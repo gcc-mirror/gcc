@@ -58,6 +58,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.PaintEvent;
+import java.awt.event.WindowEvent;
 import java.awt.im.InputContext;
 import java.awt.im.InputMethodRequests;
 import java.awt.image.BufferStrategy;
@@ -2262,7 +2263,7 @@ public abstract class Component
    * This method simply calls handleEvent and returns the result.
    *
    * @param e the event to handle
-   * @return the result of handling <code>e</code>
+   * @return true if the event was handled, false otherwise
    * @deprecated use {@link #dispatchEvent(AWTEvent)} instead
    */
   public boolean postEvent(Event e)
@@ -3028,6 +3029,7 @@ public abstract class Component
           mouseListener.mouseReleased(e);
         break;
       }
+      e.consume();
   }
 
   /**
@@ -3055,6 +3057,7 @@ public abstract class Component
           mouseMotionListener.mouseMoved(e);
         break;
       }
+      e.consume();
   }
 
   /**
@@ -3073,7 +3076,10 @@ public abstract class Component
   {
     if (mouseWheelListener != null
         && e.id == MouseEvent.MOUSE_WHEEL)
+    {
       mouseWheelListener.mouseWheelMoved(e);
+      e.consume();
+    }	
   }
 
   /**
@@ -3205,135 +3211,145 @@ public abstract class Component
   }
 
   /**
-   * AWT 1.0 mouse event handler.
+   * AWT 1.0 MOUSE_DOWN event handler.  This method is meant to be
+   * overridden by components providing their own MOUSE_DOWN handler.
+   * The default implementation simply returns false.
    *
    * @param evt the event to handle
    * @param x the x coordinate, ignored
    * @param y the y coordinate, ignored
-   * @return false: since the method was deprecated, the return has no meaning
+   * @return false
    * @deprecated use {@link #processMouseEvent(MouseEvent)} instead
    */
   public boolean mouseDown(Event evt, int x, int y)
   {
-    // XXX Add backward compatibility handling.
     return false;
   }
 
   /**
-   * AWT 1.0 mouse event.
+   * AWT 1.0 MOUSE_DRAG event handler.  This method is meant to be
+   * overridden by components providing their own MOUSE_DRAG handler.
+   * The default implementation simply returns false.
    *
    * @param evt the event to handle
    * @param x the x coordinate, ignored
    * @param y the y coordinate, ignored
-   * @return false: since the method was deprecated, the return has no meaning
+   * @return false
    * @deprecated use {@link #processMouseMotionEvent(MouseEvent)} instead
    */
   public boolean mouseDrag(Event evt, int x, int y)
   {
-    // XXX Add backward compatibility handling.
     return false;
   }
 
   /**
-   * AWT 1.0 mouse event.
+   * AWT 1.0 MOUSE_UP event handler.  This method is meant to be
+   * overridden by components providing their own MOUSE_UP handler.
+   * The default implementation simply returns false.
    *
    * @param evt the event to handle
    * @param x the x coordinate, ignored
    * @param y the y coordinate, ignored
-   * @return false: since the method was deprecated, the return has no meaning
+   * @return false
    * @deprecated use {@link #processMouseEvent(MouseEvent)} instead
    */
   public boolean mouseUp(Event evt, int x, int y)
   {
-    // XXX Add backward compatibility handling.
     return false;
   }
 
   /**
-   * AWT 1.0 mouse event.
+   * AWT 1.0 MOUSE_MOVE event handler.  This method is meant to be
+   * overridden by components providing their own MOUSE_MOVE handler.
+   * The default implementation simply returns false.
    *
    * @param evt the event to handle
    * @param x the x coordinate, ignored
    * @param y the y coordinate, ignored
-   * @return false: since the method was deprecated, the return has no meaning
+   * @return false
    * @deprecated use {@link #processMouseMotionEvent(MouseEvent)} instead
    */
   public boolean mouseMove(Event evt, int x, int y)
   {
-    // XXX Add backward compatibility handling.
     return false;
   }
 
   /**
-   * AWT 1.0 mouse event.
+   * AWT 1.0 MOUSE_ENTER event handler.  This method is meant to be
+   * overridden by components providing their own MOUSE_ENTER handler.
+   * The default implementation simply returns false.
    *
    * @param evt the event to handle
    * @param x the x coordinate, ignored
    * @param y the y coordinate, ignored
-   * @return false: since the method was deprecated, the return has no meaning
+   * @return false
    * @deprecated use {@link #processMouseEvent(MouseEvent)} instead
    */
   public boolean mouseEnter(Event evt, int x, int y)
   {
-    // XXX Add backward compatibility handling.
     return false;
   }
 
   /**
-   * AWT 1.0 mouse event.
+   * AWT 1.0 MOUSE_EXIT event handler.  This method is meant to be
+   * overridden by components providing their own MOUSE_EXIT handler.
+   * The default implementation simply returns false.
    *
    * @param evt the event to handle
    * @param x the x coordinate, ignored
    * @param y the y coordinate, ignored
-   * @return false: since the method was deprecated, the return has no meaning
+   * @return false
    * @deprecated use {@link #processMouseEvent(MouseEvent)} instead
    */
   public boolean mouseExit(Event evt, int x, int y)
   {
-    // XXX Add backward compatibility handling.
     return false;
   }
 
   /**
-   * AWT 1.0 key press event.
+   * AWT 1.0 KEY_PRESS and KEY_ACTION event handler.  This method is
+   * meant to be overridden by components providing their own key
+   * press handler.  The default implementation simply returns false.
    *
    * @param evt the event to handle
    * @param key the key pressed, ignored
-   * @return false: since the method was deprecated, the return has no meaning
+   * @return false
    * @deprecated use {@link #processKeyEvent(KeyEvent)} instead
    */
   public boolean keyDown(Event evt, int key)
   {
-    // XXX Add backward compatibility handling.
     return false;
   }
 
   /**
-   * AWT 1.0 key press event.
+   * AWT 1.0 KEY_RELEASE and KEY_ACTION_RELEASE event handler.  This
+   * method is meant to be overridden by components providing their
+   * own key release handler.  The default implementation simply
+   * returns false.
    *
    * @param evt the event to handle
    * @param key the key pressed, ignored
-   * @return false: since the method was deprecated, the return has no meaning
+   * @return false
    * @deprecated use {@link #processKeyEvent(KeyEvent)} instead
    */
   public boolean keyUp(Event evt, int key)
   {
-    // XXX Add backward compatibility handling.
     return false;
   }
 
   /**
-   * AWT 1.0 action event processor.
+   * AWT 1.0 ACTION_EVENT event handler.  This method is meant to be
+   * overridden by components providing their own action event
+   * handler.  The default implementation simply returns false.
    *
    * @param evt the event to handle
    * @param what the object acted on, ignored
-   * @return false: since the method was deprecated, the return has no meaning
+   * @return false
    * @deprecated in classes which support actions, use
    *             <code>processActionEvent(ActionEvent)</code> instead
    */
   public boolean action(Event evt, Object what)
   {
-    // XXX Add backward compatibility handling.
     return false;
   }
 
@@ -3377,30 +3393,32 @@ public abstract class Component
   }
 
   /**
-   * AWT 1.0 focus event.
+   * AWT 1.0 GOT_FOCUS event handler.  This method is meant to be
+   * overridden by components providing their own GOT_FOCUS handler.
+   * The default implementation simply returns false.
    *
    * @param evt the event to handle
    * @param what the Object focused, ignored
-   * @return false: since the method was deprecated, the return has no meaning
+   * @return false
    * @deprecated use {@link #processFocusEvent(FocusEvent)} instead
    */
   public boolean gotFocus(Event evt, Object what)
   {
-    // XXX Add backward compatibility handling.
     return false;
   }
 
   /**
-   * AWT 1.0 focus event.
+   * AWT 1.0 LOST_FOCUS event handler.  This method is meant to be
+   * overridden by components providing their own LOST_FOCUS handler.
+   * The default implementation simply returns false.
    *
    * @param evt the event to handle
    * @param what the Object focused, ignored
-   * @return false: since the method was deprecated, the return has no meaning
+   * @return false
    * @deprecated use {@link #processFocusEvent(FocusEvent)} instead
    */
   public boolean lostFocus(Event evt, Object what)
   {
-    // XXX Add backward compatibility handling.
     return false;
   }
 
@@ -3415,7 +3433,7 @@ public abstract class Component
    */
   public boolean isFocusTraversable()
   {
-    return enabled && visible && (peer == null || peer.isFocusTraversable());
+    return enabled && visible && (peer == null || isLightweight() || peer.isFocusTraversable());
   }
 
   /**
@@ -3430,7 +3448,11 @@ public abstract class Component
   }
 
   /**
-   * Specify whether this component can receive focus.
+   * Specify whether this component can receive focus. This method also
+   * sets the {@link #isFocusTraversableOverridden} field to 1, which
+   * appears to be the undocumented way {@link
+   * DefaultFocusTraversalPolicy#accept()} determines whether to respect
+   * the {@link #isFocusable()} method of the component.
    *
    * @param focusable the new focusable status
    * @since 1.4
@@ -3439,6 +3461,7 @@ public abstract class Component
   {
     firePropertyChange("focusable", this.focusable, focusable);
     this.focusable = focusable;
+    this.isFocusTraversableOverridden = 1;
   }
 
   /**
@@ -3697,7 +3720,7 @@ public abstract class Component
             Window toplevel = (Window) parent;
             if (toplevel.isFocusableWindow ())
               {
-                if (peer != null)
+                if (peer != null && !isLightweight())
                   // This call will cause a FOCUS_GAINED event to be
                   // posted to the system event queue if the native
                   // windowing system grants the focus request.
@@ -3783,7 +3806,7 @@ public abstract class Component
             Window toplevel = (Window) parent;
             if (toplevel.isFocusableWindow ())
               {
-                if (peer != null)
+                if (peer != null && !isLightweight())
                   // This call will cause a FOCUS_GAINED event to be
                   // posted to the system event queue if the native
                   // windowing system grants the focus request.
@@ -3904,6 +3927,7 @@ public abstract class Component
                 if (focusedWindow == toplevel)
                   {
                     if (peer != null
+                        && !isLightweight()
                         && !(this instanceof Window))
                       // This call will cause a FOCUS_GAINED event to be
                       // posted to the system event queue if the native
@@ -4495,23 +4519,23 @@ p   * <li>the set of backward traversal keys
         int id = e.getID ();
 
         int oldMods = 0;
-        int mods = ie.getModifiers ();
+        int mods = ie.getModifiersEx ();
 
-        if ((mods & InputEvent.BUTTON2_MASK) != 0)
+        if ((mods & InputEvent.BUTTON2_DOWN_MASK) != 0)
           oldMods |= Event.META_MASK;
-        else if ((mods & InputEvent.BUTTON3_MASK) != 0)
+        else if ((mods & InputEvent.BUTTON3_DOWN_MASK) != 0)
           oldMods |= Event.ALT_MASK;
 
-        if ((mods & (InputEvent.SHIFT_MASK | InputEvent.SHIFT_DOWN_MASK)) != 0)
+        if ((mods & InputEvent.SHIFT_DOWN_MASK) != 0)
           oldMods |= Event.SHIFT_MASK;
 
-        if ((mods & (InputEvent.CTRL_MASK | InputEvent.CTRL_DOWN_MASK)) != 0)
+        if ((mods & InputEvent.CTRL_DOWN_MASK) != 0)
           oldMods |= Event.CTRL_MASK;
 
-        if ((mods & (InputEvent.META_MASK | InputEvent.META_DOWN_MASK)) != 0)
+        if ((mods & InputEvent.META_DOWN_MASK) != 0)
           oldMods |= Event.META_MASK;
 
-        if ((mods & (InputEvent.ALT_MASK | InputEvent.ALT_DOWN_MASK)) != 0)
+        if ((mods & InputEvent.ALT_DOWN_MASK) != 0)
           oldMods |= Event.ALT_MASK;
 
         if (e instanceof MouseEvent)
@@ -4673,7 +4697,8 @@ p   * <li>the set of backward traversal keys
    *
    * @param e the event to dispatch
    */
-  void dispatchEventImpl(AWTEvent e)
+
+  void dispatchEventImpl (AWTEvent e)
   {
     Event oldEvent = translateEvent (e);
 
@@ -4681,7 +4706,30 @@ p   * <li>the set of backward traversal keys
       postEvent (oldEvent);
 
     if (eventTypeEnabled (e.id))
-      processEvent(e);
+      {
+        // the trick we use to communicate between dispatch and redispatch
+        // is to have KeyboardFocusManager.redispatch synchronize on the
+        // object itself. we then do not redispatch to KeyboardFocusManager
+        // if we are already holding the lock.
+        if (! Thread.holdsLock(e))
+          {
+            switch (e.id)
+              {
+              case WindowEvent.WINDOW_GAINED_FOCUS:
+              case WindowEvent.WINDOW_LOST_FOCUS:
+              case KeyEvent.KEY_PRESSED:
+              case KeyEvent.KEY_RELEASED:
+              case KeyEvent.KEY_TYPED:
+              case FocusEvent.FOCUS_GAINED:
+              case FocusEvent.FOCUS_LOST:
+                if (KeyboardFocusManager
+                    .getCurrentKeyboardFocusManager()
+                    .dispatchEvent(e))
+                    return;
+              }
+          }
+        processEvent (e);
+      }
   }
 
   /**

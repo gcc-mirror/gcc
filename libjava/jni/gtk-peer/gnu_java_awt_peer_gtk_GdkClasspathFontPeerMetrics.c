@@ -54,6 +54,8 @@ JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeerMetri
   jint *metrics;
   struct peerfont *pf = NULL;
   FT_Matrix mat;
+  double pointsize;
+  FT_Face face;
 
   pf = NSA_GET_FONT_PTR(env, font);
   g_assert (pf != NULL);
@@ -68,7 +70,7 @@ JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeerMetri
 #define DOUBLE_TO_16_16(d) ((FT_Fixed)((d) * 65536.0))
 #define DOUBLE_FROM_16_16(t) ((double)(t) / 65536.0)
 
-  double pointsize = pango_font_description_get_size (pf->desc);
+  pointsize = pango_font_description_get_size (pf->desc);
   pointsize /= (double) PANGO_SCALE;
 
   mat.xx = DOUBLE_TO_16_16(1);
@@ -76,7 +78,7 @@ JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeerMetri
   mat.yx = DOUBLE_TO_16_16(0);
   mat.yy = DOUBLE_TO_16_16(1);  
   
-  FT_Face face = pango_ft2_font_get_face (pf->font);  
+  face = pango_ft2_font_get_face (pf->font);  
   FT_Set_Transform(face, &mat, NULL);
   FT_Set_Char_Size( face, 
 		    DOUBLE_TO_26_6 (pointsize),

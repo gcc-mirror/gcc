@@ -117,7 +117,7 @@ public class Kernel implements Cloneable
     throws IllegalArgumentException
   {
     if (data == null)
-	return (float[])this.data.clone();
+      return (float[])this.data.clone();
 
     if (data.length < this.data.length)
       throw new IllegalArgumentException();
@@ -131,6 +131,13 @@ public class Kernel implements Cloneable
    */
   public Object clone()
   {
-    return new Kernel(width, height, data);
+    try
+      {
+	return super.clone();
+      }
+    catch (CloneNotSupportedException e)
+      {
+        throw (Error) new InternalError().initCause(e); // Impossible
+      }
   }
 }

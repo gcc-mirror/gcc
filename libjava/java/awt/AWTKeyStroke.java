@@ -409,13 +409,13 @@ public class AWTKeyStroke implements Serializable
       {
         token = t.nextToken();
         if ("shift".equals(token))
-          modifiers |= KeyEvent.SHIFT_MASK | KeyEvent.SHIFT_DOWN_MASK;
+          modifiers |= KeyEvent.SHIFT_DOWN_MASK;
         else if ("ctrl".equals(token) || "control".equals(token))
-          modifiers |= KeyEvent.CTRL_MASK | KeyEvent.CTRL_DOWN_MASK;
+          modifiers |= KeyEvent.CTRL_DOWN_MASK;
         else if ("meta".equals(token))
-          modifiers |= KeyEvent.META_MASK | KeyEvent.META_DOWN_MASK;
+          modifiers |= KeyEvent.META_DOWN_MASK;
         else if ("alt".equals(token))
-          modifiers |= KeyEvent.ALT_MASK | KeyEvent.ALT_DOWN_MASK;
+          modifiers |= KeyEvent.ALT_DOWN_MASK;
         else if ("button1".equals(token))
           modifiers |= KeyEvent.BUTTON1_DOWN_MASK;
         else if ("button2".equals(token))

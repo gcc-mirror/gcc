@@ -46,13 +46,20 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.InputMethodListener;
+import java.awt.event.KeyEvent;
+
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleText;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
@@ -62,6 +69,8 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.ActionMapUIResource;
+import javax.swing.plaf.InputMapUIResource;
 import javax.swing.plaf.TextUI;
 
 
@@ -283,11 +292,505 @@ public abstract class JTextComponent extends JComponent
     }
   }
 
+  /**
+   * According to <a
+   * href="http://java.sun.com/products/jfc/tsc/special_report/kestrel/keybindings.html">this
+   * report</a>, a pair of private classes wraps a {@link
+   * javax.swing.text.Keymap} in the new {@link InputMap} / {@link
+   * ActionMap} interfaces, such that old Keymap-using code can make use of
+   * the new framework.</p>
+   *
+   * <p>A little bit of experimentation with these classes reveals the following
+   * structure:
+   *
+   * <ul>
+   *
+   * <li>KeymapWrapper extends {@link InputMap} and holds a reference to
+   * the underlying {@link Keymap}.</li>
+   *
+   * <li>KeymapWrapper maps {@link KeyStroke} objects to {@link Action}
+   * objects, by delegation to the underlying {@link Keymap}.</li>
+   *
+   * <li>KeymapActionMap extends {@link ActionMap} also holds a reference to
+   * the underlying {@link Keymap} but only appears to use it for listing 
+   * its keys. </li>
+   *
+   * <li>KeymapActionMap maps all {@link Action} objects to
+   * <em>themselves</em>, whether they exist in the underlying {@link
+   * Keymap} or not, and passes other objects to the parent {@link
+   * ActionMap} for resolving.
+   *
+   * </ul>
+   */
+
+  private class KeymapWrapper extends InputMap
+  {
+    Keymap map;
+
+    public KeymapWrapper(Keymap k)
+    {
+      map = k;
+    }
+
+    public int size()
+    {
+      return map.getBoundKeyStrokes().length + super.size();
+    }
+
+    public Object get(KeyStroke ks)
+    {
+      Action mapped = null;
+      Keymap m = map;
+      while(mapped == null && m != null)
+        {
+          mapped = m.getAction(ks);
+          if (mapped == null && ks.getKeyEventType() == KeyEvent.KEY_TYPED)
+            mapped = m.getDefaultAction();
+          if (mapped == null)
+            m = m.getResolveParent();
+        }
+
+      if (mapped == null)
+        return super.get(ks);
+      else
+        return mapped;
+    }
+
+    public KeyStroke[] keys()
+    {
+      KeyStroke[] superKeys = super.keys();
+      KeyStroke[] mapKeys = map.getBoundKeyStrokes(); 
+      KeyStroke[] bothKeys = new KeyStroke[superKeys.length + mapKeys.length];
+      for (int i = 0; i < superKeys.length; ++i)
+        bothKeys[i] = superKeys[i];
+      for (int i = 0; i < mapKeys.length; ++i)
+        bothKeys[i + superKeys.length] = mapKeys[i];
+      return bothKeys;
+    }
+
+    public KeyStroke[] allKeys()
+    {
+      KeyStroke[] superKeys = super.allKeys();
+      KeyStroke[] mapKeys = map.getBoundKeyStrokes(); 
+      KeyStroke[] bothKeys = new KeyStroke[superKeys.length + mapKeys.length];
+      for (int i = 0; i < superKeys.length; ++i)
+        bothKeys[i] = superKeys[i];
+      for (int i = 0; i < mapKeys.length; ++i)
+        bothKeys[i + superKeys.length] = mapKeys[i];
+      return bothKeys;
+    }
+  }
+
+  private class KeymapActionMap extends ActionMap
+  {
+    Keymap map;
+
+    public KeymapActionMap(Keymap k)
+    {
+      map = k;
+    }
+
+    public Action get(Object cmd)
+    {
+      if (cmd instanceof Action)
+        return (Action) cmd;
+      else
+        return super.get(cmd);
+    }
+
+    public int size()
+    {
+      return map.getBoundKeyStrokes().length + super.size();
+    }
+
+    public Object[] keys() 
+    {
+      Object[] superKeys = super.keys();
+      Object[] mapKeys = map.getBoundKeyStrokes(); 
+      Object[] bothKeys = new Object[superKeys.length + mapKeys.length];
+      for (int i = 0; i < superKeys.length; ++i)
+        bothKeys[i] = superKeys[i];
+      for (int i = 0; i < mapKeys.length; ++i)
+        bothKeys[i + superKeys.length] = mapKeys[i];
+      return bothKeys;      
+    }
+
+    public Object[] allKeys()
+    {
+      Object[] superKeys = super.allKeys();
+      Object[] mapKeys = map.getBoundKeyStrokes(); 
+      Object[] bothKeys = new Object[superKeys.length + mapKeys.length];
+      for (int i = 0; i < superKeys.length; ++i)
+        bothKeys[i] = superKeys[i];
+      for (int i = 0; i < mapKeys.length; ++i)
+        bothKeys[i + superKeys.length] = mapKeys[i];
+      return bothKeys;
+    }
+
+  }
+
+  static class DefaultKeymap implements Keymap
+  {
+    String name;
+    Keymap parent;
+    Hashtable map;
+    Action defaultAction;
+
+    public DefaultKeymap(String name)
+    {
+      this.name = name;
+      this.map = new Hashtable();
+    }
+
+    public void addActionForKeyStroke(KeyStroke key, Action a)
+    {
+      map.put(key, a);
+    }
+
+    /**
+     * Looks up a KeyStroke either in the current map or the parent Keymap;
+     * does <em>not</em> return the default action if lookup fails.
+     *
+     * @param key The KeyStroke to look up an Action for.
+     *
+     * @return The mapping for <code>key</code>, or <code>null</code>
+     * if no mapping exists in this Keymap or any of its parents.
+     */
+    public Action getAction(KeyStroke key)
+    {
+      if (map.containsKey(key))
+        return (Action) map.get(key);
+      else if (parent != null)
+        return parent.getAction(key);
+      else
+        return null;
+    }
+
+    public Action[] getBoundActions()
+    {
+      Action [] ret = new Action[map.size()];
+      Enumeration e = map.elements();
+      int i = 0;
+      while (e.hasMoreElements())
+        {
+          ret[i++] = (Action) e.nextElement();
+        }
+      return ret;
+    }
+
+    public KeyStroke[] getBoundKeyStrokes()
+    {
+      KeyStroke [] ret = new KeyStroke[map.size()];
+      Enumeration e = map.keys();
+      int i = 0;
+      while (e.hasMoreElements())
+        {
+          ret[i++] = (KeyStroke) e.nextElement();
+        }
+      return ret;
+    }
+
+    public Action getDefaultAction()
+    {
+      return defaultAction;
+    }
+
+    public KeyStroke[] getKeyStrokesForAction(Action a)
+    {
+      int i = 0;
+      Enumeration e = map.keys();
+      while (e.hasMoreElements())
+        {
+          if (map.get(e.nextElement()).equals(a))
+            ++i;
+        }
+      KeyStroke [] ret = new KeyStroke[i];
+      i = 0;
+      e = map.keys();
+      while (e.hasMoreElements())
+        {          
+          KeyStroke k = (KeyStroke) e.nextElement();
+          if (map.get(k).equals(a))
+            ret[i++] = k;            
+        }
+      return ret;
+    }
+
+    public String getName()
+    {
+      return name;
+    }
+
+    public Keymap getResolveParent()
+    {
+      return parent;
+    }
+
+    public boolean isLocallyDefined(KeyStroke key)
+    {
+      return map.containsKey(key);
+    }
+
+    public void removeBindings()
+    {
+      map.clear();
+    }
+
+    public void removeKeyStrokeBinding(KeyStroke key)
+    {
+      map.remove(key);
+    }
+
+    public void setDefaultAction(Action a)
+    {
+      defaultAction = a;
+    }
+
+    public void setResolveParent(Keymap p)
+    {
+      parent = p;
+    }
+
+  }
+
   private static final long serialVersionUID = -8796518220218978795L;
   
   public static final String DEFAULT_KEYMAP = "default";
   public static final String FOCUS_ACCELERATOR_KEY = "focusAcceleratorKey";
+  
+  private static Hashtable keymaps = new Hashtable();
+  private Keymap keymap;
+  
+  /**
+   * Get a Keymap from the global keymap table, by name.
+   *
+   * @param n The name of the Keymap to look up
+   *
+   * @return A Keymap associated with the provided name, or
+   * <code>null</code> if no such Keymap exists
+   *
+   * @see #addKeymap()
+   * @see #removeKeymap()
+   * @see #keymaps
+   */
+  public static Keymap getKeymap(String n)
+  {
+    return (Keymap) keymaps.get(n);
+  }
 
+  /**
+   * Remove a Keymap from the global Keymap table, by name.
+   *
+   * @param n The name of the Keymap to remove
+   *
+   * @return The keymap removed from the global table
+   *
+   * @see #addKeymap()
+   * @see #getKeymap()
+   * @see #keymaps
+   */  
+  public static Keymap removeKeymap(String n)
+  {
+    Keymap km = (Keymap) keymaps.get(n);
+    keymaps.remove(n);
+    return km;
+  }
+
+  /**
+   * Create a new Keymap with a specific name and parent, and add the new
+   * Keymap to the global keymap table. The name may be <code>null</code>,
+   * in which case the new Keymap will <em>not</em> be added to the global
+   * Keymap table. The parent may also be <code>null</code>, which is
+   * harmless.
+   * 
+   * @param n The name of the new Keymap, or <code>null</code>
+   * @param parent The parent of the new Keymap, or <code>null</code>
+   *
+   * @return The newly created Keymap
+   *
+   * @see #removeKeymap()
+   * @see #getKeymap()
+   * @see #keymaps
+   */
+  public static Keymap addKeymap(String n, Keymap parent)
+  {
+    Keymap k = new DefaultKeymap(n);
+    k.setResolveParent(parent);
+    if (n != null)
+      keymaps.put(n, k);
+    return k;
+  }
+
+  /**
+   * Get the current Keymap of this component.
+   *
+   * @return The component's current Keymap
+   *
+   * @see #setKeymap()
+   * @see #keymap
+   */
+  Keymap getKeymap() 
+  {
+    return keymap;
+  }
+
+  /**
+   * Set the current Keymap of this component, installing appropriate
+   * {@link KeymapWrapper} and {@link KeymapActionMap} objects in the
+   * {@link InputMap} and {@link ActionMap} parent chains, respectively,
+   * and fire a property change event with name <code>"keymap"</code>.
+   *
+   * @see #getKeymap()
+   * @see #keymap
+   */
+  public void setKeymap(Keymap k) 
+  {
+
+    // phase 1: replace the KeymapWrapper entry in the InputMap chain.
+    // the goal here is to always maintain the following ordering:
+    //
+    //   [InputMap]? -> [KeymapWrapper]? -> [InputMapUIResource]*
+    // 
+    // that is to say, component-specific InputMaps need to remain children
+    // of Keymaps, and Keymaps need to remain children of UI-installed
+    // InputMaps (and the order of each group needs to be preserved, of
+    // course).
+    
+    KeymapWrapper kw = (k == null ? null : new KeymapWrapper(k));
+    InputMap childInputMap = getInputMap(JComponent.WHEN_FOCUSED);
+    if (childInputMap == null)
+      setInputMap(JComponent.WHEN_FOCUSED, kw);
+    else
+      {
+        while (childInputMap.getParent() != null 
+               && !(childInputMap.getParent() instanceof KeymapWrapper)
+               && !(childInputMap.getParent() instanceof InputMapUIResource))
+          childInputMap = childInputMap.getParent();
+
+        // option 1: there is nobody to replace at the end of the chain
+        if (childInputMap.getParent() == null)
+          childInputMap.setParent(kw);
+        
+        // option 2: there is already a KeymapWrapper in the chain which
+        // needs replacing (possibly with its own parents, possibly without)
+        else if (childInputMap.getParent() instanceof KeymapWrapper)
+          {
+            if (kw == null)
+              childInputMap.setParent(childInputMap.getParent().getParent());
+            else
+              {
+                kw.setParent(childInputMap.getParent().getParent());
+                childInputMap.setParent(kw);
+              }
+          }
+
+        // option 3: there is an InputMapUIResource in the chain, which marks
+        // the place where we need to stop and insert ourselves
+        else if (childInputMap.getParent() instanceof InputMapUIResource)
+          {
+            if (kw != null)
+              {
+                kw.setParent(childInputMap.getParent());
+                childInputMap.setParent(kw);
+              }
+          }
+      }
+
+    // phase 2: replace the KeymapActionMap entry in the ActionMap chain
+
+    KeymapActionMap kam = (k == null ? null : new KeymapActionMap(k));
+    ActionMap childActionMap = getActionMap();
+    if (childActionMap == null)
+      setActionMap(kam);
+    else
+      {
+        while (childActionMap.getParent() != null 
+               && !(childActionMap.getParent() instanceof KeymapActionMap)
+               && !(childActionMap.getParent() instanceof ActionMapUIResource))
+          childActionMap = childActionMap.getParent();
+
+        // option 1: there is nobody to replace at the end of the chain
+        if (childActionMap.getParent() == null)
+          childActionMap.setParent(kam);
+        
+        // option 2: there is already a KeymapActionMap in the chain which
+        // needs replacing (possibly with its own parents, possibly without)
+        else if (childActionMap.getParent() instanceof KeymapActionMap)
+          {
+            if (kam == null)
+              childActionMap.setParent(childActionMap.getParent().getParent());
+            else
+              {
+                kam.setParent(childActionMap.getParent().getParent());
+                childActionMap.setParent(kam);
+              }
+          }
+
+        // option 3: there is an ActionMapUIResource in the chain, which marks
+        // the place where we need to stop and insert ourselves
+        else if (childActionMap.getParent() instanceof ActionMapUIResource)
+          {
+            if (kam != null)
+              {
+                kam.setParent(childActionMap.getParent());
+                childActionMap.setParent(kam);
+              }
+          }
+      }
+
+    // phase 3: update the explicit keymap field
+
+    Keymap old = keymap;
+    keymap = k;
+    firePropertyChange("keymap", old, k);
+  }
+
+  /**
+   * Resolves a set of bindings against a set of actions and inserts the
+   * results into a {@link Keymap}. Specifically, for each provided binding
+   * <code>b</code>, if there exists a provided action <code>a</code> such
+   * that <code>a.getValue(Action.NAME) == b.ActionName</code> then an
+   * entry is added to the Keymap mapping <code>b</code> to
+   * </code>a</code>.
+   *
+   * @param map The Keymap to add new mappings to
+   * @param bindings The set of bindings to add to the Keymap
+   * @param actions The set of actions to resolve binding names against
+   *
+   * @see Action#NAME
+   * @see Action#getValue()
+   * @see KeyBinding#ActionName
+   */
+  public static void loadKeymap(Keymap map, 
+                                JTextComponent.KeyBinding[] bindings, 
+                                Action[] actions)
+  {
+    Hashtable acts = new Hashtable(actions.length);
+    for (int i = 0; i < actions.length; ++i)
+      acts.put(actions[i].getValue(Action.NAME), actions[i]);
+    for (int i = 0; i < bindings.length; ++i)
+      if (acts.containsKey(bindings[i].actionName))
+        map.addActionForKeyStroke(bindings[i].key, (Action) acts.get(bindings[i].actionName));
+  }
+
+  /**
+   * Returns the set of available Actions this component's associated
+   * editor can run.  Equivalent to calling
+   * <code>getUI().getEditorKit().getActions()</code>. This set of Actions
+   * is a reasonable value to provide as a parameter to {@link
+   * #loadKeymap()}, when resolving a set of {@link #KeyBinding} objects
+   * against this component.
+   *
+   * @return The set of available Actions on this component's {@link EditorKit}
+   *
+   * @see TextUI#getEditorKit()
+   * @see EditorKit#getActions()
+   */
+  public Action[] getActions()
+  {
+    return getUI().getEditorKit(this).getActions();
+  }
+    
   private Document doc;
   private Caret caret;
   private Highlighter highlighter;
@@ -296,19 +799,47 @@ public abstract class JTextComponent extends JComponent
   private Color selectedTextColor;
   private Color selectionColor;
   private boolean editable;
+  private Insets margin;
 
   /**
    * Creates a new <code>JTextComponent</code> instance.
    */
   public JTextComponent()
   {
+    Keymap defkeymap = getKeymap(DEFAULT_KEYMAP);
+    boolean creatingKeymap = false;
+    if (defkeymap == null)
+      {
+        defkeymap = addKeymap(DEFAULT_KEYMAP, null);
+        defkeymap.setDefaultAction(new DefaultEditorKit.DefaultKeyTypedAction());
+        creatingKeymap = true;
+      }
+
+    setFocusable(true);
     enableEvents(AWTEvent.KEY_EVENT_MASK);
     updateUI();
+    
+    // need to do this after updateUI()
+    if (creatingKeymap)
+      loadKeymap(defkeymap, 
+                 new KeyBinding[] { 
+                   new KeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
+                                  DefaultEditorKit.backwardAction),
+                   new KeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0),
+                                  DefaultEditorKit.forwardAction),
+                   new KeyBinding(KeyStroke.getKeyStroke("typed \b"),
+                                  DefaultEditorKit.deletePrevCharAction),
+                   new KeyBinding(KeyStroke.getKeyStroke("typed \u007f"),
+                                  DefaultEditorKit.deleteNextCharAction)                   
+                 },
+                 getActions());
   }
 
-  public void setDocument(Document s)
+  public void setDocument(Document newDoc)
   {
-    doc = s;
+    Document oldDoc = doc;
+    doc = newDoc;
+    firePropertyChange("document", oldDoc, newDoc);
     revalidate();
     repaint();
   }
@@ -328,18 +859,22 @@ public abstract class JTextComponent extends JComponent
     return null;
   }
 
+  public void setMargin(Insets m)
+  {
+    margin = m;
+  }
+
   public Insets getMargin()
   {
-    // FIXME: Not implemented.
-    return null;
+    return margin;
   }
 
   public void setText(String text)
   {
     try
       {
-	getDocument().remove(0, doc.getLength());
-	getDocument().insertString(0, text, null);
+	doc.remove(0, doc.getLength());
+	doc.insertString(0, text, null);
       }
     catch (BadLocationException e)
       {
@@ -488,8 +1023,16 @@ public abstract class JTextComponent extends JComponent
    */
   public void setCaret(Caret newCaret)
   {
-    firePropertyChange("caret", caret, newCaret);
+    if (caret != null)
+      caret.deinstall(this);
+    
+    Caret oldCaret = caret;
     caret = newCaret;
+
+    if (caret != null)
+      caret.install(this);
+    
+    firePropertyChange("caret", oldCaret, newCaret);
   }
 
   public Color getCaretColor()
@@ -499,8 +1042,9 @@ public abstract class JTextComponent extends JComponent
 
   public void setCaretColor(Color newColor)
   {
-    firePropertyChange("caretColor", caretColor, newColor);
+    Color oldCaretColor = caretColor;
     caretColor = newColor;
+    firePropertyChange("caretColor", oldCaretColor, newColor);
   }
 
   public Color getDisabledTextColor()
@@ -510,8 +1054,9 @@ public abstract class JTextComponent extends JComponent
 
   public void setDisabledTextColor(Color newColor)
   {
-    firePropertyChange("disabledTextColor", caretColor, newColor);
+    Color oldColor = disabledTextColor;
     disabledTextColor = newColor;
+    firePropertyChange("disabledTextColor", oldColor, newColor);
   }
 
   public Color getSelectedTextColor()
@@ -521,8 +1066,9 @@ public abstract class JTextComponent extends JComponent
 
   public void setSelectedTextColor(Color newColor)
   {
-    firePropertyChange("selectedTextColor", caretColor, newColor);
+    Color oldColor = selectedTextColor;
     selectedTextColor = newColor;
+    firePropertyChange("selectedTextColor", oldColor, newColor);
   }
 
   public Color getSelectionColor()
@@ -532,8 +1078,9 @@ public abstract class JTextComponent extends JComponent
 
   public void setSelectionColor(Color newColor)
   {
-    firePropertyChange("selectionColor", caretColor, newColor);
+    Color oldColor = selectionColor;
     selectionColor = newColor;
+    firePropertyChange("selectionColor", oldColor, newColor);
   }
 
   /**
@@ -584,8 +1131,16 @@ public abstract class JTextComponent extends JComponent
 
   public void setHighlighter(Highlighter newHighlighter)
   {
-    firePropertyChange("highlighter", highlighter, newHighlighter);
+    if (highlighter != null)
+      highlighter.deinstall(this);
+    
+    Highlighter oldHighlighter = highlighter;
     highlighter = newHighlighter;
+
+    if (highlighter != null)
+      highlighter.install(this);
+    
+    firePropertyChange("highlighter", oldHighlighter, newHighlighter);
   }
 
   /**
@@ -772,5 +1327,10 @@ public abstract class JTextComponent extends JComponent
   public InputMethodListener[] getInputMethodListeners()
   {
     return (InputMethodListener[]) getListeners(InputMethodListener.class);
+  }
+
+  public Rectangle modelToView(int position) throws BadLocationException
+  {
+    return getUI().modelToView(this, position);
   }
 }

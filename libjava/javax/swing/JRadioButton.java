@@ -44,33 +44,47 @@ public class JRadioButton extends JToggleButton
 {
   private static final long serialVersionUID = 7751949583255506856L;
 
-    public JRadioButton()
-    {
-	this(null, null);
-    }
-    public JRadioButton(Action a)
-    {
-	this();
-	setAction(a);
-    }
+  public JRadioButton()
+  {
+    this(null, null);
+  }
+    
+  public JRadioButton(Action a)
+  {
+    this();
+    setAction(a);
+  }
 
-    public JRadioButton(Icon icon)
-    { 
-	this(null, icon);
-    }    
+  public JRadioButton(Icon icon)
+  { 
+    this(null, icon);
+  }    
   
-    public JRadioButton(String text)
-    {
-	this(text, null);
-    }
-      
-    public JRadioButton(String text, Icon icon)
-    {
-	super(text, icon);
-        borderPainted = false;
-        contentAreaFilled = false;
-    }
+  public JRadioButton(Icon icon, boolean selected)
+  { 
+    this(null, icon, selected);
+  }    
+  
+  public JRadioButton(String text)
+  {
+    this(text, null);
+  }
 
+  public JRadioButton(String text, boolean selected)
+  {
+    this(text, null, selected);
+  }
+      
+  public JRadioButton(String text, Icon icon)
+  {
+    super(text, icon);
+    borderPainted = false;
+    contentAreaFilled = false;
+  }
+      
+  public JRadioButton(String text, Icon icon, boolean selected)
+  {
+  }
     
     public AccessibleContext getAccessibleContext()
     {

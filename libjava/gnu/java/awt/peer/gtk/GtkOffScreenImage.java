@@ -76,7 +76,10 @@ public class GtkOffScreenImage extends Image
 
   public Graphics getGraphics ()
   {
-    return g;
+    if (g instanceof GdkGraphics2D)
+      return new GdkGraphics2D ((GdkGraphics2D) this.g);
+    else
+      return new GdkGraphics ((GdkGraphics) this.g);
   }
 
   public Object getProperty (String name, ImageObserver observer)

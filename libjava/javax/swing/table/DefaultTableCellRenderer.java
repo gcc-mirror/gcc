@@ -122,8 +122,22 @@ public class DefaultTableCellRenderer extends JLabel
   {
     if (value!=null)
       super.setText(value.toString());
-    
-    return this;
+
+    setOpaque(true);
+    if (isSelected)
+      {
+        setBackground(table.getSelectionBackground());
+        setForeground(table.getSelectionForeground());
+      }
+    else
+      {
+        setBackground(table.getBackground());
+        setForeground(table.getForeground());
+      }
+
+    setEnabled(table.isEnabled());
+    setFont(table.getFont());
+    return this;    
   }
 
   /**
@@ -146,6 +160,11 @@ public class DefaultTableCellRenderer extends JLabel
    * do something.</p>
    */
   public void validate()
+  {
+    // Does nothing.
+  }
+
+  public void revalidate()
   {
     // Does nothing.
   }

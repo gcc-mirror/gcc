@@ -1,5 +1,5 @@
 /* RoundRectangle2D.java -- represents a rectangle with rounded corners
-   Copyright (C) 2000, 2002, 2003 Free Software Foundation
+   Copyright (C) 2000, 2002, 2003, 2004 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ package java.awt.geom;
 
 import java.util.NoSuchElementException;
 
+
 /** This class implements a rectangle with rounded corners.
  * @author Tom Tromey <tromey@cygnus.com>
  * @date December 3, 2000
@@ -60,12 +61,12 @@ public abstract class RoundRectangle2D extends RectangularShape
    * @param arcHeight The arc height
    */
   public abstract void setRoundRect(double x, double y, double w, double h,
-                                     double arcWidth, double arcHeight);
+                                    double arcWidth, double arcHeight);
 
   /** Create a RoundRectangle2D.  This is protected because this class
    * is abstract and cannot be instantiated.
    */
-  protected  RoundRectangle2D()
+  protected RoundRectangle2D()
   {
   }
 
@@ -87,8 +88,11 @@ public abstract class RoundRectangle2D extends RectangularShape
     // Now check to see if the point is in range of an arc.
     double dy = Math.min(Math.abs(my - y), Math.abs(my + mh - y));
     double dx = Math.min(Math.abs(mx - x), Math.abs(mx + mw - x));
-    double aw = getArcWidth();
-    double ah = getArcHeight();
+
+    // The arc dimensions are that of the corresponding ellipse
+    // thus a 90 degree segment is half of that.
+    double aw = getArcWidth() / 2.0;
+    double ah = getArcHeight() / 2.0;
     if (dx > aw || dy > ah)
       return true;
 
@@ -112,8 +116,8 @@ public abstract class RoundRectangle2D extends RectangularShape
   {
     // We have to check all four points here (for ordinary rectangles
     // we can just check opposing corners).
-    return (contains(x, y) && contains(x + w, h)
-            && contains(x, y + h) && contains(x + w, y + h));
+    return (contains(x, y) && contains(x, y + h) && contains(x + w, y + h)
+           && contains(x + w, y));
   }
 
   /** Return a new path iterator which iterates over this rectangle.
@@ -128,154 +132,161 @@ public abstract class RoundRectangle2D extends RectangularShape
     final double arcwidth = getArcWidth();
     final double archeight = getArcHeight();
     return new PathIterator()
-    {
-      /** We iterate clockwise around the rectangle, starting in the
-       * upper left.  This variable tracks our current point, which
-       * can be on either side of a given corner.  */
-      private int current = 0;
-
-      /** Child path iterator, used for corners.  */
-      private PathIterator corner;
-
-      /** This is used when rendering the corners.  We re-use the arc
-       * for each corner.  */
-      private Arc2D arc = new Arc2D.Double();
-
-      /** Temporary array used by getPoint.  */
-      private double[] temp = new double[2];
-
-      public int getWindingRule()
       {
-	return WIND_NON_ZERO;
-      }
+	/** We iterate counterclockwise around the rectangle, starting in the
+	 * upper right.  This variable tracks our current point, which
+	 * can be on either side of a given corner.  */
+	private int current = 0;
 
-      public boolean isDone()
-      {
-	return current > 9;
-      }
+	/** Child path iterator, used for corners.  */
+	private PathIterator corner;
 
-      private void getPoint(int val)
-      {
-	switch (val)
-	  {
-	  case 0:
-	  case 8:
-	    temp[0] = minx;
-	    temp[1] = miny + archeight;
-	    break;
-	  case 1:
-	    temp[0] = minx + arcwidth;
-	    temp[1] = miny;
-	    break;
-	  case 2:
-	    temp[0] = maxx - arcwidth;
-	    temp[1] = maxy;
-	    break;
-	  case 3:
-	    temp[0] = maxx;
-	    temp[1] = miny + archeight;
-	    break;
-	  case 4:
-	    temp[0] = maxx;
-	    temp[1] = maxy - archeight;
-	    break;
-	  case 5:
-	    temp[0] = maxx - arcwidth;
-	    temp[1] = maxy;
-	    break;
-	  case 6:
-	    temp[0] = minx + arcwidth;
-	    temp[1] = maxy;
-	    break;
-	  case 7:
-	    temp[0] = minx;
-	    temp[1] = maxy - archeight;
-	    break;
-	  }
-      }
+	/** This is used when rendering the corners.  We re-use the arc
+	 * for each corner.  */
+	private Arc2D arc = new Arc2D.Double();
 
-      public void next()
-      {
-	if (current >= 8)
-	  ++current;
-	else if (corner != null)
-	  {
-	    // We're iterating through the corner.  Work on the child
-	    // iterator; if it finishes, reset and move to the next
-	    // point along the rectangle.
-	    corner.next();
-	    if (corner.isDone())
-	      {
-		corner = null;
-		++current;
-	      }
-	  }
-	else
-	  {
-	    // Make an arc between this point on the rectangle and
-	    // the next one, and then iterate over this arc.
-	    getPoint(current);
-	    double x1 = temp[0];
-	    double y1 = temp[1];
-	    getPoint(current + 1);
-	    arc.setFrameFromDiagonal(x1, y1, temp[0], temp[1]);
-	    arc.setAngles(x1, y1, temp[0], temp[1]);
-	    corner = arc.getPathIterator(at);
-	  }
-      }
+	/** Temporary array used by getPoint.  */
+	private double[] temp = new double[2];
 
-      public int currentSegment(float[] coords)
-      {
-	if (corner != null)
-	  {
-	    int r = corner.currentSegment(coords);
-	    if (r == SEG_MOVETO)
-	      r = SEG_LINETO;
-	    return r;
-	  }
+	public int getWindingRule()
+	{
+	  return WIND_NON_ZERO;
+	}
 
-	if (current < 9)
-	  {
-	    getPoint(current);
-	    coords[0] = (float) temp[0];
-	    coords[1] = (float) temp[1];
-	  }
-	else if (current == 9)
-	  return SEG_CLOSE;
-	else
-	  throw new NoSuchElementException("rect iterator out of bounds");
+	public boolean isDone()
+	{
+	  return current > 9;
+	}
 
-	if (at != null)
-	  at.transform(coords, 0, coords, 0, 1);
-	return current == 0 ? SEG_MOVETO : SEG_LINETO;
-      }
+	private void getPoint(int val)
+	{
+	  switch (val)
+	    {
+	    case 0:
+	    case 8:
+	      temp[0] = maxx;
+	      temp[1] = miny + archeight;
+	      break;
+	    case 7:
+	      temp[0] = maxx;
+	      temp[1] = maxy - archeight;
+	      break;
+	    case 6:
+	      temp[0] = maxx - arcwidth;
+	      temp[1] = maxy;
+	      break;
+	    case 5:
+	      temp[0] = minx + arcwidth;
+	      temp[1] = maxy;
+	      break;
+	    case 4:
+	      temp[0] = minx;
+	      temp[1] = maxy - archeight;
+	      break;
+	    case 3:
+	      temp[0] = minx;
+	      temp[1] = miny + archeight;
+	      break;
+	    case 2:
+	      temp[0] = minx + arcwidth;
+	      temp[1] = miny;
+	      break;
+	    case 1:
+	      temp[0] = maxx - arcwidth;
+	      temp[1] = miny;
+	      break;
+	    }
+	}
 
-      public int currentSegment(double[] coords)
-      {
-	if (corner != null)
-	  {
-	    int r = corner.currentSegment(coords);
-	    if (r == SEG_MOVETO)
-	      r = SEG_LINETO;
-	    return r;
-	  }
+	public void next()
+	{
+	  if (current >= 8)
+	    ++current;
+	  else if (corner != null)
+	    {
+	      // We're iterating through the corner.  Work on the child
+	      // iterator; if it finishes, reset and move to the next
+	      // point along the rectangle.
+	      corner.next();
+	      if (corner.isDone())
+	        {
+		  corner = null;
+		  ++current;
+	        }
+	    }
+	  else
+	    {
+	      // Make an arc between this point on the rectangle and
+	      // the next one, and then iterate over this arc.
+	      getPoint(current);
+	      double x1 = temp[0];
+	      double y1 = temp[1];
+	      getPoint(current + 1);
+	      Rectangle2D.Double r = new Rectangle2D.Double(Math.min(x1,
+	                                                             temp[0]),
+	                                                    Math.min(y1,
+	                                                             temp[1]),
+	                                                    Math.abs(x1
+	                                                             - temp[0]),
+	                                                    Math.abs(y1
+	                                                             - temp[1]));
+	      arc.setArc(r, (current >> 1) * 90.0, 90.0, Arc2D.OPEN);
+	      corner = arc.getPathIterator(at);
+	    }
+	}
 
-	if (current < 9)
-	  {
-	    getPoint(current);
-	    coords[0] = temp[0];
-	    coords[1] = temp[1];
-	  }
-	else if (current == 9)
-	  return SEG_CLOSE;
-	else
-	  throw new NoSuchElementException("rect iterator out of bounds");
+	public int currentSegment(float[] coords)
+	{
+	  if (corner != null)
+	    {
+	      int r = corner.currentSegment(coords);
+	      if (r == SEG_MOVETO)
+		r = SEG_LINETO;
+	      return r;
+	    }
 
-	if (at != null)
-	  at.transform(coords, 0, coords, 0, 1);
-	return current == 0 ? SEG_MOVETO : SEG_LINETO;
-      }
-    };
+	  if (current < 9)
+	    {
+	      getPoint(current);
+	      coords[0] = (float) temp[0];
+	      coords[1] = (float) temp[1];
+	    }
+	  else if (current == 9)
+	    return SEG_CLOSE;
+	  else
+	    throw new NoSuchElementException("rect iterator out of bounds");
+
+	  if (at != null)
+	    at.transform(coords, 0, coords, 0, 1);
+	  return current == 0 ? SEG_MOVETO : SEG_LINETO;
+	}
+
+	public int currentSegment(double[] coords)
+	{
+	  if (corner != null)
+	    {
+	      int r = corner.currentSegment(coords);
+	      if (r == SEG_MOVETO)
+		r = SEG_LINETO;
+	      return r;
+	    }
+
+	  if (current < 9)
+	    {
+	      getPoint(current);
+	      coords[0] = temp[0];
+	      coords[1] = temp[1];
+	    }
+	  else if (current == 9)
+	    return SEG_CLOSE;
+	  else
+	    throw new NoSuchElementException("rect iterator out of bounds");
+
+	  if (at != null)
+	    at.transform(coords, 0, coords, 0, 1);
+	  return current == 0 ? SEG_MOVETO : SEG_LINETO;
+	}
+      };
   }
 
   /** Return true if the given rectangle intersects this shape.
@@ -286,14 +297,9 @@ public abstract class RoundRectangle2D extends RectangularShape
    */
   public boolean intersects(double x, double y, double w, double h)
   {
-    // Here we can use the same code we use for an ordinary rectangle.
-    double mx = getX();
-    double mw = getWidth();
-    if (x < mx || x >= mx + mw || x + w < mx || x + w >= mx + mw)
-      return false;
-    double my = getY();
-    double mh = getHeight();
-    return y >= my && y < my + mh && y + h >= my && y + h < my + mh;
+    // Check if any corner is within the rectangle
+    return (contains(x, y) || contains(x, y + h) || contains(x + w, y + h)
+           || contains(x + w, y));
   }
 
   /** Set the boundary of this round rectangle.
@@ -315,7 +321,7 @@ public abstract class RoundRectangle2D extends RectangularShape
   public void setRoundRect(RoundRectangle2D rr)
   {
     setRoundRect(rr.getX(), rr.getY(), rr.getWidth(), rr.getHeight(),
-                  rr.getArcWidth(), rr.getArcHeight());
+                 rr.getArcWidth(), rr.getArcHeight());
   }
 
   /** A subclass of RoundRectangle which keeps its parameters as
@@ -353,8 +359,8 @@ public abstract class RoundRectangle2D extends RectangularShape
      * @param arcWidth The arc width
      * @param arcHeight The arc height
      */
-    public Double(double x, double y, double w, double h,
-                   double arcWidth, double arcHeight)
+    public Double(double x, double y, double w, double h, double arcWidth,
+                  double arcHeight)
     {
       this.x = x;
       this.y = y;
@@ -405,7 +411,7 @@ public abstract class RoundRectangle2D extends RectangularShape
     }
 
     public void setRoundRect(double x, double y, double w, double h,
-                              double arcWidth, double arcHeight)
+                             double arcWidth, double arcHeight)
     {
       this.x = x;
       this.y = y;
@@ -451,8 +457,8 @@ public abstract class RoundRectangle2D extends RectangularShape
      * @param arcWidth The arc width
      * @param arcHeight The arc height
      */
-    public Float(float x, float y, float w, float h,
-                  float arcWidth, float arcHeight)
+    public Float(float x, float y, float w, float h, float arcWidth,
+                 float arcHeight)
     {
       this.x = x;
       this.y = y;
@@ -503,7 +509,7 @@ public abstract class RoundRectangle2D extends RectangularShape
     }
 
     public void setRoundRect(float x, float y, float w, float h,
-                              float arcWidth, float arcHeight)
+                             float arcWidth, float arcHeight)
     {
       this.x = x;
       this.y = y;
@@ -514,7 +520,7 @@ public abstract class RoundRectangle2D extends RectangularShape
     }
 
     public void setRoundRect(double x, double y, double w, double h,
-                              double arcWidth, double arcHeight)
+                             double arcWidth, double arcHeight)
     {
       this.x = (float) x;
       this.y = (float) y;

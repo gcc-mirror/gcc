@@ -86,8 +86,8 @@ public class ActionMap
   {
     Object result = actionMap.get(key);
 
-    if (result == null)
-			result = parent.get(key);
+    if (result == null && parent != null)
+      result = parent.get(key);
 
 		return (Action) result;
   }

@@ -94,15 +94,13 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics_initState__II
 
 /* copy the native state of the peer (GtkWidget *) to the native state
    of the graphics object */
-JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics_initState__Lgnu_java_awt_peer_gtk_GtkComponentPeer_2
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics_initState__Lgnu_java_awt_peer_gtk_GtkComponentPeer_2
   (JNIEnv *env, jobject obj, jobject peer)
 {
   struct graphics *g = (struct graphics *) malloc (sizeof (struct graphics));
   void *ptr;
   GtkWidget *widget;
   GdkColor color;
-  jintArray array;
-  jint *rgb;
 
   ptr = NSA_GET_PTR (env, peer);
   g->x_offset = g->y_offset = 0;
@@ -133,16 +131,7 @@ JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics_initState__Lg
 
   gdk_threads_leave ();
 
-  array = (*env)->NewIntArray (env, 3);
-  rgb = (*env)->GetIntArrayElements (env, array, NULL);
-  rgb[0] = color.red >> 8;
-  rgb[1] = color.green >> 8;
-  rgb[2] = color.blue >> 8;
-  (*env)->ReleaseIntArrayElements (env, array, rgb, 0);
-
   NSA_SET_PTR (env, obj, g);
-
-  return array;
 }
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics_dispose
@@ -323,7 +312,111 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics_copyPixmap
   gdk_flush ();
   gdk_threads_leave ();
 }
+
+static void flip_pixbuf (GdkPixbuf *pixbuf,
+                         jboolean flip_x,
+                         jboolean flip_y,
+                         jint width,
+                         jint height)
+{
+  gint src_rs;
+  guchar *src_pix;
+
+  src_rs = gdk_pixbuf_get_rowstride (pixbuf);
+  src_pix = gdk_pixbuf_get_pixels (pixbuf);
+
+  if (flip_x) 
+    {
+      gint i, channels;
+      guchar buf[4];
+
+      channels = gdk_pixbuf_get_has_alpha (pixbuf) ? 4 : 3;
+
+      for (i = 0; i < height; i++) 
+        {
+          guchar *left = src_pix + i * src_rs;
+          guchar *right = left + channels * (width - 1);
+          while (left < right)
+            { 
+              g_memmove (buf, left, channels);
+              g_memmove (left, right, channels);
+              g_memmove (right, buf, channels);
+              left += channels;
+              right -= channels;
+            }
+        }
+    }
+
+  if (flip_y) 
+    {
+      guchar *top = src_pix;
+      guchar *bottom = top + (height - 1) * src_rs;
+      gpointer buf = g_malloc (src_rs);
+      
+      while (top < bottom)
+        {
+          g_memmove (buf, top, src_rs);
+          g_memmove (top, bottom, src_rs);
+          g_memmove (bottom, buf, src_rs); 
+          top += src_rs;
+          bottom -= src_rs;
+        }
+
+      g_free (buf);
+    }
+}
   
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics_copyAndScalePixmap
+  (JNIEnv *env, jobject obj, jobject offscreen, jboolean flip_x, jboolean flip_y,
+   jint src_x, jint src_y, jint src_width, jint src_height,
+   jint dest_x, jint dest_y, jint dest_width, jint dest_height)
+{
+  struct graphics *g1, *g2;
+  GdkPixbuf *buf_src, *buf_dest;
+
+  g1 = (struct graphics *) NSA_GET_PTR (env, obj);
+  g2 = (struct graphics *) NSA_GET_PTR (env, offscreen);
+
+  gdk_threads_enter ();
+
+  buf_src = gdk_pixbuf_get_from_drawable (NULL,
+                                          g2->drawable,
+                                          g2->cm,
+                                          src_x,
+                                          src_y,
+                                          0,
+                                          0,
+                                          src_width,
+                                          src_height);
+
+  buf_dest = gdk_pixbuf_scale_simple (buf_src, 
+                                      dest_width, 
+                                      dest_height, 
+                                      GDK_INTERP_BILINEAR);
+
+  if (flip_x || flip_y)
+    {
+      flip_pixbuf (buf_dest, flip_x, flip_y, dest_width, dest_height);
+    }
+
+  gdk_pixbuf_render_to_drawable (buf_dest,
+                                 g1->drawable,
+                                 g1->gc,
+                                 0,
+                                 0,
+                                 dest_x,
+                                 dest_y,
+                                 dest_width,
+                                 dest_height,
+                                 GDK_RGB_DITHER_NORMAL,
+                                 0,
+                                 0);
+
+  g_object_unref (G_OBJECT (buf_src));
+  g_object_unref (G_OBJECT (buf_dest));
+
+  gdk_threads_leave ();
+}
 
 
 

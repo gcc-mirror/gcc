@@ -89,6 +89,18 @@ public class GtkImage extends Image implements ImageConsumer
     this.observer = observer;
   }
 
+  public synchronized int[]
+  getPixelCache ()
+  {
+    return pixelCache;
+  }
+
+  public synchronized ColorModel
+  getColorModel ()
+  {
+    return model;
+  }
+
   public synchronized int 
   getWidth (ImageObserver observer)
   {

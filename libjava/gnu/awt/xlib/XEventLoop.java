@@ -197,13 +197,13 @@ public class XEventLoop implements Runnable
     switch (buttonEvt.button)
       {
       case 1:
-	modifiers = InputEvent.BUTTON1_MASK;
+	modifiers = InputEvent.BUTTON1_DOWN_MASK;
 	break;
       case 2:
-	modifiers = InputEvent.BUTTON2_MASK;
+	modifiers = InputEvent.BUTTON2_DOWN_MASK;
 	break;
       case 3:
-	modifiers = InputEvent.BUTTON2_MASK;
+	modifiers = InputEvent.BUTTON2_DOWN_MASK;
 	break;
       }
     

@@ -588,6 +588,28 @@ public class JList extends JComponent implements Accessible, Scrollable
     return getUI().locationToIndex(this, r.getLocation());      
   }
 
+
+  /**
+   * Returns index of the cell to which specified location is closest to
+   * @param location for which to look for in the list
+   * 
+   * @return index of the cell to which specified location is closest to.
+   */
+   public int locationToIndex(Point location) {
+     return getUI().locationToIndex(this, location);      
+   }
+
+  /**
+   * Returns location of the cell located at the specified index in the list.
+   * @param index of the cell for which location will be determined
+   * 
+   * @return location of the cell located at the specified index in the list.
+   */
+   public Point indexToLocation(int index){
+   	//FIXME: Need to implement.
+	return null;
+   }
+
   /**
    * Returns the list index of the lower right or lower left corner of the
    * {@link #visibleRect} property, depending on the {@link

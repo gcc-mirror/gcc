@@ -46,8 +46,16 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.TextUI;
 import javax.swing.plaf.UIResource;
@@ -61,7 +69,9 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Keymap;
 import javax.swing.text.PlainDocument;
+import javax.swing.text.PlainView;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
@@ -88,14 +98,18 @@ public abstract class BasicTextUI extends TextUI
 
   private class RootView extends View
   {
-    private JTextComponent textComponent;
     private View view;
     
-    public RootView(JTextComponent parent)
-      {
-          super(null);
-      textComponent = parent;
-      }
+    public RootView()
+    {
+      super(null);
+    }
+
+    public ViewFactory getViewFactory()
+    {
+      // FIXME: Handle EditorKit somehow.
+      return BasicTextUI.this;
+    }
 
     public void setView(View v)
       {
@@ -123,17 +137,34 @@ public abstract class BasicTextUI extends TextUI
 
     public void paint(Graphics g, Shape s)
     {
-      System.out.println("Michael: BasicTextUI.RootView.paint");
-      
       if (view != null)
 	view.paint(g, s);
-      }
+    }
+
+    protected Rectangle modelToView(int position, Shape a, Position.Bias bias)
+      throws BadLocationException
+    {
+      return ((PlainView) view).modelToView(position, a, bias).getBounds();
+    }
+  }
+
+  class UpdateHandler implements PropertyChangeListener
+  {
+    public void propertyChange(PropertyChangeEvent event)
+    {
+      if (event.getPropertyName().equals("document"))
+	{
+          // Document changed.
+	  modelChanged();
+	}
+    }
   }
   
-  RootView rootView;
+  static EditorKit kit = new DefaultEditorKit();
+
+  RootView rootView = new RootView();
   JTextComponent textComponent;
-  int gap = 3;
-  EditorKit kit = new DefaultEditorKit();
+  UpdateHandler updateHandler = new UpdateHandler();
 
   public BasicTextUI()
   {
@@ -164,12 +195,12 @@ public abstract class BasicTextUI extends TextUI
     Document doc = textComponent.getDocument();
     if (doc == null)
       {
-	doc = new PlainDocument();
+	doc = getEditorKit(textComponent).createDefaultDocument();
 	textComponent.setDocument(doc);
-  }
-
-    rootView = new RootView(textComponent);
-    setView(create(doc.getDefaultRootElement()));
+      }
+    
+    textComponent.addPropertyChangeListener(updateHandler);
+    modelChanged();
     
     installDefaults();
     installListeners();
@@ -178,20 +209,115 @@ public abstract class BasicTextUI extends TextUI
 
   protected void installDefaults()
   {
+    Caret caret = textComponent.getCaret();
+    if (caret == null)
+      {
+        caret = createCaret();
+        textComponent.setCaret(caret);
+      }
+
+    Highlighter highlighter = textComponent.getHighlighter();
+    if (highlighter == null)
+      textComponent.setHighlighter(createHighlighter());
+
+    String prefix = getPropertyPrefix();
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    textComponent.setBackground(defaults.getColor(prefix + ".background"));
+    textComponent.setForeground(defaults.getColor(prefix + ".foreground"));
+    textComponent.setMargin(defaults.getInsets(prefix + ".margin"));
+    textComponent.setBorder(defaults.getBorder(prefix + ".border"));
+    textComponent.setFont(defaults.getFont(prefix + ".font"));
+
+    caret.setBlinkRate(defaults.getInt(prefix + ".caretBlinkRate"));
   }
 
   protected void installListeners()
   {
+    // Do nothing here.
+  }
+
+  protected String getKeymapName()
+  {
+    return "BasicTextUI";
+  }
+
+  protected Keymap createKeymap()
+  {
+    String prefix = getPropertyPrefix();
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    JTextComponent.KeyBinding[] bindings = 
+      (JTextComponent.KeyBinding[]) defaults.get(prefix + ".keyBindings");
+    Keymap km = JTextComponent.addKeymap(getKeymapName(), 
+                                         JTextComponent.getKeymap(JTextComponent.DEFAULT_KEYMAP));    
+    JTextComponent.loadKeymap(km, bindings, textComponent.getActions());
+    return km;    
   }
 
   protected void installKeyboardActions()
+  {    
+    // load any bindings for the older Keymap interface
+    Keymap km = JTextComponent.getKeymap(getKeymapName());
+    if (km == null)
+      km = createKeymap();
+    textComponent.setKeymap(km);
+
+    // load any bindings for the newer InputMap / ActionMap interface
+    SwingUtilities.replaceUIInputMap(textComponent, 
+                                     JComponent.WHEN_FOCUSED,
+                                     getInputMap(JComponent.WHEN_FOCUSED));
+    SwingUtilities.replaceUIActionMap(textComponent, getActionMap());
+  }
+
+  InputMap getInputMap(int condition)
   {
+    String prefix = getPropertyPrefix();
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    switch (condition)
+      {
+      case JComponent.WHEN_IN_FOCUSED_WINDOW:
+        // FIXME: is this the right string? nobody seems to use it.
+        return (InputMap) defaults.get(prefix + ".windowInputMap"); 
+      case JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT:
+        return (InputMap) defaults.get(prefix + ".ancestorInputMap");
+      default:
+      case JComponent.WHEN_FOCUSED:
+        return (InputMap) defaults.get(prefix + ".focusInputMap");
+      }
+  }
+
+  ActionMap getActionMap()
+  {
+    String prefix = getPropertyPrefix();
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();    
+    ActionMap am = (ActionMap) defaults.get(prefix + ".actionMap");
+    if (am == null)
+      {
+        am = createActionMap();
+        defaults.put(prefix + ".actionMap", am);
+      }
+    return am;
+  }
+
+  ActionMap createActionMap()
+  {
+    Action[] actions = textComponent.getActions();
+    ActionMap am = new ActionMap();
+    for (int i = 0; i < actions.length; ++i)
+      {
+        String name = (String) actions[i].getValue(Action.NAME);
+        if (name != null)
+          am.put(name, actions[i]);
+      }
+    return am;
   }
   
-  public void uninstallUI(final JComponent c)
+  public void uninstallUI(final JComponent component)
   {
-    super.uninstallUI(c);
-    rootView = null;
+    super.uninstallUI(component);
+    rootView.setView(null);
+
+    textComponent.removePropertyChangeListener(updateHandler);
+    textComponent = null;
 
     uninstallDefaults();
     uninstallListeners();
@@ -200,14 +326,17 @@ public abstract class BasicTextUI extends TextUI
 
   protected void uninstallDefaults()
   {
+    // Do nothing here.
   }
 
   protected void uninstallListeners()
   {
+    // Do nothing here.
   }
 
   protected void uninstallKeyboardActions()
   {
+    // Do nothing here.
   }
   
   protected abstract String getPropertyPrefix();
@@ -235,10 +364,11 @@ public abstract class BasicTextUI extends TextUI
     if (textComponent.isOpaque())
       paintBackground(g);
     
-    rootView.paint(g, getVisibleEditorRect());
-
-    if (highlighter != null)
+    if (highlighter != null
+	&& textComponent.getSelectionStart() != textComponent.getSelectionEnd())
       highlighter.paint(g);
+
+    rootView.paint(g, getVisibleEditorRect());
 
     if (caret != null)
       caret.paint(g);
@@ -246,7 +376,7 @@ public abstract class BasicTextUI extends TextUI
 
   protected void paintBackground(Graphics g)
   {
-    g.setColor(Color.WHITE); // FIXME: set background color
+    g.setColor(textComponent.getBackground());
     g.fillRect(0, 0, textComponent.getWidth(), textComponent.getHeight());
   }
 
@@ -281,13 +411,13 @@ public abstract class BasicTextUI extends TextUI
   public Rectangle modelToView(JTextComponent t, int pos)
     throws BadLocationException
   {
-    return modelToView(t, pos, null);
+    return modelToView(t, pos, Position.Bias.Forward);
   }
 
   public Rectangle modelToView(JTextComponent t, int pos, Position.Bias bias)
     throws BadLocationException
   {
-    return null;
+    return rootView.modelToView(pos, getVisibleEditorRect(), bias).getBounds();
   }
 
   public int viewToModel(JTextComponent t, Point pt)
@@ -330,5 +460,12 @@ public abstract class BasicTextUI extends TextUI
   {
     rootView.setView(view);
     view.setParent(rootView);
+  }
+
+  protected void modelChanged()
+  {
+    ViewFactory factory = rootView.getViewFactory();
+    Element elem = textComponent.getDocument().getDefaultRootElement();
+    setView(factory.create(elem));
   }
 }

@@ -52,11 +52,15 @@ public class GtkMenuPeer extends GtkMenuItemPeer
   native void create (String label);
   native void addItem (MenuItemPeer item, int key, boolean shiftModifier);
   native void setupAccelGroup (GtkGenericPeer container);
+  native void addTearOff ();
 
   public GtkMenuPeer (Menu menu)
   {
     super (menu);
     
+    if (menu.isTearOff())
+      addTearOff();
+
     MenuContainer parent = menu.getParent ();
     if (parent instanceof Menu)
       setupAccelGroup ((GtkGenericPeer)((Menu)parent).getPeer ());

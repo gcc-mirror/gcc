@@ -249,8 +249,13 @@ public class JViewport extends JComponent
 
   public void setView(Component v)
   {
-    add(v);
-    fireStateChanged();
+    while (getComponentCount() > 0)
+      remove(0);
+    if (v != null)
+      {
+        add(v);
+        fireStateChanged();
+      }
   }
 
   public void revalidate()

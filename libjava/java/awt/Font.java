@@ -1265,12 +1265,28 @@ equals(Object obj)
 public String
 toString()
 {
-  return(getClass().getName() 
-         + "(logical=" + getName () 
-         + ",family=" + getFamily ()
-         + ",name=" + getFontName ()
-         + ",style=" + getStyle ()
-         + ",size=" + getSize ());
+  String styleString = "";
+
+  switch (getStyle ())
+    {
+    case 0:
+      styleString = "plain";
+      break;
+    case 1:
+      styleString = "bold";
+      break;
+    case 2:
+      styleString = "italic";
+      break;
+    default:
+      styleString = "unknown";
+    }
+
+  return getClass ().getName () 
+    + "[family=" + getFamily ()
+    + ",name=" + getFontName ()
+    + ",style=" + styleString
+    + ",size=" + getSize () + "]";
 }
 
 

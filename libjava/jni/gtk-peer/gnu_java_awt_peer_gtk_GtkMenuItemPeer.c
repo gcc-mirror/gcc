@@ -86,6 +86,18 @@ Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_connectSignals
   gdk_threads_leave ();
 }
 
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_setEnabled
+  (JNIEnv *env, jobject obj, jboolean enabled)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+  gtk_widget_set_sensitive (GTK_WIDGET (ptr), enabled);
+  gdk_threads_leave ();
+}
+
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_setLabel
   (JNIEnv *env, jobject obj, jstring label)
 {

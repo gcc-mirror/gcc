@@ -38,26 +38,536 @@ exception statement from your version. */
 
 package javax.swing.table;
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Locale;
+
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleAction;
+import javax.accessibility.AccessibleComponent;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleSelection;
+import javax.accessibility.AccessibleStateSet;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleText;
+import javax.accessibility.AccessibleValue;
 import javax.swing.JComponent;
 import javax.swing.JTable;
+import javax.swing.UIManager;
+import javax.swing.plaf.TableHeaderUI;
 
 public class JTableHeader extends JComponent
 {
-  protected class AccessibleJTableHeader
+  protected class AccessibleJTableHeader extends AccessibleJComponent
   {
-    protected class AccessibleJTableHeaderEntry
+    protected class AccessibleJTableHeaderEntry extends AccessibleContext
+      implements Accessible, AccessibleComponent
     {
-    }
+      public void addFocusListener(FocusListener l)
+      {
+        throw new Error("not implemented");
+      }
+      public void addPropertyChangeListener(PropertyChangeListener l)
+      {
+        throw new Error("not implemented");
+      }
+      public boolean contains(Point p)
+      {
+        throw new Error("not implemented");
+      }
+      public AccessibleAction getAccessibleAction()
+      {
+        throw new Error("not implemented");
+      }
+      public Accessible getAccessibleAt(Point p)
+      {
+        throw new Error("not implemented");
+      }
+      public Accessible getAccessibleChild(int i)
+      {
+        throw new Error("not implemented");
+      }
+      public int getAccessibleChildrenCount()
+      {
+        throw new Error("not implemented");
+      }
+      public AccessibleComponent getAccessibleComponent()
+      {
+        throw new Error("not implemented");
+      }
+      public AccessibleContext getAccessibleContext()
+      {
+        throw new Error("not implemented");
+      }
+      public String getAccessibleDescription()
+      {
+        throw new Error("not implemented");
+      }
+      public int getAccessibleIndexInParent()
+      {
+        throw new Error("not implemented");
+      }
+      public String getAccessibleName()
+      {
+        throw new Error("not implemented");
+      }
+      public AccessibleRole getAccessibleRole()
+      {
+        throw new Error("not implemented");
+      }
+      public AccessibleSelection getAccessibleSelection()
+      {
+        throw new Error("not implemented");
+      }
+      public AccessibleStateSet getAccessibleStateSet()
+      {
+        throw new Error("not implemented");
+      }
+      public AccessibleText getAccessibleText()
+      {
+        throw new Error("not implemented");
+      }
+      public AccessibleValue getAccessibleValue()
+      {
+        throw new Error("not implemented");
+      }
+      public Color getBackground()
+      {
+        throw new Error("not implemented");
+      }
+      public Rectangle getBounds()
+      {
+        throw new Error("not implemented");
+      }
+      public Cursor getCursor()
+      {
+        throw new Error("not implemented");
+      }
+      public Font getFont()
+      {
+        throw new Error("not implemented");
+      }
+      public FontMetrics getFontMetrics(Font f)
+      {
+        throw new Error("not implemented");
+      }
+      public Color getForeground()
+      {
+        throw new Error("not implemented");
+      }
+      public Locale getLocale()
+      {
+        throw new Error("not implemented");
+      }
+      public Point getLocation()
+      {
+        throw new Error("not implemented");
+      }
+      public Point getLocationOnScreen()
+      {
+        throw new Error("not implemented");
+      }
+      public Dimension getSize()
+      {
+        throw new Error("not implemented");
+      }
+      public boolean isEnabled()
+      {
+        throw new Error("not implemented");
+      }
+      public boolean isFocusTraversable()
+      {
+        throw new Error("not implemented");
+      }
+      public boolean isShowing()
+      {
+        throw new Error("not implemented");
+      }
+      public boolean isVisible()
+      {
+        throw new Error("not implemented");
+      }
+      public void removeFocusListener(FocusListener l)
+      {
+        throw new Error("not implemented");
+      }
+      public void removePropertyChangeListener(PropertyChangeListener l)
+      {
+        throw new Error("not implemented");
+      }
+      public void requestFocus()
+      {
+        throw new Error("not implemented");
+      }
+      public void setAccessibleDescription(String s)
+      {
+        throw new Error("not implemented");
+      }
+      public void setAccessibleName(String s)
+      {
+        throw new Error("not implemented");
+      }
+      public void setBackground(Color c)
+      {
+        throw new Error("not implemented");
+      }
+      public void setBounds(Rectangle r)
+      {
+        throw new Error("not implemented");
+      }
+      public void setCursor(Cursor c)
+      {
+        throw new Error("not implemented");
+      }
+      public void setEnabled(boolean b)
+      {
+        throw new Error("not implemented");
+      }
+      public void setFont(Font f)
+      {
+        throw new Error("not implemented");
+      }
+      public void setForeground(Color c)
+      {
+        throw new Error("not implemented");
+      }
+      public void setLocation(Point p)
+      {
+        throw new Error("not implemented");
+      }
+      public void setSize(Dimension d)
+      {
+        throw new Error("not implemented");
+      }
+      public void setVisible(boolean b)
+      {
+        throw new Error("not implemented");
+      }
+    };
   }
 
   private static final long serialVersionUID = 5144633983372967710L;
 
-  protected TableColumnModel columnModel;
-  protected TableColumn draggedColumn;
-  protected int draggedDistance;
-  protected boolean reorderingAllowed;
-  protected boolean resizingAllowed;
-  protected TableColumn resizingColumn;
-  protected JTable table;
-  protected boolean updateTableInRealTime;
+  /**
+   * The accessibleContext property.
+   */
+  AccessibleContext accessibleContext;
+
+  /**
+   * The columnModel property.
+   */
+  TableColumnModel columnModel;
+
+  /**
+   * The draggedColumn property.
+   */
+  TableColumn draggedColumn;
+
+  /**
+   * The draggedDistance property.
+   */
+  int draggedDistance;
+
+  /**
+   * The opaque property.
+   */
+  boolean opaque;
+
+  /**
+   * The reorderingAllowed property.
+   */
+  boolean reorderingAllowed;
+
+  /**
+   * The resizingAllowed property.
+   */
+  boolean resizingAllowed;
+
+  /**
+   * The resizingColumn property.
+   */
+  TableColumn resizingColumn;
+
+  /**
+   * The table property.
+   */
+  JTable table;
+
+  /**
+   * The updateTableInRealTime property.
+   */
+  boolean updateTableInRealTime;
+
+  TableCellRenderer cellRenderer; 
+
+  public JTableHeader()
+  {
+    this(null);
+  }
+
+  public JTableHeader(TableColumnModel cm)
+  {
+    accessibleContext = new AccessibleJTableHeader();
+    columnModel = cm == null ? createDefaultTableColumnModel() : cm; 
+    draggedColumn = null;
+    draggedDistance = 0;
+    opaque = true;
+    reorderingAllowed = true;
+    resizingAllowed = true;
+    resizingColumn = null;
+    table = null;
+    updateTableInRealTime = true;
+    cellRenderer = createDefaultRenderer();
+    updateUI();
+  }
+
+  protected TableColumnModel createDefaultTableColumnModel()
+  {
+    return new DefaultTableColumnModel();
+  }
+
+
+  /**
+   * Get the value of the {@link #accessibleContext} property.
+   *
+   * @return The current value of the property
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    return accessibleContext;
+  }
+
+  /**
+   * Get the value of the {@link #columnModel} property.
+   *
+   * @return The current value of the property
+   */
+  public TableColumnModel getColumnModel()
+  {
+    return columnModel;
+  }
+
+  /**
+   * Get the value of the {@link #draggedColumn} property.
+   *
+   * @return The current value of the property
+   */
+  public TableColumn getDraggedColumn()
+  {
+    return draggedColumn;
+  }
+
+  /**
+   * Get the value of the {@link #draggedDistance} property.
+   *
+   * @return The current value of the property
+   */
+  public int getDraggedDistance()
+  {
+    return draggedDistance;
+  }
+
+  /**
+   * Get the value of the {@link #reorderingAllowed} property.
+   *
+   * @return The current value of the property
+   */
+  public boolean getReorderingAllowed()
+  {
+    return reorderingAllowed;
+  }
+
+  /**
+   * Get the value of the {@link #resizingAllowed} property.
+   *
+   * @return The current value of the property
+   */
+  public boolean getResizingAllowed()
+  {
+    return resizingAllowed;
+  }
+
+  /**
+   * Get the value of the {@link #resizingColumn} property.
+   *
+   * @return The current value of the property
+   */
+  public TableColumn getResizingColumn()
+  {
+    return resizingColumn;
+  }
+
+  /**
+   * Get the value of the {@link #table} property.
+   *
+   * @return The current value of the property
+   */
+  public JTable getTable()
+  {
+    return table;
+  }
+
+  /**
+   * Get the value of the {@link #updateTableInRealTime} property.
+   *
+   * @return The current value of the property
+   */
+  public boolean getUpdateTableInRealTime()
+  {
+    return updateTableInRealTime;
+  }
+
+  /**
+   * Get the value of the {@link #opaque} property.
+   *
+   * @return The current value of the property
+   */
+  public boolean isOpaque()
+  {
+    return opaque;
+  }
+
+  /**
+   * Set the value of the {@link #columnModel} property.
+   *
+   * @param c The new value of the property
+   */ 
+  public void setColumnModel(TableColumnModel c)
+  {
+    columnModel = c;
+  }
+
+  /**
+   * Set the value of the {@link #draggedColumn} property.
+   *
+   * @param d The new value of the property
+   */ 
+  public void setDraggedColumn(TableColumn d)
+  {
+    draggedColumn = d;
+  }
+
+  /**
+   * Set the value of the {@link #draggedDistance} property.
+   *
+   * @param d The new value of the property
+   */ 
+  public void setDraggedDistance(int d)
+  {
+    draggedDistance = d;
+  }
+
+  /**
+   * Set the value of the {@link #opaque} property.
+   *
+   * @param o The new value of the property
+   */ 
+  public void setOpaque(boolean o)
+  {
+    opaque = o;
+  }
+
+  /**
+   * Set the value of the {@link #reorderingAllowed} property.
+   *
+   * @param r The new value of the property
+   */ 
+  public void setReorderingAllowed(boolean r)
+  {
+    reorderingAllowed = r;
+  }
+
+  /**
+   * Set the value of the {@link #resizingAllowed} property.
+   *
+   * @param r The new value of the property
+   */ 
+  public void setResizingAllowed(boolean r)
+  {
+    resizingAllowed = r;
+  }
+
+  /**
+   * Set the value of the {@link #resizingColumn} property.
+   *
+   * @param r The new value of the property
+   */ 
+  public void setResizingColumn(TableColumn r)
+  {
+    resizingColumn = r;
+  }
+
+  /**
+   * Set the value of the {@link #table} property.
+   *
+   * @param t The new value of the property
+   */ 
+  public void setTable(JTable t)
+  {
+    table = t;
+  }
+
+  /**
+   * Set the value of the {@link #updateTableInRealTime} property.
+   *
+   * @param u The new value of the property
+   */ 
+  public void setUpdateTableInRealTime(boolean u)
+  {
+    updateTableInRealTime = u;
+  }
+
+  protected TableCellRenderer createDefaultRenderer()
+  {
+    return new DefaultTableCellRenderer();
+  }
+
+  public TableCellRenderer getDefaultRenderer()
+  {
+    return cellRenderer;
+  }
+
+  public Rectangle getHeaderRect(int column)
+  {
+    Rectangle r = getTable().getCellRect(-1, column, true);
+    r.height = getHeight();
+    return r;
+  }
+
+  protected String paramString()
+  {
+    return "JTableHeader";
+  }
+
+  // UI support
+
+  public String getUIClassID()
+  {
+    return "TableHeaderUI";
+  }
+
+  public TableHeaderUI getUI()
+  {
+    return (TableHeaderUI) ui;
+  }
+
+  public void setUI(TableHeaderUI u)
+  {
+    super.setUI(u);
+  }
+
+  public void updateUI()
+  {
+    setUI((TableHeaderUI) UIManager.getUI(this));
+  }
+
 }

@@ -82,6 +82,8 @@ public class ScrollPaneLayout
 
   public void syncWithScrollPane(JScrollPane scrollPane) {
     viewport = scrollPane.getViewport();
+    rowHead = scrollPane.getRowHeader();
+    colHead = scrollPane.getColumnHeader();
     vsb = scrollPane.getVerticalScrollBar();
     hsb = scrollPane.getHorizontalScrollBar();
     vsbPolicy = scrollPane.getVerticalScrollBarPolicy();
@@ -389,12 +391,12 @@ public class ScrollPaneLayout
             y4 = scrollPaneBounds.y + scrollPaneBounds.height;
             
             if (colHead != null)
-              y2 = colHead.getPreferredSize().height;
+              y2 = y1 + colHead.getPreferredSize().height;
             else
               y2 = y1;
 
             if (rowHead != null)
-              x2 = rowHead.getPreferredSize().width;
+              x2 = x1 + rowHead.getPreferredSize().width;
             else
               x2 = x1;
 

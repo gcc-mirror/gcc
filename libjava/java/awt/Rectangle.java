@@ -542,7 +542,7 @@ public class Rectangle extends Rectangle2D implements Shape, Serializable
    */
   public boolean intersects(Rectangle r)
   {
-    return width > 0 && height > 0 && r.width > 0 && r.height > 0
+    return r.width > 0 && r.height > 0 && width > 0 && height > 0
       && r.x < x + width && r.x + r.width > x
       && r.y < y + height && r.y + r.height > y;
   }

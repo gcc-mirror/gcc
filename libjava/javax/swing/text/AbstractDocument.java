@@ -38,6 +38,7 @@ exception statement from your version. */
 package javax.swing.text;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.EventListener;
@@ -63,33 +64,37 @@ public abstract class AbstractDocument
   public static final String ParagraphElementName = "paragraph";
   public static final String SectionElementName = "section";
   public static final String ElementNameAttribute = "$ename";
+
   Content content;
+  AttributeContext context;
   protected EventListenerList listenerList = new EventListenerList();
 
   protected AbstractDocument(Content doc)
   {
-    this(doc, null);
+    this(doc, StyleContext.getDefaultStyleContext());
   }
 
-  protected AbstractDocument(Content doc, AttributeContext context)
+  protected AbstractDocument(Content doc, AttributeContext ctx)
   {
     content = doc;
+    context = ctx;
   }
 
-  // these still need to be implemented by a derived class:
+  // These still need to be implemented by a derived class:
   public abstract Element getParagraphElement(int pos);
 
   public abstract Element getDefaultRootElement();
 
-  protected Element createBranchElement(Element parent, AttributeSet a)
+  protected Element createBranchElement(Element parent,
+					AttributeSet attributes)
   {
-    return new BranchElement(parent, a, 0, 0);
+    return new BranchElement(parent, attributes);
   }
 
-  protected Element createLeafElement(Element parent, AttributeSet a, int p0,
-                                      int p1)
+  protected Element createLeafElement(Element parent, AttributeSet attributes,
+				      int start, int end)
   {
-    return new LeafElement(parent, a, p0, p1 - p0);
+    return new LeafElement(parent, attributes, start, end);
   }
 
   public Position createPosition(final int offset) throws BadLocationException
@@ -145,7 +150,7 @@ public abstract class AbstractDocument
 
   protected AttributeContext getAttributeContext()
   {
-    return null;
+    return context;
   }
 
   public Element getBidiRootElement()
@@ -170,7 +175,13 @@ public abstract class AbstractDocument
 
   public Position getEndPosition()
   {
-    return null;
+    return new Position() 
+      {        
+        public int getOffset() 
+        { 
+          return getLength(); 
+        } 
+      };
   }
 
   public int getLength()
@@ -190,12 +201,20 @@ public abstract class AbstractDocument
 
   public Element[] getRootElements()
   {
-    return null;
+    Element[] elements = new Element[1];
+    elements[0] = getDefaultRootElement();
+    return elements;
   }
 
   public Position getStartPosition()
   {
-    return null;
+    return new Position() 
+      {        
+        public int getOffset() 
+        { 
+          return 0; 
+        } 
+      };
   }
 
   public String getText(int offset, int length) throws BadLocationException
@@ -203,34 +222,25 @@ public abstract class AbstractDocument
 	return content.getString(offset, length);
       }
 
-  public void getText(int offset, int length, Segment txt)
+  public void getText(int offset, int length, Segment segment)
     throws BadLocationException
   {
-    String a = getText(offset, length);
-
-    if (a == null)
-      {
-	txt.offset = 0;
-	txt.count = 0;
-	txt.array = new char[0];
-
-	return;
-      }
-
-    txt.offset = offset;
-    txt.count = length;
-
-    char[] chars = new char[a.length()];
-
-    a.getChars(0, a.length(), chars, 0);
-
-    txt.array = chars;
+    content.getChars(offset, length, segment);
   }
 
-  public void insertString(int offs, String str, AttributeSet a)
+  public void insertString(int offset, String text, AttributeSet attributes)
     throws BadLocationException
   {
-    content.insertString(offs, str);
+    // Just return when no text to insert was given.
+    if (text == null || text.length() == 0)
+      return;
+    
+    DefaultDocumentEvent event =
+      new DefaultDocumentEvent(offset, text.length(),
+			       DocumentEvent.EventType.INSERT);
+    content.insertString(offset, text);
+    insertUpdate(event, attributes);
+    fireInsertUpdate(event);
   }
 
   protected void insertUpdate(DefaultDocumentEvent chng, AttributeSet attr)
@@ -255,6 +265,26 @@ public abstract class AbstractDocument
 
   public void remove(int offset, int length) throws BadLocationException
   {
+    DefaultDocumentEvent event =
+      new DefaultDocumentEvent(offset, length,
+			       DocumentEvent.EventType.REMOVE);
+    removeUpdate(event);
+    content.remove(offset, length);
+    postRemoveUpdate(event);
+    fireRemoveUpdate(event);
+  }
+
+  /**
+   * Replaces some text in the document.
+   *
+   * @since 1.4
+   */
+  public void replace(int offset, int length, String text,
+		      AttributeSet attributes)
+    throws BadLocationException
+  {
+    remove(offset, length);
+    insertString(offset, text, attributes);
   }
 
   /**
@@ -375,47 +405,51 @@ public abstract class AbstractDocument
   }
 
   public abstract class AbstractElement
-    implements Element, TreeNode, Serializable
+    implements Element, MutableAttributeSet, TreeNode, Serializable
   {
     private static final long serialVersionUID = 1265312733007397733L;
     int count;
     int offset;
-    AttributeSet attr;
-    Vector elts = new Vector();
-    String name;
-    Element parent;
-    Vector kids = new Vector();
+
+    AttributeSet attributes;
+
+    Element element_parent;
+    Vector element_children;
+
     TreeNode tree_parent;
+    Vector tree_children;
 
     public AbstractElement(Element p, AttributeSet s)
     {
-      parent = p;
-      attr = s;
+      element_parent = p;
+      attributes = s;
     }
+
+    // TreeNode implementation
 
     public Enumeration children()
     {
-      return kids.elements();
+      return Collections.enumeration(tree_children);
     }
-
+      
     public boolean getAllowsChildren()
     {
       return true;
     }
-
+      
     public TreeNode getChildAt(int index)
     {
-      return (TreeNode) kids.elementAt(index);
+      return (TreeNode) tree_children.get(index);
     }
-
+      
     public int getChildCount()
     {
-      return kids.size();
+      return tree_children.size();
     }
-
+      
     public int getIndex(TreeNode node)
     {
-      return kids.indexOf(node);
+      return tree_children.indexOf(node);
     }
 
     public TreeNode getParent()
@@ -423,55 +457,134 @@ public abstract class AbstractDocument
       return tree_parent;
     }
 
+    public abstract boolean isLeaf();
+
+
+    // MutableAttributeSet support
+
+    public void addAttribute(Object name, Object value)
+    {
+      attributes = getAttributeContext().addAttribute(attributes, name, value);
+    }
+
+    public void addAttributes(AttributeSet attrs)
+    {
+      attributes = getAttributeContext().addAttributes(attributes, attrs);
+    }
+
+    public void removeAttribute(Object name)
+    {
+      attributes = getAttributeContext().removeAttribute(attributes, name);
+    }
+
+    public void removeAttributes(AttributeSet attrs)
+    {
+      attributes = getAttributeContext().removeAttributes(attributes, attrs);
+    }
+
+    public void removeAttributes(Enumeration names)
+    {
+      attributes = getAttributeContext().removeAttributes(attributes, names);
+    }
+
+    public void setResolveParent(AttributeSet parent)
+    {
+      attributes = getAttributeContext().addAttribute(attributes, ResolveAttribute, parent);
+    }
+
+
+    // AttributeSet interface support
+
+    public boolean containsAttribute(Object name, Object value)
+    {
+      return attributes.containsAttribute(name, value);
+    }
+
+    public boolean containsAttributes(AttributeSet attrs)
+    {
+      return attributes.containsAttributes(attrs);
+    }
+
+    public AttributeSet copyAttributes()
+    {
+      return attributes.copyAttributes();
+    }
+
+    public Object getAttribute(Object key)
+    {
+      return attributes.getAttribute(key);
+    }
+
+    public int getAttributeCount()
+    {
+      return attributes.getAttributeCount();
+    }
+      
+    public Enumeration getAttributeNames()
+    {
+      return attributes.getAttributeNames();
+    }
+      
+    public AttributeSet getResolveParent()
+    {
+      return attributes.getResolveParent();
+    }
+
+    public boolean isDefined(Object attrName)
+    {
+      return attributes.isDefined(attrName);
+    }
+      
+    public boolean isEqual(AttributeSet attrs) 
+    {
+      return attributes.isEqual(attrs);
+    }
+
+    // Element interface support
+
     public AttributeSet getAttributes()
     {
-      return attr;
+      return attributes;
     }
 
     public Document getDocument()
     {
       return AbstractDocument.this;
     }
-
+      
     public Element getElement(int index)
     {
-      return (Element) elts.elementAt(index);
+      return (Element) element_children.get(index);
     }
-
+      
     public String getName()
     {
-      return name;
+      return (String) getAttribute(NameAttribute);
     }
-
+      
     public Element getParentElement()
     {
-      return parent;
+      return element_parent;
     }
-
-    public abstract boolean isLeaf();
-
+      
     public abstract int getEndOffset();
-
+      
     public abstract int getElementCount();
-
+      
     public abstract int getElementIndex(int offset);
-
+      
     public abstract int getStartOffset();
   }
 
   public class BranchElement extends AbstractElement
   {
     private static final long serialVersionUID = -8595176318868717313L;
-    private int start;
-    private int end;
+    
     private Vector children = new Vector();
 
-    public BranchElement(Element parent, AttributeSet attributes, int start,
-                         int end)
+    public BranchElement(Element parent, AttributeSet attributes)
     {
       super(parent, attributes);
-      this.start = start;
-      this.end = end;
     }
 
     public Enumeration children()
@@ -486,6 +599,9 @@ public abstract class AbstractDocument
 
     public Element getElement(int index)
     {
+      if (index < 0 || index >= children.size())
+	return null;
+
       return (Element) children.get(index);
     }
 
@@ -496,12 +612,20 @@ public abstract class AbstractDocument
 
     public int getElementIndex(int offset)
     {
-      return children.indexOf(positionToElement(offset));
+      if (children.size() == 0)
+	return 0;
+      
+      Element element = positionToElement(offset);
+
+      if (element == null)
+	return 0;
+      
+      return children.indexOf(element);
     }
 
     public int getEndOffset()
     {
-      return end;
+      return ((Element) children.lastElement()).getEndOffset();
     }
 
     public String getName()
@@ -511,7 +635,7 @@ public abstract class AbstractDocument
 
     public int getStartOffset()
     {
-      return start;
+      return ((Element) children.firstElement()).getStartOffset();
     }
 
     public boolean isLeaf()
@@ -554,8 +678,18 @@ public abstract class AbstractDocument
     implements DocumentEvent
   {
     private static final long serialVersionUID = -7406103236022413522L;
-    public int len;
-    public int off;
+    
+    private int offset;
+    private int length;
+    private DocumentEvent.EventType type;
+
+    public DefaultDocumentEvent(int offset, int length,
+				DocumentEvent.EventType type)
+    {
+      this.offset = offset;
+      this.length = length;
+      this.type = type;
+    }
 
     public Document getDocument()
     {
@@ -564,17 +698,17 @@ public abstract class AbstractDocument
 
     public int getLength()
     {
-      return len;
+      return length;
     }
 
     public int getOffset()
     {
-      return off;
+      return offset;
     }
 
     public DocumentEvent.EventType getType()
     {
-      return null;
+      return type;
     }
 
     public DocumentEvent.ElementChange getChange(Element elem)
@@ -584,8 +718,43 @@ public abstract class AbstractDocument
   }
 
   public static class ElementEdit extends AbstractUndoableEdit
+    implements DocumentEvent.ElementChange
   {
     private static final long serialVersionUID = -1216620962142928304L;
+
+    private Element elem;
+    private int index;
+    private Element[] removed;
+    private Element[] added;
+    
+    public ElementEdit(Element elem, int index,
+		       Element[] removed, Element[] added)
+    {
+      this.elem = elem;
+      this.index = index;
+      this.removed = removed;
+      this.added = added;
+    }
+
+    public Element[] getChildrenAdded()
+    {
+      return added;
+    }
+    
+    public Element[] getChildrenRemoved()
+    {
+      return removed;
+    }
+
+    public Element getElement()
+    {
+      return elem;
+    }
+
+    public int getIndex()
+    {
+      return index;
+    }
   }
 
   public class LeafElement extends AbstractElement

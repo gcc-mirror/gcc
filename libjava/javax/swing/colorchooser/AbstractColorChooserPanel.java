@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing.colorchooser;
 
 import java.awt.Color;
@@ -44,92 +43,119 @@ import javax.swing.Icon;
 import javax.swing.JColorChooser;
 import javax.swing.JPanel;
 
+
 /**
  * AbstractColorChooserPanel
- * @author	Andrew Selkirk
- * @version	1.0
+ *
+ * @author Andrew Selkirk
+ * @version 1.0
  */
 public abstract class AbstractColorChooserPanel extends JPanel
 {
+  /** DOCUMENT ME! */
   private static final long serialVersionUID = -977469671210173863L;
 
-	/**
-	 * chooser
-	 */
-	private JColorChooser chooser;
+  /** The chooser associated with this panel. */
+  private JColorChooser chooser;
 
-	/**
-	 * Constructor AbstractColorChooserPanel
-	 */
-	public AbstractColorChooserPanel() {
-		// TODO
-	} // AbstractColorChooserPanel()
+  /**
+   * This is the constructor for the AbstractColorChooserPanel.
+   */
+  public AbstractColorChooserPanel()
+  {
+  } // AbstractColorChooserPanel()
 
-	/**
-	 * getDisplayName
-	 * @returns String
-	 */
-	public abstract String getDisplayName();
+  /**
+   * This method returns the name displayed in the tab for this chooser panel.
+   *
+   * @return The name displayed in the JTabbedPane's tabs.
+   */
+  public abstract String getDisplayName();
 
-	/**
-	 * updateChooser
-	 */
-	public abstract void updateChooser();
+  /**
+   * This method updates the chooser panel when the JColorChooser's color has
+   * changed.
+   */
+  public abstract void updateChooser();
 
-	/**
-	 * buildChooser
-	 */
-	protected abstract void buildChooser();
+  /**
+   * This method constructs and does any initialization necessary for the
+   * chooser panel.
+   */
+  protected abstract void buildChooser();
 
-	/**
-	 * getSmallDisplayIcon
-	 * @returns Icon
-	 */
-	public abstract Icon getSmallDisplayIcon();
+  /**
+   * This method sets the small icon used in the JTabbedPane for this chooser
+   * panel.
+   *
+   * @return The small icon used in the JTabbedPane.
+   */
+  public abstract Icon getSmallDisplayIcon();
 
-	/**
-	 * getLargeDisplayIcon
-	 * @returns Icon
-	 */
-	public abstract Icon getLargeDisplayIcon();
+  /**
+   * This method sets the large icon useed in the jTabbedPane for this chooser
+   * panel.
+   *
+   * @return The large icon.
+   */
+  public abstract Icon getLargeDisplayIcon();
 
-	/**
-	 * installChooserPanel
-	 * @param chooser TODO
-	 */
-	public void installChooserPanel(JColorChooser chooser) {
-		// TODO
-	} // installChooserPanel()
+  /**
+   * This method installs the chooser panel for the given JColorChooser.
+   *
+   * @param chooser The JColorChooser that will have this panel installed.
+   */
+  public void installChooserPanel(JColorChooser chooser)
+  {
+    this.chooser = chooser;
+    buildChooser();
+  } // installChooserPanel()
 
-	/**
-	 * uninstallChooserPanel
-	 * @param chooser TODO
-	 */
-	public void uninstallChooserPanel(JColorChooser chooser) {
-		// TODO
-	} // uninstallChooserPanel()
+  /**
+   * This method removes the chooser panel from the given JColorChooser and
+   * does any necessary clean up for the chooser panel.
+   *
+   * @param chooser The JColorChooser that is having this panel removed.
+   */
+  public void uninstallChooserPanel(JColorChooser chooser)
+  {
+    this.chooser = null;
+  } // uninstallChooserPanel()
 
-	/**
-	 * getColorSelectionModel
-	 * @returns ColorSelectionModel
-	 */
-	public ColorSelectionModel getColorSelectionModel() {
-		return null; // TODO
-	} // getColorSelectionModel()
+  /**
+   * This method returns the ColorSelectionModel for the JColorChooser
+   * associated with this chooser panel.
+   *
+   * @return The ColorSelectionModel for the JColorChooser associated with
+   *         this chooser panel.
+   */
+  public ColorSelectionModel getColorSelectionModel()
+  {
+    if (chooser != null)
+      return chooser.getSelectionModel();
+    return null;
+  } // getColorSelectionModel()
 
-	/**
-	 * getColorFromModel
-	 * @returns Color
-	 */
-	protected Color getColorFromModel() {
-		return null; // TODO
-	} // getColorFromModel()
+  /**
+   * This method returns the current color stored in the model for this
+   * chooser panel.
+   *
+   * @return The current color.
+   */
+  protected Color getColorFromModel()
+  {
+    if (chooser != null)
+      return chooser.getColor();
+    return null;
+  } // getColorFromModel()
 
-	/**
-	 * paint
-	 * @param graphics TODO
-	 */
-	public void paint(Graphics graphics) {
-		// TODO
-	} // paint()
+  /**
+   * This method paints the chooser panel.
+   *
+   * @param graphics The Graphics object to paint with.
+   */
+  public void paint(Graphics graphics)
+  {
+    super.paint(graphics);
+  } // paint()
 } // AbstractColorChooserPanel

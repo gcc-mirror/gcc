@@ -54,7 +54,7 @@ public abstract class TextAction extends AbstractAction
 	 */
   public TextAction(String name)
   {
-		// TODO
+    super(name);
   }
 
 	/**
@@ -64,7 +64,11 @@ public abstract class TextAction extends AbstractAction
 	 */
   protected final JTextComponent getTextComponent(ActionEvent event)
   {
-		return null; // TODO
+    if (event.getSource() != null &&
+        event.getSource() instanceof JTextComponent)
+      return (JTextComponent) event.getSource();
+    else
+      return getFocusedComponent();
   }
 
 	/**

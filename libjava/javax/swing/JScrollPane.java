@@ -41,7 +41,6 @@ package javax.swing;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
-import java.awt.LayoutManager;
 import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Point;
@@ -510,7 +509,8 @@ public class JScrollPane
           else
             {
               // otherwise we got a change update from either the VSB or
-              // HSB model, and we need to update the viewport position to
+              // HSB model, and we need to update the viewport positions of
+              // both the main viewport and any row or column headers to
               // match.
 
               int xpos = 0;
@@ -527,6 +527,20 @@ public class JScrollPane
               if (vp != null
                   && vp.getViewPosition() != pt)
                 vp.setViewPosition(pt);
+
+              pt.x = 0;
+
+              if (rowHeader != null 
+                  && rowHeader.getViewPosition() != pt)
+                rowHeader.setViewPosition(pt);
+              
+              pt.x = xpos;
+              pt.y = 0;
+
+              if (columnHeader != null 
+                  && columnHeader.getViewPosition() != pt)
+                columnHeader.setViewPosition(pt);
+
             }
         }
       };

@@ -41,6 +41,7 @@ package javax.swing.plaf.basic;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -131,6 +132,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "SeparatorUI", "javax.swing.plaf.basic.BasicSeparatorUI",
       "SliderUI", "javax.swing.plaf.basic.BasicSliderUI",
       "SplitPaneUI", "javax.swing.plaf.basic.BasicSplitPaneUI",
+      "SpinnerUI", "javax.swing.plaf.basic.BasicSpinnerUI",
       "StandardDialogUI", "javax.swing.plaf.basic.BasicStandardDialogUI",
       "TabbedPaneUI", "javax.swing.plaf.basic.BasicTabbedPaneUI",
       "TableHeaderUI", "javax.swing.plaf.basic.BasicTableHeaderUI",
@@ -246,6 +248,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
         "SPACE",  "pressed",
         "released SPACE", "released"
       }),
+      "Button.focus", midPurple,
       "Button.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "Button.foreground", new ColorUIResource(Color.black),
       "Button.highlight", new ColorUIResource(Color.white),
@@ -820,7 +823,14 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "TextField.keyBindings", new JTextComponent.KeyBinding[] {
         new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
                                                              0),
-                                      "notify-field-accept")},
+                                      "notify-field-accept"),
+        new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,
+							     InputEvent.SHIFT_DOWN_MASK),
+							     "selection-backward"),
+        new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,
+							     InputEvent.SHIFT_DOWN_MASK),
+							     "selection-forward"),
+          },
       "TextField.margin", new InsetsUIResource(0, 0, 0, 0),
       "TextField.selectionBackground", new ColorUIResource(lightPurple),
       "TextField.selectionForeground", new ColorUIResource(Color.black),
@@ -881,7 +891,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "ToolBar.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "ToolBar.foreground", new ColorUIResource(Color.black),
       "ToolBar.separatorSize", new DimensionUIResource(20, 20),
-      "ToolTip.background", new ColorUIResource(Color.white),
+      "ToolTip.background", new ColorUIResource(122, 178, 241),
       "ToolTip.border", new BorderUIResource.LineBorderUIResource(Color.lightGray),
       "ToolTip.font", new FontUIResource("SansSerif", Font.PLAIN, 12),
       "ToolTip.foreground", new ColorUIResource(Color.black),

@@ -58,25 +58,22 @@ public class GtkChoicePeer extends GtkComponentPeer
 	  items[i] = c.getItem (i);
 	  
 	append (items);
-
-        // Must set our state before notifying listeners
-	((Choice) awtComponent).select (c.getItem (0));
-	postItemEvent (c.getItem (0), ItemEvent.SELECTED);
       }
   }
 
   native void create ();
 
   native void append (String items[]);
-  native int getHistory ();
+  native int nativeGetSelected ();
   native void nativeAdd (String item, int index);
   native void nativeRemove (int index);
+  native void nativeRemoveAll ();
 
   native public void select (int position);
  
   public void add (String item, int index)
   {
-    int before = getHistory();
+    int before = nativeGetSelected();
     
     nativeAdd (item, index);
     
@@ -92,11 +89,11 @@ public class GtkChoicePeer extends GtkComponentPeer
 
   public void remove (int index)
   {
-    int before = getHistory();
+    int before = nativeGetSelected();
     int after;
     
     nativeRemove (index);
-    after = getHistory();
+    after = nativeGetSelected();
     
     /* Generate an ItemEvent if we are removing the currently selected item
        and there are at least one item left. */
@@ -110,7 +107,7 @@ public class GtkChoicePeer extends GtkComponentPeer
 
   public void removeAll ()
   {
-    nativeRemove (-1);
+    nativeRemoveAll();
   }
   
   public void addItem (String item, int position)

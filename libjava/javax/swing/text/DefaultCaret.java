@@ -61,15 +61,15 @@ public class DefaultCaret extends Rectangle
   protected ChangeEvent changeEvent = new ChangeEvent(this);
   protected EventListenerList listenerList = new EventListenerList();
   
-  Color color = new Color(0, 0, 0);
-  JTextComponent parent;
-  Point magic = null;
-  int mark = 0;
-  boolean vis_sel = true;
-  int blink = 500;
-  int dot = 0;
-  boolean vis = true;
-
+  private JTextComponent textComponent;
+  
+  private boolean selectionVisible = true;
+  private int blinkRate = 0;
+  private int dot = 0;
+  private int mark = 0;
+  private Point magicCaretPosition = null;
+  private boolean visible = true;
+  private Object highlightEntry;
 
   public void mouseDragged(MouseEvent event)
   {
@@ -117,27 +117,29 @@ public class DefaultCaret extends Rectangle
 
   public void deinstall(JTextComponent c)
   {
-    parent.removeFocusListener(this);
-    parent.removeMouseListener(this);
-    parent = null;
+    textComponent.removeFocusListener(this);
+    textComponent.removeMouseListener(this);
+    textComponent.removeMouseMotionListener(this);
+    textComponent = null;
   }
 
   public void install(JTextComponent c)
   {
-    parent.addFocusListener(this);
-    parent.addMouseListener(this);
-    parent = c;
+    textComponent = c;
+    textComponent.addFocusListener(this);
+    textComponent.addMouseListener(this);
+    textComponent.addMouseMotionListener(this);
     repaint();
   }
 
   public void setMagicCaretPosition(Point p)
   {
-    magic = p;
+    magicCaretPosition = p;
   }
 
   public Point getMagicCaretPosition()
   {
-    return magic;
+    return magicCaretPosition;
   }
 
   public int getMark()
@@ -145,27 +147,92 @@ public class DefaultCaret extends Rectangle
     return mark;
   }
 
+  private void handleHighlight()
+  {
+    Highlighter highlighter = textComponent.getHighlighter();
+    
+    if (highlighter == null)
+      return;
+    
+    int p0 = Math.min(dot, mark);
+    int p1 = Math.max(dot, mark);
+    
+    if (selectionVisible && p0 != p1)
+      {
+	try
+	  {
+	    if (highlightEntry == null)
+	      highlightEntry = highlighter.addHighlight(p0, p1, getSelectionPainter());
+	    else
+	      highlighter.changeHighlight(highlightEntry, p0, p1);
+	  }
+	catch (BadLocationException e)
+	  {
+	    // This should never happen.
+	    throw new InternalError();
+	  }
+      }
+    else
+      {
+	if (highlightEntry != null)
+	  {
+	    highlighter.removeHighlight(highlightEntry);
+	    highlightEntry = null;
+	  }
+      }
+  }
+
   public void setSelectionVisible(boolean v)
   {
-    vis_sel = v;
+    if (selectionVisible == v)
+      return;
+    
+    selectionVisible = v;
+    handleHighlight();
     repaint();
   }
 
   public boolean isSelectionVisible()
   {
-    return vis_sel;
+    return selectionVisible;
   }
 
   protected final void repaint()
   {
-    if (parent != null)
-      parent.repaint();
+    if (textComponent != null)
+      textComponent.repaint();
   }
 
   public void paint(Graphics g)
   {
-    g.setColor(color);
-    g.drawLine(x, y, x, y + height);
+    if (textComponent == null)
+      return;
+
+    int dot = getDot();
+    Rectangle rect = null;
+
+    try
+      {
+	rect = textComponent.modelToView(dot);
+      }
+    catch (BadLocationException e)
+      {
+	// This should never happen as dot should be always valid.
+	return;
+      }
+
+    if (rect == null)
+      return;
+    
+    // First we need to delete the old caret.
+    // FIXME: Implement deleting of old caret.
+    
+    // Now draw the caret on the new position if visible.
+    if (visible)
+      {
+	g.setColor(textComponent.getCaretColor());
+	g.drawLine(rect.x, rect.y, rect.x, rect.y + rect.height);
+      }
   }
 
   public EventListener[] getListeners(Class listenerType)
@@ -198,17 +265,17 @@ public class DefaultCaret extends Rectangle
 
   protected final JTextComponent getComponent()
   {
-    return parent;
+    return textComponent;
   }
   
   public int getBlinkRate()
   {
-    return blink;
+    return blinkRate;
   }
 
   public void setBlinkRate(int rate)
   {
-    blink = rate;
+    blinkRate = rate;
   }
 
   public int getDot()
@@ -218,23 +285,32 @@ public class DefaultCaret extends Rectangle
 
   public void moveDot(int dot)
   {
-    setDot(dot);
+    this.dot = dot;
+    handleHighlight();
+    repaint();
   }
 
   public void setDot(int dot)
   {
     this.dot = dot;
+    this.mark = dot;
+    handleHighlight();
     repaint();
   }
 
   public boolean isVisible()
   {
-    return vis;
+    return visible;
   }
 
   public void setVisible(boolean v)
   {
-    vis = v;
+    visible = v;
     repaint();
+  }
+
+  protected Highlighter.HighlightPainter getSelectionPainter()
+  {
+    return DefaultHighlighter.DefaultPainter;
   }
 }

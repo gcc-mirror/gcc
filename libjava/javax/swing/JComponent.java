@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -48,11 +49,13 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ImageObserver;
@@ -192,22 +195,12 @@ public abstract class JComponent extends Container implements Serializable
   Border border;
 
   /** 
-   * A tooltip associated with this component. 
-   * 
-   * @see #setToolTip
-   * @see #getToolTip
-   * @see #toolTipText
-   */
-  JToolTip toolTip;
-
-  /** 
-   * The text to show in the tooltip associated with this component. 
+   * The text to show in the tooltip associated with this component.
    * 
    * @see #setToolTipText
    * @see #getToolTipText
-   * @see #toolTip
    */
-  String toolTipText;
+   String toolTipText;
 
   /** 
    * <p>Whether to double buffer this component when painting. This flag
@@ -325,6 +318,11 @@ public abstract class JComponent extends Container implements Serializable
    * first client property.
    */
   private Hashtable clientProperties;
+  
+  private InputMap inputMap_whenFocused;
+  private InputMap inputMap_whenAncestorOfFocused;
+  private InputMap inputMap_whenInFocusedWindow;
+  private ActionMap actionMap;
 
   /** 
    * A lock held during recursive painting; this is used to serialize
@@ -757,18 +755,6 @@ public abstract class JComponent extends Container implements Serializable
     return null;
   }
 
-  /**
-   * Get the ActionListener (typically an {@link Action} object) which is
-   * associated with a particular keystroke. 
-   *
-   * @param aKeyStroke The keystroke to retrieve the action of
-   *
-   * @return The action associated with the specified keystroke
-   */
-  public ActionListener getActionForKeyStroke(KeyStroke aKeyStroke)
-  {
-    return null;
-  }
 
   /**
    * Get the value of the {@link #alignmentX} property.
@@ -875,24 +861,6 @@ public abstract class JComponent extends Container implements Serializable
     return g;
   }
 
-  /**
-   * Return the condition that determines whether a registered action
-   * occurs in response to the specified keystroke.
-   *
-   * @param aKeyStroke The keystroke to return the condition of
-   *
-   * @return One of the values {@link #UNDEFINED_CONDITION}, {@link
-   * #WHEN_ANCESTOR_OF_FOCUSED_COMPONENT}, {@link #WHEN_FOCUSED}, or {@link
-   * #WHEN_IN_FOCUSED_WINDOW}
-   *
-   * @see #registerKeyboardAction   
-   * @see #unregisterKeyboardAction   
-   * @see #resetKeyboardActiond
-   */
-  public int getConditionForKeyStroke(KeyStroke aKeyStroke)
-  {
-    return UNDEFINED_CONDITION;
-  }
 
   /**
    * Get the value of the {@link #debugGraphicsOptions} property.
@@ -1113,11 +1081,9 @@ public abstract class JComponent extends Container implements Serializable
    */
   public JToolTip createToolTip()
   {
-    if (toolTip == null)
-      {
-	toolTip = new JToolTip();
+	JToolTip toolTip = new JToolTip();
+	toolTip.setComponent(this);
 	toolTip.setTipText(toolTipText);
-      }
     
     return toolTip;
   }
@@ -1145,7 +1111,22 @@ public abstract class JComponent extends Container implements Serializable
    */
   public void setToolTipText(String text)
   {
+    if (text == null)
+    {
+      ToolTipManager.sharedInstance().unregisterComponent(this);
+      toolTipText = null;
+      return;
+    }
+		
+    // XXX: The tip text doesn't get updated unless you set it to null
+    // and then to something not-null. This is consistent with the behaviour
+    // of Sun's ToolTipManager.
+			
+    String oldText = toolTipText;
     toolTipText = text;
+		
+    if (oldText == null)
+      ToolTipManager.sharedInstance().registerComponent(this);
   }
 
   /**
@@ -1172,7 +1153,7 @@ public abstract class JComponent extends Container implements Serializable
    */
   public String getToolTipText(MouseEvent event)
   {
-    return toolTipText;
+    return getToolTipText();
   }
 
   /**
@@ -1519,6 +1500,51 @@ public abstract class JComponent extends Container implements Serializable
     registerKeyboardAction(act, null, stroke, cond);
   }
 
+  /* 
+   * There is some charmingly undocumented behavior sun seems to be using
+   * to simulate the old register/unregister keyboard binding API. It's not
+   * clear to me why this matters, but we shall endeavour to follow suit.
+   *
+   * Two main thing seem to be happening when you do registerKeyboardAction():
+   * 
+   *  - no actionMap() entry gets created, just an entry in inputMap()
+   *
+   *  - the inputMap() entry is a proxy class which invokes the the
+   *  binding's actionListener as a target, and which clobbers the command
+   *  name sent in the ActionEvent, providing the binding command name
+   *  instead.
+   *
+   * This much you can work out just by asking the input and action maps
+   * what they contain after making bindings, and watching the event which
+   * gets delivered to the recipient. Beyond that, it seems to be a
+   * sun-private solution so I will only immitate it as much as it matters
+   * to external observers.
+   */
+
+  private static class ActionListenerProxy
+    extends AbstractAction
+  {
+    ActionListener target;
+    String bindingCommandName;
+
+    public ActionListenerProxy(ActionListener li, 
+                               String cmd)
+    {
+      target = li;
+      bindingCommandName = cmd;
+    }
+
+    public void actionPerformed(ActionEvent e)
+    {
+      ActionEvent derivedEvent = new ActionEvent(e.getSource(),
+                                                 e.getID(),
+                                                 bindingCommandName,
+                                                 e.getModifiers());
+      target.actionPerformed(derivedEvent);
+    }
+  }
+
+  
   /**
    * An obsolete method to register a keyboard action on this component.
    * You should use <code>getInputMap</code> and <code>getActionMap</code>
@@ -1543,8 +1569,185 @@ public abstract class JComponent extends Container implements Serializable
                                      KeyStroke stroke, 
                                      int cond)
   {
+    getInputMap(cond).put(stroke, new ActionListenerProxy(act, cmd));
   }
 
+
+
+  public final void setInputMap(int condition, InputMap map)
+  {
+    enableEvents(AWTEvent.KEY_EVENT_MASK);
+    switch (condition)
+      {
+      case WHEN_FOCUSED:
+        inputMap_whenFocused = map;
+        break;
+
+      case WHEN_ANCESTOR_OF_FOCUSED_COMPONENT:
+        inputMap_whenAncestorOfFocused = map;
+        break;
+
+      case WHEN_IN_FOCUSED_WINDOW:
+        inputMap_whenInFocusedWindow = map;
+        break;
+        
+      case UNDEFINED_CONDITION:
+      default:
+        throw new IllegalArgumentException();
+      }
+  }
+
+  public final InputMap getInputMap(int condition)
+  {
+    enableEvents(AWTEvent.KEY_EVENT_MASK);
+    switch (condition)
+      {
+      case WHEN_FOCUSED:
+        if (inputMap_whenFocused == null)
+          inputMap_whenFocused = new InputMap();
+        return inputMap_whenFocused;
+
+      case WHEN_ANCESTOR_OF_FOCUSED_COMPONENT:
+        if (inputMap_whenAncestorOfFocused == null)
+          inputMap_whenAncestorOfFocused = new InputMap();
+        return inputMap_whenAncestorOfFocused;
+
+      case WHEN_IN_FOCUSED_WINDOW:
+        if (inputMap_whenInFocusedWindow == null)
+          inputMap_whenInFocusedWindow = new InputMap();
+        return inputMap_whenInFocusedWindow;
+
+      case UNDEFINED_CONDITION:
+      default:
+        return null;
+      }
+  }
+
+  public final InputMap getInputMap()
+  {
+    return getInputMap(WHEN_FOCUSED);
+  }
+
+  public final ActionMap getActionMap()
+  {
+    if (actionMap == null)
+      actionMap = new ActionMap();
+    return actionMap;
+  }
+
+  public final void setActionMap(ActionMap map)
+  {
+    actionMap = map;
+  }
+
+  /**
+   * @deprecated As of 1.3 KeyStrokes can be registered with multiple
+   * simultaneous conditions.
+   *
+   * Return the condition that determines whether a registered action
+   * occurs in response to the specified keystroke.
+   *
+   * @param aKeyStroke The keystroke to return the condition of
+   *
+   * @return One of the values {@link #UNDEFINED_CONDITION}, {@link
+   * #WHEN_ANCESTOR_OF_FOCUSED_COMPONENT}, {@link #WHEN_FOCUSED}, or {@link
+   * #WHEN_IN_FOCUSED_WINDOW}
+   *
+   * @see #registerKeyboardAction   
+   * @see #unregisterKeyboardAction   
+   * @see #resetKeyboardActiond
+   */
+  public int getConditionForKeyStroke(KeyStroke ks)
+  {
+    if (inputMap_whenFocused != null 
+        && inputMap_whenFocused.get(ks) != null)
+      return WHEN_FOCUSED;
+    else if (inputMap_whenAncestorOfFocused != null 
+             && inputMap_whenAncestorOfFocused.get(ks) != null)
+      return WHEN_ANCESTOR_OF_FOCUSED_COMPONENT;
+    else if (inputMap_whenInFocusedWindow != null 
+             && inputMap_whenInFocusedWindow.get(ks) != null)
+      return WHEN_IN_FOCUSED_WINDOW;
+    else
+      return UNDEFINED_CONDITION;
+  }
+
+  /**
+   * @deprecated Use {@link #getActionMap()}
+   *
+   * Get the ActionListener (typically an {@link Action} object) which is
+   * associated with a particular keystroke. 
+   *
+   * @param aKeyStroke The keystroke to retrieve the action of
+   *
+   * @return The action associated with the specified keystroke
+   */
+  public ActionListener getActionForKeyStroke(KeyStroke ks)
+  {
+    Object cmd = getInputMap().get(ks);
+    if (cmd != null)
+      {
+        if (cmd instanceof ActionListenerProxy)
+          return (ActionListenerProxy) cmd;
+        else if (cmd instanceof String)
+          return getActionMap().get(cmd);
+      }
+    return null;
+  }
+
+  /**
+   * A hook for subclasses which want to customize event processing.
+   */
+  protected void processComponentKeyEvent(KeyEvent e)
+  {
+  }
+
+  /**
+   * Override the default key dispatch system from Component to hook into
+   * the swing {@link InputMap} / {@link ActionMap} system.
+   *
+   * See <a
+   * href="http://java.sun.com/products/jfc/tsc/special_report/kestrel/keybindings.html">this
+   * report</a> for more details, it's somewhat complex.
+   */
+  protected void processKeyEvent(KeyEvent e)
+  {
+    processComponentKeyEvent(e);
+
+    // FIXME: this needs to be elaborated significantly, to do all the
+    // focus / ancestor / window searching for the various binding modes.
+    if (! e.isConsumed() &&
+        processKeyBinding(KeyStroke.getKeyStrokeForEvent(e), 
+                          e, WHEN_FOCUSED, e.getID() == KeyEvent.KEY_PRESSED))
+      e.consume();
+  }
+
+  protected boolean processKeyBinding(KeyStroke ks,
+                                      KeyEvent e,
+                                      int condition,
+                                      boolean pressed)
+  { 
+    if (isEnabled())
+      {
+        Action act = null;
+        InputMap map = getInputMap(condition);
+        if (map != null)
+          {
+            Object cmd = map.get(ks);
+            if (cmd != null)
+              {
+                if (cmd instanceof ActionListenerProxy)
+                  act = (Action) cmd;
+                else 
+                  act = (Action) getActionMap().get(cmd);
+              }
+          }
+        if (act != null && act.isEnabled())
+          return SwingUtilities.notifyAction(act, ks, e, this, e.getModifiers());
+      }
+    return false;
+  }
+  
   /**
    * Remove a keyboard action registry.
    *
@@ -1568,6 +1771,14 @@ public abstract class JComponent extends Container implements Serializable
    */
   public void resetKeyboardActions()
   {
+    if (inputMap_whenFocused != null)
+      inputMap_whenFocused.clear();
+    if (inputMap_whenAncestorOfFocused != null)
+      inputMap_whenAncestorOfFocused.clear();
+    if (inputMap_whenInFocusedWindow != null)
+      inputMap_whenInFocusedWindow.clear();
+    if (actionMap != null)
+      actionMap.clear();
   }
 
 
@@ -1875,11 +2086,14 @@ public abstract class JComponent extends Container implements Serializable
     if (ui != null)
       ui.uninstallUI(this);
 
+    ComponentUI oldUI = ui;
     ui = newUI;
 
     if (ui != null)
       ui.installUI(this);
 
+    firePropertyChange("UI", oldUI, newUI);
+    
     revalidate();
     repaint();
   }

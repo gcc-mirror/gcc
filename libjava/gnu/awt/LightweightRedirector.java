@@ -141,7 +141,7 @@ public class LightweightRedirector
     
     MouseEvent redirected = new MouseEvent(source, event.getID(),
 					   event.getWhen(),
-					   event.getModifiers(),
+					   event.getModifiersEx(),
 					   x, y,
 					   event.getClickCount(),
 					   event.isPopupTrigger());
@@ -157,20 +157,20 @@ public class LightweightRedirector
    */
   int getButtonNumber(InputEvent event)
   {
-    int modifiers = event.getModifiers();
+    int modifiers = event.getModifiersEx();
     
     modifiers &=
-      InputEvent.BUTTON1_MASK |
-      InputEvent.BUTTON2_MASK |
-      InputEvent.BUTTON3_MASK;
+      InputEvent.BUTTON1_DOWN_MASK |
+      InputEvent.BUTTON2_DOWN_MASK |
+      InputEvent.BUTTON3_DOWN_MASK;
     
     switch (modifiers)
       {
-      case InputEvent.BUTTON1_MASK:
+      case InputEvent.BUTTON1_DOWN_MASK:
 	return 1;
-      case InputEvent.BUTTON2_MASK:
+      case InputEvent.BUTTON2_DOWN_MASK:
 	return 2;
-      case InputEvent.BUTTON3_MASK:
+      case InputEvent.BUTTON3_DOWN_MASK:
 	return 3;
       case 0:
 	return 0;

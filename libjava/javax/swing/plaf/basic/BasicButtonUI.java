@@ -50,6 +50,7 @@ import java.awt.Stroke;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
@@ -59,13 +60,21 @@ import javax.swing.plaf.ComponentUI;
 
 public class BasicButtonUI extends ButtonUI
 {
-  /** A constant used to pad out elements in the button's layout and
-      preferred size calculations. */
-  int defaultTextIconGap = 4;
+  /**
+   * A constant used to pad out elements in the button's layout and
+   * preferred size calculations.
+   */
+  protected int defaultTextIconGap = 4;
 
-  /** A constant added to the defaultTextIconGap to adjust the text
-      within this particular button. */
-  int defaultTextShiftOffset = 0;
+  /**
+   * A constant added to the defaultTextIconGap to adjust the text
+   * within this particular button.
+   */
+  protected int defaultTextShiftOffset = 0;
+
+  private int textShiftOffset;
+
+  private Color focusColor;
 
   /**
    * Factory method to create an instance of BasicButtonUI for a given
@@ -85,14 +94,32 @@ public class BasicButtonUI extends ButtonUI
     return defaultTextIconGap;
   }
 
+  protected void clearTextShiftOffset()
+  {
+    textShiftOffset = 0;
+  }
+  
+  protected int getTextShiftOffset()
+  {
+    return textShiftOffset;
+  }
+
+  protected void setTextShiftOffset()
+  {
+    textShiftOffset = defaultTextShiftOffset;
+  }
+
   protected void installDefaults(AbstractButton b)
   {
     UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    focusColor = defaults.getColor("Button.focus");
     b.setForeground(defaults.getColor("Button.foreground"));
     b.setBackground(defaults.getColor("Button.background"));
     b.setMargin(defaults.getInsets("Button.margin"));
     b.setBorder(defaults.getBorder("Button.border"));
     b.setIconTextGap(defaults.getInt("Button.textIconGap"));
+    b.setInputMap(JComponent.WHEN_FOCUSED, 
+                  (InputMap) defaults.get("Button.focusInputMap"));
     b.setOpaque(true);
   }
 
@@ -133,10 +160,12 @@ public class BasicButtonUI extends ButtonUI
 
   protected void installKeyboardActions(AbstractButton b)
   {
+    listener.installKeyboardActions(b);
   }
 
   protected void uninstallKeyboardActions(AbstractButton b)
   {
+    listener.uninstallKeyboardActions(b);
   }
 
   /**
@@ -271,22 +300,12 @@ public class BasicButtonUI extends ButtonUI
   {
     if (b.hasFocus() && b.isFocusPainted())
       {
-        Graphics2D g2 = (Graphics2D) g;
-        Stroke saved_stroke = g2.getStroke();
-        Color saved_color = g2.getColor();
-        float dashes[] = new float[] {1.0f, 1.0f};        
-        BasicStroke s = new BasicStroke(1.0f, 
-                                        BasicStroke.CAP_SQUARE, 
-                                        BasicStroke.JOIN_MITER,
-                                        10, dashes, 0.0f);
-        g2.setStroke(s);
-        g2.setColor(Color.BLACK);
-        g2.drawRect(vr.x + 2, 
-                    vr.y + 2, 
-                    vr.width - 4,
-                    vr.height - 4);
-        g2.setStroke(saved_stroke);
-        g2.setColor(saved_color);
+        Color saved_color = g.getColor();
+        g.setColor(focusColor);
+        Rectangle focusRect = ir.union(tr);
+        g.drawRect(focusRect.x, focusRect.y,
+                   focusRect.width, focusRect.height);
+        g.setColor(saved_color);
       }
   }
 

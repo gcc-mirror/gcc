@@ -1226,6 +1226,7 @@ public class BasicSliderUI extends SliderUI
     if (slider.getLabelTable() == null)
       return 0;
 
+    Dimension pref;
     for (Enumeration list = slider.getLabelTable().elements();
          list.hasMoreElements();)
       {
@@ -1233,8 +1234,9 @@ public class BasicSliderUI extends SliderUI
 	if (! (comp instanceof Component))
 	  continue;
 	label = (Component) comp;
-	if (label.getWidth() > widest)
-	  widest = label.getWidth();
+	pref = label.getPreferredSize();
+	if (pref != null && pref.width > widest)
+	  widest = pref.width;
       }
     return widest;
   }
@@ -1252,7 +1254,7 @@ public class BasicSliderUI extends SliderUI
 
     if (slider.getLabelTable() == null)
       return 0;
-
+    Dimension pref;
     for (Enumeration list = slider.getLabelTable().elements();
          list.hasMoreElements();)
       {
@@ -1260,8 +1262,9 @@ public class BasicSliderUI extends SliderUI
 	if (! (comp instanceof Component))
 	  continue;
 	label = (Component) comp;
-	if (label.getHeight() > tallest)
-	  tallest = label.getHeight();
+	pref = label.getPreferredSize();
+	if (pref != null && pref.height > tallest)
+	  tallest = pref.height;
       }
     return tallest;
   }

@@ -740,8 +740,11 @@ public abstract class KeyboardFocusManager
 
   public final void redispatchEvent (Component target, AWTEvent e)
   {
-    e.setSource (target);
-    dispatchEvent (e);
+    synchronized (e)
+      {
+        e.setSource (target);
+        target.dispatchEvent (e);
+      }
   }
 
   public abstract boolean dispatchKeyEvent (KeyEvent e);

@@ -56,15 +56,12 @@ public class GtkMenuBarPeer extends GtkMenuComponentPeer
     create ();
   }
 
+  native void nativeSetHelpMenu(MenuPeer menuPeer);
+
   /* In Gnome, help menus are no longer right flushed. */
   public void addHelpMenu (Menu menu)
   {
-    addMenu (menu);
-  }
-
-  public void addMenu (Menu menu)
-  {
-    addMenu ((MenuPeer) menu.getPeer ());
+    nativeSetHelpMenu((MenuPeer) menu.getPeer());
   }
 
   native public void delMenu (int index);

@@ -135,7 +135,7 @@ public class JFormattedTextField extends JTextField
   
   public JFormattedTextField ()
   {
-    throw new InternalError ("not implemented");
+    this((AbstractFormatterFactory) null);
   }
 
   public JFormattedTextField (Format format)
@@ -150,7 +150,7 @@ public class JFormattedTextField extends JTextField
 
   public JFormattedTextField (AbstractFormatterFactory factory)
   {
-    throw new InternalError ("not implemented");
+    this(factory, null);
   }
 
   public JFormattedTextField (AbstractFormatterFactory factory, Object value)

@@ -1,4 +1,4 @@
-/* JToolTip.java -- 
+/* JToolTip.java --
    Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,25 +35,160 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing;
 
+import java.awt.AWTEvent;
 import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.swing.plaf.ToolTipUI;
 
+
+/**
+ * This class is used to display ToolTips. ToolTips are small floating windows
+ * that display text when the mouse comes to rest over a Component. ToolTips
+ * are set for JComponents using JComponent.setToolTipText(String).
+ */
 public class JToolTip extends JComponent implements Accessible
 {
+  /** DOCUMENT ME! */
   private static final long serialVersionUID = -1138929898906751643L;
-  
+
+  /**
+   * DOCUMENT ME!
+   */
+  protected class AccessibleJToolTip extends AccessibleJComponent
+  {
+    /**
+     * Creates a new AccessibleJToolTip object.
+     */
+    protected AccessibleJToolTip()
+    {
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public String getAccessibleDescription()
+    {
+      return null;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return null;
+    }
+  }
+
+  /** The text to display in the JToolTip. */
   String text;
 
+  /** The JComponent this JToolTip is used for. */
+  JComponent component;
+
+  /**
+   * Creates a new JToolTip object.
+   */
   public JToolTip()
   {
+    disableEvents(AWTEvent.MOUSE_EVENT_MASK);
+    updateUI();
   }
 
-  public void setTipText(String newText)
+  /**
+   * This method returns the text this JToolTip displays.
+   *
+   * @return The text that this JToolTip displays.
+   */
+  public String getTipText()
   {
-    this.text = newText;
+    return text;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    return null;
+  }
+
+  /**
+   * This method returns the JComponent this JToolTip displays for.
+   *
+   * @return The JComponent this JToolTip displays for.
+   */
+  public JComponent getComponent()
+  {
+    return component;
+  }
+
+  /**
+   * This method returns the UI responsible for displaying this JToolTip.
+   *
+   * @return The UI responsible for displaying this JToolTip.
+   */
+  public ToolTipUI getUI()
+  {
+    return (ToolTipUI) ui;
+  }
+
+  /**
+   * This method returns the String identifier for the UI class.
+   *
+   * @return The String identifier for the UI class.
+   */
+  public String getUIClassID()
+  {
+    return "ToolTipUI";
+  }
+
+  /**
+   * This method returns a debugging String describing the JToolTip.
+   *
+   * @return A debugging String describing the JToolTip.
+   */
+  protected String paramString()
+  {
+    return "JToolTip";
+  }
+
+  /**
+   * This method sets the JComponent that the JToolTip displays for.
+   *
+   * @param c The JComponent that the JToolTip displays for.
+   */
+  public void setComponent(JComponent c)
+  {
+    component = c;
+  }
+
+  /**
+   * This method sets the text that the JToolTip displays.
+   *
+   * @param tipText The text that the JToolTip displays.
+   */
+  public void setTipText(String tipText)
+  {
+    text = tipText;
+  }
+
+  /**
+   * This method resets the UI used to the Look and Feel default.
+   */
+  public void updateUI()
+  {
+    setUI((ToolTipUI) UIManager.getUI(this));
+    revalidate();
+    repaint();
   }
 }
-
-
