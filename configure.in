@@ -421,10 +421,6 @@ case "${target}" in
   i[34567]86-*-freebsd*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
-  s390*-*-linux*)
-    # The libffi port is not yet in the GCC tree
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
-    ;;
   i[3456]86-*-linux*)
     # This section makes it possible to build newlib natively on linux.
     # If we are using a cross compiler then don't configure newlib.
