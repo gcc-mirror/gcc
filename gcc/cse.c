@@ -4886,6 +4886,10 @@ fold_rtx (x, insn)
 	 since they are used only for lists of args
 	 in a function call's REG_EQUAL note.  */
     case EXPR_LIST:
+      /* Changing anything inside an ADDRESSOF is incorrect; we don't
+	 want to (e.g.,) make (addressof (const_int 0)) just because
+	 the location is known to be zero.  */
+    case ADDRESSOF:
       return x;
 
 #ifdef HAVE_cc0
