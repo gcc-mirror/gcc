@@ -1,3 +1,7 @@
+2004-11-16  Devang Patel  <dpatel@apple.com>
+
+	* optabs.c (vector_compare_rtx): Fix COMPARISON_CLASS_P use.
+	
 2004-11-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expmed.c, ra-colorize.c: Fix comment typos.
