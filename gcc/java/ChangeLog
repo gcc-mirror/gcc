@@ -1,3 +1,8 @@
+2000-05-08  Tom Tromey  <tromey@cygnus.com>
+
+	* expr.c (build_jni_stub): Cache the result of
+	_Jv_LookupJNIMethod.
+
 2000-05-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (predef_filenames_size): Now 7.

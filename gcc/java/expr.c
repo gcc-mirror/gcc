@@ -1855,6 +1855,7 @@ build_jni_stub (method)
   tree jni_func_type, tem;
   tree env_var, res_var = NULL_TREE, block;
   tree method_args, res_type;
+  tree meth_var;
 
   tree klass = DECL_CONTEXT (method);
   int from_class = ! CLASS_FROM_SOURCE_P (klass);
@@ -1867,12 +1868,24 @@ build_jni_stub (method)
   DECL_EXTERNAL (method) = 0;
 
   env_var = build_decl (VAR_DECL, get_identifier ("env"), ptr_type_node);
+  DECL_CONTEXT (env_var) = method;
+
   if (TREE_TYPE (TREE_TYPE (method)) != void_type_node)
     {
       res_var = build_decl (VAR_DECL, get_identifier ("res"),
 			    TREE_TYPE (TREE_TYPE (method)));
+      DECL_CONTEXT (res_var) = method;
       TREE_CHAIN (env_var) = res_var;
     }
+
+  push_obstacks (&permanent_obstack, &permanent_obstack);
+  meth_var = build_decl (VAR_DECL, get_identifier ("meth"), ptr_type_node);
+  TREE_STATIC (meth_var) = 1;
+  TREE_PUBLIC (meth_var) = 0;
+  DECL_EXTERNAL (meth_var) = 0;
+  make_decl_rtl (meth_var, NULL, 0);
+  meth_var = pushdecl_top_level (meth_var);
+  pop_obstacks ();
 
   /* One strange way that the front ends are different is that they
      store arguments differently.  */
@@ -1936,9 +1949,13 @@ build_jni_stub (method)
     = build_pointer_type (build_function_type (TREE_TYPE (TREE_TYPE (method)),
 					       arg_types));
 
-  jnifunc = build (CALL_EXPR, ptr_type_node,
-		   build_address_of (soft_lookupjnimethod_node),
-		   lookup_arg, NULL_TREE);
+  jnifunc = build (COND_EXPR, ptr_type_node,
+		   meth_var, meth_var,
+		   build (MODIFY_EXPR, ptr_type_node,
+			  meth_var,
+			  build (CALL_EXPR, ptr_type_node,
+				 build_address_of (soft_lookupjnimethod_node),
+				 lookup_arg, NULL_TREE)));
 
   /* Now we make the actual JNI call via the resulting function
      pointer.    */
@@ -2002,7 +2019,6 @@ build_jni_stub (method)
   BLOCK_EXPR_BODY (block) = body;
   return block;
 }
-
 
 /* Expand an operation to extract from or store into a field.
    IS_STATIC is 1 iff the field is static.
