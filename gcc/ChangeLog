@@ -1,3 +1,8 @@
+2000-07-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-semantics.c (make_rtl_for_local_static): Use TREE_ASM_WRITTEN
+	to figure out whether or not a variable has already been emitted.
+
 Sun Jul 23 14:49:12 2000  Jason Eckhardt  <jle@cygnus.com> 
 
         * config/i860/i860.md (untyped_call expander): Use GEN_CALL 

@@ -7825,11 +7825,8 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
      tree init;
      const char *asmspec;
 {
-  int toplev;
-  tree type;
-
-  type = TREE_TYPE (decl);
-  toplev = toplevel_bindings_p ();
+  int toplev = toplevel_bindings_p ();
+  int defer_p;
 
   /* Handle non-variables up front.  */
   if (TREE_CODE (decl) != VAR_DECL)
@@ -7838,54 +7835,55 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
       return;
     }
 
+  /* If we see a class member here, it should be a static data
+     member.  */
+  if (DECL_LANG_SPECIFIC (decl) && DECL_IN_AGGR_P (decl))
+    {
+      my_friendly_assert (TREE_STATIC (decl), 19990828);
+      /* An in-class declaration of a static data member should be
+	 external; it is only a declaration, and not a definition.  */
+      if (init == NULL_TREE)
+	my_friendly_assert (DECL_EXTERNAL (decl), 20000723);
+    }
+
   /* Set the DECL_ASSEMBLER_NAME for the variable.  */
   if (asmspec)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
 
-  if (DECL_VIRTUAL_P (decl))
-    make_decl_rtl (decl, NULL_PTR, toplev);
-  else if (TREE_READONLY (decl)
-	   && DECL_INITIAL (decl) != NULL_TREE
-	   && DECL_INITIAL (decl) != error_mark_node
-	   && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
-    {
-      DECL_INITIAL (decl) = save_expr (DECL_INITIAL (decl));
+  /* We don't create any RTL for local variables.  */
+  if (DECL_FUNCTION_SCOPE_P (decl) && !TREE_STATIC (decl))
+    return;
 
-      if (toplev && ! TREE_PUBLIC (decl))
-	{
-	  /* If this is a static const, change its apparent linkage
-	     if it belongs to a #pragma interface.  */
-	  if (!interface_unknown)
-	    {
-	      TREE_PUBLIC (decl) = 1;
-	      DECL_EXTERNAL (decl) = interface_only;
-	    }
-	  make_decl_rtl (decl, asmspec, toplev);
-	}
-      else if (toplev)
-	rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
-    }
-  else if (DECL_LANG_SPECIFIC (decl) && DECL_IN_AGGR_P (decl))
-    {
-      my_friendly_assert (TREE_STATIC (decl), 19990828);
+  /* We defer emission of local statics until the corresponding
+     DECL_STMT is expanded.  */
+  defer_p = DECL_FUNCTION_SCOPE_P (decl) || DECL_VIRTUAL_P (decl);
 
-      if (init == NULL_TREE
-#ifdef DEFAULT_STATIC_DEFS
-	  /* If this code is dead, then users must
-	     explicitly declare static member variables
-	     outside the class def'n as well.  */
-	  && TYPE_NEEDS_CONSTRUCTING (type)
-#endif
-	  )
+  /* We try to defer namespace-scope static constants so that they are
+     not emitted into the object file unncessarily.  */
+  if (!DECL_VIRTUAL_P (decl)
+      && TREE_READONLY (decl)
+      && DECL_INITIAL (decl) != NULL_TREE
+      && DECL_INITIAL (decl) != error_mark_node
+      && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl))
+      && toplev
+      && !TREE_PUBLIC (decl))
+    {
+      /* Fool with the linkage according to #pragma interface.  */
+      if (!interface_unknown)
 	{
-	  DECL_EXTERNAL (decl) = 1;
-	  make_decl_rtl (decl, asmspec, 1);
+	  TREE_PUBLIC (decl) = 1;
+	  DECL_EXTERNAL (decl) = interface_only;
 	}
-      else
-	rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
+
+      defer_p = 1;
     }
-  else if (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
-	   || (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)))
+
+  /* If we're deferring the variable, just make RTL.  Do not actually
+     emit the variable.  */
+  if (defer_p)
+    make_decl_rtl (decl, asmspec, toplev);
+  /* If we're not deferring, go ahead and assemble the variable.  */
+  else
     rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
 }
 

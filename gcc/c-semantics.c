@@ -96,7 +96,7 @@ make_rtl_for_local_static (decl)
 
   /* If we inlined this variable, we could see it's declaration
      again.  */
-  if (DECL_RTL (decl))
+  if (TREE_ASM_WRITTEN (decl))
     return;
 
   if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
