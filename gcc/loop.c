@@ -4149,10 +4149,10 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	     this can't succeed if we already know that there is a jump
 	     between v->insn and next->insn, yet next->always_executed is
 	     set and next->maybe_multiple is cleared.  Such a combination
-	     implies that the jump destination is outseide the loop.
+	     implies that the jump destination is outside the loop.
 	     If we want to make this check more sophisticated, we should
 	     check each branch between v->insn and next->insn individually
-	     to see if it the biv is dead at its destination.  */
+	     to see if the biv is dead at its destination.  */
 
 	  if (uid_luid[REGNO_LAST_UID (bl->regno)] < INSN_LUID (loop_end)
 	      && bl->init_insn

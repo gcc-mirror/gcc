@@ -40,6 +40,8 @@ Thu Mar 25 10:05:56 1999  Richard Henderson  <rth@cygnus.com>
 
 Thu Mar 25 02:12:42 1999  Finn Hakansson  <finn@axis.com>
 
+	* loop.c (strength_reduce): Correct a comment.
+
         * rtl.h (MEM_COPY_ATTRIBUTES): Remove unnecessary ending backslash.
 
 Thu Mar 25 02:02:13 1999  Axel Thimm <Axel.Thimm@physik.fu-berlin.de>
