@@ -331,46 +331,6 @@ b_mode_operand (op)
   return 0;
 }
 
-/* predicate needed for adding 1 to mem (short before output) */
-int
-simple_memory_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  rtx inner;
-  if (GET_CODE (op) != MEM)
-    return 0;
-  inner = XEXP (op, 0);
-  switch (GET_CODE (inner))
-    {
-    case REG:
-    case SYMBOL_REF:
-    case LABEL_REF:
-      return 1;
-    case PLUS:
-      if (GET_CODE (XEXP (inner, 1)) != CONST_INT)
-        return 0;
-      inner = (XEXP (inner, 0));
-      switch (GET_CODE (inner))
-	{
-	case REG:
-	case SYMBOL_REF:
-	case LABEL_REF:
-	  return 1;
-	case PLUS:
-	  if (GET_CODE (XEXP (inner, 1)) != CONST_INT)
-            return 0;
-	  switch (GET_CODE (XEXP (inner, 0)))
-	    {
-	    case SYMBOL_REF:
-	    case LABEL_REF:
-	      return 1;
-	    }
-	}
-    }
-  return 0;
-}
-
 
 /* Decide whether to output a conditional jump as a "Jump Conditional"
    or as a "Branch Conditional": */
@@ -447,28 +407,62 @@ next_cc_user_is_unsigned (insn)
 
 static int addr_inc;
 
-/* The PRINT_OPERAND and PRINT_OPERAND_ADDRESS macros have been
-   made functions: */
+/* A C compound statement to output to stdio stream STREAM the
+   assembler syntax for an instruction operand X.  X is an RTL
+   expression.
 
-print_operand (file, x, kode)
+   CODE is a value that can be used to specify one of several ways
+   of printing the operand.  It is used when identical operands
+   must be printed differently depending on the context.  CODE
+   comes from the `%' specification that was used to request
+   printing of the operand.  If the specification was just `%DIGIT'
+   then CODE is 0; if the specification was `%LTR DIGIT' then CODE
+   is the ASCII code for LTR.
+
+   If X is a register, this macro should print the register's name.
+   The names can be found in an array `reg_names' whose type is
+   `char *[]'.  `reg_names' is initialized from `REGISTER_NAMES'.
+
+   When the machine description has a specification `%PUNCT' (a `%'
+   followed by a punctuation character), this macro is called with
+   a null pointer for X and the punctuation character for CODE.
+
+   The 1750 specific codes are:
+   'J' for the negative of a constant
+   'Q' for printing addresses in B mode syntax
+   'd' for the second register in a pair
+   't' for the third register in a triple 
+   'b' for the bit number (using 1750 test bit convention)
+   'B' for the bit number of the 1's complement (for bit clear)
+   'w' for int - 16
+*/
+
+print_operand (file, x, letter)
      FILE *file;
      rtx x;
-     enum rtx_code kode;
+     int letter;
 {
   switch (GET_CODE (x))
     {
     case REG:
-      fprintf (file, "%d", REGNO (x));
+      if (letter == 'd')
+	fprintf (file, "%d", REGNO (x) + 1);
+      else if (letter == 't')
+	fprintf (file, "%d", REGNO (x) + 2);
+      else
+	fprintf (file, "%d", REGNO (x));
       break;
+
     case SYMBOL_REF:
       fprintf (file, "%s", XSTR (x, 0));
-      if (kode == 'A')
+      if (letter == 'A')
 	fprintf (file, "+1");
       break;
+
     case LABEL_REF:
     case CONST:
     case MEM:
-      if (kode == 'Q')
+      if (letter == 'Q')
 	{
 	  rtx inner = XEXP (x, 0);
 	  switch (GET_CODE (inner))
@@ -486,17 +480,18 @@ print_operand (file, x, kode)
 	}
       else
 	{
-	  addr_inc = (kode == 'A' ? 1 : 0);
+	  addr_inc = (letter == 'A' ? 1 : 0);
 	  output_address (XEXP (x, 0));
 	}
       break;
+
     case CONST_DOUBLE:
 /*    {
 	double value = get_double (x);
 	char fltstr[32];
 	sprintf (fltstr, "%lf", value);
 
-	if (kode == 'D' || kode == 'E')
+	if (letter == 'D' || letter == 'E')
 	  {
 	    int i, found = 0;
 	    for (i = 0; i <= datalbl_ndx; i++)
@@ -508,15 +503,15 @@ print_operand (file, x, kode)
 	    if (!found)
 	      {
 		strcpy (datalbl[i = ++datalbl_ndx].value, fltstr);
-		datalbl[i].name = float_label (kode, value);
-		datalbl[i].size = (kode == 'E') ? 3 : 2;
+		datalbl[i].name = float_label (letter, value);
+		datalbl[i].size = (letter == 'E') ? 3 : 2;
 		check_section (Konst);
 		fprintf (file, "K%s \tdata%s %s ;p_o\n", datalbl[i].name,
-			(kode == 'E' ? "ef" : "f"), fltstr);
+			(letter == 'E' ? "ef" : "f"), fltstr);
 		check_section (Normal);
 	      }
 	  }
-	else if (kode == 'F' || kode == 'G')
+	else if (letter == 'F' || letter == 'G')
 	  {
 	    int i, found = 0;
 	    for (i = 0; i <= datalbl_ndx; i++)
@@ -530,11 +525,11 @@ print_operand (file, x, kode)
 		fprintf (stderr,
 		   "float value %lfnot found upon label reference\n", value);
 		strcpy (datalbl[i = ++datalbl_ndx].value, fltstr);
-		datalbl[i].name = float_label (kode, value);
-		datalbl[i].size = (kode == 'G') ? 3 : 2;
+		datalbl[i].name = float_label (letter, value);
+		datalbl[i].size = (letter == 'G') ? 3 : 2;
 		check_section (Konst);
 		fprintf (file, "K%s \tdata%s %s ;p_o\n", datalbl[i].name,
-			(kode == 'G' ? "ef" : "f"), fltstr);
+			(letter == 'G' ? "ef" : "f"), fltstr);
 		check_section (Normal);
 	      }
 	    fprintf (file, "%s ;P_O 'F'", datalbl[i].name);
@@ -545,22 +540,29 @@ print_operand (file, x, kode)
  */
       fprintf (file, "%lf", get_double (x));
       break;
+
     case CONST_INT:
-      if (kode == 'J')
+      if (letter == 'J')
 	fprintf (file, "%d", -INTVAL (x));
-      else if (INTVAL (x) > 0x7FFF)
-	fprintf (file, "%d  ; range correction (val>0x7FFF) applied",
-		 INTVAL (x) - 0x10000);
+      if (letter == 'b')
+        fprintf (file, "%d", which_bit (INTVAL (x)));
+      else if (letter == 'B')
+        fprintf (file, "%d", which_bit (~INTVAL (x)));
+      else if (letter == 'w')
+	fprintf (file, "%d", INTVAL (x) - 16);
       else
 	fprintf (file, "%d", INTVAL (x));
       break;
+
     case CODE_LABEL:
       fprintf (file, "L%d", XINT (x, 3));
       break;
+
     case CALL:
       fprintf (file, "CALL nargs=%d, func is either '%s' or '%s'",
        XEXP (x, 1), XSTR (XEXP (XEXP (x, 0), 1), 0), XSTR (XEXP (x, 0), 1));
       break;
+
     case PLUS:
       {
 	rtx op0 = XEXP (x, 0), op1 = XEXP (x, 1);
@@ -591,9 +593,11 @@ print_operand (file, x, kode)
 	  fprintf (file, "p_o_+: op0code=%d, op1code=%d", op0code, op1code);
       }
       break;
+
     default:
       fprintf (file, "p_o_UFO code=%d", GET_CODE (x));
     }
+
   addr_inc = 0;
 }
 
@@ -707,4 +711,39 @@ print_operand_address (file, addr)
     }
   addr_inc = 0;
 }
+
+
+/*
+ *  Return non zero if the LS 16 bits of the given value has just one bit set,
+ *  otherwise return zero. Note this function may be used to detect one
+ *  bit clear by inverting the param.
+ */
+int
+one_bit_set_p (x)
+     int x;
+{
+  x &= 0xffff; 
+  return x && (x & (x - 1)) == 0;
+}
+
+
+/*
+ * Return the number of the least significant bit set, using the  same
+ * convention for bit numbering as in the MIL-STD-1750 sb instruction.
+ */
+int
+which_bit (x)
+     int x;
+{
+  int b = 15;
+
+  while (b > 0 && (x & 1) == 0)
+    {
+      b--;
+      x >>= 1;
+    }
+
+  return b;
+}
+
 
