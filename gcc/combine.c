@@ -10832,6 +10832,11 @@ get_last_value (x)
     {
       rtx insn, set;
 
+      /* We can't do anything if the value is set in between the insns we are
+	 processing.  */
+      if (INSN_CUID (reg_last_set[regno]) <= INSN_CUID (subst_insn))
+	return 0;
+
       /* We can not do anything useful in this case, because there is
 	 an instruction which is not on the insn chain.  */
       if (subst_prev_insn)
