@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.6 2001/05/23 21:33:30 rth Exp $
+@comment $Id: install.texi,v 1.7 2001/05/24 21:16:41 pb Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -1471,8 +1471,8 @@ IRIX 5.2.  We recommend you use GNU make instead of the vendor supplied
 make program; however, you may have success with "smake" on IRIX 5.2 if
 you do not have GNU make available.
 
-See @uref{http://reality.sgi.com/ariel/freeware/,,http://reality.sgi.com/ariel/freeware} for more information about
-using GCC on IRIX platforms.
+See @uref{http://freeware.sgi.com/,,http://freeware.sgi.com/} for more
+information about using GCC on IRIX platforms.
 
 
 @html
@@ -1526,8 +1526,8 @@ happen are when there are library functions that take/return such
 structures. There are very few such library functions. I can only recall
 seeing two of them: inet_ntoa, and semctl.
 
-See @uref{http://reality.sgi.com/ariel/freeware/,,http://reality.sgi.com/ariel/freeware} for more information about
-using GCC on IRIX platforms.
+See @uref{http://freeware.sgi.com/,,http://freeware.sgi.com/} for more
+information about using GCC on IRIX platforms.
 
 
 @html
