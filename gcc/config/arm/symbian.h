@@ -59,9 +59,8 @@
 #undef SUBTARGET_CPU_DEFAULT
 #define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm10tdmi
 
-/* The assembler should assume the VFP FPU format when the hard-float
-   ABI is in use.  */
+/* The assembler should assume VFP FPU format, and armv5t.  */
 #undef SUBTARGET_ASM_FLOAT_SPEC
 #define SUBTARGET_ASM_FLOAT_SPEC \
-  "%{!mfpu=*:%{mfloat-abi=hard:-mfpu=vfp}}"
+  "%{!mfpu=*:-mfpu=vfp} %{!mcpu=*:%{!march=*:-march=armv5t}}"
   
