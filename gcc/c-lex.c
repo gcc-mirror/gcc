@@ -1325,7 +1325,7 @@ yylex ()
 		      {
 			f_seen = 1;
 			type = float_type_node;
-			value = REAL_VALUE_TRUNCATE (TYPE_MODE (type), value);
+			value = real_value_truncate (TYPE_MODE (type), value);
 			if (REAL_VALUE_ISINF (value) && pedantic)
 			  pedwarn ("floating point number exceeds range of `float'");
 		      }
