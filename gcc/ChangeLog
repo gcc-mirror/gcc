@@ -1,5 +1,12 @@
 2000-11-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* pa.c (restore_unscaled_index_insn_codes): Delete procedure.
+	(record_unscaled_index_insn_codes): Likewise.
+	(unscaled_index_insn_codes): Delete.
+	(max_unscaled_index_insn_codes_uid): Delete.
+	(output_function_prologue, output_function_epilogue, pa_reorg):
+	Don't use the unscaled index insn hack.
+
 	* pa.md: Remove hack from all index insns to reverse the operand
 	order of frame and stack pointer references incorrectly created
 	in the reload pass.
