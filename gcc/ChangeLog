@@ -1,3 +1,8 @@
+Thu Jun 28 11:19:42 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* ssa-dce.c (eliminate_dead_code): Remove fake edges from the
+	CFG after dead code elimination is complete.
+
 2001-06-28  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gthr-posix.h [LIBOBJC]: Add weak definitions of

@@ -39,7 +39,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    out-of-date.  
 
    Edges from some infinite loops to the exit block can be added to
-   the control-flow graph.
+   the control-flow graph, but will be removed after this pass is
+   complete.
 
    It Does Not Perform:
    We decided to not simultaneously perform jump optimization and dead
@@ -606,6 +607,9 @@ eliminate_dead_code ()
       delete_insn_bb (insn);
   });
   
+  /* Remove fake edges from the CFG.  */
+  remove_fake_edges ();
+
   /* Release allocated memory.  */
   for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
     RESURRECT_INSN (insn);
