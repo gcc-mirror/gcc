@@ -3003,6 +3003,7 @@ init_decl_processing ()
      Note that stddef.h uses `unsigned long',
      and this must agree, even if long and int are the same size.  */
   t = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE)));
+  signed_size_type_node = signed_type (t);
   if (flag_traditional && TREE_UNSIGNED (t))
     t = signed_type (t);
     
@@ -3086,6 +3087,7 @@ init_decl_processing ()
     = build_function_type (integer_type_node, NULL_TREE);
   ptrdiff_type_node
     = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (PTRDIFF_TYPE)));
+  unsigned_ptrdiff_type_node = unsigned_type (ptrdiff_type_node);
 
   c_common_nodes_and_builtins (0, flag_no_builtin, flag_no_nonansi_builtin);
 
