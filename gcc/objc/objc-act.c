@@ -8330,7 +8330,7 @@ handle_impent (impent)
 
       string = (char *) alloca (strlen (class_name) + 30);
 
-      sprintf (string, "*%sobjc_class_name_%s",
+      sprintf (string, "%sobjc_class_name_%s",
                (flag_next_runtime ? "." : "__"), class_name);
     }
   else if (TREE_CODE (impent->imp_context) == CATEGORY_IMPLEMENTATION_TYPE)

@@ -1,3 +1,8 @@
+2002-02-18  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* objc/objc-act.c (handle_impent): Remove leading '*'
+	from objc_class_name. 
+
 2002-02-17  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (some_small_symbolic_operand,
