@@ -1,3 +1,22 @@
+2002-05-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/rs6000/sysv4.h (SUBTARGET_SWITCHES): Add -mwindiss.
+	(LINK_START_SPEC): Handle it.
+	(LINK_OS_SPEC): Likewise.
+	(CPP_SPEC): Likewise.
+	(STARTFILE_SPEC): Likewise.
+	(LIB_SPEC): Likewise.
+	(ENDFILE_SPEC): Likewise.  Do not assume crtsavres.o is used on
+	all platforms.
+	(CRTSAVRES_DEFAULT_SPEC): New macro.
+	(LIB_WINDISS_SPEC): New macro.
+	(CPP_OS_WINDISS_SPEC): Likewise.
+	(STARTFILE_WINDISS_SPEC): Likewise.
+	(ENDFILE_WINDISS_SPEC): Likewise.
+	(LINK_START_WINDISS_SPEC): Likewise.
+	(LINK_OS_WINDISS_SPEC): Likewise.
+	* config/rs6000/windiss.h: New file.
+	
 2002-05-07  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (bdesc_2arg): Fix vmax typos.
