@@ -483,10 +483,19 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    type, but kept valid in the wider mode.  The signedness of the
    extension may differ from that of the type.  */
 
-#define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)  \
-  if (GET_MODE_CLASS (MODE) == MODE_INT	\
-      && GET_MODE_SIZE (MODE) < 4)  	\
-    (MODE) = SImode;
+#define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)	\
+  if (GET_MODE_CLASS (MODE) == MODE_INT		\
+      && GET_MODE_SIZE (MODE) < UNITS_PER_WORD) \
+    (MODE) = (! TARGET_POWERPC64 ? SImode : DImode);
+
+/* Define this if function arguments should also be promoted using the above
+   procedure.  */
+
+#define PROMOTE_FUNCTION_ARGS
+
+/* Likewise, if the function return value is promoted.  */
+
+#define PROMOTE_FUNCTION_RETURN
 
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields. */
@@ -1303,15 +1312,19 @@ extern int rs6000_sysv_varargs_p;
    On RS/6000 an integer value is in r3 and a floating-point value is in
    fp1, unless -msoft-float.  */
 
-#define FUNCTION_VALUE(VALTYPE, FUNC)	\
-  gen_rtx (REG, TYPE_MODE (VALTYPE),	\
-	   TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_HARD_FLOAT ? 33 : 3)
+#define FUNCTION_VALUE(VALTYPE, FUNC)				\
+  gen_rtx_REG ((INTEGRAL_TYPE_P (VALTYPE)			\
+		&& TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
+	       || POINTER_TYPE_P (VALTYPE)			\
+	       ? word_mode : TYPE_MODE (VALTYPE),		\
+	       TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_HARD_FLOAT ? 33 : 3)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE)		\
-  gen_rtx (REG, MODE, GET_MODE_CLASS (MODE) == MODE_FLOAT && TARGET_HARD_FLOAT ? 33 : 3)
+  gen_rtx_REG (MODE,			\
+	       GET_MODE_CLASS (MODE) == MODE_FLOAT && TARGET_HARD_FLOAT ? 33 : 3)
 
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
@@ -1624,10 +1637,10 @@ typedef struct rs6000_args
    frame pointer.  */
 #define RETURN_ADDR_RTX(count, frame)			\
   ((count == -1)					\
-   ? gen_rtx (REG, Pmode, 65)				\
-   : gen_rtx (MEM, Pmode,				\
+   ? gen_rtx_REG (Pmode, 65)				\
+   : gen_rtx_MEM (Pmode,				\
 	      memory_address (Pmode, 			\
-			      plus_constant (copy_to_reg (gen_rtx (MEM, Pmode, \
+			      plus_constant (copy_to_reg (gen_rtx_MEM (Pmode, \
 								   memory_address (Pmode, frame))), \
 					     RETURN_ADDRESS_OFFSET))))
 
@@ -1900,9 +1913,9 @@ typedef struct rs6000_args
       low_int = INTVAL (XEXP (X, 1)) & 0xffff;				\
       if (low_int & 0x8000)						\
 	high_int += 0x10000, low_int |= ((HOST_WIDE_INT) -1) << 16;	\
-      sum = force_operand (gen_rtx (PLUS, Pmode, XEXP (X, 0),		\
+      sum = force_operand (gen_rtx_PLUS (Pmode, XEXP (X, 0),		\
 				    GEN_INT (high_int)), 0);		\
-      (X) = gen_rtx (PLUS, Pmode, sum, GEN_INT (low_int));		\
+      (X) = gen_rtx_PLUS (Pmode, sum, GEN_INT (low_int));		\
       goto WIN;								\
     }									\
   else if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
@@ -1911,7 +1924,7 @@ typedef struct rs6000_args
 	   && (TARGET_64BIT || (MODE) != DImode)			\
 	   && (MODE) != TImode)						\
     {									\
-      (X) = gen_rtx (PLUS, Pmode, XEXP (X, 0),				\
+      (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),				\
 		     force_reg (Pmode, force_operand (XEXP (X, 1), 0))); \
       goto WIN;								\
     }									\
@@ -1924,7 +1937,7 @@ typedef struct rs6000_args
     {									\
       rtx reg = gen_reg_rtx (Pmode);					\
       emit_insn (gen_elf_high (reg, (X)));				\
-      (X) = gen_rtx (LO_SUM, Pmode, reg, (X));				\
+      (X) = gen_rtx_LO_SUM (Pmode, reg, (X));				\
     }									\
 }
 
@@ -3134,7 +3147,6 @@ do {									\
 			       GT, LEU, LTU, GEU, GTU}},	\
   {"trap_comparison_operator", {EQ, NE, LE, LT, GE,		\
 				GT, LEU, LTU, GEU, GTU}},
-
 
 /* uncomment for disabling the corresponding default options */
 /* #define  MACHINE_no_sched_interblock */

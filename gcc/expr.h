@@ -252,6 +252,13 @@ enum direction {none, upward, downward};  /* Value has this type.  */
 #define STACK_SAVEAREA_MODE(LEVEL) Pmode
 #endif
 
+/* Supply a default definition of STACK_SIZE_MODE for
+   allocate_dynamic_stack_space.  Normally PLUS/MINUS, so word_mode.  */
+
+#ifndef STACK_SIZE_MODE
+#define STACK_SIZE_MODE word_mode
+#endif
+
 /* Provide default values for the macros controlling stack checking.  */
 
 #ifndef STACK_CHECK_BUILTIN

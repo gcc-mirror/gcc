@@ -1,3 +1,20 @@
+Thu Jul  2 14:34:48 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* expr.h (STACK_SIZE_MODE): New macro.
+	* explow.c (allocate_dynamic_stack_space): Use it for
+	mode of allocate_stack pattern increment operand.
+	* tm.texi (STACK_SAVEAREA_MODE, STACK_SIZE_MODE): Document.
+	* md.texi (stack_save_block, ...): Reflect use of macro.
+
+	* rs6000.h (PROMOTE_MODE): Always promote to word_mode.
+	(PROMOTE_FUNCTION_ARGS): Define.
+	(PROMOTE_FUNCTION_RETURN): Define.
+	(FUNCTION_VALUE): Promote to word_mode if smaller.
+	Convert to gen_rtx_FOO.
+	* rs6000.md (call_indirect): Store doubleword in 64-bit mode.
+	Convert to gen_rtx_FOO.
+	* rs6000.c: Convert to gen_rtx_FOO.
+	
 Thu Jul  2 14:16:11 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* varray.{c,h}: New files to provide virtual array support.
@@ -344,7 +361,7 @@ Sat Jun 27 20:20:00 1998  John Carr  <jfc@mit.edu>
 
 Sat Jun 27 20:18:34 1998  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
-	* rs6000.c: Add trap_comparison_operator to PREDICATE_CODES.
+	* rs6000.h: Add trap_comparison_operator to PREDICATE_CODES.
 
 Sat Jun 27 16:45:42 1998  Jeffrey A Law  (law@cygnus.com)
 

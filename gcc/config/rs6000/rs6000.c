@@ -1445,12 +1445,12 @@ function_arg (cum, mode, type, named)
 	      && (DEFAULT_ABI != ABI_AIX
 		  || ! TARGET_XL_CALL
 		  || (align_words < GP_ARG_NUM_REG))))
-	return gen_rtx (REG, mode, cum->fregno);
+	return gen_rtx_REG (mode, cum->fregno);
 
-      return gen_rtx (PARALLEL, mode,
+      return gen_rtx_PARALLEL (mode,
 		      gen_rtvec
 		      (2,
-		       gen_rtx (EXPR_LIST, VOIDmode,
+		       gen_rtx_EXPR_LIST (VOIDmode,
 				((align_words >= GP_ARG_NUM_REG)
 				 ? NULL_RTX
 				 : (align_words
@@ -1459,13 +1459,13 @@ function_arg (cum, mode, type, named)
 				    /* If this is partially on the stack, then
 				       we only include the portion actually
 				       in registers here.  */
-				    ? gen_rtx (REG, SImode,
+				    ? gen_rtx_REG (SImode,
 					       GP_ARG_MIN_REG + align_words)
-				    : gen_rtx (REG, mode,
+				    : gen_rtx_REG (mode,
 					       GP_ARG_MIN_REG + align_words))),
 				const0_rtx),
-		       gen_rtx (EXPR_LIST, VOIDmode,
-				gen_rtx (REG, mode, cum->fregno),
+		       gen_rtx_EXPR_LIST (VOIDmode,
+				gen_rtx_REG (mode, cum->fregno),
 				const0_rtx)));
     }
 
@@ -1479,7 +1479,7 @@ function_arg (cum, mode, type, named)
     }
 
   else if (align_words < GP_ARG_NUM_REG)
-    return gen_rtx (REG, mode, GP_ARG_MIN_REG + align_words);
+    return gen_rtx_REG (mode, GP_ARG_MIN_REG + align_words);
 
   return NULL_RTX;
 }
@@ -1601,7 +1601,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       if (!no_rtl && first_reg_offset != GP_ARG_NUM_REG)
 	move_block_from_reg
 	  (GP_ARG_MIN_REG + first_reg_offset,
-	   gen_rtx (MEM, BLKmode,
+	   gen_rtx_MEM (BLKmode,
 		    plus_constant (save_area, first_reg_offset * reg_size)),
 	   GP_ARG_NUM_REG - first_reg_offset,
 	   (GP_ARG_NUM_REG - first_reg_offset) * UNITS_PER_WORD);
@@ -1617,21 +1617,21 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 
       if (num_fp_reg >= 0)
 	{
-	  rtx cr1 = gen_rtx (REG, CCmode, 69);
+	  rtx cr1 = gen_rtx_REG (CCmode, 69);
 	  rtx lab = gen_label_rtx ();
 	  int off = (GP_ARG_NUM_REG * reg_size) + ((fregno - FP_ARG_MIN_REG) * 8);
 
-	  emit_jump_insn (gen_rtx (SET, VOIDmode,
+	  emit_jump_insn (gen_rtx_SET (VOIDmode,
 				   pc_rtx,
-				   gen_rtx (IF_THEN_ELSE, VOIDmode,
-					    gen_rtx (NE, VOIDmode, cr1, const0_rtx),
-					    gen_rtx (LABEL_REF, VOIDmode, lab),
+				   gen_rtx_IF_THEN_ELSE (VOIDmode,
+					    gen_rtx_NE (VOIDmode, cr1, const0_rtx),
+					    gen_rtx_LABEL_REF (VOIDmode, lab),
 					    pc_rtx)));
 
 	  while ( num_fp_reg-- >= 0)
 	    {
-	      emit_move_insn (gen_rtx (MEM, DFmode, plus_constant (save_area, off)),
-			      gen_rtx (REG, DFmode, fregno++));
+	      emit_move_insn (gen_rtx_MEM (DFmode, plus_constant (save_area, off)),
+			      gen_rtx_REG (DFmode, fregno++));
 	      off += 8;
 	    }
 
@@ -1673,7 +1673,7 @@ expand_block_move_mem (mode, addr, orig_mem)
      rtx addr;
      rtx orig_mem;
 {
-  rtx mem = gen_rtx (MEM, mode, addr);
+  rtx mem = gen_rtx_MEM (mode, addr);
 
   RTX_UNCHANGING_P (mem) = RTX_UNCHANGING_P (orig_mem);
   MEM_VOLATILE_P (mem) = MEM_VOLATILE_P (orig_mem);
@@ -1849,8 +1849,8 @@ expand_block_move (operands)
 	    }
 	  else
 	    {
-	      src_addr  = gen_rtx (PLUS, Pmode, src_reg,  GEN_INT (offset));
-	      dest_addr = gen_rtx (PLUS, Pmode, dest_reg, GEN_INT (offset));
+	      src_addr  = gen_rtx_PLUS (Pmode, src_reg,  GEN_INT (offset));
+	      dest_addr = gen_rtx_PLUS (Pmode, dest_reg, GEN_INT (offset));
 	    }
 
 	  /* Generate the appropriate load and store, saving the stores for later */
@@ -2267,7 +2267,7 @@ rs6000_got_register (value)
 	fatal_insn ("internal error -- needed new GOT register during reload phase to load:", value);
 
       current_function_uses_pic_offset_table = 1;
-      pic_offset_table_rtx = gen_rtx (REG, Pmode, GOT_TOC_REGNUM);
+      pic_offset_table_rtx = gen_rtx_REG (Pmode, GOT_TOC_REGNUM);
     }
 
   return pic_offset_table_rtx;
@@ -2388,7 +2388,7 @@ rs6000_finalize_pic ()
 	  rtx init = gen_init_v4_pic (reg);
 	  emit_insn_before (init, first_insn);
 	  if (!optimize && last_insn)
-	    emit_insn_after (gen_rtx (USE, VOIDmode, reg), last_insn);
+	    emit_insn_after (gen_rtx_USE (VOIDmode, reg), last_insn);
 	}
     }
 }
@@ -2403,7 +2403,7 @@ rs6000_reorg (insn)
 {
   if (flag_pic && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
     {
-      rtx got_reg = gen_rtx (REG, Pmode, GOT_TOC_REGNUM);
+      rtx got_reg = gen_rtx_REG (Pmode, GOT_TOC_REGNUM);
       for ( ; insn != NULL_RTX; insn = NEXT_INSN (insn))
 	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 	    && reg_mentioned_p (got_reg, PATTERN (insn)))
@@ -4925,8 +4925,8 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
       abort ();
 
 /* Macros to shorten the code expansions below.  */
-#define MEM_DEREF(addr) gen_rtx (MEM, pmode, memory_address (pmode, addr))
-#define MEM_PLUS(addr,offset) gen_rtx (MEM, pmode, memory_address (pmode, plus_constant (addr, offset)))
+#define MEM_DEREF(addr) gen_rtx_MEM (pmode, memory_address (pmode, addr))
+#define MEM_PLUS(addr,offset) gen_rtx_MEM (pmode, memory_address (pmode, plus_constant (addr, offset)))
 
     /* Under AIX, just build the 3 word function descriptor */
     case ABI_AIX:
@@ -4945,7 +4945,7 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
     case ABI_V4:
     case ABI_SOLARIS:
     case ABI_AIX_NODESC:
-      emit_library_call (gen_rtx (SYMBOL_REF, SImode, "__trampoline_setup"),
+      emit_library_call (gen_rtx_SYMBOL_REF (SImode, "__trampoline_setup"),
 			 FALSE, VOIDmode, 4,
 			 addr, pmode,
 			 GEN_INT (rs6000_trampoline_size ()), SImode,
@@ -4962,7 +4962,7 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 	rtx fn_reg = gen_reg_rtx (pmode);
 	rtx toc_reg = gen_reg_rtx (pmode);
 
-	emit_move_insn (tramp_reg, gen_rtx (SYMBOL_REF, pmode, "..LTRAMP1..0"));
+	emit_move_insn (tramp_reg, gen_rtx_SYMBOL_REF (pmode, "..LTRAMP1..0"));
 	addr = force_reg (pmode, addr);
 	emit_move_insn (fn_reg, MEM_DEREF (fnaddr));
 	emit_move_insn (toc_reg, MEM_PLUS (fnaddr, regsize));
@@ -4970,7 +4970,7 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 	emit_move_insn (MEM_PLUS (addr, regsize), addr);
 	emit_move_insn (MEM_PLUS (addr, 2*regsize), fn_reg);
 	emit_move_insn (MEM_PLUS (addr, 3*regsize), ctx_reg);
-	emit_move_insn (MEM_PLUS (addr, 4*regsize), gen_rtx (REG, pmode, 2));
+	emit_move_insn (MEM_PLUS (addr, 4*regsize), gen_rtx_REG (pmode, 2));
       }
       break;
     }
@@ -5107,8 +5107,8 @@ rs6000_dll_import_ref (call_ref)
   strcat (p, call_name);
   node = get_identifier (p);
 
-  reg1 = force_reg (Pmode, gen_rtx (SYMBOL_REF, VOIDmode, IDENTIFIER_POINTER (node)));
-  emit_move_insn (reg2, gen_rtx (MEM, Pmode, reg1));
+  reg1 = force_reg (Pmode, gen_rtx_SYMBOL_REF (VOIDmode, IDENTIFIER_POINTER (node)));
+  emit_move_insn (reg2, gen_rtx_MEM (Pmode, reg1));
 
   return reg2;
 }
@@ -5132,7 +5132,7 @@ rs6000_longcall_ref (call_ref)
 	call_name++;
 
       node = get_identifier (call_name);
-      call_ref = gen_rtx (SYMBOL_REF, VOIDmode, IDENTIFIER_POINTER (node));
+      call_ref = gen_rtx_SYMBOL_REF (VOIDmode, IDENTIFIER_POINTER (node));
     }
 
   return force_reg (Pmode, call_ref);
