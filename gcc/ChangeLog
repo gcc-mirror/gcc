@@ -1,3 +1,10 @@
+2005-01-20  David Edelsohn  <edelsohn@gnu.org>
+            Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/19491
+	* config/rs6000/rs6000.c (rs6000_va_start): Saturate n_gpr at
+	maximum number of GPRs.  Saturate n_fpr at maximum number of FPRs.
+
 2005-01-22  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/rs6000/rtems.h: Update copyright.

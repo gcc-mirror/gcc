@@ -5995,8 +5995,10 @@ rs6000_va_start (tree valist, rtx nextarg)
 
   /* Count number of gp and fp argument registers used.  */
   words = current_function_args_info.words;
-  n_gpr = current_function_args_info.sysv_gregno - GP_ARG_MIN_REG;
-  n_fpr = current_function_args_info.fregno - FP_ARG_MIN_REG;
+  n_gpr = MIN (current_function_args_info.sysv_gregno - GP_ARG_MIN_REG,
+	       GP_ARG_NUM_REG);
+  n_fpr = MIN (current_function_args_info.fregno - FP_ARG_MIN_REG,
+	       FP_ARG_NUM_REG);
 
   if (TARGET_DEBUG_ARG)
     fprintf (stderr, "va_start: words = "HOST_WIDE_INT_PRINT_DEC", n_gpr = "
