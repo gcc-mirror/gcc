@@ -1,3 +1,12 @@
+2002-07-25  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* c-common.c (c_sizeof_or_alignof_type): Take a third argument for
+	complaining. 
+	* c-common.h (c_sizeof): Adjust definition.
+	(c_alignof): Likewise.
+	* c-tree.h (c_sizeof_nowarn): Now macro.
+	* c-typeck.c (c_sizeof_nowarn): Remove definition.
+
 2002-07-25  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-decl.c (c_decode_option): No need to handle switches

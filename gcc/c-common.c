@@ -2602,11 +2602,14 @@ c_common_get_alias_set (t)
 }
 
 /* Compute the value of 'sizeof (TYPE)' or '__alignof__ (TYPE)', where the
-   second parameter indicates which OPERATOR is being applied.  */
+   second parameter indicates which OPERATOR is being applied.  The COMPLAIN
+   flag controls whether we should diagnose possibly ill-formed
+   constructs or not.  */
 tree
-c_sizeof_or_alignof_type (type, op)
+c_sizeof_or_alignof_type (type, op, complain)
      tree type;
      enum tree_code op;
+     int complain;
 {
   const char *op_name;
   tree value = NULL;
@@ -2619,7 +2622,7 @@ c_sizeof_or_alignof_type (type, op)
     {
       if (op == SIZEOF_EXPR)
 	{
-	  if (pedantic || warn_pointer_arith)
+	  if (complain && (pedantic || warn_pointer_arith))
 	    pedwarn ("invalid application of `sizeof' to a function type");
 	  value = size_one_node;
 	}
@@ -2628,13 +2631,15 @@ c_sizeof_or_alignof_type (type, op)
     }
   else if (type_code == VOID_TYPE || type_code == ERROR_MARK)
     {
-      if (type_code == VOID_TYPE && (pedantic || warn_pointer_arith))
+      if (type_code == VOID_TYPE 
+	  && complain && (pedantic || warn_pointer_arith))
 	pedwarn ("invalid application of `%s' to a void type", op_name);
       value = size_one_node;
     }
   else if (!COMPLETE_TYPE_P (type))
     {
-      error ("invalid application of `%s' to an incomplete type", op_name);
+      if (complain)
+	error ("invalid application of `%s' to an incomplete type", op_name);
       value = size_zero_node;
     }
   else

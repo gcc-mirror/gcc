@@ -1,3 +1,15 @@
+2002-07-25  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* cp-tree.h (cxx_sizeof_nowarn): Now a macro.
+	(cxx_sizeof_or_alignof_type): Take a third argument.
+	(cxx_sizeof): Adjust definition.
+	(cxx_alignof): Likewise.
+	* init.c (build_delete): Use cxx_sizeof_nowarn to reflect reality.
+	* typeck.c (cxx_sizeof_or_alignof_type): Take a third argument for
+	complaining.
+	(c_sizeof_nowarn): Remove definition.
+	(build_unary_op): Use cxx_sizeof_nowarn.
+
 2002-07-24  Geoffrey Keating  <geoffk@redhat.com>
 
 	* tree.c (cp_build_qualified_type_real): When copying
