@@ -709,6 +709,7 @@ extern struct rtx_def *mn10300_builtin_saveregs ();
    Do not alter them if the instruction would not alter the cc's.  */
 
 #define CC_OVERFLOW_UNUSABLE 0x200
+#define CC_NO_CARRY CC_NO_OVERFLOW
 #define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc(EXP, INSN)
 
 /* Compute the cost of computing a constant rtl expression RTX
