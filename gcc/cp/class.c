@@ -210,6 +210,7 @@ static bool contains_empty_class_p (tree);
 static tree dfs_base_derived_from (tree, void *);
 static bool base_derived_from (tree, tree);
 static int empty_base_at_nonzero_offset_p (tree, tree, splay_tree);
+static tree end_of_base (tree);
 
 /* Macros for dfs walking during vtt construction. See
    dfs_ctor_vtable_bases_queue_p, dfs_build_secondary_vptr_vtt_inits
@@ -4699,6 +4700,25 @@ layout_virtual_bases (record_layout_info rli, splay_tree offsets)
 }
 
 /* Returns the offset of the byte just past the end of the base class
+   BINFO.  */
+
+static tree
+end_of_base (tree binfo)
+{
+  tree size;
+
+  if (is_empty_class (BINFO_TYPE (binfo)))
+    /* An empty class has zero CLASSTYPE_SIZE_UNIT, but we need to
+       allocate some space for it. It cannot have virtual bases, so
+       TYPE_SIZE_UNIT is fine.  */
+    size = TYPE_SIZE_UNIT (BINFO_TYPE (binfo));
+  else
+    size = CLASSTYPE_SIZE_UNIT (BINFO_TYPE (binfo));
+
+  return size_binop (PLUS_EXPR, BINFO_OFFSET (binfo), size);
+}
+
+/* Returns the offset of the byte just past the end of the base class
    with the highest offset in T.  If INCLUDE_VIRTUALS_P is zero, then
    only non-virtual bases are included.  */
 
@@ -4708,34 +4728,34 @@ end_of_class (t, include_virtuals_p)
      int include_virtuals_p;
 {
   tree result = size_zero_node;
+  tree binfo;
+  tree offset;
   int i;
 
   for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
     {
-      tree base_binfo;
-      tree offset;
-      tree size;
-
-      base_binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
+      binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
 
       if (!include_virtuals_p
-	  && TREE_VIA_VIRTUAL (base_binfo) 
-	  && !BINFO_PRIMARY_P (base_binfo))
+	  && TREE_VIA_VIRTUAL (binfo) 
+	  && !BINFO_PRIMARY_P (binfo))
 	continue;
 
-      if (is_empty_class (BINFO_TYPE (base_binfo)))
-	/* An empty class has zero CLASSTYPE_SIZE_UNIT, but we need to
-	   allocate some space for it. It cannot have virtual bases,
-	   so TYPE_SIZE_UNIT is fine.  */
-	size = TYPE_SIZE_UNIT (BINFO_TYPE (base_binfo));
-      else
-	size = CLASSTYPE_SIZE_UNIT (BINFO_TYPE (base_binfo));
-      offset = size_binop (PLUS_EXPR, 
-			   BINFO_OFFSET (base_binfo),
-			   size);
+      offset = end_of_base (binfo);
       if (INT_CST_LT_UNSIGNED (result, offset))
 	result = offset;
     }
+
+  /* G++ 3.2 did not check indirect virtual bases.  */
+  if (abi_version_at_least (2) && include_virtuals_p)
+    for (binfo = CLASSTYPE_VBASECLASSES (t); 
+	 binfo; 
+	 binfo = TREE_CHAIN (binfo))
+      {
+	offset = end_of_base (TREE_VALUE (binfo));
+	if (INT_CST_LT_UNSIGNED (result, offset))
+	  result = offset;
+      }
 
   return result;
 }

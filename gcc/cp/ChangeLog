@@ -1,5 +1,8 @@
 2002-10-24  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (end_of_base): New method.
+	(end_of_class): Use it.  Check indirect virtual bases.
+
 	* class.c (check_field_decls): Fix typo.
 
 2002-10-23  Mark Mitchell  <mark@codesourcery.com>
