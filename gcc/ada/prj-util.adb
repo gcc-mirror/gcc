@@ -190,7 +190,8 @@ package body Prj.Util is
    function Value_Of
      (Variable : Variable_Value;
       Default  : String)
-      return     String is
+      return     String
+   is
    begin
       if Variable.Kind /= Single
         or else Variable.Default
