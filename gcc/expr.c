@@ -3070,14 +3070,18 @@ store_constructor (exp, target)
 	  bitsize = GET_MODE_BITSIZE (mode);
 	  unsignedp = TREE_UNSIGNED (elttype);
 
-	  if (index != 0 && TREE_CODE (index) != INTEGER_CST)
+	  if ((index != 0 && TREE_CODE (index) != INTEGER_CST)
+	      || TREE_CODE (TYPE_SIZE (elttype)) != INTEGER_CST)
 	    {
-	      /* We don't currently allow variable indices in a
-		 C initializer, but let's try here to support them.  */
 	      rtx pos_rtx, addr, xtarget;
 	      tree position;
 
-	      position = size_binop (MULT_EXPR, index, TYPE_SIZE (elttype));
+	      if (index == 0)
+		index = size_int (i);
+
+	      position = size_binop (EXACT_DIV_EXPR, TYPE_SIZE (elttype),
+				     size_int (BITS_PER_UNIT));
+	      position = size_binop (MULT_EXPR, index, position);
 	      pos_rtx = expand_expr (position, 0, VOIDmode, 0);
 	      addr = gen_rtx (PLUS, Pmode, XEXP (target, 0), pos_rtx);
 	      xtarget = change_address (target, mode, addr);
