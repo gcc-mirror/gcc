@@ -198,6 +198,9 @@ static void  choose_temp_base ();
 
 generic *xcalloc ();
 generic *xmalloc ();
+
+extern char *index ();
+extern char *rindex ();
 
 char *
 my_strerror (e)
@@ -483,7 +486,7 @@ main (argc, argv)
 
   if (prefix == (char *)0)
     {
-      p = strrchr (argv[0], '/');
+      p = rindex (argv[0], '/');
       if (p != (char *)0)
 	{
 	  prefix = argv[0];
@@ -676,7 +679,7 @@ main (argc, argv)
 	    }
 
       else if (first_file
-	       && (p = strrchr (arg, '.')) != (char *)0
+	       && (p = rindex (arg, '.')) != (char *)0
 	       && strcmp (p, ".o") == 0)
 	{
 	  first_file = 0;
