@@ -30,9 +30,12 @@ $section = "";
 @icstack = ();
 @endwstack = ();
 @skstack = ();
+@instack = ();
 $shift = "";
 %defs = ();
 $fnno = 1;
+$inf = "";
+$ibase = "";
 
 while ($_ = shift) {
     if (/^-D(.*)$/) {
@@ -58,14 +61,19 @@ while ($_ = shift) {
 }
 
 if (defined $in) {
-    open(STDIN, $in) or die "opening \"$in\": $!\n";
+    $inf = gensym();
+    open($inf, "<$in") or die "opening \"$in\": $!\n";
+    $ibase = $1 if $in =~ m|^(.+)/[^/]+$|;
+} else {
+    $inf = \*STDIN;
 }
+
 if (defined $out) {
     open(STDOUT, ">$out") or die "opening \"$out\": $!\n";
 }
 
-while(<STDIN>)
-{
+while(defined $inf) {
+while(<$inf>) {
     # Certain commands are discarded without further processing.
     /^\@(?:
 	 [a-z]+index		# @*index: useful only in complete manual
@@ -109,8 +117,14 @@ while(<STDIN>)
     };
 
     # handle variables
-    /^\@set\s+([a-zA-Z0-9_-]+)\s*(.*)$/ and $defs{$1} = $2, next;
-    /^\@clear\s+([a-zA-Z0-9_-]+)/ and delete $defs{$1}, next;
+    /^\@set\s+([a-zA-Z0-9_-]+)\s*(.*)$/ and do {
+	$defs{$1} = $2;
+	next;
+    };
+    /^\@clear\s+([a-zA-Z0-9_-]+)/ and do {
+	delete $defs{$1};
+	next;
+    };
 
     next unless $output;
 
@@ -210,8 +224,21 @@ while(<STDIN>)
 
     # Single line command handlers.
 
-    /^\@(?:section|unnumbered|unnumberedsec|center)\s+(.+)$/ and $_ = "\n=head2 $1\n";
-    /^\@subsection\s+(.+)$/ and $_ = "\n=head3 $1\n";
+    /^\@include\s+(.+)$/ and do {
+	push @instack, $inf;
+	$inf = gensym();
+
+	# Try cwd and $ibase.
+	open($inf, "<" . $1) 
+	    or open($inf, "<" . $ibase . "/" . $1)
+		or die "cannot open $1 or $ibase/$1: $!\n";
+	next;
+    };
+
+    /^\@(?:section|unnumbered|unnumberedsec|center)\s+(.+)$/
+	and $_ = "\n=head2 $1\n";
+    /^\@subsection\s+(.+)$/
+	and $_ = "\n=head3 $1\n";
 
     # Block command handlers:
     /^\@itemize\s+(\@[a-z]+|\*|-)/ and do {
@@ -234,16 +261,16 @@ while(<STDIN>)
 	$endw = "enumerate";
     };
 
-    /^\@table\s+(\@[a-z]+)/ and do {
+    /^\@([fv]?table)\s+(\@[a-z]+)/ and do {
 	push @endwstack, $endw;
 	push @icstack, $ic;
-	$ic = $1;
+	$endw = $1;
+	$ic = $2;
 	$ic =~ s/\@(?:samp|strong|key|gcctabopt|env)/B/;
 	$ic =~ s/\@(?:code|kbd)/C/;
 	$ic =~ s/\@(?:dfn|var|emph|cite|i)/I/;
 	$ic =~ s/\@(?:file)/F/;
 	$_ = "\n=over 4\n";
-	$endw = "table";
     };
 
     /^\@((?:small)?example|display)/ and do {
@@ -265,6 +292,10 @@ while(<STDIN>)
     };
 
     $section .= $shift.$_."\n";
+}
+# End of current file.
+close($inf);
+$inf = pop @instack;
 }
 
 die "No filename or title\n" unless defined $fn && defined $tl;
@@ -381,4 +412,16 @@ sub add_footnote
     $sects{FOOTNOTES} .= "=item $fnno.\n\n"; $fnno++;
     $sects{FOOTNOTES} .= $_[0];
     $sects{FOOTNOTES} .= "\n\n";
+}
+
+# stolen from Symbol.pm
+{
+    my $genseq = 0;
+    sub gensym
+    {
+	my $name = "GEN" . $genseq++;
+	my $ref = \*{$name};
+	delete $::{$name};
+	return $ref;
+    }
 }

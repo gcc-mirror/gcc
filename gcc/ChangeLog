@@ -1,3 +1,8 @@
+2002-03-11  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in: Give texi2pod its input file as a command line
+	argument, not on stdin.
+
 2002-03-11  Dan Nicolaescu  <dann@ics.uci.edu>
 	    Daniel Berlin  <dan@dberlin.org>
 
