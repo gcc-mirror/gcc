@@ -703,7 +703,7 @@ enum cpp_ttype
 _cpp_lex_token (pfile)
      cpp_reader *pfile;
 {
-  register int c, c2, c3;
+  register int c, c2;
   enum cpp_ttype token;
 
  get_next:
@@ -744,29 +744,43 @@ _cpp_lex_token (pfile)
 	}
 
     case '#':
+      CPP_PUTC (pfile, c);
+
+    hash:
       if (pfile->parsing_if_directive)
 	{
 	  if (_cpp_parse_assertion (pfile))
 	    return CPP_ASSERTION;
-	  goto randomchar;
+	  return CPP_OTHER;
 	}
 
       if (pfile->parsing_define_directive && ! CPP_TRADITIONAL (pfile))
 	{
-	  CPP_RESERVE (pfile, 3);
-	  CPP_PUTC_Q (pfile, '#');
-	  CPP_NUL_TERMINATE_Q (pfile);
-	  if (PEEKC () != '#')
+	  c2 = PEEKC ();
+	  if (c2 == '#')
+	    {
+	      FORWARD (1);
+	      CPP_PUTC (pfile, c2);
+	    }
+	  else if (c2 == '%' && PEEKN (1) == ':')
+	    {
+	      /* Digraph: "%:" == "#".  */
+	      FORWARD (1);
+	      CPP_RESERVE (pfile, 2);
+	      CPP_PUTC_Q (pfile, c2);
+	      CPP_PUTC_Q (pfile, GETC ());
+	    }
+	  else
 	    return CPP_STRINGIZE;
-	      
-	  FORWARD (1);
-	  CPP_PUTC_Q (pfile, '#');
-	  CPP_NUL_TERMINATE_Q (pfile);
+
 	  return CPP_TOKPASTE;
 	}
 
       if (!pfile->only_seen_white)
-	goto randomchar;
+	return CPP_OTHER;
+
+      /* Remove the "#" or "%:" from the token buffer.  */
+      CPP_ADJUST_WRITTEN (pfile, (c == '#' ? -1 : -2));
       return CPP_DIRECTIVE;
 
     case '\"':
@@ -780,7 +794,10 @@ _cpp_lex_token (pfile)
       goto letter;
 
     case ':':
-      if (CPP_OPTION (pfile, cplusplus) && PEEKC () == ':')
+      c2 = PEEKC ();
+      /* Digraph: ":>" == "]".  */
+      if (c2 == '>'
+	  || (c2 == ':' && CPP_OPTION (pfile, cplusplus)))
 	goto op2;
       goto randomchar;
 
@@ -792,9 +809,29 @@ _cpp_lex_token (pfile)
 	goto op2;
       goto randomchar;
 
+    case '%':
+      /* Digraphs: "%:" == "#", "%>" == "}".  */
+      c2 = PEEKC ();
+      if (c2 == ':')
+	{
+	  FORWARD (1);
+	  CPP_RESERVE (pfile, 2);
+	  CPP_PUTC_Q (pfile, c);
+	  CPP_PUTC_Q (pfile, c2);
+	  goto hash;
+	}
+      else if (c2 == '>')
+	{
+	  FORWARD (1);
+	  CPP_RESERVE (pfile, 2);
+	  CPP_PUTC_Q (pfile, c);
+	  CPP_PUTC_Q (pfile, c2);
+	  return CPP_RBRACE;
+	}
+      /* else fall through */
+
     case '*':
     case '!':
-    case '%':
     case '=':
     case '^':
       if (PEEKC () == '=')
@@ -822,7 +859,6 @@ _cpp_lex_token (pfile)
 	      CPP_PUTC_Q (pfile, c);
 	      CPP_PUTC_Q (pfile, GETC ());
 	      CPP_PUTC_Q (pfile, GETC ());
-	      CPP_NUL_TERMINATE_Q (pfile);
 	      return token;
 	    }
 	  goto op2;
@@ -865,6 +901,18 @@ _cpp_lex_token (pfile)
 	    }
 	  return CPP_STRING;
 	}
+      /* Digraphs: "<%" == "{", "<:" == "[".  */
+      c2 = PEEKC ();
+      if (c2 == '%')
+	{
+	  FORWARD (1);
+	  CPP_RESERVE (pfile, 2);
+	  CPP_PUTC_Q (pfile, c);
+	  CPP_PUTC_Q (pfile, c2);
+	  return CPP_LBRACE;
+	}
+      else if (c2 == ':')
+	goto op2;
       /* else fall through */
     case '>':
       c2 = PEEKC ();
@@ -874,21 +922,18 @@ _cpp_lex_token (pfile)
       if (c2 != c && (!CPP_OPTION (pfile, cplusplus) || c2 != '?'))
 	goto randomchar;
       FORWARD(1);
-      CPP_RESERVE (pfile, 4);
-      CPP_PUTC (pfile, c);
-      CPP_PUTC (pfile, c2);
-      c3 = PEEKC ();
-      if (c3 == '=')
+      CPP_RESERVE (pfile, 3);
+      CPP_PUTC_Q (pfile, c);
+      CPP_PUTC_Q (pfile, c2);
+      if (PEEKC () == '=')
 	CPP_PUTC_Q (pfile, GETC ());
-      CPP_NUL_TERMINATE_Q (pfile);
       return CPP_OTHER;
 
     case '.':
       c2 = PEEKC ();
-      if (ISDIGIT(c2))
+      if (ISDIGIT (c2))
 	{
-	  CPP_RESERVE(pfile, 2);
-	  CPP_PUTC_Q (pfile, '.');
+	  CPP_PUTC (pfile, c);
 	  c = GETC ();
 	  goto number;
 	}
@@ -899,23 +944,20 @@ _cpp_lex_token (pfile)
 
       if (c2 == '.' && PEEKN(1) == '.')
 	{
-	  CPP_RESERVE(pfile, 4);
+	  CPP_RESERVE (pfile, 3);
 	  CPP_PUTC_Q (pfile, '.');
 	  CPP_PUTC_Q (pfile, '.');
 	  CPP_PUTC_Q (pfile, '.');
 	  FORWARD (2);
-	  CPP_NUL_TERMINATE_Q (pfile);
 	  return CPP_3DOTS;
 	}
       goto randomchar;
 
     op2:
-      token = CPP_OTHER;
-      CPP_RESERVE(pfile, 3);
+      CPP_RESERVE (pfile, 2);
       CPP_PUTC_Q (pfile, c);
       CPP_PUTC_Q (pfile, GETC ());
-      CPP_NUL_TERMINATE_Q (pfile);
-      return token;
+      return CPP_OTHER;
 
     case 'L':
       c2 = PEEKC ();

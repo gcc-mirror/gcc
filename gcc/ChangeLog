@@ -1,3 +1,8 @@
+2000-04-13  Jason Merrill  <jason@casey.cygnus.com>
+
+	* cpplex.c (_cpp_lex_token): Handle digraphs.  Don't null-terminate
+	the token except for numbers and identifiers.
+
 Thu Apr 13 00:09:16 EDT 2000  John Wehle  (john@feith.com)
 
 	* i386.c (ix86_expand_binary_operator,
