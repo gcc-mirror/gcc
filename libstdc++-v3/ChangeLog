@@ -1,3 +1,9 @@
+2004-09-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/cpp_type_traits.h: Rename __is_trivially_copyable
+	to __is_scalar, more clear and consistent with "tr1" naming.
+	* include/bits/stl_algobase.h: Update consistently throughout.
+
 2004-09-13  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/11722
