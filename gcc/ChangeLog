@@ -1,3 +1,24 @@
+2002-11-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/rs6000/rs6000.c (altivec_init_builtins): Make the
+	pointer argument in the prototypes of the following builtins
+	be (const TYPE *) rather than (TYPE *):
+	 + __builtin_altivec_ld_internal_4sf
+	 + __builtin_altivec_ld_internal_4si
+	 + __builtin_altivec_ld_internal_8hi
+	 + __builtin_altivec_ld_internal_16qi
+	 + __builtin_altivec_lvsl
+	 + __builtin_altivec_lvsr
+	 + __builtin_altivec_lvebx
+	 + __builtin_altivec_lvehx
+	 + __builtin_altivec_lvewx
+	 + __builtin_altivec_lvxl
+	 + __builtin_altivec_lvx
+	 + __builtin_altivec_dst
+	 + __builtin_altivec_dstt
+	 + __builtin_altivec_dstst
+	 + __builtin_altivec_dststt
+
 2002-11-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* except.c (default_exception_section): Move variable into the
@@ -21,8 +42,8 @@
 
 2002-11-27  Jim Wilson  <wilson@redhat.com>
 
-        * config/rs6000/spe.md (spu_evsplatfi, spu_evsplati): Swap operands
-        in output template.
+	* config/rs6000/spe.md (spu_evsplatfi, spu_evsplati): Swap operands
+	in output template.
 
 2002-11-27  Casper S. Hornstrup  <chorns@users.sourceforge.net>
 
@@ -55,11 +76,11 @@ Wed Nov 27 14:45:46 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* libgcc-std.ver (_Unwind_FindEnclosingFunction): Rename from
 	_Unwind_Find_Enclosing_Function, export @@GCC_3.3.
 	* unwind.h (_Unwind_FindEnclosingFunction): Add.
-	
+
 2002-11-26  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* config/s390/s390.c (390_output_constant_pool): Set alignment 
-	before label in 64 bit mode, behind otherwise.  
+	* config/s390/s390.c (390_output_constant_pool): Set alignment
+	before label in 64 bit mode, behind otherwise.
 
 2002-11-26  Richard Henderson  <rth@redhat.com>
 
@@ -91,7 +112,7 @@ Wed Nov 27 14:45:46 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* langhooks-def.h: Update for renames.
 	* target-def.h: Likewise.
 	* tree.c (default_comp_type_attributes,
-	default_set_default_type_attributes, default_insert_attributes, 
+	default_set_default_type_attributes, default_insert_attributes,
 	default_function_attribute_inlinable_p,
 	default_ms_bitfield_layout_p): Remove.
 	* tree.h: Update.
@@ -137,7 +158,7 @@ Wed Nov 27 14:45:46 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/rs6000/rs6000.h (RS6000_CPU_CPP_ENDIAN_BUILTINS): New.
 	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Use
-	RS6000_CPU_CPP_ENDIAN_BUILTINS.         
+	RS6000_CPU_CPP_ENDIAN_BUILTINS.
 	* config/rs6000/netbsd.h (RS6000_CPU_CPP_ENDIAN_BUILTINS): Redefine.
 
 2002-11-26  Hartmut Penner  <hpenner@de.ibm.com>
@@ -153,9 +174,9 @@ Wed Nov 27 14:45:46 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(s390_emit_prologue, s390_emit_epilogue): Likewise.
 	(s390_init_machine_status): New function.
 	(override_options): call s390_init_machine_status.
-	* config/s390/s390-protos.h (s390_output_constant_pool): Changed 
+	* config/s390/s390-protos.h (s390_output_constant_pool): Changed
 	prototype.
-	
+
 2002-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* varasm.c (output_constant_pool): For pool constants in mergeable
@@ -309,7 +330,7 @@ Wed Nov 27 14:45:46 CET 2002  Jan Hubicka  <jh@suse.cz>
 2002-11-24  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/alpha/netbsd.h (CPP_SUBTARGET_SPEC): Just use
-	NETBSD_CPP_SPEC directly. 
+	NETBSD_CPP_SPEC directly.
 	(SUBTARGET_EXTRA_SPECS): Remove netbsd_cpp_spec.  Add
 	netbsd_endfile_spec.
 	(ENDFILE_SPEC): Use %(netbsd_endfile_spec).
@@ -384,7 +405,7 @@ Thu Nov 21 23:52:04 CET 2002  Jan Hubicka  <jH@suse.cz>
 
 	* i386-protos.h (x86_64_sign_extended_value): Fix prototype.
 	* i386.c (x86_64_general_operand, x86_64_szext_general_operand,
-	x86_64_nonmemory_operand, x86_64_movabs_operand, 
+	x86_64_nonmemory_operand, x86_64_movabs_operand,
 	x86_64_szext_nonmemory_operand, x86_64_immediate_operand,
 	ix86_expand_int_movcc): Update call of x86_64_sign_extended_value.
 	(local_symbolic_operand): Do not care the 64bit limits.
@@ -442,8 +463,8 @@ Thu Nov 21 23:52:04 CET 2002  Jan Hubicka  <jH@suse.cz>
 
 	* config/s390/libgcc-libc.ver: Add multilib support.
 	* config/s390/linux.h (MULTILIB_DEFAULT): Define.
-	* config/s390/t-linux64 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES, 
-	MULTILIB_OSDIRNAMES, LIBGCC, INSTALL_LIBGCC, 
+	* config/s390/t-linux64 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,
+	MULTILIB_OSDIRNAMES, LIBGCC, INSTALL_LIBGCC,
 	EXTRA_MULTILIB_PARTS): Define.
 
 2002-11-21  Richard Earnshaw  <rearnsha@arm.com>
