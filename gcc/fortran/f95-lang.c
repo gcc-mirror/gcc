@@ -863,6 +863,8 @@ gfc_init_builtin_functions (void)
   ftype = build_function_type (pvoid_type_node, tmp);
   gfc_define_builtin ("__builtin_alloca", ftype, BUILT_IN_ALLOCA,
 		      "alloca", false);
+
+  targetm.init_builtins ();
 }
 
 #undef DEFINE_MATH_BUILTIN_C
