@@ -393,14 +393,6 @@ GLIBCPP_3.2.3 {
     # __basic_file::showmanyc_helper
     _ZNSt12__basic_fileIcE16showmanyc_helperEv;
 
-    # vtable
-    _ZTVSt19__locale_cache_base;
-    _ZTVSt14__locale_cacheI[cw]E;
-
-    # typeinfo    
-    _ZTSSt19__locale_cache_base;
-    _ZTISt14__locale_cacheI[cw]E;
-
 } GLIBCPP_3.2.2;
 
 

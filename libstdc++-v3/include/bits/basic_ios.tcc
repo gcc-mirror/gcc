@@ -144,12 +144,11 @@ namespace std
 
   template<typename _CharT, typename _Traits>
     void
-    basic_ios<_CharT, _Traits>::init(basic_streambuf<_CharT, _Traits>* __sb,
-				     __locale_cache<_CharT>* __cache)
+    basic_ios<_CharT, _Traits>::init(basic_streambuf<_CharT, _Traits>* __sb)
     {
       // NB: This may be called more than once on the same object.
       ios_base::_M_init();
-      _M_cache_locale(_M_ios_locale, __cache);
+      _M_cache_locale(_M_ios_locale);
       _M_tie = 0;
 
       // NB: The 27.4.4.1 Postconditions Table specifies requirements
@@ -174,8 +173,7 @@ namespace std
 
   template<typename _CharT, typename _Traits>
     void
-    basic_ios<_CharT, _Traits>::_M_cache_locale(const locale& __loc,
-						__locale_cache<_CharT>* __cache)
+    basic_ios<_CharT, _Traits>::_M_cache_locale(const locale& __loc)
     {
       if (__builtin_expect(has_facet<__ctype_type>(__loc), true))
 	_M_fctype = &use_facet<__ctype_type>(__loc);
@@ -189,21 +187,6 @@ namespace std
 	_M_fnumget = &use_facet<__numget_type>(__loc);
       else
 	_M_fnumget = 0;
-      typedef __locale_cache<_CharT> __cache_t;
-      if (!pword(0)) {
-	// We store the cache at pword(0).  iword(0) is set to 1 to
-	// indicate that this is a static storage cache that shouldn't
-	// be deleted.
-	if (__cache)
-	  {
-	    pword(0) = auto_ptr<__cache_t>(new (__cache) __cache_t()).release();
-	    iword(0) = 1;		// so we don't try to clobber static cache
-	  }
-	else
-	  pword(0) = auto_ptr<__cache_t>(new __cache_t()).release();
-	register_callback(__cache_t::_S_callback, 0);
-      }
-      static_cast<__cache_t&>(_M_cache())._M_init(__loc);
     }
 
 #if 1

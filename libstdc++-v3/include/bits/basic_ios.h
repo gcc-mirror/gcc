@@ -425,8 +425,7 @@ namespace std
        *  memory.
       */
       void 
-      init(basic_streambuf<_CharT, _Traits>* __sb,
- 	   __locale_cache<_CharT>* __cache=0);
+      init(basic_streambuf<_CharT, _Traits>* __sb);
 
       bool
       _M_check_facet(const locale::facet* __f) const
@@ -437,7 +436,7 @@ namespace std
       }
 
       void
-      _M_cache_locale(const locale& __loc,__locale_cache<_CharT>* __cache = 0);
+      _M_cache_locale(const locale& __loc);
 
 #if 1
       // XXX GLIBCXX_ABI Deprecated, compatibility only.

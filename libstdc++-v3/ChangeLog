@@ -1,5 +1,27 @@
 2003-05-01  Benjamin Kosnik  <bkoz@redhat.com>
 
+	Revert __locale_cache.
+	* include/bits/locale_facets.tcc (num_put::_M_convert_int): Remove
+	__locale_cache.
+	(num_put::_M_convert_int): Same.
+	(num_put::do_put(bool)): Same.
+	(__locale_cache::_M_init): Same.
+	(__locale_cache::_S_callback): Same.
+	* include/bits/locale_facets.h (__locale_cache_base): Remove.
+	(__locale_cache): Remove.
+	* include/bits/basic_ios.h (basic_ios::init): Remove __locale_cache.
+	(basic_ios::_M_cache_locale): Same.
+	* include/bits/basic_ios.tcc: Same.
+	* include/bits/ios_base.h: Same.
+	(ios_base::_M_cache): Remove.
+	* src/locale-inst.cc: Same.
+	* src/ios.cc: Same.
+	* src/globals.cc: Same.
+
+	* config/linker-map.gnu: Same.
+	
+2003-05-01  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* configure.in (libtool_VERSION): To 5:4:0.
 	* configure: Regenerated.
 
