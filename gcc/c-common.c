@@ -297,27 +297,36 @@ found_attr:;
 	      && TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE)
       {
 	int i;
-	char *specified_name
-	  = IDENTIFIER_POINTER (TREE_VALUE (args));
+	char *specified_name = IDENTIFIER_POINTER (TREE_VALUE (args));
+	enum machine_mode mode = VOIDmode;
+	tree typefm;
 
-	/* Give this decl a type with the specified mode.  */
-	for (i = 0; i < NUM_MACHINE_MODES; i++)
-	  if (!strcmp (specified_name, GET_MODE_NAME (i)))
-	    {
-	      tree typefm
-		= type_for_mode (i, TREE_UNSIGNED (type));
-	      if (typefm != 0)
-		{
-		  TREE_TYPE (decl) = type = typefm;
-		  DECL_SIZE (decl) = 0;
-		  layout_decl (decl, 0);
-		}
-	      else
-		error ("no data type for mode `%s'", specified_name);
-	      break;
-	    }
-	if (i == NUM_MACHINE_MODES)
+	/* Give this decl a type with the specified mode.
+	   First check for the special modes.  */
+	if (! strcmp (specified_name, "byte")
+	    || ! strcmp (specified_name, "__byte__"))
+	  mode = byte_mode;
+	else if (!strcmp (specified_name, "word")
+		 || ! strcmp (specified_name, "__word__"))
+	  mode = word_mode;
+	else if (! strcmp (specified_name, "pointer")
+		 || !strcmp (specified_name, "__pointer__"))
+	  mode = ptr_mode;
+	else
+	  for (i = 0; i < NUM_MACHINE_MODES; i++)
+	    if (!strcmp (specified_name, GET_MODE_NAME (i)))
+	      mode = (enum machine_mode) i;
+
+	if (mode == VOIDmode)
 	  error_with_decl (decl, "unknown machine mode `%s'", specified_name);
+	else if ((typefm = type_for_mode (mode, TREE_UNSIGNED (type))) == 0)
+	  error_with_decl (decl, "no data type for mode `%s'", specified_name);
+	else
+	  {
+	    TREE_TYPE (decl) = type = typefm;
+	    DECL_SIZE (decl) = 0;
+	    layout_decl (decl, 0);
+	  }
       }
     else if ((!strcmp (IDENTIFIER_POINTER (name), "section")
 	      || !strcmp (IDENTIFIER_POINTER (name), "__section__"))
