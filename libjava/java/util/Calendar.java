@@ -376,7 +376,8 @@ public abstract class Calendar implements Serializable, Cloneable
    */
   private static ResourceBundle getBundle(Locale locale) 
   {
-    return ResourceBundle.getBundle(bundleName, locale);
+    return ResourceBundle.getBundle(bundleName, locale,
+      Calendar.class.getClassLoader());
   }
 
   /**
