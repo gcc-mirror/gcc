@@ -1,4 +1,3 @@
-INSTALL=cp
 RANLIB = :
 RANLIB_TEST = false
 CC = rcc

@@ -37,6 +37,4 @@ CLIB=-lc /usr/ucblib/libucb.a
 # CCLIBFLAGS=-Bstatic -dn -g
 # GCC_CFLAGS=-static -g -O2 -B./
 
-INSTALL=cp
-
 FIXINCLUDES=fixinc.svr4
