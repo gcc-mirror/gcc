@@ -68,7 +68,8 @@ namespace __gnu_cxx
        *  @param  size  Optimal or preferred size of internal buffer, in chars.
        *
        *  This constructor associates a file stream buffer with an open
-       *  POSIX file descriptor.
+       *  POSIX file descriptor. The file descriptor will be automatically
+       *  closed when the stdio_filebuf is closed/destroyed.
       */
       stdio_filebuf(int __fd, std::ios_base::openmode __mode,
 		    size_t __size = static_cast<size_t>(BUFSIZ));
@@ -87,8 +88,8 @@ namespace __gnu_cxx
 		    size_t __size = static_cast<size_t>(BUFSIZ));
 
       /**
-       *  Possibly closes the external data stream, in the case of the file
-       *  descriptor constructor and @c del @c == @c true.
+       *  Closes the external data stream if the file descriptor constructor
+       *  was used.
       */
       virtual
       ~stdio_filebuf();
