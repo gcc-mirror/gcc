@@ -1,3 +1,9 @@
+2001-07-18  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/html/27_io/howto.html:  Fix typo.
+	* docs/html/faq/index.html:  Minor updates for 3.0 all around.
+	* docs/html/faq/index.txt:  Regenerated.
+
 2001-07-18  Stephen M. Webb  <stephen@bregmasoft..com>
             Roman Sulzhyk  <roman_sulzhyk@yahoo.com>
 
