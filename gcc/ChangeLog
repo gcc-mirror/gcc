@@ -5,6 +5,9 @@
 
 2004-07-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (expand_expr_real_1, case SWITCH_EXPR): Don't check against
+	bounds if bounds aren't constant.
+
 	* tree-cfg.c (verify_expr): Use CHECK_OP in binary case.
 
 	* function.c, langhooks-def.h, langhooks.h: Move max_size hook
