@@ -335,96 +335,12 @@
    (LAST_ARM_REGNUM 15)
    (CC_REGNUM       24)]
 )
-
-;;---------------------------------------------------------------------------
+
+;; Addition insns.
 
 ;; Note: For DImode insns, there is normally no reason why operands should
 ;; not be in the same register, what we don't want is for something being
 ;; written to partially overlap something that is an input.
-
-;; Split up 64bit addition so that the component insns can schedule
-;; independently.
-(define_split
-  [(set (match_operand:DI          0 "s_register_operand" "")
-	(plus:DI (match_operand:DI 1 "s_register_operand" "")
-		 (match_operand:DI 2 "s_register_operand" "")))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM && reload_completed
-  "
-  [(parallel [(set (reg:CC_C CC_REGNUM)
-		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
-				 (match_dup 1)))
-	      (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))])
-   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
-			       (plus:SI (match_dup 4) (match_dup 5))))]
-  "
-  {
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[4] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-    operands[5] = gen_highpart (SImode, operands[2]);
-    operands[2] = gen_lowpart (SImode, operands[2]);
-  }"
-)
-
-;; The first insn created by this splitter must set the low part of
-;; operand0 as well as the carry bit in the CC register.  The second
-;; insn must compute the sum of the carry bit, the sign extension of
-;; operand 2 from 32 to 64 bits and the high part of operand 1.
-(define_split
-  [(set (match_operand:DI 0 "s_register_operand" "")
-	(plus:DI (sign_extend:DI (match_operand:SI 2 "s_register_operand" ""))
-		 (match_operand:DI 1 "s_register_operand" "")))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM && reload_completed
-  "
-  [(parallel [(set (reg:CC_C CC_REGNUM)
-		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
-				 (match_dup 1)))
-	      (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))])
-   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
-			       (plus:SI (ashiftrt:SI (match_dup 2)
-						     (const_int 31))
-					(match_dup 4))))]
-  "
-  {
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[4] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-    operands[2] = gen_lowpart (SImode, operands[2]);
-  }"
-)
-
-; The first insn created by this splitter must set the low part of
-; operand0 as well as the carry bit in the CC register.  The second
-; insn must compute the sum of the carry bit and the high bits from
-; operand 1
-(define_split
-  [(set (match_operand:DI 0 "s_register_operand" "")
-	(plus:DI (zero_extend:DI (match_operand:SI 2 "s_register_operand" ""))
-		 (match_operand:DI 1 "s_register_operand" "")))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM && reload_completed
-  "
-  [(parallel [(set (reg:CC_C CC_REGNUM)
-		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
-				 (match_dup 1)))
-	      (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))])
-   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
-			       (plus:SI (match_dup 4) (const_int 0))))]
-  "
-  {
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[4] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-    operands[2] = gen_lowpart (SImode, operands[2]);
-  }"
-)
-
-;; Addition insns.
 
 (define_expand "adddi3"
  [(parallel
@@ -455,41 +371,85 @@
   [(set_attr "length" "4")]
 )
 
-(define_insn "*arm_adddi3"
+(define_insn_and_split "*arm_adddi3"
   [(set (match_operand:DI          0 "s_register_operand" "=&r,&r")
 	(plus:DI (match_operand:DI 1 "s_register_operand" "%0, 0")
 		 (match_operand:DI 2 "s_register_operand" "r,  0")))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM
-  "
+  "TARGET_ARM"
   "#"
+  "TARGET_ARM && reload_completed"
+  [(parallel [(set (reg:CC_C CC_REGNUM)
+		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
+				 (match_dup 1)))
+	      (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
+			       (plus:SI (match_dup 4) (match_dup 5))))]
+  "
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[4] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+    operands[5] = gen_highpart (SImode, operands[2]);
+    operands[2] = gen_lowpart (SImode, operands[2]);
+  }"
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]
 )
 
-(define_insn "*adddi_sesidi_di"
+(define_insn_and_split "*adddi_sesidi_di"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(plus:DI (sign_extend:DI
 		  (match_operand:SI 2 "s_register_operand" "r,r"))
 		 (match_operand:DI 1 "s_register_operand" "r,0")))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM
-  "
+  "TARGET_ARM"
   "#"
+  "TARGET_ARM && reload_completed"
+  [(parallel [(set (reg:CC_C CC_REGNUM)
+		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
+				 (match_dup 1)))
+	      (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
+			       (plus:SI (ashiftrt:SI (match_dup 2)
+						     (const_int 31))
+					(match_dup 4))))]
+  "
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[4] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+    operands[2] = gen_lowpart (SImode, operands[2]);
+  }"
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]
 )
 
-(define_insn "*adddi_zesidi_di"
+(define_insn_and_split "*adddi_zesidi_di"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(plus:DI (zero_extend:DI
 		  (match_operand:SI 2 "s_register_operand" "r,r"))
 		 (match_operand:DI 1 "s_register_operand" "r,0")))
-   (clobber (reg:CC CC_REGNUM))
-  ]
-  "TARGET_ARM
-  "
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_ARM"
   "#"
+  "TARGET_ARM && reload_completed"
+  [(parallel [(set (reg:CC_C CC_REGNUM)
+		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
+				 (match_dup 1)))
+	      (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 3) (plus:SI (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))
+			       (plus:SI (match_dup 4) (const_int 0))))]
+  "
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[4] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+    operands[2] = gen_lowpart (SImode, operands[2]);
+  }"
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]
 )
@@ -510,29 +470,41 @@
   "
 )
 
-(define_split
-  [(set (match_operand:SI          0 "s_register_operand" "")
+; If there is a scratch available, this will be faster than synthesising the
+; addition.
+(define_peephole2
+  [(match_scratch:SI 3 "r")
+   (set (match_operand:SI          0 "s_register_operand" "")
 	(plus:SI (match_operand:SI 1 "s_register_operand" "")
 		 (match_operand:SI 2 "const_int_operand"  "")))]
   "TARGET_ARM &&
-  (!(const_ok_for_arm (INTVAL (operands[2]))
-   || const_ok_for_arm (-INTVAL (operands[2]))))"
-  [(clobber (const_int 0))]
-  "
-  arm_split_constant (PLUS, SImode, INTVAL (operands[2]), operands[0],
-		      operands[1], 0);
-  DONE;
-")
+   !(const_ok_for_arm (INTVAL (operands[2]))
+     || const_ok_for_arm (-INTVAL (operands[2])))
+    && const_ok_for_arm (~INTVAL (operands[2]))"
+  [(set (match_dup 3) (match_dup 2))
+   (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 3)))]
+  ""
+)
 
-(define_insn "*arm_addsi3"
+(define_insn_and_split "*arm_addsi3"
   [(set (match_operand:SI          0 "s_register_operand" "=r,r,r")
-	(plus:SI (match_operand:SI 1 "s_register_operand" "r, r,r")
+	(plus:SI (match_operand:SI 1 "s_register_operand" "%r,r,r")
 		 (match_operand:SI 2 "reg_or_int_operand" "rI,L,?n")))]
   "TARGET_ARM"
   "@
    add%?\\t%0, %1, %2
    sub%?\\t%0, %1, #%n2
    #"
+  "TARGET_ARM &&
+   GET_CODE (operands[2]) == CONST_INT
+   && !(const_ok_for_arm (INTVAL (operands[2]))
+        || const_ok_for_arm (-INTVAL (operands[2])))"
+  [(clobber (const_int 0))]
+  "
+  arm_split_constant (PLUS, SImode, INTVAL (operands[2]), operands[0],
+		      operands[1], 0);
+  DONE;
+  "
   [(set_attr "length" "4,4,16")
    (set_attr "predicable" "yes")]
 )
@@ -568,7 +540,7 @@
 
 ;; Reloading and elimination of the frame pointer can
 ;; sometimes cause this optimization to be missed.
-(define_peephole
+(define_peephole2
   [(set (match_operand:SI 0 "register_operand" "=l")
 	(match_operand:SI 1 "const_int_operand" "M"))
    (set (match_dup 0)
@@ -577,8 +549,8 @@
    && REGNO (operands[2]) == STACK_POINTER_REGNUM 
    && (unsigned HOST_WIDE_INT) (INTVAL (operands[1])) < 1024
    && (INTVAL (operands[1]) & 3) == 0"
-  "add\\t%0, %2, %1"
-  [(set_attr "length" "2")]
+  [(set (match_dup 0) (plus:SI (match_dup 2) (match_dup 1)))]
+  ""
 )
 
 (define_insn "*addsi3_compare0"
@@ -764,73 +736,9 @@
    (set_attr "length" "4,8")]
 )
 
-; If a constant is too big to fit in a single instruction then the constant
-; will be pre-loaded into a register taking at least two insns, we might be
-; able to merge it with an add, but it depends on the exact value.
-
-(define_split
-  [(set (match_operand:SI          0 "s_register_operand" "=r")
-	(plus:SI (match_operand:SI 1 "s_register_operand"  "r")
-		 (match_operand:SI 2 "const_int_operand"   "n")))]
-  "TARGET_ARM
-    && (!(const_ok_for_arm (INTVAL (operands[2]))
-	   || const_ok_for_arm (-INTVAL (operands[2]))))"
-  [(set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))
-   (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 3)))]
-  "
-  {
-    unsigned int val = (unsigned) INTVAL (operands[2]);
-    int i;
-    unsigned int temp;
-
-    /* This code is similar to the approach followed in movsi,
-       but it must generate exactly two insns.  */
-
-    for (i = 30; i >= 0; i -= 2)
-      {
-	if (val & (3 << i))
-	  {
-	    i -= 6;
-	    if (i < 0)
-	      i = 0;
-
-	    if (const_ok_for_arm (temp = (val & ~(255 << i))))
-	      {
-		val &= 255 << i;
-		break;
-	      }
-
-	    /* We might be able to do this as (larger number - small
-               number).  */
-	    temp = ((val >> i) & 255) + 1;
-	    if (temp > 255 && i < 24)
-	      {
-		i += 2;
-		temp = ((val >> i) & 255) + 1;
-	      }
-
-	    if (const_ok_for_arm ((temp << i) - val))
-	      {
-		i = temp << i;
-		temp = (unsigned) - (int) (i - val);
-		val = i;
-		break;
-	      }
-
-	    FAIL;
-	  }
-      }
-
-    /* If we got here, we have found a way of doing it in two
-       instructions.  the two constants are in val and temp.  */
-    operands[2] = GEN_INT ((int) val);
-    operands[3] = GEN_INT ((int) temp);
-  }"
-)
-
 (define_insn "addsf3"
   [(set (match_operand:SF          0 "s_register_operand" "=f,f")
-	(plus:SF (match_operand:SF 1 "s_register_operand"  "f,f")
+	(plus:SF (match_operand:SF 1 "s_register_operand" "%f,f")
 		 (match_operand:SF 2 "fpu_add_operand"    "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
@@ -842,7 +750,7 @@
 
 (define_insn "adddf3"
   [(set (match_operand:DF          0 "s_register_operand" "=f,f")
-	(plus:DF (match_operand:DF 1 "s_register_operand"  "f,f")
+	(plus:DF (match_operand:DF 1 "s_register_operand" "%f,f")
 		 (match_operand:DF 2 "fpu_add_operand"    "fG,H")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "@
@@ -1031,7 +939,7 @@
   [(set_attr "length" "2")]
 )
 
-(define_insn "*arm_subsi3_insn"
+(define_insn_and_split "*arm_subsi3_insn"
   [(set (match_operand:SI           0 "s_register_operand" "=r,r")
 	(minus:SI (match_operand:SI 1 "reg_or_int_operand" "rI,?n")
 		  (match_operand:SI 2 "s_register_operand" "r,r")))]
@@ -1039,21 +947,30 @@
   "@
    rsb%?\\t%0, %2, %1
    #"
-  [(set_attr "length" "4,16")
-   (set_attr "predicable" "yes")]
-)
-
-(define_split
-  [(set (match_operand:SI           0 "s_register_operand" "")
-	(minus:SI (match_operand:SI 1 "const_int_operand" "")
-		  (match_operand:SI 2 "s_register_operand" "")))]
-  "TARGET_ARM && (!const_ok_for_arm (INTVAL (operands[1])))"
+  "TARGET_ARM
+   && GET_CODE (operands[1]) == CONST_INT
+   && !const_ok_for_arm (INTVAL (operands[1]))"
   [(clobber (const_int 0))]
   "
   arm_split_constant (MINUS, SImode, INTVAL (operands[1]), operands[0],
 		      operands[2], 0);
   DONE;
   "
+  [(set_attr "length" "4,16")
+   (set_attr "predicable" "yes")]
+)
+
+(define_peephole2
+  [(match_scratch:SI 3 "r")
+   (set (match_operand:SI           0 "s_register_operand" "")
+	(minus:SI (match_operand:SI 1 "const_int_operand" "")
+		  (match_operand:SI 2 "s_register_operand" "")))]
+  "TARGET_ARM
+   && !const_ok_for_arm (INTVAL (operands[1]))
+   && const_ok_for_arm (~INTVAL (operands[1]))"
+  [(set (match_dup 3) (match_dup 1))
+   (set (match_dup 0) (minus:SI (match_dup 3) (match_dup 2)))]
+  ""
 )
 
 (define_insn "*subsi3_compare0"
@@ -1579,40 +1496,6 @@
 
 (define_split
   [(set (match_operand:DI 0 "s_register_operand" "")
-	(not:DI (match_operand:DI 1 "s_register_operand" "")))]
-  "TARGET_ARM && reload_completed"
-  [(set (match_dup 0) (not:SI (match_dup 1)))
-   (set (match_dup 2) (not:SI (match_dup 3)))]
-  "
-  {
-    operands[2] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[3] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-  }"
-)
-
-(define_split
-  [(set (match_operand:DI 0 "s_register_operand" "")
-	(and:DI
-	  (not:DI (match_operand:DI 1 "s_register_operand" ""))
-	  (match_operand:DI 2 "s_register_operand" "")))]
-  "TARGET_ARM && reload_completed"
-  [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
-   (set (match_dup 3) (and:SI (not:SI (match_dup 4)) (match_dup 5)))]
-  "
-  {
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[4] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-    operands[5] = gen_highpart (SImode, operands[2]);
-    operands[2] = gen_lowpart (SImode, operands[2]);
-  }"
-)
-
-(define_split
-  [(set (match_operand:DI 0 "s_register_operand" "")
 	(match_operator:DI 6 "logical_binary_operator"
 	  [(sign_extend:DI (match_operand:SI 2 "s_register_operand" ""))
 	   (match_operand:DI 1 "s_register_operand" "")]))]
@@ -1629,44 +1512,6 @@
     operands[1] = gen_lowpart (SImode, operands[1]);
     operands[5] = gen_highpart (SImode, operands[2]);
     operands[2] = gen_lowpart (SImode, operands[2]);
-  }"
-)
-
-(define_split
-  [(set (match_operand:DI 0 "s_register_operand" "")
-	(and:DI (not:DI (sign_extend:DI
-			(match_operand:SI 2 "s_register_operand" "")))
-		(match_operand:DI 1 "s_register_operand" "")))]
-  "TARGET_ARM && reload_completed"
-  [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
-   (set (match_dup 3) (and:SI (not:SI
-				(ashiftrt:SI (match_dup 2) (const_int 31)))
-			       (match_dup 4)))]
-  "
-  {
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[4] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-    operands[2] = gen_lowpart (SImode, operands[2]);
-  }"
-)
-
-;; The zero extend of operand 2 clears the high word of the output
-;; operand.
-(define_split
-  [(set (match_operand:DI 0 "s_register_operand" "")
-	(and:DI
-	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" ""))
-	  (match_operand:DI 1 "s_register_operand" "")))]
-  "TARGET_ARM && reload_completed"
-  [(set (match_dup 0) (and:SI (match_dup 1) (match_dup 2)))
-   (set (match_dup 3) (const_int 0))]
-  "
-  {
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
   }"
 )
 
@@ -1708,26 +1553,6 @@
   }"
 )
 
-;; (not (zero_extend ...)) allows us to just copy the high word from
-;; operand1 to operand0.
-(define_split
-  [(set (match_operand:DI 0 "s_register_operand" "")
-	(and:DI (not:DI (zero_extend:DI
-			(match_operand:SI 2 "s_register_operand" "")))
-		(match_operand:DI 1 "s_register_operand" "")))]
-  "TARGET_ARM && operands[0] != operands[1] && reload_completed"
-  [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
-   (set (match_dup 3) (match_dup 4))]
-  "
-  {
-    operands[3] = gen_highpart (SImode, operands[0]);
-    operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[4] = gen_highpart (SImode, operands[1]);
-    operands[1] = gen_lowpart (SImode, operands[1]);
-    operands[2] = gen_lowpart (SImode, operands[2]);
-  }"
-)
-
 (define_insn "anddi3"
   [(set (match_operand:DI         0 "s_register_operand" "=&r,&r")
 	(and:DI (match_operand:DI 1 "s_register_operand"  "%0,r")
@@ -1737,13 +1562,24 @@
   [(set_attr "length" "8")]
 )
 
-(define_insn "*anddi_zesidi_di"
+(define_insn_and_split "*anddi_zesidi_di"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(and:DI (zero_extend:DI
 		 (match_operand:SI 2 "s_register_operand" "r,r"))
 		(match_operand:DI 1 "s_register_operand" "?r,0")))]
   "TARGET_ARM"
   "#"
+  "TARGET_ARM && reload_completed"
+  ; The zero extend of operand 2 clears the high word of the output
+  ; operand.
+  [(set (match_dup 0) (and:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 3) (const_int 0))]
+  "
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+  }"
   [(set_attr "length" "8")]
 )
 
@@ -1819,7 +1655,7 @@
   "
 )
 
-(define_insn "*arm_andsi3_insn"
+(define_insn_and_split "*arm_andsi3_insn"
   [(set (match_operand:SI         0 "s_register_operand" "=r,r,r")
 	(and:SI (match_operand:SI 1 "s_register_operand" "r,r,r")
 		(match_operand:SI 2 "reg_or_int_operand" "rI,K,?n")))]
@@ -1828,6 +1664,16 @@
    and%?\\t%0, %1, %2
    bic%?\\t%0, %1, #%B2
    #"
+  "TARGET_ARM
+   && GET_CODE (operands[2]) == CONST_INT
+   && !(const_ok_for_arm (INTVAL (operands[2]))
+	|| const_ok_for_arm (~INTVAL (operands[2])))"
+  [(clobber (const_int 0))]
+  "
+  arm_split_constant  (AND, SImode, INTVAL (operands[2]), operands[0],
+		       operands[1], 0);
+  DONE;
+  "
   [(set_attr "length" "4,4,16")
    (set_attr "predicable" "yes")]
 )
@@ -1839,21 +1685,6 @@
   "TARGET_THUMB"
   "and\\t%0, %0, %2"
   [(set_attr "length" "2")]
-)
-
-(define_split
-  [(set (match_operand:SI         0 "s_register_operand" "")
-	(and:SI (match_operand:SI 1 "s_register_operand" "")
-		(match_operand:SI 2 "const_int_operand" "")))]
-  "TARGET_ARM
-   && (!(const_ok_for_arm (INTVAL (operands[2]))
-	 || const_ok_for_arm (~INTVAL (operands[2]))))"
-  [(clobber (const_int 0))]
-  "
-  arm_split_constant  (AND, SImode, INTVAL (operands[2]), operands[0],
-		       operands[1], 0);
-  DONE;
-  "
 )
 
 (define_insn "*andsi3_compare0"
@@ -2073,17 +1904,29 @@
 )
 
 ; constants for op 2 will never be given to these patterns.
-(define_insn "*anddi_notdi_di"
+(define_insn_and_split "*anddi_notdi_di"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(and:DI (not:DI (match_operand:DI 2 "s_register_operand" "r,0"))
-		(match_operand:DI 1 "s_register_operand" "0,r")))]
+	(and:DI (not:DI (match_operand:DI 1 "s_register_operand" "r,0"))
+		(match_operand:DI 2 "s_register_operand" "0,r")))]
   "TARGET_ARM"
   "#"
+  "TARGET_ARM && reload_completed"
+  [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
+   (set (match_dup 3) (and:SI (not:SI (match_dup 4)) (match_dup 5)))]
+  "
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[4] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+    operands[5] = gen_highpart (SImode, operands[2]);
+    operands[2] = gen_lowpart (SImode, operands[2]);
+  }"
   [(set_attr "length" "8")
    (set_attr "predicable" "yes")]
 )
   
-(define_insn "*anddi_notzesidi_di"
+(define_insn_and_split "*anddi_notzesidi_di"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(and:DI (not:DI (zero_extend:DI
 			 (match_operand:SI 2 "s_register_operand" "r,r")))
@@ -2092,17 +1935,43 @@
   "@
    bic%?\\t%Q0, %Q1, %2
    #"
+  ; (not (zero_extend ...)) allows us to just copy the high word from
+  ; operand1 to operand0.
+  "TARGET_ARM
+   && reload_completed
+   && operands[0] != operands[1]"
+  [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
+   (set (match_dup 3) (match_dup 4))]
+  "
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[4] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+  }"
   [(set_attr "length" "4,8")
    (set_attr "predicable" "yes")]
 )
   
-(define_insn "*anddi_notsesidi_di"
+(define_insn_and_split "*anddi_notsesidi_di"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(and:DI (not:DI (sign_extend:DI
 			 (match_operand:SI 2 "s_register_operand" "r,r")))
 		(match_operand:DI 1 "s_register_operand" "?r,0")))]
   "TARGET_ARM"
   "#"
+  "TARGET_ARM && reload_completed"
+  [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
+   (set (match_dup 3) (and:SI (not:SI
+				(ashiftrt:SI (match_dup 2) (const_int 31)))
+			       (match_dup 4)))]
+  "
+  {
+    operands[3] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[4] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+  }"
   [(set_attr "length" "8")
    (set_attr "predicable" "yes")]
 )
@@ -2218,7 +2087,7 @@
   "
 )
 
-(define_insn "*arm_iorsi3"
+(define_insn_and_split "*arm_iorsi3"
   [(set (match_operand:SI         0 "s_register_operand" "=r,r")
 	(ior:SI (match_operand:SI 1 "s_register_operand" "r,r")
 		(match_operand:SI 2 "reg_or_int_operand" "rI,?n")))]
@@ -2226,6 +2095,15 @@
   "@
    orr%?\\t%0, %1, %2
    #"
+  "TARGET_ARM
+   && GET_CODE (operands[2]) == CONST_INT
+   && !const_ok_for_arm (INTVAL (operands[2]))"
+  [(clobber (const_int 0))]
+  "
+  arm_split_constant (IOR, SImode, INTVAL (operands[2]), operands[0],
+		      operands[1], 0);
+  DONE;
+  "
   [(set_attr "length" "4,16")
    (set_attr "predicable" "yes")]
 )
@@ -2239,19 +2117,19 @@
   [(set_attr "length" "2")]
 )
 
-(define_split
-  [(set (match_operand:SI         0 "s_register_operand" "")
+(define_peephole2
+  [(match_scratch:SI 3 "r")
+   (set (match_operand:SI         0 "s_register_operand" "")
 	(ior:SI (match_operand:SI 1 "s_register_operand" "")
 		(match_operand:SI 2 "const_int_operand" "")))]
-  "TARGET_ARM && (!const_ok_for_arm (INTVAL (operands[2])))"
-  [(clobber (const_int 0))]
-  "
-  arm_split_constant (IOR, SImode, INTVAL (operands[2]), operands[0],
-		      operands[1], 0);
-  DONE;
-  "
+  "TARGET_ARM
+   && !const_ok_for_arm (INTVAL (operands[2]))
+   && const_ok_for_arm (~INTVAL (operands[2]))"
+  [(set (match_dup 3) (match_dup 2))
+   (set (match_dup 0) (ior:SI (match_dup 1) (match_dup 3)))]
+  ""
 )
-  
+
 (define_insn "*iorsi3_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (ior:SI (match_operand:SI 1 "s_register_operand" "%r")
@@ -2986,11 +2864,21 @@
 ;  "cos%?e\\t%0, %1"
 ;[(set_attr "type" "float_em")])
 
-(define_insn "one_cmpldi2"
+(define_insn_and_split "one_cmpldi2"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(not:DI (match_operand:DI 1 "s_register_operand" "?r,0")))]
   "TARGET_ARM"
   "#"
+  "TARGET_ARM && reload_completed"
+  [(set (match_dup 0) (not:SI (match_dup 1)))
+   (set (match_dup 2) (not:SI (match_dup 3)))]
+  "
+  {
+    operands[2] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[3] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+  }"
   [(set_attr "length" "8")
    (set_attr "predicable" "yes")]
 )
@@ -8417,15 +8305,15 @@
 
 ; This pattern is never tried by combine, so do it as a peephole
 
-(define_peephole
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(match_operand:SI 1 "s_register_operand" "r"))
+(define_peephole2
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(match_operand:SI 1 "s_register_operand" ""))
    (set (reg:CC CC_REGNUM)
 	(compare:CC (match_dup 1) (const_int 0)))]
-  "TARGET_ARM
-  "
-  "sub%?s\\t%0, %1, #0"
-  [(set_attr "conds" "set")]
+  "TARGET_ARM"
+  [(parallel [(set (reg:CC CC_REGNUM) (compare:CC (match_dup 1) (const_int 0)))
+	      (set (match_dup 0) (match_dup 1))])]
+  ""
 )
 
 ; Peepholes to spot possible load- and store-multiples, if the ordering is
