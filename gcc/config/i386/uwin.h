@@ -30,16 +30,19 @@ Boston, MA 02111-1307, USA.  */
 #undef MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX "/usr/gnu/lib/"
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D_WIN32 -D__WIN32__ \
-  -D_UWIN -DWINNT  -D_X86_=1 -D__STDC__=1 \
-  -D__UWIN__ -D__MSVCRT__ \
-  -D_STD_INCLUDE_DIR=mingw32 \
-  -D__stdcall=__attribute__((__stdcall__)) \
-  _D_stdcall=__attribute__((__stdcall__)) \
-  -D__cdecl=__attribute__((__cdecl__)) \
-  -D__declspec(x)=__attribute__((x)) \
-  -Asystem=winnt"
+#undef MAYBE_UWIN_CPP_BUILTINS
+#define MAYBE_UWIN_CPP_BUILTINS()			\
+  do							\
+    {							\
+	builtin_define_std ("WINNT");			\
+	builtin_define ("_WIN32");			\
+	builtin_define ("__WIN32__");			\
+	builtin_define ("_UWIN");			\
+	builtin_define ("__UWIN__");			\
+	builtin_define ("__MSVCRT__");			\
+	builtin_define ("_STD_INCLUDE_DIR=mingw32");	\
+    }							\
+  while (0)
 
 #undef CPP_SPEC
 #define CPP_SPEC "-remap %{posix:-D_POSIX_SOURCE} \

@@ -21,12 +21,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#define TARGET_VERSION fprintf (stderr, " (80386, COFF BSD syntax)"); 
+#define TARGET_VERSION fprintf (stderr, " (80386, COFF BSD syntax)");
 
-/* Specify predefined symbols in preprocessor.  */
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES ""
+#define TARGET_OS_CPP_BUILTINS() /* Sweet FA.  */
 
 /* We want to be able to get DBX debugging information via -gstabs.  */
 

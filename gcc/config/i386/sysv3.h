@@ -32,7 +32,13 @@ Boston, MA 02111-1307, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
-#define CPP_PREDEFINES "-Dunix -Asystem=svr3"
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("unix");		\
+	builtin_assert ("system=svr3");		\
+    }						\
+  while (0)
 
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
 

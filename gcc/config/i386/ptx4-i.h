@@ -33,11 +33,15 @@ Boston, MA 02111-1307, USA.  */
   (TYPE_MODE (TYPE) == BLKmode \
    || (VECTOR_MODE_P (TYPE_MODE (TYPE)) && int_size_in_bytes (TYPE) == 8))
 
-/* Define which macros to predefine.  _SEQUENT_ is our extension.  */
-/* This used to define X86, but james@bigtex.cactus.org says that
-   is supposed to be defined optionally by user programs--not by default.  */
-#define CPP_PREDEFINES \
-  "-Dunix -D_SEQUENT_ -Asystem=unix -Asystem=ptx4"
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("unix");		\
+	builtin_define ("_SEQUENT_");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=ptx4");		\
+    }						\
+  while (0)
 
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]
