@@ -1,3 +1,8 @@
+2003-08-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (instantiate_class_template): Push to class's scope before
+	tsubsting base.
+
 Sun Aug 17 10:05:38 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR C++/11702

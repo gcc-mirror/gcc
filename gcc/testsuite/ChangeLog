@@ -1,3 +1,8 @@
+2003-08-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/template/scope2.C: New test.
+	* g++.dg/template/error2.C: Correct dg-error
+
 2003-08-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/compile/mipscop*.c: Turn into compile-only tests.
