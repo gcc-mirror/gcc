@@ -309,6 +309,13 @@ straighten_stack (insn, regstack)
   struct stack_def temp_stack;
   int top;
 
+  /* If there is only a single register on the stack, then the stack is
+     already in increasing order and no reorganization is needed.
+
+     Similarly if the stack is empty.  */
+  if (regstack->top <= 0)
+    return;
+
   temp_stack.reg_set = regstack->reg_set;
 
   for (top = temp_stack.top = regstack->top; top >= 0; top--)
