@@ -6702,10 +6702,6 @@ check_throws_clauses (tree method, tree method_wfl, tree found)
 {
   tree mthrows;
 
-  /* Can't check these things with class loaded from bytecode. FIXME */
-  if (!CLASS_FROM_SOURCE_P (DECL_CONTEXT (found)))
-    return;
-
   for (mthrows = DECL_FUNCTION_THROWS (method);
        mthrows; mthrows = TREE_CHAIN (mthrows))
     {
@@ -11911,7 +11907,6 @@ java_complete_lhs (tree node)
       if (!EXPR_WFL_NODE (node) /* Or a PRIMARY flag ? */
 	  || TREE_CODE (EXPR_WFL_NODE (node)) == IDENTIFIER_NODE)
 	{
-	  tree wfl = node;
 	  node = resolve_expression_name (node, NULL);
 	  if (node == error_mark_node)
 	    return node;
