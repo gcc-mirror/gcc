@@ -7869,7 +7869,8 @@ fold (tree expr)
 	  /* Only optimize constant conditions when the selected branch
 	     has the same type as the COND_EXPR.  This avoids optimizing
 	     away "c ? x : throw", where the throw has a void type.  */
-	  if (TREE_TYPE (tem) == TREE_TYPE (t))
+	  if (! VOID_TYPE_P (TREE_TYPE (tem))
+	      || VOID_TYPE_P (TREE_TYPE (t)))
 	    return pedantic_non_lvalue (tem);
 	  return t;
 	}

@@ -1,3 +1,9 @@
+2003-12-30  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold) <COND_EXPR>: Don't require strict type
+	equality, instead just prevent replacing a COND_EXPR of non-void
+	type by one of its operands of void type.
+
 2003-12-30  Andreas Schwab  <schwab@suse.de>
 
 	* doc/c-tree.texi: Fix @item vs. @itemx.
