@@ -7778,9 +7778,6 @@
    (match_operand:SI 3 "" "")]
   ""
 {
-#if 0
-  rtx chain = operands[0];
-#endif
   rtx lab = operands[1];
   rtx stack = operands[2];
   rtx fp = operands[3];
@@ -7806,27 +7803,10 @@
      and reload the appropriate value into %fp.  */
   emit_move_insn (hard_frame_pointer_rtx, stack);
 
-  /* USE of frame_pointer_rtx added for consistency; not clear if
-     really needed.  */
-  /*emit_insn (gen_rtx_USE (VOIDmode, frame_pointer_rtx));*/
   emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
-
-#if 0
-  /* Return, restoring reg window and jumping to goto handler.  */
-  if (TARGET_V9 && GET_CODE (chain) == CONST_INT
-      && ! (INTVAL (chain) & ~(HOST_WIDE_INT)0xffffffff))
-    {
-      emit_jump_insn (gen_goto_handler_and_restore_v9 (labreg,
-						       static_chain_rtx,
-						       chain));
-      emit_barrier ();
-      DONE;
-    }
-  /* Put in the static chain register the nonlocal label address.  */
-  emit_move_insn (static_chain_rtx, chain);
-#endif
-
   emit_insn (gen_rtx_USE (VOIDmode, static_chain_rtx));
+
+  /* ??? The V9-specific version was disabled in rev 1.65.  */
   emit_jump_insn (gen_goto_handler_and_restore (labreg));
   emit_barrier ();
   DONE;
@@ -7845,28 +7825,6 @@
   "jmp\t%0+0\n\trestore"
   [(set_attr "type" "multi")
    (set_attr "length" "2")])
-
-;;(define_insn "goto_handler_and_restore_v9"
-;;  [(unspec_volatile [(match_operand:SI 0 "register_operand" "=r,r")
-;;		     (match_operand:SI 1 "register_operand" "=r,r")
-;;		     (match_operand:SI 2 "const_int_operand" "I,n")] UNSPECV_GOTO_V9)]
-;;  "TARGET_V9 && ! TARGET_ARCH64"
-;;  "@
-;;   return\t%0+0\n\tmov\t%2, %Y1
-;;   sethi\t%%hi(%2), %1\n\treturn\t%0+0\n\tor\t%Y1, %%lo(%2), %Y1"
-;;  [(set_attr "type" "multi")
-;;   (set_attr "length" "2,3")])
-;;
-;;(define_insn "*goto_handler_and_restore_v9_sp64"
-;;  [(unspec_volatile [(match_operand:DI 0 "register_operand" "=r,r")
-;;		     (match_operand:DI 1 "register_operand" "=r,r")
-;;		     (match_operand:SI 2 "const_int_operand" "I,n")] UNSPECV_GOTO_V9)]
-;;  "TARGET_V9 && TARGET_ARCH64"
-;;  "@
-;;   return\t%0+0\n\tmov\t%2, %Y1
-;;   sethi\t%%hi(%2), %1\n\treturn\t%0+0\n\tor\t%Y1, %%lo(%2), %Y1"
-;;  [(set_attr "type" "multi")
-;;   (set_attr "length" "2,3")])
 
 ;; For __builtin_setjmp we need to flush register windows iff the function
 ;; calls alloca as well, because otherwise the register window might be
