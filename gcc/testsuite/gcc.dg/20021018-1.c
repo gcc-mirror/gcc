@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fpic" } */
+/* { dg-error "overflow" "16-bit target" { target xstormy16-*-* } 0 } */
 
 extern void abort (void);
 extern void exit (int);

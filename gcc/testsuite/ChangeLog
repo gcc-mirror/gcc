@@ -1,3 +1,13 @@
+2003-05-08  DJ Delorie  <dj@redhat.com>
+
+	* gcc.c-torture/execute/20020404-1.x: New, skip for 16-bit
+	targets.
+	* gcc.c-torture/execute/20021024-1.x: Likewise.
+	* gcc.c-torture/execute/shiftdi.x: Likewise.
+	* g++.old-deja/g++.mike/p700.C: Handle 16-bit targets.
+	* g++.old-deja/g++.other/exprstmt1.C: Likewise.
+	* gcc.dg/20021018-1.c: Likewise.
+
 2003-05-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.dg/other/packed1.C: Mark xfail for sparc*- not sparc-.
