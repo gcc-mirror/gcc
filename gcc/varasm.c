@@ -3931,12 +3931,14 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	index = TREE_PURPOSE (link);
 
+#ifdef ASM_COMMENT_START
       if (field && flag_verbose_asm)
 	fprintf (asm_out_file, "%s %s:\n",
 		 ASM_COMMENT_START, 
 		 DECL_NAME (field) 
 		 ? IDENTIFIER_POINTER (DECL_NAME (field))
 		 : "<anonymous>");
+#endif
 
       /* Eliminate the marker that makes a cast not be an lvalue.  */
       if (val != 0)
