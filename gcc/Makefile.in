@@ -304,9 +304,6 @@ EXTRA_OBJS = @extra_objs@
 # the gcc driver.
 EXTRA_GCC_OBJS =@host_extra_gcc_objs@
 
-# List of extra object files that should be compiled and linked with cc1.
-EXTRA_C_OBJS =@extra_c_objs@
-
 # List of additional header files to install.
 # Often this is edited directly by `configure'.
 EXTRA_HEADERS =@extra_headers_list@
@@ -537,9 +534,12 @@ FLAGS_TO_PASS = \
 #
 # Lists of files for various purposes.
 
+# Language-specific object files for C and Objective C.
+C_AND_OBJC_OBJS = c-lex.o c-pragma.o c-decl.o c-typeck.o c-convert.o \
+  c-aux-info.o c-common.o c-iterate.o @extra_c_objs@
+
 # Language-specific object files for C.
-C_OBJS = c-parse.o c-lang.o c-lex.o c-pragma.o $(EXTRA_C_OBJS) \
-   c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-iterate.o
+C_OBJS = c-parse.o c-lang.o $(C_AND_OBJC_OBJS)
 
 # Files specific to the C interpreter bytecode compiler(s).
 BC_OBJS = bc-emit.o bc-optab.o
