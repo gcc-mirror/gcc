@@ -905,7 +905,8 @@ gcse_main (f, file)
   end_alias_analysis ();
   allocate_reg_info (max_reg_num (), FALSE, FALSE);
 
-  if (!optimize_size && flag_gcse_sm)
+  /* Store motion disabled until it is fixed.  */
+  if (0 && !optimize_size && flag_gcse_sm)
     store_motion ();
   /* Record where pseudo-registers are set.  */
   return run_jump_opt_after_gcse;
