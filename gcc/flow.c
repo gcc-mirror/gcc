@@ -4866,6 +4866,35 @@ find_use_as_address (x, reg, plusconst)
    This is part of making a debugging dump.  */
 
 void
+dump_regset (r, outf)
+     regset r;
+     FILE *outf;
+{
+  int i;
+  if (r == NULL)
+    {
+      fputs (" (nil)", outf);
+      return;
+    }
+
+  EXECUTE_IF_SET_IN_REG_SET (r, 0, i,
+    {
+      fprintf (outf, " %d", i);
+      if (i < FIRST_PSEUDO_REGISTER)
+	fprintf (outf, " [%s]",
+		 reg_names[i]);
+    });
+}
+
+void
+debug_regset (r)
+     regset r;
+{
+  dump_regset (r, stderr);
+  putc ('\n', stderr);
+}
+
+void
 dump_flow_info (file)
      FILE *file;
 {
@@ -4916,7 +4945,6 @@ dump_flow_info (file)
   for (i = 0; i < n_basic_blocks; i++)
     {
       register basic_block bb = BASIC_BLOCK (i);
-      register int regno;
       register edge e;
 
       fprintf (file, "\nBasic block %d: first insn %d, last %d, loop_depth %d.\n",
@@ -4931,24 +4959,10 @@ dump_flow_info (file)
 	dump_edge_info (file, e, 1);
 
       fprintf (file, "\nRegisters live at start:");
-      if (bb->global_live_at_start)
-	{
-          for (regno = 0; regno < max_regno; regno++)
-	    if (REGNO_REG_SET_P (bb->global_live_at_start, regno))
-	      fprintf (file, " %d", regno);
-	}
-      else
-	fprintf (file, " n/a");
+      dump_regset (bb->global_live_at_start, file);
 
       fprintf (file, "\nRegisters live at end:");
-      if (bb->global_live_at_end)
-	{
-          for (regno = 0; regno < max_regno; regno++)
-	    if (REGNO_REG_SET_P (bb->global_live_at_end, regno))
-	      fprintf (file, " %d", regno);
-	}
-      else
-	fprintf (file, " n/a");
+      dump_regset (bb->global_live_at_end, file);
 
       putc('\n', file);
     }
@@ -5005,6 +5019,60 @@ dump_edge_info (file, e, do_succ)
 }
 
 
+/* Print out one basic block with live information at start and end.  */
+void
+dump_bb (bb, outf)
+     basic_block bb;
+     FILE *outf;
+{
+  rtx insn;
+  rtx last;
+  edge e;
+
+  fprintf (outf, ";; Basic block %d, loop depth %d",
+	   bb->index, bb->loop_depth - 1);
+  if (bb->eh_beg != -1 || bb->eh_end != -1)
+    fprintf (outf, ", eh regions %d/%d", bb->eh_beg, bb->eh_end);
+  putc ('\n', outf);
+
+  fputs (";; Predecessors: ", outf);
+  for (e = bb->pred; e ; e = e->pred_next)
+    dump_edge_info (outf, e, 0);
+  putc ('\n', outf);
+
+  fputs (";; Registers live at start:", outf);
+  dump_regset (bb->global_live_at_start, outf);
+  putc ('\n', outf);
+
+  for (insn = bb->head, last = NEXT_INSN (bb->end);
+       insn != last;
+       insn = NEXT_INSN (insn))
+    print_rtl_single (outf, insn);
+
+  fputs (";; Registers live at end:", outf);
+  dump_regset (bb->global_live_at_end, outf);
+  putc ('\n', outf);
+
+  fputs (";; Successors: ", outf);
+  for (e = bb->succ; e; e = e->succ_next)
+    dump_edge_info (outf, e, 1);
+  putc ('\n', outf);
+}
+
+void
+debug_bb (bb)
+     basic_block bb;
+{
+  dump_bb (bb, stderr);
+}
+
+void
+debug_bb_n (n)
+     int n;
+{
+  dump_bb (BASIC_BLOCK(n), stderr);
+}
+
 /* Like print_rtl, but also print out live information for the start of each
    basic block.  */
 
@@ -5057,14 +5125,7 @@ print_rtl_with_bb (outf, rtx_first)
 	    {
 	      fprintf (outf, ";; Start of basic block %d, registers live:",
 		       bb->index);
-
-	      EXECUTE_IF_SET_IN_REG_SET (bb->global_live_at_start, 0, i,
-					 {
-					   fprintf (outf, " %d", i);
-					   if (i < FIRST_PSEUDO_REGISTER)
-					     fprintf (outf, " [%s]",
-						      reg_names[i]);
-					 });
+	      dump_regset (bb->global_live_at_start, outf);
 	      putc ('\n', outf);
 	    }
 
