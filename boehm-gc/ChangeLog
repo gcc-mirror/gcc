@@ -1,3 +1,9 @@
+1999-09-28  Tom Tromey  <tromey@cygnus.com>
+
+	* aclocal.m4, configure: Rebuilt.
+	* acinclude.m4 (LIB_AC_PROG_CC, LIB_AC_PROG_CXX): Provide
+	appropriate AC_PROG_ symbol.
+
 Tue Aug 10 00:08:29 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gc_priv.h: Merged IRIX thread changes from
