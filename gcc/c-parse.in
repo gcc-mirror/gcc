@@ -3161,7 +3161,7 @@ void
 finish_parse ()
 {
   cpp_finish (parse_in);
-  errorcount += parse_in->errors;
+  errorcount += cpp_errors (parse_in);
 }
 
 #define NAME(type) cpp_type2name (type)
@@ -3257,8 +3257,7 @@ _yylex ()
     case CPP_DOT:					return '.';
 
     case CPP_EOF:
-      cpp_pop_buffer (parse_in);
-      if (! CPP_BUFFER (parse_in))
+      if (cpp_pop_buffer (parse_in) == 0)
 	return 0;
       goto retry;
 

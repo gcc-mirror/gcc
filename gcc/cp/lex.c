@@ -755,7 +755,7 @@ void
 finish_parse ()
 {
   cpp_finish (parse_in);
-  errorcount += parse_in->errors;
+  errorcount += cpp_errors (parse_in);
 }
 
 inline void

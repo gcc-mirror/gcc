@@ -1,3 +1,12 @@
+2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * c-lex.c (init_c_lex): Use cpp_get_callbacks to set
+        callbacks.
+        * c-parse.in (finish_parse): Use cpp_errors.
+        (__yylex): Use return value of cpp_pop_buffer.
+        * cp/lex.c (finish_parse): Use cpp_errors.
+        * cp/spew.c (read_token): Use return value of cpp_pop_buffer.
+
 Sat Jan 13 16:57:40 2001  Denis Chertykov  <denisc@overta.ru>
 
 	* README.AVR: URLs corrected.
