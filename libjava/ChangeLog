@@ -9,6 +9,8 @@
 	* gnu/awt/j2d/IntegerGraphicsState.java (setClip): Call 
 	Rectangle.clone(), not Object.clone().
 
+	* java/util/HashSet.java (clone): Remove try/catch.
+
 2001-02-14  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/TreeMap.java: New file.
