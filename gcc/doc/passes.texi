@@ -68,7 +68,7 @@ invoked when (1) it is certain that the function is used, (2)
 warning flags specified by the user require some amount of
 compilation in order to honor, (3) the language indicates that
 semantic analysis is not complete until gimplification occurs.
-Hum... this sounds overly complicated.  Perhaps we should just
+Hum@dots{} this sounds overly complicated.  Perhaps we should just
 have the front end gimplify always; in most cases it's only one
 function call.
 
@@ -135,7 +135,7 @@ The callback should examine the expression in question and return
 @code{GS_UNHANDLED} if the expression is not a language specific
 construct that requires attention.  Otherwise it should alter the
 expression in some way to such that forward progress is made toward
-producing valid GIMPLE.  If the callback is certain that the
+producing valid GIMPLE@.  If the callback is certain that the
 transformation is complete and the expression is valid GIMPLE, it
 should return @code{GS_ALL_DONE}.  Otherwise it should return
 @code{GS_OK}, which will cause the expression to be processed again.
@@ -293,7 +293,7 @@ seeing if the result can be simplified.  It is located in
 @item Copy Renaming
 
 This pass attempts to change the name of compiler temporaries involved in
-copy operations such that SSA->normal can coalesce the copy away. When compiler
+copy operations such that SSA->normal can coalesce the copy away.  When compiler
 temporaries are copies of user variables, it also renames the compiler
 temporary to the user variable resulting in better use of user symbols.  It is
 located in @file{tree-ssa-copyrename.c} and is described by
@@ -396,10 +396,10 @@ The optimizations also use various utility functions contained in
 
 This pass applies if-conversion to simple loops to help vectorizer.
 We identify if convertable loops, if-convert statements and merge
-basic blocks in one big block. The idea is to present loop in such
+basic blocks in one big block.  The idea is to present loop in such
 form so that vectorizer can have one to one mapping between statements
-and available vector operations. This patch re-introduces COND_EXPR
-at GIMPLE level. This pass is located in @file{tree-if-conv.c}.
+and available vector operations.  This patch re-introduces COND_EXPR
+at GIMPLE level.  This pass is located in @file{tree-if-conv.c}.
 
 @item Conditional constant propagation
 
@@ -437,7 +437,7 @@ in @file{tree-ssa-dce.c} and is described by @code{pass_cd_dce}.
 This pass identifies function calls that may be rewritten into
 jumps.  No code transformation is actually applied here, but the
 data and control flow problem is solved.  The code transformation
-requires target support, and so is delayed until RTL.  In the
+requires target support, and so is delayed until RTL@.  In the
 meantime @code{CALL_EXPR_TAILCALL} is set indicating the possibility.
 The pass is located in @file{tree-tailcall.c} and is described by
 @code{pass_tail_calls}.  The RTL transformation is handled by
@@ -468,7 +468,7 @@ is described by @code{pass_mudflap_2}.
 
 This pass rewrites the function such that it is in normal form.  At
 the same time, we eliminate as many single-use temporaries as possible,
-so the intermediate language is no longer GIMPLE, but GENERIC.  The
+so the intermediate language is no longer GIMPLE, but GENERIC@.  The
 pass is located in @file{tree-ssa.c} and is described by @code{pass_del_ssa}.
 @end itemize
 
@@ -555,7 +555,7 @@ This pass is seriously out-of-date and is supposed to be replaced by
 a new one described below in near future.
 
 A second loop optimization pass takes care of basic block level
-optimizations---unrolling, peeling and unswitching loops. The source
+optimizations---unrolling, peeling and unswitching loops.  The source
 files are @file{cfgloopanal.c} and @file{cfgloopmanip.c} containing
 generic loop analysis and manipulation code, @file{loop-init.c} with
 initialization and finalization code, @file{loop-unswitch.c} for loop

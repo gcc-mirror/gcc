@@ -230,7 +230,7 @@ differences that do exist are detailed in the section @ref{Traditional
 Mode}.
 
 For clarity, unless noted otherwise, references to @samp{CPP} in this
-manual refer to GNU CPP.
+manual refer to GNU CPP@.
 @c man end
 
 @menu
@@ -596,7 +596,7 @@ Punctuator:      @{   @}   [   ]   #    ##
 @end smallexample
 
 @cindex other tokens
-Any other single character is considered ``other''. It is passed on to
+Any other single character is considered ``other''.  It is passed on to
 the preprocessor's output unmolested.  The C compiler will almost
 certainly reject source code containing ``other'' tokens.  In ASCII, the
 only other characters are @samp{@@}, @samp{$}, @samp{`}, and control
@@ -2091,7 +2091,7 @@ handling.
 
 @item __NEXT_RUNTIME__
 This macro is defined, with value 1, if (and only if) the NeXT runtime
-(as in @option{-fnext-runtime}) is in use for Objective-C.  If the GNU
+(as in @option{-fnext-runtime}) is in use for Objective-C@.  If the GNU
 runtime is used, this macro is not defined, so that you can use this
 macro to determine which runtime (NeXT or GNU) is being used.
 
@@ -3559,7 +3559,7 @@ replacement text before storing it, but preserves the form of internal
 whitespace.
 
 One consequence is that it is legitimate for the replacement text to
-contain an unmatched quote (@pxref{Traditional lexical analysis}). An
+contain an unmatched quote (@pxref{Traditional lexical analysis}).  An
 unclosed string or character constant continues into the text
 following the macro call.  Similarly, the text at the end of a macro's
 expansion can run together with the text after the macro invocation to
@@ -3802,7 +3802,7 @@ target character, and then or-ing in the bit-pattern of the new
 character truncated to the width of a target character.  The final
 bit-pattern is given type @code{int}, and is therefore signed,
 regardless of whether single characters are signed or not (a slight
-change from versions 3.1 and earlier of GCC).  If there are more
+change from versions 3.1 and earlier of GCC)@.  If there are more
 characters in the constant than would fit in the target @code{int} the
 compiler issues a warning, and the excess leading characters are
 ignored.

@@ -776,7 +776,7 @@ The following macros can be used on a tree node representing a class-type.
 
 @ftable @code
 @item LOCAL_CLASS_P
-This predicate holds if the class is local class @emph{i.e.} declared
+This predicate holds if the class is local class @emph{i.e.}@: declared
 inside a function body.
 
 @item TYPE_POLYMORPHIC_P
@@ -2062,7 +2062,7 @@ These nodes represent integer division operations that return an integer
 result.  @code{TRUNC_DIV_EXPR} rounds towards zero, @code{FLOOR_DIV_EXPR}
 rounds towards negative infinity, @code{CEIL_DIV_EXPR} rounds towards
 positive infinity and @code{ROUND_DIV_EXPR} rounds to the closest integer.
-Integer division in C and C++ is truncating, i.e@. @code{TRUNC_DIV_EXPR}.
+Integer division in C and C++ is truncating, i.e.@: @code{TRUNC_DIV_EXPR}.
 
 The behavior of these operations on signed arithmetic overflow, when
 dividing the minimum signed integer by minus one, is controlled by the
@@ -2076,9 +2076,9 @@ These nodes represent the integer remainder or modulus operation.
 The integer modulus of two operands @code{a} and @code{b} is
 defined as @code{a - (a/b)*b} where the division calculated using
 the corresponding division operator.  Hence for @code{TRUNC_MOD_EXPR}
-this definition assumes division using truncation towards zero, i.e@.
+this definition assumes division using truncation towards zero, i.e.@:
 @code{TRUNC_DIV_EXPR}.  Integer remainder in C and C++ uses truncating
-division, i.e@. @code{TRUNC_MOD_EXPR}.
+division, i.e.@: @code{TRUNC_MOD_EXPR}.
 
 @item EXACT_DIV_EXPR
 The @code{EXACT_DIV_EXPR} code is used to represent integer divisions where

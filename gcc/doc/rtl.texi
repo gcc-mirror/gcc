@@ -72,9 +72,9 @@ commonly found inside @code{symbol_ref} expressions, but they appear in
 other contexts in the RTL expressions that make up machine descriptions.
 
 In a machine description, strings are normally written with double
-quotes, as you would in C.  However, strings in machine descriptions may
+quotes, as you would in C@.  However, strings in machine descriptions may
 extend over many lines, which is invalid C, and adjacent string
-constants are not concatenated as they are in C.  Any string constant
+constants are not concatenated as they are in C@.  Any string constant
 may be surrounded with a single set of parentheses.  Sometimes this
 makes the machine description easier to read.
 
@@ -534,7 +534,7 @@ Stored in the @code{unchanging} field and printed as @samp{/u}.
 @item INSN_ANNULLED_BRANCH_P (@var{x})
 In a @code{jump_insn}, @code{call_insn}, or @code{insn} indicates
 that the branch is an annulling one.  See the discussion under
-@code{sequence} below. Stored in the @code{unchanging} field and
+@code{sequence} below.  Stored in the @code{unchanging} field and
 printed as @samp{/u}.
 
 @findex INSN_DEAD_CODE_P
@@ -808,7 +808,7 @@ the value.  Use @code{SUBREG_PROMOTED_UNSIGNED_SET} to change the value.
 Set the @code{unchanging} and @code{volatil} fields in a @code{subreg}
 to reflect zero, sign, or other extension.  If @code{volatil} is
 zero, then @code{unchanging} as nonzero means zero extension and as
-zero means sign extension. If @code{volatil} is nonzero then some
+zero means sign extension.  If @code{volatil} is nonzero then some
 other type of extension was done via the @code{ptr_extend} instruction.
 
 @findex SUBREG_PROMOTED_VAR_P

@@ -11,7 +11,7 @@
 GCC itself aims to be portable to any machine where @code{int} is at least
 a 32-bit type.  It aims to target machines with a flat (non-segmented) byte
 addressed data address space (the code address space can be separate).
-Target ABIs may have 8, 16, 32 or 64-bit @code{int} type. @code{char}
+Target ABIs may have 8, 16, 32 or 64-bit @code{int} type.  @code{char}
 can be wider than 8 bits.
 
 GCC gets most of the information about the target machine from a machine

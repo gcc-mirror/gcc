@@ -44,11 +44,11 @@ Two pointer members of the @code{basic_block} structure are the
 pointers @code{next_bb} and @code{prev_bb}.  These are used to keep
 doubly linked chain of basic blocks in the same order as the
 underlying instruction stream.  The chain of basic blocks is updated
-transparently by the provided API for manipulating the CFG.  The macro
+transparently by the provided API for manipulating the CFG@.  The macro
 @code{FOR_EACH_BB} can be used to visit all the basic blocks in
 lexicographical order.  Dominator traversals are also possible using
 @code{walk_dominator_tree}.  Given two basic blocks A and B, block A
-dominates block B if A is @emph{always} executed before B.
+dominates block B if A is @emph{always} executed before B@.
 
 @findex BASIC_BLOCK
 The @code{BASIC_BLOCK} array contains all basic blocks in an
@@ -140,8 +140,8 @@ FOR_EACH_BB (bb)
 @cindex edge in the flow graph
 @findex edge
 Edges represent possible control flow transfers from the end of some
-basic block A to the head of another basic block B.  We say that A is
-a predecessor of B, and B is a successor of A.  Edges are represented
+basic block A to the head of another basic block B@.  We say that A is
+a predecessor of B, and B is a successor of A@.  Edges are represented
 in GCC with the @code{edge} data type.  Each @code{edge} acts as a
 link between two basic blocks: the @code{src} member of an edge
 points to the predecessor basic block of the @code{dest} basic block.
@@ -173,7 +173,7 @@ may be freely redirected when the flow graph is not in SSA form.
 @findex EDGE_FALLTHRU, force_nonfallthru
 Fall-thru edges are present in case where the basic block may continue
 execution to the following one without branching.  These edges have
-the @code{EDGE_FALLTHRU} flag set. Unlike other types of edges, these
+the @code{EDGE_FALLTHRU} flag set.  Unlike other types of edges, these
 edges must come into the basic block immediately following in the
 instruction stream.  The function @code{force_nonfallthru} is
 available to insert an unconditional jump in the case that redirection
@@ -193,7 +193,7 @@ edges have the @code{EDGE_ABNORMAL} and @code{EDGE_EH} flags set.
 @findex purge_dead_edges
 When updating the instruction stream it is easy to change possibly
 trapping instruction to non-trapping, by simply removing the exception
-edge. The opposite conversion is difficult, but should not happen
+edge.  The opposite conversion is difficult, but should not happen
 anyway.  The edges can be eliminated via @code{purge_dead_edges} call.
 
 @findex REG_EH_REGION, EDGE_ABNORMAL_CALL
@@ -366,7 +366,7 @@ range from 0 to @code{REG_BR_PROB_BASE}.  It represents probability of
 passing control from the end of the @code{src} basic block to the
 @code{dest} basic block, i.e.@: the probability that control will flow
 along this edge.   The @code{EDGE_FREQUENCY} macro is available to
-compute how frequently a given edge is taken. There is a @code{count}
+compute how frequently a given edge is taken.  There is a @code{count}
 field for each edge as well, representing same information as for a
 basic block.
 
@@ -384,7 +384,7 @@ of basic blocks.
 
 @findex redirect_edge_and_branch
 Updating profile information is a delicate task that can unfortunately
-not be easily integrated with the CFG manipulation API.  Many of the
+not be easily integrated with the CFG manipulation API@.  Many of the
 functions and hooks to modify the CFG, such as
 @code{redirect_edge_and_branch}, do not have enough information to
 easily update the profile, so updating it is in the majority of cases
@@ -392,7 +392,7 @@ left up to the caller.  It is difficult to uncover bugs in the profile
 updating code, because they manifest themselves only by producing
 worse code, and checking profile consistency is not possible because
 of numeric error accumulation.  Hence special attention needs to be
-given to this issue in each pass that modifies the CFG.
+given to this issue in each pass that modifies the CFG@.
 
 @findex REG_BR_PROB_BASE, BB_FREQ_BASE, count
 It is important to point out that @code{REG_BR_PROB_BASE} and
@@ -527,7 +527,7 @@ this is best modeled as redirection of edges in the control flow graph
 and thus use of @code{redirect_edge_and_branch} is preferred over more
 low level functions, such as @code{redirect_jump} that operate on RTL
 chain only.  The CFG hooks defined in @file{cfghooks.h} should provide
-the complete API required for manipulating and maintaining the CFG.
+the complete API required for manipulating and maintaining the CFG@.
 
 @findex find_sub_basic_blocks, split_block
 It is also possible that a pass has to insert control flow instruction
@@ -561,7 +561,7 @@ function may be useful to find bugs in the control flow graph updating
 code.
 
 Note that at present, the representation of control flow in the
-@code{tree} representation is discarded before expanding to RTL.
+@code{tree} representation is discarded before expanding to RTL@.
 Long term the CFG should be maintained and ``expanded'' to the
 RTL representation along with the function @code{tree} itself.
 

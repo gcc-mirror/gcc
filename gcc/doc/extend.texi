@@ -142,7 +142,7 @@ must use @code{typeof} (@pxref{Typeof}).
 
 In G++, the result value of a statement expression undergoes array and
 function pointer decay, and is returned by value to the enclosing
-expression. For instance, if @code{A} is a class, then
+expression.  For instance, if @code{A} is a class, then
 
 @smallexample
         A a;
@@ -193,7 +193,7 @@ bug.)
 @cindex macros, local labels
 
 GCC allows you to declare @dfn{local labels} in any nested block
-scope. A local label is just like an ordinary label, but you can
+scope.  A local label is just like an ordinary label, but you can
 only reference it (with a @code{goto} statement, or by taking its
 address) within the block in which it was declared.
 
@@ -1514,7 +1514,7 @@ you may use @code{__noreturn__} instead of @code{noreturn}.
 attributes.
 
 @table @code
-@c Keep this table alphabetized by attribute name. Treat _ as space.
+@c Keep this table alphabetized by attribute name.  Treat _ as space.
 
 @item alias ("@var{target}")
 @cindex @code{alias} attribute
@@ -1631,8 +1631,8 @@ Currently, the @code{dllexport} attribute is ignored for inlined
 functions, unless the @option{-fkeep-inline-functions} flag has been
 used.  The attribute is also ignored for undefined symbols.
 
-When applied to C++ classes. the attribute marks defined non-inlined
-member functions and static data members as exports. Static consts
+When applied to C++ classes, the attribute marks defined non-inlined
+member functions and static data members as exports.  Static consts
 initialized in-class are not marked unless they are also defined
 out-of-class.
 
@@ -1646,7 +1646,7 @@ the @option{--export-all} linker flag.
 On Microsoft Windows and Symbian OS targets, the @code{dllimport}
 attribute causes the compiler to reference a function or variable via
 a global pointer to a pointer that is set up by the DLL exporting the
-symbol. The attribute implies @code{extern} storage.  On Microsoft
+symbol.  The attribute implies @code{extern} storage.  On Microsoft
 Windows targets, the pointer name is formed by combining @code{_imp__}
 and the function or variable name.
 
@@ -1654,7 +1654,7 @@ You can use @code{__declspec(dllimport)} as a synonym for
 @code{__attribute__ ((dllimport))} for compatibility with other
 compilers.
 
-Currently, the attribute is ignored for inlined functions. If the
+Currently, the attribute is ignored for inlined functions.  If the
 attribute is applied to a symbol @emph{definition}, an error is reported.
 If a symbol previously declared @code{dllimport} is later defined, the
 attribute is ignored in subsequent references, and a warning is emitted.
@@ -1676,12 +1676,12 @@ the current translation unit.
 
 For Microsoft Windows based targets the use of the @code{dllimport}
 attribute on functions is not necessary, but provides a small
-performance benefit by eliminating a thunk in the DLL. The use of the
+performance benefit by eliminating a thunk in the DLL@.  The use of the
 @code{dllimport} attribute on imported variables was required on older
 versions of the GNU linker, but can now be avoided by passing the
-@option{--enable-auto-import} switch to the GNU linker. As with
+@option{--enable-auto-import} switch to the GNU linker.  As with
 functions, using the attribute for a variable eliminates a thunk in
-the DLL.
+the DLL@.
 
 One drawback to using this attribute is that a pointer to a function
 or variable marked as @code{dllimport} cannot be used as a constant
@@ -1711,17 +1711,17 @@ to call and return from a function.
 
 On 68HC11 the compiler will generate a sequence of instructions
 to invoke a board-specific routine to switch the memory bank and call the
-real function. The board-specific routine simulates a @code{call}.
+real function.  The board-specific routine simulates a @code{call}.
 At the end of a function, it will jump to a board-specific routine
-instead of using @code{rts}. The board-specific return routine simulates
+instead of using @code{rts}.  The board-specific return routine simulates
 the @code{rtc}.
 
 @item fastcall
 @cindex functions that pop the argument stack on the 386
 On the Intel 386, the @code{fastcall} attribute causes the compiler to
-pass the first two arguments in the registers ECX and EDX. Subsequent
-arguments are passed on the stack. The called function will pop the
-arguments off the stack. If the number of arguments is variable all
+pass the first two arguments in the registers ECX and EDX@.  Subsequent
+arguments are passed on the stack.  The called function will pop the
+arguments off the stack.  If the number of arguments is variable all
 arguments are pushed on the stack.
 
 @item format (@var{archetype}, @var{string-index}, @var{first-to-check})
@@ -2214,7 +2214,7 @@ See the ELF gABI for complete details, but the short story is:
 @c keep this list of visibilities in alphabetical order.
 
 @item default
-Default visibility is the normal case for ELF.  This value is
+Default visibility is the normal case for ELF@.  This value is
 available for the visibility attribute to override other options
 that may change the assumed visibility of symbols.
 
@@ -2374,10 +2374,10 @@ feature is intended for code generated by programs which contains labels
 that may be unused but which is compiled with @option{-Wall}.  It would
 not normally be appropriate to use in it human-written code, though it
 could be useful in cases where the code that jumps to the label is
-contained within an @code{#ifdef} conditional. GNU C++ does not permit
+contained within an @code{#ifdef} conditional.  GNU C++ does not permit
 such placement of attribute lists, as it is permissible for a
 declaration, which could begin with an attribute list, to be labelled in
-C++. Declarations cannot be labelled in C90 or C99, so the ambiguity
+C++.  Declarations cannot be labelled in C90 or C99, so the ambiguity
 does not arise there.
 
 An attribute specifier list may appear as part of a @code{struct},
@@ -2976,7 +2976,7 @@ The @code{dllexport} attribute is described in @xref{Function Attributes}.
 
 @subsection M32R/D Variable Attributes
 
-One attribute is currently defined for the M32R/D.
+One attribute is currently defined for the M32R/D@.
 
 @table @code
 @item model (@var{model-name})
@@ -3147,7 +3147,7 @@ alignment.  See your linker documentation for further information.
 @item packed
 This attribute, attached to @code{struct} or @code{union} type
 definition, specifies that each member of the structure or union is
-placed to minimize the memory required. When attached to an @code{enum}
+placed to minimize the memory required.  When attached to an @code{enum}
 definition, it indicates that the smallest integral type should be used.
 
 @opindex fshort-enums
@@ -3312,7 +3312,7 @@ above in recent GCC versions.
 On those ARM targets that support @code{dllimport} (such as Symbian
 OS), you can use the @code{notshared} attribute to indicate that the
 virtual table and other similar data for a class should not be
-exported from a DLL.  For example:
+exported from a DLL@.  For example:
 
 @smallexample
 class __declspec(notshared) C @{
@@ -3502,7 +3502,7 @@ template from the first output operand and another separates the last
 output operand from the first input, if any.  Commas separate the
 operands within each group.  The total number of operands is currently
 limited to 30; this limitation may be lifted in some future version of
-GCC.
+GCC@.
 
 If there are no output operands but there are input operands, you must
 place two consecutive colons surrounding the place where the output
@@ -4344,7 +4344,7 @@ This function returns the return address of the current function, or of
 one of its callers.  The @var{level} argument is number of frames to
 scan up the call stack.  A value of @code{0} yields the return address
 of the current function, a value of @code{1} yields the return address
-of the caller of the current function, and so forth. When inlining
+of the caller of the current function, and so forth.  When inlining
 the expected behavior is that the function will return the address of
 the function that will be returned to.  To work around this behavior use
 the @code{noinline} function attribute.
@@ -4354,7 +4354,7 @@ The @var{level} argument must be a constant integer.
 On some machines it may be impossible to determine the return address of
 any function other than the current one; in such cases, or when the top
 of the stack has been reached, this function will return @code{0} or a
-random value. In addition, @code{__builtin_frame_address} may be used
+random value.  In addition, @code{__builtin_frame_address} may be used
 to determine if the top of the stack has been reached.
 
 This function should only be used with a nonzero argument for debugging
@@ -4882,7 +4882,7 @@ The remaining functions are provided for optimization purposes.
 GCC includes built-in versions of many of the functions in the standard
 C library.  The versions prefixed with @code{__builtin_} will always be
 treated as having the same meaning as the C library function even if you
-specify the @option{-fno-builtin} option. (@pxref{C Dialect Options})
+specify the @option{-fno-builtin} option.  (@pxref{C Dialect Options})
 Many of these functions are only optimized in certain cases; if they are
 not optimized in a particular case, a call to the library function will
 be emitted.
@@ -5053,7 +5053,7 @@ depending on the arguments' types.  For example:
   @})
 @end smallexample
 
-@emph{Note:} This construct is only available for C.
+@emph{Note:} This construct is only available for C@.
 
 @end deftypefn
 
@@ -5093,7 +5093,7 @@ Example:
       (void)0))
 @end smallexample
 
-@emph{Note:} This construct is only available for C.  Furthermore, the
+@emph{Note:} This construct is only available for C@.  Furthermore, the
 unused expression (@var{exp1} or @var{exp2} depending on the value of
 @var{const_exp}) may still generate syntax errors.  This may change in
 future revisions.
@@ -5266,7 +5266,7 @@ leading @samp{0} or @samp{0x} prefixes.  The number parsed is placed
 in the significand such that the least significant bit of the number
 is at the least significant bit of the significand.  The number is
 truncated to fit the significand field provided.  The significand is
-forced to be a quiet NaN.
+forced to be a quiet NaN@.
 
 This function, if given a string literal, is evaluated early enough
 that it is considered a compile-time constant.
@@ -5282,7 +5282,7 @@ Similar to @code{__builtin_nan}, except the return type is @code{long double}.
 
 @deftypefn {Built-in Function} double __builtin_nans (const char *str)
 Similar to @code{__builtin_nan}, except the significand is forced
-to be a signaling NaN.  The @code{nans} function is proposed by
+to be a signaling NaN@.  The @code{nans} function is proposed by
 @uref{http://www.open-std.org/jtc1/sc22/wg14/www/docs/n965.htm,,WG14 N965}.
 @end deftypefn
 
@@ -5314,7 +5314,7 @@ Returns the number of 1-bits in @var{x}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_parity (unsigned int x)
-Returns the parity of @var{x}, i.@:e. the number of 1-bits in @var{x}
+Returns the parity of @var{x}, i.e.@: the number of 1-bits in @var{x}
 modulo 2.
 @end deftypefn
 
@@ -8648,7 +8648,7 @@ declarations to have @var{string} prepended to their assembly symbols.
 This effect may be terminated with another @code{extern_prefix} pragma
 whose argument is an empty string.  The preprocessor macro
 @code{__PRAGMA_EXTERN_PREFIX} will be defined if this pragma is
-available (currently only on Tru64 UNIX).
+available (currently only on Tru64 UNIX)@.
 @end table
 
 These pragmas and the asm labels extension interact in a complicated
