@@ -1,3 +1,8 @@
+2001-01-31  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * gcc.dg/cpp/avoidpaste1.c: Update.
+        * gcc.dg/cpp/paste4.c: Update.
+
 2001-01-30  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* gcc.dg/c99-float-1.c: XFAIL FLT_EVAL_METHOD and DECIMAL_DIG
