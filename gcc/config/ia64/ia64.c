@@ -1154,6 +1154,7 @@ ia64_expand_move (op0, op1)
       if ((tls_kind = tls_symbolic_operand (op1, Pmode)))
 	{
 	  rtx tga_op1, tga_op2, tga_ret, tga_eqv, tmp, insns;
+	  rtx orig_op0 = op0;
 
 	  switch (tls_kind)
 	    {
@@ -1177,8 +1178,10 @@ ia64_expand_move (op0, op1)
 	      insns = get_insns ();
 	      end_sequence ();
 
+	      if (GET_MODE (op0) != Pmode)
+		op0 = tga_ret;
 	      emit_libcall_block (insns, op0, tga_ret, op1);
-	      return NULL_RTX;
+	      break;
 
 	    case TLS_MODEL_LOCAL_DYNAMIC:
 	      /* ??? This isn't the completely proper way to do local-dynamic
@@ -1206,20 +1209,15 @@ ia64_expand_move (op0, op1)
 	      tmp = gen_reg_rtx (Pmode);
 	      emit_libcall_block (insns, tmp, tga_ret, tga_eqv);
 
-	      if (register_operand (op0, Pmode))
-		tga_ret = op0;
-	      else
-		tga_ret = gen_reg_rtx (Pmode);
+	      if (!register_operand (op0, Pmode))
+		op0 = gen_reg_rtx (Pmode);
 	      if (TARGET_TLS64)
 		{
-		  emit_insn (gen_load_dtprel (tga_ret, op1));
-		  emit_insn (gen_adddi3 (tga_ret, tmp, tga_ret));
+		  emit_insn (gen_load_dtprel (op0, op1));
+		  emit_insn (gen_adddi3 (op0, tmp, op0));
 		}
 	      else
-		emit_insn (gen_add_dtprel (tga_ret, tmp, op1));
-	      if (tga_ret == op0)
-		return NULL_RTX;
-	      op1 = tga_ret;
+		emit_insn (gen_add_dtprel (op0, tmp, op1));
 	      break;
 
 	    case TLS_MODEL_INITIAL_EXEC:
@@ -1229,35 +1227,32 @@ ia64_expand_move (op0, op1)
 	      RTX_UNCHANGING_P (tmp) = 1;
 	      tmp = force_reg (Pmode, tmp);
 
-	      if (register_operand (op0, Pmode))
-		op1 = op0;
-	      else
-		op1 = gen_reg_rtx (Pmode);
-	      emit_insn (gen_adddi3 (op1, tmp, gen_thread_pointer ()));
-	      if (op1 == op0)
-		return NULL_RTX;
+	      if (!register_operand (op0, Pmode))
+		op0 = gen_reg_rtx (Pmode);
+	      emit_insn (gen_adddi3 (op0, tmp, gen_thread_pointer ()));
 	      break;
 
 	    case TLS_MODEL_LOCAL_EXEC:
-	      if (register_operand (op0, Pmode))
-		tmp = op0;
-	      else
-		tmp = gen_reg_rtx (Pmode);
+	      if (!register_operand (op0, Pmode))
+		op0 = gen_reg_rtx (Pmode);
 	      if (TARGET_TLS64)
 		{
-		  emit_insn (gen_load_tprel (tmp, op1));
-		  emit_insn (gen_adddi3 (tmp, gen_thread_pointer (), tmp));
+		  emit_insn (gen_load_tprel (op0, op1));
+		  emit_insn (gen_adddi3 (op0, gen_thread_pointer (), op0));
 		}
 	      else
-		emit_insn (gen_add_tprel (tmp, gen_thread_pointer (), op1));
-	      if (tmp == op0)
-		return NULL_RTX;
-	      op1 = tmp;
+		emit_insn (gen_add_tprel (op0, gen_thread_pointer (), op1));
 	      break;
 
 	    default:
 	      abort ();
 	    }
+
+	  if (orig_op0 == op0)
+	    return NULL_RTX;
+	  if (GET_MODE (orig_op0) == Pmode)
+	    return op0;
+	  return gen_lowpart (GET_MODE (orig_op0), op0);
 	}
       else if (!TARGET_NO_PIC &&
 	       (symbolic_operand (op1, Pmode) ||

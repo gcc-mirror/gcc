@@ -1,3 +1,9 @@
+2003-09-09  Richard Henderson  <rth@redhat.com>
+
+	PR target/12224:
+        * config/ia64/ia64.c (ia64_expand_move): Properly truncate
+        result when op0 is SImode.
+
 2003-09-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in (gcc_cv_as_ix86_cmov_sun_syntax): Check if
