@@ -474,7 +474,7 @@ TARGET_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)
 # The HOST_* variables are a special case, which are used for the gcc
 # cross-building scheme.
 EXTRA_GCC_FLAGS = \
-	'AR=$$(AR_FOR_TARGET)' \
+	'AR=$(AR)' \
 	'AS=$(AS)' \
 	'CC=$(CC)' \
 	'CXX=$(CXX)' \
@@ -483,7 +483,7 @@ EXTRA_GCC_FLAGS = \
 	'HOST_PREFIX=$(HOST_PREFIX)' \
 	'HOST_PREFIX_1=$(HOST_PREFIX_1)' \
 	'NM=$(NM)' \
-	'RANLIB=$$(RANLIB_FOR_TARGET)' \
+	'RANLIB=$(RANLIB)' \
 	'WINDRES=$$(WINDRES_FOR_TARGET)' \
 	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
 	"`echo 'LANGUAGES=$(LANGUAGES)' | sed -e s/.*=$$/XFOO=/`" \
