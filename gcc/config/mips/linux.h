@@ -279,3 +279,9 @@ void FN ()							\
 /* Tell function_prologue in mips.c that we have already output the .ent/.end
    pseudo-ops.  */
 #define FUNCTION_NAME_ALREADY_DECLARED
+
+/* The glibc _mcount stub will save $v0 for us.  Don't mess with saving
+   it, since ASM_OUTPUT_REG_PUSH/ASM_OUTPUT_REG_POP do not work in the
+   presence of $gp-relative calls.  */
+#undef ASM_OUTPUT_REG_PUSH
+#undef ASM_OUTPUT_REG_POP
