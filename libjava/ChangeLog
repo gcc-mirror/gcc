@@ -1,3 +1,33 @@
+2003-09-19  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkDialogPeer.java (create()): Create a
+	top-level GTK window.
+	(getArgs): Add "title" property.
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java (setResizable): Use
+	"allow_shrink" and "allow_grow" properties.
+	* java/awt/Dialog.java: Initialize resizable to true and change
+	comments accordingly.  Initialize visible to false in
+	constructors.
+	* java/awt/Frame.java (dispose): Remove method.
+	* java/awt/Window.java (ownedWindows): New field.
+	(Window(Window,GraphicsConfiguration)): Add a weak reference to
+	owner's ownedWindows vector.
+	(finalize): Remove method.
+	(hide): Hide owned windows.
+	(dispose): Dispose of owned windows.
+	(getOwnedWindows): Implement.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c: Remove
+	unused GtkArg code.
+	(set(String,boolean)): Clamp gboolean parameter to g_object_set
+	to TRUE or FALSE.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(create): Set window's size requisition.
+	(connectHooks): Fix indentation.
+	(setResizable): Remove function.
+	(static setBounds): Likewise.
+	(setBounds): Replace call to setBounds with GTK size requisition
+	and resize calls.
+
 2003-09-19  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* win32-threads.cc: (ensure_interrupt_event_initialized) New

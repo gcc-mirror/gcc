@@ -438,25 +438,6 @@ addNotify()
 /*************************************************************************/
 
 /**
-  * Destroys any resources associated with this frame.  This includes
-  * all components in the frame and all owned toplevel windows.
-  */
-public void
-dispose()
-{
-  Enumeration e = ownedWindows.elements();
-  while(e.hasMoreElements())
-    {
-      Window w = (Window)e.nextElement();
-      w.dispose();
-    }
-
-  super.dispose();
-}
-
-/*************************************************************************/
-
-/**
   * Returns a debugging string describing this window.
   *
   * @return A debugging string describing this window.
@@ -472,8 +453,6 @@ getFrames()
 {
   //Frame[] array = new Frames[frames.size()];
   //return frames.toArray(array);
-    
-    // see finalize() comment
   String msg = "FIXME: can't be implemented without weak references";
   throw new UnsupportedOperationException(msg);
 }
