@@ -811,23 +811,25 @@ struct cum_arg
    After reload, it makes no difference, since pseudo regs have
    been eliminated by then.  */
 
+/* Non-strict versions.  */
+#define REG_OK_FOR_INDEX_NONSTRICT_P(X) 0
+/* Don't use REGNO_OK_FOR_BASE_P here because it uses reg_renumber.  */
+#define REG_OK_FOR_BASE_NONSTRICT_P(X)				\
+  (REGNO (X) >= FIRST_PSEUDO_REGISTER || REGNO (X) != 8)
+
+/* Strict versions.  */
+#define REG_OK_FOR_INDEX_STRICT_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
+#define REG_OK_FOR_BASE_STRICT_P(X)  REGNO_OK_FOR_BASE_P (REGNO (X))
+
 #ifndef REG_OK_STRICT
 
-/* Nonzero if X is a hard reg that can be used as an index
-   or if it is a pseudo reg.  */
-#define REG_OK_FOR_INDEX_P(X) 0
-/* Nonzero if X is a hard reg that can be used as a base reg
-   or if it is a pseudo reg.  */
-/* Don't use REGNO_OK_FOR_BASE_P here because it uses reg_renumber.  */
-#define REG_OK_FOR_BASE_P(X) \
-	(REGNO (X) >= FIRST_PSEUDO_REGISTER || REGNO (X) != 8)
+#define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_INDEX_NONSTRICT_P (X)
+#define REG_OK_FOR_BASE_P(X)  REG_OK_FOR_BASE_NONSTRICT_P (X)
 
 #else
 
-/* Nonzero if X is a hard reg that can be used as an index.  */
-#define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
-/* Nonzero if X is a hard reg that can be used as a base reg.  */
-#define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
+#define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_INDEX_STRICT_P (X)
+#define REG_OK_FOR_BASE_P(X)  REG_OK_FOR_BASE_STRICT_P (X)
 
 #endif
 
