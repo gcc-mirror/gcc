@@ -1542,8 +1542,14 @@ ia64_function_arg (cum, mode, type, named, incoming)
   int offset = 0;
   enum machine_mode hfa_mode = VOIDmode;
 
-  /* Arguments larger than 8 bytes start at the next even boundary.  */
-  if (words > 1 && (cum->words & 1))
+  /* Integer and float arguments larger than 8 bytes start at the next even
+     boundary.  Aggregates larger than 8 bytes start at the next even boundary
+     if the aggregate has 16 byte alignment.  */
+  /* ??? The ABI does not specify how to handle aggregates with alignment from
+     9 to 15 bytes, or greater than 16.   We handle them all as if they had
+     16 byte alignment.  Such aggregates can occur only if gcc extensions are
+     used.  */
+  if ((TYPE_ALIGN (type) > 8 * BITS_PER_UNIT) && (cum->words & 1))
     offset = 1;
 
   /* If all argument slots are used, then it must go on the stack.  */
