@@ -1725,6 +1725,7 @@ compile_file (name)
 	if (warn_unused
 	    && (TREE_CODE (decl) == FUNCTION_DECL
 		|| TREE_CODE (decl) == VAR_DECL)
+	    && ! DECL_IN_SYSTEM_HEADER (decl)
 	    && ! TREE_EXTERNAL (decl)
 	    && ! TREE_PUBLIC (decl)
 	    && ! TREE_USED (decl)
@@ -2048,11 +2049,6 @@ rest_of_compilation (decl)
 	  TIMEVAR (integration_time, save_for_inline_copying (decl));
 	}
     }
-
-  /* Suppress warnings for unused static functions
-     defined (not just declared) in system headers.  */
-  if (in_system_header && TREE_STATIC (decl) && !TREE_INLINE (decl))
-    TREE_USED (decl) = 1;
 
   TREE_ASM_WRITTEN (decl) = 1;
 
