@@ -85,7 +85,7 @@ extern int    function_arg_partial_nregs    PARAMS ((CUMULATIVE_ARGS *, Mmode, t
 #endif
 #endif
 
-#ifdef _C_PRAGMA_H
+#ifdef GCC_C_PRAGMA_H
 extern void ghs_pragma_section		    PARAMS ((cpp_reader *));
 extern void ghs_pragma_interrupt	    PARAMS ((cpp_reader *));
 extern void ghs_pragma_starttda		    PARAMS ((cpp_reader *));

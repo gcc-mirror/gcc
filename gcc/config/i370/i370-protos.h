@@ -50,7 +50,7 @@ extern void i370_function_prolog PARAMS ((FILE *, int));
 extern void check_label_emit PARAMS ((void));
 extern void mvs_free_label_list PARAMS ((void));
 
-#ifdef _C_PRAGMA_H
+#ifdef GCC_C_PRAGMA_H
 extern void i370_pr_map PARAMS ((cpp_reader *));
 #endif
 
