@@ -614,8 +614,8 @@ public class BasicGraphicsUtils
       b.getToolkit().getFontMetrics(b.getFont()), // see comment above
       b.getText(),
       b.getIcon(),
-      b.getVerticalAlignment(),
-      b.getHorizontalAlignment(),
+      SwingUtilities.TOP,    // important:
+      SwingUtilities.LEFT,   // large vrect, stick to the top left
       b.getVerticalTextPosition(),
       b.getHorizontalTextPosition(),
       viewRect, iconRect, textRect,

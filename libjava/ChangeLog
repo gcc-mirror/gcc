@@ -1,3 +1,10 @@
+2004-02-02  Graydon Hoare  <graydon@redhat.com>
+
+	* javax/swing/SwingUtilities.java: Many new functions.
+	* java/awt/Container.java (LightweightDispatcher): Reimplement.
+	* javax/swing/basic/BasicGraphicsUtils.java 
+	(getPreferredButtonSize): Start layout from top-left corner.
+
 2004-02-04  Olga Rodimina  <rodimina@redhat.com>
 
 	* java/awt/geom/AffineTransform.java: 
