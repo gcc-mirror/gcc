@@ -2069,6 +2069,7 @@ expand_end_loop ()
 {
   rtx start_label = loop_stack->data.loop.start_label;
   rtx insn = get_last_insn ();
+  int needs_end_jump = 1;
 
   /* Mark the continue-point at the top of the loop if none elsewhere.  */
   if (start_label == loop_stack->data.loop.continue_label)
@@ -2076,9 +2077,77 @@ expand_end_loop ()
 
   do_pending_stack_adjust ();
 
-  /* If optimizing, perhaps reorder the loop.  If the loop starts with
-     a loop exit, roll that to the end where it will optimize together
-     with the jump back.
+  /* If optimizing, perhaps reorder the loop.
+     First, try to use a condjump near the end.
+     expand_exit_loop_if_false ends loops with unconditional jumps,
+     like this:
+
+     if (test) goto label;
+     optional: cleanup
+     goto loop_stack->data.loop.end_label
+     barrier
+     label:
+
+     If we find such a pattern, we can end the loop earlier.  */
+
+  if (optimize
+      && GET_CODE (insn) == CODE_LABEL
+      && LABEL_NAME (insn) == NULL
+      && GET_CODE (PREV_INSN (insn)) == BARRIER)
+    {
+      rtx label = insn;
+      rtx jump = PREV_INSN (PREV_INSN (label));
+
+      if (GET_CODE (jump) == JUMP_INSN
+	  && GET_CODE (PATTERN (jump)) == SET
+	  && SET_DEST (PATTERN (jump)) == pc_rtx
+	  && GET_CODE (SET_SRC (PATTERN (jump))) == LABEL_REF
+	  && (XEXP (SET_SRC (PATTERN (jump)), 0)
+	      == loop_stack->data.loop.end_label))
+	{
+	  rtx prev;
+
+	  /* The test might be complex and reference LABEL multiple times,
+	     like the loop in loop_iterations to set vtop.  To handle this,
+	     we move LABEL.  */
+	  insn = PREV_INSN (label);
+	  reorder_insns (label, label, start_label);
+
+	  for (prev = PREV_INSN (jump); ; prev = PREV_INSN (prev))
+	   {
+	      /* We ignore line number notes, but if we see any other note,
+		 in particular NOTE_INSN_BLOCK_*, NOTE_INSN_EH_REGION_*,
+		 NOTE_INSN_LOOP_*, we disable this optimization.  */
+	      if (GET_CODE (prev) == NOTE)
+		{
+		  if (NOTE_LINE_NUMBER (prev) < 0)
+		    break;
+		  continue;
+		}
+	      if (GET_CODE (prev) == CODE_LABEL)
+		break;
+	      if (GET_CODE (prev) == JUMP_INSN)
+		{
+		  if (GET_CODE (PATTERN (prev)) == SET
+		      && SET_DEST (PATTERN (prev)) == pc_rtx
+		      && GET_CODE (SET_SRC (PATTERN (prev))) == IF_THEN_ELSE
+		      && (GET_CODE (XEXP (SET_SRC (PATTERN (prev)), 1))
+			  == LABEL_REF)
+		      && XEXP (XEXP (SET_SRC (PATTERN (prev)), 1), 0) == label)
+		    {
+		      XEXP (XEXP (SET_SRC (PATTERN (prev)), 1), 0)
+			= start_label;
+		      emit_note_after (NOTE_INSN_LOOP_END, prev);
+		      needs_end_jump = 0;
+		    }
+		  break;
+		}
+	   }
+	}
+    }
+
+     /* If the loop starts with a loop exit, roll that to the end where
+     it will optimize together with the jump back.
 
      We look for the conditional branch to the exit, except that once
      we find such a branch, we don't look past 30 instructions.
@@ -2105,6 +2174,7 @@ expand_end_loop ()
      code, terminating in a test.  */
 
   if (optimize
+      && needs_end_jump
       &&
       ! (GET_CODE (insn) == JUMP_INSN
 	 && GET_CODE (PATTERN (insn)) == SET
@@ -2288,8 +2358,11 @@ expand_end_loop ()
 	}
     }
 
-  emit_jump (start_label);
-  emit_note (NULL_PTR, NOTE_INSN_LOOP_END);
+  if (needs_end_jump)
+    {
+      emit_jump (start_label);
+      emit_note (NULL_PTR, NOTE_INSN_LOOP_END);
+    }
   emit_label (loop_stack->data.loop.end_label);
 
   POPSTACK (loop_stack);

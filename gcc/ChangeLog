@@ -1,3 +1,8 @@
+Thu Feb 25 18:40:06 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* stmt.c (expand_end_loop): Grok code emitted by
+	expand_exit_loop_if_false.
+
 Thu Feb 25 10:17:32 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.c (return_in_memory): Float fields in unions
