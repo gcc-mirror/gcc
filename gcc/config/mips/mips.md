@@ -4317,22 +4317,11 @@ beq\t%2,%.,1b\;\
   DONE;
 })
 
-(define_expand "cmpdf"
+(define_expand "cmp<mode>"
   [(set (cc0)
-	(compare:CC (match_operand:DF 0 "register_operand")
-		    (match_operand:DF 1 "register_operand")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-{
-  cmp_operands[0] = operands[0];
-  cmp_operands[1] = operands[1];
-  DONE;
-})
-
-(define_expand "cmpsf"
-  [(set (cc0)
-	(compare:CC (match_operand:SF 0 "register_operand")
-		    (match_operand:SF 1 "register_operand")))]
-  "TARGET_HARD_FLOAT"
+	(compare:CC (match_operand:SCALARF 0 "register_operand")
+		    (match_operand:SCALARF 1 "register_operand")))]
+  ""
 {
   cmp_operands[0] = operands[0];
   cmp_operands[1] = operands[1];
