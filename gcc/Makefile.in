@@ -141,7 +141,8 @@ prefix = /usr/local
 # Directory in which to put localized header files. On the systems with
 # gcc as the native cc, `local_prefix' may not be `prefix' which is
 # `/usr'.
-local_prefix = $(prefix)
+# NOTE: local_prefix *should not* default from prefix.
+local_prefix = /usr/local
 # Directory in which to put host dependent programs and libraries
 exec_prefix = $(prefix)
 # Directory in which to put the executable for the command `gcc'
@@ -154,6 +155,8 @@ libsubdir = $(libdir)/gcc-lib/$(target)/$(version)
 includedir = $(local_prefix)/include
 # assertdir is overridden in cross-make.
 assertdir = $(includedir)
+# where the info files go
+infodir = $(prefix)/info
 # Extension (if any) to put in installed man-page filename.
 manext = .1
 # Directory in which to put man pages.
@@ -1510,7 +1513,8 @@ realclean: distclean
 install: $(INSTALL_TARGET) ; @true
 
 # Copy the compiler files into directories where they will be run.
-install-normal: install-common $(INSTALL_HEADERS) install-libgcc install-man
+install-normal: install-common $(INSTALL_HEADERS) install-libgcc install-man \
+    install-info
 
 # Do nothing while making gcc with a cross-compiler. The person who
 # makes gcc for the target machine has to know how to put a complete
@@ -1550,6 +1554,7 @@ install-dir:
 	  if [ -d $(assertdir) ] ; then true ; else mkdir $(assertdir) ; fi ; \
 	else true; \
 	fi
+	-if [ -d $(infodir) ] ; then true ; else mkdir $(infodir) ; fi
 # We don't use mkdir -p to create the parents of mandir,
 # because some systems don't support it.
 # Instead, we use this technique to create the immediate parent of mandir.
@@ -1614,6 +1619,13 @@ install-common: native install-dir xgcc $(EXTRA_PARTS)
 	fi
 	-rm -f $(libsubdir)/cpp
 	$(INSTALL_PROGRAM) cpp $(libsubdir)/cpp
+
+# Install the info files.
+install-info: doc
+	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
+	cd $(srcdir); for f in cpp.info* gcc.info*; \
+	do $(INSTALL_DATA) $$f $(infodir)/$$f; done
+	-chmod a-x $(infodir)/cpp.info* $(infodir)/gcc.info*
 
 # Install the man pages.
 install-man: install-dir $(srcdir)/gcc.1 $(srcdir)/cccp.1 $(srcdir)/g++.1
