@@ -974,14 +974,14 @@ namespace std
         }
       else
         {
-          locale __loc = __io.getloc();
-	  const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc); 
+	  typedef __locale_cache<_CharT> __cache_type;
+	  __cache_type& __lc = static_cast<__cache_type&>(__io._M_cache());
 	  typedef basic_string<_CharT> 	__string_type;
 	  __string_type __name;
           if (__v)
-	    __name = __np.truename();
+	    __name = __lc.truename();
           else
-	    __name = __np.falsename();
+	    __name = __lc.falsename();
 
 	  const _CharT* __cs = __name.c_str();
 	  int __len = __name.size();
