@@ -1,3 +1,8 @@
+Tue Mar  3 10:00:11 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* toplev.c: Only generate <name>.dbr file when dumping RTL if
+	DEALY_SLOTS is defined. 
+
 Tue Mar  3 07:36:37 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* reorg.c (fill_eager_delay_slots): Add new argument delay_list

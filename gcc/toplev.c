@@ -276,7 +276,9 @@ int local_reg_dump = 0;
 int global_reg_dump = 0;
 int sched2_dump = 0;
 int jump2_opt_dump = 0;
+#ifdef DELAY_SLOTS
 int dbr_sched_dump = 0;
+#endif
 int flag_print_asm_name = 0;
 #ifdef STACK_REGS
 int stack_reg_dump = 0;
@@ -983,7 +985,9 @@ int sched_time;
 int local_alloc_time;
 int global_alloc_time;
 int sched2_time;
+#ifdef DELAY_SLOTS
 int dbr_sched_time;
+#endif
 int shorten_branch_time;
 int stack_reg_time;
 int final_time;
@@ -2279,7 +2283,9 @@ compile_file (name)
   local_alloc_time = 0;
   global_alloc_time = 0;
   sched2_time = 0;
+#ifdef DELAY_SLOTS
   dbr_sched_time = 0;
+#endif
   shorten_branch_time = 0;
   stack_reg_time = 0;
   final_time = 0;
@@ -2371,8 +2377,10 @@ compile_file (name)
     clean_dump_file (".sched2");
   if (jump2_opt_dump)
     clean_dump_file (".jump2");
+#ifdef DELAY_SLOTS
   if (dbr_sched_dump)
     clean_dump_file (".dbr");
+#endif
 #ifdef STACK_REGS
   if (stack_reg_dump)
     clean_dump_file (".stack");
@@ -2859,7 +2867,9 @@ compile_file (name)
       print_time ("local-alloc", local_alloc_time);
       print_time ("global-alloc", global_alloc_time);
       print_time ("sched2", sched2_time);
+#ifdef DELAY_SLOTS
       print_time ("dbranch", dbr_sched_time);
+#endif
       print_time ("shorten-branch", shorten_branch_time);
       print_time ("stack-reg", stack_reg_time);
       print_time ("final", final_time);
@@ -3836,7 +3846,9 @@ main (argc, argv, envp)
  		  case 'a':
 		    branch_prob_dump = 1;
  		    combine_dump = 1;
+#ifdef DELAY_SLOTS
  		    dbr_sched_dump = 1;
+#endif
  		    flow_dump = 1;
  		    global_reg_dump = 1;
  		    jump_opt_dump = 1;
@@ -3867,9 +3879,11 @@ main (argc, argv, envp)
 		  case 'c':
 		    combine_dump = 1;
 		    break;
+#ifdef DELAY_SLOTS
 		  case 'd':
 		    dbr_sched_dump = 1;
 		    break;
+#endif
 		  case 'f':
 		    flow_dump = 1;
 		    break;
