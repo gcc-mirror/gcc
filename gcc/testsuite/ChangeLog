@@ -1,3 +1,7 @@
+1998-05-23  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lib/old-dejagnu.exp: Ignore C++ "instantiated from" mesages.
+
 Thu May 21 23:23:21 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980520-1.c: New test.
