@@ -1739,7 +1739,7 @@ static void add_func_table	PROTO((mo_header_t *, load_all_t *,
 static void print_header	PROTO((mo_header_t *));
 static void print_load_command	PROTO((load_union_t*, size_t, int));
 static void bad_header		PROTO((int));
-static struct file_info	*read_file  PROTO((hcar *, int, int));
+static struct file_info	*read_file  PROTO((char *, int, int));
 static void end_file		PROTO((struct file_info *));
 
 /* OSF/rose specific version to scan the name list of the loaded
