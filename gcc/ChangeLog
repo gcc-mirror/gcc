@@ -1,6 +1,8 @@
 2003-07-06  Andreas Jaeger  <aj@suse.de>
 
-	* unroll.c: Likewise.
+	* varray.c (varray_check_failed): Fix typo.
+
+	* unroll.c: Convert prototypes to ISO C90.
 	* varasm.c: Likewise.
 	* varray.c: Likewise.
 	* varray.h: Likewise.
