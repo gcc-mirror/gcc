@@ -2418,9 +2418,9 @@ stage1-start:
 	-mv $(STAGESTUFF) stage1
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
-	-if [ -f as$(exeext) ] ; then ln -s as$(exeext) stage1 || cp as$(exeext) stage1 ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then ln -s ld$(exeext) stage1 || cp ld$(exeext) stage1 ; else true ; fi
-	-if [ -f collect-ld$(exeext) ] ; then ln -s collect-ld$(exeext) stage1 || cp collect-ld$(exeext) stage1 ; else true ; fi
+	-if [ -f as$(exeext) ] ; then ln -s ../as$(exeext) stage1 || cp as$(exeext) stage1 ; else true ; fi
+	-if [ -f ld$(exeext) ] ; then ln -s ../ld$(exeext) stage1 || cp ld$(exeext) stage1 ; else true ; fi
+	-if [ -f collect-ld$(exeext) ] ; then ln -s ../collect-ld$(exeext) stage1 || cp collect-ld$(exeext) stage1 ; else true ; fi
 	-rm -f stage1/libgcc.a
 	-cp libgcc.a stage1
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage1/libgcc.a; else true; fi
@@ -2435,9 +2435,9 @@ stage2-start:
 	-mv $(STAGESTUFF) stage2
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
-	-if [ -f as$(exeext) ] ; then ln -s as$(exeext) stage2 || cp as$(exeext) stage2 ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then ln -s ld$(exeext) stage2 || cp ld$(exeext) stage2 ; else true ; fi
-	-if [ -f collect-ld ] ; then ln -s collect-ld$(exeext) stage2 || cp collect-ld$(exeext) stage2 ; else true ; fi
+	-if [ -f as$(exeext) ] ; then ln -s ../as$(exeext) stage2 || cp as$(exeext) stage2 ; else true ; fi
+	-if [ -f ld$(exeext) ] ; then ln -s ../ld$(exeext) stage2 || cp ld$(exeext) stage2 ; else true ; fi
+	-if [ -f collect-ld ] ; then ln -s ../collect-ld$(exeext) stage2 || cp collect-ld$(exeext) stage2 ; else true ; fi
 	-rm -f stage2/libgcc.a
 	-cp libgcc.a stage2
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage2/libgcc.a; else true; fi
@@ -2452,9 +2452,9 @@ stage3-start:
 	-mv $(STAGESTUFF) stage3
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
-	-if [ -f as$(exeext) ] ; then ln -s as$(exeext) stage3 || cp as$(exeext) stage3 ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then ln -s ld$(exeext) stage3 || cp ld$(exeext) stage3 ; else true ; fi
-	-if [ -f collect-ld$(exeext) ] ; then ln -s collect-ld$(exeext) stage3 || cp collect-ld$(exeext) stage3 ; else true ; fi
+	-if [ -f as$(exeext) ] ; then ln -s ../as$(exeext) stage3 || cp as$(exeext) stage3 ; else true ; fi
+	-if [ -f ld$(exeext) ] ; then ln -s ../ld$(exeext) stage3 || cp ld$(exeext) stage3 ; else true ; fi
+	-if [ -f collect-ld$(exeext) ] ; then ln -s ../collect-ld$(exeext) stage3 || cp collect-ld$(exeext) stage3 ; else true ; fi
 	-rm -f stage3/libgcc.a
 	-cp libgcc.a stage3
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage3/libgcc.a; else true; fi
@@ -2469,9 +2469,9 @@ stage4-start:
 	-mv $(STAGESTUFF) stage4
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
-	-if [ -f as$(exeext) ] ; then ln -s as$(exeext) stage4 || cp as$(exeext) stage4 ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then ln -s ld$(exeext) stage4 || cp ld$(exeext) stage4 ; else true ; fi
-	-if [ -f collect-ld$(exeext) ] ; then ln -s collect-ld$(exeext) stage4 || cp collect-ld$(exeext) stage4 ; else true ; fi
+	-if [ -f as$(exeext) ] ; then ln -s ../as$(exeext) stage4 || cp as$(exeext) stage4 ; else true ; fi
+	-if [ -f ld$(exeext) ] ; then ln -s ../ld$(exeext) stage4 || cp ld$(exeext) stage4 ; else true ; fi
+	-if [ -f collect-ld$(exeext) ] ; then ln -s ../collect-ld$(exeext) stage4 || cp collect-ld$(exeext) stage4 ; else true ; fi
 	-rm -f stage4/libgcc.a
 	-cp libgcc.a stage4
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage4/libgcc.a; else true; fi
