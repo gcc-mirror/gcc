@@ -1764,7 +1764,7 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 				 load it with the correct address directly.  */
 			      if (GET_CODE (temp) == CALL_INSN
 				  && fn_address != 0
-				  && reg_mentioned_p (fn_reg, body))
+				  && reg_referenced_p (fn_reg, body))
 				emit_insn_after (gen_move_insn (fn_reg,
 								fn_address),
 						 fn_address_insn);
