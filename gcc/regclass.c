@@ -1547,18 +1547,16 @@ record_address_regs (x, class, scale)
 
 	else if (code0 == REG && code1 == REG
 		 && REGNO (arg0) < FIRST_PSEUDO_REGISTER
-		 && (REGNO_OK_FOR_BASE_P (REGNO (arg0))
-		     || REGNO_OK_FOR_INDEX_P (REGNO (arg0))))
+		 && (REG_OK_FOR_BASE_P (arg0) || REG_OK_FOR_INDEX_P (arg0)))
 	  record_address_regs (arg1,
-			       REGNO_OK_FOR_BASE_P (REGNO (arg0))
+			       REG_OK_FOR_BASE_P (arg0)
 			       ? INDEX_REG_CLASS : BASE_REG_CLASS,
 			       scale);
 	else if (code0 == REG && code1 == REG
 		 && REGNO (arg1) < FIRST_PSEUDO_REGISTER
-		 && (REGNO_OK_FOR_BASE_P (REGNO (arg1))
-		     || REGNO_OK_FOR_INDEX_P (REGNO (arg1))))
+		 && (REG_OK_FOR_BASE_P (arg1) || REG_OK_FOR_INDEX_P (arg1)))
 	  record_address_regs (arg0,
-			       REGNO_OK_FOR_BASE_P (REGNO (arg1))
+			       REG_OK_FOR_BASE_P (arg1)
 			       ? INDEX_REG_CLASS : BASE_REG_CLASS,
 			       scale);
 
