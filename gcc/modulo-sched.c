@@ -1936,7 +1936,7 @@ ps_insn_find_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
 
   /* Find the first must follow and the last must precede
      and insert the node immediately after the must precede
-     but make sure that it there is no must follow after it.   */
+     but make sure that it there is no must follow after it.  */
   for (next_ps_i = ps->rows[row];
        next_ps_i;
        next_ps_i = next_ps_i->next_in_row)

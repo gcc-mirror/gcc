@@ -103,7 +103,7 @@ struct dom_walk_data
   /* From here below are private data.  Please do not use this
      information/data outside domwalk.c.  */
 
-  /* Stack of available block local structures.   */
+  /* Stack of available block local structures.  */
   varray_type free_block_data;
 };
 

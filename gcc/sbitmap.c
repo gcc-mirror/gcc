@@ -103,7 +103,7 @@ sbitmap_resize (sbitmap bmap, unsigned int n_elms, int def)
   return bmap;
 }
 
-/* Re-allocate a simple bitmap of N_ELMS bits. New storage is uninitialized.   */
+/* Re-allocate a simple bitmap of N_ELMS bits. New storage is uninitialized.  */
 
 sbitmap
 sbitmap_realloc (sbitmap src, unsigned int n_elms)

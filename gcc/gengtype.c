@@ -3006,7 +3006,7 @@ main(int ARG_UNUSED (argc), char ** ARG_UNUSED (argv))
         parse_file (all_files[i]);
 #ifndef USE_MAPPED_LOCATION
       /* temporary kludge - gengtype doesn't handle conditionals.
-	 Manually add source_locus *after* we've processed input.h. */
+	 Manually add source_locus *after* we've processed input.h.  */
       if (i == 0)
 	do_typedef ("source_locus", create_pointer (resolve_typedef ("location_t", &pos)), &pos);
 #endif

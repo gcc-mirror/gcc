@@ -106,7 +106,7 @@ write_tm_preds_h (void)
 	      (match_test "basereg_operand_1 (op, mode)")))
 
    The only wart is that there's no way to insist on a { } string in
-   an RTL template, so we have to handle "" strings. */
+   an RTL template, so we have to handle "" strings.  */
 
    
 static void
@@ -288,7 +288,7 @@ add_mode_tests (struct pred_data *p)
 	    if (test0 && test1)
 	      /* Must put it on the dependent clause, not the
 	      	 controlling expression, or we change the meaning of
-	      	 the test. */
+	      	 the test.  */
 	      pos = &XEXP (subexp, 1);
 	    else
 	      pos = &XEXP (subexp, 2);

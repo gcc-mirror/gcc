@@ -846,7 +846,7 @@ tree_ssa_loop_version (struct loops *loops, struct loop * loop,
 
   /* At this point condition_bb is loop predheader with two successors, 
      first_head and second_head.   Make sure that loop predheader has only 
-     one successor. */
+     one successor.  */
   loop_split_edge_with (loop_preheader_edge (loop), NULL);
   loop_split_edge_with (loop_preheader_edge (nloop), NULL);
 

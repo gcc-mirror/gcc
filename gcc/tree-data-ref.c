@@ -1457,7 +1457,7 @@ analyze_subscript_affine_affine (tree chrec_a,
 		  else
 		    {
 		      /* FIXME: For the moment, the upper bound of the
-			 iteration domain for j is not checked. */
+			 iteration domain for j is not checked.  */
 		      *overlaps_a = chrec_dont_know;
 		      *overlaps_b = chrec_dont_know;
 		      *last_conflicts = chrec_dont_know;
@@ -1467,7 +1467,7 @@ analyze_subscript_affine_affine (tree chrec_a,
 	      else
 		{
 		  /* FIXME: For the moment, the upper bound of the
-		     iteration domain for i is not checked. */
+		     iteration domain for i is not checked.  */
 		  *overlaps_a = chrec_dont_know;
 		  *overlaps_b = chrec_dont_know;
 		  *last_conflicts = chrec_dont_know;

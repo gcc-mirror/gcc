@@ -90,7 +90,7 @@ INSN_NOTE (BASIC_BLOCK)
 
 /* Record that the current basic block is unlikely to be executed and
    should be moved to the UNLIKELY_EXECUTED_TEXT_SECTION.  FIXME: Make
-   this a bit on the basic block structure. */
+   this a bit on the basic block structure.  */
 INSN_NOTE (UNLIKELY_EXECUTED_CODE)
 
 #undef INSN_NOTE

@@ -9027,7 +9027,7 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	     signbit', and attempt to change the PLUS to an XOR and move it to
 	     the outer operation as is done above in the AND/IOR/XOR case
 	     leg for shift(logical). See details in logical handling above
-	     for reasoning in doing so. */
+	     for reasoning in doing so.  */
 	  if (code == LSHIFTRT
 	      && GET_CODE (XEXP (varop, 1)) == CONST_INT
 	      && mode_signbit_p (result_mode, XEXP (varop, 1))

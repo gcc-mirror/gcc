@@ -54,7 +54,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 /* Returns true if ARG is either NULL_TREE or constant zero.  Unlike
-   integer_zerop, it does not care about overflow flags. */
+   integer_zerop, it does not care about overflow flags.  */
 
 bool
 zero_p (tree arg)
@@ -69,7 +69,7 @@ zero_p (tree arg)
 }
 
 /* Returns true if ARG a nonzero constant.  Unlike integer_nonzerop, it does
-   not care about overflow flags. */
+   not care about overflow flags.  */
 
 static bool
 nonzero_p (tree arg)

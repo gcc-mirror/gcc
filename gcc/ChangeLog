@@ -1,5 +1,17 @@
 2004-10-22  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* alias.c, basic-block.h, cgraphunit.c, combine.c, domwalk.h,
+	final.c, gengtype.c, genpreds.c, ggc-page.c, insn-notes.def,
+	lambda-code.c, loop-unroll.c, modulo-sched.c, pointer-set.c,
+	pretty-print.c, ra-colorize.c, sbitmap.c, tree-complex.c,
+	tree-data-ref.c, tree-dfa.c, tree-inline.c, tree-into-ssa.c,
+	tree-scalar-evolution.c, tree-ssa-dom.c,
+	tree-ssa-loop-manip.c, tree-ssa-loop-niter.c,
+	tree-ssa-phiopt.c, tree-ssa-pre.c, tree-ssa-threadupdate.c,
+	tree-vectorizer.c, vec.h: Fix comment formatting.
+
+2004-10-22  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* dwarf.h, gthr-dce.h, gthr-single.h, gthr-solaris.h, gthr.h,
 	libfuncs.h, libgcc2.h, stab.def, tsystem.h: Update copyright.
 
