@@ -1,3 +1,9 @@
+2002-04-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6352
+	* toplev.c (rest_of_compilation): Do not defer functions for which
+	TREE_SYMBOL_REFERENCED has already been set.
+
 Fri Apr 19 15:53:03 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movsi_1, movhi_1): Force reload to use more flexible
