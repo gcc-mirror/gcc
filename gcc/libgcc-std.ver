@@ -132,6 +132,7 @@ GCC_3.0 {
   __sjpopnthrow
   __sjthrow
   __terminate
+  __terminate_set_func
   __throw
   __throw_type_match
   __unwinding_cleanup
