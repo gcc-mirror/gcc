@@ -3000,43 +3000,21 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
 
 /* This is how to output an assembler line defining a `double' constant.  */
 
-#define ASM_OUTPUT_DOUBLE(FILE, VALUE)					\
-  {									\
-    if (REAL_VALUE_ISINF (VALUE)					\
-        || REAL_VALUE_ISNAN (VALUE)					\
-	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
-      {									\
-	long t[2];							\
-	REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);			\
-	fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n",		\
-		t[0] & 0xffffffff, t[1] & 0xffffffff);			\
-      }									\
-    else								\
-      {									\
-	char str[30];							\
-	REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", str);			\
-	fprintf (FILE, "\t.double 0d%s\n", str);			\
-      }									\
+#define ASM_OUTPUT_DOUBLE(FILE, VALUE)			\
+  {							\
+    long t[2];						\
+    REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);		\
+    fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n",	\
+	     t[0] & 0xffffffff, t[1] & 0xffffffff);	\
   }
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
-#define ASM_OUTPUT_FLOAT(FILE, VALUE)					\
-  {									\
-    if (REAL_VALUE_ISINF (VALUE)					\
-        || REAL_VALUE_ISNAN (VALUE)					\
-	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
-      {									\
-	long t;								\
-	REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
-	fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);		\
-      }									\
-    else								\
-      {									\
-	char str[30];							\
-	REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);			\
-	fprintf (FILE, "\t.float 0d%s\n", str);				\
-      }									\
+#define ASM_OUTPUT_FLOAT(FILE, VALUE)			\
+  {							\
+    long t;						\
+    REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);		\
+    fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);	\
   }
 
 /* This is how to output an assembler line defining an `int' constant.  */
@@ -3084,38 +3062,6 @@ do {									\
    at P to FILE.  */
 
 #define ASM_OUTPUT_ASCII(FILE, P, N)  output_ascii ((FILE), (P), (N))
-
-/* This is how to output code to push a register on the stack.
-   It need not be very fast code.
-
-   On the rs6000, we must keep the backchain up to date.  In order
-   to simplify things, always allocate 16 bytes for a push (System V
-   wants to keep stack aligned to a 16 byte boundary).  */
-
-#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)					\
-do {									\
-  extern char *reg_names[];						\
-  asm_fprintf (FILE,							\
-	       (TARGET_32BIT)						\
-	       ? "\t{stu|stwu} %s,-16(%s)\n\t{st|stw} %s,12(%s)\n"	\
-	       : "\tstdu %s,-32(%s)\n\tstd %s,24(%s)\n",		\
-	       reg_names[1], reg_names[1], reg_names[REGNO],		\
-	       reg_names[1]);						\
-} while (0)
-
-/* This is how to output an insn to pop a register from the stack.
-   It need not be very fast code.  */
-
-#define ASM_OUTPUT_REG_POP(FILE,REGNO)					\
-do {									\
-  extern char *reg_names[];						\
-  asm_fprintf (FILE,							\
-	       (TARGET_32BIT)						\
-	       ? "\t{l|lwz} %s,12(%s)\n\t{ai|addic} %s,%s,16\n"		\
-	       : "\tld %s,24(%s)\n\t{ai|addic} %s,%s,32\n",		\
-	       reg_names[REGNO], reg_names[1], reg_names[1],		\
-	       reg_names[1]);						\
-} while (0)
 
 /* This is how to output an element of a case-vector that is absolute.
    (RS/6000 does not use such vectors, but we must define this macro
