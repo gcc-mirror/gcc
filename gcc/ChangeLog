@@ -1,5 +1,12 @@
 2003-09-07  Roger Sayle  <roger@eyesopen.com>
 
+	* expr.c (expand_operands): New function to expand an operand pair.
+	(expand_expr): Call expand_operands whenever we need to expand both
+	operands of a binary operator.
+	(do_store_flag): Likewise for operands of comparison operations.
+
+2003-09-07  Roger Sayle  <roger@eyesopen.com>
+
 	* combine.c (combine_simplify_rtx): Don't convert -(A*B) into
 	(-A)*B if we care about sign-dependent rounding.
 
