@@ -1,3 +1,11 @@
+2002-02-21  Anthony Green  <green@redhat.com>
+
+	* java/lang/Thread.java (Thread): New constructor taking stack
+	size parameter (ignored for now).
+	* Many methods: Merged GNU Classpath documentation.
+
+	* java/lang/Class.java (finalize): throws a Throwable.
+
 2003-02-21  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/zip/ZipEntry.java (setComment): Don't check length when
