@@ -1,3 +1,9 @@
+2004-09-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.c (expand_block_clear): Use vector
+	instructions if available.
+	(expand_block_move): Likewise.
+
 2004-09-03  Jan Hubicka  <jh@suse.cz>
 
 	* rtl.def (RANGE_INFO, RANGE_REG, RANGE_VAR, RANGE_LIVE): Kill.

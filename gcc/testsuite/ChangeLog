@@ -1,3 +1,8 @@
+2004-09-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/ppc-vector-memcpy.c: New.
+	* gcc.dg/ppc-vector-memset.c: New.
+
 2004-09-02  Chao-ying Fu  <fu@mips.com>
 
 	* gcc.target/mips/mips-3d-1.c: New test.
