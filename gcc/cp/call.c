@@ -3241,7 +3241,7 @@ build_over_call (fn, convs, args, flags)
 	      < TYPE_PRECISION (double_type_node)))
 	/* Convert `float' to `double'.  */
 	val = cp_convert (double_type_node, val);
-      else if (TYPE_LANG_SPECIFIC (TREE_TYPE (val))
+      else if (IS_AGGR_TYPE (TREE_TYPE (val))
 	       && ! TYPE_HAS_TRIVIAL_INIT_REF (TREE_TYPE (val)))
 	cp_warning ("cannot pass objects of type `%T' through `...'",
 		    TREE_TYPE (val));
