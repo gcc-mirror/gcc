@@ -571,9 +571,7 @@ AC_ARG_ENABLE(__cxa_atexit,
 AC_ARG_ENABLE(threads,
 [  --enable-threads        enable thread usage for target GCC
   --enable-threads=LIB    use LIB thread package for target GCC],,
-enable_threads='')
-# Save in case it gets overwritten in config.gcc
-enable_threads_flag=$enable_threads
+[enable_threads=''])
 
 AC_ARG_ENABLE(objc-gc,
 [  --enable-objc-gc	  enable the use of Boehm's garbage collector with
@@ -1212,7 +1210,7 @@ fi
 # ---------
 
 # Check if a valid thread package
-case ${enable_threads_flag} in
+case ${enable_threads} in
   "" | no)
     # No threads
     target_thread_file='single'
@@ -1223,10 +1221,10 @@ case ${enable_threads_flag} in
     ;;
   aix | dce | gnat | irix | posix | rtems | \
   single | solaris | vxworks | win32 )
-    target_thread_file=${enable_threads_flag}
+    target_thread_file=${enable_threads}
     ;;
   *)
-    echo "${enable_threads_flag} is an unknown thread package" 1>&2
+    echo "${enable_threads} is an unknown thread package" 1>&2
     exit 1
     ;;
 esac
