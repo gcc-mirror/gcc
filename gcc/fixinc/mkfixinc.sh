@@ -35,9 +35,7 @@ esac
 
 # Check for special fix rules for particular targets
 case $machine in
-	*-*-sysv4* | \
-	i?86-*-sysv5* | \
-	i?86-*-udk*)
+	*-*-sysv4* )
 		fixincludes=fixinc.svr4
 		;;
 

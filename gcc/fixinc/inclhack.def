@@ -1918,6 +1918,76 @@ fix = {
     test_text = "#if !__STDC__ /* not standard C */\nint foo;\n#endif";
 };
 
+/*
+ *  "!__STDC__" or "__STDC__==0" or "__STDC__!=1" or "__STDC__-0==0"
+ *  is "!defined( __STRICT_ANSI__ )"
+ */
+fix = {
+    hackname = strict_ansi_not;
+    mach="*-*-sysv4*";
+    mach="i[34567]86-*-sysv5*";
+    mach="i[34567]86-*-udk*";
+    select   = "^([ \t]*#[ \t]*if.*)"
+               "(!__STDC__"
+               "|__STDC__[ \t]*==[ \t]*0"
+               "|__STDC__[ \t]*!=[ \t]*1"
+               "|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0"
+               ")(.*)";
+
+    c_fix     = format;
+    c_fix_arg = "%1 !defined(__STRICT_ANSI__)%3";
+
+    test_text = "#if !__STDC__ || __STDC__ == 0 || __STDC__ != 1"
+               "|| __STDC__ - 0 == 0"
+               "/* not std C */\nint foo;\n#endif";
+};
+
+/*
+ *  "__STDC__-0==0"
+ *  is "!defined( __STRICT_ANSI__ )" on continued #if-s
+ */
+fix = {
+    hackname = strict_ansi_not_ctd;
+    files="limits.h";
+    files="math.h";
+    files="stdio.h";
+    files="signal.h";
+    files="stdlib.h";
+    files="time.h";
+    mach="i[34567]86-*-sysv5*";
+    select   = "^([ \t]*[|&][|&][ \t(]*)"
+               "(__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0"
+               ")(.*)";
+
+    c_fix     = format;
+    c_fix_arg = "%1 !defined(__STRICT_ANSI__)%3";
+
+    test_text = "#if 1\\\n"
+               "|| __STDC__ - 0 == 0 /* not std C */\nint foo;\n#endif";
+};
+
+/*
+ *  "__STDC__!=0" or "__STDC__==1" or "__STDC__-0==1"
+ *  is "defined( __STRICT_ANSI__ )"
+ */
+fix = {
+    hackname = strict_ansi_only;
+    mach="*-*-sysv4*";
+    mach="i[34567]86-*-sysv5*";
+    mach="i[34567]86-*-udk";
+    select   = "^([ \t]*#[ \t]*if.*)"
+               "(__STDC__[ \t]*!=[ \t]*0"
+               "|__STDC__[ \t]*==[ \t]*1"
+               "|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*1"
+               "|__STDC__[ \t]*-[ \t]*0[ \t]*!=[ \t]*0"
+               ")(.*)";
+
+    c_fix     = format;
+    c_fix_arg = "%1 defined(__STRICT_ANSI__)%3";
+
+    test_text = "#if __STDC__ == 1 /* is std C\n */\nint foo;\n#endif";
+};
+
 
 /*
  *  Fix prototype declaration of utime in sys/times.h.
