@@ -5,7 +5,5 @@
 // by Alexandre Oliva <oliva@dcc.unicamp.br>
 // simplified from bug report by Meenaradchagan Vishnu <mvishnu@fore.com>
 
-// crash test - XFAIL *-*-*
-
 template <typename> struct foo {};
-template <> void foo();
+template <> void foo(); // ERROR - bad specialization
