@@ -4340,12 +4340,7 @@ assign_parms (fndecl)
      tree fndecl;
 {
   tree parm;
-  rtx entry_parm = 0;
-  rtx stack_parm = 0;
   CUMULATIVE_ARGS args_so_far;
-  enum machine_mode promoted_mode, passed_mode;
-  enum machine_mode nominal_mode, promoted_nominal_mode;
-  int unsignedp;
   /* Total space needed so far for args on the stack,
      given as a constant and a tree-expression.  */
   struct args_size stack_args_size;
@@ -4359,8 +4354,8 @@ assign_parms (fndecl)
 #ifdef SETUP_INCOMING_VARARGS
   int varargs_setup = 0;
 #endif
+  int reg_parm_stack_space = 0;
   rtx conversion_insns = 0;
-  struct args_size alignment_pad;
 
   /* Nonzero if function takes extra anonymous args.
      This means the last named arg must be on the stack
@@ -4407,6 +4402,14 @@ assign_parms (fndecl)
   max_parm_reg = LAST_VIRTUAL_REGISTER + 1;
   parm_reg_stack_loc = (rtx *) ggc_alloc_cleared (max_parm_reg * sizeof (rtx));
 
+#ifdef REG_PARM_STACK_SPACE
+#ifdef MAYBE_REG_PARM_STACK_SPACE
+  reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
+#else
+  reg_parm_stack_space = REG_PARM_STACK_SPACE (fndecl);
+#endif
+#endif
+
 #ifdef INIT_CUMULATIVE_INCOMING_ARGS
   INIT_CUMULATIVE_INCOMING_ARGS (args_so_far, fntype, NULL_RTX);
 #else
@@ -4419,14 +4422,19 @@ assign_parms (fndecl)
 
   for (parm = fnargs; parm; parm = TREE_CHAIN (parm))
     {
-      struct args_size stack_offset;
-      struct args_size arg_size;
+      rtx entry_parm;
+      rtx stack_parm;
+      enum machine_mode promoted_mode, passed_mode;
+      enum machine_mode nominal_mode, promoted_nominal_mode;
+      int unsignedp;
+      struct locate_and_pad_arg_data locate;
       int passed_pointer = 0;
       int did_conversion = 0;
       tree passed_type = DECL_ARG_TYPE (parm);
       tree nominal_type = TREE_TYPE (parm);
-      int pretend_named;
       int last_named = 0, named_arg;
+      int in_regs;
+      int partial = 0;
 
       /* Set LAST_NAMED if this is last named arg before last
 	 anonymous args.  */
@@ -4490,7 +4498,7 @@ assign_parms (fndecl)
 	  || TREE_ADDRESSABLE (passed_type)
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
 	  || FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, passed_mode,
-					      passed_type, named_arg)
+					     passed_type, named_arg)
 #endif
 	  )
 	{
@@ -4560,27 +4568,52 @@ assign_parms (fndecl)
 	 it came in a register so that REG_PARM_STACK_SPACE isn't skipped.
 	 In this case, we call FUNCTION_ARG with NAMED set to 1 instead of
 	 0 as it was the previous time.  */
-
-      pretend_named = named_arg || PRETEND_OUTGOING_VARARGS_NAMED;
-      locate_and_pad_parm (promoted_mode, passed_type,
+      in_regs = entry_parm != 0;
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
-			   1,
-#else
+      in_regs = 1;
+#endif
+      if (!in_regs && !named_arg)
+	{
+	  int pretend_named = PRETEND_OUTGOING_VARARGS_NAMED;
+	  if (pretend_named)
+	    {
 #ifdef FUNCTION_INCOMING_ARG
-			   FUNCTION_INCOMING_ARG (args_so_far, promoted_mode,
-						  passed_type,
-						  pretend_named) != 0,
+	      in_regs = FUNCTION_INCOMING_ARG (args_so_far, promoted_mode,
+					       passed_type,
+					       pretend_named) != 0;
 #else
-			   FUNCTION_ARG (args_so_far, promoted_mode,
-					 passed_type,
-					 pretend_named) != 0,
+	      in_regs = FUNCTION_ARG (args_so_far, promoted_mode,
+				      passed_type,
+				      pretend_named) != 0;
 #endif
+	    }
+	}
+
+      /* If this parameter was passed both in registers and in the stack,
+	 use the copy on the stack.  */
+      if (MUST_PASS_IN_STACK (promoted_mode, passed_type))
+	entry_parm = 0;
+
+#ifdef FUNCTION_ARG_PARTIAL_NREGS
+      if (entry_parm)
+	partial = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, promoted_mode,
+					      passed_type, named_arg);
 #endif
-			   fndecl, &stack_args_size, &stack_offset, &arg_size,
-			   &alignment_pad);
+
+      memset (&locate, 0, sizeof (locate));
+      locate_and_pad_parm (promoted_mode, passed_type, in_regs,
+			   entry_parm ? partial : 0, fndecl,
+			   &stack_args_size, &locate);
 
       {
-	rtx offset_rtx = ARGS_SIZE_RTX (stack_offset);
+	rtx offset_rtx;
+
+	/* If we're passing this arg using a reg, make its stack home
+	   the aligned stack slot.  */
+	if (entry_parm)
+	  offset_rtx = ARGS_SIZE_RTX (locate.slot_offset);
+	else
+	  offset_rtx = ARGS_SIZE_RTX (locate.offset);
 
 	if (offset_rtx == const0_rtx)
 	  stack_parm = gen_rtx_MEM (promoted_mode, internal_arg_pointer);
@@ -4597,12 +4630,6 @@ assign_parms (fndecl)
 	  set_reg_attrs_for_parm (entry_parm, stack_parm);
       }
 
-      /* If this parameter was passed both in registers and in the stack,
-	 use the copy on the stack.  */
-      if (MUST_PASS_IN_STACK (promoted_mode, passed_type))
-	entry_parm = 0;
-
-#ifdef FUNCTION_ARG_PARTIAL_NREGS
       /* If this parm was passed part in regs and part in memory,
 	 pretend it arrived entirely in memory
 	 by pushing the register-part onto the stack.
@@ -4611,39 +4638,31 @@ assign_parms (fndecl)
 	 we could put it together in a pseudoreg directly,
 	 but for now that's not worth bothering with.  */
 
-      if (entry_parm)
+      if (partial)
 	{
-	  int nregs = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, promoted_mode,
-						  passed_type, named_arg);
-
-	  if (nregs > 0)
-	    {
-#if defined (REG_PARM_STACK_SPACE) && !defined (MAYBE_REG_PARM_STACK_SPACE)
-	      /* When REG_PARM_STACK_SPACE is nonzero, stack space for
-		 split parameters was allocated by our caller, so we
-		 won't be pushing it in the prolog.  */
-	      if (REG_PARM_STACK_SPACE (fndecl) == 0)
+#ifndef MAYBE_REG_PARM_STACK_SPACE
+	  /* When REG_PARM_STACK_SPACE is nonzero, stack space for
+	     split parameters was allocated by our caller, so we
+	     won't be pushing it in the prolog.  */
+	  if (reg_parm_stack_space)
 #endif
-	      current_function_pretend_args_size
-		= (((nregs * UNITS_PER_WORD) + (PARM_BOUNDARY / BITS_PER_UNIT) - 1)
-		   / (PARM_BOUNDARY / BITS_PER_UNIT)
-		   * (PARM_BOUNDARY / BITS_PER_UNIT));
+	  current_function_pretend_args_size
+	    = (((partial * UNITS_PER_WORD) + (PARM_BOUNDARY / BITS_PER_UNIT) - 1)
+	       / (PARM_BOUNDARY / BITS_PER_UNIT)
+	       * (PARM_BOUNDARY / BITS_PER_UNIT));
 
-	      /* Handle calls that pass values in multiple non-contiguous
-		 locations.  The Irix 6 ABI has examples of this.  */
-	      if (GET_CODE (entry_parm) == PARALLEL)
-		emit_group_store (validize_mem (stack_parm), entry_parm,
-				  int_size_in_bytes (TREE_TYPE (parm)));
+	  /* Handle calls that pass values in multiple non-contiguous
+	     locations.  The Irix 6 ABI has examples of this.  */
+	  if (GET_CODE (entry_parm) == PARALLEL)
+	    emit_group_store (validize_mem (stack_parm), entry_parm,
+			      int_size_in_bytes (TREE_TYPE (parm)));
 
-	      else
-		move_block_from_reg (REGNO (entry_parm),
-				     validize_mem (stack_parm), nregs,
-				     int_size_in_bytes (TREE_TYPE (parm)));
+	  else
+	    move_block_from_reg (REGNO (entry_parm), validize_mem (stack_parm),
+				 partial, int_size_in_bytes (TREE_TYPE (parm)));
 
-	      entry_parm = stack_parm;
-	    }
+	  entry_parm = stack_parm;
 	}
-#endif
 
       /* If we didn't decide this parm came in a register,
 	 by default it came on the stack.  */
@@ -4674,9 +4693,9 @@ assign_parms (fndecl)
 #endif
 	  )
 	{
-	  stack_args_size.constant += arg_size.constant;
-	  if (arg_size.var)
-	    ADD_PARM_SIZE (stack_args_size, arg_size.var);
+	  stack_args_size.constant += locate.size.constant;
+	  if (locate.size.var)
+	    ADD_PARM_SIZE (stack_args_size, locate.size.var);
 	}
       else
 	/* No stack slot was pushed for this parm.  */
@@ -4700,7 +4719,7 @@ assign_parms (fndecl)
 
       /* If parm was passed in memory, and we need to convert it on entry,
 	 don't store it back in that same slot.  */
-      if (entry_parm != 0
+      if (entry_parm == stack_parm
 	  && nominal_mode != BLKmode && nominal_mode != passed_mode)
 	stack_parm = 0;
 
@@ -5023,7 +5042,7 @@ assign_parms (fndecl)
 	      && ! did_conversion
 	      && stack_parm != 0
 	      && GET_CODE (stack_parm) == MEM
-	      && stack_offset.var == 0
+	      && locate.offset.var == 0
 	      && reg_mentioned_p (virtual_incoming_args_rtx,
 				  XEXP (stack_parm, 0)))
 	    {
@@ -5109,7 +5128,8 @@ assign_parms (fndecl)
 		{
 		  stack_parm
 		    = assign_stack_local (GET_MODE (entry_parm),
-					  GET_MODE_SIZE (GET_MODE (entry_parm)), 0);
+					  GET_MODE_SIZE (GET_MODE (entry_parm)),
+					  0);
 		  set_mem_attributes (stack_parm, parm, 1);
 		}
 
@@ -5280,8 +5300,11 @@ promoted_input_arg (regno, pmode, punsignedp)
    INITIAL_OFFSET_PTR points to the current offset into the stacked
    arguments.
 
-   The starting offset and size for this parm are returned in *OFFSET_PTR
-   and *ARG_SIZE_PTR, respectively.
+   The starting offset and size for this parm are returned in
+   LOCATE->OFFSET and LOCATE->SIZE, respectively.  When IN_REGS is
+   nonzero, the offset is that of stack slot, which is returned in
+   LOCATE->SLOT_OFFSET.  LOCATE->ALIGNMENT_PAD is the amount of
+   padding required from the initial offset ptr to the stack slot.
 
    IN_REGS is nonzero if the argument will be passed in registers.  It will
    never be set if REG_PARM_STACK_SPACE is not defined.
@@ -5298,45 +5321,39 @@ promoted_input_arg (regno, pmode, punsignedp)
    initial offset is not affected by this rounding, while the size always
    is and the starting offset may be.  */
 
-/*  offset_ptr will be negative for ARGS_GROW_DOWNWARD case;
-    initial_offset_ptr is positive because locate_and_pad_parm's
+/*  LOCATE->OFFSET will be negative for ARGS_GROW_DOWNWARD case;
+    INITIAL_OFFSET_PTR is positive because locate_and_pad_parm's
     callers pass in the total size of args so far as
-    initial_offset_ptr. arg_size_ptr is always positive.  */
+    INITIAL_OFFSET_PTR.  LOCATE->SIZE is always positive.  */
 
 void
-locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
-		     initial_offset_ptr, offset_ptr, arg_size_ptr,
-		     alignment_pad)
+locate_and_pad_parm (passed_mode, type, in_regs, partial, fndecl,
+		     initial_offset_ptr, locate)
      enum machine_mode passed_mode;
      tree type;
-     int in_regs ATTRIBUTE_UNUSED;
+     int in_regs;
+     int partial;
      tree fndecl ATTRIBUTE_UNUSED;
      struct args_size *initial_offset_ptr;
-     struct args_size *offset_ptr;
-     struct args_size *arg_size_ptr;
-     struct args_size *alignment_pad;
-
+     struct locate_and_pad_arg_data *locate;
 {
-  tree sizetree
-    = type ? size_in_bytes (type) : size_int (GET_MODE_SIZE (passed_mode));
-  enum direction where_pad = FUNCTION_ARG_PADDING (passed_mode, type);
-  int boundary = FUNCTION_ARG_BOUNDARY (passed_mode, type);
-#ifdef ARGS_GROW_DOWNWARD
-  tree s2 = sizetree;
-#endif
+  tree sizetree;
+  enum direction where_pad;
+  int boundary;
+  int reg_parm_stack_space = 0;
+  int part_size_in_regs;
 
 #ifdef REG_PARM_STACK_SPACE
+#ifdef MAYBE_REG_PARM_STACK_SPACE
+  reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
+#else
+  reg_parm_stack_space = REG_PARM_STACK_SPACE (fndecl);
+#endif
+
   /* If we have found a stack parm before we reach the end of the
      area reserved for registers, skip that area.  */
   if (! in_regs)
     {
-      int reg_parm_stack_space = 0;
-
-#ifdef MAYBE_REG_PARM_STACK_SPACE
-      reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
-#else
-      reg_parm_stack_space = REG_PARM_STACK_SPACE (fndecl);
-#endif
       if (reg_parm_stack_space > 0)
 	{
 	  if (initial_offset_ptr->var)
@@ -5352,54 +5369,56 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
     }
 #endif /* REG_PARM_STACK_SPACE */
 
-  arg_size_ptr->var = 0;
-  arg_size_ptr->constant = 0;
-  alignment_pad->var = 0;
-  alignment_pad->constant = 0;
+  part_size_in_regs = 0;
+  if (reg_parm_stack_space == 0)
+    part_size_in_regs = ((partial * UNITS_PER_WORD)
+			 / (PARM_BOUNDARY / BITS_PER_UNIT)
+			 * (PARM_BOUNDARY / BITS_PER_UNIT));
+
+  sizetree
+    = type ? size_in_bytes (type) : size_int (GET_MODE_SIZE (passed_mode));
+  where_pad = FUNCTION_ARG_PADDING (passed_mode, type);
+  boundary = FUNCTION_ARG_BOUNDARY (passed_mode, type);
 
 #ifdef ARGS_GROW_DOWNWARD
+  locate->slot_offset.constant = -initial_offset_ptr->constant;
   if (initial_offset_ptr->var)
-    {
-      offset_ptr->constant = 0;
-      offset_ptr->var = size_binop (MINUS_EXPR, ssize_int (0),
-				    initial_offset_ptr->var);
-    }
-  else
-    {
-      offset_ptr->constant = -initial_offset_ptr->constant;
-      offset_ptr->var = 0;
-    }
+    locate->slot_offset.var = size_binop (MINUS_EXPR, ssize_int (0),
+					  initial_offset_ptr->var);
 
-  if (where_pad != none
-      && (!host_integerp (sizetree, 1)
-	  || (tree_low_cst (sizetree, 1) * BITS_PER_UNIT) % PARM_BOUNDARY))
-    s2 = round_up (s2, PARM_BOUNDARY / BITS_PER_UNIT);
-  SUB_PARM_SIZE (*offset_ptr, s2);
+  {
+    tree s2 = sizetree;
+    if (where_pad != none
+	&& (!host_integerp (sizetree, 1)
+	    || (tree_low_cst (sizetree, 1) * BITS_PER_UNIT) % PARM_BOUNDARY))
+      s2 = round_up (s2, PARM_BOUNDARY / BITS_PER_UNIT);
+    SUB_PARM_SIZE (locate->slot_offset, s2);
+  }
+
+  locate->slot_offset.constant += part_size_in_regs;
 
   if (!in_regs
 #ifdef REG_PARM_STACK_SPACE
       || REG_PARM_STACK_SPACE (fndecl) > 0
 #endif
      )
-    pad_to_arg_alignment (offset_ptr, boundary, alignment_pad);
+    pad_to_arg_alignment (&locate->slot_offset, boundary,
+			  &locate->alignment_pad);
 
+  locate->size.constant = (-initial_offset_ptr->constant
+			   - locate->slot_offset.constant);
   if (initial_offset_ptr->var)
-    arg_size_ptr->var = size_binop (MINUS_EXPR,
-				    size_binop (MINUS_EXPR,
-						ssize_int (0),
-						initial_offset_ptr->var),
-				    offset_ptr->var);
+    locate->size.var = size_binop (MINUS_EXPR,
+				   size_binop (MINUS_EXPR,
+					       ssize_int (0),
+					       initial_offset_ptr->var),
+				   locate->slot_offset.var);
 
-  else
-    arg_size_ptr->constant = (-initial_offset_ptr->constant
-			      - offset_ptr->constant);
-
-  /* Pad_below needs the pre-rounded size to know how much to pad below.
-     We only pad parameters which are not in registers as they have their
-     padding done elsewhere.  */
-  if (where_pad == downward
-      && !in_regs)
-    pad_below (offset_ptr, passed_mode, sizetree);
+  /* Pad_below needs the pre-rounded size to know how much to pad
+     below.  */
+  locate->offset = locate->slot_offset;
+  if (where_pad == downward)
+    pad_below (&locate->offset, passed_mode, sizetree);
 
 #else /* !ARGS_GROW_DOWNWARD */
   if (!in_regs
@@ -5407,8 +5426,9 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
       || REG_PARM_STACK_SPACE (fndecl) > 0
 #endif
       )
-    pad_to_arg_alignment (initial_offset_ptr, boundary, alignment_pad);
-  *offset_ptr = *initial_offset_ptr;
+    pad_to_arg_alignment (initial_offset_ptr, boundary,
+			  &locate->alignment_pad);
+  locate->slot_offset = *initial_offset_ptr;
 
 #ifdef PUSH_ROUNDING
   if (passed_mode != BLKmode)
@@ -5417,18 +5437,18 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
 
   /* Pad_below needs the pre-rounded size to know how much to pad below
      so this must be done before rounding up.  */
-  if (where_pad == downward
-    /* However, BLKmode args passed in regs have their padding done elsewhere.
-       The stack slot must be able to hold the entire register.  */
-      && !(in_regs && passed_mode == BLKmode))
-    pad_below (offset_ptr, passed_mode, sizetree);
+  locate->offset = locate->slot_offset;
+  if (where_pad == downward)
+    pad_below (&locate->offset, passed_mode, sizetree);
 
   if (where_pad != none
       && (!host_integerp (sizetree, 1)
 	  || (tree_low_cst (sizetree, 1) * BITS_PER_UNIT) % PARM_BOUNDARY))
     sizetree = round_up (sizetree, PARM_BOUNDARY / BITS_PER_UNIT);
 
-  ADD_PARM_SIZE (*arg_size_ptr, sizetree);
+  ADD_PARM_SIZE (locate->size, sizetree);
+
+  locate->size.constant -= part_size_in_regs;
 #endif /* ARGS_GROW_DOWNWARD */
 }
 
@@ -5467,7 +5487,8 @@ pad_to_arg_alignment (offset_ptr, boundary, alignment_pad)
 #endif
 	      (ARGS_SIZE_TREE (*offset_ptr),
 	       boundary / BITS_PER_UNIT);
-	  offset_ptr->constant = 0; /*?*/
+	  /* ARGS_SIZE_TREE includes constant term.  */
+	  offset_ptr->constant = 0;
 	  if (boundary > PARM_BOUNDARY && boundary > STACK_BOUNDARY)
 	    alignment_pad->var = size_binop (MINUS_EXPR, offset_ptr->var,
 					     save_var);
