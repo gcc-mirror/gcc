@@ -1,3 +1,9 @@
+2003-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR middle-end/10336
+	* jump.c (never_reached_warning): Really stop looking if we reach 
+	the beginning of the function.
+
 2003-04-29  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/elf.h (SIZE_TYPE, PTRDIFF_TYPE, USER_LABEL_PREFIX):
