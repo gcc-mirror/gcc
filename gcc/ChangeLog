@@ -1,3 +1,8 @@
+2000-10-31  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/unknown-elf.h (UNIQUE_SECTION_P): Do not allow
+	-fdata-sections to override the section attribute of a DECL.
+
 2000-10-31  Chris Demetriou  <cgd@sibyte.com>
 
 	* libgcc2.c (__shtab): Remove __shtab variable.

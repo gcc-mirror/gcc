@@ -139,7 +139,7 @@ rdata_section ()						\
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
 
-#define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL) || flag_data_sections)
+#define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL))
 
 #define UNIQUE_SECTION(DECL, RELOC)					\
   do									\
