@@ -4437,8 +4437,11 @@ h8300_tiny_constant_address_p (rtx x)
   switch (GET_CODE (x))
     {
     case SYMBOL_REF:
-      /* We accept symbols declared with tiny_data.  */
-      return (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_TINY_DATA) != 0;
+      /* In the normal mode, any symbol fits in the 16-bit absolute
+	 address range.  We also accept symbols declared with
+	 tiny_data.  */
+      return (TARGET_NORMAL_MODE
+	      || (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_TINY_DATA) != 0);
 
     case CONST_INT:
       addr = INTVAL (x);
@@ -4447,6 +4450,9 @@ h8300_tiny_constant_address_p (rtx x)
 		  && (IN_RANGE (addr, h1, h2) || IN_RANGE (addr, h3, h4)))
 	      || (TARGET_H8300S
 		  && (IN_RANGE (addr, s1, s2) || IN_RANGE (addr, s3, s4))));
+
+    case CONST:
+      return TARGET_NORMAL_MODE;
 
     default:
       return 0;
