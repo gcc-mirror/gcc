@@ -94,10 +94,7 @@ Mon Aug 11 10:04:49 1997  Jeffrey A Law  (law@cygnus.com)
 	(alias.o): Add dependencies.
 	* alias.c: New file.
 	* sched.c: Remove alias analysis code.  It lives in alias.c now.
-	(reg_last_uses_size): Declare.
 	(sched_analyze_2): Add new arguments to true_dependence.
-	(sched_analyze_insn): Use reg_last_uses_size instead of max_reg.
-	(schedule_block): Initialize reg_last_uses_size.
 	(schedule_insns): Always call init_alias_analysis.
 	* calls.c (expand_call): Note calls to malloc, calloc, and realloc;
 	mark return value from such functions as a pointer and keep track of
