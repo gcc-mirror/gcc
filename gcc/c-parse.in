@@ -894,7 +894,7 @@ string:
 	| string STRING
 		{ $$ = chainon ($1, $2);
 ifc
-		  if (warn_traditional)
+		  if (warn_traditional && !in_system_header)
 		    warning ("Use of ANSI string concatenation");
 end ifc
 		}
