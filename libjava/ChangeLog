@@ -1,3 +1,7 @@
+2004-07-17  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/String.java: Fixed javadocs all over.
+
 2004-07-17  Mark Wielaard  <mark@klomp.org>
 
 	* gnu/java/nio/channels/FileChannelImpl.java (truncate): Only truncate
