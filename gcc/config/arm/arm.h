@@ -157,16 +157,15 @@ extern enum processor_type arm_cpu;
 
 /* Omitting the frame pointer is a very good idea on the ARM, especially if
    not TARGET_APCS, in which case all that pushing on function entry isn't
-   mandatory anymore.  
-   Forcing loads to be explicit also allows cse to work better */
+   mandatory anymore.  Unfortunately this is not permitted since we mustn't
+   change the flags when -g is enabled and without a frame pointer debugging
+   using dbx is impossible.
+   Forcing loads to be explicit allows cse to work better */
 
 #define OPTIMIZATION_OPTIONS(OPTIMIZE)  \
 {					\
   if (OPTIMIZE)				\
-    {					\
-      flag_force_mem = 1;		\
-      flag_omit_frame_pointer = 1;	\
-    }					\
+    flag_force_mem = 1;			\
 }
 
 /* Target machine storage Layout.  */
@@ -1474,11 +1473,13 @@ do {									\
     {						      	   		\
       char *s = (char *) alloca (11 + strlen (PREFIX));	   		\
       extern int arm_target_label, arm_ccfsm_state;	   		\
+      extern rtx arm_target_insn;					\
 						           		\
       if (arm_ccfsm_state == 3 && arm_target_label == (NUM)   		\
 	&& !strcmp (PREFIX, "L"))					\
 	{								\
 	  arm_ccfsm_state = 0;				        	\
+	  arm_target_insn = NULL;					\
 	}								\
 	strcpy (s, "*");				      		\
 	sprintf (&s[strlen (s)], "%s%d", (PREFIX), (NUM));   		\
