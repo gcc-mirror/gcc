@@ -1,6 +1,7 @@
 // 1999-10-11 bkoz
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,39 +31,41 @@
 // 27.5.2 template class basic_streambuf
 
 #include <streambuf>
-#include <ostream>
+#include <locale>
 #include <testsuite_hooks.h>
 
-// libstdc++/3599
-class testbuf : public std::streambuf
+class testbuf : public std::wstreambuf
 {
 public:
-  typedef std::streambuf::traits_type traits_type;
+  typedef std::wstreambuf::traits_type traits_type;
 
-  testbuf() : std::streambuf() { }
- 
-protected:
-  int_type 
-  overflow(int_type c __attribute__((unused)) = traits_type::eof()) 
-  { return traits_type::not_eof(0); }
+  testbuf() : std::wstreambuf() { }
 };
 
-void
-test07()
+// libstdc++/9322
+void test08()
 {
+  using std::locale;
   bool test __attribute__((unused)) = true;
+
+  locale loc;
   testbuf ob;
-  std::ostream out(&ob); 
+  VERIFY( ob.getloc() == loc );
 
-  out << "gasp";
-  VERIFY( out.good() );
+  locale::global(__gnu_test::try_named_locale("en_US"));
+  VERIFY( ob.getloc() == loc );
 
-  out << std::endl;
-  VERIFY( out.good() );
+  locale loc_de = __gnu_test::try_named_locale("de_DE");
+  locale ret = ob.pubimbue(loc_de);
+  VERIFY( ob.getloc() == loc_de );
+  VERIFY( ret == loc );
+
+  locale::global(loc);
+  VERIFY( ob.getloc() == loc_de );
 }
 
 int main() 
 {
-  test07();
+  test08();
   return 0;
 }

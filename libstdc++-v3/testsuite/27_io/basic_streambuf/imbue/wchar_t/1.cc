@@ -1,6 +1,6 @@
-// 981208 bkoz test functionality of basic_stringbuf for char_type == char
+// 981208 bkoz test functionality of basic_streambuf for char_type == wchar_t
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -23,12 +23,12 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-class testbuf : public std::streambuf
+class testbuf : public std::wstreambuf
 {
 public:
-  typedef std::streambuf::traits_type traits_type;
+  typedef std::wstreambuf::traits_type traits_type;
 
-  testbuf() : std::streambuf() { }
+  testbuf() : std::wstreambuf() { }
 };
 
 // test the streambuf locale settings

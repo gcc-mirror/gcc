@@ -1,3 +1,27 @@
+2004-07-11  Paolo Carlini  <pcarlini@suse.de>
+
+	Add wchar_t counterparts of the basic_streambbuf<char> tests.
+	* testsuite/27_io/basic_streambuf/cons/wchar_t/1.cc: New.
+	* testsuite/27_io/basic_streambuf/imbue/wchar_t/1.cc, 9322.cc:
+	Likewise.
+	* testsuite/27_io/basic_streambuf/in_avail/wchar_t/9701-3.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/overflow/wchar_t/1.cc, 2.cc,
+	3599.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputbackc/wchar_t/9538.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputc/wchar_t/1057.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/wchar_t/1.cc, 1057.cc:
+	Likewise.
+	* testsuite/27_io/basic_streambuf/sync/wchar_t/1057.cc: Likewise.
+
+	* testsuite/27_io/basic_streambuf/imbue/char/1.cc, 9322.cc: Minor
+	tweaks.
+	* testsuite/27_io/basic_streambuf/overflow/char/2.cc, 3599.cc:
+	Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/char/1057.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sync/char/1057.cc: Likewise.
+
 2004-07-11  Phil Edwards  <phil@codesourcery.com>
 
 	* acinclude.m4:  Cosmetic shell syntax fixes.

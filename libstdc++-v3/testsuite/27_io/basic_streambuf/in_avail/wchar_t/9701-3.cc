@@ -1,7 +1,4 @@
-// 981208 bkoz test functionality of basic_stringbuf for char_type == char
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
-// Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,35 +16,44 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-#include <streambuf>
-#include <locale>
+// 27.5.2.2.3 Get area
+
+#include <fstream>
 #include <testsuite_hooks.h>
 
-class testbuf : public std::streambuf
+class Derived_fbuf : public std::wfilebuf
 {
 public:
-  typedef std::streambuf::traits_type traits_type;
+  const char_type* pub_egptr() const
+  { return egptr(); }
 
-  testbuf() : std::streambuf() { }
+  const char_type* pub_gptr() const
+  { return gptr(); }
 };
 
-// test the streambuf locale settings
-void test02() 
+// libstdc++/9701 (in_avail)
+void test01()
 {
-  testbuf buf;
-  std::locale loc_c = std::locale::classic();
-  loc_c = buf.getloc();
-  buf.pubimbue(loc_c); //This should initialize _M_init to true
-  std::locale loc_tmp = buf.getloc(); 
-  VERIFY( loc_tmp == loc_c );
+  using namespace std;
+  bool test __attribute__((unused)) = true;
+  const char* name = "tmp_file1_w";
+
+  Derived_fbuf df2;
+  df2.open(name, ios_base::in | ios_base::out | ios_base::trunc);
+
+  df2.sputn(L"Comomoc", 7);
+
+  df2.pubseekoff(0, ios_base::beg);
+  df2.sbumpc();
+  df2.sputbackc(L't');
+
+  VERIFY( df2.pub_gptr() < df2.pub_egptr() );
+  VERIFY( df2.in_avail() == df2.pub_egptr() - df2.pub_gptr() );
 }
 
-int main()
+int
+main()
 {
-  test02();
+  test01();
   return 0;
 }
-
-
-
-// more candy!!!

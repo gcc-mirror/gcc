@@ -30,7 +30,7 @@
 // 27.5.2 template class basic_streambuf
 
 #include <streambuf>
-#include <sstream>
+#include <string>
 #include <testsuite_hooks.h>
 
 class nullsetpbuf : public std::streambuf

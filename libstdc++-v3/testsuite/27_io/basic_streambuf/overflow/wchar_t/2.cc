@@ -31,38 +31,51 @@
 
 #include <streambuf>
 #include <ostream>
+#include <string>
 #include <testsuite_hooks.h>
 
-// libstdc++/3599
-class testbuf : public std::streambuf
-{
-public:
-  typedef std::streambuf::traits_type traits_type;
+// test03
+// http://gcc.gnu.org/ml/libstdc++/2000-q1/msg00151.html
+template<typename charT, typename traits = std::char_traits<charT> >
+  class basic_nullbuf : public std::basic_streambuf<charT, traits>
+  {
+  protected:
+    typedef typename
+      std::basic_streambuf<charT, traits>::int_type int_type;
+    virtual int_type 
+    overflow(int_type c) 
+    {  return traits::not_eof(c); }
+  };
 
-  testbuf() : std::streambuf() { }
- 
-protected:
-  int_type 
-  overflow(int_type c __attribute__((unused)) = traits_type::eof()) 
-  { return traits_type::not_eof(0); }
-};
+typedef basic_nullbuf<wchar_t> nullbuf;
 
-void
-test07()
+template<typename T>
+  wchar_t
+  print(const T& x) 
+  {
+   nullbuf ob;
+   std::wostream out(&ob); 
+   out << x << std::endl;
+   return (!out ? L'0' : L'1');
+ }
+
+void test03() 
 {
   bool test __attribute__((unused)) = true;
-  testbuf ob;
-  std::ostream out(&ob); 
+  const std::wstring control01(L"11111");
+  std::wstring test01;
 
-  out << "gasp";
-  VERIFY( out.good() );
+  test01 += print(true);
+  test01 += print(3.14159);
+  test01 += print(10);
+  test01 += print(L'x');
+  test01 += print(L"pipo");
 
-  out << std::endl;
-  VERIFY( out.good() );
+  VERIFY( test01 == control01 );
 }
 
 int main() 
 {
-  test07();
+  test03();
   return 0;
 }
