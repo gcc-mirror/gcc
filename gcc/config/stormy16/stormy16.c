@@ -1260,6 +1260,21 @@ xstormy16_function_arg_advance (cum, mode, type, named)
   return cum;
 }
 
+rtx
+xstormy16_function_arg (cum, mode, type, named)
+     CUMULATIVE_ARGS cum;
+     enum machine_mode mode;
+     tree type;
+     int named ATTRIBUTE_UNUSED;
+{
+  if (mode == VOIDmode)
+    return const0_rtx;
+  if (MUST_PASS_IN_STACK (mode, type)
+      || cum + XSTORMY16_WORD_SIZE (type, mode) > NUM_ARGUMENT_REGISTERS)
+    return 0;
+  return gen_rtx_REG (mode, cum + 2);
+}
+
 /* Do any needed setup for a variadic function.  CUM has not been updated
    for the last named argument which has type TYPE and mode MODE.  */
 void
@@ -1354,7 +1369,7 @@ xstormy16_expand_builtin_va_arg (valist, type)
   rtx count_rtx, addr_rtx, r;
   rtx lab_gotaddr, lab_fromstack;
   tree t;
-  int size, size_of_reg_args;
+  int size, size_of_reg_args, must_stack;
   tree size_tree, count_plus_size;
   rtx count_plus_size_rtx;
   
@@ -1364,7 +1379,7 @@ xstormy16_expand_builtin_va_arg (valist, type)
   base = build (COMPONENT_REF, TREE_TYPE (f_base), valist, f_base);
   count = build (COMPONENT_REF, TREE_TYPE (f_count), valist, f_count);
 
-  size = PUSH_ROUNDING (int_size_in_bytes (type));
+  must_stack = MUST_PASS_IN_STACK (TYPE_MODE (type), type);
   size_tree = round_up (size_in_bytes (type), UNITS_PER_WORD);
   
   size_of_reg_args = NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD;
@@ -1374,24 +1389,28 @@ xstormy16_expand_builtin_va_arg (valist, type)
   lab_fromstack = gen_label_rtx ();
   addr_rtx = gen_reg_rtx (Pmode);
 
-  count_plus_size = build (PLUS_EXPR, TREE_TYPE (count), count, size_tree);
-  count_plus_size_rtx = expand_expr (count_plus_size, NULL_RTX, HImode, EXPAND_NORMAL);
-  emit_cmp_and_jump_insns (count_plus_size_rtx, GEN_INT (size_of_reg_args),
-			   GTU, const1_rtx, HImode, 1, lab_fromstack);
+  if (!must_stack)
+    {
+      count_plus_size = build (PLUS_EXPR, TREE_TYPE (count), count, size_tree);
+      count_plus_size_rtx = expand_expr (count_plus_size, NULL_RTX, HImode, EXPAND_NORMAL);
+      emit_cmp_and_jump_insns (count_plus_size_rtx, GEN_INT (size_of_reg_args),
+			       GTU, const1_rtx, HImode, 1, lab_fromstack);
   
-  t = build (PLUS_EXPR, ptr_type_node, base, count);
-  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-  if (r != addr_rtx)
-    emit_move_insn (addr_rtx, r);
+      t = build (PLUS_EXPR, ptr_type_node, base, count);
+      r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+      if (r != addr_rtx)
+	emit_move_insn (addr_rtx, r);
 
-  emit_jump_insn (gen_jump (lab_gotaddr));
-  emit_barrier ();
-  emit_label (lab_fromstack);
+      emit_jump_insn (gen_jump (lab_gotaddr));
+      emit_barrier ();
+      emit_label (lab_fromstack);
+    }
   
   /* Arguments larger than a word might need to skip over some
      registers, since arguments are either passed entirely in
      registers or entirely on the stack.  */
-  if (size > 2 || size < 0)
+  size = PUSH_ROUNDING (int_size_in_bytes (type));
+  if (size > 2 || size < 0 || must_stack)
     {
       rtx lab_notransition = gen_label_rtx ();
       emit_cmp_and_jump_insns (count_rtx, GEN_INT (NUM_ARGUMENT_REGISTERS 
