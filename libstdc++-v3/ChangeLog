@@ -1,3 +1,7 @@
+2002-06-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/os/generic/bits/ctype_noninline.h: Tweak format.
+
 2002-06-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/os/aix/bits/ctype_noninline.h (do_toupper,do_tolower):
@@ -31,6 +35,7 @@
 	* testsuite/21_strings/ctor_copy_dtor.cc: Add test04.
 
 2002-06-03  Marc Espie  <espie@openbsd.org>
+
         * config/cpu/m68k/bits/atomicity.h(__exchange_and_add): Fix inline
         assembly for old assemblers.                                            
 
