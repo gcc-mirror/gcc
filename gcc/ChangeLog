@@ -1,3 +1,11 @@
+2004-06-08  DJ Delorie  <dj@redhat.com>
+
+	* toplev.c (floor_log2_wide): Replace loop with faster bit
+	operations.
+	(exact_log2_wide): Define in terms of the above.
+	* toplev.h (floor_log2): Use _builtin_clz family of builtins if
+	available.
+
 2004-06-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/rs6000.c (print_operand, <case 'z'>):

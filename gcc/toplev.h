@@ -152,7 +152,30 @@ extern bool fast_math_flags_set_p	(void);
 
 #ifndef exact_log2
 #define exact_log2(N) exact_log2_wide ((unsigned HOST_WIDE_INT) (N))
+
+#if (__GNUC__ * 1000 + __GNUC_MINOR__) >= 3004
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONGLONG
+#define FL2T__ HOST_WIDE_INT
+#define FL2T_CLZ__ __builtin_clzll
+#else
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+#define FL2T__ HOST_WIDE_INT
+#define FL2T_CLZ__ __builtin_clzl
+#else
+#define FL2T__ int
+#define FL2T_CLZ__ __builtin_clz
+#endif
+#endif
+static inline int floor_log2(FL2T__ n)
+{
+  if (n)
+    return (sizeof(FL2T__)*8-1) - (int)FL2T_CLZ__(n);
+  return -1;
+}
+#else
 #define floor_log2(N) floor_log2_wide ((unsigned HOST_WIDE_INT) (N))
+#endif
+
 #endif
 extern int exact_log2_wide             (unsigned HOST_WIDE_INT);
 extern int floor_log2_wide             (unsigned HOST_WIDE_INT);
