@@ -1,3 +1,7 @@
+1999-11-18  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* integrate.c (expand_inline_function): Add necessary check for NULL.
+
 1999-11-18  Nick Clifton  <nickc@cygnus.com>
 
 	* toplev.c (main): Correctly detect an unrecognised option.
