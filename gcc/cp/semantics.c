@@ -1257,15 +1257,15 @@ setup_vtbl_ptr ()
       tree compound_stmt;
       int saved_cfnd;
 
-      /* If the dtor is empty, and we know there is not possible way we
-	 could use any vtable entries, before they are possibly set by
-	 a base class dtor, we don't have to setup the vtables, as we
-	 know that any base class dtoring will set up any vtables it
-	 needs.  We avoid MI, because one base class dtor can do a
+      /* If the dtor is empty, and we know there is not any possible
+	 way we could use any vtable entries, before they are possibly
+	 set by a base class dtor, we don't have to setup the vtables,
+	 as we know that any base class dtor will set up any vtables
+	 it needs.  We avoid MI, because one base class dtor can do a
 	 virtual dispatch to an overridden function that would need to
 	 have a non-related vtable set up, we cannot avoid setting up
-	 vtables in that case.  We could change this to see if there is
-	 just one vtable.  */
+	 vtables in that case.  We could change this to see if there
+	 is just one vtable.  */
       if_stmt = begin_if_stmt ();
 
       /* If it is not safe to avoid setting up the vtables, then

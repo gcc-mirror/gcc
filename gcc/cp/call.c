@@ -4321,6 +4321,32 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	     old ABI.  */
 	  name = constructor_p ? ctor_identifier : dtor_identifier;
 	}
+      /* If we're call a subobject constructor or destructor for a
+	 subobject that uses virtual base classes, then we need to
+	 pass down a pointer to a VTT for the subobject.  */
+      else if ((name == base_ctor_identifier
+		|| name == base_dtor_identifier)
+	       && TYPE_USES_VIRTUAL_BASECLASSES (basetype))
+	{
+	  tree vtt;
+	  tree sub_vtt;
+
+	  /* If the current function is a complete object constructor
+	     or destructor, then we fetch the VTT directly.
+	     Otherwise, we look it up using the VTT we were given.  */
+	  vtt = IDENTIFIER_GLOBAL_VALUE (get_vtt_name (current_class_type));
+	  vtt = build_unary_op (ADDR_EXPR, vtt, /*noconvert=*/1);
+	  vtt = build (COND_EXPR, TREE_TYPE (vtt), 
+		       DECL_USE_VTT_PARM (current_function_decl),
+		       DECL_VTT_PARM (current_function_decl),
+		       vtt);
+
+	  sub_vtt = build (PLUS_EXPR, TREE_TYPE (vtt), vtt,
+			   BINFO_SUBVTT_INDEX (basetype_path));
+	  sub_vtt = build_indirect_ref (sub_vtt, NULL);
+
+	  args = tree_cons (NULL_TREE, sub_vtt, args);
+	}
     }
   else
     pretty_name = name;

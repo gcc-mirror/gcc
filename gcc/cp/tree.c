@@ -847,7 +847,7 @@ make_binfo (offset, binfo, vtable, virtuals)
      tree offset, binfo;
      tree vtable, virtuals;
 {
-  tree new_binfo = make_tree_vec (8);
+  tree new_binfo = make_tree_vec (10);
   tree type;
 
   if (TREE_CODE (binfo) == TREE_VEC)

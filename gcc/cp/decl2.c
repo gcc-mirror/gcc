@@ -924,6 +924,22 @@ grok_x_components (specs)
       break;
 }
 
+/* Returns a PARM_DECL for a parameter of the indicated TYPE, with the
+   indicated NAME.  */
+
+tree
+build_artificial_parm (name, type)
+     tree name;
+     tree type;
+{
+  tree parm;
+
+  parm = build_decl (PARM_DECL, name, type);
+  SET_DECL_ARTIFICIAL (parm);
+  DECL_ARG_TYPE (parm) = type;
+  return parm;
+}
+
 /* Constructors for types with virtual baseclasses need an "in-charge" flag
    saying whether this constructor is responsible for initialization of
    virtual baseclasses or not.  All destructors also need this "in-charge"
@@ -956,10 +972,7 @@ maybe_retrofit_in_chrg (fn)
     return;
 
   /* First add it to DECL_ARGUMENTS...  */
-  parm = build_decl (PARM_DECL, in_charge_identifier, integer_type_node);
-  /* Mark the artificial `__in_chrg' parameter as "artificial".  */
-  SET_DECL_ARTIFICIAL (parm);
-  DECL_ARG_TYPE (parm) = integer_type_node;
+  parm = build_artificial_parm (in_charge_identifier, integer_type_node);
   TREE_READONLY (parm) = 1;
   parms = DECL_ARGUMENTS (fn);
   TREE_CHAIN (parm) = TREE_CHAIN (parms);
@@ -978,6 +991,18 @@ maybe_retrofit_in_chrg (fn)
 
   /* Now we've got the in-charge parameter.  */
   DECL_HAS_IN_CHARGE_PARM_P (fn) = 1;
+
+  /* If this is a subobject constructor or destructor, our caller will
+     pass us a pointer to our VTT.  */
+  if (flag_new_abi && TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
+    {
+      DECL_VTT_PARM (fn) = build_artificial_parm (vtt_parm_identifier, 
+						  vtt_parm_type);
+      DECL_CONTEXT (DECL_VTT_PARM (fn)) = fn;
+      DECL_USE_VTT_PARM (fn) = build_artificial_parm (NULL_TREE,
+						      boolean_type_node);
+      DECL_CONTEXT (DECL_USE_VTT_PARM (fn)) = fn;
+    }
 }
 
 /* Classes overload their constituent function names automatically.
@@ -1032,12 +1057,9 @@ grokclassfn (ctype, function, flags, quals)
 	 assigned to.  */
       this_quals |= TYPE_QUAL_CONST;
       qual_type = cp_build_qualified_type (type, this_quals);
-      parm = build_decl (PARM_DECL, this_identifier, qual_type);
+      parm = build_artificial_parm (this_identifier, qual_type);
       c_apply_type_quals_to_decl (this_quals, parm);
 
-      /* Mark the artificial `this' parameter as "artificial".  */
-      SET_DECL_ARTIFICIAL (parm);
-      DECL_ARG_TYPE (parm) = type;
       /* We can make this a register, so long as we don't
 	 accidentally complain if someone tries to take its address.  */
       DECL_REGISTER (parm) = 1;

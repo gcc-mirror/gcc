@@ -3369,6 +3369,7 @@ duplicate_decls (newdecl, olddecl)
       DECL_VIRTUAL_P (newdecl) |= DECL_VIRTUAL_P (olddecl);
       DECL_NEEDS_FINAL_OVERRIDER_P (newdecl) |= DECL_NEEDS_FINAL_OVERRIDER_P (olddecl);
       DECL_THIS_STATIC (newdecl) |= DECL_THIS_STATIC (olddecl);
+      DECL_VTT_PARM (newdecl) = DECL_VTT_PARM (olddecl);
       new_defines_function = DECL_INITIAL (newdecl) != NULL_TREE;
 
       /* Optionally warn about more than one declaration for the same
@@ -6074,6 +6075,7 @@ initialize_predefined_identifiers ()
     { "__pfn_or_delta2", &pfn_or_delta2_identifier, 0 },
     { "_vptr", &vptr_identifier, 0 },
     { "__cp_push_exception", &cp_push_exception_identifier, 0 },
+    { "__vtt_parm", &vtt_parm_identifier, 0 },
     { NULL, NULL, 0 }
   };
 
@@ -6325,6 +6327,7 @@ init_decl_processing ()
   const_ptr_type_node
     = build_pointer_type (build_qualified_type (void_type_node,
 						TYPE_QUAL_CONST));
+  vtt_parm_type = build_pointer_type (const_ptr_type_node);
   c_common_nodes_and_builtins (1, flag_no_builtin, flag_no_nonansi_builtin);
   lang_type_promotes_to = convert_type_from_ellipsis;
 
@@ -8740,7 +8743,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       quals = NULL_TREE;
     }
 
-  if (IDENTIFIER_OPNAME_P (DECL_NAME (decl)))
+  if (DECL_OVERLOADED_OPERATOR_P (decl))
     grok_op_properties (decl, virtualp, check < 0);
 
   if (ctype && decl_function_context (decl))
@@ -14744,6 +14747,7 @@ lang_mark_tree (t)
 	      ggc_mark_tree (ld->befriending_classes);
 	      ggc_mark_tree (ld->saved_tree);
 	      ggc_mark_tree (ld->cloned_function);
+	      ggc_mark_tree (ld->vtt_parm);
 	      if (TREE_CODE (t) == TYPE_DECL)
 		ggc_mark_tree (ld->u.sorted_fields);
 	      else if (TREE_CODE (t) == FUNCTION_DECL
