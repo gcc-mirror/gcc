@@ -860,8 +860,8 @@ optimize_reg_copy_2 (insn, dest, src)
 		    /* We assume that a register is used exactly once per
 		       insn in the updates below.  If this is not correct,
 		       no great harm is done.  */
-		    reg_n_refs[sregno] -= loop_depth;
-		    reg_n_refs[dregno] += loop_depth;
+		    reg_n_refs[dregno] -= loop_depth;
+		    reg_n_refs[sregno] += loop_depth;
 		  }
 
 
