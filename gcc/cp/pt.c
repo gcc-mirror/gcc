@@ -4847,7 +4847,8 @@ tsubst_decl (t, args, type, in_decl)
 	       specialization, and the complete set of arguments used to
 	       specialize R.  */
 	    gen_tmpl = most_general_template (DECL_TI_TEMPLATE (t));
-	    argvec = tsubst (DECL_TI_ARGS (t), args, in_decl);
+	    argvec = tsubst (DECL_TI_ARGS (DECL_TEMPLATE_RESULT (gen_tmpl)),
+			     args, in_decl); 
 
 	    /* Check to see if we already have this specialization.  */
 	    spec = retrieve_specialization (gen_tmpl, argvec);
@@ -7460,7 +7461,7 @@ do_decl_instantiation (declspecs, declarator, storage)
   else if (DECL_TEMPLATE_SPECIALIZATION (decl))
     /* [temp.spec]
 
-       No program shall both explicit instantiation and explicit
+       No program shall both explicitly instantiate and explicitly
        specialize a template.  */
     {
       cp_error ("explicit instantiation of `%#D' after", decl);
@@ -7649,6 +7650,9 @@ regenerate_decl_from_template (decl, tmpl)
   tree code_pattern;
   tree new_decl;
   tree gen_tmpl;
+  tree subst_args;
+  int args_depth;
+  int parms_depth;
   int unregistered;
 
   args = DECL_TI_ARGS (decl);
@@ -7667,15 +7671,51 @@ regenerate_decl_from_template (decl, tmpl)
      register_specialization for it.  */
   my_friendly_assert (unregistered, 0);
 
-  /* Do the substitution to get the new declaration.  */
-  new_decl = tsubst (code_pattern, args, NULL_TREE);
+  /* Do the substitution to get the new declaration.  Normally, of
+     course, we want the full set of ARGS.  However, one peculiar case
+     is code like this: 
+
+       template <class T> struct S { 
+	 template <class U> friend void f();
+       };
+       template <class U> friend void f() {}
+       template S<int>;
+       template void f<double>();
+
+     Here, the ARGS for the instantiation of will be {int, double}.
+     But, we only need as many ARGS as there are levels of template
+     parameters in CODE_PATTERN.  We are careful not to get fooled
+     into reducing the ARGS in situations like:
+
+       template <class T> struct S { template <class U> void f(U); }
+       template <class T> template <> void S<T>::f(int) {}
+
+     which we can spot because the innermost template args for the
+     CODE_PATTERN don't use any template parameters.  */
+  args_depth = TMPL_ARGS_DEPTH (args);
+  parms_depth = 
+    TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (DECL_TI_TEMPLATE (code_pattern)));
+  if (args_depth > parms_depth
+      && !DECL_TEMPLATE_SPECIALIZATION (code_pattern))
+    {
+      int i;
+
+      subst_args = make_temp_vec (parms_depth);
+      for (i = 0; i < parms_depth; ++i)
+	TREE_VEC_ELT (subst_args, i) = 
+	  TREE_VEC_ELT (args, i + (args_depth - parms_depth));
+    }
+  else
+    subst_args = args;
+
+  new_decl = tsubst (code_pattern, subst_args, NULL_TREE);
 
   if (TREE_CODE (decl) == VAR_DECL)
     {
       /* Set up DECL_INITIAL, since tsubst doesn't.  */
       pushclass (DECL_CONTEXT (decl), 2);
       DECL_INITIAL (new_decl) = 
-	tsubst_expr (DECL_INITIAL (code_pattern), args, 
+	tsubst_expr (DECL_INITIAL (code_pattern), subst_args, 
 		     DECL_TI_TEMPLATE (decl));
       popclass (1);
     }
@@ -7747,16 +7787,60 @@ instantiate_decl (d)
   if (! push_tinst_level (d))
     return d;
 
-  for (td = tmpl; 
-       DECL_TEMPLATE_INSTANTIATION (td) 
-	 /* This next clause handles friend templates defined inside
-	    class templates.  The friend templates are not really
-	    instantiations from the point of view of the language, but
-	    they are instantiations from the point of view of the
-	    compiler.  */
-	 || (DECL_TEMPLATE_INFO (td) && !DECL_TEMPLATE_SPECIALIZATION (td)); 
+  /* Set TD to the template whose DECL_TEMPLATE_RESULT is the pattern
+     for the instantiation.  This is not always the most general
+     template.  Consider, for example:
+
+        template <class T>
+	struct S { template <class U> void f();
+	           template <> void f<int>(); };
+
+     and an instantiation of S<double>::f<int>.  We want TD to be the
+     specialization S<T>::f<int>, not the more general S<T>::f<U>.  */
+  td = tmpl;
+  for (td = tmpl;
+       /* An instantiation cannot have a definition, so we need a
+	  more general template.  */
+       DECL_TEMPLATE_INSTANTIATION (td)
+	 /* We must also deal with friend templates.  Given:
+
+	      template <class T> struct S { 
+		template <class U> friend void f() {};
+	      };
+	 
+	    S<int>::f<U> say, is not an instantiation of S<T>::f<U>,
+	    so far as the language is concerned, but that's still
+	    where we get the pattern for the instantiation from.  On
+	    ther hand, if the definition comes outside the class, say:
+
+ 	      template <class T> struct S { 
+	        template <class U> friend void f();
+              };
+	      template <class U> friend void f() {}
+
+	    we don't need to look any further.  That's what the check for
+	    DECL_INITIAL is for.  */
+	|| (TREE_CODE (d) == FUNCTION_DECL
+	    && DECL_TEMPLATE_INFO (td) 
+	    && !DECL_TEMPLATE_SPECIALIZATION (td)
+	    && !DECL_INITIAL (DECL_TEMPLATE_RESULT (td)));
        )
-    td = DECL_TI_TEMPLATE (td);
+    {
+      /* The present template, TD, should not be a definition.  If it
+	 were a definition, we should be using it!  Note that we
+	 cannot restructure the loop to just keep going until we find
+	 a template with a definition, since that might go too far if
+	 a specialization was declared, but not defined.  */
+      my_friendly_assert (!(TREE_CODE (d) == FUNCTION_DECL
+			    && DECL_INITIAL (DECL_TEMPLATE_RESULT (td))),
+			  0);
+      my_friendly_assert (!(TREE_CODE (d) == VAR_DECL
+			    && !DECL_IN_AGGR_P (DECL_TEMPLATE_RESULT (td))), 
+			  0); 
+      
+      /* Fetch the more general template.  */
+      td = DECL_TI_TEMPLATE (td);
+    }
 
   code_pattern = DECL_TEMPLATE_RESULT (td);
 
