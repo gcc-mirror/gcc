@@ -1,5 +1,8 @@
 2002-06-19  Nathanael Nerode  <neroden@twcny.rr.com>
 
+	* configure.in: Move definition of libstdcxx_flags
+	right above usage, rather than waaay earlier.
+
 	* configure.in: Pull definition of is_cross_compiler earlier.
 
 	* configure.in: Rearrange a little.
