@@ -9629,9 +9629,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       && lookup_attribute ("noinline", attrs))
     warning ("%Jinline function '%D' given attribute noinline", decl1, decl1);
 
-  /* Determine the ELF visibility attribute for the function.  */
-  determine_visibility (decl1);
-
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl1))
     /* This is a constructor, we must ensure that any default args
        introduced by this definition are propagated to the clones
@@ -9768,6 +9765,12 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	}
       fntype = TREE_TYPE (decl1);
     }
+
+  /* Determine the ELF visibility attribute for the function.  We must
+     not do this before calling "pushdecl", as we must allow
+     "duplicate_decls" to merge any attributes appropriately.  */
+  if (!DECL_CLONED_FUNCTION_P (decl1))
+    determine_visibility (decl1);
 
   /* Reset these in case the call to pushdecl changed them.  */
   current_function_decl = decl1;

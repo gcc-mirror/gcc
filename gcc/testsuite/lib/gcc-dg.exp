@@ -338,8 +338,10 @@ proc dg-require-profiling { args } {
 
 proc dg-require-dll { args } {
     global target_triplet
-    # As a special case, the mcore-*-elf supports dllimport/dllexport.
-    if { [string match "mcore-*-elf" $target_triplet] } {
+    # As a special case, the mcore-*-elf supports these attributes.
+    # All Symbian OS targets also support these attributes.
+    if { [string match "mcore-*-elf" $target_triplet]
+         || [string match "*-*-symbianelf" $target_triplet]} {
 	return
     }
     # PE/COFF targets support dllimport/dllexport.

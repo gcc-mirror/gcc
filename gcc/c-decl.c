@@ -3000,6 +3000,12 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
   if (current_scope == file_scope)
     maybe_apply_pragma_weak (decl);
 
+  /* If this is a variable definition, determine its ELF visibility.  */
+  if (TREE_CODE (decl) == VAR_DECL 
+      && TREE_STATIC (decl) 
+      && !DECL_EXTERNAL (decl))
+    c_determine_visibility (decl);
+
   /* Output the assembler code and/or RTL code for variables and functions,
      unless the type is an undefined structure or union.
      If not, it will get done when the type is completed.  */
@@ -6346,6 +6352,9 @@ finish_function (void)
   if (DECL_STATIC_DESTRUCTOR (fndecl)
       && !targetm.have_ctors_dtors)
     static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
+
+  /* Finalize the ELF visibility for the function.  */
+  c_determine_visibility (fndecl);
 
   /* Genericize before inlining.  Delay genericizing nested functions
      until their parent function is genericized.  Since finalizing

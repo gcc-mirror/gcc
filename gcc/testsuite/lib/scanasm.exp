@@ -79,6 +79,32 @@ proc scan-assembler-not { args } {
     dg-scan "scan-assembler-not" 0 $testcase $output_file $args
 }
 
+# Check that a symbol is defined as a hidden symbol in the .s file
+# produced by the compiler.
+
+proc scan-hidden { args } {
+    upvar 2 name testcase
+    set output_file "[file rootname [file tail $testcase]].s"
+
+    set symbol [lindex $args 0]
+    set args [lreplace $args 0 0 "hidden\[ \t_\]*$symbol"]
+
+    dg-scan "scan-hidden" 1 $testcase $output_file $args
+}
+
+# Check that a symbol is not defined as a hidden symbol in the .s file
+# produced by the compiler.
+
+proc scan-not-hidden { args } {
+    upvar 2 name testcase
+    set output_file "[file rootname [file tail $testcase]].s"
+
+    set symbol [lindex $args 0]
+    set args [lreplace $args 0 0 "hidden\[ \t_\]*$symbol"]
+
+    dg-scan "scan-not-hidden" 0 $testcase $output_file $args
+}
+
 # Look for a pattern in OUTPUT_FILE.  See dg-scan for details.
 
 proc scan-file { output_file args } {

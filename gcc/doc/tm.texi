@@ -8338,12 +8338,16 @@ attribute is nullified by a subsequent definition.  This function may
 call @code{merge_attributes} to handle machine-independent merging.
 
 @findex TARGET_DLLIMPORT_DECL_ATTRIBUTES
-If the only target-specific handling you require is @samp{dllimport} for
-Microsoft Windows targets, you should define the macro
-@code{TARGET_DLLIMPORT_DECL_ATTRIBUTES}.  This links in a function
-called @code{merge_dllimport_decl_attributes} which can then be defined
-as the expansion of @code{TARGET_MERGE_DECL_ATTRIBUTES}.  This is done
-in @file{i386/cygwin.h} and @file{i386/i386.c}, for example.
+If the only target-specific handling you require is @samp{dllimport}
+for Microsoft Windows targets, you should define the macro
+@code{TARGET_DLLIMPORT_DECL_ATTRIBUTES} to @code{1}.  The compiler
+will then define a function called
+@code{merge_dllimport_decl_attributes} which can then be defined as
+the expansion of @code{TARGET_MERGE_DECL_ATTRIBUTES}.  You can also
+add @code{handle_dll_attribute} in the attribute table for your port
+to perform initial processing of the @samp{dllimport} and
+@samp{dllexport} attributes.  This is done in @file{i386/cygwin.h} and
+@file{i386/i386.c}, for example.
 @end deftypefn
 
 @defmac TARGET_DECLSPEC

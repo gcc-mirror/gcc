@@ -172,7 +172,7 @@ static bool arm_cxx_cdtor_returns_this (void);
 
 
 /* Initialize the GCC target structure.  */
-#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
+#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
 #undef  TARGET_MERGE_DECL_ATTRIBUTES
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
 #endif
@@ -2466,6 +2466,9 @@ const struct attribute_spec arm_attribute_table[] =
   { "dllimport",    0, 0, true,  false, false, NULL },
   { "dllexport",    0, 0, true,  false, false, NULL },
   { "interfacearm", 0, 0, true,  false, false, arm_handle_fndecl_attribute },
+#elif TARGET_DLLIMPORT_DECL_ATTRIBUTES
+  { "dllimport",    0, 0, false, false, false, handle_dll_attribute },
+  { "dllexport",    0, 0, false, false, false, handle_dll_attribute },
 #endif
   { NULL,           0, 0, false, false, false, NULL }
 };

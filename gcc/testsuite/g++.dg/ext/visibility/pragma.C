@@ -1,7 +1,7 @@
 /* Test that #pragma GCC visibility affects class members. */
 /* { dg-do compile } */
 /* { dg-require-visibility "" } */
-/* { dg-final { scan-assembler "\\.hidden.*Foo.methodEv" } } */
+/* { dg-final { scan-hidden "_ZN3Foo6methodEv" } } */
 
 #pragma GCC visibility push(hidden)
 class Foo

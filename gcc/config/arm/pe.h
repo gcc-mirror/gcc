@@ -40,7 +40,7 @@
 
 /* Get tree.c to declare a target-specific specialization of
    merge_decl_attributes.  */
-#define TARGET_DLLIMPORT_DECL_ATTRIBUTES
+#define TARGET_DLLIMPORT_DECL_ATTRIBUTES 1
 
 #undef  SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "-D__pe__"

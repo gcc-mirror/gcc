@@ -156,7 +156,7 @@ static bool       mcore_return_in_memory	(tree, tree);
 #undef  TARGET_ASM_EXTERNAL_LIBCALL
 #define TARGET_ASM_EXTERNAL_LIBCALL	mcore_external_libcall
 
-#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
+#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
 #undef  TARGET_MERGE_DECL_ATTRIBUTES
 #define TARGET_MERGE_DECL_ATTRIBUTES	merge_dllimport_decl_attributes
 #endif

@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-require-visibility "" } */
 /* { dg-options "-fvisibility-inlines-hidden" } */
-/* { dg-final { scan-assembler "\\.hidden.*Foo.methodEv" } } */
+/* { dg-final { scan-hidden "_ZN3Foo6methodEv" } } */
 
 class Foo
 {

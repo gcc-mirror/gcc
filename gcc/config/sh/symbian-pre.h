@@ -30,7 +30,7 @@
 #define SUBTARGET_CPP_SPEC ""
 
 /* Get tree.c to declare merge_dllimport_decl_attributes().  */
-#define TARGET_DLLIMPORT_DECL_ATTRIBUTES
+#define TARGET_DLLIMPORT_DECL_ATTRIBUTES 1
 
 /* The Symbian OS currently does not support exception handling.  */
 #define SUBTARGET_CC1PLUS_SPEC "-fno-exceptions"
