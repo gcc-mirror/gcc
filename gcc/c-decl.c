@@ -208,7 +208,10 @@ char *pending_invalid_xref_file;
 int pending_invalid_xref_line;
 
 /* While defining an enum type, this is 1 plus the last enumerator
-   constant value.  */
+   constant value.  Note that will do not have to save this or `enum_overflow'
+   around nested function definition since such a definition could only
+   occur in an enum value expression and we don't use these variables in
+   that case.  */
 
 static tree enum_next_value;
 
@@ -6461,7 +6464,6 @@ finish_function (nested)
 struct c_function
 {
   struct c_function *next;
-  tree enum_next_value;
   tree named_labels;
   tree shadowed_labels;
   int returns_value;
@@ -6490,7 +6492,6 @@ push_c_function_context ()
   p->next = c_function_chain;
   c_function_chain = p;
 
-  p->enum_next_value = enum_next_value;
   p->named_labels = named_labels;
   p->shadowed_labels = shadowed_labels;
   p->returns_value = current_function_returns_value;
@@ -6527,7 +6528,6 @@ pop_c_function_context ()
 
   c_function_chain = p->next;
 
-  enum_next_value = p->enum_next_value;
   named_labels = p->named_labels;
   shadowed_labels = p->shadowed_labels;
   current_function_returns_value = p->returns_value;
