@@ -39,6 +39,7 @@ Boston, MA 02111-1307, USA.
 	.file	"crtn.s"
 	.ident	"GNU C crtn.s"
 
+#ifndef __powerpc64__
 	.section ".got","aw"
 	.globl	__GOT_END__
 	.type	__GOT_END__,@object
@@ -113,3 +114,4 @@ __EH_FRAME_END__:
 	mtlr 0
 	addi 1,1,16
 	blr
+#endif

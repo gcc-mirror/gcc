@@ -39,6 +39,7 @@
 	.file	"scrti.s"
 	.ident	"GNU C scrti.s"
 
+#ifndef __powerpc64__
 # Start of .text
 	.section ".text"
 	.globl	_ex_text0
@@ -102,3 +103,4 @@ _fini:	stwu	%r1,-16(%r1)
 	.space 4
 	.weak	environ
 	.set	environ,_environ
+#endif

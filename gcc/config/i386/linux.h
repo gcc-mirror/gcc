@@ -51,7 +51,7 @@ Boston, MA 02111-1307, USA.  */
    To the best of my knowledge, no Linux libc has required the label
    argument to mcount.  */
 
-#define NO_PROFILE_COUNTERS
+#define NO_PROFILE_COUNTERS	1
 
 #undef MCOUNT_NAME
 #define MCOUNT_NAME "mcount"

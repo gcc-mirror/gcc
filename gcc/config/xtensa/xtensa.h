@@ -942,7 +942,7 @@ typedef struct xtensa_args {
    _mcount uses a window size of 8 to make sure that it doesn't clobber
    any incoming argument values. */
 
-#define NO_PROFILE_COUNTERS
+#define NO_PROFILE_COUNTERS	1
 
 #define FUNCTION_PROFILER(FILE, LABELNO) \
   do {									\

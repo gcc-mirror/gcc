@@ -39,6 +39,7 @@
 	.section ".text"
 	#include "ppc-asm.h"
 
+#ifndef __powerpc64__
 	.type	trampoline_initial,@object
 	.align	2
 trampoline_initial:
@@ -107,3 +108,4 @@ FUNC_START(__trampoline_setup)
 	bl	JUMP_TARGET(abort)
 FUNC_END(__trampoline_setup)
 
+#endif

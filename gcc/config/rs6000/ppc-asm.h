@@ -95,32 +95,7 @@
  * the real function with one or two leading periods respectively.
  */
 
-#ifdef _RELOCATABLE
-#define DESC_SECTION ".got2"
-#else
-#define DESC_SECTION ".got1"
-#endif
-
-#if defined(_CALL_AIXDESC)
-#define FUNC_NAME(name) GLUE(.,name)
-#define JUMP_TARGET(name) FUNC_NAME(name)
-#define FUNC_START(name) \
-	.section DESC_SECTION,"aw"; \
-name: \
-	.long GLUE(.,name); \
-	.long _GLOBAL_OFFSET_TABLE_; \
-	.long 0; \
-	.previous; \
-	.type GLUE(.,name),@function; \
-	.globl name; \
-	.globl GLUE(.,name); \
-GLUE(.,name):
-
-#define FUNC_END(name) \
-GLUE(.L,name): \
-	.size GLUE(.,name),GLUE(.L,name)-GLUE(.,name)
-
-#elif defined (__powerpc64__)
+#if defined (__powerpc64__)
 #define FUNC_NAME(name) GLUE(.,name)
 #define JUMP_TARGET(name) FUNC_NAME(name)
 #define FUNC_START(name) \
@@ -139,7 +114,34 @@ GLUE(.,name):
 GLUE(.L,name): \
 	.size GLUE(.,name),GLUE(.L,name)-GLUE(.,name)
 
+#elif defined(_CALL_AIXDESC)
+
+#ifdef _RELOCATABLE
+#define DESC_SECTION ".got2"
 #else
+#define DESC_SECTION ".got1"
+#endif
+
+#define FUNC_NAME(name) GLUE(.,name)
+#define JUMP_TARGET(name) FUNC_NAME(name)
+#define FUNC_START(name) \
+	.section DESC_SECTION,"aw"; \
+name: \
+	.long GLUE(.,name); \
+	.long _GLOBAL_OFFSET_TABLE_; \
+	.long 0; \
+	.previous; \
+	.type GLUE(.,name),@function; \
+	.globl name; \
+	.globl GLUE(.,name); \
+GLUE(.,name):
+
+#define FUNC_END(name) \
+GLUE(.L,name): \
+	.size GLUE(.,name),GLUE(.L,name)-GLUE(.,name)
+
+#else
+
 #define FUNC_NAME(name) GLUE(__USER_LABEL_PREFIX__,name)
 #if defined __PIC__ || defined __pic__
 #define JUMP_TARGET(name) FUNC_NAME(name@plt)
@@ -155,4 +157,3 @@ FUNC_NAME(name):
 GLUE(.L,name): \
 	.size FUNC_NAME(name),GLUE(.L,name)-FUNC_NAME(name)
 #endif
-

@@ -310,7 +310,7 @@ do { text_section ();							\
 
 /* Our profiling scheme doesn't LP labels and counter words.  */
 
-#define NO_PROFILE_COUNTERS
+#define NO_PROFILE_COUNTERS	1
 
 #undef	INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP
