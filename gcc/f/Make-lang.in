@@ -93,6 +93,10 @@ g77version.o: $(srcdir)/f/version.c
 # to track changes to the toplevel gcc Makefile as well.
 # We depend on g77.c last, to make it obvious where it came from.
 g77.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g77.c
+	case "$(LANGUAGES)" in \
+	  *[fF]77*) touch lang-f77;; \
+	  *) rm -f lang-f77;; \
+	esac
 	if [ -f lang-f77 ]; then \
 	  $(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(DRIVER_DEFINES) \
 	   -DLANG_SPECIFIC_DRIVER -c g77.c; \

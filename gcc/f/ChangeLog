@@ -1,3 +1,7 @@
+Tue Aug 11 08:12:14 1998  H.J. Lu  (hjl@gnu.org)
+
+	* Make-lang.in (g77.o): Touch lang-f77 before checking it.
+
 1998-08-09  Dave Love  <d.love@dl.ac.uk>
 
 	* Make-lang.in (f/g77.dvi): Replace non-working use of texi2dvi
