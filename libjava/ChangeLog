@@ -1,3 +1,9 @@
+2005-03-25  Mike Stump  <mrs@apple.com>
+
+	* configure.ac: Fix ZIP and GCJH at configure time to absolute
+	paths like we do for the compiler, as we use it in external/sax
+	and it doesn't get MULTIBUILDTOP right when multilibing.
+
 2005-03-24  Anthony Green  <green@redhat.com>
 
 	* gnu/gcj/tools/gcj_dbtool/Main.java: Accept libdir argument with
