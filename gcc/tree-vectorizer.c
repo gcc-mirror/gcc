@@ -2494,7 +2494,7 @@ vectorizable_assignment (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       return true;
     }
 
-  /** Trasform.  **/
+  /** Transform.  **/
   if (vect_debug_details (NULL))
     fprintf (dump_file, "transform assignment.");
 
@@ -2685,7 +2685,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       return true;
     }
 
-  /** Trasform.  **/
+  /** Transform.  **/
 
   if (vect_debug_details (NULL))
     fprintf (dump_file, "transform store");
@@ -2772,7 +2772,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       return true;
     }
 
-  /** Trasform.  **/
+  /** Transform.  **/
 
   if (vect_debug_details (NULL))
     fprintf (dump_file, "transform load.");

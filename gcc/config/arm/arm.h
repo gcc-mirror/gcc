@@ -26,7 +26,7 @@
 #ifndef GCC_ARM_H
 #define GCC_ARM_H
 
-/* The archetecture define.  */
+/* The architecture define.  */
 extern char arm_arch_name[];
 
 /* Target CPU builtins.  */

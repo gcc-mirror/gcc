@@ -2417,7 +2417,7 @@ insert_backedge_copies (void)
 		     start of a loop should be with a COND_EXPR or GOTO_EXPR.
 		     However, better safe than sorry. 
 
-		     If the block ends with a control statment or
+		     If the block ends with a control statement or
 		     something that might throw, then we have to
 		     insert this assignment before the last
 		     statement.  Else insert it after the last statement.  */

@@ -1,3 +1,16 @@
+2005-01-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* alias.c, c-common.h, c-incpath.c, c-incpath.h, expr.c,
+	fold-const.c, gimplify.c, params.h, tree-data-ref.c,
+	tree-if-conv.c, tree-nested.c, tree-outof-ssa.c,
+	tree-ssa-dom.c, tree-vectorizer.c, tree.def, config/darwin.c,
+	config/freebsd-spec.h, config/arm/arm.h,
+	config/h8300/h8300.md, config/i386/i386.md,
+	config/i386/predicates.md, config/i386/sse.md,
+	config/ia64/ia64.c, config/ip2k/ip2k.c, config/s390/s390.c,
+	config/vax/vax.md: Fix comment typos.  Follow spelling
+	conventions.
+
 2005-01-23  Steven Bosscher  <stevenb@suse.de>
 
 	* gengtype.c (walk_type): Produce `not equal to' compares for loop

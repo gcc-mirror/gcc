@@ -246,7 +246,7 @@ struct vrp_hash_elt
    in this basic block.  We use this during finalization to know
    which variables need their VRP data updated.  */
 
-/* Stack of SSA_NAMEs which had their values constrainted by operations
+/* Stack of SSA_NAMEs which had their values constrained by operations
    in this basic block.  During finalization of this block we use this
    list to determine which variables need their VRP data updated.
 
@@ -1255,7 +1255,7 @@ record_equivalences_from_incoming_edge (basic_block bb)
   basic_block parent;
   struct edge_info *edge_info;
 
-  /* If our parent block ended with a control statment, then we may be
+  /* If our parent block ended with a control statement, then we may be
      able to record some equivalences based on which outgoing edge from
      the parent was followed.  */
   parent = get_immediate_dominator (CDI_DOMINATORS, bb);

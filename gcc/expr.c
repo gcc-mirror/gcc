@@ -2732,7 +2732,7 @@ emit_move_change_mode (enum machine_mode new_mode,
     }
   else
     {
-      /* Note that we do want simplify_subreg's behaviour of validating
+      /* Note that we do want simplify_subreg's behavior of validating
 	 that the new mode is ok for a hard register.  If we were to use
 	 simplify_gen_subreg, we would create the subreg, but would
 	 probably run into the target not being able to implement it.  */
@@ -2877,7 +2877,7 @@ emit_move_complex (enum machine_mode mode, rtx x, rtx y)
   if (push_operand (x, mode))
     return emit_move_complex_push (mode, x, y);
 
-  /* For memory to memory moves, optimial behaviour can be had with the
+  /* For memory to memory moves, optimal behavior can be had with the
      existing block move logic.  */
   if (MEM_P (x) && MEM_P (y))
     {

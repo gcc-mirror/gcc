@@ -4243,7 +4243,7 @@ gimplify_type_sizes (tree type, tree *list_p)
   tree field, t;
 
   /* Note that we do not check for TYPE_SIZES_GIMPLIFIED already set because
-     that's not supposed to happen on types where gimplifcation does anything.
+     that's not supposed to happen on types where gimplification does anything.
      We should assert that it isn't set, but we can indeed be called multiple
      times on pointers.  Unfortunately, this includes fat pointers which we
      can't easily test for.  We could pass TYPE down to gimplify_one_sizepos

@@ -492,7 +492,7 @@
        (ior (match_operand 0 "register_no_elim_operand")
 	    (match_operand 0 "memory_operand"))))
 
-;; Simiarly, but for tail calls, in which we cannot allow memory references.
+;; Similarly, but for tail calls, in which we cannot allow memory references.
 (define_predicate "sibcall_insn_operand"
   (ior (match_operand 0 "constant_call_address_operand")
        (match_operand 0 "register_no_elim_operand")))

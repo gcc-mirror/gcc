@@ -142,7 +142,7 @@ machopic_classify_symbol (rtx sym_ref)
 
 /* Indicate when fix-and-continue style code generation is being used
    and when a reference to data should be indirected so that it can be
-   rebound in a new translation unit to refernce the original instance
+   rebound in a new translation unit to reference the original instance
    of that data.  Symbol names that are for code generation local to
    the translation unit are bound to the new translation unit;
    currently this means symbols that begin with L or _OBJC_;
