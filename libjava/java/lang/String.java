@@ -159,7 +159,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param str String to copy
    * @throws NullPointerException if value is null
    */
-  public String (String str)
+  public String(String str)
   {
     data = str.data;
     boffset = str.boffset;
@@ -174,7 +174,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param data char array to copy
    * @throws NullPointerException if data is null
    */
-  public String (char[] data)
+  public String(char[] data)
   {
     init(data, 0, data.length, false);
   }
@@ -192,7 +192,7 @@ public final class String implements Serializable, Comparable, CharSequence
    *         || offset + count > data.length)
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    */
-  public String (char[] data, int offset, int count)
+  public String(char[] data, int offset, int count)
   {
     init(data, offset, count, false);
   }
@@ -221,7 +221,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @deprecated use {@link #String(byte[], int, int, String)} to perform
    *             correct encoding
    */
-  public String (byte[] ascii, int hibyte, int offset, int count)
+  public String(byte[] ascii, int hibyte, int offset, int count)
   {
     init(ascii, hibyte, offset, count);
   }
@@ -246,7 +246,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @deprecated use {@link #String(byte[], String)} to perform
    *             correct encoding
    */
-  public String (byte[] ascii, int hibyte)
+  public String(byte[] ascii, int hibyte)
   {
     init(ascii, hibyte, 0, ascii.length);
   }
@@ -272,10 +272,10 @@ public final class String implements Serializable, Comparable, CharSequence
    * @throws Error if the decoding fails
    * @since 1.1
    */
-  public String (byte[] byteArray, int offset, int count, String enc)
+  public String(byte[] data, int offset, int count, String encoding)
     throws UnsupportedEncodingException
   {
-    init (byteArray, offset, count, enc);
+    init (data, offset, count, encoding);
   }
 
   /**
@@ -295,10 +295,10 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see #String(byte[], int, int, String)
    * @since 1.1
    */
-  public String (byte[] byteArray, String enc)
+  public String(byte[] data, String encoding)
     throws UnsupportedEncodingException
   {
-    this (byteArray, 0, byteArray.length, enc);
+    this (data, 0, data.length, encoding);
   }
 
   /**
@@ -319,11 +319,11 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see #String(byte[], int, int, String)
    * @since 1.1
    */
-  public String (byte[] byteArray, int offset, int count)
+  public String(byte[] data, int offset, int count)
   {
     try
       {
-	init (byteArray, offset, count,
+	init (data, offset, count,
 	      System.getProperty("file.encoding", "8859_1"));
       }
     catch (UnsupportedEncodingException x1)
@@ -331,7 +331,7 @@ public final class String implements Serializable, Comparable, CharSequence
 	// Maybe the default encoding is bad.
 	try
 	  {
-	    init (byteArray, offset, count, "8859_1");
+	    init (data, offset, count, "8859_1");
 	  }
 	catch (UnsupportedEncodingException x2)
 	  {
@@ -355,9 +355,9 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see #String(byte[], int, int, String)
    * @since 1.1
    */
-  public String (byte[] byteArray)
+  public String(byte[] data)
   {
-    this (byteArray, 0, byteArray.length);
+    this (data, 0, data.length);
   }
 
   /**
@@ -367,7 +367,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param buffer StringBuffer to copy
    * @throws NullPointerException if buffer is null
    */
-  public String (StringBuffer buffer)
+  public String(StringBuffer buffer)
   {
     synchronized (buffer)
       {
@@ -386,7 +386,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @throws NullPointerException if chars is null
    * @throws StringIndexOutOfBoundsException if bounds check fails
    */
-  String (char[] data, int offset, int count, boolean dont_copy)
+  String(char[] data, int offset, int count, boolean dont_copy)
   {
     init(data, offset, count, dont_copy);
   }
@@ -394,7 +394,7 @@ public final class String implements Serializable, Comparable, CharSequence
   // This is used by gnu.gcj.runtime.StringBuffer, so it must have
   // package-private protection.  It is accessed via CNI and so avoids
   // ordinary protection mechanisms.
-  String (gnu.gcj.runtime.StringBuffer buffer)
+  String(gnu.gcj.runtime.StringBuffer buffer)
   {
     // No need to synchronize or mark the buffer, since we know it is
     // only used once.
@@ -419,7 +419,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= length()
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    */
-  public native char charAt (int index);
+  public native char charAt(int index);
 
   /**
    * Copies characters from this String starting at a specified start index,
@@ -436,8 +436,8 @@ public final class String implements Serializable, Comparable, CharSequence
    *         StringIndexOutOfBoundsException, and dst problems cause an
    *         ArrayIndexOutOfBoundsException)
    */
-  public native void getChars (int srcBegin, int srcEnd,
-			       char[] dst, int dstBegin);
+  public native void getChars(int srcBegin, int srcEnd,
+			      char[] dst, int dstBegin);
 
   /**
    * Copies the low byte of each character from this String starting at a
@@ -457,8 +457,8 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see #getBytes(String)
    * @deprecated use {@link #getBytes()}, which uses a char to byte encoder
    */
-  public native void getBytes (int srcBegin, int srcEnd,
-			       byte[] dst, int dstBegin);
+  public native void getBytes(int srcBegin, int srcEnd,
+			      byte[] dst, int dstBegin);
 
   /**
    * Converts the Unicode characters in this String to a byte array. Uses the
@@ -474,7 +474,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @throws UnsupportedEncodingException if encoding is not supported
    * @since 1.1
    */
-  public native byte[] getBytes (String enc)
+  public native byte[] getBytes(String enc)
     throws UnsupportedEncodingException;
 
   /**
@@ -487,7 +487,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return the resulting byte array, or null on a problem
    * @since 1.1
    */
-  public byte[] getBytes ()
+  public byte[] getBytes()
   {
     try
       {
@@ -519,7 +519,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see #compareTo(String)
    * @see #equalsIgnoreCase(String)
    */
-  public native boolean equals (Object anObject);
+  public native boolean equals(Object anObject);
 
   /**
    * Compares the given StringBuffer to this String. This is true if the
@@ -549,7 +549,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see Character#toUpperCase(char)
    * @see Character#toLowerCase(char)
    */
-  public native boolean equalsIgnoreCase (String anotherString);
+  public native boolean equalsIgnoreCase(String anotherString);
 
   /**
    * Compares this String and another String (case sensitive,
@@ -565,7 +565,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return the comparison
    * @throws NullPointerException if anotherString is null
    */
-  public native int compareTo (String anotherString);
+  public native int compareTo(String anotherString);
 
   /**
    * Behaves like <code>compareTo(java.lang.String)</code> unless the Object
@@ -597,7 +597,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see Collator#compare(String, String)
    * @since 1.2
    */
-  public int compareToIgnoreCase (String str)
+  public int compareToIgnoreCase(String str)
   {
     return this.toUpperCase().toLowerCase().compareTo(
      str.toUpperCase().toLowerCase());
@@ -616,8 +616,8 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return true if regions match (case sensitive)
    * @throws NullPointerException if other is null
    */
-  public native boolean regionMatches (int toffset,
-				       String other, int ooffset, int len);
+  public native boolean regionMatches(int toffset,
+				      String other, int ooffset, int len);
 
   /**
    * Predicate which determines if this String matches another String
@@ -636,8 +636,8 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return true if regions match, false otherwise
    * @throws NullPointerException if other is null
    */
-  public native boolean regionMatches (boolean ignoreCase, int toffset,
-				       String other, int ooffset, int len);
+  public native boolean regionMatches(boolean ignoreCase, int toffset,
+				      String other, int ooffset, int len);
 
   /**
    * Predicate which determines if this String contains the given prefix,
@@ -651,7 +651,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @throws NullPointerException if prefix is null
    * @see #regionMatches(boolean, int, String, int, int)
    */
-  public native boolean startsWith (String prefix, int toffset);
+  public native boolean startsWith(String prefix, int toffset);
 
   /**
    * Predicate which determines if this String starts with a given prefix.
@@ -662,7 +662,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @throws NullPointerException if prefix is null
    * @see #startsWith(String, int)
    */
-  public boolean startsWith (String prefix)
+  public boolean startsWith(String prefix)
   {
     return startsWith (prefix, 0);
   }
@@ -676,7 +676,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @throws NullPointerException if suffix is null
    * @see #regionMatches(boolean, int, String, int, int)
    */
-  public boolean endsWith (String suffix)
+  public boolean endsWith(String suffix)
   {
     return regionMatches (this.count - suffix.count, suffix, 0, suffix.count);
   }
@@ -688,7 +688,7 @@ public final class String implements Serializable, Comparable, CharSequence
    *
    * @return hashcode value of this String
    */
-  public native int hashCode ();
+  public native int hashCode();
 
   /**
    * Finds the first instance of a character in this String.
@@ -696,9 +696,9 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param ch character to find
    * @return location (base 0) of the character, or -1 if not found
    */
-  public int indexOf (int ch)
+  public int indexOf(int ch)
   {
-    return indexOf (ch, 0);
+    return indexOf(ch, 0);
   }
 
   /**
@@ -711,7 +711,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param fromIndex index to start the search
    * @return location (base 0) of the character, or -1 if not found
    */
-  public native int indexOf (int ch, int fromIndex);
+  public native int indexOf(int ch, int fromIndex);
 
   /**
    * Finds the last instance of a character in this String.
@@ -719,7 +719,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param ch character to find
    * @return location (base 0) of the character, or -1 if not found
    */
-  public int lastIndexOf (int ch)
+  public int lastIndexOf(int ch)
   {
     return lastIndexOf (ch, count - 1);
   }
@@ -734,7 +734,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param fromIndex index to start the search
    * @return location (base 0) of the character, or -1 if not found
    */
-  public native int lastIndexOf (int ch, int fromIndex);
+  public native int lastIndexOf(int ch, int fromIndex);
 
   /**
    * Finds the first instance of a String in this String.
@@ -743,9 +743,9 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return location (base 0) of the String, or -1 if not found
    * @throws NullPointerException if str is null
    */
-  public int indexOf (String str)
+  public int indexOf(String str)
   {
-    return indexOf (str, 0);
+    return indexOf(str, 0);
   }
 
   /**
@@ -759,7 +759,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return location (base 0) of the String, or -1 if not found
    * @throws NullPointerException if str is null
    */
-  public native int indexOf (String str, int fromIndex);
+  public native int indexOf(String str, int fromIndex);
 
   /**
    * Finds the last instance of a String in this String.
@@ -768,7 +768,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return location (base 0) of the String, or -1 if not found
    * @throws NullPointerException if str is null
    */
-  public int lastIndexOf (String str)
+  public int lastIndexOf(String str)
   {
     return lastIndexOf (str, count - str.count);
   }
@@ -784,7 +784,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return location (base 0) of the String, or -1 if not found
    * @throws NullPointerException if str is null
    */
-  public int lastIndexOf (String str, int fromIndex)
+  public int lastIndexOf(String str, int fromIndex)
   {
     if (fromIndex >= count)
       fromIndex = count - str.count;
@@ -806,7 +806,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @throws IndexOutOfBoundsException if begin &lt; 0 || begin &gt; length()
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    */
-  public String substring (int beginIndex)
+  public String substring(int beginIndex)
   {
     return substring (beginIndex, count);
   }
@@ -822,7 +822,7 @@ public final class String implements Serializable, Comparable, CharSequence
    *         || begin > end (while unspecified, this is a
    *         StringIndexOutOfBoundsException)
    */
-  public native String substring (int beginIndex, int endIndex);
+  public native String substring(int beginIndex, int endIndex);
 
   /**
    * Creates a substring of this String, starting at a specified index
@@ -849,7 +849,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return newly concatenated String
    * @throws NullPointerException if str is null
    */
-  public native String concat (String str);
+  public native String concat(String str);
 
   /**
    * Replaces every instance of a character in this String with a new
@@ -859,7 +859,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param newChar the new character
    * @return new String with all instances of oldChar replaced with newChar
    */
-  public native String replace (char oldChar, char newChar);
+  public native String replace(char oldChar, char newChar);
 
   /**
    * Test if this String matches a regular expression. This is shorthand for
@@ -990,7 +990,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see #toUpperCase(Locale)
    * @since 1.1
    */
-  public native String toLowerCase (Locale locale);
+  public native String toLowerCase(Locale locale);
 
   /**
    * Lowercases this String. This uses Unicode's special case mappings, as
@@ -1001,7 +1001,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see #toLowerCase(Locale)
    * @see #toUpperCase()
    */
-  public String toLowerCase ()
+  public String toLowerCase()
   {
     // The JDK is a bit confused about what to do here.  If we pass in
     // the default Locale then special Locale handling might be
@@ -1021,7 +1021,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see #toLowerCase(Locale)
    * @since 1.1
    */
-  public native String toUpperCase (Locale locale);
+  public native String toUpperCase(Locale locale);
 
   /**
    * Uppercases this String. This uses Unicode's special case mappings, as
@@ -1032,7 +1032,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see #toUpperCase(Locale)
    * @see #toLowerCase()
    */
-  public String toUpperCase ()
+  public String toUpperCase()
   {
     // The JDK is a bit confused about what to do here.  If we pass in
     // the default Locale then special Locale handling might be
@@ -1049,14 +1049,14 @@ public final class String implements Serializable, Comparable, CharSequence
    *
    * @return new trimmed String, or this if nothing trimmed
    */
-  public native String trim ();
+  public native String trim();
 
   /**
    * Returns this, as it is already a String!
    *
    * @return this
    */
-  public String toString ()
+  public String toString()
   {
     return this;
   }
@@ -1067,7 +1067,7 @@ public final class String implements Serializable, Comparable, CharSequence
    *
    * @return character array copying the String
    */
-  public native char[] toCharArray ();
+  public native char[] toCharArray();
 
   /**
    * Returns a String representation of an Object. This is "null" if the
@@ -1077,7 +1077,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param obj the Object
    * @return the string conversion of obj
    */
-  public static String valueOf (Object obj)
+  public static String valueOf(Object obj)
   {
     return obj == null ? "null" : obj.toString();
   }
@@ -1092,7 +1092,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @see #valueOf(char[], int, int)
    * @see #String(char[])
    */
-  public static String valueOf (char[] data)
+  public static String valueOf(char[] data)
   {
     return valueOf (data, 0, data.length);
   }
@@ -1112,7 +1112,7 @@ public final class String implements Serializable, Comparable, CharSequence
    *         (while unspecified, this is a StringIndexOutOfBoundsException)
    * @see #String(char[], int, int)
    */
-  public static native String valueOf (char[] data, int offset, int count);
+  public static native String valueOf(char[] data, int offset, int count);
 
   /**
    * Returns a String representing the character sequence of the char array,
@@ -1157,7 +1157,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param b the boolean
    * @return "true" if b is true, else "false"
    */
-  public static String valueOf (boolean b)
+  public static String valueOf(boolean b)
   {
     return b ? "true" : "false";
   }
@@ -1168,7 +1168,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @param c the character
    * @return String containing the single character c
    */
-  public static native String valueOf (char c);
+  public static native String valueOf(char c);
 
   /**
    * Returns a String representing an integer.
@@ -1177,7 +1177,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return String containing the integer in base 10
    * @see Integer#toString(int)
    */
-  public static native String valueOf (int i);
+  public static native String valueOf(int i);
 
   /**
    * Returns a String representing a long.
@@ -1186,7 +1186,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return String containing the long in base 10
    * @see Long#toString(long)
    */
-  public static String valueOf (long l)
+  public static String valueOf(long l)
   {
     return Long.toString(l);
   }
@@ -1198,7 +1198,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return String containing the float
    * @see Float#toString(float)
    */
-  public static String valueOf (float f)
+  public static String valueOf(float f)
   {
     return Float.toString(f);
   }
@@ -1210,7 +1210,7 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return String containing the double
    * @see Double#toString(double)
    */
-  public static String valueOf (double d)
+  public static String valueOf(double d)
   {
     return Double.toString(d);
   }
@@ -1224,13 +1224,13 @@ public final class String implements Serializable, Comparable, CharSequence
    *
    * @return the interned String
    */
-  public native String intern ();
+  public native String intern();
 
 
-  private native void init (char[] chars, int offset, int count,
-			    boolean dont_copy);
-  private native void init (byte[] chars, int hibyte, int offset, int count);
-  private native void init (byte[] chars, int offset, int count, String enc)
+  private native void init(char[] chars, int offset, int count,
+			   boolean dont_copy);
+  private native void init(byte[] chars, int hibyte, int offset, int count);
+  private native void init(byte[] chars, int offset, int count, String enc)
     throws UnsupportedEncodingException;
-  private static native void rehash ();
+  private static native void rehash();
 }
