@@ -1,4 +1,4 @@
-# Copyright (C) 1992, 1993, 1994, 1996, 1997 Free Software Foundation, Inc.
+# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 2000, 2001 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,50 +15,49 @@
 # Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # This file was written by Rob Savoye (rob@cygnus.com)
-# Currently maintained by Doug Evans (dje@cygnus.com)
+# Many modifications by Jeffrey Wheat (cassidy@cygnus.com)
+# With modifications by Mike Stump <mrs@cygnus.com>.
 
-# This file is loaded by the tool init file (eg: unix.exp).  It provides
-# default definitions for g77_start, etc. and other supporting cast members.
-
-# These globals are used by g77_start if no compiler arguments are provided.
-# They are also used by the various testsuites to define the environment:
-# where to find stdio.h, libc.a, etc.
-
+#
+# g77 support library routines
+#
+load_lib prune.exp
 load_lib gcc-defs.exp
 
 #
 # G77_UNDER_TEST is the compiler under test.
 #
 
+
+set gpp_compile_options ""
+
+
 #
-# default_g77_version -- extract and print the version number of the compiler
+# g77_version -- extract and print the version number of the compiler
 #
 
-proc default_g77_version { } {
+proc g77_version { } {
     global G77_UNDER_TEST
-
-    g77_init;
+    
+    g77_init
 
     # ignore any arguments after the command
     set compiler [lindex $G77_UNDER_TEST 0]
-
-    if ![is_remote host] {
-	set compiler_name [which $compiler];
-    } else {
-	set compiler_name $compiler;
-    }
-
+    
     # verify that the compiler exists
-    if { $compiler_name != 0 } then {
-        set options ""
-
-        lappend options "additional_flags=-v"
-        set tmp [g77_target_compile "" "" "none" $options]
-	regexp "g77 version\[^\n\]*" $tmp version
-	if { [info exists version] } then {
-	    clone_output "$compiler_name $version\n"
+    if { [is_remote host] || [which $compiler] != 0 } then {
+	set tmp [remote_exec host "$compiler -v"]
+	set status [lindex $tmp 0];
+	set output [lindex $tmp 1];
+	regexp "version.*$" $output version
+	if { $status == 0 && [info exists version] } then {
+	    if [is_remote host] {
+		clone_output "$compiler $version\n"
+	    } else {
+		clone_output "[which $compiler] $version\n"
+	    }
 	} else {
-	    clone_output "Couldn't determine version of $compiler_name: $tmp\n"
+	    clone_output "Couldn't determine version of [which $compiler]\n"
 	}
     } else {
 	# compiler does not exist (this should have already been detected)
@@ -67,43 +66,83 @@ proc default_g77_version { } {
 }
 
 #
-# Call g77_version. We do it this way so we can override it if needed.
+# g77_link_flags -- provide new version of g77_link_flags
+# (originally from libgloss.exp) which knows about the gcc tree structure
 #
-proc g77_version { } {
-    default_g77_version;
+
+proc g77_link_flags { paths } {
+    global rootme
+    global srcdir
+    global ld_library_path
+
+    set gccpath ${paths}
+    set libio_dir ""
+    set flags ""
+    set ld_library_path "."
+
+    if { $gccpath != "" } {
+      if [file exists "${gccpath}/libf2c/.libs/libg2c.a"] {
+          append flags "-L${gccpath}/libf2c/.libs "
+	  if [file exists "${gccpath}/libf2c/.libs/libg2c.so"] {
+	      append flags "-Wl,--rpath-link,${rootme} "
+	      append ld_library_path ":${gccpath}/libf2c/.libs"
+	  }
+      }
+      if [file exists "${gccpath}/libf2c/libfrtbegin.a"] {
+          append flags "-L${gccpath}/libf2c "
+      }
+      if [file exists "${gccpath}/libiberty/libiberty.a"] {
+          append flags "-L${gccpath}/libiberty "
+      }
+      append ld_library_path ":${rootme}"
+    }
+    return "$flags"
 }
 
 #
-# g77_init -- called at the start of each .exp script.
+# g77_init -- called at the start of each subdir of tests
 #
-# There currently isn't much to do, but always using it allows us to
-# make some enhancements without having to go back and rewrite the scripts.
-#
-
-set g77_initialized 0
 
 proc g77_init { args } {
+    global subdir
+    global gpp_initialized
+    global base_dir
     global tmpdir
     global libdir
-    global gluefile wrap_flags
-    global g77_initialized
+    global gluefile wrap_flags;
+    global objdir srcdir
+    global ALWAYS_G77FLAGS
+    global TOOL_EXECUTABLE TOOL_OPTIONS
     global G77_UNDER_TEST
-    global TOOL_EXECUTABLE
-
-    if { $g77_initialized == 1 } { return; }
+    global TESTING_IN_BUILD_TREE
 
     if ![info exists G77_UNDER_TEST] then {
 	if [info exists TOOL_EXECUTABLE] {
 	    set G77_UNDER_TEST $TOOL_EXECUTABLE;
 	} else {
-	    set G77_UNDER_TEST [find_g77]
+	    if { [is_remote host] || ! [info exists TESTING_IN_BUILD_TREE] } {
+		set G77_UNDER_TEST [transform g77]
+	    } else {
+		set G77_UNDER_TEST [findfile $base_dir/../g77 "$base_dir/../g77 -B$base_dir/../" [findfile $base_dir/g77 "$base_dir/g77 -B$base_dir/" [transform g77]]]
+	    }
 	}
     }
 
-    if ![info exists tmpdir] then {
-	set tmpdir /tmp
+    if ![is_remote host] {
+	if { [which $G77_UNDER_TEST] == 0 } then {
+	    perror "G77_UNDER_TEST ($G77_UNDER_TEST) does not exist"
+	    exit 1
+	}
     }
-    if { [target_info needs_status_wrapper]!="" && ![info exists gluefile] } {
+    if ![info exists tmpdir] {
+	set tmpdir "/tmp"
+    }
+
+    if [info exists gluefile] {
+	unset gluefile
+    }
+
+    if { [target_info needs_status_wrapper] != "" } {
 	set gluefile ${tmpdir}/testglue.o;
 	set result [build_wrapper $gluefile];
 	if { $result != "" } {
@@ -113,56 +152,61 @@ proc g77_init { args } {
 	    unset gluefile
 	}
     }
+
+    set ALWAYS_G77FLAGS ""
+
+    if ![is_remote host] {
+	if [info exists TOOL_OPTIONS] {
+	    lappend ALWAYS_G77FLAGS "ldflags=[g77_link_flags [get_multilibs ${TOOL_OPTIONS}] ]";
+	} else {
+	    lappend ALWAYS_G77FLAGS "ldflags=[g77_link_flags [get_multilibs] ]";
+	}
+    }
+
+    if [info exists TOOL_OPTIONS] {
+	lappend ALWAYS_G77FLAGS "additional_flags=$TOOL_OPTIONS";
+    }
+
+    verbose -log "ALWAYS_G77FLAGS set to $ALWAYS_G77FLAGS"
+
+    verbose "g77 is initialized" 3
 }
 
+#
+# g77_target_compile -- compile a source file
+#
+
 proc g77_target_compile { source dest type options } {
-    global rootme;
     global tmpdir;
-    global gluefile wrap_flags;
-    global G77_UNDER_TEST
-    global TOOL_OPTIONS
-    global ld_library_path;
+    global gluefile wrap_flags
+    global ALWAYS_G77FLAGS;
+    global G77_UNDER_TEST;
 
-    set ld_library_path ".:${rootme}"
-
-    if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
+    if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
-	lappend options "ldflags=$wrap_flags"
+	lappend options "ldflags=${wrap_flags}"
     }
 
-    if [target_info exists g77,stack_size] {
-	lappend options "additional_flags=-DSTACK_SIZE=[target_info g77,stack_size]"
-    }
-    if [target_info exists g77,no_trampolines] {
-	lappend options "additional_flags=-DNO_TRAMPOLINES"
-    }
-    if [target_info exists g77,no_label_values] {
-	lappend options "additional_flags=-DNO_LABEL_VALUES"
-    }
-    if [info exists TOOL_OPTIONS] {
-	lappend options "additional_flags=$TOOL_OPTIONS"
-    }
-    if [target_info exists g77,no_varargs] {
-	lappend options "additional_flags=-DNO_VARARGS"
-    }
-    if ![is_remote host] {
-      set gccpath "[get_multilibs]"
-      set libg2c_dir [lookfor_file ${gccpath} libf2c/libg2c.la]
-      if { $libg2c_dir != "" } {
-	set libg2c_link_flags "-L[file dirname ${libg2c_dir}]"
-	lappend options "additional_flags=${libg2c_link_flags}"
-      }
-    }
-    set g2cpath "[get_multilibs]"
-    set libg2c_dir [lookfor_file ${g2cpath} libf2c/.libs/libg2c.a]
-    if { $libg2c_dir != "" } {
-        set libg2c_dir [file dirname ${libg2c_dir}]
-        set g2c_link_flags "-L${libg2c_dir}"
-        lappend options "additional_flags=${g2c_link_flags}"
-        append ld_library_path ":${libg2c_dir}"
-    }
- 
-    lappend options "compiler=$G77_UNDER_TEST"
+    lappend options "compiler=$G77_UNDER_TEST";
+
+    set options [concat "$ALWAYS_G77FLAGS" $options];
+
     return [target_compile $source $dest $type $options]
 }
 
+#
+# g77_set_ld_library_path --
+# On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
+# called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
+# (for the 64-bit ABI).  The right way to do this would be to modify
+# unix.exp -- but that's not an option since it's part of DejaGNU
+# proper, so we do it here, by trickery.  We really only need to do 
+# this on IRIX, but it shouldn't hurt to do it anywhere else.
+#
+
+proc ${tool}_set_ld_library_path { name element op } {
+  setenv LD_LIBRARYN32_PATH [getenv LD_LIBRARY_PATH]
+  setenv LD_LIBRARY64_PATH [getenv LD_LIBRARY_PATH]
+}
+
+trace variable env(LD_LIBRARY_PATH) w ${tool}_set_ld_library_path
