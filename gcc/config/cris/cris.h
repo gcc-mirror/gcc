@@ -116,8 +116,7 @@ extern const char *cris_elinux_stacksize_str;
    Note that -melf overrides -maout.  */
 
 #define CPP_SPEC \
- "-D__CRIS_ABI_version=2\
-  %{mtune=*:-D__tune_%* %{mtune=v*:-D__CRIS_arch_tune=%*}}\
+ "%{mtune=*:-D__tune_%* %{mtune=v*:-D__CRIS_arch_tune=%*}}\
    %{mtune=etrax4:-D__tune_v3 -D__CRIS_arch_tune=3}\
    %{mtune=etrax100:-D__tune_v8 -D__CRIS_arch_tune=8}\
    %{mtune=svinto:-D__tune_v8 -D__CRIS_arch_tune=8}\
@@ -141,8 +140,7 @@ extern const char *cris_elinux_stacksize_str;
 
 /* For the cris-*-elf subtarget.  */
 #define CRIS_CPP_SUBTARGET_SPEC \
- "-D__ELF__\
-  %{mbest-lib-options:\
+ "%{mbest-lib-options:\
    %{!moverride-best-lib-options:\
     %{!march=*:%{!metrax*:%{!mcpu=*:-D__tune_v10 -D__CRIS_arch_tune=10}}}}}"
 
@@ -246,8 +244,23 @@ extern const char *cris_elinux_stacksize_str;
 
 /* Node: Run-time Target */
 
-/* Only keep the non-varying ones here.  */
-#define CPP_PREDEFINES	"-Dcris -DCRIS -DGNU_CRIS"
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define_std ("cris");		\
+      builtin_define_std ("CRIS");		\
+      builtin_define_std ("GNU_CRIS");		\
+      builtin_define ("__CRIS_ABI_version=2");	\
+    }						\
+  while (0)
+
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("__ELF__");		\
+    }						\
+  while (0)
+
 
 /* This needs to be at least 32 bits.  */
 extern int target_flags;

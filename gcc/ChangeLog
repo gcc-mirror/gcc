@@ -1,5 +1,17 @@
 2003-03-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* config/cris/aout.h (CRIS_CPP_SUBTARGET_SPEC): Move -D__AOUT__ to...
+	(TARGET_OS_CPP_BUILTINS): New macro.
+	* config/cris/cris.h (CRIS_CPP_SUBTARGET_SPEC): Move -D__ELF__ to...
+	(TARGET_OS_CPP_BUILTINS): New macro.
+	(CPP_PREDEFINES): Don't define.  Move old definitions and...
+	(CPP_SPEC): ...move -D__CRIS_ABI_version=2 to...
+	(TARGET_CPU_CPP_BUILTINS): New macro.
+	* config/cris/linux.h (CRIS_CPP_SUBTARGET_SPEC): Move constant
+	definitions and the optional __PIC__, __pic__ and
+	__NO_UNDERSCORES__ definitions to...
+	(TARGET_OS_CPP_BUILTINS): New macro.
+
 	* flags.h (flag_leading_underscore): Declare.
 
 	* c-opts.c (c_common_post_options): On fopen failure, return
