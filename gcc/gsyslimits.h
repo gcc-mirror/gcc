@@ -4,5 +4,5 @@
    instead of this text.  */
 
 #define _GCC_NEXT_LIMITS_H		/* tell gcc's limits.h to recurse */
-#include_next <limits.h>
+ #include_next <limits.h>
 #undef _GCC_NEXT_LIMITS_H

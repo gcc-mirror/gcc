@@ -15,7 +15,7 @@ sed 's/^@//' > "include/limits.h" <<'@//E*O*F include/limits.h//'
 #ifndef _LIMITS_H
 #define _LIMITS_H
 
-#include_next <limits.h>
+ #include_next <limits.h>
 
 /* Minimum and maximum values a `char' can hold.  */
 #ifdef __CHAR_UNSIGNED__
@@ -34,7 +34,7 @@ sed 's/^@//' > "include/math.h" <<'@//E*O*F include/math.h//'
 #ifndef _MATH_H
 #define _MATH_H
 
-#include_next <math.h>
+ #include_next <math.h>
 
 #undef HUGE_VAL
 
@@ -386,7 +386,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 
 #endif /* __WCHAR_T */
 
-#include_next <stddef.h>
+ #include_next <stddef.h>
 
 #endif /* _STDDEF_H */
 @//E*O*F include/stddef.h//
@@ -400,12 +400,12 @@ sed 's/^@//' > "include/stdlib.h" <<'@//E*O*F include/stdlib.h//'
 #if _CONVEX_SOURCE
 
 #define alloca __non_builtin_alloca
-#include_next <stdlib.h>
+ #include_next <stdlib.h>
 #undef alloca
 
 #else
 
-#include_next <stdlib.h>
+ #include_next <stdlib.h>
 
 #endif  /* _CONVEX_SOURCE */
 

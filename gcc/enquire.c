@@ -716,7 +716,7 @@ int main(argc, argv) int argc; char *argv[]; {
 		printf ("#ifndef _FLOAT_H___\n");
 		printf ("#define _FLOAT_H___\n");
 		if (SYS_FLOAT_H_WRAP)
-			printf ("#include_next <float.h>\n");
+			printf (" #include_next <float.h>\n");
 	}
 #ifdef ID
 	printf("%sProduced on %s by enquire version %s, CWI, Amsterdam%s\n",

@@ -232,11 +232,11 @@ _cpp_handle_directive (pfile)
   if (CPP_WTRADITIONAL (pfile))
     {
       if (!hash_at_bol && dtable[i].origin == KANDR)
-	cpp_warning (pfile, "the # in #%s should be at the left margin",
+	cpp_warning (pfile, "traditional C ignores #%s with the # indented",
 		     dtable[i].name);
       else if (hash_at_bol && dtable[i].origin != KANDR)
 	cpp_warning (pfile,
-		     "the # in #%s should not be at the left margin",
+		     "traditional C rejects #%s unless the # is indented",
 		     dtable[i].name);
     }
 
@@ -1658,7 +1658,10 @@ do_assert (pfile)
 
   bslot = _cpp_lookup_slot (pfile, sym, blen, 1, &bhash);
   if (! *bslot)
-    *bslot = base = _cpp_make_hashnode (sym, blen, T_ASSERT, bhash);
+    {
+      *bslot = base = _cpp_make_hashnode (sym, blen, T_ASSERT, bhash);
+      base->value.aschain = 0;
+    }
   else
     {
       base = *bslot;

@@ -785,6 +785,11 @@ _cpp_parse_expr (pfile)
 	  cpp_ice (pfile, "lex returns a NAME");
 	case ERROR:
 	  goto syntax_error;
+	case '#':
+	  /* We get '#' when get_directive_token hits a syntactically
+	     invalid assertion predicate.  _cpp_parse_assertion has
+	     already issued an error.  */
+	  goto syntax_error;
 	default:
 	  cpp_error (pfile, "invalid character in #if");
 	  goto syntax_error;

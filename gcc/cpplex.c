@@ -604,7 +604,12 @@ _cpp_parse_assertion (pfile)
   int c, dropwhite;
   _cpp_skip_hspace (pfile);
   c = PEEKC();
-  if (! is_idstart(c))
+  if (c == '\n')
+    {
+      cpp_error (pfile, "assertion without predicate");
+      return 0;
+    }
+  else if (! is_idstart(c))
     {
       cpp_error (pfile, "assertion predicate is not an identifier");
       return 0;
@@ -709,8 +714,9 @@ _cpp_lex_token (pfile)
       if (pfile->parsing_if_directive)
 	{
 	  _cpp_skip_hspace (pfile);
-	  _cpp_parse_assertion (pfile);
-	  return CPP_ASSERTION;
+	  if (_cpp_parse_assertion (pfile))
+	    return CPP_ASSERTION;
+	  goto randomchar;
 	}
 
       if (pfile->parsing_define_directive && ! CPP_TRADITIONAL (pfile))

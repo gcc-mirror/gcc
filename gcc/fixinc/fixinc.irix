@@ -90,7 +90,7 @@ if [ -r $INPUT/$file ]; then
 #ifdef __cplusplus
 # define exception __math_exception
 #endif
-#include_next <math.h>
+ #include_next <math.h>
 #ifdef __cplusplus
 # undef exception
 #endif
@@ -123,7 +123,7 @@ if [ -r $INPUT/$file ]; then
 #ifdef __cplusplus
 # define bool __curses_bool_t
 #endif
-#include_next <curses.h>
+ #include_next <curses.h>
 #ifdef __cplusplus
 # undef bool
 #endif

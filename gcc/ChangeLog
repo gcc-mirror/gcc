@@ -1,3 +1,24 @@
+2000-04-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppinit.c (cpp_start_read): Turn off -Wtraditional if
+	processing C++.
+	* cpplib.c (_cpp_handle_directive): Improve warnings for
+	traditional C and indented directives.
+
+	* enquire.c, gsyslimits.h, limity.h, config/convex/fixinc.convex,
+	fixinc/fixinc.irix, fixinc/fixinc.sco, fixinc/fixinc.wrap,
+	fixinc/inclhack.def: Indent the # of #include_next one space.
+	* cp/rtti.c: Un-indent #if and #endif.
+
+	* cppexp.c (_cpp_parse_expr): If lex returns '#', it's a
+	syntax error, but an error has already been printed.
+	* cpplex.c (_cpp_parse_assertion): Give a more specific error
+	message when called with nothing remaining on the line.
+	(_cpp_lex_token): If _cpp_parse_assertion fails, return an
+	OTHER token, not an ASSERTION.
+	* cpplib.c (do_assert): When we create a 'base' node, clear
+	its aschain pointer.
+
 2000-04-02  Neil Booth <NeilB@earthling.net>
 
 	* cppexp.c:  New typedef op_t.  struct operation and struct 

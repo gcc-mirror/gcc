@@ -1,4 +1,6 @@
 /* Basic tests of the #assert preprocessor extension. */
+/* { dg-do compile } */
+/* { dg-options "" } */
 
 #define fail  int fail
 
