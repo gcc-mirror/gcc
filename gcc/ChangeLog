@@ -1,3 +1,8 @@
+Sat Jun  5 17:04:16 1999  Craig Burley  <craig@jcb-sc.com>
+
+	From Dave Love to egcs-patches on 20 May 1999 17:38:38 +0100:
+	* invoke.texi: Clarify text vis-a-vis Intel CPUs.
+
 Fri Jun  4 13:30:27 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* alpha/osf.h (CPP_SUBTARGET_SPEC): Handle -threads.

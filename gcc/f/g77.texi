@@ -10774,30 +10774,25 @@ compiler, typically @code{gcc}.)
 
 @node Use Submodel Options
 @subsection Use Submodel Options
-@cindex Pentium optimizations
-@cindex optimization, for Pentium
-@cindex 586/686 CPUs
 @cindex submodels
 
 Using an appropriate @samp{-m} option to generate specific code for your
 CPU may be worthwhile, though it may mean the executable won't run on
 other versions of the CPU that don't support the same instruction set.
 @xref{Submodel Options,,Hardware Models and Configurations,gcc,Using and
-Porting GNU CC}.
+Porting GNU CC}.  For instance on an x86 system the compiler might have
+been built---as shown by @samp{g77 -v}---for the target
+@samp{i386-pc-linux-gnu}, i.e.@: an @samp{i386} CPU@.  In that case to
+generate code best optimized for a Pentium you could use the option
+@samp{-march=pentium}.
 
-For recent CPUs that don't have explicit support in
-the released version of @code{gcc}, it may still be possible to get
-improvements.
-For instance, the flags recommended for 586/686
-(Pentium(Pro)) chips for building the Linux kernel are:
+For recent CPUs that don't have explicit support in the released version
+of @code{gcc}, it @emph{might} still be possible to get improvements
+with certain @samp{-m} options.
 
-@smallexample
--m486 -malign-loops=2 -malign-jumps=2 -malign-functions=2
--fomit-frame-pointer
-@end smallexample
-
-@noindent @samp{-fomit-frame-pointer} will, however, inhibit debugging
-on x86 systems.
+@samp{-fomit-frame-pointer} can help performance on x86 systems and
+others.  It will, however, inhibit debugging on the systems on which it
+is not turned on anyway by @samp{-O}.
 
 @node Trouble
 @chapter Known Causes of Trouble with GNU Fortran

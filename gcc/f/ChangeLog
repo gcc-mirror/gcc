@@ -1,3 +1,8 @@
+Sat Jun  5 17:03:23 1999  Craig Burley  <craig@jcb-sc.com>
+
+	From Dave Love to egcs-patches on 20 May 1999 17:38:38 +0100:
+	* g77.texi: Clean up fossil text vis-a-vis Intel CPUs.
+
 Fri Jun  4 13:56:56 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* Make-lang.in: Use libsubdir, not prefix, to store
