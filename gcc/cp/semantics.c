@@ -1272,6 +1272,10 @@ finish_parenthesized_expr (tree expr)
     /* [expr.unary.op]/3 The qualified id of a pointer-to-member must not be
        enclosed in parentheses.  */
     PTRMEM_OK_P (expr) = 0;
+  
+  if (TREE_CODE (expr) == STRING_CST)
+    PAREN_STRING_LITERAL_P (expr) = 1;
+  
   return expr;
 }
 
