@@ -1870,31 +1870,35 @@ fix = {
 };
 #endif
 
-
-/*
- *  Delete the '#define void int' line from curses.h on Lynx
+/* 
+ *  Remove header file warning from sys/time.h.  Autoconf's
+ *  AC_HEADER_TIME recommends to include both sys/time.h and time.h
+ *  which causes warning on LynxOS.  Remove the warning.
  */
 fix = {
-    hackname  = lynx_void_int;
-    files     = curses.h;
-    select    = "#[ \t]*define[ \t]+void[ \t]+int[ \t]*";
+    hackname  = lynxos_no_warning_in_sys_time_h;
+    files     = sys/time.h;
+    select    = "#warning[ \t]+Using <time.h> instead of <sys/time.h>";
     c_fix     = format;
     c_fix_arg = "";
-    test_text = "# define\tvoid\tint \t/* curses foiled again */";
+    test_text = "#warning Using <time.h> instead of <sys/time.h>";
 };
 
 
-/*
- *  Fix fcntl prototype in fcntl.h on LynxOS.
+/* 
+ *  Add missing declaration for putenv.
  */
 fix = {
-    hackname  = lynxos_fcntl_proto;
-    files     = fcntl.h;
-    select    = "fcntl[ \t]*" '\(int, int, int\)';
+    hackname  = lynxos_missing_putenv;
+    mach      = '*-*-lynxos*';
+    files     = stdlib.h;
+    bypass    = 'putenv[ \t]*\\(';
+    select    = "extern char \\*getenv[ \t]*_AP\\(\\(const char \\*\\)\\);";
     c_fix     = format;
-    c_fix_arg = '%1...)';
-    c_fix_arg = "(fcntl[ \t]*" '\(int, int, )int\)';
-    test_text = "extern int fcntl(int, int, int);";
+    c_fix_arg = "%0\n"
+        "extern int putenv				_AP((char *));";
+    c_fix_arg = "extern char \\*getenv[ \t]*_AP\\(\\(const char \\*\\)\\);";
+    test_text = "extern char *getenv	_AP((const char *));";
 };
 
 

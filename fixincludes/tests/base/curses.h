@@ -30,11 +30,6 @@ struct term;
 #endif  /* BAD_STRUCT_TERM_CHECK */
 
 
-#if defined( LYNX_VOID_INT_CHECK )
-/* curses foiled again */
-#endif  /* LYNX_VOID_INT_CHECK */
-
-
 #if defined( VOID_NULL_CHECK )
 #ifndef NULL
 #define NULL 0  /* typed NULL */

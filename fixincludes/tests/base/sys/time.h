@@ -14,6 +14,11 @@ struct sigevent;
 #endif  /* HPUX_SYSTIME_CHECK */
 
 
+#if defined( LYNX_NO_WARNING_IN_SYS_TIME_H_CHECK )
+
+#endif  /* LYNX_NO_WARNING_IN_SYS_TIME_H_CHECK */
+
+
 #if defined( ULTRIX_SYS_TIME_CHECK )
 @(#)time.h      6.1     (ULTRIX)
 extern time_t		time( time_t *__tloc );

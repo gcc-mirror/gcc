@@ -1,3 +1,15 @@
+2004-09-10  Adam Nemet  <anemet@lnxw.com>
+
+	* inclhack.def (lynx_void_int): Remove.
+	(lynxos_fcntl_proto): Remove.
+	(lynxos_no_warning_in_sys_time_h): New fix.
+	(lynxos_missing_putenv): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/fcntl.h: Remove.
+	* tests/base/sys/time.h: Update from test area.
+	* tests/base/curses.h: Likewise.
+	* tests/base/stdlib.h: Likewise.
+
 2004-09-03  Jan Beulich  <jbeulich@novell.com>
 
 	* inclhack.def: Suppress exception_structure and math_exception
