@@ -227,13 +227,13 @@ mode_mask_operand (op, mode)
     return CONST_DOUBLE_HIGH (op) == 0 && CONST_DOUBLE_LOW (op) == -1;
 #endif
 
-  if (GET_CODE (op) == CONST_INT)
-    return (INTVAL (op) == 0xff
-	    || INTVAL (op) == 0xffff
+  return (GET_CODE (op) == CONST_INT
+	  && (INTVAL (op) == 0xff
+	      || INTVAL (op) == 0xffff
 #if HOST_BITS_PER_WIDE_INT == 64
-	    || INTVAL (op) == 0xffffffff
+	      || INTVAL (op) == 0xffffffff
 #endif
-	    );
+	      ));
 }
 
 /* Return 1 if OP is a multiple of 8 less than 64.  */
