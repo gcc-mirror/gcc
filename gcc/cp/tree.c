@@ -646,8 +646,7 @@ unshare_base_binfos (base_binfo)
 	    = make_binfo (BINFO_OFFSET (base_base_binfo),
 			  base_base_binfo,
 			  BINFO_VTABLE (base_base_binfo),
-			  BINFO_VIRTUALS (base_base_binfo),
-			  chain);
+			  BINFO_VIRTUALS (base_base_binfo));
 	  chain = TREE_VEC_ELT (base_binfos, j);
 	  TREE_VIA_PUBLIC (chain) = TREE_VIA_PUBLIC (base_base_binfo);
 	  TREE_VIA_PROTECTED (chain) = TREE_VIA_PROTECTED (base_base_binfo);
@@ -677,9 +676,7 @@ layout_basetypes (rec, max)
   tree binfos = TYPE_BINFO_BASETYPES (rec);
   int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
 
-  /* Get all the virtual base types that this type uses.
-     The TREE_VALUE slot holds the virtual baseclass type.  */
-  tree vbase_types = get_vbase_types (rec);
+  tree vbase_types;
 
   unsigned int record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (rec));
   unsigned int desired_align;
@@ -694,7 +691,11 @@ layout_basetypes (rec, max)
     record_align = MAX (record_align, STRUCTURE_SIZE_BOUNDARY);
 #endif
 
-  CLASSTYPE_VBASECLASSES (rec) = vbase_types;
+  /* Get all the virtual base types that this type uses.  The
+     TREE_VALUE slot holds the virtual baseclass type.  Note that
+     get_vbase_types makes copies of the virtual base BINFOs, so that
+     the vbase_types are unshared.  */
+  CLASSTYPE_VBASECLASSES (rec) = vbase_types = get_vbase_types (rec);
 
   my_friendly_assert (TREE_CODE (TYPE_SIZE (rec)) == INTEGER_CST, 19970302);
   const_size = TREE_INT_CST_LOW (TYPE_SIZE (rec));
@@ -761,6 +762,11 @@ layout_basetypes (rec, max)
       else
 	{
 	  my_friendly_assert (TREE_TYPE (field) == basetype, 23897);
+
+	  if (get_base_distance (basetype, rec, 0, (tree*)0) == -2)
+	    cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
+			basetype, rec);
+
 	  BINFO_OFFSET (base_binfo)
 	    = size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)),
 			      BITS_PER_UNIT));
@@ -774,6 +780,14 @@ layout_basetypes (rec, max)
     {
       BINFO_INHERITANCE_CHAIN (vbase_types) = TYPE_BINFO (rec);
       unshare_base_binfos (vbase_types);
+
+      if (extra_warnings)
+	{
+	  tree basetype = BINFO_TYPE (vbase_types);
+	  if (get_base_distance (basetype, rec, 0, (tree*)0) == -2)
+	    cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
+			basetype, rec);
+	}
     }
 
   return max;
@@ -1198,15 +1212,12 @@ get_decl_list (value)
    VTABLE is the virtual function table with which to initialize
    sub-objects of type TYPE.
 
-   VIRTUALS are the virtual functions sitting in VTABLE.
-
-   CHAIN are more associations we must retain.  */
+   VIRTUALS are the virtual functions sitting in VTABLE.  */
 
 tree
-make_binfo (offset, binfo, vtable, virtuals, chain)
+make_binfo (offset, binfo, vtable, virtuals)
      tree offset, binfo;
      tree vtable, virtuals;
-     tree chain;
 {
   tree new_binfo = make_tree_vec (7);
   tree type;
@@ -1218,10 +1229,6 @@ make_binfo (offset, binfo, vtable, virtuals, chain)
       type = binfo;
       binfo = TYPE_BINFO (binfo);
     }
-
-  TREE_CHAIN (new_binfo) = chain;
-  if (chain)
-    TREE_USED (new_binfo) = TREE_USED (chain);
 
   TREE_TYPE (new_binfo) = TYPE_MAIN_VARIANT (type);
   BINFO_OFFSET (new_binfo) = offset;
@@ -1251,13 +1258,22 @@ binfo_value (elem, type)
   return get_binfo (elem, type, 0);
 }
 
+/* Reverse the BINFO-chain given by PATH.  (If the 
+   BINFO_INHERITANCE_CHAIN points from base classes to derived
+   classes, it will instead point from derived classes to base
+   classes.)  Returns the first node in the reversed chain.  If COPY
+   is non-zero, the nodes are copied as the chain is traversed.  */
+
 tree
-reverse_path (path)
+reverse_path (path, copy)
      tree path;
+     int copy;
 {
   register tree prev = 0, tmp, next;
   for (tmp = path; tmp; tmp = next)
     {
+      if (copy) 
+	tmp = copy_node (tmp);
       next = BINFO_INHERITANCE_CHAIN (tmp);
       BINFO_INHERITANCE_CHAIN (tmp) = prev;
       prev = tmp;

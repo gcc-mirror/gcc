@@ -966,6 +966,16 @@ struct lang_type
 
 /* Additional macros for inheritance information.  */
 
+/* The BINFO_INHERITANCE_CHAIN is used opposite to the description in
+   gcc/tree.h.  In particular if D is derived from B then the BINFO
+   for B (in D) will have a BINFO_INHERITANCE_CHAIN pointing to
+   D.  In tree.h, this pointer is described as pointing in other
+   direction.  
+
+   After a call to get_vbase_types, the vbases are chained together in
+   depth-first order via TREE_CHAIN.  Other than that, TREE_CHAIN is
+   unused.  */
+
 #ifdef MI_MATRIX
 /* When building a matrix to determine by a single lookup
    whether one class is derived from another or not,
@@ -2548,7 +2558,7 @@ extern int parmlist_is_exprlist			PROTO((tree));
 extern int copy_args_p				PROTO((tree));
 extern int grok_ctor_properties			PROTO((tree, tree));
 extern void grok_op_properties			PROTO((tree, int, int));
-extern tree xref_tag				PROTO((tree, tree, tree, int));
+extern tree xref_tag				PROTO((tree, tree, int));
 extern tree xref_tag_from_type			PROTO((tree, tree, int));
 extern void xref_basetypes			PROTO((tree, tree, tree, tree));
 extern tree start_enum				PROTO((tree));
@@ -3005,9 +3015,9 @@ extern tree hash_tree_cons			PROTO((int, int, int, tree, tree, tree));
 extern tree hash_tree_chain			PROTO((tree, tree));
 extern tree hash_chainon			PROTO((tree, tree));
 extern tree get_decl_list			PROTO((tree));
-extern tree make_binfo				PROTO((tree, tree, tree, tree, tree));
+extern tree make_binfo				PROTO((tree, tree, tree, tree));
 extern tree binfo_value				PROTO((tree, tree));
-extern tree reverse_path			PROTO((tree));
+extern tree reverse_path			PROTO((tree, int));
 extern int count_functions			PROTO((tree));
 extern int is_overloaded_fn			PROTO((tree));
 extern tree get_first_fn			PROTO((tree));

@@ -1003,7 +1003,7 @@ compute_access (basetype_path, field)
     }
 
   /* must reverse more than one element */
-  basetype_path = reverse_path (basetype_path);
+  basetype_path = reverse_path (basetype_path, /*copy=*/0);
   types = basetype_path;
   via_protected = 0;
   access = access_default_node;
@@ -1049,7 +1049,7 @@ compute_access (basetype_path, field)
       else
 	break;
     }
-  reverse_path (basetype_path);
+  reverse_path (basetype_path, /*copy=*/0);
 
   /* No special visibilities apply.  Use normal rules.  */
 
@@ -3196,10 +3196,12 @@ dfs_get_vbase_types (binfo)
 {
   if (TREE_VIA_VIRTUAL (binfo) && ! BINFO_VBASE_MARKED (binfo))
     {
-      vbase_types = make_binfo (integer_zero_node, binfo,
-				BINFO_VTABLE (binfo),
-				BINFO_VIRTUALS (binfo), vbase_types);
-      TREE_VIA_VIRTUAL (vbase_types) = 1;
+      tree new_vbase = make_binfo (integer_zero_node, binfo,
+				   BINFO_VTABLE (binfo),
+				   BINFO_VIRTUALS (binfo));
+      TREE_CHAIN (new_vbase) = vbase_types;
+      TREE_VIA_VIRTUAL (new_vbase) = 1;
+      vbase_types = new_vbase;
       SET_BINFO_VBASE_MARKED (binfo);
     }
   SET_BINFO_MARKED (binfo);
@@ -3214,11 +3216,7 @@ get_vbase_types (type)
   tree vbases;
   tree binfo;
 
-  if (TREE_CODE (type) == TREE_VEC)
-    binfo = type;
-  else
-    binfo = TYPE_BINFO (type);
-
+  binfo = TYPE_BINFO (type);
   vbase_types = NULL_TREE;
   dfs_walk (binfo, dfs_get_vbase_types, unmarkedp);
   dfs_walk (binfo, dfs_unmark, markedp);
@@ -4004,3 +4002,4 @@ types_overlap_p (empty_type, next_type)
   dfs_walk (TYPE_BINFO (empty_type), dfs_check_overlap, dfs_no_overlap_yet);
   return found_overlap;
 }
+

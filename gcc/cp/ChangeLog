@@ -1,3 +1,33 @@
+1998-08-27  Mark Mitchell  <mark@markmitchell.com>
+
+	* class.c (build_vbase_path): Use reverse_path.
+	(finish_base_struct): Move warnings for inaccessible bases to
+	layout_basetypes.
+	(modify_one_vtable): Remove check of TREE_USED (binfo).
+	(fixup_vtable_deltas1): Likewise.
+	* cp-tree.h (BINFO_INHERITANCE_CHAIN): Document here.
+	(xref_tag): Remove binfos parameter.
+	(make_binfo): Remove chain parameter.
+	(reverse_path): Add copy parameter.
+	* decl.c (init_decl_processing): Change calls to xref_tag.
+	(xref_tag): Remove binfos parameter.
+	(xref_basetypes): Change calls to make_binfo.
+	* decl2.c (grok_x_components): Change calls to xref_tag.
+	(handle_class_head): Likewise.
+	* friend.c (do_friend): Likewise.
+	* lex.c (make_lang_type): Change calls to make_binfo.
+	* parse.y (structsp): Change calls to xref_tag.
+	(named_complex_class_head_sans_basetype): Likewise.
+	(named_class_head): Likewise.
+	* rtti.c (init_rtti_processing): Likewise.
+	* search.c (compute_access): Change calls to reverse_path.
+	(dfs_get_vbase_types): Change calls to make_binfo.
+	(get_vbase_types): Remove dead code.
+	* tree.c (unshare_base_binfos): Change calls to make_binfo.
+	(layout_basetypes): Warn here about inaccessible bases.
+	(make_binfo): Remove chain parameter.
+	(reverse_path): Add copy parameter.
+	
 1998-08-27  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c: #if 0 complete_type_p.

@@ -2083,10 +2083,10 @@ structsp:
 		  $$.new_type_flag = 1;
 		  check_for_missing_semicolon ($$.t); }
 	| ENUM identifier
-		{ $$.t = xref_tag (enum_type_node, $2, NULL_TREE, 1); 
+		{ $$.t = xref_tag (enum_type_node, $2, 1); 
 		  $$.new_type_flag = 0; }
 	| ENUM complex_type_name
-		{ $$.t = xref_tag (enum_type_node, $2, NULL_TREE, 1); 
+		{ $$.t = xref_tag (enum_type_node, $2, 1); 
 		  $$.new_type_flag = 0; }
 	| TYPENAME_KEYWORD typename_sub
 		{ $$.t = $2;
@@ -2193,12 +2193,12 @@ named_complex_class_head_sans_basetype:
 
 do_xref_defn:
 	  /* empty */  %prec EMPTY
-		{ $<ttype>$ = xref_tag (current_aggr, $<ttype>0, NULL_TREE, 0); }
+		{ $<ttype>$ = xref_tag (current_aggr, $<ttype>0, 0); }
 	;
 
 named_class_head:
 	  named_class_head_sans_basetype  %prec EMPTY
-		{ $$ = xref_tag (current_aggr, $1, NULL_TREE, 1); }
+		{ $$ = xref_tag (current_aggr, $1, 1); }
 	| named_class_head_sans_basetype_defn do_xref_defn
           maybe_base_class_list  %prec EMPTY
 		{ 
@@ -2225,7 +2225,7 @@ named_class_head:
 
 unnamed_class_head:
 	  aggr '{'
-		{ $$ = xref_tag ($$, make_anon_name (), NULL_TREE, 0);
+		{ $$ = xref_tag ($$, make_anon_name (), 0);
 		  yyungetc ('{', 1); }
 	;
 

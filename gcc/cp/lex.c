@@ -4623,8 +4623,7 @@ make_lang_type (code)
   CLASSTYPE_AS_LIST (t) = build_expr_list (NULL_TREE, t);
   SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
   CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
-  TYPE_BINFO (t) = make_binfo (integer_zero_node, t, NULL_TREE, NULL_TREE,
-			       NULL_TREE);
+  TYPE_BINFO (t) = make_binfo (integer_zero_node, t, NULL_TREE, NULL_TREE);
   CLASSTYPE_BINFO_AS_LIST (t) = build_tree_list (NULL_TREE, TYPE_BINFO (t));
 
   /* Make sure this is laid out, for ease of use later.

@@ -60,7 +60,7 @@ init_rtti_processing ()
   if (flag_honor_std)
     push_namespace (get_identifier ("std"));
   type_info_type_node = xref_tag
-    (class_type_node, get_identifier ("type_info"), NULL_TREE, 1);
+    (class_type_node, get_identifier ("type_info"), 1);
   if (flag_honor_std)
     pop_namespace ();
   tinfo_fn_id = get_identifier ("__tf");
