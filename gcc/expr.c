@@ -3028,6 +3028,13 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
       || (STRICT_ALIGNMENT && bitpos % GET_MODE_ALIGNMENT (mode) != 0))
     {
       rtx temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
+
+      /* Unless MODE is VOIDmode or BLKmode, convert TEMP to
+	 MODE.  */
+      if (mode != VOIDmode && mode != BLKmode
+	  && mode != TYPE_MODE (TREE_TYPE (exp)))
+	temp = convert_modes (mode, TYPE_MODE (TREE_TYPE (exp)), temp, 1);
+
       /* Store the value in the bitfield.  */
       store_bit_field (target, bitsize, bitpos, mode, temp, align, total_size);
       if (value_mode != VOIDmode)
