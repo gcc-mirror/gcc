@@ -1586,7 +1586,7 @@ dbxout_symbol (decl, local)
 #endif
       /* Don't output the same typedef twice.
          And don't output what language-specific stuff doesn't want output.  */
-      if (TREE_ASM_WRITTEN (decl) || DECL_IGNORED_P (decl))
+      if (TREE_ASM_WRITTEN (decl) || TYPE_DECL_SUPPRESS_DEBUG (decl))
 	return;
 
       FORCE_TEXT;
