@@ -37,5 +37,6 @@ main()
         if(sizeof(two) >= sizeof(defaultalign)) abort();
         if(sizeof(three) <= sizeof(two)) abort();
         if(sizeof(resetalign) != sizeof(defaultalign)) abort();
+	return 0;
 }
 
