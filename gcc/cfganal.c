@@ -1,6 +1,6 @@
 /* Control flow graph analysis code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -328,10 +328,11 @@ flow_call_edges_add (blocks)
 
 	  for (e = bb->succ; e; e = e->succ_next)
 	    if (e->dest == EXIT_BLOCK_PTR)
-	      break;
-
-	  insert_insn_on_edge (gen_rtx_USE (VOIDmode, const0_rtx), e);
-	  commit_edge_insertions ();
+	      {
+		insert_insn_on_edge (gen_rtx_USE (VOIDmode, const0_rtx), e);
+		commit_edge_insertions ();
+		break;
+	      }
 	}
     }
 
