@@ -58,10 +58,6 @@ ZIP = jar
 endif
 GCJH = gcjh
 else # CANADIAN
-## JAVAC is set to `$(GCJ) -C'.  However, JAVAC is run from the srcdir
-## (due to problems running it in builddir).  In this case the obvious
-## definition of GCJ won't work; instead we resort to this ugly
-## definition that gives us absolute paths.
 GCJH = $(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
 ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar$(EXEEXT)
 endif # CANADIAN
@@ -165,6 +161,7 @@ install-exec-hook:
 ## a .java file with some other class which is caught.  Note that we
 ## only want to create headers for those files which do not have
 ## hand-maintained headers.
+$(built_java_source_files:.java=.class): libgcj.jar
 $(java_source_files:.java=.class): libgcj.jar
 
 ## The .class files for X will not be included in libgcj.jar, but the
@@ -172,36 +169,20 @@ $(java_source_files:.java=.class): libgcj.jar
 ## built. We need this to generate headers for the nat-files.
 $(x_java_source_files:.java=.class): libgcj.jar
 
-## FIXME: this isn't really correct.
-$(built_java_source_files:.java=.class): $(built_java_source_files)
-## This little nastiness is here so that the backquoted stuff in the
-## GCJ definition can be correctly expanded, if required.
-	@javac="$(JAVAC)"; \
-	for f in $?; do \
-	  echo $$javac -L$(here) $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` -d $(here) $$f; \
-	  $$javac -L$(here) $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` \
-	  -d $(here) $$f; \
-	done
-
 ## We have the zip file depend on the java sources and not the class
 ## files, because we don't know the names of all the class files.
 ## FIXME: this method fails in a peculiar case: if libgcj.jar is
 ## up-to-date, and foo.class is removed, and bar.java is touched, then
 ## `make libgcj.jar' will not rebuilt foo.class.  That's because
 ## libgcj.jar is not out-of-date with respect to foo.java.
-libgcj.jar: $(java_source_files) $(x_java_source_files)
+libgcj.jar: $(built_java_source_files) $(java_source_files) $(x_java_source_files)
 ## Create a list of all Java sources, without exceeding any shell limits.
-	@: $(shell echo Creating list of files to compile...) $(shell rm -f tmp-list || :) $(shell touch tmp-list) $(foreach source,$(subst $(srcdir)/,,$?),$(shell echo $(source) >> tmp-list))
-## FIXME: this ought to depend on built_java_source_files, but right
-## now it can't.  Ugly.
-	$(MAKE) $(built_java_source_files:.java=.class)
-## This little nastiness is here so that the backquoted stuff in the
-## GCJ definition can be correctly expanded, if required.
+	@: $(shell echo Creating list of files to compile...) $(shell rm -f tmp-list || :) $(shell touch tmp-list) $(foreach source,$?,$(shell echo $(source) >> tmp-list))
 	@set fnord $(MAKEFLAGS); amf=$$2; fail=no; \
-	javac="$(JAVAC)"; dir=`/bin/pwd`; cd $(srcdir); \
-	for f in `cat $$dir/tmp-list`; do \
-	  echo $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) $$f; \
-	  $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) $$f \
+	javac="$(JAVAC)"; \
+	cat tmp-list | while read f; do \
+	  echo $$javac $(JCFLAGS) -classpath $(here):$(srcdir) -d $(here) $$f; \
+	  $$javac $(JCFLAGS) -classpath $(here):$(srcdir) -d $(here) $$f \
 	    || case "$$amf" in *=*) exit 1;; *k*) fail=yes ;; *) exit 1;; esac; \
 	done; \
 	test "$$fail" = no
@@ -253,15 +234,13 @@ $(javao_files) $(x_javao_files): %.lo: %.java
 ## Pass the list of object files to libtool in a temporary file to 
 ## avoid tripping platform command line length limits.
 libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
-	@echo $(libgcj_la_OBJECTS) > libgcj.objectlist;
-	@echo $(libgcj_la_LIBADD) >> libgcj.objectlist;
+	@: $(shell echo Creating list of files to link...) $(shell rm -f libgcj.objectlist || :) $(shell touch libgcj.objectlist) $(foreach object,$(libgcj_la_OBJECTS) $(libgcj_la_LIBADD),$(shell echo $(object) >> libgcj.objectlist))
 	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
 	@LIBFFI@ \
 	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
 
 libgcjx.la: $(libgcjx_la_OBJECTS) $(libgcjx_la_DEPENDENCIES)
-	@echo $(libgcjx_la_OBJECTS) > libgcjx.objectlist;
-	@echo $(libgcjx_la_LIBADD) >> libgcjx.objectlist;
+	@: $(shell echo Creating list of files to link...) $(shell rm -f libgcjx.objectlist || :) $(shell touch libgcjx.objectlist) $(foreach object,$(libgcjx_la_OBJECTS) $(libgcjx_la_LIBADD),$(shell echo $(object) >> libgcjx.objectlist))
 	$(libgcjx_la_LINK) -objectlist libgcjx.objectlist \
 	-rpath $(toolexeclibdir) $(libgcjx_la_LDFLAGS) $(LIBS)
 
@@ -282,6 +261,8 @@ nat_headers = $(ordinary_java_source_files:.java=.h) \
 	java/io/ObjectInputStream$$GetField.h
 
 x_nat_headers = $(x_java_source_files:.java=.h)
+
+$(nat_headers) $(x_nat_headers): libgcj.jar
 
 java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
