@@ -1,3 +1,7 @@
+2002-04-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/warn/effc1.C: New test.
+
 2002-04-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/if-cexp.c: Add a test.
