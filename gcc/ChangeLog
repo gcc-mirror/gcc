@@ -1,7 +1,11 @@
+2005-01-13  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_binary_operation) <AND>: Optimize
+	(and (sign_extend X) C) into (zero_extend (and X C)).
+
 2005-01-13  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/freebsd-spec.h:  Make KSE pthread lib logic the default.
-
 
 2005-01-13  Richard Henderson  <rth@redhat.com>
 
