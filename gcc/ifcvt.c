@@ -1193,6 +1193,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
   rtx a = if_info->a;
   rtx b = if_info->b;
   rtx x = if_info->x;
+  rtx orig_a, orig_b;
   rtx insn_a, insn_b;
   rtx tmp, target;
   int is_mem = 0;
@@ -1248,6 +1249,9 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 
   start_sequence ();
 
+  orig_a = a;
+  orig_b = b;
+
   /* If either operand is complex, load it into a register first.
      The best way to do this is to copy the original insn.  In this
      way we preserve any clobbers etc that the insn may have had.
@@ -1279,7 +1283,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
     }
   if (! general_operand (b, GET_MODE (b)))
     {
-      rtx set;
+      rtx set, last;
 
       if (no_new_pseudos)
 	goto end_seq_and_fail;
@@ -1287,9 +1291,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
       if (is_mem)
 	{
           tmp = gen_reg_rtx (GET_MODE (b));
-	  tmp = emit_insn (gen_rtx_SET (VOIDmode,
-				  	tmp,
-					b));
+	  tmp = gen_rtx_SET (VOIDmode, tmp, b);
 	}
       else if (! insn_b)
 	goto end_seq_and_fail;
@@ -1299,8 +1301,22 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 	  tmp = copy_rtx (insn_b);
 	  set = single_set (tmp);
 	  SET_DEST (set) = b;
-	  tmp = emit_insn (PATTERN (tmp));
+	  tmp = PATTERN (tmp);
 	}
+
+      /* If insn to set up A clobbers any registers B depends on, try to
+	 swap insn that sets up A with the one that sets up B.  If even
+	 that doesn't help, punt.  */
+      last = get_last_insn ();
+      if (last && modified_in_p (orig_b, last))
+	{
+	  tmp = emit_insn_before (tmp, get_insns ());
+	  if (modified_in_p (orig_a, tmp))
+	    goto end_seq_and_fail;
+	}
+      else
+	tmp = emit_insn (tmp);
+
       if (recog_memoized (tmp) < 0)
 	goto end_seq_and_fail;
     }
