@@ -1,3 +1,8 @@
+Thu Jul 31 12:34:45 1999  Joe Buck  <jbuck@synopsys.com>
+
+	* gcc.texi: Use terms "GNU Compiler Collection" and "GCC".
+	Also update copyright.
+
 Sat Jul 31 11:10:07 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* c-pragma.c: Don't include "except.h".
