@@ -169,13 +169,11 @@ Boston, MA 02111-1307, USA.  */
 
    Registers 0  - 31 remain unchanged.
 
-   Registers 32 - 60 are mapped to 72, 74, 76 ...
+   Registers 32 - 59 are mapped to 72, 74, 76 ...
 
-   Register 88 is mapped to 32.  */
-
+   Register 60 is mapped to 32.  */
 #define DBX_REGISTER_NUMBER(REGNO) \
-  ((REGNO) <= 31 ? (REGNO) :						\
-   ((REGNO) > 31 && (REGNO) <= 60 ? (REGNO - 32) * 2 + 72 : 32))
+  ((REGNO) <= 31 ? (REGNO) : ((REGNO) < 60 ? (REGNO - 32) * 2 + 72 : 32))
 
 /* We must not use the DBX register numbers for the DWARF 2 CFA column
    numbers because that maps to numbers beyond FIRST_PSEUDO_REGISTER.
@@ -292,7 +290,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
  "%fr28", "%fr29",  "%fr30", "%fr31", "SAR"}
 
 #define ADDITIONAL_REGISTER_NAMES \
- {{"%cr11",88}}
+ {{"%cr11",60}}
 
 #define FP_SAVED_REG_LAST 49
 #define FP_SAVED_REG_FIRST 40
