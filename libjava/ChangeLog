@@ -1,3 +1,8 @@
+2003-02-13  Mark Wielaard  <mark@klomp.org>
+
+	* java/io/BufferedOutputStream.java (write(int)): Only flush when
+	next byte cannot be buffered.
+
 2003-02-13  Michael Koch  <konqueror@gmx.de>
  
 	* java/awt/Label.java
