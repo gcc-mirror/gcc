@@ -87,10 +87,6 @@
 
 # include "auto-host.h"
 
-# if !defined(const) && !defined(HAVE_CONST)
-#  define const
-# endif
-
 # if !defined(volatile) && !defined(HAVE_VOLATILE)
 #  define volatile
 # endif
