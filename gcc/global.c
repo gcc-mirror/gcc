@@ -871,7 +871,8 @@ prune_preferences ()
 	 we want to give the lower-priority allocno the first chance for
 	 these registers).  */
       for (j = i + 1; j < max_allocno; j++)
-	if (CONFLICTP (allocno, allocno_order[j]))
+	if (CONFLICTP (allocno, allocno_order[j])
+	    || CONFLICTP (allocno_order[j], allocno))
 	  {
 	    COPY_HARD_REG_SET (temp,
 			       hard_reg_full_preferences[allocno_order[j]]);
