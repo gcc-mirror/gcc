@@ -1,3 +1,8 @@
+2004-03-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl (new-bootstrap): Fix typo.
+	* Makefile.in: Regenerate.
+
 2004-03-22  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Rearrange by moving recursive_targets rules

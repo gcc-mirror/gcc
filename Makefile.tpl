@@ -1459,7 +1459,7 @@ configure-stage3-gcc: all-stage2-gcc
 	fi ; \
 	[ -d stage3-gcc ] || mkdir stage3-gcc; \
 	mv stage3-gcc gcc ; \
-	mv stage1-gcc prev-gcc ; \
+	mv stage2-gcc prev-gcc ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
