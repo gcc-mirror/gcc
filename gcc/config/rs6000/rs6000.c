@@ -623,6 +623,27 @@ reg_or_cint_operand (op, mode)
 	     || gpc_reg_operand (op, mode));
 }
 
+/* Return 1 is the operand is either a non-special register or ANY
+   32-bit unsigned constant integer.  */
+
+int
+reg_or_u_cint_operand (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+     return (gpc_reg_operand (op, mode)
+	     || (GET_CODE (op) == CONST_INT
+#if HOST_BITS_PER_WIDE_INT != 32
+		 && INTVAL (op) < ((HOST_WIDE_INT) 1 << 32)
+#endif
+		 && INTVAL (op) > 0)
+#if HOST_BITS_PER_WIDE_INT == 32
+	     || (GET_CODE (op) == CONST_DOUBLE
+		 && CONST_DOUBLE_HIGH (op) == 0)
+#endif
+	 );
+}
+
 /* Return 1 if the operand is an operand that can be loaded via the GOT */
 
 int
@@ -905,8 +926,41 @@ logical_operand (op, mode)
 {
   return (gpc_reg_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
-	      && ((INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) == 0
-		  || (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff0000)) == 0)));
+#if HOST_BITS_PER_WIDE_INT != 32
+	      && INTVAL (op) > 0
+	      && INTVAL (op) < ((HOST_WIDE_INT) 1 << 32)
+#endif
+	      && ((INTVAL (op) & GET_MODE_MASK (mode)
+		   & (~ (HOST_WIDE_INT) 0xffff)) == 0
+		  || (INTVAL (op) & GET_MODE_MASK (mode)
+		      & (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) == 0)));
+}
+
+/* Return 1 if the operand is a non-special register or a 32-bit constant
+   that can be used as the operand of an OR or XOR insn on the RS/6000.  */
+
+int
+logical_u_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (gpc_reg_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT
+	      && INTVAL (op) > 0
+#if HOST_BITS_PER_WIDE_INT != 32
+	      && INTVAL (op) < ((HOST_WIDE_INT) 1 << 32)
+#endif
+	      && ((INTVAL (op) & GET_MODE_MASK (mode)
+		   & (~ (HOST_WIDE_INT) 0xffff)) == 0
+		  || (INTVAL (op) & GET_MODE_MASK (mode)
+		      & (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) == 0))
+#if HOST_BITS_PER_WIDE_INT == 32
+	  || (GET_CODE (op) == CONST_DOUBLE
+	      && CONST_DOUBLE_HIGH (op) == 0
+	      && ((CONST_DOUBLE_LOW (op)
+		   & (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) == 0))
+#endif
+      );
 }
 
 /* Return 1 if C is a constant that is not a logical operand (as
@@ -918,8 +972,39 @@ non_logical_cint_operand (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
-	  && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) != 0
-	  && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff0000)) != 0);
+#if HOST_BITS_PER_WIDE_INT != 32
+	  && INTVAL (op) < ((HOST_WIDE_INT) 1 << 32)
+#endif
+	  && (INTVAL (op) & GET_MODE_MASK (mode) &
+	      (~ (HOST_WIDE_INT) 0xffff)) != 0
+	  && (INTVAL (op) & GET_MODE_MASK (mode) &
+	      (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) != 0);
+}
+
+/* Return 1 if C is an unsigned 32-bit constant that is not a
+   logical operand (as above).  */
+
+int
+non_logical_u_cint_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return ((GET_CODE (op) == CONST_INT
+	   && INTVAL (op) > 0
+#if HOST_BITS_PER_WIDE_INT != 32
+	   && INTVAL (op) < ((HOST_WIDE_INT) 1 << 32)
+#endif
+	   && (INTVAL (op) & GET_MODE_MASK (mode)
+	       & (~ (HOST_WIDE_INT) 0xffff)) != 0
+	   && (INTVAL (op) & GET_MODE_MASK (mode)
+	       & (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) != 0)
+#if HOST_BITS_PER_WIDE_INT == 32
+	  || (GET_CODE (op) == CONST_DOUBLE
+	      && CONST_DOUBLE_HIGH (op) == 0
+	      && (CONST_DOUBLE_LOW (op) & (~ (HOST_WIDE_INT) 0xffff)) != 0
+	      && (CONST_DOUBLE_LOW (op)
+		  & (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) != 0));
+#endif
 }
 
 /* Return 1 if C is a constant that can be encoded in a 32-bit mask on the
@@ -1916,13 +2001,19 @@ expand_block_move (operands)
      then don't generate more than 8 loads.  */
   if (TARGET_STRING)
     {
-      if (bytes > 4*8)
+      if (bytes > 8*4)
 	return 0;
     }
   else if (! STRICT_ALIGNMENT)
     {
-      if (bytes > 4*8)
-	return 0;
+      if (TARGET_POWERPC64 && align >= 4)
+	{
+	  if (bytes > 8*8)
+	    return 0;
+	}
+      else
+	if (bytes > 8*4)
+	  return 0;
     }
   else if (bytes > 8*align)
     return 0;

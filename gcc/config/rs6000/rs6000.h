@@ -3183,6 +3183,7 @@ do {									\
   {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},	\
   {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}}, 	\
   {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}}, 		\
+  {"reg_or_u_cint_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}}, \
   {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
   {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},		\
   {"easy_fp_constant", {CONST_DOUBLE}},				\
@@ -3196,7 +3197,9 @@ do {									\
   {"and_operand", {SUBREG, REG, CONST_INT}},			\
   {"and64_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
   {"logical_operand", {SUBREG, REG, CONST_INT}}, 		\
+  {"logical_u_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}}, \
   {"non_logical_cint_operand", {CONST_INT}},			\
+  {"non_logical_u_cint_operand", {CONST_INT, CONST_DOUBLE}},	\
   {"mask_operand", {CONST_INT}},				\
   {"mask64_operand", {CONST_INT, CONST_DOUBLE}},		\
   {"count_register_operand", {REG}},				\

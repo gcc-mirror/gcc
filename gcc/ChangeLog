@@ -1,3 +1,22 @@
+Wed Mar 22 13:11:54 2000  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (reg_or_u_cint_operand): New function.
+	(logical_operand): Handle 64-bit hosts.
+	(logical_u_operand): New function.
+	(non_logical_cint_operand): Handle 64-bit hosts.
+	(non_logical_u_cint_operand): New function.
+	(expand_block_move): Allow 8 DImode loads for PowerPC64.
+	* rs6000.h (PREDICATE_CODES): Define new functions.
+	* rs6000.md (iordi3, xordi3): Constant int must be unsigned 32-bits.
+	(movdi_64): Bracket code intended for 64-bit hosts.  Create
+	CONST_DOUBLE for 32-bit values.
+
+Wed Mar 22 13:11:54 2000  Gabriel Paubert  <paubert@iram.es>
+
+	* rs6000.md: Correct instructions length attributes and
+	constraints on unsigned compare instructions.
+	(*ne0): Disable for PowerPC64.
+	
 Tue Mar  7 21:41:17 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* cccp.c (handle_directive): Initialize backslash_newlines_p.
