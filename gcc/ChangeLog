@@ -1,3 +1,13 @@
+Wed Mar 11 12:05:20 1998  Teemu Torma  <tot@trema.com>
+
+	* gthr.h: Changed the comment about return values.
+	* gthr-solaris.h (__gthread_once): Do not use errno; return the
+	error number instead of -1. 
+	(__gthread_key_create): Any non-zero return value is an error.
+	* libgcc2.c (eh_context_initialize): Check for non-zero return
+	value from __gthread_once.
+	Check that the value of get_eh_context was really changed.
+
 Wed Mar 11 18:26:25 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (LOOP_ALIGN): Only align when optimizing.

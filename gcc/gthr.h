@@ -65,7 +65,8 @@ Boston, MA 02111-1307, USA.  */
      int __gthread_mutex_trylock (__gthread_mutex_t *mutex);
      int __gthread_mutex_unlock (__gthread_mutex_t *mutex);
 
-   All functions returning int should return 0 on success, -1 on error.
+   All functions returning int should return zero on success or the error
+   number.  If the operation is not supported, -1 is returned.
 
    Currently supported threads packages are
      POSIX threads with -D_PTHREADS
