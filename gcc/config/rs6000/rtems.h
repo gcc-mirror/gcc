@@ -27,6 +27,7 @@
     {                                     \
       builtin_define_std ("PPC");         \
       builtin_define ("__rtems__");       \
+      builtin_define ("__USE_INIT_FINI__"); \
       builtin_assert ("system=rtems");    \
       builtin_assert ("cpu=powerpc");     \
       builtin_assert ("machine=powerpc"); \
