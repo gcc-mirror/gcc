@@ -190,13 +190,16 @@ find_methodref_index (cpool, decl)
      CPool *cpool;
      tree decl;
 {
-  int class_index = find_class_constant (cpool, DECL_CONTEXT (decl));
+  tree mclass = DECL_CONTEXT (decl);
+  int class_index = find_class_constant (cpool, mclass);
   tree name = DECL_CONSTRUCTOR_P (decl) ? init_identifier_node
     : DECL_NAME (decl);
   int name_type_index
     = find_name_and_type_constant (cpool, name, TREE_TYPE (decl));
-  /* Methodref or INterfacemethodRef - FIXME */
-  return find_constant1 (cpool, CONSTANT_Methodref,
+  return find_constant1 (cpool,
+			 CLASS_INTERFACE (TYPE_NAME (mclass))
+			 ? CONSTANT_InterfaceMethodref
+			 : CONSTANT_Methodref,
 			 (class_index << 16) | name_type_index);
 }
 
