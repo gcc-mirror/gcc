@@ -1,3 +1,14 @@
+Tue 26-Sep-2000 18:25:38 BST  Neil Booth  <neilb@earthling.net>
+
+	* gcc.c (cpp_options): Add spec for -ftabstop=.
+	(invoke_as): New spec that handles invoking as.
+	Update specs to handle -save-temps and -traditional.
+	* ch/lang-specs.h, f/lang-specs.h, java/lang-specs.h:
+	Use invoke_as.
+	* cp/lang-specs.h, objc/lang-specs.h: Update to use
+	invoke_as, and handle -save-temps and -traditional (if
+	appropriate).
+
 2000-09-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.c (sparc_emit_set_const64): Don't abort when
