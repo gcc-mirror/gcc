@@ -1,3 +1,9 @@
+2003-07-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (function_arg_partial_nregs): Use
+	SPARC_INT_ARG_MAX to determine where to split unnamed
+	complex FP arguments.
+
 Thu Jul  3 20:36:47 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (create_basic_block, merge_blocks_nomove): Kill.
