@@ -5,7 +5,9 @@ AC_INIT(pexecute.c)
 
 dnl We use these options to decide which functions to include.
 AC_ARG_WITH(target-subdir,
-[  --with-target-subdir=SUBDIR      Configuring with a cross compiler])
+[  --with-target-subdir=SUBDIR      Configuring in a subdirectory])
+AC_ARG_WITH(cross-host,
+[  --with-cross-host=HOST           Configuring with a cross compiler])
 AC_ARG_WITH(newlib,
 [  --with-newlib                    Configuring with newlib])
 
@@ -173,20 +175,21 @@ fi
 setobjs=
 if test -n "${with_target_subdir}"; then
 
-  # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
+  # We are being configured as a target library.  AC_REPLACE_FUNCS
   # may not work correctly, because the compiler may not be able to
-  # link executables.
+  # link executables.  Note that we may still be being configured
+  # native.
 
   # If we are being configured for newlib, we know which functions
   # newlib provide and which ones we will be expected to provide.
 
   if test "x${with_newlib}" = "xyes"; then
     ALLOCA="alloca.o"
-    LIBOBJS="basename.o insque.o random.o strdup.o vasprintf.o"
+    LIBOBJS="asprintf.o basename.o insque.o random.o strdup.o vasprintf.o"
 
     for f in $funcs; do
       case "$f" in
-	basename | insque | random | strdup | vasprintf)
+	asprintf | basename | insque | random | strdup | vasprintf)
 	  ;;
 	*)
 	  n=HAVE_`echo $f | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
@@ -198,7 +201,7 @@ if test -n "${with_target_subdir}"; then
     # newlib doesnt provide any of the variables in $vars, so we
     # dont have to check them here.
 
-    # Of the functions in $checkfuncs, VxWorks only has strerror.
+    # Of the functions in $checkfuncs, newlib only has strerror.
     AC_DEFINE(HAVE_STRERROR)
 
     setobjs=yes
@@ -300,7 +303,7 @@ fi
 
 # Install a library built with a cross compiler in $(tooldir) rather
 # than $(libdir).
-if test -z "${with_target_subdir}"; then
+if test -z "${with_cross_host}"; then
   INSTALL_DEST=libdir
 else
   INSTALL_DEST=tooldir
