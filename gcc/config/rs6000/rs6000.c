@@ -2892,7 +2892,8 @@ init_cumulative_args (cum, fntype, libname, incoming, libcall)
   cum->fregno = FP_ARG_MIN_REG;
   cum->vregno = ALTIVEC_ARG_MIN_REG;
   cum->prototype = (fntype && TYPE_ARG_TYPES (fntype));
-  cum->call_cookie = libcall ? CALL_LIBCALL : CALL_NORMAL;
+  cum->call_cookie = ((DEFAULT_ABI == ABI_V4 && libcall)
+		      ? CALL_LIBCALL : CALL_NORMAL);
   cum->sysv_gregno = GP_ARG_MIN_REG;
 
   if (incoming)
