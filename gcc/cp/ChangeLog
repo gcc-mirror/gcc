@@ -1,5 +1,6 @@
 Wed May 31 14:09:00 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* cp-tree.h (c_get_alias_set): Deleted.
 	* Makefile.in (decl.o): Include ../expr.h.
 	* decl.c (expr.h): Include.
 	(init_decl_processing): Call record_component_aliases for arrays.
