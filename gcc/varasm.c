@@ -791,7 +791,7 @@ set_user_assembler_name (tree decl, const char *name)
 int
 decode_reg_name (const char *asmspec)
 {
-  if (asmspec != 0 && strlen (asmspec) != 0)
+  if (asmspec != 0)
     {
       int i;
 
@@ -901,10 +901,10 @@ make_decl_rtl (tree decl)
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
-  reg_number = decode_reg_name (name);
 
   if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
     {
+      reg_number = decode_reg_name (name);
       /* First detect errors in declaring global registers.  */
       if (reg_number == -1)
 	error ("%Jregister name not specified for %qD", decl, decl);
@@ -955,12 +955,19 @@ make_decl_rtl (tree decl)
 	  return;
 	}
     }
-
   /* Now handle ordinary static variables and functions (in memory).
      Also handle vars declared register invalidly.  */
-
-  if (name[0] == '*' && (reg_number >= 0 || reg_number == -3))
-    error ("%Jregister name given for non-register variable %qD", decl, decl);
+  else if (name[0] == '*')
+  {
+#ifdef REGISTER_PREFIX
+    if (strlen (REGISTER_PREFIX) != 0)
+      {
+	reg_number = decode_reg_name (name)
+	if (reg_number >= 0 || reg_number == -3)
+	  error ("%Jregister name given for non-register variable %qD", decl, decl);
+      }
+#endif
+  }
 
   /* Specifying a section attribute on a variable forces it into a
      non-.bss section, and thus it cannot be common.  */
