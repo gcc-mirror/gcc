@@ -633,10 +633,12 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
 # If it is, rm *.o is an easy way to do it.
 # CONFIG_H = $(host_xm_file) $(tm_file)
 CONFIG_H =
-RTL_H = rtl.h rtl.def machmode.h machmode.def
-TREE_H = tree.h real.h tree.def machmode.h machmode.def
+RTL_H = rtl.h rtl.def gansidecl.h machmode.h machmode.def
+TREE_H = tree.h real.h tree.def gansidecl.h machmode.h machmode.def
 BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
 BASIC_BLOCK_H = basic-block.h bitmap.h
+DEMANGLE_H = demangle.h gansidecl.h
+RECOG_H = recog.h gansidecl.h
 #
 # Language makefile fragments.
 
@@ -951,7 +953,7 @@ libgcc2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs
 
 LIB2ADD = $(srcdir)/frame.c $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
 libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2ADD) \
-   machmode.h longlong.h gbl-ctors.h config.status
+   machmode.h longlong.h frame.h gansidecl.h gbl-ctors.h config.status
 # Actually build it in tmplibgcc2.a, then rename at end,
 # so that libgcc2.a itself remains nonexistent if compilation is aborted.
 	-rm -f tmplibgcc2.a
@@ -1047,6 +1049,7 @@ stamp-mlib: $(srcdir)/genmultilib Makefile
 
 # Build multiple copies of libgcc.a, one for each target switch.
 stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
+   frame.h gansidecl.h \
    $(LIB2ADD) machmode.h longlong.h gbl-ctors.h config.status
 	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
@@ -1199,12 +1202,12 @@ collect2 : collect2.o cplus-dem.o underscore.o version.o \
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ collect2.o \
 	  cplus-dem.o underscore.o version.o choose-temp.o $(LIBS)
 
-collect2.o : collect2.c $(CONFIG_H) gstab.h obstack.h demangle.h
+collect2.o : collect2.c $(CONFIG_H) gansidecl.h gstab.h obstack.h $(DEMANGLE_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
 	-DTARGET_MACHINE=\"$(target_alias)\" $(MAYBE_USE_COLLECT2) \
 	-c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
 
-cplus-dem.o: cplus-dem.c demangle.h
+cplus-dem.o: cplus-dem.c $(DEMANGLE_H)
 
 underscore.c: stamp-under ; @true
 
@@ -1233,7 +1236,7 @@ DRIVER_DEFINES = \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
   -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\"
-gcc.o: gcc.c $(CONFIG_H) multilib.h Makefile $(lang_specs_files)
+gcc.o: gcc.c $(CONFIG_H) gansidecl.h multilib.h Makefile $(lang_specs_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
@@ -1241,10 +1244,10 @@ gcc.o: gcc.c $(CONFIG_H) multilib.h Makefile $(lang_specs_files)
 dumpvers: dumpvers.c
 
 version.o: version.c
-obstack.o: obstack.c
-choose-temp.o: choose-temp.c
-pexecute.o: pexecute.c
-prefix.o: prefix.c $(CONFIG_H) Makefile
+obstack.o: obstack.c $(CONFIG_H)
+choose-temp.o: choose-temp.c $(CONFIG_H) gansidecl.h
+pexecute.o: pexecute.c $(CONFIG_H) gansidecl.h
+prefix.o: prefix.c $(CONFIG_H) gansidecl.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	-DPREFIX=\"$(prefix)\" \
 	  -c `echo $(srcdir)/prefix.c | sed 's,^\./,,'`
@@ -1272,26 +1275,26 @@ varasm.o : varasm.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h function.h \
    output.h bytecode.h c-pragma.h
 function.o : function.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-codes.h expr.h regs.h hard-reg-set.h insn-config.h \
-   recog.h output.h bytecode.h bc-emit.h
+   $(RECOG_H) output.h bytecode.h bc-emit.h
 stmt.o : stmt.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-config.h insn-codes.h hard-reg-set.h expr.h except.h \
-   loop.h recog.h bytecode.h bc-typecd.h bc-typecd.def bc-opcode.h \
+   loop.h $(RECOG_H) bytecode.h bc-typecd.h bc-typecd.def bc-opcode.h \
    bc-optab.h bc-emit.h
 except.o : except.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-codes.h expr.h regs.h hard-reg-set.h insn-config.h \
-   recog.h output.h except.h
+   $(RECOG_H) output.h except.h
 expr.o : expr.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h regs.h \
-   insn-flags.h insn-codes.h expr.h insn-config.h recog.h output.h \
+   insn-flags.h insn-codes.h expr.h insn-config.h $(RECOG_H) output.h \
    typeclass.h bytecode.h bc-opcode.h bc-typecd.h bc-typecd.def bc-optab.h \
    bc-emit.h modemap.def hard-reg-set.h
 calls.o : calls.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h expr.h insn-codes.h \
    insn-flags.h regs.h
 expmed.o : expmed.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h  \
-   insn-flags.h insn-config.h insn-codes.h expr.h recog.h real.h
+   insn-flags.h insn-config.h insn-codes.h expr.h $(RECOG_H) real.h
 explow.o : explow.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h hard-reg-set.h \
-   insn-config.h expr.h recog.h insn-flags.h insn-codes.h
+   insn-config.h expr.h $(RECOG_H) insn-flags.h insn-codes.h
 optabs.o : optabs.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h  \
-   insn-flags.h insn-config.h insn-codes.h expr.h recog.h reload.h
+   insn-flags.h insn-config.h insn-codes.h expr.h $(RECOG_H) reload.h
 dbxout.o : dbxout.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h regs.h \
    insn-config.h reload.h gstab.h xcoffout.h defaults.h output.h
 sdbout.o : sdbout.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h except.h \
@@ -1303,7 +1306,7 @@ dwarf2out.o : dwarf2out.c $(CONFIG_H) $(TREE_H) $(RTL_H) dwarf2.h flags.h \
    insn-config.h reload.h output.h defaults.h hard-reg-set.h regs.h expr.h
 xcoffout.o : xcoffout.c $(CONFIG_H) $(TREE_H) $(RTL_H) xcoffout.h flags.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h except.h \
-   function.h regs.h insn-config.h recog.h real.h expr.h obstack.h \
+   function.h regs.h insn-config.h $(RECOG_H) real.h expr.h obstack.h \
    bytecode.h bc-opcode.h bc-typecd.h bc-typecd.def bc-optab.h bc-emit.h \
    bc-opname.h
 real.o : real.c $(CONFIG_H) $(TREE_H)
@@ -1311,51 +1314,51 @@ getpwd.o : getpwd.c $(CONFIG_H)
 
 integrate.o : integrate.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h integrate.h \
    insn-flags.h insn-config.h insn-codes.h expr.h real.h regs.h function.h \
-   bytecode.h output.h recog.h except.h
+   bytecode.h output.h $(RECOG_H) except.h
 
 jump.o : jump.c $(CONFIG_H) $(RTL_H) flags.h hard-reg-set.h regs.h \
-   insn-config.h insn-flags.h recog.h expr.h real.h except.h
+   insn-config.h insn-flags.h $(RECOG_H) expr.h real.h except.h
 stupid.o : stupid.c $(CONFIG_H) $(RTL_H) regs.h hard-reg-set.h flags.h
 
 cse.o : cse.c $(CONFIG_H) $(RTL_H) regs.h hard-reg-set.h flags.h real.h \
-   insn-config.h recog.h expr.h
+   insn-config.h $(RECOG_H) expr.h
 profile.o : profile.c $(CONFIG_H) $(RTL_H) flags.h insn-flags.h gcov-io.h \
-   tree.h output.h regs.h
+   $(TREE_H) output.h regs.h
 loop.o : loop.c $(CONFIG_H) $(RTL_H) flags.h loop.h insn-config.h \
-   insn-flags.h insn-codes.h regs.h hard-reg-set.h recog.h expr.h real.h
+   insn-flags.h insn-codes.h regs.h hard-reg-set.h $(RECOG_H) expr.h real.h
 unroll.o : unroll.c $(CONFIG_H) $(RTL_H) insn-config.h integrate.h regs.h \
-   recog.h flags.h expr.h loop.h
+   $(RECOG_H) flags.h expr.h loop.h
 flow.o : flow.c $(CONFIG_H) $(RTL_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) regs.h hard-reg-set.h output.h
 combine.o : combine.c $(CONFIG_H) $(RTL_H) flags.h  \
    insn-config.h insn-flags.h insn-codes.h insn-attr.h regs.h expr.h \
-   $(BASIC_BLOCK_H) recog.h real.h hard-reg-set.h
+   $(BASIC_BLOCK_H) $(RECOG_H) real.h hard-reg-set.h
 regclass.o : regclass.c $(CONFIG_H) $(RTL_H) hard-reg-set.h flags.h \
-   $(BASIC_BLOCK_H) regs.h insn-config.h recog.h reload.h real.h bytecode.h
+   $(BASIC_BLOCK_H) regs.h insn-config.h $(RECOG_H) reload.h real.h bytecode.h
 local-alloc.o : local-alloc.c $(CONFIG_H) $(RTL_H) flags.h $(BASIC_BLOCK_H) \
-   regs.h hard-reg-set.h insn-config.h recog.h output.h
+   regs.h hard-reg-set.h insn-config.h $(RECOG_H) output.h
 bitmap.o : bitmap.c $(CONFIG_H) $(RTL_H) flags.h $(BASIC_BLOCK_H) regs.h
 global.o : global.c $(CONFIG_H) $(RTL_H) flags.h  \
    $(BASIC_BLOCK_H) regs.h hard-reg-set.h insn-config.h output.h
 
 reload.o : reload.c $(CONFIG_H) $(RTL_H) flags.h output.h expr.h\
-   reload.h recog.h hard-reg-set.h insn-config.h insn-codes.h regs.h real.h
+   reload.h $(RECOG_H) hard-reg-set.h insn-config.h insn-codes.h regs.h real.h
 reload1.o : reload1.c $(CONFIG_H) $(RTL_H) real.h flags.h expr.h \
    reload.h regs.h hard-reg-set.h insn-config.h insn-flags.h insn-codes.h \
-   $(BASIC_BLOCK_H) recog.h output.h
+   $(BASIC_BLOCK_H) $(RECOG_H) output.h
 caller-save.o : caller-save.c $(CONFIG_H) $(RTL_H) flags.h \
-   regs.h hard-reg-set.h insn-codes.h insn-config.h $(BASIC_BLOCK_H) recog.h \
+   regs.h hard-reg-set.h insn-codes.h insn-config.h $(BASIC_BLOCK_H) $(RECOG_H) \
    reload.h expr.h
 reorg.o : reorg.c $(CONFIG_H) $(RTL_H) conditions.h hard-reg-set.h \
-   $(BASIC_BLOCK_H) regs.h insn-config.h insn-attr.h insn-flags.h recog.h \
+   $(BASIC_BLOCK_H) regs.h insn-config.h insn-attr.h insn-flags.h $(RECOG_H) \
    flags.h output.h
 sched.o : $(SCHED_PREFIX)sched.c $(CONFIG_H) $(RTL_H) $(BASIC_BLOCK_H) regs.h hard-reg-set.h \
    flags.h insn-config.h insn-attr.h
 final.o : final.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h regs.h \
-   recog.h conditions.h insn-config.h insn-attr.h except.h real.h output.h \
+   $(RECOG_H) conditions.h insn-config.h insn-attr.h except.h real.h output.h \
    hard-reg-set.h insn-flags.h insn-codes.h gstab.h xcoffout.h defaults.h
 recog.o : recog.c $(CONFIG_H) $(RTL_H)  \
-   regs.h recog.h hard-reg-set.h flags.h insn-config.h insn-attr.h \
+   regs.h $(RECOG_H) hard-reg-set.h flags.h insn-config.h insn-attr.h \
    insn-flags.h insn-codes.h real.h
 reg-stack.o : reg-stack.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
    regs.h hard-reg-set.h flags.h insn-config.h insn-flags.h
@@ -1441,7 +1444,7 @@ stamp-emit : $(md_file) genemit $(srcdir)/move-if-change
 	$(srcdir)/move-if-change tmp-emit.c insn-emit.c
 	touch stamp-emit
 
-insn-recog.o : insn-recog.c $(CONFIG_H) $(RTL_H) insn-config.h recog.h \
+insn-recog.o : insn-recog.c $(CONFIG_H) $(RTL_H) insn-config.h $(RECOG_H) \
   real.h output.h flags.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-recog.c
 
@@ -1452,7 +1455,7 @@ stamp-recog : $(md_file) genrecog $(srcdir)/move-if-change
 	touch stamp-recog
 
 insn-opinit.o : insn-opinit.c $(CONFIG_H) $(RTL_H) insn-codes.h insn-flags.h \
-  insn-config.h flags.h rtl.h recog.h expr.h reload.h
+  insn-config.h flags.h $(RECOG_H) expr.h reload.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-opinit.c
 
 insn-opinit.c: stamp-opinit ; @true
@@ -1502,7 +1505,7 @@ stamp-attrtab : $(md_file) genattrtab $(srcdir)/move-if-change
 	touch stamp-attrtab
 
 insn-output.o : insn-output.c $(CONFIG_H) $(RTL_H) regs.h real.h conditions.h \
-    hard-reg-set.h insn-config.h insn-flags.h insn-attr.h output.h recog.h \
+    hard-reg-set.h insn-config.h insn-flags.h insn-attr.h output.h $(RECOG_H) \
     insn-codes.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-output.c
 
