@@ -19,6 +19,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define USG
 
+#undef TRUE
+#undef FALSE
+
 #include "i386/xm-i386.h"
 
 #define bcopy(a,b,c) memcpy (b,a,c)
