@@ -1,3 +1,7 @@
+2004-07-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* combine.c (simplify_comparison): Fix comment typo.
+
 2004-07-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (SIBCALL_SLOT_EMPTY_P): Rename
