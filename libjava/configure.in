@@ -747,6 +747,14 @@ AC_SUBST(GCC_UNWIND_INCLUDE)
 
 AC_SUBST(AM_RUNTESTFLAGS)
 
+# Determine gcj version number.
+changequote(<<,>>)
+gcjversion=`$GCJ -v 2>&1 | sed -n 's/^.*version \([^ ]*\).*$/\1/p'`
+changequote([,])
+GCJVERSION=$gcjversion
+AC_SUBST(GCJVERSION)
+AC_DEFINE_UNQUOTED(GCJVERSION, "$GCJVERSION", [Short GCJ version ID])
+
 dnl Work around a g++ bug.  Reported to gcc-bugs@gcc.gnu.org on Jan 22, 2000.
 AC_MSG_CHECKING([for g++ -ffloat-store bug])
 save_CFLAGS="$CFLAGS"
