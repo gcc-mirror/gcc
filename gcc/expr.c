@@ -8157,7 +8157,7 @@ expand_cleanups_to (old_cleanups)
 {
   while (cleanups_this_call != old_cleanups)
     {
-      expand_expr (TREE_VALUE (cleanups_this_call), NULL_RTX, VOIDmode, 0);
+      expand_expr (TREE_VALUE (cleanups_this_call), const0_rtx, VOIDmode, 0);
       cleanups_this_call = TREE_CHAIN (cleanups_this_call);
     }
 }
