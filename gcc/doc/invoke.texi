@@ -288,7 +288,7 @@ Objective-C and Objective-C++ Dialects}.
 -fbranch-probabilities -fprofile-values -fvpt -fbranch-target-load-optimize @gol
 -fbranch-target-load-optimize2 -fbtr-bb-exclusive @gol
 -fcaller-saves  -fcprop-registers  -fcse-follow-jumps @gol
--fcse-follow-jumps  -fcse-skip-blocks  -fcx-limited-range  -fdata-sections @gol
+-fcse-skip-blocks  -fcx-limited-range  -fdata-sections @gol
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
 -fforce-addr  -fforce-mem  -ffunction-sections @gol
@@ -323,7 +323,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-loop-linear -ftree-loop-im -ftree-loop-ivcanon -fivopts @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename -ftree-sink @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre -ftree-vectorize @gol
--ftree-salias @gol
+-ftree-salias -fweb @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -4779,15 +4779,15 @@ at @option{-O} and higher.
 Perform linear loop transformations on tree.  This flag can improve cache
 performance and allow further loop optimizations to take place.
 
-@item -ftree-lim
-Perform loop invariant motion on trees.  This pass moves only invartiants that
+@item -ftree-loop-im
+Perform loop invariant motion on trees.  This pass moves only invariants that
 would be hard to handle on rtl level (function calls, operations that expand to
 nontrivial sequences of insns).  With @option{-funswitch-loops} it also moves
 operands of conditions that are invariant out of the loop, so that we can use
 just trivial invariantness analysis in loop unswitching.  The pass also includes
 store motion.
 
-@item -fivcanon
+@item -ftree-loop-ivcanon
 Create a canonical counter for number of iterations in the loop for that
 determining number of iterations requires complicated analysis.  Later
 optimizations then may determine the number easily.  Useful especially
