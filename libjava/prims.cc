@@ -10,14 +10,14 @@ details.  */
 
 #include <config.h>
 
-#ifdef USE_WIN32_SIGNALLING
+#ifdef WIN32
 #include <windows.h>
-#endif /* USE_WIN32_SIGNALLING */
+#endif /* WIN32 */
 
-#ifdef USE_WINSOCK
+#ifdef WIN32
 #undef __INSIDE_CYGWIN__
 #include <winsock.h>
-#endif /* USE_WINSOCK */
+#endif /* WIN32 */
 
 #include <stdlib.h>
 #include <stdarg.h>
@@ -730,28 +730,19 @@ _Jv_ThisExecutable (const char *name)
     }
 }
 
-#ifdef USE_WIN32_SIGNALLING
+#ifdef WIN32
 
 extern "C" int* win32_get_restart_frame (void *);
 
 LONG CALLBACK
 win32_exception_handler (LPEXCEPTION_POINTERS e)
 {
-  int* setjmp_buf;
-  if (e->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION)   
-    setjmp_buf = win32_get_restart_frame (nullp);
+  if (e->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION)
+    _Jv_ThrowNullPointerException();
   else if (e->ExceptionRecord->ExceptionCode == EXCEPTION_INT_DIVIDE_BY_ZERO)
-    setjmp_buf = win32_get_restart_frame (arithexception);
+    throw new java::lang::ArithmeticException;
   else
     return EXCEPTION_CONTINUE_SEARCH;
-
-  e->ContextRecord->Ebp = setjmp_buf[0];
-  // FIXME: Why does i386-signal.h increment the PC here, do we need to do it?
-  e->ContextRecord->Eip = setjmp_buf[1];
-  // FIXME: Is this the stack pointer? Do we need it?
-  e->ContextRecord->Esp = setjmp_buf[2];
-
-  return EXCEPTION_CONTINUE_EXECUTION;
 }
 
 #endif
@@ -962,14 +953,11 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
   LTDL_SET_PRELOADED_SYMBOLS ();
 #endif
 
-#ifdef USE_WINSOCK
+#ifdef WIN32
   // Initialise winsock for networking
   WSADATA data;
   if (WSAStartup (MAKEWORD (1, 1), &data))
       MessageBox (NULL, "Error initialising winsock library.", "Error", MB_OK | MB_ICONEXCLAMATION);
-#endif /* USE_WINSOCK */
-
-#ifdef USE_WIN32_SIGNALLING
   // Install exception handler
   SetUnhandledExceptionFilter (win32_exception_handler);
 #elif defined(HAVE_SIGACTION)
