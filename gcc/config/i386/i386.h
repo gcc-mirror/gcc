@@ -889,6 +889,98 @@ enum reg_class
     }									\
 }
 
+/* A C statement or compound statement to output to FILE some
+   assembler code to initialize basic-block profiling for the current
+   object module.  This code should call the subroutine
+   `__bb_init_func' once per object module, passing it as its sole
+   argument the address of a block allocated in the object module.
+
+   The name of the block is a local symbol made with this statement:
+
+	ASM_GENERATE_INTERNAL_LABEL (BUFFER, "LPBX", 0);
+
+   Of course, since you are writing the definition of
+   `ASM_GENERATE_INTERNAL_LABEL' as well as that of this macro, you
+   can take a short cut in the definition of this macro and use the
+   name that you know will result.
+
+   The first word of this block is a flag which will be nonzero if the
+   object module has already been initialized.  So test this word
+   first, and do not call `__bb_init_func' if the flag is nonzero.  */
+
+#undef	FUNCTION_BLOCK_PROFILER
+#define FUNCTION_BLOCK_PROFILER(STREAM, LABELNO)			\
+do									\
+  {									\
+    static int num_func = 0;						\
+    rtx xops[9];							\
+    char block_table[80], false_label[80];				\
+									\
+    ASM_GENERATE_INTERNAL_LABEL (block_table, "LPBX", 0);		\
+    ASM_GENERATE_INTERNAL_LABEL (false_label, "LPBZ", num_func);	\
+									\
+    xops[0] = const0_rtx;						\
+    xops[1] = gen_rtx (SYMBOL_REF, VOIDmode, block_table);		\
+    xops[2] = gen_rtx (MEM, Pmode, gen_rtx (SYMBOL_REF, VOIDmode, false_label)); \
+    xops[3] = gen_rtx (MEM, Pmode, gen_rtx (SYMBOL_REF, VOIDmode, "__bb_init_func")); \
+    xops[4] = gen_rtx (MEM, Pmode, xops[1]);				\
+    xops[5] = stack_pointer_rtx;					\
+    xops[6] = GEN_INT (4);						\
+    xops[7] = gen_rtx (REG, Pmode, 0);	/* eax */			\
+    xops[8] = gen_rtx (MEM, SImode, stack_pointer_rtx);			\
+									\
+    CONSTANT_POOL_ADDRESS_P (xops[1]) = TRUE;				\
+    CONSTANT_POOL_ADDRESS_P (xops[2]) = TRUE;				\
+									\
+    output_asm_insn (AS2(cmp%L4,%0,%4), xops);				\
+    output_asm_insn (AS1(jne,%2), xops);				\
+									\
+    if (!flag_pic)							\
+      output_asm_insn (AS1(push%L1,%1), xops);				\
+    else								\
+      {									\
+	output_asm_insn (AS1 (push%L7,%7), xops);			\
+	output_asm_insn (AS2 (lea%L7,%a1,%7), xops);			\
+	output_asm_insn (AS2 (xchg%L7,%8,%7), xops);			\
+      }									\
+									\
+    output_asm_insn (AS1(call,%P3), xops);				\
+    output_asm_insn (AS2(add%L0,%6,%5), xops);				\
+    ASM_OUTPUT_INTERNAL_LABEL (STREAM, "LPBZ", num_func);		\
+    num_func++;								\
+  }									\
+while (0)
+
+
+/* A C statement or compound statement to increment the count
+   associated with the basic block number BLOCKNO.  Basic blocks are
+   numbered separately from zero within each compilation.  The count
+   associated with block number BLOCKNO is at index BLOCKNO in a
+   vector of words; the name of this array is a local symbol made
+   with this statement:
+
+	ASM_GENERATE_INTERNAL_LABEL (BUFFER, "LPBX", 2);
+
+   Of course, since you are writing the definition of
+   `ASM_GENERATE_INTERNAL_LABEL' as well as that of this macro, you
+   can take a short cut in the definition of this macro and use the
+   name that you know will result.  */
+
+#define BLOCK_PROFILER(STREAM, BLOCKNO)					\
+do									\
+  {									\
+    rtx xops[1], cnt_rtx;						\
+    char counts[80];							\
+									\
+    ASM_GENERATE_INTERNAL_LABEL (counts, "LPBX", 2);			\
+    cnt_rtx = gen_rtx (SYMBOL_REF, VOIDmode, counts);			\
+    CONSTANT_POOL_ADDRESS_P (cnt_rtx) = TRUE;				\
+									\
+    xops[0] = gen_rtx (MEM, SImode, plus_constant (cnt_rtx, (BLOCKNO)*4)); \
+    output_asm_insn (AS1(inc%L0,%0), xops);				\
+  }									\
+while (0)
+
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.
