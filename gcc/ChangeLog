@@ -1,3 +1,8 @@
+2002-05-03  David S. Miller  <davem@redhat.com>
+
+	* target-defs.h (TARGET_SCHED_CYCLE_DISPLAY): Delete.
+	* target.h (struct gcc_target): Delete cycle_display member.
+
 2002-05-03  Richard Henderson  <rth@redhat.com>
 
 	* real.c (etoasc): Strip most trailing zeros for clarity.
