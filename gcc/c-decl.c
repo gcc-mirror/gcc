@@ -3335,11 +3335,16 @@ finish_decl (decl, init, asmspec_tree)
 				0);
     }
 
-  if (temporary && TREE_PERMANENT (decl))
+  /* ??? After 2.3, test (init != 0) instead of TREE_CODE.  */
+  if (!(TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))
+      && temporary && TREE_PERMANENT (decl))
     {
       /* We need to remember that this array HAD an initialization,
 	 but discard the actual temporary nodes,
 	 since we can't have a permanent node keep pointing to them.  */
+      /* We make an exception for inline functions, since it's
+	 normal for a local extern redeclaration of an inline function
+	 to have a copy of the top-level decl's DECL_INLINE.  */
       if (DECL_INITIAL (decl) != 0)
 	DECL_INITIAL (decl) = error_mark_node;
     }
