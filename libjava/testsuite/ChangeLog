@@ -1,3 +1,8 @@
+2002-03-22  Eric Blake  <ebb9@email.byu.edu>
+
+	For PR java/6026:
+	* libjava.compile/PR6026.java: New file.
+
 2002-03-21  Andrew Haley  <aph@redhat.com>
 
 	* libjava.lang/Thread_Interrupt.java (Looper.calibrate): New.
