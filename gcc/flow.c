@@ -381,7 +381,12 @@ static int merge_blocks_move_predecessor_nojumps PARAMS ((basic_block,
 static int merge_blocks_move_successor_nojumps PARAMS ((basic_block,
 							basic_block));
 static int merge_blocks			PARAMS ((edge,basic_block,basic_block));
-static void try_merge_blocks		PARAMS ((void));
+static bool try_optimize_cfg		PARAMS ((void));
+static bool forwarder_block_p		PARAMS ((basic_block));
+static bool can_fallthru		PARAMS ((basic_block, basic_block));
+static bool try_redirect_by_replacing_jump PARAMS ((edge, basic_block));
+static bool try_simplify_condjump	PARAMS ((basic_block));
+static bool try_forward_edges		PARAMS ((basic_block));
 static void tidy_fallthru_edges		PARAMS ((void));
 static int verify_wide_reg_1		PARAMS ((rtx *, void *));
 static void verify_wide_reg		PARAMS ((int, rtx, rtx));
@@ -471,7 +476,7 @@ static int flow_loop_level_compute	PARAMS ((struct loop *, int));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
 static void allocate_bb_life_data	PARAMS ((void));
 static void find_sub_basic_blocks	PARAMS ((basic_block));
-static int redirect_edge_and_branch 	PARAMS ((edge, basic_block));
+static bool redirect_edge_and_branch 	PARAMS ((edge, basic_block));
 static rtx block_label			PARAMS ((basic_block));
 
 /* Find basic blocks of the current function.
@@ -1010,7 +1015,8 @@ void
 cleanup_cfg ()
 {
   delete_unreachable_blocks ();
-  try_merge_blocks ();
+  if (try_optimize_cfg ())
+    delete_unreachable_blocks ();
   mark_critical_edges ();
 
   /* Kill the data we won't maintain.  */
@@ -1586,22 +1592,161 @@ block_label (block)
   return block->head;
 }
 
+/* Return true if the block has no effect and only forwards control flow to
+   its single destination.  */
+static bool
+forwarder_block_p (bb)
+     basic_block bb;
+{
+  rtx insn;
+  if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR
+      || !bb->succ || bb->succ->succ_next)
+    return false;
+
+  insn = next_active_insn (bb->head);
+  if (!insn)
+    return false;
+  if (GET_CODE (insn) == CODE_LABEL
+      || (GET_CODE (insn) == JUMP_INSN && onlyjump_p (insn)))
+    return true;
+  return false;
+}
+
+/* Return nonzero if we can reach target from src by falling trought.  */
+static bool
+can_fallthru (src, target)
+     basic_block src, target;
+{
+  rtx insn = src->end;
+  rtx insn2 = target->head;
+
+  if (!active_insn_p (insn2))
+    insn2 = next_active_insn (insn2);
+  /* ??? Later we may add code to move jump tables offline.  */
+  return next_active_insn (insn) == insn2;
+}
+
+/* Attempt to perform edge redirection by replacing possibly complex jump
+   instruction by unconditional jump or removing jump completely.
+   This can apply only if all edges now point to the same block. 
+
+   The parameters and return values are equivalent to redirect_edge_and_branch.
+ */
+static bool
+try_redirect_by_replacing_jump (e, target)
+     edge e;
+     basic_block target;
+{
+  basic_block src = e->src;
+  rtx insn = src->end;
+  edge tmp;
+  rtx set;
+  int fallthru = 0;
+  rtx barrier;
+
+  /* Verify that all targets will be TARGET.  */
+  for (tmp = src->succ; tmp; tmp = tmp->succ_next)
+    if (tmp->dest != target && tmp != e)
+      break;
+  if (tmp || GET_CODE (insn) != JUMP_INSN)
+    return false;
+
+  /* Avoid removing branch with side effects.  */
+  set = single_set (insn);
+  if (!set || side_effects_p (set))
+    return false;
+
+  /* See if we can create the fallthru edge.  */
+  if (can_fallthru (src, target))
+    {
+      src->end = PREV_INSN (insn);
+      if (rtl_dump_file)
+	fprintf (rtl_dump_file, "Removing jump %i.\n", INSN_UID (insn));
+      flow_delete_insn (insn);
+      fallthru = 1;
+      insn = src->end;
+    }
+  /* If this already is simplejump, redirect it.  */
+  else if (simplejump_p (insn))
+    {
+      if (e->dest == target)
+	return false;
+      if (rtl_dump_file)
+	fprintf (rtl_dump_file, "Redirecting jump %i from %i to %i.\n",
+		 INSN_UID (insn), e->dest->index, target->index);
+      redirect_jump (insn, block_label (target), 0);
+    }
+  /* Or replace possibly complicated jump insn by simple jump insn.  */
+  else
+    {
+      rtx target_label = block_label (target);
+
+      src->end = PREV_INSN (insn);
+      src->end = emit_jump_insn_after (gen_jump (target_label), src->end);
+      JUMP_LABEL (src->end) = target_label;
+      LABEL_NUSES (target_label)++;
+      if (rtl_dump_file)
+	fprintf (rtl_dump_file, "Replacing insn %i by jump %i\n",
+		 INSN_UID (insn), INSN_UID (src->end));
+      flow_delete_insn (insn);
+      insn = src->end;
+    }
+
+  /* Keep only one edge out and set proper flags.  */
+  while (src->succ->succ_next)
+    remove_edge (src->succ);
+  e = src->succ;
+  if (fallthru)
+    e->flags = EDGE_FALLTHRU;
+  else
+    e->flags = 0;
+
+  /* Fixup barriers.  */
+  barrier = next_nonnote_insn (insn);
+  if (fallthru && GET_CODE (barrier) == BARRIER)
+    flow_delete_insn (barrier);
+  else if (!fallthru && GET_CODE (barrier) != BARRIER)
+    emit_barrier_after (insn);
+
+  if (e->dest != target)
+    redirect_edge_succ (e, target);
+  return true;
+}
+
 /* Attempt to change code to redirect edge E to TARGET.
    Don't do that on expense of adding new instructions or reordering
-   basic blocks.  */
-static int
+   basic blocks.
+
+   Function can be also called with edge destionation equivalent to the
+   TARGET.  Then it should try the simplifications and do nothing if
+   none is possible.
+
+   Return true if transformation suceeded.  We still return flase in case
+   E already destinated TARGET and we didn't managed to simplify instruction
+   stream.  */
+static bool
 redirect_edge_and_branch (e, target)
      edge e;
      basic_block target;
 {
-  rtx insn = e->src->end;
   rtx tmp;
   rtx old_label = e->dest->head;
-  if (e->flags & EDGE_FALLTHRU)
-    return 0;
+  basic_block src = e->src;
+  rtx insn = src->end;
 
+  if (try_redirect_by_replacing_jump (e, target))
+    return true;
+  /* Do this fast path late, as we want above code to simplify for cases
+     where called on single edge leaving basic block containing nontrivial
+     jump insn.  */
+  else if (e->dest == target)
+    return false;
+
+  /* We can only redirect non-fallthru edges of jump insn.  */
+  if (e->flags & EDGE_FALLTHRU)
+    return false;
   if (GET_CODE (insn) != JUMP_INSN)
-    abort ();
+    return false;
 
   /* Recognize a tablejump and adjust all matching cases.  */
   if ((tmp = JUMP_LABEL (insn)) != NULL_RTX
@@ -1646,11 +1791,11 @@ redirect_edge_and_branch (e, target)
 	 one basic block to the other in case only one computed_jump is
 	 available.  */
       if (computed_jump_p (insn))
-	return 0;
+	return false;
 
       /* A return instruction can't be redirected.  */
       if (returnjump_p (insn))
-	return 0;
+	return false;
 
       /* If the insn doesn't go where we think, we're confused.  */
       if (JUMP_LABEL (insn) != old_label)
@@ -1658,10 +1803,26 @@ redirect_edge_and_branch (e, target)
       redirect_jump (insn, block_label (target), 0);
     }
 
-  redirect_edge_succ (e, target);
-  return 1;
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file, "Edge %i->%i redirected to %i\n",
+	     e->src->index, e->dest->index, target->index);
+  if (e->dest != target)
+    {
+      edge s;
+      /* Check whether the edge is already present.  */
+      for (s = src->succ; s; s=s->succ_next)
+	if (s->dest == target)
+	  break;
+      if (s)
+	{
+	  s->flags |= e->flags;
+	  remove_edge (e);
+	}
+      else
+	redirect_edge_succ (e, target);
+    }
+  return true;
 }
-
 
 /* Split a (typically critical) edge.  Return the new block.
    Abort on abnormal edges.
@@ -2331,6 +2492,19 @@ flow_delete_insn (insn)
 	   && GET_CODE (XEXP (note, 0)) == CODE_LABEL)
     LABEL_NUSES (XEXP (note, 0))--;
 
+  if (GET_CODE (insn) == JUMP_INSN
+      && (GET_CODE (PATTERN (insn)) == ADDR_VEC
+	  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC))
+    {
+      rtx pat = PATTERN (insn);
+      int diff_vec_p = GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC;
+      int len = XVECLEN (pat, diff_vec_p);
+      int i;
+
+      for (i = 0; i < len; i++)
+	LABEL_NUSES (XEXP (XVECEXP (pat, diff_vec_p, i), 0))--;
+    }
+
   return next;
 }
 
@@ -2668,37 +2842,211 @@ merge_blocks (e, b, c)
     }
 }
 
-/* Top level driver for merge_blocks.  */
+/* Simplify conditional jump around an jump.  
+   Return nonzero in case optimization matched.  */
 
-static void
-try_merge_blocks ()
+static bool
+try_simplify_condjump (src)
+     basic_block src;
+{
+  basic_block final_block, next_block;
+  rtx insn = src->end;
+  edge branch, fallthru;
+
+  if (!any_condjump_p (insn))
+    return false;
+
+  fallthru = FALLTHRU_EDGE (src);
+
+  /* Following block must be simple forwarder block with single
+     entry and must not be last in the stream.  */
+  next_block = fallthru->dest;
+  if (!forwarder_block_p (next_block)
+      || next_block->pred->pred_next
+      || next_block->index == n_basic_blocks - 1)
+    return false;
+
+  /* The branch must target to block afterwards.  */
+  final_block = BASIC_BLOCK (next_block->index + 1);
+
+  branch = BRANCH_EDGE (src);
+
+  if (branch->dest != final_block)
+    return false;
+
+  /* Avoid jump.c from being overactive on removin ureachable insns.  */
+  LABEL_NUSES (JUMP_LABEL (insn))++;
+  if (!invert_jump (insn, block_label (next_block->succ->dest), 1))
+    {
+      LABEL_NUSES (JUMP_LABEL (insn))--;
+      return false;
+    }
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file, "Simplifying condjump %i around jump %i\n",
+	     INSN_UID (insn), INSN_UID (next_block->end));
+
+  redirect_edge_succ (branch, final_block);
+  redirect_edge_succ (fallthru, next_block->succ->dest);
+
+  branch->flags |= EDGE_FALLTHRU;
+  fallthru->flags &= EDGE_FALLTHRU;
+  
+  flow_delete_block (next_block);
+  return true;
+}
+
+/* Attempt to forward edges leaving basic block B.
+   Return nonzero if sucessfull.  */
+
+static bool
+try_forward_edges (b)
+     basic_block b;
+{
+  bool changed = 0;
+  edge e;
+  for (e = b->succ; e; e = e->succ_next)
+    {
+      basic_block target = e->dest, first = e->dest;
+      int counter = 0;
+
+      /* Look for the real destination of jump.
+         Avoid inifinite loop in the infinite empty loop by counting
+         up to n_basic_blocks.  */
+      while (forwarder_block_p (target)
+	     && target->succ->dest != EXIT_BLOCK_PTR
+	     && counter < n_basic_blocks)
+	{
+	  /* Bypass trivial infinite loops.  */
+	  if (target == target->succ->dest)
+	    counter = n_basic_blocks;
+	  target = target->succ->dest, counter++;
+	}
+
+      if (target != first && counter < n_basic_blocks
+	  && redirect_edge_and_branch (e, target))
+	{
+	  while (first != target)
+	    {
+	      first->count -= e->count;
+	      first->succ->count -= e->count;
+	      first->frequency -= ((e->probability * b->frequency
+				    + REG_BR_PROB_BASE / 2)
+				   / REG_BR_PROB_BASE);
+	      first = first->succ->dest;
+	    }
+	  /* We've possibly removed the edge.  */
+	  changed = 1;
+	  e = b->succ;
+	}
+      else if (rtl_dump_file && counter == n_basic_blocks)
+	fprintf (rtl_dump_file, "Infinite loop in BB %i.\n", target->index);
+      else if (rtl_dump_file && first != target)
+	fprintf (rtl_dump_file,
+		 "Forwarding edge %i->%i to %i failed.\n", b->index,
+		 e->dest->index, target->index);
+    }
+  return changed;
+}
+
+/* Do simple CFG optimizations - basic block merging, simplifying of jump
+   instructions etc.
+
+   Return nonzero in case some optimizations matched.  */
+
+static bool
+try_optimize_cfg ()
 {
   int i;
+  bool changed_overall = 0;
+  bool changed;
 
   /* Attempt to merge blocks as made possible by edge removal.  If a block
      has only one successor, and the successor has only one predecessor,
      they may be combined.  */
 
-  for (i = 0; i < n_basic_blocks;)
+  do
     {
-      basic_block c, b = BASIC_BLOCK (i);
-      edge s;
+      changed = 0;
+      for (i = 0; i < n_basic_blocks;)
+	{
+	  basic_block c, b = BASIC_BLOCK (i);
+	  edge s;
+	  int changed_here = 0;
 
-      /* A loop because chains of blocks might be combineable.  */
-      while ((s = b->succ) != NULL
-	     && s->succ_next == NULL
-	     && (s->flags & EDGE_EH) == 0
-	     && (c = s->dest) != EXIT_BLOCK_PTR
-	     && c->pred->pred_next == NULL
-	     /* If the jump insn has side effects, we can't kill the edge.  */
-	     && (GET_CODE (b->end) != JUMP_INSN
-		 || onlyjump_p (b->end))
-	     && merge_blocks (s, b, c))
-	continue;
+	  /* Delete trivially dead basic block.  */
+	  if (b->pred == NULL)
+	    {
+	      c = BASIC_BLOCK (i - 1);
+	      if (rtl_dump_file)
+		fprintf (rtl_dump_file, "Deleting block %i.\n", b->index);
+	      flow_delete_block (b);
+	      changed = 1;
+	      b = c;
+	    }
+	  /* The fallthru forwarder block can be deleted.  */
+	  if (b->pred->pred_next == NULL
+	      && forwarder_block_p (b)
+	      && (b->pred->flags & EDGE_FALLTHRU)
+	      && (b->succ->flags & EDGE_FALLTHRU))
+	    {
+	      if (rtl_dump_file)
+		fprintf (rtl_dump_file, "Deleting fallthru block %i.\n",
+			 b->index);
+	      c = BASIC_BLOCK (i ? i - 1 : i + 1);
+	      redirect_edge_succ (b->pred, b->succ->dest);
+	      flow_delete_block (b);
+	      changed = 1;
+	      b = c;
+	    }
 
-      /* Don't get confused by the index shift caused by deleting blocks.  */
-      i = b->index + 1;
+	  /* A loop because chains of blocks might be combineable.  */
+	  while ((s = b->succ) != NULL
+		 && s->succ_next == NULL
+		 && (s->flags & EDGE_EH) == 0
+		 && (c = s->dest) != EXIT_BLOCK_PTR
+		 && c->pred->pred_next == NULL
+		 /* If the jump insn has side effects, we can't kill the edge.  */
+		 && (GET_CODE (b->end) != JUMP_INSN
+		     || onlyjump_p (b->end)) && merge_blocks (s, b, c))
+	    changed_here = 1;
+
+	  if (try_simplify_condjump (b))
+	    changed_here = 1;
+
+	  /* In the case basic blocks has single outgoing edge, but over by the
+	     non-trivial jump instruction, we can replace it by unconditional
+	     jump, or delete the jump completely.  Use logic of
+	     redirect_edge_and_branch to do the dirty job for us.  
+
+	     We match cases as conditional jumps jumping to the next block or
+	     dispatch tables.  */
+
+	  if (b->succ
+	      && b->succ->succ_next == NULL
+	      && GET_CODE (b->end) == JUMP_INSN
+	      && b->succ->dest != EXIT_BLOCK_PTR
+	      && redirect_edge_and_branch (b->succ, b->succ->dest))
+	    changed_here = 1;
+
+	  if (try_forward_edges (b))
+	    changed_here = 1;
+
+	  /* Don't get confused by the index shift caused by deleting
+	     blocks.  */
+	  if (!changed_here)
+	    i = b->index + 1;
+	  else
+	    changed = 1;
+	}
+      changed_overall |= changed;
+      changed = 0;
     }
+  while (changed);
+#ifdef ENABLE_CHECKING
+  if (changed)
+    verify_flow_info ();
+#endif
+  return changed_overall;
 }
 
 /* The given edge should potentially be a fallthru edge.  If that is in

@@ -488,6 +488,14 @@ struct edge_list
 /* Number of edges in the compressed edge list.  */
 #define NUM_EDGES(el)			((el)->num_edges)
 
+/* BB is assumed to contain conditional jump.  Return the fallthru edge.  */
+#define FALLTHRU_EDGE(bb)		((bb)->succ->flags & EDGE_FALLTHRU \
+					 ? (bb)->succ : (bb)->succ->succ_next)
+
+/* BB is assumed to contain conditional jump.  Return the branch edge.  */
+#define BRANCH_EDGE(bb)			((bb)->succ->flags & EDGE_FALLTHRU \
+					 ? (bb)->succ->succ_next : (bb)->succ)
+
 struct edge_list * create_edge_list	PARAMS ((void));
 void free_edge_list			PARAMS ((struct edge_list *));
 void print_edge_list			PARAMS ((FILE *, struct edge_list *));

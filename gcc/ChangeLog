@@ -1,3 +1,14 @@
+Thu Jun 28 20:13:11 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* flow.c (try_merge_block): Rename to try_optimize_cfg;
+	do basic simplifications on the CFG.
+	(is_forwarder_block_p, can_fallthru, try_redirect_by_replacing_jump,
+	 try_simplify_condjump): New.
+	(redirect_edge_and_branch): Try replace jump insn.
+	(flow_delete_insn): Handle deleting of ADDR_VEC insns.
+
+	* basic-block.h (FALLTHRU_EDGE, BRANCH_EDGE): New macros.
+
 Thu Jun 28 11:19:42 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* ssa-dce.c (eliminate_dead_code): Remove fake edges from the
