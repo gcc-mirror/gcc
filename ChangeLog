@@ -1,3 +1,7 @@
+2001-02-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* config.if: Assume enable_libstdcxx_v3 is defined.
+
 2001-02-04  Mark Mitchell  <mark@codesourcery.com>
 
 	Remove V2 C++ library.
