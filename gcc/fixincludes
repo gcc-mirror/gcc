@@ -5,9 +5,6 @@
 
 # See README-fixinc for more information.
 
-# Command to run gcc.
-GCCCMD=${4-${GCCCMD-gcc}}
-
 # Directory where gcc sources (and sometimes special include files) live.
 # fixincludes doesn't use this, but fixinc.svr4 does, and I want to make
 # sure somebody doesn't try to use arg3 for something incompatible. -- gumby
@@ -353,15 +350,12 @@ for file in sys/types.h stdlib.h sys/stdtypes.h stddef.h memory.h unistd.h; do
   fi
 
   if [ -r ${LIB}/$file ]; then
-    echo Fixing $file comment
-    # Get the definition of __SIZE_TYPE__, if any.
-    # (This file must be called something.c).
-    echo "__SIZE_TYPE__" > ${LIB}/types.c
-    foo=`${GCCCMD} -E -P ${LIB}/types.c`
-    rm -f ${LIB}/types.c
-    # Default to our preferred type.
-    if [ "$foo" = __SIZE_TYPE__ ]; then foo="unsigned long int"; fi
-    sed -e "s/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/typedef $foo size_t/" ${LIB}/$file > ${LIB}/${file}.sed
+    echo Fixing size_t in $file
+    sed -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/i\
+#ifndef __SIZE_TYPE__\
+#define __SIZE_TYPE__ long unsigned int\
+#endif' \
+      -e 's/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/typedef __SIZE_TYPE__ size_t/' ${LIB}/$file > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     if cmp $file ${LIB}/$file >/dev/null 2>&1; then
       rm ${LIB}/$file
