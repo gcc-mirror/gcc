@@ -1,3 +1,8 @@
+2003-10-04  Richard Earnshaw  <reanrsha@arm.com>
+
+	* doc/extend.texi: Document how GCC estimates and relies on the size
+	of an asm.
+
 2003-10-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_pad_arg_upward): Pad floating-point

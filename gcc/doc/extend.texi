@@ -4136,6 +4136,26 @@ If you are writing a header file that should be includable in ISO C
 programs, write @code{__asm__} instead of @code{asm}.  @xref{Alternate
 Keywords}.
 
+@subsection Size of an @code{asm}
+
+Some targets require that GCC track the size of each instruction used in
+order to generate correct code.  Because the final length of an
+@code{asm} is only known by the assembler, GCC must make an estimate as
+to how big it will be.  The estimate is formed by counting the number of
+statements in the pattern of the @code{asm} and multiplying that by the
+length of the longest instruction on that processor.  Statements in the
+@code{asm} are identified by newline characters and whatever statement
+separator characters are supported by the assembler; on most processors
+this is the `@code{;}' character.
+
+Normally, GCC's estimate is perfectly adequate to ensure that correct
+code is generated, but it is possible to confuse the compiler if you use
+pseudo instructions or assembler macros that expand into multiple real
+instructions or if you use assembler directives that expand to more
+space in the object file than would be needed for a single instruction.
+If this happens then the assembler will produce a diagnostic saying that
+a label is unreachable.
+
 @subsection i386 floating point asm operands
 
 There are several rules on the usage of stack-like regs in
