@@ -1,3 +1,8 @@
+2001-01-19  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (gen_subprogram_die): Don't reuse the in-class decl
+	for the abstract instance of an inline function.
+
 Fri Jan 19 14:31:35 2001  Alexandre Oliva  <aoliva@redhat.com>, J"orn Rennecke <amylaar@redhat.com>
 
 	* reload1.c (move2add_note_store): Treat all registers directly or

@@ -9868,12 +9868,11 @@ gen_subprogram_die (decl, context_die)
       /* If the definition comes from the same place as the declaration,
 	 maybe use the old DIE.  We always want the DIE for this function
 	 that has the *_pc attributes to be under comp_unit_die so the
-	 debugger can find it.  For inlines, that is the concrete instance,
-	 so we can use the old DIE here.  For non-inline methods, we want a
-	 specification DIE at toplevel, so we need a new DIE.  For local
-	 class methods, this doesn't apply; we just use the old DIE.  */
-      if ((DECL_ABSTRACT (decl) || old_die->die_parent == comp_unit_die
-	   || context_die == NULL)
+	 debugger can find it.  We also need to do this for abstract
+	 instances of inlines, since the spec requires the out-of-line copy
+	 to have the same parent.  For local class methods, this doesn't
+	 apply; we just use the old DIE.  */
+      if ((old_die->die_parent == comp_unit_die || context_die == NULL)
 	  && (DECL_ARTIFICIAL (decl)
 	      || (get_AT_unsigned (old_die, DW_AT_decl_file) == file_index
 		  && (get_AT_unsigned (old_die, DW_AT_decl_line)
