@@ -1,3 +1,8 @@
+Fri Mar  5 19:26:23 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (SLOW_BYTE_ACCESS): Define to 1.
+	(BOOL_TYPE_SIZE): Define.
+
 Fri Mar  5 02:14:54 1999  John Wehle  (john@feith.com)
 
 	* function.c (assign_stack_temp_for_type): Abort
