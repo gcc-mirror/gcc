@@ -5227,15 +5227,17 @@ fold (expr)
 	    switch (TREE_CODE (t))
 	      {
 	      case LE_EXPR:
-		return build (GE_EXPR, type,
-			      convert (signed_type (TREE_TYPE (arg0)), arg0),
-			      convert (signed_type (TREE_TYPE (arg1)),
-				       integer_zero_node));
+		return fold (build (GE_EXPR, type,
+				    convert (signed_type (TREE_TYPE (arg0)),
+					     arg0),
+				    convert (signed_type (TREE_TYPE (arg1)),
+					     integer_zero_node)));
 	      case GT_EXPR:
-		return build (LT_EXPR, type,
-			      convert (signed_type (TREE_TYPE (arg0)), arg0),
-			      convert (signed_type (TREE_TYPE (arg1)),
-				       integer_zero_node));
+		return fold (build (LT_EXPR, type,
+				    convert (signed_type (TREE_TYPE (arg0)),
+					     arg0),
+				    convert (signed_type (TREE_TYPE (arg1)),
+					     integer_zero_node)));
 	      }
 	  }
       }
