@@ -1,3 +1,8 @@
+2004-08-14  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* gcc_release (build_sources): Add comment header to generated
+	MD5SUMS.
+
 2004-08-06  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* gcc_release (snapshot_print): Accept arguments.  Don't use echo -e.
