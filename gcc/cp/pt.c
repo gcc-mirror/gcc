@@ -5559,7 +5559,11 @@ tsubst_default_argument (fn, type, arg)
        };
      
      we must be careful to do name lookup in the scope of S<T>,
-     rather than in the current class.  */
+     rather than in the current class.
+
+     ??? current_class_type affects a lot more than name lookup.  This is
+     very fragile.  Fortunately, it will go away when we do 2-phase name
+     binding properly.  */
   if (DECL_CLASS_SCOPE_P (fn))
     pushclass (DECL_CONTEXT (fn), 2);
 

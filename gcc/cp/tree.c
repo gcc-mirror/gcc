@@ -1844,7 +1844,11 @@ maybe_dummy_object (type, binfop)
   if (binfop)
     *binfop = binfo;
   
-  if (current_class_ref && context == current_class_type)
+  if (current_class_ref && context == current_class_type
+      // Kludge: Make sure that current_class_type is actually correct.
+      // It might not be if we're in the middle of tsubst_default_argument.
+      && same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (current_class_ref)),
+		      current_class_type))
     decl = current_class_ref;
   else
     decl = build_dummy_object (context);
