@@ -327,17 +327,11 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
 
 dnl
 dnl Check to see if the (math function) argument passed is
-dnl 1) declared when using the c++ compiler
-dnl 2) has "C" linkage
-dnl
-dnl Define HAVE_CARGF etc if "cargf" is declared and links
-dnl
-dnl argument 1 is name of function to check
-dnl
+dnl declared when using the c++ compiler
 dnl ASSUMES argument is a math function with ONE parameter
 dnl
-dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1
-AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1, [
+dnl GLIBCPP_CHECK_MATH_DECL_1
+AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_1, [
   AC_MSG_CHECKING([for $1 declaration])
   if test x${glibcpp_cv_func_$1_use+set} != xset; then
     AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
@@ -350,10 +344,33 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1, [
     ])
   fi
   AC_MSG_RESULT($glibcpp_cv_func_$1_use)
+])
+
+dnl
+dnl Check to see if the (math function) argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl 3) if not, see if 1) and 2) for argument prepended with '_'
+dnl
+dnl Define HAVE_CARGF etc if "cargf" is declared and links
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a math function with ONE parameter
+dnl
+dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1
+AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1, [
+  GLIBCPP_CHECK_MATH_DECL_1($1)
   if test x$glibcpp_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)    
+  else
+    GLIBCPP_CHECK_MATH_DECL_1(_$1)
+    if test x$glibcpp_cv_func__$1_use = x"yes"; then
+      AC_CHECK_FUNCS(_$1)    
+    fi	
   fi
 ])
+
 
 dnl
 dnl Like GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1, but does a bunch of
@@ -378,17 +395,11 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1, [
 
 dnl
 dnl Check to see if the (math function) argument passed is
-dnl 1) declared when using the c++ compiler
-dnl 2) has "C" linkage
+dnl declared when using the c++ compiler
+dnl ASSUMES argument is a math function with ONE parameter
 dnl
-dnl Define HAVE_CARGF etc if "cargf" is declared and links
-dnl
-dnl argument 1 is name of function to check
-dnl
-dnl ASSUMES argument is a math function with TWO parameters
-dnl
-dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2
-AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2, [
+dnl GLIBCPP_CHECK_MATH_DECL_2
+AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_2, [
   AC_MSG_CHECKING([for $1 declaration])
   if test x${glibcpp_cv_func_$1_use+set} != xset; then
     AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
@@ -401,11 +412,53 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2, [
     ])
   fi
   AC_MSG_RESULT($glibcpp_cv_func_$1_use)
+])
+
+dnl
+dnl Check to see if the (math function) argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl
+dnl Define HAVE_CARGF etc if "cargf" is declared and links
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a math function with TWO parameters
+dnl
+dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2
+AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2, [
+  GLIBCPP_CHECK_MATH_DECL_2($1)
   if test x$glibcpp_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)    
+  else
+    GLIBCPP_CHECK_MATH_DECL_2(_$1)
+    if test x$glibcpp_cv_func__$1_use = x"yes"; then
+      AC_CHECK_FUNCS(_$1)    
+    fi	
   fi
 ])
 
+
+dnl
+dnl Check to see if the (math function) argument passed is
+dnl declared when using the c++ compiler
+dnl ASSUMES argument is a math function with ONE parameter
+dnl
+dnl GLIBCPP_CHECK_MATH_DECL_3
+AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_3, [
+  AC_MSG_CHECKING([for $1 declaration])
+  if test x${glibcpp_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <math.h>], 
+                     [ $1(0, 0, 0);], 
+                     [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
+  AC_MSG_RESULT($glibcpp_cv_func_$1_use)
+])
 
 dnl
 dnl Check to see if the (math function) argument passed is
@@ -420,20 +473,14 @@ dnl ASSUMES argument is a math function with THREE parameters
 dnl
 dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3
 AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3, [
-  AC_MSG_CHECKING([for $1 declaration])
-  if test x${glibcpp_cv_func_$1_use+set} != xset; then
-    AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
-      AC_LANG_SAVE
-      AC_LANG_CPLUSPLUS
-      AC_TRY_COMPILE([#include <math.h>], 
-                     [ $1(0, 0, 0);], 
-                     [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
-      AC_LANG_RESTORE
-    ])
-  fi
-  AC_MSG_RESULT($glibcpp_cv_func_$1_use)
+  GLIBCPP_CHECK_MATH_DECL_3($1)
   if test x$glibcpp_cv_func_$1_use = x"yes"; then
     AC_CHECK_FUNCS($1)    
+  else
+    GLIBCPP_CHECK_MATH_DECL_3(_$1)
+    if test x$glibcpp_cv_func__$1_use = x"yes"; then
+      AC_CHECK_FUNCS(_$1)    
+    fi	
   fi
 ])
 
@@ -686,13 +733,6 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   dnl keep this sync'd with the one above. And if you add any new symbol,
   dnl please add the corresponding block in the @BOTTOM@ section of acconfig.h.
   dnl Check to see if certain C math functions exist.
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isinf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isnan)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_finite)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_copysign)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(_sincos)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_fpclass)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_qfpclass)
 
   dnl Check to see if basic C math functions have float versions.
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(_float trig,
@@ -703,19 +743,6 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(_float round,
                                           _float_round,
                                           _ceilf _floorf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isnanf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isinff)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_fabsf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_fmodf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_frexpf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_ldexpf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_logf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_log10f)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_modff)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_powf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_sqrtf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(_sincosf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_finitef)
 
   dnl Check to see if basic C math functions have long double versions.
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(_long double trig,
@@ -726,22 +753,6 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(_long double round,
                                           _long_double_round,
                                           _ceill _floorl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isnanl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isinfl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_copysignl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_atan2l)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_expl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_fabsl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_fmodl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_frexpl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_ldexpl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_logl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_log10l)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_modfl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_powl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_sqrtl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(_sincosl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_finitel)
 
   LIBS="$ac_save_LIBS"
   CXXFLAGS="$ac_save_CXXFLAGS"
