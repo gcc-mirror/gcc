@@ -2106,7 +2106,7 @@ finish_sizeof (t)
   if (processing_template_decl)
     return build_min_nt (SIZEOF_EXPR, t);
 
-  return TYPE_P (t) ? c_sizeof (t) : expr_sizeof (t);
+  return TYPE_P (t) ? cxx_sizeof (t) : expr_sizeof (t);
 }
 
 /* Implement the __alignof keyword: Return the minimum required
@@ -2119,7 +2119,7 @@ finish_alignof (t)
   if (processing_template_decl)
     return build_min_nt (ALIGNOF_EXPR, t);
 
-  return TYPE_P (t) ? c_alignof (t) : c_alignof_expr (t);
+  return TYPE_P (t) ? cxx_alignof (t) : c_alignof_expr (t);
 }
 
 /* Generate RTL for the statement T, and its substatements, and any

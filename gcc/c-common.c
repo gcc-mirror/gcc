@@ -2601,36 +2601,61 @@ c_common_get_alias_set (t)
   return -1;
 }
 
-/* Implement the __alignof keyword: Return the minimum required
-   alignment of TYPE, measured in bytes.  */
-
+/* Compute the value of 'sizeof (TYPE)' or '__alignof__ (TYPE)', where the
+   second parameter indicates which OPERATOR is being applied.  */
 tree
-c_alignof (type)
+c_sizeof_or_alignof_type (type, op)
      tree type;
+     enum tree_code op;
 {
-  enum tree_code code = TREE_CODE (type);
-  tree t;
-
-  /* In C++, sizeof applies to the referent.  Handle alignof the same way.  */
-  if (code == REFERENCE_TYPE)
+  const char *op_name;
+  tree value = NULL;
+  enum tree_code type_code = TREE_CODE (type);
+  
+  my_friendly_assert (op == SIZEOF_EXPR || op == ALIGNOF_EXPR, 20020720);
+  op_name = op == SIZEOF_EXPR ? "sizeof" : "__alignof__";
+  
+  if (type_code == FUNCTION_TYPE)
     {
-      type = TREE_TYPE (type);
-      code = TREE_CODE (type);
+      if (op == SIZEOF_EXPR)
+	{
+	  if (pedantic || warn_pointer_arith)
+	    pedwarn ("invalid application of `sizeof' to a function type");
+	  value = size_one_node;
+	}
+      else
+	value = size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
     }
-
-  if (code == FUNCTION_TYPE)
-    t = size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
-  else if (code == VOID_TYPE || code == ERROR_MARK)
-    t = size_one_node;
+  else if (type_code == VOID_TYPE || type_code == ERROR_MARK)
+    {
+      if (type_code == VOID_TYPE && (pedantic || warn_pointer_arith))
+	pedwarn ("invalid application of `%s' to a void type", op_name);
+      value = size_one_node;
+    }
   else if (!COMPLETE_TYPE_P (type))
     {
-      error ("__alignof__ applied to an incomplete type");
-      t = size_zero_node;
+      error ("invalid application of `%s' to an incomplete type", op_name);
+      value = size_zero_node;
     }
   else
-    t = size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
+    {
+      if (op == SIZEOF_EXPR)
+	/* Convert in case a char is more than one unit.  */
+	value = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
+			    size_int (TYPE_PRECISION (char_type_node)
+				      / BITS_PER_UNIT));
+      else
+	value = size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
+    }
 
-  return fold (build1 (NOP_EXPR, c_size_type_node, t));
+  /* VALUE will have an integer type with TYPE_IS_SIZETYPE set.
+     TYPE_IS_SIZETYPE means that certain things (like overflow) will
+     never happen.  However, this node should really have type
+     `size_t', which is just a typedef for an ordinary integer type.  */
+  value = fold (build1 (NOP_EXPR, c_size_type_node, value));
+  my_friendly_assert (!TYPE_IS_SIZETYPE (TREE_TYPE (value)), 20001021);
+  
+  return value;
 }
 
 /* Implement the __alignof keyword: Return the minimum required
