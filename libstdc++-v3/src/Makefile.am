@@ -21,10 +21,12 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.65 2001/01/25 22:39:28 mmitchel Exp $
+## $Id: Makefile.am,v 1.66 2001/01/30 09:18:51 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
+
+mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
 # Install a library built with a cross compiler in tooldir, not libdir.
