@@ -43,6 +43,7 @@
   namespace _C_Swamp {
     extern "C" {
 #     define _IN_C_SWAMP_
+#     pragma system_header
 #     include_next <stdlib.h>
       typedef int (*_C_cmp_fun_ptr)(const void*, const void*);  // C fn ptr
     }

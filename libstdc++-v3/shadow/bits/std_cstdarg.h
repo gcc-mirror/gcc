@@ -37,6 +37,7 @@
   namespace _C_Swamp {
     extern "C" {
 #     define _IN_C_SWAMP_
+#     pragma system_header
 #     include_next <stdarg.h>
     }
     typedef va_list   _CPP_va_list_capture;

@@ -31,6 +31,7 @@
 #ifndef _CPP_SYS_CDEFS_H
 # define _CPP_SYS_CDEFS_H
 
+# pragma system_header
 # include_next <sys/cdefs.h>
 
 // glibc-2 hackery.  Other systems likely require other hacks.

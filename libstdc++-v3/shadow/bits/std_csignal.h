@@ -37,6 +37,7 @@
   namespace _C_Swamp {
     extern "C" {
 #     define _IN_C_SWAMP_
+#     pragma system_header
 #     include_next <signal.h>
       typedef void (*_CPP_CSIGFUN_capture)(int);  // a C function pointer
       typedef sig_atomic_t _CPP_sig_atomic_t_capture; 

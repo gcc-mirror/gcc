@@ -100,15 +100,11 @@ bool test02()
   int  int1 = 45;
   int  int2 = 0;
   
-#if 0
-  // XXX g++ doesn't like this. Recognizes the keyword, but can't
-  // parse what's next.
   test &= arg1 && int1;
   test &= arg1 and int1;
 
   test &= (arg1 && arg2) == (arg1 and arg2);
   test &= (arg1 && int1) == (arg1 and int1);
-#endif
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -125,6 +121,10 @@ int main(void)
 
   return 0;
 }
+
+
+
+
 
 
 

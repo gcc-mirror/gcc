@@ -39,6 +39,7 @@
   namespace _C_Swamp {
     extern "C" {
 #     define _IN_C_SWAMP_
+#     pragma system_header
 #     include_next <time.h>
     }
     inline clock_t _CPP_CLOCKS_PER_SEC_capture() 

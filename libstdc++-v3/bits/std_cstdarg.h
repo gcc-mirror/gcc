@@ -35,5 +35,6 @@
 
 #ifndef _CPP_CSTDARG
 #define _CPP_CSTDARG 1
+# pragma system_header
 # include_next <stdarg.h>
 #endif

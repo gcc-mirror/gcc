@@ -35,5 +35,6 @@
 
 #ifndef _CPP_CSIGNAL
 #define _CPP_CSIGNAL 1
+# pragma system_header
 # include_next <signal.h>
 #endif

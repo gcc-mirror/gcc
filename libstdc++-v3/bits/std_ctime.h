@@ -35,5 +35,6 @@
 
 #ifndef _CPP_CTIME
 #define _CPP_CTIME 1
+# pragma system_header
 # include_next <time.h>
 #endif

@@ -35,5 +35,6 @@
 
 #ifndef _CPP_CSETJMP
 #define _CPP_CSETJMP 1
+# pragma system_header
 # include_next <setjmp.h>
 #endif

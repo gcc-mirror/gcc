@@ -37,6 +37,7 @@
   namespace _C_Swamp {
     extern "C" {
 #     define _IN_C_SWAMP_
+#     pragma system_header
 #     include_next <setjmp.h>
     }
     typedef jmp_buf   _CPP_jmp_buf_capture;
