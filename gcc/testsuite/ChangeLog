@@ -1,4 +1,11 @@
-2001-08-14  David Billinghurst <David.Billinghurst@riotinto.com>
+2001-08-16  David Billinghurst  <David.Billinghurst@riotinto.com>
+
+	* g77.f-torture/compile/pr3743.x: Do not return 1 for xfail.
+	Fix thinko.
+	* g77.f-torture/execute/f90-intrinsic-bit.x: Do not return 1
+	for xfail.
+
+2001-08-14  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* lib/g77-dg.exp:  Use prune.exp for common procedures
 	(g77-dg-prune): Replace prune_g77_output with prune_gcc_output 
