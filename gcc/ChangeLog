@@ -1,3 +1,11 @@
+2004-12-02  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-alias.c (setup_pointers_and_addressables): Remove
+	redundant test of v_ann->mem_tag_kind.
+
+	* tree-ssa-operands.c (get_indirect_ref_operands): Remove
+	redundant conditional clearing opf_kill_def.
+
 2004-12-10  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/frv/frv-modes.def: Fix comment typos.
