@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *           Copyright (C) 1992-2003 Free Software Foundation, Inc.         *
+ *           Copyright (C) 1992-2004 Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -40,4 +40,5 @@
     %{g*} %{O*} %{W*} %{w} %{p} %{pg:-p} %{m*} %{a} %{f*} %{d*}\
     %{!S:%{o*:%w%*-gnatO}} \
     %i %{S:%W{o*}%{!o*:-o %b.s}} \
+    %{!S:%{gnatc*|gnatz*|gnats*: -o %j}} \
     %{!gnatc*:%{!gnatz*:%{!gnats*:%(invoke_as)}}}", 0, 0, 0},

@@ -3379,6 +3379,16 @@ package body Checks is
 
             if Is_Access_Type (Atyp) then
                Atyp := Designated_Type (Atyp);
+
+               --  If the prefix is an access to an unconstrained array,
+               --  perform check unconditionally: it depends on the bounds
+               --  of an object and we cannot currently recognize whether
+               --  the test may be redundant.
+
+               if not Is_Constrained (Atyp) then
+                  Set_Do_Range_Check (N, True);
+                  return;
+               end if;
             end if;
 
             Indx := First_Index (Atyp);

@@ -6935,7 +6935,7 @@ See also the packages @code{GNAT.Traceback} and
 @ifclear vms
 Note that on x86 ports, you must not use @option{-fomit-frame-pointer}
 @code{gcc} option.
-@end ifclear vms
+@end ifclear
 
 @item ^-F^/FORCE_ELABS_FLAGS^
 @cindex @option{^-F^/FORCE_ELABS_FLAGS^} (@command{gnatbind})

@@ -4998,11 +4998,11 @@ gnat_to_gnu_field (Entity_Id gnat_field,
       && TYPE_LEFT_JUSTIFIED_MODULAR_P (gnu_field_type))
     gnu_field_type = TREE_TYPE (TYPE_FIELDS (gnu_field_type));
 
-  /* If we are packing this record or we have a specified size that's
-     smaller than that of the field type and the field type is also a record
-     that's BLKmode and with a small constant size, see if we can get a
-     better form of the type that allows more packing.  If we can, show
-     a size was specified for it if there wasn't one so we know to
+  /* If we are packing this record, have a specified size that's smaller than
+     that of the field type, or a position is specified, and the field type
+     is also a record that's BLKmode and with a small constant size, see if
+     we can get a better form of the type that allows more packing.  If we
+     can, show a size was specified for it if there wasn't one so we know to
      make this a bitfield and avoid making things wider.  */
   if (TREE_CODE (gnu_field_type) == RECORD_TYPE
       && TYPE_MODE (gnu_field_type) == BLKmode
@@ -5010,7 +5010,8 @@ gnat_to_gnu_field (Entity_Id gnat_field,
       && compare_tree_int (TYPE_SIZE (gnu_field_type), BIGGEST_ALIGNMENT) <= 0
       && (packed
 	  || (gnu_size != 0 && tree_int_cst_lt (gnu_size,
-						TYPE_SIZE (gnu_field_type)))))
+						TYPE_SIZE (gnu_field_type)))
+	  || Present (Component_Clause (gnat_field))))
     {
       gnu_field_type = make_packable_type (gnu_field_type);
 

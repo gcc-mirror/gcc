@@ -386,7 +386,7 @@ package body Switch.C is
 
                   when 'I' =>
                      Ptr := Ptr + 1;
-                     Scan_Pos (Switch_Chars, 999, Ptr, Multiple_Unit_Index);
+                     Scan_Pos (Switch_Chars, Max, Ptr, Multiple_Unit_Index);
 
                   --  -gnatem (mapping file)
 
