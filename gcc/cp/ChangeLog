@@ -1,3 +1,8 @@
+1997-10-31  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* except.c (push_eh_info): Pass the number of fields - 1 down, not
+	the exact number of fields.
+
 Fri Oct 31 01:47:57 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	Support for nested exceptions.

@@ -342,7 +342,9 @@ push_eh_info ()
 					 boolean_type_node);
       fields[4] = build_lang_field_decl (FIELD_DECL, get_identifier ("next"),
 					 build_pointer_type (t));
-      finish_builtin_type (t, "cp_eh_info", fields, 5, ptr_type_node);
+      /* N.B.: The fourth field LEN is expected to be
+	 the number of fields - 1, not the total number of fields.  */
+      finish_builtin_type (t, "cp_eh_info", fields, 4, ptr_type_node);
       t = build_pointer_type (t);
 
       /* And now the function.  */
