@@ -1,3 +1,8 @@
+2004-06-30  Roger Sayle  <roger@eyesopen.com>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs) <MINUS_EXPR>: Handle
+	subtractions identically to additions, always COSTS_N_INSNS (1).
+
 2004-06-30  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* expmed.c (expand_smod_pow2): Fix sign of mask.
