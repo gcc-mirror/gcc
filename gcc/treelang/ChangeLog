@@ -1,5 +1,11 @@
 2004-10-02  James A. Morrison  <phython@gcc.gnu.org>
 
+	* parse.y: Use gcc_assert and gcc_unreachable instead of abort.
+	* tree1.c: Likewise.
+	* treetree.c: Likewise.
+
+2004-10-02  James A. Morrison  <phython@gcc.gnu.org>
+
 	* lex.l: Remove random whitespace.
 	* parse.y: Reformat copyright notice.  Indent declarations.
 	Wrap long lines, unwrap short lines.

@@ -197,8 +197,7 @@ storage typename NAME init_opt SEMICOLON {
 
   if (VAR_INIT (prod))
     {
-      if (! ((struct prod_token_parm_item*)VAR_INIT (prod))->tp.pro.code)
-        abort ();
+      gcc_assert (((struct prod_token_parm_item*)VAR_INIT (prod))->tp.pro.code);
     if (STORAGE_CLASS (prod) == EXTERNAL_REFERENCE_STORAGE)
       {
         fprintf (stderr, "%s:%i:%i: External reference variables may not have initial value\n",
@@ -217,8 +216,7 @@ storage typename NAME init_opt SEMICOLON {
      VAR_INIT (prod) ?
      ((struct prod_token_parm_item*)VAR_INIT (prod))->tp.pro.code : NULL,
      tok->tp.tok.location);
-  if (!prod->tp.pro.code) 
-    abort ();
+  gcc_assert (prod->tp.pro.code);
 }
 ;
 
@@ -287,7 +285,7 @@ storage typename NAME LEFT_PARENTHESIS parameters_opt RIGHT_PARENTHESIS SEMICOLO
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
   type = EXPRESSION_TYPE (prod);
   /* Create a parameter list in a non-front end specific format.  */
@@ -295,16 +293,15 @@ storage typename NAME LEFT_PARENTHESIS parameters_opt RIGHT_PARENTHESIS SEMICOLO
        this_parm;
        this_parm = this_parm->tp.pro.next)
     {
-      if (this_parm->category != production_category)
-        abort ();
+      gcc_assert (this_parm->category == production_category);
+
       this_parm_var = VARIABLE (this_parm);
-      if (!this_parm_var)
-        abort ();
-      if (this_parm_var->category != production_category)
-        abort ();
+
+      gcc_assert (this_parm_var);
+      gcc_assert (this_parm_var->category == production_category);
+
       this_parms = my_malloc (sizeof (struct prod_token_parm_item));
-      if (!this_parm_var->tp.pro.main_token)
-        abort ();
+      gcc_assert (this_parm_var->tp.pro.main_token);
 
       this_parms->tp.par.variable_name =
 	this_parm_var->tp.pro.main_token->tp.tok.chars;
@@ -353,22 +350,21 @@ NAME LEFT_BRACE {
       errorcount++;
       YYERROR;
     }
-  if (!proto->tp.pro.code)
-    abort ();
-  tree_code_create_function_initial
-    (proto->tp.pro.code, tok->tp.tok.location,
-     FIRST_PARMS (current_function));
+  gcc_assert (proto->tp.pro.code);
 
+  tree_code_create_function_initial (proto->tp.pro.code, tok->tp.tok.location,
+                                     FIRST_PARMS (current_function));
+
+#ifdef ENABLE_CHECKING
   /* Check all the parameters have code.  */
   for (this_parm = PARAMETERS (proto);
        this_parm;
        this_parm = this_parm->tp.pro.next)
     {
-      if (! (struct prod_token_parm_item*)VARIABLE (this_parm))
-        abort ();
-      if (! (( (struct prod_token_parm_item*)VARIABLE (this_parm))->tp.pro.code))
-        abort ();
+      gcc_assert ((struct prod_token_parm_item*)VARIABLE (this_parm));
+      gcc_assert ((( (struct prod_token_parm_item*)VARIABLE (this_parm))->tp.pro.code));
     }
+#endif
 }
 variable_defs_opt statements_opt RIGHT_BRACE {
   struct prod_token_parm_item* tok;
@@ -555,12 +551,12 @@ tl_RETURN expression_opt {
         /* Check same type.  */
         if (check_type_match (NUMERIC_TYPE (type_prod), $2))
           {
-            if (!type_prod->tp.pro.code)
-              abort ();
-            if (!exp->tp.pro.code)
-              abort ();
+            gcc_assert (type_prod->tp.pro.code);
+            gcc_assert (exp->tp.pro.code);
+
             /* Generate the code. */
-            tree_code_generate_return (type_prod->tp.pro.code, exp->tp.pro.code);
+            tree_code_generate_return (type_prod->tp.pro.code,
+                                       exp->tp.pro.code);
           }
       }
 }
@@ -573,8 +569,7 @@ expression_opt:
 |expression {
   struct prod_token_parm_item *exp;
   exp = $1;
-  if (!exp->tp.pro.code)
-    abort ();
+  gcc_assert (exp->tp.pro.code);
   
   $$ = $1;
 }
@@ -680,20 +675,19 @@ NAME LEFT_PARENTHESIS expressions_with_commas RIGHT_PARENTHESIS {
   for (exp_proto = PARAMETERS (proto), exp = PARAMETERS (prod);
        exp_proto;
        exp = exp->tp.pro.next, exp_proto = exp_proto->tp.pro.next)
-  {
-    if (!exp)
-      abort ();
-    if (!exp_proto)
-      abort ();
-    if (!exp->tp.pro.code)
-      abort ();
-    var = VARIABLE (exp_proto);
-    if (!var)
-      abort ();
-    if (!var->tp.pro.code)
-      abort ();
-    parms = tree_code_add_parameter (parms, var->tp.pro.code, exp->tp.pro.code);
-  }
+    {
+      gcc_assert (exp);
+      gcc_assert (exp_proto);
+      gcc_assert (exp->tp.pro.code);
+
+      var = VARIABLE (exp_proto);
+
+      gcc_assert (var);
+      gcc_assert (var->tp.pro.code);
+
+      parms = tree_code_add_parameter (parms, var->tp.pro.code,
+                                       exp->tp.pro.code);
+    }
   type = tree_code_get_type (NUMERIC_TYPE (prod));
   prod->tp.pro.code = tree_code_get_expression (EXP_FUNCTION_INVOCATION, type,
                                                 proto->tp.pro.code, parms,
@@ -826,8 +820,7 @@ reverse_prod_list (struct prod_token_parm_item *old_first)
 
   while (current) 
     {
-      if (current->category != production_category)
-        abort ();
+      gcc_assert (current->category == production_category);
       next = current->tp.pro.next;
       current->tp.pro.next = prev;
       prev = current;
@@ -888,18 +881,14 @@ check_type_match (int type_num, struct prod_token_parm_item *exp)
           return 1;
           
         case VOID_TYPE:
-          abort ();
-      
         default: 
-          abort ();
+          gcc_unreachable ();
         }
       break;
       
     case VOID_TYPE:
-      abort ();
-      
     default:
-      abort ();
+      gcc_unreachable ();
       
     }
 }
@@ -943,8 +932,7 @@ make_plus_expression (struct prod_token_parm_item* tok,
 
   NUMERIC_TYPE (prod) = type_code;
   type = tree_code_get_type (type_code);
-  if (!type)
-    abort ();
+  gcc_assert (type);
   OP1 (prod) = op1;
   OP2 (prod) = op2;
       
@@ -982,7 +970,7 @@ set_storage (struct prod_token_parm_item *prod)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
