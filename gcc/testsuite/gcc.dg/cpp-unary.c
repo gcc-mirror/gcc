@@ -1,3 +1,5 @@
+/* Copyright (C) 2000 Free Software Foundation, Inc.  */
+
 /* { dg-do preprocess } */
 
 /* Test the various unary operators.  */

@@ -1,3 +1,9 @@
+2000-04-06  Neil Booth  <NeilB@earthling.net>
+
+	* cpp-ifparen.c, cpp-missingop.c, cpp-missingparen.c,
+	cpp-shift.c, cpp-shortcircuit.c, cpp-unary.c:  Add FSF
+	copyright.	  
+
 2000-04-04  Geoff Keating  <geoffk@cygnus.com>
 
 	* gcc.dg/cast-qual-1.c: Revert last change.
