@@ -88,7 +88,9 @@ Boston, MA 02111-1307, USA.  */
    be weak in this file if at all possible.  */
 extern void __register_frame_info (void *, struct object *)
 				  TARGET_ATTRIBUTE_WEAK;
-
+extern void __register_frame_info_bases (void *, struct object *,
+					 void *, void *)
+				  TARGET_ATTRIBUTE_WEAK;
 extern void *__deregister_frame_info (void *)
 				     TARGET_ATTRIBUTE_WEAK;
 
@@ -188,9 +190,10 @@ static void
 __do_global_dtors_aux (void)
 {
   static func_ptr *p = __DTOR_LIST__ + 1;
-  static int completed = 0;
+  static int completed;
+  func_ptr f;
 
-  if (completed)
+  if (__builtin_expect (completed, 0))
     return;
 
 #ifdef CRTSTUFFS_O
@@ -198,10 +201,10 @@ __do_global_dtors_aux (void)
     __cxa_finalize (__dso_handle);
 #endif
 
-  while (*p)
+  while ((f = *p))
     {
       p++;
-      (*(p-1)) ();
+      f ();
     }
 
 #ifdef EH_FRAME_SECTION_ASM_OP
@@ -234,8 +237,24 @@ static void
 frame_dummy (void)
 {
   static struct object object;
+#if defined(CRT_GET_RFIB_TEXT) || defined(CRT_GET_RFIB_DATA)
+  void *tbase, *dbase;
+#ifdef CRT_GET_RFIB_TEXT
+  CRT_GET_RFIB_TEXT (tbase);
+#else
+  tbase = 0;
+#endif
+#ifdef CRT_GET_RFIB_DATA
+  CRT_GET_RFIB_DATA (dbase);
+#else
+  dbase = 0;
+#endif
+  if (__register_frame_info_bases)
+    __register_frame_info_bases (__EH_FRAME_BEGIN__, &object, tbase, dbase);
+#else
   if (__register_frame_info)
     __register_frame_info (__EH_FRAME_BEGIN__, &object);
+#endif
 }
 
 static void __attribute__ ((__unused__))
@@ -315,9 +334,9 @@ static func_ptr __DTOR_LIST__[];
 void
 __do_global_dtors (void)
 {
-  func_ptr *p;
-  for (p = __DTOR_LIST__ + 1; *p; p++)
-    (*p) ();
+  func_ptr *p, f;
+  for (p = __DTOR_LIST__ + 1; (f = *p); p++)
+    f ();
 
 #ifdef EH_FRAME_SECTION_ASM_OP
   if (__deregister_frame_info)

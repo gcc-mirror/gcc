@@ -1,3 +1,15 @@
+2001-05-22  Richard Henderson  <rth@redhat.com>
+
+	* crtstuff.c (__register_frame_info_bases): Declare.
+	(frame_dummy): Use it, if CRT_GET_RFIB_TEXT or CRT_GET_RFIB_DATA.
+	(__do_global_dtors_aux, __do_global_dtors): Streamline.
+
+	* config/i386/linux.h (ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): New.
+	(CRT_GET_RFIB_DATA): New.
+	* config/i386/sysv4.h: Likewise.
+	* config/i386/sco5.h: Likewise.
+	(ASM_PREFERRED_EH_DATA_FORMAT): New.
+
 2001-05-22  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 	
 	* doc/install.texi (Specific): Remove a bogus and duplicate part
@@ -54,7 +66,7 @@
 	* config/rs6000/linux.h (MD_FALLBACK_FRAME_STATE_FOR): New.
 
 2001-05-20  Mark Mitchell  <mark@codesourcery.com>
-            Jim Wilson  <wilson@redhat.com>
+	    Jim Wilson  <wilson@redhat.com>
 	
 	* libgcc2.h (TItype): Do not assume that the host has 64-bit ntegers.
 	(W_TYPE_SIZE): Likewise.
@@ -218,9 +230,9 @@ Sat May 19 09:40:45 2001  Denis Chertykov  <denisc@overta.ru>
 
 2001-05-18  Per Bothner  <per@bothner.com>
 
-        Changes needed for java/jvspec.c
-        * gcc.h (n_infiles, outfiles):  Add declarations.
-        * gcc.c (n_infiles, outfiles):  Mske no longer static.
+	Changes needed for java/jvspec.c
+	* gcc.h (n_infiles, outfiles):  Add declarations.
+	* gcc.c (n_infiles, outfiles):  Mske no longer static.
 
 Fri May 18 10:12:19 2001  Jeffrey A Law  (law@cygnus.com)
 
@@ -461,7 +473,7 @@ Wed May 16 13:38:21 2001  Jeffrey A Law  (law@cygnus.com)
 2001-05-16  Jakub Jelinek  <jakub@redhat.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 
-        * gcc.c (give_switch): Don't write before start of string.
+	* gcc.c (give_switch): Don't write before start of string.
 	Always append suffix.
 
 2001-05-16  Nathan Sidwell  <nathan@codesourcery.com>
@@ -1986,8 +1998,8 @@ Sun Apr  8 22:20:27 2001  Christopher Faylor <cgf@cygnus.com>
 
 2001-04-05  Benjamin Kosnik  <bkoz@redhat.com>
 
-        * cppdefault.c (GPLUSPLUS_BACKWARD_INCLUDE_DIR): Add.
-        * Makefile.in (-DGPLUSPLUS_BACKWARD_INCLUDE_DIR): Add.
+	* cppdefault.c (GPLUSPLUS_BACKWARD_INCLUDE_DIR): Add.
+	* Makefile.in (-DGPLUSPLUS_BACKWARD_INCLUDE_DIR): Add.
 
 2001-04-05  Bernd Schmidt  <bernds@redhat.com>
 

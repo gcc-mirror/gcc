@@ -951,3 +951,44 @@ do {									\
 } while (0)
 # endif /* ! _SCO_ELF */
 #endif /* CRT_BEGIN !! CRT_END */
+
+/* Handle special EH pointer encodings.  Absolute, pc-relative, and
+   indirect are handled automatically.  */
+#define ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX(FILE, ENCODING, SIZE, ADDR, DONE) \
+  do {									\
+    if ((SIZE) == 4 && ((ENCODING) & 0x70) == DW_EH_PE_datarel)		\
+      {									\
+        fputs (UNALIGNED_INT_ASM_OP, FILE);				\
+        assemble_name (FILE, XSTR (ADDR, 0));				\
+	fputs (((ENCODING) & DW_EH_PE_indirect ? "@GOT" : "@GOTOFF"), FILE); \
+        goto DONE;							\
+      }									\
+  } while (0)
+
+/* Used by crtstuff.c to initialize the base of data-relative relocations.
+   These are GOT relative on x86, so return the pic register.  */
+#ifdef __PIC__
+#define CRT_GET_RFIB_DATA(BASE)			\
+  {						\
+    register void *ebx_ __asm__("ebx");		\
+    BASE = ebx_;				\
+  }
+#else
+#define CRT_GET_RFIB_DATA(BASE)						\
+  __asm__ ("call\t.LPR%=\n"						\
+	   ".LPR%=:\n\t"						\
+	   "popl\t%0\n\t"						\
+	   /* Due to a GAS bug, this cannot use EAX.  That encodes	\
+	      smaller than the traditional EBX, which results in the	\
+	      offset being off by one.  */				\
+	   "addl\t$_GLOBAL_OFFSET_TABLE_+[.-.LPR%=],%0"			\
+	   : "=d"(BASE))
+#endif
+
+/* Select a format to encode pointers in exception handling data.  CODE
+   is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
+   true if the symbol may be affected by dynamic relocations.  */
+#undef ASM_PREFERRED_EH_DATA_FORMAT
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)			\
+  (flag_pic ? (GLOBAL ? DW_EH_PE_indirect : 0) | DW_EH_PE_datarel	\
+   : DW_EH_PE_absptr)
