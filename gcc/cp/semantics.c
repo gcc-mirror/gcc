@@ -150,7 +150,7 @@ do_pushlevel ()
 
 /* Finish a goto-statement.  */
 
-void
+tree
 finish_goto_stmt (destination)
      tree destination;
 {
@@ -171,7 +171,7 @@ finish_goto_stmt (destination)
   
   check_goto (destination);
 
-  add_stmt (build_stmt (GOTO_STMT, destination));
+  return add_stmt (build_stmt (GOTO_STMT, destination));
 }
 
 /* COND is the condition-expression for an if, while, etc.,
@@ -196,10 +196,12 @@ maybe_convert_cond (cond)
 
 /* Finish an expression-statement, whose EXPRESSION is as indicated.  */
 
-void 
+tree
 finish_expr_stmt (expr)
      tree expr;
 {
+  tree r = NULL_TREE;
+
   if (expr != NULL_TREE)
     {
       if (!processing_template_decl
@@ -215,7 +217,7 @@ finish_expr_stmt (expr)
       if (!processing_template_decl)
 	expr = break_out_cleanups (expr);
       
-      add_stmt (build_stmt (EXPR_STMT, expr));
+      r = add_stmt (build_stmt (EXPR_STMT, expr));
     }
 
   finish_stmt ();
@@ -223,6 +225,8 @@ finish_expr_stmt (expr)
   /* This was an expression-statement, so we save the type of the
      expression.  */
   last_expr_type = expr ? TREE_TYPE (expr) : NULL_TREE;
+
+  return r;
 }
 
 
@@ -375,10 +379,12 @@ finish_do_stmt (cond, do_stmt)
 /* Finish a return-statement.  The EXPRESSION returned, if any, is as
    indicated.  */
 
-void
+tree
 finish_return_stmt (expr)
      tree expr;
 {
+  tree r;
+
   if (!processing_template_decl)
     expr = check_return_expr (expr);
   if (!processing_template_decl)
@@ -391,8 +397,7 @@ finish_return_stmt (expr)
 	     return a value there.  When we finally generate the real
 	     return statement, CTOR_LABEL is no longer set, and we fall
 	     through into the normal return-processing code below.  */
-	  finish_goto_stmt (ctor_label);
-	  return;
+	  return finish_goto_stmt (ctor_label);
 	}
       else if (DECL_DESTRUCTOR_P (current_function_decl))
 	{
@@ -400,12 +405,13 @@ finish_return_stmt (expr)
 	     base-classes before returning.  So, all returns in a
 	     destructor get sent to the DTOR_LABEL; finsh_function emits
 	     code to return a value there.  */
-	  finish_goto_stmt (dtor_label);
-	  return;
+	  return finish_goto_stmt (dtor_label);
 	}
     }
-  add_stmt (build_stmt (RETURN_STMT, expr));
+  r = add_stmt (build_stmt (RETURN_STMT, expr));
   finish_stmt ();
+
+  return r;
 }
 
 /* Begin a for-statement.  Returns a new FOR_STMT if appropriate.  */
@@ -482,18 +488,18 @@ finish_for_stmt (for_stmt)
 
 /* Finish a break-statement.  */
 
-void
+tree
 finish_break_stmt ()
 {
-  add_stmt (build_break_stmt ());
+  return add_stmt (build_break_stmt ());
 }
 
 /* Finish a continue-statement.  */
 
-void
+tree
 finish_continue_stmt ()
 {
-  add_stmt (build_continue_stmt ());
+  return add_stmt (build_continue_stmt ());
 }
 
 /* Begin a switch-statement.  Returns a new SWITCH_STMT if
@@ -884,7 +890,7 @@ finish_compound_stmt (has_no_scope, compound_stmt)
    STRING, some OUTPUT_OPERANDS, some INPUT_OPERANDS, and some
    CLOBBERS.  */
 
-void
+tree
 finish_asm_stmt (cv_qualifier, string, output_operands,
 		 input_operands, clobbers)
      tree cv_qualifier;
@@ -914,7 +920,7 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
   r = build_stmt (ASM_STMT, cv_qualifier, string,
 		  output_operands, input_operands,
 		  clobbers);
-  add_stmt (r);
+  return add_stmt (r);
 }
 
 /* Finish a label with the indicated NAME.  */
