@@ -170,3 +170,26 @@ do {							\
   tree name_tree = get_identifier (NAME);		\
   TREE_ASM_WRITTEN (name_tree) = 1;			\
 } while (0)
+
+/* This is how we tell the assembler that a symbol is weak.  */
+
+#define ASM_OUTPUT_WEAK_ALIAS(FILE, NAME, VALUE)	\
+  do							\
+    {							\
+      ASM_GLOBALIZE_LABEL (FILE, NAME);			\
+      fputs ("\t.weakext\t", FILE);			\
+      assemble_name (FILE, NAME);			\
+      if (VALUE)					\
+        {						\
+          fputc (' ', FILE);				\
+          assemble_name (FILE, VALUE);			\
+        }						\
+      fputc ('\n', FILE);				\
+    }							\
+  while (0)
+
+#define ASM_WEAKEN_LABEL(FILE, NAME) ASM_OUTPUT_WEAK_ALIAS(FILE, NAME, 0)
+
+/* Handle #pragma weak and #pragma pack.  */
+#undef HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1
