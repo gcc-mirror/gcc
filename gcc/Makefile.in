@@ -2332,7 +2332,7 @@ intl.o: intl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h Makefile
 
 # Make-lang.in should add dependencies of po-generated on any generated
 # files which need to be scanned by gettext (usually Yacc-generated parsers).
-po-generated: $(parsedir)/c-parse.c
+po-generated: $(parsedir)/c-parse.c options.c
 
 #
 # Remake cpp and protoize.
