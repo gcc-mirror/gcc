@@ -1,3 +1,9 @@
+2003-08-06  Graeme Peterson <gp@qnx.com>
+
+	* config/i386/nto.h: New.
+	* config/i386/t-nto: New.
+	* config.gcc (i[34567]86-*-nto-qnx*): New.
+
 2003-08-06  Phil Edwards  <pme@gcc.gnu.org>
 
 	* doc/install.texi (*-*-solaris2*):  Refine configure instructions.
