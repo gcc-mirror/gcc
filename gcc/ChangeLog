@@ -1,3 +1,9 @@
+Mon Sep 15 15:39:26 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* cse.c (simplify_relational_operation): If MODE specifies a
+	mode wider than HOST_WIDE_INT, then the high word of a CONST_INT
+	is derived from the sign bit of the low word.
+
 1997-09-15  Brendan Kehoe  <brendan@cygnus.com>
 
 	* except.c (find_exception_handler_labels): Use xmalloc instead of
