@@ -1,3 +1,8 @@
+2003-10-24  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/12624
+	* varasm.c (notice_global_symbol): Disqualify global registers.
+
 2003-10-23  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/11414
