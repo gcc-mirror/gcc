@@ -1,3 +1,12 @@
+2002-03-29  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (x86_arch_always_fancy_math_387): New.
+	(override_options): Disable NO_FANCY_MATH_387 if the arch allows.
+	* config/i386/i386.h (x86_arch_always_fancy_math_387): New.
+	* config/i386/i386.md (sqrtxf2, sqrtextendsfxf2, sinxf2): Fix
+	conditional.
+	* docs/invoke.texi: Update -mno-fancy-math-387 docs.
+
 2002-03-29  Dale Johannesen <dalej@apple.com>
 
 	* loop.c (combine_movables): Do allow combination of pseudos.
