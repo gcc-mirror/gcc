@@ -1036,18 +1036,15 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
     {
       /* Create the new structures.  */
 
-      /* Position the new block correctly relative to loop notes.  */
-      note = last_loop_beg_note (e->src->end);
-      note = NEXT_INSN (note);
+      /* If the old block ended with a tablejump, skip its table
+	 by searching forward from there.  Otherwise start searching
+	 forward from the last instruction of the old block.  */
+      if (!tablejump_p (e->src->end, NULL, &note))
+	note = e->src->end;
 
-      /* ... and ADDR_VECs.  */
-      if (note != NULL
-	  && GET_CODE (note) == CODE_LABEL
-	  && NEXT_INSN (note)
-	  && GET_CODE (NEXT_INSN (note)) == JUMP_INSN
-	  && (GET_CODE (PATTERN (NEXT_INSN (note))) == ADDR_DIFF_VEC
-	      || GET_CODE (PATTERN (NEXT_INSN (note))) == ADDR_VEC))
-	note = NEXT_INSN (NEXT_INSN (note));
+      /* Position the new block correctly relative to loop notes.  */
+      note = last_loop_beg_note (note);
+      note = NEXT_INSN (note);
 
       jump_block = create_basic_block (note, NULL, e->src);
       jump_block->count = e->count;
