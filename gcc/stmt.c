@@ -641,8 +641,14 @@ set_file_and_line_for_stmt (file, line)
      char *file;
      int line;
 {
-  emit_filename = file;
-  emit_lineno = line;
+  /* If we're outputting an inline function, and we add a line note,
+     there may be no CFUN->STMT information.  So, there's no need to
+     update it.  */
+  if (cfun->stmt)
+    {
+      emit_filename = file;
+      emit_lineno = line;
+    }
 }
 
 /* Emit a no-op instruction.  */
