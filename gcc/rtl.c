@@ -117,6 +117,15 @@ enum machine_mode mode_wider_mode[(int) MAX_MACHINE_MODE] = {
 
 #undef DEF_MACHMODE
 
+/* Indexed by mode class, gives the narrowest mode for each class.  */
+
+enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS];
+
+/* Commonly used modes.  */
+
+enum machine_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT */
+enum machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD */
+
 /* Indexed by rtx code, gives a sequence of operand-types for
    rtx's of that code.  The sequence is a C string in which
    each charcter describes one operand.  */
@@ -774,11 +783,14 @@ read_rtx (infile)
 }
 
 /* This is called once per compilation, before any rtx's are constructed.
-   It initializes the vector `rtx_length' and the extra CC modes, if any.  */
+   It initializes the vector `rtx_length', the extra CC modes, if any,
+   and computes certain commonly-used modes.  */
 
 void
 init_rtl ()
 {
+  int min_class_size[(int) MAX_MODE_CLASS];
+  enum machine_mode mode;
   int i;
 
   for (i = 0; i < NUM_RTX_CODE; i++)
@@ -816,4 +828,27 @@ init_rtl ()
       mode_wider_mode[i] = VOIDmode;
     }
 #endif
+
+  /* Find the narrowest mode for each class and compute the word and byte
+     modes.  */
+
+  for (i = 0; i < (int) MAX_MODE_CLASS; i++)
+    min_class_size[i] = 1000;
+
+  for (mode = VOIDmode; (int) mode < (int) MAX_MACHINE_MODE;
+       mode = (enum machine_mode) ((int) mode + 1))
+    {
+      if (GET_MODE_SIZE (mode) < min_class_size[(int) GET_MODE_CLASS (mode)])
+	{
+	  class_narrowest_mode[(int) GET_MODE_CLASS (mode)] = mode;
+	  min_class_size[(int) GET_MODE_CLASS (mode)] = GET_MODE_SIZE (mode);
+	}
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && GET_MODE_BITSIZE (mode) == BITS_PER_UNIT)
+	byte_mode = mode;
+
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && GET_MODE_BITSIZE (mode) == BITS_PER_WORD)
+	word_mode = mode;
+    }
 }

@@ -59,7 +59,7 @@ extern char *mode_name[];
 #define GET_MODE_NAME(MODE)		(mode_name[(int)(MODE)])
 
 enum mode_class { MODE_RANDOM, MODE_INT, MODE_FLOAT, MODE_PARTIAL_INT, MODE_CC,
-		  MODE_COMPLEX_INT, MODE_COMPLEX_FLOAT };
+		  MODE_COMPLEX_INT, MODE_COMPLEX_FLOAT, MAX_MODE_CLASS};
 
 /* Get the general kind of object that mode MODE represents
    (integer, floating, complex, etc.)  */
@@ -107,5 +107,16 @@ extern enum machine_mode get_best_mode ();
 #define GET_MODE_ALIGNMENT(MODE)   \
   MIN (BIGGEST_ALIGNMENT, 	   \
        MAX (1, (GET_MODE_UNIT_SIZE (MODE) * BITS_PER_UNIT)))
+
+/* For each class, get the narrowest mode in that class.  */
+
+extern enum machine_mode class_narrowest_mode[];
+#define GET_CLASS_NARROWEST_MODE(CLASS) class_narrowest_mode[(int)(CLASS)]
+
+/* Define the integer modes whose sizes are BITS_PER_UNIT
+   and BITS_PER_WORD.  */
+
+extern enum machine_mode byte_mode;
+extern enum machine_mode word_mode;
 
 #endif /* not HAVE_MACHINE_MODES */
