@@ -1673,7 +1673,21 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	 avoid machine mode mismatch when we substitute INLINE_TARGET.
 	 But TARGET is what we will return to the caller.  */
       if (arriving_mode != departing_mode)
-	reg_to_map = gen_rtx (SUBREG, arriving_mode, target, 0);
+	{
+	  /* Avoid creating a paradoxical subreg wider than
+	     BITS_PER_WORD, since that is illegal.  */
+	  if (GET_MODE_BITSIZE (arriving_mode) > BITS_PER_WORD)
+	    {
+	      if (!TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (departing_mode),
+					  GET_MODE_BITSIZE (arriving_mode)))
+		/* Maybe could be handled by using convert_move () ?  */
+		abort ();
+	      reg_to_map = gen_reg_rtx (arriving_mode);
+	      target = gen_lowpart (departing_mode, reg_to_map);
+	    }
+	  else
+	    reg_to_map = gen_rtx (SUBREG, arriving_mode, target, 0);
+	}
       else
 	reg_to_map = target;
 
