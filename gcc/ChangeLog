@@ -1,3 +1,9 @@
+Sat Dec 18 05:29:29 1999  Scott Bambrough  <scottb@netwinder.org>
+
+	* config/arm/linux-elf.h: Change all instances of 
+	ARM_FLAG_SHORT_BYTES to ARM_FLAG_MMU_TRAPS.
+	* config/arm/uclinux-elf.h: Likewise.
+
 1999-12-18 Gabriel Dos Reis  <gdr@codesourcery.com>
 
         * toplev.c (notice, vmessage, v_message_with_file_and_line,
