@@ -1,3 +1,7 @@
+2000-10-20  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+ 
+	* t-vax: New file.  Don't build modules from libgcc1.c.
+
 Fri Oct 20 00:57:00 EDT 2000  John Wehle  (john@feith.com)
 
 	* alias.c: (mark_constant_function): Don't check pure functions.
