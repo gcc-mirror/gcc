@@ -960,6 +960,26 @@ shorten_branches (first)
   int uid;
   rtx align_tab[MAX_CODE_ALIGN];
 
+  /* In order to make sure that all instructions have valid length info,
+     we must split them before we compute the address/length info.  */
+
+  for (insn = NEXT_INSN (first); insn; insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      {
+	rtx old = insn;
+	/* Don't split the insn if it has been deleted.  */
+	if (! INSN_DELETED_P (old))
+	  insn = try_split (PATTERN (old), old, 1);
+	/* When not optimizing, the old insn will be still left around
+	   with only the 'deleted' bit set.  Transform it into a note
+	   to avoid confusion of subsequent processing.  */
+	if (INSN_DELETED_P (old))
+	  {
+	    PUT_CODE (old, NOTE);
+	    NOTE_LINE_NUMBER (old) = NOTE_INSN_DELETED;
+	    NOTE_SOURCE_FILE (old) = 0;
+	  }
+      }
 #endif
 
   /* We must do some computations even when not actually shortening, in
