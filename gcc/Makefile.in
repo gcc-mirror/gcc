@@ -1974,9 +1974,9 @@ libcpp.a: $(LIBCPP_OBJS)
 	$(AR) $(AR_FLAGS) libcpp.a $(LIBCPP_OBJS)
 	if $(RANLIB_TEST) ; then $(RANLIB) libcpp.a ; else true ; fi
 
-cppmain$(exeext): cppmain.o libcpp.a $(LIBDEPS)
+cppmain$(exeext): cppmain.o intl.o libcpp.a $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cppmain$(exeext) cppmain.o \
-	libcpp.a $(LIBS)
+	intl.o libcpp.a $(LIBS)
 
 cppmain.o: cppmain.c $(CONFIG_H) cpplib.h intl.h system.h
 
