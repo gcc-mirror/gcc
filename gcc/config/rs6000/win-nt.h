@@ -50,7 +50,7 @@ Boston, MA 02111-1307, USA.  */
  %{v}"
 
 #undef	LINK_SPEC
-#define	LINK_SPEC "%{V} %{v:%{!V:-V}}"
+#define	LINK_SPEC "%{v:-V}"
 
 /* Allow switches specified in LIB_SPEC, but don't do anything with them
    in the compiler.  */
