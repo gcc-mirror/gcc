@@ -558,9 +558,9 @@ proper position among the other output files.  */
 #ifndef LIBGCC_SPEC
 #if defined(LINK_LIBGCC_SPECIAL) || defined(LINK_LIBGCC_SPECIAL_1)
 /* Have gcc do the search for libgcc.a.  */
-#define LIBGCC_SPEC "libgcc.a%s %L libgcc.a%s"
+#define LIBGCC_SPEC "libgcc.a%s"
 #else
-#define LIBGCC_SPEC "-lgcc %L -lgcc"
+#define LIBGCC_SPEC "-lgcc"
 #endif
 #endif
 
@@ -620,7 +620,7 @@ proper position among the other output files.  */
 %{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %(linker) %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r} %{s} %{t}\
     %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
-    %{static:} %{L*} %(link_libgcc) %o %{!nostdlib:%{!nodefaultlibs:%G}}\
+    %{static:} %{L*} %(link_libgcc) %o %{!nostdlib:%{!nodefaultlibs:%G %L %G}}\
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} }}}}}}"
 #endif
 
@@ -1426,16 +1426,7 @@ init_gcc_specs (obstack, shared_name, static_name, eh_name)
 #else
 		shared_name,
 #endif
-		"}}} %L ",
-		"%{static|static-libgcc:", static_name, " ", eh_name,
-		"}%{!static:%{!static-libgcc:",
-		"%{!shared:%{!shared-libgcc:", static_name, " ",
-		eh_name, "}%{shared-libgcc:",
-		static_name, "}}",
-#ifdef LINK_EH_SPEC
-		"%{shared:%{!shared-libgcc:", static_name, "}}",
-#endif
-		"}}", NULL);
+		"}}}", NULL);
 
   obstack_grow (obstack, buf, strlen (buf));
   free (buf);
@@ -1516,7 +1507,7 @@ init_spec ()
        when given the proper command line arguments.  */
     while (*p)
       {
-        if (in_sep && *p == '-' && strncmp (p, "-lgcc %L -lgcc", 14) == 0)
+        if (in_sep && *p == '-' && strncmp (p, "-lgcc", 5) == 0)
 	  {
 	    init_gcc_specs (&obstack,
 #ifdef NO_SHARED_LIBGCC_MULTILIB
@@ -1527,11 +1518,10 @@ init_spec ()
 			    ,
 			    "-lgcc",
 			    "-lgcc_eh");
-	    p += 14;
+	    p += 5;
 	    in_sep = 0;
 	  }
-	else if (in_sep && *p == 'l'
-		 && strncmp (p, "libgcc.a%s %L libgcc.a%s", 24) == 0)
+	else if (in_sep && *p == 'l' && strncmp (p, "libgcc.a%s", 10) == 0)
 	  {
 	    /* Ug.  We don't know shared library extensions.  Hope that
 	       systems that use this form don't do shared libraries.  */
@@ -1544,7 +1534,7 @@ init_spec ()
 			    ,
 			    "libgcc.a%s",
 			    "libgcc_eh.a%s");
-	    p += 24;
+	    p += 10;
 	    in_sep = 0;
 	  }
 	else
