@@ -467,7 +467,7 @@ namespace std {
 
   ctype<char>::
   ~ctype()
-  { if (_M_del) delete[] table(); }
+  { if (_M_del) delete[] this->table(); }
 
   char
   ctype<char>::
@@ -569,18 +569,18 @@ namespace std {
 
   // NB: These ctype<wchar_t> methods are not configuration-specific,
   // unlike the ctype<char> bits.
-  ctype<wchar_t>::ctype(size_t /*__refs*/) throw() { }
+  ctype<wchar_t>::ctype(size_t __refs) : _Ctype<wchar_t>(__refs) { }
 
   wchar_t
   ctype<wchar_t>::do_toupper(wchar_t __c) const
-  { return ::towupper(__c); }
+  { return towupper(__c); }
 
   const wchar_t*
   ctype<wchar_t>::do_toupper(wchar_t* __low, const wchar_t* __high) const
   {
     while (__low < __high)
       {
-        *__low = ::towupper(*__low);
+        *__low = towupper(*__low);
         ++__low;
       }
     return __high;
@@ -588,14 +588,14 @@ namespace std {
   
   wchar_t
   ctype<wchar_t>::do_tolower(wchar_t __c) const
-  { return ::towlower(__c); }
+  { return towlower(__c); }
   
   const wchar_t*
   ctype<wchar_t>::do_tolower(wchar_t* __low, const wchar_t* __high) const
   {
     while (__low < __high)
       {
-        *__low = ::towlower(*__low);
+        *__low = towlower(*__low);
         ++__low;
       }
     return __high;
@@ -603,68 +603,70 @@ namespace std {
 
   bool
   ctype<wchar_t>::
-  do_is(mask /*__m*/, char_type /*__c*/) const
-  { 
-    // XXX
-    return false;
-  }
+  do_is(mask __m, char_type __c) const
+  { return static_cast<bool>(iswctype(_M_convert_to_wmask(__m), __c)); }
   
   const wchar_t* 
   ctype<wchar_t>::
-  do_is(const wchar_t* __low, const wchar_t* /*__high*/, mask* /*__vec*/) const
+  do_is(const wchar_t* __low, const wchar_t* __high, mask* __m) const
   {
-    // XXX
+    while (__low < __high && !this->is(*__m, *__low))
+      ++__low;
     return __low;
   }
   
   const wchar_t* 
   ctype<wchar_t>::
-  do_scan_is(mask /*__m*/, const wchar_t* __low, const wchar_t* /*__high*/) const
+  do_scan_is(mask __m, const wchar_t* __low, const wchar_t* __high) const
   {
-    // XXX
+    while (__low < __high && !this->is(__m, *__low))
+      ++__low;
     return __low;
   }
 
   const wchar_t*
   ctype<wchar_t>::
-  do_scan_not(mask /*__m*/, const char_type* __low, 
-	      const char_type* /*__high*/) const
+  do_scan_not(mask __m, const char_type* __low, const char_type* __high) const
   {
-    // XXX
+    while (__low < __high && this->is(__m, *__low) != 0)
+      ++__low;
     return __low;
   }
 
   wchar_t
   ctype<wchar_t>::
   do_widen(char __c) const
-  { 
-    // XXX
-    return static_cast<wchar_t>((unsigned char)__c); 
-  }
+  { return btowc(__c); }
   
   const char* 
   ctype<wchar_t>::
-  do_widen(const char* /*__low*/, const char* __high, 
-	   wchar_t* /*__dest*/) const
+  do_widen(const char* __low, const char* __high, wchar_t* __dest) const
   {
-    // XXX
+    mbstate_t __state;
+    memset(&__state, 0, sizeof(mbstate_t));
+    mbsrtowcs(__dest, &__low, __high - __low, &__state);
     return __high;
   }
 
   char
   ctype<wchar_t>::
-  do_narrow(wchar_t /*__c*/, char __dfault) const
+  do_narrow(wchar_t __wc, char __dfault) const
   { 
-    // XXX
-    return __dfault; 
+    int __c = wctob(__wc);
+    return (__c == EOF ? __dfault : static_cast<char>(__c)); 
   }
 
   const wchar_t*
   ctype<wchar_t>::
-  do_narrow(const wchar_t* /*__low*/, const wchar_t* __high, 
-	    char /*__dfault*/, char* /*__dest*/) const
+  do_narrow(const wchar_t* __low, const wchar_t* __high, char __dfault, 
+	    char* __dest) const
   {
-    // XXX
+    mbstate_t __state;
+    memset(&__state, 0, sizeof(mbstate_t));
+    size_t __len = __high - __low;
+    size_t __conv = wcsrtombs(__dest, &__low, __len, &__state);
+    if (__conv == __len)
+      *__dest = __dfault;
     return __high;
   }
 
