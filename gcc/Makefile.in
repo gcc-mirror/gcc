@@ -199,7 +199,9 @@ libdir = $(exec_prefix)/lib
 # Directory in which the compiler finds executables, libraries, etc.
 libsubdir = $(libdir)/gcc-lib/$(target)/$(version)
 # Directory in which the compiler finds g++ includes.
-gxx_include_dir= $(libdir)/g++-include
+gxx_include_dir= $(prefix)/include/g++
+# Directory in which the old g++ header files may be found.
+old_gxx_include_dir= $(libdir)/g++-include
 # Directory to search for site-specific includes.
 includedir = $(local_prefix)/include
 # assertdir is overridden in cross-make.
@@ -1654,6 +1656,7 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
+	  -DOLD_GPLUSPLUS_INCLUDE_DIR=\"$(old_gxx_include_dir)\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
@@ -1668,6 +1671,7 @@ cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
+	  -DOLD_GPLUSPLUS_INCLUDE_DIR=\"$(old_gxx_include_dir)\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
