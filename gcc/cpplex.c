@@ -2643,7 +2643,8 @@ parse_number (pfile, list, name)
    escaped newlines.
 
    Can be used for character constants (terminator = '\''), string
-   constants ('"'), angled headers ('>') and assertions (')').  */
+   constants ('"') and angled headers ('>').  Multi-line strings are
+   allowed, except for within directives.  */
 
 static void
 parse_string2 (pfile, list, name, terminator)
@@ -3185,17 +3186,6 @@ _cpp_lex_line (pfile, list)
 	  cur_token++;
 	  break;
 
-	case '(':
-	  /* Is this the beginning of an assertion string?  */
-	  if (list->dir_flags & SYNTAX_ASSERT)
-	    {
-	      c = ')';	/* Terminator.  */
-	      cur_token->type = CPP_ASSERTION;
-	      goto do_parse_string;
-	    }
-	  PUSH_TOKEN (CPP_OPEN_PAREN);
-	  break;
-
 	case '?':
 	  if (cur + 1 < buffer->rlimit && *cur == '?'
 	      && trigraph_map[cur[1]] && trigraph_ok (pfile, cur + 1))
@@ -3261,6 +3251,7 @@ _cpp_lex_line (pfile, list)
 	case '!': PUSH_TOKEN (CPP_NOT); break;
 	case ',': PUSH_TOKEN (CPP_COMMA); break;
 	case ';': PUSH_TOKEN (CPP_SEMICOLON); break;
+	case '(': PUSH_TOKEN (CPP_OPEN_PAREN); break;
 	case ')': PUSH_TOKEN (CPP_CLOSE_PAREN); break;
 
 	case '$':

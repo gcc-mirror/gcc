@@ -191,7 +191,6 @@ struct cpp_token
 
 /* Directive flags.  */
 #define SYNTAX_INCLUDE (1 << 8)
-#define SYNTAX_ASSERT  (1 << 9)
 
 typedef int (*directive_handler) PARAMS ((cpp_reader *));
 
