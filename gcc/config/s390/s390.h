@@ -37,19 +37,37 @@ enum processor_type
   PROCESSOR_9672_G5,		
   PROCESSOR_9672_G6,		
   PROCESSOR_2064_Z900,		
+  PROCESSOR_2084_Z990,
   PROCESSOR_max
 };
 
-extern enum processor_type s390_cpu;
+/* Optional architectural facilities supported by the processor.  */
+
+enum processor_flags
+{
+  PF_IEEE_FLOAT = 1,
+  PF_ZARCH = 2,
+  PF_LONG_DISPLACEMENT = 4
+};
+
+extern enum processor_type s390_tune;
+extern enum processor_flags s390_tune_flags;
 extern const char *s390_tune_string;
 
 extern enum processor_type s390_arch;
+extern enum processor_flags s390_arch_flags;
 extern const char *s390_arch_string;
 
-#define TARGET_CPU_DEFAULT_9672 0
-#define TARGET_CPU_DEFAULT_2064 2
+#define TARGET_CPU_IEEE_FLOAT \
+	(s390_arch_flags & PF_IEEE_FLOAT)
+#define TARGET_CPU_ZARCH \
+	(s390_arch_flags & PF_ZARCH)
+#define TARGET_CPU_LONG_DISPLACEMENT \
+	(s390_arch_flags & PF_LONG_DISPLACEMENT)
 
-#define TARGET_CPU_DEFAULT_NAMES {"g5", "g6", "z900"}
+#define TARGET_LONG_DISPLACEMENT \
+       (TARGET_ZARCH && TARGET_CPU_LONG_DISPLACEMENT)
+
 
 /* Run-time target specification.  */
 
@@ -118,6 +136,25 @@ extern int target_flags;
   { "arch=",            &s390_arch_string,                      \
     N_("Generate code for given CPU"), 0},                      \
 }
+
+/* Support for configure-time defaults.  */
+#define OPTION_DEFAULT_SPECS 					\
+  { "mode", "%{!mesa:%{!mzarch:-m%(VALUE)}}" },			\
+  { "arch", "%{!march=*:-march=%(VALUE)}" },			\
+  { "tune", "%{!mtune=*:-mtune=%(VALUE)}" }
+
+/* Defaulting rules.  */
+#ifdef DEFAULT_TARGET_64BIT
+#define DRIVER_SELF_SPECS					\
+  "%{!m31:%{!m64:-m64}}",					\
+  "%{!mesa:%{!mzarch:%{m31:-mesa}%{m64:-mzarch}}}",		\
+  "%{!march=*:%{mesa:-march=g5}%{mzarch:-march=z900}}"
+#else
+#define DRIVER_SELF_SPECS					\
+  "%{!m31:%{!m64:-m31}}",					\
+  "%{!mesa:%{!mzarch:%{m31:-mesa}%{m64:-mzarch}}}",		\
+  "%{!march=*:%{mesa:-march=g5}%{mzarch:-march=z900}}"
+#endif
 
 /* Target version string.  Overridden by the OS header.  */
 #ifdef DEFAULT_TARGET_64BIT

@@ -1,3 +1,37 @@
+2003-06-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config.gcc [s390*-*-*]: Support --with-arch, --with-tune, and
+	--with-mode configure options.
+	* config/s390/s390.h (OPTION_DEFAULT_SPECS): Define.
+	(DRIVER_SELF_SPECS): Define.
+	* config/s390/linux.h (ASM_SPEC): Pass architecture mode and cpu
+	architecture to assembler.
+	(LINK_SPEC): Merge 31-bit and 64-bit variants.
+	(LINK_ARCH31_SPEC, LINK_ARCH64_SPEC, EXTRA_SPECS): Remove.
+	* config/s390/s390.c (override_options): New default rules for 
+	architecture mode and cpu architecture selection.
+	* doc/invoke.texi (-mesa, -mzarch, -march, -mtune): Document
+	new default rules.
+	
+	* config/s390/s390.h (enum processor_type): Add PROCESSOR_2084_Z990.
+	* config/s390/s390.md (attr "cpu"): Add "z990" processor type.
+	* config/s390/s390.c (override_options): Add "z990" to 
+	processor_alias_table.
+	* doc/invoke.texi (-march): Document "z990" processor type.
+
+	* config/s390/s390.c (s390_tune_flags, s390_arch_flags): New variables.
+	* config/s390/s390.h (s390_tune_flags, s390_arch_flags): Declare.
+	(enum processor_flags, TARGET_CPU_IEEE_FLOAT, TARGET_CPU_ZARCH,
+	TARGET_CPU_LONG_DISPLACEMENT, TARGET_LONG_DISPLACEMENT): New.
+	* config/s390/s390.c (override_options): Replace enum pta_flags by 
+	enum processor_flags.  Fill in s390_tune_flags and s390_arch_flags.
+
+	* config/s390/s390.c (s390_cpu): Rename to ...
+	(s390_tune): ... this.
+	* config/s390/s390.h (s390_cpu, s390_tune): Likewise.
+	* config/s390/s390.c (s390_issue_rate, override_options): Likewise.
+	* config/s390/s390.md (attr "cpu"): Likewise.
+
 2003-06-30  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-common.c (enum c_language_kind, flag_objc): Remove.

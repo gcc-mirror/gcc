@@ -157,9 +157,11 @@ struct s390_address
 };
 
 /* Which cpu are we tuning for.  */
-enum processor_type s390_cpu;
+enum processor_type s390_tune;
+enum processor_flags s390_tune_flags;
 /* Which instruction set architecture to use.  */
 enum processor_type s390_arch;
+enum processor_flags s390_arch_flags;
 
 /* Strings to hold which cpu and instruction set architecture  to use.  */
 const char *s390_tune_string;		/* for -mtune=<xxx> */
@@ -925,22 +927,19 @@ void
 override_options ()
 {
   int i;
-  static const char * const cpu_names[] = TARGET_CPU_DEFAULT_NAMES;
   static struct pta
     {
       const char *const name;		/* processor name or nickname.  */
       const enum processor_type processor;
-      const enum pta_flags
-	{
-	  PTA_IEEE_FLOAT = 1,
-	  PTA_ZARCH = 2
-	} flags;
+      const enum processor_flags flags;
     }
   const processor_alias_table[] =
     {
-      {"g5", PROCESSOR_9672_G5, PTA_IEEE_FLOAT},
-      {"g6", PROCESSOR_9672_G6, PTA_IEEE_FLOAT},
-      {"z900", PROCESSOR_2064_Z900, PTA_IEEE_FLOAT | PTA_ZARCH},
+      {"g5", PROCESSOR_9672_G5, PF_IEEE_FLOAT},
+      {"g6", PROCESSOR_9672_G6, PF_IEEE_FLOAT},
+      {"z900", PROCESSOR_2064_Z900, PF_IEEE_FLOAT | PF_ZARCH},
+      {"z990", PROCESSOR_2084_Z990, PF_IEEE_FLOAT | PF_ZARCH 
+				    | PF_LONG_DISPLACEMENT},
     };
 
   int const pta_size = ARRAY_SIZE (processor_alias_table);
@@ -950,59 +949,55 @@ override_options ()
 
   /* Set up function hooks.  */
   init_machine_status = s390_init_machine_status;
- 
-  /* Set cpu and arch, if only partially given.  */
-  if (!s390_tune_string && s390_arch_string)
-    s390_tune_string = s390_arch_string;
-  if (!s390_tune_string)
-    s390_tune_string = cpu_names [TARGET_64BIT ? TARGET_CPU_DEFAULT_2064
-                                              :	TARGET_CPU_DEFAULT_9672];
+
+  /* Architecture mode defaults according to ABI.  */
+  if (!(target_flags_explicit & MASK_ZARCH))
+    {
+      if (TARGET_64BIT)
+	target_flags |= MASK_ZARCH;
+      else
+	target_flags &= ~MASK_ZARCH;
+    }
+
+  /* Determine processor architectural level.  */
   if (!s390_arch_string)
-#ifdef DEFAULT_TARGET_64BIT
-    s390_arch_string = "z900";
-#else
-    s390_arch_string = "g5";
-#endif
+    s390_arch_string = TARGET_ZARCH? "z900" : "g5";
 
   for (i = 0; i < pta_size; i++)
     if (! strcmp (s390_arch_string, processor_alias_table[i].name))
       {
 	s390_arch = processor_alias_table[i].processor;
-	/* Default cpu tuning to the architecture.  */
-	s390_cpu = s390_arch;
-     
-	if (!(processor_alias_table[i].flags & PTA_ZARCH) 
-            && TARGET_64BIT)
-          error ("64-bit ABI not supported on %s", s390_arch_string);
-
-	if (!(processor_alias_table[i].flags & PTA_ZARCH) 
-            && TARGET_ZARCH)
-          error ("z/Architecture not supported on %s", s390_arch_string);
-
+	s390_arch_flags = processor_alias_table[i].flags;
 	break;
       }
-
   if (i == pta_size)
-    error ("bad value (%s) for -march= switch", s390_arch_string);
+    error ("Unknown cpu used in -march=%s.", s390_arch_string);
 
-  /* ESA implies 31 bit mode.  */
-  if ((target_flags_explicit & MASK_ZARCH) && !TARGET_ZARCH)
+  /* Determine processor to tune for.  */
+  if (!s390_tune_string)
     {
-      if ((target_flags_explicit & MASK_64BIT) && TARGET_64BIT)
-	error ("64-bit ABI not possible in ESA/390 mode");
-      else
-	target_flags &= ~MASK_64BIT;
+      s390_tune = s390_arch;
+      s390_tune_flags = s390_arch_flags;
+      s390_tune_string = s390_arch_string;
+    }
+  else
+    {
+      for (i = 0; i < pta_size; i++)
+	if (! strcmp (s390_tune_string, processor_alias_table[i].name))
+	  {
+	    s390_tune = processor_alias_table[i].processor;
+	    s390_tune_flags = processor_alias_table[i].flags;
+	    break;
+	  }
+      if (i == pta_size)
+	error ("Unknown cpu used in -mtune=%s.", s390_tune_string);
     }
 
-  for (i = 0; i < pta_size; i++)
-    if (! strcmp (s390_tune_string, processor_alias_table[i].name))
-      {
-	s390_cpu = processor_alias_table[i].processor;
-	break;
-      }
-
-  if (i == pta_size)
-    error ("bad value (%s) for -mtune= switch", s390_tune_string);
+  /* Sanity checks.  */
+  if (TARGET_ZARCH && !(s390_arch_flags & PF_ZARCH))
+    error ("z/Architecture mode not supported on %s.", s390_arch_string);
+  if (TARGET_64BIT && !TARGET_ZARCH)
+    error ("64-bit ABI not supported in ESA/390 mode.");
 }
 
 /* Map for smallest class containing reg regno.  */
@@ -3707,7 +3702,7 @@ s390_issue_rate ()
 static int
 s390_use_dfa_pipeline_interface ()
 {
-  if (s390_cpu == PROCESSOR_2064_Z900)
+  if (s390_tune == PROCESSOR_2064_Z900)
     return 1;
   return 0;
 
