@@ -1205,8 +1205,8 @@ probe_stack_range (first, size)
 #endif
 
   /* If we have to generate explicit probes, see if we have a constant
-     number of them to generate.  If so, that's the easy case.  */
-  if (GET_CODE (size) == CONST_INT)
+     small number of them to generate.  If so, that's the easy case.  */
+  if (GET_CODE (size) == CONST_INT && INTVAL (size) < 10)
     {
       HOST_WIDE_INT offset;
 
