@@ -33,6 +33,7 @@ details.  */
 #include <java/lang/ClassNotFoundException.h>
 #include <java/lang/ClassCircularityError.h>
 #include <java/lang/IncompatibleClassChangeError.h>
+#include <java/lang/VirtualMachineError.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/lang/Runtime.h>
 #include <java/lang/StringBuffer.h>
@@ -453,6 +454,22 @@ void
 _Jv_RegisterClassHookDefault (jclass klass)
 {
   jint hash = HASH_UTF (klass->name);
+
+  jclass check_class = loaded_classes[hash];
+
+  // If the class is already registered, don't re-register it.
+  while (check_class != NULL)
+    {
+      if (check_class == klass)
+	{
+	  // If you get this, it means you have the same class in two
+	  // different libraries.
+	  throw new java::lang::VirtualMachineError (JvNewStringLatin1 ("class registered twice"));
+	}
+
+      check_class = check_class->next;
+    }
+
   klass->next = loaded_classes[hash];
   loaded_classes[hash] = klass;
 }

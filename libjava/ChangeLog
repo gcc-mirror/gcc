@@ -1,3 +1,10 @@
+2001-09-05  Corey Minyard  <minyard@acm.org>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natClassLoader.cc: Include VirtualMachineError.h
+	(_Jv_RegisterClassHookDefault): Throw error if a class is
+	registered twice.
+
 2001-09-05  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natSystem.cc (init_properties): Default locale is
