@@ -184,10 +184,10 @@ specify the real type of a field identified by @code{use_param1} through
 @findex use_params
 @item use_params
 
-When a structure contains another structure that is parameterised,
+When a structure contains another structure that is parameterized,
 there's no need to do anything special, the inner stucture inherits the
 parameters of the outer one.  When a structure contains a pointer to a
-parameterised structure, the type machinery won't automatically detect
+parameterized structure, the type machinery won't automatically detect
 this (it could, it just doesn't yet), so it's necessary to tell it that
 the pointed-to structure should use the same parameters as the outer
 structure.  This is done by marking the pointer with the

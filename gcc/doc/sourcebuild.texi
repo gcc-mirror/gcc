@@ -867,7 +867,7 @@ the compiler with optimization.
 FIXME: describe this.
 
 @item gcc.c-torture
-This contains particlar code fragments which have historically broken easily.
+This contains particular code fragments which have historically broken easily.
 These tests are run with multiple optimization options, so tests for features
 which only break at some optimization levels belong here.  This also contains
 tests to check that certain optimizations occur.  It might be worthwhile to 

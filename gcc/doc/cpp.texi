@@ -3779,7 +3779,7 @@ The standard requires at least 15 levels.
 The C standard mandates this be at least 63.  CPP is limited only by
 available memory.
 
-@item Levels of parenthesised expressions within a full expression.
+@item Levels of parenthesized expressions within a full expression.
 
 The C standard requires this to be at least 63.  In preprocessor
 conditional expressions, it is limited only by available memory.
@@ -3892,9 +3892,9 @@ answers.  Subsequent assertions do not override previous ones for the
 same predicate.  All the answers for any given predicate are
 simultaneously true.
 
-@cindex assertions, cancelling
+@cindex assertions, canceling
 @findex #unassert
-Assertions can be cancelled with the @samp{#unassert} directive.  It
+Assertions can be canceled with the @samp{#unassert} directive.  It
 has the same syntax as @samp{#assert}.  In that form it cancels only the
 answer which was specified on the @samp{#unassert} line; other answers
 for that predicate remain true.  You can cancel an entire predicate by

@@ -289,7 +289,7 @@ SSA Conditional Constant Propagation.  Turned on by the @option{-fssa-ccp}
 SSA Aggressive Dead Code Elimination.  Turned on by the @option{-fssa-dce}
 option.  This pass performs conditional constant propagation to simplify
 instructions including conditional branches.  This pass is more aggressive
-than the constant propgation done by the CSE and GCSE pases, but operates
+than the constant propagation done by the CSE and GCSE pases, but operates
 in linear time.
 
 @opindex dW

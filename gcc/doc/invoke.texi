@@ -1608,7 +1608,7 @@ struct C : public B, public A @{@};
 @end smallexample
 
 @noindent
-G++ will place the @code{A} base class of @code{C} at a non-zero offset;
+G++ will place the @code{A} base class of @code{C} at a nonzero offset;
 it should be placed at offset zero.  G++ mistakenly believes that the
 @code{A} data member of @code{B} is already at offset zero.
 
@@ -2518,7 +2518,7 @@ Warn if floating point values are used in equality comparisons.
 The idea behind this is that sometimes it is convenient (for the
 programmer) to consider floating-point values as approximations to
 infinitely precise real numbers.  If you are doing this, then you need
-to compute (by analysing the code, or in some other way) the maximum or
+to compute (by analyzing the code, or in some other way) the maximum or
 likely maximum error that the computation introduces, and allow for it
 when performing comparisons (and when producing output, but that's a
 different problem).  In particular, instead of testing for equality, you
@@ -3150,7 +3150,7 @@ Dump after local register allocation, to @file{@var{file}.23.lreg}.
 Dump after loop optimization, to @file{@var{file}.12.loop}.
 @item M
 @opindex dM
-Dump after performing the machine dependent reorganisation pass, to
+Dump after performing the machine dependent reorganization pass, to
 @file{@var{file}.33.mach}.
 @item n
 @opindex dn
