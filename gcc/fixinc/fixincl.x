@@ -37,7 +37,7 @@ tSCC zAix_SyswaitName[] =
  *  File name selection pattern
  */
 tSCC zAix_SyswaitList[] =
-        "|" "sys/wait.h" "|";
+  "|sys/wait.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -72,7 +72,7 @@ tSCC zAix_VolatileName[] =
  *  File name selection pattern
  */
 tSCC zAix_VolatileList[] =
-        "|" "sys/signal.h" "|";
+  "|sys/signal.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -106,8 +106,7 @@ tSCC zAlpha_GetoptName[] =
  *  File name selection pattern
  */
 tSCC zAlpha_GetoptList[] =
-        "|" "stdio.h"
-        "|" "stdlib.h" "|";
+  "|stdio.h|stdlib.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -141,7 +140,7 @@ tSCC zAlpha_ParensName[] =
  *  File name selection pattern
  */
 tSCC zAlpha_ParensList[] =
-        "|" "sym.h" "|";
+  "|sym.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -175,7 +174,7 @@ tSCC zAlpha_SbrkName[] =
  *  File name selection pattern
  */
 tSCC zAlpha_SbrkList[] =
-        "|" "unistd.h" "|";
+  "|unistd.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -209,7 +208,7 @@ tSCC zArm_Norcroft_HintName[] =
  *  File name selection pattern
  */
 tSCC zArm_Norcroft_HintList[] =
-        "|" "X11/Intrinsic.h" "|";
+  "|X11/Intrinsic.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -243,7 +242,7 @@ tSCC zArm_WcharName[] =
  *  File name selection pattern
  */
 tSCC zArm_WcharList[] =
-        "|" "stdlib.h" "|";
+  "|stdlib.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -278,7 +277,7 @@ tSCC zAux_AsmName[] =
  *  File name selection pattern
  */
 tSCC zAux_AsmList[] =
-        "|" "sys/param.h" "|";
+  "|sys/param.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -312,10 +311,7 @@ tSCC zAvoid_BoolName[] =
  *  File name selection pattern
  */
 tSCC zAvoid_BoolList[] =
-        "|" "curses.h"
-        "|" "curses_colr/curses.h"
-        "|" "term.h"
-        "|" "tinfo.h" "|";
+  "|curses.h|curses_colr/curses.h|term.h|tinfo.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -352,7 +348,7 @@ tSCC zBad_Struct_TermName[] =
  *  File name selection pattern
  */
 tSCC zBad_Struct_TermList[] =
-        "|" "curses.h" "|";
+  "|curses.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -386,7 +382,7 @@ tSCC zBadquoteName[] =
  *  File name selection pattern
  */
 tSCC zBadquoteList[] =
-        "|" "sundev/vuid_event.h" "|";
+  "|sundev/vuid_event.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -412,20 +408,7 @@ tSCC zBad_LvalName[] =
  *  File name selection pattern
  */
 tSCC zBad_LvalList[] =
-        "|" "libgen.h"
-        "|" "dirent.h"
-        "|" "ftw.h"
-        "|" "grp.h"
-        "|" "ndbm.h"
-        "|" "pthread.h"
-        "|" "pwd.h"
-        "|" "signal.h"
-        "|" "standards.h"
-        "|" "stdlib.h"
-        "|" "string.h"
-        "|" "stropts.h"
-        "|" "time.h"
-        "|" "unistd.h" "|";
+  "|libgen.h|dirent.h|ftw.h|grp.h|ndbm.h|pthread.h|pwd.h|signal.h|standards.h|stdlib.h|string.h|stropts.h|time.h|unistd.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -459,7 +442,7 @@ tSCC zBroken_Assert_StdioName[] =
  *  File name selection pattern
  */
 tSCC zBroken_Assert_StdioList[] =
-        "|" "assert.h" "|";
+  "|assert.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -501,7 +484,7 @@ tSCC zBroken_Assert_StdlibName[] =
  *  File name selection pattern
  */
 tSCC zBroken_Assert_StdlibList[] =
-        "|" "assert.h" "|";
+  "|assert.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -579,7 +562,7 @@ tSCC zDec_Intern_AsmName[] =
  *  File name selection pattern
  */
 tSCC zDec_Intern_AsmList[] =
-        "|" "c_asm.h" "|";
+  "|c_asm.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -649,8 +632,7 @@ tSCC zEcd_CursorName[] =
  *  File name selection pattern
  */
 tSCC zEcd_CursorList[] =
-        "|" "sunwindow/win_lock.h"
-        "|" "sunwindow/win_cursor.h" "|";
+  "|sunwindow/win_lock.h|sunwindow/win_cursor.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -676,7 +658,7 @@ tSCC zSco5_Stat_WrappersName[] =
  *  File name selection pattern
  */
 tSCC zSco5_Stat_WrappersList[] =
-        "|" "sys/stat.h" "|";
+  "|sys/stat.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -791,7 +773,7 @@ tSCC zHp_InlineName[] =
  *  File name selection pattern
  */
 tSCC zHp_InlineList[] =
-        "|" "sys/spinlock.h" "|";
+  "|sys/spinlock.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -826,7 +808,7 @@ tSCC zHp_SysfileName[] =
  *  File name selection pattern
  */
 tSCC zHp_SysfileList[] =
-        "|" "sys/file.h" "|";
+  "|sys/file.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -860,8 +842,7 @@ tSCC zCxx_UnreadyName[] =
  *  File name selection pattern
  */
 tSCC zCxx_UnreadyList[] =
-        "|" "sys/mman.h"
-        "|" "rpc/types.h" "|";
+  "|sys/mman.h|rpc/types.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -903,7 +884,7 @@ tSCC zHpux_MaxintName[] =
  *  File name selection pattern
  */
 tSCC zHpux_MaxintList[] =
-        "|" "sys/param.h" "|";
+  "|sys/param.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -932,7 +913,7 @@ tSCC zHpux_SystimeName[] =
  *  File name selection pattern
  */
 tSCC zHpux_SystimeList[] =
-        "|" "sys/time.h" "|";
+  "|sys/time.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -966,12 +947,7 @@ tSCC zInteractv_Add1Name[] =
  *  File name selection pattern
  */
 tSCC zInteractv_Add1List[] =
-        "|" "stdio.h"
-        "|" "math.h"
-        "|" "ctype.h"
-        "|" "sys/limits.h"
-        "|" "sys/fcntl.h"
-        "|" "sys/dirent.h" "|";
+  "|stdio.h|math.h|ctype.h|sys/limits.h|sys/fcntl.h|sys/dirent.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1008,7 +984,7 @@ tSCC zInteractv_Add2Name[] =
  *  File name selection pattern
  */
 tSCC zInteractv_Add2List[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1045,7 +1021,7 @@ tSCC zInteractv_Add3Name[] =
  *  File name selection pattern
  */
 tSCC zInteractv_Add3List[] =
-        "|" "sys/limits.h" "|";
+  "|sys/limits.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1155,7 +1131,7 @@ tSCC zIp_Missing_SemiName[] =
  *  File name selection pattern
  */
 tSCC zIp_Missing_SemiList[] =
-        "|" "netinet/ip.h" "|";
+  "|netinet/ip.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1181,7 +1157,7 @@ tSCC zIrix_Multiline_CmntName[] =
  *  File name selection pattern
  */
 tSCC zIrix_Multiline_CmntList[] =
-        "|" "sys/types.h" "|";
+  "|sys/types.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1208,7 +1184,7 @@ tSCC zIrix_SockaddrName[] =
  *  File name selection pattern
  */
 tSCC zIrix_SockaddrList[] =
-        "|" "rpc/auth.h" "|";
+  "|rpc/auth.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1243,7 +1219,7 @@ tSCC zIrix_Struct__FileName[] =
  *  File name selection pattern
  */
 tSCC zIrix_Struct__FileList[] =
-        "|" "rpc/xdr.h" "|";
+  "|rpc/xdr.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1270,7 +1246,7 @@ tSCC zIsc_FmodName[] =
  *  File name selection pattern
  */
 tSCC zIsc_FmodList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1304,8 +1280,7 @@ tSCC zMotorola_NestedName[] =
  *  File name selection pattern
  */
 tSCC zMotorola_NestedList[] =
-        "|" "limits.h"
-        "|" "sys/limits.h" "|";
+  "|limits.h|sys/limits.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1334,7 +1309,7 @@ tSCC zIsc_Sys_LimitsName[] =
  *  File name selection pattern
  */
 tSCC zIsc_Sys_LimitsList[] =
-        "|" "sys/limits.h" "|";
+  "|sys/limits.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1369,24 +1344,7 @@ tSCC zKandr_ConcatName[] =
  *  File name selection pattern
  */
 tSCC zKandr_ConcatList[] =
-        "|" "sparc/asm_linkage.h"
-        "|" "sun3/asm_linkage.h"
-        "|" "sun3x/asm_linkage.h"
-        "|" "sun4/asm_linkage.h"
-        "|" "sun4c/asm_linkage.h"
-        "|" "sun4m/asm_linkage.h"
-        "|" "sun4c/debug/asm_linkage.h"
-        "|" "sun4m/debug/asm_linkage.h"
-        "|" "arm/as_support.h"
-        "|" "arm/mc_type.h"
-        "|" "arm/xcb.h"
-        "|" "dev/chardefmac.h"
-        "|" "dev/ps_irq.h"
-        "|" "dev/screen.h"
-        "|" "dev/scsi.h"
-        "|" "sys/tty.h"
-        "|" "Xm.acorn/XmP.h"
-        "|" "bsd43/bsd43_.h" "|";
+  "|sparc/asm_linkage.h|sun3/asm_linkage.h|sun3x/asm_linkage.h|sun4/asm_linkage.h|sun4c/asm_linkage.h|sun4m/asm_linkage.h|sun4c/debug/asm_linkage.h|sun4m/debug/asm_linkage.h|arm/as_support.h|arm/mc_type.h|arm/xcb.h|dev/chardefmac.h|dev/ps_irq.h|dev/screen.h|dev/scsi.h|sys/tty.h|Xm.acorn/XmP.h|bsd43/bsd43_.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1420,7 +1378,7 @@ tSCC zLimits_IfndefsName[] =
  *  File name selection pattern
  */
 tSCC zLimits_IfndefsList[] =
-        "|" "limits.h" "|";
+  "|limits.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1478,7 +1436,7 @@ tSCC zLynx_Void_IntName[] =
  *  File name selection pattern
  */
 tSCC zLynx_Void_IntList[] =
-        "|" "curses.h" "|";
+  "|curses.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1512,7 +1470,7 @@ tSCC zLynxos_Fcntl_ProtoName[] =
  *  File name selection pattern
  */
 tSCC zLynxos_Fcntl_ProtoList[] =
-        "|" "fcntl.h" "|";
+  "|fcntl.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1546,7 +1504,7 @@ tSCC zM88k_Bad_Hypot_OptName[] =
  *  File name selection pattern
  */
 tSCC zM88k_Bad_Hypot_OptList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1587,7 +1545,7 @@ tSCC zM88k_Bad_S_IfName[] =
  *  File name selection pattern
  */
 tSCC zM88k_Bad_S_IfList[] =
-        "|" "sys/stat.h" "|";
+  "|sys/stat.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1624,7 +1582,7 @@ tSCC zM88k_Multi_InclName[] =
  *  File name selection pattern
  */
 tSCC zM88k_Multi_InclList[] =
-        "|" "time.h" "|";
+  "|time.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1734,7 +1692,7 @@ tSCC zMath_ExceptionName[] =
  *  File name selection pattern
  */
 tSCC zMath_ExceptionList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1783,7 +1741,7 @@ tSCC zMath_Gcc_IfndefsName[] =
  *  File name selection pattern
  */
 tSCC zMath_Gcc_IfndefsList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1821,7 +1779,7 @@ tSCC zNested_CommentName[] =
  *  File name selection pattern
  */
 tSCC zNested_CommentList[] =
-        "|" "rpc/rpc.h" "|";
+  "|rpc/rpc.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1847,7 +1805,7 @@ tSCC zNews_Os_RecursionName[] =
  *  File name selection pattern
  */
 tSCC zNews_Os_RecursionList[] =
-        "|" "stdlib.h" "|";
+  "|stdlib.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1884,7 +1842,7 @@ tSCC zNext_Math_PrefixName[] =
  *  File name selection pattern
  */
 tSCC zNext_Math_PrefixList[] =
-        "|" "ansi/math.h" "|";
+  "|ansi/math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1922,7 +1880,7 @@ tSCC zNext_TemplateName[] =
  *  File name selection pattern
  */
 tSCC zNext_TemplateList[] =
-        "|" "bsd/libc.h" "|";
+  "|bsd/libc.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1957,7 +1915,7 @@ tSCC zNext_VolitileName[] =
  *  File name selection pattern
  */
 tSCC zNext_VolitileList[] =
-        "|" "ansi/stdlib.h" "|";
+  "|ansi/stdlib.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -1992,7 +1950,7 @@ tSCC zNext_Wait_UnionName[] =
  *  File name selection pattern
  */
 tSCC zNext_Wait_UnionList[] =
-        "|" "sys/wait.h" "|";
+  "|sys/wait.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2026,7 +1984,7 @@ tSCC zNodeent_SyntaxName[] =
  *  File name selection pattern
  */
 tSCC zNodeent_SyntaxList[] =
-        "|" "netdnet/dnetdb.h" "|";
+  "|netdnet/dnetdb.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2052,8 +2010,7 @@ tSCC zOsf_Namespace_AName[] =
  *  File name selection pattern
  */
 tSCC zOsf_Namespace_AList[] =
-        "|" "reg_types.h"
-        "|" "sys/lc_core.h" "|";
+  "|reg_types.h|sys/lc_core.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2098,7 +2055,7 @@ tSCC zOsf_Namespace_BName[] =
  *  File name selection pattern
  */
 tSCC zOsf_Namespace_BList[] =
-        "|" "regex.h" "|";
+  "|regex.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2144,7 +2101,7 @@ tSCC zPthread_Page_SizeName[] =
  *  File name selection pattern
  */
 tSCC zPthread_Page_SizeList[] =
-        "|" "pthread.h" "|";
+  "|pthread.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2178,7 +2135,7 @@ tSCC zRs6000_DoubleName[] =
  *  File name selection pattern
  */
 tSCC zRs6000_DoubleList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2215,7 +2172,7 @@ tSCC zRs6000_FchmodName[] =
  *  File name selection pattern
  */
 tSCC zRs6000_FchmodList[] =
-        "|" "sys/stat.h" "|";
+  "|sys/stat.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2249,8 +2206,7 @@ tSCC zRs6000_ParamName[] =
  *  File name selection pattern
  */
 tSCC zRs6000_ParamList[] =
-        "|" "stdio.h"
-        "|" "unistd.h" "|";
+  "|stdio.h|unistd.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2276,7 +2232,7 @@ tSCC zSony_IncludeName[] =
  *  File name selection pattern
  */
 tSCC zSony_IncludeList[] =
-        "|" "machine/machparam.h" "|";
+  "|machine/machparam.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2310,7 +2266,7 @@ tSCC zStatsswtchName[] =
  *  File name selection pattern
  */
 tSCC zStatsswtchList[] =
-        "|" "rpcsvc/rstat.h" "|";
+  "|rpcsvc/rstat.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2344,7 +2300,7 @@ tSCC zStdio_Va_ListName[] =
  *  File name selection pattern
  */
 tSCC zStdio_Va_ListList[] =
-        "|" "stdio.h" "|";
+  "|stdio.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2387,8 +2343,7 @@ tSCC zSun_Bogus_IfdefName[] =
  *  File name selection pattern
  */
 tSCC zSun_Bogus_IfdefList[] =
-        "|" "hsfs/hsfs_spec.h"
-        "|" "hsfs/iso_spec.h" "|";
+  "|hsfs/hsfs_spec.h|hsfs/iso_spec.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2422,7 +2377,7 @@ tSCC zSun_Bogus_Ifdef_Sun4cName[] =
  *  File name selection pattern
  */
 tSCC zSun_Bogus_Ifdef_Sun4cList[] =
-        "|" "hsfs/hsnode.h" "|";
+  "|hsfs/hsnode.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2456,7 +2411,7 @@ tSCC zSun_CatmacroName[] =
  *  File name selection pattern
  */
 tSCC zSun_CatmacroList[] =
-        "|" "pixrect/memvar.h" "|";
+  "|pixrect/memvar.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2495,7 +2450,7 @@ tSCC zSun_MallocName[] =
  *  File name selection pattern
  */
 tSCC zSun_MallocList[] =
-        "|" "malloc.h" "|";
+  "|malloc.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2524,7 +2479,7 @@ tSCC zSun_MemcpyName[] =
  *  File name selection pattern
  */
 tSCC zSun_MemcpyList[] =
-        "|" "memory.h" "|";
+  "|memory.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2578,7 +2533,7 @@ tSCC zSun_Rusers_SemiName[] =
  *  File name selection pattern
  */
 tSCC zSun_Rusers_SemiList[] =
-        "|" "rpcsvc/rusers.h" "|";
+  "|rpcsvc/rusers.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2612,8 +2567,7 @@ tSCC zSun_SignalName[] =
  *  File name selection pattern
  */
 tSCC zSun_SignalList[] =
-        "|" "sys/signal.h"
-        "|" "signal.h" "|";
+  "|sys/signal.h|signal.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2652,10 +2606,7 @@ tSCC zSun_Auth_ProtoName[] =
  *  File name selection pattern
  */
 tSCC zSun_Auth_ProtoList[] =
-        "|" "rpc/auth.h"
-        "|" "rpc/clnt.h"
-        "|" "rpc/svc.h"
-        "|" "rpc/xdr.h" "|";
+  "|rpc/auth.h|rpc/clnt.h|rpc/svc.h|rpc/xdr.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2701,7 +2652,7 @@ tSCC zSunos_Matherr_DeclName[] =
  *  File name selection pattern
  */
 tSCC zSunos_Matherr_DeclList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2729,7 +2680,7 @@ tSCC zSunos_StrlenName[] =
  *  File name selection pattern
  */
 tSCC zSunos_StrlenList[] =
-        "|" "strings.h" "|";
+  "|strings.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2755,12 +2706,7 @@ tSCC zSystypesName[] =
  *  File name selection pattern
  */
 tSCC zSystypesList[] =
-        "|" "sys/types.h"
-        "|" "stdlib.h"
-        "|" "sys/stdtypes.h"
-        "|" "stddef.h"
-        "|" "memory.h"
-        "|" "unistd.h" "|";
+  "|sys/types.h|stdlib.h|sys/stdtypes.h|stddef.h|memory.h|unistd.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2818,7 +2764,7 @@ tSCC zSystypes_For_AixName[] =
  *  File name selection pattern
  */
 tSCC zSystypes_For_AixList[] =
-        "|" "sys/types.h" "|";
+  "|sys/types.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2863,7 +2809,7 @@ tSCC zSysv68_StringName[] =
  *  File name selection pattern
  */
 tSCC zSysv68_StringList[] =
-        "|" "string.h" "|";
+  "|string.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2899,7 +2845,7 @@ tSCC zSysz_Stdlib_For_SunName[] =
  *  File name selection pattern
  */
 tSCC zSysz_Stdlib_For_SunList[] =
-        "|" "stdlib.h" "|";
+  "|stdlib.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2935,7 +2881,7 @@ tSCC zSysz_Stdtypes_For_SunName[] =
  *  File name selection pattern
  */
 tSCC zSysz_Stdtypes_For_SunList[] =
-        "|" "sys/stdtypes.h" "|";
+  "|sys/stdtypes.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -2975,7 +2921,7 @@ tSCC zTinfo_CplusplusName[] =
  *  File name selection pattern
  */
 tSCC zTinfo_CplusplusList[] =
-        "|" "tinfo.h" "|";
+  "|tinfo.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3001,7 +2947,7 @@ tSCC zUltrix_Ansi_CompatName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_Ansi_CompatList[] =
-        "|" "ansi_compat.h" "|";
+  "|ansi_compat.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3037,7 +2983,7 @@ tSCC zUltrix_Fix_FixprotoName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_Fix_FixprotoList[] =
-        "|" "sys/utsname.h" "|";
+  "|sys/utsname.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3072,7 +3018,7 @@ tSCC zUltrix_Atof_ParamName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_Atof_ParamList[] =
-        "|" "math.h" "|";
+  "|math.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3102,7 +3048,7 @@ tSCC zUltrix_ConstName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_ConstList[] =
-        "|" "stdio.h" "|";
+  "|stdio.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3136,7 +3082,7 @@ tSCC zUltrix_IfdefName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_IfdefList[] =
-        "|" "sys/file.h" "|";
+  "|sys/file.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3170,7 +3116,7 @@ tSCC zUltrix_Nested_CmntName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_Nested_CmntList[] =
-        "|" "rpc/svc.h" "|";
+  "|rpc/svc.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3196,7 +3142,7 @@ tSCC zUltrix_StaticName[] =
  *  File name selection pattern
  */
 tSCC zUltrix_StaticList[] =
-        "|" "machine/cpu.h" "|";
+  "|machine/cpu.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3273,7 +3219,7 @@ tSCC zVa_I960_MacroName[] =
  *  File name selection pattern
  */
 tSCC zVa_I960_MacroList[] =
-        "|" "arch/i960/archI960.h" "|";
+  "|arch/i960/archI960.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3310,17 +3256,7 @@ tSCC zVoid_NullName[] =
  *  File name selection pattern
  */
 tSCC zVoid_NullList[] =
-        "|" "curses.h"
-        "|" "dbm.h"
-        "|" "locale.h"
-        "|" "stdio.h"
-        "|" "stdlib.h"
-        "|" "string.h"
-        "|" "time.h"
-        "|" "unistd.h"
-        "|" "sys/dir.h"
-        "|" "sys/param.h"
-        "|" "sys/types.h" "|";
+  "|curses.h|dbm.h|locale.h|stdio.h|stdlib.h|string.h|time.h|unistd.h|sys/dir.h|sys/param.h|sys/types.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3354,7 +3290,7 @@ tSCC zVxworks_Gcc_ProblemName[] =
  *  File name selection pattern
  */
 tSCC zVxworks_Gcc_ProblemList[] =
-        "|" "types/vxTypesBase.h" "|";
+  "|types/vxTypesBase.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3403,7 +3339,7 @@ tSCC zVxworks_Needs_VxtypesName[] =
  *  File name selection pattern
  */
 tSCC zVxworks_Needs_VxtypesList[] =
-        "|" "time.h" "|";
+  "|time.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3437,7 +3373,7 @@ tSCC zVxworks_Needs_VxworksName[] =
  *  File name selection pattern
  */
 tSCC zVxworks_Needs_VxworksList[] =
-        "|" "sys/stat.h" "|";
+  "|sys/stat.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3485,7 +3421,7 @@ tSCC zVxworks_TimeName[] =
  *  File name selection pattern
  */
 tSCC zVxworks_TimeList[] =
-        "|" "time.h" "|";
+  "|time.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3535,7 +3471,7 @@ tSCC zX11_ClassName[] =
  *  File name selection pattern
  */
 tSCC zX11_ClassList[] =
-        "|" "X11/ShellP.h" "|";
+  "|X11/ShellP.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3574,7 +3510,7 @@ tSCC zX11_Class_UsageName[] =
  *  File name selection pattern
  */
 tSCC zX11_Class_UsageList[] =
-        "|" "Xm/BaseClassI.h" "|";
+  "|Xm/BaseClassI.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3608,7 +3544,7 @@ tSCC zX11_NewName[] =
  *  File name selection pattern
  */
 tSCC zX11_NewList[] =
-        "|" "Xm/Traversal.h" "|";
+  "|Xm/Traversal.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3648,7 +3584,7 @@ tSCC zX11_SprintfName[] =
  *  File name selection pattern
  */
 tSCC zX11_SprintfList[] =
-        "|" "X11*/Xmu.h" "|";
+  "|X11*/Xmu.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3676,7 +3612,7 @@ tSCC zZzz_Ki_IfaceName[] =
  *  File name selection pattern
  */
 tSCC zZzz_Ki_IfaceList[] =
-        "|" "sys/ki_iface.h" "|";
+  "|sys/ki_iface.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3712,7 +3648,7 @@ tSCC zZzz_KiName[] =
  *  File name selection pattern
  */
 tSCC zZzz_KiList[] =
-        "|" "sys/ki.h" "|";
+  "|sys/ki.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3748,7 +3684,7 @@ tSCC zZzz_Ki_CallsName[] =
  *  File name selection pattern
  */
 tSCC zZzz_Ki_CallsList[] =
-        "|" "sys/ki_calls.h" "|";
+  "|sys/ki_calls.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3784,7 +3720,7 @@ tSCC zZzz_Ki_DefsName[] =
  *  File name selection pattern
  */
 tSCC zZzz_Ki_DefsList[] =
-        "|" "sys/ki_defs.h" "|";
+  "|sys/ki_defs.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3820,7 +3756,7 @@ tSCC zZzz_Bad_FixesName[] =
  *  File name selection pattern
  */
 tSCC zZzz_Bad_FixesList[] =
-        "|" "sundev/ipi_error.h" "|";
+  "|sundev/ipi_error.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -3848,7 +3784,7 @@ tSCC zZzz_TimeName[] =
  *  File name selection pattern
  */
 tSCC zZzz_TimeList[] =
-        "|" "sys/time.h" "|";
+  "|sys/time.h|";
 /*
  *  Machine/OS name selection pattern
  */
