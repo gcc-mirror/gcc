@@ -1,3 +1,8 @@
+2002-07-22  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (CLASS_CANNOT_CHANGE_MODE): Include FP_REGS
+	on big-endian targets.
+
 2002-07-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* hwint.h (HOST_WIDE_INT_PRINT_DEC_SPACE,

@@ -2249,14 +2249,18 @@ extern enum reg_class mips_char_to_class[256];
    so (subreg:SI (reg:DI hi) 0) gets the high word instead of the low
    word as intended.
 
+   Similarly, when using paired floating-point registers, the first
+   register holds the low word, regardless of endianness.  So in big
+   endian mode, (subreg:SI (reg:DF $f0) 0) does not get the high word
+   as intended.
+
    Also, loading a 32-bit value into a 64-bit floating-point register
    will not sign-extend the value, despite what LOAD_EXTEND_OP says.
    We can't allow 64-bit float registers to change from a 32-bit
    mode to a 64-bit mode.  */
 
 #define CLASS_CANNOT_CHANGE_MODE					\
-  (TARGET_BIG_ENDIAN							\
-   ? (TARGET_FLOAT64 ? FP_REGS : NO_REGS)				\
+  (TARGET_BIG_ENDIAN ? FP_REGS						\
    : (TARGET_FLOAT64 ? HI_AND_FP_REGS : HI_REG))
 
 /* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.  */
