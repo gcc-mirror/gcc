@@ -593,6 +593,7 @@ namespace_qualifier:
 		    $$ = lastiddecl;
 		  got_scope = $$;
 		}
+        ;
 
 any_id:
 	  unqualified_id
@@ -642,6 +643,7 @@ maybe_identifier:
 	  	{ $$ = $1; }
 	|	/* empty */
 		{ $$ = NULL_TREE; }
+        ;
 
 template_type_parm:
 	  aggr maybe_identifier
@@ -1039,9 +1041,11 @@ explicit_instantiation:
 
 begin_explicit_instantiation: 
       { begin_explicit_instantiation(); }
+        ;
 
 end_explicit_instantiation: 
       { end_explicit_instantiation(); }
+        ;
 
 /* The TYPENAME expansions are to deal with use of a template class name as
   a template within the class itself, where the template decl is hidden by
@@ -1062,6 +1066,7 @@ apparent_template_type:
 	| identifier '<' template_arg_list_opt '>'
 	    .finish_template_type
 		{ $$ = $5; }
+        ;
 
 self_template_type:
 	  SELFNAME  '<' template_arg_list_opt template_close_bracket
@@ -1077,6 +1082,7 @@ self_template_type:
 		  $$ = finish_template_type ($<ttype>-3, $<ttype>-1, 
 					     yychar == SCOPE);
 		}
+        ;
 
 template_close_bracket:
 	  '>'
@@ -1496,6 +1502,7 @@ do_id:
 		  else
 		    $$ = $<ttype>-1;
 		}
+        ;
 
 template_id:
           PFUNCNAME '<' do_id template_arg_list_opt template_close_bracket 
@@ -2182,6 +2189,7 @@ maybe_init:
 		{ $$ = NULL_TREE; }
 	| '=' init
 		{ $$ = $2; }
+        ;
 
 /* If we are processing a template, we don't want to expand this
    initializer yet.  */
@@ -2246,6 +2254,7 @@ defarg_again:
 		{ replace_defarg ($1, $2); }
 	| DEFARG_MARKER error END_OF_SAVED_INPUT
 		{ replace_defarg ($1, error_mark_node); }
+        ;
 
 pending_defargs:
 	  /* empty */ %prec EMPTY
@@ -2677,6 +2686,7 @@ component_decl_1:
 		{ $$ = grokfield ($$, NULL_TREE, $4, $2, $3); }
 	| using_decl
 		{ $$ = do_class_using_decl ($1); }
+        ;
 
 /* The case of exactly one component is handled directly by component_decl.  */
 /* ??? Huh? ^^^ */
