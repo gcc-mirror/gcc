@@ -2000,9 +2000,11 @@ reload (first, global, dumpfile)
   reg_equiv_constant = 0;
   reg_equiv_memory_loc = 0;
 
-  free (scratch_list);
+  if (scratch_list)
+    free (scratch_list);
   scratch_list = 0;
-  free (scratch_block);
+  if (scratch_block)
+    free (scratch_block);
   scratch_block = 0;
 
   return failure;
