@@ -1125,7 +1125,7 @@ compadr:
 	  output_asm_insn (singlemove_string (middlehalf), middlehalf);
 	  return "";
 	}
-      else if (reg_overlap_mentioned_p (operands[0], XEXP (operands[1], 0)))
+      else if (reg_overlap_mentioned_p (testlow, XEXP (operands[1], 0)))
 	/* If the low half of dest is mentioned in the source memory
 	   address, the arrange to emit the move late half first.  */
 	dest_overlapped_low = 1;
