@@ -176,7 +176,8 @@ libio_headers =
 endif
 
 generated_headers = \
-	bits/std_limits.h bits/c++config.h bits/c++threads.h bits/c++io.h
+	 $(top_builddir)/bits/std_limits.h $(top_builddir)/bits/c++config.h \
+	 $(top_builddir)/bits/c++threads.h $(top_builddir)/bits/c++io.h
 
 cpu_headers = \
 	 $(top_srcdir)/@cpu_include_dir@/bits/atomicity.h 
@@ -259,7 +260,6 @@ install: myinstallheaders
 
 # NB: As libio_headers may be empty, need this to make sure bash doesn't
 # choke on an empty for... loop by using libio_headers_install
-
 myinstallheaders: $(headers:%=$(myincludep)%)
 	if test -z "$(MULTISUBDIR)"; then \
 	for i in $(std_headers); do \
@@ -267,8 +267,8 @@ myinstallheaders: $(headers:%=$(myincludep)%)
 	        $(INSTALL_DATA) $(top_srcdir)/std/$$i $(myincludep); \
 	done; \
 	for i in $(generated_headers); do \
-	  echo "$(INSTALL_DATA) $(top_builddir)/$$i $(myincludep)bits/"; \
-	        $(INSTALL_DATA) $(top_builddir)/$$i $(myincludep)bits/; \
+	  echo "$(INSTALL_DATA) $$i $(myincludep)bits/"; \
+	        $(INSTALL_DATA) $$i $(myincludep)bits/; \
 	done; \
 	libio_headers_install='$(libio_headers)'; \
 	for i in $$libio_headers_install; do \
@@ -286,10 +286,19 @@ $(headers:%=$(myincludep)%): $(myincludep)%: %
 	$(INSTALL_DATA) $^ $@; \
 	fi;
 
-# For the next time we have to handle misc-inst.cc and locale-inst.cc
-# in a special way since we cannot instantiate all classes due to
-# missing definitions for things like vptrs, type_info bits, etc. when
-# using -fno-implicit-templates. 
+# All the machinations with string instantiations messes up the
+# automake-genrated TAGS rule. Make a simple one here.
+TAGS: $(generated_headers) $(cpu_headers) 
+	etags -C $(top_srcdir)/bits/*.h $(top_srcdir)/bits/*.tcc \
+	$(generated_headers) $(cpu_headers) $(libio_headers) \
+	$(top_srcdir)/src/*.cc \
+	$(top_builddir)/src/limitsMEMBERS.cc $(top_builddir)/src/c++io.cc \
+	-o $(top_builddir)/TAGS
+
+# We have to handle misc-inst.cc and locale-inst.cc in a special way
+# since we cannot instantiate all classes due to missing definitions
+# for things like vptrs, type_info bits, etc. when using
+# -fno-implicit-templates.
 misc-inst.o: misc-inst.cc
 	$(CXXCOMPILE) -fimplicit-templates -c $<
 misc-inst.lo: misc-inst.cc
@@ -530,3 +539,4 @@ wstringSCOPY.o \
 wstringEQ.o : string-inst.cc
 	$(CXXCOMPILE) -fimplicit-templates \
 	-c -D`echo $@ | tr -dc '0-9A-Z'` -DC=wchar_t $< -o $@
+

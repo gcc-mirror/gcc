@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script, like so:
-# aclocal -I m4, autoconf, autoheader, automake
+# aclocal, autoconf, autoheader, automake
 
 AC_PREREQ(2.13)
 AC_INIT(src/complex.cc)
