@@ -3718,6 +3718,33 @@ mark_constant_pool ()
        insn = XEXP (insn, 1))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
       mark_constants (PATTERN (insn));
+
+  /* It's possible that the only reference to a symbol is in a symbol
+     that's in the constant pool.  This happens in Fortran under some
+     situations.  (When the constant contains the address of another
+     constant, and only the first is used directly in an insn.) 
+     This is potentially suboptimal if there's ever a possibility of
+     backwards (in pool order) 2'd level references.  However, it's
+     not clear that 2'd level references can happen. */
+  for (pool = first_pool; pool; pool = pool->next)
+    {
+      struct pool_sym *sym;
+      char *label;
+
+      /* skip unmarked entries; no insn refers to them. */
+      if (!pool->mark)
+	  continue;
+
+      label = XSTR (pool->constant, 0);
+
+      /* Be sure the symbol's value is marked. */
+      for (sym = const_rtx_sym_hash_table[SYMHASH (label)]; sym; 
+           sym = sym->next)
+	  if (sym->label == label)
+	    sym->pool->mark = 1;
+      /* If we didn't find it, there's something truly wrong here, but it
+	 will be announced by the assembler. */
+    }
 }
 
 static void
