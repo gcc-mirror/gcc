@@ -1,3 +1,8 @@
+1998-01-13  Lee Iverson   (leei@ai.sri.com)
+
+	* config-ml.in (multi-do): LDFLAGS must include multilib
+	designator.
+
 Tue Jan 13 01:13:24 1998   Robert Lipe (robertl@dgii.com)
 
 	* config.guess: Recognize i[3456]-i586-UnixWare7-sysv5.
