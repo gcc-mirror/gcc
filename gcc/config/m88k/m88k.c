@@ -1,8 +1,7 @@
 /* Subroutines for insn-output.c for Motorola 88000.
-   Copyright (C) 1988, 1989, 1990, 1991, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
-   Enhanced by Michael Meissner (meissner@osf.org)
-   Version 2 port by Tom Wood (twood@pets.sps.mot.com)
+   Currently maintained by (gcc@dg-rtp.dg.com)
 
 This file is part of GNU CC.
 
@@ -3093,4 +3092,33 @@ pic_address_needs_scratch (x)
     return 1;
 
   return 0;
+}
+
+/* Returns 1 if OP is either a symbol reference or a sum of a symbol
+   reference and a constant.  */
+
+int
+symbolic_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  switch (GET_CODE (op))
+    {
+    case SYMBOL_REF:
+    case LABEL_REF:
+      return 1;
+
+    case CONST:
+      op = XEXP (op, 0);
+      return ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+               || GET_CODE (XEXP (op, 0)) == LABEL_REF)
+              && GET_CODE (XEXP (op, 1)) == CONST_INT);
+
+      /* ??? This clause seems to be irrelevant.  */
+    case CONST_DOUBLE:
+      return GET_MODE (op) == mode;
+
+    default:
+      return 0;
+    }
 }
