@@ -269,8 +269,8 @@ extern void transfer_replacements PARAMS ((int, int));
 
 /* IN_RTX is the value loaded by a reload that we now decided to inherit,
    or a subpart of it.  If we have any replacements registered for IN_RTX,
-   chancel the reloads that were supposed to load them.
-   Return nonzero if we chanceled any reloads.  */
+   cancel the reloads that were supposed to load them.
+   Return nonzero if we canceled any reloads.  */
 extern int remove_address_replacements PARAMS ((rtx in_rtx));
 
 /* Like rtx_equal_p except that it allows a REG and a SUBREG to match

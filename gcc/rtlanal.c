@@ -3420,7 +3420,7 @@ hoist_test_store (x, val, live)
   /* Pseudo registers can be allways replaced by another pseudo to avoid
      the side effect, for hard register we must ensure that they are dead.
      Eventually we may want to add code to try turn pseudos to hards, but it
-     is unlikely usefull.  */
+     is unlikely useful.  */
 
   if (REGNO (x) < FIRST_PSEUDO_REGISTER)
     {

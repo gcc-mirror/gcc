@@ -1,3 +1,24 @@
+2003-01-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ifcvt.c: Fix comment typos.
+	* lcm.c: Likewise.
+	* libgcc2.c: Likewise.
+	* local-alloc.c: Likewise.
+	* loop.c: Likewise.
+	* predict.c: Likewise.
+	* ra-build.c: Likewise.
+	* ra.c: Likewise.
+	* ra-colorize.c: Likewise.
+	* ra.h: Likewise.
+	* ra-rewrite.c: Likewise.
+	* regmove.c: Likewise.
+	* reload.h: Likewise.
+	* rtlanal.c: Likewise.
+	* toplev.c: Likewise.
+	* tree.h: Likewise.
+	* unwind-dw2-fde-glibc.c: Likewise.
+	* vmsdbgout.c: Likewise.
+
 2003-01-16  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (struct file_table): Remove.

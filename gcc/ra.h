@@ -258,7 +258,7 @@ struct web
   /* Number of usable colors in usable_regs.  */
   int num_freedom;
 
-  /* After successfull coloring the graph each web gets a new reg rtx,
+  /* After successful coloring the graph each web gets a new reg rtx,
      with which the original uses and defs are replaced.  This is it.  */
   rtx reg_rtx;
 

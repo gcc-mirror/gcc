@@ -3150,7 +3150,7 @@ rest_of_compilation (decl)
 	= combine_instructions (insns, max_reg_num ());
 
       /* Combining insns may have turned an indirect jump into a
-	 direct jump.  Rebuid the JUMP_LABEL fields of jumping
+	 direct jump.  Rebuild the JUMP_LABEL fields of jumping
 	 instructions.  */
       if (rebuild_jump_labels_after_combine)
 	{

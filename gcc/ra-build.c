@@ -2653,7 +2653,7 @@ detect_remat_webs ()
 		  oldwebs can't have their references changed.  The
 		  incremental machinery barfs on that.  */
 	       || (!rtx_unstable_p (src) && !contains_pseudo (src))
-	       /* Additionally also memrefs to stack-slots are usefull, when
+	       /* Additionally also memrefs to stack-slots are useful, when
 		  we created them ourself.  They might not have set their
 		  unchanging flag set, but nevertheless they are stable across
 		  the livetime in question.  */

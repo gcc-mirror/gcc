@@ -234,7 +234,7 @@ __mulvdi3 (DWtype u, DWtype v)
 #endif
 
 
-/* Unless shift functions are defined whith full ANSI prototypes,
+/* Unless shift functions are defined with full ANSI prototypes,
    parameter b will be promoted to int if word_type is smaller than an int.  */
 #ifdef L_lshrdi3
 DWtype
@@ -1347,7 +1347,7 @@ gcov_exit (void)
 
 #if defined (TARGET_HAS_F_SETLKW)
       /* After a fork, another process might try to read and/or write
-         the same file simultanously.  So if we can, lock the file to
+         the same file simultaneously.  So if we can, lock the file to
          avoid race conditions.  */
       while (fcntl (fileno (da_file), F_SETLKW, &s_flock)
 	     && errno == EINTR)

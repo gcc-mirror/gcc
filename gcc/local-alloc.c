@@ -1179,7 +1179,7 @@ update_equiv_regs ()
 }
 
 /* Mark REG as having no known equivalence.
-   Some instructions might have been proceessed before and furnished
+   Some instructions might have been processed before and furnished
    with REG_EQUIV notes for this register; these notes will have to be
    removed.
    STORE is the piece of RTL that does the non-constant / conflicting
@@ -1327,7 +1327,7 @@ block_alloc (b)
 		     must match operand zero.  In that case, skip any
 		     operand that doesn't list operand 0 since we know that
 		     the operand always conflicts with operand 0.  We
-		     ignore commutatity in this case to keep things simple.  */
+		     ignore commutativity in this case to keep things simple.  */
 		  if (n_matching_alts == recog_data.n_alternatives
 		      && 0 == requires_inout (recog_data.constraints[i]))
 		    continue;

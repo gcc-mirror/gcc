@@ -352,7 +352,7 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #endif
 
 /* This is similar to the default ASM_OUTPUT_ASCII, except that no trailing
-   newline is produced.  When flag_verbose_asm is asserted, we add commnetary
+   newline is produced.  When flag_verbose_asm is asserted, we add commentary
    at the end of the line, so we must avoid output of a newline here.  */
 #ifndef ASM_OUTPUT_DEBUG_STRING
 #define ASM_OUTPUT_DEBUG_STRING(FILE,P)		\

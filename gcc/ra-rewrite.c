@@ -1489,7 +1489,7 @@ detect_web_parts_to_rebuild ()
   sbitmap_zero (already_webs);
   /* We need to recheck all uses of all webs involved in spilling (and the
      uses added by spill insns, but those are not analyzed yet).
-     Those are the spilled webs themself, webs coalesced to spilled ones,
+     Those are the spilled webs themselves, webs coalesced to spilled ones,
      and webs conflicting with any of them.  */
   for (pass = 0; pass < 2; pass++)
     for (d = (pass == 0) ? WEBS(SPILLED) : WEBS(COALESCED); d; d = d->next)
