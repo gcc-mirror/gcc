@@ -1,3 +1,8 @@
+Tue Nov 24 09:57:34 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (lex.c): Do not depend on hash.h.
+	(lex.o): Depend on hash.h.
+
 Mon Oct 19 12:13:47 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (lex.o): Depend on dwarfout.h.
