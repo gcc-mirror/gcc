@@ -5853,6 +5853,7 @@ start_function (declspecs, declarator, nested)
 {
   tree decl1, old_decl;
   tree restype;
+  int old_immediate_size_expand = immediate_size_expand;
 
   current_function_returns_value = 0;  /* Assume, until we see it does. */
   current_function_returns_null = 0;
@@ -5861,6 +5862,9 @@ start_function (declspecs, declarator, nested)
   c_function_varargs = 0;
   named_labels = 0;
   shadowed_labels = 0;
+
+  /* Don't expand any sizes in the return type of the function.  */
+  immediate_size_expand = 0;
 
   decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, 1);
 
@@ -5996,6 +6000,8 @@ start_function (declspecs, declarator, nested)
      (or an implicit decl), propagate certain information about the usage.  */
   if (TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (current_function_decl)))
     TREE_ADDRESSABLE (current_function_decl) = 1;
+
+  immediate_size_expand = old_immediate_size_expand;
 
   return 1;
 }
