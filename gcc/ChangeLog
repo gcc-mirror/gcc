@@ -1,3 +1,8 @@
+Fri Jun 22 19:20:59 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (estimate_bb_frequencies): Do not handle conditional
+	jumps jumping to fallthru basic block as conditional jumps.
+
 Fri Jun 22 19:11:28 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* regs.h (struct reg_info_def): Add freq field.

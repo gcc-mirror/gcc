@@ -25,9 +25,12 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/types.h>
 
 static int __fetch_long	PARAMS ((long *, char *, size_t)) ATTRIBUTE_UNUSED;
-static int __store_long PARAMS ((long, char *, size_t)) ATTRIBUTE_UNUSED;
 static int __read_long  PARAMS ((long *, FILE *, size_t)) ATTRIBUTE_UNUSED;
 static int __write_long PARAMS ((long, FILE *, size_t)) ATTRIBUTE_UNUSED;
+static int __fetch_gcov_type PARAMS ((gcov_type *, char *, size_t)) ATTRIBUTE_UNUSED;
+static int __store_gcov_type PARAMS ((gcov_type, char *, size_t)) ATTRIBUTE_UNUSED;
+static int __read_gcov_type  PARAMS ((gcov_type *, FILE *, size_t)) ATTRIBUTE_UNUSED;
+static int __write_gcov_type PARAMS ((gcov_type, FILE *, size_t)) ATTRIBUTE_UNUSED;
 
 /* These routines only work for signed values. */
 
@@ -36,8 +39,8 @@ static int __write_long PARAMS ((long, FILE *, size_t)) ATTRIBUTE_UNUSED;
    to store. */
 
 static int
-__store_long (value, dest, bytes)
-     long value;
+__store_gcov_type (value, dest, bytes)
+     gcov_type value;
      char *dest;
      size_t bytes;
 {
@@ -46,7 +49,7 @@ __store_long (value, dest, bytes)
 
   if (value < 0)
     {
-      long oldvalue = value;
+      gcov_type oldvalue = value;
       value = -value;
       if (oldvalue != -value)
 	return 1;
@@ -69,6 +72,29 @@ __store_long (value, dest, bytes)
 /* Retrieve a quantity containing BYTES*8-1 bits from SOURCE and store
    the result in DEST. Returns a non-zero value if the value in SOURCE
    will not fit in DEST. */
+
+static int
+__fetch_gcov_type (dest, source, bytes)
+     gcov_type *dest;
+     char *source;
+     size_t bytes;
+{
+  gcov_type value = 0;
+  int i;
+
+  for (i = bytes - 1; (size_t) i > (sizeof (*dest) - 1); i--)
+    if (source[i] & ((size_t) i == (bytes - 1) ? 127 : 255 ))
+      return 1;
+
+  for (; i >= 0; i--)
+    value = value * 256 + (source[i] & ((size_t)i == (bytes - 1) ? 127 : 255));
+
+  if ((source[bytes - 1] & 128) && (value > 0))
+    value = - value;
+
+  *dest = value;
+  return 0;
+}
 
 static int
 __fetch_long (dest, source, bytes)
@@ -103,6 +129,20 @@ __fetch_long (dest, source, bytes)
    BYTES may be a maximum of 10. */
 
 static int
+__write_gcov_type (value, file, bytes)
+     gcov_type value;
+     FILE *file;
+     size_t bytes;
+{
+  char c[10];
+
+  if (bytes > 10 || __store_gcov_type (value, c, bytes))
+    return 1;
+  else
+    return fwrite(c, 1, bytes, file) != bytes;
+}
+
+static int
 __write_long (value, file, bytes)
      long value;
      FILE *file;
@@ -110,7 +150,7 @@ __write_long (value, file, bytes)
 {
   char c[10];
 
-  if (bytes > 10 || __store_long (value, c, bytes))
+  if (bytes > 10 || __store_gcov_type ((gcov_type)value, c, bytes))
     return 1;
   else
     return fwrite(c, 1, bytes, file) != bytes;
@@ -124,6 +164,20 @@ __write_long (value, file, bytes)
    data, but the function will read BYTES characters anyway.
 
    BYTES may be a maximum of 10. */
+
+static int
+__read_gcov_type (dest, file, bytes)
+     gcov_type *dest;
+     FILE *file;
+     size_t bytes;
+{
+  char c[10];
+
+  if (bytes > 10 || fread(c, 1, bytes, file) != bytes)
+    return 1;
+  else
+    return __fetch_gcov_type (dest, c, bytes);
+}
 
 static int
 __read_long (dest, file, bytes)
