@@ -2923,7 +2923,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
       if (new_thread && GET_CODE (new_thread) == JUMP_INSN
 	  && (simplejump_p (new_thread)
 	      || GET_CODE (PATTERN (new_thread)) == RETURN))
-	new_thread = follow_jumps (JUMP_LABEL (new_thread), 1);
+	new_thread = follow_jumps (JUMP_LABEL (new_thread));
 
       if (new_thread == 0)
 	label = find_end_label ();
@@ -3084,7 +3084,7 @@ relax_delay_slots (first)
       if (GET_CODE (insn) == JUMP_INSN
 	  && (target_label = JUMP_LABEL (insn)) != 0)
 	{
-	  target_label = follow_jumps (target_label, 1);
+	  target_label = follow_jumps (target_label);
 	  target_label = prev_label (next_active_insn (target_label));
 
 	  if (target_label == 0)
@@ -3196,7 +3196,7 @@ relax_delay_slots (first)
 	{
 	  /* If this jump goes to another unconditional jump, thread it, but
 	     don't convert a jump into a RETURN here.  */
-	  trial = follow_jumps (target_label, 1);
+	  trial = follow_jumps (target_label);
 	  trial = prev_label (next_active_insn (trial));
 	  if (trial == 0 && target_label != 0)
 	    trial = find_end_label ();
