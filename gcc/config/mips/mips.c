@@ -143,6 +143,7 @@ static hashval_t iris_section_align_entry_hash	PARAMS ((const PTR));
 static int iris6_section_align_1		PARAMS ((void **, void *));
 #endif
 static int mips_adjust_cost			PARAMS ((rtx, rtx, rtx, int));
+static int mips_issue_rate			PARAMS ((void));
 
 static void mips_init_machine_status		PARAMS ((struct function *));
 static void mips_free_machine_status		PARAMS ((struct function *));
@@ -571,6 +572,9 @@ enum reg_class mips_char_to_class[256] =
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST mips_adjust_cost
+
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE mips_issue_rate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1976,7 +1980,7 @@ embedded_pic_fnaddr_reg ()
     }
 
   return cfun->machine->embedded_pic_fnaddr_rtx;
-}  
+}
 
 /* Return RTL for the offset from the current function to the argument.
    X is the symbol whose offset from the current function we want.  */
@@ -10324,7 +10328,24 @@ mips_return_in_memory (type)
 	    || (int_size_in_bytes (type) == -1));
 }
 
+static int
+mips_issue_rate ()
+{
+  int rate;
 
+  switch (mips_tune)
+    {
+    case PROCESSOR_R3000:
+      rate = 1;
+      break;
+
+    default:
+      rate = 1;
+      break;
+    }
+
+  return rate;
+}
 
 
 #ifdef TARGET_IRIX6

@@ -1,3 +1,9 @@
+2002-04-26  Eric Christopher  <echristo@redhat.com>
+
+	PR optimization/3700
+	* config/mips/mips.c (mips_issue_rate): Define.  New function.
+	(TARGET_SCHED_ISSUE_RATE): Use.
+
 2002-04-25  David S. Miller  <davem@redhat.com>
 
 	PR target/6422
@@ -120,7 +126,7 @@
 	of the corresponding functions.
 	* mips-protos.h (mips_class_max_nregs, mips_register_move_cost):
 	New prototypes.
-	
+
 2002-04-25  Matt Hiller  <hiller@redhat.com>
 
 	* config/mips/mips.h (mips_sw_reg_names): Declare as extern.
@@ -134,7 +140,7 @@
 	for coprocessor registers.
 	(ADDITIONAL_REGISTER_NAMES): Include
 	ALL_COP_ADDITIONAL_REGISTER_NAMES.
-	
+
 	(COP0_REG_FIRST, COP0_REG_LAST, COP0_REG_NUM,
 	COP2_REG_FIRST, COP2_REG_LAST, COP2_REG_NUM,
 	COP3_REG_FIRST, COP3_REG_LAST, COP3_REG_NUM,
@@ -172,7 +178,7 @@
 	* testsuite/gcc.c-torture/mipscop-4.c: New testcase.
 	* testsuite/gcc.c-torture/mipscop-4.x: Disable above if target
 	isn't mips.
-	
+
 	* doc/tm.texi: Document feature.
 
 2002-04-25  Neil Booth  <neil@daikokuya.demon.co.uk>
