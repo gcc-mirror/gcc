@@ -1,3 +1,15 @@
+1999-10-18  Tom Tromey  <tromey@cygnus.com>
+
+	* gnu/gcj/runtime/VMClassLoader.java (getVMClassLoader): New
+	method.
+	(redirect): New static field.
+	* java/lang/ClassLoader.java (getSystemClassLoader): Now
+	native
+	(getVMClassLoader0): Removed.
+	* java/lang/natClassLoader.cc (getVMClassLoader0): Removed.
+	(redirect): Removed.
+	(getSystemClassLoader): Implemented.
+
 1999-10-16  Anthony Green  <green@cygnus.com>
 
 	* java/lang/ClassLoader.java (getSystemResource): Use

@@ -59,4 +59,15 @@ final class VMClassLoader extends java.net.URLClassLoader
    */
   protected final native Class findSystemClass(String name) 
     throws java.lang.ClassNotFoundException, java.lang.LinkageError;
+
+  // Return the sole VMClassLoader.
+  private static synchronized VMClassLoader getVMClassLoader ()
+  {
+    if (redirect == null)
+      redirect = new VMClassLoader ();
+    return redirect;
+  }
+
+  // The only VMClassLoader that can exist.
+  private static VMClassLoader redirect;
 }
