@@ -1,3 +1,8 @@
+2001-02-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-parse.c (HANDLE_SYNTHETIC_ATTRIBUTE): Don't handle field
+	DECLs.
+
 2001-02-06  Tom Tromey  <tromey@redhat.com>
 
 	* lex.c (java_new_lexer): Longer error message.
