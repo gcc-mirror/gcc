@@ -130,16 +130,22 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #endif
 
+/* Define a generic NULL if one hasn't already been defined.  */
+
 #ifndef NULL
 #define NULL 0
 #endif
 
-#ifndef NULL_PTR
-#ifdef __STDC__
-#define NULL_PTR (void *) NULL
+#ifndef GENERIC_PTR
+#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+#define GENERIC_PTR void *
 #else
-#define NULL_PTR (char *) NULL
+#define GENERIC_PTR char *
 #endif
+#endif
+
+#ifndef NULL_PTR
+#define NULL_PTR ((GENERIC_PTR)0)
 #endif
 
 #ifndef INCLUDE_LEN_FUDGE
