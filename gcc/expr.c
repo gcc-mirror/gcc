@@ -6443,8 +6443,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
   original_target = target;
   ignore = (target == const0_rtx
 	    || ((code == NON_LVALUE_EXPR || code == NOP_EXPR
-		 || code == CONVERT_EXPR || code == REFERENCE_EXPR
-		 || code == COND_EXPR || code == VIEW_CONVERT_EXPR)
+		 || code == CONVERT_EXPR || code == COND_EXPR 
+     || code == VIEW_CONVERT_EXPR)
 		&& TREE_CODE (type) == VOID_TYPE));
 
   /* If we are going to ignore this result, we need only do something
@@ -7503,7 +7503,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case NON_LVALUE_EXPR:
     case NOP_EXPR:
     case CONVERT_EXPR:
-    case REFERENCE_EXPR:
       if (TREE_OPERAND (exp, 0) == error_mark_node)
 	return const0_rtx;
 

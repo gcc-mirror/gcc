@@ -208,7 +208,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
            < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (exp, 0)))))
         goto normal;
     case NON_LVALUE_EXPR:
-    case REFERENCE_EXPR:
     case ABS_EXPR:
     case NEGATE_EXPR:
     case LROTATE_EXPR:

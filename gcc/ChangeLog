@@ -1,5 +1,14 @@
 2004-07-06  Daniel Berlin  <dberlin@dberlin.org>
-	
+
+	* dojump.c (do_jump): REFERENCE_EXPR is dead.
+	* expr.c (expand_expr_real_1): Ditto.
+	* tree-inline.c (estimate_num_insns_1): Ditto.
+	* tree-pretty-print.c (dump_generic_node): Ditto.
+	(op_symbol): Ditto.
+	* tree.def: Ditto.
+
+2004-07-06  Daniel Berlin  <dberlin@dberlin.org>
+
 	* tree-ssa-pre.c (reference_node_pool): New pool.
 	(find_or_generate_expression): Class 'r' is okay too.
 	(create_value_expr_from): Ditto.
@@ -7,7 +16,7 @@
 	(eliminate): Ditto.
 	(compute_avail): Reverse ordering of tests.
 	Valuize INDIRECT_REF as well.
-	
+
 2004-07-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR rtl-optimization/16380
