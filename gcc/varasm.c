@@ -1765,6 +1765,7 @@ assemble_static_space (size)
    This is done at most once per compilation.
    Returns an RTX for the address of the template.  */
 
+#ifdef TRAMPOLINE_TEMPLATE
 rtx
 assemble_trampoline_template ()
 {
@@ -1798,6 +1799,7 @@ assemble_trampoline_template ()
     = (char *) obstack_copy0 (&permanent_obstack, label, strlen (label));
   return gen_rtx (SYMBOL_REF, Pmode, name);
 }
+#endif
 
 /* Assemble the integer constant X into an object of SIZE bytes.
    X must be either a CONST_INT or CONST_DOUBLE.
