@@ -8316,7 +8316,7 @@ append_include_chain (first, last)
     last_include->next = first;
 
   if (first_bracket_include == 0)
-    first_bracket_include = dir;
+    first_bracket_include = first;
 
   for (dir = first; ; dir = dir->next) {
     size_t len = strlen (dir->fname) + INCLUDE_LEN_FUDGE;
