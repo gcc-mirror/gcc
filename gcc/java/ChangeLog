@@ -1,3 +1,10 @@
+2004-10-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* parse.y (issue_warning_error_from_context): Use va_list *
+	instead of va_list parameter.
+	(parse_error_context): Update call.
+	(parse_warning_context): Likewise.
+
 2004-10-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* parse.y, parse-scan.y: Add list of diagnostic messages to
