@@ -33,7 +33,11 @@
 
 #include <sys/times.h>
 #include <sys/resource.h>
+#ifdef __FreeBSD__
+#include <stdlib.h>
+#else
 #include <malloc.h>
+#endif
 #include <string>
 #include <fstream>
 #include <iomanip>
@@ -80,6 +84,11 @@ namespace __gnu_cxx_test
     system_time() const
     { return tms_end.tms_stime - tms_begin.tms_stime; }
   };
+
+#ifdef __FreeBSD__
+  struct mallinfo { int arena; };
+  int mallinfo (void) { return 0; }
+#endif
 
   class resource_counter
   {
