@@ -6441,7 +6441,7 @@ expand_function_end (filename, line, end_bindings)
       blktramp = change_address (initial_trampoline, BLKmode, tramp);
       emit_block_move (blktramp, initial_trampoline,
 		       GEN_INT (TRAMPOLINE_SIZE),
-		       TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT);
+		       TRAMPOLINE_ALIGNMENT);
 #endif
       INITIALIZE_TRAMPOLINE (tramp, XEXP (DECL_RTL (function), 0), context);
       seq = get_insns ();
