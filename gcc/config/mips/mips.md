@@ -4087,23 +4087,15 @@ beq\t%2,%.,1b\;\
 ;; We cope with this by making the mflo and mfhi patterns use both HI and LO.
 ;; Operand 1 is the register we want, operand 2 is the other one.
 
-(define_insn "mfhilo_di"
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "h,l")
-		    (match_operand:DI 2 "register_operand" "l,h")]
-		   UNSPEC_MFHILO))]
-  "TARGET_64BIT"
-  "mf%1\t%0"
-  [(set_attr "type" "mfhilo")])
-
-(define_insn "mfhilo_si"
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(unspec:SI [(match_operand:SI 1 "register_operand" "h,l")
-		    (match_operand:SI 2 "register_operand" "l,h")]
-		   UNSPEC_MFHILO))]
+(define_insn "mfhilo_<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=d,d")
+	(unspec:GPR [(match_operand:GPR 1 "register_operand" "h,l")
+		     (match_operand:GPR 2 "register_operand" "l,h")]
+		    UNSPEC_MFHILO))]
   ""
   "mf%1\t%0"
-  [(set_attr "type" "mfhilo")])
+  [(set_attr "type" "mfhilo")
+   (set_attr "mode" "<MODE>")])
 
 ;; Patterns for loading or storing part of a paired floating point
 ;; register.  We need them because odd-numbered floating-point registers
