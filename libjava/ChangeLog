@@ -1,3 +1,9 @@
+2002-07-08  Mark Wielaard  <mark@klomp.org>
+
+	* mauve-libgcj: Don't compile java.sql.Blob.BlobTest,
+	java.sql.Clob.ClobTest, java.sql.Connection.TestJdbc20,
+	java.sql.DatabaseMetaData.TestJdbc20
+
 2002-07-05  Tony Kimball  <alk@pobox.com>
 
 	* java/lang/natRuntime.cc (nativeGetLibname): Added missing `#'.
