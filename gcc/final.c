@@ -1445,9 +1445,28 @@ shorten_branches (first)
 
 	  if (! (varying_length[uid]))
 	    {
-	      insn_current_address += insn_lengths[uid];
+	      if (GET_CODE (insn) == INSN
+		  && GET_CODE (PATTERN (insn)) == SEQUENCE)
+		{
+		  int i;
+
+		  body = PATTERN (insn);
+		  for (i = 0; i < XVECLEN (body, 0); i++)
+		    {
+		      rtx inner_insn = XVECEXP (body, 0, i);
+		      int inner_uid = INSN_UID (inner_insn);
+
+		      INSN_ADDRESSES (inner_uid) = insn_current_address;
+
+		      insn_current_address += insn_lengths[inner_uid];
+		    }
+                }
+	      else
+		insn_current_address += insn_lengths[uid];
+
 	      continue;
 	    }
+
 	  if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	    {
 	      int i;

@@ -1,5 +1,10 @@
 2001-08-08  Graham Stott  <grahams@redhat.com>
 
+	* final.c (shorten_branches): Update the INSN_ADDRESSES of insns
+	within fixed length SEQUENCE.
+
+2001-08-08  Graham Stott  <grahams@redhat.com>
+
 	* diagnostic.h (diagnostic_format_decoder): Parenthesize macro parameter.
 	(diagnostic_prefixing_rule): Likewise.
 	(diagnostic_line_cutoff): Likewise.
