@@ -38,36 +38,6 @@ static xref_flag_table xref_table [] = {
   {NULL, NULL, NULL, NULL},
 };
 
-/* Decode an xref flag value. Return 0 if the flag wasn't found. */
-
-int
-xref_flag_value (const char *flag)
-{
-  int i;
-  for (i = 0; xref_table [i].key; i++)
-    if (!strcmp (flag, xref_table [i].key))
-      return i+1;
-  return 0;
-}
-
-void
-xref_set_data (int flag, void *data)
-{
-  xref_table [flag-1].data = data;
-}
-
-void *
-xref_get_data (int flag)
-{
-  return xref_table [flag-1].data;
-}
-
-void
-xref_set_current_fp (FILE *fp)
-{
-  xref_table [flag_emit_xref-1].fp = fp;
-}
-
 /* Branch to the right xref "back-end".  */
 
 void
@@ -87,6 +57,3 @@ expand_xref (tree node)
 
   (*current_expand) (fp, node);
 }
-
-/* Implementation of the xref back-ends. */
-
