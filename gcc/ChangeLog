@@ -1,3 +1,9 @@
+2004-09-13  James E Wilson  <wilson@specifixinc.com>
+
+	* Makefile.in (GEN_PROTOS_OBJS): Add $(BUILD_ERRORS).
+	* gen-protos.c: Include errors.h.
+	(progname): Delete.
+
 2004-09-14  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (predict.o): Depend on tree-scalar-evolution.h

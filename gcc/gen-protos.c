@@ -21,9 +21,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "coretypes.h"
 #include "tm.h"
 #include "scan.h"
+#include "errors.h"
 
 int verbose = 0;
-const char *progname;
 
 static void add_hash (const char *);
 static int parse_fn_proto (char *, char *, struct fn_decl *);
