@@ -1103,7 +1103,7 @@ output_prolog (file, size)
     {
       i = (a29k_regstack_size + arg_count) * 4;
       if (i >= 256)
-	fprintf (file, "\tconst %s,%d\n\tsub lr1,gr1,%s\n",
+	fprintf (file, "\tconst %s,%d\n\tadd lr1,gr1,%s\n",
 		 reg_names[R_TAV], i, reg_names[R_TAV]);
       else
 	{
