@@ -1,5 +1,5 @@
 /* BoxLayout.java -- A layout for swing components.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,15 +35,17 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing;
 
-import java.awt.Container;
+import java.awt.AWTError;
 import java.awt.Component;
+import java.awt.ComponentOrientation;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.LayoutManager2;
 import java.io.Serializable;
+
 
 /**
  * A layout for swing components.
@@ -54,101 +56,235 @@ import java.io.Serializable;
  */
 public class BoxLayout implements LayoutManager2, Serializable
 {
-    GridLayout      gridbag;
-    
-    final static int X_AXIS = 0;
-    final static int Y_AXIS = 1;
+  /**
+   * Specifies that components are laid out left to right.
+   */
+  public static final int X_AXIS = 0;
 
-    int way = X_AXIS;
+  /**
+   * Specifies that components are laid out top to bottom.
+   */
+  public static final int Y_AXIS = 1;
 
-    BoxLayout(JComponent p,
-	      int way)
-    {
-	int width = 0;
-	int height = 0;
+  /**
+   * Specifies that components are laid out in the direction of a line of text.
+   */
+  public static final int LINE_AXIS = 2;
 
-	this.way = way;
+  /**
+   * Sepcifies that components are laid out in the direction of the line flow.
+   */
+  public static final int PAGE_AXIS = 3;
 
-	if (way == X_AXIS)
-	    {
-		width = 1;
-	    }
+  /*
+   * Needed for serialization.
+   */
+  private static final long serialVersionUID = -2474455742719112368L;
+
+  /*
+   * The container given to the constructor.
+   */
+  private Container container;
+  
+  /*
+   * Internal layout.
+   */
+  private GridLayout grid;
+
+  /*
+   * Current type of component layouting. Defaults to X_AXIS.
+   */
+  private int way = X_AXIS;
+
+  /**
+   * Constructs a <code>BoxLayout</code> object.
+   *
+   * @param container The container that needs to be laid out.
+   * @param way The orientation of the components.
+   *
+   * @exception AWTError If way has an invalid value.
+   */
+  public BoxLayout(Container container, int way)
+  {
+    int width = 0;
+    int height = 0;
+    ComponentOrientation orientation = container.getComponentOrientation();
+
+    this.container = container;
+    this.way = way;
+
+    switch (way)
+      {
+      case X_AXIS:
+	width = 1;
+	break;
+      case Y_AXIS:
+	height = 1;
+	break;
+      case LINE_AXIS:
+	if (orientation.isHorizontal())
+          height = 1;
 	else
-	    {
-		height = 1;
-	    }
-	
-
-	gridbag = new GridLayout(width, height);
-    }
-    
-    BoxLayout(int way)
-    {
-	this(null,way);
-    }
-    
-
-    public void addLayoutComponent(String name, Component comp)
-    {
-	if (way == X_AXIS)
-	    {
-		gridbag.setColumns( gridbag.getColumns() + 1);
-	    }
+	  width = 1;
+	break;
+      case PAGE_AXIS:
+	if (!orientation.isHorizontal())
+          height = 1;
 	else
-	    {
-		gridbag.setRows( gridbag.getRows() + 1);
-	    }
-    }
+	  width = 1;
+	break;
+      default:
+	throw new AWTError("Invalid value for way");
+      }
 
-    public void removeLayoutComponent(Component comp)
-    {
-	gridbag.removeLayoutComponent(comp);
-	if (way == X_AXIS)
-	    {
-		gridbag.setColumns( gridbag.getColumns() - 1);
-	    }
-	else
-	    {
-		gridbag.setRows( gridbag.getRows() - 1);
-	    }
-    }
+    grid = new GridLayout(width, height);
+  }
 
-    public Dimension preferredLayoutSize(Container parent)
-    {
-	return gridbag.preferredLayoutSize(parent);
-    }
+  /**
+   * Adds a component to the layout.
+   *
+   * @param name The name of the component to add.
+   * @param component the component to add to the layout.
+   */
+  public void addLayoutComponent(String name, Component component)
+  {
+    if (way == X_AXIS
+        || (way == LINE_AXIS
+            && component.getComponentOrientation().isHorizontal())
+        || (way == PAGE_AXIS
+            && !component.getComponentOrientation().isHorizontal()))
+      grid.setColumns(grid.getColumns() + 1);
+    else
+      grid.setRows(grid.getRows() + 1);
+  }
 
-    public Dimension minimumLayoutSize(Container parent)
-    {
-	return gridbag.minimumLayoutSize(parent);
-    }
+  /**
+   * Removes a component from the layout.
+   *
+   * @param component The component to remove from the layout.
+   */
+  public void removeLayoutComponent(Component component)
+  {
+    grid.removeLayoutComponent(component);
 
-    public void layoutContainer(Container parent)
-    {	
-	gridbag.layoutContainer(parent);
-    }
+    if (way == X_AXIS
+        || (way == LINE_AXIS
+            && component.getComponentOrientation().isHorizontal())
+        || (way == PAGE_AXIS
+            && !component.getComponentOrientation().isHorizontal()))
+      grid.setColumns(grid.getColumns() - 1);
+    else
+      grid.setRows(grid.getRows() - 1);
+  }
 
-    public void addLayoutComponent ( Component child, Object constraints )
-    {
-	addLayoutComponent("", child);
-    }
+  /**
+   * Returns the preferred size of the layout.
+   *
+   * @param parent The container that needs to be laid out.
+   *
+   * @return The dimension of the layout.
+   */
+  public Dimension preferredLayoutSize(Container parent)
+  {
+    if (parent != container)
+      throw new AWTError("invalid parent");
+    
+    return grid.preferredLayoutSize(parent);
+  }
 
-    public float getLayoutAlignmentX ( Container parent )
-    {
-	return 0;
-    }
+  /**
+   * Returns the minimum size of the layout.
+   *
+   * @param parent The container that needs to be laid out.
+   *
+   * @return The dimension of the layout.
+   */
+  public Dimension minimumLayoutSize(Container parent)
+  {
+    if (parent != container)
+      throw new AWTError("invalid parent");
+    
+    return grid.minimumLayoutSize(parent);
+  }
 
-    public float getLayoutAlignmentY ( Container parent )
-    {
-	return 0;
-    }
+  /**
+   * Lays out the specified container using this layout.
+   *
+   * @param parent The container that needs to be laid out.
+   */
+  public void layoutContainer(Container parent)
+  {
+    if (parent != container)
+      throw new AWTError("invalid parent");
+    
+    grid.layoutContainer(parent);
+  }
 
-    public void invalidateLayout ( Container parent )
-    {
-    }
+  /**
+   * Adds a component to the layout.
+   *
+   * @param child The component to add to the layout.
+   * @param constraints The constraints for the component in the layout.
+   */
+  public void addLayoutComponent(Component child, Object constraints)
+  {
+    addLayoutComponent("", child);
+  }
 
-    public Dimension maximumLayoutSize ( Container parent )
-    {
-	return preferredLayoutSize(parent);
-    }
+  /**
+   * Returns the alignment along the X axis for the container.
+   *
+   * @param parent The container that needs to be laid out.
+   *
+   * @return The alignment.
+   */
+  public float getLayoutAlignmentX(Container parent)
+  {
+    if (parent != container)
+      throw new AWTError("invalid parent");
+    
+    return 0;
+  }
+
+  /**
+   * Returns the alignment along the Y axis for the container.
+   *
+   * @param parent The container that needs to be laid out.
+   *
+   * @return The alignment.
+   */
+  public float getLayoutAlignmentY(Container parent)
+  {
+    if (parent != container)
+      throw new AWTError("invalid parent");
+    
+    return 0;
+  }
+
+  /**
+   * Invalidates the layout.
+   *
+   * @param parent The container that needs to be laid out.
+   */
+  public void invalidateLayout(Container parent)
+  {
+    if (parent != container)
+      throw new AWTError("invalid parent");
+  }
+
+  /**
+   * Returns the maximum size of the layout gived the components
+   * in the given container.
+   *
+   * @param parent The container that needs to be laid out.
+   *
+   * @return The dimension of the layout.
+   */
+  public Dimension maximumLayoutSize(Container parent)
+  {
+    if (parent != container)
+      throw new AWTError("invalid parent");
+    
+    return preferredLayoutSize(parent);
+  }
 }
