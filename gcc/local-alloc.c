@@ -540,7 +540,7 @@ equiv_init_varies_p (x)
       return 0;
 
     case REG:
-      return reg_equiv[REGNO (x)].replace == 0 && rtx_varies_p (x);
+      return reg_equiv[REGNO (x)].replace == 0 && rtx_varies_p (x, 0);
 
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
@@ -604,7 +604,7 @@ equiv_init_movable_p (x, regno)
     case REG:
       return (reg_equiv[REGNO (x)].loop_depth >= reg_equiv[regno].loop_depth
 	      && reg_equiv[REGNO (x)].replace)
-	     || (REG_BASIC_BLOCK (REGNO (x)) < 0 && ! rtx_varies_p (x));
+	     || (REG_BASIC_BLOCK (REGNO (x)) < 0 && ! rtx_varies_p (x, 0));
 
     case UNSPEC_VOLATILE:
       return 0;
@@ -933,7 +933,7 @@ update_equiv_regs ()
       /* cse sometimes generates function invariants, but doesn't put a
 	 REG_EQUAL note on the insn.  Since this note would be redundant,
          there's no point creating it earlier than here.  */
-      if (! note && ! rtx_varies_p (src))
+      if (! note && ! rtx_varies_p (src, 0))
 	REG_NOTES (insn)
 	  = note = gen_rtx_EXPR_LIST (REG_EQUAL, src, REG_NOTES (insn));
 
@@ -944,7 +944,7 @@ update_equiv_regs ()
 
       if (REG_N_SETS (regno) != 1
 	  && (! note
-	      || rtx_varies_p (XEXP (note, 0))
+	      || rtx_varies_p (XEXP (note, 0), 0)
 	      || (reg_equiv[regno].replacement
 		  && ! rtx_equal_p (XEXP (note, 0),
 				    reg_equiv[regno].replacement))))
@@ -958,7 +958,7 @@ update_equiv_regs ()
 
       /* If this register is known to be equal to a constant, record that
 	 it is always equivalent to the constant.  */
-      if (note && ! rtx_varies_p (XEXP (note, 0)))
+      if (note && ! rtx_varies_p (XEXP (note, 0), 0))
 	PUT_MODE (note, (enum machine_mode) REG_EQUIV);
 
       /* If this insn introduces a "constant" register, decrease the priority

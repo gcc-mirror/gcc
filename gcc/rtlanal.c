@@ -25,7 +25,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "rtl.h"
 
-static int rtx_addr_can_trap_p	PARAMS ((rtx));
 static void reg_set_p_1		PARAMS ((rtx, rtx, void *));
 static void insn_dependent_p_1	PARAMS ((rtx, rtx, void *));
 static void reg_set_last_1	PARAMS ((rtx, rtx, void *));
@@ -113,11 +112,14 @@ rtx_unstable_p (x)
 /* Return 1 if X has a value that can vary even between two
    executions of the program.  0 means X can be compared reliably
    against certain constants or near-constants.
+   FOR_ALIAS is nonzero if we are called from alias analysis; if it is
+   zero, we are slightly more conservative.
    The frame pointer and the arg pointer are considered constant.  */
 
 int
-rtx_varies_p (x)
+rtx_varies_p (x, for_alias)
      rtx x;
+     int for_alias;
 {
   register RTX_CODE code = GET_CODE (x);
   register int i;
@@ -126,7 +128,7 @@ rtx_varies_p (x)
   switch (code)
     {
     case MEM:
-      return ! RTX_UNCHANGING_P (x) || rtx_varies_p (XEXP (x, 0));
+      return ! RTX_UNCHANGING_P (x) || rtx_varies_p (XEXP (x, 0), for_alias);
 
     case QUEUED:
       return 1;
@@ -146,19 +148,22 @@ rtx_varies_p (x)
       if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
 	  || x == arg_pointer_rtx)
 	return 0;
-#ifndef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
-      /* ??? When call-clobbered, the value is stable modulo the restore
-	 that must happen after a call.  This currently screws up local-alloc
-	 into believing that the restore is not needed.  */
-      if (x == pic_offset_table_rtx)
-	return 0;
+      if (x == pic_offset_table_rtx
+#ifdef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
+	  /* ??? When call-clobbered, the value is stable modulo the restore
+	     that must happen after a call.  This currently screws up
+	     local-alloc into believing that the restore is not needed, so we
+	     must return 0 only if we are called from alias analysis.  */
+	  && for_alias
 #endif
+	  )
+	return 0;
       return 1;
 
     case LO_SUM:
       /* The operand 0 of a LO_SUM is considered constant
 	 (in fact is it related specifically to operand 1).  */
-      return rtx_varies_p (XEXP (x, 1));
+      return rtx_varies_p (XEXP (x, 1), for_alias);
       
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
@@ -174,14 +179,14 @@ rtx_varies_p (x)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     if (fmt[i] == 'e')
       {
-	if (rtx_varies_p (XEXP (x, i)))
+	if (rtx_varies_p (XEXP (x, i), for_alias))
 	  return 1;
       }
     else if (fmt[i] == 'E')
       {
 	int j;
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  if (rtx_varies_p (XVECEXP (x, i, j)))
+	  if (rtx_varies_p (XVECEXP (x, i, j), for_alias))
 	    return 1;
       }
 
@@ -190,7 +195,7 @@ rtx_varies_p (x)
 
 /* Return 0 if the use of X as an address in a MEM can cause a trap.  */
 
-static int
+int
 rtx_addr_can_trap_p (x)
      register rtx x;
 {
@@ -236,11 +241,14 @@ rtx_addr_can_trap_p (x)
 
 /* Return 1 if X refers to a memory location whose address 
    cannot be compared reliably with constant addresses,
-   or if X refers to a BLKmode memory object.  */
+   or if X refers to a BLKmode memory object. 
+   FOR_ALIAS is nonzero if we are called from alias analysis; if it is
+   zero, we are slightly more conservative.  */
 
 int
-rtx_addr_varies_p (x)
+rtx_addr_varies_p (x, for_alias)
      rtx x;
+     int for_alias;
 {
   register enum rtx_code code;
   register int i;
@@ -251,20 +259,20 @@ rtx_addr_varies_p (x)
 
   code = GET_CODE (x);
   if (code == MEM)
-    return GET_MODE (x) == BLKmode || rtx_varies_p (XEXP (x, 0));
+    return GET_MODE (x) == BLKmode || rtx_varies_p (XEXP (x, 0), for_alias);
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     if (fmt[i] == 'e')
       {
-	if (rtx_addr_varies_p (XEXP (x, i)))
+	if (rtx_addr_varies_p (XEXP (x, i), for_alias))
 	  return 1;
       }
     else if (fmt[i] == 'E')
       {
 	int j;
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  if (rtx_addr_varies_p (XVECEXP (x, i, j)))
+	  if (rtx_addr_varies_p (XVECEXP (x, i, j), for_alias))
 	    return 1;
       }
   return 0;
