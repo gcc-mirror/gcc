@@ -1541,7 +1541,7 @@ extern rtx emit_call_insn		PARAMS ((rtx));
 extern rtx emit_label			PARAMS ((rtx));
 extern rtx emit_barrier			PARAMS ((void));
 extern rtx emit_line_note		PARAMS ((const char *, int));
-extern rtx emit_note			PARAMS ((const char *, int));
+extern rtx emit_note			PARAMS ((int));
 extern rtx emit_line_note_force		PARAMS ((const char *, int));
 extern rtx make_insn_raw		PARAMS ((rtx));
 extern void add_function_usage_to       PARAMS ((rtx, rtx));

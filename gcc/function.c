@@ -6549,7 +6549,7 @@ init_function_start (subr)
   /* Make sure first insn is a note even if we don't want linenums.
      This makes sure the first insn will never be deleted.
      Also, final expects a note to appear there.  */
-  emit_note (NULL, NOTE_INSN_DELETED);
+  emit_note (NOTE_INSN_DELETED);
 
   /* Set flags used by final.c.  */
   if (aggregate_value_p (DECL_RESULT (subr)))
@@ -6791,10 +6791,10 @@ expand_function_start (subr, parms_have_cleanups)
      The move is supposed to make sdb output more accurate.  */
   /* Indicate the beginning of the function body,
      as opposed to parm setup.  */
-  emit_note (NULL, NOTE_INSN_FUNCTION_BEG);
+  emit_note (NOTE_INSN_FUNCTION_BEG);
 
   if (GET_CODE (get_last_insn ()) != NOTE)
-    emit_note (NULL, NOTE_INSN_DELETED);
+    emit_note (NOTE_INSN_DELETED);
   parm_birth_insn = get_last_insn ();
 
   context_display = 0;
@@ -6868,7 +6868,7 @@ expand_function_start (subr, parms_have_cleanups)
   /* After the display initializations is where the tail-recursion label
      should go, if we end up needing one.   Ensure we have a NOTE here
      since some things (like trampolines) get placed before this.  */
-  tail_recursion_reentry = emit_note (NULL, NOTE_INSN_DELETED);
+  tail_recursion_reentry = emit_note (NOTE_INSN_DELETED);
 
   /* Evaluate now the sizes of any types declared among the arguments.  */
   expand_pending_sizes (nreverse (get_pending_sizes ()));
@@ -7080,7 +7080,7 @@ expand_function_end ()
   /* Mark the end of the function body.
      If control reaches this insn, the function can drop through
      without returning a value.  */
-  emit_note (NULL, NOTE_INSN_FUNCTION_END);
+  emit_note (NOTE_INSN_FUNCTION_END);
 
   /* Must mark the last line number note in the function, so that the test
      coverage code can avoid counting the last line twice.  This just tells
@@ -7088,10 +7088,11 @@ expand_function_end ()
      already exists a copy of this note somewhere above.  This line number
      note is still needed for debugging though, so we can't delete it.  */
   if (flag_test_coverage)
-    emit_note (NULL, NOTE_INSN_REPEATED_LINE_NUMBER);
+    emit_note (NOTE_INSN_REPEATED_LINE_NUMBER);
 
   /* Output a linenumber for the end of the function.
      SDB depends on this.  */
+  
   emit_line_note_force (input_filename, input_line);
 
   /* Before the return label (if any), clobber the return
@@ -7753,7 +7754,7 @@ thread_prologue_and_epilogue_insns (f)
 
       /* Retain a map of the prologue insns.  */
       record_insns (seq, &prologue);
-      prologue_end = emit_note (NULL, NOTE_INSN_PROLOGUE_END);
+      prologue_end = emit_note (NOTE_INSN_PROLOGUE_END);
 
       seq = get_insns ();
       end_sequence ();
@@ -7889,7 +7890,7 @@ thread_prologue_and_epilogue_insns (f)
 	goto epilogue_done;
 
       start_sequence ();
-      epilogue_end = emit_note (NULL, NOTE_INSN_EPILOGUE_BEG);
+      epilogue_end = emit_note (NOTE_INSN_EPILOGUE_BEG);
 
       seq = gen_epilogue ();
 

@@ -10706,7 +10706,7 @@ rs6000_emit_eh_toc_restore (stacksize)
     abort ();
   emit_move_insn (opcode, insn_after_throw);
   
-  emit_note (NULL, NOTE_INSN_LOOP_BEG);
+  emit_note (NOTE_INSN_LOOP_BEG);
   emit_label (loop_start);
   
   do_compare_rtx_and_jump (opcode, tocompare, NE, 1,
@@ -10733,9 +10733,9 @@ rs6000_emit_eh_toc_restore (stacksize)
   emit_move_insn (opcode_addr, mem);
   emit_move_insn (opcode, gen_rtx_MEM (SImode, opcode_addr));
 
-  emit_note (NULL, NOTE_INSN_LOOP_CONT);
+  emit_note (NOTE_INSN_LOOP_CONT);
   emit_jump (loop_start);
-  emit_note (NULL, NOTE_INSN_LOOP_END);
+  emit_note (NOTE_INSN_LOOP_END);
   emit_label (loop_exit);
 }
 
@@ -10809,7 +10809,7 @@ rs6000_emit_allocate_stack (size, copy_r12)
 	{
 	  /* Need a note here so that try_split doesn't get confused.  */
 	  if (get_last_insn() == NULL_RTX)
-	    emit_note (0, NOTE_INSN_DELETED);
+	    emit_note (NOTE_INSN_DELETED);
 	  insn = emit_move_insn (tmp_reg, todec);
 	  try_split (PATTERN (insn), insn, 0);
 	  todec = tmp_reg;
@@ -11536,9 +11536,9 @@ rs6000_output_function_prologue (file, size)
 
       /* A NOTE_INSN_DELETED is supposed to be at the start and end of
 	 the "toplevel" insn chain.  */
-      emit_note (0, NOTE_INSN_DELETED);
+      emit_note (NOTE_INSN_DELETED);
       rs6000_emit_prologue ();
-      emit_note (0, NOTE_INSN_DELETED);
+      emit_note (NOTE_INSN_DELETED);
 
       /* Expand INSN_ADDRESSES so final() doesn't crash. */
       {
@@ -11957,9 +11957,9 @@ rs6000_output_function_epilogue (file, size)
 
 	  /* A NOTE_INSN_DELETED is supposed to be at the start
 	     and end of the "toplevel" insn chain.  */
-	  emit_note (0, NOTE_INSN_DELETED);
+	  emit_note (NOTE_INSN_DELETED);
 	  rs6000_emit_epilogue (FALSE);
-	  emit_note (0, NOTE_INSN_DELETED);
+	  emit_note (NOTE_INSN_DELETED);
 
 	  /* Expand INSN_ADDRESSES so final() doesn't crash. */
 	  {
@@ -12254,7 +12254,7 @@ rs6000_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
   no_new_pseudos = 1;
 
   /* Mark the end of the (empty) prologue.  */
-  emit_note (NULL, NOTE_INSN_PROLOGUE_END);
+  emit_note (NOTE_INSN_PROLOGUE_END);
 
   /* Find the "this" pointer.  If the function returns a structure,
      the structure return pointer is in r3.  */

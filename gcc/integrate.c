@@ -897,7 +897,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
      insn that can be used as an insertion point.  */
   map->insns_at_start = get_last_insn ();
   if (map->insns_at_start == 0)
-    map->insns_at_start = emit_note (NULL, NOTE_INSN_DELETED);
+    map->insns_at_start = emit_note (NOTE_INSN_DELETED);
 
   map->regno_pointer_align = inl_f->emit->regno_pointer_align;
   map->x_regno_reg_rtx = inl_f->emit->x_regno_reg_rtx;
@@ -1304,7 +1304,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
      This line number note is still needed for debugging though, so we can't
      delete it.  */
   if (flag_test_coverage)
-    emit_note (NULL, NOTE_INSN_REPEATED_LINE_NUMBER);
+    emit_note (NOTE_INSN_REPEATED_LINE_NUMBER);
 
   emit_line_note (input_filename, input_line);
 
@@ -1689,7 +1689,7 @@ copy_insn_list (insns, map, static_chain_value)
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_BEG
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED)
 	    {
-	      copy = emit_note (NULL, NOTE_LINE_NUMBER (insn));
+	      copy = emit_note (NOTE_LINE_NUMBER (insn));
 	      NOTE_DATA (copy) = NOTE_DATA (insn);
 	      if ((NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_BEG
 		   || NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_END)

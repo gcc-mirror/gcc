@@ -8491,7 +8491,7 @@ ia64_output_mi_thunk (file, thunk, delta, vcall_offset, function)
     reg_names[IN_REG (0)] = ia64_reg_numbers[0];
 
   /* Mark the end of the (empty) prologue.  */
-  emit_note (NULL, NOTE_INSN_PROLOGUE_END);
+  emit_note (NOTE_INSN_PROLOGUE_END);
 
   this = gen_rtx_REG (Pmode, IN_REG (0));
 

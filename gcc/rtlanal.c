@@ -3838,7 +3838,7 @@ hoist_insn_to_edge (insn, e, val, new)
   if (e->insns == NULL_RTX)
     {
       start_sequence ();
-      emit_note (NULL, NOTE_INSN_DELETED);
+      emit_note (NOTE_INSN_DELETED);
     }
   else
     push_to_sequence (e->insns);

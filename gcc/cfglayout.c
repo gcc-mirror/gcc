@@ -513,7 +513,7 @@ reemit_insn_block_notes (void)
     }
 
   /* change_scope emits before the insn, not after.  */
-  note = emit_note (NULL, NOTE_INSN_DELETED);
+  note = emit_note (NOTE_INSN_DELETED);
   change_scope (note, cur_block, DECL_INITIAL (cfun->decl));
   delete_insn (note);
 
@@ -943,7 +943,7 @@ duplicate_insn_chain (rtx from, rtx to)
 
   /* Avoid updating of boundaries of previous basic block.  The
      note will get removed from insn stream in fixup.  */
-  last = emit_note (NULL, NOTE_INSN_DELETED);
+  last = emit_note (NOTE_INSN_DELETED);
 
   /* Create copy at the end of INSN chain.  The chain will
      be reordered later.  */

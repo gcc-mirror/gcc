@@ -2671,7 +2671,7 @@ compensate_edge (e, file)
       start_sequence ();
 
       /* ??? change_stack needs some point to emit insns after.  */
-      after = emit_note (NULL, NOTE_INSN_DELETED);
+      after = emit_note (NOTE_INSN_DELETED);
 
       tmpstack = regstack;
       change_stack (after, &tmpstack, target_stack, EMIT_BEFORE);

@@ -7658,7 +7658,7 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   /* We always require a valid GP.  */
   emit_insn (gen_prologue_ldgp ());
-  emit_note (NULL, NOTE_INSN_PROLOGUE_END);
+  emit_note (NOTE_INSN_PROLOGUE_END);
 
   /* Find the "this" pointer.  If the function returns a structure,
      the structure return pointer is in $16.  */

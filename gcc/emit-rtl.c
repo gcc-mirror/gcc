@@ -4899,6 +4899,8 @@ emit_line_note (file, line)
      const char *file;
      int line;
 {
+  rtx note;
+  
   if (line < 0)
     abort ();
   
@@ -4916,25 +4918,25 @@ emit_line_note (file, line)
       return NULL_RTX;
     }
 
-  return emit_note (file, line);
+  note = emit_note (line);
+  NOTE_SOURCE_FILE (note) = file;
+  
+  return note;
 }
 
-/* Make an insn of code NOTE
-   with data-fields specified by FILE and LINE
-   and add it to the end of the doubly-linked list.
-   If it is a line-number NOTE, omit it if it matches the previous one.  */
+/* Make an insn of code NOTE or type NOTE_NO
+   and add it to the end of the doubly-linked list.  */
 
 rtx
-emit_note (file, line)
-     const char *file;
-     int line;
+emit_note (note_no)
+     int note_no;
 {
   rtx note;
 
   note = rtx_alloc (NOTE);
   INSN_UID (note) = cur_insn_uid++;
-  NOTE_SOURCE_FILE (note) = file;
-  NOTE_LINE_NUMBER (note) = line;
+  NOTE_LINE_NUMBER (note) = note_no;
+  NOTE_DATA (note) = 0;
   BLOCK_FOR_INSN (note) = NULL;
   add_insn (note);
   return note;

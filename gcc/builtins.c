@@ -4301,7 +4301,7 @@ expand_builtin_expect (tree arglist, rtx target)
 
       rtx_c = expand_expr (c, NULL_RTX, GET_MODE (target), EXPAND_NORMAL);
 
-      note = emit_note (NULL, NOTE_INSN_EXPECTED_VALUE);
+      note = emit_note (NOTE_INSN_EXPECTED_VALUE);
       NOTE_EXPECTED_VALUE (note) = gen_rtx_EQ (VOIDmode, target, rtx_c);
     }
 

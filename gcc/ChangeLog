@@ -1,5 +1,39 @@
 2003-06-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* rtl.h (emit_note): Remove FILE parameter.
+	* emit-rtl.c (emit_line_note): Adjust emit_note call.
+	(emit_note): Remove FILE parameter. Adjust.
+	* builtins.c (expand_builtin_expect): Adjust emit_note call.
+	* c-semantics.c (genrtl_scope_stmt): Likewise.
+	(expand_stmt): Likewise.
+	* cfglayout.c (reemit_insn_block_notes): Likewise.
+	(duplicate_insn_chain): Likewise.
+	* except.c (expand_eh_region_start, expand_eh_region_end,
+	sjlj_emit_function_enter): Likewise.
+	* explow.c (probe_stack_range): Likewise.
+	* expr.c (emit_block_move_via_loop): Likewise.
+	* function.c (init_function_start, expand_function_start,
+	expand_function_end, thread_prologue_and_epilogue_insns): Likewise.
+	* integrate.c (expand_inline_function, copy_insn_list): Likewise.
+	* reg-stack.c (compensate_edge): Likewise.
+	* reload1.c (reload): Likewise.
+	* rtlanal.c (hoist_insn_to_edge): Likewise.
+	* stmt.c (expand_fixup, expand_start_loop, expand_start_null_loop,
+	expand_loop_continue_here, expand_end_loop, expand_continue_loop,
+	expand_exit_loop_top_cond, expand_value_return,
+	expand_start_bindings_and_block, expand_end_bindings,
+	expand_decl_cleanup, expand_start_case): Likewise.
+	* unroll.c (copy_loop_body
+	* config/alpha/alpha.c (alpha_output_mi_thunk_osf): Likewise.
+	* config/ia64/ia64.c (ia64_output_mi_thunk): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_eh_toc_restore,
+	rs6000_emit_allocate_stack, rs6000_output_function_prologue,
+	rs6000_output_function_epilogue, rs6000_output_mi_thunk): Likewise.
+	* config/sh/sh.c (sh_output_mi_thunk): Likewise.
+	* config/sparc/sparc.c (sparc_output_mi_thunk): Likewise.
+
+2003-06-27  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* c-tree.h (grokfield): Remove unused filename and line parameters.
 	* c-decl.c (grokfield): Remove unused filename and line	parameters.
 	* c-parse.in (component_decl): Adjust field grokking rules, adjust
