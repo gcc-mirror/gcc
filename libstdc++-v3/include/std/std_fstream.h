@@ -145,7 +145,7 @@ namespace std
 
       /**
        *  @if maint
-       *  Pointer to the beginning of internally-allocated space.
+       *  Pointer to the beginning of internal buffer.
        *  @endif
       */
       char_type*		_M_buf; 	
