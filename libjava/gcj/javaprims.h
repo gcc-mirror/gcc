@@ -279,16 +279,18 @@ extern "Java"
       class EventObject;
       class GregorianCalendar;
       class HashMap;
-      class HashMap$Entry;
+      class HashMap$HashEntry;
       class HashMap$HashIterator;
       class HashSet;
       class Hashtable;
-      class Hashtable$Entry;
       class Hashtable$Enumerator;
+      class Hashtable$HashEntry;
       class Hashtable$HashIterator;
       class IdentityHashMap;
       class IdentityHashMap$IdentityIterator;
       class Iterator;
+      class LinkedHashMap;
+      class LinkedHashMap$LinkedHashEntry;
       class LinkedList;
       class LinkedList$Entry;
       class LinkedList$LinkedListItr;
@@ -298,6 +300,7 @@ extern "Java"
       class Locale;
       class Map;
       class Map$Entry;
+      class Map$Map;
       class MissingResourceException;
       class NoSuchElementException;
       class Observable;
@@ -306,6 +309,7 @@ extern "Java"
       class PropertyPermission;
       class PropertyResourceBundle;
       class Random;
+      class RandomAccess;
       class ResourceBundle;
       class Set;
       class SimpleTimeZone;
