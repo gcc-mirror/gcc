@@ -1,3 +1,10 @@
+1999-11-22  Jason Merrill  <jason@casey.cygnus.com>
+
+	* gmon.c, i386/gmon-sol2.c, sparc/gmon-sol2.c: Remove advertising 
+	clause from BSD license, pursuant with
+
+	  ftp://ftp.cs.berkeley.edu/pub/4bsd/README.Impt.License.Change
+
 1999-11-22  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* loop.c (load_mems): Reformat slightly.
