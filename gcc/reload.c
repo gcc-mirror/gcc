@@ -800,6 +800,9 @@ push_reload (in, out, inloc, outloc, class,
      and M1 is not the same size as M2.  */
 
   if (in != 0 && GET_CODE (in) == SUBREG
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+      && class != CLASS_CANNOT_CHANGE_SIZE
+#endif
       && (CONSTANT_P (SUBREG_REG (in))
 	  || GET_CODE (SUBREG_REG (in)) == PLUS
 	  || strict_low
@@ -895,6 +898,9 @@ push_reload (in, out, inloc, outloc, class,
      (except in the case of STRICT_LOW_PART,
      and in that case the constraint should label it input-output.)  */
   if (out != 0 && GET_CODE (out) == SUBREG
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+      && class != CLASS_CANNOT_CHANGE_SIZE
+#endif
       && (CONSTANT_P (SUBREG_REG (out))
 	  || strict_low
 	  || (((GET_CODE (SUBREG_REG (out)) == REG
