@@ -1,5 +1,12 @@
 1998-09-08  Mark Mitchell  <mark@markmitchell.com>
 
+	* cp-tree.h (anonymous_namespace_name): Declare.
+	* decl.c: Define it.
+	(push_namespace): Use anonymous_namespace_name, rather than local
+	static anon_name.
+	* error.c (dump_decl): If a namespace is named
+	anonymous_namespace_name, call it {anonymous}.
+
 	* decl.c (grokparms): Distinguish between references and pointers
 	in error message.
 

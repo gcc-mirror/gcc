@@ -1924,6 +1924,8 @@ extern tree boolean_type_node, boolean_true_node, boolean_false_node;
 
 extern tree null_node;
 
+extern tree anonymous_namespace_name;
+
 /* in pt.c  */
 
 /* These values are used for the `STRICT' parameter to type_unfication and
