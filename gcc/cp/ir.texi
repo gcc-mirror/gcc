@@ -35,7 +35,7 @@ Copyright (c) 1999 Free Software Foundation, Inc.
 @end ifinfo
 
 @c ---------------------------------------------------------------------
-@c Titlepage
+@c Title page
 @c ---------------------------------------------------------------------
 
 @titlepage
@@ -834,7 +834,7 @@ indicates the first bit in the object.
 FIXME: Talk about bitfields.
 
 @item NAMESPACE_DECL
-@xref{Namespaces}
+@xref{Namespaces}.
 
 @item TEMPLATE_DECL
 
@@ -1123,22 +1123,22 @@ this:
 @example
 void process_stmt (stmt)
      tree stmt;
-{
+@{
   while (stmt)
-    {
+    @{
       switch (TREE_CODE (stmt))
-        {
+        @{
         case IF_STMT:
           process_stmt (THEN_CLAUSE (stmt));
           /* More processing here.  */
           break;
         
         ...
-        }
+        @}
 
       stmt = TREE_CHAIN (stmt);
-    }
-}
+    @}
+@}
 @end example
 In other words, while the @code{then} clause of an @code{if} statement
 in C++ can be only one statement (although that one statement may be a
@@ -1747,7 +1747,7 @@ sites.
 These nodes are used to represent G++'s statement-expression extension.
 The statement-expression extension allows code like this:
 @example
-int f() { return ({ int j; j = 3; j + 7; }); }
+int f() @{ return (@{ int j; j = 3; j + 7; @}); @}
 @end example
 In other words, an sequence of statements may occur where a single
 expression would normally appear.  The @code{STMT_EXPR} node represents
@@ -1777,7 +1777,7 @@ again, the @code{TREE_VALUE} is the corresponding initializer.  If the
 next available array element.
 
 Conceptually, before any initialization is done, the entire area of
-storage is intialized to zero.
+storage is initialized to zero.
 
 @item SAVE_EXPR
 
@@ -1805,7 +1805,7 @@ second operand are the arguments to pass that function, as a
 function.
 
 If @code{AGGR_INIT_VIA_CTOR_P} holds of the @code{AGGR_INIT_EXPR}, then
-the intialization is via a constructor call.  The address of the third
+the initialization is via a constructor call.  The address of the third
 operand of the @code{AGGR_INIT_EXPR}, which is always a @code{VAR_DECL},
 is taken, and this value replaces the first argument in the argument
 list.  In this case, the value of the expression is the @code{VAR_DECL}
