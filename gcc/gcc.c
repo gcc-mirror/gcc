@@ -881,8 +881,9 @@ static const struct compiler default_compilers[] =
           %{traditional|ftraditional:\
 %eGNU C no longer supports -traditional without -E}\
 	  %{save-temps|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
-		%(cpp_options) %{save-temps:%b.i} %{!save-temps:%g.i} \n\
-		    cc1 -fpreprocessed %{save-temps:%b.i} %{!save-temps:%g.i} %(cc1_options)}\
+		%(cpp_options) -o %{save-temps:%b.i} %{!save-temps:%g.i} \n\
+		    cc1 -fpreprocessed %{save-temps:%b.i} %{!save-temps:%g.i} \
+			%(cc1_options)}\
 	  %{!save-temps:%{!traditional-cpp:%{!no-integrated-cpp:\
 		cc1 %(cpp_unique_options) %(cc1_options)}}}\
         %{!fsyntax-only:%(invoke_as)}}}}", 0},
@@ -895,15 +896,16 @@ static const struct compiler default_compilers[] =
       external preprocessor if -save-temps is given.  */
      "%{E|M|MM:%(trad_capable_cpp) %(cpp_options) %(cpp_debug_options)}\
       %{!E:%{!M:%{!MM:\
-	  %{save-temps|traditional-cpp:%(trad_capable_cpp) \
-		%(cpp_options) %b.i \n\
-		    cc1 -fpreprocessed %b.i %(cc1_options)\
+	  %{save-temps|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
+		%(cpp_options) -o %{save-temps:%b.i} %{!save-temps:%g.i} \n\
+		    cc1 -fpreprocessed %{save-temps:%b.i} %{!save-temps:%g.i} \
+			%(cc1_options)\
                         -o %g.s %{!o*:--output-pch=%i.gch}\
                         %W{o*:--output-pch=%*}%V}\
-	  %{!save-temps:%{!traditional-cpp:\
+	  %{!save-temps:%{!traditional-cpp:%{!no-integrated-cpp:\
 		cc1 %(cpp_unique_options) %(cc1_options)\
                     -o %g.s %{!o*:--output-pch=%i.gch}\
-                    %W{o*:--output-pch=%*}%V}}}}}", 0},
+                    %W{o*:--output-pch=%*}%V}}}}}}", 0},
   {".i", "@cpp-output", 0},
   {"@cpp-output",
    "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}", 0},

@@ -1,3 +1,9 @@
+2003-05-23  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c (default_compilers): Use -o to specify preprocessor's output
+	file.  Make -no-integrated-cpp work when building PCH files.
+	* objc/lang-specs.h: Likewise.
+
 2003-05-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/Makefile.in: Correct description.
