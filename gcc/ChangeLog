@@ -1,3 +1,7 @@
+2004-01-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/sh/sh.c: Include ggc.h.
+
 2004-01-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.in (MD5_H): New.
