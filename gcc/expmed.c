@@ -1027,6 +1027,15 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
       op0 = SUBREG_REG (op0);
     }
 
+  if (GET_CODE (op0) == REG
+      && mode == GET_MODE (op0)
+      && bitnum == 0
+      && bitsize == GET_MODE_BITSIZE (GET_MODE (op0)))
+    {
+      /* We're trying to extract a full register from itself.  */
+      return op0;
+    }
+
   /* Make sure we are playing with integral modes.  Pun with subregs
      if we aren't.  */
   {
