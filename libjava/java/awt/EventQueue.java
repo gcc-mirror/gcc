@@ -153,11 +153,10 @@ public class EventQueue
   
     InvocationEvent ie = 
       new InvocationEvent(eq, runnable, current, true);
-    
-    eq.postEvent(ie);
-    
+
     synchronized (current)
       {
+	eq.postEvent(ie);
 	current.wait();
       }
 
