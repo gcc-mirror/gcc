@@ -600,10 +600,7 @@ _Jv_JNI_AllocObject (JNIEnv *env, jclass clazz)
       if (clazz->isInterface() || Modifier::isAbstract(clazz->getModifiers()))
 	env->ex = new java::lang::InstantiationException ();
       else
-	{
-	  // FIXME: will this work for String?
-	  obj = JvAllocObject (clazz);
-	}
+	obj = JvAllocObject (clazz);
     }
   catch (jthrowable t)
     {
@@ -694,18 +691,21 @@ array_from_valist (jvalue *values, JArray<jclass> *arg_types, va_list vargs)
   jclass *arg_elts = elements (arg_types);
   for (int i = 0; i < arg_types->length; ++i)
     {
+      // Here we assume that sizeof(int) >= sizeof(jint), because we
+      // use `int' when decoding the varargs.  Likewise for
+      // long/jlong, float, and double.
       if (arg_elts[i] == JvPrimClass (byte))
 	values[i].b = (jbyte) va_arg (vargs, int);
       else if (arg_elts[i] == JvPrimClass (short))
 	values[i].s = (jshort) va_arg (vargs, int);
       else if (arg_elts[i] == JvPrimClass (int))
-	values[i].i = va_arg (vargs, jint);
+	values[i].i = (jint) va_arg (vargs, int);
       else if (arg_elts[i] == JvPrimClass (long))
-	values[i].j = va_arg (vargs, jlong);
+	values[i].j = (jlong) va_arg (vargs, long);
       else if (arg_elts[i] == JvPrimClass (float))
-	values[i].f = va_arg (vargs, jfloat);
+	values[i].f = (jfloat) va_arg (vargs, double);
       else if (arg_elts[i] == JvPrimClass (double))
-	values[i].d = va_arg (vargs, jdouble);
+	values[i].d = (jdouble) va_arg (vargs, double);
       else if (arg_elts[i] == JvPrimClass (boolean))
 	values[i].z = (jboolean) va_arg (vargs, int);
       else if (arg_elts[i] == JvPrimClass (char))
