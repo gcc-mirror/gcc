@@ -47,7 +47,9 @@ TREELANGSED = sed
 TREELANGSEDFLAGS = -n
 
 # back end compiler libraries etc
-TREE_BE_LIBS = $(C_TARGET_OBJS) $(BACKEND) $(LIBIBERTY) $(INTLLIBS) $(LIBS) $(LIBDEPS)
+TREE_BE_LIBS = $(BACKEND) $(LIBIBERTY) $(INTLIBS) $(LIBS) $(LIBDEPS)
+
+
 GCC_EXTRAS = -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include
 
 # ./xgcc is the just built compiler. See GCC_FOR_TARGET in the GCC Makefile.in.
@@ -56,10 +58,9 @@ GCC_EXTRAS = -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include
 
 # GCC_FOR_TREELANG = ./xgcc $(GCC_EXTRAS)
 
-TREE_GENERATED = $(srcdir)/treelang/lex.c $(srcdir)/treelang/parse.c\
-	$(srcdir)/treelang/parse.h $(srcdir)/treelang/parse.output $(srcdir)/treelang/TAGS
-
-TREE_SOURCE = ${srcdir}/treelang/parse.y ${srcdir}/treelang/lex.l ${srcdir}/treelang/tree1.c ${srcdir}/treelang/treelang.h ${srcdir}/treelang/treetree.c $(srcdir)/treelang/treetree.h ${srcdir}/treelang/opts.h
+TREE_GENERATED = $(srcdir)/treelang/lex.c $(srcdir)/treelang/parse.c \
+  $(srcdir)/treelang/parse.h $(srcdir)/treelang/parse.output \
+  $(srcdir)/treelang/TAGS
 
 TREE_EXES = tree1$(exeext)
 
@@ -83,13 +84,13 @@ treelang.done: tree1$(exeext)
 # no preprocessor
 
 # core compiler
-tree1$(exeext): treelang/tree1.o treelang/treetree.o treelang/lex.o treelang/parse.o\
-	$(TREE_BE_LIBS) c-convert.o c-typeck.o c-common.o c-cppbuiltin.o \
-	c-decl.o attribs.o
+tree1$(exeext): treelang/tree1.o treelang/treetree.o treelang/tree-convert.o \
+	treelang/lex.o treelang/parse.o \
+	$(TREE_BE_LIBS) attribs.o
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-	treelang/tree1.o treelang/treetree.o treelang/lex.o treelang/parse.o \
-	c-convert.o c-typeck.o c-common.o c-cppbuiltin.o c-decl.o attribs.o \
-	$(TREE_BE_LIBS)
+	treelang/tree1.o treelang/treetree.o treelang/tree-convert.o \
+	treelang/lex.o treelang/parse.o \
+	$(TREE_BE_LIBS) attribs.o
 
 #
 # Compiling object files from source files.
@@ -105,6 +106,9 @@ treelang/treetree.o: treelang/treetree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(TREE_H) flags.h output.h $(C_TREE_H) $(RTL_H) $(GGC_H) toplev.h \
   varray.h $(LANGHOOKS_DEF_H) langhooks.h treelang/treelang.h input.h \
   treelang/treetree.h treelang/parse.h
+
+treelang/tree-convert.o: treelang/tree-convert.c $(CONFIG_H) $(SYSTEM_) \
+  coretypes.h diagnostic.h $(TREE_H) flags.h toplev.h langhooks.h
 
 treelang/parse.o: treelang/parse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) diagnostic.h treelang/treelang.h input.h treelang/treetree.h
@@ -314,9 +318,6 @@ treelang.check.fix: force
 	-cp testsuite/treelang/*runpgm* t
 	-rm -f t/*nofilename
 
-treelang.wc: force
-	wc  ${TREE_SOURCE}
-
 #
 
 .PHONY: treelang.html
@@ -324,3 +325,5 @@ treelang.wc: force
 treelang.html:
 	cd $(srcdir)/treelang && texi2html -I ../doc/include -verbose -menu -split_chapter -number treelang.texi
 #	mv treelang*.html $(srcdir)/treelang
+
+config.status: treelang/config-lang.in
