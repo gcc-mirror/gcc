@@ -124,6 +124,11 @@ process_pragma (finput, t)
 	}
       *s = '\0';
 
+      /* We had to read a non-numerical character to get out of the
+	 while loop---often a newline.  So, we have to put it back to
+	 make sure we continue to parse everything properly.  */
+      ungetc (c, finput);
+
       align = atoi (buf);
       switch (align)
 	{
