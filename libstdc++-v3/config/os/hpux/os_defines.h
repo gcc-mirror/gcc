@@ -97,8 +97,10 @@ typedef long int __padding_type;
 #define _GLIBCPP_INST_ATOMICITY_LOCK 1
 #endif
 
-/* Don't use pragma weak in gthread headers.  */
-#ifdef __hppa__
+/* Don't use pragma weak in gthread headers.  HP-UX rejects programs
+   with unsatisfied external references even if all of those references
+   are weak; gthread relies on such unsatisfied references being resolved
+   to null pointers when weak symbol support is on.  */
 #define _GLIBCPP_GTHREAD_USE_WEAK 0
-#endif
+
 #endif

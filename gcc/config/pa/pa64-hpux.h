@@ -408,3 +408,7 @@ PA_INIT_FINI_HACK
    and returns 0.  /bin/true cannot be used because it is a script without
    an interpreter.  */
 #define INIT_ENVIRONMENT "LD_PXDB=/usr/ccs/bin/size"
+
+/* The HPUX dynamic linker objects to weak symbols with no
+   definitions, so do not use them in gthr-posix.h.  */
+#define GTHREAD_USE_WEAK 0

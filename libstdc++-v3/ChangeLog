@@ -1,3 +1,8 @@
+2003-08-25  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/os/hpux/os_defines.h: Unconditionally define
+	_GLIBCPP_GTHREAD_USE_WEAK to 0.
+
 2003-08-11  Andreas Jaeger  <aj@suse.de>
 
 	* include/Makefile.am (stamp-c_base): Add dependency on stamp-bits
@@ -9,7 +14,7 @@
 	PR libstdc++/11784
 	* libstdc++-v3/config/cpu/m68k/atomicity.h (__exchange_and_add):
 	Replace variants with new BSET-based version.
-	
+
 2003-08-04  Release Manager
 
 	* GCC 3.3.1 Released.
@@ -20,8 +25,8 @@
 
 2003-07-24  Nathan Myers  <ncm-nospam@cantrip.org>
 
-        * testsuite/23_containers/map_operators.cc: Conform to 
-        container requirement as value must be Assignable.
+	* testsuite/23_containers/map_operators.cc: Conform to
+	container requirement as value must be Assignable.
 
 2003-07-18  Andreas Jaeger  <aj@suse.de>
 
@@ -45,7 +50,7 @@
 
 2003-07-15  Loren J. Rittle  <ljrittle@acm.org>
 
-        * testsuite/thread/pthread4.cc: Further tweak to avoid fini race.
+	* testsuite/thread/pthread4.cc: Further tweak to avoid fini race.
 
 2003-07-15  Petur Runolfsson  <peturr02@ru.is>
 
@@ -58,7 +63,7 @@
 	Change last parameter from int_type to size_t.
 
 2003-07-08  Benjamin Kosnik  <bkoz@redhat.com>
-            Jerry Quinn  <jlquinn@optonline.net>
+	    Jerry Quinn  <jlquinn@optonline.net>
 
 	* include/bits/ios_base.h (ios_base::_M_getloc): Return reference
 	to the imbued locale.
@@ -95,12 +100,12 @@
 2003-07-04  Jerry Quinn  <jlquinn@optonline.net>
 
 	* include/bits/locale_facets.tcc (__int_to_char): Move common
-        case to the top.
+	case to the top.
 
 2003-07-04  Jerry Quinn  <jlquinn@optonline.net>
 
 	* testsuite/27_io/ostream_inserter_arith.cc (test05, test06):
-        Add missing bool test.
+	Add missing bool test.
 
 2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
 
@@ -205,7 +210,7 @@
 
 	2003-06-16  Andreas Jaeger  <aj@suse.de>
 
-        * testsuite/abi_check.cc: Create summary report.
+	* testsuite/abi_check.cc: Create summary report.
 
 	2003-06-16  Andreas Jaeger  <aj@suse.de>
 
@@ -215,7 +220,7 @@
 	* configure: Regenerate.
 
 	2003-06-16  Benjamin Kosnik  <bkoz@redhat.com>
-            Andreas Jaeger  <aj@suse.de>
+	    Andreas Jaeger  <aj@suse.de>
 
 	* configure.target: Set x86_64 abi_baseline pair correctly.
 
@@ -384,7 +389,7 @@
 	* configure: Regenerated.
 
 2003-05-01  Paolo Carlini  <pcarlini@unitus.it>
-            Nathan Myers  <ncm@cantrip.org>
+	    Nathan Myers  <ncm@cantrip.org>
 
 	Backport from mainline fix of 2003-03-28.
 	PR libstdc++/9533
@@ -451,7 +456,7 @@
 	(basic_filebuf::close): Add exception specification of throw().
 
 2003-04-25  Ranjit Mathew  <rmathew@hotmail.com>
-            Phil Edwards  <pme@gcc.gnu.org>
+	    Phil Edwards  <pme@gcc.gnu.org>
 
 	* testsuite_flags.in: Guard against the possibility
 	of having "xgcc" as a part of a folder name in the
@@ -469,8 +474,8 @@
 
 2003-04-23  Benjamin Kosnik  <bkoz@redhat.com>
 
-        * config/locale/generic/c_locale.h (__convert_from_v): Use
-        attribute unused.
+	* config/locale/generic/c_locale.h (__convert_from_v): Use
+	attribute unused.
 
 2003-04-23  Phil Edwards  <pme@gcc.gnu.org>
 
@@ -486,16 +491,16 @@
 	    Benjamin Kosnik <bkoz at redhat dot com>
 
 	* include/bits/basic_ios.h (ios_base::Init::_S_ios_create):
-        Declare friend.
+	Declare friend.
 	(basic_ios::init, basic_ios::_M_cache_locale): Add locale
-        cache argument.
+	cache argument.
 	* include/bits/basic_ios.tcc (basic_ios::init): Pass cache to
-        _M_cache_locale.
+	_M_cache_locale.
 	(basic_ios::_M_cache_locale): Use placement new if cache is
-        provided.  Track the distinction in iword(0).
+	provided.  Track the distinction in iword(0).
 	* include/bits/locale_facets.tcc
-        (__locale_cache::_S_callback): Only delete cache if iword(0)
-        is 0, i.e. not static.
+	(__locale_cache::_S_callback): Only delete cache if iword(0)
+	is 0, i.e. not static.
 	* src/globals.cc: Allocate space for __locale_cache objects.
 	* src/ios.cc (__gnu_cxx): Declare extern __locale_cache objects
 	for standard wide and narrow stream objects.
@@ -527,9 +532,9 @@
 	* include/bits/istream.tcc: Same.
 
 2003-04-17  Andreas Tobler  <toa@pop.agri.ch>
-            Benjamin Kosnik  <bkoz@redhat.com>
+	    Benjamin Kosnik  <bkoz@redhat.com>
 
-        * config/os/generic/ctype_inline.h: Fix.
+	* config/os/generic/ctype_inline.h: Fix.
 
 2003-04-17  Andreas Tobler  <toa@pop.agri.ch>
 
@@ -537,7 +542,7 @@
 	solaris includes, not generic.
 
 2003-04-15  Benjamin Kosnik  <bkoz@redhat.com>
-            Paolo Carlini  <pcarlini@unitus.it>
+	    Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/9423
 	* docs/html/27_io/howto.html
@@ -546,12 +551,12 @@
 
 2003-04-15  Andreas Tobler  <a.tobler@schweiz.ch>
 
-        * testsuite/thread/pthread1.cc: Enable for darwin test.
-        * testsuite/thread/pthread2.cc: Same.
-        * testsuite/thread/pthread3.cc: Same.
-        * testsuite/thread/pthread4.cc: Same.
-        * testsuite/thread/pthread5.cc: Same.
-        * testsuite/thread/pthread6.cc: Same.
+	* testsuite/thread/pthread1.cc: Enable for darwin test.
+	* testsuite/thread/pthread2.cc: Same.
+	* testsuite/thread/pthread3.cc: Same.
+	* testsuite/thread/pthread4.cc: Same.
+	* testsuite/thread/pthread5.cc: Same.
+	* testsuite/thread/pthread6.cc: Same.
 
 2003-04-15  Loren J. Rittle  <ljrittle@acm.org>
 
@@ -627,8 +632,8 @@
 
 	PR libstdc++/5730
 	* include/bits/c++config (_GLIBCPP_FAST_MATH): Define.
-        * include/std/std_complex.h (norm):  Use faster,
-        less accurate computation for builtin float types under --fast-math.
+	* include/std/std_complex.h (norm):  Use faster,
+	less accurate computation for builtin float types under --fast-math.
 
 2003-03-21  Paolo Carlini  <pcarlini@unitus.it>
 
@@ -652,10 +657,10 @@
 
 2003-03-17  Petur Runolfsson  <peturr02@ru.is>
 
-        PR libstdc++/9964
-        * include/bits/fstream.tcc (basic_filebuf::close):
-        Always close file, even when write fails.
-        * testsuite/27_io/filebuf_members.cc (test_07):  New test.
+	PR libstdc++/9964
+	* include/bits/fstream.tcc (basic_filebuf::close):
+	Always close file, even when write fails.
+	* testsuite/27_io/filebuf_members.cc (test_07):  New test.
 
 2003-03-17  Danny Smith  <dannysmith@users.sourceforge.net>
 
@@ -758,7 +763,7 @@
 
 2003-03-05  Carlo Wood  <carlo@alinoe.com>
 
-        * include/bits/ios_base.h(ios_base::Init::_S_initialized()): Added
+	* include/bits/ios_base.h(ios_base::Init::_S_initialized()): Added
 	_S_initialized() in order to allow debugging libraries to detect
 	when the std streams are initialized from an overloaded operator
 	new.
@@ -773,7 +778,7 @@
 	(_M_cache_locale): New.
 	(_M_cache_facets): Deprecate.
 	* include/bits/basic_ios.tcc (basic_ios::copyfmt): Set up locale
-        caching.
+	caching.
 	(basic_ios::imbue,basic_ios::init): Use _M_cache_locale.
 	(basic_ios::_M_cache_locale): New.
 	(basic_ios::_M_cache_facets): Deprecate.
@@ -785,9 +790,9 @@
 	(num_put::_M_convert_int): Use locale cache literal string,
 	grouping flag, thousands separator.
 	(num_out::_M_convert_float): Use locale cache grouping flag, decimal
-        point, thousands separator.
+	point, thousands separator.
 	(__locale_cache<_CharT>::_M_init,__locale_cache<_CharT>::_S_callback):
-        New.
+	New.
 	* src/locale-inst.cc
 	(__locale_cache<_CharT>::_S_callback, __locale_cache<char>,
 	__locale_cache<wchar_t>): New.
@@ -805,7 +810,7 @@
 	* testsuite/abi_check.cc: Update.
 
 2003-03-03 Jerry Quinn  <jlquinn@optonline.net>
-           Benjamin Kosnik  <benjamin@redhat.com>
+	   Benjamin Kosnik  <benjamin@redhat.com>
 
 	* include/bits/locale_facets.h (__num_base): Add _S_atoms_out.
 	Add indexes into this array.
@@ -836,7 +841,7 @@
 	set_memory_limits.
 
 2003-02-28  Brad Spencer  <spencer@infointeractive.com>
-            Nathan Myers  <ncm@cantrip.org>
+	    Nathan Myers  <ncm@cantrip.org>
 
 	* src/Makefile.am (stamp-debug): Clean.
 	* src/Makefile.in: Regenerate.
@@ -860,12 +865,12 @@
 
 2003-02-27  Benjamin Kosnik  <bkoz@redhat.com>
 
-        * configure.in (GLIBCPP_ENABLE_DEBUG): Default to none.
+	* configure.in (GLIBCPP_ENABLE_DEBUG): Default to none.
 	Call GLIBCPP_ENABLE_DEBUG_FLAGS.
-        * acinclude.m4 (GLIBCPP_ENABLE_DEBUG): GLIBCPP_BUILD_DEBUG, new
-        conditional if --enable-debug is yes. Rework.
+	* acinclude.m4 (GLIBCPP_ENABLE_DEBUG): GLIBCPP_BUILD_DEBUG, new
+	conditional if --enable-debug is yes. Rework.
 	(GLIBCPP_ENABLE_DEBUG_FLAGS): New.
-        * aclocal.m4: Regenerate.
+	* aclocal.m4: Regenerate.
 	* libio/Makefile.am: Remove DEBUG_FLAGS.
 	* libio/Makefile.in: Regenerate.
 	* libsupc++/Makefile.am: Remove DEBUG_FLAGS.
@@ -928,7 +933,7 @@
 
 2003-02-27  Jerry Quinn  <jlquinn@optonline.net>
 
-        * config/locale/generic/messages_members.h (messages::messages):
+	* config/locale/generic/messages_members.h (messages::messages):
 	Remove name from unused parameter.
 
 2003-02-27  Benjamin Kosnik  <bkoz@redhat.com>
@@ -1035,7 +1040,7 @@
 	for pos_type.
 
 2003-02-11  Paolo Carlini  <pcarlini@unitus.it>
-            Petur Runolfsson  <peturr02@ru.is>
+	    Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/9318
 	* include/bits/streambuf.tcc (__copy_streambufs):
@@ -1114,7 +1119,7 @@
 
 2003-02-05  Benjamin Kosnik  <bkoz@redhat.com>
 
-        * testsuite/26_numerics/valarray_name_lookup.cc: Fix.
+	* testsuite/26_numerics/valarray_name_lookup.cc: Fix.
 
 2003-02-05  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -1368,8 +1373,8 @@
 2003-01-06  Paolo Carlini  <pcarlini@unitus.it>
 
 	* src/codecvt.cc
-        (codecvt<char, char, mbstate_t>::do_in, do_out):
-        Tweak parameters to avoid unused parameter warnings.
+	(codecvt<char, char, mbstate_t>::do_in, do_out):
+	Tweak parameters to avoid unused parameter warnings.
 
 2003-01-06  Paolo Carlini  <pcarlini@unitus.it>
 
@@ -1488,7 +1493,7 @@
 2002-12-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/basic_string.h (compare(const basic_string&)):
-        Fully qualify min() with std::.
+	Fully qualify min() with std::.
 
 2002-12-02  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -1528,7 +1533,7 @@
 	* docs/html/faq/index.html: Add tip about a namespace for extensions.
 
 2002-11-28  Paolo Carlini  <pcarlini@unitus.it>
-            Nathan Myers  <ncm@cantrip.org>
+	    Nathan Myers  <ncm@cantrip.org>
 
 	* src/localename.cc
 	(locale::_Impl::_Impl(const char*, size_t)):
@@ -1548,7 +1553,7 @@
 	__cxa_guard_release, __cxa_guard_abort in CXXABI_1.2.1.
 
 2002-11-25  Paolo Carlini  <pcarlini@unitus.it>
-            Nathan Myers  <ncm@cantrip.org>
+	    Nathan Myers  <ncm@cantrip.org>
 
 	* src/localename.cc
 	(locale::_Impl::_Impl(const char*, size_t)):
@@ -1588,7 +1593,7 @@
 	Trivial cosmetic tweaks.
 
 2002-11-22  Laszlo Ersek  <erseklaszlo@chello.hu>
-            Paolo Carlini  <pcarlini@unitus.it>
+	    Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/8645
 	* include/bits/stl_tree.h (_Rb_tree_rebalance_for_erase):
@@ -1641,7 +1646,7 @@
 	include/std/std_streambuf.h:  Doxygenate all I/O entities.
 
 2002-11-20  Benjamin Kosnik  <bkoz@redhat.com>
-            Jonathan Lennox  <lennox@cs.columbia.edu>
+	    Jonathan Lennox  <lennox@cs.columbia.edu>
 
 	* include/bits/streambuf.tcc (__copy_streambufs):
 	Revert previous fix for the interactive half of
@@ -1681,7 +1686,7 @@
 	and std::codecvt<wchar_t>::codecvt(size_t) into one export pattern.
 
 2002-11-15  Benjamin Kosnik  <bkoz@redhat.com>
-            Gabriel Dos Reis  <gdr@integrable-solutions.net>
+	    Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR libstdc++/8230
 	* include/bits/stl_alloc.h: Use builtin_expect for the most
@@ -1698,7 +1703,7 @@
 	* src/ios.cc [_GLIBCPP_HAVE_UNISTD_H]: Include unistd.h.
 
 2002-11-15  Paolo Carlini  <pcarlini@unitus.it>
-            Loren J. Rittle  <ljrittle@acm.org>
+	    Loren J. Rittle  <ljrittle@acm.org>
 
 	PR libstdc++/8399
 	* acinclude.m4
@@ -1752,8 +1757,8 @@
 
 2002-11-11  Benjamin Kosnik  <bkoz@redhat.com>
 
-        PR libstdc++/6746
-        * include/bits/fstream.tcc (filebuf::open): Set input pointers.
+	PR libstdc++/6746
+	* include/bits/fstream.tcc (filebuf::open): Set input pointers.
 	* config/io/basic_file_stdio.cc (__basic_file::_M_open_mode): Set
 	__p_mode as well.
 	(__basic_file::open): Set to non-block for input.
@@ -1774,7 +1779,7 @@
 	docs/html/ext/sgiexts.html: Add missing <html> tag.
 
 2002-11-07  Phil Edwards  <pme@gcc.gnu.org>
-            Richard Earnshaw  <rearnsha@arm.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/cpu/generic/atomicity.h:  Provide atomic __exchange_and_add
 	and __atomic_add.
@@ -2041,7 +2046,7 @@
 	* testsuite/22_locale/static_members.cc (test02): Avoid null strings.
 
 2002-10-12  Jonathan Wakely  <jw@kayari.org>
-            Gabriel Dos Reis  <gdr@integrable-solutions.net>
+	    Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* docs/html/21_strings/howto.html#5:  Correct nasting of XHTML
 	elements.  Correct allocator-related text.
@@ -2303,9 +2308,9 @@
 	__glibcpp_s8_digits10 et al; check vs the installed versions
 	of digits10 for particular sizes.
 
-        * include/std/std_limits.h (__glibcpp_float_is_modulo,
-        __glibcpp_double_is_modulo, __glibcpp_long_double_is_modulo): Kill.
-        (numeric_limits<T>::is_modulo, T floating): Use false.
+	* include/std/std_limits.h (__glibcpp_float_is_modulo,
+	__glibcpp_double_is_modulo, __glibcpp_long_double_is_modulo): Kill.
+	(numeric_limits<T>::is_modulo, T floating): Use false.
 
 2002-09-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 

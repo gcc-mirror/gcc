@@ -1,3 +1,17 @@
+2003-08-25  Zack Weinberg  <zack@codesourcery.com>
+
+	* config.gcc (hppa*-*-hpux11*, ia64*-*-hpux*): Remove
+	commented-out logic to use DCE threads (if present), add
+	support for POSIX threads.
+	* config/ia64/hpux.h: Define CPP_SPEC to set appropriate
+	#defines for -pthread.  Add -lpthread to LIB_SPEC when
+	-pthread.  In both cases take -mt as a synonym for -pthread
+	for acc compatibility.
+	Define GTHREAD_USE_WEAK to 0.
+	* config/pa/pa-hpux11.h: Likewise for CPP_SPEC and LIB_SPEC.
+	Remove old logic for DCE threads from LIB_SPEC.
+	* config/pa/pa64-hpux.h: Define GTHREAD_USE_WEAK to 0.
+
 2003-08-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* combine.c (distribute_notes): Handle REG_ALWAYS_RETURN.
