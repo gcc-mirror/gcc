@@ -1,3 +1,13 @@
+2003-05-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (DOM_CC_X_AND_Y, DOM_CC_NX_OR_Y, DOM_CC_X_OR_Y): New 
+	constants.
+	(ior_scc_scc, and_scc_scc): New insn_and_split patterns.
+	* arm.c (arm_select_dominance_cc_mode): Renamed from 
+	select_dominance_cc_mode, no-longer static.  Use DOM_CC... constants.
+	Callers updated.
+	* arm-protos.h (arm_select_dominance_cc_mode): Add prototype.
+
 2003-05-09  Roger Sayle  <roger@eyesopen.com>
 
 	* config/alpha/alpha.c (alpha_start_function): Declare frame_size
