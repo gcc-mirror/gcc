@@ -8091,7 +8091,7 @@ maybe_yank_clinit (tree mdecl)
 
   /* Now we analyze the method body and look for something that
      isn't a MODIFY_EXPR */
-  if (!IS_EMPTY_STMT (bbody) && analyze_clinit_body (type, bbody))
+  if (bbody && !IS_EMPTY_STMT (bbody) && analyze_clinit_body (type, bbody))
     return 0;
 
   /* Get rid of <clinit> in the class' list of methods */
