@@ -495,7 +495,7 @@ pop_function_context ()
   {
     struct var_refs_queue *queue = p->fixup_var_refs_queue;
     for (; queue; queue = queue->next)
-      fixup_var_refs (queue->modified);
+      fixup_var_refs (queue->modified, queue->promoted_mode, queue->unsignedp);
   }
 
   free (p);
@@ -812,11 +812,17 @@ put_var_into_stack (decl)
 {
   register rtx reg;
   register rtx new = 0;
+  enum machine_mode promoted_mode, decl_mode;
   struct function *function = 0;
   tree context = decl_function_context (decl);
 
-  /* Get the current rtl used for this object.  */
+  /* Get the current rtl used for this object and it's original mode.  */
   reg = TREE_CODE (decl) == SAVE_EXPR ? SAVE_EXPR_RTL (decl) : DECL_RTL (decl);
+  promoted_mode = GET_MODE (reg);
+
+  /* Get the declared mode for this object.  */
+  decl_mode = (TREE_CODE (decl) == SAVE_EXPR ? TYPE_MODE (TREE_TYPE (decl))
+	       : DECL_MODE (decl));
 
   /* If this variable comes from an outer function,
      find that function's saved context.  */
@@ -847,7 +853,7 @@ put_var_into_stack (decl)
 	new = function->parm_reg_stack_loc[REGNO (reg)];
       if (new == 0)
 	new = assign_outer_stack_local (GET_MODE (reg),
-					GET_MODE_SIZE (GET_MODE (reg)),
+					GET_MODE_SIZE (decl_mode),
 					0, function);
     }
   else
@@ -856,14 +862,14 @@ put_var_into_stack (decl)
 	new = parm_reg_stack_loc[REGNO (reg)];
       if (new == 0)
 	new = assign_stack_local (GET_MODE (reg),
-				  GET_MODE_SIZE (GET_MODE (reg)),
-				  0);
+				  GET_MODE_SIZE (decl_mode), 0);
     }
 
   XEXP (reg, 0) = XEXP (new, 0);
   /* `volatil' bit means one thing for MEMs, another entirely for REGs.  */
   REG_USERVAR_P (reg) = 0;
   PUT_CODE (reg, MEM);
+  PUT_MODE (reg, decl_mode);
 
   /* If this is a memory ref that contains aggregate components,
      mark it as such for cse and loop optimize.  */
@@ -884,18 +890,22 @@ put_var_into_stack (decl)
       temp
 	= (struct var_refs_queue *) oballoc (sizeof (struct var_refs_queue));
       temp->modified = reg;
+      temp->promoted_mode = promoted_mode;
+      temp->unsignedp = TREE_UNSIGNED (TREE_TYPE (decl));
       temp->next = function->fixup_var_refs_queue;
       function->fixup_var_refs_queue = temp;
       pop_obstacks ();
     }
   else
     /* Variable is local; fix it up now.  */
-    fixup_var_refs (reg);
+    fixup_var_refs (reg, promoted_mode, TREE_UNSIGNED (TREE_TYPE (decl)));
 }
 
 static void
-fixup_var_refs (var)
+fixup_var_refs (var, promoted_mode, unsignedp)
      rtx var;
+     enum machine_mode promoted_mode;
+     int unsignedp;
 {
   tree pending;
   rtx first_insn = get_insns ();
@@ -903,13 +913,14 @@ fixup_var_refs (var)
   tree rtl_exps = rtl_expr_chain;
 
   /* Must scan all insns for stack-refs that exceed the limit.  */
-  fixup_var_refs_insns (var, first_insn, stack == 0);
+  fixup_var_refs_insns (var, promoted_mode, unsignedp, first_insn, stack == 0);
 
   /* Scan all pending sequences too.  */
   for (; stack; stack = stack->next)
     {
       push_to_sequence (stack->first);
-      fixup_var_refs_insns (var, stack->first, stack->next != 0);
+      fixup_var_refs_insns (var, promoted_mode, unsignedp,
+			    stack->first, stack->next != 0);
       /* Update remembered end of sequence
 	 in case we added an insn at the end.  */
       stack->last = get_last_insn ();
@@ -923,7 +934,7 @@ fixup_var_refs (var)
       if (seq != const0_rtx && seq != 0)
 	{
 	  push_to_sequence (seq);
-	  fixup_var_refs_insns (var, seq, 0);
+	  fixup_var_refs_insns (var, promoted_mode, unsignedp, seq, 0);
 	  end_sequence ();
 	}
     }
@@ -974,8 +985,10 @@ find_replacement (replacements, x)
    main chain of insns for the current function.  */
 
 static void
-fixup_var_refs_insns (var, insn, toplevel)
+fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
      rtx var;
+     enum machine_mode promoted_mode;
+     int unsignedp;
      rtx insn;
      int toplevel;
 {
@@ -1012,13 +1025,15 @@ fixup_var_refs_insns (var, insn, toplevel)
 
 	      struct fixup_replacement *replacements = 0;
 
-	      fixup_var_refs_1 (var, &PATTERN (insn), insn, &replacements);
+	      fixup_var_refs_1 (var, promoted_mode, &PATTERN (insn), insn,
+				&replacements);
 
 	      while (replacements)
 		{
 		  if (GET_CODE (replacements->new) == REG)
 		    {
 		      rtx insert_before;
+		      rtx seq;
 
 		      /* OLD might be a (subreg (mem)).  */
 		      if (GET_CODE (replacements->old) == SUBREG)
@@ -1042,9 +1057,24 @@ fixup_var_refs_insns (var, insn, toplevel)
 		      else
 			insert_before = insn;
 
-		      emit_insn_before (gen_move_insn (replacements->new,
-						       replacements->old),
-					insert_before);
+		      /* If we are changing the mode, do a conversion.
+			 This might be wasteful, but combine.c will
+			 eliminate much of the waste.  */
+
+		      if (GET_MODE (replacements->new)
+			  != GET_MODE (replacements->old))
+			{
+			  start_sequence ();
+			  convert_move (replacements->new,
+					replacements->old, unsignedp);
+			  seq = gen_sequence ();
+			  end_sequence ();
+			}
+		      else
+			seq = gen_move_insn (replacements->new,
+					     replacements->old);
+
+		      emit_insn_before (seq, insert_before);
 		    }
 
 		  replacements = replacements->next;
@@ -1062,8 +1092,8 @@ fixup_var_refs_insns (var, insn, toplevel)
     }
 }
 
-/* VAR is a MEM that used to be a pseudo register.  See if the rtx expression
-   at *LOC in INSN needs to be changed.
+/* VAR is a MEM that used to be a pseudo register with mode PROMOTED_MODE.
+   See if the rtx expression at *LOC in INSN needs to be changed.  
 
    REPLACEMENTS is a pointer to a list head that starts out zero, but may
    contain a list of original rtx's and replacements. If we find that we need
@@ -1074,8 +1104,9 @@ fixup_var_refs_insns (var, insn, toplevel)
    or the SUBREG, as appropriate, to the pseudo.  */
 
 static void
-fixup_var_refs_1 (var, loc, insn, replacements)
+fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
      register rtx var;
+     enum machine_mode promoted_mode;
      register rtx *loc;
      rtx insn;
      struct fixup_replacement **replacements;
@@ -1104,14 +1135,15 @@ fixup_var_refs_1 (var, loc, insn, replacements)
 
 	  *loc = replacement->new = x = fixup_stack_1 (x, insn);
 
-	  /* Unless we are forcing memory to register, we can leave things
-	     the way they are if the insn is valid.  */
+	  /* Unless we are forcing memory to register or we changed the mode,
+	     we can leave things the way they are if the insn is valid.  */
 	     
 	  INSN_CODE (insn) = -1;
-	  if (! flag_force_mem && recog_memoized (insn) >= 0)
+	  if (! flag_force_mem && GET_MODE (x) == promoted_mode
+	      && recog_memoized (insn) >= 0)
 	    return;
 
-	  *loc = replacement->new = gen_reg_rtx (GET_MODE (x));
+	  *loc = replacement->new = gen_reg_rtx (promoted_mode);
 	  return;
 	}
 
@@ -1230,6 +1262,18 @@ fixup_var_refs_1 (var, loc, insn, replacements)
     case SUBREG:
       if (SUBREG_REG (x) == var)
 	{
+	  /* If this is a special SUBREG made because VAR was promoted
+	     from a wider mode, replace it with VAR and call ourself
+	     recursively, this time saying that the object previously
+	     had its current mode (by virtue of the SUBREG).  */
+
+	  if (SUBREG_PROMOTED_VAR_P (x))
+	    {
+	      *loc = var;
+	      fixup_var_refs_1 (var, GET_MODE (var), loc, insn, replacements);
+	      return;
+	    }
+
 	  /* If this SUBREG makes VAR wider, it has become a paradoxical
 	     SUBREG with VAR in memory, but these aren't allowed at this 
 	     stage of the compilation.  So load VAR into a pseudo and take
@@ -1314,9 +1358,12 @@ fixup_var_refs_1 (var, loc, insn, replacements)
 	  {
 	    /* Since this case will return, ensure we fixup all the
 	       operands here.  */
-	    fixup_var_refs_1 (var, &XEXP (outerdest, 1), insn, replacements);
-	    fixup_var_refs_1 (var, &XEXP (outerdest, 2), insn, replacements);
-	    fixup_var_refs_1 (var, &SET_SRC (x), insn, replacements);
+	    fixup_var_refs_1 (var, promoted_mode, &XEXP (outerdest, 1),
+			      insn, replacements);
+	    fixup_var_refs_1 (var, promoted_mode, &XEXP (outerdest, 2),
+			      insn, replacements);
+	    fixup_var_refs_1 (var, promoted_mode, &SET_SRC (x),
+			      insn, replacements);
 
 	    tem = XEXP (outerdest, 0);
 
@@ -1439,24 +1486,37 @@ fixup_var_refs_1 (var, loc, insn, replacements)
 
 	/* Otherwise, storing into VAR must be handled specially
 	   by storing into a temporary and copying that into VAR
-	   with a new insn after this one.  */
+	   with a new insn after this one.  Note that this case
+	   will be used when storing into a promoted scalar since
+	   the insn will now have different modes on the input
+	   and output and hence will be invalid (except for the case
+	   of setting it to a constant, which does not need any
+	   change if it is valid).  We generate extra code in that case,
+	   but combine.c will eliminate it.  */
 
 	if (dest == var)
 	  {
 	    rtx temp;
-	    rtx fixeddest;
-	    tem = SET_DEST (x);
-	    /* STRICT_LOW_PART can be discarded, around a MEM.  */
-	    if (GET_CODE (tem) == STRICT_LOW_PART)
-	      tem = XEXP (tem, 0);
-	    /* Convert (SUBREG (MEM)) to a MEM in a changed mode.  */
-	    if (GET_CODE (tem) == SUBREG)
-	      fixeddest = fixup_memory_subreg (tem, insn, 0);
-	    else
-	      fixeddest = fixup_stack_1 (tem, insn);
+	    rtx fixeddest = SET_DEST (x);
 
-	    temp = gen_reg_rtx (GET_MODE (tem));
-	    emit_insn_after (gen_move_insn (fixeddest, temp), insn);
+	    /* STRICT_LOW_PART can be discarded, around a MEM.  */
+	    if (GET_CODE (fixeddest) == STRICT_LOW_PART)
+	      fixeddest = XEXP (fixeddest, 0);
+	    /* Convert (SUBREG (MEM)) to a MEM in a changed mode.  */
+	    if (GET_CODE (fixeddest) == SUBREG)
+	      fixeddest = fixup_memory_subreg (fixeddest, insn, 0);
+	    else
+	      fixeddest = fixup_stack_1 (fixeddest, insn);
+
+	    temp = gen_reg_rtx (GET_MODE (SET_SRC (x)) == VOIDmode
+				? GET_MODE (fixeddest)
+				: GET_MODE (SET_SRC (x)));
+
+	    emit_insn_after (gen_move_insn (fixeddest,
+					    gen_lowpart (GET_MODE (fixeddest),
+							 temp)),
+			     insn);
+
 	    SET_DEST (x) = temp;
 	  }
       }
@@ -1468,12 +1528,13 @@ fixup_var_refs_1 (var, loc, insn, replacements)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	fixup_var_refs_1 (var, &XEXP (x, i), insn, replacements);
+	fixup_var_refs_1 (var, promoted_mode, &XEXP (x, i), insn, replacements);
       if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
-	    fixup_var_refs_1 (var, &XVECEXP (x, i, j), insn, replacements);
+	    fixup_var_refs_1 (var, promoted_mode, &XVECEXP (x, i, j),
+			      insn, replacements);
 	}
     }
 }
@@ -2493,6 +2554,7 @@ assign_parms (fndecl, second_time)
   register rtx stack_parm = 0;
   CUMULATIVE_ARGS args_so_far;
   enum machine_mode passed_mode, nominal_mode;
+  int unsignedp;
   /* Total space needed so far for args on the stack,
      given as a constant and a tree-expression.  */
   struct args_size stack_args_size;
@@ -2889,9 +2951,24 @@ assign_parms (fndecl, second_time)
 		  by invisible reference.  */
 	       || passed_pointer || parm == function_result_decl)
 	{
-	  /* Store the parm in a pseudoregister during the function.  */
-	  register rtx parmreg = gen_reg_rtx (nominal_mode);
+	  /* Store the parm in a pseudoregister during the function, but we
+	     may need to do it in a wider mode.  */
 
+	  register rtx parmreg;
+
+	  unsignedp = TREE_UNSIGNED (TREE_TYPE (parm));
+	  if (TREE_CODE (TREE_TYPE (parm)) == INTEGER_TYPE
+	      || TREE_CODE (TREE_TYPE (parm)) == ENUMERAL_TYPE
+	      || TREE_CODE (TREE_TYPE (parm)) == BOOLEAN_TYPE
+	      || TREE_CODE (TREE_TYPE (parm)) == CHAR_TYPE
+	      || TREE_CODE (TREE_TYPE (parm)) == REAL_TYPE
+	      || TREE_CODE (TREE_TYPE (parm)) == POINTER_TYPE
+	      || TREE_CODE (TREE_TYPE (parm)) == OFFSET_TYPE)
+	    {
+	      PROMOTE_MODE (nominal_mode, unsignedp, TREE_TYPE (parm));
+	    }
+
+	  parmreg = gen_reg_rtx (nominal_mode);
 	  REG_USERVAR_P (parmreg) = 1;
 
 	  /* If this was an item that we received a pointer to, set DECL_RTL
@@ -2917,9 +2994,9 @@ assign_parms (fndecl, second_time)
 		  && REGNO (entry_parm) < FIRST_PSEUDO_REGISTER
 		  && ! HARD_REGNO_MODE_OK (REGNO (entry_parm),
 					   GET_MODE (entry_parm)))
-		convert_move (parmreg, copy_to_reg (entry_parm), 0);
+		convert_move (parmreg, copy_to_reg (entry_parm), unsignedp);
 	      else
-		convert_move (parmreg, validize_mem (entry_parm), 0);
+		convert_move (parmreg, validize_mem (entry_parm), unsignedp);
 	    }
 	  else
 	    emit_move_insn (parmreg, validize_mem (entry_parm));
