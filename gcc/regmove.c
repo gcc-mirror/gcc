@@ -655,7 +655,7 @@ optimize_reg_copy_3 (rtx insn, rtx dest, rtx src)
   rtx src_reg = XEXP (src, 0);
   int src_no = REGNO (src_reg);
   int dst_no = REGNO (dest);
-  rtx p, set, subreg;
+  rtx p, set;
   enum machine_mode old_mode;
 
   if (src_no < FIRST_PSEUDO_REGISTER
@@ -703,14 +703,15 @@ optimize_reg_copy_3 (rtx insn, rtx dest, rtx src)
 
   /* Now walk forward making additional replacements.  We want to be able
      to undo all the changes if a later substitution fails.  */
-  subreg = gen_lowpart_SUBREG (old_mode, src_reg);
   while (p = NEXT_INSN (p), p != insn)
     {
       if (! INSN_P (p))
 	continue;
 
       /* Make a tentative change.  */
-      validate_replace_rtx_group (src_reg, subreg, p);
+      validate_replace_rtx_group (src_reg,
+				  gen_lowpart_SUBREG (old_mode, src_reg),
+				  p);
     }
 
   validate_replace_rtx_group (src, src_reg, insn);

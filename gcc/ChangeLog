@@ -1,3 +1,8 @@
+2004-09-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/17266
+	* regmove.c (optimize_reg_copy_3): Make a new SUBREG for each insn.
+
 2004-09-21  Uros Bizjak  <uros@kss-loka.si>
 
 	PR rtl-optimization/14851
