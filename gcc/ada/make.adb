@@ -2224,7 +2224,9 @@ package body Make is
             if not Projects.Table (Arguments_Project).Externally_Built then
                Prj.Env.Set_Ada_Paths (Arguments_Project, True);
 
-               if MLib.Tgt.Support_For_Libraries /= MLib.Tgt.None then
+               if not Unique_Compile
+                 and then MLib.Tgt.Support_For_Libraries /= MLib.Tgt.None
+               then
                   declare
                      The_Data : Project_Data :=
                                   Projects.Table (Arguments_Project);
@@ -4352,7 +4354,9 @@ package body Make is
          --  put all the project sources in the queue, and flag the project
          --  so that the library is generated.
 
-         if MLib.Tgt.Support_For_Libraries /= MLib.Tgt.None then
+         if not Unique_Compile
+           and then MLib.Tgt.Support_For_Libraries /= MLib.Tgt.None
+         then
             for Proj in Projects.First .. Projects.Last loop
                if Projects.Table (Proj).Library then
                   Projects.Table (Proj).Need_To_Build_Lib :=
