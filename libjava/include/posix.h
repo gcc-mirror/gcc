@@ -28,6 +28,13 @@ details.  */
 #include <unistd.h>
 #endif
 
+#include <gcj/cni.h>
+
 extern int _Jv_select (int n, fd_set *, fd_set *, fd_set *, struct timeval *);
-extern void _Jv_platform_gettimeofday (struct timeval *);
+extern jlong _Jv_platform_gettimeofday ();
 extern void _Jv_platform_initialize (void);
+
+
+
+
+

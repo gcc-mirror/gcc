@@ -16,8 +16,9 @@ details.  */
 
 #undef __INSIDE_CYGWIN__
 #include <winsock.h>
+#include <gcj/cni.h>
 
 extern void _Jv_platform_initialize (void);
-extern void _Jv_platform_gettimeofday (struct timeval *);
+extern jlong _Jv_platform_gettimeofday ();
 
 #endif /* __JV_WIN32_H__ */
