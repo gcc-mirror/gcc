@@ -175,7 +175,7 @@
   ""
   "@
    clrq %0
-   movq %1,%0")
+   movq %D1,%0")
 
 ;; The VAX move instructions have space-time tradeoffs.  On a microVAX
 ;; register-register mov instructions take 3 bytes and 2 CPU cycles.  clrl
