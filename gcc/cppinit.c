@@ -896,10 +896,8 @@ cpp_start_read (pfile, fname)
       fprintf (stderr, _("End of search list.\n"));
     }
 
-  initialize_dependency_output (pfile);
-  
-  /* Open the main input file.  This must be done before -D processing
-     so we have a buffer to stand on.  */
+  /* Open the main input file.  This must be done early, so we have a
+     buffer to stand on.  */
   if (opts->in_fname == NULL || *opts->in_fname == 0)
     {
       opts->in_fname = fname;
@@ -910,6 +908,8 @@ cpp_start_read (pfile, fname)
   if (!cpp_read_file (pfile, fname))
     return 0;
 
+  initialize_dependency_output (pfile);
+  
   /* -D and friends may produce output, which should be identified
      as line 0.  */
 

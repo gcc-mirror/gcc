@@ -1,3 +1,8 @@
+2000-03-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppinit.c (cpp_start_read): Call initialize_dependency_output
+	only after reading in the primary source file.
+
 2000-03-29  Geoff Keating  <geoffk@cygnus.com>
 
 	* c-common.c (c_common_nodes_and_builtins): The first parameter to
