@@ -552,6 +552,11 @@ struct binding_level
        structure or union types.  */
     unsigned int n_incomplete;
 
+    /* List of VAR_DECLS saved from a previous for statement.
+       These would be dead in ANSI-conformant code, but might
+       be referenced in traditional code. */
+    tree dead_vars_from_for;
+
     /* 1 for the level that holds the parameters of a function.
        2 for the level that holds a class declaration.
        3 for levels that hold parameter declarations.  */
@@ -582,6 +587,9 @@ struct binding_level
 
     /* This is set for a namespace binding level.  */
     unsigned namespace_p : 1;
+
+    /* True if this level is that of a for-statement. */
+    unsigned is_for_scope : 1;
 
     /* One bit left for this word.  */
 
@@ -939,6 +947,12 @@ pushlevel (tag_transparent)
   keep_next_level_flag = 0;
 }
 
+int
+note_level_for_for ()
+{
+  current_binding_level->is_for_scope = 1;
+}
+
 void
 pushlevel_temporary (tag_transparent)
      int tag_transparent;
@@ -1097,28 +1111,81 @@ poplevel (keep, reverse, functionbody)
 
   /* Clear out the meanings of the local variables of this level.  */
 
-  for (link = decls; link; link = TREE_CHAIN (link))
+  for (link = current_binding_level->dead_vars_from_for;
+       link != NULL_TREE; link = TREE_CHAIN (link))
     {
-      if (DECL_NAME (link) != NULL_TREE)
+      if (DECL_DEAD_FOR_LOCAL (link))
 	{
-	  /* If the ident. was used or addressed via a local extern decl,
-	     don't forget that fact.  */
-	  if (DECL_EXTERNAL (link))
+	  tree id = DECL_NAME (link);
+	  if (IDENTIFIER_LOCAL_VALUE (id) == link)
+	    IDENTIFIER_LOCAL_VALUE (id) = DECL_SHADOWED_FOR_VAR (link);
+	}
+    }
+
+  if (current_binding_level->is_for_scope && flag_new_for_scope == 1)
+    {
+      for (link = decls; link; link = TREE_CHAIN (link))
+	{
+	  if (TREE_CODE (link) == VAR_DECL)
+	    DECL_DEAD_FOR_LOCAL (link) = 1;
+	}
+    }
+  else
+    {
+      for (link = decls; link; link = TREE_CHAIN (link))
+	{
+	  if (DECL_NAME (link) != NULL_TREE)
 	    {
-	      if (TREE_USED (link))
-		TREE_USED (DECL_ASSEMBLER_NAME (link)) = 1;
-	      if (TREE_ADDRESSABLE (link))
-		TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (link)) = 1;
+	      /* If the ident. was used or addressed via a local extern decl,
+		 don't forget that fact.  */
+	      if (DECL_EXTERNAL (link))
+		{
+		  if (TREE_USED (link))
+		    TREE_USED (DECL_ASSEMBLER_NAME (link)) = 1;
+		  if (TREE_ADDRESSABLE (link))
+		    TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (link)) = 1;
+		}
+	      IDENTIFIER_LOCAL_VALUE (DECL_NAME (link)) = NULL_TREE;
 	    }
-	  IDENTIFIER_LOCAL_VALUE (DECL_NAME (link)) = NULL_TREE;
 	}
     }
 
   /* Restore all name-meanings of the outer levels
      that were shadowed by this level.  */
 
-  for (link = current_binding_level->shadowed; link; link = TREE_CHAIN (link))
-    IDENTIFIER_LOCAL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
+  if (current_binding_level->is_for_scope && flag_new_for_scope == 1)
+    {
+      struct binding_level *outer = current_binding_level->level_chain;
+      for (link = current_binding_level->shadowed; link; link = TREE_CHAIN (link))
+	{
+	  tree id = TREE_PURPOSE (link);
+	  tree decl = IDENTIFIER_LOCAL_VALUE (id);
+	  if (DECL_DEAD_FOR_LOCAL (decl))
+	    DECL_SHADOWED_FOR_VAR (decl) = TREE_VALUE (link);
+	  else
+	    IDENTIFIER_LOCAL_VALUE (id) = TREE_VALUE (link);
+	}
+
+      /* Save declarations made in a 'for' statement so we can support pre-ANSI
+	 'for' scoping semantics. */
+
+      /* We append the current names of for-variables to those from previous
+	 declarations, so that when we get around to do an poplevel
+	 on the OUTER level, we restore the any shadowed readl bindings.
+	 Note that the new names are put first on the combined list,
+	 so they get to be restored first.  This is important if there are
+	 two for-loops using the same for-variable in the same block.
+	 The binding we really want restored is whatever binding was shadowed
+	 by the *first* for-variable, not the binding shadowed by the
+	 second for-variable (which would be the first for-variable). */
+      outer->dead_vars_from_for
+	= chainon (current_binding_level->names, outer->dead_vars_from_for);
+    }
+  else
+    {
+      for (link = current_binding_level->shadowed; link; link = TREE_CHAIN (link))
+	IDENTIFIER_LOCAL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
+    }
   for (link = current_binding_level->class_shadowed;
        link; link = TREE_CHAIN (link))
     IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
@@ -3029,15 +3096,16 @@ pushdecl (x)
 
       else if (t != NULL_TREE)
 	{
-	  if (TREE_CODE (t) == PARM_DECL)
+	  file = DECL_SOURCE_FILE (t);
+	  line = DECL_SOURCE_LINE (t);
+	  if (TREE_CODE (x) == VAR_DECL && DECL_DEAD_FOR_LOCAL (x))
+	    ; /* This is OK. */
+	  else if (TREE_CODE (t) == PARM_DECL)
 	    {
 	      if (DECL_CONTEXT (t) == NULL_TREE)
 		fatal ("parse errors have confused me too much");
 	    }
-	  file = DECL_SOURCE_FILE (t);
-	  line = DECL_SOURCE_LINE (t);
-
-	  if (((TREE_CODE (x) == FUNCTION_DECL && DECL_LANGUAGE (x) == lang_c)
+	  else if (((TREE_CODE (x) == FUNCTION_DECL && DECL_LANGUAGE (x) == lang_c)
 	       || (TREE_CODE (x) == TEMPLATE_DECL
 		   && ! DECL_TEMPLATE_IS_CLASS (x)))
 	      && is_overloaded_fn (t))
@@ -3303,6 +3371,13 @@ pushdecl (x)
 	      if (b->parm_flag == 1)
 		cp_error ("declaration of `%#D' shadows a parameter", name);
 	    }
+	  else if (oldlocal != NULL_TREE && b->is_for_scope
+		   && !DECL_DEAD_FOR_LOCAL (oldlocal))
+	    {
+	      warning ("variable `%s' shadows local",
+		       IDENTIFIER_POINTER (name));
+	      cp_warning_at ("  this is the shadowed declaration", oldlocal);
+	    }		   
 	  /* Maybe warn if shadowing something else.  */
 	  else if (warn_shadow && !DECL_EXTERNAL (x)
 		   /* No shadow warnings for internally generated vars.  */
