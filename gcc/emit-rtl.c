@@ -2518,7 +2518,7 @@ try_split (pat, trial, last)
 	  for (i = XVECLEN (seq, 0) - 1; i >= 0; i--)
 	    if (GET_CODE (XVECEXP (seq, 0, i)) == JUMP_INSN)
 	      mark_jump_label (PATTERN (XVECEXP (seq, 0, i)),
-			       XVECEXP (seq, 0, i), 0);
+			       XVECEXP (seq, 0, i), 0, 0);
 
 	  /* If we are splitting a CALL_INSN, look for the CALL_INSN
 	     in SEQ and copy our CALL_INSN_FUNCTION_USAGE to it.  */

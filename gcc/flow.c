@@ -798,7 +798,7 @@ find_sub_basic_blocks (bb)
       bb = BASIC_BLOCK (i);
       if (GET_CODE (bb->end) == JUMP_INSN)
 	{
-	  mark_jump_label (PATTERN (bb->end), bb->end, 0);
+	  mark_jump_label (PATTERN (bb->end), bb->end, 0, 0);
 	  make_label_edge (NULL, bb, JUMP_LABEL (bb->end), 0);
 	}
       insn = NEXT_INSN (insn);
