@@ -161,11 +161,35 @@
 %{!m32:" ASM_CPU64_DEFAULT_SPEC "} \
 ")
 
+/* wchar_t is called differently in <wchar.h> for 32 and 64-bit
+   compilations.  This is called for by SCD 2.4.1, p. 6-83, Figure 6-65
+   (32-bit) and p. 6P-10, Figure 6.38 (64-bit).  */
+#define NO_BUILTIN_WCHAR_TYPE
+
+#undef WCHAR_TYPE
+#define WCHAR_TYPE (TARGET_ARCH64 ? "int" : "long int")
+
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE 32
+
+/* Same for wint_t.  See SCD 2.4.1, p. 6-83, Figure 6-66 (32-bit).  There's
+   no corresponding 64-bit definition, but this is what Solaris 8
+   <iso/wchar_iso.h> uses.  */
+#define NO_BUILTIN_WINT_TYPE
+
+#undef WINT_TYPE
+#define WINT_TYPE (TARGET_ARCH64 ? "int" : "long int")
+
+#undef WINT_TYPE_SIZE
+#define WINT_TYPE_SIZE 32
+
 #undef CPP_ARCH32_SPEC
 #define CPP_ARCH32_SPEC "-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int \
+-D__WCHAR_TYPE__=long\\ int -D__WINT_TYPE__=long\\ int \
 -D__GCC_NEW_VARARGS__ -Acpu=sparc -Amachine=sparc"
 #undef CPP_ARCH64_SPEC
 #define CPP_ARCH64_SPEC "-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int \
+-D__WCHAR_TYPE__=int -D__WINT_TYPE__=int \
 -D__arch64__ -Acpu=sparc64 -Amachine=sparcv9 -D__sparcv9"
 
 #undef CPP_ARCH_SPEC
