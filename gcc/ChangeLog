@@ -1,3 +1,9 @@
+2004-11-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR rtl-optimization/17104
+	* config/rs6000/rs6000.c (rs6000_emit_move): Don't wrap small
+	loads in zero_extend.
+
 2004-11-02  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR debug/18242

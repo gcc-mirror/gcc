@@ -4264,22 +4264,8 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
       return;
     }
 
-  if (!no_new_pseudos)
-    {
-      if (GET_CODE (operands[1]) == MEM && optimize > 0
-	  && (mode == QImode || mode == HImode || mode == SImode)
-	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (word_mode))
-	{
-	  rtx reg = gen_reg_rtx (word_mode);
-
-	  emit_insn (gen_rtx_SET (word_mode, reg,
-				  gen_rtx_ZERO_EXTEND (word_mode,
-						       operands[1])));
-	  operands[1] = gen_lowpart (mode, reg);
-	}
-      if (GET_CODE (operands[0]) != REG)
-	operands[1] = force_reg (mode, operands[1]);
-    }
+  if (!no_new_pseudos && GET_CODE (operands[0]) != REG)
+    operands[1] = force_reg (mode, operands[1]);
 
   if (mode == SFmode && ! TARGET_POWERPC
       && TARGET_HARD_FLOAT && TARGET_FPRS

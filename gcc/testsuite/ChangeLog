@@ -1,3 +1,8 @@
+2004-11-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR rtl-optimization/17104
+	* gcc.dg/ppc-bitfield1.c: New.
+
 2004-11-01  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/uninit-H.c (ASM): Define to "$sp" on MIPS targets.
