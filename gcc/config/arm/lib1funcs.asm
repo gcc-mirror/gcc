@@ -74,9 +74,15 @@ Boston, MA 02111-1307, USA.  */
 #endif
 	
 #if defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5T__) \
-	|| defined(__ARM_ARCH_5TE__)
+	|| defined(__ARM_ARCH_5E__) || defined(__ARM_ARCH_5TE__) \
+	|| defined(__ARM_ARCH_5TEJ__)
 # undef __ARM_ARCH__
 # define __ARM_ARCH__ 5
+#endif
+
+#if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__)
+# undef __ARM_ARCH__
+# define __ARM_ARCH__ 6
 #endif
 
 /* How to return from a function call depends on the architecture variant.  */
@@ -876,7 +882,11 @@ LSYM(Lover12):
 		
 /* Do not build the interworking functions when the target architecture does 
    not support Thumb instructions.  (This can be a multilib option).  */
-#if defined L_call_via_rX && (defined __ARM_ARCH_4T__ || defined __ARM_ARCH_5T__ || defined __ARM_ARCH_5TE__)
+#if defined __ARM_ARCH_4T__ || defined __ARM_ARCH_5T__\
+      || defined __ARM_ARCH_5TE__ || defined __ARM_ARCH_5TEJ__ \
+      || __ARM_ARCH__ >= 6
+
+#if defined L_call_via_rX
 
 /* These labels & instructions are used by the Arm/Thumb interworking code. 
    The address of function to be called is loaded into a register and then 
@@ -914,10 +924,8 @@ LSYM(Lover12):
 	call_via lr
 
 #endif /* L_call_via_rX */
-/* ------------------------------------------------------------------------ */
-/* Do not build the interworking functions when the target architecture does 
-   not support Thumb instructions.  (This can be a multilib option).  */
-#if defined L_interwork_call_via_rX && (defined __ARM_ARCH_4T__ || defined __ARM_ARCH_5T__ || defined __ARM_ARCH_5TE__)
+
+#if defined L_interwork_call_via_rX
 
 /* These labels & instructions are used by the Arm/Thumb interworking code,
    when the target address is in an unknown instruction set.  The address 
@@ -993,6 +1001,7 @@ LSYM(Lchange_\register):
 	SIZE	(_interwork_call_via_lr)
 	
 #endif /* L_interwork_call_via_rX */
+#endif /* Arch supports thumb.  */
 
 #include "ieee754-df.S"
 #include "ieee754-sf.S"

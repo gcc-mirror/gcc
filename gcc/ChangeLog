@@ -1,3 +1,7 @@
+2004-04-28  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/lib1funcs.asm: Recognize armv5tej and armv6.
+
 2004-04-28  Josef Zlomek  <zlomekj@suse.cz>
 
 	* var-tracking.c (variable_different_p): Add a parameter
