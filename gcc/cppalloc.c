@@ -74,8 +74,8 @@ char *
 xstrdup (input)
   const char *input;
 {
-  unsigned size = strlen (input);
-  char *output = xmalloc (size + 1);
-  strcpy (output, input);
+  size_t size = strlen (input) + 1;
+  char *output = xmalloc (size);
+  memcpy (output, input, size);
   return output;
 }

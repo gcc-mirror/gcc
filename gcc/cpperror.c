@@ -63,8 +63,8 @@ cpp_print_containing_files (pfile)
 	  if (first)
 	    {
 	      first = 0;
-	      cpp_notice ("In file included from %s:%ld",
-			  ip->nominal_fname, line);
+	      cpp_message (pfile, -1, "In file included from %s:%ld",
+			   ip->nominal_fname, line);
 	    }
 	  else
 	    cpp_message (pfile, -1, ",\n                 from %s:%ld",
