@@ -200,11 +200,14 @@ inline void vec_dstt (const float *, int, const int) __attribute__ ((always_inli
 inline vector float vec_sld (vector float, vector float, const int) __attribute__ ((always_inline));
 inline vector signed int vec_sld (vector signed int, vector signed int, const int) __attribute__ ((always_inline));
 inline vector unsigned int vec_sld (vector unsigned int, vector unsigned int, const int) __attribute__ ((always_inline));
+inline vector bool int vec_sld (vector bool int, vector bool int, const int) __attribute__ ((always_inline));
 inline vector signed short vec_sld (vector signed short, vector signed short, const int) __attribute__ ((always_inline));
 inline vector unsigned short vec_sld (vector unsigned short, vector unsigned short, const int) __attribute__ ((always_inline));
+inline vector bool short vec_sld (vector bool short, vector bool short, const int) __attribute__ ((always_inline));
 inline vector pixel vec_sld (vector pixel, vector pixel, const int) __attribute__ ((always_inline));
 inline vector signed char vec_sld (vector signed char, vector signed char, const int) __attribute__ ((always_inline));
 inline vector unsigned char vec_sld (vector unsigned char, vector unsigned char, const int) __attribute__ ((always_inline));
+inline vector bool char vec_sld (vector bool char, vector bool char, const int) __attribute__ ((always_inline));
 inline vector signed char vec_splat (vector signed char, const int) __attribute__ ((always_inline));
 inline vector unsigned char vec_splat (vector unsigned char, const int) __attribute__ ((always_inline));
 inline vector bool char vec_splat (vector bool char, const int) __attribute__ ((always_inline));
@@ -4196,6 +4199,12 @@ vec_sld (vector unsigned int a1, vector unsigned int a2, const int a3)
   return (vector unsigned int) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, a3);
 }
 
+inline vector bool int
+vec_sld (vector bool int a1, vector bool int a2, const int a3)
+{
+  return (vector bool int) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, a3);
+}
+
 inline vector signed short
 vec_sld (vector signed short a1, vector signed short a2, const int a3)
 {
@@ -4206,6 +4215,12 @@ inline vector unsigned short
 vec_sld (vector unsigned short a1, vector unsigned short a2, const int a3)
 {
   return (vector unsigned short) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, a3);
+}
+
+inline vector bool short
+vec_sld (vector bool short a1, vector bool short a2, const int a3)
+{
+  return (vector bool short) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, a3);
 }
 
 inline vector pixel
@@ -4224,6 +4239,12 @@ inline vector unsigned char
 vec_sld (vector unsigned char a1, vector unsigned char a2, const int a3)
 {
   return (vector unsigned char) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, a3);
+}
+
+inline vector bool char
+vec_sld (vector bool char a1, vector bool char a2, const int a3)
+{
+  return (vector bool char) __builtin_altivec_vsldoi_4si ((vector signed int) a1, (vector signed int) a2, a3);
 }
 
 /* vec_sll */
@@ -9534,17 +9555,23 @@ __ch (__tern_args_eq (vector signed int, (a1), vector signed int, (a2), int, (a3
       ((vector signed int) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
 __ch (__tern_args_eq (vector unsigned int, (a1), vector unsigned int, (a2), int, (a3)), \
       ((vector unsigned int) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
+__ch (__tern_args_eq (vector bool int, (a1), vector bool int, (a2), int, (a3)), \
+      ((vector bool int) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
 __ch (__tern_args_eq (vector signed short, (a1), vector signed short, (a2), int, (a3)), \
       ((vector signed short) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
 __ch (__tern_args_eq (vector unsigned short, (a1), vector unsigned short, (a2), int, (a3)), \
       ((vector unsigned short) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
+__ch (__tern_args_eq (vector bool short, (a1), vector bool short, (a2), int, (a3)), \
+      ((vector bool short) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
 __ch (__tern_args_eq (vector pixel, (a1), vector pixel, (a2), int, (a3)), \
       ((vector pixel) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
 __ch (__tern_args_eq (vector signed char, (a1), vector signed char, (a2), int, (a3)), \
       ((vector signed char) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
 __ch (__tern_args_eq (vector unsigned char, (a1), vector unsigned char, (a2), int, (a3)), \
       ((vector unsigned char) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
-    __builtin_altivec_compiletime_error ("vec_sld")))))))))
+__ch (__tern_args_eq (vector bool char, (a1), vector bool char, (a2), int, (a3)), \
+      ((vector bool char) __builtin_altivec_vsldoi_4si ((vector signed int) (a1), (vector signed int) (a2), (const int) (a3))), \
+    __builtin_altivec_compiletime_error ("vec_sld"))))))))))))
 
 #define vec_sll(a1, a2) \
 __ch (__bin_args_eq (vector signed int, (a1), vector unsigned int, (a2)), \

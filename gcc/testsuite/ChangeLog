@@ -1,3 +1,8 @@
+2004-05-10  Ziemowit Laski  <zlaski@apple.com>
+
+	* g++.dg/ext/altivec-8.C: New test case.
+	* gcc.dg/altivec-13.c: New test case.
+
 2004-05-08  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/divcmp-1.c: New test case.
