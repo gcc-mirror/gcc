@@ -52,6 +52,7 @@ ffi_java_raw_size (ffi_cif *cif)
       switch((*at) -> type) {
 	case FFI_TYPE_UINT64:
 	case FFI_TYPE_SINT64:
+	case FFI_TYPE_DOUBLE:
 	  result += 2 * SIZEOF_ARG;
 	  break;
 	case FFI_TYPE_STRUCT:
