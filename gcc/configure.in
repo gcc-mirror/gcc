@@ -140,6 +140,8 @@ GCC_NEED_DECLARATION(realloc)
 GCC_NEED_DECLARATION(calloc)
 GCC_NEED_DECLARATION(free)
 
+AC_DECL_SYS_SIGLIST
+
 # File extensions
 manext='.1'
 objext='.o'

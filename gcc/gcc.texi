@@ -3718,11 +3718,6 @@ system.
 Define this if your system @emph{does not} provide the variable
 @code{sys_siglist}.
 
-@findex DONT_DECLARE_SYS_SIGLIST
-@item DONT_DECLARE_SYS_SIGLIST
-Define this if your system has the variable @code{sys_siglist}, and
-there is already a declaration of it in the system header files.
-
 @findex USE_PROTOTYPES
 @item USE_PROTOTYPES
 Define this to be 1 if you know that the host compiler supports
