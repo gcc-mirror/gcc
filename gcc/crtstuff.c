@@ -70,7 +70,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifdef INIT_SECTION_ASM_OP
 
 /* The function __do_global_ctors_aux is compiled twice (once in crtbegin.o
-   and once in crtend.o).  It must be declared static to aviod a link
+   and once in crtend.o).  It must be declared static to avoid a link
    error.  Here, we define __do_global_ctors as an externally callable
    function.  It is externally callable so that __main can invoke it when
    INVOKE__main is defined.  This has the additional effect of forcing cc1
