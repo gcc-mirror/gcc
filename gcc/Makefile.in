@@ -182,7 +182,15 @@ LIBGCC2 = libgcc2.a
 # -g1 causes output of debug info only for file-scope entities.
 # we use this here because that should be enough, and also
 # so that -g1 will be tested.
-LIBGCC2_CFLAGS = -O2 $(GCC_CFLAGS) -g1
+LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) -g1
+
+# Additional options to use when compiling libgcc2.a.
+# Some targets override this to -Iinclude
+LIBGCC2_INCLUDES =
+
+# Things which must be built before building libgcc2.a.
+# Some targets override this to stmp-int-hdrs
+LIBGCC2_DEPS =
 
 # List of extra executables that should be compiled for this target machine
 # that are used for compiling from source code to object code.
@@ -616,7 +624,7 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 # Compiling libgcc2.a requires making sure that cc1, etc. have been compiled.
 # But recompiling cc1 should not force recompilation of libgcc2.a.
 # If you want to force recompilation, delete libgcc2.a.
-libgcc2.ready: $(GCC_PASSES)
+libgcc2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS)
 	-if [ -f libgcc2.ready ] ; then \
 		true; \
 	else \
@@ -1290,7 +1298,9 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 # stamp-* so that mostlyclean does not force the include directory to
 # be rebuilt.
 
-stmp-headers: stmp-fixinc $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h xlimits.h gfloat.h
+# Build the include directory except for float.h (which depends upon
+# enquire).
+stmp-int-hdrs: stmp-fixinc $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h xlimits.h
 # Copy in the headers provided with gcc.
 # The sed command gets just the last file name component;
 # this is necessary because VPATH could add a dirname.
@@ -1322,13 +1332,17 @@ stmp-headers: stmp-fixinc $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimits.h 
 	rm -f include/limits.h
 	cp xlimits.h include/limits.h
 	chmod a+r include/limits.h
-	rm -f include/float.h
-	cp gfloat.h include/float.h
-	chmod a+r include/float.h
 # Install the README
 	rm -f include/README
 	cp $(srcdir)/README-fixinc include/README
 	chmod a+r include/README
+	touch stmp-int-hdrs
+
+# Build the complete include directory.
+stmp-headers: stmp-int-hdrs gfloat.h
+	rm -f include/float.h
+	cp gfloat.h include/float.h
+	chmod a+r include/float.h
 	touch stmp-headers
 
 # Build fixed copies of system files.
