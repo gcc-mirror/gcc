@@ -1,5 +1,5 @@
 /* { dg-do run { target *-*-linux* powerpc*-*-darwin* } } */
-/* { dg-options "-fasynchronous-unwind-tables -fexceptions -O2" } */
+/* { dg-options "-fexceptions -fnon-call-exceptions -O2" } */
 /* Verify that cleanups work with exception handling through realtime
    signal frames.  */
 
