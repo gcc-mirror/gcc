@@ -2385,7 +2385,7 @@ write_vtable_entries (decl)
 	  TREE_ADDRESSABLE (fn) = 1;
 	  temporary_allocation ();
 	  output_inline_function (fn);
-	  permanent_allocation ();
+	  permanent_allocation (1);
 	}
       else
 	assemble_external (fn);
@@ -2763,7 +2763,7 @@ finish_file ()
 	{
 	  temporary_allocation ();
 	  output_inline_function (decl);
-	  permanent_allocation ();
+	  permanent_allocation (1);
 	}
       pending_addressable_inlines = TREE_CHAIN (pending_addressable_inlines);
     }
@@ -2813,7 +2813,7 @@ finish_file ()
 	}
     }
 
-  permanent_allocation ();
+  permanent_allocation (1);
   this_time = get_run_time ();
   parse_time -= this_time - start_time;
   varconst_time += this_time - start_time;
