@@ -345,7 +345,7 @@ maybe_get_identifier (text)
 void
 stringpool_statistics ()
 {
-  size_t nelts, overhead, headers;
+  size_t nelts, nids, overhead, headers;
   size_t total_bytes, longest, sum_of_squares;
   double exp_len, exp_len2, exp2_len;
   struct str_header *e;
@@ -356,7 +356,7 @@ stringpool_statistics ()
 		     : (x) / (1024*1024))))
 #define LABEL(x) ((x) < 1024*10 ? ' ' : ((x) < 1024*1024*10 ? 'k' : 'M'))
 
-  total_bytes = longest = sum_of_squares = 0;
+  total_bytes = longest = sum_of_squares = nids = 0;
   FORALL_STRINGS (e)
     {
       size_t n = e->len;
@@ -365,6 +365,8 @@ stringpool_statistics ()
       sum_of_squares += n*n;
       if (n > longest)
 	longest = n;
+      if (e->data)
+	nids++;
     }
       
   nelts = string_hash.nelements;
@@ -374,10 +376,13 @@ stringpool_statistics ()
   fprintf (stderr,
 "\nString pool\n\
 entries\t\t%lu\n\
+identifiers\t%lu (%.2f%%)\n\
 slots\t\t%lu\n\
 bytes\t\t%lu%c (%lu%c overhead)\n\
 table size\t%lu%c\n",
-	   (unsigned long) nelts, (unsigned long) string_hash.nslots,
+	   (unsigned long) nelts,
+	   (unsigned long) nids, nids * 100.0 / nelts,
+	   (unsigned long) string_hash.nslots,
 	   SCALE (total_bytes), LABEL (total_bytes),
 	   SCALE (overhead), LABEL (overhead),
 	   SCALE (headers), LABEL (headers));
