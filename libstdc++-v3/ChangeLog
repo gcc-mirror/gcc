@@ -1,5 +1,12 @@
 2003-12-02  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (time_get::do_get_year):
+	Avoid using a basic_string and calling a full blown strtol
+	(via __convert_to_v) for simple 2 or 4 digits, base 10,
+	positive integers; simplify.
+
+2003-12-02  Paolo Carlini  <pcarlini@suse.de>
+
 	* config/locale/gnu/monetary_members.cc
 	(money_base::_S_construct_pattern): For case 3: and 4:
 	exchanging 'if (__precedes)' and 'if (__space)' allows
