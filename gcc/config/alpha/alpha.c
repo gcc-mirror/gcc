@@ -2130,7 +2130,7 @@ alpha_expand_block_move (operands)
 		  start_sequence ();
 		  emit_move_insn (gen_lowpart (DImode, tmp), data_regs[0]);
 		  emit_move_insn (gen_highpart (DImode, tmp), data_regs[1]);
-		  seq = gen_sequence ();
+		  seq = get_insns ();
 		  end_sequence ();
 
 		  emit_no_conflict_block (seq, tmp, data_regs[0],
