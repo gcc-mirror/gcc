@@ -1,5 +1,12 @@
 2003-12-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR debug/12923
+	* gcc.dg/20031218-1.c: New test.
+
+	PR debug/12389
+	* gcc.dg/20031218-2.c: New test.
+	* gcc.dg/20031218-3.c: New test.
+
 	* g++.dg/abi/mangle18-1.C: Modify regexp to test for `[: \t\n]' at end
 	of label name and allow for USER_LABEL_PREFIX == "_" names.
 	* g++.dg/abi/mangle18-2.C: Likewise.
