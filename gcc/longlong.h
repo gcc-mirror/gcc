@@ -42,18 +42,22 @@
    If, in addition, the most significant bit of DENOMINATOR must be 1,
    then the pre-processor symbol UDIV_NEEDS_NORMALIZATION is defined to 1.
 
-   4) count_leading_zeros(count, x) counts the number of zero-bits from
+   4) sdiv_qrnnd(quotient, remainder, high_numerator, low_numerator,
+   denominator).  Like udiv_qrnnd but the numbers are signed.  The
+   quotient is rounded towards 0.
+
+   5) count_leading_zeros(count, x) counts the number of zero-bits from
    the msb to the first non-zero bit.  This is the number of steps X
    needs to be shifted left to set the msb.  Undefined for X == 0.
 
-   5) add_ssaaaa(high_sum, low_sum, high_addend_1, low_addend_1,
+   6) add_ssaaaa(high_sum, low_sum, high_addend_1, low_addend_1,
    high_addend_2, low_addend_2) adds two two-word unsigned integers,
    composed by HIGH_ADDEND_1 and LOW_ADDEND_1, and HIGH_ADDEND_2 and
    LOW_ADDEND_2 respectively.  The result is placed in HIGH_SUM and
    LOW_SUM.  Overflow (i.e. carry out) is not stored anywhere, and is
    lost.
 
-   6) sub_ddmmss(high_difference, low_difference, high_minuend,
+   7) sub_ddmmss(high_difference, low_difference, high_minuend,
    low_minuend, high_subtrahend, low_subtrahend) subtracts two
    two-word unsigned integers, composed by HIGH_MINUEND_1 and
    LOW_MINUEND_1, and HIGH_SUBTRAHEND_2 and LOW_SUBTRAHEND_2
