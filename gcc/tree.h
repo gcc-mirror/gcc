@@ -1490,6 +1490,11 @@ extern int lvalue_or_else		PROTO((tree, char *));
 
 extern tree save_expr			PROTO((tree));
 
+/* Returns the index of the first non-tree operand for CODE, or the number
+   of operands if all are trees.  */
+
+extern int first_rtl_op			PROTO((enum tree_code));
+
 /* unsave_expr (EXP) returns an expression equivalent to EXP but it
    can be used multiple times and will evaluate EXP, in it's entirety
    each time.  */
@@ -1508,6 +1513,11 @@ extern tree unsave_expr_now		PROTO((tree));
    or a COND_EXPR.  */
 
 extern int contains_placeholder_p	PROTO((tree));
+
+/* Return 1 if EXP contains any expressions that produce cleanups for an
+   outer scope to deal with.  Used by fold.  */
+
+extern int has_cleanups			PROTO((tree));
 
 /* Given a tree EXP, a FIELD_DECL F, and a replacement value R,
    return a tree with all occurrences of references to F in a

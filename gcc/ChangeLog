@@ -1,3 +1,13 @@
+1998-02-16  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (first_rtl_op): New fn.
+	(unsave_expr_now): Use it.
+	* print-tree.c (print_node): Likewise.
+	* tree.c (has_cleanups): New fn.
+	* fold-const.c (fold, case CLEANUP_POINT_EXPR): Use it.  Be more
+	conservative about pushing the cleanup point down.
+	* tree.h: Declare them.
+
 Sun Feb 15 23:28:44 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* toplev.c (flag_schedule_reverse_before_reload): Delete variable.

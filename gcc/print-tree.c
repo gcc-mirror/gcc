@@ -547,29 +547,10 @@ print_node (file, prefix, node, indent)
 	  return;
 	}
 
-      first_rtl = len = tree_code_length[(int) TREE_CODE (node)];
-      /* These kinds of nodes contain rtx's, not trees,
+      len = tree_code_length[(int) TREE_CODE (node)];
+      /* Some nodes contain rtx's, not trees,
 	 after a certain point.  Print the rtx's as rtx's.  */
-      switch (TREE_CODE (node))
-	{
-	case SAVE_EXPR:
-	  first_rtl = 2;
-	  break;
-	case CALL_EXPR:
-	  first_rtl = 2;
-	  break;
-	case METHOD_CALL_EXPR:
-	  first_rtl = 3;
-	  break;
-	case WITH_CLEANUP_EXPR:
-	  /* Should be defined to be 2.  */
-	  first_rtl = 1;
-	  break;
-	case RTL_EXPR:
-	  first_rtl = 0;
-	default:
-	  break;
-	}
+      first_rtl = first_rtl_op (TREE_CODE (node));
       for (i = 0; i < len; i++)
 	{
 	  if (i >= first_rtl)

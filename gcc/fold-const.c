@@ -5920,7 +5920,7 @@ fold (expr)
       /* Pull arithmetic ops out of the CLEANUP_POINT_EXPR where
          appropriate.  */
     case CLEANUP_POINT_EXPR:
-      if (! TREE_SIDE_EFFECTS (arg0))
+      if (! has_cleanups (arg0))
 	return TREE_OPERAND (t, 0);
 
       {
@@ -5941,12 +5941,14 @@ fold (expr)
 	  {
 	    arg01 = TREE_OPERAND (arg0, 1);
 
-	    if (! TREE_SIDE_EFFECTS (arg00))
+	    if (TREE_CONSTANT (arg00)
+		|| ((code0 == TRUTH_ANDIF_EXPR || code0 == TRUTH_ORIF_EXPR)
+		    && ! has_cleanups (arg00)))
 	      return fold (build (code0, type, arg00,
 				  fold (build1 (CLEANUP_POINT_EXPR,
 						TREE_TYPE (arg01), arg01))));
 
-	    if (! TREE_SIDE_EFFECTS (arg01))
+	    if (TREE_CONSTANT (arg01))
 	      return fold (build (code0, type,
 				  fold (build1 (CLEANUP_POINT_EXPR,
 						TREE_TYPE (arg00), arg00)),

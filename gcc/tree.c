@@ -2387,6 +2387,31 @@ unsave_expr (expr)
   return t;
 }
 
+/* Returns the index of the first non-tree operand for CODE, or the number
+   of operands if all are trees.  */
+
+int
+first_rtl_op (code)
+     enum tree_code code;
+{
+  switch (code)
+    {
+    case SAVE_EXPR:
+      return 2;
+    case RTL_EXPR:
+      return 0;
+    case CALL_EXPR:
+      return 2;
+    case WITH_CLEANUP_EXPR:
+      /* Should be defined to be 2.  */
+      return 1;
+    case METHOD_CALL_EXPR:
+      return 3;
+    default:
+      return tree_code_length [(int) code];
+    }
+}
+
 /* Modify a tree in place so that all the evaluate only once things
    are cleared out.  Return the EXPR given.  */
 
@@ -2402,12 +2427,11 @@ unsave_expr_now (expr)
     return expr;
 
   code = TREE_CODE (expr);
-  first_rtl = tree_code_length [(int) code];
+  first_rtl = first_rtl_op (code);
   switch (code)
     {
     case SAVE_EXPR:
       SAVE_EXPR_RTL (expr) = 0;
-      first_rtl = 2;
       break;
 
     case TARGET_EXPR:
@@ -2419,7 +2443,6 @@ unsave_expr_now (expr)
       /* I don't yet know how to emit a sequence multiple times.  */
       if (RTL_EXPR_SEQUENCE (expr) != 0)
 	abort ();
-      first_rtl = 0;
       break;
 
     case CALL_EXPR:
@@ -2434,16 +2457,6 @@ unsave_expr_now (expr)
 	      exp = TREE_CHAIN (exp);
 	    }
 	}
-      first_rtl = 2;
-      break;
-
-    case WITH_CLEANUP_EXPR:
-      /* Should be defined to be 2.  */
-      first_rtl = 1;
-      break;
-
-    case METHOD_CALL_EXPR:
-      first_rtl = 3;
       break;
 
     default:
@@ -2560,6 +2573,64 @@ contains_placeholder_p (exp)
     default:
       return 0;
     }
+}
+
+/* Return 1 if EXP contains any expressions that produce cleanups for an
+   outer scope to deal with.  Used by fold.  */
+
+int
+has_cleanups (exp)
+     tree exp;
+{
+  int i, nops, cmp;
+
+  if (! TREE_SIDE_EFFECTS (exp))
+    return 0;
+
+  switch (TREE_CODE (exp))
+    {
+    case TARGET_EXPR:
+    case WITH_CLEANUP_EXPR:
+      return 1;
+
+    case CLEANUP_POINT_EXPR:
+      return 0;
+
+    case CALL_EXPR:
+      for (exp = TREE_OPERAND (exp, 1); exp; exp = TREE_CHAIN (exp))
+	{
+	  cmp = has_cleanups (TREE_VALUE (exp));
+	  if (cmp)
+	    return cmp;
+	}
+      return 0;
+
+    default:
+      break;
+    }
+
+  /* This general rule works for most tree codes.  All exceptions should be
+     handled above.  If this is a language-specific tree code, we can't
+     trust what might be in the operand, so say we don't know
+     the situation.  */
+  if ((int) TREE_CODE (exp) >= (int) LAST_AND_UNUSED_TREE_CODE)
+    return -1;
+
+  nops = first_rtl_op (TREE_CODE (exp));
+  for (i = 0; i < nops; i++)
+    if (TREE_OPERAND (exp, i) != 0)
+      {
+	int type = TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, i)));
+	if (type == 'e' || type == '<' || type == '1' || type == '2'
+	    || type == 'r' || type == 's')
+	  {
+	    cmp = has_cleanups (TREE_OPERAND (exp, i));
+	    if (cmp)
+	      return cmp;
+	  }
+      }
+
+  return 0;
 }
 
 /* Given a tree EXP, a FIELD_DECL F, and a replacement value R,
