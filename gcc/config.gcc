@@ -614,11 +614,11 @@ arc-*-elf*)
 	;;
 arm-*-coff* | armel-*-coff*)
 	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h"
-	tmake_file=arm/t-arm arm/t-arm-coff
+	tmake_file="arm/t-arm arm/t-arm-coff"
 	;;
 arm-semi-aof | armel-semi-aof)
 	tm_file="arm/semiaof.h arm/aof.h arm/arm.h"
-	tmake_file=arm/t-arm arm/t-semi
+	tmake_file="arm/t-arm arm/t-semi"
 	;;
 arm-wrs-vxworks)
 	tm_file="dbxelf.h elfos.h svr4.h vxworks.h arm/elf.h arm/aout.h arm/arm.h arm/vxworks.h"
@@ -650,7 +650,7 @@ arm*-*-uclinux*)		# ARM ucLinux
 	;;
 arm*-*-ecos-elf)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/ecos-elf.h"
-	tmake_file=arm/t-arm arm/t-arm-elf
+	tmake_file="arm/t-arm arm/t-arm-elf"
 	;;
 arm*-*-rtems*)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/rtems-elf.h rtems.h"
@@ -1975,7 +1975,7 @@ sparc64-*-netbsd*)
 	;;
 strongarm-*-elf*)
 	tm_file="arm/strongarm-elf.h dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"
-	tmake_file=arm/t-strongarm-elf
+	tmake_file="arm/t-arm arm/t-strongarm-elf"
 	out_file=arm/arm.c
 	md_file=arm/arm.md
 	extra_modes=arm/arm-modes.def
@@ -1983,7 +1983,7 @@ strongarm-*-elf*)
 	;;
 strongarm-*-pe)
 	tm_file="arm/semi.h arm/aout.h arm/coff.h dbxcoff.h arm/strongarm-coff.h arm/arm.h arm/pe.h arm/strongarm-pe.h"
-	tmake_file=arm/t-strongarm-pe
+	tmake_file="arm/t-arm arm/t-strongarm-pe"
 	out_file=arm/arm.c
 	md_file=arm/arm.md
 	extra_modes=arm/arm-modes.def
@@ -1992,7 +1992,7 @@ strongarm-*-pe)
 	;;
 strongarm-*-kaos*)
 	tm_file="arm/strongarm-elf.h dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h kaos.h arm/kaos-strongarm.h"
-	tmake_file=arm/t-strongarm-elf
+	tmake_file="arm/t-arm arm/t-strongarm-elf"
 	out_file=arm/arm.c
 	md_file=arm/arm.md
 	extra_modes=arm/arm-modes.def
@@ -2073,7 +2073,7 @@ vax-*-ultrix*)			# VAXen running ultrix
 	;;
 xscale-*-elf)
 	tm_file="arm/xscale-elf.h dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"
-	tmake_file=arm/t-xscale-elf
+	tmake_file="arm/t-arm arm/t-xscale-elf"
 	out_file=arm/arm.c
 	md_file=arm/arm.md
 	extra_modes=arm/arm-modes.def
@@ -2081,7 +2081,7 @@ xscale-*-elf)
 	;;
 xscale-*-coff)
 	tm_file="arm/semi.h arm/aout.h arm/coff.h dbxcoff.h arm/xscale-coff.h arm/arm.h"
-	tmake_file=arm/t-xscale-coff
+	tmake_file="arm/t-arm arm/t-xscale-coff"
 	out_file=arm/arm.c
 	md_file=arm/arm.md
 	extra_modes=arm/arm-modes.def
