@@ -1,5 +1,7 @@
 Mon Apr 27 18:36:28 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* m68k/lb1sf68.asm (Laddsf$3): Fix typos in mcf5200 exg code.
+
 	* loop.c (check_dbra_loop): New locals jump, first_compare, and
 	compare_and_branch.  Call get_condition to set first_compare.
 	Set compare_and_branch to number of compare/branch instructions.
