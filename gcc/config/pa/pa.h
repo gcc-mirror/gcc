@@ -2280,6 +2280,8 @@ extern char *output_bb ();
 extern char *output_bvb ();
 extern char *output_dbra ();
 extern char *output_movb ();
+extern char *output_parallel_movb ();
+extern char *output_parallel_addb ();
 extern char *output_return ();
 extern char *output_call ();
 extern char *output_millicode_call ();
