@@ -1272,7 +1272,7 @@ build_signal_descriptor (sigdef, exprlist)
       || ! CH_DECL_SIGNAL (sigdef))
     {
       error ("SEND requires a SIGNAL; %s is not a SIGNAL name", 
-	     signame);
+	     IDENTIFIER_POINTER (signame));
       return error_mark_node;
     }
   if (CH_TYPE_NONVALUE_P (TREE_TYPE (sigdef)))

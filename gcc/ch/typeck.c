@@ -1211,7 +1211,7 @@ build_chill_cast (type, expr)
 		 build1 (NOP_EXPR, build_pointer_type (type),
 			 build1 (ADDR_EXPR, build_pointer_type (expr_type),
 				 expr)));
-  TREE_READONLY (expr) == TYPE_READONLY (type);
+  TREE_READONLY (expr) = TYPE_READONLY (type);
   return expr;
 }
 
