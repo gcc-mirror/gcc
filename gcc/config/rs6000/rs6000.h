@@ -940,15 +940,18 @@ extern int rs6000_altivec_abi;
     for (i = 32; i < 64; i++)						\
       fixed_regs[i] = call_used_regs[i]					\
         = call_really_used_regs[i] = 1;					\
-  if (DEFAULT_ABI == ABI_V4 && flag_pic == 1)				\
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM]					\
-      = call_used_regs[PIC_OFFSET_TABLE_REGNUM]				\
-      = call_really_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
-  if (DEFAULT_ABI == ABI_DARWIN && flag_pic)				\
-    global_regs[PIC_OFFSET_TABLE_REGNUM]				\
-      = fixed_regs[PIC_OFFSET_TABLE_REGNUM]				\
-      = call_used_regs[PIC_OFFSET_TABLE_REGNUM]				\
-      = call_really_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
+  if (DEFAULT_ABI == ABI_V4						\
+      && PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM			\
+      && flag_pic == 1)							\
+    fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]				\
+      = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]			\
+      = call_really_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;	\
+  if (DEFAULT_ABI == ABI_DARWIN						\
+      && PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)			\
+    global_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]				\
+      = fixed_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]			\
+      = call_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM]			\
+      = call_really_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;	\
   if (! TARGET_ALTIVEC)							\
     {									\
       for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)	\
@@ -2080,7 +2083,8 @@ do {									     \
    this macro is not defined, it is up to the machine-dependent files
    to allocate such a register (if necessary).  */
 
-#define PIC_OFFSET_TABLE_REGNUM 30
+#define RS6000_PIC_OFFSET_TABLE_REGNUM 30
+#define PIC_OFFSET_TABLE_REGNUM (flag_pic ? RS6000_PIC_OFFSET_TABLE_REGNUM : INVALID_REGNUM)
 
 #define TOC_REGISTER (TARGET_MINIMAL_TOC ? 30 : 2)
 

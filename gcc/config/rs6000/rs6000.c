@@ -6095,8 +6095,8 @@ rs6000_got_register (value)
   /* The second flow pass currently (June 1999) can't update
      regs_ever_live without disturbing other parts of the compiler, so
      update it here to make the prolog/epilogue code happy.  */
-  if (no_new_pseudos && ! regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
-    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
+  if (no_new_pseudos && ! regs_ever_live[RS6000_PIC_OFFSET_TABLE_REGNUM])
+    regs_ever_live[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;
 
   current_function_uses_pic_offset_table = 1;
 
@@ -7400,7 +7400,7 @@ first_reg_to_save ()
   for (first_reg = 13; first_reg <= 31; first_reg++)
     if (regs_ever_live[first_reg] 
 	&& (! call_used_regs[first_reg]
-	    || (first_reg == PIC_OFFSET_TABLE_REGNUM
+	    || (first_reg == RS6000_PIC_OFFSET_TABLE_REGNUM
 		&& ((DEFAULT_ABI == ABI_V4 && flag_pic == 1)
 		    || (DEFAULT_ABI == ABI_DARWIN && flag_pic)))))
       break;
@@ -7454,8 +7454,8 @@ first_reg_to_save ()
 
 #if TARGET_MACHO
   if (flag_pic && current_function_uses_pic_offset_table &&
-      (first_reg > PIC_OFFSET_TABLE_REGNUM))
-    return PIC_OFFSET_TABLE_REGNUM;
+      (first_reg > RS6000_PIC_OFFSET_TABLE_REGNUM))
+    return RS6000_PIC_OFFSET_TABLE_REGNUM;
 #endif
 
   return first_reg;
@@ -7667,13 +7667,13 @@ rs6000_stack_info ()
 
   /* Calculate which registers need to be saved & save area size.  */
   info_ptr->first_gp_reg_save = first_reg_to_save ();
-  /* Assume that we will have to save PIC_OFFSET_TABLE_REGNUM, 
+  /* Assume that we will have to save RS6000_PIC_OFFSET_TABLE_REGNUM, 
      even if it currently looks like we won't.  */
   if (((TARGET_TOC && TARGET_MINIMAL_TOC)
        || (flag_pic == 1 && abi == ABI_V4)
        || (flag_pic && abi == ABI_DARWIN))
-      && info_ptr->first_gp_reg_save > PIC_OFFSET_TABLE_REGNUM)
-    info_ptr->gp_size = reg_size * (32 - PIC_OFFSET_TABLE_REGNUM);
+      && info_ptr->first_gp_reg_save > RS6000_PIC_OFFSET_TABLE_REGNUM)
+    info_ptr->gp_size = reg_size * (32 - RS6000_PIC_OFFSET_TABLE_REGNUM);
   else
     info_ptr->gp_size = reg_size * (32 - info_ptr->first_gp_reg_save);
 
@@ -8090,7 +8090,7 @@ rs6000_emit_load_toc_table (fromprolog)
      int fromprolog;
 {
   rtx dest;
-  dest = gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
+  dest = gen_rtx_REG (Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM);
 
   if (TARGET_ELF && DEFAULT_ABI != ABI_AIX)
     {
@@ -8829,7 +8829,7 @@ rs6000_emit_prologue ()
       for (i = 0; i < 32 - info->first_gp_reg_save; i++)
 	if ((regs_ever_live[info->first_gp_reg_save+i] 
 	     && ! call_used_regs[info->first_gp_reg_save+i])
-	    || (i+info->first_gp_reg_save == PIC_OFFSET_TABLE_REGNUM
+	    || (i+info->first_gp_reg_save == RS6000_PIC_OFFSET_TABLE_REGNUM
 		&& ((DEFAULT_ABI == ABI_V4 && flag_pic == 1)
 		    || (DEFAULT_ABI == ABI_DARWIN && flag_pic))))
 	  {
@@ -8931,10 +8931,10 @@ rs6000_emit_prologue ()
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  /* If we are using PIC_OFFSET_TABLE_REGNUM, we need to set it up.  */
+  /* If we are using RS6000_PIC_OFFSET_TABLE_REGNUM, we need to set it up.  */
   if ((TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
       || (DEFAULT_ABI == ABI_V4 && flag_pic == 1
-	  && regs_ever_live[PIC_OFFSET_TABLE_REGNUM]))
+	  && regs_ever_live[RS6000_PIC_OFFSET_TABLE_REGNUM]))
   {
     /* If emit_load_toc_table will use the link register, we need to save
        it.  We use R11 for this purpose because emit_load_toc_table
@@ -8962,7 +8962,7 @@ rs6000_emit_prologue ()
       rs6000_maybe_dead (emit_insn (gen_load_macho_picbase (dest)));
 
       rs6000_maybe_dead (
-	emit_move_insn (gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM),
+	emit_move_insn (gen_rtx_REG (Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM),
 			gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)));
     }
 }
@@ -9204,7 +9204,7 @@ rs6000_emit_epilogue (sibcall)
     for (i = 0; i < 32 - info->first_gp_reg_save; i++)
       if ((regs_ever_live[info->first_gp_reg_save+i] 
 	   && ! call_used_regs[info->first_gp_reg_save+i])
-	  || (i+info->first_gp_reg_save == PIC_OFFSET_TABLE_REGNUM
+	  || (i+info->first_gp_reg_save == RS6000_PIC_OFFSET_TABLE_REGNUM
 	      && ((DEFAULT_ABI == ABI_V4 && flag_pic == 1)
 		  || (DEFAULT_ABI == ABI_DARWIN && flag_pic))))
 	{
