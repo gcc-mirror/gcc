@@ -3951,7 +3951,7 @@ build_unary_op (code, xarg, noconvert)
 	 is enough to prevent anybody from looking inside for
 	 associativity, but won't generate any code.  */
       if (!(arg = build_expr_type_conversion
-	    (WANT_ARITH | WANT_ENUM | WANT_POINTER, arg, 1)))
+	    (WANT_ARITH | WANT_ENUM | WANT_POINTER, arg, true)))
 	errstring = "wrong type argument to unary plus";
       else
 	{
@@ -3963,7 +3963,7 @@ build_unary_op (code, xarg, noconvert)
       break;
 
     case NEGATE_EXPR:
-      if (!(arg = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, arg, 1)))
+      if (!(arg = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, arg, true)))
 	errstring = "wrong type argument to unary minus";
       else if (!noconvert)
 	arg = default_conversion (arg);
@@ -3977,14 +3977,14 @@ build_unary_op (code, xarg, noconvert)
 	    arg = default_conversion (arg);
 	}
       else if (!(arg = build_expr_type_conversion (WANT_INT | WANT_ENUM,
-						   arg, 1)))
+						   arg, true)))
 	errstring = "wrong type argument to bit-complement";
       else if (!noconvert)
 	arg = default_conversion (arg);
       break;
 
     case ABS_EXPR:
-      if (!(arg = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, arg, 1)))
+      if (!(arg = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, arg, true)))
 	errstring = "wrong type argument to abs";
       else if (!noconvert)
 	arg = default_conversion (arg);
@@ -3992,7 +3992,7 @@ build_unary_op (code, xarg, noconvert)
 
     case CONJ_EXPR:
       /* Conjugating a real value is a no-op, but allow it anyway.  */
-      if (!(arg = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, arg, 1)))
+      if (!(arg = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, arg, true)))
 	errstring = "wrong type argument to conjugation";
       else if (!noconvert)
 	arg = default_conversion (arg);
@@ -4052,7 +4052,7 @@ build_unary_op (code, xarg, noconvert)
       /* Report invalid types.  */
 
       if (!(arg = build_expr_type_conversion (WANT_ARITH | WANT_POINTER,
-					      arg, 1)))
+					      arg, true)))
 	{
 	  if (code == PREINCREMENT_EXPR)
 	    errstring ="no pre-increment operator for type";

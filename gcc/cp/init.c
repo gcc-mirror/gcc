@@ -1958,7 +1958,7 @@ build_new (placement, decl, init, use_global_new)
 	      else
 		{
 		  if (build_expr_type_conversion (WANT_INT | WANT_ENUM, 
-						  this_nelts, 0)
+						  this_nelts, false)
 		      == NULL_TREE)
 		    pedwarn ("size in array new must have integral type");
 

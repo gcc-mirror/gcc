@@ -1,3 +1,19 @@
+2002-12-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Remove traditional C constructs 3/n.
+	* cvt.c (cp_convert_to_pointer, convert_to_pointer_force,
+	build_up_reference, warn_ref_binding, convert_to_reference,
+	convert_from_reference, convert_lvalue, cp_convert, ocp_convert,
+	convert_to_void, convert, convert_force, build_type_conversion,
+	build_expr_type_conversion, type_promotes_to,
+	perform_qualification_conversions): Use C90 prototyping style.
+	* decl2.c (grok_array_decl): Use boolean constant.
+	(delete_sanity): Likewise.
+	* typeck.c (build_unary_op): Likewise.
+	* semantics.c (finish_switch_cond): Likewise.
+	* parser.c (cp_parser_direct_new_declarator): Likewise.
+	* init.c (build_new): Likewise.
+
 2002-12-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (po-generated): Remove parse.c.
@@ -196,29 +212,30 @@
 
 2002-12-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
-	* call.c (tourney, build_field_call, equal_functions, joust) 
-	(compare_ics, build_over_call, build_java_interface_fn_ref) 
-	(convert_like_real, op_error, build_object_call, resolve_args) 
-	(build_vfield_ref, check_dtor_name, build_scoped_method_call) 
-	(build_addr_func, build_call, build_method_call, null_ptr_cst_p) 
-	(sufficient_parms_p, build_conv, non_reference, strip_top_quals) 
-	(standard_conversion, reference_related_p) 
-	(reference_compatible_p, convert_class_to_reference) 
-	(direct_reference_binding, reference_binding) 
-	(implicit_conversion, is_complete, promoted_arithmetic_type_p) 
-	(add_template_conv_candidate, any_viable, any_strictly_viable) 
-	(build_this, splice_viable, print_z_candidates) 
-	(build_user_type_conversion, build_new_function_call) 
-	(conditional_conversion, build_conditional_expr, build_new_op) 
-	(build_op_delete_call, enforce_access, call_builtin_trap) 
-	(convert_arg_to_ellipsis, build_x_va_arg, cxx_type_promotes_to) 
-	(convert_default_arg, type_passed_as, convert_for_arg_passing) 
-	(in_charge_arg_for_name, is_properly_derived_from) 
-	(maybe_handle_implicit_object, maybe_handle_ref_bind) 
-	(source_type, add_warning, can_convert, can_convert_arg) 
-	(perform_implicit_conversion, can_convert_arg_bad) 
-	(initialize_reference, add_conv_candidate) 
-	(add_template_candidate_real, add_template_candidate): Ansify.
+	Remove traditional C constructs 2/n.
+	* call.c (tourney, build_field_call, equal_functions, joust,
+	compare_ics, build_over_call, build_java_interface_fn_ref,
+	convert_like_real, op_error, build_object_call, resolve_args,
+	build_vfield_ref, check_dtor_name, build_scoped_method_call,
+	build_addr_func, build_call, build_method_call, null_ptr_cst_p,
+	sufficient_parms_p, build_conv, non_reference, strip_top_quals,
+	standard_conversion, reference_related_p,
+	reference_compatible_p, convert_class_to_reference,
+	direct_reference_binding, reference_binding,
+	,implicit_conversion, is_complete, promoted_arithmetic_type_p,
+	add_template_conv_candidate, any_viable, any_strictly_viable,
+	build_this, splice_viable, print_z_candidates,
+	build_user_type_conversion, build_new_function_call,
+	conditional_conversion, build_conditional_expr, build_new_op,
+	build_op_delete_call, enforce_access, call_builtin_trap,
+	convert_arg_to_ellipsis, build_x_va_arg, cxx_type_promotes_to,
+	convert_default_arg, type_passed_as, convert_for_arg_passing,
+	in_charge_arg_for_name, is_properly_derived_from,
+	maybe_handle_implicit_object, maybe_handle_ref_bind,
+	source_type, add_warning, can_convert, can_convert_arg,
+	perform_implicit_conversion, can_convert_arg_bad,
+	initialize_reference, add_conv_candidate,
+	add_template_candidate_real, add_template_candidate): Ansify.
 
 2002-12-22  Nathan Sidwell  <nathan@codesourcery.com>
 
