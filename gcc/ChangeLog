@@ -1,3 +1,10 @@
+Wed Dec 30 23:44:11 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* cse.c (invalidate_skipped_block): Call invalidate_from_clobbers
+	for each insn in the skipped block.
+
+	* i386.md (doubleword shifts): Avoid namespace pollution.
+
 Mon Dec 28 10:44:40 1998  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (subst): Process the inputs to a parallel asm_operands

@@ -7991,6 +7991,7 @@ invalidate_skipped_block (start)
 	  invalidate_for_call ();
 	}
 
+      invalidate_from_clobbers (PATTERN (insn));
       note_stores (PATTERN (insn), invalidate_skipped_set);
     }
 }
