@@ -1,18 +1,15 @@
-# We have to use the cross-compiler we just built to compile it.
-CC = gcc -b $(host)
-
 # Need those to compile binaries running on host machine.
 # It is configured by
 #
 # configure --host=target_cpu-target_os \
-#	--target=host=target_cpu-target_os --build=host_cpu-host_os
+#	--target=target_cpu-target_os --build=host_cpu-host_os
 #
 # That HOST stuff has to be taken care of very carefully.
 HOST_PREFIX=l-
 HOST_PREFIX_1=$(HOST_PREFIX)
-HOST_CC=$(CC) -b $(build)
-HOST_CFLAGS=$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS) \
-            -DGENERATOR_FILE
+HOST_CC=$(CC_FOR_BUILD)
+HOST_CFLAGS=$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD) \
+	    $(XCFLAGS) -DGENERATOR_FILE
 HOST_LDFLAGS=$(LDFLAGS)
 HOST_CPPFLAGS=$(ALL_CPPFLAGS)
 HOST_MALLOC=$(MALLOC)

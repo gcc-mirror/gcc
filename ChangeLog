@@ -1,3 +1,8 @@
+2001-06-27  H.J. Lu  (hjl@gnu.org)
+
+	* Makefile (CFLAGS_FOR_BUILD): New.
+	(EXTRA_GCC_FLAGS): Add CFLAGS_FOR_BUILD.
+
 2001-06-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* README: Remove version number.

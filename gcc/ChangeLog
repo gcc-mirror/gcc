@@ -1,3 +1,16 @@
+2001-06-27  H.J. Lu  (hjl@gnu.org)
+
+	* build-make (CC): Removed.
+	(HOST_CC): Set to $(CC_FOR_BUILD).
+	(HOST_CFLAGS): Replace $(CFLAGS) with $(CFLAGS_FOR_BUILD).
+	Fix a typo in comments.
+
+	* configure.in: Set CFLAGS to $(CFLAGS_FOR_BUILD) when
+	generating auto-build.h for canadian cross compile. Set CC
+	to `"${CC_FOR_BUILD}"' instead of just `${CC_FOR_BUILD}'.
+	Save/restore CFLAGS.
+	* configure: Regenerated.
+
 2001-06-27  Jim Wilson  <wilson@redhat.com>
 
 	* emit-rtl.c (gen_highpart): Call validize_mem.

@@ -844,8 +844,11 @@ else
 	/* | [A-Za-z]:[\\/]* ) realsrcdir=${srcdir};;
 	*) realsrcdir=../${srcdir};;
 	esac
-	CC=${CC_FOR_BUILD} ${realsrcdir}/configure \
+	saved_CFLAGS="${CFLAGS}"
+	CC="${CC_FOR_BUILD}" CFLAGS="${CFLAGS_FOR_BUILD}" \
+	${realsrcdir}/configure \
 		--target=$target --host=$build --build=$build
+	CFLAGS="${saved_CFLAGS}"
 
 	# We just finished tests for the build machine, so rename
 	# the file auto-build.h in the gcc directory.
