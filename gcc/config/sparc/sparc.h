@@ -512,15 +512,21 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
   ((REGNO) >= 32 ? FP_REGS : (REGNO) == 0 ? NO_REGS : GENERAL_REGS)
 
 /* This is the order in which to allocate registers
-   normally.  */
+   normally.  
+   
+   We put %f0/%f1 last among the float registers, so as to make it more
+   likely that a pseduo-register which dies in the float return register
+   will get allocated to the float return register, thus saving a move
+   instruction at the end of the function.  */
 #define REG_ALLOC_ORDER \
 { 8, 9, 10, 11, 12, 13, 2, 3, 		\
   15, 16, 17, 18, 19, 20, 21, 22, 	\
   23, 24, 25, 26, 27, 28, 29, 31,	\
-  32, 33, 34, 35, 36, 37, 38, 39,	\
+  34, 35, 36, 37, 38, 39,		\
   40, 41, 42, 43, 44, 45, 46, 47,	\
   48, 49, 50, 51, 52, 53, 54, 55,	\
   56, 57, 58, 59, 60, 61, 62, 63,	\
+  32, 33,				\
   1, 4, 5, 6, 7, 0, 14, 30}
 
 /* This is the order in which to allocate registers for
@@ -530,10 +536,11 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
 { 2, 3, 24, 25, 26, 27, 28, 29,		\
   15, 8, 9, 10, 11, 12, 13,		\
   16, 17, 18, 19, 20, 21, 22, 23,	\
-  32, 33, 34, 35, 36, 37, 38, 39,	\
+  34, 35, 36, 37, 38, 39,		\
   40, 41, 42, 43, 44, 45, 46, 47,	\
   48, 49, 50, 51, 52, 53, 54, 55,	\
   56, 57, 58, 59, 60, 61, 62, 63,	\
+  32, 33,				\
   1, 4, 5, 6, 7, 0, 14, 30, 31}
 
 #define ORDER_REGS_FOR_LOCAL_ALLOC order_regs_for_local_alloc ()
