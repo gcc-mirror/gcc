@@ -1,3 +1,14 @@
+Sat Oct 24 13:41:06 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* local-alloc.c (alloc_qty_for_scratch, requires_inout): Allow
+	matching up to operand number 9.
+	* recog.c (constrain_operands): Likewise.
+	* reg-stack.c (constrain_asm_operands): Likewise.
+	* regclass.c (record_reg_classes): Likewise.
+	* regmove.c (find_matches): Likewise.
+	* reload.c (find_reloads): Likewise.
+	* reload1.c (reload_cse_simplify_operands): Likewise.
+
 Sat Oct 24 09:27:30 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* regclass.c (record_reg_classes): Skip modifiers when looking
