@@ -249,58 +249,6 @@ struct cpp_context
    same reason we use unsigned char - to avoid signedness issues.  */
 typedef int cppchar_t;
 
-struct cpp_buffer
-{
-  const unsigned char *cur;	 /* current position */
-  const unsigned char *rlimit; /* end of valid data */
-  const unsigned char *line_base; /* start of current line */
-  cppchar_t read_ahead;		/* read ahead character */
-  cppchar_t extra_char;		/* extra read-ahead for long tokens.  */
-
-  struct cpp_reader *pfile;	/* Owns this buffer.  */
-  struct cpp_buffer *prev;
-
-  const unsigned char *buf;	 /* entire buffer */
-
-  /* Filename specified with #line command.  */
-  const char *nominal_fname;
-
-  /* Actual directory of this file, used only for "" includes */
-  struct file_name_list *actual_dir;
-
-  /* Pointer into the include table.  Used for include_next and
-     to record control macros. */
-  struct include_file *inc;
-
-  /* Value of if_stack at start of this file.
-     Used to prohibit unmatched #endif (etc) in an include file.  */
-  struct if_stack *if_stack;
-
-  /* Token column position adjustment owing to tabs in whitespace.  */
-  unsigned int col_adjust;
-
-  /* Line number at line_base (above). */
-  unsigned int lineno;
-
-  /* Because of the way the lexer works, -Wtrigraphs can sometimes
-     warn twice for the same trigraph.  This helps prevent that.  */
-  const unsigned char *last_Wtrigraphs;
-
-  /* True if we have already warned about C++ comments in this file.
-     The warning happens only for C89 extended mode with -pedantic on,
-     or for -Wtraditional, and only once per file (otherwise it would
-     be far too noisy).  */
-  unsigned char warned_cplusplus_comments;
-
-  /* True if we don't process trigraphs and escaped newlines.  True
-     for preprocessed input, command line directives, and _Pragma
-     buffers.  */
-  unsigned char from_stage3;
-
-  /* Temporary storage for pfile->skipping whilst in a directive.  */
-  unsigned char was_skipping;
-};
-
 /* Maximum nesting of cpp_buffers.  We use a static limit, partly for
    efficiency, and partly to limit runaway recursion.  */
 #define CPP_STACK_MAX 200
@@ -523,6 +471,25 @@ struct spec_nodes
   cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
 };
 
+/* This structure is passed to the call back when changing file.  */
+enum cpp_fc_reason {FC_ENTER = 0, FC_LEAVE, FC_RENAME};
+
+struct cpp_file_loc
+{
+  const char *filename;
+  unsigned int lineno;
+};
+
+typedef struct cpp_file_change cpp_file_change;
+struct cpp_file_change
+{
+  struct cpp_file_loc from;	/* Line of #include or #line.  */
+  struct cpp_file_loc to;	/* Line after #include or #line, or start.  */
+  enum cpp_fc_reason reason;	/* Reason for change.  */
+  unsigned char sysp;		/* Nonzero if system header.  */
+  unsigned char externc;	/* Nonzero if wrapper needed.  */
+};
+
 /* A cpp_reader encapsulates the "state" of a pre-processor run.
    Applying cpp_get_token repeatedly yields a stream of pre-processor
    tokens.  Usually, there is only one cpp_reader object active.  */
@@ -624,9 +591,7 @@ struct cpp_reader
 
   /* Call backs.  */
   struct {
-    void (*enter_file) PARAMS ((cpp_reader *));
-    void (*leave_file) PARAMS ((cpp_reader *));
-    void (*rename_file) PARAMS ((cpp_reader *));
+    void (*change_file) PARAMS ((cpp_reader *, const cpp_file_change *));
     void (*include) PARAMS ((cpp_reader *, const unsigned char *,
 			     const cpp_token *));
     void (*define) PARAMS ((cpp_reader *, cpp_hashnode *));
@@ -826,7 +791,6 @@ extern void cpp_stop_lookahead		PARAMS ((cpp_reader *, int));
 extern int cpp_included	PARAMS ((cpp_reader *, const char *));
 extern int cpp_read_file PARAMS ((cpp_reader *, const char *));
 extern void cpp_make_system_header PARAMS ((cpp_reader *, cpp_buffer *, int));
-extern const char *cpp_syshdr_flags PARAMS ((cpp_reader *, cpp_buffer *));
 
 /* These are inline functions instead of macros so we can get type
    checking.  */

@@ -114,6 +114,7 @@ static char *files_to_ignore[] = {
 char *inf_buffer;
 char *inf_limit;
 char *inf_ptr;
+static const char *cur_file;
 
 /* Certain standard files get extra treatment */
 
@@ -198,6 +199,7 @@ static int inf_skip_spaces PARAMS ((int));
 static int inf_read_upto PARAMS ((sstring *, int));
 static int inf_scan_ident PARAMS ((sstring *, int));
 static int check_protection PARAMS ((int *, int *));
+static void cb_change_file PARAMS ((cpp_reader *, const cpp_file_change *));
 
 static void
 add_symbols (flags, names)
@@ -511,18 +513,16 @@ recognized_extern (name)
 }
 
 /* Called by scan_decls if it saw a function definition for a function
-   named FNAME, in source file FILE_SEEN on line LINE_SEEN.  KIND is
-   'I' for an inline function; 'F' if a normal function declaration
-   preceded by 'extern "C"' (or nested inside 'extern "C"' braces); or
-   'f' for other function declarations.  */
+   named FNAME.  KIND is 'I' for an inline function; 'F' if a normal
+   function declaration preceded by 'extern "C"' (or nested inside
+   'extern "C"' braces); or 'f' for other function declarations.  */
 
 void
-recognized_function (fname, line, kind, have_arg_list, file_seen)
+recognized_function (fname, line, kind, have_arg_list)
      const cpp_token *fname;
      unsigned int line;
      int kind; /* One of 'f' 'F' or 'I' */
      int have_arg_list;
-     const char *file_seen;
 {
   struct partial_proto *partial;
   int i;
@@ -552,9 +552,9 @@ recognized_function (fname, line, kind, have_arg_list, file_seen)
 
   /* If the partial prototype was included from some other file,
      we don't need to patch it up (in this run).  */
-  i = strlen (file_seen);
+  i = strlen (cur_file);
   if (i < inc_filename_length
-      || strcmp (inc_filename, file_seen + (i - inc_filename_length)) != 0)
+      || strcmp (inc_filename, cur_file + (i - inc_filename_length)) != 0)
     return;
 
   if (fn == NULL)
@@ -598,6 +598,15 @@ check_macro_names (pfile, names)
 }
 
 static void
+cb_change_file (pfile, fc)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     const cpp_file_change *fc;
+{
+  /* Just keep track of current file name.  */
+  cur_file = fc->to.filename;
+}
+
+static void
 read_scan_file (in_fname, argc, argv)
      char *in_fname;
      int argc;
@@ -612,6 +621,7 @@ read_scan_file (in_fname, argc, argv)
 
   cpp_init ();			/* Initialize cpplib.   */
   cpp_reader_init (&scan_in, CLK_GNUC89);
+  scan_in.cb.change_file = cb_change_file;
 
   /* We are going to be scanning a header file out of its proper context,
      so ignore warnings and errors.  */

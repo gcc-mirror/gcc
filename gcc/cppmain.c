@@ -46,7 +46,6 @@ static int dump_macro PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 
 static void print_line PARAMS ((const char *));
 static void maybe_print_line PARAMS ((unsigned int));
-static void move_printer PARAMS ((cpp_reader *, unsigned int, const char *));
 
 /* Callback routines for the parser.   Most of these are active only
    in specific modes.  */
@@ -55,9 +54,7 @@ static void cb_undef	PARAMS ((cpp_reader *, cpp_hashnode *));
 static void cb_include	PARAMS ((cpp_reader *, const unsigned char *,
 				 const cpp_token *));
 static void cb_ident	  PARAMS ((cpp_reader *, const cpp_string *));
-static void cb_enter_file PARAMS ((cpp_reader *));
-static void cb_leave_file PARAMS ((cpp_reader *));
-static void cb_rename_file PARAMS ((cpp_reader *));
+static void cb_change_file PARAMS ((cpp_reader *, const cpp_file_change *));
 static void cb_def_pragma PARAMS ((cpp_reader *));
 static void do_pragma_implementation PARAMS ((cpp_reader *));
 
@@ -108,11 +105,7 @@ main (argc, argv)
       pfile->cb.ident      = cb_ident;
       pfile->cb.def_pragma = cb_def_pragma;
       if (! CPP_OPTION (pfile, no_line_commands))
-	{
-	  pfile->cb.enter_file = cb_enter_file;
-	  pfile->cb.leave_file = cb_leave_file;
-	  pfile->cb.rename_file = cb_rename_file;
-	}
+	pfile->cb.change_file = cb_change_file;
     }
 
   if (CPP_OPTION (pfile, dump_includes))
@@ -285,18 +278,6 @@ print_line (special_flags)
 	   print.lineno, print.last_fname, special_flags, print.syshdr_flags);
 }
 
-static void
-move_printer (pfile, line, special_flags)
-     cpp_reader *pfile;
-     unsigned int line;
-     const char *special_flags;
-{
-  print.lineno = line;
-  print.last_fname = pfile->buffer->nominal_fname;
-  print.syshdr_flags = cpp_syshdr_flags (pfile, pfile->buffer);
-  print_line (special_flags);
-}
-
 /* Callbacks */
 
 static void
@@ -354,29 +335,33 @@ cb_include (pfile, dir, header)
 }
 
 static void
-cb_enter_file (pfile)
-     cpp_reader *pfile;
+cb_change_file (pfile, fc)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     const cpp_file_change *fc;
 {
-  /* Bring current file to correct line (except main file).  FIXME: we
-     may be using the same buffer via a # NUMBER "file" 1 directive.  */
-  if (pfile->done_initializing && pfile->buffer->prev)
-    maybe_print_line (pfile->buffer->prev->lineno);
+  const char *flags;
 
-  move_printer (pfile, 1, pfile->done_initializing ? " 1": "");
-}
+  /* Bring current file to correct line (except first file).  */
+  if (fc->reason == FC_ENTER && fc->from.filename)
+    maybe_print_line (fc->from.lineno);
 
-static void
-cb_leave_file (pfile)
-     cpp_reader *pfile;
-{
-  move_printer (pfile, pfile->buffer->lineno + 1, " 2");
-}
+  print.lineno = fc->to.lineno;
+  print.last_fname = fc->to.filename;
+  if (fc->externc)
+    print.syshdr_flags = " 3 4";
+  else if (fc->sysp)
+    print.syshdr_flags = " 3";
+  else
+    print.syshdr_flags = "";
 
-static void
-cb_rename_file (pfile)
-     cpp_reader *pfile;
-{
-  move_printer (pfile, pfile->buffer->lineno + 1, "");
+  switch (fc->reason)
+    {
+    case FC_ENTER : flags = fc->from.filename ? " 1": ""; break;
+    case FC_LEAVE : flags = " 2"; break;
+    case FC_RENAME: flags = ""; break;
+    }
+
+  print_line (flags);
 }
 
 static void
