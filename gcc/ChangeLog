@@ -1,3 +1,8 @@
+Wed Oct 13 00:45:04 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* reload1.c (reload_reg_free_for_value_p):  RELOAD_OTHER reloads with
+	an earlyclobbered output conflict with RELOAD_INPUT reloads.
+
 Tue Oct 12 23:28:28 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (BOOL_TYPE_SIZE): Don't use INT_TYPE_SIZE / CHAR_TYPE_SIZE.

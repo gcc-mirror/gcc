@@ -5258,7 +5258,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 	  if (! rld[i].in || ! rtx_equal_p (rld[i].in, value)
 	      || rld[i].out || out)
 	    {
-	      int time2;
+	      int j, time2;
 	      switch (rld[i].when_needed)
 		{
 		case RELOAD_FOR_OTHER_ADDRESS:
@@ -5337,6 +5337,11 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 		  if (! rld[i].in || rtx_equal_p (rld[i].in, value))
 		    {
 		      time2 = MAX_RECOG_OPERANDS * 4 + 4;
+		      /* Earlyclobbered outputs must conflict with inputs.  */
+		      for (j = 0; j < n_earlyclobbers; j++)
+			if (reload_out[i] == reload_earlyclobbers[j])
+			  time2 = MAX_RECOG_OPERANDS * 4 + 3;
+			  
 		      break;
 		    }
 		  time2 = 1;
