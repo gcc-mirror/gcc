@@ -8016,6 +8016,8 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 					    template_count, 
 					    2 * (funcdef_flag != 0) + 
 					    4 * (friendp != 0));
+      if (decl == error_mark_node)
+	return error_mark_node;
 
       if ((! TYPE_FOR_JAVA (ctype) || check_java_method (ctype, decl))
 	  && check)
@@ -8063,6 +8065,9 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 					    template_count, 
 					    2 * (funcdef_flag != 0) + 
 					    4 * (friendp != 0));
+      if (decl == error_mark_node)
+	return error_mark_node;
+
       if (ctype != NULL_TREE
 	  && (! TYPE_FOR_JAVA (ctype) || check_java_method (ctype, decl))
 	  && check)
@@ -10392,10 +10397,15 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		if (decl && DECL_NAME (decl))
 		  {
 		    if (template_class_depth (current_class_type) == 0)
-		      decl 
-			= check_explicit_specialization 
-			(declarator, decl,
-			 template_count, 2 * (funcdef_flag != 0) + 4);
+		      {
+			decl 
+			  = check_explicit_specialization 
+			  (declarator, decl,
+			   template_count, 2 * (funcdef_flag != 0) + 4);
+			if (decl == error_mark_node)
+			  return error_mark_node;
+		      }
+
 		    t = do_friend (ctype, declarator, decl,
 				   last_function_parms, flags, quals,
 				   funcdef_flag);

@@ -28,9 +28,9 @@ struct S3
   static int h(U);
 };
 
-template <class T>
 template <>
-int S3<T>::h(int) { return 0; }
+template <>
+int S3<double>::h(int) { return 0; }
 
 template <>
 template <>

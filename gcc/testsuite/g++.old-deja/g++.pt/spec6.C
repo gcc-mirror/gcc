@@ -4,20 +4,22 @@ struct S1
 {
   template <class T>
   void f(T t1, T t2);
-
-  template <>
-  void f(int i1, int i2);
 };
+
+
+template <>
+void S1::f(int i1, int i2);
 
 template <class U>
 struct S2
 {
   template <class T>
   void f(T t1, T t2);
-
-  template <>
-  void f(int i1, int i2);
 };
+
+template <>
+template <>
+void S2<char>::f(int i1, int i2);
 
 void h()
 {

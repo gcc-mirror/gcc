@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
       (TREE_MANGLED) (in IDENTIFIER_NODE) (commented-out).
    1:  IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
-      TI_PENDING_SPECIALIZATION_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
       DELETE_EXPR_USE_VEC (in DELETE_EXPR).
       (TREE_CALLS_NEW) (in _EXPR or _REF) (commented-out).
@@ -1266,11 +1265,6 @@ struct lang_decl
 #define TI_ARGS(NODE) (TREE_VALUE (NODE))
 #define TI_SPEC_INFO(NODE) (TREE_CHAIN (NODE))
 #define TI_PENDING_TEMPLATE_FLAG(NODE) TREE_LANG_FLAG_1 (NODE)
-
-/* TI_PENDING_SPECIALIZATION_FLAG on a template-info node indicates
-   that the template is a specialization of a member template, but
-   that we don't yet know which one.  */
-#define TI_PENDING_SPECIALIZATION_FLAG(NODE) TREE_LANG_FLAG_1 (NODE)
 
 /* The TEMPLATE_DECL instantiated or specialized by NODE.  This
    TEMPLATE_DECL will be the immediate parent, not the most general

@@ -127,6 +127,8 @@ static int template_class_depth_real PROTO((tree, int));
 static tree tsubst_aggr_type PROTO((tree, tree, tree, int));
 static tree tsubst_decl PROTO((tree, tree, tree, tree));
 static tree tsubst_arg_types PROTO((tree, tree, tree));
+static void check_specialization_scope PROTO((void));
+static tree process_partial_specialization PROTO((tree));
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -575,12 +577,44 @@ begin_template_parm_list ()
   note_template_header (0);
 }
 
+/* This routine is called when a specialization is declared.  If it is
+   illegal to declare a specialization here, an error is reported.  */
+
+void
+check_specialization_scope ()
+{
+  tree scope = current_scope ();
+  /* [temp.expl.spec] 
+     
+     An explicit specialization shall be declared in the namespace of
+     which the template is a member, or, for member templates, in the
+     namespace of which the enclosing class or enclosing class
+     template is a member.  An explicit specialization of a member
+     function, member class or static data member of a class template
+     shall be declared in the namespace of which the class template
+     is a member.  */
+  if (scope && TREE_CODE (scope) != NAMESPACE_DECL)
+    cp_error ("explicit specialization in non-namespace scope `%D'",
+	      scope);
+  /* [temp.expl.spec] 
+
+     In an explicit specialization declaration for a member of a class
+     template or a member template that appears in namespace scope,
+     the member template and some of its enclosing class templates may
+     remain unspecialized, except that the declaration shall not
+     explicitly specialize a class member template if its enclosing
+     class templates are not explicitly specialized as well.  */
+  if (current_template_parms) 
+    cp_error ("enclosing class templates are not explicit specialized");
+}
+
 /* We've just seen template <>. */
 
 void
 begin_specialization ()
 {
   note_template_header (1);
+  check_specialization_scope ();
 }
 
 /* Called at then end of processing a declaration preceeded by
@@ -1209,17 +1243,10 @@ check_explicit_specialization (declarator, decl, template_count, flags)
       if (ctype != NULL_TREE && TYPE_BEING_DEFINED (ctype))
 	{
 	  if (!explicit_instantiation)
-	    {
-	      /* Since finish_struct_1 has not been called yet, we
-		 can't call lookup_fnfields.  We note that this
-		 template is a specialization, and proceed, letting
-		 finish_struct fix this up later.  */
-	      tree ti = perm_tree_cons (NULL_TREE, 
-					TREE_OPERAND (declarator, 1),
-					NULL_TREE);
-	      TI_PENDING_SPECIALIZATION_FLAG (ti) = 1;
-	      DECL_TEMPLATE_INFO (decl) = ti;
-	    }
+	    /* A specialization in class scope.  This is illegal,
+	       but the error will already have been flagged by
+	       check_specialization_scope.  */
+	    return error_mark_node;
 	  else
 	    /* It's not legal to write an explicit instantiation in
 	       class scope, e.g.:
@@ -1759,8 +1786,23 @@ build_template_decl (decl, parms)
 
 struct template_parm_data
 {
+  /* The level of the template parameters we are currently
+     processing.  */
   int level;
+
+  /* The index of the specialization argument we are currently
+     processing.  */
+  int current_arg;
+
+  /* An array whose size is the number of template parameters.  The
+     elements are non-zero if the parameter has been used in any one
+     of the arguments processed so far.  */
   int* parms;
+
+  /* An array whose size is the number of template arguments.  The
+     elements are non-zero if the argument makes use of template
+     parameters of this level.  */
+  int* arg_uses_template_parms;
 };
 
 /* Subroutine of push_template_decl used to see if each template
@@ -1790,11 +1832,203 @@ mark_template_parm (t, data)
     }
 
   if (level == tpd->level)
-    tpd->parms[idx] = 1;
+    {
+      tpd->parms[idx] = 1;
+      tpd->arg_uses_template_parms[tpd->current_arg] = 1;
+    }
 
   /* Return zero so that for_each_template_parm will continue the
      traversal of the tree; we want to mark *every* template parm.  */
   return 0;
+}
+
+/* Process the partial specialization DECL.  */
+
+tree
+process_partial_specialization (decl)
+     tree decl;
+{
+  tree type = TREE_TYPE (decl);
+  tree maintmpl = CLASSTYPE_TI_TEMPLATE (type);
+  tree specargs = CLASSTYPE_TI_ARGS (type);
+  tree inner_args = innermost_args (specargs);
+  tree inner_parms = INNERMOST_TEMPLATE_PARMS (current_template_parms);
+  tree main_inner_parms = DECL_INNERMOST_TEMPLATE_PARMS (maintmpl);
+  int nargs = TREE_VEC_LENGTH (inner_args);
+  int ntparms = TREE_VEC_LENGTH (inner_parms);
+  int  i;
+  int did_error_intro = 0;
+  int issued_default_arg_message = 0;
+  struct template_parm_data tpd;
+  struct template_parm_data tpd2;
+
+  /* [temp.class.spec]
+     
+     The template parameter list of a specialization shall not
+     contain default template argument values.  */
+  for (i = 0; i < ntparms; ++i) 
+    {
+      if (TREE_PURPOSE (TREE_VEC_ELT (inner_parms, i)))
+	{
+	  if (!issued_default_arg_message)
+	    {
+	      cp_error ("default argument in partial specialization `%T'", 
+			type);
+	      issued_default_arg_message = 1;
+	    }
+	  TREE_PURPOSE (TREE_VEC_ELT (inner_parms, i)) = NULL_TREE;
+	}
+    }
+
+  /* We check that each of the template parameters given in the
+     partial specialization is used in the argument list to the
+     specialization.  For example:
+
+       template <class T> struct S;
+       template <class T> struct S<T*>;
+
+     The second declaration is OK because `T*' uses the template
+     parameter T, whereas
+
+       template <class T> struct S<int>;
+
+     is no good.  Even trickier is:
+
+       template <class T>
+       struct S1
+       {
+	  template <class U>
+	  struct S2;
+	  template <class U>
+	  struct S2<T>;
+       };
+
+     The S2<T> declaration is actually illegal; it is a
+     full-specialization.  Of course, 
+
+	  template <class U>
+	  struct S2<T (*)(U)>;
+
+     or some such would have been OK.  */
+  tpd.level = TMPL_PARMS_DEPTH (current_template_parms);
+  tpd.parms = alloca (sizeof (int) * ntparms);
+  bzero (tpd.parms, sizeof (int) * nargs);
+
+  tpd.arg_uses_template_parms = alloca (sizeof (int) * nargs);
+  bzero (tpd.arg_uses_template_parms, sizeof (int) * nargs);
+  for (i = 0; i < nargs; ++i)
+    {
+      tpd.current_arg = i;
+      for_each_template_parm (TREE_VEC_ELT (inner_args, i),
+			      &mark_template_parm,
+			      &tpd);
+    }
+  for (i = 0; i < ntparms; ++i)
+    if (tpd.parms[i] == 0)
+      {
+	/* One of the template parms was not used in the
+           specialization.  */
+	if (!did_error_intro)
+	  {
+	    cp_error ("template parameters not used in partial specialization:");
+	    did_error_intro = 1;
+	  }
+
+	cp_error ("        `%D'", 
+		  TREE_VALUE (TREE_VEC_ELT (inner_parms, i)));
+      }
+
+  /* [temp.class.spec]
+
+     The argument list of the specialization shall not be identical to
+     the implicit argument list of the primary template.  */
+  if (comp_template_args (inner_args, 
+			  innermost_args (CLASSTYPE_TI_ARGS (TREE_TYPE
+							     (maintmpl)))))
+    cp_error ("partial specialization `%T' does not specialize any template arguments", type);
+
+  /* [temp.class.spec]
+
+     A partially specialized non-type argument expression shall not
+     involve template parameters of the partial specialization except
+     when the argument expression is a simple identifier.
+
+     The type of a template parameter corresponding to a specialized
+     non-type argument shall not be dependent on a parameter of the
+     specialization.  */
+  my_friendly_assert (nargs == DECL_NTPARMS (maintmpl), 0);
+  tpd2.parms = 0;
+  for (i = 0; i < nargs; ++i)
+    {
+      tree arg = TREE_VEC_ELT (inner_args, i);
+      if (/* These first two lines are the `non-type' bit.  */
+	  TREE_CODE_CLASS (TREE_CODE (arg)) != 't'
+	  && TREE_CODE (arg) != TEMPLATE_DECL
+	  /* This next line is the `argument expression is not just a
+	     simple identifier' condition and also the `specialized
+	     non-type argument' bit.  */
+	  && TREE_CODE (arg) != TEMPLATE_PARM_INDEX)
+	{
+	  if (tpd.arg_uses_template_parms[i])
+	    cp_error ("template argument `%E' involves template parameter(s)", arg);
+	  else 
+	    {
+	      /* Look at the corresponding template parameter,
+		 marking which template parameters its type depends
+		 upon.  */
+	      tree type = 
+		TREE_TYPE (TREE_VALUE (TREE_VEC_ELT (main_inner_parms, 
+						     i)));
+
+	      if (!tpd2.parms)
+		{
+		  /* We haven't yet initialized TPD2.  Do so now.  */
+		  tpd2.arg_uses_template_parms 
+		    =  (int*) alloca (sizeof (int) * nargs);
+		  tpd2.parms = (int*) alloca (sizeof (int) * nargs);
+		  tpd2.level = 
+		    TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (maintmpl));
+		}
+
+	      /* Mark the template paramters.  But this time, we're
+		 looking for the template parameters of the main
+		 template, not in the specialization.  */
+	      tpd2.current_arg = i;
+	      tpd2.arg_uses_template_parms[i] = 0;
+	      bzero (tpd.parms, sizeof (int) * nargs);
+	      for_each_template_parm (type,
+				      &mark_template_parm,
+				      &tpd2);
+		  
+	      if (tpd2.arg_uses_template_parms [i])
+		{
+		  /* The type depended on some template parameters.
+		     If they are fully specialized in the
+		     specialization, that's OK.  */
+		  int j;
+		  for (j = 0; j < nargs; ++j)
+		    if (tpd2.parms[j] != 0
+			&& tpd.arg_uses_template_parms [j])
+		      {
+			cp_error ("type `%T' of template argument `%E' depends on template paramter(s)", 
+				  type,
+				  arg);
+			break;
+		      }
+		}
+	    }
+	}
+    }
+
+  if (retrieve_specialization (maintmpl, specargs))
+    /* We've already got this specialization.  */
+    return decl;
+
+  DECL_TEMPLATE_SPECIALIZATIONS (maintmpl) = CLASSTYPE_TI_SPEC_INFO (type)
+    = perm_tree_cons (inner_args, inner_parms,
+		      DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
+  TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
+  return decl;
 }
 
 /* Creates a TEMPLATE_DECL for the indicated DECL using the template
@@ -1868,92 +2102,7 @@ push_template_decl_real (decl, is_friend)
   if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl)
       && TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE
       && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
-    {
-      tree type = TREE_TYPE (decl);
-      tree maintmpl = CLASSTYPE_TI_TEMPLATE (type);
-      tree specargs = CLASSTYPE_TI_ARGS (type);
-
-      /* We check that each of the template parameters given in the
-	 partial specialization is used in the argument list to the
-	 specialization.  For example:
-	 
-	   template <class T> struct S;
-	   template <class T> struct S<T*>;
-
-	 The second declaration is OK because `T*' uses the template
-	 parameter T, whereas
-       
-           template <class T> struct S<int>;
-
-	 is no good.  Even trickier is:
-
-	   template <class T>
-	   struct S1
-	   {
-	      template <class U>
-	      struct S2;
-	      template <class U>
-	      struct S2<T>;
-	   };
-	   
-	 The S2<T> declaration is actually illegal; it is a
-	 full-specialization.  Of course, 
-
-              template <class U>
-              struct S2<T (*)(U)>;
-
-         or some such would have been OK.  */
-      int  i;
-      struct template_parm_data tpd;
-      int ntparms 
-	= TREE_VEC_LENGTH (INNERMOST_TEMPLATE_PARMS (current_template_parms));
-      int did_error_intro = 0;
-
-      tpd.level = TMPL_PARMS_DEPTH (current_template_parms);
-      tpd.parms = alloca (sizeof (int) * ntparms);
-      for (i = 0; i < ntparms; ++i)
-	tpd.parms[i] = 0;
-      for (i = 0; i < TREE_VEC_LENGTH (specargs); ++i)
-	for_each_template_parm (TREE_VEC_ELT (specargs, i),
-				&mark_template_parm,
-				&tpd);
-      for (i = 0; i < ntparms; ++i)
-	if (tpd.parms[i] == 0)
-	  {
-	    /* One of the template parms was not used in the
-	       specialization.  */
-	    if (!did_error_intro)
-	      {
-		cp_error ("template parameters not used in partial specialization:");
-		did_error_intro = 1;
-	      }
-
-	    cp_error ("        `%D'", 
-		      TREE_VALUE (TREE_VEC_ELT 
-				  (TREE_VALUE (current_template_parms),
-				   i)));
-	  }
-
-      /* [temp.class.spec]
-
-	 The argument list of the specialization shall not be
-	 identical to the implicit argument list of the primary
-	 template.  */
-      if (comp_template_args (specargs, 
-			      CLASSTYPE_TI_ARGS (TREE_TYPE (maintmpl))))
-	cp_error ("partial specialization `%T' does not specialize any template arguments", type);
-			   
-      if (retrieve_specialization (maintmpl, specargs))
-	/* We've already got this specialization.  */
-	return decl;
-
-      DECL_TEMPLATE_SPECIALIZATIONS (maintmpl) = CLASSTYPE_TI_SPEC_INFO (type)
-	= perm_tree_cons (innermost_args (specargs),
-			  INNERMOST_TEMPLATE_PARMS (current_template_parms),
-			  DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
-      TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
-      return decl;
-    }
+    return process_partial_specialization (decl);
 
   args = current_template_args ();
 
@@ -5194,7 +5343,6 @@ tsubst_decl (t, args, type, in_decl)
   return r;
 }
 
-
 /* Substitue into the ARG_TYPES of a function type.  */
 
 tree
@@ -5204,7 +5352,6 @@ tsubst_arg_types (arg_types, args, in_decl)
      tree in_decl;
 {
   tree remaining_arg_types;
-  tree result;
   tree type;
 
   if (!arg_types || arg_types == void_list_node)

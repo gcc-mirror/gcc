@@ -4,11 +4,12 @@ struct S
   struct Y {
     template <class T>
     void foo(T t);
-
-    template <>
-    void foo<int>(int i) { }
   };
 };
+
+template <>
+template <>
+void S::Y<char>::foo<int>(int i) { }
 
 int main()
 {

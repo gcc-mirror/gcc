@@ -14,10 +14,10 @@ struct S1
 
   template <class T>
   void f(T* t);
-
-  template <>
-  void f(int* ip) {}
 };
+
+template <>
+void S1::f(int* ip) {}
 
 template <class U>
 struct S2
@@ -27,10 +27,11 @@ struct S2
 
   template <class T>
   void f(T* t);
-
-  template <>
-  void f(int* ip) {}
 };
+
+template <>
+template <>
+void S2<double>::f(int* ip) {}
 
 int main()
 {
