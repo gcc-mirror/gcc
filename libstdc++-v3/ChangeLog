@@ -1,3 +1,12 @@
+2003-02-24  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/9825
+	* src/fstream.cc
+	(basic_filebuf<char/wchar_t>::_M_underflow_common): When
+	__bump is true (uflow), always increment the read pointer
+	(_M_in_cur) before returning successfully.
+	* testsuite/27_io/filebuf_virtuals.cc (test12): Add.
+
 2003-02-24  Paolo Carlini <pcarlini@unitus.it>
 	    Nathan Myers <ncm@cantrip.org>
 

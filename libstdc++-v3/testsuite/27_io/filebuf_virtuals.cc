@@ -73,6 +73,7 @@ const char name_02[] = "filebuf_virtuals-2.txt"; // empty file, need to create
 const char name_03[] = "filebuf_virtuals-3.txt"; // empty file, need to create
 const char name_04[] = "filebuf_virtuals-4.txt"; // empty file, need to create
 const char name_05[] = "filebuf_virtuals-5.txt"; // empty file, need to create
+const char name_06[] = "filebuf_virtuals-6.txt"; // empty file, need to create
 
 class derived_filebuf: public std::filebuf
 {
@@ -681,6 +682,28 @@ void test11()
   dfbuf_02.close();
 }
 
+// libstdc++/9825
+void test12()
+{
+  using namespace std;
+  bool test = true;
+
+  filebuf fbuf;
+
+  fbuf.open(name_06, ios_base::in|ios_base::out|ios_base::trunc);
+  fbuf.sputn("crazy bees!", 11);
+  fbuf.pubseekoff(0, ios_base::beg);
+  fbuf.sbumpc();
+  fbuf.sputbackc('x');
+  filebuf::int_type c = fbuf.sbumpc();
+  VERIFY( c == 'x' );
+  c = fbuf.sbumpc();
+  VERIFY( c == 'r' );
+  c = fbuf.sbumpc();
+  VERIFY( c == 'a' );
+  fbuf.close();  
+}
+
 main() 
 {
   test01();
@@ -696,5 +719,6 @@ main()
   test09();
   test10();
   test11();
+  test12();
   return 0;
 }
