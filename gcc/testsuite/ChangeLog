@@ -1,3 +1,7 @@
+2004-09-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/opt/switch1.C: New test.
+
 2004-09-15  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* g++.dg/ext/member-attr.C, g++.dg/warn/deprecated.C,
