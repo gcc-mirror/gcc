@@ -6817,12 +6817,20 @@ force_to_mode (x, mode, mask, reg, just_select)
 
   /* If none of the bits in X are needed, return a zero.  */
   if (! just_select && (nonzero & mask) == 0)
-    return const0_rtx;
+    x = const0_rtx;
 
   /* If X is a CONST_INT, return a new one.  Do this here since the
      test below will fail.  */
   if (GET_CODE (x) == CONST_INT)
-    return gen_int_mode (INTVAL (x) & mask, mode);
+    {
+      if (SCALAR_INT_MODE_P (mode))
+        return gen_int_mode (INTVAL (x) & mask, mode);
+      else
+	{
+	  x = GEN_INT (INTVAL (x) & mask);
+	  return gen_lowpart_common (mode, x);
+	}
+    }
 
   /* If X is narrower than MODE and we want all the bits in X's mode, just
      get X in the proper mode.  */
