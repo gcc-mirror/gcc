@@ -2999,10 +2999,11 @@ This extension is not supported by GNU C++.
 @node Function Names
 @section Function Names as Strings
 
-GNU CC predefines two string variables to be the name of the current function.
-The variable @code{__FUNCTION__} is the name of the function as it appears
-in the source.  The variable @code{__PRETTY_FUNCTION__} is the name of
-the function pretty printed in a language specific fashion.
+GNU CC predefines two magic identifiers to hold the name of the current
+function. The identifier @code{__FUNCTION__} holds the name of the function
+as it appears in the source. The identifier @code{__PRETTY_FUNCTION__}
+holds the name of the function pretty printed in a language specific
+fashion.
 
 These names are always the same in a C function, but in a C++ function
 they may be different.  For example, this program:
@@ -3038,10 +3039,42 @@ __FUNCTION__ = sub
 __PRETTY_FUNCTION__ = int  a::sub (int)
 @end smallexample
 
-These names are not macros: they are predefined string variables.
-For example, @samp{#ifdef __FUNCTION__} does not have any special
+The compiler automagically replaces the identifiers with a string
+literal containing the appropriate name. Thus, they are neither
+preprocessor macros, like @code{__FILE__} and @code{__LINE__}, nor
+variables. This means that they catenate with other string literals, and
+that they can be used to initialize char arrays. For example
+
+@smallexample
+char here[] = "Function " __FUNCTION__ " in " __FILE__;
+@end smallexample
+
+On the other hand, @samp{#ifdef __FUNCTION__} does not have any special
 meaning inside a function, since the preprocessor does not do anything
 special with the identifier @code{__FUNCTION__}.
+
+GNU CC also supports the magic word @code{__func__}, defined by the
+draft standard for C-99:
+
+@display
+The identifier @code{__func__} is implicitly declared by the translator
+as if, immediately following the opening brace of each function
+definition, the declaration
+
+@smallexample
+static const char __func__[] = "function-name";
+@end smallexample
+
+appeared, where function-name is the name of the lexically-enclosing
+function. This name is the unadorned name of the function.
+@end display
+
+By this definition, @code{__func__} is a variable, not a string literal.
+In particular, @code{__func__} does not catenate with other string
+literals.
+
+In @code{C++}, @code{__FUNCTION__} and @code{__PRETTY_FUNCTION__} are
+variables, declared in the same way as @code{__func__}.
 
 @node Return Address
 @section Getting the Return or Frame Address of a Function
