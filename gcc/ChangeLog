@@ -1,3 +1,12 @@
+2002-11-20  Steve Ellcey  <sje@cup.hp.com>
+
+	* emit-rtl.c (gen_reg_rtx): Simplify mapping of Complex type
+	to component type using GET_MODE_INNER.
+	* expr.c (emit_move_insn_1): Ditto.
+	* optabs.c (expand_binop): Ditto.
+	(expand_unop): Ditto.
+	(expand_complex_abs): Ditto.
+
 2002-11-20  Douglas B Rupp  <rupp@gnat.com>
 
 	* hwint.h (HAVE___INT64): Fix typo (was HAVE__INT64).
