@@ -5339,7 +5339,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 		      time2 = MAX_RECOG_OPERANDS * 4 + 4;
 		      /* Earlyclobbered outputs must conflict with inputs.  */
 		      for (j = 0; j < n_earlyclobbers; j++)
-			if (reload_out[i] == reload_earlyclobbers[j])
+			if (rld[i].out == reload_earlyclobbers[j])
 			  time2 = MAX_RECOG_OPERANDS * 4 + 3;
 			  
 		      break;
