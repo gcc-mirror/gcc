@@ -1,3 +1,12 @@
+2002-05-17  Andreas Schwab  <schwab@suse.de>
+
+	* varasm.c (resolve_unique_section): Add third parameter
+	flag_function_or_data_sections and use it instead of
+	flag_function_sections.
+	(assemble_start_function): Pass flag_function_sections.
+	(asm_emit_uninitialised): Pass flag_data_sections.
+	(assemble_variable): Likewise.
+
 2002-05-15  Eric Botcazou  <ebotcazou@multimania.com>
 
 	* fold-const.c (fold) [LT_EXPR]: Move the transformation of a
