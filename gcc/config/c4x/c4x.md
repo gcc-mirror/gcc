@@ -2142,7 +2142,7 @@
          (lshiftrt:HI
           (mult:HI 
            (zero_extend:HI (match_operand:QI 1 "src_operand" "%0,rR,rS<>,0,rR,rS<>"))
-           (zero_extend:HI (match_operand:QI 2 "lsrc_operand" "JR,rS<>,rLm,JR,rS<>,rLm")))
+           (zero_extend:HI (match_operand:QI 2 "lsrc_operand" "rLm,JR,rS<>,rLm,JR,rS<>")))
           (const_int 32))))
    (clobber (reg:CC_NOOV 21))]
   "! TARGET_C3X && valid_operands (MULT, operands, QImode)"
