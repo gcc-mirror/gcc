@@ -2304,7 +2304,125 @@ all_ones_mask_p (mask, size)
 				  size_int (precision - size)), 0);
 }
 
+/* Try to optimize a range test.
+
+   For example, "i >= 2 && i =< 9" can be done as "(unsigned) (i - 2) <= 7".
+
+   JCODE is the logical combination of the two terms.  It can be
+   TRUTH_ANDIF_EXPR, TRUTH_AND_EXPR, TRUTH_ORIF_EXPR, or TRUTH_OR_EXPR.
+   TYPE is the type of the result.
+
+   VAR is the value being tested.  LO_CODE and HI_CODE are the comparison
+   operators comparing VAR to LO_CST and HI_CST.  LO_CST is known to be no
+   larger than HI_CST (they may be equal).
+
+   We return the simplified tree or 0 if no optimization is possible.  */
+
+tree
+range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
+     enum tree_code jcode, lo_code, hi_code;
+     tree type, var, lo_cst, hi_cst;
+{
+  tree utype;
+  enum tree_code rcode;
+
+  /* See if this is a range test and normalize the constant terms.  */
+
+  if (jcode == TRUTH_ANDIF_EXPR || jcode == TRUTH_AND_EXPR)
+    {
+      switch (lo_code)
+	{
+	case NE_EXPR:
+	  /* See if we have VAR != CST && VAR != CST+1.  */
+	  if (! (hi_code == NE_EXPR
+		 && TREE_INT_CST_LOW (hi_cst) - TREE_INT_CST_LOW (lo_cst) == 1
+		 && tree_int_cst_equal (integer_one_node,
+					const_binop (MINUS_EXPR,
+						     hi_cst, lo_cst))))
+	    return 0;
+
+	  rcode = GT_EXPR;
+	  break;
+
+	case GT_EXPR:
+	case GE_EXPR:
+	  if (hi_code == LT_EXPR)
+	    hi_cst = const_binop (MINUS_EXPR, hi_cst, integer_one_node);
+	  else if (hi_code != LE_EXPR)
+	    return 0;
+
+	  if (lo_code == GT_EXPR)
+	    lo_cst = const_binop (PLUS_EXPR, lo_cst, integer_one_node);
+
+	  /* We now have VAR >= LO_CST && VAR <= HI_CST.  */
+	  rcode = LE_EXPR;
+	  break;
+
+	default:
+	  return 0;
+	}
+    }
+  else
+    {
+      switch (lo_code)
+	{
+	case EQ_EXPR:
+	  /* See if we have VAR == CST || VAR == CST+1.  */
+	  if (! (hi_code == EQ_EXPR
+		 && TREE_INT_CST_LOW (hi_cst) - TREE_INT_CST_LOW (lo_cst) == 1
+		 && tree_int_cst_equal (integer_one_node,
+					const_binop (MINUS_EXPR,
+						     hi_cst, lo_cst))))
+	    return 0;
+
+	  rcode = LE_EXPR;
+	  break;
+
+	case LE_EXPR:
+	case LT_EXPR:
+	  if (hi_code == GE_EXPR)
+	    hi_cst = const_binop (MINUS_EXPR, hi_cst, integer_one_node);
+	  else if (hi_code != GT_EXPR)
+	    return 0;
+
+	  if (lo_code == LE_EXPR)
+	    lo_cst = const_binop (PLUS_EXPR, lo_cst, integer_one_node);
+
+	  /* We now have VAR < LO_CST || VAR > HI_CST.  */
+	  rcode = GT_EXPR;
+	  break;
+
+	default:
+	  return 0;
+	}
+    }
+
+  /* When normalizing, it is possible to both increment the smaller constant
+     and decrement the larger constant.  See if they are still ordered.  */
+  if (tree_int_cst_lt (lo_cst, hi_cst))
+    return 0;
+
+  /* The range test is invalid if subtracting the two constants results
+     in overflow.  This can happen in traditional mode.  */
+  if (! int_fits_type_p (hi_cst, TREE_TYPE (var))
+      || ! int_fits_type_p (lo_cst, TREE_TYPE (var)))
+    return 0;
+
+  utype = TREE_TYPE (var);
+  if (! TREE_UNSIGNED (utype))
+    {
+      utype = unsigned_type (utype);
+      var = convert (utype, var);
+    }
+
+  return fold (convert (type,
+			build (rcode, utype,
+			       build (MINUS_EXPR, utype, var, lo_cst),
+			       const_binop (MINUS_EXPR, hi_cst, lo_cst))));
+}
+
 /* Try to merge two comparisons to the same innermost item.
+   Also look for range tests like "ch >= '0' && ch <= '9'".
 
    For example, if we have p->a == 2 && p->b == 4 and we can make an
    object large enough to span both A and B, we can do this with a comparison
@@ -2355,15 +2473,44 @@ merge_component_references (code, truth_type, lhs, rhs)
   int first_bit, end_bit;
   int volatilep = 0;
 
-  /* Start by getting the comparison codes and seeing if we may be able
-     to do something.  Then get all the parameters for each side.  Fail
-     if anything is volatile.  */
+  /* Start by getting the comparison codes and seeing if this looks like
+     a range test.  Fail if anything is volatile.  */
 
   lcode = TREE_CODE (lhs);
   rcode = TREE_CODE (rhs);
+
+  if (TREE_SIDE_EFFECTS (lhs)
+      || TREE_SIDE_EFFECTS (rhs)
+      || TREE_CODE_CLASS (lcode) != '<'
+      || TREE_CODE_CLASS (rcode) != '<')
+    return 0;
+
+  if (TREE_CODE (TREE_OPERAND (lhs, 1)) == INTEGER_CST
+      && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST
+      && operand_equal_p (TREE_OPERAND (lhs, 0),
+			  TREE_OPERAND (rhs, 0), 0))
+    {
+      if (tree_int_cst_lt (TREE_OPERAND (lhs, 1), TREE_OPERAND (rhs, 1)))
+	result = range_test (code, truth_type, lcode, rcode,
+			     TREE_OPERAND (lhs, 0),
+			     TREE_OPERAND (lhs, 1),
+			     TREE_OPERAND (rhs, 1));
+      else
+	result = range_test (code, truth_type, rcode, lcode,
+			     TREE_OPERAND (lhs, 0),
+			     TREE_OPERAND (rhs, 1),
+			     TREE_OPERAND (lhs, 1));
+
+      /* If this isn't a range test, it also isn't a comparison that
+	 can be merged.  */
+      return result;
+    }
+
+  /* See if the comparisons can be merged.  Then get all the parameters for
+     each side.  */
+
   if ((lcode != EQ_EXPR && lcode != NE_EXPR)
-      || (rcode != EQ_EXPR && rcode != NE_EXPR)
-      || TREE_SIDE_EFFECTS (lhs) || TREE_SIDE_EFFECTS (rhs))
+      || (rcode != EQ_EXPR && rcode != NE_EXPR))
     return 0;
 
   ll_inner = decode_field_reference (TREE_OPERAND (lhs, 0),
