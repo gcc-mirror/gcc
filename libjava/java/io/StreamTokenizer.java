@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -231,7 +231,7 @@ public class StreamTokenizer
    * The start of a comment also terminates a word.  Any character with a 
    * non-alphabetic and non-numeric attribute (such as white space, a quote,
    * or a commet) are treated as non-alphabetic and terminate the word.
-   * <li>If a comment charcters is parsed, then all remaining characters on
+   * <li>If a comment character is parsed, then all remaining characters on
    * the current line are skipped and another token is parsed.  Any EOL or
    * EOF's encountered are not discarded, but rather terminate the comment.
    * <li>If a quote character is parsed, then all characters up to the 
@@ -287,6 +287,50 @@ public class StreamTokenizer
 	    }
 	  if (eolSignificant)
 	    return (ttype = TT_EOL);
+	}
+
+    if (ch == '/')
+      if ((ch = in.read()) == '/' && slashSlash)
+	{
+	  while ((ch = in.read()) != '\n' && ch != '\r' && ch != TT_EOF)
+	    ;
+	  if (ch != TT_EOF)
+	    in.unread(ch);
+	  return nextToken(); // Recursive, but not too deep in normal cases
+	}
+      else if (ch == '*' && slashStar) 
+	{
+	  while (true)
+	    {
+	      ch = in.read();
+	      if (ch == '*')
+		{
+		  if ((ch = in.read()) == '/')
+		    break;
+		  else if (ch != TT_EOF)
+		    in.unread(ch);
+		}
+	      else if (ch == '\n' || ch == '\r')
+		{
+		  lineNumber++;
+		  if (ch == '\r' && (ch = in.read()) != '\n')
+		    {
+		      if (ch != TT_EOF)
+			in.unread(ch);
+		    }
+		}
+	      else if (ch == TT_EOF)
+		{
+		  break;
+		}
+	    }
+	  return nextToken(); // Recursive, but not too deep in normal cases
+	}
+      else
+	{
+	  if (ch != TT_EOF)
+	    in.unread(ch);
+	  ch = '/';
 	}
 
     if (ch == TT_EOF)
@@ -419,50 +463,6 @@ public class StreamTokenizer
       }
     else
       {
-        if (ch == '/')
-	  if ((ch = in.read()) == '/' && slashSlash)
-	    {
-	      while ((ch = in.read()) != '\n' && ch != '\r' && ch != TT_EOF)
-		;
-	      if (ch != TT_EOF)
-		in.unread(ch);
-	      return nextToken(); // Recursive, but not too deep in normal cases
-	    }
-	  else if (ch == '*' && slashStar) 
-	    {
-	      while (true)
-		{
-	          ch = in.read();
-		  if (ch == '*')
-		    {
-		      if ((ch = in.read()) == '/')
-			break;
-		      else if (ch != TT_EOF)
-			in.unread(ch);
-		    }
-		  else if (ch == '\n' || ch == '\r')
-		    {
-		      lineNumber++;
-		      if (ch == '\r' && (ch = in.read()) != '\n')
-			{
-		          if (ch != TT_EOF)
-			    in.unread(ch);
-			}
-		    }
-		  else if (ch == TT_EOF)
-		    {
-		      break;
-		    }
-		}
-	      return nextToken(); // Recursive, but not too deep in normal cases
-	    }
-	  else
-	    {
-	      if (ch != TT_EOF)
-		in.unread(ch);
-	      ch = '/';
-	    }
-
 	ttype = ch;
       }
 
@@ -481,7 +481,7 @@ public class StreamTokenizer
    * quote, or comment) will be set on this character.  This character will
    * parse as its own token.
    *
-   * @param c The charcter to make ordinary, passed as an int
+   * @param c The character to make ordinary, passed as an int
    */
   public void ordinaryChar(int ch)
   {
@@ -626,7 +626,7 @@ public class StreamTokenizer
   }
 
   /**
-   * This method sets the whitespace attribute for all charcters in the
+   * This method sets the whitespace attribute for all characters in the
    * specified range, range terminators included.
    *
    * @param low The low end of the range of values to set the whitespace
@@ -645,7 +645,7 @@ public class StreamTokenizer
   }
 
   /**
-   * This method sets the alphabetic attribute for all charcters in the
+   * This method sets the alphabetic attribute for all characters in the
    * specified range, range terminators included.
    *
    * @param low The low end of the range of values to set the alphabetic
