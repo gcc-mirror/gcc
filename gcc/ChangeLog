@@ -1,3 +1,8 @@
+Mon Feb  1 19:21:36 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reload.c (find_reloads): Handle multiple 
+	RELOAD_FOR_{IN,OUT}PUT_ADDRESS like RELOAD_FOR_OPERAND_ADDRESS.
+
 Mon Jan 25 16:53:37 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (instantiate_virtual_regs_1, case SET): Handle case where
