@@ -87,7 +87,7 @@ endif
 JCFLAGS = -g -L$(here)
 JC1FLAGS = -g -L$(here) @LIBGCJ_JAVAFLAGS@
 
-LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I../libffi/include
+LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I$(MULTIBUILDTOP)../libffi/include
 
 INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 	$(GCINCS) $(THREADINCS) $(INCLTDL) \
