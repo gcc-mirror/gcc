@@ -98,7 +98,8 @@ public final class CharBufferImpl extends CharBuffer
   
   public CharBuffer slice()
   {
-    return new CharBufferImpl (this);
+    return new CharBufferImpl (backing_buffer, arrayOffset () + position (),
+                               remaining ());
   }
   
   public CharBuffer duplicate()
@@ -125,9 +126,10 @@ public final class CharBufferImpl extends CharBuffer
 
   final public CharSequence subSequence (int start, int end)
   {
-    if (start < 0 ||
-        end > length () ||
-        start > end)
+    if (start < 0
+        || start > length ()
+        || end < start
+        || end > length ())
       throw new IndexOutOfBoundsException ();
 
     // No support for direct buffers yet.

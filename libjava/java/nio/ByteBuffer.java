@@ -247,6 +247,15 @@ public abstract class ByteBuffer extends Buffer implements Comparable
   }
   
   /**
+   * Returns the current hash code of this buffer.
+   */
+  public int hashCode()
+  {
+    // FIXME: Check what SUN calcs here
+    return super.hashCode();
+  }
+
+  /**
    * Tells whether or not this buffer is equal to another object.
    */
   public boolean equals (Object obj)
