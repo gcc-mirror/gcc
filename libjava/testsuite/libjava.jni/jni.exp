@@ -163,10 +163,10 @@ proc gcj_jni_test_one {file} {
 # Run the JNI tests.
 proc gcj_jni_run {} {
   global srcdir subdir
-  global target_triplet host_triplet
+  global build_triplet host_triplet
 
   # For now we only test JNI on native builds.
-  if {$target_triplet == $host_triplet} {
+  if {$build_triplet == $host_triplet} {
     catch "glob -nocomplain ${srcdir}/${subdir}/*.java" srcfiles
 
     foreach x $srcfiles {
