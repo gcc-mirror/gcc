@@ -1021,7 +1021,7 @@ add_symbol (p, s)
      const char *s;
 {
   p->hash_next = NULL;
-  p->symbol = savestring (s);
+  p->symbol = savestring (s, strlen (s));
   p->ddip = NULL;
   p->fip = NULL;
   return p;
@@ -1160,9 +1160,9 @@ continue_outer: ;
       copy_p = line_buf + offset;
     }
   *copy_p++ = '\n';
-  *copy_p++ = '\0';
+  *copy_p = '\0';
 
-  return (got_unexpanded ? savestring (line_buf) : 0);
+  return (got_unexpanded ? savestring (line_buf, copy_p - line_buf) : 0);
 }
 
 /* Return the absolutized filename for the given relative
@@ -1265,7 +1265,7 @@ abspath (cwd, rel_filename)
   /* Make a copy (in the heap) of the stuff left in the absolutization
      buffer and return a pointer to the copy.  */
 
-  return savestring (abs_buffer);
+  return savestring (abs_buffer, outp - abs_buffer);
 }
 
 /* Given a filename (and possibly a directory name from which the filename
