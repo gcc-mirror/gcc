@@ -57,20 +57,21 @@
 #endif
 
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
 /*  MEMORYSTATUSEX is missing from older windows headers, so define
-    a local replacement.  */ 
-typedef struct  {
-	DWORD dwLength;
-	DWORD dwMemoryLoad;
-	DWORDLONG ullTotalPhys;
-	DWORDLONG ullAvailPhys;
-	DWORDLONG ullTotalPageFile;
-	DWORDLONG ullAvailPageFile;
-	DWORDLONG ullTotalVirtual;
-	DWORDLONG ullAvailVirtual;
-	DWORDLONG ullAvailExtendedVirtual;
+    a local replacement.  */
+typedef struct
+{
+  DWORD dwLength;
+  DWORD dwMemoryLoad;
+  DWORDLONG ullTotalPhys;
+  DWORDLONG ullAvailPhys;
+  DWORDLONG ullTotalPageFile;
+  DWORDLONG ullAvailPageFile;
+  DWORDLONG ullTotalVirtual;
+  DWORDLONG ullAvailVirtual;
+  DWORDLONG ullAvailExtendedVirtual;
 } lMEMORYSTATUSEX;
 typedef WINBOOL (WINAPI *PFN_MS_EX) (lMEMORYSTATUSEX*);
 #endif
@@ -82,7 +83,7 @@ double
 physmem_total ()
 {
 #if defined _SC_PHYS_PAGES && defined _SC_PAGESIZE
-  {
+  { /* This works on linux-gnu, solaris2 and cygwin.  */
     double pages = sysconf (_SC_PHYS_PAGES);
     double pagesize = sysconf (_SC_PAGESIZE);
     if (0 <= pages && 0 <= pagesize)
@@ -111,7 +112,7 @@ physmem_total ()
 	double pagesize = sysconf (_SC_PAGESIZE);
 	double pages = realmem.physmem;
 	if (0 <= pages && 0 <= pagesize)
-          return pages * pagesize;
+	  return pages * pagesize;
       }
   }
 #endif
@@ -134,12 +135,12 @@ physmem_total ()
 #if HAVE_SYSCTL && defined HW_PHYSMEM
   { /* This works on *bsd and darwin.  */
     unsigned int physmem;
-    size_t len = sizeof(physmem);
-    static int mib[2] = {CTL_HW, HW_PHYSMEM};
+    size_t len = sizeof physmem;
+    static int mib[2] = { CTL_HW, HW_PHYSMEM };
 
-    if (sysctl(mib, ARRAY_SIZE(mib), &physmem, &len, NULL, 0) == 0
+    if (sysctl (mib, ARRAY_SIZE (mib), &physmem, &len, NULL, 0) == 0
 	&& len == sizeof (physmem))
-      return (double)physmem;
+      return (double) physmem;
   }
 #endif
 
@@ -150,31 +151,31 @@ physmem_total ()
 
 #if defined _WIN32
   { /* this works on windows */
-    PFN_MS_EX pfnex; 
-    HMODULE h = GetModuleHandle("kernel32.dll");
+    PFN_MS_EX pfnex;
+    HMODULE h = GetModuleHandle ("kernel32.dll");
 
-    if (!h) 
+    if (!h)
       return 0.0;
 
-    /*  Use GlobalMemoryStatusEx if available.  */ 
+    /*  Use GlobalMemoryStatusEx if available.  */
     if ((pfnex = (PFN_MS_EX) GetProcAddress (h, "GlobalMemoryStatusEx")))
       {
 	lMEMORYSTATUSEX lms_ex;
 	lms_ex.dwLength = sizeof lms_ex;
 	if (!pfnex (&lms_ex))
 	  return 0.0;
-	return (double)lms_ex.ullTotalPhys;
+	return (double) lms_ex.ullTotalPhys;
       }
 
     /*  Fall back to GlobalMemoryStatus which is always available.
-        but returns wrong results for physical memory > 4GB.  */ 
+        but returns wrong results for physical memory > 4GB.  */
     else
       {
-        MEMORYSTATUS ms;
-        GlobalMemoryStatus (&ms);
-        return (double)ms.dwTotalPhys;
+	MEMORYSTATUS ms;
+	GlobalMemoryStatus (&ms);
+	return (double) ms.dwTotalPhys;
       }
-   }
+  }
 #endif
 
   /* Return 0 if we can't determine the value.  */
@@ -186,7 +187,7 @@ double
 physmem_available ()
 {
 #if defined _SC_AVPHYS_PAGES && defined _SC_PAGESIZE
-  {
+  { /* This works on linux-gnu, solaris2 and cygwin.  */
     double pages = sysconf (_SC_AVPHYS_PAGES);
     double pagesize = sysconf (_SC_PAGESIZE);
     if (0 <= pages && 0 <= pagesize)
@@ -217,7 +218,7 @@ physmem_available ()
 	double pagesize = sysconf (_SC_PAGESIZE);
 	double pages = realmem.availrmem;
 	if (0 <= pages && 0 <= pagesize)
-          return pages * pagesize;
+	  return pages * pagesize;
       }
   }
 #endif
@@ -240,24 +241,24 @@ physmem_available ()
 #if HAVE_SYSCTL && defined HW_USERMEM
   { /* This works on *bsd and darwin.  */
     unsigned int usermem;
-    size_t len = sizeof(usermem);
-    static int mib[2] = {CTL_HW, HW_USERMEM};
+    size_t len = sizeof usermem;
+    static int mib[2] = { CTL_HW, HW_USERMEM };
 
-    if (sysctl(mib, ARRAY_SIZE(mib), &usermem, &len, NULL, 0) == 0
+    if (sysctl (mib, ARRAY_SIZE (mib), &usermem, &len, NULL, 0) == 0
 	&& len == sizeof (usermem))
-      return (double)usermem;
+      return (double) usermem;
   }
 #endif
 
 #if defined _WIN32
   { /* this works on windows */
-    PFN_MS_EX pfnex; 
+    PFN_MS_EX pfnex;
     HMODULE h = GetModuleHandle ("kernel32.dll");
 
     if (!h)
       return 0.0;
 
-    /*  Use GlobalMemoryStatusEx if available.  */ 
+    /*  Use GlobalMemoryStatusEx if available.  */
     if ((pfnex = (PFN_MS_EX) GetProcAddress (h, "GlobalMemoryStatusEx")))
       {
 	lMEMORYSTATUSEX lms_ex;
@@ -268,12 +269,12 @@ physmem_available ()
       }
 
     /*  Fall back to GlobalMemoryStatus which is always available.
-        but returns wrong results for physical memory > 4GB  */ 
+        but returns wrong results for physical memory > 4GB  */
     else
       {
 	MEMORYSTATUS ms;
 	GlobalMemoryStatus (&ms);
-	return (double)ms.dwAvailPhys;
+	return (double) ms.dwAvailPhys;
       }
   }
 #endif
