@@ -292,6 +292,12 @@ regrename_optimize ()
 		    /* Can't use regs which aren't saved by the prologue.  */
 		    || (! regs_ever_live[new_reg + i]
 			&& ! call_used_regs[new_reg + i])
+#ifdef LEAF_REGISTERS
+		    /* We can't use a non-leaf register if we're in a 
+		       leaf function.  */
+		    || (current_function_is_leaf 
+			&& !LEAF_REGISTERS[new_reg + i])
+#endif
 #ifdef HARD_REGNO_RENAME_OK
 		    || ! HARD_REGNO_RENAME_OK (reg + i, new_reg + i)
 #endif
