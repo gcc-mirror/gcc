@@ -10177,6 +10177,8 @@ mips_output_conditional_branch (insn,
 
     case 12:
     case 16:
+    case 24:
+    case 28:
       {
 	/* Generate a reversed conditional branch around ` j'
 	   instruction:
@@ -10184,18 +10186,41 @@ mips_output_conditional_branch (insn,
 		.set noreorder
 		.set nomacro
 		bc    l
-		nop
+		delay_slot or #nop
 		j     target
+		#nop
+	     l:
 		.set macro
 		.set reorder
-	     l:
 
+	   If the original branch was a likely branch, the delay slot
+	   must be executed only if the branch is taken, so generate:
+
+		.set noreorder
+		.set nomacro
+		bc    l
+		#nop
+		j     target
+		delay slot or #nop
+	     l:
+		.set macro
+		.set reorder
+	   
+	   When generating non-embedded PIC, instead of:
+
+	        j     target
+
+	   we emit:
+
+	        .set noat
+	        la    $at, target
+		jr    $at
+		.set at
 	*/
 
         rtx orig_target;
 	rtx target = gen_label_rtx ();
 
-        output_asm_insn ("%(%<", 0);
         orig_target = operands[1];
         operands[1] = target;
 	/* Generate the reversed comparison.  This takes four
@@ -10210,13 +10235,8 @@ mips_output_conditional_branch (insn,
 		   op1,
 		   op2);
         output_asm_insn (buffer, operands);
-        operands[1] = orig_target;
 
-	output_asm_insn ("nop\n\tj\t%1", operands);
-
-        if (length == 16)
-	  output_asm_insn ("nop", 0);
-        else
+        if (length != 16 && length != 28 && ! mips_branch_likely)
           {
             /* Output delay slot instruction.  */
             rtx insn = final_sequence;
@@ -10224,9 +10244,33 @@ mips_output_conditional_branch (insn,
                              optimize, 0, 1);
             INSN_DELETED_P (XVECEXP (insn, 0, 1)) = 1;
           }
-	output_asm_insn ("%>%)", 0);
+	else
+	  output_asm_insn ("%#", 0);
+
+	if (length <= 16)
+	  output_asm_insn ("j\t%0", &orig_target);
+	else
+	  {
+	    if (Pmode == DImode)
+	      output_asm_insn ("%[dla\t%@,%0\n\tjr\t%@%]", &orig_target);
+	    else
+	      output_asm_insn ("%[la\t%@,%0\n\tjr\t%@%]", &orig_target);
+	  }
+
+        if (length != 16 && length != 28 && mips_branch_likely)
+          {
+            /* Output delay slot instruction.  */
+            rtx insn = final_sequence;
+            final_scan_insn (XVECEXP (insn, 0, 1), asm_out_file,
+                             optimize, 0, 1);
+            INSN_DELETED_P (XVECEXP (insn, 0, 1)) = 1;
+          }
+	else
+	  output_asm_insn ("%#", 0);
+
         ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
                                    CODE_LABEL_NUMBER (target));
+
         return "";
       }
 

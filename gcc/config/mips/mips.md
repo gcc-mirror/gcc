@@ -105,9 +105,12 @@
    (cond [(eq_attr "type" "branch")
           (cond [(lt (abs (minus (match_dup 1) (plus (pc) (const_int 4))))
                      (const_int 131072))
-                 (const_int 4)]
-	         (const_int 12))]
-          (const_int 4)))
+                 (const_int 4)
+		 (ne (symbol_ref "flag_pic && ! TARGET_EMBEDDED_PIC")
+		     (const_int 0))
+		 (const_int 24)
+		 ] (const_int 12))
+	  ] (const_int 4)))
 
 ;; Attribute describing the processor.  This attribute must match exactly
 ;; with the processor_type enumeration in mips.h.
@@ -9592,18 +9595,31 @@ move\\t%0,%z4\\n\\
   "!TARGET_MIPS16"
   "*
 {
-  if (GET_CODE (operands[0]) == REG)
-    return \"%*j\\t%0\";
-  /* ??? I don't know why this is necessary.  This works around an
-     assembler problem that appears when a label is defined, then referenced
-     in a switch table, then used in a `j' instruction.  */
-  else if (mips_abi != ABI_32 && mips_abi != ABI_O64)
-    return \"%*b\\t%l0\";
+  if (flag_pic && ! TARGET_EMBEDDED_PIC)
+    {
+      if (get_attr_length (insn) <= 8)
+	return \"%*b\\t%l0\";
+      else if (Pmode == DImode)
+	return \"%[dla\\t%@,%l0\;%*jr\\t%@%]\";
+      else
+	return \"%[la\\t%@,%l0\;%*jr\\t%@%]\";
+    }
   else
     return \"%*j\\t%l0\";
 }"
   [(set_attr "type"	"jump")
-   (set_attr "mode"	"none")])
+   (set_attr "mode"	"none")
+   (set (attr "length")
+	;; we can't use `j' when emitting non-embedded PIC, so we emit
+	;; branch, if it's in range, or load the address of the branch
+	;; target into $at in a PIC-compatible way and then jump to it.
+	(if_then_else 
+	 (ior (eq (symbol_ref "flag_pic && ! TARGET_EMBEDDED_PIC")
+		  (const_int 0))
+	      (lt (abs (minus (match_dup 0)
+			      (plus (pc) (const_int 4))))
+		  (const_int 131072)))
+	 (const_int 4) (const_int 16)))])
 
 ;; We need a different insn for the mips16, because a mips16 branch
 ;; does not have a delay slot.
@@ -9611,7 +9627,7 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (pc)
 	(label_ref (match_operand 0 "" "")))]
-  "TARGET_MIPS16 && GET_CODE (operands[0]) != REG"
+  "TARGET_MIPS16"
   "b\\t%l0"
   [(set_attr "type"	"branch")
    (set_attr "mode"	"none")
