@@ -62,7 +62,8 @@ public class SimpleDateFormat extends DateFormat
 
   private transient Vector tokens;
   private DateFormatSymbols formatData;  // formatData
-  private Date defaultCenturyStart = computeCenturyStart ();
+  private Date defaultCenturyStart;
+  private transient int defaultCentury;
   private String pattern;
   private int serialVersionOnStream = 1; // 0 indicates JDK1.1.3 or earlier
   private static final long serialVersionUID = 4774881970558875024L;
@@ -78,9 +79,12 @@ public class SimpleDateFormat extends DateFormat
     stream.defaultReadObject();
     if (serialVersionOnStream < 1)
       {
-        defaultCenturyStart = computeCenturyStart ();
+        computeCenturyStart ();
 	serialVersionOnStream = 1;
       }
+    else
+      // Ensure that defaultCentury gets set.
+      set2DigitYearStart(defaultCenturyStart);
 
     // Set up items normally taken care of by the constructor.
     tokens = new Vector();
@@ -159,7 +163,7 @@ public class SimpleDateFormat extends DateFormat
     super();
     Locale locale = Locale.getDefault();
     calendar = new GregorianCalendar(locale);
-    calendar.clear ();
+    computeCenturyStart();
     tokens = new Vector();
     formatData = new DateFormatSymbols(locale);
     pattern = (formatData.dateFormats[DEFAULT] + ' '
@@ -186,7 +190,7 @@ public class SimpleDateFormat extends DateFormat
   {
     super();
     calendar = new GregorianCalendar(locale);
-    calendar.clear ();
+    computeCenturyStart();
     tokens = new Vector();
     formatData = new DateFormatSymbols(locale);
     compileFormat(pattern);
@@ -203,10 +207,6 @@ public class SimpleDateFormat extends DateFormat
   {
     super();
     calendar = new GregorianCalendar();
-    calendar.clear ();
-    // FIXME: XXX: Is it really necessary to set the timezone?
-    // The Calendar constructor is supposed to take care of this.
-    calendar.setTimeZone(TimeZone.getDefault());
     tokens = new Vector();
     this.formatData = formatData;
     compileFormat(pattern);
@@ -309,6 +309,10 @@ public class SimpleDateFormat extends DateFormat
   public void set2DigitYearStart(Date date)
   {
     defaultCenturyStart = date;
+    calendar.clear();
+    calendar.setTime(date);
+    int year = calendar.get(Calendar.YEAR);
+    defaultCentury = year - (year % 100);
   }
 
   /**
@@ -386,8 +390,7 @@ public class SimpleDateFormat extends DateFormat
   public StringBuffer format(Date date, StringBuffer buffer, FieldPosition pos)
   {
     String temp;
-    Calendar theCalendar = (Calendar) calendar.clone();
-    theCalendar.setTime(date);
+    calendar.setTime(date);
     
     // go through vector, filling in fields where applicable, else toString
     Enumeration e = tokens.elements();
@@ -398,10 +401,10 @@ public class SimpleDateFormat extends DateFormat
 	int beginIndex = buffer.length();
 	switch (p.field) {
 	case ERA_FIELD:
-	  buffer.append(formatData.eras[theCalendar.get(Calendar.ERA)]);
+	  buffer.append(formatData.eras[calendar.get(Calendar.ERA)]);
 	  break;
 	case YEAR_FIELD:
-	  temp = String.valueOf(theCalendar.get(Calendar.YEAR));
+	  temp = String.valueOf(calendar.get(Calendar.YEAR));
 	  if (p.size < 4)
 	    buffer.append(temp.substring(temp.length()-2));
 	  else
@@ -409,60 +412,60 @@ public class SimpleDateFormat extends DateFormat
 	  break;
 	case MONTH_FIELD:
 	  if (p.size < 3)
-	    withLeadingZeros(theCalendar.get(Calendar.MONTH)+1,p.size,buffer);
+	    withLeadingZeros(calendar.get(Calendar.MONTH)+1,p.size,buffer);
 	  else if (p.size < 4)
-	    buffer.append(formatData.shortMonths[theCalendar.get(Calendar.MONTH)]);
+	    buffer.append(formatData.shortMonths[calendar.get(Calendar.MONTH)]);
 	  else
-	    buffer.append(formatData.months[theCalendar.get(Calendar.MONTH)]);
+	    buffer.append(formatData.months[calendar.get(Calendar.MONTH)]);
 	  break;
 	case DATE_FIELD:
-	  withLeadingZeros(theCalendar.get(Calendar.DATE),p.size,buffer);
+	  withLeadingZeros(calendar.get(Calendar.DATE),p.size,buffer);
 	  break;
 	case HOUR_OF_DAY1_FIELD: // 1-24
-	  withLeadingZeros(((theCalendar.get(Calendar.HOUR_OF_DAY)+23)%24)+1,p.size,buffer);
+	  withLeadingZeros(((calendar.get(Calendar.HOUR_OF_DAY)+23)%24)+1,p.size,buffer);
 	  break;
 	case HOUR_OF_DAY0_FIELD: // 0-23
-	  withLeadingZeros(theCalendar.get(Calendar.HOUR_OF_DAY),p.size,buffer);
+	  withLeadingZeros(calendar.get(Calendar.HOUR_OF_DAY),p.size,buffer);
 	  break;
 	case MINUTE_FIELD:
-	  withLeadingZeros(theCalendar.get(Calendar.MINUTE),p.size,buffer);
+	  withLeadingZeros(calendar.get(Calendar.MINUTE),p.size,buffer);
 	  break;
 	case SECOND_FIELD:
-	  withLeadingZeros(theCalendar.get(Calendar.SECOND),p.size,buffer);
+	  withLeadingZeros(calendar.get(Calendar.SECOND),p.size,buffer);
 	  break;
 	case MILLISECOND_FIELD:
-	  withLeadingZeros(theCalendar.get(Calendar.MILLISECOND),p.size,buffer);
+	  withLeadingZeros(calendar.get(Calendar.MILLISECOND),p.size,buffer);
 	  break;
 	case DAY_OF_WEEK_FIELD:
 	  if (p.size < 4)
-	    buffer.append(formatData.shortWeekdays[theCalendar.get(Calendar.DAY_OF_WEEK)]);
+	    buffer.append(formatData.shortWeekdays[calendar.get(Calendar.DAY_OF_WEEK)]);
 	  else
-	    buffer.append(formatData.weekdays[theCalendar.get(Calendar.DAY_OF_WEEK)]);
+	    buffer.append(formatData.weekdays[calendar.get(Calendar.DAY_OF_WEEK)]);
 	  break;
 	case DAY_OF_YEAR_FIELD:
-	  withLeadingZeros(theCalendar.get(Calendar.DAY_OF_YEAR),p.size,buffer);
+	  withLeadingZeros(calendar.get(Calendar.DAY_OF_YEAR),p.size,buffer);
 	  break;
 	case DAY_OF_WEEK_IN_MONTH_FIELD:
-	  withLeadingZeros(theCalendar.get(Calendar.DAY_OF_WEEK_IN_MONTH),p.size,buffer);
+	  withLeadingZeros(calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH),p.size,buffer);
 	  break;
 	case WEEK_OF_YEAR_FIELD:
-	  withLeadingZeros(theCalendar.get(Calendar.WEEK_OF_YEAR),p.size,buffer);
+	  withLeadingZeros(calendar.get(Calendar.WEEK_OF_YEAR),p.size,buffer);
 	  break;
 	case WEEK_OF_MONTH_FIELD:
-	  withLeadingZeros(theCalendar.get(Calendar.WEEK_OF_MONTH),p.size,buffer);
+	  withLeadingZeros(calendar.get(Calendar.WEEK_OF_MONTH),p.size,buffer);
 	  break;
 	case AM_PM_FIELD:
-	  buffer.append(formatData.ampms[theCalendar.get(Calendar.AM_PM)]);
+	  buffer.append(formatData.ampms[calendar.get(Calendar.AM_PM)]);
 	  break;
 	case HOUR1_FIELD: // 1-12
-	  withLeadingZeros(((theCalendar.get(Calendar.HOUR)+11)%12)+1,p.size,buffer);
+	  withLeadingZeros(((calendar.get(Calendar.HOUR)+11)%12)+1,p.size,buffer);
 	  break;
 	case HOUR0_FIELD: // 0-11
-	  withLeadingZeros(theCalendar.get(Calendar.HOUR),p.size,buffer);
+	  withLeadingZeros(calendar.get(Calendar.HOUR),p.size,buffer);
 	  break;
 	case TIMEZONE_FIELD:
-	  TimeZone zone = theCalendar.getTimeZone();
-	  boolean isDST = theCalendar.get(Calendar.DST_OFFSET) != 0;
+	  TimeZone zone = calendar.getTimeZone();
+	  boolean isDST = calendar.get(Calendar.DST_OFFSET) != 0;
 	  // FIXME: XXX: This should be a localized time zone.
 	  String zoneID = zone.getDisplayName(isDST, p.size > 3 ? TimeZone.LONG : TimeZone.SHORT);
 	  buffer.append(zoneID);
@@ -482,7 +485,8 @@ public class SimpleDateFormat extends DateFormat
     return buffer;
   }
 
-  private void withLeadingZeros(int value, int length, StringBuffer buffer) {
+  private void withLeadingZeros(int value, int length, StringBuffer buffer) 
+  {
     String valStr = String.valueOf(value);
     for (length -= valStr.length(); length > 0; length--)
       buffer.append('0');
@@ -514,12 +518,10 @@ public class SimpleDateFormat extends DateFormat
     int fmt_index = 0;
     int fmt_max = pattern.length();
 
-    // We copy the Calendar because if we don't we will modify it and
-    // then this.equals() will no longer have the desired result.
-    Calendar theCalendar = (Calendar) calendar.clone ();
-    theCalendar.clear();
+    calendar.clear();
     boolean saw_timezone = false;
     int quote_start = -1;
+    boolean is2DigitYear = false;
     for (; fmt_index < fmt_max; ++fmt_index)
       {
 	char ch = pattern.charAt(fmt_index);
@@ -552,7 +554,7 @@ public class SimpleDateFormat extends DateFormat
 	int first = fmt_index;
 	while (++fmt_index < fmt_max && pattern.charAt(fmt_index) == ch)
 	  ;
-	int count = fmt_index - first;
+	int fmt_count = fmt_index - first;
 	--fmt_index;
 
 	// We can handle most fields automatically: most either are
@@ -564,6 +566,7 @@ public class SimpleDateFormat extends DateFormat
 	boolean is_numeric = true;
 	String[] match = null;
 	int offset = 0;
+	boolean maybe2DigitYear = false;
 	switch (ch)
 	  {
 	  case 'd':
@@ -579,7 +582,7 @@ public class SimpleDateFormat extends DateFormat
 	    is_numeric = false;
 	    offset = 1;
 	    calendar_field = Calendar.DAY_OF_WEEK;
-	    match = (count <= 3
+	    match = (fmt_count <= 3
 		     ? formatData.getShortWeekdays()
 		     : formatData.getWeekdays());
 	    break;
@@ -591,20 +594,20 @@ public class SimpleDateFormat extends DateFormat
 	    break;
 	  case 'M':
 	    calendar_field = Calendar.MONTH;
-	    if (count <= 2)
+	    if (fmt_count <= 2)
 	      offset = -1;
 	    else
 	      {
 		is_numeric = false;
-		match = (count <= 3
+		match = (fmt_count <= 3
 			 ? formatData.getShortMonths()
 			 : formatData.getMonths());
 	      }
 	    break;
 	  case 'y':
 	    calendar_field = Calendar.YEAR;
-	    if (count <= 2)
-	      offset = 1900;
+	    if (fmt_count <= 2)
+	      maybe2DigitYear = true;
 	    break;
 	  case 'K':
 	    calendar_field = Calendar.HOUR;
@@ -655,8 +658,8 @@ public class SimpleDateFormat extends DateFormat
 		    found_zone = true;
 		    saw_timezone = true;
 		    TimeZone tz = TimeZone.getTimeZone (strings[0]);
-		    theCalendar.setTimeZone (tz);
-		    theCalendar.set (Calendar.ZONE_OFFSET, tz.getRawOffset ());
+		    calendar.setTimeZone (tz);
+		    calendar.set (Calendar.ZONE_OFFSET, tz.getRawOffset ());
 		    offset = 0;
 		    if (k > 2 && tz instanceof SimpleTimeZone)
 		      {
@@ -680,9 +683,12 @@ public class SimpleDateFormat extends DateFormat
 
 	// Compute the value we should assign to the field.
 	int value;
+	int index = -1;
 	if (is_numeric)
 	  {
-	    numberFormat.setMinimumIntegerDigits(count);
+	    numberFormat.setMinimumIntegerDigits(fmt_count);
+	    if (maybe2DigitYear)
+	      index = pos.getIndex();
 	    Number n = numberFormat.parse(dateStr, pos);
 	    if (pos == null || ! (n instanceof Long))
 	      return null;
@@ -690,7 +696,7 @@ public class SimpleDateFormat extends DateFormat
 	  }
 	else if (match != null)
 	  {
-	    int index = pos.getIndex();
+	    index = pos.getIndex();
 	    int i;
 	    for (i = offset; i < match.length; ++i)
 	      {
@@ -707,9 +713,28 @@ public class SimpleDateFormat extends DateFormat
 	  }
 	else
 	  value = offset;
+	  
+	if (maybe2DigitYear)
+	  {
+	    // Parse into default century if the numeric year string has 
+	    // exactly 2 digits.
+	    int digit_count = pos.getIndex() - index;
+	    if (digit_count == 2)
+	      is2DigitYear = true;
+	  }
 
 	// Assign the value and move on.
-	theCalendar.set(calendar_field, value);
+	calendar.set(calendar_field, value);
+      }
+    
+    if (is2DigitYear)
+      {
+	// Apply the 80-20 heuristic to dermine the full year based on 
+	// defaultCenturyStart. 
+	int year = defaultCentury + calendar.get(Calendar.YEAR);
+	calendar.set(Calendar.YEAR, year);
+	if (calendar.getTime().compareTo(defaultCenturyStart) < 0)
+	  calendar.set(Calendar.YEAR, year + 100);      
       }
 
     try
@@ -718,10 +743,10 @@ public class SimpleDateFormat extends DateFormat
 	  {
 	    // Use the real rules to determine whether or not this
 	    // particular time is in daylight savings.
-	    theCalendar.clear (Calendar.DST_OFFSET);
-	    theCalendar.clear (Calendar.ZONE_OFFSET);
+	    calendar.clear (Calendar.DST_OFFSET);
+	    calendar.clear (Calendar.ZONE_OFFSET);
 	  }
-        return theCalendar.getTime();
+        return calendar.getTime();
       }
     catch (IllegalArgumentException x)
       {
@@ -732,18 +757,10 @@ public class SimpleDateFormat extends DateFormat
 
   // Compute the start of the current century as defined by
   // get2DigitYearStart.
-  private Date computeCenturyStart ()
+  private void computeCenturyStart()
   {
-    // Compute the current year.  We assume a year has 365 days.  Then
-    // compute 80 years ago, and finally reconstruct the number of
-    // milliseconds.  We do this computation in this strange way
-    // because it lets us easily truncate the milliseconds, seconds,
-    // etc, which don't matter and which confuse
-    // SimpleDateFormat.equals().
-    long now = System.currentTimeMillis ();
-    now /= 365L * 24L * 60L * 60L * 1000L;
-    now -= 80;
-    now *= 365L * 24L * 60L * 60L * 1000L;
-    return new Date (now);
+    int year = calendar.get(Calendar.YEAR);
+    calendar.set(Calendar.YEAR, year - 80);
+    set2DigitYearStart(calendar.getTime());
   }
 }

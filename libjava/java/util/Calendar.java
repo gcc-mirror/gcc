@@ -549,8 +549,6 @@ public abstract class Calendar implements Serializable, Cloneable
    */
   public final void set(int field, int value)
   {
-    if (!areFieldsSet)
-      computeFields();
     isTimeSet = false;
     fields[field] = value;
     isSet[field] = true;
@@ -573,7 +571,6 @@ public abstract class Calendar implements Serializable, Cloneable
 	isSet[HOUR] = false;
 	break;
       case HOUR:
-	isSet[AM_PM] = false;
 	isSet[HOUR_OF_DAY] = false;
 	break;
       }
@@ -587,8 +584,6 @@ public abstract class Calendar implements Serializable, Cloneable
    */
   public final void set(int year, int month, int date)
   {
-    if (!areFieldsSet)
-      computeFields();
     isTimeSet = false;
     fields[YEAR] = year;
     fields[MONTH] = month;

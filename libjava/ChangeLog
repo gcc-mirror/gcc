@@ -1,3 +1,24 @@
+2001-07-26  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/util/Calendar.java (set): Never recompute fields here. They 
+	will already be set if someone set time explicitly, and it can cause
+	problems to do so. Don't invalidate AM_PM setting if HOUR is set.
+	* java/util/GregorianCalendar.java (computeTime): Don't ignore an
+	HOUR setting if AM_PM is set. Don't try to ensure the HOUR value is 
+	sane.
+	* java/text/SimpleDateFormat.java (defaultCentury): New field.
+	(readObject): Call set2DigitYearStart if appropriate so that 
+	defaultCentury is calculated.
+	(SimpleDateFormat): Don't bother clearing calendar here. Call
+	computeCenturyStart().
+	(set2DigitYearStart): Calculate and set defaultCentury.
+	(format): Don't clone the calendar. Use "calendar" not "theCalendar"
+	everywhere.
+	(parse): Likewise. If the pattern is "y" or "yy" and it found exactly
+	2 numeric digits, use the 80-20 heuristic to parse the value into a
+	default century based on defaultCenturyStart.
+	(computeCenturyStart): Rewritten. Call set2DigitYearStart().
+
 2001-07-25  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
