@@ -1,3 +1,9 @@
+2005-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/19857
+	* gcc.dg/tree-ssa/20050215-1.c: New test.
+	* gcc.c-torture/execute/20050215-1.c: New test.
+
 2005-02-15  Eric Christopher  <echristo@redhat.com>
 
 	* gcc.dg/cpp/20050215-1.c: New file.
