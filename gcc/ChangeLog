@@ -1,5 +1,9 @@
 2000-05-31  Richard Henderson  <rth@cygnus.com>
 
+	* ifcvt.c (cond_exec_process_insns): Don't ever ignore clobbers.
+
+2000-05-31  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (merge_blocks_nomove): Remove a barrier not following
 	a jump as well.
 
