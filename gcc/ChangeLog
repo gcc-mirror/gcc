@@ -1,3 +1,12 @@
+2003-06-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (4 anonymous patterns): Give internal
+	names.
+	(movsi_h8300): Change the name to *movsi_h8300.
+	(movsi_h8300hs): Change the name to *movsi_h8300hs.
+	(movsf_h8300): Change the name to *movsf_h8300.
+	(movsf_h8300hs): Change the name to *movsf_h8300hs.
+
 2003-06-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.c (expand_builtin_strcpy): Don't evaluate side-effects in
