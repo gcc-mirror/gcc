@@ -1,3 +1,10 @@
+2005-02-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* bitmap.c, bitmap.h, lambda-code.c, tree-dfa.c, tree-dump.c,
+	tree-dump.h, tree-ssa-loop-manip.c, value-prof.c,
+	config/mips/mips.md, config/rs6000/aix.h,
+	config/rs6000/beos.h, config/rs6000/sysv4.h: Update copyright.
+
 2005-02-15  Richard Henderson  <rth@redhat.com>
 
 	* bb-reorder.c (find_traces_1_round): Force fallthru edge from a 

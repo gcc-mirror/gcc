@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler, for BeOS.
-   Copyright (C) 1997, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1997, 2000, 2001, 2002, 2003, 2005
+   Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com), based on aix41.h
    from David Edelsohn (edelsohn@npac.syr.edu).
 
