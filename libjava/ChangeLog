@@ -1,5 +1,12 @@
 2002-12-08  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
+	* java/util/Hashtable.java (Hashtable(Map)): Use putAll, not putAllInternal.
+	(putAllInternal): Correct comment.
+	* java/util/HashMap.java (HashMap(Map)): As above.
+	(putAllInternal): As above.
+
+2002-12-08  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
 	* java/util/Hashtable.java (internalContainsValue): Removed.
 	(containsValue): Don't delegate to internalContainsValue.
 
