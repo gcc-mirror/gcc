@@ -1,3 +1,8 @@
+1999-05-27  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* fold-const.c (fold_truthop): Make the field reference unsigned
+	when converting a single bit compare.
+
 Thu May 27 02:40:48 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (strength_reduce): Don't do biv->giv conversion on constants.
