@@ -5384,6 +5384,24 @@ expand_field_assignment (x)
 
       compute_mode = GET_MODE (inner);
 
+      /* Don't attempt bitwise arithmetic on non-integral modes.  */
+      if (! INTEGRAL_MODE_P (compute_mode))
+	{
+	  enum machine_mode imode;
+
+	  /* Something is probably seriously wrong if this matches.  */
+	  if (! FLOAT_MODE_P (compute_mode))
+	    break;
+
+	  /* Try to find an integral mode to pun with.  */
+	  imode = mode_for_size (GET_MODE_BITSIZE (compute_mode), MODE_INT, 0);
+	  if (imode == BLKmode)
+	    break;
+
+	  compute_mode = imode;
+	  inner = gen_lowpart_for_combine (imode, inner);
+	}
+
       /* Compute a mask of LEN bits, if we can do this on the host machine.  */
       if (len < HOST_BITS_PER_WIDE_INT)
 	mask = GEN_INT (((HOST_WIDE_INT) 1 << len) - 1);
