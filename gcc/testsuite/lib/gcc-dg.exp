@@ -320,19 +320,31 @@ proc gcc-dg-debug-runtest { target_compile trivial opt_opts testcases } {
     }
 }
 
+# Skip a test and clear all xfail flags that might have been set for it
+# by dg-xfail-if or for the xfail list in dg-do.  A procedure that calls
+# this must specify "upvar dg-do-what dg-do-what".
+
+proc skip_test_and_clear_xfail { } {
+    global compiler_conditional_xfail_data
+    upvar dg-do-what dg-do-what
+
+    set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    if [info exists compiler_conditional_xfail_data] {
+	unset compiler_conditional_xfail_data
+    }
+}
+
 # If this target does not support weak symbols, skip this test.
 
 proc dg-require-weak { args } {
-    upvar dg-do-what dg-do-what
-    upvar name name
-
     set weak_available [ check_weak_available ]
     if { $weak_available == -1 } {
+	upvar name name
 	unresolved "$name"
     }
     if { $weak_available != 1 } {
-	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
-	return
+	upvar dg-do-what dg-do-what
+	skip_test_and_clear_xfail
     }
 }
 
@@ -340,16 +352,14 @@ proc dg-require-weak { args } {
 # test.
 
 proc dg-require-visibility { args } {
-    upvar dg-do-what dg-do-what
-    upvar name name
-
     set visibility_available [ check_visibility_available ]
     if { $visibility_available == -1 } {
+	upvar name name
 	unresolved "$name"
     }
     if { $visibility_available != 1 } {
-	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
-	return
+	upvar dg-do-what dg-do-what
+	skip_test_and_clear_xfail
     }
 }
 
@@ -357,16 +367,14 @@ proc dg-require-visibility { args } {
 # test.
 
 proc dg-require-alias { args } {
-    upvar dg-do-what dg-do-what
-    upvar name name
-
     set alias_available [ check_alias_available ]
     if { $alias_available == -1 } {
+	upvar name name
 	unresolved "$name"
     }
     if { $alias_available < 2 } {
-	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
-	return
+	upvar dg-do-what dg-do-what
+	skip_test_and_clear_xfail
     }
 }
 
@@ -376,8 +384,7 @@ proc dg-require-alias { args } {
 proc dg-require-gc-sections { args } {
     if { ![ check_gc_sections_available ] } {
 	upvar dg-do-what dg-do-what
-	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
-	return
+	skip_test_and_clear_xfail
     }
 }
 
@@ -386,8 +393,7 @@ proc dg-require-gc-sections { args } {
 proc dg-require-profiling { args } {
     if { ![ check_profiling_available ${args} ] } {
 	upvar dg-do-what dg-do-what
-	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
-	return
+	skip_test_and_clear_xfail
     }
 }
 
@@ -407,27 +413,23 @@ proc dg-require-dll { args } {
     }
 
     upvar dg-do-what dg-do-what
-    set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    skip_test_and_clear_xfail
 }
 
 proc dg-require-iconv { args } {
     if { ![ check_iconv_available ${args} ] } {
 	upvar dg-do-what dg-do-what
-	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
-	return
+	skip_test_and_clear_xfail
     }
-    return
 }
 
 # If this target does not support named sections skip this test.
 
 proc dg-require-named-sections { args } {
-   upvar name name
-
-   if { ![ check_named_sections_available ] } {
-       upvar dg-do-what dg-do-what
-       set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
-   }
+    if { ![ check_named_sections_available ] } {
+	upvar dg-do-what dg-do-what
+	skip_test_and_clear_xfail
+    }
 }
 
 # Prune any messages matching ARGS[1] (a regexp) from test output.
