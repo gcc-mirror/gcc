@@ -1,5 +1,11 @@
 2001-09-24  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* pa.c (return_addr_rtx): Return NULL_RTX if count is not zero.  Use
+	initial value of return pointer register instead of value in frame-20.
+	Revise comments.
+
+2001-09-24  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
 	* som.h (ASM_OUTPUT_EXTERNAL): Improve formatting.
 	(ASM_OUTPUT_EXTERNAL_LIBCALL): Only generate a .IMPORT statement for
 	the libcall if there isn't a referenced identifier for the symbol.
