@@ -1,3 +1,12 @@
+2005-04-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20734
+	* cp-tree.def (OFFSET_REF): Correct comments.
+	* init.c (build_offset_ref): Remove misleading comment.
+	* typeck.c (build_unary_op): Handle pointer-to-member creation
+	here, rather than ...
+	(unary_complex_lvalue): ... here.
+
 2005-04-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/19312
