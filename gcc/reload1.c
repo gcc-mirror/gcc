@@ -266,6 +266,11 @@ enum reg_class reload_address_index_reg_class;
 
 int reload_in_progress = 0;
 
+/* Set to the register number that was reloaded in the last insn or
+   -1 if none;  this is used to better choose which alternative to reload.  */
+
+int last_output_reload_regno;
+
 /* These arrays record the insn_code of insns that may be needed to
    perform input and output reloads of special objects.  They provide a
    place to pass a scratch register.  */
@@ -1034,6 +1039,8 @@ reload (first, global, dumpfile)
 	      || (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 		  && REG_NOTES (insn) != 0))
 	    set_label_offsets (insn, insn, 0);
+
+	  last_output_reload_regno = -1;
 
 	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	    {
@@ -4013,6 +4020,7 @@ reload_as_needed (first, live_known)
 	spill_reg_order[spill_regs[i]] = i;
     }
 
+  last_output_reload_regno = -1;
   for (insn = first; insn;)
     {
       register rtx next = NEXT_INSN (insn);
@@ -4088,7 +4096,11 @@ reload_as_needed (first, live_known)
 	    }
 
 	  if (GET_MODE (insn) == VOIDmode)
-	    n_reloads = 0;
+	    {
+	      n_reloads = 0;
+	      last_output_reload_regno = -1;
+	    }
+
 	  /* First find the pseudo regs that must be reloaded for this insn.
 	     This info is returned in the tables reload_... (see reload.h).
 	     Also modify the body of INSN by substituting RELOAD
