@@ -1,5 +1,10 @@
 2002-09-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* expr.c (expand_expr) [MINUS_EXPR]: Convert A - const to 
+	A + (-const) on RTX level, even for unsigned types.
+
+2002-09-26  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* reload.c (dup_replacements): New function.
 	(find_reloads): Use it to duplicate replacements at the top level
 	of match_dup operands.
