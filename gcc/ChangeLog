@@ -60,11 +60,6 @@
 	* except.h (lang_eh_type_covers): Mark extern.
 	(lang_eh_runtime_type): Likewise.
 
-2001-04-02  Jakub Jelinek  <jakub@redhat.com>
-
-	* lex.c (ffelex_hash_): Avoid eating one whole line after
-	#line.
-
 2001-04-02  Zack Weinberg  <zackw@stanford.edu>
 
 	* genattr.c, gencheck.c, gencodes.c, genconfig.c, genflags.c,
