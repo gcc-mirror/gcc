@@ -1,3 +1,7 @@
+Mon Jun  8 12:13:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* regmove.c: Remove include for varargs or stdarg.
+
 Mon Jun  8 07:49:41 1998  Andris Pavenis   <pavenis@lanet.lv>
 
 	* gcc.c (link_command_spec): Support LINK_COMMAND_SPEC.
