@@ -1,3 +1,14 @@
+2001-03-09  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* include/bits/istream.tcc ( basic_istream<_CharT, _Traits>&
+	operator>>(basic_istream<_CharT, _Traits>& __in, _CharT* __s)):
+	Use streamsize, not int_type.
+
+2001-03-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/27_io/streambuf.cc (test06): New test, disabled at the
+	moment.
+	
 2001-03-08  Andreas Schwab  <schwab@suse.de>
 
 	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Fix syntax in test

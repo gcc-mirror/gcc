@@ -984,9 +984,9 @@ namespace std {
 	{
 	  try {
 	    // Figure out how many characters to extract.
-	    int_type __num = static_cast<int_type>(__in.width());
-	    if (__num <= 0)
-	      __num = basic_string<_CharT, _Traits>::npos;
+	    streamsize __num = __in.width();
+	    if (__num == 0)
+	      __num = numeric_limits<streamsize>::max();
 
 	    __streambuf_type* __sb = __in.rdbuf();
 	    const __ctype_type* __ctype = __in._M_get_fctype_ios();
