@@ -176,7 +176,7 @@ throw_bad_cast (void)
     fn = push_throw_library_fn (fn, build_function_type (ptr_type_node,
 							 void_list_node));
   
-  return build_cxx_call (fn, NULL_TREE, NULL_TREE);
+  return build_cxx_call (fn, NULL_TREE);
 }
 
 /* Return an expression for "__cxa_bad_typeid()".  The expression
@@ -193,7 +193,7 @@ throw_bad_typeid (void)
       fn = push_throw_library_fn (fn, t);
     }
 
-  return convert_from_reference (build_cxx_call (fn, NULL_TREE, NULL_TREE));
+  return convert_from_reference (build_cxx_call (fn, NULL_TREE));
 }
 
 /* Return an lvalue expression whose type is "const std::type_info"
@@ -652,7 +652,7 @@ build_dynamic_cast_1 (tree type, tree expr)
               pop_nested_namespace (ns);
               dynamic_cast_node = dcast_fn;
 	    }
-          result = build_cxx_call (dcast_fn, elems, elems);
+          result = build_cxx_call (dcast_fn, elems);
 
 	  if (tc == REFERENCE_TYPE)
 	    {

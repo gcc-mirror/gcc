@@ -3626,7 +3626,7 @@ extern tree strip_top_quals (tree);
 extern tree perform_implicit_conversion (tree, tree);
 extern tree perform_direct_initialization_if_possible (tree, tree);
 extern tree in_charge_arg_for_name (tree);
-extern tree build_cxx_call (tree, tree, tree);
+extern tree build_cxx_call (tree, tree);
 #ifdef ENABLE_CHECKING
 extern void validate_conversion_obstack (void);
 #endif /* ENABLE_CHECKING */
