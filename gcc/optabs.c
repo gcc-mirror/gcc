@@ -2950,7 +2950,7 @@ emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
   rtx op0;
   rtx op1;
 	  
-  if (GET_CODE (x) == CONST_INT)
+  if (CONSTANT_P (x))
     {
       /* Swap operands and condition to ensure canonical RTL.  */
       op0 = y;
