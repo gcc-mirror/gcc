@@ -1,3 +1,7 @@
+2005-03-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* invoke.texi: Fix typos.
+
 2005-03-15  Feng Wang  <fengwang@nudt.edu.cn>
 
 	PR fortran/18827
