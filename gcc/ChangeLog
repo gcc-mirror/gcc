@@ -1,3 +1,7 @@
+Tue Jul 20 12:37:30 1999  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* dwarf2out.c (output_abbrev_section): Terminate with a zero.
+
 Tue Jul 20 12:12:27 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* gcc.c (default_compilers, cpp-output): Pass -fpreprocessed.
