@@ -1,3 +1,11 @@
+2002-05-21  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/stl_vector.h:  Reformat to follow C++STYLE.
+	Doxygenate all public members.  Reorder to follow 14882.
+	(vector::push_back(void)):  Remove previously-deprecated fn.
+	(vector::insert(iterator), vector::_M_insert_aux(iterator)):
+	Deprecate for removal in 3.3.
+
 2002-05-20  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/faq/index.html (5.4):  Recommend against -I options for
