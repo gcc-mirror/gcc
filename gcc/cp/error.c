@@ -211,6 +211,7 @@ dump_type_real (t, v, canonical_name)
 
     case TYPE_DECL:
     case TEMPLATE_DECL:
+    case NAMESPACE_DECL:
       dump_decl (t, v);
       break;
 
