@@ -1,3 +1,12 @@
+Wed Sep 02 09:25:29 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* lex.c (check_newline):  Change how HANDLE_PRAGMA is called.
+	Generate warning messages if unknown pragmas are encountered.
+	(pragma_getc): New function: retrieves characters from the
+	input stream.  Defined when HANDLE_PRAGMA is defined.
+	(pragma_ungetc): New function: replaces characters back into the
+	input stream.  Defined when HANDLE_PRAGMA is defined.
+
 Mon Aug 31 15:35:16 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* decl.c (layout_chill_variants): Calculate nlables properly.
