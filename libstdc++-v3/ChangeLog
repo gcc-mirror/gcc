@@ -1,3 +1,9 @@
+2003-07-31  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite/lib/libstdc++-v3-dg.exp:  Rename...
+	* testsuite/lib/libstdc++-v3.exp:  ...to this.
+	* testsuite/libstdc++-v3.dg/dg.exp:  No special case needed now.
+
 2003-07-31  Doug Gregor  <dgregor@apple.com>
 
 	Add user specialization tests.
