@@ -1,5 +1,7 @@
 2000-01-05  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/natClass.cc: Include <gcj/method.h>.
+
 	* java/lang/Class.h (_getMethods): Correctly declare as private,
 	not public.
 
