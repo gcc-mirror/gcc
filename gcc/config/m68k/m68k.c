@@ -21,7 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Some output-actions in m68k.md need these.  */
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "insn-attr.h"
 #include "recog.h"
+#include "toplev.h"
 
 /* Needed for use_return_insn.  */
 #include "flags.h"
@@ -866,7 +867,7 @@ not_sp_operand (op, mode)
 int
 valid_dbcc_comparison_p (x, mode)
      rtx x;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (x))
     {
@@ -1243,7 +1244,7 @@ output_btst (operands, countop, dataop, insn, signpos)
 int
 symbolic_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -1331,7 +1332,7 @@ extend_operator(x, mode)
 rtx
 legitimize_pic_address (orig, mode, reg)
      rtx orig, reg;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   rtx pic_ref = orig;
 
@@ -3252,7 +3253,7 @@ strict_low_part_peephole_ok (mode, first_insn, target)
 int
 const_uint32_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == CONSTANT_P_RTX)
     return 1;
@@ -3273,7 +3274,7 @@ const_uint32_operand (op, mode)
 int
 const_sint32_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == CONSTANT_P_RTX)
     return 1;

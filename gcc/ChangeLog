@@ -1,5 +1,15 @@
 Mon Aug 17 09:23:42 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
+	* config/m68k/m68k.c: Include "system.h" instead of <stdio.h>.
+	Include "toplev.h".
+	(valid_dbcc_comparison_p): Mark mode argument as unused.
+	(symbolic_operand): Likewise.
+	(legitimize_pic_address): Likewise.
+	(const_uint32_operand): Likewise.
+	(const_sint32_operand): Likewise.
+	* sched.c [!INSN_SCHEDULING]: Define only dummy function
+	schedule_insns and comment out rest of file.
+
 	* m68k.c (output_move_simode_const): Use subl to move a zero into an
 	address register.
 	(output_move_[hq]imode): Likewise.
