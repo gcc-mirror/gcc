@@ -1,3 +1,7 @@
+Fri Oct 30 00:54:25 1998  Peter Jakubek <pjak@snafu.de>
+
+	* m68k.h (INDIRECTABLE_1_ADDRESS_P): Fix thinko.
+
 Thu Oct 29 12:14:58 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* alpha/linux.h (CPP_PREDEFINES): Add missing space.
