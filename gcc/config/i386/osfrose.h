@@ -81,6 +81,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
      { "large-align",	 MASK_LARGE_ALIGN},				\
      { "no-large-align",-MASK_LARGE_ALIGN},				\
      { "mcount",	-MASK_NO_MCOUNT},				\
+     { "mcount-ptr",	 MASK_NO_MCOUNT},				\
      { "no-mcount",	 MASK_NO_MCOUNT},
 
 /* OSF/rose uses stabs, not dwarf.  */
@@ -115,10 +116,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Turn on -pic-extern by default.  */
 #undef  CC1_SPEC
 #define CC1_SPEC "\
-%{!melf: %{!mrose: -mrose }} \
-%{melf: %{!munderscores: %{!mno-underscores: -mno-underscores }}} \
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{!melf: %{pic-none: -mno-half-pic} \
+%{!melf: %{!mrose: -mrose }} \
+%{melf: %{!munderscores: %{!mno-underscores: -mno-underscores }} \
+	%{!mmcount: %{!mno-mcount: %{!mmcount-ptr: -mmcount-ptr }}}} \
+%{!melf: %{!munderscores: %{!mno-underscores: -munderscores }} \
+	 %{!mmcount: %{!mno-mcount: %{!mmcount-ptr: -mmcount }}} \
+	 %{pic-none: -mno-half-pic} \
 	 %{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
 	 %{!pic-none: -mhalf-pic }}"
 
