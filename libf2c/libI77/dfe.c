@@ -101,7 +101,7 @@ s_rdfe (cilist * a)
     f_init ();
   f__init = 3;
   f__reading = 1;
-  if (n = c_dfe (a))
+  if ((n = c_dfe (a)))
     return (n);
   if (f__curunit->uwrt && f__nowreading (f__curunit))
     err (a->cierr, errno, "read start");
@@ -124,7 +124,7 @@ s_wdfe (cilist * a)
     f_init ();
   f__init = 3;
   f__reading = 0;
-  if (n = c_dfe (a))
+  if ((n = c_dfe (a)))
     return (n);
   if (f__curunit->uwrt != 1 && f__nowwriting (f__curunit))
     err (a->cierr, errno, "startwrt");

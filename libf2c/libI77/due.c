@@ -37,7 +37,7 @@ s_rdue (cilist * a)
 {
   int n;
   f__reading = 1;
-  if (n = c_due (a))
+  if ((n = c_due (a)))
     return (n);
   if (f__curunit->uwrt && f__nowreading (f__curunit))
     err (a->cierr, errno, "read start");
@@ -49,7 +49,7 @@ s_wdue (cilist * a)
 {
   int n;
   f__reading = 0;
-  if (n = c_due (a))
+  if ((n = c_due (a)))
     return (n);
   if (f__curunit->uwrt != 1 && f__nowwriting (f__curunit))
     err (a->cierr, errno, "write start");

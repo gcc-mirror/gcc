@@ -25,10 +25,10 @@ rd_Z (Uint * n, int w, ftnlen len)
   if (!hex['0'])
     {
       s = "0123456789";
-      while (ch = *s++)
+      while ((ch = *s++))
 	hex[ch] = ch - '0' + 1;
       s = "ABCDEF";
-      while (ch = *s++)
+      while ((ch = *s++))
 	hex[ch] = hex[ch + 'a' - 'A'] = ch - 'A' + 11;
     }
   s = s0 = (char *) x;

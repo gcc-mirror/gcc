@@ -31,7 +31,7 @@ s_rsue (cilist * a)
     f_init ();
   f__init = 3;
   f__reading = 1;
-  if (n = c_sue (a))
+  if ((n = c_sue (a)))
     return (n);
   f__recpos = 0;
   if (f__curunit->uwrt && f__nowreading (f__curunit))
@@ -56,7 +56,7 @@ s_wsue (cilist * a)
   if (f__init != 1)
     f_init ();
   f__init = 3;
-  if (n = c_sue (a))
+  if ((n = c_sue (a)))
     return (n);
   f__reading = 0;
   f__reclen = 0;

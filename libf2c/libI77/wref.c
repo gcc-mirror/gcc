@@ -134,7 +134,7 @@ wrt_E (ufloat * p, int w, int d, int e, ftnlen len)
 #else
       if (!e0)
 	{
-	  for (s -= 2, e1 = 2; s[0] = s[1]; s++)
+	  for (s -= 2, e1 = 2; (s[0] = s[1]); s++)
 #ifdef CRAY
 	    delta--;
 	  if ((delta += 4) < 0)
@@ -233,7 +233,7 @@ wrt_F (ufloat * p, int w, int d, ftnlen len)
 #endif
     }
 
-  if (n = f__scale)
+  if ((n = f__scale))
     {
       if (n > 0)
 	do
@@ -298,7 +298,7 @@ wrt_F (ufloat * p, int w, int d, ftnlen len)
     PUT ('-');
   else if (f__cplus)
     PUT ('+');
-  while (n = *b++)
+  while ((n = *b++))
     PUT (n);
   while (--d1 >= 0)
     PUT ('0');

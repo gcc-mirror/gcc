@@ -239,7 +239,7 @@ f_open (olist * a)
     case 'r':			/* Fortran 90 replace option */
     case 'R':
     replace:
-      if (tf = fopen (buf, f__w_mode[0]))
+      if ((tf = fopen (buf, f__w_mode[0])))
 	fclose (tf);
     }
 
@@ -251,9 +251,9 @@ f_open (olist * a)
     ufmt = 0;
   if (!(tf = fopen (buf, f__w_mode[ufmt | 2])))
     {
-      if (tf = fopen (buf, f__r_mode[ufmt]))
+      if ((tf = fopen (buf, f__r_mode[ufmt])))
 	b->urw = 1;
-      else if (tf = fopen (buf, f__w_mode[ufmt]))
+      else if ((tf = fopen (buf, f__w_mode[ufmt])))
 	{
 	  b->uwrt = 1;
 	  b->urw = 2;
