@@ -1,3 +1,7 @@
+2003-03-05  Roger Sayle  <roger@eyesopen.com>
+
+	* expr.h (lang_expand_expr): Delete obsolete prototype.
+
 2003-03-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* emit-rtl.c (gen_highpart_mode): Fix a comment typo.
