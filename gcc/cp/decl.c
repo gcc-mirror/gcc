@@ -3717,11 +3717,8 @@ duplicate_decls (newdecl, olddecl)
 	    DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
 	}
     }
-
-  if (TREE_CODE (newdecl) == NAMESPACE_DECL)
-    {
-      NAMESPACE_LEVEL (newdecl) = NAMESPACE_LEVEL (olddecl);
-    }
+  else if (TREE_CODE (newdecl) == NAMESPACE_DECL)
+    NAMESPACE_LEVEL (newdecl) = NAMESPACE_LEVEL (olddecl);
 
   /* Now preserve various other info from the definition.  */
   TREE_ADDRESSABLE (newdecl) = TREE_ADDRESSABLE (olddecl);
@@ -6371,6 +6368,12 @@ init_decl_processing ()
       flag_inline_trees = 2;
       flag_inline_functions = 0;
     }
+
+  /* In C++, we never create builtin functions whose name does not
+     begin with `__'.  Users should be using headers to get prototypes
+     in C++.  It would be nice if we could warn when `-fbuiltin' is
+     used explicitly, but we do not have that information.  */
+  flag_no_builtin = 1;
 
   /* Initially, C.  */
   current_lang_name = lang_name_c;

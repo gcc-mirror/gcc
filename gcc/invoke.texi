@@ -972,6 +972,13 @@ and faster, but since the function calls no longer appear as such, you
 cannot set a breakpoint on those calls, nor can you change the behavior
 of the functions by linking with a different library.
 
+In C++, @samp{-fno-builtin} is always in effect.  The @samp{-fbuiltin}
+option has no effect.  Therefore, in C++, the only way to get the
+optimization benefits of builtin functions is to call the function
+using the @samp{__builtin_} prefix.  The GNU C++ Standard Library uses
+builtin functions to implement many functions (like
+@code{std::strchr}), so that you automatically get efficient code.
+
 @item -fhosted
 @cindex hosted environment
 
