@@ -51,6 +51,7 @@ struct JCF;
       RESOLVE_PACKAGE_NAME_P (in EXPR_WITH_FILE_LOCATION)
    4: RESOLVE_TYPE_NAME_P (in EXPR_WITH_FILE_LOCATION)
    5: IS_BREAK_STMT_P (in EXPR_WITH_FILE_LOCATION)
+      IS_CRAFTED_STRING_BUFFER_P (in CALL_EXPR)
 
    Usage of TYPE_LANG_FLAG_?:
    1: TYPE_ARRAY_P (in RECORD_TYPE).
@@ -241,6 +242,7 @@ extern tree soft_monitorenter_node;
 extern tree soft_monitorexit_node;
 extern tree soft_lookupinterfacemethod_node;
 extern tree soft_fmod_node;
+extern tree soft_exceptioninfo_call_node;
 
 extern tree access_flags_type_node;
 
@@ -317,6 +319,7 @@ struct lang_identifier
 #define DECL_ARG_SLOT_COUNT(DECL) (DECL_LANG_SPECIFIC(DECL)->arg_slot_count)
 /* Pointer to the function's COMPOUND_EXPR tree */
 #define DECL_FUNCTION_BODY(DECL) (DECL_LANG_SPECIFIC(DECL)->function_decl_body)
+#define DECL_SPECIFIC_COUNT(DECL) DECL_ARG_SLOT_COUNT(DECL)
 
 /* In a LABEL_DECL, a TREE_VEC that saves the type_map at that point. */
 #define LABEL_TYPE_STATE(NODE) (DECL_INITIAL (NODE))
@@ -480,7 +483,6 @@ extern tree build_known_method_ref PROTO ((tree, tree, tree, tree, tree));
 extern tree build_class_init PROTO ((tree, tree));
 extern tree build_invokevirtual PROTO ((tree, tree));
 extern tree invoke_build_dtable PROTO ((int, tree));
-extern tree match_java_method PROTO ((tree, tree, tree));
 extern tree build_field_ref PROTO ((tree, tree, tree));
 extern void pushdecl_force_head PROTO ((tree));
 extern tree build_java_binop PROTO ((enum tree_code, tree, tree, tree));
@@ -493,6 +495,9 @@ extern tree build_java_array_length_access PROTO ((tree));
 extern tree build_java_arraynull_check PROTO ((tree, tree, tree));
 extern tree create_label_decl PROTO ((tree));
 extern void push_labeled_block PROTO ((tree));
+extern tree prepare_eh_table_type PROTO ((tree));
+extern void java_set_exception_lang_code PROTO (());
+extern tree generate_name PROTO ((void));
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
 
@@ -663,6 +668,9 @@ extern tree *type_map;
 /* True if STMT (a WFL in that case) holds a BREAK statement */
 #define IS_BREAK_STMT_P(WFL) TREE_LANG_FLAG_5 (WFL)
 
+/* True if EXPR (a CALL_EXPR in that case) is a crafted StringBuffer */
+#define IS_CRAFTED_STRING_BUFFER_P(EXPR) TREE_LANG_FLAG_5 (EXPR)
+
 /* Add a FIELD_DECL to RECORD_TYPE RTYPE.
    The field has name NAME (a char*), and type FTYPE.
    Unless this is the first field, FIELD most hold the previous field.
@@ -709,12 +717,12 @@ extern tree *type_map;
 #define FINISH_RECORD_CONSTRUCTOR(CONS) \
   CONSTRUCTOR_ELTS(CONS) = nreverse (CONSTRUCTOR_ELTS(CONS))
 
-/* New tree code for expression, so we can expand then individually. */
-#define JAVA_UNARY_PLUS_EXPR ((int)LAST_AND_UNUSED_TREE_CODE + 2)
-#define JAVA_NEW_ARRAY_EXPR  ((int)LAST_AND_UNUSED_TREE_CODE + 3)
-#define JAVA_NEW_CLASS_EXPR  ((int)LAST_AND_UNUSED_TREE_CODE + 4)
-#define JAVA_THIS_EXPR       ((int)LAST_AND_UNUSED_TREE_CODE + 5)
-
 /* Macro(s) using the definitions above */
-#define CALL_CONSTRUCTOR_P(NODE) (TREE_CODE (NODE) == JAVA_NEW_CLASS_EXPR)
+#define CALL_CONSTRUCTOR_P(NODE) (TREE_CODE (NODE) == NEW_CLASS_EXPR)
 
+/* Using a FINALLY_EXPR node */
+#define FINALLY_EXPR_LABEL(NODE) TREE_OPERAND ((NODE), 0)
+#define FINALLY_EXPR_BLOCK(NODE) TREE_OPERAND ((NODE), 1)
+
+/* Using a CATCH_EXPR node */
+#define CATCH_EXPR_GET_EXPR(NODE, V) (V ? LABELED_BLOCK_BODY (NODE) : (NODE))
