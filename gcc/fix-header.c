@@ -487,7 +487,7 @@ recognized_extern (name, name_length, type, type_length)
   switch (special_file_handling)
     {
     case errno_h:
-      if (strcmp (name, "errno") == 0 && !seen_errno)
+      if (name_length == 5 && strncmp (name, "errno", 5) == 0 && !seen_errno)
 	seen_errno = 1, required_other--;
       break;
     }
