@@ -7,8 +7,8 @@ template <class T> struct A {
 };
 inline template struct A<int>;
 
-// { dg-final { scan-assembler "\n_?_ZTV1AIiE(:|\n)" } }
+// { dg-final { scan-assembler "\n_?_ZTV1AIiE(:|\n|\t)" } }
 A<int> a;
 
-// { dg-final { scan-assembler-not "\n_?_ZTV1AIcE(:|\n)" } }
+// { dg-final { scan-assembler-not "\n_?_ZTV1AIcE(:|\n|\t)" } }
 A<char> b;
