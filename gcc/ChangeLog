@@ -1,3 +1,8 @@
+2003-04-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-decl.c (set_save_expr_context): Use traditional-style function
+	definition.
+
 2003-04-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 	
 	* doc/contrib.texi (Contributors): Add entries for Wolfgang

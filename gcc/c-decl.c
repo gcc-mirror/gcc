@@ -6432,9 +6432,10 @@ c_expand_deferred_function (fndecl)
    nested FUNCTION_DECL.  */
 
 static tree
-set_save_expr_context (tree *tp, 
-		       int *walk_subtrees,
-		       void *data)
+set_save_expr_context (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees;
+     void *data;
 {
   if (TREE_CODE (*tp) == SAVE_EXPR && !SAVE_EXPR_CONTEXT (*tp))
     SAVE_EXPR_CONTEXT (*tp) = (tree) data;
