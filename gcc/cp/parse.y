@@ -2521,6 +2521,8 @@ class_head_defn:
 		  current_aggr = $1;
 		  $$.t = TYPE_MAIN_DECL (xref_tag ($1, make_anon_name (), 0));
 		  $$.new_type_flag = 0;
+		  CLASSTYPE_DECLARED_CLASS (TREE_TYPE ($$.t))
+		    = $1 == class_type_node;
 		  yyungetc ('{', 1);
 		}
 	;

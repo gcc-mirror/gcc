@@ -1,3 +1,8 @@
+2002-12-13  Joe Buck <jbuck@synopsys.com>
+
+	* parse.y (class_head_defn): Set CLASSTYPE_DECLARED_CLASS for
+	anonymous structs.
+
 2002-12-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 	
         PR C++/8031
