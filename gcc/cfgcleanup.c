@@ -670,21 +670,30 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
      need to be compared for equivalence, which we'll do below.  */
 
   i1 = bb1->end;
+  last1 = afterlast1 = last2 = afterlast2 = NULL_RTX;
   if (onlyjump_p (i1)
       || (returnjump_p (i1) && !side_effects_p (PATTERN (i1))))
-    i1 = PREV_INSN (i1);
+    {
+      last1 = i1;
+      /* Count everything except for unconditional jump as insn.  */
+      if (!simplejump_p (i1) && !returnjump_p (i1))
+	ninsns++;
+      i1 = PREV_INSN (i1);
+    }
   i2 = bb2->end;
   if (onlyjump_p (i2)
       || (returnjump_p (i2) && !side_effects_p (PATTERN (i2))))
-    i2 = PREV_INSN (i2);
+    {
+      last2 = i2;
+      i2 = PREV_INSN (i2);
+    }
 
-  last1 = afterlast1 = last2 = afterlast2 = NULL_RTX;
   while (true)
     {
       /* Ignore notes.  */
-      while ((GET_CODE (i1) == NOTE && i1 != bb1->head))
+      while (!active_insn_p (i1) && i1 != bb1->head)
 	i1 = PREV_INSN (i1);
-      while ((GET_CODE (i2) == NOTE && i2 != bb2->head))
+      while (!active_insn_p (i2) && i2 != bb2->head)
 	i2 = PREV_INSN (i2);
 
       if (i1 == bb1->head || i2 == bb2->head)
@@ -735,11 +744,11 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
      Two, it keeps line number notes as matched as may be.  */
   if (ninsns)
     {
-      while (last1 != bb1->head && GET_CODE (PREV_INSN (last1)) == NOTE)
+      while (last1 != bb1->head && !active_insn_p (PREV_INSN (last1)))
 	last1 = PREV_INSN (last1);
       if (last1 != bb1->head && GET_CODE (PREV_INSN (last1)) == CODE_LABEL)
 	last1 = PREV_INSN (last1);
-      while (last2 != bb2->head && GET_CODE (PREV_INSN (last2)) == NOTE)
+      while (last2 != bb2->head && !active_insn_p (PREV_INSN (last2)))
 	last2 = PREV_INSN (last2);
       if (last2 != bb2->head && GET_CODE (PREV_INSN (last2)) == CODE_LABEL)
 	last2 = PREV_INSN (last2);
