@@ -1383,8 +1383,14 @@ add_ehl_entry (label, region)
 
   slot = (struct ehl_map_entry **)
     htab_find_slot (exception_handler_label_map, entry, INSERT);
-  if (*slot)
+
+  /* Before landing pad creation, each exception handler has its own
+     label.  After landing pad creation, the exception handlers may
+     share landing pads.  This is ok, since maybe_remove_eh_handler
+     only requires the 1-1 mapping before landing pad creation.  */
+  if (*slot && !cfun->eh->built_landing_pads)
     abort ();
+
   *slot = entry;
 }
 
