@@ -1478,6 +1478,11 @@ extern int lineno;
    that standard C forbids.  */
 extern int pedantic;
 
+/* Nonzero means lvalues are limited to those valid in pedantic ANSI C.
+   Zero means allow extended lvalues.  */
+
+extern int pedantic_lvalues;
+
 /* Nonzero means can safely call expand_expr now;
    otherwise layout_type puts variable sizes onto `pending_sizes' instead.  */
 
