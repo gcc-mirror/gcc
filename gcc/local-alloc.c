@@ -865,7 +865,7 @@ optimize_reg_copy_1 (insn, dest, src)
    In that case, we can replace all uses of DEST, starting with INSN and
    ending with the set of SRC to DEST, with SRC.  We do not do this
    optimization if a CALL_INSN is crossed unless SRC already crosses a
-   call.
+   call or if DEST dies before the copy back to SRC.
 
    It is assumed that DEST and SRC are pseudos; it is too complicated to do
    this for hard registers since the substitutions we may make might fail.  */
@@ -930,6 +930,7 @@ optimize_reg_copy_2 (insn, dest, src)
 	}
 
       if (reg_set_p (src, p)
+	  || find_reg_note (p, REG_DEAD, dest)
 	  || (GET_CODE (p) == CALL_INSN && reg_n_calls_crossed[sregno] == 0))
 	break;
     }
