@@ -6408,7 +6408,10 @@ ia64_cycle_display (clock, last)
      int clock;
      rtx last;
 {
-  return emit_insn_after (gen_cycle_display (GEN_INT (clock)), last);
+  if (ia64_final_schedule)
+    return emit_insn_after (gen_cycle_display (GEN_INT (clock)), last);
+  else
+    return last;
 }
 
 /* Emit pseudo-ops for the assembler to describe predicate relations.
