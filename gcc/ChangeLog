@@ -1,3 +1,8 @@
+2001-01-21  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_asm_file_end): Disable putting
+	pic_label_name in a linkonce section.
+
 2001-01-17  Philipp Thomas  <pthomas@suse.de>
 
 	* aclocal.m4 (AM_WITH_NLS): Add -lintl to LIBS if gettext was
