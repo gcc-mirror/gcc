@@ -224,8 +224,8 @@ $(PARSE_C) : $(srcdir)/parse.y
 #	@echo $(CONFLICTS)
 #	$(BISON) $(BISONFLAGS) -d $(srcdir)/parse.y
 #	grep '^#define[ 	]*YYEMPTY' y.tab.c >>y.tab.h
-#	$(srcdir)/../move-if-change y.tab.c $(PARSE_C)
-#	$(srcdir)/../move-if-change y.tab.h $(PARSE_H)
+#	$(SHELL) $(srcdir)/../move-if-change y.tab.c $(PARSE_C)
+#	$(SHELL) $(srcdir)/../move-if-change y.tab.h $(PARSE_H)
 #	cp $(PARSE_C) y.tab.c
 #	touch stamp-parse
 

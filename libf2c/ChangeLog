@@ -1,3 +1,7 @@
+Tue Sep 14 01:44:01 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* Makefile.in:  Prepend $(SHELL) to move-if-change calls.
+
 Fri Aug  6 23:32:29 1999  Daniel Jacobowitz <drow@drow.them.org>
 
 	* Makefile.in (FLAGS_TO_PASS): Include prefix, exec_prefix,

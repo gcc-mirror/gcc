@@ -179,7 +179,7 @@ g2c.h: g2c.hin config.status Makefile
 # lines below, since g2c.h isn't necessarily brought up to date.
 #	mv g2c.h g2c.x
 	$(SHELL) config.status
-#	$(srcdir)/../move-if-change g2c.h g2c.x && mv g2c.x g2c.h
+#	$(SHELL) $(srcdir)/../move-if-change g2c.h g2c.x && mv g2c.x g2c.h
 
 Makefile: Makefile.in config.status
 # Autoconf doc uses `./config.status'.  Is there a good reason to use $(SHELL)?
