@@ -860,7 +860,7 @@ rtx_cost (x, outer_code)
       total = 0;
       break;
     default:
-      total = 2;
+      total = COSTS_N_INSNS (1);
     }
 
   switch (code)

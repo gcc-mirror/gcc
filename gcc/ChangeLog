@@ -1,3 +1,12 @@
+2000-09-14  Richard Henderson  <rth@cygnus.com>
+
+	* calls.c (precompute_register_parameters): Use COSTS_N_INSNS, not 2.
+	* cse.c (rtx_cost): Likewise.
+	* optabls.c (expand_binop): Likewise.
+	(expand_twoval_binop, prepare_cmp_insn): Likewise.
+	* regclass.c (copy_cost): Likewise.
+	* reload1.c (reload_cse_move2add): Likewise.
+
 2000-09-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-parse.in (reswords): Add _Complex.

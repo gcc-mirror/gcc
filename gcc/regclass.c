@@ -1813,7 +1813,7 @@ copy_cost (x, mode, class, to_p)
 
   else
     /* If this is a constant, we may eventually want to call rtx_cost here.  */
-    return 2;
+    return COSTS_N_INSNS (1);
 }
 
 /* Record the pseudo registers we must reload into hard registers

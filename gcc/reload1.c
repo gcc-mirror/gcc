@@ -8941,7 +8941,7 @@ reload_cse_move2add (first)
 			success
 			  = validate_change (next, &SET_SRC (set), reg, 0);
 		      else if ((rtx_cost (new_src, PLUS)
-				< 2 + rtx_cost (src3, SET))
+				< COSTS_N_INSNS (1) + rtx_cost (src3, SET))
 			       && have_add2_insn (GET_MODE (reg)))
 			success
 			  = validate_change (next, &PATTERN (next),
