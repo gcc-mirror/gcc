@@ -826,13 +826,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
 	      code = UNKNOWN;
 	  }
 
-	/* We know exactly what const_int_operand matches -- any CONST_INT.  */
-	if (strcmp ("const_int_operand", pred_name) == 0)
-	  {
-	    code = CONST_INT;
-	    mode = VOIDmode;
-	  }
-	else if (pred_name[0] != 0)
+	if (pred_name[0] != 0)
 	  {
 	    test = new_decision_test (DT_pred, &place);
 	    test->u.pred.name = pred_name;
@@ -1206,7 +1200,7 @@ maybe_both_true (d1, d2, toplevel)
 	p1 = d1, d1 = d2, d2 = p1;
 
       if (d1->success.first == 0)
-	return 0;
+	return 1;
       for (p1 = d1->success.first; p1; p1 = p1->next)
 	if (maybe_both_true (p1, d2, 0))
 	  return 1;
