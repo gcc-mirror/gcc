@@ -1,5 +1,12 @@
 2003-09-05  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/11922
+	* pt.c (tsubst_qualified_id): Make sure we get a non-type.
+	(tsubst_expr, tsubst_copy_and_build): Pass false, not zero, as
+	is_type_p to lookup_qualified_name.
+
+	* semantics.c (finish_call_expr): Refactor some code.
+
 	PR c++/12037
 	* cp-tree.h (COMPOUND_EXPR_OVERLOADED): New.
 	(build_min_non_dep): Declare.

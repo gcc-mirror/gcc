@@ -1,5 +1,8 @@
 2003-09-05  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/11922
+	* g++/dg/template/qualified-id1.C: New test.
+	
 	PR c++/12037
 	* g++.dg/warn/noeffect4.C: New test.
 
