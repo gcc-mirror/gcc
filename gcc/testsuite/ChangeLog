@@ -1,7 +1,8 @@
 2002-09-20  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* lib/scanasm.exp (scan-assembler-dem, scan-assembler-dem-not):
-	Adjust for c++filt moved to binutils.
+	Adjust for c++filt moved to binutils.  Remove spurious duplicate
+	setting of cxxfilt.
 
 2002-09-19  Geoffrey Keating  <geoffk@apple.com>
 
