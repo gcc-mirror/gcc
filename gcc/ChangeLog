@@ -1,3 +1,11 @@
+2001-10-04  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.c (init_cumulative_args): Remember to set
+	cum->prototype.
+	* config.gcc: Redo linux configuration. Add target_cpu_default
+	of soft-float to all mipsisa32 combinations and tx39.
+	* config/mips/linux.h: Remove include of mips.h.
+
 2001-10-03  Loren J. Rittle  <ljrittle@acm.org>
 
 	* Makefile.in (STAGE2_FLAGS_TO_PASS): Propagate HOST_CFLAGS,
@@ -101,7 +109,7 @@ Tue Oct  2 12:46:01 CEST 2001  Bo Thorsen     <bo@suse.co.uk>,
 Tue Oct  2 12:46:01 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (legitimize_pic_address): Add missing bits of 64bit support.
-	(ix86_expand_int_movcc): Optimize DImode conditional moves with 
+	(ix86_expand_int_movcc): Optimize DImode conditional moves with
 	constants on x86_64.
 	(ix86_attr_length_immediate_default): Support MODE_DI.
 	* i386.md (fixdi splitter): Add missing "&& 1" in splitter
@@ -264,7 +272,7 @@ Mon Oct  1 06:43:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(MEM_DECL, MEM_OFFSET, MEM_SIZE, MEM_ALIGN): New macros.
 	(MEM_COPY_ATTRIBUTES): Copy MEM_ATTRS.
 	(set_mem_alias_set): Delete decl from here.
-	
+
 	* alias.c (set_mem_alias_set): Delete from here.
 	* emit-rtl.c (mem_attrs_htab): New variable.
 	(rtx_htab_mark, rtx_htab_mark_1): Deleted.
@@ -455,7 +463,7 @@ Sat Sep 29 15:08:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	mmx_pshufw, umaxv8qi3, smaxv4hi3, uminv8qi3, sminv4hi3, sfence,
 	sfence_insn, prefetch): Make these available if TARGET_SSE or
 	TARGET_3DNOW_A.
-	
+
 Fri Sep 28 19:18:40 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386-protos.h (ix86_setup_incoming_varargs, ix86_va_arg,
@@ -471,7 +479,7 @@ Fri Sep 28 19:18:40 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* cpplex.c (new_buff, _cpp_get_buff, _cpp_extend_buff):
 	Use size_t everywhere, make definitions consistent with
-	prototypes.	
+	prototypes.
 
 Fri Sep 28 14:59:34 CEST 2001  Jan Hubicka  <jh@suse.cz>
 

@@ -2228,13 +2228,17 @@ mipsel-*-netbsd* | mips-dec-netbsd*)    # Decstation running NetBSD
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
 	xmake_file=x-linux
-	tm_file="linux.h mips/linux.h"
 	case $machine in
 		mipsisa32el-*)
-			tm_file="mips/little.h $tm_file mips/isa32-linux.h";;
+			tm_file="elfos.h mips/elfl.h mips/linux.h mips/isa32-linux.h"
+			target_cpu_default="MASK_SOFT_FLOAT"
+			;;
                 mipsisa32-*)
-			tm_file="$tm_file mips/isa32-linux.h";;
-	       	mips*el-*)  tm_file="mips/little.h $tm_file" ;;
+			tm_file="elfos.h mips/elf.h mips/linux.h mips/isa32-linux.h"
+			target_cpu_default="MASK_SOFT_FLOAT"
+			;;
+	       	mips*el-*)  tm_file="elfos.h mips/elfl.h mips/linux.h" ;;
+		*) tm_file="elfos.h mips/elf.h mips/linux.h"
 	esac
 	tmake_file="t-slibgcc-elf-ver t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -2456,6 +2460,7 @@ mips-*-ecoff*)
 mipsisa32-*-elf*)
 	tm_file="mips/isa3264.h mips/abi64.h"
 	tmake_file=mips/t-isa3264
+	target_cpu_default="MASK_SOFT_FLOAT"
 	;;
 mipsel-*-elf*)
 	tm_file="mips/elfl.h"
@@ -2498,6 +2503,7 @@ mips*-*-rtems*)
 mipstx39el-*-elf*)
 	tm_file="mips/r3900.h mips/elfl.h mips/abi64.h"
 	tmake_file=mips/t-r3900
+	target_cpu_default="MASK_SOFT_FLOAT"
 	;;
 mipstx39-*-elf*)
 	tm_file="mips/r3900.h mips/elf.h mips/abi64.h"

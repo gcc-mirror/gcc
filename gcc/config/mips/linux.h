@@ -23,8 +23,6 @@ Boston, MA 02111-1307, USA.  */
 /* US Software GOFAST library support.  */
 #define INIT_SUBTARGET_OPTABS INIT_GOFAST_OPTABS
 
-#include "mips/mips.h"
-
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 
@@ -98,7 +96,7 @@ do {								\
    given time.  */
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_sdata, in_sbss, in_rdata
- 
+
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS                                         \
   SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP) \
