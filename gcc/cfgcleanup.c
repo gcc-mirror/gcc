@@ -553,7 +553,7 @@ merge_blocks (e, b, c, mode)
 
 static bool
 insns_match_p (mode, i1, i2)
-	int mode;
+	int mode ATTRIBUTE_UNUSED;
 	rtx i1, i2;
 {
   rtx p1, p2;

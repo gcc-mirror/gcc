@@ -1219,7 +1219,7 @@ copy_value (dest, src, vd)
 static bool
 mode_change_ok (orig_mode, new_mode, regno)
      enum machine_mode orig_mode, new_mode;
-     unsigned int regno;
+     unsigned int regno ATTRIBUTE_UNUSED;
 {
   if (GET_MODE_SIZE (orig_mode) < GET_MODE_SIZE (new_mode))
     return false;

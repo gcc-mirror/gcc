@@ -2737,7 +2737,7 @@ execute ()
      	    {
 	      for (j = commands[i].argv; *j; j++)
 		{
-		  char *p;
+		  const char *p;
 		  fprintf (stderr, " \"");
 		  for (p = *j; *p; ++p)
 		    {

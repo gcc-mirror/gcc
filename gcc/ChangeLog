@@ -1,3 +1,11 @@
+2001-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_memcmp): Mark parameter with
+	ATTRIBUTE_UNUSED.
+	* cfgcleanup.c (insns_match_p): Likewise.
+	* regrename.c (mode_change_ok): Likewise.
+	* gcc.c (execute): Const-ify.
+
 2001-12-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-parse.in (typename): Do not split attributes.
