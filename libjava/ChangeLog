@@ -1,5 +1,21 @@
 2004-04-23  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/URL.java
+	(hashcode): Don't initialize with default value explicitely.
+	(getContent): Removed redundant "final" keyword.
+	(openStream): Likewise.
+	(getURLStreamHandler): Fixed coding style.
+	* java/net/URLConnection.java
+	(defaultAllowUserInteraction): Don't initialize with default value
+	explicitely.
+	(connected): Likewise.
+	(doOutput): Likewise.
+	(ifModifiedSince): Likewise.
+	(dateformats_initialized): Likewise.
+	(setURLStreamHander): Use StreamTokenizer where it belongs to.
+
+2004-04-23  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/channels/FileChannelImpl.java
 	(SET, CUR): Unused, removed.
 	(read): Implement here directly.
