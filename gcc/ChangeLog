@@ -1,3 +1,8 @@
+2000-04-04  Richard Henderson  <rth@cygnus.com>
+
+	* regrename.c (consider_available): Test fixed_regs not
+	PIC_OFFSET_TABLE_REGNUM.
+
 2000-04-04  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/t-ppccomm (EXTRA_MULTILIB_PARTS): Add crtbegin,
