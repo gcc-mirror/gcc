@@ -1,5 +1,7 @@
 Thu Aug 21 10:22:19 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* version.c: Bump for new snapshot.
+
 	* Makefile.in (install-common): Put gcov comment at start of line.
 
 Wed Aug 20 22:47:33 1997  Jeffrey A Law  (law@cygnus.com)
