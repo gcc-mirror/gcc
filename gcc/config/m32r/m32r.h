@@ -597,15 +597,18 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
        (values in the range -32767 to +32768).  */
 
 /* local to this file */
-#define INT8_P(X) ((unsigned) ((X) + 0x80) < 0x100)
-#define INT16_P(X) ((unsigned) ((X) + 0x8000) < 0x10000)
-#define CMP_INT16_P(X) ((unsigned) ((X) - 1 + 0x8000) < 0x10000)
-#define UINT16_P(X) ((unsigned) (X) < 0x10000)
-#define UPPER16_P(X) (((X) & ~0xffff0000) == 0)
-#define UINT24_P(X) ((unsigned) (X) < 0x1000000)
-#define INT32_P(X) ((X) >= (-(HOST_WIDE_INT) 0x7fffffff - 1) \
-		    && (X) <= (unsigned HOST_WIDE_INT) 0xffffffff)
-#define UINT5_P(X) ((unsigned) (X) < 32)
+#define INT8_P(X) ((X) >= -0x80 && (X) <= 0x7f)
+#define INT16_P(X) ((X) >= -0x8000 && (X) <= 0x7fff)
+#define CMP_INT16_P(X) ((X) >= -0x7fff && (X) <= 0x8000)
+#define UINT16_P(X) ((X) >= 0 && (X) <= 0xffff)
+#define UPPER16_P(X) (((X) & 0xffff) == 0				\
+		      && ((X) >> 16) >= -0x8000				\
+		      && ((X) >> 16) <= 0x7fff)
+#define UINT24_P(X) ((X) >= 0 && (X) < 0x1000000)
+#define INT32_P(X) (((X) >= -(HOST_WIDE_INT) 0x80000000			\
+		     && (X) <= (HOST_WIDE_INT) 0x7fffffff)		\
+		    || (unsigned HOST_WIDE_INT) (X) <= 0xffffffff)
+#define UINT5_P(X) ((X) >= 0 && (X) < 32)
 #define INVERTED_SIGNED_8BIT(VAL) ((VAL) >= -127 && (VAL) <= 128)
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)					\
@@ -968,22 +971,6 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
  : 2 * PARM_BOUNDARY)
 #endif
 
-#if 0
-/* If defined, is a C expression that produces the machine-specific
-   code for a call to `__builtin_saveregs'.  This code will be moved
-   to the very beginning of the function, before any parameter access
-   are made.  The return value of this function should be an RTX that
-   contains the value to use as the return of `__builtin_saveregs'.
-
-   The argument ARGS is a `tree_list' containing the arguments that
-   were passed to `__builtin_saveregs'.
-
-   If this macro is not defined, the compiler will output an ordinary
-   call to the library function `__builtin_saveregs'.  */
-extern struct rtx *m32r_expand_builtin_savergs ();
-#define EXPAND_BUILTIN_SAVEREGS() m32r_expand_builtin_saveregs ()
-#endif
-
 /* This macro offers an alternative
    to using `__builtin_saveregs' and defining the macro
    `EXPAND_BUILTIN_SAVEREGS'.  Use it to store the anonymous register
@@ -1013,6 +1000,10 @@ extern struct rtx *m32r_expand_builtin_savergs ();
 
 #define SETUP_INCOMING_VARARGS(ARGS_SO_FAR, MODE, TYPE, PRETEND_SIZE, NO_RTL) \
 m32r_setup_incoming_varargs (&ARGS_SO_FAR, MODE, TYPE, &PRETEND_SIZE, NO_RTL)
+
+/* Implement `va_arg'.  */
+#define EXPAND_BUILTIN_VA_ARG(valist, type) \
+  m32r_va_arg (valist, type)
 
 /* Function results.  */
 
@@ -2059,6 +2050,7 @@ extern int  function_arg_partial_nregs		PROTO((CUMULATIVE_ARGS *,
 extern void m32r_setup_incoming_varargs		PROTO((CUMULATIVE_ARGS *,
 						       int, Tree, int *,
 						       int));
+extern struct rtx_def *m32r_va_arg		PROTO((Tree, Tree));
 extern int  m32r_address_code			PROTO((Rtx));
 extern enum m32r_function_type m32r_compute_function_type
 						PROTO((Tree));

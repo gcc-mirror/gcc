@@ -1338,11 +1338,74 @@ m32r_setup_incoming_varargs (cum, int_mode, type, pretend_size, no_rtl)
       regblock = gen_rtx (MEM, BLKmode,
 			  plus_constant (arg_pointer_rtx,
 					 FIRST_PARM_OFFSET (0)));
+      MEM_ALIAS_SET (regblock) = get_varargs_alias_set ();
       move_block_from_reg (first_reg_offset, regblock,
 			   size, size * UNITS_PER_WORD);
 
       *pretend_size = (size * UNITS_PER_WORD);
     }
+}
+
+/* Implement `va_arg'.  */
+
+rtx
+m32r_va_arg (valist, type)
+     tree valist, type;
+{
+  HOST_WIDE_INT size, rsize;
+  tree t;
+  rtx addr_rtx;
+
+  size = int_size_in_bytes (type);
+  rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
+
+  if (size > 8)
+    {
+      tree type_ptr, type_ptr_ptr;
+
+      /* Pass by reference.  */
+
+      type_ptr = build_pointer_type (type);
+      type_ptr_ptr = build_pointer_type (type_ptr);
+
+      t = build (POSTINCREMENT_EXPR, va_list_type_node, valist, 
+		 build_int_2 (UNITS_PER_WORD, 0));
+      TREE_SIDE_EFFECTS (t) = 1;
+      t = build1 (NOP_EXPR, type_ptr_ptr, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+      t = build1 (INDIRECT_REF, type_ptr, t);
+
+      addr_rtx = expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
+    }
+  else
+    {
+      /* Pass by value.  */
+
+      if (size < UNITS_PER_WORD)
+	{
+	  /* Care for bigendian correction on the aligned address.  */
+	  t = build (PLUS_EXPR, ptr_type_node, valist,
+		     build_int_2 (rsize - size, 0));
+	  addr_rtx = expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
+	  addr_rtx = copy_to_reg (addr_rtx);
+
+	  /* Increment AP.  */
+	  t = build (PLUS_EXPR, va_list_type_node, valist,
+		     build_int_2 (rsize, 0));
+	  t = build (MODIFY_EXPR, va_list_type_node, valist, t);
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	}
+      else
+	{
+	  t = build (POSTINCREMENT_EXPR, va_list_type_node, valist, 
+		     build_int_2 (rsize, 0));
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  addr_rtx = expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
+	}
+    }
+
+  return addr_rtx;
 }
 
 /* Cost functions.  */
