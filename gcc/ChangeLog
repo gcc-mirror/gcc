@@ -1,3 +1,8 @@
+2000-11-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-parse.in (unary_expr): Move VA_ARG from here ...
+	(primary): ... to here.
+
 2000-11-23  Graham Stott  <grahams@redhat.com>
 
 	* expr.c (store_constructor): If a field is non addressable and

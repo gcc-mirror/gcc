@@ -1252,9 +1252,6 @@ unary_expr:
 		{ $$ = build_x_unary_op (REALPART_EXPR, $2); }
 	| IMAGPART cast_expr %prec UNARY
 		{ $$ = build_x_unary_op (IMAGPART_EXPR, $2); }
-	| VA_ARG '(' expr_no_commas ',' type_id ')'
-		{ $$ = build_x_va_arg ($3, groktypename ($5.t));
-		  check_for_new_type ("__builtin_va_arg", $5); }
 	;
 
 new_placement:
@@ -1562,6 +1559,9 @@ primary:
                { $$ = finish_call_expr ($1, $3, 0); }
 	| primary LEFT_RIGHT
                { $$ = finish_call_expr ($1, NULL_TREE, 0); }
+	| VA_ARG '(' expr_no_commas ',' type_id ')'
+		{ $$ = build_x_va_arg ($3, groktypename ($5.t));
+		  check_for_new_type ("__builtin_va_arg", $5); }
 	| primary '[' expr ']'
 		{ $$ = grok_array_decl ($$, $3); }
 	| primary PLUSPLUS
