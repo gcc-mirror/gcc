@@ -1,3 +1,7 @@
+2005-01-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits (is_function): Minor consistency tweaks.
+
 2005-01-28  Geoffrey Keating  <geoffk@apple.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Search the path
