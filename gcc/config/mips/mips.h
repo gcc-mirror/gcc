@@ -1061,6 +1061,12 @@ do {                                                  \
 
 #define PUT_SDB_EPILOGUE_END(NAME)
 
+#define PUT_SDB_SRC_FILE(FILENAME) \
+do {							\
+  extern FILE *asm_out_text_file;			\
+  output_file_directive (asm_out_text_file, (FILENAME)); \
+} while (0)
+
 #define SDB_GENERATE_FAKE(BUFFER, NUMBER) \
   sprintf ((BUFFER), ".%dfake", (NUMBER));
 
