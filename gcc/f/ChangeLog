@@ -1,3 +1,8 @@
+2003-01-05  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Update news to reflect reality:
+	PR Fortran/9038 won't be fixed until 3.4.
+
 2003-01-04  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR Fortran/9038
