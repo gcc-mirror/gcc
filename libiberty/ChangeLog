@@ -1,3 +1,9 @@
+Wed Aug 19 14:05:01 1998  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* cplus-dem.c (work_stuff): Add dllimported.
+	(demangled_prefix): Mark symbols imported from PE DLL.
+	(internal_cplus_demangled): Handle.
+
 1998-08-17  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cplus-dem.c (do_type): Fix simple array handling.  If we fail,
