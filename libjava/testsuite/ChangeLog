@@ -1,3 +1,11 @@
+1999-10-19  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* libjava.compile/invokeinterface: New directory.
+	* libjava.compile/invokeinterface/Test.java: New file. Test code for
+	PR gcj/71 and PR gcj/72.
+	* libjava.compile/invokeinterface/A.java: New file.
+	* libjava.compile/invokeinterface/B.java: New file.
+
 1999-10-02  Anthony Green  <green@cygnus.com>
 
 	* libjava.compile/Case.xfail: Removed.  This test should pass now.
