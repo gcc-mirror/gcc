@@ -13,14 +13,17 @@ foo (int v, va_list ap)
   switch (v)
     {
     case 5:
-      foo_arg = va_arg (ap, int) + va_arg (ap, double);
+      foo_arg = va_arg (ap, int);
+      foo_arg += va_arg (ap, double);
       foo_arg += va_arg (ap, long long);
       break;
     case 8:
-      foo_arg = va_arg (ap, long long) + va_arg (ap, double);
+      foo_arg = va_arg (ap, long long);
+      foo_arg += va_arg (ap, double);
       break;
     case 11:
-      foo_arg = va_arg (ap, int) + va_arg (ap, long double);
+      foo_arg = va_arg (ap, int);
+      foo_arg += va_arg (ap, long double);
       break;
     default:
       abort ();
