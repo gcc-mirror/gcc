@@ -1,3 +1,9 @@
+2002-06-18  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcc.c-torture/execute/simd-1.c: New.
+
+        * gcc.dg/simd-1.c: New.
+
 2002-06-18  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-torture/execute/20020615-1.c: Correct bug-description.
