@@ -1,3 +1,7 @@
+2004-12-05  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_assemble_integer): Fix typo.
+
 2004-12-04  Richard Henderson  <rth@redhat.com>
 
 	* emit-rtl.c, expr.c, function.c, integrate.c, optabs.c, rtl.h:

@@ -9750,7 +9750,7 @@ print_operand_address (FILE *file, rtx x)
 static bool
 rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
 {
-#ifndef RELOCATABLE_NEEDS_FIXUP
+#ifdef RELOCATABLE_NEEDS_FIXUP
   /* Special handling for SI values.  */
   if (RELOCATABLE_NEEDS_FIXUP && size == 4 && aligned_p)
     {
