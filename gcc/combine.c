@@ -2147,6 +2147,15 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 					     gen_rtx_CLOBBER (VOIDmode,
 							      ni2dest))),
 				 i3);
+	  /* If the split with the mode-changed register didn't work, try
+	     the original register.  */
+	  if (! m_split && ni2dest != i2dest)
+	    m_split = split_insns (gen_rtx_PARALLEL
+				   (VOIDmode,
+				    gen_rtvec (2, newpat,
+					       gen_rtx_CLOBBER (VOIDmode,
+								i2dest))),
+				    i3);
 	}
 
       if (m_split && GET_CODE (m_split) != SEQUENCE)
