@@ -22,6 +22,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef __STDC__
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -654,6 +659,7 @@ extern void cpp_pedwarn_with_file_and_line PVPROTO ((cpp_reader *, char *, int, 
   ATTRIBUTE_PRINTF_4;
 extern void cpp_error_from_errno PROTO ((cpp_reader *, const char *));
 extern void cpp_perror_with_name PROTO ((cpp_reader *, const char *));
+extern void v_cpp_message PROTO ((cpp_reader *, int, const char *, va_list));
 
 extern void cpp_grow_buffer PARAMS ((cpp_reader *, long));
 extern int cpp_parse_escape PARAMS ((cpp_reader *, char **));

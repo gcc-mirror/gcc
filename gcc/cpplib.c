@@ -202,7 +202,6 @@ struct cpp_pending {
 
 char *xmalloc ();
 extern void cpp_hash_cleanup PARAMS ((cpp_reader *));
-extern void v_cpp_message PROTO ((cpp_reader *, int, const char *, va_list));
 
 static void add_import			PROTO ((cpp_reader *, int, char *));
 static void append_include_chain	PROTO ((cpp_reader *,

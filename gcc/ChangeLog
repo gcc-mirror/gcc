@@ -1,3 +1,10 @@
+Mon May 25 14:00:13 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* cpperror.c (v_cpp_message): Remove static prototype.
+	* cpplib.c (v_cpp_message): Move prototype to cpplib.h.
+	* cpplib.h (v_cpp_message): Add protoptype.
+	(stdarg.h,varargs.h): Needed for v_cpp_message prototype.
+
 Sun May 24 20:36:15 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
