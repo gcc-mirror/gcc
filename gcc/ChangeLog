@@ -1,3 +1,9 @@
+2004-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (expand_assignment): Reenable bitfield += optimizations.
+	Use alias set 0 for memory, do proper mode calculations and adjust
+	address for memories.
+
 2004-07-14  Per Bothner  <per@bothner.com>
 
 	* input.h:  If USE_MAPPED_LOCATION, define separate expanded_location

@@ -3528,18 +3528,16 @@ expand_assignment (tree to, tree from, int want_value)
 	  MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
 	}
 
-      /* Disabled temporarily.  GET_MODE (to_rtx) is often not the right
-	 mode.  */
-      while (0 && mode1 == VOIDmode && !want_value
-	     && bitpos + bitsize <= BITS_PER_WORD
-	     && bitsize < BITS_PER_WORD
+      /* Optimize bitfld op= val in certain cases.  */
+      while (mode1 == VOIDmode && !want_value
+	     && bitsize > 0 && bitsize < BITS_PER_WORD
 	     && GET_MODE_BITSIZE (GET_MODE (to_rtx)) <= BITS_PER_WORD
 	     && !TREE_SIDE_EFFECTS (to)
 	     && !TREE_THIS_VOLATILE (to))
 	{
 	  tree src, op0, op1;
-	  rtx value;
-	  HOST_WIDE_INT count = bitpos;
+	  rtx value, str_rtx = to_rtx;
+	  HOST_WIDE_INT bitpos1 = bitpos;
 	  optab binop;
 
 	  src = from;
@@ -3555,45 +3553,87 @@ expand_assignment (tree to, tree from, int want_value)
 	  if (! operand_equal_p (to, op0, 0))
 	    break;
 
+	  if (MEM_P (str_rtx))
+	    {
+	      enum machine_mode mode = GET_MODE (str_rtx);
+	      HOST_WIDE_INT offset1;
+
+	      if (GET_MODE_BITSIZE (mode) == 0
+		  || GET_MODE_BITSIZE (mode) > BITS_PER_WORD)
+		mode = word_mode;
+	      mode = get_best_mode (bitsize, bitpos1, MEM_ALIGN (str_rtx),
+				    mode, 0);
+	      if (mode == VOIDmode)
+		break;
+
+	      offset1 = bitpos1;
+	      bitpos1 %= GET_MODE_BITSIZE (mode);
+	      offset1 = (offset1 - bitpos1) / BITS_PER_UNIT;
+	      str_rtx = adjust_address (str_rtx, mode, offset1);
+	    }
+	  else if (!REG_P (str_rtx) && GET_CODE (str_rtx) != SUBREG)
+	    break;
+
+	  /* If the bit field covers the whole REG/MEM, store_field
+	     will likely generate better code.  */
+	  if (bitsize >= GET_MODE_BITSIZE (GET_MODE (str_rtx)))
+	    break;
+
+	  /* We can't handle fields split accross multiple entities.  */
+	  if (bitpos1 + bitsize > GET_MODE_BITSIZE (GET_MODE (str_rtx)))
+	    break;
+
 	  if (BYTES_BIG_ENDIAN)
-	    count = GET_MODE_BITSIZE (GET_MODE (to_rtx)) - bitpos - bitsize;
+	    bitpos1 = GET_MODE_BITSIZE (GET_MODE (str_rtx)) - bitpos1
+		      - bitsize;
 
 	  /* Special case some bitfield op= exp.  */
 	  switch (TREE_CODE (src))
 	    {
 	    case PLUS_EXPR:
 	    case MINUS_EXPR:
-	      if (count <= 0)
-	        break;
-
 	      /* For now, just optimize the case of the topmost bitfield
 		 where we don't need to do any masking and also
 		 1 bit bitfields where xor can be used.
 		 We might win by one instruction for the other bitfields
 		 too if insv/extv instructions aren't used, so that
 		 can be added later.  */
-	      if (count + bitsize != GET_MODE_BITSIZE (GET_MODE (to_rtx))
+	      if (bitpos1 + bitsize != GET_MODE_BITSIZE (GET_MODE (str_rtx))
 		  && (bitsize != 1 || TREE_CODE (op1) != INTEGER_CST))
 		break;
-	      value = expand_expr (op1, NULL_RTX, VOIDmode, 0);
+	      value = expand_expr (op1, NULL_RTX, GET_MODE (str_rtx), 0);
+	      value = convert_modes (GET_MODE (str_rtx),
+				     TYPE_MODE (TREE_TYPE (op1)), value,
+				     TYPE_UNSIGNED (TREE_TYPE (op1)));
+
+	      /* We may be accessing data outside the field, which means
+		 we can alias adjacent data.  */
+	      if (MEM_P (str_rtx))
+		{
+		  str_rtx = shallow_copy_rtx (str_rtx);
+		  set_mem_alias_set (str_rtx, 0);
+		  set_mem_expr (str_rtx, 0);
+		}
+
 	      binop = TREE_CODE (src) == PLUS_EXPR ? add_optab : sub_optab;
 	      if (bitsize == 1
-		  && count + bitsize != GET_MODE_BITSIZE (GET_MODE (to_rtx)))
+		  && bitpos1 + bitsize != GET_MODE_BITSIZE (GET_MODE (str_rtx)))
 		{
-		  value = expand_and (GET_MODE (to_rtx), value, const1_rtx,
+		  value = expand_and (GET_MODE (str_rtx), value, const1_rtx,
 				      NULL_RTX);
 		  binop = xor_optab;
 		}
-	      value = expand_shift (LSHIFT_EXPR, GET_MODE (to_rtx),
-				    value, build_int_2 (count, 0),
+	      value = expand_shift (LSHIFT_EXPR, GET_MODE (str_rtx),
+				    value, build_int_2 (bitpos1, 0),
 				    NULL_RTX, 1);
-	      result = expand_binop (GET_MODE (to_rtx), binop, to_rtx,
-				     value, to_rtx, 1, OPTAB_WIDEN);
-	      if (result != to_rtx)
-		emit_move_insn (to_rtx, result);
+	      result = expand_binop (GET_MODE (str_rtx), binop, str_rtx,
+				     value, str_rtx, 1, OPTAB_WIDEN);
+	      if (result != str_rtx)
+		emit_move_insn (str_rtx, result);
 	      free_temp_slots ();
 	      pop_temp_slots ();
 	      return NULL_RTX;
+
 	    default:
 	      break;
 	    }
