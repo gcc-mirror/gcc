@@ -960,16 +960,21 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
 	}
       break;
     case GDK_ENTER_NOTIFY:
-      (*gdk_env)->CallVoidMethod (gdk_env, peer, postMouseEventID,
-				  AWT_MOUSE_ENTERED, 
-				  (jlong)event->crossing.time,
-				  state_to_awt_mods (event->crossing.state), 
-				  (jint)event->crossing.x,
-				  (jint)event->crossing.y, 
-				  0,
-				  JNI_FALSE);
+      /* We are not interested in enter events that are due to
+         grab/ungrab and not to actually crossing boundaries */
+      if (event->crossing.mode == GDK_CROSSING_NORMAL)
+        (*gdk_env)->CallVoidMethod (gdk_env, peer, postMouseEventID,
+				    AWT_MOUSE_ENTERED, 
+				    (jlong)event->crossing.time,
+				    state_to_awt_mods (event->crossing.state), 
+				    (jint)event->crossing.x,
+				    (jint)event->crossing.y, 
+				    0,
+				    JNI_FALSE);
       break;
     case GDK_LEAVE_NOTIFY:
+      /* We are not interested in leave events that are due to
+         grab/ungrab and not to actually crossing boundaries */
       if (event->crossing.mode == GDK_CROSSING_NORMAL)
 	(*gdk_env)->CallVoidMethod (gdk_env, peer,
 				    postMouseEventID,

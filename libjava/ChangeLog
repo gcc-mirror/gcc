@@ -1,5 +1,10 @@
 2004-01-16  Fernando Nasser  <fnasser@redhat.com>
 
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c (pre_event_handler):
+	Discard GDK_ENTER_NOTIFY related to ungrabs.
+
+2004-01-16  Fernando Nasser  <fnasser@redhat.com>
+
 	* java/awt/EventQueue.java (pop): Prevent breaking the chain if pop
 	is called for an intermediate queue.
 
