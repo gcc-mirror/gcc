@@ -35,25 +35,41 @@ int main()
 
   time_counter time;
   resource_counter resource;
-  const long iters = 200000000;
+  wchar_t bufwc[] = L"M'innamoravo di tutto (Fabrizio De Andre')";
+  char bufc[sizeof(bufwc) / sizeof(wchar_t)];
 
   locale loc;
   const ctype<wchar_t>& ct = use_facet<ctype<wchar_t> >(loc);
 
   // narrow
   start_counters(time, resource);
-  for (long i = 0; i < iters; ++i)
+  for (long i = 0; i < 200000000; ++i)
     ct.narrow(i % 128, '*');
   stop_counters(time, resource);
   report_performance(__FILE__, "narrow", time, resource);
   clear_counters(time, resource);
 
+  // narrow array
+  start_counters(time, resource);
+  for (long i = 0; i < 20000000; ++i)
+    ct.narrow(bufwc, bufwc + sizeof(bufwc) / sizeof(wchar_t), '*', bufc);
+  stop_counters(time, resource);
+  report_performance(__FILE__, "narrow array", time, resource);
+  clear_counters(time, resource);
+
   // widen
   start_counters(time, resource);
-  for (long i = 0; i < iters; ++i)
+  for (long i = 0; i < 200000000; ++i)
     ct.widen(i % 128);
   stop_counters(time, resource);
   report_performance(__FILE__, "widen", time, resource);
+
+  // widen array
+  start_counters(time, resource);
+  for (long i = 0; i < 20000000; ++i)
+    ct.widen(bufc, bufc + sizeof(bufc), bufwc);
+  stop_counters(time, resource);
+  report_performance(__FILE__, "widen array", time, resource);
 
   return 0;
 }

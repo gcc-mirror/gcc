@@ -185,12 +185,7 @@ namespace std
   wchar_t
   ctype<wchar_t>::
   do_widen(char __c) const
-  { 
-    const unsigned char __uc = static_cast<unsigned char>(__c);
-    if (__uc < 128)
-      return _M_widen[__uc];
-    return btowc(__uc);
-  }
+  { return _M_widen[static_cast<unsigned char>(__c)]; }
   
   const char* 
   ctype<wchar_t>::
@@ -198,11 +193,7 @@ namespace std
   {
     while (__lo < __hi)
       {
-	const unsigned char __uc = static_cast<unsigned char>(*__lo);	
-	if (__uc < 128)
-	  *__dest = _M_widen[__uc];
-	else
-	  *__dest = btowc(__uc);	
+	*__dest = _M_widen[static_cast<unsigned char>(*__lo)];
 	++__lo;
 	++__dest;
       }
@@ -264,7 +255,8 @@ namespace std
       _M_narrow_ok = true;
     else
       _M_narrow_ok = false;
-    for (int __i = 0; __i < 128; ++__i)
+    for (size_t __i = 0;
+	 __i < sizeof(_M_widen) / sizeof(wint_t); ++__i)
       _M_widen[__i] = btowc(__i);
   }
 #endif //  _GLIBCXX_USE_WCHAR_T
