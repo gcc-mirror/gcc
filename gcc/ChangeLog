@@ -1,3 +1,8 @@
+2002-11-17  Graham Stott  <graham.stott@btinternet.com>
+
+	* real.c (real_to_decimal): Fix buffer overrun when buffer size
+	is smaller than representation.
+
 2002-11-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c: Fix formatting.

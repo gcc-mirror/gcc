@@ -1485,6 +1485,11 @@ real_to_decimal (str, r_orig, buf_size, digits, crop_trailing_zeros)
       abort ();
     }
 
+  /* Bound the number of digits printed by the size of the representation.  */
+  max_digits = SIGNIFICAND_BITS * M_LOG10_2;
+  if (digits == 0 || digits > max_digits)
+    digits = max_digits;
+
   /* Estimate the decimal exponent, and compute the length of the string it
      will print as.  Be conservative and add one to account for possible
      overflow or rounding error.  */
@@ -1497,11 +1502,6 @@ real_to_decimal (str, r_orig, buf_size, digits, crop_trailing_zeros)
   if (max_digits > buf_size)
     abort ();
   if (digits > max_digits)
-    digits = max_digits;
-
-  /* Bound the number of digits printed by the size of the representation.  */
-  max_digits = SIGNIFICAND_BITS * M_LOG10_2;
-  if (digits == 0 || digits > max_digits)
     digits = max_digits;
 
   one = real_digit (1);
