@@ -103,6 +103,7 @@ srcdir = @srcdir@
 VPATH = @srcdir@
 
 # Directory holding libjava.zip.
+prefix = @prefix@
 datadir = @datadir@
 libjava_zip = $(datadir)/libjava.zip
 
