@@ -1,3 +1,11 @@
+2005-04-01  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gcj.texi (Invoking gij): Add descriptions of new -X options.
+	Mention recognized-and-ignored compatibility options.
+	(Memory allocation): Add descriptions of JvMalloc, JvRealloc and
+	JvFree.
+	(About CNI): Add Memory allocation section.
+
 2005-04-01  Tom Tromey  <tromey@redhat.com>
 
 	* decl.c (java_init_decl_processing): Fix types of

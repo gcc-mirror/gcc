@@ -1,3 +1,27 @@
+2005-04-01  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/20090, PR libgcj/20526
+	* gij.cc (nonstandard_opts_help): New function.
+	(add_option): New function.
+	(main): Support java options.  Set java.class.path.  Don't set
+	_Jv_Jar_Class_Path.
+	* prims.cc (parse_x_arg): New function.
+	(parse_init_args): Call parse_x_arg for -X and _ options, when
+	ignoreUnrecognized is true.
+	(new _Jv_RunMain): New vm_args variant.
+	(old _Jv_RunMain): Call new vm_args _Jv_RunMain.
+	(_Jv_Jar_Class_Path): Remove variable.
+	* include/java-props.h: Likewise.
+	* include/cni.h (JvRealloc): New function.
+	* include/jvm.h (_Jv_RunMain): Declare vm_args variant.
+	* java/lang/natRuntime.cc (insertSystemProperties): Remove
+	_Jv_Jar_Class_Path logic.  Use JV_VERSION and JV_API_VERSION
+	macros.
+	* configure.ac (JV_VERSION): Define.
+	(JV_API_VERSION): Likewise.
+	* configure: Regenerate.
+	* include/config.h.in: Regenerate.
+
 2005-04-01  Mark Anderson <mark@panonet.net>
 
 	* java/lang/natDouble.cc (parseDouble): Handle NaN, Infinity and

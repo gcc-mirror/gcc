@@ -23,9 +23,6 @@ typedef struct
 extern const char **_Jv_Compiler_Properties;
 extern int _Jv_Properties_Count;
 
-// The JAR file to add to the beginning of java.class.path.
-extern const char *_Jv_Jar_Class_Path;
-
 // Properties taken from the user's environment.
 extern property_pair *_Jv_Environment_Properties;
 

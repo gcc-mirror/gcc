@@ -1207,6 +1207,9 @@ GCJVERSION=$gcjversion
 AC_SUBST(GCJVERSION)
 AC_DEFINE_UNQUOTED(GCJVERSION, "$GCJVERSION", [Short GCJ version ID])
 
+AC_DEFINE(JV_VERSION, "1.4.2", [Compatibility version string])
+AC_DEFINE(JV_API_VERSION, "1.4", [API compatibility version string])
+
 TL_AC_GXX_INCLUDE_DIR
 
 # We check for sys/filio.h because Solaris 2.5 defines FIONREAD there.

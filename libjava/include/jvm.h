@@ -374,6 +374,9 @@ extern "C" void JvRunMain (jclass klass, int argc, const char **argv);
 void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, 
 		  bool is_jar);
 
+void _Jv_RunMain (struct _Jv_VMInitArgs *vm_args, jclass klass,
+                  const char *name, int argc, const char **argv, bool is_jar);
+
 // Delayed until after _Jv_AllocBytes is declared.
 //
 // Note that we allocate this as unscanned memory -- the vtables

@@ -108,6 +108,12 @@ JvMalloc (jsize size)
   return _Jv_Malloc (size);
 }
 
+extern inline void *
+JvRealloc (void *ptr, jsize size)
+{
+  return _Jv_Realloc (ptr, size);
+}
+
 extern inline void
 JvFree (void *ptr)
 {
