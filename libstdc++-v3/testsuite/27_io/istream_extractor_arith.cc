@@ -523,7 +523,7 @@ bool test12_aux(bool integer_type)
   int digits_overflow;
   if (integer_type)
     // This many digits will overflow integer types in base 10.
-    digits_overflow = std::numeric_limits<T>::digits10 + 1;
+    digits_overflow = std::numeric_limits<T>::digits10 + 2;
   else
     // This might do it, unsure.
     digits_overflow = std::numeric_limits<T>::max_exponent10 + 1;
@@ -573,7 +573,7 @@ void test13()
   // 2
   // quick test for failbit on maximum length extraction.
   int i;
-  int max_digits = numeric_limits<int>::digits10;
+  int max_digits = numeric_limits<int>::digits10 + 1;
   string digits;
   for (int j = 0; j < max_digits; ++j)
     digits += '1';

@@ -144,31 +144,31 @@
 #define __glibcpp_s8_max 127
 #define __glibcpp_s8_min (-__glibcpp_s8_max - 1)
 #define __glibcpp_s8_digits 7
-#define __glibcpp_s8_digits10 3
+#define __glibcpp_s8_digits10 2
 #define __glibcpp_u8_min 0U
 #define __glibcpp_u8_max (__glibcpp_s8_max * 2 + 1)
 #define __glibcpp_u8_digits 8
-#define __glibcpp_u8_digits10 3
+#define __glibcpp_u8_digits10 2
 #define __glibcpp_s16_max 32767
 #define __glibcpp_s16_min (-__glibcpp_s16_max - 1)
 #define __glibcpp_s16_digits 15
-#define __glibcpp_s16_digits10 5
+#define __glibcpp_s16_digits10 4
 #define __glibcpp_u16_min 0U
 #define __glibcpp_u16_max (__glibcpp_s16_max * 2 + 1)
 #define __glibcpp_u16_digits 16
-#define __glibcpp_u16_digits10 5
+#define __glibcpp_u16_digits10 4
 #define __glibcpp_s32_max 2147483647L
 #define __glibcpp_s32_min (-__glibcpp_s32_max - 1)
 #define __glibcpp_s32_digits 31
-#define __glibcpp_s32_digits10 10
+#define __glibcpp_s32_digits10 9
 #define __glibcpp_u32_min 0UL
 #define __glibcpp_u32_max (__glibcpp_s32_max * 2U + 1)
 #define __glibcpp_u32_digits 32
-#define __glibcpp_u32_digits10 10
+#define __glibcpp_u32_digits10 9
 #define __glibcpp_s64_max 9223372036854775807LL
 #define __glibcpp_s64_min (-__glibcpp_s64_max - 1)
 #define __glibcpp_s64_digits 63
-#define __glibcpp_s64_digits10 19
+#define __glibcpp_s64_digits10 18
 #define __glibcpp_u64_min 0ULL
 #define __glibcpp_u64_max (__glibcpp_s64_max * 2ULL + 1)
 #define __glibcpp_u64_digits 64
@@ -1033,7 +1033,7 @@ namespace std
       { return true; }
 
       static const int digits = __glibcpp_bool_digits;
-      static const int digits10 = 1;
+      static const int digits10 = 0;
       static const bool is_signed = false;
       static const bool is_integer = true;
       static const bool is_exact = true;

@@ -155,10 +155,34 @@ void test02()
   const bool* pb1 = &b_nl_type::traps;
 }
 
+// libstdc++/5045
+bool test03()
+{
+  bool test = true;
+
+  VERIFY( std::numeric_limits<bool>::digits10 == 0 );
+  VERIFY( __glibcpp_s8_digits10 == 2 );
+  VERIFY( __glibcpp_u8_digits10 == 2 );
+  VERIFY( __glibcpp_s16_digits10 == 4 );
+  VERIFY( __glibcpp_u16_digits10 == 4 );
+  VERIFY( __glibcpp_s32_digits10 == 9 );
+  VERIFY( __glibcpp_u32_digits10 == 9 );
+  VERIFY( __glibcpp_s64_digits10 == 18 );
+  VERIFY( __glibcpp_u64_digits10 == 19 );
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+
+  return test;
+}
+
+
 int main()
 {
   test01();
   test02();
+  test03();
 
   test_extrema<char>();
   test_extrema<signed char>();
