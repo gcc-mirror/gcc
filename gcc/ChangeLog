@@ -1,3 +1,16 @@
+2001-05-02  Stan Shebs  <shebs@apple.com>
+
+	* objc/objc-act.c (STRING_OBJECT_CLASS_NAME): Default to
+	NSConstantString for NeXT-style runtimes.
+	(STRING_OBJECT_GLOBAL_NAME): New macro.
+	(enum objc_tree_index): Add values OCTI_CNST_STR_GLOB_ID and
+	OCTI_STRING_CLASS_DECL.
+	(constant_string_global_id): New macro.
+	(string_class_decl): Ditto.
+	(setup_string_decl): New function.
+	(build_objc_string_object): Use it to build a NeXT runtime
+	compatible string initializer.
+
 2001-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* tradcpp.c (do_define): Make sure we don't walk past limit.
