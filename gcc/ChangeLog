@@ -1,5 +1,9 @@
 2004-09-08  Eric Christopher  <echristo@redhat.com>
 
+	* builtins.c: Fix prototype for fold_builtin_atan.
+
+2004-09-08  Eric Christopher  <echristo@redhat.com>
+
 	* builtins.c (fold_builtin_strlen, fold_builtin_sqrt, fold_builtin_cbrt,
 	fold_builtin_pow, fold_builtin_sin, fold_builtin_cos, fold_builtin_tan,
 	fold_builtin_atan): New functions. Migrate function bodies...
