@@ -1,3 +1,13 @@
+1999-12-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (pending_statics_used): Make it a macro.
+	(saved_inlines_used): Likewise.
+	(finish_static_data_member_decl): Use VARRAY_PUSH_TREE.
+	(mark_inline_for_output): Likewise.
+	(ssdf_decls_used): Remove.
+	(start_static_storage_duration_function): Use VARRAY_PUSH_TREE.
+	(generate_ctor_or_dtor_function): Adjust accordingly.
+	
 1999-11-24  Geoffrey Keating  <geoffk@cygnus.com>
             Greg McGary  <gkm@gnu.org>
 
