@@ -111,10 +111,10 @@ public:
 
   typedef typename _Ht::size_type size_type;
   typedef typename _Ht::difference_type difference_type;
-  typedef typename _Ht::const_pointer pointer;
-  typedef typename _Ht::const_pointer const_pointer;
-  typedef typename _Ht::const_reference reference;
-  typedef typename _Ht::const_reference const_reference;
+  typedef typename _Alloc::pointer pointer;
+  typedef typename _Alloc::const_pointer const_pointer;
+  typedef typename _Alloc::reference reference;
+  typedef typename _Alloc::const_reference const_reference;
 
   typedef typename _Ht::const_iterator iterator;
   typedef typename _Ht::const_iterator const_iterator;
@@ -267,10 +267,10 @@ public:
 
   typedef typename _Ht::size_type size_type;
   typedef typename _Ht::difference_type difference_type;
-  typedef typename _Ht::const_pointer pointer;
-  typedef typename _Ht::const_pointer const_pointer;
-  typedef typename _Ht::const_reference reference;
-  typedef typename _Ht::const_reference const_reference;
+  typedef typename _Alloc::pointer pointer;
+  typedef typename _Alloc::const_pointer const_pointer;
+  typedef typename _Alloc::reference reference;
+  typedef typename _Alloc::const_reference const_reference;
 
   typedef typename _Ht::const_iterator iterator;
   typedef typename _Ht::const_iterator const_iterator;
