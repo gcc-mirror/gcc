@@ -1,7 +1,12 @@
+2004-05-06  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.md (*fscalexf4): Correct insn "mode"
+	attribute to "XF".
+
 2004-05-05  Uros Bizjak  <uros@kss-loka.si>
 
 	* optabs.h (enum optab_index): Add new OTI_fmod and OTI_drem.
-	(fmod_optab): Define corresponding macros.
+	(fmod_optab, drem_optab): Define corresponding macros.
 	* optabs.c (init_optabs): Initialize fmod_optab and drem_optab.
 	* genopinit.c (optabs): Implement fmod_optab and drem_optab
 	using fmod?f3 and drem?f3 patterns.
