@@ -7409,7 +7409,7 @@ first_reg_to_save ()
     if (regs_ever_live[first_reg] 
 	&& (! call_used_regs[first_reg]
 	    || (first_reg == RS6000_PIC_OFFSET_TABLE_REGNUM
-		&& ((DEFAULT_ABI == ABI_V4 && flag_pic == 1)
+		&& ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
 		    || (DEFAULT_ABI == ABI_DARWIN && flag_pic)))))
       break;
 
@@ -8793,7 +8793,7 @@ rs6000_emit_prologue ()
 	if ((regs_ever_live[info->first_gp_reg_save+i] 
 	     && ! call_used_regs[info->first_gp_reg_save+i])
 	    || (i+info->first_gp_reg_save == RS6000_PIC_OFFSET_TABLE_REGNUM
-		&& ((DEFAULT_ABI == ABI_V4 && flag_pic == 1)
+		&& ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
 		    || (DEFAULT_ABI == ABI_DARWIN && flag_pic))))
 	  {
 	    rtx addr, reg, mem;
@@ -9179,7 +9179,7 @@ rs6000_emit_epilogue (sibcall)
       if ((regs_ever_live[info->first_gp_reg_save+i] 
 	   && ! call_used_regs[info->first_gp_reg_save+i])
 	  || (i+info->first_gp_reg_save == RS6000_PIC_OFFSET_TABLE_REGNUM
-	      && ((DEFAULT_ABI == ABI_V4 && flag_pic == 1)
+	      && ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
 		  || (DEFAULT_ABI == ABI_DARWIN && flag_pic))))
 	{
 	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, 
