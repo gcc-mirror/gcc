@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@worldnet.fr)
 
 This file is part of GNU CC.
@@ -1690,15 +1690,9 @@ do {                                                                    \
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE	Pmode
 
-/* Specify the tree operation to be used to convert reals to integers.  */
-#define IMPLICIT_FIX_EXPR	FIX_ROUND_EXPR
-
 /* This flag, if defined, says the same insns that convert to a signed fixnum
    also convert validly to an unsigned one.  */
 #define FIXUNS_TRUNC_LIKE_FIX_TRUNC
-
-/* This is the kind of divide that is easiest to do in the general case.  */
-#define EASY_DIV_EXPR		TRUNC_DIV_EXPR
 
 /* Max number of bytes we can move from memory to memory in one
    reasonably fast instruction.  */

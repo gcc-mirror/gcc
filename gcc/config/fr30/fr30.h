@@ -1,7 +1,7 @@
 /*{{{  Comment.  */ 
 
 /* Definitions of FR30 target. 
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GNU CC.
@@ -1567,14 +1567,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 /* An alias for a machine mode name.  This is the machine mode that elements of
    a jump-table should have.  */
 #define CASE_VECTOR_MODE SImode
-
-/* An alias for a tree code that is the easiest kind of division to compile
-   code for in the general case.  It may be `TRUNC_DIV_EXPR', `FLOOR_DIV_EXPR',
-   `CEIL_DIV_EXPR' or `ROUND_DIV_EXPR'.  These four division operators differ
-   in how they round the result to an integer.  `EASY_DIV_EXPR' is used when it
-   is permissible to use any of those kinds of division and the choice should
-   be made on the basis of efficiency.  */
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* The maximum number of bytes that a single instruction can move quickly from
    memory to memory.  */

@@ -1201,10 +1201,6 @@ const_section ()						\
    than "unsigned int", and we have signed characters.  FIXME: measure.  */
 #define LOAD_EXTEND_OP(MODE) (TARGET_ZERO_EXTEND ? ZERO_EXTEND : SIGN_EXTEND)
 
-/* Whatever.  I don't really know.  This has worked before.  It's also
-   what everybody else is using.  */
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
-
 #define MOVE_MAX 8
 
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  System/370 version.
-   Copyright (C) 1989, 1993, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1989, 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for OS/390 LanguageEnvironment C by Dave Pitts (dpitts@cozx.com)
@@ -861,10 +861,6 @@ enum reg_class
 
 /* #define CASE_VECTOR_PC_RELATIVE */
 
-/* Specify the tree operation to be used to convert reals to integers.  */
-
-#define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
-
 /* Define this if fixuns_trunc is the same as fix_trunc.  */
 
 #define FIXUNS_TRUNC_LIKE_FIX_TRUNC
@@ -872,10 +868,6 @@ enum reg_class
 /* We use "unsigned char" as default.  */
 
 #define DEFAULT_SIGNED_CHAR 0
-
-/* This is the kind of divide that is easiest to do in the general case.  */
-
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* Max number of bytes we can move from memory to memory in one reasonably
    fast instruction.  */

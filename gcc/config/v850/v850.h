@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler. NEC V850 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -1422,15 +1423,9 @@ do {									\
 /* Byte and short loads sign extend the value to a word.  */
 #define LOAD_EXTEND_OP(MODE) SIGN_EXTEND
 
-/* Specify the tree operation to be used to convert reals to integers.  */
-#define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
-
 /* This flag, if defined, says the same insns that convert to a signed fixnum
    also convert validly to an unsigned one.  */
 #define FIXUNS_TRUNC_LIKE_FIX_TRUNC
-
-/* This is the kind of divide that is easiest to do in the general case.  */
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  AT&T we32000 version.
-   Copyright (C) 1991, 1992, 1993, 1994, 1995, 1996, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1993, 1994, 1995, 1996, 1998, 1999, 2000,
+   2001, 2002 Free Software Foundation, Inc.
    Contributed by John Wehle (john@feith1.uucp)
 
 This file is part of GNU CC.
@@ -591,12 +591,6 @@ enum reg_class { NO_REGS, GENERAL_REGS,
    table.
    Do not define this if the table should contain absolute addresses.  */
 /* #define CASE_VECTOR_PC_RELATIVE 1 */
-
-/* Specify the tree operation to be used to convert reals to integers.  */
-#define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
-
-/* This is the kind of divide that is easiest to do in the general case.  */
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 0

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Clipper version.
    Copyright (C) 1987, 1988, 1991, 1993, 1994, 1995, 1996, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
 This file is part of GNU CC.
@@ -337,10 +337,6 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS, LIM_REG_CLASSES};
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
 #define STACK_GROWS_DOWNWARD
-
-/* Define this if longjmp restores from saved registers
-   rather than from what setjmp saved.  */
-/* #define LONGJMP_RESTORE_FROM_STACK */
 
 /* Define this if the nominal address of the stack frame
    is at the high-address end of the local variables;
@@ -779,12 +775,6 @@ do									      \
    be the code that says which one of the two operations is implicitly
    done, NIL if none.  */
 #define LOAD_EXTEND_OP(MODE) SIGN_EXTEND
-
-/* Specify the tree operation to be used to convert reals to integers.  */
-#define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
-
-/* This is the kind of divide that is easiest to do in the general case.  */
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1

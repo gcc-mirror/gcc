@@ -1990,12 +1990,6 @@ extern char m32r_punct_chars[256];
    done, NIL if none.  */
 #define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
 
-/* Specify the tree operation to be used to convert reals to integers.  */
-#define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
-
-/* This is the kind of divide that is easiest to do in the general case.  */
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
-
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4
