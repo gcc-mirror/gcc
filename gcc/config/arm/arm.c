@@ -11266,7 +11266,7 @@ arm_expand_builtin (tree exp,
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+      op1 = force_reg (SImode, expand_expr (arg1, NULL_RTX, VOIDmode, 0));
       emit_insn (gen_iwmmxt_tmcr (op0, op1));
       return 0;
 
