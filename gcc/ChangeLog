@@ -1,5 +1,8 @@
 2003-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc: Remove some unnecessary uses of 'x' in case statements.
+	Actually allow ep9312 as an arm --with-arch setting.
+
 	* config.gcc (*-hpux11): Disable fixproto.
 
 2003-09-24  Phil Edwards  <phil@codesourcery.com>
