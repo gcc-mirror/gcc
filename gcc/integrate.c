@@ -1342,7 +1342,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
   /* If the function returns a BLKmode object in a register, copy it
      out of the temp register into a BLKmode memory object. */
-  if (TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl))) == BLKmode
+  if (target 
+      && TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl))) == BLKmode
       && ! aggregate_value_p (TREE_TYPE (TREE_TYPE (fndecl))))
     target = copy_blkmode_from_reg (0, target, TREE_TYPE (TREE_TYPE (fndecl)));
   
