@@ -26,9 +26,10 @@ proc gfortran-dg-test { prog do_what extra_tool_flags } {
     set output_file [lindex $result 1]
 
     # Put the error message on the same line as the line number
+    # FIXME: Add a colon after line number
     # Remove the line of source code with the error and
-    # the "     ^" that points to error
-    regsub -all "\n\[^\n\]*\n *\\^\n" $comp_output "" comp_output 
+    # the number pointing to error
+    regsub -all "\n\n\[^\n\]*\n *\[0-9\]*\n" $comp_output ": " comp_output    
 
     return [list $comp_output $output_file]
 }
