@@ -344,6 +344,10 @@ output_move_double (operands)
 	  output_asm_insn ("addd %0,%1", xops);
 	  operands[1] = gen_rtx (MEM, DImode, op0);
 	  latehalf[1] = adj_offsettable_operand (operands[1], 4);
+	  /* The first half has the overlap, Do the late half first.  */
+	  output_asm_insn (singlemove_string (latehalf), latehalf);
+	  /* Then clobber.  */
+	  return singlemove_string (operands);
 	}
       if (reg_mentioned_p (op0, XEXP (op1, 0)))
 	{
