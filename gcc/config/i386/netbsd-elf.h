@@ -20,6 +20,13 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      NETBSD_OS_CPP_BUILTINS_ELF();		\
+    }						\
+  while (0)
+
 /* Provide a LINK_SPEC appropriate for a NetBSD/i386 ELF target.
    This is a copy of LINK_SPEC from <netbsd-elf.h> tweaked for
    the i386 target.  */
@@ -38,16 +45,14 @@ Boston, MA 02111-1307, USA.  */
       %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}}	\
     %{static:-static}}"
 
-/* Names to predefine in the preprocessor for this target machine.  */
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS			\
+  { "netbsd_cpp_spec", NETBSD_CPP_SPEC },
 
-#define CPP_PREDEFINES							\
-  "-D__NetBSD__ -D__ELF__ -Asystem=unix -Asystem=NetBSD"
-
-/* Provide a CPP_SPEC appropriate for NetBSD.  Currently we just deal with
-   the GCC option `-posix'.  */
+/* Provide a CPP_SPEC appropriate for NetBSD.  */
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%(cpp_cpu) %(netbsd_cpp_spec)"
 
 
 /* Make gcc agree with <machine/ansi.h> */
