@@ -1,3 +1,9 @@
+2004-02-27  Eric Christopher  <echristo@redhat.com>
+
+	* g++.dg/charset/charset.exp: Change CFLAGS to CHARSETCFLAGS.
+	* g++.dg/charset/asm2.c: Run only x86.
+	* gcc.dg/charset/asm3.c: Ditto.
+
 2004-02-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	* lib/g++.exp (g++_link_flags): Append LD_LIBRARY_PATH to
