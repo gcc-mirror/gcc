@@ -330,6 +330,29 @@ do									\
   }									\
 while (0)
 
+/* Similarly, we want the function code label here.  */
+#define DBX_OUTPUT_BRAC(FILE, NAME, BRAC) \
+  do									\
+    {									\
+      const char *flab;							\
+      fprintf (FILE, "%s%d,0,0,", ASM_STABN_OP, BRAC);			\
+      assemble_name (FILE, NAME);					\
+      putc ('-', FILE);							\
+      if (current_function_func_begin_label != NULL_TREE)		\
+	flab = IDENTIFIER_POINTER (current_function_func_begin_label);	\
+      else								\
+	{								\
+	  putc ('.', FILE);						\
+	  flab = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);	\
+	}								\
+      assemble_name (FILE, flab);					\
+      putc ('\n', FILE);						\
+    }									\
+  while (0)
+
+#define DBX_OUTPUT_LBRAC(FILE, NAME) DBX_OUTPUT_BRAC (FILE, NAME, N_LBRAC)
+#define DBX_OUTPUT_RBRAC(FILE, NAME) DBX_OUTPUT_BRAC (FILE, NAME, N_RBRAC)
+
 /* Override sysv4.h as these are ABI_V4 only.  */
 #undef	ASM_OUTPUT_REG_PUSH
 #undef	ASM_OUTPUT_REG_POP
