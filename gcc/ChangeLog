@@ -1,3 +1,39 @@
+2004-11-13  Steven Bosscher  <stevenb@suse.de>
+
+	* cse.c (CHEAP_REGNO): Redefine using REGNO_PTR_FRAME_P and
+	HARD_REGISTER_NUM_P.
+
+	* cselib.c (new_cselib_val): Make comment correct and more detailed.
+	* flow.c (mark_set_1): Likewise.
+
+	* except.c (duplicate_eh_region_1, duplicate_eh_region_2,
+	duplicate_eh_regions): Remove.
+	* except.h (duplicate_eh_regions): Remove prototype.
+	* integrate.c (get_label_from_map, copy_rtx_and_substitute,
+	global_const_equiv_varray): Remove.
+	* integrate.h (get_label_from_map, copy_rtx_and_substitute,
+	global_const_equiv_varray, set_label_in_map): Remove prototypes,
+	extern declaration, and #define.
+	(MAYBE_EXTEND_CONST_EQUIV_VARRAY, SET_CONST_EQUIV_DATA): Remove.
+	(struct inline_remap): Remove.
+	* varray.c (struct element): Remove entry for const_equiv_data.
+	* varray.h (struct const_equiv_data): Remove.
+	(enum varray_data_enum) <VARRAY_DATA_CONST_EQUIV>: Remove.
+	(union varray_data_tag) <const_equiv>: Remove.
+	(VARRAY_CONST_EQUIV_INIT, VARRAY_CONST_EQUIV,
+	VARRAY_PUSH_CONST_EQUIV, VARRAY_TOP_CONST_EQUIV): Remove.
+
+	* regstack.c (record_label_references): Remove unused function.
+
+	* rtl.def (VALUE): Update comment.
+	(LABEL_REF): Remove unused operand 2.
+	* rtl.h (struct rtx_def): Update for removed accessor macros.
+	(XCADVFLAGS, INSN_DEAD_CODE_P, LINE_NUMBER, CONTAINING_INSN,
+	REG_LOOP_TEST_P): Remove.
+	(ADDR_DIFF_VEC_FLAGS, CSELIB_VAL_PTR, LABEL_NEXTREF): Add comments.
+	* web.c (entry_register): Don't copy REG_LOOP_TEST_P.
+	* doc/rtl.texi (INSN_DEAD_CODE_P, REG_LOOP_TEST_P): Remove.
+
 2004-11-13  James A. Morrison  <phython@gcc.gnu.org>
             Eric Botcazou  <ebotcazou@libertysurf.fr>
 

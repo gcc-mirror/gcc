@@ -2634,7 +2634,7 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 	invalidate_mems_from_set (pbi, reg);
 
       /* If the memory reference had embedded side effects (autoincrement
-	 address modes.  Then we may need to kill some entries on the
+	 address modes) then we may need to kill some entries on the
 	 memory set list.  */
       if (insn && MEM_P (reg))
 	for_each_rtx (&PATTERN (insn), invalidate_mems_from_autoinc, pbi);

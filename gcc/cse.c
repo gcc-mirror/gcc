@@ -504,11 +504,9 @@ struct table_elt
    of 0.  Next come pseudos with a cost of one and other hard registers with
    a cost of 2.  Aside from these special cases, call `rtx_cost'.  */
 
-#define CHEAP_REGNO(N) \
-  ((N) == FRAME_POINTER_REGNUM || (N) == HARD_FRAME_POINTER_REGNUM	\
-   || (N) == STACK_POINTER_REGNUM || (N) == ARG_POINTER_REGNUM		\
-   || ((N) >= FIRST_VIRTUAL_REGISTER && (N) <= LAST_VIRTUAL_REGISTER)	\
-   || ((N) < FIRST_PSEUDO_REGISTER					\
+#define CHEAP_REGNO(N)							\
+  (REGNO_PTR_FRAME_P(N)							\
+   || (HARD_REGISTER_NUM_P (N)						\
        && FIXED_REGNO_P (N) && REGNO_REG_CLASS (N) != NO_REGS))
 
 #define COST(X) (REG_P (X) ? 0 : notreg_cost (X, SET))

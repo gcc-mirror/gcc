@@ -23,8 +23,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct function;
 
-struct inline_remap;
-
 /* Per-function EH data.  Used only in except.c, but GC and others
    manipulate pointers to the opaque type.  */
 struct eh_status;
@@ -83,7 +81,6 @@ extern void expand_eh_return (void);
 extern rtx expand_builtin_extend_pointer (tree);
 extern rtx get_exception_pointer (struct function *);
 extern rtx get_exception_filter (struct function *);
-extern int duplicate_eh_regions (struct function *, struct inline_remap *);
 extern int check_handled (tree, tree);
 
 extern void sjlj_emit_function_exit_after (rtx);

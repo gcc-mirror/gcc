@@ -704,8 +704,11 @@ new_cselib_val (unsigned int value, enum machine_mode mode)
   gcc_assert (value);
 
   e->value = value;
-  /* We use custom method to allocate this RTL construct because it accounts
-     about 8% of overall memory usage.  */
+  /* We use an alloc pool to allocate this RTL construct because it
+     accounts for about 8% of the overall memory usage.  We know
+     precisely when we can have VALUE RTXen (when cselib is active)
+     so we don't need to put them in garbave collected memory.
+     ??? Why should a VALUE be an RTX in the first place?  */
   e->u.val_rtx = pool_alloc (value_pool);
   memset (e->u.val_rtx, 0, RTX_HDR_SIZE);
   PUT_CODE (e->u.val_rtx, VALUE);

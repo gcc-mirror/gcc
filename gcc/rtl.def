@@ -331,7 +331,9 @@ DEF_RTL_EXPR(CONST, "const", "e", RTX_CONST_OBJ)
    by a SET whose first operand is (PC).  */
 DEF_RTL_EXPR(PC, "pc", "", RTX_OBJ)
 
-/* Used in the cselib routines to describe a value.  */
+/* Used in the cselib routines to describe a value.  Objects of this
+   kind are only allocated in cselib.c, in an alloc pool instead of
+   in GC memory.  The only operand of a VALUE is a cselib_val_struct.  */
 DEF_RTL_EXPR(VALUE, "value", "0", RTX_OBJ)
 
 /* A register.  The "operand" is the register number, accessed with
@@ -387,9 +389,8 @@ DEF_RTL_EXPR(MEM, "mem", "e0", RTX_OBJ)
 
 /* Reference to an assembler label in the code for this function.
    The operand is a CODE_LABEL found in the insn chain.
-   The unprinted fields 1 and 2 are used in flow.c for the
-   LABEL_NEXTREF and CONTAINING_INSN.  */
-DEF_RTL_EXPR(LABEL_REF, "label_ref", "u00", RTX_CONST_OBJ)
+   The unprinted field 1 is used in flow.c for the LABEL_NEXTREF.  */
+DEF_RTL_EXPR(LABEL_REF, "label_ref", "u0", RTX_CONST_OBJ)
 
 /* Reference to a named label: 
    Operand 0: label name
