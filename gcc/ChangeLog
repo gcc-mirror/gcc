@@ -1,3 +1,7 @@
+Fri Sep 19 20:51:03 199  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* alpha/linux.h (HANDLE_SYSV_PRAGMA): Defined.
+
 Fri Sep 19 18:53:50 1997 J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* jump.c (thread_jumps): check can_reverse_comparison_p before

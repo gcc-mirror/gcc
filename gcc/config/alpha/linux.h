@@ -65,6 +65,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Show that we need a GP when profiling.  */
 #define TARGET_PROFILING_NEEDS_GP
 
+/* We need that too. */
+#define HANDLE_SYSV_PRAGMA
+
 #undef ASM_FINAL_SPEC
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
