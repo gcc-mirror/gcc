@@ -5184,16 +5184,6 @@ holding the constant.  This restriction is often true of addresses
 of TLS symbols for various targets.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VECTORIZE_MISALIGNED_MEM_OK (@var{mode})
-This hook should return true if a move* pattern to/from memory
-can be generated for machine_mode @var{mode} even if the memory location 
-is unaligned.
-If a move* of data to/from unaligned memory locations is not supported for
-machine_mode @var{mode}, the hook should return false.  
-This hook is used by the autovectorizer, and when expanding a 
-@code{MISALIGNED_INDIRECT_REF} expression.
-@end deftypefn
-
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD (void)
 This hook should return the DECL of a function @var{f} that given an
 address @var{addr} as an argument returns a mask @var{m} that can be

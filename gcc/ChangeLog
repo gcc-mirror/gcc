@@ -1,5 +1,18 @@
 2004-12-22  Richard Henderson  <rth@redhat.com>
 
+	* optabs.h (OTI_movmisalign, movmisalign_optab): New.
+	* optabs.c (init_optabs): Create it.
+	* genopinit.c (optabs): Initialize it.
+	* expr.c (expand_expr_real_1) <MISALIGNED_INDIRECT_REF>: Use it.
+	* tree-vectorizer.c (vect_supportable_dr_alignment): Likewise.
+	* target-def.h (TARGET_VECTORIZE_MISALIGNED_MEM_OK): Remove.
+	* target.h (vectorize.misaligned_mem_ok): Remove.
+	* targhooks.c (default_vect_misaligned_mem_ok): Remove.
+	* doc/md.texi (movmisalign): New.
+	* doc/tm.texi (TARGET_VECTORIZE_MISALIGNED_MEM_OK): Remove.
+
+2004-12-22  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/emmintrin.h (_mm_loadh_pd): Don't cast pointer arg
 	to __v2si.
 	(_mm_storeh_pd, _mm_loadl_pd, _mm_storel_pd): Likewise.

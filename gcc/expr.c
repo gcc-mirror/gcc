@@ -6697,10 +6697,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	tree exp1 = TREE_OPERAND (exp, 0);
 	tree orig;
 
-	if (code == MISALIGNED_INDIRECT_REF
-	    && !targetm.vectorize.misaligned_mem_ok (mode))
-	  abort ();
-
 	if (modifier != EXPAND_WRITE)
 	  {
 	    tree t;
@@ -6726,6 +6722,33 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	if (!orig)
 	  orig = exp;
 	set_mem_attributes (temp, orig, 0);
+
+	/* Resolve the misalignment now, so that we don't have to remember
+	   to resolve it later.  Of course, this only works for reads.  */
+	/* ??? When we get around to supporting writes, we'll have to handle
+	   this in store_expr directly.  The vectorizer isn't generating
+	   those yet, however.  */
+	if (code == MISALIGNED_INDIRECT_REF)
+	  {
+	    int icode;
+	    rtx reg, insn;
+
+	    gcc_assert (modifier == EXPAND_NORMAL);
+
+	    /* The vectorizer should have already checked the mode.  */
+	    icode = movmisalign_optab->handlers[mode].insn_code;
+	    gcc_assert (icode != CODE_FOR_nothing);
+
+	    /* We've already validated the memory, and we're creating a
+	       new pseudo destination.  The predicates really can't fail.  */
+	    reg = gen_reg_rtx (mode);
+
+	    /* Nor can the insn generator.  */
+	    insn = GEN_FCN (icode) (reg, temp);
+	    emit_insn (insn);
+
+	    return reg;
+	  }
 
 	return temp;
       }

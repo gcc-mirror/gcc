@@ -2758,6 +2758,17 @@ with mode @var{m} of a register whose natural mode is wider,
 the @samp{movstrict@var{m}} instruction is guaranteed not to alter
 any of the register except the part which belongs to mode @var{m}.
 
+@cindex @code{movmisalign@var{m}} instruction pattern
+@item @samp{movmisalign@var{m}}
+This variant of a move pattern is designed to load or store a value
+from a memory address that is not naturally aligned for its mode.
+For a store, the memory will be in operand 0; for a load, the memory
+will be in operand 1.  The other operand is guaranteed not to be a
+memory, so that it's easy to tell whether this is a load or store.
+
+This pattern is used by the autovectorizer, and when expanding a
+@code{MISALIGNED_INDIRECT_REF} expression.
+
 @cindex @code{load_multiple} instruction pattern
 @item @samp{load_multiple}
 Load several consecutive memory locations into consecutive registers.
