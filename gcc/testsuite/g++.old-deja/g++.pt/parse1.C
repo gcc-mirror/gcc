@@ -1,0 +1,1 @@
+  template <class T> combine { };
