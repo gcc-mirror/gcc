@@ -17,6 +17,19 @@
 # endif
 #endif
 
+/* Work around the fact that the sign of the second double in the IBM
+   double-double format is not strictly specified when it contains a zero.
+   For instance, -0.0L can be represented with either (-0.0, +0.0) or
+   (-0.0, -0.0).  The former is what we'll get from the compiler when it
+   builds constants; the later is what we'll get from the negation operator
+   at runtime.  */
+/* ??? This hack only works for big-endian, which is fortunately true for
+   all of AIX, Darwin, and Irix.  */
+#if LDBL_MANT_DIG == 106
+# undef fpsizeofl
+# define fpsizeofl	sizeof(double)
+#endif
+
 
 #define TEST(TYPE, EXT)						\
 TYPE c##EXT (TYPE x, TYPE y)					\
