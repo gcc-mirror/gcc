@@ -52,7 +52,7 @@ static int h8300_interrupt_function_p (tree);
 static int h8300_saveall_function_p (tree);
 static int h8300_monitor_function_p (tree);
 static int h8300_os_task_function_p (tree);
-static void dosize (int, unsigned int);
+static void h8300_emit_stack_adjustment (int, unsigned int);
 static int round_frame_size (int);
 static unsigned int compute_saved_regs (void);
 static void push (int);
@@ -365,7 +365,7 @@ byte_reg (rtx x, int b)
    SIZE to adjust the stack pointer.  */
 
 static void
-dosize (int sign, unsigned int size)
+h8300_emit_stack_adjustment (int sign, unsigned int size)
 {
   /* H8/300 cannot add/subtract a large constant with a single
      instruction.  If a temporary register is available, load the
@@ -506,7 +506,7 @@ h8300_expand_prologue (void)
     }
 
   /* Leave room for locals.  */
-  dosize (-1, round_frame_size (get_frame_size ()));
+  h8300_emit_stack_adjustment (-1, round_frame_size (get_frame_size ()));
 
   /* Push the rest of the registers in ascending order.  */
   saved_regs = compute_saved_regs ();
@@ -631,7 +631,7 @@ h8300_expand_epilogue (void)
     }
 
   /* Deallocate locals.  */
-  dosize (1, round_frame_size (get_frame_size ()));
+  h8300_emit_stack_adjustment (1, round_frame_size (get_frame_size ()));
 
   /* Pop frame pointer if we had one.  */
   if (frame_pointer_needed)
