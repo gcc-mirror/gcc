@@ -57,7 +57,17 @@
 
 ;; Attribute for cpu type.
 ;; These must match the values for enum processor_type in sparc.h.
-(define_attr "cpu" "v7,cypress,v8,supersparc,sparclite,f930,f934,hypersparc,sparclite86x,sparclet,tsc701,v9,ultrasparc,ultrasparc3"
+(define_attr "cpu"
+  "v7,
+   cypress,
+   v8,
+   supersparc,
+   sparclite,f930,f934,
+   hypersparc,sparclite86x,
+   sparclet,tsc701,
+   v9,
+   ultrasparc,
+   ultrasparc3"
   (const (symbol_ref "sparc_cpu_attr")))
 
 ;; Attribute for the instruction set.
@@ -79,7 +89,19 @@
 ;; Insn type.
 
 (define_attr "type"
-  "ialu,compare,shift,load,sload,store,uncond_branch,branch,call,sibcall,call_no_delay_slot,return,imul,idiv,fpload,fpstore,fp,fpmove,fpcmove,fpcrmove,fpcmp,fpmul,fpdivs,fpdivd,fpsqrts,fpsqrtd,cmove,multi,misc"
+  "ialu,compare,shift,
+   load,sload,store,
+   uncond_branch,branch,call,sibcall,call_no_delay_slot,
+   imul,idiv,
+   fpload,fpstore,
+   fp,fpmove,
+   fpcmove,fpcrmove,
+   fpcmp,
+   fpmul,fpdivs,fpdivd,
+   fpsqrts,fpsqrtd,
+   cmove,
+   ialuX,
+   multi,flushw,iflush,trap"
   (const_string "ialu"))
 
 ;; true if branch/call has empty delay slot and will emit a nop in it
@@ -168,7 +190,7 @@
 ;; Attributes for instruction and branch scheduling
 
 (define_attr "in_call_delay" "false,true"
-  (cond [(eq_attr "type" "uncond_branch,branch,call,sibcall,call_no_delay_slot,return,multi")
+  (cond [(eq_attr "type" "uncond_branch,branch,call,sibcall,call_no_delay_slot,multi")
 	 	(const_string "false")
 	 (eq_attr "type" "load,fpload,store,fpstore")
 	 	(if_then_else (eq_attr "length" "1")
@@ -189,21 +211,6 @@
 
 (define_attr "leaf_function" "false,true"
   (const (symbol_ref "current_function_uses_only_leaf_regs")))
-
-(define_attr "eligible_for_return_delay" "false,true"
-  (symbol_ref "eligible_for_return_delay (insn)"))
-
-(define_attr "in_return_delay" "false,true"
-  (if_then_else (and (and (and (eq_attr "type" "ialu,load,sload,store")
-			       (eq_attr "length" "1"))
-			  (eq_attr "leaf_function" "false"))
-		     (eq_attr "eligible_for_return_delay" "false"))
-		(const_string "true")
-		(const_string "false")))
-
-(define_delay (and (eq_attr "type" "return")
-		   (eq_attr "isa" "v9"))
-  [(eq_attr "in_return_delay" "true") (nil) (nil)])
 
 ;; ??? Should implement the notion of predelay slots for floating point
 ;; branches.  This would allow us to remove the nop always inserted before
@@ -1170,14 +1177,14 @@
 	(ltu:SI (reg:CC 100) (const_int 0)))]
   ""
   "addx\\t%%g0, 0, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_insn "*neg_sltu_insn"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (ltu:SI (reg:CC 100) (const_int 0))))]
   ""
   "subx\\t%%g0, 0, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 ;; ??? Combine should canonicalize these next two to the same pattern.
 (define_insn "*neg_sltu_minus_x"
@@ -1186,7 +1193,7 @@
 		  (match_operand:SI 1 "arith_operand" "rI")))]
   ""
   "subx\\t%%g0, %1, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_insn "*neg_sltu_plus_x"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1194,21 +1201,21 @@
 			 (match_operand:SI 1 "arith_operand" "rI"))))]
   ""
   "subx\\t%%g0, %1, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_insn "*sgeu_insn"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(geu:SI (reg:CC 100) (const_int 0)))]
   ""
   "subx\\t%%g0, -1, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_insn "*neg_sgeu_insn"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (geu:SI (reg:CC 100) (const_int 0))))]
   ""
   "addx\\t%%g0, -1, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 ;; We can also do (x + ((unsigned) i >= 0)) and related, so put them in.
 ;; ??? The addx/subx insns use the 32 bit carry flag so there are no DImode
@@ -1220,7 +1227,7 @@
 		 (match_operand:SI 1 "arith_operand" "rI")))]
   ""
   "addx\\t%%g0, %1, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_insn "*sltu_plus_x_plus_y"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1229,7 +1236,7 @@
 			  (match_operand:SI 2 "arith_operand" "rI"))))]
   ""
   "addx\\t%1, %2, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_insn "*x_minus_sltu"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1237,7 +1244,7 @@
 		  (ltu:SI (reg:CC 100) (const_int 0))))]
   ""
   "subx\\t%1, 0, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 ;; ??? Combine should canonicalize these next two to the same pattern.
 (define_insn "*x_minus_y_minus_sltu"
@@ -1247,7 +1254,7 @@
 		  (ltu:SI (reg:CC 100) (const_int 0))))]
   ""
   "subx\\t%r1, %2, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_insn "*x_minus_sltu_plus_y"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1256,7 +1263,7 @@
 			   (match_operand:SI 2 "arith_operand" "rI"))))]
   ""
   "subx\\t%r1, %2, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_insn "*sgeu_plus_x"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1264,7 +1271,7 @@
 		 (match_operand:SI 1 "register_operand" "r")))]
   ""
   "subx\\t%1, -1, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_insn "*x_minus_sgeu"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1272,7 +1279,7 @@
 		  (geu:SI (reg:CC 100) (const_int 0))))]
   ""
   "addx\\t%1, -1, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
@@ -1779,13 +1786,6 @@
   "sethi\\t%%hi(%a1-4), %0\\n\\tcall\\t%a2\\n\\tadd\\t%0, %%lo(%a1+4), %0"
   [(set_attr "type" "multi")
    (set_attr "length" "3")])
-
-;; Currently unused...
-;; (define_insn "get_pc_via_rdpc"
-;;   [(set (match_operand 0 "register_operand" "=r") (pc))]
-;;   "TARGET_V9"
-;;   "rd\\t%%pc, %0"
-;;   [(set_attr "type" "misc")])
 
 
 ;; Move instructions
@@ -5061,7 +5061,7 @@
 		 (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
   ""
   "addx\\t%1, %2, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_insn "*addx_extend_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -5091,7 +5091,7 @@
                                  (ltu:SI (reg:CC_NOOV 100) (const_int 0)))))]
   "TARGET_ARCH64"
   "addx\\t%r1, %2, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_insn "subx"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -5100,7 +5100,7 @@
 		  (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
   ""
   "subx\\t%r1, %2, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_insn "*subx_extend_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -5109,7 +5109,7 @@
                                   (ltu:SI (reg:CC_NOOV 100) (const_int 0)))))]
   "TARGET_ARCH64"
   "subx\\t%r1, %2, %0"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "ialuX")])
 
 (define_insn "*subx_extend"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -8126,7 +8126,7 @@
   [(unspec_volatile [(const_int 0)] UNSPECV_FLUSHW)]
   ""
   "* return TARGET_V9 ? \"flushw\" : \"ta\\t3\";"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "flushw")])
 
 (define_insn "goto_handler_and_restore"
   [(unspec_volatile [(match_operand 0 "register_operand" "=r")] UNSPECV_GOTO)]
@@ -8189,7 +8189,7 @@
 	   SPARC_STACK_BIAS + 15 * UNITS_PER_WORD);
   return \"\";
 }"
-  [(set_attr "type" "misc")
+  [(set_attr "type" "multi")
    (set (attr "length") (if_then_else (eq_attr "pic" "true")
 				       (const_int 4)
 				       (const_int 3)))])
@@ -8245,13 +8245,13 @@
   [(unspec_volatile [(match_operand:SI 0 "memory_operand" "m")] UNSPECV_FLUSH)]
   ""
   "* return TARGET_V9 ? \"flush\\t%f0\" : \"iflush\\t%f0\";"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "iflush")])
 
 (define_insn "flushdi"
   [(unspec_volatile [(match_operand:DI 0 "memory_operand" "m")] UNSPECV_FLUSH)]
   ""
   "* return TARGET_V9 ? \"flush\\t%f0\" : \"iflush\\t%f0\";"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "iflush")])
 
 
 ;; find first set.
@@ -8750,7 +8750,7 @@
   [(trap_if (const_int 1) (const_int 5))]
   ""
   "ta\\t5"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "trap")])
 
 (define_expand "conditional_trap"
   [(trap_if (match_operator 0 "noov_compare_op"
@@ -8766,11 +8766,11 @@
 	    (match_operand:SI 1 "arith_operand" "rM"))]
   ""
   "t%C0\\t%1"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "trap")])
 
 (define_insn ""
   [(trap_if (match_operator 0 "noov_compare_op" [(reg:CCX 100) (const_int 0)])
 	    (match_operand:SI 1 "arith_operand" "rM"))]
   "TARGET_V9"
   "t%C0\\t%%xcc, %1"
-  [(set_attr "type" "misc")])
+  [(set_attr "type" "trap")])

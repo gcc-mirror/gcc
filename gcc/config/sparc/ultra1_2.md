@@ -78,6 +78,11 @@
 (absence_set "us1_slot1" "us1_slot2,us1_slot3")
 (absence_set "us1_slot2" "us1_slot3")
 
+(define_insn_reservation "us1_single" 1
+  (and (eq_attr "cpu" "ultrasparc")
+    (eq_attr "type" "multi,flushw,iflush,trap"))
+  "us1_single_issue")
+
 (define_insn_reservation "us1_simple_ieuN" 1
   (and (eq_attr "cpu" "ultrasparc")
     (eq_attr "type" "ialu"))
@@ -92,6 +97,11 @@
   (and (eq_attr "cpu" "ultrasparc")
     (eq_attr "type" "compare"))
   "us1_ieu1 + us1_slot012")
+
+(define_insn_reservation "us1_ialuX" 1
+  (and (eq_attr "cpu" "ultrasparc")
+    (eq_attr "type" "ialuX"))
+  "us1_single_issue")
 
 (define_insn_reservation "us1_cmove" 2
   (and (eq_attr "cpu" "ultrasparc")

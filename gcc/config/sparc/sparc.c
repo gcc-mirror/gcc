@@ -3065,17 +3065,6 @@ check_return_regs (x)
 
 }
 
-/* Return 1 if TRIAL references only in and global registers.  */
-int
-eligible_for_return_delay (trial)
-     rtx trial;
-{
-  if (GET_CODE (PATTERN (trial)) != SET)
-    return 0;
-
-  return check_return_regs (PATTERN (trial));
-}
-
 int
 short_branch (uid1, uid2)
      int uid1, uid2;

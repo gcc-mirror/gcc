@@ -1,3 +1,20 @@
+2002-05-28  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.md (cpu): Tidy.
+	(type): Delete 'return', add 'ialuX', 'flushw', 'iflush', and
+	'trap'.
+	(in_call_delay): Delete reference to 'return' type.
+	(eligible_for_return_delay, in_return_delay, define_delay
+	referencing those): Delete.
+	(rest of file): Use new type attributes as appropriate.
+	* config/sparc/sparc-protos.h (eligible_for_return_delay): Delete.
+	* config/sparc/sparc.c (eligible_for_return_delay): Likewise.
+	* config/sparc/ultra1_2.md (us1_single): New reservation.
+	(us1_ialuX): Likewise.
+	* config/sparc/ultra3.md (us3_single): Likewise.
+	(us3_ialuX): Likewise.
+	(us3_imul, us3_idiv): Tweak.
+	
 2002-05-28  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_in_small_data_p): Return false for
