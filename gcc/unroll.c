@@ -1054,7 +1054,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 		  {
 		    map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
 		    record_base_value (REGNO (map->reg_map[j]),
-				       regno_reg_rtx[j]);
+				       regno_reg_rtx[j], 0);
 		  }
 	      /* The last copy needs the compare/branch insns at the end,
 		 so reset copy_end here if the loop ends with a conditional
@@ -1216,7 +1216,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  {
 	    map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
 	    record_base_value (REGNO (map->reg_map[j]),
-			       regno_reg_rtx[j]);
+			       regno_reg_rtx[j], 0);
 	  }
 
       /* If loop starts with a branch to the test, then fix it so that
@@ -1861,7 +1861,12 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		      tem = gen_reg_rtx (GET_MODE (giv_src_reg));
 		      giv_dest_reg = tem;
 		      map->reg_map[regno] = tem;
-		      record_base_value (REGNO (tem), giv_src_reg);
+		      record_base_value (REGNO (tem),
+					 giv_inc == const0_rtx
+					 ? giv_src_reg
+					 : gen_rtx_PLUS (GET_MODE (giv_src_reg),
+							 giv_src_reg, giv_inc),
+					 1);
 		    }
 		  else
 		    map->reg_map[regno] = giv_src_reg;
@@ -2560,7 +2565,7 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
 		{
 		  rtx tem = gen_reg_rtx (bl->biv->mode);
 
-		  record_base_value (REGNO (tem), bl->biv->add_val);
+		  record_base_value (REGNO (tem), bl->biv->add_val, 0);
 		  emit_insn_before (gen_move_insn (tem, bl->biv->src_reg),
 				    loop_start);
 
@@ -2617,7 +2622,7 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
 		 this insn will always be executed, no matter how the loop
 		 exits.  */
 	      rtx tem = gen_reg_rtx (bl->biv->mode);
-	      record_base_value (REGNO (tem), bl->biv->add_val);
+	      record_base_value (REGNO (tem), bl->biv->add_val, 0);
 
 	      emit_insn_before (gen_move_insn (tem, bl->biv->src_reg),
 				loop_start);
@@ -2799,7 +2804,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	    {
 	      rtx tem = gen_reg_rtx (bl->biv->mode);
 
-	      record_base_value (REGNO (tem), bl->biv->add_val);
+	      record_base_value (REGNO (tem), bl->biv->add_val, 0);
 	      emit_insn_before (gen_move_insn (tem, bl->biv->src_reg),
 				loop_start);
 	      biv_initial_value = tem;
@@ -2841,7 +2846,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		      || GET_CODE (XEXP (value, 1)) != CONST_INT))
 		{
 		  rtx tem = gen_reg_rtx (v->mode);
-		  record_base_value (REGNO (tem), v->add_val);
+		  record_base_value (REGNO (tem), v->add_val, 0);
 		  emit_iv_add_mult (bl->initial_value, v->mult_val,
 				    v->add_val, tem, loop_start);
 		  value = tem;
@@ -2900,7 +2905,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		     Emit insn to initialize its value before loop start.  */
 
 		  rtx tem = gen_reg_rtx (v->mode);
-		  record_base_value (REGNO (tem), v->add_val);
+		  record_base_value (REGNO (tem), v->add_val, 0);
 		  v->unrolled = 1;
 
 		  /* If the address giv has a constant in its new_reg value,
@@ -3216,7 +3221,7 @@ final_biv_value (bl, loop_start, loop_end)
 	     case it is needed later.  */
 
 	  tem = gen_reg_rtx (bl->biv->mode);
-	  record_base_value (REGNO (tem), bl->biv->add_val);
+	  record_base_value (REGNO (tem), bl->biv->add_val, 0);
 	  /* Make sure loop_end is not the last insn.  */
 	  if (NEXT_INSN (loop_end) == 0)
 	    emit_note_after (NOTE_INSN_DELETED, loop_end);
@@ -3315,7 +3320,7 @@ final_giv_value (v, loop_start, loop_end)
 
 	  /* Put the final biv value in tem.  */
 	  tem = gen_reg_rtx (bl->biv->mode);
-	  record_base_value (REGNO (tem), bl->biv->add_val);
+	  record_base_value (REGNO (tem), bl->biv->add_val, 0);
 	  emit_iv_add_mult (increment, GEN_INT (loop_n_iterations),
 			    bl->initial_value, tem, insert_before);
 

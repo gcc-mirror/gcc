@@ -5986,7 +5986,7 @@ emit_iv_add_mult (b, m, a, reg, insert_before)
 
   emit_insn_before (seq, insert_before);
 
-  record_base_value (REGNO (reg), b);
+  record_base_value (REGNO (reg), b, 0);
 }
 
 /* Test whether A * B can be computed without

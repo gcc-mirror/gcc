@@ -68,6 +68,16 @@ unsigned int reg_base_value_size;	/* size of reg_base_value array */
 #define REG_BASE_VALUE(X) \
 	(REGNO (X) < reg_base_value_size ? reg_base_value[REGNO (X)] : 0)
 
+/* Vector of known invariant relationships between registers.  Set in
+   loop unrolling.  Indexed by register number, if nonzero the value
+   is an expression describing this register in terms of another.
+
+   The length of this array is REG_BASE_VALUE_SIZE.
+
+   Because this array contains only pseudo registers it has no effect
+   after reload.  */
+static rtx *alias_invariant;
+
 /* Vector indexed by N giving the initial (unchanging) value known
    for pseudo-register N.  */
 rtx *reg_known_value;
@@ -205,6 +215,8 @@ find_base_value (src)
 	return find_base_value (XEXP (src, 0));
       return 0;
 
+    case ZERO_EXTEND:
+    case SIGN_EXTEND:	/* used for NT/Alpha pointers */
     case HIGH:
       return find_base_value (XEXP (src, 0));
 
@@ -295,16 +307,26 @@ record_set (dest, set)
 
 /* Called from loop optimization when a new pseudo-register is created.  */
 void
-record_base_value (regno, val)
+record_base_value (regno, val, invariant)
      int regno;
      rtx val;
+     int invariant;
 {
   if (regno >= reg_base_value_size)
     return;
+
+  /* If INVARIANT is true then this value also describes an invariant
+     relationship which can be used to deduce that two registers with
+     unknown values are different.  */
+  if (invariant && alias_invariant)
+    alias_invariant[regno] = val;
+
   if (GET_CODE (val) == REG)
     {
       if (REGNO (val) < reg_base_value_size)
-	reg_base_value[regno] = reg_base_value[REGNO (val)];
+	{
+	  reg_base_value[regno] = reg_base_value[REGNO (val)];
+	}
       return;
     }
   reg_base_value[regno] = find_base_value (val);
@@ -397,6 +419,10 @@ rtx_equal_for_memref_p (x, y)
     return XEXP (x, 0) == XEXP (y, 0);
   if (code == SYMBOL_REF)
     return XSTR (x, 0) == XSTR (y, 0);
+  if (code == CONST_INT)
+    return INTVAL (x) == INTVAL (y);
+  if (code == ADDRESSOF)
+    return REGNO (XEXP (x, 0)) == REGNO (XEXP (y, 0)) && XINT (x, 1) == XINT (y, 1);
 
   /* For commutative operations, the RTX match if the operand match in any
      order.  Also handle the simple binary and unary cases without a loop.  */
@@ -412,25 +438,20 @@ rtx_equal_for_memref_p (x, y)
     return rtx_equal_for_memref_p (XEXP (x, 0), XEXP (y, 0));
 
   /* Compare the elements.  If any pair of corresponding elements
-     fail to match, return 0 for the whole things.  */
+     fail to match, return 0 for the whole things.
+
+     Limit cases to types which actually appear in addresses.  */
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       switch (fmt[i])
 	{
-	case 'w':
-	  if (XWINT (x, i) != XWINT (y, i))
-	    return 0;
-	  break;
-
-	case 'n':
 	case 'i':
 	  if (XINT (x, i) != XINT (y, i))
 	    return 0;
 	  break;
 
-	case 'V':
 	case 'E':
 	  /* Two vectors must have the same length.  */
 	  if (XVECLEN (x, i) != XVECLEN (y, i))
@@ -445,19 +466,6 @@ rtx_equal_for_memref_p (x, y)
 	case 'e':
 	  if (rtx_equal_for_memref_p (XEXP (x, i), XEXP (y, i)) == 0)
 	    return 0;
-	  break;
-
-	case 'S':
-	case 's':
-	  if (strcmp (XSTR (x, i), XSTR (y, i)))
-	    return 0;
-	  break;
-
-	case 'u':
-	  /* These are just backpointers, so they don't matter.  */
-	  break;
-
-	case '0':
 	  break;
 
 	  /* It is believed that rtx's at this level will never
@@ -513,9 +521,9 @@ find_base_term (x)
     case REG:
       return REG_BASE_VALUE (x);
 
+    case ZERO_EXTEND:
+    case SIGN_EXTEND:	/* Used for Alpha/NT pointers */
     case HIGH:
-      return find_base_term (XEXP (x, 0));
-
     case PRE_INC:
     case PRE_DEC:
     case POST_INC:
@@ -746,6 +754,25 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 	  c /= INTVAL (x1);
 	  return memrefs_conflict_p (xsize, x0, ysize, y0, c);
 	}
+
+      case REG:
+	/* Are these registers known not to be equal?  */
+	if (alias_invariant)
+	  {
+	    int r_x = REGNO (x), r_y = REGNO (y);
+	    rtx i_x, i_y;	/* invariant relationships of X and Y */
+
+	    i_x = r_x >= reg_base_value_size ? 0 : alias_invariant[r_x];
+	    i_y = r_y >= reg_base_value_size ? 0 : alias_invariant[r_y];
+
+	    if (i_x == 0 && i_y == 0)
+	      break;
+
+	    if (! memrefs_conflict_p (xsize, i_x ? i_x : x,
+				      ysize, i_y ? i_y : y, c))
+	      return 0;
+	  }
+	break;
 
       default:
 	break;
@@ -1034,6 +1061,13 @@ init_alias_analysis ()
   new_reg_base_value = (rtx *)alloca (reg_base_value_size * sizeof (rtx));
   reg_seen = (char *)alloca (reg_base_value_size);
   bzero ((char *) reg_base_value, reg_base_value_size * sizeof (rtx));
+  if (! reload_completed && flag_unroll_loops)
+    {
+      alias_invariant = (rtx *)xrealloc (alias_invariant,
+					 reg_base_value_size * sizeof (rtx));
+      bzero ((char *)alias_invariant, reg_base_value_size * sizeof (rtx));
+    }
+    
 
   /* The basic idea is that each pass through this loop will use the
      "constant" information from the previous pass to propagate alias
@@ -1203,4 +1237,9 @@ end_alias_analysis ()
   reg_known_value = 0;
   reg_base_value = 0;
   reg_base_value_size = 0;
+  if (alias_invariant)
+    {
+      free ((char *)alias_invariant);
+      alias_invariant = 0;
+    }
 }
