@@ -1,3 +1,7 @@
+2002-02-09  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c-torture/execute/20030209-1.c: New test.
+
 2003-02-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/execute/builtin-bitops-1.c: When testing the
