@@ -1,3 +1,10 @@
+2003-06-27  Krister Walfridsson  <cato@df.lth.se>
+
+	* config/os/bsd/netbsd/ctype_noninline.h
+	(_C_ctype_): Declare.
+	(ctype<char>::classic_table): Return _C_ctype_ + 1.
+	(ctype<char>::ctype): Use classic_table.
+
 2003-06-27  Paolo Carlini  <pcarlini@unitus.it>
 	    Nathan C. Myers  <ncm-nospam@cantrip.org>
 
