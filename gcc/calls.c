@@ -753,7 +753,12 @@ restore_fixed_argument_area (save_area, argblock, high_to_save, low_to_save)
 /* If any elements in ARGS refer to parameters that are to be passed in
    registers, but not in memory, and whose alignment does not permit a
    direct copy into registers.  Copy the values into a group of pseudos
-   which we will later copy into the appropriate hard registers.  */
+   which we will later copy into the appropriate hard registers. 
+
+   Pseudos for each unaligned argument will be stored into the array
+   args[argnum].aligned_regs.  The caller is responsible for deallocating
+   the aligned_regs array if it is nonzero.  */
+
 static void
 store_unaligned_arguments_into_pseudos (args, num_actuals)
      struct arg_data *args;
@@ -774,8 +779,8 @@ store_unaligned_arguments_into_pseudos (args, num_actuals)
 	  = args[i].partial ? args[i].partial
 	    : (bytes + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
 
-	args[i].aligned_regs = (rtx *) alloca (sizeof (rtx)
-					       * args[i].n_aligned_regs);
+	args[i].aligned_regs = (rtx *) xmalloc (sizeof (rtx)
+						* args[i].n_aligned_regs);
 
 	/* Structures smaller than a word are aligned to the least
 	   significant byte (to the right).  On a BYTES_BIG_ENDIAN machine,
@@ -2297,6 +2302,11 @@ expand_call (exp, target, ignore)
     emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, NULL_RTX);
 
   pop_temp_slots ();
+
+  /* Free up storage we no longer need.  */
+  for (i = 0; i < num_actuals; ++i)
+    if (args[i].aligned_regs)
+      free (args[i].aligned_regs);
 
   return target;
 }
