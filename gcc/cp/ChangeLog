@@ -1,3 +1,9 @@
+1998-11-13  Mark Mitchell  <mark@markmitchell.com>
+
+	* except.c (expand_throw): Make sure first argument to
+	__cp_push_exception is of type `void*' to avoid spurious error
+	messages.
+
 1998-11-11  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (try_one_overload): Take orig_targs again.  Only check for
