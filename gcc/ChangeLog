@@ -13,6 +13,9 @@ Thu Sep  2 00:43:59 1999  Finn Hakansson  <finn@axis.com>
 
 Thu Sep  2 00:06:43 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* fold-const.c (fold_range_test): Do not try to fold the range
+	test if the rhs or lhs has side effects.
+
 	* combine.c (simplify_rtx): Recognize another case of a synthesized
 	sign extension.
 
