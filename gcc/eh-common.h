@@ -92,7 +92,6 @@ typedef void * (*__eh_matcher)          PROTO ((void *, void *, void *));
 typedef struct __eh_info 
 {
   __eh_matcher match_function;
-  void *coerced_value;
   short language;
   short version;
 } __eh_info;

@@ -1025,7 +1025,7 @@ get_dynamic_handler_chain ()
 
   /* This is the offset of dynamic_handler_chain in the eh_context struct
      declared in eh-common.h. If its location is change, change this offset */
-  dhc = plus_constant (ehc, GET_MODE_SIZE (Pmode));
+  dhc = plus_constant (ehc, POINTER_SIZE / BITS_PER_UNIT);
 
   result = copy_to_reg (dhc);
 
@@ -1045,7 +1045,7 @@ get_dynamic_cleanup_chain ()
   rtx dhc, dcc, result;
 
   dhc = get_dynamic_handler_chain ();
-  dcc = plus_constant (dhc, GET_MODE_SIZE (Pmode));
+  dcc = plus_constant (dhc, POINTER_SIZE / BITS_PER_UNIT);
 
   result = copy_to_reg (dcc);
 
@@ -1618,6 +1618,10 @@ expand_start_all_catch ()
       expand_eh_region_start ();
       ehstack.top->entry->outer_context = outer_context;
     }
+
+  /* We also have to start the handler if we aren't using the new model. */
+  if (! flag_new_exceptions)
+    start_catch_handler (NULL);
 }
 
 /* Finish up the catch block.  At this point all the insns for the

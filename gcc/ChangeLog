@@ -1,3 +1,12 @@
+Tue Jun 23 10:06:07 EDT 1998  Andrew MacLeod  (amacleod@cygnus.com)
+
+	* eh-common.h (struct __eh_info): Remove coerced value field.
+	* libgcc2.c (find_exception_handler): Don't set coerced_value field.
+	* except.c (get_dynamic_handler_chain, get_dynamic_cleanup_chain): Use 
+	POINTER_SIZE instead of Pmode.
+	(expand_start_all_catch): Call start_catch_handler() if we are not
+	using new style exceptions.
+
 Tue Jun 23 06:45:00 1998  Catherine Moore  <clm@cygnus.com>
 
         * varasm.c (assemble_variable): Remove reference to warn_bss_align.

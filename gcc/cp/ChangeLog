@@ -1,3 +1,23 @@
+1998-06-23  Andrew MacLeod  (amacleod@cygnus.com)
+
+	* parse.y (function_try_block): Don't call start_catch_handler.
+	* except.c (call_eh_info): Remove coerced field from declaration.
+	(build_eh_type_type_ref): New function to create an address of a
+	rtti function for the new style exception tables.
+	(expand_start_catch_block): Split function, this contains the
+	common part.
+	(process_start_catch_block_old): New function to perform the rest
+	of expand_start_catch_block under old style exceptions.
+	(process_start_catch_block_old): New function to perform the rest
+	of expand_start_catch_block under new style exceptions.
+	(expand_end_catch_block): Only pop the false label off the stack under
+	the old style of exceptions.
+	* semantics.c (finish_try_block): Don't call start_catch_handler.
+	* exception.cc (struct cp_eh_info): Add original_value field.
+	(__cplus_type_matcher): Perform type matching on the original exception
+	value, and if we have a match, set the current value.
+	(__cp_push_exception): Set the original expcetion value.
+
 1998-06-23  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (joust): Fix confusing conversion warning.
