@@ -1,3 +1,9 @@
+2003-01-24  Ranjit Mathew  <rmathew@hotmail.com>
+
+	Fixes PR java/9253:
+	* java/io/natFileWin32.cc (performList): Append only "*.*"
+	if the canonical file path already has a "\" at the end.
+
 2003-01-24  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/ClassLoader.java (findLoadedClass): Removed erroneous
