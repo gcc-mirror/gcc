@@ -1,0 +1,24 @@
+// Build don't link:
+#include<iostream.h>
+
+struct A {
+  A() {
+    cerr<<"A constructing\n";
+    throw 1;
+  }
+  void *operator new(unsigned sz) {
+    cerr<<"A allocated\n";
+    return ::operator new(sz);
+  }
+  void operator delete (void *p) {
+    cerr<<"A deleted\n";
+    ::operator delete (p);
+  }
+};
+
+int main() {
+  try {
+     new A();
+  } catch (...) {
+  }
+}
