@@ -1,4 +1,10 @@
-2003-04-19  Nathan Sidwell  <nathan@codesourcery.com>
+2003-04-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9881
+	* g++.dg/init/addr-const1.C: New test.
+	* g++.dg/other/packed1.C: XFAIL on aligned architectures.
+
+2003-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/10405
 	* g++.dg/lookup/struct-hack1.C: New test.
