@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -39,8 +39,6 @@ public class ZipEntry implements ZipConstants
 
   public ZipEntry (String name)
   {
-    if (name == null)
-      throw new NullPointerException ();
     if (name.length() > 65535)
       throw new IllegalArgumentException ();
     this.name = name;

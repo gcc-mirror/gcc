@@ -1,6 +1,6 @@
 // DatagramPacket.java - Represents packets in a connectionless protocol.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -32,8 +32,6 @@ public final class DatagramPacket
   // JDK1.2
   public DatagramPacket(byte[] buf, int offset, int length)
   {
-    // FIXME: We can't currently rely on NullPointerException being
-    // thrown when we invoke a method on a null object.
     if (buf == null)
       throw new NullPointerException("Null buffer");
     if (offset < 0)
@@ -60,8 +58,6 @@ public final class DatagramPacket
   public DatagramPacket(byte[] buf, int offset, int length,
 	InetAddress address, int port)
   {
-    // FIXME: We can't currently rely on NullPointerException being
-    // thrown when we invoke a method on a null object.
     if (buf == null)
       throw new NullPointerException("Null buffer");
     if (offset < 0)
@@ -145,8 +141,6 @@ public final class DatagramPacket
   {
     // This form of setData must be used if offset is to be changed.
 
-    // FIXME: We can't currently rely on NullPointerException being
-    // thrown when we invoke a method on a null object.
     if (buf == null)
       throw new NullPointerException("Null buffer");
     if (offset < 0)

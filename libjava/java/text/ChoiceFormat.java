@@ -1,6 +1,6 @@
 // ChoiceFormat.java - Formatter for `switch'-like string substitution.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -257,8 +257,6 @@ public class ChoiceFormat extends NumberFormat
 
   public void setChoices (double[] limits, String[] strings)
     {
-      if (limits == null || strings == null)
-	throw new NullPointerException ();
       if (limits.length != strings.length)
 	throw new IllegalArgumentException ();
       this.strings = (String[]) strings.clone();

@@ -1,6 +1,6 @@
 // BitSet - A vector of bits.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -24,8 +24,6 @@ public final class BitSet implements Cloneable, Serializable
 {
   public void and (BitSet bs)
     {
-      if (bs == null)
-	throw new NullPointerException ();
       int max = Math.min(bits.length, bs.bits.length);
       int i;
       for (i = 0; i < max; ++i)
@@ -110,8 +108,6 @@ public final class BitSet implements Cloneable, Serializable
 
   public void or (BitSet bs)
     {
-      if (bs == null)
-	throw new NullPointerException ();
       ensure (bs.bits.length - 1);
       int i;
       for (i = 0; i < bs.bits.length; ++i)
@@ -159,8 +155,6 @@ public final class BitSet implements Cloneable, Serializable
 
   public void xor (BitSet bs)
     {
-      if (bs == null)
-	throw new NullPointerException ();
       ensure (bs.bits.length - 1);
       int i;
       for (i = 0; i < bs.bits.length; ++i)

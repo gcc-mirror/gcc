@@ -1,6 +1,6 @@
 // MulticastSocket.java
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -84,10 +84,6 @@ public class MulticastSocket extends DatagramSocket
 
   public void joinGroup(InetAddress mcastaddr) throws IOException
   {
-    // FIXME: We can't currently rely on NullPointerException being
-    // thrown when we invoke a method on a null object.
-    if (mcastaddr == null)
-      throw new NullPointerException("Null address");
     if (! mcastaddr.isMulticastAddress())
       throw new IOException("Not a Multicast address");
 
@@ -100,10 +96,6 @@ public class MulticastSocket extends DatagramSocket
 
   public void leaveGroup(InetAddress mcastaddr) throws IOException
   {
-    // FIXME: We can't currently rely on NullPointerException being
-    // thrown when we invoke a method on a null object.
-    if (mcastaddr == null)
-      throw new NullPointerException("Null address");
     if (! mcastaddr.isMulticastAddress())
       throw new IOException("Not a Multicast address");
 
