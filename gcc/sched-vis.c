@@ -87,7 +87,8 @@ int n_visual_lines;
 static unsigned visual_tbl_line_length;
 char *visual_tbl;
 int n_vis_no_unit;
-rtx vis_no_unit[10];
+#define MAX_VISUAL_NO_UNIT 20
+rtx vis_no_unit[MAX_VISUAL_NO_UNIT];
 
 /* Finds units that are in use in this fuction.  Required only
    for visualization.  */
@@ -844,8 +845,11 @@ void
 visualize_no_unit (insn)
      rtx insn;
 {
-  vis_no_unit[n_vis_no_unit] = insn;
-  n_vis_no_unit++;
+  if (n_vis_no_unit < MAX_VISUAL_NO_UNIT)
+    {
+      vis_no_unit[n_vis_no_unit] = insn;
+      n_vis_no_unit++;
+    }
 }
 
 /* Print insns scheduled in clock, for visualization.  */
