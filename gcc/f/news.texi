@@ -157,7 +157,7 @@ The following information was last updated on @value{last-update-news}:
 @item
 Using options @code{-g}, @code{-ggdb} or @code{-gdwarf[-2]} (where
 appropriate for your target) now also enables debugging information
-for COMMON BLOCK items to be emitted.
+for COMMON BLOCK and EQUIVALENCE items to be emitted.
 @end ifclear
 
 @ifclear USERVISONLY

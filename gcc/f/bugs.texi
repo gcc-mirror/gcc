@@ -178,11 +178,10 @@ for information on how to change the point at which
 @cindex local equivalence areas
 @item
 Previous versions of @code{g77} didn't emit information on
-variable and array members of common blocks for use
-with a debugger (the @samp{-g} command-line option).
+variable and array members of common blocks and equivalences
+for use with a debugger (the @samp{-g} command-line option).
 As of the version of @code{g77} shipped with version 3.0 of
-@code{GCC}, this is corrected.  However, there's a similar bug for
-local equivalence areas, which hasn't been repaired yet.
+@code{GCC}, this is corrected.
 
 As of Version 0.5.19, a temporary kludge solution is provided whereby
 some rudimentary information on a member is written as a string that
