@@ -8195,7 +8195,12 @@ do_resolve_class (enclosing, class_type, decl, cl)
   if (!QUALIFIED_P (TYPE_NAME (class_type)))
     {
       tree package;
-      for (package = package_list; package; package = TREE_CHAIN (package))
+
+      /* If there is a current package (ctxp->package), it's the first
+	 element of package_list and we can skip it. */
+      for (package = (ctxp->package ? 
+		      TREE_CHAIN (package_list) : package_list);
+	   package; package = TREE_CHAIN (package))
 	if ((new_class_decl = qualify_and_find (class_type,
 					       TREE_PURPOSE (package), 
 					       TYPE_NAME (class_type))))
@@ -8207,9 +8212,6 @@ do_resolve_class (enclosing, class_type, decl, cl)
   if (check_pkg_class_access (TYPE_NAME (class_type), 
 			      (cl ? cl : lookup_cl (decl))))
     return NULL_TREE;
-
-  if ((new_class_decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type))))
-    return new_class_decl;
 
   /* 6- Last call for a resolution */
   return IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type));
@@ -14738,7 +14740,7 @@ valid_ref_assignconv_cast_p (source, dest, cast)
       if (TYPE_CLASS_P (dest))
 	return  (source == dest 
 		 || inherits_from_p (source, dest)
-		 || enclosing_context_p (dest, source /*source, dest*/)
+		 || enclosing_context_p (source, dest)
 		 || (cast && inherits_from_p (dest, source)));
       if (TYPE_INTERFACE_P (dest))
 	{
