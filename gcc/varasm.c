@@ -1217,7 +1217,7 @@ assemble_real (d, mode)
       abort ();
     }
 
-  set_float_handler (0);
+  set_float_handler (NULL_PTR);
 }
 
 /* Here we combine duplicate floating constants to make
@@ -1238,7 +1238,7 @@ static rtx const_double_chain;
 
 rtx
 immed_double_const (i0, i1, mode)
-     int i0, i1;
+     HOST_WIDE_INT i0, i1;
      enum machine_mode mode;
 {
   register rtx r;
@@ -1250,22 +1250,24 @@ immed_double_const (i0, i1, mode)
 	 sign bit are all one.  So we get either a reasonable negative value
 	 or a reasonable unsigned value for this mode.  */
       int width = GET_MODE_BITSIZE (mode);
-      if (width < HOST_BITS_PER_INT
-	  && ((i0 & ((-1) << (width - 1))) != ((-1) << (width - 1))))
-	i0 &= (1 << width) - 1, i1 = 0;
-      else if (width == HOST_BITS_PER_INT
+      if (width < HOST_BITS_PER_WIDE_INT
+	  && ((i0 & ((HOST_WIDE_INT) (-1) << (width - 1)))
+	      != ((HOST_WIDE_INT) (-1) << (width - 1))))
+	i0 &= ((HOST_WIDE_INT) 1 << width) - 1, i1 = 0;
+      else if (width == HOST_BITS_PER_WIDE_INT
 	       && ! (i1 == ~0 && i0 < 0))
 	i1 = 0;
-      else if (width > 2 * HOST_BITS_PER_INT)
+      else if (width > 2 * HOST_BITS_PER_WIDE_INT)
 	/* We cannot represent this value as a constant.  */
 	abort ();
 
-      /* If MODE fits within HOST_BITS_PER_INT, always use a CONST_INT.
+      /* If MODE fits within HOST_BITS_PER_WIDE_INT, always use a CONST_INT.
 
 	 ??? Strictly speaking, this is wrong if we create a CONST_INT
 	 for a large unsigned constant with the size of MODE being
-	 HOST_BITS_PER_INT and later try to interpret that constant in a wider
-	 mode.  In that case we will mis-interpret it as a negative number.
+	 HOST_BITS_PER_WIDE_INT and later try to interpret that constant in a
+	 wider mode.  In that case we will mis-interpret it as a negative
+	 number.
 
 	 Unfortunately, the only alternative is to make a CONST_DOUBLE
 	 for any constant in any mode if it is an unsigned constant larger
@@ -1276,13 +1278,13 @@ immed_double_const (i0, i1, mode)
 	 We have always been making CONST_INTs in this case, so nothing new
 	 is being broken.  */
 
-      if (width <= HOST_BITS_PER_INT)
+      if (width <= HOST_BITS_PER_WIDE_INT)
 	i1 = (i0 < 0) ? ~0 : 0;
 
       /* If this integer fits in one word, return a CONST_INT.  */
       if ((i1 == 0 && i0 >= 0)
 	  || (i1 == ~0 && i0 < 0))
-	return gen_rtx (CONST_INT, VOIDmode, i0);
+	return GEN_INT (i0);
 
       /* We use VOIDmode for integers.  */
       mode = VOIDmode;
@@ -1345,7 +1347,7 @@ immed_real_const_1 (d, mode)
   else if (REAL_VALUES_EQUAL (dconst1, d))
     return CONST1_RTX (mode);
 
-  if (sizeof u == 2 * sizeof (int))
+  if (sizeof u == 2 * sizeof (HOST_WIDE_INT))
     return immed_double_const (u.i[0], u.i[1], mode);
 
   /* The rest of this function handles the case where
@@ -2579,7 +2581,7 @@ output_constant (exp, size)
 	     || TREE_CODE (exp) == NON_LVALUE_EXPR)
 	exp = TREE_OPERAND (exp, 0);
 
-      if (! assemble_integer (expand_expr (exp, 0, VOIDmode,
+      if (! assemble_integer (expand_expr (exp, NULL_RTX, VOIDmode,
 					   EXPAND_INITIALIZER),
 			      size, 0))
 	error ("initializer for integer value is too complicated");
@@ -2654,7 +2656,7 @@ output_constructor (exp, size)
   int byte_buffer_in_use = 0;
   register int byte;
 
-  if (HOST_BITS_PER_INT < BITS_PER_UNIT)
+  if (HOST_BITS_PER_WIDE_INT < BITS_PER_UNIT)
     abort ();
 
   if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
@@ -2809,26 +2811,27 @@ output_constructor (exp, size)
 	      shift = end_offset - next_offset - this_time;
 	      /* Don't try to take a bunch of bits that cross
 		 the word boundary in the INTEGER_CST.  */
-	      if (shift < HOST_BITS_PER_INT
-		  && shift + this_time > HOST_BITS_PER_INT)
+	      if (shift < HOST_BITS_PER_WIDE_INT
+		  && shift + this_time > HOST_BITS_PER_WIDE_INT)
 		{
-		  this_time -= (HOST_BITS_PER_INT - shift);
-		  shift = HOST_BITS_PER_INT;
+		  this_time -= (HOST_BITS_PER_WIDE_INT - shift);
+		  shift = HOST_BITS_PER_WIDE_INT;
 		}
 
 	      /* Now get the bits from the appropriate constant word.  */
-	      if (shift < HOST_BITS_PER_INT)
+	      if (shift < HOST_BITS_PER_WIDE_INT)
 		{
 		  value = TREE_INT_CST_LOW (val);
 		}
-	      else if (shift < 2 * HOST_BITS_PER_INT)
+	      else if (shift < 2 * HOST_BITS_PER_WIDE_INT)
 		{
 		  value = TREE_INT_CST_HIGH (val);
-		  shift -= HOST_BITS_PER_INT;
+		  shift -= HOST_BITS_PER_WIDE_INT;
 		}
 	      else
 		abort ();
-	      byte |= (((value >> shift) & ((1 << this_time) - 1))
+	      byte |= (((value >> shift)
+			& (((HOST_WIDE_INT) 1 << this_time) - 1))
 		       << (BITS_PER_UNIT - this_time - next_bit));
 #else
 	      /* On little-endian machines,
@@ -2839,24 +2842,25 @@ output_constructor (exp, size)
 		       - TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)));
 	      /* Don't try to take a bunch of bits that cross
 		 the word boundary in the INTEGER_CST.  */
-	      if (shift < HOST_BITS_PER_INT
-		  && shift + this_time > HOST_BITS_PER_INT)
+	      if (shift < HOST_BITS_PER_WIDE_INT
+		  && shift + this_time > HOST_BITS_PER_WIDE_INT)
 		{
-		  this_time -= (HOST_BITS_PER_INT - shift);
-		  shift = HOST_BITS_PER_INT;
+		  this_time -= (HOST_BITS_PER_WIDE_INT - shift);
+		  shift = HOST_BITS_PER_WIDE_INT;
 		}
 
 	      /* Now get the bits from the appropriate constant word.  */
 	      if (shift < HOST_BITS_PER_INT)
 		value = TREE_INT_CST_LOW (val);
-	      else if (shift < 2 * HOST_BITS_PER_INT)
+	      else if (shift < 2 * HOST_BITS_PER_WIDE_INT)
 		{
 		  value = TREE_INT_CST_HIGH (val);
-		  shift -= HOST_BITS_PER_INT;
+		  shift -= HOST_BITS_PER_WIDE_INT;
 		}
 	      else
 		abort ();
-	      byte |= ((value >> shift) & ((1 << this_time) - 1)) << next_bit;
+	      byte |= ((value >> shift)
+		       & (((HOST_WIDE_INT) 1 << this_time) - 1)) << next_bit;
 #endif
 	      next_offset += this_time;
 	      byte_buffer_in_use = 1;

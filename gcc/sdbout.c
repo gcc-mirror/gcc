@@ -1129,8 +1129,8 @@ sdbout_parms (parms)
 	/* Perform any necessary register eliminations on the parameter's rtl,
 	   so that the debugging output will be accurate.  */
 	DECL_INCOMING_RTL (parms) =
-	  eliminate_regs (DECL_INCOMING_RTL (parms), 0, 0);
-	DECL_RTL (parms) = eliminate_regs (DECL_RTL (parms), 0, 0);
+	  eliminate_regs (DECL_INCOMING_RTL (parms), 0, NULL_RTX);
+	DECL_RTL (parms) = eliminate_regs (DECL_RTL (parms), 0, NULL_RTX);
 
 	if (PARM_PASSED_IN_MEMORY (parms))
 	  {
