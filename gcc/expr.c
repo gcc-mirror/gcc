@@ -6013,6 +6013,7 @@ expand_expr (exp, target, tmode, modifier)
 	    TREE_TYPE (cond) = integer_type_node;
 	    RTL_EXPR_RTL (cond) = flag;
 	    RTL_EXPR_SEQUENCE (cond) = NULL_RTX;
+	    cond = save_expr (cond);
 
 	    if (! left_cleanups)
 	      left_cleanups = integer_zero_node;
@@ -8950,6 +8951,7 @@ do_jump (exp, if_false_label, if_true_label)
 	    TREE_TYPE (cond) = integer_type_node;
 	    RTL_EXPR_RTL (cond) = flag;
 	    RTL_EXPR_SEQUENCE (cond) = NULL_RTX;
+	    cond = save_expr (cond);
 
 	    new_cleanups = build (COND_EXPR, void_type_node,
 				  truthvalue_conversion (cond),
@@ -9007,6 +9009,7 @@ do_jump (exp, if_false_label, if_true_label)
 	    TREE_TYPE (cond) = integer_type_node;
 	    RTL_EXPR_RTL (cond) = flag;
 	    RTL_EXPR_SEQUENCE (cond) = NULL_RTX;
+	    cond = save_expr (cond);
 
 	    new_cleanups = build (COND_EXPR, void_type_node,
 				  truthvalue_conversion (cond),
