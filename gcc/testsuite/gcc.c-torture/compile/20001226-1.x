@@ -1,5 +1,5 @@
-# This does not work on m68hc11 due to the asm which forces a
-# float or a double to go in a register.
+# This does not assemble on m68hc11 because the function is larger
+# than 64K.
 
 global target_triplet
 if { [istarget "m6811-*-*"] || [istarget "m6812-*-*"] } {
