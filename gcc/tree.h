@@ -142,6 +142,7 @@ struct tree_common
   unsigned public_flag : 1;
   unsigned private_flag : 1;
   unsigned protected_flag : 1;
+  unsigned bounded_flag : 1;
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
@@ -150,8 +151,6 @@ struct tree_common
   unsigned lang_flag_4 : 1;
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
-
-  /* There is room for three more flags.  */
 };
 
 /* The following table lists the uses of each of the above flags and
@@ -258,7 +257,14 @@ struct tree_common
        TREE_NOTHROW in
            CALL_EXPR, FUNCTION_DECL
 
-							  */
+   bounded_flag:
+
+       TREE_BOUNDED in
+	   expressions, VAR_DECL, PARM_DECL, FIELD_DECL, FUNCTION_DECL
+       TYPE_BOUNDED in
+	   ..._TYPE
+*/
+
 /* Define accessors for the fields that all tree nodes have
    (though some fields are not used for all kinds of nodes).  */
 
@@ -394,10 +400,54 @@ extern void tree_class_check_failed PARAMS ((const tree, char,
    || TREE_CODE (TYPE) == UNION_TYPE || TREE_CODE (TYPE) == QUAL_UNION_TYPE \
    || TREE_CODE (TYPE) == SET_TYPE)
 
-/* Nonzero if TYPE represents a pointer type.  */
+/* Nonzero if TYPE represents an unbounded pointer or unbounded
+   reference type.  (It should be renamed to INDIRECT_TYPE_P.)  */
 
 #define POINTER_TYPE_P(TYPE) \
   (TREE_CODE (TYPE) == POINTER_TYPE || TREE_CODE (TYPE) == REFERENCE_TYPE)
+
+/* Nonzero if TYPE represents a bounded pointer or bounded reference type.  */
+
+#define BOUNDED_INDIRECT_TYPE_P(TYPE) \
+  (TREE_CODE (TYPE) == RECORD_TYPE && TREE_TYPE (TYPE))
+
+/* Nonzero if TYPE represents a bounded pointer type.  */
+
+#define BOUNDED_POINTER_TYPE_P(TYPE) \
+  (BOUNDED_INDIRECT_TYPE_P (TYPE) \
+   && TREE_CODE (TYPE_BOUNDED_SUBTYPE (TYPE)) == POINTER_TYPE)
+
+/* Nonzero if TYPE represents a bounded reference type.  Bounded
+   reference types have two specific uses: (1) When a reference is
+   seated to a variable-length RECORD_TYPE that has an array of
+   indeterminate length as its final field.  For all other objects, it
+   is sufficient to check bounds at the time the reference is seated,
+   and assume that all future uses of the reference are safe, since
+   the address of references cannot change.  (2) When a reference
+   supertype is seated to an subtype object.  The bounds "remember"
+   the true size of the complete object, so that subsequent upcasts of
+   the address of the reference will be checked properly (is such a
+   thing valid C++?).  */
+
+#define BOUNDED_REFERENCE_TYPE_P(TYPE) \
+  (BOUNDED_INDIRECT_TYPE_P (TYPE) \
+   && TREE_CODE (TYPE_BOUNDED_SUBTYPE (TYPE)) == REFERENCE_TYPE)
+
+/* Nonzero if TYPE represents a pointer or reference type, either
+   bounded or unbounded.  */
+
+#define MAYBE_BOUNDED_INDIRECT_TYPE_P(TYPE) \
+  (POINTER_TYPE_P (TYPE) || BOUNDED_INDIRECT_TYPE_P (TYPE))
+
+/* Nonzero if TYPE represents a pointer type, either bounded or unbounded.  */
+
+#define MAYBE_BOUNDED_POINTER_TYPE_P(TYPE) \
+  (TREE_CODE (TYPE) == POINTER_TYPE || BOUNDED_POINTER_TYPE_P (TYPE))
+
+/* Nonzero if TYPE represents a reference type, either bounded or unbounded.  */
+
+#define MAYBE_BOUNDED_REFERENCE_TYPE_P(TYPE) \
+  (TREE_CODE (TYPE) == REFERENCE_TYPE || BOUNDED_REFERENCE_TYPE_P (TYPE))
 
 /* Nonzero if this type is a complete type.  */
 #define COMPLETE_TYPE_P(NODE) (TYPE_SIZE (NODE) != NULL_TREE)
@@ -550,6 +600,40 @@ extern void tree_class_check_failed PARAMS ((const tree, char,
 /* Used in classes in C++.
    In a BLOCK node, this is BLOCK_HANDLER_BLOCK.  */
 #define TREE_PROTECTED(NODE) ((NODE)->common.protected_flag)
+
+/* In a ..._TYPE node, nonzero means that the type's size and layout,
+   (or the size and layout of its arguments and/or return value in the
+   case of a FUNCTION_TYPE or METHOD_TYPE) was changed by the presence
+   of pointer bounds.  Use TYPE_BOUNDED instead of this macro when the
+   node is a type, because eventually we may make that a different
+   bit.  TYPE_BOUNDED doesn't mean that this type is a bounded indirect
+   type--use BOUNDED_POINTER_TYPE_P, BOUNDED_REFERENCE_TYPE_P,
+   BOUNDED_INDIRECT_TYPE_P to test for that.
+
+   In a FUNCTION_DECL, nonzero means that the size and layout of one
+   of its arguments and/or return value was changed by the presence of
+   pointer bounds.  This value can differ from the value of
+   TYPE_BOUNDED (TREE_TYPE (fundecl)) if the function was implicitly
+   declared, then later called with pointer args, or was declared with
+   a variable argument list and is later called with pointer values in
+   the variable argument list.
+
+   In a VAR_DECL, PARM_DECL or FIELD_DECL, TREE_BOUNDED matches the value
+   of the decl's type's BOUNDED_POINTER_TYPE_P.
+
+   In a CONSTRUCTOR or other expression, nonzero means the value is a
+   bounded pointer.  It is insufficient to determine the boundedness
+   of an expression EXP with BOUNDED_POINTER_TYPE_P (TREE_TYPE (EXP)),
+   since we allow pointer to be temporarily cast to integer for
+   rounding up to an alignment boudary in a way that preserves the
+   pointer's bounds.
+
+   In an IDENTIFIER_NODE, nonzero means that the name is prefixed with
+   BP_PREFIX (see varasm.c).  This occurs for the DECL_ASSEMBLER_NAME
+   of a function that has bounded pointer(s) for its return type and/or
+   argument type(s).  */
+
+#define TREE_BOUNDED(NODE) ((NODE)->common.bounded_flag)
 
 /* These flags are available for each language front end to use internally.  */
 #define TREE_LANG_FLAG_0(NODE) ((NODE)->common.lang_flag_0)
@@ -795,6 +879,26 @@ struct tree_block
 #define TYPE_OBSTACK(NODE) (TYPE_CHECK (NODE)->type.obstack)
 #define TYPE_LANG_SPECIFIC(NODE) (TYPE_CHECK (NODE)->type.lang_specific)
 
+/* Indirect types present difficulties because they may be represented
+   as either POINTER_TYPE/REFERENCE_TYPE nodes (unbounded) or as
+   RECORD_TYPE nodes (bounded).  Bounded and unbounded pointers might
+   be logically equivalent, but physically different.  Simple
+   comparison of the main variant only tells if the types are
+   logically equivalent.  Use this predicate to compare for physical
+   equivalency.  */
+
+/* Types have the same main variant, and have the same boundedness.  */
+#define TYPE_MAIN_VARIANTS_PHYSICALLY_EQUAL_P(TYPE1, TYPE2)	\
+  (TYPE_MAIN_VARIANT (TYPE1) == TYPE_MAIN_VARIANT (TYPE2)	\
+   && TREE_CODE (TYPE1) == TREE_CODE (TYPE2))
+
+/* Return the type variant that has no qualifiers (i.e., the main variant),
+   except that the boundedness qualifier is preserved.  */
+#define TYPE_MAIN_PHYSICAL_VARIANT(TYPE)		\
+  (BOUNDED_POINTER_TYPE_P (TYPE)			\
+   ? build_qualified_type (TYPE, TYPE_QUAL_BOUNDED)	\
+   : TYPE_MAIN_VARIANT (TYPE))
+
 /* For aggregate types, information about this type, as a base type
    for itself.  Used in a language-dependent way for types that are
    neither a RECORD_TYPE, QUAL_UNION_TYPE, nor a UNION_TYPE.  */
@@ -846,6 +950,11 @@ struct tree_block
    the term.  */
 #define TYPE_RESTRICT(NODE) (TYPE_CHECK (NODE)->type.restrict_flag)
 
+/* If nonzero, this type's size and layout, (or the size and layout of
+   its arguments and/or return value in the case of a FUNCTION_TYPE or
+   METHOD_TYPE) was changed by the presence of pointer bounds.  */
+#define TYPE_BOUNDED(NODE) (TYPE_CHECK (NODE)->common.bounded_flag)
+
 /* There is a TYPE_QUAL value for each type qualifier.  They can be
    combined by bitwise-or to form the complete set of qualifiers for a
    type.  */
@@ -854,12 +963,25 @@ struct tree_block
 #define TYPE_QUAL_CONST    0x1
 #define TYPE_QUAL_VOLATILE 0x2
 #define TYPE_QUAL_RESTRICT 0x4
+#define TYPE_QUAL_BOUNDED  0x8
 
 /* The set of type qualifiers for this type.  */
-#define TYPE_QUALS(NODE)			\
-  ((TYPE_READONLY(NODE) * TYPE_QUAL_CONST)	\
-   | (TYPE_VOLATILE(NODE) * TYPE_QUAL_VOLATILE)	\
-   | (TYPE_RESTRICT(NODE) * TYPE_QUAL_RESTRICT))
+#define TYPE_QUALS(NODE)					\
+  ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)			\
+   | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
+   | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)		\
+   | (BOUNDED_INDIRECT_TYPE_P (NODE) * TYPE_QUAL_BOUNDED))
+
+/* The set of qualifiers pertinent to an expression node.  */
+#define TREE_EXPR_QUALS(NODE)				\
+  ((TREE_READONLY (NODE) * TYPE_QUAL_CONST)		\
+   | (TREE_THIS_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)	\
+   | (TREE_BOUNDED (NODE) * TYPE_QUAL_BOUNDED))
+
+/* The set of qualifiers pertinent to a FUNCTION_DECL node.  */
+#define TREE_FUNC_QUALS(NODE)				\
+  ((TREE_READONLY (NODE) * TYPE_QUAL_CONST)		\
+   | (TREE_THIS_VOLATILE (NODE) * TYPE_QUAL_VOLATILE))
 
 /* These flags are available for each language front end to use internally.  */
 #define TYPE_LANG_FLAG_0(NODE) (TYPE_CHECK (NODE)->type.lang_flag_0)
@@ -891,6 +1013,65 @@ struct tree_block
    compact a way as possible.  */
 #define TYPE_PACKED(NODE) (TYPE_CHECK (NODE)->type.packed_flag)
 
+/* A bounded pointer or bounded reference type (collectively called
+   indirect types) is represented as a RECORD_TYPE node containing
+   three pointer fields whose type is the corresponding unbounded
+   POINTER_TYPE or REFERENCE_TYPE.  A RECORD_TYPE node that represents
+   a bounded indirect type differs from a normal RECORD_TYPE node in
+   that its TREE_TYPE is non-NULL and has the pointed-to type just as
+   a POINTER_TYPE or REFERENCE_TYPE node has.  The bounded RECORD_TYPE
+   nodes are stored on the same type variant chain alongside the
+   variants of the underlaying indirect types nodes.  The main variant
+   of such chains is always the unbounded type.  */
+
+/* Access the field decls of a bounded-pointer type.  */
+#define TYPE_BOUNDED_VALUE(TYPE) TYPE_FIELDS (TYPE)
+#define TYPE_BOUNDED_BASE(TYPE) TREE_CHAIN (TYPE_BOUNDED_VALUE (TYPE))
+#define TYPE_BOUNDED_EXTENT(TYPE) TREE_CHAIN (TYPE_BOUNDED_BASE (TYPE))
+
+/* Access the simple-pointer subtype of a bounded-pointer type.  */
+#define TYPE_BOUNDED_SUBTYPE(TYPE) TREE_TYPE (TYPE_BOUNDED_VALUE (TYPE))
+
+/* Find the unbounded counterpart to a type, or return TYPE if it is
+   already unbounded.  */
+#define TYPE_UNBOUNDED_VARIANT(TYPE) \
+  (BOUNDED_POINTER_TYPE_P (TYPE) ? TYPE_BOUNDED_SUBTYPE (TYPE) : (TYPE))
+
+/* This field comprises two bits, for values in the range 0..3:
+
+   depth=0 means that type is a scalar, or an aggregate that contains
+   only depth=0 types, or a function that has only depth=0 types for
+   its return value and argument types.
+
+   depth=1 means that type is a pointer to a depth=0 type, or an
+   aggregate that contains only depth=0 and depth=1 types, or a
+   function that has only depth=0 and depth=1 types for its return
+   value and argument types.
+
+   The meanings of depth=2 and depth=3 are obvious by induction.
+   Varargs functions are depth=3.  The type `va_list' is depth=3.
+
+   The purpose of measuring pointer depth of a type is to determine
+   the eligibility of a function for an automatically-generated
+   bounded-pointer thunk.  A depth=0 functions needs no thunk.  A
+   depth=1 function is eligible for an automatic thunk.  Functions
+   with depth 2 or more are too complex to get automatic thunks.
+
+   Function decls also have a pointer_depth field, since we also
+   consider the actual argument types for functions.  */
+
+#define TYPE_POINTER_DEPTH(TYPE) (TYPE_CHECK (TYPE)->type.pointer_depth)
+
+/* In a FUNCTION_TYPE node, this bit stores the value of
+   default_pointer_boundedness at the time TYPE was created.  It is
+   useful for choosing default boundedness of function arguments for
+   non-prototype function decls and for varargs/stdarg lists.  */
+
+#define TYPE_AMBIENT_BOUNDEDNESS(TYPE) (TYPE_CHECK (TYPE)->type.transparent_union_flag)
+
+#define MAX_POINTER_DEPTH 2
+#define VA_LIST_POINTER_DEPTH 3
+
 struct tree_type
 {
   char common[sizeof (struct tree_common)];
@@ -909,6 +1090,7 @@ struct tree_type
   unsigned transparent_union_flag : 1;
   unsigned packed_flag : 1;
   unsigned restrict_flag : 1;
+  unsigned pointer_depth : 2;
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
@@ -917,7 +1099,6 @@ struct tree_type
   unsigned lang_flag_4 : 1;
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
-  /* room for 3 more bits */
 
   unsigned int align;
   union tree_node *pointer_to;
@@ -1347,6 +1528,16 @@ struct tree_type
 #define DECL_POINTER_ALIAS_SET_KNOWN_P(NODE) \
   (DECL_POINTER_ALIAS_SET (NODE) != - 1)
 
+/* The pointer_depth field comprises two bits for values in the range
+   0..3.  The value is normally equal to TYPE_POINTER_DEPTH of decl's
+   type node, but for functions it migth be greater.  For example,
+   this can happen when the function is declared to accept a parameter
+   of type void* (depth=1), but is actually called with an argument of
+   type foo** (depth=2).  The function type will get the formal
+   parameter's depth, but the function decl will get the actual
+   argument's depth.  */
+#define DECL_POINTER_DEPTH(DECL) (DECL_CHECK (DECL)->decl.pointer_depth)
+
 struct tree_decl
 {
   char common[sizeof (struct tree_common)];
@@ -1382,6 +1573,7 @@ struct tree_decl
   unsigned no_limit_stack : 1;
   unsigned pure_flag : 1;
   ENUM_BITFIELD(built_in_class) built_in_class : 2;
+  unsigned pointer_depth : 2;
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
