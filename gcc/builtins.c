@@ -722,11 +722,15 @@ static rtx
 get_memory_rtx (exp)
      tree exp;
 {
-  rtx mem = gen_rtx_MEM (BLKmode,
-			 memory_address (BLKmode,
-					 expand_expr (exp, NULL_RTX,
-						      ptr_mode, EXPAND_SUM)));
+  rtx addr = expand_expr (exp, NULL_RTX, ptr_mode, EXPAND_SUM);
+  rtx mem;
 
+#ifdef POINTERS_EXTEND_UNSIGNED
+  if (GET_MODE (addr) != Pmode)
+    addr = convert_memory_address (Pmode, addr);
+#endif
+
+  mem = gen_rtx_MEM (BLKmode, memory_address (BLKmode, addr));
   set_mem_attributes (mem, exp, 0);
 
   /* Get an expression we can use to find the attributes to assign to MEM.
@@ -1048,13 +1052,17 @@ expand_builtin_apply (function, arguments, argsize)
   rtx old_stack_level = 0;
   rtx call_fusage = 0;
 
+#ifdef POINTERS_EXTEND_UNSIGNED
+  if (GET_MODE (arguments) != Pmode)
+    arguments = convert_memory_address (Pmode, arguments);
+#endif
+
   /* Create a block where the return registers can be saved.  */
   result = assign_stack_local (BLKmode, apply_result_size (), -1);
 
   /* Fetch the arg pointer from the ARGUMENTS block.  */
   incoming_args = gen_reg_rtx (Pmode);
-  emit_move_insn (incoming_args,
-		  gen_rtx_MEM (Pmode, arguments));
+  emit_move_insn (incoming_args, gen_rtx_MEM (Pmode, arguments));
 #ifndef STACK_GROWS_DOWNWARD
   incoming_args = expand_simple_binop (Pmode, MINUS, incoming_args, argsize,
 				       incoming_args, 0, OPTAB_LIB_WIDEN);
@@ -1217,6 +1225,11 @@ expand_builtin_return (result)
   enum machine_mode mode;
   rtx reg;
   rtx call_fusage = 0;
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+  if (GET_MODE (result) != Pmode)
+    result = convert_memory_address (Pmode, result);
+#endif
 
   apply_result_size ();
   result = gen_rtx_MEM (BLKmode, result);
@@ -2959,6 +2972,11 @@ expand_builtin_va_arg (valist, type)
 #endif
     }
 
+#ifdef POINTERS_EXTEND_UNSIGNED
+  if (GET_MODE (addr) != Pmode)
+    addr = convert_memory_address (Pmode, addr);
+#endif
+
   result = gen_rtx_MEM (TYPE_MODE (type), addr);
   set_mem_alias_set (result, get_varargs_alias_set ());
 
@@ -3017,6 +3035,14 @@ expand_builtin_va_copy (arglist)
       srcb = expand_expr (src, NULL_RTX, Pmode, EXPAND_NORMAL);
       size = expand_expr (TYPE_SIZE_UNIT (va_list_type_node), NULL_RTX,
 			  VOIDmode, EXPAND_NORMAL);
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+      if (GET_MODE (dstb) != Pmode)
+	dstb = convert_memory_address (Pmode, dstb);
+
+      if (GET_MODE (srcb) != Pmode)
+	srcb = convert_memory_address (Pmode, srcb);
+#endif
 
       /* "Dereference" to BLKmode memories.  */
       dstb = gen_rtx_MEM (BLKmode, dstb);

@@ -1,3 +1,9 @@
+Sun Oct 28 15:45:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* builtins.c (get_memory_rtx): Handle POINTERS_EXTEND_UNSIGNED case.
+	(expand_builtin_apply, expand_builtin_return): Likewise.
+	(expand_builtin_va_arg, expand_builtin_va_copy): Likewise.
+
 2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* ChangeLog.0, ChangeLog.1, ChangeLog.2, ChangeLog.3, ChangeLog.4,
