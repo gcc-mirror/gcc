@@ -179,6 +179,8 @@ sparc_override_options ()
   struct cpu_table *cpu;
   struct sparc_cpu_select *sel;
 
+  int fpu = TARGET_FPU; /* save current -mfpu status */
+
   /* Set the default.  */
   for (def = &cpu_default[0]; def->name; ++def)
     if (def->cpu == TARGET_CPU_DEFAULT)
@@ -209,6 +211,11 @@ sparc_override_options ()
 	    error ("bad value (%s) for %s switch", sel->string, sel->name);
 	}
     }
+
+  /* If -mfpu or -mno-fpu was explicitly used, don't override with
+     the processor default.  */
+  if (TARGET_FPU_SET)
+    target_flags = (target_flags & ~MASK_FPU) | fpu;
 
   /* Use the deprecated v8 insns for sparc64 in 32 bit mode.  */
   if (TARGET_V9 && TARGET_ARCH32)
