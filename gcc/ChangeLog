@@ -1,5 +1,9 @@
 2003-06-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* config/sparc/sparc.c (sparc_va_arg): Don't align 16-byte+ structures.
+
+2003-06-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* dbxout.c (dbxout_source_line_counter): New global variable.
 	Mark it with GTY(()).
 	(dbxout_source_line): Increment dbxout_source_line_counter
