@@ -28,19 +28,27 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "reload.h"
 #include "expr.h"
 
+#ifndef MAX_MOVE_MAX
+#define MAX_MOVE_MAX MOVE_MAX
+#endif
+
+#ifndef MAX_UNITS_PER_WORD
+#define MAX_UNITS_PER_WORD UNITS_PER_WORD
+#endif
+
 /* Modes for each hard register that we can save.  The smallest mode is wide
    enough to save the entire contents of the register.  When saving the
    register because it is live we first try to save in multi-register modes.
    If that is not possible the save is done one register at a time.  */
 
 static enum machine_mode 
-  regno_save_mode[FIRST_PSEUDO_REGISTER][MOVE_MAX / UNITS_PER_WORD + 1];
+  regno_save_mode[FIRST_PSEUDO_REGISTER][MAX_MOVE_MAX / MAX_UNITS_PER_WORD + 1];
 
 /* For each hard register, a place on the stack where it can be saved,
    if needed.  */
 
 static rtx 
-  regno_save_mem[FIRST_PSEUDO_REGISTER][MOVE_MAX / UNITS_PER_WORD + 1];
+  regno_save_mem[FIRST_PSEUDO_REGISTER][MAX_MOVE_MAX / MAX_UNITS_PER_WORD + 1];
 
 /* We will only make a register eligible for caller-save if it can be
    saved in its widest mode with a simple SET insn as long as the memory
@@ -49,9 +57,9 @@ static rtx
    be recognized.  */
 
 static enum insn_code 
-  reg_save_code[FIRST_PSEUDO_REGISTER][MOVE_MAX / UNITS_PER_WORD + 1];
+  reg_save_code[FIRST_PSEUDO_REGISTER][MAX_MOVE_MAX / MAX_UNITS_PER_WORD + 1];
 static enum insn_code 
-  reg_restore_code[FIRST_PSEUDO_REGISTER][MOVE_MAX / UNITS_PER_WORD + 1];
+  reg_restore_code[FIRST_PSEUDO_REGISTER][MAX_MOVE_MAX / MAX_UNITS_PER_WORD + 1];
 
 /* Set of hard regs currently live (during scan of all insns).  */
 
