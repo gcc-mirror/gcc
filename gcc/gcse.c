@@ -4346,10 +4346,9 @@ insert_insn_end_bb (expr, bb, pre)
 	 If we inserted before the CODE_LABEL, then we would be putting
 	 the insn in the wrong basic block.  In that case, put the insn
 	 after the CODE_LABEL.  Also, respect NOTE_INSN_BASIC_BLOCK.  */
-      if (GET_CODE (insn) == CODE_LABEL)
-	insn = NEXT_INSN (insn);
-      else if (GET_CODE (insn) == NOTE
-	       && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK)
+      while (GET_CODE (insn) == CODE_LABEL
+	     || (GET_CODE (insn) == NOTE
+		 && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK))
 	insn = NEXT_INSN (insn);
 
       new_insn = emit_block_insn_before (pat, insn, BASIC_BLOCK (bb));
