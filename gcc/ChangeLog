@@ -1,5 +1,8 @@
 Sun Apr  4 13:55:20 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* jump.c (delete_computation): Can trust REG_DEAD if same register
+	is set in insn.
+
 	* expr.c (placeholder_list): Move decl to file scope.
 	(do_jump, case WITH_RECORD_EXPR): New case.
 
