@@ -3888,10 +3888,16 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels)
 	}
 
       /* We can avoid a reload if the register's equivalent memory expression
-	 is valid as an indirect memory address. */
+	 is valid as an indirect memory address.
+	 But not all addresses are valid in a mem used as an indirect address:
+	 only reg or reg+constant.  */
 
       else if (reg_equiv_mem[regno] != 0 && ind_levels > 0
-	       && strict_memory_address_p (mode, reg_equiv_mem[regno]))
+	       && strict_memory_address_p (mode, reg_equiv_mem[regno])
+	       && (GET_CODE (XEXP (reg_equiv_mem[regno], 0)) == REG
+		   || (GET_CODE (XEXP (reg_equiv_mem[regno], 0)) == PLUS
+		       && GET_CODE (XEXP (XEXP (reg_equiv_mem[regno], 0), 0)) == REG
+		       && CONSTANT_P (XEXP (XEXP (reg_equiv_mem[regno], 0), 0)))))
 	return 0;
 
       /* The only remaining case where we can avoid a reload is if this is a
