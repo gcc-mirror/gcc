@@ -2900,7 +2900,7 @@
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (match_dup 1)))
    (clobber (match_scratch:SI 4 "=X,r"))]
-  ""
+  "0"
 "*
 {
   if (INSN_ANNULLED_BRANCH_P (insn))
