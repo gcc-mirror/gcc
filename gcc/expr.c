@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "output.h"
 #include "typeclass.h"
+#include "defaults.h"
 
 #include "bytecode.h"
 #include "bc-opcode.h"
