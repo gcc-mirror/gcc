@@ -83,6 +83,12 @@ static assume_compiled_node *find_assume_compiled_node
 
 static assume_compiled_node *assume_compiled_tree;
 
+static tree class_roots[4] = { NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE };
+#define registered_class class_roots[0]
+#define fields_ident class_roots[1]  /* get_identifier ("fields") */
+#define info_ident class_roots[2]  /* get_identifier ("info") */
+#define class_list class_roots[3]
+
 /* Return the node that most closely represents the class whose name
    is IDENT.  Start the search from NODE.  Return NULL if an
    appropriate node does not exist.  */
@@ -978,22 +984,10 @@ build_static_field_ref (fdecl)
     {
       /* Compile as:
        * *(FTYPE*)build_class_ref(FCLASS)->fields[INDEX].info.addr */
-      static tree fields_ident = NULL_TREE;
-      static tree info_ident = NULL_TREE;
       tree ref = build_class_ref (fclass);
       tree fld;
       int field_index = 0;
       ref = build1 (INDIRECT_REF, class_type_node, ref);
-      if (fields_ident == NULL_TREE)
-	{
-	  fields_ident = get_identifier ("fields");
-	  ggc_add_tree_root (&fields_ident, 1);
-	}
-      if (info_ident == NULL_TREE)
-	{
-	  info_ident = get_identifier ("info");
-	  ggc_add_tree_root (&info_ident, 1);
-	}
       ref = build (COMPONENT_REF, field_ptr_type_node, ref,
 		   lookup_field (&class_type_node, fields_ident));
 
@@ -1508,7 +1502,7 @@ is_compiled_class (class)
   if (class == current_class)
     return 2;
 
-  seen_in_zip = (TYPE_JCF (class) && TYPE_JCF (class)->seen_in_zip);
+  seen_in_zip = (TYPE_JCF (class) && JCF_SEEN_IN_ZIP (TYPE_JCF (class)));
   if (CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P (class) || seen_in_zip)
     {
       /* The class was seen in the current ZIP file and will be
@@ -1628,19 +1622,10 @@ void
 layout_class (this_class)
      tree this_class;
 {
-  static tree list = NULL_TREE;
-  static int initialized_p;
   tree super_class = CLASSTYPE_SUPER (this_class);
   tree field;
   
-  /* Register LIST with the garbage collector.  */
-  if (!initialized_p)
-    {
-      ggc_add_tree_root (&list, 1);
-      initialized_p = 1;
-    }
-
-  list = tree_cons (this_class, NULL_TREE, list);
+  class_list = tree_cons (this_class, NULL_TREE, class_list);
   if (CLASS_BEING_LAIDOUT (this_class))
     {
       char buffer [1024];
@@ -1651,7 +1636,7 @@ layout_class (this_class)
 	       IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (this_class))));
       obstack_grow (&temporary_obstack, buffer, strlen (buffer));
 
-      for (current = TREE_CHAIN (list); current; 
+      for (current = TREE_CHAIN (class_list); current; 
 	   current = TREE_CHAIN (current))
 	{
 	  tree decl = TYPE_NAME (TREE_PURPOSE (current));
@@ -1679,7 +1664,7 @@ layout_class (this_class)
 	{
 	  TYPE_SIZE (this_class) = error_mark_node;
 	  CLASS_BEING_LAIDOUT (this_class) = 0;
-	  list = TREE_CHAIN (list);
+	  class_list = TREE_CHAIN (class_list);
 	  return;
 	}
       if (TYPE_SIZE (this_class) == NULL_TREE)
@@ -1721,7 +1706,7 @@ layout_class (this_class)
 		{
 		  TYPE_SIZE (this_class) = error_mark_node;
 		  CLASS_BEING_LAIDOUT (this_class) = 0;
-		  list = TREE_CHAIN (list);
+		  class_list = TREE_CHAIN (class_list);
 		  return;
 		}
 	    }
@@ -1733,7 +1718,7 @@ layout_class (this_class)
     fold (convert (int_type_node, TYPE_SIZE_UNIT (this_class)));
 
   CLASS_BEING_LAIDOUT (this_class) = 0;
-  list = TREE_CHAIN (list);
+  class_list = TREE_CHAIN (class_list);
 }
 
 void
@@ -1845,8 +1830,6 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
   return dtable_count;
 }
 
-static tree registered_class = NULL_TREE;
-
 void
 register_class ()
 {
@@ -1911,7 +1894,9 @@ void
 init_class_processing ()
 {
   registerClass_libfunc = gen_rtx (SYMBOL_REF, Pmode, "_Jv_RegisterClass");
-  ggc_add_tree_root (&registered_class, 1);
+  ggc_add_tree_root (class_roots, sizeof (class_roots) / sizeof (tree));
+  fields_ident = get_identifier ("fields");
+  info_ident = get_identifier ("info");
   ggc_add_rtx_root (&registerClass_libfunc, 1);
   gcc_obstack_init (&temporary_obstack);
 }
