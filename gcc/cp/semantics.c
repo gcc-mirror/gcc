@@ -2392,12 +2392,30 @@ finish_id_expression (tree id_expression,
     }
 
   /* If the name resolved to a template parameter, there is no
-     need to look it up again later.  Similarly, we resolve
-     enumeration constants to their underlying values.  */
-  if (TREE_CODE (decl) == CONST_DECL)
+     need to look it up again later.  */
+  if ((TREE_CODE (decl) == CONST_DECL && DECL_TEMPLATE_PARM_P (decl))
+      || TREE_CODE (decl) == TEMPLATE_PARM_INDEX)
     {
       *idk = CP_ID_KIND_NONE;
-      if (DECL_TEMPLATE_PARM_P (decl) || !processing_template_decl)
+      if (TREE_CODE (decl) == TEMPLATE_PARM_INDEX)
+	decl = TEMPLATE_PARM_DECL (decl);
+      if (constant_expression_p 
+	  && !INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))) 
+	{
+	  if (!allow_non_constant_expression_p)
+	    error ("template parameter `%D' of type `%T' is not allowed in "
+		   "an integral constant expression because it is not of "
+		   "integral or enumeration type", decl, TREE_TYPE (decl));
+	  *non_constant_expression_p = true;
+	}
+      return DECL_INITIAL (decl);
+    }
+  /* Similarly, we resolve enumeration constants to their 
+     underlying values.  */
+  else if (TREE_CODE (decl) == CONST_DECL)
+    {
+      *idk = CP_ID_KIND_NONE;
+      if (!processing_template_decl)
 	return DECL_INITIAL (decl);
       return decl;
     }
@@ -2516,21 +2534,17 @@ finish_id_expression (tree id_expression,
 	}
 
       /* Only certain kinds of names are allowed in constant
-	 expression.  Enumerators have already been handled above.  */
+       expression.  Enumerators and template parameters 
+       have already been handled above.  */
       if (constant_expression_p)
 	{
-	  /* Non-type template parameters of integral or enumeration
-	     type are OK.  */
-	  if (TREE_CODE (decl) == TEMPLATE_PARM_INDEX
-	      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl)))
-	  ;
-	  /* Const variables or static data members of integral or
-	     enumeration types initialized with constant expressions
-	     are OK.  */
-	  else if (TREE_CODE (decl) == VAR_DECL
-		   && CP_TYPE_CONST_P (TREE_TYPE (decl))
-		   && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))
-		   && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
+	    /* Const variables or static data members of integral or
+	      enumeration types initialized with constant expressions
+	      are OK.  */
+	  if (TREE_CODE (decl) == VAR_DECL
+	      && CP_TYPE_CONST_P (TREE_TYPE (decl))
+	      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))
+	      && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
 	    ;
 	  else
 	    {
