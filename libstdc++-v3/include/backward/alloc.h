@@ -53,10 +53,6 @@ using std::__debug_alloc;
 using std::__alloc; 
 using std::__single_client_alloc; 
 using std::allocator;
-#ifdef __USE_MALLOC
-using std::malloc_alloc; 
-#else
 using std::__default_alloc_template; 
-#endif
 
 #endif 

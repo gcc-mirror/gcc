@@ -209,7 +209,7 @@ void test01()
   sz02 = str011.length();
   VERIFY( sz02 > sz01 );
     
-  // trickster allocator (__USE_MALLOC, luke) issues involved with these:
+  // trickster allocator issues involved with these:
   std::string str3 = "8-chars_8-chars_";
   const char* p3 = str3.c_str();
   std::string str4 = str3 + "7-chars";

@@ -20,7 +20,6 @@
 
 // 20.4.1.1 allocator members
 
-#undef __USE_MALLOC
 #include <memory>
 #include <cstdlib>
 #include <testsuite_hooks.h>
