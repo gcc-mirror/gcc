@@ -8515,7 +8515,8 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(clz:SI (match_operand:SI 1 "s_register_operand" "r")))]
   "TARGET_ARM && arm_arch5"
-  "clz\\t%0, %1")
+  "clz%?\\t%0, %1"
+  [(set_attr "predicable" "yes")])
 
 (define_expand "ffssi2"
   [(set (match_operand:SI 0 "s_register_operand" "")

@@ -1,3 +1,7 @@
+2003-05-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (clzsi2): The CLZ instruction is predicable.
+
 2003-05-09  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c: Formatting.
