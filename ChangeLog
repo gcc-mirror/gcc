@@ -1,3 +1,8 @@
+2003-12-08  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* configure.in (raw_libstdcxx_flags): Remove the leading space.
+	* configure: Regenerate.
+
 2003-12-01  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* MAINTAINERS: Move myself from 'Bug database only accounts' to
