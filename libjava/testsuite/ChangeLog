@@ -1,3 +1,12 @@
+2001-12-13  Tom Tromey  <tromey@redhat.com>
+
+	For PR libgcj/5103:
+	* libjava.jni/cxxtest.out: New file.
+	* libjava.jni/cxxtest.cc: New file.
+	* libjava.jni/cxxtest.java: New file.
+	* libjava.jni/jni.exp (gcj_jni_test_one): If there is no .c file,
+	assume there is a .cc file.
+
 2001-12-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* libjava.lang/PR3731.out: Adjust output to reflect that "instanceof"
