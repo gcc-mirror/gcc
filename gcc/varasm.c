@@ -707,8 +707,9 @@ assemble_variable (decl, top_level, at_end)
       return;
     }
 
-  /* Normally no need to say anything for external references,
-     since assembler considers all undefined symbols external.  */
+  /* Normally no need to say anything here for external references,
+     since assemble_external is called by the langauge-specific code
+     when a declaration is first seen.  */
 
   if (DECL_EXTERNAL (decl))
     return;
