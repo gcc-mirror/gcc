@@ -1,4 +1,15 @@
-2002-01-16  Jason Merrill  <jason@redhat.com>
+2002-01-17  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (begin_constructor_body, begin_destructor_body): New fns.
+	(begin_function_body): Call them and keep_next_level.
+	* init.c (emit_base_init): Call keep_next_level.
+	* semantics.c (setup_vtbl_ptr): Lose.
+	* cp-tree.h (struct cp_language_function): Remove vtbls_set_up_p.
+	(vtbls_set_up_p): Lose.
+	* pt.c (tsubst_expr, CTOR_INITIALIZER): Call emit_base_init.
+	* method.c (do_build_copy_constructor): Likewise.
+	(synthesize_method): Call finish_mem_initializers.
+	* parse.y (nodecls): Likewise.
 
 	* error.c (dump_type_suffix): Print the exception specs before
 	recursing.

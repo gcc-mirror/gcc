@@ -624,7 +624,7 @@ do_build_copy_constructor (fndecl)
 	}
       member_init_list = nreverse (member_init_list);
       base_init_list = nreverse (base_init_list);
-      setup_vtbl_ptr (member_init_list, base_init_list);
+      emit_base_init (member_init_list, base_init_list);
     }
 }
 
@@ -770,15 +770,13 @@ synthesize_method (fndecl)
       do_build_assign_ref (fndecl);
       need_body = 0;
     }
-  else if (DECL_DESTRUCTOR_P (fndecl))
-    setup_vtbl_ptr (NULL_TREE, NULL_TREE);
-  else
+  else if (DECL_CONSTRUCTOR_P (fndecl))
     {
       tree arg_chain = FUNCTION_FIRST_USER_PARMTYPE (fndecl);
       if (arg_chain != void_list_node)
 	do_build_copy_constructor (fndecl);
       else if (TYPE_NEEDS_CONSTRUCTING (current_class_type))
-	setup_vtbl_ptr (NULL_TREE, NULL_TREE);
+	finish_mem_initializers (NULL_TREE);
     }
 
   /* If we haven't yet generated the body of the function, just

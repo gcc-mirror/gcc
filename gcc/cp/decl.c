@@ -133,7 +133,9 @@ static void mark_lang_function PARAMS ((struct cp_language_function *));
 static void save_function_data PARAMS ((tree));
 static void check_function_type PARAMS ((tree, tree));
 static void destroy_local_var PARAMS ((tree));
+static void begin_constructor_body PARAMS ((void));
 static void finish_constructor_body PARAMS ((void));
+static void begin_destructor_body PARAMS ((void));
 static void finish_destructor_body PARAMS ((void));
 static tree create_array_type_for_decl PARAMS ((tree, tree, tree));
 static tree get_atexit_node PARAMS ((void));
@@ -13931,6 +13933,18 @@ save_function_data (decl)
     }
 }
 
+/* Add a note to mark the beginning of the main body of the constructor.
+   This is used to set up the data structures for the cleanup regions for
+   fully-constructed bases and members.  */
+
+static void
+begin_constructor_body ()
+{
+  tree ctor_stmt = build_stmt (CTOR_STMT);
+  CTOR_BEGIN_P (ctor_stmt) = 1;
+  add_stmt (ctor_stmt);
+}
+
 /* Add a note to mark the end of the main body of the constructor.  This is
    used to end the cleanup regions for fully-constructed bases and
    members.  */
@@ -13944,6 +13958,54 @@ finish_constructor_body ()
      as with the destructor cleanups; the only difference is that these are
      only run if an exception is thrown.  */
   add_stmt (build_stmt (CTOR_STMT));
+}
+
+/* Do all the processing for the beginning of a destructor; set up the
+   vtable pointers and cleanups for bases and members.  */
+
+static void
+begin_destructor_body ()
+{
+  tree if_stmt;
+  tree compound_stmt;
+
+  /* If the dtor is empty, and we know there is not any possible
+     way we could use any vtable entries, before they are possibly
+     set by a base class dtor, we don't have to setup the vtables,
+     as we know that any base class dtor will set up any vtables
+     it needs.  We avoid MI, because one base class dtor can do a
+     virtual dispatch to an overridden function that would need to
+     have a non-related vtable set up, we cannot avoid setting up
+     vtables in that case.  We could change this to see if there
+     is just one vtable.
+
+     ??? In the destructor for a class, the vtables are set
+     appropriately for that class.  There will be no non-related
+     vtables.  jason 2001-12-11.  */
+  if_stmt = begin_if_stmt ();
+
+  /* If it is not safe to avoid setting up the vtables, then
+     someone will change the condition to be boolean_true_node.  
+     (Actually, for now, we do not have code to set the condition
+     appropriately, so we just assume that we always need to
+     initialize the vtables.)  */
+  finish_if_stmt_cond (boolean_true_node, if_stmt);
+  current_vcalls_possible_p = &IF_COND (if_stmt);
+
+  compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
+
+  /* Make all virtual function table pointers in non-virtual base
+     classes point to CURRENT_CLASS_TYPE's virtual function
+     tables.  */
+  initialize_vtbl_ptrs (current_class_ptr);
+
+  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
+  finish_then_clause (if_stmt);
+  finish_if_stmt ();
+
+  /* And insert cleanups for our bases and members so that they
+     will be properly destroyed if we throw.  */
+  push_base_cleanups ();
 }
 
 /* At the end of every destructor we generate code to delete the object if
@@ -13990,8 +14052,23 @@ finish_destructor_body ()
 tree
 begin_function_body ()
 {
-  tree stmt = begin_compound_stmt (0);
+  tree stmt;
+
+  stmt = begin_compound_stmt (0);
   COMPOUND_STMT_BODY_BLOCK (stmt) = 1;
+
+  if (processing_template_decl)
+    /* Do nothing now.  */;
+  else if (DECL_CONSTRUCTOR_P (current_function_decl))
+    begin_constructor_body ();
+  else if (DECL_DESTRUCTOR_P (current_function_decl))
+    begin_destructor_body ();
+
+  /* Always keep the BLOCK node associated with the outermost pair of
+     curly braces of a function.  These are needed for correct
+     operation of dwarfout.c.  */
+  keep_next_level (1);
+
   return stmt;
 }
 

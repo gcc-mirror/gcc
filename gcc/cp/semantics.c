@@ -1141,90 +1141,11 @@ finish_mem_initializers (init_list)
 	}
     }
 
-  setup_vtbl_ptr (member_init_list, base_init_list);
-}
-
-/* Do the initialization work necessary at the beginning of a constructor
-   or destructor.  This means processing member initializers and setting
-   vtable pointers.
-
-   ??? The call to keep_next_level at the end applies to all functions, but
-   should probably go somewhere else.  */
-
-void
-setup_vtbl_ptr (member_init_list, base_init_list)
-     tree member_init_list;
-     tree base_init_list;
-{
-  my_friendly_assert (doing_semantic_analysis_p (), 19990919);
-  my_friendly_assert (!vtbls_set_up_p, 20011220);
-
   if (processing_template_decl)
     add_stmt (build_min_nt (CTOR_INITIALIZER,
 			    member_init_list, base_init_list));
-  else if (DECL_CONSTRUCTOR_P (current_function_decl))
-    {
-      tree ctor_stmt;
-
-      /* Mark the beginning of the constructor.  */
-      ctor_stmt = build_stmt (CTOR_STMT);
-      CTOR_BEGIN_P (ctor_stmt) = 1;
-      add_stmt (ctor_stmt);
-	  
-      /* And actually initialize the base-classes and members.  */
-      emit_base_init (member_init_list, base_init_list);
-    }
-  else if (DECL_DESTRUCTOR_P (current_function_decl))
-    {
-      tree if_stmt;
-      tree compound_stmt;
-
-      /* If the dtor is empty, and we know there is not any possible
-	 way we could use any vtable entries, before they are possibly
-	 set by a base class dtor, we don't have to setup the vtables,
-	 as we know that any base class dtor will set up any vtables
-	 it needs.  We avoid MI, because one base class dtor can do a
-	 virtual dispatch to an overridden function that would need to
-	 have a non-related vtable set up, we cannot avoid setting up
-	 vtables in that case.  We could change this to see if there
-	 is just one vtable.
-
-         ??? In the destructor for a class, the vtables are set
-         appropriately for that class.  There will be no non-related
-         vtables.  jason 2001-12-11.  */
-      if_stmt = begin_if_stmt ();
-
-      /* If it is not safe to avoid setting up the vtables, then
-	 someone will change the condition to be boolean_true_node.  
-         (Actually, for now, we do not have code to set the condition
-	 appropriately, so we just assume that we always need to
-	 initialize the vtables.)  */
-      finish_if_stmt_cond (boolean_true_node, if_stmt);
-      current_vcalls_possible_p = &IF_COND (if_stmt);
-
-      compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
-
-      /* Make all virtual function table pointers in non-virtual base
-	 classes point to CURRENT_CLASS_TYPE's virtual function
-	 tables.  */
-      initialize_vtbl_ptrs (current_class_ptr);
-
-      finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
-      finish_then_clause (if_stmt);
-      finish_if_stmt ();
-
-      /* And insert cleanups for our bases and members so that they
-         will be properly destroyed if we throw.  */
-      push_base_cleanups ();
-    }
-
-  /* Always keep the BLOCK node associated with the outermost pair of
-     curly braces of a function.  These are needed for correct
-     operation of dwarfout.c.  */
-  keep_next_level (1);
-
-  /* The virtual function tables are set up now.  */
-  vtbls_set_up_p = 1;
+  else
+    emit_base_init (member_init_list, base_init_list);
 }
 
 /* Returns the stack of SCOPE_STMTs for the current function.  */

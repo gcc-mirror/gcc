@@ -1765,7 +1765,8 @@ string:
 nodecls:
 	  /* empty */
 		{
-		  setup_vtbl_ptr (NULL_TREE, NULL_TREE);
+		  if (DECL_CONSTRUCTOR_P (current_function_decl))
+		    finish_mem_initializers (NULL_TREE);
 		}
 	;
 
