@@ -1,3 +1,8 @@
+1999-05-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_decl_flags): Remove comdat.  Updated dummy.
+	(DECL_COMDAT): Remove definition.
+
 1999-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (wrapup_globals_for_namespace): Fix thinko in previous
