@@ -143,7 +143,9 @@ jint
 gnu::java::nio::SocketChannelImpl::SocketRead (jint fd, jbyteArray data,
                                                jint offset, jint length)
 {
-  int result = ::recv (fd, data, offset, length);
+  /* The cast to char* is needed to placate the Win32 API.  */
+  int result =
+    ::recv (fd, reinterpret_cast<char*>(elements(data)), offset, length);
 
   if (result < 0)
     {
@@ -158,7 +160,11 @@ jint
 gnu::java::nio::SocketChannelImpl::SocketWrite (jint fd, jbyteArray data,
                                                 jint offset, jint length)
 {
-  int result = ::send (fd, data, offset, length);
+  /* The cast to char* is needed to placate the Win32 API. I used char*
+     instead of const char* because I wasn't sure about the API on all
+     UNICES.  */
+  int result =
+    ::send (fd, reinterpret_cast<char*>(elements(data)), offset, length);
 
   if (result < 0)
     {

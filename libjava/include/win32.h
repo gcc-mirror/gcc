@@ -30,6 +30,11 @@ details.  */
 #define ENOTCONN 0
 #define ECONNRESET 0
 
+/* This is incorrect, but allows java/net/natPlainDatagramSocketImpl.cc
+   to compile under MingW. This will be remedied in a subsequent gcj
+   release where the Win32 and Posix networking code have been forked.  */
+#define ECONNREFUSED 0
+
 #ifndef ENOPROTOOPT
 #define ENOPROTOOPT 109
 #endif
@@ -39,6 +44,7 @@ details.  */
 extern void _Jv_platform_initialize (void);
 extern void _Jv_platform_initProperties (java::util::Properties*);
 extern jlong _Jv_platform_gettimeofday ();
+extern int _Jv_select (int n, fd_set *, fd_set *, fd_set *, struct timeval *);
 
 inline void
 _Jv_platform_close_on_exec (jint)

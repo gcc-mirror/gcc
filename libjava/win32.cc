@@ -15,6 +15,7 @@ details.  */
 #include <stdlib.h>
 
 #include <java/lang/ArithmeticException.h>
+#include <java/lang/UnsupportedOperationException.h>
 #include <java/util/Properties.h>
 
 static LONG CALLBACK
@@ -46,10 +47,10 @@ _Jv_platform_initialize (void)
   if (WSAStartup (MAKEWORD (1, 1), &data))
     MessageBox (NULL, "Error initialising winsock library.", "Error",
 		MB_OK | MB_ICONEXCLAMATION);
-  
+
   // Install exception handler
   SetUnhandledExceptionFilter (win32_exception_handler);
-  
+
   // Initialize our executable name
   GetModuleFileName(NULL, exec_name, sizeof(exec_name));
 }
@@ -103,7 +104,7 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
 
       _Jv_Free (buffer);
     }
-  
+
   // Use GetUserName to set 'user.name'.
   buflen = 257;  // UNLEN + 1
   buffer = (char *) _Jv_MallocUnchecked (buflen);
@@ -114,8 +115,8 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
       _Jv_Free (buffer);
     }
 
-  // According to the api documentation for 'GetWindowsDirectory()', the 
-  // environmental variable HOMEPATH always specifies the user's home 
+  // According to the api documentation for 'GetWindowsDirectory()', the
+  // environmental variable HOMEPATH always specifies the user's home
   // directory or a default directory.  On the 3 windows machines I checked
   // only 1 had it set.  If it's not set, JDK1.3.1 seems to set it to
   // the windows directory, so we'll do the same.
@@ -130,7 +131,7 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
           if (winHome != NULL)
             {
               if (GetWindowsDirectory (winHome, MAX_PATH))
-		SET ("user.home", winHome);
+        SET ("user.home", winHome);
               _Jv_Free (winHome);
             }
         }
@@ -148,7 +149,7 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
       if (buffer != NULL)
         {
           sprintf (buffer, "%d.%d", (int) osvi.dwMajorVersion,
-		   (int) osvi.dwMinorVersion);
+           (int) osvi.dwMinorVersion);
           SET ("os.version", buffer);
           _Jv_Free (buffer);
         }
@@ -163,7 +164,7 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
             else if (osvi.dwMajorVersion == 4 && osvi.dwMinorVersion == 90)
               SET ("os.name", "Windows Me");
             else
-              SET ("os.name", "Windows ??"); 
+              SET ("os.name", "Windows ??");
             break;
 
           case VER_PLATFORM_WIN32_NT:
@@ -186,23 +187,24 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
   // Set the OS architecture.
   SYSTEM_INFO si;
   GetSystemInfo (&si);
-  switch (si.dwProcessorType)
+  switch (si.wProcessorArchitecture)
     {
-      case PROCESSOR_INTEL_386:
-        SET ("os.arch", "i386");
+      case PROCESSOR_ARCHITECTURE_INTEL:
+        SET ("os.arch", "x86");
         break;
-      case PROCESSOR_INTEL_486:
-        SET ("os.arch", "i486");
+      case PROCESSOR_ARCHITECTURE_MIPS:
+        SET ("os.arch", "mips");
         break;
-      case PROCESSOR_INTEL_PENTIUM:
-        SET ("os.arch", "i586");
+      case PROCESSOR_ARCHITECTURE_ALPHA:
+        SET ("os.arch", "alpha");
         break;
-      case PROCESSOR_MIPS_R4000:	
-        SET ("os.arch", "MIPS4000");
+      case PROCESSOR_ARCHITECTURE_PPC:
+        SET ("os.arch", "ppc");
         break;
-      case PROCESSOR_ALPHA_21064:
-        SET ("os.arch", "ALPHA");
+      case PROCESSOR_ARCHITECTURE_IA64:
+        SET ("os.arch", "ia64");
         break;
+      case PROCESSOR_ARCHITECTURE_UNKNOWN:
       default:
         SET ("os.arch", "unknown");
         break;
@@ -229,4 +231,12 @@ backtrace (void **__array, int __size)
     __array[i++] = (void*)(rfp[1]-4);
   }
   return i;
+}
+
+/* Placeholder implementation */
+int
+_Jv_select (int, fd_set *, fd_set *, fd_set *, struct timeval *)
+{
+  throw new java::lang::UnsupportedOperationException(JvNewStringUTF("_Jv_select() not implemented in Win32"));
+  return 0;
 }
