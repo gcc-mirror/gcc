@@ -62,6 +62,8 @@ Boston, MA 02111-1307, USA.  */
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
 
+#define ASM_COMMENT_START "|"
+
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number.
    Motorola format uses different register names than defined in m68k.h. */

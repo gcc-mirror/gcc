@@ -1,5 +1,5 @@
 /* Definitions for Motorola m68k running Linux
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -25,6 +25,8 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 
 #define DBX_DEBUGGING_INFO
+
+#define ASM_COMMENT_START "|"
 
 #define CPP_PREDEFINES \
   "-Dunix -Dmc68000 -Dmc68020 -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(m68k) -Amachine(m68k)"
