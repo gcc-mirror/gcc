@@ -1,3 +1,7 @@
+2005-02-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/darwin-tramp.asm: Remove stray 'APPLE LOCAL' marker.
+
 2005-02-18  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (constant_boolean_node): Always create values of the
