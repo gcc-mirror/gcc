@@ -238,7 +238,7 @@ public class Runtime
                       }
                 try
                   {
-                    exitSequence.sleep(1); // Give other threads a chance.
+                    Thread.sleep(1); // Give other threads a chance.
                   }
                 catch (InterruptedException e)
                   {
