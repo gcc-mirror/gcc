@@ -3109,7 +3109,7 @@ The stock GNU binutils 2.15 release is broken on this platform because of a
 single bug.  It has been fixed on the 2.15 branch in the CVS repository.
 You can obtain a working version by checking out the binutils-2_15-branch
 from the CVS repository or applying the patch
-`http://sources.redhat.com/ml/binutils-cvs/2004-09/msg00036.html' to the
+@uref{http://sources.redhat.com/ml/binutils-cvs/2004-09/msg00036.html} to the
 release.
 
 Sun bug 4296832 turns up when compiling X11 headers with GCC 2.95 or
