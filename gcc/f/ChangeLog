@@ -1,3 +1,9 @@
+2002-11-02  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.texi: Correct documentation on generating C++ prototypes
+	of Fortran routines with f2c.
+	* news.texi: Document fixes in GCC-3.3, 3.2 and 3.1.
+
 2002-10-30  Roger Sayle  <roger@eyesopen.com>
 
 	* com.c (ffecom_subscript_check_): Cast the failure branch
