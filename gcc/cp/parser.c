@@ -10960,6 +10960,11 @@ cp_parser_direct_declarator (cp_parser* parser,
 						 &non_constant_p);
 	      if (!non_constant_p)
 		bounds = fold_non_dependent_expr (bounds);
+	      else if (!at_function_scope_p ())
+		{
+		  error ("array bound is not an integer constant");
+		  bounds = error_mark_node;
+		}
 	    }
 	  else
 	    bounds = NULL_TREE;

@@ -3670,6 +3670,8 @@ start_decl (const cp_declarator *declarator,
   tree type, tem;
   tree context;
 
+  *pop_scope_p = false;
+ 
   /* This should only be done once on the top most decl.  */
   if (have_extern_spec)
     {
@@ -3690,19 +3692,17 @@ start_decl (const cp_declarator *declarator,
   deprecated_state = DEPRECATED_NORMAL;
 
   if (decl == NULL_TREE || TREE_CODE (decl) == VOID_TYPE)
-    return NULL_TREE;
+    return error_mark_node;
 
   type = TREE_TYPE (decl);
 
   if (type == error_mark_node)
-    return NULL_TREE;
+    return error_mark_node;
 
   context = DECL_CONTEXT (decl);
 
   if (context)
     *pop_scope_p = push_scope (context);
-  else
-    *pop_scope_p = false;
   
   /* We are only interested in class contexts, later.  */
   if (context && TREE_CODE (context) == NAMESPACE_DECL)

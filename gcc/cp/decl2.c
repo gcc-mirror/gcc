@@ -1743,7 +1743,7 @@ import_export_decl (tree decl)
      vague linkage, maybe_commonize_var is used.
 
      Therefore, the only declarations that should be provided to this
-     function are those with external linkage that:
+     function are those with external linkage that are:
 
      * implicit instantiations of function templates
 

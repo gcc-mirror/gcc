@@ -1,3 +1,20 @@
+2004-11-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18389
+	* g++.dg/parse/cond1.C: New test.
+
+	PR c++/18429
+	* g++.dg/template/array9.C: New test.
+	* g++.dg/ext/vla1.C: Adjust error messages.
+	* g++.dg/ext/vlm1.C: Likewise.
+	* g++.dg/template/crash2.C: Likewise.
+
+	PR c++/18436
+	* g++.dg/template/call3.C: New test.
+
+	PR c++/18407
+	* g++.dg/template/ptrmem11.C: New test.
+
 2004-11-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR other/14264
