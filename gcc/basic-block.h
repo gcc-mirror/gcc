@@ -288,8 +288,14 @@ struct loop
   /* Number of blocks contained within the loop.  */
   int num_nodes;
 
+  /* Array of edges that enter the loop.  */
+  edge *entry_edges;
+
+  /* Number of edges that enter the loop.  */
+  int num_entries;
+
   /* Array of edges that exit the loop.  */
-  edge *exits;
+  edge *exit_edges;
 
   /* Number of edges that exit the loop.  */
   int num_exits;
