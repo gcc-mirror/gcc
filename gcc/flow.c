@@ -5010,6 +5010,20 @@ ior_reg_cond (old, x, add)
 {
   rtx op0, op1;
 
+  if (GET_RTX_CLASS (GET_CODE (old)) == '<')
+    {
+      if (GET_RTX_CLASS (GET_CODE (x)) == '<'
+	  && GET_CODE (x) == reverse_condition (GET_CODE (old))
+	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
+	return const1_rtx;
+      if (GET_CODE (x) == GET_CODE (old)
+	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
+	return old;
+      if (! add)
+	return old;
+      return gen_rtx_IOR (0, old, x);
+    }
+
   switch (GET_CODE (old))
     {
     case IOR:
@@ -5062,19 +5076,6 @@ ior_reg_cond (old, x, add)
 	return old;
       return gen_rtx_IOR (0, old, x);
 
-    case EQ:
-    case NE:
-      if ((GET_CODE (x) == EQ || GET_CODE (x) == NE)
-	  && GET_CODE (x) != GET_CODE (old)
-	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
-	return const1_rtx;
-      if (GET_CODE (x) == GET_CODE (old)
-	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
-	return old;
-      if (! add)
-	return old;
-      return gen_rtx_IOR (0, old, x);
-
     default:
       abort ();
     }
@@ -5111,6 +5112,20 @@ and_reg_cond (old, x, add)
      int add;
 {
   rtx op0, op1;
+
+  if (GET_RTX_CLASS (GET_CODE (old)) == '<')
+    {
+      if (GET_RTX_CLASS (GET_CODE (x)) == '<'
+	  && GET_CODE (x) == reverse_condition (GET_CODE (old))
+	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
+	return const0_rtx;
+      if (GET_CODE (x) == GET_CODE (old)
+	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
+	return old;
+      if (! add)
+	return old;
+      return gen_rtx_AND (0, old, x);
+    }
 
   switch (GET_CODE (old))
     {
@@ -5164,19 +5179,6 @@ and_reg_cond (old, x, add)
 	return old;
       return gen_rtx_AND (0, old, x);
 
-    case EQ:
-    case NE:
-      if ((GET_CODE (x) == EQ || GET_CODE (x) == NE)
-	  && GET_CODE (x) != GET_CODE (old)
-	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
-	return const0_rtx;
-      if (GET_CODE (x) == GET_CODE (old)
-	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
-	return old;
-      if (! add)
-	return old;
-      return gen_rtx_AND (0, old, x);
-
     default:
       abort ();
     }
@@ -5193,6 +5195,14 @@ elim_reg_cond (x, regno)
      unsigned int regno;
 {
   rtx op0, op1;
+
+  if (GET_RTX_CLASS (GET_CODE (x)) == '<')
+    {
+      if (REGNO (XEXP (x, 0)) == regno)
+	return const0_rtx;
+      return x;
+    }
+
   switch (GET_CODE (x))
     {
     case AND:
@@ -5231,11 +5241,6 @@ elim_reg_cond (x, regno)
 	return not_reg_cond (op0);
       return x;
 
-    case EQ:
-    case NE:
-      if (REGNO (XEXP (x, 0)) == regno)
-	return const0_rtx;
-      return x;
     default:
       abort ();
     }
