@@ -9378,6 +9378,10 @@ ffecom_tree_divide_ (tree tree_type, tree left, tree right,
 		       right);
 
     case COMPLEX_TYPE:
+      if (! optimize_size)
+	return ffecom_2 (RDIV_EXPR, tree_type,
+			 left,
+			 right);
       {
 	ffecomGfrt ix;
 
@@ -15019,6 +15023,7 @@ lang_init_options ()
   flag_reduce_all_givs = 1;
   flag_argument_noalias = 2;
   flag_errno_math = 0;
+  flag_complex_divide_method = 1;
 }
 
 void

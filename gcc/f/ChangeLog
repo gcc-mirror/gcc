@@ -1,3 +1,13 @@
+Tue May 18 03:52:04 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Support use of back end's improved open-coding of complex divide:
+	* com.c (ffecom_tree_divide_): Use RDIV_EXPR for complex divide,
+	instead of run-time call to [cz]_div, if `-Os' option specified.
+	(lang_init_options): Tell back end we want support for wide range
+	of inputs to complex divide.
+
+	* Bump version.
+
 Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* lang-specs.h: Define __GNUC__ and __GNUC_MINOR__ only if -no-gcc
