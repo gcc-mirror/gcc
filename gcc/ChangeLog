@@ -1,3 +1,8 @@
+2000-05-26  Richard Earnshaw  <rearnsha@arm.com>
+
+	* ifcvt.c (cond_exec_get_condition): Set test_if to the SET_SRC
+	of get_pc.
+
 2000-05-25  Richard Henderson  <rth@cygnus.com>
 
 	* config/alpha/alpha.c (alpha_comparison_operator): Don't be
