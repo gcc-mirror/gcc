@@ -1,3 +1,8 @@
+2000-09-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* libgcc2.h: Use LONG_LONG_TYPE_SIZE instead of MIN_UNITS_PER_WORD
+	to decide whether 64-bit support must be generated.
+
 2000-09-10  Richard Henderson  <rth@cygnus.com>
 
 	* c-parse.in (asm patterns): Fix volatile check.
