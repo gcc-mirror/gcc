@@ -1588,7 +1588,7 @@ install-headers: install-include-dir $(INSTALL_HEADERS_DIR) install-assert-h
 	    dest=`ls -ld $(libsubdir)/include/$$i | sed -n 's/.*-> //p'`; \
 	    if expr "$$dest" : "$$dir.*" > /dev/null; then \
 	      rm -f $(libsubdir)/include/$$i; \
-	      ln -s $(libsubdir)/include`echo "$$dest" | sed "s|$$dir||"` $(libsubdir)/include/$$i; \
+	      ln -s `echo $$i | sed "s|/[^/]*|/..|g" | sed 's|/..$$||'``echo "$$dest" | sed "s|$$dir||"` $(libsubdir)/include/$$i; \
 	    fi; \
 	  done; \
 	fi
