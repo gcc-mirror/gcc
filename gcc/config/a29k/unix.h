@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for AMD Am29000 CPU, Unix.
-   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
-   Contributed by Richard Kenner (kenner@nyu.edu)
+   Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
+   Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
 
@@ -75,6 +75,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* If we want shared data, we have to turn off commons.  */
 
 #define OVERRIDE_OPTIONS if (flag_shared_data) flag_no_common = 1;
+
+/* Default to -fno-pcc-struct-return, since we don't have to worry about
+   compatibility.  */
+#define DEFAULT_PCC_STRUCT_RETURN 0
 
 #if 0 /* This would be needed except that the 29k doesn't have strict
 	 alignment requirements.  */
