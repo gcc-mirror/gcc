@@ -1,5 +1,5 @@
 /* FileFilter.java -- Filter a list of pathnames
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998,2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,12 +41,14 @@ package java.io;
 /**
  * This interface has one method which is used for filtering pathnames
  * returned in a pathname listing.  It is currently used by the 
- * <code>File.listFiles()</code> method.
+ * <code>File.listFiles(FileFilter)</code> method.
  * <p>
  * The method in this interface determines if a particular pathname should
  * or should not be included in the pathname listing.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
+ * 
+ * @see File#listFiles(java.io.FileFilter)
  */
 public interface FileFilter
 {

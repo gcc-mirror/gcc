@@ -1,6 +1,6 @@
 /* ObjectStreamConstants.java -- Interface containing constant values
    used in reading and writing serialized objects
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,14 +40,15 @@ exception statement from your version. */
 package java.io;
 
 /**
-   This interface contains constants that are used in object
-   serialization.  This interface is used by ObjectOutputStream,
-   ObjectInputStream, ObjectStreamClass, and possibly other classes.
-   The values for these constants are specified in Javasoft's "Object
-   Serialization Specification" TODO: add reference
-*/
+ * This interface contains constants that are used in object
+ * serialization.  This interface is used by <code>ObjectOutputStream</code>,
+ * <code>ObjectInputStream</code>, and <code>ObjectStreamClass</code>.
+ * The values for these constants are specified by the Java library
+ * specification.
+ */
 public interface ObjectStreamConstants
 {
+  // FIXME: Javadoc comment these values.
   public final static int PROTOCOL_VERSION_1 = 1;
   public final static int PROTOCOL_VERSION_2 = 2;
 
@@ -85,3 +86,4 @@ public interface ObjectStreamConstants
   final static SerializablePermission SUBCLASS_IMPLEMENTATION_PERMISSION
     = new SerializablePermission("enableSubclassImplementation");
 }
+

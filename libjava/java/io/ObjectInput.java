@@ -45,6 +45,8 @@ package java.io;
   * <code>InputStream</code>
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
+  *
+  * @see DataInput
   */
 public interface ObjectInput extends DataInput
 {
@@ -60,7 +62,8 @@ public interface ObjectInput extends DataInput
 
   /**
     * This method reading a byte of data from a stream.  It returns that byte
-    * as an int.  This method blocks if no data is available to be read.
+    * as an <code>int</code>.  This method blocks if no data is available 
+    * to be read.
     * 
     * @return The byte of data read
     *
@@ -76,7 +79,7 @@ public interface ObjectInput extends DataInput
     *
     * @param buf The byte array to receive the data read
     *
-    * @return The actual number fo bytes read or -1 if end of stream
+    * @return The actual number of bytes read or -1 if end of stream
     *
     * @exception IOException If an error occurs
     */
@@ -92,10 +95,10 @@ public interface ObjectInput extends DataInput
     * possible.
     *
     * @param buf The byte array to receive the data read
-    * @param offset The offset into @code{buf} to start storing data
+    * @param offset The offset into <code>buf</code> to start storing data
     * @param len The maximum number of bytes to read
     *
-    * @return The actual number fo bytes read or -1 if end of stream
+    * @return The actual number of bytes read or -1 if end of stream
     *
     * @exception IOException If an error occurs
     */
@@ -103,14 +106,14 @@ public interface ObjectInput extends DataInput
 
   /**
     * Reads an object instance and returns it.  If the class for the object
-    * being read cannot be found, then a ClassNotFoundException will
-    * be thrown.
+    * being read cannot be found, then a <code>ClassNotFoundException</code>
+    * will be thrown.
     *
     * @return The object instance that was read
     *
     * @exception ClassNotFoundException If a class for the object cannot be 
     * found
-    * @exception IOException If an error occurs
+    * @exception IOException If any other error occurs
     */
   public abstract Object readObject() 
     throws ClassNotFoundException, IOException;
@@ -126,7 +129,7 @@ public interface ObjectInput extends DataInput
     *
     * @exception IOException If an error occurs
     */
-  public abstract long skip(long num_bytes) throws IOException;
+  public abstract long skip(long numBytes) throws IOException;
 
   /**
     * This method closes the input source
