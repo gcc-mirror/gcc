@@ -5936,9 +5936,9 @@
 )
 
 (define_expand "call_value"
-  [(parallel [(set (match_operand       0 "" "=rf")
-	           (call (match_operand 1 "memory_operand" "m")
-		         (match_operand 2 "general_operand" "g")))
+  [(parallel [(set (match_operand       0 "" "")
+	           (call (match_operand 1 "memory_operand" "")
+		         (match_operand 2 "general_operand" "")))
 	      (use (match_operand 3 "" ""))
 	      (clobber (reg:SI 14))])]
   "TARGET_EITHER"
@@ -5958,8 +5958,8 @@
 )
 
 (define_insn "*call_value_reg"
-  [(set (match_operand 0 "" "=rf")
-        (call (mem:SI (match_operand:SI 1 "s_register_operand" "r"))
+  [(set (match_operand 0 "" "=r,f")
+        (call (mem:SI (match_operand:SI 1 "s_register_operand" "r,r"))
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI 14))]
@@ -5972,8 +5972,8 @@
 )
 
 (define_insn "*call_value_mem"
-  [(set (match_operand 0 "" "=rf")
-	(call (mem:SI (match_operand:SI 1 "memory_operand" "m"))
+  [(set (match_operand 0 "" "=r,f")
+	(call (mem:SI (match_operand:SI 1 "memory_operand" "m,m"))
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI 14))]
@@ -6004,8 +6004,8 @@
 )
 
 (define_insn "*call_value_symbol"
-  [(set (match_operand 0 "s_register_operand" "=rf")
-	(call (mem:SI (match_operand:SI 1 "" "X"))
+  [(set (match_operand 0 "s_register_operand" "=r,f")
+	(call (mem:SI (match_operand:SI 1 "" "X,X"))
 	(match_operand:SI 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI 14))]
@@ -6099,8 +6099,8 @@
 )
 
 (define_insn "*sibcall_value_insn"
- [(set (match_operand 0 "s_register_operand" "=rf")
-       (call (mem:SI (match_operand:SI 1 "" "X"))
+ [(set (match_operand 0 "s_register_operand" "=r,f")
+       (call (mem:SI (match_operand:SI 1 "" "X,X"))
 	     (match_operand 2 "" "")))
   (use (match_operand 3 "" ""))]
   "TARGET_ARM && GET_CODE (operands[1]) == SYMBOL_REF"
