@@ -1447,6 +1447,14 @@ main (argc, argv)
 
   /* Now handle the command line options.  */
 
+  /* Do undefines specified with -U.  */
+  for (i = 1; i < argc; i++)
+    if (pend_undefs[i]) {
+      if (debug_output)
+        output_line_command (fp, &outbuf, 0, same_file);
+      make_undef (pend_undefs[i], &outbuf);
+    }
+
   /* Do assertions specified with -A.  */
   for (i = 1; i < argc; i++)
     if (pend_assertions[i])
@@ -1458,14 +1466,6 @@ main (argc, argv)
       if (debug_output)
         output_line_command (fp, &outbuf, 0, same_file);
       make_definition (pend_defs[i], &outbuf);
-    }
-
-  /* Do undefines specified with -U.  */
-  for (i = 1; i < argc; i++)
-    if (pend_undefs[i]) {
-      if (debug_output)
-        output_line_command (fp, &outbuf, 0, same_file);
-      make_undef (pend_undefs[i], &outbuf);
     }
 
   done_initializing = 1;
@@ -1697,7 +1697,11 @@ main (argc, argv)
       else
 	deps_output (p, 0);
       /* Supply our own suffix.  */
+#ifndef VMS
       deps_output (".o : ", 0);
+#else
+      deps_output (".obj : ", 0);
+#endif
       deps_output (in_fname, 0);
       deps_output (" ", 0);
     }
@@ -2270,23 +2274,25 @@ do { ip = &instack[indepth];		\
 	   and backslash-newlines, and see if we reach this #.
 	   If not, this # is not special.  */
 	bp = beg_of_line;
-	while (1) {
-	  if (is_hor_space[*bp])
-	    bp++;
-	  else if (*bp == '\\' && bp[1] == '\n')
-	    bp += 2;
-	  else if (*bp == '/' && bp[1] == '*') {
-	    bp += 2;
-	    while (!(*bp == '*' && bp[1] == '/'))
+	/* If -traditional, require # to be at beginning of line.  */
+	if (!traditional)
+	  while (1) {
+	    if (is_hor_space[*bp])
 	      bp++;
-	    bp += 2;
+	    else if (*bp == '\\' && bp[1] == '\n')
+	      bp += 2;
+	    else if (*bp == '/' && bp[1] == '*') {
+	      bp += 2;
+	      while (!(*bp == '*' && bp[1] == '/'))
+		bp++;
+	      bp += 2;
+	    }
+	    else if ((cplusplus || objc) && *bp == '/' && bp[1] == '/') {
+	      bp += 2;
+	      while (*bp++ != '\n') ;
+	    }
+	    else break;
 	  }
-	  else if ((cplusplus || objc) && *bp == '/' && bp[1] == '/') {
-	    bp += 2;
-	    while (*bp++ != '\n') ;
-	  }
-	  else break;
-	}
 	if (bp + 1 != ibp)
 	  goto randomchar;
       }
@@ -3735,7 +3741,6 @@ get_filename:
 	}
       break;
     }
-    goto fail;
 
   case '<':
     fend = fbeg;
@@ -6082,22 +6087,16 @@ do_xifdef (buf, limit, op, keyword)
     U_CHAR *p = ip->buf;
     while (p != directive_start) {
       char c = *p++;
-      switch (c) {
-      case ' ':
-      case '\t':
-      case '\n':
-	break;
-      case '/':
-	if (p != ip->bufp && *p == '*') {
-	  /* Skip this comment.  */
-	  int junk;
-	  U_CHAR *save_bufp = ip->bufp;
-	  ip->bufp = p + 1;
-	  p = skip_to_end_of_comment (ip, &junk, 1);
-	  ip->bufp = save_bufp;
-	}
-	break;
-      default:
+      if (is_space[c])
+	;
+      else if (c == '/' && p != ip->bufp && *p == '*') {
+	/* Skip this comment.  */
+	int junk;
+	U_CHAR *save_bufp = ip->bufp;
+	ip->bufp = p + 1;
+	p = skip_to_end_of_comment (ip, &junk, 1);
+	ip->bufp = save_bufp;
+      } else {
 	goto fail;
       }
     }
