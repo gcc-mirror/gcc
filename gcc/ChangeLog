@@ -1,3 +1,22 @@
+2004-12-06  J"orn Rennecke <joern.rennecke@st.com>
+
+	* bt-load.c (btr_def_s): New member own_end;
+	(add_btr_to_live_range): Add second parameter.  Changed caller.
+	(clear_btr_from_live_range): Clear btrs_live_at_end bit
+	for the register its definition basic block if own_end is set.
+	(augment_live_range): Also take btrs_live_at_end into account.
+	(combine_btr_defs): Don't bother with
+	other_def->other_btr_uses_after_use if it pertains to a different
+	register.
+	(move_btr_def): Set def->other_btr_uses_before_def after 
+	calling combine_btr_defs."
+	
+	* bt-load.c (augment_live_range): New argument full_range.
+	Changed all callers.
+
+	* bt-load.c (move_tr_def): Set other_tr_uses_before_def
+	taking new btr assignment into account.
+
 2004-12-05  Daniel Berlin <dberlin@dberlin.org>
 
 	* tree-ssa-alias.c (create_global_var): Use void_type_node,
