@@ -1817,16 +1817,19 @@ nonoverlapping_memrefs_p (x, y)
 	   : MEM_SIZE (rtly) ? INTVAL (MEM_SIZE (rtly)) :
 	   -1);
 
-  /* If we have an offset or size for either memref, it can update the values
-     computed above.  */
+  /* If we have an offset for either memref, it can update the values computed
+     above.  */
   if (MEM_OFFSET (x))
     offsetx += INTVAL (MEM_OFFSET (x)), sizex -= INTVAL (MEM_OFFSET (x));
   if (MEM_OFFSET (y))
     offsety += INTVAL (MEM_OFFSET (y)), sizey -= INTVAL (MEM_OFFSET (y));
 
-  if (MEM_SIZE (x))
+  /* If a memref has both a size and an offset, we can use the smaller size.
+     We can't do this is the offset isn't know because we must view this
+     memref as being anywhere inside the DECL's MEM.  */
+  if (MEM_SIZE (x) && MEM_OFFSET (x))
     sizex = INTVAL (MEM_SIZE (x));
-  if (MEM_SIZE (y))
+  if (MEM_SIZE (y) && MEM_OFFSET (y))
     sizey = INTVAL (MEM_SIZE (y));
 
   /* Put the values of the memref with the lower offset in X's values.  */

@@ -1,3 +1,8 @@
+Mon Nov 12 11:58:26 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (nonoverlapping_memrefs_p): Only update size from memref
+	if both size and offset known.
+
 2001-11-12  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/ia64/freebsd.h: Fix misspelling.
