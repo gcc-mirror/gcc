@@ -24,11 +24,6 @@
 	* config/ia64/ia64.c (rtx_needs_barrier): Call rtx_needs_barrier
 	for RETURNS as well.
 
-2001-05-14  Nick Clifton  <nickc@cambridge.redhat.com>
-
-	* decl.c (duplicate_decls): Suppress warning about duplicate
-        decls if the first decl is a friend.
-
 Mon May 14 17:34:48 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (TARGET_64BIT): Define to constant if !TARGET_BI_ARCH
