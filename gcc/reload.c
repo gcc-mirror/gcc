@@ -5517,7 +5517,20 @@ find_reloads_address_part (x, loc, class, mode, opnum, type, ind_levels)
       && (! LEGITIMATE_CONSTANT_P (x)
 	  || PREFERRED_RELOAD_CLASS (x, class) == NO_REGS))
     {
-      rtx tem = x = force_const_mem (mode, x);
+      rtx tem;
+
+      /* If this is a CONST_INT, it could have been created by a
+	 plus_constant call in eliminate_regs, which means it may be
+	 on the reload_obstack.  reload_obstack will be freed later, so
+	 we can't allow such RTL to be put in the constant pool.  There
+	 is code in force_const_mem to check for this case, but it doesn't
+	 work because we have already popped off the reload_obstack, so
+	 rtl_obstack == saveable_obstack is true at this point.  */
+      if (GET_CODE (x) == CONST_INT)
+	tem = x = force_const_mem (mode, GEN_INT (INTVAL (x)));
+      else
+	tem = x = force_const_mem (mode, x);
+
       find_reloads_address (mode, &tem, XEXP (tem, 0), &XEXP (tem, 0),
 			    opnum, type, ind_levels, 0);
     }
@@ -5527,7 +5540,13 @@ find_reloads_address_part (x, loc, class, mode, opnum, type, ind_levels)
 	   && (! LEGITIMATE_CONSTANT_P (XEXP (x, 1))
 	       || PREFERRED_RELOAD_CLASS (XEXP (x, 1), class) == NO_REGS))
     {
-      rtx tem = force_const_mem (GET_MODE (x), XEXP (x, 1));
+      rtx tem;
+
+      /* See comment above.  */
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	tem = force_const_mem (GET_MODE (x), GEN_INT (INTVAL (XEXP (x, 1))));
+      else
+	tem = force_const_mem (GET_MODE (x), XEXP (x, 1));
 
       x = gen_rtx_PLUS (GET_MODE (x), XEXP (x, 0), tem);
       find_reloads_address (mode, &tem, XEXP (tem, 0), &XEXP (tem, 0),
