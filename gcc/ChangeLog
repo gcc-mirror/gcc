@@ -1,3 +1,9 @@
+2003-09-18  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_unary_operation): Only transform
+	(not (eq X Y)) into (ne X Y) when mode is BImode or STORE_FLAG_VALUE
+	is -1.  RTL "not" is a bit-wise not, "~", not a logical not "!".
+
 2003-09-18  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR target/11674
