@@ -440,6 +440,29 @@ create_bb (void *h, void *e, basic_block after)
 				 Edge creation
 ---------------------------------------------------------------------------*/
 
+/* Fold COND_EXPR_COND of each COND_EXPR.  */
+
+static void
+fold_cond_expr_cond (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      tree stmt = last_stmt (bb);
+
+      if (stmt
+	  && TREE_CODE (stmt) == COND_EXPR)
+	{
+	  tree cond = fold (COND_EXPR_COND (stmt));
+	  if (integer_zerop (cond))
+	    COND_EXPR_COND (stmt) = integer_zero_node;
+	  else if (integer_onep (cond))
+	    COND_EXPR_COND (stmt) = integer_one_node;
+	}
+    }
+}
+
 /* Join all the blocks in the flowgraph.  */
 
 static void
@@ -477,6 +500,9 @@ make_edges (void)
   /* We do not care about fake edges, so remove any that the CFG
      builder inserted for completeness.  */
   remove_fake_exit_edges ();
+
+  /* Fold COND_EXPR_COND of each COND_EXPR.  */
+  fold_cond_expr_cond ();
 
   /* Clean up the graph and warn for unreachable code.  */
   cleanup_tree_cfg ();
@@ -2198,14 +2224,7 @@ find_taken_edge (basic_block bb, tree val)
   gcc_assert (is_ctrl_stmt (stmt));
   gcc_assert (val);
 
-  /* If VAL is a predicate of the form N RELOP N, where N is an
-     SSA_NAME, we can usually determine its truth value.  */
-  if (COMPARISON_CLASS_P (val))
-    val = fold (val);
-
-  /* If VAL is not a constant, we can't determine which edge might
-     be taken.  */
-  if (!really_constant_p (val))
+  if (TREE_CODE (val) != INTEGER_CST)
     return NULL;
 
   if (TREE_CODE (stmt) == COND_EXPR)
@@ -2237,12 +2256,12 @@ find_taken_edge_cond_expr (basic_block bb, tree val)
     return true_edge;
   else if (integer_zerop (val))
     return false_edge;
-  else
-    return NULL;
+
+  gcc_unreachable ();
 }
 
 
-/* Given a constant value VAL and the entry block BB to a SWITCH_EXPR
+/* Given an INTEGER_CST VAL and the entry block BB to a SWITCH_EXPR
    statement, determine which edge will be taken out of the block.  Return
    NULL if any edge may be taken.  */
 
@@ -2252,9 +2271,6 @@ find_taken_edge_switch_expr (basic_block bb, tree val)
   tree switch_expr, taken_case;
   basic_block dest_bb;
   edge e;
-
-  if (TREE_CODE (val) != INTEGER_CST)
-    return NULL;
 
   switch_expr = last_stmt (bb);
   taken_case = find_case_label_for_value (switch_expr, val);
