@@ -1971,11 +1971,7 @@ intmax_t i = -1;
 EOF
 if { (eval echo configure:1973: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
-  cat >> confdefs.h <<EOF
-#define HAVE_INTTYPES_H 1
-EOF
-
-   gcc_cv_header_inttypes_h=yes
+  gcc_cv_header_inttypes_h=yes
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
@@ -1986,18 +1982,24 @@ rm -f conftest*
 fi
 
 echo "$ac_t""$gcc_cv_header_inttypes_h" 1>&6
+if test $gcc_cv_header_inttypes_h = yes; then
+  cat >> confdefs.h <<\EOF
+#define HAVE_INTTYPES_H 1
+EOF
+
+fi
 
 for ac_func in strtoul bsearch strerror putenv popen bcopy bzero bcmp \
 	index rindex strchr strrchr kill getrlimit setrlimit atoll atoq \
 	sysconf isascii gettimeofday strsignal
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:1996: checking for $ac_func" >&5
+echo "configure:1998: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2001 "configure"
+#line 2003 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -2020,7 +2022,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:2024: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2026: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -2049,12 +2051,12 @@ done
 #AC_CHECK_TYPE(wchar_t, unsigned int)
 
 echo $ac_n "checking for vprintf""... $ac_c" 1>&6
-echo "configure:2053: checking for vprintf" >&5
+echo "configure:2055: checking for vprintf" >&5
 if eval "test \"`echo '$''{'ac_cv_func_vprintf'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2058 "configure"
+#line 2060 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char vprintf(); below.  */
@@ -2077,7 +2079,7 @@ vprintf();
 
 ; return 0; }
 EOF
-if { (eval echo configure:2081: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2083: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_func_vprintf=yes"
 else
@@ -2101,12 +2103,12 @@ fi
 
 if test "$ac_cv_func_vprintf" != yes; then
 echo $ac_n "checking for _doprnt""... $ac_c" 1>&6
-echo "configure:2105: checking for _doprnt" >&5
+echo "configure:2107: checking for _doprnt" >&5
 if eval "test \"`echo '$''{'ac_cv_func__doprnt'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2110 "configure"
+#line 2112 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char _doprnt(); below.  */
@@ -2129,7 +2131,7 @@ _doprnt();
 
 ; return 0; }
 EOF
-if { (eval echo configure:2133: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2135: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_func__doprnt=yes"
 else
@@ -2165,7 +2167,7 @@ fi
 
 
 echo $ac_n "checking whether the printf functions support %p""... $ac_c" 1>&6
-echo "configure:2169: checking whether the printf functions support %p" >&5
+echo "configure:2171: checking whether the printf functions support %p" >&5
 if eval "test \"`echo '$''{'gcc_cv_func_printf_ptr'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2173,7 +2175,7 @@ else
   gcc_cv_func_printf_ptr=no
 else
   cat > conftest.$ac_ext <<EOF
-#line 2177 "configure"
+#line 2179 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 
@@ -2186,7 +2188,7 @@ main()
   exit (p != q);
 }
 EOF
-if { (eval echo configure:2190: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:2192: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest && (./conftest; exit) 2>/dev/null
 then
   gcc_cv_func_printf_ptr=yes
 else
@@ -2210,12 +2212,12 @@ EOF
 fi
 
 echo $ac_n "checking for pid_t""... $ac_c" 1>&6
-echo "configure:2214: checking for pid_t" >&5
+echo "configure:2216: checking for pid_t" >&5
 if eval "test \"`echo '$''{'ac_cv_type_pid_t'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2219 "configure"
+#line 2221 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #if STDC_HEADERS
@@ -2244,17 +2246,17 @@ fi
 
 ac_safe=`echo "vfork.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for vfork.h""... $ac_c" 1>&6
-echo "configure:2248: checking for vfork.h" >&5
+echo "configure:2250: checking for vfork.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2253 "configure"
+#line 2255 "configure"
 #include "confdefs.h"
 #include <vfork.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2258: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2260: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -2279,18 +2281,18 @@ else
 fi
 
 echo $ac_n "checking for working vfork""... $ac_c" 1>&6
-echo "configure:2283: checking for working vfork" >&5
+echo "configure:2285: checking for working vfork" >&5
 if eval "test \"`echo '$''{'ac_cv_func_vfork_works'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   if test "$cross_compiling" = yes; then
   echo $ac_n "checking for vfork""... $ac_c" 1>&6
-echo "configure:2289: checking for vfork" >&5
+echo "configure:2291: checking for vfork" >&5
 if eval "test \"`echo '$''{'ac_cv_func_vfork'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2294 "configure"
+#line 2296 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char vfork(); below.  */
@@ -2313,7 +2315,7 @@ vfork();
 
 ; return 0; }
 EOF
-if { (eval echo configure:2317: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2319: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_func_vfork=yes"
 else
@@ -2335,7 +2337,7 @@ fi
 ac_cv_func_vfork_works=$ac_cv_func_vfork
 else
   cat > conftest.$ac_ext <<EOF
-#line 2339 "configure"
+#line 2341 "configure"
 #include "confdefs.h"
 /* Thanks to Paul Eggert for this test.  */
 #include <stdio.h>
@@ -2430,7 +2432,7 @@ main() {
   }
 }
 EOF
-if { (eval echo configure:2434: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:2436: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest && (./conftest; exit) 2>/dev/null
 then
   ac_cv_func_vfork_works=yes
 else
@@ -2458,12 +2460,12 @@ for ac_func in malloc realloc calloc free bcopy bzero bcmp \
 	strsignal
 do
 echo $ac_n "checking whether $ac_func must be declared""... $ac_c" 1>&6
-echo "configure:2462: checking whether $ac_func must be declared" >&5
+echo "configure:2464: checking whether $ac_func must be declared" >&5
 if eval "test \"`echo '$''{'gcc_cv_decl_needed_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2467 "configure"
+#line 2469 "configure"
 #include "confdefs.h"
 
 #include <stdio.h>
@@ -2496,7 +2498,7 @@ int main() {
 char *(*pfn) = (char *(*)) $ac_func
 ; return 0; }
 EOF
-if { (eval echo configure:2500: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2502: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   eval "gcc_cv_decl_needed_$ac_func=no"
 else
@@ -2525,12 +2527,12 @@ done
 for ac_func in getrlimit setrlimit
 do
 echo $ac_n "checking whether $ac_func must be declared""... $ac_c" 1>&6
-echo "configure:2529: checking whether $ac_func must be declared" >&5
+echo "configure:2531: checking whether $ac_func must be declared" >&5
 if eval "test \"`echo '$''{'gcc_cv_decl_needed_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2534 "configure"
+#line 2536 "configure"
 #include "confdefs.h"
 
 #include <stdio.h>
@@ -2567,7 +2569,7 @@ int main() {
 char *(*pfn) = (char *(*)) $ac_func
 ; return 0; }
 EOF
-if { (eval echo configure:2571: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2573: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   eval "gcc_cv_decl_needed_$ac_func=no"
 else
@@ -2594,12 +2596,12 @@ done
 
 
 echo $ac_n "checking for sys_siglist declaration in signal.h or unistd.h""... $ac_c" 1>&6
-echo "configure:2598: checking for sys_siglist declaration in signal.h or unistd.h" >&5
+echo "configure:2600: checking for sys_siglist declaration in signal.h or unistd.h" >&5
 if eval "test \"`echo '$''{'ac_cv_decl_sys_siglist'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2603 "configure"
+#line 2605 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #include <signal.h>
@@ -2611,7 +2613,7 @@ int main() {
 char *msg = *(sys_siglist + 1);
 ; return 0; }
 EOF
-if { (eval echo configure:2615: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2617: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_decl_sys_siglist=yes
 else
@@ -5585,14 +5587,14 @@ fi
 # auto-host.h is the file containing items generated by autoconf and is
 # the first file included by config.h.
 null_defines=
-host_xm_file="auto-host.h ${host_xm_file}"
+host_xm_file="auto-host.h gansidecl.h ${host_xm_file}"
 
 # If host=build, it is correct to have hconfig include auto-host.h
 # as well.  If host!=build, we are in error and need to do more 
 # work to find out the build config parameters.
 if test x$host = x$build
 then
-	build_xm_file="auto-host.h ${build_xm_file}"
+	build_xm_file="auto-host.h gansidecl.h ${build_xm_file}"
 else
 	# We create a subdir, then run autoconf in the subdir.
 	# To prevent recursion we set host and build for the new
@@ -5614,8 +5616,11 @@ else
 	mv auto-host.h ../auto-build.h
 	cd ..
 	rm -rf $tempdir
-	build_xm_file="auto-build.h ${build_xm_file}"
+	build_xm_file="auto-build.h gansidecl.h ${build_xm_file}"
 fi
+
+xm_file="gansidecl.h ${xm_file}"
+tm_file="gansidecl.h ${tm_file}"
 
 vars="host_xm_file tm_file xm_file build_xm_file"
 links="config.h tm.h tconfig.h hconfig.h"
@@ -5721,28 +5726,28 @@ out_object_file=`basename $out_file .c`.o
 
 tm_file_list=
 for f in $tm_file; do
-	tm_file_list="${tm_file_list} \$(srcdir)/config/$f"
+	if test $f != "gansidecl.h" ; then
+		tm_file_list="${tm_file_list} \$(srcdir)/config/$f"
+	else
+		tm_file_list="${tm_file_list} $f"
+	fi
 done
 
 host_xm_file_list=
 for f in $host_xm_file; do
-	if test $f != "auto-host.h"; then
+	if test $f != "auto-host.h" -a $f != "gansidecl.h" ; then
 		host_xm_file_list="${host_xm_file_list} \$(srcdir)/config/$f"
 	else
-		host_xm_file_list="${host_xm_file_list} auto-host.h"
+		host_xm_file_list="${host_xm_file_list} $f"
 	fi
 done
 
 build_xm_file_list=
 for f in $build_xm_file; do
-	if test $f != "auto-build.h"; then
-		if test $f != "auto-host.h"; then
-			build_xm_file_list="${build_xm_file_list} \$(srcdir)/config/$f"
-		else
-			build_xm_file_list="${build_xm_file_list} auto-host.h"
-		fi
+	if test $f != "auto-build.h" -a $f != "auto-host.h" -a $f != "gansidecl.h" ; then
+		build_xm_file_list="${build_xm_file_list} \$(srcdir)/config/$f"
 	else
-		build_xm_file_list="${build_xm_file_list} auto-build.h"
+		build_xm_file_list="${build_xm_file_list} $f"
 	fi
 done
 
@@ -5830,7 +5835,7 @@ fi
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:5834: checking assembler alignment features" >&5
+echo "configure:5839: checking assembler alignment features" >&5
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
@@ -5903,7 +5908,7 @@ fi
 echo "$ac_t""$gcc_cv_as_alignment_features" 1>&6
 
 echo $ac_n "checking assembler subsection support""... $ac_c" 1>&6
-echo "configure:5907: checking assembler subsection support" >&5
+echo "configure:5912: checking assembler subsection support" >&5
 gcc_cv_as_subsections=
 if test x$gcc_cv_as != x; then
 	# Check if we have .subsection
@@ -6139,7 +6144,7 @@ fi
 
 # Warn if using init_priority.
 echo $ac_n "checking whether to enable init_priority by default""... $ac_c" 1>&6
-echo "configure:6143: checking whether to enable init_priority by default" >&5
+echo "configure:6148: checking whether to enable init_priority by default" >&5
 if test x$enable_init_priority != xyes; then
   enable_init_priority=no
 fi

@@ -35,7 +35,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 # include <sys/resource.h>
 #endif
 
-#include "gansidecl.h"
 #include "cpplib.h"
 #include "cpphash.h"
 #include "output.h"

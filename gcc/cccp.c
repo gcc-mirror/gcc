@@ -37,7 +37,6 @@ Boston, MA 02111-1307, USA. */
 
 typedef unsigned char U_CHAR;
 
-#include "gansidecl.h"
 #include "pcp.h"
 
 #ifdef MULTIBYTE_CHARS

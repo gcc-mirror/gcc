@@ -25,7 +25,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #ifndef EMACS
 #include "config.h"
 #include "system.h"
-#include "gansidecl.h"
 #else
 #include <stdio.h>
 #endif /* not EMACS */

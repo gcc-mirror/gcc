@@ -20,8 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef NO_HALF_PIC
 
-#include "gansidecl.h"
-
 #if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
 union tree_node;		/* forward reference */
 struct rtx_def;

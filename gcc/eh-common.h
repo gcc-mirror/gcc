@@ -15,8 +15,6 @@
    checking of runtime conditions. If the handler wasn't suppose to
    get the exception, it performs a re-throw. */
 
-#include "gansidecl.h"
-
 
 /* The handler_label field MUST be the first field in this structure. The 
    __throw()  library routine expects uses __eh_stub() from except.c, which

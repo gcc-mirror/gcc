@@ -20,7 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "hconfig.h"
 #include "system.h"
-#include "gansidecl.h"
 
 #define DEFTREECODE(SYM, NAME, TYPE, LEN)   STRINGIFY(SYM),
 

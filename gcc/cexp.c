@@ -30,7 +30,6 @@
 #include "system.h"
 #include <setjmp.h>
 /* #define YYDEBUG 1 */
-#include "gansidecl.h"
 
 #ifdef MULTIBYTE_CHARS
 #include "mbchar.h"

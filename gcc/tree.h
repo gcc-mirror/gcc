@@ -1372,8 +1372,6 @@ union tree_node
   struct tree_block block;
  };
 
-#include "gansidecl.h"
-
 #define NULL_TREE (tree) NULL
 
 /* The following functions accept a wide integer argument.  Rather than

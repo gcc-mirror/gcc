@@ -173,8 +173,6 @@ typedef struct rtx_def
   rtunion fld[1];
 } *rtx;
 
-#include "gansidecl.h"
-
 #define NULL_RTX (rtx) 0
 
 /* Define macros to access the `code' field of the rtx.  */

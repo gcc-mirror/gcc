@@ -21,8 +21,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef HAVE_MACHINE_MODES
 #define HAVE_MACHINE_MODES
 
-#include "gansidecl.h"
-
 /* Strictly speaking, this isn't the proper place to include these definitions,
    but this file is included by every GCC file.
 

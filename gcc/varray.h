@@ -22,10 +22,6 @@
 #ifndef _VARRAY_H_
 #define _VARRAY_H_
 
-#ifndef PROTO
-#include "gansidecl.h"
-#endif
-
 #ifndef HOST_WIDE_INT
 #include "machmode.h"
 #endif

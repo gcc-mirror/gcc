@@ -44,7 +44,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "config.h"
 #include "system.h"
 #include <sys/stat.h>
-#include "gansidecl.h"
 
 #include "gcov-io.h"
 

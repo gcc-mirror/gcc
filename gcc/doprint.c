@@ -5,7 +5,6 @@
 
 #include "config.h"
 #include "system.h"
-#include "gansidecl.h"
 #undef _doprnt
 
 #ifdef TEST /* Make sure to use the internal one. */

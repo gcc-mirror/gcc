@@ -20,7 +20,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "svr4.h"	/* Automatically does #undef CPP_PREDEFINES */
-#include "gansidecl.h"	/* For the PROTO macro  */
 
 #undef ASM_SPEC
 #define ASM_SPEC "%{mv*:-mv%*}"
