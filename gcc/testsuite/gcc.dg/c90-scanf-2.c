@@ -14,9 +14,9 @@ __extension__ typedef long long int llong;
    should be used.
 */
 #include <limits.h>
-#if INT_MAX == LLONG_MAX
+#if INT_MAX == __LONG_LONG_MAX__
 typedef int intmax_t;
-#elif LONG_MAX == LLONG_MAX
+#elif LONG_MAX == __LONG_LONG_MAX__
 typedef long intmax_t;
 #else
 __extension__ typedef long long intmax_t;
