@@ -1,3 +1,8 @@
+2001-09-05  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/linux.h: Set CPLUSPLUS_CPP_SPEC.
+	* config/sparc/linux64.h: Likewise.
+
 2001-09-05  Andreas Jaeger  <aj@suse.de>
 
 	* doc/invoke.texi (i386 Options): -mwide-multiply is not
