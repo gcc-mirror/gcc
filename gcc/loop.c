@@ -7795,6 +7795,17 @@ check_dbra_loop (loop, insn_count)
   else
     return 0;
 
+  {
+    /* If more than one condition is present to control the loop, then
+       do not procceed as this function does not know how to rewrite loop 
+       tests with more than one condition.  */
+
+    rtx jump1;
+    if ((jump1 = prev_nonnote_insn (jump)) != loop_continue)
+      if (GET_CODE (jump1) == JUMP_INSN))
+        return 0;
+  }
+
   /* Check all of the bivs to see if the compare uses one of them.
      Skip biv's set more than once because we can't guarantee that
      it will be zero on the last iteration.  Also skip if the biv is
