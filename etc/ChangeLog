@@ -1,3 +1,8 @@
+Mon Sep 15 22:53:01 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* aclocal.m4: New file with replacement for AC_PROG_INSTALL.
+	* configure.in: Use EGCS_PROG_INSTALL.
+
 Tue Jun 17 15:50:23 1997  Angela Marie Thomas (angela@cygnus.com)
 
 	* Install.in: Add /usr/bsd to PATH for Irix (home of compress)

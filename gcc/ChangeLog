@@ -1,3 +1,8 @@
+Mon Sep 15 22:53:01 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* aclocal.m4: Add replacement for AC_PROG_INSTALL.
+	* configure.in: Use EGCS_PROG_INSTALL.
+
 Mon Sep 15 22:40:55 1997  Jim Wilson  (wilson@cygnus.com)
 
 	* dwarf2out.c (gen_subprogram_die): Handle redefinition of an
