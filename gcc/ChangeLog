@@ -1,3 +1,9 @@
+Mon Jan 22 20:53:47 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.md (return_internal): Add a USE of the PIC register to ensure
+	it is restored after each call.
+	(return expander): Corresponding changes.
+
 2001-01-22  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* rs6000.h (INIT_EXPANDERS): Delete.
