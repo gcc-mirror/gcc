@@ -41,7 +41,7 @@ extern int target_flags;
 #define TARGET_SWITCHES		\
   { { "c400", 1, "Generate code for the C400" },		\
     { "c300", -1, "Generate code for the C300" },		\
-    { "", TARGET_DEFAULT} }
+    { "", TARGET_DEFAULT, NULL} }
 
 #define TARGET_C400 1
 #define TARGET_C300 0

@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_SWITCHES  \
   { {"vaxc-alignment", 2, "Use VAX-C alignment"}, \
-    { "", TARGET_DEFAULT}}
+    { "", TARGET_DEFAULT, NULL}}
 
 /* Default target_flags if no switches specified.  */
 
