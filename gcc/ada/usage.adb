@@ -445,6 +445,7 @@ begin
    Write_Line ("        r    check casing for identifier references");
    Write_Line ("        s    check separate subprogram specs present");
    Write_Line ("        t    check token separation rules");
+   Write_Line ("        x    check extra parens around conditionals");
 
    --  Lines for -gnatyN switch
 

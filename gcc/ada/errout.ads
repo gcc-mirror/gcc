@@ -584,6 +584,12 @@ package Errout is
    --  Given a construct C, finds the first node in the construct, i.e. the
    --  one with the lowest Sloc value. This is useful in placing error msgs.
 
+   function First_Sloc (N : Node_Id) return Source_Ptr;
+   --  Given the node for an expression, return a source pointer value that
+   --  points to the start of the first token in the expression. In the case
+   --  where the expression is parenthesized, an attempt is made to include
+   --  the parentheses (i.e. to return the location of the initial paren).
+
    procedure Purge_Messages (From : Source_Ptr; To : Source_Ptr)
      renames Erroutc.Purge_Messages;
    --  All error messages whose location is in the range From .. To (not

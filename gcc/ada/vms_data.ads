@@ -1815,7 +1815,9 @@ package VMS_Data is
                                             "SPECS "                       &
                                                "-gnatys "                  &
                                             "TOKEN "                       &
-                                               "-gnatyt ";
+                                               "-gnatyt "                  &
+                                            "XTRA_PARENS "                 &
+                                               "-gnatyx ";
    --        /NOSTYLE_CHECKS (D)
    --        /STYLE_CHECKS[=(keyword,[...])]
    --

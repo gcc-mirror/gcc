@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -217,7 +217,7 @@ package body Styleg.C is
 
    procedure Subprogram_Not_In_Alpha_Order (Name : Node_Id) is
    begin
-      if Style_Check_Subprogram_Order then
+      if Style_Check_Order_Subprograms then
          Error_Msg_N
            ("(style) subprogram body& not in alphabetical order", Name);
       end if;
