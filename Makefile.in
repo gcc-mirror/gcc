@@ -28157,88 +28157,88 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 .PHONY: stage1-start stage1-end
 
 stage1-start::
-	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
+	@[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
 	echo stage1 > stage_current ; \
 	echo stage1 > stage_last
 @if bfd
-	[ -d stage1-bfd ] || mkdir stage1-bfd; \
+	@[ -d stage1-bfd ] || mkdir stage1-bfd; \
 	set stage1-bfd bfd ; @CREATE_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
-	[ -d stage1-opcodes ] || mkdir stage1-opcodes; \
+	@[ -d stage1-opcodes ] || mkdir stage1-opcodes; \
 	set stage1-opcodes opcodes ; @CREATE_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
-	[ -d stage1-binutils ] || mkdir stage1-binutils; \
+	@[ -d stage1-binutils ] || mkdir stage1-binutils; \
 	set stage1-binutils binutils ; @CREATE_LINK_TO_DIR@ 
 @endif binutils
 @if gas
-	[ -d stage1-gas ] || mkdir stage1-gas; \
+	@[ -d stage1-gas ] || mkdir stage1-gas; \
 	set stage1-gas gas ; @CREATE_LINK_TO_DIR@ 
 @endif gas
 @if gcc
-	[ -d stage1-gcc ] || mkdir stage1-gcc; \
+	@[ -d stage1-gcc ] || mkdir stage1-gcc; \
 	set stage1-gcc gcc ; @CREATE_LINK_TO_DIR@ 
 @endif gcc
 @if intl
-	[ -d stage1-intl ] || mkdir stage1-intl; \
+	@[ -d stage1-intl ] || mkdir stage1-intl; \
 	set stage1-intl intl ; @CREATE_LINK_TO_DIR@ 
 @endif intl
 @if ld
-	[ -d stage1-ld ] || mkdir stage1-ld; \
+	@[ -d stage1-ld ] || mkdir stage1-ld; \
 	set stage1-ld ld ; @CREATE_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
-	[ -d stage1-libcpp ] || mkdir stage1-libcpp; \
+	@[ -d stage1-libcpp ] || mkdir stage1-libcpp; \
 	set stage1-libcpp libcpp ; @CREATE_LINK_TO_DIR@ 
 @endif libcpp
 @if libbanshee
-	[ -d stage1-libbanshee ] || mkdir stage1-libbanshee; \
+	@[ -d stage1-libbanshee ] || mkdir stage1-libbanshee; \
 	set stage1-libbanshee libbanshee ; @CREATE_LINK_TO_DIR@ 
 @endif libbanshee
 @if libiberty
-	[ -d stage1-libiberty ] || mkdir stage1-libiberty; \
+	@[ -d stage1-libiberty ] || mkdir stage1-libiberty; \
 	set stage1-libiberty libiberty ; @CREATE_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
-	[ -d stage1-zlib ] || mkdir stage1-zlib; \
+	@[ -d stage1-zlib ] || mkdir stage1-zlib; \
 	set stage1-zlib zlib ; @CREATE_LINK_TO_DIR@ 
 @endif zlib
 
 stage1-end::
-	rm -f stage_current
+	@rm -f stage_current
 @if bfd
-	set bfd stage1-bfd ; @UNDO_LINK_TO_DIR@ 
+	@set bfd stage1-bfd ; @UNDO_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
-	set opcodes stage1-opcodes ; @UNDO_LINK_TO_DIR@ 
+	@set opcodes stage1-opcodes ; @UNDO_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
-	set binutils stage1-binutils ; @UNDO_LINK_TO_DIR@ 
+	@set binutils stage1-binutils ; @UNDO_LINK_TO_DIR@ 
 @endif binutils
 @if gas
-	set gas stage1-gas ; @UNDO_LINK_TO_DIR@ 
+	@set gas stage1-gas ; @UNDO_LINK_TO_DIR@ 
 @endif gas
 @if gcc
-	set gcc stage1-gcc ; @UNDO_LINK_TO_DIR@ 
+	@set gcc stage1-gcc ; @UNDO_LINK_TO_DIR@ 
 @endif gcc
 @if intl
-	set intl stage1-intl ; @UNDO_LINK_TO_DIR@ 
+	@set intl stage1-intl ; @UNDO_LINK_TO_DIR@ 
 @endif intl
 @if ld
-	set ld stage1-ld ; @UNDO_LINK_TO_DIR@ 
+	@set ld stage1-ld ; @UNDO_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
-	set libcpp stage1-libcpp ; @UNDO_LINK_TO_DIR@ 
+	@set libcpp stage1-libcpp ; @UNDO_LINK_TO_DIR@ 
 @endif libcpp
 @if libbanshee
-	set libbanshee stage1-libbanshee ; @UNDO_LINK_TO_DIR@ 
+	@set libbanshee stage1-libbanshee ; @UNDO_LINK_TO_DIR@ 
 @endif libbanshee
 @if libiberty
-	set libiberty stage1-libiberty ; @UNDO_LINK_TO_DIR@ 
+	@set libiberty stage1-libiberty ; @UNDO_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
-	set zlib stage1-zlib ; @UNDO_LINK_TO_DIR@ 
+	@set zlib stage1-zlib ; @UNDO_LINK_TO_DIR@ 
 @endif zlib
 
 # Bubble a bugfix through all the stages up to stage 1.  They
@@ -28246,11 +28246,11 @@ stage1-end::
 # be reconfigured as well.
 .PHONY: stage1-bubble
 stage1-bubble:: 
-	@case `echo all-stage1-*` in \
-	  'all-stage1-*') ;; \
-	  *) echo Remaking stage 1 ; rm -f all-stage1-* ;; \
-	esac ; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage1
+	@if test -f stage1-lean  ; then \
+	  echo Skipping rebuild of stage1 ; \
+	else \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage1; \
+	fi
 
 .PHONY: all-stage1
 all-stage1:     \
@@ -28267,19 +28267,17 @@ all-stage1:     \
   maybe-all-stage1-zlib       
 
 
+.PHONY: configure-stage1-bfd maybe-configure-stage1-bfd
+.PHONY: all-stage1-bfd maybe-all-stage1-bfd
+
 maybe-configure-stage1-bfd:
 maybe-all-stage1-bfd:
 
 @if bfd-bootstrap
 maybe-configure-stage1-bfd: configure-stage1-bfd
-configure-stage1-bfd: 
-	$(MAKE) stage1-start
-	@if [ -f stage1-bfd/Makefile ] ; then \
-	  $(STAMP) configure-stage1-bfd ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage1-bfd:
+	@$(MAKE) stage1-start
+	@[ -f bfd/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
@@ -28298,34 +28296,30 @@ configure-stage1-bfd:
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"  && \
-	  $(STAMP) ../configure-stage1-bfd
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 
 maybe-all-stage1-bfd: all-stage1-bfd
 all-stage1-bfd: configure-stage1-bfd
-	$(MAKE) stage1-start
+	@$(MAKE) stage1-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
 	cd bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
-		CFLAGS="$(STAGE1_CFLAGS)"  && \
-	$(STAMP) ../all-stage1-bfd
+		CFLAGS="$(STAGE1_CFLAGS)" 
 @endif bfd-bootstrap
+
+.PHONY: configure-stage1-opcodes maybe-configure-stage1-opcodes
+.PHONY: all-stage1-opcodes maybe-all-stage1-opcodes
 
 maybe-configure-stage1-opcodes:
 maybe-all-stage1-opcodes:
 
 @if opcodes-bootstrap
 maybe-configure-stage1-opcodes: configure-stage1-opcodes
-configure-stage1-opcodes: 
-	$(MAKE) stage1-start
-	@if [ -f stage1-opcodes/Makefile ] ; then \
-	  $(STAMP) configure-stage1-opcodes ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage1-opcodes:
+	@$(MAKE) stage1-start
+	@[ -f opcodes/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
@@ -28344,34 +28338,30 @@ configure-stage1-opcodes:
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"  && \
-	  $(STAMP) ../configure-stage1-opcodes
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 
 maybe-all-stage1-opcodes: all-stage1-opcodes
 all-stage1-opcodes: configure-stage1-opcodes
-	$(MAKE) stage1-start
+	@$(MAKE) stage1-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
 	cd opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
-		CFLAGS="$(STAGE1_CFLAGS)"  && \
-	$(STAMP) ../all-stage1-opcodes
+		CFLAGS="$(STAGE1_CFLAGS)" 
 @endif opcodes-bootstrap
+
+.PHONY: configure-stage1-binutils maybe-configure-stage1-binutils
+.PHONY: all-stage1-binutils maybe-all-stage1-binutils
 
 maybe-configure-stage1-binutils:
 maybe-all-stage1-binutils:
 
 @if binutils-bootstrap
 maybe-configure-stage1-binutils: configure-stage1-binutils
-configure-stage1-binutils: 
-	$(MAKE) stage1-start
-	@if [ -f stage1-binutils/Makefile ] ; then \
-	  $(STAMP) configure-stage1-binutils ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage1-binutils:
+	@$(MAKE) stage1-start
+	@[ -f binutils/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
@@ -28390,34 +28380,30 @@ configure-stage1-binutils:
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"  && \
-	  $(STAMP) ../configure-stage1-binutils
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 
 maybe-all-stage1-binutils: all-stage1-binutils
 all-stage1-binutils: configure-stage1-binutils
-	$(MAKE) stage1-start
+	@$(MAKE) stage1-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
 	cd binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
-		CFLAGS="$(STAGE1_CFLAGS)"  && \
-	$(STAMP) ../all-stage1-binutils
+		CFLAGS="$(STAGE1_CFLAGS)" 
 @endif binutils-bootstrap
+
+.PHONY: configure-stage1-gas maybe-configure-stage1-gas
+.PHONY: all-stage1-gas maybe-all-stage1-gas
 
 maybe-configure-stage1-gas:
 maybe-all-stage1-gas:
 
 @if gas-bootstrap
 maybe-configure-stage1-gas: configure-stage1-gas
-configure-stage1-gas: 
-	$(MAKE) stage1-start
-	@if [ -f stage1-gas/Makefile ] ; then \
-	  $(STAMP) configure-stage1-gas ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage1-gas:
+	@$(MAKE) stage1-start
+	@[ -f gas/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
@@ -28436,34 +28422,30 @@ configure-stage1-gas:
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"  && \
-	  $(STAMP) ../configure-stage1-gas
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 
 maybe-all-stage1-gas: all-stage1-gas
 all-stage1-gas: configure-stage1-gas
-	$(MAKE) stage1-start
+	@$(MAKE) stage1-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
 	cd gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
-		CFLAGS="$(STAGE1_CFLAGS)"  && \
-	$(STAMP) ../all-stage1-gas
+		CFLAGS="$(STAGE1_CFLAGS)" 
 @endif gas-bootstrap
+
+.PHONY: configure-stage1-gcc maybe-configure-stage1-gcc
+.PHONY: all-stage1-gcc maybe-all-stage1-gcc
 
 maybe-configure-stage1-gcc:
 maybe-all-stage1-gcc:
 
 @if gcc-bootstrap
 maybe-configure-stage1-gcc: configure-stage1-gcc
-configure-stage1-gcc: 
-	$(MAKE) stage1-start
-	@if [ -f stage1-gcc/Makefile ] ; then \
-	  $(STAMP) configure-stage1-gcc ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage1-gcc:
+	@$(MAKE) stage1-start
+	@[ -f gcc/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
@@ -28482,34 +28464,30 @@ configure-stage1-gcc:
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"  && \
-	  $(STAMP) ../configure-stage1-gcc
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 
 maybe-all-stage1-gcc: all-stage1-gcc
 all-stage1-gcc: configure-stage1-gcc
-	$(MAKE) stage1-start
+	@$(MAKE) stage1-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
 	cd gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
-		CFLAGS="$(STAGE1_CFLAGS)" $(EXTRA_GCC_FLAGS) && \
-	$(STAMP) ../all-stage1-gcc
+		CFLAGS="$(STAGE1_CFLAGS)" $(EXTRA_GCC_FLAGS)
 @endif gcc-bootstrap
+
+.PHONY: configure-stage1-intl maybe-configure-stage1-intl
+.PHONY: all-stage1-intl maybe-all-stage1-intl
 
 maybe-configure-stage1-intl:
 maybe-all-stage1-intl:
 
 @if intl-bootstrap
 maybe-configure-stage1-intl: configure-stage1-intl
-configure-stage1-intl: 
-	$(MAKE) stage1-start
-	@if [ -f stage1-intl/Makefile ] ; then \
-	  $(STAMP) configure-stage1-intl ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage1-intl:
+	@$(MAKE) stage1-start
+	@[ -f intl/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
@@ -28528,34 +28506,30 @@ configure-stage1-intl:
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"  && \
-	  $(STAMP) ../configure-stage1-intl
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 
 maybe-all-stage1-intl: all-stage1-intl
 all-stage1-intl: configure-stage1-intl
-	$(MAKE) stage1-start
+	@$(MAKE) stage1-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
 	cd intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
-		CFLAGS="$(STAGE1_CFLAGS)"  && \
-	$(STAMP) ../all-stage1-intl
+		CFLAGS="$(STAGE1_CFLAGS)" 
 @endif intl-bootstrap
+
+.PHONY: configure-stage1-ld maybe-configure-stage1-ld
+.PHONY: all-stage1-ld maybe-all-stage1-ld
 
 maybe-configure-stage1-ld:
 maybe-all-stage1-ld:
 
 @if ld-bootstrap
 maybe-configure-stage1-ld: configure-stage1-ld
-configure-stage1-ld: 
-	$(MAKE) stage1-start
-	@if [ -f stage1-ld/Makefile ] ; then \
-	  $(STAMP) configure-stage1-ld ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage1-ld:
+	@$(MAKE) stage1-start
+	@[ -f ld/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
@@ -28574,34 +28548,30 @@ configure-stage1-ld:
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"  && \
-	  $(STAMP) ../configure-stage1-ld
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 
 maybe-all-stage1-ld: all-stage1-ld
 all-stage1-ld: configure-stage1-ld
-	$(MAKE) stage1-start
+	@$(MAKE) stage1-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
 	cd ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
-		CFLAGS="$(STAGE1_CFLAGS)"  && \
-	$(STAMP) ../all-stage1-ld
+		CFLAGS="$(STAGE1_CFLAGS)" 
 @endif ld-bootstrap
+
+.PHONY: configure-stage1-libcpp maybe-configure-stage1-libcpp
+.PHONY: all-stage1-libcpp maybe-all-stage1-libcpp
 
 maybe-configure-stage1-libcpp:
 maybe-all-stage1-libcpp:
 
 @if libcpp-bootstrap
 maybe-configure-stage1-libcpp: configure-stage1-libcpp
-configure-stage1-libcpp: 
-	$(MAKE) stage1-start
-	@if [ -f stage1-libcpp/Makefile ] ; then \
-	  $(STAMP) configure-stage1-libcpp ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage1-libcpp:
+	@$(MAKE) stage1-start
+	@[ -f libcpp/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
@@ -28620,34 +28590,30 @@ configure-stage1-libcpp:
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"  && \
-	  $(STAMP) ../configure-stage1-libcpp
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 
 maybe-all-stage1-libcpp: all-stage1-libcpp
 all-stage1-libcpp: configure-stage1-libcpp
-	$(MAKE) stage1-start
+	@$(MAKE) stage1-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
 	cd libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
-		CFLAGS="$(STAGE1_CFLAGS)"  && \
-	$(STAMP) ../all-stage1-libcpp
+		CFLAGS="$(STAGE1_CFLAGS)" 
 @endif libcpp-bootstrap
+
+.PHONY: configure-stage1-libbanshee maybe-configure-stage1-libbanshee
+.PHONY: all-stage1-libbanshee maybe-all-stage1-libbanshee
 
 maybe-configure-stage1-libbanshee:
 maybe-all-stage1-libbanshee:
 
 @if libbanshee-bootstrap
 maybe-configure-stage1-libbanshee: configure-stage1-libbanshee
-configure-stage1-libbanshee: 
-	$(MAKE) stage1-start
-	@if [ -f stage1-libbanshee/Makefile ] ; then \
-	  $(STAMP) configure-stage1-libbanshee ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage1-libbanshee:
+	@$(MAKE) stage1-start
+	@[ -f libbanshee/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
@@ -28666,34 +28632,30 @@ configure-stage1-libbanshee:
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"  && \
-	  $(STAMP) ../configure-stage1-libbanshee
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 
 maybe-all-stage1-libbanshee: all-stage1-libbanshee
 all-stage1-libbanshee: configure-stage1-libbanshee
-	$(MAKE) stage1-start
+	@$(MAKE) stage1-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
 	cd libbanshee && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
-		CFLAGS="$(STAGE1_CFLAGS)"  && \
-	$(STAMP) ../all-stage1-libbanshee
+		CFLAGS="$(STAGE1_CFLAGS)" 
 @endif libbanshee-bootstrap
+
+.PHONY: configure-stage1-libiberty maybe-configure-stage1-libiberty
+.PHONY: all-stage1-libiberty maybe-all-stage1-libiberty
 
 maybe-configure-stage1-libiberty:
 maybe-all-stage1-libiberty:
 
 @if libiberty-bootstrap
 maybe-configure-stage1-libiberty: configure-stage1-libiberty
-configure-stage1-libiberty: 
-	$(MAKE) stage1-start
-	@if [ -f stage1-libiberty/Makefile ] ; then \
-	  $(STAMP) configure-stage1-libiberty ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage1-libiberty:
+	@$(MAKE) stage1-start
+	@[ -f libiberty/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
@@ -28712,34 +28674,30 @@ configure-stage1-libiberty:
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"  && \
-	  $(STAMP) ../configure-stage1-libiberty
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 
 maybe-all-stage1-libiberty: all-stage1-libiberty
 all-stage1-libiberty: configure-stage1-libiberty
-	$(MAKE) stage1-start
+	@$(MAKE) stage1-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
 	cd libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
-		CFLAGS="$(STAGE1_CFLAGS)"  && \
-	$(STAMP) ../all-stage1-libiberty
+		CFLAGS="$(STAGE1_CFLAGS)" 
 @endif libiberty-bootstrap
+
+.PHONY: configure-stage1-zlib maybe-configure-stage1-zlib
+.PHONY: all-stage1-zlib maybe-all-stage1-zlib
 
 maybe-configure-stage1-zlib:
 maybe-all-stage1-zlib:
 
 @if zlib-bootstrap
 maybe-configure-stage1-zlib: configure-stage1-zlib
-configure-stage1-zlib: 
-	$(MAKE) stage1-start
-	@if [ -f stage1-zlib/Makefile ] ; then \
-	  $(STAMP) configure-stage1-zlib ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage1-zlib:
+	@$(MAKE) stage1-start
+	@[ -f zlib/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
@@ -28758,19 +28716,17 @@ configure-stage1-zlib:
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"  && \
-	  $(STAMP) ../configure-stage1-zlib
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 
 maybe-all-stage1-zlib: all-stage1-zlib
 all-stage1-zlib: configure-stage1-zlib
-	$(MAKE) stage1-start
+	@$(MAKE) stage1-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(HOST_EXPORTS)  \
 	cd zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
-		CFLAGS="$(STAGE1_CFLAGS)"  && \
-	$(STAMP) ../all-stage1-zlib
+		CFLAGS="$(STAGE1_CFLAGS)" 
 @endif zlib-bootstrap
 
 
@@ -28781,35 +28737,13 @@ all-stage1-zlib: configure-stage1-zlib
 
 
 
-.PHONY: restage1 touch-stage1 distclean-stage1
+.PHONY: distclean-stage1
 
 # Rules to wipe a stage and all the following ones, used for cleanstrap
 
 distclean-stage1::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
-	rm -rf configure-stage1-* all-stage1-* stage1-* 
-
-# Rules to renew the timestamp on a stage and all the following ones
-
-touch-stage1::
-	@case `echo configure-stage1-*` in \
-	  'configure-stage1-*') ;; \
-	  *) \
-	    echo '$(STAMP)' configure-stage1-* && \
-	    $(STAMP) configure-stage1-* ;; \
-	esac ; \
-	case `echo all-stage1-*` in \
-	  'all-stage1-*') ;; \
-	  *) \
-	    echo '$(STAMP)' all-stage1-* && \
-	    $(STAMP) all-stage1-* ;; \
-	esac
-
-# After building a stage, touch the following ones
-
-restage1::
-	rm -rf all-stage1-* 
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS)  all-stage1 
+	rm -rf stage1-* 
 
 
 @endif gcc-bootstrap
@@ -28818,109 +28752,109 @@ restage1::
 .PHONY: stage2-start stage2-end
 
 stage2-start::
-	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
+	@[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
 	echo stage2 > stage_current ; \
 	echo stage2 > stage_last
 @if bfd
-	[ -d stage2-bfd ] || mkdir stage2-bfd; \
+	@[ -d stage2-bfd ] || mkdir stage2-bfd; \
 	set stage2-bfd bfd ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-bfd prev-bfd ; @CREATE_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
-	[ -d stage2-opcodes ] || mkdir stage2-opcodes; \
+	@[ -d stage2-opcodes ] || mkdir stage2-opcodes; \
 	set stage2-opcodes opcodes ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-opcodes prev-opcodes ; @CREATE_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
-	[ -d stage2-binutils ] || mkdir stage2-binutils; \
+	@[ -d stage2-binutils ] || mkdir stage2-binutils; \
 	set stage2-binutils binutils ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-binutils prev-binutils ; @CREATE_LINK_TO_DIR@ 
 @endif binutils
 @if gas
-	[ -d stage2-gas ] || mkdir stage2-gas; \
+	@[ -d stage2-gas ] || mkdir stage2-gas; \
 	set stage2-gas gas ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-gas prev-gas ; @CREATE_LINK_TO_DIR@ 
 @endif gas
 @if gcc
-	[ -d stage2-gcc ] || mkdir stage2-gcc; \
+	@[ -d stage2-gcc ] || mkdir stage2-gcc; \
 	set stage2-gcc gcc ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ 
 @endif gcc
 @if intl
-	[ -d stage2-intl ] || mkdir stage2-intl; \
+	@[ -d stage2-intl ] || mkdir stage2-intl; \
 	set stage2-intl intl ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-intl prev-intl ; @CREATE_LINK_TO_DIR@ 
 @endif intl
 @if ld
-	[ -d stage2-ld ] || mkdir stage2-ld; \
+	@[ -d stage2-ld ] || mkdir stage2-ld; \
 	set stage2-ld ld ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-ld prev-ld ; @CREATE_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
-	[ -d stage2-libcpp ] || mkdir stage2-libcpp; \
+	@[ -d stage2-libcpp ] || mkdir stage2-libcpp; \
 	set stage2-libcpp libcpp ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-libcpp prev-libcpp ; @CREATE_LINK_TO_DIR@ 
 @endif libcpp
 @if libbanshee
-	[ -d stage2-libbanshee ] || mkdir stage2-libbanshee; \
+	@[ -d stage2-libbanshee ] || mkdir stage2-libbanshee; \
 	set stage2-libbanshee libbanshee ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-libbanshee prev-libbanshee ; @CREATE_LINK_TO_DIR@ 
 @endif libbanshee
 @if libiberty
-	[ -d stage2-libiberty ] || mkdir stage2-libiberty; \
+	@[ -d stage2-libiberty ] || mkdir stage2-libiberty; \
 	set stage2-libiberty libiberty ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-libiberty prev-libiberty ; @CREATE_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
-	[ -d stage2-zlib ] || mkdir stage2-zlib; \
+	@[ -d stage2-zlib ] || mkdir stage2-zlib; \
 	set stage2-zlib zlib ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-zlib prev-zlib ; @CREATE_LINK_TO_DIR@ 
 @endif zlib
 
 stage2-end::
-	rm -f stage_current
+	@rm -f stage_current
 @if bfd
-	set bfd stage2-bfd ; @UNDO_LINK_TO_DIR@  ; \
+	@set bfd stage2-bfd ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-bfd stage1-bfd ; @UNDO_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
-	set opcodes stage2-opcodes ; @UNDO_LINK_TO_DIR@  ; \
+	@set opcodes stage2-opcodes ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-opcodes stage1-opcodes ; @UNDO_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
-	set binutils stage2-binutils ; @UNDO_LINK_TO_DIR@  ; \
+	@set binutils stage2-binutils ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-binutils stage1-binutils ; @UNDO_LINK_TO_DIR@ 
 @endif binutils
 @if gas
-	set gas stage2-gas ; @UNDO_LINK_TO_DIR@  ; \
+	@set gas stage2-gas ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-gas stage1-gas ; @UNDO_LINK_TO_DIR@ 
 @endif gas
 @if gcc
-	set gcc stage2-gcc ; @UNDO_LINK_TO_DIR@  ; \
+	@set gcc stage2-gcc ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-gcc stage1-gcc ; @UNDO_LINK_TO_DIR@ 
 @endif gcc
 @if intl
-	set intl stage2-intl ; @UNDO_LINK_TO_DIR@  ; \
+	@set intl stage2-intl ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-intl stage1-intl ; @UNDO_LINK_TO_DIR@ 
 @endif intl
 @if ld
-	set ld stage2-ld ; @UNDO_LINK_TO_DIR@  ; \
+	@set ld stage2-ld ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-ld stage1-ld ; @UNDO_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
-	set libcpp stage2-libcpp ; @UNDO_LINK_TO_DIR@  ; \
+	@set libcpp stage2-libcpp ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libcpp stage1-libcpp ; @UNDO_LINK_TO_DIR@ 
 @endif libcpp
 @if libbanshee
-	set libbanshee stage2-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
+	@set libbanshee stage2-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libbanshee stage1-libbanshee ; @UNDO_LINK_TO_DIR@ 
 @endif libbanshee
 @if libiberty
-	set libiberty stage2-libiberty ; @UNDO_LINK_TO_DIR@  ; \
+	@set libiberty stage2-libiberty ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libiberty stage1-libiberty ; @UNDO_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
-	set zlib stage2-zlib ; @UNDO_LINK_TO_DIR@  ; \
+	@set zlib stage2-zlib ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-zlib stage1-zlib ; @UNDO_LINK_TO_DIR@ 
 @endif zlib
 
@@ -28929,11 +28863,11 @@ stage2-end::
 # be reconfigured as well.
 .PHONY: stage2-bubble
 stage2-bubble:: stage1-bubble
-	@case `echo all-stage2-*` in \
-	  'all-stage2-*') ;; \
-	  *) echo Remaking stage 2 ; rm -f all-stage2-* ;; \
-	esac ; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage2
+	@if test -f stage2-lean || test -f stage1-lean  ; then \
+	  echo Skipping rebuild of stage2 ; \
+	else \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage2; \
+	fi
 
 .PHONY: all-stage2
 all-stage2:     \
@@ -28950,19 +28884,17 @@ all-stage2:     \
   maybe-all-stage2-zlib       
 
 
+.PHONY: configure-stage2-bfd maybe-configure-stage2-bfd
+.PHONY: all-stage2-bfd maybe-all-stage2-bfd
+
 maybe-configure-stage2-bfd:
 maybe-all-stage2-bfd:
 
 @if bfd-bootstrap
 maybe-configure-stage2-bfd: configure-stage2-bfd
-configure-stage2-bfd:  maybe-all-stage1-bfd 
-	$(MAKE) stage2-start
-	@if [ -f stage2-bfd/Makefile ] ; then \
-	  $(STAMP) configure-stage2-bfd ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage2-bfd:
+	@$(MAKE) stage2-start
+	@[ -f bfd/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -28981,35 +28913,31 @@ configure-stage2-bfd:  maybe-all-stage1-bfd
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage2-bfd
+	  @stage2_werror_flag@ 
 
 maybe-all-stage2-bfd: all-stage2-bfd
 all-stage2-bfd: configure-stage2-bfd
-	$(MAKE) stage2-start
+	@$(MAKE) stage2-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage2-bfd
+		 
 @endif bfd-bootstrap
+
+.PHONY: configure-stage2-opcodes maybe-configure-stage2-opcodes
+.PHONY: all-stage2-opcodes maybe-all-stage2-opcodes
 
 maybe-configure-stage2-opcodes:
 maybe-all-stage2-opcodes:
 
 @if opcodes-bootstrap
 maybe-configure-stage2-opcodes: configure-stage2-opcodes
-configure-stage2-opcodes:  maybe-all-stage1-opcodes 
-	$(MAKE) stage2-start
-	@if [ -f stage2-opcodes/Makefile ] ; then \
-	  $(STAMP) configure-stage2-opcodes ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage2-opcodes:
+	@$(MAKE) stage2-start
+	@[ -f opcodes/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29028,35 +28956,31 @@ configure-stage2-opcodes:  maybe-all-stage1-opcodes
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage2-opcodes
+	  @stage2_werror_flag@ 
 
 maybe-all-stage2-opcodes: all-stage2-opcodes
 all-stage2-opcodes: configure-stage2-opcodes
-	$(MAKE) stage2-start
+	@$(MAKE) stage2-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage2-opcodes
+		 
 @endif opcodes-bootstrap
+
+.PHONY: configure-stage2-binutils maybe-configure-stage2-binutils
+.PHONY: all-stage2-binutils maybe-all-stage2-binutils
 
 maybe-configure-stage2-binutils:
 maybe-all-stage2-binutils:
 
 @if binutils-bootstrap
 maybe-configure-stage2-binutils: configure-stage2-binutils
-configure-stage2-binutils:  maybe-all-stage1-binutils 
-	$(MAKE) stage2-start
-	@if [ -f stage2-binutils/Makefile ] ; then \
-	  $(STAMP) configure-stage2-binutils ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage2-binutils:
+	@$(MAKE) stage2-start
+	@[ -f binutils/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29075,35 +28999,31 @@ configure-stage2-binutils:  maybe-all-stage1-binutils
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage2-binutils
+	  @stage2_werror_flag@ 
 
 maybe-all-stage2-binutils: all-stage2-binutils
 all-stage2-binutils: configure-stage2-binutils
-	$(MAKE) stage2-start
+	@$(MAKE) stage2-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage2-binutils
+		 
 @endif binutils-bootstrap
+
+.PHONY: configure-stage2-gas maybe-configure-stage2-gas
+.PHONY: all-stage2-gas maybe-all-stage2-gas
 
 maybe-configure-stage2-gas:
 maybe-all-stage2-gas:
 
 @if gas-bootstrap
 maybe-configure-stage2-gas: configure-stage2-gas
-configure-stage2-gas:  maybe-all-stage1-gas 
-	$(MAKE) stage2-start
-	@if [ -f stage2-gas/Makefile ] ; then \
-	  $(STAMP) configure-stage2-gas ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage2-gas:
+	@$(MAKE) stage2-start
+	@[ -f gas/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29122,35 +29042,31 @@ configure-stage2-gas:  maybe-all-stage1-gas
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage2-gas
+	  @stage2_werror_flag@ 
 
 maybe-all-stage2-gas: all-stage2-gas
 all-stage2-gas: configure-stage2-gas
-	$(MAKE) stage2-start
+	@$(MAKE) stage2-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage2-gas
+		 
 @endif gas-bootstrap
+
+.PHONY: configure-stage2-gcc maybe-configure-stage2-gcc
+.PHONY: all-stage2-gcc maybe-all-stage2-gcc
 
 maybe-configure-stage2-gcc:
 maybe-all-stage2-gcc:
 
 @if gcc-bootstrap
 maybe-configure-stage2-gcc: configure-stage2-gcc
-configure-stage2-gcc:  maybe-all-stage1-gcc 
-	$(MAKE) stage2-start
-	@if [ -f stage2-gcc/Makefile ] ; then \
-	  $(STAMP) configure-stage2-gcc ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage2-gcc:
+	@$(MAKE) stage2-start
+	@[ -f gcc/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29169,35 +29085,31 @@ configure-stage2-gcc:  maybe-all-stage1-gcc
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage2-gcc
+	  @stage2_werror_flag@ 
 
 maybe-all-stage2-gcc: all-stage2-gcc
 all-stage2-gcc: configure-stage2-gcc
-	$(MAKE) stage2-start
+	@$(MAKE) stage2-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 $(EXTRA_GCC_FLAGS) && \
-	$(STAMP) ../all-stage2-gcc
+		 $(EXTRA_GCC_FLAGS)
 @endif gcc-bootstrap
+
+.PHONY: configure-stage2-intl maybe-configure-stage2-intl
+.PHONY: all-stage2-intl maybe-all-stage2-intl
 
 maybe-configure-stage2-intl:
 maybe-all-stage2-intl:
 
 @if intl-bootstrap
 maybe-configure-stage2-intl: configure-stage2-intl
-configure-stage2-intl:  maybe-all-stage1-intl 
-	$(MAKE) stage2-start
-	@if [ -f stage2-intl/Makefile ] ; then \
-	  $(STAMP) configure-stage2-intl ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage2-intl:
+	@$(MAKE) stage2-start
+	@[ -f intl/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29216,35 +29128,31 @@ configure-stage2-intl:  maybe-all-stage1-intl
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage2-intl
+	  @stage2_werror_flag@ 
 
 maybe-all-stage2-intl: all-stage2-intl
 all-stage2-intl: configure-stage2-intl
-	$(MAKE) stage2-start
+	@$(MAKE) stage2-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage2-intl
+		 
 @endif intl-bootstrap
+
+.PHONY: configure-stage2-ld maybe-configure-stage2-ld
+.PHONY: all-stage2-ld maybe-all-stage2-ld
 
 maybe-configure-stage2-ld:
 maybe-all-stage2-ld:
 
 @if ld-bootstrap
 maybe-configure-stage2-ld: configure-stage2-ld
-configure-stage2-ld:  maybe-all-stage1-ld 
-	$(MAKE) stage2-start
-	@if [ -f stage2-ld/Makefile ] ; then \
-	  $(STAMP) configure-stage2-ld ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage2-ld:
+	@$(MAKE) stage2-start
+	@[ -f ld/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29263,35 +29171,31 @@ configure-stage2-ld:  maybe-all-stage1-ld
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage2-ld
+	  @stage2_werror_flag@ 
 
 maybe-all-stage2-ld: all-stage2-ld
 all-stage2-ld: configure-stage2-ld
-	$(MAKE) stage2-start
+	@$(MAKE) stage2-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage2-ld
+		 
 @endif ld-bootstrap
+
+.PHONY: configure-stage2-libcpp maybe-configure-stage2-libcpp
+.PHONY: all-stage2-libcpp maybe-all-stage2-libcpp
 
 maybe-configure-stage2-libcpp:
 maybe-all-stage2-libcpp:
 
 @if libcpp-bootstrap
 maybe-configure-stage2-libcpp: configure-stage2-libcpp
-configure-stage2-libcpp:  maybe-all-stage1-libcpp 
-	$(MAKE) stage2-start
-	@if [ -f stage2-libcpp/Makefile ] ; then \
-	  $(STAMP) configure-stage2-libcpp ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage2-libcpp:
+	@$(MAKE) stage2-start
+	@[ -f libcpp/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29310,35 +29214,31 @@ configure-stage2-libcpp:  maybe-all-stage1-libcpp
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage2-libcpp
+	  @stage2_werror_flag@ 
 
 maybe-all-stage2-libcpp: all-stage2-libcpp
 all-stage2-libcpp: configure-stage2-libcpp
-	$(MAKE) stage2-start
+	@$(MAKE) stage2-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage2-libcpp
+		 
 @endif libcpp-bootstrap
+
+.PHONY: configure-stage2-libbanshee maybe-configure-stage2-libbanshee
+.PHONY: all-stage2-libbanshee maybe-all-stage2-libbanshee
 
 maybe-configure-stage2-libbanshee:
 maybe-all-stage2-libbanshee:
 
 @if libbanshee-bootstrap
 maybe-configure-stage2-libbanshee: configure-stage2-libbanshee
-configure-stage2-libbanshee:  maybe-all-stage1-libbanshee 
-	$(MAKE) stage2-start
-	@if [ -f stage2-libbanshee/Makefile ] ; then \
-	  $(STAMP) configure-stage2-libbanshee ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage2-libbanshee:
+	@$(MAKE) stage2-start
+	@[ -f libbanshee/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29357,35 +29257,31 @@ configure-stage2-libbanshee:  maybe-all-stage1-libbanshee
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage2-libbanshee
+	  @stage2_werror_flag@ 
 
 maybe-all-stage2-libbanshee: all-stage2-libbanshee
 all-stage2-libbanshee: configure-stage2-libbanshee
-	$(MAKE) stage2-start
+	@$(MAKE) stage2-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libbanshee && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage2-libbanshee
+		 
 @endif libbanshee-bootstrap
+
+.PHONY: configure-stage2-libiberty maybe-configure-stage2-libiberty
+.PHONY: all-stage2-libiberty maybe-all-stage2-libiberty
 
 maybe-configure-stage2-libiberty:
 maybe-all-stage2-libiberty:
 
 @if libiberty-bootstrap
 maybe-configure-stage2-libiberty: configure-stage2-libiberty
-configure-stage2-libiberty:  maybe-all-stage1-libiberty 
-	$(MAKE) stage2-start
-	@if [ -f stage2-libiberty/Makefile ] ; then \
-	  $(STAMP) configure-stage2-libiberty ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage2-libiberty:
+	@$(MAKE) stage2-start
+	@[ -f libiberty/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29404,35 +29300,31 @@ configure-stage2-libiberty:  maybe-all-stage1-libiberty
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage2-libiberty
+	  @stage2_werror_flag@ 
 
 maybe-all-stage2-libiberty: all-stage2-libiberty
 all-stage2-libiberty: configure-stage2-libiberty
-	$(MAKE) stage2-start
+	@$(MAKE) stage2-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage2-libiberty
+		 
 @endif libiberty-bootstrap
+
+.PHONY: configure-stage2-zlib maybe-configure-stage2-zlib
+.PHONY: all-stage2-zlib maybe-all-stage2-zlib
 
 maybe-configure-stage2-zlib:
 maybe-all-stage2-zlib:
 
 @if zlib-bootstrap
 maybe-configure-stage2-zlib: configure-stage2-zlib
-configure-stage2-zlib:  maybe-all-stage1-zlib 
-	$(MAKE) stage2-start
-	@if [ -f stage2-zlib/Makefile ] ; then \
-	  $(STAMP) configure-stage2-zlib ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage2-zlib:
+	@$(MAKE) stage2-start
+	@[ -f zlib/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29451,20 +29343,18 @@ configure-stage2-zlib:  maybe-all-stage1-zlib
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage2-zlib
+	  @stage2_werror_flag@ 
 
 maybe-all-stage2-zlib: all-stage2-zlib
 all-stage2-zlib: configure-stage2-zlib
-	$(MAKE) stage2-start
+	@$(MAKE) stage2-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage2-zlib
+		 
 @endif zlib-bootstrap
 
 
@@ -29478,35 +29368,13 @@ all-stage2-zlib: configure-stage2-zlib
 bootstrap2: stage2-bubble  all
 
 
-.PHONY: restage2 touch-stage2 distclean-stage2
+.PHONY: distclean-stage2
 
 # Rules to wipe a stage and all the following ones, used for cleanstrap
 distclean-stage1:: distclean-stage2 
 distclean-stage2::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
-	rm -rf configure-stage2-* all-stage2-* stage2-* 
-
-# Rules to renew the timestamp on a stage and all the following ones
-touch-stage1:: touch-stage2 
-touch-stage2::
-	@case `echo configure-stage2-*` in \
-	  'configure-stage2-*') ;; \
-	  *) \
-	    echo '$(STAMP)' configure-stage2-* && \
-	    $(STAMP) configure-stage2-* ;; \
-	esac ; \
-	case `echo all-stage2-*` in \
-	  'all-stage2-*') ;; \
-	  *) \
-	    echo '$(STAMP)' all-stage2-* && \
-	    $(STAMP) all-stage2-* ;; \
-	esac
-
-# After building a stage, touch the following ones
-restage1:: touch-stage2 
-restage2::
-	rm -rf all-stage2-* 
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS)  all-stage2 
+	rm -rf stage2-* 
 
 
 @endif gcc-bootstrap
@@ -29515,109 +29383,109 @@ restage2::
 .PHONY: stage3-start stage3-end
 
 stage3-start::
-	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
+	@[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
 	echo stage3 > stage_current ; \
 	echo stage3 > stage_last
 @if bfd
-	[ -d stage3-bfd ] || mkdir stage3-bfd; \
+	@[ -d stage3-bfd ] || mkdir stage3-bfd; \
 	set stage3-bfd bfd ; @CREATE_LINK_TO_DIR@  ; \
 	set stage2-bfd prev-bfd ; @CREATE_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
-	[ -d stage3-opcodes ] || mkdir stage3-opcodes; \
+	@[ -d stage3-opcodes ] || mkdir stage3-opcodes; \
 	set stage3-opcodes opcodes ; @CREATE_LINK_TO_DIR@  ; \
 	set stage2-opcodes prev-opcodes ; @CREATE_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
-	[ -d stage3-binutils ] || mkdir stage3-binutils; \
+	@[ -d stage3-binutils ] || mkdir stage3-binutils; \
 	set stage3-binutils binutils ; @CREATE_LINK_TO_DIR@  ; \
 	set stage2-binutils prev-binutils ; @CREATE_LINK_TO_DIR@ 
 @endif binutils
 @if gas
-	[ -d stage3-gas ] || mkdir stage3-gas; \
+	@[ -d stage3-gas ] || mkdir stage3-gas; \
 	set stage3-gas gas ; @CREATE_LINK_TO_DIR@  ; \
 	set stage2-gas prev-gas ; @CREATE_LINK_TO_DIR@ 
 @endif gas
 @if gcc
-	[ -d stage3-gcc ] || mkdir stage3-gcc; \
+	@[ -d stage3-gcc ] || mkdir stage3-gcc; \
 	set stage3-gcc gcc ; @CREATE_LINK_TO_DIR@  ; \
 	set stage2-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ 
 @endif gcc
 @if intl
-	[ -d stage3-intl ] || mkdir stage3-intl; \
+	@[ -d stage3-intl ] || mkdir stage3-intl; \
 	set stage3-intl intl ; @CREATE_LINK_TO_DIR@  ; \
 	set stage2-intl prev-intl ; @CREATE_LINK_TO_DIR@ 
 @endif intl
 @if ld
-	[ -d stage3-ld ] || mkdir stage3-ld; \
+	@[ -d stage3-ld ] || mkdir stage3-ld; \
 	set stage3-ld ld ; @CREATE_LINK_TO_DIR@  ; \
 	set stage2-ld prev-ld ; @CREATE_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
-	[ -d stage3-libcpp ] || mkdir stage3-libcpp; \
+	@[ -d stage3-libcpp ] || mkdir stage3-libcpp; \
 	set stage3-libcpp libcpp ; @CREATE_LINK_TO_DIR@  ; \
 	set stage2-libcpp prev-libcpp ; @CREATE_LINK_TO_DIR@ 
 @endif libcpp
 @if libbanshee
-	[ -d stage3-libbanshee ] || mkdir stage3-libbanshee; \
+	@[ -d stage3-libbanshee ] || mkdir stage3-libbanshee; \
 	set stage3-libbanshee libbanshee ; @CREATE_LINK_TO_DIR@  ; \
 	set stage2-libbanshee prev-libbanshee ; @CREATE_LINK_TO_DIR@ 
 @endif libbanshee
 @if libiberty
-	[ -d stage3-libiberty ] || mkdir stage3-libiberty; \
+	@[ -d stage3-libiberty ] || mkdir stage3-libiberty; \
 	set stage3-libiberty libiberty ; @CREATE_LINK_TO_DIR@  ; \
 	set stage2-libiberty prev-libiberty ; @CREATE_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
-	[ -d stage3-zlib ] || mkdir stage3-zlib; \
+	@[ -d stage3-zlib ] || mkdir stage3-zlib; \
 	set stage3-zlib zlib ; @CREATE_LINK_TO_DIR@  ; \
 	set stage2-zlib prev-zlib ; @CREATE_LINK_TO_DIR@ 
 @endif zlib
 
 stage3-end::
-	rm -f stage_current
+	@rm -f stage_current
 @if bfd
-	set bfd stage3-bfd ; @UNDO_LINK_TO_DIR@  ; \
+	@set bfd stage3-bfd ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-bfd stage2-bfd ; @UNDO_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
-	set opcodes stage3-opcodes ; @UNDO_LINK_TO_DIR@  ; \
+	@set opcodes stage3-opcodes ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-opcodes stage2-opcodes ; @UNDO_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
-	set binutils stage3-binutils ; @UNDO_LINK_TO_DIR@  ; \
+	@set binutils stage3-binutils ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-binutils stage2-binutils ; @UNDO_LINK_TO_DIR@ 
 @endif binutils
 @if gas
-	set gas stage3-gas ; @UNDO_LINK_TO_DIR@  ; \
+	@set gas stage3-gas ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-gas stage2-gas ; @UNDO_LINK_TO_DIR@ 
 @endif gas
 @if gcc
-	set gcc stage3-gcc ; @UNDO_LINK_TO_DIR@  ; \
+	@set gcc stage3-gcc ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-gcc stage2-gcc ; @UNDO_LINK_TO_DIR@ 
 @endif gcc
 @if intl
-	set intl stage3-intl ; @UNDO_LINK_TO_DIR@  ; \
+	@set intl stage3-intl ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-intl stage2-intl ; @UNDO_LINK_TO_DIR@ 
 @endif intl
 @if ld
-	set ld stage3-ld ; @UNDO_LINK_TO_DIR@  ; \
+	@set ld stage3-ld ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-ld stage2-ld ; @UNDO_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
-	set libcpp stage3-libcpp ; @UNDO_LINK_TO_DIR@  ; \
+	@set libcpp stage3-libcpp ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libcpp stage2-libcpp ; @UNDO_LINK_TO_DIR@ 
 @endif libcpp
 @if libbanshee
-	set libbanshee stage3-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
+	@set libbanshee stage3-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libbanshee stage2-libbanshee ; @UNDO_LINK_TO_DIR@ 
 @endif libbanshee
 @if libiberty
-	set libiberty stage3-libiberty ; @UNDO_LINK_TO_DIR@  ; \
+	@set libiberty stage3-libiberty ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libiberty stage2-libiberty ; @UNDO_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
-	set zlib stage3-zlib ; @UNDO_LINK_TO_DIR@  ; \
+	@set zlib stage3-zlib ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-zlib stage2-zlib ; @UNDO_LINK_TO_DIR@ 
 @endif zlib
 
@@ -29626,11 +29494,12 @@ stage3-end::
 # be reconfigured as well.
 .PHONY: stage3-bubble
 stage3-bubble:: stage2-bubble
-	@case `echo all-stage3-*` in \
-	  'all-stage3-*') ;; \
-	  *) echo Remaking stage 3 ; rm -f all-stage3-* ;; \
-	esac ; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage3
+	@bootstrap_lean@-rm -rf stage1-* ; $(STAMP) stage1-lean
+	@if test -f stage3-lean || test -f stage2-lean  ; then \
+	  echo Skipping rebuild of stage3 ; \
+	else \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage3; \
+	fi
 
 .PHONY: all-stage3
 all-stage3:     \
@@ -29647,19 +29516,17 @@ all-stage3:     \
   maybe-all-stage3-zlib       
 
 
+.PHONY: configure-stage3-bfd maybe-configure-stage3-bfd
+.PHONY: all-stage3-bfd maybe-all-stage3-bfd
+
 maybe-configure-stage3-bfd:
 maybe-all-stage3-bfd:
 
 @if bfd-bootstrap
 maybe-configure-stage3-bfd: configure-stage3-bfd
-configure-stage3-bfd:  maybe-all-stage2-bfd 
-	$(MAKE) stage3-start
-	@if [ -f stage3-bfd/Makefile ] ; then \
-	  $(STAMP) configure-stage3-bfd ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage3-bfd:
+	@$(MAKE) stage3-start
+	@[ -f bfd/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29678,35 +29545,31 @@ configure-stage3-bfd:  maybe-all-stage2-bfd
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage3-bfd
+	  @stage2_werror_flag@ 
 
 maybe-all-stage3-bfd: all-stage3-bfd
 all-stage3-bfd: configure-stage3-bfd
-	$(MAKE) stage3-start
+	@$(MAKE) stage3-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage3-bfd
+		 
 @endif bfd-bootstrap
+
+.PHONY: configure-stage3-opcodes maybe-configure-stage3-opcodes
+.PHONY: all-stage3-opcodes maybe-all-stage3-opcodes
 
 maybe-configure-stage3-opcodes:
 maybe-all-stage3-opcodes:
 
 @if opcodes-bootstrap
 maybe-configure-stage3-opcodes: configure-stage3-opcodes
-configure-stage3-opcodes:  maybe-all-stage2-opcodes 
-	$(MAKE) stage3-start
-	@if [ -f stage3-opcodes/Makefile ] ; then \
-	  $(STAMP) configure-stage3-opcodes ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage3-opcodes:
+	@$(MAKE) stage3-start
+	@[ -f opcodes/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29725,35 +29588,31 @@ configure-stage3-opcodes:  maybe-all-stage2-opcodes
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage3-opcodes
+	  @stage2_werror_flag@ 
 
 maybe-all-stage3-opcodes: all-stage3-opcodes
 all-stage3-opcodes: configure-stage3-opcodes
-	$(MAKE) stage3-start
+	@$(MAKE) stage3-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage3-opcodes
+		 
 @endif opcodes-bootstrap
+
+.PHONY: configure-stage3-binutils maybe-configure-stage3-binutils
+.PHONY: all-stage3-binutils maybe-all-stage3-binutils
 
 maybe-configure-stage3-binutils:
 maybe-all-stage3-binutils:
 
 @if binutils-bootstrap
 maybe-configure-stage3-binutils: configure-stage3-binutils
-configure-stage3-binutils:  maybe-all-stage2-binutils 
-	$(MAKE) stage3-start
-	@if [ -f stage3-binutils/Makefile ] ; then \
-	  $(STAMP) configure-stage3-binutils ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage3-binutils:
+	@$(MAKE) stage3-start
+	@[ -f binutils/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29772,35 +29631,31 @@ configure-stage3-binutils:  maybe-all-stage2-binutils
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage3-binutils
+	  @stage2_werror_flag@ 
 
 maybe-all-stage3-binutils: all-stage3-binutils
 all-stage3-binutils: configure-stage3-binutils
-	$(MAKE) stage3-start
+	@$(MAKE) stage3-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage3-binutils
+		 
 @endif binutils-bootstrap
+
+.PHONY: configure-stage3-gas maybe-configure-stage3-gas
+.PHONY: all-stage3-gas maybe-all-stage3-gas
 
 maybe-configure-stage3-gas:
 maybe-all-stage3-gas:
 
 @if gas-bootstrap
 maybe-configure-stage3-gas: configure-stage3-gas
-configure-stage3-gas:  maybe-all-stage2-gas 
-	$(MAKE) stage3-start
-	@if [ -f stage3-gas/Makefile ] ; then \
-	  $(STAMP) configure-stage3-gas ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage3-gas:
+	@$(MAKE) stage3-start
+	@[ -f gas/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29819,35 +29674,31 @@ configure-stage3-gas:  maybe-all-stage2-gas
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage3-gas
+	  @stage2_werror_flag@ 
 
 maybe-all-stage3-gas: all-stage3-gas
 all-stage3-gas: configure-stage3-gas
-	$(MAKE) stage3-start
+	@$(MAKE) stage3-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage3-gas
+		 
 @endif gas-bootstrap
+
+.PHONY: configure-stage3-gcc maybe-configure-stage3-gcc
+.PHONY: all-stage3-gcc maybe-all-stage3-gcc
 
 maybe-configure-stage3-gcc:
 maybe-all-stage3-gcc:
 
 @if gcc-bootstrap
 maybe-configure-stage3-gcc: configure-stage3-gcc
-configure-stage3-gcc:  maybe-all-stage2-gcc 
-	$(MAKE) stage3-start
-	@if [ -f stage3-gcc/Makefile ] ; then \
-	  $(STAMP) configure-stage3-gcc ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage3-gcc:
+	@$(MAKE) stage3-start
+	@[ -f gcc/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29866,35 +29717,31 @@ configure-stage3-gcc:  maybe-all-stage2-gcc
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage3-gcc
+	  @stage2_werror_flag@ 
 
 maybe-all-stage3-gcc: all-stage3-gcc
 all-stage3-gcc: configure-stage3-gcc
-	$(MAKE) stage3-start
+	@$(MAKE) stage3-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 $(EXTRA_GCC_FLAGS) && \
-	$(STAMP) ../all-stage3-gcc
+		 $(EXTRA_GCC_FLAGS)
 @endif gcc-bootstrap
+
+.PHONY: configure-stage3-intl maybe-configure-stage3-intl
+.PHONY: all-stage3-intl maybe-all-stage3-intl
 
 maybe-configure-stage3-intl:
 maybe-all-stage3-intl:
 
 @if intl-bootstrap
 maybe-configure-stage3-intl: configure-stage3-intl
-configure-stage3-intl:  maybe-all-stage2-intl 
-	$(MAKE) stage3-start
-	@if [ -f stage3-intl/Makefile ] ; then \
-	  $(STAMP) configure-stage3-intl ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage3-intl:
+	@$(MAKE) stage3-start
+	@[ -f intl/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29913,35 +29760,31 @@ configure-stage3-intl:  maybe-all-stage2-intl
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage3-intl
+	  @stage2_werror_flag@ 
 
 maybe-all-stage3-intl: all-stage3-intl
 all-stage3-intl: configure-stage3-intl
-	$(MAKE) stage3-start
+	@$(MAKE) stage3-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage3-intl
+		 
 @endif intl-bootstrap
+
+.PHONY: configure-stage3-ld maybe-configure-stage3-ld
+.PHONY: all-stage3-ld maybe-all-stage3-ld
 
 maybe-configure-stage3-ld:
 maybe-all-stage3-ld:
 
 @if ld-bootstrap
 maybe-configure-stage3-ld: configure-stage3-ld
-configure-stage3-ld:  maybe-all-stage2-ld 
-	$(MAKE) stage3-start
-	@if [ -f stage3-ld/Makefile ] ; then \
-	  $(STAMP) configure-stage3-ld ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage3-ld:
+	@$(MAKE) stage3-start
+	@[ -f ld/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -29960,35 +29803,31 @@ configure-stage3-ld:  maybe-all-stage2-ld
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage3-ld
+	  @stage2_werror_flag@ 
 
 maybe-all-stage3-ld: all-stage3-ld
 all-stage3-ld: configure-stage3-ld
-	$(MAKE) stage3-start
+	@$(MAKE) stage3-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage3-ld
+		 
 @endif ld-bootstrap
+
+.PHONY: configure-stage3-libcpp maybe-configure-stage3-libcpp
+.PHONY: all-stage3-libcpp maybe-all-stage3-libcpp
 
 maybe-configure-stage3-libcpp:
 maybe-all-stage3-libcpp:
 
 @if libcpp-bootstrap
 maybe-configure-stage3-libcpp: configure-stage3-libcpp
-configure-stage3-libcpp:  maybe-all-stage2-libcpp 
-	$(MAKE) stage3-start
-	@if [ -f stage3-libcpp/Makefile ] ; then \
-	  $(STAMP) configure-stage3-libcpp ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage3-libcpp:
+	@$(MAKE) stage3-start
+	@[ -f libcpp/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30007,35 +29846,31 @@ configure-stage3-libcpp:  maybe-all-stage2-libcpp
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage3-libcpp
+	  @stage2_werror_flag@ 
 
 maybe-all-stage3-libcpp: all-stage3-libcpp
 all-stage3-libcpp: configure-stage3-libcpp
-	$(MAKE) stage3-start
+	@$(MAKE) stage3-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage3-libcpp
+		 
 @endif libcpp-bootstrap
+
+.PHONY: configure-stage3-libbanshee maybe-configure-stage3-libbanshee
+.PHONY: all-stage3-libbanshee maybe-all-stage3-libbanshee
 
 maybe-configure-stage3-libbanshee:
 maybe-all-stage3-libbanshee:
 
 @if libbanshee-bootstrap
 maybe-configure-stage3-libbanshee: configure-stage3-libbanshee
-configure-stage3-libbanshee:  maybe-all-stage2-libbanshee 
-	$(MAKE) stage3-start
-	@if [ -f stage3-libbanshee/Makefile ] ; then \
-	  $(STAMP) configure-stage3-libbanshee ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage3-libbanshee:
+	@$(MAKE) stage3-start
+	@[ -f libbanshee/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30054,35 +29889,31 @@ configure-stage3-libbanshee:  maybe-all-stage2-libbanshee
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage3-libbanshee
+	  @stage2_werror_flag@ 
 
 maybe-all-stage3-libbanshee: all-stage3-libbanshee
 all-stage3-libbanshee: configure-stage3-libbanshee
-	$(MAKE) stage3-start
+	@$(MAKE) stage3-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libbanshee && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage3-libbanshee
+		 
 @endif libbanshee-bootstrap
+
+.PHONY: configure-stage3-libiberty maybe-configure-stage3-libiberty
+.PHONY: all-stage3-libiberty maybe-all-stage3-libiberty
 
 maybe-configure-stage3-libiberty:
 maybe-all-stage3-libiberty:
 
 @if libiberty-bootstrap
 maybe-configure-stage3-libiberty: configure-stage3-libiberty
-configure-stage3-libiberty:  maybe-all-stage2-libiberty 
-	$(MAKE) stage3-start
-	@if [ -f stage3-libiberty/Makefile ] ; then \
-	  $(STAMP) configure-stage3-libiberty ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage3-libiberty:
+	@$(MAKE) stage3-start
+	@[ -f libiberty/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30101,35 +29932,31 @@ configure-stage3-libiberty:  maybe-all-stage2-libiberty
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage3-libiberty
+	  @stage2_werror_flag@ 
 
 maybe-all-stage3-libiberty: all-stage3-libiberty
 all-stage3-libiberty: configure-stage3-libiberty
-	$(MAKE) stage3-start
+	@$(MAKE) stage3-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage3-libiberty
+		 
 @endif libiberty-bootstrap
+
+.PHONY: configure-stage3-zlib maybe-configure-stage3-zlib
+.PHONY: all-stage3-zlib maybe-all-stage3-zlib
 
 maybe-configure-stage3-zlib:
 maybe-all-stage3-zlib:
 
 @if zlib-bootstrap
 maybe-configure-stage3-zlib: configure-stage3-zlib
-configure-stage3-zlib:  maybe-all-stage2-zlib 
-	$(MAKE) stage3-start
-	@if [ -f stage3-zlib/Makefile ] ; then \
-	  $(STAMP) configure-stage3-zlib ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage3-zlib:
+	@$(MAKE) stage3-start
+	@[ -f zlib/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30148,20 +29975,18 @@ configure-stage3-zlib:  maybe-all-stage2-zlib
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage3-zlib
+	  @stage2_werror_flag@ 
 
 maybe-all-stage3-zlib: all-stage3-zlib
 all-stage3-zlib: configure-stage3-zlib
-	$(MAKE) stage3-start
+	@$(MAKE) stage3-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage3-zlib
+		 
 @endif zlib-bootstrap
 
 
@@ -30169,8 +29994,12 @@ all-stage3-zlib: configure-stage3-zlib
 # only possibility, but now it conflicts with no-bootstrap rules
 @if gcc-bootstrap
 
-compare: all-stage3-gcc
-	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
+compare:
+	@if test -f stage2-lean; then \
+	  echo Cannot compare object files as stage 2 was deleted. ; \
+	  exit 0 ; \
+	fi; \
+	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	rm -f .bad_compare ; \
@@ -30190,42 +30019,21 @@ compare: all-stage3-gcc
 	  true; \
 	fi ; \
 	$(STAMP) compare
+	@bootstrap_lean@-rm -rf stage2-* ; $(STAMP) stage2-lean
 
 
 
 .PHONY: bootstrap
-bootstrap: stage3-bubble  compare  all
+bootstrap: stage3-bubble compare all
 
 
-.PHONY: restage3 touch-stage3 distclean-stage3
+.PHONY: distclean-stage3
 
 # Rules to wipe a stage and all the following ones, used for cleanstrap
 distclean-stage2:: distclean-stage3 
 distclean-stage3::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
-	rm -rf configure-stage3-* all-stage3-* stage3-* compare 
-
-# Rules to renew the timestamp on a stage and all the following ones
-touch-stage2:: touch-stage3 
-touch-stage3::
-	@case `echo configure-stage3-*` in \
-	  'configure-stage3-*') ;; \
-	  *) \
-	    echo '$(STAMP)' configure-stage3-* && \
-	    $(STAMP) configure-stage3-* ;; \
-	esac ; \
-	case `echo all-stage3-*` in \
-	  'all-stage3-*') ;; \
-	  *) \
-	    echo '$(STAMP)' all-stage3-* && \
-	    $(STAMP) all-stage3-* ;; \
-	esac
-
-# After building a stage, touch the following ones
-restage2:: touch-stage3 
-restage3::
-	rm -rf all-stage3-* compare 
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) compare 
+	rm -rf stage3-* compare 
 
 
 .PHONY: cleanstrap
@@ -30237,109 +30045,109 @@ cleanstrap: distclean-stage1 bootstrap
 .PHONY: stage4-start stage4-end
 
 stage4-start::
-	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
+	@[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
 	echo stage4 > stage_current ; \
 	echo stage4 > stage_last
 @if bfd
-	[ -d stage4-bfd ] || mkdir stage4-bfd; \
+	@[ -d stage4-bfd ] || mkdir stage4-bfd; \
 	set stage4-bfd bfd ; @CREATE_LINK_TO_DIR@  ; \
 	set stage3-bfd prev-bfd ; @CREATE_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
-	[ -d stage4-opcodes ] || mkdir stage4-opcodes; \
+	@[ -d stage4-opcodes ] || mkdir stage4-opcodes; \
 	set stage4-opcodes opcodes ; @CREATE_LINK_TO_DIR@  ; \
 	set stage3-opcodes prev-opcodes ; @CREATE_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
-	[ -d stage4-binutils ] || mkdir stage4-binutils; \
+	@[ -d stage4-binutils ] || mkdir stage4-binutils; \
 	set stage4-binutils binutils ; @CREATE_LINK_TO_DIR@  ; \
 	set stage3-binutils prev-binutils ; @CREATE_LINK_TO_DIR@ 
 @endif binutils
 @if gas
-	[ -d stage4-gas ] || mkdir stage4-gas; \
+	@[ -d stage4-gas ] || mkdir stage4-gas; \
 	set stage4-gas gas ; @CREATE_LINK_TO_DIR@  ; \
 	set stage3-gas prev-gas ; @CREATE_LINK_TO_DIR@ 
 @endif gas
 @if gcc
-	[ -d stage4-gcc ] || mkdir stage4-gcc; \
+	@[ -d stage4-gcc ] || mkdir stage4-gcc; \
 	set stage4-gcc gcc ; @CREATE_LINK_TO_DIR@  ; \
 	set stage3-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ 
 @endif gcc
 @if intl
-	[ -d stage4-intl ] || mkdir stage4-intl; \
+	@[ -d stage4-intl ] || mkdir stage4-intl; \
 	set stage4-intl intl ; @CREATE_LINK_TO_DIR@  ; \
 	set stage3-intl prev-intl ; @CREATE_LINK_TO_DIR@ 
 @endif intl
 @if ld
-	[ -d stage4-ld ] || mkdir stage4-ld; \
+	@[ -d stage4-ld ] || mkdir stage4-ld; \
 	set stage4-ld ld ; @CREATE_LINK_TO_DIR@  ; \
 	set stage3-ld prev-ld ; @CREATE_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
-	[ -d stage4-libcpp ] || mkdir stage4-libcpp; \
+	@[ -d stage4-libcpp ] || mkdir stage4-libcpp; \
 	set stage4-libcpp libcpp ; @CREATE_LINK_TO_DIR@  ; \
 	set stage3-libcpp prev-libcpp ; @CREATE_LINK_TO_DIR@ 
 @endif libcpp
 @if libbanshee
-	[ -d stage4-libbanshee ] || mkdir stage4-libbanshee; \
+	@[ -d stage4-libbanshee ] || mkdir stage4-libbanshee; \
 	set stage4-libbanshee libbanshee ; @CREATE_LINK_TO_DIR@  ; \
 	set stage3-libbanshee prev-libbanshee ; @CREATE_LINK_TO_DIR@ 
 @endif libbanshee
 @if libiberty
-	[ -d stage4-libiberty ] || mkdir stage4-libiberty; \
+	@[ -d stage4-libiberty ] || mkdir stage4-libiberty; \
 	set stage4-libiberty libiberty ; @CREATE_LINK_TO_DIR@  ; \
 	set stage3-libiberty prev-libiberty ; @CREATE_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
-	[ -d stage4-zlib ] || mkdir stage4-zlib; \
+	@[ -d stage4-zlib ] || mkdir stage4-zlib; \
 	set stage4-zlib zlib ; @CREATE_LINK_TO_DIR@  ; \
 	set stage3-zlib prev-zlib ; @CREATE_LINK_TO_DIR@ 
 @endif zlib
 
 stage4-end::
-	rm -f stage_current
+	@rm -f stage_current
 @if bfd
-	set bfd stage4-bfd ; @UNDO_LINK_TO_DIR@  ; \
+	@set bfd stage4-bfd ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-bfd stage3-bfd ; @UNDO_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
-	set opcodes stage4-opcodes ; @UNDO_LINK_TO_DIR@  ; \
+	@set opcodes stage4-opcodes ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-opcodes stage3-opcodes ; @UNDO_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
-	set binutils stage4-binutils ; @UNDO_LINK_TO_DIR@  ; \
+	@set binutils stage4-binutils ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-binutils stage3-binutils ; @UNDO_LINK_TO_DIR@ 
 @endif binutils
 @if gas
-	set gas stage4-gas ; @UNDO_LINK_TO_DIR@  ; \
+	@set gas stage4-gas ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-gas stage3-gas ; @UNDO_LINK_TO_DIR@ 
 @endif gas
 @if gcc
-	set gcc stage4-gcc ; @UNDO_LINK_TO_DIR@  ; \
+	@set gcc stage4-gcc ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-gcc stage3-gcc ; @UNDO_LINK_TO_DIR@ 
 @endif gcc
 @if intl
-	set intl stage4-intl ; @UNDO_LINK_TO_DIR@  ; \
+	@set intl stage4-intl ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-intl stage3-intl ; @UNDO_LINK_TO_DIR@ 
 @endif intl
 @if ld
-	set ld stage4-ld ; @UNDO_LINK_TO_DIR@  ; \
+	@set ld stage4-ld ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-ld stage3-ld ; @UNDO_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
-	set libcpp stage4-libcpp ; @UNDO_LINK_TO_DIR@  ; \
+	@set libcpp stage4-libcpp ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libcpp stage3-libcpp ; @UNDO_LINK_TO_DIR@ 
 @endif libcpp
 @if libbanshee
-	set libbanshee stage4-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
+	@set libbanshee stage4-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libbanshee stage3-libbanshee ; @UNDO_LINK_TO_DIR@ 
 @endif libbanshee
 @if libiberty
-	set libiberty stage4-libiberty ; @UNDO_LINK_TO_DIR@  ; \
+	@set libiberty stage4-libiberty ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libiberty stage3-libiberty ; @UNDO_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
-	set zlib stage4-zlib ; @UNDO_LINK_TO_DIR@  ; \
+	@set zlib stage4-zlib ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-zlib stage3-zlib ; @UNDO_LINK_TO_DIR@ 
 @endif zlib
 
@@ -30348,11 +30156,12 @@ stage4-end::
 # be reconfigured as well.
 .PHONY: stage4-bubble
 stage4-bubble:: stage3-bubble
-	@case `echo all-stage4-*` in \
-	  'all-stage4-*') ;; \
-	  *) echo Remaking stage 4 ; rm -f all-stage4-* ;; \
-	esac ; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage4
+	@bootstrap_lean@-rm -rf stage2-* ; $(STAMP) stage2-lean
+	@if test -f stage4-lean || test -f stage3-lean  ; then \
+	  echo Skipping rebuild of stage4 ; \
+	else \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage4; \
+	fi
 
 .PHONY: all-stage4
 all-stage4:     \
@@ -30369,19 +30178,17 @@ all-stage4:     \
   maybe-all-stage4-zlib       
 
 
+.PHONY: configure-stage4-bfd maybe-configure-stage4-bfd
+.PHONY: all-stage4-bfd maybe-all-stage4-bfd
+
 maybe-configure-stage4-bfd:
 maybe-all-stage4-bfd:
 
 @if bfd-bootstrap
 maybe-configure-stage4-bfd: configure-stage4-bfd
-configure-stage4-bfd:  maybe-all-stage3-bfd 
-	$(MAKE) stage4-start
-	@if [ -f stage4-bfd/Makefile ] ; then \
-	  $(STAMP) configure-stage4-bfd ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage4-bfd:
+	@$(MAKE) stage4-start
+	@[ -f bfd/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30400,35 +30207,31 @@ configure-stage4-bfd:  maybe-all-stage3-bfd
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage4-bfd
+	  @stage2_werror_flag@ 
 
 maybe-all-stage4-bfd: all-stage4-bfd
 all-stage4-bfd: configure-stage4-bfd
-	$(MAKE) stage4-start
+	@$(MAKE) stage4-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage4-bfd
+		 
 @endif bfd-bootstrap
+
+.PHONY: configure-stage4-opcodes maybe-configure-stage4-opcodes
+.PHONY: all-stage4-opcodes maybe-all-stage4-opcodes
 
 maybe-configure-stage4-opcodes:
 maybe-all-stage4-opcodes:
 
 @if opcodes-bootstrap
 maybe-configure-stage4-opcodes: configure-stage4-opcodes
-configure-stage4-opcodes:  maybe-all-stage3-opcodes 
-	$(MAKE) stage4-start
-	@if [ -f stage4-opcodes/Makefile ] ; then \
-	  $(STAMP) configure-stage4-opcodes ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage4-opcodes:
+	@$(MAKE) stage4-start
+	@[ -f opcodes/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30447,35 +30250,31 @@ configure-stage4-opcodes:  maybe-all-stage3-opcodes
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage4-opcodes
+	  @stage2_werror_flag@ 
 
 maybe-all-stage4-opcodes: all-stage4-opcodes
 all-stage4-opcodes: configure-stage4-opcodes
-	$(MAKE) stage4-start
+	@$(MAKE) stage4-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage4-opcodes
+		 
 @endif opcodes-bootstrap
+
+.PHONY: configure-stage4-binutils maybe-configure-stage4-binutils
+.PHONY: all-stage4-binutils maybe-all-stage4-binutils
 
 maybe-configure-stage4-binutils:
 maybe-all-stage4-binutils:
 
 @if binutils-bootstrap
 maybe-configure-stage4-binutils: configure-stage4-binutils
-configure-stage4-binutils:  maybe-all-stage3-binutils 
-	$(MAKE) stage4-start
-	@if [ -f stage4-binutils/Makefile ] ; then \
-	  $(STAMP) configure-stage4-binutils ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage4-binutils:
+	@$(MAKE) stage4-start
+	@[ -f binutils/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30494,35 +30293,31 @@ configure-stage4-binutils:  maybe-all-stage3-binutils
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage4-binutils
+	  @stage2_werror_flag@ 
 
 maybe-all-stage4-binutils: all-stage4-binutils
 all-stage4-binutils: configure-stage4-binutils
-	$(MAKE) stage4-start
+	@$(MAKE) stage4-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage4-binutils
+		 
 @endif binutils-bootstrap
+
+.PHONY: configure-stage4-gas maybe-configure-stage4-gas
+.PHONY: all-stage4-gas maybe-all-stage4-gas
 
 maybe-configure-stage4-gas:
 maybe-all-stage4-gas:
 
 @if gas-bootstrap
 maybe-configure-stage4-gas: configure-stage4-gas
-configure-stage4-gas:  maybe-all-stage3-gas 
-	$(MAKE) stage4-start
-	@if [ -f stage4-gas/Makefile ] ; then \
-	  $(STAMP) configure-stage4-gas ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage4-gas:
+	@$(MAKE) stage4-start
+	@[ -f gas/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30541,35 +30336,31 @@ configure-stage4-gas:  maybe-all-stage3-gas
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage4-gas
+	  @stage2_werror_flag@ 
 
 maybe-all-stage4-gas: all-stage4-gas
 all-stage4-gas: configure-stage4-gas
-	$(MAKE) stage4-start
+	@$(MAKE) stage4-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage4-gas
+		 
 @endif gas-bootstrap
+
+.PHONY: configure-stage4-gcc maybe-configure-stage4-gcc
+.PHONY: all-stage4-gcc maybe-all-stage4-gcc
 
 maybe-configure-stage4-gcc:
 maybe-all-stage4-gcc:
 
 @if gcc-bootstrap
 maybe-configure-stage4-gcc: configure-stage4-gcc
-configure-stage4-gcc:  maybe-all-stage3-gcc 
-	$(MAKE) stage4-start
-	@if [ -f stage4-gcc/Makefile ] ; then \
-	  $(STAMP) configure-stage4-gcc ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage4-gcc:
+	@$(MAKE) stage4-start
+	@[ -f gcc/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30588,35 +30379,31 @@ configure-stage4-gcc:  maybe-all-stage3-gcc
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage4-gcc
+	  @stage2_werror_flag@ 
 
 maybe-all-stage4-gcc: all-stage4-gcc
 all-stage4-gcc: configure-stage4-gcc
-	$(MAKE) stage4-start
+	@$(MAKE) stage4-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 $(EXTRA_GCC_FLAGS) && \
-	$(STAMP) ../all-stage4-gcc
+		 $(EXTRA_GCC_FLAGS)
 @endif gcc-bootstrap
+
+.PHONY: configure-stage4-intl maybe-configure-stage4-intl
+.PHONY: all-stage4-intl maybe-all-stage4-intl
 
 maybe-configure-stage4-intl:
 maybe-all-stage4-intl:
 
 @if intl-bootstrap
 maybe-configure-stage4-intl: configure-stage4-intl
-configure-stage4-intl:  maybe-all-stage3-intl 
-	$(MAKE) stage4-start
-	@if [ -f stage4-intl/Makefile ] ; then \
-	  $(STAMP) configure-stage4-intl ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage4-intl:
+	@$(MAKE) stage4-start
+	@[ -f intl/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30635,35 +30422,31 @@ configure-stage4-intl:  maybe-all-stage3-intl
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage4-intl
+	  @stage2_werror_flag@ 
 
 maybe-all-stage4-intl: all-stage4-intl
 all-stage4-intl: configure-stage4-intl
-	$(MAKE) stage4-start
+	@$(MAKE) stage4-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage4-intl
+		 
 @endif intl-bootstrap
+
+.PHONY: configure-stage4-ld maybe-configure-stage4-ld
+.PHONY: all-stage4-ld maybe-all-stage4-ld
 
 maybe-configure-stage4-ld:
 maybe-all-stage4-ld:
 
 @if ld-bootstrap
 maybe-configure-stage4-ld: configure-stage4-ld
-configure-stage4-ld:  maybe-all-stage3-ld 
-	$(MAKE) stage4-start
-	@if [ -f stage4-ld/Makefile ] ; then \
-	  $(STAMP) configure-stage4-ld ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage4-ld:
+	@$(MAKE) stage4-start
+	@[ -f ld/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30682,35 +30465,31 @@ configure-stage4-ld:  maybe-all-stage3-ld
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage4-ld
+	  @stage2_werror_flag@ 
 
 maybe-all-stage4-ld: all-stage4-ld
 all-stage4-ld: configure-stage4-ld
-	$(MAKE) stage4-start
+	@$(MAKE) stage4-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage4-ld
+		 
 @endif ld-bootstrap
+
+.PHONY: configure-stage4-libcpp maybe-configure-stage4-libcpp
+.PHONY: all-stage4-libcpp maybe-all-stage4-libcpp
 
 maybe-configure-stage4-libcpp:
 maybe-all-stage4-libcpp:
 
 @if libcpp-bootstrap
 maybe-configure-stage4-libcpp: configure-stage4-libcpp
-configure-stage4-libcpp:  maybe-all-stage3-libcpp 
-	$(MAKE) stage4-start
-	@if [ -f stage4-libcpp/Makefile ] ; then \
-	  $(STAMP) configure-stage4-libcpp ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage4-libcpp:
+	@$(MAKE) stage4-start
+	@[ -f libcpp/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30729,35 +30508,31 @@ configure-stage4-libcpp:  maybe-all-stage3-libcpp
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage4-libcpp
+	  @stage2_werror_flag@ 
 
 maybe-all-stage4-libcpp: all-stage4-libcpp
 all-stage4-libcpp: configure-stage4-libcpp
-	$(MAKE) stage4-start
+	@$(MAKE) stage4-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage4-libcpp
+		 
 @endif libcpp-bootstrap
+
+.PHONY: configure-stage4-libbanshee maybe-configure-stage4-libbanshee
+.PHONY: all-stage4-libbanshee maybe-all-stage4-libbanshee
 
 maybe-configure-stage4-libbanshee:
 maybe-all-stage4-libbanshee:
 
 @if libbanshee-bootstrap
 maybe-configure-stage4-libbanshee: configure-stage4-libbanshee
-configure-stage4-libbanshee:  maybe-all-stage3-libbanshee 
-	$(MAKE) stage4-start
-	@if [ -f stage4-libbanshee/Makefile ] ; then \
-	  $(STAMP) configure-stage4-libbanshee ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage4-libbanshee:
+	@$(MAKE) stage4-start
+	@[ -f libbanshee/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30776,35 +30551,31 @@ configure-stage4-libbanshee:  maybe-all-stage3-libbanshee
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage4-libbanshee
+	  @stage2_werror_flag@ 
 
 maybe-all-stage4-libbanshee: all-stage4-libbanshee
 all-stage4-libbanshee: configure-stage4-libbanshee
-	$(MAKE) stage4-start
+	@$(MAKE) stage4-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libbanshee && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage4-libbanshee
+		 
 @endif libbanshee-bootstrap
+
+.PHONY: configure-stage4-libiberty maybe-configure-stage4-libiberty
+.PHONY: all-stage4-libiberty maybe-all-stage4-libiberty
 
 maybe-configure-stage4-libiberty:
 maybe-all-stage4-libiberty:
 
 @if libiberty-bootstrap
 maybe-configure-stage4-libiberty: configure-stage4-libiberty
-configure-stage4-libiberty:  maybe-all-stage3-libiberty 
-	$(MAKE) stage4-start
-	@if [ -f stage4-libiberty/Makefile ] ; then \
-	  $(STAMP) configure-stage4-libiberty ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage4-libiberty:
+	@$(MAKE) stage4-start
+	@[ -f libiberty/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30823,35 +30594,31 @@ configure-stage4-libiberty:  maybe-all-stage3-libiberty
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage4-libiberty
+	  @stage2_werror_flag@ 
 
 maybe-all-stage4-libiberty: all-stage4-libiberty
 all-stage4-libiberty: configure-stage4-libiberty
-	$(MAKE) stage4-start
+	@$(MAKE) stage4-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage4-libiberty
+		 
 @endif libiberty-bootstrap
+
+.PHONY: configure-stage4-zlib maybe-configure-stage4-zlib
+.PHONY: all-stage4-zlib maybe-all-stage4-zlib
 
 maybe-configure-stage4-zlib:
 maybe-all-stage4-zlib:
 
 @if zlib-bootstrap
 maybe-configure-stage4-zlib: configure-stage4-zlib
-configure-stage4-zlib:  maybe-all-stage3-zlib 
-	$(MAKE) stage4-start
-	@if [ -f stage4-zlib/Makefile ] ; then \
-	  $(STAMP) configure-stage4-zlib ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stage4-zlib:
+	@$(MAKE) stage4-start
+	@[ -f zlib/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -30870,20 +30637,18 @@ configure-stage4-zlib:  maybe-all-stage3-zlib
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stage4-zlib
+	  @stage2_werror_flag@ 
 
 maybe-all-stage4-zlib: all-stage4-zlib
 all-stage4-zlib: configure-stage4-zlib
-	$(MAKE) stage4-start
+	@$(MAKE) stage4-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		  && \
-	$(STAMP) ../all-stage4-zlib
+		 
 @endif zlib-bootstrap
 
 
@@ -30891,8 +30656,12 @@ all-stage4-zlib: configure-stage4-zlib
 # only possibility, but now it conflicts with no-bootstrap rules
 @if gcc-bootstrap
 
-compare3: all-stage4-gcc
-	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
+compare3:
+	@if test -f stage3-lean; then \
+	  echo Cannot compare object files as stage 3 was deleted. ; \
+	  exit 0 ; \
+	fi; \
+	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	rm -f .bad_compare ; \
@@ -30912,42 +30681,21 @@ compare3: all-stage4-gcc
 	  true; \
 	fi ; \
 	$(STAMP) compare3
+	@bootstrap_lean@-rm -rf stage3-* ; $(STAMP) stage3-lean
 
 
 
 .PHONY: bootstrap4
-bootstrap4: stage4-bubble  compare3  all
+bootstrap4: stage4-bubble compare3 all
 
 
-.PHONY: restage4 touch-stage4 distclean-stage4
+.PHONY: distclean-stage4
 
 # Rules to wipe a stage and all the following ones, used for cleanstrap
 distclean-stage3:: distclean-stage4 
 distclean-stage4::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
-	rm -rf configure-stage4-* all-stage4-* stage4-* compare3 
-
-# Rules to renew the timestamp on a stage and all the following ones
-touch-stage3:: touch-stage4 
-touch-stage4::
-	@case `echo configure-stage4-*` in \
-	  'configure-stage4-*') ;; \
-	  *) \
-	    echo '$(STAMP)' configure-stage4-* && \
-	    $(STAMP) configure-stage4-* ;; \
-	esac ; \
-	case `echo all-stage4-*` in \
-	  'all-stage4-*') ;; \
-	  *) \
-	    echo '$(STAMP)' all-stage4-* && \
-	    $(STAMP) all-stage4-* ;; \
-	esac
-
-# After building a stage, touch the following ones
-restage3:: touch-stage4 
-restage4::
-	rm -rf all-stage4-* compare3 
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) compare3 
+	rm -rf stage4-* compare3 
 
 
 @endif gcc-bootstrap
@@ -30956,109 +30704,109 @@ restage4::
 .PHONY: stageprofile-start stageprofile-end
 
 stageprofile-start::
-	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
+	@[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
 	echo stageprofile > stage_current ; \
 	echo stageprofile > stage_last
 @if bfd
-	[ -d stageprofile-bfd ] || mkdir stageprofile-bfd; \
+	@[ -d stageprofile-bfd ] || mkdir stageprofile-bfd; \
 	set stageprofile-bfd bfd ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-bfd prev-bfd ; @CREATE_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
-	[ -d stageprofile-opcodes ] || mkdir stageprofile-opcodes; \
+	@[ -d stageprofile-opcodes ] || mkdir stageprofile-opcodes; \
 	set stageprofile-opcodes opcodes ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-opcodes prev-opcodes ; @CREATE_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
-	[ -d stageprofile-binutils ] || mkdir stageprofile-binutils; \
+	@[ -d stageprofile-binutils ] || mkdir stageprofile-binutils; \
 	set stageprofile-binutils binutils ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-binutils prev-binutils ; @CREATE_LINK_TO_DIR@ 
 @endif binutils
 @if gas
-	[ -d stageprofile-gas ] || mkdir stageprofile-gas; \
+	@[ -d stageprofile-gas ] || mkdir stageprofile-gas; \
 	set stageprofile-gas gas ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-gas prev-gas ; @CREATE_LINK_TO_DIR@ 
 @endif gas
 @if gcc
-	[ -d stageprofile-gcc ] || mkdir stageprofile-gcc; \
+	@[ -d stageprofile-gcc ] || mkdir stageprofile-gcc; \
 	set stageprofile-gcc gcc ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ 
 @endif gcc
 @if intl
-	[ -d stageprofile-intl ] || mkdir stageprofile-intl; \
+	@[ -d stageprofile-intl ] || mkdir stageprofile-intl; \
 	set stageprofile-intl intl ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-intl prev-intl ; @CREATE_LINK_TO_DIR@ 
 @endif intl
 @if ld
-	[ -d stageprofile-ld ] || mkdir stageprofile-ld; \
+	@[ -d stageprofile-ld ] || mkdir stageprofile-ld; \
 	set stageprofile-ld ld ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-ld prev-ld ; @CREATE_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
-	[ -d stageprofile-libcpp ] || mkdir stageprofile-libcpp; \
+	@[ -d stageprofile-libcpp ] || mkdir stageprofile-libcpp; \
 	set stageprofile-libcpp libcpp ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-libcpp prev-libcpp ; @CREATE_LINK_TO_DIR@ 
 @endif libcpp
 @if libbanshee
-	[ -d stageprofile-libbanshee ] || mkdir stageprofile-libbanshee; \
+	@[ -d stageprofile-libbanshee ] || mkdir stageprofile-libbanshee; \
 	set stageprofile-libbanshee libbanshee ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-libbanshee prev-libbanshee ; @CREATE_LINK_TO_DIR@ 
 @endif libbanshee
 @if libiberty
-	[ -d stageprofile-libiberty ] || mkdir stageprofile-libiberty; \
+	@[ -d stageprofile-libiberty ] || mkdir stageprofile-libiberty; \
 	set stageprofile-libiberty libiberty ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-libiberty prev-libiberty ; @CREATE_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
-	[ -d stageprofile-zlib ] || mkdir stageprofile-zlib; \
+	@[ -d stageprofile-zlib ] || mkdir stageprofile-zlib; \
 	set stageprofile-zlib zlib ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-zlib prev-zlib ; @CREATE_LINK_TO_DIR@ 
 @endif zlib
 
 stageprofile-end::
-	rm -f stage_current
+	@rm -f stage_current
 @if bfd
-	set bfd stageprofile-bfd ; @UNDO_LINK_TO_DIR@  ; \
+	@set bfd stageprofile-bfd ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-bfd stage1-bfd ; @UNDO_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
-	set opcodes stageprofile-opcodes ; @UNDO_LINK_TO_DIR@  ; \
+	@set opcodes stageprofile-opcodes ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-opcodes stage1-opcodes ; @UNDO_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
-	set binutils stageprofile-binutils ; @UNDO_LINK_TO_DIR@  ; \
+	@set binutils stageprofile-binutils ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-binutils stage1-binutils ; @UNDO_LINK_TO_DIR@ 
 @endif binutils
 @if gas
-	set gas stageprofile-gas ; @UNDO_LINK_TO_DIR@  ; \
+	@set gas stageprofile-gas ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-gas stage1-gas ; @UNDO_LINK_TO_DIR@ 
 @endif gas
 @if gcc
-	set gcc stageprofile-gcc ; @UNDO_LINK_TO_DIR@  ; \
+	@set gcc stageprofile-gcc ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-gcc stage1-gcc ; @UNDO_LINK_TO_DIR@ 
 @endif gcc
 @if intl
-	set intl stageprofile-intl ; @UNDO_LINK_TO_DIR@  ; \
+	@set intl stageprofile-intl ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-intl stage1-intl ; @UNDO_LINK_TO_DIR@ 
 @endif intl
 @if ld
-	set ld stageprofile-ld ; @UNDO_LINK_TO_DIR@  ; \
+	@set ld stageprofile-ld ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-ld stage1-ld ; @UNDO_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
-	set libcpp stageprofile-libcpp ; @UNDO_LINK_TO_DIR@  ; \
+	@set libcpp stageprofile-libcpp ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libcpp stage1-libcpp ; @UNDO_LINK_TO_DIR@ 
 @endif libcpp
 @if libbanshee
-	set libbanshee stageprofile-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
+	@set libbanshee stageprofile-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libbanshee stage1-libbanshee ; @UNDO_LINK_TO_DIR@ 
 @endif libbanshee
 @if libiberty
-	set libiberty stageprofile-libiberty ; @UNDO_LINK_TO_DIR@  ; \
+	@set libiberty stageprofile-libiberty ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libiberty stage1-libiberty ; @UNDO_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
-	set zlib stageprofile-zlib ; @UNDO_LINK_TO_DIR@  ; \
+	@set zlib stageprofile-zlib ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-zlib stage1-zlib ; @UNDO_LINK_TO_DIR@ 
 @endif zlib
 
@@ -31067,11 +30815,11 @@ stageprofile-end::
 # be reconfigured as well.
 .PHONY: stageprofile-bubble
 stageprofile-bubble:: stage1-bubble
-	@case `echo all-stageprofile-*` in \
-	  'all-stageprofile-*') ;; \
-	  *) echo Remaking stage profile ; rm -f all-stageprofile-* ;; \
-	esac ; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stageprofile
+	@if test -f stageprofile-lean || test -f stage1-lean  ; then \
+	  echo Skipping rebuild of stageprofile ; \
+	else \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stageprofile; \
+	fi
 
 .PHONY: all-stageprofile
 all-stageprofile:     \
@@ -31088,19 +30836,17 @@ all-stageprofile:     \
   maybe-all-stageprofile-zlib       
 
 
+.PHONY: configure-stageprofile-bfd maybe-configure-stageprofile-bfd
+.PHONY: all-stageprofile-bfd maybe-all-stageprofile-bfd
+
 maybe-configure-stageprofile-bfd:
 maybe-all-stageprofile-bfd:
 
 @if bfd-bootstrap
 maybe-configure-stageprofile-bfd: configure-stageprofile-bfd
-configure-stageprofile-bfd:  maybe-all-stage1-bfd 
-	$(MAKE) stageprofile-start
-	@if [ -f stageprofile-bfd/Makefile ] ; then \
-	  $(STAMP) configure-stageprofile-bfd ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stageprofile-bfd:
+	@$(MAKE) stageprofile-start
+	@[ -f bfd/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31119,35 +30865,31 @@ configure-stageprofile-bfd:  maybe-all-stage1-bfd
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stageprofile-bfd
+	  @stage2_werror_flag@ 
 
 maybe-all-stageprofile-bfd: all-stageprofile-bfd
 all-stageprofile-bfd: configure-stageprofile-bfd
-	$(MAKE) stageprofile-start
+	@$(MAKE) stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  && \
-	$(STAMP) ../all-stageprofile-bfd
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
 @endif bfd-bootstrap
+
+.PHONY: configure-stageprofile-opcodes maybe-configure-stageprofile-opcodes
+.PHONY: all-stageprofile-opcodes maybe-all-stageprofile-opcodes
 
 maybe-configure-stageprofile-opcodes:
 maybe-all-stageprofile-opcodes:
 
 @if opcodes-bootstrap
 maybe-configure-stageprofile-opcodes: configure-stageprofile-opcodes
-configure-stageprofile-opcodes:  maybe-all-stage1-opcodes 
-	$(MAKE) stageprofile-start
-	@if [ -f stageprofile-opcodes/Makefile ] ; then \
-	  $(STAMP) configure-stageprofile-opcodes ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stageprofile-opcodes:
+	@$(MAKE) stageprofile-start
+	@[ -f opcodes/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31166,35 +30908,31 @@ configure-stageprofile-opcodes:  maybe-all-stage1-opcodes
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stageprofile-opcodes
+	  @stage2_werror_flag@ 
 
 maybe-all-stageprofile-opcodes: all-stageprofile-opcodes
 all-stageprofile-opcodes: configure-stageprofile-opcodes
-	$(MAKE) stageprofile-start
+	@$(MAKE) stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  && \
-	$(STAMP) ../all-stageprofile-opcodes
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
 @endif opcodes-bootstrap
+
+.PHONY: configure-stageprofile-binutils maybe-configure-stageprofile-binutils
+.PHONY: all-stageprofile-binutils maybe-all-stageprofile-binutils
 
 maybe-configure-stageprofile-binutils:
 maybe-all-stageprofile-binutils:
 
 @if binutils-bootstrap
 maybe-configure-stageprofile-binutils: configure-stageprofile-binutils
-configure-stageprofile-binutils:  maybe-all-stage1-binutils 
-	$(MAKE) stageprofile-start
-	@if [ -f stageprofile-binutils/Makefile ] ; then \
-	  $(STAMP) configure-stageprofile-binutils ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stageprofile-binutils:
+	@$(MAKE) stageprofile-start
+	@[ -f binutils/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31213,35 +30951,31 @@ configure-stageprofile-binutils:  maybe-all-stage1-binutils
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stageprofile-binutils
+	  @stage2_werror_flag@ 
 
 maybe-all-stageprofile-binutils: all-stageprofile-binutils
 all-stageprofile-binutils: configure-stageprofile-binutils
-	$(MAKE) stageprofile-start
+	@$(MAKE) stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  && \
-	$(STAMP) ../all-stageprofile-binutils
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
 @endif binutils-bootstrap
+
+.PHONY: configure-stageprofile-gas maybe-configure-stageprofile-gas
+.PHONY: all-stageprofile-gas maybe-all-stageprofile-gas
 
 maybe-configure-stageprofile-gas:
 maybe-all-stageprofile-gas:
 
 @if gas-bootstrap
 maybe-configure-stageprofile-gas: configure-stageprofile-gas
-configure-stageprofile-gas:  maybe-all-stage1-gas 
-	$(MAKE) stageprofile-start
-	@if [ -f stageprofile-gas/Makefile ] ; then \
-	  $(STAMP) configure-stageprofile-gas ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stageprofile-gas:
+	@$(MAKE) stageprofile-start
+	@[ -f gas/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31260,35 +30994,31 @@ configure-stageprofile-gas:  maybe-all-stage1-gas
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stageprofile-gas
+	  @stage2_werror_flag@ 
 
 maybe-all-stageprofile-gas: all-stageprofile-gas
 all-stageprofile-gas: configure-stageprofile-gas
-	$(MAKE) stageprofile-start
+	@$(MAKE) stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  && \
-	$(STAMP) ../all-stageprofile-gas
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
 @endif gas-bootstrap
+
+.PHONY: configure-stageprofile-gcc maybe-configure-stageprofile-gcc
+.PHONY: all-stageprofile-gcc maybe-all-stageprofile-gcc
 
 maybe-configure-stageprofile-gcc:
 maybe-all-stageprofile-gcc:
 
 @if gcc-bootstrap
 maybe-configure-stageprofile-gcc: configure-stageprofile-gcc
-configure-stageprofile-gcc:  maybe-all-stage1-gcc 
-	$(MAKE) stageprofile-start
-	@if [ -f stageprofile-gcc/Makefile ] ; then \
-	  $(STAMP) configure-stageprofile-gcc ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stageprofile-gcc:
+	@$(MAKE) stageprofile-start
+	@[ -f gcc/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31307,35 +31037,31 @@ configure-stageprofile-gcc:  maybe-all-stage1-gcc
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stageprofile-gcc
+	  @stage2_werror_flag@ 
 
 maybe-all-stageprofile-gcc: all-stageprofile-gcc
 all-stageprofile-gcc: configure-stageprofile-gcc
-	$(MAKE) stageprofile-start
+	@$(MAKE) stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(EXTRA_GCC_FLAGS) && \
-	$(STAMP) ../all-stageprofile-gcc
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(EXTRA_GCC_FLAGS)
 @endif gcc-bootstrap
+
+.PHONY: configure-stageprofile-intl maybe-configure-stageprofile-intl
+.PHONY: all-stageprofile-intl maybe-all-stageprofile-intl
 
 maybe-configure-stageprofile-intl:
 maybe-all-stageprofile-intl:
 
 @if intl-bootstrap
 maybe-configure-stageprofile-intl: configure-stageprofile-intl
-configure-stageprofile-intl:  maybe-all-stage1-intl 
-	$(MAKE) stageprofile-start
-	@if [ -f stageprofile-intl/Makefile ] ; then \
-	  $(STAMP) configure-stageprofile-intl ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stageprofile-intl:
+	@$(MAKE) stageprofile-start
+	@[ -f intl/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31354,35 +31080,31 @@ configure-stageprofile-intl:  maybe-all-stage1-intl
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stageprofile-intl
+	  @stage2_werror_flag@ 
 
 maybe-all-stageprofile-intl: all-stageprofile-intl
 all-stageprofile-intl: configure-stageprofile-intl
-	$(MAKE) stageprofile-start
+	@$(MAKE) stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  && \
-	$(STAMP) ../all-stageprofile-intl
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
 @endif intl-bootstrap
+
+.PHONY: configure-stageprofile-ld maybe-configure-stageprofile-ld
+.PHONY: all-stageprofile-ld maybe-all-stageprofile-ld
 
 maybe-configure-stageprofile-ld:
 maybe-all-stageprofile-ld:
 
 @if ld-bootstrap
 maybe-configure-stageprofile-ld: configure-stageprofile-ld
-configure-stageprofile-ld:  maybe-all-stage1-ld 
-	$(MAKE) stageprofile-start
-	@if [ -f stageprofile-ld/Makefile ] ; then \
-	  $(STAMP) configure-stageprofile-ld ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stageprofile-ld:
+	@$(MAKE) stageprofile-start
+	@[ -f ld/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31401,35 +31123,31 @@ configure-stageprofile-ld:  maybe-all-stage1-ld
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stageprofile-ld
+	  @stage2_werror_flag@ 
 
 maybe-all-stageprofile-ld: all-stageprofile-ld
 all-stageprofile-ld: configure-stageprofile-ld
-	$(MAKE) stageprofile-start
+	@$(MAKE) stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  && \
-	$(STAMP) ../all-stageprofile-ld
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
 @endif ld-bootstrap
+
+.PHONY: configure-stageprofile-libcpp maybe-configure-stageprofile-libcpp
+.PHONY: all-stageprofile-libcpp maybe-all-stageprofile-libcpp
 
 maybe-configure-stageprofile-libcpp:
 maybe-all-stageprofile-libcpp:
 
 @if libcpp-bootstrap
 maybe-configure-stageprofile-libcpp: configure-stageprofile-libcpp
-configure-stageprofile-libcpp:  maybe-all-stage1-libcpp 
-	$(MAKE) stageprofile-start
-	@if [ -f stageprofile-libcpp/Makefile ] ; then \
-	  $(STAMP) configure-stageprofile-libcpp ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stageprofile-libcpp:
+	@$(MAKE) stageprofile-start
+	@[ -f libcpp/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31448,35 +31166,31 @@ configure-stageprofile-libcpp:  maybe-all-stage1-libcpp
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stageprofile-libcpp
+	  @stage2_werror_flag@ 
 
 maybe-all-stageprofile-libcpp: all-stageprofile-libcpp
 all-stageprofile-libcpp: configure-stageprofile-libcpp
-	$(MAKE) stageprofile-start
+	@$(MAKE) stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  && \
-	$(STAMP) ../all-stageprofile-libcpp
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
 @endif libcpp-bootstrap
+
+.PHONY: configure-stageprofile-libbanshee maybe-configure-stageprofile-libbanshee
+.PHONY: all-stageprofile-libbanshee maybe-all-stageprofile-libbanshee
 
 maybe-configure-stageprofile-libbanshee:
 maybe-all-stageprofile-libbanshee:
 
 @if libbanshee-bootstrap
 maybe-configure-stageprofile-libbanshee: configure-stageprofile-libbanshee
-configure-stageprofile-libbanshee:  maybe-all-stage1-libbanshee 
-	$(MAKE) stageprofile-start
-	@if [ -f stageprofile-libbanshee/Makefile ] ; then \
-	  $(STAMP) configure-stageprofile-libbanshee ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stageprofile-libbanshee:
+	@$(MAKE) stageprofile-start
+	@[ -f libbanshee/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31495,35 +31209,31 @@ configure-stageprofile-libbanshee:  maybe-all-stage1-libbanshee
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stageprofile-libbanshee
+	  @stage2_werror_flag@ 
 
 maybe-all-stageprofile-libbanshee: all-stageprofile-libbanshee
 all-stageprofile-libbanshee: configure-stageprofile-libbanshee
-	$(MAKE) stageprofile-start
+	@$(MAKE) stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libbanshee && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  && \
-	$(STAMP) ../all-stageprofile-libbanshee
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
 @endif libbanshee-bootstrap
+
+.PHONY: configure-stageprofile-libiberty maybe-configure-stageprofile-libiberty
+.PHONY: all-stageprofile-libiberty maybe-all-stageprofile-libiberty
 
 maybe-configure-stageprofile-libiberty:
 maybe-all-stageprofile-libiberty:
 
 @if libiberty-bootstrap
 maybe-configure-stageprofile-libiberty: configure-stageprofile-libiberty
-configure-stageprofile-libiberty:  maybe-all-stage1-libiberty 
-	$(MAKE) stageprofile-start
-	@if [ -f stageprofile-libiberty/Makefile ] ; then \
-	  $(STAMP) configure-stageprofile-libiberty ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stageprofile-libiberty:
+	@$(MAKE) stageprofile-start
+	@[ -f libiberty/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31542,35 +31252,31 @@ configure-stageprofile-libiberty:  maybe-all-stage1-libiberty
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stageprofile-libiberty
+	  @stage2_werror_flag@ 
 
 maybe-all-stageprofile-libiberty: all-stageprofile-libiberty
 all-stageprofile-libiberty: configure-stageprofile-libiberty
-	$(MAKE) stageprofile-start
+	@$(MAKE) stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  && \
-	$(STAMP) ../all-stageprofile-libiberty
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
 @endif libiberty-bootstrap
+
+.PHONY: configure-stageprofile-zlib maybe-configure-stageprofile-zlib
+.PHONY: all-stageprofile-zlib maybe-all-stageprofile-zlib
 
 maybe-configure-stageprofile-zlib:
 maybe-all-stageprofile-zlib:
 
 @if zlib-bootstrap
 maybe-configure-stageprofile-zlib: configure-stageprofile-zlib
-configure-stageprofile-zlib:  maybe-all-stage1-zlib 
-	$(MAKE) stageprofile-start
-	@if [ -f stageprofile-zlib/Makefile ] ; then \
-	  $(STAMP) configure-stageprofile-zlib ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stageprofile-zlib:
+	@$(MAKE) stageprofile-start
+	@[ -f zlib/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31589,20 +31295,18 @@ configure-stageprofile-zlib:  maybe-all-stage1-zlib
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stageprofile-zlib
+	  @stage2_werror_flag@ 
 
 maybe-all-stageprofile-zlib: all-stageprofile-zlib
 all-stageprofile-zlib: configure-stageprofile-zlib
-	$(MAKE) stageprofile-start
+	@$(MAKE) stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"  && \
-	$(STAMP) ../all-stageprofile-zlib
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" 
 @endif zlib-bootstrap
 
 
@@ -31613,35 +31317,13 @@ all-stageprofile-zlib: configure-stageprofile-zlib
 
 
 
-.PHONY: restageprofile touch-stageprofile distclean-stageprofile
+.PHONY: distclean-stageprofile
 
 # Rules to wipe a stage and all the following ones, used for cleanstrap
 distclean-stage1:: distclean-stageprofile 
 distclean-stageprofile::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
-	rm -rf configure-stageprofile-* all-stageprofile-* stageprofile-* 
-
-# Rules to renew the timestamp on a stage and all the following ones
-touch-stage1:: touch-stageprofile 
-touch-stageprofile::
-	@case `echo configure-stageprofile-*` in \
-	  'configure-stageprofile-*') ;; \
-	  *) \
-	    echo '$(STAMP)' configure-stageprofile-* && \
-	    $(STAMP) configure-stageprofile-* ;; \
-	esac ; \
-	case `echo all-stageprofile-*` in \
-	  'all-stageprofile-*') ;; \
-	  *) \
-	    echo '$(STAMP)' all-stageprofile-* && \
-	    $(STAMP) all-stageprofile-* ;; \
-	esac
-
-# After building a stage, touch the following ones
-restage1:: touch-stageprofile 
-restageprofile::
-	rm -rf all-stageprofile-* 
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS)  all-stageprofile 
+	rm -rf stageprofile-* 
 
 
 @endif gcc-bootstrap
@@ -31650,109 +31332,109 @@ restageprofile::
 .PHONY: stagefeedback-start stagefeedback-end
 
 stagefeedback-start::
-	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
+	@[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
 	echo stagefeedback > stage_current ; \
 	echo stagefeedback > stage_last
 @if bfd
-	[ -d stagefeedback-bfd ] || mkdir stagefeedback-bfd; \
+	@[ -d stagefeedback-bfd ] || mkdir stagefeedback-bfd; \
 	set stagefeedback-bfd bfd ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-bfd prev-bfd ; @CREATE_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
-	[ -d stagefeedback-opcodes ] || mkdir stagefeedback-opcodes; \
+	@[ -d stagefeedback-opcodes ] || mkdir stagefeedback-opcodes; \
 	set stagefeedback-opcodes opcodes ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-opcodes prev-opcodes ; @CREATE_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
-	[ -d stagefeedback-binutils ] || mkdir stagefeedback-binutils; \
+	@[ -d stagefeedback-binutils ] || mkdir stagefeedback-binutils; \
 	set stagefeedback-binutils binutils ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-binutils prev-binutils ; @CREATE_LINK_TO_DIR@ 
 @endif binutils
 @if gas
-	[ -d stagefeedback-gas ] || mkdir stagefeedback-gas; \
+	@[ -d stagefeedback-gas ] || mkdir stagefeedback-gas; \
 	set stagefeedback-gas gas ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-gas prev-gas ; @CREATE_LINK_TO_DIR@ 
 @endif gas
 @if gcc
-	[ -d stagefeedback-gcc ] || mkdir stagefeedback-gcc; \
+	@[ -d stagefeedback-gcc ] || mkdir stagefeedback-gcc; \
 	set stagefeedback-gcc gcc ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ 
 @endif gcc
 @if intl
-	[ -d stagefeedback-intl ] || mkdir stagefeedback-intl; \
+	@[ -d stagefeedback-intl ] || mkdir stagefeedback-intl; \
 	set stagefeedback-intl intl ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-intl prev-intl ; @CREATE_LINK_TO_DIR@ 
 @endif intl
 @if ld
-	[ -d stagefeedback-ld ] || mkdir stagefeedback-ld; \
+	@[ -d stagefeedback-ld ] || mkdir stagefeedback-ld; \
 	set stagefeedback-ld ld ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-ld prev-ld ; @CREATE_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
-	[ -d stagefeedback-libcpp ] || mkdir stagefeedback-libcpp; \
+	@[ -d stagefeedback-libcpp ] || mkdir stagefeedback-libcpp; \
 	set stagefeedback-libcpp libcpp ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-libcpp prev-libcpp ; @CREATE_LINK_TO_DIR@ 
 @endif libcpp
 @if libbanshee
-	[ -d stagefeedback-libbanshee ] || mkdir stagefeedback-libbanshee; \
+	@[ -d stagefeedback-libbanshee ] || mkdir stagefeedback-libbanshee; \
 	set stagefeedback-libbanshee libbanshee ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-libbanshee prev-libbanshee ; @CREATE_LINK_TO_DIR@ 
 @endif libbanshee
 @if libiberty
-	[ -d stagefeedback-libiberty ] || mkdir stagefeedback-libiberty; \
+	@[ -d stagefeedback-libiberty ] || mkdir stagefeedback-libiberty; \
 	set stagefeedback-libiberty libiberty ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-libiberty prev-libiberty ; @CREATE_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
-	[ -d stagefeedback-zlib ] || mkdir stagefeedback-zlib; \
+	@[ -d stagefeedback-zlib ] || mkdir stagefeedback-zlib; \
 	set stagefeedback-zlib zlib ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-zlib prev-zlib ; @CREATE_LINK_TO_DIR@ 
 @endif zlib
 
 stagefeedback-end::
-	rm -f stage_current
+	@rm -f stage_current
 @if bfd
-	set bfd stagefeedback-bfd ; @UNDO_LINK_TO_DIR@  ; \
+	@set bfd stagefeedback-bfd ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-bfd stage1-bfd ; @UNDO_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
-	set opcodes stagefeedback-opcodes ; @UNDO_LINK_TO_DIR@  ; \
+	@set opcodes stagefeedback-opcodes ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-opcodes stage1-opcodes ; @UNDO_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
-	set binutils stagefeedback-binutils ; @UNDO_LINK_TO_DIR@  ; \
+	@set binutils stagefeedback-binutils ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-binutils stage1-binutils ; @UNDO_LINK_TO_DIR@ 
 @endif binutils
 @if gas
-	set gas stagefeedback-gas ; @UNDO_LINK_TO_DIR@  ; \
+	@set gas stagefeedback-gas ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-gas stage1-gas ; @UNDO_LINK_TO_DIR@ 
 @endif gas
 @if gcc
-	set gcc stagefeedback-gcc ; @UNDO_LINK_TO_DIR@  ; \
+	@set gcc stagefeedback-gcc ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-gcc stage1-gcc ; @UNDO_LINK_TO_DIR@ 
 @endif gcc
 @if intl
-	set intl stagefeedback-intl ; @UNDO_LINK_TO_DIR@  ; \
+	@set intl stagefeedback-intl ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-intl stage1-intl ; @UNDO_LINK_TO_DIR@ 
 @endif intl
 @if ld
-	set ld stagefeedback-ld ; @UNDO_LINK_TO_DIR@  ; \
+	@set ld stagefeedback-ld ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-ld stage1-ld ; @UNDO_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
-	set libcpp stagefeedback-libcpp ; @UNDO_LINK_TO_DIR@  ; \
+	@set libcpp stagefeedback-libcpp ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libcpp stage1-libcpp ; @UNDO_LINK_TO_DIR@ 
 @endif libcpp
 @if libbanshee
-	set libbanshee stagefeedback-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
+	@set libbanshee stagefeedback-libbanshee ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libbanshee stage1-libbanshee ; @UNDO_LINK_TO_DIR@ 
 @endif libbanshee
 @if libiberty
-	set libiberty stagefeedback-libiberty ; @UNDO_LINK_TO_DIR@  ; \
+	@set libiberty stagefeedback-libiberty ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-libiberty stage1-libiberty ; @UNDO_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
-	set zlib stagefeedback-zlib ; @UNDO_LINK_TO_DIR@  ; \
+	@set zlib stagefeedback-zlib ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-zlib stage1-zlib ; @UNDO_LINK_TO_DIR@ 
 @endif zlib
 
@@ -31761,11 +31443,11 @@ stagefeedback-end::
 # be reconfigured as well.
 .PHONY: stagefeedback-bubble
 stagefeedback-bubble:: stage1-bubble
-	@case `echo all-stagefeedback-*` in \
-	  'all-stagefeedback-*') ;; \
-	  *) echo Remaking stage feedback ; rm -f all-stagefeedback-* ;; \
-	esac ; \
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stagefeedback
+	@if test -f stagefeedback-lean || test -f stage1-lean  ; then \
+	  echo Skipping rebuild of stagefeedback ; \
+	else \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stagefeedback; \
+	fi
 
 .PHONY: all-stagefeedback
 all-stagefeedback:     \
@@ -31782,19 +31464,17 @@ all-stagefeedback:     \
   maybe-all-stagefeedback-zlib       
 
 
+.PHONY: configure-stagefeedback-bfd maybe-configure-stagefeedback-bfd
+.PHONY: all-stagefeedback-bfd maybe-all-stagefeedback-bfd
+
 maybe-configure-stagefeedback-bfd:
 maybe-all-stagefeedback-bfd:
 
 @if bfd-bootstrap
 maybe-configure-stagefeedback-bfd: configure-stagefeedback-bfd
-configure-stagefeedback-bfd:  maybe-all-stage1-bfd 
-	$(MAKE) stagefeedback-start
-	@if [ -f stagefeedback-bfd/Makefile ] ; then \
-	  $(STAMP) configure-stagefeedback-bfd ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stagefeedback-bfd:
+	@$(MAKE) stagefeedback-start
+	@[ -f bfd/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31813,35 +31493,31 @@ configure-stagefeedback-bfd:  maybe-all-stage1-bfd
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stagefeedback-bfd
+	  @stage2_werror_flag@ 
 
 maybe-all-stagefeedback-bfd: all-stagefeedback-bfd
 all-stagefeedback-bfd: configure-stagefeedback-bfd
-	$(MAKE) stagefeedback-start
+	@$(MAKE) stagefeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  && \
-	$(STAMP) ../all-stagefeedback-bfd
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
 @endif bfd-bootstrap
+
+.PHONY: configure-stagefeedback-opcodes maybe-configure-stagefeedback-opcodes
+.PHONY: all-stagefeedback-opcodes maybe-all-stagefeedback-opcodes
 
 maybe-configure-stagefeedback-opcodes:
 maybe-all-stagefeedback-opcodes:
 
 @if opcodes-bootstrap
 maybe-configure-stagefeedback-opcodes: configure-stagefeedback-opcodes
-configure-stagefeedback-opcodes:  maybe-all-stage1-opcodes 
-	$(MAKE) stagefeedback-start
-	@if [ -f stagefeedback-opcodes/Makefile ] ; then \
-	  $(STAMP) configure-stagefeedback-opcodes ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stagefeedback-opcodes:
+	@$(MAKE) stagefeedback-start
+	@[ -f opcodes/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31860,35 +31536,31 @@ configure-stagefeedback-opcodes:  maybe-all-stage1-opcodes
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stagefeedback-opcodes
+	  @stage2_werror_flag@ 
 
 maybe-all-stagefeedback-opcodes: all-stagefeedback-opcodes
 all-stagefeedback-opcodes: configure-stagefeedback-opcodes
-	$(MAKE) stagefeedback-start
+	@$(MAKE) stagefeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  && \
-	$(STAMP) ../all-stagefeedback-opcodes
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
 @endif opcodes-bootstrap
+
+.PHONY: configure-stagefeedback-binutils maybe-configure-stagefeedback-binutils
+.PHONY: all-stagefeedback-binutils maybe-all-stagefeedback-binutils
 
 maybe-configure-stagefeedback-binutils:
 maybe-all-stagefeedback-binutils:
 
 @if binutils-bootstrap
 maybe-configure-stagefeedback-binutils: configure-stagefeedback-binutils
-configure-stagefeedback-binutils:  maybe-all-stage1-binutils 
-	$(MAKE) stagefeedback-start
-	@if [ -f stagefeedback-binutils/Makefile ] ; then \
-	  $(STAMP) configure-stagefeedback-binutils ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stagefeedback-binutils:
+	@$(MAKE) stagefeedback-start
+	@[ -f binutils/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31907,35 +31579,31 @@ configure-stagefeedback-binutils:  maybe-all-stage1-binutils
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stagefeedback-binutils
+	  @stage2_werror_flag@ 
 
 maybe-all-stagefeedback-binutils: all-stagefeedback-binutils
 all-stagefeedback-binutils: configure-stagefeedback-binutils
-	$(MAKE) stagefeedback-start
+	@$(MAKE) stagefeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  && \
-	$(STAMP) ../all-stagefeedback-binutils
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
 @endif binutils-bootstrap
+
+.PHONY: configure-stagefeedback-gas maybe-configure-stagefeedback-gas
+.PHONY: all-stagefeedback-gas maybe-all-stagefeedback-gas
 
 maybe-configure-stagefeedback-gas:
 maybe-all-stagefeedback-gas:
 
 @if gas-bootstrap
 maybe-configure-stagefeedback-gas: configure-stagefeedback-gas
-configure-stagefeedback-gas:  maybe-all-stage1-gas 
-	$(MAKE) stagefeedback-start
-	@if [ -f stagefeedback-gas/Makefile ] ; then \
-	  $(STAMP) configure-stagefeedback-gas ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stagefeedback-gas:
+	@$(MAKE) stagefeedback-start
+	@[ -f gas/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -31954,35 +31622,31 @@ configure-stagefeedback-gas:  maybe-all-stage1-gas
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stagefeedback-gas
+	  @stage2_werror_flag@ 
 
 maybe-all-stagefeedback-gas: all-stagefeedback-gas
 all-stagefeedback-gas: configure-stagefeedback-gas
-	$(MAKE) stagefeedback-start
+	@$(MAKE) stagefeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  && \
-	$(STAMP) ../all-stagefeedback-gas
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
 @endif gas-bootstrap
+
+.PHONY: configure-stagefeedback-gcc maybe-configure-stagefeedback-gcc
+.PHONY: all-stagefeedback-gcc maybe-all-stagefeedback-gcc
 
 maybe-configure-stagefeedback-gcc:
 maybe-all-stagefeedback-gcc:
 
 @if gcc-bootstrap
 maybe-configure-stagefeedback-gcc: configure-stagefeedback-gcc
-configure-stagefeedback-gcc:  maybe-all-stage1-gcc 
-	$(MAKE) stagefeedback-start
-	@if [ -f stagefeedback-gcc/Makefile ] ; then \
-	  $(STAMP) configure-stagefeedback-gcc ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stagefeedback-gcc:
+	@$(MAKE) stagefeedback-start
+	@[ -f gcc/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -32001,35 +31665,31 @@ configure-stagefeedback-gcc:  maybe-all-stage1-gcc
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stagefeedback-gcc
+	  @stage2_werror_flag@ 
 
 maybe-all-stagefeedback-gcc: all-stagefeedback-gcc
 all-stagefeedback-gcc: configure-stagefeedback-gcc
-	$(MAKE) stagefeedback-start
+	@$(MAKE) stagefeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(EXTRA_GCC_FLAGS) && \
-	$(STAMP) ../all-stagefeedback-gcc
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(EXTRA_GCC_FLAGS)
 @endif gcc-bootstrap
+
+.PHONY: configure-stagefeedback-intl maybe-configure-stagefeedback-intl
+.PHONY: all-stagefeedback-intl maybe-all-stagefeedback-intl
 
 maybe-configure-stagefeedback-intl:
 maybe-all-stagefeedback-intl:
 
 @if intl-bootstrap
 maybe-configure-stagefeedback-intl: configure-stagefeedback-intl
-configure-stagefeedback-intl:  maybe-all-stage1-intl 
-	$(MAKE) stagefeedback-start
-	@if [ -f stagefeedback-intl/Makefile ] ; then \
-	  $(STAMP) configure-stagefeedback-intl ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stagefeedback-intl:
+	@$(MAKE) stagefeedback-start
+	@[ -f intl/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -32048,35 +31708,31 @@ configure-stagefeedback-intl:  maybe-all-stage1-intl
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stagefeedback-intl
+	  @stage2_werror_flag@ 
 
 maybe-all-stagefeedback-intl: all-stagefeedback-intl
 all-stagefeedback-intl: configure-stagefeedback-intl
-	$(MAKE) stagefeedback-start
+	@$(MAKE) stagefeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  && \
-	$(STAMP) ../all-stagefeedback-intl
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
 @endif intl-bootstrap
+
+.PHONY: configure-stagefeedback-ld maybe-configure-stagefeedback-ld
+.PHONY: all-stagefeedback-ld maybe-all-stagefeedback-ld
 
 maybe-configure-stagefeedback-ld:
 maybe-all-stagefeedback-ld:
 
 @if ld-bootstrap
 maybe-configure-stagefeedback-ld: configure-stagefeedback-ld
-configure-stagefeedback-ld:  maybe-all-stage1-ld 
-	$(MAKE) stagefeedback-start
-	@if [ -f stagefeedback-ld/Makefile ] ; then \
-	  $(STAMP) configure-stagefeedback-ld ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stagefeedback-ld:
+	@$(MAKE) stagefeedback-start
+	@[ -f ld/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -32095,35 +31751,31 @@ configure-stagefeedback-ld:  maybe-all-stage1-ld
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stagefeedback-ld
+	  @stage2_werror_flag@ 
 
 maybe-all-stagefeedback-ld: all-stagefeedback-ld
 all-stagefeedback-ld: configure-stagefeedback-ld
-	$(MAKE) stagefeedback-start
+	@$(MAKE) stagefeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  && \
-	$(STAMP) ../all-stagefeedback-ld
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
 @endif ld-bootstrap
+
+.PHONY: configure-stagefeedback-libcpp maybe-configure-stagefeedback-libcpp
+.PHONY: all-stagefeedback-libcpp maybe-all-stagefeedback-libcpp
 
 maybe-configure-stagefeedback-libcpp:
 maybe-all-stagefeedback-libcpp:
 
 @if libcpp-bootstrap
 maybe-configure-stagefeedback-libcpp: configure-stagefeedback-libcpp
-configure-stagefeedback-libcpp:  maybe-all-stage1-libcpp 
-	$(MAKE) stagefeedback-start
-	@if [ -f stagefeedback-libcpp/Makefile ] ; then \
-	  $(STAMP) configure-stagefeedback-libcpp ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stagefeedback-libcpp:
+	@$(MAKE) stagefeedback-start
+	@[ -f libcpp/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -32142,35 +31794,31 @@ configure-stagefeedback-libcpp:  maybe-all-stage1-libcpp
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stagefeedback-libcpp
+	  @stage2_werror_flag@ 
 
 maybe-all-stagefeedback-libcpp: all-stagefeedback-libcpp
 all-stagefeedback-libcpp: configure-stagefeedback-libcpp
-	$(MAKE) stagefeedback-start
+	@$(MAKE) stagefeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  && \
-	$(STAMP) ../all-stagefeedback-libcpp
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
 @endif libcpp-bootstrap
+
+.PHONY: configure-stagefeedback-libbanshee maybe-configure-stagefeedback-libbanshee
+.PHONY: all-stagefeedback-libbanshee maybe-all-stagefeedback-libbanshee
 
 maybe-configure-stagefeedback-libbanshee:
 maybe-all-stagefeedback-libbanshee:
 
 @if libbanshee-bootstrap
 maybe-configure-stagefeedback-libbanshee: configure-stagefeedback-libbanshee
-configure-stagefeedback-libbanshee:  maybe-all-stage1-libbanshee 
-	$(MAKE) stagefeedback-start
-	@if [ -f stagefeedback-libbanshee/Makefile ] ; then \
-	  $(STAMP) configure-stagefeedback-libbanshee ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stagefeedback-libbanshee:
+	@$(MAKE) stagefeedback-start
+	@[ -f libbanshee/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -32189,35 +31837,31 @@ configure-stagefeedback-libbanshee:  maybe-all-stage1-libbanshee
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stagefeedback-libbanshee
+	  @stage2_werror_flag@ 
 
 maybe-all-stagefeedback-libbanshee: all-stagefeedback-libbanshee
 all-stagefeedback-libbanshee: configure-stagefeedback-libbanshee
-	$(MAKE) stagefeedback-start
+	@$(MAKE) stagefeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libbanshee && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  && \
-	$(STAMP) ../all-stagefeedback-libbanshee
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
 @endif libbanshee-bootstrap
+
+.PHONY: configure-stagefeedback-libiberty maybe-configure-stagefeedback-libiberty
+.PHONY: all-stagefeedback-libiberty maybe-all-stagefeedback-libiberty
 
 maybe-configure-stagefeedback-libiberty:
 maybe-all-stagefeedback-libiberty:
 
 @if libiberty-bootstrap
 maybe-configure-stagefeedback-libiberty: configure-stagefeedback-libiberty
-configure-stagefeedback-libiberty:  maybe-all-stage1-libiberty 
-	$(MAKE) stagefeedback-start
-	@if [ -f stagefeedback-libiberty/Makefile ] ; then \
-	  $(STAMP) configure-stagefeedback-libiberty ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stagefeedback-libiberty:
+	@$(MAKE) stagefeedback-start
+	@[ -f libiberty/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -32236,35 +31880,31 @@ configure-stagefeedback-libiberty:  maybe-all-stage1-libiberty
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stagefeedback-libiberty
+	  @stage2_werror_flag@ 
 
 maybe-all-stagefeedback-libiberty: all-stagefeedback-libiberty
 all-stagefeedback-libiberty: configure-stagefeedback-libiberty
-	$(MAKE) stagefeedback-start
+	@$(MAKE) stagefeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  && \
-	$(STAMP) ../all-stagefeedback-libiberty
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
 @endif libiberty-bootstrap
+
+.PHONY: configure-stagefeedback-zlib maybe-configure-stagefeedback-zlib
+.PHONY: all-stagefeedback-zlib maybe-all-stagefeedback-zlib
 
 maybe-configure-stagefeedback-zlib:
 maybe-all-stagefeedback-zlib:
 
 @if zlib-bootstrap
 maybe-configure-stagefeedback-zlib: configure-stagefeedback-zlib
-configure-stagefeedback-zlib:  maybe-all-stage1-zlib 
-	$(MAKE) stagefeedback-start
-	@if [ -f stagefeedback-zlib/Makefile ] ; then \
-	  $(STAMP) configure-stagefeedback-zlib ; \
-	  exit 0; \
-	else \
-	  true ; \
-	fi ; \
+configure-stagefeedback-zlib:
+	@$(MAKE) stagefeedback-start
+	@[ -f zlib/Makefile ] && exit 0 || : ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
@@ -32283,20 +31923,18 @@ configure-stagefeedback-zlib:  maybe-all-stage1-zlib
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  @stage2_werror_flag@  && \
-	  $(STAMP) ../configure-stagefeedback-zlib
+	  @stage2_werror_flag@ 
 
 maybe-all-stagefeedback-zlib: all-stagefeedback-zlib
 all-stagefeedback-zlib: configure-stagefeedback-zlib
-	$(MAKE) stagefeedback-start
+	@$(MAKE) stagefeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
 	$(STAGE_HOST_EXPORTS)  \
 	cd zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use"  && \
-	$(STAMP) ../all-stagefeedback-zlib
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" 
 @endif zlib-bootstrap
 
 
@@ -32307,35 +31945,13 @@ all-stagefeedback-zlib: configure-stagefeedback-zlib
 
 
 
-.PHONY: restagefeedback touch-stagefeedback distclean-stagefeedback
+.PHONY: distclean-stagefeedback
 
 # Rules to wipe a stage and all the following ones, used for cleanstrap
 distclean-stage1:: distclean-stagefeedback 
 distclean-stagefeedback::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
-	rm -rf configure-stagefeedback-* all-stagefeedback-* stagefeedback-* 
-
-# Rules to renew the timestamp on a stage and all the following ones
-touch-stage1:: touch-stagefeedback 
-touch-stagefeedback::
-	@case `echo configure-stagefeedback-*` in \
-	  'configure-stagefeedback-*') ;; \
-	  *) \
-	    echo '$(STAMP)' configure-stagefeedback-* && \
-	    $(STAMP) configure-stagefeedback-* ;; \
-	esac ; \
-	case `echo all-stagefeedback-*` in \
-	  'all-stagefeedback-*') ;; \
-	  *) \
-	    echo '$(STAMP)' all-stagefeedback-* && \
-	    $(STAMP) all-stagefeedback-* ;; \
-	esac
-
-# After building a stage, touch the following ones
-restage1:: touch-stagefeedback 
-restagefeedback::
-	rm -rf all-stagefeedback-* 
-	$(MAKE) $(RECURSE_FLAGS_TO_PASS)  all-stagefeedback 
+	rm -rf stagefeedback-* 
 
 
 @endif gcc-bootstrap

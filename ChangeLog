@@ -1,3 +1,18 @@
+2004-08-26  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.def (bootstrap stages): Add 'lean' parameter.
+	* Makefile.tpl (configure-stageN-*, all-stageN-*): Turned into
+	phony targets; do not generate timestamp files.
+	(distclean-stageN): Remove references to their timestamp files.
+	(restageN, touch-stageN): Remove.
+	(stageN-bubble): Rewritten.
+	(compare): Support lean bootstraps.
+	* Makefile.in: Regenerate.
+
+	* configure.in: Only warn when bootstrapping but
+	build != host or build != target.  Support lean bootstraps.
+	* configure: Regenerate.
+
 2004-08-26  Phil Edwards  <phil@codesourcery.com>
 
 	* configure.in:  Give a better error message if GMP/MPFR are missing

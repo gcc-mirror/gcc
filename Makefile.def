@@ -445,14 +445,14 @@ bootstrap_stage = {
 	stage_configure_flags="@stage2_werror_flag@" ;
 	stage_make_flags="" ; };
 bootstrap_stage = {
-	id=3 ; prev=2 ;
+	id=3 ; prev=2 ; lean=1 ;
 	compare_target=compare ;
 	bootstrap_target=bootstrap ;
 	cleanstrap_target=cleanstrap ;
 	stage_configure_flags="@stage2_werror_flag@" ;
 	stage_make_flags="" ; };
 bootstrap_stage = {
-	id=4 ; prev=3 ;
+	id=4 ; prev=3 ; lean=2 ;
 	compare_target=compare3 ;
 	bootstrap_target=bootstrap4 ;
 	stage_configure_flags="@stage2_werror_flag@" ;
