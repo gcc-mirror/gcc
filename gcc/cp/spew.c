@@ -1525,12 +1525,17 @@ yyerror (msgid)
     error ("%s at end of input", string);
   else if (last_token == CPP_CHAR || last_token == CPP_WCHAR)
     {
-      unsigned int val = TREE_INT_CST_LOW (yylval.ttype);
-      const char *const ell = (last_token == CPP_CHAR) ? "" : "L";
-      if (val <= UCHAR_MAX && ISGRAPH (val))
-	error ("%s before %s'%c'", string, ell, val);
+      if (yylval.ttype && TREE_CODE (yylval.ttype) == INTEGER_CST)
+	{
+	  unsigned int val = TREE_INT_CST_LOW (yylval.ttype);
+	  const char *const ell = (last_token == CPP_CHAR) ? "" : "L";
+	  if (val <= UCHAR_MAX && ISGRAPH (val))
+	    error ("%s before %s'%c'", string, ell, val);
+	  else
+	    error ("%s before %s'\\x%x'", string, ell, val);
+	}
       else
-	error ("%s before %s'\\x%x'", string, ell, val);
+	error ("%s", string);
     }
   else if (last_token == CPP_STRING
 	   || last_token == CPP_WSTRING)

@@ -1,3 +1,8 @@
+2003-03-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10278
+	* spew.c (yyerror): Avoid crashing at all costs.
+
 2003-03-31  Jason Merrill  <jason@redhat.com>
 
 	PR java/10145
