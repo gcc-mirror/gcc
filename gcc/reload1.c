@@ -454,6 +454,8 @@ static void add_auto_inc_notes PROTO((rtx, rtx));
 #endif
 static rtx gen_mode_int			PROTO((enum machine_mode,
 					       HOST_WIDE_INT));
+static void failed_reload		PROTO((rtx, int));
+static int set_reload_reg		PROTO((int, int));
 extern void dump_needs			PROTO((struct insn_chain *, FILE *));
 
 /* Initialize the reload pass once per compilation.  */

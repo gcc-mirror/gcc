@@ -633,11 +633,11 @@ typedef const PTR_T CPTR_T;
    so they can't be static.  */
 
 extern void	pfatal_with_name
-				__proto((const char *));
-extern void	fancy_abort	__proto((void));
-       void	botch		__proto((const char *));
+				__proto((const char *)) ATTRIBUTE_NORETURN;
+extern void	fancy_abort	__proto((void)) ATTRIBUTE_NORETURN;
+       void	botch		__proto((const char *)) ATTRIBUTE_NORETURN;
 
-extern void	fatal		PVPROTO((const char *format, ...)) ATTRIBUTE_PRINTF_1;
+extern void	fatal		PVPROTO((const char *format, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 extern void	error		PVPROTO((const char *format, ...)) ATTRIBUTE_PRINTF_1;
 
 #ifndef MIPS_DEBUGGING_INFO
@@ -1661,7 +1661,7 @@ STATIC void	parse_stabn	__proto((const char *));
 STATIC page_t  *read_seek	__proto((Size_t, off_t, const char *));
 STATIC void	copy_object	__proto((void));
 
-STATIC void	catch_signal	__proto((int));
+STATIC void	catch_signal	__proto((int)) ATTRIBUTE_NORETURN;
 STATIC page_t  *allocate_page	__proto((void));
 
 STATIC page_t  *allocate_multiple_pages
@@ -4801,10 +4801,12 @@ copy_object __proto((void))
 
 /* Ye olde main program.  */
 
+extern int main PROTO ((int, char **));
+
 int
 main (argc, argv)
      int argc;
-     char *argv[];
+     char **argv;
 {
   int iflag = 0;
   char *p = local_rindex (argv[0], '/');

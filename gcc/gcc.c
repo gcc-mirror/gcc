@@ -4672,6 +4672,8 @@ fatal_error (signum)
   kill (getpid (), signum);
 }
 
+extern int main PROTO ((int, char **));
+
 int
 main (argc, argv)
      int argc;

@@ -1,3 +1,18 @@
+Fri Oct 29 13:49:39 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* flow.c (debug_flow_info): Add prototype.
+
+	* gcc.c (main): Likewise.
+
+	* gcse.c (expr_reaches_here_p_work, pre_expr_reaches_here_p_work):
+	Likewise.
+
+	* reload1.c (failed_reload, set_reload_reg): Likewise.
+	
+	* mips-tfile.c (main): Likewise.
+	(pfatal_with_name, fancy_abort, botch, fatal, catch_signal): Mark
+	with ATTRIBUTE_NORETURN.
+
 Fri Oct 29 18:16:03 1999  Andrew Haley  <aph@cygnus.com>
 
        * config/i386/i386.h (ENCODE_SECTION_INFO): Don't do anything if
