@@ -131,8 +131,6 @@ static void alpha_sa_mask	PROTO((unsigned long *imaskP,
 void
 override_options ()
 {
-  /* 971208 -- EV6 scheduling parameters are still secret, so don't even
-     pretend and just schedule for an EV5 for now.  -- r~  */
   alpha_cpu
     = TARGET_CPU_DEFAULT & MASK_CPU_EV6 ? PROCESSOR_EV6
       : (TARGET_CPU_DEFAULT & MASK_CPU_EV5 ? PROCESSOR_EV5 : PROCESSOR_EV4);
