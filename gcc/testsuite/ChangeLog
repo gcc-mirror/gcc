@@ -1,3 +1,7 @@
+2003-08-19  Michael Ritzert  <ritzert@t-online.de>
+
+	* g++.dg/README: Describe the pch directory.
+
 2003-08-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11174
