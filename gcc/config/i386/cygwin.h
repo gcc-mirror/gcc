@@ -459,6 +459,11 @@ do {									\
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
   i386_pe_declare_function_type (FILE, XSTR (FUN, 0), 1)
 
+/* This says out to put a global symbol in the BSS section. */
+#undef ASM_OUTPUT_ALIGNED_BSS
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
+
 /* Output function declarations at the end of the file.  */
 #define ASM_FILE_END(FILE) \
   i386_pe_asm_file_end (FILE)
