@@ -1,3 +1,8 @@
+1998-04-19  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/compile/970125-0.f: New test.
+	* g77.f-torture/compile/980419-1.f: New test.
+
 Wed Mar 18 16:22:22 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.dg/980313-1.c: New test for fp conditional move on PPro.
