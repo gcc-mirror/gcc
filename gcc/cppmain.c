@@ -364,7 +364,7 @@ cb_define (pfile, node)
      cpp_hashnode *node;
 {
   maybe_print_line (cpp_get_line (pfile)->output_line);
-  fprintf (print.outf, "#define %s", node->name);
+  fprintf (print.outf, "#define %s", NODE_NAME (node));
 
   /* -dD command line option.  */
   if (options->dump_macros == dump_definitions)
@@ -380,7 +380,7 @@ cb_undef (pfile, node)
      cpp_hashnode *node;
 {
   maybe_print_line (cpp_get_line (pfile)->output_line);
-  fprintf (print.outf, "#undef %s\n", node->name);
+  fprintf (print.outf, "#undef %s\n", NODE_NAME (node));
   print.lineno++;
 }
 
@@ -446,7 +446,7 @@ dump_macro (pfile, node, v)
 {
   if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
     {
-      fprintf (print.outf, "#define %s", node->name);
+      fprintf (print.outf, "#define %s", NODE_NAME (node));
       fputs ((const char *) cpp_macro_definition (pfile, node), print.outf);
       putc ('\n', print.outf);
       print.lineno++;

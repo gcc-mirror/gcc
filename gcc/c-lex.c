@@ -347,7 +347,7 @@ cb_undef (pfile, node)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
      cpp_hashnode *node;
 {
-  debug_undef (lineno, (const char *) node->name);
+  debug_undef (lineno, (const char *) NODE_NAME (node));
 }
 
 /* Parse a '\uNNNN' or '\UNNNNNNNN' sequence.
@@ -997,7 +997,7 @@ c_lex (value)
       goto retry;
       
     case CPP_NAME:
-      *value = get_identifier ((const char *)tok.val.node->name);
+      *value = get_identifier ((const char *) NODE_NAME (tok.val.node));
       break;
 
     case CPP_INT:

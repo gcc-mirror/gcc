@@ -136,8 +136,8 @@ _cpp_lookup_with_hash (pfile, len, hash)
     {
       unsigned int hash2;
 
-      if (entry->hash == hash && entry->length == len
-	  && !memcmp (entry->name, name, len))
+      if (entry->hash == hash && NODE_LEN (entry) == len
+	  && !memcmp (NODE_NAME (entry), name, len))
 	return entry;
 
       hash2 = 1 + hash % (size - 2);
@@ -151,8 +151,8 @@ _cpp_lookup_with_hash (pfile, len, hash)
 
 	  if (entry == NULL)
 	    break;
-	  if (entry->hash == hash && entry->length == len
-	      && !memcmp (entry->name, name, len))
+	  if (entry->hash == hash && NODE_LEN (entry) == len
+	      && !memcmp (NODE_NAME (entry), name, len))
 	    return entry;
 	}
     }
@@ -168,9 +168,9 @@ _cpp_lookup_with_hash (pfile, len, hash)
   entry->flags = 0;
   entry->directive_index = 0;
   entry->arg_index = 0;
-  entry->length = len;
+  NODE_LEN (entry) = len;
   entry->hash = hash;
-  entry->name = name;
+  NODE_NAME (entry) = name;
   entry->value.macro = 0;
 
   pfile->hashtab->nelts++;

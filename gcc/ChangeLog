@@ -1,3 +1,20 @@
+2001-05-16  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* cppexp.c (lex): Use NODE_NAME and NODE_LEN.
+	* cpphash.c (_cpp_lookup_with_hash): Similarly.
+	* cpplex.c (cpp_ideq, parse_identifier, cpp_token_len,
+	cpp_spell_token, cpp_output_token): Similarly.
+	* cpplib.c (lex_macro_node, do_undef, do_pragma,
+	do_pragma_poison, parse_assertion, do_assert): Similarly.
+	* cppmacro.c (builtin_macro, parse_args, funlike_invocation_p,
+	save_parameter, _cpp_create_definition, check_trad_stringification,
+	cpp_macro_definition): Similarly.
+	* cppmain.c (cb_define, cb_undef, dump_macro): Similarly.
+	* c-lex.c (cb_undef, c_lex): Similarly.
+	* fix-header.c (recognized_function): Similarly.
+	* cpplib.h (NODE_LEN, NODE_NAME): New.
+	(cpp_hashnode): Rename length len.
+
 Wed May 16 13:41:10 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa32-regs.h (HARD_REGNO_MODE_OK): Allow TI/TFmode values in

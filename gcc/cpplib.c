@@ -454,7 +454,7 @@ lex_macro_node (pfile)
       else if (token.flags & NAMED_OP)
 	cpp_error (pfile,
 		   "\"%s\" cannot be used as a macro name as it is an operator in C++",
-		   token.val.node->name);
+		   NODE_NAME (token.val.node));
       else
 	cpp_error (pfile, "macro names must be identifiers");
     }
@@ -464,8 +464,9 @@ lex_macro_node (pfile)
 
       /* In Objective C, some keywords begin with '@', but general
 	 identifiers do not, and you're not allowed to #define them.  */
-      if (node == pfile->spec_nodes.n_defined || node->name[0] == '@')
-	cpp_error (pfile, "\"%s\" cannot be used as a macro name", node->name);
+      if (node == pfile->spec_nodes.n_defined || NODE_NAME (node)[0] == '@')
+	cpp_error (pfile, "\"%s\" cannot be used as a macro name",
+		   NODE_NAME (node));
       else if (!(node->flags & NODE_POISONED))
 	return node;
     }
@@ -503,7 +504,7 @@ do_undef (pfile)
 	(*pfile->cb.undef) (pfile, node);
 
       if (node->flags & NODE_WARN)
-	cpp_warning (pfile, "undefining \"%s\"", node->name);
+	cpp_warning (pfile, "undefining \"%s\"", NODE_NAME (node));
 
       _cpp_free_definition (node);
     }
@@ -1031,9 +1032,6 @@ do_pragma (pfile)
 {
   const struct pragma_entry *p;
   cpp_token tok;
-  const cpp_hashnode *node;
-  const U_CHAR *name;
-  size_t len;
   int drop = 0;
 
   p = pfile->pragmas;
@@ -1044,9 +1042,10 @@ do_pragma (pfile)
   cpp_get_token (pfile, &tok);
   if (tok.type == CPP_NAME)
     {
-      node = tok.val.node;
-      name = node->name;
-      len = node->length;
+      const cpp_hashnode *node = tok.val.node;
+      const U_CHAR *name = NODE_NAME (node);
+      size_t len = NODE_LEN (node);
+
       while (p)
 	{
 	  if (strlen (p->name) == len && !memcmp (p->name, name, len))
@@ -1114,7 +1113,7 @@ do_pragma_poison (pfile)
 	continue;
 
       if (hp->type == NT_MACRO)
-	cpp_warning (pfile, "poisoning existing macro \"%s\"", hp->name);
+	cpp_warning (pfile, "poisoning existing macro \"%s\"", NODE_NAME (hp));
       _cpp_free_definition (hp);
       hp->flags |= NODE_POISONED | NODE_DIAGNOSTIC;
     }
@@ -1542,12 +1541,12 @@ parse_assertion (pfile, answerp, type)
     cpp_error (pfile, "predicate must be an identifier");
   else if (parse_answer (pfile, answerp, type) == 0)
     {
-      unsigned int len = predicate.val.node->length;
+      unsigned int len = NODE_LEN (predicate.val.node);
       unsigned char *sym = alloca (len + 1);
 
       /* Prefix '#' to get it out of macro namespace.  */
       sym[0] = '#';
-      memcpy (sym + 1, predicate.val.node->name, len);
+      memcpy (sym + 1, NODE_NAME (predicate.val.node), len);
       result = cpp_lookup (pfile, sym, len + 1);
     }
 
@@ -1620,7 +1619,7 @@ do_assert (pfile)
 	{
 	  if (*find_answer (node, new_answer))
 	    {
-	      cpp_warning (pfile, "\"%s\" re-asserted", node->name + 1);
+	      cpp_warning (pfile, "\"%s\" re-asserted", NODE_NAME (node) + 1);
 	      return;
 	    }
 	  new_answer->next = node->value.answers;
