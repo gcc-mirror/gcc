@@ -1616,15 +1616,13 @@
   ""
   "")
 
-;; TODO: insn length for AVR_ENHANCED
 (define_insn "call_insn"
   [(call (mem:HI (match_operand:HI 0 "nonmemory_operand" "!z,*r,i"))
          (match_operand:HI 1 "general_operand" "X,X,X"))]
 ;; We don't need in saving Z register because r30,r31 is a call used registers
   ;; Operand 1 not used on the AVR.
   "(register_operand (operands[0], HImode) || CONSTANT_P (operands[0]))"
-  "*
-{
+  "*{
   if (which_alternative==0)
      return \"icall\";
   else if (which_alternative==1)
@@ -1645,14 +1643,16 @@
    (set (attr "length")
 	(cond [(eq (symbol_ref "which_alternative") (const_int 0))
 	       (const_int 1)
-	       (eq (symbol_ref "which_alternative") (const_int 1))
+	       (eq (symbol_ref "(which_alternative == 1 && AVR_ENHANCED)")
+                   (const_int 1))
+	       (const_int 2)
+	       (eq (symbol_ref "(which_alternative == 1 && !AVR_ENHANCED)")
+                   (const_int 1))
 	       (const_int 3)
-	       (eq (symbol_ref "!AVR_MEGA")
-		   (const_int 0))
+	       (eq (symbol_ref "!AVR_MEGA") (const_int 0))
 	       (const_int 2)]
 	(const_int 1)))])
 
-;; TODO: insn length for AVR_ENHANCED
 (define_insn "call_value_insn"
   [(set (match_operand 0 "register_operand" "=r,r,r")
         (call (mem:HI (match_operand:HI 1 "nonmemory_operand" "!z,*r,i"))
@@ -1682,7 +1682,11 @@
    (set (attr "length")
 	(cond [(eq (symbol_ref "which_alternative") (const_int 0))
 	       (const_int 1)
-	       (eq (symbol_ref "which_alternative") (const_int 1))
+	       (eq (symbol_ref "(which_alternative == 1 && AVR_ENHANCED)")
+                   (const_int 1))
+	       (const_int 2)
+	       (eq (symbol_ref "(which_alternative == 1 && !AVR_ENHANCED)")
+                   (const_int 1))
 	       (const_int 3)
 	       (eq (symbol_ref "!AVR_MEGA")
 		   (const_int 0))
@@ -1713,7 +1717,26 @@
   "optimize"
   "")
 
-;; TODO: jump to __tabjejump__ in libgcc
+;; Not a prologue, but similar idea - move the common piece of code to libgcc.
+(define_insn "*tablejump_lib"
+   [(set (pc) (mem:HI (plus:HI (match_operand:HI 0 "register_operand" "=&z")
+			       (label_ref (match_operand 2 "" "")))))
+    (use (label_ref (match_operand 1 "" "")))]
+  "TARGET_CALL_PROLOGUES"
+  "*{
+  output_asm_insn (AS2 (subi,r30,lo8(-(%2))) CR_TAB
+	           AS2 (sbci,r31,hi8(-(%2))), operands);
+  return (AVR_MEGA
+          ? AS1 (jmp,__tablejump__)
+          : AS1 (rjmp,__tablejump__));
+  }"
+  [(set_attr "cc" "clobber")
+   (set (attr "length")
+	(if_then_else (eq (symbol_ref "AVR_MEGA")
+			  (const_int 0))
+		      (const_int 3)
+		      (const_int 4)))])
+
 
 (define_insn "*tablejump_enh"
    [(set (pc) (mem:HI

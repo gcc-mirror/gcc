@@ -1,3 +1,9 @@
+Sun Sep  3 13:10:56 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.md ("*tablejump_lib"): New pattern.
+	(call_value_insn): Right length claculation.
+	(call_insn): Likewise.
+
 2000-09-02  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* config/avr/avr-protos.h, config/avr/avr.c (unique_section,
