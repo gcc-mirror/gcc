@@ -8377,12 +8377,15 @@ add_const_value_attribute (die, rtl)
 	  add_AT_int (die, DW_AT_const_value, (long) val);
 	else if ((unsigned long) val == (unsigned HOST_WIDE_INT) val)
 	  add_AT_unsigned (die, DW_AT_const_value, (unsigned long) val);
+	else
+	  {
 #if HOST_BITS_PER_LONG * 2 == HOST_BITS_PER_WIDE_INT
-	add_AT_long_long (die, DW_AT_const_value,
-			  val >> HOST_BITS_PER_LONG, val);
+	    add_AT_long_long (die, DW_AT_const_value,
+			      val >> HOST_BITS_PER_LONG, val);
 #else
-	abort ();
+	    abort ();
 #endif
+	  }
       }
       break;
 
