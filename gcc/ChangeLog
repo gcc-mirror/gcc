@@ -1,5 +1,22 @@
 2003-07-17  Geoffrey Keating  <geoffk@apple.com>
 
+	PR 11498
+	* Makefile.in (c-opts.o): Add $(LANGHOOKS_DEF_H).
+	(langhooks.o): Add $(GGC_H), gt-langhooks.h.
+	(GTFILES): Add langhooks.c.
+	(gt-langhooks.h): New.
+	* c-common.h (c_static_assembler_name): Prototype.
+	* c-lang.c (LANG_HOOKS_SET_DECL_ASSEMBLER_NAME): Define.
+	* objc/objc-lang.c (LANG_HOOKS_SET_DECL_ASSEMBLER_NAME): Define.
+	* c-opts.c: Include langhooks-def.h.
+	(c_static_assembler_name): New.
+	* langhooks.c: Include ggc.h.  Include gt-langhooks.h.
+	(var_labelno): New.
+	(lhd_set_decl_assembler_name): Give static objects with context
+	unique names.
+	* varasm.c (var_labelno): Delete.
+	(make_decl_rtl): Don't change the assembler name once it's set.
+
 	* c-opts.c (this_input_filename): New.
 	(finish_options): Take new parameter, name of file being compiled.
 	Update callers.  Set this_input_filename.
