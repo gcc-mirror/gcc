@@ -1,3 +1,7 @@
+1998-10-21  Dave Love  <fx@gnu.org>
+
+	* libI77/open.c (_XOPEN_SOURCE): Define.
+
 Fri Oct  2 01:27:50 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
 
 	* Makefile.in (install): Add missing "else true;".

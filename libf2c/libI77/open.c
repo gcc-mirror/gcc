@@ -1,3 +1,6 @@
+/* Define _XOPEN_SOURCE to get tempnam prototype with glibc et al --
+   more general than _INCLUDE_XOPEN_SOURCE used elsewhere `for HP-UX'.  */
+#define _XOPEN_SOURCE 1
 #include "f2c.h"
 #include "fio.h"
 #include <string.h>
