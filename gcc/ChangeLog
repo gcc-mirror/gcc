@@ -1,3 +1,11 @@
+2002-06-14  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rtl.h (SCHED_GROUP_P): Disallow CODE_LABEL, BARRIER and NOTE.
+	* sched-deps.c (add_dependence): Likewise.
+	(group_leader): Likewise.
+	* sched-rgn.c (init_ready_list): Likewise.
+	* doc/rtl.texi: Adjust accordingly.
+
 2002-06-13  Jeffrey Law  <law@redhat.com>
 
 	* gcse.c (delete_null_pointer_checks_1): Inform caller if any

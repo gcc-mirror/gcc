@@ -614,17 +614,13 @@ anywhere.  This does not mean that it is function invariant.
 Stored in the @code{unchanging} field and printed as @samp{/u}.
 
 @findex SCHED_GROUP_P
-@cindex @code{insn} and @samp{/i}
-@cindex @code{call_insn} and @samp{/i}
-@cindex @code{jump_insn} and @samp{/i}
-@cindex @code{code_label} and @samp{/i}
-@cindex @code{barrier} and @samp{/i}
-@cindex @code{note} and @samp{/i}
-@cindex @code{in_struct}, in @code{insn}, @code{jump_insn}, @code{call_insn}, @code{code_label}, @code{barrier}, and @code{note}
+@cindex @code{insn} and @samp{/s}
+@cindex @code{call_insn} and @samp{/s}
+@cindex @code{jump_insn} and @samp{/s}
+@cindex @code{in_struct}, in @code{insn}, @code{jump_insn} and @code{call_insn}
 @item SCHED_GROUP_P (@var{x})
-During instruction scheduling, in an @code{insn}, @code{call_insn},
-@code{jump_insn}, @code{code_label}, @code{barrier}, or
-@code{note}, indicates that the
+During instruction scheduling, in an @code{insn}, @code{call_insn} or
+@code{jump_insn}, indicates that the
 previous insn must be scheduled together with this insn.  This is used to
 ensure that certain groups of instructions will not be split up by the
 instruction scheduling pass, for example, @code{use} insns before
