@@ -1,3 +1,8 @@
+2004-04-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14810
+	* name-lookup.c (maybe_push_cleanup_level): Robustify.
+
 2004-04-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (VTT_TOP_LEVEL_P): Use unsigned_flag directly.
