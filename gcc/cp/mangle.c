@@ -1196,10 +1196,7 @@ write_discriminator (discriminator)
   if (discriminator > 0)
     {
       write_char ('_');
-      /* The number is omitted for discriminator == 1.  Beyond 1, the
-	 numbering starts at 0.  */
-      if (discriminator > 1)
-	write_unsigned_number (discriminator - 2);
+      write_unsigned_number (discriminator - 1);
     }
 }
 
