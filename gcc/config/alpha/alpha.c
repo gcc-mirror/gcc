@@ -581,7 +581,7 @@ reg_or_0_operand (op, mode)
       register rtx op;
       enum machine_mode mode;
 {
-  return op == const0_rtx || register_operand (op, mode);
+  return op == CONST0_RTX (mode) || register_operand (op, mode);
 }
 
 /* Return 1 if OP is a constant in the range of 0-63 (for a shift) or
@@ -748,25 +748,14 @@ mul8_operand (op, mode)
 	  && (INTVAL (op) & 7) == 0);
 }
 
-/* Return 1 if OP is the constant zero in floating-point.  */
+/* Return 1 if OP is the zero constant for MODE.  */
 
 int
-fp0_operand (op, mode)
+const0_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  return (GET_MODE (op) == mode
-	  && GET_MODE_CLASS (mode) == MODE_FLOAT && op == CONST0_RTX (mode));
-}
-
-/* Return 1 if OP is the floating-point constant zero or a register.  */
-
-int
-reg_or_fp0_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode;
-{
-  return fp0_operand (op, mode) || register_operand (op, mode);
+  return op == CONST0_RTX (mode);
 }
 
 /* Return 1 if OP is a hard floating-point register.  */
