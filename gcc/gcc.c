@@ -757,7 +757,7 @@ static char *link_command_spec = "\
 #endif
 
 /* A vector of options to give to the linker.
-   These options are accumulated by -Xlinker and -Wl,
+   These options are accumulated by %x,
    and substituted into the linker command with %X.  */
 static int n_linker_options;
 static char **linker_options;
@@ -2519,54 +2519,6 @@ process_command (argc, argv)
 	print_multi_lib = 1;
       else if (! strcmp (argv[i], "-print-multi-directory"))
 	print_multi_directory = 1;
-      else if (! strcmp (argv[i], "-Xlinker"))
-	{
-	  /* Pass the argument of this option to the linker when we link.  */
-
-	  if (i + 1 == argc)
-	    fatal ("argument to `-Xlinker' is missing");
-
-	  n_linker_options++;
-	  if (!linker_options)
-	    linker_options
-	      = (char **) xmalloc (n_linker_options * sizeof (char **));
-	  else
-	    linker_options
-	      = (char **) xrealloc (linker_options,
-				    n_linker_options * sizeof (char **));
-
-	  linker_options[n_linker_options - 1] = argv[++i];
-	}
-      else if (! strncmp (argv[i], "-Wl,", 4))
-	{
-	  int prev, j;
-	  /* Pass the rest of this option to the linker when we link.  */
-
-	  n_linker_options++;
-	  if (!linker_options)
-	    linker_options
-	      = (char **) xmalloc (n_linker_options * sizeof (char **));
-	  else
-	    linker_options
-	      = (char **) xrealloc (linker_options,
-				    n_linker_options * sizeof (char **));
-
-	  /* Split the argument at commas.  */
-	  prev = 4;
-	  for (j = 4; argv[i][j]; j++)
-	    if (argv[i][j] == ',')
-	      {
-		linker_options[n_linker_options - 1]
-		  = save_string (argv[i] + prev, j - prev);
-		n_linker_options++;
-		linker_options
-		  = (char **) xrealloc (linker_options,
-					n_linker_options * sizeof (char **));
-		prev = j + 1;
-	      }
-	  /* Record the part after the last comma.  */
-	  linker_options[n_linker_options - 1] = argv[i] + prev;
-	}
       else if (! strncmp (argv[i], "-Wa,", 4))
 	{
 	  int prev, j;
@@ -2630,7 +2582,19 @@ process_command (argc, argv)
       else if (argv[i][0] == '+' && argv[i][1] == 'e')
 	/* The +e options to the C++ front-end.  */
 	n_switches++;
-      else if (argv[i][0] == '-' && argv[i][1] != 0 && argv[i][1] != 'l')
+      else if (strncmp (argv[i], "-Wl,", 4) == 0)
+	n_infiles++;
+      else if (strcmp (argv[i], "-Xlinker") == 0)
+	{
+	  if (i + 1 == argc)
+	    fatal ("argument to `-Xlinker' is missing");
+
+	  n_infiles++;
+	  i++;
+	}
+      else if (strncmp (argv[i], "-l", 2) == 0)
+	n_infiles++;
+      else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
 	  register char *p = &argv[i][1];
 	  register int c = *p;
@@ -2801,11 +2765,7 @@ process_command (argc, argv)
   for (i = 1; i < argc; i++)
     {
       /* Just skip the switches that were handled by the preceding loop.  */
-      if (!strcmp (argv[i], "-Xlinker"))
-	i++;
-      else if (! strncmp (argv[i], "-Wl,", 4))
-	;
-      else if (! strncmp (argv[i], "-Wa,", 4))
+      if (! strncmp (argv[i], "-Wa,", 4))
 	;
       else if (! strncmp (argv[i], "-Wp,", 4))
 	;
@@ -2832,7 +2792,22 @@ process_command (argc, argv)
 	  switches[n_switches].valid = 0;
 	  n_switches++;
 	}
-      else if (argv[i][0] == '-' && argv[i][1] != 0 && argv[i][1] != 'l')
+      else if (strncmp (argv[i], "-Wl,", 4) == 0)
+	{
+	  infiles[n_infiles].language = spec_lang;
+	  infiles[n_infiles++].name = argv[i] + 4;
+	}
+      else if (strcmp (argv[i], "-Xlinker") == 0)
+	{
+	  infiles[n_infiles].language = spec_lang;
+	  infiles[n_infiles++].name = argv[++i];
+	}
+      else if (strncmp (argv[i], "-l", 2) == 0)
+	{
+	  infiles[n_infiles].language = spec_lang;
+	  infiles[n_infiles++].name = argv[i];
+	}
+      else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
 	  register char *p = &argv[i][1];
 	  register int c = *p;
@@ -2905,9 +2880,7 @@ process_command (argc, argv)
 	}
       else
 	{
-	  if ((argv[i][0] != '-' || argv[i][1] != 'l')
-	      && strcmp (argv[i], "-")
-	      && access (argv[i], R_OK) < 0)
+	  if (strcmp (argv[i], "-") != 0 && access (argv[i], R_OK) < 0)
 	    {
 	      perror_with_name (argv[i]);
 	      error_count++;
@@ -3427,8 +3400,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    }
 	    break;
 
-	  /* Dump out the options accumulated previously using %x,
-	     -Xlinker and -Wl,.  */
+	  /* Dump out the options accumulated previously using %x.  */
 	  case 'X':
 	    for (i = 0; i < n_linker_options; i++)
 	      {
