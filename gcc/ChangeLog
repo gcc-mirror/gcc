@@ -1,3 +1,8 @@
+Thu Mar 18 15:58:26 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* loop.c (strength_reduce): Do not perform pseudo replacements
+	if the loop contains volatile memory references.
+
 Thu Mar 18 19:09:50 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload.c (find_reloads_toplev): When processing X recursively,

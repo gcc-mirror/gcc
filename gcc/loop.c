@@ -4115,8 +4115,11 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   first_increment_giv = max_reg_num ();
   for (n_extra_increment = 0, bl = loop_iv_list; bl; bl = bl->next)
     n_extra_increment += bl->biv_count - 1;
+
+  /* If the loop contains volatile memory references do not allow any
+     replacements to take place, since this could loose the volatile markers.  */
   /* XXX Temporary.  */
-  if (0 && n_extra_increment)
+  if (0 && n_extra_increment  && ! loop_has_volatile)
     {
       int nregs = first_increment_giv + n_extra_increment;
 
