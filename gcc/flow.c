@@ -197,6 +197,11 @@ rtx *basic_block_head;
 
 rtx *basic_block_end;
 
+/* Element N indicates whether basic block N can be reached through a
+   computed jump.  */
+
+char *basic_block_computed_jump_target;
+
 /* Element N is a regset describing the registers live
    at the start of basic block N.
    This info lasts until we finish compiling the function.  */
@@ -354,6 +359,7 @@ find_basic_blocks (f, nregs, file, live_reachable_p)
   basic_block_head = (rtx *) xmalloc (n_basic_blocks * sizeof (rtx));
   basic_block_end = (rtx *) xmalloc (n_basic_blocks * sizeof (rtx));
   basic_block_drops_in = (char *) xmalloc (n_basic_blocks);
+  basic_block_computed_jump_target = (char *) oballoc (n_basic_blocks);
   basic_block_loop_depth = (short *) xmalloc (n_basic_blocks * sizeof (short));
   uid_block_number
     = (int *) xmalloc ((max_uid_for_flow + 1) * sizeof (int));
@@ -403,7 +409,9 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
   block_live_static = block_live;
   bzero (block_live, n_basic_blocks);
   bzero (block_marked, n_basic_blocks);
+  bzero (basic_block_computed_jump_target, n_basic_blocks);
   bzero (active_eh_handler, (max_uid_for_flow + 1) * sizeof (rtx));
+  current_function_has_computed_jump = 0;
 
   /* Initialize with just block 0 reachable and no blocks marked.  */
   if (n_basic_blocks > 0)
@@ -611,16 +619,25 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 			   and forced_labels list.  */
 			if (computed_jump_p (insn))
 			  {
+			    current_function_has_computed_jump = 1;
 			    for (x = label_value_list; x; x = XEXP (x, 1))
-			      mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
-								 XEXP (x, 0)),
-					      insn, 0);
+			      {
+				int b = BLOCK_NUM (XEXP (x, 0));
+				basic_block_computed_jump_target[b] = 1;
+				mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
+								   XEXP (x, 0)),
+						insn, 0);
+			      }
 
 			    for (x = forced_labels; x; x = XEXP (x, 1))
-			      mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
-								 XEXP (x, 0)),
-					      insn, 0);
-			    }
+			      {
+				int b = BLOCK_NUM (XEXP (x, 0));
+				basic_block_computed_jump_target[b] = 1;
+				mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
+								   XEXP (x, 0)),
+						insn, 0);
+			      }
+			  }
 
 			/* If this is a CALL_INSN, then mark it as reaching
 			   the active EH handler for this CALL_INSN.  If

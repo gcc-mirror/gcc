@@ -1,3 +1,28 @@
+Sat Mar 28 01:06:12 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+			  Jeffrey A Law  (law@cygnus.com)
+
+	* basic-block.h (basic_block_computed_jump_target): Declare.
+	* flags.h: (current_function_has_computed_jump): Declare.
+	* flow.c: (basic_block_computed_jump_target): Define.
+	(flow_analysis): Allocate it. Set current_function_has_computed_jump
+	to 0.
+	(find_basic_blocks): Set current_function_has_computed_jump and
+	elements of basic_block_computed_jump_target to 1 as appropriate.
+	* function.c: (current_function_has_computed_jump): Define.
+	* global.c (global_conflicts): Don't allocate pseudos into stack regs
+	at the start of a block that is reachable by a computed jump.
+	* reg-stack.c (stack_reg_life_analysis): If must restart, do so
+	immediately.
+	(subst_stack_regs): Undo change from Sep 4 1997.
+	(uses_reg_or_mem): Now unused, deleted.
+	* stupid.c (stupid_life_analysis): Compute
+	current_function_has_computed_jump.
+	(stupid_find_reg): Don't allocate stack regs if the function has a
+	computed goto.
+	* haifa-sched.c (is_cfg_nonregular): Delete code to determine if
+	the current function has a computed jump.  Use the global value
+	instead.
+
 Sat Mar 28 00:21:37 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* i386/freebsd.h (CPP_PREDEFINES): Remove __386BSD__.

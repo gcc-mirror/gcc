@@ -457,6 +457,13 @@ extern int current_function_has_nonlocal_label;
 
 extern int current_function_has_nonlocal_goto;
 
+/* Nonzero if this function has a computed goto.
+
+   It is computed during find_basic_blocks or during stupid life
+   analysis.  */
+
+extern int current_function_has_computed_jump;
+
 /* Nonzero if GCC must add code to check memory access (used by Checker).  */
 
 extern int flag_check_memory_usage;
