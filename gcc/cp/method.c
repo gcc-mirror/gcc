@@ -75,11 +75,11 @@ static tree build_decl_overload_real PROTO((tree, tree, tree, tree,
 static void build_template_template_parm_names PROTO((tree));
 static void build_template_parm_names PROTO((tree, tree));
 static void build_underscore_int PROTO((int));
-static void start_sqangling PROTO((void));
-static void end_sqangling PROTO((void));
+static void start_squangling PROTO((void));
+static void end_squangling PROTO((void));
 static int check_ktype PROTO((tree, int));
 static int issue_ktype PROTO((tree));
-static void build_overloaded_scope_ref PROTO((tree));
+static void build_overload_scope_ref PROTO((tree));
 static void build_mangled_template_parm_index PROTO((char *, tree));
 static int check_btype PROTO((tree));
 
