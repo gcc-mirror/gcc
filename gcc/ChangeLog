@@ -1,3 +1,11 @@
+2004-09-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_strstr, expand_builtin_strchr,
+	expand_builtin_strrchr, expand_builtin_strpbrk,
+	expand_builtin_strncat, expand_builtin_strspn,
+	expand_builtin_strcspn, expand_builtin_fputs): Eliminate duplicate
+	code.
+
 2004-09-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_expand_logical_operator): Add
