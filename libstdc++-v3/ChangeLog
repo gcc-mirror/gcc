@@ -2,6 +2,10 @@
 
 	* GCC 3.3.1 Released.
 
+2003-08-04  Release Manager
+
+	* GCC 3.3.1 Released.
+
 2003-07-24  Nathan Myers  <ncm-nospam@cantrip.org>
 
         * testsuite/23_containers/map_operators.cc: Conform to 
