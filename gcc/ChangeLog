@@ -1,3 +1,8 @@
+Wed Sep  2 14:47:36 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* jump.c (jump_optimize): In if/then/else transformations, add
+	another call to modified_between_p for the jump insn.
+
 Wed Sep  2 14:16:49 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* fix-header.c (symlink): Treat like readlink.
