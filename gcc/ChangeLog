@@ -1,3 +1,9 @@
+2000-08-05  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* fixinc/fixincl.c (fix_with_system): Pipe the output of
+	"external" fixes through `cat', to avoid truncating the input
+	file by redirection.
+
 2000-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (lea_general_1): Copy insn condition to split

@@ -914,10 +914,13 @@ fix_with_system (p_fixd, pz_fix_file, pz_file_source, pz_temp_file)
       /* Don't use the "src > dstX; rm -f dst; mv -f dstX dst" trick:
 	 dst is a temporary file anyway, so we know there's no other
 	 file by that name; and DOS's system(3) doesn't mind to
-	 clobber existing file in redirection.  Besides, with DOS 8+3
-	 limited file namespace, we can easily lose if dst already has
-	 an extension that is 3 or more characters long.  */
-      tSCC   z_cmd_fmt[] = " %s > %s";
+         clobber existing file in redirection.  Besides, with DOS 8+3
+         limited file namespace, we can easily lose if dst already has
+         an extension that is 3 or more characters long.
+         The following bizarre use of 'cat' only works on DOS boxes.
+         It is causing the file to be dropped into a temporary file for
+         'cat' to read (pipes do not work on DOS).  */
+      tSCC   z_cmd_fmt[] = " %s | cat > %s";
       tCC**  ppArgs = p_fixd->patch_args;
 
       argsize = sizeof( z_cmd_fmt ) + strlen( pz_temp_file )
