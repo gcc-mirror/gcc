@@ -589,6 +589,12 @@ convert_move (to, from, unsignedp)
       if ((code = can_extend_p (to_mode, from_mode, unsignedp))
 	  != CODE_FOR_nothing)
 	{
+	  /* If FROM is a SUBREG, put it into a register.  Do this
+	     so that we always generate the same set of insns for
+	     better cse'ing; if an intermediate assignment occurred,
+	     we won't be doing the operation directly on the SUBREG.  */
+	  if (optimize > 0 && GET_CODE (from) == SUBREG)
+	    from = force_reg (from_mode, from);
 	  emit_unop_insn (code, to, from, equiv_code);
 	  return;
 	}
@@ -6198,7 +6204,8 @@ do_jump (exp, if_false_label, if_true_label)
 	do_jump_by_parts_equality_rtx (temp, if_true_label, if_false_label);
       else if (GET_MODE (temp) != VOIDmode)
 	comparison = compare_from_rtx (temp, CONST0_RTX (GET_MODE (temp)),
-				       NE, 1, GET_MODE (temp), NULL_RTX, 0);
+				       NE, TREE_UNSIGNED (TREE_TYPE (exp)),
+				       GET_MODE (temp), NULL_RTX, 0);
       else
 	abort ();
     }
@@ -6324,7 +6331,8 @@ do_jump_by_parts_equality (exp, if_false_label, if_true_label)
     {
       rtx comp = compare_from_rtx (operand_subword_force (op0, i, mode),
 				   operand_subword_force (op1, i, mode),
-				   EQ, 0, word_mode, NULL_RTX, 0);
+				   EQ, TREE_UNSIGNED (TREE_TYPE (exp)),
+				   word_mode, NULL_RTX, 0);
       if (comp == const_true_rtx)
 	emit_jump (if_false_label);
       else if (comp != const0_rtx)
@@ -6357,7 +6365,7 @@ do_jump_by_parts_equality_rtx (op0, if_false_label, if_true_label)
     {
       rtx comp = compare_from_rtx (operand_subword_force (op0, i,
 							  GET_MODE (op0)),
-				   const0_rtx, EQ, 0, word_mode, NULL_RTX, 0);
+				   const0_rtx, EQ, 1, word_mode, NULL_RTX, 0);
       if (comp == const_true_rtx)
 	emit_jump (if_false_label);
       else if (comp != const0_rtx)
@@ -6502,6 +6510,11 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size, align)
   if (GET_CODE (op0) == CONST_INT && GET_CODE (op1) == CONST_INT)
     return simplify_relational_operation (code, mode, op0, op1);
 
+#if 0
+  /* There's no need to do this now that combine.c can eliminate lots of
+     sign extensions.  This can be less efficient in certain cases on other
+     machines.
+
   /* If this is a signed equality comparison, we can do it as an
      unsigned comparison since zero-extension is cheaper than sign
      extension and comparisons with zero are done as unsigned.  This is
@@ -6517,6 +6530,7 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size, align)
 	op1 = GEN_INT (INTVAL (op1) & GET_MODE_MASK (GET_MODE (op0)));
       unsignedp = 1;
     }
+#endif
 	
   emit_cmp_insn (op0, op1, code, size, mode, unsignedp, align);
 
