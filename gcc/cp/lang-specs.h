@@ -43,19 +43,19 @@ Boston, MA 02111-1307, USA.  */
        %{!no-gcc:-D__GNUG__=%v1}\
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
-       %(cc1_options) %{+e*}\
+       %(cc1_options) %2 %{+e*}\
        %{!fsyntax-only:%(invoke_as)}}}}"
 #else /* ! USE_CPPLIB */
     "cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-trigraphs -$ -D__STRICT_ANSI__} %(cpp_options)\
        %{!M:%{!MM:%{!E:%{!pipe:%g.ii} |\n\
-     cc1plus -lang-c++ %{!pipe:%g.ii} %(cc1_options) %{+e*}\
+     cc1plus -lang-c++ %{!pipe:%g.ii} %(cc1_options) %2 %{+e*}\
      %{!fsyntax-only:%(invoke_as)}}}}\n"
 #endif /* ! USE_CPPLIB */
   },
   {".ii", "@c++-cpp-output"},
   {"@c++-cpp-output",
    "%{!M:%{!MM:%{!E:\
-    cc1plus -lang-c++ -fpreprocessed %i %(cc1_options) %{+e*}\
+    cc1plus -lang-c++ -fpreprocessed %i %(cc1_options) %2 %{+e*}\
     %{!fsyntax-only:%(invoke_as)}}}}"},
