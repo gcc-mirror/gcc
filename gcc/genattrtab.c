@@ -248,6 +248,7 @@ static int got_define_asm_attributes;
 static int must_extract;
 static int must_constrain;
 static int address_used;
+static int length_used;
 static int num_delays;
 static int have_annul_true, have_annul_false;
 static int num_units;
@@ -4489,6 +4490,7 @@ max_attr_value (exp)
 	`must_extract'	  if we need to extract the insn operands
 	`must_constrain'  if we must compute `which_alternative'
 	`address_used'	  if an address expression was used
+	`length_used'	  if an (eq_attr "length" ...) was used
  */
 
 static void
@@ -4520,6 +4522,8 @@ walk_attr_value (exp)
     case EQ_ATTR:
       if (XSTR (exp, 0) == alternative_name)
 	must_extract = must_constrain = 1;
+      else if (strcmp (XSTR (exp, 0), "length") == 0)
+	length_used = 1;
       return;
 
     case MATCH_DUP:
@@ -4772,7 +4776,7 @@ write_attr_case (attr, av, write_case_lines, prefix, suffix, indent, known_true)
       printf ("default:\n");
     }
 
-  /* See what we have to do to handle output this value.  */
+  /* See what we have to do to output this value.  */
   must_extract = must_constrain = address_used = 0;
   walk_attr_value (av->value);
 
@@ -5408,7 +5412,9 @@ fancy_abort ()
   fatal ("Internal gcc abort.");
 }
 
-/* Determine if an insn has a constant number of delay slots. */
+/* Determine if an insn has a constant number of delay slots, i.e., the
+   number of delay slots is not a function of the length of the insn.  */
+
 void
 write_const_num_delay_slots ()
 {
@@ -5426,13 +5432,18 @@ write_const_num_delay_slots ()
       printf ("    {\n");
 
       for (av = attr->first_value; av; av = av->next)
-	if (GET_CODE (av->value) == COND && av->num_insns)
-	  {
-	    for (ie = av->first_insn; ie; ie = ie->next)
+	{
+	  length_used = 0;
+	  walk_attr_value (av->value);
+	  if (length_used)
+	    {
+	      for (ie = av->first_insn; ie; ie = ie->next)
 	      if (ie->insn_code != -1)
 		printf ("    case %d:\n", ie->insn_code);
-	    printf ("      return 0;\n");
-	  }
+	      printf ("      return 0;\n");
+	    }
+	}
+
       printf ("    default:\n");
       printf ("      return 1;\n");
       printf ("    }\n}\n");
