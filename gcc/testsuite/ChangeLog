@@ -1,3 +1,10 @@
+2005-04-05  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR testsuite/20767
+	* gcc.dg/tree-ssa/ssa-pre-8.c (foo): Use __SIZE_TYPE__ instead
+	of plain old "unsigned int" for the type of "i".  Makes this test
+	64bit clean.
+
 2005-04-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.dg/i386-ssefn-1.c: New test.

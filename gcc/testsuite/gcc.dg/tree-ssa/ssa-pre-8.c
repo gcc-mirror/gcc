@@ -5,7 +5,7 @@ struct s {
 };
 
 int
-foo (unsigned int i, struct s *array)
+foo (__SIZE_TYPE__ i, struct s *array)
 {
   int *p = array[i].n;
   if (p)
