@@ -260,7 +260,9 @@ public class File implements Serializable
 	String l = prefix + t.substring(t.length() - 6) + suffix;
 	try
 	  {
-	    desc.open (l, FileDescriptor.WRITE | FileDescriptor.EXCL);
+	    desc = new FileDescriptor 
+	      (l, FileDescriptor.WRITE | FileDescriptor.EXCL);
+	    desc.close ();
 	    ret.setPath(l);
 	    return ret;
 	  }
