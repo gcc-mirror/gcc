@@ -190,99 +190,105 @@ gen_e_list setif_get_inter(gen_e e)
   return ( (setif_inter_) e)->exprs;
 }
 
-static setif_var_list search_ubs(region r, setif_var v1, setif_var goal)
+static void search_ubs_aux(setif_var v, setif_var goal, setif_var_list cycle,
+			   bool* found)
 {
-  bool found = FALSE;
-  setif_var_list cycle;
+  assert(! *found); 
   
-  static void search_ubs_aux(setif_var v)
+  if (sv_eq (v, goal))
     {
-      assert(! found); 
+      *found = TRUE;
+      return;
+    }
+  else if (sv_lt(v,goal))
+    {
+      return;
+    }
+  else 
+    {
+      gen_e_list_scanner scan;
+      gen_e ub;
+      gen_e_list ubs = sv_get_ubs(v);
       
-      if (sv_eq (v, goal))
-	{
-	  found = TRUE;
-	  return;
-	}
-      else if (sv_lt(v,goal))
-	{
-	  return;
-	}
-      else 
-	{
-	  gen_e_list_scanner scan;
-	  gen_e ub;
-	  gen_e_list ubs = sv_get_ubs(v);
-	  
-	  gen_e_list_scan(ubs,&scan);
-	  while (gen_e_list_next(&scan,&ub))
+      gen_e_list_scan(ubs,&scan);
+      while (gen_e_list_next(&scan,&ub))
+      {
+	if (setif_is_var(ub))
 	  {
-	    if (setif_is_var(ub))
+	    search_ubs_aux((setif_var)ub, goal, cycle, found);
+	    if (*found)
 	      {
-		search_ubs_aux((setif_var)ub);
-		if (found)
-		  {
-		    setif_var_list_cons(v,cycle);
-		    return;
-		  }
+		setif_var_list_cons(v,cycle);
+		return;
 	      }
 	  }
-	}
+      }
     }
+}
 
+
+static setif_var_list search_ubs(region r, setif_var v1, setif_var goal)
+{
+  bool found;
+  setif_var_list cycle;
+  
   found = FALSE;
   cycle = new_setif_var_list(r);
-  search_ubs_aux(v1);
+  search_ubs_aux(v1, goal, cycle, &found);
 
   return cycle;
 }
+
+
+static void search_lbs_aux(setif_var v, setif_var goal, setif_var_list cycle,
+			   bool* found)
+{
+  assert (! *found);
+  if (sv_eq(v,goal))
+    {
+      *found = TRUE;
+      return;
+    }
+  else if (sv_lt(v,goal))
+    {
+      return;
+    }
+  else
+    {
+      gen_e_list_scanner scan;
+      gen_e lb;
+      gen_e_list lbs = sv_get_lbs(v);
+      
+      gen_e_list_scan(lbs,&scan);
+      while (gen_e_list_next(&scan,&lb))
+      {
+	if (setif_is_var(lb))
+	  {
+	    search_lbs_aux((setif_var)lb, goal, cycle, found);
+	    if (*found)
+	      {
+		setif_var_list_cons(v,cycle);
+		return;
+	      }
+	  }
+      }
+    }
+    
+}
+
 
 static setif_var_list search_lbs(region r, setif_var v1, setif_var goal)
 {
   bool found;
   setif_var_list cycle;
  
-  static void search_lbs_aux(setif_var v)
-    {
-      assert (! found);
-      if (sv_eq(v,goal))
-	{
-	  found = TRUE;
-	  return;
-	}
-      else if (sv_lt(v,goal))
-	{
-	  return;
-	}
-      else
-	{
-	  gen_e_list_scanner scan;
-	  gen_e lb;
-	  gen_e_list lbs = sv_get_lbs(v);
-	  
-	  gen_e_list_scan(lbs,&scan);
-	  while (gen_e_list_next(&scan,&lb))
-	  {
-	    if (setif_is_var(lb))
-	      {
-		search_lbs_aux((setif_var)lb);
-		if (found)
-		  {
-		    setif_var_list_cons(v,cycle);
-		    return;
-		  }
-	      }
-	  }
-	}
-	
-    }
-
   found = FALSE;
   cycle = new_setif_var_list(r);
-  search_lbs_aux(v1);
+  search_lbs_aux(v1, goal, cycle, &found);
 
   return cycle; 
 }
+
 
 static setif_var_list cycle_detect(region r,setif_var v1,setif_var v2)
 {
@@ -309,156 +315,164 @@ static setif_var_list cycle_detect_rev(region r, setif_var v1, setif_var v2)
     }
 }
 
-void setif_inclusion(con_match_fn_ptr con_match, res_proj_fn_ptr res_proj, 
+
+static void collapse_cycle_lower(region r, setif_var witness,
+				 setif_var_list cycle,
+				 con_match_fn_ptr con_match,
+				 res_proj_fn_ptr res_proj) deletes
+{
+  gen_e lb;
+  gen_e_list_scanner scan_bounds;
+  setif_var_list_scanner scan_cycle;
+  setif_var var;
+
+#ifndef NDEBUG
+  stamp lowest = sv_get_stamp(witness);
+#endif
+  bounds b = bounds_create(r);
+  
+  /* Collect all lower bounds in the cycle, and add transitive edges */
+  setif_var_list_scan(cycle,&scan_cycle);
+  while(setif_var_list_next(&scan_cycle,&var))
+    {
+      assert( sv_get_stamp(var) > lowest);
+      gen_e_list_scan(sv_get_lbs(var),&scan_bounds);
+      while(gen_e_list_next(&scan_bounds,&lb))
+	bounds_add(b,lb,setif_get_stamp(lb));
+    }
+
+  sv_unify(witness,cycle);
+  assert(sv_get_stamp(witness) == lowest);
+  
+  gen_e_list_scan(bounds_exprs(b),&scan_bounds);
+  while (gen_e_list_next(&scan_bounds,&lb))
+    setif_inclusion(con_match,res_proj,lb, (gen_e) witness);
+  
+  bounds_delete(b);
+  invalidate_tlb_cache();
+
+  setif_stats.cycles_collapsed_backward++;
+  setif_stats.cycles_length_backward += setif_var_list_length(cycle);
+}
+
+static void collapse_cycle_upper(region r, setif_var witness,
+				 setif_var_list cycle,
+				 con_match_fn_ptr con_match,
+				 res_proj_fn_ptr res_proj) deletes
+{
+  gen_e ub;
+  gen_e_list_scanner scan_bounds;
+  setif_var_list_scanner scan_cycle;
+  setif_var var;
+
+#ifndef NDEBUG
+  stamp lowest = sv_get_stamp(witness);
+#endif
+  bounds b = bounds_create(r);
+  
+  /* Collect all upper bounds in the cycle, and add transitive edges */
+  setif_var_list_scan(cycle,&scan_cycle);
+  while(setif_var_list_next(&scan_cycle,&var))
+    { 
+      assert( sv_get_stamp(var) > lowest);
+
+      gen_e_list_scan(sv_get_ubs(var),&scan_bounds);
+      while(gen_e_list_next(&scan_bounds,&ub))
+	bounds_add(b,ub,setif_get_stamp(ub));
+      
+      gen_e_list_scan(sv_get_ub_projs(var),&scan_bounds);
+      while(gen_e_list_next(&scan_bounds,&ub))
+	bounds_add(b,ub,setif_get_stamp(ub));
+    }
+
+  sv_unify(witness,cycle);
+  assert(sv_get_stamp(witness) == lowest);
+
+  gen_e_list_scan(bounds_exprs(b),&scan_bounds);
+  while (gen_e_list_next(&scan_bounds,&ub))
+    setif_inclusion(con_match,res_proj,(gen_e) witness, ub);
+    
+  bounds_delete(b);
+  invalidate_tlb_cache();
+
+  setif_stats.cycles_collapsed_forward++;
+  setif_stats.cycles_length_backward += setif_var_list_length(cycle);
+}
+
+static void update_lower_bound(setif_var v, gen_e e,
+			       con_match_fn_ptr con_match,
+			       res_proj_fn_ptr res_proj) deletes
+{
+  if (sv_add_lb(v,e,setif_get_stamp(e)))
+    {
+      if (setif_is_var(e))
+	setif_stats.redundant_succ++;
+      
+      else
+	setif_stats.redundant_source++;
+    }
+
+  else
+    {
+      gen_e_list_scanner scan;
+      gen_e ub;
+      
+      if (setif_is_var(e))
+	setif_stats.added_succ++;
+      else
+	setif_stats.added_source++;
+      
+      invalidate_tlb_cache();
+
+      gen_e_list_scan(sv_get_ubs(v),&scan);
+      while(gen_e_list_next(&scan,&ub))
+	setif_inclusion(con_match,res_proj,e,ub);
+      
+      gen_e_list_scan(sv_get_ub_projs(v),&scan);
+      while (gen_e_list_next(&scan,&ub))
+	setif_inclusion(con_match,res_proj,e,ub);
+
+    }
+  
+}
+
+static void update_upper_bound(setif_var v, gen_e e,
+			       con_match_fn_ptr con_match,
+			       res_proj_fn_ptr res_proj) deletes
+{
+  if (sv_add_ub(v,e,setif_get_stamp(e)))
+    {
+      if (setif_is_var(e))
+	setif_stats.redundant_pred++;
+    
+      else
+	setif_stats.redundant_sink++;
+    }
+  
+  else
+    {
+      gen_e_list_scanner scan;
+      gen_e lb;
+
+      if (setif_is_var(e))
+	setif_stats.added_pred++;
+      else
+	setif_stats.added_sink++;
+
+      invalidate_tlb_cache();
+      
+      gen_e_list_scan(sv_get_lbs(v),&scan);
+      while (gen_e_list_next(&scan,&lb))
+	setif_inclusion(con_match,res_proj,lb,e);
+
+    }
+  
+}
+
+
+void setif_inclusion(con_match_fn_ptr con_match, res_proj_fn_ptr res_proj,
 		     gen_e e1, gen_e e2) deletes
 {
-
-  static void collapse_cycle_lower(region r, setif_var witness, 
-			    setif_var_list cycle) deletes
-    {
-      gen_e lb;
-      gen_e_list_scanner scan_bounds;
-      setif_var_list_scanner scan_cycle;
-      setif_var var;
-
-#ifndef NDEBUG
-      stamp lowest = sv_get_stamp(witness);
-#endif
-      bounds b = bounds_create(r);
-      
-      /* Collect all lower bounds in the cycle, and add transitive edges */
-      setif_var_list_scan(cycle,&scan_cycle);
-      while(setif_var_list_next(&scan_cycle,&var))
-	{
-	  assert( sv_get_stamp(var) > lowest);
-	  gen_e_list_scan(sv_get_lbs(var),&scan_bounds);
-	  while(gen_e_list_next(&scan_bounds,&lb))
-	    bounds_add(b,lb,setif_get_stamp(lb));
-	}
-
-      sv_unify(witness,cycle);
-      assert(sv_get_stamp(witness) == lowest);
-      
-      gen_e_list_scan(bounds_exprs(b),&scan_bounds);
-      while (gen_e_list_next(&scan_bounds,&lb))
-	setif_inclusion(con_match,res_proj,lb, (gen_e) witness);
-      
-      bounds_delete(b);
-      invalidate_tlb_cache();
-
-      setif_stats.cycles_collapsed_backward++;
-      setif_stats.cycles_length_backward += setif_var_list_length(cycle);
-    }
-  
-  static void collapse_cycle_upper(region r, setif_var witness,
-			    setif_var_list cycle) deletes
-    {
-      gen_e ub;
-      gen_e_list_scanner scan_bounds;
-      setif_var_list_scanner scan_cycle;
-      setif_var var;
-
-#ifndef NDEBUG
-      stamp lowest = sv_get_stamp(witness);
-#endif
-      bounds b = bounds_create(r);
-     
-      /* Collect all upper bounds in the cycle, and add transitive edges */
-      setif_var_list_scan(cycle,&scan_cycle);
-      while(setif_var_list_next(&scan_cycle,&var))
-	{ 
-	  assert( sv_get_stamp(var) > lowest);
-
-	  gen_e_list_scan(sv_get_ubs(var),&scan_bounds);
-	  while(gen_e_list_next(&scan_bounds,&ub))
-	    bounds_add(b,ub,setif_get_stamp(ub));
-	  
-	  gen_e_list_scan(sv_get_ub_projs(var),&scan_bounds);
-	  while(gen_e_list_next(&scan_bounds,&ub))
-	    bounds_add(b,ub,setif_get_stamp(ub));
-	}
-
-      sv_unify(witness,cycle);
-      assert(sv_get_stamp(witness) == lowest);
-
-      gen_e_list_scan(bounds_exprs(b),&scan_bounds);
-      while (gen_e_list_next(&scan_bounds,&ub))
-	setif_inclusion(con_match,res_proj,(gen_e) witness, ub);
-	
-      bounds_delete(b);
-      invalidate_tlb_cache();
-
-      setif_stats.cycles_collapsed_forward++;
-      setif_stats.cycles_length_backward += setif_var_list_length(cycle);
-    }
-  
-  static void update_lower_bound(setif_var v, gen_e e) deletes
-    {
-      if (sv_add_lb(v,e,setif_get_stamp(e)))
-	{
-	  if (setif_is_var(e))
-	    setif_stats.redundant_succ++;
-	  
-	  else
-	    setif_stats.redundant_source++;
-	}
-
-      else
-	{
-	  gen_e_list_scanner scan;
-	  gen_e ub;
-	  
-	  if (setif_is_var(e))
-	    setif_stats.added_succ++;
-	  else
-	    setif_stats.added_source++;
-	  
-	  invalidate_tlb_cache();
-
-	  gen_e_list_scan(sv_get_ubs(v),&scan);
-	  while(gen_e_list_next(&scan,&ub))
-	    setif_inclusion(con_match,res_proj,e,ub);
-	  
-	  gen_e_list_scan(sv_get_ub_projs(v),&scan);
-	  while (gen_e_list_next(&scan,&ub))
-	    setif_inclusion(con_match,res_proj,e,ub);
-
-	}
-      
-    }
-
-  static void update_upper_bound(setif_var v, gen_e e) deletes
-    {
-      if (sv_add_ub(v,e,setif_get_stamp(e)))
-	{
-	  if (setif_is_var(e))
-	    setif_stats.redundant_pred++;
-	
-	  else
-	    setif_stats.redundant_sink++;
-	}
-      
-      else
-	{
-	  gen_e_list_scanner scan;
-	  gen_e lb;
-
-	  if (setif_is_var(e))
-	    setif_stats.added_pred++;
-	  else
-	    setif_stats.added_sink++;
-
-	  invalidate_tlb_cache();
-	  
-	  gen_e_list_scan(sv_get_lbs(v),&scan);
-	  while (gen_e_list_next(&scan,&lb))
-	    setif_inclusion(con_match,res_proj,lb,e);
-
-	}
-      
-    }
-
-
   if (eq(e1,e2))
     return;
   
@@ -519,18 +533,18 @@ void setif_inclusion(con_match_fn_ptr con_match, res_proj_fn_ptr res_proj,
 	      setif_var_list cycle = cycle_detect(scratch,v1,v2);
 	      
 	      if (! setif_var_list_empty(cycle))
-		collapse_cycle_upper(scratch,v1,cycle);
+		collapse_cycle_upper(scratch,v1,cycle,con_match,res_proj);
 	      else
-		update_lower_bound(v2,e1);
+		update_lower_bound(v2,e1,con_match,res_proj);
 	      
 	      deleteregion(scratch);
 	    }
 	  
 	  else 
-	    update_lower_bound(v2,e1);
+	    update_lower_bound(v2,e1,con_match,res_proj);
 	}
       else /* e1 is a source */
-	update_lower_bound(v2,e1);
+	update_lower_bound(v2,e1,con_match,res_proj);
     }
 
   else if ( r_inductive(e1,e2) ) /* 'x <= _ */
@@ -547,22 +561,22 @@ void setif_inclusion(con_match_fn_ptr con_match, res_proj_fn_ptr res_proj,
 	      setif_var_list cycle = cycle_detect_rev(scratch,v1,v2);
 	      
 	      if (! setif_var_list_empty(cycle))
-		collapse_cycle_lower(scratch,v2,cycle);
+		collapse_cycle_lower(scratch,v2,cycle,con_match,res_proj);
 	      else
-		update_upper_bound(v1,e2);
+		update_upper_bound(v1,e2,con_match,res_proj);
 	      
 	      deleteregion(scratch);
 	    }
       
 	  else
-	    update_upper_bound(v1,e2);
+	    update_upper_bound(v1,e2,con_match,res_proj);
 	}
       else /* e2 is a sink */
 	{
 	  if (flag_merge_projections && res_proj(v1,e2))
 	    return;
 	  else
-	    update_upper_bound(v1,e2);
+	    update_upper_bound(v1,e2,con_match,res_proj);
 	}
     }
 

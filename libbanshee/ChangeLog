@@ -1,3 +1,15 @@
+2004-06-27  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR bootstrap/15627
+	* engine/flowrow-sort.c (update_upper_bound): Converted comment to
+	C-style.
+	(flowrow_inclusion): Likewise.
+	(flowrow_extract_field): Unnest field_eq.
+	* engine/setif-sort.c (search_ubs): Unnest search_ubs_aux.
+	(search_lbs): Unnest search_lbs_aux.
+	(setif_inclusion): Unnest collapse_cycle_lower, collapse_cycle_upper,
+	update_lower_bound, update_upper_bound.
+
 2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in: Regenerate with automake 1.8.5.
