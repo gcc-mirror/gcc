@@ -307,7 +307,7 @@ c4x_override_options ()
     target_flags &= ~C3X_FLAG;
 
   /* Convert foo / 8.0 into foo * 0.125, etc.  */
-  set_fast_math_flags();
+  set_fast_math_flags (1);
 
   /* We should phase out the following at some stage.
      This provides compatibility with the old -mno-aliases option.  */

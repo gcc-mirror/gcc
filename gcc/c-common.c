@@ -4351,6 +4351,23 @@ cb_register_builtins (pfile)
   /* Misc.  */
   builtin_define_with_value ("__VERSION__", version_string, 1);
 
+  /* Other target-independent built-ins determined by command-line
+     options.  */
+  if (optimize_size)
+    cpp_define (pfile, "__OPTIMIZE_SIZE__");
+  if (optimize)
+    cpp_define (pfile, "__OPTIMIZE__");
+
+  if (flag_hosted)
+    cpp_define (pfile, "__STDC_HOSTED__=1");
+  else
+    cpp_define (pfile, "__STDC_HOSTED__=0");
+
+  if (fast_math_flags_set_p ())
+    cpp_define (pfile, "__FAST_MATH__");
+  if (flag_no_inline)
+    cpp_define (pfile, "__NO_INLINE__");
+
   /* A straightforward target hook doesn't work, because of problems
      linking that hook's body when part of non-C front ends.  */
   TARGET_CPU_CPP_BUILTINS ();
