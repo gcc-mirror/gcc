@@ -415,7 +415,6 @@ int required_other = 0;
 static void
 write_lbrac ()
 {
-
 #if ADD_MISSING_EXTERN_C
   if (missing_extern_C_count + required_unseen_count > 0)
     fprintf (outf, "#ifdef __cplusplus\nextern \"C\" {\n#endif\n");

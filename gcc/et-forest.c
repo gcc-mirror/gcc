@@ -439,7 +439,6 @@ calculate_value (node)
 et_forest_t
 et_forest_create ()
 {
-
   et_forest_t forest = xmalloc (sizeof (struct et_forest));
 
   forest->nnodes = 0;

@@ -636,7 +636,6 @@ int
 global_reg_mentioned_p (x)
      rtx x;
 {
-
   if (INSN_P (x))
     {
       if (GET_CODE (x) == CALL_INSN)

@@ -8032,7 +8032,6 @@ static inline unsigned HOST_WIDE_INT
 simple_type_size_in_bits (type)
      tree type;
 {
-
   if (TREE_CODE (type) == ERROR_MARK)
     return BITS_PER_WORD;
   else if (TYPE_SIZE (type) == NULL_TREE)

@@ -684,7 +684,6 @@ rtx
 stabilize (x)
      rtx x;
 {
-
   if (GET_CODE (x) != MEM
       || ! rtx_unstable_p (XEXP (x, 0)))
     return x;
