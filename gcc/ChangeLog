@@ -1,3 +1,7 @@
+2004-08-15  Steven Bosscher  <stevenb@suse.de>
+
+	* rtl.c (note_insn_name): Add NOTE_DISABLE_SCHED_OF_BLOCK.
+
 2004-08-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* fixinc/inclhack.def (stdio_va_list): Also fix com_err.h, cps.h,
