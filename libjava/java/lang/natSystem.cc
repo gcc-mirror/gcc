@@ -9,6 +9,7 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
+#include <platform.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -23,8 +24,6 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/io/PrintStream.h>
 #include <java/io/InputStream.h>
-
-#include "platform.h"
 
 
 

@@ -16,6 +16,7 @@ details.  */
  */
 
 #include <config.h>
+#include <platform.h>
 
 #include <string.h>
 
@@ -30,8 +31,6 @@ details.  */
 #include <java-interp.h>
 #include <java/util/IdentityHashMap.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
-
-#include "platform.h"
 
 #include <sys/types.h>
 

@@ -9,6 +9,7 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
+#include <platform.h>
 
 #include <string.h>
 
@@ -27,8 +28,6 @@ details.  */
 #include <java/lang/Class.h>
 #include <java/lang/Cloneable.h>
 #include <java/lang/Thread.h>
-
-#include "platform.h"
 
 #ifdef LOCK_DEBUG
 #  include <stdio.h>

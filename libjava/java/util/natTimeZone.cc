@@ -9,11 +9,10 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
+#include <platform.h>
 
 #include <gcj/cni.h>
 #include <jvm.h>
-
-#include "platform.h"
 
 #include <java/util/TimeZone.h>
 #include <java/lang/Character.h>
