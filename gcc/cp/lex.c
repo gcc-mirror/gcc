@@ -5014,6 +5014,19 @@ copy_lang_decl (node)
   DECL_LANG_SPECIFIC (node) = ld;
 }
 
+/* Copy DECL, including any language-specific parts.  */
+
+tree
+copy_decl (decl)
+     tree decl;
+{
+  tree copy;
+
+  copy = copy_node (decl);
+  copy_lang_decl (copy);
+  return copy;
+}
+
 tree
 cp_make_lang_type (code)
      enum tree_code code;

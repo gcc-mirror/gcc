@@ -2861,7 +2861,7 @@ finish_objects (method_type, initp, body)
 
   /* Finish up. */
   finish_compound_stmt(/*has_no_scope=*/0, body);
-  fn = finish_function (lineno, 0);
+  fn = finish_function (0);
   expand_body (fn);
 
   /* When only doing semantic analysis, and no RTL generation, we
@@ -3045,7 +3045,7 @@ finish_static_storage_duration_function (body)
 {
   /* Close out the function.  */
   finish_compound_stmt (/*has_no_scope=*/0, body);
-  expand_body (finish_function (lineno, 0));
+  expand_body (finish_function (0));
 }
 
 /* Return the information about the indicated PRIORITY level.  If no

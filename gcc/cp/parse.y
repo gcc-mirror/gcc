@@ -732,9 +732,9 @@ eat_saved_input:
 
 fndef:
 	  fn.def1 maybe_return_init ctor_initializer_opt compstmt_or_error
-		{ expand_body (finish_function (lineno, (int)$3)); }
+		{ expand_body (finish_function ((int)$3)); }
 	| fn.def1 maybe_return_init function_try_block
-		{ expand_body (finish_function (lineno, (int)$3)); }
+		{ expand_body (finish_function ((int)$3)); }
 	| fn.def1 maybe_return_init error
 		{ }
 	;
@@ -2102,17 +2102,17 @@ fn.defpen:
 pending_inline:
 	  fn.defpen maybe_return_init ctor_initializer_opt compstmt_or_error
 		{
-		  expand_body (finish_function (lineno, (int)$3 | 2));
+		  expand_body (finish_function ((int)$3 | 2));
 		  process_next_inline ($1);
 		}
 	| fn.defpen maybe_return_init function_try_block
 		{ 
-		  expand_body (finish_function (lineno, (int)$3 | 2)); 
+		  expand_body (finish_function ((int)$3 | 2)); 
                   process_next_inline ($1);
 		}
 	| fn.defpen maybe_return_init error
 		{ 
-		  finish_function (lineno, 2); 
+		  finish_function (2); 
 		  process_next_inline ($1); }
 	;
 

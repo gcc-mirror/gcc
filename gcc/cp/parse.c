@@ -4908,11 +4908,11 @@ case 85:
     break;}
 case 91:
 #line 735 "parse.y"
-{ expand_body (finish_function (lineno, (int)yyvsp[-1].itype)); ;
+{ expand_body (finish_function ((int)yyvsp[-1].itype)); ;
     break;}
 case 92:
 #line 737 "parse.y"
-{ expand_body (finish_function (lineno, (int)yyvsp[0].itype)); ;
+{ expand_body (finish_function ((int)yyvsp[0].itype)); ;
     break;}
 case 93:
 #line 739 "parse.y"
@@ -6419,21 +6419,21 @@ case 458:
 case 459:
 #line 2104 "parse.y"
 {
-		  expand_body (finish_function (lineno, (int)yyvsp[-1].itype | 2));
+		  expand_body (finish_function ((int)yyvsp[-1].itype | 2));
 		  process_next_inline (yyvsp[-3].pi);
 		;
     break;}
 case 460:
 #line 2109 "parse.y"
 { 
-		  expand_body (finish_function (lineno, (int)yyvsp[0].itype | 2)); 
+		  expand_body (finish_function ((int)yyvsp[0].itype | 2)); 
                   process_next_inline (yyvsp[-2].pi);
 		;
     break;}
 case 461:
 #line 2114 "parse.y"
 { 
-		  finish_function (lineno, 2); 
+		  finish_function (2); 
 		  process_next_inline (yyvsp[-2].pi); ;
     break;}
 case 464:

@@ -5440,8 +5440,7 @@ tsubst_decl (t, args, type, in_decl)
 	   We also create a new function declaration, which is just
 	   like the old one, but points to this new template, rather
 	   than the old one.  */
-	r = copy_node (t);
-	copy_lang_decl (r);
+	r = copy_decl (t);
 	my_friendly_assert (DECL_LANG_SPECIFIC (r) != 0, 0);
 	TREE_CHAIN (r) = NULL_TREE;
 
@@ -5681,9 +5680,7 @@ tsubst_decl (t, args, type, in_decl)
            point, as they may not represent instantiations of this
            template, and in any case are considered separate under the
            discrete model.  Instead, see add_maybe_template.  */
-
-	r = copy_node (t);
-	copy_lang_decl (r);
+	r = copy_decl (t);
 	DECL_USE_TEMPLATE (r) = 0;
 	TREE_TYPE (r) = type;
 
@@ -5819,8 +5816,7 @@ tsubst_decl (t, args, type, in_decl)
 
     case FIELD_DECL:
       {
-	r = copy_node (t);
-	copy_lang_decl (r);
+	r = copy_decl (t);
 	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (CP_TYPE_QUALS (type), r);
 
@@ -5899,10 +5895,7 @@ tsubst_decl (t, args, type, in_decl)
 	    break;
 	  }
 
-	/* This declaration is going to have to be around for a while,
-	   so me make sure it is on a saveable obstack.  */
-	r = copy_node (t);
-	
+	r = copy_decl (t);
 	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (CP_TYPE_QUALS (type), r);
 	DECL_CONTEXT (r) = ctx;
@@ -5912,7 +5905,6 @@ tsubst_decl (t, args, type, in_decl)
 	DECL_INITIAL (r) = NULL_TREE;
 	DECL_RTL (r) = 0;
 	DECL_SIZE (r) = DECL_SIZE_UNIT (r) = 0;
-	copy_lang_decl (r);
 
 	/* For __PRETTY_FUNCTION__ we have to adjust the initializer.  */
 	if (DECL_PRETTY_FUNCTION_P (r))
@@ -9585,7 +9577,7 @@ instantiate_decl (d, defer_ok)
 		   /*complain=*/1, tmpl);
 
       /* Finish the function.  */
-      expand_body (finish_function (lineno, 0));
+      expand_body (finish_function (0));
     }
 
   /* We're not deferring instantiation any more.  */

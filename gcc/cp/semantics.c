@@ -1957,11 +1957,6 @@ begin_class_definition (t)
 	|| ! CLASSTYPE_INTERFACE_ONLY (t))
       CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
   }
-#if 0
-  tmp = TYPE_IDENTIFIER ($<ttype>0);
-  if (tmp && IDENTIFIER_TEMPLATE (tmp))
-    overload_template_name (tmp, 1);
-#endif
   reset_specialization();
   
   /* Make a declaration for this class in its own scope.  */
@@ -2788,7 +2783,7 @@ expand_body (fn)
   lineno = STMT_LINENO (DECL_SAVED_TREE (fn));
 
   /* Generate code for the function.  */
-  finish_function (lineno, 0);
+  finish_function (0);
 
   /* If possible, obliterate the body of the function so that it can
      be garbage collected.  */
