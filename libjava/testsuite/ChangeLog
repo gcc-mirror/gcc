@@ -1,3 +1,11 @@
+2000-01-16  Anthony Green  <green@cygnus.com>
+
+	* libjava.lang/pr83.out: New file.
+	* libjava.lang/pr83.java: New file.
+
+	* libjava.lang/pr109.out: New file.
+	* libjava.lang/pr109.java: New file.
+
 2000-01-11  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.lang/klass.out: New file.
