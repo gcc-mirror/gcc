@@ -65,6 +65,7 @@ target_alias = @target_alias@
 target_triplet = @target@
 AR = @AR@
 AS = @AS@
+BACKTRACESPEC = @BACKTRACESPEC@
 CC = @CC@
 CHECKREFSPEC = @CHECKREFSPEC@
 COMPPATH = @COMPPATH@
