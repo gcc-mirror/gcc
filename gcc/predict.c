@@ -87,7 +87,7 @@ struct predictor_info
 struct predictor_info predictor_info[] = {
 #include "predict.def"
 
-  /* Upper bound on predictors. */
+  /* Upper bound on predictors.  */
   {NULL, 0, 0}
 };
 #undef DEF_PREDICTOR

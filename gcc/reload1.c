@@ -9067,7 +9067,7 @@ static int reg_set_luid[FIRST_PSEUDO_REGISTER];
    reg_offset[n] in mode reg_mode[n] .
    If reg_base_reg[n] is non-negative, register n has been set to the
    sum of reg_offset[n] and the value of register reg_base_reg[n]
-   before reg_set_luid[n], calculated in mode reg_mode[n] . */
+   before reg_set_luid[n], calculated in mode reg_mode[n] .  */
 static HOST_WIDE_INT reg_offset[FIRST_PSEUDO_REGISTER];
 static int reg_base_reg[FIRST_PSEUDO_REGISTER];
 static enum machine_mode reg_mode[FIRST_PSEUDO_REGISTER];

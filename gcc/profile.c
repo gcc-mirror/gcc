@@ -84,10 +84,10 @@ static FILE *bbg_file;
 
 static FILE *da_file;
 
-/* Pointer of the output file for the basic block/line number map. */
+/* Pointer of the output file for the basic block/line number map.  */
 static FILE *bb_file;
 
-/* Last source file name written to bb_file. */
+/* Last source file name written to bb_file.  */
 
 static char *last_bb_file_name;
 
@@ -121,7 +121,7 @@ static basic_block find_group PARAMS ((basic_block));
 static void union_groups PARAMS ((basic_block, basic_block));
 
 /* If non-zero, we need to output a constructor to set up the
-   per-object-file data. */
+   per-object-file data.  */
 static int need_func_profiler = 0;
 
 /* Add edge instrumentation code to the entire insn chain.
@@ -702,12 +702,12 @@ branch_prob ()
 
   /* Create spanning tree from basic block graph, mark each edge that is
      on the spanning tree.  We insert as many abnormal and critical edges
-     as possible to minimize number of edge splits necesary. */
+     as possible to minimize number of edge splits necesary.  */
 
   find_spanning_tree (el);
 
   /* Fake edges that are not on the tree will not be instrumented, so
-     mark them ignored. */
+     mark them ignored.  */
   for (i = 0; i < num_edges; i++)
     {
       edge e = INDEX_EDGE (el, i);
@@ -807,7 +807,7 @@ branch_prob ()
 }
 
 /* Union find algorithm implementation for the basic blocks using
-   aux fields. */
+   aux fields.  */
 
 static basic_block
 find_group (bb)
@@ -995,7 +995,7 @@ end_branch_prob ()
 	  long temp;
 	  /* This seems slightly dangerous, as it presumes the EOF
 	     flag will not be set until an attempt is made to read
-	     past the end of the file. */
+	     past the end of the file.  */
 	  if (feof (da_file))
 	    error (".da file contents exhausted too early");
 	  /* Should be at end of file now.  */
@@ -1083,7 +1083,7 @@ gen_edge_profiler (edgeno)
 }
 
 /* Output code for a constructor that will invoke __bb_init_func, if
-   this has not already been done. */
+   this has not already been done.  */
 
 void
 output_func_start_profiler ()
@@ -1100,18 +1100,18 @@ output_func_start_profiler ()
   int save_flag_branch_probabilities = flag_branch_probabilities;
 
   /* It's either already been output, or we don't need it because we're
-     not doing profile-edges. */
+     not doing profile-edges.  */
   if (! need_func_profiler)
     return;
 
   need_func_profiler = 0;
 
   /* Synthesize a constructor function to invoke __bb_init_func with a
-     pointer to this object file's profile block. */
+     pointer to this object file's profile block.  */
 
   /* Try and make a unique name given the "file function name".
 
-     And no, I don't like this either. */
+     And no, I don't like this either.  */
 
   fnname = get_file_function_name ('I');
   cfnname = IDENTIFIER_POINTER (fnname);
@@ -1141,7 +1141,7 @@ output_func_start_profiler ()
   pushlevel (0);
   expand_function_start (fndecl, 0);
 
-  /* Actually generate the code to call __bb_init_func. */
+  /* Actually generate the code to call __bb_init_func.  */
   ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", 0);
   table_address = force_reg (Pmode,
 			     gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf)));

@@ -1065,7 +1065,7 @@ register_operand (op, mode)
     }
 
   /* If we have an ADDRESSOF, consider it valid since it will be
-     converted into something that will not be a MEM. */
+     converted into something that will not be a MEM.  */
   if (GET_CODE (op) == ADDRESSOF)
     return 1;
 
@@ -1984,11 +1984,11 @@ offsettable_address_p (strictp, mode, y)
 
 int
 mode_dependent_address_p (addr)
-  rtx addr ATTRIBUTE_UNUSED; /* Maybe used in GO_IF_MODE_DEPENDENT_ADDRESS. */
+  rtx addr ATTRIBUTE_UNUSED; /* Maybe used in GO_IF_MODE_DEPENDENT_ADDRESS.  */
 {
   GO_IF_MODE_DEPENDENT_ADDRESS (addr, win);
   return 0;
-  /* Label `win' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS. */
+  /* Label `win' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS.  */
  win: ATTRIBUTE_UNUSED_LABEL
   return 1;
 }
@@ -2012,7 +2012,7 @@ mode_independent_operand (op, mode)
   addr = XEXP (op, 0);
   GO_IF_MODE_DEPENDENT_ADDRESS (addr, lose);
   return 1;
-  /* Label `lose' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS. */
+  /* Label `lose' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS.  */
  lose: ATTRIBUTE_UNUSED_LABEL
   return 0;
 }
@@ -2988,7 +2988,7 @@ peep2_find_free_register (from, to, class_str, mode, reg_set)
   return NULL_RTX;
 }
 
-/* Perform the peephole2 optimization pass. */
+/* Perform the peephole2 optimization pass.  */
 
 void
 peephole2_optimize (dump_file)

@@ -1128,7 +1128,7 @@ mark_target_live_regs (insns, target, res)
   /* If we hit an unconditional branch, we have another way of finding out
      what is live: we can see what is live at the branch target and include
      anything used but not set before the branch.  We add the live
-     resources found using the test below to those found until now. */
+     resources found using the test below to those found until now.  */
 
   if (jump_insn)
     {
@@ -1304,7 +1304,7 @@ incr_ticks_for_insn (insn)
 }
 
 /* Add TRIAL to the set of resources used at the end of the current
-   function. */
+   function.  */
 void
 mark_end_of_function_resources (trial, include_delayed_effects)
      rtx trial;

@@ -185,7 +185,7 @@ static int print_help_list;
 
 static int verbose_flag;
 
-/* Flag indicating to print target specific command line options. */
+/* Flag indicating to print target specific command line options.  */
 
 static int target_help_flag;
 
@@ -3280,7 +3280,7 @@ process_command (argc, argv)
 	}
       else if (strcmp (argv[i], "-ftarget-help") == 0)
         {
-          /* translate_options() has turned --target-help into -ftarget-help. */
+          /* translate_options() has turned --target-help into -ftarget-help.  */
           target_help_flag = 1;
 
           /* We will be passing a dummy file on to the sub-processes.  */
@@ -4004,7 +4004,7 @@ static int this_is_library_file;
 static int input_from_pipe;
 
 /* Nonnull means substitute this for any suffix when outputting a switches
-   arguments. */
+   arguments.  */
 static const char *suffix_subst;
 
 /* Process the spec SPEC and run the commands specified therein.
@@ -5879,7 +5879,7 @@ main (argc, argv)
       /* We do not exit here. Instead we have created a fake input file
          called 'target-dummy' which needs to be compiled, and we pass this
          on to the various sub-processes, along with the --target-help
-         switch. */
+         switch.  */
     }
 
   if (print_help_list)

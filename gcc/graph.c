@@ -80,7 +80,7 @@ label: \"basic block %d",
     }
 
 #if 0
-  /* FIXME Should this be printed?  It makes the graph significantly larger. */
+  /* FIXME Should this be printed?  It makes the graph significantly larger.  */
 
   /* Print the live-at-start register list.  */
   fputc ('\n', fp);

@@ -592,7 +592,7 @@ alloc_page (order)
 
   if (p != NULL)
     {
-      /* Recycle the allocated memory from this page ... */
+      /* Recycle the allocated memory from this page ...  */
       *pp = p->next;
       page = p->page;
 
@@ -987,7 +987,7 @@ ggc_set_mark (p)
   word = bit / HOST_BITS_PER_LONG;
   mask = (unsigned long) 1 << (bit % HOST_BITS_PER_LONG);
   
-  /* If the bit was previously set, skip it. */
+  /* If the bit was previously set, skip it.  */
   if (entry->in_use_p[word] & mask)
     return 1;
 
@@ -1053,7 +1053,7 @@ init_ggc ()
 	  abort ();
       }
 
-    /* We have a good page, might as well hold onto it... */
+    /* We have a good page, might as well hold onto it...  */
     e = (struct page_entry *) xcalloc (1, sizeof (struct page_entry));
     e->bytes = G.pagesize;
     e->page = p;

@@ -75,7 +75,7 @@ Boston, MA 02111-1307, USA.  */
    5. Allocate the variables in that order; each if possible into
    a preferred register, else into another register.  */
 
-/* Number of pseudo-registers which are candidates for allocation. */
+/* Number of pseudo-registers which are candidates for allocation.  */
 
 static int max_allocno;
 

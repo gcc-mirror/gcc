@@ -2654,11 +2654,11 @@ __clear_insn_cache (void)
   int save_errno;
 
   /* Preserve errno, because users would be surprised to have
-  errno changing without explicitly calling any system-call. */
+  errno changing without explicitly calling any system-call.  */
   save_errno = errno;
 
   /* Keep it simple : memctl (MCT_TEXT) always fully clears the insn cache.
-     No need to use an address derived from _start or %sp, as 0 works also. */
+     No need to use an address derived from _start or %sp, as 0 works also.  */
   memctl(0, 4096, MCT_TEXT);
   errno = save_errno;
 #endif

@@ -2224,7 +2224,7 @@ replace_rtx (x, from, to)
   register const char *fmt;
 
   /* The following prevents loops occurrence when we change MEM in
-     CONST_DOUBLE onto the same CONST_DOUBLE. */
+     CONST_DOUBLE onto the same CONST_DOUBLE.  */
   if (x != 0 && GET_CODE (x) == CONST_DOUBLE)
     return x;
 
@@ -2773,7 +2773,7 @@ subreg_regno_offset (xregno, xmode, offset, ymode)
   return ret;
 }
 
-/* Return the final regno that a subreg expression refers to. */
+/* Return the final regno that a subreg expression refers to.  */
 unsigned int 
 subreg_regno (x)
      rtx x;

@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "gcc.h"
 
-/* Filter argc and argv before processing by the gcc driver proper. */
+/* Filter argc and argv before processing by the gcc driver proper.  */
 void
 lang_specific_driver (in_argc, in_argv, in_added_libraries)
      int *in_argc ATTRIBUTE_UNUSED;
@@ -92,12 +92,12 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 #endif
 }
 
-/* Called before linking.  Returns 0 on success and -1 on failure. */
+/* Called before linking.  Returns 0 on success and -1 on failure.  */
 int
 lang_specific_pre_link ()
 {
-  return 0;  /* Not used for C. */
+  return 0;  /* Not used for C.  */
 }
 
-/* Number of extra output files that lang_specific_pre_link may generate. */
-int lang_specific_extra_outfiles = 0;  /* Not used for C. */
+/* Number of extra output files that lang_specific_pre_link may generate.  */
+int lang_specific_extra_outfiles = 0;  /* Not used for C.  */

@@ -265,7 +265,7 @@ struct reg_info_data {
 static struct reg_info_data *reg_info_head;
 
 /* No more global register variables may be declared; true once
-   regclass has been initialized. */
+   regclass has been initialized.  */
 
 static int no_global_reg_vars = 0;
 
@@ -633,7 +633,7 @@ memory_move_secondary_cost (mode, class, in)
   enum reg_class altclass;
   int partial_cost = 0;
   /* We need a memory reference to feed to SECONDARY... macros.  */
-  /* mem may be unused even if the SECONDARY_ macros are defined. */
+  /* mem may be unused even if the SECONDARY_ macros are defined.  */
   rtx mem ATTRIBUTE_UNUSED = top_of_stack[(int) mode];
 
 
@@ -848,7 +848,7 @@ static struct costs init_cost;
 
 static struct reg_pref *reg_pref;
 
-/* Allocated buffers for reg_pref. */
+/* Allocated buffers for reg_pref.  */
 
 static struct reg_pref *reg_pref_buffer;
 
@@ -908,7 +908,7 @@ regclass_init ()
      before regclass is run.  */
   reg_pref = NULL;
 
-  /* No more global register variables may be declared. */
+  /* No more global register variables may be declared.  */
   no_global_reg_vars = 1;
 }
 

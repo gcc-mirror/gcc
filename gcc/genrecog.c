@@ -800,7 +800,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
   switch (code)
     {
     case PARALLEL:
-      /* Toplevel peephole pattern. */
+      /* Toplevel peephole pattern.  */
       if (insn_type == PEEPHOLE2 && top)
 	{
 	  /* We don't need the node we just created -- unlink it.  */
@@ -809,7 +809,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
 	  for (i = 0; i < (size_t) XVECLEN (pattern, 0); i++)
 	    {
 	      /* Which insn we're looking at is represented by A-Z. We don't
-	         ever use 'A', however; it is always implied. */
+	         ever use 'A', however; it is always implied.  */
 
 	      subpos[depth] = (i > 0 ? 'A' + i : 0);
 	      sub = add_to_sequence (XVECEXP (pattern, 0, i),
@@ -1705,7 +1705,7 @@ find_afterward (head, real_afterward)
    new state, branch to node AFTERWARD if non-zero, otherwise return.
 
    Failure to move to the new state can only occur if we are trying to
-   match multiple insns and we try to step past the end of the stream. */
+   match multiple insns and we try to step past the end of the stream.  */
 
 static void
 change_state (oldpos, newpos, afterward, indent)
@@ -1734,7 +1734,7 @@ change_state (oldpos, newpos, afterward, indent)
   /* Go down to desired level.  */
   while (depth < ndepth)
     {
-      /* It's a different insn from the first one. */
+      /* It's a different insn from the first one.  */
       if (newpos[depth] >= 'A' && newpos[depth] <= 'Z')
 	{
 	  /* We can only fail if we're moving down the tree.  */

@@ -212,7 +212,7 @@ special_rtx (idx)
 	  || strcmp (defs[idx].enumname, "MEM") == 0);
 }
 
-/* Place a list of all format specifiers we use into the array FORMAT. */
+/* Place a list of all format specifiers we use into the array FORMAT.  */
 
 static void
 find_formats ()

@@ -5311,7 +5311,7 @@ asctoeg (ss, y, oprec)
 
   /* Exponent interpretation */
  expnt:
-  /* 0.0eXXX is zero, regardless of XXX.  Check for the 0.0. */
+  /* 0.0eXXX is zero, regardless of XXX.  Check for the 0.0.  */
   for (k = 0; k < NI; k++)
     {
       if (yy[k] != 0)
@@ -6016,7 +6016,7 @@ c4xtoe (d, e, mode)
   int i;
   int carry;
 
-  /* Short-circuit the zero case. */
+  /* Short-circuit the zero case.  */
   if ((d[0] == 0x8000)
       && (d[1] == 0x0000)
       && ((mode == QFmode) || ((d[2] == 0x0000) && (d[3] == 0x0000))))
@@ -6043,7 +6043,7 @@ c4xtoe (d, e, mode)
   }
 
   r >>= 8;			/* Shift exponent word down 8 bits.  */
-  if (r & 0x80)			/* Make the exponent negative if it is. */
+  if (r & 0x80)			/* Make the exponent negative if it is.  */
   {
      r = r | (~0 & ~0xff);
   }
@@ -6070,7 +6070,7 @@ c4xtoe (d, e, mode)
 
      /* Now do the two's complement on the data.  */
 
-     carry = 1;	/* Initially add 1 for the two's complement. */
+     carry = 1;	/* Initially add 1 for the two's complement.  */
      for (i=size + M; i > M; i--)
      {
 	if (carry && (y[i] == 0x0000))
@@ -6130,10 +6130,10 @@ etoc4x (x, d, mode)
 
   emovi (x, xi);
 
-  /* Adjust exponent for offsets. */
+  /* Adjust exponent for offsets.  */
   exp = (EMULONG) xi[E] - (EXONE - 0x7f);
 
-  /* Round off to nearest or even. */
+  /* Round off to nearest or even.  */
   rndsav = rndprc;
   rndprc = mode == QFmode ? 24 : 32;
   emdnorm (xi, 0, 0, exp, 64);
@@ -6158,7 +6158,7 @@ toc4x (x, y, mode)
       /* Only check for double if necessary */
       && ((mode == QFmode) || ((x[M+2] == 0) && (x[M+3] == 0))))
     {
-      /* We have a zero.  Put it into the output and return. */
+      /* We have a zero.  Put it into the output and return.  */
       *y++ = 0x8000;
       *y++ = 0x0000;
       if (mode != QFmode)
@@ -6172,14 +6172,14 @@ toc4x (x, y, mode)
   *y = 0;
 
   /* Negative number require a two's complement conversion of the
-     mantissa. */
+     mantissa.  */
   if (x[0])
     {
       *y = 0x0080;
 
       i = ((int) x[1]) - 0x7f;
 
-      /* Now add 1 to the inverted data to do the two's complement. */
+      /* Now add 1 to the inverted data to do the two's complement.  */
       if (mode != QFmode)
 	v = 4 + M;
       else
@@ -6202,11 +6202,11 @@ toc4x (x, y, mode)
       /* The following is a special case.  The C4X negative float requires
 	 a zero in the high bit (because the format is (2 - x) x 2^m), so
 	 if a one is in that bit, we have to shift left one to get rid
-	 of it.  This only occurs if the number is -1 x 2^m. */
+	 of it.  This only occurs if the number is -1 x 2^m.  */
       if (x[M+1] & 0x8000)
 	{
 	  /* This is the case of -1 x 2^m, we have to rid ourselves of the
-	     high sign bit and shift the exponent. */
+	     high sign bit and shift the exponent.  */
 	  eshift(x, 1);
 	  i--;
 	}
@@ -6376,9 +6376,9 @@ ereal_unto_float (f)
       s[0] = (unsigned EMUSHORT) f;
       s[1] = (unsigned EMUSHORT) (f >> 16);
     }
-  /* Convert and promote the target float to E-type. */
+  /* Convert and promote the target float to E-type.  */
   e24toe (s, e);
-  /* Output E-type to REAL_VALUE_TYPE. */
+  /* Output E-type to REAL_VALUE_TYPE.  */
   PUT_REAL (e, &r);
   return r;
 }
@@ -6411,9 +6411,9 @@ ereal_unto_double (d)
       s[2] = (unsigned EMUSHORT) d[1];
       s[3] = (unsigned EMUSHORT) (d[1] >> 16);
     }
-  /* Convert target double to E-type. */
+  /* Convert target double to E-type.  */
   e53toe (s, e);
-  /* Output E-type to REAL_VALUE_TYPE. */
+  /* Output E-type to REAL_VALUE_TYPE.  */
   PUT_REAL (e, &r);
   return r;
 }
