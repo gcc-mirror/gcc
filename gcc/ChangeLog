@@ -1,3 +1,8 @@
+2003-06-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.c (expand_builtin_strcpy): Don't evaluate side-effects in
+	src twice.
+
 2003-06-24  J"orn Rennecke <joern.rennecke@superh.com>
 
 	Back out these patches:
