@@ -2,6 +2,9 @@
 
 /* { dg-do preprocess } */
 
+#define HASH #
+HASH
+
 /* There is a #error directive.  */
 
 #error bad	/* { dg-error "bad" } */

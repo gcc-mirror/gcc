@@ -4,6 +4,10 @@
 
 /* { dg-do preprocess } */
 
+#ifndef FOO
+#1			/* Once caused a bogus unterminated #ifndef.  */
+#endif
+		
 #define foo() mov r0, #5  /* { dg-bogus "not followed" "spurious warning" } */
 
 entry:
