@@ -2692,15 +2692,14 @@ fix = {
 
 
 /*
- *  Don't use or define the name va_list in stdio.h.
- *  This is for ANSI and also to interoperate properly with gcc's
- *  varargs.h.  Note _BSD_VA_LIST_ is dealt with elsewhere.  The
- *  presence of __gnuc_va_list, __DJ_va_list, or _G_va_list is taken
- *  to indicate that the header knows what it's doing -- under SUSv2,
- *  stdio.h is required to define va_list, and we shouldn't break that.
- *  On IRIX 6.5, internal/wchar_core.h used to get its definition of
- *  va_list from stdio.h.  Since this doesn't happen any longer, use
- *  __gnuc_va_list there, too.
+ *  Don't use or define the name va_list in stdio.h.  This is for
+ *  ANSI.  Note _BSD_VA_LIST_ is dealt with elsewhere.  The presence
+ *  of __gnuc_va_list, __DJ_va_list, or _G_va_list is taken to
+ *  indicate that the header knows what it's doing -- under SUSv2,
+ *  stdio.h is required to define va_list, and we shouldn't break
+ *  that.  On IRIX 6.5, internal/wchar_core.h used to get its
+ *  definition of va_list from stdio.h.  Since this doesn't happen any
+ *  longer, use __gnuc_va_list there, too.
  */
 fix = {
     hackname = stdio_va_list;
@@ -2716,6 +2715,9 @@ fix = {
     files    = wchar.h;
     files    = curses_colr/curses.h;
     bypass   = '__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list|_G_va_list';
+    /* Don't fix, if we use va_list from stdarg.h, or if the use is
+       otherwise protected.  */
+    bypass   = 'include <stdarg\.h>|#ifdef va_start';
 
     /*
      * Use __gnuc_va_list in arg types in place of va_list.
