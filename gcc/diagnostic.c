@@ -85,7 +85,6 @@ static void diagnostic_action_after_output (diagnostic_context *,
 static void real_abort (void) ATTRIBUTE_NORETURN;
 
 extern int rtl_dump_and_exit;
-extern int warnings_are_errors;
 
 /* A diagnostic_context surrogate for stderr.  */
 static diagnostic_context global_diagnostic_context;

@@ -41,6 +41,83 @@ bool exit_after_options;
 /* If -version.  */
 bool version_flag;
 
+/* Print various extra warnings.  -W/-Wextra.  */
+bool extra_warnings;
+
+/* Don't print warning messages.  -w.  */
+bool inhibit_warnings;
+
+/* Treat warnings as errors.  -Werror.  */
+bool warnings_are_errors;
+
+/* Warn if a function returns an aggregate, since there are often
+   incompatible calling conventions for doing this.  */
+bool warn_aggregate_return;
+
+/* Nonzero means warn about pointer casts that increase the required
+   alignment of the target type (and might therefore lead to a crash
+   due to a misaligned access).  */
+bool warn_cast_align;
+
+/* Nonzero means warn about uses of __attribute__((deprecated))
+   declarations.  */
+bool warn_deprecated_decl = true;
+
+/* Warn when an optimization pass is disabled.  */
+bool warn_disabled_optimization;
+
+/* Nonzero means warn if inline function is too large.  */
+bool warn_inline;
+
+/* True to warn about any objects definitions whose size is larger
+   than N bytes.  Also want about function definitions whose returned
+   values are larger than N bytes, where N is `larger_than_size'.  */
+bool warn_larger_than;
+HOST_WIDE_INT larger_than_size;
+
+/* Warn about functions which might be candidates for attribute noreturn.  */
+bool warn_missing_noreturn;
+
+/* True to warn about code which is never reached.  */
+bool warn_notreached;
+
+/* Warn if packed attribute on struct is unnecessary and inefficient.  */
+bool warn_packed;
+
+/* Warn when gcc pads a structure to an alignment boundary.  */
+bool warn_padded;
+
+/* True means warn about all declarations which shadow others.  */
+bool warn_shadow;
+
+/* Nonzero means warn about constructs which might not be
+   strict-aliasing safe.  */
+bool warn_strict_aliasing;
+
+/* True to warn if a switch on an enum, that does not have a default
+   case, fails to have a case for every enum value.  */
+bool warn_switch;
+
+/* Warn if a switch does not have a default case.  */
+bool warn_switch_default;
+
+/* Warn if a switch on an enum fails to have a case for every enum
+   value (regardless of the presence or otherwise of a default case).  */
+bool warn_switch_enum;
+
+/* Don't suppress warnings from system headers.  -Wsystem-headers.  */
+bool warn_system_headers;
+
+/* True to warn about variables used before they are initialized.  */
+int warn_uninitialized;
+
+/* True to warn about unused variables, functions et.al.  */
+bool warn_unused_function;
+bool warn_unused_label;
+bool warn_unused_parameter;
+bool warn_unused_variable;
+bool warn_unused_value;
+
 /* Hack for cooperation between set_Wunused and set_Wextra.  */
 static bool maybe_warn_unused_parameter;
 
@@ -136,7 +213,7 @@ find_opt (const char *input, int lang_mask)
   return result;
 }
 
-/* If ARG is a postive integer made up solely of digits, return its
+/* If ARG is a non-negative integer made up solely of digits, return its
    value, otherwise return -1.  */
 static int
 integral_argument (const char *arg)
@@ -316,12 +393,104 @@ common_handle_option (size_t scode, const char *arg,
       set_Wextra (value);
       break;
 
+    case OPT_Waggregate_return:
+      warn_aggregate_return = value;
+      break;
+
+    case OPT_Wcast_align:
+      warn_cast_align = value;
+      break;
+
+    case OPT_Wdeprecated_declarations:
+      warn_deprecated_decl = value;
+
+    case OPT_Wdisabled_optimization:
+      warn_disabled_optimization = value;
+      break;
+
+    case OPT_Werror:
+      warnings_are_errors = value;
+      break;
+
     case OPT_Wextra:
       set_Wextra (value);
       break;
 
+    case OPT_Winline:
+      warn_inline = value;
+      break;
+
+    case OPT_Wlarger_than_:
+      larger_than_size = value;
+      warn_larger_than = value != -1;
+      break;
+
+    case OPT_Wmissing_noreturn:
+      warn_missing_noreturn = value;
+      break;
+
+    case OPT_Wpacked:
+      warn_packed = value;
+      break;
+
+    case OPT_Wpadded:
+      warn_padded = value;
+      break;
+
+    case OPT_Wshadow:
+      warn_shadow = value;
+      break;
+
+    case OPT_Wstrict_aliasing:
+      warn_strict_aliasing = value;
+      break;
+
+    case OPT_Wswitch:
+      warn_switch = value;
+      break;
+
+    case OPT_Wswitch_default:
+      warn_switch_default = value;
+      break;
+
+    case OPT_Wswitch_enum:
+      warn_switch_enum = value;
+      break;
+
+    case OPT_Wsystem_headers:
+      warn_system_headers = value;
+      break;
+
+    case OPT_Wuninitialized:
+      warn_uninitialized = value;
+      break;
+
+    case OPT_Wunreachable_code:
+      warn_notreached = value;
+      break;
+
     case OPT_Wunused:
       set_Wunused (value);
+      break;
+
+    case OPT_Wunused_function:
+      warn_unused_function = value;
+      break;
+
+    case OPT_Wunused_label:
+      warn_unused_label = value;
+      break;
+
+    case OPT_Wunused_parameter:
+      warn_unused_parameter = value;
+      break;
+
+    case OPT_Wunused_value:
+      warn_unused_value = value;
+      break;
+
+    case OPT_Wunused_variable:
+      warn_unused_variable = value;
       break;
 
     case OPT_aux_info:
@@ -349,6 +518,10 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_dumpbase:
       dump_base_name = arg;
+      break;
+
+    case OPT_g:
+      decode_g_option (arg);
       break;
 
     case OPT_m:
@@ -380,7 +553,7 @@ common_handle_option (size_t scode, const char *arg,
       break;
 
     case OPT_w:
-      inhibit_warnings = 1;
+      inhibit_warnings = true;
       break;      
     }
 
