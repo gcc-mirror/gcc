@@ -913,7 +913,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)	\
   gen_rtx (REG,							\
-	   (INTEGRAL_MODE_P (TYPE_MODE (VALTYPE))		\
+	   (INTEGRAL_TYPE_P (VALTYPE)				\
 	    && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD) 	\
 	   ? word_mode : TYPE_MODE (VALTYPE),			\
 	   ((TARGET_FPREGS					\
