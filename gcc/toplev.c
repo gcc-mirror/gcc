@@ -2080,20 +2080,23 @@ pipe_closed (signo)
 
 /* Strip off a legitimate source ending from the input string NAME of
    length LEN.  Rather than having to know the names used by all of
-   our front ends, we strip off an ending of a period followed by one,
-   two, or three characters.  */
+   our front ends, we strip off an ending of a period followed by
+   up to five characters.  (Java uses ".class".) */
 
 void
 strip_off_ending (name, len)
      char *name;
      int len;
 {
-  if (len > 2 && name[len - 2] == '.')
-    name[len - 2] = '\0';
-  else if (len > 3 && name[len - 3] == '.')
-    name[len - 3] = '\0';
-  else if (len > 4 && name[len - 4] == '.')
-    name[len - 4] = '\0';
+  int i;
+  for (i = 2;  i < 6 && len > i;  i++)
+    {
+      if (name[len - i] == '.')
+	{
+	  name[len - i] = '\0';
+	  break;
+	}
+    }
 }
 
 /* Output a quoted string.  */
