@@ -40,7 +40,7 @@ alpha port		Richard Henderson	rth@redhat.com
 arm port		Nick Clifton		nickc@redhat.com
 arm port		Richard Earnshaw	rearnsha@arm.com
 avr port		Denis Chertykov		denisc@overta.ru
-avr port		Marek Michalkiewicz	marekm@linux.org.pl
+avr port		Marek Michalkiewicz	marekm@amelek.gda.pl
 c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 cris port		Hans-Peter Nilsson	hp@axis.com
 fr30 port		Nick Clifton		nickc@redhat.com
