@@ -369,6 +369,9 @@ case "${target}" in
         *) ;;
     esac
     ;;
+  *-*-uclinux*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss target-rda ${libgcj}"
+    ;;
   *-*-vxworks*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss target-libiberty ${libgcj}"
     ;;
