@@ -1408,6 +1408,16 @@ do
   fi
 done
 
+# This file on SunOS 4 has a very large macro.  When the sed loop
+# tries pull it in, it overflows the pattern space size of the SunOS
+# sed (GNU sed does not have this problem).  Since the file does not
+# require fixing, we remove it from the fixed directory.
+file=sundev/ipi_error.h
+if [ -r ${LIB}/$file ]; then
+  echo "Removing incorrect fix to SunOS <sundev/ipi_error.h>"
+  rm -f ${LIB}/$file
+fi
+
 echo 'Removing unneeded directories:'
 cd $LIB
 files=`find . -type d -print | sort -r`
