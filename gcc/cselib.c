@@ -49,7 +49,7 @@ static struct elt_loc_list *new_elt_loc_list PARAMS ((struct elt_loc_list *,
 static void unchain_one_value		PARAMS ((cselib_val *));
 static void unchain_one_elt_list	PARAMS ((struct elt_list **));
 static void unchain_one_elt_loc_list	PARAMS ((struct elt_loc_list **));
-static void clear_table			PARAMS ((int));
+static void clear_table			PARAMS ((void));
 static int discard_useless_locs		PARAMS ((void **, void *));
 static int discard_useless_values	PARAMS ((void **, void *));
 static void remove_useless_values	PARAMS ((void));
@@ -224,17 +224,12 @@ unchain_one_value (v)
    which are known to have been used.  */
 
 static void
-clear_table (clear_all)
-     int clear_all;
+clear_table ()
 {
   unsigned int i;
 
-  if (clear_all)
-    for (i = 0; i < cselib_nregs; i++)
-      REG_VALUES (i) = 0;
-  else
-    for (i = 0; i < VARRAY_ACTIVE_SIZE (used_regs); i++)
-      REG_VALUES (VARRAY_UINT (used_regs, i)) = 0;
+  for (i = 0; i < VARRAY_ACTIVE_SIZE (used_regs); i++)
+    REG_VALUES (VARRAY_UINT (used_regs, i)) = 0;
 
   max_value_regs = 0;
 
@@ -1359,7 +1354,7 @@ cselib_process_insn (insn)
 	  && GET_CODE (PATTERN (insn)) == ASM_OPERANDS
 	  && MEM_VOLATILE_P (PATTERN (insn))))
     {
-      clear_table (0);
+      clear_table ();
       return;
     }
 
@@ -1437,8 +1432,6 @@ cselib_init ()
     {
       reg_values = reg_values_old;
       used_regs = used_regs_old;
-      VARRAY_CLEAR (reg_values);
-      VARRAY_CLEAR (used_regs);
     }
   else
     {
@@ -1447,7 +1440,6 @@ cselib_init ()
     }
   hash_table = htab_create_ggc (31, get_value_hash, entry_and_rtx_equal_p, 
 				NULL);
-  clear_table (1);
   cselib_current_insn_in_libcall = false;
 }
 
@@ -1456,6 +1448,7 @@ cselib_init ()
 void
 cselib_finish ()
 {
+  clear_table ();
   reg_values_old = reg_values;
   reg_values = 0;
   used_regs_old = used_regs;

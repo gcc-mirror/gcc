@@ -1327,19 +1327,17 @@ set_noop_p (set)
   rtx src = SET_SRC (set);
   rtx dst = SET_DEST (set);
 
-  if (side_effects_p (src) || side_effects_p (dst))
-    return 0;
-
-  if (GET_CODE (dst) == MEM && GET_CODE (src) == MEM)
-    return rtx_equal_p (dst, src);
-
   if (dst == pc_rtx && src == pc_rtx)
     return 1;
+
+  if (GET_CODE (dst) == MEM && GET_CODE (src) == MEM)
+    return rtx_equal_p (dst, src) && !side_effects_p (dst);
 
   if (GET_CODE (dst) == SIGN_EXTRACT
       || GET_CODE (dst) == ZERO_EXTRACT)
     return rtx_equal_p (XEXP (dst, 0), src)
-	   && ! BYTES_BIG_ENDIAN && XEXP (dst, 2) == const0_rtx;
+	   && ! BYTES_BIG_ENDIAN && XEXP (dst, 2) == const0_rtx
+	   && !side_effects_p (src);
 
   if (GET_CODE (dst) == STRICT_LOW_PART)
     dst = XEXP (dst, 0);
@@ -2018,14 +2016,19 @@ rtx
 find_reg_equal_equiv_note (insn)
      rtx insn;
 {
-  rtx note;
+  rtx link;
 
-  if (single_set (insn) == 0)
+  if (!INSN_P (insn))
     return 0;
-  else if ((note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
-    return note;
-  else
-    return find_reg_note (insn, REG_EQUAL, NULL_RTX);
+  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+    if (REG_NOTE_KIND (link) == REG_EQUAL
+	|| REG_NOTE_KIND (link) == REG_EQUIV)
+      {
+	if (single_set (insn) == 0)
+	  return 0;
+	return link;
+      }
+  return NULL;
 }
 
 /* Return true if DATUM, or any overlap of DATUM, of kind CODE is found
