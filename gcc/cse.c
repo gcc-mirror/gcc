@@ -2564,9 +2564,12 @@ find_best_addr (insn, loc)
      rtx insn;
      rtx *loc;
 {
-  struct table_elt *elt, *p;
+  struct table_elt *elt;
   rtx addr = *loc;
+#ifdef ADDRESS_COST
+  struct table_elt *p;
   int found_better = 1;
+#endif
   int save_do_not_record = do_not_record;
   int save_hash_arg_in_memory = hash_arg_in_memory;
   int save_hash_arg_in_struct = hash_arg_in_struct;

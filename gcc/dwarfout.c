@@ -362,7 +362,9 @@ static inline void body_begin_attribute	PROTO((char *));
 static inline void body_end_attribute	PROTO((char *));
 static inline void language_attribute	PROTO((unsigned));
 static inline void member_attribute	PROTO((tree));
+#if 0
 static inline void string_length_attribute PROTO((tree));
+#endif
 static inline void comp_dir_attribute	PROTO((char *));
 static inline void sf_names_attribute	PROTO((char *));
 static inline void src_info_attribute	PROTO((char *));
@@ -2875,6 +2877,7 @@ member_attribute (context)
     }
 }
 
+#if 0
 static inline void
 string_length_attribute (upper_bound)
      register tree upper_bound;
@@ -2890,6 +2893,7 @@ string_length_attribute (upper_bound)
   output_bound_representation (upper_bound, 0, 'u');
   ASM_OUTPUT_LABEL (asm_out_file, end_label);
 }
+#endif
 
 static inline void
 comp_dir_attribute (dirname)

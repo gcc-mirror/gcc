@@ -118,7 +118,9 @@ static void delete_from_jump_chain	PROTO((rtx));
 static int delete_labelref_insn		PROTO((rtx, rtx, int));
 static void mark_modified_reg		PROTO((rtx, rtx));
 static void redirect_tablejump		PROTO((rtx, rtx));
+#ifndef HAVE_cc0
 static rtx find_insert_position         PROTO((rtx, rtx));
+#endif
 
 /* Delete no-op jumps and optimize jumps to jumps
    and jumps around jumps.
@@ -4739,6 +4741,7 @@ rtx_equal_for_thread_p (x, y, yinsn)
 }
 
 
+#ifndef HAVE_cc0
 /* Return the insn that NEW can be safely inserted in front of starting at
    the jump insn INSN.  Return 0 if it is not safe to do this jump
    optimization.  Note that NEW must contain a single set. */
@@ -4779,3 +4782,4 @@ find_insert_position (insn, new)
 
   return reg_mentioned_p (SET_DEST (single_set (new)), prev) ? 0 : prev;
 }
+#endif /* !HAVE_cc0 */

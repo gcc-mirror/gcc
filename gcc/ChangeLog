@@ -1,3 +1,21 @@
+1998-05-24  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* m68k.h: Declare more functions used in macros.
+	(REG_CLASS_CONTENTS): Completely embrace initializer.
+	* m68k.md (adddi3, subdi3): Add abort call to avoid warning
+	about returning no value.
+	* cse.c (find_best_addr): Declare p and found_better only if
+	needed.
+	* dbxout.c (dbxout_continue): Define only if DBX_CONTIN_LENGTH > 0.
+	* dwarfout.c (string_length_attribute): #if 0 away.
+	* function.c (expand_function_end): Define varible blktramp only
+	if needed.
+	* jump.c (find_insert_position): Define only if !HAVE_cc0.
+	* loop.c (combine_givs_p): Define variable tem only if needed.
+	* real.c: Comment out unused functions eabs, eround,
+	e{24,53,64,113}toasc and eiinfin.
+
+
 Sat May 23 23:44:53 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
 
 	* Makefile.in (boostrap2-lean, bootstrap3-lean,

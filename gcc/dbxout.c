@@ -326,7 +326,9 @@ static void dbxout_function_end		PROTO((void));
 #endif
 static void dbxout_typedefs		PROTO((tree));
 static void dbxout_type_index		PROTO((tree));
+#if DBX_CONTIN_LENGTH > 0
 static void dbxout_continue		PROTO((void));
+#endif
 static void dbxout_type_fields		PROTO((tree));
 static void dbxout_type_method_1	PROTO((tree, char *));
 static void dbxout_type_methods		PROTO((tree));
@@ -602,6 +604,7 @@ dbxout_type_index (type)
 #endif
 }
 
+#if DBX_CONTIN_LENGTH > 0
 /* Continue a symbol-description that gets too big.
    End one symbol table entry with a double-backslash
    and start a new one, eventually producing something like
@@ -620,6 +623,7 @@ dbxout_continue ()
   fprintf (asmfile, "%s \"", ASM_STABS_OP);
   current_sym_nchars = 0;
 }
+#endif /* DBX_CONTIN_LENGTH > 0 */
 
 /* Subroutine of `dbxout_type'.  Output the type fields of TYPE.
    This must be a separate function because anonymous unions require

@@ -586,14 +586,14 @@ enum reg_class {
 
 #define REG_CLASS_CONTENTS \
 {					\
- 0x00000000,   	/* NO_REGS */		\
- 0x000000ff,	/* DATA_REGS */		\
- 0x0000ff00,	/* ADDR_REGS */		\
- 0x00ff0000,	/* FP_REGS */		\
- 0x0000ffff,	/* GENERAL_REGS */	\
- 0x00ff00ff,	/* DATA_OR_FP_REGS */	\
- 0x00ffff00,    /* ADDR_OR_FP_REGS */   \
- 0x00ffffff,	/* ALL_REGS */		\
+  {0x00000000},  /* NO_REGS */		\
+  {0x000000ff},  /* DATA_REGS */	\
+  {0x0000ff00},  /* ADDR_REGS */	\
+  {0x00ff0000},  /* FP_REGS */		\
+  {0x0000ffff},  /* GENERAL_REGS */	\
+  {0x00ff00ff},  /* DATA_OR_FP_REGS */	\
+  {0x00ffff00},  /* ADDR_OR_FP_REGS */	\
+  {0x00ffffff},  /* ALL_REGS */		\
 }
 
 /* The same information, inverted:
@@ -2121,6 +2121,8 @@ extern int use_return_insn ();
 extern void print_operand_address ();
 extern void print_operand ();
 extern void notice_update_cc ();
+extern void finalize_pic ();
+extern void override_options ();
 
 
 /*
