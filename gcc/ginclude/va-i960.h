@@ -40,6 +40,8 @@ typedef unsigned __gnuc_va_list[2];
 #define	va_start(AP) ((AP)[1] = 0, *(AP) = (unsigned) &va_alist)
 #endif
 
+/* We cast to void * and then to TYPE * because this avoids
+   a warning about increasing the alignment requirement.  */
 #define	va_arg(AP, T)							\
 (									\
   (									\
@@ -48,7 +50,7 @@ typedef unsigned __gnuc_va_list[2];
       : ((AP)[1] = __vpad ((AP)[1], T))					\
   ),									\
 									\
-  *((T *) ((char *) *(AP) + (AP)[1] - __vsiz (T)))			\
+  *((T *) (void *) ((char *) *(AP) + (AP)[1] - __vsiz (T)))		\
 )
 
 void va_end (__gnuc_va_list);		/* Defined in libgcc.a */

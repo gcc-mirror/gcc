@@ -63,13 +63,16 @@ typedef struct
 
 #define	__va_size(TYPE) ((sizeof(TYPE) + 3) >> 2)
 
-#define va_arg(AP,TYPE) \
+/* We cast to void * and then to TYPE * because this avoids
+   a warning about increasing the alignment requirement.  */
+#define va_arg(AP,TYPE)							   \
   ( (AP).__va_arg = (((AP).__va_arg + (1 << (__alignof__(TYPE) >> 3)) - 1) \
-		     & ~((1 << (__alignof__(TYPE) >> 3)) - 1)) \
-    + __va_size(TYPE), \
-    *((TYPE *) ((__va_reg_p(TYPE) && (AP).__va_arg < 8 + __va_size(TYPE) \
-		 ? (AP).__va_reg : (AP).__va_stk) \
-		+ ((AP).__va_arg - __va_size(TYPE)))))
+		     & ~((1 << (__alignof__(TYPE) >> 3)) - 1))		   \
+    + __va_size(TYPE),							   \
+    *((TYPE *) (void *) ((__va_reg_p(TYPE)				   \
+			  && (AP).__va_arg < 8 + __va_size(TYPE)	   \
+			  ? (AP).__va_reg : (AP).__va_stk)		   \
+			 + ((AP).__va_arg - __va_size(TYPE)))))
 
 #define va_end(AP)
 

@@ -62,9 +62,11 @@ typedef void *__gnuc_va_list;
 void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #define va_end(AP)
 
+/* We cast to void * and then to TYPE * because this avoids
+   a warning about increasing the alignment requirement.  */
 #define va_arg(AP, TYPE)						\
  (AP = (char *) (AP) + __va_rounded_size (TYPE),			\
-  *((TYPE *) ((char *) (AP) - __va_rounded_size (TYPE))))
+  *((TYPE *) (void *) ((char *) (AP) - __va_rounded_size (TYPE))))
 #endif /* _STDARG_H */
 
 #endif /* not alpha */

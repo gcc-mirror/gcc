@@ -49,11 +49,13 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #define va_arg(list, mode) ((mode *)(list += __va_rounded_size(mode)))[-1]
 
 #else		/* !lint */
-#define va_arg(__AP, __type)						\
-  ((__type *)(__AP = (char *) ((__alignof(__type) > 4			\
-				? ((int)__AP + 8 - 1) & -8		\
-				: ((int)__AP + 4 - 1) & -4) 		\
-			   + __va_rounded_size(__type))))[-1]
+/* We cast to void * and then to TYPE * because this avoids
+   a warning about increasing the alignment requirement.  */
+#define va_arg(__AP, __type)						    \
+  ((__type *) (void *) (__AP = (char *) ((__alignof(__type) > 4		    \
+					  ? ((int)__AP + 8 - 1) & -8	    \
+					  : ((int)__AP + 4 - 1) & -4)	    \
+					 + __va_rounded_size(__type))))[-1]
 #endif		/* lint */
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
