@@ -2380,6 +2380,11 @@ duplicate_loop_exit_test (loop_start)
 	 is a NOTE_INSN_LOOP_BEG because this means we have a nested loop
 	 is a NOTE_INSN_BLOCK_{BEG,END} because duplicating these notes
 	      are not valid
+	    
+
+     We also do not do this if we find an insn with ASM_OPERANDS.  While
+     this restriction should not be necessary, copying an insn with
+     ASM_OPERANDS can confuse asm_noperands in some cases.
 
      Also, don't do this if the exit code is more than 20 insns.  */
 
@@ -2422,7 +2427,8 @@ duplicate_loop_exit_test (loop_start)
 	case INSN:
 	  if (++num_insns > 20
 	      || find_reg_note (insn, REG_RETVAL, NULL_RTX)
-	      || find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+	      || find_reg_note (insn, REG_LIBCALL, NULL_RTX)
+	      || asm_noperands (PATTERN (insn)))
 	    return 0;
 	  break;
 	default:
