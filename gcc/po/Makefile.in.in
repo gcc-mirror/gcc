@@ -69,7 +69,7 @@ INSTOBJEXT = @INSTOBJEXT@
 	$(MSGFMT) -o $@ $<
 
 .po.gmo:
-	file=$(srcdir)/`echo $* | sed 's,.*/,,'`.gmo \
+	file=`echo $* | sed 's,.*/,,'`.gmo \
 	  && rm -f $$file && $(GMSGFMT) -o $$file $<
 
 .po.cat:
@@ -79,7 +79,7 @@ INSTOBJEXT = @INSTOBJEXT@
 
 all: all-@USE_NLS@
 
-all-yes: $(srcdir)/cat-id-tbl.c $(CATALOGS)
+all-yes: $(CATALOGS) @MAINT@ $(srcdir)/cat-id-tbl.c 
 all-no:
 
 $(srcdir)/$(PACKAGE).pot: $(POTFILES)

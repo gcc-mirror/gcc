@@ -1,3 +1,12 @@
+2000-05-31  Philipp Thomas  <pthomas@suse.de>
+
+	* configure.in (enable-nls): Enable if build == host, i.e. when 
+	not building a canadian cross compiler.
+	(enable-maintainer-mode): Added for use with i18n.
+	* aclocal.m4 (AM_GNU_GETTEXT): Only build catalogs that are a
+	cross section of ALL_LINGUAS and LINGUAS.
+	* configure: Rebuild.
+
 2000-05-31  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/check.tpl: rework to use test result tree
