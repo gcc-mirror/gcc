@@ -1,0 +1,103 @@
+<HTML>
+<HEAD>
+  <H1>
+  Notes on the locale implementation.
+  </H1>
+</HEAD>
+<I>
+prepared by Benjamin Kosnik (bkoz@redhat.com) on September 15, 2000
+</I>
+
+<P>
+<H2>
+1. Abstract
+</H2>
+<P>
+</P>
+
+<P>
+<H2>
+2. What the standard says
+</H2>
+
+
+<P>
+<H2>
+3. Problems with &quot;C&quot; locales : global locales, termination.
+</H2>
+
+<P>
+For the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt; ,
+conversions are made between the internal character set (always UCS4
+on GNU/Linux) and whatever the currently selected locale for the
+LC_CTYPE category implements.
+
+<P>
+<H2>
+4. Design
+</H2>
+The two required specializations are implemented as follows:
+
+
+<P>
+<H2>
+5.  Examples
+</H2>
+
+<pre>
+  typedef ctype<char> cctype;
+</pre>
+
+More information can be found in the following testcases:
+<UL>
+<LI> testsuite/22_locale/ctype_char_members.cc 
+<LI> testsuite/22_locale/ctype_wchar_t_members.cc 
+</UL>
+
+<P>
+<H2>
+6.  Unresolved Issues
+</H2>
+
+<UL>
+	<LI> locale -a displays available locales on linux
+
+	<LI> locale initialization: at what point does _S_classic,
+	_S_global get initialized? Can named locales assume this
+	initialization has already taken place?
+</UL>
+
+
+<P>
+<H2>
+7. Acknowledgments
+</H2>
+
+<P>
+<H2>
+8. Bibliography / Referenced Documents
+</H2>
+
+Drepper, Ulrich, GNU libc (glibc) 2.2 manual. In particular, Chapters &quot;6. Character Set Handling&quot; and &quot;7 Locales and Internationalization&quot;
+
+<P>
+Drepper, Ulrich, Numerous, late-night email correspondence
+
+<P>
+ISO/IEC 14882:1998 Programming languages - C++
+
+<P>
+ISO/IEC 9899:1999 Programming languages - C
+
+<P>
+Langer, Angelika and Klaus Kreft, Standard C++ IOStreams and Locales, Advanced Programmer's Guide and Reference, Addison Wesley Longman, Inc. 2000
+
+<P>
+Stroustrup, Bjarne, Appendix D, The C++ Programming Language, Special Edition, Addison Wesley, Inc. 2000
+
+<P>
+System Interface Definitions, Issue 6 (IEEE Std. 1003.1-200x)
+The Open Group/The Institute of Electrical and Electronics Engineers, Inc.
+http://www.opennc.org/austin/docreg.html
+
+
