@@ -216,7 +216,7 @@ static HARD_REG_SET *block_out_reg_set;
    later, but only to look up an insn that is the head or tail of some
    block.  life_analysis and the stack register conversion process can
    add insns within a block. */
-static short *block_number;
+static int *block_number;
 
 /* This is the register file for all register after conversion */
 static rtx FP_mode_reg[FIRST_PSEUDO_REGISTER][(int) MAX_MACHINE_MODE];
@@ -226,7 +226,7 @@ static rtx FP_mode_reg[FIRST_PSEUDO_REGISTER][(int) MAX_MACHINE_MODE];
 
 #define BLOCK_NUM(INSN)  \
   (((INSN_UID (INSN) > max_uid)	\
-    ? (short *)(abort() , 0)		\
+    ? (int *)(abort() , 0)		\
     : block_number)[INSN_UID (INSN)])
 
 extern rtx gen_jump ();
@@ -366,7 +366,7 @@ reg_to_stack (first, file)
   bzero (block_stack_in, blocks * sizeof (struct stack_def));
   bzero (block_out_reg_set, blocks * sizeof (HARD_REG_SET));
 
-  block_number = (short *) alloca ((max_uid + 1) * sizeof (short));
+  block_number = (int *) alloca ((max_uid + 1) * sizeof (int));
 
   find_blocks (first);
   stack_reg_life_analysis (first);
