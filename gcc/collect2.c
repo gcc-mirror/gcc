@@ -226,6 +226,7 @@ struct head
 
 enum pass {
   PASS_FIRST,				/* without constructors */
+  PASS_OBJ,				/* individual objects */
   PASS_LIB,			        /* looking for shared libraries */
   PASS_SECOND				/* with constructors linked in */
 };
@@ -249,15 +250,19 @@ static int   temp_filename_length;	/* Length of temp_filename */
 static char *temp_filename;		/* Base of temp filenames */
 static char *c_file;			/* <xxx>.c for constructor/destructor list. */
 static char *o_file;			/* <xxx>.o for constructor/destructor list. */
+static char *export_file;	        /* <xxx>.x for AIX export list. */
+static int  auto_export = 1;	        /* true if exporting everything. */
 char *ldout;				/* File for ld errors.  */
 static char *output_file;		/* Output file for ld.  */
 static char *nm_file_name;		/* pathname of nm */
 static char *ldd_file_name;		/* pathname of ldd (or equivalent) */
 static char *strip_file_name;		/* pathname of strip */
 char *c_file_name;		        /* pathname of gcc */
+static char *initname, *fininame;	/* names of init and fini funcs */
 
 static struct head constructors;	/* list of constructors found */
 static struct head destructors;		/* list of destructors found */
+static struct head exports;		/* list of exported symbols */
 
 struct obstack temporary_obstack;
 struct obstack permanent_obstack;
@@ -296,6 +301,7 @@ static int is_in_prefix_list	PROTO((struct path_prefix *, char *, int));
 static char *find_a_file	PROTO((struct path_prefix *, char *));
 static void add_prefix		PROTO((struct path_prefix *, char *));
 static void prefix_from_env	PROTO((char *, struct path_prefix *));
+static void prefix_from_string	PROTO((char *, struct path_prefix *));
 static void do_wait		PROTO((char *));
 static void fork_execute	PROTO((char *, char **));
 static void maybe_unlink	PROTO((char *));
@@ -303,6 +309,7 @@ static void add_to_list		PROTO((struct head *, char *));
 static void write_list		PROTO((FILE *, char *, struct id *));
 static void write_list_with_asm PROTO((FILE *, char *, struct id *));
 static void write_c_file	PROTO((FILE *, char *));
+static void write_export_file	PROTO((FILE *));
 static void scan_prog_file	PROTO((char *, enum pass));
 static void scan_libraries	PROTO((char *));
 
@@ -368,6 +375,9 @@ collect_exit (status)
 
   if (o_file != 0 && o_file[0])
     maybe_unlink (o_file);
+
+  if (export_file != 0 && export_file[0])
+    maybe_unlink (export_file);
 
   if (ldout != 0 && ldout[0])
     {
@@ -860,36 +870,42 @@ prefix_from_env (env, pprefix)
   char *p = getenv (env);
 
   if (p)
+    prefix_from_string (p, pprefix);
+}
+
+static void
+prefix_from_string (p, pprefix)
+     char *p;
+     struct path_prefix *pprefix;
+{
+  char *startp, *endp;
+  char *nstore = (char *) xmalloc (strlen (p) + 3);
+
+  startp = endp = p;
+  while (1)
     {
-      char *startp, *endp;
-      char *nstore = (char *) xmalloc (strlen (p) + 3);
-
-      startp = endp = p;
-      while (1)
+      if (*endp == PATH_SEPARATOR || *endp == 0)
 	{
-	  if (*endp == PATH_SEPARATOR || *endp == 0)
+	  strncpy (nstore, startp, endp-startp);
+	  if (endp == startp)
 	    {
-	      strncpy (nstore, startp, endp-startp);
-	      if (endp == startp)
-		{
-		  strcpy (nstore, "./");
-		}
-	      else if (endp[-1] != '/')
-		{
-		  nstore[endp-startp] = '/';
-		  nstore[endp-startp+1] = 0;
-		}
-	      else
-		nstore[endp-startp] = 0;
-
-	      add_prefix (pprefix, nstore);
-	      if (*endp == 0)
-		break;
-	      endp = startp = endp + 1;
+	      strcpy (nstore, "./");
+	    }
+	  else if (endp[-1] != '/')
+	    {
+	      nstore[endp-startp] = '/';
+	      nstore[endp-startp+1] = 0;
 	    }
 	  else
-	    endp++;
+	    nstore[endp-startp] = 0;
+
+	  add_prefix (pprefix, nstore);
+	  if (*endp == 0)
+	    break;
+	  endp = startp = endp + 1;
 	}
+      else
+	endp++;
     }
 }
 
@@ -918,16 +934,16 @@ main (argc, argv)
   char *gstrip_suffix	= "gstrip";
   char *full_gstrip_suffix = gstrip_suffix;
   char *arg;
-  FILE *outf;
+  FILE *outf, *exportf;
   char *ld_file_name;
   char *collect_name;
   char *collect_names;
   char *p;
   char **c_argv;
   char **c_ptr;
-  char **ld1_argv	= (char **) xcalloc (sizeof (char *), argc+2);
+  char **ld1_argv	= (char **) xcalloc (sizeof (char *), argc+3);
   char **ld1		= ld1_argv;
-  char **ld2_argv	= (char **) xcalloc (sizeof (char *), argc+5);
+  char **ld2_argv	= (char **) xcalloc (sizeof (char *), argc+6);
   char **ld2		= ld2_argv;
   char **object_lst	= (char **) xcalloc (sizeof (char *), argc);
   char **object		= object_lst;
@@ -1183,10 +1199,12 @@ main (argc, argv)
   choose_temp_base ();
   c_file = xcalloc (temp_filename_length + sizeof (".c"), 1);
   o_file = xcalloc (temp_filename_length + sizeof (".o"), 1);
+  export_file = xmalloc (temp_filename_length + sizeof (".x"));
   ldout = xmalloc (temp_filename_length + sizeof (".ld"));
   sprintf (ldout, "%s.ld", temp_filename);
   sprintf (c_file, "%s.c", temp_filename);
   sprintf (o_file, "%s.o", temp_filename);
+  sprintf (export_file, "%s.x", temp_filename);
   *c_ptr++ = c_file_name;
   *c_ptr++ = "-c";
   *c_ptr++ = "-o";
@@ -1220,6 +1238,14 @@ main (argc, argv)
 		  ld2--;
 		}
 	      break;
+
+#ifdef COLLECT_EXPORT_LIST
+	    case 'b':
+	      if (!strncmp (arg, "-bE:", 4)
+		  || !strncmp (arg, "-bexport:", 9))
+		auto_export = 0;
+	      break;
+#endif
 
 	    case 'l':
 	      if (first_file)
@@ -1303,6 +1329,26 @@ main (argc, argv)
 #endif
     }
 
+#ifdef COLLECT_EXPORT_LIST
+  /* The AIX linker will discard static constructors in object files if
+     nothing else in the file is referenced, so look at them first.  */
+  while (object_lst < object)
+    scan_prog_file (*object_lst++, PASS_OBJ);
+
+  {
+    char *buf = alloca (strlen (export_file) + 5);
+    sprintf (buf, "-bE:%s", export_file);
+    *ld1++ = buf;
+    *ld2++ = buf;
+    exportf = fopen (export_file, "w");
+    if (exportf == (FILE *)0)
+      fatal_perror ("%s", export_file);
+    write_export_file (exportf);
+    if (fclose (exportf))
+      fatal_perror ("closing %s", export_file);
+  }
+#endif
+
   *c_ptr++ = c_file;
   *object = *c_ptr = *ld1 = *ld2 = (char *)0;
 
@@ -1374,13 +1420,6 @@ main (argc, argv)
      and destructors to call.
      Write the constructor and destructor tables to a .s file and reload. */
 
-#ifdef COLLECT_SCAN_OBJECTS
-  /* The AIX linker will discard static constructors in object files if
-     nothing else in the file is referenced, so look at them first.  */
-  while (object_lst < object)
-    scan_prog_file (*object_lst++, PASS_FIRST);
-#endif
-
   scan_prog_file (output_file, PASS_FIRST);
 
 #ifdef SCAN_LIBRARIES
@@ -1424,12 +1463,31 @@ main (argc, argv)
   if (fclose (outf))
     fatal_perror ("closing %s", c_file);
 
+#ifdef COLLECT_EXPORT_LIST
+  if (shared_obj)
+    {
+      add_to_list (&exports, initname);
+      add_to_list (&exports, fininame);
+      exportf = fopen (export_file, "w");
+      if (exportf == (FILE *)0)
+	fatal_perror ("%s", export_file);
+      write_export_file (exportf);
+      if (fclose (exportf))
+	fatal_perror ("closing %s", export_file);
+    }
+#endif
+
   if (debug)
     {
       fprintf (stderr, "\n========== output_file = %s, c_file = %s\n",
 	       output_file, c_file);
       write_c_file (stderr, "stderr");
       fprintf (stderr, "========== end of c_file\n\n");
+#ifdef COLLECT_EXPORT_LIST
+      fprintf (stderr, "\n========== export_file = %s\n", export_file);
+      write_export_file (stderr);
+      fprintf (stderr, "========== end of export_file\n\n");
+#endif
     }
 
   /* Assemble the constructor and destructor tables.
@@ -1444,6 +1502,7 @@ main (argc, argv)
 
   maybe_unlink (c_file);
   maybe_unlink (o_file);
+  maybe_unlink (export_file);
   return 0;
 }
 
@@ -1653,7 +1712,6 @@ write_c_file_stat (stream, name)
      char *name;
 {
   char *prefix, *p, *q;
-  char *initname, *fininame;
 
   /* Figure out name of output_file, stripping off .so version.  */
   p = rindex (output_file, '/');
@@ -1736,9 +1794,6 @@ write_c_file_stat (stream, name)
 
   fprintf (stream, "void _GLOBAL__DI() {\n\t%s();\n}\n", initname);
   fprintf (stream, "void _GLOBAL__DD() {\n\t%s();\n}\n", fininame);
-
-  free (initname);
-  free (fininame);
 }
 
 /* Write the constructor/destructor tables. */
@@ -1779,6 +1834,15 @@ write_c_file (stream, name)
     write_c_file_stat (stream, name);
   else
     write_c_file_glob (stream, name);
+}
+
+static void
+write_export_file (stream)
+     FILE *stream;
+{
+  struct id *list = exports.first;
+  for (; list; list = list->next)
+    fprintf (stream, "%s\n", list->name);
 }
 
 #ifdef OBJECT_FORMAT_NONE
@@ -2395,7 +2459,7 @@ scan_prog_file (prog_name, which_pass)
   LDFILE *ldptr = NULL;
   int sym_index, sym_count;
 
-  if (which_pass != PASS_FIRST)
+  if (which_pass != PASS_FIRST && which_pass != PASS_OBJ)
     return;
 
   if ((ldptr = ldopen (prog_name, ldptr)) == NULL)
@@ -2423,9 +2487,10 @@ scan_prog_file (prog_name, which_pass)
 	      if ((name = ldgetname (ldptr, &symbol)) == NULL)
 		continue;		/* should never happen */
 
-#ifdef _AIX
-	      /* All AIX function names begin with a dot. */
-	      if (*name++ != '.')
+#ifdef XCOFF_DEBUGGING_INFO
+	      /* All AIX function names have a duplicate entry beginning
+		 with a dot. */
+	      if (*name == '.')
 		continue;
 #endif
 
@@ -2433,13 +2498,19 @@ scan_prog_file (prog_name, which_pass)
 		{
 		case 1:
 		  add_to_list (&constructors, name);
+		  if (which_pass == PASS_OBJ)
+		    add_to_list (&exports, name);
 		  break;
 
 		case 2:
 		  add_to_list (&destructors, name);
+		  if (which_pass == PASS_OBJ)
+		    add_to_list (&exports, name);
 		  break;
 
 		default:		/* not a constructor or destructor */
+		  if (which_pass == PASS_OBJ && auto_export)
+		    add_to_list (&exports, name);
 		  continue;
 		}
 
