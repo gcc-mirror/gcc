@@ -576,7 +576,7 @@ static void compute_set_hash_table    PROTO ((rtx));
 static void alloc_expr_hash_table     PROTO ((int));
 static void free_expr_hash_table      PROTO ((void));
 static void compute_expr_hash_table   PROTO ((rtx));
-static void dump_hash_table           PROTO ((FILE *, char *, struct expr **, int, int));
+static void dump_hash_table           PROTO ((FILE *, const char *, struct expr **, int, int));
 static struct expr *lookup_expr       PROTO ((rtx));
 static struct expr *lookup_set        PROTO ((int, rtx));
 static struct expr *next_set          PROTO ((int, struct expr *));
@@ -1910,7 +1910,7 @@ hash_scan_insn (insn, set_p, in_libcall_block)
 static void
 dump_hash_table (file, name, table, table_size, total_size)
      FILE *file;
-     char *name;
+     const char *name;
      struct expr **table;
      int table_size, total_size;
 {

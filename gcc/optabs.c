@@ -21,13 +21,16 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+
+/* Include insn-config.h before expr.h so that HAVE_conditional_move
+   is properly defined. */
+#include "insn-config.h"
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
 #include "insn-flags.h"
 #include "insn-codes.h"
 #include "expr.h"
-#include "insn-config.h"
 #include "recog.h"
 #include "reload.h"
 
@@ -248,9 +251,9 @@ static enum insn_code can_float_p PROTO((enum machine_mode, enum machine_mode,
 					 int));
 static rtx ftruncify	PROTO((rtx));
 static optab init_optab	PROTO((enum rtx_code));
-static void init_libfuncs PROTO((optab, int, int, char *, int));
-static void init_integral_libfuncs PROTO((optab, char *, int));
-static void init_floating_libfuncs PROTO((optab, char *, int));
+static void init_libfuncs PROTO((optab, int, int, const char *, int));
+static void init_integral_libfuncs PROTO((optab, const char *, int));
+static void init_floating_libfuncs PROTO((optab, const char *, int));
 #ifdef HAVE_conditional_trap
 static void init_traps PROTO((void));
 #endif
@@ -4085,7 +4088,7 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
     register optab optable;
     register int first_mode;
     register int last_mode;
-    register char *opname;
+    register const char *opname;
     register int suffix;
 {
   register int mode;
@@ -4099,7 +4102,7 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
       register char *libfunc_name
 	= (char *) xmalloc (2 + opname_len + mname_len + 1 + 1);
       register char *p;
-      register char *q;
+      register const char *q;
 
       p = libfunc_name;
       *p++ = '_';
@@ -4123,7 +4126,7 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
 static void
 init_integral_libfuncs (optable, opname, suffix)
     register optab optable;
-    register char *opname;
+    register const char *opname;
     register int suffix;
 {
   init_libfuncs (optable, SImode, TImode, opname, suffix);
@@ -4137,7 +4140,7 @@ init_integral_libfuncs (optable, opname, suffix)
 static void
 init_floating_libfuncs (optable, opname, suffix)
     register optab optable;
-    register char *opname;
+    register const char *opname;
     register int suffix;
 {
   init_libfuncs (optable, SFmode, TFmode, opname, suffix);

@@ -1,3 +1,38 @@
+Sat Mar  6 07:49:23 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-aux-info.c (data_type, affix_data_type, gen_decl, 
+ 	gen_formal_list_for_type, gen_formal_list_for_func_def, gen_type):
+	Qualify a char* with the `const' keyword.
+
+	* c-common.c (declare_hidden_char_array, add_attribute, if_elt,
+ 	declare_function_name, decl_attributes, format_char_info,
+ 	check_format_info, binary_op_error): Likewise.
+	
+	* cexp.y (yyerror, error, pedwarn, warning, token): Likewise.
+
+	* gcse.c (dump_hash_table): Likewise.
+
+	* integrate.c (function_cannot_inline_p): Likewise
+
+	* optabs.c: Include insn-config.h earlier.
+	(init_libfuncs, init_integral_libfuncs, init_floating_libfuncs):
+	Qualify a char* with the `const' keyword.
+	
+	* real.c (asctoe24, asctoe53, asctoe64, asctoe113, asctoe,
+ 	asctoeg, mtherr, ereal_atof): Likewise.
+
+	* real.h (ereal_atof): Likewise.
+
+	* sbitmap.c (dump_sbitmap_vector): Likewise.
+
+	* sbitmap.h (dump_sbitmap_vector): Likewise.
+
+	* stmt.c (nesting, n_occurrences, expand_start_case): Likewise.
+
+	* toplev.c (rest_of_compilation): Likewise.
+
+	* tree.h (function_cannot_inline_p, expand_start_case): Likewise.
+	
 Fri Mar  5 23:16:42 1999  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.h (ASM_OUTPUT_REG_{PUSH,POP}): Add 64-bit support and do

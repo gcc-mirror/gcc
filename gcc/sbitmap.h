@@ -90,7 +90,7 @@ do {									\
 #define sbitmap_vector_free(vec)	free(vec)
 
 extern void dump_sbitmap PROTO ((FILE *, sbitmap));
-extern void dump_sbitmap_vector PROTO ((FILE *, char *, char *,
+extern void dump_sbitmap_vector PROTO ((FILE *, const char *, const char *,
 					sbitmap *, int));
 
 extern sbitmap sbitmap_alloc PROTO ((int));

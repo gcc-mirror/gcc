@@ -454,7 +454,7 @@ dump_sbitmap (file, bmap)
 void
 dump_sbitmap_vector (file, title, subtitle, bmaps, n_maps)
      FILE *file;
-     char *title, *subtitle;
+     const char *title, *subtitle;
      sbitmap *bmaps;
      int n_maps;
 {

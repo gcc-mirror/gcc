@@ -1805,7 +1805,7 @@ extern tree decl_type_context		PROTO((tree));
    Otherwise return a warning message with a single %s
    for the function's name.  */
 
-extern char *function_cannot_inline_p 	PROTO((tree));
+extern const char *function_cannot_inline_p 	PROTO((tree));
 
 /* Return 1 if EXPR is the real constant zero.  */
 extern int real_zerop PROTO((tree));
@@ -1946,7 +1946,7 @@ extern tree last_cleanup_this_contour		PROTO((void));
 extern int expand_dhc_cleanup			PROTO((tree));
 extern int expand_dcc_cleanup			PROTO((tree));
 extern void expand_start_case			PROTO((int, tree, tree,
-						       char *));
+						       const char *));
 extern void expand_end_case			PROTO((tree));
 extern int pushcase				PROTO((tree,
 						       tree (*) (tree, tree),

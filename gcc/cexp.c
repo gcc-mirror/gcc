@@ -46,7 +46,8 @@ struct arglist {
 HOST_WIDEST_INT parse_c_expression PROTO((char *, int));
 
 static int yylex PROTO((void));
-static void yyerror PVPROTO((char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+static void yyerror PVPROTO((const char *, ...))
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 static HOST_WIDEST_INT expression_value;
 #ifdef TEST_EXP_READER
 static int expression_signedp;
@@ -131,9 +132,9 @@ struct constant;
 HOST_WIDEST_INT parse_escape PROTO((char **, HOST_WIDEST_INT));
 int check_assertion PROTO((U_CHAR *, int, int, struct arglist *));
 struct hashnode *lookup PROTO((U_CHAR *, int, int));
-void error PVPROTO((char *, ...)) ATTRIBUTE_PRINTF_1;
-void pedwarn PVPROTO((char *, ...)) ATTRIBUTE_PRINTF_1;
-void warning PVPROTO((char *, ...)) ATTRIBUTE_PRINTF_1;
+void error PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
+void pedwarn PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
+void warning PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
 
 static int parse_number PROTO((int));
 static HOST_WIDEST_INT left_shift PROTO((struct constant *, unsigned HOST_WIDEST_INT));
@@ -144,7 +145,7 @@ static void integer_overflow PROTO((void));
 #define SIGNED (~0)
 #define UNSIGNED 0
 
-#line 152 "cexp.y"
+#line 153 "cexp.y"
 typedef union {
   struct constant {HOST_WIDEST_INT value; int signedp;} integer;
   struct name {U_CHAR *address; int length;} name;
@@ -225,10 +226,10 @@ static const short yyrhs[] = {    35,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   182,   192,   193,   200,   205,   208,   210,   213,   217,   219,
-   224,   229,   242,   259,   272,   278,   284,   290,   296,   299,
-   302,   309,   316,   323,   330,   333,   336,   339,   342,   345,
-   348,   351,   353,   356,   359,   361,   363,   371,   373,   386
+   183,   193,   194,   201,   206,   209,   211,   214,   218,   220,
+   225,   230,   243,   260,   273,   279,   285,   291,   297,   300,
+   303,   310,   317,   324,   331,   334,   337,   340,   343,   346,
+   349,   352,   354,   357,   360,   362,   364,   372,   374,   387
 };
 #endif
 
@@ -832,7 +833,7 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 183 "cexp.y"
+#line 184 "cexp.y"
 {
 		  expression_value = yyvsp[0].integer.value;
 #ifdef TEST_EXP_READER
@@ -841,55 +842,55 @@ case 1:
 		;
     break;}
 case 3:
-#line 194 "cexp.y"
+#line 195 "cexp.y"
 { if (pedantic)
 			    pedwarn ("comma operator in operand of `#if'");
 			  yyval.integer = yyvsp[0].integer; ;
     break;}
 case 4:
-#line 201 "cexp.y"
+#line 202 "cexp.y"
 { yyval.integer.value = - yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[0].integer.signedp;
 			  if ((yyval.integer.value & yyvsp[0].integer.value & yyval.integer.signedp) < 0)
 			    integer_overflow (); ;
     break;}
 case 5:
-#line 206 "cexp.y"
+#line 207 "cexp.y"
 { yyval.integer.value = ! yyvsp[0].integer.value;
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 6:
-#line 209 "cexp.y"
+#line 210 "cexp.y"
 { yyval.integer = yyvsp[0].integer; ;
     break;}
 case 7:
-#line 211 "cexp.y"
+#line 212 "cexp.y"
 { yyval.integer.value = ~ yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[0].integer.signedp; ;
     break;}
 case 8:
-#line 214 "cexp.y"
+#line 215 "cexp.y"
 { yyval.integer.value = check_assertion (yyvsp[0].name.address, yyvsp[0].name.length,
 						      0, NULL_PTR);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 9:
-#line 218 "cexp.y"
+#line 219 "cexp.y"
 { keyword_parsing = 1; ;
     break;}
 case 10:
-#line 220 "cexp.y"
+#line 221 "cexp.y"
 { yyval.integer.value = check_assertion (yyvsp[-4].name.address, yyvsp[-4].name.length,
 						      1, yyvsp[-1].keywords);
 			  keyword_parsing = 0;
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 11:
-#line 225 "cexp.y"
+#line 226 "cexp.y"
 { yyval.integer = yyvsp[-1].integer; ;
     break;}
 case 12:
-#line 230 "cexp.y"
+#line 231 "cexp.y"
 { yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp;
 			  if (yyval.integer.signedp)
 			    {
@@ -904,7 +905,7 @@ case 12:
 					* yyvsp[0].integer.value); ;
     break;}
 case 13:
-#line 243 "cexp.y"
+#line 244 "cexp.y"
 { if (yyvsp[0].integer.value == 0)
 			    {
 			      if (!skip_evaluation)
@@ -923,7 +924,7 @@ case 13:
 					/ yyvsp[0].integer.value); ;
     break;}
 case 14:
-#line 260 "cexp.y"
+#line 261 "cexp.y"
 { if (yyvsp[0].integer.value == 0)
 			    {
 			      if (!skip_evaluation)
@@ -938,7 +939,7 @@ case 14:
 					% yyvsp[0].integer.value); ;
     break;}
 case 15:
-#line 273 "cexp.y"
+#line 274 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value + yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp;
 			  if (overflow_sum_sign (yyvsp[-2].integer.value, yyvsp[0].integer.value,
@@ -946,7 +947,7 @@ case 15:
 			    integer_overflow (); ;
     break;}
 case 16:
-#line 279 "cexp.y"
+#line 280 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value - yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp;
 			  if (overflow_sum_sign (yyval.integer.value, yyvsp[0].integer.value,
@@ -954,7 +955,7 @@ case 16:
 			    integer_overflow (); ;
     break;}
 case 17:
-#line 285 "cexp.y"
+#line 286 "cexp.y"
 { yyval.integer.signedp = yyvsp[-2].integer.signedp;
 			  if ((yyvsp[0].integer.value & yyvsp[0].integer.signedp) < 0)
 			    yyval.integer.value = right_shift (&yyvsp[-2].integer, -yyvsp[0].integer.value);
@@ -962,7 +963,7 @@ case 17:
 			    yyval.integer.value = left_shift (&yyvsp[-2].integer, yyvsp[0].integer.value); ;
     break;}
 case 18:
-#line 291 "cexp.y"
+#line 292 "cexp.y"
 { yyval.integer.signedp = yyvsp[-2].integer.signedp;
 			  if ((yyvsp[0].integer.value & yyvsp[0].integer.signedp) < 0)
 			    yyval.integer.value = left_shift (&yyvsp[-2].integer, -yyvsp[0].integer.value);
@@ -970,17 +971,17 @@ case 18:
 			    yyval.integer.value = right_shift (&yyvsp[-2].integer, yyvsp[0].integer.value); ;
     break;}
 case 19:
-#line 297 "cexp.y"
+#line 298 "cexp.y"
 { yyval.integer.value = (yyvsp[-2].integer.value == yyvsp[0].integer.value);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 20:
-#line 300 "cexp.y"
+#line 301 "cexp.y"
 { yyval.integer.value = (yyvsp[-2].integer.value != yyvsp[0].integer.value);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 21:
-#line 303 "cexp.y"
+#line 304 "cexp.y"
 { yyval.integer.signedp = SIGNED;
 			  if (yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp)
 			    yyval.integer.value = yyvsp[-2].integer.value <= yyvsp[0].integer.value;
@@ -989,7 +990,7 @@ case 21:
 					<= yyvsp[0].integer.value); ;
     break;}
 case 22:
-#line 310 "cexp.y"
+#line 311 "cexp.y"
 { yyval.integer.signedp = SIGNED;
 			  if (yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp)
 			    yyval.integer.value = yyvsp[-2].integer.value >= yyvsp[0].integer.value;
@@ -998,7 +999,7 @@ case 22:
 					>= yyvsp[0].integer.value); ;
     break;}
 case 23:
-#line 317 "cexp.y"
+#line 318 "cexp.y"
 { yyval.integer.signedp = SIGNED;
 			  if (yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp)
 			    yyval.integer.value = yyvsp[-2].integer.value < yyvsp[0].integer.value;
@@ -1007,7 +1008,7 @@ case 23:
 					< yyvsp[0].integer.value); ;
     break;}
 case 24:
-#line 324 "cexp.y"
+#line 325 "cexp.y"
 { yyval.integer.signedp = SIGNED;
 			  if (yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp)
 			    yyval.integer.value = yyvsp[-2].integer.value > yyvsp[0].integer.value;
@@ -1016,64 +1017,64 @@ case 24:
 					> yyvsp[0].integer.value); ;
     break;}
 case 25:
-#line 331 "cexp.y"
+#line 332 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value & yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp; ;
     break;}
 case 26:
-#line 334 "cexp.y"
+#line 335 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value ^ yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp; ;
     break;}
 case 27:
-#line 337 "cexp.y"
+#line 338 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value | yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp; ;
     break;}
 case 28:
-#line 340 "cexp.y"
+#line 341 "cexp.y"
 { skip_evaluation += !yyvsp[-1].integer.value; ;
     break;}
 case 29:
-#line 342 "cexp.y"
+#line 343 "cexp.y"
 { skip_evaluation -= !yyvsp[-3].integer.value;
 			  yyval.integer.value = (yyvsp[-3].integer.value && yyvsp[0].integer.value);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 30:
-#line 346 "cexp.y"
+#line 347 "cexp.y"
 { skip_evaluation += !!yyvsp[-1].integer.value; ;
     break;}
 case 31:
-#line 348 "cexp.y"
+#line 349 "cexp.y"
 { skip_evaluation -= !!yyvsp[-3].integer.value;
 			  yyval.integer.value = (yyvsp[-3].integer.value || yyvsp[0].integer.value);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 32:
-#line 352 "cexp.y"
+#line 353 "cexp.y"
 { skip_evaluation += !yyvsp[-1].integer.value; ;
     break;}
 case 33:
-#line 354 "cexp.y"
+#line 355 "cexp.y"
 { skip_evaluation += !!yyvsp[-4].integer.value - !yyvsp[-4].integer.value; ;
     break;}
 case 34:
-#line 356 "cexp.y"
+#line 357 "cexp.y"
 { skip_evaluation -= !!yyvsp[-6].integer.value;
 			  yyval.integer.value = yyvsp[-6].integer.value ? yyvsp[-3].integer.value : yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-3].integer.signedp & yyvsp[0].integer.signedp; ;
     break;}
 case 35:
-#line 360 "cexp.y"
+#line 361 "cexp.y"
 { yyval.integer = yylval.integer; ;
     break;}
 case 36:
-#line 362 "cexp.y"
+#line 363 "cexp.y"
 { yyval.integer = yylval.integer; ;
     break;}
 case 37:
-#line 364 "cexp.y"
+#line 365 "cexp.y"
 { if (warn_undef && !skip_evaluation)
 			    warning ("`%.*s' is not defined",
 				     yyvsp[0].name.length, yyvsp[0].name.address);
@@ -1081,11 +1082,11 @@ case 37:
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 38:
-#line 372 "cexp.y"
+#line 373 "cexp.y"
 { yyval.keywords = 0; ;
     break;}
 case 39:
-#line 374 "cexp.y"
+#line 375 "cexp.y"
 { struct arglist *temp;
 			  yyval.keywords = (struct arglist *) xmalloc (sizeof (struct arglist));
 			  yyval.keywords->next = yyvsp[-2].keywords;
@@ -1100,7 +1101,7 @@ case 39:
 			  temp->next->length = 1; ;
     break;}
 case 40:
-#line 387 "cexp.y"
+#line 388 "cexp.y"
 { yyval.keywords = (struct arglist *) xmalloc (sizeof (struct arglist));
 			  yyval.keywords->name = yyvsp[-1].name.address;
 			  yyval.keywords->length = yyvsp[-1].name.length;
@@ -1304,7 +1305,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 392 "cexp.y"
+#line 393 "cexp.y"
 
 
 /* During parsing of a C expression, the pointer to the next character
@@ -1410,7 +1411,7 @@ parse_number (olen)
 }
 
 struct token {
-  char *operator;
+  const char *operator;
   int token;
 };
 
@@ -1917,17 +1918,17 @@ parse_c_expression (string, warn_undefined)
 }
 
 static void
-yyerror VPROTO ((char * msgid, ...))
+yyerror VPROTO ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msgid;
+  const char * msgid;
 #endif
   va_list args;
 
   VA_START (args, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  msgid = va_arg (args, char *);
+  msgid = va_arg (args, const char *);
 #endif
 
   fprintf (stderr, "error: ");
