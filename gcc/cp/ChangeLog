@@ -1,3 +1,26 @@
+2003-03-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* name-lookup.c: New file.
+	* name-lookup.h: Likewise..
+	* decl.c (push_binding): Adjust use cxx_binding_make.
+	(free_bindings): Move to name-lookup.c
+	(pop_binding): Use cxx_binding_free.
+	(binding_for_name): Tidy.
+	* cp-tree.h: Include "name-lookup.h"
+	(cxx_binding_make): Move to name-lookup.h
+	(cxx_binding_clear): Likewise.
+	(struct cxx_binding): Likewise.
+	(LOCAL_BINDING_P): Likewise.
+	(INHERITED_VALUE_BINDING_P): Likewise.
+	(BINDING_SCOPE): Likewise.
+	(BINDING_HAS_LEVEL_P): Likewise.
+	(BINDING_VALUE): Likewise.
+	(BINDING_TYPE): Likewise.
+	* config-lang.in (gtfiles): Add cp/name-lookup.h
+	* Make-lang.in (cp/name-lookup.o): New rule.
+	(CXX_OBJS): Add cp/name-lookup.o
+	(CXX_TREE_H): Add cp/name-lookup.h
+
 2003-03-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/10245

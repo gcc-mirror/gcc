@@ -889,31 +889,16 @@ finish_scope (void)
    this is the `struct cp_binding_level' for the block.  */
 #define BINDING_LEVEL(NODE) ((NODE)->scope.level)
 
-/* A free list of cxx_binding nodes, connected by their
-   TREE_CHAINs.  */
-
-static GTY((deletable (""))) cxx_binding *free_bindings;
-
 /* Make DECL the innermost binding for ID.  The LEVEL is the binding
    level at which this declaration is being bound.  */
 
 static void
 push_binding (tree id, tree decl, struct cp_binding_level* level)
 {
-  cxx_binding *binding;
-
-  if (free_bindings)
-    {
-      binding = free_bindings;
-      free_bindings = binding->previous;
-    }
-  else
-    binding = cxx_binding_make ();
+   cxx_binding *binding = cxx_binding_make (decl, NULL);
 
   /* Now, fill in the binding information.  */
   binding->previous = IDENTIFIER_BINDING (id);
-  BINDING_VALUE (binding) = decl;
-  BINDING_TYPE (binding) = NULL_TREE;
   BINDING_LEVEL (binding) = level;
   INHERITED_VALUE_BINDING_P (binding) = 0;
   LOCAL_BINDING_P (binding) = (level != class_binding_level);
@@ -1161,8 +1146,7 @@ pop_binding (tree id, tree decl)
       IDENTIFIER_BINDING (id) = binding->previous;
 
       /* Add it to the free list.  */
-      binding->previous = free_bindings;
-      free_bindings = binding;
+      cxx_binding_free (binding);
 
       /* Clear the BINDING_LEVEL so the garbage collector doesn't walk
 	 it.  */
@@ -2084,10 +2068,8 @@ binding_for_name (tree name, tree scope)
   if (result)
     return result;
   /* Not found, make a new one.  */
-  result = cxx_binding_make ();
+  result = cxx_binding_make (NULL, NULL);
   result->previous = IDENTIFIER_NAMESPACE_BINDINGS (name);
-  BINDING_TYPE (result) = NULL_TREE;
-  BINDING_VALUE (result) = NULL_TREE;
   BINDING_SCOPE (result) = scope;
   result->is_local = false;
   result->value_is_inherited = false;
