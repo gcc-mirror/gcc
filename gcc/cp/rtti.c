@@ -566,7 +566,7 @@ build_dynamic_cast_1 (type, expr)
 		  && TREE_CODE (TREE_TYPE (op)) == RECORD_TYPE)
 		{
 		  cp_warning ("dynamic_cast of `%#D' to `%#T' can never succeed",
-			      expr, type);
+			      op, type);
 		  retval = build_int_2 (0, 0); 
 		  TREE_TYPE (retval) = type; 
 		  return retval;
