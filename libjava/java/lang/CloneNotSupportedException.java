@@ -36,36 +36,42 @@ package java.lang;
  */
 
 /**
- * Exceptions may be thrown by one part of a Java program and caught
- * by another in order to deal with exceptional conditions.  
- * Thrown to indicate an object should not or could not be cloned.  
- * For example <code>CloneNotSupportedException</code> is thrown by
- * the <code>clone</code> method of <code>Object</code> to indicate 
- * that object does not implement the <code>Cloneable</code> interface.
+ * Thrown to indicate an object should not or could not be cloned. This
+ * includes the case when {@link Object#clone()} is called on an object
+ * which does not implement the {@link Cloneable} interface.
+ * <p>
  *
- * @since JDK 1.0
- * 
+ * Notice that calling <code>clone()</code> on an array will never produce
+ * this exception, as the VM will always succeed in copying the array, or
+ * cause an OutOfMemoryError first.
+ *
  * @author Brian Jones
  * @author Warren Levy <warrenl@cygnus.com>
- * @date September 18, 1998.
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @since 1.0
+ * @see Cloneable
+ * @see Object#clone()
  */
 public class CloneNotSupportedException extends Exception
 {
-  static final long serialVersionUID = 5195511250079656443L;
+  /**
+   * compatible with JDK 1.0+
+   */
+  private static final long serialVersionUID = 5195511250079656443L;
 
   /**
    * Create an exception without a message.
    */
   public CloneNotSupportedException()
-    {
-      super();
-    }
+  {
+  }
 
   /**
    * Create an exception with a message.
+   * @param s the error message
    */
   public CloneNotSupportedException(String s)
-    {
-      super(s);
-    }
+  {
+    super(s);
+  }
 }
