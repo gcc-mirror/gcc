@@ -1,3 +1,9 @@
+2003-12-03  Jan Hubicka  <jh@suse.cz>
+
+	PR optimization/12324
+	* toplev.c  (rest_of_decl_compilation): Do not deffer when compiling
+	in unit-at-a-time mode.
+
 2003-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (store_constructor): Only set RTX_UNCHANGING_P for
