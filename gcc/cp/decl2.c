@@ -36,10 +36,26 @@ Boston, MA 02111-1307, USA.  */
 #include "decl.h"
 #include "lex.h"
 #include "output.h"
+#include "except.h"
 
 extern tree get_file_function_name ();
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
+static tree get_sentry PROTO((tree));
+static void mark_vtable_entries PROTO((tree));
+static void import_export_template PROTO((tree));
 static void grok_function_init PROTO((tree, tree));
-void import_export_decl ();
+static int finish_vtable_vardecl PROTO((tree, tree));
+static int prune_vtable_vardecl PROTO((tree, tree));
+static void finish_sigtable_vardecl PROTO((tree, tree));
+
 extern int current_class_depth;
 
 /* A list of virtual function tables we must make sure to write out.  */
@@ -2324,7 +2340,10 @@ mark_vtable_entries (decl)
       tree fn = TREE_OPERAND (fnaddr, 0);
       TREE_ADDRESSABLE (fn) = 1;
       if (DECL_LANG_SPECIFIC (fn) && DECL_ABSTRACT_VIRTUAL_P (fn))
-	TREE_OPERAND (fnaddr, 0) = fn = abort_fndecl;
+	{
+	  TREE_OPERAND (fnaddr, 0) = fn = copy_node (fn);
+	  DECL_RTL (fn) = DECL_RTL (abort_fndecl);
+	}
       if (TREE_CODE (fn) == THUNK_DECL && DECL_EXTERNAL (fn))
 	{
 	  DECL_EXTERNAL (fn) = 0;
@@ -2520,8 +2539,8 @@ prune_vtable_vardecl (prev, vars)
 
 int
 walk_vtables (typedecl_fn, vardecl_fn)
-     register void (*typedecl_fn)();
-     register int (*vardecl_fn)();
+     register void (*typedecl_fn) PROTO ((tree, tree));
+     register int (*vardecl_fn) PROTO ((tree, tree));
 {
   tree prev, vars;
   int flag = 0;
@@ -2568,8 +2587,8 @@ finish_sigtable_vardecl (prev, vars)
 
 void
 walk_sigtables (typedecl_fn, vardecl_fn)
-     register void (*typedecl_fn)();
-     register void (*vardecl_fn)();
+     register void (*typedecl_fn) PROTO((tree, tree));
+     register void (*vardecl_fn) PROTO((tree, tree));
 {
   tree prev, vars;
 
@@ -2697,7 +2716,6 @@ extern tree pending_templates;
 extern tree maybe_templates;
 
 extern struct obstack permanent_obstack;
-extern tree get_id_2 ();
 
 static tree
 get_sentry (base)
@@ -2814,7 +2832,8 @@ finish_file ()
 
   /* Walk to mark the inline functions we need, then output them so
      that we can pick up any other tdecls that those routines need.  */
-  walk_vtables ((void (*)())0, finish_prevtable_vardecl);
+  walk_vtables ((void (*) PROTO ((tree, tree))) 0,
+		finish_prevtable_vardecl);
 
   for (vars = pending_statics; vars; vars = TREE_CHAIN (vars))
     {
@@ -3056,7 +3075,8 @@ finish_file ()
   start_time = get_run_time ();
 
   if (flag_handle_signatures)
-    walk_sigtables ((void (*)())0, finish_sigtable_vardecl);
+    walk_sigtables ((void (*) PROTO ((tree, tree))) 0,
+		    finish_sigtable_vardecl);
 
   for (fnname = saved_inlines; fnname; fnname = TREE_CHAIN (fnname))
     {
@@ -3082,7 +3102,8 @@ finish_file ()
 	SET_DECL_ARTIFICIAL (vars);
 	pushdecl (vars);
 
-	reconsider |= walk_vtables ((void (*)())0, finish_vtable_vardecl);
+	reconsider |= walk_vtables ((void (*) PROTO((tree, tree))) 0, 
+				    finish_vtable_vardecl);
 
 	while (*p)
 	  {
@@ -3138,7 +3159,8 @@ finish_file ()
   /* Now delete from the chain of variables all virtual function tables.
      We output them all ourselves, because each will be treated specially.  */
 
-  walk_vtables ((void (*)())0, prune_vtable_vardecl);
+  walk_vtables ((void (*) PROTO((tree, tree))) 0,
+		prune_vtable_vardecl);
 
   for (vars = getdecls (); vars; vars = TREE_CHAIN (vars))
     {

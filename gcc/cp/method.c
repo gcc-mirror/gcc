@@ -39,6 +39,12 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "flags.h"
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+extern char *index ();
+#endif
+
 /* TREE_LIST of the current inline functions that need to be
    processed.  */
 struct pending_inline *pending_inlines;
@@ -51,6 +57,20 @@ int static_labelno;
 /* Obstack where we build text strings for overloading, etc.  */
 static struct obstack scratch_obstack;
 static char *scratch_firstobj;
+
+static void icat PROTO((HOST_WIDE_INT));
+static void dicat PROTO((HOST_WIDE_INT, HOST_WIDE_INT));
+static void flush_repeats PROTO((tree));
+static void build_overload_identifier PROTO((tree));
+static void build_overload_nested_name PROTO((tree));
+static void build_overload_int PROTO((tree));
+static void build_overload_identifier PROTO((tree));
+static void build_qualified_name PROTO((tree));
+static void build_overload_value PROTO((tree, tree));
+static char *thunk_printable_name PROTO((tree));
+static void do_build_assign_ref PROTO((tree));
+static void do_build_copy_constructor PROTO((tree));
+static tree largest_union_member PROTO((tree));
 
 # define OB_INIT() (scratch_firstobj ? (obstack_free (&scratch_obstack, scratch_firstobj), 0) : 0)
 # define OB_PUTC(C) (obstack_1grow (&scratch_obstack, (C)))
@@ -355,7 +375,6 @@ flush_repeats (type)
 }
 
 static int numeric_output_need_bar;
-static void build_overload_identifier ();
 
 static void
 build_overload_nested_name (decl)
@@ -477,7 +496,6 @@ build_overload_value (type, value)
       {
 	REAL_VALUE_TYPE val;
 	char *bufp = digit_buffer;
-	extern char *index ();
 
 	pedwarn ("ANSI C++ forbids floating-point template arguments");
 

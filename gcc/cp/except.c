@@ -44,6 +44,13 @@ tree builtin_return_address_fndecl;
 /* Used to cache a call to __builtin_return_address.  */
 static tree BuiltinReturnAddress;
      
+static void easy_expand_asm PROTO((char *));
+static void push_eh_cleanup PROTO((void));
+static void do_unwind PROTO((rtx));
+static rtx do_function_call PROTO((tree, tree, tree));
+static tree build_eh_type_type PROTO((tree));
+static tree build_eh_type PROTO((tree));
+static void expand_end_eh_spec PROTO((tree));
 
 static void
 easy_expand_asm (str)
@@ -156,9 +163,6 @@ asm (TEXT_SECTION_ASM_OP);
      
      ===================================================================== */
 
-extern rtx emit_insn		PROTO((rtx));
-extern rtx gen_nop		PROTO(());
-
 /* local globals for function calls
    ====================================================================== */
 
@@ -230,7 +234,6 @@ do_function_call (func, params, return_type)
 void
 init_exception_processing ()
 {
-  extern tree define_function ();
   tree unexpected_fndecl, terminate_fndecl;
   tree set_unexpected_fndecl, set_terminate_fndecl;
   tree catch_match_fndecl;

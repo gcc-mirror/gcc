@@ -32,9 +32,22 @@ Boston, MA 02111-1307, USA.  */
 #define INT_TYPE_SIZE BITS_PER_WORD
 #endif
 
-extern tree define_function ();
-extern tree build_t_desc_overload ();
 extern struct obstack permanent_obstack;
+
+static tree call_void_fn PROTO((char *));
+static tree build_headof_sub PROTO((tree));
+static tree build_headof PROTO((tree));
+static tree get_tinfo_var PROTO((tree));
+static tree get_typeid_1 PROTO((tree));
+static tree ifnonnull PROTO((tree, tree));
+static tree build_dynamic_cast_1 PROTO((tree, tree));
+static void expand_si_desc PROTO((tree, tree));
+static void expand_class_desc PROTO((tree, tree));
+static void expand_attr_desc PROTO((tree, tree));
+static void expand_ptr_desc PROTO((tree, tree));
+static void expand_generic_desc PROTO((tree, tree, char *));
+static tree throw_bad_cast PROTO((void));
+static tree throw_bad_typeid PROTO((void));
 
 tree type_info_type_node;
 tree tinfo_fn_id;

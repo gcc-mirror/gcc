@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "lex.h"
 #include "cp-tree.h"
 #include "output.h"
+#include "except.h"
 
 /* Since parsers are distinct for each language, put the language string
    definition here.  (fnf) */
@@ -61,8 +62,6 @@ extern tree last_tree;
 extern tree strip_attrs		PROTO((tree));
 /* END FSF LOCAL */
 
-void yyerror ();
-
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
 
@@ -73,11 +72,11 @@ void yyerror ();
    error message if the user supplies an empty conditional expression.  */
 static char *cond_stmt_keyword;
 
+static tree empty_parms PROTO((void));
+
 /* Nonzero if we have an `extern "C"' acting as an extern specifier.  */
 int have_extern_spec;
 int used_extern_spec;
-
-void yyhook ();
 
 /* Cons up an empty parameter list.  */
 #ifdef __GNUC__
@@ -301,7 +300,7 @@ static tree current_aggr;
 /* Tell yyparse how to print a token's value, if yydebug is set.  */
 
 #define YYPRINT(FILE,YYCHAR,YYLVAL) yyprint(FILE,YYCHAR,YYLVAL)
-extern void yyprint ();
+extern void yyprint			PROTO((FILE *, int, YYSTYPE));
 extern tree combine_strings		PROTO((tree));
 %}
 
@@ -2215,7 +2214,7 @@ structsp:
 		  if (! semi)
 		    check_for_missing_semicolon ($1); 
 		  if (current_scope () == current_function_decl)
-		    do_pending_defargs ($1);
+		    do_pending_defargs ();
 		}
 	  pending_defargs
 		{

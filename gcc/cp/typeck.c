@@ -29,9 +29,6 @@ Boston, MA 02111-1307, USA.  */
    and to process initializations in declarations (since they work
    like a strange sort of assignment).  */
 
-extern void error ();
-extern void warning ();
-
 #include "config.h"
 #include <stdio.h>
 #include "tree.h"
@@ -40,19 +37,29 @@ extern void warning ();
 #include "flags.h"
 #include "output.h"
 
-int mark_addressable PROTO((tree));
-static tree convert_for_assignment PROTO((tree, tree, char*, tree, int));
-/* static */ tree convert_for_initialization PROTO((tree, tree, tree, int, char*, tree, int));
-extern tree shorten_compare ();
-static tree pointer_int_sum PROTO((enum tree_code, register tree, register tree));
-static tree pointer_diff PROTO((register tree, register tree));
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
+extern void compiler_error ();
+
+static tree convert_for_assignment PROTO((tree, tree, char*, tree,
+					  int));
+static tree pointer_int_sum PROTO((enum tree_code, tree, tree));
+static tree rationalize_conditional_expr PROTO((enum tree_code, tree));
 static int comp_target_parms PROTO((tree, tree, int));
+static int comp_ptr_ttypes_real PROTO((tree, tree, int));
 static int comp_ptr_ttypes_const PROTO((tree, tree));
 static int comp_ptr_ttypes_reinterpret PROTO((tree, tree));
-#if 0
-static tree convert_sequence ();
-#endif
-/* static */ tree unary_complex_lvalue PROTO((enum tree_code, tree));
+static int comp_array_types PROTO((int (*) (tree, tree, int), tree,
+				   tree, int));
+static tree build_ptrmemfunc1 PROTO((tree, tree, tree, tree, tree));
+static tree common_base_type PROTO((tree, tree));
+static tree convert_sequence PROTO((tree, tree));
+static tree lookup_anon_field PROTO((tree, tree));
+static tree pointer_diff PROTO((tree, tree));
+static tree qualify_type PROTO((tree, tree));
+static tree expand_target_expr PROTO((tree));
 static tree get_delta_difference PROTO((tree, tree, int));
 
 /* Return the target type of TYPE, which meas return T for:
@@ -589,7 +596,7 @@ compexcepttypes (t1, t2)
 
 static int
 comp_array_types (cmp, t1, t2, strict)
-     register int (*cmp)();
+     register int (*cmp) PROTO((tree, tree, int));
      tree t1, t2;
      int strict;
 {
@@ -6254,14 +6261,14 @@ build_ptrmemfunc1 (type, delta, idx, pfn, delta2)
   if (pfn)
     {
       allconstant = TREE_CONSTANT (pfn);
-      allsimple = initializer_constant_valid_p (pfn, TREE_TYPE (pfn));
+      allsimple = (int) initializer_constant_valid_p (pfn, TREE_TYPE (pfn));
       u = tree_cons (pfn_field, pfn, NULL_TREE);
     }
   else
     {
       delta2 = convert_and_check (delta_type_node, delta2);
       allconstant = TREE_CONSTANT (delta2);
-      allsimple = initializer_constant_valid_p (delta2, TREE_TYPE (delta2));
+      allsimple = (int) initializer_constant_valid_p (delta2, TREE_TYPE (delta2));
       u = tree_cons (delta2_field, delta2, NULL_TREE);
     }
 

@@ -86,10 +86,24 @@ static char *scratch_firstobj;
 
 # define NEXT_CODE(t) (TREE_CODE (TREE_TYPE (t)))
 
-static void dump_type (), dump_decl (), dump_function_decl ();
-static void dump_expr (), dump_unary_op (), dump_binary_op ();
-static void dump_aggr_type (), dump_type_prefix (), dump_type_suffix ();
-static void dump_function_name ();
+enum pad { none, before, after };
+
+static void dump_type PROTO((tree, int));
+static void dump_decl PROTO((tree, int));
+static void dump_function_decl PROTO((tree, int));
+static void dump_expr PROTO((tree, int));
+static void dump_unary_op PROTO((char *, tree, int));
+static void dump_binary_op PROTO((char *, tree));
+static void dump_aggr_type PROTO((tree, int));
+static void dump_type_prefix PROTO((tree, int));
+static void dump_type_suffix PROTO((tree, int));
+static void dump_function_name PROTO((tree));
+static void dump_expr_list PROTO((tree));
+static void dump_global_iord PROTO((tree));
+static void dump_readonly_or_volatile PROTO((tree, enum pad));
+static void dump_char PROTO((char));
+static char *aggr_variety PROTO((tree));
+static tree ident_fndecl PROTO((tree));
 
 void
 init_error ()
@@ -97,8 +111,6 @@ init_error ()
   gcc_obstack_init (&scratch_obstack);
   scratch_firstobj = (char *)obstack_alloc (&scratch_obstack, 0);
 }
-
-enum pad { none, before, after };
 
 static void
 dump_readonly_or_volatile (t, p)
@@ -154,7 +166,7 @@ dump_type (t, v)
 	  if (TREE_PURPOSE (t) && v)
 	    {
 	      OB_PUTS (" = ");
-	      dump_expr (TREE_PURPOSE (t));
+	      dump_expr (TREE_PURPOSE (t), 0);
 	    }
 	  if (TREE_CHAIN (t))
 	    {
@@ -183,7 +195,7 @@ dump_type (t, v)
 	  && (IS_SIGNATURE_POINTER (t) || IS_SIGNATURE_REFERENCE (t)))
 	{
 	  if (TYPE_READONLY (t) | TYPE_VOLATILE (t))
-	    dump_readonly_or_volatile (t);
+	    dump_readonly_or_volatile (t, after);
 	  dump_type (SIGNATURE_TYPE (t), v);
 	  if (IS_SIGNATURE_POINTER (t))
 	    OB_PUTC ('*');
@@ -535,7 +547,7 @@ dump_type_suffix (t, v)
 /* Return a function declaration which corresponds to the IDENTIFIER_NODE
    argument.  */
 
-tree
+static tree
 ident_fndecl (t)
      tree t;
 {
@@ -567,7 +579,7 @@ ident_fndecl (t)
 #define GLOBAL_IORD_P(NODE) \
   ! strncmp (IDENTIFIER_POINTER(NODE), GLOBAL_THING, sizeof (GLOBAL_THING) - 1)
 
-void
+static void
 dump_global_iord (t)
      tree t;
 {
@@ -1280,7 +1292,7 @@ dump_expr (t, nop)
 	  if (integer_all_onesp (idx))
 	    {
 	      tree pfn = PFN_FROM_PTRMEMFUNC (t);
-	      dump_expr (pfn);
+	      dump_expr (pfn, 0);
 	      break;
 	    }
 	  if (TREE_CODE (idx) == INTEGER_CST
@@ -1306,7 +1318,7 @@ dump_expr (t, nop)
 		}
 	      if (virtuals)
 		{
-		  dump_expr (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals)));
+		  dump_expr (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals)), 0);
 		  break;
 		}
 	    }

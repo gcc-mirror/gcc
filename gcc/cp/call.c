@@ -31,11 +31,13 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "flags.h"
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #include "obstack.h"
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-extern void sorry ();
 
 extern int inhibit_warnings;
 extern tree ctor_label, dtor_label;
@@ -45,6 +47,59 @@ extern tree ctor_label, dtor_label;
 
 static struct harshness_code convert_harshness PROTO((register tree, register tree, tree));
 static tree build_new_method_call		PROTO((tree, tree, tree, tree, int));
+
+static int rank_for_ideal PROTO((struct candidate *,
+				 struct candidate *));
+static int user_harshness PROTO((tree, tree));
+static int strictly_better PROTO((unsigned short, unsigned short));
+static struct candidate * ideal_candidate PROTO((struct candidate *,
+						 int, int));
+static int may_be_remote PROTO((tree));
+static tree build_field_call PROTO((tree, tree, tree, tree));
+static tree find_scoped_type PROTO((tree, tree, tree));
+static void print_candidates PROTO((tree));
+static struct z_candidate * tourney PROTO((struct z_candidate *));
+static int joust PROTO((struct z_candidate *, struct z_candidate *));
+static int compare_qual PROTO((tree, tree));
+static int compare_ics PROTO((tree, tree));
+static tree build_over_call PROTO((tree, tree, tree, int));
+static tree convert_default_arg PROTO((tree, tree));
+static void enforce_access PROTO((tree, tree));
+static tree convert_like PROTO((tree, tree));
+static void op_error PROTO((enum tree_code, enum tree_code, tree, tree,
+			    tree, char *));
+static tree build_object_call PROTO((tree, tree));
+static tree resolve_args PROTO((tree));
+static struct z_candidate * build_user_type_conversion_1
+	PROTO ((tree, tree, int));
+static void print_z_candidates PROTO((struct z_candidate *));
+static tree build_this PROTO((tree));
+static struct z_candidate * splice_viable PROTO((struct z_candidate *));
+static int any_viable PROTO((struct z_candidate *));
+static struct z_candidate * add_template_candidate
+	PROTO((struct z_candidate *, tree, tree, int));
+static struct z_candidate * add_builtin_candidates
+	PROTO((struct z_candidate *, enum tree_code, enum tree_code,
+	       tree, tree *, int));
+static struct z_candidate * add_builtin_candidate
+	PROTO((struct z_candidate *, enum tree_code, enum tree_code,
+	       tree, tree, tree, tree *, tree *, int));
+static int is_complete PROTO((tree));
+static struct z_candidate * build_builtin_candidate 
+	PROTO((struct z_candidate *, tree, tree, tree, tree *, tree *,
+	       int));
+static struct z_candidate * add_conv_candidate 
+	PROTO((struct z_candidate *, tree, tree, tree));
+static struct z_candidate * add_function_candidate 
+	PROTO((struct z_candidate *, tree, tree, int));
+static tree implicit_conversion PROTO((tree, tree, tree, int));
+static tree standard_conversion PROTO((tree, tree, tree));
+static tree reference_binding PROTO((tree, tree, tree, int));
+static tree strip_top_quals PROTO((tree));
+static tree non_reference PROTO((tree));
+static tree build_conv PROTO((enum tree_code, tree, tree));
+static void print_n_candidates PROTO((struct candidate *, int));
+static tree default_parm_conversions PROTO((tree, tree *));
 
 #define EVIL_RETURN(ARG)	((ARG).code = EVIL_CODE, (ARG))
 #define STD_RETURN(ARG)		((ARG).code = STD_CODE, (ARG))
@@ -1072,7 +1127,7 @@ ideal_candidate (candidates, n_candidates, len)
      functions.  */
 
   qsort (candidates, n_candidates, sizeof (struct candidate),
-	 rank_for_overload);
+	 (int (*) PROTO((const void *, const void *))) rank_for_overload);
   best_code = cp[-1].h.code;
 
   /* If they're at least as good as each other, do an arg-by-arg check.  */
@@ -1086,7 +1141,7 @@ ideal_candidate (candidates, n_candidates, len)
 	  break;
 
       qsort (candidates+j, n_candidates-j, sizeof (struct candidate),
-	     rank_for_ideal);
+	     (int (*) PROTO((const void *, const void *))) rank_for_ideal);
       for (i = 0; i < len; i++)
 	{
 	  if (cp[-1].harshness[i].code < cp[-2].harshness[i].code)
@@ -2935,12 +2990,6 @@ struct z_candidate {
 #define ICS_BAD_FLAG(NODE) TREE_LANG_FLAG_3 (NODE)
 
 #define USER_CONV_FN(NODE) TREE_OPERAND (NODE, 1)
-
-static struct z_candidate * build_user_type_conversion_1 ();
-static tree convert_like ();
-static tree build_over_call ();
-static struct z_candidate * tourney ();
-static void enforce_access ();
 
 int
 null_ptr_cst_p (t)
@@ -5460,10 +5509,8 @@ static int
 is_subseq (ics1, ics2)
      tree ics1, ics2;
 {
-  for (;;)
+  for (;; ics2 = TREE_OPERAND (ics2, 0))
     {
-      ics2 = TREE_OPERAND (ics2, 0);
-
       if (TREE_CODE (ics2) == TREE_CODE (ics1)
 	  && comptypes (TREE_TYPE (ics2), TREE_TYPE (ics1), 1)
 	  && comptypes (TREE_TYPE (TREE_OPERAND (ics2, 0)),

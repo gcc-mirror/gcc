@@ -26,6 +26,13 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "output.h"
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
+static void add_friend PROTO((tree, tree));
+static void add_friends PROTO((tree, tree, tree));
+
 /* Friend data structures:
 
    Lists of friend functions come from TYPE_DECL nodes.  Since all
