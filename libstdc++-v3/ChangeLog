@@ -1,3 +1,12 @@
+2003-06-09  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4:  Move all AM_CONDITIONAL calls out.
+	(GLIBCPP_CONFIGURE):  Set defaults for variables used in AM_CONDITIONAL
+	statements.
+	* configure.in:  Centralize AM_CONDITIONALs so that they are always
+	run.  Make use of GLIBCPP_IS_CROSS_COMPILING.
+	* aclocal.m4, configure:  Regenerated.
+
 2003-06-09  Paolo Carlini  <pcarlini@unitus.it>
 
 	* docs/html/ext/howto.html ('LWG Issues'):  Add issue 235.
