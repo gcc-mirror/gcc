@@ -1,3 +1,7 @@
+2003-11-03  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* genattrtab.c (count_sub_rtxs): Removed.
+
 2003-11-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	* recog.c (preprocess_constraints): Only zero those elements of
