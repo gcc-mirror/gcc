@@ -1,3 +1,8 @@
+2004-06-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* fold-const.c (fold_convert): Treat OFFSET_TYPE like
+	POINTER_TYPE and INTEGER_TYPE.
+
 2004-06-08  Bernardo Innocenti  <bernie@develer.com>
 
 	* modulo-sched.c: Compile only when INSN_SCHEDULING is
