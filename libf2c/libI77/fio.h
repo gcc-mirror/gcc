@@ -18,7 +18,11 @@
 /* Only use fseeko/ftello if they are both there.  */
 
 #if defined (HAVE_FSEEKO) && defined (HAVE_FTELLO)
-#define FSEEK fseeko
+/* The cast helps in any case where the fseeko() prototype is somehow missing
+   (perhaps because _POSIX_SOURCE is defined and the system headers try
+   to keep a clean namespace in that case) even though the autoconf test
+   found the non-standard function via its trivial link test.  */
+#define FSEEK(a,b,c) fseeko(a, (off_t) b, c)
 #define FTELL ftello
 #else
 #define FSEEK fseek
