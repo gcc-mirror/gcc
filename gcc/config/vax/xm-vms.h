@@ -32,6 +32,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define HOST_BITS_PER_LONG 32
 #define HOST_BITS_PER_LONGLONG 64
 
+#define HOST_FLOAT_FORMAT VAX_FLOAT_FORMAT
+
 #define SUCCESS_EXIT_CODE 1
 #define FATAL_EXIT_CODE (44 | 0x10000000)  /* Failure, and no DCL message.  */
 
