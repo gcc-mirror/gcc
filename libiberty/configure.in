@@ -130,9 +130,11 @@ funcs="$funcs memcpy"
 funcs="$funcs memmove"
 funcs="$funcs memset"
 funcs="$funcs mkstemps"
+funcs="$funcs putenv"
 funcs="$funcs random"
 funcs="$funcs rename"
 funcs="$funcs rindex"
+funcs="$funcs setenv"
 funcs="$funcs sigsetmask"
 funcs="$funcs strcasecmp"
 funcs="$funcs strchr"
@@ -161,8 +163,8 @@ checkfuncs="getrusage on_exit psignal strerror strsignal sysconf times sbrk"
 if test "x" = "y"; then
   AC_CHECK_FUNCS(asprintf atexit basename bcmp bcopy bzero calloc clock getcwd)
   AC_CHECK_FUNCS(getpagesize index insque mkstemps memchr memcmp memcpy memmove)
-  AC_CHECK_FUNCS(memset random rename rindex sigsetmask strcasecmp)
-  AC_CHECK_FUNCS(strchr strdup strncasecmp strrchr strstr strtod strtol)
+  AC_CHECK_FUNCS(memset putenv random rename rindex sigsetmask strcasecmp)
+  AC_CHECK_FUNCS(setenv strchr strdup strncasecmp strrchr strstr strtod strtol)
   AC_CHECK_FUNCS(strtoul tmpnam vasprintf vfprintf vprintf vsprintf waitpid)
   AC_DEFINE(HAVE_SYS_ERRLIST)
   AC_DEFINE(HAVE_SYS_NERR)
