@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80x86 running DG/ux
-   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
    Currently maintained by gcc@dg-rtp.dg.com.
 
 This file is part of GNU CC.
@@ -25,7 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "i386/sysv4.h"
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.5 $"
+#define VERSION_INFO2   "$Revision: 1.6 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -260,24 +260,6 @@ char insn; int insn_; char * file_; int line_;
     warning ("argument is a structure"),0 : 0), \
     (function_arg (&CUM, MODE, TYPE, NAMED)))
 
-/* This is how to output an assembler line
-   that says to advance the location counter
-   to a multiple of 2**LOG bytes.  */
-
-#undef ASM_OUTPUT_ALIGN
-#define ASM_OUTPUT_ALIGN(FILE,LOG)	\
-     if (LOG <= 2) 			\
-        fprintf ((FILE), "\t.align %d\n", 1<<(LOG));\
-     else if ((LOG)!=0) 		\
-        {				\
-	 char buf[256];			\
-	 if (!backalign_labelno) fprintf ((FILE), "\t.align %d\n", 1); \
-	 ASM_GENERATE_INTERNAL_LABEL (buf, "LBA", backalign_labelno++); \
-	 fprintf ((FILE), "%s:", &buf[1]); \
-	 fprintf ((FILE), "\t.backalign %s,%d,%d\n", &buf[1], 1<<(LOG), \
-		  ((TARGET_PENTIUMPRO || TARGET_486) && LOG==4) ? 6 : 2);\
-        }
-
-/* add .align 1 to avoid .backalign bug in assembler */
+/* Add .align 1 to avoid .backalign bug in assembler */
 #undef CONST_SECTION_ASM_OP
 #define CONST_SECTION_ASM_OP    ".section\t.rodata\n\t.align 1"
