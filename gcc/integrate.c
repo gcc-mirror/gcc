@@ -276,6 +276,17 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
 
       if (GET_CODE (p) == REG)
 	parmdecl_map[REGNO (p)] = parms;
+      else if (GET_CODE (p) == CONCAT)
+	{
+	  rtx preal = gen_realpart (GET_MODE (XEXP (p, 0)), p);
+	  rtx pimag = gen_imagpart (GET_MODE (preal), p);
+
+	  if (GET_CODE (preal) == REG)
+	    parmdecl_map[REGNO (preal)] = parms;
+	  if (GET_CODE (pimag) == REG)
+	    parmdecl_map[REGNO (pimag)] = parms;
+	}
+
       /* This flag is cleared later
 	 if the function ever modifies the value of the parm.  */
       TREE_READONLY (parms) = 1;
@@ -1273,9 +1284,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 		 But if ARG_VALS[I] overlaps TARGET, these assumptions are
 		 wrong, so put ARG_VALS[I] into a fresh register.  */
 	      || (target != 0
-		  && (GET_CODE (arg_vals[i]) == REG
-		      || GET_CODE (arg_vals[i]) == SUBREG
-		      || GET_CODE (arg_vals[i]) == MEM)
+		  && ! CONSTANT_P (arg_vals[i])
 		  && reg_overlap_mentioned_p (arg_vals[i], target))
 	      /* ??? We must always copy a SUBREG into a REG, because it might
 		 get substituted into an address, and not all ports correctly
