@@ -160,7 +160,7 @@ EOF
     sun*:*:4.2BSD:*)
 	UNAME_RELEASE=`(head -1 /etc/motd | awk '{print substr($5,1,3)}') 2>/dev/null`
 	test "x${UNAME_RELEASE}" = "x" && UNAME_RELEASE=3
-	case "`/bin/arch" in
+	case "`/bin/arch`" in
 	    sun3)
 		echo m68k-sun-sunos${UNAME_RELEASE}
 		;;
