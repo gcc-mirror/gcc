@@ -1,3 +1,23 @@
+Tue Oct 23 13:05:53 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.
+
+	* builtins.c (expand_builtin_setjmp): Only call convert_memory_address
+	if needed.
+	(expand_builtin_longjmp, expand_builtin_alloca): Likewise.
+	* except.c (expand_builtin_frob_return_addr): Likewise.
+	(expand_builtin_eh_return): Likewise.
+	* stmt.c (expand_computed_goto): Likewise.
+	* explow.c (memory_address): Likewise.
+	(allocate_dynamic_stack_space): Clean up predicate testing.
+	(probe_stack_range): Convert SIZE to Pmode.
+	* calls.c (rtx_for_function_call): Only call convert_memory_address
+	if needed.
+	Pass function call operand as ptr_mode, not Pmode.
+	* expr.c (expand_assignment): Clean up calls to convert_memory
+	address by only doing so when needed and making offsets Pmode.
+	(store_constructor, expand_expr, expand_expr_unaligned): Likewise.
+	* function.c (assign_parms): Ensure address in MEM for RESULT_DECL
+	is in Pmode, not ptr_mode.
+
 2001-10-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* darwin-protos.h (constructor_section, destructor_section,

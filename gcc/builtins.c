@@ -456,7 +456,8 @@ expand_builtin_setjmp_setup (buf_addr, receiver_label)
     setjmp_alias_set = new_alias_set ();
 
 #ifdef POINTERS_EXTEND_UNSIGNED
-  buf_addr = convert_memory_address (Pmode, buf_addr);
+  if (GET_MODE (buf_addr) != Pmode)
+    buf_addr = convert_memory_address (Pmode, buf_addr);
 #endif
 
   buf_addr = force_reg (Pmode, force_operand (buf_addr, NULL_RTX));
@@ -642,8 +643,10 @@ expand_builtin_longjmp (buf_addr, value)
     setjmp_alias_set = new_alias_set ();
 
 #ifdef POINTERS_EXTEND_UNSIGNED
-  buf_addr = convert_memory_address (Pmode, buf_addr);
+  if (GET_MODE (buf_addr) != Pmode)
+    buf_addr = convert_memory_address (Pmode, buf_addr);
 #endif
+
   buf_addr = force_reg (Pmode, buf_addr);
 
   /* We used to store value in static_chain_rtx, but that fails if pointers
@@ -3104,7 +3107,8 @@ expand_builtin_alloca (arglist, target)
   result = allocate_dynamic_stack_space (op0, target, BITS_PER_UNIT);
 
 #ifdef POINTERS_EXTEND_UNSIGNED
-  result = convert_memory_address (ptr_mode, result);
+  if (GET_MODE (result) != ptr_mode)
+    result = convert_memory_address (ptr_mode, result);
 #endif
 
   return result;
