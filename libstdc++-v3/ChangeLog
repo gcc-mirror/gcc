@@ -1,3 +1,9 @@
+2001-05-24  Phil Edwards  <pme@sources.redhat.com>
+
+	* libsupc++/eh_alloc.cc (__cxa_allocate_exception):  Qualify
+	malloc with std:: .
+	(__cxa_free_exception):  Likewise with free.
+
 2001-05-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* include/c_std/bin/std_cstring.h: #define away all global
