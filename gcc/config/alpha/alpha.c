@@ -1024,7 +1024,8 @@ alpha_emit_conditional_move (cmp, mode)
 
   tem = gen_reg_rtx (cmp_op_mode);
   emit_move_insn (tem, gen_rtx (code, cmp_op_mode, op0, op1));
-  return gen_rtx (code == NE ? EQ : NE, VOIDmode, tem, CONST0_RTX (mode));
+  return gen_rtx (code == NE ? EQ : NE, VOIDmode, tem,
+		  CONST0_RTX (cmp_op_mode));
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
