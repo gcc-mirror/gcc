@@ -3591,13 +3591,13 @@ hairyfunc5
 # This is from gcc PR 8861
 --format=gnu-v3 --no-params
 _Z1fILi1ELc120EEv1AIXplT_cviLd810000000000000000703DAD7A370C5EEE
-void f<1, 120>(A<(1) + ((int)((double)810000000000000000703DAD7A370C5))>)
-f<1, 120>
+void f<1, (char)120>(A<(1) + ((int)((double)[810000000000000000703DAD7A370C5]))>)
+f<1, (char)120>
 #
 # This is also from gcc PR 8861
 --format=gnu-v3 --no-params
 _Z1fILi1EEv1AIXplT_cvingLf3f800000EEE
-void f<1>(A<(1) + ((int)(-((float)3f800000)))>)
+void f<1>(A<(1) + ((int)(-((float)[3f800000])))>)
 f<1>
 #
 # This is from a libstdc++ debug mode patch.
@@ -3635,7 +3635,7 @@ std::operator< <file_path, std::string>
 # More hairy qualifier handling.
 --format=gnu-v3 --no-params
 _Z9hairyfuncM1YKFPVPFrPA2_PM1XKFKPA3_ilEPcEiE
-hairyfunc(int (* const (X::** (* restrict (* volatile*(Y::*)(int) const)(char*)) [2])(long) const) [3])
+hairyfunc(int (* const (X::** (* restrict (* volatile* (Y::*)(int) const)(char*)) [2])(long) const) [3])
 hairyfunc
 #
 # Check that negative numbers are handled correctly.
