@@ -5106,8 +5106,9 @@ builtin_define_with_hex_fp_value (macro, type, digits, hex_str, fp_suffix)
   cpp_define (parse_in, buf);
 }
 
-/* Define MAX for TYPE based on the precision of the type, which is assumed
-   to be signed.  IS_LONG is 1 for type "long" and 2 for "long long".  */
+/* Define MAX for TYPE based on the precision of the type.  IS_LONG is
+   1 for type "long" and 2 for "long long".  We have to handle
+   unsigned types, since wchar_t might be unsigned.  */
 
 static void
 builtin_define_type_max (macro, type, is_long)
@@ -5115,41 +5116,37 @@ builtin_define_type_max (macro, type, is_long)
      tree type;
      int is_long;
 {
-  const char *value;
+  static const char *const values[]
+    = { "127", "255",
+	"32767", "65535",
+	"2147483647", "4294967295",
+	"9223372036854775807", "18446744073709551615",
+	"170141183460469231731687303715884105727",
+	"340282366920938463463374607431768211455" };
+  static const char *const suffixes[] = { "", "U", "L", "UL", "LL", "ULL" };
+
+  const char *value, *suffix;
   char *buf;
-  size_t mlen, vlen, extra;
+  size_t idx;
 
   /* Pre-rendering the values mean we don't have to futz with printing a
      multi-word decimal value.  There are also a very limited number of
      precisions that we support, so it's really a waste of time.  */
   switch (TYPE_PRECISION (type))
     {
-    case 8:
-      value = "127";
-      break;
-    case 16:
-      value = "32767";
-      break;
-    case 32:
-      value = "2147483647";
-      break;
-    case 64:
-      value = "9223372036854775807";
-      break;
-    case 128:
-      value = "170141183460469231731687303715884105727";
-      break;
-    default:
-      abort ();
+    case 8:	idx = 0; break;
+    case 16:	idx = 2; break;
+    case 32:	idx = 4; break;
+    case 64:	idx = 6; break;
+    case 128:	idx = 8; break;
+    default:    abort ();
     }
 
-  mlen = strlen (macro);
-  vlen = strlen (value);
-  extra = 2 + is_long;
-  buf = alloca (mlen + vlen + extra);
+  value = values[idx + TREE_UNSIGNED (type)];
+  suffix = suffixes[is_long * 2 + TREE_UNSIGNED (type)];
 
-  sprintf (buf, "%s=%s%s", macro, value,
-	   (is_long == 1 ? "L" : is_long == 2 ? "LL" : ""));
+  buf = alloca (strlen (macro) + 1 + strlen (value) + strlen (suffix) + 1);
+  sprintf (buf, "%s=%s%s", macro, value, suffix);
 
   cpp_define (parse_in, buf);
 }
