@@ -87,9 +87,6 @@
 /* Define if you have the _asinl function.  */
 #undef HAVE__ASINL
 
-/* Define if you have the _atan2f function.  */
-#undef HAVE__ATAN2F
-
 /* Define if you have the _atan2l function.  */
 #undef HAVE__ATAN2L
 
@@ -108,9 +105,6 @@
 /* Define if you have the _copysign function.  */
 #undef HAVE__COPYSIGN
 
-/* Define if you have the _copysignf function.  */
-#undef HAVE__COPYSIGNF
-
 /* Define if you have the _copysignl function.  */
 #undef HAVE__COPYSIGNL
 
@@ -125,9 +119,6 @@
 
 /* Define if you have the _cosl function.  */
 #undef HAVE__COSL
-
-/* Define if you have the _expf function.  */
-#undef HAVE__EXPF
 
 /* Define if you have the _expl function.  */
 #undef HAVE__EXPL
