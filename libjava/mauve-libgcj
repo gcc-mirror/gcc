@@ -4,6 +4,9 @@ JDK1.1
 !java.applet
 !java.awt
 !java.beans
+# We don't support object serialization yet.
+!java.io.ObjectStreamClass
+!java.io.ObjectInputOutput
 java.lang.Character.classify12
 java.lang.String.hash
 # We don't have the URL function in Class yet.
