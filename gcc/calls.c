@@ -447,8 +447,6 @@ expand_call (exp, target, ignore, modifier)
   int is_longjmp;
   /* Nonzero if this is a call to an inline function.  */
   int is_integrable = 0;
-  /* Nonzero if this is a call to __builtin_new.  */
-  int is_builtin_new;
   /* Nonzero if this is a call to a `const' function.
      Note that only explicitly named functions are handled as `const' here.  */
   int is_const = 0;
@@ -664,11 +662,6 @@ expand_call (exp, target, ignore, modifier)
 	       && ! strcmp (tname, "longjmp"))
 	is_longjmp = 1;
     }
-
-  is_builtin_new
-    = (name != 0
-       && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 13
-       && (!strcmp (name, "__builtin_new")));
 
   if (may_be_alloca)
     current_function_calls_alloca = 1;
@@ -1458,14 +1451,6 @@ expand_call (exp, target, ignore, modifier)
 
   if (is_volatile || is_longjmp)
     emit_barrier ();
-
-  /* For calls to __builtin_new, note that it can never return 0.
-     This is because a new handler will be called, and 0 it not
-     among the numbers it is supposed to return.  */
-#if 0
-  if (is_builtin_new)
-    emit_note (name, NOTE_INSN_BUILTIN_NEW);
-#endif
 
   /* If value type not void, return an rtx for the value.  */
 
