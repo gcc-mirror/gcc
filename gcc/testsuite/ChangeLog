@@ -1,3 +1,8 @@
+2004-06-07  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-41.c: New test case.
+	* gcc.dg/builtins-42.c: New test case.
+
 2004-06-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* g++.dg/ext/altivec-1.C: XFAIL powerpc-ibm-aix*.

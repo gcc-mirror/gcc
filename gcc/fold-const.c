@@ -9024,12 +9024,17 @@ tree_expr_nonnegative_p (tree t)
 	    CASE_BUILTIN_F (BUILT_IN_FREXP)
 	    CASE_BUILTIN_F (BUILT_IN_HYPOT)
 	    CASE_BUILTIN_F (BUILT_IN_POW10)
-	    CASE_BUILTIN_F (BUILT_IN_SQRT)
 	    CASE_BUILTIN_I (BUILT_IN_FFS)
 	    CASE_BUILTIN_I (BUILT_IN_PARITY)
 	    CASE_BUILTIN_I (BUILT_IN_POPCOUNT)
 	      /* Always true.  */
 	      return 1;
+
+	    CASE_BUILTIN_F (BUILT_IN_SQRT)
+	      /* sqrt(-0.0) is -0.0.  */
+	      if (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (t))))
+		return 1;
+	      return tree_expr_nonnegative_p (TREE_VALUE (arglist));
 
 	    CASE_BUILTIN_F (BUILT_IN_ASINH)
 	    CASE_BUILTIN_F (BUILT_IN_ATAN)
@@ -9057,17 +9062,17 @@ tree_expr_nonnegative_p (tree t)
 	      /* True if the 1st argument is nonnegative.  */
 	      return tree_expr_nonnegative_p (TREE_VALUE (arglist));
 
-	    CASE_BUILTIN_F(BUILT_IN_FMAX)
+	    CASE_BUILTIN_F (BUILT_IN_FMAX)
 	      /* True if the 1st OR 2nd arguments are nonnegative.  */
 	      return tree_expr_nonnegative_p (TREE_VALUE (arglist))
 	        || tree_expr_nonnegative_p (TREE_VALUE (TREE_CHAIN (arglist)));
 
-	    CASE_BUILTIN_F(BUILT_IN_FMIN)
+	    CASE_BUILTIN_F (BUILT_IN_FMIN)
 	      /* True if the 1st AND 2nd arguments are nonnegative.  */
 	      return tree_expr_nonnegative_p (TREE_VALUE (arglist))
 	        && tree_expr_nonnegative_p (TREE_VALUE (TREE_CHAIN (arglist)));
 
-	    CASE_BUILTIN_F(BUILT_IN_COPYSIGN)
+	    CASE_BUILTIN_F (BUILT_IN_COPYSIGN)
 	      /* True if the 2nd argument is nonnegative.  */
 	      return tree_expr_nonnegative_p (TREE_VALUE (TREE_CHAIN (arglist)));
 
