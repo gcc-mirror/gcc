@@ -233,7 +233,7 @@ extern int jcf_unexpected_eof PARAMS ((JCF*, int)) ATTRIBUTE_NORETURN;
 /* Extract a character from a Java-style Utf8 string.
  * PTR points to the current character.
  * LIMIT points to the end of the Utf8 string.
- * PTR is incremented to point after the character thta gets returns.
+ * PTR is incremented to point after the character that gets returned.
  * On an error, -1 is returned. */
 #define UTF8_GET(PTR, LIMIT) \
   ((PTR) >= (LIMIT) ? -1 \
