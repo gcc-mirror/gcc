@@ -1,3 +1,11 @@
+2004-01-25  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/13810
+	* parser.c (cp_parser_type_parameter): When cp_parser_id_expression 
+	returns a TYPE_DECL. no further lookup is required.
+	* semantics.c (check_template_template_default_arg): A TYPE_DECL
+	is invalid. Rework to give better diagnostics.
+
 2004-01-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13797
