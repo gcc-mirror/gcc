@@ -45,8 +45,8 @@ import java.io.IOException;
  * exception occurred.  Look in the descriptive message (if any) for
  * details on what went wrong.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Warren Levy (warrenl@cygnus.com)
  * @status updated to 1.4
  */
 public class ProtocolException extends IOException

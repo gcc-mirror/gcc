@@ -43,7 +43,7 @@ import java.io.InterruptedIOException;
 /**
  * This exception signals that a socket read or accept timed out.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.4
  * @status updated to 1.4
  */

@@ -41,7 +41,7 @@ package java.net;
 /**
  * This exception is thrown when a String cannot be parsed as a URI.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see URI
  * @since 1.4
  * @status updated to 1.4

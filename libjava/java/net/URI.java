@@ -1,4 +1,4 @@
-/* URI.java - An URI class
+/* URI.java - An URI class --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -134,14 +134,14 @@ public final class URI implements Comparable, Serializable
   {
     this.string = (String) is.readObject();
     try
-    {
-      parseURI(this.string);
-    }
+      {
+	parseURI(this.string);
+      }
     catch (URISyntaxException x)
-    {
-      // Should not happen.
-      throw new RuntimeException(x);
-    }
+      {
+	// Should not happen.
+	throw new RuntimeException(x);
+      }
   }
 
   private void writeObject(ObjectOutputStream os) throws IOException
@@ -618,7 +618,7 @@ public final class URI implements Comparable, Serializable
    */
   public boolean isAbsolute()
   {
-    return (scheme != null);
+    return scheme != null;
   }
 
   /**

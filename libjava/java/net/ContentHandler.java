@@ -55,7 +55,7 @@ import java.io.IOException;
   * indirectly through methods in other classes.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Warren Levy <warrenl@cygnus.com>
+  * @author Warren Levy (warrenl@cygnus.com)
   */
 public abstract class ContentHandler
 {

@@ -51,7 +51,7 @@ package java.net;
  * @since 1.2
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @status should be completely JDK 1.4 compatible
  */
 public interface SocketOptions

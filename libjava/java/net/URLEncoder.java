@@ -60,7 +60,7 @@ import java.io.UnsupportedEncodingException;
  * This method is very useful for encoding strings to be sent to CGI scripts
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @author Mark Wielaard (mark@klomp.org)
  */
 public class URLEncoder

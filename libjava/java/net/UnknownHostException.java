@@ -46,7 +46,7 @@ import java.io.IOException;
  * DNS problem has occurred, but most often means that the host was not
  * correctly specified.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Per Bothner
  * @status updated to 1.4
  */

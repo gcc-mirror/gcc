@@ -1,4 +1,4 @@
-/* NetworkInterface.java
+/* NetworkInterface.java --
    Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,7 +49,7 @@ import java.util.Vector;
  * For example, an ethernet interface may be named "eth0" and have the
  * address 192.168.1.101 assigned to it.
  *
- * @author Michael Koch <konqueror@gmx.de>
+ * @author Michael Koch (konqueror@gmx.de)
  * @since 1.4
  */
 public final class NetworkInterface
@@ -113,6 +113,7 @@ public final class NetworkInterface
 	  }
 	catch (SecurityException e)
 	  {
+	    // Ignore.
 	  }
       }
 

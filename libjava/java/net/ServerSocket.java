@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.net;
 
 import gnu.java.net.PlainSocketImpl;
+
 import java.io.IOException;
 import java.nio.channels.IllegalBlockingModeException;
 import java.nio.channels.ServerSocketChannel;
@@ -340,6 +341,7 @@ public class ServerSocket
 	  }
 	catch (IOException e2)
 	  {
+	    // Ignore.
 	  }
 
 	throw e;

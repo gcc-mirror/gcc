@@ -49,7 +49,7 @@ package java.net;
  * <code>URLStreamHandler</code> object.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  */
 public interface URLStreamHandlerFactory
 {

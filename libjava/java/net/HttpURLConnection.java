@@ -1,5 +1,5 @@
-/* HttpURLConnection.java - Subclass of communications links using
-                            Hypertext Transfer Protocol.
+/* HttpURLConnection.java -- Subclass of communications links using
+   Hypertext Transfer Protocol.
    Copyright (C) 1998, 1999, 2000, 2002, 2003  Free Software Foundation
 
 This file is part of GNU Classpath.
@@ -291,7 +291,7 @@ public abstract class HttpURLConnection extends URLConnection
   /**
    * This is a list of valid request methods, separated by "|" characters.
    */
-  private static String valid_methods =
+  private static final String valid_methods =
     "|GET|POST|HEAD|OPTIONS|PUT|DELETE|TRACE|";
 
   // Instance Variables
@@ -537,7 +537,7 @@ public abstract class HttpURLConnection extends URLConnection
   public InputStream getErrorStream()
   {
     if (! connected)
-      return (null);
+      return null;
 
     int code;
     try
@@ -550,10 +550,10 @@ public abstract class HttpURLConnection extends URLConnection
       }
 
     if (code == -1)
-      return (null);
+      return null;
 
     if (((code / 100) != 4) || ((code / 100) != 5))
-      return (null);
+      return null;
 
     try
       {
@@ -561,14 +561,14 @@ public abstract class HttpURLConnection extends URLConnection
 
 	int i = pbis.read();
 	if (i == -1)
-	  return (null);
+	  return null;
 
 	pbis.unread(i);
-	return (pbis);
+	return pbis;
       }
     catch (IOException e)
       {
-	return (null);
+	return null;
       }
   }
 
