@@ -1826,6 +1826,30 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# Correct the return type for strlen in strings.h in SunOS 4.
+file=strings.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e 's/int[ 	]*strlen();/__SIZE_TYPE__ strlen();/' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+
 # Delete the '#define void int' line from curses.h on Lynx
 file=curses.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
