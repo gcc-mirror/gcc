@@ -1,3 +1,10 @@
+2002-11-10  H.J. Lu <hjl@gnu.org>
+
+	* calls.c (PUSH_ARGS_REVERSED): Define only if not defined.
+	* expr.c (PUSH_ARGS_REVERSED): Likewise.
+
+	* config/i386/i386.h (PUSH_ARGS_REVERSED): Set to 1.
+
 2002-11-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/rs6000/sysv4.h: Define NO_IMPLICIT_EXTERN_C here...
