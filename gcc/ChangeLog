@@ -1,5 +1,12 @@
 2004-08-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
+	PR tree-optimization/17016
+	* tree-ssa-loop-niter.c (number_of_iterations_cond,
+	number_of_iterations_exit): Use POINTER_TYPE_P instead
+	of testing for POINTER_TYPE.
+
+2004-08-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
 	* tree-ssa-loop-ivcanon.c: New file.
 	* tree-ssa-loop-manip.c (create_iv): New function.
 	* Makefile.in (tree-ssa-loop-ivcanon.o): Add.
