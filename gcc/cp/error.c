@@ -36,7 +36,7 @@ enum pad { none, before, after };
    TFF_CLASS_SCOPE: if possible, include the class-name part of a
         qualified-id.  This flag may be implied in some circumstances by
         TFF_NAMESPACE_SCOPE.
-   TFF_SCOPE: the combinaison of the two above.        
+   TFF_SCOPE: the combinaison of the two above.
    TFF_CHASE_TYPDEF: print the original type-id instead of the typedef-name.
    TFF_DECL_SPECIFIERS: print decl-specifiers.
    TFF_CLASS_KEY_OR_ENUM: precede a class-type name (resp. enum name) with
@@ -90,8 +90,6 @@ typedef struct
      put_whitespace (TFI) = none;            \
    } while (0)
 
-typedef const char *cp_printer ();
-
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
@@ -116,7 +114,7 @@ static char *scratch_firstobj;
 # define OB_PUTI(CST) do { sprintf (digit_buffer, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)(CST)); \
 			   OB_PUTCP (digit_buffer); } while (0)
 
-# define OB_END_TEMPLATE_ID() 						    \
+# define OB_END_TEMPLATE_ID()						    \
   (((obstack_next_free (&scratch_obstack) != obstack_base (&scratch_obstack) \
     && obstack_next_free (&scratch_obstack)[-1] == '>')			    \
    ? OB_PUTC (' ') : (void)0), OB_PUTC ('>'))
@@ -256,7 +254,7 @@ dump_scope (scope, flags)
 {
   if (scope == NULL_TREE)
     return;
-  
+
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     {
       if (scope != global_namespace)
@@ -298,7 +296,7 @@ dump_qualifiers (t, p)
   int ix;
   int quals = TYPE_QUALS (t);
   int do_after = p == after;
-  
+
   if (quals)
     {
       for (ix = 0; ix != 3; ix++)
@@ -431,7 +429,7 @@ dump_template_bindings (parms, args)
 	    dump_template_argument (arg, TS_PLAIN);
 	  else
 	    OB_PUTS ("{missing}");
-          
+
 	  ++arg_idx;
 	  need_comma = 1;
 	}
@@ -450,7 +448,7 @@ dump_type (t, flags)
 {
   if (t == NULL_TREE)
     return;
-  
+
   if (TYPE_PTRMEMFUNC_P (t))
     goto offset_type;
 
@@ -487,12 +485,12 @@ dump_type (t, flags)
           break;
         }
       /* else fallthrough */
-    
+
     case TEMPLATE_DECL:
     case NAMESPACE_DECL:
       dump_decl (t, flags & ~TS_DECL_TYPE);
       break;
-    
+
     case COMPLEX_TYPE:
       OB_PUTS ("complex ");
       dump_type (TREE_TYPE (t), flags);
@@ -593,7 +591,7 @@ dump_typename (t, flags)
      enum tree_string_flags flags;
 {
   tree ctx = TYPE_CONTEXT (t);
-  
+
   if (TREE_CODE (ctx) == TYPENAME_TYPE)
     dump_typename (ctx, flags);
   else
@@ -638,7 +636,7 @@ dump_aggr_type (t, flags)
       OB_PUTCP (variety);
       OB_PUTC (' ');
     }
-  
+
   if (flags & TS_CHASE_TYPEDEFS)
     t = TYPE_MAIN_VARIANT (t);
 
@@ -659,7 +657,7 @@ dump_aggr_type (t, flags)
           /* Because the template names are mangled, we have to locate
              the most general template, and use that name.  */
           tree tpl = CLASSTYPE_TI_TEMPLATE (t);
-          
+
           while (DECL_TEMPLATE_INFO (tpl))
             tpl = DECL_TI_TEMPLATE (tpl);
           name = tpl;
@@ -694,8 +692,8 @@ dump_aggr_type (t, flags)
    deal with prefix and suffix.
 
    Arrays must also do this for DECL nodes, like int a[], and for things like
-   int *[]&.  
-   
+   int *[]&.
+
    Return indicates how you should pad an object name after this. I.e. you
    want to pad non-*, non-& cores, but not pad * or & types.  */
 
@@ -705,20 +703,20 @@ dump_type_prefix (t, flags)
      enum tree_string_flags flags;
 {
   enum pad padding = before;
-  
+
   if (TYPE_PTRMEMFUNC_P (t))
     {
       t = TYPE_PTRMEMFUNC_FN_TYPE (t);
       goto offset_type;
     }
-  
+
   switch (TREE_CODE (t))
     {
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       {
 	tree sub = TREE_TYPE (t);
-	
+
 	padding = dump_type_prefix (sub, flags);
 	/* A tree for a member pointer looks like pointer to offset,
 	   so let the OFFSET_TYPE case handle it.  */
@@ -792,7 +790,7 @@ dump_type_prefix (t, flags)
       dump_type (t, flags);
       padding = before;
       break;
-      
+
     default:
       sorry ("`%s' not supported by dump_type_prefix",
 	     tree_code_name[(int) TREE_CODE (t)]);
@@ -865,7 +863,7 @@ dump_type_suffix (t, flags)
       OB_PUTC (']');
       dump_type_suffix (TREE_TYPE (t), flags);
       break;
-      
+
     case ENUMERAL_TYPE:
     case IDENTIFIER_NODE:
     case INTEGER_TYPE:
@@ -944,7 +942,7 @@ dump_global_iord (t)
     OB_PUTS ("destructors");
   else
     my_friendly_abort (352);
-  
+
   OB_PUTS (" for ");
   OB_PUTCP (input_filename);
   OB_PUTC (')');
@@ -999,11 +997,11 @@ dump_decl (t, flags)
       }
       if (flags & TS_DECORATE)
 	OB_PUTS ("typedef ");
-      dump_simple_decl (t, DECL_ORIGINAL_TYPE (t) 
+      dump_simple_decl (t, DECL_ORIGINAL_TYPE (t)
 			? DECL_ORIGINAL_TYPE (t) : TREE_TYPE (t),
 	                flags);
       break;
-      
+
     case VAR_DECL:
       if (DECL_NAME (t) && VTABLE_NAME_P (DECL_NAME (t)))
 	{
@@ -1040,7 +1038,7 @@ dump_decl (t, flags)
       dump_decl (TREE_OPERAND (t, 0), flags & ~TS_DECL_TYPE);
       OB_PUTS ("::");
       dump_decl (TREE_OPERAND (t, 1), flags);
-      break;      
+      break;
 
     case ARRAY_REF:
       dump_decl (TREE_OPERAND (t, 0), flags);
@@ -1172,17 +1170,17 @@ dump_template_decl (t, flags)
 {
   tree orig_parms = DECL_TEMPLATE_PARMS (t);
   tree parms;
-  int i; 
-  
+  int i;
+
   if (flags & TS_TEMPLATE_PREFIX)
     {
-      for (parms = orig_parms = nreverse (orig_parms); 
+      for (parms = orig_parms = nreverse (orig_parms);
            parms;
            parms = TREE_CHAIN (parms))
         {
 	  tree inner_parms = INNERMOST_TEMPLATE_PARMS (parms);
           int len = TREE_VEC_LENGTH (inner_parms);
-          
+
           OB_PUTS ("template <");
           for (i = 0; i < len; i++)
             {
@@ -1270,7 +1268,7 @@ dump_function_decl (t, flags)
     OB_PUTS ("static ");
   else if (TYPE_POLYMORPHIC_P (t))
     OB_PUTS ("virtual ");
-  
+
   /* Print the return type?  */
   if (show_return)
     show_return = !DECL_CONV_FN_P (t)  && !DECL_CONSTRUCTOR_P (t)
@@ -1291,26 +1289,26 @@ dump_function_decl (t, flags)
     dump_scope (CP_DECL_CONTEXT (t), flags);
 
   dump_function_name (t, flags);
-  
+
   if (!(flags & TS_DECL_TYPE))
     return;
   if (TREE_CODE (fntype) == METHOD_TYPE && parmtypes)
     /* Skip "this" parameter.  */
     parmtypes = TREE_CHAIN (parmtypes);
-    
+
   /* Skip past the "in_charge" parameter.  */
   if (DECL_HAS_IN_CHARGE_PARM_P (t))
     parmtypes = TREE_CHAIN (parmtypes);
-  
+
   dump_parameters (parmtypes, flags);
-  
+
   if (show_return)
     dump_type_suffix (TREE_TYPE (fntype), flags);
 
   if (TREE_CODE (fntype) == METHOD_TYPE)
     dump_qualifiers (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fntype))),
 		     before);
-  
+
   if (flags & TS_FUNC_THROW)
     dump_exception_spec (TYPE_RAISES_EXCEPTIONS (fntype), flags);
 
@@ -1347,7 +1345,7 @@ dump_parameters (parmtypes, flags)
           break;
         }
       dump_type (TREE_VALUE (parmtypes), flags);
-      
+
       if ((flags & TS_PARM_DEFAULTS) && TREE_PURPOSE (parmtypes))
         {
           OB_PUTS (" = ");
@@ -1414,7 +1412,7 @@ dump_function_name (t, flags)
 
   if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t)
       && !DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (t)
-      && (DECL_TEMPLATE_SPECIALIZATION (t) 
+      && (DECL_TEMPLATE_SPECIALIZATION (t)
 	  || TREE_CODE (DECL_TI_TEMPLATE (t)) != TEMPLATE_DECL
 	  || DECL_TEMPLATE_SPECIALIZATION (DECL_TI_TEMPLATE (t))
 	  || PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (t))))
@@ -1434,7 +1432,7 @@ dump_template_parms (info, primary, flags)
      enum tree_string_flags flags;
 {
   tree args = info ? TI_ARGS (info) : NULL_TREE;
-  
+
   if (primary && flags & TS_TEMPLATE_PLAIN)
     return;
   flags &= ~(TS_AGGR_TAGS | TS_TEMPLATE_PLAIN);
@@ -1447,13 +1445,13 @@ dump_template_parms (info, primary, flags)
       int len = 0;
       int ix = 0;
       int need_comma = 0;
-      
+
       if (TREE_CODE (args) == TREE_VEC)
         {
           if (TREE_VEC_LENGTH (args) > 0
-    	      && TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
-    	    args = TREE_VEC_ELT (args, TREE_VEC_LENGTH (args) - 1);
-          
+	      && TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
+	    args = TREE_VEC_ELT (args, TREE_VEC_LENGTH (args) - 1);
+
           len = TREE_VEC_LENGTH (args);
         }
       else if (TREE_CODE (args) == TREE_LIST)
@@ -1473,7 +1471,7 @@ dump_template_parms (info, primary, flags)
             }
           if (need_comma)
             OB_PUTS (", ");
-              
+
           if (!arg)
             OB_PUTS ("{template parameter error}");
           else
@@ -1486,17 +1484,17 @@ dump_template_parms (info, primary, flags)
       tree tpl = TI_TEMPLATE (info);
       tree parms = DECL_TEMPLATE_PARMS (tpl);
       int len, ix;
-      
+
       parms = TREE_CODE (parms) == TREE_LIST ? TREE_VALUE (parms) : NULL_TREE;
       len = parms ? TREE_VEC_LENGTH (parms) : 0;
-      
+
       for (ix = 0; ix != len; ix++)
         {
           tree parm = TREE_VALUE (TREE_VEC_ELT (parms, ix));
 
           if (ix)
             OB_PUTS (", ");
-          
+
           dump_decl (parm, flags & ~TS_DECL_TYPE);
         }
     }
@@ -1595,12 +1593,12 @@ dump_expr (t, flags)
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
 	  {
 	    tree values = TYPE_VALUES (type);
-	    
+
 	    for (; values;
 	         values = TREE_CHAIN (values))
 	      if (tree_int_cst_equal (TREE_VALUE (values), t))
 	        break;
-	    
+
 	    if (values)
 	      OB_PUTID (TREE_PURPOSE (values));
 	    else
@@ -1725,7 +1723,7 @@ dump_expr (t, flags)
     case AGGR_INIT_EXPR:
       {
 	tree fn = NULL_TREE;
-	
+
 	if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
 	  fn = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
 
@@ -1749,7 +1747,7 @@ dump_expr (t, flags)
       {
 	tree fn = TREE_OPERAND (t, 0);
 	tree args = TREE_OPERAND (t, 1);
-	
+
 	if (TREE_CODE (fn) == ADDR_EXPR)
 	  fn = TREE_OPERAND (fn, 0);
 
@@ -1900,7 +1898,7 @@ dump_expr (t, flags)
 	  /* An ADDR_EXPR can have reference type.  In that case, we
 	     shouldn't print the `&' doing so indicates to the user
 	     that the expression has pointer type.  */
-	  || (TREE_TYPE (t) 
+	  || (TREE_TYPE (t)
 	      && TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE))
 	dump_expr (TREE_OPERAND (t, 0), flags | TS_EXPR_PARENS);
       else
@@ -1954,7 +1952,7 @@ dump_expr (t, flags)
 
 	  while (TREE_CODE (next) == POINTER_TYPE)
 	    next = TREE_TYPE (next);
-	  
+
 	  if (TREE_CODE (next) == FUNCTION_TYPE)
 	    {
 	      if (flags & TS_EXPR_PARENS)
@@ -2006,7 +2004,7 @@ dump_expr (t, flags)
 	      t = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (t)));
 	      t = TYPE_METHOD_BASETYPE (t);
 	      virtuals = TYPE_BINFO_VIRTUALS (TYPE_MAIN_VARIANT (t));
-	      
+
 	      n = tree_low_cst (idx, 0) - first_vfun_index (t);
 
 	      /* Map vtable index back one, to allow for the null pointer to
@@ -2109,7 +2107,7 @@ dump_expr (t, flags)
     case ALIGNOF_EXPR:
       if (TREE_CODE (t) == SIZEOF_EXPR)
 	OB_PUTS ("sizeof (");
-      else 
+      else
 	{
 	  my_friendly_assert (TREE_CODE (t) == ALIGNOF_EXPR, 0);
 	  OB_PUTS ("__alignof__ (");
@@ -2154,7 +2152,7 @@ dump_expr (t, flags)
       dump_expr (TREE_OPERAND (t, 1), flags & ~TS_EXPR_PARENS);
       OB_PUTS ("} ");
       break;
-      
+
     case LOOP_EXPR:
       OB_PUTS ("while (1) { ");
       dump_expr (TREE_OPERAND (t, 0), flags & ~TS_EXPR_PARENS);
@@ -2173,7 +2171,7 @@ dump_expr (t, flags)
 	  OB_PUTID (DECL_NAME (TREE_VALUE (t)));
 	  break;
 	}
-      /* else fall through */	
+      /* else fall through */
 
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
@@ -2272,9 +2270,9 @@ context_as_string (context, flags)
      enum tree_string_flags flags;
 {
   OB_INIT ();
-  
+
   dump_scope (context, flags);
-  
+
   OB_FINISH ();
 
   return (char *)obstack_base (&scratch_obstack);
@@ -2365,7 +2363,7 @@ decl_to_string (decl, verbose)
   else if (TREE_CODE (decl) == FUNCTION_DECL)
     flags |= TS_DECL_TYPE | TS_FUNC_NORETURN;
   flags |= TS_TEMPLATE_PREFIX;
-  
+
   OB_INIT ();
 
   dump_decl (decl, flags);
@@ -2395,14 +2393,14 @@ fndecl_to_string (fndecl, verbose)
      int verbose;
 {
   enum tree_string_flags flags;
-  
+
   flags = TS_FUNC_THROW | TS_DECL_TYPE;
   if (verbose)
     flags |= TS_PARM_DEFAULTS;
   OB_INIT ();
 
   dump_decl (fndecl, flags);
-  
+
   OB_FINISH ();
 
   return (char *)obstack_base (&scratch_obstack);
@@ -2470,12 +2468,12 @@ type_to_string (typ, verbose)
      int verbose;
 {
   enum tree_string_flags flags;
-  
+
   flags = 0;
   if (verbose)
     flags |= TS_AGGR_TAGS;
   flags |= TS_TEMPLATE_PREFIX;
-  
+
   OB_INIT ();
 
   dump_type (typ, flags);
@@ -2504,7 +2502,7 @@ args_to_string (p, verbose)
   enum tree_string_flags flags = 0;
   if (verbose)
     flags |= TS_AGGR_TAGS;
-  
+
   if (p == NULL_TREE)
     return "";
 
@@ -2590,7 +2588,7 @@ cp_print_error_function (buffer, dc)
 
       os = output_buffer_state (buffer);
       output_set_prefix (buffer, prefix);
-      
+
       if (current_function_decl == NULL)
         output_add_string (buffer, "At global scope:");
       else
@@ -2649,17 +2647,17 @@ print_instantiation_full_context (buffer)
 	{
 	  if (current_function_decl == TINST_DECL (p))
 	    /* Avoid redundancy with the the "In function" line.  */;
-	  else 
+	  else
 	    output_verbatim (buffer, "%s: In instantiation of `%s':\n", file,
                              decl_as_string (TINST_DECL (p),
                                              TS_DECL_TYPE | TS_FUNC_NORETURN));
-	  
+
 	  line = TINST_LINE (p);
 	  file = TINST_FILE (p);
 	  p = TREE_CHAIN (p);
 	}
     }
-  
+
   print_instantiation_partial_context (buffer, p, file, line);
 }
 
@@ -2739,7 +2737,7 @@ cp_tree_printer (buffer)
           | TFF_FUNCTION_DEFAULT_ARGUMENTS;
       print_function_argument_list (buffer, &tfi);
       break;
-      
+
     case 'D':
       tree_being_formatted (&tfi) =
         va_arg (output_buffer_format_args (buffer), tree);
@@ -2750,7 +2748,7 @@ cp_tree_printer (buffer)
           | TFF_EXCEPTION_SPECIFICATION | TFF_CHASE_NAMESPACE_ALIAS;
       print_declaration (buffer, &tfi);
       break;
-      
+
     case 'E':
       tree_being_formatted (&tfi) =
         va_arg (output_buffer_format_args (buffer), tree);
@@ -2758,22 +2756,22 @@ cp_tree_printer (buffer)
         tree_formatting_flags (&tfi) = TFF_SCOPE;
       print_expression (buffer, &tfi);
       break;
-      
+
     case 'F':
       tree_being_formatted (&tfi) =
         va_arg (output_buffer_format_args (buffer), tree);
       if (be_verbose)
         tree_formatting_flags (&tfi) = TFF_SCOPE | TFF_DECL_SPECIFIERS
           | TFF_RETURN_TYPE | TFF_FUNCTION_DEFAULT_ARGUMENTS
-          | TFF_EXCEPTION_SPECIFICATION;          
+          | TFF_EXCEPTION_SPECIFICATION;
       print_function_declaration (buffer, &tfi);
       break;
-      
+
     case 'P':
       print_function_parameter
         (buffer, va_arg (output_buffer_format_args (buffer), int));
       break;
-      
+
     case 'T':
       tree_being_formatted (&tfi) =
         va_arg (output_buffer_format_args (buffer), tree);
@@ -2782,17 +2780,17 @@ cp_tree_printer (buffer)
           | TFF_RETURN_TYPE | TFF_EXCEPTION_SPECIFICATION;
       print_type_id (buffer, &tfi);
       break;
-      
+
     case 'V':
       tree_being_formatted (&tfi) =
         va_arg (output_buffer_format_args (buffer), tree);
       print_cv_qualifier_seq (buffer, &tfi);
       break;
-      
+
     default:
       return 0;
     }
-  
+
   return 1;
 }
 
@@ -2806,7 +2804,7 @@ print_function_argument_list (buffer, tfi)
 }
 
 /* Print a declaration represented by tree_being_formatted (TFI)
-   onto buffer.  */   
+   onto buffer.  */
 static void
 print_declaration (buffer, tfi)
      output_buffer *buffer __attribute__ ((__unused__));
@@ -2859,7 +2857,7 @@ print_type_id (buffer, tfi)
   if (flags & TFF_CHASE_TYPEDEF)
     tree_being_formatted (tfi) =
       typedef_original_name (tree_being_formatted (tfi));
-  
+
   /* A type-id is of the form:
      type-id:
         type-specifier-seq abstract-declarator(opt)  */
@@ -2880,7 +2878,7 @@ print_type_id (buffer, tfi)
     case FUNCTION_TYPE:
     ptr_mem_fun:
       print_rest_of_abstract_declarator (buffer, tfi);
-  
+
     default:
       break;
     }
@@ -2940,7 +2938,7 @@ print_type_specifier_seq (buffer, tfi)
       /* Because the abstract-declarator can modify the type-specifier-seq
          in a highly non linear manner, we pretty-print its prefix here.
          The suffix part is handled by print_rest_of_abstract_declarator.  */
-      
+
       /* A RECORD_TYPE is also used to represent a pointer to member
          function.  */
     case RECORD_TYPE:
@@ -2951,7 +2949,7 @@ print_type_specifier_seq (buffer, tfi)
             TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (t));
           print_type_id (buffer, tfi);
           print_whitespace (buffer, tfi);
-          
+
           /* Then the beginning of the abstract-declarator part.  */
           tree_being_formatted (tfi) =
             TYPE_METHOD_BASETYPE (TYPE_PTRMEMFUNC_FN_TYPE (t));
@@ -3001,7 +2999,7 @@ print_type_specifier_seq (buffer, tfi)
       tree_being_formatted (tfi) = TREE_TYPE (t);
       print_type_id (buffer, tfi);
       print_whitespace (buffer, tfi);
-      
+
       /* Then, the containing class.  */
       tree_being_formatted (tfi) = TYPE_OFFSET_BASETYPE (t);
       print_nested_name_specifier (buffer, tfi);
@@ -3191,9 +3189,9 @@ print_rest_of_abstract_declarator (buffer, tfi)
 {
   tree t = tree_being_formatted (tfi);
   enum tree_code code = TREE_CODE (t);
-  
+
   /* An abstract-declarator has the form:
-    
+
      abstract-declarator:
           ptr-operator abstract-declarator(opt)
           direct-abstract-declarator
@@ -3310,7 +3308,7 @@ print_rest_of_abstract_declarator (buffer, tfi)
       sorry_for_unsupported_tree (t);
       /* fall throught.  */
     case ERROR_MARK:
-      break;      
+      break;
     }
 }
 
@@ -3338,7 +3336,7 @@ print_cv_qualifier_seq (buffer, tfi)
             print_identifier (buffer, qualifier[i]);
             put_whitespace (tfi) = before;
           }
-      
+
       if (pad_after)
         {
           output_add_space (buffer);
@@ -3406,7 +3404,7 @@ print_nested_name_specifier (buffer, tfi)
         }
     }
 
-  tree_being_formatted (tfi) = t;             
+  tree_being_formatted (tfi) = t;
 }
 
 static void

@@ -1,3 +1,10 @@
+2000-09-21  Andreas Jaeger  <aj@suse.de>
+
+	* errfn.c: Move declaration of cp_printer and cp_printers to ...
+	* cp-tree.h: ... here.
+
+	* error.c: Remove declaration of cp_printer.
+
 2000-09-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (mark_local_for_remap_r): Handle CASE_LABELs.
@@ -14,7 +21,7 @@
 2000-09-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h (check_function_format): Accept a `status' parameter.
-	
+
 	* call.c, typeck.c: Updates calls to `check_function_format'.
 
 2000-09-17  Geoffrey Keating  <geoffk@cygnus.com>
@@ -72,7 +79,7 @@
 	* tree.c (cp_statement_code_p): Don't include SCOPE_STMT.
 	* typeck.c: Change order of includes.
 	(convert_sequence): Remove.
-	
+
 2000-09-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* lex.c (reswords): Add _Complex.
@@ -214,7 +221,7 @@ Thu Sep 14 12:10:45 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(finish_case_label): Remove.
 	* typeck.c (c_expand_return): Remove.
 	(c_expand_start_case): Likewise.
-	
+
 2000-09-07  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* ir.texi: Document type nodes.
@@ -316,7 +323,7 @@ Thu Sep 14 12:10:45 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(cp_statement_code_p): New function.
 	(walk_stmt_tree): Remove.
 	(init_tree): Set lang_statement_code_p.
-	
+
 2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
 
 	Integrated preprocessor.
@@ -2983,11 +2990,11 @@ Mon May 15 11:46:29 2000  Donald Lindsay  <dlindsay@cygnus.com>
 Wed May 17 17:27:44 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* decl.c (pop_label): Replace warn_unused with warn_unused_label.
-  	* typeck.c (build_x_compound_expr): Replace warn_unused with
- 	warn_unused_value.
+	* typeck.c (build_x_compound_expr): Replace warn_unused with
+	warn_unused_value.
 
 	* decl2.c (lang_decode_option): Update -Wall unused flags by
- 	calling set_Wunused.
+	calling set_Wunused.
 
 2000-05-16  Mark Mitchell  <mark@codesourcery.com>
 
@@ -6327,4 +6334,3 @@ Wed Jan 26 22:19:14 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 2000-01-01  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* call.c (build_new_method_call): Also check destructors.
-

@@ -114,7 +114,7 @@ Boston, MA 02111-1307, USA.  */
    TYPE_BINFO
      For an ENUMERAL_TYPE, this is ENUM_TEMPLATE_INFO.
      For a TYPENAME_TYPE, this is TYPENAME_TYPE_FULLNAME.
-     For a TEMPLATE_TEMPLATE_PARM or BOUND_TEMPLATE_TEMPLATE_PARM, 
+     For a TEMPLATE_TEMPLATE_PARM or BOUND_TEMPLATE_TEMPLATE_PARM,
      this is TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
 
   BINFO_VIRTUALS
@@ -145,7 +145,7 @@ Boston, MA 02111-1307, USA.  */
      in both ABIs.
 
    DECL_ARGUMENTS
-     For a VAR_DECL this is DECL_ANON_UNION_ELEMS.  
+     For a VAR_DECL this is DECL_ANON_UNION_ELEMS.
 
    DECL_VINDEX
      This field is NULL for a non-virtual function.  For a virtual
@@ -154,7 +154,7 @@ Boston, MA 02111-1307, USA.  */
      a virtual function is declared, but before it is known what
      function is overriden, this field is the error_mark_node.
 
-     Temporarily, it may be set to a TREE_LIST whose TREE_VALUE is 
+     Temporarily, it may be set to a TREE_LIST whose TREE_VALUE is
      the virtual function this one overrides, and whose TREE_CHAIN is
      the old DECL_VINDEX.  */
 
@@ -173,8 +173,8 @@ Boston, MA 02111-1307, USA.  */
 #define VAR_FUNCTION_OR_PARM_DECL_CHECK(NODE)			\
 ({  const tree __t = NODE;					\
     enum tree_code __c = TREE_CODE(__t);			\
-    if (__c != VAR_DECL 					\
-	&& __c != FUNCTION_DECL 				\
+    if (__c != VAR_DECL					\
+	&& __c != FUNCTION_DECL				\
         && __c != PARM_DECL)					\
       tree_check_failed (__t, VAR_DECL, __FILE__, __LINE__,	\
 			 __FUNCTION__);				\
@@ -183,7 +183,7 @@ Boston, MA 02111-1307, USA.  */
 #define VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK(NODE)		\
 ({  const tree __t = NODE;					\
     enum tree_code __c = TREE_CODE(__t);			\
-    if (__c != VAR_DECL 					\
+    if (__c != VAR_DECL					\
 	&& __c != FUNCTION_DECL					\
 	&& __c != TYPE_DECL					\
 	&& __c != TEMPLATE_DECL)				\
@@ -307,14 +307,14 @@ struct lang_id2
   tree error_locus;
 };
 
-typedef struct 
+typedef struct
 {
   tree t;
   int new_type_flag;
   tree lookups;
 } flagged_type_tree;
 
-typedef struct 
+typedef struct
 {
   struct tree_common common;
   HOST_WIDE_INT index;
@@ -326,7 +326,7 @@ typedef struct
 typedef struct ptrmem_cst
 {
   struct tree_common common;
-  /* This isn't used, but the middle-end expects all constants to have 
+  /* This isn't used, but the middle-end expects all constants to have
      this field.  */
   struct rtx_def *rtl;
   tree member;
@@ -470,7 +470,7 @@ struct tree_srcloc
 /* The IDENTIFIER_VALUE is the value of the IDENTIFIER_BINDING, or
    NULL_TREE if there is no binding.  */
 #define IDENTIFIER_VALUE(NODE)			\
-  (IDENTIFIER_BINDING (NODE) 			\
+  (IDENTIFIER_BINDING (NODE)			\
    ? BINDING_VALUE (IDENTIFIER_BINDING (NODE))	\
    : NULL_TREE)
 
@@ -493,7 +493,7 @@ struct tree_srcloc
 
 #define LANG_ID_FIELD(NAME,NODE)			\
   (LANG_IDENTIFIER_CAST (NODE)->x			\
-   ? LANG_IDENTIFIER_CAST (NODE)->x->NAME : 0)	 
+   ? LANG_IDENTIFIER_CAST (NODE)->x->NAME : 0)
 
 #define SET_LANG_ID(NODE,VALUE,NAME)					  \
   (LANG_IDENTIFIER_CAST (NODE)->x == 0				  \
@@ -577,7 +577,7 @@ enum cp_tree_index
     CPTI_VMI_CLASS_DESC_TYPE,
     CPTI_PTM_DESC_TYPE,
     CPTI_BASE_DESC_TYPE,
-    
+
     CPTI_CLASS_TYPE,
     CPTI_RECORD_TYPE,
     CPTI_UNION_TYPE,
@@ -1144,8 +1144,8 @@ extern int name_mangling_version;
    would normally be, for use with WINE.  */
 extern int flag_short_wchar;
 
-/* Nonzero if squashed mangling is to be performed. 
-   This uses the B and K codes to reference previously seen class types 
+/* Nonzero if squashed mangling is to be performed.
+   This uses the B and K codes to reference previously seen class types
    and class qualifiers.       */
 extern int flag_do_squangling;
 
@@ -1220,8 +1220,8 @@ enum languages { lang_c, lang_cplusplus, lang_java };
    || TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM	\
    || TYPE_LANG_FLAG_5 (t))
 
-/* Set IS_AGGR_TYPE for T to VAL.  T must be a class, struct, or 
-   union type.  */ 
+/* Set IS_AGGR_TYPE for T to VAL.  T must be a class, struct, or
+   union type.  */
 #define SET_IS_AGGR_TYPE(T, VAL) \
   (TYPE_LANG_FLAG_5 (T) = (VAL))
 
@@ -1246,7 +1246,7 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* The type qualifiers for this type, including the qualifiers on the
    elements for an array type.  */
 #define CP_TYPE_QUALS(NODE)			\
-  ((TREE_CODE (NODE) != ARRAY_TYPE) 		\
+  ((TREE_CODE (NODE) != ARRAY_TYPE)		\
    ? TYPE_QUALS (NODE) : cp_type_quals (NODE))
 
 /* Nonzero if this type is const-qualified.  */
@@ -1364,7 +1364,7 @@ struct lang_type
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
   unsigned dummy : 8;
-      
+
   int vsize;
 
   tree primary_base;
@@ -1409,7 +1409,7 @@ struct lang_type
    has a two-argument array operator delete.  */
 #define TYPE_VEC_NEW_USES_COOKIE(NODE)		\
   (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (NODE)	\
-   || (TYPE_LANG_SPECIFIC (NODE) 		\
+   || (TYPE_LANG_SPECIFIC (NODE)		\
        && TYPE_VEC_DELETE_TAKES_SIZE (NODE)))
 
 /* Nonzero means that this _CLASSTYPE node defines ways of converting
@@ -1523,7 +1523,7 @@ struct lang_type
 #define SET_CLASSTYPE_MARKED2(NODE)   SET_CLASSTYPE_MARKED_N(NODE, 1)
 #define CLEAR_CLASSTYPE_MARKED2(NODE) CLEAR_CLASSTYPE_MARKED_N(NODE, 1)
 #define SET_CLASSTYPE_MARKED3(NODE)   SET_CLASSTYPE_MARKED_N(NODE, 2)
-#define CLEAR_CLASSTYPE_MARKED3(NODE) CLEAR_CLASSTYPE_MARKED_N(NODE, 2)	
+#define CLEAR_CLASSTYPE_MARKED3(NODE) CLEAR_CLASSTYPE_MARKED_N(NODE, 2)
 #define SET_CLASSTYPE_MARKED4(NODE)   SET_CLASSTYPE_MARKED_N(NODE, 3)
 #define CLEAR_CLASSTYPE_MARKED4(NODE) CLEAR_CLASSTYPE_MARKED_N(NODE, 3)
 #define SET_CLASSTYPE_MARKED5(NODE)   SET_CLASSTYPE_MARKED_N(NODE, 4)
@@ -1566,8 +1566,8 @@ struct lang_type
    binfo_for_vbase.  C is the most derived class for the hierarchy
    containing BINFO.  */
 #define CANONICAL_BINFO(BINFO, C)		\
-  (TREE_VIA_VIRTUAL (BINFO) 			\
-   ? binfo_for_vbase (BINFO_TYPE (BINFO), C) 	\
+  (TREE_VIA_VIRTUAL (BINFO)			\
+   ? binfo_for_vbase (BINFO_TYPE (BINFO), C)	\
    : BINFO)
 
 /* Number of direct baseclasses of NODE.  */
@@ -1692,7 +1692,7 @@ struct lang_type
 /* Any subobject that needs a new vtable must have a vptr and must not
    be a primary base (since it would then use the vtable from a
    derived class.)  */
-#define SET_BINFO_NEW_VTABLE_MARKED(B, C)		       		 \
+#define SET_BINFO_NEW_VTABLE_MARKED(B, C)				 \
   (BINFO_NEW_VTABLE_MARKED (B, C) = 1,					 \
    my_friendly_assert (!BINFO_PRIMARY_MARKED_P (B), 20000517),		 \
    my_friendly_assert (CLASSTYPE_VFIELDS (BINFO_TYPE (B)) != NULL_TREE,  \
@@ -1806,7 +1806,7 @@ struct lang_type
 #define CAN_HAVE_FULL_LANG_DECL_P(NODE)		\
   (!(TREE_CODE ((NODE)) == VAR_DECL		\
      || TREE_CODE ((NODE)) == CONST_DECL	\
-     || TREE_CODE ((NODE)) == FIELD_DECL 	\
+     || TREE_CODE ((NODE)) == FIELD_DECL	\
      || TREE_CODE ((NODE)) == USING_DECL))
 
 struct lang_decl_flags
@@ -1932,7 +1932,7 @@ struct lang_decl
 /* Nonzero if NODE (a FUNCTION_DECL) is a constructor for a complete
    object.  */
 #define DECL_COMPLETE_CONSTRUCTOR_P(NODE)		\
-  (DECL_CONSTRUCTOR_P (NODE) 				\
+  (DECL_CONSTRUCTOR_P (NODE)				\
    && DECL_NAME (NODE) == complete_ctor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a constructor for a base
@@ -1964,7 +1964,7 @@ struct lang_decl
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a complete
    object.  */
 #define DECL_COMPLETE_DESTRUCTOR_P(NODE)		\
-  (DECL_DESTRUCTOR_P (NODE) 				\
+  (DECL_DESTRUCTOR_P (NODE)				\
    && DECL_NAME (NODE) == complete_dtor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a base
@@ -1976,13 +1976,13 @@ struct lang_decl
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a complete
    object that deletes the object after it has been destroyed.  */
 #define DECL_DELETING_DESTRUCTOR_P(NODE)		\
-  (DECL_DESTRUCTOR_P (NODE) 				\
+  (DECL_DESTRUCTOR_P (NODE)				\
    && DECL_NAME (NODE) == deleting_dtor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a cloned constructor or
    destructor.  */
 #define DECL_CLONED_FUNCTION_P(NODE)		\
-  (DECL_LANG_SPECIFIC (NODE) 			\
+  (DECL_LANG_SPECIFIC (NODE)			\
    && DECL_CLONED_FUNCTION (NODE) != NULL_TREE)
 
 /* If DECL_CLONED_FUNCTION_P holds, this is the function that was
@@ -2024,7 +2024,7 @@ struct lang_decl
    overloaded operator, ERROR_MARK is returned.  Since the numerical
    value of ERROR_MARK is zero, this macro can be used as a predicate
    to test whether or not NODE is an overloaded operator.  */
-#define DECL_OVERLOADED_OPERATOR_P(NODE)       		\
+#define DECL_OVERLOADED_OPERATOR_P(NODE)		\
   (IDENTIFIER_OPNAME_P (DECL_NAME ((NODE)))		\
    ? DECL_LANG_SPECIFIC (NODE)->u2.operator_code : ERROR_MARK)
 
@@ -2040,7 +2040,7 @@ struct lang_decl
 
 /* Non-zero for a FUNCTION_DECL that declares a type-info function.
    This only happens in the old abi.  */
-#define DECL_TINFO_FN_P(NODE) 					\
+#define DECL_TINFO_FN_P(NODE)					\
   (TREE_CODE (NODE) == FUNCTION_DECL				\
    && DECL_ARTIFICIAL (NODE)					\
    && DECL_LANG_SPECIFIC(NODE)->decl_flags.tinfo_fn_p)
@@ -2083,7 +2083,7 @@ struct lang_decl
 #define SHARED_MEMBER_P(NODE) \
   (TREE_CODE (NODE) == VAR_DECL || TREE_CODE (NODE) == TYPE_DECL \
    || TREE_CODE (NODE) == CONST_DECL)
-				
+
 /* Nonzero for FUNCTION_DECL means that this decl is a non-static
    member function.  */
 #define DECL_NONSTATIC_MEMBER_FUNCTION_P(NODE) \
@@ -2098,7 +2098,7 @@ struct lang_decl
    has `this' as const X *const.  */
 #define DECL_CONST_MEMFUNC_P(NODE)					 \
   (DECL_NONSTATIC_MEMBER_FUNCTION_P (NODE)				 \
-   && CP_TYPE_CONST_P (TREE_TYPE (TREE_VALUE 				 \
+   && CP_TYPE_CONST_P (TREE_TYPE (TREE_VALUE				 \
 				  (TYPE_ARG_TYPES (TREE_TYPE (NODE))))))
 
 /* Nonzero for FUNCTION_DECL means that this member function
@@ -2109,8 +2109,8 @@ struct lang_decl
 				  (TYPE_ARG_TYPES (TREE_TYPE (NODE))))))
 
 /* Nonzero for a DECL means that this member is a non-static member.  */
-#define DECL_NONSTATIC_MEMBER_P(NODE) 		\
-  ((TREE_CODE (NODE) == FUNCTION_DECL 		\
+#define DECL_NONSTATIC_MEMBER_P(NODE)		\
+  ((TREE_CODE (NODE) == FUNCTION_DECL		\
     && DECL_NONSTATIC_MEMBER_FUNCTION_P (NODE))	\
    || TREE_CODE (NODE) == FIELD_DECL)
 
@@ -2163,7 +2163,7 @@ struct lang_decl
 
 /* For a non-member friend function, the class (if any) in which this
    friend was defined.  For example, given:
-   
+
      struct S { friend void f (); };
 
    the DECL_FRIEND_CONTEXT for `f' will be `S'.  */
@@ -2244,7 +2244,7 @@ struct lang_decl
    but have not yet processed it.  */
 #define DECL_PENDING_INLINE_P(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.pending_inline_p)
-   
+
 /* If DECL_PENDING_INLINE_P holds, this is the saved text of the
    function.  */
 #define DECL_PENDING_INLINE_INFO(NODE) \
@@ -2289,9 +2289,9 @@ struct lang_decl
 
 /* Set the template information for an ENUMERAL_, RECORD_, or
    UNION_TYPE to VAL.  */
-#define SET_TYPE_TEMPLATE_INFO(NODE, VAL) 	\
-  (TREE_CODE (NODE) == ENUMERAL_TYPE 		\
-   ? (ENUM_TEMPLATE_INFO (NODE) = VAL) 		\
+#define SET_TYPE_TEMPLATE_INFO(NODE, VAL)	\
+  (TREE_CODE (NODE) == ENUMERAL_TYPE		\
+   ? (ENUM_TEMPLATE_INFO (NODE) = VAL)		\
    : (CLASSTYPE_TEMPLATE_INFO (NODE) = VAL))
 
 #define TI_TEMPLATE(NODE) (TREE_PURPOSE (NODE))
@@ -2304,7 +2304,7 @@ struct lang_decl
    arguments, then each entry in the TREE_VEC is itself a TREE_VEC,
    containing the template arguments for a single level.  The first
    entry in the outer TREE_VEC is the outermost level of template
-   parameters; the last is the innermost.  
+   parameters; the last is the innermost.
 
    It is incorrect to ever form a template argument vector containing
    only one level of arguments, but which is a TREE_VEC containing as
@@ -2330,7 +2330,7 @@ struct lang_decl
 /* The LEVELth level of the template ARGS.  The outermost level of of
    args is level 1, not level 0.  */
 #define TMPL_ARGS_LEVEL(ARGS, LEVEL)		\
-  (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (ARGS) 	\
+  (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (ARGS)	\
    ? TREE_VEC_ELT ((ARGS), (LEVEL) - 1) : ARGS)
 
 /* Set the LEVELth level of the template ARGS to VAL.  This macro does
@@ -2349,9 +2349,9 @@ struct lang_decl
 
 /* Given a single level of template arguments in NODE, return the
    number of arguments.  */
-#define NUM_TMPL_ARGS(NODE) 				\
-  ((NODE) == NULL_TREE ? 0 				\
-   : (TREE_CODE (NODE) == TREE_VEC 			\
+#define NUM_TMPL_ARGS(NODE)				\
+  ((NODE) == NULL_TREE ? 0				\
+   : (TREE_CODE (NODE) == TREE_VEC			\
       ? TREE_VEC_LENGTH (NODE) : list_length (NODE)))
 
 /* Returns the innermost level of template arguments in ARGS.  */
@@ -2369,7 +2369,7 @@ struct lang_decl
       template <class T> struct S { template <class U> void f(U); }
 
    the FUNCTION_DECL for S<int>::f<double> will have, as its
-   DECL_TI_TEMPLATE, `template <class U> S<int>::f<U>'. 
+   DECL_TI_TEMPLATE, `template <class U> S<int>::f<U>'.
 
    As a special case, for a member friend template of a template
    class, this value will not be a TEMPLATE_DECL, but rather a
@@ -2379,7 +2379,7 @@ struct lang_decl
      template <class T> struct S { friend void f<int>(int, double); }
 
    the DECL_TI_TEMPLATE will be a LOOKUP_EXPR for `f' and the
-   DECL_TI_ARGS will be {int}.  */ 
+   DECL_TI_ARGS will be {int}.  */
 #define DECL_TI_TEMPLATE(NODE)      TI_TEMPLATE (DECL_TEMPLATE_INFO (NODE))
 
 /* The template arguments used to obtain this decl from the most
@@ -2390,7 +2390,7 @@ struct lang_decl
 #define DECL_TI_ARGS(NODE)          TI_ARGS (DECL_TEMPLATE_INFO (NODE))
 #define CLASSTYPE_TI_TEMPLATE(NODE) TI_TEMPLATE (CLASSTYPE_TEMPLATE_INFO (NODE))
 #define CLASSTYPE_TI_ARGS(NODE)     TI_ARGS (CLASSTYPE_TEMPLATE_INFO (NODE))
-#define ENUM_TI_TEMPLATE(NODE) 			\
+#define ENUM_TI_TEMPLATE(NODE)			\
   TI_TEMPLATE (ENUM_TEMPLATE_INFO (NODE))
 #define ENUM_TI_ARGS(NODE)			\
   TI_ARGS (ENUM_TEMPLATE_INFO (NODE))
@@ -2445,7 +2445,7 @@ struct lang_decl
 
 /* Nonzero if NODE is a TYPE_DECL that should not be visible because
    it is from a dependent base class.  */
-#define IMPLICIT_TYPENAME_TYPE_DECL_P(NODE) 	\
+#define IMPLICIT_TYPENAME_TYPE_DECL_P(NODE)	\
   (TREE_CODE (NODE) == TYPE_DECL		\
    && DECL_ARTIFICIAL (NODE)			\
    && IMPLICIT_TYPENAME_P (TREE_TYPE (NODE)))
@@ -2466,9 +2466,9 @@ struct lang_decl
 #define TYPE_POLYMORPHIC_P(NODE) (TREE_LANG_FLAG_2 (NODE))
 
 /* Nonzero if this class has a virtual function table pointer.  */
-#define TYPE_CONTAINS_VPTR_P(NODE) 		\
-  (TYPE_POLYMORPHIC_P (NODE) 			\
-   || (vbase_offsets_in_vtable_p () 		\
+#define TYPE_CONTAINS_VPTR_P(NODE)		\
+  (TYPE_POLYMORPHIC_P (NODE)			\
+   || (vbase_offsets_in_vtable_p ()		\
        && TYPE_USES_VIRTUAL_BASECLASSES (NODE)))
 
 extern int flag_new_for_scope;
@@ -2512,12 +2512,12 @@ extern int flag_new_for_scope;
 /* [basic.fundamental]
 
    Types  bool, char, wchar_t, and the signed and unsigned integer types
-   are collectively called integral types.  
+   are collectively called integral types.
 
    Note that INTEGRAL_TYPE_P, as defined in tree.h, allows enumeration
    types as well, which is incorrect in C++.  */
-#define CP_INTEGRAL_TYPE_P(TYPE) 		\
-  (TREE_CODE ((TYPE)) == BOOLEAN_TYPE 		\
+#define CP_INTEGRAL_TYPE_P(TYPE)		\
+  (TREE_CODE ((TYPE)) == BOOLEAN_TYPE		\
    || TREE_CODE ((TYPE)) == INTEGER_TYPE)
 
 /* [basic.fundamental]
@@ -2568,15 +2568,15 @@ extern int flag_new_for_scope;
 #define TYPE_HAS_COMPLEX_INIT_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_complex_init_ref)
 
 /* Nonzero if TYPE has a trivial destructor.  From [class.dtor]:
-   
+
      A destructor is trivial if it is an implicitly declared
      destructor and if:
 
        - all of the direct base classes of its class have trivial
-         destructors, 
+         destructors,
 
        - for all of the non-static data members of its class that are
-         of class type (or array thereof), each such class has a 
+         of class type (or array thereof), each such class has a
 	 trivial destructor.  */
 #define TYPE_HAS_TRIVIAL_DESTRUCTOR(NODE) \
   (!TYPE_HAS_NONTRIVIAL_DESTRUCTOR (NODE))
@@ -2677,7 +2677,7 @@ extern int flag_new_for_scope;
    function.
 
    (Of course, the exact values may differ depending on the mangling
-   scheme, sizes of types, and such.).  
+   scheme, sizes of types, and such.).
 
    Under the new ABI, we do:
 
@@ -2690,7 +2690,7 @@ extern int flag_new_for_scope;
    in the object.)  If the function is virtual, then PFN is one plus
    twice the index into the vtable; otherwise, it is just a pointer to
    the function.  */
-     
+
 /* Get the POINTER_TYPE to the METHOD_TYPE associated with this
    pointer to member function.  TYPE_PTRMEMFUNC_P _must_ be true,
    before using this macro.  */
@@ -2728,7 +2728,7 @@ extern int flag_new_for_scope;
 #define PTRMEM_CST_CLASS(NODE) \
   TYPE_PTRMEM_CLASS_TYPE (TREE_TYPE (PTRMEM_CST_CHECK (NODE)))
 
-/* For a pointer-to-member constant `X::Y' this is the _DECL for 
+/* For a pointer-to-member constant `X::Y' this is the _DECL for
    `Y'.  */
 #define PTRMEM_CST_MEMBER(NODE) (((ptrmem_cst_t)PTRMEM_CST_CHECK (NODE))->member)
 
@@ -2857,7 +2857,7 @@ extern int flag_new_for_scope;
 
       template <class T> struct S {
         template <class U> void f(U);
-	template <> void f(T); 
+	template <> void f(T);
       };
 
    the `S<int>::f<int>(int)' function will appear on the
@@ -2881,7 +2881,7 @@ extern int flag_new_for_scope;
 #define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     DECL_SIZE(NODE)
 
 /* Nonzero for a DECL which is actually a template parameter.  */
-#define DECL_TEMPLATE_PARM_P(NODE) 		\
+#define DECL_TEMPLATE_PARM_P(NODE)		\
   (DECL_LANG_FLAG_0 (NODE)			\
    && (TREE_CODE (NODE) == CONST_DECL		\
        || TREE_CODE (NODE) == TYPE_DECL		\
@@ -3396,7 +3396,7 @@ extern varray_type local_classes;
 #define VTABLE_PFN_NAME		"__pfn"
 #define VTABLE_DELTA2_NAME	"__delta2"
 
-#define EXCEPTION_CLEANUP_NAME 	"exception cleanup"
+#define EXCEPTION_CLEANUP_NAME	"exception cleanup"
 
 /* The name used as a prefix for VTTs.  When the new ABI mangling
    scheme is implemented, this should be removed.  */
@@ -3414,7 +3414,7 @@ extern varray_type local_classes;
 #define VPTR_NAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == JOINER \
 			      && IDENTIFIER_POINTER (ID_NODE)[1] == 'v')
 #define DESTRUCTOR_NAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[1] == JOINER \
-                                    && IDENTIFIER_POINTER (ID_NODE)[2] == '_') 
+                                    && IDENTIFIER_POINTER (ID_NODE)[2] == '_')
 
 #define VTABLE_NAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[1] == 'v' \
   && IDENTIFIER_POINTER (ID_NODE)[2] == 't' \
@@ -3438,7 +3438,7 @@ extern varray_type local_classes;
 #endif /* !defined(NO_DOLLAR_IN_LABEL) || !defined(NO_DOT_IN_LABEL) */
 
 /* Store the vbase pointer field name for type TYPE into pointer BUF.  */
-#define FORMAT_VBASE_NAME(BUF,TYPE) do { 				\
+#define FORMAT_VBASE_NAME(BUF,TYPE) do {				\
   char *wbuf = (char *) alloca (TYPE_ASSEMBLER_NAME_LENGTH (TYPE)	\
 			 + sizeof (VBASE_NAME) + 1);			\
   sprintf (wbuf, VBASE_NAME_FORMAT, TYPE_ASSEMBLER_NAME_STRING (TYPE));	\
@@ -3527,7 +3527,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 
    These are used in global lookup to support elaborated types and
    qualifiers.
-   
+
    LOOKUP_PREFER_TYPES means not to accept objects, and possibly namespaces.
    LOOKUP_PREFER_NAMESPACES means not to accept objects, and possibly types.
    LOOKUP_PREFER_BOTH means class-or-namespace-name.
@@ -3555,7 +3555,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define LOOKUP_TYPES_ONLY(f)  \
   (!((f) & LOOKUP_PREFER_NAMESPACES) && ((f) & LOOKUP_PREFER_TYPES))
 #define LOOKUP_QUALIFIERS_ONLY(f)     ((f) & LOOKUP_PREFER_BOTH)
-     
+
 
 /* These flags are used by the conversion code.
    CONV_IMPLICIT   :  Perform implicit conversions (standard and user-defined).
@@ -3564,7 +3564,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
    CONV_REINTERPRET:  Perform the explicit conversions for reinterpret_cast.
    CONV_PRIVATE    :  Perform upcasts to private bases.
    CONV_FORCE_TEMP :  Require a new temporary when converting to the same
-   		      aggregate type.  */
+		      aggregate type.  */
 
 #define CONV_IMPLICIT    1
 #define CONV_STATIC      2
@@ -3640,7 +3640,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define TEMPLATE_PARM_ORIG_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->orig_level)
 #define TEMPLATE_PARM_DECL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->decl)
 
-/* These macros are for accessing the fields of TEMPLATE_TYPE_PARM, 
+/* These macros are for accessing the fields of TEMPLATE_TYPE_PARM,
    TEMPLATE_TEMPLATE_PARM and BOUND_TEMPLATE_TEMPLATE_PARM nodes.  */
 #define TEMPLATE_TYPE_PARM_INDEX(NODE) (TYPE_FIELDS (NODE))
 #define TEMPLATE_TYPE_IDX(NODE) \
@@ -3668,19 +3668,19 @@ enum tree_string_flags
     TS_FUNC_SCOPE     = 1 <<  8, /* show function scope */
     TS_PEDANTIC_NAME  = 1 <<  9, /* pedantically name things */
     TS_TEMPLATE_PREFIX= 1 << 10, /* show template <parms> prefix */
-    
+
     /* Internal use flags */
     TS_TEMPLATE_PARM  = 1 << 11, /* decl is really a non-type template parm */
     TS_TEMPLATE_PLAIN = 1 << 12, /* don't decorate primary template_name */
-    
+
     TS_NEXT_BIT       = 13       /* next available bit */
 };
 
 /* Returns the TEMPLATE_DECL associated to a TEMPLATE_TEMPLATE_PARM
    node.  */
-#define TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL(NODE) 	\
+#define TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL(NODE)	\
   ((TREE_CODE (NODE) == BOUND_TEMPLATE_TEMPLATE_PARM)	\
-   ? TYPE_TI_TEMPLATE (NODE) 				\
+   ? TYPE_TI_TEMPLATE (NODE)				\
    : TYPE_NAME (NODE))
 
 /* in lex.c  */
@@ -3950,11 +3950,11 @@ extern tree grokbitfield			PARAMS ((tree, tree, tree));
 extern tree groktypefield			PARAMS ((tree, tree));
 extern tree grokoptypename			PARAMS ((tree, tree));
 extern int copy_assignment_arg_p		PARAMS ((tree, int));
-extern void cplus_decl_attributes		PARAMS ((tree, tree, tree)); 
+extern void cplus_decl_attributes		PARAMS ((tree, tree, tree));
 extern tree constructor_name_full		PARAMS ((tree));
 extern tree constructor_name			PARAMS ((tree));
 extern void setup_vtbl_ptr			PARAMS ((tree, tree));
-extern void defer_fn             		PARAMS ((tree));
+extern void defer_fn		PARAMS ((tree));
 extern tree get_temp_name			PARAMS ((tree));
 extern void finish_anon_union			PARAMS ((tree));
 extern tree finish_table			PARAMS ((tree, tree, tree, int));
@@ -4019,6 +4019,13 @@ extern const char *cp_file_of			PARAMS ((tree));
 extern int cp_line_of				PARAMS ((tree));
 extern const char *language_to_string           PARAMS ((enum languages, int));
 extern void print_instantiation_context         PARAMS ((void));
+/* cp_printer is the type of a function which converts an argument into
+   a string for digestion by printf.  The cp_printer function should deal
+   with all memory management; the functions in errfn will not free
+   the char*s returned.  See error.c for an example use of this code.  */
+typedef const char *cp_printer			PARAMS ((tree, int));
+extern cp_printer *cp_printers[256];
+
 
 /* in except.c */
 extern void init_exception_processing		PARAMS ((void));
@@ -4114,7 +4121,7 @@ extern void init_method				PARAMS ((void));
 extern char *build_overload_name		PARAMS ((tree, int, int));
 extern tree build_static_name			PARAMS ((tree, tree));
 extern tree build_decl_overload_real            PARAMS ((tree, tree, tree, tree,
-						       tree, int)); 
+						       tree, int));
 extern void set_mangled_name_for_decl           PARAMS ((tree));
 extern tree build_typename_overload		PARAMS ((tree));
 extern tree build_overload_with_type		PARAMS ((tree, tree));
@@ -4241,11 +4248,11 @@ extern int at_function_scope_p                  PARAMS ((void));
 extern tree lookup_conversions			PARAMS ((tree));
 extern tree binfo_for_vtable			PARAMS ((tree));
 extern int  binfo_from_vbase			PARAMS ((tree));
-extern tree dfs_walk                            PARAMS ((tree, 
+extern tree dfs_walk                            PARAMS ((tree,
 						       tree (*)(tree, void *),
 						       tree (*) (tree, void *),
 						       void *));
-extern tree dfs_walk_real                      PARAMS ((tree, 
+extern tree dfs_walk_real                      PARAMS ((tree,
 						       tree (*) (tree, void *),
 						       tree (*) (tree, void *),
 						       tree (*) (tree, void *),
@@ -4409,7 +4416,7 @@ extern tree array_type_nelts_top		PARAMS ((tree));
 extern tree break_out_target_exprs		PARAMS ((tree));
 extern tree get_type_decl			PARAMS ((tree));
 extern tree vec_binfo_member			PARAMS ((tree, tree));
-extern tree decl_namespace_context 		PARAMS ((tree));
+extern tree decl_namespace_context		PARAMS ((tree));
 extern tree lvalue_type				PARAMS ((tree));
 extern tree error_type				PARAMS ((tree));
 extern tree build_ptr_wrapper			PARAMS ((void *));
@@ -4427,7 +4434,7 @@ extern tree maybe_dummy_object			PARAMS ((tree, tree *));
 extern int is_dummy_object			PARAMS ((tree));
 extern tree walk_tree                           PARAMS ((tree *,
 							 walk_tree_fn,
-							 void *, 
+							 void *,
 							 htab_t));
 extern tree walk_tree_without_duplicates        PARAMS ((tree *,
 							 walk_tree_fn,
@@ -4445,7 +4452,7 @@ extern int count_trees                          PARAMS ((tree));
 extern int char_type_p                          PARAMS ((tree));
 extern void verify_stmt_tree                    PARAMS ((tree));
 extern tree find_tree                           PARAMS ((tree, tree));
-  
+
 /* in typeck.c */
 extern int string_conv_p			PARAMS ((tree, tree, int));
 extern tree condition_conversion		PARAMS ((tree));
@@ -4571,7 +4578,7 @@ extern tree mangle_typeinfo_string_for_type     PARAMS ((tree));
 extern tree mangle_vtbl_for_type                PARAMS ((tree));
 extern tree mangle_vtt_for_type                 PARAMS ((tree));
 extern tree mangle_ctor_vtbl_for_type           PARAMS ((tree, tree));
-extern tree mangle_thunk                        PARAMS ((tree, tree, tree)); 
+extern tree mangle_thunk                        PARAMS ((tree, tree, tree));
 extern tree mangle_conv_op_name_for_type        PARAMS ((tree));
 extern tree mangle_guard_variable               PARAMS ((tree));
 
