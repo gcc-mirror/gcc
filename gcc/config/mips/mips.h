@@ -1048,8 +1048,17 @@ extern int mips_abi;
 %{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
 %{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
 %{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3} \
-%{!gdwarf*:-mdebug} %{gdwarf*:-no-mdebug}"
+%(mdebug_asm_spec)"
 #endif
+
+/* Beginning with gas 2.13, -mdebug must be passed to correctly handle COFF
+   and stabs debugging info.  */
+#if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GAS) != 0
+/* GAS */
+#define MDEBUG_ASM_SPEC "%{!gdwarf*:-mdebug} %{gdwarf*:-no-mdebug}"
+#else /* not GAS */
+#define MDEBUG_ASM_SPEC ""
+#endif /* not GAS */
 
 /* SUBTARGET_ASM_SPEC is always passed to the assembler.  It may be
    overridden by subtargets.  */
@@ -1178,6 +1187,7 @@ extern int mips_abi;
   { "subtarget_mips_as_asm_spec", SUBTARGET_MIPS_AS_ASM_SPEC }, 	\
   { "subtarget_asm_optimizing_spec", SUBTARGET_ASM_OPTIMIZING_SPEC },	\
   { "subtarget_asm_debugging_spec", SUBTARGET_ASM_DEBUGGING_SPEC },	\
+  { "mdebug_asm_spec", MDEBUG_ASM_SPEC },				\
   { "subtarget_asm_spec", SUBTARGET_ASM_SPEC },				\
   { "asm_abi_default_spec", ASM_ABI_DEFAULT_SPEC },			\
   { "endian_spec", ENDIAN_SPEC },					\
@@ -3094,17 +3104,15 @@ typedef struct mips_args {
    assembler would use $at as a temp to load in the large offset.  In this
    case $at is already in use.  We convert such problem addresses to
    `la $5,s;sw $4,70000($5)' via LEGITIMIZE_ADDRESS.  */
-/* ??? SGI Irix 6 assembler fails for CONST address, so reject them
-   when !TARGET_GAS.  */
+/* ??? SGI IRIX 6 N32/N64 assembler fails for CONST address, so reject them
+   when !TARGET_GAS or ABI_32.  */
 /* We should be rejecting everything but const addresses.  */
 #define CONSTANT_ADDRESS_P(X)						\
   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
     || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH		\
     || (GET_CODE (X) == CONST						\
 	&& ! (flag_pic && pic_address_needs_scratch (X))		\
-	&& (TARGET_GAS)							\
-	&& (mips_abi != ABI_N32 					\
-	    && mips_abi != ABI_64)))
+	&& (TARGET_GAS || mips_abi == ABI_32)))
 
 
 /* Define this, so that when PIC, reload won't try to reload invalid
