@@ -600,7 +600,7 @@ fix = {
  */
 fix = {
     hackname = ioctl_fix_ctrl;
-    select = "CTRL[ \t]";
+    select = "CTRL[ \t]*\\(";
 
     sed = "/[^A-Z0-9_]CTRL[ \t]*(/"
               "s/\\([^']\\))/'\\1')/";
@@ -1517,13 +1517,9 @@ fix = {
     files    = rpc/svc.h;
     files    = rpc/xdr.h;
     /*
-     *  Select those files containing '(*name)()' but *not*
-     *  containing '(*name)(junk)'.  The change would be innocuous
-     *  but there is no point bothering if the fix is not needed.
+     *  Select those files containing '(*name)()'.
      */
     select   = '\(\*[a-z][a-z_]*\)\(\)';
-    bypass   = "^[a-zA-Z0-9_ \t]*" '\(\*[a-z][a-z_]*\)\('
-               "[ \t]*[a-zA-Z.].*" '\)';
     sed      = 's'
                 '/^\(.*(\*[a-z][a-z_]*)(\)'      '\();.*\)'
                 "/\\\n"
