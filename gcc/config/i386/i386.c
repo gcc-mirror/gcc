@@ -18,6 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdio.h>
+#include <setjmp.h>
 #include "config.h"
 #include "rtl.h"
 #include "regs.h"
@@ -437,21 +438,30 @@ int
 standard_80387_constant_p (x)
      rtx x;
 {
-  union real_extract u;
-  register double d;
+#if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
+  REAL_VALUE_TYPE d;
+  jmp_buf handler;
+  int is0, is1;
 
-  bcopy (&CONST_DOUBLE_LOW (x), &u, sizeof u);
-  d = u.d;
+  if (setjmp (handler))
+    return 0;
 
-  if (d == 0)
+  set_float_handler (handler);
+  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
+  is0 = REAL_VALUES_EQUAL (d, dconst0);
+  is1 = REAL_VALUES_EQUAL (d, dconst1);
+  set_float_handler (NULL_PTR);
+
+  if (is0)
     return 1;
 
-  if (d == 1)
+  if (is1)
     return 2;
 
   /* Note that on the 80387, other constants, such as pi,
      are much slower to load as standard constants
      than to load from doubles in memory!  */
+#endif
 
   return 0;
 }
