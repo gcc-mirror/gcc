@@ -1205,7 +1205,21 @@ finish_class ()
 {
   tree method;
   tree type_methods = TYPE_METHODS (CLASS_TO_HANDLE_TYPE (current_class));
-  
+  int saw_native_method = 0;
+
+  /* Find out if we have any native methods.  We use this information
+     later.  */
+  for (method = type_methods;
+       method != NULL_TREE;
+       method = TREE_CHAIN (method))
+    {
+      if (METHOD_NATIVE (method))
+	{
+	  saw_native_method = 1;
+	  break;
+	}
+    }
+
   /* Emit deferred inline methods. */  
   for (method = type_methods; method != NULL_TREE; )
     {
@@ -1214,7 +1228,8 @@ finish_class ()
 	  /* It's a deferred inline method.  Decide if we need to emit it. */
 	  if (flag_keep_inline_functions
 	      || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (method))
-	      || ! METHOD_PRIVATE (method))
+	      || ! METHOD_PRIVATE (method)
+	      || saw_native_method)
 	    {
 	      temporary_allocation ();
 	      output_inline_function (method);
