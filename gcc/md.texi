@@ -2387,7 +2387,7 @@ such required data.
 When saving the stack pointer, operand 0 is the save area and operand 1
 is the stack pointer.  The mode used to allocate the save area is the
 initially mode of operand 0, but you can override that choice by
-defining the @code{STACK_SAVEAREA_MODE} macro (@pxref{Storage_Layout}).
+defining the @code{STACK_SAVEAREA_MODE} macro (@pxref{Storage Layout}).
 Whether specified by the pattern or the macro, you must specify an
 integral mode, or @code{VOIDmode} if no save area is needed for a
 particular type of save (either because no save is needed or because a
