@@ -692,7 +692,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-attr.h insn-attrtab.c insn-opinit.c tree-check.h \
  s-flags s-config s-codes s-mlib s-unders s-genrtl \
  s-output s-recog s-emit s-extract s-peep s-check \
- s-attr s-attrtab s-opinit s-crt s-crtS s-crt0 \
+ s-attr s-attrtab s-opinit s-crt s-$(T)crtS s-crt0 \
  genemit$(build_exeext) genoutput$(build_exeext) genrecog$(build_exeext) \
  genextract$(build_exeext) genflags$(build_exeext) gencodes$(build_exeext) \
  genconfig$(build_exeext) genpeep$(build_exeext) genattrtab$(build_exeext) \
@@ -1291,20 +1291,19 @@ $(T)crtend.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
 
 # On some systems we also want to install versions of these files
 # compiled using PIC for use in shared libraries.
-crtbeginS.o crtendS.o: s-crtS ; @true
+$(T)crtbeginS.o $(T)crtendS.o: s-$(T)crtS ; @true
 
-s-crtS: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
+s-$(T)crtS: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
   defaults.h frame.h gbl-ctors.h stmp-int-hdrs tsystem.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
 	  -DCRT_BEGIN -DCRTSTUFFS_O -finhibit-size-directive \
 	  -fno-inline-functions -fno-exceptions @inhibit_libc@ -g0 \
-	  -c $(srcdir)/crtstuff.c
-	mv crtstuff$(objext) crtbeginS$(objext)
+	  -c $(srcdir)/crtstuff.c -o $(T)crtbeginS$(objext)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
 	  -DCRT_END -DCRTSTUFFS_O -finhibit-size-directive \
 	  -fno-inline-functions -fno-exceptions @inhibit_libc@ -g0 \
-	  -c $(srcdir)/crtstuff.c -o crtendS$(objext)
-	touch s-crtS
+	  -c $(srcdir)/crtstuff.c -o $(T)crtendS$(objext)
+	touch s-$(T)crtS
 
 # Compile the start modules crt0.o and mcrt0.o that are linked with every program
 crt0.o: s-crt0 ; @true
