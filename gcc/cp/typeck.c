@@ -579,8 +579,8 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
 tree
 merge_types (tree t1, tree t2)
 {
-  register enum tree_code code1;
-  register enum tree_code code2;
+  enum tree_code code1;
+  enum tree_code code2;
   tree attributes;
 
   /* Save time if the two types are the same.  */
@@ -1265,8 +1265,8 @@ cxx_sizeof_or_alignof_expr (tree e, enum tree_code op)
 tree
 decay_conversion (tree exp)
 {
-  register tree type;
-  register enum tree_code code;
+  tree type;
+  enum tree_code code;
 
   type = TREE_TYPE (exp);
   code = TREE_CODE (type);
@@ -1317,7 +1317,7 @@ decay_conversion (tree exp)
     return build_unary_op (ADDR_EXPR, exp, 0);
   if (code == ARRAY_TYPE)
     {
-      register tree adr;
+      tree adr;
       tree ptrtype;
 
       if (TREE_CODE (exp) == INDIRECT_REF)
@@ -2010,7 +2010,7 @@ build_x_indirect_ref (tree expr, const char *errorstring)
 tree
 build_indirect_ref (tree ptr, const char *errorstring)
 {
-  register tree pointer, type;
+  tree pointer, type;
 
   if (ptr == error_mark_node)
     return error_mark_node;
@@ -2348,8 +2348,8 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
 tree
 build_function_call (tree function, tree params)
 {
-  register tree fntype, fndecl;
-  register tree coerced_params;
+  tree fntype, fndecl;
+  tree coerced_params;
   tree result;
   tree name = NULL_TREE, assembler_name = NULL_TREE;
   int is_method;
@@ -2466,8 +2466,8 @@ build_function_call (tree function, tree params)
 tree
 convert_arguments (tree typelist, tree values, tree fndecl, int flags)
 {
-  register tree typetail, valtail;
-  register tree result = NULL_TREE;
+  tree typetail, valtail;
+  tree result = NULL_TREE;
   const char *called_thing = 0;
   int i = 0;
 
@@ -2492,8 +2492,8 @@ convert_arguments (tree typelist, tree values, tree fndecl, int flags)
        valtail;
        valtail = TREE_CHAIN (valtail), i++)
     {
-      register tree type = typetail ? TREE_VALUE (typetail) : 0;
-      register tree val = TREE_VALUE (valtail);
+      tree type = typetail ? TREE_VALUE (typetail) : 0;
+      tree val = TREE_VALUE (valtail);
 
       if (val == error_mark_node)
 	return error_mark_node;
@@ -2677,17 +2677,17 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 		 int convert_p ATTRIBUTE_UNUSED)
 {
   tree op0, op1;
-  register enum tree_code code0, code1;
+  enum tree_code code0, code1;
   tree type0, type1;
 
   /* Expression code to give to the expression when it is built.
      Normally this is CODE, which is what the caller asked for,
      but in some special cases we change it.  */
-  register enum tree_code resultcode = code;
+  enum tree_code resultcode = code;
 
   /* Data type in which the computation is to be performed.
      In the simplest cases this is the common type of the arguments.  */
-  register tree result_type = NULL;
+  tree result_type = NULL;
 
   /* Nonzero means operands have already been type-converted
      in whatever way is necessary.
@@ -3396,8 +3396,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
     build_type = result_type;
 
   {
-    register tree result = build (resultcode, build_type, op0, op1);
-    register tree folded;
+    tree result = build (resultcode, build_type, op0, op1);
+    tree folded;
 
     folded = fold (result);
     if (folded == result)
@@ -3412,8 +3412,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
    of pointer PTROP and integer INTOP.  */
 
 static tree
-cp_pointer_int_sum (enum tree_code resultcode, register tree ptrop,
-		    register tree intop)
+cp_pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
 {
   tree res_type = TREE_TYPE (ptrop);
 
@@ -3431,9 +3430,9 @@ cp_pointer_int_sum (enum tree_code resultcode, register tree ptrop,
    The resulting tree has type int.  */
 
 static tree
-pointer_diff (register tree op0, register tree op1, register tree ptrtype)
+pointer_diff (tree op0, tree op1, tree ptrtype)
 {
-  register tree result, folded;
+  tree result, folded;
   tree restype = ptrdiff_type_node;
   tree target_type = TREE_TYPE (ptrtype);
 
@@ -3630,8 +3629,8 @@ tree
 build_unary_op (enum tree_code code, tree xarg, int noconvert)
 {
   /* No default_conversion here.  It causes trouble for ADDR_EXPR.  */
-  register tree arg = xarg;
-  register tree argtype = 0;
+  tree arg = xarg;
+  tree argtype = 0;
   const char *errstring = NULL;
   tree val;
 
@@ -3769,7 +3768,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 			0);
 
       {
-	register tree inc;
+	tree inc;
 	tree result_type = TREE_TYPE (arg);
 
 	arg = get_unwidened (arg, 0);
@@ -4214,7 +4213,7 @@ unary_complex_lvalue (enum tree_code code, tree arg)
 bool
 cxx_mark_addressable (tree exp)
 {
-  register tree x = exp;
+  tree x = exp;
 
   while (1)
     switch (TREE_CODE (x))
@@ -4750,7 +4749,7 @@ build_const_cast (tree type, tree expr)
 tree
 build_c_cast (tree type, tree expr)
 {
-  register tree value = expr;
+  tree value = expr;
   tree otype;
 
   if (type == error_mark_node || expr == error_mark_node)
@@ -4915,7 +4914,7 @@ build_c_cast (tree type, tree expr)
 tree
 build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 {
-  register tree result;
+  tree result;
   tree newrhs = rhs;
   tree lhstype = TREE_TYPE (lhs);
   tree olhstype = lhstype;
@@ -5589,8 +5588,8 @@ static tree
 convert_for_assignment (tree type, tree rhs,
 			const char *errtype, tree fndecl, int parmnum)
 {
-  register tree rhstype;
-  register enum tree_code coder;
+  tree rhstype;
+  enum tree_code coder;
 
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
@@ -5688,9 +5687,9 @@ tree
 convert_for_initialization (tree exp, tree type, tree rhs, int flags,
 			    const char *errtype, tree fndecl, int parmnum)
 {
-  register enum tree_code codel = TREE_CODE (type);
-  register tree rhstype;
-  register enum tree_code coder;
+  enum tree_code codel = TREE_CODE (type);
+  tree rhstype;
+  enum tree_code coder;
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Strip such NOP_EXPRs, since RHS is used in non-lvalue context.  */
@@ -5773,10 +5772,10 @@ c_expand_asm_operands (tree string, tree outputs, tree inputs, tree clobbers,
 		       int vol, location_t locus)
 {
   int noutputs = list_length (outputs);
-  register int i;
+  int i;
   /* o[I] is the place that output number I should be written.  */
-  register tree *o = alloca (noutputs * sizeof (tree));
-  register tree tail;
+  tree *o = alloca (noutputs * sizeof (tree));
+  tree tail;
 
   /* Record the contents of OUTPUTS before it is modified.  */
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)

@@ -1,3 +1,19 @@
+2003-12-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cvt.c: Remove uses of "register" specifier in
+	declarations of arguments and local variables.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* expr.c: Likewise.
+	* friend.c: Likewise.
+	* lex.c: Likewise.
+	* name-lookup.c: Likewise.
+	* repo.c: Likewise.
+	* search.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+
 2003-12-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12795

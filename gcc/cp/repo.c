@@ -267,7 +267,7 @@ get_base_filename (const char *filename)
 static void
 open_repo_file (const char *filename)
 {
-  register const char *p;
+  const char *p;
   const char *s = get_base_filename (filename);
 
   if (s == NULL)

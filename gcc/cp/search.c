@@ -125,7 +125,7 @@ push_search_level (struct stack_level *stack, struct obstack *obstack)
 static struct search_level *
 pop_search_level (struct stack_level *obstack)
 {
-  register struct search_level *stack = pop_stack_level (obstack);
+  struct search_level *stack = pop_stack_level (obstack);
 
   return stack;
 }
@@ -422,7 +422,7 @@ get_dynamic_cast_base_type (tree subtype, tree target)
 tree
 lookup_field_1 (tree type, tree name, bool want_type)
 {
-  register tree field;
+  tree field;
 
   if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
       || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM

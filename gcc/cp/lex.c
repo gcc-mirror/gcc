@@ -838,7 +838,7 @@ copy_type (tree type)
 tree
 cxx_make_type (enum tree_code code)
 {
-  register tree t = make_node (code);
+  tree t = make_node (code);
 
   /* Create lang_type structure.  */
   if (IS_AGGR_TYPE_CODE (code)

@@ -425,7 +425,7 @@ pop_labels (tree block)
 tree
 poplevel (int keep, int reverse, int functionbody)
 {
-  register tree link;
+  tree link;
   /* The chain of decls was accumulated in reverse order.
      Put it into forward order, just for cleanliness.  */
   tree decls;
@@ -1556,8 +1556,8 @@ duplicate_decls (tree newdecl, tree olddecl)
   /* Deal with C++: must preserve virtual function table size.  */
   if (TREE_CODE (olddecl) == TYPE_DECL)
     {
-      register tree newtype = TREE_TYPE (newdecl);
-      register tree oldtype = TREE_TYPE (olddecl);
+      tree newtype = TREE_TYPE (newdecl);
+      tree oldtype = TREE_TYPE (olddecl);
 
       if (newtype != error_mark_node && oldtype != error_mark_node
 	  && TYPE_LANG_SPECIFIC (newtype) && TYPE_LANG_SPECIFIC (oldtype))
@@ -1939,7 +1939,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 tree
 implicitly_declare (tree functionid)
 {
-  register tree decl;
+  tree decl;
 
   /* We used to reuse an old implicit decl here,
      but this loses with inline functions because it can clobber
@@ -2348,7 +2348,7 @@ define_label (location_t location, tree name)
 {
   tree decl = lookup_label (name);
   struct named_label_list *ent;
-  register struct cp_binding_level *p;
+  struct cp_binding_level *p;
 
   timevar_push (TV_NAME_LOOKUP);
   for (ent = named_labels; ent; ent = ent->next)
@@ -2439,7 +2439,7 @@ tree
 finish_case_label (tree low_value, tree high_value)
 {
   tree cond, r;
-  register struct cp_binding_level *p;
+  struct cp_binding_level *p;
 
   if (processing_template_decl)
     {
@@ -3441,7 +3441,7 @@ check_tag_decl (tree declspecs)
   int saw_friend = 0;
   int saw_typedef = 0;
   tree ob_modifier = NULL_TREE;
-  register tree link;
+  tree link;
   /* If a class, struct, or enum type is declared by the DECLSPECS
      (i.e, if a class-specifier, enum-specifier, or non-typename
      elaborated-type-specifier appears in the DECLSPECS),
@@ -3638,7 +3638,7 @@ start_decl (tree declarator,
             tree prefix_attributes)
 {
   tree decl;
-  register tree type, tem;
+  tree type, tem;
   tree context;
 
   /* This should only be done once on the top most decl.  */
@@ -5286,7 +5286,7 @@ start_handler_parms (tree declspecs, tree declarator)
 int
 complete_array_type (tree type, tree initial_value, int do_default)
 {
-  register tree maxindex = NULL_TREE;
+  tree maxindex = NULL_TREE;
   int value = 0;
 
   if (initial_value)
@@ -6350,7 +6350,7 @@ grokdeclarator (tree declarator,
      and get it as a string, for an error message.  */
   {
     tree *next = &declarator;
-    register tree decl;
+    tree decl;
     name = NULL;
 
     while (next && *next)
@@ -6674,8 +6674,8 @@ grokdeclarator (tree declarator,
 
   for (spec = declspecs; spec; spec = TREE_CHAIN (spec))
     {
-      register int i;
-      register tree id;
+      int i;
+      tree id;
 
       /* Certain parse errors slip through.  For example,
 	 `int class;' is not caught by the parser. Try
@@ -6779,7 +6779,7 @@ grokdeclarator (tree declarator,
 	error ("two or more data types in declaration of `%s'", name);
       else if (TREE_CODE (id) == IDENTIFIER_NODE)
 	{
-	  register tree t = lookup_name (id, 1);
+	  tree t = lookup_name (id, 1);
 	  if (!t || TREE_CODE (t) != TYPE_DECL)
 	    error ("`%s' fails to be a typedef or built in type",
 		   IDENTIFIER_POINTER (id));
@@ -7098,7 +7098,7 @@ grokdeclarator (tree declarator,
 	  if (decl_context == FIELD)
 	    {
 	      tree tmp = NULL_TREE;
-	      register int op = 0;
+	      int op = 0;
 
 	      if (declarator)
 		{
@@ -7474,7 +7474,7 @@ grokdeclarator (tree declarator,
 
 	  if (TREE_TYPE (declarator))
 	    {
-	      register tree typemodlist;
+	      tree typemodlist;
 	      int erred = 0;
 	      int constp = 0;
 	      int volatilep = 0;
@@ -7993,7 +7993,7 @@ grokdeclarator (tree declarator,
     }
 
   {
-    register tree decl;
+    tree decl;
 
     if (decl_context == PARM)
       {
@@ -9285,7 +9285,7 @@ xref_tag (enum tag_types tag_code, tree name, tree attributes,
 	  bool globalize, bool template_header_p)
 {
   enum tree_code code;
-  register tree t;
+  tree t;
   struct cp_binding_level *b = current_binding_level;
   tree context = NULL_TREE;
 
@@ -9651,7 +9651,7 @@ xref_basetypes (tree ref, tree base_list)
 tree
 start_enum (tree name)
 {
-  register tree enumtype = NULL_TREE;
+  tree enumtype = NULL_TREE;
   struct cp_binding_level *b = current_binding_level;
 
   /* If this is the real definition for a previous forward reference,
@@ -10387,8 +10387,8 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
 static void
 store_parm_decls (tree current_function_parms)
 {
-  register tree fndecl = current_function_decl;
-  register tree parm;
+  tree fndecl = current_function_decl;
+  tree parm;
 
   /* This is a chain of any other decls that came in among the parm
      declarations.  If a parm is declared with  enum {foo, bar} x;
@@ -10664,7 +10664,7 @@ finish_function_body (tree compstmt)
 tree
 finish_function (int flags)
 {
-  register tree fndecl = current_function_decl;
+  tree fndecl = current_function_decl;
   tree fntype, ctype = NULL_TREE;
   int inclass_inline = (flags & 2) != 0;
   int nested;
@@ -10960,10 +10960,10 @@ start_method (tree declspecs, tree declarator, tree attrlist)
 tree
 finish_method (tree decl)
 {
-  register tree fndecl = decl;
+  tree fndecl = decl;
   tree old_initial;
 
-  register tree link;
+  tree link;
 
   if (decl == void_type_node)
     return decl;

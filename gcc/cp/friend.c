@@ -39,7 +39,7 @@ int
 is_friend (tree type, tree supplicant)
 {
   int declp;
-  register tree list;
+  tree list;
   tree context;
 
   if (supplicant == NULL_TREE || type == NULL_TREE)
