@@ -112,6 +112,7 @@ static int	 arm_barrier_cost		PARAMS ((rtx));
 static Mfix *    create_fix_barrier		PARAMS ((Mfix *, Hint));
 static void	 push_minipool_barrier	        PARAMS ((rtx, Hint));
 static void	 push_minipool_fix		PARAMS ((rtx, Hint, rtx *, Mmode, rtx));
+static void	 arm_reorg			PARAMS ((void));
 static bool	 note_invalid_constants	        PARAMS ((rtx, Hint, int));
 static int       current_file_function_operand	PARAMS ((rtx));
 static Ulong	 arm_compute_save_reg0_reg12_mask  PARAMS ((void));
@@ -217,6 +218,9 @@ static void	 aof_globalize_label		PARAMS ((FILE *, Ccstar));
 #define TARGET_RTX_COSTS arm_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST arm_address_cost
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG arm_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2838,13 +2842,13 @@ thumb_legitimate_address_p (mode, x, strict_p)
   else if (thumb_base_register_rtx_p (x, mode, strict_p))
     return 1;
 
-  /* This is PC relative data before MACHINE_DEPENDENT_REORG runs.  */
+  /* This is PC relative data before arm_reorg runs.  */
   else if (GET_MODE_SIZE (mode) >= 4 && CONSTANT_P (x)
 	   && GET_CODE (x) == SYMBOL_REF
            && CONSTANT_POOL_ADDRESS_P (x) && ! flag_pic)
     return 1;
 
-  /* This is PC relative data after MACHINE_DEPENDENT_REORG runs.  */
+  /* This is PC relative data after arm_reorg runs.  */
   else if (GET_MODE_SIZE (mode) >= 4 && reload_completed
 	   && (GET_CODE (x) == LABEL_REF
 	       || (GET_CODE (x) == CONST
@@ -6977,9 +6981,13 @@ note_invalid_constants (insn, address, do_pushes)
   return result;
 }
 
-void
-arm_reorg (first)
-     rtx first;
+/* Gcc puts the pool in the wrong place for ARM, since we can only
+   load addresses a limited distance around the pc.  We do some
+   special munging to move the constant pool values to the correct
+   point in the code.  */
+
+static void
+arm_reorg ()
 {
   rtx insn;
   HOST_WIDE_INT address = 0;
@@ -6989,11 +6997,12 @@ arm_reorg (first)
 
   /* The first insn must always be a note, or the code below won't
      scan it properly.  */
-  if (GET_CODE (first) != NOTE)
+  insn = get_insns ();
+  if (GET_CODE (insn) != NOTE)
     abort ();
 
   /* Scan all the insns and record the operands that will need fixing.  */
-  for (insn = next_nonnote_insn (first); insn; insn = next_nonnote_insn (insn))
+  for (insn = next_nonnote_insn (insn); insn; insn = next_nonnote_insn (insn))
     {
       if (TARGET_CIRRUS_FIX_INVALID_INSNS
           && (arm_cirrus_insn_p (insn)

@@ -1246,9 +1246,6 @@ extern long mcore_current_compilation_timestamp;
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
   ((CHAR)=='.' || (CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^' || (CHAR) == '!')
 
-/* This is to handle loads from the constant pool.  */
-#define MACHINE_DEPENDENT_REORG(X) mcore_dependent_reorg (X)
-
 #define PREDICATE_CODES							\
   { "mcore_arith_reg_operand",		{ REG, SUBREG }},		\
   { "mcore_general_movsrc_operand",	{ MEM, CONST_INT, REG, SUBREG }},\

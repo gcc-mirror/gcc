@@ -828,6 +828,7 @@ static void x86_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					 HOST_WIDE_INT, tree));
 static bool x86_can_output_mi_thunk PARAMS ((tree, HOST_WIDE_INT,
 					     HOST_WIDE_INT, tree));
+static void ix86_reorg PARAMS ((void));
 bool ix86_expand_carry_flag_compare PARAMS ((enum rtx_code, rtx, rtx, rtx*));
 
 struct ix86_address
@@ -1005,6 +1006,9 @@ static void init_ext_80387_constants PARAMS ((void));
 #define TARGET_RTX_COSTS ix86_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST ix86_address_cost
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG ix86_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -15531,9 +15535,8 @@ x86_function_profiler (file, labelno)
    when RET is not destination of conditional jump or directly preceded
    by other jump instruction.  We avoid the penalty by inserting NOP just
    before the RET instructions in such cases.  */
-void
-x86_machine_dependent_reorg (first)
-     rtx first ATTRIBUTE_UNUSED;
+static void
+ix86_reorg ()
 {
   edge e;
 

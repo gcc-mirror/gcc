@@ -94,7 +94,6 @@ extern void		gen_conditional_move PARAMS ((rtx *));
 extern void		mips_gen_conditional_trap PARAMS ((rtx *));
 extern void		mips_emit_fcc_reload PARAMS ((rtx, rtx, rtx));
 extern void		mips_set_return_address PARAMS ((rtx, rtx));
-extern void		machine_dependent_reorg PARAMS ((rtx));
 extern void		mips_count_memory_refs PARAMS ((rtx, int));
 extern HOST_WIDE_INT	mips_debugger_offset PARAMS ((rtx, HOST_WIDE_INT));
 extern const char      *mips_fill_delay_slot PARAMS ((const char *,

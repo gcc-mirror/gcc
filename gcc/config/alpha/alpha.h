@@ -1356,9 +1356,6 @@ do {									     \
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)  \
 { if (GET_CODE (ADDR) == AND) goto LABEL; }
-
-/* Machine-dependent reorg pass.  */
-#define MACHINE_DEPENDENT_REORG(X)	alpha_reorg(X)
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */

@@ -8426,7 +8426,7 @@ the FPSCR PR bit has to be cleared, while for a double precision
 operation, this bit has to be set.  Changing the PR bit requires a general
 purpose register as a scratch register, hence these FPSCR sets have to
 be inserted before reload, i.e.@: you can't put this into instruction emitting
-or @code{MACHINE_DEPENDENT_REORG}.
+or @code{TARGET_MACHINE_DEPENDENT_REORG}.
 
 You can have multiple entities that are mode-switched, and select at run time
 which entities actually need it.  @code{OPTIMIZE_MODE_SWITCHING} should
@@ -9143,13 +9143,6 @@ slot of @var{insn}.
 
 You need not define this macro if it would always return zero.
 
-@findex MACHINE_DEPENDENT_REORG
-@item MACHINE_DEPENDENT_REORG (@var{insn})
-In rare cases, correct code generation requires extra machine
-dependent processing between the second jump optimization pass and
-delayed branch scheduling.  On those machines, define this macro as a C
-statement to act on the code starting at @var{insn}.
-
 @findex MULTIPLE_SYMBOL_SPACES
 @item MULTIPLE_SYMBOL_SPACES
 Define this macro if in some cases global symbols from one translation
@@ -9253,6 +9246,21 @@ added to the @code{struct ce_if_block} structure.  These should be initialized
 by the @code{IFCVT_INIT_EXTRA_FIELDS} macro.
 
 @end table
+
+@findex TARGET_MACHINE_DEPENDENT_REORG
+@deftypefn {Target Hook} void TARGET_MACHINE_DEPENDENT_REORG ()
+If non-null, this hook performs a target-specific pass over the
+instruction stream.  The compiler will run it at all optimization levels,
+just before the point at which it normally does delayed-branch scheduling.
+
+The exact purpose of the hook varies from target to target.  Some use
+it to do transformations that are necessary for correctness, such as
+laying out in-function constant pools or avoiding hardware hazards.
+Others use it as an opportunity to do some machine-dependent optimizations.
+
+You need not implement the hook if it has nothing to do.  The default
+definition is null.
+@end deftypefn
 
 @deftypefn {Target Hook} void TARGET_INIT_BUILTINS ()
 Define this hook if you have any machine-specific built-in functions

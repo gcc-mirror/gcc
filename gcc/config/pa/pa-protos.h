@@ -19,9 +19,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #ifdef RTX_CODE
-/* Prototype function used in MACHINE_DEPENDENT_REORG macro.  */
-extern void pa_reorg PARAMS ((rtx));
-
 /* Prototype function used in various macros.  */
 extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
 

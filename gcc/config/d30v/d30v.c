@@ -3423,18 +3423,6 @@ d30v_emit_cond_move (dest, test, true_value, false_value)
 }
 
 
-/* In rare cases, correct code generation requires extra machine dependent
-   processing between the second jump optimization pass and delayed branch
-   scheduling.  On those machines, define this macro as a C statement to act on
-   the code starting at INSN.  */
-
-void
-d30v_machine_dependent_reorg (insn)
-     rtx insn ATTRIBUTE_UNUSED;
-{
-}
-
-
 /* A C statement (sans semicolon) to update the integer variable COST based on
    the relationship between INSN that is dependent on DEP_INSN through the
    dependence LINK.  The default is to make no adjustment to COST.  This can be

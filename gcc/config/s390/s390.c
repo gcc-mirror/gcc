@@ -72,7 +72,7 @@ static int s390_issue_rate PARAMS ((void));
 static int s390_use_dfa_pipeline_interface PARAMS ((void));
 static bool s390_rtx_costs PARAMS ((rtx, int, int, int *));
 static int s390_address_cost PARAMS ((rtx));
-
+static void s390_reorg PARAMS ((void));
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -124,6 +124,9 @@ static int s390_address_cost PARAMS ((rtx));
 #define TARGET_RTX_COSTS s390_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST s390_address_cost
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG s390_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4942,9 +4945,8 @@ s390_fixup_clobbered_return_reg (return_reg)
 
 /* Perform machine-dependent processing.  */
 
-void
-s390_machine_dependent_reorg (first)
-     rtx first ATTRIBUTE_UNUSED;
+static void
+s390_reorg ()
 {
   bool fixed_up_clobbered_return_reg = 0;
   rtx temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);

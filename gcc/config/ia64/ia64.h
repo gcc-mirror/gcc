@@ -2300,13 +2300,6 @@ do {									\
 
 #define HANDLE_SYSV_PRAGMA 1
 
-/* In rare cases, correct code generation requires extra machine dependent
-   processing between the second jump optimization pass and delayed branch
-   scheduling.  On those machines, define this macro as a C statement to act on
-   the code starting at INSN.  */
-
-#define MACHINE_DEPENDENT_REORG(INSN) ia64_reorg (INSN)
-
 /* A C expression for the maximum number of instructions to execute via
    conditional execution instructions instead of a branch.  A value of
    BRANCH_COST+1 is the default if the machine does not use

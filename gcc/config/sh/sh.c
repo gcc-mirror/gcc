@@ -186,6 +186,7 @@ static int mova_p PARAMS ((rtx));
 static rtx find_barrier PARAMS ((int, rtx, rtx));
 static int noncall_uses_reg PARAMS ((rtx, rtx, rtx *));
 static rtx gen_block_redirect PARAMS ((rtx, int, int));
+static void sh_reorg PARAMS ((void));
 static void output_stack_adjust PARAMS ((int, rtx, int, rtx (*) (rtx)));
 static rtx frame_insn PARAMS ((rtx));
 static rtx push PARAMS ((int));
@@ -282,6 +283,9 @@ static int sh_address_cost PARAMS ((rtx));
 #define TARGET_RTX_COSTS sh_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST sh_address_cost
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG sh_reorg
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_HAVE_TLS
@@ -3717,19 +3721,18 @@ sh_loop_align (label)
   return align_loops_log;
 }
 
-/* Exported to toplev.c.
-
-   Do a final pass over the function, just before delayed branch
+/* Do a final pass over the function, just before delayed branch
    scheduling.  */
 
-void
-machine_dependent_reorg (first)
-     rtx first;
+static void
+sh_reorg ()
 {
-  rtx insn, mova = NULL_RTX;
+  rtx first, insn, mova = NULL_RTX;
   int num_mova;
   rtx r0_rtx = gen_rtx_REG (Pmode, 0);
   rtx r0_inc_rtx = gen_rtx_POST_INC (Pmode, r0_rtx);
+
+  first = get_insns ();
 
   /* We must split call insns before introducing `mova's.  If we're
      optimizing, they'll have already been split.  Otherwise, make
@@ -8449,7 +8452,7 @@ sh_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
       schedule_insns (rtl_dump_file);
     }
 
-  MACHINE_DEPENDENT_REORG (insns);
+  sh_reorg ();
 
   if (optimize > 0 && flag_delayed_branch)
       dbr_schedule (insns, rtl_dump_file);

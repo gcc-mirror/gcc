@@ -2242,14 +2242,6 @@ extern int making_const_table;
 /* The arm5 clz instruction returns 32.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
 
-
-/* Gcc puts the pool in the wrong place for ARM, since we can only
-   load addresses a limited distance around the pc.  We do some
-   special munging to move the constant pool values to the correct
-   point in the code.  */
-#define MACHINE_DEPENDENT_REORG(INSN)	\
-    arm_reorg (INSN);			\
-
 #undef  ASM_APP_OFF
 #define ASM_APP_OFF (TARGET_THUMB ? "\t.code\t16\n" : "")
 

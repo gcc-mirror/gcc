@@ -2242,12 +2242,6 @@ do {							\
    in that case.  This macro controls the compiler proper; it does
    not affect the preprocessor.  */
 
-#define MACHINE_DEPENDENT_REORG(INSN) machine_dependent_reorg (INSN)
-/* In rare cases, correct code generation requires extra machine
-   dependent processing between the second jump optimization pass and
-   delayed branch scheduling.  On those machines, define this macro
-   as a C statement to act on the code starting at INSN.  */
-
 extern int ip2k_reorg_in_progress;
 /* Flag if we're in the middle of IP2k-specific reorganization.  */
 

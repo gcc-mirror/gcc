@@ -69,6 +69,7 @@ static void   avr_unique_section PARAMS ((tree, int));
 static void   avr_insert_attributes PARAMS ((tree, tree *));
 static unsigned int avr_section_type_flags PARAMS ((tree, const char *, int));
 
+static void avr_reorg PARAMS ((void));
 static void   avr_asm_out_ctor PARAMS ((rtx, int));
 static void   avr_asm_out_dtor PARAMS ((rtx, int));
 static int default_rtx_costs PARAMS ((rtx, enum rtx_code, enum rtx_code));
@@ -234,6 +235,8 @@ int avr_case_values_threshold = 30000;
 #define TARGET_RTX_COSTS avr_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST avr_address_cost
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG avr_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5187,13 +5190,12 @@ avr_normalize_condition (condition)
 
 /* This fnction optimizes conditional jumps */
 
-void
-machine_dependent_reorg (first_insn)
-     rtx first_insn;
+static void
+avr_reorg ()
 {
   rtx insn, pattern;
   
-  for (insn = first_insn; insn; insn = NEXT_INSN (insn))
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (! (GET_CODE (insn) == INSN
 	     || GET_CODE (insn) == CALL_INSN

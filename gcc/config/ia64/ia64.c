@@ -185,10 +185,11 @@ static bool ia64_function_ok_for_sibcall PARAMS ((tree, tree));
 static bool ia64_rtx_costs PARAMS ((rtx, int, int, int *));
 static void fix_range PARAMS ((const char *));
 static struct machine_function * ia64_init_machine_status PARAMS ((void));
-static void emit_insn_group_barriers PARAMS ((FILE *, rtx));
-static void emit_all_insn_group_barriers PARAMS ((FILE *, rtx));
+static void emit_insn_group_barriers PARAMS ((FILE *));
+static void emit_all_insn_group_barriers PARAMS ((FILE *));
 static void final_emit_insn_group_barriers PARAMS ((FILE *));
 static void emit_predicate_relation_info PARAMS ((void));
+static void ia64_reorg PARAMS ((void));
 static bool ia64_in_small_data_p PARAMS ((tree));
 static void process_epilogue PARAMS ((void));
 static int process_set PARAMS ((FILE *, rtx));
@@ -355,6 +356,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_RTX_COSTS ia64_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_0
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG ia64_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5358,17 +5362,16 @@ safe_group_barrier_needed_p (insn)
   return t;
 }
 
-/* INSNS is a chain of instructions.  Scan the chain, and insert stop bits
-   as necessary to eliminate dependencies.  This function assumes that
-   a final instruction scheduling pass has been run which has already
-   inserted most of the necessary stop bits.  This function only inserts
-   new ones at basic block boundaries, since these are invisible to the
-   scheduler.  */
+/* Scan the current function and insert stop bits as necessary to
+   eliminate dependencies.  This function assumes that a final
+   instruction scheduling pass has been run which has already
+   inserted most of the necessary stop bits.  This function only
+   inserts new ones at basic block boundaries, since these are
+   invisible to the scheduler.  */
 
 static void
-emit_insn_group_barriers (dump, insns)
+emit_insn_group_barriers (dump)
      FILE *dump;
-     rtx insns;
 {
   rtx insn;
   rtx last_label = 0;
@@ -5376,7 +5379,7 @@ emit_insn_group_barriers (dump, insns)
 
   init_insn_group_barriers ();
 
-  for (insn = insns; insn; insn = NEXT_INSN (insn))
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (GET_CODE (insn) == CODE_LABEL)
 	{
@@ -5424,15 +5427,14 @@ emit_insn_group_barriers (dump, insns)
    This function has to emit all necessary group barriers.  */
 
 static void
-emit_all_insn_group_barriers (dump, insns)
+emit_all_insn_group_barriers (dump)
      FILE *dump ATTRIBUTE_UNUSED;
-     rtx insns;
 {
   rtx insn;
 
   init_insn_group_barriers ();
 
-  for (insn = insns; insn; insn = NEXT_INSN (insn))
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (GET_CODE (insn) == BARRIER)
 	{
@@ -7182,9 +7184,8 @@ emit_predicate_relation_info ()
 
 /* Perform machine dependent operations on the rtl chain INSNS.  */
 
-void
-ia64_reorg (insns)
-     rtx insns;
+static void
+ia64_reorg ()
 {
   /* We are freeing block_for_insn in the toplev to keep compatibility
      with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
@@ -7283,13 +7284,13 @@ ia64_reorg (insns)
 	  free (clocks);
 	}
       free (stops_p);
-      emit_insn_group_barriers (rtl_dump_file, insns);
+      emit_insn_group_barriers (rtl_dump_file);
 
       ia64_final_schedule = 0;
       timevar_pop (TV_SCHED2);
     }
   else
-    emit_all_insn_group_barriers (rtl_dump_file, insns);
+    emit_all_insn_group_barriers (rtl_dump_file);
 
   /* A call must not be the last instruction in a function, so that the
      return address is still within the function, so that unwinding works
@@ -8528,8 +8529,8 @@ ia64_output_mi_thunk (file, thunk, delta, vcall_offset, function)
      instruction scheduling worth while.  Note that use_thunk calls
      assemble_start_function and assemble_end_function.  */
 
+  emit_all_insn_group_barriers (NULL);
   insn = get_insns ();
-  emit_all_insn_group_barriers (NULL, insn);
   shorten_branches (insn);
   final_start_function (insn, file, 1);
   final (insn, file, 1, 0);

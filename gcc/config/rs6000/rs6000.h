@@ -2184,14 +2184,6 @@ do {								\
    generating position independent code.  */
 
 /* #define LEGITIMATE_PIC_OPERAND_P (X) */
-
-/* In rare cases, correct code generation requires extra machine
-   dependent processing between the second jump optimization pass and
-   delayed branch scheduling.  On those machines, define this macro
-   as a C statement to act on the code starting at INSN.  */
-
-/* #define MACHINE_DEPENDENT_REORG(INSN) */
-
 
 /* Define this if some processing needs to be done immediately before
    emitting code for an insn.  */

@@ -1709,15 +1709,6 @@ do {                                                                    \
 /* Allow $ in identifiers */
 #define DOLLARS_IN_IDENTIFIERS	1
 
-/* Machine-dependent reorg pass.
-   Specific optimizations are defined here:
-    - this pass changes the Z register into either X or Y
-      (it preserves X/Y previous values in a memory slot in page0). 
-
-   When this pass is finished, the global variable
-   'z_replacement_completed' is set to 2.  */
-#define MACHINE_DEPENDENT_REORG(X)	m68hc11_reorg (X)
-
 extern int debug_m6811;
 extern int z_replacement_completed;
 extern int current_function_interrupt;

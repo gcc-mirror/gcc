@@ -247,6 +247,7 @@ static rtx add_constant				PARAMS ((struct constant **,
 static void dump_constants			PARAMS ((struct constant *,
 							rtx));
 static rtx mips_find_symbol			PARAMS ((rtx));
+static void mips_reorg				PARAMS ((void));
 static void abort_with_insn			PARAMS ((rtx, const char *))
   ATTRIBUTE_NORETURN;
 static int symbolic_expression_p                PARAMS ((rtx));
@@ -881,6 +882,9 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO mips_encode_section_info
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG mips_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -9898,21 +9902,20 @@ mips_find_symbol (addr)
   return NULL_RTX;
 }
 
-/* Exported to toplev.c.
+/* In mips16 mode, we need to look through the function to check for
+   PC relative loads that are out of range.  */
 
-   Do a final pass over the function, just before delayed branch
-   scheduling.  */
-
-void
-machine_dependent_reorg (first)
-     rtx first;
+static void
+mips_reorg ()
 {
   int insns_len, max_internal_pool_size, pool_size, addr, first_constant_ref;
-  rtx insn;
+  rtx first, insn;
   struct constant *constants;
 
   if (! TARGET_MIPS16)
     return;
+
+  first = get_insns ();
 
   /* If $gp is used, try to remove stores, and replace loads with
      copies from $gp.  */

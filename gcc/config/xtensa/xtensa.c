@@ -198,6 +198,7 @@ static rtx gen_conditional_move PARAMS ((rtx));
 static rtx fixup_subreg_mem PARAMS ((rtx x));
 static enum machine_mode xtensa_find_mode_for_size PARAMS ((unsigned));
 static struct machine_function * xtensa_init_machine_status PARAMS ((void));
+static void xtensa_reorg PARAMS ((void));
 static void printx PARAMS ((FILE *, signed int));
 static unsigned int xtensa_multibss_section_type_flags
   PARAMS ((tree, const char *, int));
@@ -242,6 +243,9 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #define TARGET_RTX_COSTS xtensa_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_0
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG xtensa_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2187,13 +2191,23 @@ xtensa_frame_pointer_required ()
 }
 
 
-void
-xtensa_reorg (first)
-    rtx first;
+/* If the stack frame size is too big to fit in the immediate field of
+   the ENTRY instruction, we need to store the frame size in the
+   constant pool.  However, the code in xtensa_function_prologue runs too
+   late to be able to add anything to the constant pool.  Since the
+   final frame size isn't known until reload is complete, this seems
+   like the best place to do it.
+
+   There may also be some fixup required if there is an incoming argument
+   in a7 and the function requires a frame pointer. */
+
+static void
+xtensa_reorg ()
 {
-  rtx insn, set_frame_ptr_insn = 0;
+  rtx first, insn, set_frame_ptr_insn = 0;
     
   unsigned long tsize = compute_frame_size (get_frame_size ());
+  first = get_insns ();
   if (tsize < (1 << (12+3)))
     frame_size_const = 0;
   else

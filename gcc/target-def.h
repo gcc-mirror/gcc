@@ -283,6 +283,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_ENCODE_SECTION_INFO default_encode_section_info
 #endif
 
+#define TARGET_MACHINE_DEPENDENT_REORG 0
+
 /* The whole shebang.  */
 #define TARGET_INITIALIZER			\
 {						\
@@ -313,6 +315,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_RTX_COSTS,				\
   TARGET_ADDRESS_COST,				\
   TARGET_DWARF_REGISTER_SPAN,                   \
+  TARGET_MACHINE_DEPENDENT_REORG,		\
   TARGET_HAVE_NAMED_SECTIONS,			\
   TARGET_HAVE_CTORS_DTORS,			\
   TARGET_HAVE_TLS,				\

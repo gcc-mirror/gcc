@@ -4161,10 +4161,6 @@ while (0)
 					 && mips_abi != ABI_32		\
 					 && mips_abi != ABI_O64)
 
-/* In mips16 mode, we need to look through the function to check for
-   PC relative loads that are out of range.  */
-#define MACHINE_DEPENDENT_REORG(X) machine_dependent_reorg (X)
-
 /* We need to use a special set of functions to handle hard floating
    point code in mips16 mode.  */
 

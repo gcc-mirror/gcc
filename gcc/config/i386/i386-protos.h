@@ -225,7 +225,6 @@ extern int x86_field_alignment PARAMS ((tree, int));
 #endif
 
 extern rtx ix86_tls_get_addr PARAMS ((void));
-extern void x86_machine_dependent_reorg PARAMS ((rtx));
 extern bool ix86_must_pass_in_stack PARAMS ((enum machine_mode mode, tree));
 
 /* In winnt.c  */

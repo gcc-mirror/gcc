@@ -101,7 +101,6 @@ extern enum reg_class ia64_secondary_reload_class PARAMS((enum reg_class,
 							  enum machine_mode,
 							  rtx));
 extern void ia64_output_dwarf_dtprel PARAMS ((FILE*, int, rtx));
-extern void ia64_reorg PARAMS((rtx));
 extern void process_for_unwind_directive PARAMS ((FILE *, rtx));
 extern const char *get_bundle_name PARAMS ((int));
 #endif /* RTX_CODE */

@@ -3824,12 +3824,6 @@ do  {						\
    You need not define this macro if it would always return zero.  */
 /* #define INSN_REFERENCES_ARE_DELAYED(INSN) */
 
-/* In rare cases, correct code generation requires extra machine dependent
-   processing between the second jump optimization pass and delayed branch
-   scheduling.  On those machines, define this macro as a C statement to act on
-   the code starting at INSN.  */
-/* #define MACHINE_DEPENDENT_REORG(INSN) */
-
 /* Define this macro if in some cases global symbols from one translation unit
    may not be bound to undefined symbols in another translation unit without
    user intervention.  For instance, under Microsoft Windows symbols must be

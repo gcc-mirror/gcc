@@ -1009,14 +1009,6 @@ do {									\
 	&& GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF		\
 	&& GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT		\
 	&& ! CONST_OK_FOR_K (INTVAL (XEXP (XEXP (X, 0), 1)))))
-
-/* In rare cases, correct code generation requires extra machine
-   dependent processing between the second jump optimization pass and
-   delayed branch scheduling.  On those machines, define this macro
-   as a C statement to act on the code starting at INSN.  */
-
-#define MACHINE_DEPENDENT_REORG(INSN) v850_reorg (INSN)
-
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 

@@ -1066,10 +1066,4 @@ extern int s390_nr_constants;
 /* This macro definition sets up a default value for `main' to return.  */
 #define DEFAULT_MAIN_RETURN  c_expand_return (integer_zero_node)
 
-/* In rare cases, correct code generation requires extra machine dependent
-   processing between the second jump optimization pass and delayed branch
-   scheduling.  On those machines, define this macro as a C statement to act on
-   the code starting at INSN.  */
-#define MACHINE_DEPENDENT_REORG(INSN) s390_machine_dependent_reorg (INSN)
-
 #endif 

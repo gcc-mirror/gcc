@@ -189,6 +189,7 @@ static int c4x_arn_mem_operand PARAMS ((rtx, enum machine_mode, unsigned int));
 static void c4x_check_attribute PARAMS ((const char *, tree, tree, tree *));
 static int c4x_r11_set_p PARAMS ((rtx));
 static int c4x_rptb_valid_p PARAMS ((rtx, rtx));
+static void c4x_reorg PARAMS ((void));
 static int c4x_label_ref_used_p PARAMS ((rtx, rtx));
 static tree c4x_handle_fntype_attribute PARAMS ((tree *, tree, tree, int, bool *));
 const struct attribute_spec c4x_attribute_table[];
@@ -229,6 +230,9 @@ static int c4x_address_cost PARAMS ((rtx));
 #define TARGET_RTX_COSTS c4x_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST c4x_address_cost
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG c4x_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2424,17 +2428,22 @@ c4x_rptb_insert (insn)
 }
 
 
-/* This function is a C4x special called immediately before delayed
-   branch scheduling.  We fix up RTPB style loops that didn't get RC
+/* We need to use direct addressing for large constants and addresses
+   that cannot fit within an instruction.  We must check for these
+   after after the final jump optimisation pass, since this may
+   introduce a local_move insn for a SYMBOL_REF.  This pass
+   must come before delayed branch slot filling since it can generate
+   additional instructions.
+
+   This function also fixes up RTPB style loops that didn't get RC
    allocated as the loop counter.  */
 
-void
-c4x_process_after_reload (first)
-     rtx first;
+static void
+c4x_reorg ()
 {
   rtx insn;
 
-  for (insn = first; insn; insn = NEXT_INSN (insn))
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       /* Look for insn.  */
       if (INSN_P (insn))

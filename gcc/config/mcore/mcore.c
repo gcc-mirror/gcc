@@ -126,7 +126,8 @@ static void       layout_mcore_frame           PARAMS ((struct mcore_frame *));
 static cond_type  is_cond_candidate            PARAMS ((rtx));
 static rtx        emit_new_cond_insn           PARAMS ((rtx, int));
 static rtx        conditionalize_block         PARAMS ((rtx));
-static void       conditionalize_optimization  PARAMS ((rtx));
+static void       conditionalize_optimization  PARAMS ((void));
+static void       mcore_reorg                  PARAMS ((void));
 static rtx        handle_structs_in_regs       PARAMS ((enum machine_mode, tree, int));
 static void       mcore_mark_dllexport         PARAMS ((tree));
 static void       mcore_mark_dllimport         PARAMS ((tree));
@@ -172,6 +173,9 @@ static bool       mcore_rtx_costs		PARAMS ((rtx, int, int, int *));
 #define TARGET_RTX_COSTS mcore_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_0
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG mcore_reorg
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3016,23 +3020,21 @@ conditionalize_block (first)
    in before cse 2).  */
 
 static void
-conditionalize_optimization (first)
-     rtx first;
+conditionalize_optimization ()
 {
   rtx insn;
 
-  for (insn = first; insn; insn = conditionalize_block (insn))
+  for (insn = get_insns (); insn; insn = conditionalize_block (insn))
     continue;
 }
 
 static int saved_warn_return_type = -1;
 static int saved_warn_return_type_count = 0;
 
-/* This function is called from toplev.c before reorg.  */
+/* This is to handle loads from the constant pool.  */
 
-void
-mcore_dependent_reorg (first)
-     rtx first;
+static void
+mcore_reorg ()
 {
   /* Reset this variable.  */
   current_function_anonymous_args = 0;
@@ -3056,7 +3058,7 @@ mcore_dependent_reorg (first)
     return;
   
   /* Conditionalize blocks where we can.  */
-  conditionalize_optimization (first);
+  conditionalize_optimization ();
 
   /* Literal pool generation is now pushed off until the assembler.  */
 }
