@@ -535,7 +535,21 @@ expand_epilogue ()
   size = get_frame_size () + current_function_outgoing_args_size;
   size += (current_function_outgoing_args_size ? 4 : 0);
 
-  /* Cut back the stack.  */
+  /* Maybe cut back the stack, except for the register save area.
+
+     If the frame pointer exists, then use the frame pointer to
+     cut back the stack.
+
+     If the stack size + register save area is more than 255 bytes,
+     then the stack must be cut back here since the size + register
+     save size is too big for a ret/retf instruction. 
+
+     Else leave it alone, it will be cut back as part of the
+     ret/retf instruction, or there wasn't any stack to begin with.
+
+     Under no circumstanes should the register save area be
+     deallocated here, that would leave a window where an interrupt
+     could occur and trash the register save area.  */
   if (frame_pointer_needed)
     {
       emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
@@ -543,7 +557,7 @@ expand_epilogue ()
     }
   else if ((regs_ever_live[2] || regs_ever_live[3]
 	    || regs_ever_live[6] || regs_ever_live[7])
-	   && size > 255)
+	   && size + 16 > 255)
     {
       emit_insn (gen_addsi3 (stack_pointer_rtx,
 			     stack_pointer_rtx,
@@ -559,7 +573,7 @@ expand_epilogue ()
   if (regs_ever_live[2] || regs_ever_live[3]
       || regs_ever_live[6] || regs_ever_live[7]
       || frame_pointer_needed)
-    emit_jump_insn (gen_return_internal_regs (GEN_INT (size)));
+    emit_jump_insn (gen_return_internal_regs (GEN_INT (size + 16)));
   else
     {
       if (size)
