@@ -1,3 +1,11 @@
+2002-12-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/8503
+	Remove DR 295 implementation.
+	* pt.c (check_cv_quals_for_unify): Disable function & method cases.
+	* tree.c (cp_build_qualified_type_real): Likewise. Don't warn
+	about ignoring volatile qualifiers.
+
 2002-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* parse.y (bad_parm): Add missing argument to error function call.

@@ -46,8 +46,9 @@ class X{
 };
 
 typedef int const * bart ();
-typedef bart const * const * bar2; // ok - constifying qualifiers
-typedef bart volatile * const * bar2v; // WARNING - qualifiers
+//The following is DR295 dependant
+typedef bart const * const * bar2; // ERROR - constifying qualifiers
+typedef bart volatile * const * bar2v; // ERROR - qualifiers
 
 bar2 baz (X::Y y)
 {				// ERROR - in this context

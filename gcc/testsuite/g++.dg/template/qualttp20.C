@@ -16,18 +16,20 @@ struct AS
 template <typename T> struct B1 : T
 {
   typedef typename T::L __restrict__ r;// { dg-error "`__restrict' qualifiers cannot" "" }
-  typedef typename T::myT __restrict__ p;// { dg-warning "ignoring `__restrict'" "" }
-  
-  typedef typename T::myT volatile *myvolatile; // { dg-warning "ignoring `volatile'" "" }
-  typename T::myT volatile *a;    // { dg-warning "ignoring `volatile'" "" }
-  myvolatile b;			 // { dg-bogus "ignoring `volatile'" "" { xfail *-*-* } }
+  typedef typename T::myT __restrict__ p;// { dg-warning "ignoring `__restrict'" "" { xfail *-*-* } }
+
+  // The following are DR 295 dependent
+  typedef typename T::myT volatile *myvolatile; // { dg-error "qualifiers" ""  }
+  typename T::myT volatile *a;    // { dg-error "qualifiers" "" }
+  myvolatile b;			 // { dg-error "qualifiers" "" }
 };
 template <typename T> struct B2 : T
 {
-  typedef typename T::myT const *myconst;
-  typename T::myT const *a;
-  myconst b;
+  // The following are DR 295 dependent
+  typedef typename T::myT const *myconst; // { dg-error "qualifiers" "" }
+  typename T::myT const *a; // { dg-error "qualifiers" "" }
+  myconst b; // { dg-error "qualifiers" "" }
 };
 
 B1<AS> b1;	// { dg-error "instantiated" "" }
-B2<AS> b2;
+B2<AS> b2;      // { dg-error "instantiated" "" }	

@@ -536,6 +536,11 @@ cp_build_qualified_type_real (type, type_quals, complain)
 {
   tree result;
   int bad_quals = TYPE_UNQUALIFIED;
+  /* We keep bad function qualifiers separate, so that we can decide
+     whether to implement DR 295 or not. DR 295 break existing code,
+     unfortunately. Remove this variable to implement the defect
+     report.  */
+  int bad_func_quals = TYPE_UNQUALIFIED;
 
   if (type == error_mark_node)
     return type;
@@ -551,6 +556,8 @@ cp_build_qualified_type_real (type, type_quals, complain)
 	  || TREE_CODE (type) == METHOD_TYPE))
     {
       bad_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
+      if (TREE_CODE (type) != REFERENCE_TYPE)
+	bad_func_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
       type_quals &= ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
     }
   
@@ -569,21 +576,23 @@ cp_build_qualified_type_real (type, type_quals, complain)
     /*OK*/;
   else if (!(complain & (tf_error | tf_ignore_bad_quals)))
     return error_mark_node;
+  else if (bad_func_quals && !(complain & tf_error))
+    return error_mark_node;
   else
     {
       if (complain & tf_ignore_bad_quals)
  	/* We're not going to warn about constifying things that can't
  	   be constified.  */
  	bad_quals &= ~TYPE_QUAL_CONST;
+      bad_quals |= bad_func_quals;
       if (bad_quals)
  	{
  	  tree bad_type = build_qualified_type (ptr_type_node, bad_quals);
  
- 	  if (!(complain & tf_ignore_bad_quals))
+ 	  if (!(complain & tf_ignore_bad_quals)
+	      || bad_func_quals)
  	    error ("`%V' qualifiers cannot be applied to `%T'",
 		   bad_type, type);
- 	  else if (complain & tf_warning)
- 	    warning ("ignoring `%V' qualifiers on `%T'", bad_type, type);
  	}
     }
   

@@ -1,3 +1,9 @@
+2002-12-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/template/qualttp20.C: Adjust expected errors.
+	* g++.old-deja/g++.jason/report.C: Likewise.
+	* g++.old-deja/g++.other/qual1.C: Likewise.
+
 2002-12-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/unroll-1.c: New test.
