@@ -7061,10 +7061,14 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 		   better to have a testcase first.  */
 		return 0;
 
-	      /* Add insn to decrement register, and delete insn
-		 that incremented the register.  */
-	      p = emit_insn_before (gen_add2_insn (reg, new_add_val),
-				    bl->biv->insn);
+	      /* We may not have a single insn which can increment a reg, so
+		 create a sequence to hold all the insns from expand_inc.  */
+	      start_sequence ();
+	      expand_inc (reg, new_add_val);
+              tem = gen_sequence ();
+              end_sequence ();
+
+	      p = emit_insn_before (tem, bl->biv->insn);
 	      delete_insn (bl->biv->insn);
 		      
 	      /* Update biv info to reflect its new status.  */

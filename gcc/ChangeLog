@@ -1,3 +1,7 @@
+Sat Nov 21 22:12:09 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (check_dbra_loop): Avoid using gen_add2_insn.
+
 Sat Nov 21 02:18:38 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (move_movables): Start of libcall might be new loop start.
