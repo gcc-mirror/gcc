@@ -847,6 +847,20 @@
    (set_attr "length" "4,8")]
 )
 
+; transform ((x << y) - 1) to ~(~(x-1) << y)  Where X is a constant.
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(plus:SI (ashift:SI (match_operand:SI 1 "const_int_operand" "")
+			    (match_operand:SI 2 "s_register_operand" ""))
+		 (const_int -1)))
+   (clobber (match_operand:SI 3 "s_register_operand" ""))]
+  "TARGET_ARM"
+  [(set (match_dup 3) (match_dup 1))
+   (set (match_dup 0) (not:SI (ashift:SI (match_dup 3) (match_dup 2))))]
+  "
+  operands[1] = GEN_INT (~(INTVAL (operands[1]) - 1));
+")
+
 (define_expand "addsf3"
   [(set (match_operand:SF          0 "s_register_operand" "")
 	(plus:SF (match_operand:SF 1 "s_register_operand" "")

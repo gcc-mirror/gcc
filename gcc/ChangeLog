@@ -1,3 +1,8 @@
+2003-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md: New split to transform ((X << y) - 1) into ~(~(X-1) << y)
+	for constant X.
+
 2003-12-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	* calls.c (expand_call): Don't try using tail or recursive calls
