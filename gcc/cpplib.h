@@ -67,8 +67,8 @@ struct cpp_buffer
   const unsigned char *cur;	 /* current position */
   const unsigned char *rlimit; /* end of valid data */
   const unsigned char *buf;	 /* entire buffer */
-  const unsigned char *alimit; /* end of allocated buffer */
   const unsigned char *line_base; /* start of current line */
+  const unsigned char *mark;  /* Saved position for lengthy backtrack. */
 
   struct cpp_buffer *prev;
 
@@ -84,10 +84,11 @@ struct cpp_buffer
   struct ihash *ihash;
 
   long lineno; /* Line number at CPP_LINE_BASE. */
-  long colno; /* Column number at CPP_LINE_BASE. */
-  long mark;  /* Saved position for lengthy backtrack. */
   parse_cleanup_t cleanup;
-  void *data;
+
+  /* If the buffer is the expansion of a macro, this points to the
+     macro's hash table entry.  */
+  struct hashnode *macro;
 
   /* Value of if_stack at start of this file.
      Used to prohibit unmatched #endif (etc) in an include file.  */
@@ -347,6 +348,7 @@ struct cpp_reader
   unsigned int max_include_len;
 
   struct if_stack *if_stack;
+  const unsigned char *potential_control_macro;
 
   long lineno;
 

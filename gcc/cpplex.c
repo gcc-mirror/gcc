@@ -25,11 +25,16 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 
-#define PEEKN(N) (CPP_BUFFER (pfile)->rlimit - CPP_BUFFER (pfile)->cur >= (N) \
-		  ? CPP_BUFFER (pfile)->cur[N] : EOF)
-#define FORWARD(N) CPP_FORWARD (CPP_BUFFER (pfile), (N))
-#define GETC() CPP_BUF_GET (CPP_BUFFER (pfile))
-#define PEEKC() CPP_BUF_PEEK (CPP_BUFFER (pfile))
+#define PEEKBUF(BUFFER, N) \
+  ((BUFFER)->rlimit - (BUFFER)->cur > (N) ? (BUFFER)->cur[N] : EOF)
+#define GETBUF(BUFFER) \
+  ((BUFFER)->cur < (BUFFER)->rlimit ? *(BUFFER)->cur++ : EOF)
+#define FORWARDBUF(BUFFER, N) ((BUFFER)->cur += (N))
+
+#define PEEKN(N) PEEKBUF (CPP_BUFFER (pfile), N)
+#define FORWARD(N) FORWARDBUF (CPP_BUFFER (pfile), (N))
+#define GETC() GETBUF (CPP_BUFFER (pfile))
+#define PEEKC() PEEKBUF (CPP_BUFFER (pfile), 0)
 
 static void skip_block_comment	PARAMS ((cpp_reader *));
 static void skip_line_comment	PARAMS ((cpp_reader *));
@@ -87,9 +92,9 @@ cpp_push_buffer (pfile, buffer, length)
   new->if_stack = pfile->if_stack;
   new->cleanup = null_cleanup;
   new->buf = new->cur = buffer;
-  new->alimit = new->rlimit = buffer + length;
+  new->rlimit = buffer + length;
   new->prev = buf;
-  new->mark = -1;
+  new->mark = NULL;
   new->line_base = NULL;
 
   CPP_BUFFER (pfile) = new;
@@ -667,7 +672,6 @@ _cpp_parse_assertion (pfile)
   else
     CPP_PUTC (pfile, ')');
 
-  CPP_NUL_TERMINATE (pfile);
   return 2;
 }
 
@@ -702,8 +706,16 @@ _cpp_lex_token (pfile)
 	  
       /* Comments are equivalent to spaces.
 	 For -traditional, a comment is equivalent to nothing.  */
-      if (CPP_TRADITIONAL (pfile) || !CPP_OPTION (pfile, discard_comments))
+      if (!CPP_OPTION (pfile, discard_comments))
 	return CPP_COMMENT;
+      else if (CPP_TRADITIONAL (pfile)
+	       && ! is_space (PEEKC ()))
+	{
+	  if (pfile->parsing_define_directive)
+	    return CPP_COMMENT;
+	  else
+	    goto get_next;
+	}
       else
 	{
 	  CPP_PUTC (pfile, c);
@@ -713,7 +725,6 @@ _cpp_lex_token (pfile)
     case '#':
       if (pfile->parsing_if_directive)
 	{
-	  _cpp_skip_hspace (pfile);
 	  if (_cpp_parse_assertion (pfile))
 	    return CPP_ASSERTION;
 	  goto randomchar;
@@ -740,7 +751,6 @@ _cpp_lex_token (pfile)
     case '\"':
     case '\'':
       parse_string (pfile, c);
-      pfile->only_seen_white = 0;
       return c == '\'' ? CPP_CHAR : CPP_STRING;
 
     case '$':
@@ -787,7 +797,6 @@ _cpp_lex_token (pfile)
 	    {
 	      /* In C++, there's a ->* operator.  */
 	      token = CPP_OTHER;
-	      pfile->only_seen_white = 0;
 	      CPP_RESERVE (pfile, 4);
 	      CPP_PUTC_Q (pfile, c);
 	      CPP_PUTC_Q (pfile, GETC ());
@@ -851,7 +860,6 @@ _cpp_lex_token (pfile)
       if (c3 == '=')
 	CPP_PUTC_Q (pfile, GETC ());
       CPP_NUL_TERMINATE_Q (pfile);
-      pfile->only_seen_white = 0;
       return CPP_OTHER;
 
     case '.':
@@ -876,14 +884,12 @@ _cpp_lex_token (pfile)
 	  CPP_PUTC_Q (pfile, '.');
 	  FORWARD (2);
 	  CPP_NUL_TERMINATE_Q (pfile);
-	  pfile->only_seen_white = 0;
 	  return CPP_3DOTS;
 	}
       goto randomchar;
 
     op2:
       token = CPP_OTHER;
-      pfile->only_seen_white = 0;
       CPP_RESERVE(pfile, 3);
       CPP_PUTC_Q (pfile, c);
       CPP_PUTC_Q (pfile, GETC ());
@@ -897,7 +903,6 @@ _cpp_lex_token (pfile)
 	  CPP_PUTC (pfile, c);
 	  c = GETC ();
 	  parse_string (pfile, c);
-	  pfile->only_seen_white = 0;
 	  return c == '\'' ? CPP_WCHAR : CPP_WSTRING;
 	}
       goto letter;
@@ -923,13 +928,11 @@ _cpp_lex_token (pfile)
 	c2= c;
       }
     CPP_NUL_TERMINATE_Q (pfile);
-    pfile->only_seen_white = 0;
     return CPP_NUMBER;
     case 'b': case 'c': case 'd': case 'h': case 'o':
     case 'B': case 'C': case 'D': case 'H': case 'O':
       if (CPP_OPTION (pfile, chill) && PEEKC () == '\'')
 	{
-	  pfile->only_seen_white = 0;
 	  CPP_RESERVE (pfile, 2);
 	  CPP_PUTC_Q (pfile, c);
 	  CPP_PUTC_Q (pfile, '\'');
@@ -970,11 +973,10 @@ _cpp_lex_token (pfile)
     case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
     case 'Y': case 'Z':
     letter:
-    pfile->only_seen_white = 0;
     _cpp_parse_name (pfile, c);
     return CPP_MACRO;
 
-    case ' ':  case '\t':  case '\v':
+    case ' ': case '\t': case '\v': case '\f':
       for (;;)
 	{
 	  CPP_PUTC (pfile, c);
@@ -998,6 +1000,8 @@ _cpp_lex_token (pfile)
 	    }
 	  else if (c == ' ')
 	    {
+	      /* "\r " means a space, but only if necessary to prevent
+		 accidental token concatenation.  */
 	      CPP_RESERVE (pfile, 2);
 	      if (pfile->output_escapes)
 		CPP_PUTC_Q (pfile, '\r');
@@ -1019,15 +1023,6 @@ _cpp_lex_token (pfile)
 
     case '\n':
       CPP_PUTC (pfile, c);
-      if (pfile->only_seen_white == 0)
-	pfile->only_seen_white = 1;
-      CPP_BUMP_LINE (pfile);
-      if (! CPP_OPTION (pfile, no_line_commands))
-	{
-	  pfile->lineno++;
-	  if (CPP_BUFFER (pfile)->lineno != pfile->lineno)
-	    _cpp_output_line_command (pfile, same_file);
-	}
       return CPP_VSPACE;
 
     case '(': token = CPP_LPAREN;    goto char1;
@@ -1041,7 +1036,6 @@ _cpp_lex_token (pfile)
     default:
       token = CPP_OTHER;
     char1:
-      pfile->only_seen_white = 0;
       CPP_PUTC (pfile, c);
       return token;
     }
@@ -1074,6 +1068,13 @@ maybe_macroexpand (pfile, written)
 	  macro[1] = '-';
 	}
       return 0;
+    }
+  if (hp->type == T_EMPTY)
+    {
+      /* Special case optimization: macro expands to nothing.  */
+      CPP_SET_WRITTEN (pfile, written);
+      CPP_PUTC_Q (pfile, ' ');
+      return 1;
     }
 
   /* If macro wants an arglist, verify that a '(' follows.  */
@@ -1146,9 +1147,28 @@ cpp_get_token (pfile)
   switch (token)
     {
     default:
+      pfile->potential_control_macro = 0;
+      pfile->only_seen_white = 0;
+      return token;
+
+    case CPP_VSPACE:
+      if (pfile->only_seen_white == 0)
+	pfile->only_seen_white = 1;
+      CPP_BUMP_LINE (pfile);
+      if (! CPP_OPTION (pfile, no_line_commands))
+	{
+	  pfile->lineno++;
+	  if (CPP_BUFFER (pfile)->lineno != pfile->lineno)
+	    _cpp_output_line_command (pfile, same_file);
+	}
+      return token;
+
+    case CPP_HSPACE:
+    case CPP_COMMENT:
       return token;
 
     case CPP_DIRECTIVE:
+      pfile->potential_control_macro = 0;
       if (_cpp_handle_directive (pfile))
 	return CPP_DIRECTIVE;
       pfile->only_seen_white = 0;
@@ -1156,6 +1176,8 @@ cpp_get_token (pfile)
       return CPP_OTHER;
 
     case CPP_MACRO:
+      pfile->potential_control_macro = 0;
+      pfile->only_seen_white = 0;
       if (! pfile->no_macro_expand
 	  && maybe_macroexpand (pfile, written))
 	goto get_next;
@@ -1192,57 +1214,96 @@ cpp_get_non_space_token (pfile)
   for (;;)
     {
       enum cpp_token token = cpp_get_token (pfile);
-      if (token != CPP_COMMENT && token != CPP_POP
-	  && token != CPP_HSPACE && token != CPP_VSPACE)
+      if (token != CPP_COMMENT && token != CPP_HSPACE && token != CPP_VSPACE)
 	return token;
       CPP_SET_WRITTEN (pfile, old_written);
     }
 }
 
-/* Like cpp_get_token, except that it does not read past end-of-line.
-   Also, horizontal space is skipped, and macros are popped.  */
+/* Like cpp_get_token, except that it does not execute directives,
+   does not consume vertical space, and automatically pops off macro
+   buffers.
+
+   XXX This function will exist only till collect_expansion doesn't
+   need to see whitespace anymore, then it'll be merged with
+   _cpp_get_directive_token (below).  */
+enum cpp_token
+_cpp_get_define_token (pfile)
+     cpp_reader *pfile;
+{
+  long old_written;
+  enum cpp_token token;
+
+ get_next:
+  old_written = CPP_WRITTEN (pfile);
+  token = _cpp_lex_token (pfile);
+  switch (token)
+    {
+    default:
+      return token;
+
+    case CPP_VSPACE:
+      /* Put it back and return VSPACE.  */
+      FORWARD(-1);
+      CPP_ADJUST_WRITTEN (pfile, -1);
+      return CPP_VSPACE;
+
+    case CPP_HSPACE:
+      if (CPP_PEDANTIC (pfile))
+	{
+	  U_CHAR *p, *limit;
+	  p = pfile->token_buffer + old_written;
+	  limit = CPP_PWRITTEN (pfile);
+	  while (p < limit)
+	    {
+	      if (*p == '\v' || *p == '\f')
+		cpp_pedwarn (pfile, "%s in preprocessing directive",
+			     *p == '\f' ? "formfeed" : "vertical tab");
+	      p++;
+	    }
+	}
+      return CPP_HSPACE;
+
+    case CPP_DIRECTIVE:
+      /* Don't execute the directive, but don't smash it to OTHER either.  */
+      CPP_PUTC (pfile, '#');
+      return CPP_DIRECTIVE;
+
+    case CPP_MACRO:
+      if (! pfile->no_macro_expand
+	  && maybe_macroexpand (pfile, old_written))
+	goto get_next;
+      return CPP_NAME;
+
+    case CPP_EOF:
+      if (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
+	{
+	  cpp_pop_buffer (pfile);
+	  goto get_next;
+	}
+      else
+	/* This can happen for files that don't end with a newline,
+	   and for cpp_define and friends.  Pretend they do, so
+	   callers don't have to deal.  A warning will be issued by
+	   someone else, if necessary.  */
+	return CPP_VSPACE;
+    }
+}
+
+/* Just like _cpp_get_define_token except that it discards horizontal
+   whitespace.  */
 
 enum cpp_token
 _cpp_get_directive_token (pfile)
      cpp_reader *pfile;
 {
-  long old_written = CPP_WRITTEN (pfile);
-  enum cpp_token token;
-
+  int old_written = CPP_WRITTEN (pfile);
   for (;;)
     {
-      _cpp_skip_hspace (pfile);
-      if (PEEKC () == '\n')
-	return CPP_VSPACE;
-
-      token = cpp_get_token (pfile);
-      /* token could be hspace at the beginning of a macro.  */
-      if (token == CPP_HSPACE || token == CPP_COMMENT)
-	{
-	  CPP_SET_WRITTEN (pfile, old_written);
-	  continue;
-	}
-
-      /* token cannot be vspace, it would have been caught above.  */
-      if (token == CPP_VSPACE)
-	{
-	  cpp_ice (pfile, "VSPACE in get_directive_token");
-	  return token;
-	}
-
-      /* token cannot be POP unless the buffer is a macro buffer.  */
-      if (token != CPP_POP)
+      enum cpp_token token = _cpp_get_define_token (pfile);
+      if (token != CPP_COMMENT && token != CPP_HSPACE)
 	return token;
-
-      if (! CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
-	{
-	  cpp_ice (pfile, "POP of file buffer in get_directive_token");
-	  return token;
-	}
-
-      /* We must pop the buffer by hand, or else cpp_get_token might
-	 hand us white space or newline on the next invocation.  */
-      cpp_pop_buffer (pfile);
+      CPP_SET_WRITTEN (pfile, old_written);
     }
 }
 

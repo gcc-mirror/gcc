@@ -98,7 +98,7 @@ enum node_type
   T_MACRO,	   /* macro defined by `#define' */
   T_DISABLED,	   /* macro temporarily turned off for rescan */
   T_POISON,	   /* macro defined with `#pragma poison' */
-  T_UNUSED	   /* Used for something not defined.  */
+  T_EMPTY	   /* macro defined to nothing */
 };
 
 /* different kinds of things that can appear in the value field
@@ -192,11 +192,11 @@ extern unsigned char _cpp_IStable[256];
 
 /* Macros.  */
 
+/* One character lookahead in the input buffer.  Note that if this
+   returns EOF, it does *not* necessarily mean the file's end has been
+   reached.  */
 #define CPP_BUF_PEEK(BUFFER) \
   ((BUFFER)->cur < (BUFFER)->rlimit ? *(BUFFER)->cur : EOF)
-#define CPP_BUF_GET(BUFFER) \
-  ((BUFFER)->cur < (BUFFER)->rlimit ? *(BUFFER)->cur++ : EOF)
-#define CPP_FORWARD(BUFFER, N) ((BUFFER)->cur += (N))
 
 /* Make sure PFILE->token_buffer has space for at least N more characters. */
 #define CPP_RESERVE(PFILE, N) \
@@ -223,6 +223,11 @@ extern unsigned char _cpp_IStable[256];
 #define CPP_BUMP_LINE(PFILE) CPP_BUMP_BUFFER_LINE(CPP_BUFFER(PFILE))
 #define CPP_PREV_BUFFER(BUFFER) ((BUFFER)->prev)
 
+/* Are we in column 1 right now?  Used mainly for -traditional handling
+   of directives.  */
+#define CPP_IN_COLUMN_1(PFILE) \
+(CPP_BUFFER (PFILE)->cur - CPP_BUFFER (PFILE)->line_base == 1)
+
 #define CPP_PRINT_DEPS(PFILE) CPP_OPTION (PFILE, print_deps)
 #define CPP_TRADITIONAL(PFILE) CPP_OPTION (PFILE, traditional)
 #define CPP_PEDANTIC(PFILE) \
@@ -232,7 +237,7 @@ extern unsigned char _cpp_IStable[256];
 
 /* CPP_IS_MACRO_BUFFER is true if the buffer contains macro expansion.
    (Note that it is false while we're expanding macro *arguments*.) */
-#define CPP_IS_MACRO_BUFFER(PBUF) ((PBUF)->data != NULL)
+#define CPP_IS_MACRO_BUFFER(PBUF) ((PBUF)->macro != NULL)
 
 /* Remember the current position of PFILE so it may be returned to
    after looking ahead a bit.
@@ -241,14 +246,18 @@ extern unsigned char _cpp_IStable[256];
    may not forget about it and continue parsing.  You may not pop a
    buffer with an active mark.  You may not call CPP_BUMP_LINE while a
    mark is active.  */
-#define CPP_SET_BUF_MARK(IP)   ((IP)->mark = (IP)->cur - (IP)->buf)
-#define CPP_GOTO_BUF_MARK(IP)  ((IP)->cur = (IP)->buf + (IP)->mark, \
-				(IP)->mark = -1)
+#define CPP_SET_BUF_MARK(IP)   ((IP)->mark = (IP)->cur)
+#define CPP_GOTO_BUF_MARK(IP)  ((IP)->cur = (IP)->mark,	(IP)->mark = 0)
 #define CPP_SET_MARK(PFILE)  CPP_SET_BUF_MARK(CPP_BUFFER(PFILE))
 #define CPP_GOTO_MARK(PFILE) CPP_GOTO_BUF_MARK(CPP_BUFFER(PFILE))
 
 /* ACTIVE_MARK_P is true if there's a live mark in the buffer.  */
-#define ACTIVE_MARK_P(PFILE) (CPP_BUFFER (PFILE)->mark != -1)
+#define ACTIVE_MARK_P(PFILE) (CPP_BUFFER (PFILE)->mark != 0)
+
+/* Are mark and point adjacent characters?  Used mostly to deal with
+   the somewhat annoying semantic of #define.  */
+#define ADJACENT_TO_MARK(PFILE) \
+ (CPP_BUFFER(PFILE)->cur - CPP_BUFFER(PFILE)->mark == 1)
 
 /* Last arg to output_line_command.  */
 enum file_change_code {same_file, rename_file, enter_file, leave_file};
@@ -295,6 +304,8 @@ extern long _cpp_read_and_prescan	PARAMS ((cpp_reader *, cpp_buffer *,
 extern void _cpp_init_input_buffer	PARAMS ((cpp_reader *));
 extern void _cpp_grow_token_buffer	PARAMS ((cpp_reader *, long));
 extern enum cpp_token _cpp_get_directive_token
+					PARAMS ((cpp_reader *));
+extern enum cpp_token _cpp_get_define_token
 					PARAMS ((cpp_reader *));
 
 /* In cpplib.c */

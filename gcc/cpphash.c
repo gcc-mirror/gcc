@@ -45,10 +45,6 @@ static enum cpp_token macarg	 PARAMS ((cpp_reader *, int));
 static struct tm *timestamp	 PARAMS ((cpp_reader *));
 static void special_symbol	 PARAMS ((HASHNODE *, cpp_reader *));
 
-#define CPP_IS_MACRO_BUFFER(PBUF) ((PBUF)->data != NULL)
-#define FORWARD(N) CPP_FORWARD (CPP_BUFFER (pfile), (N))
-#define PEEKC() CPP_BUF_PEEK (CPP_BUFFER (pfile))
-
 /* Initial hash table size.  (It can grow if necessary - see hashtab.c.)  */
 #define HASHSIZE 500
 
@@ -266,7 +262,7 @@ macro_cleanup (pbuf, pfile)
      cpp_buffer *pbuf;
      cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
-  HASHNODE *macro = (HASHNODE *) pbuf->data;
+  HASHNODE *macro = pbuf->macro;
   if (macro->type == T_DISABLED)
     macro->type = T_MACRO;
   if (macro->type != T_MACRO || pbuf->buf != macro->value.defn->expansion)
@@ -314,26 +310,18 @@ collect_expansion (pfile, arglist)
   last -= 2;  /* two extra chars for the leading escape */
   for (;;)
     {
-      /* We use cpp_get_token because _cpp_get_directive_token would
-	 discard whitespace and we can't cope with that yet.  Macro
-	 expansion is off, so we are guaranteed not to see POP or EOF.  */
-
-      while (PEEKC () == '\r')
-	{
-	  FORWARD (1);
-	  CPP_BUMP_LINE (pfile);
-	}
-      if (PEEKC () == '\n')
-	goto done;
+      /* Macro expansion is off, so we are guaranteed not to see POP
+	 or EOF.  */
       here = CPP_WRITTEN (pfile);
-      token = cpp_get_token (pfile);
+      token = _cpp_get_define_token (pfile);
       tok = pfile->token_buffer + here;
       switch (token)
 	{
 	case CPP_POP:
 	case CPP_EOF:
+	  cpp_ice (pfile, "EOF in collect_expansion");
+	  /* fall through */
 	case CPP_VSPACE:
-	  cpp_ice (pfile, "EOF or VSPACE in collect_expansion");
 	  goto done;
 
 	case CPP_HSPACE:
@@ -386,15 +374,13 @@ collect_expansion (pfile, arglist)
 	case CPP_COMMENT:
 	  /* We must be in -traditional mode.  Pretend this was a
 	     token paste, but only if there was no leading or
-	     trailing space and it's in the middle of the line.  */
+	     trailing space and it's in the middle of the line.
+	     _cpp_lex_token won't return a COMMENT if there was trailing
+	     space.  */
 	  CPP_SET_WRITTEN (pfile, here);
 	  if (last_token == START)
 	    break;
 	  if (is_hspace (pfile->token_buffer[here-1]))
-	    break;
-	  if (is_hspace (PEEKC ()))
-	    break;
-	  if (PEEKC () == '\n')
 	    break;
 	  if (last_token == ARG)
 	    endpat->raw_after = 1;
@@ -738,38 +724,21 @@ _cpp_create_definition (pfile, funlike)
   cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, &col);
   file = CPP_BUFFER (pfile)->nominal_fname;
 
-  pfile->no_macro_expand++;
-  pfile->parsing_define_directive++;
-  CPP_OPTION (pfile, discard_comments)++;
-  CPP_OPTION (pfile, no_line_commands)++;
-  
   if (funlike)
     {
       args = collect_formal_parameters (pfile);
       if (args == 0)
-	goto err;
+	return 0;
     }
 
   defn = collect_expansion (pfile, args);
   if (defn == 0)
-    goto err;
+    return 0;
 
   defn->line = line;
   defn->file = file;
   defn->col  = col;
-
-  pfile->no_macro_expand--;
-  pfile->parsing_define_directive--;
-  CPP_OPTION (pfile, discard_comments)--;
-  CPP_OPTION (pfile, no_line_commands)--;
   return defn;
-
- err:
-  pfile->no_macro_expand--;
-  pfile->parsing_define_directive--;
-  CPP_OPTION (pfile, discard_comments)--;
-  CPP_OPTION (pfile, no_line_commands)--;
-  return 0;
 }
 
 /*
@@ -1446,6 +1415,18 @@ unsafe_chars (pfile, c1, c2)
 {
   switch (c1)
     {
+    case EOF:
+      /* We don't know what the previous character was.  We do know
+	 that it can't have been an idchar (or else it would have been
+	 pasted with the idchars of the macro name), and there are a
+	 number of second characters for which it doesn't matter what
+	 the first was.  */
+      if (is_idchar (c2) || c2 == '\'' || c2 == '\"'
+	  || c2 == '(' || c2 == '[' || c2 == '{'
+	  || c2 == ')' || c2 == ']' || c2 == '}')
+	return 0;
+      return 1;
+
     case '+':  case '-':
       if (c2 == c1 || c2 == '=')
 	return 1;
@@ -1488,17 +1469,14 @@ unsafe_chars (pfile, c1, c2)
 }
 
 static void
-push_macro_expansion (pfile, xbuf, xbuf_len, hp)
+push_macro_expansion (pfile, xbuf, len, hp)
      cpp_reader *pfile;
      register U_CHAR *xbuf;
-     int xbuf_len;
+     int len;
      HASHNODE *hp;
 {
-  register cpp_buffer *mbuf = cpp_push_buffer (pfile, xbuf, xbuf_len);
-  if (mbuf == NULL)
-    return;
-  mbuf->cleanup = macro_cleanup;
-  mbuf->data = hp;
+  cpp_buffer *mbuf;
+  int advance_cur = 0;
 
   /* The first chars of the expansion should be a "\r " added by
      collect_expansion.  This is to prevent accidental token-pasting
@@ -1507,34 +1485,31 @@ push_macro_expansion (pfile, xbuf, xbuf_len, hp)
 
      We would like to avoid adding unneeded spaces (for the sake of
      tools that use cpp, such as imake).  In some common cases we can
-     tell that it is safe to omit the space.
-
-     The character before the macro invocation cannot have been an
-     idchar (or else it would have been pasted with the idchars of
-     the macro name).  Therefore, if the first non-space character
-     of the expansion is an idchar, we do not need the extra space
-     to prevent token pasting.
-
-     Also, we don't need the extra space if the first char is '(',
-     or some other (less common) characters.  */
+     tell that it is safe to omit the space.  */
 
   if (xbuf[0] == '\r' && xbuf[1] == ' '
-      && (is_idchar(xbuf[2]) || xbuf[2] == '(' || xbuf[2] == '\''
-	  || xbuf[2] == '\"'))
-    mbuf->cur += 2;
+      && !unsafe_chars (pfile, EOF, xbuf[2]))
+    advance_cur = 1;
 
   /* Likewise, avoid the extra space at the end of the macro expansion
      if this is safe.  We can do a better job here since we can know
      what the next char will be.  */
-  if (xbuf_len >= 3
-      && mbuf->rlimit[-2] == '\r'
-      && mbuf->rlimit[-1] == ' ')
+  if (len >= 3
+      && xbuf[len-2] == '\r'
+      && xbuf[len-1] == ' ')
     {
-      int c1 = mbuf->rlimit[-3];
-      int c2 = CPP_BUF_PEEK (CPP_PREV_BUFFER (CPP_BUFFER (pfile)));
-      if (c2 == EOF || !unsafe_chars (pfile, c1, c2))
-	mbuf->rlimit -= 2;
+      int c = CPP_BUF_PEEK (CPP_BUFFER (pfile));
+      if (c == EOF || !unsafe_chars (pfile, xbuf[len-3], c))
+	len -= 2;
     }
+
+  mbuf = cpp_push_buffer (pfile, xbuf, len);
+  if (mbuf == NULL)
+    return;
+  if (advance_cur)
+    mbuf->cur += 2;
+  mbuf->cleanup = macro_cleanup;
+  mbuf->macro = hp;
 }
 
 /* Return zero if two DEFINITIONs are isomorphic.  */

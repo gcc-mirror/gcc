@@ -1,3 +1,80 @@
+2000-04-06  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (CPP_IS_MACRO_BUFFER, FORWARD, PEEKC): Delete.
+	(macro_cleanup): No need to cast pbuf->macro.
+	(collect_expansion): Use _cpp_get_define_token.  Goto done if
+	it returns VSPACE.  Remove check for trailing space after
+	CPP_COMMENT.
+	(_cpp_create_definition): Don't diddle flags here.  Return
+	directly on error.
+	(unsafe_chars): Handle c1 being EOF.
+	(push_macro_expansion): Use unsafe_chars for both accidental-paste
+	checks.  Don't push the buffer till after we're done with
+	them.
+	* cpplex.c (PEEKBUF, GETBUF, FORWARDBUF): New.
+	(PEEKN, FORWARD, GETC, PEEKC): Use them.
+	(cpp_push_buffer): Don't set new->alimit.  Set new->mark
+	appropriately.
+	(_cpp_parse_assertion): Don't NUL terminate.
+	(_cpp_lex_token): Fix -traditional macro handling.  Don't skip
+	hspace before calling _cpp_parse_assertion.  Remove all sets
+	of only_seen_white. Treat '\f' as hspace.  Don't do anything
+	special with '\n' here.
+	(maybe_macroexpand): Handle T_EMPTY hash entries without
+	pushing a buffer at all.
+	(cpp_get_token): Handle clearing only_seen_white here.  Handle
+	incrementing the line number here.  Clear
+	potential_control_macro as well as only_seen_white, if
+	appropriate.
+	(cpp_get_non_space_token): Don't eat CPP_POP tokens.
+	(_cpp_get_define_token): New function, basically like
+	_cpp_get_directive_token was but doesn't eat horizontal space.
+	Don't do anything with only_seen_white here.
+	(_cpp_get_directive_token): Just call _cpp_get_define_token
+	repeatedly till it returns non-hspace.
+
+	* cpplib.c (PEEKN, FORWARD, GETC, PEEKC): Delete.
+	(conditional_skip, skip_if_group): Return int.
+	(DIRECTIVE_TABLE): Change origin of all conditional directives
+	to "COND".
+	(TRAD_DIRECT_P): New macro.
+	(_cpp_handle_directive): Use _cpp_get_directive_token.  Issue
+	an error for a bogus directive, unless -lang-asm.  Use
+	TRAD_DIRECT_P. Loop calling handler functions till one returns
+	zero.
+	(get_macro_name): Don't diddle flags here.
+	(do_define): Diddle flags here.  Use _cpp_get_directive_token.
+	Create T_EMPTY nodes for #define macro /* nothing */.
+	(do_undef): Don't copy the name.  Use _cpp_get_directive_token.
+	Use hp->name when calling pass_thru_directive.
+	(do_if, do_else, do_elif, do_ifdef, do_ifndef, conditional_skip):
+	Return the result of conditional_skip and/or skip_if_group.
+	Don't call _cpp_output_line_command.
+	(consider_directive_while_skipping): Use _cpp_get_directive_token.
+	Issue -Wtraditional warnings as appropriate.  Don't complain
+	about unrecognized directives.  If we are to stop skipping,
+	return the number of the directive that ended the skip.
+	(skip_if_group): Use _cpp_get_directive_token.  Turn off macro
+	expansion and line commands while skipping.  Return the result
+	of consider_directive_while_skipping, if nonzero.
+	(do_endif): Just set potential_control_macro here.
+	(validate_else): Use _cpp_get_directive_token.
+	(do_assert, do_unassert): Don't save pointers into the
+	token_buffer across calls to the lexer.  Use
+	_cpp_get_directive_token.  
+
+	* cpplib.h (cpp_buffer): Remove alimit and colno.  Make mark a 
+	pointer, not an offset.  Replace 'data', which was a generic
+	pointer, with 'macro', which points to a struct hashnode.
+	(cpp_reader): Add 'potential_control_macro' pointer.
+	* cpphash.h (T_UNUSED): Replace with T_EMPTY.
+	(CPP_BUF_GET, CPP_FORWARD): Delete.
+	(CPP_IN_COLUMN_1, ADJACENT_TO_MARK): New macros.
+	(CPP_IS_MACRO_BUFFER, CPP_SET_BUF_MARK, CPP_GOTO_BUF_MARK,
+	ACTIVE_MARK_P): Update.
+	(_cpp_get_define_token): New internal function.
+	* cppfiles.c (read_include_file): Don't set fp->alimit or fp->colno.
+
 2000-04-05   Benjamin Kosnik  <bkoz@cygnus.com>
 
         * configure.in: And here.

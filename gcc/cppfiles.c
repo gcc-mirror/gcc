@@ -742,12 +742,11 @@ read_include_file (pfile, fd, ihash)
     ihash->control_macro = (const U_CHAR *) "";  /* never re-include */
 
   close (fd);
-  fp->rlimit = fp->alimit = fp->buf + length;
+  fp->rlimit = fp->buf + length;
   fp->cur = fp->buf;
   if (ihash->foundhere != ABSOLUTE_PATH)
       fp->system_header_p = ihash->foundhere->sysp;
   fp->lineno = 1;
-  fp->colno = 1;
   fp->line_base = fp->buf;
   fp->cleanup = file_cleanup;
 
