@@ -1,4 +1,4 @@
-// -*- C++ -*- header wrapper.
+// -*- C++ -*- forwarding header.
 
 // Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
@@ -31,77 +31,29 @@
 // ISO C++ 14882: 20.5  Date and time
 //
 
+// Note: This is not a conforming implementation.
+
 #ifndef _CPP_CTIME
 #define _CPP_CTIME 1
 
-# include <bits/std_cstddef.h>  
+#pragma GCC system_header
+#include <time.h>
 
-namespace _C_legacy {
-  extern "C" {
-#     define _IN_C_LEGACY_
-#     pragma GCC system_header
+namespace std
+{
+  using ::clock_t;
+  using ::time_t;
+  using ::tm;
 
-      // XXX
-      // glibc 2.1.x time.h is on crack
-#     undef __need_time_t
-#     undef __need_clock_t
-#     undef __need_timespec
-
-#     include_next <time.h>
-  }
-
-  typedef clock_t	_CPP_clock_t_capture;
-  typedef time_t    	_CPP_time_t_capture;
-  typedef tm 		_CPP_tm_capture;
-
-} // namespace _C_legacy
-
-#  undef clock_t
-#  undef time_t
-#  undef tm
-#  undef clock
-#  undef difftime
-#  undef mktime
-#  undef time
-#  undef asctime
-#  undef ctime
-#  undef gmtime
-#  undef localtime
-#  undef strftime
-
-namespace std {
-
-  // Adopt C names into std::
-  typedef _C_legacy::_CPP_clock_t_capture  clock_t;
-  typedef _C_legacy::_CPP_time_t_capture   time_t;
-  struct tm : _C_legacy::_CPP_tm_capture  { };
-
-  using _C_legacy::clock;
-  using _C_legacy::difftime;
-  using _C_legacy::mktime;
-  using _C_legacy::time;
-  using _C_legacy::ctime;
-
-  inline char* 
-  asctime(const tm* __t) 
-  { return _C_legacy::asctime(static_cast<_C_legacy::_CPP_tm_capture const*>(__t)); }
-
-  inline tm* 
-  gmtime(time_t const* __tp) 
-  { return reinterpret_cast<tm*>(_C_legacy::gmtime(__tp)); }
-
-  inline tm* 
-  localtime(const time_t* __tp) 
-  { return reinterpret_cast<tm*>(_C_legacy::localtime(__tp)); } 
-    
-  inline size_t 
-  strftime(char* __buf, size_t __maxsz, char const* __fmt, tm const* __tp) 
-  { return _C_legacy::strftime(__buf, __maxsz, __fmt,
-	       	       static_cast<_C_legacy::_CPP_tm_capture const*>(__tp)); }
-
-} // namespace std
-  
-# undef _IN_C_LEGACY_
+  extern "C" clock_t clock(void); 
+  extern "C" double difftime(time_t, time_t); 
+  extern "C" time_t mktime(struct tm*); 
+  extern "C" time_t time(time_t*); 
+  extern "C" char* asctime(const struct tm*); 
+  extern "C" char* ctime(const time_t*); 
+  extern "C" struct tm* gmtime(const time_t*); 
+  extern "C" struct tm* localtime(const time_t*); 
+  extern "C" size_t strftime(char*, size_t, const char*, const struct tm*);
+}
 
 #endif
-

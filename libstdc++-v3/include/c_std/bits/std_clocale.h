@@ -1,4 +1,4 @@
-// -*- C++ -*- header wrapper.
+// -*- C++ -*- forwarding header.
 
 // Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
@@ -31,40 +31,22 @@
 // ISO C++ 14882: 18.2.2  Implementation properties: C library
 //
 
+// Note: This is not a conforming implementation.
+
 #ifndef _CPP_CLOCALE
-#define _CPP_CLOCALE     1
+#define _CPP_CLOCALE 1
 
-# include <bits/std_cstddef.h> 
+#pragma GCC system_header
+#include <locale.h>
 
-namespace _C_legacy {
-  extern "C" {
-#     define _IN_C_LEGACY_
-#     pragma GCC system_header
-#     include_next <locale.h>
-  }
+namespace std
+{
+  using ::lconv;
+  extern "C" char* setlocale(int, const char*); 
+  extern "C" struct lconv* localeconv(void);
+}
 
-  typedef lconv _CPP_lconv_capture;
-} // namespace _C_legacy
-
-#  undef lconv
-#  undef setlocale
-#  undef localeconv
-
-namespace std {
-  // Adopt C names into std::
-  struct lconv : _C_legacy::_CPP_lconv_capture  { };
-
-  using _C_legacy::setlocale;  
-
-  inline lconv* 
-  localeconv() { return reinterpret_cast<lconv*>(_C_legacy::localeconv()); }
-} // namespace std
-
-# undef _IN_C_LEGACY_
-
-#endif 
-
-
+#endif
 
 
 

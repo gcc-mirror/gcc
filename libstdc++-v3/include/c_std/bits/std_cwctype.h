@@ -1,4 +1,4 @@
-// -*- C++ -*- header wrapper.
+// -*- C++ -*- forwarding header.
 
 // Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
@@ -28,102 +28,67 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 
+// ISO C++ 14882: <cwctype>
 //
+
+// Note: This is not a conforming implementation.
 
 #ifndef _CPP_CWCTYPE
 #define _CPP_CWCTYPE 1
 
-# include <bits/std_cwchar.h>  
+#pragma GCC system_header
+#include <wctype.h>
 
-namespace _C_legacy {
-  extern "C" {
-#     define _IN_C_LEGACY_
-#     pragma GCC system_header
-#     include_next <wctype.h>
-  }
-} // namespace _C_legacy
+// Get rid of those macros defined in <wctype.h> in lieu of real functions.
+#undef iswalnum
+#undef iswalpha
+#undef iswblank
+#undef iswcntrl
+#undef iswdigit
+#undef iswgraph
+#undef iswlower
+#undef iswprint
+#undef iswprint
+#undef iswpunct
+#undef iswspace
+#undef iswupper
+#undef iswxdigit
+#undef iswctype  
+#undef towlower
+#undef towupper
+#undef towctrans
+#undef wctrans
+
+namespace std
+{
+  using ::wctype_t;
+  using ::wctrans_t;
+
+  extern "C" int iswalnum(wint_t); 
+  extern "C" int iswalpha(wint_t); 
+  extern "C" int iswblank(wint_t); 
+  extern "C" int iswcntrl(wint_t); 
+  extern "C" int iswdigit(wint_t); 
+  extern "C" int iswgraph(wint_t); 
+  extern "C" int iswlower(wint_t); 
+  extern "C" int iswprint(wint_t); 
+  extern "C" int iswpunct(wint_t); 
+  extern "C" int iswspace(wint_t); 
+  extern "C" int iswupper(wint_t); 
+  extern "C" int iswxdigit(wint_t);
+  extern "C" int iswctype(wint_t, wctype_t); 
+  extern "C" wctype_t wctype(const char *); 
+  extern "C" wint_t towlower(wint_t); 
+  extern "C" wint_t towupper(wint_t); 
+  extern "C" wint_t towctrans(wint_t, wctrans_t); 
+  extern "C" wctrans_t wctrans(const char*);
+}
+
+#endif 
 
 
-# undef wctype_t
-# undef wctrans_t
-# undef iswalpha
-# undef iswupper
-# undef iswlower
-# undef iswdigit
-# undef iswxdigit
-# undef iswalnum
-# undef iswspace
-# undef iswpunct
-# undef iswprint
-# undef iswgraph
-# undef iswcntrl
-# undef iswctype
-# undef towctrans
-# undef towlower
-# undef towupper
-# undef wctrans
-# undef wctype
 
-namespace std {
-  using _C_legacy::wctype_t;
-  using _C_legacy::wctrans_t;
 
-  inline int 
-  iswalpha(wint_t __wc) { return _C_legacy::iswalpha(__wc); }
 
-  inline int 
-  iswupper(wint_t __wc) { return _C_legacy::iswupper(__wc); }
 
-  inline int 
-  iswlower(wint_t __wc) { return _C_legacy::iswlower(__wc); }
-
-  inline int 
-  iswdigit(wint_t __wc) { return _C_legacy::iswdigit(__wc); }
-
-  inline int 
-  iswxdigit(wint_t __wc) { return _C_legacy::iswxdigit(__wc); }
-
-  inline int 
-  iswalnum(wint_t __wc) { return _C_legacy::iswalnum(__wc); }
-
-  inline int 
-  iswspace(wint_t __wc) { return _C_legacy::iswspace(__wc); }
-
-  inline int 
-  iswpunct(wint_t __wc) { return _C_legacy::iswpunct(__wc); }
-
-  inline int 
-  iswprint(wint_t __wc) { return _C_legacy::iswprint(__wc); }
-
-  inline int 
-  iswgraph(wint_t __wc) { return _C_legacy::iswgraph(__wc); }
-
-  inline int 
-  iswcntrl(wint_t __wc) { return _C_legacy::iswcntrl(__wc); }
-
-  inline int 
-  towlower(wint_t __wc) { return _C_legacy::towlower(__wc); }
-
-  inline int 
-  towupper(wint_t __wc) { return _C_legacy::towupper(__wc); }
-
-  inline int 
-  iswctype(wint_t __wc, wctype_t __desc) 
-  { return _C_legacy::iswctype(__wc, __desc); }
-
-  inline wint_t 
-  towctrans(wint_t __wc, wctrans_t __desc)
-  { return _C_legacy::towctrans (__wc, __desc); }
-  
-  inline wctrans_t 
-  wctrans(const char *__property) { return _C_legacy::wctrans(__property); }
-
-  inline wctype_t 
-  wctype(char const* __property) { return _C_legacy::wctype(__property); }
-} // namespace std
-
-# undef _IN_C_LEGACY_
-
-#endif
 
