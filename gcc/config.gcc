@@ -87,12 +87,15 @@
 #  host_extra_objs	List of extra host-dependant objects that should
 #			be linked into the compiler proper.
 #
-#  extra_objs		List of extra target-dependant objects that should
-#			be linked into the compiler proper.
-#
 #  host_extra_gcc_objs	List of extra host-dependant objects that should
 #			be linked into the gcc driver.
 #
+#  c_target_objs	List of extra target-dependant objects that be
+#			linked into the C compiler only.
+#  
+#  cxx_target_objs	List of extra target-dependant objects that be
+#			linked into the C++ compiler only.
+#  
 #  build_xm_defines	List of macros to define when compiling for the
 #			build machine.
 #
@@ -171,6 +174,8 @@ extra_programs=
 extra_objs=
 extra_host_objs=
 extra_gcc_objs=
+c_target_objs=
+cxx_target_objs=
 xm_defines=
 float_format=
 # Set this to force installation and use of collect2.
