@@ -318,7 +318,7 @@ split_block (basic_block bb, void *i)
   new_bb->frequency = bb->frequency;
   new_bb->loop_depth = bb->loop_depth;
 
-  if (dom_computed[CDI_DOMINATORS] >= DOM_CONS_OK)
+  if (dom_info_available_p (CDI_DOMINATORS))
     {
       redirect_immediate_dominators (CDI_DOMINATORS, bb, new_bb);
       set_immediate_dominator (CDI_DOMINATORS, new_bb, bb);
@@ -592,7 +592,7 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
 	new_bb_cbk (jump);
     }
 
-  if (dom_computed[CDI_DOMINATORS] >= DOM_CONS_OK)
+  if (dom_info_available_p (CDI_DOMINATORS))
     {
       basic_block doms_to_fix[2];
 

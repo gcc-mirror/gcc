@@ -216,7 +216,7 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
 
       /* Update dominance info.  Note that bb_join's data was
          updated by split_block.  */
-      if (dom_computed[CDI_DOMINATORS] >= DOM_CONS_OK)
+      if (dom_info_available_p (CDI_DOMINATORS))
         {
           set_immediate_dominator (CDI_DOMINATORS, bb_true, bb_cond);
           set_immediate_dominator (CDI_DOMINATORS, bb_false, bb_cond);
