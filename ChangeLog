@@ -1,3 +1,9 @@
+2002-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
+	* Makefile.tpl: Autogenerate *-target-* lists, dependencies of
+	all-target-foo on configure-target-foo.
+	* Makefile.def: Ditto.
+	* Makefile.in: Rebuild.
+
 2002-09-25  Andrew Haley  <aph@redhat.com>
 
 	* MAINTAINERS: Add aph@redhat.com as Java maintainer.
