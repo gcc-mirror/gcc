@@ -3043,7 +3043,9 @@ gen_sequence ()
   if (len == 1
       && (GET_CODE (first_insn) == INSN
 	  || GET_CODE (first_insn) == JUMP_INSN
-	  || GET_CODE (first_insn) == CALL_INSN))
+	  /* Don't discard the call usage field.  */
+	  || (GET_CODE (first_insn) == CALL_INSN
+	      && CALL_INSN_FUNCTION_USAGE (first_insn) == NULL_RTX)))
     return PATTERN (first_insn);
 
   /* Put them in a vector.  See if we already have a SEQUENCE of the
