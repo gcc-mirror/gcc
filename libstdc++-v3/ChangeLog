@@ -1,3 +1,8 @@
+2004-06-10  Jan van Dijk  <jan@etpmod.phys.tue.nl>
+
+	* include/std/std_complex.h (sin(const complex<_Tp>& __z)): Make
+	this function return a value.
+
 2004-06-09  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/15775
