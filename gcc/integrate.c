@@ -1099,6 +1099,13 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  pattern = PATTERN (insn);
 	  set = single_set (insn);
 	  copy = 0;
+	  if (GET_CODE (pattern) == USE
+	      && GET_CODE (XEXP (pattern, 0)) == REG
+	      && REG_FUNCTION_VALUE_P (XEXP (pattern, 0)))
+	    /* The (USE (REG n)) at return from the function should
+	       be ignored since we are changing (REG n) into
+	       inline_target.  */
+	    break;
 
 	  /* If the inline fn needs eh context, make sure that
 	     the current fn has one. */
