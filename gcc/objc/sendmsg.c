@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #define gen_rtx(args...) 1
 #define rtx int
 
-#if STRUCT_VALUE == 0
+#if !defined(STRUCT_VALUE) || STRUCT_VALUE == 0
 #define INVISIBLE_STRUCT_RETURN 1
 #else
 #define INVISIBLE_STRUCT_RETURN 0
@@ -69,6 +69,21 @@ static Method_t search_for_method_in_hierarchy (Class class, SEL sel);
 static Method_t search_for_method_in_list(MethodList_t list, SEL op);
 id nil_method(id, SEL, ...);
 
+/* Given a selector, return the proper forwarding implementation. */
+__inline__
+IMP
+__objc_get_forward_imp (SEL sel)
+{
+  const char *t = sel->sel_types;
+
+  if (t && (*t == '[' || *t == '(' || *t == '{'))
+    return (IMP)__objc_block_forward;
+  else if (t && (*t == 'f' || *t == 'd'))
+    return (IMP)__objc_double_forward;
+  else
+    return (IMP)__objc_word_forward;
+}
+
 /* Given a class and selector, return the selector's implementation.  */
 __inline__
 IMP
@@ -76,45 +91,57 @@ get_imp (Class class, SEL sel)
 {
   IMP impl;
   void* res = sarray_get (class->dtable, (size_t) sel->sel_id);
-  if(res == __objc_init_install_dtable)
-    {
-      objc_mutex_lock(__objc_runtime_mutex);
-      __objc_install_dispatch_table_for_class (class);
-      objc_mutex_unlock(__objc_runtime_mutex);
-      res = sarray_get (class->dtable, (size_t) sel->sel_id);
-    }
   if (res == 0)
     {
-      const char *t = sel->sel_types;
-      if (t && (*t == '[' || *t == '(' || *t == '{'))
-	res = (IMP)__objc_block_forward;
-      else if (t && (*t == 'f' || *t == 'd'))
-	res = (IMP)__objc_double_forward;
+      /* Not a valid method */
+      if(class->dtable == __objc_uninstalled_dtable)
+	{
+	  /* The dispatch table needs to be installed. */
+	  objc_mutex_lock(__objc_runtime_mutex);
+	  __objc_install_dispatch_table_for_class (class);
+	  objc_mutex_unlock(__objc_runtime_mutex);
+	  /* Call ourselves with the installed dispatch table
+	     and get the real method */
+	  res = get_imp(class, sel);
+	}
       else
-	res = (IMP)__objc_word_forward;
+	{
+	  /* The dispatch table has been installed so the
+	     method just doesn't exist for the class.
+	     Return the forwarding implementation. */
+	  res = __objc_get_forward_imp(sel);
+	}
     }
   return res;
 }
 
-__inline__ BOOL
+/* Query if an object can respond to a selector, returns YES if the
+object implements the selector otherwise NO.  Does not check if the
+method can be forwarded. */
+__inline__
+BOOL
 __objc_responds_to (id object, SEL sel)
 {
-  void* res = sarray_get (object->class_pointer->dtable, (size_t) sel->sel_id);
-  if(res == __objc_init_install_dtable)
+  void* res;
+
+  /* Install dispatch table if need be */
+  if (object->class_pointer->dtable == __objc_uninstalled_dtable)
     {
       objc_mutex_lock(__objc_runtime_mutex);
       __objc_install_dispatch_table_for_class (object->class_pointer);
       objc_mutex_unlock(__objc_runtime_mutex);
-      res = sarray_get (object->class_pointer->dtable, (size_t) sel->sel_id);
     }
+
+  /* Get the method from the dispatch table */
+  res = sarray_get (object->class_pointer->dtable, (size_t) sel->sel_id);
   return (res != 0);
 }
 
 /* This is the lookup function.  All entries in the table are either a 
-   valid method *or* one of `__objc_missing_method' which calls
-   forward:: etc, or `__objc_init_install_dtable' which installs the
-   real dtable */
-__inline__ IMP
+   valid method *or* zero.  If zero then either the dispatch table
+   needs to be installed or it doesn't exist and forwarding is attempted. */
+__inline__
+IMP
 objc_msg_lookup(id receiver, SEL op)
 {
   IMP result;
@@ -123,13 +150,23 @@ objc_msg_lookup(id receiver, SEL op)
       result = sarray_get(receiver->class_pointer->dtable, (sidx)op->sel_id);
       if (result == 0)
 	{
-	  const char *t = op->sel_types;
-	  if (t && (*t == '[' || *t == '(' || *t == '{'))
-	    result = (IMP)__objc_block_forward;
-	  else if (t && (*t == 'f' || *t == 'd'))
-	    result = (IMP)__objc_double_forward;
+	  /* Not a valid method */
+	  if(receiver->class_pointer->dtable == __objc_uninstalled_dtable)
+	    {
+	      /* The dispatch table needs to be installed.
+		 This happens on the very first method call to the class. */
+	      __objc_init_install_dtable(receiver, op);
+
+	      /* Get real method for this in newly installed dtable */
+	      result = get_imp(receiver->class_pointer, op);
+	    }
 	  else
-	    result = (IMP)__objc_word_forward;
+	    {
+	      /* The dispatch table has been installed so the
+		 method just doesn't exist for the class.
+		 Attempt to forward the method. */
+	      result = __objc_get_forward_imp(op);
+	    }
 	}
       return result;
     }
@@ -160,68 +197,23 @@ objc_msg_sendv(id object, SEL op, arglist_t arg_frame)
 			 method_get_sizeof_arguments (m));
 }
 
-void __objc_init_dispatch_tables()
+void
+__objc_init_dispatch_tables()
 {
   __objc_uninstalled_dtable
-    = sarray_new(200, __objc_init_install_dtable);
+    = sarray_new(200, 0);
 }
 
-/* Various return functions that are used based upon the
-   return type for the selector.
-   __objc_block_return for structures.
-   __objc_double_return for floats/doubles.
-   __objc_word_return for pointers or types that fit in registers.
-   */
-#if INVISIBLE_STRUCT_RETURN
-static __big
-#else
-static id
-#endif
-__objc_block_return(IMP imp, void * args)
+/* This function is called by objc_msg_lookup when the
+   dispatch table needs to be installed; thus it is called once
+   for each class, namely when the very first message is sent to it. */
+static void
+__objc_init_install_dtable(id receiver, SEL op)
 {
-  void * result = __builtin_apply((apply_t)imp, args, 96);
-  if (result)
-    __builtin_return (result);
-  else
-    return;
-}
-
-static id
-__objc_word_return(IMP imp, void * args)
-{
-  void * result = __builtin_apply((apply_t)imp, args, 96);
-  if (result)
-    __builtin_return (result);
-  else
-    return;
-}
- 
-static double
-__objc_double_return(IMP imp, void * args)
-{
-  void * result = __builtin_apply((apply_t)imp, args, 96);
-  if (result)
-    __builtin_return (result);
-  else
-    return;
-}
-
-/* This one is a bit hairy.  This function is installed in the 
-   premature dispatch table, and thus called once for each class,
-   namely when the very first message is send to it.  */
-
-static void __objc_init_install_dtable(id receiver, SEL op)
-{
-  __label__ already_initialized;
-  IMP imp;
-  void* args;
-  void* result;
-  const char *t;
-
   /* This may happen, if the programmer has taken the address of a 
      method before the dtable was initialized... too bad for him! */
   if(receiver->class_pointer->dtable != __objc_uninstalled_dtable)
-    goto already_initialized;
+    return;
 
   objc_mutex_lock(__objc_runtime_mutex);
 
@@ -252,33 +244,20 @@ static void __objc_init_install_dtable(id receiver, SEL op)
 	CLS_SETINITIALIZED((Class)receiver);
     }
   objc_mutex_unlock(__objc_runtime_mutex);
-
-already_initialized:
-  
-  /* Get real method for this in newly installed dtable */
-  imp = get_imp(receiver->class_pointer, op);
-
-  /* Perform the appropriate return based upon the method return type */
-  args = __builtin_apply_args();
-  t = op->sel_types;
-  if (t && (*t == '[' || *t == '(' || *t == '{'))
-    ((id(*)())__objc_block_return)(imp, args);
-  else if (t && (*t == 'f' || *t == 'd'))
-    ((id(*)())__objc_double_return)(imp, args);
-  else
-    __objc_word_return(imp, args);
 }
 
 /* Install dummy table for class which causes the first message to
    that class (or instances hereof) to be initialized properly */
-void __objc_install_premature_dtable(Class class)
+void
+__objc_install_premature_dtable(Class class)
 {
   assert(__objc_uninstalled_dtable);
   class->dtable = __objc_uninstalled_dtable;
 }   
 
 /* Send +initialize to class if not already done */
-static void __objc_send_initialize(Class class)
+static void
+__objc_send_initialize(Class class)
 {
   /* This *must* be a class object */
   assert(CLS_ISCLASS(class));
@@ -382,7 +361,8 @@ __objc_install_dispatch_table_for_class (Class class)
   __objc_install_methods_in_dtable (class, class->methods);
 }
 
-void __objc_update_dispatch_table_for_class (Class class)
+void
+__objc_update_dispatch_table_for_class (Class class)
 {
   Class next;
   struct sarray *arr;
@@ -616,7 +596,8 @@ __objc_forward (id object, SEL sel, arglist_t args)
   }
 }
 
-void __objc_print_dtable_stats()
+void
+__objc_print_dtable_stats()
 {
   int total = 0;
 
@@ -646,7 +627,9 @@ void __objc_print_dtable_stats()
   objc_mutex_unlock(__objc_runtime_mutex);
 }
 
-/* Returns the dispatch table */
+/* Returns the uninstalled dispatch table indicator.
+ If a class' dispatch table points to __objc_uninstalled_dtable
+ then that means it needs its dispatch table to be installed. */
 __inline__
 struct sarray* 
 objc_get_uninstalled_dtable()
