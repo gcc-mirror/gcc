@@ -9224,6 +9224,37 @@
    && short_branch (INSN_UID (insn), INSN_UID (operands[2]))
    && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (insn))"
   "call\\t%a0, %1\\n\\tadd\\t%%o7, (%l2-.-4), %%o7")
+
+(define_insn "prefetch"
+  [(prefetch (match_operand:DI 0 "address_operand" "p")
+	     (match_operand:DI 1 "const_int_operand" "n")
+	     (match_operand:DI 2 "const_int_operand" "n"))]
+  "TARGET_V9"
+{
+  static const char * const prefetch_instr[2][4] = {
+    {
+      "prefetch\\t[%a0], 1", /* no locality: prefetch for one read */
+      "prefetch\\t[%a0], 0", /* medium locality: prefetch for several reads */
+      "prefetch\\t[%a0], 0", /* medium locality: prefetch for several reads */
+      "prefetch\\t[%a0], 4", /* high locality: prefetch page */
+    },
+    {
+      "prefetch\\t[%a0], 3", /* no locality: prefetch for one write */
+      "prefetch\\t[%a0], 2", /* medium locality: prefetch for several writes */
+      "prefetch\\t[%a0], 2", /* medium locality: prefetch for several writes */
+      "prefetch\\t[%a0], 4", /* high locality: prefetch page */
+    }
+  };
+  int read_or_write = INTVAL (operands[1]);
+  int locality = INTVAL (operands[2]);
+
+  if (read_or_write != 0 && read_or_write != 1)
+    abort ();
+  if (locality < 0 || locality > 3)
+    abort ();
+  return prefetch_instr [read_or_write][locality];
+}
+  [(set_attr "type" "load")])
 
 (define_expand "prologue"
   [(const_int 1)]
