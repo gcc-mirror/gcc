@@ -1,3 +1,10 @@
+2004-09-28  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/URLConnection.java: Reformatted.
+	* java/net/URLClassLoader.java: Reformatted.
+	(getContent): Reordered return of content.
+	(getContentHandler): Don't check for null explicitely.
+
 2004-09-27  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/BufferedInputStream.java
