@@ -1,3 +1,7 @@
+2000-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/string-opt-5.c: Add some memset tests.
+
 2000-12-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/cast6.C: New test.

@@ -83,6 +83,7 @@ static tree c_strlen			PARAMS ((tree));
 static const char *c_getstr		PARAMS ((tree));
 static rtx c_readstr			PARAMS ((const char *,
 						 enum machine_mode));
+static int target_char_cast		PARAMS ((tree, char *)); 
 static rtx get_memory_rtx		PARAMS ((tree));
 static int apply_args_size		PARAMS ((void));
 static int apply_result_size		PARAMS ((void));
@@ -115,6 +116,8 @@ static rtx expand_builtin_strcpy	PARAMS ((tree));
 static rtx builtin_strncpy_read_str	PARAMS ((PTR, HOST_WIDE_INT,
 						 enum machine_mode));
 static rtx expand_builtin_strncpy	PARAMS ((tree, rtx,
+						 enum machine_mode));
+static rtx builtin_memset_read_str	PARAMS ((PTR, HOST_WIDE_INT,
 						 enum machine_mode));
 static rtx expand_builtin_memset	PARAMS ((tree));
 static rtx expand_builtin_bzero		PARAMS ((tree));
@@ -317,6 +320,7 @@ c_getstr (src)
 /* Return a CONST_INT or CONST_DOUBLE corresponding to target
    reading GET_MODE_BITSIZE (MODE) bits from string constant
    STR.  */
+
 static rtx
 c_readstr (str, mode)
      const char *str;
@@ -347,6 +351,36 @@ c_readstr (str, mode)
       c[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
     }
   return immed_double_const (c[0], c[1], mode);
+}
+
+/* Cast a target constant CST to target CHAR and if that value fits into
+   host char type, return zero and put that value into variable pointed by
+   P.  */
+
+static int
+target_char_cast (cst, p)
+     tree cst;
+     char *p;
+{
+  unsigned HOST_WIDE_INT val, hostval;
+
+  if (TREE_CODE (cst) != INTEGER_CST
+      || CHAR_TYPE_SIZE > HOST_BITS_PER_WIDE_INT)
+    return 1;
+
+  val = TREE_INT_CST_LOW (cst);
+  if (CHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT)
+    val &= (((unsigned HOST_WIDE_INT) 1) << CHAR_TYPE_SIZE) - 1;
+
+  hostval = val;
+  if (HOST_BITS_PER_CHAR < HOST_BITS_PER_WIDE_INT)
+    hostval &= (((unsigned HOST_WIDE_INT) 1) << HOST_BITS_PER_CHAR) - 1;
+
+  if (val != hostval)
+    return 1;
+
+  *p = hostval;
+  return 0;
 }
 
 /* Given TEM, a pointer to a stack frame, follow the dynamic chain COUNT
@@ -1583,7 +1617,13 @@ expand_builtin_strchr (arglist, target, mode)
       p1 = c_getstr (s1);
       if (p1 != NULL)
 	{
-	  const char *r = strchr (p1, (char) TREE_INT_CST_LOW (s2));
+	  char c;
+	  const char *r;
+
+	  if (target_char_cast (s2, &c))
+	    return 0;
+
+	  r = strchr (p1, c);
 
 	  if (r == NULL)
 	    return const0_rtx;
@@ -1628,7 +1668,13 @@ expand_builtin_strrchr (arglist, target, mode)
       p1 = c_getstr (s1);
       if (p1 != NULL)
 	{
-	  const char *r = strrchr (p1, (char) TREE_INT_CST_LOW (s2));
+	  char c;
+	  const char *r;
+
+	  if (target_char_cast (s2, &c))
+	    return 0;
+
+	  r = strrchr (p1, c);
 
 	  if (r == NULL)
 	    return const0_rtx;
@@ -1945,6 +1991,24 @@ expand_builtin_strncpy (arglist, target, mode)
     }
 }
 
+/* Callback routine for store_by_pieces.  Read GET_MODE_BITSIZE (MODE)
+   bytes from constant string DATA + OFFSET and return it as target
+   constant.  */
+
+static rtx
+builtin_memset_read_str (data, offset, mode)
+     PTR data;
+     HOST_WIDE_INT offset ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
+{
+  const char *c = (const char *) data;
+  char *p = alloca (GET_MODE_SIZE (mode));
+
+  memset (p, *c, GET_MODE_SIZE (mode));
+
+  return c_readstr (p, mode);
+}
+
 /* Expand expression EXP, which is a call to the memset builtin.  Return 0
    if we failed the caller should emit a normal call.  */
 
@@ -1971,6 +2035,7 @@ expand_builtin_memset (exp)
       tree dest = TREE_VALUE (arglist);
       tree val = TREE_VALUE (TREE_CHAIN (arglist));
       tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      char c;
 
       int dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
       rtx dest_mem, dest_addr, len_rtx;
@@ -1980,18 +2045,28 @@ expand_builtin_memset (exp)
       if (dest_align == 0)
 	return 0;
 
-      /* If the arguments have side-effects, then we can only evaluate
-	 them at most once.  The following code evaluates them twice if
-	 they are not constants because we break out to expand_call
-	 in that case.  They can't be constants if they have side-effects
-	 so we can check for that first.  Alternatively, we could call
-	 save_expr to make multiple evaluation safe.  */
-      if (TREE_SIDE_EFFECTS (val) || TREE_SIDE_EFFECTS (len))
+      if (TREE_CODE (val) != INTEGER_CST)
 	return 0;
 
-      /* If VAL is not 0, don't do this operation in-line. */
-      if (expand_expr (val, NULL_RTX, VOIDmode, 0) != const0_rtx)
+      if (target_char_cast (val, &c))
 	return 0;
+
+      if (c)
+	{
+	  if (TREE_CODE (len) != INTEGER_CST || TREE_INT_CST_HIGH (len))
+	    return 0;
+	  if (current_function_check_memory_usage
+	      || !can_store_by_pieces (TREE_INT_CST_LOW (len),
+				       builtin_memset_read_str,
+				       (PTR) &c, dest_align))
+	    return 0;
+
+	  dest_mem = get_memory_rtx (dest);
+	  store_by_pieces (dest_mem, TREE_INT_CST_LOW (len),
+			   builtin_memset_read_str,
+			   (PTR) &c, dest_align);
+	  return force_operand (XEXP (dest_mem, 0), NULL_RTX);
+	}
 
       len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
 
