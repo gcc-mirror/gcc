@@ -1593,6 +1593,8 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
   if (! value || value == error_mark_node)
     /* friend or constructor went bad.  */
     return value;
+  if (TREE_TYPE (value) == error_mark_node)
+    return error_mark_node;  
 
   /* Pass friendly classes back.  */
   if (TREE_CODE (value) == VOID_TYPE)

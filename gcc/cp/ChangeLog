@@ -1,3 +1,7 @@
+2000-03-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl2.c (grokfield): Bail out if type is error_mark_node.
+
 2000-03-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tinfo2.cc (__ptr_to_member_data): Rename to ...
