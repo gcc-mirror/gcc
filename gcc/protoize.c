@@ -79,7 +79,6 @@ extern void fancy_abort  (void) ATTRIBUTE_NORETURN;
 static void notice (const char *, ...) ATTRIBUTE_PRINTF_1;
 static char *savestring (const char *, unsigned int);
 static char *dupnstr (const char *, size_t);
-static const char *substr (const char *, const char * const);
 static int safe_read (int, void *, int);
 static void safe_write (int, void *, int, const char *);
 static void save_pointers (void);
@@ -547,28 +546,6 @@ dupnstr (const char *s, size_t n)
   strncpy (ret_val, s, n);
   ret_val[n] = '\0';
   return ret_val;
-}
-
-/* Return a pointer to the first occurrence of s2 within s1 or NULL if s2
-   does not occur within s1.  Assume neither s1 nor s2 are null pointers.  */
-
-static const char *
-substr (const char *s1, const char *const s2)
-{
-  for (; *s1 ; s1++)
-    {
-      const char *p1;
-      const char *p2;
-      int c;
-
-      for (p1 = s1, p2 = s2; (c = *p2); p1++, p2++)
-	if (*p1 != c)
-	  goto outer;
-      return s1;
-outer:
-      ;
-    }
-  return 0;
 }
 
 /* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
@@ -2516,7 +2493,7 @@ find_extern_def (const def_dec_info *head, const def_dec_info *user)
 	        char *p;
 
 	        strcpy (needed, user->ansi_decl);
-	        p = (NONCONST char *) substr (needed, user->hash_entry->symbol)
+	        p = strstr (needed, user->hash_entry->symbol)
 	            + strlen (user->hash_entry->symbol) + 2;
 		/* Avoid having ??? in the string.  */
 		*p++ = '?';
@@ -2875,7 +2852,7 @@ other_variable_style_function (const char *ansi_header)
   /* See if we have a stdarg function, or a function which has stdarg style
      parameters or a stdarg style return type.  */
 
-  return substr (ansi_header, "...") != 0;
+  return strstr (ansi_header, "...") != 0;
 
 #else /* !defined (UNPROTOIZE) */
 
@@ -2889,7 +2866,7 @@ other_variable_style_function (const char *ansi_header)
     {
       const char *candidate;
 
-      if ((candidate = substr (p, varargs_style_indicator)) == 0)
+      if ((candidate = strstr (p, varargs_style_indicator)) == 0)
 	return 0;
       else
 	if (!is_id_char (candidate[-1]) && !is_id_char (candidate[len]))
