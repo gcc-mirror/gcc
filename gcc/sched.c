@@ -3514,6 +3514,26 @@ schedule_block (b, file)
 			sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 0);
 		  }
 
+		/* Each call clobbers (makes live) all call-clobbered regs
+		   that are not global or fixed.  Note that the function-value
+		   reg is a call_clobbered reg.  */
+
+		if (GET_CODE (insn) == CALL_INSN)
+		  {
+		    int j;
+		    for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
+		      if (call_used_regs[j] && ! global_regs[j]
+			  && ! fixed_regs[j])
+			{
+			  register int offset = j / REGSET_ELT_BITS;
+			  register REGSET_ELT_TYPE bit
+			    = (REGSET_ELT_TYPE) 1 << (j % REGSET_ELT_BITS);
+
+			  bb_live_regs[offset] |= bit;
+			  bb_dead_regs[offset] &= ~bit;
+			}
+		  }
+
 		for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 		  {
 		    if ((REG_NOTE_KIND (link) == REG_DEAD
@@ -3613,6 +3633,26 @@ schedule_block (b, file)
 	      for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
 		if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == USE)
 		  sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 0);
+	    }
+
+	  /* Each call clobbers (makes live) all call-clobbered regs that are
+	     not global or fixed.  Note that the function-value reg is a
+	     call_clobbered reg.  */
+
+	  if (GET_CODE (insn) == CALL_INSN)
+	    {
+	      int j;
+	      for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
+		if (call_used_regs[j] && ! global_regs[j]
+		    && ! fixed_regs[j])
+		  {
+		    register int offset = j / REGSET_ELT_BITS;
+		    register REGSET_ELT_TYPE bit
+		      = (REGSET_ELT_TYPE) 1 << (j % REGSET_ELT_BITS);
+
+		    bb_live_regs[offset] |= bit;
+		    bb_dead_regs[offset] &= ~bit;
+		  }
 	    }
 
 	  /* Need to know what registers this insn kills.  */
@@ -3854,12 +3894,12 @@ schedule_block (b, file)
 		{
 		  register struct sometimes *p;
 
-		  /* A call kills all call used and global registers, except
-		     for those mentioned in the call pattern which will be
-		     made live again later.  */
+		  /* A call kills all call used registers that are not
+		     global or fixed, except for those mentioned in the call
+		     pattern which will be made live again later.  */
 		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		    if ((call_used_regs[i] && ! fixed_regs[i])
-			|| global_regs[i])
+		    if (call_used_regs[i] && ! global_regs[i]
+			&& ! fixed_regs[i])
 		      {
 			register int offset = i / REGSET_ELT_BITS;
 			register REGSET_ELT_TYPE bit
