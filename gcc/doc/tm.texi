@@ -2507,6 +2507,23 @@ When we say, ``define this macro if @dots{},'' it means that the
 compiler checks this macro only with @code{#ifdef} so the precise
 definition used does not matter.
 
+@findex STACK_PUSH_CODE
+@item STACK_PUSH_CODE
+
+This macro defines the operation used when something is pushed
+on the stack.  In RTL, a push operation will be
+@code{(set (mem (STACK_PUSH_CODE (reg sp))) ...)}
+
+The choices are @code{PRE_DEC}, @code{POST_DEC}, @code{PRE_INC},
+and @code{POST_INC}.  Which of these is correct depends on
+the stack direction and on whether the stack pointer points
+to the last item on the stack or whether it points to the
+space for the next item on the stack.
+
+The default is @code{PRE_DEC} when @code{STACK_GROWS_DOWNWARD} is
+defined, which is almost always right, and @code{PRE_INC} otherwise,
+which is often wrong.
+
 @findex FRAME_GROWS_DOWNWARD
 @item FRAME_GROWS_DOWNWARD
 Define this macro if the addresses of local variable slots are at negative
