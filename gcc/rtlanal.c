@@ -3731,7 +3731,7 @@ hoist_insn_to_edge (rtx insn, edge e, rtx val, rtx new)
     abort ();
 
   /* Do not use emit_insn_on_edge as we want to preserve notes and similar
-     stuff.  We also emit CALL_INSNS and firends.  */
+     stuff.  We also emit CALL_INSNS and friends.  */
   if (e->insns == NULL_RTX)
     {
       start_sequence ();
