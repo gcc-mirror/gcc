@@ -1,3 +1,8 @@
+2002-03-12  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload1.c (reload): Ignore MEM REG_EQUIV notes if the equivalent
+	is not a valid memory_operand.
+
 2002-03-12  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa-config.h: Define XCHAL_HAVE_LOOPS.
