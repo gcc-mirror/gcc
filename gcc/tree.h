@@ -2452,7 +2452,6 @@ extern void preserve_temp_slots		PARAMS ((struct rtx_def *));
 extern int aggregate_value_p		PARAMS ((tree));
 extern tree reorder_blocks		PARAMS ((tree,
 						struct rtx_def *));
-extern void free_temps_for_rtl_expr	PARAMS ((tree));
 extern void instantiate_virtual_regs	PARAMS ((tree, struct rtx_def *));
 extern void unshare_all_rtl		PARAMS ((tree, struct rtx_def *));
 extern int max_parm_reg_num		PARAMS ((void));
@@ -2486,7 +2485,6 @@ extern struct rtx_def *store_expr		PARAMS ((tree, struct rtx_def *,
 extern void check_max_integer_computation_mode	PARAMS ((tree));
 
 /* In emit-rtl.c */
-extern void start_sequence_for_rtl_expr		PARAMS ((tree));
 extern struct rtx_def *emit_line_note_after	PARAMS ((char *, int,
 							struct rtx_def *));
 extern struct rtx_def *emit_line_note		PARAMS ((char *, int));

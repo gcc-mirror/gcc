@@ -1,3 +1,31 @@
+2000-03-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* function.h (struct sequence_stack): Remove rtl_expr.
+	(struct emit_staus): Likewise.
+	(seq_rtl_expr): Remove.
+	* tree.h (free_temps_for_rtl_expr): Don't declare.
+	(start_sequence_for_rtl_expr): Likewise.
+	* rtl.h (preserve_rtl_expr_result): Likewise.
+	* emit-rtl.c (start_sequence): Don't set sequence_rtl_expr.
+	(start_sequence_for_rtl_expr): Remove.
+	(push_topmost_sequence): Don't save sequence_rtl_expr.
+	(pop_topmost_sequence): Remove comment about not restoring it.
+	(end_sequence): Don't set seq_rtl_expr.
+	(init_emit): Don't initialize it.
+	(mark_sequence_stack): Don't mark it.
+	(mark_emit_status): Likewise.
+	* except.c (protect_with_terminate): Use
+	start_sequence_for_rtl_expr, not start_sequence.
+	* expr.c (expand_expr, case RTL_EXPR): Don't call
+	preserve_rtl_expr_result or free_temps_for_rtl_expr.
+	(assign_stack_temp_for_type): Don't set rtl_expr.
+	(preserve_rtl_expr_result): Remove.
+	(free_temps_for_rtl_expr): Likewise.
+	(pop_temp_slots): Likewise.
+	(mark_temp_slot): Don't mark the rtl_expr.
+	* stmt.c (expand_start_stmt_expr): Use start_sequence, not
+	start_sequence_for_rtl_expr.
+	
 2000-03-04  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* mkdeps.c, mkdeps.h: New files.
