@@ -271,7 +271,7 @@ JAVA_LEX_C = java/lex.c java/keyword.h java/chartables.h
 
 java/parse.o: $(parsedir)/java/parse.c java/jcf-reader.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) function.h $(JAVA_TREE_H) $(JAVA_LEX_C) java/parse.h \
-  java/lex.h $(GGC_H) debug.h gt-java-parse.h gtype-java.h
+  java/lex.h input.h $(GGC_H) debug.h gt-java-parse.h gtype-java.h
 java/jcf-dump.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(JAVA_TREE_H) \
   java/jcf-dump.c java/jcf-reader.c java/jcf.h java/javaop.h java/javaop.def \
   version.h $(GGC_H)
@@ -328,7 +328,7 @@ java/mangle.o: java/mangle.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) $(SYSTEM_H) \
 java/mangle_name.o: java/mangle_name.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) \
   $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(GGC_H)
 java/parse-scan.o: $(parsedir)/java/parse-scan.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h \
-  $(JAVA_LEX_C) java/parse.h java/lex.h
+  $(JAVA_LEX_C) java/parse.h java/lex.h input.h
 java/resource.o: java/resource.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(JAVA_TREE_H) $(RTL_H) java/jcf.h java/parse.h toplev.h output.h $(GGC_H) \
   $(TARGET_H) function.h gt-java-resource.h

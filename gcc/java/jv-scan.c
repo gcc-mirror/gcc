@@ -55,9 +55,6 @@ static void version (void) ATTRIBUTE_NORETURN;
 /* Current input file and output file IO streams.  */
 FILE *finput, *out;
 
-/* Current input filename.  */
-char *input_filename;
-
 /* Executable name.  */
 char *exec_name;
 
