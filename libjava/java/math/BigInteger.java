@@ -220,12 +220,8 @@ public class BigInteger extends Number implements Comparable
   private static int[] byteArrayToIntArray(byte[] bytes, int sign)
   {
     // Determine number of words needed.
-    int[] words = new int[(bytes.length + 3) / 4 + 1];
+    int[] words = new int[bytes.length/4 + 1];
     int nwords = words.length;
-
-    // For simplicity, tack on an extra word of sign at the front,
-    // it will be canonicalized out later. */
-    words[--nwords] = sign;
 
     // Create a int out of modulo 4 high order bytes.
     int bptr = 0;
