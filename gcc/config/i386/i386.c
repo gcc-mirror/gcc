@@ -6917,8 +6917,10 @@ ix86_split_long_move (operands)
       && reg_overlap_mentioned_p (stack_pointer_rtx, operands[1]))
     {
       if (nparts == 3)
-	part[1][1] = part[1][2];
-      part[1][0] = part[1][1];
+	part[1][1] = change_address (part[1][1], GET_MODE (part[1][1]),
+				     XEXP (part[1][2], 0));
+      part[1][0] = change_address (part[1][0], GET_MODE (part[1][0]),
+				   XEXP (part[1][1], 0));
     }
 
   /* We need to do copy in the right order in case an address register
@@ -6990,6 +6992,8 @@ ix86_split_long_move (operands)
 		part[1][1] = gen_rtx_REG (DImode, REGNO (part[1][1]));
 	      else
 		abort();
+	      if (GET_MODE (part[1][0]) == SImode)
+		part[1][0] = part[1][1];
 	    }
 	}
       emit_move_insn (part[0][1], part[1][1]);
