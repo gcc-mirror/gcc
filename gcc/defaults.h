@@ -217,6 +217,15 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 #endif
 #endif
 
+/* If we have named section and we support weak symbols, then use the
+   .jcr section for recording java classes which need to be registered
+   at program start-up time.  */
+#if defined (TARGET_ASM_NAMED_SECTION) && SUPPORTS_WEAK
+#ifndef JCR_SECTION_NAME
+#define JCR_SECTION_NAME ".jcr"
+#endif
+#endif
+
 /* If we have no definition for UNIQUE_SECTION, but do have the 
    ability to generate arbitrary sections, construct something
    reasonable.  */
