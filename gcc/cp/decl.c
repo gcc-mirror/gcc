@@ -5251,59 +5251,6 @@ lookup_tag (form, name, binding_level, thislevel_only)
 	  else
 	    return NULL_TREE;
 	}
-      if (current_class_type && level->level_chain->namespace_p)
-	{
-	  /* Try looking in this class's tags before heading into
-	     global binding level.  */
-	  tree context = current_class_type;
-	  while (context)
-	    {
-	      switch (TREE_CODE_CLASS (TREE_CODE (context)))
-		{
-		tree these_tags;
-		case 't':
-		    these_tags = CLASSTYPE_TAGS (context);
-		    if (ANON_AGGRNAME_P (name))
-		      while (these_tags)
-			{
-			  if (TYPE_IDENTIFIER (TREE_VALUE (these_tags))
-			      == name)
-			    return TREE_VALUE (tail);
-			  these_tags = TREE_CHAIN (these_tags);
-			}
-		    else
-		      while (these_tags)
-			{
-			  if (TREE_PURPOSE (these_tags) == name)
-			    {
-			      if (TREE_CODE (TREE_VALUE (these_tags)) != form)
-				{
-				  cp_error ("`%#D' redeclared as %C in class scope",
-					    TREE_VALUE (tail), form);
-				  return NULL_TREE;
-				}
-			      return TREE_VALUE (tail);
-			    }
-			  these_tags = TREE_CHAIN (these_tags);
-			}
-		    /* If this type is not yet complete, then don't
-		       look at its context.  */
-		    if (TYPE_SIZE (context) == NULL_TREE)
-		      goto no_context;
-		    /* Go to next enclosing type, if any.  */
-		    context = DECL_CONTEXT (TYPE_MAIN_DECL (context));
-		    break;
-	        case 'd':
-		    context = DECL_CONTEXT (context);
-		    break;
-	        default:
-		    my_friendly_abort (10);
-		}
-	      continue;
-	      no_context:
-	      break;
-	    }
-	}
     }
   return NULL_TREE;
 }

@@ -266,7 +266,7 @@ make_friend_class (type, friend_type)
 		friend_type);
       return;
     }
-
+  
   if (processing_template_decl > template_class_depth (type))
     /* If the TYPE is a template then it makes sense for it to be
        friends with itself; this means that each instantiation is
@@ -280,6 +280,26 @@ make_friend_class (type, friend_type)
     }
   else
     is_template_friend = 0;
+
+  if (is_template_friend 
+      && TREE_CODE (friend_type) == TYPENAME_TYPE)
+    {
+      /* [temp.friend]
+
+	   A friend of a class or class template can be a function or
+	   class template, a specialization of a function template or
+	   class template, or an ordinary (nontemplate) function or
+	   class. 
+	   
+	 But, we're looking at something like:
+
+	   template <class T> friend typename S<T>::X;
+
+	 which isn't any of these.  */
+      cp_error ("typename type `%T' declare `friend'",
+		friend_type);
+      return;
+    }
 
   GNU_xref_hier (type, friend_type, 0, 0, 1);
 

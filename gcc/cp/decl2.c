@@ -5257,7 +5257,10 @@ handle_class_head (aggr, scope, id)
   else 
     {
       if (scope)
-	cp_error ("`%T' does not have a nested type named `%D'", scope, id);
+	{
+	  cp_error ("`%T' does not have a nested type named `%D'", scope, id);
+	  return error_mark_node;
+	}
       else
 	cp_error ("no file-scope type named `%D'", id);
       
