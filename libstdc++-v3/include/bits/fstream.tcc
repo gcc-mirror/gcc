@@ -71,14 +71,13 @@ namespace std
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
     basic_filebuf() : __streambuf_type(), _M_file(&_M_lock), 
-    _M_state_cur(__state_type()), _M_state_beg(__state_type()), 
-    _M_buf(NULL), _M_buf_size(BUFSIZ), _M_buf_allocated(false),
-    _M_last_overflowed(false), _M_filepos(0), _M_pback_cur_save(0),
+    _M_state_cur(__state_type()), _M_state_beg(__state_type()), _M_buf(NULL), 
+    _M_buf_allocated(false),_M_last_overflowed(false), 
+    _M_filepos(0), _M_pback(char_type()), _M_pback_cur_save(0), 
     _M_pback_end_save(0), _M_pback_init(false), _M_codecvt(0)
     { 
       this->_M_buf_unified = true; 	  
-      if (__builtin_expect(has_facet<__codecvt_type>(this->_M_buf_locale), 
-			                             true))
+      if (has_facet<__codecvt_type>(this->_M_buf_locale))
 	_M_codecvt = &use_facet<__codecvt_type>(this->_M_buf_locale);
     }
 
@@ -194,40 +193,41 @@ namespace std
 	  // fileops happen...
 	  _M_destroy_pback();
 
-	  if (this->_M_in_cur < this->_M_in_end)
+	  const size_t __buflen = this->_M_buf_size 
+	                          ? this->_M_buf_size - 1 : 0;
+	  if (__buflen)
 	    {
-	      __ret = traits_type::to_int_type(*this->_M_in_cur);
-	      if (__bump)
-		_M_move_in_cur(1);
-	      return __ret;
-	    }
+	      if (this->_M_in_cur < this->_M_in_end)
+		{
+		  __ret = traits_type::to_int_type(*this->_M_in_cur);
+		  if (__bump)
+		    _M_move_in_cur(1);
+		  return __ret;
+		}
 
-	  // Sync internal and external buffers.
-	  if (__testout && this->_M_out_beg < this->_M_out_lim)
-	    this->overflow();
+	      // Sync internal and external buffers.
+	      if (__testout && this->_M_out_beg < this->_M_out_lim)
+		this->overflow();
 
-	  if (_M_buf_size > 1)
-	    {
+	      // Get and convert input sequence.
 	      streamsize __elen = 0;
 	      streamsize __ilen = 0;
-
 	      if (__check_facet(_M_codecvt).always_noconv())
 		{
-		  __elen = _M_file.xsgetn(reinterpret_cast<char*>(this->_M_in_beg), _M_buf_size - 1);
+		  __elen = _M_file.xsgetn(reinterpret_cast<char*>(this->_M_in_beg), __buflen);
 		  __ilen = __elen;
 		}
 	      else
 		{
-		  char* __buf = static_cast<char*>(__builtin_alloca(_M_buf_size - 1));
-		  __elen = _M_file.xsgetn(__buf, _M_buf_size - 1);
+		  char* __buf = static_cast<char*>(__builtin_alloca(__buflen));
+		  __elen = _M_file.xsgetn(__buf, __buflen);
 		  
 		  const char* __eend;
 		  char_type* __iend;
 		  codecvt_base::result __r;
 		  __r = _M_codecvt->in(_M_state_cur, __buf, __buf + __elen, 
 				       __eend, this->_M_in_beg, 
-				       this->_M_in_beg + _M_buf_size - 1, 
-				       __iend);
+				       this->_M_in_beg + __buflen, __iend);
 		  if (__r == codecvt_base::ok)
 		    __ilen = __iend - this->_M_in_beg;
 		  else if (__r == codecvt_base::noconv)
@@ -245,13 +245,49 @@ namespace std
 		    }
 		}
 
-	      if (0 < __ilen)
+	      if (__ilen > 0)
 		{
 		  _M_set_buffer(__ilen);
 		  __ret = traits_type::to_int_type(*this->_M_in_cur);
 		  if (__bump)
 		    _M_move_in_cur(1);
-		}	   
+		}	   	    
+	    }
+	  else
+	    {
+	      // Unbuffered.
+	      char __buf;
+	      if (_M_file.xsgetn(&__buf, 1) > 0)
+		{
+		  if (__check_facet(_M_codecvt).always_noconv())
+		    {
+		      char_type* __cp = reinterpret_cast<char_type*>(&__buf);
+		      __ret = traits_type::to_int_type(*__cp);
+		    }
+		  else
+		    {
+		      char_type __c;		 
+		      const char* __eend;
+		      char_type* __iend;
+		      codecvt_base::result __r;
+		      __r = _M_codecvt->in(_M_state_cur, &__buf, &__buf + 1, 
+					   __eend, &__c, &__c + 1, __iend);
+		      if (__r == codecvt_base::ok 
+			  || __r == codecvt_base::noconv)
+			__ret = traits_type::to_int_type(__c);
+		    }
+
+		  // Need to put back this extracted character so that
+		  // sgetc will not advance the input stream iff
+		  // underflow, but cannot call pbackfail directly as
+		  // it calls underflow... which leads to a recursive
+		  // showdown.
+		  if (!__bump)
+		    {
+		      _M_create_pback();
+		      *this->_M_in_cur = traits_type::to_char_type(__ret); 
+		    }
+		}
 	    }
 	}
       _M_last_overflowed = false;	
@@ -279,11 +315,6 @@ namespace std
 	      _M_move_in_cur(-1);
 	      __tmp = traits_type::to_int_type(*this->_M_in_cur);
 	    }
-	  // At the beginning of the buffer, need to make a
-	  // putback position available.
-	  // But the seek may fail (f.i., at the beginning of
-	  // a file, see libstdc++/9439) and in that case
-	  // we return traits_type::eof().
 	  else if (this->seekoff(-1, ios_base::cur) >= 0)
 	    {
 	      __tmp = this->underflow();
@@ -291,7 +322,14 @@ namespace std
 		return __ret;
 	    }
 	  else
-	    return __ret;
+	    {
+	      // At the beginning of the buffer, need to make a
+	      // putback position available.  But the seek may fail
+	      // (f.i., at the beginning of a file, see
+	      // libstdc++/9439) and in that case we return
+	      // traits_type::eof().
+	      return __ret;
+	    }
 
 	  // Try to put back __i into input sequence in one of three ways.
 	  // Order these tests done in is unspecified by the standard.
@@ -394,7 +432,7 @@ namespace std
 	    }
 	  else
 	    {
-	      // Result == error 
+	      // Result == error .
 	      __blen = 0;
 	    }
 	  

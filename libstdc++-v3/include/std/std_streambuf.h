@@ -159,14 +159,6 @@ namespace std
 			  __streambuf_type* __sbin,__streambuf_type* __sbout);
       
     protected:
-      /**
-       *  @if maint
-       *  True iff _M_in_* and _M_out_* buffers should always point to
-       *  the same place.  True for fstreams, false for sstreams.
-       *  @endif
-      */
-      bool 			_M_buf_unified;	
-
       //@{
       /**
        *  @if maint
@@ -193,15 +185,31 @@ namespace std
        *  @endif
       */      
       char_type*                _M_out_lim;    // End limit of used put area.
-
       //@}
+
+      /**
+       *  @if maint
+       *  True iff _M_in_* and _M_out_* buffers should always point to
+       *  the same place.  True for fstreams, false for sstreams.
+       *  @endif
+      */
+      bool 			_M_buf_unified;	
+
+      /**
+       *  @if maint
+       *  Actual size of internal buffer. This number is equal to the size
+       *  of the put area + 1 position, reserved for the overflow char of
+       *  a full area.
+       *  @endif
+      */
+      size_t			_M_buf_size;
 
       /**
        *  @if maint
        *  Place to stash in || out || in | out settings for current streambuf.
        *  @endif
       */
-      ios_base::openmode 	_M_mode;	
+      ios_base::openmode 	_M_mode;
 
       /**
        *  @if maint
@@ -259,6 +267,7 @@ namespace std
       ~basic_streambuf() 
       {
 	_M_buf_unified = false;
+	_M_buf_size = 0;
 	_M_mode = ios_base::openmode(0);
       }
 
@@ -458,10 +467,10 @@ namespace std
        *  - this is not an error
       */
       basic_streambuf()
-      : _M_buf_unified(false), _M_in_beg(0), _M_in_cur(0),
-      _M_in_end(0), _M_out_beg(0), _M_out_cur(0), _M_out_end(0),
-      _M_out_lim(0), _M_mode(ios_base::openmode(0)),
-      _M_buf_locale(locale()) 
+      : _M_in_beg(0), _M_in_cur(0), _M_in_end(0), 
+      _M_out_beg(0), _M_out_cur(0), _M_out_end(0),_M_out_lim(0), 
+      _M_buf_unified(false), _M_buf_size(BUFSIZ), 
+      _M_mode(ios_base::openmode(0)),_M_buf_locale(locale()) 
       { }
 
       // [27.5.2.3.1] get area access

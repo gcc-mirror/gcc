@@ -121,15 +121,6 @@ namespace std
       */
       char_type*		_M_buf; 	
 
-      /**
-       *  @if maint
-       *  Actual size of internal buffer. This number is equal to the size
-       *  of the put area + 1 position, reserved for the overflow char of
-       *  a full area.
-       *  @endif
-      */
-      size_t			_M_buf_size;
-
       // Set iff _M_buf is allocated memory from _M_allocate_internal_buffer.
       /**
        *  @if maint
@@ -191,9 +182,9 @@ namespace std
 	if (_M_pback_init)
 	  {
 	    // Length _M_in_cur moved in the pback buffer.
-	    const size_t __off = this->_M_in_cur == this->_M_in_beg ? 0 : 1;
-	    this->setg(this->_M_buf, _M_pback_cur_save + __off, 
-		       _M_pback_end_save);
+	    if (_M_pback_cur_save)
+	      _M_pback_cur_save += this->_M_in_cur != this->_M_in_beg;
+	    this->setg(this->_M_buf, _M_pback_cur_save, _M_pback_end_save);
 	    _M_pback_init = false;
 	  }
       }
@@ -215,7 +206,6 @@ namespace std
       ~basic_filebuf()
       {
 	this->close();
-	_M_buf_size = 0;
 	_M_last_overflowed = false;
       }
 
@@ -375,7 +365,7 @@ namespace std
 	    // Need to restore current position after the write.
 	    off_type __off = this->_M_out_cur - this->_M_out_lim;
 
-	    // _M_file.sync() will be called within
+	    // _M_file.sync() will be called within.
 	    if (traits_type::eq_int_type(this->overflow(), traits_type::eof()))
 	      __ret = -1;
 	    else if (__off)
@@ -395,8 +385,8 @@ namespace std
       virtual streamsize
       xsgetn(char_type* __s, streamsize __n)
       {
-	streamsize __ret = 0;
 	// Clear out pback buffer before going on to the real deal...
+	streamsize __ret = 0;
 	if (this->_M_pback_init)
 	  {
 	    if (__n && this->_M_in_cur == this->_M_in_beg)
@@ -439,7 +429,7 @@ namespace std
       {
  	const bool __testin = this->_M_mode & ios_base::in;
  	const bool __testout = this->_M_mode & ios_base::out;
-	if (_M_buf_size)
+	if (this->_M_buf_size)
 	  {
 	    if (__testin)
 	      this->setg(this->_M_buf, this->_M_buf, this->_M_buf + __off);

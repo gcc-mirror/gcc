@@ -110,6 +110,7 @@ namespace __gnu_cxx_test
   std::locale
   try_named_locale(const char* name);
 
+
   // Test data types.
   struct pod_char
   {
@@ -136,6 +137,7 @@ namespace __gnu_cxx_test
     unsigned long l;
     unsigned long l2;
   };
+
 
   // Counting.
   struct counter
