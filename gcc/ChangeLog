@@ -1,3 +1,10 @@
+2003-07-11  Richard Henderson  <rth@redhat.com>
+
+	* function.c (assign_parms): Don't recombine complex args if
+	fnargs is unchanged from orig_fnargs.
+	(split_complex_args): Return args without complex before copying.
+	Re-layout the modified parameters.
+
 2003-07-11  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* regclass.c (choose_hard_reg_mode): Add third argument.
