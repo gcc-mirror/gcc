@@ -5043,7 +5043,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode, unsignedp, type,
 	 low-order bits.  However, if EXP's type is a record and this is
 	 big-endian machine, we want the upper BITSIZE bits.  */
       if (BYTES_BIG_ENDIAN && GET_MODE_CLASS (GET_MODE (temp)) == MODE_INT
-	  && bitsize < GET_MODE_BITSIZE (GET_MODE (temp))
+	  && bitsize < (HOST_WIDE_INT) GET_MODE_BITSIZE (GET_MODE (temp))
 	  && TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
 	temp = expand_shift (RSHIFT_EXPR, GET_MODE (temp), temp,
 			     size_int (GET_MODE_BITSIZE (GET_MODE (temp))
@@ -5790,7 +5790,7 @@ highest_pow2_factor (exp)
 	}
       break;
 
-    case PLUS_EXPR:  case MINUS_EXPR:
+    case PLUS_EXPR:  case MINUS_EXPR:  case MIN_EXPR:  case MAX_EXPR:
       c0 = highest_pow2_factor (TREE_OPERAND (exp, 0));
       c1 = highest_pow2_factor (TREE_OPERAND (exp, 1));
       return MIN (c0, c1);
@@ -5802,13 +5802,21 @@ highest_pow2_factor (exp)
 
     case ROUND_DIV_EXPR:  case TRUNC_DIV_EXPR:  case FLOOR_DIV_EXPR:
     case CEIL_DIV_EXPR:
-      c0 = highest_pow2_factor (TREE_OPERAND (exp, 0));
-      c1 = highest_pow2_factor (TREE_OPERAND (exp, 1));
-      return MAX (1, c0 / c1);
+      if (integer_pow2p (TREE_OPERAND (exp, 1))
+	  && host_integerp (TREE_OPERAND (exp, 1), 1))
+	{
+	  c0 = highest_pow2_factor (TREE_OPERAND (exp, 0));
+	  c1 = tree_low_cst (TREE_OPERAND (exp, 1), 1);
+	  return MAX (1, c0 / c1);
+	}
+      break;
 
     case NON_LVALUE_EXPR:  case NOP_EXPR:  case CONVERT_EXPR:
-    case COMPOUND_EXPR:    case SAVE_EXPR: case WITH_RECORD_EXPR:
+    case SAVE_EXPR: case WITH_RECORD_EXPR:
       return highest_pow2_factor (TREE_OPERAND (exp, 0));
+
+    case COMPOUND_EXPR:
+      return highest_pow2_factor (TREE_OPERAND (exp, 1));
 
     case COND_EXPR:
       c0 = highest_pow2_factor (TREE_OPERAND (exp, 1));
@@ -6932,7 +6940,7 @@ expand_expr (exp, target, tmode, modifier)
 	       machine, we must put the field into the high-order bits.  */
 	    if (TREE_CODE (type) == RECORD_TYPE && BYTES_BIG_ENDIAN
 		&& GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT
-		&& bitsize < GET_MODE_BITSIZE (GET_MODE (op0)))
+		&& bitsize < (HOST_WIDE_INT) GET_MODE_BITSIZE (GET_MODE (op0)))
 	      op0 = expand_shift (LSHIFT_EXPR, GET_MODE (op0), op0,
 				  size_int (GET_MODE_BITSIZE (GET_MODE (op0))
 					    - bitsize),
@@ -7305,8 +7313,9 @@ expand_expr (exp, target, tmode, modifier)
 		   && MEM_ALIGN (op0) < GET_MODE_ALIGNMENT (TYPE_MODE (type)))
 	    {
 	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-	      HOST_WIDE_INT temp_size = MAX (int_size_in_bytes (inner_type),
-					     GET_MODE_SIZE (TYPE_MODE (type)));
+	      HOST_WIDE_INT temp_size
+		= MAX (int_size_in_bytes (inner_type),
+		       (HOST_WIDE_INT) GET_MODE_SIZE (TYPE_MODE (type)));
 	      rtx new = assign_stack_temp_for_type (TYPE_MODE (type),
 						    temp_size, 0, type);
 	      rtx new_with_op0_mode = copy_rtx (new);
