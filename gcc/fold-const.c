@@ -6920,11 +6920,11 @@ fold (expr)
 		     so that we can convert this back to the 
 		     corresponding COND_EXPR.  */
 		  return pedantic_non_lvalue
-		    (convert (type, (fold (build (MIN_EXPR, comp_type,
-						  (comp_code == LE_EXPR
-						   ? comp_op0 : comp_op1),
-						  (comp_code == LE_EXPR
-						   ? comp_op1 : comp_op0))))));
+		    (convert (type, fold (build (MIN_EXPR, comp_type,
+						 (comp_code == LE_EXPR
+						  ? comp_op0 : comp_op1),
+						 (comp_code == LE_EXPR
+						  ? comp_op1 : comp_op0)))));
 		  break;
 		case GE_EXPR:
 		case GT_EXPR:
