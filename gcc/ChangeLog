@@ -1,3 +1,11 @@
+2003-12-19  James E. Wilson  <wilson@specifixinc.com>
+
+	* configure.in: Delete libunwind_has_eh_support test.
+	* configure: Regenerate.
+	* config.gcc (ia64*-*-linux*): Delete reference to t-libunwind-no-eh
+	and libunwind_has_eh_support check.
+	* config/t-libunwind-no-eh: Delete.
+
 2003-12-19  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-format.c (print_char_table): Allow 'I' flag on floating point
