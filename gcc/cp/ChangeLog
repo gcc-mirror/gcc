@@ -1,3 +1,17 @@
+1998-10-08  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (resolve_overloaded_unification): New fn.
+	(try_one_overload): Likewise.
+	(unify): Don't fail on unknown type.
+	(type_unification_real): Likewise.  Use resolve_overloaded_unification
+	to handle an overloaded argument.
+	(template_args_equal): Split out...
+	(comp_template_args): From here.
+	(determine_specialization): Also allow a template with more
+	parms than were explicitly specified.
+	* cp-tree.h: Add template_args_equal.
+	* call.c (resolve_args): Remove TEMPLATE_ID_EXPR code.
+
 Thu Oct  8 15:58:30 1998  Anthony Green  <green@cygnus.com>
 
 	* semantics.c (finish_asm_stmt): Revert my 1998-09-28

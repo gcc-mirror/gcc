@@ -2861,6 +2861,7 @@ extern void pop_tinst_level			PROTO((void));
 extern int more_specialized_class		PROTO((tree, tree));
 extern void do_pushlevel			PROTO((void));
 extern int is_member_template                   PROTO((tree));
+extern int template_parms_equal                 PROTO((tree, tree));
 extern int comp_template_parms                  PROTO((tree, tree));
 extern int decl_template_parm_p			PROTO((tree));
 extern int template_class_depth                 PROTO((tree));

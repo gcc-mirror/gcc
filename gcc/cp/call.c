@@ -2255,26 +2255,6 @@ resolve_args (args)
 	}
       else if (TREE_CODE (TREE_VALUE (t)) == OFFSET_REF)
 	TREE_VALUE (t) = resolve_offset_ref (TREE_VALUE (t));
-      else if (TREE_CODE (TREE_VALUE (t)) == TEMPLATE_ID_EXPR)
-	{
-	  tree targs;
-	  tree r;
-
-	  r = determine_specialization (TREE_VALUE (t), NULL_TREE,
-					&targs, 
-					/*need_member_template=*/0,
-					/*complain=*/0);
-
-	  /* If we figured out what was being specialized, use it.
-	     Otherwise, the function being called may resolve the
-	     choice of specialization, so we don't issue any error
-	     messages here.  */
-	  if (r)
-	    {
-	      r = instantiate_template (r, targs);
-	      TREE_VALUE (t) = r;
-	    }
-	}
     }
   return args;
 }

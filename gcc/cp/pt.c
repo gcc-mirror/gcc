@@ -77,6 +77,12 @@ static tree saved_trees;
 #define UNIFY_ALLOW_DERIVED 4
 
 static int unify PROTO((tree, tree, tree, tree, int, int*));
+static int resolve_overloaded_unification PROTO((tree, tree, tree, tree,
+						 unification_kind_t, int,
+						 int*));
+static int try_one_overload PROTO((tree, tree, tree, tree,
+				   unification_kind_t, int, int*));
+static int unify PROTO((tree, tree, tree, tree, int, int*));
 static void add_pending_template PROTO((tree));
 static int push_tinst_level PROTO((tree));
 static tree classtype_mangled_name PROTO((tree));
@@ -905,7 +911,6 @@ determine_specialization (template_id, decl, targs_out,
   tree fns, targs_in;
   tree templates = NULL_TREE;
   tree fn;
-  int i;
 
   *targs_out = NULL_TREE;
 
@@ -949,18 +954,14 @@ determine_specialization (template_id, decl, targs_out,
 
       if (decl == NULL_TREE)
 	{
-	  tree targs = make_scratch_vec (DECL_NTPARMS (tmpl));
+	  /* Unify against ourselves to make sure that the args we have
+	     make sense and there aren't any undeducible parms.  It's OK if
+	     not all the parms are specified; they might be deduced
+	     later. */
+	  tree targs = get_bindings_overload (tmpl, DECL_RESULT (tmpl),
+					      targs_in);
 
-	  /* We allow incomplete unification here, because we are going to
-	     check all the functions. */
-	  i = type_unification (DECL_INNERMOST_TEMPLATE_PARMS (tmpl),
-				targs,
-				NULL_TREE,
-				NULL_TREE,  
-				targs_in,
-				DEDUCE_EXACT, 1);
-      
-	  if (i == 0) 
+	  if (targs) 
 	    /* Unification was successful.  */
 	    templates = scratch_tree_cons (targs, tmpl, templates);
 	}
@@ -1005,7 +1006,8 @@ determine_specialization (template_id, decl, targs_out,
 	}
       return NULL_TREE;
     }
-  else if (TREE_CHAIN (templates) != NULL_TREE) 
+  else if (TREE_CHAIN (templates) != NULL_TREE
+	   || uses_template_parms (TREE_PURPOSE (templates)))
     {
     ambiguous:
       if (complain)
@@ -3045,7 +3047,26 @@ coerce_template_parms (parms, args, in_decl,
   return new_inner_args;
 }
 
-/* Renturns 1 iff the OLDARGS and NEWARGS are in fact identical sets
+/* Returns 1 if template args OT and NT are equivalent.  */
+
+int
+template_args_equal (ot, nt)
+     tree ot, nt;
+{
+  if (nt == ot)
+    return 1;
+  if (TREE_CODE (nt) != TREE_CODE (ot))
+    return 0;
+  if (TREE_CODE (nt) == TREE_VEC)
+    /* For member templates */
+    return comp_template_args (ot, nt);
+  else if (TREE_CODE_CLASS (TREE_CODE (ot)) == 't')
+    return comptypes (ot, nt, 1);
+  else
+    return (cp_tree_equal (ot, nt) > 0);
+}
+
+/* Returns 1 iff the OLDARGS and NEWARGS are in fact identical sets
    of template arguments.  Returns 0 otherwise.  */
 
 int
@@ -3062,26 +3083,8 @@ comp_template_args (oldargs, newargs)
       tree nt = TREE_VEC_ELT (newargs, i);
       tree ot = TREE_VEC_ELT (oldargs, i);
 
-      if (nt == ot)
-	continue;
-      else if (!nt || !ot)
+      if (! template_args_equal (ot, nt))
 	return 0;
-      else if (TREE_CODE (nt) != TREE_CODE (ot))
-	return 0;
-      else if (TREE_CODE (nt) == TREE_VEC)
-        {
-          /* For member templates */
-	  if (comp_template_args (ot, nt))
-	    continue;
-        }
-      else if (TREE_CODE_CLASS (TREE_CODE (ot)) == 't')
-	{
-	  if (comptypes (ot, nt, 1))
-	    continue;
-	}
-      else if (cp_tree_equal (ot, nt) > 0)
-	continue;
-      return 0;
     }
   return 1;
 }
@@ -6730,7 +6733,9 @@ type_unification_real (tparms, targs, parms, args, subr,
       if (arg == error_mark_node)
 	return 1;
       if (arg == unknown_type_node)
-	return 1;
+	/* We can't deduce anything from this, but we might get all the
+	   template args from other function args.  */
+	continue;
 
       /* Conversions will be performed on a function argument that
 	 corresponds with a function parameter that contains only
@@ -6771,28 +6776,19 @@ type_unification_real (tparms, targs, parms, args, subr,
       if (TREE_CODE_CLASS (TREE_CODE (arg)) != 't')
 	{
 	  my_friendly_assert (TREE_TYPE (arg) != NULL_TREE, 293);
-	  if (TREE_CODE (arg) == OVERLOAD
-	      && TREE_CODE (OVL_FUNCTION (arg)) == TEMPLATE_DECL)
+	  if (type_unknown_p (arg))
 	    {
-	      tree targs;
-	      tree arg_type;
-	      int r;
+	      /* [temp.deduct.type] A template-argument can be deduced from
+		 a pointer to function or pointer to member function
+		 argument if the set of overloaded functions does not
+		 contain function templates and at most one of a set of
+		 overloaded functions provides a unique match.  */
 
-	      /* Have to back unify here */
-	      arg = OVL_FUNCTION (arg);
-	      targs = make_scratch_vec (DECL_NTPARMS (arg));
-	      arg_type = TREE_TYPE (arg);
-	      maybe_adjust_types_for_deduction (strict, &parm, &arg_type);
-	      parm = expr_tree_cons (NULL_TREE, parm, NULL_TREE);
-	      arg_type = scratch_tree_cons (NULL_TREE, arg_type, NULL_TREE);
-	      r = type_unification (DECL_INNERMOST_TEMPLATE_PARMS (arg), 
-				    targs, arg_type, parm, NULL_TREE,
-				    DEDUCE_EXACT, allow_incomplete);
-	      if (r)
-		/* If the back-unification failed, just bail out.  */
-		return r;
-	      else 
-		continue;
+	      if (resolve_overloaded_unification
+		  (tparms, targs, parm, arg, strict, sub_strict, explicit_mask)
+		  != 0)
+		return 1;
+	      continue;
 	    }
 	  arg = TREE_TYPE (arg);
 	}
@@ -6827,6 +6823,152 @@ type_unification_real (tparms, targs, parms, args, subr,
 	  return 2;
 	}
   return 0;
+}
+
+/* Subroutine of type_unification_real.  Args are like the variables at the
+   call site.  ARG is an overloaded function (or template-id); we try
+   deducing template args from each of the overloads, and if only one
+   succeeds, we go with that.  Modifies TARGS and returns 0 on success.  */
+
+static int
+resolve_overloaded_unification (tparms, targs, parm, arg, strict,
+				sub_strict, explicit_mask)
+     tree tparms, targs, parm, arg;
+     unification_kind_t strict;
+     int sub_strict;
+     int* explicit_mask;
+{
+  tree tempargs = copy_node (targs);
+  int good = 0;
+
+  if (TREE_CODE (arg) == ADDR_EXPR)
+    arg = TREE_OPERAND (arg, 0);
+  if (TREE_CODE (arg) == TEMPLATE_ID_EXPR)
+    {
+      /* If we got some explicit template args, we need to plug them into
+	 the affected templates before we try to unify, in case the
+	 explicit args will completely resolve the templates in question.  */
+
+      tree expl_subargs = TREE_OPERAND (arg, 1);
+      arg = TREE_OPERAND (arg, 0);
+
+      for (; arg; arg = OVL_NEXT (arg))
+	{
+	  tree fn = OVL_CURRENT (arg);
+	  tree subargs, elem;
+
+	  if (TREE_CODE (fn) != TEMPLATE_DECL)
+	    continue;
+
+	  subargs = get_bindings_overload (fn, DECL_RESULT (fn), expl_subargs);
+	  if (subargs)
+	    {
+	      elem = tsubst (TREE_TYPE (fn), subargs, NULL_TREE);
+	      good += try_one_overload (tparms, tempargs, parm, elem,
+					strict, sub_strict, explicit_mask);
+	    }
+	}
+    }
+  else if (TREE_CODE (arg) == OVERLOAD)
+    {
+      for (; arg; arg = OVL_NEXT (arg))
+	good += try_one_overload (tparms, tempargs, parm,
+				  TREE_TYPE (OVL_CURRENT (arg)),
+				  strict, sub_strict, explicit_mask);
+    }
+  else
+    my_friendly_abort (981006);
+
+  /* [temp.deduct.type] A template-argument can be deduced from a pointer
+     to function or pointer to member function argument if the set of
+     overloaded functions does not contain function templates and at most
+     one of a set of overloaded functions provides a unique match.
+
+     So if we found multiple possibilities, we return success but don't
+     deduce anything.  */
+
+  if (good == 1)
+    {
+      int i = TREE_VEC_LENGTH (targs);
+      for (; i--; )
+	if (TREE_VEC_ELT (tempargs, i))
+	  TREE_VEC_ELT (targs, i) = TREE_VEC_ELT (tempargs, i);
+    }
+  if (good)
+    return 0;
+
+  return 1;
+}
+
+/* Subroutine of resolve_overloaded_unification; does deduction for a single
+   overload.  Fills TARGS with any deduced arguments, or error_mark_node if
+   different overloads deduce different arguments for a given parm.
+   Returns 1 on success.  */
+
+static int
+try_one_overload (tparms, targs, parm, arg, strict,
+		  sub_strict, explicit_mask)
+     tree tparms, targs, parm, arg;
+     unification_kind_t strict;
+     int sub_strict;
+     int* explicit_mask;
+{
+  int nargs;
+  tree tempargs;
+  int i;
+
+  /* [temp.deduct.type] A template-argument can be deduced from a pointer
+     to function or pointer to member function argument if the set of
+     overloaded functions does not contain function templates and at most
+     one of a set of overloaded functions provides a unique match.
+
+     So if this is a template, just return success.  */
+
+  if (uses_template_parms (arg))
+    return 1;
+
+  maybe_adjust_types_for_deduction (strict, &parm, &arg);
+
+  /* We don't copy orig_targs for this because if we have already deduced
+     some template args from previous args, unify would complain when we
+     try to deduce a template parameter for the same argument, even though
+     there isn't really a conflict.  */
+  nargs = TREE_VEC_LENGTH (targs);
+  tempargs = make_scratch_vec (nargs);
+
+  if (unify (tparms, tempargs, parm, arg, sub_strict, explicit_mask) != 0)
+    return 0;
+
+  /* First make sure we didn't deduce anything that conflicts with
+     previously deduced/specified args.  */
+  for (i = nargs; i--; )
+    {
+      tree elt = TREE_VEC_ELT (tempargs, i);
+      tree oldelt = TREE_VEC_ELT (targs, i);
+
+      if (elt == NULL_TREE)
+	continue;
+      else if (uses_template_parms (elt))
+	{
+	  /* Since we're unifying against ourselves, we will fill in template
+	     args used in the function parm list with our own template parms.
+	     Discard them.  */
+	  TREE_VEC_ELT (tempargs, i) = NULL_TREE;
+	  continue;
+	}
+      else if (oldelt && ! template_args_equal (oldelt, elt))
+	return 0;
+    }
+
+  for (i = nargs; i--; )
+    {
+      tree elt = TREE_VEC_ELT (tempargs, i);
+
+      if (elt)
+	TREE_VEC_ELT (targs, i) = elt;
+    }
+
+  return 1;
 }
 
 /* Returns the level of DECL, which declares a template parameter.  */
@@ -6903,7 +7045,10 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
   if (arg == error_mark_node)
     return 1;
   if (arg == unknown_type_node)
-    return 1;
+    /* We can't deduce anything from this, but we might get all the
+       template args from other function args.  */
+    return 0;
+
   /* If PARM uses template parameters, then we can't bail out here,
      even in ARG == PARM, since we won't record unifications for the
      template parameters.  We might need them if we're trying to
@@ -8496,5 +8641,3 @@ set_mangled_name_for_template_decl (decl)
   /* Restore the previously active namespace.  */
   current_namespace = saved_namespace;
 }
-
-
