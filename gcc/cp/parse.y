@@ -2356,8 +2356,7 @@ named_complex_class_head_sans_basetype:
 		{ 
 		  current_aggr = $1; 
 		  $$.t = $3;
-		  if (CP_DECL_CONTEXT ($$.t))
-		    push_scope (CP_DECL_CONTEXT ($$.t));
+		  push_scope (CP_DECL_CONTEXT ($$.t));
 		  $$.new_type_flag = 1;
 		}
 	;
