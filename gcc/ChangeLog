@@ -1,5 +1,10 @@
 2004-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* expr.c (store_constructor): Use gen_int_mode to correctly
+	sign-extend CONST_INT value.
+
+2004-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* combine.c (if_then_else_cond): Check for NULL return value of
 	simplify_gen_subreg.
 
