@@ -4002,19 +4002,25 @@ build_range_type (type, lowval, highval)
 
   push_obstacks (TYPE_OBSTACK (itype), TYPE_OBSTACK (itype));
   TYPE_MIN_VALUE (itype) = convert (type, lowval);
-  TYPE_MAX_VALUE (itype) = convert (type, highval);
+  TYPE_MAX_VALUE (itype) = highval ? convert (type, highval) : NULL;
   pop_obstacks ();
 
   TYPE_PRECISION (itype) = TYPE_PRECISION (type);
   TYPE_MODE (itype) = TYPE_MODE (type);
   TYPE_SIZE (itype) = TYPE_SIZE (type);
   TYPE_ALIGN (itype) = TYPE_ALIGN (type);
-  if ((TREE_CODE (lowval) == INTEGER_CST)
-      && (TREE_CODE (highval) == INTEGER_CST))
+  if (TREE_CODE (lowval) == INTEGER_CST)
     {
-      HOST_WIDE_INT highint = TREE_INT_CST_LOW (highval);
-      HOST_WIDE_INT lowint = TREE_INT_CST_LOW (lowval);
-      int maxint = (int) (highint - lowint);
+      HOST_WIDE_INT lowint, highint;
+      int maxint;
+
+      lowint = TREE_INT_CST_LOW (lowval);
+      if (highval && TREE_CODE (highval) == INTEGER_CST)
+	highint = TREE_INT_CST_LOW (highval);
+      else
+	highint = (~(unsigned HOST_WIDE_INT)0) >> 1;
+
+      maxint = (int) (highint - lowint);
       return type_hash_canon (maxint < 0 ? ~maxint : maxint, itype);
     }
   else

@@ -954,7 +954,8 @@ dbxout_range_type (type)
 	     TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)));
   else
     fprintf (asmfile, ";0");
-  if (TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST)
+  if (TYPE_MAX_VALUE (type) 
+      && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST)
     fprintf (asmfile, ";%d;", 
 	     TREE_INT_CST_LOW (TYPE_MAX_VALUE (type)));
   else

@@ -4624,10 +4624,16 @@ pushcase_range (value1, value2, converter, label, duplicate)
 
   /* Fail if the range is empty.  Do this before any conversion since
      we want to allow out-of-range empty ranges.  */
-  if (tree_int_cst_lt (value2, value1))
+  if (value2 && tree_int_cst_lt (value2, value1))
     return 4;
 
   value1 = (*converter) (nominal_type, value1);
+
+  /* If the max was unbounded, use the max of the nominal_type we are 
+     converting to.  Do this after the < check above to suppress false
+     positives.  */
+  if (!value2)
+    value2 = TYPE_MAX_VALUE (nominal_type);
   value2 = (*converter) (nominal_type, value2);
 
   /* Fail if these values are out of range.  */
@@ -4955,6 +4961,7 @@ all_cases_count (type, spareness)
     default:
     case INTEGER_TYPE:
       if (TREE_CODE (TYPE_MIN_VALUE (type)) != INTEGER_CST
+	  || TYPE_MAX_VALUE (type) == NULL
 	  || TREE_CODE (TYPE_MAX_VALUE (type)) != INTEGER_CST)
 	return -1;
       else
@@ -6193,6 +6200,11 @@ node_has_high_bound (node, index_type)
 {
   tree high_plus_one;
   case_node_ptr pnode;
+
+  /* If there is no upper bound, obviously no test is needed.  */
+
+  if (TYPE_MAX_VALUE (index_type) == NULL)
+    return 1;
 
   /* If the upper bound of this node is the highest value in the type
      of the index expression, we need not test against it.  */

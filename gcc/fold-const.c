@@ -1215,7 +1215,9 @@ int_const_binop (code, arg1, arg2, notrunc, forsize)
     }
 
   if (TREE_TYPE (arg1) == sizetype && hi == 0
-      && low >= 0 && low <= TREE_INT_CST_LOW (TYPE_MAX_VALUE (sizetype))
+      && low >= 0
+      && (TYPE_MAX_VALUE (sizetype) == NULL
+	  || low <= TREE_INT_CST_LOW (TYPE_MAX_VALUE (sizetype)))
       && ! overflow
       && ! TREE_OVERFLOW (arg1) && ! TREE_OVERFLOW (arg2))
     t = size_int (low);
@@ -1532,25 +1534,34 @@ fold_convert (t, arg1)
 	  REAL_VALUE_TYPE l;
 	  REAL_VALUE_TYPE u;
 	  tree type1 = TREE_TYPE (arg1);
+	  int no_upper_bound;
 
 	  x = TREE_REAL_CST (arg1);
 	  l = real_value_from_int_cst (type1, TYPE_MIN_VALUE (type));
-	  u = real_value_from_int_cst (type1, TYPE_MAX_VALUE (type));
+
+	  no_upper_bound = (TYPE_MAX_VALUE (type) == NULL);
+	  if (!no_upper_bound)
+	    u = real_value_from_int_cst (type1, TYPE_MAX_VALUE (type));
+
 	  /* See if X will be in range after truncation towards 0.
 	     To compensate for truncation, move the bounds away from 0,
 	     but reject if X exactly equals the adjusted bounds.  */
 #ifdef REAL_ARITHMETIC
 	  REAL_ARITHMETIC (l, MINUS_EXPR, l, dconst1);
-	  REAL_ARITHMETIC (u, PLUS_EXPR, u, dconst1);
+	  if (!no_upper_bound)
+	    REAL_ARITHMETIC (u, PLUS_EXPR, u, dconst1);
 #else
 	  l--;
-	  u++;
+	  if (!no_upper_bound)
+	    u++;
 #endif
 	  /* If X is a NaN, use zero instead and show we have an overflow.
 	     Otherwise, range check.  */
 	  if (REAL_VALUE_ISNAN (x))
 	    overflow = 1, x = dconst0;
-	  else if (! (REAL_VALUES_LESS (l, x) && REAL_VALUES_LESS (x, u)))
+	  else if (! (REAL_VALUES_LESS (l, x)
+		      && !no_upper_bound
+		      && REAL_VALUES_LESS (x, u)))
 	    overflow = 1;
 
 #ifndef REAL_ARITHMETIC
@@ -2922,11 +2933,22 @@ make_range (exp, pin_p, plow, phigh)
 	  if (TREE_UNSIGNED (type) && ! TREE_UNSIGNED (TREE_TYPE (exp)))
 	    {
 	      tree equiv_type = type_for_mode (TYPE_MODE (type), 1);
-	      tree high_positive
-		= fold (build (RSHIFT_EXPR, type,
-			       convert (type,
-					TYPE_MAX_VALUE (equiv_type)),
-			       convert (type, integer_one_node)));
+	      tree high_positive;
+
+	      /* A range without an upper bound is, naturally, unbounded.
+		 Since convert would have cropped a very large value, use
+		  the max value for the destination type.  */
+
+	      high_positive = TYPE_MAX_VALUE (equiv_type);
+	      if (!high_positive)
+		{
+		  high_positive = TYPE_MAX_VALUE (type);
+		  if (!high_positive)
+		    abort();
+		}
+	      high_positive = fold (build (RSHIFT_EXPR, type,
+					   convert (type, high_positive),
+					   convert (type, integer_one_node)));
 			
 	      /* If the low bound is specified, "and" the range with the
 		 range for which the original unsigned value will be
@@ -4914,6 +4936,7 @@ fold (expr)
       if (operand_equal_p (arg0, arg1, 0))
 	return arg0;
       if (INTEGRAL_TYPE_P (type)
+	  && TYPE_MAX_VALUE (type)
 	  && operand_equal_p (arg1, TYPE_MAX_VALUE (type), 1))
 	return omit_one_operand (type, arg1, arg0);
       goto associate;
@@ -5397,6 +5420,8 @@ fold (expr)
 	      && ! (TREE_CONSTANT (cval1) && TREE_CONSTANT (cval2))
 	      && TREE_TYPE (cval1) == TREE_TYPE (cval2)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (cval1))
+	      && TYPE_MAX_VALUE (TREE_TYPE (cval1))
+	      && TYPE_MAX_VALUE (TREE_TYPE (cval2))
 	      && ! operand_equal_p (TYPE_MIN_VALUE (TREE_TYPE (cval1)),
 				    TYPE_MAX_VALUE (TREE_TYPE (cval2)), 0))
 	    {

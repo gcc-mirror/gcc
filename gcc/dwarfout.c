@@ -2587,9 +2587,8 @@ subscript_data_attribute (type)
 	  /* Output the representation format byte for this dimension.  */
 
 	  ASM_OUTPUT_DWARF_FMT_BYTE (asm_out_file,
-				  FMT_CODE (1,
-					    TREE_CODE (lower) == INTEGER_CST,
-					    TREE_CODE (upper) == INTEGER_CST));
+		  FMT_CODE (1, TREE_CODE (lower) == INTEGER_CST,
+			    (upper && TREE_CODE (upper) == INTEGER_CST)));
 
 	  /* Output the index type for this dimension.	*/
 
@@ -2675,9 +2674,9 @@ byte_size_attribute (tree_node)
       case ARRAY_TYPE:
 	{
 	  /* The lower bound is zero, so the length is the upper bound + 1.  */
-	  register tree upper_bound;
-	  upper_bound = TYPE_MAX_VALUE (TYPE_DOMAIN (tree_node));
-	  size = (unsigned) TREE_INT_CST_LOW (upper_bound) + 1;
+	  register tree upper;
+	  upper = TYPE_MAX_VALUE (TYPE_DOMAIN (tree_node));
+	  size = upper ? (unsigned) TREE_INT_CST_LOW (upper) + 1 : -1;
 	  break;
 	}
 
