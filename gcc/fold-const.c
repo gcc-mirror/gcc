@@ -4807,7 +4807,8 @@ count_cond (tree expr, int lim)
    expression, and ARG to `a'.  If COND_FIRST_P is nonzero, then the
    COND is the first argument to CODE; otherwise (as in the example
    given here), it is the second argument.  TYPE is the type of the
-   original expression.  */
+   original expression.  Return NULL_TREE if no simplication is
+   possible.  */
 
 static tree
 fold_binary_op_with_conditional_arg (enum tree_code code, tree type,
@@ -4836,6 +4837,19 @@ fold_binary_op_with_conditional_arg (enum tree_code code, tree type,
   tree lhs_type = type;
   tree rhs_type = type;
   int save = 0;
+
+  if (TREE_CODE (cond) != COND_EXPR
+      && TREE_CODE_CLASS (code) == '<')
+    return NULL_TREE;
+
+  if (TREE_CODE (arg) == COND_EXPR
+      && count_cond (cond, 25) + count_cond (arg, 25) > 25)
+    return NULL_TREE;
+
+  if (TREE_SIDE_EFFECTS (arg)
+      && (lang_hooks.decls.global_bindings_p () != 0
+	  || CONTAINS_PLACEHOLDER_P (arg)))
+    return NULL_TREE;
 
   if (cond_first_p)
     {
@@ -5578,37 +5592,32 @@ fold (tree expr)
   else if (TREE_CODE_CLASS (code) == '2'
 	   || TREE_CODE_CLASS (code) == '<')
     {
+      if (TREE_CODE (arg0) == COMPOUND_EXPR)
+	return build (COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0),
+		      fold (build (code, type, TREE_OPERAND (arg0, 1), arg1)));
       if (TREE_CODE (arg1) == COMPOUND_EXPR
-	  && ! TREE_SIDE_EFFECTS (TREE_OPERAND (arg1, 0))
-	  && ! TREE_SIDE_EFFECTS (arg0))
+	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 0)))
 	return build (COMPOUND_EXPR, type, TREE_OPERAND (arg1, 0),
 		      fold (build (code, type,
 				   arg0, TREE_OPERAND (arg1, 1))));
-      else if ((TREE_CODE (arg1) == COND_EXPR
-		|| (TREE_CODE_CLASS (TREE_CODE (arg1)) == '<'
-		    && TREE_CODE_CLASS (code) != '<'))
-	       && (TREE_CODE (arg0) != COND_EXPR
-		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
-	       && (! TREE_SIDE_EFFECTS (arg0)
-		   || (lang_hooks.decls.global_bindings_p () == 0
-		       && ! CONTAINS_PLACEHOLDER_P (arg0))))
-	return
-	  fold_binary_op_with_conditional_arg (code, type, arg1, arg0,
-					       /*cond_first_p=*/0);
-      else if (TREE_CODE (arg0) == COMPOUND_EXPR)
-	return build (COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0),
-		      fold (build (code, type, TREE_OPERAND (arg0, 1), arg1)));
-      else if ((TREE_CODE (arg0) == COND_EXPR
-		|| (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
-		    && TREE_CODE_CLASS (code) != '<'))
-	       && (TREE_CODE (arg1) != COND_EXPR
-		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
-	       && (! TREE_SIDE_EFFECTS (arg1)
-		   || (lang_hooks.decls.global_bindings_p () == 0
-		       && ! CONTAINS_PLACEHOLDER_P (arg1))))
-	return
-	  fold_binary_op_with_conditional_arg (code, type, arg0, arg1,
-					       /*cond_first_p=*/1);
+
+      if (TREE_CODE (arg0) == COND_EXPR
+	  || TREE_CODE_CLASS (TREE_CODE (arg0)) == '<')
+	{
+	  tem = fold_binary_op_with_conditional_arg (code, type, arg0, arg1,
+						     /*cond_first_p=*/1);
+	  if (tem != NULL_TREE)
+	    return tem;
+	}
+
+      if (TREE_CODE (arg1) == COND_EXPR
+	  || TREE_CODE_CLASS (TREE_CODE (arg1)) == '<')
+	{
+	  tem = fold_binary_op_with_conditional_arg (code, type, arg1, arg0,
+						     /*cond_first_p=*/0);
+	  if (tem != NULL_TREE)
+	    return tem;
+	}
     }
 
   switch (code)
