@@ -3805,7 +3805,7 @@ extern tree build_vbase_path			PARAMS ((enum tree_code, tree, tree, tree, int));
 extern tree build_vtbl_ref			PARAMS ((tree, tree));
 extern tree build_vfn_ref			PARAMS ((tree *, tree, tree));
 extern tree get_vtable_decl                     PARAMS ((tree, int));
-extern void add_method				PARAMS ((tree, tree *, tree));
+extern void add_method				PARAMS ((tree, tree, int));
 extern int currently_open_class			PARAMS ((tree));
 extern tree currently_open_derived_class	PARAMS ((tree));
 extern tree get_vfield_offset			PARAMS ((tree));

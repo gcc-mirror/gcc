@@ -1,3 +1,14 @@
+2000-08-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (add_method): Change prototype.
+	* class.c (add_method): Remove FIELDS parameter.  Add ERROR_P.
+	Don't double the size of the method vector in the error case.
+	(handle_using_decl): Adjust call to add_method.
+	(add_implicitly_declared_members): Likewise.
+	(clone_function_decl): Likewise.
+	* decl2.c (check_classfn): Likewise.
+	* semantics.c (finish_member_declaration): Likewise.
+	
 2000-08-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* decl.c (flag_isoc94): New variable.
