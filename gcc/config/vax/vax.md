@@ -1932,7 +1932,7 @@
 ;; If you are tempted to try `g', please don't--it's not worth
 ;; the risk we will reopen the same bug.
 (define_insn "indirect_jump"
-  [(set (pc) (match_operand:SI 0 "general_operand" "r"))]
+  [(set (pc) (match_operand:SI 0 "register_operand" "r"))]
   ""
   "jmp (%0)")
 
