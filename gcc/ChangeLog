@@ -1,5 +1,11 @@
 2001-08-11  Ulrich Weigand  <uweigand@de.ibm.com>
  
+	* s390.c, s390.h, s390.md, s390-protos.h, linux.h, t-linux: 
+	Clean up code: add missing comments and prototypes, fix warnings,
+        remove obsolete code, fix spacing to conform to coding style.
+
+2001-08-11  Ulrich Weigand  <uweigand@de.ibm.com>
+ 
  	* config/s390/s390.c (targetm): Define TARGET_ASM_OPEN_PAREN
 	and TARGET_ASM_CLOSE_PAREN.
 	(regclass_map): CC register belongs to class NO_REGS.

@@ -19,70 +19,56 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Declare functions in s390.c and linux.c */
+/* Declare functions in s390.c.  */
+
+extern void optimization_options PARAMS ((int, int));
+extern int s390_arg_frame_offset PARAMS ((void));
+extern void s390_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+extern void s390_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 #ifdef RTX_CODE
-
-#ifdef TREE_CODE
-extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx, int));
-extern void s390_va_start PARAMS ((int, tree, rtx));
-
-#endif /* TREE_CODE */
-
+extern int const0_operand PARAMS ((rtx, enum machine_mode));
+extern int const1_operand PARAMS ((rtx, enum machine_mode));
+extern int larl_operand PARAMS ((rtx, enum machine_mode));
 extern int fp_operand PARAMS ((rtx, enum machine_mode));
 extern int s_operand PARAMS ((rtx, enum machine_mode));
-extern int larl_operand PARAMS ((rtx, enum machine_mode));
-extern int r_or_im8_operand PARAMS ((rtx, enum machine_mode));
-extern int r_or_s_operand PARAMS ((rtx, enum machine_mode)); 
+extern int r_or_s_operand PARAMS ((rtx, enum machine_mode));
 extern int r_or_s_or_im8_operand PARAMS ((rtx, enum machine_mode));
 extern int r_or_x_or_im16_operand PARAMS ((rtx, enum machine_mode));
+extern int r_or_im8_operand PARAMS ((rtx, enum machine_mode));
+extern int tmxx_operand PARAMS ((rtx, enum machine_mode));
 extern int bras_sym_operand PARAMS ((rtx, enum machine_mode));
 extern int load_multiple_operation PARAMS ((rtx, enum machine_mode));
 extern int store_multiple_operation PARAMS ((rtx, enum machine_mode));
-extern int dead_p PARAMS ((rtx, rtx));
-extern void print_operand PARAMS ((FILE *, rtx, char));
-extern void print_operand_address PARAMS ((FILE *, rtx));
+
+extern int s390_match_ccmode PARAMS ((rtx, enum machine_mode));
+extern int symbolic_reference_mentioned_p PARAMS ((rtx));
 extern int legitimate_pic_operand_p PARAMS ((rtx));
 extern int legitimate_constant_p PARAMS ((rtx));
+extern int legitimate_address_p PARAMS ((enum machine_mode, rtx, int));
+extern rtx legitimize_pic_address PARAMS ((rtx, rtx));
+extern rtx legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
+extern void emit_pic_move PARAMS ((rtx *, enum machine_mode));
 
-extern int unsigned_comparison_operator PARAMS ((rtx));
-extern int unsigned_jump_follows_p PARAMS ((rtx));
-
-extern void update_cc PARAMS ((rtx, rtx));
-
-extern void s390_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern void s390_output_symbolic_const PARAMS ((FILE *, rtx));
+extern void print_operand_address PARAMS ((FILE *, rtx));
+extern void print_operand PARAMS ((FILE *, rtx, int));
 extern int s390_adjust_cost PARAMS ((rtx, rtx, rtx, int));
-
 extern int s390_stop_dump_lit_p PARAMS ((rtx));
 extern void s390_dump_literal_pool PARAMS ((rtx, rtx));
-extern void s390_expand_eh_epilogue PARAMS ((rtx, rtx, rtx));
-extern void s390_asm_output_external_libcall PARAMS ((FILE *, rtx));
-
+extern void s390_trampoline_template PARAMS ((FILE *));
+extern void s390_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern void s390_function_arg_advance PARAMS ((CUMULATIVE_ARGS *,
-					       enum machine_mode,
-					       tree, int));
-extern struct rtx_def *s390_function_arg PARAMS ((CUMULATIVE_ARGS *,
-					     enum machine_mode, tree, int));
-extern int s390_function_arg_partial_nregs PARAMS ((CUMULATIVE_ARGS *,
-					       enum machine_mode, tree, int));
+extern void s390_asm_output_pool_prologue PARAMS ((FILE *, const char *, tree, int));
 extern int s390_function_arg_pass_by_reference PARAMS ((enum machine_mode, tree));
-extern void setup_incoming_varargs PARAMS ((CUMULATIVE_ARGS *,
-					    enum machine_mode, tree,
-					    int *, int));
-extern struct rtx_def *s390_va_arg PARAMS ((tree, tree));
-extern union tree_node *s390_build_va_list PARAMS ((void));
-extern void s390_asm_output_pool_prologue PARAMS ((FILE *, char *, tree, int));
-extern void encode_section_info PARAMS ((tree));
-
+extern void s390_function_arg_advance PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
+extern tree s390_build_va_list PARAMS ((void));
+#ifdef RTX_CODE
+extern rtx s390_function_arg PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
+extern void s390_va_start PARAMS ((int, tree, rtx));
+extern rtx s390_va_arg PARAMS ((tree, tree));
+#endif /* RTX_CODE */
 #endif /* TREE_CODE */
 
-
-extern void s390_trampoline_template PARAMS ((FILE *));
-extern void s390_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-extern void s390_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-extern void s390_final_chunkify PARAMS ((int));
-extern int s390_arg_frame_offset PARAMS ((void));
