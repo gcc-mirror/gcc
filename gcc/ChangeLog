@@ -1,3 +1,33 @@
+2004-08-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (mips_symbolic_constant_p)
+	(mips_atomic_symbolic_constant_p, mips_stack_address_p)
+	(mips_small_data_pattern_p): Declare.
+	* config/mips/mips.h (CONST_GP_P): Moved from mips.c.
+	(PREDICATE_CODES, SPECIAL_MODE_PREDICATES): Delete.
+	* config/mips/mips.c (mips_symbolic_constant_p): Make global.
+	(mips_atomic_symbolic_constant_p, mips_stack_address_p): New functions.
+	(uns_arith_operand, const_arith_operand, arith_operand, sle_operand)
+	(sleu_operand, small_int, reg_or_0_operand, const_float_1_operand)
+	(reg_or_const_float_1_operand, hilo_operand, extend_operator)
+	(macc_msac_operand, equality_op, cmp_op, trap_cmp_op)
+	(pc_or_label_operand, call_insn_operand, move_operand)
+	(consttable_operand, symbolic_operand, general_symbolic_operand)
+	(global_got_operand, local_got_operand, stack_operand)
+	(fp_register_operand, lo_operand, fcc_register_operand): Delete.
+	(mips_small_data_pattern_1): Renamed from small_data_pattern_1.
+	(mips_small_data_pattern_p): Replace previous small_data_pattern
+	predicate.  Turn into a bool () (rtx) function.
+	* config/mips/predicates.md: New file.
+	* config/mips/mips.md: Include it.  Use the target-independent
+	comparison_operator instead of cmp_op.  Rename trap_cmp_op to
+	trap_comparison_operator and equality_op to equality_operator.
+	Replace uses of small_int with the equivalent const_arith_operand.
+	Rename reg_or_const_float_1_operand to reg_or_1_operand.  Rename
+	const_float_1_operand to const_1_operand.  Rename fcc_register_operand
+	to fcc_reload_operand.
+	* config/mips/sb1.md: Rename fp_register_operand to fpr_operand.
+
 2004-08-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR libstdc++/17005 partial fix.

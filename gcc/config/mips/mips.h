@@ -1653,6 +1653,13 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 #define FP_REG_RTX_P(X) (GET_CODE (X) == REG && FP_REG_P (REGNO (X)))
 
+/* True if X is (const (unspec [(const_int 0)] UNSPEC_GP)).  This is used
+   to initialize the mips16 gp pseudo register.  */
+#define CONST_GP_P(X)				\
+  (GET_CODE (X) == CONST			\
+   && GET_CODE (XEXP (X, 0)) == UNSPEC		\
+   && XINT (XEXP (X, 0), 1) == UNSPEC_GP)
+
 /* Return coprocessor number from register number.  */
 
 #define COPNUM_AS_CHAR_FROM_REGNUM(REGNO) 				\
@@ -2693,67 +2700,6 @@ typedef struct mips_args {
    be updated with the correct length of the insn.  */
 #define ADJUST_INSN_LENGTH(INSN, LENGTH) \
   ((LENGTH) = mips_adjust_insn_length ((INSN), (LENGTH)))
-
-
-/* Optionally define this if you have added predicates to
-   `MACHINE.c'.  This macro is called within an initializer of an
-   array of structures.  The first field in the structure is the
-   name of a predicate and the second field is an array of rtl
-   codes.  For each predicate, list all rtl codes that can be in
-   expressions matched by the predicate.  The list should have a
-   trailing comma.  Here is an example of two entries in the list
-   for a typical RISC machine:
-
-   #define PREDICATE_CODES \
-     {"gen_reg_rtx_operand", {SUBREG, REG}},  \
-     {"reg_or_short_cint_operand", {SUBREG, REG, CONST_INT}},
-
-   Defining this macro does not affect the generated code (however,
-   incorrect definitions that omit an rtl code that may be matched
-   by the predicate can cause the compiler to malfunction).
-   Instead, it allows the table built by `genrecog' to be more
-   compact and efficient, thus speeding up the compiler.  The most
-   important predicates to include in the list specified by this
-   macro are thoses used in the most insn patterns.  */
-
-#define PREDICATE_CODES							\
-  {"uns_arith_operand",		{ REG, CONST_INT, SUBREG }},		\
-  {"symbolic_operand",		{ CONST, SYMBOL_REF, LABEL_REF }},	\
-  {"general_symbolic_operand",	{ CONST, SYMBOL_REF, LABEL_REF }},	\
-  {"global_got_operand",	{ CONST, SYMBOL_REF, LABEL_REF }},	\
-  {"local_got_operand",		{ CONST, SYMBOL_REF, LABEL_REF }},	\
-  {"const_arith_operand",	{ CONST_INT }},				\
-  {"small_data_pattern",	{ SET, PARALLEL, UNSPEC,		\
-				  UNSPEC_VOLATILE }},			\
-  {"arith_operand",		{ REG, CONST_INT, CONST, SUBREG }},	\
-  {"reg_or_0_operand",		{ REG, CONST_INT, CONST_DOUBLE, SUBREG }}, \
-  {"sle_operand",		{ CONST_INT }},				\
-  {"sleu_operand",		{ CONST_INT }},				\
-  {"small_int",			{ CONST_INT }},				\
-  {"const_float_1_operand",	{ CONST_DOUBLE }},			\
-  {"reg_or_const_float_1_operand", { CONST_DOUBLE, REG}},               \
-  {"equality_op",		{ EQ, NE }},				\
-  {"cmp_op",			{ EQ, NE, GT, GE, GTU, GEU, LT, LE,	\
-				  LTU, LEU }},				\
-  {"trap_cmp_op",		{ EQ, NE, GE, GEU, LT, LTU }},		\
-  {"pc_or_label_operand",	{ PC, LABEL_REF }},			\
-  {"call_insn_operand",		{ CONST, SYMBOL_REF, LABEL_REF, REG }},	\
-  {"move_operand", 		{ CONST_INT, CONST_DOUBLE, CONST,	\
-				  SYMBOL_REF, LABEL_REF, SUBREG,	\
-				  REG, MEM}},				\
-  {"stack_operand",		{ MEM }},				\
-  {"consttable_operand",	{ LABEL_REF, SYMBOL_REF, CONST_INT,	\
-				  CONST_DOUBLE, CONST }},		\
-  {"fcc_register_operand",	{ REG, SUBREG }},			\
-  {"hilo_operand",		{ REG }},				\
-  {"macc_msac_operand",		{ PLUS, MINUS }},			\
-  {"extend_operator",		{ ZERO_EXTEND, SIGN_EXTEND }},
-
-/* A list of predicates that do special things with modes, and so
-   should not elicit warnings for VOIDmode match_operand.  */
-
-#define SPECIAL_MODE_PREDICATES \
-  "pc_or_label_operand",
 
 /* Control the assembler format that we output.  */
 
