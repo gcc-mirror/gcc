@@ -13,6 +13,7 @@ details.  */
 #include <config.h>
 
 #include <zlib.h>
+#include <stdlib.h>
 
 #include <cni.h>
 #include <jvm.h>
@@ -47,7 +48,7 @@ java::util::zip::Deflater::deflate (jbyteArray buf, jint off, jint len)
     {
     case Z_STREAM_END:
       is_finished = true;
-      if (s->avail_out == len)
+      if (s->avail_out == (unsigned int) len)
 	return -1;
       break;
 
@@ -160,7 +161,7 @@ java::util::zip::Deflater::update ()
   JvSynchronize sync (this);
   z_streamp s = (z_streamp) zstream;
 
-  int strat;
+  int strat = Z_DEFAULT_STRATEGY;
   switch (strategy)
     {
     case DEFAULT_STRATEGY:
@@ -172,6 +173,8 @@ java::util::zip::Deflater::update ()
     case HUFFMAN_ONLY:
       strat = Z_HUFFMAN_ONLY;
       break;
+    default:
+      JvFail ("unexpected strategy");
     }
 
   // Ignore errors.

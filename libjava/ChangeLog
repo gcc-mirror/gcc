@@ -1,5 +1,11 @@
 1999-05-19  Tom Tromey  <tromey@cygnus.com>
 
+	* java/util/zip/natInflater.cc (inflate): Cast `len' to unsigned.
+	Include <stdlib.h>.
+	* java/util/zip/natDeflater.cc (deflate): Cast `len' to unsigned.
+	Include <stdlib.h>.
+	(update): Fail in default case.  Always initialize `strat'.
+
 	* mauve-libgcj: Enable java.util.zip.
 
 1999-05-18  Warren Levy  <warrenl@cygnus.com>

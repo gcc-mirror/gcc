@@ -13,6 +13,7 @@ details.  */
 #include <config.h>
 
 #include <zlib.h>
+#include <stdlib.h>
 
 #include <cni.h>
 #include <jvm.h>
@@ -104,7 +105,7 @@ java::util::zip::Inflater::inflate (jbyteArray buf, jint off, jint len)
     {
     case Z_STREAM_END:
       is_finished = true;
-      if (s->avail_out == len)
+      if (s->avail_out == (unsigned int) len)
 	return -1;
       break;
 
