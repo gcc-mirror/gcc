@@ -1,3 +1,9 @@
+2000-06-28  Alex Samuel  <samuel@codesourcery.com>
+
+	* libioP.h (VTABLE_LABEL): Update for new vtable mangling.
+	* stdstrbufs.cc (filebuf_vtable): Likewise.
+	(stdiobuf_vtable): Likewise.
+	
 2000-06-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* libioP.h: Handle new ABI mangling.

@@ -463,7 +463,7 @@ find_substitution (node)
 	    {
 	      tree args = CLASSTYPE_TI_ARGS (type);
 	      if (TREE_VEC_LENGTH (args) == 3
-		  && TREE_VEC_ELT (args, 0) == char_type_node
+		  && same_type_p (TREE_VEC_ELT (args, 0), char_type_node)
 		  && is_std_substitution_char (TREE_VEC_ELT (args, 1),
 					       SUBID_CHAR_TRAITS)
 		  && is_std_substitution_char (TREE_VEC_ELT (args, 2),
@@ -493,7 +493,7 @@ find_substitution (node)
 	 args <char, std::char_traits<char> > .  */
       tree args = CLASSTYPE_TI_ARGS (type);
       if (TREE_VEC_LENGTH (args) == 2
-	  && TREE_VEC_ELT (args, 0) == char_type_node
+	  && same_type_p (TREE_VEC_ELT (args, 0), char_type_node)
 	  && is_std_substitution_char (TREE_VEC_ELT (args, 1),
 				       SUBID_CHAR_TRAITS))
 	{
@@ -570,17 +570,13 @@ write_mangled_name (decl)
 }
 
 /*   <encoding>		::= <function name> <bare-function-type>
-			::= <data name>
-			::= <substitution>  */
+			::= <data name>  */
 
 static void
 write_encoding (decl)
      tree decl;
 {
   MANGLE_TRACE_TREE ("encoding", decl);
-
-  if (find_substitution (decl))
-    return;
 
   if (DECL_LANG_SPECIFIC (decl) && DECL_EXTERN_C_FUNCTION_P (decl))
     {
@@ -600,8 +596,6 @@ write_encoding (decl)
 
       write_bare_function_type (fn_type, DECL_TEMPLATE_ID_P (decl));
     }
-
-  add_substitution (decl);
 }
 
 /* <name> ::= <unscoped-name>

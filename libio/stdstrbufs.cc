@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1994 Free Software Foundation
+Copyright (C) 1994, 2000 Free Software Foundation
 
 This file is part of the GNU IO Library.  This library is free
 software; you can redistribute it and/or modify it under the
@@ -42,7 +42,7 @@ extern char filebuf_vtable[]
 #endif
        "filebuf");
 #else
-  asm ( "_ZN7filebufTVE" );
+  asm ( "_ZTV7filebuf" );
 #endif /* (!defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100) */
 #else /* !__GNUC__ */
 #if _G_VTABLE_LABEL_HAS_LENGTH
@@ -98,7 +98,7 @@ extern struct _IO_jump_t stdiobuf_vtable
 #endif
        "stdiobuf");
 #else
-  asm ( "_ZN15stdiobuf_vtableTVE" );
+  asm ( "_ZTV15stdiobuf_vtable" );
 #endif /* (!defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100) */
 #else /* !__GNUC__ */
 #if _G_VTABLE_LABEL_HAS_LENGTH
