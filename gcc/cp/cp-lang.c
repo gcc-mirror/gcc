@@ -40,7 +40,6 @@ static tree cp_expr_size (tree);
 static size_t cp_tree_size (enum tree_code);
 static bool cp_var_mod_type_p (tree);
 static int cxx_types_compatible_p (tree, tree);
-static int cp_expand_decl (tree);
 static void cxx_initialize_diagnostics (diagnostic_context *);
 
 #undef LANG_HOOKS_NAME
@@ -72,7 +71,7 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
 #undef LANG_HOOKS_EXPAND_EXPR
 #define LANG_HOOKS_EXPAND_EXPR cxx_expand_expr
 #undef LANG_HOOKS_EXPAND_DECL
-#define LANG_HOOKS_EXPAND_DECL cp_expand_decl
+#define LANG_HOOKS_EXPAND_DECL c_expand_decl
 #undef LANG_HOOKS_SAFE_FROM_P
 #define LANG_HOOKS_SAFE_FROM_P c_safe_from_p
 #undef LANG_HOOKS_PARSE_FILE
@@ -291,29 +290,6 @@ cp_expr_size (tree exp)
   else
     /* Use the default code.  */
     return lhd_expr_size (exp);
-}
-
-/* Expand DECL if it declares an entity not handled by the
-   common code.  */
-
-static int
-cp_expand_decl (tree decl)
-{
-  if (TREE_CODE (decl) == VAR_DECL && !TREE_STATIC (decl))
-    {
-      /* Let the back-end know about this variable.  */
-      if (!anon_aggr_type_p (TREE_TYPE (decl)))
-	emit_local_var (decl);
-      else
-	expand_anon_union_decl (decl, NULL_TREE, 
-				DECL_ANON_UNION_ELEMS (decl));
-    }
-  else if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
-    make_rtl_for_local_static (decl);
-  else
-    return 0;
-
-  return 1;
 }
 
 int
