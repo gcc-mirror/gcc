@@ -6001,8 +6001,50 @@ emit_reload_insns (insn)
 		    {
 		      if (icode != CODE_FOR_nothing)
 			{
-			  emit_insn (GEN_FCN (icode) (reloadreg, real_oldequiv,
-						      second_reload_reg));
+			  rtx pat;
+#ifdef SECONDARY_MEMORY_NEEDED
+			  /* If we need a memory location to do the move, do
+			     it that way.  */
+			  if (GET_CODE (real_oldequiv) == REG
+			      && REGNO (real_oldequiv) < FIRST_PSEUDO_REGISTER
+			      && SECONDARY_MEMORY_NEEDED
+			      (REGNO_REG_CLASS (REGNO (real_oldequiv)),
+			       REGNO_REG_CLASS (REGNO (second_reload_reg)),
+			       GET_MODE (second_reload_reg)))
+			    {
+			      /* Get the memory to use and rewrite both
+				 registers to its mode.  */
+			      rtx loc
+				= get_secondary_mem (real_oldequiv,
+						     GET_MODE (second_reload_reg),
+						     reload_opnum[j],
+						     reload_when_needed[j]);
+			      rtx tmp_reloadreg;
+
+			      if (GET_MODE (loc)
+				  != GET_MODE (second_reload_reg))
+				second_reload_reg
+				  = gen_rtx (REG,
+					     GET_MODE (loc),
+					     REGNO (second_reload_reg));
+			  
+			      if (GET_MODE (loc) != GET_MODE (real_oldequiv))
+				tmp_reloadreg = gen_rtx (REG, GET_MODE (loc),
+							 REGNO (real_oldequiv));
+			      else
+				tmp_reloadreg = real_oldequiv;
+			      
+			      emit_move_insn (loc, tmp_reloadreg);
+			      emit_move_insn (second_reload_reg, loc);
+			      pat = gen_move_insn (reloadreg, second_reload_reg);
+			      
+			    }
+			  else
+#endif
+			    pat = GEN_FCN (icode) (reloadreg,
+						   real_oldequiv,
+						   second_reload_reg);
+			  emit_insn (pat);
 			  special = 1;
 			}
 		      else
