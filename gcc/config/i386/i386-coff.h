@@ -22,6 +22,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "i386/gas.h"
+#include "dbxcoff.h"
 
 /* Specify predefined symbols in preprocessor.  */
 
