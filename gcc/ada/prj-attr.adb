@@ -82,6 +82,8 @@ package body Prj.Attr is
      "lVmain#" &
      "LVlanguages#" &
      "SVmain_language#" &
+     "LVada_roots#" &
+     "SVexternally_built#" &
 
    --  package Naming
 
@@ -183,6 +185,17 @@ package body Prj.Attr is
      "SVvcs_kind#" &
      "SVvcs_file_check#" &
      "SVvcs_log_check#" &
+
+   --  package Language_Processing
+
+     "Planguage_processing#" &
+     "Lacompiler_driver#" &
+     "Sacompiler_kind#" &
+     "Ladependency_option#" &
+     "Lacompute_dependency#" &
+     "Lainclude_option#" &
+     "Sabinder_driver#" &
+     "SVdefault_linker#" &
 
      "#";
 

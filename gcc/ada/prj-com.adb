@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2000-2003 Free Software Foundation, Inc.       --
+--             Copyright (C) 2000-2004 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,11 +32,6 @@ package body Prj.Com is
    ----------
    -- Hash --
    ----------
-
-   function Hash (Name : Name_Id) return Header_Num is
-   begin
-      return Hash (Get_Name_String (Name));
-   end Hash;
 
    function Hash (Name : String_Id) return Header_Num is
    begin

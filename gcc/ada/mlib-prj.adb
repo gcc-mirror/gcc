@@ -109,11 +109,11 @@ package body MLib.Prj is
       Table_Increment      => 100);
 
    package Objects_Htable is new GNAT.HTable.Simple_HTable
-     (Header_Num => Com.Header_Num,
+     (Header_Num => Header_Num,
       Element    => Boolean,
       No_Element => False,
       Key        => Name_Id,
-      Hash       => Com.Hash,
+      Hash       => Hash,
       Equal      => "=");
 
    --  List of non-Ada object files
@@ -155,42 +155,42 @@ package body MLib.Prj is
    --  All the ALI file in the library
 
    package Library_ALIs is new GNAT.HTable.Simple_HTable
-     (Header_Num => Com.Header_Num,
+     (Header_Num => Header_Num,
       Element    => Boolean,
       No_Element => False,
       Key        => Name_Id,
-      Hash       => Com.Hash,
+      Hash       => Hash,
       Equal      => "=");
 
    --  The ALI files in the interface sets
 
    package Interface_ALIs is new GNAT.HTable.Simple_HTable
-     (Header_Num => Com.Header_Num,
+     (Header_Num => Header_Num,
       Element    => Boolean,
       No_Element => False,
       Key        => Name_Id,
-      Hash       => Com.Hash,
+      Hash       => Hash,
       Equal      => "=");
 
    --  The ALI files that have been processed to check if the corresponding
    --  library unit is in the interface set.
 
    package Processed_ALIs is new GNAT.HTable.Simple_HTable
-     (Header_Num => Com.Header_Num,
+     (Header_Num => Header_Num,
       Element    => Boolean,
       No_Element => False,
       Key        => Name_Id,
-      Hash       => Com.Hash,
+      Hash       => Hash,
       Equal      => "=");
 
    --  The projects imported directly or indirectly.
 
    package Processed_Projects is new GNAT.HTable.Simple_HTable
-     (Header_Num => Com.Header_Num,
+     (Header_Num => Header_Num,
       Element    => Boolean,
       No_Element => False,
       Key        => Name_Id,
-      Hash       => Com.Hash,
+      Hash       => Hash,
       Equal      => "=");
 
    --  The library projects imported directly or indirectly.

@@ -37,6 +37,8 @@ with Types;  use Types;
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
+with System.HTable; use System.HTable;
+
 package Prj is
 
    Empty_Name : Name_Id;
@@ -66,96 +68,167 @@ package Prj is
    Slash : Name_Id;
    --  "/", used as the path of locally removed files
 
-   type Languages_Processed is (Ada_Language, Other_Languages, All_Languages);
-   --  To specify how to process project files
+   type Language_Index is new Nat;
 
-   type Programming_Language is
-     (Lang_Ada, Lang_C, Lang_C_Plus_Plus);
-   --  The set of languages supported
+   No_Language_Index           : constant Language_Index := 0;
+   First_Language_Index        : constant Language_Index := 1;
+   First_Language_Indexes_Last : constant Language_Index := 5;
 
-   subtype Other_Programming_Language is
-     Programming_Language range Lang_C .. Programming_Language'Last;
-   --  The set of non-Ada languages supported
+   Ada_Language_Index         : constant Language_Index :=
+                                  First_Language_Index;
+   C_Language_Index           : constant Language_Index :=
+                                  Ada_Language_Index + 1;
+   C_Plus_Plus_Language_Index : constant Language_Index :=
+                                  C_Language_Index + 1;
 
-   type Languages_In_Project is array (Programming_Language) of Boolean;
+   Last_Language_Index : Language_Index := No_Language_Index;
+
+   subtype First_Language_Indexes is Language_Index
+      range First_Language_Index .. First_Language_Indexes_Last;
+
+   type Header_Num is range 0 .. 2047;
+
+   function Hash is new System.HTable.Hash (Header_Num => Header_Num);
+
+   function Hash (Name : Name_Id) return Header_Num;
+
+   package Language_Indexes is new System.HTable.Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Language_Index,
+      No_Element => No_Language_Index,
+      Key        => Name_Id,
+      Hash       => Hash,
+      Equal      => "=");
+   --  Mapping of language names to language indexes
+
+   package Language_Names is new Table.Table
+     (Table_Component_Type => Name_Id,
+      Table_Index_Type     => Language_Index,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 4,
+      Table_Increment      => 100,
+      Table_Name           => "Prj.Language_Names");
+   --  The table for the name of programming languages
+
+   procedure Add_Language_Name (Name : Name_Id);
+
+   procedure Display_Language_Name (Language : Language_Index);
+
+   type Languages_In_Project is array (First_Language_Indexes) of Boolean;
    --  Set of supported languages used in a project
 
    No_Languages : constant Languages_In_Project := (others => False);
    --  No supported languages are used
 
-   type Impl_Suffix_Array is array (Programming_Language) of Name_Id;
+   type Supp_Language_Index is new Nat;
+   No_Supp_Language_Index  : constant Supp_Language_Index := 0;
+
+   type Supp_Language is record
+      Index   : Language_Index := No_Language_Index;
+      Present : Boolean := False;
+      Next    : Supp_Language_Index := No_Supp_Language_Index;
+   end record;
+
+   package Present_Languages is new Table.Table
+     (Table_Component_Type => Supp_Language,
+      Table_Index_Type     => Supp_Language_Index,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 4,
+      Table_Increment      => 100,
+      Table_Name           => "Prj.Present_Languages");
+   --  The table for the presence of languages with an index that is outside
+   --  of First_Language_Indexes.
+
+   type Impl_Suffix_Array is array (First_Language_Indexes) of Name_Id;
    --  Suffixes for the non spec sources of the different supported languages
    --  in a project.
 
    No_Impl_Suffixes : constant Impl_Suffix_Array := (others => No_Name);
    --  A default value for the non spec source suffixes
 
-   Lang_Ada_Name         : aliased String := "ada";
-   Lang_C_Name           : aliased String := "c";
-   Lang_C_Plus_Plus_Name : aliased String := "c++";
-   Lang_Names : constant array (Programming_Language) of String_Access :=
-     (Lang_Ada         => Lang_Ada_Name        'Access,
-      Lang_C           => Lang_C_Name          'Access,
-      Lang_C_Plus_Plus => Lang_C_Plus_Plus_Name'Access);
-   --  Names of the supported programming languages, to be used after switch
-   --  -x when using a GCC compiler.
+   type Supp_Suffix is record
+      Index   : Language_Index := No_Language_Index;
+      Suffix  : Name_Id := No_Name;
+      Next    : Supp_Language_Index := No_Supp_Language_Index;
+   end record;
 
-   Lang_Name_Ids : array (Programming_Language) of Name_Id;
-   --  Same as Lang_Names, but using Name_Id, instead of String_Access.
-   --  Initialized by Prj.Initialize.
+   package Supp_Suffix_Table is new Table.Table
+     (Table_Component_Type => Supp_Suffix,
+      Table_Index_Type     => Supp_Language_Index,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 4,
+      Table_Increment      => 100,
+      Table_Name           => "Prj.Supp_Suffix_Table");
+   --  The table for the presence of languages with an index that is outside
+   --  of First_Language_Indexes.
 
-   Lang_Ada_Display_Name         : aliased String := "Ada";
-   Lang_C_Display_Name           : aliased String := "C";
-   Lang_C_Plus_Plus_Display_Name : aliased String := "C++";
-   Lang_Display_Names :
-     constant array (Programming_Language) of String_Access :=
-       (Lang_Ada         => Lang_Ada_Display_Name        'Access,
-        Lang_C           => Lang_C_Display_Name          'Access,
-        Lang_C_Plus_Plus => Lang_C_Plus_Plus_Display_Name'Access);
-   --  Names of the supported programming languages, to be used for display
-   --  purposes.
+   type Language_Kind is (GNU, other);
 
-   Ada_Impl_Suffix         : aliased String := ".adb";
-   C_Impl_Suffix           : aliased String := ".c";
-   C_Plus_Plus_Impl_Suffix : aliased String := ".cc";
-   Lang_Suffixes : constant array (Programming_Language) of String_Access :=
-     (Lang_Ada         => Ada_Impl_Suffix        'Access,
-      Lang_C           => C_Impl_Suffix          'Access,
-      Lang_C_Plus_Plus => C_Plus_Plus_Impl_Suffix'Access);
-   --  Default extension of the sources of the different languages.
+   type Name_List_Index is new Nat;
+   No_Name_List            : constant Name_List_Index := 0;
 
-   Lang_Suffix_Ids         : array (Programming_Language) of Name_Id;
-   --  Same as Lang_Suffixes, but using Name_Id, instead of String_Access.
-   --  Initialized by Prj.Initialize.
+   type Name_Node is record
+      Name : Name_Id         := No_Name;
+      Next : Name_List_Index := No_Name_List;
+   end record;
 
-   Gnatmake_String    : aliased String := "gnatmake";
-   Gcc_String         : aliased String := "gcc";
-   G_Plus_Plus_String : aliased String := "g++";
-   Default_Compiler_Names  :
-     constant array (Programming_Language) of String_Access :=
-     (Lang_Ada         => Gnatmake_String   'Access,
-      Lang_C           => Gcc_String        'Access,
-      Lang_C_Plus_Plus => G_Plus_Plus_String'Access);
-   --  Default names of the compilers for the supported languages.
-   --  Used when no IDE'Compiler_Command is specified for a language.
-   --  For Ada, specify the gnatmake executable.
+   package Name_Lists is new Table.Table
+     (Table_Component_Type => Name_Node,
+      Table_Index_Type     => Name_List_Index,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 10,
+      Table_Increment      => 100,
+      Table_Name           => "Prj.Name_Lists");
+   --  The table for lists of names used in package Language_Processing
 
-   Ada_Args_Strings        : aliased String := "";
-   C_Args_String           : aliased String := "c";
-   C_Plus_Plus_Args_String : aliased String := "xx";
-   Lang_Args : constant array (Programming_Language) of String_Access :=
-     (Lang_Ada         => Ada_Args_Strings       'Access,
-      Lang_C           => C_Args_String          'Access,
-      Lang_C_Plus_Plus => C_Plus_Plus_Args_String'Access);
-   --  For each supported language, the string between "-c" and "args" to
-   --  be used in the gprmake switch for the start of the compiling switch
-   --  section for each supported language. For example, "-ccargs" indicates
-   --  the start of the C compiler switch section.
+   type Language_Processing_Data is record
+      Compiler_Drivers     : Name_List_Index := No_Name_List;
+      Compiler_Paths       : Name_Id         := No_Name;
+      Compiler_Kinds       : Language_Kind   := GNU;
+      Dependency_Options   : Name_List_Index := No_Name_List;
+      Compute_Dependencies : Name_List_Index := No_Name_List;
+      Include_Options      : Name_List_Index := No_Name_List;
+      Binder_Drivers       : Name_Id         := No_Name;
+      Binder_Driver_Paths  : Name_Id         := No_Name;
+   end record;
+
+   Default_Language_Processing_Data :
+     constant Language_Processing_Data :=
+       (Compiler_Drivers     => No_Name_List,
+        Compiler_Paths       => No_Name,
+        Compiler_Kinds       => GNU,
+        Dependency_Options   => No_Name_List,
+        Compute_Dependencies => No_Name_List,
+        Include_Options      => No_Name_List,
+        Binder_Drivers       => No_Name,
+        Binder_Driver_Paths  => No_Name);
+
+   type First_Language_Processing_Data is
+     array (First_Language_Indexes) of Language_Processing_Data;
+
+   Default_First_Language_Processing_Data : First_Language_Processing_Data :=
+     (others => Default_Language_Processing_Data);
+
+   type Supp_Language_Data is record
+      Index : Language_Index := No_Language_Index;
+      Data  : Language_Processing_Data := Default_Language_Processing_Data;
+      Next  : Supp_Language_Index := No_Supp_Language_Index;
+   end record;
+
+   package Supp_Languages is new Table.Table
+     (Table_Component_Type => Supp_Language_Data,
+      Table_Index_Type     => Supp_Language_Index,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 4,
+      Table_Increment      => 100,
+      Table_Name           => "Prj.Supp_Languages");
+   --  The table for language data when there are more languages than
+   --  in First_Language_Indexes.
 
    type Other_Source_Id is new Nat;
    No_Other_Source : constant Other_Source_Id := 0;
    type Other_Source is record
-      Language         : Programming_Language; --  language of the source
+      Language         : Language_Index;       --  language of the source
       File_Name        : Name_Id;              --  source file simple name
       Path_Name        : Name_Id;              --  source full path name
       Source_TS        : Time_Stamp_Type;      --  source file time stamp
@@ -375,8 +448,6 @@ package Prj is
    --  The following record contains data for a naming scheme
 
    type Naming_Data is record
-      Current_Language : Name_Id := No_Name;
-      --  The programming language being currently considered
 
       Dot_Replacement : Name_Id := No_Name;
       --  The string to replace '.' in the source file name (for Ada).
@@ -393,24 +464,28 @@ package Prj is
       --  source file name of a spec.
       --  Indexed by the programming language.
 
-      Current_Spec_Suffix : Name_Id := No_Name;
-      --  The "spec" suffix of the current programming language
+      Ada_Spec_Suffix : Name_Id := No_Name;
+      --  The suffix of the Ada spec sources
 
       Spec_Suffix_Loc : Source_Ptr := No_Location;
       --  The position in the project file source where
-      --  Current_Spec_Suffix is defined.
+      --  Ada_Spec_Suffix is defined.
+
+      Impl_Suffixes    : Impl_Suffix_Array   := No_Impl_Suffixes;
+      Supp_Suffixes    : Supp_Language_Index := No_Supp_Language_Index;
+      --  The source suffixes of the different languages
 
       Body_Suffix : Array_Element_Id := No_Array_Element;
       --  The string to append to the unit name for the
       --  source file name of a body.
       --  Indexed by the programming language.
 
-      Current_Body_Suffix : Name_Id := No_Name;
-      --  The "body" suffix of the current programming language
+      Ada_Body_Suffix : Name_Id := No_Name;
+      --  The suffix of the Ada body sources
 
       Body_Suffix_Loc : Source_Ptr := No_Location;
       --  The position in the project file source where
-      --  Current_Body_Suffix is defined.
+      --  Ada_Body_Suffix is defined.
 
       Separate_Suffix : Name_Id := No_Name;
       --  String to append to unit name for source file name of an Ada subunit.
@@ -441,8 +516,7 @@ package Prj is
    --  The standard GNAT naming scheme
 
    function Same_Naming_Scheme
-     (Left, Right : Naming_Data)
-      return        Boolean;
+     (Left, Right : Naming_Data) return Boolean;
    --  Returns True if Left and Right are the same naming scheme
    --  not considering Specs and Bodies.
 
@@ -469,11 +543,11 @@ package Prj is
    --  The following record describes a project file representation
 
    type Project_Data is record
-      Languages : Languages_In_Project := No_Languages;
-      --  Indicate the different languages of the source of this project
+      Externally_Built : Boolean := False;
 
-      Impl_Suffixes : Impl_Suffix_Array := No_Impl_Suffixes;
-      --  The source suffixes of the different languages other than Ada
+      Languages      : Languages_In_Project := No_Languages;
+      Supp_Languages : Supp_Language_Index  := No_Supp_Language_Index;
+      --  Indicate the different languages of the source of this project
 
       First_Referred_By  : Project_Id := No_Project;
       --  The project, if any, that was the first to be known
@@ -498,7 +572,7 @@ package Prj is
       --  project. Set by Prj.Proc.Process.
 
       Mains : String_List_Id := Nil_String;
-      --  List of mains specified by attribute Main. Set by Prj.Nmsc.Ada_Check.
+      --  List of mains specified by attribute Main. Set by Prj.Nmsc.Check.
 
       Directory : Name_Id := No_Name;
       --  Directory where the project file resides. Set by Prj.Proc.Process.
@@ -548,11 +622,11 @@ package Prj is
 
       Standalone_Library : Boolean := False;
       --  Indicate that this is a Standalone Library Project File.
-      --  Set by Prj.Nmsc.Ada_Check.
+      --  Set by Prj.Nmsc.Check.
 
       Lib_Interface_ALIs : String_List_Id := Nil_String;
       --  For Standalone Library Project Files, indicate the list
-      --  of Interface ALI files. Set by Prj.Nmsc.Ada_Check.
+      --  of Interface ALI files. Set by Prj.Nmsc.Check.
 
       Lib_Auto_Init : Boolean := False;
       --  For non static Standalone Library Project Files, indicate if
@@ -629,6 +703,15 @@ package Prj is
       --  The naming scheme of this project file.
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
+      First_Language_Processing : First_Language_Processing_Data :=
+        Default_First_Language_Processing_Data;
+
+      Supp_Language_Processing      : Supp_Language_Index :=
+                                       No_Supp_Language_Index;
+
+      Default_Linker                : Name_Id := No_Name;
+      Default_Linker_Path           : Name_Id := No_Name;
+
       Decl : Declarations := No_Declarations;
       --  The declarations (variables, attributes and packages) of this
       --  project file. Set by Prj.Proc.Process.
@@ -698,6 +781,44 @@ package Prj is
       --  be kept in the project tree.
 
    end record;
+
+   function Is_Present
+     (Language   : Language_Index;
+      In_Project : Project_Data) return Boolean;
+   --  Return True when Language is one of the languages used in
+   --  project Project.
+
+   procedure Set
+     (Language   : Language_Index;
+      Present    : Boolean;
+      In_Project : in out Project_Data);
+   --  Indicate if Language is or not a language used in project Project
+
+   function Language_Processing_Data_Of
+     (Language   : Language_Index;
+      In_Project : Project_Data) return Language_Processing_Data;
+   --  Return the Language_Processing_Data for language Language in project
+   --  In_Project. Return the default when no Language_Processing_Data are
+   --  defined for the language.
+
+   procedure Set
+     (Language_Processing : Language_Processing_Data;
+      For_Language        : Language_Index;
+      In_Project          : in out Project_Data);
+   --  Set the Language_Processing_Data for language Language in project
+   --  In_Project.
+
+   function Suffix_Of
+     (Language   : Language_Index;
+      In_Project : Project_Data) return Name_Id;
+   --  Return the suffix for language Language in project In_Project. Return
+   --  No_Name when no suffix is defined for the language.
+
+   procedure Set
+     (Suffix       : Name_Id;
+      For_Language : Language_Index;
+      In_Project   : in out Project_Data);
+   --  Set the suffix for language Language in project In_Project
 
    Project_Error : exception;
    --  Raised by some subprograms in Prj.Attr.

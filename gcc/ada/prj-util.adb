@@ -107,12 +107,12 @@ package body Prj.Util is
       Body_Append : constant String := Get_Name_String
                                           (Projects.Table
                                             (Project).
-                                              Naming.Current_Body_Suffix);
+                                              Naming.Ada_Body_Suffix);
 
       Spec_Append : constant String := Get_Name_String
                                           (Projects.Table
                                             (Project).
-                                               Naming.Current_Spec_Suffix);
+                                               Naming.Ada_Spec_Suffix);
 
    begin
       if Builder_Package /= No_Package then
@@ -131,9 +131,9 @@ package body Prj.Util is
                           Projects.Table (Project).Naming;
 
                Spec_Suffix : constant String :=
-                               Get_Name_String (Naming.Current_Spec_Suffix);
+                               Get_Name_String (Naming.Ada_Spec_Suffix);
                Body_Suffix : constant String :=
-                               Get_Name_String (Naming.Current_Body_Suffix);
+                               Get_Name_String (Naming.Ada_Body_Suffix);
 
                Truncated : Boolean := False;
 

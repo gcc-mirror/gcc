@@ -74,8 +74,6 @@ procedure GNATCmd is
    --  files to pass to a tool, when there are more than
    --  Max_Files_On_The_Command_Line files.
 
-   --  A table to keep the switches from the project file
-
    package First_Switches is new Table.Table
      (Table_Component_Type => String_Access,
       Table_Index_Type     => Integer,
@@ -83,6 +81,16 @@ procedure GNATCmd is
       Table_Initial        => 20,
       Table_Increment      => 100,
       Table_Name           => "Gnatcmd.First_Switches");
+   --  A table to keep the switches from the project file
+
+   package Carg_Switches is new Table.Table
+     (Table_Component_Type => String_Access,
+      Table_Index_Type     => Integer,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 20,
+      Table_Increment      => 100,
+      Table_Name           => "Gnatcmd.Carg_Switches");
+   --  A table to keep the switches following -cargs for ASIS tools
 
    package Library_Paths is new Table.Table (
      Table_Component_Type => String_Access,
@@ -152,6 +160,10 @@ procedure GNATCmd is
    -- Local Subprograms --
    -----------------------
 
+   procedure Add_To_Carg_Switches (Switch : String_Access);
+   --  Add a switch to the Carg_Switches table. If it is the first one,
+   --  put the switch "-cargs" at the beginning of the table.
+
    procedure Check_Files;
    --  For GNAT LIST, GNAT PRETTY and GNAT METRIC, check if a project
    --  file is specified, without any file arguments. If it is the case,
@@ -208,6 +220,23 @@ procedure GNATCmd is
    --  Test if Switch is a relative search path switch.
    --  If it is and it includes directory information, prepend the path with
    --  Parent.This subprogram is only called when using project files.
+
+   --------------------------
+   -- Add_To_Carg_Switches --
+   --------------------------
+
+   procedure Add_To_Carg_Switches (Switch : String_Access) is
+   begin
+      --  If the Carg_Switches table is empty, put "-cargs" at the beginning
+
+      if Carg_Switches.Last = 0 then
+         Carg_Switches.Increment_Last;
+         Carg_Switches.Table (Carg_Switches.Last) := new String'("-cargs");
+      end if;
+
+      Carg_Switches.Increment_Last;
+      Carg_Switches.Table (Carg_Switches.Last) := Switch;
+   end Add_To_Carg_Switches;
 
    -----------------
    -- Check_Files --
@@ -966,6 +995,8 @@ begin
 
    First_Switches.Init;
    First_Switches.Set_Last (0);
+   Carg_Switches.Init;
+   Carg_Switches.Set_Last (0);
 
    VMS_Conv.Initialize;
 
@@ -1626,20 +1657,40 @@ begin
            or else The_Command = Stub
            or else The_Command = Elim
          then
+            --  If -cargs is one of the switches, move the following
+            --  switches to the Carg_Switches table.
+
+            for J in 1 .. First_Switches.Last loop
+               if First_Switches.Table (J).all = "-cargs" then
+                  for K in J + 1 .. First_Switches.Last loop
+                     Add_To_Carg_Switches (First_Switches.Table (K));
+                  end loop;
+                  First_Switches.Set_Last (J - 1);
+                  exit;
+               end if;
+            end loop;
+
+            for J in 1 .. Last_Switches.Last loop
+               if Last_Switches.Table (J).all = "-cargs" then
+                  for K in J + 1 .. Last_Switches.Last loop
+                     Add_To_Carg_Switches (Last_Switches.Table (K));
+                  end loop;
+                  Last_Switches.Set_Last (J - 1);
+                  exit;
+               end if;
+            end loop;
+
             declare
                CP_File : constant Name_Id := Configuration_Pragmas_File;
-
             begin
                if CP_File /= No_Name then
-                  First_Switches.Increment_Last;
-
                   if The_Command = Elim then
+                     First_Switches.Increment_Last;
                      First_Switches.Table (First_Switches.Last)  :=
                        new String'("-C" & Get_Name_String (CP_File));
-
                   else
-                     First_Switches.Table (First_Switches.Last) :=
-                       new String'("-gnatec=" & Get_Name_String (CP_File));
+                     Add_To_Carg_Switches
+                       (new String'("-gnatec=" & Get_Name_String (CP_File)));
                   end if;
                end if;
             end;
@@ -1698,7 +1749,7 @@ begin
                --  indicate to gnatstub the name of the body file with
                --  a -o switch.
 
-               if Data.Naming.Current_Spec_Suffix /=
+               if Data.Naming.Ada_Spec_Suffix /=
                  Prj.Default_Ada_Spec_Suffix
                then
                   if File_Index /= 0 then
@@ -1708,14 +1759,14 @@ begin
                         Last : Natural := Spec'Last;
 
                      begin
-                        Get_Name_String (Data.Naming.Current_Spec_Suffix);
+                        Get_Name_String (Data.Naming.Ada_Spec_Suffix);
 
                         if Spec'Length > Name_Len
                           and then Spec (Last - Name_Len + 1 .. Last) =
                           Name_Buffer (1 .. Name_Len)
                         then
                            Last := Last - Name_Len;
-                           Get_Name_String (Data.Naming.Current_Body_Suffix);
+                           Get_Name_String (Data.Naming.Ada_Body_Suffix);
                            Last_Switches.Increment_Last;
                            Last_Switches.Table (Last_Switches.Last) :=
                              new String'("-o");
@@ -1753,7 +1804,7 @@ begin
          end if;
 
          --  For gnatmetric, the generated files should be put in the
-         --  object directory. This must be the first dwitch, because it may
+         --  object directory. This must be the first switch, because it may
          --  be overriden by a switch in package Metrics in the project file
          --  or by a command line option.
 
@@ -1783,7 +1834,9 @@ begin
 
       declare
          The_Args : Argument_List
-                      (1 .. First_Switches.Last + Last_Switches.Last);
+                      (1 .. First_Switches.Last +
+                            Last_Switches.Last +
+                            Carg_Switches.Last);
          Arg_Num  : Natural := 0;
 
       begin
@@ -1795,6 +1848,11 @@ begin
          for J in 1 .. Last_Switches.Last loop
             Arg_Num := Arg_Num + 1;
             The_Args (Arg_Num) := Last_Switches.Table (J);
+         end loop;
+
+         for J in 1 .. Carg_Switches.Last loop
+            Arg_Num := Arg_Num + 1;
+            The_Args (Arg_Num) := Carg_Switches.Table (J);
          end loop;
 
          --  If Display_Command is on, only display the generated command

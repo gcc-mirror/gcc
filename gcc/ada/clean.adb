@@ -30,7 +30,7 @@ with ALI;      use ALI;
 with Csets;
 with Gnatvsn;
 with Hostparm;
-with Makeutl;  use Makeutl;
+with Makeutl;
 with MLib.Tgt; use MLib.Tgt;
 with Namet;    use Namet;
 with Opt;      use Opt;
@@ -593,7 +593,7 @@ package body Clean is
          Put_Line ("""");
       end if;
 
-      --  Add project to the list of proceesed projects
+      --  Add project to the list of processed projects
 
       Processed_Projects.Increment_Last;
       Processed_Projects.Table (Processed_Projects.Last) := Project;
@@ -611,7 +611,7 @@ package body Clean is
             --  Look through the units to find those that are either immediate
             --  sources or inherited sources of the project.
 
-            if Data.Languages (Lang_Ada) then
+            if Data.Languages (Ada_Language_Index) then
                for Unit in 1 .. Prj.Com.Units.Last loop
                   U_Data := Prj.Com.Units.Table (Unit);
                   File_Name1 := No_Name;
@@ -787,7 +787,9 @@ package body Clean is
                --  If it is a library with only non Ada sources, delete
                --  the fake archive and the dependency file, if they exist.
 
-               if Data.Library and then not Data.Languages (Lang_Ada) then
+               if Data.Library
+                 and then not Data.Languages (Ada_Language_Index)
+               then
                   Clean_Archive (Project);
                end if;
             end if;
@@ -1105,8 +1107,7 @@ package body Clean is
          Prj.Pars.Parse
            (Project           => Main_Project,
             Project_File_Name => Project_File_Name.all,
-            Packages_To_Check => Packages_To_Check_By_Gnatmake,
-            Process_Languages => All_Languages);
+            Packages_To_Check => Packages_To_Check_By_Gnatmake);
 
          if Main_Project = No_Project then
             Fail ("""" & Project_File_Name.all & """ processing failed");
@@ -1202,6 +1203,10 @@ package body Clean is
       Data : Project_Data;
 
    begin
+      if Prj = No_Project or else Of_Project = No_Project then
+         return False;
+      end if;
+
       if Of_Project = Prj then
          return True;
       end if;
@@ -1276,13 +1281,13 @@ package body Clean is
    begin
       --  Do not insert an empty name or an already marked source
 
-      if Lib_File /= No_Name and then not Is_Marked (Lib_File) then
+      if Lib_File /= No_Name and then not Makeutl.Is_Marked (Lib_File) then
          Q.Table (Q.Last) := Lib_File;
          Q.Increment_Last;
 
          --  Mark the source that has been just added to the Q
 
-         Mark (Lib_File);
+         Makeutl.Mark (Lib_File);
       end if;
    end Insert_Q;
 

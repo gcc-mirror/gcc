@@ -43,8 +43,7 @@ package body Prj.Pars is
    procedure Parse
      (Project           : out Project_Id;
       Project_File_Name : String;
-      Packages_To_Check : String_List_Access := All_Packages;
-      Process_Languages : Languages_Processed := Ada_Language)
+      Packages_To_Check : String_List_Access := All_Packages)
    is
       Project_Tree      : Project_Node_Id := Empty_Node;
       The_Project       : Project_Id      := No_Project;
@@ -67,7 +66,6 @@ package body Prj.Pars is
             Success           => Success,
             From_Project_Node => Project_Tree,
             Report_Error      => null,
-            Process_Languages => Process_Languages,
             Follow_Links      => Opt.Follow_Links);
          Prj.Err.Finalize;
 

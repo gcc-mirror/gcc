@@ -37,7 +37,6 @@ package Prj.Proc is
       Success           : out Boolean;
       From_Project_Node : Project_Node_Id;
       Report_Error      : Put_Line_Access;
-      Process_Languages : Languages_Processed := Ada_Language;
       Follow_Links      : Boolean := True);
    --  Process a project file tree into project file data structures.
    --  If Report_Error is null, use the error reporting mechanism.

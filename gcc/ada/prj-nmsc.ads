@@ -32,26 +32,22 @@ private package Prj.Nmsc is
    --  procedures do (related to their names), rather than just an english
    --  language summary of the implementation ???
 
-   procedure Other_Languages_Check
-     (Project      : Project_Id;
-      Report_Error : Put_Line_Access);
-   --  Call Language_Independent_Check
-   --
-   --  Check the naming scheme for the supported languages (c, c++, ...) other
-   --  than Ada. Find the source files if any.
-   --
-   --  If Report_Error is null, use the standard error reporting mechanism
-   --  (Errout). Otherwise, report errors using Report_Error.
-
-   procedure Ada_Check
+   procedure Check
      (Project      : Project_Id;
       Report_Error : Put_Line_Access;
       Follow_Links : Boolean);
-   --  Call Language_Independent_Check
+   --  Check the object directory and the source directories
+   --
+   --  Check the library attributes, including the library directory if any
+   --
+   --  Get the set of specification and implementation suffixes, if any
    --
    --  Check the naming scheme for Ada
    --
    --  Find the Ada source files if any
+   --
+   --  Check the naming scheme for the supported languages (c, c++, ...) other
+   --  than Ada. Find the source files if any.
    --
    --  If Report_Error is null , use the standard error reporting mechanism
    --  (Errout). Otherwise, report errors using Report_Error.
@@ -60,17 +56,5 @@ private package Prj.Nmsc is
    --  any file duplicated through symbolic links (although the latter are
    --  still valid if they point to a file which is outside of the project),
    --  and that no directory has a name which is a valid source name.
-
-   procedure Language_Independent_Check
-     (Project      : Project_Id;
-      Report_Error : Put_Line_Access);
-   --  Check the object directory and the source directories
-   --
-   --  Check the library attributes, including the library directory if any
-   --
-   --  Get the set of specification and implementation suffixes, if any
-   --
-   --  If Report_Error is null , use the standard error reporting mechanism
-   --  (Errout). Otherwise, report errors using Report_Error.
 
 end Prj.Nmsc;
