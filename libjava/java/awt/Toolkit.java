@@ -496,9 +496,10 @@ public abstract class Toolkit
         toolkit = (Toolkit) obj;
         return toolkit;
       }
-    catch (Exception e)
+    catch (Throwable t)
       {
-        throw new AWTError("Cannot load AWT toolkit: " + e.getMessage());
+	AWTError e = new AWTError("Cannot load AWT toolkit: " + toolkit_name);
+	throw (AWTError) e.initCause(t);
       }
   }
 
