@@ -2399,7 +2399,13 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
 
   /* When normalizing, it is possible to both increment the smaller constant
      and decrement the larger constant.  See if they are still ordered.  */
-  if (tree_int_cst_lt (lo_cst, hi_cst))
+  if (tree_int_cst_lt (hi_cst, lo_cst))
+    return 0;
+
+  /* Fail if VAR isn't an integer.  */
+  utype = TREE_TYPE (var);
+  if (TREE_CODE (utype) != INTEGER_TYPE
+      && TREE_CODE (utype) != ENUMERAL_TYPE)
     return 0;
 
   /* The range test is invalid if subtracting the two constants results
@@ -2408,7 +2414,6 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
       || ! int_fits_type_p (lo_cst, TREE_TYPE (var)))
     return 0;
 
-  utype = TREE_TYPE (var);
   if (! TREE_UNSIGNED (utype))
     {
       utype = unsigned_type (utype);
