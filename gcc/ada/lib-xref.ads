@@ -101,7 +101,7 @@ package Lib.Xref is
    --
    --     There may be zero or more ref entries on each line
    --
-   --        file | line type col
+   --        file | line type col [...]
    --
    --           file is the dependency number of the file with the reference.
    --           It and the following vertical bar are omitted if the file is
@@ -173,9 +173,21 @@ package Lib.Xref is
    --           Note that in the case of accept statements, there can
    --           be multiple b and T/t entries for the same entity.
    --
+   --           [..] is used for generic instantiation references. These
+   --           references are present only if the entity in question is
+   --           a generic entity, and in that case the [..] contains the
+   --           reference for the instantiation. In the case of nested
+   --           instantiations, this can be nested [...[...[...]]] etc.
+   --           The reference is of the form [file|line] no column is
+   --           present since it is assumed that only one instantiation
+   --           appears on a single source line. Note that the appearence
+   --           of file numbers in such references follows the normal
+   --           rules (present only if needed, and resets the current
+   --           file for subsequent references).
+   --
    --     Examples:
    --
-   --        44B5*Flag_Type 5r23 6m45 3|9r35 11r56
+   --        44B5*Flag_Type{boolean} 5r23 6m45 3|9r35 11r56
    --
    --           This line gives references for the publicly visible Boolean
    --           type Flag_Type declared on line 44, column 5. There are four
@@ -215,6 +227,13 @@ package Lib.Xref is
    --
    --              a reference (e.g. a variable declaration) at line 18 column
    --              4 of the current file.
+   --
+   --        10I3*Genv{integer} 3|4I10[6|12]
+   --
+   --           This line gives a reference for the entity Genv in a generic
+   --           package. The reference in file 3, line 4, col 10, refers to
+   --           an instance of the generic where the instantiation can be
+   --           found in file 6 at line 12.
    --
    --  Continuation lines are used if the reference list gets too long,
    --  a continuation line starts with a period, and then has references

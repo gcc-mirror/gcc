@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.25 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -442,6 +442,81 @@ package body Csets is
       'N' => 'N',  X_CD => X_CD,  X_DD => X_DD,
       'O' => 'O',  X_CE => X_CE,  X_DE => X_DE,  X_AE => X_AE,
       'P' => 'P',  X_CF => X_CF,
+      'Q' => 'Q',
+      'R' => 'R',
+      'S' => 'S',
+      'T' => 'T',
+      'U' => 'U',
+      'V' => 'V',
+      'W' => 'W',
+      'X' => 'X',
+      'Y' => 'Y',
+      'Z' => 'Z',
+
+      '0' => '0',
+      '1' => '1',
+      '2' => '2',
+      '3' => '3',
+      '4' => '4',
+      '5' => '5',
+      '6' => '6',
+      '7' => '7',
+      '8' => '8',
+      '9' => '9',
+
+      '_' => '_',
+
+      others => ' ');
+
+   ---------------------------------------------------
+   -- Definitions for Latin-5 (Cyrillic ISO-8859-5) --
+   ---------------------------------------------------
+
+   Fold_Latin_5 : Translate_Table := Translate_Table'(
+
+      'a' => 'A',  X_D0 => X_B0,  X_E0 => X_C0,
+      'b' => 'B',  X_D1 => X_B1,  X_E1 => X_C1,  X_F1 => X_A1,
+      'c' => 'C',  X_D2 => X_B2,  X_E2 => X_C2,  X_F2 => X_A2,
+      'd' => 'D',  X_D3 => X_B3,  X_E3 => X_C3,  X_F3 => X_A3,
+      'e' => 'E',  X_D4 => X_B4,  X_E4 => X_C4,  X_F4 => X_A4,
+      'f' => 'F',  X_D5 => X_B5,  X_E5 => X_C5,  X_F5 => X_A5,
+      'g' => 'G',  X_D6 => X_B6,  X_E6 => X_C6,  X_F6 => X_A6,
+      'h' => 'H',  X_D7 => X_B7,  X_E7 => X_C7,  X_F7 => X_A7,
+      'i' => 'I',  X_D8 => X_B8,  X_E8 => X_C8,  X_F8 => X_A8,
+      'j' => 'J',  X_D9 => X_B9,  X_E9 => X_C9,  X_F9 => X_A9,
+      'k' => 'K',  X_DA => X_BA,  X_EA => X_CA,  X_FA => X_AA,
+      'l' => 'L',  X_DB => X_BB,  X_EB => X_CB,  X_FB => X_AB,
+      'm' => 'M',  X_DC => X_BC,  X_EC => X_CC,  X_FC => X_AC,
+      'n' => 'N',  X_DD => X_BD,  X_ED => X_CD,
+      'o' => 'O',  X_DE => X_BE,  X_EE => X_CE,  X_FE => X_AE,
+      'p' => 'P',  X_DF => X_BF,  X_EF => X_CF,  X_FF => X_AF,
+      'q' => 'Q',
+      'r' => 'R',
+      's' => 'S',
+      't' => 'T',
+      'u' => 'U',
+      'v' => 'V',
+      'w' => 'W',
+      'x' => 'X',
+      'y' => 'Y',
+      'z' => 'Z',
+
+      'A' => 'A',  X_B0 => X_B0,  X_C0 => X_C0,
+      'B' => 'B',  X_B1 => X_B1,  X_C1 => X_C1,  X_A1 => X_A1,
+      'C' => 'C',  X_B2 => X_B2,  X_C2 => X_C2,  X_A2 => X_A2,
+      'D' => 'D',  X_B3 => X_B3,  X_C3 => X_C3,  X_A3 => X_A3,
+      'E' => 'E',  X_B4 => X_B4,  X_C4 => X_C4,  X_A4 => X_A4,
+      'F' => 'F',  X_B5 => X_B5,  X_C5 => X_C5,  X_A5 => X_A5,
+      'G' => 'G',  X_B6 => X_B6,  X_C6 => X_C6,  X_A6 => X_A6,
+      'H' => 'H',  X_B7 => X_B7,  X_C7 => X_C7,  X_A7 => X_A7,
+      'I' => 'I',  X_B8 => X_B8,  X_C8 => X_C8,  X_A8 => X_A8,
+      'J' => 'J',  X_B9 => X_B9,  X_C9 => X_C9,  X_A9 => X_A9,
+      'K' => 'K',  X_BA => X_BA,  X_CA => X_CA,  X_AA => X_AA,
+      'L' => 'L',  X_BB => X_BB,  X_CB => X_CB,  X_AB => X_AB,
+      'M' => 'M',  X_BC => X_BC,  X_CC => X_CC,  X_AC => X_AC,
+      'N' => 'N',  X_BD => X_BD,  X_CD => X_CD,
+      'O' => 'O',  X_BE => X_BE,  X_CE => X_CE,  X_AE => X_AE,
+      'P' => 'P',  X_BF => X_BF,  X_CF => X_CF,  X_AF => X_AF,
       'Q' => 'Q',
       'R' => 'R',
       'S' => 'S',
@@ -965,6 +1040,9 @@ package body Csets is
 
       elsif Identifier_Character_Set = '4' then
          Fold_Upper := Fold_Latin_4;
+
+      elsif Identifier_Character_Set = '5' then
+         Fold_Upper := Fold_Latin_5;
 
       elsif Identifier_Character_Set = 'p' then
          Fold_Upper := Fold_IBM_PC_437;

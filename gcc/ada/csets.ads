@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.16 $                             --
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,6 +68,7 @@ pragma Elaborate_Body (Csets);
    --    '2'  Latin-2
    --    '3'  Latin-3
    --    '4'  Latin-4
+   --    '5'  Latin-5 (Cyrillic ISO-8859-5)
    --    'p'  IBM PC (code page 437)
    --    '8'  IBM PC (code page 850)
    --    'f'  Full upper set (all distinct)

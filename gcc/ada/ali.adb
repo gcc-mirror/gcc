@@ -1218,7 +1218,7 @@ package body ALI is
 
          Xref_Section.Increment_Last;
 
-         declare
+         Read_Refs_For_One_File : declare
             XS : Xref_Section_Record renames
                    Xref_Section.Table (Xref_Section.Last);
 
@@ -1240,11 +1240,63 @@ package body ALI is
             while C /= 'X' and then C /= EOF loop
                Xref_Entity.Increment_Last;
 
-               declare
+               Read_Refs_For_One_Entity : declare
+
                   XE : Xref_Entity_Record renames
                          Xref_Entity.Table (Xref_Entity.Last);
 
                   N : Nat;
+
+                  procedure Read_Instantiation_Reference;
+                  --  Acquire instantiation reference. Caller has checked
+                  --  that current character is '[' and on return the cursor
+                  --  is skipped past the corresponding closing ']'.
+
+                  ----------------------------------
+                  -- Read_Instantiation_Reference --
+                  ----------------------------------
+
+                  procedure Read_Instantiation_Reference is
+                  begin
+                     Xref.Increment_Last;
+
+                     declare
+                        XR : Xref_Record renames Xref.Table (Xref.Last);
+
+                     begin
+                        P := P + 1; -- skip [
+                        N := Get_Nat;
+
+                        if Nextc = '|' then
+                           XR.File_Num :=
+                             Sdep_Id (N + Nat (First_Sdep_Entry) - 1);
+                           Current_File_Num := XR.File_Num;
+                           P := P + 1;
+                           N := Get_Nat;
+
+                        else
+                           XR.File_Num := Current_File_Num;
+                        end if;
+
+                        XR.Line  := N;
+                        XR.Rtype := ' ';
+                        XR.Col   := 0;
+
+                        --  Recursive call for next reference
+
+                        if Nextc = '[' then
+                           pragma Warnings (Off); -- kill recursion warning
+                           Read_Instantiation_Reference;
+                           pragma Warnings (On);
+                        end if;
+
+                        --  Skip closing bracket after recursive call
+
+                        P := P + 1;
+                     end;
+                  end Read_Instantiation_Reference;
+
+               --  Start of processing for Read_Refs_For_One_Entity
 
                begin
                   XE.Line   := Get_Nat;
@@ -1343,6 +1395,10 @@ package body ALI is
                         XR.Line  := N;
                         XR.Rtype := Getc;
                         XR.Col   := Get_Nat;
+
+                        if Nextc = '[' then
+                           Read_Instantiation_Reference;
+                        end if;
                      end;
                   end loop;
 
@@ -1350,13 +1406,15 @@ package body ALI is
 
                   XE.Last_Xref := Xref.Last;
                   C := Nextc;
-               end;
+
+               end Read_Refs_For_One_Entity;
             end loop;
 
             --  Record last entity
 
             XS.Last_Entity := Xref_Entity.Last;
-         end;
+
+         end Read_Refs_For_One_File;
 
          C := Getc;
       end loop;

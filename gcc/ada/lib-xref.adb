@@ -481,7 +481,9 @@ package body Lib.Xref is
          Crloc  := No_Location;
 
          for Refno in 1 .. Nrefs loop
-            declare
+
+            Output_One_Ref : declare
+
                XE : Xref_Entry renames Xrefs.Table (Rnums (Refno));
                --  The current entry to be accessed
 
@@ -497,6 +499,57 @@ package body Lib.Xref is
                Left  : Character;
                Right : Character;
                --  Used for {} or <> for type reference
+
+               procedure Output_Instantiation_Refs (Loc : Source_Ptr);
+               --  Recursive procedure to output instantiation references for
+               --  the given source ptr in [file|line[...]] form. No output
+               --  if the given location is not a generic template reference.
+
+               -------------------------------
+               -- Output_Instantiation_Refs --
+               -------------------------------
+
+               procedure Output_Instantiation_Refs (Loc : Source_Ptr) is
+                  Iloc : constant Source_Ptr := Instantiation_Location (Loc);
+                  Lun  : Unit_Number_Type;
+
+               begin
+                  --  Nothing to do if this is not an instantiation
+
+                  if Iloc = No_Location then
+                     return;
+                  end if;
+
+                  --  For now, nothing to do unless special debug flag set
+
+                  if not Debug_Flag_MM then
+                     return;
+                  end if;
+
+                  --  Output instantiation reference
+
+                  Write_Info_Char ('[');
+                  Lun := Get_Source_Unit (Iloc);
+
+                  if Lun /= Curru then
+                     Curru := XE.Lun;
+                     Write_Info_Nat (Dependency_Num (Curru));
+                     Write_Info_Char ('|');
+                  end if;
+
+                  Write_Info_Nat (Int (Get_Logical_Line_Number (Iloc)));
+
+                  --  Recursive call to get nested instantiations
+
+                  Output_Instantiation_Refs (Iloc);
+
+                  --  Output final ] after call to get proper nesting
+
+                  Write_Info_Char (']');
+                  return;
+               end Output_Instantiation_Refs;
+
+            --  Start of processing for Output_One_Ref
 
             begin
                Ent := XE.Ent;
@@ -841,9 +894,11 @@ package body Lib.Xref is
                      Write_Info_Nat  (Int (Get_Logical_Line_Number (XE.Loc)));
                      Write_Info_Char (XE.Typ);
                      Write_Info_Nat  (Int (Get_Column_Number (XE.Loc)));
+
+                     Output_Instantiation_Refs (Sloc (XE.Ent));
                   end if;
                end if;
-            end;
+            end Output_One_Ref;
 
          <<Continue>>
             null;

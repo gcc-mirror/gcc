@@ -464,6 +464,8 @@ procedure GNATCmd is
                                                 "-gnati3 "                 &
                                              "4 "                          &
                                                 "-gnati4 "                 &
+                                             "5 "                          &
+                                                "-gnati5 "                 &
                                              "PC "                         &
                                                 "-gnatip "                 &
                                              "PC850 "                      &

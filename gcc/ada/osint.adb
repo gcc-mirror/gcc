@@ -725,12 +725,38 @@ package body Osint is
 
    begin
       Get_Name_String (Src);
+
       if Hostparm.OpenVMS then
          Name_Buffer (Name_Len + 1 .. Name_Len + 3) := "_dg";
       else
          Name_Buffer (Name_Len + 1 .. Name_Len + 3) := ".dg";
       end if;
+
       Name_Len := Name_Len + 3;
+
+      if Output_Object_File_Name /= null then
+
+         for Index in reverse Output_Object_File_Name'Range loop
+
+            if Output_Object_File_Name (Index) = Directory_Separator then
+               declare
+                  File_Name : constant String := Name_Buffer (1 .. Name_Len);
+
+               begin
+                  Name_Len := Index - Output_Object_File_Name'First + 1;
+                  Name_Buffer (1 .. Name_Len) :=
+                    Output_Object_File_Name
+                      (Output_Object_File_Name'First .. Index);
+                  Name_Buffer (Name_Len + 1 .. Name_Len + File_Name'Length) :=
+                    File_Name;
+                  Name_Len := Name_Len + File_Name'Length;
+               end;
+
+               exit;
+            end if;
+         end loop;
+      end if;
+
       Result := Name_Find;
       Name_Buffer (Name_Len + 1) := ASCII.NUL;
       Create_File_And_Check (Output_FD, Text);
