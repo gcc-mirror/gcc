@@ -1,5 +1,11 @@
 2004-06-14  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	PR c++/15967
+	* search.c (lookup_field): Propagate the ambiguity list.
+	(lookup_fnfields): Likewise.
+
+2004-06-14  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	PR c++/15947
 	* parser.c (cp_parser_template_name): Ctors/dtors never need a
 	template keyword to disambiguate.

@@ -1,0 +1,15 @@
+// { dg-do compile }
+// Contributed by Wolfgang Wieser <wwieser at gmx dot de>
+// PR c++/15967: ICE with ambiguous operator new
+
+typedef unsigned int size_t; 
+
+struct A { void *operator new(size_t s){} };  // { dg-error "operator new" }
+struct B { void *operator new(size_t s){} };  // { dg-error "operator new" }
+
+struct C : A,B {}; 
+
+int crash() 
+{
+  C *c=new C();   // { dg-error "ambiguous" }
+}

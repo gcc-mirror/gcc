@@ -1332,8 +1332,9 @@ lookup_field (tree xbasetype, tree name, int protect, bool want_type)
 {
   tree rval = lookup_member (xbasetype, name, protect, want_type);
   
-  /* Ignore functions.  */
-  if (rval && BASELINK_P (rval))
+  /* Ignore functions, but propagate the ambiguity list.  */
+  if (!error_operand_p (rval)
+      && (rval && BASELINK_P (rval)))
     return NULL_TREE;
 
   return rval;
@@ -1347,8 +1348,9 @@ lookup_fnfields (tree xbasetype, tree name, int protect)
 {
   tree rval = lookup_member (xbasetype, name, protect, /*want_type=*/false);
 
-  /* Ignore non-functions.  */
-  if (rval && !BASELINK_P (rval))
+  /* Ignore non-functions, but propagate the ambiguity list.  */
+  if (!error_operand_p (rval)
+      && (rval && !BASELINK_P (rval)))
     return NULL_TREE;
 
   return rval;

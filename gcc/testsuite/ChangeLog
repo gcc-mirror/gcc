@@ -1,5 +1,10 @@
 2004-06-14  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	PR c++/15967
+	* g++.dg/lookup/crash3.C: New test.
+
+2004-06-14  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	PR c++/15947
 	* g++.dg/parse/dtor4.C: New test.
 
