@@ -326,7 +326,7 @@ L4:	lsrl	IMM (1), d1	/* shift divisor */
 	swap	d2
 	mulu	d0, d2		/* high part, at most 17 bits */
 	swap	d2		/* align high part with low part */
-	btst	IMM (0), d2	/* high part 17 bits? */
+	tstw	d2		/* high part 17 bits? */
 	jne	L5		/* if 17 bits, quotient was too large */
 	addl	d2, d1		/* add parts */
 	jcs	L5		/* if sum is 33 bits, quotient was too large */
