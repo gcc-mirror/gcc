@@ -32,18 +32,14 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#define TEXT_SEG(x) .section .text.libgcc ; x
-#define GLOBAL(x) .global _##x
-#define FUNCTION(x) .func _##x
-#define LABEL(x) _##x##:
-#define ENDFUNC .endfunc
-
 #define __zero_reg__ r1
 #define __tmp_reg__ r0
 #define __SREG__ 0x3f
 #define __SP_H__ 0x3e
 #define __SP_L__ 0x3d
 
+	.section .text.libgcc
+	
 /*******************************************************
                Multiplication  8 x 8
 *******************************************************/
@@ -53,13 +49,12 @@ Boston, MA 02111-1307, USA.  */
 #define	r_arg1 	r24		/* multiplier */
 #define r_res	__tmp_reg__	/* result */
 
-TEXT_SEG(mulqi3)
-GLOBAL (mulqi3)
-FUNCTION (mulqi3)
-LABEL(mulqi3)
+	.global	_mulqi3
+	.func	_mulqi3
+_mulqi3:
 
-GLOBAL (umulqi3)
-LABEL(umulqi3)
+	.global	_umulqi3
+_umulqi3:
 	clr	r_res		; clear result
 __mulqi3_loop:
 	sbrc	r_arg1,0
@@ -76,7 +71,7 @@ __mulqi3_exit:
 #undef r_arg1  
 #undef r_res   
 	
-ENDFUNC
+.endfunc
 #endif 	/* defined (Lmulqi3) */
 
 
@@ -91,13 +86,12 @@ ENDFUNC
 #define r_resL	r20		/* result Low */
 #define r_resH  r21		/* result High */
 
-TEXT_SEG(mulhi3)
-GLOBAL (mulhi3)
-FUNCTION (mulhi3)
-LABEL(mulhi3)
+	.global	_mulhi3
+	.func	_mulhi3
+_mulhi3:
 
-GLOBAL (umulhi3)
-LABEL(umulhi3)
+	.global	_umulhi3
+_umulhi3:
 	
 	clr	r_resH		; clear result
 	clr	r_resL		; clear result
@@ -129,7 +123,7 @@ __mulhi3_exit:
 #undef r_resL 	
 #undef r_resH 
 
-ENDFUNC
+.endfunc
 #endif /* defined (Lmulhi3) */
 
 #if defined (Lmulsi3)
@@ -153,13 +147,12 @@ ENDFUNC
 #define r_resHH  r31		/* result High */
 
 	
-TEXT_SEG(mulsi3)
-GLOBAL (mulsi3)
-FUNCTION (mulsi3)
-LABEL(mulsi3)
+	.global	_mulsi3
+	.func	_mulsi3
+_mulsi3:
 
-GLOBAL (umulsi3)
-LABEL(umulsi3)
+	.global	_umulsi3
+_umulsi3:
 	clr	r_resHH		; clear result
 	clr	r_resHL		; clear result
 	clr	r_resH		; clear result
@@ -207,7 +200,7 @@ __mulsi3_exit:
 #undef r_resHL 
 #undef r_resHH 
 
-ENDFUNC
+.endfunc
 #endif /* defined (Lmulsi3) */
 	
 /*******************************************************
@@ -220,46 +213,42 @@ ENDFUNC
 
 #if defined (Lumodqi3)
 
-TEXT_SEG(divqi3)
-GLOBAL (umodqi3)
-FUNCTION (umodqi3)
-LABEL(umodqi3)
+	.global	_umodqi3
+	.func	_umodqi3
+_umodqi3:
 	clt
 	rcall	_udivqi3
 	mov	r24,r_rem
 	ret
-ENDFUNC
+.endfunc
 #endif /* defined (Lumodqi3) */
 	
 #if defined (Ludivqi3)
 
-TEXT_SEG(divqi3)
-GLOBAL (udivqi3)
-FUNCTION (udivqi3)
-LABEL(udivqi3)
+	.global	_udivqi3
+	.func	_udivqi3
+_udivqi3:
 	clr	__tmp_reg__
 	rjmp	_divqi_raw
-ENDFUNC
+.endfunc
 #endif /* defined (Ludivqi3) */
 
 #if defined (Lmodqi3)
 	
-TEXT_SEG (divqi3)
-GLOBAL (moqhi3)
-FUNCTION (moqhi3)
-LABEL (modqi3)
+	.global	_moqhi3
+	.func	_moqhi3
+_modqi3:
 	rcall	_divqi3
 	mov	r24,r_rem
 	ret
-ENDFUNC
+.endfunc
 #endif /* defined (Lmodqi3) */
 
 #if defined (Ldivqi3)
 
-TEXT_SEG(divqi3)
-GLOBAL (divqi3)
-FUNCTION (divqi3)
-LABEL(divqi3)
+	.global	_divqi3
+	.func	_divqi3
+_divqi3:
         bst     r_arg1,7	; store sign of divident
         mov     __tmp_reg__,r_arg1
         eor     __tmp_reg__,r_arg2; r0.7 is sign of result
@@ -267,8 +256,8 @@ LABEL(divqi3)
         neg     r_arg1		; divident negative : negate
         sbrc	r_arg2,7
         neg     r_arg2		; divisor negative : negate
-GLOBAL (divqi_raw)
-LABEL (divqi_raw)	
+	.global	_divqi_raw
+_divqi_raw:	
 	sub	r_rem,r_rem	; clear remainder and carry
 	ldi	r_cnt,9		; init loop counter
 	rjmp	__divqi3_ep	; jump to entry point
@@ -291,7 +280,7 @@ __divqi3_1:
 __divqi3_exit:
 	mov	r24,r_arg1	; put result to return register
 	ret
-ENDFUNC
+.endfunc
 #endif /* defined (Ldivqi3) */
 
 #undef r_rem
@@ -315,53 +304,49 @@ ENDFUNC
 #define	r_cnt	r21	/* loop count */
 #if defined (Lumodhi3)
 	
-TEXT_SEG (divhi3)
-GLOBAL (umodhi3)
-FUNCTION (umodhi3)
-LABEL (umodhi3)
+	.global	_umodhi3
+	.func	_umodhi3
+_umodhi3:
 	clt
 	rcall	_udivhi3
-GLOBAL (umodhi3_ret)
-LABEL (umodhi3_ret)
+	.global	_umodhi3_ret
+_umodhi3_ret:
 	mov	r24,r_remL
 	mov	r25,r_remH
 	ret
-ENDFUNC
+.endfunc
 #endif /* defined (Lumodhi3) */
 	
 #if defined (Ludivhi3)
 	
-TEXT_SEG (divhi3)
-GLOBAL (udivhi3)
-FUNCTION (udivhi3)
-LABEL (udivhi3)
+	.global	_udivhi3
+	.func	_udivhi3
+_udivhi3:
 	clr	__tmp_reg__
 	rjmp	_divhi_raw
-ENDFUNC
+.endfunc
 #endif /* defined (Ludivhi3) */
 
 #if defined (Lmodhi3)
 	
-TEXT_SEG (divhi3)
-GLOBAL (modhi3)
-FUNCTION (modhi3)
-LABEL (modhi3)
-GLOBAL (div)
-LABEL (div)
+	.global	_modhi3
+	.func	_modhi3
+_modhi3:
+	.global	_div
+_div:
 	rcall	_divhi3
 	mov	r22,r24		; needed for div () function
 	mov	r23,r25
 	rjmp	_umodhi3_ret
-ENDFUNC
+.endfunc
 #endif /* defined (Lmodhi3) */
 	
 	
 #if defined (Ldivhi3)
 	
-TEXT_SEG (divhi3)
-GLOBAL (divhi3)
-FUNCTION (divhi3)
-LABEL (divhi3)
+	.global	_divhi3
+	.func	_divhi3
+_divhi3:
         bst     r_arg1H,7	; store sign of divident
         mov     __tmp_reg__,r_arg1H
         eor     __tmp_reg__,r_arg2H   ; r0.7 is sign of result
@@ -376,8 +361,8 @@ __divhi3_skip1:
         neg     r_arg2L		; divisor negative : negate
 	sbci	r_arg2H,0xff
 __divhi3_skip2:
-GLOBAL (divhi_raw)
-LABEL (divhi_raw)
+	.global	_divhi_raw
+_divhi_raw:
 	sub	r_remL,r_remL
 	sub	r_remH,r_remH		; clear remainder and carry
 	ldi	r_cnt,17	; init loop counter
@@ -408,7 +393,7 @@ __divhi3_exit:
 	com	r_arg1L
 	com	r_arg1H
 	ret
-ENDFUNC
+.endfunc
 #endif /* defined (Ldivhi3) */
 	
 #undef r_remH  
@@ -444,58 +429,54 @@ ENDFUNC
 
 #if defined (Lumodsi3)
 
-TEXT_SEG(divsi3)
-GLOBAL (umodsi3)
-FUNCTION (umodsi3)
-LABEL(umodsi3)
+	.global	_umodsi3
+	.func	_umodsi3
+_umodsi3:
 	clt
 	rcall	_udivsi3
-GLOBAL (umodsi3_ret)
-LABEL (umodsi3_ret)
+	.global	_umodsi3_ret
+_umodsi3_ret:
 	mov	r25,r_remHH
 	mov	r24,r_remHL
 	mov	r23,r_remH
 	mov	r22,r_remL
-GLOBAL (cleanup)
-LABEL (cleanup)
+	.global	_cleanup
+_cleanup:
 	ret
-ENDFUNC
+.endfunc
 #endif /* defined (Lumodsi3) */
 	
 #if defined (Ludivsi3)
 
-TEXT_SEG(divsi3)
-GLOBAL (udivsi3)
-FUNCTION (udivsi3)
-LABEL(udivsi3)
+	.global	_udivsi3
+	.func	_udivsi3
+_udivsi3:
 	clr	__tmp_reg__
 	rjmp	_divsi_raw
-ENDFUNC
+.endfunc
 #endif /* defined (Ludivsi3) */
 
 #if defined (Lmodsi3)
 	
-TEXT_SEG (divsi3)
-GLOBAL (modsi3)
-FUNCTION (modsi3)
-LABEL (modsi3)
-GLOBAL (ldiv)
-LABEL (ldiv)
+	.global	_modsi3
+	.func	_modsi3
+_modsi3:
+	.global	_ldiv
+_ldiv:
 	rcall	_divsi3
 	mov	r18,r22		/* Needed for ldiv */
 	mov	r19,r23
 	mov	r20,r24
 	mov	r21,r25
 	rjmp	_umodsi3_ret
-ENDFUNC
+.endfunc
 #endif /* defined (Lmodsi3) */
 
 #if defined (Ldivsi3)
 
-TEXT_SEG(divsi3)
-GLOBAL (divsi3)
-FUNCTION (divsi3)
-LABEL(divsi3)
+	.global	_divsi3
+	.func	_divsi3
+_divsi3:
         bst     r_arg1HH,7	; store sign of divident
         mov     __tmp_reg__,r_arg1HH
         eor     __tmp_reg__,r_arg2HH   ; r0.7 is sign of result
@@ -518,8 +499,8 @@ __divsi3_skip1:
 	sbci	r_arg2HL,0xff
 	sbci	r_arg2HH,0xff
 __divsi3_skip2:
-GLOBAL (divsi_raw)
-LABEL (divsi_raw)
+	.global	_divsi_raw
+_divsi_raw:
 	push	r_cnt
 	sub	r_remL,r_remL
 	sub	r_remH,r_remH
@@ -571,7 +552,7 @@ __divsi3_exit:
 	com	r_arg1HL
 	com	r_arg1HH
 	ret
-ENDFUNC
+.endfunc
 #endif /* defined (Ldivsi3) */
 
 /**********************************
@@ -579,10 +560,9 @@ ENDFUNC
  **********************************/
 #if defined (Lprologue)
 
-TEXT_SEG (_prologue_saves)
-GLOBAL (_prologue_saves__)
-FUNCTION (_prologue_saves__)
-LABEL (_prologue_saves__)
+	.global	__prologue_saves__
+	.func	__prologue_saves__
+__prologue_saves__:
 	push r2
 	push r3
 	push r4
@@ -614,7 +594,7 @@ LABEL (_prologue_saves__)
 	out	__SP_H__,r29
 _prologue_end:
 	ijmp
-ENDFUNC
+.endfunc
 #endif /* defined (Lprologue) */
 
 /*
@@ -622,10 +602,9 @@ ENDFUNC
  */
 #if defined (Lepilogue)
 
-TEXT_SEG (_epilogue_restores)
-GLOBAL (_epilogue_restores__)
-FUNCTION (_epilogue_restores__)
-LABEL (_epilogue_restores__)
+	.global	__epilogue_restores__
+	.func	__epilogue_restores__
+__epilogue_restores__:
 	ldd	r2,Y+18
 	ldd	r3,Y+17
 	ldd	r4,Y+16
@@ -657,10 +636,9 @@ LABEL (_epilogue_restores__)
 #endif /* defined (Lepilogue) */
 
 #ifdef L__exit
-TEXT_SEG(exit)
-GLOBAL (exit)
-FUNCTION (exit)
-LABEL(exit)
+	.global	_exit
+	.func	_exit
+_exit:
 	rjmp	_exit
-ENDFUNC
+.endfunc
 #endif

@@ -911,7 +911,7 @@ print_operand (file, x, code)
   else if (code == 'k')
     asm_fprintf (file, cond_string (reverse_condition (GET_CODE (x))));
   else
-    output_addr_const (file, x);
+    print_operand_address (file, x);
 }
 
 /* Recognise operand OP of mode MODE used in call instructions */

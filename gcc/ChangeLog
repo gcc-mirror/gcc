@@ -1,3 +1,9 @@
+2000-03-02  Denis Chertykov  <denisc@overta.ru>
+
+	* avr.c (print_operand): Use print_operand_address instead of
+	output_addr_const.
+	* avr/libgcc.S: Cleanup code.
+
 2000-03-02  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_emit_set_const_1): Also try c + small constant.
