@@ -2415,9 +2415,15 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 
 	if (regno >= min_regno)
 	  {
+	    /* While the following 3 lines means that the inequality
+	         REGNO_LAST_UID (regno) <= REGNO_LAST_NOTE_UID (regno)
+	       is true at the end of the scanning, it may be subsequently
+	       invalidated (e.g. in load_mems) so it should not be relied
+	       upon.  */
 	    REGNO_LAST_NOTE_UID (regno) = INSN_UID (insn);
 	    if (!note_flag)
 	      REGNO_LAST_UID (regno) = INSN_UID (insn);
+
 	    if (REGNO_FIRST_UID (regno) == 0)
 	      REGNO_FIRST_UID (regno) = INSN_UID (insn);
 	    /* If we are called by reg_scan_update() (indicated by min_regno

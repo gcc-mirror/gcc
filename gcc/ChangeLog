@@ -1,3 +1,11 @@
+2004-11-27  Falk Hueffner  <falk@debian.org>
+            Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/18577
+	* unroll.c (unroll_loop): Test both REGNO_LAST_UID and
+	REGNO_LAST_NOTE_UID to decide whether a pseudo is local
+	to the loop.
+
 2004-11-27  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/12769

@@ -794,6 +794,10 @@ unroll_loop (loop, insn_count, strength_reduce_p)
       for (r = FIRST_PSEUDO_REGISTER; r < max_reg_before_loop; ++r)
 	if (REGNO_FIRST_UID (r) > 0 && REGNO_FIRST_UID (r) < max_uid_for_loop
 	    && REGNO_FIRST_LUID (r) >= copy_start_luid
+	    /* See the comment in reg_scan_mark_refs on the relationship between
+	       last_uid and last_note_uid.  */
+	    && REGNO_LAST_UID (r) > 0 && REGNO_LAST_UID (r) < max_uid_for_loop
+	    && REGNO_LAST_LUID (r) <= copy_end_luid
 	    && REGNO_LAST_NOTE_UID (r) > 0 && REGNO_LAST_NOTE_UID (r) < max_uid_for_loop
 	    && REGNO_LAST_NOTE_LUID (r) <= copy_end_luid)
 	  {

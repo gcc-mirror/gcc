@@ -49,6 +49,9 @@ typedef struct reg_info_def
   int first_uid;		/* UID of first insn to use (REG n) */
   int last_uid;			/* UID of last insn to use (REG n) */
   int last_note_uid;		/* UID of last note to use (REG n) */
+				/* See the comment in reg_scan_mark_refs on
+				   the relationship between last_uid and
+				   last_note_uid.  */
 
 				/* fields set by reg_scan & flow_analysis */
   int sets;			/* # of times (REG n) is set */
