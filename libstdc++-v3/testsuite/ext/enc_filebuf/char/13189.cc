@@ -1,4 +1,4 @@
-// Copyright (C) 2003, 2004 Free Software Foundation
+// Copyright (C) 2003, 2004, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,10 +16,10 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
+#include <testsuite_hooks.h>
 #ifdef _GLIBCXX_USE___ENC_TRAITS
 #include <ext/enc_filebuf.h>
 #endif
-#include <testsuite_hooks.h>
 
 void test01()
 {

@@ -1,5 +1,11 @@
 2005-01-01  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/ext/enc_filebuf/char/13189.cc: Fix, first include
+	testsuite_hooks.h, to know whether including ext/enc_filebuf.h.
+	* testsuite/ext/enc_filebuf/wchar_t/13189.cc: Likewise.
+
+2005-01-01  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/27_io/basic_istream/extractors_character/char/1.cc: Fix,
 	null-terminate array1 at the outset.
 	* testsuite/27_io/basic_istream/extractors_character/wchar_t/1.cc:
