@@ -109,7 +109,7 @@ Boston, MA 02111-1307, USA.
    messages.  */
 
 #undef ASM_FINAL_SPEC
-#define ASM_FINAL_SPEC "%{pipe:-}"
+#define ASM_FINAL_SPEC "%|"
 
 /* Under svr4, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */
