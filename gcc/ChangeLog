@@ -1,3 +1,8 @@
+2003-07-15  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c.opt: Document more options.
+	* toplev.c (documented_lang_options): Remove all local help strings.
+
 2003-07-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR debug/11473

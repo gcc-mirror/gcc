@@ -146,16 +146,19 @@ C++ ObjC++
 
 Wall
 C ObjC C++ ObjC++
-Enable most preprocessor warnings
+Enable most warning messages
 
 Wbad-function-cast
 C ObjC
+Warn about casting functions to incompatible types
 
 Wcast-qual
 C ObjC C++ ObjC++
+Warn about casts which discard qualifiers
 
 Wchar-subscripts
 C ObjC C++ ObjC++
+Warn about subscripts whose type is \"char\"
 
 Wcomment
 C ObjC C++ ObjC++
@@ -167,6 +170,7 @@ Synonym for -Wcomment
 
 Wconversion
 C ObjC C++ ObjC++
+Warn about possibly confusing type conversions
 
 Wctor-dtor-privacy
 C++ ObjC++
@@ -176,6 +180,7 @@ C++ ObjC++
 
 Wdiv-by-zero
 C ObjC
+Warn about compile-time integer division by zero
 
 Weffc++
 C++ ObjC++
@@ -190,24 +195,31 @@ C ObjC C++ ObjC++
 
 Werror-implicit-function-declaration
 C ObjC RejectNegative
+Make implicit function declarations an error
 
 Wfloat-equal
 C ObjC C++ ObjC++
+Warn if testing floating point numbers for equality
 
 Wformat
 C ObjC C++ ObjC++
+Warn about printf/scanf/strftime/strfmon format string anomalies
 
 Wformat-extra-args
 C ObjC C++ ObjC++
+Warn if passing too many arguments to a function for its format string
 
 Wformat-nonliteral
 C ObjC C++ ObjC++
+Warn about format strings that are not literals
 
 Wformat-security
 C ObjC C++ ObjC++
+Warn about possible security problems with format functions
 
 Wformat-y2k
 C ObjC C++ ObjC++
+Warn about strftime formats yielding 2-digit years
 
 Wformat-zero-length
 C ObjC
@@ -220,43 +232,54 @@ C ObjC C++ ObjC++
 
 Wimplicit-function-declaration
 C ObjC
+Warn about implicit function declarations
 
 Wimplicit-int
 C ObjC
+Warn when a declaration does not specify a type
 
 Wimport
 C ObjC C++ ObjC++
-Warn about uses of the #import directive
+Warn about uses of the \"#import\" directive
 
 Winvalid-offsetof
 C++ ObjC++
 
 Winvalid-pch
 C ObjC C++ ObjC++
+Warn about PCH files that are found but not used
 
 Wlong-long
 C ObjC C++ ObjC++
+Do not warn about using \"long long\" when -pedantic
 
 Wmain
 C ObjC
+Warn about suspicious declarations of \"main\"
 
 Wmissing-braces
 C ObjC C++ ObjC++
+Warn about possibly missing braces around initializers
 
 Wmissing-declarations
 C ObjC
+Warn about global functions without previous declarations
 
 Wmissing-format-attribute
 C ObjC C++ ObjC++
+Warn about functions which might be candidates for format attributes
 
 Wmissing-prototypes
 C ObjC
+Warn about global functions without prototypes
 
 Wmultichar
 C ObjC C++ ObjC++
+Warn about use of multi-character character constants
 
 Wnested-externs
 C ObjC
+Warn about \"extern\" declarations not at file scope
 
 Wnon-template-friend
 C++ ObjC++
@@ -275,39 +298,46 @@ C++ ObjC++
 
 Wparentheses
 C ObjC C++ ObjC++
+Warn about possibly missing parentheses
 
 Wpmf-conversions
 C++ ObjC++
 
 Wpointer-arith
 C ObjC C++ ObjC++
+Warn about function pointer arithmetic
 
 Wprotocol
 ObjC ObjC++
 
 Wredundant-decls
 C ObjC C++ ObjC++
+Warn about multiple declarations of the same object
 
 Wreorder
 C++ ObjC++
 
 Wreturn-type
 C ObjC C++ ObjC++
+Warn whenever a function's return type defaults to \"int\"
 
 Wselector
 ObjC ObjC++
 
 Wsequence-point
 C ObjC
+Warn about possible violations of sequence point rules
 
 Wsign-compare
 C ObjC C++ ObjC++
+Warn about signed-unsigned comparisons
 
 Wsign-promo
 C++ ObjC++
 
 Wstrict-prototypes
 C ObjC
+Warn about unprototyped function declarations
 
 Wsynth
 C++ ObjC++
@@ -333,6 +363,7 @@ Warn if an undefined macro is used in an #if directive
 
 Wunknown-pragmas
 C ObjC C++ ObjC++
+Warn about unrecognized pragmas
 
 Wunused-macros
 C ObjC C++ ObjC++
@@ -340,9 +371,11 @@ Warn about macros defined in the main file that are not used
 
 Wwrite-strings
 C ObjC C++ ObjC++
+Give strings the type \"array of char\"
 
 ansi
 C ObjC C++ ObjC++
+A synonym for -std=c89.  In a future version of GCC it will become synonymous with -std=c99 instead
 
 d
 C ObjC C++ ObjC++ Joined
@@ -362,9 +395,11 @@ C++ ObjC++
 
 fasm
 C ObjC C++ ObjC++
+Recognize the \"asm\" keyword
 
 fbuiltin
 C ObjC C++ ObjC++
+Recognize built-in functions
 
 fbuiltin-
 C ObjC C++ ObjC++ Joined
@@ -374,6 +409,7 @@ C++ ObjC++
 
 fcond-mismatch
 C ObjC C++ ObjC++
+Allow the arguments of the '?' operator to have different types
 
 fconserve-space
 C++ ObjC++
@@ -421,6 +457,7 @@ C++ ObjC++
 
 ffreestanding
 C ObjC
+Do not assume that standard C libraries and \"main\" exist
 
 fgnu-keywords
 C++ ObjC++
@@ -439,6 +476,7 @@ C++ ObjC++
 
 fhosted
 C ObjC
+Assume normal C execution environment
 
 fhuge-objects
 C++ ObjC++
@@ -497,21 +535,26 @@ C++ ObjC++
 
 fshort-double
 C ObjC C++ ObjC++
+Use the same size for double as for float
 
 fshort-enums
 C ObjC C++ ObjC++
+Use the narrowest integer type possible for enumeration types
 
 fshort-wchar
 C ObjC C++ ObjC++
+Force the underlying type for \"wchar_t\" to be \"unsigned short\"
 
 fshow-column
 C ObjC C++ ObjC++
 
 fsigned-bitfields
 C ObjC C++ ObjC++
+When \"signed\" or \"unsigned\" is not given make the bitfield signed
 
 fsigned-char
 C ObjC C++ ObjC++
+Make \"char\" signed by default
 
 fsquangle
 C++ ObjC++
@@ -534,9 +577,11 @@ C++ ObjC++
 
 funsigned-bitfields
 C ObjC C++ ObjC++
+When \"signed\" or \"unsigned\" is not given make the bitfield unsigned
 
 funsigned-char
 C ObjC C++ ObjC++
+Make \"char\" unsigned by default
 
 fuse-cxa-atexit
 C++ ObjC++

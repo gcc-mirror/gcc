@@ -1,3 +1,9 @@
+2003-07-15  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang-options.h: Remove.
+	* lang.opt: Document some options.  Remove --help.
+	* tree1.c (treelang_handle_option): Remove OPT__help case.
+
 2003-07-12  Andreas Jaeger  <aj@suse.de>
 
 	* Make-lang.in (treelang/tree-convert.o): Depend on TM_H.

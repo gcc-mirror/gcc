@@ -108,17 +108,6 @@ treelang_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED,
     default:
       abort();
 
-    case OPT__help:
-      if (!version_done)
-	{
-	  fputs (language_string, stdout);
-	  fputs (version_string, stdout);
-	  fputs ("\n", stdout);
-	  version_done = 1;
-	}
-      fprintf (stdout, "Usage: tree1 [switches] -o output input\n");
-      break;
-
     case OPT_v:
       if (!version_done)
 	{
