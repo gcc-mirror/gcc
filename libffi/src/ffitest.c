@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffitest.c - Copyright (c) 1996, 1997, 1998, 2002  Red Hat, Inc.
+   ffitest.c - Copyright (c) 1996, 1997, 1998, 2002, 2003  Red Hat, Inc.
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -1044,7 +1044,9 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
 # if FFI_CLOSURES
   /* A simple closure test */
     {
-      ffi_closure cl;
+      /* The closure must not be an automatic variable on
+	 platforms (Solaris) that forbid stack execution by default. */
+      static ffi_closure cl;
       ffi_type * cl_arg_types[3];
 
       cl_arg_types[0] = &ffi_type_sint;

@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1996 Cygnus Solutions
+   ffi.c - Copyright (c) 1996, 2003 Cygnus Solutions
    
    Sparc Foreign Function Interface 
 
@@ -27,6 +27,12 @@
 #include <ffi_common.h>
 
 #include <stdlib.h>
+
+#ifdef SPARC64
+extern void ffi_closure_v9(void);
+#else
+extern void ffi_closure_v8(void);
+#endif
 
 /* ffi_prep_args is called by the assembly routine once stack space
    has been allocated for the function's arguments */
@@ -408,4 +414,102 @@ void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
       break;
     }
 
+}
+
+ffi_status
+ffi_prep_closure (ffi_closure* closure,
+		  ffi_cif* cif,
+		  void (*fun)(ffi_cif*, void*, void**, void*),
+		  void *user_data)
+{
+  unsigned int *tramp = (unsigned int *) &closure->tramp[0];
+  unsigned long fn;
+  unsigned long ctx = (unsigned long) closure;
+
+#ifdef SPARC64
+  /* Trampoline address is equal to the closure address.  We take advantage
+     of that to reduce the trampoline size by 8 bytes. */
+  FFI_ASSERT (cif->abi == FFI_V9);
+  fn = (unsigned long) ffi_closure_v9;
+  tramp[0] = 0x83414000;	/* rd	%pc, %g1	*/
+  tramp[1] = 0xca586010;	/* ldx	[%g1+16], %g5	*/
+  tramp[2] = 0x81c14000;	/* jmp	%g5		*/
+  tramp[3] = 0x01000000;	/* nop			*/
+  *((unsigned long *) &tramp[4]) = fn;
+#else
+  FFI_ASSERT (cif->abi == FFI_V8);
+  fn = (unsigned long) ffi_closure_v8;
+  tramp[0] = 0x03000000 | fn >> 10;	/* sethi %hi(fn), %g1	*/
+  tramp[1] = 0x05000000 | ctx >> 10;	/* sethi %hi(ctx), %g2	*/
+  tramp[2] = 0x81c06000 | (fn & 0x3ff);	/* jmp   %g1+%lo(fn)	*/
+  tramp[3] = 0x8410a000 | (ctx & 0x3ff);/* or    %g2, %lo(ctx)	*/
+#endif
+
+  closure->cif = cif;
+  closure->fun = fun;
+  closure->user_data = user_data;
+
+  /* Flush the Icache.  FIXME: alignment isn't certain, assume 8 bytes */
+#ifdef SPARC64
+  asm volatile ("flush	%0" : : "r" (closure) : "memory");
+  asm volatile ("flush	%0" : : "r" (((char *) closure) + 8) : "memory");
+#else
+  asm volatile ("iflush	%0" : : "r" (closure) : "memory");
+  asm volatile ("iflush	%0" : : "r" (((char *) closure) + 8) : "memory");
+#endif
+
+  return FFI_OK;
+}
+
+int
+ffi_closure_sparc_inner(ffi_closure *closure,
+  void *rvalue, unsigned long *gpr, double *fpr)
+{
+  ffi_cif *cif;
+  void **avalue;
+  ffi_type **arg_types;
+  int i, avn, argn;
+
+  cif = closure->cif;
+  avalue = alloca(cif->nargs * sizeof(void *));
+
+  argn = 0;
+
+  /* Copy the caller's structure return address to that the closure
+     returns the data directly to the caller.  */
+  if (cif->flags == FFI_TYPE_STRUCT)
+    {
+      rvalue = (void *) gpr[0];
+      argn = 1;
+    }
+
+  i = 0;
+  avn = cif->nargs;
+  arg_types = cif->arg_types;
+  
+  /* Grab the addresses of the arguments from the stack frame.  */
+  while (i < avn)
+    {
+      /* Assume big-endian.  FIXME */
+      argn += ALIGN(arg_types[i]->size, SIZEOF_ARG) / SIZEOF_ARG;
+
+#ifdef SPARC64
+      if (i < 6 && (arg_types[i]->type == FFI_TYPE_FLOAT
+		 || arg_types[i]->type == FFI_TYPE_DOUBLE
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+		 || arg_types[i]->type == FFI_TYPE_LONGDOUBLE
+#endif
+		))
+        avalue[i] = ((char *) &fpr[argn]) - arg_types[i]->size;
+      else
+#endif
+        avalue[i] = ((char *) &gpr[argn]) - arg_types[i]->size;
+      i++;
+    }
+
+  /* Invoke the closure.  */
+  (closure->fun) (cif, rvalue, avalue, closure->user_data);
+
+  /* Tell ffi_closure_sparc how to perform return type promotions.  */
+  return cif->rtype->type;
 }

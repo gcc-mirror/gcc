@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   v8.S - Copyright (c) 1996, 1997 Cygnus Solutions
+   v8.S - Copyright (c) 1996, 1997, 2003 Cygnus Solutions
    
    Sparc Foreign Function Interface 
 
@@ -94,6 +94,72 @@ longlong:
 .ffi_call_V8_end:
 	.size	ffi_call_V8,.ffi_call_V8_end-ffi_call_V8
 
+
+#define	STACKFRAME	104	/* 16*4 register window +
+				   1*4 struct return +	
+				   6*4 args backing store +
+				   3*4 locals */
+
+/* ffi_closure_v8(...)
+
+   Receives the closure argument in %g2.   */
+
+	.text
+	.align 8
+	.globl ffi_closure_v8
+
+ffi_closure_v8:
+	.register	%g2, #scratch
+.LLFB2:
+	save	%sp, -STACKFRAME, %sp
+.LLCFI1:
+
+	! Store all of the potential argument registers in va_list format.
+	st	%i0, [%fp+68+0]
+	st	%i1, [%fp+68+4]
+	st	%i2, [%fp+68+8]
+	st	%i3, [%fp+68+12]
+	st	%i4, [%fp+68+16]
+	st	%i5, [%fp+68+20]
+
+	! Call ffi_closure_sparc_inner to do the bulk of the work.
+	mov	%g2, %o0
+	add	%fp, -8, %o1
+	add	%fp,  68, %o2
+	call	ffi_closure_sparc_inner
+	 mov	0, %o3
+
+	! Load up the return value in the proper type.
+	cmp	%o0, FFI_TYPE_VOID
+	be	done1
+
+	cmp	%o0, FFI_TYPE_FLOAT
+	be,a	done1
+	 ld	[%fp-8], %f0
+
+	cmp	%o0, FFI_TYPE_DOUBLE
+	be,a	done1
+	 ldd	[%fp-8], %f0
+
+	cmp	%o0, FFI_TYPE_SINT64
+	be,a	integer
+	 ld	[%fp-4], %i1
+
+	cmp	%o0, FFI_TYPE_UINT64
+	be,a	integer
+	 ld	[%fp-4], %i1
+
+integer:
+	ld	[%fp-8], %i0
+
+done1:
+	ret
+	 restore
+.LLFE2:
+
+.ffi_closure_v8_end:
+	.size	ffi_closure_v8,.ffi_closure_v8_end-ffi_closure_v8
+
 #ifdef SPARC64
 #define WS 8
 #define nword	xword
@@ -148,3 +214,26 @@ longlong:
 	.byte	0x1f	! uleb128 0x1f
 	.align	WS
 .LLEFDE1:
+.LLSFDE2:
+	.uaword	.LLEFDE2-.LLASFDE2	! FDE Length
+.LLASFDE2:
+	.uaword	.LLASFDE2-.LLframe1	! FDE CIE offset
+#ifdef HAVE_AS_SPARC_UA_PCREL
+	.uaword	%r_disp32(.LLFB2)
+	.uaword	.LLFE2-.LLFB2	! FDE address range
+#else
+	.align	WS
+	.nword	.LLFB2
+	.uanword .LLFE2-.LLFB2	! FDE address range
+#endif
+	.byte	0x0	! uleb128 0x0; Augmentation size
+	.byte	0x4	! DW_CFA_advance_loc4
+	.uaword	.LLCFI1-.LLFB2
+	.byte	0xd	! DW_CFA_def_cfa_register
+	.byte	0x1e	! uleb128 0x1e
+	.byte	0x2d	! DW_CFA_GNU_window_save
+	.byte	0x9	! DW_CFA_register
+	.byte	0xf	! uleb128 0xf
+	.byte	0x1f	! uleb128 0x1f
+	.align	WS
+.LLEFDE2:

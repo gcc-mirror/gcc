@@ -1,3 +1,11 @@
+2003-01-03  Jeff Sturm  <jsturm@one-point.com>
+
+	* include/ffi.h.in: Add closure defines for SPARC, SPARC64.
+	* src/ffitest.c (main): Use static storage for closure.
+	* src/sparc/ffi.c (ffi_prep_closure, ffi_closure_sparc_inner): New.
+	* src/sparc/v8.S (ffi_closure_v8): New.
+	* src/sparc/v9.S (ffi_closure_v9): New.
+
 2002-11-10  Ranjit Mathew <rmathew@hotmail.com>
 
 	* include/ffi.h.in: Added FFI_STDCALL ffi_type
