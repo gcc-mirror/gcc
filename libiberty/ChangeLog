@@ -1,3 +1,12 @@
+2005-03-09  Ian Lance Taylor  <ian@airs.com>
+
+	* pex-os2.c: Remove.
+	* configure.ac: Remove *-*-os2-emx* case when setting pexecute.
+	* Makefile.in (CFILES): Remove pex-os2.c.
+	(CONFIGURED_OFILES): Remove pex-os2.o.
+	(pex-os2.o): Remove target.
+	* configure: Rebuild.
+
 2005-03-07  Ian Lance Taylor  <ian@airs.com>
 
 	* mpw-config.in: Remove.
