@@ -1,5 +1,5 @@
 @c Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
-@c 2003
+@c 2003, 2004
 @c  Free Software Foundation, Inc.
 @c This is part of the G77 manual.
 @c For copying conditions, see the file g77.texi.
@@ -9,9 +9,9 @@
 
 @c Keep this the same as the dates above, since it's used
 @c in the standalone derivations of this file (e.g. NEWS).
-@set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002,2003
+@set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
 
-@set last-update-news 2003-09-21
+@set last-update-news 2004-05-18
 
 @ifset DOC-NEWS
 @include root.texi
@@ -142,14 +142,6 @@ is later than the dates of those releases.
 That's due to attempts to keep this development version
 of news about previous @command{g77} versions up-to-date.
 @end ifset
-
-@ifclear USERVISONLY
-An online, ``live'' version of this document
-(derived directly from the mainline, development version
-of @command{g77} within @command{gcc})
-is available at
-@uref{http://gcc.gnu.org/onlinedocs/g77/News.html}.
-@end ifclear
 
 The following information was last updated on @value{last-update-news}:
 

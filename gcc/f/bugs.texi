@@ -1,4 +1,4 @@
-@c Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+@c Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 @c This is part of the G77 manual.
 @c For copying conditions, see the file g77.texi.
 
@@ -7,9 +7,9 @@
 
 @c Keep this the same as the dates above, since it's used
 @c in the standalone derivations of this file (e.g. BUGS).
-@set copyrights-bugs 1995,1996,1997,1998,1999,2000,2001,2002
+@set copyrights-bugs 1995,1996,1997,1998,1999,2000,2001,2002,2004
 
-@set last-update-bugs 2002-02-01
+@set last-update-bugs 2004-05-18
 
 @ifset DOC-BUGS
 @include root.texi
@@ -73,13 +73,6 @@ only an official @emph{release} of that version
 is expected to contain documentation that is
 most consistent with the @code{g77} product in that version.
 @end ifset
-
-An online, ``live'' version of this document
-(derived directly from the mainline, development version
-of @code{g77} within @code{gcc})
-is available via
-@uref{http://gcc.gnu.org/onlinedocs/g77/Trouble.html}.
-Follow the ``Known Bugs'' link.
 
 The following information was last updated on @value{last-update-bugs}:
 

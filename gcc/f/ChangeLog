@@ -1,3 +1,7 @@
+2004-05-18  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* bugs.texi, news.texi: Don't reference mainline versions.
+
 2004-05-16  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* g77.texi (Floating-point Errors): Fix typo.
