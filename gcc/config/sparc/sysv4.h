@@ -64,7 +64,7 @@ Boston, MA 02111-1307, USA.  */
 /* Pass -K to the assembler when PIC.  */
 #undef ASM_SPEC
 #define ASM_SPEC \
-  "%{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
+  "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
    %{fpic:-K PIC} %{fPIC:-K PIC} %(asm_cpu)"
 
 /* Must use data section for relocatable constants when pic.  */
