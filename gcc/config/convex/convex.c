@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Convex.
-   Copyright (C) 1988, 93, 94, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 93, 94, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "function.h"
 #include "expr.h"
+#include "tm_p.h"
 
 /* Tables used in convex.h */
 
@@ -55,13 +56,16 @@ static char cmp_modech;
 
 /* Forwards */
 
+#if 0
 static rtx frame_argblock;
 static int frame_argblock_size;
 static rtx convert_arg_pushes ();
-static void expand_movstr_call ();
+#endif
+static void expand_movstr_call PARAMS ((rtx *));
 
 /* Here from OVERRIDE_OPTIONS at startup.  Initialize constant tables. */
 
+void
 init_convex ()
 {
   int regno;
@@ -101,6 +105,7 @@ init_convex ()
   psw_disable_float ();
 }
 
+void
 psw_disable_float ()
 {
 #if __convex__ && __GNUC__
@@ -117,10 +122,10 @@ psw_disable_float ()
 /* Here to output code for a compare insn.  Output nothing, just
    record the operands and their mode. */
 
-char *
+const char *
 output_cmp (operand0, operand1, modech)
      rtx operand0, operand1;
-     char modech;
+     int modech;
 {
   cmp_operand0 = operand0;
   cmp_operand1 = operand1;
@@ -137,11 +142,11 @@ output_cmp (operand0, operand1, modech)
        (beq L5)
  */
 
-char *
+const char *
 output_condjump (label, cond, jbr_sense)
      rtx label;
-     char *cond;
-     char jbr_sense;
+     const char *cond;
+     int jbr_sense;
 {
   rtx operands[3];
   char cmp_op[4];
@@ -251,6 +256,8 @@ simplify_for_convex (x)
 
     case CONST:
       return simplify_for_convex (XEXP (x, 0));
+    default:
+      break;
     }
 
   return x;
@@ -458,13 +465,13 @@ check_float_value (mode, dp, overflow)
 void
 asm_declare_function_name (file, name, decl)
     FILE *file;
-    char *name;
+    const char *name;
     tree decl;
 {
-  tree parms;
   int nargs = list_length (DECL_ARGUMENTS (decl));
 
-  char *p, c;
+  const char *p;
+  char c;
   extern char *version_string;
   static char vers[4];
   int i;
@@ -498,10 +505,11 @@ asm_declare_function_name (file, name, decl)
     %z prints a CONST_INT shift count as a multiply operand -- viz. 1 << n.
  */
 
+void
 print_operand (file, x, code)
      FILE *file;
      rtx x;
-     char code;
+     int code;
 {
   long u[2];
   REAL_VALUE_TYPE d;
@@ -531,9 +539,9 @@ print_operand (file, x, code)
 	}
 #endif
 	if (code == 'u')
-	  fprintf (file, "#%#x", u[0]);
+	  fprintf (file, "#%#lx", u[0]);
 	else if (code == 'v')
-	  fprintf (file, "#%#x", u[1]);
+	  fprintf (file, "#%#lx", u[1]);
 	else
 	  outfloat (file, d, "%.17e", "#", "");
 	break;
@@ -565,6 +573,7 @@ print_operand (file, x, code)
 
 /* Print a memory operand whose address is X, on file FILE. */
 
+void
 print_operand_address (file, addr)
      FILE *file;
      rtx addr;
@@ -612,10 +621,11 @@ print_operand_address (file, addr)
 /* Output a float to FILE, value VALUE, format FMT, preceded by PFX
    and followed by SFX. */
 
+void
 outfloat (file, value, fmt, pfx, sfx)
      FILE *file;
      REAL_VALUE_TYPE value;
-     char *fmt, *pfx, *sfx;
+     const char *fmt, *pfx, *sfx;
 {
   char buf[64];
   fputs (pfx, file);
@@ -631,6 +641,7 @@ outfloat (file, value, fmt, pfx, sfx)
    and the calling sequence does not require the arg block to be at the
    top of the stack.  */
 
+void
 replace_arg_pushes ()
 {
   /* Doesn't work yet. */
@@ -644,9 +655,9 @@ replace_arg_pushes ()
      4 - address of the arg list.  
  */
 
-char *
+const char *
 output_call (insn, operands)
-     rtx insn, *operands;
+     rtx insn ATTRIBUTE_UNUSED, *operands;
 {
   if (operands[4] == stack_pointer_rtx)
     output_asm_insn ("mov sp,ap", operands);
@@ -669,6 +680,7 @@ output_call (insn, operands)
 
 /* Here after reloading, before the second scheduling pass. */
 
+void
 emit_ap_optimizations ()
 {
   /* Removed for now. */

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Convex version.
-   Copyright (C) 1988, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1995, 1996, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -628,7 +628,7 @@ enum reg_class {
    of length N_REG_CLASSES.  */
 
 #define REG_CLASS_CONTENTS \
-  { 0, 0x00ff, 0xfe00, 0x0100, 0xff00, 0xfeff, 0xffff }
+  { {0}, {0x00ff}, {0xfe00}, {0x0100}, {0xff00}, {0xfeff}, {0xffff} }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -1107,7 +1107,7 @@ enum reg_class {
 
 #define RTX_COSTS(RTX,CODE,OUTER_CODE) \
   case PLUS:								\
-    if (regno_pointer_flag != 0						\
+    if (cfun->emit->regno_pointer_flag != 0				\
 	&& GET_CODE (XEXP (RTX, 0)) == REG				\
 	&& REGNO_POINTER_FLAG (REGNO (XEXP (RTX, 0)))			\
 	&& GET_CODE (XEXP (RTX, 1)) == CONST_INT)			\
@@ -1172,11 +1172,10 @@ enum reg_class {
 
 /* But must prevent real.c from constructing Vax dfloats */
 #define REAL_VALUE_ATOF(X,S) atof (X)
-extern double atof();
 
 /* Check a `double' value for validity for a particular machine mode.  */
 #define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW) \
-   OVERFLOW = check_float_value (MODE, &D, OVERFLOW)
+   (OVERFLOW = check_float_value (MODE, &D, OVERFLOW))
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 
@@ -1235,13 +1234,13 @@ extern double atof();
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
 
-#define ASM_OUTPUT_ALIGN(FILE,LOG)  \
+#define ASM_OUTPUT_ALIGN(FILE,LOG) do { \
   if (current_section_is_text && (LOG) > 1)				\
     fprintf (FILE, ".text %d\n", LOG);					\
   else if (current_section_is_text)					\
     fprintf (FILE, ".text\n.align %d\n", 1 << (LOG));			\
   else									\
-    fprintf (FILE, ".align %d\n", 1 << (LOG))
+    fprintf (FILE, ".align %d\n", 1 << (LOG)); } while (0)
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
@@ -1493,11 +1492,3 @@ extern enum reg_class reg_class_from_letter[];
 extern char regno_ok_for_index_p_base[];
 #define regno_ok_for_index_p (regno_ok_for_index_p_base + 1)
 
-extern int const_double_low_int ();
-extern int const_double_high_int ();
-extern char *output_cmp ();
-extern char *output_condjump ();
-extern char *output_call ();
-extern void gen_ap_for_call ();
-extern int check_float_value ();
-extern void asm_declare_function_name ();
