@@ -1,3 +1,8 @@
+Sun Feb 22 15:23:27 1998  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* configure.in (alpha*-*-linux*): Treat alpha*-*-linux* as
+	alpha*-*-linux* not alpha*-*-*.
+
 Fri Jan  2 11:34:38 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* egcs-1.0.1 release.

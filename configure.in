@@ -416,6 +416,12 @@ case "${target}" in
   alpha*-*-*vms*)
     noconfigdirs="$noconfigdirs gdb ld target-newlib target-libgloss"
     ;;
+  alpha*-*-linux*)
+    # newlib is not 64 bit ready
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    # linux has rx in libc
+    skipdirs="$skipdirs target-librx"
+    ;;
   alpha*-*-*)
     # newlib is not 64 bit ready
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
