@@ -404,7 +404,7 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    *
    * @see DataInput#readUTF
    */
-  public synchronized final void writeUTF (String value) throws IOException
+  public final synchronized void writeUTF(String value) throws IOException
   {
     int len = value.length();
     int sum = 0;

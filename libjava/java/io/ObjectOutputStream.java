@@ -893,7 +893,7 @@ public class ObjectOutputStream extends OutputStream
    *
    * XXX: finish up comments
    */
-  public static abstract class PutField
+  public abstract static class PutField
   {
     public abstract void put (String name, boolean value);
     public abstract void put (String name, byte value);
@@ -1552,7 +1552,7 @@ public class ObjectOutputStream extends OutputStream
   }
 
   // this value comes from 1.2 spec, but is used in 1.1 as well
-  private final static int BUFFER_SIZE = 1024;
+  private static final int BUFFER_SIZE = 1024;
 
   private static int defaultProtocolVersion = PROTOCOL_VERSION_2;
 

@@ -1120,7 +1120,7 @@ public class ObjectInputStream extends InputStream
    *
    * XXX: finish up comments
    */
-  public static abstract class GetField
+  public abstract static class GetField
   {
     public abstract ObjectStreamClass getObjectStreamClass();
 

@@ -651,7 +651,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @see DataInput#readUTF
    */
-  public final static String readUTF (DataInput in) throws IOException
+  public static final String readUTF(DataInput in) throws IOException
   {
     final int UTFlen = in.readUnsignedShort ();
     byte[] buf = new byte [UTFlen];
