@@ -1,3 +1,8 @@
+2001-02-11  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* include/bits/valarray_meta.h (_RefFunClos<>_RefRunClos): Fix
+	thinko in member initialisation.
+
 2001-02-11  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* include/bits/std_valarray.h(valarray<>::shift): Avoid
