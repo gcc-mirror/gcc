@@ -560,6 +560,10 @@ _Jv_JNI_CallAnyMethodV (JNIEnv *env, jobject obj, jclass klass,
   jvalue args[arg_types->length];
   array_from_valist (args, arg_types, vargs);
 
+  // For constructors we need to pass the Class we are instantiating.
+  if (style == constructor)
+    return_type = klass;
+
   jvalue result;
   jthrowable ex = _Jv_CallAnyMethodA (obj, return_type, id,
 				      style == constructor,
@@ -604,6 +608,10 @@ _Jv_JNI_CallAnyMethodA (JNIEnv *env, jobject obj, jclass klass,
   _Jv_GetTypesFromSignature (id, decl_class,
 			     &arg_types, &return_type);
 
+  // For constructors we need to pass the Class we are instantiating.
+  if (style == constructor)
+    return_type = klass;
+
   jvalue result;
   jthrowable ex = _Jv_CallAnyMethodA (obj, return_type, id,
 				      style == constructor,
@@ -635,6 +643,10 @@ _Jv_JNI_CallAnyVoidMethodV (JNIEnv *env, jobject obj, jclass klass,
 
   jvalue args[arg_types->length];
   array_from_valist (args, arg_types, vargs);
+
+  // For constructors we need to pass the Class we are instantiating.
+  if (style == constructor)
+    return_type = klass;
 
   jthrowable ex = _Jv_CallAnyMethodA (obj, return_type, id,
 				      style == constructor,
@@ -804,7 +816,11 @@ _Jv_JNI_NewObjectV (JNIEnv *env, jclass klass,
 {
   JvAssert (klass && ! klass->isArray ());
   JvAssert (! strcmp (id->name->data, "<init>")
-	    && ! strcmp (id->signature->data, "()V"));
+	    && id->signature->length > 2
+	    && id->signature->data[0] == '('
+	    && ! strcmp (&id->signature->data[id->signature->length - 2],
+			 ")V"));
+
   return _Jv_JNI_CallAnyMethodV<jobject, constructor> (env, NULL, klass,
 						       id, args);
 }
@@ -814,7 +830,10 @@ _Jv_JNI_NewObject (JNIEnv *env, jclass klass, jmethodID id, ...)
 {
   JvAssert (klass && ! klass->isArray ());
   JvAssert (! strcmp (id->name->data, "<init>")
-	    && ! strcmp (id->signature->data, "()V"));
+	    && id->signature->length > 2
+	    && id->signature->data[0] == '('
+	    && ! strcmp (&id->signature->data[id->signature->length - 2],
+			 ")V"));
 
   va_list args;
   jobject result;
@@ -833,7 +852,11 @@ _Jv_JNI_NewObjectA (JNIEnv *env, jclass klass, jmethodID id,
 {
   JvAssert (klass && ! klass->isArray ());
   JvAssert (! strcmp (id->name->data, "<init>")
-	    && ! strcmp (id->signature->data, "()V"));
+	    && id->signature->length > 2
+	    && id->signature->data[0] == '('
+	    && ! strcmp (&id->signature->data[id->signature->length - 2],
+			 ")V"));
+
   return _Jv_JNI_CallAnyMethodA<jobject, constructor> (env, NULL, klass,
 						       id, args);
 }

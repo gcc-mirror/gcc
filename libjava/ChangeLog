@@ -1,5 +1,13 @@
 2000-02-16  Tom Tromey  <tromey@cygnus.com>
 
+	* jni.cc (_Jv_JNI_NewObjectV): Corrected assertion.
+	(_Jv_JNI_NewObject): Likewise.
+	(_Jv_JNI_NewObjectA): Likewise.
+	(_Jv_JNI_CallAnyMethodV): In constructor case, pass correct value
+	as "return" type to _Jv_CallAnyMethodA.
+	(_Jv_JNI_CallAnyMethodA): Likewise.
+	(_Jv_JNI_CallAnyVoidMethodV): Likewise.
+
 	* jni.cc (_Jv_JNI_FindClass): Use ClassLoader.loadClass, not
 	findClass.
 
