@@ -370,15 +370,17 @@ else
    LIBS="$LIBS $THREADLIBS"
    AC_CHECK_FUNCS(pthread_mutexattr_settype pthread_mutexattr_setkind_np)
 
-   # Look for sched_yield.  Sometimes it is in the posix4 library
-   # (Solaris) and sometimes in -lrt (x86 Solaris).
+   # Look for sched_yield.  Up to Solaris 2.6, it is in libposix4, since
+   # Solaris 7 the name librt is preferred.
    AC_CHECK_FUNCS(sched_yield, , [
-     AC_CHECK_LIB(posix4, sched_yield, [
+     AC_CHECK_LIB(rt, sched_yield, [
        AC_DEFINE(HAVE_SCHED_YIELD)
-       THREADLIBS="$THREADLIBS -lposix4"], [
-       AC_CHECK_LIB(rt, sched_yield, [
+       THREADLIBS="$THREADLIBS -lrt"
+       THREADSPECS="$THREADSPECS -lrt"], [
+       AC_CHECK_LIB(posix4, sched_yield, [
          AC_DEFINE(HAVE_SCHED_YIELD)
-	 THREADLIBS="$THREADLIBS -lrt"])])])
+	 THREADLIBS="$THREADLIBS -lposix4"
+         THREADSPECS="$THREADSPECS -lposix4"])])])
    LIBS="$save_LIBS"
 
    # We require a way to get the time.
