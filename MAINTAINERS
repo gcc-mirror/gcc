@@ -61,7 +61,6 @@ m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
 mcore port		Nick Clifton		nickc@redhat.com
 mips port               Eric Christopher        echristo@redhat.com
 mmix port		Hans-Peter Nilsson	hp@bitrange.com
-mn10200 port		Jeff Law		law@redhat.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
 ns32k port		Ian Dall		ian@beware.dropbear.id.au

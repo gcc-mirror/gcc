@@ -1,3 +1,7 @@
+2003-12-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* MAINTAINERS: Remove the mn10200 maintainer.
+
 2003-12-21  Bernardo Innocenti  <bernie@develer.com>
  
  	* configure.in (*-*-uclinux): Exclude newlib, libgloss and rda.
