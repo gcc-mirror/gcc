@@ -158,6 +158,7 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
     percent = safeGetChar (res, "percent", '%');
     perMill = safeGetChar (res, "perMill", '\u2030');
     zeroDigit = safeGetChar (res, "zeroDigit", '0');
+    locale = loc;
   }
 
   /**
@@ -580,13 +581,20 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
   /**
    * @serial This value represents the type of object being de-serialized.
    * 0 indicates a pre-Java 1.1.6 version, 1 indicates 1.1.6 or later.
-   */
-  private int serialVersionOnStream = 1;
+   * 0 indicates a pre-Java 1.1.6 version, 1 indicates 1.1.6 or later,
+   * 2 indicates 1.4 or later
+    */
+  private int serialVersionOnStream = 2;
   /**
    * @serial This is the character used to represent 0.
    */
   private char zeroDigit;
 
+  /**
+   * @serial The locale of these currency symbols.
+   */
+  private Locale locale;
+ 
   private static final long serialVersionUID = 5772796243397350300L;
 
   private void readObject(ObjectInputStream stream)
@@ -597,7 +605,10 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
       {
         monetarySeparator = decimalSeparator;
 	exponential = 'E';
-	serialVersionOnStream = 1;
       }
+    if (serialVersionOnStream < 2)
+	locale = Locale.getDefault();
+
+    serialVersionOnStream = 2;
   }
 }
