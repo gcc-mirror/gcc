@@ -8061,17 +8061,22 @@
   ""
   "
 {
+  rtx addr;
+
   /* Since the stack grows upward, we need to store virtual_stack_dynamic_rtx
      in operand 0 before adjusting the stack.  */
   emit_move_insn (operands[0], virtual_stack_dynamic_rtx);
   anti_adjust_stack (operands[1]);
   if (TARGET_HPUX_UNWIND_LIBRARY)
     {
-      rtx dst = gen_rtx_MEM (word_mode,
-  			     gen_rtx_PLUS (word_mode, stack_pointer_rtx,
-			  		   GEN_INT (TARGET_64BIT ? -8 : -4)));
-
-      emit_move_insn (dst, frame_pointer_rtx);
+      addr = gen_rtx_PLUS (word_mode, stack_pointer_rtx,
+			   GEN_INT (TARGET_64BIT ? -8 : -4));
+      emit_move_insn (gen_rtx_MEM (word_mode, addr), frame_pointer_rtx);
+    }
+  if (!TARGET_64BIT && flag_pic)
+    {
+      rtx addr = gen_rtx_PLUS (word_mode, stack_pointer_rtx, GEN_INT (-32));
+      emit_move_insn (gen_rtx_MEM (word_mode, addr), pic_offset_table_rtx);
     }
   DONE;
 }")

@@ -3475,9 +3475,17 @@ hppa_expand_prologue (void)
      when generating PIC code.  FIXME:  What is the correct thing
      to do for functions which make no calls and allocate no
      frame?  Do we need to allocate a frame, or can we just omit
-     the save?   For now we'll just omit the save.  */
+     the save?   For now we'll just omit the save.
+     
+     We don't want a note on this insn as the frame marker can
+     move if there is a dynamic stack allocation.  */
   if (flag_pic && actual_fsize != 0 && !TARGET_64BIT)
-    store_reg (PIC_OFFSET_TABLE_REGNUM, -32, STACK_POINTER_REGNUM);
+    {
+      rtx addr = gen_rtx_PLUS (word_mode, stack_pointer_rtx, GEN_INT (-32));
+
+      emit_move_insn (gen_rtx_MEM (word_mode, addr), pic_offset_table_rtx);
+
+    }
 
   /* Align pointer properly (doubleword boundary).  */
   offset = (offset + 7) & ~7;
