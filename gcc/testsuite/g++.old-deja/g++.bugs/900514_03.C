@@ -83,14 +83,14 @@ struct t_2_st_0;
 struct t_2_st_1 {
   int member;
 
-  t_2_st_1 (t_2_st_0);
+  t_2_st_1 (t_2_st_0);		// ERROR - candidate
   t_2_st_1 ();
-};
+};				// ERROR - candidate
 
 struct t_2_st_0 {
   int member;
 
-  operator t_2_st_1 ();
+  operator t_2_st_1 ();		// ERROR - candidate
 };
 
 t_2_st_0 t_2_st_0_obj0;
