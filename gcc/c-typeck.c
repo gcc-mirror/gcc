@@ -6862,7 +6862,7 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       if (o[i] != TREE_VALUE (tail))
 	{
 	  expand_expr (build_modify_expr (o[i], NOP_EXPR, TREE_VALUE (tail)),
-		       0, VOIDmode, 0);
+		       NULL_RTX, VOIDmode, EXPAND_NORMAL);
 	  free_temp_slots ();
 	}
       /* Detect modification of read-only values.
