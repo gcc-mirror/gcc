@@ -1252,7 +1252,7 @@ do {						\
 #define SYMBOL_REF_WEAK(RTX)						\
   (RTL_FLAG_CHECK1("SYMBOL_REF_WEAK", (RTX), SYMBOL_REF)->integrated)
 
-/* The tree decl associated with the symbol, or null.  */
+/* The tree (decl or constant) associated with the symbol, or null.  */
 #define SYMBOL_REF_DECL(RTX)	X0TREE ((RTX), 2)
 
 /* A set of flags on a symbol_ref that are, in some respects, redundant with

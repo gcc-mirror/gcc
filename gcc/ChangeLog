@@ -1,3 +1,23 @@
+2003-04-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* varasm.c (const_str_htab_hash, const_str_htab_eq, STRHASH,
+	struct deferred_string, const_str_htab): Kill.
+	(n_deferred_strings): New static variable.
+	(build_constant_desc): Set SYMBOL_REF_DECL of the new
+	symbol_ref to point to the constant.
+	(output_constant_def): When a deferred string is forced out,
+	just clear STRING_POOL_ADDRESS_P and decrement n_deferred_strings.
+	(mark_constant): Likewise.
+	(maybe_output_constant_def_contents): When deferring a string
+	constant, just set STRING_POOL_ADDRESS_P and increment
+	n_deferred_strings.
+	(mark_constant_pool): Check n_deferred_strings, not the size
+	of const_str_htab.
+	(init_varasm_once): No need to create const_str_htab.
+
+	* rtl.def, rtl.h, doc/rtl.texi: Document possibility that
+	SYMBOL_REF_DECL points to a constant.
+
 2003-04-26  Zack Weinberg  <zack@codesourcery.com>
 
 	* varasm.c (output_constant_def): Split out two new static
