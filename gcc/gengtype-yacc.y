@@ -274,6 +274,7 @@ option:   ID
             { $$ = create_option ($1, (void *)$3); }
 	| type_option '(' type ')'
 	    { $$ = create_option ($1, adjust_field_type ($3, NULL)); }
+	;
 
 optionseq: option
 	      {
@@ -302,4 +303,5 @@ stringseq: STRING
 	       free ((void *)$2);
 	       $$ = s;
 	     }
+	   ;
 %%
