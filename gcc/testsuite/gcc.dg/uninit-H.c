@@ -14,6 +14,10 @@
 # define ASM __asm__("$sp")
 #elif defined __sparc__
 # define ASM __asm__("sp")
+#elif defined __ia64__
+# define ASM __asm__("r12")
+#elif defined __hppa__
+# define ASM __asm__("%r30")
 #else
 # define ASM
 #endif
