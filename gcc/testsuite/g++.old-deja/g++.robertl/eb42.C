@@ -1,3 +1,4 @@
+//Build don't link:
 #include <vector.h>
 #include <algo.h>
 
