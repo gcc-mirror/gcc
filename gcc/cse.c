@@ -445,12 +445,12 @@ struct table_elt
 #ifdef OVERLAPPING_REGNO_P
 #define FIXED_REGNO_P(N)  \
   (((N) == FRAME_POINTER_REGNUM || (N) == HARD_FRAME_POINTER_REGNUM \
-    || fixed_regs[N])	  \
+    || fixed_regs[N] || global_regs[N])	  \
    && ! OVERLAPPING_REGNO_P ((N)))
 #else
 #define FIXED_REGNO_P(N)  \
   ((N) == FRAME_POINTER_REGNUM || (N) == HARD_FRAME_POINTER_REGNUM \
-   || fixed_regs[N])
+   || fixed_regs[N] || global_regs[N])
 #endif
 
 /* Compute cost of X, as stored in the `cost' field of a table_elt.  Fixed
@@ -458,16 +458,23 @@ struct table_elt
    of 0.  Next come pseudos with a cost of one and other hard registers with
    a cost of 2.  Aside from these special cases, call `rtx_cost'.  */
 
-#define CHEAP_REG(N) \
+#define CHEAP_REGNO(N) \
   ((N) == FRAME_POINTER_REGNUM || (N) == HARD_FRAME_POINTER_REGNUM 	\
    || (N) == STACK_POINTER_REGNUM || (N) == ARG_POINTER_REGNUM	     	\
    || ((N) >= FIRST_VIRTUAL_REGISTER && (N) <= LAST_VIRTUAL_REGISTER) 	\
    || ((N) < FIRST_PSEUDO_REGISTER					\
        && FIXED_REGNO_P (N) && REGNO_REG_CLASS (N) != NO_REGS))
 
+/* A register is cheap if it is a user variable assigned to the register
+   or if its register number always corresponds to a cheap register.  */
+
+#define CHEAP_REG(N) \
+  ((REG_USERVAR_P (N) && REGNO (N) < FIRST_PSEUDO_REGISTER)	\
+   || CHEAP_REGNO (REGNO (N)))
+
 #define COST(X)						\
   (GET_CODE (X) == REG					\
-   ? (CHEAP_REG (REGNO (X)) ? 0				\
+   ? (CHEAP_REG (X) ? 0					\
       : REGNO (X) >= FIRST_PSEUDO_REGISTER ? 1		\
       : 2)						\
    : rtx_cost (X, SET) * 2)
@@ -717,7 +724,7 @@ rtx_cost (x, outer_code)
   switch (code)
     {
     case REG:
-      return ! CHEAP_REG (REGNO (x));
+      return ! CHEAP_REG (x);
 
     case SUBREG:
       /* If we can't tie these modes, make this expensive.  The larger
