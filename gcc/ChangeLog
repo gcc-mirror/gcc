@@ -1,3 +1,7 @@
+2002-04-16  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* doc/install.texi (Building): libgcj requires GNU make.
+
 2002-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/6315

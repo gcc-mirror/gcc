@@ -865,9 +865,10 @@ corresponding @option{--without} option.
 Now that GCC is configured, you are ready to build the compiler and
 runtime libraries.
 
-We @strong{highly} recommend that GCC be built using GNU make;
+We @strong{highly} recommend that GCC be built using GNU make; 
 other versions may work, then again they might not.
-GNU make is required for compiling GNAT, the Ada compiler.
+GNU make is required for compiling GNAT (the Ada compiler) and the Java
+runtime library.
 
 (For example, many broken versions of make will fail if you use the
 recommended setup where @var{objdir} is different from @var{srcdir}.
