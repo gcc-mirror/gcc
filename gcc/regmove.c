@@ -560,11 +560,12 @@ copy_src_to_dest (insn, src, dest, loop_depth)
      parameter when there is no frame pointer that is not allocated a register.
      For now, we just reject them, rather than incrementing the live length.  */
 
-  if (GET_CODE (src) == REG && GET_CODE (dest) == REG
+  if (GET_CODE (src) == REG
+      && REG_LIVE_LENGTH (REGNO (src)) > 0
+      && GET_CODE (dest) == REG
+      && REG_LIVE_LENGTH (REGNO (dest)) > 0
       && (set = single_set (insn)) != NULL_RTX
       && !reg_mentioned_p (dest, SET_SRC (set))
-      && REG_LIVE_LENGTH (REGNO (dest)) > 0
-      && REG_LIVE_LENGTH (REGNO (src)) > 0
       && validate_replace_rtx (src, dest, insn))
     {
       /* Generate the src->dest move.  */
