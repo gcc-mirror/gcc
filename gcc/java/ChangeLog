@@ -1,3 +1,7 @@
+2004-12-20  Andrew Haley  <aph@redhat.com>
+
+	* typeck.c: Use fold_convert for ints and booleans.
+
 2004-12-17  Andrew Haley  <aph@redhat.com>
 
 	PR java/18931
