@@ -2495,23 +2495,6 @@ init_decl_processing ()
 			       BUILT_IN_ALLOCA, 0);
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
-      /* Declare these functions volatile
-	 to avoid spurious "control drops through" warnings.  */
-      /* Don't specify the argument types, to avoid errors
-	 from certain code which isn't valid in ANSI but which exists.  */
-      temp = builtin_function ("abort",
-			       build_function_type (void_type_node, 0),
-			       NOT_BUILT_IN, 0);
-      TREE_THIS_VOLATILE (temp) = 1;
-      TREE_SIDE_EFFECTS (temp) = 1;
-      /* Suppress error if redefined as a non-function.  */
-      DECL_BUILT_IN_NONANSI (temp) = 1;
-      exit_type = build_function_type (void_type_node, 0);
-      temp = builtin_function ("exit", exit_type, NOT_BUILT_IN, 0);
-      TREE_THIS_VOLATILE (temp) = 1;
-      TREE_SIDE_EFFECTS (temp) = 1;
-      /* Suppress error if redefined as a non-function.  */
-      DECL_BUILT_IN_NONANSI (temp) = 1;
       temp = builtin_function ("_exit", exit_type, NOT_BUILT_IN, 0);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
@@ -2562,10 +2545,11 @@ init_decl_processing ()
   /* In an ANSI C program, it is okay to supply built-in meanings
      for these functions, since applications cannot validly use them
      with any other meaning.
-     However, a traditional C program can do so.
-     Also, honor the -fno-builtin option.  */
-  if (!flag_traditional && !flag_no_builtin)
+     However, honor the -fno-builtin option.  */
+  if (!flag_no_builtin)
     {
+      tree exit_type;
+
       builtin_function ("abs", int_ftype_int, BUILT_IN_ABS, 0);
       builtin_function ("fabs", double_ftype_double, BUILT_IN_FABS, 0);
       builtin_function ("labs", long_ftype_long, BUILT_IN_LABS, 0);
@@ -2575,6 +2559,28 @@ init_decl_processing ()
       builtin_function ("strcpy", string_ftype_ptr_ptr, BUILT_IN_STRCPY, 0);
       builtin_function ("strlen", sizet_ftype_string, BUILT_IN_STRLEN, 0);
       builtin_function ("sqrt", double_ftype_double, BUILT_IN_FSQRT, 0);
+
+      /* Declare these functions volatile
+	 to avoid spurious "control drops through" warnings.  */
+      /* Don't specify the argument types, to avoid errors
+	 from certain code which isn't valid in ANSI but which exists.  */
+      temp = builtin_function ("abort",
+			       build_function_type (void_type_node, 0),
+			       NOT_BUILT_IN, 0);
+      TREE_THIS_VOLATILE (temp) = 1;
+      TREE_SIDE_EFFECTS (temp) = 1;
+#if 0
+      /* Suppress error if redefined as a non-function.  */
+      DECL_BUILT_IN_NONANSI (temp) = 1;
+#endif
+      exit_type = build_function_type (void_type_node, 0);
+      temp = builtin_function ("exit", exit_type, NOT_BUILT_IN, 0);
+      TREE_THIS_VOLATILE (temp) = 1;
+      TREE_SIDE_EFFECTS (temp) = 1;
+#if 0
+      /* Suppress error if redefined as a non-function.  */
+      DECL_BUILT_IN_NONANSI (temp) = 1;
+#endif
     }
 
 #if 0
