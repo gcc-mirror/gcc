@@ -260,12 +260,14 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.flag_repack_arrays = value;
       break;
 
-    case OPT_ffixed_line_length_80:
-      gfc_option.fixed_line_length = 80;
+    case OPT_ffixed_line_length_none:
+      gfc_option.fixed_line_length = 0;
       break;
 
-    case OPT_ffixed_line_length_132:
-      gfc_option.fixed_line_length = 132;
+    case OPT_ffixed_line_length_:
+      if (value != 0 && value < 7)
+	gfc_fatal_error ("Fixed line length must be at least seven.");
+      gfc_option.fixed_line_length = value;
       break;
 
     case OPT_fmax_identifier_length_:
