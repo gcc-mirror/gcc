@@ -1,3 +1,9 @@
+2005-03-01  Per Bothner  <per@bothner.com>
+
+	* diagnostic.c (diagnostic_build_prefix): If USE_MAPPED_LOCATION
+	and we have a non-zero column-number, add it to the message.
+	Also factor out the diagnostic_kind_text.
+
 2005-03-01  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* cfgloop.c (flow_loop_entry_edges_find, flow_loop_exit_edges_find,
