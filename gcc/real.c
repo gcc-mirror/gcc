@@ -260,7 +260,12 @@ do {						\
 #define MAXDECEXP 4932
 #define MINDECEXP -4977
 #define GET_REAL(r,e) bcopy ((char *) r, (char *) e, 2*NE)
-#define PUT_REAL(e,r) bcopy ((char *) e, (char *) r, 2*NE)
+#define PUT_REAL(e,r)				\
+do {						\
+  if (2*NE < sizeof(*r))			\
+    bzero((char *)r, sizeof(*r));		\
+  bcopy ((char *) e, (char *) r, 2*NE);		\
+} while (0)
 #else
 #define NE 6
 #define MAXDECEXP 4932
