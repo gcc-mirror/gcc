@@ -83,7 +83,8 @@ MISC =	libF77/F77_aloc.o libF77/VersionF.o libF77/main.o libF77/s_rnge.o \
 	libF77/abort_.o libF77/getarg_.o libF77/iargc_.o libF77/getenv_.o \
 	libF77/signal_.o libF77/s_stop.o libF77/s_paus.o libF77/system_.o \
 	libF77/cabs.o libF77/derf_.o libF77/derfc_.o libF77/erf_.o \
-	libF77/erfc_.o libF77/sig_die.o libF77/exit_.o
+	libF77/erfc_.o libF77/sig_die.o libF77/exit_.o \
+	libF77/setarg.o libF77/setsig.o
 POW =	libF77/pow_ci.o libF77/pow_dd.o libF77/pow_di.o libF77/pow_hh.o \
 	libF77/pow_ii.o  libF77/pow_ri.o libF77/pow_zi.o libF77/pow_zz.o \
 	libF77/pow_qq.o
@@ -236,5 +237,4 @@ maintainer-clean: distclean
 
 rebuilt: ${srcdir}/configure ${srcdir}/libU77/configure
 
-.PHONY: libf77 libi77 libu77 rebuilt mostlyclean clean distclean \
-  maintainer-clean all
+.PHONY: rebuilt mostlyclean clean distclean maintainer-clean all
