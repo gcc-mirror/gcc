@@ -1,3 +1,8 @@
+Wed Jul  1 04:22:23 1998  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.c (function_arg_record_value): Take a MODE arg with which to
+	create the PARALLEL.  Update all callers.
+
 Wed Jul  1 04:10:35 1998  Richard Henderson  <rth@cygnus.com>
 
 	* expr.c (expand_assignment, store_constructor, expand_expr): Use
