@@ -1,4 +1,3 @@
-// excess errors test - XFAIL *-*-*
 class Foo {
 };
 

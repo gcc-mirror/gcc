@@ -15,7 +15,7 @@ main() {
   B b;
   try {
     (void)dynamic_cast<D&>(b);
-  } catch (bad_cast) {
+  } catch (std::bad_cast) {
     return 0;
   }
   return 1;

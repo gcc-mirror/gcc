@@ -8,15 +8,15 @@ void my_term ()  { exit (1); }
 void my_unexp () { throw 42; }
 
 void
-f () throw (char, int, bad_exception)
+f () throw (char, int, std::bad_exception)
 {
   throw 'a';
 }
 
 main ()
 {
-  set_terminate (my_term);
-  set_unexpected (my_unexp);
+  std::set_terminate (my_term);
+  std::set_unexpected (my_unexp);
 
   try
     {
@@ -30,7 +30,7 @@ main ()
     {
       return 3;
     }
-  catch (bad_exception)
+  catch (std::bad_exception)
     {
       return 4;
     }

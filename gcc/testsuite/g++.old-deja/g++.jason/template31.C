@@ -2,6 +2,8 @@
 
 #include <iostream.h>
 #include <vector>
+
+using std::vector;
  
 class Component {
     int george;
@@ -34,5 +36,5 @@ main(int argc, char**argv)   {
     exit(0);
 }
 
-template class __malloc_alloc_template<0>;
-template class __default_alloc_template<false, 0>;
+template class std::__malloc_alloc_template<0>;
+template class std::__default_alloc_template<false, 0>;

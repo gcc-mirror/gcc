@@ -36,7 +36,7 @@ void my_terminate() {
 }
 
 main() {
-  set_terminate (my_terminate);
+  std::set_terminate (my_terminate);
   try {
     bar();
   } catch (...) {
