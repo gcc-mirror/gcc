@@ -121,7 +121,7 @@ static tree subst_identifiers[SUBID_MAX];
 
 /* Single-letter codes for builtin integer types, defined in
    <builtin-type>.  These are indexed by integer_type_kind values.  */
-static char
+static const char
 integer_type_codes[itk_none] =
 {
   'c',  /* itk_char */
