@@ -1,5 +1,8 @@
 2004-08-12  Janis Johnson  <janis187@us.ibm.com>
 
+	* g++.dg/ext/altivec-2.C: Check for hardware support before
+	executing any VMX instructions.
+
 	* gcc.dg/vmx/ops-long-2.c: Add dg-error directives.
 
 2004-08-12  Jakub Jelinek  <jakub@redhat.com>

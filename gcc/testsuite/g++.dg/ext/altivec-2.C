@@ -8,14 +8,12 @@
 #include <altivec.h>
 #include "altivec_check.h"
 
-int main (int argc, const char * argv[])
+int main1 (void)
 {
   int i;
   const float cf = 1.0;
   vector float v;
   const vector float cv = (vector float){1.0, 2.0, 3.0, 4.0};
-
-  altivec_check ();
 
   vec_dst(&cv, i, 0);
   v = vec_ld(0, &cv);	
@@ -23,4 +21,10 @@ int main (int argc, const char * argv[])
   vec_lvsl(0, &cf);
   
   return 0;
+}
+
+int main (int argc, const char * argv[])
+{
+  altivec_check ();
+  return main1 ();
 }
