@@ -1,3 +1,15 @@
+Mon Apr 26 21:17:41 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* c-pragma.c (push_alignment): Don't ignore alignments greater than
+	4 bytes.
+	(handle_pragma_token): Likewise.
+
+	* c-pragma.c: Support for #pragma pack (push, <id>, <n>).
+	(struct align_stack): Add id field.
+	(push_alignment, pop_alignment): Take id parameter.
+	(handle_pragma_token): Add necessary states.
+	* c-pragma.h (enum pragma_state): Add necessary states.
+
 Tue Apr 27 13:58:23 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (*cmpqf, *cmpqf_noov, *cmpqi_test, 
