@@ -644,7 +644,7 @@ extern int rs6000_pic_labelno;
 	putc ('\n', FILE);						\
       }									\
 									\
-    fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
+    fprintf (FILE, "%s", TYPE_ASM_OP);					\
     assemble_name (FILE, NAME);						\
     putc (',', FILE);							\
     fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
@@ -762,14 +762,14 @@ do {									\
       ASM_OUTPUT_SKIP (FILE, SIZE);					\
       if (!flag_inhibit_size_directive && (SIZE) > 0)			\
 	{								\
-	  fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			\
+	  fprintf (FILE, "%s", SIZE_ASM_OP);				\
 	  assemble_name (FILE, NAME);					\
 	  fprintf (FILE, ",%d\n",  SIZE);				\
 	}								\
     }									\
   else									\
     {									\
-      fprintf (FILE, "\t%s\t", LCOMM_ASM_OP);				\
+      fprintf (FILE, "%s", LCOMM_ASM_OP);				\
       assemble_name ((FILE), (NAME));					\
       fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
     }									\
@@ -1007,7 +1007,7 @@ do {									\
     if (DEFAULT_ABI != ABI_SOLARIS)					\
       {									\
 	ctors_section ();						\
-	fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
+	fprintf (FILE, "%s", INT_ASM_OP);				\
 	assemble_name (FILE, NAME);					\
       }									\
     else								\
@@ -1028,7 +1028,7 @@ do {									\
     if (DEFAULT_ABI != ABI_SOLARIS)					\
       {									\
 	dtors_section ();						\
-	fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
+	fprintf (FILE, "%s", INT_ASM_OP);				\
 	assemble_name (FILE, NAME);					\
       }									\
     else								\

@@ -2597,26 +2597,26 @@ v850_output_common (file, decl, name, size, align)
 {
   if (decl == NULL_TREE)
     {
-      fprintf (file, "\t%s\t", COMMON_ASM_OP);
+      fprintf (file, "%s", COMMON_ASM_OP);
     }
   else
     {
       switch (v850_get_data_area (decl))
 	{
 	case DATA_AREA_ZDA:
-	  fprintf (file, "\t%s\t", ZCOMMON_ASM_OP);
+	  fprintf (file, "%s", ZCOMMON_ASM_OP);
 	  break;
 
 	case DATA_AREA_SDA:
-	  fprintf (file, "\t%s\t", SCOMMON_ASM_OP);
+	  fprintf (file, "%s", SCOMMON_ASM_OP);
 	  break;
 
 	case DATA_AREA_TDA:
-	  fprintf (file, "\t%s\t", TCOMMON_ASM_OP);
+	  fprintf (file, "%s", TCOMMON_ASM_OP);
 	  break;
       
 	default:
-	  fprintf (file, "\t%s\t", COMMON_ASM_OP);
+	  fprintf (file, "%s", COMMON_ASM_OP);
 	  break;
 	}
     }
@@ -2634,7 +2634,7 @@ v850_output_local (file, decl, name, size, align)
      int size;
      int align;
 {
-  fprintf (file, "\t%s\t", LOCAL_ASM_OP);
+  fprintf (file, "%s", LOCAL_ASM_OP);
   assemble_name (file, name);
   fprintf (file, "\n");
   

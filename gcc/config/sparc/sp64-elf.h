@@ -135,14 +135,14 @@ crtbegin.o%s \
 
 #define ASM_OUTPUT_DWARF_ADDR(FILE, LABEL) \
 do {								\
-  fprintf ((FILE), "\t%s\t", UNALIGNED_LONGLONG_ASM_OP);	\
+  fprintf ((FILE), "%s", UNALIGNED_LONGLONG_ASM_OP);		\
   assemble_name ((FILE), (LABEL));				\
   fprintf ((FILE), "\n");					\
 } while (0)
 
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE, RTX) \
 do {								\
-  fprintf ((FILE), "\t%s\t", UNALIGNED_LONGLONG_ASM_OP);	\
+  fprintf ((FILE), "%s", UNALIGNED_LONGLONG_ASM_OP);		\
   output_addr_const ((FILE), (RTX));				\
   fputc ('\n', (FILE));						\
 } while (0)
@@ -150,7 +150,7 @@ do {								\
 /* ??? Not sure if this should be 4 or 8 bytes.  4 works for now.  */
 #define ASM_OUTPUT_DWARF_REF(FILE, LABEL) \
 do {								\
-  fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);		\
+  fprintf ((FILE), "%s", UNALIGNED_INT_ASM_OP);			\
   assemble_name ((FILE), (LABEL));				\
   fprintf ((FILE), "\n");					\
 } while (0)
