@@ -598,7 +598,7 @@
 #define __glibcpp_float_has_infinity false
 #endif
 
-#ifndef __glibcpp_float_has_quiet_NaM
+#ifndef __glibcpp_float_has_quiet_NaN
 #define __glibcpp_float_has_quiet_NaN false
 #endif
 
@@ -702,7 +702,7 @@
 #define __glibcpp_double_has_infinity false
 #endif
 
-#ifndef __glibcpp_double_has_quiet_NaM
+#ifndef __glibcpp_double_has_quiet_NaN
 #define __glibcpp_double_has_quiet_NaN false
 #endif
 
