@@ -1,3 +1,7 @@
+2001-05-28  Stan Shebs  <shebs@apple.com>
+
+	* objc/objc.gperf: Remove, no longer used.
+
 2001-05-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-tree.texi, contrib.texi, cpp.texi, extend.texi, gcc.texi,
