@@ -203,6 +203,18 @@ do {							\
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE)	PARM_BOUNDARY
 #endif
 
+#ifndef FUNCTION_ARG_PARTIAL_NREGS
+#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 0
+#endif
+
+#ifndef FUNCTION_ARG_PASS_BY_REFERENCE
+#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) 0
+#endif
+
+#ifndef FUNCTION_ARG_CALLEE_COPIES
+#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) 0
+#endif
+
 tree split_complex_types (tree);
 tree split_complex_values (tree);
 

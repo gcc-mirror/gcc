@@ -975,16 +975,13 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       /* See if this argument should be passed by invisible reference.  */
       if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (type))
 	  || TREE_ADDRESSABLE (type)
-#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
 	  || FUNCTION_ARG_PASS_BY_REFERENCE (*args_so_far, TYPE_MODE (type),
 					     type, argpos < n_named_args)
-#endif
 	  )
 	{
 	  /* If we're compiling a thunk, pass through invisible
              references instead of making a copy.  */
 	  if (call_from_thunk_p
-#ifdef FUNCTION_ARG_CALLEE_COPIES
 	      || (FUNCTION_ARG_CALLEE_COPIES (*args_so_far, TYPE_MODE (type),
 					     type, argpos < n_named_args)
 		  /* If it's in a register, we must make a copy of it too.  */
@@ -992,7 +989,6 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		  && !(TREE_CODE (args[i].tree_value) == VAR_DECL
 		       && REG_P (DECL_RTL (args[i].tree_value)))
 		  && ! TREE_ADDRESSABLE (type))
-#endif
 	      )
 	    {
 	      /* C++ uses a TARGET_EXPR to indicate that we want to make a
@@ -1095,12 +1091,10 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       args[i].tail_call_reg = args[i].reg;
 #endif
 
-#ifdef FUNCTION_ARG_PARTIAL_NREGS
       if (args[i].reg)
 	args[i].partial
 	  = FUNCTION_ARG_PARTIAL_NREGS (*args_so_far, mode, type,
 					argpos < n_named_args);
-#endif
 
       args[i].pass_on_stack = MUST_PASS_IN_STACK (mode, type);
 
@@ -3525,10 +3519,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       argvec[count].partial = 0;
 
       argvec[count].reg = FUNCTION_ARG (args_so_far, Pmode, NULL_TREE, 1);
-#ifdef FUNCTION_ARG_PARTIAL_NREGS
       if (FUNCTION_ARG_PARTIAL_NREGS (args_so_far, Pmode, NULL_TREE, 1))
 	abort ();
-#endif
 
       locate_and_pad_parm (Pmode, NULL_TREE,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
@@ -3566,16 +3558,11 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  && ! (CONSTANT_P (val) && LEGITIMATE_CONSTANT_P (val)))
 	val = force_operand (val, NULL_RTX);
 
-#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
       if (FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, mode, NULL_TREE, 1))
 	{
 	  rtx slot;
-	  int must_copy = 1
-#ifdef FUNCTION_ARG_CALLEE_COPIES
-	    && ! FUNCTION_ARG_CALLEE_COPIES (args_so_far, mode,
-					     NULL_TREE, 1)
-#endif
-	    ;
+	  int must_copy = ! FUNCTION_ARG_CALLEE_COPIES (args_so_far, mode,
+							NULL_TREE, 1);
 
 	  /* loop.c won't look at CALL_INSN_FUNCTION_USAGE of const/pure
 	     functions, so we have to pretend this isn't such a function.  */
@@ -3627,19 +3614,14 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  mode = Pmode;
 	  val = force_operand (XEXP (slot, 0), NULL_RTX);
 	}
-#endif
 
       argvec[count].value = val;
       argvec[count].mode = mode;
 
       argvec[count].reg = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
 
-#ifdef FUNCTION_ARG_PARTIAL_NREGS
       argvec[count].partial
 	= FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode, NULL_TREE, 1);
-#else
-      argvec[count].partial = 0;
-#endif
 
       locate_and_pad_parm (mode, NULL_TREE,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA

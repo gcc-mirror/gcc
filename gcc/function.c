@@ -2241,10 +2241,8 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
      the machine requires these objects be passed that way.  */
   if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (passed_type))
       || TREE_ADDRESSABLE (passed_type)
-#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
       || FUNCTION_ARG_PASS_BY_REFERENCE (all->args_so_far, passed_mode,
 					 passed_type, data->named_arg)
-#endif
       )
     {
       passed_type = nominal_type = build_pointer_type (passed_type);
@@ -2361,7 +2359,6 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
   if (MUST_PASS_IN_STACK (data->promoted_mode, data->passed_type))
     entry_parm = 0;
 
-#ifdef FUNCTION_ARG_PARTIAL_NREGS
   if (entry_parm)
     {
       int partial;
@@ -2404,7 +2401,6 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
 	  all->extra_pretend_bytes = all->pretend_args_size;
 	}
     }
-#endif
 
   locate_and_pad_parm (data->promoted_mode, data->passed_type, in_regs,
 		       entry_parm ? data->partial : 0, current_function_decl,
@@ -2849,7 +2845,6 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
       data->stack_parm = NULL;
     }
 
-#ifdef FUNCTION_ARG_CALLEE_COPIES
   /* If we are passed an arg by reference and it is our responsibility
      to make a copy, do it now.
      PASSED_TYPE and PASSED mode now refer to the pointer, not the
@@ -2894,7 +2889,6 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	  did_conversion = true;
 	}
     }
-#endif /* FUNCTION_ARG_CALLEE_COPIES */
 
   /* Mark the register as eliminable if we did no conversion and it was
      copied from memory at a fixed offset, and the arg pointer was not

@@ -1424,11 +1424,9 @@ block_move_libcall_safe_for_call_parm (void)
 	rtx tmp = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
 	if (!tmp || !REG_P (tmp))
 	  return false;
-#ifdef FUNCTION_ARG_PARTIAL_NREGS
 	if (FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode,
 					NULL_TREE, 1))
 	  return false;
-#endif
 	FUNCTION_ARG_ADVANCE (args_so_far, mode, NULL_TREE, 1);
       }
   }
