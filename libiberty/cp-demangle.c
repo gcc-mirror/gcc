@@ -4085,8 +4085,7 @@ is_ctor_or_dtor (mangled, ctor_kind, dtor_kind)
 	  free (di.comps);
 	if (di.subs != NULL)
 	  free (di.subs);
-	*palc = 1;
-	return NULL;
+	return 0;
       }
 #endif
 

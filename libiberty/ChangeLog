@@ -1,3 +1,7 @@
+2003-12-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-demangle.c (is_ctor_or_dtor): Fix error in last change.
+
 2003-12-22  Daniel Jacobowitz  <drow@mvista.com>
 
 	PR debug/13272
