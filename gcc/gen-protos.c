@@ -25,15 +25,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 int verbose = 0;
 char *progname;
 
-/* Table of prototypes that override sys-protos.h.  */
-static char *overrides[] =
-{
-#ifdef SYS_PROTO_OVERRIDES
-  SYS_PROTO_OVERRIDES
-#endif
-  0
-};
-
 #define HASH_SIZE 2503 /* a prime */
 int hash_tab[HASH_SIZE];
 int next_index;
@@ -171,29 +162,6 @@ main (argc, argv)
   fprintf (outf, "  {\"\", \"\", \"\"},\n");
   next_index = 1;
   
-  /* Output the overriding prototypes first so fix-header will use them
-     in preference to the default ones.  */
-  /* ??? Two copies of the prototype are output.  This doesn't cause any
-     problems, but one might wish to avoid outputting the second one.  */
-
-  for (optr = overrides; *optr; ++optr)
-    {
-      /* Using sstring's here may be overkill but parse_fn_proto modifies
-	 the input string.  */
-      linebuf.ptr = linebuf.base;
-      make_sstring_space (&linebuf, strlen (*optr) + 1);
-      strcpy (linebuf.base, *optr);
-      linebuf.ptr = linebuf.base + strlen (*optr);
-
-      if (! parse_fn_proto (linebuf.base, linebuf.ptr, &fn_decl))
-	continue;
-
-      add_hash (fn_decl.fname);
-
-      fprintf (outf, "  {\"%s\", \"%s\", \"%s\"},\n",
-	       fn_decl.fname, fn_decl.rtype, fn_decl.params);
-    }
-
   for (;;)
     {
       int c = skip_spaces (inf, ' ');

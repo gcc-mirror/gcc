@@ -449,7 +449,11 @@ extern int                    getgroups(int, gid_t *);
 extern struct hostent *       gethostbyaddr(/* ??? */);
 extern struct hostent *       gethostbyname(/* ??? */);
 extern struct hostent *       gethostent(/* ??? */);
+#ifdef __alpha__
+extern int                    gethostid(void);
+#else
 extern long                   gethostid(void);
+#endif
 extern int                    gethostname(char *, size_t);
 extern int                    getitimer(int, struct itimerval *);
 extern char *                 getlogin(void);
