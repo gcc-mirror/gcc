@@ -264,7 +264,12 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
   # Check for -Wl,--gc-sections
   AC_MSG_CHECKING([for ld that supports -Wl,--gc-sections])
   CXXFLAGS='-Wl,--gc-sections'
-  AC_TRY_COMPILE(, [int foo;
+  AC_TRY_COMPILE(, [
+   try
+     {
+       throw 1;
+     }
+   catch (...) {};
   ], [ac_sectionLDflags=yes], [ac_sectionLFflags=no])
   if test "$ac_test_CXXFLAGS" = set; then
     CXXFLAGS="$ac_save_CXXFLAGS"
@@ -895,9 +900,16 @@ dnl Define HAVE_CARGF etc if "cargf" is found.
 dnl
 dnl GLIBCPP_CHECK_MATH_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
 
+  dnl NB: Can't use AC_LANG_CPLUSPLUS here, because g++ tries to link
+  dnl in libstdc++, which we are building right now.
+  dnl Yet, we need to use the c++ compiler so that __cplusplus is defined.
+  dnl So, use this.
+  ac_test_CFLAGS="${CFLAGS+set}"
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS='-x c++'
+
+  dnl Check libm
   AC_CHECK_LIB(m, sin, libm="-lm")
   save_LIBS="$LIBS"
   LIBS="$LIBS $libm"
@@ -925,7 +937,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   _sincosl _finite _finitef _finitel _fqfinite _fpclass _qfpclass)
 
   LIBS="$save_LIBS"
-  AC_LANG_RESTORE
+  CFLAGS="$ac_save_CFLAGS"
 ])
 
 

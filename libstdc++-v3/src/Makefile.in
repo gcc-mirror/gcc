@@ -125,7 +125,7 @@ EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 # or configure.in to see how they are set.
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
 AC_CXXFLAGS = \
-	@WERROR@ @WFMT_FLAGS@ @CPU_FLAGS@ @EXTRA_CXX_FLAGS@ \
+	$(WERROR) @WFMT_FLAGS@ @CPU_FLAGS@ @EXTRA_CXX_FLAGS@ \
 	@SECTION_FLAGS@ @SECTION_LDFLAGS@ @DEBUG_FLAGS@ 
 
 

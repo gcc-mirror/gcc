@@ -1,4 +1,18 @@
+2000-06-19  Raja R Harinath  <harinath@cs.umn.edu>
+	
+	* src/Makefile.am: change @WERROR@ to $(WERROR) so that this can
+	be overridden on the command line for individual files.
+
 2000-06-19  Benjamin Kosnik  <bkoz@soma.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_MATH_SUPPORT): Can't use
+	AC_LANG_CPLUSPLUS as this tries to link in libstdc++, Which we are
+	building. Use -x c++ instead, which does not attempt to link
+	libstdc++.
+
+	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES): Actually check for
+	not coring when we hit a try/throw block, which was the problem
+	with the linker support...
 
 	* docs/17_intro/contribute.html: Add bits about getting to the LWG
 	issues pages.
