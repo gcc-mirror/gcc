@@ -96,7 +96,7 @@ GCC_FOR_TARGET = ./xgcc -B./
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
 # It also specifies -B$(tooldir)/ to find as and ld for a cross compiler.
-GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(CROSS_GCC_CFLAGS)
+GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS)
 
 # Special flags for compiling enquire.
 # We disable optimization to make floating point more reliable.
@@ -112,7 +112,6 @@ AR_FOR_TARGET = $(TARGET_TOOLPREFIX)ar
 AR_FOR_TARGET_FLAGS = rc
 RANLIB_FOR_TARGET = $(TARGET_TOOLPREFIX)ranlib
 RANLIB_TEST_FOR_TARGET = [ -f $(TARGET_TOOLPREFIX)ranlib ]
-CROSS_TOOLS =
 
 # Dir to search for system headers.  Overridden by cross-make.
 SYSTEM_HEADER_DIR = /usr/include
@@ -541,7 +540,7 @@ libgcc1.conv: libgcc1.a
 
 # Use this as value of LIBGCC1 to inhibit use of libgcc1.c entirely.
 # Make an empty file instead.
-libgcc1.null: $(CROSS_TOOLS) $(GCC_PASSES)
+libgcc1.null: $(GCC_PASSES)
 	echo "__foo () {}" > dummy.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) -c dummy.c
 	$(OLDAR) $(OLDAR_FLAGS) libgcc1.null dummy.o
@@ -602,10 +601,7 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 # Compiling libgcc2.a requires making sure that cc1, etc. have been compiled.
 # But recompiling cc1 should not force recompilation of libgcc2.a.
 # If you want to force recompilation, delete libgcc2.a.
-# Depend on install-cross-tools to make sure we set up properly 
-# to run the assembler before we try compiling anything.
-# install-cross-tools does nothing if not cross compiling.
-libgcc2.ready: $(GCC_PASSES) $(CROSS_TOOLS)
+libgcc2.ready: $(GCC_PASSES)
 	-if [ -f libgcc2.ready ] ; then \
 		true; \
 	else \
@@ -1369,60 +1365,13 @@ install-native: install-common install-libgcc $(INSTALL_HEADERS) \
 
 # Copy the files of cross compiler into directories where they will be run.
 install-cross: install-common install-common-headers \
-   install-man install-cross-tools install-libgcc
+   install-man install-libgcc
 
 # Do nothing while making gcc with a cross-compiler. The person who
 # makes gcc for the target machine has to know how to put a complete
 # gcc together by hand.
 install-build: force
 	@echo You have to install gcc on your target machine by hand.
-
-# Install the tools, libraries and header files for the target machine
-# where cross-compilation will look for them.
-# Use tooldir to find them.
-install-cross-tools: install-dir
-# The first if makes this a no-op except for a cross compiler.
-# The /. after the dirname causes test to follow symlinks.
-# Before making a link or an indirection script, 
-# we verify the desired file does not already exist.
-# If a symlink does exist, then making a symlink would certainly fail, 
-# leading us to overwrite the real file through the symlink.
-	-if [ -f gcc-cross ] ; \
-	then \
-	  if [ -d $(tooldir)/. ] ; \
-	  then \
-	    for file in as $(REAL_LD_NAME) ar nm ranlib; do \
-	      if [ -f $(libsubdir)/$$file ] ; \
-	      then true; \
-	      else  \
-		rm -rf $(libsubdir)/$$file; \
-		$(SYMLINK) $(tooldir)/bin/$$file $(libsubdir)/$$file \
-		|| (echo "#!/bin/sh"; echo $(tooldir)/bin/$$file "$$@") > $(libsubdir)/$$file; \
-	      fi; \
-	    done; \
-	    for file in $(tooldir)/lib/*; do \
-	      if [ -f $$file ] ; \
-	      then \
-		if [ -f $(libsubdir)/`basename $$file` ] ; \
-		then true; \
-		else  \
-		  rm -rf $(libsubdir)/`basename $$file`; \
-		  $(SYMLINK) $$file $(libsubdir)/`basename $$file` \
-		  || $(INSTALL_DATA) $$file $(libsubdir)/`basename $$file`; \
-		fi; \
-	      else true; \
-	      fi; \
-	    done; \
-	    if [ -d $(tooldir)/include/. ] ; then \
-	      rm -rf $(libsubdir)/sys-include; \
-	      $(SYMLINK) $(tooldir)/include $(libsubdir)/sys-include \
-	      || (if [ -d $(libsubdir)/sys-include ] ; then true ; else mkdir $(libsubdir)/sys-include ; fi; \
-		  (cd $(tooldir)/include; tar cf - .) | (cd $(libsubdir)/sys-include; tar xpf -)); \
-	    else true; fi; \
-	  else true; \
-	  fi; \
-	else true; \
-	fi;
 
 # Run this on the target machine
 # to finish installation of cross compiler.

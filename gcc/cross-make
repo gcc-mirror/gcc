@@ -1,6 +1,3 @@
-# This variable gets added to GCC_CFLAGS.
-CROSS_GCC_CFLAGS = -B$(tooldir)/bin/
-
 # Expect user to provide libgcc1.a,
 # and give up immediately if the user has not done so.
 LIBGCC1 = libgcc1.cross
@@ -13,12 +10,8 @@ OLDAR_FLAGS = $(AR_FOR_TARGET_FLAGS)
 RANLIB = $(RANLIB_FOR_TARGET)
 RANLIB_TEST = $(RANLIB_TEST_FOR_TARGET)
 
-# Cause installation of the cross-compilation tools
-# before we try to build libgcc.a.
-CROSS_TOOLS = install-cross-tools
-
 # Dir to search for system headers.  Normally /usr/include.
-SYSTEM_HEADER_DIR = $(libsubdir)/sys-include
+SYSTEM_HEADER_DIR = $(tooldir)/include
 
 # Cause installation using install-cross.
 INSTALL_TARGET = install-cross
