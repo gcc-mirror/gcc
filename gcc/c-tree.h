@@ -19,9 +19,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifndef _C_TREE_H
 #define _C_TREE_H
-#if 0 /* I fear this may cause failures on some systems,
-	 so I turned off the few prototypes that needed it -- rms. */
-#include <stdio.h>
+
+#ifndef STDIO_PROTO
+#ifdef BUFSIZ
+#define STDIO_PROTO(ARGS) PROTO(ARGS)
+#else
+#define STDIO_PROTO(ARGS) ()
+#endif
 #endif
 
 /* Language-dependent contents of an identifier.  */
@@ -168,10 +172,7 @@ extern void constant_expression_warning		PROTO((tree));
 extern void overflow_warning			PROTO((tree));
 extern void unsigned_conversion_warning		PROTO((tree, tree));
 /* Read the rest of the current #-directive line.  */
-#if 0
-extern char *get_directive_line                 PROTO((FILE *));
-#endif
-extern char *get_directive_line ();
+extern char *get_directive_line                 STDIO_PROTO((FILE *));
 /* Subroutine of build_binary_op, used for comparison operations.
    See if the operands have both been converted from subword integer types
    and, if so, perhaps change them both back to their original type.  */
@@ -277,9 +278,8 @@ extern void pop_c_function_context              PROTO((void));
 extern void pop_label_level                     PROTO((void));
 extern tree poplevel                            PROTO((int, int, int));
 extern void print_lang_decl                     PROTO((void));
-#if 0
-extern void print_lang_identifier               PROTO((FILE *, tree, int));
-#endif
+extern void print_lang_identifier               STDIO_PROTO((FILE *, tree,
+							     int));
 extern void print_lang_type                     PROTO((void));
 extern void push_c_function_context             PROTO((void));
 extern void push_label_level                    PROTO((void));
