@@ -818,7 +818,8 @@ init_standard_includes (pfile)
 	      /* Should we be translating sysrooted dirs too?  Assume
 		 that iprefix and sysroot are mutually exclusive, for
 		 now.  */
-	      if (p->add_sysroot && CPP_OPTION (pfile, sysroot))
+	      if (p->add_sysroot && CPP_OPTION (pfile, sysroot)
+		  && *(CPP_OPTION (pfile, sysroot)))
 		continue;
 
 	      /* Does this dir start with the prefix?  */
@@ -850,7 +851,8 @@ init_standard_includes (pfile)
 	  char *str;
 
 	  /* Should this dir start with the sysroot?  */
-	  if (p->add_sysroot && CPP_OPTION (pfile, sysroot))
+	  if (p->add_sysroot && CPP_OPTION (pfile, sysroot)
+	      && *(CPP_OPTION (pfile, sysroot)))
 	    str = concat (CPP_OPTION (pfile, sysroot), p->fname, NULL);
 
 	  else

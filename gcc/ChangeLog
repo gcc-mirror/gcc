@@ -1,3 +1,8 @@
+2004-03-02  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* cppinit.c (init_standard_includes): Check that sysroot
+	string is not empty.
+
 2004-03-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport from 3.4.0:
