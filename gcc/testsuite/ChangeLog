@@ -1,3 +1,7 @@
+2003-02-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/asmreg-1.c: New test.
+
 2003-02-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/7982
