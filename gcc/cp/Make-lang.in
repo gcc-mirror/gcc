@@ -104,7 +104,7 @@ $(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf
 
 gtype-cp.h gt-cp-call.h gt-cp-decl.h gt-cp-decl2.h : s-gtype; @true
 gt-cp-pt.h gt-cp-repo.h gt-cp-parser.h : s-gtype; @true
-gt-cp-tree.h : s-gtype; @true
+gt-cp-tree.h gt-cp-name-lookup.h: s-gtype; @true
 
 #
 # Build hooks:
@@ -277,4 +277,4 @@ cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) toplev.h real.h
 cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) diagnostic.h gt-cp-parser.h output.h
 
 cp/name-lookup.o: cp/name-lookup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TM_H) $(CXX_TREE_H) timevar.h
+	$(TM_H) $(CXX_TREE_H) timevar.h gt-cp-name-lookup.h
