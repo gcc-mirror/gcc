@@ -1,3 +1,8 @@
+Wed Dec  9 06:16:26 1998  Craig Burley  (burley@gnu.ai.mit.edu)
+
+	* fold-const.c (multiple_of_p): New function.
+	(fold): Turn some cases of *_DIV_EXPR into EXACT_DIV_EXPR.
+
 Wed Dec  9 04:42:23 1998  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* expr.h, real.h: Add more prototypes.
