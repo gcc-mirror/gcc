@@ -1,3 +1,8 @@
+2001-02-02  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/float-sh.h (LDBL_EPSILON, LDBL_MIN, LDBL_MAX): Prevent
+	truncation to 32-bit doubles on -m3e and -m4-single-only.
+
 2001-02-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.c (init_gcc_specs): New function.  Make -shared-libgcc 

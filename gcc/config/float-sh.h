@@ -99,6 +99,9 @@
 
 #endif
 
+/* Because -m3e and -m4-single-only have 32-bit doubles, we append L
+   to the doubles below, so that they're not truncated.  */
+
    /* Number of base-FLT_RADIX digits in the significand of a long double */
 #undef LDBL_MANT_DIG
 #define LDBL_MANT_DIG 53
@@ -107,13 +110,13 @@
 #define LDBL_DIG 15
    /* Difference between 1.0 and the minimum long double greater than 1.0 */
 #undef LDBL_EPSILON
-#define LDBL_EPSILON 2.2204460492503131e-16
+#define LDBL_EPSILON 2.2204460492503131e-16L
    /* Minimum int x such that FLT_RADIX**(x-1) is a normalised long double */
 #undef LDBL_MIN_EXP
 #define LDBL_MIN_EXP (-1021)
    /* Minimum normalised long double */
 #undef LDBL_MIN
-#define LDBL_MIN 2.2250738585072014e-308
+#define LDBL_MIN 2.2250738585072014e-308L
    /* Minimum int x such that 10**x is a normalised long double */
 #undef LDBL_MIN_10_EXP
 #define LDBL_MIN_10_EXP (-307)
@@ -122,7 +125,7 @@
 #define LDBL_MAX_EXP 1024
    /* Maximum long double */
 #undef LDBL_MAX
-#define LDBL_MAX 1.7976931348623157e+308
+#define LDBL_MAX 1.7976931348623157e+308L
    /* Maximum int x such that 10**x is a representable long double */
 #undef LDBL_MAX_10_EXP
 #define LDBL_MAX_10_EXP 308
