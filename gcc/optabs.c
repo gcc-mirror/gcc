@@ -5557,6 +5557,8 @@ init_optabs ()
   cos_optab = init_optab (UNKNOWN);
   exp_optab = init_optab (UNKNOWN);
   log_optab = init_optab (UNKNOWN);
+  tan_optab = init_optab (UNKNOWN);
+  atan_optab = init_optab (UNKNOWN);
   strlen_optab = init_optab (UNKNOWN);
   cbranch_optab = init_optab (UNKNOWN);
   cmov_optab = init_optab (UNKNOWN);
