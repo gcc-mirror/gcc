@@ -1,3 +1,11 @@
+2003-04-09  Dan Nicolaescu  <dann@ics.uci.edu>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* regrename.c (struct du_chain): Use a bitfield for reg_class.
+	* cse.c (struct qty_table_elem, struct table_elt, struct set):
+	Use bitfields for fields holding enum rtx_code or
+	enum machine_mode values.  Add comments explaining size choices.
+
 2003-04-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/fp-bit.c (unpack_d): Handle pair of doubles with
@@ -107,9 +115,9 @@
 
 2003-04-08  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_init_builtins): Set opaque types
-        regardless of architecture.
-        (spe_init_builtins): Change V2SI and V2SF types to opaque types.
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Set opaque types
+	regardless of architecture.
+	(spe_init_builtins): Change V2SI and V2SF types to opaque types.
 
 2003-04-08  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -137,11 +145,11 @@ Tue Apr  8 11:12:07 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* doc/sourcebuild.texi: Likewise.
 
 2003-04-07  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
-        PR c/9516
-        * expr.c (safe_from_p): Rearrange to avoid deep recursion in
-        favour of looping and tail recursion for TREE_LIST and binops.
+	PR c/9516
+	* expr.c (safe_from_p): Rearrange to avoid deep recursion in
+	favour of looping and tail recursion for TREE_LIST and binops.
 
 2003-04-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
@@ -156,9 +164,9 @@ Tue Apr  8 11:12:07 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-07  Richard Henderson  <rth@redhat.com>
 
-        PR opt/8634
-        * function.c (purge_addressof_1): Don't try arithmetics for
-        unchanging memories.
+	PR opt/8634
+	* function.c (purge_addressof_1): Don't try arithmetics for
+	unchanging memories.
 
 2003-04-07  Janis Johnson  <janis187@us.ibm.com>
 
@@ -177,13 +185,13 @@ Mon Apr  7 22:19:59 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-07  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_common_init_builtins): Rename all
-        V2SI_type_node to opaque_V2SI_type_node.  Rename all
-        V2SF_type_node to opaque_V2SF_type_node.
-        (rs6000_init_builtins): Define opaque_V2SI_type_node and
-        opaque_V2SF_type_node.
-        (is_ev64_opaque_type): The types opaque_V2SI_type_node and
-        opaque_V2SF_type_node are opaque types.
+	* config/rs6000/rs6000.c (rs6000_common_init_builtins): Rename all
+	V2SI_type_node to opaque_V2SI_type_node.  Rename all
+	V2SF_type_node to opaque_V2SF_type_node.
+	(rs6000_init_builtins): Define opaque_V2SI_type_node and
+	opaque_V2SF_type_node.
+	(is_ev64_opaque_type): The types opaque_V2SI_type_node and
+	opaque_V2SF_type_node are opaque types.
 
 2003-04-07  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -238,27 +246,27 @@ Mon Apr  7 22:19:59 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-07  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/invoke.texi (RS/6000 and PowerPC Options): Document
-        -mfloat-gprs.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
+	-mfloat-gprs.
 
-        * config/rs6000/rs6000.c: Delete rs6000_fprs.
-        Declare rs6000_float_gprs.
-        Declare rs6000_float_gprs_string.
-        (rs6000_parse_float_gprs_option): New.
-        (rs6000_override_options): Genericize rs6000_parse_* calls to use
-        rs6000_parse_yes_no_option.
-        Change check for cpu=8540, to use TARGET_E500.
-        (rs6000_parse_isel_option): Delete.
-        (rs6000_parse_spe_option): Delete.
-        (rs6000_parse_vrsave_option): Delete.
+	* config/rs6000/rs6000.c: Delete rs6000_fprs.
+	Declare rs6000_float_gprs.
+	Declare rs6000_float_gprs_string.
+	(rs6000_parse_float_gprs_option): New.
+	(rs6000_override_options): Genericize rs6000_parse_* calls to use
+	rs6000_parse_yes_no_option.
+	Change check for cpu=8540, to use TARGET_E500.
+	(rs6000_parse_isel_option): Delete.
+	(rs6000_parse_spe_option): Delete.
+	(rs6000_parse_vrsave_option): Delete.
 
-        * config/rs6000/rs6000.h: Rename rs6000_fprs to rs6000_float_gprs.
-        Define rs6000_float_gprs_string.
-        (TARGET_OPTIONS): Add rs6000_float_gprs option.
+	* config/rs6000/rs6000.h: Rename rs6000_fprs to rs6000_float_gprs.
+	Define rs6000_float_gprs_string.
+	(TARGET_OPTIONS): Add rs6000_float_gprs option.
 
-        * config/rs6000/eabi.h (TARGET_FPRS): Change to use rs6000_float_gprs.
+	* config/rs6000/eabi.h (TARGET_FPRS): Change to use rs6000_float_gprs.
 
-        * config/rs6000/eabispe.h: Set rs6000_float_gprs.
+	* config/rs6000/eabispe.h: Set rs6000_float_gprs.
 
 Mon Apr  7 14:36:24 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
