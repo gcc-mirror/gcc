@@ -3565,9 +3565,9 @@ so here's a silly made-up example:
 @end smallexample
 
 @noindent
-If we had not added the @code{(match_dup 3)} at the end of the sequence,
-it might have been the case that the register we chose at the beginning
-of the sequence is killed by the first or second @code{set}.
+If we had not added the @code{(match_dup 4)} in the middle of the input
+sequence, it might have been the case that the register we chose at the
+beginning of the sequence is killed by the first or second @code{set}.
 
 @node Insn Attributes
 @section Instruction Attributes
