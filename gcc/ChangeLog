@@ -1,5 +1,14 @@
 Sun Feb 18 15:45:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* Makefile.in (gcse.o): Now includes ggc.h.
+	* gcse.c: Include ggc.h.
+	(want_to_gcse_p): Verify expression can be in SET as valid insn.
+	(try_replace_reg): Remove warning of uninitialize variable.
+	(process_insert_insn): Call invalid_insn_p to validate insn.
+	* recog.c (insn_invalid_p): Now global.
+	See if can make valid by adding CLOBBERs of SCRATCH only and do if so.
+	* recog.h (insn_invalid_p): New declaration.
+
 	* jump.c (jump_optimize_1): Only define reversed_code #ifdef HAVE_trap.
 
 	* config/sparc/sparc.c (eligible_for_epilogue_delay): Don't put
