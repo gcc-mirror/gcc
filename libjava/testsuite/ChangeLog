@@ -1,3 +1,7 @@
+2003-03-22  Andreas Tobler <a.tobler@schweiz.ch>
+
+	* libjava.jni/jni.exp: Add compilation/link fix dor darwin dylibs.
+
 2003-03-22  Tom Tromey  <tromey@redhat.com>
 
 	* lib/libjava.exp (gcj_invoke): Moved...
