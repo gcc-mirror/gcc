@@ -1,3 +1,8 @@
+2001-05-21  Per Bothner  <per@bothner.com>
+
+	* jcf-parse.c (read_class):  If class is from .class or .zip file
+	and it's already been read, don't push/pop parser context.
+
 2001-05-18  Per Bothner  <per@bothner.com>
 
 	* jvspec.c (lang_specific_pre_link):  Re-arrange the linker

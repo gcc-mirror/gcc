@@ -558,7 +558,6 @@ read_class (name)
   tree save_current_class = current_class;
   const char *save_input_filename = input_filename;
   JCF *save_current_jcf = current_jcf;
-  int generate;
 
   if ((icv = IDENTIFIER_CLASS_VALUE (name)) != NULL_TREE)
     {
@@ -579,14 +578,15 @@ read_class (name)
 
   current_jcf = jcf;
 
-  java_parser_context_save_global ();
-  java_push_parser_context ();
   if (current_jcf->java_source)
     {
       const char *filename = current_jcf->filename;
       tree file;
       FILE *finput;
+      int generate;
 
+      java_parser_context_save_global ();
+      java_push_parser_context ();
       BUILD_FILENAME_IDENTIFIER_NODE (file, filename);
       generate = IS_A_COMMAND_LINE_FILENAME_P (file);
       if (wfl_operator == NULL_TREE)
@@ -605,24 +605,28 @@ read_class (name)
 	    fatal_io_error ("can't close %s", input_filename);
 	}
       JCF_FINISH (current_jcf);
+      java_pop_parser_context (generate);
+      java_parser_context_restore_global ();
     }
   else
     {
-      input_filename = current_jcf->filename;
-      current_class = class;
       if (class == NULL_TREE || ! CLASS_PARSED_P (class))
 	{
+	  java_parser_context_save_global ();
+	  java_push_parser_context ();
+	  current_class = class;
+	  input_filename = current_jcf->filename;
 	  if (JCF_SEEN_IN_ZIP (current_jcf))
 	    read_zip_member(current_jcf,
 			    current_jcf->zipd, current_jcf->zipd->zipf);
 	  jcf_parse (current_jcf);
+	  class = current_class;
+	  java_pop_parser_context (0);
+	  java_parser_context_restore_global ();
 	}
-      layout_class (current_class);
-      load_inner_classes (current_class);
-      generate = 0;
+      layout_class (class);
+      load_inner_classes (class);
     }
-  java_pop_parser_context (generate);
-  java_parser_context_restore_global ();
 
   current_class = save_current_class;
   input_filename = save_input_filename;
