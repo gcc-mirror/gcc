@@ -1,3 +1,10 @@
+2000-08-08  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (life_analysis): Only turn off PROP_LOG_LINKS and
+	PROP_AUTOINC at -O0.  Don't collect alias info at -O0.
+	(init_propagate_block_info): Don't kill memory stores at -O0.
+	(mark_set_1, mark_used_regs): Likewise.
+
 2000-08-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (optimization_options): Decorate 'level' as
