@@ -1,3 +1,8 @@
+2000-04-06  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tlink.c (read_repo_files): Don't look for .rpo info for
+	linker flags.
+
 Thu Apr  6 20:39:26 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (STRUCT_VALUE, RETURN_IN_MEMORY): Define.

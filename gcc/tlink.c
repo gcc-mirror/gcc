@@ -550,8 +550,14 @@ read_repo_files (object_lst)
 
   for (; *object; object++)
     {
-      const char *p = frob_extension (*object, ".rpo");
+      const char *p;
       file *f;
+
+      /* Don't bother trying for ld flags.  */
+      if (*object[0] == '-')
+	continue;
+
+      p = frob_extension (*object, ".rpo");
 
       if (! file_exists (p))
 	continue;
