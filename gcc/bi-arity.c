@@ -21,7 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "bi-defs.h"
 
 int
-length(n)
+length (n)
      struct node *n;
 {
   int k;
@@ -32,23 +32,25 @@ length(n)
 }
 
 int
-main()
+main ()
 {
   struct def *d;
   struct variation *v;
   struct node *n;
 
-  yyparse();
-  reverse();
+  yyparse ();
+  reverse ();
 
   for (d = defs; d; d = d->next)
     for (v = d->variations; v; v = v->next)
       {
-	printf("{ %d, %d, %d, {", length(v->inputs),
-	       length(v->outputs), length(v->literals));
+	printf ("{ %d, %d, %d, {", length (v->inputs),
+	       length (v->outputs), length (v->literals));
 	for (n = v->literals; n; n = n->next)
-	  printf("%scode, ", n->text);
-	printf("}},\n");
+	  printf ("%scode, ", n->text);
+	if (v->literals == 0)
+	  printf ("0");
+	printf ("}},\n");
       }
   return 0;
 }
