@@ -613,6 +613,12 @@ extern int flag_permissive;
 
 extern int flag_access_control;
 
+/* If this variable is defined to a non-NULL value, it will be called
+   after the file has been completely parsed.  The argument will be
+   the GLOBAL_NAMESPACE.  */
+
+extern void (*back_end_hook) PROTO((tree));
+
 
 /* C++ language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
