@@ -1,3 +1,8 @@
+Sat Dec 26 06:31:43 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reorg.c (optimize_skip): Count insns in delay slots for epilogue
+	as being after a conditional return.
+
 Wed Dec 23 07:30:22 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* mips.md (movdf [mips4]): Remove '=' in constraint when not output.
