@@ -1,3 +1,8 @@
+Fri 25-Aug-2000 08:03:27 BST  Neil Booth  <NeilB@earthling.net>
+
+	* cpplex.c (is_macro_disabled): Caller has already checked
+	that we're not a preprocessed file.
+
 2000-08-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (C_AND_OBJC_OBJS): Remove c-iterate.o.
