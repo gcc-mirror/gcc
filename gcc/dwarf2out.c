@@ -8000,15 +8000,19 @@ is_subrange_type (tree type)
 {
   tree subtype = TREE_TYPE (type);
 
-  if (TREE_CODE (type) == INTEGER_TYPE
-      && subtype != NULL_TREE)
-    {
-      if (TREE_CODE (subtype) == INTEGER_TYPE)
-        return true;
-      if (TREE_CODE (subtype) == ENUMERAL_TYPE)
-        return true;
-    }
-  return false;
+  /* Subrange types are identified by the fact that they are integer
+     types, and that they have a subtype which is either an integer type
+     or an enumeral type.  */
+
+  if (TREE_CODE (type) != INTEGER_TYPE
+      || subtype == NULL_TREE)
+    return false;
+
+  if (TREE_CODE (subtype) != INTEGER_TYPE
+      && TREE_CODE (subtype) != ENUMERAL_TYPE)
+    return false;
+
+  return true;
 }
 
 /*  Given a pointer to a tree node for a subrange type, return a pointer
