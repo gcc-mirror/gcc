@@ -1762,7 +1762,7 @@ Warn if anything is declared more than once in the same scope, even in
 cases where multiple declaration is valid and changes nothing.
 
 @item -Wnested-externs
-Warn if an @code{extern} declaration is encountered within an function.
+Warn if an @code{extern} declaration is encountered within a function.
 
 @item -Wunreachable-code
 Warn if the compiler detects that code will never be executed.
