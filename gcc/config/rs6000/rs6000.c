@@ -2080,6 +2080,12 @@ ccr_bit (op, scc_p)
 
 /* Print an operand.  Recognize special options, documented below.  */
 
+#ifdef TARGET_EABI
+#define SMALL_DATA_RELOC ((TARGET_EABI) ? "sda21" : "sdarel")
+#else
+#define SMALL_DATA_RELOC "sda21"
+#endif
+
 void
 print_operand (file, x, code)
     FILE *file;
@@ -2275,8 +2281,8 @@ print_operand (file, x, code)
 	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 4));
 	  else
 	    output_address (plus_constant (XEXP (x, 0), 4));
-	  if (DEFAULT_ABI == ABI_V4 && small_data_operand (x, GET_MODE (x)))
-	    fprintf (file, "@%s(%s)", (TARGET_EABI) ? "sda21" : "sdarel", reg_names[0]);
+	  if (small_data_operand (x, GET_MODE (x)))
+	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC, reg_names[0]);
 	}
       return;
 			    
@@ -2487,8 +2493,8 @@ print_operand (file, x, code)
 	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 8));
 	  else
 	    output_address (plus_constant (XEXP (x, 0), 8));
-	  if (DEFAULT_ABI == ABI_V4 && small_data_operand (x, GET_MODE (x)))
-	    fprintf (file, "@%s(%s)", (TARGET_EABI) ? "sda21" : "sdarel", reg_names[0]);
+	  if (small_data_operand (x, GET_MODE (x)))
+	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC, reg_names[0]);
 	}
       return;
 			    
@@ -2536,8 +2542,8 @@ print_operand (file, x, code)
 	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 12));
 	  else
 	    output_address (plus_constant (XEXP (x, 0), 12));
-	  if (DEFAULT_ABI == ABI_V4 && small_data_operand (x, GET_MODE (x)))
-	    fprintf (file, "@%s(%s)", (TARGET_EABI) ? "sda21" : "sdarel", reg_names[0]);
+	  if (small_data_operand (x, GET_MODE (x)))
+	    fprintf (file, "@%s(%s)", SMALL_DATA_RELOC, reg_names[0]);
 	}
       return;
 			    
@@ -2578,8 +2584,8 @@ print_operand_address (file, x)
   else if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == CONST)
     {
       output_addr_const (file, x);
-      if (DEFAULT_ABI == ABI_V4 && small_data_operand (x, GET_MODE (x)))
-	fprintf (file, "@%s(%s)", (TARGET_EABI) ? "sda21" : "sdarel", reg_names[0]);
+      if (small_data_operand (x, GET_MODE (x)))
+	fprintf (file, "@%s(%s)", SMALL_DATA_RELOC, reg_names[0]);
 
 #ifdef TARGET_NO_TOC
       else if (TARGET_NO_TOC)
@@ -4612,9 +4618,11 @@ rs6000_select_section (decl, reloc)
 	{
 	  if (TARGET_SDATA && (size > 0) && (size <= g_switch_value))
 	    {
+#ifdef TARGET_EABI
 	      if (TARGET_EABI)
 		sdata2_section ();
 	      else
+#endif
 		sdata_section ();	/* System V doesn't have .sdata2/.sbss2 */
 	    }
 	  else
@@ -4625,3 +4633,65 @@ rs6000_select_section (decl, reloc)
     const_section ();
 }
 #endif /* USING_SVR4_H */
+
+
+/* CYGNUS LOCAL mac */
+
+/* Whether we are using m68k-compatible alignment.  */
+
+int mac68k_aligned;
+
+/* Most Mac compiler pragmas are unimportant, but we must recognize
+   the m68k alignment pragma, because that is crucial to transitions
+   to and from the m68k emulator on PowerMacs.  */
+
+int
+handle_mac_pragma (finput, t)
+     FILE *finput;
+     tree t;
+{
+  int retval = 0;
+  register char *pname;
+  char pbuf[200];
+  int c, psize;
+
+  if (TREE_CODE (t) != IDENTIFIER_NODE)
+    return 0;
+
+  pname = IDENTIFIER_POINTER (t);
+  if (strcmp (pname, "segment") == 0)
+    {
+      retval = 1;
+      /* (should collect pbuf + 8 into a segment name) */
+    }
+  else if (strcmp (pname, "options") == 0)
+    {
+      c = getc (finput);
+      /* Skip over initial whitespace.  */
+      while (c == ' ' || c == '\t')
+	c = getc (finput);
+
+      /* Return without doing anything if no content.  */
+      if (c == '\n' || c == EOF)
+	return 0;
+
+      /* Collect the rest of the line.  */
+      while (psize < sizeof (pbuf) - 1 && c != '\n')
+	{
+	  pbuf[psize++] = c;
+	  c = getc (finput);
+	}
+
+      if (strncmp (pbuf, "align=mac68k", 12) == 0)
+	{
+	  mac68k_aligned = retval = 1;
+	}
+      else if (strncmp (pbuf, "align=reset", 11) == 0)
+	{
+	  mac68k_aligned = 0, retval = 1;
+	}
+    }
+
+  return c;
+}
+/* END CYGNUS LOCAL mac */
