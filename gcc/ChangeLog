@@ -1,3 +1,8 @@
+2004-01-08  Richard Sandiford  <rsandifo@redhat.com>
+
+	* simplify-rtx.c (simplify_immed_subreg): Fix construction of
+	floating-point constants.
+
 2004-01-08  J. Brobecker  <brobecker@gnat.com>
 
 	* dwarf2out.c (subrange_type_die): Add context_die parameter.
