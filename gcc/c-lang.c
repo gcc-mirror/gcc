@@ -37,10 +37,12 @@ lang_decode_option (p)
 void
 lang_init ()
 {
+#if !USE_CPPLIB
   /* the beginning of the file is a new line; check for # */
   /* With luck, we discover the real source file's name from that
      and put it in input_filename.  */
   ungetc (check_newline (), finput);
+#endif
 }
 
 void
