@@ -371,6 +371,7 @@ namespace std
   {
     if (__s)
       {
+	_S_initialize(); 
 	if (strcmp(__s, "C") == 0 || strcmp(__s, "POSIX") == 0)
 	  (_M_impl = _S_classic)->_M_add_reference();
 	else
