@@ -1,5 +1,7 @@
 2002-04-22  Hans-Peter Nilsson  <hp@axis.com>
 
+	* gcc.dg/20020415-1.c: Expect warning for unsupported -fpic on
+	cris-*-elf* and mmix-*-*.
 	* g77.dg/f77-edit-i-in.f: xfail for cris-*-elf.
 	* g77.f-torture/execute/io0.x, g77.f-torture/execute/io1.x,
 	g77.f-torture/execute/20001201.x,

@@ -3,6 +3,7 @@
    ASM_SIMPLIFY_DWARF_ADDR hook.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fpic -g" } */
+/* { dg-warning "not supported" "PIC unsupported" { target cris-*-elf* mmix-*-* } 0 } */
 
 static inline char *
 bar (unsigned long x, char *y)
