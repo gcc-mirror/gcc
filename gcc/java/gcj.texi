@@ -161,6 +161,7 @@ options specific to @command{gcj}.
 * Input Options::		How gcj finds files
 * Encodings::                   Options controlling source file encoding
 * Warnings::			Options controlling warnings specific to gcj
+* Linking::			Options for making an executable
 * Code Generation::		Options controlling the output of gcj
 * Configure-time Options::	Options you won't use
 @end menu
@@ -353,21 +354,45 @@ This is the same as @code{-Wredundant-modifiers -Wextraneous-semicolon
 @end table
 
 
-@node Code Generation
-@section Code Generation
+@node Linking
+@section Linking
 
-In addition to the many @command{gcc} options controlling code generation,
-@command{gcj} has several options specific to itself.
+To turn a Java application into an executable program,
+you need to link it with the needed libraries, just as for C or C++.
+The linker by default looks for a global function named @code{main}.
+Since Java does not have global functions, and a
+collection of Java classes may have more than one class with a
+@code{main} method, you need to let the linker know which of those
+@code{main} methods it should invoke when starting the application.
+You can do that in any of these ways:
+
+@itemize @bullet
+@item
+Specify the class containing the desired @code{main} method
+when you link the application, using the @code{--main} flag,
+described below.
+@item
+Link the Java package(s) into a shared library (dll) rather than an
+executable.  Then invoke the application using the @code{gij} program,
+making sure that @code{gij} can find the libraries it needs.
+@item
+Link the Java packages(s) with the flag @code{-lgij}, which links
+in the @code{main} routine from the @code{gij} command.
+This allows you to select the class whose @code{main} method you
+want to run when you run the application.  You can also use
+other @code{gij} flags, such as @code{-D} flags to set properties.
+Using the @code{-lgij} library (rather than the @code{gij} program
+of the previous mechanism) has some advantages: it is compatible with
+static linking, and does not require configuring or installing libraries.
+@end itemize
+
+These @code{gij} options relate to linking an execitable:
 
 @table @gcctabopt
 @item --main=@var{CLASSNAME}
 This option is used when linking to specify the name of the class whose
 @code{main} method should be invoked when the resulting executable is
-run.  @footnote{The linker by default looks for a global function named
-@code{main}.  Since Java does not have global functions, and a
-collection of Java classes may have more than one class with a
-@code{main} method, you need to let the linker know which of those
-@code{main} methods it should invoke when starting the application.}
+run.
 
 @item -D@var{name}[=@var{value}]
 This option can only be used with @code{--main}.  It defines a system
@@ -375,6 +400,21 @@ property named @var{name} with value @var{value}.  If @var{value} is not
 specified then it defaults to the empty string.  These system properties
 are initialized at the program's startup and can be retrieved at runtime
 using the @code{java.lang.System.getProperty} method.
+
+@item -lgij
+Create an application whose command-line processing is that
+of the @code{gij} command.
+
+This option is an alternative to using @code{--main}; you cannot use both.
+@end table
+
+@node Code Generation
+@section Code Generation
+
+In addition to the many @command{gcc} options controlling code generation,
+@command{gcj} has several options specific to itself.
+
+@table @gcctabopt
 
 @item -C
 This option is used to tell @command{gcj} to generate bytecode
