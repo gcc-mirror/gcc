@@ -1,3 +1,14 @@
+2001-05-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* include/c_std/bin/std_cstring.h: #define away all global
+	functions we will redeclare in namespace `std'.
+	* libsupc++/eh_alloc.cc (__cxa_allocate_exception): Use
+	std::memset, instead of memset.
+	* testsuite/19_diagnostics/stdexceptions.cc: Use `std::strcmp',
+	not plain `strcmp'.
+	* testsuite/21_strings/c_strings.cc: Use `std::strcpy' instead of
+	plain `strcpy'.
+	
 2001-05-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/2832
