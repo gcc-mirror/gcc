@@ -338,9 +338,10 @@ extern int push_reload PARAMS ((rtx, rtx, rtx *, rtx *, enum reg_class,
 				enum machine_mode, enum machine_mode,
 				int, int, int, enum reload_type));
 
-/* Functions in reload1.c:  */
-
+/* Functions in postreload.c:  */
 extern void reload_cse_regs		PARAMS ((rtx));
+
+/* Functions in reload1.c:  */
 extern int reloads_conflict		PARAMS ((int, int));
 
 /* Initialize the reload pass once per compilation.  */

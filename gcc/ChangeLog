@@ -1,5 +1,36 @@
 2003-06-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* Makefile.in (OBJS): Add postreload.o.
+	Remove cselib.h from the dependency list for reload1.o.
+	Add a dependency list for postreload.o.
+	* reload.h: Change the comment for the prototype of
+	reload_cse_regs.
+	* reload1.c: Don't include cselib.h.
+	(reload_cse_regs): Move to postreload.c
+	(reload_cse_regs_1): Likewise.
+	(reload_cse_noop_set_p): Likewise.
+	(reload_cse_simplify_set): Likewise.
+	(reload_cse_simplify_operands): Likewise.
+	(RELOAD_COMBINE_MAX_USES): Likewise.
+	(reload_combine_ruid): Likewise.
+	(LABEL_LIVE): Likewise.
+	(reload_combine): Likewise.
+	(reload_combine_note_use): Likewise.
+	(reload_combine_note_store): Likewise.
+	(reg_set_luid): Likewise.
+	(reg_offset): Likewise.
+	(reg_base_reg): Likewise.
+	(reg_mode): Likewise.
+	(move2add_luid): Likewise.
+	(move2add_last_label_luid): Likewise.
+	(MODES_OK_FOR_MOVE2ADD): Likewise.
+	(reload_cse_move2add): Likewise.
+	(move2add_note_store): Likewise.
+	(reload_cse_simplify): Likewise.
+	* postreload.c: New.
+
+2003-06-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/avr/avr.c (final_prescan_insn): Remove support for
 	-mrtl.
 	* config/avr/avr.h (MASK_RTL_DUMP): Remove.
