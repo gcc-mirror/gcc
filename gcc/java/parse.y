@@ -15970,16 +15970,16 @@ fold_constant_for_init (tree node, tree context)
 	    }
 	  else
 	    {
-	      /* Install the proper context for the field resolution.
-		 The prior context is restored once the name is
-		 properly qualified. */
+	      tree r = NULL_TREE;
+	      /* Install the proper context for the field resolution.  */
 	      tree saved_current_class = current_class;
 	      /* Wait until the USE_COMPONENT_REF re-write.  FIXME. */
 	      current_class = DECL_CONTEXT (context);
 	      qualify_ambiguous_name (node);
+	      r = resolve_field_access (node, &decl, NULL);
+	      /* Restore prior context.  */
 	      current_class = saved_current_class;
-	      if (resolve_field_access (node, &decl, NULL)
-		  && decl != NULL_TREE)
+	      if (r != error_mark_node && decl != NULL_TREE)
 		return fold_constant_for_init (decl, decl);
 	      return NULL_TREE;
 	    }

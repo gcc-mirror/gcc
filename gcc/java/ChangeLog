@@ -1,3 +1,9 @@
+2004-08-02  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR java/16701
+	* parse.y (fold_constant_for_init): Call resolve_field_access with
+	correct current_class context.
+
 2004-08-01  Roger Sayle  <roger@eyesopen.com>
 
 	* decl.c (update_aliases, initialize_local_variable): Replace calls
