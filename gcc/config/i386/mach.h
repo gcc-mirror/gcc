@@ -4,7 +4,7 @@
    i386gas.h checks this.  */
 #define YES_UNDERSCORES
 
-#include "i386gas.h"
+#include "i386gstabs.h"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Di386 -DMACH"
