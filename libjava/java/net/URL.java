@@ -213,7 +213,7 @@ public final class URL implements Serializable
    * @param port The port number to use, or -1 to use the protocol's default
    * port
    * @param file The "file" portion of the URL.
-   * @param handler The protocol handler to use with this URL.
+   * @param ph The protocol handler to use with this URL.
    *
    * @exception MalformedURLException If no protocol handler can be loaded
    * for the specified protocol.
@@ -222,8 +222,8 @@ public final class URL implements Serializable
    *
    * @since 1.2
    */
-  public URL(String protocol, String host, int port, String file,
-	     URLStreamHandler ph)
+  public URL (String protocol, String host, int port, String file,
+	      URLStreamHandler ph)
     throws MalformedURLException
   {
     if (protocol == null)
@@ -320,7 +320,7 @@ public final class URL implements Serializable
    *
    * @param context The context in which to parse the specification
    * @param spec The string to parse as an URL
-   * @param handler The stream handler for the URL
+   * @param ph The stream handler for the URL
    *
    * @exception MalformedURLException If a protocol handler cannot be found
    * or the URL cannot be parsed
@@ -718,6 +718,14 @@ public final class URL implements Serializable
     return ph.toExternalForm(this);
   }
 
+  /**
+   * This internal method is used in two different constructors to load
+   * a protocol handler for this URL.
+   *
+   * @param protocol The protocol to load a handler for
+   *
+   * @return A URLStreamHandler for this protocol, or null when not found.
+   */
   private static synchronized URLStreamHandler
     getURLStreamHandler (String protocol)
   {
