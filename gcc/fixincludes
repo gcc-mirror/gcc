@@ -1597,6 +1597,28 @@ do
   fi
 done
 
+# math.h on SunOS 4 puts the declaration of matherr before the definition
+# of struct exception, so the prototype (added by fixproto) causes havoc.
+file=math.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, matherr declaration
+  sed -e '/^struct exception/,$b' \
+      -e '/matherr/i\
+struct exception;
+'\
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
 # This file on SunOS 4 has a very large macro.  When the sed loop
 # tries pull it in, it overflows the pattern space size of the SunOS
 # sed (GNU sed does not have this problem).  Since the file does not
