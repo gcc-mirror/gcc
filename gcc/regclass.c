@@ -175,7 +175,12 @@ static int move_cost[N_REG_CLASSES][N_REG_CLASSES];
 /* Similar, but here we don't have to move if the first index is a subset
    of the second so in that case the cost is zero.  */
 
-static int may_move_cost[N_REG_CLASSES][N_REG_CLASSES];
+static int may_move_in_cost[N_REG_CLASSES][N_REG_CLASSES];
+
+/* Similar, but here we don't have to move if the first index is a superset
+   of the second so in that case the cost is zero.  */
+
+static int may_move_out_cost[N_REG_CLASSES][N_REG_CLASSES];
 
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 
@@ -413,9 +418,14 @@ init_reg_sets_1 ()
 	move_cost[i][j] = cost;
 
 	if (reg_class_subset_p (i, j))
-	  cost = 0;
+	  may_move_in_cost[i][j] = 0;
+	else
+	  may_move_in_cost[i][j] = cost;
 
-	may_move_cost[i][j] = cost;
+	if (reg_class_subset_p (j, i))
+	  may_move_out_cost[i][j] = 0;
+	else
+	  may_move_out_cost[i][j] = cost;
       }
 }
 
@@ -1277,8 +1287,8 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 		  for (class = 0; class < N_REG_CLASSES; class++)
 		    pp->cost[class]
 		      = (recog_data.operand_type[i] == OP_IN
-			 ? may_move_cost[class][(int) classes[i]]
-			 : may_move_cost[(int) classes[i]][class]);
+			 ? may_move_in_cost[class][(int) classes[i]]
+			 : may_move_out_cost[(int) classes[i]][class]);
 		  
 		  /* If the alternative actually allows memory, make things
 		     a bit cheaper since we won't need an extra insn to
@@ -1296,7 +1306,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 
 		  if (prefclass)
 		    alt_cost
-		      += (may_move_cost[(unsigned char) prefclass[REGNO (op)]]
+		      += (may_move_in_cost[(unsigned char) prefclass[REGNO (op)]]
 			  [(int) classes[i]]);
 
 		  if (REGNO (ops[i]) != REGNO (ops[j])
@@ -1498,8 +1508,8 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 		  for (class = 0; class < N_REG_CLASSES; class++)
 		    pp->cost[class]
 		      = (recog_data.operand_type[i] == OP_IN
-			 ? may_move_cost[class][(int) classes[i]]
-			 : may_move_cost[(int) classes[i]][class]);
+			 ? may_move_in_cost[class][(int) classes[i]]
+			 : may_move_out_cost[(int) classes[i]][class]);
 
 		  /* If the alternative actually allows memory, make things
 		     a bit cheaper since we won't need an extra insn to
@@ -1517,7 +1527,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 
 		  if (prefclass)
 		    alt_cost
-		      += (may_move_cost[(unsigned char) prefclass[REGNO (op)]]
+		      += (may_move_in_cost[(unsigned char) prefclass[REGNO (op)]]
 			  [(int) classes[i]]);
 		}
 	    }
@@ -1835,7 +1845,7 @@ record_address_regs (x, class, scale)
 	pp->mem_cost += (MEMORY_MOVE_COST (Pmode, class, 1) * scale) / 2;
 
 	for (i = 0; i < N_REG_CLASSES; i++)
-	  pp->cost[i] += (may_move_cost[i][(int) class] * scale) / 2;
+	  pp->cost[i] += (may_move_in_cost[i][(int) class] * scale) / 2;
       }
       break;
 
