@@ -2913,69 +2913,6 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	  ret = GS_UNHANDLED;
 	break;
 
-      case CALL_EXPR:
-	/* For calls that return in memory, give *to_p as the CALL_EXPR's
-	   return slot so that we don't generate a temporary.  */
-	if (aggregate_value_p (*from_p, *from_p))
-	  {
-	    tree init = *from_p;
-	    tree fn = TREE_OPERAND (init, 0);
-	    tree args = TREE_OPERAND (init, 1);
-	    tree rettype = TREE_TYPE (TREE_TYPE (TREE_TYPE (fn)));
-	    tree arg = *to_p;
-	    tree type;
-
-	    /* Only use the original target if *to_p isn't already
-	       addressable; if its address escapes, and the called function
-	       uses the NRV optimization, a conforming program could see
-	       *to_p change before the called function returns.  This is
-	       c++/19317.  */
-	    bool use_temp = !is_gimple_non_addressable (*to_p);
-
-	    /* A CALL_EXPR with an explicit return slot argument should
-	       never appear on the RHS of a MODIFY_EXPR.  */
-	    if (CALL_EXPR_HAS_RETURN_SLOT_ADDR (*from_p))
-	      abort ();
-
-	    if (use_temp)
-	      {
-		arg = create_tmp_var (rettype, "ret");
-		*from_p = arg;
-	      }
-
-	    type = TREE_TYPE (arg);
-	    /* FIXME: Mark the address as not escaping.  */
-	    lang_hooks.mark_addressable (arg);
-	    arg = build1 (ADDR_EXPR, build_pointer_type (type), arg);
-	    /* The return type might have different cv-quals from arg.  */
-	    arg = convert (build_pointer_type (rettype), arg);
-	    args = tree_cons (NULL_TREE, arg, args);
-	    init = build3 (CALL_EXPR, rettype, fn, args, NULL_TREE);
-	    CALL_EXPR_HAS_RETURN_SLOT_ADDR (init) = 1;
-	    TREE_USED (init) = 1;
-
-	    if (use_temp)
-	      {
-		gimplify_and_add (init, pre_p);
-		ret = GS_OK;
-		break;
-	      }
-	    else if (want_value)
-	      {
-		gimplify_and_add (init, pre_p);
-		*expr_p = *to_p;
-		return GS_OK;
-	      }
-	    else
-	      {
-		*expr_p = init;
-		return GS_OK;
-	      }
-	  }
-	else
-	  ret = GS_UNHANDLED;
-	break;
-
       default:
 	ret = GS_UNHANDLED;
 	break;
