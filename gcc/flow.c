@@ -267,7 +267,6 @@ static void find_auto_inc		PROTO((regset, rtx, rtx));
 static void mark_used_regs		PROTO((regset, regset, rtx, int, rtx));
 static int try_pre_increment_1		PROTO((rtx));
 static int try_pre_increment		PROTO((rtx, rtx, HOST_WIDE_INT));
-static rtx find_use_as_address		PROTO((rtx, rtx, HOST_WIDE_INT));
 void dump_flow_info			PROTO((FILE *));
 
 /* Find basic blocks of the current function and perform data flow analysis.
@@ -2722,7 +2721,7 @@ try_pre_increment (insn, reg, amount)
    If REG appears more than once, or is used other than in such an address,
    return (rtx)1.  */
 
-static rtx
+rtx
 find_use_as_address (x, reg, plusconst)
      register rtx x;
      rtx reg;
