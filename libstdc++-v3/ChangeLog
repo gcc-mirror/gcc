@@ -1,3 +1,9 @@
+2001-08-15  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* testsuite/18_support/numeric_limits.cc: Add more tests.
+	* include/bits/std_limits.h (numeric_limits<char>::max): Fix
+	typo. 
+
 2001-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
  
 	* configure.target (cpu_include_dir): Set to `config/cpu/s390'
