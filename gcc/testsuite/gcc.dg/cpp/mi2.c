@@ -3,8 +3,8 @@
    Problem noted by Tom Tromey <tromey@cygnus.com>.  */
 /* { dg-do compile } */
 
-#include "cpp-mi2a.h"
-#include "cpp-mi2b.h"
+#include "mi2a.h"
+#include "mi2b.h"
 
 int main (void)
 {

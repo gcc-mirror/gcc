@@ -50,17 +50,6 @@ if { [istarget rs6000-*-aix*]
 dg-runtest $srcdir/$subdir/981006-1.c "-Wuninitialized -O2 $extra_flags" ""
 dg-finish
 
-# 921210-1
-set lines [gcc_target_compile $srcdir/$subdir/921210-1.c "" preprocess ""]
-set lines [prune [split [prune_warnings [prune_gcc_output $lines]] "\n"] ""]
-set line [lindex $lines [expr [llength $lines]-1]]
-regsub -all " " $line "" clean
-if [expr [string compare $clean "(a->f+1)+1"]==0] then {
-    pass "921210-1.c"
-} else {
-    fail "921210-1.c"
-}
-
 # 920521-1
 c-torture 920521-1.c "-S"
 

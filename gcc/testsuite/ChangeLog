@@ -1,3 +1,89 @@
+2000-06-27  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/cpp: New directory.
+	* gcc.dg/cpp/cpp.exp: New driver.
+	* gcc.dg/cpp/20000627-1.c: New test.
+	* gcc.c-torture/special/special.exp: Remove entry for 921210-1.c.
+	* gcc.c-torture/special/921210-1.c: Move to gcc.dg/cpp/19921210-1.c
+	and rewrite as a compilation test.
+
+	* gcc.dg: Move many files into the cpp subdirectory, possibly
+	renaming or editing them as well.
+	Old name		New name
+	990119-1.c		cpp/19990119-1.c
+	990228-1.c		cpp/19990228-1.c
+	990407-1.c		cpp/19990407-1.c
+	990409-1.c		cpp/19990409-1.c
+	990413-1.c		cpp/19990413-1.c
+	990703-1.c		cpp/19990703-1.c
+	20000127-1.c		cpp/20000127-1.c
+	20000129-1.c		cpp/20000129-1.c
+	20000207-1.c		cpp/20000207-1.c
+	20000207-2.c		cpp/20000207-2.c
+	20000209-1.c		cpp/20000209-1.c
+	20000209-2.c		cpp/20000209-2.c
+	20000301-1.c		cpp/20000301-1.c
+	20000419-1.c		cpp/20000419-1.c
+	20000510-1.S		cpp/20000510-1.S
+	20000519-1.c		cpp/20000519-1.c
+	20000529-1.c		cpp/20000529-1.c
+	20000625-1.c		cpp/20000625-1.c
+	20000625-2.c		cpp/20000625-2.c
+	cpp-as1.c		cpp/assert1.c
+	cpp-as2.c		cpp/assert2.c
+	cxx-comments-1.c	cpp/cxxcom1.c
+	cxx-comments-2.c	cpp/cxxcom2.c
+	endif-label.c		cpp/endif.c
+	cpp-hash1.c		cpp/hash1.c
+	cpp-hash2.c		cpp/hash2.c
+	cpp-if1.c		cpp/if-1.c
+	cpp-if2.c		cpp/if-2.c
+	cpp-if3.c		cpp/if-3.c
+	cpp-if4.c		cpp/if-4.c
+	cpp-if5.c		cpp/if-5.c
+	cpp-cond.c		cpp/if-cexp.c
+	cpp-missingop.c		cpp/if-mop.c
+	cpp-missingparen.c	cpp/if-mpar.c
+	cpp-opprec.c		cpp/if-oppr.c
+	cpp-ifparen.c		cpp/if-paren.c
+	cpp-shortcircuit.c	cpp/if-sc.c
+	cpp-shift.c		cpp/if-shift.c
+	cpp-unary.c		cpp/if-unary.c
+	cpp-li1.c		cpp/line1.c
+	cpp-li2.c		cpp/line2.c
+	lineno.c		cpp/line3.c
+	lineno-2.c		cpp/line4.c
+	cpp-mi.c		cpp/mi1.c
+	cpp-mic.h		cpp/mi1c.h
+	cpp-micc.h		cpp/mi1cc.h
+	cpp-mind.h		cpp/mi1nd.h
+	cpp-mindp.h		cpp/mi1ndp.h
+	cpp-mix.h		cpp/mi1x.h
+	cpp-mi2.c		cpp/mi2.c
+	cpp-mi2a.h		cpp/mi2a.h
+	cpp-mi2b.h		cpp/mi2b.h
+	cpp-mi2c.h		cpp/mi2c.h
+	cpp-mi3.c		cpp/mi3.c
+	cpp-mi3.def		cpp/mi3.def
+	poison-1.c		cpp/poison.c
+	pr-impl.c		cpp/prag-imp.c
+	cpp-redef-2.c		cpp/redef1.c
+	cpp-redef.c		cpp/redef2.c
+	strpaste.c		cpp/strp1.c
+	strpaste-2.c		cpp/strp2.c
+	cpp-tradpaste.c		cpp/tr-paste.c
+	cpp-tradstringify.c	cpp/tr-str.c
+	cpp-tradwarn1.c		cpp/tr-warn1.c
+	cpp-tradwarn2.c		cpp/tr-warn2.c
+	trigraphs.c		cpp/trigraphs.c
+	cpp-unc1.c		cpp/unc1.c
+	cpp-unc2.c		cpp/unc2.c
+	cpp-unc3.c		cpp/unc3.c
+	cpp-unc.c		cpp/unc4.c
+	undef.c			cpp/undef1.c
+	undef-2.c		cpp/undef2.c
+	cpp-wi1.c		cpp/widestr1.c
+
 2000-06-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/g++.exp (g++_include_flags): Tweak.
