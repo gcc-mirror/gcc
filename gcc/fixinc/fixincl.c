@@ -220,12 +220,14 @@ initialize ( argc, argv )
   char** argv;
 {
   static const char var_not_found[] =
+#ifndef __STDC__
     "fixincl ERROR:  %s environment variable not defined\n"
-#ifdef __STDC__
+#else
+    "fixincl ERROR:  %s environment variable not defined\n"
     "each of these must be defined:\n"
-#define _ENV_(v,m,n,t) "\t" n "  - " t "\n"
-ENV_TABLE
-#undef _ENV_
+# define _ENV_(v,m,n,t) "\t" n "  - " t "\n"
+  ENV_TABLE
+# undef _ENV_
 #endif
     ;
 
