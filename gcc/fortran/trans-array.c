@@ -3762,10 +3762,12 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
       if (!sym->attr.pointer && sym->as->type != AS_ASSUMED_SHAPE 
           && !sym->attr.allocatable)
         {
-          if (!sym->attr.dummy)
-	    se->expr = gfc_build_addr_expr (NULL, tmp);
+	  /* Some variables are declared directly, others are declard as
+	     pointers and allocated on the heap.  */
+          if (sym->attr.dummy || POINTER_TYPE_P (TREE_TYPE (tmp)))
+            se->expr = tmp;
           else
-            se->expr = tmp;  
+	    se->expr = gfc_build_addr_expr (NULL, tmp);
 	  return;
         }
       if (sym->attr.allocatable)

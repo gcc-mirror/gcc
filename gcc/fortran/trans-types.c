@@ -750,6 +750,8 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, int packed)
 
   if (packed < 3 || !known_stride)
     {
+      /* For dummy arrays and automatic (heap allocated) arrays we
+	 want a pointer to the array.  */
       type = build_pointer_type (type);
       GFC_ARRAY_TYPE_P (type) = 1;
       TYPE_LANG_SPECIFIC (type) = TYPE_LANG_SPECIFIC (TREE_TYPE (type));
