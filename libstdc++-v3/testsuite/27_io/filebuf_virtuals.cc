@@ -542,8 +542,8 @@ class MyTraits : public std::char_traits<char>
 public:
   static bool eq(char c1, char c2)
   {
-    VERIFY( c1 >= 0 );
-    VERIFY( c2 >= 0 );
+    VERIFY( c1 != 'X' );
+    VERIFY( c2 != 'X' );
     return std::char_traits<char>::eq(c1, c2);
   }
 };
@@ -555,8 +555,8 @@ class MyBuf : public std::basic_streambuf<char, MyTraits>
 public:
   MyBuf()
   {
-    std::memset(buffer, -1, sizeof(buffer));
-    std::memset(buffer + 2, 0, 4);
+    std::memset(buffer, 'X', sizeof(buffer));
+    std::memset(buffer + 2, 'f', 4);
     setg(buffer + 2, buffer + 2, buffer + 6);
   }
 };
@@ -567,7 +567,7 @@ void test08()
   bool test = true;
 
   MyBuf mb;
-  mb.sputbackc(0);  
+  mb.sputbackc('a');  
 }
 
 // libstdc++/9439, libstdc++/9425
