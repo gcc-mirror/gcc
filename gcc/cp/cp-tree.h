@@ -399,13 +399,15 @@ struct tree_wrapper GTY(())
   struct z_candidate *z_c;
 };
 
-#define SRCLOC_FILE(NODE) (((struct tree_srcloc*)SRCLOC_CHECK (NODE))->filename)
-#define SRCLOC_LINE(NODE) (((struct tree_srcloc*)SRCLOC_CHECK (NODE))->linenum)
+#define SOURCE_LOCUS(NODE) \
+   (((struct tree_srcloc*)SRCLOC_CHECK (NODE))->locus)
+#define SRCLOC_FILE(NODE) SOURCE_LOCUS (NODE).file
+#define SRCLOC_LINE(NODE) SOURCE_LOCUS (NODE).line
+
 struct tree_srcloc GTY(())
 {
   struct tree_common common;
-  const char *filename;
-  int linenum;
+  location_t locus;
 };
 
 /* Macros for access to language-specific slots in an identifier.  */
