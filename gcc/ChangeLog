@@ -1,3 +1,18 @@
+2003-10-01  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (expand_builtin_init_dwarf_reg_sizes): Honor
+	DWARF_ALT_FRAME_RETURN_COLUMN.
+	* unwind-dw2.c (dwarf_reg_size_table): Expand by one.
+	(_Unwind_GetGR, _Unwind_SetGR): Validate lookup column.
+	(uw_frame_state_for): Return end-of-stack for null return address.
+
+	* config/alpha/alpha.c (alpha_sa_mask): Add r31 for eh_return.
+	(alpha_expand_prologue): Store a zero for it.
+	(alpha_expand_epilogue): Don't reload it.
+	* config/alpha/alpha.h (DWARF_ALT_FRAME_RETURN_COLUMN): New.
+	* config/alpha/linux.h (MD_FALLBACK_FRAME_STATE_FOR): Use column 64
+	for the sigframe return address.
+
 2003-10-01  Nick Clifton  <nickc@redhat.com>
 
 	* Import this patch from mainline:
@@ -85,7 +100,7 @@
 	* config.gcc (mips*-*-rtems*): Use config/mips/t-rtems.
 
 2003-09-19  T. Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
-            Eric Botcazou <ebotcazou@libertysurf.fr>
+	    Eric Botcazou <ebotcazou@libertysurf.fr>
 
 	PR target/12166
 	* config/sparc/sol2-c1.asm (start): Set __Argv if GCRT1.
@@ -158,8 +173,8 @@
 2003-09-09  Richard Henderson  <rth@redhat.com>
 
 	PR target/12224:
-        * config/ia64/ia64.c (ia64_expand_move): Properly truncate
-        result when op0 is SImode.
+	* config/ia64/ia64.c (ia64_expand_move): Properly truncate
+	result when op0 is SImode.
 
 2003-09-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
@@ -262,9 +277,9 @@ Sat Sep  6 23:16:35 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-08-25  Richard Henderson  <rth@redhat.com>
 
-        * config/i386.i386.c (ix86_return_in_memory): Reformat.  Return true
-        for 16-byte vector modes if sse not enabled; warn for abi change.
-        (ix86_value_regno): Only return xmm0 for 16-byte vector types.
+	* config/i386.i386.c (ix86_return_in_memory): Reformat.  Return true
+	for 16-byte vector modes if sse not enabled; warn for abi change.
+	(ix86_value_regno): Only return xmm0 for 16-byte vector types.
 
 2003-08-25  Zack Weinberg  <zack@codesourcery.com>
 

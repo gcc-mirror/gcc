@@ -432,6 +432,15 @@ expand_builtin_init_dwarf_reg_sizes (address)
 
 	emit_move_insn (adjust_address (mem, mode, offset), GEN_INT (size));
       }
+
+#ifdef DWARF_ALT_FRAME_RETURN_COLUMN
+  {
+    enum machine_mode save_mode = Pmode;
+    HOST_WIDE_INT offset = DWARF_ALT_FRAME_RETURN_COLUMN * GET_MODE_SIZE (mode);
+    HOST_WIDE_INT size = GET_MODE_SIZE (save_mode);
+    emit_move_insn (adjust_address (mem, mode, offset), GEN_INT (size));
+  }
+#endif
 }
 
 /* Convert a DWARF call frame info. operation to its string name */
