@@ -65,11 +65,18 @@ cplus_expand_constant (cst)
 					  bit_position (member),
 					  bitsize_int (BITS_PER_UNIT)));
 
-	    /* We offset all pointer to data members by 1 so that we
-	       can distinguish between a null pointer to data member
-	       and the first data member of a structure.  */
-	    offset = size_binop (PLUS_EXPR, offset, size_one_node);
-	    cst = cp_convert (type, offset);
+	    if (flag_new_abi)
+	      /* Under the new ABI, we use -1 to represent the NULL
+		 pointer; non-NULL values simply contain the offset of
+		 the data member.  */
+	      ;
+	    else
+	      /* We offset all pointer to data members by 1 so that we
+		 can distinguish between a null pointer to data member
+		 and the first data member of a structure.  */
+	      offset = size_binop (PLUS_EXPR, offset, size_one_node);
+
+	    cst = fold (build1 (NOP_EXPR, type, offset));
 	  }
 	else
 	  {

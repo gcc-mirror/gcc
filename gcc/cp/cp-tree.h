@@ -2347,6 +2347,8 @@ extern int flag_new_for_scope;
    && DECL_LANG_SPECIFIC (NODE)->decl_flags.bitfield)
 #define SET_DECL_C_BIT_FIELD(NODE) \
   (DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))->decl_flags.bitfield = 1)
+#define CLEAR_DECL_C_BIT_FIELD(NODE) \
+  (DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))->decl_flags.bitfield = 0)
 
 /* In a FUNCTION_DECL, nonzero if the function cannot be inlined.  */
 #define DECL_UNINLINABLE(NODE) \

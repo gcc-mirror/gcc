@@ -1821,11 +1821,13 @@ resolve_offset_ref (exp)
       addr = convert_pointer_to (basetype, addr);
       member = cp_convert (ptrdiff_type_node, member);
 
-      /* Pointer to data members are offset by one, so that a null
-	 pointer with a real value of 0 is distinguishable from an
-	 offset of the first member of a structure.  */
-      member = build_binary_op (MINUS_EXPR, member,
-				cp_convert (ptrdiff_type_node, integer_one_node));
+      if (!flag_new_abi)
+	/* Pointer to data members are offset by one, so that a null
+	   pointer with a real value of 0 is distinguishable from an
+	   offset of the first member of a structure.  */
+	member = build_binary_op (MINUS_EXPR, member,
+				  cp_convert (ptrdiff_type_node, 
+					      integer_one_node));
 
       return build1 (INDIRECT_REF, type,
 		     build (PLUS_EXPR, build_pointer_type (type),

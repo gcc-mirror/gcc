@@ -3616,22 +3616,20 @@ check_bitfield_decl (field)
      tree field;
 {
   tree type = TREE_TYPE (field);
+  tree w = NULL_TREE;
 
-  /* Invalid bit-field size done by grokfield.  */
-  /* Detect invalid bit-field type. Simply checking if TYPE is
-     integral is insufficient, as that is the array core of the field
-     type. If TREE_TYPE (field) is integral, then TYPE must be the same.  */
+  /* Detect invalid bit-field type.  */
   if (DECL_INITIAL (field)
       && ! INTEGRAL_TYPE_P (TREE_TYPE (field)))
     {
       cp_error_at ("bit-field `%#D' with non-integral type", field);
-      DECL_INITIAL (field) = NULL;
+      w = error_mark_node;
     }
 
   /* Detect and ignore out of range field width.  */
   if (DECL_INITIAL (field))
     {
-      tree w = DECL_INITIAL (field);
+      w = DECL_INITIAL (field);
 
       /* Avoid the non_lvalue wrapper added by fold for PLUS_EXPRs.  */
       STRIP_NOPS (w);
@@ -3646,17 +3644,17 @@ check_bitfield_decl (field)
 	{
 	  cp_error_at ("bit-field `%D' width not an integer constant",
 		       field);
-	  DECL_INITIAL (field) = NULL_TREE;
+	  w = error_mark_node;
 	}
       else if (tree_int_cst_sgn (w) < 0)
 	{
-	  DECL_INITIAL (field) = NULL;
 	  cp_error_at ("negative width in bit-field `%D'", field);
+	  w = error_mark_node;
 	}
       else if (integer_zerop (w) && DECL_NAME (field) != 0)
 	{
-	  DECL_INITIAL (field) = NULL;
 	  cp_error_at ("zero width for bit-field `%D'", field);
+	  w = error_mark_node;
 	}
       else if (compare_tree_int (w, TYPE_PRECISION (type)) > 0
 	       && TREE_CODE (type) != ENUMERAL_TYPE
@@ -3672,30 +3670,37 @@ check_bitfield_decl (field)
 					      TREE_UNSIGNED (type)))))
 	cp_warning_at ("`%D' is too small to hold all values of `%#T'",
 		       field, type);
+    }
+  
+  /* Remove the bit-field width indicator so that the rest of the
+     compiler does not treat that value as an initializer.  */
+  DECL_INITIAL (field) = NULL_TREE;
 
-      if (DECL_INITIAL (field))
+  if (w != error_mark_node)
+    {
+      DECL_SIZE (field) = convert (bitsizetype, w);
+      DECL_BIT_FIELD (field) = 1;
+
+      if (integer_zerop (w))
 	{
-	  DECL_INITIAL (field) = NULL_TREE;
-	  DECL_SIZE (field) = convert (bitsizetype, w);
-	  DECL_BIT_FIELD (field) = 1;
-
-	  if (integer_zerop (w))
-	    {
 #ifdef EMPTY_FIELD_BOUNDARY
-	      DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
-					EMPTY_FIELD_BOUNDARY);
+	  DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
+				    EMPTY_FIELD_BOUNDARY);
 #endif
 #ifdef PCC_BITFIELD_TYPE_MATTERS
-	      if (PCC_BITFIELD_TYPE_MATTERS)
-		DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
-					  TYPE_ALIGN (type));
+	  if (PCC_BITFIELD_TYPE_MATTERS)
+	    DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
+				      TYPE_ALIGN (type));
 #endif
-	    }
 	}
     }
   else
-    /* Non-bit-fields are aligned for their type.  */
-    DECL_ALIGN (field) = MAX (DECL_ALIGN (field), TYPE_ALIGN (type));
+    {
+      /* Non-bit-fields are aligned for their type.  */
+      DECL_BIT_FIELD (field) = 0;
+      CLEAR_DECL_C_BIT_FIELD (field);
+      DECL_ALIGN (field) = MAX (DECL_ALIGN (field), TYPE_ALIGN (type));
+    }
 }
 
 /* FIELD is a non bit-field.  We are finishing the processing for its
@@ -4678,7 +4683,10 @@ dfs_propagate_binfo_offsets (binfo, data)
   tree offset = (tree) data;
 
   /* Update the BINFO_OFFSET for this base.  */
-  BINFO_OFFSET (binfo) = size_binop (PLUS_EXPR, BINFO_OFFSET (binfo), offset);
+  BINFO_OFFSET (binfo) = fold (build (PLUS_EXPR,
+				      sizetype,
+				      BINFO_OFFSET (binfo), 
+				      offset));
 
   SET_BINFO_MARKED (binfo);
 
@@ -4744,8 +4752,7 @@ dfs_set_offset_for_unshared_vbases (binfo, data)
       tree offset;
       
       vbase = BINFO_FOR_VBASE (BINFO_TYPE (binfo), t);
-      offset = size_binop (MINUS_EXPR, 
-			   BINFO_OFFSET (vbase), BINFO_OFFSET (binfo));
+      offset = size_diffop (BINFO_OFFSET (vbase), BINFO_OFFSET (binfo));
       propagate_binfo_offsets (binfo, offset);
     }
 
