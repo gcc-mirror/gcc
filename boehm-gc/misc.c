@@ -439,6 +439,9 @@ void GC_init_inner()
 #   if defined(LINUX) && defined(ALPHA)
       GC_init_linuxalpha();
 #   endif
+#   if defined(LINUX) && defined(SPARC)
+	GC_init_linuxsparc();
+#   endif
 #   ifdef SOLARIS_THREADS
 	GC_thr_init();
 	/* We need dirty bits in order to find live stack sections.	*/

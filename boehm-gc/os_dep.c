@@ -68,7 +68,7 @@
 #   define NEED_FIND_LIMIT
 # endif
 
-# if defined(LINUX) && (defined(POWERPC) || defined(ALPHA))
+# if defined(LINUX) && (defined(POWERPC) || defined(ALPHA) || defined(SPARC))
 #   define NEED_FIND_LIMIT
 # endif
 
@@ -221,6 +221,19 @@
      }
 # endif
      //fprintf(stderr, "GC_data_start = %p\n", GC_data_start);
+  }
+#endif
+
+#if defined(LINUX) && defined(SPARC)
+  ptr_t GC_data_start;
+
+  void GC_init_linuxsparc()
+  {
+    extern ptr_t GC_find_limit();
+    extern char **_environ;
+      /* This may need to be environ, without the underscore, for     */
+      /* some versions.                                               */
+    GC_data_start = GC_find_limit((ptr_t)&_environ, FALSE);
   }
 #endif
 
@@ -2261,7 +2274,7 @@ struct hblk *h;
  * Call stack save code for debugging.
  * Should probably be in mach_dep.c, but that requires reorganization.
  */
-#if defined(SPARC)
+#if defined(SPARC) && !defined(LINUX)
 #   if defined(SUNOS4)
 #     include <machine/frame.h>
 #   else

@@ -1,3 +1,11 @@
+1999-07-19  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* config.h: Updates for GNU/Linux/sparc.  Use HEURISTIC2 on
+	Solaris7/sparc, since HEURISTIC1 does not work.
+	* os_dep.c: Updates for GNU/Linux/sparc.
+	* misc.c (GC_init_inner): Likewise.
+	From gc-boehm 4.14.
+
 1999-07-19  Tom Tromey  <tromey@cygnus.com>
 
 	* config.h (MPROTECT_VDB): Don't define on Linux.

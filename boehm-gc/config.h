@@ -128,6 +128,12 @@
 #    define LINUX
 #    define mach_type_known
 # endif
+# if (defined(linux) || defined(__linux__)) && \
+     (defined(sparc) || defined(__sparc__))
+#    define SPARC
+#    define LINUX
+#    define mach_type_known
+# endif
 # if defined(__alpha) || defined(__alpha__)
 #   define ALPHA
 #   if defined(linux) || defined(__linux__)
@@ -498,7 +504,10 @@
 #	  define HEAP_START DATAEND
 #       endif
 #	define PROC_VDB
-#	define HEURISTIC1
+/*	HEURISTIC1 reportedly no longer works under 2.7.  Thus we	*/
+/* 	switched to HEURISTIC2, eventhough it creates some debugging	*/
+/*	issues.								*/
+#	define HEURISTIC2
 #	include <unistd.h>
 #       define GETPAGESIZE()  sysconf(_SC_PAGESIZE)
 		/* getpagesize() appeared to be missing from at least one */
@@ -532,6 +541,18 @@
 #       define STACKBOTTOM ((ptr_t) 0xdfff0000)
 #   endif
 #   define DYNAMIC_LOADING
+#   ifdef LINUX
+#     define OS_TYPE "LINUX"
+#     ifdef __ELF__
+#         define DATASTART GC_data_start
+#     else
+          Linux Sparc non elf ?
+#     endif
+      extern int _end;
+#     define DATAEND (&_end)
+#     define SVR4
+#     define STACKBOTTOM ((ptr_t) 0xf0000000)
+#   endif
 # endif
 
 # ifdef I386
@@ -979,7 +1000,7 @@
 #   define THREADS
 # endif
 
-# if defined(SPARC)
+# if defined(SPARC) && !defined(LINUX)
 #   define SAVE_CALL_CHAIN
 #   define ASM_CLEAR_CODE	/* Stack clearing is crucial, and we 	*/
 				/* include assembly code to do it well.	*/
