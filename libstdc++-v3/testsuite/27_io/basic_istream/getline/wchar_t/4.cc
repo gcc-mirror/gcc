@@ -81,7 +81,7 @@ void test01()
   VERIFY( is.gcount() == 10 );
 
   is.clear();
-  traits_type::assign(buffer, sizeof(buffer) / sizeof(wchar_t), 'X');
+  traits_type::assign(buffer, sizeof(buffer) / sizeof(wchar_t), L'X');
   is.getline(buffer, sizeof(buffer) / sizeof(wchar_t));
   VERIFY( is.rdstate() == ios_base::failbit );
   VERIFY( !traits_type::compare(buffer, L"abcdefghi\0",
