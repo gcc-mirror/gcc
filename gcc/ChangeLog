@@ -1,3 +1,10 @@
+2002-01-02  Kazu Hirata  <kazu@hxi.com>
+
+	* except.c: Fix comment typos.
+	* loop.c: Likewise.
+	* varasm.c: Likewise.
+	* doc/tm.texi: Fix a typo.
+
 2002-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (output_init_element): Allow initializing static storage

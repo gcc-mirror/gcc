@@ -1,6 +1,6 @@
 /* Perform various loop optimizations, including strength reduction.
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3832,7 +3832,7 @@ emit_prefetch_instructions (loop)
 		 ineffective.  Later we may be able to reverse such BIVs.  */
 	      || (PREFETCH_NO_REVERSE_ORDER 
 		  && (stride = INTVAL (iv->mult_val) * basestride) < 0)
-	      /* Prefetching of accesses with such a extreme stride is probably
+	      /* Prefetching of accesses with such an extreme stride is probably
 		 not worthwhile, either.  */
 	      || (PREFETCH_NO_EXTREME_STRIDE
 		  && stride > PREFETCH_EXTREME_STRIDE)

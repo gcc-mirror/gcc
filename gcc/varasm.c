@@ -1,6 +1,6 @@
 /* Output variables, constants and external declarations, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -133,7 +133,7 @@ tree last_assemble_variable_decl;
    So giving constant the alias set for the type will allow such
    initializations to appear to conflict with the load of the constant.  We
    avoid this by giving all constants an alias set for just constants.
-   Since there will be no stores to that a alias set, nothing will ever
+   Since there will be no stores to that alias set, nothing will ever
    conflict with them.  */
 
 static HOST_WIDE_INT const_alias_set;
