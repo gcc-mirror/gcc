@@ -1,5 +1,4 @@
-/* Definitions for rtems targetting an Intel m68k using coff.
-
+/* Definitions for rtems targetting a Motorola m68k using coff.
    Copyright (C) 1996 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
