@@ -1,3 +1,9 @@
+2003-12-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/13060
+	* function.c (fixup_var_refs_1) [SUBREG]: Recognize even if a
+	replacement already exists.  Fix again the whole insn if that fails.
+
 2003-12-06  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/rs6000.c (macho_branch_islands): Use 
