@@ -1,3 +1,8 @@
+2002-10-11  Jason Molenda  <jmolenda@apple.com>
+
+	* init.c (build_field_list): Provide uses_unions_p with a default
+	value.
+
 2002-10-10  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PRs C++/6803, C++/7721 and C++/7803

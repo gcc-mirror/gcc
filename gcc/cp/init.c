@@ -348,6 +348,8 @@ build_field_list (t, list, uses_unions_p)
 {
   tree fields;
 
+  *uses_unions_p = 0;
+
   /* Note whether or not T is a union.  */
   if (TREE_CODE (t) == UNION_TYPE)
     *uses_unions_p = 1;
