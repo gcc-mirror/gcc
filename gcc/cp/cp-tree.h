@@ -334,11 +334,6 @@ typedef enum cp_id_kind
 #define IDENTIFIER_BINDING(NODE) \
   (LANG_IDENTIFIER_CAST (NODE)->bindings)
 
-/* The IDENTIFIER_VALUE is the value of the IDENTIFIER_BINDING, or
-   NULL_TREE if there is no binding.  */
-#define IDENTIFIER_VALUE(NODE)			\
-  (IDENTIFIER_BINDING (NODE) ? IDENTIFIER_BINDING (NODE)->value : NULL)
-
 /* TREE_TYPE only indicates on local and class scope the current
    type. For namespace scope, the presence of a type in any namespace
    is indicated with global_type_node, and the real type behind must
@@ -1387,9 +1382,6 @@ struct lang_type GTY(())
 		       || BINFO_VIRTUAL_P (B), 20000517),			 \
    my_friendly_assert (CLASSTYPE_VFIELDS (BINFO_TYPE (B)) != NULL_TREE,  \
 		       20000517))
-
-/* Nonzero means this class has done dfs_pushdecls.  */
-#define BINFO_PUSHDECLS_MARKED(NODE) BINFO_VTABLE_PATH_MARKED (NODE)
 
 /* Nonzero if this BINFO is a primary base class.  */
 
@@ -3708,7 +3700,6 @@ extern tree start_decl				(const cp_declarator *, cp_decl_specifier_seq *, int, 
 extern void start_decl_1			(tree);
 extern void cp_finish_decl			(tree, tree, tree, int);
 extern void finish_decl				(tree, tree, tree);
-extern void maybe_inject_for_scope_var          (tree);
 extern int complete_array_type			(tree, tree, int);
 extern tree build_ptrmemfunc_type		(tree);
 extern tree build_ptrmem_type                   (tree, tree);
@@ -4003,7 +3994,6 @@ extern int look_for_overrides			(tree, tree);
 extern void get_pure_virtuals		        (tree);
 extern void maybe_suppress_debug_info		(tree);
 extern void note_debug_info_needed		(tree);
-extern void push_class_decls			(tree);
 extern void print_search_statistics		(void);
 extern void reinit_search_statistics		(void);
 extern tree current_scope			(void);

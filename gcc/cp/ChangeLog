@@ -1,3 +1,49 @@
+2004-07-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (IDENTIFIER_VALUE): Remove.
+	(BINFO_PUSHDECLS_MARKED): Likewise.
+	(maybe_inject_for_scope_var): Likewise.
+	(push_class_decls): Likewise.
+	* name-lookup.h (push_class_binding): Remove.
+	(innermost_non_namespace_value): New function.
+	(outer_binding): Likewise.
+	* class.c (add_method): Push bindings before adding to
+	TYPE_METHODS.
+	(restore_class_cache): Do not restore class_shadowed.
+	(pushclass): Do not add USING_DECLs.  Do not call
+	push_class_decls.
+	* config-lang.in (gtfiles): Remove $(srcdir)/cp/search.c.
+	* decl.c (pushdecl): Use outer_binding.
+	(poplevel): Set the scope for an out-of-scope for-loop declaration
+	appropriately.
+	(cp_finish_decl): Don't call maybe_inject_for_scope_var.
+	* name-lookup.c (new_class_binding): New function.
+	(push_binding): Use it.
+	(pushdecl): Use innermost_non_namespace_value.
+	(maybe_inject_for_scope_var): Remove.
+	(push_class_binding): Remove.
+	(set_inherited_value_binding_p): New function.
+	(get_class_binding): New function.
+	(push_class_level_binding): Assert that the current_class_type is
+	being defined.
+	(outer_binding): New function.
+	(innermost_non_namespace_value): Likewise.
+	(lookup_name_real): Use outer_binding.
+	(lookup_name_current_level): Ignore out-of-scope variables.
+	* pt.c (check_template_shadow): Use innermost_non_namespace_value.
+	(lookup_template_class): Likewise.
+	* search.c (dfs_push_type_decls): Remove.
+	(dfs_push_decls): Likewise.
+	(setup_class_bindings): Likewise.
+	(lookup_field_1): Handle USING_DECLs from dependent scopes.
+	(marked_pushdecls_p): Remove.
+	(unmarked_pushdecls_p): Remove.
+	(marked_identifiers): Remove.
+	(setup_class_bindings): Remove.
+	(dfs_push_type_decls): Remove.
+	(dfs_push_decls): Remove.
+	(push_class_decls): Remove.
+	
 2004-07-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16518

@@ -540,17 +540,19 @@ poplevel (int keep, int reverse, int functionbody)
       if (leaving_for_scope && TREE_CODE (link) == VAR_DECL
           && DECL_NAME (link))
 	{
-	  cxx_binding *outer_binding
-	    = IDENTIFIER_BINDING (DECL_NAME (link))->previous;
+	  tree name = DECL_NAME (link);
+	  cxx_binding *ob;
 	  tree ns_binding;
 
-	  if (!outer_binding)
-	    ns_binding = IDENTIFIER_NAMESPACE_VALUE (DECL_NAME (link));
+	  ob = outer_binding (name,
+			      IDENTIFIER_BINDING (name),
+			      /*class_p=*/true);
+	  if (!ob)
+	    ns_binding = IDENTIFIER_NAMESPACE_VALUE (name);
 	  else
 	    ns_binding = NULL_TREE;
 
-	  if (outer_binding
-	      && outer_binding->scope == current_binding_level->level_chain)
+	  if (ob && ob->scope == current_binding_level->level_chain)
 	    /* We have something like:
 
 	         int i;
@@ -558,9 +560,8 @@ poplevel (int keep, int reverse, int functionbody)
 
 	       and we are leaving the `for' scope.  There's no reason to
 	       keep the binding of the inner `i' in this case.  */
-	    pop_binding (DECL_NAME (link), link);
-	  else if ((outer_binding
-		    && (TREE_CODE (outer_binding->value) == TYPE_DECL))
+	    pop_binding (name, link);
+	  else if ((ob && (TREE_CODE (ob->value) == TYPE_DECL))
 		   || (ns_binding && TREE_CODE (ns_binding) == TYPE_DECL))
 	    /* Here, we have something like:
 
@@ -572,7 +573,7 @@ poplevel (int keep, int reverse, int functionbody)
 
 	       We must pop the for-scope binding so we know what's a
 	       type and what isn't.  */
-	    pop_binding (DECL_NAME (link), link);
+	    pop_binding (name, link);
 	  else
 	    {
 	      /* Mark this VAR_DECL as dead so that we can tell we left it
@@ -581,8 +582,8 @@ poplevel (int keep, int reverse, int functionbody)
 
 	      /* Keep track of what should have happened when we
 		 popped the binding.  */
-	      if (outer_binding && outer_binding->value)
-		DECL_SHADOWED_FOR_VAR (link) = outer_binding->value;
+	      if (ob && ob->value)
+		DECL_SHADOWED_FOR_VAR (link) = ob->value;
 
 	      /* Add it to the list of dead variables in the next
 		 outermost binding to that we can remove these when we
@@ -594,7 +595,8 @@ poplevel (int keep, int reverse, int functionbody)
 
 	      /* Although we don't pop the cxx_binding, we do clear
 		 its SCOPE since the scope is going away now.  */
-	      IDENTIFIER_BINDING (DECL_NAME (link))->scope = NULL;
+	      IDENTIFIER_BINDING (name)->scope 
+		= current_binding_level->level_chain;
 	    }
 	}
       else
@@ -4846,8 +4848,6 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	  /* A variable definition.  */
 	  if (DECL_FUNCTION_SCOPE_P (decl))
 	    {
-	      /* This is a local declaration.  */
-	      maybe_inject_for_scope_var (decl);
 	      /* Initialize the local variable.  */
 	      if (processing_template_decl)
 		{

@@ -2075,7 +2075,7 @@ check_template_shadow (tree decl)
   /* Figure out what we're shadowing.  */
   if (TREE_CODE (decl) == OVERLOAD)
     decl = OVL_CURRENT (decl);
-  olddecl = IDENTIFIER_VALUE (DECL_NAME (decl));
+  olddecl = innermost_non_namespace_value (DECL_NAME (decl));
 
   /* If there's no previous binding for this name, we're not shadowing
      anything, let alone a template parameter.  */
@@ -4156,9 +4156,9 @@ lookup_template_class (tree d1,
   
   if (TREE_CODE (d1) == IDENTIFIER_NODE)
     {
-      if (IDENTIFIER_VALUE (d1) 
-	  && DECL_TEMPLATE_TEMPLATE_PARM_P (IDENTIFIER_VALUE (d1)))
-	template = IDENTIFIER_VALUE (d1);
+      tree value = innermost_non_namespace_value (d1);
+      if (value && DECL_TEMPLATE_TEMPLATE_PARM_P (value))
+	template = value;
       else
 	{
 	  if (context)
@@ -4200,11 +4200,7 @@ lookup_template_class (tree d1,
       context = DECL_CONTEXT (template);
     }
 
-  /* With something like `template <class T> class X class X { ... };'
-     we could end up with D1 having nothing but an IDENTIFIER_VALUE.
-     We don't want to do that, but we have to deal with the situation,
-     so let's give them some syntax errors to chew on instead of a
-     crash. Alternatively D1 might not be a template type at all.  */
+  /* Issue an error message if we didn't find a template.  */
   if (! template)
     {
       if (complain & tf_error)
