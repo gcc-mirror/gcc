@@ -21,6 +21,13 @@ Boston, MA 02111-1307, USA.  */
 /* So we can conditionalize small amounts of code in pa.c or pa.md.  */
 #define OBJ_ELF
 
+#define ENDFILE_SPEC "crtend.o%s"
+
+#define STARTFILE_SPEC "%{!shared: \
+			 %{!symbolic: \
+			  %{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}\
+			crtbegin.o%s"
+
 #define TEXT_SECTION_ASM_OP "\t.text"
 #define DATA_SECTION_ASM_OP "\t.data"
 #define BSS_SECTION_ASM_OP "\t.section\t.bss"
