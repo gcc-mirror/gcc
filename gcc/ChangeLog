@@ -1,3 +1,8 @@
+2001-02-16  Jes Sorensen  <jes@linuxcare.com>
+
+	* ia64.c (errata_emit_nops): Add VOIDmode as second argument to
+	shladd_operand() call.
+
 2001-02-16  Bruce Korb  <bkorb@gnu.org>
             Rodney Brown  <RodneyBrown@mynd.com>
 

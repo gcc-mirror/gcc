@@ -4643,7 +4643,7 @@ errata_emit_nops (insn)
       && GET_CODE (SET_SRC (set)) != PLUS
       && GET_CODE (SET_SRC (set)) != MINUS
       && (GET_CODE (SET_SRC (set)) != ASHIFT
-	  || !shladd_operand (XEXP (SET_SRC (set), 1)))
+	  || !shladd_operand (XEXP (SET_SRC (set), 1), VOIDmode))
       && (GET_CODE (SET_SRC (set)) != MEM
 	  || GET_CODE (XEXP (SET_SRC (set), 0)) != POST_MODIFY)
       && GENERAL_REGNO_P (REGNO (SET_DEST (set))))
