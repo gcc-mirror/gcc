@@ -34,11 +34,11 @@ Boston, MA 02111-1307, USA.  */
 #define BSS_SECTION_ASM_OP "\t.bss"
 
 /* A C statement (sans semicolon) to output to the stdio stream
-   FILE the assembler definition of an uninitialized global label named
+   FILE the assembler definition of uninitialized global DECL named
    NAME whose size is SIZE bytes.  The variable ROUNDED
    is the size rounded up to whatever alignment the caller wants.
    Try to use asm_output_bss to implement this macro.  */
 /* a.out files typically can't handle arbitrary variable alignments so
    define ASM_OUTPUT_BSS instead of ASM_OUTPUT_ALIGNED_BSS.  */
-#define ASM_OUTPUT_BSS(FILE, NAME, SIZE, ROUNDED) \
-  asm_output_bss ((FILE), (NAME), (SIZE), (ROUNDED))
+#define ASM_OUTPUT_BSS(FILE, DECL, NAME, SIZE, ROUNDED) \
+  asm_output_bss ((FILE), (DECL), (NAME), (SIZE), (ROUNDED))
