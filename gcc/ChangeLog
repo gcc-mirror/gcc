@@ -1,3 +1,8 @@
+2004-02-25  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* fold-const.c (fold): Treat MAX_EXPR and MIN_EXPR like
+	comparisons with regard to signedness.
+
 2004-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcov-io.c (gcov_open) [GCOV_LOCKED]: Use open + fdopen instead of

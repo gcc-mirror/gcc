@@ -5377,7 +5377,10 @@ fold (tree expr)
 	  if (op == 0)
 	    continue;		/* Valid for CALL_EXPR, at least.  */
 
-	  if (kind == '<' || code == RSHIFT_EXPR)
+	  if (kind == '<'
+	      || code == MAX_EXPR
+	      || code == MIN_EXPR
+	      || code == RSHIFT_EXPR)
 	    {
 	      /* Signedness matters here.  Perhaps we can refine this
 		 later.  */
