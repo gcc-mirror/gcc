@@ -1,3 +1,9 @@
+Mon Apr 17 14:59:36 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* cse.c (struct check_depdendence_data): New.
+	(check_dependence): New function.
+	(invalidate): Use check_depdenence.
+
 2000-04-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* dwarf2out.c (DWARF_CIE_DATA_ALIGNMENT): Adjust, now that
