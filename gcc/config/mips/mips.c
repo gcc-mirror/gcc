@@ -5483,7 +5483,7 @@ mips_output_float (stream, value)
 
 long
 compute_frame_size (size)
-     int size;			/* # of var. bytes allocated */
+     HOST_WIDE_INT size;	/* # of var. bytes allocated */
 {
   int regno;
   long total_size;		/* # bytes that the entire frame takes up */
