@@ -9,6 +9,12 @@
 	so that it is actually matched.
 	(sethi_di_medlow): Likewise.
 
+	* config/sparc/sparc.h (LEGITIMATE_CONSTANT_P): Consider TFmode 0.0L
+	as legitimate constant if -mvis.
+	* config/sparc/sparc.md (movtf): Likewise.
+	(clear_sf): Use const_double_operand.
+	(clear_sfp, clear_dfp, clear_tf, clear_tfp): New patterns.
+
 Tue Dec  7 19:22:06 1999  Richard Henderson  <rth@cygnus.com>
 
 	* loop.h (struct induction): Add multi_insn_incr.

@@ -2750,13 +2750,20 @@
 
 (define_insn "*clear_sf"
   [(set (match_operand:SF 0 "register_operand" "=f")
-        (match_operand:SF 1 "" ""))]
+        (match_operand:SF 1 "const_double_operand" ""))]
   "TARGET_VIS
-   && GET_CODE (operands[1]) == CONST_DOUBLE
-   && GET_CODE (operands[0]) == REG
    && fp_zero_operand (operands[1])"
   "fzeros\\t%0"
   [(set_attr "type" "fpmove")
+   (set_attr "length" "1")])
+
+(define_insn "*clear_sfp"
+  [(set (match_operand:SF 0 "memory_operand" "=m")
+        (match_operand:SF 1 "const_double_operand" ""))]
+  "! TARGET_LIVE_G0
+   && fp_zero_operand (operands[1])"
+  "st\\t%%g0, %0"
+  [(set_attr "type" "store")
    (set_attr "length" "1")])
 
 (define_insn "*movsf_const_intreg"
@@ -2925,6 +2932,16 @@
    && fp_zero_operand (operands[1])"
   "fzero\\t%0"
   [(set_attr "type" "fpmove")
+   (set_attr "length" "1")])
+
+(define_insn "*clear_dfp"
+  [(set (match_operand:DF 0 "memory_operand" "=m")
+        (match_operand:DF 1 "const_double_operand" ""))]
+  "! TARGET_LIVE_G0
+   && TARGET_V9
+   && fp_zero_operand (operands[1])"
+  "stx\\t%%g0, %0"
+  [(set_attr "type" "store")
    (set_attr "length" "1")])
 
 (define_insn "*movdf_const_intreg_sp32"
@@ -3278,6 +3295,52 @@
   DONE;
 }")
 
+(define_insn "*clear_tf"
+  [(set (match_operand:TF 0 "register_operand" "=e")
+        (match_operand:TF 1 "const_double_operand" ""))]
+  "TARGET_VIS
+   && fp_zero_operand (operands[1])"
+  "#"
+  [(set_attr "type" "fpmove")
+   (set_attr "length" "2")])
+
+(define_split
+  [(set (match_operand:TF 0 "register_operand" "")
+        (match_operand:TF 1 "const_double_operand" ""))]
+  "TARGET_VIS && reload_completed
+   && fp_zero_operand (operands[1])"
+  [(set (subreg:DF (match_dup 0) 0) (match_dup 1))
+   (set (subreg:DF (match_dup 0) 8) (match_dup 1))]
+  "
+{
+  operands[1] = CONST0_RTX (DFmode);
+}
+")
+
+(define_insn "*clear_tfp"
+  [(set (match_operand:TF 0 "memory_operand" "=m")
+        (match_operand:TF 1 "const_double_operand" ""))]
+  "! TARGET_LIVE_G0
+   && TARGET_V9
+   && fp_zero_operand (operands[1])"
+  "#"
+  [(set_attr "type" "fpmove")
+   (set_attr "length" "2")])
+
+(define_split
+  [(set (match_operand:TF 0 "memory_operand" "=m")
+        (match_operand:TF 1 "const_double_operand" ""))]
+  "! TARGET_LIVE_G0
+   && TARGET_V9 && reload_completed
+   && fp_zero_operand (operands[1])"
+  [(set (subreg:DF (match_dup 0) 0) (match_dup 1))
+   (set (subreg:DF (match_dup 0) 8) (match_dup 1))]
+  "
+{
+  operands[1] = CONST0_RTX (DFmode);
+}
+")
+
 (define_expand "movtf"
   [(set (match_operand:TF 0 "general_operand" "")
 	(match_operand:TF 1 "general_operand" ""))]
@@ -3288,6 +3351,11 @@
   if (GET_CODE (operands[0]) == REG
       && CONSTANT_P (operands[1]))
     {
+      if (TARGET_VIS
+          && GET_CODE (operands[1]) == CONST_DOUBLE
+	  && fp_zero_operand (operands[1]))
+	goto movtf_is_ok;
+
       /* emit_group_store will send such bogosity to us when it is
          not storing directly into memory.  So fix this up to avoid
          crashes in output_constant_pool.  */
