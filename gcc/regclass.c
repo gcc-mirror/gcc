@@ -1364,6 +1364,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	  int regno = REGNO (ops[!i]);
 	  enum machine_mode mode = GET_MODE (ops[!i]);
 	  int class;
+	  int nr;
 
 	  if (regno >= FIRST_PSEUDO_REGISTER && prefclass != 0
 	      && (reg_class_size[prefclass[regno]]
@@ -1373,7 +1374,21 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	    for (class = 0; class < N_REG_CLASSES; class++)
 	      if (TEST_HARD_REG_BIT (reg_class_contents[class], regno)
 		  && reg_class_size[class] == CLASS_MAX_NREGS (class, mode))
-		op_costs[i].cost[class] = -1;
+		{
+		  if (reg_class_size[class] == 1)
+		    op_costs[i].cost[class] = -1;
+		  else
+		    {
+		      for (nr = 0; nr < HARD_REGNO_NREGS(regno, mode); nr++)
+			{
+			  if (!TEST_HARD_REG_BIT (reg_class_contents[class], regno + nr))
+			    break;
+			}
+
+		      if (nr == HARD_REGNO_NREGS(regno,mode))
+			op_costs[i].cost[class] = -1;
+		    }
+		}
 	}
 }
 
