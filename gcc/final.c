@@ -2332,12 +2332,6 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       break;
 
     case CODE_LABEL:
-#if defined (DWARF2_UNWIND_INFO)
-      /* If we push arguments, we need to check all insns for stack
-	 adjustments.  */
-      if (dwarf2out_do_frame ())
-	dwarf2out_frame_debug (insn);
-#endif
       /* The target port might emit labels in the output function for
 	 some insn, e.g. sh.c output_branchy_insn.  */
       if (CODE_LABEL_NUMBER (insn) <= max_labelno)
