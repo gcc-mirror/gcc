@@ -1,3 +1,9 @@
+2003-08-21  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (MUST_PASS_IN_STACK): Remove BLKmode clause.
+	* config/mips/mips.c (function_arg_pass_by_reference): Never return
+	true for n32 & n64.
+
 2003-08-21  Josef Zlomek  <zlomekj@suse.cz>
 
 	* fold-const.c (fold): Fix bug in (A & C) == D where D & ~C != 0
