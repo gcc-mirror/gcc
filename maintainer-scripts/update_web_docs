@@ -137,19 +137,7 @@ for file in */*.html *.ps; do
   fi
 done
 
-news_file=g77/News.html
-bugs_file=g77/Trouble.html
-
 cd $DOCSDIR
-
-rm -f g77_news.html
-rm -f g77_bugs.html
-rm -f g77_news.html.gz
-rm -f g77_bugs.html.gz
-ln $news_file g77_news.html
-ln $bugs_file g77_bugs.html
-ln ${news_file}.gz g77_news.html.gz
-ln ${bugs_file}.gz g77_bugs.html.gz
 
 # Finally, generate the installation documentation (but only for CVS HEAD).
 if [ "$RELEASE" = "HEAD" ]; then
