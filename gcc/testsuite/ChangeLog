@@ -1,3 +1,7 @@
+2003-12-19  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* gcc.dg/altivec-varargs-1.c: Enable testcase on ppc linux.
+
 2003-12-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR debug/12923
