@@ -5542,7 +5542,7 @@ tsubst (t, args, in_decl)
 	  }
 
 	max = fold (build_binary_op (MINUS_EXPR, max, integer_one_node, 1));
-	return build_index_2_type (size_zero_node, max);
+	return build_index_type (max);
       }
 
     case TEMPLATE_TYPE_PARM:
