@@ -1477,6 +1477,12 @@ around this, by choosing @code{BOOT_CFLAGS} to avoid the parts of the
 stage1 compiler that were miscompiled, or by using @samp{make
 bootstrap4} to increase the number of stages of bootstrap.
 
+Note that using non-standard @code{CFLAGS} can cause bootstrap to fail in
+@file{libiberty}, if these trigger a warning with the new compiler.  For
+example using @samp{-O2 -g -mcpu=i686} on @code{i686-pc-linux-gnu} will
+cause bootstrap failure as @code{-mcpu=} is deprecated in 3.4.0 and above.
+
+
 If you used the flag @option{--enable-languages=@dots{}} to restrict
 the compilers to be built, only those you've actually enabled will be
 built.  This will of course only build those runtime libraries, for
