@@ -3882,10 +3882,10 @@ You may also use @code{__builtin_constant_p} in initializers for static
 data.  For instance, you can write
 
 @smallexample
-static const int table[] = {
+static const int table[] = @{
    __builtin_constant_p (EXPRESSION) ? (EXPRESSION) : -1,
    /* ... */
-};
+@};
 @end smallexample
 
 @noindent

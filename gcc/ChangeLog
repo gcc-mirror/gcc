@@ -1,3 +1,7 @@
+2001-08-04  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* doc/extend.texi (Other Builtins): Fix typo in last change.
+
 2001-08-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("cmphi_1", "cmpqi_1"): Allow memory 
