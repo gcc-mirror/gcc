@@ -1,3 +1,7 @@
+2001-11-05  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.md (load_toc_aix_{si,di}): Mark r2 as used.
+
 2001-11-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* configure.in: AC_SUBST xm_defines.
