@@ -1724,6 +1724,8 @@ unshare_all_rtl_again (insn)
      rtx insn;
 {
   rtx p;
+  tree decl;
+
   for (p = insn; p; p = NEXT_INSN (p))
     if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
       {
@@ -1731,7 +1733,14 @@ unshare_all_rtl_again (insn)
 	reset_used_flags (REG_NOTES (p));
 	reset_used_flags (LOG_LINKS (p));
       }
-  unshare_all_rtl_1 (insn);
+
+  /* Make sure that virtual parameters are not shared.  */
+  for (decl = DECL_ARGUMENTS (cfun->decl); decl; decl = TREE_CHAIN (decl))
+    reset_used_flags (DECL_RTL (decl));
+
+  reset_used_flags (stack_slot_list);
+
+  unshare_all_rtl (cfun->decl, insn);
 }
 
 /* Go through all the RTL insn bodies and copy any invalid shared structure.

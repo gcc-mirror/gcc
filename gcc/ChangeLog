@@ -1,3 +1,8 @@
+2000-04-15  Richard Earnshaw (rearnsah@arm.com)
+
+	* emit-rtl.c (unshare_all_rtl_again): Unmark everything, then
+	call unshare_all_rtl.
+
 Fri Apr 14 16:58:45 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/lib1funcs.asm (__divdi3, __moddi3, __udivdi3, __umoddi3):
