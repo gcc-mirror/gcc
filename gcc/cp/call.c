@@ -523,7 +523,17 @@ convert_harshness (type, parmtype, parm)
 	  h.distance = CLASSTYPE_MAX_DEPTH (ttr)+1;
 	  return h;
 	}
+
       h.code = penalty ? STD_CODE : PROMO_CODE;
+      /* Catch things like `const char *' -> `const void *'
+	 vs `const char *' -> `void *'.  */
+      if (ttl != ttr)
+	{
+	  tree tmp1 = TREE_TYPE (type), tmp2 = TREE_TYPE (parmtype);
+	  if ((TYPE_READONLY (tmp1) != TREE_READONLY (tmp2))
+	      || (TYPE_VOLATILE (tmp1) != TYPE_VOLATILE (tmp2)))
+	    h.code |= QUAL_CODE;
+	}
       return h;
     }
 
