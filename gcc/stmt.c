@@ -5055,11 +5055,11 @@ estimate_case_costs (node)
 
       for (i = 0; i < 128; i++)
 	{
-	  if (isalnum (i))
+	  if (ISALNUM (i))
 	    cost_table[i] = 16;
-	  else if (ispunct (i))
+	  else if (ISPUNCT (i))
 	    cost_table[i] = 8;
-	  else if (iscntrl (i))
+	  else if (ISCNTRL (i))
 	    cost_table[i] = -1;
 	}
 

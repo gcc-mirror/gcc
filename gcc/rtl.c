@@ -561,7 +561,7 @@ atoll(p)
   int neg = 0;
   HOST_WIDE_INT tmp_wide;
 
-  while (isspace(*p))
+  while (ISSPACE(*p))
     p++;
   if (*p == '-')
     neg = 1, p++;
@@ -569,7 +569,7 @@ atoll(p)
     p++;
 
   tmp_wide = 0;
-  while (isdigit(*p))
+  while (ISDIGIT(*p))
     {
       HOST_WIDE_INT new_wide = tmp_wide*10 + (*p - '0');
       if (new_wide < tmp_wide)

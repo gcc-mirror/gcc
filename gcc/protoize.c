@@ -845,7 +845,7 @@ static int
 is_id_char (ch)
      char ch;
 {
-  return (isalnum (ch) || (ch == '_') || (ch == '$'));
+  return (ISALNUM (ch) || (ch == '_') || (ch == '$'));
 }
 
 /* Give a message indicating the proper way to invoke this program and then
@@ -2021,12 +2021,12 @@ munge_compile_params (params_list)
   temp_params[param_count++] = compiler_file_name;
   for (;;)
     {
-      while (isspace (*params_list))
+      while (ISSPACE (*params_list))
         params_list++;
       if (!*params_list)
         break;
       param = params_list;
-      while (*params_list && !isspace (*params_list))
+      while (*params_list && !ISSPACE (*params_list))
         params_list++;
       if (param[0] != '-')
         temp_params[param_count++]
@@ -2041,9 +2041,9 @@ munge_compile_params (params_list)
               case 'c':
                 break;		/* Don't copy these.  */
               case 'o':
-                while (isspace (*params_list))
+                while (ISSPACE (*params_list))
                   params_list++;
-                while (*params_list && !isspace (*params_list))
+                while (*params_list && !ISSPACE (*params_list))
                   params_list++;
                 break;
               default:
@@ -2974,7 +2974,7 @@ static const char *
 forward_to_next_token_char (ptr)
      const char *ptr;
 {
-  for (++ptr; isspace (*ptr); check_source (++ptr < clean_text_limit, 0))
+  for (++ptr; ISSPACE (*ptr); check_source (++ptr < clean_text_limit, 0))
     continue;
   return ptr;
 }
@@ -3342,7 +3342,7 @@ edit_formals_lists (end_formals, f_list_count, def_dec_p)
 
       next_end = start_formals - 1;
       check_source (next_end > clean_read_ptr, 0);
-      while (isspace (*next_end))
+      while (ISSPACE (*next_end))
         check_source (--next_end > clean_read_ptr, 0);
       check_source (*next_end == ')', next_end);
       check_source (--next_end > clean_read_ptr, 0);
@@ -3362,7 +3362,7 @@ edit_formals_lists (end_formals, f_list_count, def_dec_p)
       const char *func_name_limit;
       size_t func_name_len;
 
-      for (func_name_limit = start_formals-1; isspace (*func_name_limit); )
+      for (func_name_limit = start_formals-1; ISSPACE (*func_name_limit); )
         check_source (--func_name_limit > clean_read_ptr, 0);
 
       for (func_name_start = func_name_limit++;
@@ -3458,8 +3458,8 @@ find_rightmost_formals_list (clean_text_p)
 
     while (*end_formals != ')')
       {
-	if (isspace (*end_formals))
-	  while (isspace (*end_formals))
+	if (ISSPACE (*end_formals))
+	  while (ISSPACE (*end_formals))
 	    check_source (--end_formals > clean_read_ptr, 0);
 	else
 	  check_source (--end_formals > clean_read_ptr, 0);
@@ -3488,8 +3488,8 @@ find_rightmost_formals_list (clean_text_p)
 
       while (*end_formals != ')')
         {
-          if (isspace (*end_formals))
-            while (isspace (*end_formals))
+          if (ISSPACE (*end_formals))
+            while (ISSPACE (*end_formals))
               check_source (--end_formals > clean_read_ptr, 0);
           else
             check_source (--end_formals > clean_read_ptr, 0);
@@ -3507,7 +3507,7 @@ find_rightmost_formals_list (clean_text_p)
          by an alphabetic character, while others *cannot* validly be followed
          by such characters.  */
 
-      if ((ch == '{') || isalpha (ch))
+      if ((ch == '{') || ISALPHA (ch))
         break;
 
       /* At this point, we have found a right paren, but we know that it is
@@ -3603,7 +3603,7 @@ add_local_decl (def_dec_p, clean_text_p)
        We can now just scan backwards and find the left end of the existing
        indentation string, and then copy it to the output buffer.  */
 
-    for (sp = ep; isspace (*sp) && *sp != '\n'; sp--)
+    for (sp = ep; ISSPACE (*sp) && *sp != '\n'; sp--)
       continue;
 
     /* Now write out the open { which began this block, and any following
@@ -3684,7 +3684,7 @@ add_global_decls (file_p, clean_text_p)
      header.  We will put in the added declarations just prior to that.  */
 
   scan_p++;
-  while (isspace (*scan_p))
+  while (ISSPACE (*scan_p))
     scan_p++;
   scan_p--;
 
@@ -3853,7 +3853,7 @@ edit_fn_definition (def_dec_p, clean_text_p)
           {
             have_newlines |= (*scan_orig == '\n');
             /* Leave identical whitespace alone.  */
-            if (!isspace (*scan_orig))
+            if (!ISSPACE (*scan_orig))
               *((NONCONST char *)scan_orig) = ' '; /* identical - so whiteout */
           }
         else
@@ -3897,7 +3897,7 @@ do_cleaning (new_clean_text_base, new_clean_text_limit)
             scan_p += 2;
             while (scan_p[1] != '/' || scan_p[0] != '*')
               {
-                if (!isspace (*scan_p))
+                if (!ISSPACE (*scan_p))
                   *scan_p = ' ';
                 if (++scan_p >= new_clean_text_limit)
                   abort ();
@@ -3912,7 +3912,7 @@ do_cleaning (new_clean_text_base, new_clean_text_limit)
             *scan_p = ' ';
             while (scan_p[1] != '\n' || scan_p[0] == '\\')
               {
-                if (!isspace (*scan_p))
+                if (!ISSPACE (*scan_p))
                   *scan_p = ' ';
                 if (++scan_p >= new_clean_text_limit)
                   abort ();
@@ -3924,9 +3924,9 @@ do_cleaning (new_clean_text_base, new_clean_text_limit)
             non_whitespace_since_newline = 1;
             while (scan_p[1] != '\'' || scan_p[0] == '\\')
               {
-                if (scan_p[0] == '\\' && !isspace (scan_p[1]))
+                if (scan_p[0] == '\\' && !ISSPACE (scan_p[1]))
                   scan_p[1] = ' ';
-                if (!isspace (*scan_p))
+                if (!ISSPACE (*scan_p))
                   *scan_p = ' ';
                 if (++scan_p >= new_clean_text_limit)
                   abort ();
@@ -3938,14 +3938,14 @@ do_cleaning (new_clean_text_base, new_clean_text_limit)
             non_whitespace_since_newline = 1;
             while (scan_p[1] != '"' || scan_p[0] == '\\')
               {
-                if (scan_p[0] == '\\' && !isspace (scan_p[1]))
+                if (scan_p[0] == '\\' && !ISSPACE (scan_p[1]))
                   scan_p[1] = ' ';
-                if (!isspace (*scan_p))
+                if (!ISSPACE (*scan_p))
                   *scan_p = ' ';
                 if (++scan_p >= new_clean_text_limit)
                   abort ();
               }
-	    if (!isspace (*scan_p))
+	    if (!ISSPACE (*scan_p))
 	      *scan_p = ' ';
 	    scan_p++;
             break;
@@ -4038,12 +4038,12 @@ scan_for_missed_items (file_p)
 
           last_r_paren = scan_p;
 
-          for (ahead_p = scan_p + 1; isspace (*ahead_p); )
+          for (ahead_p = scan_p + 1; ISSPACE (*ahead_p); )
             check_source (++ahead_p < limit, limit);
 
           scan_p = ahead_p - 1;
 
-          if (isalpha (*ahead_p) || *ahead_p == '{')
+          if (ISALPHA (*ahead_p) || *ahead_p == '{')
             {
               const char *last_l_paren;
               const int lineno = identify_lineno (ahead_p);
@@ -4057,7 +4057,7 @@ scan_for_missed_items (file_p)
               do
                 {
                   last_l_paren = careful_find_l_paren (last_r_paren);
-                  for (last_r_paren = last_l_paren-1; isspace (*last_r_paren); )
+                  for (last_r_paren = last_l_paren-1; ISSPACE (*last_r_paren); )
                     check_source (--last_r_paren >= backup_limit, backup_limit);
                 }
               while (*last_r_paren == ')');
@@ -4696,7 +4696,7 @@ main (argc, argv)
   {
     const char *cp;
 
-    for (cp = varargs_style_indicator; isalnum (*cp) || *cp == '_'; cp++)
+    for (cp = varargs_style_indicator; ISALNUM (*cp) || *cp == '_'; cp++)
       continue;
     if (*cp != 0)
       varargs_style_indicator = savestring (varargs_style_indicator,

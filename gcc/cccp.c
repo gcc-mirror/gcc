@@ -1750,7 +1750,7 @@ main (argc, argv)
 
 	if (*vers == 'V')
 	  vers++;
-	if (isdigit (*vers))
+	if (ISDIGIT (*vers))
 	  {
 	    vms_version_value = (*vers - '0') * 10000000;
 	  }
@@ -1758,7 +1758,7 @@ main (argc, argv)
 	if (*vers == '.')
 	  {
 	    vers++;
-	    if (isdigit (*vers))
+	    if (ISDIGIT (*vers))
 	      {
 		vms_version_value += (*vers - '0') * 100000;
 	      }
@@ -2503,10 +2503,10 @@ get_lintcmd (ibp, limit, argstart, arglen, cmdlen)
   if ((linsize >= 7) && !bcmp (ibp, "VARARGS", 7)) {
     *cmdlen = 7;
     ibp += 7; linsize -= 7;
-    if ((linsize == 0) || ! isdigit (*ibp)) return "VARARGS";
+    if ((linsize == 0) || ! ISDIGIT (*ibp)) return "VARARGS";
 
     /* OK, read a number */
-    for (numptr = *argstart = ibp; (numptr < limit) && isdigit (*numptr);
+    for (numptr = *argstart = ibp; (numptr < limit) && ISDIGIT (*numptr);
 	 numptr++);
     *arglen = numptr - *argstart;
     return "VARARGS";
@@ -4378,8 +4378,10 @@ get_filename:
      * code from case '<' is repeated here) and generates a warning.
      * (Note: macro expansion of `xyz' takes precedence.)
      */
-    if (retried && isalpha(*(U_CHAR *) (--fbeg))) {
-      while (fin != limit && (!isspace(*fin)))
+    /* Note: The argument of ISALPHA() can be evaluated twice, so do
+       the pre-decrement outside of the macro. */
+    if (retried && (--fbeg, ISALPHA(*(U_CHAR *) (fbeg)))) {
+      while (fin != limit && (!ISSPACE(*fin)))
 	*fend++ = *fin++;
       warning ("VAX-C-style include specification found, use '#include <filename.h>' !");
       vaxc_include = 1;
@@ -4673,7 +4675,7 @@ base_name (fname)
   char *s = fname;
   char *p;
 #if defined (__MSDOS__) || defined (_WIN32)
-  if (isalpha (s[0]) && s[1] == ':') s += 2;
+  if (ISALPHA (s[0]) && s[1] == ':') s += 2;
 #endif
 #ifdef VMS
   if ((p = rindex (s, ':'))) s = p + 1;	/* Skip device.  */
@@ -4696,11 +4698,11 @@ absolute_filename (filename)
      char *filename;
 {
 #if defined (__MSDOS__) || (defined (_WIN32) && !defined (__CYGWIN32__))
-  if (isalpha (filename[0]) && filename[1] == ':') filename += 2;
+  if (ISALPHA (filename[0]) && filename[1] == ':') filename += 2;
 #endif
 #if defined (__CYGWIN32__)
   /* At present, any path that begins with a drive spec is absolute.  */
-  if (isalpha (filename[0]) && filename[1] == ':') return 1;
+  if (ISALPHA (filename[0]) && filename[1] == ':') return 1;
 #endif
   if (filename[0] == '/') return 1;
 #ifdef DIR_SEPARATOR
@@ -6628,7 +6630,7 @@ do_line (buf, limit, op, keyword)
   bp = tem.buf;
   SKIP_WHITE_SPACE (bp);
 
-  if (!isdigit (*bp)) {
+  if (!ISDIGIT (*bp)) {
     error ("invalid format `#line' directive");
     return 0;
   }
@@ -6643,7 +6645,7 @@ do_line (buf, limit, op, keyword)
     pedwarn ("line number out of range in `#line' directive");
 
   /* skip over the line number.  */
-  while (isdigit (*bp))
+  while (ISDIGIT (*bp))
     bp++;
 
 #if 0 /* #line 10"foo.c" is supposed to be allowed.  */
@@ -7128,7 +7130,7 @@ do_xifdef (buf, limit, op, keyword)
     HASHNODE *hp;
 
     if (! traditional) {
-      if (isdigit (buf[0]))
+      if (ISDIGIT (buf[0]))
 	pedwarn ("`#%s' argument starts with a digit", keyword->name);
       else if (end != limit)
 	pedwarn ("garbage at end of `#%s' argument", keyword->name);
@@ -7871,7 +7873,7 @@ quote_string (dst, src, srclen)
     switch ((c = *src++))
       {
       default:
-        if (isprint (c))
+        if (ISPRINT (c))
 	  *dst++ = c;
 	else
 	  {

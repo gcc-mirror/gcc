@@ -530,13 +530,13 @@ scan_linker_output (fname)
       symbol *sym;
       int end;
       
-      while (*p && isspace (*p))
+      while (*p && ISSPACE (*p))
 	++p;
 
       if (! *p)
 	continue;
 
-      for (q = p; *q && ! isspace (*q); ++q)
+      for (q = p; *q && ! ISSPACE (*q); ++q)
 	;
 
       /* Try the first word on the line.  */

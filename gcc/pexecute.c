@@ -165,7 +165,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
       char *cp;
       for (cp = argv[i]; *cp; cp++)
 	{
-	  if (*cp == '"' || *cp == '\'' || *cp == '\\' || isspace (*cp))
+	  if (*cp == '"' || *cp == '\'' || *cp == '\\' || ISSPACE (*cp))
 	    fputc ('\\', argfile);
 	  fputc (*cp, argfile);
 	}

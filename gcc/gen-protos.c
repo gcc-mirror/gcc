@@ -109,7 +109,7 @@ parse_fn_proto (start, end, fn)
   ptr--;
   while (*ptr == ' ' || *ptr == '\t') ptr--;
 
-  if (!isalnum (*ptr))
+  if (!ISALNUM (*ptr))
     {
       if (verbose)
 	fprintf (stderr, "%s: Can't handle this complex prototype: %s\n",
@@ -118,7 +118,7 @@ parse_fn_proto (start, end, fn)
     }
   name_end = ptr+1;
 
-  while (isalnum (*ptr) || *ptr == '_') --ptr;
+  while (ISALNUM (*ptr) || *ptr == '_') --ptr;
   name_start = ptr+1;
   while (*ptr == ' ' || *ptr == '\t') ptr--;
   ptr[1] = 0;
