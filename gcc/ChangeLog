@@ -1,3 +1,11 @@
+2003-09-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/11646
+	* cfgrtl.c (purge_dead_edges) [JUMP_INSN]: Rematerialize the
+	EDGE_ABNORMAL flag for EH edges.
+	* toplev.c (rest_of_handle_cse): Delete unreachable blocks
+	if dead edges were purged.
+
 2003-09-16  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Add target predefines.

@@ -1,3 +1,7 @@
+2003-09-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/opt/cfg3.C: New test.
+
 2003-09-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/7939
