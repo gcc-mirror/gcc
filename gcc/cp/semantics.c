@@ -1098,6 +1098,10 @@ begin_function_definition (decl_specs, declarator)
     return 0;
   
   reinit_parse_for_function ();
+  /* The things we're about to see are not directly qualified by any
+     template headers we've seen thus far.  */
+  reset_specialization ();
+
   return 1;
 }
 

@@ -1,3 +1,28 @@
+1998-07-31  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (PROCESSING_REAL_TEMPLATE_DECL_P): New macro.
+	(maybe_check_template_type): New function.
+	* decl.c (maybe_process_template_type_declaration): New function,
+	split out from pushtag  Call maybe_check_template_type.
+	(pushtag): Use it.  Use PROCESSING_REAL_TEMPLATE_DECL_P.
+	(xref_tag): Use PROCESSING_REAL_TEMPLATE_DECL_P.
+	* friend.c (do_friend): Use PROCESSING_REAL_TEMPLATE_DECL_P.
+	* pt.c (template_class_depth_real): Generalization of ...
+	(template_class_depth): Use it.
+	(register_specialization): Use duplicate_decls for duplicate
+	declarations of specializations.
+	(maybe_check_template_type): New function.
+	(push_template_decl_real): Fix comment.
+	(convert_nontype_argument): Likewise.
+	(lookup_template_class): Likewise.  Avoid an infinite loop on
+	erroneous code.
+	(tsubst_friend_function): Fix comment.
+	(tsubst, case FUNCTION_DECL): Deal with a DECL_TI_TEMPLATE that is
+	an IDENTIFIER_NODE.
+	* semantics.c (begin_function_definition): Use
+	reset_specialization to note that template headers don't apply
+	directly to declarations after the opening curly for a function.
+
 1998-07-29  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (push_overloaded_decl): Use current_namespace instead of
