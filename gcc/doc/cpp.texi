@@ -1206,7 +1206,7 @@ if you had written
 foo = (char *) malloc (1024);
 @end example
 
-By convention, macro names are written in upper case.  Programs are
+By convention, macro names are written in uppercase.  Programs are
 easier to read when it is possible to tell at a glance which names are
 macros.
 

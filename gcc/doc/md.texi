@@ -1314,15 +1314,15 @@ The constraints are defined through these macros:
 
 @table @code
 @item REG_CLASS_FROM_LETTER
-Register class constraints (usually lower case).
+Register class constraints (usually lowercase).
 
 @item CONST_OK_FOR_LETTER_P
 Immediate constant constraints, for non-floating point constants of
-word size or smaller precision (usually upper case).
+word size or smaller precision (usually uppercase).
 
 @item CONST_DOUBLE_OK_FOR_LETTER_P
 Immediate constant constraints, for all floating point constants and for
-constants of greater than word size precision (usually upper case).
+constants of greater than word size precision (usually uppercase).
 
 @item EXTRA_CONSTRAINT
 Special cases of registers or memory.  This macro is not required, and
@@ -2318,7 +2318,7 @@ pattern to accomplish a certain task.
 @table @asis
 @cindex @code{mov@var{m}} instruction pattern
 @item @samp{mov@var{m}}
-Here @var{m} stands for a two-letter machine mode name, in lower case.
+Here @var{m} stands for a two-letter machine mode name, in lowercase.
 This instruction pattern moves data with that machine mode from operand
 1 to operand 0.  For example, @samp{movsi} moves full-word data.
 
@@ -4810,7 +4810,7 @@ A @samp{#define} is written for the symbol @samp{HAVE_ATTR_@var{name}}.
 @item
 An enumeral class is defined for @samp{attr_@var{name}} with
 elements of the form @samp{@var{upper-name}_@var{upper-value}} where
-the attribute name and value are first converted to upper case.
+the attribute name and value are first converted to uppercase.
 
 @item
 A function @samp{get_attr_@var{name}} is defined that is passed an insn and

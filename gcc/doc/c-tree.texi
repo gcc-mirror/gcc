@@ -124,7 +124,7 @@ functions described here.  In particular, no guarantee is given that the
 values are lvalues.
 
 In general, the names of macros are all in uppercase, while the names of
-functions are entirely in lower case.  There are rare exceptions to this
+functions are entirely in lowercase.  There are rare exceptions to this
 rule.  You should assume that any macro or function whose name is made
 up entirely of uppercase letters may evaluate its arguments more than
 once.  You may assume that a macro or function whose name is made up

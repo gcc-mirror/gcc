@@ -99,7 +99,7 @@ null pointers are used instead.
 @findex PUT_CODE
 Expressions are classified by @dfn{expression codes} (also called RTX
 codes).  The expression code is a name defined in @file{rtl.def}, which is
-also (in upper case) a C enumeration constant.  The possible expression
+also (in uppercase) a C enumeration constant.  The possible expression
 codes and their meanings are machine-independent.  The code of an RTX can
 be extracted with the macro @code{GET_CODE (@var{x})} and altered with
 @code{PUT_CODE (@var{x}, @var{newcode})}.
@@ -118,8 +118,8 @@ Expressions are written as parentheses containing the name of the
 expression type, its flags and machine mode if any, and then the operands
 of the expression (separated by spaces).
 
-Expression code names in the @samp{md} file are written in lower case,
-but when they appear in C code they are written in upper case.  In this
+Expression code names in the @samp{md} file are written in lowercase,
+but when they appear in C code they are written in uppercase.  In this
 manual, they are shown as follows: @code{const_int}.
 
 @cindex (nil)
