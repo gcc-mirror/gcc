@@ -1109,7 +1109,7 @@ configure-gcc:
 	    libsrcdir="$$s/gcc";; \
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} --cache-file=config.cache \
+	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	  || exit 1
 
 # Don't 'make all' in gcc if it's already been made by 'bootstrap'; that
