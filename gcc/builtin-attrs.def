@@ -41,13 +41,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    DEF_ATTR_TREE_LIST (ENUM, PURPOSE, VALUE, CHAIN)
 
      Constructs a TREE_LIST with given PURPOSE, VALUE and CHAIN (given
-     as previous ENUM names).
-
-   DEF_FN_ATTR (NAME, ATTRS, PREDICATE)
-
-     Specifies that the function with name NAME (a previous ENUM for an
-     IDENTIFIER_NODE) has attributes ATTRS (a previous ENUM) if
-     PREDICATE is true.  */
+     as previous ENUM names).  */
 
 DEF_ATTR_NULL_TREE (ATTR_NULL)
 
@@ -157,43 +151,3 @@ DEF_FORMAT_ARG_ATTRIBUTE(1)
 DEF_FORMAT_ARG_ATTRIBUTE(2)
 #undef DEF_FORMAT_ARG_ATTRIBUTE
 
-/* Define an attribute for a function, along with the IDENTIFIER_NODE.  */
-#define DEF_FN_ATTR_IDENT(NAME, ATTRS, PREDICATE)	\
-  DEF_ATTR_IDENT (ATTR_##NAME, #NAME)			\
-  DEF_FN_ATTR (ATTR_##NAME, ATTRS, PREDICATE)
-
-/* The ISO C functions are always checked (whether <stdio.h> is
-   included or not), since it is common to call printf without
-   including <stdio.h>.  There shouldn't be a problem with this,
-   since ISO C reserves these function names whether you include the
-   header file or not.  In any case, the checking is harmless.  With
-   -ffreestanding, these default attributes are disabled, and must be
-   specified manually if desired.  */
-
-/* Functions from ISO/IEC 9899:1990.  */
-#define DEF_C89_ATTR(NAME, ATTRS) DEF_FN_ATTR_IDENT (NAME, ATTRS, flag_hosted)
-DEF_C89_ATTR (fscanf, ATTR_FORMAT_SCANF_2_3)
-DEF_C89_ATTR (vfprintf, ATTR_FORMAT_PRINTF_2_0)
-DEF_C89_ATTR (strftime, ATTR_FORMAT_STRFTIME_3_0)
-#undef DEF_C89_ATTR
-
-/* ISO C99 adds the snprintf and vscanf family functions.  */
-#define DEF_C99_ATTR(NAME, ATTRS)					    \
-  DEF_FN_ATTR_IDENT (NAME, ATTRS,					    \
-	       (flag_hosted						    \
-		&& (flag_isoc99 || flag_noniso_default_format_attributes)))
-DEF_C99_ATTR (vfscanf, ATTR_FORMAT_SCANF_2_0)
-#undef DEF_C99_ATTR
-
-/* Functions not in any version of ISO C.  */
-#define DEF_EXT_ATTR(NAME, ATTRS)					\
-  DEF_FN_ATTR_IDENT (NAME, ATTRS,					\
-	       flag_hosted && flag_noniso_default_format_attributes)
-/* Uniforum/GNU gettext functions.  */
-DEF_EXT_ATTR (gettext, ATTR_FORMAT_ARG_1)
-DEF_EXT_ATTR (dgettext, ATTR_FORMAT_ARG_2)
-DEF_EXT_ATTR (dcgettext, ATTR_FORMAT_ARG_2)
-/* X/Open strfmon function.  */
-DEF_EXT_ATTR (strfmon, ATTR_FORMAT_STRFMON_3_4)
-#undef DEF_EXT_ATTR
-#undef DEF_FN_ATTR_IDENT
