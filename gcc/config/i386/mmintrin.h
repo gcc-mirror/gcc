@@ -30,6 +30,9 @@
 #ifndef _MMINTRIN_H_INCLUDED
 #define _MMINTRIN_H_INCLUDED
 
+#ifndef __MMX__
+# error "MMX instruction set not enabled"
+#else
 /* The data type intended for user use.  */
 typedef unsigned long long __m64 __attribute__ ((__aligned__ (8)));
 
@@ -539,4 +542,5 @@ _mm_set1_pi8 (char __b)
   return _mm_set1_pi32 (__i);
 }
 
+#endif /* __MMX__ */
 #endif /* _MMINTRIN_H_INCLUDED */

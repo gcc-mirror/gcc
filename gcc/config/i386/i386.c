@@ -13315,6 +13315,11 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
     case IX86_BUILTIN_STORERPD:
       return ix86_expand_store_builtin (CODE_FOR_sse2_movapd, arglist);
 
+    case IX86_BUILTIN_CLRPD:
+      target = gen_reg_rtx (V2DFmode);
+      emit_insn (gen_sse_clrv2df (target));
+      return target;
+
     case IX86_BUILTIN_MFENCE:
 	emit_insn (gen_sse2_mfence ());
 	return 0;

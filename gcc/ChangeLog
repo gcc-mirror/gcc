@@ -1,3 +1,14 @@
+Thu Oct 17 18:40:47 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* mmintrin.h: Guard by __MMX__
+	* xmmintrin.h: Guard by __SSE__
+
+	PR other/8062
+	* xmmintrin.h (_MM_SHUFFLE2): New macro.
+	(_mm_load*_?d): New functions.
+	(_mm_set*_?d): New functions.
+	(_mm_store*_?d): New functions.
+
 Wed Oct 16 15:01:29 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	Really commit patch announced at Oct 14
