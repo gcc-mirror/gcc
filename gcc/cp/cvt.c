@@ -579,21 +579,21 @@ convert_pointer_to_real (binfo, expr)
 
   my_friendly_assert (!integer_zerop (expr), 191);
 
+  intype = TYPE_MAIN_VARIANT (TREE_TYPE (intype));
   if (TREE_CODE (type) == RECORD_TYPE
-      && TREE_CODE (TREE_TYPE (intype)) == RECORD_TYPE
-      && type != TYPE_MAIN_VARIANT (TREE_TYPE (intype)))
+      && TREE_CODE (intype) == RECORD_TYPE
+      && type != intype)
     {
       tree path;
       int distance
-	= get_base_distance (binfo, TYPE_MAIN_VARIANT (TREE_TYPE (intype)),
-			     0, &path);
+	= get_base_distance (binfo, intype, 0, &path);
 
       /* This function shouldn't be called with unqualified arguments
 	 but if it is, give them an error message that they can read.  */
       if (distance < 0)
 	{
 	  cp_error ("cannot convert a pointer of type `%T' to a pointer of type `%T'",
-		    TREE_TYPE (intype), type);
+		    intype, type);
 
 	  if (distance == -2)
 	    cp_error ("because `%T' is an ambiguous base class", type);

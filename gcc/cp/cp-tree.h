@@ -852,7 +852,7 @@ struct lang_type
 #define CLASSTYPE_N_BASECLASSES(NODE) \
   (TYPE_BINFO_BASETYPES (NODE) ? TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES(NODE)) : 0)
 
-/* Memoize the number of super classes (base classes) tha this node
+/* Memoize the number of super classes (base classes) that this node
    has.  That way we can know immediately (albeit conservatively how
    large a multiple-inheritance matrix we need to build to find
    derivation information.  */

@@ -7007,7 +7007,8 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
       if (TREE_CODE (arg) != TREE_CODE (parm))
 	return 1;
 
-      if (TREE_CODE (parm) == INTEGER_TYPE)
+      if (TREE_CODE (parm) == INTEGER_TYPE
+	  && TREE_CODE (TYPE_MAX_VALUE (parm)) != INTEGER_CST)
 	{
 	  if (TYPE_MIN_VALUE (parm) && TYPE_MIN_VALUE (arg)
 	      && unify (tparms, targs, TYPE_MIN_VALUE (parm),
@@ -7018,12 +7019,11 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 			TYPE_MAX_VALUE (arg), UNIFY_ALLOW_NONE, explicit_mask))
 	    return 1;
 	}
-      else if (TREE_CODE (parm) == REAL_TYPE
-	       /* We use the TYPE_MAIN_VARIANT since we have already
-		  checked cv-qualification at the top of the
-		  function.  */
-	       && !comptypes (TYPE_MAIN_VARIANT (arg),
-			      TYPE_MAIN_VARIANT (parm), 1))
+      /* We use the TYPE_MAIN_VARIANT since we have already
+	 checked cv-qualification at the top of the
+	 function.  */
+      else if (!comptypes (TYPE_MAIN_VARIANT (arg),
+			   TYPE_MAIN_VARIANT (parm), 1))
 	return 1;
 
       /* As far as unification is concerned, this wins.	 Later checks
