@@ -10044,6 +10044,7 @@ preexpand_calls (exp)
     case RTL_EXPR:
     case WITH_CLEANUP_EXPR:
     case CLEANUP_POINT_EXPR:
+    case TRY_CATCH_EXPR:
       return;
 
     case SAVE_EXPR:
