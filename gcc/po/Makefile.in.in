@@ -79,8 +79,11 @@ INSTOBJEXT = @INSTOBJEXT@
 
 all: all-@USE_NLS@
 
-all-yes: $(CATALOGS) @MAINT@ $(srcdir)/cat-id-tbl.c 
+all-yes: stamp-check-pot $(CATALOGS) @MAINT@ $(srcdir)/cat-id-tbl.c 
 all-no:
+
+stamp-check-pot: $(POTFILES)
+	touch $@
 
 $(srcdir)/$(PACKAGE).pot: $(POTFILES)
 	$(XGETTEXT) --default-domain=$(PACKAGE) --directory=$(top_srcdir) \
@@ -187,7 +190,7 @@ dvi info tags TAGS ID:
 
 mostlyclean:
 	rm -f core core.* *.pox $(PACKAGE).po *.old.po cat-id-tbl.tmp
-	rm -fr *.o
+	rm -fr *.o stamp-check-pot
 
 clean: mostlyclean
 
