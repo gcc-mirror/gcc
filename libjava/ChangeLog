@@ -6,7 +6,7 @@
 	* prims.cc (_Jv_InitPrimClass): Don't call
 	_Jv_InitNewClassFields.
 
-2003-10-13  Taras Judge  <taras.judge@shaw.ca>
+2003-10-13  Taras Glek  <taras.judge@shaw.ca>
 
 	PR libgcj/12592
 	* gnu/java/net/protocol/http/Connection.java (connect): Use \r\n,
