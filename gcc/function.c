@@ -2930,7 +2930,7 @@ instantiate_decl (x, size, valid_only)
 
   addr = XEXP (x, 0);
   if (CONSTANT_P (addr)
-      || GET_CODE (addr) == ADDRESSOF
+      || (GET_CODE (addr) == ADDRESSOF && GET_CODE (XEXP (addr, 0)) == REG)
       || (GET_CODE (addr) == REG
 	  && (REGNO (addr) < FIRST_VIRTUAL_REGISTER
 	      || REGNO (addr) > LAST_VIRTUAL_REGISTER)))
