@@ -3177,12 +3177,12 @@ extern tree namespace_ancestor			PROTO((tree, tree));
 extern tree unqualified_namespace_lookup	PROTO((tree, int, tree *));
 extern int  lookup_using_namespace              PROTO((tree, tree, tree, tree, int, tree *));
 extern int  qualified_lookup_using_namespace    PROTO((tree, tree, tree, int));
-extern tree auto_function			PROTO((tree, tree, enum built_in_function));
+extern tree auto_function			PROTO((tree, tree));
 extern void init_decl_processing		PROTO((void));
 extern int init_type_desc			PROTO((void));
-extern tree define_function
-	PROTO((const char *, tree, enum built_in_function,
-	       void (*) (tree), const char *));  
+extern tree define_function			PROTO((const char *, tree,
+						       void (*) (tree),
+						       const char *));
 extern tree check_tag_decl			PROTO((tree));
 extern void shadow_tag				PROTO((tree));
 extern tree groktypename			PROTO((tree));
