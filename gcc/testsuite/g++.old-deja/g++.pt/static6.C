@@ -1,4 +1,4 @@
-// Build don't link:
+// Build don't run:
 
 // Simplified from testcase by Erez Louidor Lior <s3824888@techst02.technion.ac.il>
 
@@ -10,3 +10,5 @@ template<class T>
 const int A<T>::l[1] = {1};
 
 int i = A<int>::l[0];
+
+int main(){}
