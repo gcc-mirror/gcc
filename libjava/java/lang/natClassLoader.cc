@@ -292,12 +292,10 @@ _Jv_PrepareCompiledClass (jclass klass)
       for (int n = JvNumStaticFields (klass); n > 0; --n)
 	{
 	  int mod = f->getModifiers ();
-	  // Maybe the compiler should mark these with
-	  // _Jv_FIELD_CONSTANT_VALUE?  For now we just know that this
-	  // only happens for constant strings.
+	  // If we have a static String field with a non-null initial
+	  // value, we know it points to a Utf8Const.
 	  if (f->getClass () == &StringClass
-	      && java::lang::reflect::Modifier::isStatic (mod)
-	      && java::lang::reflect::Modifier::isFinal (mod))
+	      && java::lang::reflect::Modifier::isStatic (mod))
 	    {
 	      jstring *strp = (jstring *) f->u.addr;
 	      if (*strp)
