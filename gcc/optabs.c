@@ -2505,7 +2505,8 @@ expand_complex_abs (mode, op0, target, unsignedp)
 
   /* Open-code the complex absolute-value operation
      if we can open-code sqrt.  Otherwise it's not worth while.  */
-  if (sqrt_optab->handlers[(int) submode].insn_code != CODE_FOR_nothing)
+  if (sqrt_optab->handlers[(int) submode].insn_code != CODE_FOR_nothing
+      && ! flag_trapv)
     {
       rtx real, imag, total;
 
