@@ -105,14 +105,6 @@ struct machine_function GTY(())
 
 /* Node: Driver */
 
-/* When both ABI:s work, this is how we tell them apart in code.  The
-   GNU abi is implied the default.  Also implied in TARGET_DEFAULT.  */
-#define CPP_SPEC \
- "%{mabi=gnu:-D__MMIX_ABI_GNU__\
-    %{mabi=mmixware:\
-      %eoptions -mabi=mmixware and -mabi=gnu are mutually exclusive}}\
-  %{!mabi=gnu:-D__MMIX_ABI_MMIXWARE__}"
-
 /* User symbols are in the same name-space as built-in symbols, but we
    don't need the built-in symbols, so remove those and instead apply
    stricter operand checking.  Don't warn when expanding insns.  */
@@ -148,7 +140,18 @@ extern const char *mmix_cc1_ignored_option;
 /* Node: Run-time Target */
 
 /* Define __LONG_MAX__, since we're advised not to change glimits.h.  */
-#define CPP_PREDEFINES "-D__mmix__ -D__MMIX__ -D__LONG_MAX__=9223372036854775807L"
+#define TARGET_CPU_CPP_BUILTINS()				\
+  do								\
+    {								\
+      builtin_define ("__mmix__");				\
+      builtin_define ("__MMIX__");				\
+      builtin_define ("__LONG_MAX__=9223372036854775807L");	\
+      if (TARGET_ABI_GNU)					\
+	builtin_define ("__MMIX_ABI_GNU__");			\
+      else							\
+	builtin_define ("__MMIX_ABI_MMIXWARE__");		\
+    }								\
+  while (0)
 
 extern int target_flags;
 
@@ -167,7 +170,9 @@ extern int target_flags;
    a constant pool in global registers, code offseting from those
    registers (automatically causing a request for a suitable constant base
    address register) without having to know the specific register or the
-   specific offset.  */
+   specific offset.  The setback is that there's a limited number of
+   registers, and you'll not find out until link time whether you
+   should've compiled with -mno-base-addresses.  */
 #define TARGET_MASK_BASE_ADDRESSES 128
 
 /* FIXME: Get rid of this one.  */
@@ -855,8 +860,13 @@ typedef struct { int regs; int lib; int now_varargs; } CUMULATIVE_ARGS;
 #define SELECT_CC_MODE(OP, X, Y)		\
  mmix_select_cc_mode (OP, X, Y)
 
-#define CANONICALIZE_COMPARISON(CODE, OP0, OP1)		\
- mmix_canonicalize_comparison (&(CODE), &(OP0), &(OP1));
+/* A definition of CANONICALIZE_COMPARISON that changed LE and GT
+   comparisons with -1 to LT and GE respectively, and LT, LTU, GE or GEU
+   comparisons with 256 to 255 and LE, LEU, GT and GTU has been
+   ineffective; the code path for performing the changes did not trig for
+   neither the GCC test-suite nor ghostscript-6.52 nor Knuth's mmix.tar.gz
+   itself (core GCC functionality supposedly handling it) with sources
+   from 2002-06-06.  */
 
 #define REVERSIBLE_CC_MODE(MODE)		\
  mmix_reversible_cc_mode (MODE)
@@ -999,8 +1009,8 @@ typedef struct { int regs; int lib; int now_varargs; } CUMULATIVE_ARGS;
 
 
 /* Node: Macros for Initialization */
-/* We're compiling to ELF and linking to MMO; all ELF features that GCC
-   care for are there.  FIXME: Are they?  */
+/* We're compiling to ELF and linking to MMO; fundamental ELF features
+   that GCC depend on are there.  */
 
 /* These must be constant strings, since they're used in crtstuff.c.  */
 #define INIT_SECTION_ASM_OP "\t.section .init,\"ax\" ! mmixal-incompatible"
@@ -1126,8 +1136,6 @@ typedef struct { int regs; int lib; int now_varargs; } CUMULATIVE_ARGS;
   {SYMBOL_REF, LABEL_REF, CONST,		\
    SUBREG, REG, PLUS}},				\
  {"mmix_reg_or_constant_operand",		\
-  {CONST_INT, CONST_DOUBLE, SUBREG, REG}},	\
- {"mmix_reg_or_8bit_or_256_operand",		\
   {CONST_INT, CONST_DOUBLE, SUBREG, REG}},	\
  {"mmix_reg_or_8bit_operand",			\
   {CONST_INT, CONST_DOUBLE, SUBREG, REG}},	\

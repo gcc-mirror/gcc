@@ -1,3 +1,21 @@
+2002-06-10  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.h: Improve comments.
+	(CPP_SPEC, CPP_PREDEFINES): Don't define.
+	(TARGET_CPU_CPP_BUILTINS): Define.
+	(CANONICALIZE_COMPARISON): Don't define, replace with comment.
+	(PREDICATE_CODES) <"mmix_reg_or_8bit_or_256_operand">: Remove
+	unused predicate.
+	* config/mmix/mmix.c (MMIX_OUTPUT_REGNO): Add cast to avoid
+	compiler warning.
+	(mmix_constant_address_p): Remove another
+	redundant test before case.
+	(mmix_canonicalize_comparison): Remove unused function.
+	(mmix_print_operand_address): Don't test and adjust for operand in
+	non-canonical format.
+	(mmix_reg_or_8bit_or_256_operand): Remove unused predicate.
+	(mmix_gen_compare_reg): Don't use CANONICALIZE_COMPARISON.
+
 2002-06-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/m32r/m32r.h: Don't define SELECT_CC_MODE.
