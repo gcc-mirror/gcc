@@ -94,6 +94,9 @@ alloc_pool rbi_pool;
 
 void debug_flow_info (void);
 static void free_edge (edge);
+
+/* Indicate the presence of the profile.  */
+enum profile_status profile_status;
 
 /* Called once at initialization time.  */
 
@@ -468,6 +471,53 @@ clear_bb_flags (void)
     bb->flags = 0;
 }
 
+/* Check the consistency of profile information.  We can't do that
+   in verify_flow_info, as the counts may get invalid for incompletely
+   solved graphs, later eliminating of conditionals or roundoff errors.
+   It is still practical to have them reported for debugging of simple
+   testcases.  */
+void
+check_bb_profile (basic_block bb, FILE * file)
+{
+  edge e;
+  int sum = 0;
+  gcov_type lsum;
+
+  if (profile_status == PROFILE_ABSENT)
+    return;
+
+  if (bb != EXIT_BLOCK_PTR)
+    {
+      for (e = bb->succ; e; e = e->succ_next)
+	sum += e->probability;
+      if (bb->succ && abs (sum - REG_BR_PROB_BASE) > 100)
+	fprintf (file, "Invalid sum of outgoing probabilities %.1f%%\n",
+		 sum * 100.0 / REG_BR_PROB_BASE);
+      lsum = 0;
+      for (e = bb->succ; e; e = e->succ_next)
+	lsum += e->count;
+      if (bb->succ && (lsum - bb->count > 100 || lsum - bb->count < -100))
+	fprintf (file, "Invalid sum of outgoing counts %i, should be %i\n",
+		 (int) lsum, (int) bb->count);
+    }
+  if (bb != ENTRY_BLOCK_PTR)
+    {
+      sum = 0;
+      for (e = bb->pred; e; e = e->pred_next)
+	sum += EDGE_FREQUENCY (e);
+      if (abs (sum - bb->frequency) > 100)
+	fprintf (file,
+		 "Invalid sum of incomming frequencies %i, should be %i\n",
+		 sum, bb->frequency);
+      lsum = 0;
+      for (e = bb->pred; e; e = e->pred_next)
+	lsum += e->count;
+      if (lsum - bb->count > 100 || lsum - bb->count < -100)
+	fprintf (file, "Invalid sum of incomming counts %i, should be %i\n",
+		 (int) lsum, (int) bb->count);
+    }
+}
+
 void
 dump_flow_info (FILE *file)
 {
@@ -527,8 +577,6 @@ dump_flow_info (FILE *file)
   FOR_EACH_BB (bb)
     {
       edge e;
-      int sum;
-      gcov_type lsum;
 
       fprintf (file, "\nBasic block %d ", bb->index);
       fprintf (file, "prev %d, next %d, ",
@@ -555,39 +603,23 @@ dump_flow_info (FILE *file)
 
       fprintf (file, "\nRegisters live at end:");
       dump_regset (bb->global_live_at_end, file);
-
+  
       putc ('\n', file);
 
-      /* Check the consistency of profile information.  We can't do that
-	 in verify_flow_info, as the counts may get invalid for incompletely
-	 solved graphs, later eliminating of conditionals or roundoff errors.
-	 It is still practical to have them reported for debugging of simple
-	 testcases.  */
-      sum = 0;
-      for (e = bb->succ; e; e = e->succ_next)
-	sum += e->probability;
-      if (bb->succ && abs (sum - REG_BR_PROB_BASE) > 100)
-	fprintf (file, "Invalid sum of outgoing probabilities %.1f%%\n",
-		 sum * 100.0 / REG_BR_PROB_BASE);
-      sum = 0;
-      for (e = bb->pred; e; e = e->pred_next)
-	sum += EDGE_FREQUENCY (e);
-      if (abs (sum - bb->frequency) > 100)
-	fprintf (file,
-		 "Invalid sum of incomming frequencies %i, should be %i\n",
-		 sum, bb->frequency);
-      lsum = 0;
-      for (e = bb->pred; e; e = e->pred_next)
-	lsum += e->count;
-      if (lsum - bb->count > 100 || lsum - bb->count < -100)
-	fprintf (file, "Invalid sum of incomming counts %i, should be %i\n",
-		 (int)lsum, (int)bb->count);
-      lsum = 0;
-      for (e = bb->succ; e; e = e->succ_next)
-	lsum += e->count;
-      if (bb->succ && (lsum - bb->count > 100 || lsum - bb->count < -100))
-	fprintf (file, "Invalid sum of incomming counts %i, should be %i\n",
-		 (int)lsum, (int)bb->count);
+      if (bb->global_live_at_start)
+	{
+	  fprintf (file, "\nRegisters live at start:");
+	  dump_regset (bb->global_live_at_start, file);
+	}
+
+      if (bb->global_live_at_end)
+	{
+	  fprintf (file, "\nRegisters live at end:");
+	  dump_regset (bb->global_live_at_end, file);
+	}
+
+      putc ('\n', file);
+      check_bb_profile (bb, file);
     }
 
   putc ('\n', file);

@@ -433,6 +433,8 @@ tree_expand_cfg (void)
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
     }
 
+  profile_status = PROFILE_ABSENT;
+
   /* Some backends want to know that we are expanding to RTL.  */
   currently_expanding_to_rtl = 1;
 

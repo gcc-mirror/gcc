@@ -330,6 +330,14 @@ extern int last_basic_block;
 
 extern int n_edges;
 
+/* Signalize the status of profile information in the CFG.  */
+extern enum profile_status
+{
+  PROFILE_ABSENT,
+  PROFILE_GUESSED,
+  PROFILE_READ
+} profile_status;
+
 /* Index by basic block number, get basic block struct info.  */
 
 extern GTY(()) varray_type basic_block_info;
@@ -723,6 +731,7 @@ extern basic_block first_dom_son (enum cdi_direction, basic_block);
 extern basic_block next_dom_son (enum cdi_direction, basic_block);
 extern edge try_redirect_by_replacing_jump (edge, basic_block, bool);
 extern void break_superblocks (void);
+extern void check_bb_profile (basic_block, FILE *);
 
 #include "cfghooks.h"
 
