@@ -594,8 +594,10 @@ savealloc (size)
 /* Print out which obstack an object is in.  */
 
 void
-debug_obstack (object)
+print_obstack_name (object, file, prefix)
      char *object;
+     FILE *file;
+     char *prefix;
 {
   struct obstack *obstack = NULL;
   char *obstack_name = NULL;
@@ -651,13 +653,21 @@ debug_obstack (object)
     {
       if (object >= obstack->next_free
 	  && object < obstack->chunk_limit)
-	fprintf (stderr, "object in free portion of obstack %s.\n",
-		 obstack_name);
+	fprintf (file, "%s in free portion of obstack %s",
+		 prefix, obstack_name);
       else
-	fprintf (stderr, "object allocated from %s.\n", obstack_name);
+	fprintf (file, "%s allocated from %s", prefix, obstack_name);
     }
   else
-    fprintf (stderr, "object not allocated from any obstack.\n");
+    fprintf (file, "%s not allocated from any obstack", prefix);
+}
+
+void
+debug_obstack (object)
+     char *object;
+{
+  print_obstack_name (object, stderr, "object");
+  fprintf (stderr, ".\n");
 }
 
 /* Return 1 if OBJ is in the permanent obstack.
