@@ -1,3 +1,7 @@
+Sun Oct 10 00:43:08 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386.h (CC1_SPEC): Typo -- use cc1_cpu.
+
 Sat Oct  9 23:26:55 1999  Jeffrey A Law  (law@cygnus.com)
 
         * gcse.c (gcse_main): Avoid global optimizations if we have a

@@ -340,7 +340,7 @@ extern int ix86_arch;
 #endif
 
 #ifndef CC1_SPEC
-#define CC1_SPEC "%(cc1_spec) "
+#define CC1_SPEC "%(cc1_cpu) "
 #endif
 
 /* This macro defines names of additional specifications to put in the
