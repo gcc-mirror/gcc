@@ -1,3 +1,10 @@
+Tue Jun 23 16:44:21 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* cpplib.c (do_line): Typo broke #line directive.
+	(cpp_message_from_errno): New function.
+	(cpp_error_from_errno): Call cpp_message_from_errno.
+	* cpplib.h (cpp_message_from_errno): New function.
+
 Tue Jun 23 13:38:18 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* libgcc2.c (__get_eh_table_version, __get_eh_table_language): New

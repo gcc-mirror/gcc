@@ -658,6 +658,7 @@ extern void cpp_pedwarn_with_line PVPROTO ((cpp_reader *, int, int, const char *
   ATTRIBUTE_PRINTF_4;
 extern void cpp_pedwarn_with_file_and_line PVPROTO ((cpp_reader *, char *, int, const char *, ...))
   ATTRIBUTE_PRINTF_4;
+extern void cpp_message_from_errno PROTO ((cpp_reader *, int, const char *));
 extern void cpp_error_from_errno PROTO ((cpp_reader *, const char *));
 extern void cpp_perror_with_name PROTO ((cpp_reader *, const char *));
 extern void v_cpp_message PROTO ((cpp_reader *, int, const char *, va_list));
