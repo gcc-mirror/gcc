@@ -549,7 +549,7 @@ fixup_reorder_chain ()
   for (bb = BASIC_BLOCK (0); bb ; bb = RBI (bb)->next)
     {
       edge e_fall, e_taken, e;
-      rtx jump_insn, barrier_insn;
+      rtx jump_insn, barrier_insn, bb_end_insn;
       basic_block nb;
 
       if (bb->succ == NULL)
@@ -564,9 +564,10 @@ fixup_reorder_chain ()
 	else if (! (e->flags & EDGE_EH))
 	  e_taken = e;
 
-      if (GET_CODE (bb->end) == JUMP_INSN)
+      bb_end_insn = bb->end;
+      if (GET_CODE (bb_end_insn) == JUMP_INSN)
 	{
-	  if (any_uncondjump_p (bb->end))
+	  if (any_uncondjump_p (bb_end_insn))
 	    {
 	      /* If the destination is still not next, nothing to do.  */
 	      if (RBI (bb)->index + 1 != RBI (e_taken->dest)->index)
@@ -582,7 +583,7 @@ fixup_reorder_chain ()
 			 bb->index, RBI (bb)->index);
 	      continue;
 	    }
-	  else if (any_condjump_p (bb->end))
+	  else if (any_condjump_p (bb_end_insn))
 	    {
 	      /* If the old fallthru is still next, nothing to do.  */
 	      if (RBI (bb)->index + 1 == RBI (e_fall->dest)->index
@@ -596,10 +597,11 @@ fixup_reorder_chain ()
 		 edge based on known or assumed probability.  */
 	      if (RBI (bb)->index + 1 != RBI (e_taken->dest)->index)
 		{
-		  rtx note = find_reg_note (bb->end, REG_BR_PROB, 0);
+		  rtx note = find_reg_note (bb_end_insn, REG_BR_PROB, 0);
 		  if (note
 		      && INTVAL (XEXP (note, 0)) < REG_BR_PROB_BASE / 2
-		      && invert_jump (bb->end, label_for_bb (e_fall->dest), 0))
+		      && invert_jump (bb_end_insn,
+				      label_for_bb (e_fall->dest), 0))
 		    {
 		      e_fall->flags &= ~EDGE_FALLTHRU;
 		      e_taken->flags |= EDGE_FALLTHRU;
@@ -609,14 +611,15 @@ fixup_reorder_chain ()
 
 	      /* Otherwise we can try to invert the jump.  This will 
 		 basically never fail, however, keep up the pretense.  */
-	      else if (invert_jump (bb->end, label_for_bb (e_fall->dest), 0))
+	      else if (invert_jump (bb_end_insn,
+				    label_for_bb (e_fall->dest), 0))
 		{
 		  e_fall->flags &= ~EDGE_FALLTHRU;
 		  e_taken->flags |= EDGE_FALLTHRU;
 		  continue;
 		}
 	    }
-	  else if (returnjump_p (bb->end))
+	  else if (returnjump_p (bb_end_insn))
 	    continue;
 	  else
 	    {
@@ -629,8 +632,10 @@ fixup_reorder_chain ()
 		 tablejump, the fallthru block should not have moved.  */
 	      if (RBI (bb)->index + 1 == RBI (e_fall->dest)->index)
 		continue;
-#endif
+	      bb_end_insn = skip_insns_after_block (bb);
+#else
 	      abort ();
+#endif
 	    }
 	}
       else
@@ -653,7 +658,7 @@ fixup_reorder_chain ()
 	    {
 	      e_fall->flags &= ~EDGE_FALLTHRU;
 
-	      jump_insn = emit_jump_to_block_after (e_fall->dest, bb->end);
+	      jump_insn = emit_jump_to_block_after (e_fall->dest, bb_end_insn);
 	      bb->end = jump_insn;
 	      barrier_insn = emit_barrier_after (jump_insn);
 	      RBI (bb)->eff_end = barrier_insn;
@@ -664,7 +669,7 @@ fixup_reorder_chain ()
       /* We got here if we need to add a new jump insn in a new block
 	 across the edge e_fall.  */
 
-      jump_insn = emit_jump_to_block_after (e_fall->dest, bb->end);
+      jump_insn = emit_jump_to_block_after (e_fall->dest, bb_end_insn);
       barrier_insn = emit_barrier_after (jump_insn);
 
       VARRAY_GROW (basic_block_info, ++n_basic_blocks);

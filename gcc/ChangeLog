@@ -1,5 +1,10 @@
 2000-09-07  Richard Henderson  <rth@cygnus.com>
 
+	* bb-reorder.c (fixup_reorder_chain): Add jump in new block
+	after switch for CASE_DROPS_THROUGH.
+
+2000-09-07  Richard Henderson  <rth@cygnus.com>
+
 	* loop.c (strength_reduce): Call check_ext_dependant_givs.
 	Properly extend the biv initial value for the giv.
 	(record_biv): Zero ext_dependant.
