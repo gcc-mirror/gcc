@@ -1,4 +1,4 @@
-/* { dg-do compile { target i386-*-* } } */
+/* { dg-do compile { target i?86-*-* } } */
 
 int foo ()
 {

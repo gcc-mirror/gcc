@@ -1,3 +1,8 @@
+2001-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20010202-1.c: New test.
+	* gcc.dg/991209-1.c: Compile on whole ia32 family, not just i386.
+
 2001-02-07  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* g++.dg/stdbool-if.C: New test.

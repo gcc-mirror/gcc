@@ -5610,13 +5610,19 @@ finish_enum (enumtype, values, attributes)
   unsign = (tree_int_cst_sgn (minnode) >= 0);
   precision = MAX (min_precision (minnode, unsign),
 		   min_precision (maxnode, unsign));
-  if (!TYPE_PACKED (enumtype))
-    precision = MAX (precision, TYPE_PRECISION (integer_type_node));
-  if (type_for_size (precision, unsign) == 0)
+  if (TYPE_PACKED (enumtype) || precision > TYPE_PRECISION (integer_type_node))
     {
-      warning ("enumeration values exceed range of largest integer");
-      precision = TYPE_PRECISION (long_long_integer_type_node);
+      tree narrowest = type_for_size (precision, unsign);
+      if (narrowest == 0)
+	{
+	  warning ("enumeration values exceed range of largest integer");
+	  narrowest = long_long_integer_type_node;
+	}
+
+      precision = TYPE_PRECISION (narrowest);
     }
+  else
+    precision = TYPE_PRECISION (integer_type_node);
 
   if (precision == TYPE_PRECISION (integer_type_node))
     enum_value_type = type_for_size (precision, 0);
