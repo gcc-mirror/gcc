@@ -56,6 +56,7 @@ extern int non_logical_cint_operand PARAMS ((rtx, enum machine_mode));
 extern int logical_operand PARAMS ((rtx, enum machine_mode));
 extern int mask_operand PARAMS ((rtx, enum machine_mode));
 extern int mask64_operand PARAMS ((rtx, enum machine_mode));
+extern int rldic_operand PARAMS ((rtx, enum machine_mode));
 extern int and64_operand PARAMS ((rtx, enum machine_mode));
 extern int and_operand PARAMS ((rtx, enum machine_mode));
 extern int count_register_operand PARAMS ((rtx, enum machine_mode));
@@ -78,6 +79,7 @@ extern int boolean_operator PARAMS ((rtx, enum machine_mode));
 extern int boolean_or_operator PARAMS ((rtx, enum machine_mode));
 extern int includes_lshift_p PARAMS ((rtx, rtx));
 extern int includes_rshift_p PARAMS ((rtx, rtx));
+extern int includes_lshift64_p PARAMS ((rtx, rtx));
 extern int registers_ok_for_quad_peep PARAMS ((rtx, rtx));
 extern int addrs_ok_for_quad_peep PARAMS ((rtx, rtx));
 extern enum reg_class secondary_reload_class PARAMS ((enum reg_class,

@@ -2757,6 +2757,7 @@ do {									\
   {"non_logical_cint_operand", {CONST_INT, CONST_DOUBLE}},	\
   {"mask_operand", {CONST_INT}},				\
   {"mask64_operand", {CONST_INT, CONST_DOUBLE}},		\
+  {"rldic_operand", {CONST_INT, CONST_DOUBLE}},			\
   {"count_register_operand", {REG}},				\
   {"xer_operand", {REG}},					\
   {"call_operand", {SYMBOL_REF, REG}},				\
