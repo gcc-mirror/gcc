@@ -156,7 +156,7 @@ if false; then
   AC_EXEEXT
 fi
 
-. [$]{boehm_gc_basedir}/configure.host
+. [$]{srcdir}/configure.host
 
 case [$]{boehm_gc_basedir} in
 /* | [A-Za-z]:[/\\]*) boehm_gc_flagbasedir=[$]{boehm_gc_basedir} ;;
