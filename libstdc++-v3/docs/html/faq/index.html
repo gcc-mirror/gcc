@@ -740,11 +740,11 @@ New:
          and unmaintained.  Do not report problems with -v2 to the -v3
          mailing list.
       </p>
-      <p>Currently our header files are installed in
-         <code>${prefix}/include/g++-v3</code> (see the 'v'?).  This may
-         change with the next release of GCC, as it may be too confusing,
-         but <a href="http://gcc.gnu.org/ml/gcc/2000-10/msg00732.html">the
-         question has not yet been decided</a>.
+      <p>For GCC versions 3.0 and 3.1 the libstdc++-v3 header files are
+        installed in <code>${prefix}/include/g++-v3</code> (see the 'v'?). 
+        Starting with version 3.2 the headers are installed in
+        <code>${prefix}/include/c++/${version}</code> as this prevents
+        headers from previous versions being found by mistake.
       </p>
       <p><a name="4_4_glibc"><strong>glibc</strong></a>
          If you're on a GNU/Linux system and have just upgraded to

@@ -603,9 +603,11 @@ New:
    and unmaintained. Do not report problems with -v2 to the -v3 mailing
    list.
 
-   Currently our header files are installed in ${prefix}/include/g++-v3
-   (see the 'v'?). This may change with the next release of GCC, as it
-   may be too confusing, but [87]the question has not yet been decided.
+   For GCC versions 3.0 and 3.1 the libstdc++-v3 header files are
+   installed in ${prefix}/include/g++-v3 (see the 'v'?). Starting with
+   version 3.2 the headers are installed in
+   ${prefix}/include/c++/${version} as this prevents headers from
+   previous versions being found by mistake.
 
    glibc If you're on a GNU/Linux system and have just upgraded to glibc
    2.2, but are still using gcc 2.95.2, then you should have read the
@@ -618,7 +620,7 @@ type has changed in glibc 2.2.  The patch is at
 http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
 
-   Note that 2.95.x shipped with the [88]old v2 library which is no
+   Note that 2.95.x shipped with the [87]old v2 library which is no
    longer maintained. Also note that gcc 2.95.3 fixes this problem, but
    requires a separate patch for libstdc++-v3.
 
@@ -631,7 +633,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    visibility, or you just plain forgot, etc).
 
    More information, including how to optionally enable/disable the
-   checks, is available [89]here.
+   checks, is available [88]here.
 
    dlopen/dlsym If you are using the C++ library across
    dynamically-loaded objects, make certain that you are passing the
@@ -653,16 +655,16 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
    If you have found a bug in the library and you think you have a
    working fix, then send it in! The main GCC site has a page on
-   [90]submitting patches that covers the procedure, but for libstdc++
+   [89]submitting patches that covers the procedure, but for libstdc++
    you should also send the patch to our mailing list in addition to the
-   GCC patches mailing list. The libstdc++ [91]contributors' page also
+   GCC patches mailing list. The libstdc++ [90]contributors' page also
    talks about how to submit patches.
 
    In addition to the description, the patch, and the ChangeLog entry, it
    is a Good Thing if you can additionally create a small test program to
    test for the presence of the bug that your patch fixes. Bugs have a
    way of being reintroduced; if an old bug creeps back in, it will be
-   caught immediately by the [92]testsuite -- but only if such a test
+   caught immediately by the [91]testsuite -- but only if such a test
    exists.
      _________________________________________________________________
 
@@ -696,7 +698,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
        libstdc++. Some of that is already happening, see 4.2. Some of
        those changes are being predicted by the library maintainers, and
        we add code to the library based on what the current proposed
-       resolution specifies. Those additions are listed in [93]the
+       resolution specifies. Those additions are listed in [92]the
        extensions page.
     2. Performance tuning. Lots of performance tuning. This too is
        already underway for post-3.0 releases, starting with memory
@@ -712,13 +714,13 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
        type from C99.) Bugfixes and rewrites (to improve or fix thread
        safety, for instance) will of course be a continuing task.
 
-   [94]This question about the next libstdc++ prompted some brief but
-   interesting [95]speculation.
+   [93]This question about the next libstdc++ prompted some brief but
+   interesting [94]speculation.
      _________________________________________________________________
 
 5.3 What about the STL from SGI?
 
-   The [96]STL from SGI, version 3.3, was the most recent merge of the
+   The [95]STL from SGI, version 3.3, was the most recent merge of the
    STL codebase. The code in libstdc++ contains many fixes and changes,
    and it is very likely that the SGI code is no longer under active
    development. We expect that no future merges will take place.
@@ -767,7 +769,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    This is a bit cleaner than defining typedefs for all the
    instantiations you might need.
 
-   Extensions to the library have [97]their own page.
+   Extensions to the library have [96]their own page.
      _________________________________________________________________
 
 5.5 [removed]
@@ -816,8 +818,8 @@ a
    otherwise documented as safe, do not assume that two threads may
    access a shared standard library object at the same time.
 
-   See chapters [98]17 (library introduction), [99]23 (containers), and
-   [100]27 (I/O) for more information.
+   See chapters [97]17 (library introduction), [98]23 (containers), and
+   [99]27 (I/O) for more information.
      _________________________________________________________________
 
 5.7 How do I get a copy of the ISO C++ Standard?
@@ -828,11 +830,11 @@ a
    their two-meeting commitment for voting rights, may get a copy of the
    standard from their respective national standards organization. In the
    USA, this national standards organization is ANSI and their website is
-   right [101]here. (And if you've already registered with them, clicking
+   right [100]here. (And if you've already registered with them, clicking
    this link will take you to directly to the place where you can
-   [102]buy the standard on-line.
+   [101]buy the standard on-line.
 
-   Who is your country's member body? Visit the [103]ISO homepage and
+   Who is your country's member body? Visit the [102]ISO homepage and
    find out!
      _________________________________________________________________
 
@@ -883,8 +885,8 @@ a
    encompasses the standard library.
      _________________________________________________________________
 
-   See [104]license.html for copying conditions. Comments and suggestions
-   are welcome, and may be sent to [105]the libstdc++ mailing list. 
+   See [103]license.html for copying conditions. Comments and suggestions
+   are welcome, and may be sent to [104]the libstdc++ mailing list. 
 
 References
 
@@ -974,22 +976,21 @@ References
   84. ../ext/howto.html#5
   85. http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html
   86. http://gcc.gnu.org/gnatswrite.html
-  87. http://gcc.gnu.org/ml/gcc/2000-10/msg00732.html
-  88. ../faq/index.html#4_4_interface
-  89. ../19_diagnostics/howto.html#3
-  90. http://gcc.gnu.org/contribute.html
-  91. ../17_intro/contribute.html
-  92. ../faq/index.html#2_4
-  93. ../ext/howto.html#5
-  94. http://gcc.gnu.org/ml/libstdc++/1999/msg00080.html
-  95. http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html
-  96. http://www.sgi.com/Technology/STL/
-  97. ../ext/howto.html
-  98. ../17_intro/howto.html#3
-  99. ../23_containers/howto.html#3
- 100. ../27_io/howto.html#9
- 101. http://www.ansi.org/
- 102. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
- 103. http://www.iso.ch/
- 104. ../17_intro/license.html
- 105. mailto:libstdc++@gcc.gnu.org
+  87. ../faq/index.html#4_4_interface
+  88. ../19_diagnostics/howto.html#3
+  89. http://gcc.gnu.org/contribute.html
+  90. ../17_intro/contribute.html
+  91. ../faq/index.html#2_4
+  92. ../ext/howto.html#5
+  93. http://gcc.gnu.org/ml/libstdc++/1999/msg00080.html
+  94. http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html
+  95. http://www.sgi.com/Technology/STL/
+  96. ../ext/howto.html
+  97. ../17_intro/howto.html#3
+  98. ../23_containers/howto.html#3
+  99. ../27_io/howto.html#9
+ 100. http://www.ansi.org/
+ 101. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
+ 102. http://www.iso.ch/
+ 103. ../17_intro/license.html
+ 104. mailto:libstdc++@gcc.gnu.org
