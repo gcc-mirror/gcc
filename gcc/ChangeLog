@@ -1,3 +1,9 @@
+Mon Apr 26 01:02:38 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (fix_trunc patterns): Use reg_no_subreg_operand on op0
+	for less work in reload.
+	(movsf and movdf patterns): Put fp reg alternatives first.
+
 Mon Apr 26 01:55:56 1999  Marc Espie  <espie@cvs.openbsd.org>
 
 	* configure.in (openbsd): Factorize xmake_file.

@@ -1945,7 +1945,7 @@
    (set_attr "trap" "yes")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=&f")
+  [(set (match_operand:DI 0 "reg_no_subreg_operand" "=&f")
 	(fix:DI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
   "cvt%-q%(c %R1,%0"
@@ -1953,7 +1953,7 @@
    (set_attr "trap" "yes")])
 
 (define_insn "fix_truncdfdi2"
-  [(set (match_operand:DI 0 "register_operand" "=f")
+  [(set (match_operand:DI 0 "reg_no_subreg_operand" "=f")
 	(fix:DI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "cvt%-q%(c %R1,%0"
@@ -2008,7 +2008,7 @@
    (set_attr "trap" "yes")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=&f")
+  [(set (match_operand:DI 0 "reg_no_subreg_operand" "=&f")
 	(fix:DI (float_extend:DF
 		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
@@ -2017,7 +2017,7 @@
    (set_attr "trap" "yes")])
 
 (define_insn "fix_truncsfdi2"
-  [(set (match_operand:DI 0 "register_operand" "=f")
+  [(set (match_operand:DI 0 "reg_no_subreg_operand" "=f")
 	(fix:DI (float_extend:DF
 		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
@@ -4013,68 +4013,68 @@
 ;; they are simpler.
 
 (define_insn ""
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m,f,f,m")
-	(match_operand:SF 1 "input_operand" "rG,m,r,fG,m,fG"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,r,r,m,m")
+	(match_operand:SF 1 "input_operand" "fG,m,rG,m,fG,r"))]
   "! TARGET_CIX
    && (register_operand (operands[0], SFmode)
        || reg_or_fp0_operand (operands[1], SFmode))"
   "@
-   mov %r1,%0
-   ldl %0,%1
-   stl %r1,%0
    fmov %R1,%0
    ld%, %0,%1
-   st%, %R1,%0"
-  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst")])
+   mov %r1,%0
+   ldl %0,%1
+   st%, %R1,%0
+   stl %r1,%0"
+  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist")])
 
 (define_insn ""
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m,f,f,m,f,*r")
-	(match_operand:SF 1 "input_operand" "rG,m,r,fG,m,fG,r,*f"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,r,r,m,m,f,*r")
+	(match_operand:SF 1 "input_operand" "fG,m,rG,m,fG,r,r,*f"))]
   "TARGET_CIX
    && (register_operand (operands[0], SFmode)
        || reg_or_fp0_operand (operands[1], SFmode))"
   "@
-   mov %r1,%0
-   ldl %0,%1
-   stl %r1,%0
    fmov %R1,%0
    ld%, %0,%1
+   mov %r1,%0
+   ldl %0,%1
    st%, %R1,%0
+   stl %r1,%0
    itofs %1,%0
    ftois %1,%0"
-  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst,itof,ftoi")])
+  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")])
 
 (define_insn ""
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m,f,f,m")
-	(match_operand:DF 1 "input_operand" "rG,m,r,fG,m,fG"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,r,r,m,m")
+	(match_operand:DF 1 "input_operand" "fG,m,rG,m,fG,r"))]
   "! TARGET_CIX
    && (register_operand (operands[0], DFmode)
        || reg_or_fp0_operand (operands[1], DFmode))"
   "@
-   mov %r1,%0
-   ldq %0,%1
-   stq %r1,%0
    fmov %R1,%0
    ld%- %0,%1
-   st%- %R1,%0"
-  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst")])
+   mov %r1,%0
+   ldq %0,%1
+   st%- %R1,%0
+   stq %r1,%0"
+  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist")])
 
 (define_insn ""
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m,f,f,m,f,*r")
-	(match_operand:DF 1 "input_operand" "rG,m,r,fG,m,fG,r,*f"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,r,r,m,m,f,*r")
+	(match_operand:DF 1 "input_operand" "fG,m,rG,m,fG,r,r,*f"))]
   "TARGET_CIX
    && (register_operand (operands[0], DFmode)
        || reg_or_fp0_operand (operands[1], DFmode))"
   "@
-   mov %r1,%0
-   ldq %0,%1
-   stq %r1,%0
    fmov %R1,%0
    ld%- %0,%1
+   mov %r1,%0
+   ldq %0,%1
    st%- %R1,%0
+   stq %r1,%0
    itoft %1,%0
    ftoit %1,%0"
-  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst,itof,ftoi")])
+  [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")])
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "nonimmediate_operand" "")
