@@ -266,7 +266,7 @@ toc_section ()						\
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)		\
 { rtx sym_ref = XEXP (DECL_RTL (DECL), 0);			\
-  if (!DECL_WEAK (DECL))					\
+  if ((*targetm.binds_local_p) (DECL))				\
     SYMBOL_REF_FLAG (sym_ref) = 1;				\
   if (TREE_PUBLIC (DECL))					\
     {								\
