@@ -2873,6 +2873,7 @@ demangle_template_arg (dm)
       /* Expression.  */
       advance_char (dm);
       RETURN_IF_ERROR (demangle_expression (dm));
+      RETURN_IF_ERROR (demangle_char (dm, 'E'));
       break;
 
     default:
