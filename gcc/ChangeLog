@@ -1,3 +1,22 @@
+2002-02-20  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (EPILOGUE_USES): Conditionalize
+	VRSAVE_REGNO on TARGET_ALTIVEC.
+
+2002-02-20  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (includes_lshift_p): Mask irrelevant
+	bits of SImode const_int.
+	(includes_rshift_p): Likewise.
+	(print_operand): Call mask_operand and mask64_operand with correct
+	mode. 
+	(rs6000_output_function_epilogue): Pad traceback table to word.
+	* config/rs6000/rs6000.h (MASK_64BIT): Correct comment.
+	(EXTRA_CONSTRAINT, 'S' and 'T'): Call mask_operand and
+	mask64_operand with correct mode.
+	(RETURN_IN_MEMORY): Use HOST_WIDE_INT, not HOST_WIDEST_INT.
+	(FUNCTION_ARG_REGNO_P): Correct parentheses.
+
 2002-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/4461
