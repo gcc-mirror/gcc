@@ -1065,13 +1065,17 @@ is_subobject_of_p (parent, binfo)
   tree binfos;
   int i, n_baselinks;
 
+  /* We want to canonicalize for comparison purposes.  But, when we
+     iterate through basetypes later, we want the binfos from the
+     original hierarchy.  That's why we have to calculate BINFOS
+     first, and then canonicalize.  */
+  binfos = BINFO_BASETYPES (binfo);
   parent = canonical_binfo (parent);
   binfo = canonical_binfo (binfo);
 
   if (parent == binfo)
     return 1;
 
-  binfos = BINFO_BASETYPES (binfo);
   n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
 
   /* Process and/or queue base types.  */
