@@ -1,3 +1,9 @@
+Tue Feb  1 00:57:40 2000  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* dwarfout.c (SHORT_TYPE_SIZE): Correct default.
+
+	* tm.texi (Type Layout): Correct entry for CHAR_TYPE_SIZE.
+
 2000-01-31  Chandra Chavva <cchavva@cygnus.com>
 
 	* combine.c (try_combine) [HAVE_cc0]: Trying to check the missed
