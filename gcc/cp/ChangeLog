@@ -1,5 +1,10 @@
 2002-08-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* class.c (convert_to_base): Correct check for error_mark_node.
+	(create_vtable_ptr): Remove unused VFUNS_P parm.
+
+2002-08-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp/Make-lang.in (c++.mostlyclean): Remove coverage files.
 
 2002-08-07  Mark Mitchell  <mark@codesourcery.com>
