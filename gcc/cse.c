@@ -3714,7 +3714,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	    return tem;
 
 	  /* Don't let a relocatable value get a negative coeff.  */
-	  if (GET_CODE (op1) == CONST_INT && GET_MODE (op1) != VOIDmode)
+	  if (GET_CODE (op1) == CONST_INT && GET_MODE (op0) != VOIDmode)
 	    return plus_constant (op0, - INTVAL (op1));
 	  break;
 
