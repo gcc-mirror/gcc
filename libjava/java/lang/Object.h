@@ -21,8 +21,11 @@ struct _JvObjectPrefix
 {
 protected:
   // New ABI Compatibility Dummy, #1 and 2.
-  virtual void nacd_1 (void) {};  // This slot really contains the Class pointer.
-  virtual void nacd_2 (void) {};  // Actually the GC bitmap marking descriptor.
+  virtual void nacd_1 (void) {}; // This slot really contains the Class pointer.
+  // For IA64, the GC descriptor goes into the second word of the nacd1 descr.
+# ifndef __ia64__
+    virtual void nacd_2 (void) {}; // Actually the GC bitmap marking descriptor.
+# endif
 };
 
 class java::lang::Object : public _JvObjectPrefix

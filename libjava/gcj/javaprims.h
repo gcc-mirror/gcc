@@ -384,6 +384,8 @@ typedef struct _Jv_Field *jfieldID;
 typedef struct _Jv_Method *jmethodID;
 
 extern "C" jobject _Jv_AllocObject (jclass, jint) __attribute__((__malloc__));
+extern "C" jobject _Jv_AllocObjectNoFinalizer (jclass, jint) __attribute__((__malloc__));
+extern "C" jobject _Jv_AllocObjectNoInitNoFinalizer (jclass, jint) __attribute__((__malloc__));
 #ifdef JV_HASH_SYNCHRONIZATION
   extern "C" jobject _Jv_AllocPtrFreeObject (jclass, jint)
   			    __attribute__((__malloc__));

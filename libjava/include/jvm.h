@@ -28,18 +28,12 @@ details.  */
 struct _Jv_VTable
 {
 #ifdef __ia64__
-  jclass clas;
-  unsigned long : 64;
-  void *gc_descr;
-  unsigned long : 64;
-
   typedef struct { void *pc, *gp; } vtable_elt;
 #else
-  jclass clas;
-  void *gc_descr;
-
   typedef void *vtable_elt;
 #endif
+  jclass clas;
+  void *gc_descr;
 
   // This must be last, as derived classes "extend" this by
   // adding new data members.
@@ -48,12 +42,20 @@ struct _Jv_VTable
 #ifdef __ia64__
   void *get_method(int i) { return &method[i]; }
   void set_method(int i, void *fptr) { method[i] = *(vtable_elt *)fptr; }
+  void *get_finalizer()
+  {
+    // We know that get_finalizer is only used for checking whether
+    // this object needs to have a finalizer registered.  So it is
+    // safe to simply return just the PC component of the vtable
+    // slot.
+    return ((vtable_elt *)(get_method(0)))->pc;
+  }
 #else
   void *get_method(int i) { return method[i]; }
   void set_method(int i, void *fptr) { method[i] = fptr; }
+  void *get_finalizer() { return get_method(0); }
 #endif
 
-  void *get_finalizer() { return get_method(0); }
   static size_t vtable_elt_size() { return sizeof(vtable_elt); }
   static _Jv_VTable *new_vtable (int count);
 };

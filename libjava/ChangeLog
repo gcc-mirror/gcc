@@ -1,3 +1,16 @@
+2001-12-14  Hans Boehm  <Hans_Boehm@hp.com>
+	* libjava/prims.cc: Some old cleanups.  The collector now
+	handles test for out of memory.
+
+	* libjava/prims.cc, libjava/gcj/javaprims.h:
+	(_Jv_AllocObjectNoInitNoFinalizer, _Jv_AllocObjectNoFinalizer):
+	New functions for finalizer-free allocation.
+	(jvmpi_notify_alloc): Became separate function.
+
+	* libjava/java/lang/Object.h, libjava/include/jvm.h: Adjust for
+	revised vtable layout on IA64.  With TARGET_VTABLE_USES_DESCRIPTORS,
+	there is only one extra descriptor.
+
 2001-12-12  Tom Tromey  <tromey@redhat.com>
 
 	* prims.cc (_Jv_RunMain): Use `using' to simplify code.  Set
