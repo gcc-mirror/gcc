@@ -1993,9 +1993,11 @@ typedef struct rs6000_args
    acceptable.  */
 
 #define LEGITIMATE_CONSTANT_P(X)				\
-  (GET_CODE (X) != CONST_DOUBLE || GET_MODE (X) == VOIDmode	\
-   || (TARGET_POWERPC64 && GET_MODE (X) == DImode)		\
-   || easy_fp_constant (X, GET_MODE (X)))
+  ((GET_CODE (X) != CONST_VECTOR				\
+    || zero_constant (X, GET_MODE (X)))				\
+   && (GET_CODE (X) != CONST_DOUBLE || GET_MODE (X) == VOIDmode	\
+       || (TARGET_POWERPC64 && GET_MODE (X) == DImode)		\
+       || easy_fp_constant (X, GET_MODE (X))))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
