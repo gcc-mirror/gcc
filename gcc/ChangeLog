@@ -1,3 +1,8 @@
+Thu Jan 14 13:52:42 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (in_annul_slot_3): Correctly allow unarycc 
+	and binarycc operations in 3rd annulled delay slot!
+
 1999-01-12  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* m68k/mot3300.h (ADD_MISSING_POSIX, ADD_MISSING_XOPEN): Define to

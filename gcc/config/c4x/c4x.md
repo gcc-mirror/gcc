@@ -369,7 +369,7 @@
 
 (define_attr "in_annul_slot_3" "false,true"
   (if_then_else (and (eq_attr "cpu" "c4x")
-		     (eq_attr "type" "!jump,call,rets,jmpc,unarycc,binarycc,db,dbc,repeat,repeat_top,laj,push,pop,multi"))
+		     (eq_attr "type" "!jump,call,rets,jmpc,db,dbc,repeat,repeat_top,laj,push,pop,multi"))
 		(const_string "true")
 		(const_string "false")))
 
