@@ -5022,18 +5022,20 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 		   && contains_placeholder_p (this_offset))
 	    this_offset = build (WITH_RECORD_EXPR, sizetype, this_offset, exp);
 
-	  offset = size_binop (PLUS_EXPR, offset, DECL_FIELD_OFFSET (field));
+	  offset = size_binop (PLUS_EXPR, offset, this_offset);
 	  bit_offset = size_binop (PLUS_EXPR, bit_offset,
 				   DECL_FIELD_BIT_OFFSET (field));
 
 	  if (! host_integerp (offset, 0))
 	    alignment = MIN (alignment, DECL_OFFSET_ALIGN (field));
 	}
+
       else if (TREE_CODE (exp) == ARRAY_REF)
 	{
 	  tree index = TREE_OPERAND (exp, 1);
 	  tree domain = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (exp, 0)));
 	  tree low_bound = (domain ? TYPE_MIN_VALUE (domain) : 0);
+	  tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (exp));
 
 	  /* We assume all arrays have sizes that are a multiple of a byte.
 	     First subtract the lower bound, if any, in the type of the
@@ -5043,15 +5045,23 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	    index = fold (build (MINUS_EXPR, TREE_TYPE (index),
 				 index, low_bound));
 
+	  /* If the index has a self-referential type, pass it to a
+	     WITH_RECORD_EXPR; if the component size is, pass our
+	     component to one.  */
 	  if (! TREE_CONSTANT (index)
 	      && contains_placeholder_p (index))
 	    index = build (WITH_RECORD_EXPR, TREE_TYPE (index), index, exp);
+	  if (! TREE_CONSTANT (unit_size)
+	      && contains_placeholder_p (unit_size))
+	    unit_size = build (WITH_RECORD_EXPR, sizetype, unit_size,
+			       TREE_OPERAND (exp, 0));
 
 	  offset = size_binop (PLUS_EXPR, offset,
 			       size_binop (MULT_EXPR,
 					   convert (sizetype, index),
-					   TYPE_SIZE_UNIT (TREE_TYPE (exp))));
+					   unit_size));
 	}
+
       else if (TREE_CODE (exp) != NON_LVALUE_EXPR
 	       && ! ((TREE_CODE (exp) == NOP_EXPR
 		      || TREE_CODE (exp) == CONVERT_EXPR)
@@ -7060,7 +7070,8 @@ expand_expr (exp, target, tmode, modifier)
 			       * BITS_PER_UNIT),
 			      GET_MODE_BITSIZE (mode)),
 			 0, TYPE_MODE (valtype), TREE_OPERAND (exp, 0),
-			 VOIDmode, 0, 1, int_size_in_bytes (type), 0);
+			 VOIDmode, 0, BITS_PER_UNIT,
+			 int_size_in_bytes (type), 0);
 	  else
 	    abort ();
 
