@@ -1,3 +1,11 @@
+2003-08-19  Daniel Jacobowitz  <drow@mvista.com>
+
+	* unwind-c.c: Add libgcc-style exception.
+	* unwind-dw2.c: Likewise.
+	* unwind-pe.h: Likewise.
+	* unwind-sjlj.c: Likewise.
+	* unwind.inc: Likewise.
+
 2003-08-19  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.md: Adjust SI-mode "trap_if" instruction
