@@ -850,6 +850,24 @@ reg_or_neg_short_operand (op, mode)
   return gpc_reg_operand (op, mode);
 }
 
+/* Returns 1 if OP is either a constant integer valid for a DS-field or
+   a non-special register.  If a register, it must be in the proper
+   mode unless MODE is VOIDmode.  */
+
+int
+reg_or_aligned_short_operand (op, mode)
+      rtx op;
+      enum machine_mode mode;
+{
+  if (gpc_reg_operand (op, mode))
+    return 1;
+  else if (short_cint_operand (op, mode) && !(INTVAL (op) & 3))
+    return 1;
+
+  return 0;
+}
+
+
 /* Return 1 if the operand is either a register or an integer whose
    high-order 16 bits are zero.  */
 
