@@ -1,3 +1,9 @@
+2000-11-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.texi, invoke.texi: Add new section discussing language
+	standards; link to it where appropriate; refer to ISO C instead of
+	ANSI C.
+
 2000-11-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	* builtins.c (std_expand_builtin_va_start): Take PARM_BOUNDARY
