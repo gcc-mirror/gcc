@@ -1,3 +1,7 @@
+2004-05-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* g77.texi (Floating-point Errors): Fix typo.
+
 2004-05-07  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* g77.texi (Floating-point Errors): Avoid referencing 

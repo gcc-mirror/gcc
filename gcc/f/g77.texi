@@ -8613,7 +8613,7 @@ Floating-Point Arithmetic', Computing Surveys, 23, March 1991, pp.@:
 An online version is available at
 @uref{http://docs.sun.com/}.
 
-Information related to the IEEE 754 floating-point standard by can be found
+Information related to the IEEE 754 floating-point standard can be found
 at @uref{http://grouper.ieee.org/groups/754/} and
 @uref{http://http.cs.berkeley.edu/%7Ewkahan/ieee754status/};
 see also slides from the short course referenced from
