@@ -28,9 +28,9 @@
 #define TARGET_VERSION	fputs (" (ARM/ELF)", stderr);
 #endif
 
-/* Default to using APCS-32 and software floating point.  */
+/* Default to using software floating point.  */
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT	(ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_32 | ARM_FLAG_APCS_FRAME)
+#define TARGET_DEFAULT	(ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_FRAME)
 #endif
 
 /* Now we define the strings used to build the spec file.  */
@@ -85,10 +85,6 @@
     }									\
   while (0)
 
-#ifndef CPP_APCS_PC_DEFAULT_SPEC
-#define CPP_APCS_PC_DEFAULT_SPEC	"-D__APCS_32__"
-#endif
-     
 #ifndef SUBTARGET_CPU_DEFAULT
 #define SUBTARGET_CPU_DEFAULT 		TARGET_CPU_arm7tdmi
 #endif

@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler, for ARM with PE obj format.
-   Copyright (C) 1995, 1996, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1999, 2000, 2002, 2003, 2004
+   Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
    
    This file is part of GCC.
@@ -65,18 +66,12 @@
   N_("Ignore dllimport attribute for functions") },		\
 { "no-nop-fun-dllimport",	- TARGET_FLAG_NOP_FUN, "" },
 
-/* Defaulting to APCS-26 support is a legacy issue.   It has been done
-   that way for a long time, so changing it will probably break some
-   people's worlds.  Support for APCS-32 is now enabled as a multilib,
-   and at some point in the future APCS-32 may become the default.
-   Possibly when chips that support APCS-26 are no longer made.  */
-
 #undef  TARGET_DEFAULT
 #define TARGET_DEFAULT	(ARM_FLAG_SOFT_FLOAT | TARGET_FLAG_NOP_FUN)
 
 #undef  MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \
-  { "marm", "mlittle-endian", "msoft-float", "mapcs-26", "mno-thumb-interwork" }  
+  { "marm", "mlittle-endian", "msoft-float", "mno-thumb-interwork" }  
 
 #undef  WCHAR_TYPE
 #define WCHAR_TYPE 	"short unsigned int"

@@ -13,7 +13,7 @@ MULTILIB_MATCHES     =
 # MULTILIB_OPTIONS    += mcpu=ep9312
 # MULTILIB_DIRNAMES   += ep9312
 # MULTILIB_EXCEPTIONS += *mthumb/*mcpu=ep9312*
-	
+# 	
 # MULTILIB_OPTIONS     += mlittle-endian/mbig-endian
 # MULTILIB_DIRNAMES    += le be
 # MULTILIB_MATCHES     += mbig-endian=mbe mlittle-endian=mle
@@ -22,13 +22,8 @@ MULTILIB_MATCHES     =
 # MULTILIB_DIRNAMES   += fpu soft
 # MULTILIB_EXCEPTIONS += *mthumb/*mhard-float*
 # 
-# MULTILIB_OPTIONS    += mapcs-32/mapcs-26
-# MULTILIB_DIRNAMES   += 32bit 26bit
-# MULTILIB_EXCEPTIONS += *mthumb/*mapcs-26*
-# 
 # MULTILIB_OPTIONS    += mno-thumb-interwork/mthumb-interwork
 # MULTILIB_DIRNAMES   += normal interwork
-# MULTILIB_EXCEPTIONS += *mapcs-26/*mthumb-interwork*
 # 
 # MULTILIB_OPTIONS    += fno-leading-underscore/fleading-underscore
 # MULTILIB_DIRNAMES   += elf under

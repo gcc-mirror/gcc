@@ -25,7 +25,6 @@ MULTILIB_DIRNAMES    = be
 MULTILIB_EXCEPTIONS  = 
 MULTILIB_MATCHES     = mbig-endian=mbe mlittle-endian=mle
 
-# Note XScale does not support 26 bit APCS.
 # Note XScale does not support hard FP
 
 MULTILIB_OPTIONS    += mthumb-interwork

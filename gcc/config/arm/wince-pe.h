@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with WINCE-PE obj format.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
    Contributed by Nick Clifton <nickc@redhat.com>
    
    This file is part of GCC.
@@ -19,11 +19,9 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-/* Override arm/pe.h's default apcs26 support.  */
-
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT	(ARM_FLAG_APCS_32 | ARM_FLAG_SOFT_FLOAT | TARGET_FLAG_NOP_FUN)
+#define TARGET_DEFAULT	(ARM_FLAG_SOFT_FLOAT | TARGET_FLAG_NOP_FUN)
 
 #undef  MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \
-  { "marm", "mlittle-endian", "msoft-float", "mapcs-32", "mno-thumb-interwork" }  
+  { "marm", "mlittle-endian", "msoft-float", "mno-thumb-interwork" }  

@@ -1,3 +1,39 @@
+2004-05-15  Richard Earnshaw  <reanrsha@arm.com>
+
+	* arm.h (TARGET_APCS_32): Delete.
+	(TARGET_MMU_TRAPS): Delete.
+	(TARGET_CPU_CPP_BUILTINS): Unconditionally define __APCS_32__.  Never
+	define __APCS_26__.
+	(CPP_SPEC): Remove checking of -mapcs-{26,32}.
+	(ARM_FLAG_APCS_32, ARM_FLAG_MMU_TRAPS): Delete.
+	(TARGET_SWITCHES): Remove alignment_traps and apcs-{26,32} switches.
+	(prog_mode_type): Delete.
+	(PROMOTE_MODE): Always promote unsigned for HImode.
+	(SECONDARY_INPUT_RELOAD_CLASS): Simplify.
+	(MASK_RETURN_ADDR): Simplify.
+	* arm.c (arm_prgmode): Delete.
+	(arm_override_options, arm_gen_rotated_half_load): Simplify.
+	(print_multi_reg, output_return_instruction): Simplify.
+	(arm_output_epilogue, arm_final_prescan_insn): Simplify.
+	(arm_return_addr): Simplify.
+	* arm.md (prog_mode): Delete.
+	(conds): Simplify.
+	(zero_extendhisi2, extendhisi2, movhi, movhi_bytes): Simplify.
+	(rotated_loadsi, movhi_insn_littleend, movhi_insn_bigend): Delete.
+	(loadhi_si_bigend, loadhi_preinc, loadhi_shiftpreinc): Delete.
+	(loadhi_shiftpredec): Delete.
+	(peephole for post-increment on HImode load): Delete.
+	* arm/crtn.asm: (FUNC_END): Simplify.
+	* arm/lib1funcs.asm: Remove APCS-26 return macros.
+	* arm/aof.h, arm/coff.h arm/elf.h arm/linux-elf.h arm/netbsd-elf.h
+	* arm/netbsd.h arm/pe.h arm/semi.h arm/semiaof.h arm/unknown-elf.h 
+	* arm/vxworks.h arm/wince-pe.h: Tidy TARGET_DEFAULTS and
+	MULTILIB_DEFAULTS as required.
+	* arm/t-arm-elf arm/t-linux arm/t-pe arm/t-semi arm/t-wince-pe
+	* arm/t-xscale-coff arm/t-xscale-elf arm/uclinux-elf: Tidy MULTILIB
+	variables as required.
+	* doc/invoke.texi (ARM Options): Remove obsolete flags.
+
 2004-05-15  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_va_arg <ABI_V4>): Don't use

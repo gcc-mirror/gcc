@@ -24,8 +24,8 @@ pe.o: $(srcdir)/config/arm/pe.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) output.h flags.h $(TREE_H) expr.h toplev.h $(TM_P_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/arm/pe.c
 
-MULTILIB_OPTIONS = mhard-float mthumb mapcs-32
-MULTILIB_DIRNAMES = fpu thumb apcs32
+MULTILIB_OPTIONS = mhard-float mthumb
+MULTILIB_DIRNAMES = fpu thumb
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib

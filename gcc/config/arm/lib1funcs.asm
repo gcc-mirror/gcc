@@ -60,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
 #define LSYM(x) x
 #endif
 
-/* Function end macros.  Variants for 26 bit APCS and interworking.  */
+/* Function end macros.  Variants for interworking.  */
 
 @ This selects the minimum architecture level required.
 #define __ARM_ARCH__ 3
@@ -87,12 +87,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* How to return from a function call depends on the architecture variant.  */
 
-#ifdef __APCS_26__
-
-# define RET		movs	pc, lr
-# define RETc(x)	mov##x##s	pc, lr
-
-#elif (__ARM_ARCH__ > 4) || defined(__ARM_ARCH_4T__)
+#if (__ARM_ARCH__ > 4) || defined(__ARM_ARCH_4T__)
 
 # define RET		bx	lr
 # define RETc(x)	bx##x	lr
@@ -112,13 +107,7 @@ Boston, MA 02111-1307, USA.  */
 /* Don't pass dirn, it's there just to get token pasting right.  */
 
 .macro	RETLDM	regs=, cond=, dirn=ia
-#ifdef __APCS_26__
-	.ifc "\regs",""
-	ldm\cond\dirn	sp!, {pc}^
-	.else
-	ldm\cond\dirn	sp!, {\regs, pc}^
-	.endif
-#elif defined (__INTERWORKING__)
+#if defined (__INTERWORKING__)
 	.ifc "\regs",""
 	ldr\cond	lr, [sp], #4
 	.else
