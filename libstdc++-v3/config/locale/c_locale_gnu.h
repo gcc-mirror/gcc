@@ -38,12 +38,9 @@
 #include <iconv.h>		// For codecvt using iconv, iconv_t
 #include <libintl.h> 		// For messages
 
+#define _GLIBCPP_C_LOCALE_GNU 1
+
 namespace std
 {
   typedef __locale_t		__c_locale;
 }
-
-
-
-
-

@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,6 +37,24 @@
   using _C_legacy::__ctype_toupper;
   using _C_legacy::__ctype_tolower;
   using _C_legacy::__ctype_b;
+#endif
+
+#if _GLIBCPP_C_LOCALE_GNU
+  ctype<char>::ctype(__c_locale __cloc, const mask* __table, bool __del, 
+		     size_t __refs) 
+  : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
+  _M_toupper(__cloc ? __cloc->__ctype_toupper : __ctype_toupper), 
+  _M_tolower(__cloc ? __cloc->__ctype_tolower : __ctype_tolower),
+  _M_ctable(__ctype_b), 
+  _M_table(__table ? __table : (__cloc ? __cloc->__ctype_b : __ctype_b))
+  { }
+#else
+  ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
+		     size_t __refs) 
+  : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
+  _M_toupper(__ctype_toupper), _M_tolower(__ctype_tolower),
+  _M_ctable(__ctype_b), _M_table(__table ? __table : __ctype_b)
+  { }
 #endif
 
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) : 

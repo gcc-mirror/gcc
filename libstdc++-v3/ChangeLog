@@ -1,3 +1,36 @@
+2001-12-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Named locale support for ctype<char>.
+	* config/locale/c_locale_gnu.h (_GLIBCPP_C_LOCALE_GNU): New.
+	* config/os/gnu-linux/bits/ctype_noninline.h (ctype<char>): Add
+	definitions for alternate constructor.
+	* config/os/solaris/solaris2.7/bits/ctype_noninline.h (ctype): Same.
+	* config/os/solaris/solaris2.6/bits/ctype_noninline.h (ctype): Same.
+	* config/os/solaris/solaris2.5/bits/ctype_noninline.h (ctype): Same.
+	* config/os/newlib/bits/ctype_noninline.h (ctype): Same.
+	* config/os/irix/irix6.5/bits/ctype_noninline.h (ctype): Same.
+	* config/os/irix/irix5.2/bits/ctype_noninline.h (ctype): Same.
+	* config/os/hpux/bits/ctype_noninline.h (ctype): Same.
+	* config/os/generic/bits/ctype_noninline.h (ctype): Same.
+	* config/os/djgpp/bits/ctype_noninline.h (ctype): Same.
+	* config/os/bsd/netbsd/bits/ctype_noninline.h (ctype): Same.
+	* config/os/bsd/freebsd/bits/ctype_noninline.h (ctype): Same.
+	* config/os/aix/bits/ctype_noninline.h (ctype): Same.
+	* include/bits/locale_facets.h (ctype<_CharT>): Remove dummy
+	definitions for all virtual functions. These are now explicitly
+	undefined for non-required factets, ie any non-char, non-wchar_t
+	instantiations.
+	* src/localename.cc (locale::_Impl::_Impl(string, size_t): Named
+	locales use alternate constructor for ctype facet.
+	* include/bits/locale_facets.h (ctype<char>::ctype(__c_locale, const
+	mask*, bool, size_t): Add.
+	(ctype<wchar_t>::ctype(__c_locale, size_t): Add.
+	* src/locale.cc (ctype<wchar_t>::ctype(__c_locale, size_t)): Add
+	definition.
+
+	* testsuite/22_locale/ctype_members_char.cc (test02): Add, mark
+	XFAIL for non-gnu locale models.
+
 2001-12-12  Philip Martin  <philip@codematters.co.uk>
             Ross Smith     <r-smith@ihug.co.nz>
             Paolo Carlini  <pcarlini@unitus.it>

@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,11 +33,18 @@
   
 // Information as gleaned from /usr/include/ctype.h
   
+  ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
+		     size_t __refs) 
+  : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
+  _M_toupper(NULL), _M_tolower(NULL), _M_ctable(_ctype_), 
+  _M_table(__table == 0 ? _M_ctable : __table) 
+  { }
+
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) 
-    : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
-      _M_toupper(NULL), _M_tolower(NULL),
-      _M_ctable(_ctype_), _M_table(__table == 0 ? _M_ctable: __table) 
-    { }
+  : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
+  _M_toupper(NULL), _M_tolower(NULL), _M_ctable(_ctype_), 
+  _M_table(__table == 0 ? _M_ctable : __table) 
+  { }
 
   char
   ctype<char>::do_toupper(char __c) const
