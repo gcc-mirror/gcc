@@ -1,3 +1,9 @@
+2004-01-15  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (gnu/gcj/runtime/StackTrace.lo): New rule.
+	(%.lo: %.java) Filter out StackTrace.lo.
+
 2004-01-14  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.in: Add in AC_PREREQ(2.13)
