@@ -2838,7 +2838,7 @@
     return \"#\";
 }"
   [(set_attr "type" "move")
-   (set_attr "length" "1")])
+   (set_attr "length" "1,2")])
 
 ;; There isn't much I can do about this, if I change the
 ;; mode then flow info gets really confused because the
@@ -3013,7 +3013,7 @@
     return \"#\";
 }"
   [(set_attr "type" "move")
-   (set_attr "length" "1")])
+   (set_attr "length" "1,2,2")])
 
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
