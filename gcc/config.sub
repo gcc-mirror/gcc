@@ -178,6 +178,10 @@ case $basic_machine in
 	crds | unos)
 		basic_machine=m68k-crds
 		;;
+	elxsi)
+		basic_machine=elxsi-elxsi
+		os=-bsd
+		;;
 	encore | umax | mmax)
 		basic_machine=ns32k-encore
 		os=-bsd
