@@ -117,6 +117,16 @@ typedef union tree_node *tree;
 
 #define NULL_TREE (tree) NULL
 
+/* Define a generic NULL if one hasn't already been defined.  */
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+#ifndef NULL_PTR
+#define NULL_PTR (char *) NULL
+#endif
+
 /* Every kind of tree node starts with this structure,
    so all nodes have these fields.
 
@@ -312,28 +322,32 @@ struct tree_common
 
 /* Define additional fields and accessors for nodes representing constants.  */
 
-/* In an INTEGER_CST node.  These two together make a 64 bit integer.
-   If the data type is signed, the value is sign-extended to 64 bits
+/* In an INTEGER_CST node.  These two together make a 2-word integer.
+   If the data type is signed, the value is sign-extended to 2 words
    even though not all of them may really be in use.
-   In an unsigned constant shorter than 64 bits, the extra bits are 0.  */
+   In an unsigned constant shorter than 2 words, the extra bits are 0.  */
 #define TREE_INT_CST_LOW(NODE) ((NODE)->int_cst.int_cst_low)
 #define TREE_INT_CST_HIGH(NODE) ((NODE)->int_cst.int_cst_high)
 
 #define INT_CST_LT(A, B)  \
 (TREE_INT_CST_HIGH (A) < TREE_INT_CST_HIGH (B)			\
  || (TREE_INT_CST_HIGH (A) == TREE_INT_CST_HIGH (B)		\
-     && ((unsigned) TREE_INT_CST_LOW (A) < (unsigned) TREE_INT_CST_LOW (B))))
+     && ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (A)		\
+	 < (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (B))))
 
 #define INT_CST_LT_UNSIGNED(A, B)  \
-((unsigned) TREE_INT_CST_HIGH (A) < (unsigned) TREE_INT_CST_HIGH (B)	  \
- || ((unsigned) TREE_INT_CST_HIGH (A) == (unsigned) TREE_INT_CST_HIGH (B) \
-     && ((unsigned) TREE_INT_CST_LOW (A) < (unsigned) TREE_INT_CST_LOW (B))))
+(((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (A)	\
+  < (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (B))	\
+ || (((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (A)	\
+      == (unsigned HOST_WIDE_INT ) TREE_INT_CST_HIGH (B)) \
+     && (((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (A)	\
+	  < (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (B)))))
 
 struct tree_int_cst
 {
   char common[sizeof (struct tree_common)];
-  long int_cst_low;
-  long int_cst_high;
+  HOST_WIDE_INT int_cst_low;
+  HOST_WIDE_INT int_cst_high;
 };
 
 /* In REAL_CST, STRING_CST, COMPLEX_CST nodes, and CONSTRUCTOR nodes,
@@ -856,6 +870,15 @@ union tree_node
 #define CONSTRUCTOR_NAME_FORMAT "_GLOBAL_.I.%s"
 #endif
 
+/* The following functions accept a wide integer argument.  Rather than
+   having to cast on every function call, we use a macro instead, that is
+   defined here and in rtl.h.  */
+
+#ifndef exact_log2
+#define exact_log2(N) exact_log2_wide ((HOST_WIDE_INT) (N))
+#define floor_log2(N) floor_log2_wide ((HOST_WIDE_INT) (N))
+#endif
+
 extern char *oballoc ();
 extern char *permalloc ();
 extern char *savealloc ();
@@ -890,7 +913,10 @@ extern tree get_identifier ();
 
 /* Construct various types of nodes.  */
 
-extern tree build_int_2 ();
+#define build_int_2(LO,HI)  \
+  build_int_2_wide ((HOST_WIDE_INT) (LO), (HOST_WIDE_INT) (HI))
+
+extern tree build_int_2_wide ();
 extern tree build_real ();
 extern tree build_real_from_string ();
 extern tree build_real_from_int_cst ();
