@@ -98,13 +98,6 @@ do {									\
 /* We don't use the standard svr4 STARTFILE_SPEC because it's wrong for us.
    We don't use the standard LIB_SPEC only because we don't yet support c++ */
 
-/* If we cannot find the GNU *crt*.o files in the STANDARD_STARTFILE_PREFIX
-   directory, our fallback strategy must be to look for these files instead
-   in the Sun C 2.0 directory.  */
-
-#undef MD_STARTFILE_PREFIX
-#define MD_STARTFILE_PREFIX "/opt/SUNWspro/SC2.0/"
-
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared: \
 			 %{!symbolic: \
