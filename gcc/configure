@@ -4816,7 +4816,7 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		float_format=m68k
                 ;;
-	m68k-next-nextstep3*)
+	m68k-next-nextstep[34]*)
 		tm_file=m68k/next.h
 		xm_file="m68k/xm-next.h ${xm_file}"
 		tmake_file=m68k/t-next

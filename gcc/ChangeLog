@@ -1,3 +1,8 @@
+Fri Nov  5 01:44:09 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (m68k-next-nextstep4): Handle Openstep 4.2.
+	* configure: Rebuilt.
+
 Fri Nov  5 01:24:37 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* global.c (CONFLICTP, SET_CONFLICT): Avoid signed division.
