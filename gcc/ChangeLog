@@ -1,3 +1,7 @@
+2003-09-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc: Remove host-specific rewrites of target_alias.
+
 2003-09-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (genprogs): Fix typo.
