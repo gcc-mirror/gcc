@@ -354,6 +354,9 @@ EOF
     hp300:4.4BSD:*:* | 9000/[34]??:4.3bsd:2.*:*)
 	echo m68k-hp-bsd4.4
 	exit 0 ;;
+    *9??*:MPE/iX:*:*)
+	echo hppa1.0-hp-mpeix
+	exit 0 ;;
     9000/[3478]??:HP-UX:*:*)
 	case "${UNAME_MACHINE}" in
 	    9000/31? )            HP_ARCH=m68000 ;;

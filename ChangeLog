@@ -1,3 +1,8 @@
+Sun Aug 30 21:15:19 1998  Mark Klein (mklein@dis.com)
+
+	* config.guess: Detect and handle MPE/IX.
+	* config.sub: Deal with MPE/IX.
+
 Sat Aug 29 14:32:55 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* configure.in: Use mh-aix43.
