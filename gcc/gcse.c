@@ -4416,9 +4416,7 @@ insert_insn_end_bb (expr, bb, pre)
 	}
 #endif
       /* FIXME: What if something in cc0/jump uses value set in new insn?  */
-      new_insn = emit_insn_before (pat, insn);
-      if (BLOCK_HEAD (bb) == insn)
-	BLOCK_HEAD (bb) = new_insn;
+      new_insn = emit_block_insn_before (pat, insn, BASIC_BLOCK (bb));
     }
   /* Likewise if the last insn is a call, as will happen in the presence
      of exception handling.  */
@@ -4478,19 +4476,13 @@ insert_insn_end_bb (expr, bb, pre)
 	 stopped on the head of the block, which could be a CODE_LABEL.
 	 If we inserted before the CODE_LABEL, then we would be putting
 	 the insn in the wrong basic block.  In that case, put the insn
-	 after the CODE_LABEL.
-
-	 ?!? Do we need to account for NOTE_INSN_BASIC_BLOCK here?  */
-      if (GET_CODE (insn) != CODE_LABEL)
-	{
-	  new_insn = emit_insn_before (pat, insn);
-	  if (BLOCK_HEAD (bb) == insn)
-	    BLOCK_HEAD (bb) = new_insn;
-	}
-      else
-	{
-	  new_insn = emit_insn_after (pat, insn);
-	}
+	 after the CODE_LABEL.  Also, respect NOTE_INSN_BASIC_BLOCK.  */
+      if (GET_CODE (insn) == CODE_LABEL)
+	insn = NEXT_INSN (insn);
+      if (GET_CODE (insn) == NOTE
+	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK)
+	insn = NEXT_INSN (insn);
+      new_insn = emit_block_insn_before (pat, insn, BASIC_BLOCK (bb));
     }
   else
     {
