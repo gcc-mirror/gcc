@@ -1,3 +1,8 @@
+2000-01-19  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (propagate_block): Replace FIRST, LAST and BNUM 
+	arguments with BB.  Update all callers.  Tidy line wrapping.
+
 2000-01-19  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* emit-rtl.c (try_split): Return last_insn if we split the 
