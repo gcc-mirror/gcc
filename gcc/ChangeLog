@@ -1,3 +1,7 @@
+Mon Jul  2 12:50:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* flow.c (try_simplify_condjump): Fix typo in updating fallthru flags.
+
 2001-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific, mips*-sgi-irix4): Split from IRIX 5
