@@ -1099,23 +1099,8 @@ while (0)
        : (GET_MODE_SIZE (MODE) + 3) / 4)				\
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* Due to the ARCH64 descrepancy above we must override these
-   next two macros too.  */
-#define REG_SIZE(R) \
-  (TARGET_ARCH64							\
-   && ((GET_CODE (R) == REG						\
-        && ((REGNO (R) >= FIRST_PSEUDO_REGISTER				\
-	     && FLOAT_MODE_P (GET_MODE (R)))				\
-	    || (REGNO (R) < FIRST_PSEUDO_REGISTER			\
-		&& REGNO (R) >= 32)))					\
-       || (GET_CODE (R) == SUBREG					\
-	   && ((REGNO (SUBREG_REG (R)) >= FIRST_PSEUDO_REGISTER		\
-	     && FLOAT_MODE_P (GET_MODE (SUBREG_REG (R))))		\
-	    || (REGNO (SUBREG_REG (R)) < FIRST_PSEUDO_REGISTER		\
-		&& REGNO (SUBREG_REG (R)) >= 32))))			\
-   ? (GET_MODE_SIZE (GET_MODE (R)) + 3) / 4				\
-   : (GET_MODE_SIZE (GET_MODE (R)) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
+/* Due to the ARCH64 descrepancy above we must override this next
+   macro too.  */
 #define REGMODE_NATURAL_SIZE(MODE) \
   ((TARGET_ARCH64 && FLOAT_MODE_P (MODE)) ? 4 : UNITS_PER_WORD)
 

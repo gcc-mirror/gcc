@@ -248,11 +248,6 @@ extern unsigned int ia64_section_threshold;
 #define WCHAR_TYPE "unsigned short"
 #endif
 
-/* Have to get rid of the system's definition so that we can use gcc's
-   instead. */
-#include <sys/machine.h>
-#undef REG_SIZE
-
 /* Define the `__builtin_va_list' type for AIX.  Use char* b/c that's what the
    system headers expect.  */
 #define BUILD_VA_LIST_TYPE(VALIST) \
