@@ -449,6 +449,8 @@ static void print_rtl_and_abort_fcn	PARAMS ((const char *, int,
 						 const char *))
 					ATTRIBUTE_NORETURN;
 
+static void add_to_mem_set_list		PARAMS ((struct propagate_block_info *,
+						 rtx));
 static void invalidate_mems_from_autoinc PARAMS ((struct propagate_block_info *,
 						  rtx));
 static void invalidate_mems_from_set	PARAMS ((struct propagate_block_info *,
@@ -1797,8 +1799,7 @@ try_redirect_by_replacing_jump (e, target)
    When emmiting jump to redirect an fallthru edge, it should always
    appear after the LOOP_BEG notes, as loop optimizer expect loop to
    eighter start by fallthru edge or jump following the LOOP_BEG note
-   jumping to the loop exit test.
- */
+   jumping to the loop exit test.  */
 rtx
 last_loop_beg_note (insn)
      rtx insn;
@@ -5441,23 +5442,7 @@ init_propagate_block_info (bb, live, local_set, cond_local_set, flags)
 		|| (GET_CODE (XEXP (canon_mem, 0)) == PLUS
 		    && XEXP (XEXP (canon_mem, 0), 0) == frame_pointer_rtx
 		    && GET_CODE (XEXP (XEXP (canon_mem, 0), 1)) == CONST_INT))
-	      {
-#ifdef AUTO_INC_DEC
-		/* Store a copy of mem, otherwise the address may be scrogged
-		   by find_auto_inc.  This matters because insn_dead_p uses
-		   an rtx_equal_p check to determine if two addresses are
-		   the same.  This works before find_auto_inc, but fails
-		   after find_auto_inc, causing discrepencies between the
-		   set of live registers calculated during the
-		   calculate_global_regs_live phase and what actually exists
-		   after flow completes, leading to aborts.  */
-		if (flags & PROP_AUTOINC)
-		  mem = shallow_copy_rtx (mem);
-#endif
-		pbi->mem_set_list = alloc_EXPR_LIST (0, mem, pbi->mem_set_list);
-		if (++pbi->mem_set_list_len >= MAX_MEM_SET_LIST_LEN)
-		  break;
-	      }
+	      add_to_mem_set_list (pbi, canon_mem);
 	  }
     }
 
@@ -5614,10 +5599,12 @@ insn_dead_p (pbi, x, call_ok, notes)
 
       if (GET_CODE (r) == MEM)
 	{
-	  rtx temp;
+	  rtx temp, canon_r;
 
-	  if (MEM_VOLATILE_P (r))
+	  if (MEM_VOLATILE_P (r) || GET_MODE (r) == BLKmode)
 	    return 0;
+
+	  canon_r = canon_rtx (r);
 
 	  /* Walk the set of memory locations we are currently tracking
 	     and see if one is an identical match to this memory location.
@@ -5630,8 +5617,11 @@ insn_dead_p (pbi, x, call_ok, notes)
 	      {
 		rtx mem = XEXP (temp, 0);
 
-		if (rtx_equal_p (mem, r))
+		if (rtx_equal_p (XEXP (canon_r, 0), XEXP (mem, 0))
+		    && (GET_MODE_SIZE (GET_MODE (canon_r))
+			<= GET_MODE_SIZE (GET_MODE (mem))))
 		  return 1;
+
 #ifdef AUTO_INC_DEC
 		/* Check if memory reference matches an auto increment. Only
 		   post increment/decrement or modify are valid.  */
@@ -5837,6 +5827,53 @@ regno_clobbered_at_setjmp (regno)
 	  && REGNO_REG_SET_P (regs_live_at_setjmp, regno));
 }
 
+/* Add MEM to PBI->MEM_SET_LIST.  MEM should be canonical.  Respect the
+   maximal list size; look for overlaps in mode and select the largest.  */
+static void
+add_to_mem_set_list (pbi, mem)
+     struct propagate_block_info *pbi;
+     rtx mem;
+{
+  rtx i;
+
+  /* We don't know how large a BLKmode store is, so we must not
+     take them into consideration.  */
+  if (GET_MODE (mem) == BLKmode)
+    return;
+
+  for (i = pbi->mem_set_list; i ; i = XEXP (i, 1))
+    {
+      rtx e = XEXP (i, 0);
+      if (rtx_equal_p (XEXP (mem, 0), XEXP (e, 0)))
+	{
+	  if (GET_MODE_SIZE (GET_MODE (mem)) > GET_MODE_SIZE (GET_MODE (e)))
+	    {
+#ifdef AUTO_INC_DEC
+	      /* If we must store a copy of the mem, we can just modify
+		 the mode of the stored copy.  */
+	      if (pbi->flags & PROP_AUTOINC)
+	        PUT_MODE (e, GET_MODE (mem));
+	      else
+#endif
+	        XEXP (i, 0) = mem;
+	    }
+	  return;
+	}
+    }
+
+  if (pbi->mem_set_list_len < MAX_MEM_SET_LIST_LEN)
+    {
+#ifdef AUTO_INC_DEC
+      /* Store a copy of mem, otherwise the address may be
+	 scrogged by find_auto_inc.  */
+      if (pbi->flags & PROP_AUTOINC)
+	mem = shallow_copy_rtx (mem);
+#endif
+      pbi->mem_set_list = alloc_EXPR_LIST (0, mem, pbi->mem_set_list);
+      pbi->mem_set_list_len++;
+    }
+}
+
 /* INSN references memory, possibly using autoincrement addressing modes.
    Find any entries on the mem_set_list that need to be invalidated due
    to an address change.  */
@@ -5848,36 +5885,11 @@ invalidate_mems_from_autoinc (pbi, insn)
 {
   rtx note = REG_NOTES (insn);
   for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-    {
-      if (REG_NOTE_KIND (note) == REG_INC)
-	{
-	  rtx temp = pbi->mem_set_list;
-	  rtx prev = NULL_RTX;
-	  rtx next;
-
-	  while (temp)
-	    {
-	      next = XEXP (temp, 1);
-	      if (reg_overlap_mentioned_p (XEXP (note, 0), XEXP (temp, 0)))
-		{
-		  /* Splice temp out of list.  */
-		  if (prev)
-		    XEXP (prev, 1) = next;
-		  else
-		    pbi->mem_set_list = next;
-		  free_EXPR_LIST_node (temp);
-		  pbi->mem_set_list_len--;
-		}
-	      else
-		prev = temp;
-	      temp = next;
-	    }
-	}
-    }
+    if (REG_NOTE_KIND (note) == REG_INC)
+      invalidate_mems_from_set (pbi, XEXP (note, 0));
 }
 
-/* EXP is either a MEM or a REG.  Remove any dependant entries
-   from pbi->mem_set_list.  */
+/* EXP is a REG.  Remove any dependant entries from pbi->mem_set_list.  */
 
 static void
 invalidate_mems_from_set (pbi, exp)
@@ -5891,10 +5903,7 @@ invalidate_mems_from_set (pbi, exp)
   while (temp)
     {
       next = XEXP (temp, 1);
-      if ((GET_CODE (exp) == MEM
-	   && output_dependence (XEXP (temp, 0), exp))
-	  || (GET_CODE (exp) == REG
-	      && reg_overlap_mentioned_p (exp, XEXP (temp, 0))))
+      if (reg_overlap_mentioned_p (exp, XEXP (temp, 0)))
 	{
 	  /* Splice this entry out of the list.  */
 	  if (prev)
@@ -6091,7 +6100,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
      If this set is a REG, then it kills any MEMs which use the reg.  */
   if (optimize && (flags & PROP_SCAN_DEAD_CODE))
     {
-      if (GET_CODE (reg) == MEM || GET_CODE (reg) == REG)
+      if (GET_CODE (reg) == REG)
 	invalidate_mems_from_set (pbi, reg);
 
       /* If the memory reference had embedded side effects (autoincrement
@@ -6100,27 +6109,14 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
       if (insn && GET_CODE (reg) == MEM)
 	invalidate_mems_from_autoinc (pbi, insn);
 
-      if (pbi->mem_set_list_len < MAX_MEM_SET_LIST_LEN
-	  && GET_CODE (reg) == MEM && ! side_effects_p (reg)
+      if (GET_CODE (reg) == MEM && ! side_effects_p (reg)
 	  /* ??? With more effort we could track conditional memory life.  */
 	  && ! cond
-	  /* We do not know the size of a BLKmode store, so we do not track
-	     them for redundant store elimination.  */
-	  && GET_MODE (reg) != BLKmode
 	  /* There are no REG_INC notes for SP, so we can't assume we'll see
 	     everything that invalidates it.  To be safe, don't eliminate any
 	     stores though SP; none of them should be redundant anyway.  */
 	  && ! reg_mentioned_p (stack_pointer_rtx, reg))
-	{
-#ifdef AUTO_INC_DEC
-	  /* Store a copy of mem, otherwise the address may be
-	     scrogged by find_auto_inc.  */
-	  if (flags & PROP_AUTOINC)
-	    reg = shallow_copy_rtx (reg);
-#endif
-	  pbi->mem_set_list = alloc_EXPR_LIST (0, reg, pbi->mem_set_list);
-	  pbi->mem_set_list_len++;
-	}
+        add_to_mem_set_list (pbi, canon_rtx (reg));
     }
 
   if (GET_CODE (reg) == REG
