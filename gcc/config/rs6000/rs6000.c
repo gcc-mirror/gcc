@@ -5519,7 +5519,7 @@ rs6000_va_start (tree valist, rtx nextarg)
   f_ovf = TREE_CHAIN (f_res);
   f_sav = TREE_CHAIN (f_ovf);
 
-  valist = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)), valist);
+  valist = build_va_arg_indirect_ref (valist);
   gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
   fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
   ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
@@ -5578,7 +5578,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
     {
       t = rs6000_gimplify_va_arg (valist, ptrtype, pre_p, post_p);
-      return build_fold_indirect_ref (t);
+      return build_va_arg_indirect_ref (t);
     }
 
   if (DEFAULT_ABI != ABI_V4)
@@ -5617,7 +5617,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   f_ovf = TREE_CHAIN (f_res);
   f_sav = TREE_CHAIN (f_ovf);
 
-  valist = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)), valist);
+  valist = build_va_arg_indirect_ref (valist);
   gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
   fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
   ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
@@ -5733,7 +5733,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
     }
 
   addr = fold_convert (ptrtype, addr);
-  return build_fold_indirect_ref (addr);
+  return build_va_arg_indirect_ref (addr);
 }
 
 /* Builtins.  */
