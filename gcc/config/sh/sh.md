@@ -506,17 +506,13 @@
     }
 }")
 
-;; ??? Why is this disabled?
-
 (define_insn ""
   [(set (reg:DI 20)
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
 		 (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" "r"))))]
-  "(TARGET_SH2) && 0"
+  "TARGET_SH2"
   "dmuls.l	%2,%1"
   [(set_attr "type" "dmpy")])
-
-;; ??? Why is this disabled?
 
 (define_expand "mulsidi3"
   [(set (reg:DI 20)
@@ -524,20 +520,16 @@
 		 (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" ""))))
    (set (match_operand:DI 0 "arith_reg_operand" "")
 	(reg:DI 20))]
-  "(TARGET_SH2) && 0"
+  "TARGET_SH2"
   "")
-
-;; ??? Why is this disabled?
 
 (define_insn ""
   [(set (reg:DI 20)
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
 		 (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" "r"))))]
-  "(TARGET_SH2) && 0"
+  "TARGET_SH2"
   "dmulu.l	%2,%1"
   [(set_attr "type" "dmpy")])
-
-;; ??? Why is this disabled?
 
 (define_expand "umulsidi3"
   [(set (reg:DI 20)
@@ -545,7 +537,53 @@
 		 (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" ""))))
    (set (match_operand:DI 0 "arith_reg_operand" "")
 	(reg:DI 20))]
-  "(TARGET_SH2) && 0"
+  "TARGET_SH2"
+  "")
+
+(define_insn ""
+  [(set (reg:SI 20)
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
+			       (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" "r")))
+		      (const_int 32))))
+   (clobber (reg:SI 21))]
+  "TARGET_SH2"
+  "dmuls.l	%2,%1"
+  [(set_attr "type" "dmpy")])
+
+(define_expand "smulsi3_highpart"
+  [(parallel [(set (reg:SI 20)
+		   (truncate:SI
+		    (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" ""))
+					  (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" "")))
+				 (const_int 32))))
+	      (clobber (reg:SI 21))])
+   (set (match_operand:SI 0 "arith_reg_operand" "")
+	(reg:SI 20))]
+  "TARGET_SH2"
+  "")
+
+(define_insn ""
+  [(set (reg:SI 20)
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
+			       (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" "r")))
+		      (const_int 32))))
+   (clobber (reg:SI 21))]
+  "TARGET_SH2"
+  "dmulu.l	%2,%1"
+  [(set_attr "type" "dmpy")])
+
+(define_expand "umulsi3_highpart"
+  [(parallel [(set (reg:SI 20)
+		   (truncate:SI
+		    (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" ""))
+					  (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" "")))
+				 (const_int 32))))
+	      (clobber (reg:SI 21))])
+   (set (match_operand:SI 0 "arith_reg_operand" "")
+	(reg:SI 20))]
+  "TARGET_SH2"
   "")
 
 ;; -------------------------------------------------------------------------
@@ -1160,13 +1198,13 @@
 ;; ??? This should be a define expand.
 
 (define_insn ""
-  [(set (match_operand:DI 0 "general_movdst_operand" "=r,r,r,m,r")
-	(match_operand:DI 1 "general_movsrc_operand" "Q,r,m,r,i"))]
+  [(set (match_operand:DI 0 "general_movdst_operand" "=r,r,r,m,r,r")
+	(match_operand:DI 1 "general_movsrc_operand" "Q,r,m,r,i,x"))]
   "arith_reg_operand (operands[0], DImode)
    || arith_reg_operand (operands[1], DImode)"
   "* return output_movedouble (insn, operands, DImode);"
   [(set_attr "length" "4")
-   (set_attr "type" "pcload,move,load,store,move")])
+   (set_attr "type" "pcload,move,load,store,move,move")])
 
 ;; If the output is a register and the input is memory or a register, we have
 ;; to be careful and see which word needs to be loaded first.  
