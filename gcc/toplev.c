@@ -3387,10 +3387,12 @@ rest_of_compilation (decl)
       timevar_push (TV_REORDER_BLOCKS);
       open_dump_file (DFI_bbro, decl);
 
-      /* Last attempt to optimize CFG, as life analyzis possibly removed
-	 some instructions.  */
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
-		   | cleanup_crossjump);
+      /* Last attempt to optimize CFG, as life analysis possibly removed
+	 some instructions.  Note that we can't rerun crossjump at this
+	 point, because it can turn a switch into a direct branch, which
+	 can leave the tablejump address calculation in the code, which
+	 can lead to referencing an undefined label.  */
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
       if (flag_reorder_blocks)
 	{
 	  reorder_basic_blocks ();
