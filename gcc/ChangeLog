@@ -1,3 +1,16 @@
+Thu Dec 11 23:34:54 1997  Fred Fish  <fnf@ninemoons.com>
+
+	* config.sub: Add support for BeOS target.
+	* configure.in: Likewise.
+	* ginclude/stdarg.h: Likewise.
+	* ginclude/stddef.h: Likewise.
+	* ginclude/varargs.h: Likewise.
+	* rs6000/beos.h: New file for BeOS.
+	* rs6000/t-beos: Likewise.
+	* rs6000/x-beos: Likewise.
+	* rs6000/xm-beos.h: Likewise.
+	* toplev.c (get_run_time): Just return 0 on BeOS.
+
 Thu Dec 11 23:25:23 1997  Jeffrey A Law  (law@cygnus.com)
 			  Toon Moene  (toon@moene.indiv.nluug.nl)
 
