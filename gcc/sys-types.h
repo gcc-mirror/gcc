@@ -86,6 +86,10 @@ union wait;
 #include "gstddef.h"
 
 /* #include "sys/types.h" */
+
+/* The actual types used here are mostly wrong,
+   but it is not supposed to matter what types we use here.  */
+
 typedef int dev_t;
 typedef int pid_t;
 typedef int gid_t;
@@ -161,7 +165,7 @@ typedef int ushort;
 typedef int ulong;
 typedef int uint;
 
-typedef va_list;
+typedef int va_list;
 
 typedef int archdr;
 typedef int AUTH;
