@@ -579,7 +579,7 @@ convert_pointer_to_real (binfo, expr)
   ptr_type = cp_build_qualified_type (type,
 				      CP_TYPE_QUALS (TREE_TYPE (intype)));
   ptr_type = build_pointer_type (ptr_type);
-  if (ptr_type == TYPE_MAIN_VARIANT (intype))
+  if (same_type_p (ptr_type, TYPE_MAIN_VARIANT (intype)))
     return expr;
 
   my_friendly_assert (!integer_zerop (expr), 191);
