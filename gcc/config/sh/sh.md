@@ -161,7 +161,7 @@
 ;; Target CPU.
 
 (define_attr "cpu"
- "sh1,sh2,sh2e,sh3,sh3e,sh4,sh4a,sh5"
+ "sh1,sh2,sh2e,sh2a,sh3,sh3e,sh4,sh4a,sh5"
   (const (symbol_ref "sh_cpu_attr")))
 
 (define_attr "endian" "big,little"
@@ -1151,6 +1151,14 @@
   ""
   [(set_attr "length" "0")])
 
+(define_insn "udivsi3_sh2a"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(udiv:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		(match_operand:SI 2 "arith_reg_operand" "z")))]
+  "TARGET_SH2A"
+  "divu	%2,%1"
+  [(set_attr "type" "arith")])
+
 ;; We must use a pseudo-reg forced to reg 0 in the SET_DEST rather than
 ;; hard register 0.  If we used hard register 0, then the next instruction
 ;; would be a move from hard register 0 to a pseudo-reg.  If the pseudo-reg
@@ -1287,6 +1295,13 @@
       emit_insn (gen_udivsi3_i4_media (operands[0], operands[1], operands[2]));
       DONE;
     }
+  else if (TARGET_SH2A)
+    {
+      operands[1] = force_reg (SImode, operands[1]);
+      operands[2] = force_reg (SImode, operands[2]);
+      emit_insn (gen_udivsi3_sh2a (operands[0], operands[1], operands[2]));
+      DONE;
+    }
   else if (TARGET_SH5)
     {
       emit_move_insn (operands[3],
@@ -1319,6 +1334,14 @@
   REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
   DONE;
 }")
+
+(define_insn "divsi3_sh2a"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(div:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		(match_operand:SI 2 "arith_reg_operand" "z")))]
+  "TARGET_SH2A"
+  "divs	%2,%1"
+  [(set_attr "type" "arith")])
 
 (define_insn "divsi3_i1"
   [(set (match_operand:SI 0 "register_operand" "=z")
@@ -1426,6 +1449,13 @@
 	last = gen_divsi3_i4_single (operands[0], operands[3]);
       else
 	last = gen_divsi3_i4 (operands[0], operands[3]);
+    }
+  else if (TARGET_SH2A)
+    {
+      operands[1] = force_reg (SImode, operands[1]);
+      operands[2] = force_reg (SImode, operands[2]);
+      emit_insn (gen_divsi3_sh2a (operands[0], operands[1], operands[2]));
+      DONE;
     }
   else if (TARGET_SHMEDIA_FPU)
     {
@@ -1584,6 +1614,14 @@
 	     (use (match_operand:SI 3 "register_operand" ""))])]
   "TARGET_SH1"
   "")
+
+(define_insn "mul_r"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(mult:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		 (match_operand:SI 2 "arith_reg_operand" "z")))]
+  "TARGET_SH2A"
+  "mulr	%2,%0"
+  [(set_attr "type" "dmpy")])
 
 (define_insn "mul_l"
   [(set (reg:SI MACL_REG)
@@ -2134,6 +2172,15 @@
 ;;
 ;; shift left
 
+(define_insn "ashlsi3_sh2a"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		   (match_operand:SI 2 "arith_reg_operand" "r")))]
+  "TARGET_SH2A"
+  "shad	%2,%0"
+  [(set_attr "type" "arith")
+   (set_attr "length" "4")])
+
 ;; This pattern is used by init_expmed for computing the costs of shift
 ;; insns.
 
@@ -2269,6 +2316,15 @@
 ; arithmetic shift right
 ;
 
+(define_insn "ashrsi3_sh2a"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		   (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
+  "TARGET_SH2A"
+  "shad	%2,%0"
+  [(set_attr "type" "dyn_shift")
+   (set_attr "length" "4")])
+
 (define_insn "ashrsi3_k"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
@@ -2387,6 +2443,15 @@
 }")
 
 ;; logical shift right
+
+(define_insn "lshrsi3_sh2a"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
+  "TARGET_SH2A"
+  "shld	%2,%0"
+  [(set_attr "type" "dyn_shift")
+   (set_attr "length" "4")])
 
 (define_insn "lshrsi3_d"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -3307,6 +3372,7 @@
 	 "Q,rI08,r,mr,x,l,t,r,x,l,r,r,>,>,i"))]
   "TARGET_SH1
    && ! TARGET_SH2E
+   && ! TARGET_SH2A
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
@@ -3336,15 +3402,16 @@
 ;; TARGET_FMOVD is in effect, and mode switching is done before reload.
 (define_insn "movsi_ie"
   [(set (match_operand:SI 0 "general_movdst_operand"
-	    "=r,r,t,r,r,r,r,m,<,<,x,l,x,l,y,<,r,y,r,*f,y,*f,y")
+	    "=r,r,r,t,r,r,r,r,m,<,<,x,l,x,l,y,<,r,y,r,*f,y,*f,y")
 	(match_operand:SI 1 "general_movsrc_operand"
-	 "Q,rI08,r,mr,x,l,t,r,x,l,r,r,>,>,>,y,i,r,y,y,*f,*f,y"))]
-  "TARGET_SH2E
+	 "Q,rI08,I20,r,mr,x,l,t,r,x,l,r,r,>,>,>,y,i,r,y,y,*f,*f,y"))]
+  "(TARGET_SH2E || TARGET_SH2A)
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
 	mov.l	%1,%0
 	mov	%1,%0
+	movi20	%1,%0
 	cmp/pl	%1
 	mov.l	%1,%0
 	sts	%1,%0
@@ -3366,9 +3433,9 @@
 	flds	%1,fpul
 	fmov	%1,%0
 	! move optimized away"
-  [(set_attr "type" "pcload_si,move,*,load_si,mac_gp,prget,move,store,store,pstore,move,prset,load,pload,load,store,pcload_si,gp_fpul,fpul_gp,fmove,fmove,fmove,nil")
-   (set_attr "late_fp_use" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,yes,*,*,yes,*,*,*,*")
-   (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,0")])
+  [(set_attr "type" "pcload_si,move,move,*,load_si,mac_gp,prget,move,store,store,pstore,move,prset,load,pload,load,store,pcload_si,gp_fpul,fpul_gp,fmove,fmove,fmove,nil")
+   (set_attr "late_fp_use" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,yes,*,*,yes,*,*,*,*")
+   (set_attr "length" "*,*,4,*,4,*,*,*,4,*,*,*,*,*,*,*,*,*,*,*,*,*,*,0")])
 
 (define_insn "movsi_i_lowpart"
   [(set (strict_low_part (match_operand:SI 0 "general_movdst_operand" "+r,r,r,r,r,r,m,r"))
@@ -4109,7 +4176,7 @@
   [(set (match_operand:DF 0 "general_movdst_operand" "=r,r,r,m")
 	(match_operand:DF 1 "general_movsrc_operand" "r,FQ,m,r"))]
   "TARGET_SH1
-   && (! TARGET_SH4 || reload_completed
+   && (! (TARGET_SH4 || TARGET_SH2A_DOUBLE) || reload_completed
        /* ??? We provide some insn so that direct_{load,store}[DFmode] get set */
        || (GET_CODE (operands[0]) == REG && REGNO (operands[0]) == 3)
        || (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == 3))
@@ -4130,7 +4197,7 @@
 	(match_operand:DF 1 "general_movsrc_operand" "d,r,F,m,d,FQ,m,r,d,r"))
    (use (match_operand:PSI 2 "fpscr_operand" "c,c,c,c,c,c,c,c,c,c"))
    (clobber (match_scratch:SI 3 "=X,X,&z,X,X,X,X,X,X,X"))]
-  "TARGET_SH4
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)
    && (arith_reg_operand (operands[0], DFmode)
        || arith_reg_operand (operands[1], DFmode))"
   "@
@@ -4148,8 +4215,8 @@
      [(if_then_else (eq_attr "fmovd" "yes") (const_int 2) (const_int 4))
       (const_int 4)
       (if_then_else (eq_attr "fmovd" "yes") (const_int 4) (const_int 6))
-      (if_then_else (eq_attr "fmovd" "yes") (const_int 2) (const_int 6))
-      (if_then_else (eq_attr "fmovd" "yes") (const_int 2) (const_int 6))
+      (if_then_else (eq_attr "fmovd" "yes") (const_int 4) (const_int 6))
+      (if_then_else (eq_attr "fmovd" "yes") (const_int 4) (const_int 6))
       (const_int 4)
       (const_int 8) (const_int 8) ;; these need only 8 bytes for @(r0,rn)
       ;; We can't use 4-byte push/pop on SHcompact, so we have to
@@ -4178,7 +4245,7 @@
 	(match_operand:DF 1 "register_operand" ""))
    (use (match_operand:PSI 2 "fpscr_operand" ""))
    (clobber (match_scratch:SI 3 "=X"))]
-  "TARGET_SH4 && reload_completed
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && reload_completed
    && (true_regnum (operands[0]) < 16) != (true_regnum (operands[1]) < 16)"
   [(const_int 0)]
   "
@@ -4217,7 +4284,7 @@
 	(match_operand:DF 1 "general_movsrc_operand"  ""))
    (use (match_operand:PSI 2 "fpscr_operand" ""))
    (clobber (match_scratch:SI 3 ""))]
-  "TARGET_SH4
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)
    && reload_completed
    && true_regnum (operands[0]) < 16
    && true_regnum (operands[1]) < 16"
@@ -4290,7 +4357,7 @@
 	(match_operand:DF 1 "memory_operand"  ""))
    (use (match_operand:PSI 2 "fpscr_operand" ""))
    (clobber (reg:SI R0_REG))]
-  "TARGET_SH4 && reload_completed"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (use (match_dup 2))
 	      (clobber (scratch:SI))])]
@@ -4347,7 +4414,7 @@
 	(mem:DF (match_operand:SI 1 "register_operand" "")))
    (use (match_operand:PSI 2 "fpscr_operand" ""))
    (clobber (match_scratch:SI 3 ""))]
-  "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))
    && find_regno_note (insn, REG_DEAD, true_regnum (operands[1]))"
   [(const_int 0)]
@@ -4373,7 +4440,7 @@
 	(match_operand:DF 1 "memory_operand" ""))
    (use (match_operand:PSI 2 "fpscr_operand" ""))
    (clobber (match_scratch:SI 3 ""))]
-  "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))"
   [(const_int 0)]
   "
@@ -4414,7 +4481,7 @@
 	(match_operand:DF 1 "register_operand" ""))
    (use (match_operand:PSI 2 "fpscr_operand" ""))
    (clobber (match_scratch:SI 3 ""))]
-  "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[1]))"
   [(const_int 0)]
   "
@@ -4568,7 +4635,7 @@
 	emit_insn (gen_movdf_media_nofpu (operands[0], operands[1]));
       DONE;
     }
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       emit_df_insn (gen_movdf_i4 (operands[0], operands[1], get_fpscr_rtx ()));
       DONE;
@@ -4865,7 +4932,7 @@
 	! move optimized away"
   [(set_attr "type" "fmove,move,fmove,fmove,pcfload,fload,store,pcload,load,store,fmove,fmove,load,*,fpul_gp,gp_fpul,store,load,nil")
    (set_attr "late_fp_use" "*,*,*,*,*,*,yes,*,*,*,*,*,*,*,yes,*,yes,*,*")
-   (set_attr "length" "*,*,*,*,4,*,*,*,*,*,2,2,2,4,2,2,2,2,0")
+   (set_attr "length" "*,*,*,*,4,4,4,*,*,*,2,2,2,4,2,2,2,2,0")
    (set (attr "fp_mode") (if_then_else (eq_attr "fmovd" "yes")
 					   (const_string "single")
 					   (const_string "none")))])
@@ -6473,7 +6540,7 @@
 		    (const_int 0))
 	      (match_operand 1 "" "")
 	      (match_operand 2 "" "")])]
-  "TARGET_SH2E || TARGET_SHMEDIA"
+  "(TARGET_SH2E || TARGET_SH2A) || TARGET_SHMEDIA"
   "
 {
   int i;
@@ -8069,7 +8136,7 @@ mov.l\\t1f,r0\\n\\
 (define_expand "fpu_switch0"
   [(set (match_operand:SI 0 "" "") (match_dup 2))
    (set (match_dup 1) (mem:PSI (match_dup 0)))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "
 {
   operands[1] = get_fpscr_rtx ();
@@ -8083,7 +8150,7 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:SI 0 "" "") (match_dup 2))
    (set (match_dup 3) (plus:SI (match_dup 0) (const_int 4)))
    (set (match_dup 1) (mem:PSI (match_dup 3)))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "
 {
   operands[1] = get_fpscr_rtx ();
@@ -8097,7 +8164,7 @@ mov.l\\t1f,r0\\n\\
 (define_expand "movpsi"
   [(set (match_operand:PSI 0 "register_operand" "")
 	(match_operand:PSI 1 "general_movsrc_operand" ""))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "")
 
 ;; The c / m alternative is a fake to guide reload to load directly into
@@ -8131,7 +8198,7 @@ mov.l\\t1f,r0\\n\\
 (define_split
   [(set (reg:PSI FPSCR_REG)
 	(mem:PSI (match_operand:SI 0 "register_operand" "")))]
-  "TARGET_SH4 && find_regno_note (insn, REG_DEAD, true_regnum (operands[0]))"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && find_regno_note (insn, REG_DEAD, true_regnum (operands[0]))"
   [(set (match_dup 0) (match_dup 0))]
   "
 {
@@ -8145,7 +8212,7 @@ mov.l\\t1f,r0\\n\\
 (define_split
   [(set (reg:PSI FPSCR_REG)
 	(mem:PSI (match_operand:SI 0 "register_operand" "")))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   [(set (match_dup 0) (plus:SI (match_dup 0) (const_int -4)))]
   "
 {
@@ -8165,7 +8232,7 @@ mov.l\\t1f,r0\\n\\
 (define_insn "toggle_sz"
   [(set (reg:PSI FPSCR_REG)
 	(xor:PSI (reg:PSI FPSCR_REG) (const_int 1048576)))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fschg"
   [(set_attr "type" "fp") (set_attr "fp_set" "unknown")])
 
@@ -8323,7 +8390,7 @@ mov.l\\t1f,r0\\n\\
   "TARGET_SH2E || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_SINGLE)
     expand_sf_binop (&gen_mulsf3_i4, operands);
   else if (TARGET_SH2E)
     emit_insn (gen_mulsf3_ie (operands[0], operands[1], operands[2]));
@@ -8353,7 +8420,7 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%0")
 		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))]
-  "TARGET_SH2E && ! TARGET_SH4"
+  "TARGET_SH2E && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "fmul	%2,%0"
   [(set_attr "type" "fp")])
 
@@ -8422,7 +8489,7 @@ mov.l\\t1f,r0\\n\\
   "TARGET_SH2E || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_SINGLE)
     {
       emit_sf_insn (gen_floatsisf2_i4 (operands[0], operands[1], get_fpscr_rtx ()));
       DONE;
@@ -8440,7 +8507,7 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(float:SF (match_operand:SI 1 "fpul_operand" "y")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "float	%1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
@@ -8448,7 +8515,7 @@ mov.l\\t1f,r0\\n\\
 (define_insn "*floatsisf2_ie"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(float:SF (match_operand:SI 1 "fpul_operand" "y")))]
-  "TARGET_SH2E && ! TARGET_SH4"
+  "TARGET_SH2E && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "float	%1,%0"
   [(set_attr "type" "fp")])
 
@@ -8465,7 +8532,7 @@ mov.l\\t1f,r0\\n\\
   "TARGET_SH2E || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_SINGLE)
     {
       emit_sf_insn (gen_fix_truncsfsi2_i4 (operands[0], operands[1], get_fpscr_rtx ()));
       DONE;
@@ -8483,7 +8550,7 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:SI 0 "fpul_operand" "=y")
 	(fix:SI (match_operand:SF 1 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "ftrc	%1,%0"
   [(set_attr "type" "ftrc_s")
    (set_attr "fp_mode" "single")])
@@ -8513,7 +8580,7 @@ mov.l\\t1f,r0\\n\\
 (define_insn "*fixsfsi"
   [(set (match_operand:SI 0 "fpul_operand" "=y")
 	(fix:SI (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
-  "TARGET_SH2E && ! TARGET_SH4"
+  "TARGET_SH2E && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "ftrc	%1,%0"
   [(set_attr "type" "fp")])
 
@@ -8521,7 +8588,7 @@ mov.l\\t1f,r0\\n\\
   [(set (reg:SI T_REG)
 	(gt:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
 	       (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
-  "TARGET_SH2E && ! TARGET_SH4"
+  "TARGET_SH2E && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "fcmp/gt	%1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
@@ -8530,7 +8597,7 @@ mov.l\\t1f,r0\\n\\
   [(set (reg:SI T_REG)
 	(eq:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
 	       (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
-  "TARGET_SH2E && ! TARGET_SH4"
+  "TARGET_SH2E && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "fcmp/eq	%1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
@@ -8540,7 +8607,7 @@ mov.l\\t1f,r0\\n\\
 	(ior:SI (reg:SI T_REG)
 		(eq:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
 		       (match_operand:SF 1 "fp_arith_reg_operand" "f"))))]
-  "TARGET_SH2E && TARGET_IEEE && ! TARGET_SH4"
+  "TARGET_SH2E && TARGET_IEEE && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "* return output_ieee_ccmpeq (insn, operands);"
   [(set_attr "length" "4")])
 
@@ -8550,7 +8617,7 @@ mov.l\\t1f,r0\\n\\
 	(gt:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
 	       (match_operand:SF 1 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "fcmp/gt	%1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
@@ -8560,7 +8627,7 @@ mov.l\\t1f,r0\\n\\
 	(eq:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
 	       (match_operand:SF 1 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "fcmp/eq	%1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
@@ -8571,7 +8638,7 @@ mov.l\\t1f,r0\\n\\
 		(eq:SI (match_operand:SF 0 "fp_arith_reg_operand" "f")
 		       (match_operand:SF 1 "fp_arith_reg_operand" "f"))))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_IEEE && TARGET_SH4"
+  "TARGET_IEEE && (TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "* return output_ieee_ccmpeq (insn, operands);"
   [(set_attr "length" "4")
    (set_attr "fp_mode" "single")])
@@ -8822,10 +8889,10 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
 	(plus:DF (match_operand:DF 1 "fp_arith_reg_operand" "")
 		 (match_operand:DF 2 "fp_arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SHMEDIA_FPU"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       expand_df_binop (&gen_adddf3_i, operands);
       DONE;
@@ -8845,7 +8912,7 @@ mov.l\\t1f,r0\\n\\
 	(plus:DF (match_operand:DF 1 "fp_arith_reg_operand" "%0")
 		 (match_operand:DF 2 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fadd	%2,%0"
   [(set_attr "type" "dfp_arith")
    (set_attr "fp_mode" "double")])
@@ -8854,10 +8921,10 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
 	(minus:DF (match_operand:DF 1 "fp_arith_reg_operand" "")
 		  (match_operand:DF 2 "fp_arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SHMEDIA_FPU"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       expand_df_binop (&gen_subdf3_i, operands);
       DONE;
@@ -8877,7 +8944,7 @@ mov.l\\t1f,r0\\n\\
 	(minus:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")
 		  (match_operand:DF 2 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fsub	%2,%0"
   [(set_attr "type" "dfp_arith")
    (set_attr "fp_mode" "double")])
@@ -8886,10 +8953,10 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
 	(mult:DF (match_operand:DF 1 "fp_arith_reg_operand" "")
 		 (match_operand:DF 2 "fp_arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SHMEDIA_FPU"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       expand_df_binop (&gen_muldf3_i, operands);
       DONE;
@@ -8909,7 +8976,7 @@ mov.l\\t1f,r0\\n\\
 	(mult:DF (match_operand:DF 1 "fp_arith_reg_operand" "%0")
 		 (match_operand:DF 2 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fmul	%2,%0"
   [(set_attr "type" "dfp_arith")
    (set_attr "fp_mode" "double")])
@@ -8918,10 +8985,10 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
 	(div:DF (match_operand:DF 1 "fp_arith_reg_operand" "")
 		(match_operand:DF 2 "fp_arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SHMEDIA_FPU"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       expand_df_binop (&gen_divdf3_i, operands);
       DONE;
@@ -8941,7 +9008,7 @@ mov.l\\t1f,r0\\n\\
 	(div:DF (match_operand:DF 1 "fp_arith_reg_operand" "0")
 		(match_operand:DF 2 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fdiv	%2,%0"
   [(set_attr "type" "dfdiv")
    (set_attr "fp_mode" "double")])
@@ -8956,10 +9023,10 @@ mov.l\\t1f,r0\\n\\
 (define_expand "floatsidf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
 	(float:DF (match_operand:SI 1 "fpul_operand" "")))]
-  "TARGET_SH4 || TARGET_SHMEDIA_FPU"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       emit_df_insn (gen_floatsidf2_i (operands[0], operands[1],
 				      get_fpscr_rtx ()));
@@ -8978,7 +9045,7 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
 	(float:DF (match_operand:SI 1 "fpul_operand" "y")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "float	%1,%0"
   [(set_attr "type" "dfp_conv")
    (set_attr "fp_mode" "double")])
@@ -8993,10 +9060,10 @@ mov.l\\t1f,r0\\n\\
 (define_expand "fix_truncdfsi2"
   [(set (match_operand:SI 0 "fpul_operand" "")
 	(fix:SI (match_operand:DF 1 "fp_arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SHMEDIA_FPU"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       emit_df_insn (gen_fix_truncdfsi2_i (operands[0], operands[1],
 					  get_fpscr_rtx ()));
@@ -9015,7 +9082,7 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:SI 0 "fpul_operand" "=y")
 	(fix:SI (match_operand:DF 1 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "ftrc	%1,%0"
   [(set_attr "type" "dfp_conv")
    (set_attr "dfp_comp" "no")
@@ -9048,7 +9115,7 @@ mov.l\\t1f,r0\\n\\
 	(gt:SI (match_operand:DF 0 "arith_reg_operand" "f")
 	       (match_operand:DF 1 "arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fcmp/gt	%1,%0"
   [(set_attr "type" "dfp_cmp")
    (set_attr "fp_mode" "double")])
@@ -9058,7 +9125,7 @@ mov.l\\t1f,r0\\n\\
 	(eq:SI (match_operand:DF 0 "arith_reg_operand" "f")
 	       (match_operand:DF 1 "arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fcmp/eq	%1,%0"
   [(set_attr "type" "dfp_cmp")
    (set_attr "fp_mode" "double")])
@@ -9069,7 +9136,7 @@ mov.l\\t1f,r0\\n\\
 		(eq:SI (match_operand:DF 0 "arith_reg_operand" "f")
 		       (match_operand:DF 1 "arith_reg_operand" "f"))))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_IEEE && TARGET_SH4"
+  "TARGET_IEEE && (TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "* return output_ieee_ccmpeq (insn, operands);"
   [(set_attr "length" "4")
    (set_attr "fp_mode" "double")])
@@ -9110,7 +9177,7 @@ mov.l\\t1f,r0\\n\\
   [(set (reg:SI T_REG)
 	(compare (match_operand:DF 0 "arith_operand" "")
 		 (match_operand:DF 1 "arith_operand" "")))]
-  "TARGET_SH4 || TARGET_SHMEDIA_FPU"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
   "
 {
   sh_compare_op0 = operands[0];
@@ -9121,10 +9188,10 @@ mov.l\\t1f,r0\\n\\
 (define_expand "negdf2"
   [(set (match_operand:DF 0 "arith_reg_operand" "")
 	(neg:DF (match_operand:DF 1 "arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SHMEDIA_FPU"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       expand_df_unop (&gen_negdf2_i, operands);
       DONE;
@@ -9142,7 +9209,7 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:DF 0 "arith_reg_operand" "=f")
 	(neg:DF (match_operand:DF 1 "arith_reg_operand" "0")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fneg	%0"
   [(set_attr "type" "fmove")
    (set_attr "fp_mode" "double")])
@@ -9150,10 +9217,10 @@ mov.l\\t1f,r0\\n\\
 (define_expand "sqrtdf2"
   [(set (match_operand:DF 0 "arith_reg_operand" "")
 	(sqrt:DF (match_operand:DF 1 "arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SHMEDIA_FPU"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       expand_df_unop (&gen_sqrtdf2_i, operands);
       DONE;
@@ -9171,7 +9238,7 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:DF 0 "arith_reg_operand" "=f")
 	(sqrt:DF (match_operand:DF 1 "arith_reg_operand" "0")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fsqrt	%0"
   [(set_attr "type" "dfdiv")
    (set_attr "fp_mode" "double")])
@@ -9179,10 +9246,10 @@ mov.l\\t1f,r0\\n\\
 (define_expand "absdf2"
   [(set (match_operand:DF 0 "arith_reg_operand" "")
 	(abs:DF (match_operand:DF 1 "arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SHMEDIA_FPU"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       expand_df_unop (&gen_absdf2_i, operands);
       DONE;
@@ -9200,7 +9267,7 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:DF 0 "arith_reg_operand" "=f")
 	(abs:DF (match_operand:DF 1 "arith_reg_operand" "0")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fabs	%0"
   [(set_attr "type" "fmove")
    (set_attr "fp_mode" "double")])
@@ -9208,10 +9275,10 @@ mov.l\\t1f,r0\\n\\
 (define_expand "extendsfdf2"
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "")
 	(float_extend:DF (match_operand:SF 1 "fpul_operand" "")))]
-  "TARGET_SH4 || TARGET_SHMEDIA_FPU"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       emit_df_insn (gen_extendsfdf2_i4 (operands[0], operands[1],
 					get_fpscr_rtx ()));
@@ -9230,7 +9297,7 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:DF 0 "fp_arith_reg_operand" "=f")
 	(float_extend:DF (match_operand:SF 1 "fpul_operand" "y")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fcnvsd  %1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "double")])
@@ -9238,10 +9305,10 @@ mov.l\\t1f,r0\\n\\
 (define_expand "truncdfsf2"
   [(set (match_operand:SF 0 "fpul_operand" "")
 	(float_truncate:SF (match_operand:DF 1 "fp_arith_reg_operand" "")))]
-  "TARGET_SH4 || TARGET_SHMEDIA_FPU"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
   "
 {
-  if (TARGET_SH4)
+  if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
     {
       emit_df_insn (gen_truncdfsf2_i4 (operands[0], operands[1],
 				       get_fpscr_rtx ()));
@@ -9260,7 +9327,7 @@ mov.l\\t1f,r0\\n\\
   [(set (match_operand:SF 0 "fpul_operand" "=y")
 	(float_truncate:SF (match_operand:DF 1 "fp_arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH4"
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fcnvds  %1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "double")])

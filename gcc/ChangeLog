@@ -1,3 +1,70 @@
+2004-07-29  Alexandre Oliva  <aoliva@redhat.com>
+
+	Introduce sh2a support.
+	2004-07-29  Alexandre Oliva  <aoliva@redhat.com>
+	* config.gcc: Build multilibs for sh2a and sh2a-single by
+	default.
+	* config/sh/sh.h (SUPPORT_SH2A, SUPPORT_SH2A_SINGLE): Define by
+	default.  Split their tests out of the corresponding SH4
+	multilibs.
+	* config/sh/t-sh (MULTILIB_MATCHES): Don't ever use SH4 or SH4a
+	multilibs for SH2a.
+	2004-07-28  Alexandre Oliva  <aoliva@redhat.com>
+	* config.gcc: Handle sh2a multilibs and cpu selection.
+	* config/sh/sh.h: Likewise.  Handle sh2a command line flags.
+	* config/sh/t-mlib-sh2a: New.
+	* config/sh/t-mlib-sh2a-nofpu: New.
+	* config/sh/t-mlib-sh2a-single: New.
+	* config/sh/t-mlib-sh2a-single-only: New.
+	2004-07-09  Nick Clifton  <nickc@redhat.com>
+	Issue 43400
+	* config/sh/sh.h (DRIVER_SELF_SPECS): Issue an error message if
+	-ml and -m2a are used together.
+	2004-03-23  DJ Delorie  <dj@redhat.com>
+	* config/sh/sh.c (sh_builtin_saveregs): Use the double code only
+	when we have a double-sized FPU.
+	2004-02-24  Corinna Vinschen <vinschen@redhat.com>
+	* config/sh/lib1funcs.asm (set_fpscr): Don't build if __SH2A_NOFPU__
+	is set.
+	* config/sh/elf.h (SUBTARGET_ASM_ISA_SPEC): Add cases for -msh2a-nofpu,
+	-msh2a-single and -msh2a-single-only
+	2004-02-24  Corinna Vinschen <vinschen@redhat.com>
+	* config/sh/crt1.asm: Don't generate FPU instructions if __SH2A_NOFPU__
+	is set.
+	2004-02-20  DJ Delorie  <dj@delorie.com>
+	* config/sh/sh.md (movsf_i, movsf_ie, movsf, ble, bge): Disable for sh2a-nofpu.
+	2004-02-20  Fred Fish <fnf@redhat.com>,
+	Corinna Vinschen <vinschen@redhat.com>
+	* config/sh/t-sh (MULTILIB_OPTIONS): Add 2a-nofpu.
+	(MULTILIB_EXCEPTIONS): Don't build littel-endian on sh2a.
+	2004-02-18  DJ Delorie  <dj@redhat.com>
+	* config/sh/sh.c (broken_move): Add support for movi20.
+	* config/sh/sh.h: Likewise.
+	(SHIFT_COUNT_TRUNCATED): Set for sh2a.
+	* config/sh/sh.md (udivsi3_sh2a): New.
+	(udivsi3): Call it.
+	(divsi3_sh2a): New.
+	(divsi3): Call it.
+	(mul_r): New.
+	(ashlsi3_sh2a): New.
+	(ashrsi3_sh2a): New.
+	(lshrsi3_sh2a): New.
+	(movsi_i): Disable for sh2a.
+	(movsi_ie): Add movi20.
+	(movsf_i, movsf_ie, movsf, ble, untyped_call): Explicitly enable
+	sh2a, for -m2a-nofpu mode.
+	2004-02-13  DJ Delorie  <dj@redhat.com>
+	* config/sh/lib1funcs.asm: Handle double vs single better.
+	* config/sh/sh.h: Likewise.
+	2004-02-09  DJ Delorie  <dj@redhat.com>
+	* config/sh/crt1.asm: Add support for sh2a.
+	* config/sh/elf.h: Likewise.
+	* config/sh/lib1funcs.asm: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sh/sh.md: Likewise.
+	* config/sh/sh.h: Likewise.
+	* config/sh/t-sh: Likewise.
+
 2004-07-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/frv/frv.md (movqi_internal, movhi_internal,
