@@ -1,6 +1,6 @@
 // FirstThread.java - Implementation of very first thread.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -74,4 +74,13 @@ final class FirstThread extends Thread
   private Class klass;
   private String klass_name;
   private Object args;
+
+  // If the user links statically then we need to ensure that these
+  // classes are linked in.  Otherwise bootstrapping fails.  These
+  // classes are only referred to via Class.forName(), so we add an
+  // explicit mention of them here.
+  static final Class Kcert = java.security.cert.Certificate.class;
+  static final Class Kfile = gnu.gcj.protocol.file.Handler.class;
+  static final Class Khttp = gnu.gcj.protocol.http.Handler.class;
+  static final Class Kjar  = gnu.gcj.protocol.jar.Handler.class;
 }
