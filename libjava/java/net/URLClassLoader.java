@@ -799,6 +799,9 @@ public class URLClassLoader extends SecureClassLoader
         if (newUrl == null)
           return; // Silently ignore...
 
+	// Reset the toString() value.
+	thisString = null;
+
         // Check global cache to see if there're already url loader
         // for this url.
         URLLoader loader = (URLLoader) urlloaders.get(newUrl);
@@ -1020,25 +1023,28 @@ public class URLClassLoader extends SecureClassLoader
    */
   public String toString()
   {
-    if (thisString == null)
+    synchronized (urlloaders)
       {
-	StringBuffer sb = new StringBuffer();
-	sb.append(this.getClass().getName());
-	sb.append("{urls=[" );
-	URL[] thisURLs = getURLs();
-	for (int i = 0; i < thisURLs.length; i++)
+	if (thisString == null)
 	  {
-	    sb.append(thisURLs[i]);
-	    if (i < thisURLs.length - 1)
-	      sb.append(',');
+	    StringBuffer sb = new StringBuffer();
+	    sb.append(this.getClass().getName());
+	    sb.append("{urls=[" );
+	    URL[] thisURLs = getURLs();
+	    for (int i = 0; i < thisURLs.length; i++)
+	      {
+		sb.append(thisURLs[i]);
+		if (i < thisURLs.length - 1)
+		  sb.append(',');
+	      }
+	    sb.append(']');
+	    sb.append(", parent=");
+	    sb.append(getParent());
+	    sb.append('}');
+	    thisString = sb.toString();
 	  }
-	sb.append(']');
-	sb.append(", parent=");
-	sb.append(getParent());
-	sb.append('}');
-	thisString = sb.toString();
+	return thisString;
       }
-    return thisString;
   }
 
   /**
