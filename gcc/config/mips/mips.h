@@ -2193,7 +2193,7 @@ while (0)
    CODE is the expression code--redundant, since it can be obtained
    with `GET_CODE (X)'.  */
 
-#define CONST_COSTS(X,CODE)						\
+#define CONST_COSTS(X,CODE,OUTER_CODE)					\
   case CONST_INT:							\
     /* Always return 0, since we don't have different sized		\
        instructions, hence different costs according to Richard		\
@@ -2243,7 +2243,7 @@ while (0)
    strength reduction, and also makes it easier to identify what the
    compiler is doing.  */
 
-#define RTX_COSTS(X,CODE)						\
+#define RTX_COSTS(X,CODE,OUTER_CODE)					\
   case MEM:								\
     {									\
       int num_words = (GET_MODE_SIZE (GET_MODE (X)) > UNITS_PER_WORD) ? 2 : 1; \
