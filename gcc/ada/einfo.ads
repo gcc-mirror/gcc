@@ -2191,10 +2191,6 @@ package Einfo is
 --    Is_Protected_Type (synthesized)
 --       Applies to all entities, true for protected types and subtypes
 
---    Is_Psected (Flag153)
---       Present in entities for objects, true if a valid Psect_Object
---       pragma applies to the object. Used to detect duplicate pragmas.
-
 --    Is_Public (Flag10)
 --       Present in all entities. Set to indicate that an entity defined in
 --       one compilation unit can be referenced from other compilation units.
@@ -4167,7 +4163,6 @@ package Einfo is
    --    Has_Volatile_Components       (Flag87)
    --    Is_Atomic                     (Flag85)
    --    Is_Eliminated                 (Flag124)
-   --    Is_Psected                    (Flag153)
    --    Is_True_Constant              (Flag163)
    --    Is_Volatile                   (Flag16)
    --    Never_Set_In_Source           (Flag115)
@@ -4746,7 +4741,6 @@ package Einfo is
    --    Has_Volatile_Components       (Flag87)
    --    Is_Atomic                     (Flag85)
    --    Is_Eliminated                 (Flag124)
-   --    Is_Psected                    (Flag153)
    --    Is_Shared_Passive             (Flag60)
    --    Is_True_Constant              (Flag163)
    --    Is_Volatile                   (Flag16)
@@ -5186,7 +5180,6 @@ package Einfo is
    function Is_Preelaborated                   (Id : E) return B;
    function Is_Private_Composite               (Id : E) return B;
    function Is_Private_Descendant              (Id : E) return B;
-   function Is_Psected                         (Id : E) return B;
    function Is_Public                          (Id : E) return B;
    function Is_Pure                            (Id : E) return B;
    function Is_Remote_Call_Interface           (Id : E) return B;
@@ -5662,7 +5655,6 @@ package Einfo is
    procedure Set_Is_Preelaborated              (Id : E; V : B := True);
    procedure Set_Is_Private_Composite          (Id : E; V : B := True);
    procedure Set_Is_Private_Descendant         (Id : E; V : B := True);
-   procedure Set_Is_Psected                    (Id : E; V : B := True);
    procedure Set_Is_Public                     (Id : E; V : B := True);
    procedure Set_Is_Pure                       (Id : E; V : B := True);
    procedure Set_Is_Remote_Call_Interface      (Id : E; V : B := True);
@@ -5868,26 +5860,56 @@ package Einfo is
    procedure Next_Stored_Discriminant (N : in out Node_Id)
      renames Proc_Next_Stored_Discriminant;
 
-   -------------------------------
-   -- Miscellaneous Subprograms --
-   -------------------------------
+   ----------------------------------------------
+   -- Subprograms for Accessing Rep Item Chain --
+   ----------------------------------------------
 
-   procedure Append_Entity (Id : Entity_Id; V : Entity_Id);
-   --  Add an entity to the list of entities declared in the scope V
+   --  The First_Rep_Item field of every entity points to a linked list
+   --  (linked through Next_Rep_Item) of representation pragmas and
+   --  attribute definition clauses that apply to the item. Note that
+   --  in the case of types, it is assumed that any such rep items for
+   --  a base type also apply to all subtypes. This is implemented by
+   --  having the chain for subtypes link onto the chain for the base
+   --  type, so that any new entries for the subtype are added at the
+   --  start of the chain.
+
+   function Get_Attribute_Definition_Clause
+     (E  : Entity_Id;
+      Id : Attribute_Id) return Node_Id;
+   --  Searches the Rep_Item chain for a given entity E, for an instance
+   --  of an attribute definition clause with the given attibute Id Id. If
+   --  found, the value returned is the N_Attribute_Definition_Clause node,
+   --  otherwise Empty is returned.
 
    function Get_Rep_Pragma (E : Entity_Id; Nam : Name_Id) return Node_Id;
    --  Searches the Rep_Item chain for the given entity E, for an instance
    --  of a representation pragma with the given name Nam. If found then
    --  the value returned is the N_Pragma node, otherwise Empty is returned.
 
-   function Get_Attribute_Definition_Clause
-     (E    : Entity_Id;
-      Id   : Attribute_Id)
-      return Node_Id;
+   function Has_Rep_Pragma (E : Entity_Id; Nam : Name_Id) return Boolean;
+   --  Searches the Rep_Item chain for the given entity E, for an instance
+   --  of representation pragma with the given name Nam. If found then True
+   --  is returned, otherwise False indicates that no matching entry was found.
+
+   function Has_Attribute_Definition_Clause
+     (E  : Entity_Id;
+      Id : Attribute_Id) return Boolean;
    --  Searches the Rep_Item chain for a given entity E, for an instance
    --  of an attribute definition clause with the given attibute Id Id. If
-   --  found, the value returned is the N_Attribute_Definition_Clause node,
-   --  otherwise Empty is returned.
+   --  found, True is returned, otherwise False indicates that no matching
+   --  entry was found.
+
+   procedure Record_Rep_Item (E : Entity_Id; N : Node_Id);
+   --  N is the node for either a representation pragma or an attribute
+   --  definition clause that applies to entity E. This procedure links
+   --  the node N onto the Rep_Item chain for entity E.
+
+   -------------------------------
+   -- Miscellaneous Subprograms --
+   -------------------------------
+
+   procedure Append_Entity (Id : Entity_Id; V : Entity_Id);
+   --  Add an entity to the list of entities declared in the scope V
 
    function Is_Entity_Name (N : Node_Id) return Boolean;
    --  Test if the node N is the name of an entity (i.e. is an identifier,
@@ -6183,7 +6205,6 @@ package Einfo is
    pragma Inline (Is_Private_Descendant);
    pragma Inline (Is_Private_Type);
    pragma Inline (Is_Protected_Type);
-   pragma Inline (Is_Psected);
    pragma Inline (Is_Public);
    pragma Inline (Is_Pure);
    pragma Inline (Is_Real_Type);
@@ -6499,7 +6520,6 @@ package Einfo is
    pragma Inline (Set_Is_Preelaborated);
    pragma Inline (Set_Is_Private_Composite);
    pragma Inline (Set_Is_Private_Descendant);
-   pragma Inline (Set_Is_Psected);
    pragma Inline (Set_Is_Public);
    pragma Inline (Set_Is_Pure);
    pragma Inline (Set_Is_Remote_Call_Interface);

@@ -58,22 +58,31 @@ package body Exp_Prag is
 
    function Arg1 (N : Node_Id) return Node_Id;
    function Arg2 (N : Node_Id) return Node_Id;
-   --  Obtain specified Pragma_Argument_Association
+   --  Obtain specified pragma argument expression
 
    procedure Expand_Pragma_Abort_Defer             (N : Node_Id);
    procedure Expand_Pragma_Assert                  (N : Node_Id);
+   procedure Expand_Pragma_Common_Object           (N : Node_Id);
    procedure Expand_Pragma_Import                  (N : Node_Id);
    procedure Expand_Pragma_Import_Export_Exception (N : Node_Id);
    procedure Expand_Pragma_Inspection_Point        (N : Node_Id);
    procedure Expand_Pragma_Interrupt_Priority      (N : Node_Id);
+   procedure Expand_Pragma_Psect_Object            (N : Node_Id);
 
    ----------
    -- Arg1 --
    ----------
 
    function Arg1 (N : Node_Id) return Node_Id is
+      Arg : constant Node_Id := First (Pragma_Argument_Associations (N));
    begin
-      return First (Pragma_Argument_Associations (N));
+      if Present (Arg)
+        and then Nkind (Arg) = N_Pragma_Argument_Association
+      then
+         return Expression (Arg);
+      else
+         return Arg;
+      end if;
    end Arg1;
 
    ----------
@@ -81,8 +90,23 @@ package body Exp_Prag is
    ----------
 
    function Arg2 (N : Node_Id) return Node_Id is
+      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (N));
    begin
-      return Next (Arg1 (N));
+      if No (Arg1) then
+         return Empty;
+      else
+         declare
+            Arg : constant Node_Id := Next (Arg1);
+         begin
+            if Present (Arg)
+              and then Nkind (Arg) = N_Pragma_Argument_Association
+            then
+               return Expression (Arg);
+            else
+               return Arg;
+            end if;
+         end;
+      end if;
    end Arg2;
 
    ---------------------
@@ -105,6 +129,9 @@ package body Exp_Prag is
             when Pragma_Assert =>
                Expand_Pragma_Assert (N);
 
+            when Pragma_Common_Object =>
+               Expand_Pragma_Common_Object (N);
+
             when Pragma_Export_Exception =>
                Expand_Pragma_Import_Export_Exception (N);
 
@@ -119,6 +146,9 @@ package body Exp_Prag is
 
             when Pragma_Interrupt_Priority =>
                Expand_Pragma_Interrupt_Priority (N);
+
+            when Pragma_Psect_Object =>
+               Expand_Pragma_Psect_Object (N);
 
             --  All other pragmas need no expander action
 
@@ -195,7 +225,7 @@ package body Exp_Prag is
 
    procedure Expand_Pragma_Assert (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
-      Cond : constant Node_Id    := Expression (Arg1 (N));
+      Cond : constant Node_Id    := Arg1 (N);
       Msg  : String_Id;
 
    begin
@@ -222,7 +252,7 @@ package body Exp_Prag is
       --  First, we need to prepare the character literal
 
       if Present (Arg2 (N)) then
-         Msg := Strval (Expr_Value_S (Expression (Arg2 (N))));
+         Msg := Strval (Expr_Value_S (Arg2 (N)));
       else
          Build_Location_String (Loc);
          Msg := String_From_Name_Buffer;
@@ -265,6 +295,114 @@ package body Exp_Prag is
       end if;
    end Expand_Pragma_Assert;
 
+   ---------------------------------
+   -- Expand_Pragma_Common_Object --
+   ---------------------------------
+
+   --  Add series of pragmas to replicate semantic effect in DEC Ada
+
+   --    pragma Linker_Section (internal_name, external_name);
+   --    pragma Machine_Attribute (internal_name, "overlaid");
+   --    pragma Machine_Attribute (internal_name, "global");
+   --    pragma Machine_Attribute (internal_name, "initialize");
+
+   --  For now we do nothing with the size attribute ???
+
+   --  Really this expansion would be much better in the back end. The
+   --  front end should not need to know about target dependent, back end
+   --  dependent semantics ???
+
+   procedure Expand_Pragma_Common_Object (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Internal : constant Node_Id := Arg1 (N);
+      External : constant Node_Id := Arg2 (N);
+
+      Psect : Node_Id;
+      --  Psect value upper cased as string literal
+
+      Iloc : constant Source_Ptr := Sloc (Internal);
+      Eloc : constant Source_Ptr := Sloc (External);
+      Ploc : Source_Ptr;
+
+   begin
+      --  Acquire Psect value and fold to upper case
+
+      if Present (External) then
+         if Nkind (External) = N_String_Literal then
+            String_To_Name_Buffer (Strval (External));
+         else
+            Get_Name_String (Chars (External));
+         end if;
+
+         Set_All_Upper_Case;
+
+         Psect :=
+           Make_String_Literal (Eloc,
+             Strval => String_From_Name_Buffer);
+
+      else
+         Get_Name_String (Chars (Internal));
+         Set_All_Upper_Case;
+         Psect :=
+           Make_String_Literal (Iloc,
+             Strval => String_From_Name_Buffer);
+      end if;
+
+      Ploc := Sloc (Psect);
+
+      --  Insert pragmas
+
+      Insert_List_After_And_Analyze (N, New_List (
+
+         --  The Linker_Section pragma ensures the correct section
+
+         Make_Pragma (Loc,
+           Chars => Name_Linker_Section,
+           Pragma_Argument_Associations => New_List (
+             Make_Pragma_Argument_Association (Iloc,
+               Expression => New_Copy_Tree (Internal)),
+             Make_Pragma_Argument_Association (Ploc,
+               Expression => New_Copy_Tree (Psect)))),
+
+         --  Machine_Attribute "overlaid" ensures that this section
+         --  overlays any other sections of the same name.
+
+         Make_Pragma (Loc,
+           Chars => Name_Machine_Attribute,
+           Pragma_Argument_Associations => New_List (
+             Make_Pragma_Argument_Association (Iloc,
+               Expression => New_Copy_Tree (Internal)),
+             Make_Pragma_Argument_Association (Eloc,
+               Expression =>
+                 Make_String_Literal (Sloc => Ploc,
+                   Strval => "overlaid")))),
+
+         --  Machine_Attribute "global" ensures that section is visible
+
+         Make_Pragma (Loc,
+           Chars => Name_Machine_Attribute,
+           Pragma_Argument_Associations => New_List (
+             Make_Pragma_Argument_Association (Iloc,
+               Expression => New_Copy_Tree (Internal)),
+             Make_Pragma_Argument_Association (Eloc,
+               Expression =>
+                 Make_String_Literal (Sloc => Ploc,
+                   Strval => "global")))),
+
+         --  Machine_Attribute "initialize" ensures section is demand zeroed
+
+         Make_Pragma (Loc,
+           Chars => Name_Machine_Attribute,
+           Pragma_Argument_Associations => New_List (
+             Make_Pragma_Argument_Association (Iloc,
+               Expression => New_Copy_Tree (Internal)),
+             Make_Pragma_Argument_Association (Eloc,
+               Expression =>
+                 Make_String_Literal (Sloc => Ploc,
+                   Strval => "initialize"))))));
+   end Expand_Pragma_Common_Object;
+
    --------------------------
    -- Expand_Pragma_Import --
    --------------------------
@@ -281,7 +419,7 @@ package body Exp_Prag is
    --  seen (i.e. this elaboration cannot be deferred to the freeze point).
 
    procedure Expand_Pragma_Import (N : Node_Id) is
-      Def_Id    : constant Entity_Id := Entity (Expression (Arg2 (N)));
+      Def_Id    : constant Entity_Id := Entity (Arg2 (N));
       Typ       : Entity_Id;
       Init_Call : Node_Id;
 
@@ -340,7 +478,7 @@ package body Exp_Prag is
       end if;
 
       declare
-         Id     : constant Entity_Id := Entity (Expression (Arg1 (N)));
+         Id     : constant Entity_Id := Entity (Arg1 (N));
          Call   : constant Node_Id := Register_Exception_Call (Id);
          Loc    : constant Source_Ptr := Sloc (N);
 
@@ -578,5 +716,17 @@ package body Exp_Prag is
                  Attribute_Name => Name_Last))));
       end if;
    end Expand_Pragma_Interrupt_Priority;
+
+   --------------------------------
+   -- Expand_Pragma_Psect_Object --
+   --------------------------------
+
+   --  Convert to Common_Object, and expand the resulting pragma
+
+   procedure Expand_Pragma_Psect_Object (N : Node_Id) is
+   begin
+      Set_Chars (N, Name_Common_Object);
+      Expand_Pragma_Common_Object (N);
+   end Expand_Pragma_Psect_Object;
 
 end Exp_Prag;

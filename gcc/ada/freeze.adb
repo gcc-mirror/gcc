@@ -2235,17 +2235,17 @@ package body Freeze is
                --  inherited the indication from elsewhere (e.g. an address
                --  clause, which is not good enough in RM terms!)
 
-               if Present (Get_Rep_Pragma (E, Name_Atomic))
+               if Has_Rep_Pragma (E, Name_Atomic)
                     or else
-                  Present (Get_Rep_Pragma (E, Name_Atomic_Components))
+                  Has_Rep_Pragma (E, Name_Atomic_Components)
                then
                   Error_Msg_N
                     ("stand alone atomic constant must be " &
                      "imported ('R'M 'C.6(13))", E);
 
-               elsif Present (Get_Rep_Pragma (E, Name_Volatile))
+               elsif Has_Rep_Pragma (E, Name_Volatile)
                        or else
-                     Present (Get_Rep_Pragma (E, Name_Volatile_Components))
+                     Has_Rep_Pragma (E, Name_Volatile_Components)
                then
                   Error_Msg_N
                     ("stand alone volatile constant must be " &

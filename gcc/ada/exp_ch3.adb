@@ -57,7 +57,6 @@ with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
-with Stringt;  use Stringt;
 with Snames;   use Snames;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
@@ -1118,15 +1117,10 @@ package body Exp_Ch3 is
          --  This is just a workaround that must be improved later???
 
          if With_Default_Init then
-            declare
-               S           : String_Id;
-               Null_String : Node_Id;
-            begin
-               Start_String;
-               S := End_String;
-               Null_String := Make_String_Literal (Loc, Strval => S);
-               Append_To (Args, Null_String);
-            end;
+            Append_To (Args,
+              Make_String_Literal (Loc,
+                Strval => ""));
+
          else
             Decls := Build_Task_Image_Decls (Loc, Id_Ref, Enclos_Type);
             Decl  := Last (Decls);

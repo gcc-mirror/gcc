@@ -35,6 +35,7 @@ with Rident;   use Rident;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with Stringt;  use Stringt;
 with Uintp;    use Uintp;
 
 package body Tbuild is
@@ -333,6 +334,22 @@ package body Tbuild is
           Reason =>
             UI_From_Int (RT_Exception_Code'Pos (Reason)));
    end Make_Raise_Storage_Error;
+
+   -------------------------
+   -- Make_String_Literal --
+   -------------------------
+
+   function Make_String_Literal
+     (Sloc   : Source_Ptr;
+      Strval : String) return Node_Id
+   is
+   begin
+      Start_String;
+      Store_String_Chars (Strval);
+      return
+        Make_String_Literal (Sloc,
+          Strval => End_String);
+   end Make_String_Literal;
 
    ---------------------------
    -- Make_Unsuppress_Block --

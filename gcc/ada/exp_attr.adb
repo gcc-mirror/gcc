@@ -138,6 +138,11 @@ package body Exp_Attr is
    --  defining it, is returned. In both cases, inheritance of representation
    --  aspects is thus taken into account.
 
+   function Get_Stream_Convert_Pragma (T : Entity_Id) return Node_Id;
+   --  Given a type, find a corresponding stream convert pragma that applies to
+   --  the implementation base type of this type (Typ). If found, return the
+   --  pragma node, otherwise return Empty if no pragma is found.
+
    function Is_Constrained_Packed_Array (Typ : Entity_Id) return Boolean;
    --  Utility for array attributes, returns true on packed constrained
    --  arrays, and on access to same.
@@ -297,9 +302,11 @@ package body Exp_Attr is
 
       --  The generated call is given the provided set of parameters, and then
       --  wrapped in a conversion which converts the result to the target type
+      --  We use the base type as the target because a range check may be
+      --  required.
 
       Rewrite (N,
-        Unchecked_Convert_To (Etype (N),
+        Unchecked_Convert_To (Base_Type (Etype (N)),
           Make_Function_Call (Loc,
             Name => Fnm,
             Parameter_Associations => Args)));
@@ -909,12 +916,9 @@ package body Exp_Attr is
          if Pent = Standard_Standard
            or else Pent = Standard_ASCII
          then
-            Name_Buffer (1 .. Verbose_Library_Version'Length) :=
-              Verbose_Library_Version;
-            Name_Len := Verbose_Library_Version'Length;
             Rewrite (N,
               Make_String_Literal (Loc,
-                Strval => String_From_Name_Buffer));
+                Strval => Verbose_Library_Version));
 
          --  All other cases
 
@@ -1804,9 +1808,7 @@ package body Exp_Attr is
             --  from which it is derived. The extra conversion is required
             --  for the derived case.
 
-            Prag :=
-              Get_Rep_Pragma
-                (Implementation_Base_Type (P_Type), Name_Stream_Convert);
+            Prag := Get_Stream_Convert_Pragma (P_Type);
 
             if Present (Prag) then
                Arg2  := Next (First (Pragma_Argument_Associations (Prag)));
@@ -2380,9 +2382,7 @@ package body Exp_Attr is
             --  it is derived to type strmtyp. The conversion to acttyp is
             --  required for the derived case.
 
-            Prag :=
-              Get_Rep_Pragma
-                (Implementation_Base_Type (P_Type), Name_Stream_Convert);
+            Prag := Get_Stream_Convert_Pragma (P_Type);
 
             if Present (Prag) then
                Arg3 :=
@@ -2795,9 +2795,7 @@ package body Exp_Attr is
             --  where Itemx is the expression of the type conversion (i.e.
             --  the actual object), and typex is the type of Itemx.
 
-            Prag :=
-              Get_Rep_Pragma
-                (Implementation_Base_Type (P_Type), Name_Stream_Convert);
+            Prag := Get_Stream_Convert_Pragma (P_Type);
 
             if Present (Prag) then
                Arg2  := Next (First (Pragma_Argument_Associations (Prag)));
@@ -4017,9 +4015,7 @@ package body Exp_Attr is
             --  it is derived to type strmtyp. The conversion to acttyp is
             --  required for the derived case.
 
-            Prag :=
-              Get_Rep_Pragma
-                (Implementation_Base_Type (P_Type), Name_Stream_Convert);
+            Prag := Get_Stream_Convert_Pragma (P_Type);
 
             if Present (Prag) then
                Arg3 :=
@@ -4325,6 +4321,46 @@ package body Exp_Attr is
 
       return Etype (Indx);
    end Get_Index_Subtype;
+
+   -------------------------------
+   -- Get_Stream_Convert_Pragma --
+   -------------------------------
+
+   function Get_Stream_Convert_Pragma (T : Entity_Id) return Node_Id is
+      Typ : Entity_Id;
+      N   : Node_Id;
+
+   begin
+      --  Note: we cannot use Get_Rep_Pragma here because of the peculiarity
+      --  that a stream convert pragma for a tagged type is not inherited from
+      --  its parent. Probably what is wrong here is that it is basically
+      --  incorrect to consider a stream convert pragma to be a representation
+      --  pragma at all ???
+
+      N := First_Rep_Item (Implementation_Base_Type (T));
+      while Present (N) loop
+         if Nkind (N) = N_Pragma and then Chars (N) = Name_Stream_Convert then
+
+            --  For tagged types this pragma is not inherited, so we
+            --  must verify that it is defined for the given type and
+            --  not an ancestor.
+
+            Typ :=
+              Entity (Expression (First (Pragma_Argument_Associations (N))));
+
+            if not Is_Tagged_Type (T)
+              or else T = Typ
+              or else (Is_Private_Type (Typ) and then T = Full_View (Typ))
+            then
+               return N;
+            end if;
+         end if;
+
+         Next_Rep_Item (N);
+      end loop;
+
+      return Empty;
+   end Get_Stream_Convert_Pragma;
 
    ---------------------------------
    -- Is_Constrained_Packed_Array --

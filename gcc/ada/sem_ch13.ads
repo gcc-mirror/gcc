@@ -90,11 +90,6 @@ package Sem_Ch13 is
    --  If the size is too small, and an error message is given, then both
    --  Esize and RM_Size are reset to the allowed minimum value in T.
 
-   procedure Record_Rep_Item (T : Entity_Id; N : Node_Id);
-   --  N is the node for either a representation pragma or an attribute
-   --  definition clause that applies to type T. This procedure links
-   --  the node N onto the Rep_Item chain for the type T.
-
    function Rep_Item_Too_Early (T : Entity_Id; N : Node_Id) return Boolean;
    --  Called at the start of processing a representation clause or a
    --  representation pragma. Used to check that the representation item

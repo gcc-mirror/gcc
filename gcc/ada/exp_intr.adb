@@ -110,21 +110,18 @@ package body Exp_Intr is
       Loc : constant Source_Ptr := Sloc (N);
       P   : Node_Id;
       E   : Entity_Id;
-      S   : String_Id;
 
    begin
       --  Climb up parents to see if we are in exception handler
 
       P := Parent (N);
       loop
-         --  Case of not in exception handler
+         --  Case of not in exception handler, replace by null string
 
          if No (P) then
-            Start_String;
-            S := End_String;
             Rewrite (N,
               Make_String_Literal (Loc,
-                Strval => S));
+                Strval => ""));
             exit;
 
          --  Case of in exception handler

@@ -1232,7 +1232,7 @@ package body Sem_Attr is
          if Is_Limited_Type (P_Type)
            and then Comes_From_Source (N)
            and then not Present (TSS (Btyp, Nam))
-           and then No (Get_Rep_Pragma (Btyp, Name_Stream_Convert))
+           and then not Has_Rep_Pragma (Btyp, Name_Stream_Convert)
          then
             Error_Msg_Name_1 := Aname;
             Error_Msg_NE
@@ -3480,22 +3480,21 @@ package body Sem_Attr is
 
       when Attribute_Target_Name => Target_Name : declare
          TN : constant String := Sdefault.Target_Name.all;
-         TL : Integer := TN'Last;
+         TL : Natural;
 
       begin
          Check_Standard_Prefix;
          Check_E0;
-         Start_String;
+
+         TL := TN'Last;
 
          if TN (TL) = '/' or else TN (TL) = '\' then
             TL := TL - 1;
          end if;
 
-         Store_String_Chars (TN (TN'First .. TL));
-
          Rewrite (N,
            Make_String_Literal (Loc,
-             Strval => End_String));
+             Strval => TN (TN'First .. TL)));
          Analyze_And_Resolve (N, Standard_String);
       end Target_Name;
 
