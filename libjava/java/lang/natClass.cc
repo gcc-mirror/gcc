@@ -1835,6 +1835,12 @@ _Jv_LayoutVTableMethods (jclass klass)
       if (! _Jv_isVirtualMethod (meth))
 	continue;
 
+      // FIXME: Must check that we don't override:
+      // - Package-private method where superclass is in different package.
+      // - Final or less-accessible declaration in superclass (check binary 
+      //   spec, do we allocate new vtable entry or put throw node in vtable?)
+      // - Static or private method in superclass.
+
       if (superclass != NULL)
 	{
 	  super_meth = _Jv_LookupDeclaredMethod (superclass, meth->name, 
@@ -1843,8 +1849,7 @@ _Jv_LayoutVTableMethods (jclass klass)
 
       if (super_meth)
         meth->index = super_meth->index;
-      else if (! (meth->accflags & java::lang::reflect::Modifier::FINAL)
-	       && ! (klass->accflags & java::lang::reflect::Modifier::FINAL))
+      else
 	meth->index = index++;
     }
 
