@@ -314,11 +314,11 @@ found_attr:;
 	       a previous declaration.  Ensure they match.  */
 	    else if (DECL_SECTION_NAME (decl) != NULL_TREE
 		     && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
-				TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (args)))) != 0)
+				TREE_STRING_POINTER (TREE_VALUE (args))) != 0)
 	      error_with_decl (decl,
 			       "section of `%s' conflicts with previous declaration");
 	    else
-	      DECL_SECTION_NAME (decl) = TREE_VALUE (TREE_VALUE (args));
+	      DECL_SECTION_NAME (decl) = TREE_VALUE (args);
 	  }
 	else
 	  error_with_decl (decl,
