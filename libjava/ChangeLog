@@ -1,3 +1,13 @@
+2003-08-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/ref/natReference.cc (finalize_referred_to_object):
+	Set `list->reference' to DELETED_REFERENCE when removing dead
+	object.
+	(find_slot): Added an assert.
+	(DELETED_REFERENCE): New define.
+	(add_to_hash): Check for DELETED_REFERENCE.
+	(remove_from_hash): Just return if found slot isn't ours.
+
 2003-08-19  Andrew Haley  <aph@redhat.com>
 
 	* prims.cc (unblock_signal): New function.
