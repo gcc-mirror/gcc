@@ -6293,7 +6293,7 @@ remove_reachable_equiv_notes (basic_block bb, struct ls_expr *smexpr)
 
   sbitmap_zero (visited);
 
-  act = (EDGE_COUNT (ei.container) > 0 ? EDGE_I (ei.container, 0) : NULL);
+  act = (EDGE_COUNT (ei_container (ei)) > 0 ? EDGE_I (ei_container (ei), 0) : NULL);
   while (1)
     {
       if (!act)
@@ -6351,7 +6351,7 @@ remove_reachable_equiv_notes (basic_block bb, struct ls_expr *smexpr)
 	  if (act)
 	    stack[sp++] = ei;
 	  ei = ei_start (bb->succs);
-	  act = (EDGE_COUNT (ei.container) > 0 ? EDGE_I (ei.container, 0) : NULL);
+	  act = (EDGE_COUNT (ei_container (ei)) > 0 ? EDGE_I (ei_container (ei), 0) : NULL);
 	}
     }
 }
