@@ -169,11 +169,13 @@ dw_fde_node;
   ((((SIZE) + (BOUNDARY) - 1) / (BOUNDARY)) * (BOUNDARY))
 
 /* Offsets recorded in opcodes are a multiple of this alignment factor.  */
+#ifndef DWARF_CIE_DATA_ALIGNMENT
 #ifdef STACK_GROWS_DOWNWARD
 #define DWARF_CIE_DATA_ALIGNMENT (-((int) UNITS_PER_WORD))
 #else
 #define DWARF_CIE_DATA_ALIGNMENT ((int) UNITS_PER_WORD)
 #endif
+#endif /* not DWARF_CIE_DATA_ALIGNMENT */
 
 /* A pointer to the base of a table that contains frame description
    information for each routine.  */
@@ -940,6 +942,18 @@ reg_save (label, reg, sreg, offset)
       else
 	cfi->dw_cfi_opc = DW_CFA_offset;
 
+#ifdef ENABLE_CHECKING
+      {
+	/* If we get an offset that is not a multiple of
+	   DWARF_CIE_DATA_ALIGNMENT, there is either a bug in the
+	   definition of DWARF_CIE_DATA_ALIGNMENT, or a bug in the machine
+	   description.  */
+	long check_offset = offset / DWARF_CIE_DATA_ALIGNMENT;
+
+	if (check_offset * DWARF_CIE_DATA_ALIGNMENT != offset)
+	  abort ();
+      }
+#endif
       offset /= DWARF_CIE_DATA_ALIGNMENT;
       if (offset < 0)
 	{
