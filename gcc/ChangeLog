@@ -1,3 +1,10 @@
+2004-04-29  Philip Blundell  <philb@gnu.org>
+
+	* Merge from trunk:
+	2004-04-20  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (arm_legitimate_address_p): Use rtx_equal_p.
+
 2004-04-29  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR/12028
