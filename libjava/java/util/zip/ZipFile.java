@@ -133,7 +133,9 @@ public class ZipFile implements ZipConstants
 
     InputStream is = new ByteArrayInputStream (buffer);
     if (ze.getMethod() == ZipEntry.DEFLATED)
-      is = new InflaterInputStream (is);
+      // Data in zipfile entries does not have a zlib header, so construct
+      // an Inflater with the `nowrapper' option.
+      is = new InflaterInputStream (is, new Inflater (true), 512);
     return is;
   }
 

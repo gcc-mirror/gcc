@@ -206,8 +206,9 @@ private:
   inline friend void 
   _Jv_InitClass (jclass klass)
   {
-    if (__builtin_expect (klass->state != JV_STATE_DONE, false))
-      klass->initializeClass ();
+    if (klass->state == JV_STATE_DONE)
+      return;
+    klass->initializeClass ();  
   }
 
   friend _Jv_Method* _Jv_LookupDeclaredMethod (jclass, _Jv_Utf8Const *, 

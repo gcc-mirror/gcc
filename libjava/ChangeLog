@@ -1,3 +1,16 @@
+2000-05-20  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Fix for PR libgcj/226:
+	* java/lang/Class.h (_Jv_InitClass): Don't call __builtin_expect,
+	since this is an installed header.
+	
+	Fix for PR libgcj/228:
+	* java/util/zip/ZipFile (getInputStream): Create inflater with 
+	nowrapper option.
+	
+	* java/util/zip/natInflater.cc (inflate): Throw zlib's error message
+	with DataFormatException.	
+
 2000-05-20  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
