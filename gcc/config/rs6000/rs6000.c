@@ -249,7 +249,7 @@ rs6000_override_options (default_cpu)
 	 {"601", PROCESSOR_PPC601,
 	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_OPT_MASKS | MASK_POWERPC64},
-	 {"602", PROCESSOR_PPC602,
+	 {"602", PROCESSOR_PPC603,
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
 	 {"603", PROCESSOR_PPC603,
@@ -3954,8 +3954,6 @@ int get_issue_rate()
     return 4;
   case CPU_PPC601:
     return 3;       /* ? */
-  case CPU_PPC602:
-    return 1; 
   case CPU_PPC603:
     return 2; 
   case CPU_PPC604:
