@@ -586,6 +586,20 @@ fix = {
 
 
 /*
+ *  Fix assert macro in assert.h on Alpha OSF/1.
+ *  The superfluous int cast breaks C++.
+ */
+fix = {
+    hackname  = alpha_assert;
+    files     = "assert.h";
+    select    = '(#define assert\(EX\).*)\(\(int\) \(EX\)\)';
+    c_fix     = format;
+    c_fix_arg = "%1(EX)";
+    test_text = '#define assert(EX) (((int) (EX)) ? (void)0 : __assert(#EX, __FILE__, __LINE__))';
+};
+
+
+/*
  *  Fix getopt declarations in stdio.h and stdlib.h on Alpha OSF/1 and AIX.
  */
 fix = {
