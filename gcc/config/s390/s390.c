@@ -1674,23 +1674,14 @@ s390_preferred_reload_class (op, class)
   switch (GET_CODE (op))
     {
       /* Constants we cannot reload must be forced into the
-	 literal pool.  For constants we *could* handle directly,
-	 it might still be preferable to put them in the pool and
-	 use a memory-to-memory instruction.
+	 literal pool.  */
 
-	 However, try to avoid needlessly allocating a literal
-	 pool in a routine that wouldn't otherwise need any.
-	 Heuristically, we assume that 64-bit leaf functions
-	 typically don't need a literal pool, all others do.  */
       case CONST_DOUBLE:
       case CONST_INT:
-	if (!legitimate_reload_constant_p (op))
-	  return NO_REGS;
-
-	if (TARGET_64BIT && current_function_is_leaf)
+	if (legitimate_reload_constant_p (op))
 	  return class;
-
-	return NO_REGS;
+	else
+	  return NO_REGS;
 
       /* If a symbolic constant or a PLUS is reloaded,
 	 it is most likely being used as an address, so
@@ -1878,6 +1869,22 @@ s390_decompose_address (addr, out)
   else
     disp = addr;		/* displacement */
 
+
+  /* Prefer to use pointer as base, not index.  */
+  if (base && indx)
+    {
+      int base_ptr = GET_CODE (base) == UNSPEC
+		     || (REG_P (base) && REG_POINTER (base));
+      int indx_ptr = GET_CODE (indx) == UNSPEC
+		     || (REG_P (indx) && REG_POINTER (indx));
+
+      if (!base_ptr && indx_ptr)
+	{
+	  rtx tmp = base;
+	  base = indx;
+	  indx = tmp;
+	}
+    }
 
   /* Validate base register.  */
   if (base)
