@@ -1,4 +1,4 @@
-#   Copyright (C) 2000 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 2001, 2002 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,30 +14,31 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
-# G++ testsuite that uses the `dg.exp' driver.
+# Gcov test driver.
 
 # Load support procs.
 load_lib g++-dg.exp
+load_lib gcov.exp
 
-# If a testcase doesn't have special options, use these.
-global DEFAULT_CXXFLAGS
-if ![info exists DEFAULT_CXXFLAGS] then {
-    set DEFAULT_CXXFLAGS " -ansi -pedantic-errors -Wno-long-long"
+global GXX_UNDER_TEST
+
+# Find gcov in the same directory as $GXX_UNDER_TEST.
+if { ![is_remote host] && [string match "*/*" [lindex $GXX_UNDER_TEST 0]] } {
+    set GCOV [file dirname [lindex $GXX_UNDER_TEST 0]]/gcov
+} else {
+    set GCOV gcov
 }
 
-# Initialize `dg'.
+# Initialize harness.
 dg-init
 
-# Gather a list of all tests, with the exception of those in directories
-# that are handled specially.
-set all [lsort [find $srcdir/$subdir *.C]]
-set tests [prune [prune [prune [prune $all $srcdir/$subdir/special/*] \
-                               $srcdir/$subdir/debug/*] \
-                        $srcdir/$subdir/gcov/*] \
-                 $srcdir/$subdir/bprob/*]
+# Delete old .da files.
+set files [glob -nocomplain gcov-*.da];
+if { $files != "" } {
+    eval "remote_file build delete $files";
+}
 
 # Main loop.
-dg-runtest $tests "" $DEFAULT_CXXFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] "" ""
 
-# All done.
 dg-finish
