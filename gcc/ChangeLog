@@ -1,3 +1,7 @@
+Wed Jun 10 01:39:00 1998  Juha Sarlin <juha@c3l.tyreso.se> 
+
+	* h8300.c (get_shift_alg): Add special cases for shifts of 8 and 24.
+
 Tue Jun  9 22:05:34 1998  Richard Henderson  <rth@cygnus.com>
 
 	* fold-const.c (fold): Even with otherwise constant trees, look for
