@@ -1,3 +1,7 @@
+2001-08-15  Jason Eckhardt  <jle@redhat.com>
+
+	* config/i960/i960.md (trap): Change "faulteq.t" to "faulte.t".
+
 Wed Aug 15 14:24:22 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (struct block_info_def): Remove nvisited.
