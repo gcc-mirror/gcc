@@ -577,6 +577,9 @@ init_lex ()
   ridpointers[(int) RID_INT] = get_identifier ("int");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_INT],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_INT]));
+  ridpointers[(int) RID_BOOL] = get_identifier ("bool");
+  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_BOOL],
+			  build_tree_list (NULL_TREE, ridpointers[(int) RID_BOOL]));
   ridpointers[(int) RID_CHAR] = get_identifier ("char");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_CHAR],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_CHAR]));
@@ -4442,9 +4445,9 @@ real_yylex ()
 		value = MIN_MAX;
 		nextchar = c1;
 	      }
-	    if (pedantic)
-	      error ("use of `operator %s' is not standard C++",
-		     token_buffer);
+	    if (flag_ansi)
+	      pedwarn ("use of `operator %s' is not standard C++",
+		       token_buffer);
 	    goto done;
 	  }
 

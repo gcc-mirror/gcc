@@ -96,16 +96,9 @@ int flag_signed_bitfields = 1;
 
 int flag_no_ident = 0;
 
-/* Nonzero means handle things in ANSI, instead of GNU fashion.  This
-   flag should be tested for language behavior that's different between
-   ANSI and GNU, but not so horrible as to merit a PEDANTIC label.  */
+/* Nonzero means disable GNU extensions.  */
 
 int flag_ansi = 0;
-
-/* Nonzero means do argument matching for overloading according to the
-   ANSI rules, rather than what g++ used to believe to be correct.  */
-
-int flag_ansi_overloading = 1;
 
 /* Nonzero means do emit exported implementations of functions even if
    they can be inlined.  */
@@ -359,7 +352,6 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"nonnull-objects", &flag_assume_nonnull_objects, 1},
   {"implement-inlines", &flag_implement_inlines, 1},
   {"external-templates", &flag_external_templates, 1},
-  {"ansi-overloading", &flag_ansi_overloading, 1},
   {"huge-objects", &flag_huge_objects, 1},
   {"conserve-space", &flag_conserve_space, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
@@ -797,9 +789,11 @@ grokclassfn (ctype, cname, function, flags, quals)
 	 we may wish to make it special.  */
       tree type = TREE_VALUE (arg_types);
 
-      if (flags == DTOR_FLAG)
+      if ((flag_this_is_variable > 0)
+	  && (flags == DTOR_FLAG || DECL_CONSTRUCTOR_P (function)))
 	type = TYPE_MAIN_VARIANT (type);
-      else if (DECL_CONSTRUCTOR_P (function))
+
+      if (DECL_CONSTRUCTOR_P (function))
 	{
 	  if (TYPE_USES_VIRTUAL_BASECLASSES (ctype))
 	    {
@@ -824,14 +818,7 @@ grokclassfn (ctype, cname, function, flags, quals)
       /* We can make this a register, so long as we don't
 	 accidentally complain if someone tries to take its address.  */
       DECL_REGISTER (parm) = 1;
-#if 0
-      /* it is wrong to flag the object as readonly, when
-	 flag_this_is_variable is 0. */
-      if (flags != DTOR_FLAG
-	  && (flag_this_is_variable <= 0 || TYPE_READONLY (type)))
-#else
-      if (flags != DTOR_FLAG && TYPE_READONLY (type))
-#endif
+      if (TYPE_READONLY (type))
 	TREE_READONLY (parm) = 1;
       TREE_CHAIN (parm) = last_function_parms;
       last_function_parms = parm;
@@ -1044,7 +1031,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
     case 2:
       maxindex = build_binary_op (MINUS_EXPR, size, integer_one_node, 1);
       if (! flag_traditional)
-	pedwarn ("ANSI C++ forbids array size in vector delete");
+	pedwarn ("anachronistic use of array size in vector delete");
       /* Fall through.  */
     case 1:
       elt_size = c_sizeof (type);
@@ -1800,7 +1787,7 @@ build_push_scope (cname, name)
 void cplus_decl_attributes (decl, attributes)
      tree decl, attributes;
 {
-  if (decl)
+  if (decl && decl != void_type_node)
     decl_attributes (decl, attributes);
 }
 
@@ -2951,4 +2938,44 @@ finish_decl_parsing (decl)
       my_friendly_abort (5);
       return NULL_TREE;
     }
+}
+
+tree
+check_cp_case_value (value)
+     tree value;
+{
+  if (value == NULL_TREE)
+    return value;
+
+  /* build_c_cast puts on a NOP_EXPR to make a non-lvalue.
+     Strip such NOP_EXPRs.  */
+  if (TREE_CODE (value) == NOP_EXPR
+      && TREE_TYPE (value) == TREE_TYPE (TREE_OPERAND (value, 0)))
+    value = TREE_OPERAND (value, 0);
+
+  if (TREE_READONLY_DECL_P (value))
+    {
+      value = decl_constant_value (value);
+      /* build_c_cast puts on a NOP_EXPR to make a non-lvalue.
+	 Strip such NOP_EXPRs.  */
+      if (TREE_CODE (value) == NOP_EXPR
+	  && TREE_TYPE (value) == TREE_TYPE (TREE_OPERAND (value, 0)))
+	value = TREE_OPERAND (value, 0);
+    }
+  value = fold (value);
+
+  if (TREE_CODE (value) != INTEGER_CST
+      && value != error_mark_node)
+    {
+      cp_error ("case label `%E' does not reduce to an integer constant",
+		value);
+      value = error_mark_node;
+    }
+  else
+    /* Promote char or short to int.  */
+    value = default_conversion (value);
+
+  constant_expression_warning (value);
+
+  return value;
 }

@@ -280,11 +280,6 @@ extern int flag_ansi;
 
 extern int flag_handle_exceptions;
 
-/* Nonzero means do argument matching for overloading according to the
-   ANSI rules, rather than what g++ used to believe to be correct.  */
-
-extern int flag_ansi_overloading;
-
 /* Nonzero means recognize and handle signature language constructs.  */
 
 extern int flag_handle_signatures;
@@ -1132,6 +1127,10 @@ struct lang_decl
        || TYPE_MAIN_VARIANT (t) == short_integer_type_node	\
        || TYPE_MAIN_VARIANT (t) == short_unsigned_type_node))
 
+#define INTEGRAL_CODE_P(CODE) \
+  (CODE == INTEGER_TYPE || CODE == ENUMERAL_TYPE || CODE == BOOLEAN_TYPE)
+#define ARITHMETIC_TYPE_P(TYPE) (INTEGRAL_TYPE_P (TYPE) || FLOAT_TYPE_P (TYPE))
+
 /* Mark which labels are explicitly declared.
    These may be shadowed, and may be referenced from nested functions.  */
 #define C_DECLARED_LABEL_FLAG(label) TREE_LANG_FLAG_1 (label)
@@ -1367,6 +1366,7 @@ extern tree delta_type_node;
 extern tree long_long_integer_type_node, long_long_unsigned_type_node;
 /* For building calls to `delete'.  */
 extern tree integer_two_node, integer_three_node;
+extern tree bool_type_node, true_node, false_node;
 
 /* in except.c */
 extern tree current_exception_type;
@@ -1938,6 +1938,7 @@ extern tree reparse_absdcl_as_casts		PROTO((tree, tree));
 extern tree reparse_decl_as_expr		PROTO((tree, tree));
 extern tree finish_decl_parsing			PROTO((tree));
 extern tree lookup_name_nonclass		PROTO((tree));
+extern tree check_cp_case_value			PROTO((tree));
 
 /* in edsel.c */
 
@@ -2217,6 +2218,7 @@ extern tree array_type_nelts_total		PROTO((tree));
 extern tree array_type_nelts_top		PROTO((tree));
 
 /* in typeck.c */
+extern tree bool_truthvalue_conversion		PROTO((tree));
 extern tree target_type				PROTO((tree));
 extern tree require_complete_type		PROTO((tree));
 extern int type_unknown_p			PROTO((tree));
@@ -2262,6 +2264,9 @@ extern tree build_x_conditional_expr		PROTO((tree, tree, tree));
 extern tree build_conditional_expr		PROTO((tree, tree, tree));
 extern tree build_x_compound_expr		PROTO((tree));
 extern tree build_compound_expr			PROTO((tree));
+extern tree build_static_cast			PROTO((tree, tree));
+extern tree build_reinterpret_cast		PROTO((tree, tree));
+extern tree build_const_cast			PROTO((tree, tree));
 extern tree build_c_cast			PROTO((tree, tree));
 extern tree build_modify_expr			PROTO((tree, enum tree_code, tree));
 extern int language_lvalue_valid		PROTO((tree));

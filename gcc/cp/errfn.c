@@ -120,7 +120,7 @@ cp_thing (errfn, atarg1, format, arglist)
 
 	  if (arg >= NARGS) abort ();
 	  
-	  if (maybe_here && atarg)
+	  if (maybe_here && atarg1)
 	    atarg = args[arg];
 
 	  /* Must use a temporary to avoid calling *function twice */

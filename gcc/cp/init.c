@@ -3566,7 +3566,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
   if (TREE_CODE (type) == POINTER_TYPE)
     {
-      type = TREE_TYPE (type);
+      type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
       if (TYPE_SIZE (type) == 0)
 	{
 	  incomplete_type_error (0, type);
@@ -3582,6 +3582,9 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	}
       if (TREE_SIDE_EFFECTS (addr))
 	addr = save_expr (addr);
+
+      /* throw away const and volatile on target type of addr */
+      addr = convert_force (build_pointer_type (type), addr);
       ref = build_indirect_ref (addr, NULL_PTR);
       ptr = 1;
     }

@@ -44,38 +44,17 @@ extern tree unary_complex_lvalue ();
 
 /* Compute the ease with which a conversion can be performed
    between an expected and the given type.  */
-static int convert_harshness_old ();
-static struct harshness_code convert_harshness_ansi ();
+static struct harshness_code convert_harshness ();
 
-/* OLD METHOD */
-/* Note the old method also uses USER_HARSHNESS, BASE_DERIVED_HARSHNESS,
-   CONST_HARSHNESS.  */
-#define EVIL 1
-#define TRIVIAL 0
-#define EVIL_HARSHNESS(ARG) ((ARG) & 1)
-#define ELLIPSIS_HARSHNESS(ARG) ((ARG) & 2)
-#define CONTRAVARIANT_HARSHNESS(ARG) ((ARG) & 8)
-#define INT_TO_BD_HARSHNESS(ARG) (((ARG) << 5) | 16)
-#define INT_FROM_BD_HARSHNESS(ARG) ((ARG) >> 5)
-#define INT_TO_EASY_HARSHNESS(ARG) ((ARG) << 5)
-#define INT_FROM_EASY_HARSHNESS(ARG) ((ARG) >> 5)
-#define ONLY_EASY_HARSHNESS(ARG) (((ARG) & 31) == 0)
-
-
-/* NEW METHOD */
 #define EVIL_RETURN(ARG)	((ARG).code = EVIL_CODE, (ARG))
 #define QUAL_RETURN(ARG)	((ARG).code = QUAL_CODE, (ARG))
 #define TRIVIAL_RETURN(ARG)	((ARG).code = TRIVIAL_CODE, (ARG))
 #define ZERO_RETURN(ARG)	((ARG).code = 0, (ARG))
 
-#define USER_HARSHNESS(ARG) ((ARG) & 4)
-#define BASE_DERIVED_HARSHNESS(ARG) ((ARG) & 16)
-#define CONST_HARSHNESS(ARG) ((ARG) & 2048)
-
 /* Ordering function for overload resolution.  Compare two candidates
    by gross quality.  */
 int
-rank_for_overload_ansi (x, y)
+rank_for_overload (x, y)
      struct candidate *x, *y;
 {
   if (y->h.code & (EVIL_CODE|ELLIPSIS_CODE|USER_CODE))
@@ -85,8 +64,8 @@ rank_for_overload_ansi (x, y)
 
   /* This is set by compute_conversion_costs, for calling a non-const
      member function from a const member function.  */
-  if ((y->v.ansi_harshness[0].code & CONST_CODE) ^ (x->v.ansi_harshness[0].code & CONST_CODE))
-    return y->v.ansi_harshness[0].code - x->v.ansi_harshness[0].code;
+  if ((y->harshness[0].code & CONST_CODE) ^ (x->harshness[0].code & CONST_CODE))
+    return y->harshness[0].code - x->harshness[0].code;
 
   if (y->h.code & STD_CODE)
     {
@@ -98,33 +77,6 @@ rank_for_overload_ansi (x, y)
     return -1;
 
   return y->h.code - x->h.code;
-}
-
-int
-rank_for_overload_old (x, y)
-     struct candidate *x, *y;
-{
-  if (y->evil - x->evil)
-    return y->evil - x->evil;
-  if (CONST_HARSHNESS (y->v.old_harshness[0]) ^ CONST_HARSHNESS (x->v.old_harshness[0]))
-    return y->v.old_harshness[0] - x->v.old_harshness[0];
-  if (y->ellipsis - x->ellipsis)
-    return y->ellipsis - x->ellipsis;
-  if (y->user - x->user)
-    return y->user - x->user;
-  if (y->b_or_d - x->b_or_d)
-    return y->b_or_d - x->b_or_d;
-  return y->easy - x->easy;
-}
-
-int
-rank_for_overload (x, y)
-     struct candidate *x, *y;
-{
-  if (flag_ansi_overloading)
-    return rank_for_overload_ansi (x, y);
-  else
-    return rank_for_overload_old (x, y);
 }
 
 /* Compare two candidates, argument by argument.  */
@@ -139,17 +91,17 @@ rank_for_ideal (x, y)
 
   for (i = 0; i < x->h_len; i++)
     {
-      if (y->v.ansi_harshness[i].code - x->v.ansi_harshness[i].code)
-	return y->v.ansi_harshness[i].code - x->v.ansi_harshness[i].code;
-      if ((y->v.ansi_harshness[i].code & STD_CODE)
-	  && (y->v.ansi_harshness[i].distance - x->v.ansi_harshness[i].distance))
-	return y->v.ansi_harshness[i].distance - x->v.ansi_harshness[i].distance;
+      if (y->harshness[i].code - x->harshness[i].code)
+	return y->harshness[i].code - x->harshness[i].code;
+      if ((y->harshness[i].code & STD_CODE)
+	  && (y->harshness[i].distance - x->harshness[i].distance))
+	return y->harshness[i].distance - x->harshness[i].distance;
 
       /* They're both the same code.  Now see if we're dealing with an
 	 integral promotion that needs a finer grain of accuracy.  */
-      if (y->v.ansi_harshness[0].code & PROMO_CODE
-	  && (y->v.ansi_harshness[i].int_penalty ^ x->v.ansi_harshness[i].int_penalty))
-	return y->v.ansi_harshness[i].int_penalty - x->v.ansi_harshness[i].int_penalty;
+      if (y->harshness[0].code & PROMO_CODE
+	  && (y->harshness[i].int_penalty ^ x->harshness[i].int_penalty))
+	return y->harshness[i].int_penalty - x->harshness[i].int_penalty;
     }
   return 0;
 }
@@ -158,7 +110,7 @@ rank_for_ideal (x, y)
    we have to work with.  We use a somewhat arbitrary cost function
    to measure this conversion.  */
 static struct harshness_code
-convert_harshness_ansi (type, parmtype, parm)
+convert_harshness (type, parmtype, parm)
      register tree type, parmtype;
      tree parm;
 {
@@ -213,7 +165,7 @@ convert_harshness_ansi (type, parmtype, parm)
       /* Compare return types.  */
       p1 = TREE_TYPE (type);
       p2 = TREE_TYPE (parmtype);
-      h2 = convert_harshness_ansi (p1, p2, NULL_TREE);
+      h2 = convert_harshness (p1, p2, NULL_TREE);
       if (h2.code & EVIL_CODE)
 	return h2;
 
@@ -262,7 +214,7 @@ convert_harshness_ansi (type, parmtype, parm)
       while (p1 && TREE_VALUE (p1) != void_type_node
 	     && p2 && TREE_VALUE (p2) != void_type_node)
 	{
-	  h2 = convert_harshness_ansi (TREE_VALUE (p1), TREE_VALUE (p2),
+	  h2 = convert_harshness (TREE_VALUE (p1), TREE_VALUE (p2),
 				       NULL_TREE);
 	  if (h2.code & EVIL_CODE)
 	    return h2;
@@ -341,7 +293,7 @@ convert_harshness_ansi (type, parmtype, parm)
   if (coder == VOID_TYPE)
     return EVIL_RETURN (h);
 
-  if (codel == ENUMERAL_TYPE || codel == INTEGER_TYPE)
+  if (INTEGRAL_CODE_P (codel))
     {
       /* Control equivalence of ints an enums.  */
 
@@ -356,7 +308,7 @@ convert_harshness_ansi (type, parmtype, parm)
 
       /* else enums and ints (almost) freely interconvert.  */
 
-      if (coder == INTEGER_TYPE || coder == ENUMERAL_TYPE)
+      if (INTEGRAL_CODE_P (coder))
 	{
 	  if (TYPE_MAIN_VARIANT (type)
 	      == TYPE_MAIN_VARIANT (type_promotes_to (parmtype)))
@@ -395,7 +347,7 @@ convert_harshness_ansi (type, parmtype, parm)
 	    
 	  return h;
 	}
-      else if (coder == INTEGER_TYPE || coder == ENUMERAL_TYPE)
+      else if (INTEGRAL_CODE_P (coder))
 	{
 	  h.code = STD_CODE;
 	  h.distance = 0;
@@ -625,12 +577,11 @@ convert_harshness_ansi (type, parmtype, parm)
 	   matter if we make life easier for the programmer
 	   by creating a temporary variable with which to
 	   hold the result.  */
-	if (parm && (coder == INTEGER_TYPE
-		     || coder == ENUMERAL_TYPE
+	if (parm && (INTEGRAL_CODE_P (coder)
 		     || coder == REAL_TYPE)
 	    && ! lvalue_p (parm))
 	  {
-	    h = convert_harshness_ansi (ttl, ttr, NULL_TREE);
+	    h = convert_harshness (ttl, ttr, NULL_TREE);
 	    if (penalty > 2 || h.code != 0)
 	      h.code |= STD_CODE;
 	    else
@@ -672,7 +623,7 @@ convert_harshness_ansi (type, parmtype, parm)
 
 	if (parm && codel != REFERENCE_TYPE)
 	  {
-	    h = convert_harshness_ansi (ttl, ttr, NULL_TREE);
+	    h = convert_harshness (ttl, ttr, NULL_TREE);
 	    if (penalty == 2)
 	      h.code |= QUAL_CODE;
 	    else if (penalty == 4)
@@ -731,468 +682,6 @@ convert_harshness_ansi (type, parmtype, parm)
   return EVIL_RETURN (h);
 }
 
-/* TYPE is the type we wish to convert to.  PARM is the parameter
-   we have to work with.  We use a somewhat arbitrary cost function
-   to measure this conversion.  */
-static int
-convert_harshness_old (type, parmtype, parm)
-     register tree type, parmtype;
-     tree parm;
-{
-  register enum tree_code codel;
-  register enum tree_code coder;
-
-#ifdef GATHER_STATISTICS
-  n_convert_harshness++;
-#endif
-
-  if (TYPE_PTRMEMFUNC_P (type))
-    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
-  if (TYPE_PTRMEMFUNC_P (parmtype))
-    parmtype = TYPE_PTRMEMFUNC_FN_TYPE (parmtype);
-
-  codel = TREE_CODE (type);
-  coder = TREE_CODE (parmtype);
-
-  if (TYPE_MAIN_VARIANT (parmtype) == TYPE_MAIN_VARIANT (type))
-    return TRIVIAL;
-
-  if (coder == ERROR_MARK)
-    return EVIL;
-
-  if (codel == POINTER_TYPE && fntype_p (parmtype))
-    {
-      tree p1, p2;
-      int harshness, new_harshness;
-
-      /* Get to the METHOD_TYPE or FUNCTION_TYPE that this might be.  */
-      type = TREE_TYPE (type);
-
-      if (coder == POINTER_TYPE)
-	{
-	  parmtype = TREE_TYPE (parmtype);
-	  coder = TREE_CODE (parmtype);
-	}
-
-      if (coder != TREE_CODE (type))
-	return EVIL;
-
-      harshness = 0;
-
-      /* We allow the default conversion between function type
-	 and pointer-to-function type for free.  */
-      if (type == parmtype)
-	return TRIVIAL;
-
-      /* Compare return types.  */
-      p1 = TREE_TYPE (type);
-      p2 = TREE_TYPE (parmtype);
-      new_harshness = convert_harshness_old (p1, p2, NULL_TREE);
-      if (EVIL_HARSHNESS (new_harshness))
-	return EVIL;
-
-      if (BASE_DERIVED_HARSHNESS (new_harshness))
-	{
-	  tree binfo;
-
-	  /* This only works for pointers.  */
-	  if (TREE_CODE (p1) != POINTER_TYPE
-	      && TREE_CODE (p1) != REFERENCE_TYPE)
-	    return EVIL;
-
-	  p1 = TREE_TYPE (p1);
-	  p2 = TREE_TYPE (p2);
-	  /* Don't die if we happen to be dealing with void*.  */
-	  if (!IS_AGGR_TYPE (p1) || !IS_AGGR_TYPE (p2))
-	    return EVIL;
-	  if (CONTRAVARIANT_HARSHNESS (new_harshness))
-	    binfo = get_binfo (p2, p1, 0);
-	  else
-	    binfo = get_binfo (p1, p2, 0);
-
-	  if (! BINFO_OFFSET_ZEROP (binfo))
-	    {
-	      static int explained = 0;
-	      if (CONTRAVARIANT_HARSHNESS (new_harshness))
-		message_2_types (sorry, "cannot cast `%d' to `%d' at function call site", p2, p1);
-	      else
-		message_2_types (sorry, "cannot cast `%d' to `%d' at function call site", p1, p2);
-
-	      if (! explained++)
-		sorry ("(because pointer values change during conversion)");
-	      return EVIL;
-	    }
-	}
-
-      harshness |= new_harshness;
-
-      p1 = TYPE_ARG_TYPES (type);
-      p2 = TYPE_ARG_TYPES (parmtype);
-      while (p1 && TREE_VALUE (p1) != void_type_node
-	     && p2 && TREE_VALUE (p2) != void_type_node)
-	{
-	  new_harshness = convert_harshness_old (TREE_VALUE (p1),
-						 TREE_VALUE (p2), NULL_TREE);
-	  if (EVIL_HARSHNESS (new_harshness))
-	    return EVIL;
-
-	  if (BASE_DERIVED_HARSHNESS (new_harshness))
-	    {
-	      /* This only works for pointers and references. */
-	      if (TREE_CODE (TREE_VALUE (p1)) != POINTER_TYPE
-		  && TREE_CODE (TREE_VALUE (p1)) != REFERENCE_TYPE)
-		return EVIL;
-	      new_harshness ^= CONTRAVARIANT_HARSHNESS (new_harshness);
-	      harshness |= new_harshness;
-	    }
-	  /* This trick allows use to accumulate easy type
-	     conversions without messing up the bits that encode
-	     info about more involved things.  */
-	  else if (ONLY_EASY_HARSHNESS (new_harshness))
-	    harshness += new_harshness;
-	  else
-	    harshness |= new_harshness;
-	  p1 = TREE_CHAIN (p1);
-	  p2 = TREE_CHAIN (p2);
-	}
-      if (p1 == p2)
-	return harshness;
-      if (p2)
-	return p1 ? EVIL : (harshness | ELLIPSIS_HARSHNESS (-1));
-      if (p1)
-	return harshness | (TREE_PURPOSE (p1) == NULL_TREE);
-    }
-  else if (codel == POINTER_TYPE && coder == OFFSET_TYPE)
-    {
-      /* XXX: Note this is set a few times, but it's never actually
-	 used! (bpk) */
-      int harshness;
-
-      /* Get to the OFFSET_TYPE that this might be.  */
-      type = TREE_TYPE (type);
-
-      if (coder != TREE_CODE (type))
-	return EVIL;
-
-      harshness = 0;
-
-      if (TYPE_OFFSET_BASETYPE (type) == TYPE_OFFSET_BASETYPE (parmtype))
-	harshness = 0;
-      else if (UNIQUELY_DERIVED_FROM_P (TYPE_OFFSET_BASETYPE (type),
-			       TYPE_OFFSET_BASETYPE (parmtype)))
-	harshness = INT_TO_BD_HARSHNESS (1);
-      else if (UNIQUELY_DERIVED_FROM_P (TYPE_OFFSET_BASETYPE (parmtype),
-			       TYPE_OFFSET_BASETYPE (type)))
-	harshness = CONTRAVARIANT_HARSHNESS (-1);
-      else
-	return EVIL;
-      /* Now test the OFFSET_TYPE's target compatibility.  */
-      type = TREE_TYPE (type);
-      parmtype = TREE_TYPE (parmtype);
-    }
-
-  if (coder == UNKNOWN_TYPE)
-    {
-      if (codel == FUNCTION_TYPE
-	  || codel == METHOD_TYPE
-	  || (codel == POINTER_TYPE
-	      && (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
-		  || TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE)))
-	return TRIVIAL;
-      return EVIL;
-    }
-
-  if (coder == VOID_TYPE)
-    return EVIL;
-
-  if (codel == ENUMERAL_TYPE || codel == INTEGER_TYPE)
-    {
-      /* Control equivalence of ints an enums.  */
-
-      if (codel == ENUMERAL_TYPE
-	  && flag_int_enum_equivalence == 0)
-	{
-	  /* Enums can be converted to ints, but not vice-versa.  */
-	  if (coder != ENUMERAL_TYPE
-	      || TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (parmtype))
-	    return EVIL;
-	}
-
-      /* else enums and ints (almost) freely interconvert.  */
-
-      if (coder == INTEGER_TYPE || coder == ENUMERAL_TYPE)
-	{
-	  int easy = TREE_UNSIGNED (type) ^ TREE_UNSIGNED (parmtype);
-	  if (codel != coder)
-	    easy += 1;
-	  if (TYPE_MODE (type) != TYPE_MODE (parmtype))
-	    easy += 2;
-	  return INT_TO_EASY_HARSHNESS (easy);
-	}
-      else if (coder == REAL_TYPE)
-	return INT_TO_EASY_HARSHNESS (4);
-    }
-
-  if (codel == REAL_TYPE)
-    if (coder == REAL_TYPE)
-      /* Shun converting between float and double if a choice exists.  */
-      {
-	if (TYPE_MODE (type) != TYPE_MODE (parmtype))
-	  return INT_TO_EASY_HARSHNESS (2);
-	return TRIVIAL;
-      }
-    else if (coder == INTEGER_TYPE || coder == ENUMERAL_TYPE)
-      return INT_TO_EASY_HARSHNESS (4);
-
-  /* convert arrays which have not previously been converted.  */
-  if (codel == ARRAY_TYPE)
-    codel = POINTER_TYPE;
-  if (coder == ARRAY_TYPE)
-    coder = POINTER_TYPE;
-
-  /* Conversions among pointers */
-  if (codel == POINTER_TYPE && coder == POINTER_TYPE)
-    {
-      register tree ttl = TYPE_MAIN_VARIANT (TREE_TYPE (type));
-      register tree ttr = TYPE_MAIN_VARIANT (TREE_TYPE (parmtype));
-      int penalty = 4 * (ttl != ttr);
-      /* Anything converts to void *.  void * converts to anything.
-	 Since these may be `const void *' (etc.) use VOID_TYPE
-	 instead of void_type_node.
-	 Otherwise, the targets must be the same,
-	 except that we do allow (at some cost) conversion
-	 between signed and unsinged pointer types.  */
-
-      if ((TREE_CODE (ttl) == METHOD_TYPE
-	   || TREE_CODE (ttl) == FUNCTION_TYPE)
-	  && TREE_CODE (ttl) == TREE_CODE (ttr))
-	{
-	  if (comptypes (ttl, ttr, -1))
-	    return INT_TO_EASY_HARSHNESS (penalty);
-	  return EVIL;
-	}
-
-      if (!(TREE_CODE (ttl) == VOID_TYPE
-	    || TREE_CODE (ttr) == VOID_TYPE
-	    || (TREE_UNSIGNED (ttl) ^ TREE_UNSIGNED (ttr)
-		&& (ttl = unsigned_type (ttl),
-		    ttr = unsigned_type (ttr),
-		    penalty = 10, 0))
-	    || (comp_target_types (ttl, ttr, 0))))
-	return EVIL;
-
-      if (penalty == 10)
-	return INT_TO_EASY_HARSHNESS (10);
-      if (ttr == ttl)
-	return INT_TO_BD_HARSHNESS (0);
-
-      if (TREE_CODE (ttl) == RECORD_TYPE && TREE_CODE (ttr) == RECORD_TYPE)
-	{
-	  int b_or_d = get_base_distance (ttl, ttr, 0, 0);
-	  if (b_or_d < 0)
-	    {
-	      b_or_d = get_base_distance (ttr, ttl, 0, 0);
-	      if (b_or_d < 0)
-		return EVIL;
-	      return CONTRAVARIANT_HARSHNESS (-1);
-	    }
-	  return INT_TO_BD_HARSHNESS (b_or_d);
-	}
-      /* If converting from a `class*' to a `void*', make it
-	 less favorable than any inheritance relationship.  */
-      if (TREE_CODE (ttl) == VOID_TYPE && IS_AGGR_TYPE (ttr))
-	return INT_TO_BD_HARSHNESS (CLASSTYPE_MAX_DEPTH (ttr)+1);
-      return INT_TO_EASY_HARSHNESS (penalty);
-    }
-
-  if (codel == POINTER_TYPE && coder == INTEGER_TYPE)
-    {
-      /* This is not a bad match, but don't let it beat
-	 integer-enum combinations.  */
-      if (parm && integer_zerop (parm))
-	return INT_TO_EASY_HARSHNESS (4);
-    }
-
-  /* C++: Since the `this' parameter of a signature member function
-     is represented as a signature pointer to handle default implementations
-     correctly, we can have the case that `type' is a signature pointer
-     while `parmtype' is a pointer to a signature table.  We don't really
-     do any conversions in this case, so just return 0.  */
-
-  if (codel == RECORD_TYPE && coder == POINTER_TYPE
-      && IS_SIGNATURE_POINTER (type) && IS_SIGNATURE (TREE_TYPE (parmtype)))
-    return 0;
-
-  /* C++: one of the types must be a reference type.  */
-  {
-    tree ttl, ttr;
-    register tree intype = TYPE_MAIN_VARIANT (parmtype);
-    register enum tree_code form = TREE_CODE (intype);
-    int penalty;
-
-    if (codel == REFERENCE_TYPE || coder == REFERENCE_TYPE)
-      {
-	ttl = TYPE_MAIN_VARIANT (type);
-
-	if (codel == REFERENCE_TYPE)
-	  {
-	    ttl = TREE_TYPE (ttl);
-
-	    /* When passing a non-const argument into a const reference,
-	       dig it a little, so a non-const reference is preferred over
-	       this one. (mrs) */
-	    if (parm && TREE_READONLY (ttl) && ! TREE_READONLY (parm))
-	      penalty = 2;
-	    else
-	      penalty = 0;
-
-	    ttl = TYPE_MAIN_VARIANT (ttl);
-
-	    if (form == OFFSET_TYPE)
-	      {
-		intype = TREE_TYPE (intype);
-		form = TREE_CODE (intype);
-	      }
-
-	    if (form == REFERENCE_TYPE)
-	      {
-		intype = TYPE_MAIN_VARIANT (TREE_TYPE (intype));
-
-		if (ttl == intype)
-		  return TRIVIAL;
-		penalty = 2;
-	      }
-	    else
-	      {
-		/* Can reference be built up?  */
-		if (ttl == intype && penalty == 0) {
-		  /* Because the READONLY bits and VIRTUAL bits are not always
-		     in the type, this extra check is necessary.  The problem
-		     should be fixed someplace else, and this extra code
-		     removed.
-
-		     Also, if type if a reference, the readonly bits could
-		     either be in the outer type (with reference) or on the
-		     inner type (the thing being referenced).  (mrs)  */
-		  if (parm
-		      && ((TREE_READONLY (parm)
-			   && ! (TYPE_READONLY (type)
-				 || (TREE_CODE (type) == REFERENCE_TYPE
-				     && TYPE_READONLY (TREE_TYPE (type)))))
-			  || (TREE_SIDE_EFFECTS (parm)
-			      && ! (TYPE_VOLATILE (type)
-				    || (TREE_CODE (type) == REFERENCE_TYPE
-					&& TYPE_VOLATILE (TREE_TYPE (type)))))))
-		    penalty = 2;
-		  else
-		    return TRIVIAL;
-		}
-		else
-		  penalty = 2;
-	      }
-	  }
-	else if (form == REFERENCE_TYPE)
-	  {
-	    if (parm)
-	      {
-		tree tmp = convert_from_reference (parm);
-		intype = TYPE_MAIN_VARIANT (TREE_TYPE (tmp));
-	      }
-	    else
-	      {
-		intype = parmtype;
-		do
-		  {
-		    intype = TREE_TYPE (intype);
-		  }
-		while (TREE_CODE (intype) == REFERENCE_TYPE);
-		intype = TYPE_MAIN_VARIANT (intype);
-	      }
-
-	    if (ttl == intype)
-	      return TRIVIAL;
-	    else
-	      penalty = 2;
-	  }
-
-	if (TREE_UNSIGNED (ttl) ^ TREE_UNSIGNED (intype))
-	  {
-	    ttl = unsigned_type (ttl);
-	    intype = unsigned_type (intype);
-	    penalty += 2;
-	  }
-
-	ttr = intype;
-
-	/* If the initializer is not an lvalue, then it does not
-	   matter if we make life easier for the programmer
-	   by creating a temporary variable with which to
-	   hold the result.  */
-	if (parm && (coder == INTEGER_TYPE
-		     || coder == ENUMERAL_TYPE
-		     || coder == REAL_TYPE)
-	    && ! lvalue_p (parm))
-	  return (convert_harshness_old (ttl, ttr, NULL_TREE)
-		  | INT_TO_EASY_HARSHNESS (penalty));
-
-	if (ttl == ttr)
-	  {
-	    if (penalty)
-	      return INT_TO_EASY_HARSHNESS (penalty);
-	    return INT_TO_BD_HARSHNESS (0);
-	  }
-
-	/* Pointers to voids always convert for pointers.  But
-	   make them less natural than more specific matches.  */
-	if (TREE_CODE (ttl) == POINTER_TYPE && TREE_CODE (ttr) == POINTER_TYPE)
-	  if (TREE_TYPE (ttl) == void_type_node
-	      || TREE_TYPE (ttr) == void_type_node)
-	    return INT_TO_EASY_HARSHNESS (penalty+1);
-
-	if (parm && codel != REFERENCE_TYPE)
-	  return (convert_harshness_old (ttl, ttr, NULL_TREE)
-		  | INT_TO_EASY_HARSHNESS (penalty));
-
-	/* Here it does matter.  If this conversion is from
-	   derived to base, allow it.  Otherwise, types must
-	   be compatible in the strong sense.  */
-	if (TREE_CODE (ttl) == RECORD_TYPE && TREE_CODE (ttr) == RECORD_TYPE)
-	  {
-	    int b_or_d = get_base_distance (ttl, ttr, 0, 0);
-	    if (b_or_d < 0)
-	      {
-		b_or_d = get_base_distance (ttr, ttl, 0, 0);
-		if (b_or_d < 0)
-		  return EVIL;
-		return CONTRAVARIANT_HARSHNESS (-1);
-	      }
-	    /* Say that this conversion is relatively painless.
-	       If it turns out that there is a user-defined X(X&)
-	       constructor, then that will be invoked, but that's
-	       preferable to dealing with other user-defined conversions
-	       that may produce surprising results.  */
-	    return INT_TO_BD_HARSHNESS (b_or_d);
-	  }
-
-	if (comp_target_types (ttl, intype, 1))
-	  return INT_TO_EASY_HARSHNESS (penalty);
-      }
-  }
-  if (codel == RECORD_TYPE && coder == RECORD_TYPE)
-    {
-      int b_or_d = get_base_distance (type, parmtype, 0, 0);
-      if (b_or_d < 0)
-	{
-	  b_or_d = get_base_distance (parmtype, type, 0, 0);
-	  if (b_or_d < 0)
-	    return EVIL;
-	  return CONTRAVARIANT_HARSHNESS (-1);
-	}
-      return INT_TO_BD_HARSHNESS (b_or_d);
-    }
-  return EVIL;
-}
-
 #ifdef DEBUG_MATCHING
 static char *
 print_harshness (h)
@@ -1243,7 +732,7 @@ print_harshness (h)
    must be unique.  */
 
 void
-compute_conversion_costs_ansi (function, tta_in, cp, arglen)
+compute_conversion_costs (function, tta_in, cp, arglen)
      tree function;
      tree tta_in;
      struct candidate *cp;
@@ -1274,7 +763,7 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
   cp->h.code = 0;
   cp->h.distance = 0;
   cp->h.int_penalty = 0;
-  bzero (cp->v.ansi_harshness,
+  bzero (cp->harshness,
 	 (cp->h_len + 1) * sizeof (struct harshness_code));
 
   while (ttf && tta)
@@ -1305,7 +794,7 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
 	  if (TREE_CODE (rhs) == ERROR_MARK)
 	    h.code = EVIL_CODE;
 	  else
-	    h = convert_harshness_ansi (lhstype, TREE_TYPE (rhs), rhs);
+	    h = convert_harshness (lhstype, TREE_TYPE (rhs), rhs);
 	}
       else
 	{
@@ -1323,7 +812,7 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
 		    TREE_VALUE (ttf));
 #endif
 
-	  h = convert_harshness_ansi (TREE_VALUE (ttf),
+	  h = convert_harshness (TREE_VALUE (ttf),
 				      TREE_TYPE (TREE_VALUE (tta)),
 				      TREE_VALUE (tta));
 
@@ -1332,7 +821,7 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
 #endif
 	}
 
-      cp->v.ansi_harshness[strike_index] = h;
+      cp->harshness[strike_index] = h;
       if ((h.code & EVIL_CODE)
 	  || ((h.code & STD_CODE) && h.distance < 0))
 	{
@@ -1342,7 +831,7 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
      else if (h.code & ELLIPSIS_CODE)
        ellipsis_strikes += 1;
 #if 0
-      /* This is never set by `convert_harshness_ansi'.  */
+      /* This is never set by `convert_harshness'.  */
       else if (h.code & USER_CODE)
 	{
 	  user_strikes += 1;
@@ -1385,7 +874,7 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
 	  h.distance = 0;
 	  h.int_penalty = 0;
 	  for (; l; --l)
-	    cp->v.ansi_harshness[strike_index++] = h;
+	    cp->harshness[strike_index++] = h;
 	}
     }
   else if (ttf && ttf != void_list_node)
@@ -1398,10 +887,10 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
 	  return;
 	}
       /* Store index of first default.  */
-      cp->v.ansi_harshness[arglen].distance = strike_index+1;
+      cp->harshness[arglen].distance = strike_index+1;
     }
   else
-    cp->v.ansi_harshness[arglen].distance = 0;
+    cp->harshness[arglen].distance = 0;
 
   /* Argument list lengths work out, so don't need to check them again.  */
   if (evil_strikes)
@@ -1431,7 +920,7 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
 	  if (ttf == void_list_node)
 	    break;
 
-	  lose = cp->v.ansi_harshness[strike_index];
+	  lose = cp->harshness[strike_index];
 	  if ((lose.code & EVIL_CODE)
 	      || ((lose.code & STD_CODE) && lose.distance < 0))
 	    {
@@ -1510,7 +999,7 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
 	      if (win == 1)
 		{
 		  user_strikes += 1;
-		  cp->v.ansi_harshness[strike_index].code
+		  cp->harshness[strike_index].code
 		    = USER_CODE | (extra_conversions ? STD_CODE : 0);
 		  win = 0;
 		}
@@ -1543,7 +1032,7 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
 	    ? TYPE_READONLY (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (this_parm))))
 	    : TYPE_READONLY (TREE_TYPE (this_parm)))
 	{
-	  cp->v.ansi_harshness[0].code |= TRIVIAL_CODE;
+	  cp->harshness[0].code |= TRIVIAL_CODE;
 	  ++easy_strikes;
 	}
       else
@@ -1554,7 +1043,7 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
 	     harshness to a maximum value.  */
 	  if (TREE_CODE (TREE_TYPE (TREE_VALUE (tta_in))) == POINTER_TYPE
 	      && (TYPE_READONLY (TREE_TYPE (TREE_TYPE (TREE_VALUE (tta_in))))))
-	    cp->v.ansi_harshness[0].code |= CONST_CODE;
+	    cp->harshness[0].code |= CONST_CODE;
 	}
     }
 
@@ -1567,636 +1056,6 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
 #ifdef DEBUG_MATCHING
   cp_error ("final eval %s", print_harshness (&cp->h));
 #endif
-}
-
-void
-compute_conversion_costs_old (function, tta_in, cp, arglen)
-     tree function;
-     tree tta_in;
-     struct candidate *cp;
-     int arglen;
-{
-  tree ttf_in = TYPE_ARG_TYPES (TREE_TYPE (function));
-  tree ttf = ttf_in;
-  tree tta = tta_in;
-
-  /* Start out with no strikes against.  */
-  int evil_strikes = 0;
-  int ellipsis_strikes = 0;
-  int user_strikes = 0;
-  int b_or_d_strikes = 0;
-  int easy_strikes = 0;
-
-  int strike_index = 0, win, lose;
-
-#ifdef GATHER_STATISTICS
-  n_compute_conversion_costs++;
-#endif
-
-  cp->function = function;
-  cp->arg = tta ? TREE_VALUE (tta) : NULL_TREE;
-  cp->u.bad_arg = 0;		/* optimistic!  */
-
-  bzero (cp->v.old_harshness, (cp->h_len + 1) * sizeof (unsigned short));
-
-  while (ttf && tta)
-    {
-      int harshness;
-
-      if (ttf == void_list_node)
-	break;
-
-      if (type_unknown_p (TREE_VALUE (tta)))
-	{	  
-	  /* Must perform some instantiation here.  */
-	  tree rhs = TREE_VALUE (tta);
-	  tree lhstype = TREE_VALUE (ttf);
-
-	  /* Keep quiet about possible contravariance violations.  */
-	  int old_inhibit_warnings = inhibit_warnings;
-	  inhibit_warnings = 1;
-
-	  /* @@ This is to undo what `grokdeclarator' does to
-	     parameter types.  It really should go through
-	     something more general.  */
-
-	  TREE_TYPE (tta) = unknown_type_node;
-	  rhs = instantiate_type (lhstype, rhs, 0);
-	  inhibit_warnings = old_inhibit_warnings;
-
-	  if (TREE_CODE (rhs) == ERROR_MARK)
-	    harshness = 1;
-	  else
-	    {
-	      harshness = convert_harshness_old (lhstype, TREE_TYPE (rhs),
-						 rhs);
-	      /* harshness |= 2; */
-	    }
-	}
-      else
-	harshness = convert_harshness_old (TREE_VALUE (ttf),
-					   TREE_TYPE (TREE_VALUE (tta)),
-					   TREE_VALUE (tta));
-
-      cp->v.old_harshness[strike_index] = harshness;
-      if (EVIL_HARSHNESS (harshness)
-	  || CONTRAVARIANT_HARSHNESS (harshness))
-	{
-	  cp->u.bad_arg = strike_index;
-	  evil_strikes = 1;
-	}
-     else if (ELLIPSIS_HARSHNESS (harshness))
-	{
-	  ellipsis_strikes += 1;
-	}
-#if 0
-      /* This is never set by `convert_harshness_old'.  */
-      else if (USER_HARSHNESS (harshness))
-	{
-	  user_strikes += 1;
-	}
-#endif
-      else if (BASE_DERIVED_HARSHNESS (harshness))
-	{
-	  b_or_d_strikes += INT_FROM_BD_HARSHNESS (harshness);
-	}
-      else
-	easy_strikes += INT_FROM_EASY_HARSHNESS (harshness);
-      ttf = TREE_CHAIN (ttf);
-      tta = TREE_CHAIN (tta);
-      strike_index += 1;
-    }
-
-  if (tta)
-    {
-      /* ran out of formals, and parmlist is fixed size.  */
-      if (ttf /* == void_type_node */)
-	{
-	  cp->evil = 1;
-	  cp->u.bad_arg = -1;
-	  return;
-	}
-      else ellipsis_strikes += list_length (tta);
-    }
-  else if (ttf && ttf != void_list_node)
-    {
-      /* ran out of actuals, and no defaults.  */
-      if (TREE_PURPOSE (ttf) == NULL_TREE)
-	{
-	  cp->evil = 1;
-	  cp->u.bad_arg = -2;
-	  return;
-	}
-      /* Store index of first default.  */
-      cp->v.old_harshness[arglen] = strike_index+1;
-    }
-  else
-    cp->v.old_harshness[arglen] = 0;
-
-  /* Argument list lengths work out, so don't need to check them again.  */
-  if (evil_strikes)
-    {
-      /* We do not check for derived->base conversions here, since in
-	 no case would they give evil strike counts, unless such conversions
-	 are somehow ambiguous.  */
-
-      /* See if any user-defined conversions apply.
-         But make sure that we do not loop.  */
-      static int dont_convert_types = 0;
-
-      if (dont_convert_types)
-	{
-	  cp->evil = 1;
-	  return;
-	}
-
-      win = 0;			/* Only get one chance to win.  */
-      ttf = TYPE_ARG_TYPES (TREE_TYPE (function));
-      tta = tta_in;
-      strike_index = 0;
-      evil_strikes = 0;
-
-      while (ttf && tta)
-	{
-	  if (ttf == void_list_node)
-	    break;
-
-	  lose = cp->v.old_harshness[strike_index];
-	  if (EVIL_HARSHNESS (lose)
-	      || CONTRAVARIANT_HARSHNESS (lose))
-	    {
-	      tree actual_type = TREE_TYPE (TREE_VALUE (tta));
-	      tree formal_type = TREE_VALUE (ttf);
-
-	      dont_convert_types = 1;
-
-	      if (TREE_CODE (formal_type) == REFERENCE_TYPE)
-		formal_type = TREE_TYPE (formal_type);
-	      if (TREE_CODE (actual_type) == REFERENCE_TYPE)
-		actual_type = TREE_TYPE (actual_type);
-
-	      if (formal_type != error_mark_node
-		  && actual_type != error_mark_node)
-		{
-		  formal_type = TYPE_MAIN_VARIANT (formal_type);
-		  actual_type = TYPE_MAIN_VARIANT (actual_type);
-
-		  if (TYPE_HAS_CONSTRUCTOR (formal_type))
-		    {
-		      /* If it has a constructor for this type, try to use it.  */
-		      if (convert_to_aggr (formal_type, TREE_VALUE (tta), 0, 1)
-			  != error_mark_node)
-			{
-			  /* @@ There is no way to save this result yet.
-			     @@ So success is NULL_TREE for now.  */
-			  win++;
-			}
-		    }
-		  if (TYPE_LANG_SPECIFIC (actual_type) && TYPE_HAS_CONVERSION (actual_type))
-		    {
-		      if (TREE_CODE (formal_type) == INTEGER_TYPE
-			  && TYPE_HAS_INT_CONVERSION (actual_type))
-			win++;
-		      else if (TREE_CODE (formal_type) == REAL_TYPE
-			       && TYPE_HAS_REAL_CONVERSION (actual_type))
-			win++;
-		      else
-			{
-			  tree conv = build_type_conversion (CALL_EXPR, TREE_VALUE (ttf), TREE_VALUE (tta), 0);
-			  if (conv)
-			    {
-			      if (conv == error_mark_node)
-				win += 2;
-			      else
-				win++;
-			    }
-			  else if (TREE_CODE (TREE_VALUE (ttf)) == REFERENCE_TYPE)
-			    {
-			      conv = build_type_conversion (CALL_EXPR, formal_type, TREE_VALUE (tta), 0);
-			      if (conv)
-				{
-				  if (conv == error_mark_node)
-				    win += 2;
-				  else
-				    win++;
-				}
-			    }
-			}
-		    }
-		}
-	      dont_convert_types = 0;
-
-	      if (win == 1)
-		{
-		  user_strikes += 1;
-		  cp->v.old_harshness[strike_index] = USER_HARSHNESS (-1);
-		  win = 0;
-		}
-	      else
-		{
-		  if (cp->u.bad_arg > strike_index)
-		    cp->u.bad_arg = strike_index;
-
-		  evil_strikes = win ? 2 : 1;
-		  break;
-		}
-	    }
-
-	  ttf = TREE_CHAIN (ttf);
-	  tta = TREE_CHAIN (tta);
-	  strike_index += 1;
-	}
-    }
-
-  /* Const member functions get a small penalty because defaulting
-     to const is less useful than defaulting to non-const. */
-  /* This is bogus, it does not correspond to anything in the ARM.
-     This code will be fixed when this entire section is rewritten
-     to conform to the ARM.  (mrs)  */
-  if (TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE)
-    {
-      tree this_parm = TREE_VALUE (ttf_in);
-
-      if (TREE_CODE (this_parm) == RECORD_TYPE	/* Is `this' a sig ptr?  */
-	    ? TYPE_READONLY (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (this_parm))))
-	    : TYPE_READONLY (TREE_TYPE (this_parm)))
-	{
-	  cp->v.old_harshness[0] += INT_TO_EASY_HARSHNESS (1);
-	  ++easy_strikes;
-	}
-      else
-	{
-	  /* Calling a non-const member function from a const member function
-	     is probably invalid, but for now we let it only draw a warning.
-	     We indicate that such a mismatch has occurred by setting the
-	     harshness to a maximum value.  */
-	  if (TREE_CODE (TREE_TYPE (TREE_VALUE (tta_in))) == POINTER_TYPE
-	      && (TYPE_READONLY (TREE_TYPE (TREE_TYPE (TREE_VALUE (tta_in))))))
-	    cp->v.old_harshness[0] |= CONST_HARSHNESS (-1);
-	}
-    }
-
-  cp->evil = evil_strikes;
-  cp->ellipsis = ellipsis_strikes;
-  cp->user = user_strikes;
-  cp->b_or_d = b_or_d_strikes;
-  cp->easy = easy_strikes;
-}
-
-void
-compute_conversion_costs (function, tta_in, cp, arglen)
-     tree function;
-     tree tta_in;
-     struct candidate *cp;
-     int arglen;
-{
-  if (flag_ansi_overloading)
-    compute_conversion_costs_ansi (function, tta_in, cp, arglen);
-  else
-    compute_conversion_costs_old (function, tta_in, cp, arglen);
-}
-
-/* When one of several possible overloaded functions and/or methods
-   can be called, choose the best candidate for overloading.
-
-   BASETYPE is the context from which we start method resolution
-   or NULL if we are comparing overloaded functions.
-   CANDIDATES is the array of candidates we have to choose from.
-   N_CANDIDATES is the length of CANDIDATES.
-   PARMS is a TREE_LIST of parameters to the function we'll ultimately
-   choose.  It is modified in place when resolving methods.  It is not
-   modified in place when resolving overloaded functions.
-   LEN is the length of the parameter list.  */
-
-static struct candidate *
-ideal_candidate_old (basetype, candidates, n_candidates, parms, len)
-     tree basetype;
-     struct candidate *candidates;
-     int n_candidates;
-     tree parms;
-     int len;
-{
-  struct candidate *cp = candidates + n_candidates;
-  int index, i;
-  tree ttf;
-
-  qsort (candidates,		/* char *base */
-	 n_candidates,		/* int nel */
-	 sizeof (struct candidate), /* int width */
-	 rank_for_overload);	/* int (*compar)() */
-
-  /* If the best candidate requires user-defined conversions,
-     and its user-defined conversions are a strict subset
-     of all other candidates requiring user-defined conversions,
-     then it is, in fact, the best.  */
-  for (i = -1; cp + i != candidates; i--)
-    if (cp[i].user == 0)
-      break;
-
-  if (i < -1)
-    {
-      tree ttf0;
-
-      /* Check that every other candidate requires those conversions
-	 as a strict subset of their conversions.  */
-      if (cp[i].user == cp[-1].user)
-	goto non_subset;
-
-      /* Look at subset relationship more closely.  */
-      while (i != -1)
-	{
-	  for (ttf = TYPE_ARG_TYPES (TREE_TYPE (cp[i].function)),
-	       ttf0 = TYPE_ARG_TYPES (TREE_TYPE (cp[-1].function)),
-	       index = 0; index < len; index++)
-	    {
-	      if (USER_HARSHNESS (cp[i].v.old_harshness[index]))
-		{
-		  /* If our "best" candidate also needs a conversion,
-		     it must be the same one.  */
-		  if (USER_HARSHNESS (cp[-1].v.old_harshness[index])
-		      && TREE_VALUE (ttf) != TREE_VALUE (ttf0))
-		    goto non_subset;
-		}
-	      ttf = TREE_CHAIN (ttf);
-	      ttf0 = TREE_CHAIN (ttf0);
-	      /* Handle `...' gracefully.  */
-	      if (ttf == NULL_TREE || ttf0 == NULL_TREE)
-		break;
-	    }
-	  i++;
-	}
-      /* The best was the best.  */
-      return cp - 1;
-    non_subset:
-      /* Use other rules for determining "bestness".  */
-      ;
-    }
-
-  /* If the best two candidates we find require user-defined
-     conversions, we may need to report and error message.  */
-  if (cp[-1].user && cp[-2].user
-      && (cp[-1].b_or_d || cp[-2].b_or_d == 0))
-    {
-      /* If the best two methods found involved user-defined
-	 type conversions, then we must see whether one
-	 of them is exactly what we wanted.  If not, then
-	 we have an ambiguity.  */
-      int best = 0;
-      tree tta = parms;
-      tree f1;
-#if 0
-      /* for LUCID */
-      tree p1;
-#endif
-
-      /* Stash all of our parameters in safe places
-	 so that we can perform type conversions in place.  */
-      while (tta)
-	{
-	  TREE_PURPOSE (tta) = TREE_VALUE (tta);
-	  tta = TREE_CHAIN (tta);
-	}
-
-      i = 0;
-      do
-	{
-	  int exact_conversions = 0;
-
-	  i -= 1;
-	  tta = parms;
-	  if (DECL_STATIC_FUNCTION_P (cp[i].function))
-	    tta = TREE_CHAIN (tta);
-	  /* special note, we don't go through len parameters, because we
-	     may only need len-1 parameters because of a call to a static
-	     member. */
-	  for (ttf = TYPE_ARG_TYPES (TREE_TYPE (cp[i].function)), index = 0;
-	       tta;
-	       tta = TREE_CHAIN (tta), ttf = TREE_CHAIN (ttf), index++)
-	    {
-	      /* If this is a varargs function, there's no conversion to do,
-		 but don't accept an arg that needs a copy ctor.  */
-	      if (ttf == NULL_TREE)
-		{
-		  /* FIXME: verify that we cannot get here with an
-		     arg that needs a ctor.  */
-		  break;
-		}
-
-	      if (USER_HARSHNESS (cp[i].v.old_harshness[index]))
-		{
-		  tree this_parm = build_type_conversion (CALL_EXPR, TREE_VALUE (ttf), TREE_PURPOSE (tta), 2);
-		  if (basetype != NULL_TREE)
-		    TREE_VALUE (tta) = this_parm;
-		  if (this_parm)
-		    {
-		      if (TREE_CODE (this_parm) != CONVERT_EXPR
-			  && (TREE_CODE (this_parm) != NOP_EXPR
-			      || comp_target_types (TREE_TYPE (this_parm),
-						    TREE_TYPE (TREE_OPERAND (this_parm, 0)), 1)))
-			exact_conversions += 1;
-		    }
-		  else if (PROMOTES_TO_AGGR_TYPE (TREE_VALUE (ttf), REFERENCE_TYPE))
-		    {
-		      /* To get here we had to have succeeded via
-			 a constructor.  */
-		      TREE_VALUE (tta) = TREE_PURPOSE (tta);
-		      exact_conversions += 1;
-		    }
-		}
-	    }
-	  if (exact_conversions == cp[i].user)
-	    {
-	      if (best == 0)
-		{
-		  best = i;
-		  f1 = cp[best].function;
-#if 0
-		  /* For LUCID */
-		  p1 = TYPE_ARG_TYPES (TREE_TYPE (f1));
-#endif
-		}
-	      else
-		{
-		  /* Don't complain if next best is from base class.  */
-		  tree f2 = cp[i].function;
-
-		  if (TREE_CODE (TREE_TYPE (f1)) == METHOD_TYPE
-		      && TREE_CODE (TREE_TYPE (f2)) == METHOD_TYPE
-		      && BASE_DERIVED_HARSHNESS (cp[i].v.old_harshness[0])
-		      && cp[best].v.old_harshness[0] < cp[i].v.old_harshness[0])
-		    {
-#if 0
-		      tree p2 = TYPE_ARG_TYPES (TREE_TYPE (f2));
-		      /* For LUCID.  */
-		      if (! compparms (TREE_CHAIN (p1), TREE_CHAIN (p2), 1))
-			goto ret0;
-		      else
-#endif
-			continue;
-		    }
-		  else
-		    {
-		      /* Ensure that there's nothing ambiguous about these
-			 two fns.  */
-		      int identical = 1;
-		      for (index = 0; index < len; index++)
-			{
-			  /* Type conversions must be piecewise equivalent.  */
-			  if (USER_HARSHNESS (cp[best].v.old_harshness[index])
-			      != USER_HARSHNESS (cp[i].v.old_harshness[index]))
-			    goto ret0;
-			  /* If there's anything we like better about the
-			     other function, consider it ambiguous.  */
-			  if (cp[i].v.old_harshness[index] < cp[best].v.old_harshness[index])
-			    goto ret0;
-			  /* If any single one it diffent, then the whole is
-			     not identical.  */
-			  if (cp[i].v.old_harshness[index] != cp[best].v.old_harshness[index])
-			    identical = 0;
-			}
-
-		      /* If we can't tell the difference between the two, it
-			 is ambiguous.  */
-		      if (identical)
-			goto ret0;
-
-		      /* If we made it to here, it means we're satisfied that
-			 BEST is still best.  */
-		      continue;
-		    }
-		}
-	    }
-	} while (cp + i != candidates);
-
-      if (best)
-	{
-	  int exact_conversions = cp[best].user;
-	  tta = parms;
-	  if (DECL_STATIC_FUNCTION_P (cp[best].function))
-	    tta = TREE_CHAIN (parms);
-	  for (ttf = TYPE_ARG_TYPES (TREE_TYPE (cp[best].function)), index = 0;
-	       exact_conversions > 0;
-	       tta = TREE_CHAIN (tta), ttf = TREE_CHAIN (ttf), index++)
-	    {
-	      if (USER_HARSHNESS (cp[best].v.old_harshness[index]))
-		{
-		  /* We must now fill in the slot we left behind.
-		     @@ This could be optimized to use the value previously
-		     @@ computed by build_type_conversion in some cases.  */
-		  if (basetype != NULL_TREE)
-		    TREE_VALUE (tta) = convert (TREE_VALUE (ttf), TREE_PURPOSE (tta));
-		  exact_conversions -= 1;
-		}
-	      else
-		TREE_VALUE (tta) = TREE_PURPOSE (tta);
-	    }
-	  return cp + best;
-	}
-      goto ret0;
-    }
-  /* If the best two candidates we find both use default parameters,
-     we may need to report and error.  Don't need to worry if next-best
-     candidate is forced to use user-defined conversion when best is not.  */
-  if (cp[-2].user == 0
-      && cp[-1].v.old_harshness[len] != 0 && cp[-2].v.old_harshness[len] != 0)
-    {
-      tree tt1 = TYPE_ARG_TYPES (TREE_TYPE (cp[-1].function));
-      tree tt2 = TYPE_ARG_TYPES (TREE_TYPE (cp[-2].function));
-      unsigned i = cp[-1].v.old_harshness[len];
-
-      if (cp[-2].v.old_harshness[len] < i)
-	i = cp[-2].v.old_harshness[len];
-      while (--i > 0)
-	{
-	  if (TYPE_MAIN_VARIANT (TREE_VALUE (tt1))
-	      != TYPE_MAIN_VARIANT (TREE_VALUE (tt2)))
-	    /* These lists are not identical, so we can choose our best candidate.  */
-	    return cp - 1;
-	  tt1 = TREE_CHAIN (tt1);
-	  tt2 = TREE_CHAIN (tt2);
-	}
-      /* To get here, both lists had the same parameters up to the defaults
-	 which were used.  This is an ambiguous request.  */
-      goto ret0;
-    }
-
-  /* Otherwise, return our best candidate.  Note that if we get candidates
-     from independent base classes, we have an ambiguity, even if one
-     argument list look a little better than another one.  */
-  if (cp[-1].b_or_d && basetype && TYPE_USES_MULTIPLE_INHERITANCE (basetype))
-    {
-      int i = n_candidates - 1, best = i;
-      tree base1 = NULL_TREE;
-
-      if (TREE_CODE (TREE_TYPE (candidates[i].function)) == FUNCTION_TYPE)
-	return cp - 1;
-
-      for (; i >= 0 && candidates[i].user == 0 && candidates[i].evil == 0; i--)
-	{
-	  if (TREE_CODE (TREE_TYPE (candidates[i].function)) == METHOD_TYPE)
-	    {
-	      tree newbase = DECL_CLASS_CONTEXT (candidates[i].function);
-
-	      if (base1 != NULL_TREE)
-		{
-		  /* newbase could be a base or a parent of base1 */
-		  if (newbase != base1 && ! UNIQUELY_DERIVED_FROM_P (newbase, base1)
-		      && ! UNIQUELY_DERIVED_FROM_P (base1, newbase))
-		    {
-		      cp_error ("ambiguous request for function from distinct base classes of type `%T'", basetype);
-		      cp_error_at ("  first candidate is `%#D'",
-				     candidates[best].function);
-		      cp_error_at ("  second candidate is `%#D'",
-				     candidates[i].function);
-		      cp[-1].evil = 1;
-		      return cp - 1;
-		    }
-		}
-	      else
-		{
-		  best = i;
-		  base1 = newbase;
-		}
-	    }
-	  else
-	    return cp - 1;
-	}
-    }
-
-  /* Don't accept a candidate as being ideal if it's indistinguishable
-     from another candidate.  */
-  if (rank_for_overload (cp-1, cp-2) == 0)
-    {
-      /* If the types are distinguishably different (like
-	 `long' vs. `unsigned long'), that's ok.  But if they are arbitrarily
-	 different, such as `int (*)(void)' vs. `void (*)(int)',
-	 that's not ok.  */
-      tree p1 = TYPE_ARG_TYPES (TREE_TYPE (cp[-1].function));
-      tree p2 = TYPE_ARG_TYPES (TREE_TYPE (cp[-2].function));
-      while (p1 && p2)
-	{
-	  if (TREE_CODE (TREE_VALUE (p1)) == POINTER_TYPE
-	      && TREE_CODE (TREE_TYPE (TREE_VALUE (p1))) == FUNCTION_TYPE
-	      && TREE_VALUE (p1) != TREE_VALUE (p2))
-	    return NULL;
-	  p1 = TREE_CHAIN (p1);
-	  p2 = TREE_CHAIN (p2);
-	}
-      if (p1 || p2)
-	return NULL;
-    }
-
-  return cp - 1;
-
- ret0:
-  /* In the case where there is no ideal candidate, restore
-     TREE_VALUE slots of PARMS from TREE_PURPOSE slots.  */
-  while (parms)
-    {
-      TREE_VALUE (parms) = TREE_PURPOSE (parms);
-      parms = TREE_CHAIN (parms);
-    }
-  return NULL;
 }
 
 /* Subroutine of ideal_candidate.  See if X or Y is a better match
@@ -2216,8 +1075,20 @@ strictly_better (x, y)
   return 0;
 }
 
+/* When one of several possible overloaded functions and/or methods
+   can be called, choose the best candidate for overloading.
+
+   BASETYPE is the context from which we start method resolution
+   or NULL if we are comparing overloaded functions.
+   CANDIDATES is the array of candidates we have to choose from.
+   N_CANDIDATES is the length of CANDIDATES.
+   PARMS is a TREE_LIST of parameters to the function we'll ultimately
+   choose.  It is modified in place when resolving methods.  It is not
+   modified in place when resolving overloaded functions.
+   LEN is the length of the parameter list.  */
+
 static struct candidate *
-ideal_candidate_ansi (basetype, candidates, n_candidates, parms, len)
+ideal_candidate (basetype, candidates, n_candidates, parms, len)
      tree basetype;
      struct candidate *candidates;
      int n_candidates;
@@ -2278,27 +1149,27 @@ ideal_candidate_ansi (basetype, candidates, n_candidates, parms, len)
 	     rank_for_ideal);
       for (i = 0; i < len; i++)
 	{
-	  if (cp[-1].v.ansi_harshness[i].code < cp[-2].v.ansi_harshness[i].code)
+	  if (cp[-1].harshness[i].code < cp[-2].harshness[i].code)
 	    better = 1;
-	  else if (cp[-1].v.ansi_harshness[i].code > cp[-2].v.ansi_harshness[i].code)
+	  else if (cp[-1].harshness[i].code > cp[-2].harshness[i].code)
 	    worse = 1;
-	  else if (cp[-1].v.ansi_harshness[i].code & STD_CODE)
+	  else if (cp[-1].harshness[i].code & STD_CODE)
 	    {
 	      /* If it involves a standard conversion, let the
 		 inheritance lattice be the final arbiter.  */
-	      if (cp[-1].v.ansi_harshness[i].distance > cp[-2].v.ansi_harshness[i].distance)
+	      if (cp[-1].harshness[i].distance > cp[-2].harshness[i].distance)
 		worse = 1;
-	      else if (cp[-1].v.ansi_harshness[i].distance < cp[-2].v.ansi_harshness[i].distance)
+	      else if (cp[-1].harshness[i].distance < cp[-2].harshness[i].distance)
 		better = 1;
 	    }
-	  else if (cp[-1].v.ansi_harshness[i].code & PROMO_CODE)
+	  else if (cp[-1].harshness[i].code & PROMO_CODE)
 	    {
 	      /* For integral promotions, take into account a finer
 		 granularity for determining which types should be favored
 		 over others in such promotions.  */
-	      if (cp[-1].v.ansi_harshness[i].int_penalty > cp[-2].v.ansi_harshness[i].int_penalty)
+	      if (cp[-1].harshness[i].int_penalty > cp[-2].harshness[i].int_penalty)
 		worse = 1;
-	      else if (cp[-1].v.ansi_harshness[i].int_penalty < cp[-2].v.ansi_harshness[i].int_penalty)
+	      else if (cp[-1].harshness[i].int_penalty < cp[-2].harshness[i].int_penalty)
 		better = 1;
 	    }
 	}
@@ -2307,22 +1178,6 @@ ideal_candidate_ansi (basetype, candidates, n_candidates, parms, len)
 	return NULL;
     }
   return cp-1;
-}
-
-static struct candidate *
-ideal_candidate (basetype, candidates, n_candidates, parms, len)
-     tree basetype;
-     struct candidate *candidates;
-     int n_candidates;
-     tree parms;
-     int len;
-{
-  if (flag_ansi_overloading)
-    return ideal_candidate_ansi (basetype, candidates, n_candidates, parms,
-				 len);
-  else
-    return ideal_candidate_old (basetype, candidates, n_candidates, parms,
-				len);
 }
 
 /* Assume that if the class referred to is not in the
@@ -3252,12 +2107,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		my_friendly_abort (167);
 
 	      cp->h_len = len;
-	      if (flag_ansi_overloading)
-		cp->v.ansi_harshness = (struct harshness_code *)
-		  alloca ((len + 1) * sizeof (struct harshness_code));
-	      else
-		cp->v.old_harshness = (unsigned short *)
-		  alloca ((len + 1) * sizeof (unsigned short));
+	      cp->harshness = (struct harshness_code *)
+		alloca ((len + 1) * sizeof (struct harshness_code));
 
 	      result = build_overload_call (name, friend_parms, 0, cp);
 	      /* If it turns out to be the one we were actually looking for
@@ -3266,30 +2117,16 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	      if (TREE_CODE (result) == CALL_EXPR)
 		return result;
 
-	      if (flag_ansi_overloading)
-		while ((cp->h.code & EVIL_CODE) == 0)
-		  {
-		    /* non-standard uses: set the field to 0 to indicate
-		       we are using a non-member function.  */
-		    cp->u.field = 0;
-		    if (cp->v.ansi_harshness[len].distance == 0
-			&& cp->h.code < best)
-		      best = cp->h.code;
-		    cp += 1;
-		  }
-	      else
-		while (cp->evil == 0)
-		  {
-		    /* non-standard uses: set the field to 0 to indicate
-		       we are using a non-member function.  */
-		    cp->u.field = 0;
-		    if (cp->v.old_harshness[len] == 0
-			&& cp->v.old_harshness[len] == 0
-			&& cp->ellipsis == 0 && cp->user == 0 && cp->b_or_d == 0
-			&& cp->easy < best)
-		      best = cp->easy;
-		    cp += 1;
-		  }
+	      while ((cp->h.code & EVIL_CODE) == 0)
+		{
+		  /* non-standard uses: set the field to 0 to indicate
+		     we are using a non-member function.  */
+		  cp->u.field = 0;
+		  if (cp->harshness[len].distance == 0
+		      && cp->h.code < best)
+		    best = cp->h.code;
+		  cp += 1;
+		}
 	    }
 	}
 
@@ -3357,22 +2194,14 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		  n_inner_fields_searched++;
 #endif
 		  cp->h_len = len;
-		  if (flag_ansi_overloading)
-		    cp->v.ansi_harshness = (struct harshness_code *)
-		      alloca ((len + 1) * sizeof (struct harshness_code));
-		  else
-		    cp->v.old_harshness = (unsigned short *)
-		      alloca ((len + 1) * sizeof (unsigned short));
+		  cp->harshness = (struct harshness_code *)
+		    alloca ((len + 1) * sizeof (struct harshness_code));
 
 		  if (DECL_STATIC_FUNCTION_P (function))
 		    these_parms = TREE_CHAIN (these_parms);
 		  compute_conversion_costs (function, these_parms, cp, len);
 
-		  if (!flag_ansi_overloading)
-		      cp->b_or_d += b_or_d;
-
-		  if ((flag_ansi_overloading && (cp->h.code & EVIL_CODE) == 0)
-		      || (!flag_ansi_overloading && cp->evil == 0))
+		  if ((cp->h.code & EVIL_CODE) == 0)
 		    {
 		      cp->u.field = function;
 		      cp->function = function;
@@ -3380,10 +2209,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
 		      /* No "two-level" conversions.  */
 		      if (flags & LOOKUP_NO_CONVERSION
-			  && ((flag_ansi_overloading
-			       && (cp->h.code & USER_CODE))
-			      || (!flag_ansi_overloading
-				  && cp->user != 0)))
+			  && (cp->h.code & USER_CODE))
 			continue;
 
 		      /* If we used default parameters, we must
@@ -3391,14 +2217,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
 			 use them also, and report a possible
 			 ambiguity.  */
 		      if (! TYPE_USES_MULTIPLE_INHERITANCE (save_basetype)
-			  && ((flag_ansi_overloading
-			       && cp->v.ansi_harshness[len].distance == 0
-			       && cp->h.code < best)
-			      || (!flag_ansi_overloading
-				  && cp->v.old_harshness[len] == 0
-				  && CONST_HARSHNESS (cp->v.old_harshness[0]) == 0
-				  && cp->ellipsis == 0 && cp->user == 0 && cp->b_or_d == 0
-				  && cp->easy < best)))
+			  && cp->harshness[len].distance == 0
+			  && cp->h.code < best)
 			{
 			  if (! DECL_STATIC_FUNCTION_P (function))
 			    TREE_VALUE (parms) = cp->arg;
@@ -3472,12 +2292,10 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		    }
 		  return error_mark_node;
 		}
-	      if ((flag_ansi_overloading && (cp->h.code & EVIL_CODE))
-		  || (!flag_ansi_overloading && cp->evil))
+	      if (cp->h.code & EVIL_CODE)
 		return error_mark_node;
 	    }
-	  else if ((flag_ansi_overloading && (cp[-1].h.code & EVIL_CODE))
-		   || (!flag_ansi_overloading && cp[-1].evil == 2))
+	  else if (cp[-1].h.code & EVIL_CODE)
 	    {
 	      if (flags & LOOKUP_COMPLAIN)
 		cp_error ("ambiguous type conversion requested for %s `%D'",
@@ -3546,10 +2364,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
       continue;
 
     found_and_maybe_warn:
-      if (((flag_ansi_overloading
-	    && (cp->v.ansi_harshness[0].code & CONST_CODE))
-	   || (!flag_ansi_overloading
-	       && CONST_HARSHNESS (cp->v.old_harshness[0])))
+      if ((cp->harshness[0].code & CONST_CODE)
 	  /* 12.1p2: Constructors can be called for const objects.  */
 	  && ! DECL_CONSTRUCTOR_P (cp->function))
 	{
@@ -3869,24 +2684,11 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
 
   if (final_cp)
     {
-      if (flag_ansi_overloading)
-	{
-	  final_cp[0].h.code = 0;
-	  final_cp[0].h.distance = 0;
-	  final_cp[0].function = 0;
-	  /* end marker.  */
-	  final_cp[1].h.code = EVIL_CODE;
-	}
-      else
-	{
-	  final_cp[0].evil = 0;
-	  final_cp[0].user = 0;
-	  final_cp[0].b_or_d = 0;
-	  final_cp[0].easy = 0;
-	  final_cp[0].function = 0;
-	  /* end marker.  */
-	  final_cp[1].evil = 1;
-	}
+      final_cp[0].h.code = 0;
+      final_cp[0].h.distance = 0;
+      final_cp[0].function = 0;
+      /* end marker.  */
+      final_cp[1].h.code = EVIL_CODE;
     }
 
   for (parm = parms; parm; parm = TREE_CHAIN (parm))
@@ -3896,12 +2698,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
       if (t == error_mark_node)
 	{
 	  if (final_cp)
-	    {
-	      if (flag_ansi_overloading)
-		final_cp->h.code = EVIL_CODE;
-	      else
-		final_cp->evil = 1;
-	    }
+	    final_cp->h.code = EVIL_CODE;
 	  return error_mark_node;
 	}
       if (TREE_CODE (t) == ARRAY_TYPE || TREE_CODE (t) == OFFSET_TYPE)
@@ -3920,26 +2717,6 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
   else
     parmtypes = void_list_node;
 
-  if (! flag_ansi_overloading)
-    {
-      tree fn;
-
-      /* This is a speed improvement that ends up not working properly in
-	 the situation of fns with and without default parameters.  I turned
-	 this off in the new method so it'll go through the argument matching
-	 code to properly diagnose a match/failure. (bpk)  */
-      overload_name = build_decl_overload (fnname, parmtypes, 0);
-      fn = lookup_name_nonclass (overload_name);
-
-      /* Now check to see whether or not we can win.
-	 Note that if we are called from `build_method_call',
-	 then we cannot have a mis-match, because we would have
-	 already found such a winning case.  */
-
-      if (fn && TREE_CODE (fn) == FUNCTION_DECL)
-	return build_function_call (DECL_MAIN_VARIANT (fn), parms);
-    }
-
   functions = lookup_name_nonclass (fnname);
 
   if (functions == NULL_TREE)
@@ -3949,12 +2726,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
       if (flags & LOOKUP_COMPLAIN)
 	error ("only member functions apply");
       if (final_cp)
-	{
-	  if (flag_ansi_overloading)
-	    final_cp->h.code = EVIL_CODE;
-	  else
-	    final_cp->evil = 1;
-	}
+	final_cp->h.code = EVIL_CODE;
       return error_mark_node;
     }
 
@@ -3982,12 +2754,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
 	cp_error ("function `%D' declared overloaded, but no instances of that function declared",
 		  TREE_PURPOSE (functions));
       if (final_cp)
-	{
-	  if (flag_ansi_overloading)
-	    final_cp->h.code = EVIL_CODE;
-	  else
-	    final_cp->evil = 1;
-	}
+	final_cp->h.code = EVIL_CODE;
       return error_mark_node;
     }
 
@@ -4061,10 +2828,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
 	  /* Unconverted template -- failed match.  */
 	  cp->function = function;
 	  cp->u.bad_arg = -4;
-	  if (flag_ansi_overloading)
-	    cp->h.code = EVIL_CODE;
-	  else
-	    cp->evil = 1;
+	  cp->h.code = EVIL_CODE;
 	}
       else
 	{
@@ -4086,60 +2850,30 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
 	  /* Can't use alloca here, since result might be
 	     passed to calling function.  */
 	  cp->h_len = parmlength;
-	  if (flag_ansi_overloading)
-	    cp->v.ansi_harshness = (struct harshness_code *)
-	      oballoc ((parmlength + 1) * sizeof (struct harshness_code));
-	  else
-	    cp->v.old_harshness = (unsigned short *)
-	      oballoc ((parmlength + 1) * sizeof (unsigned short));
+	  cp->harshness = (struct harshness_code *)
+	    oballoc ((parmlength + 1) * sizeof (struct harshness_code));
 
 	  compute_conversion_costs (function, parms, cp, parmlength);
 
-	  if (flag_ansi_overloading)
-	    /* Make sure this is clear as well.  */
-	    cp->h.int_penalty += template_cost;
-	  else
-	    /* Should really add another field...  */
-	    cp->easy = cp->easy * 128 + template_cost;
+	  /* Make sure this is clear as well.  */
+	  cp->h.int_penalty += template_cost;
 
-	  /* It seemed easier to have both if stmts in here, rather
-	     than excluding the hell out of it with flag_ansi_overloading
-	     everywhere. (bpk) */
-	  if (flag_ansi_overloading)
+	  if ((cp[0].h.code & EVIL_CODE) == 0)
 	    {
-	      if ((cp[0].h.code & EVIL_CODE) == 0)
-		{
-		  cp[1].h.code = EVIL_CODE;
+	      cp[1].h.code = EVIL_CODE;
 
-		  /* int_penalty is set by convert_harshness_ansi for cases
-		     where we need to know about any penalties that would
-		     otherwise make a TRIVIAL_CODE pass.  */
-		  if (final_cp
-		      && template_cost == 0
-		      && cp[0].h.code <= TRIVIAL_CODE
-		      && cp[0].h.int_penalty == 0)
-		    {
-		      final_cp[0].h = cp[0].h;
-		      return function;
-		    }
-		  cp++;
-		}
-	    }
-	  else
-	    {
-	      if (cp[0].evil == 0)
+	      /* int_penalty is set by convert_harshness_ansi for cases
+		 where we need to know about any penalties that would
+		 otherwise make a TRIVIAL_CODE pass.  */
+	      if (final_cp
+		  && template_cost == 0
+		  && cp[0].h.code <= TRIVIAL_CODE
+		  && cp[0].h.int_penalty == 0)
 		{
-		  cp[1].evil = 1;
-		  if (final_cp
-		      && cp[0].user == 0 && cp[0].b_or_d == 0
-		      && template_cost == 0
-		      && cp[0].easy <= 1)
-		    {
-		      final_cp[0].easy = cp[0].easy;
-		      return function;
-		    }
-		  cp++;
+		  final_cp[0].h = cp[0].h;
+		  return function;
 		}
+	      cp++;
 	    }
 	}
     }
@@ -4149,10 +2883,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
       tree rval = error_mark_node;
 
       /* Leave marker.  */
-      if (flag_ansi_overloading)
-	cp[0].h.code = EVIL_CODE;
-      else
-	cp[0].evil = 1;
+      cp[0].h.code = EVIL_CODE;
       if (cp - candidates > 1)
 	{
 	  struct candidate *best_cp
@@ -4173,8 +2904,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
       else
 	{
 	  cp -= 1;
-	  if ((flag_ansi_overloading && (cp->h.code & EVIL_CODE))
-	      || (!flag_ansi_overloading && cp->evil > 1))
+	  if (cp->h.code & EVIL_CODE)
 	    {
 	      if (flags & LOOKUP_COMPLAIN)
 		error ("type conversion ambiguous");

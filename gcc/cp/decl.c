@@ -204,6 +204,9 @@ tree int_array_type_node;
 
 tree wchar_array_type_node;
 
+/* The bool data type, and constants */
+tree bool_type_node, true_node, false_node;
+
 /* type `int ()' -- used for implicit declaration of functions.  */
 
 tree default_function_type;
@@ -412,9 +415,7 @@ extern int flag_no_builtin;
 
 extern int flag_implement_inlines;
 
-/* Nonzero means handle things in ANSI, instead of GNU fashion.  This
-   flag should be tested for language behavior that's different between
-   ANSI and GNU, but not so horrible as to merit a PEDANTIC label.  */
+/* Nonzero means disable GNU extensions.  */
 
 extern int flag_ansi;
 
@@ -1709,7 +1710,7 @@ pushtag (name, type, globalize)
 {
   register struct binding_level *b;
   tree context = 0;
-  tree cdecl = 0;
+  tree c_decl = 0;
 
   b = inner_binding_level;
   while (b->tag_transparent
@@ -1727,7 +1728,7 @@ pushtag (name, type, globalize)
       if (! context && ! globalize)
         context = current_scope ();
       if (context)
-	cdecl = TREE_CODE (context) == FUNCTION_DECL
+	c_decl = TREE_CODE (context) == FUNCTION_DECL
 	  ? context : TYPE_NAME (context);
 
       /* Record the identifier as the type's name if it has none.  */
@@ -1746,7 +1747,7 @@ pushtag (name, type, globalize)
 	  if (b->parm_flag != 2
 	      || TYPE_SIZE (current_class_type) != NULL_TREE)
 	    {
-	      d = lookup_nested_type (type, cdecl);
+	      d = lookup_nested_type (type, c_decl);
 
 	      if (d == NULL_TREE)
 		{
@@ -1824,7 +1825,7 @@ pushtag (name, type, globalize)
 	  else if (context && TREE_CODE (context) == FUNCTION_DECL)
 	    {
 	      /* Function-nested class.  */
-	      set_nested_typename (d, DECL_ASSEMBLER_NAME (cdecl),
+	      set_nested_typename (d, DECL_ASSEMBLER_NAME (c_decl),
 				   name, type);
 	      /* This builds the links for classes nested in fn scope.  */
 	      DECL_CONTEXT (d) = context;
@@ -1834,7 +1835,7 @@ pushtag (name, type, globalize)
 	  else if (context && TREE_CODE (context) == RECORD_TYPE)
 	    {
 	      /* Class-nested class.  */
-	      set_nested_typename (d, DECL_NESTED_TYPENAME (cdecl),
+	      set_nested_typename (d, DECL_NESTED_TYPENAME (c_decl),
 				   name, type);
 	      /* This builds the links for classes nested in type scope.  */
 	      DECL_CONTEXT (d) = context;
@@ -4373,6 +4374,14 @@ init_decl_processing ()
   TREE_TYPE (integer_three_node) = integer_type_node;
   empty_init_node = build_nt (CONSTRUCTOR, NULL_TREE, NULL_TREE);
 
+  bool_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
+  TREE_SET_CODE (bool_type_node, BOOLEAN_TYPE);
+  record_builtin_type (RID_BOOL, "bool", bool_type_node);
+  false_node = build_int_2 (0, 0);
+  TREE_TYPE (false_node) = bool_type_node;
+  true_node = build_int_2 (1, 0);
+  TREE_TYPE (true_node) = bool_type_node;
+
   /* These are needed by stor-layout.c.  */
   size_zero_node = size_int (0);
   size_one_node = size_int (1);
@@ -5007,7 +5016,7 @@ shadow_tag (declspecs)
 {
   int found_tag = 0;
   int warned = 0;
-  int static_or_extern = 0;
+  tree ob_modifier = NULL_TREE;
   register tree link;
   register enum tree_code code, ok_code = ERROR_MARK;
   register tree t = NULL_TREE;
@@ -5018,10 +5027,11 @@ shadow_tag (declspecs)
 
       code = TREE_CODE (value);
       if (IS_AGGR_TYPE_CODE (code) || code == ENUMERAL_TYPE)
-	/* Used to test also that TYPE_SIZE (value) != 0.
-	   That caused warning for `struct foo;' at top level in the file.  */
 	{
 	  register tree name = TYPE_NAME (value);
+
+	  if (code == ENUMERAL_TYPE && TYPE_SIZE (value) == 0)
+	    cp_error ("forward declaration of `%#T'", value);
 
 	  if (name == NULL_TREE)
 	    name = lookup_tag_reverse (value, NULL_TREE);
@@ -5041,7 +5051,6 @@ shadow_tag (declspecs)
 	      pushtag (name, t, 0);
 	      pop_obstacks ();
 	      ok_code = code;
-	      break;
 	    }
 	  else if (name != NULL_TREE || code == ENUMERAL_TYPE)
 	    ok_code = code;
@@ -5056,8 +5065,10 @@ shadow_tag (declspecs)
 	    }
 	}
       else if (value == ridpointers[(int) RID_STATIC]
-	       || value == ridpointers[(int) RID_EXTERN])
-	static_or_extern = 1;
+	       || value == ridpointers[(int) RID_EXTERN]
+	       || value == ridpointers[(int) RID_AUTO]
+	       || value == ridpointers[(int) RID_REGISTER])
+	ob_modifier = value;
     }
 
   /* This is where the variables in an anonymous union are
@@ -5086,9 +5097,10 @@ shadow_tag (declspecs)
   else
     {
       /* Anonymous unions are objects, that's why we only check for
-	 static/extern specifiers in this branch.  */
-      if (static_or_extern)
-	error ("static/extern can only be specified for objects and functions");
+	 inappropriate specifiers in this branch.  */
+      if (ob_modifier)
+	cp_error ("`%D' can only be specified for objects and functions",
+		  ob_modifier);
 
       if (ok_code == RECORD_TYPE
 	  && found_tag == 1
@@ -5113,8 +5125,10 @@ shadow_tag (declspecs)
 	      pop_obstacks ();
 	    }
 	}
+      else if (found_tag == 0)
+	pedwarn ("abstract declarator used as declaration");
       else if (!warned && found_tag > 1)
-	warning ("multiple types in one declaration");
+	pedwarn ("multiple types in one declaration");
     }
 }
 
@@ -5967,14 +5981,16 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 	  && (TYPE_READONLY (type) || TREE_READONLY (decl)))
 	cp_error ("uninitialized const `%D'", decl);
 
-      /* Initialize variables in need of static initialization
-	 with `empty_init_node' to keep assemble_variable from putting them
-	 in the wrong program space.  (Common storage is okay for non-public
-	 uninitialized data; the linker can't match it with storage from other
-	 files, and we may save some disk space.)  */
+      /* Initialize variables in need of static initialization with
+	 `empty_init_node' to keep assemble_variable from putting them in
+	 the wrong program space.  Common storage is okay for non-public
+	 uninitialized data; the linker can't match it with storage from
+	 other files, and we may save some disk space.  Consts have to go
+	 into data, though, since the backend would put them in text
+	 otherwise.  */
       if (flag_pic == 0
 	  && TREE_STATIC (decl)
-	  && TREE_PUBLIC (decl)
+	  && (TREE_PUBLIC (decl) || was_readonly)
 	  && ! DECL_EXTERNAL (decl)
 	  && TREE_CODE (decl) == VAR_DECL
 	  && TYPE_NEEDS_CONSTRUCTING (type)
@@ -7341,6 +7357,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		}
 	      goto found;
 	    }
+	  if (id == ridpointers[(int) RID_BOOL])
+	    {
+	      if (type)
+		error ("extraneous `bool' ignored");
+	      else
+		{
+		  type = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (id));
+		}
+	      goto found;
+	    }
 	  if (id == ridpointers[(int) RID_WCHAR])
 	    {
 	      if (type)
@@ -7445,7 +7471,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		/* Save warning until we know what is really going on.  */
 		warn_about_return_type = 1;
 	    }
-	  else if (class_binding_level && declarator
+	  else if (decl_context == FIELD && declarator
 		   && TREE_CODE (declarator) == SCOPE_REF)
 	    /* OK -- access declaration */;
 	  else if (declspecs == NULL_TREE &&
@@ -8007,7 +8033,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		  }
 		if (TREE_READONLY_DECL_P (size))
 		  size = decl_constant_value (size);
-		if (pedantic && integer_zerop (size))
+		if (flag_ansi && integer_zerop (size))
 		  cp_pedwarn ("ANSI C++ forbids zero-size array `%D'", dname);
 		if (TREE_CONSTANT (size))
 		  {
@@ -8022,7 +8048,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		  }
 		else
 		  {
-		    if (pedantic)
+		    if (flag_ansi)
 		      cp_pedwarn ("ANSI C++ forbids variable-size array `%D'",
 				  dname);
 		  dont_grok_size:
@@ -8909,7 +8935,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		   initialize the named nonstatic member....  This (or an
 		   initializer list) is the only way to initialize
 		   nonstatic const and reference members.  */
-		else if (pedantic || flag_ansi || ! constp)
+		else if (flag_ansi || ! constp)
 		  pedwarn ("ANSI C++ forbids initialization of %s `%s'",
 			   constp ? "const member" : "member",
 			   IDENTIFIER_POINTER (declarator));
@@ -9061,7 +9087,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	    if (RIDBIT_SETP (RID_EXTERN, specbits))
 	      {
 		current_extern_inline = 1;
-		if (flag_ansi || pedantic || flag_pedantic_errors)
+		if (flag_ansi)
 		  pedwarn ("ANSI C++ does not permit `extern inline'");
 	      }
 	  }
@@ -10245,30 +10271,33 @@ finish_enum (enumtype, values)
   register HOST_WIDE_INT minvalue = 0;
   register HOST_WIDE_INT i;
 
-  TYPE_VALUES (enumtype) = values;
-
   /* Calculate the maximum value of any enumerator in this type.  */
 
   if (values)
     {
       /* Speed up the main loop by performing some precalculations */
 
-      HOST_WIDE_INT value = TREE_INT_CST_LOW (TREE_VALUE (values));
+      HOST_WIDE_INT value;
       TREE_TYPE (TREE_VALUE (values)) = enumtype;
       TREE_TYPE (DECL_INITIAL (TREE_VALUE (values))) = enumtype;
+      TREE_VALUE (values) = DECL_INITIAL (TREE_VALUE (values));
+      value = TREE_INT_CST_LOW (TREE_VALUE (values));
       minvalue = maxvalue = value;
       
       for (pair = TREE_CHAIN (values); pair; pair = TREE_CHAIN (pair))
 	{
+	  TREE_TYPE (TREE_VALUE (pair)) = enumtype;
+	  TREE_TYPE (DECL_INITIAL (TREE_VALUE (pair))) = enumtype;
+	  TREE_VALUE (pair) = DECL_INITIAL (TREE_VALUE (pair));
 	  value = TREE_INT_CST_LOW (TREE_VALUE (pair));
 	  if (value > maxvalue)
 	    maxvalue = value;
 	  else if (value < minvalue)
 	    minvalue = value;
-	  TREE_TYPE (TREE_VALUE (pair)) = enumtype;
-	  TREE_TYPE (DECL_INITIAL (TREE_VALUE (pair))) = enumtype;
 	}
     }
+
+  TYPE_VALUES (enumtype) = values;
 
   if (flag_short_enums)
     {
@@ -10970,7 +10999,7 @@ store_return_init (return_id, init)
 {
   tree decl = DECL_RESULT (current_function_decl);
 
-  if (pedantic)
+  if (flag_ansi)
     /* Give this error as many times as there are occurrences,
        so that users can use Emacs compilation buffers to find
        and fix all such places.  */

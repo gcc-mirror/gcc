@@ -198,6 +198,7 @@ dump_type (t, v)
       /* fall through.  */
     case REAL_TYPE:
     case VOID_TYPE:
+    case BOOLEAN_TYPE:
       dump_readonly_or_volatile (t, after);
       OB_PUTID (TYPE_IDENTIFIER (t));
       break;
@@ -356,6 +357,10 @@ dump_type_prefix (t, v)
 
 	switch (TREE_CODE (sub))
 	  {
+	  case ARRAY_TYPE:
+	    OB_PUTC2 (' ', '(');
+	    break;
+
 	  case POINTER_TYPE:
 	    /* We don't want "char * &" */
 	    if (! (TYPE_READONLY (sub) || TYPE_VOLATILE (sub)))
@@ -405,6 +410,7 @@ dump_type_prefix (t, v)
     case ERROR_MARK:
     case IDENTIFIER_NODE:
     case INTEGER_TYPE:
+    case BOOLEAN_TYPE:
     case REAL_TYPE:
     case RECORD_TYPE:
     case TEMPLATE_TYPE_PARM:
@@ -476,6 +482,7 @@ dump_type_suffix (t, v)
     case ERROR_MARK:
     case IDENTIFIER_NODE:
     case INTEGER_TYPE:
+    case BOOLEAN_TYPE:
     case REAL_TYPE:
     case RECORD_TYPE:
     case TEMPLATE_TYPE_PARM:
