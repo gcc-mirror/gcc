@@ -1,3 +1,22 @@
+2003-07-31  Per Bothner  <pbothner@apple.com>
+
+	* opts.c (in_fnames, num_in_fnames):  Moved here from c-opts.
+	(add_input_filename):  New function.
+	(handle_options):  Call add_input_filename directly instead of
+	with a lang hook.
+	* opts.h (in_fnames, num_in_fnames):  Moved here.
+	(add_input_filename):  Declare.
+	* c-decl.c:  Need to #include opts.h.
+	* Makefile.in (c-decl.o):  Also depends on opts.h.
+	* c-opts.c (in_fnames, num_in_fnames):  Moved to opts.c.
+	(c_common_handle_filename):  Replaced by add_input_filename.
+	* c-common.h (in_fnames, num_in_fnames, c_common_handle_filename):
+	Remove.
+	* langhooks.h (struct lang_hooks):  Remove handle_filename hook.
+	* langhooks-def.h (LANG_HOOKS_HANDLE_FILENAME):  Remove macro.
+	(LANG_HOOKS_INITIALIZER):  Remove use of LANG_HOOKS_HANDLE_FILENAME.
+	* c-lang.c (LANG_HOOKS_HANDLE_FILENAME):  Remove macro.
+
 2003-07-31  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* combine.c (try_combine): Set JUMP_LABEL for newly created

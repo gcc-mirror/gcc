@@ -52,8 +52,6 @@ static int saved_lineno;
 static cpp_options *cpp_opts;
 
 /* Input filename.  */
-static const char **in_fnames;
-unsigned num_in_fnames;
 static const char *this_input_filename;
 
 /* Filename and stream for preprocessed output.  */
@@ -1030,15 +1028,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     }
 
   return result;
-}
-
-/* Handle FILENAME from the command line.  */
-void
-c_common_handle_filename (const char *filename)
-{
-  num_in_fnames++;
-  in_fnames = xrealloc (in_fnames, num_in_fnames * sizeof (in_fnames[0]));
-  in_fnames[num_in_fnames - 1] = filename;
 }
 
 /* Post-switch processing.  */

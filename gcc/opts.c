@@ -134,6 +134,10 @@ static unsigned int columns = 80;
 /* What to print when a switch has no documentation.  */
 static const char undocumented_msg[] = N_("This switch lacks documentation");
 
+/* Input file names. */
+const char **in_fnames;
+unsigned num_in_fnames;
+
 static size_t find_opt (const char *, int);
 static int common_handle_option (size_t scode, const char *arg, int value);
 static void handle_param (const char *);
@@ -422,7 +426,7 @@ handle_options (unsigned int argc, const char **argv, unsigned int lang_mask)
       if (opt[0] != '-' || opt[1] == '\0')
 	{
 	  main_input_filename = opt;
-	  (*lang_hooks.handle_filename) (opt);
+	  add_input_filename (opt);
 	  n = 1;
 	  continue;
 	}
@@ -435,6 +439,15 @@ handle_options (unsigned int argc, const char **argv, unsigned int lang_mask)
 	  error ("unrecognized command line option \"%s\"", opt);
 	}
     }
+}
+
+/* Handle FILENAME from the command line.  */
+void
+add_input_filename (const char *filename)
+{
+  num_in_fnames++;
+  in_fnames = xrealloc (in_fnames, num_in_fnames * sizeof (in_fnames[0]));
+  in_fnames[num_in_fnames - 1] = filename;
 }
 
 /* Parse command line options and set default flag values.  Do minimal
