@@ -1,3 +1,8 @@
+Fri Jun 19 23:26:12 1998  Bruno Haible <haible@ilog.fr>
+
+	* gcc.misc-tests/m-un-2.c: New test.
+	* g++.old-deja/g++.other/warn01.c: Likewise.
+
 Fri Jun 19 14:06:36 1998  Robert Lipe  <robertl@dgii.com>
 	
 	* gcc.dg/980414-1.c: Move comments outside of ASM to improve
