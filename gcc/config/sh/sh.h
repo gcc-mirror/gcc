@@ -3227,6 +3227,7 @@ extern int rtx_equal_function_value_matters;
   {"mextr_bit_offset", {CONST_INT}},					\
   {"noncommutative_float_operator", {MINUS, DIV}},			\
   {"shmedia_6bit_operand", {SUBREG, REG, CONST_INT}},			\
+  {"sh_register_operand", {REG, SUBREG, CONST_INT}},			\
   {"target_reg_operand", {SUBREG, REG}},				\
   {"target_operand", {SUBREG, REG, LABEL_REF, SYMBOL_REF, CONST, UNSPEC}},\
   {"trunc_hi_operand", {SUBREG, REG, TRUNCATE}},			\

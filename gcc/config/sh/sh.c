@@ -724,7 +724,7 @@ prepare_move_operands (operands, mode)
     {
       /* Copy the source to a register if both operands aren't registers.  */
       if (! register_operand (operands[0], mode)
-	  && ! register_operand (operands[1], mode))
+	  && ! sh_register_operand (operands[1], mode))
 	operands[1] = copy_to_mode_reg (mode, operands[1]);
 
       /* This case can happen while generating code to move the result
@@ -7836,6 +7836,18 @@ sh_register_move_cost (mode, srcclass, dstclass)
     return 2 * ((GET_MODE_SIZE (mode) + 7) / 8U);
 
   return 2 * ((GET_MODE_SIZE (mode) + 3) / 4U);
+}
+
+/* Like register_operand, but take into account that SHMEDIA can use
+   the constant zero like a general register.  */
+int
+sh_register_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (op == CONST0_RTX (mode) && TARGET_SHMEDIA)
+    return 1;
+  return register_operand (op, mode);
 }
 
 #include "gt-sh.h"
