@@ -1,3 +1,32 @@
+Sun Mar  7 08:30:37 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gmon-sol2.c: Include config.h and system.h.  Don't redundantly
+	include system header files.
+	(sccsid): Remove.
+	(moncontrol, monstartup, _mcleanup, internal_mcount): Prototype.
+	(_mcleanup): Add the `const' keyword to a char*.
+	(internal_mcount): Declare `etext' as a char[] not a function.
+	Cast `etext' to char* when calling `monstartup'.
+
+	* sparc.c (frame_base_name, save_regs, restore_regs,
+	build_big_number, sparc_cmodel_string, sparc_align_loops_string,
+	sparc_align_jumps_string, sparc_align_funcs_string, code_model,
+	cpu_default, cpu_table, output_function_prologue,
+	output_function_epilogue, output_return,
+	sparc_flat_output_function_prologue, ultra_code_names,
+	sparc_flat_output_function_epilogue): Constify a char*.
+	(hypersparc_adjust_cost): Add a default case in a switch.
+
+	* sparc.h (sparc_cmodel_string, OVERRIDE_OPTIONS,
+	sparc_cpu_select, sparc_align_loops_string,
+	sparc_align_jumps_string, sparc_align_funcs_string,
+	output_return): Constify a char*.
+
+	* sparc.md (movdi): Change the comparison of HOST_BITS_PER_WIDE_INT
+	so that we check "== 32", instead of "!= 64".  Cast a value to
+ 	HOST_WIDE_INT when comparing against one.  Hide the declaration
+ 	for variable `chain'.
+
 Sun Mar  7 08:05:27 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (const, inline): Move the stage2 handling of these

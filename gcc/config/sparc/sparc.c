@@ -98,15 +98,15 @@ char leaf_reg_remap[] =
    this is "%sp+something".  We record "something" separately as it may be
    too big for reg+constant addressing.  */
 
-static char *frame_base_name;
+static const char *frame_base_name;
 static int frame_base_offset;
 
 static rtx pic_setup_code	PROTO((void));
 static void sparc_init_modes	PROTO((void));
-static int save_regs		PROTO((FILE *, int, int, char *,
+static int save_regs		PROTO((FILE *, int, int, const char *,
 				       int, int, int));
-static int restore_regs		PROTO((FILE *, int, int, char *, int, int));
-static void build_big_number	PROTO((FILE *, int, char *));
+static int restore_regs		PROTO((FILE *, int, int, const char *, int, int));
+static void build_big_number	PROTO((FILE *, int, const char *));
 static int function_arg_slotno	PROTO((const CUMULATIVE_ARGS *,
 				       enum machine_mode, tree, int, int,
 				       int *, int *));
@@ -127,14 +127,14 @@ extern char *dwarf2out_cfi_label ();
 /* Option handling.  */
 
 /* Code model option as passed by user.  */
-char *sparc_cmodel_string;
+const char *sparc_cmodel_string;
 /* Parsed value.  */
 enum cmodel sparc_cmodel;
 
 /* Record alignment options as passed by user.  */
-char *sparc_align_loops_string;
-char *sparc_align_jumps_string;
-char *sparc_align_funcs_string;
+const char *sparc_align_loops_string;
+const char *sparc_align_jumps_string;
+const char *sparc_align_funcs_string;
 
 /* Parsed values, as a power of two.  */
 int sparc_align_loops;
@@ -160,7 +160,7 @@ void
 sparc_override_options ()
 {
   static struct code_model {
-    char *name;
+    const char *name;
     int value;
   } cmodels[] = {
     { "32", CM_32 },
@@ -174,7 +174,7 @@ sparc_override_options ()
   /* Map TARGET_CPU_DEFAULT to value for -m{arch,tune}=.  */
   static struct cpu_default {
     int cpu;
-    char *name;
+    const char *name;
   } cpu_default[] = {
     /* There must be one entry here for each TARGET_CPU value.  */
     { TARGET_CPU_sparc, "cypress" },
@@ -191,7 +191,7 @@ sparc_override_options ()
   struct cpu_default *def;
   /* Table of values for -m{cpu,tune}=.  */
   static struct cpu_table {
-    char *name;
+    const char *name;
     enum processor_type processor;
     int disable;
     int enable;
@@ -2886,7 +2886,7 @@ static int
 save_regs (file, low, high, base, offset, n_regs, real_offset)
      FILE *file;
      int low, high;
-     char *base;
+     const char *base;
      int offset;
      int n_regs;
      int real_offset;
@@ -2959,7 +2959,7 @@ static int
 restore_regs (file, low, high, base, offset, n_regs)
      FILE *file;
      int low, high;
-     char *base;
+     const char *base;
      int offset;
      int n_regs;
 {
@@ -3074,7 +3074,7 @@ static void
 build_big_number (file, num, reg)
      FILE *file;
      int num;
-     char *reg;
+     const char *reg;
 {
   if (num >= 0 || ! TARGET_ARCH64)
     {
@@ -3206,7 +3206,7 @@ output_function_prologue (file, size, leaf_function)
   if (num_gfregs)
     {
       int offset, real_offset, n_regs;
-      char *base;
+      const char *base;
 
       real_offset = -apparent_fsize;
       offset = -apparent_fsize + frame_base_offset;
@@ -3257,7 +3257,7 @@ output_function_epilogue (file, size, leaf_function)
      int size ATTRIBUTE_UNUSED;
      int leaf_function;
 {
-  char *ret;
+  const char *ret;
 
   if (leaf_label)
     {
@@ -3287,7 +3287,7 @@ output_function_epilogue (file, size, leaf_function)
   if (num_gfregs)
     {
       int offset, n_regs;
-      char *base;
+      const char *base;
 
       offset = -apparent_fsize + frame_base_offset;
       if (offset < -4096 || offset + num_gfregs * 4 > 4096 - 8 /*double*/)
@@ -4675,7 +4675,7 @@ epilogue_renumber (where)
 
 /* Output assembler code to return from a function.  */
 
-char *
+const char *
 output_return (operands)
      rtx *operands;
 {
@@ -5876,7 +5876,7 @@ sparc_flat_output_function_prologue (file, size)
     {
       unsigned int reg_offset = current_frame_info.reg_offset;
       char *fp_str = reg_names[FRAME_POINTER_REGNUM];
-      char *t1_str = "%g1";
+      const char *t1_str = "%g1";
 
       /* Things get a little tricky if local variables take up more than ~4096
 	 bytes and outgoing arguments take up more than ~4096 bytes.  When that
@@ -6055,7 +6055,7 @@ sparc_flat_output_function_epilogue (file, size)
       unsigned int size1;
       char *sp_str = reg_names[STACK_POINTER_REGNUM];
       char *fp_str = reg_names[FRAME_POINTER_REGNUM];
-      char *t1_str = "%g1";
+      const char *t1_str = "%g1";
 
       /* In the reload sequence, we don't need to fill the load delay
 	 slots for most of the loads, also see if we can fill the final
@@ -6331,6 +6331,8 @@ hypersparc_adjust_cost (insn, link, dep_insn, cost)
 	  if (dep_type == TYPE_FPCMP)
 	    return cost - 1;
 	  break;
+	default:
+	  break;
 	}
 	break;
 
@@ -6540,7 +6542,7 @@ enum ultra_code { NONE=0, /* no insn at all				*/
 		  SINGLE, /* single issue instructions			*/
 		  NUM_ULTRA_CODES };
 
-static char *ultra_code_names[NUM_ULTRA_CODES] = {
+static const char *ultra_code_names[NUM_ULTRA_CODES] = {
   "NONE", "IEU0", "IEU1", "IEUN", "LSU", "CTI",
   "FPM", "FPA", "SINGLE" };
 

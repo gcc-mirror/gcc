@@ -87,7 +87,7 @@ enum cmodel {
 };
 
 /* Value of -mcmodel specified by user.  */
-extern char *sparc_cmodel_string;
+extern const char *sparc_cmodel_string;
 /* One of CM_FOO.  */
 extern enum cmodel sparc_cmodel;
 
@@ -389,7 +389,7 @@ void sparc_override_options ();
       {									\
 	if (flag_pic)							\
 	  {								\
-	    char *pic_string = (flag_pic == 1) ? "-fpic" : "-fPIC";	\
+	    const char *pic_string = (flag_pic == 1) ? "-fpic" : "-fPIC";\
 	    warning ("%s and profiling conflict: disabling %s",		\
 		     pic_string, pic_string);				\
 	    flag_pic = 0;						\
@@ -675,8 +675,8 @@ extern enum processor_type sparc_cpu;
 /* sparc_select[0] is reserved for the default cpu.  */
 struct sparc_cpu_select
 {
-  char *string;
-  char *name;
+  const char *string;
+  const char *name;
   int set_tune_p;
   int set_arch_p;
 };
@@ -684,9 +684,9 @@ struct sparc_cpu_select
 extern struct sparc_cpu_select sparc_select[];
 
 /* Variables to record values the user passes.  */
-extern char *sparc_align_loops_string;
-extern char *sparc_align_jumps_string;
-extern char *sparc_align_funcs_string;
+extern const char *sparc_align_loops_string;
+extern const char *sparc_align_jumps_string;
+extern const char *sparc_align_funcs_string;
 /* Parsed values as a power of two.  */
 extern int sparc_align_loops;
 extern int sparc_align_jumps;
@@ -3400,7 +3400,7 @@ extern int sparc_splitdi_legitimate ();
 extern int sparc_absnegfloat_split_legitimate ();
 
 extern char *output_cbranch ();
-extern char *output_return ();
+extern const char *output_return ();
 extern char *output_v9branch ();
 
 extern void emit_v9_brxx_insn ();
