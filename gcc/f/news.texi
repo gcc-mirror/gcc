@@ -155,6 +155,17 @@ The following information was last updated on @value{last-update-news}:
 @itemize @bullet
 @ifclear USERVISONLY
 @item
+@code{g77} no longer generates bad code for assignments,
+or other conversions,
+of @code{REAL} or @code{COMPLEX} constant expressions
+to type @code{INTEGER(KIND=2)}
+(often referred to as @code{INTEGER*8}).
+
+For example, @samp{INTEGER*8 J; J = 4E10} now works as documented.
+@end ifclear
+
+@ifclear USERVISONLY
+@item
 Fix @code{g77} so it no longer crashes when compiling
 I/O statements using keywords that define @code{INTEGER} values,
 such as @samp{IOSTAT=@var{j}},

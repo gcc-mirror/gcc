@@ -633,6 +633,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      break;
 	    }
 
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
+
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_integer1_val
 	     (ffebld_cu_val_integer1 (u)), expr);
@@ -821,6 +825,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      assert ("INTEGER2 bad type" == NULL);
 	      break;
 	    }
+
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
 
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_integer2_val
@@ -1011,6 +1019,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      break;
 	    }
 
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
+
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_integer3_val
 	     (ffebld_cu_val_integer3 (u)), expr);
@@ -1200,6 +1212,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      break;
 	    }
 
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
+
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_integer4_val
 	     (ffebld_cu_val_integer4 (u)), expr);
@@ -1317,6 +1333,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      break;
 	    }
 
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
+
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_logical1_val
 	     (ffebld_cu_val_logical1 (u)), expr);
@@ -1423,6 +1443,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      assert ("LOGICAL2 bad type" == NULL);
 	      break;
 	    }
+
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
 
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_logical2_val
@@ -1531,6 +1555,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      break;
 	    }
 
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
+
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_logical3_val
 	     (ffebld_cu_val_logical3 (u)), expr);
@@ -1637,6 +1665,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      assert ("LOGICAL4 bad type" == NULL);
 	      break;
 	    }
+
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
 
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_logical4_val
@@ -1796,6 +1828,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      break;
 	    }
 
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
+
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_real1_val
 	     (ffebld_cu_val_real1 (u)), expr);
@@ -1943,6 +1979,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      assert ("REAL2 bad type" == NULL);
 	      break;
 	    }
+
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
 
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_real2_val
@@ -2092,6 +2132,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      break;
 	    }
 
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
+
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_real3_val
 	     (ffebld_cu_val_real3 (u)), expr);
@@ -2239,6 +2283,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      assert ("REAL4 bad type" == NULL);
 	      break;
 	    }
+
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
 
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_real4_val
@@ -2398,6 +2446,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      break;
 	    }
 
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
+
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_complex1_val
 	     (ffebld_cu_val_complex1 (u)), expr);
@@ -2545,6 +2597,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      assert ("COMPLEX2 bad type" == NULL);
 	      break;
 	    }
+
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
 
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_complex2_val
@@ -2694,6 +2750,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      break;
 	    }
 
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
+
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_complex3_val
 	     (ffebld_cu_val_complex3 (u)), expr);
@@ -2841,6 +2901,10 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	      assert ("COMPLEX4 bad type" == NULL);
 	      break;
 	    }
+
+	  /* If conversion operation is not implemented, return original expr.  */
+	  if (error == FFEBAD_NOCANDO)
+	    return expr;
 
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_complex4_val

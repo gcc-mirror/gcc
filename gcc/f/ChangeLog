@@ -1,3 +1,15 @@
+Sat Mar 13 17:51:55 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix 19990313-0.f, 19990313-1.f, 19990313-2.f, 19990313-3.f:
+	* bad.def (FFEBAD_NOCANDO): New error code for internal use only.
+	* expr.c (ffeexpr_collapse_convert): If FFEBAD_NOCANDO returned
+	by convertor, just return original expr.
+	* target.h: Return FFEBAD_NOCANDO for (usually) 64-bit
+	conversions that aren't yet working properly.
+	* news.texi: Explain.
+
+	* version.c: Bump version.
+
 Sat Mar 13 14:26:55 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* RELEASE-PREP: New file, lists things to do for a release.
