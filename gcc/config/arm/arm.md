@@ -1769,13 +1769,21 @@
 [(set_attr "length" "8")])
 
 (define_expand "zero_extendhisi2"
-  [(set (match_dup 2) (ashift:SI (match_operand:HI 1 "s_register_operand" "")
+  [(set (match_dup 2) (ashift:SI (match_operand:HI 1 "nonimmediate_operand" "")
 				 (const_int 16)))
    (set (match_operand:SI 0 "s_register_operand" "")
 	(lshiftrt:SI (match_dup 2) (const_int 16)))]
   ""
   "
-{ operands[1] = gen_lowpart (SImode, operands[1]);
+{
+  if (TARGET_SHORT_BY_BYTES && GET_CODE (operands[1]) == MEM)
+    {
+      emit_insn (gen_movhi_bytes (operands[0], operands[1]));
+      DONE;
+    }
+  if (! s_register_operand (operands[1], HImode))
+    operands[1] = copy_to_mode_reg (HImode, operands[1]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
   operands[2] = gen_reg_rtx (SImode); 
 }")
 
@@ -1819,15 +1827,51 @@
 
 (define_expand "extendhisi2"
   [(set (match_dup 2)
-	(ashift:SI (match_operand:HI 1 "s_register_operand" "")
+	(ashift:SI (match_operand:HI 1 "nonimmediate_operand" "")
 		   (const_int 16)))
    (set (match_operand:SI 0 "s_register_operand" "")
 	(ashiftrt:SI (match_dup 2)
 		     (const_int 16)))]
   ""
   "
-{ operands[1] = gen_lowpart (SImode, operands[1]);
-  operands[2] = gen_reg_rtx (SImode); }")
+{ 
+  if (TARGET_SHORT_BY_BYTES && GET_CODE (operands[1]) == MEM)
+    {
+      emit_insn (gen_extendhisi2_mem (operands[0], operands[1]));
+      DONE;
+    }
+  if (! s_register_operand (operands[1], HImode))
+    operands[1] = copy_to_mode_reg (HImode, operands[1]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[2] = gen_reg_rtx (SImode);
+}")
+
+(define_expand "extendhisi2_mem"
+  [(set (match_dup 2) (zero_extend:SI (mem:QI (match_operand:HI 1 "" ""))))
+   (set (match_dup 3)
+	(zero_extend:SI (mem:QI (plus:SI (match_dup 1) (const_int 1)))))
+   (set (match_dup 6) (ashift:SI (match_dup 4) (const_int 24)))
+   (set (match_operand:SI 0 "" "")
+	(ior:SI (ashiftrt:SI (match_dup 6) (const_int 16)) (match_dup 5)))]
+  ""
+  "
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[1] = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
+  operands[2] = gen_reg_rtx (SImode);
+  operands[3] = gen_reg_rtx (SImode);
+  operands[6] = gen_reg_rtx (SImode);
+
+  if (BYTES_BIG_ENDIAN)
+    {
+      operands[4] = operands[2];
+      operands[5] = operands[3];
+    }
+  else
+    {
+      operands[4] = operands[3];
+      operands[5] = operands[2];
+    }
+")
 
 (define_expand "extendqihi2"
   [(set (match_dup 2)
@@ -2202,6 +2246,12 @@
 	  emit_insn (gen_movsi (reg, GEN_INT (val)));
 	  operands[1] = gen_rtx (SUBREG, HImode, reg, 0);
 	}
+      else if (TARGET_SHORT_BY_BYTES && GET_CODE (operands[1]) == MEM)
+        {
+	  rtx reg = gen_reg_rtx (SImode);
+	  emit_insn (gen_movhi_bytes (reg, operands[1]));
+	  operands[1] = gen_lowpart (HImode, reg);
+	}
       else if (BYTES_BIG_ENDIAN && GET_CODE (operands[1]) == MEM)
 	{
 	  emit_insn (gen_movhi_bigend (operands[0], operands[1]));
@@ -2209,6 +2259,31 @@
 	}
     }
 }
+")
+
+(define_expand "movhi_bytes"
+  [(set (match_dup 2) (zero_extend:SI (mem:QI (match_operand:HI 1 "" ""))))
+   (set (match_dup 3)
+	(zero_extend:SI (mem:QI (plus:SI (match_dup 1) (const_int 1)))))
+   (set (match_operand:SI 0 "" "")
+	 (ior:SI (ashift:SI (match_dup 4) (const_int 8)) (match_dup 5)))]
+  ""
+  "
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[1] = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
+  operands[2] = gen_reg_rtx (SImode);
+  operands[3] = gen_reg_rtx (SImode);
+
+  if (BYTES_BIG_ENDIAN)
+    {
+      operands[4] = operands[2];
+      operands[5] = operands[3];
+    }
+  else
+    {
+      operands[4] = operands[3];
+      operands[5] = operands[2];
+    }
 ")
 
 (define_expand "movhi_bigend"
@@ -2230,7 +2305,8 @@
 (define_insn ""
   [(set (match_operand:HI 0 "general_operand" "=r,r,r")
 	(match_operand:HI 1 "general_operand"  "rI,K,m"))]
-  "(! BYTES_BIG_ENDIAN)
+  "! BYTES_BIG_ENDIAN
+   && ! TARGET_SHORT_BY_BYTES
    && (GET_CODE (operands[1]) != CONST_INT
        || const_ok_for_arm (INTVAL (operands[1]))
        || const_ok_for_arm (~INTVAL (operands[1])))"
@@ -2244,6 +2320,7 @@
   [(set (match_operand:HI 0 "s_register_operand" "=r,r,r")
 	(match_operand:HI 1 "general_operand"  "rI,K,m"))]
   "BYTES_BIG_ENDIAN
+   && ! TARGET_SHORT_BY_BYTES
    && (GET_CODE (operands[1]) != CONST_INT
        || const_ok_for_arm (INTVAL (operands[1]))
        || const_ok_for_arm (~INTVAL (operands[1])))"
@@ -2258,9 +2335,19 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(rotate:SI (subreg:SI (match_operand:HI 1 "memory_operand" "m") 0)
 		   (const_int 16)))]
-  "BYTES_BIG_ENDIAN"
+  "BYTES_BIG_ENDIAN
+   && ! TARGET_SHORT_BY_BYTES"
   "ldr%?\\t%0, %1\\t%@ movhi_bigend"
 [(set_attr "type" "load")])
+
+(define_insn ""
+  [(set (match_operand:HI 0 "s_register_operand" "=r,r")
+	(match_operand:HI 1 "arm_rhs_operand"  "rI,K"))]
+  "TARGET_SHORT_BY_BYTES"
+  "@
+   mov%?\\t%0, %1\\t%@ movhi
+   mvn%?\\t%0, #%B1\\t%@ movhi")
+
 
 (define_expand "reload_outhi"
   [(parallel [(match_operand:HI 0 "reload_memory_operand" "=o")
@@ -2269,6 +2356,16 @@
   ""
   "
   arm_reload_out_hi (operands);
+  DONE;
+")
+
+(define_expand "reload_inhi"
+  [(parallel [(match_operand:HI 0 "s_register_operand" "=r")
+	      (match_operand:HI 1 "reload_memory_operand" "o")
+	      (match_operand:SI 2 "s_register_operand" "=&r")])]
+  "TARGET_SHORT_BY_BYTES"
+  "
+  arm_reload_in_hi (operands);
   DONE;
 ")
 
@@ -4706,6 +4803,7 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   "(! BYTES_BIG_ENDIAN)
+   && ! TARGET_SHORT_BY_BYTES
    && REGNO (operands[0]) != FRAME_POINTER_REGNUM
    && REGNO (operands[1]) != FRAME_POINTER_REGNUM
    && (GET_CODE (operands[2]) != REG
@@ -4720,6 +4818,7 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(minus:SI (match_dup 1) (match_dup 2)))]
   "(!BYTES_BIG_ENDIAN)
+   && ! TARGET_SHORT_BY_BYTES
    && REGNO (operands[0]) != FRAME_POINTER_REGNUM
    && REGNO (operands[1]) != FRAME_POINTER_REGNUM
    && (GET_CODE (operands[2]) != REG
@@ -4857,6 +4956,7 @@
 	(plus:SI (match_op_dup 2 [(match_dup 3)	(match_dup 4)])
 		 (match_dup 1)))]
   "(! BYTES_BIG_ENDIAN)
+   && ! TARGET_SHORT_BY_BYTES
    && REGNO (operands[0]) != FRAME_POINTER_REGNUM
    && REGNO (operands[1]) != FRAME_POINTER_REGNUM
    && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
@@ -4873,6 +4973,7 @@
 	(minus:SI (match_dup 1) (match_op_dup 2 [(match_dup 3)
 						 (match_dup 4)])))]
   "(! BYTES_BIG_ENDIAN)
+   && ! TARGET_SHORT_BY_BYTES
    && REGNO (operands[0]) != FRAME_POINTER_REGNUM
    && REGNO (operands[1]) != FRAME_POINTER_REGNUM
    && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
@@ -4919,6 +5020,7 @@
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_operand:SI 2 "index_operand" "rJ")))]
   "(! BYTES_BIG_ENDIAN)
+   && ! TARGET_SHORT_BY_BYTES
    && REGNO(operands[0]) != REGNO(operands[1])
    && (GET_CODE (operands[2]) != REG
        || REGNO(operands[0]) != REGNO (operands[2]))"
