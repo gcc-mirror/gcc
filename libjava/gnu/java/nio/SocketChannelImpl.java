@@ -227,12 +227,9 @@ public final class SocketChannelImpl extends SocketChannel
     int available = input.available();
     int len = dst.capacity() - dst.position();
 	
-    if (! isBlocking() && available == 0)
+    if ((! isBlocking()) && available == 0)
       return 0;
     
-    if (len > available)
-      len = available;
-
     if (dst.hasArray())
       {
         offset = dst.arrayOffset() + dst.position();

@@ -1,3 +1,9 @@
+2004-11-22  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/SocketChannelImpl.java
+	(read): Made check for blocking un-ambiguous.
+	Removed wrong check for data array length.
+
 2004-11-21  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/SocketChannelImpl.java
