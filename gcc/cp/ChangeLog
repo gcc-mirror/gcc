@@ -1,3 +1,8 @@
+2000-05-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (layout_nonempty_base_or_field): Replace
+	`record_layout_info' with `record_layout_info_s'.
+
 2000-05-26  Jason Merrill  <jason@casey.soma.redhat.com>
 
 	Fix goto checking.

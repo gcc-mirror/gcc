@@ -1,3 +1,10 @@
+2000-05-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (struct record_layout_info): Rename to (struct
+	record_layout_info_s).
+	* stor-layout.c (start_record_layout): Replace
+	`record_layout_info' with `record_layout_info_s'.
+
 2000-05-26  Richard Earnshaw  <rearnsha@arm.com>
 
 	* flow.c (find_label_refs): New function.

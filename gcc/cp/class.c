@@ -3656,7 +3656,7 @@ layout_nonempty_base_or_field (rli, decl, binfo, v)
   while (1)
     {
       tree offset;
-      struct record_layout_info old_rli = *rli;
+      struct record_layout_info_s old_rli = *rli;
 
       /* Place this field.  */
       place_field (rli, decl);
