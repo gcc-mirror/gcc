@@ -3915,7 +3915,7 @@ real_yylex ()
 	      if (parts[i])
 		warn = 1;
 	    if (warn)
-	      pedwarn ("integer constant out of range");
+	      pedwarn ("integer constant is too large for this configuration of the compiler - truncated to %d bits", HOST_BITS_PER_WIDE_INT * 2);
 
 	    /* This is simplified by the fact that our constant
 	       is always positive.  */
@@ -3956,7 +3956,7 @@ real_yylex ()
 	      type = long_long_unsigned_type_node;
 
 	    if (!int_fits_type_p (yylval.ttype, type) && !warn)
-	      pedwarn ("integer constant out of range");
+	      pedwarn ("integer constant is larger than the maximum value for its type");
 
 	    if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
 	      warning ("decimal integer constant is so large that it is unsigned");

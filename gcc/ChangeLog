@@ -1,3 +1,7 @@
+Thu Jul  1 11:05:25 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* c-lex.c (yylex): Improve 'integer constant out of range' messages.
+
 Wed Jun 30 16:51:41 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* configure.in: Add arm-pe and thumb-pe targets.
