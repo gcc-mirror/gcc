@@ -1,3 +1,13 @@
+2003-03-07  Matthias Klose  <doko@debian.org>
+
+	* Makefile.am (AM_MAKEFLAGS): Also pass gxx_include_dir.
+	FLAGS_TO_PASS: Set to AM_MAKEFLAGS
+	* Makefile.in: Regenerate.
+	* libsupc++/Makefile.am: Express glibcppinstalldir in terms
+	of gxx_include_dir.
+	AM_MAKEFLAGS: Pass gxx_include_dir.
+	* libsupc++/Makefile.in: Regenerate.
+
 2003-03-06  Jerry Quinn  <jlquinn@optonline.net>
 
 	* testsuite/27_io/ios_base_storage.cc (test02): Set exception

@@ -99,7 +99,7 @@ sources = \
 libsupc___la_SOURCES = $(sources) 
 libsupc__convenience_la_SOURCES = $(sources) 
 
-glibcppinstalldir = @gxx_include_dir@
+glibcppinstalldir = $(gxx_include_dir)
 glibcppinstall_HEADERS = $(headers)
 
 # Use special rules for pulling things out of libiberty.  These
@@ -125,6 +125,9 @@ AM_CXXFLAGS = \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \
 	$(CONFIG_CXXFLAGS) 
+
+AM_MAKEFLAGS = \
+	"gxx_include_dir=$(gxx_include_dir)"
 
 # libstdc++ libtool notes
 
