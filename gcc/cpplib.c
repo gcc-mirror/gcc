@@ -6242,10 +6242,6 @@ print_help ()
 {
   printf ("Usage: %s [switches] input output\n", progname);
   printf ("Switches:\n");
-  /* start-sanitize-obscured-headers */
-  printf ("  -fgenobscured=<args>      Generate obscured versions of header files used\n");
-  printf ("  -fuseobscured=<args>      Search for obscured versions of header files\n");
-  /* end-sanitize-obscured-headers */
   printf ("  -include <file>           Include the contents of <file> before other files\n");
   printf ("  -imacros <file>           Accept definition of marcos in <file>\n");
   printf ("  -iprefix <path>           Specify <path> as a prefix for next two options\n");
