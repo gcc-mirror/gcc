@@ -1,3 +1,17 @@
+2002-06-08  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/backwards/strstream_members.cc: New.
+
+2002-06-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/backwards/strstream: Format.
+	* src/strstream.cc: Format.
+	
+2002-06-08  Andreas Schwab  <schwab@suse.de>
+
+	* src/strstream.cc (strstreambuf::overflow): Set _M_buf,
+	_M_buf_size and _M_buf_size_opt to the new buffer and size.
+
 2002-06-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/os/generic/bits/ctype_noninline.h: Tweak format.
