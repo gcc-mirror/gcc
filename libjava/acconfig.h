@@ -83,6 +83,9 @@
 /* Define if gethostbyaddr_r returns `int'.  */
 #undef GETHOSTBYADDR_R_RETURNS_INT
 
+/* Define if usleep is declared in <unistd.h>.  */
+#undef HAVE_USLEEP_DECL
+
 /* Define if struct tm has tm_gmtoff field.  */
 #undef STRUCT_TM_HAS_GMTOFF
 

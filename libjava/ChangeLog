@@ -1,3 +1,11 @@
+2003-07-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in: Check for usleep declaration.
+	* acconfig.h (HAVE_USLEEP_DECL): Provide template.
+	* configure: Regenerate.
+	* include/config.h.in: Likewise.
+	* include/posix.h [!HAVE_USLEEP_DECL]: Declare usleep.
+
 2003-07-01  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/gcj/convert/natIconv.cc

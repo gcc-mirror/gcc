@@ -92,6 +92,10 @@ _Jv_platform_close_on_exec (jint fd)
 #undef fcntl
 
 #ifdef JV_HASH_SYNCHRONIZATION
+#ifndef HAVE_USLEEP_DECL
+extern "C" int usleep (useconds_t useconds);
+#endif /* not HAVE_USLEEP_DECL */
+
 inline void
 _Jv_platform_usleep (unsigned long usecs)
 {
