@@ -461,6 +461,26 @@ sed -e '/[	 ]size_t.*;/i\
   fi
 fi
 
+# Fix this ARM/RISCiX file to avoid interfering with the use of __wchar_t
+# in cc1plus.
+file=stdlib.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e "s/\(#[ 	]*\(ifndef\)[ 	]*\)__wchar_t/\1_GCC_WCHAR_T/" \
+      -e "s/\(#[ 	]*\(define\)[ 	]*\)__wchar_t/\1_GCC_WCHAR_T/" \
+     ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm ${LIB}/$file
+  fi
+fi
+
 # Fix this file to avoid interfering with stddef.h, but don't mistakenly
 # match e.g. ssize_t present in AIX for the ps/2.
 file=sys/types.h
