@@ -1,9 +1,18 @@
-2004-03-16 Richard Zidlicky <rz@linux-m68k.org>
+2004-03-16  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/14599
+	* config/mips/mips.md (UNSPEC_GP): New constant.
+	* config/mips/mips.c (CONST_GP_P): Expect the CONST to contain
+	an UNSPEC instead of (reg $gp).
+	(mips16_gp_pseudo_reg): Change accordingly.
+	(print_operand): Print $gp directly when handling CONST_GP_P.
+
+2004-03-16  Richard Zidlicky  <rz@linux-m68k.org>
 
 	* config.gcc, config/m68k/linux.h: Implement with-cpu for m68k-linux.
 	* longlong.h: Make code 68060 clean when compiling for m68060.
 
-2004-03-16   Richard Zidlicky  <rz@linux-m68k.org>
+2004-03-16  Richard Zidlicky  <rz@linux-m68k.org>
 
 	* config/m68k/m68k.md: Fix constraints for bitfield instructions.
 	* doc/md.texi: Clarify description of "i" constraint.
