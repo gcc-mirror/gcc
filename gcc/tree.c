@@ -445,13 +445,16 @@ restore_tree_status (p, context)
     {
       struct simple_obstack_stack *current, **p = &toplev_inline_obstacks;
 
-      while ((*p)->obstack != function_maybepermanent_obstack)
-	p = &((*p)->next);
-      current = *p;
-      *p = current->next;
+      if ((*p) != NULL)
+	{
+	  while ((*p)->obstack != function_maybepermanent_obstack)
+	    p = &((*p)->next);
+	  current = *p;
+	  *p = current->next;
 
-      current->next = extra_inline_obstacks;
-      extra_inline_obstacks = current;
+	  current->next = extra_inline_obstacks;
+	  extra_inline_obstacks = current;
+	}
     }
 
   obstack_free (function_obstack, 0);
