@@ -1,3 +1,8 @@
+Wed Nov 10 01:10:41 1999  Philippe De Muyter  <phdm@macqel.be>
+
+	* genoutput.c (output_insn_data): Cast `INSN_OUTPUT_FORMAT_MULTI' and
+	`INSN_OUTPUT_FORMAT_FUNCTION' to `PTR'-type.
+
 Wed Nov 10 00:51:41 1999  Hans-Peter Nilsson  <hp@axis.se>
 
 	* invoke.texi (C Dialect Options): Add missing builtins from
