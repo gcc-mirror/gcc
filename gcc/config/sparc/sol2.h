@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARC running Solaris 2
-   Copyright 1992, 1995, 1996 Free Software Foundation, Inc.
+   Copyright 1992, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@netcom.com).
    Additional changes by David V. Henkel-Wallace (gumby@cygnus.com).
 
@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
+%{!ansi:%{!traditional:-D__STDC__=0 }}\
 %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude} \
 %(cpp_cpu) \
 "
