@@ -1,3 +1,7 @@
+2000-01-12  Zack Weinberg  <zack@wolery.cumb.org
+
+	* cccp.c: Accept and ignore -lang-fortran.
+
 2000-01-12  Robert Lipe  <robertl@sco.com>
 
 	* i386/sysv5.h (CPP_SPEC, LIBSPEC): Add -pthreadT.

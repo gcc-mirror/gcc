@@ -1,3 +1,7 @@
+Wed Jan 12 09:32:59 2000  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* lang-specs.h: Pass -lang-fortran to preprocessor.
+
 Thu Dec 30 13:14:31 1999  Richard Henderson  <rth@cygnus.com>
 
 	* stw.h (struct _ffestw_): Change type of uses_ to int.
