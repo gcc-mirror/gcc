@@ -1,3 +1,13 @@
+2000-07-10  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.c (output_octal): Second parameter is unsigned.
+	(output_long_octal): Likewise.
+	(output_hexadecimal): Likewise.
+	(output_long_hexadecimal): Likewise.
+	(output_format): Adjust arguments extraction. Tweak.
+	(output_verbatim, verbatim): End variable argument list.
+	(report_diagnostic): Improve documentation.
+	
 2000-07-10  Benjamin Chelf  <chelf@codesourcery.com>
 
 	* c-common.h (build_stmt): Declare.
