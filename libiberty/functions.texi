@@ -276,7 +276,7 @@ itself.
 
 @end deftypefn
 
-@c getruntime.c:78
+@c getruntime.c:82
 @deftypefn Replacement long get_run_time (void)
 
 Returns the time used so far, in microseconds.  If possible, this is
@@ -322,11 +322,12 @@ between calls to @code{getpwd}.
 
 Initializes the array mapping the current character set to
 corresponding hex values.  This function must be called before any
-call to @code{hex_p} or @code{hex_value}.
+call to @code{hex_p} or @code{hex_value}.  If you fail to call it, a
+default ASCII-based table will normally be used on ASCII systems.
 
 @end deftypefn
 
-@c hex.c:33
+@c hex.c:34
 @deftypefn Extension int hex_p (int @var{c})
 
 Evaluates to non-zero if the given character is a valid hex character,
@@ -335,7 +336,7 @@ or zero if it is not.  Note that the value you pass will be cast to
 
 @end deftypefn
 
-@c hex.c:41
+@c hex.c:42
 @deftypefn Extension int hex_value (int @var{c})
 
 Returns the numeric equivalent of the given character when interpreted
@@ -388,6 +389,22 @@ strings for particular input.
 
 In particular, the empty string returns the same empty string,
 and a path ending in @code{/} returns the empty string after it.
+
+@end deftypefn
+
+@c make-relative-prefix.c:24
+@deftypefn Extension {const char*} make_relative_prefix (const char *@var{progname}, const char *@var{bin_prefix}, const char *@var{prefix})
+
+Given three strings @var{progname}, @var{bin_prefix}, @var{prefix}, return a string
+that gets to @var{prefix} starting with the directory portion of @var{progname} and
+a relative pathname of the difference between @var{bin_prefix} and @var{prefix}.
+
+For example, if @var{bin_prefix} is @code{/alpha/beta/gamma/gcc/delta}, @var{prefix}
+is @code{/alpha/beta/gamma/omega/}, and @var{progname} is @code{/red/green/blue/gcc},
+then this function will return @code{/red/green/blue/../../omega/}.
+
+The return value is normally allocated via @code{malloc}.  If no relative prefix
+can be found, return @code{NULL}.
 
 @end deftypefn
 

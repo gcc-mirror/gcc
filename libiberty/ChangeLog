@@ -1,3 +1,9 @@
+2002-11-22  Daniel Jacobowitz  <drow@mvista.com>
+
+	* Makefile.in: Add make-relative-prefix.c.
+	* make-relative-prefix.c: New file.
+	* functions.texi: Rebuilt.
+
 2002-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* md5.c (md5_process_block): Avoid `function-like macro "F{G,H,I}" must be

@@ -1,3 +1,7 @@
+2002-11-22  Daniel Jacobowitz  <drow@mvista.com>
+
+	* libiberty.h (make_relative_prefix): Add prototype.
+
 2002-10-26  Roger Sayle  <roger@eyesopen.com>
 
 	* partition.h:  Close the extern "C" scope when compiling with C++.

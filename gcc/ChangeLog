@@ -1,5 +1,10 @@
 2002-11-22  Daniel Jacobowitz  <drow@mvista.com>
 
+	* gcc.c (make_relative_prefix, split_directories)
+	(free_split_directories): Removed.
+
+2002-11-22  Daniel Jacobowitz  <drow@mvista.com>
+
 	* configure.in: Set insn=nop for DWARF-2 tests on ARM.
 	* configure: Regenerated.
 
