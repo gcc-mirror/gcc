@@ -963,6 +963,8 @@ main (argc, argv)
   /* File name which deps are being written to.
      This is 0 if deps are being written to stdout.  */
   char *deps_file = 0;
+  /* Fopen file mode to open deps_file with.  */
+  char *deps_mode = "a";
   /* Stream on which to print the dependency information.  */
   FILE *deps_stream = 0;
   /* Target-name to write with the dependency information.  */
@@ -1035,21 +1037,44 @@ main (argc, argv)
       case 'i':
 	if (!strcmp (argv[i], "-include")) {
 	  if (i + 1 == argc)
-	    fatal ("Filename missing after -include option");
+	    fatal ("Filename missing after `-include' option");
 	  else
 	    pend_includes[i] = argv[i+1], i++;
 	}
 	if (!strcmp (argv[i], "-imacros")) {
 	  if (i + 1 == argc)
-	    fatal ("Filename missing after -imacros option");
+	    fatal ("Filename missing after `-imacros' option");
 	  else
 	    pend_files[i] = argv[i+1], i++;
 	}
 	if (!strcmp (argv[i], "-iprefix")) {
 	  if (i + 1 == argc)
-	    fatal ("Filename missing after -iprefix option");
+	    fatal ("Filename missing after `-iprefix' option");
 	  else
 	    include_prefix = argv[++i];
+	}
+	/* Add directory to end of path for includes,
+	   with the default prefix at the front of its name.  */
+	if (!strcmp (argv[i], "-iwithprefix")) {
+	  struct file_name_list *dirtmp;
+
+	  dirtmp = (struct file_name_list *)
+	    xmalloc (sizeof (struct file_name_list));
+	  dirtmp->next = 0;	/* New one goes on the end */
+	  dirtmp->control_macro = 0;
+	  if (i + 1 == argc)
+	    fatal ("Directory name missing after `-iwithprefix' option");
+
+	  dirtmp->fname = (char *) xmalloc (strlen (argv[i+1])
+					    + strlen (include_prefix) + 1);
+	  strcpy (dirtmp->fname, include_prefix);
+	  strcat (dirtmp->fname, argv[++i]);
+
+	  if (after_include == 0)
+	    after_include = dirtmp;
+	  else
+	    last_after_include->next = dirtmp;
+	  last_after_include = dirtmp; /* Tail follows the last one */
 	}
 	/* Add directory to end of path for includes.  */
 	if (!strcmp (argv[i], "-idirafter")) {
@@ -1060,7 +1085,7 @@ main (argc, argv)
 	  dirtmp->next = 0;	/* New one goes on the end */
 	  dirtmp->control_macro = 0;
 	  if (i + 1 == argc)
-	    fatal ("Directory name missing after -idirafter option");
+	    fatal ("Directory name missing after `-idirafter' option");
 	  else
 	    dirtmp->fname = argv[++i];
 
@@ -1179,6 +1204,7 @@ main (argc, argv)
 	    || !strcmp (argv[i], "-MMD")) {
 	  i++;
 	  deps_file = argv[i];
+	  deps_mode = "w";
 	} else {
 	  /* For -M and -MM, write deps on standard output
 	     and suppress the usual output.  */
@@ -1656,6 +1682,7 @@ main (argc, argv)
     }
       
     deps_file = output_file;
+    deps_mode = "a";
   }
 
   /* For -M, print the expected object file name
@@ -1822,7 +1849,7 @@ main (argc, argv)
   if (print_deps) {
     /* Don't actually write the deps file if compilation has failed.  */
     if (errors == 0) {
-      if (deps_file && ! (deps_stream = fopen (deps_file, "a")))
+      if (deps_file && ! (deps_stream = fopen (deps_file, deps_mode)))
 	pfatal_with_name (deps_file);
       fputs (deps_buffer, deps_stream);
       putc ('\n', deps_stream);
@@ -2621,30 +2648,34 @@ do { ip = &instack[indepth];		\
       break;
 
     case '\n':
+      if (ip->fname == 0 && *ibp == '-') {
+	/* Newline - inhibits expansion of preceding token.
+	   If expanding a macro arg, we keep the newline -.
+	   In final output, it is deleted.
+	   We recognize Newline - in macro bodies and macro args.  */
+	if (! concatenated) {
+	  ident_length = 0;
+	  hash = 0;
+	}
+	ibp++;
+	if (!output_marks) {
+	  obp--;
+	} else {
+	  /* If expanding a macro arg, keep the newline -.  */
+	  *obp++ = '-';
+	}
+	break;
+      }
+
       /* If reprocessing a macro expansion, newline is a special marker.  */
-      if (ip->macro != 0) {
+      else if (ip->macro != 0) {
 	/* Newline White is a "funny space" to separate tokens that are
 	   supposed to be separate but without space between.
 	   Here White means any whitespace character.
 	   Newline - marks a recursive macro use that is not
 	   supposed to be expandable.  */
 
-	if (*ibp == '-') {
-	  /* Newline - inhibits expansion of preceding token.
-	     If expanding a macro arg, we keep the newline -.
-	     In final output, it is deleted.  */
-	  if (! concatenated) {
-	    ident_length = 0;
-	    hash = 0;
-	  }
-	  ibp++;
-	  if (!output_marks) {
-	    obp--;
-	  } else {
-	    /* If expanding a macro arg, keep the newline -.  */
-	    *obp++ = '-';
-	  }
-	} else if (is_space[*ibp]) {
+	if (is_space[*ibp]) {
 	  /* Newline Space does not prevent expansion of preceding token
 	     so expand the preceding token and then come back.  */
 	  if (ident_length > 0)
@@ -2918,7 +2949,20 @@ startagain:
 		 along with any following whitespace just copied.  */
 	      obp = op->buf + obufp_before_macroname;
 	      op->lineno = op_lineno_before_macroname;
-	      
+
+	      /* Prevent accidental token-pasting with a character
+		 before the macro call.  */
+	      if (!traditional && obp != op->buf
+		  && (obp[-1] == '-' || obp[1] == '+' || obp[1] == '&'
+		      || obp[-1] == '|' || obp[1] == '<' || obp[1] == '>')) {
+		/* If we are expanding a macro arg, make a newline marker
+		   to separate the tokens.  If we are making real output,
+		   a plain space will do.  */
+		if (output_marks)
+		  *obp++ = '\n';
+		*obp++ = ' ';
+	      }
+
 	      /* Expand the macro, reading arguments as needed,
 		 and push the expansion on the input stack.  */
 	      ip->bufp = ibp;
@@ -4390,10 +4434,10 @@ check_preconditions (prec)
       int len;
       
       prec += 5;
-      while (is_hor_space[*prec])
+      while (is_hor_space[(U_CHAR) *prec])
 	prec++;
       name = prec;
-      while (is_idchar[*prec])
+      while (is_idchar[(U_CHAR) *prec])
 	prec++;
       len = prec - name;
       
@@ -5840,7 +5884,7 @@ do_error (buf, limit, op, keyword)
      struct directive *keyword;
 {
   int length = limit - buf;
-  char *copy = (char *) xmalloc (length + 1);
+  U_CHAR *copy = (U_CHAR *) xmalloc (length + 1);
   bcopy (buf, copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
@@ -5863,7 +5907,7 @@ do_warning (buf, limit, op, keyword)
      struct directive *keyword;
 {
   int length = limit - buf;
-  char *copy = (char *) xmalloc (length + 1);
+  U_CHAR *copy = (U_CHAR *) xmalloc (length + 1);
   bcopy (buf, copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
@@ -6107,7 +6151,7 @@ do_xifdef (buf, limit, op, keyword)
   if (ip->fname != 0 && keyword->type == T_IFNDEF) {
     U_CHAR *p = ip->buf;
     while (p != directive_start) {
-      char c = *p++;
+      U_CHAR c = *p++;
       if (is_space[c])
 	;
       else if (c == '/' && p != ip->bufp && *p == '*') {
@@ -7010,7 +7054,9 @@ macroexpand (hp, op)
 	if (ap->stringify)
 	  xbuf_len += args[ap->argno].stringified_length;
 	else if (ap->raw_before || ap->raw_after || traditional)
-	  xbuf_len += args[ap->argno].raw_length;
+	  /* Add 4 for two newline-space markers to prevent
+	     token concatenation.  */
+	  xbuf_len += args[ap->argno].raw_length + 4;
 	else {
 	  /* We have an ordinary (expanded) occurrence of the arg.
 	     So compute its expansion, if we have not already.  */
@@ -7025,7 +7071,9 @@ macroexpand (hp, op)
 	    args[ap->argno].free2 = obuf.buf;
 	  }
 
-	  xbuf_len += args[ap->argno].expand_length;
+	  /* Add 4 for two newline-space markers to prevent
+	     token concatenation.  */
+	  xbuf_len += args[ap->argno].expand_length + 4;
 	}
 	if (args[ap->argno].use_count < 10)
 	  args[ap->argno].use_count++;
@@ -7042,13 +7090,28 @@ macroexpand (hp, op)
       for (last_ap = NULL, ap = defn->pattern; ap != NULL;
 	   last_ap = ap, ap = ap->next) {
 	register struct argdata *arg = &args[ap->argno];
+	int count_before = totlen;
 
-	/* add chars to XBUF unless rest_args was zero with concatenation */
+	/* Add chars to XBUF.  */
 	for (i = 0; i < ap->nchars; i++, offset++)
-	  if (! (rest_zero && ((ap->rest_args && ap->raw_before)
-			       || (last_ap != NULL && last_ap->rest_args
-				   && last_ap->raw_after))))
-	    xbuf[totlen++] = exp[offset];
+	  xbuf[totlen++] = exp[offset];
+
+	/* If followed by an empty rest arg with concatenation,
+	   delete the last run of nonwhite chars.  */
+	if (rest_zero && totlen > count_before
+	    && ((ap->rest_args && ap->raw_before)
+		|| (last_ap != NULL && last_ap->rest_args
+		    && last_ap->raw_after))) {
+	  /* Delete final whitespace.  */
+	  while (totlen > count_before && is_space[xbuf[totlen - 1]]) {
+	    totlen--;
+	  }
+
+	  /* Delete the nonwhites before them.  */
+	  while (totlen > count_before && ! is_space[xbuf[totlen - 1]]) {
+	    totlen--;
+	  }
+	}
 
 	if (ap->stringify != 0) {
 	  int arglen = arg->raw_length;
@@ -7128,6 +7191,11 @@ macroexpand (hp, op)
 	       if the argument is concatenated with what precedes it.  */
 	    if (p1[0] == '\n' && p1[1] == '-')
 	      p1 += 2;
+	  } else if (!traditional) {
+	  /* Ordinary expanded use of the argument.
+	     Put in newline-space markers to prevent token pasting.  */
+	    xbuf[totlen++] = '\n';
+	    xbuf[totlen++] = ' ';
 	  }
 	  if (ap->raw_after) {
 	    /* Arg is concatenated after: delete trailing whitespace,
@@ -7147,11 +7215,28 @@ macroexpand (hp, op)
 	      else break;
 	    }
 	  }
+
 	  bcopy (p1, xbuf + totlen, l1 - p1);
 	  totlen += l1 - p1;
+	  if (!traditional && !ap->raw_after) {
+	    /* Ordinary expanded use of the argument.
+	       Put in newline-space markers to prevent token pasting.  */
+	    xbuf[totlen++] = '\n';
+	    xbuf[totlen++] = ' ';
+	  }
 	} else {
+	  /* Ordinary expanded use of the argument.
+	     Put in newline-space markers to prevent token pasting.  */
+	  if (!traditional) {
+	    xbuf[totlen++] = '\n';
+	    xbuf[totlen++] = ' ';
+	  }
 	  bcopy (arg->expanded, xbuf + totlen, arg->expand_length);
 	  totlen += arg->expand_length;
+	  if (!traditional) {
+	    xbuf[totlen++] = '\n';
+	    xbuf[totlen++] = ' ';
+	  }
 	  /* If a macro argument with newlines is used multiple times,
 	     then only expand the newlines once.  This avoids creating output
 	     lines which don't correspond to any input line, which confuses
