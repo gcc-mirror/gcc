@@ -24,7 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define SGS_SWITCH_TABLES	/* Different switch table handling */
 
-#include "hp320.h"
+#include "m68k/hp320.h"
 
 /* See m68k.h.  0 means 680[01]0 with no 68881.  */
 

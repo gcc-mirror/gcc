@@ -3,7 +3,7 @@
 /* See m68k.h.  0 means 68000 without 68881 and no bitfields.   */
 #define	TARGET_DEFAULT 0
 
-#include "hp320.h"
+#include "m68k/hp320.h"
 
 #undef CPP_SPEC
 #undef ASM_SPEC

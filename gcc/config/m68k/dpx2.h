@@ -2,7 +2,7 @@
  * dpx2.h - Bull DPX/2 200 and 300 systems (m68k, SysVr3)
  */
 
-#include "m68k.h"
+#include "m68k/m68k.h"
 #undef SELECT_RTX_SECTION
 #include "svr3.h"
 
