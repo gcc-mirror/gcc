@@ -1,3 +1,11 @@
+2004-04-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/14587
+	* config/i386/winnt.c (associated_type): Look for attributes on
+	the TYPE_MAIN_VARIANT of *this.
+	* attribs.c (decl_attributes): If ATTR_FLAG_TYPE_IN_PLACE, also
+	apply the attributes to the variants.
+
 2004-04-30  Paul Brook  <paul@codesourcery.com>
 
 	* config.gcc: Simplify arm --with-{cpu,tune} test.

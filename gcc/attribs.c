@@ -294,7 +294,26 @@ decl_attributes (tree *node, tree attributes, int flags)
 	      if (DECL_P (*anode))
 		DECL_ATTRIBUTES (*anode) = tree_cons (name, args, old_attrs);
 	      else if (flags & (int) ATTR_FLAG_TYPE_IN_PLACE)
-		TYPE_ATTRIBUTES (*anode) = tree_cons (name, args, old_attrs);
+		{
+		  TYPE_ATTRIBUTES (*anode) = tree_cons (name, args, old_attrs);
+		  /* If this is the main variant, also push the attributes
+		     out to the other variants.  */
+		  if (*anode == TYPE_MAIN_VARIANT (*anode))
+		    {
+		      tree variant;
+		      for (variant = *anode; variant;
+			   variant = TYPE_NEXT_VARIANT (variant))
+			{
+			  if (TYPE_ATTRIBUTES (variant) == old_attrs)
+			    TYPE_ATTRIBUTES (variant)
+			      = TYPE_ATTRIBUTES (*anode);
+			  else if (!lookup_attribute
+				   (spec->name, TYPE_ATTRIBUTES (variant)))
+			    TYPE_ATTRIBUTES (variant) = tree_cons
+			      (name, args, TYPE_ATTRIBUTES (variant));
+			}
+		    }
+		}
 	      else
 		*anode = build_type_attribute_variant (*anode,
 						       tree_cons (name, args,
