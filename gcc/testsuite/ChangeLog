@@ -1,3 +1,8 @@
+2000-05-20  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.c-torture/execute/20000519-1.c (main): Fixed return value of
+	testcase.
+
 2000-05-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.c-torture/execute/20000519-2.c: New test.
