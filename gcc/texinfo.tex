@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.216 1997/07/10 17:34:25 karl Exp karl $
+%% $Id: texinfo.tex,v 2.217 1997/07/14 17:43:41 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.216 $
+\deftexinfoversion$Revision: 2.217 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1402,14 +1402,12 @@ where each line of input produces a line of output.}
 \else{\tclose{\kbdfont\look}}\fi
 \else{\tclose{\kbdfont\look}}\fi}
 
-% @url, @email.  Quotes do not seem necessary.
-\let\url=\code % perhaps include a hypertex \special eventually
-% rms does not like the angle brackets --karl, 17may97.
-%\def\email#1{$\langle${\tt #1}$\rangle$}
-\let\email=\code
+% @url.  Quotes do not seem necessary, so use \code.
+\let\url=\code
 
 % @uref (abbreviation for `urlref') takes an optional second argument
 % specifying the text to display.  First (mandatory) arg is the url.
+% Perhaps eventually put in a hypertex \special here.
 % 
 \def\uref#1{\urefxxx #1,,\finish}
 \def\urefxxx#1,#2,#3\finish{%
@@ -1420,6 +1418,11 @@ where each line of input produces a line of output.}
     \code{#1}%
   \fi
 }
+
+% rms does not like the angle brackets --karl, 17may97.
+% So now @email is just like @uref.
+%\def\email#1{$\langle${\tt #1}$\rangle$}
+\let\email=\uref
 
 % Check if we are currently using a typewriter font.  Since all the
 % Computer Modern typewriter fonts have zero interword stretch (and
