@@ -397,6 +397,14 @@ extern int current_function_has_nonlocal_label;
 
 extern int current_function_has_nonlocal_goto;
 
+/* Nonzero if GCC must add code to check memory access (used by Checker).  */
+
+extern int flag_check_memory_usage;
+
+/* Nonzero if GCC must prefix function names (used with
+   flag_check_memory_usage).  */
+
+extern int flag_prefix_function_name;
 /* Nonzero if the current function is a thunk, so we should try to cut
    corners where we can.  */
 extern int current_function_is_thunk;
