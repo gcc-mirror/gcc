@@ -1,3 +1,9 @@
+2000-10-17  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md: Remove an unnecessary zero_extend
+	expander that is used when not optimizing.  Output a tab after
+	each assembly insns.
+
 2000-10-17  Chandrakala Chavva  <cchavva@redhat.com>
 
 	* gcc.c: New options --target-help.
