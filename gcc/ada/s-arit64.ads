@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---        Copyright (C) 1994,1995,1996 Free Software Foundation, Inc.       --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,7 +52,7 @@ pragma Pure (Arith_64);
 
    function Multiply_With_Ovflo_Check (X, Y : Int64) return Int64;
    --  Raises Constraint_Error if product of operands overflows 64
-   --  bits, otherwise returns the 64-bit signed integer difference.
+   --  bits, otherwise returns the 64-bit signed integer product.
 
    procedure Scaled_Divide
      (X, Y, Z : Int64;
@@ -71,12 +71,11 @@ pragma Pure (Arith_64);
       Q, R    : out Int64;
       Round   : Boolean);
    --  Performs the division X / (Y * Z), storing the quotient in Q and
-   --  the remainder in R. Constraint_Error is raised if Y or Z is zero.
-   --  Round indicates if the result should be rounded. If Round is False,
-   --  then Q, R are the normal quotient and remainder from a truncating
-   --  division. If Round is True, then Q is the rounded quotient. The
-   --  remainder R is not affected by the setting of the Round flag. The
-   --  result is known to be in range except for the noted possibility of
-   --  Y or Z being zero, so no other overflow checks are required.
+   --  the remainder in R. Constraint_Error is raised if Y or Z is zero,
+   --  or if the quotient does not fit in 64-bits. Round indicates if the
+   --  result should be rounded. If Round is False, then Q, R are the normal
+   --  quotient and remainder from a truncating division. If Round is True,
+   --  then Q is the rounded quotient. The remainder R is not affected by the
+   --  setting of the Round flag.
 
 end System.Arith_64;
