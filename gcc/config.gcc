@@ -2305,7 +2305,7 @@ sh-*-rtems*)
 	fi
 	;;
 sh-*-linux* | sh[2346lbe]*-*-linux*)
-	tmake_file="sh/t-sh sh/t-elf"
+	tmake_file="sh/t-sh sh/t-elf t-slibgcc-elf-ver t-linux"
 	case $machine in
 	sh*be-*-* | sh*eb-*-*) ;;
 	*)

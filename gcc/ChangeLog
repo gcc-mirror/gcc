@@ -1,3 +1,21 @@
+2003-12-01  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline
+
+	2002-11-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config.gcc (sh*-*-linux*): Add t-slibgcc-elf-ver and t-linux.
+        to tmake_file.
+	* config/sh/libgcc-glibc.ver: New file.
+
+	Backport from mainline
+
+	2003-10-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/t-linux (SHLIB_LINK): Override to use a linker script
+	libgcc_s.so.
+	(SHLIB_INSTALL): Likewise.
+
 2003-12-01  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/11634

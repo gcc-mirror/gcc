@@ -12,3 +12,27 @@ MULTILIB_MATCHES =
 MULTILIB_EXCEPTIONS=
 
 EXTRA_MULTILIB_PARTS= crtbegin.o crtend.o crtbeginS.o crtendS.o
+
+# Override t-slibgcc-elf-ver to export some libgcc symbols with
+# the symbol versions that glibc used.
+SHLIB_MAPFILES =  $(srcdir)/libgcc-std.ver $(srcdir)/config/sh/libgcc-glibc.ver
+
+# Override SHLIB_LINK and SHLIB_INSTALL to use linker script
+# libgcc_s.so.
+SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
+	-Wl,--soname=$(SHLIB_SONAME) \
+	-Wl,--version-script=$(SHLIB_MAP) \
+	-o $(SHLIB_NAME) @multilib_flags@ $(SHLIB_OBJS) $(SHLIB_LC) && \
+	rm -f $(SHLIB_SOLINK) && \
+	(echo "/* GNU ld script"; \
+	 echo "   Use the shared library, but some functions are only in"; \
+	 echo "   the static library.  */"; \
+	 echo "GROUP ( $(SHLIB_SONAME) libgcc.a )" \
+	) > $(SHLIB_SOLINK)
+SHLIB_INSTALL = \
+	$$(SHELL) $$(srcdir)/mkinstalldirs $$(slibdir)$(SHLIB_SLIBDIR_QUAL); \
+	$(INSTALL_DATA) $(SHLIB_NAME) \
+	  $$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SONAME); \
+	rm -f $$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK); \
+	$(INSTALL_DATA) $(SHLIB_SOLINK) \
+	  $$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK)
