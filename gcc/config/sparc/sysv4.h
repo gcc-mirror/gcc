@@ -77,11 +77,6 @@ Boston, MA 02111-1307, USA.  */
     const_section ();				\
 }
 
-/* This is the string used to begin an assembly language comment for the
-   Sparc/svr4 assembler.  */
-
-#define ASM_COMMENT_START "!"
-
 /* Define the names of various pseudo-op used by the Sparc/svr4 assembler.
    Note that many of these are different from the typical pseudo-ops used
    by most svr4 assemblers.  That is probably due to a (misguided?) attempt
