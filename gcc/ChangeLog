@@ -1,3 +1,9 @@
+2004-02-17  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/14180
+	* cselib.c (remove_useless_values): Do not access released
+	memory.
+
 2004-02-17  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* combine.c (simplify_if_then_else): Do not replace 

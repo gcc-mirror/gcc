@@ -358,8 +358,6 @@ remove_useless_values (void)
   while (values_became_useless);
 
   /* Second pass: actually remove the values.  */
-  htab_traverse (hash_table, discard_useless_values, 0);
-
   p = &first_containing_mem;
   for (v = *p; v != &dummy_val; v = v->next_containing_mem)
     if (v->locs)
@@ -368,6 +366,8 @@ remove_useless_values (void)
 	p = &(*p)->next_containing_mem;
       }
   *p = &dummy_val;
+
+  htab_traverse (hash_table, discard_useless_values, 0);
 
   if (n_useless_values != 0)
     abort ();
