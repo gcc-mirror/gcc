@@ -1100,7 +1100,11 @@ hppa_address_cost (X)
 
    Return 1 if we have written out everything that needs to be done to
    do the move.  Otherwise, return 0 and the caller will emit the move
-   normally.  */
+   normally. 
+
+   Note SCRATCH_REG may not be in the proper mode depending on how it
+   will be used.  This routine is resposible for creating a new copy
+   of SCRATCH_REG in the proper mode.  */
 
 int
 emit_move_sequence (operands, mode, scratch_reg)
@@ -1161,6 +1165,9 @@ emit_move_sequence (operands, mode, scratch_reg)
       if (GET_CODE (operand1) == SUBREG)
 	operand1 = XEXP (operand1, 0);
 
+      /* SCRATCH_REG will hold an address and maybe the actual data.  We want
+	 it in WORD_MODE regardless of what mode it was originally given
+	 to us.  */
       scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
 
       /* D might not fit in 14 bits either; for such cases load D into
@@ -1190,7 +1197,11 @@ emit_move_sequence (operands, mode, scratch_reg)
       if (GET_CODE (operand0) == SUBREG)
 	operand0 = XEXP (operand0, 0);
 
+      /* SCRATCH_REG will hold an address and maybe the actual data.  We want
+	 it in WORD_MODE regardless of what mode it was originally given
+	 to us.  */
       scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
+
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
       if (!memory_address_p (Pmode, XEXP (operand0, 0)))
@@ -1224,6 +1235,11 @@ emit_move_sequence (operands, mode, scratch_reg)
     {
       rtx xoperands[2];
 
+      /* SCRATCH_REG will hold an address and maybe the actual data.  We want
+	 it in WORD_MODE regardless of what mode it was originally given
+	 to us.  */
+      scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
+
       /* Force the constant into memory and put the address of the
 	 memory location into scratch_reg.  */
       xoperands[0] = scratch_reg;
@@ -1244,6 +1260,11 @@ emit_move_sequence (operands, mode, scratch_reg)
 		   && FP_REG_CLASS_P (REGNO_REG_CLASS (REGNO (operand1)))))
 	   && scratch_reg)
     {
+      /* SCRATCH_REG will hold an address and maybe the actual data.  We want
+	 it in WORD_MODE regardless of what mode it was originally given
+	 to us.  */
+      scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
+
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
       if (GET_CODE (operand1) == MEM
@@ -1336,7 +1357,13 @@ emit_move_sequence (operands, mode, scratch_reg)
 
 	      /* Figure out what (if any) scratch register to use.  */
 	      if (reload_in_progress || reload_completed)
-		scratch_reg = scratch_reg ? scratch_reg : operand0;
+		{
+		  scratch_reg = scratch_reg ? scratch_reg : operand0;
+		  /* SCRATCH_REG will hold an address and maybe the actual
+		     data.  We want it in WORD_MODE regardless of what mode it
+		     was originally given to us.  */
+		  scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
+		}
 	      else if (flag_pic)
 		scratch_reg = gen_reg_rtx (Pmode);
 
@@ -1388,7 +1415,13 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      rtx temp;
 
 	      if (reload_in_progress || reload_completed)
-		temp = scratch_reg ? scratch_reg : operand0;
+		{
+		  temp = scratch_reg ? scratch_reg : operand0;
+		  /* TEMP will hold an address and maybe the actual
+		     data.  We want it in WORD_MODE regardless of what mode it
+		     was originally given to us.  */
+		  temp = gen_rtx_REG (word_mode, REGNO (temp));
+		}
 	      else
 		temp = gen_reg_rtx (Pmode);
 
@@ -1421,7 +1454,13 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      rtx temp, set;
 
 	      if (reload_in_progress || reload_completed)
-		temp = scratch_reg ? scratch_reg : operand0;
+		{
+		  temp = scratch_reg ? scratch_reg : operand0;
+		  /* TEMP will hold an address and maybe the actual
+		     data.  We want it in WORD_MODE regardless of what mode it
+		     was originally given to us.  */
+		  temp = gen_rtx_REG (word_mode, REGNO (temp));
+		}
 	      else
 		temp = gen_reg_rtx (mode);
 
