@@ -2646,10 +2646,15 @@ some old C programs contain such lines.
 The ANSI standard specifies that the effect of the @samp{#pragma}
 directive is implementation-defined.  The GNU C preprocessor recognizes
 some pragmas, and passes unrecognized ones through to the preprocessor
-output, so they are available to the compilation pass.  GNU C preprocessor
-pragmas are of the form @samp{#pragma GCC ...}. For backwards
-compatibility previously supported pragmas are also recognized without
-the @samp{GCC}, however that use is deprecated.
+output, so they are available to the compilation pass.
+
+In line with the C99 standard, which introduces a STDC namespace for
+C99 pragmas, the preprocessor introduces a GCC namespace for GCC
+pragmas.  Supported GCC preprocessor pragmas are of the form
+@samp{#pragma GCC ...}.  For backwards compatibility previously
+supported pragmas are also recognized without the @samp{GCC} prefix,
+however that use is deprecated.  Pragmas that are already deprecated
+are not recognized with a @samp{GCC} prefix.
 
 @findex #ident
 The @samp{#ident} directive is supported for compatibility with certain
