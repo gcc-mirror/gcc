@@ -62,6 +62,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "integrate.h"
 #include "langhooks.h"
+#include "target.h"
 
 #ifndef TRAMPOLINE_ALIGNMENT
 #define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
@@ -4177,16 +4178,37 @@ get_first_nonparm_insn (void)
    EXP may be a type node or an expression (whose type is tested).  */
 
 int
-aggregate_value_p (tree exp)
+aggregate_value_p (tree exp, tree fntype)
 {
   int i, regno, nregs;
   rtx reg;
 
   tree type = (TYPE_P (exp)) ? exp : TREE_TYPE (exp);
 
+  if (fntype)
+    switch (TREE_CODE (fntype))
+      {
+      case CALL_EXPR:
+	fntype = get_callee_fndecl (fntype);
+	fntype = fntype ? TREE_TYPE (fntype) : 0;
+	break;
+      case FUNCTION_DECL:
+	fntype = TREE_TYPE (fntype);
+	break;
+      case FUNCTION_TYPE:
+      case METHOD_TYPE:
+        break;
+      case IDENTIFIER_NODE:
+	fntype = 0;
+	break;
+      default:
+	/* We don't expect other rtl types here.  */
+	abort();
+      }
+
   if (TREE_CODE (type) == VOID_TYPE)
     return 0;
-  if (RETURN_IN_MEMORY (type))
+  if (targetm.calls.return_in_memory (type, fntype))
     return 1;
   /* Types that are TREE_ADDRESSABLE must be constructed in memory,
      and thus can't be returned in registers.  */
@@ -4230,9 +4252,7 @@ assign_parms (tree fndecl)
   /* This is a dummy PARM_DECL that we used for the function result if
      the function returns a structure.  */
   tree function_result_decl = 0;
-#ifdef SETUP_INCOMING_VARARGS
   int varargs_setup = 0;
-#endif
   int reg_parm_stack_space = 0;
   rtx conversion_insns = 0;
 
@@ -4265,9 +4285,9 @@ assign_parms (tree fndecl)
   stack_args_size.var = 0;
 
   /* If struct value address is treated as the first argument, make it so.  */
-  if (aggregate_value_p (DECL_RESULT (fndecl))
+  if (aggregate_value_p (DECL_RESULT (fndecl), fndecl)
       && ! current_function_returns_pcc_struct
-      && struct_value_incoming_rtx == 0)
+      && targetm.calls.struct_value_rtx (TREE_TYPE (fndecl), 1) == 0)
     {
       tree type = build_pointer_type (TREE_TYPE (fntype));
 
@@ -4336,7 +4356,7 @@ assign_parms (tree fndecl)
       /* Set NAMED_ARG if this arg should be treated as a named arg.  For
 	 most machines, if this is a varargs/stdarg function, then we treat
 	 the last named arg as if it were anonymous too.  */
-      named_arg = STRICT_ARGUMENT_NAMING ? 1 : ! last_named;
+      named_arg = targetm.calls.strict_argument_naming (&args_so_far) ? 1 : ! last_named;
 
       if (TREE_TYPE (parm) == error_mark_node
 	  /* This can happen after weird syntax errors
@@ -4401,11 +4421,12 @@ assign_parms (tree fndecl)
 
       promoted_mode = passed_mode;
 
-#ifdef PROMOTE_FUNCTION_ARGS
-      /* Compute the mode in which the arg is actually extended to.  */
-      unsignedp = TREE_UNSIGNED (passed_type);
-      promoted_mode = promote_mode (passed_type, promoted_mode, &unsignedp, 1);
-#endif
+      if (targetm.calls.promote_function_args (TREE_TYPE (fndecl)))
+	{
+	  /* Compute the mode in which the arg is actually extended to.  */
+	  unsignedp = TREE_UNSIGNED (passed_type);
+	  promoted_mode = promote_mode (passed_type, promoted_mode, &unsignedp, 1);
+	}
 
       /* Let machine desc say which reg (if any) the parm arrives in.
 	 0 means it arrives on the stack.  */
@@ -4420,7 +4441,6 @@ assign_parms (tree fndecl)
       if (entry_parm == 0)
 	promoted_mode = passed_mode;
 
-#ifdef SETUP_INCOMING_VARARGS
       /* If this is the last named parameter, do any required setup for
 	 varargs or stdargs.  We need to know about the case of this being an
 	 addressable type, in which case we skip the registers it
@@ -4433,11 +4453,11 @@ assign_parms (tree fndecl)
 	 Also, indicate when RTL generation is to be suppressed.  */
       if (last_named && !varargs_setup)
 	{
-	  SETUP_INCOMING_VARARGS (args_so_far, promoted_mode, passed_type,
-				  current_function_pretend_args_size, 0);
+	  targetm.calls.setup_incoming_varargs (&args_so_far, promoted_mode,
+						  passed_type,
+						  &current_function_pretend_args_size, 0);
 	  varargs_setup = 1;
 	}
-#endif
 
       /* Determine parm's home in the stack,
 	 in case it arrives in the stack or we should pretend it did.
@@ -4457,7 +4477,8 @@ assign_parms (tree fndecl)
 #endif
       if (!in_regs && !named_arg)
 	{
-	  int pretend_named = PRETEND_OUTGOING_VARARGS_NAMED;
+	  int pretend_named =
+	    targetm.calls.pretend_outgoing_varargs_named (&args_so_far);
 	  if (pretend_named)
 	    {
 #ifdef FUNCTION_INCOMING_ARG
@@ -5275,8 +5296,6 @@ split_complex_args (tree args)
    that REGNO is promoted from and whether the promotion was signed or
    unsigned.  */
 
-#ifdef PROMOTE_FUNCTION_ARGS
-
 rtx
 promoted_input_arg (unsigned int regno, enum machine_mode *pmode, int *punsignedp)
 {
@@ -5304,7 +5323,6 @@ promoted_input_arg (unsigned int regno, enum machine_mode *pmode, int *punsigned
   return 0;
 }
 
-#endif
 
 /* Compute the size and offset from the start of the stacked arguments for a
    parm passed in mode PASSED_MODE and with type TYPE.
@@ -6284,7 +6302,7 @@ allocate_struct_function (tree fndecl)
   current_function_name = (*lang_hooks.decl_printable_name) (fndecl, 2);
 
   result = DECL_RESULT (fndecl);
-  if (aggregate_value_p (result))
+  if (aggregate_value_p (result, fndecl))
     {
 #ifdef PCC_STATIC_STRUCT_RETURN
       current_function_returns_pcc_struct = 1;
@@ -6515,7 +6533,7 @@ expand_function_start (tree subr, int parms_have_cleanups)
      before any library calls that assign parms might generate.  */
 
   /* Decide whether to return the value in memory or in a register.  */
-  if (aggregate_value_p (DECL_RESULT (subr)))
+  if (aggregate_value_p (DECL_RESULT (subr), subr))
     {
       /* Returning something that won't go in a register.  */
       rtx value_address = 0;
@@ -6529,13 +6547,14 @@ expand_function_start (tree subr, int parms_have_cleanups)
       else
 #endif
 	{
+	  rtx sv = targetm.calls.struct_value_rtx (TREE_TYPE (subr), 1);
 	  /* Expect to be passed the address of a place to store the value.
 	     If it is passed as an argument, assign_parms will take care of
 	     it.  */
-	  if (struct_value_incoming_rtx)
+	  if (sv)
 	    {
 	      value_address = gen_reg_rtx (Pmode);
-	      emit_move_insn (value_address, struct_value_incoming_rtx);
+	      emit_move_insn (value_address, sv);
 	    }
 	}
       if (value_address)
@@ -6973,10 +6992,9 @@ expand_function_end (void)
 	    {
 	      int unsignedp = TREE_UNSIGNED (TREE_TYPE (decl_result));
 
-#ifdef PROMOTE_FUNCTION_RETURN
-	      promote_mode (TREE_TYPE (decl_result), GET_MODE (decl_rtl),
-			    &unsignedp, 1);
-#endif
+	      if (targetm.calls.promote_function_return (TREE_TYPE (current_function_decl)))
+		promote_mode (TREE_TYPE (decl_result), GET_MODE (decl_rtl),
+			      &unsignedp, 1);
 
 	      convert_move (real_decl_rtl, decl_rtl, unsignedp);
 	    }

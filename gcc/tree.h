@@ -2871,7 +2871,7 @@ extern void pop_temp_slots (void);
 extern void push_temp_slots (void);
 extern void preserve_temp_slots (rtx);
 extern void preserve_rtl_expr_temps (tree);
-extern int aggregate_value_p (tree);
+extern int aggregate_value_p (tree, tree);
 extern void free_temps_for_rtl_expr (tree);
 extern void instantiate_virtual_regs (tree, rtx);
 extern void unshare_all_rtl (tree, rtx);

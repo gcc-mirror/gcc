@@ -25,7 +25,6 @@ Boston, MA 02111-1307, USA.  */
 #define GCC_SH_PROTOS_H
 
 #ifdef RTX_CODE
-extern struct rtx_def *sh_builtin_saveregs PARAMS ((void));
 extern struct rtx_def *prepare_scc_operands PARAMS ((enum rtx_code));
 
 /* Declare functions defined in sh.c and used in templates.  */
@@ -121,6 +120,8 @@ extern int fldi_ok PARAMS ((void));
 extern int sh_pr_n_sets PARAMS ((void));
 extern int sh_hard_regno_rename_ok PARAMS ((unsigned int, unsigned int));
 extern int sh_cfun_interrupt_handler_p PARAMS ((void));
+extern int sh_attr_renesas_p PARAMS ((tree));
+extern int sh_cfun_attr_renesas_p PARAMS ((void));
 extern void sh_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern bool sh_cannot_change_mode_class
 	      PARAMS ((enum machine_mode, enum machine_mode, enum reg_class));
@@ -137,5 +138,9 @@ extern void sh_pr_trapa PARAMS ((struct cpp_reader *));
 extern void sh_pr_nosave_low_regs PARAMS ((struct cpp_reader *));
 extern rtx function_symbol (const char *);
 extern rtx sh_get_pr_initial_val (void);
+
+extern rtx sh_function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
+extern void sh_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
+extern int sh_pass_in_reg_p (CUMULATIVE_ARGS *, enum machine_mode, tree);
 
 #endif /* ! GCC_SH_PROTOS_H */

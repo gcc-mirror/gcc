@@ -1562,7 +1562,7 @@ xstormy16_asm_output_mi_thunk (file, thunk_fndecl, delta,
   int regnum = FIRST_ARGUMENT_REGISTER;
   
   /* There might be a hidden first argument for a returned structure.  */
-  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function))))
+  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
     regnum += 1;
   
   fprintf (file, "\tadd %s,#0x%x\n", reg_names[regnum], (int) delta & 0xFFFF);

@@ -1,5 +1,5 @@
 /* Sets (bit vectors) of hard registers, and operations on them.
-   Copyright (C) 1987, 1992, 1994, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1994, 2000, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC
 
@@ -418,7 +418,7 @@ extern HARD_REG_SET losing_caller_save_reg_set;
 
 /* Indexed by hard register number, contains 1 for registers that are
    fixed use -- i.e. in fixed_regs -- or a function value return register
-   or STRUCT_VALUE_REGNUM or STATIC_CHAIN_REGNUM.  These are the
+   or TARGET_STRUCT_VALUE_RTX or STATIC_CHAIN_REGNUM.  These are the
    registers that cannot hold quantities across calls even if we are
    willing to save and restore them.  */
 

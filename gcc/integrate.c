@@ -1028,7 +1028,7 @@ expand_inline_function (tree fndecl, tree parms, rtx target, int ignore,
       else
 	{
 	  if (! structure_value_addr
-	      || ! aggregate_value_p (DECL_RESULT (fndecl)))
+	      || ! aggregate_value_p (DECL_RESULT (fndecl), fndecl))
 	    abort ();
 
 	  /* Pass the function the address in which to return a structure
@@ -1283,7 +1283,7 @@ expand_inline_function (tree fndecl, tree parms, rtx target, int ignore,
      out of the temp register into a BLKmode memory object.  */
   if (target
       && TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl))) == BLKmode
-      && ! aggregate_value_p (TREE_TYPE (TREE_TYPE (fndecl))))
+      && ! aggregate_value_p (TREE_TYPE (TREE_TYPE (fndecl)), fndecl))
     target = copy_blkmode_from_reg (0, target, TREE_TYPE (TREE_TYPE (fndecl)));
 
   if (structure_value_addr)

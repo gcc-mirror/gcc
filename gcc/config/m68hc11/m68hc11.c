@@ -1490,7 +1490,7 @@ m68hc11_init_cumulative_args (cum, fntype, libname)
 
   ret_type = TREE_TYPE (fntype);
 
-  if (ret_type && aggregate_value_p (ret_type))
+  if (ret_type && aggregate_value_p (ret_type, fntype))
     {
       cum->words = 1;
       cum->nregs = 1;

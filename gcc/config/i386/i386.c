@@ -1748,7 +1748,7 @@ ix86_return_pops_args (tree fundecl, tree funtype, int size)
   }
 
   /* Lose any fake structure return argument if it is passed on the stack.  */
-  if (aggregate_value_p (TREE_TYPE (funtype))
+  if (aggregate_value_p (TREE_TYPE (funtype), fundecl)
       && !TARGET_64BIT)
     {
       int nregs = ix86_function_regparm (funtype, fundecl);
@@ -15150,7 +15150,7 @@ x86_this_parameter (tree function)
 
   if (TARGET_64BIT)
     {
-      int n = aggregate_value_p (TREE_TYPE (type)) != 0;
+      int n = aggregate_value_p (TREE_TYPE (type), type) != 0;
       return gen_rtx_REG (DImode, x86_64_int_parameter_registers[n]);
     }
 
@@ -15174,7 +15174,7 @@ x86_this_parameter (tree function)
 	}
     }
 
-  if (aggregate_value_p (TREE_TYPE (type)))
+  if (aggregate_value_p (TREE_TYPE (type), type))
     return gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 8));
   else
     return gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 4));

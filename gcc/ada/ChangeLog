@@ -1,3 +1,8 @@
+2003-09-03  DJ Delorie  <dj@redhat.com>
+
+	* misc.c (default_pass_by_ref): Convert to calls.return_in_memory
+	hook.
+
 2003-08-30  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in: Update substitutions to match changes to

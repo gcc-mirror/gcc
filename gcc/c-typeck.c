@@ -1866,7 +1866,7 @@ convert_arguments (tree typelist, tree values, tree name, tree fundecl)
 					        (char *) 0, /* arg passing  */
 						fundecl, name, parmnum + 1);
 
-	      if (PROMOTE_PROTOTYPES
+	      if (targetm.calls.promote_prototypes (fundecl ? TREE_TYPE (fundecl) : 0)
 		  && INTEGRAL_TYPE_P (type)
 		  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 		parmval = default_conversion (parmval);
@@ -3615,7 +3615,7 @@ c_convert_parm_for_inlining (tree parm, tree value, tree fn)
   ret = convert_for_assignment (type, value,
 				(char *) 0 /* arg passing  */, fn,
 				DECL_NAME (fn), 0);
-  if (PROMOTE_PROTOTYPES
+  if (targetm.calls.promote_prototypes (TREE_TYPE (fn))
       && INTEGRAL_TYPE_P (type)
       && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
     ret = default_conversion (ret);

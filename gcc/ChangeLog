@@ -1,3 +1,135 @@
+2003-09-03  DJ Delorie  <dj@redhat.com>
+
+	* targhooks.c: New file.
+	* targhooks.h: New file.
+	* Makefile.in: Add targhooks.o support.
+	(function.o): Depend on$(TARGET_H).
+	(stmt.o): Likewise.
+	(combine.o): Depend on $(TREE_H) and $(TARGET_H).
+	* builtins.c (apply_args_size, expand_builtin_apply_args_1,
+	expand_builtin_apply): Convert to calls.struct_value_rtx hook.
+	(expand_builtin_saveregs): Convert to
+	calls.expand_builtin_saveregs hook.
+	* c-decl.c (start_decl): Handle new calls.promote_prototypes hook
+	here, instead of ...
+	(get_parm_info) ... here.
+	(store_parm_decls_oldstyle): Convert to calls.promote_prototypes
+	hook.
+	(finish_function): Handle calls.promote_prototypes hook here too.
+	* c-typeck.c (convert_arguments): Convert to
+	calls.promote_prototypes hook.
+	(c_convert_parm_for_inlining): Likewise.
+	* calls.c (initialize_argument_information): Convert to
+	calls.promote_function_args hook.
+	(expand_call): Convert to calls.struct_value_rtx,
+	calls.strict_argument_naming,
+	calls.pretend_outgoing_varargs_named, and
+	calls.promote_function_return hooks.  Pass fndecl to
+	aggregate_value_p.  Initialize CUMULATIVE_ARGS before calling
+	hooks, so they can use that.
+	(emit_library_call_value_1): Likewise.
+	* combine.c (setup_incoming_promotions): Convert to
+	calls.promote_function_args hook.
+	* emit-rtl.c: Convert to calls.struct_value_rtx hook.
+	* expr.c (expand_assignment): Pass call to aggregate_value_p.
+	(expand_expr): Likewise.
+	* expr.h: Remove support for SETUP_INCOMING_VARARGS,
+	STRICT_ARGUMENT_NAMING, PRETEND_OUTGOING_VARARGS_NAMED,
+	RETURN_IN_MEMORY macro defaults.
+	* final.c (profile_function): Convert to calls.struct_value_rtx
+	hook.
+	* function.c (aggregate_value_p): Accept function type tree as
+	second parameter; try to deduce fntype from it.  Convert to
+	calls.return_in_memory hook.
+	(assign_parms): Convert to calls.setup_incoming_varargs,
+	calls.strict_argument_naming, calls.promote_function_args,
+	calls.pretend_outgoing_varargs_named hooks.  Pass fndecl to
+	aggregate_value_p.
+	(expand_function_start): Likewise.  Convert to
+	calls.struct_value_rtx hook.
+	(expand_function_end): Convert to calls.promote_function_return hook.
+	(allocate_struct_function): Pass fndecl to aggregate_value_p.
+	* hard-reg-set.h: Update comments to new hook names.
+	* integrate.c (expand_inline_function): Pass fndecl to aggregate_value_p.
+	* reg-stack.c (stack_result): Likewise.
+	* rtl.h (struct_value_rtx, struct_value_incoming_rtx): Delete.
+	* stmt.c (expand_value_return): Convert to
+	calls.promote_function_return hook.
+	* target-def.h: Add TARGET_PROMOTE_FUNCTION_ARGS,
+	TARGET_PROMOTE_FUNCTION_RETURN, TARGET_PROMOTE_PROTOTYPES,
+	TARGET_STRUCT_VALUE_RTX, TARGET_RETURN_IN_MEMORY,
+	TARGET_EXPAND_BUILTIN_SAVEREGS, TARGET_SETUP_INCOMING_VARARGS,
+	TARGET_STRICT_ARGUMENT_NAMING,
+	TARGET_PRETEND_OUTGOING_VARARGS_NAMED, and TARGET_CALLS.
+	* target.h: Likewise.
+	* tree.h (aggregate_value_p): Also takes a tree to deduce function
+	attributes from (for target hooks).
+	* doc/tm.texi (PROMOTE_FUNCTION_ARGS, PROMOTE_FUNCTION_RETURN,
+	PROMOTE_PROTOTYPES, RETURN_IN_MEMORY, STRUCT_VALUE_REGNUM,
+	STRUCT_VALUE, STRUCT_VALUE_INCOMING_REGNUM, STRUCT_VALUE_INCOMING,
+	EXPAND_BUILTIN_SAVEREGS, SETUP_INCOMING_VARARGS,
+	STRICT_ARGUMENT_NAMING, PRETEND_OUTGOING_VARARGS_NAMED): Convert
+	to hooks.
+	
+	* config/alpha/alpha.c (alpha_output_mi_thunk_osf): Pass function
+	to aggregate_value_p.
+	* config/arm/arm.c (arm_init_cumulative_args,
+	arm_output_mi_thunk): Likewise.
+	* config/i386/i386.c (ix86_return_pops_args, x86_this_parameter):
+	Likewise.
+	* config/mips/mips.c (mips_save_reg_p, mips_expand_prologue,
+	mips_can_use_return_insn): Likewise.
+	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Likewise.
+	* config/s390/s390.c (s390_output_mi_thunk): Likewise.
+	* config/sparc/sparc.c (sparc_output_mi_thunk): Pass function to
+	aggregate_value_p.
+	* config/story16/stormy16.c (xstormy16_asm_output_mi_thunk): Pass
+	function to aggregate_value_p.
+	* objc/objc-act.c (generate_struct_by_value_array): Pass NULL to
+	aggregate_value_p.
+	
+	* config/sh/sh-protos.h (sh_builtin_saveregs): Remove.
+	(sh_attr_renesas_p, sh_cfun_attr_renesas_p, sh_function_arg,
+	sh_function_arg_advance, sh_pass_in_reg_p): New.  * config/sh/sh.c
+	(sh_handle_renesas_attribute, sh_promote_prototypes,
+	sh_struct_value_rtx, sh_return_in_memory, sh_builtin_saveregs,
+	sh_setup_incoming_varargs, sh_strict_argument_naming,
+	sh_pretend_outgoing_varargs_named): New decls.
+	(targetm): Add new hooks.
+	(calc_live_regs): Save MACL and MACH if the function has the
+	renesas attribute.
+	(sh_expand_prologue): Support renesas attribute.
+	(sh_builtin_saveregs): Make static.
+	(sh_build_va_list): Support renesas attribute.
+	(sh_va_start): Likewise.
+	(sh_va_arg): Likewise.
+	(sh_promote_prototypes): New.
+	(sh_function_arg): New, moved from sh.h.  Support renesas
+	attribute.
+	(sh_function_arg_advance): Likewise.
+	(sh_return_in_memory): Likewise.
+	(sh_strict_argument_naming): Likewise.
+	(sh_pretend_outgoing_varargs_named): Likewise.
+	(sh_struct_value_rtx): New.
+	(sh_attribute): Add renesas attribute.
+	(sh_handle_renesas_attribute): New.
+	(sh_attr_renesas_p, sh_cfun_attr_renesas_p): New.
+	(sh_ms_bitfield_layout_p): Support renesas attribute also.
+	(sh_output_mi_thunk): Pass function to aggregate_value_p.  *
+	config/sh/sh.h (TARGET_SWITCHES): Add -mrenesas as an alias for
+	-mhitachi.
+	(STRUCT_VALUE_REGNUM, STRUCT_VALUE, RETURN_IN_MEMORY): Moved to
+	target hooks.
+	(sh_args): Add renesas_abi flag.
+	(INIT_CUMULATIVE_ARGS): Set it.  Pass fndecl to aggregate_value_p.
+	(FUNCTION_ARG_ADVANCE, FUNCTION_ARG): Move to sh.c.
+	(PASS_IN_REG_P): Support renesas attribute.  Pass DF and TF on the
+	stack for the renesas abi.
+	(STRICT_ARGUMENT_NAMING, PRETEND_OUTGOING_VARARGS_NAMED,
+	SETUP_INCOMING_VARARGS, EXPAND_BUILTIN_SAVEREGS,
+	PROMOTE_PROTOTYPES): Moved to sh.c.  * config/sh/sh.md (call): Set
+	call cookie to indicate renesas calls.
+	
 2003-09-03  Mostafa Hagog  <mustafa@il.ibm.com>
 
 	* gcse.c (replace_one_set): New function.

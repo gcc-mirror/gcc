@@ -406,7 +406,7 @@ generate_struct_by_value_array ()
 	}
       finish_struct (type, field_decl_chain, NULL_TREE);
  
-      aggregate_in_mem[i] = aggregate_value_p (type);
+      aggregate_in_mem[i] = aggregate_value_p (type, 0);
       if (!aggregate_in_mem[i])
 	found = 1;
     }

@@ -5933,7 +5933,7 @@ mips_save_reg_p (unsigned int regno)
       if (regno == GP_REG_FIRST + 31
 	  && mips16_hard_float
 	  && !mips_entry
-	  && !aggregate_value_p (return_type)
+	  && !aggregate_value_p (return_type, current_function_decl)
 	  && GET_MODE_CLASS (DECL_MODE (return_type)) == MODE_FLOAT
 	  && GET_MODE_SIZE (DECL_MODE (return_type)) <= UNITS_PER_FPVALUE)
 	return true;
@@ -6712,7 +6712,7 @@ mips_expand_prologue (void)
     REGNO (pic_offset_table_rtx) = cfun->machine->global_pointer;
 
   /* If struct value address is treated as the first argument, make it so.  */
-  if (aggregate_value_p (DECL_RESULT (fndecl))
+  if (aggregate_value_p (DECL_RESULT (fndecl), fndecl)
       && ! current_function_returns_pcc_struct
       && struct_value_incoming_rtx == 0)
     {
@@ -7179,7 +7179,7 @@ mips_can_use_return_insn (void)
      registers.  */
   if (TARGET_MIPS16
       && mips16_hard_float
-      && ! aggregate_value_p (return_type)
+      && ! aggregate_value_p (return_type, current_function_decl)
       && GET_MODE_CLASS (DECL_MODE (return_type)) == MODE_FLOAT
       && GET_MODE_SIZE (DECL_MODE (return_type)) <= UNITS_PER_FPVALUE)
     return 0;

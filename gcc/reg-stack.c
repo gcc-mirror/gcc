@@ -802,7 +802,7 @@ stack_result (tree decl)
 
   /* If the value is supposed to be returned in memory, then clearly
      it is not returned in a stack register.  */
-  if (aggregate_value_p (DECL_RESULT (decl)))
+  if (aggregate_value_p (DECL_RESULT (decl), decl))
     return 0;
 
   result = DECL_RTL_IF_SET (DECL_RESULT (decl));

@@ -1086,7 +1086,7 @@ i960_function_name_declare (file, name, fndecl)
       
   /* See if caller passes in an address to return value.  */
 
-  if (aggregate_value_p (DECL_RESULT (fndecl)))
+  if (aggregate_value_p (DECL_RESULT (fndecl), fndecl))
     {
       tail_call_ok = 0;
       leaf_proc_ok = 0;

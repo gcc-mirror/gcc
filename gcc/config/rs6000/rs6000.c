@@ -12430,7 +12430,7 @@ rs6000_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
 
   /* Find the "this" pointer.  If the function returns a structure,
      the structure return pointer is in r3.  */
-  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function))))
+  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
     this = gen_rtx_REG (Pmode, 4);
   else
     this = gen_rtx_REG (Pmode, 3);

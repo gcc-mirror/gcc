@@ -6629,7 +6629,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     }
 
   /* Operand 1 is the 'this' pointer.  */
-  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function))))
+  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
     op[1] = gen_rtx_REG (Pmode, 3);
   else
     op[1] = gen_rtx_REG (Pmode, 2);

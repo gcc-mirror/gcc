@@ -1058,24 +1058,25 @@ sign-extend the result to 64 bits.  On such machines, set
 Do not define this macro if it would never modify @var{m}.
 @end defmac
 
-@defmac PROMOTE_FUNCTION_ARGS
-Define this macro if the promotion described by @code{PROMOTE_MODE}
-should also be done for outgoing function arguments.
-@end defmac
+@deftypefn {Target Hook} bool TARGET_PROMOTE_FUNCTION_ARGS (tree @var{fntype})
+This target hook should return @code{true} if the promotion described by
+@code{PROMOTE_MODE} should also be done for outgoing function arguments.
+@end deftypefn
 
-@defmac PROMOTE_FUNCTION_RETURN
-Define this macro if the promotion described by @code{PROMOTE_MODE}
-should also be done for the return value of functions.
+@deftypefn {Target Hook} bool TARGET_PROMOTE_FUNCTION_RETURN (tree @var{fntype})
+This target hook should return @code{true} if the promotion described by
+@code{PROMOTE_MODE} should also be done for the return value of
+functions.
 
-If this macro is defined, @code{FUNCTION_VALUE} must perform the same
-promotions done by @code{PROMOTE_MODE}.
-@end defmac
+If this target hook returns @code{true}, @code{FUNCTION_VALUE} must
+perform the same promotions done by @code{PROMOTE_MODE}.
+@end deftypefn
 
 @defmac PROMOTE_FOR_CALL_ONLY
 Define this macro if the promotion described by @code{PROMOTE_MODE}
 should @emph{only} be performed for outgoing function arguments or
-function return values, as specified by @code{PROMOTE_FUNCTION_ARGS}
-and @code{PROMOTE_FUNCTION_RETURN}, respectively.
+function return values, as specified by @code{TARGET_PROMOTE_FUNCTION_ARGS}
+and @code{TARGET_PROMOTE_FUNCTION_RETURN}, respectively.
 @end defmac
 
 @defmac PARM_BOUNDARY
@@ -3353,14 +3354,13 @@ The macros in this section control how arguments are passed
 on the stack.  See the following section for other macros that
 control passing certain arguments in registers.
 
-@defmac PROMOTE_PROTOTYPES
-A C expression whose value is nonzero if an argument declared in
-a prototype as an integral type smaller than @code{int} should
-actually be passed as an @code{int}.  In addition to avoiding
-errors in certain cases of mismatch, it also makes for better
-code on certain machines.  If the macro is not defined in target
-header files, it defaults to 0.
-@end defmac
+@deftypefn {Target Hook} bool TARGET_PROMOTE_PROTOTYPES (tree @var{fntype})
+This target hook returns @code{true} if an argument declared in a
+prototype as an integral type smaller than @code{int} should actually be
+passed as an @code{int}.  In addition to avoiding errors in certain
+cases of mismatch, it also makes for better code on certain machines.
+The default is to not promote prototypes.
+@end deftypefn
 
 @defmac PUSH_ARGS
 A C expression.  If nonzero, push insns will be used to pass
@@ -3819,7 +3819,7 @@ register where the return value is stored.  The value can also be a
 @code{parallel} RTX, if the return value is in multiple places.  See
 @code{FUNCTION_ARG} for an explanation of the @code{parallel} form.
 
-If @code{PROMOTE_FUNCTION_RETURN} is defined, you must apply the same
+If @code{TARGET_PROMOTE_FUNCTION_RETURN} is defined, you must apply the same
 promotion rules specified in @code{PROMOTE_MODE} if @var{valtype} is a
 scalar type.
 
@@ -3910,24 +3910,24 @@ is called the @dfn{structure value address}.
 This section describes how to control returning structure values in
 memory.
 
-@defmac RETURN_IN_MEMORY (@var{type})
-A C expression which can inhibit the returning of certain function
-values in registers, based on the type of value.  A nonzero value says
-to return the function value in memory, just as large structures are
-always returned.  Here @var{type} will be a C expression of type
-@code{tree}, representing the data type of the value.
+@deftypefn {Target Hook} bool RETURN_IN_MEMORY (tree @var{type}, tree @var{fntype})
+This target hook should return a nonzero value to say to return the
+function value in memory, just as large structures are always returned.
+Here @var{type} will be the data type of the value, and @var{fntype}
+will be the type of the function doing the returning, or @code{NULL} for
+libcalls.
 
 Note that values of mode @code{BLKmode} must be explicitly handled
-by this macro.  Also, the option @option{-fpcc-struct-return}
+by this function.  Also, the option @option{-fpcc-struct-return}
 takes effect regardless of this macro.  On most systems, it is
-possible to leave the macro undefined; this causes a default
+possible to leave the hook undefined; this causes a default
 definition to be used, whose value is the constant 1 for @code{BLKmode}
 values, and 0 otherwise.
 
-Do not use this macro to indicate that structures and unions should always
+Do not use this hook to indicate that structures and unions should always
 be returned in memory.  You should instead use @code{DEFAULT_PCC_STRUCT_RETURN}
 to indicate this.
-@end defmac
+@end deftypefn
 
 @defmac DEFAULT_PCC_STRUCT_RETURN
 Define this macro to be 1 if all structure and union return values must be
@@ -3939,36 +3939,23 @@ and union return values are decided by the @code{RETURN_IN_MEMORY} macro.
 If not defined, this defaults to the value 1.
 @end defmac
 
-@defmac STRUCT_VALUE_REGNUM
-If the structure value address is passed in a register, then
-@code{STRUCT_VALUE_REGNUM} should be the number of that register.
-@end defmac
+@deftypefn {Target Hook} rtx TARGET_STRUCT_VALUE_RTX (tree @var{fndecl}, int @var{incoming})
+This target hook should return the location of the structure value
+address (normally a @code{mem} or @code{reg}), or 0 if the address is
+passed as an ``invisible'' first argument.  Note that @var{fndecl} may
+be @code{NULL}, for libcalls.
 
-@defmac STRUCT_VALUE
-If the structure value address is not passed in a register, define
-@code{STRUCT_VALUE} as an expression returning an RTX for the place
-where the address is passed.  If it returns 0, the address is passed as
-an ``invisible'' first argument.
-@end defmac
-
-@defmac STRUCT_VALUE_INCOMING_REGNUM
 On some architectures the place where the structure value address
 is found by the called function is not the same place that the
 caller put it.  This can be due to register windows, or it could
 be because the function prologue moves it to a different place.
+@var{incoming} is @code{true} when the location is needed in
+the context of the called function, and @code{false} in the context of
+the caller.
 
-If the incoming location of the structure value address is in a
-register, define this macro as the register number.
-@end defmac
-
-@defmac STRUCT_VALUE_INCOMING
-If the incoming location is not a register, then you should define
-@code{STRUCT_VALUE_INCOMING} as an expression for an RTX for where the
-called function should find the value.  If it should find the value on
-the stack, define this to create a @code{mem} which refers to the frame
-pointer.  A definition of 0 means that the address is passed as an
-``invisible'' first argument.
-@end defmac
+If @var{incoming} is @code{true} and the address is to be found on the
+stack, return a @code{mem} which refers to the frame pointer.
+@end deftypefn
 
 @defmac PCC_STATIC_STRUCT_RETURN
 Define this macro if the usual system convention on the target machine
@@ -4428,70 +4415,71 @@ interpret the values of @code{__builtin_classify_type}.
 
 These machine description macros help implement varargs:
 
-@defmac EXPAND_BUILTIN_SAVEREGS ()
-If defined, is a C expression that produces the machine-specific code
-for a call to @code{__builtin_saveregs}.  This code will be moved to the
-very beginning of the function, before any parameter access are made.
-The return value of this function should be an RTX that contains the
-value to use as the return of @code{__builtin_saveregs}.
-@end defmac
+@deftypefn {Target Hook} rtx TARGET_EXPAND_BUILTIN_SAVEREGS (void)
+If defined, this hook produces the machine-specific code for a call to
+@code{__builtin_saveregs}.  This code will be moved to the very
+beginning of the function, before any parameter access are made.  The
+return value of this function should be an RTX that contains the value
+to use as the return of @code{__builtin_saveregs}.
+@end deftypefn
 
-@defmac SETUP_INCOMING_VARARGS (@var{args_so_far}, @var{mode}, @var{type}, @var{pretend_args_size}, @var{second_time})
-This macro offers an alternative to using @code{__builtin_saveregs} and
-defining the macro @code{EXPAND_BUILTIN_SAVEREGS}.  Use it to store the
-anonymous register arguments into the stack so that all the arguments
-appear to have been passed consecutively on the stack.  Once this is
-done, you can use the standard implementation of varargs that works for
-machines that pass all their arguments on the stack.
+@deftypefn {Target Hook} void TARGET_SETUP_INCOMING_VARARGS (CUMULATIVE_ARGS *@var{args_so_far}, enum machine_mode @var{mode}, tree @var{type}, int *@var{pretend_args_size}, int @var{second_time})
+This target hook offers an alternative to using
+@code{__builtin_saveregs} and defining the hook
+@code{TARGET_EXPAND_BUILTIN_SAVEREGS}.  Use it to store the anonymous
+register arguments into the stack so that all the arguments appear to
+have been passed consecutively on the stack.  Once this is done, you can
+use the standard implementation of varargs that works for machines that
+pass all their arguments on the stack.
 
-The argument @var{args_so_far} is the @code{CUMULATIVE_ARGS} data
+The argument @var{args_so_far} points to the @code{CUMULATIVE_ARGS} data
 structure, containing the values that are obtained after processing the
 named arguments.  The arguments @var{mode} and @var{type} describe the
 last named argument---its machine mode and its data type as a tree node.
 
-The macro implementation should do two things: first, push onto the
-stack all the argument registers @emph{not} used for the named
-arguments, and second, store the size of the data thus pushed into the
-@code{int}-valued variable whose name is supplied as the argument
-@var{pretend_args_size}.  The value that you store here will serve as
-additional offset for setting up the stack frame.
+The target hook should do two things: first, push onto the stack all the
+argument registers @emph{not} used for the named arguments, and second,
+store the size of the data thus pushed into the @code{int}-valued
+variable pointed to by @var{pretend_args_size}.  The value that you
+store here will serve as additional offset for setting up the stack
+frame.
 
 Because you must generate code to push the anonymous arguments at
 compile time without knowing their data types,
-@code{SETUP_INCOMING_VARARGS} is only useful on machines that have just
-a single category of argument register and use it uniformly for all data
-types.
+@code{TARGET_SETUP_INCOMING_VARARGS} is only useful on machines that
+have just a single category of argument register and use it uniformly
+for all data types.
 
 If the argument @var{second_time} is nonzero, it means that the
 arguments of the function are being analyzed for the second time.  This
 happens for an inline function, which is not actually compiled until the
-end of the source file.  The macro @code{SETUP_INCOMING_VARARGS} should
+end of the source file.  The hook @code{TARGET_SETUP_INCOMING_VARARGS} should
 not generate any instructions in this case.
-@end defmac
+@end deftypefn
 
-@defmac STRICT_ARGUMENT_NAMING
-Define this macro to be a nonzero value if the location where a function
+@deftypefn {Target Hook} bool TARGET_STRICT_ARGUMENT_NAMING (CUMULATIVE_ARGS *@var{ca})
+Define this hook to return @code{true} if the location where a function
 argument is passed depends on whether or not it is a named argument.
 
-This macro controls how the @var{named} argument to @code{FUNCTION_ARG}
-is set for varargs and stdarg functions.  If this macro returns a
-nonzero value, the @var{named} argument is always true for named
-arguments, and false for unnamed arguments.  If it returns a value of
-zero, but @code{SETUP_INCOMING_VARARGS} is defined, then all arguments
-are treated as named.  Otherwise, all named arguments except the last
-are treated as named.
+This hook controls how the @var{named} argument to @code{FUNCTION_ARG}
+is set for varargs and stdarg functions.  If this hook returns
+@code{true}, the @var{named} argument is always true for named
+arguments, and false for unnamed arguments.  If it returns @code{false},
+but @code{TARGET_PRETEND_OUTOGOING_VARARGS_NAMED} returns @code{true},
+then all arguments are treated as named.  Otherwise, all named arguments
+except the last are treated as named.
 
-You need not define this macro if it always returns zero.
-@end defmac
+You need not define this hook if it always returns zero.
+@end deftypefn
 
-@defmac PRETEND_OUTGOING_VARARGS_NAMED
+@deftypefn {Target Hook} bool TARGET_PRETEND_OUTGOING_VARARGS_NAMED
 If you need to conditionally change ABIs so that one works with
-@code{SETUP_INCOMING_VARARGS}, but the other works like neither
-@code{SETUP_INCOMING_VARARGS} nor @code{STRICT_ARGUMENT_NAMING} was
-defined, then define this macro to return nonzero if
-@code{SETUP_INCOMING_VARARGS} is used, zero otherwise.
-Otherwise, you should not define this macro.
-@end defmac
+@code{TARGET_SETUP_INCOMING_VARARGS}, but the other works like neither
+@code{TARGET_SETUP_INCOMING_VARARGS} nor @code{TARGET_STRICT_ARGUMENT_NAMING} was
+defined, then define this hook to return @code{true} if
+@code{SETUP_INCOMING_VARARGS} is used, @code{false} otherwise.
+Otherwise, you should not define this hook.
+@end deftypefn
 
 @node Trampolines
 @section Trampolines for Nested Functions
