@@ -1,6 +1,10 @@
+Fri May  3 13:34:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (attribute memory): Handle compares properly.
+
 Fri May  3 10:51:38 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
-	* i386.c (sse_clrsf, sse_clrsi): Set memory attribute
+	* i386.md (sse_clrsf, sse_clrsi): Set memory attribute
 	to none.
 
 2002-05-02  Kazu Hirata  <kazu@cs.umass.edu>
