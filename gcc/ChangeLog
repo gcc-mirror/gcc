@@ -1,3 +1,9 @@
+2004-07-29  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa.c (verify_flow_sensitive_alias_info): When
+	comparing points-to sets of different pointers, make sure the
+	second pointer is actually referenced in the code.
+
 2004-07-29  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/ia64/ia64.c (setjmp_operand): Delete, unused.
