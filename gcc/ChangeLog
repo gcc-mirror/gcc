@@ -1,3 +1,7 @@
+2001-08-26  Andreas Jaeger  <aj@suse.de>
+
+	* c-tree.h: Add prototyp for c_sizeof_nowarn.
+
 2001-08-25 Dan Nicolaescu  <dann@ics.uci.edu>
   
         * ssa-ccp.c (ssa_const_prop): Free ssa_edges.
