@@ -189,17 +189,17 @@ libobjc_s.a: libobjc.a
 
 # Create a relocatable DLL
 libobjc.dll: libobjc_s.a $(srcdir)/objc/libobjc_entry.o
-	$(GCC_FOR_TARGET) -dll -Wl,--base-file -Wl,libobjc.base \
+	$(GCC_FOR_TARGET) -mdll -Wl,--base-file -Wl,libobjc.base \
 		-o libobjc.dll libobjc_s.a \
 		$(srcdir)/objc/libobjc_entry.o -lkernel32
 	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/objc/libobjc.def \
 		--base-file libobjc.base --output-exp libobjc.exp
-	$(GCC_FOR_TARGET) -dll -Wl,--base-file libobjc.base libobjc.exp \
+	$(GCC_FOR_TARGET) -mdll -Wl,--base-file libobjc.base libobjc.exp \
 		-o libobjc.dll libobjc_s.a \
 		$(srcdir)/objc/libobjc_entry.o -lkernel32
 	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/objc/libobjc.def \
 		--base-file libobjc.base --output-exp libobjc.exp
-	$(GCC_FOR_TARGET) libobjc.exp -dll \
+	$(GCC_FOR_TARGET) libobjc.exp -mdll \
 		-o libobjc.dll libobjc_s.a \
 		$(srcdir)/objc/libobjc_entry.o -lkernel32
 	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/objc/libobjc.def \
