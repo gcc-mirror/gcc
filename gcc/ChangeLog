@@ -28,7 +28,8 @@
 
 2004-02-08  Kazu Hirata  <kazu@cs.umass.edu>
 
-	* c-objc-common.c (): Fix a typo in a warning.
+	* c-objc-common.c (c_cannot_inline_tree_fn): Fix a typo in a
+	warning.
 	* cse.c (preferrable): Change to preferable. Update all of its
 	callers.
 	* genautomata.c (ainsn): Change
