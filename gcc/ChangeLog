@@ -1,3 +1,11 @@
+2001-01-31  Alan Modra <alan@linuxcare.com.au>
+
+	* pa.c (hppa_encode_label): Correct size of alloca buffer
+	so we don't overrun it.  Correct leading `*' case.
+	* pa.h (STRIP_NAME_ENCODING): Simplify now that we don't
+	need to handle `*@'.
+	(FUNCTION_NAME_P): Likewise.
+
 2001-01-31  Richard Henderson  <rth@redhat.com>
 
 	* config.gcc (alpha-osf5): Use float-i128.h.

@@ -1488,8 +1488,7 @@ do { 									\
    || (TREE_CODE_CLASS (TREE_CODE (DECL)) == 'c'			\
        && !(TREE_CODE (DECL) == STRING_CST && flag_writable_strings)))
 
-#define FUNCTION_NAME_P(NAME) \
-(*(NAME) == '@' || (*(NAME) == '*' && *((NAME) + 1) == '@'))
+#define FUNCTION_NAME_P(NAME)  (*(NAME) == '@')
 
 #define ENCODE_SECTION_INFO(DECL)\
 do							\
@@ -1511,9 +1510,8 @@ while (0)
    This is sort of inverse to ENCODE_SECTION_INFO.  */
 
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)	\
-  (VAR) = ((SYMBOL_NAME)  + ((SYMBOL_NAME)[0] == '*' ?	\
-			     1 + (SYMBOL_NAME)[1] == '@'\
-			     : (SYMBOL_NAME)[0] == '@'))
+  (VAR) = ((SYMBOL_NAME)			\
+	   + (*(SYMBOL_NAME) == '*' || *(SYMBOL_NAME) == '@'))
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
