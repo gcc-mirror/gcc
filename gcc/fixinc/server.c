@@ -235,6 +235,28 @@ server_setup ()
   p_cur_dir = getcwd ((char *) NULL, MAXPATHLEN + 1);
 }
 
+/*
+ *  find_shell
+ *
+ *  Locate a shell suitable for use.  For various reasons
+ *  (like the use of "trap" in server_setup(), it must be a
+ *  Bourne-like shell.
+ *
+ *  Most of the time, /bin/sh is preferred, but sometimes
+ *  it's quite broken (like on Ultrix).  autoconf lets you
+ *  override with $CONFIG_SHELL, so we do the same.
+ */
+
+static char *
+find_shell ()
+{
+  char * shell = getenv ("CONFIG_SHELL");
+  if (shell)
+    return shell;
+
+  return "/bin/sh";
+}
+
 
 /*
  *  run_shell
@@ -266,6 +288,8 @@ run_shell (pz_cmd)
       THEN try to start it.  */
   if (server_id == NULLPROCESS)
     {
+      def_args[0] = find_shell ();
+
       server_id = proc2_fopen (&server_pair, def_args);
       if (server_id > 0)
         server_setup ();

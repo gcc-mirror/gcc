@@ -1,3 +1,8 @@
+2000-04-03  Felix Lee  <flee@cygnus.com>
+
+	* fixinc/server.c (find_shell): New function.  Avoid $SHELL.
+	(run_shell): Use it. 
+
 2000-04-03  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* Makefile.in (stmp-int-hdrs): Make include subdir here...
