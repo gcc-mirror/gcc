@@ -5551,17 +5551,18 @@ finish_enum (enumtype, values)
   /* An enum can have some negative values; then it is signed.  */
   TREE_UNSIGNED (enumtype) = ! tree_int_cst_lt (minnode, integer_zero_node);
 
-  /* If the enumerators might not fit in an int, change their type now.  */
-  /* It seems more useful in the debugger to leave these as int
-     unless the enumerator is wider than int.  */
-  if (TYPE_PRECISION (enumtype) <= TYPE_PRECISION (integer_type_node))
-    for (pair = values; pair; pair = TREE_CHAIN (pair))
-      {
-	TREE_TYPE (TREE_PURPOSE (pair)) = enumtype;
-	DECL_SIZE (TREE_PURPOSE (pair)) = TYPE_SIZE (enumtype);
-	if (TREE_CODE (TREE_PURPOSE (pair)) != FUNCTION_DECL)
-	  DECL_ALIGN (TREE_PURPOSE (pair)) = TYPE_ALIGN (enumtype);
-      }
+  /* Change the type of the enumerators to be the enum type.
+     Formerly this was done only for enums that fit in an int,
+     but the comment said it was done only for enums wider than int.
+     It seems necessary to do this for wide enums,
+     and best not to change what's done for ordinary narrower ones.  */
+  for (pair = values; pair; pair = TREE_CHAIN (pair))
+    {
+      TREE_TYPE (TREE_PURPOSE (pair)) = enumtype;
+      DECL_SIZE (TREE_PURPOSE (pair)) = TYPE_SIZE (enumtype);
+      if (TREE_CODE (TREE_PURPOSE (pair)) != FUNCTION_DECL)
+	DECL_ALIGN (TREE_PURPOSE (pair)) = TYPE_ALIGN (enumtype);
+    }
 
   /* Replace the decl nodes in VALUES with their names.  */
   for (pair = values; pair; pair = TREE_CHAIN (pair))
@@ -5600,7 +5601,7 @@ tree
 build_enumerator (name, value)
      tree name, value;
 {
-  register tree decl;
+  register tree decl, type;
 
   /* Validate and default VALUE.  */
 
@@ -5645,9 +5646,16 @@ build_enumerator (name, value)
 
   /* Now create a declaration for the enum value name.  */
 
-  decl = build_decl (CONST_DECL, name, integer_type_node);
+  type = TREE_TYPE (value);
+  type = type_for_size (MAX (TYPE_PRECISION (type),
+			     TYPE_PRECISION (integer_type_node)),
+			((flag_traditional
+			  || TYPE_PRECISION (type) >= TYPE_PRECISION (integer_type_node))
+			 && TREE_UNSIGNED (type)));
+
+  decl = build_decl (CONST_DECL, name, type);
   DECL_INITIAL (decl) = value;
-  TREE_TYPE (value) = integer_type_node;
+  TREE_TYPE (value) = type;
   pushdecl (decl);
 
   return saveable_tree_cons (decl, value, NULL_TREE);
