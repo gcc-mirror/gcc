@@ -1,3 +1,8 @@
+2002-03-20  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (ASM_OUTPUT_POOL_PROLOGUE): Emit a
+	".literal_position" directive before the constant pool.
+
 2002-03-20  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Update Geoffrey Keating.
