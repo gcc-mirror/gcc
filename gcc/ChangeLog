@@ -1,5 +1,19 @@
 Sun Mar 21 17:33:48 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* gcse.c (dump_hash_table): Fix whitespace in declaration.
+	(compute_transpout): Renamed from pre_compute_transpout.
+	(compute_pre_*): Deleted
+	(pre_expr_reaches_here_p): New argument, CHECK_PRE_COMP.  All
+	callers changed.
+	(insert_insn_end_bb): Renamed from pre_insert_insn.
+	(pre_*): Delete unused variables.  Only leave local properties and
+	global redundant/optimal computation points.
+	(alloc_pre_mem, free_pre_mem): Corresponding changes.
+	(compute_pre_data): Simplify and call pre_lcm to run the lazy
+	code motion dataflow analysis.
+	(pre_insert, pre_insert_copies, pre_delete): Revamp to use LCM
+	based redundant and optimal computation points.
+
 	* basic-block.h (pre_lcm, pre_rev_lcm): Declare.
 
 	* toplev.c (main): A debug option without a level defaults to
