@@ -990,7 +990,7 @@ compstmtend:
 already_scoped_stmt:
 	  '{'
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      $<ttype>$ = build_min_nt (COMPOUND_STMT, NULL_TREE);
 		      COMPOUND_STMT_NO_SCOPE ($<ttype>$) = 1;
@@ -999,7 +999,7 @@ already_scoped_stmt:
 		}
 	  compstmtend
 		{ 
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
 		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
@@ -1287,10 +1287,10 @@ primary:
 	| boolean.literal
 	| string
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    push_obstacks (&permanent_obstack, &permanent_obstack);
 		  $$ = combine_strings ($$);
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    pop_obstacks ();
 		}
 	| '(' expr ')'
@@ -1455,7 +1455,7 @@ primary:
 		  check_for_new_type ("const_cast", $3);
 		  $$ = build_const_cast (type, $6); }
 	| TYPEID '(' expr ')'
-		{ $$ = build_typeid ($3); }
+		{ $$ = build_x_typeid ($3); }
 	| TYPEID '(' type_id ')'
 		{ tree type = groktypename ($3.t);
 		  check_for_new_type ("typeid", $3);
@@ -1473,20 +1473,20 @@ primary:
 	| overqualified_id  %prec HYPERUNARY
 		{ $$ = build_offset_ref (OP0 ($$), OP1 ($$)); }
 	| overqualified_id '(' nonnull_exprlist ')'
-		{ if (current_template_parms)
+		{ if (processing_template_decl)
 		    $$ = build_min_nt (CALL_EXPR, copy_to_permanent ($1), $3, NULL_TREE);
 		  else
 		    $$ = build_member_call (OP0 ($$), OP1 ($$), $3); }
 	| overqualified_id LEFT_RIGHT
-		{ if (current_template_parms)
+		{ if (processing_template_decl)
 		    $$ = build_min_nt (CALL_EXPR, copy_to_permanent ($1), 
 				       NULL_TREE, NULL_TREE);
 		  else
 		    $$ = build_member_call (OP0 ($$), OP1 ($$), NULL_TREE); }
 	| object unqualified_id  %prec UNARY
-		{ $$ = build_component_ref ($$, $2, NULL_TREE, 1); }
+		{ $$ = build_x_component_ref ($$, $2, NULL_TREE, 1); }
 	| object overqualified_id  %prec UNARY
-		{ if (current_template_parms)
+		{ if (processing_template_decl)
 		    $$ = build_min_nt (COMPONENT_REF, $1, copy_to_permanent ($2));
 		  else
 		    $$ = build_object_ref ($$, OP0 ($2), OP1 ($2)); }
@@ -2294,7 +2294,7 @@ named_class_head:
 			      && TYPE_SIZE ($$) == NULL_TREE)
 			    {
 			      SET_CLASSTYPE_TEMPLATE_SPECIALIZATION ($$);
-			      if (current_template_parms)
+			      if (processing_template_decl)
 				push_template_decl (TYPE_MAIN_DECL ($$));
 			    }
 			  else if (CLASSTYPE_TEMPLATE_INSTANTIATION ($$))
@@ -2496,7 +2496,7 @@ left_curly:
                       pushtag (TYPE_IDENTIFIER ($<ttype>0), t, 0);
                       $<ttype>0 = t;
                     }
-		  if (current_template_parms && TYPE_CONTEXT (t)
+		  if (processing_template_decl && TYPE_CONTEXT (t)
 		      && ! current_class_type)
 		    push_template_decl (TYPE_STUB_DECL (t));
 		  pushclass (t, 0);
@@ -2507,7 +2507,7 @@ left_curly:
 			  && TYPE_SIZE (t) == NULL_TREE)
 			{
 			  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (t);
-			  if (current_template_parms)
+			  if (processing_template_decl)
 			    push_template_decl (TYPE_MAIN_DECL (t));
 			}
 		      else if (CLASSTYPE_TEMPLATE_INSTANTIATION (t))
@@ -2672,7 +2672,8 @@ component_decl_1:
 		  $$ = grokfield ($2, specs, $5, $3,
 				  build_tree_list ($4, attrs)); }
 	| component_constructor_declarator maybeasm maybe_attribute maybe_init
-		{ $$ = grokfield ($$, NULL_TREE, $4, $2, $3); }
+		{ $$ = grokfield ($$, NULL_TREE, $4, $2,
+				  build_tree_list ($3, NULL_TREE)); }
 	| using_decl
 		{ $$ = do_class_using_decl ($1); }
 	;
@@ -3242,7 +3243,7 @@ compstmt_or_error:
 compstmt:
 	  '{'
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      $<ttype>$ = build_min_nt (COMPOUND_STMT, NULL_TREE);
 		      add_tree ($<ttype>$);
@@ -3250,7 +3251,7 @@ compstmt:
 		}
 	  .pushlevel compstmtend .poplevel
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
 		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
@@ -3263,7 +3264,7 @@ compstmt:
 simple_if:
 	  IF
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      $<ttype>$ = build_min_nt (IF_STMT, NULL_TREE, NULL_TREE,
 					        NULL_TREE);
@@ -3273,7 +3274,7 @@ simple_if:
 		}
 	  .pushlevel paren_cond_or_null
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      if (last_tree != $<ttype>2)
 		        {
@@ -3292,7 +3293,7 @@ simple_if:
 		}
 	  implicitly_scoped_stmt
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      TREE_OPERAND ($<ttype>2, 1) = TREE_CHAIN ($<ttype>2);
 		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
@@ -3306,7 +3307,7 @@ implicitly_scoped_stmt:
 		{ finish_stmt (); }
 	| .pushlevel
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      $<ttype>$ = build_min_nt (COMPOUND_STMT, NULL_TREE);
 		      add_tree ($<ttype>$);
@@ -3314,7 +3315,7 @@ implicitly_scoped_stmt:
 		}
 	  simple_stmt .poplevel
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
 		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
@@ -3336,7 +3337,7 @@ simple_stmt:
 	| expr ';'
 		{
 		  tree expr = $1;
-		  if (! current_template_parms)
+		  if (! processing_template_decl)
 		    {
 		      emit_line_note (input_filename, lineno);
 		      /* Do default conversion if safe and possibly important,
@@ -3350,10 +3351,10 @@ simple_stmt:
 		  clear_momentary ();
 		  finish_stmt (); }
 	| simple_if ELSE
-		{ if (! current_template_parms) expand_start_else (); }
+		{ if (! processing_template_decl) expand_start_else (); }
 	  implicitly_scoped_stmt
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      TREE_OPERAND ($<ttype>1, 2) = TREE_CHAIN ($<ttype>1);
 		      TREE_CHAIN ($<ttype>1) = NULL_TREE;
@@ -3365,12 +3366,12 @@ simple_stmt:
 	  .poplevel
 		{ finish_stmt (); }
 	| simple_if  %prec IF
-		{ if (! current_template_parms) expand_end_cond ();
+		{ if (! processing_template_decl) expand_end_cond ();
 		  do_poplevel ();
 		  finish_stmt (); }
 	| WHILE
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      $<ttype>$ = build_min_nt (WHILE_STMT, NULL_TREE, NULL_TREE);
 		      add_tree ($<ttype>$);
@@ -3385,7 +3386,7 @@ simple_stmt:
 		}
 	  .pushlevel paren_cond_or_null
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      if (last_tree != $<ttype>2)
 		        {
@@ -3404,7 +3405,7 @@ simple_stmt:
 		}
 	  already_scoped_stmt .poplevel
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      TREE_OPERAND ($<ttype>2, 1) = TREE_CHAIN ($<ttype>2);
 		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
@@ -3416,7 +3417,7 @@ simple_stmt:
 		}
 	| DO
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      $<ttype>$ = build_min_nt (DO_STMT, NULL_TREE, NULL_TREE);
 		      add_tree ($<ttype>$);
@@ -3430,7 +3431,7 @@ simple_stmt:
 		}
 	  implicitly_scoped_stmt WHILE
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
 		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
@@ -3444,7 +3445,7 @@ simple_stmt:
 		}
 	  paren_expr_or_null ';'
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    TREE_OPERAND ($<ttype>2, 1) = $6;
 		  else
 		    {
@@ -3456,7 +3457,7 @@ simple_stmt:
 		  finish_stmt ();
 		}
 	| FOR
-		{ if (current_template_parms)
+		{ if (processing_template_decl)
 		    {
 		      $<ttype>$ = build_min_nt (FOR_STMT, NULL_TREE, NULL_TREE, 
 					        NULL_TREE, NULL_TREE);
@@ -3476,7 +3477,7 @@ simple_stmt:
 		}
 	  '(' for.init.statement
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      if (last_tree != $<ttype>2)
 			{
@@ -3494,7 +3495,7 @@ simple_stmt:
 		}
 	  .pushlevel xcond ';'
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      if (last_tree != $<ttype>2)
 		        {
@@ -3515,13 +3516,13 @@ simple_stmt:
 		/* Don't let the tree nodes for $10 be discarded
 		   by clear_momentary during the parsing of the next stmt.  */
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    TREE_OPERAND ($<ttype>2, 2) = $10;
 		  push_momentary ();
 		}
 	  already_scoped_stmt .poplevel
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      TREE_OPERAND ($<ttype>2, 3) = TREE_CHAIN ($<ttype>2);
 		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
@@ -3542,7 +3543,7 @@ simple_stmt:
 		  finish_stmt (); }
 	| SWITCH .pushlevel '(' condition ')'
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      $<ttype>$ = build_min_nt (SWITCH_STMT, $4, NULL_TREE);
 		      add_tree ($<ttype>$);
@@ -3559,7 +3560,7 @@ simple_stmt:
 		}
 	  implicitly_scoped_stmt
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    {
 		      TREE_OPERAND ($<ttype>6, 1) = TREE_CHAIN ($<ttype>6);
 		      TREE_CHAIN ($<ttype>6) = NULL_TREE;
@@ -3583,13 +3584,13 @@ simple_stmt:
 	  stmt
 	| BREAK ';'
 		{ emit_line_note (input_filename, lineno);
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    add_tree (build_min_nt (BREAK_STMT));
 		  else if ( ! expand_exit_something ())
 		    error ("break statement not within loop or switch"); }
 	| CONTINUE ';'
 		{ emit_line_note (input_filename, lineno);
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    add_tree (build_min_nt (CONTINUE_STMT));
 		  else if (! expand_continue_loop (0))
 		    error ("continue statement not within a loop"); }
@@ -3637,7 +3638,7 @@ simple_stmt:
 		}
 	| GOTO '*' expr ';'
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    add_tree (build_min_nt (GOTO_STMT, $3));
 		  else
 		    { emit_line_note (input_filename, lineno);
@@ -3645,7 +3646,7 @@ simple_stmt:
 		}
 	| GOTO identifier ';'
 		{
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    add_tree (build_min_nt (GOTO_STMT, $2));
 		  else
 		    {

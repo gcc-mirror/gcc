@@ -1803,7 +1803,7 @@ build_offset_ref (type, name)
   tree basebinfo = NULL_TREE;
   int dtor = 0;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min_nt (SCOPE_REF, type, name);
 
   /* Handle namespace names fully here.  */
@@ -2601,6 +2601,7 @@ build_new (placement, decl, init, use_global_new)
   tree alloc_expr, alloc_temp;
   int has_array = 0;
   enum tree_code code = NEW_EXPR;
+  int use_cookie;
 
   tree pending_sizes = NULL_TREE;
 
@@ -2648,7 +2649,7 @@ build_new (placement, decl, init, use_global_new)
 	    {
 	      if (this_nelts == NULL_TREE)
 		error ("new of array type fails to specify size");
-	      else if (current_template_parms)
+	      else if (processing_template_decl)
 		{
 		  nelts = this_nelts;
 		  absdcl = TREE_OPERAND (absdcl, 0);
@@ -2718,7 +2719,7 @@ build_new (placement, decl, init, use_global_new)
       decl = TYPE_NAME (type);
     }
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       tree t;
       if (has_array)
@@ -2801,9 +2802,25 @@ build_new (placement, decl, init, use_global_new)
       return error_mark_node;
     }
 
+#if 1
   /* Get a little extra space to store a couple of things before the new'ed
-     array.  */
-  if (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type))
+     array, if this isn't the default placement new.  */
+
+  use_cookie = (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type)
+		&& ! (placement && ! TREE_CHAIN (placement)
+		      && TREE_TYPE (TREE_VALUE (placement)) == ptr_type_node));
+#else
+  /* Get a little extra space to store a couple of things before the new'ed
+     array, if this is either non-placement new or new (nothrow).  */
+  
+  use_cookie = (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type)
+		&& (! placement
+		    || (IS_AGGR_TYPE (TREE_TYPE (placement))
+			&& (TYPE_IDENTIFIER (TREE_TYPE (placement))
+			    == get_identifier ("nothrow_t")))));
+#endif
+
+  if (use_cookie)
     {
       tree extra = BI_header_size;
 
@@ -2857,7 +2874,7 @@ build_new (placement, decl, init, use_global_new)
      sure we have some extra bytes in that case for the BI_header_size
      cookies? And how does that interact with the code below? (mrs) */
   /* Finish up some magic for new'ed arrays */
-  if (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type) && rval != NULL_TREE)
+  if (use_cookie && rval != NULL_TREE)
     {
       tree extra = BI_header_size;
       tree cookie, exp1;

@@ -373,7 +373,7 @@ do_case (start, end)
   if (end && pedantic)
     pedwarn ("ANSI C++ forbids range expressions in switch statement");
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       add_tree (build_min_nt (CASE_LABEL, start, end));
       return;

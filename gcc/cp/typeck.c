@@ -83,7 +83,7 @@ require_complete_type (value)
 {
   tree type;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return value;
 
   type = TREE_TYPE (value);
@@ -132,8 +132,7 @@ complete_type (type)
   else if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
     {
       tree t = complete_type (TREE_TYPE (type));
-      if (TYPE_SIZE (t) != NULL_TREE
-	  && current_template_parms == NULL_TREE)
+      if (TYPE_SIZE (t) != NULL_TREE && ! processing_template_decl)
 	layout_type (type);
       TYPE_NEEDS_CONSTRUCTING (type)
 	= TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (t));
@@ -1275,7 +1274,7 @@ c_sizeof (type)
   enum tree_code code = TREE_CODE (type);
   tree t;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min (SIZEOF_EXPR, sizetype, type);
 
   if (code == FUNCTION_TYPE)
@@ -1341,7 +1340,7 @@ tree
 expr_sizeof (e)
      tree e;
 {
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min (SIZEOF_EXPR, sizetype, e);
 
   if (TREE_CODE (e) == COMPONENT_REF
@@ -1623,8 +1622,8 @@ build_object_ref (datum, basetype, field)
     {
       tree binfo = binfo_or_else (basetype, dtype);
       if (binfo)
-	return build_component_ref (build_scoped_ref (datum, basetype),
-				    field, binfo, 1);
+	return build_x_component_ref (build_scoped_ref (datum, basetype),
+				      field, binfo, 1);
     }
   return error_mark_node;
 }
@@ -1709,7 +1708,7 @@ build_component_ref (datum, component, basetype_path, protect)
   register tree field = NULL;
   register tree ref;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min_nt (COMPONENT_REF, datum, component);
 
   /* If DATUM is a COMPOUND_EXPR or COND_EXPR, move our reference
@@ -1937,6 +1936,22 @@ build_component_ref (datum, component, basetype_path, protect)
 
   return ref;
 }
+
+/* Variant of build_component_ref for use in expressions, which should
+   never have REFERENCE_TYPE.  */
+
+tree
+build_x_component_ref (datum, component, basetype_path, protect)
+     tree datum, component, basetype_path;
+     int protect;
+{
+  tree t = build_component_ref (datum, component, basetype_path, protect);
+
+  if (! processing_template_decl)
+    t = convert_from_reference (t);
+
+  return t;
+}
 
 /* Given an expression PTR for a pointer, return an expression
    for the value pointed to.
@@ -1952,7 +1967,7 @@ build_x_indirect_ref (ptr, errorstring)
 {
   tree rval;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min_nt (INDIRECT_REF, ptr);
 
   rval = build_opfncall (INDIRECT_REF, LOOKUP_NORMAL, ptr, NULL_TREE, NULL_TREE);
@@ -2213,7 +2228,7 @@ build_x_function_call (function, params, decl)
   if (function == error_mark_node)
     return error_mark_node;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min_nt (CALL_EXPR, function, params, NULL_TREE);
 
   type = TREE_TYPE (function);
@@ -2908,7 +2923,7 @@ build_x_binary_op (code, arg1, arg2)
 {
   tree rval;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min_nt (code, arg1, arg2);
 
   if (flag_ansi_overloading)
@@ -3958,7 +3973,7 @@ build_x_unary_op (code, xarg)
      enum tree_code code;
      tree xarg;
 {
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min_nt (code, xarg, NULL_TREE);
 
   /* & rec, on incomplete RECORD_TYPEs is the simple opr &, not an
@@ -4005,7 +4020,7 @@ condition_conversion (expr)
      tree expr;
 {
   tree t;
-  if (current_template_parms)
+  if (processing_template_decl)
     return expr;
   t = convert (boolean_type_node, expr);
   t = fold (build1 (CLEANUP_POINT_EXPR, boolean_type_node, t));
@@ -4653,7 +4668,7 @@ build_x_conditional_expr (ifexp, op1, op2)
 {
   tree rval = NULL_TREE;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min_nt (COND_EXPR, ifexp, op1, op2);
 
   if (flag_ansi_overloading)
@@ -4988,7 +5003,7 @@ build_x_compound_expr (list)
   tree rest = TREE_CHAIN (list);
   tree result;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min_nt (COMPOUND_EXPR, list, NULL_TREE);
 
   if (rest == NULL_TREE)
@@ -5068,7 +5083,7 @@ build_static_cast (type, expr)
   if (TREE_CODE (expr) == OFFSET_REF)
     expr = resolve_offset_ref (expr);
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       tree t = build_min (STATIC_CAST_EXPR, type, expr);
       return t;
@@ -5160,7 +5175,7 @@ build_reinterpret_cast (type, expr)
   if (TREE_CODE (expr) == OFFSET_REF)
     expr = resolve_offset_ref (expr);
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       tree t = build_min (REINTERPRET_CAST_EXPR, type, expr);
       return t;
@@ -5252,7 +5267,7 @@ build_const_cast (type, expr)
   if (TREE_CODE (expr) == OFFSET_REF)
     expr = resolve_offset_ref (expr);
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       tree t = build_min (CONST_CAST_EXPR, type, expr);
       return t;
@@ -5361,7 +5376,7 @@ build_c_cast (type, expr, allow_nonconverting)
       return error_mark_node;
     }
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       tree t = build_min (CAST_EXPR, type,
 			  min_tree_cons (NULL_TREE, value, NULL_TREE));
@@ -5993,7 +6008,7 @@ build_x_modify_expr (lhs, modifycode, rhs)
      enum tree_code modifycode;
      tree rhs;
 {
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min_nt (MODOP_EXPR, lhs,
 			 build_min_nt (modifycode, NULL_TREE, NULL_TREE), rhs);
 
@@ -7022,7 +7037,7 @@ c_expand_return (retval)
       return;
     }
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       add_tree (build_min_nt (RETURN_STMT, retval));
       return;

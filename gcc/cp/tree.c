@@ -356,6 +356,7 @@ break_out_calls (exp)
 extern struct obstack *current_obstack;
 extern struct obstack permanent_obstack, class_obstack;
 extern struct obstack *saveable_obstack;
+extern struct obstack *expression_obstack;
 
 /* Here is how primitive or already-canonicalized types' hash
    codes are made.  MUST BE CONSISTENT WITH tree.c !!! */
@@ -421,7 +422,7 @@ build_cplus_array_type_1 (elt_type, index_type)
       saveable_obstack = &permanent_obstack;
     }
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       t = make_node (ARRAY_TYPE);
       TREE_TYPE (t) = elt_type;
@@ -1615,8 +1616,8 @@ mapcar (t, func)
 				 mapcar (TYPE_ARG_TYPES (t), func));
       return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
     case ARRAY_TYPE:
-      tmp = build_array_type (mapcar (TREE_TYPE (t), func),
-			      mapcar (TYPE_DOMAIN (t), func));
+      tmp = build_cplus_array_type (mapcar (TREE_TYPE (t), func),
+				    mapcar (TYPE_DOMAIN (t), func));
       return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
     case INTEGER_TYPE:
       tmp = build_index_type (mapcar (TYPE_MAX_VALUE (t), func));
@@ -1631,6 +1632,11 @@ mapcar (t, func)
 	 mapcar (TREE_TYPE (t), func),
 	 mapcar (TREE_CHAIN (TYPE_ARG_TYPES (t)), func));
       return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
+
+    case CONSTRUCTOR:
+      t = copy_node (t);
+      CONSTRUCTOR_ELTS (t) = mapcar (CONSTRUCTOR_ELTS (t), func);
+      return t;
 
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
@@ -1673,20 +1679,20 @@ copy_to_permanent (t)
 {
   register struct obstack *ambient_obstack = current_obstack;
   register struct obstack *ambient_saveable_obstack = saveable_obstack;
-  int resume;
+  register struct obstack *ambient_expression_obstack = expression_obstack;
 
   if (t == NULL_TREE || TREE_PERMANENT (t))
     return t;
 
   saveable_obstack = &permanent_obstack;
   current_obstack = saveable_obstack;
-  resume = suspend_momentary ();
+  expression_obstack = saveable_obstack;
 
   t = mapcar (t, perm_manip);
 
-  resume_momentary (resume);
   current_obstack = ambient_obstack;
   saveable_obstack = ambient_saveable_obstack;
+  expression_obstack = ambient_expression_obstack;
 
   return t;
 }

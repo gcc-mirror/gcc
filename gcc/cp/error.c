@@ -487,7 +487,16 @@ dump_type_suffix (t, v)
     case ARRAY_TYPE:
       OB_PUTC ('[');
       if (TYPE_DOMAIN (t))
-	OB_PUTI (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TYPE_DOMAIN (t))) + 1);
+	{
+	  if (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (t))) == INTEGER_CST)
+	    OB_PUTI (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TYPE_DOMAIN (t))) + 1);
+	  else if (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (t))) == MINUS_EXPR)
+	    dump_expr (TREE_OPERAND (TYPE_MAX_VALUE (TYPE_DOMAIN (t)), 0), 0);
+	  else
+	    dump_expr (fold (build_binary_op
+			     (PLUS_EXPR, TYPE_MAX_VALUE (TYPE_DOMAIN (t)),
+			      integer_one_node, 1)), 0);
+	}
       OB_PUTC (']');
       dump_type_suffix (TREE_TYPE (t), v);
       break;

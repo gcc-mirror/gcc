@@ -1773,6 +1773,7 @@ struct saved_scope {
   int minimal_parse_mode;
   tree last_function_parms;
   tree template_parms;
+  HOST_WIDE_INT processing_template_decl;
   tree previous_class_type, previous_class_values;
 };
 static struct saved_scope *current_saved_scope;
@@ -1869,6 +1870,7 @@ maybe_push_to_top_level (pseudo)
   s->minimal_parse_mode = minimal_parse_mode;
   s->last_function_parms = last_function_parms;
   s->template_parms = current_template_parms;
+  s->processing_template_decl = processing_template_decl;
   s->previous_class_type = previous_class_type;
   s->previous_class_values = previous_class_values;
 
@@ -1884,7 +1886,10 @@ maybe_push_to_top_level (pseudo)
   minimal_parse_mode = 0;
   previous_class_type = previous_class_values = NULL_TREE;
   if (!pseudo)
-    current_template_parms = NULL_TREE;
+    {
+      current_template_parms = NULL_TREE;
+      processing_template_decl = 0;
+    }
 
   s->prev = current_saved_scope;
   s->old_bindings = old_bindings;
@@ -1943,6 +1948,7 @@ pop_from_top_level ()
   minimal_parse_mode = s->minimal_parse_mode;
   last_function_parms = s->last_function_parms;
   current_template_parms = s->template_parms;
+  processing_template_decl = s->processing_template_decl;
   previous_class_type = s->previous_class_type;
   previous_class_values = s->previous_class_values;
 
@@ -2078,7 +2084,7 @@ pushtag (name, type, globalize)
 
 	      TYPE_NAME (type) = d;
 	      DECL_CONTEXT (d) = context;
-	      if (! globalize && current_template_parms && IS_AGGR_TYPE (type))
+	      if (! globalize && processing_template_decl && IS_AGGR_TYPE (type))
 		push_template_decl (d);
 
 	      /* If it is anonymous, then we are called from pushdecl,
@@ -2110,7 +2116,7 @@ pushtag (name, type, globalize)
 
 	      TYPE_MAIN_DECL (type) = d;
 	      DECL_CONTEXT (d) = context;
-	      if (! globalize && current_template_parms && IS_AGGR_TYPE (type))
+	      if (! globalize && processing_template_decl && IS_AGGR_TYPE (type))
 		push_template_decl (d);
 
 	      d = pushdecl_class_level (d);
@@ -2723,7 +2729,7 @@ duplicate_decls (newdecl, olddecl)
       /* Lay the type out, unless already done.  */
       if (oldtype != TREE_TYPE (newdecl)
 	  && TREE_TYPE (newdecl) != error_mark_node
-	  && !(current_template_parms && uses_template_parms (newdecl)))
+	  && !(processing_template_decl && uses_template_parms (newdecl)))
 	layout_type (TREE_TYPE (newdecl));
 
       if ((TREE_CODE (newdecl) == VAR_DECL
@@ -2731,7 +2737,7 @@ duplicate_decls (newdecl, olddecl)
 	   || TREE_CODE (newdecl) == RESULT_DECL
 	   || TREE_CODE (newdecl) == FIELD_DECL
 	   || TREE_CODE (newdecl) == TYPE_DECL)
-	  && !(current_template_parms && uses_template_parms (newdecl)))
+	  && !(processing_template_decl && uses_template_parms (newdecl)))
 	layout_decl (newdecl, 0);
 
       /* Merge the type qualifiers.  */
@@ -4312,7 +4318,7 @@ make_typename_type (context, name)
   else if (TREE_CODE (name) != IDENTIFIER_NODE)
     my_friendly_abort (2000);
 
-  if (! current_template_parms
+  if (! processing_template_decl
       || ! uses_template_parms (context)
       || context == current_class_type)
     {
@@ -4325,11 +4331,11 @@ make_typename_type (context, name)
       return TREE_TYPE (t);
     }
 
-  if (current_template_parms)
+  if (processing_template_decl)
     push_obstacks (&permanent_obstack, &permanent_obstack);
   t = make_lang_type (TYPENAME_TYPE);
   d = build_decl (TYPE_DECL, name, t);
-  if (current_template_parms)
+  if (processing_template_decl)
     pop_obstacks ();
 
   TYPE_CONTEXT (t) = context;
@@ -4389,7 +4395,8 @@ lookup_name_real (name, prefer_type, nonclass)
 	      val = lookup_namespace_name (type, name);
 	    }
 	  else if (! IS_AGGR_TYPE (type)
-		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM)
+		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM
+		   || TREE_CODE (type) == TYPENAME_TYPE)
 	    /* Someone else will give an error about this if needed.  */
 	    val = NULL_TREE;
 	  else if (TYPE_BEING_DEFINED (type))
@@ -4421,7 +4428,7 @@ lookup_name_real (name, prefer_type, nonclass)
 	val = NULL_TREE;
 
 #if 1
-      if (got_scope && current_template_parms
+      if (got_scope && processing_template_decl
 	  && got_scope != current_class_type
 	  && uses_template_parms (got_scope)
 	  && val && TREE_CODE (val) == TYPE_DECL
@@ -4805,6 +4812,12 @@ init_decl_processing ()
   record_builtin_type (RID_MAX, "long long unsigned",
 		       long_long_unsigned_type_node);
 
+  short_integer_type_node = make_signed_type (SHORT_TYPE_SIZE);
+  record_builtin_type (RID_SHORT, "short int", short_integer_type_node);
+  short_unsigned_type_node = make_unsigned_type (SHORT_TYPE_SIZE);
+  record_builtin_type (RID_MAX, "short unsigned int", short_unsigned_type_node);
+  record_builtin_type (RID_MAX, "unsigned short", short_unsigned_type_node);
+
   /* `unsigned long' is the standard type for sizeof.
      Traditionally, use a signed type.
      Note that stddef.h uses `unsigned long',
@@ -4824,12 +4837,8 @@ init_decl_processing ()
   TREE_TYPE (TYPE_SIZE (long_integer_type_node)) = sizetype;
   TREE_TYPE (TYPE_SIZE (long_long_integer_type_node)) = sizetype;
   TREE_TYPE (TYPE_SIZE (long_long_unsigned_type_node)) = sizetype;
-
-  short_integer_type_node = make_signed_type (SHORT_TYPE_SIZE);
-  record_builtin_type (RID_SHORT, "short int", short_integer_type_node);
-  short_unsigned_type_node = make_unsigned_type (SHORT_TYPE_SIZE);
-  record_builtin_type (RID_MAX, "short unsigned int", short_unsigned_type_node);
-  record_builtin_type (RID_MAX, "unsigned short", short_unsigned_type_node);
+  TREE_TYPE (TYPE_SIZE (short_integer_type_node)) = sizetype;
+  TREE_TYPE (TYPE_SIZE (short_unsigned_type_node)) = sizetype;
 
   /* Define both `signed char' and `unsigned char'.  */
   signed_char_type_node = make_signed_type (CHAR_TYPE_SIZE);
@@ -5646,7 +5655,7 @@ shadow_tag (declspecs)
 		  && TYPE_SIZE (value) == NULL_TREE)
 		{
 		  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (value);
-		  if (current_template_parms)
+		  if (processing_template_decl)
 		    push_template_decl (TYPE_MAIN_DECL (value));
 		}
 	      else if (CLASSTYPE_TEMPLATE_INSTANTIATION (value))
@@ -5782,7 +5791,7 @@ start_decl (declarator, declspecs, initialized)
   type = TREE_TYPE (decl);
 
   /* Don't lose if destructors must be executed at file-level.  */
-  if (! current_template_parms && TREE_STATIC (decl)
+  if (! processing_template_decl && TREE_STATIC (decl)
       && TYPE_NEEDS_DESTRUCTOR (complete_type (type))
       && !TREE_PERMANENT (decl))
     {
@@ -5829,11 +5838,23 @@ start_decl (declarator, declspecs, initialized)
 	break;
 
       default:
-	if (TREE_CODE (type) == ARRAY_TYPE && ! current_template_parms
-	    && TYPE_SIZE (complete_type (TREE_TYPE (type))) == NULL_TREE)
+	if (! processing_template_decl)
 	  {
-	    cp_error ("elements of array `%#D' have incomplete type", decl);
-	    initialized = 0;
+	    if (TYPE_SIZE (type) != NULL_TREE
+		&& ! TREE_CONSTANT (TYPE_SIZE (type)))
+	      {
+		cp_error
+		  ("variable-sized object `%D' may not be initialized", decl);
+		initialized = 0;
+	      }
+
+	    if (TREE_CODE (type) == ARRAY_TYPE
+		&& TYPE_SIZE (complete_type (TREE_TYPE (type))) == NULL_TREE)
+	      {
+		cp_error
+		  ("elements of array `%#D' have incomplete type", decl);
+		initialized = 0;
+	      }
 	  }
       }
 
@@ -5901,7 +5922,7 @@ start_decl (declarator, declspecs, initialized)
   else
     tem = pushdecl (decl);
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       if (! current_function_decl)
 	push_template_decl (tem);
@@ -5922,7 +5943,7 @@ start_decl (declarator, declspecs, initialized)
   DECL_COMMON (tem) = flag_conserve_space || ! TREE_PUBLIC (tem);
 #endif
 
-  if (! current_template_parms)
+  if (! processing_template_decl)
     start_decl_1 (tem);
 
   /* Corresponding pop_obstacks is done in `cp_finish_decl'.  */
@@ -5942,7 +5963,7 @@ start_decl (declarator, declspecs, initialized)
 	 use temporary storage.  Do this even if we will ignore the value.  */
       if (toplevel_bindings_p () && debug_temp_inits)
 	{
-	  if (current_template_parms
+	  if (processing_template_decl
 	      || TYPE_NEEDS_CONSTRUCTING (type)
 	      || TREE_CODE (type) == REFERENCE_TYPE)
 	    /* In this case, the initializer must lay down in permanent
@@ -6002,7 +6023,7 @@ start_decl_1 (decl)
       && TREE_CODE (decl) != TEMPLATE_DECL
       && IS_AGGR_TYPE (type) && ! DECL_EXTERNAL (decl))
     {
-      if ((! current_template_parms || ! uses_template_parms (type))
+      if ((! processing_template_decl || ! uses_template_parms (type))
 	  && TYPE_SIZE (complete_type (type)) == NULL_TREE)
 	{
 	  cp_error ("aggregate `%#D' has incomplete type and cannot be initialized",
@@ -6228,7 +6249,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       return;
     }
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       if (init && DECL_INITIAL (decl))
 	DECL_INITIAL (decl) = init;
@@ -6796,7 +6817,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   /* If requested, warn about definitions of large data objects.  */
 
   if (warn_larger_than
-      && ! current_template_parms
+      && ! processing_template_decl
       && (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
       && !DECL_EXTERNAL (decl))
     {
@@ -8393,7 +8414,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 		/* If this involves a template parameter, it'll be
 		   constant, but we don't know what the value is yet.  */
-		if (current_template_parms)
+		if (processing_template_decl)
 		  {
 		    itype = make_node (INTEGER_TYPE);
 		    TYPE_MIN_VALUE (itype) = size_zero_node;
@@ -9481,7 +9502,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      }
 
 	    if (current_lang_name == lang_name_cplusplus
-		&& ! current_template_parms
+		&& ! processing_template_decl
 		&& ! (IDENTIFIER_LENGTH (original_name) == 4
 		      && IDENTIFIER_POINTER (original_name)[0] == 'm'
 		      && strcmp (IDENTIFIER_POINTER (original_name), "main") == 0)
@@ -9873,7 +9894,7 @@ grokparms (first_parm, funcdef_flag)
 		      any_init++;
 		      if (TREE_CODE (init) == SAVE_EXPR)
 			PARM_DECL_EXPR (init) = 1;
-		      else if (current_template_parms)
+		      else if (processing_template_decl)
 			;
 		      else if (TREE_CODE (init) == VAR_DECL
 			       || TREE_CODE (init) == PARM_DECL)
@@ -9893,7 +9914,7 @@ grokparms (first_parm, funcdef_flag)
 			}
 		      else
 			init = require_instantiated_type (type, init, integer_zero_node);
-		      if (! current_template_parms
+		      if (! processing_template_decl
 			  && ! can_convert_arg (type, TREE_TYPE (init), init))
 			cp_pedwarn ("invalid type `%T' for default argument to `%#D'",
 				    TREE_TYPE (init), decl);
@@ -10229,7 +10250,7 @@ grok_op_properties (decl, virtualp, friendp)
 	    {
 	      if ((name == ansi_opname[(int) POSTINCREMENT_EXPR]
 		   || name == ansi_opname[(int) POSTDECREMENT_EXPR])
-		  && ! current_template_parms
+		  && ! processing_template_decl
 		  && TREE_VALUE (TREE_CHAIN (argtypes)) != integer_type_node)
 		{
 		  if (methodp)
@@ -10688,7 +10709,7 @@ finish_enum (enumtype, values)
       register tree pair;
       register tree value = DECL_INITIAL (TREE_VALUE (values));
 
-      if (! current_template_parms)
+      if (! processing_template_decl)
 	{
 	  /* Speed up the main loop by performing some precalculations */
 	  TREE_TYPE (TREE_VALUE (values)) = enumtype;
@@ -10700,7 +10721,7 @@ finish_enum (enumtype, values)
       for (pair = TREE_CHAIN (values); pair; pair = TREE_CHAIN (pair))
 	{
 	  value = DECL_INITIAL (TREE_VALUE (pair));
-	  if (! current_template_parms)
+	  if (! processing_template_decl)
 	    {
 	      TREE_TYPE (TREE_VALUE (pair)) = enumtype;
 	      TREE_TYPE (value) = enumtype;
@@ -10717,7 +10738,7 @@ finish_enum (enumtype, values)
 
   TYPE_VALUES (enumtype) = values;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return enumtype;
 
   {
@@ -10786,7 +10807,7 @@ build_enumerator (name, value)
   if (value)
     STRIP_TYPE_NOPS (value);
 
- if (! current_template_parms)
+ if (! processing_template_decl)
    {
      /* Validate and default VALUE.  */
      if (value != NULL_TREE)
@@ -10807,7 +10828,7 @@ build_enumerator (name, value)
        }
 
      /* Default based on previous value.  */
-     if (value == NULL_TREE && ! current_template_parms)
+     if (value == NULL_TREE && ! processing_template_decl)
        {
 	 value = enum_next_value;
 	 if (enum_overflow)
@@ -10849,7 +10870,7 @@ build_enumerator (name, value)
       GNU_xref_decl (current_function_decl, decl);
     }
 
- if (! current_template_parms)
+ if (! processing_template_decl)
    {
      /* Set basis for default for next value.  */
      enum_next_value = build_binary_op_nodefault (PLUS_EXPR, value,
@@ -11059,7 +11080,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 
   announce_function (decl1);
 
-  if (! current_template_parms)
+  if (! processing_template_decl)
     {
       if (TYPE_SIZE (complete_type (TREE_TYPE (fntype))) == NULL_TREE)
 	{
@@ -11105,7 +11126,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
      If we already have a decl for this name, and it is a FUNCTION_DECL,
      use the old decl.  */
 
-  if (current_template_parms)
+  if (processing_template_decl)
     push_template_decl (decl1);
   else if (pre_parsed_p == 0)
     {
@@ -11129,7 +11150,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	       || flag_alt_external_templates))
     {
       if (DECL_THIS_INLINE (decl1) || DECL_TEMPLATE_INSTANTIATION (decl1)
-	  || current_template_parms)
+	  || processing_template_decl)
 	DECL_EXTERNAL (decl1)
 	  = (interface_only
 	     || (DECL_THIS_INLINE (decl1) && ! flag_implement_inlines));
@@ -11246,7 +11267,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
        of this function only.  Tiemann moved up here from bottom of fn.  */
     temporary_allocation ();
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       extern tree last_tree;
       ++minimal_parse_mode;
@@ -11395,7 +11416,7 @@ store_parm_decls ()
 
 		  pushdecl (parm);
 		}
-	      if (! current_template_parms
+	      if (! processing_template_decl
 		  && (cleanup = maybe_build_cleanup (parm), cleanup))
 		{
 		  expand_decl (parm);
@@ -11433,7 +11454,7 @@ store_parm_decls ()
 
   /* Initialize the RTL code for the function.  */
   DECL_SAVED_INSNS (fndecl) = NULL_RTX;
-  if (! current_template_parms)
+  if (! processing_template_decl)
     expand_function_start (fndecl, parms_have_cleanups);
 
   /* Create a binding contour which can be used to catch
@@ -11458,7 +11479,7 @@ store_parm_decls ()
     }
 
   /* Take care of exception handling things. */
-  if (! current_template_parms && flag_exceptions)
+  if (! processing_template_decl && flag_exceptions)
     {
       rtx insns;
       start_sequence ();
@@ -11589,7 +11610,7 @@ finish_function (lineno, call_poplevel, nested)
       store_parm_decls ();
     }
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       if (DECL_CONSTRUCTOR_P (fndecl) && call_poplevel)
 	{
@@ -12017,7 +12038,7 @@ finish_function (lineno, call_poplevel, nested)
      to the FUNCTION_DECL node itself.  */
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
-  if (! current_template_parms)
+  if (! processing_template_decl)
     {
       /* So we can tell if jump_optimize sets it to 1.  */
       can_reach_end = 0;
@@ -12070,7 +12091,7 @@ finish_function (lineno, call_poplevel, nested)
   /* Free all the tree nodes making up this function.  */
   /* Switch back to allocating nodes permanently
      until we start another function.  */
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       --minimal_parse_mode;
       DECL_SAVED_TREE (fndecl) = TREE_CHAIN (DECL_SAVED_TREE (fndecl));
@@ -12086,7 +12107,7 @@ finish_function (lineno, call_poplevel, nested)
 	 was an actual function definition.  */
       DECL_INITIAL (fndecl) = error_mark_node;
       /* And we need the arguments for template instantiation.  */
-      if (! current_template_parms)
+      if (! processing_template_decl)
 	{
 	  if (! DECL_CONSTRUCTOR_P (fndecl)
 	      || !(TYPE_USES_VIRTUAL_BASECLASSES
@@ -12178,7 +12199,7 @@ start_method (declspecs, declarator)
   if (flag_default_inline)
     DECL_INLINE (fndecl) = 1;
 
-  if (current_template_parms && ! current_function_decl)
+  if (processing_template_decl && ! current_function_decl)
     push_template_decl (fndecl);
 
   /* We read in the parameters on the maybepermanent_obstack,
@@ -12437,7 +12458,7 @@ cplus_expand_expr_stmt (exp)
   push_temp_slots ();
   target_temp_slot_level = temp_slot_level;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       add_tree (build_min_nt (EXPR_STMT, exp));
       return;

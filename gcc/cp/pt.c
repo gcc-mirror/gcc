@@ -80,6 +80,7 @@ begin_template_parm_list ()
 {
   pushlevel (0);
   declare_pseudo_global_level ();
+  ++processing_template_decl;
 }
 
 /* Process information from new template parameter NEXT and append it to the
@@ -141,7 +142,7 @@ process_template_parm (list, next)
       decl = build_decl (CONST_DECL, DECL_NAME (parm), TREE_TYPE (parm));
       DECL_INITIAL (decl) = tinfo;
       DECL_INITIAL (parm) = tinfo;
-      TEMPLATE_CONST_SET_INFO (tinfo, idx, processing_template_decl + 1);
+      TEMPLATE_CONST_SET_INFO (tinfo, idx, processing_template_decl);
     }
   else
     {
@@ -150,7 +151,7 @@ process_template_parm (list, next)
       decl = build_decl (TYPE_DECL, TREE_VALUE (parm), t);
       TYPE_MAIN_DECL (t) = decl;
       parm = decl;
-      TEMPLATE_TYPE_SET_INFO (t, idx, processing_template_decl + 1);
+      TEMPLATE_TYPE_SET_INFO (t, idx, processing_template_decl);
     }
   SET_DECL_ARTIFICIAL (decl);
   pushdecl (decl);
@@ -171,7 +172,6 @@ end_template_parm_list (parms)
   tree parm;
   tree saved_parmlist = make_tree_vec (list_length (parms));
 
-  ++processing_template_decl;
   current_template_parms
     = tree_cons (build_int_2 (0, processing_template_decl),
 		 saved_parmlist, current_template_parms);
@@ -187,7 +187,7 @@ end_template_parm_list (parms)
 void
 end_template_decl ()
 {
-  if (! current_template_parms)
+  if (! processing_template_decl)
     return;
 
   /* This matches the pushlevel in begin_template_parm_list.  */
@@ -404,7 +404,7 @@ coerce_template_parms (parms, arglist, in_decl)
       if (is_type)
 	{
 	  val = groktypename (arg);
-	  if (! current_template_parms)
+	  if (! processing_template_decl)
 	    {
 	      tree t = target_type (val);
 	      if (IS_AGGR_TYPE (t)
@@ -419,12 +419,12 @@ coerce_template_parms (parms, arglist, in_decl)
 	{
 	  tree t = tsubst (TREE_TYPE (parm), &TREE_VEC_ELT (vec, 0),
 			   TREE_VEC_LENGTH (vec), in_decl);
-	  if (current_template_parms)
+	  if (processing_template_decl)
 	    val = arg;
 	  else
 	    val = digest_init (t, arg, (tree *) 0);
 
-	  if (val == error_mark_node || current_template_parms)
+	  if (val == error_mark_node || processing_template_decl)
 	    ;
 
 	  /* 14.2: Other template-arguments must be constant-expressions,
@@ -743,10 +743,10 @@ lookup_template_class (d1, arglist, in_decl)
 
       if (TYPE_BEING_DEFINED (ctx) && ctx == current_class_type)
 	{
-	  tree save_parms = current_template_parms;
-	  current_template_parms = NULL_TREE;
+	  int save_temp = processing_template_decl;
+	  processing_template_decl = 0;
 	  t = xref_tag_from_type (TREE_TYPE (template), id, 0);
-	  current_template_parms = save_parms;
+	  processing_template_decl = save_temp;
 	}
       else
 	{
@@ -910,10 +910,13 @@ uses_template_parms (t)
     case TYPENAME_TYPE:
       return 1;
 
+    case SCOPE_REF:
+      return uses_template_parms (TREE_OPERAND (t, 0));
+
     case CONSTRUCTOR:
       if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
 	return uses_template_parms (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (t)));
-      /* else fall through */
+      return uses_template_parms (TREE_OPERAND (t, 1));
 
     default:
       switch (TREE_CODE_CLASS (TREE_CODE (t)))
@@ -1384,7 +1387,7 @@ tsubst (t, args, nargs, in_decl)
 
       {
 	tree max = tsubst_expr (TYPE_MAX_VALUE (t), args, nargs, in_decl);
-	if (current_template_parms)
+	if (processing_template_decl)
 	  {
 	    tree itype = make_node (INTEGER_TYPE);
 	    TYPE_MIN_VALUE (itype) = size_zero_node;
@@ -1986,6 +1989,7 @@ tsubst_copy (t, args, nargs, in_decl)
     case SIZEOF_EXPR:
     case ARROW_EXPR:
     case THROW_EXPR:
+    case TYPEID_EXPR:
       return build1
 	(code, NULL_TREE,
 	 tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl));
@@ -2139,6 +2143,11 @@ tsubst_copy (t, args, nargs, in_decl)
       else
 	return t;
 
+    case CONSTRUCTOR:
+      return build
+	(CONSTRUCTOR, tsubst (TREE_TYPE (t), args, nargs, in_decl), NULL_TREE,
+	 tsubst_copy (CONSTRUCTOR_ELTS (t), args, nargs, in_decl));
+
     default:
       return t;
     }
@@ -2153,7 +2162,7 @@ tsubst_expr (t, args, nargs, in_decl)
   if (t == NULL_TREE || t == error_mark_node)
     return t;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     return tsubst_copy (t, args, nargs, in_decl);
 
   switch (TREE_CODE (t))
@@ -3255,6 +3264,8 @@ instantiate_decl (d)
   int nested = in_function_p ();
   int d_defined;
   int pattern_defined;
+  int line = lineno;
+  char *file = input_filename;
 
   if (TREE_CODE (d) == FUNCTION_DECL)
     {
@@ -3297,9 +3308,19 @@ instantiate_decl (d)
      variable is a static const initialized in the class body.  */
   if (TREE_CODE (d) == VAR_DECL
       && ! DECL_INITIAL (d) && DECL_INITIAL (pattern))
-    DECL_INITIAL (d) = tsubst_expr
-      (DECL_INITIAL (pattern), &TREE_VEC_ELT (args, 0),
-       TREE_VEC_LENGTH (args), tmpl);
+    {
+      lineno = DECL_SOURCE_LINE (d);
+      input_filename = DECL_SOURCE_FILE (d);
+
+      pushclass (DECL_CONTEXT (d), 2);
+      DECL_INITIAL (d) = tsubst_expr
+	(DECL_INITIAL (pattern), &TREE_VEC_ELT (args, 0),
+	 TREE_VEC_LENGTH (args), tmpl);
+      popclass (1);
+
+      lineno = line;
+      input_filename = file;
+    }
 
   if (! pattern_defined
       || (TREE_CODE (d) == FUNCTION_DECL && ! DECL_INLINE (d)
@@ -3320,6 +3341,9 @@ instantiate_decl (d)
 
   push_to_top_level ();
 
+  lineno = DECL_SOURCE_LINE (d);
+  input_filename = DECL_SOURCE_FILE (d);
+
   /* Trick tsubst into giving us a new decl in case the template changed.  */
   save_ti = DECL_TEMPLATE_INFO (pattern);
   DECL_TEMPLATE_INFO (pattern) = NULL_TREE;
@@ -3328,9 +3352,13 @@ instantiate_decl (d)
 
   /* And set up DECL_INITIAL, since tsubst doesn't.  */
   if (TREE_CODE (td) == VAR_DECL)
-    DECL_INITIAL (td) = tsubst_expr
-      (DECL_INITIAL (pattern), &TREE_VEC_ELT (args, 0),
-       TREE_VEC_LENGTH (args), tmpl);
+    {
+      pushclass (DECL_CONTEXT (d), 2);
+      DECL_INITIAL (td) = tsubst_expr
+	(DECL_INITIAL (pattern), &TREE_VEC_ELT (args, 0),
+	 TREE_VEC_LENGTH (args), tmpl);
+      popclass (1);
+    }
 
   /* Convince duplicate_decls to use the DECL_ARGUMENTS from the new decl.  */
   if (TREE_CODE (d) == FUNCTION_DECL)
@@ -3354,11 +3382,6 @@ instantiate_decl (d)
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {
       tree t = DECL_SAVED_TREE (pattern);
-      int line = lineno;
-      char *file = input_filename;
-
-      lineno = DECL_SOURCE_LINE (d);
-      input_filename = DECL_SOURCE_FILE (d);
 
       start_function (NULL_TREE, d, NULL_TREE, 1);
       store_parm_decls ();
@@ -3392,10 +3415,10 @@ instantiate_decl (d)
 		   TREE_VEC_LENGTH (args), tmpl);
 
       finish_function (lineno, 0, nested);
-
-      lineno = line;
-      input_filename = file;
     }
+
+  lineno = line;
+  input_filename = file;
 
   pop_from_top_level ();
   pop_tinst_level ();

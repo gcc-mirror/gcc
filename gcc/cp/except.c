@@ -1132,7 +1132,7 @@ build_throw (e)
 {
   if (e != error_mark_node)
     {
-      if (current_template_parms)
+      if (processing_template_decl)
 	return build_min (THROW_EXPR, void_type_node, e);
       e = build1 (THROW_EXPR, void_type_node, e);
       TREE_SIDE_EFFECTS (e) = 1;

@@ -1176,10 +1176,9 @@ thrown is used instead.  All code that originates exceptions, even code
 that throws exceptions as a side effect, like dynamic casting, and all
 code that catches exceptions must be compiled with either -frtti, or
 -fno-rtti.  It is not possible to mix rtti base exception handling
-objects with code that doesn't use rtti.  Also, -frtti can alter the
-binary layout of classes, so mixing -frtti code and -fno-rtti code can
-be dangerous.  The exceptions to this, are code that doesn't catch or
-throw exceptions, catch (...), and code that just rethrows an exception.
+objects with code that doesn't use rtti.  The exceptions to this, are
+code that doesn't catch or throw exceptions, catch (...), and code that
+just rethrows an exception.
 
 Currently we use the normal mangling used in building functions names
 (int's are "i", const char * is PCc) to build the non-rtti base type

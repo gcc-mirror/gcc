@@ -1053,7 +1053,7 @@ grok_array_decl (array_expr, index_exp)
 
   if (type == error_mark_node || index_exp == error_mark_node)
     return error_mark_node;
-  if (current_template_parms)
+  if (processing_template_decl)
     return build_min (ARRAY_REF, type ? TREE_TYPE (type) : NULL_TREE,
 		      array_expr, index_exp);
 
@@ -1133,7 +1133,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
   if (exp == error_mark_node)
     return exp;
 
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       t = build_min (DELETE_EXPR, void_type_node, exp, size);
       DELETE_EXPR_USE_GLOBAL (t) = use_global_delete;
@@ -1455,7 +1455,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	       because `decl_const_value' would mis-interpret it
 	       as only meaning that this VAR_DECL is defined.  */
 	    init = build1 (NOP_EXPR, TREE_TYPE (value), init);
-	  else if (current_template_parms)
+	  else if (processing_template_decl)
 	    ;
 	  else if (! TREE_CONSTANT (init))
 	    {
@@ -1476,7 +1476,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
   /* The corresponding pop_obstacks is in cp_finish_decl.  */
   push_obstacks_nochange ();
 
-  if (current_template_parms && ! current_function_decl
+  if (processing_template_decl && ! current_function_decl
       && (TREE_CODE (value) == VAR_DECL || TREE_CODE (value) == FUNCTION_DECL))
     push_template_decl (value);
 
@@ -1500,7 +1500,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	      DECL_ASSEMBLER_NAME (value)
 		= build_static_name (current_class_type, DECL_NAME (value));
 	    }
-	  if (! current_template_parms)
+	  if (! processing_template_decl)
 	    pending_statics = perm_tree_cons (NULL_TREE, value, pending_statics);
 
 	  /* Static consts need not be initialized in the class definition.  */
@@ -1839,7 +1839,7 @@ setup_vtbl_ptr ()
   if (base_init_expr == 0
       && DECL_CONSTRUCTOR_P (current_function_decl))
     {
-      if (current_template_parms)
+      if (processing_template_decl)
 	add_tree (build_min_nt
 		  (CTOR_INITIALIZER,
 		   current_member_init_list, current_base_init_list));
@@ -3412,12 +3412,25 @@ build_expr_from_tree (t)
       }
 
     case COMPONENT_REF:
-      return build_component_ref
+      return build_x_component_ref
 	(build_expr_from_tree (TREE_OPERAND (t, 0)),
 	 TREE_OPERAND (t, 1), NULL_TREE, 1);
 
     case THROW_EXPR:
       return build_throw (build_expr_from_tree (TREE_OPERAND (t, 0)));
+
+    case CONSTRUCTOR:
+      {
+	tree r = build_nt (CONSTRUCTOR, NULL_TREE,
+			   build_expr_from_tree (CONSTRUCTOR_ELTS (t)));
+
+	if (TREE_TYPE (t))
+	  return digest_init (TREE_TYPE (t), r, 0);
+	return r;
+      }
+
+    case TYPEID_EXPR:
+      return build_x_typeid (build_expr_from_tree (TREE_OPERAND (t, 0)));
 
     default:
       return t;
@@ -3629,7 +3642,7 @@ mark_used (decl)
      tree decl;
 {
   TREE_USED (decl) = 1;
-  if (current_template_parms)
+  if (processing_template_decl)
     return;
   assemble_external (decl);
   /* Is it a synthesized method that needs to be synthesized?  */

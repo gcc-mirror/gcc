@@ -30,6 +30,10 @@ Boston, MA 02111-1307, USA.  */
 #undef NULL
 #define NULL 0
 
+#ifndef INT_TYPE_SIZE
+#define INT_TYPE_SIZE BITS_PER_WORD
+#endif
+
 extern tree define_function ();
 extern tree build_t_desc_overload ();
 extern struct obstack *permanent_obstack;
@@ -111,13 +115,59 @@ build_headof (exp)
   return build (PLUS_EXPR, type, exp,
 		convert (ptrdiff_type_node, offset));
 }
+
+/* Build a call to a generic entry point taking and returning void.  */
+
+static tree
+call_void_fn (name)
+     char *name;
+{
+  tree d = get_identifier (name);
+  tree type;
+  
+  if (IDENTIFIER_GLOBAL_VALUE (d))
+    d = IDENTIFIER_GLOBAL_VALUE (d);
+  else
+    {
+      push_obstacks (&permanent_obstack, &permanent_obstack);
+
+      type = build_function_type (void_type_node, void_list_node);
+      d = build_lang_decl (FUNCTION_DECL, d, type);
+      DECL_EXTERNAL (d) = 1;
+      TREE_PUBLIC (d) = 1;
+      DECL_ARTIFICIAL (d) = 1;
+      pushdecl_top_level (d);
+      make_function_rtl (d);
+      assemble_external (d);
+
+      pop_obstacks ();
+    }
+
+  return build_call (d, void_type_node, NULL_TREE);
+}
+
+/* Get a bad_cast node for the program to throw...
+
+   See libstdc++/exception.cc for __throw_bad_cast */
+
+static tree
+throw_bad_cast ()
+{
+  return call_void_fn ("__throw_bad_cast");
+}
+
+static tree
+throw_bad_typeid ()
+{
+  return call_void_fn ("__throw_bad_typeid");
+}
 
-/* Return the type_info node associated with the expression EXP.  If EXP is
-   a reference to a polymorphic class, return the dynamic type; otherwise
-   return the static type of the expression.  */
+/* Return the type_info function associated with the expression EXP.  If
+   EXP is a reference to a polymorphic class, return the dynamic type;
+   otherwise return the static type of the expression.  */
 
 tree
-build_typeid (exp)
+get_tinfo_fn_dynamic (exp)
      tree exp;
 {
   tree type;
@@ -127,14 +177,6 @@ build_typeid (exp)
 
   type = TREE_TYPE (exp);
 
-  /* Strip top-level cv-qualifiers.  */
-  type = TYPE_MAIN_VARIANT (type);
-
-  /* if b is an instance of B, typeid(b) == typeid(B).  Do this before
-     reference trickiness.  */
-  if (TREE_CODE (exp) == VAR_DECL && TREE_CODE (type) == RECORD_TYPE)
-    return get_typeid (type);
-
   /* peel back references, so they match.  */
   if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
@@ -142,12 +184,8 @@ build_typeid (exp)
   /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);
 
-  /* Apply trivial conversion T -> T& for dereferenced ptrs.  */
-  if (TREE_CODE (type) == RECORD_TYPE)
-    type = build_reference_type (type);
-
   /* If exp is a reference to polymorphic type, get the real type_info.  */
-  if (TREE_CODE (type) == REFERENCE_TYPE && TYPE_VIRTUAL_P (TREE_TYPE (type)))
+  if (TYPE_VIRTUAL_P (type) && ! resolves_to_fixed_type_p (exp, 0))
     {
       /* build reference to type_info from vtable.  */
       tree t;
@@ -156,7 +194,7 @@ build_typeid (exp)
 	warning ("taking dynamic typeid of object without -frtti");
 
       /* If we don't have rtti stuff, get to a sub-object that does.  */
-      if (!CLASSTYPE_VFIELDS (TREE_TYPE (type)))
+      if (! CLASSTYPE_VFIELDS (type))
 	{
 	  exp = build_unary_op (ADDR_EXPR, exp, 0);
 	  exp = build_headof_sub (exp);
@@ -168,14 +206,57 @@ build_typeid (exp)
       else
 	t = build_vfn_ref ((tree *) 0, exp, integer_zero_node);
       TREE_TYPE (t) = build_pointer_type (tinfo_fn_type);
-
-      t = build (CALL_EXPR, TREE_TYPE (tinfo_fn_type), t, NULL_TREE, NULL_TREE);
-      TREE_SIDE_EFFECTS (t) = 1;
-      return convert_from_reference (t);
+      return t;
     }
 
   /* otherwise return the type_info for the static type of the expr.  */
-  return get_typeid (type);
+  return get_tinfo_fn (TYPE_MAIN_VARIANT (type));
+}
+
+tree
+build_typeid (exp)
+     tree exp;
+{
+  exp = get_tinfo_fn_dynamic (exp);
+  exp = build_call (exp, TREE_TYPE (tinfo_fn_type), NULL_TREE);
+  return convert_from_reference (exp);
+}  
+
+tree
+build_x_typeid (exp)
+     tree exp;
+{
+  tree cond = NULL_TREE;
+  tree type = TREE_TYPE (tinfo_fn_type);
+  int nonnull;
+
+  if (processing_template_decl)
+    return build_min_nt (TYPEID_EXPR, exp);
+
+  if (TREE_CODE (exp) == INDIRECT_REF
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
+      && TYPE_VIRTUAL_P (TREE_TYPE (exp))
+      && ! resolves_to_fixed_type_p (exp, &nonnull)
+      && ! nonnull)
+    {
+      exp = stabilize_reference (exp);
+      cond = convert (boolean_type_node, TREE_OPERAND (exp, 0));
+    }
+
+  exp = get_tinfo_fn_dynamic (exp);
+  exp = build_call (exp, type, NULL_TREE);
+
+  if (cond)
+    {
+      tree bad = throw_bad_typeid ();
+
+      bad = build_compound_expr
+	(tree_cons (NULL_TREE, bad, build_tree_list
+		    (NULL_TREE, convert (type, integer_zero_node))));
+      exp = build (COND_EXPR, type, cond, exp, bad);
+    }
+
+  return convert_from_reference (exp);
 }
 
 tree
@@ -193,7 +274,7 @@ get_tinfo_var (type)
      If our struct layout or the type_info classes are changed, this will
      need to be modified.  */
   if (TYPE_VOLATILE (type) || TYPE_READONLY (type))
-    size = 4 * POINTER_SIZE;
+    size = 3 * POINTER_SIZE + INT_TYPE_SIZE;
   else if (TREE_CODE (type) == POINTER_TYPE
 	   && ! (TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE
 		 || TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE))
@@ -207,7 +288,7 @@ get_tinfo_var (type)
 		   (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), 0))))
 	size = 3 * POINTER_SIZE;
       else
-	size = 4 * POINTER_SIZE;
+	size = 3 * POINTER_SIZE + INT_TYPE_SIZE;
     }
   else
     size = 2 * POINTER_SIZE;
@@ -266,9 +347,8 @@ tree
 get_typeid_1 (type)
      tree type;
 {
-  tree t = build (CALL_EXPR, TREE_TYPE (tinfo_fn_type),
-		  default_conversion (get_tinfo_fn (type)), NULL_TREE, NULL_TREE);
-  TREE_SIDE_EFFECTS (t) = 1;
+  tree t = build_call
+    (get_tinfo_fn (type), TREE_TYPE (tinfo_fn_type), NULL_TREE);
   return convert_from_reference (t);
 }
   
@@ -294,37 +374,6 @@ get_typeid (type)
   type = TYPE_MAIN_VARIANT (type);
 
   return get_typeid_1 (type);
-}
-
-/* Get a bad_cast node for the program to throw...
-
-   See libstdc++/exception.cc for __throw_bad_cast */
-
-static tree
-throw_bad_cast ()
-{
-  tree d = get_identifier ("__throw_bad_cast");
-  tree type;
-  
-  if (IDENTIFIER_GLOBAL_VALUE (d))
-    return IDENTIFIER_GLOBAL_VALUE (d);
-
-  push_obstacks (&permanent_obstack, &permanent_obstack);
-
-  type = build_function_type (void_type_node, void_list_node);
-  d = build_lang_decl (FUNCTION_DECL, d, type);
-  DECL_EXTERNAL (d) = 1;
-  TREE_PUBLIC (d) = 1;
-  DECL_ARTIFICIAL (d) = 1;
-  pushdecl_top_level (d);
-  make_function_rtl (d);
-  assemble_external (d);
-
-  pop_obstacks ();
-
-  d = build (CALL_EXPR, void_type_node, default_conversion (d), NULL_TREE, NULL_TREE);
-  TREE_SIDE_EFFECTS (d) = 1;
-  return d;
 }
 
 /* Check whether TEST is null before returning RESULT.  If TEST is used in
@@ -355,7 +404,7 @@ build_dynamic_cast (type, expr)
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
   
-  if (current_template_parms)
+  if (processing_template_decl)
     {
       tree t = build_min (DYNAMIC_CAST_EXPR, type, expr);
       return t;
@@ -497,19 +546,22 @@ build_dynamic_cast (type, expr)
 	  expr2 = build_headof (expr1);
 
 	  if (ec == POINTER_TYPE)
-	    td1 = build_typeid (build_indirect_ref (expr, NULL_PTR));
+	    td1 = get_tinfo_fn_dynamic (build_indirect_ref (expr, NULL_PTR));
 	  else
-	    td1 = build_typeid (expr);
+	    td1 = get_tinfo_fn_dynamic (expr);
+	  td1 = decay_conversion (td1);
 	  
-	  td2 = get_typeid (TREE_TYPE (type));
-	  td3 = get_typeid (TREE_TYPE (exprtype));
+	  td2 = decay_conversion
+	    (get_tinfo_fn (TYPE_MAIN_VARIANT (TREE_TYPE (type))));
+	  td3 = decay_conversion
+	    (get_tinfo_fn (TYPE_MAIN_VARIANT (TREE_TYPE (exprtype))));
 
           elems = tree_cons
-	    (NULL_TREE, TREE_OPERAND (td1, 0), tree_cons
-	     (NULL_TREE, TREE_OPERAND (td2, 0), tree_cons
+	    (NULL_TREE, td1, tree_cons
+	     (NULL_TREE, td2, tree_cons
 	      (NULL_TREE, build_int_2 (1, 0), tree_cons
 	       (NULL_TREE, expr2, tree_cons
-		(NULL_TREE, TREE_OPERAND (td3, 0), tree_cons
+		(NULL_TREE, td3, tree_cons
 		 (NULL_TREE, expr1, NULL_TREE))))));
 
 	  dcast_fn = get_identifier ("__dynamic_cast");
@@ -520,14 +572,12 @@ build_dynamic_cast (type, expr)
 	      tree tmp;
 
 	      push_obstacks (&permanent_obstack, &permanent_obstack);
-	      tmp = build_reference_type
-		(build_type_variant (type_info_type_node, 1, 0));
 	      tmp = tree_cons
-		(NULL_TREE, tmp, tree_cons
-		 (NULL_TREE, tmp, tree_cons
+		(NULL_TREE, TREE_TYPE (td1), tree_cons
+		 (NULL_TREE, TREE_TYPE (td1), tree_cons
 		  (NULL_TREE, integer_type_node, tree_cons
 		   (NULL_TREE, ptr_type_node, tree_cons
-		    (NULL_TREE, tmp, tree_cons
+		    (NULL_TREE, TREE_TYPE (td1), tree_cons
 		     (NULL_TREE, ptr_type_node, void_list_node))))));
 	      tmp = build_function_type (ptr_type_node, tmp);
 	      dcast_fn = build_lang_decl (FUNCTION_DECL, dcast_fn, tmp);
@@ -540,15 +590,16 @@ build_dynamic_cast (type, expr)
 	      pop_obstacks ();
 	    }
 	  
-          result = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (dcast_fn)),
-			  decay_conversion (dcast_fn), elems, NULL_TREE);
-	  TREE_SIDE_EFFECTS (result) = 1;
+          result = build_call
+	    (dcast_fn, TREE_TYPE (TREE_TYPE (dcast_fn)), elems);
 
 	  if (tc == REFERENCE_TYPE)
 	    {
 	      expr1 = throw_bad_cast ();
-	      expr1 = build_compound_expr (tree_cons (NULL_TREE, expr1,
-						      build_tree_list (NULL_TREE, convert (type, integer_zero_node))));
+	      expr1 = build_compound_expr
+		(tree_cons (NULL_TREE, expr1,
+			    build_tree_list (NULL_TREE, convert
+					     (type, integer_zero_node))));
 	      TREE_TYPE (expr1) = type;
 	      result = save_expr (result);
 	      return build (COND_EXPR, type, result, result, expr1);
@@ -625,9 +676,7 @@ expand_si_desc (tdecl, type)
       pop_obstacks ();
     }
 
-  fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-	      decay_conversion (fn), elems, NULL_TREE);
-  TREE_SIDE_EFFECTS (fn) = 1;
+  fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
   expand_expr_stmt (fn);
 }
 
@@ -668,7 +717,7 @@ expand_class_desc (tdecl, type)
 	(FIELD_DECL, NULL_TREE,
 	 build_pointer_type (build_type_variant (type_info_type_node, 1, 0)));
       fields [1] = build_lang_field_decl
-	(FIELD_DECL, NULL_TREE, sizetype);
+	(FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
       DECL_BIT_FIELD (fields[1]) = 1;
       DECL_FIELD_SIZE (fields[1]) = 29;
 
@@ -805,9 +854,7 @@ expand_class_desc (tdecl, type)
       pop_obstacks ();
     }
 
-  fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-	      decay_conversion (fn), elems, NULL_TREE);
-  TREE_SIDE_EFFECTS (fn) = 1;
+  fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
   expand_expr_stmt (fn);
 }
 
@@ -854,9 +901,7 @@ expand_ptr_desc (tdecl, type)
       pop_obstacks ();
     }
 
-  fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-	      decay_conversion (fn), elems, NULL_TREE);
-  TREE_SIDE_EFFECTS (fn) = 1;
+  fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
   expand_expr_stmt (fn);
 }
 
@@ -905,9 +950,7 @@ expand_attr_desc (tdecl, type)
       pop_obstacks ();
     }
 
-  fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-	      decay_conversion (fn), elems, NULL_TREE);
-  TREE_SIDE_EFFECTS (fn) = 1;
+  fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
   expand_expr_stmt (fn);
 }
 
@@ -947,9 +990,7 @@ expand_generic_desc (tdecl, type, fnname)
       pop_obstacks ();
     }
 
-  fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-	      decay_conversion (fn), elems, NULL_TREE);
-  TREE_SIDE_EFFECTS (fn) = 1;
+  fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
   expand_expr_stmt (fn);
 }
 
@@ -994,10 +1035,12 @@ synthesize_tinfo_fn (fndecl)
   tmp = build_binary_op (EQ_EXPR, tmp, integer_zero_node, 1);
   expand_start_cond (tmp, 0);
 
-  if (TYPE_VOLATILE (type) || TYPE_READONLY (type))
-    expand_attr_desc (tdecl, type);
+  if (TREE_CODE (type) == FUNCTION_TYPE)
+    expand_generic_desc (tdecl, type, "__rtti_func");
   else if (TREE_CODE (type) == ARRAY_TYPE)
     expand_generic_desc (tdecl, type, "__rtti_array");
+  else if (TYPE_VOLATILE (type) || TYPE_READONLY (type))
+    expand_attr_desc (tdecl, type);
   else if (TREE_CODE (type) == POINTER_TYPE)
     {
       if (TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE)
@@ -1022,8 +1065,6 @@ synthesize_tinfo_fn (fndecl)
     }
   else if (TREE_CODE (type) == ENUMERAL_TYPE)
     expand_generic_desc (tdecl, type, "__rtti_user");
-  else if (TREE_CODE (type) == FUNCTION_TYPE)
-    expand_generic_desc (tdecl, type, "__rtti_func");
   else
     my_friendly_abort (252);
 
