@@ -20,7 +20,9 @@
 /* This is tested by i386/gas.h.  */
 #define YES_UNDERSCORES
 
+#ifndef LINUX_ELF
 #include "i386/gstabs.h"
+#endif
 
 /* Specify predefined symbols in preprocessor.  */
 
