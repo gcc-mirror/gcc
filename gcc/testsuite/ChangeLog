@@ -1,3 +1,8 @@
+2003-02-28  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/noreturn-1.c: Move noreturn warning line.
+	* gcc.dg/return-type-1.c: Move control reaches end warning line.
+
 2003-02-28  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/pch/pch.exp: Change .pch to .gch.

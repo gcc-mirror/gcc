@@ -5,5 +5,5 @@
 /* { dg-options "-O -Wreturn-type" } */
 int
 foo(void)
-{
-} /* { dg-warning "control reaches end of non-void function" "warning for falling off end of non-void function" } */
+{ /* { dg-warning "control reaches end of non-void function" "warning for falling off end of non-void function" } */
+}
