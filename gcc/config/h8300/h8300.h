@@ -785,8 +785,9 @@ struct cum_arg
 
 #define REGNO_OK_FOR_INDEX_P(regno) 0
 
-#define REGNO_OK_FOR_BASE_P(regno) \
-  (((regno) < FIRST_PSEUDO_REGISTER && regno != 8) || reg_renumber[regno] >= 0)
+#define REGNO_OK_FOR_BASE_P(regno)				\
+  (((regno) < FIRST_PSEUDO_REGISTER && regno != MAC_REG)	\
+   || reg_renumber[regno] >= 0)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 
