@@ -1,3 +1,7 @@
+Sat Nov 21 02:18:38 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (move_movables): Start of libcall might be new loop start.
+
 Fri Nov 20 12:14:16 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* hash.c (hash_table_init_n): Wrap prototype arguments in PARAMS().
