@@ -3444,6 +3444,21 @@ output_cbranch (operands, nullify, length, negated, insn)
 	      strcat (buf, "%B3");
 	    strcat (buf, ",n %2,%1,.+12\n\tbl %0,0");
 	  }
+	/* Handle short backwards branch with an unfilled delay slot.
+	   Using a comb;nop rather than comiclr;bl saves 1 cycle for both
+	   taken and untaken branches.  */
+	else if (dbr_sequence_length () == 0
+		 && ! forward_branch_p (insn)
+		 && insn_addresses
+		 && VAL_14_BITS_P (insn_addresses[INSN_UID (JUMP_LABEL (insn))]
+				    - insn_addresses[INSN_UID (insn)]))
+	  {
+	    strcpy (buf, "com%I2b,");
+	    if (negated)
+	      strcat (buf, "%B3 %2,%1,%0%#");
+	    else
+	      strcat (buf, "%S3 %2,%1,%0%#");
+	  }
 	else
 	  {
 	    strcpy (buf, "com%I2clr,");
@@ -3556,6 +3571,26 @@ output_bb (operands, nullify, length, negated, insn, which)
 	    else
 	      strcat (buf, " %0,%1,.+12\n\tbl %2,0");
 	  }
+	/* Handle short backwards branch with an unfilled delay slot.
+	   Using a bb;nop rather than extrs;bl saves 1 cycle for both
+	   taken and untaken branches.  */
+	else if (dbr_sequence_length () == 0
+		 && ! forward_branch_p (insn)
+		 && insn_addresses
+		 && VAL_14_BITS_P (insn_addresses[INSN_UID (JUMP_LABEL (insn))]
+				    - insn_addresses[INSN_UID (insn)]))
+	  {
+	    strcpy (buf, "bb,");
+	    if ((which == 0 && negated)
+		|| (which == 1 && ! negated))
+	      strcat (buf, ">=");
+	    else
+	      strcat (buf, "<");
+	    if (negated)
+	      strcat (buf, " %0,%1,%3%#");
+	    else
+	      strcat (buf, " %0,%1,%2%#");
+	  }
 	else
 	  {
 	    strcpy (buf, "extrs,");
@@ -3641,6 +3676,15 @@ output_dbra (operands, insn, which_alternative)
 	      && ! forward_branch_p (insn)
 	      && nullify)
 	    return "addib,%N2,n %1,%0,.+12\n\tbl %3,0";
+	  /* Handle short backwards branch with an unfilled delay slot.
+	     Using a addb;nop rather than addi;bl saves 1 cycle for both
+	     taken and untaken branches.  */
+	  else if (dbr_sequence_length () == 0
+		   && ! forward_branch_p (insn)
+		   && insn_addresses
+		   && VAL_14_BITS_P (insn_addresses[INSN_UID (JUMP_LABEL (insn))]
+				      - insn_addresses[INSN_UID (insn)]))
+	      return "addib,%C2 %1,%0,%3%#";
 
 	  /* Handle normal cases.  */
 	  if (nullify)
@@ -3738,6 +3782,15 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	      && nullify)
 	    return "movb,%N2,n %1,%0,.+12\n\ttbl %3,0";
 
+	  /* Handle short backwards branch with an unfilled delay slot.
+	     Using a movb;nop rather than or;bl saves 1 cycle for both
+	     taken and untaken branches.  */
+	  else if (dbr_sequence_length () == 0
+		   && ! forward_branch_p (insn)
+		   && insn_addresses
+		   && VAL_14_BITS_P (insn_addresses[INSN_UID (JUMP_LABEL (insn))]
+				      - insn_addresses[INSN_UID (insn)]))
+	    return "movb,%C2 %1,%0,%3%#";
 	  /* Handle normal cases.  */
 	  if (nullify)
 	    return "or,%N2 %1,%%r0,%0\n\tbl,n %3,0";
