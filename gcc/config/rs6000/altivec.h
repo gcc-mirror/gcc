@@ -117,7 +117,7 @@ inline void vec_dst (const vector unsigned int *, int, const int) __attribute__ 
 inline void vec_dst (const vector signed int *, int, const int) __attribute__ ((always_inline));
 inline void vec_dst (const vector bool int *, int, const int) __attribute__ ((always_inline));
 inline void vec_dst (const vector float *, int, const int) __attribute__ ((always_inline));
-inline void vec_dst (const int *, int, const int) __attribute__ ((always_inline));
+inline void vec_dst (const unsigned char *, int, const int) __attribute__ ((always_inline));
 inline void vec_dst (const signed char *, int, const int) __attribute__ ((always_inline));
 inline void vec_dst (const unsigned short *, int, const int) __attribute__ ((always_inline));
 inline void vec_dst (const short *, int, const int) __attribute__ ((always_inline));
@@ -138,7 +138,7 @@ inline void vec_dstst (const vector unsigned int *, int, const int) __attribute_
 inline void vec_dstst (const vector signed int *, int, const int) __attribute__ ((always_inline));
 inline void vec_dstst (const vector bool int *, int, const int) __attribute__ ((always_inline));
 inline void vec_dstst (const vector float *, int, const int) __attribute__ ((always_inline));
-inline void vec_dstst (const int *, int, const int) __attribute__ ((always_inline));
+inline void vec_dstst (const unsigned char *, int, const int) __attribute__ ((always_inline));
 inline void vec_dstst (const signed char *, int, const int) __attribute__ ((always_inline));
 inline void vec_dstst (const unsigned short *, int, const int) __attribute__ ((always_inline));
 inline void vec_dstst (const short *, int, const int) __attribute__ ((always_inline));
@@ -159,7 +159,7 @@ inline void vec_dststt (const vector unsigned int *, int, const int) __attribute
 inline void vec_dststt (const vector signed int *, int, const int) __attribute__ ((always_inline));
 inline void vec_dststt (const vector bool int *, int, const int) __attribute__ ((always_inline));
 inline void vec_dststt (const vector float *, int, const int) __attribute__ ((always_inline));
-inline void vec_dststt (const int *, int, const int) __attribute__ ((always_inline));
+inline void vec_dststt (const unsigned char *, int, const int) __attribute__ ((always_inline));
 inline void vec_dststt (const signed char *, int, const int) __attribute__ ((always_inline));
 inline void vec_dststt (const unsigned short *, int, const int) __attribute__ ((always_inline));
 inline void vec_dststt (const short *, int, const int) __attribute__ ((always_inline));
@@ -180,7 +180,7 @@ inline void vec_dstt (const vector unsigned int *, int, const int) __attribute__
 inline void vec_dstt (const vector signed int *, int, const int) __attribute__ ((always_inline));
 inline void vec_dstt (const vector bool int *, int, const int) __attribute__ ((always_inline));
 inline void vec_dstt (const vector float *, int, const int) __attribute__ ((always_inline));
-inline void vec_dstt (const int *, int, const int) __attribute__ ((always_inline));
+inline void vec_dstt (const unsigned char *, int, const int) __attribute__ ((always_inline));
 inline void vec_dstt (const signed char *, int, const int) __attribute__ ((always_inline));
 inline void vec_dstt (const unsigned short *, int, const int) __attribute__ ((always_inline));
 inline void vec_dstt (const short *, int, const int) __attribute__ ((always_inline));
@@ -195,15 +195,20 @@ inline vector signed int vec_sld (vector signed int, vector signed int, const in
 inline vector unsigned int vec_sld (vector unsigned int, vector unsigned int, const int) __attribute__ ((always_inline));
 inline vector signed short vec_sld (vector signed short, vector signed short, const int) __attribute__ ((always_inline));
 inline vector unsigned short vec_sld (vector unsigned short, vector unsigned short, const int) __attribute__ ((always_inline));
+inline vector pixel vec_sld (vector pixel, vector pixel, const int) __attribute__ ((always_inline));
 inline vector signed char vec_sld (vector signed char, vector signed char, const int) __attribute__ ((always_inline));
 inline vector unsigned char vec_sld (vector unsigned char, vector unsigned char, const int) __attribute__ ((always_inline));
 inline vector signed char vec_splat (vector signed char, const int) __attribute__ ((always_inline));
 inline vector unsigned char vec_splat (vector unsigned char, const int) __attribute__ ((always_inline));
+inline vector bool char vec_splat (vector bool char, const int) __attribute__ ((always_inline));
 inline vector signed short vec_splat (vector signed short, const int) __attribute__ ((always_inline));
 inline vector unsigned short vec_splat (vector unsigned short, const int) __attribute__ ((always_inline));
+inline vector bool short vec_splat (vector bool short, const int) __attribute__ ((always_inline));
+inline vector pixel vec_splat (vector pixel, const int) __attribute__ ((always_inline));
 inline vector float vec_splat (vector float, const int) __attribute__ ((always_inline));
 inline vector signed int vec_splat (vector signed int, const int) __attribute__ ((always_inline));
 inline vector unsigned int vec_splat (vector unsigned int, const int) __attribute__ ((always_inline));
+inline vector bool int vec_splat (vector bool int, const int) __attribute__ ((always_inline));
 inline vector signed char vec_splat_s8 (const int) __attribute__ ((always_inline));
 inline vector signed short vec_splat_s16 (const int) __attribute__ ((always_inline));
 inline vector signed int vec_splat_s32 (const int) __attribute__ ((always_inline));

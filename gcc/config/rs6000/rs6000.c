@@ -6004,6 +6004,7 @@ altivec_expand_dst_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 	    || arg2 == error_mark_node)
 	  return const0_rtx;
 
+	*expandedp = true;
 	STRIP_NOPS (arg2);
 	if (TREE_CODE (arg2) != INTEGER_CST
 	    || TREE_INT_CST_LOW (arg2) & ~0x3)
@@ -6021,7 +6022,6 @@ altivec_expand_dst_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 	if (pat != 0)
 	  emit_insn (pat);
 
-	*expandedp = true;
 	return NULL_RTX;
       }
 
