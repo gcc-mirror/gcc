@@ -1,3 +1,24 @@
+2001-08-27  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (mask_operand): Rewrite without
+	bit-shifting loop.
+	(mask64_operand): Likewise.
+	(rldic_operand): Delete.
+	(includes_lshift64_p): Delete.
+	(includes_rldic_lshift_p): New function.
+	(includes_rldicr_lshift_p): New function.
+	(print_operand): Don't call rldic_operand in case 'W'.
+	* config/rs6000/rs6000-protos.h (rldic_operand): Remove.
+	(includes_lshift64_p): Remove.
+	(includes_rldic_lshift_p): Declare.
+	(includes_rldicr_lshift_p): Declare.
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Remove rldic_operand.
+	* config/rs6000/rs6000.md <ashldi3_internal 64 bit patterns>:
+	Replace match_operand rldic_operand predicate with
+	const_int_operand.  Replace includes_lshift64_p condition with
+	includes_rldic_lshift_p.
+	<ashldi3_internal 64 bit rldicr patterns>: New.
+
 2001-08-27  Andreas Jaeger  <aj@suse.de>
 
 	* emit-rtl.c: Use VA_OPEN/VA_CLOSE/VA_FIXEDARG throughout.
