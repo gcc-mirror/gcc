@@ -3991,7 +3991,7 @@
 
 (define_insn "*return_internal"
   [(return)]
-  ""
+  "reload_completed"
   "ret $31,($26),1"
   [(set_attr "type" "ibr")])
 
