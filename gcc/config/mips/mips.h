@@ -227,6 +227,183 @@ extern char	       *mktemp ();
 #endif
 
 
+/* Run-time compilation parameters selecting different hardware subsets.  */
+
+/* Macros used in the machine description to test the flags.  */
+
+					/* Bits for real switches */
+#define MASK_INT64	0x00000001	/* ints are 64 bits */
+#define MASK_LONG64	0x00000002	/* longs are 64 bits */
+#define MASK_LLONG128	0x00000004	/* long longs are 128 bits */
+#define MASK_GPOPT	0x00000008	/* Optimize for global pointer */
+#define MASK_GAS	0x00000010	/* Gas used instead of MIPS as */
+#define MASK_NAME_REGS	0x00000020	/* Use MIPS s/w reg name convention */
+#define MASK_STATS	0x00000040	/* print statistics to stderr */
+#define MASK_MEMCPY	0x00000080	/* call memcpy instead of inline code*/
+#define MASK_SOFT_FLOAT	0x00000100	/* software floating point */
+#define MASK_FLOAT64	0x00000200	/* fp registers are 64 bits */
+#define MASK_ABICALLS	0x00000400	/* emit .abicalls/.cprestore/.cpload */
+#define MASK_HALF_PIC	0x00000800	/* Emit OSF-style pic refs to externs*/
+#define MASK_LONG_CALLS	0x00001000	/* Always call through a register */
+#define MASK_UNUSED1	0x00002000
+#define MASK_UNUSED2	0x00004000
+#define MASK_UNUSED3	0x00008000
+#define MASK_UNUSED4	0x00010000
+#define MASK_UNUSED5	0x00020000
+#define MASK_UNUSED6	0x00040000
+#define MASK_UNUSED7	0x00080000
+
+					/* Dummy switches used only in spec's*/
+#define MASK_MIPS_TFILE	0x00000000	/* flag for mips-tfile usage */
+
+					/* Debug switches, not documented */
+#define MASK_DEBUG	0x40000000	/* Eliminate version # in .s file */
+#define MASK_DEBUG_A	0x20000000	/* don't allow <label>($reg) addrs */
+#define MASK_DEBUG_B	0x10000000	/* GO_IF_LEGITIMATE_ADDRESS debug */
+#define MASK_DEBUG_C	0x08000000	/* don't expand seq, etc. */
+#define MASK_DEBUG_D	0x04000000	/* don't do define_split's */
+#define MASK_DEBUG_E	0x02000000	/* function_arg debug */
+#define MASK_DEBUG_F	0x01000000	/* don't try to suppress load nop's */
+#define MASK_DEBUG_G	0x00800000	/* don't support 64 bit arithmetic */
+#define MASK_DEBUG_H	0x00400000	/* allow ints in FP registers */
+#define MASK_DEBUG_I	0x00200000	/* unused */
+#define MASK_DEBUG_J	0x00100000	/* unused */
+
+					/* r4000 64 bit sizes */
+#define TARGET_INT64		(target_flags & MASK_INT64)
+#define TARGET_LONG64		(target_flags & MASK_LONG64)
+#define TARGET_LLONG128		(target_flags & MASK_LLONG128)
+#define TARGET_FLOAT64		(target_flags & MASK_FLOAT64)
+
+					/* Mips vs. GNU assembler */
+#define TARGET_GAS		(target_flags & MASK_GAS)
+#define TARGET_UNIX_ASM		(!TARGET_GAS)
+#define TARGET_MIPS_AS		TARGET_UNIX_ASM
+
+					/* Debug Mode */
+#define TARGET_DEBUG_MODE	(target_flags & MASK_DEBUG)
+#define TARGET_DEBUG_A_MODE	(target_flags & MASK_DEBUG_A)
+#define TARGET_DEBUG_B_MODE	(target_flags & MASK_DEBUG_B)
+#define TARGET_DEBUG_C_MODE	(target_flags & MASK_DEBUG_C)
+#define TARGET_DEBUG_D_MODE	(target_flags & MASK_DEBUG_D)
+#define TARGET_DEBUG_E_MODE	(target_flags & MASK_DEBUG_E)
+#define TARGET_DEBUG_F_MODE	(target_flags & MASK_DEBUG_F)
+#define TARGET_DEBUG_G_MODE	(target_flags & MASK_DEBUG_G)
+#define TARGET_DEBUG_H_MODE	(target_flags & MASK_DEBUG_H)
+#define TARGET_DEBUG_I_MODE	(target_flags & MASK_DEBUG_I)
+#define TARGET_DEBUG_J_MODE	(target_flags & MASK_DEBUG_J)
+
+					/* Reg. Naming in .s ($21 vs. $a0) */
+#define TARGET_NAME_REGS	(target_flags & MASK_NAME_REGS)
+
+					/* Optimize for Sdata/Sbss */
+#define TARGET_GP_OPT		(target_flags & MASK_GPOPT)
+
+					/* print program statistics */
+#define TARGET_STATS		(target_flags & MASK_STATS)
+
+					/* call memcpy instead of inline code */
+#define TARGET_MEMCPY		(target_flags & MASK_MEMCPY)
+
+					/* .abicalls, etc from Pyramid V.4 */
+#define TARGET_ABICALLS		(target_flags & MASK_ABICALLS)
+
+					/* OSF pic references to externs */
+#define TARGET_HALF_PIC		(target_flags & MASK_HALF_PIC)
+
+					/* software floating point */
+#define TARGET_SOFT_FLOAT	(target_flags & MASK_SOFT_FLOAT)
+#define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
+
+					/* always call through a register */
+#define TARGET_LONG_CALLS	(target_flags & MASK_LONG_CALLS)
+
+/* Macro to define tables used to set the flags.
+   This is a list in braces of pairs in braces,
+   each pair being { "NAME", VALUE }
+   where VALUE is the bits to set or minus the bits to clear.
+   An empty string NAME is used to identify the default VALUE.  */
+
+#define TARGET_SWITCHES							\
+{									\
+  {"int64",		  MASK_INT64 | MASK_LONG64},			\
+  {"long64",		  MASK_LONG64},					\
+  {"longlong128",	  MASK_INT64 | MASK_LONG64 | MASK_LLONG128},	\
+  {"mips-as",		 -MASK_GAS},					\
+  {"gas",		  MASK_GAS},					\
+  {"rnames",		  MASK_NAME_REGS},				\
+  {"no-rnames",		 -MASK_NAME_REGS},				\
+  {"gpOPT",		  MASK_GPOPT},					\
+  {"gpopt",		  MASK_GPOPT},					\
+  {"no-gpOPT",		 -MASK_GPOPT},					\
+  {"no-gpopt",		 -MASK_GPOPT},					\
+  {"stats",		  MASK_STATS},					\
+  {"no-stats",		 -MASK_STATS},					\
+  {"memcpy",		  MASK_MEMCPY},					\
+  {"no-memcpy",		 -MASK_MEMCPY},					\
+  {"mips-tfile",	  MASK_MIPS_TFILE},				\
+  {"no-mips-tfile",	 -MASK_MIPS_TFILE},				\
+  {"soft-float",	  MASK_SOFT_FLOAT},				\
+  {"hard-float",	 -MASK_SOFT_FLOAT},				\
+  {"fp64",		  MASK_FLOAT64},				\
+  {"fp32",		 -MASK_FLOAT64},				\
+  {"abicalls",		  MASK_ABICALLS},				\
+  {"no-abicalls",	 -MASK_ABICALLS},				\
+  {"half-pic",		  MASK_HALF_PIC},				\
+  {"no-half-pic",	 -MASK_HALF_PIC},				\
+  {"long-calls",	  MASK_LONG_CALLS},				\
+  {"no-long-calls",	 -MASK_LONG_CALLS},				\
+  {"debug",		  MASK_DEBUG},					\
+  {"debuga",		  MASK_DEBUG_A},				\
+  {"debugb",		  MASK_DEBUG_B},				\
+  {"debugc",		  MASK_DEBUG_C},				\
+  {"debugd",		  MASK_DEBUG_D},				\
+  {"debuge",		  MASK_DEBUG_E},				\
+  {"debugf",		  MASK_DEBUG_F},				\
+  {"debugg",		  MASK_DEBUG_G},				\
+  {"debugh",		  MASK_DEBUG_H},				\
+  {"debugi",		  MASK_DEBUG_I},				\
+  {"debugj",		  MASK_DEBUG_J},				\
+  {"",			  TARGET_DEFAULT}				\
+}
+
+/* Default target_flags if no switches are specified  */
+
+#ifndef TARGET_DEFAULT
+#define TARGET_DEFAULT 0
+#endif
+
+/* This macro is similar to `TARGET_SWITCHES' but defines names of
+   command options that have values.  Its definition is an
+   initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   fixed part of the option name, and the address of a variable. 
+   The variable, type `char *', is set to the variable part of the
+   given option if the fixed part matches.  The actual option name
+   is made by appending `-m' to the specified name.
+
+   Here is an example which defines `-mshort-data-NUMBER'.  If the
+   given option is `-mshort-data-512', the variable `m88k_short_data'
+   will be set to the string `"512"'.
+
+	extern char *m88k_short_data;
+	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
+
+#define TARGET_OPTIONS							\
+{									\
+  { "cpu=",	&mips_cpu_string	},				\
+  { "ips",	&mips_isa_string	}				\
+}
+
+/* Macros to decide whether certain features are available or not,
+   depending on the instruction set architecture level.  */
+
+#define BRANCH_LIKELY_P()	(mips_isa >= 2)
+#define HAVE_64BIT_P()		(mips_isa >= 3)
+#define HAVE_SQRT_P()		(mips_isa >= 2)
+
+
 /* Switch  Recognition by gcc.c.  Add -G xx support */
 
 #ifdef SWITCH_TAKES_ARG
@@ -381,7 +558,17 @@ while (0)
    -mmips-tfile.  */
 
 #ifndef ASM_FINAL_SPEC
-#ifndef CROSS_COMPILE
+#if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GAS) != 0 || defined (CROSS_COMPILE)
+				/* GAS */
+#define ASM_FINAL_SPEC "\
+%{mmips-as: %{!mno-mips-tfile: \
+	\n mips-tfile %{v*: -v} \
+		%{K: -I %b.o~} \
+		%{!K: %{save-temps: -I %b.o~}} \
+		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
+		%{.s:%i} %{!.s:%g.s}}}"
+
+#else				/* not GAS, clean up after MIPS assembler */
 #define ASM_FINAL_SPEC "\
 %{!mgas: %{!mno-mips-tfile: \
 	\n mips-tfile %{v*: -v} \
@@ -390,16 +577,7 @@ while (0)
 		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
 		%{.s:%i} %{!.s:%g.s}}}"
 
-#else				/* CROSS_COMPILE */
-#define ASM_FINAL_SPEC "\
-%{!mgas: %{mmips-tfile: \
-	\n mips-tfile %{v*: -v} \
-		%{K: -I %b.o~} \
-		%{!K: %{save-temps: -I %b.o~}} \
-		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
-		%{.s:%i} %{!.s:%g.s}}}"
-
-#endif	/* CROSS_COMPILE */
+#endif	/* GAS */
 #endif	/* ASM_FINAL_SPEC */
 
 /* Redefinition of libraries used.  Mips doesn't support normal
@@ -463,7 +641,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 35]"
+#define MIPS_VERSION "[AL 1.1, MM 36]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -664,183 +842,6 @@ do {							\
 
 #define ASM_OUTPUT_CONSTRUCTOR(file, name)
 #define ASM_OUTPUT_DESTRUCTOR(file, name)
-
-
-/* Run-time compilation parameters selecting different hardware subsets.  */
-
-/* Macros used in the machine description to test the flags.  */
-
-					/* Bits for real switches */
-#define MASK_INT64	0x00000001	/* ints are 64 bits */
-#define MASK_LONG64	0x00000002	/* longs are 64 bits */
-#define MASK_LLONG128	0x00000004	/* long longs are 128 bits */
-#define MASK_GPOPT	0x00000008	/* Optimize for global pointer */
-#define MASK_GAS	0x00000010	/* Gas used instead of MIPS as */
-#define MASK_NAME_REGS	0x00000020	/* Use MIPS s/w reg name convention */
-#define MASK_STATS	0x00000040	/* print statistics to stderr */
-#define MASK_MEMCPY	0x00000080	/* call memcpy instead of inline code*/
-#define MASK_SOFT_FLOAT	0x00000100	/* software floating point */
-#define MASK_FLOAT64	0x00000200	/* fp registers are 64 bits */
-#define MASK_ABICALLS	0x00000400	/* emit .abicalls/.cprestore/.cpload */
-#define MASK_HALF_PIC	0x00000800	/* Emit OSF-style pic refs to externs*/
-#define MASK_LONG_CALLS	0x00001000	/* Always call through a register */
-#define MASK_UNUSED1	0x00002000
-#define MASK_UNUSED2	0x00004000
-#define MASK_UNUSED3	0x00008000
-#define MASK_UNUSED4	0x00010000
-#define MASK_UNUSED5	0x00020000
-#define MASK_UNUSED6	0x00040000
-#define MASK_UNUSED7	0x00080000
-
-					/* Dummy switches used only in spec's*/
-#define MASK_MIPS_TFILE	0x00000000	/* flag for mips-tfile usage */
-
-					/* Debug switches, not documented */
-#define MASK_DEBUG	0x40000000	/* Eliminate version # in .s file */
-#define MASK_DEBUG_A	0x20000000	/* don't allow <label>($reg) addrs */
-#define MASK_DEBUG_B	0x10000000	/* GO_IF_LEGITIMATE_ADDRESS debug */
-#define MASK_DEBUG_C	0x08000000	/* don't expand seq, etc. */
-#define MASK_DEBUG_D	0x04000000	/* don't do define_split's */
-#define MASK_DEBUG_E	0x02000000	/* function_arg debug */
-#define MASK_DEBUG_F	0x01000000	/* don't try to suppress load nop's */
-#define MASK_DEBUG_G	0x00800000	/* don't support 64 bit arithmetic */
-#define MASK_DEBUG_H	0x00400000	/* allow ints in FP registers */
-#define MASK_DEBUG_I	0x00200000	/* unused */
-#define MASK_DEBUG_J	0x00100000	/* unused */
-
-					/* r4000 64 bit sizes */
-#define TARGET_INT64		(target_flags & MASK_INT64)
-#define TARGET_LONG64		(target_flags & MASK_LONG64)
-#define TARGET_LLONG128		(target_flags & MASK_LLONG128)
-#define TARGET_FLOAT64		(target_flags & MASK_FLOAT64)
-
-					/* Mips vs. GNU assembler */
-#define TARGET_GAS		(target_flags & MASK_GAS)
-#define TARGET_UNIX_ASM		(!TARGET_GAS)
-#define TARGET_MIPS_AS		TARGET_UNIX_ASM
-
-					/* Debug Mode */
-#define TARGET_DEBUG_MODE	(target_flags & MASK_DEBUG)
-#define TARGET_DEBUG_A_MODE	(target_flags & MASK_DEBUG_A)
-#define TARGET_DEBUG_B_MODE	(target_flags & MASK_DEBUG_B)
-#define TARGET_DEBUG_C_MODE	(target_flags & MASK_DEBUG_C)
-#define TARGET_DEBUG_D_MODE	(target_flags & MASK_DEBUG_D)
-#define TARGET_DEBUG_E_MODE	(target_flags & MASK_DEBUG_E)
-#define TARGET_DEBUG_F_MODE	(target_flags & MASK_DEBUG_F)
-#define TARGET_DEBUG_G_MODE	(target_flags & MASK_DEBUG_G)
-#define TARGET_DEBUG_H_MODE	(target_flags & MASK_DEBUG_H)
-#define TARGET_DEBUG_I_MODE	(target_flags & MASK_DEBUG_I)
-#define TARGET_DEBUG_J_MODE	(target_flags & MASK_DEBUG_J)
-
-					/* Reg. Naming in .s ($21 vs. $a0) */
-#define TARGET_NAME_REGS	(target_flags & MASK_NAME_REGS)
-
-					/* Optimize for Sdata/Sbss */
-#define TARGET_GP_OPT		(target_flags & MASK_GPOPT)
-
-					/* print program statistics */
-#define TARGET_STATS		(target_flags & MASK_STATS)
-
-					/* call memcpy instead of inline code */
-#define TARGET_MEMCPY		(target_flags & MASK_MEMCPY)
-
-					/* .abicalls, etc from Pyramid V.4 */
-#define TARGET_ABICALLS		(target_flags & MASK_ABICALLS)
-
-					/* OSF pic references to externs */
-#define TARGET_HALF_PIC		(target_flags & MASK_HALF_PIC)
-
-					/* software floating point */
-#define TARGET_SOFT_FLOAT	(target_flags & MASK_SOFT_FLOAT)
-#define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
-
-					/* always call through a register */
-#define TARGET_LONG_CALLS	(target_flags & MASK_LONG_CALLS)
-
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
-
-#define TARGET_SWITCHES							\
-{									\
-  {"int64",		  MASK_INT64 | MASK_LONG64},			\
-  {"long64",		  MASK_LONG64},					\
-  {"longlong128",	  MASK_INT64 | MASK_LONG64 | MASK_LLONG128},	\
-  {"mips-as",		 -MASK_GAS},					\
-  {"gas",		  MASK_GAS},					\
-  {"rnames",		  MASK_NAME_REGS},				\
-  {"no-rnames",		 -MASK_NAME_REGS},				\
-  {"gpOPT",		  MASK_GPOPT},					\
-  {"gpopt",		  MASK_GPOPT},					\
-  {"no-gpOPT",		 -MASK_GPOPT},					\
-  {"no-gpopt",		 -MASK_GPOPT},					\
-  {"stats",		  MASK_STATS},					\
-  {"no-stats",		 -MASK_STATS},					\
-  {"memcpy",		  MASK_MEMCPY},					\
-  {"no-memcpy",		 -MASK_MEMCPY},					\
-  {"mips-tfile",	  MASK_MIPS_TFILE},				\
-  {"no-mips-tfile",	 -MASK_MIPS_TFILE},				\
-  {"soft-float",	  MASK_SOFT_FLOAT},				\
-  {"hard-float",	 -MASK_SOFT_FLOAT},				\
-  {"fp64",		  MASK_FLOAT64},				\
-  {"fp32",		 -MASK_FLOAT64},				\
-  {"abicalls",		  MASK_ABICALLS},				\
-  {"no-abicalls",	 -MASK_ABICALLS},				\
-  {"half-pic",		  MASK_HALF_PIC},				\
-  {"no-half-pic",	 -MASK_HALF_PIC},				\
-  {"long-calls",	  MASK_LONG_CALLS},				\
-  {"no-long-calls",	 -MASK_LONG_CALLS},				\
-  {"debug",		  MASK_DEBUG},					\
-  {"debuga",		  MASK_DEBUG_A},				\
-  {"debugb",		  MASK_DEBUG_B},				\
-  {"debugc",		  MASK_DEBUG_C},				\
-  {"debugd",		  MASK_DEBUG_D},				\
-  {"debuge",		  MASK_DEBUG_E},				\
-  {"debugf",		  MASK_DEBUG_F},				\
-  {"debugg",		  MASK_DEBUG_G},				\
-  {"debugh",		  MASK_DEBUG_H},				\
-  {"debugi",		  MASK_DEBUG_I},				\
-  {"debugj",		  MASK_DEBUG_J},				\
-  {"",			  TARGET_DEFAULT}				\
-}
-
-/* Default target_flags if no switches are specified  */
-
-#ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 0
-#endif
-
-/* This macro is similar to `TARGET_SWITCHES' but defines names of
-   command options that have values.  Its definition is an
-   initializer with a subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the
-   fixed part of the option name, and the address of a variable. 
-   The variable, type `char *', is set to the variable part of the
-   given option if the fixed part matches.  The actual option name
-   is made by appending `-m' to the specified name.
-
-   Here is an example which defines `-mshort-data-NUMBER'.  If the
-   given option is `-mshort-data-512', the variable `m88k_short_data'
-   will be set to the string `"512"'.
-
-	extern char *m88k_short_data;
-	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
-
-#define TARGET_OPTIONS							\
-{									\
-  { "cpu=",	&mips_cpu_string	},				\
-  { "ips",	&mips_isa_string	}				\
-}
-
-/* Macros to decide whether certain features are available or not,
-   depending on the instruction set architecture level.  */
-
-#define BRANCH_LIKELY_P()	(mips_isa >= 2)
-#define HAVE_64BIT_P()		(mips_isa >= 3)
-#define HAVE_SQRT_P()		(mips_isa >= 2)
 
 
 /* Target machine storage layout */
