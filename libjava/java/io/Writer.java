@@ -1,5 +1,5 @@
 /* Writer.java -- Base class for character output streams
-   Copyright (C) 1998, 1999, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -76,10 +76,13 @@ public abstract class Writer
    * on the specified <code>Object</code>.
    *
    * @param lock The <code>Object</code> to use for synchronizing critical
-   *             sections
+   *             sections. Must be not be null.
    */
   protected Writer(Object lock)
   {
+    if (lock == null)
+      throw new NullPointerException();
+
     this.lock = lock;
   }
 
