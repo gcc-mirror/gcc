@@ -402,7 +402,7 @@ while (0)
 	\n mips-tfile %{v*: -v} \
 		%{K: -I %b.o~} \
 		%{!K: %{save-temps: -I %b.o~}} \
-		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %b.o} \
+		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %g.o} \
 		%{.s:%i} %{!.s:%g.s}}}"
 #endif
 

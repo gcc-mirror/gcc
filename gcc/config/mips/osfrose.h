@@ -45,7 +45,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	\n mips-tfile %{v*: -v} %{d*} \
 			%{K: -I %b.o~} \
 			%{!K: %{save-temps: -I %b.o~}} \
-			%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %b.o} \
+			%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %g.o} \
 			%{.s:%i} %{!.s:%g.s}}}"
 
 #define CPP_SPEC "\
