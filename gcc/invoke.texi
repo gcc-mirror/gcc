@@ -2469,7 +2469,7 @@ default.
 @item -funroll-loops
 Perform the optimization of loop unrolling.  This is only done for loops
 whose number of iterations can be determined at compile time or run time.
-@samp{-funroll-loop} implies both @samp{-fstrength-reduce} and
+@samp{-funroll-loops} implies both @samp{-fstrength-reduce} and
 @samp{-frerun-cse-after-loop}.
 
 @item -funroll-all-loops
@@ -2486,7 +2486,7 @@ Forces all general-induction variables in loops to be
 strength-reduced.
 
 @emph{Note:} When compiling programs written in Fortran,
-@samp{-fmove-all-moveables} and @samp{-freduce-all-givs} are enabled
+@samp{-fmove-all-movables} and @samp{-freduce-all-givs} are enabled
 by default when you use the optimizer.
 
 These options may generate better or worse code; results are highly
