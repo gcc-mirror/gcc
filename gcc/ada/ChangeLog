@@ -1,5 +1,9 @@
 2001-10-08  Geert Bosch  (bosch@gnat.com)
 
+	* 5oosinte.adb: Add 2001 to copyright notice.
+
+2001-10-08  Geert Bosch  (bosch@gnat.com)
+
 	* ceinfo.adb: Add utility for consistency checking of einfo.ad[bs].
 
 	* csinfo.adb: Add utility for consistency checking of sinfo.ad[bs].
