@@ -1,5 +1,16 @@
 2003-06-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/InetSocketAddress.java
+	(InetSocketAddress): Use wildcard address if addr is null.
+	(InetSocketAddress): Dont duplicate implementation.
+	(InetSocketAddress): Throw exception when hostname is null.
+	* java/net/Socket.java:
+	Reworked imports.
+	(Socket): Throw exception when raddr is null, handle case when laddr
+	is null.
+
+2003-06-17  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/DirectByteBufferImpl.java
 	(address): Made package private.
 	(DirectByteBufferImpl): New constructor.
