@@ -266,7 +266,7 @@ static GTY(()) struct c_scope *current_function_scope;
 
 static GTY(()) struct c_scope *global_scope;
 
-/* Append VAR to LIST in scope SCOPE.  */		\
+/* Append VAR to LIST in scope SCOPE.  */
 #define SCOPE_LIST_APPEND(scope, list, decl) do {	\
   struct c_scope *s_ = (scope);				\
   tree d_ = (decl);					\

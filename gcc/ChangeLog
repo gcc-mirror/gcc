@@ -1,3 +1,7 @@
+2003-08-09  Per Bothner  <per@bothner.com>
+
+	* c-decl.c (SCOPE_LIST_APPEND):  Remove bogus line continuation.
+
 2003-08-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_asm_output_mi_thunk): Fix typo.
