@@ -115,7 +115,8 @@ decode (shorts, low, hi)
    by setting to 0 or 1 all the bits in the constant
    that don't belong in the type.
    Yield 1 if a signed overflow occurs, 0 otherwise.
-   If OVERFLOW is nonzero, a signed overflow has already occurred.  */
+   If OVERFLOW is nonzero, a signed overflow has already occurred
+   in calculating T, so propagate it.  */
 
 int
 force_fit_type (t, overflow)
