@@ -56,6 +56,8 @@ i386_pe_valid_decl_attribute_p (decl, attributes, attr, args)
 	return 1;
       if (is_attribute_p ("dllimport", attr))
 	return 1;
+      if (is_attribute_p ("shared", attr))
+	return TREE_CODE (decl) == VAR_DECL;
     }
 
   return ix86_valid_decl_attribute_p (decl, attributes, attr, args);
