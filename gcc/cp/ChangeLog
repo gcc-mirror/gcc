@@ -1,3 +1,123 @@
+1999-04-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* tinfo.h (__class_type_info): Fix illegal declaration.
+	
+	* cp-tree.def (TEMPLATE_ID_EXPR): Update comment.
+	* cp-tree.h (INHERITED_VALUE_BINDING_P): New macro.
+	(IDENTIFIER_CLASS_VALUE): Improve documentation.
+	(is_properly_derived_from): Declare.
+	(invalidate_class_lookup_cache): Likewise.
+	(maybe_maybe_note_name_used_in_class): Likewise.
+	(note_name_declared_in_class): Likewise.
+	(push_using_decl): Remove duplicate declaration.
+	(id_in_current_class): Remove declaration.
+	(push_class_binding): Change prototype.
+	(clear_identitifer_class_values): Declare.
+	* call.c (is_properly_derived_from): Make it global.
+	(build_new_function_call): Be careful about updating candidates.
+	(build_new_method_call): Handle COMPONENT_REFs.  Don't crash when
+	asked to make illegal calls.
+	* class.c: Include splay-tree.h.
+	(class_stack_node): Add names_used slot.
+	(check_member_decl_is_same_in_complete_scope): Remove.
+	(add_method): Fix comment.  Push the declaration into class
+	scope.
+	(finish_struct_1): When popping the class, pop the bindings too.
+	Remove check for data member/function member conflict.
+	(finish_struct): Remove calls to
+	check_member_decl_is_same_in_complete_scope.  Change calls to
+	popclass.
+	(pushclass): Clear names_used in the class stack entry.
+	Use invalidate_class_lookup_cache to remove cached entries, rather
+	than magic values with popclass.  Clear IDENTIFIER_CLASS_VALUE
+	before entering a new class.  Remove dead code.  Don't mess with
+	current_function_decl when pushing declarations.
+	(invalidate_class_lookup_cache): New function, split out from ...
+	(popclass): Here.  Clean up names_used on our way out.
+	(instantiate_type): Adjust.
+	(build_self_reference): Don't push the declaration here.
+	(maybe_note_name_used_in_class): New function.
+	(note_name_declared_in_class): Likewise.
+	* decl.c (add_binding): Change prototype.
+	(find_class_binding_level): New function.
+	(innermost_nonclass_level): Likewise.
+	(current_binding_level): Update documentation.
+	(inner_binding_level): Remove.  Replace with current_binding_level
+	throughout.
+	(push_binding_level): Remove special handling of
+	class_binding_level.
+	(pop_binding_level): Likewise.  Use find_class_binding_level.
+	(suspend_binding_level): Likewise.
+	(global_bindings_p): Use innermost_nonclass_level.
+	(toplevel_bindings_p): Likewise.
+	(namespace_bindings_p): Likewise.
+	(pseudo_global_level_p): Likewise.
+	(push_binding): Clear INHERITED_VALUE_BINDING_P.
+	(add_binding): Check for illegal multiple declarations.  Return a
+	value indicating whether or not the new binding was legal.
+	(push_local_binding): Skip over class binding levels.  Check
+	return value from add_binding.
+	(push_class_binding): Set INHERITED_VALUE_BINDING_P.  Call
+	note_name_declared_in_class.
+	(pushlevel_class): Remove "fake out the rest of the compiler"
+	code.
+	(poplevel_class): Reset IDENTIFIER_CLASS_VALUEs.
+	(clear_identifier_class_values): New function.
+	(pop_from_top_level): Use it.
+	(pop_everything): Tweak.
+	(maybe_process_template_type_declaration): Don't push the
+	declaration for the template here.
+	(pushtag): Don't push tag declarations into class scope here.
+	(pushdecl): Apply DeMorgan's law for readability.
+	(pushdecl_class_level): Remove special-case code for
+	TYPE_BEING_DEFINED.  Handle OVERLOADs and anonymous unions.
+	(push_class_level_bindng): Deal with inherited bindings.
+	(lookup_name_real): Remove special-case code for
+	TYPE_BEING_DEFINED, and some implicit typename magic.
+	(grokdeclarator): Handle COMPONENT_REF for a template function.
+	(build_enumerator): Don't call pushdecl_class_level here.
+	(id_in_current_class): Remove.
+	* decl2.c (grokfield): Don't call pushdecl_class_level or
+	check_template_shadow.
+	* errfn.c (cp_file_of): Don't declare.
+	(cp_line_of): Likewise.
+	* error.c (dump_decl): Handle an OVERLOAD.
+	(cp_file_of): Likewise.
+	(cp_line_of): Likewise.
+	* init.c (build_member_call): Handle a COMPONENT_REF.
+	* lex.c (do_identifier): Call maybe_note_name_used_in_class, not
+	pushdecl_class_level.
+	* method.c (hack_identifier): Build COMPONENT_REFs for references
+	to member templates as well as member functions.  Remove dead
+	code.
+	* parse.y (left_curly): Remove.
+	(nonnested_type): Call maybe_note_name_used_in_class, not
+	pushdecl_class_level.
+	* parse.c: Regenerated.
+	(nested_name_specifier_1): Likewise.
+	* pt.c (check_explicit_specialization): Adjust, for robustness.
+	(check_template_shadow): Handle OVERLOADs.
+	(build_template_decl): Set DECL_CONSTRUCTOR_P on the
+	TEMPLATE_DECL, if appropriate.
+	* search.c (envelope_add_decl): Remove.
+	(dfs_pushdecls): Likewise.
+	(dfs_compress_decls): Likewise.
+	(dfs_push_decls): New function.
+	(dfs_push_type_decls): Likewise.
+	(setup_class_bindings): Likewise.
+	(template_self_reference_p): Likewise.
+	(lookup_field_r): Use it.
+	(looup_member): Remove old comment.  Deal with ambiguity.
+	(push_class_decls): Use dfs_push_decls and dfs_push_type_decls,
+	and remove envelope processing.
+	* semantics.c (begin_class_definition): Let pushclass push
+	declarations for base classes.
+	(finish_member_declaration): Push declarations into class scope.
+	* typeck.c (build_component_ref): Just put an OVERLOAD into the
+	COMPONENT_REF, not a TREE_LIST of an OVERLOAD.
+	(build_x_function_call): Deal with OVERLOAD.  Handle template-ids.
+	* Makefile.in (class.o): Depend on splay-tree.h.
+	
 Wed Mar 31 11:30:43 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* cvt.c (convert_pointer_to_real): Use same_type_p.

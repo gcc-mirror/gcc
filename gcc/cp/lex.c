@@ -2878,15 +2878,13 @@ do_identifier (token, parsing, args)
 
   /* Remember that this name has been used in the class definition, as per
      [class.scope0] */
-  if (id && current_class_type && parsing
-      && TYPE_BEING_DEFINED (current_class_type)
-      && ! IDENTIFIER_CLASS_VALUE (token)
+  if (id && parsing
       /* Avoid breaking if we get called for a default argument that
 	 refers to an overloaded method.  Eventually this will not be
 	 necessary, since default arguments shouldn't be parsed until
 	 after the class is complete.  (jason 3/12/97) */
       && TREE_CODE (id) != OVERLOAD)
-    pushdecl_class_level (id);
+    maybe_note_name_used_in_class (token, id);
 
   if (id == error_mark_node)
     {

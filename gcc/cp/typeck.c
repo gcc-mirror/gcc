@@ -2191,7 +2191,7 @@ build_component_ref (datum, component, basetype_path, protect)
 		}
 
 	      ref = build (COMPONENT_REF, unknown_type_node,
-			   datum, fndecls);
+			   datum, TREE_VALUE (fndecls));
 	      return ref;
 	    }
 
@@ -2616,6 +2616,8 @@ build_x_function_call (function, params, decl)
 		&& current_class_type != NULL_TREE
 		&& (IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (function))
 		    == function))
+	       || (TREE_CODE (function) == OVERLOAD
+		   && DECL_FUNCTION_MEMBER_P (OVL_CURRENT (function)))
 	       || TREE_CODE (function) == IDENTIFIER_NODE
 	       || TREE_CODE (type) == METHOD_TYPE
 	       || TYPE_PTRMEMFUNC_P (type));
@@ -2628,6 +2630,9 @@ build_x_function_call (function, params, decl)
   if (is_method)
     {
       tree basetype = NULL_TREE;
+
+      if (TREE_CODE (function) == OVERLOAD)
+	function = OVL_CURRENT (function);
 
       if (TREE_CODE (function) == FUNCTION_DECL
 	  || DECL_FUNCTION_TEMPLATE_P (function))
@@ -2700,7 +2705,14 @@ build_x_function_call (function, params, decl)
       /* Undo what we did in build_component_ref.  */
       decl = TREE_OPERAND (function, 0);
       function = TREE_OPERAND (function, 1);
-      function = DECL_NAME (OVL_CURRENT (TREE_VALUE (function)));
+      function = DECL_NAME (OVL_CURRENT (function));
+
+      if (template_id)
+	{
+	  TREE_OPERAND (template_id, 0) = function;
+	  function = template_id;
+	}
+
       return build_method_call (decl, function, params,
 				NULL_TREE, LOOKUP_NORMAL);
     }

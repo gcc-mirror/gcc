@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
       (TREE_CALLS_NEW) (in _EXPR or _REF) (commented-out).
       TYPE_USES_COMPLEX_INHERITANCE (in _TYPE).
       C_DECLARED_LABEL_FLAG.
+      INHERITED_VALUE_BINDING_P (in CPLUS_BINDING)
    2: IDENTIFIER_OPNAME_P.
       BINFO_VBASE_MARKED.
       BINFO_FIELDS_MARKED.
@@ -133,6 +134,10 @@ typedef struct ptrmem_cst
 /* Nonzero if this binding is for a local scope, as opposed to a class
    or namespace scope.  */
 #define LOCAL_BINDING_P(NODE) TREE_LANG_FLAG_0(NODE)
+
+/* Nonzero if BINDING_VALUE is from a base class of the class which is
+   currently being defined.  */
+#define INHERITED_VALUE_BINDING_P(NODE) TREE_LANG_FLAG_1(NODE)
 
 /* For a binding between a name and an entity at a non-local scope,
    defines the scope where the binding is declared.  (Either a class
@@ -235,10 +240,10 @@ struct tree_srcloc
    ? BINDING_VALUE (IDENTIFIER_BINDING (NODE))	\
    : NULL_TREE)
 
-/* If we are currently in class scope, then IDENTIFIER_CLASS_VALUE
-   indicates the class-scoped binding of NODE.  This is just a pointer
-   to the BINDING_VALUE of one of the bindings in the
-   IDENTIFIER_BINDINGs list, so any time that this is set so is
+/* If IDENTIFIER_CLASS_VALUE is set, then NODE is bound in the current
+   class, and IDENTIFIER_CLASS_VALUE is the value binding.  This is
+   just a pointer to the BINDING_VALUE of one of the bindings in the
+   IDENTIFIER_BINDINGs list, so any time that this is non-NULL so is
    IDENTIFIER_BINDING.  */
 #define IDENTIFIER_CLASS_VALUE(NODE) \
   (((struct lang_identifier *) (NODE))->class_value)
@@ -2684,6 +2689,7 @@ extern int can_convert_arg			PROTO((tree, tree, tree));
 extern int enforce_access                       PROTO((tree, tree));
 extern tree convert_default_arg                 PROTO((tree, tree, tree));
 extern tree convert_arg_to_ellipsis             PROTO((tree));
+extern int is_properly_derived_from             PROTO((tree, tree));
 
 /* in class.c */
 extern tree build_vbase_path			PROTO((enum tree_code, tree, tree, tree, int));
@@ -2713,6 +2719,9 @@ extern void warn_hidden				PROTO((tree));
 extern tree get_enclosing_class			PROTO((tree));
 int is_base_of_enclosing_class			PROTO((tree, tree));
 extern void unreverse_member_declarations       PROTO((tree));
+extern void invalidate_class_lookup_cache       PROTO((void));
+extern void maybe_note_name_used_in_class       PROTO((tree, tree));
+extern void note_name_declared_in_class         PROTO((tree, tree));
 
 /* in cvt.c */
 extern tree convert_to_reference		PROTO((tree, tree, int, int, tree));
@@ -2776,7 +2785,6 @@ extern tree pushdecl_namespace_level            PROTO((tree));
 extern tree push_using_decl                     PROTO((tree, tree));
 extern tree push_using_directive                PROTO((tree));
 extern void push_class_level_binding		PROTO((tree, tree));
-extern tree push_using_decl                     PROTO((tree, tree));
 extern tree implicitly_declare			PROTO((tree));
 extern tree lookup_label			PROTO((tree));
 extern tree shadow_label			PROTO((tree));
@@ -2845,7 +2853,6 @@ extern tree maybe_build_cleanup_and_delete	PROTO((tree));
 extern tree maybe_build_cleanup			PROTO((tree));
 extern void cplus_expand_expr_stmt		PROTO((tree));
 extern void finish_stmt				PROTO((void));
-extern int id_in_current_class			PROTO((tree));
 extern void push_cp_function_context		PROTO((tree));
 extern void pop_cp_function_context		PROTO((tree));
 extern int in_function_p			PROTO((void));
@@ -2856,9 +2863,10 @@ extern void cat_namespace_levels                PROTO((void));
 extern void fixup_anonymous_union               PROTO((tree));
 extern int check_static_variable_definition     PROTO((tree, tree));
 extern void push_local_binding                  PROTO((tree, tree, int));
-extern void push_class_binding                  PROTO((tree, tree));
+extern int push_class_binding                   PROTO((tree, tree));
 extern tree check_default_argument              PROTO((tree, tree));
 extern tree push_overloaded_decl		PROTO((tree, int));
+extern void clear_identifier_class_values       PROTO((void));
 
 /* in decl2.c */
 extern int check_java_method			PROTO((tree));

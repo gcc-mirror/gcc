@@ -41,8 +41,6 @@ int cp_silent = 0;
 typedef void errorfn ();	/* deliberately vague */
 
 static void cp_thing PROTO ((errorfn *, int, const char *, va_list));
-extern char* cp_file_of PROTO((tree));
-extern int   cp_line_of PROTO((tree));
 
 #define STRDUP(f) (ap = (char *) alloca (strlen (f) +1), strcpy (ap, (f)), ap)
 

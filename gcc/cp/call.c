@@ -87,7 +87,6 @@ static tree strip_top_quals PROTO((tree));
 static tree non_reference PROTO((tree));
 static tree build_conv PROTO((enum tree_code, tree, tree));
 static int is_subseq PROTO((tree, tree));
-static int is_properly_derived_from PROTO((tree, tree));
 static int maybe_handle_ref_bind PROTO((tree*, tree*));
 static void maybe_handle_implicit_object PROTO((tree*));
 static struct z_candidate * add_candidate PROTO((struct z_candidate *,
@@ -2312,6 +2311,8 @@ build_new_function_call (fn, args)
       for (t1 = fn; t1; t1 = OVL_CHAIN (t1))
 	{
 	  tree t = OVL_FUNCTION (t1);
+	  struct z_candidate *old_candidates = candidates;
+
 	  if (TREE_CODE (t) == TEMPLATE_DECL)
 	    {
 	      templates = scratch_tree_cons (NULL_TREE, t, templates);
@@ -2322,6 +2323,9 @@ build_new_function_call (fn, args)
 	  else if (! template_only)
 	    candidates = add_function_candidate
 	      (candidates, t, args, LOOKUP_NORMAL);
+
+	  if (candidates != old_candidates)
+	    candidates->basetype_path = DECL_REAL_CONTEXT (t);
 	}
 
       if (! any_viable (candidates))
@@ -3524,8 +3528,16 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     {
       explicit_targs = TREE_OPERAND (name, 1);
       name = TREE_OPERAND (name, 0);
-      if (TREE_CODE (name) == TEMPLATE_DECL)
+      if (TREE_CODE_CLASS (TREE_CODE (name)) == 'd')
 	name = DECL_NAME (name);
+      else 
+	{
+	  if (TREE_CODE (name) == COMPONENT_REF)
+	    name = TREE_OPERAND (name, 1);
+	  if (TREE_CODE (name) == OVERLOAD)
+	    name = DECL_NAME (OVL_CURRENT (name));
+	}
+
       template_only = 1;
     }
 
@@ -3675,7 +3687,10 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     cp_error ("abstract virtual `%#D' called from constructor", cand->fn);
   if (TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE
       && is_dummy_object (instance_ptr))
-    cp_error ("cannot call member function `%D' without object", cand->fn);
+    {
+      cp_error ("cannot call member function `%D' without object", cand->fn);
+      return error_mark_node;
+    }
 
   if (DECL_VINDEX (cand->fn) && ! (flags & LOOKUP_NONVIRTUAL)
       && ((instance == current_class_ref && (dtor_label || ctor_label))
@@ -3738,7 +3753,7 @@ is_subseq (ics1, ics2)
 /* Returns non-zero iff DERIVED is derived from BASE.  The inputs may
    be any _TYPE nodes.  */
 
-static int
+int
 is_properly_derived_from (derived, base)
      tree derived;
      tree base;

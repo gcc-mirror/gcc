@@ -3,8 +3,6 @@
 // Based on bug report by Klaus-Georg Adams
 // <Klaus-Georg.Adams@chemie.uni-karlsruhe.de>
 
-// crash test - XFAIL *-*-*
-
 struct bar {
   typedef bar t;
 };

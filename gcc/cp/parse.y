@@ -2138,7 +2138,8 @@ structsp:
 		  if (!processing_template_decl)
 		    cp_pedwarn ("using `typename' outside of template"); }
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
-	| class_head left_curly 
+	| class_head '{'
+                { $<ttype>1 = begin_class_definition ($<ttype>1); }
           opt.component_decl_list '}' maybe_attribute
 		{ 
 		  int semi;
@@ -2147,7 +2148,7 @@ structsp:
 		    yychar = YYLEX;
 		  semi = yychar == ';';
 
-		  $<ttype>$ = finish_class_definition ($1, $5, semi); 
+		  $<ttype>$ = finish_class_definition ($1, $6, semi); 
 		}
 	  pending_defargs
                 {
@@ -2156,7 +2157,7 @@ structsp:
 	  pending_inlines
                 {
 		  finish_inline_definitions ();
-		  $$.t = $<ttype>6;
+		  $$.t = $<ttype>7;
 		  $$.new_type_flag = 1; 
 		}
 	| class_head  %prec EMPTY
@@ -2402,11 +2403,6 @@ base_class_access_list:
 		  else
 		    error ("multiple `virtual' specifiers");
 		}
-	;
-
-left_curly:
-	  '{'
-                { $<ttype>0 = begin_class_definition ($<ttype>0); }
 	;
 
 opt.component_decl_list:
@@ -2758,14 +2754,7 @@ nonnested_type:
 		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
 		    {
 		      $$ = lookup_name ($1, 1);
-		      if (current_class_type
-			  && TYPE_BEING_DEFINED (current_class_type)
-			  && ! IDENTIFIER_CLASS_VALUE ($1))
-			{
-			  /* Remember that this name has been used in the class
-			     definition, as per [class.scope0] */
-			  pushdecl_class_level ($$);
-			}
+		      maybe_note_name_used_in_class ($1, $$);
 		    }
 		  else
 		    $$ = $1;
@@ -2925,12 +2914,7 @@ nested_name_specifier_1:
 		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
 		    {
 		      $$ = lastiddecl;
-		      /* Remember that this name has been used in the class
-			 definition, as per [class.scope0] */
-		      if (current_class_type
-			  && TYPE_BEING_DEFINED (current_class_type)
-			  && ! IDENTIFIER_CLASS_VALUE ($1))
-			pushdecl_class_level ($$);
+		      maybe_note_name_used_in_class ($1, $$);
 		    }
 		  got_scope = $$ = TYPE_MAIN_VARIANT (TREE_TYPE ($$));
 		}
