@@ -1,3 +1,17 @@
+Tue Mar 14 08:42:21 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (hppa configurations): Add pa32-regs.h to the
+	list of tm files as appropriate.
+	* configure: Rebuilt.
+	* pa.c (compute_frame_size): Remove explicit knowledge about FP
+	register numbering.
+	(hppa_expand_prologue, hppa_expand_epilogue): Likewise.
+	(fmpyaddoperands, fmpysuboperands): Likewise.
+	* pa.h: Remove various definitions which depend on knowing
+	how registers are numbered.
+	* pa32-regs.h: New file with PA32 register numbering specific
+	definitions.
+
 2000-03-14  Richard Henderson  <rth@cygnus.com>
 
 	* regmove.c (combine_stack_adjustments): New.
