@@ -280,7 +280,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
 		  if (this_val == trunc_int_for_mode (this_val, GET_MODE (src)))
 		    break;
 		default:
-		  gcc_unreachable ();
+		  abort ();
 		}
 	      this_rtx = GEN_INT (this_val);
 	    }
@@ -1057,7 +1057,8 @@ reload_combine_note_use (rtx *xp, rtx insn)
       if (REG_P (SET_DEST (x)))
 	{
 	  /* No spurious CLOBBERs of pseudo registers may remain.  */
-	  gcc_assert (REGNO (SET_DEST (x)) < FIRST_PSEUDO_REGISTER);
+	  if (REGNO (SET_DEST (x)) >= FIRST_PSEUDO_REGISTER)
+	    abort ();
 	  return;
 	}
       break;
@@ -1077,7 +1078,8 @@ reload_combine_note_use (rtx *xp, rtx insn)
 	int nregs;
 
 	/* No spurious USEs of pseudo registers may remain.  */
-	gcc_assert (regno < FIRST_PSEUDO_REGISTER);
+	if (regno >= FIRST_PSEUDO_REGISTER)
+	  abort ();
 
 	nregs = hard_regno_nregs[regno][GET_MODE (x)];
 

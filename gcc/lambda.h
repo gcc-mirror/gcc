@@ -290,7 +290,10 @@ lambda_vector_min_nz (lambda_vector vec1, int n, int start)
 {
   int j;
   int min = -1;
-  gcc_assert (start <= n);
+#ifdef ENABLE_CHECKING 
+  if (start > n)
+    abort ();
+#endif
   for (j = start; j < n; j++)
     {
       if (vec1[j])
@@ -298,7 +301,8 @@ lambda_vector_min_nz (lambda_vector vec1, int n, int start)
 	  min = j;
     }
 
-  gcc_assert (min >= 0);
+  if (min < 0)
+    abort ();
 
   return min;
 }

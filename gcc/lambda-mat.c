@@ -379,7 +379,8 @@ lambda_matrix_inverse_hard (lambda_matrix mat, lambda_matrix inv, int n)
       diagonal = row[j];
 
       /* If the matrix is singular, abort.  */
-      gcc_assert (diagonal != 0);
+      if (diagonal == 0)
+	abort ();
 
       determinant = determinant * diagonal;
 

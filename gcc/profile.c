@@ -149,7 +149,8 @@ instrument_edges (struct edge_list *el)
 
 	  if (!inf->ignore && !inf->on_tree)
 	    {
-	      gcc_assert (!(e->flags & EDGE_ABNORMAL));
+	      if (e->flags & EDGE_ABNORMAL)
+		abort ();
 	      if (dump_file)
 		fprintf (dump_file, "Edge %d to %d instrumented%s\n",
 			 e->src->index, e->dest->index,
@@ -195,7 +196,7 @@ instrument_values (histogram_values values)
 	  break;
 
 	default:
-	  gcc_unreachable ();
+	  abort ();
 	}
       if (!coverage_counter_alloc (t, hist->n_counters))
 	continue;
@@ -219,7 +220,7 @@ instrument_values (histogram_values values)
 	  break;
 
 	default:
-	  gcc_unreachable ();
+	  abort ();
 	}
     }
 }
@@ -419,7 +420,8 @@ compute_branch_probabilities (void)
 		  /* Calculate count for remaining edge by conservation.  */
 		  total = bb->count - total;
 
-		  gcc_assert (e);
+		  if (! e)
+		    abort ();
 		  EDGE_INFO (e)->count_valid = 1;
 		  e->count = total;
 		  bi->succ_count--;
@@ -445,7 +447,8 @@ compute_branch_probabilities (void)
 		  /* Calculate count for remaining edge by conservation.  */
 		  total = bb->count - total + e->count;
 
-		  gcc_assert (e);
+		  if (! e)
+		    abort ();
 		  EDGE_INFO (e)->count_valid = 1;
 		  e->count = total;
 		  bi->pred_count--;
@@ -463,18 +466,17 @@ compute_branch_probabilities (void)
   if (dump_file)
     fprintf (dump_file, "Graph solving took %d passes.\n\n", passes);
 
-#ifdef ENABLE_CHECKING
   /* If the graph has been correctly solved, every block will have a
      succ and pred count of zero.  */
   FOR_EACH_BB (bb)
     {
-      gcc_assert (!BB_INFO (bb)->succ_count);
-      gcc_assert (!BB_INFO (bb)->pred_count);
+      if (BB_INFO (bb)->succ_count || BB_INFO (bb)->pred_count)
+	abort ();
     }
-#endif
-  
+
   /* For every edge, calculate its branch probability and add a reg_note
      to the branch insn to indicate this.  */
+
   for (i = 0; i < 20; i++)
     hist_br_prob[i] = 0;
   num_never_executed = 0;
@@ -982,7 +984,8 @@ branch_prob (void)
     {
       unsigned n_instrumented = instrument_edges (el);
 
-      gcc_assert (n_instrumented == num_instrumented);
+      if (n_instrumented != num_instrumented)
+	abort ();
 
       if (flag_profile_values)
 	instrument_values (values);
@@ -1041,7 +1044,8 @@ union_groups (basic_block bb1, basic_block bb2)
 
   /* ??? I don't have a place for the rank field.  OK.  Lets go w/o it,
      this code is unlikely going to be performance problem anyway.  */
-  gcc_assert (bb1g != bb2g);
+  if (bb1g == bb2g)
+    abort ();
 
   bb1g->aux = bb2g;
 }
@@ -1186,7 +1190,8 @@ void
 tree_register_profile_hooks (void)
 {
   profile_hooks = &tree_profile_hooks;
-  gcc_assert (ir_type ());
+  if (!ir_type ())
+    abort ();
 }
 
 /* Set up hooks to enable RTL-based profiling.  */
@@ -1195,5 +1200,6 @@ void
 rtl_register_profile_hooks (void)
 {
   profile_hooks = &rtl_profile_hooks;
-  gcc_assert (!ir_type ());
+  if (ir_type ())
+    abort ();
 }

@@ -119,7 +119,7 @@ static rtx expand_parity (enum machine_mode, rtx, rtx);
 
 #ifndef HAVE_conditional_trap
 #define HAVE_conditional_trap 0
-#define gen_conditional_trap(a,b) (gcc_unreachable (), NULL_RTX)
+#define gen_conditional_trap(a,b) (abort (), NULL_RTX)
 #endif
 
 /* Add a REG_EQUAL note to the last insn in INSNS.  TARGET is being set to
@@ -138,9 +138,10 @@ add_equal_note (rtx insns, rtx target, enum rtx_code code, rtx op0, rtx op1)
   rtx last_insn, insn, set;
   rtx note;
 
-  gcc_assert (insns);
-  gcc_assert (INSN_P (insns));
-  gcc_assert (NEXT_INSN (insns) != NULL_RTX);
+  if (! insns
+      || ! INSN_P (insns)
+      || NEXT_INSN (insns) == NULL_RTX)
+    abort ();
 
   if (GET_RTX_CLASS (code) != RTX_COMM_ARITH
       && GET_RTX_CLASS (code) != RTX_BIN_ARITH
@@ -671,7 +672,8 @@ expand_simple_binop (enum machine_mode mode, enum rtx_code code, rtx op0,
 		     enum optab_methods methods)
 {
   optab binop = code_to_optab[(int) code];
-  gcc_assert (binop != 0);
+  if (binop == 0)
+    abort ();
 
   return expand_binop (mode, binop, op0, op1, target, unsignedp, methods);
 }
@@ -1710,8 +1712,9 @@ expand_twoval_unop (optab unoptab, rtx op0, rtx targ0, rtx targ1,
 
       /* We could handle this, but we should always be called with a pseudo
 	 for our targets and all insns should take them as outputs.  */
-      gcc_assert ((*insn_data[icode].operand[0].predicate) (targ0, mode));
-      gcc_assert ((*insn_data[icode].operand[1].predicate) (targ1, mode));
+      if (! (*insn_data[icode].operand[0].predicate) (targ0, mode)
+	  || ! (*insn_data[icode].operand[1].predicate) (targ1, mode))
+	abort ();
 
       pat = GEN_FCN (icode) (targ0, targ1, xop0);
       if (pat)
@@ -1838,8 +1841,9 @@ expand_twoval_binop (optab binoptab, rtx op0, rtx op1, rtx targ0, rtx targ1,
 
       /* We could handle this, but we should always be called with a pseudo
 	 for our targets and all insns should take them as outputs.  */
-      gcc_assert ((*insn_data[icode].operand[0].predicate) (targ0, mode));
-      gcc_assert ((*insn_data[icode].operand[3].predicate) (targ1, mode));
+      if (! (*insn_data[icode].operand[0].predicate) (targ0, mode)
+	  || ! (*insn_data[icode].operand[3].predicate) (targ1, mode))
+	abort ();
 
       pat = GEN_FCN (icode) (targ0, xop0, xop1, targ1);
       if (pat)
@@ -1902,7 +1906,8 @@ expand_twoval_binop_libfunc (optab binoptab, rtx op0, rtx op1,
   rtx insns;
 
   /* Exactly one of TARG0 or TARG1 should be non-NULL.  */
-  gcc_assert ((targ0 != NULL_RTX) ^ (targ1 != NULL_RTX));
+  if (!((targ0 != NULL_RTX) ^ (targ1 != NULL_RTX)))
+    abort ();
 
   mode = GET_MODE (op0);
   if (!binoptab->handlers[(int) mode].libfunc)
@@ -1939,7 +1944,8 @@ expand_simple_unop (enum machine_mode mode, enum rtx_code code, rtx op0,
 		    rtx target, int unsignedp)
 {
   optab unop = code_to_optab[(int) code];
-  gcc_assert (unop != 0);
+  if (unop == 0)
+    abort ();
 
   return expand_unop (mode, unop, op0, target, unsignedp);
 }
@@ -2614,7 +2620,8 @@ emit_no_conflict_block (rtx insns, rtx target, rtx op0, rtx op1, rtx equiv)
 	      }
 	}
 
-      gcc_assert (set != 0);
+      if (set == 0)
+	abort ();
 
       if (! reg_overlap_mentioned_p (target, SET_DEST (set)))
 	{
@@ -2925,7 +2932,7 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
 
   /* They could both be VOIDmode if both args are immediate constants,
      but we should fold that at an earlier stage.
-     With no special code here, this will assert out,
+     With no special code here, this will call abort,
      reminding the programmer to implement such folding.  */
 
   if (mode != BLKmode && flag_force_mem)
@@ -2954,10 +2961,11 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
     y = force_reg (mode, y);
 
 #ifdef HAVE_cc0
-  /* Assert out if we have a non-canonical comparison.  The RTL documentation
+  /* Abort if we have a non-canonical comparison.  The RTL documentation
      states that canonical comparisons are required only for targets which
      have cc0.  */
-  gcc_assert (!CONSTANT_P (x) || CONSTANT_P (y));
+  if (CONSTANT_P (x) && ! CONSTANT_P (y))
+    abort ();
 #endif
 
   /* Don't let both operands fail to indicate the mode.  */
@@ -2976,7 +2984,8 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
       rtx opalign
 	= GEN_INT (MIN (MEM_ALIGN (x), MEM_ALIGN (y)) / BITS_PER_UNIT);
 
-      gcc_assert (size != 0);
+      if (size == 0)
+	abort ();
 
       /* Try to use a memory block compare insn - either cmpstr
 	 or cmpmem will do.  */
@@ -3073,8 +3082,11 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
       return;
     }
 
-  gcc_assert (class == MODE_FLOAT);
-  prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp);
+  if (class == MODE_FLOAT)
+    prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp);
+
+  else
+    abort ();
 }
 
 /* Before emitting an insn with code ICODE, make sure that X, which is going
@@ -3114,7 +3126,7 @@ emit_cmp_and_jump_insn_1 (rtx x, rtx y, enum machine_mode mode,
   enum machine_mode wider_mode = mode;
 
   /* Try combined insns first.  */
-  for (;;)
+  do
     {
       enum insn_code icode;
       PUT_MODE (test, wider_mode);
@@ -3157,12 +3169,15 @@ emit_cmp_and_jump_insn_1 (rtx x, rtx y, enum machine_mode mode,
 	  return;
 	}
 
-      gcc_assert (class == MODE_INT || class == MODE_FLOAT
-		  || class == MODE_COMPLEX_FLOAT);
+      if (class != MODE_INT && class != MODE_FLOAT
+	  && class != MODE_COMPLEX_FLOAT)
+	break;
 
       wider_mode = GET_MODE_WIDER_MODE (wider_mode);
-      gcc_assert (wider_mode != VOIDmode);
     }
+  while (wider_mode != VOIDmode);
+
+  abort ();
 }
 
 /* Generate code to compare X with Y so that the condition codes are
@@ -3193,7 +3208,8 @@ emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
     {
       /* If we're not emitting a branch, this means some caller
          is out of sync.  */
-      gcc_assert (label);
+      if (! label)
+	abort ();
 
       op0 = y, op1 = x;
       comparison = swap_condition (comparison);
@@ -3264,7 +3280,8 @@ prepare_float_lib_cmp (rtx *px, rtx *py, enum rtx_code *pcomparison,
 	}
     }
 
-  gcc_assert (mode != VOIDmode);
+  if (mode == VOIDmode)
+    abort ();
 
   if (mode != orig_mode)
     {
@@ -3322,7 +3339,7 @@ prepare_float_lib_cmp (rtx *px, rtx *py, enum rtx_code *pcomparison,
 	      break;
 
 	    default:
-	      gcc_unreachable ();
+	      abort ();
 	    }
 	  equiv = simplify_gen_ternary (IF_THEN_ELSE, word_mode, word_mode,
 					equiv, true_rtx, false_rtx);
@@ -3624,12 +3641,13 @@ gen_add2_insn (rtx x, rtx y)
 {
   int icode = (int) add_optab->handlers[(int) GET_MODE (x)].insn_code;
 
-  gcc_assert ((*insn_data[icode].operand[0].predicate)
-	       (x, insn_data[icode].operand[0].mode));
-  gcc_assert ((*insn_data[icode].operand[1].predicate)
-	       (x, insn_data[icode].operand[1].mode));
-  gcc_assert ((*insn_data[icode].operand[2].predicate)
-	       (y, insn_data[icode].operand[2].mode));
+  if (! ((*insn_data[icode].operand[0].predicate)
+	 (x, insn_data[icode].operand[0].mode))
+      || ! ((*insn_data[icode].operand[1].predicate)
+	    (x, insn_data[icode].operand[1].mode))
+      || ! ((*insn_data[icode].operand[2].predicate)
+	    (y, insn_data[icode].operand[2].mode)))
+    abort ();
 
   return (GEN_FCN (icode) (x, x, y));
 }
@@ -3658,7 +3676,8 @@ have_add2_insn (rtx x, rtx y)
 {
   int icode;
 
-  gcc_assert (GET_MODE (x) != VOIDmode);
+  if (GET_MODE (x) == VOIDmode)
+    abort ();
 
   icode = (int) add_optab->handlers[(int) GET_MODE (x)].insn_code;
 
@@ -3683,12 +3702,13 @@ gen_sub2_insn (rtx x, rtx y)
 {
   int icode = (int) sub_optab->handlers[(int) GET_MODE (x)].insn_code;
 
-  gcc_assert ((*insn_data[icode].operand[0].predicate)
-	       (x, insn_data[icode].operand[0].mode));
-  gcc_assert ((*insn_data[icode].operand[1].predicate)
-	       (x, insn_data[icode].operand[1].mode));
-  gcc_assert ((*insn_data[icode].operand[2].predicate)
-	       (y, insn_data[icode].operand[2].mode));
+  if (! ((*insn_data[icode].operand[0].predicate)
+	 (x, insn_data[icode].operand[0].mode))
+      || ! ((*insn_data[icode].operand[1].predicate)
+	    (x, insn_data[icode].operand[1].mode))
+      || ! ((*insn_data[icode].operand[2].predicate)
+	    (y, insn_data[icode].operand[2].mode)))
+    abort ();
 
   return (GEN_FCN (icode) (x, x, y));
 }
@@ -3717,7 +3737,8 @@ have_sub2_insn (rtx x, rtx y)
 {
   int icode;
 
-  gcc_assert (GET_MODE (x) != VOIDmode);
+  if (GET_MODE (x) == VOIDmode)
+    abort ();
 
   icode = (int) sub_optab->handlers[(int) GET_MODE (x)].insn_code;
 
@@ -3843,7 +3864,8 @@ expand_float (rtx to, rtx from, int unsignedp)
   enum machine_mode fmode, imode;
 
   /* Crash now, because we won't be able to decide which mode to use.  */
-  gcc_assert (GET_MODE (from) != VOIDmode);
+  if (GET_MODE (from) == VOIDmode)
+    abort ();
 
   /* Look for an insn to do the conversion.  Do it in the specified
      modes if possible; otherwise convert either input, output or both to
@@ -4004,7 +4026,8 @@ expand_float (rtx to, rtx from, int unsignedp)
 	from = force_not_mem (from);
 
       libfunc = tab->handlers[GET_MODE (to)][GET_MODE (from)].libfunc;
-      gcc_assert (libfunc);
+      if (!libfunc)
+	abort ();
 
       start_sequence ();
 
@@ -4187,7 +4210,8 @@ expand_fix (rtx to, rtx from, int unsignedp)
 
       convert_optab tab = unsignedp ? ufix_optab : sfix_optab;
       libfunc = tab->handlers[GET_MODE (to)][GET_MODE (from)].libfunc;
-      gcc_assert (libfunc);
+      if (!libfunc)
+	abort ();
 
       if (flag_force_mem)
 	from = force_not_mem (from);
@@ -4800,7 +4824,8 @@ debug_optab_libfuncs (void)
 	h = &o->handlers[j];
 	if (h->libfunc)
 	  {
-	    gcc_assert (GET_CODE (h->libfunc) == SYMBOL_REF);
+	    if (GET_CODE (h->libfunc) != SYMBOL_REF)
+	      abort ();
 	    fprintf (stderr, "%s\t%s:\t%s\n",
 		     GET_RTX_NAME (o->code),
 		     GET_MODE_NAME (j),
@@ -4820,7 +4845,8 @@ debug_optab_libfuncs (void)
 	  h = &o->handlers[j][k];
 	  if (h->libfunc)
 	    {
-	      gcc_assert (GET_CODE (h->libfunc) == SYMBOL_REF);
+	      if (GET_CODE (h->libfunc) != SYMBOL_REF)
+		abort ();
 	      fprintf (stderr, "%s\t%s\t%s:\t%s\n",
 		       GET_RTX_NAME (o->code),
 		       GET_MODE_NAME (j),

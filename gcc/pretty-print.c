@@ -231,7 +231,8 @@ pp_base_format_text (pretty_printer *pp, text_info *text)
           break;
         }
       /* We don't support precision beyond that of "long long".  */
-      gcc_assert (precision <= 2);
+      if (precision > 2)
+        abort();
 
       if (quoted)
 	pp_string (pp, open_quote);
@@ -318,10 +319,10 @@ pp_base_format_text (pretty_printer *pp, text_info *text)
 	    int n;
 	    const char *s;
 	    /* We handle no precision specifier but '%.*s'.  */
-	    ++text->format_spec;
-	    gcc_assert (*text->format_spec == '*');
-	    ++text->format_spec;
-	    gcc_assert (*text->format_spec == 's');
+	    if (*++text->format_spec != '*')
+	      abort ();
+	    else if (*++text->format_spec != 's')
+	      abort ();
 	    n = va_arg (*text->args_ptr, int);
 	    s = va_arg (*text->args_ptr, const char *);
 	    pp_append_text (pp, s, s + n);
@@ -329,16 +330,14 @@ pp_base_format_text (pretty_printer *pp, text_info *text)
 	  break;
 
 	default:
-	  {
-	    bool ok;
-
-	    /* Make sure there's a format translator. */
-	    gcc_assert (pp_format_decoder (pp));
-	    ok = pp_format_decoder (pp) (pp, text);
-	    /* and make sure it recognized the format.  */
-	    gcc_assert (ok);
-	    break;
-	  }
+          if (!pp_format_decoder (pp) || !(*pp_format_decoder (pp)) (pp, text))
+	    {
+	      /* Hmmm.  The client failed to install a format translator
+                 but called us with an unrecognized format.  Or, maybe, the
+                 translated string just contains an invalid format, or
+                 has formats in the wrong order.  Sorry.  */
+	      abort ();
+	    }
 	}
       if (quoted)
 	pp_string (pp, close_quote);

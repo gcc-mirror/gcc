@@ -61,7 +61,8 @@ set_param_value (const char *name, int value)
   size_t i;
 
   /* Make sure nobody tries to set a parameter to an invalid value.  */
-  gcc_assert (value != INVALID_PARAM_VAL);
+  if (value == INVALID_PARAM_VAL)
+    abort ();
 
   /* Scan the parameter table to find a matching entry.  */
   for (i = 0; i < num_compiler_params; ++i)

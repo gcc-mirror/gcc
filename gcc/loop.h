@@ -45,7 +45,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    of an insn added during loop, since these don't have LUIDs.  */
 
 #define INSN_LUID(INSN)			\
-  (gcc_assert (INSN_UID (INSN) < max_uid_for_loop), uid_luid[INSN_UID (INSN)])
+  (INSN_UID (INSN) < max_uid_for_loop ? uid_luid[INSN_UID (INSN)] \
+   : (abort (), -1))
 
 #define REGNO_FIRST_LUID(REGNO)			\
   (REGNO_FIRST_UID (REGNO) < max_uid_for_loop	\

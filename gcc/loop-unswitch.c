@@ -103,11 +103,13 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
     {
       /* A hack -- there seems to be no easy generic way how to make a
 	 conditional jump from a ccmode comparison.  */
-      gcc_assert (cinsn);
+      if (!cinsn)
+	abort ();
       cond = XEXP (SET_SRC (pc_set (cinsn)), 0);
-      gcc_assert (GET_CODE (cond) == comp);
-      gcc_assert (rtx_equal_p (op0, XEXP (cond, 0)));
-      gcc_assert (rtx_equal_p (op1, XEXP (cond, 1)));
+      if (GET_CODE (cond) != comp
+	  || !rtx_equal_p (op0, XEXP (cond, 0))
+	  || !rtx_equal_p (op1, XEXP (cond, 1)))
+	abort ();
       emit_jump_insn (copy_insn (PATTERN (cinsn)));
       jump = get_last_insn ();
       JUMP_LABEL (jump) = JUMP_LABEL (cinsn);
@@ -116,7 +118,8 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
     }
   else
     {
-      gcc_assert (!cinsn);
+      if (cinsn)
+	abort ();
 
       op0 = force_operand (op0, NULL_RTX);
       op1 = force_operand (op1, NULL_RTX);
@@ -376,7 +379,8 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
 
   /* Unswitch the loop on this condition.  */
   nloop = unswitch_loop (loops, loop, bbs[i], cond, cinsn);
-  gcc_assert (nloop);
+  if (!nloop)
+  abort ();
 
   /* Invoke itself on modified loops.  */
   unswitch_single_loop (loops, nloop, rconds, num + 1);
@@ -408,17 +412,19 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on,
   rtx seq;
 
   /* Some sanity checking.  */
-  gcc_assert (flow_bb_inside_loop_p (loop, unswitch_on));
-
-  gcc_assert (unswitch_on->succ);
-  gcc_assert (unswitch_on->succ->succ_next);
-  gcc_assert (!unswitch_on->succ->succ_next->succ_next);
-
-  gcc_assert (just_once_each_iteration_p (loop, unswitch_on));
-  gcc_assert (!loop->inner);
-  gcc_assert (flow_bb_inside_loop_p (loop, unswitch_on->succ->dest));
-  gcc_assert (flow_bb_inside_loop_p (loop,
-				     unswitch_on->succ->succ_next->dest));
+  if (!flow_bb_inside_loop_p (loop, unswitch_on))
+    abort ();
+  if (!unswitch_on->succ || !unswitch_on->succ->succ_next ||
+      unswitch_on->succ->succ_next->succ_next)
+    abort ();
+  if (!just_once_each_iteration_p (loop, unswitch_on))
+    abort ();
+  if (loop->inner)
+    abort ();
+  if (!flow_bb_inside_loop_p (loop, unswitch_on->succ->dest))
+    abort ();
+  if (!flow_bb_inside_loop_p (loop, unswitch_on->succ->succ_next->dest))
+    abort ();
 
   entry = loop_preheader_edge (loop);
 
