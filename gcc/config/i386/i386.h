@@ -194,7 +194,9 @@ extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
 #define TARGET_UNROLL_STRLEN (x86_unroll_strlen & CPUMASK)
 #define TARGET_USE_Q_REG (x86_use_q_reg & CPUMASK)
 #define TARGET_USE_ANY_REG (x86_use_any_reg & CPUMASK)
-#define TARGET_CMOVE (x86_cmove & (1 << ix86_arch))
+/* For sane SSE instruction set generation we need fcomi instruction.  It is
+   safe to enable all CMOVE instructions.  */
+#define TARGET_CMOVE ((x86_cmove & (1 << ix86_arch)) || TARGET_SSE)
 #define TARGET_DEEP_BRANCH_PREDICTION (x86_deep_branch & CPUMASK)
 #define TARGET_DOUBLE_WITH_ADD (x86_double_with_add & CPUMASK)
 #define TARGET_USE_SAHF (x86_use_sahf & CPUMASK)
