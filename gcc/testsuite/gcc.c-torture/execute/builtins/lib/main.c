@@ -1,3 +1,4 @@
+extern void abort(void);
 extern void main_test (void);
 int inside_main;
 

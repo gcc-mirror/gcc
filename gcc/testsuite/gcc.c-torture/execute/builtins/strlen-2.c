@@ -5,6 +5,7 @@
    Written by Jakub Jelinek, June 23, 2003.  */
 
 typedef __SIZE_TYPE__ size_t;
+extern size_t strlen (const char *);
 extern char *strcpy (char *, const char *);
 extern int memcmp (const void *, const void *, size_t);
 extern void abort (void);
