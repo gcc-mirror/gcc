@@ -1,3 +1,8 @@
+2002-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* fold-const.c (fold): Use (*lang_hooks.types.unsigned_type)
+	instead of unsigned_type.
+
 Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (SSE_FLOAT_MODE_P): Kill bogus TARGET_SSE_MATH check.

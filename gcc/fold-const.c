@@ -4726,7 +4726,7 @@ fold (expr)
 		  && (LOAD_EXTEND_OP (TYPE_MODE (TREE_TYPE (and0)))
 		      == ZERO_EXTEND))
 		{
-		  tree uns = unsigned_type (TREE_TYPE (and0));
+		  tree uns = (*lang_hooks.types.unsigned_type) (TREE_TYPE (and0));
 		  and0 = convert (uns, and0);
 	  	  and1 = convert (uns, and1);
 		}
