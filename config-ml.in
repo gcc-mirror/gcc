@@ -529,6 +529,10 @@ multi-do:
 				LIBCXXFLAGS="$(LIBCXXFLAGS) $${flags}" \
 				LDFLAGS="$(LDFLAGS) $${flags}" \
 				DESTDIR="$(DESTDIR)" \
+				INSTALL="$(INSTALL)" \
+				INSTALL_DATA="$(INSTALL_DATA)" \
+				INSTALL_PROGRAM="$(INSTALL_PROGRAM)" \
+				INSTALL_SCRIPT="$(INSTALL_SCRIPT)" \
 				$(DO)); then \
 		  true; \
 		else \
