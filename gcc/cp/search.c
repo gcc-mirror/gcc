@@ -131,6 +131,7 @@ static void add_conversions PROTO((tree));
 static tree get_virtuals_named_this PROTO((tree));
 static tree get_virtual_destructor PROTO((tree, int));
 static int tree_has_any_destructor_p PROTO((tree, int));
+static int covariant_return_p PROTO((tree, tree));
 static struct search_level *push_search_level
 	PROTO((struct stack_level *, struct obstack *));
 static struct search_level *pop_search_level
@@ -2167,7 +2168,7 @@ tree_has_any_destructor_p (binfo, i)
    Returns 1 if trivial covariance, 2 if non-trivial (requiring runtime
    adjustment), or -1 if pedantically invalid covariance.  */
 
-int
+static int
 covariant_return_p (brettype, drettype)
      tree brettype, drettype;
 {

@@ -2137,6 +2137,10 @@ named_class_head_sans_basetype:
 named_class_head_sans_basetype_defn:
 	  aggr identifier_defn  %prec EMPTY
 		{ current_aggr = $$; $$ = $2; }
+	| named_class_head_sans_basetype '{'
+		{ yyungetc ('{', 1); }
+	| named_class_head_sans_basetype ':'
+		{ yyungetc (':', 1); }
 	;
 
 named_complex_class_head_sans_basetype:
@@ -2233,7 +2237,14 @@ base_class_list:
 base_class:
 	  base_class.1
 		{
-		  tree type = TREE_TYPE ($1);
+		  tree type;
+		  if ($1 == NULL_TREE)
+		    {
+		      error ("invalid base class");
+		      type = error_mark_node;
+		    }
+		  else
+		    type = TREE_TYPE ($1);
 		  if (! is_aggr_type (type, 1))
 		    $$ = NULL_TREE;
 		  else if (current_aggr == signature_type_node
@@ -2258,7 +2269,14 @@ base_class:
 		}
 	| base_class_access_list see_typename base_class.1
 		{
-		  tree type = TREE_TYPE ($3);
+		  tree type;
+		  if ($3 == NULL_TREE)
+		    {
+		      error ("invalid base class");
+		      type = error_mark_node;
+		    }
+		  else
+		    type = TREE_TYPE ($3);
 		  if (current_aggr == signature_type_node)
 		    error ("access and source specifiers not allowed in signature");
 		  if (! is_aggr_type (type, 1))
@@ -2879,7 +2897,7 @@ nested_name_specifier_1:
 			  && ! IDENTIFIER_CLASS_VALUE ($1))
 			pushdecl_class_level ($$);
 		    }
-		  got_scope = $$ = TREE_TYPE ($$);
+		  got_scope = $$ = TYPE_MAIN_VARIANT (TREE_TYPE ($$));
 		}
 	| SELFNAME SCOPE
 		{

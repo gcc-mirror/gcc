@@ -52,7 +52,6 @@ static int cpp_initialized;
 
 static tree get_sentry PROTO((tree));
 static void mark_vtable_entries PROTO((tree));
-static void import_export_template PROTO((tree));
 static void grok_function_init PROTO((tree, tree));
 static int finish_vtable_vardecl PROTO((tree, tree));
 static int prune_vtable_vardecl PROTO((tree, tree));
@@ -2594,29 +2593,39 @@ import_export_vtable (decl, type, final)
     }
 }
 
-static void
-import_export_template (type)
-     tree type;
+/* Determine whether or not we want to specifically import or export CTYPE,
+   using various heuristics.  */
+
+void
+import_export_class (ctype)
+     tree ctype;
 {
-  if (CLASSTYPE_IMPLICIT_INSTANTIATION (type)
-      && ! flag_implicit_templates
-      && CLASSTYPE_INTERFACE_UNKNOWN (type))
-    {
-      SET_CLASSTYPE_INTERFACE_KNOWN (type);
-      CLASSTYPE_INTERFACE_ONLY (type) = 1;
-      CLASSTYPE_VTABLE_NEEDS_WRITING (type) = 0;
-    }
-}
-    
-int
-finish_prevtable_vardecl (prev, vars)
-     tree prev, vars;
-{
-  tree ctype = DECL_CONTEXT (vars);
-  import_export_template (ctype);
+  /* -1 for imported, 1 for exported.  */
+  int import_export = 0;
+
+  if (CLASSTYPE_INTERFACE_KNOWN (ctype))
+    return;
+
+#ifdef VALID_MACHINE_TYPE_ATTRIBUTE
+  /* FIXME this should really use some sort of target-independent macro.  */
+  if (lookup_attribute ("dllimport", TYPE_ATTRIBUTES (ctype)))
+    import_export = -1;
+  else if (lookup_attribute ("dllexport", TYPE_ATTRIBUTES (ctype)))
+    import_export = 1;
+#endif
+
+  /* If we got -fno-implicit-templates, we import template classes that
+     weren't explicitly instantiated.  */
+  if (import_export == 0
+      && CLASSTYPE_IMPLICIT_INSTANTIATION (ctype)
+      && ! flag_implicit_templates)
+    import_export = -1;
 
 #ifndef MULTIPLE_SYMBOL_SPACES
-  if (CLASSTYPE_INTERFACE_UNKNOWN (ctype) && TYPE_VIRTUAL_P (ctype)
+  /* Base our import/export status on that of the first non-inline,
+     non-abstract virtual function, if any.  */
+  if (import_export == 0
+      && TYPE_VIRTUAL_P (ctype)
       && ! CLASSTYPE_TEMPLATE_INSTANTIATION (ctype))
     {
       tree method;
@@ -2627,16 +2636,27 @@ finish_prevtable_vardecl (prev, vars)
 	      && !DECL_THIS_INLINE (method)
 	      && !DECL_ABSTRACT_VIRTUAL_P (method))
 	    {
-	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
-	      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype)
-		= ! DECL_REALLY_EXTERN (method);
-	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_REALLY_EXTERN (method);
+	      import_export = (DECL_REALLY_EXTERN (method) ? -1 : 1);
 	      break;
 	    }
 	}
     }
 #endif
 
+  if (import_export)
+    {
+      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
+      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype) = (import_export > 0);
+      CLASSTYPE_INTERFACE_ONLY (ctype) = (import_export < 0);
+    }
+}
+    
+int
+finish_prevtable_vardecl (prev, vars)
+     tree prev, vars;
+{
+  tree ctype = DECL_CONTEXT (vars);
+  import_export_class (ctype);
   import_export_vtable (vars, ctype, 1);
   return 1;
 }
@@ -2827,18 +2847,17 @@ import_export_decl (decl)
     {
       tree ctype = TREE_TYPE (DECL_NAME (decl));
       if (IS_AGGR_TYPE (ctype) && CLASSTYPE_INTERFACE_KNOWN (ctype)
-	  && TYPE_VIRTUAL_P (ctype))
-	{
+	  && TYPE_VIRTUAL_P (ctype)
 	  /* If the type is a cv-qualified variant of a type, then we
 	     must emit the tinfo function in this translation unit
 	     since it will not be emitted when the vtable for the type
 	     is output (which is when the unqualified version is
 	     generated).  */
+	  && ctype == TYPE_MAIN_VARIANT (ctype))
+	{
 	  DECL_NOT_REALLY_EXTERN (decl)
-	    = TYPE_READONLY (ctype) 
-	    || TYPE_VOLATILE (ctype)
-	    || ! (CLASSTYPE_INTERFACE_ONLY (ctype)
-		  || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
+	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
+		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
 
 	  /* For WIN32 we also want to put explicit instantiations in
 	     linkonce sections.  */

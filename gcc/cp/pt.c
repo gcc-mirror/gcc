@@ -2659,11 +2659,11 @@ coerce_template_parms (parms, arglist, in_decl,
 	      if (! processing_template_decl)
 		{
 		  tree t = target_type (val);
-		  if (TREE_CODE (t) != TYPENAME_TYPE 
-		      && IS_AGGR_TYPE (t)
+		  if (((IS_AGGR_TYPE (t) && TREE_CODE (t) != TYPENAME_TYPE)
+		       || TREE_CODE (t) == ENUMERAL_TYPE)
 		      && decl_function_context (TYPE_MAIN_DECL (t)))
 		    {
-		      cp_error ("type `%T' composed from a local class is not a valid template-argument",
+		      cp_error ("type `%T' composed from a local type is not a valid template-argument",
 				val);
 		      return error_mark_node;
 		    }
@@ -6577,6 +6577,30 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
       /* Matched cases are handled by the ARG == PARM test above.  */
       return 1;
 
+    case MINUS_EXPR:
+      if (TREE_CODE (TREE_OPERAND (parm, 1)) == INTEGER_CST)
+	{
+	  /* We handle this case specially, since it comes up with
+	     arrays.  In particular, something like:
+
+	     template <int N> void f(int (&x)[N]);
+
+	     Here, we are trying to unify the range type, which
+	     looks like [0 ... (N - 1)].  */
+	  tree t, t1, t2;
+	  t1 = TREE_OPERAND (parm, 0);
+	  t2 = TREE_OPERAND (parm, 1);
+
+	  /* Should this be a regular fold?  */
+	  t = maybe_fold_nontype_arg (build (PLUS_EXPR,
+					     integer_type_node,
+					     arg, t2));
+
+	  return unify (tparms, targs, t1, t, UNIFY_ALLOW_NONE,
+			explicit_mask);
+	}
+      /* else fall through */
+
     default:
       if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (parm))))
 	{
@@ -6596,34 +6620,11 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 	     figuring it out.  */
 	  tree t = 
 	    maybe_fold_nontype_arg (tsubst_expr (parm, targs, NULL_TREE)); 
-	  enum tree_code tc = TREE_CODE (t);
+	  tree a = maybe_fold_nontype_arg (arg);
 
-	  if (tc == MINUS_EXPR 
-	      && TREE_CODE (TREE_OPERAND (t, 0)) == TEMPLATE_PARM_INDEX
-	      && TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST)
-	    {
-	      /* We handle this case specially, since it comes up with
-		 arrays.  In particular, something like:
-
-		 template <int N> void f(int (&x)[N]);
-
-		 Here, we are trying to unify the range type, which
-		 looks like [0 ... (N - 1)].  */
-	      tree t1, t2;
-	      t1 = TREE_OPERAND (parm, 0);
-	      t2 = TREE_OPERAND (parm, 1);
-
-	      t = maybe_fold_nontype_arg (build (PLUS_EXPR,
-						 integer_type_node,
-						 arg, t2));
-
-	      return unify (tparms, targs, t1, t, UNIFY_ALLOW_NONE,
-			    explicit_mask);
-	    }
-
-	  if (!IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (tc)))
+	  if (!IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (t))))
 	    /* Good, we mangaged to simplify the exression.  */
-	    return unify (tparms, targs, t, arg, UNIFY_ALLOW_NONE,
+	    return unify (tparms, targs, t, a, UNIFY_ALLOW_NONE,
 			  explicit_mask);
 	  else
 	    /* Bad, we couldn't simplify this.  Assume it doesn't

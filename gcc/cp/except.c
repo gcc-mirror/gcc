@@ -59,6 +59,8 @@ static tree do_pop_exception PROTO((void));
 static void process_start_catch_block PROTO((tree, tree));
 static void process_start_catch_block_old PROTO((tree, tree));
 static tree build_eh_type_type_ref PROTO((tree));
+static tree build_terminate_handler PROTO((void));
+static tree alloc_eh_object PROTO((tree));
 
 #if 0
 /* This is the startup, and finish stuff per exception table.  */
@@ -556,7 +558,7 @@ push_eh_cleanup ()
 /* Build up a call to terminate on the function obstack, for use as an
    exception handler.  */
 
-tree
+static tree
 build_terminate_handler ()
 {
   int yes = suspend_momentary ();
@@ -699,7 +701,9 @@ process_start_catch_block_old (declspecs, declarator)
       DECL_INITIAL (decl) = init;
       decl = pushdecl (decl);
 
-      cp_finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+      start_decl_1 (decl);
+      cp_finish_decl (decl, DECL_INITIAL (decl),
+		      NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
   else
     {
@@ -1038,7 +1042,7 @@ end_anon_func ()
 
 /* Return a pointer to a buffer for an exception object of type TYPE.  */
 
-tree
+static tree
 alloc_eh_object (type)
      tree type;
 {

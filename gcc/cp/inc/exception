@@ -29,9 +29,9 @@ typedef void (*terminate_handler) ();
 typedef void (*unexpected_handler) ();
 
 terminate_handler set_terminate (terminate_handler);
-void terminate (void) __attribute__ ((__noreturn__));
+void terminate () __attribute__ ((__noreturn__));
 unexpected_handler set_unexpected (unexpected_handler);
-void unexpected (void) __attribute__ ((__noreturn__));
+void unexpected () __attribute__ ((__noreturn__));
 bool uncaught_exception ();
 
 #ifdef __HONOR_STD

@@ -168,6 +168,8 @@ static tree lookup_tag PROTO((enum tree_code, tree,
 			      struct binding_level *, int));
 static void set_identifier_type_value_with_scope
 	PROTO((tree, tree, struct binding_level *));
+static void set_identifier_local_value_with_scope
+	PROTO((tree, tree, struct binding_level *));
 static void record_builtin_type PROTO((enum rid, char *, tree));
 static void record_unknown_type PROTO((tree, char *));
 static int member_function_or_else PROTO((tree, tree, char *));
@@ -2159,7 +2161,7 @@ set_identifier_type_value (id, type)
   set_identifier_type_value_with_scope (id, type, inner_binding_level);
 }
 
-void
+static void
 set_identifier_local_value_with_scope (id, val, b)
      tree id, val;
      struct binding_level *b;
@@ -3002,7 +3004,7 @@ duplicate_decls (newdecl, olddecl)
       TREE_TYPE (newdecl) = TREE_TYPE (olddecl) = newtype;
 
       /* Lay the type out, unless already done.  */
-      if (newtype != CANONICAL_TYPE_VARIANT (oldtype)
+      if (newtype != canonical_type_variant (oldtype)
 	  && TREE_TYPE (newdecl) != error_mark_node
 	  && !(processing_template_decl && uses_template_parms (newdecl)))
 	layout_type (TREE_TYPE (newdecl));
@@ -5083,7 +5085,11 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 			  TREE_TYPE (val));
 	    }
 
-	  val = from_obj;
+	  /* We don't change val to from_obj if got_object depends on
+	     template parms because that breaks implicit typename for
+	     destructor calls.  */
+	  if (! uses_template_parms (got_object))
+	    val = got_object;
 	}
 
       if ((TREE_CODE (val) == TEMPLATE_DECL && looking_for_template)
@@ -6617,6 +6623,7 @@ start_decl_1 (decl)
 	  cp_error ("variable `%#D' has initializer but incomplete type",
 		    decl);
 	  initialized = 0;
+	  type = TREE_TYPE (decl) = error_mark_node;
 	}
       else if (TYPE_SIZE (complete_type (TREE_TYPE (type))) == NULL_TREE)
 	{
@@ -6639,8 +6646,7 @@ start_decl_1 (decl)
 		 decl);
 	  /* Change the type so that assemble_variable will give
 	     DECL an rtl we can live with: (mem (const_int 0)).  */
-	  TREE_TYPE (decl) = error_mark_node;
-	  type = error_mark_node;
+	  type = TREE_TYPE (decl) = error_mark_node;
 	}
       else
 	{
@@ -11959,8 +11965,11 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
     {
       decl1 = declarator;
 
+#if 0
+      /* What was this testing for, exactly?  */
       if (! DECL_ARGUMENTS (decl1)
 	  && !DECL_STATIC_FUNCTION_P (decl1)
+	  && !DECL_ARTIFICIAL (decl1)
 	  && DECL_CLASS_SCOPE_P (decl1)
 	  && TYPE_IDENTIFIER (DECL_CONTEXT (decl1))
 	  && IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (DECL_CONTEXT (decl1))))
@@ -11973,6 +11982,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	  else if (BINDING_VALUE (binding))
 	    cp_error_at ("previous declaration here", BINDING_VALUE (binding));
 	}
+#endif
 
       fntype = TREE_TYPE (decl1);
       if (TREE_CODE (fntype) == METHOD_TYPE)
