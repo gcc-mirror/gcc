@@ -364,15 +364,15 @@ AC_ARG_ENABLE(coverage,
 [  --enable-coverage[=LEVEL]
 			  enable compiler\'s code coverage collection.
 			  Use to measure compiler performance and locate
-			  unused parts of the compiler. With LEVEL, specificy
+			  unused parts of the compiler. With LEVEL, specify
 			  optimization. Values are opt, noopt,
 			  default is noopt],
 [case "${enableval}" in
 yes|noopt)
-	coverage_flags="-fprofile-arcs -ftest-coverage -O0"
+	coverage_flags="-fprofile-arcs -ftest-coverage -O0 -DSELF_COVERAGE=1"
 	;;
 opt)
-	coverage_flags="-fprofile-arcs -ftest-coverage -O2"
+	coverage_flags="-fprofile-arcs -ftest-coverage -O2 -DSELF_COVERAGE=2"
 	;;
 *)
 	AC_MSG_ERROR(unknown coverage setting $enableval)
