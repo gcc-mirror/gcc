@@ -9414,6 +9414,7 @@ cp_parser_using_declaration (cp_parser* parser)
   tree decl;
   tree identifier;
   tree scope;
+  tree qscope;
 
   /* Look for the `using' keyword.  */
   cp_parser_require_keyword (parser, RID_USING, "`using'");
@@ -9438,18 +9439,20 @@ cp_parser_using_declaration (cp_parser* parser)
   /* If we saw `typename', or didn't see `::', then there must be a
      nested-name-specifier present.  */
   if (typename_p || !global_scope_p)
-    cp_parser_nested_name_specifier (parser, typename_p, 
-				     /*check_dependency_p=*/true,
-				     /*type_p=*/false,
-				     /*is_declaration=*/true);
+    qscope = cp_parser_nested_name_specifier (parser, typename_p, 
+					      /*check_dependency_p=*/true,
+					      /*type_p=*/false,
+					      /*is_declaration=*/true);
   /* Otherwise, we could be in either of the two productions.  In that
      case, treat the nested-name-specifier as optional.  */
   else
-    cp_parser_nested_name_specifier_opt (parser,
-					 /*typename_keyword_p=*/false,
-					 /*check_dependency_p=*/true,
-					 /*type_p=*/false,
-					 /*is_declaration=*/true);
+    qscope = cp_parser_nested_name_specifier_opt (parser,
+						  /*typename_keyword_p=*/false,
+						  /*check_dependency_p=*/true,
+						  /*type_p=*/false,
+						  /*is_declaration=*/true);
+  if (!qscope)
+    qscope = global_namespace;
 
   /* Parse the unqualified-id.  */
   identifier = cp_parser_unqualified_id (parser, 
@@ -9485,9 +9488,9 @@ cp_parser_using_declaration (cp_parser* parser)
 	  if (decl == error_mark_node)
 	    cp_parser_name_lookup_error (parser, identifier, decl, NULL);
 	  else if (scope)
-	    do_local_using_decl (decl);
+	    do_local_using_decl (decl, qscope, identifier);
 	  else
-	    do_toplevel_using_decl (decl);
+	    do_toplevel_using_decl (decl, qscope, identifier);
 	}
     }
 
