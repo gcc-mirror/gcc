@@ -7345,7 +7345,7 @@ if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
 
   /* If we are comparing a value against zero, we are done.  */
   if ((code == NE || code == EQ)
-      && GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) == 0)
+      && XEXP (x, 1) == const0_rtx)
     {
       *ptrue = (code == NE) ? const_true_rtx : const0_rtx;
       *pfalse = (code == NE) ? const0_rtx : const_true_rtx;

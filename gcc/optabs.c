@@ -4259,9 +4259,9 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
   /* get_condition will prefer to generate LT and GT even if the old
      comparison was against zero, so undo that canonicalization here since
      comparisons against zero are cheaper.  */
-  if (code == LT && GET_CODE (op1) == CONST_INT && INTVAL (op1) == 1)
+  if (code == LT && op1 == const1_rtx)
     code = LE, op1 = const0_rtx;
-  else if (code == GT && GET_CODE (op1) == CONST_INT && INTVAL (op1) == -1)
+  else if (code == GT && op1 == constm1_rtx)
     code = GE, op1 = const0_rtx;
 
   if (cmode == VOIDmode)
@@ -4400,9 +4400,9 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
   /* get_condition will prefer to generate LT and GT even if the old
      comparison was against zero, so undo that canonicalization here since
      comparisons against zero are cheaper.  */
-  if (code == LT && GET_CODE (op1) == CONST_INT && INTVAL (op1) == 1)
+  if (code == LT && op1 == const1_rtx)
     code = LE, op1 = const0_rtx;
-  else if (code == GT && GET_CODE (op1) == CONST_INT && INTVAL (op1) == -1)
+  else if (code == GT && op1 == constm1_rtx)
     code = GE, op1 = const0_rtx;
 
   if (cmode == VOIDmode)

@@ -8034,9 +8034,7 @@ check_dbra_loop (struct loop *loop, int insn_count)
      In this case, add a reg_note REG_NONNEG, which allows the
      m68k DBRA instruction to be used.  */
 
-  if (((GET_CODE (comparison) == GT
-	&& GET_CODE (XEXP (comparison, 1)) == CONST_INT
-	&& INTVAL (XEXP (comparison, 1)) == -1)
+  if (((GET_CODE (comparison) == GT && XEXP (comparison, 1) == constm1_rtx)
        || (GET_CODE (comparison) == NE && XEXP (comparison, 1) == const0_rtx))
       && GET_CODE (bl->biv->add_val) == CONST_INT
       && INTVAL (bl->biv->add_val) < 0)
