@@ -190,7 +190,7 @@ namespace tr1
 
   template<typename _Tp>
     struct is_enum
-    : integral_constant<bool, __is_enum_helper<_Tp>::__value> { };
+    : public integral_constant<bool, __is_enum_helper<_Tp>::__value> { };
 
   template<typename _Tp, bool = (is_reference<_Tp>::value
 				 || is_void<_Tp>::value)>
