@@ -6545,19 +6545,19 @@ movtf_is_ok:
   ""
   "*
 {
-  /* Some implementations (e.g. TurboSparc) are reported to have problems
+  /* TurboSparc is reported to have problems with
      with
 	foo: b,a foo
      i.e. an empty loop with the annul bit set.  The workaround is to use 
         foo: b foo; nop
      instead.  */
 
-  if (flag_delayed_branch
+  if (! TARGET_V9 && flag_delayed_branch
       && (insn_addresses[INSN_UID (operands[0])]
 	  == insn_addresses[INSN_UID (insn)]))
-    return TARGET_V9 ? \"b,pt\\t%%xcc, %l0%#\" : \"b\\t%l0%#\";
+    return \"b\\t%l0%#\";
   else
-    return TARGET_V9 ? \"b,pt%*\\t%%xcc, %l0%(\" : \"b%*\\t%l0%(\";
+    return TARGET_V9 ? \"ba,pt%*\\t%%xcc, %l0%(\" : \"b%*\\t%l0%(\";
 }"
   [(set_attr "type" "uncond_branch")])
 
