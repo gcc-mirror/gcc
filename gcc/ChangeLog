@@ -1,3 +1,8 @@
+Tue Dec  8 22:33:18 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* explow.c (plus_constant_wide): Don't immediately return with
+	result of recursive call.
+
 Tue Dec  8 15:32:56 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* eh-common.h (struct eh_context): Add table_index for rethrows.
