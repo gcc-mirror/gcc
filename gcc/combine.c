@@ -5049,6 +5049,14 @@ simplify_if_then_else (x)
       simplify_shift_const (NULL_RTX, ASHIFT, mode,
 			    gen_lowpart_for_combine (mode, XEXP (cond, 0)), i);
 
+  /* (IF_THEN_ELSE (NE REG 0) (0) (8)) is REG for nonzero_bits (REG) == 8.  */
+  if (true_code == NE && XEXP (cond, 1) == const0_rtx
+      && false_rtx == const0_rtx && GET_CODE (true_rtx) == CONST_INT
+      && (INTVAL (true_rtx) & GET_MODE_MASK (mode))
+	  == nonzero_bits (XEXP (cond, 0), mode)
+      && (i = exact_log2 (INTVAL (true_rtx) & GET_MODE_MASK (mode))) >= 0)
+    return XEXP (cond, 0);
+
   return x;
 }
 
