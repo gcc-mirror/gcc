@@ -1,3 +1,8 @@
+2003-06-27  Roger Sayle  <roger@eyesopen.com>
+
+	* config/alpha/alpha.md (anonymous define_split): Adjust emit_note
+	call to match recent API change.
+
 2003-06-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* dbxout.c (flag_debug_only_used_symbols): Delete redundant
