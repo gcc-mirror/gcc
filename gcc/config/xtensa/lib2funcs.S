@@ -159,7 +159,7 @@ __xtensa_nonlocal_goto:
 	.type	__xtensa_sync_caches,@function
 __xtensa_sync_caches:
 	entry 	sp, 32
-#if XCHAL_DCACHE_SIZE > 0 && XCHAL_DCACHE_IS_WRITEBACK
+#if XCHAL_DCACHE_SIZE > 0
 	# Flush the trampoline from the data cache
 	extui	a4, a2, 0, XCHAL_DCACHE_LINEWIDTH
 	addi	a4, a4, TRAMPOLINE_SIZE

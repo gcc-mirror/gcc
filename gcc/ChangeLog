@@ -1,3 +1,8 @@
+2003-04-10  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib2funcs.S (__xtensa_sync_caches): Flush data cache
+	even if it is configured to be write-through.
+
 2003-04-10  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (larl_operand): Do not allow symbols
