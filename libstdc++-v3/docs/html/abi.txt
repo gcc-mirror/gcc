@@ -6,7 +6,7 @@ document exists, why it's incomplete, and what needs to be done still.
 
 ===========================
 
-2002-07-01 Benjamin Kosnik
+2002-07-23 Benjamin Kosnik
 
 Description of the libstdc++ ABI.
 
@@ -123,9 +123,37 @@ III. Versioning
 
 IV. Testing ABI changes
 
-- 'make check-abi'??
+Currently, there is no formal testing for changes in the libstdc++
+ABI. It would be in the best interest of GNU C++ users everywhere to
+have such a test, and work to develop this test is ongoing.
 
-- other ABI checkers
+There is a formal method for checking the compiler parts of the C++
+ABI, donated by Intel. More information can be obtained
+<a href="http://developer.intel.com/software/products/opensource/">here.</a>
+
+To test the library, the following two ideas have been suggested:
+
+One. 
+(Brendan Kehoe, Jeff Law suggestion to run 'make check-c++' two ways, 
+one with a new compiler and an old library, and the other with an old
+compiler and a new library, and look for testsuite regressions)
+
+Two.  
+Have the libstdc++ testesuite proactively check the library
+ABI. Probably a couple of items would be covered, although perhaps not
+all would need to be done at once for this to be useful. Compute the
+list of names exported in the shared version of libstdc++
+binary. Then, save this list of names. Have this list of names
+re-computed for each new binary of the same version. Next, use sizeof
+and offset to compute offsets for each structure and type in the
+standard library, saving to another datafile. Then, compute this for
+new binaries, and look for differences.
+
+The thought is to choose one or both of these approaches, and to use a
+Makefile hook, perhaps 'make check-abi', to add this capability to the
+libstdc++ testsuite.
+
+Perhaps there are other Library ABI checkers. If so, please notify us.
 
 
 V. Issues not directly addressed, and possible suggestions
