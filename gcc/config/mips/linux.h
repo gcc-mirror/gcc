@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* Handle #pragma weak and #pragma pack.  */
+#undef HANDLE_SYSV_PRAGMA
 #define HANDLE_SYSV_PRAGMA 1
 
 /* Use more efficient ``thunks'' to implement C++ vtables. */
@@ -160,3 +161,38 @@ Boston, MA 02111-1307, USA.  */
 %{mabi=64: -64} \
 %{!fno-PIC:%{!fno-pic:-KPIC}} \
 %{fno-PIC:-non_shared} %{fno-pic:-non_shared}"
+
+/* We don't need those nonsenses.  */
+#undef INVOKE__main
+#undef CTOR_LIST_BEGIN
+#undef CTOR_LIST_END
+#undef DTOR_LIST_BEGIN
+#undef DTOR_LIST_END
+
+/* The MIPS assembler has different syntax for .set. We set it to
+   .dummy to trap any errors.  */
+#undef SET_ASM_OP
+#define SET_ASM_OP "\t.dummy\t"
+
+/* This is how we tell the assembler that two symbols have the
+   same value.  */
+#undef ASM_OUTPUT_DEF
+#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
+  do {									\
+	fprintf ((FILE), "\t");						\
+	assemble_name (FILE, LABEL1);					\
+	fprintf (FILE, "=");						\
+	assemble_name (FILE, LABEL2);					\
+	fprintf (FILE, "\n");						\
+ } while (0)
+
+#undef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+#define ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL(FILE, SY, HI, LO)    	\
+  do {									\
+	fputc ('\t', FILE);						\
+	assemble_name (FILE, SY);					\
+	fputc ('=', FILE);						\
+	assemble_name (FILE, HI);					\
+	fputc ('-', FILE);						\
+	assemble_name (FILE, LO);					\
+  } while (0)

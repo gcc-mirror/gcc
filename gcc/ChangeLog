@@ -1,3 +1,49 @@
+2001-04-26  H.J. Lu  (hjl@gnu.org)
+
+	* config.gcc (mips*-*-linux*): Add elfos.h to tm_file.
+
+	* config/mips/ecoff.h (STARTFILE_SPEC): Undefine before
+	define.
+	* config/mips/elf64.h (MAX_OFILE_ALIGNMENT): Likewise.
+	(ASM_OUTPUT_SECTION_NAME): Likewise.
+	(ASM_WEAKEN_LABEL): Likewise.
+	(UNIQUE_SECTION): Likewise.
+	(ASM_OUTPUT_CONSTRUCTOR): Likewise.
+	(ASM_OUTPUT_DESTRUCTOR): Likewise.
+	* config/mips/elf.h (MAX_OFILE_ALIGNMENT): Likewise.
+	(ASM_OUTPUT_SECTION_NAME): Likewise.
+	(ASM_WEAKEN_LABEL): Likewise.
+	(UNIQUE_SECTION): Likewise.
+	(ASM_OUTPUT_CONSTRUCTOR): Likewise.
+	(ASM_OUTPUT_DESTRUCTOR): Likewise.
+	* config/mips/linux.h (HANDLE_SYSV_PRAGMA): Likewise.
+	* config/mips/mips.h (DBX_CONTIN_LENGTH): Likewise.
+	(ASM_FILE_START): Likewise.
+	(ASM_OUTPUT_SOURCE_LINE): Likewise.
+	(ASM_DECLARE_OBJECT_NAME): Likewise.
+	(ASM_FILE_END): Likewise.
+	(ASM_DECLARE_FUNCTION_NAME): Likewise.
+	(ASM_OUTPUT_INTERNAL_LABEL): Likewise.
+	(ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	(ASM_OUTPUT_CASE_LABEL): Likewise.
+	(ASM_OUTPUT_SKIP): Likewise.
+	(ASM_OUTPUT_ASCII): Likewise.
+	(ASM_OUTPUT_IDENT): Likewise.
+	(READONLY_DATA_SECTION): Likewise.
+	(EXTRA_SECTIONS): Likewise.
+	(EXTRA_SECTION_FUNCTIONS): Likewise.
+	(SELECT_RTX_SECTION): Likewise.
+	(SELECT_SECTION): Likewise.
+
+	* config/mips/linux.h (INVOKE__main): Undefine.
+	(CTOR_LIST_BEGIN): Likewise.
+	(CTOR_LIST_END): Likewise.
+	(DTOR_LIST_BEGIN): Likewise.
+	(DTOR_LIST_END): Likewise.
+	(SET_ASM_OP): Defined it to ".dummy".
+	(ASM_OUTPUT_DEF): Defined.
+	(ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL): Defined.
+
 2001-04-26  Nathan Sidwell <nathan@codesourcery.com>
 
 	* c-lex.c (c_lex): Remove # from %o diagnostic formatting.
