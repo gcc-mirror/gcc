@@ -98,6 +98,7 @@ outdir=unset
 do_html=false
 do_man=false
 enabled_sections=
+generate_tagfile=
 DATEtext=`date '+%Y-%m-%d'`
 
 parse_options $*
@@ -110,15 +111,20 @@ if test $srcdir = unset || test $outdir = unset || test $mode = unset; then
 fi
 
 case x"$mode" in
-    xuser)           do_html=true
-                     LEVELtext='User'
-                     ;;
-    xmaint)          do_html=true
-                     enabled_sections=maint
-                     LEVELtext='Maintainer'
-                     ;;
-    xman)            do_man=true
-                     ;;
+    xuser)
+      do_html=true
+      LEVELtext='User'
+      generate_tagfile="$outdir/html_$mode/libstdc++.tag"
+      ;;
+    xmaint)
+      do_html=true
+      enabled_sections=maint
+      LEVELtext='Maintainer'
+      generate_tagfile="$outdir/html_$mode/libstdc++.tag"
+      ;;
+    xman)
+      do_man=true
+      ;;
     *)
       echo run_doxygen error:  $mode is an invalid mode 1>&2
       exit 1 ;;
@@ -143,6 +149,7 @@ fi
       -e "s=@enabled_sections@=${enabled_sections}=" \
       -e "s=@do_html@=${do_html}=" \
       -e "s=@do_man@=${do_man}=" \
+      -e "s=@generate_tagfile@=${generate_tagfile}=" \
       ${srcdir}/docs/doxygen/user.cfg.in > ${outdir}/${mode}.cfg
   echo :: NOTE that this may take some time...
   echo doxygen ${outdir}/${mode}.cfg
