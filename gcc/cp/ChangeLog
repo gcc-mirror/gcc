@@ -1,3 +1,12 @@
+2003-04-30  Garbiel Dos Reis  <gcc@integrable-solutions.net>
+
+	* decl.c (check_previous_goto_1): Adjust prototype.
+	(check_previous_goto): Adjust use.
+	(check_switch_goto): Likewise.
+	(use_label): Adjust.
+	(check_previous_goto_1): Don't use pedwarn_with_file_and_line.
+	(struct named_label_use_list): Use location_t datatype.
+
 2003-04-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10551

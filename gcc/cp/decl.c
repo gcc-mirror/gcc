@@ -112,7 +112,7 @@ static void add_decl_to_level (tree, struct cp_binding_level *);
 static tree make_label_decl (tree, int);
 static void use_label (tree);
 static void check_previous_goto_1 (tree, struct cp_binding_level *, tree,
-				   const char *, int);
+				   const location_t *);
 static void check_previous_goto (struct named_label_use_list *);
 static void check_switch_goto (struct cp_binding_level *);
 static void check_previous_gotos (tree);
@@ -215,8 +215,7 @@ struct named_label_use_list GTY(())
   struct cp_binding_level *binding_level;
   tree names_in_scope;
   tree label_decl;
-  const char *filename_o_goto;
-  int lineno_o_goto;
+  location_t o_goto_locus;
   struct named_label_use_list *next;
 };
 
@@ -4626,8 +4625,8 @@ use_label (tree decl)
       new_ent->label_decl = decl;
       new_ent->names_in_scope = current_binding_level->names;
       new_ent->binding_level = current_binding_level;
-      new_ent->lineno_o_goto = lineno;
-      new_ent->filename_o_goto = input_filename;
+      new_ent->o_goto_locus.line = lineno;
+      new_ent->o_goto_locus.file = input_filename;
       new_ent->next = named_label_uses;
       named_label_uses = new_ent;
     }
@@ -4726,9 +4725,7 @@ decl_jump_unsafe (tree decl)
 static void
 check_previous_goto_1 (tree decl,
                        struct cp_binding_level* level,
-                       tree names,
-                       const char* file,
-                       int line)
+                       tree names, const location_t *locus)
 {
   int identified = 0;
   int saw_eh = 0;
@@ -4751,8 +4748,8 @@ check_previous_goto_1 (tree decl,
 	      else
 		pedwarn ("jump to case label");
 
-	      if (file)
-		pedwarn_with_file_and_line (file, line, "  from here");
+	      if (locus)
+		pedwarn ("%H  from here", locus);
 	      identified = 1;
 	    }
 
@@ -4775,8 +4772,8 @@ check_previous_goto_1 (tree decl,
 	      else
 		pedwarn ("jump to case label");
 
-	      if (file)
-		pedwarn_with_file_and_line (file, line, "  from here");
+	      if (locus)
+		pedwarn ("%H  from here", locus);
 	      identified = 1;
 	    }
 	  if (b->is_try_scope)
@@ -4792,14 +4789,13 @@ static void
 check_previous_goto (struct named_label_use_list* use)
 {
   check_previous_goto_1 (use->label_decl, use->binding_level,
-			 use->names_in_scope, use->filename_o_goto,
-			 use->lineno_o_goto);
+			 use->names_in_scope, &use->o_goto_locus);
 }
 
 static void
 check_switch_goto (struct cp_binding_level* level)
 {
-  check_previous_goto_1 (NULL_TREE, level, level->names, NULL, 0);
+  check_previous_goto_1 (NULL_TREE, level, level->names, NULL);
 }
 
 /* Check that any previously seen jumps to a newly defined label DECL
