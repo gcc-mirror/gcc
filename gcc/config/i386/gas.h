@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running system V with gnu tools
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -93,8 +93,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
      fprintf ((FILE), "\t.align 2,0x90\n");  /* Use log of 4 as arg.  */
 
 #undef ASM_FILE_START
+/* ASM_FILE_START(FILE) used to be defined as:
+     fprintf (FILE, "\t.file\t\"%s\"\n", dump_base_name);
+   However, the string dump_base_name may contain backslashes.  (This may often
+   be the case when gcc is run under operating systems such as DOS and OS/2.)
+   Each backslash in dump_base_name must be converted to two consecutive
+   backslashes on output.  */
 #define ASM_FILE_START(FILE) \
-  fprintf (FILE, "\t.file\t\"%s\"\n", dump_base_name);
+  { char *p; \
+    fprintf (FILE, "\t.file\t\""); \
+    for (p = dump_base_name; *p != '\0'; p++) \
+      if (*p == '\\') fprintf (FILE, "\\\\");  \
+      else fprintf (FILE, "%c", *p); \
+    fprintf (FILE, "\"\n"); }
 
 /* A C statement or statements which output an assembler instruction
    opcode to the stdio stream STREAM.  The macro-operand PTR is a
