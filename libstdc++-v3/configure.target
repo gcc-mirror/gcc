@@ -87,6 +87,9 @@ case "${target_os}" in
   cygwin*)
     os_include_dir="config/os/newlib"
     ;;
+  *djgpp*)
+    os_include_dir="config/os/djgpp"
+    ;;
   linux* | gnu*)
     os_include_dir="config/os/gnu-linux"
     ;;
