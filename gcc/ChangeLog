@@ -1,3 +1,11 @@
+2003-12-18  Steven Bosscher  <stevenb@suse.de>
+
+	* Makefile.in (tracer.o, bb-reorder.o): Depend on timevar.h
+	* toplev.c (rest_of_handle_reorder_blocks, rest_of_handle_tracer):
+	Don't push and pop TV_REORDER_BLOCKS timevars, do it...
+	* bb-reorder.c (reorder_basic_blocks): ...here, and...
+	* tracer.c (tracer): here.
+
 2003-12-18  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* loop.c (move_movables): Handle combination of m->consec, 

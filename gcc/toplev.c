@@ -2298,7 +2298,6 @@ rest_of_handle_regrename (tree decl, rtx insns)
 static void
 rest_of_handle_reorder_blocks (tree decl, rtx insns)
 {
-  timevar_push (TV_REORDER_BLOCKS);
   open_dump_file (DFI_bbro, decl);
 
   /* Last attempt to optimize CFG, as scheduling, peepholing and insn
@@ -2315,7 +2314,6 @@ rest_of_handle_reorder_blocks (tree decl, rtx insns)
     cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE);
 
   close_dump_file (DFI_bbro, print_rtl_with_bb, insns);
-  timevar_pop (TV_REORDER_BLOCKS);
 }
 
 #ifdef INSN_SCHEDULING
@@ -2394,7 +2392,6 @@ rest_of_handle_regmove (tree decl, rtx insns)
 static void
 rest_of_handle_tracer (tree decl, rtx insns)
 {
-  timevar_push (TV_TRACER);
   open_dump_file (DFI_tracer, decl);
   if (rtl_dump_file)
     dump_flow_info (rtl_dump_file);
@@ -2402,7 +2399,6 @@ rest_of_handle_tracer (tree decl, rtx insns)
   cleanup_cfg (CLEANUP_EXPENSIVE);
   reg_scan (insns, max_reg_num (), 0);
   close_dump_file (DFI_tracer, print_rtl_with_bb, get_insns ());
-  timevar_pop (TV_TRACER);
 }
 
 /* If-conversion and CFG cleanup.  */
