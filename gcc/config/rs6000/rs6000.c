@@ -1018,6 +1018,17 @@ print_operand (file, x, code)
       RS6000_OUTPUT_BASENAME (file, XSTR (x, 0));
       return;
 
+    case 'A':
+      /* If X is a constant integer whose low-order 5 bits are zero,
+	 write 'l'.  Otherwise, write 'r'.  This is a kludge to fix a bug
+	 in the RS/6000 assembler where "sri" with a zero shift count
+	 write a trash instruction.  */
+      if (GET_CODE (x) != CONST_INT && (INTVAL (x) & 31) == 0)
+	fprintf (file, "l");
+      else
+	fprintf (file, "r");
+      return;
+
     case 0:
       if (GET_CODE (x) == REG)
 	fprintf (file, "%s", reg_names[REGNO (x)]);

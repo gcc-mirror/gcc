@@ -1367,6 +1367,20 @@ reload (first, global, dumpfile)
 	    }
 	}
 
+      /* See if anything that happened changes which eliminations are valid.
+	 For example, on the Sparc, whether or not the frame pointer can
+	 be eliminated can depend on what registers have been used.  We need
+	 not check some conditions again (such as flag_omit_frame_pointer)
+	 since they can't have changed.  */
+
+      for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+	if ((ep->from == FRAME_POINTER_REGNUM && FRAME_POINTER_REQUIRED)
+#ifdef ELIMINABLE_REGS
+	    || ! CAN_ELIMINATE (ep->from, ep->to)
+#endif
+	    )
+	  ep->can_eliminate = 0;
+
       /* Look for the case where we have discovered that we can't replace
 	 register A with register B and that means that we will now be
 	 trying to replace register A with register C.  This means we can
