@@ -383,6 +383,11 @@ extern int x86_prefetch_sse;
    the frame pointer in leaf functions.  */
 #define TARGET_DEFAULT 0
 
+/* This is not really a target flag, but is done this way so that
+   it's analogous to similar code for Mach-O on PowerPC.  darwin.h
+   redefines this to 1.  */
+#define TARGET_MACHO 0
+
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
    initializer with a subgrouping for each command option.

@@ -1,3 +1,36 @@
+2002-07-31  Stan Shebs  <shebs@apple.com>
+
+	* config.gcc (i[34567]86-*-darwin*): New configuration.
+	* config/darwin.h (TARGET_ENCODE_SECTION_INFO): Undefine before
+	defining.
+	(TARGET_ENCODE_SECTION_INFO): Ditto.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Ditto.
+	* config/darwin.c (machopic_indirect_data_reference): Remove
+	setting of RTX_UNCHANGING_P.
+	(machopic_legitimize_pic_address): Move RTX_UNCHANGING_P up so as
+	not to be applied to sums.
+	* config/i386/t-darwin: New file.
+	* config/i386/darwin.h: New file.
+	* config/i386/i386.h (TARGET_MACHO): Add default definition.
+	* config/i386/i386.md (tablejump): Add TARGET_MACHO case.
+	* config/i386/i386.c (output_set_got): For Mach-O, output Mach-O
+	label and not the GOT add.
+	(constant_address_p): For Mach-O, seeing a CONST is enough.
+	(legitimate_pic_address_disp_p): Add a Mach-O case.
+	(legitimate_address_p): Also test machopic_operand_p if Mach-O.
+	(legitimize_pic_address): Use generic Mach-O code to legitimize.
+	(output_pic_addr_const): Suppress @PLT if Mach-O, and parens
+	if outputting a difference.
+	(ix86_output_addr_diff_elt): Add Mach-O case.
+	(ix86_expand_move): Similarly.
+	(ix86_expand_call): Similarly.
+	(current_machopic_label_num): New global.
+	(machopic_output_stub): New function.
+	(ix86_value_regno): New function.
+	(ix86_function_value): Use it instead of VALUE_REGNO.
+	(ix86_libcall_value): Ditto.
+	* config/i386/unix.h (VALUE_REGNO): Remove.
+
 2002-07-31  Graham Stott  <grahas@btinternet.com>
 
 	* config/rs6000/rs6000.c(rs6000_hash_constant): Fix

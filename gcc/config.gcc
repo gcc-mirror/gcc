@@ -998,6 +998,18 @@ i370-*-linux*)
 		thread_file='posix'
 	fi
 	;;
+i[34567]86-*-darwin*)
+	tm_file="${tm_file} darwin.h i386/darwin.h"
+	tm_p_file="${tm_p_file} darwin-protos.h"
+	tmake_file=i386/t-darwin
+	extra_objs="darwin.o"
+	target_gtfiles="\$(srcdir)/config/darwin.c"
+	c_target_objs="darwin-c.o"
+	cxx_target_objs="darwin-c.o"
+	# Darwin linker does collect2 functionality
+	use_collect2=no
+	float_format=i386
+	;;
 i[34567]86-*-elf*)
 	xm_defines=POSIX
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h"
