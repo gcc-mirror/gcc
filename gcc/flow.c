@@ -1094,12 +1094,17 @@ make_edges (label_value_list)
 	{
 	  rtx tmp;
 
+	  /* Recognize a non-local goto as a branch outside the
+	     current function.  */
+	  if (find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
+	    ;
+
 	  /* ??? Recognize a tablejump and do the right thing.  */
-	  if ((tmp = JUMP_LABEL (insn)) != NULL_RTX
-	      && (tmp = NEXT_INSN (tmp)) != NULL_RTX
-	      && GET_CODE (tmp) == JUMP_INSN
-	      && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
-		  || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
+	  else if ((tmp = JUMP_LABEL (insn)) != NULL_RTX
+		   && (tmp = NEXT_INSN (tmp)) != NULL_RTX
+		   && GET_CODE (tmp) == JUMP_INSN
+		   && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
+		       || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
 	    {
 	      rtvec vec;
 	      int j;

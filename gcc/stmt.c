@@ -783,7 +783,7 @@ expand_goto (label)
     {
       struct function *p = find_function_data (context);
       rtx label_ref = gen_rtx_LABEL_REF (Pmode, label_rtx (label));
-      rtx handler_slot, static_chain, save_area;
+      rtx handler_slot, static_chain, save_area, insn;
       tree link;
 
       /* Find the corresponding handler slot for this label.  */
@@ -836,6 +836,15 @@ expand_goto (label)
 	  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
 	  emit_indirect_jump (handler_slot);
 	}
+
+      /* Search backwards to the jump insn and mark it as a 
+	 non-local goto.  */
+      for (insn = get_last_insn ();
+	   GET_CODE (insn) != JUMP_INSN; 
+	   insn = PREV_INSN (insn))
+	continue;
+      REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO, const0_rtx,
+					  REG_NOTES (insn));
     }
   else
     expand_goto_internal (label, label_rtx (label), NULL_RTX);
