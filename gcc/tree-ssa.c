@@ -108,8 +108,6 @@ flush_pending_stmts (edge e)
 static bool
 verify_ssa_name (tree ssa_name, bool is_virtual)
 {
-  TREE_VISITED (ssa_name) = 1;
-
   if (TREE_CODE (ssa_name) != SSA_NAME)
     {
       error ("Expected an SSA_NAME object");
@@ -219,6 +217,7 @@ verify_use (basic_block bb, basic_block def_bb, tree ssa_name,
   bool err = false;
 
   err = verify_ssa_name (ssa_name, is_virtual);
+  TREE_VISITED (ssa_name) = 1;
 
   if (IS_EMPTY_STMT (SSA_NAME_DEF_STMT (ssa_name))
       && var_ann (SSA_NAME_VAR (ssa_name))->default_def == ssa_name)

@@ -1,3 +1,10 @@
+2005-02-01  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/19670
+	* tree-ssa.c (verify_ssa_name): Don't set TREE_VISITED
+	here...
+	(verify_use): ... set it here, instead.
+
 2005-02-01  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (Test directives): Fix formatting.
