@@ -1,3 +1,8 @@
+2002-01-22  Momchil Velikov  <velco@fadata.bg>
+
+	* configure.in (variable detection): Use arrays of unspecified
+	size instead of plain integers.
+
 2001-12-20  Release Manager
 
 	* GCC 3.0.3 Released.
