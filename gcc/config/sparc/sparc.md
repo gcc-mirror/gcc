@@ -1376,14 +1376,13 @@
   "")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "register_operand" "=r,r,r")
-	(zero_extend:HI (match_operand:QI 1 "sparc_operand" "r,I,Q")))]
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(zero_extend:HI (match_operand:QI 1 "sparc_operand" "r,Q")))]
   "GET_CODE (operands[1]) != CONST_INT"
   "@
-   and %1,0xff,%0;
-   mov (%1 & 0xff),%0
+   and %1,0xff,%0
    ldub %1,%0"
-  [(set_attr "type" "unary,move,load")
+  [(set_attr "type" "unary,load")
    (set_attr "length" "1")])
 
 (define_expand "zero_extendqisi2"
@@ -1393,14 +1392,13 @@
   "")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r")
-	(zero_extend:SI (match_operand:QI 1 "sparc_operand" "r,I,Q")))]
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(zero_extend:SI (match_operand:QI 1 "sparc_operand" "r,Q")))]
   "GET_CODE (operands[1]) != CONST_INT"
   "@
    and %1,0xff,%0
-   mov (%1 & 0xff),%0
    ldub %1,%0"
-  [(set_attr "type" "unary,move,load")
+  [(set_attr "type" "unary,load")
    (set_attr "length" "1")])
 
 (define_insn ""
