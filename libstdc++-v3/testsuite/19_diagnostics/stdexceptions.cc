@@ -69,12 +69,48 @@ void test03()
     { VERIFY( false ); }
 }
 
+// test copy ctors and assignment operators
+// libstdc++/1972
+// via Greg Bumgardner <bumgard@roguewave.com>
+void allocate_on_stack(void) 
+{
+  const size_t num = 512;
+  __extension__ char array[num];
+  for (size_t i = 0; i < num; i++) 
+    array[i]=0;
+}
+void test04()
+{
+  const std::string s("CA ISO emergency once again:immediate power down");
+  const char* strlit1 = "wish I lived in Palo Alto";
+  const char* strlit2 = "...or Santa Barbara";
+  std::runtime_error obj1(s);
+  
+  // block 01
+  {
+    const std::string s2(strlit1);
+    std::runtime_error obj2(s2);
+    obj1 = obj2;
+  }
+  allocate_on_stack();
+  VERIFY( strcmp(strlit1, obj1.what()) == 0 ); 
+
+  // block 02
+  {
+    const std::string s3(strlit2);
+    std::runtime_error obj3 = std::runtime_error(s3);
+    obj1 = obj3;
+  }
+  allocate_on_stack();     
+  VERIFY( strcmp(strlit2, obj1.what()) == 0 ); 
+}
 
 int main(void)
 {
   test01();
   test02();
   test03();
-  
+  test04();
+
   return 0;
 }

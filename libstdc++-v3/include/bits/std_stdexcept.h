@@ -43,7 +43,7 @@ namespace std
 {
   class logic_error : public exception 
   {
-    const string _M_msg;
+    string _M_msg;
 
   public:
     explicit 
@@ -82,7 +82,7 @@ namespace std
 
   class runtime_error : public exception 
   {
-    const string _M_msg;
+    string _M_msg;
 
   public:
     explicit 
