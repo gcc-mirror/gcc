@@ -4,6 +4,8 @@
 
 	* gcc.dg/20020220-2.c: New test.
 
+	* g++.dg/opt/mmx1.C: New test.
+
 2002-02-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c-torture/compile/20020110.c: New test.

@@ -1,4 +1,10 @@
-2002-02-20  Jakub Jelinek  <jakub@redhat.com>
+2002-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/4994
+	* config/i386/i386.md (movsi_1, movsf_1): Support MMX -> MMX
+	register moves.
+
+2002-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/4574
 	* expr.h (expand_and): Add mode argument.
