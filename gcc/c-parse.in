@@ -395,7 +395,8 @@ unary_expr:
 		{ $$ = $3;
 		  pedantic = $<itype>1; }
 	| unop cast_expr  %prec UNARY
-		{ $$ = build_unary_op ($1, $2, 0); }
+		{ $$ = build_unary_op ($1, $2, 0);
+		  overflow_warning ($$); }
 	/* Refer to the address of a label as a pointer.  */
 	| ANDAND identifier
 		{ tree label = lookup_label ($2);
