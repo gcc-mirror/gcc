@@ -136,6 +136,17 @@ java::lang::VMClassLoader::getPrimitiveClass (jchar type)
   return _Jv_FindClassFromSignature (sig, NULL);
 }
 
+jclass
+java::lang::VMClassLoader::loadClass(jstring name, jboolean resolve)
+{
+  _Jv_Utf8Const *utf = _Jv_makeUtf8Const (name);
+  // FIXME: we culd make _Jv_FindClassFromSignature a template.
+  jclass klass = _Jv_FindClassInCache (utf, NULL);
+  if (klass && resolve)
+    _Jv_InitClass (klass);
+  return klass;
+}
+
 void
 _Jv_WaitForState (jclass klass, int state)
 {

@@ -983,6 +983,12 @@ _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
       arg_vec = JvConvertArgv (argc - 1, argv + 1);
 #endif
 
+      // We have to initialize this fairly early, to avoid circular
+      // class initialization.  In particular we want to start the
+      // initialization of ClassLoader before we start the
+      // initialization of VMClassLoader.
+      _Jv_InitClass (&java::lang::ClassLoader::class$);
+
       using namespace gnu::gcj::runtime;
       if (klass)
 	main_thread = new FirstThread (klass, arg_vec);

@@ -1,3 +1,9 @@
+2003-10-02  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/VMClassLoader.java (loadClass): Now native.
+	* java/lang/natClassLoader.cc (loadClass): Implement.
+	* prims.cc (_Jv_RunMain): Initialize ClassLoader.
+
 2003-10-02  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/InetAddress.java
