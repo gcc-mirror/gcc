@@ -33,6 +33,7 @@
 
 #include <bits/basic_file.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <errno.h>
 
 namespace std 
