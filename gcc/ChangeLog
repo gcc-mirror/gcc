@@ -1,3 +1,7 @@
+Sun Jun 28 02:11:16 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Jun 27 23:32:25 1998  Richard Henderson  <rth@cygnus.com>
 
 	* jump.c (jump_optimize): Use side_effects_p & may_trap_p instead
