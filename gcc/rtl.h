@@ -909,6 +909,8 @@ extern int ceil_log2			PROTO((unsigned HOST_WIDE_INT));
   plus_constant_for_output_wide (X, (HOST_WIDE_INT) (C))
 
 /* In explow.c */
+extern HOST_WIDE_INT trunc_int_for_mode	PROTO((HOST_WIDE_INT,
+					       enum machine_mode));
 extern rtx plus_constant_wide		 PROTO((rtx, HOST_WIDE_INT));
 extern rtx plus_constant_for_output_wide PROTO((rtx, HOST_WIDE_INT));
 extern void optimize_save_area_alloca	PROTO((rtx));
