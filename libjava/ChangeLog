@@ -1,5 +1,15 @@
 2002-03-25  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.am (libgcj_la_LDFLAGS): Use THREADLDFLAGS.
+	(jv_convert_LDFLAGS): Likewise.
+	(gij_LDFLAGS): Likewise.
+	(rmic_LDFLAGS): Likewise.
+	(rmiregistry_LDFLAGS): Likewise.
+	* configure.in (THREADLDFLAGS): New subst; set correctly for
+	*BSD.
+
+2002-03-25  Tom Tromey  <tromey@redhat.com>
+
 	For PR libgcj/5303:
 	* gnu/java/rmi/registry/RegistryImpl.java (main): Recognize --help
 	and --version.
