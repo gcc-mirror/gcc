@@ -1,3 +1,7 @@
+2001-11-04  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* gcc.c-torture/execute/anon-1.c: New test.
+
 2001-11-03  Geoffrey Keating  <geoffk@redhat.com>
 
 	* g++.old-deja/g++.bugs/900227_01.C: short and pointer are the

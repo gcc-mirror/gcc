@@ -1,3 +1,11 @@
+2001-11-04  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	PR c/2820
+	* c-typeck.c (lookup_field): Rework to return a chain down to
+	the looked-up field.
+	(build_component_ref): Use the new lookup_field to handle
+	nested anonymous entities correctly.
+
 Sun Nov  4 11:53:31 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/sparc/sparc.c (sparc_emit_set_const32, GEN_HIGHINT64):

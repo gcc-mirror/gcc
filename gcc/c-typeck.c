@@ -55,7 +55,7 @@ static int comp_target_types		PARAMS ((tree, tree));
 static int function_types_compatible_p	PARAMS ((tree, tree));
 static int type_lists_compatible_p	PARAMS ((tree, tree));
 static tree decl_constant_value_for_broken_optimization PARAMS ((tree));
-static tree lookup_field		PARAMS ((tree, tree, tree *));
+static tree lookup_field		PARAMS ((tree, tree));
 static tree convert_arguments		PARAMS ((tree, tree, tree, tree));
 static tree pointer_int_sum		PARAMS ((enum tree_code, tree, tree));
 static tree pointer_diff		PARAMS ((tree, tree));
@@ -990,17 +990,20 @@ default_conversion (exp)
   return exp;
 }
 
-/* Look up component name in the structure type definition.
+/* Look up COMPONENT in a structure or union DECL.
 
-   If this component name is found indirectly within an anonymous union,
-   store in *INDIRECT the component which directly contains
-   that anonymous union.  Otherwise, set *INDIRECT to 0.  */
+   If the component name is not found, returns NULL_TREE.  Otherwise,
+   the return value is a TREE_LIST, with each TREE_VALUE a FIELD_DECL
+   stepping down the chain to the component, which is in the last
+   TREE_VALUE of the list.  Normally the list is of length one, but if
+   the component is embedded within (nested) anonymous structures or
+   unions, the list steps down the chain to the component.  */
      
 static tree
-lookup_field (type, component, indirect)
-     tree type, component;
-     tree *indirect;
+lookup_field (decl, component)
+     tree decl, component;
 {
+  tree type = TREE_TYPE (decl);
   tree field;
 
   /* If TYPE_LANG_SPECIFIC is set, then it is a sorted array of pointers
@@ -1026,18 +1029,15 @@ lookup_field (type, component, indirect)
 	      /* Step through all anon unions in linear fashion.  */
 	      while (DECL_NAME (field_array[bot]) == NULL_TREE)
 		{
-		  tree anon = 0, junk;
-
 		  field = field_array[bot++];
 		  if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
 		      || TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
-		    anon = lookup_field (TREE_TYPE (field), component, &junk);
-
-		  if (anon != NULL_TREE)
 		    {
-		      *indirect = field;
-		      return anon;
-		    }
+		      tree anon = lookup_field (field, component);
+
+		      if (anon)
+			return tree_cons (NULL_TREE, field, anon);
+		    } 
 		}
 
 	      /* Entire record is only anon unions.  */
@@ -1059,35 +1059,31 @@ lookup_field (type, component, indirect)
       if (DECL_NAME (field_array[bot]) == component)
 	field = field_array[bot];
       else if (DECL_NAME (field) != component)
-	field = 0;
+	return NULL_TREE;
     }
   else
     {
       for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	{
-	  if (DECL_NAME (field) == NULL_TREE)
+	  if (DECL_NAME (field) == NULL_TREE
+	      && (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
+		  || TREE_CODE (TREE_TYPE (field)) == UNION_TYPE))
 	    {
-	      tree junk;
-	      tree anon = 0;
+	      tree anon = lookup_field (field, component);
 
-	      if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
-		  || TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
-		anon = lookup_field (TREE_TYPE (field), component, &junk);
-
-	      if (anon != NULL_TREE)
-		{
-		  *indirect = field;
-		  return anon;
-		}
+	      if (anon)
+		return tree_cons (NULL_TREE, field, anon);
 	    }
 
 	  if (DECL_NAME (field) == component)
 	    break;
 	}
+
+      if (field == NULL_TREE)
+	return NULL_TREE;
     }
 
-  *indirect = NULL_TREE;
-  return field;
+  return tree_cons (NULL_TREE, field, NULL_TREE);
 }
 
 /* Make an expression to refer to the COMPONENT field of
@@ -1126,15 +1122,13 @@ build_component_ref (datum, component)
 
   if (code == RECORD_TYPE || code == UNION_TYPE)
     {
-      tree indirect = 0;
-
       if (!COMPLETE_TYPE_P (type))
 	{
 	  incomplete_type_error (NULL_TREE, type);
 	  return error_mark_node;
 	}
 
-      field = lookup_field (type, component, &indirect);
+      field = lookup_field (datum, component);
 
       if (!field)
 	{
@@ -1143,28 +1137,26 @@ build_component_ref (datum, component)
 		 IDENTIFIER_POINTER (component));
 	  return error_mark_node;
 	}
-      if (TREE_TYPE (field) == error_mark_node)
-	return error_mark_node;
 
-      /* If FIELD was found buried within an anonymous union,
-	 make one COMPONENT_REF to get that anonymous union,
-	 then fall thru to make a second COMPONENT_REF to get FIELD.  */
-      if (indirect != 0)
+      /* Chain the COMPONENT_REFs if necessary down to the FIELD.
+	 This might be better solved in future the way the C++ front
+	 end does it - by giving the anonymous entities each a
+	 separate name and type, and then have build_component_ref
+	 recursively call itself.  We can't do that here.  */
+      for (; field; field = TREE_CHAIN (field))
 	{
-	  ref = build (COMPONENT_REF, TREE_TYPE (indirect), datum, indirect);
-	  if (TREE_READONLY (datum) || TREE_READONLY (indirect))
+	  tree subdatum = TREE_VALUE (field);
+
+	  if (TREE_TYPE (subdatum) == error_mark_node)
+	    return error_mark_node;
+
+	  ref = build (COMPONENT_REF, TREE_TYPE (subdatum), datum, subdatum);
+	  if (TREE_READONLY (datum) || TREE_READONLY (subdatum))
 	    TREE_READONLY (ref) = 1;
-	  if (TREE_THIS_VOLATILE (datum) || TREE_THIS_VOLATILE (indirect))
+	  if (TREE_THIS_VOLATILE (datum) || TREE_THIS_VOLATILE (subdatum))
 	    TREE_THIS_VOLATILE (ref) = 1;
 	  datum = ref;
 	}
-
-      ref = build (COMPONENT_REF, TREE_TYPE (field), datum, field);
-
-      if (TREE_READONLY (datum) || TREE_READONLY (field))
-	TREE_READONLY (ref) = 1;
-      if (TREE_THIS_VOLATILE (datum) || TREE_THIS_VOLATILE (field))
-	TREE_THIS_VOLATILE (ref) = 1;
 
       return ref;
     }
