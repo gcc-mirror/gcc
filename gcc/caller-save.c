@@ -522,6 +522,16 @@ insert_save_restore (insn, save_p, regno, insn_mode)
   enum insn_code code;
   int i;
 
+  /* A common failure mode if register status is not correct in the RTL
+     is for this routine to be called with a REGNO we didn't expect to
+     save.  That will cause us to write an insn with a (nil) SET_DEST
+     or SET_SRC.  Instead of doing so and causing a crash later, check
+     for this common case and abort here instead.  This will remove one
+     step in debugging such problems.  */
+
+  if (regno_save_mem[regno] == 0)
+    abort ();
+
   /* If INSN is a CALL_INSN, we must insert our insns before any
      USE insns in front of the CALL_INSN.  */
 
