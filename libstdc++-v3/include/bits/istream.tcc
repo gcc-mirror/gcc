@@ -64,7 +64,7 @@ namespace std
 
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 195. Should basic_istream::sentry's constructor ever
-	      // 195. set eofbit?
+	      // set eofbit?
 	      if (traits_type::eq_int_type(__c, __eof))
 		__in.setstate(ios_base::eofbit);
 	    }
