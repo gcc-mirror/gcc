@@ -1495,6 +1495,13 @@ extern struct rtx_def *gen_compare_reg ();
 		  CXT);							\
 }
 
+/* Generate RTL to flush the register windows so as to make arbitrary frames
+   available.  */
+#define SETUP_FRAME_ADDRESSES()		\
+  emit_insn (gen_flush_register_windows ())
+
+#define BUILTIN_SETJMP_FRAME_VALUE hard_frame_pointer_rtx
+
 #if 0
 /* Promote char and short arguments to ints, when want compatibility with
    the iC960 compilers.  */
