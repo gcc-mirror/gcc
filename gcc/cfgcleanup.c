@@ -515,6 +515,15 @@ try_forward_edges (mode, b)
 
 	      if (GET_CODE (insn) == NOTE)
 		break;
+
+	      /* Do not clean up branches to just past the end of a loop
+		 at this time; it can mess up the loop optimizer's
+		 recognition of some patterns. */
+
+	      insn = PREV_INSN (target->head);
+	      if (insn && GET_CODE (insn) == NOTE
+		    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
+		break;
 	    }
 
 	  counter++;

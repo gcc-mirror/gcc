@@ -1,3 +1,8 @@
+2002-09-17  Dale Johannesen  <dalej@apple.com>
+	* cfgcleanup.c (try_forward_edges):  Do not forward a
+	branch to just after a loop exit before loop optimization;
+	this interfered with doloop detection.
+
 2002-09-17  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (output_return_instruction): Do not
@@ -118,6 +123,7 @@ Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* real.h (real_nan): Return bool.
 	* doc/extend.texi: Document new builtins.
 
+>>>>>>> 1.15460
 2002-09-16  Jason Merrill  <jason@redhat.com>
 	    Danny Smith  <dannysmith@users.sourceforge.net>
 
