@@ -1419,10 +1419,23 @@ integrate_decl_tree (let, map)
       if (DECL_LANG_SPECIFIC (d))
 	copy_lang_decl (d);
 
+      /* ??? We used to call pushdecl here, but that does not work now that
+	 we generate entire functions as trees.  We only want the pushdecl
+	 code that sets DECL_CONTEXT.  Each front end sets DECL_CONTEXT
+	 slightly differently though, so we may need new callbacks to the
+	 front-ends to do this right.  For now, we just use the code from the
+	 C front end and hope that is sufficient.  Alternatively, we could
+	 set DECL_CONTEXT (d) here only if DECL_CONTEXT (t) is non-null.  */
       /* This new declaration is now in the scope of the function into
 	 which we are inlining the function, not the function being
 	 inlined.  */
       DECL_CONTEXT (d) = current_function_decl;
+      /* A local extern declaration for a function doesn't constitute nesting.
+	 A local auto declaration does, since it's a forward decl
+	 for a nested function coming later.  */
+      if (TREE_CODE (d) == FUNCTION_DECL && DECL_INITIAL (d) == 0
+	  && DECL_EXTERNAL (d))
+	DECL_CONTEXT (d) = 0;
 
       /* Add this declaration to the list of variables in the new
 	 block.  */

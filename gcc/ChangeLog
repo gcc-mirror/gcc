@@ -1,3 +1,8 @@
+Wed Oct 20 15:18:42 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* integrate.c (integrate_decl_tree): Set DECL_CONTEXT to 0 if this is
+	a local extern function declaration.
+
 Wed Oct 20 13:56:01 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.c (ix86_expand_prologue): Properly wrap USE around
