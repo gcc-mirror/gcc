@@ -970,7 +970,7 @@ free_def_dec (def_dec_info *p)
   free (p);
 }
 
-/* Unexpand as many macro symbol as we can find.
+/* Unexpand as many macro symbols as we can find.
 
    If the given line must be unexpanded, make a copy of it in the heap and
    return a pointer to the unexpanded copy.  Otherwise return NULL.  */
