@@ -1012,6 +1012,9 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 	  if (toplevel
 	      && GET_CODE (PATTERN (insn)) == SET
 	      && SET_DEST (PATTERN (insn)) == var
+	      /* If this represents the result of an insn group,
+		 don't delete the insn.  */
+	      && find_reg_note (insn, REG_RETVAL, NULL_RTX) == 0
 	      && rtx_equal_p (SET_SRC (PATTERN (insn)), var))
 	    {
 	      /* In unoptimized compilation, we shouldn't call delete_insn
