@@ -7834,7 +7834,6 @@ emit_multi_reg_push (mask)
   
   par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs));
   dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (num_dwarf_regs + 1));
-  RTX_FRAME_RELATED_P (dwarf) = 1;
   dwarf_par_index = 1;
 
   for (i = 0; i <= LAST_ARM_REGNUM; i++)
