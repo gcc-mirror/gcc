@@ -99,6 +99,13 @@ struct _Jv_ifaces
   jshort count;
 };
 
+// Used for vtable pointer manipulation.
+union _Jv_Self
+{
+  char *vtable_ptr;
+  jclass self;
+};
+
 #define JV_PRIMITIVE_VTABLE ((_Jv_VTable *) -1)
 
 #define JV_CLASS(Obj) ((jclass) (*(_Jv_VTable **) Obj)->clas)
@@ -211,9 +218,8 @@ public:
 
     // C++ ctors set the vtbl pointer to point at an offset inside the vtable
     // object. That doesn't work for Java, so this hack adjusts it back.
-    void *p =  ((void **)this)[0];
-    ((void **)this)[0] = (void *)((char *)p-2*sizeof (void *));
-
+    ((_Jv_Self *)this)->vtable_ptr -= 2 * sizeof (void *);
+    
     // We must initialize every field of the class.  We do this in the
     // same order they are declared in Class.h, except for fields that
     // are initialized to NULL.

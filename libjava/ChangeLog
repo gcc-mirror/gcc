@@ -1,3 +1,13 @@
+2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/lang/Class.h (_Jv_Self): New union type.
+	(Class): Manipulate vtable pointer via _Jv_Self union. Thanks to
+	Jeff Sturm and Fergus Henderson.
+
+2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/lang/ClassLoader.java: Remove dead code fragment.
+
 2001-05-03  Martin Kahlert  <martin.kahlert@infineon.com>
 
 	* jni.cc (_Jv_JNI_GetPrimitiveArrayRegion): Fixed bounds
