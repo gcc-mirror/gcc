@@ -1,5 +1,11 @@
 2004-02-12  Zack Weinberg  <zack@codesourcery.com>
 
+	* dbxout.c: Move declaration of dbxout_type_decl outside
+	#ifdef DBX_DEBUGGING_INFO.
+	* c-parse.in: Don't give the asmdef production a type.
+
+2004-02-12  Zack Weinberg  <zack@codesourcery.com>
+
 	* debug.h (struct gcc_debug_hooks): Add type_decl field.
 	(debug_nothing_tree_int): Prototype.
 	(dwarf_debug_hooks): Delete, unused.
