@@ -79,7 +79,7 @@ Boston, MA 02111-1307, USA. */
   do									\
     {									\
       if (i386_pe_dllexport_name_p (NAME))				\
-	i386_pe_record_exported_symbol (NAME);				\
+	i386_pe_record_exported_symbol (NAME, 0);			\
       /* UWIN binutils bug workaround. */				\
       if (0 && write_symbols != SDB_DEBUG)				\
 	i386_pe_declare_function_type (FILE, NAME, TREE_PUBLIC (DECL));	\

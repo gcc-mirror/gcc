@@ -1,3 +1,17 @@
+Sat Aug 28 15:58:16 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/winnt.c (export_list): New type.
+	(exports_head): Rename to
+	(export_head):  this.
+	(i386_pe_record_exported_symbol): Add is_data flag.
+	(i386_pe_asm_file_end): Emit directive for exported variables.
+	* i386/cygwin.h (i386_pe_record_exported_symbol): Update
+	prototype.
+	* i386/cygwin.h (ASM_OUTPUT_COMMON): Specify symbol type.
+	(ASM_DECLARE_OBJECT_NAME): Likewise.
+	(ASM_DECLARE_FUNCTION_NAME): Likewise.
+	* i386/uwin.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+
 Fri Aug 27 15:35:24 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (fold_rtx): Work around bug in Sun V5.0 compilers.
