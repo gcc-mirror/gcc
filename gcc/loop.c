@@ -56,6 +56,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "predict.h"
 #include "insn-flags.h"
 #include "optabs.h"
+#include "cfgloop.h"
 
 /* Not really meaningful values, but at least something.  */
 #ifndef SIMULTANEOUS_PREFETCHES
@@ -495,7 +496,7 @@ loop_optimize (f, dumpfile, flags)
 
   /* Allocate and initialize auxiliary loop information.  */
   loops_info = xcalloc (loops->num, sizeof (struct loop_info));
-  for (i = 0; i < loops->num; i++)
+  for (i = 0; i < (int) loops->num; i++)
     loops->array[i].aux = loops_info + i;
 
   /* Now find all register lifetimes.  This must be done after

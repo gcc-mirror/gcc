@@ -52,6 +52,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "params.h"
 #include "target.h"
 #include "loop.h"
+#include "cfgloop.h"
 
 /* real constants: 0, 1, 1-1/REG_BR_PROB_BASE, REG_BR_PROB_BASE,
 		   1/REG_BR_PROB_BASE, 0.5, BB_FREQ_MAX.  */
@@ -425,7 +426,7 @@ estimate_probability (loops_info)
 {
   dominance_info dominators, post_dominators;
   basic_block bb;
-  int i;
+  unsigned i;
 
   connect_infinite_loops_to_exit ();
   dominators = calculate_dominance_info (CDI_DOMINATORS);
@@ -436,12 +437,27 @@ estimate_probability (loops_info)
   for (i = 1; i < loops_info->num; i++)
     {
       basic_block bb, *bbs;
-      int j;
+      unsigned j;
       int exits;
       struct loop *loop = loops_info->parray[i];
+      struct loop_desc desc;
+      unsigned HOST_WIDE_INT niter;
 
       flow_loop_scan (loops_info, loop, LOOP_EXIT_EDGES);
       exits = loop->num_exits;
+
+      if (simple_loop_p (loops_info, loop, &desc)
+	  && desc.const_iter)
+	{
+	  niter = desc.niter + 1;
+	  if (niter == 0)        /* We might overflow here.  */
+	    niter = desc.niter;
+
+	  predict_edge (desc.in_edge, PRED_LOOP_ITERATIONS,
+			REG_BR_PROB_BASE
+			- (REG_BR_PROB_BASE + niter /2)
+			/ niter);
+	}
 
       bbs = get_loop_body (loop);
       for (j = 0; j < loop->num_nodes; j++)
@@ -1060,7 +1076,7 @@ estimate_loops_at_level (first_loop)
     {
       edge e;
       basic_block *bbs;
-      int i;
+      unsigned i;
 
       estimate_loops_at_level (loop->inner);
       

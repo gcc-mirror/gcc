@@ -268,7 +268,7 @@ reorder_basic_blocks ()
   if ((* targetm.cannot_modify_jumps_p) ())
     return;
 
-  cfg_layout_initialize ();
+  cfg_layout_initialize (NULL);
 
   make_reorder_chain ();
 

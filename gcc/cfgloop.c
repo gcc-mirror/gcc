@@ -26,6 +26,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "toplev.h"
+#include "cfgloop.h"
+#include "flags.h"
 
 /* Ratio of frequencies of edges so that one of more latch edges is
    considered to belong to inner loop with same header.  */
@@ -114,7 +116,7 @@ flow_loop_dump (loop, file, loop_dump_aux, verbose)
      int verbose;
 {
   basic_block *bbs;
-  int i;
+  unsigned i;
 
   if (! loop || ! loop->header)
     return;
@@ -206,7 +208,7 @@ flow_loops_free (loops)
 {
   if (loops->parray)
     {
-      int i;
+      unsigned i;
 
       if (! loops->num)
 	abort ();
@@ -275,7 +277,7 @@ flow_loop_exit_edges_find (loop)
 {
   edge e;
   basic_block node, *bbs;
-  int num_exits, i;
+  unsigned num_exits, i;
 
   loop->exit_edges = NULL;
   loop->num_exits = 0;
@@ -609,6 +611,10 @@ make_forwarder_block (bb, redirect_latch, redirect_nonlatch, except,
 
   insn = PREV_INSN (first_insn_after_basic_block_note (bb));
 
+  /* For empty block split_block will return NULL.  */
+  if (bb->end == insn)
+    emit_note_after (NOTE_INSN_DELETED, insn);
+
   fallthru = split_block (bb, insn);
   dummy = fallthru->src;
   bb = fallthru->dest;
@@ -926,9 +932,11 @@ flow_loops_find (loops, flags)
       loops->cfg.dom = NULL;
       free_dominance_info (dom);
     }
+
+  loops->state = 0;
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
-  verify_loop_structure (loops, 0);
+  verify_loop_structure (loops);
 #endif
 
   return loops->num;
@@ -992,7 +1000,7 @@ get_loop_body (loop)
      const struct loop *loop;
 {
   basic_block *tovisit, bb;
-  int tv = 0;
+  unsigned tv = 0;
 
   if (!loop->num_nodes)
     abort ();
@@ -1003,7 +1011,7 @@ get_loop_body (loop)
   if (loop->latch == EXIT_BLOCK_PTR)
     {
       /* There may be blocks unreachable from EXIT_BLOCK.  */
-      if (loop->num_nodes != n_basic_blocks + 2)
+      if (loop->num_nodes != (unsigned) n_basic_blocks + 2)
 	abort ();
       FOR_EACH_BB (bb)
 	tovisit[tv++] = bb;
@@ -1073,18 +1081,57 @@ find_common_loop (loop_s, loop_d)
   return loop_s;
 }
 
+/* Cancels the LOOP; it must be innermost one.  */
+void
+cancel_loop (loops, loop)
+     struct loops *loops;
+     struct loop *loop;
+{
+  basic_block *bbs;
+  unsigned i;
+
+  if (loop->inner)
+    abort ();
+
+  /* Move blocks up one level (they should be removed as soon as possible).  */
+  bbs = get_loop_body (loop);
+  for (i = 0; i < loop->num_nodes; i++)
+    bbs[i]->loop_father = loop->outer;
+
+  /* Remove the loop from structure.  */
+  flow_loop_tree_node_remove (loop);
+
+  /* Remove loop from loops array.  */
+  loops->parray[loop->num] = NULL;
+
+  /* Free loop data.  */
+  flow_loop_free (loop);
+}
+
+/* Cancels LOOP and all its subloops.  */
+void
+cancel_loop_tree (loops, loop)
+     struct loops *loops;
+     struct loop *loop;
+{
+  while (loop->inner)
+    cancel_loop_tree (loops, loop->inner);
+  cancel_loop (loops, loop);
+}
+
 /* Checks that LOOPS are allright:
      -- sizes of loops are allright
      -- results of get_loop_body really belong to the loop
      -- loop header have just single entry edge and single latch edge
      -- loop latches have only single successor that is header of their loop
+     -- irreducible loops are correctly marked
   */
 void
-verify_loop_structure (loops, flags)
+verify_loop_structure (loops)
      struct loops *loops;
-     int flags;
 {
-  int *sizes, i, j;
+  unsigned *sizes, i, j;
+  sbitmap irreds;
   basic_block *bbs, bb;
   struct loop *loop;
   int err = 0;
@@ -1137,14 +1184,14 @@ verify_loop_structure (loops, flags)
       if (!loop)
 	continue;
 
-      if ((flags & VLS_EXPECT_PREHEADERS)
+      if ((loops->state & LOOPS_HAVE_PREHEADERS)
 	  && (!loop->header->pred->pred_next
 	      || loop->header->pred->pred_next->pred_next))
 	{
 	  error ("Loop %d's header does not have exactly 2 entries.", i);
 	  err = 1;
 	}
-      if (flags & VLS_EXPECT_SIMPLE_LATCHES)
+      if (loops->state & LOOPS_HAVE_SIMPLE_LATCHES)
 	{
 	  if (!loop->latch->succ
 	      || loop->latch->succ->succ_next)
@@ -1170,6 +1217,39 @@ verify_loop_structure (loops, flags)
 	}
     }
 
+  /* Check irreducible loops.  */
+  if (loops->state & LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
+    {
+      /* Record old info.  */
+      irreds = sbitmap_alloc (last_basic_block);
+      FOR_EACH_BB (bb)
+	if (bb->flags & BB_IRREDUCIBLE_LOOP)
+	  SET_BIT (irreds, bb->index);
+	else
+	  RESET_BIT (irreds, bb->index);
+
+      /* Recount it.  */
+      mark_irreducible_loops (loops);
+
+      /* Compare.  */
+      FOR_EACH_BB (bb)
+	{
+	  if ((bb->flags & BB_IRREDUCIBLE_LOOP)
+	      && !TEST_BIT (irreds, bb->index))
+	    {
+	      error ("Basic block %d should be marked irreducible.", bb->index);
+	      err = 1;
+	    }
+	  else if (!(bb->flags & BB_IRREDUCIBLE_LOOP)
+	      && TEST_BIT (irreds, bb->index))
+	    {
+	      error ("Basic block %d should not be marked irreducible.", bb->index);
+	      err = 1;
+	    }
+	}
+      free (irreds);
+    }
+
   if (err)
     abort ();
 }
@@ -1177,7 +1257,7 @@ verify_loop_structure (loops, flags)
 /* Returns latch edge of LOOP.  */
 edge
 loop_latch_edge (loop)
-     struct loop *loop;
+     const struct loop *loop;
 {
   edge e;
 
@@ -1190,7 +1270,7 @@ loop_latch_edge (loop)
 /* Returns preheader edge of LOOP.  */
 edge
 loop_preheader_edge (loop)
-     struct loop *loop;
+     const struct loop *loop;
 {
   edge e;
 

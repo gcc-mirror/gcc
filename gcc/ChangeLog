@@ -1,3 +1,52 @@
+2003-01-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloopanal.c: New file.
+	* cfgloopmanip.c: New file.
+	* Makefile.in (cfgloopanal.o, cfgloopmanip.o): New.
+	(toplev.o, loop.o, doloop.o, unroll.o, cfgloop.o, predict.o,
+	cfglayout.o): Add dependency on cfgloop.h.
+	(cfgloop.o): Add flags.h dependency.
+	* basic-block.h (BB_IRREDUCIBLE_LOOP, BB_SUPERBLOCK): New flags.
+	(VLS_EXPECT_PREHEADERS, VLS_EXPECT_SIMPLE_LATCHES): Removed.
+	(struct loop, struct loops, flow_loops_find, flow_loops_update,
+	flow_loops_free, flow_loops_dump, flow_loop_dump,
+	flow_loop_scan, flow_loop_tree_node_add, flow_loop_tree_node_remove,
+	LOOP_TREE,,LOOP_PRE_HEADER, LOOP_ENTRY_EDGES, LOOP_EXIT_EDGES,
+	LOOP_ALL, flow_loop_outside_edge_p, flow_loop_nested_p,
+	flow_bb_inside_loop_p, get_loop_body, loop_preheader_edge,
+	loop_latch_edge, add_bb_to_loop, remove_bb_from_loops,
+	find_common_loop, verify_loop_structure): Declarations moved to ...
+	* cfgloop.h: New file.
+	* bb-reorder.c (reorder_basic_blocks): Modified.
+	* cfglayout.c: Include cfgloop.h.
+	(cleanup_unconditional_jumps, cfg_layout_redirect_edge,
+	cfg_layout_duplicate_bb, cfg_layout_initialize): Update loop structure.
+	(break_superblocks): New static function.
+	(cfg_layout_finalize): Use it.
+	(cfg_layout_split_block): New function.
+	* cfglayout.h (struct reorder_block_def): Add copy and duplicated
+	fields.
+	(cfg_layout_initialize, cfg_layout_redirect_edge): Declaration
+	changed.
+	(cfg_layout_split_block): Declare.
+	* cfgloop.c: Include cfgloop.h and flags.h.
+	(flow_loop_dump, flow_loops_free, flow_loop_exit_edges_find,
+	get_loop_body): Avoid signed versus unsigned comparison warnings.
+	(make_forwarder_block, flow_loops_find, loop_preheader_edge,
+	loop_latch_edge): Modified.
+	(verify_loop_structure): Modified to use flags stored in loop structure;
+	check irreducible loops.
+	(cancel_loop, cancel_loop_tree): New functions.
+	(estimate_probability): Use loop analysis code for predictions.
+	(estimate_loops_at_level):  Avoid signed versus unsigned comparison
+	warnings.
+	* doloop.c: Include cfgloop.h.
+	* loop.c: Include cfgloop.h.
+	* predict.c: Include cfgloop.h.
+	* toplev.c: Include cfgloop.h.
+	* unroll.c: Include cfgloop.h.
+	* tracer.c (tracer): Modified.
+
 2003-01-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (get_shift_alg): Fix a typo.
