@@ -1,3 +1,8 @@
+Sat May 19 09:40:45 2001  Denis Chertykov  <denisc@overta.ru>
+
+	* regrename.c (regrename_optimize): frame pointer register can
+	use a few hardregs.
+
 2001-05-18  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* toplev.c (note_outlining_of_inline_function): Add ATTRIBUTE_UNUSED
