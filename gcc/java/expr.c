@@ -2197,8 +2197,8 @@ process_jvm_instruction (PC, byte_ops, length)
      replace the top of the stack with the thrown object reference */
   if (instruction_bits [PC] & BCODE_EXCEPTION_TARGET)
     {
-      pop_value (ptr_type_node);
-      push_value (soft_exceptioninfo_call_node);
+      tree type = pop_type (ptr_type_node);
+      push_value (build1 (NOP_EXPR, type, soft_exceptioninfo_call_node));
     }
 
   switch (byte_ops[PC++])

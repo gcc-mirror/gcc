@@ -7161,8 +7161,13 @@ java_check_regular_methods (class_decl)
       found = lookup_argument_method (super_class, DECL_NAME (method), sig);
 
       /* Nothing overrides or it's a private method. */
-      if (!found || (found && METHOD_PRIVATE (found)))
+      if (!found)
 	continue;
+      if (METHOD_PRIVATE (found))
+	{
+	  found = NULL_TREE;
+	  continue;
+	}
 
       /* If found wasn't verified, it's DECL_NAME won't be set properly. 
 	 We set it temporarily for the sake of the error report. */
@@ -8310,7 +8315,7 @@ java_complete_expand_methods ()
 	{
 	  if (flag_emit_class_files)
 	    write_classfile (current_class);
-	  else
+	  else if (! flag_syntax_only)
 	    finish_class (current_class);
 	}
     }
