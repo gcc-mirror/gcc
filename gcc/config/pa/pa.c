@@ -3638,14 +3638,6 @@ hppa_expand_prologue ()
 	    }
 	}
     }
-
-  /* FIXME: expand_call and expand_millicode_call need to be fixed to
-     prevent insns with frame notes being scheduled in the delay slot
-     of calls.  This causes problems because the dwarf2 output code
-     processes the insn list serially.  For now, limit the migration
-     of prologue insns with a blockage.  */
-  if (DO_FRAME_NOTES)
-    emit_insn (gen_blockage ());
 }
 
 /* Emit RTL to load REG from the memory location specified by BASE+DISP.
