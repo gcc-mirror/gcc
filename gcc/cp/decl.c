@@ -6769,7 +6769,15 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		  && cleanup == NULL_TREE
 		  && DECL_NAME (decl))
 		TREE_USED (decl) = 0;
+	    }
+	  /* Cleanup any temporaries needed for the initial value.  */
+	  expand_cleanups_to (old_cleanups);
+	  pop_temp_slots ();
+	  pop_temp_slots ();
+	  target_temp_slot_level = old_temp_level;
 
+	  if (DECL_SIZE (decl) && type != error_mark_node)
+	    {
 	      /* Store the cleanup, if there was one.  */
 	      if (cleanup)
 		{
@@ -6778,11 +6786,6 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 			      decl);
 		}
 	    }
-	  /* Cleanup any temporaries needed for the initial value.  */
-	  expand_cleanups_to (old_cleanups);
-	  pop_temp_slots ();
-	  pop_temp_slots ();
-	  target_temp_slot_level = old_temp_level;
 	}
     finish_end0:
 

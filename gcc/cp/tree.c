@@ -1761,11 +1761,18 @@ break_out_target_exprs (t)
   return mapcar (t, bot_manip);
 }
 
+/* Arrange for an expression to be expanded multiple independent
+   times.  This is useful for cleanup actions, as the backend can
+   expand them multiple times in different places.  */
 tree
 unsave_expr (expr)
      tree expr;
 {
   tree t;
+
+  /* If this is already protected, no sense in protecting it again.  */
+  if (TREE_CODE (expr) == UNSAVE_EXPR)
+    return expr;
 
   t = build1 (UNSAVE_EXPR, TREE_TYPE (expr), expr);
   TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (expr);
@@ -1984,16 +1991,19 @@ can_free (obstack, t)
 }
 
 /* Return first vector element whose BINFO_TYPE is ELEM.
-   Return 0 if ELEM is not in VEC.  */
+   Return 0 if ELEM is not in VEC.  VEC may be NULL_TREE.  */
 
 tree
 vec_binfo_member (elem, vec)
      tree elem, vec;
 {
   int i;
-  for (i = 0; i < TREE_VEC_LENGTH (vec); ++i)
-    if (elem == BINFO_TYPE (TREE_VEC_ELT (vec, i)))
-      return TREE_VEC_ELT (vec, i);
+
+  if (vec)
+    for (i = 0; i < TREE_VEC_LENGTH (vec); ++i)
+      if (elem == BINFO_TYPE (TREE_VEC_ELT (vec, i)))
+	return TREE_VEC_ELT (vec, i);
+
   return NULL_TREE;
 }
 
