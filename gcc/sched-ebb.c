@@ -90,9 +90,16 @@ init_ready_list (ready)
      Count number of insns in the target block being scheduled.  */
   for (insn = NEXT_INSN (prev_head); insn != next_tail; insn = NEXT_INSN (insn))
     {
-      if (INSN_DEP_COUNT (insn) == 0)
+      rtx next;
+
+      if (! INSN_P (insn))
+	continue;
+      next = NEXT_INSN (insn);
+
+      if (INSN_DEP_COUNT (insn) == 0
+	  && (! INSN_P (next) || SCHED_GROUP_P (next) == 0))
 	ready_add (ready, insn);
-      if (!(SCHED_GROUP_P (insn)))
+      if (! SCHED_GROUP_P (insn))
 	target_n_insns++;
     }
 }
