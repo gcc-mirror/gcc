@@ -1,3 +1,9 @@
+2003-03-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h: Do not include fixdfdi.h on s390x.
+	(TARGET_64BIT): Define as compile-time constant when IN_LIBGCC2.
+	(MIN_UNITS_PER_WORD): Do not define when IN_LIBGCC2.
+
 2003-03-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR doc-bug/9813

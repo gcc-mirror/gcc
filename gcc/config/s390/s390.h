@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Override the __fixdfdi etc. routines when building libgcc2.
    ??? This should be done in a cleaner way ...  */
-#ifdef IN_LIBGCC2
+#if defined (IN_LIBGCC2) && !defined (__s390x__)
 #include <s390/fixdfdi.h>
 #endif
 
@@ -134,6 +134,17 @@ extern int target_flags;
 #define CAN_DEBUG_WITHOUT_FP
 
 
+/* In libgcc2, determine target settings as compile-time constants.  */
+#ifdef IN_LIBGCC2
+#undef TARGET_64BIT
+#ifdef __s390x__
+#define TARGET_64BIT 1
+#else
+#define TARGET_64BIT 0
+#endif
+#endif
+
+
 /* Target machine storage layout.  */
 
 /* Everything is big-endian.  */
@@ -143,7 +154,9 @@ extern int target_flags;
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
+#ifndef IN_LIBGCC2
 #define MIN_UNITS_PER_WORD 4
+#endif
 #define MAX_BITS_PER_WORD 64
 
 /* Function arguments and return values are promoted to word size.  */
