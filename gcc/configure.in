@@ -3600,8 +3600,9 @@ AC_SUBST(gthread_flags)
 
 lang_specs_files=
 lang_options_files=
-rm -f specs.h options.h
-touch specs.h options.h
+lang_tree_files=
+rm -f specs.h options.h gencheck.h
+touch specs.h options.h gencheck.h
 for subdir in . $subdirs
 do
 	if test -f $srcdir/$subdir/lang-specs.h; then
@@ -3611,6 +3612,10 @@ do
 	if test -f $srcdir/$subdir/lang-options.h; then
 		echo "#include \"$subdir/lang-options.h\"" >>options.h
 		lang_options_files="$lang_options_files $srcdir/$subdir/lang-options.h"
+	fi
+	if test -f $srcdir/$subdir/$subdir-tree.def; then
+		echo "#include \"$subdir/$subdir-tree.def\"" >>gencheck.h
+		lang_tree_files="$lang_tree_files $srcdir/$subdir/$subdir-tree.def"
 	fi
 done
 
@@ -3803,6 +3808,7 @@ AC_SUBST(build_xm_file_list)
 AC_SUBST(host_xm_file_list)
 AC_SUBST(lang_specs_files)
 AC_SUBST(lang_options_files)
+AC_SUBST(lang_tree_files)
 AC_SUBST(thread_file)
 AC_SUBST(gcc_version)
 AC_SUBST(gcc_version_trigger)

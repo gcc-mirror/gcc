@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 
 char *tree_codes[] = {
 #include "tree.def"
+#include "gencheck.h"
 (char*)0
 };
 
