@@ -4014,7 +4014,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   tree endlink, int_endlink, double_endlink, unsigned_endlink;
   tree sizetype_endlink;
   tree ptr_ftype, ptr_ftype_unsigned;
-  tree void_ftype_any, void_ftype_int, int_ftype_any;
+  tree void_ftype_any, void_ftype_int, int_ftype_any, sizet_ftype_any;
   tree double_ftype_double, double_ftype_double_double;
   tree float_ftype_float, ldouble_ftype_ldouble;
   tree int_ftype_cptr_cptr_sizet;
@@ -4060,6 +4060,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   /* We realloc here because sizetype could be int or unsigned.  S'ok.  */
   ptr_ftype_sizetype = build_function_type (ptr_type_node, sizetype_endlink);
 
+  sizet_ftype_any = build_function_type (sizetype, NULL_TREE);
   int_ftype_any = build_function_type (integer_type_node, NULL_TREE);
   void_ftype_any = build_function_type (void_type_node, NULL_TREE);
   void_ftype = build_function_type (void_type_node, endlink);
@@ -4377,6 +4378,9 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
      them later with argument without worrying about the explicit
      declarations in stdio.h being taken as the initial declaration.
      Also, save the _DECL for these so we can use them later.  */
+  built_in_decls[BUILT_IN_FWRITE] =
+    builtin_function ("__builtin_fwrite", sizet_ftype_any,
+		      BUILT_IN_FWRITE, BUILT_IN_NORMAL, "fwrite");
   built_in_decls[BUILT_IN_FPUTC] =
     builtin_function ("__builtin_fputc", int_ftype_any,
 		      BUILT_IN_FPUTC, BUILT_IN_NORMAL, "fputc");
