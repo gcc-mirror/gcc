@@ -1937,21 +1937,12 @@ compute_frame_size (size, fregs_live)
      we need to add this in because of STARTING_FRAME_OFFSET. */
   fsize = size + (size || frame_pointer_needed ? 8 : 0);
 
-  /* fp is stored in a special place. */
-  if (frame_pointer_needed)
+  for (i = 18; i >= 3; i--)
     {
-      for (i = 18; i >= 5; i--)
-	if (regs_ever_live[i])
-	  fsize += 4;
-
-      if (regs_ever_live[3])
+      /* fp is stored in a special place.  */
+      if (regs_ever_live[i]
+	  && (i != FRAME_POINTER_REGNUM || !frame_pointer_needed))
 	fsize += 4;
-    }
-  else
-    {
-      for (i = 18; i >= 3; i--)
-	if (regs_ever_live[i])
-	  fsize += 4;
     }
   fsize = (fsize + 7) & ~7;
 
