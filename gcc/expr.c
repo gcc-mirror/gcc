@@ -4293,6 +4293,12 @@ store_expr (exp, target, want_value)
 
 		  MEM_COPY_ATTRIBUTES (dest, target);
 
+		  /* The residual likely does not have the same alignment
+		     as the original target.  While we could compute the
+		     alignment of the residual, it hardely seems worth
+		     the effort.  */
+		  set_mem_align (dest, BITS_PER_UNIT);
+
 		  /* Be sure we can write on ADDR.  */
 		  in_check_memory_usage = 1;
 		  if (current_function_check_memory_usage)

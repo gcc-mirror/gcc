@@ -1,3 +1,9 @@
+Wed Nov 28 15:36:13 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* expr.c (store_expr): When copying a string constant into an
+	array, reset the known alignment of the MEM for the section to
+	be cleared to BITS_PER_UNIT.
+
 2001-11-28  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c: Remove whitespace at end of line.
