@@ -2,7 +2,7 @@
 /* Use the system's macros with the system's compiler.  */
 #include <varargs.h>
 #else
-/* Record that varargs.h is defined; this turns off stdarg.h.  */
+/* Record that this is varargs.h; this turns off stdarg.h.  */
 
 #ifndef _VARARGS_H
 #define _VARARGS_H
@@ -64,30 +64,15 @@
 /* The ... causes current_function_varargs to be set in cc1.  */
 #define va_dcl    int __builtin_va_alist; __va_ellipsis
 
-#ifdef _HIDDEN_VA_LIST  /* On OSF1, this means varargs.h is "half-loaded".  */
-#undef _VA_LIST
-#endif
+/* Define __gnuc_va_list, just as in gstdarg.h.  */
 
-/* The macro _VA_LIST_ is the same thing used by this file in Ultrix.  */
-/* But in 4.3bsd-net2, _VA_LIST_ has another meaning.  So ignore it.  */
-#if !defined (_VA_LIST_) || defined (_ANSI_H_)
-/* The macro _VA_LIST is used in SCO Unix 3.2.  */
-#ifndef _VA_LIST
-#ifndef _VA_LIST_
-#define _VA_LIST_
+#ifndef __GNUC_VA_LIST
+#define __GNUC_VA_LIST
+#ifdef __svr4__
+typedef char *__gnuc_va_list;
+#else
+typedef void *__gnuc_va_list;
 #endif
-#define _VA_LIST
-/* Make this a macro rather than a typedef, so we can undef any other defn.  */
-#define va_list __va___list
-typedef char * __va___list;
-#endif /* _VA_LIST */
-#endif /* !defined (_VA_LIST_) || defined (_ANSI_H_) */
-
-/*  In 4.3bsd-net2, it is said we must #undef this.
-    I hope this successfully identifies that system.
-    I don't know why this works--rms.  */
-#ifdef _ANSI_H_
-#undef _VA_LIST_
 #endif
 
 #define va_start(AP)  AP=(char *) &__builtin_va_alist
@@ -112,12 +97,17 @@ typedef char * __va___list;
 #endif /* not sparc */
 #endif /* not _VARARGS_H */
 
-#ifdef __GNUC_VA_LIST
-/* If an include file defined __GNUC_VA_LIST,
-   copy it into va_list.  */
+/* Define va_list from __gnuc_va_list.  */
 
 #ifdef _HIDDEN_VA_LIST  /* On OSF1, this means varargs.h is "half-loaded".  */
 #undef _VA_LIST
+#endif
+
+/*  In 4.3bsd-net2, _VA_LIST_ is defined by machine/ansi.h, but no
+    typedef for va_list is in that file.  Undef _VA_LIST_ here
+    so we do define va_list.  */
+#ifdef _ANSI_H_
+#undef _VA_LIST_
 #endif
 
 /* The macro _VA_LIST_ is the same thing used by this file in Ultrix.  */
@@ -129,6 +119,17 @@ typedef char * __va___list;
 typedef __gnuc_va_list va_list;
 #endif /* _VA_LIST */
 #endif /* _VA_LIST_ */
-#endif /* __GNUC_VA_LIST */
+
+/*  I think that in 4.3bsd-net2 there is some need
+    to leave _VA_LIST_ undefined after.  I don't know why. -- rms.  */
+#ifdef _ANSI_H_
+#undef _VA_LIST_
+#endif
+
+/* The next BSD release (if there is one) wants this symbol to be
+   undefined instead of _VA_LIST_.  */
+#ifdef _BSD_VA_LIST
+#undef _BSD_VA_LIST
+#endif
 
 #endif /* __GNUC__ */
