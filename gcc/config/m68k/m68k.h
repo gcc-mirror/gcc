@@ -1396,7 +1396,7 @@ __transfer_from_trampoline ()					\
    `assemble_name' uses this.  */
 
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  asm_fprintf (FILE, "%0U%s", NAME)
+  asm_fprintf (FILE, "%U%s", NAME)
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where

@@ -1,3 +1,9 @@
+2003-05-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* m68hc11.c: Don't use the `0' flag for asm_fprintf specifiers.
+	* m68k.c: Likewise.
+	* m68k.h: Likewise.
+
 2003-05-22  Zack Weinberg  <zack@codesourcery.com>
 
 	PR other/2873
