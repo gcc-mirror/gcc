@@ -73,6 +73,7 @@ do
 	  newdirs="$newdirs `find $d -type l -exec test -d '{}' \; -print`"
     done
 
+    files="$files $newdirs"
     dirs="$newdirs"
 done
 
