@@ -3844,11 +3844,8 @@ simplify_binary_operation (code, mode, op0, op1)
 
 #ifdef SHIFT_COUNT_TRUNCATED
       if (SHIFT_COUNT_TRUNCATED)
-	arg1 &= (BITS_PER_WORD - 1);
+	arg1 %= width;
 #endif
-
-      if (arg1 >= width)
-	return 0;
 
       val = ((unsigned HOST_WIDE_INT) arg0) >> arg1;
       break;
@@ -3860,11 +3857,8 @@ simplify_binary_operation (code, mode, op0, op1)
 
 #ifdef SHIFT_COUNT_TRUNCATED
       if (SHIFT_COUNT_TRUNCATED)
-	arg1 &= (BITS_PER_WORD - 1);
+	arg1 %= width;
 #endif
-
-      if (arg1 >= width)
-	return 0;
 
       val = ((unsigned HOST_WIDE_INT) arg0) << arg1;
       break;
@@ -3875,11 +3869,8 @@ simplify_binary_operation (code, mode, op0, op1)
 
 #ifdef SHIFT_COUNT_TRUNCATED
       if (SHIFT_COUNT_TRUNCATED)
-	arg1 &= (BITS_PER_WORD - 1);
+	arg1 %= width;
 #endif
-
-      if (arg1 >= width)
-	return 0;
 
       val = arg0s >> arg1;
 
