@@ -215,6 +215,11 @@
 
 2005-04-02  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/t-darwin (TARGET_LIBGCC2_CFLAGS): Add -pipe.
+	* config/t-darwin (TARGET_LIBGCC2_CFLAGS): Likewise.
+
+2005-04-02  Geoffrey Keating  <geoffk@apple.com>
+
 	* config/rs6000/t-darwin8: Comment out ppc64 multilib.
 
 2005-04-01  Richard Guenther <rguenth@tat.physik.uni-tuebingen.de>
