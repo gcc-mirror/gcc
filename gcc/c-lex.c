@@ -353,57 +353,15 @@ static int
 skip_white_space (c)
      register int c;
 {
-#if 0
-  register int inside;
-#endif
+  static int newline_warning = 0;
 
   for (;;)
     {
       switch (c)
 	{
-	  /* Don't recognize comments in cc1: all comments are removed by cpp,
-	     and cpp output can include / and * consecutively as operators.  */
-#if 0
-	case '/':
-	  c = getc (finput);
-	  if (c != '*')
-	    {
-	      ungetc (c, finput);
-	      return '/';
-	    }
-
-	  c = getc (finput);
-
-	  inside = 1;
-	  while (inside)
-	    {
-	      if (c == '*')
-		{
-		  while (c == '*')
-		    c = getc (finput);
-
-		  if (c == '/')
-		    {
-		      inside = 0;
-		      c = getc (finput);
-		    }
-		}
-	      else if (c == '\n')
-		{
-		  lineno++;
-		  c = getc (finput);
-		}
-	      else if (c == EOF)
-		{
-		  error ("unterminated comment");
-		  break;
-		}
-	      else
-		c = getc (finput);
-	    }
-
-	  break;
-#endif
+	  /* We don't recognize comments here, because
+	     cpp output can include / and * consecutively as operators.
+	     Also, there's no need, since cpp removes all comments.  */
 
 	case '\n':
 	  c = check_newline ();
@@ -412,11 +370,20 @@ skip_white_space (c)
 	case ' ':
 	case '\t':
 	case '\f':
-#if 0  /* ANSI says no.  */
-	case '\r':
-#endif
 	case '\v':
 	case '\b':
+	  c = getc (finput);
+	  break;
+
+	case '\r':
+	  /* ANSI C says the effects of a carriage return in a source file
+	     are undefined.  */
+	  if (pedantic && !newline_warning)
+	    {
+	      warning ("carriage return in source file");
+	      warning ("(we only warn about the first carriage return)");
+	      newline_warning = 1;
+	    }
 	  c = getc (finput);
 	  break;
 
