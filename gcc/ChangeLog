@@ -1,5 +1,7 @@
 2000-05-27  Geoff Keating  <geoffk@cygnus.com>
 
+	* reload.c (get_secondary_mem): Don't widen floating-point modes.
+
 	* combine.c (subst): Honour CLASS_CANNOT_CHANGE_SIZE when
 	substituting the REG in a (subreg:X (reg:Y ...)).
 

@@ -587,7 +587,7 @@ get_secondary_mem (x, mode, opnum, type)
 #ifdef SECONDARY_MEMORY_NEEDED_MODE
   mode = SECONDARY_MEMORY_NEEDED_MODE (mode);
 #else
-  if (GET_MODE_BITSIZE (mode) < BITS_PER_WORD)
+  if (GET_MODE_BITSIZE (mode) < BITS_PER_WORD && INTEGRAL_MODE_P (mode))
     mode = mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (mode), 0);
 #endif
 
