@@ -1,7 +1,7 @@
 Tue Feb  2 23:38:35 1999  David O'Brien <obrien@FreeBSD.org>
 
-	* i386/freebsd*.h now allows '$' in label names and does not use the PCC struct
-	return method.
+	* i386/freebsd*.h now allows '$' in label names and does not use the
+	PCC struct return method.
 
 Tue Feb  2 22:38:23 1999  Jim Wilson  <wilson@cygnus.com>
 
@@ -29,6 +29,7 @@ Fri Jan 29 21:00:56 1999  Bob Manson  <manson@charmed.cygnus.com>
 	* haifa-sched.c (regno_use_in): Moved to rtlanal.c.
 	(split_block_insns): Moved to recog.c.
 	(update_flow_info): Make public.
+	* rtl.h: Declare them.
 
 	* reorg.c: Moved the functions dealing with computing resource
 	usage to resource.c.
