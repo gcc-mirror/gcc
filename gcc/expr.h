@@ -487,6 +487,9 @@ extern int expand_twoval_binop PROTO((optab, rtx, rtx, rtx, rtx, int));
 /* Expand a unary arithmetic operation given optab rtx operand.  */
 extern rtx expand_unop PROTO((enum machine_mode, optab, rtx, rtx, int));
 
+/* Expand the absolute value operation.  */
+extern rtx expand_abs PROTO((enum machine_mode, rtx, rtx, int, int));
+
 /* Expand the complex absolute value operation.  */
 extern rtx expand_complex_abs PROTO((enum machine_mode, rtx, rtx, int));
 
