@@ -232,3 +232,8 @@ do {								\
 #ifndef ASM_DECLARE_RESULT
 #define ASM_DECLARE_RESULT(FILE, RESULT)
 #endif
+
+/* If using HP ld do not call pxdb.  Use size as a program that does nothing
+   and returns 0.  /bin/true cannot be used because it is a script without
+   an interpreter.  */
+#define INIT_ENVIRONMENT "LD_PXDB=/usr/ccs/bin/size"

@@ -1,3 +1,7 @@
+2003-02-03  Steve Ellcey  <sje@cup.hp.com>
+
+        * config/pa/pa64-hpux.h (INIT_ENVIRONMENT): New.
+
 2003-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/9465
