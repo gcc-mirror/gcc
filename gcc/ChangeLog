@@ -1,3 +1,9 @@
+2003-06-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/8787
+	* config/i386/djgpp.h (ASM_FILE_START): emit `.intel_syntax'
+	if -masm=intel.
+
 2003-06-10  Andrew Haley  <aph@redhat.com>
 
 	* langhooks-def.h (LANG_HOOKS_DECL_OK_FOR_SIBCALL): New.
