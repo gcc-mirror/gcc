@@ -621,12 +621,11 @@ struct lang_type
       unsigned has_complex_assign_ref : 1;
       unsigned has_abstract_assign_ref : 1;
       unsigned non_aggregate : 1;
-      unsigned has_non_private_static_mem_fn : 1;
 
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 10;
+      unsigned dummy : 11;
     } type_flags;
 
   int n_ancestors;
@@ -1451,10 +1450,6 @@ extern int flag_new_for_scope;
   (TYPE_LANG_SPECIFIC (NODE)->type_flags.non_aggregate)
 #define TYPE_NON_AGGREGATE_CLASS(NODE) \
   (IS_AGGR_TYPE (NODE) && CLASSTYPE_NON_AGGREGATE (NODE))
-
-/* Nonzero if NODE has a non-private static member function.  */
-#define CLASSTYPE_HAS_NON_PRIVATE_STATIC_MEM_FN(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->type_flags.has_non_private_static_mem_fn)
 
 /* Nonzero if there is a user-defined X::op=(x&) for this class.  */
 #define TYPE_HAS_REAL_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_real_assign_ref)
@@ -2414,7 +2409,6 @@ extern tree get_vfield_offset			PROTO((tree));
 extern void duplicate_tag_error			PROTO((tree));
 extern tree finish_struct			PROTO((tree, tree, tree, int));
 extern tree finish_struct_1			PROTO((tree, int));
-extern tree finish_struct_methods		PROTO((tree, tree, int));
 extern int resolves_to_fixed_type_p		PROTO((tree, int *));
 extern void init_class_processing		PROTO((void));
 extern int is_empty_class			PROTO((tree));

@@ -112,7 +112,7 @@ protected:
 
 // 20
 // local names (14.6.1 p 4) part two, variable names as template param
-template <class T17, int i> class Xtwenty {
+template <class T17, int i> struct Xtwenty {
   void f(){
     T17 my_type; //ok
     for (int j = 0; j < 5; ++l)

@@ -2,7 +2,7 @@
 // Build don't link:
 
 template <class T>
-class A {
+struct A {
   int i;
   Blarg () : i(0) { }		// ERROR - 
 };

@@ -6,7 +6,7 @@ class a
         vector<s> vs;
         friend class b;
 };
-class b
+struct b
 {
         vector<a> va;
         operator vector< vector<s> >()
