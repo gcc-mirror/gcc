@@ -236,6 +236,12 @@ set_source_filename (jcf, index)
     DECL_ARTIFICIAL (current_method) = 1;				\
 }
 
+#define HANDLE_GCJCOMPILED_ATTRIBUTE()		\
+{ 						\
+  if (current_class == object_type_node)	\
+    jcf->right_zip = 1;				\
+}
+
 #include "jcf-reader.c"
 
 static int yydebug;
@@ -710,7 +716,15 @@ jcf_parse (jcf)
 
   layout_class (current_class);
   if (current_class == object_type_node)
-    layout_class_methods (object_type_node);
+    {
+      layout_class_methods (object_type_node);
+      /* If we don't have the right archive, emit a verbose warning.
+	 If we're generating bytecode, emit the warning only if
+	 -fforce-classes-archive-check was specified. */
+      if (!jcf->right_zip
+	  && (!flag_emit_class_files || flag_force_classes_archive_check))
+	fatal_error ("The `java.lang.Object' that was found in `%s' didn't have the special zero-length `gnu.gcj.gcj-compiled' attribute. This generally means that your classpath is incorrect set. Use `info gcj \"Input Options\"' to see the info page describing how to set the classpath.", jcf->filename);
+    }
   else
     all_class_list = tree_cons (NULL_TREE,
 				TYPE_NAME (current_class), all_class_list );

@@ -1,3 +1,23 @@
+2001-03-23  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* gcj.texi (Input Options): documented the check for attribute
+	`gnu.gcc.gccj-compiled' and the `-fforce-classes-archive-check' flag.
+	* java-tree.h (flag_force_classes_archive_check): Declared extern.
+	* jcf-parse.c (HANDLE_GCJCOMPILED_ATTRIBUTE): New macro.
+	(jcf_parse): Check for the right classes archive if necessary.
+	* jcf-reader.c (get_attribute): Define `MATCH_ATTRIBUTE' and use it.
+	(jcf_parse_fields): Fixed indentation.
+	* jcf-write.c (append_gcj_attribute): New function.
+	(generate_classfile): Compute the attribute count, invoke
+	`append_gcj_attribute'.
+	* jcf.h (typedef struct JCF): `seen_in_zip' and `java_source'
+	turned into bit fields. New bit field `right_zip.'
+	(JCF_ZERO): Set `right_zip' to zero.
+	* lang-options.h (-fforce-classes-archive-check): Added flag.
+	* lang.c (flag_force_classes_archive_check): New flag.
+	(lang_f_options): New entry `force-classes-archive-check.'
+	Fixes PR java/1213.
+
 2001-02-07  Andrew Haley  <aph@redhat.com>
 
 	* gcj.texi (Configure-time Options): Add -fcheck-references.
