@@ -1,0 +1,48 @@
+# Copyright (C) 2005 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+
+# Run the LANGUAGE compiler with GCC_OPTIONS and inspect the compiler,
+# assembler and linker output (from gcc -v) to make sure that they
+# match the patterns COMPILER_PATTERN, AS_PATTERN and LD_PATTERN,
+# respectively.
+
+proc check_for_options {language gcc_options compiler_pattern as_pattern ld_pattern} {
+    set test "compiler driver $gcc_options option(s)"
+    set gcc_options "\{additional_flags=$gcc_options -v\}"
+    set src "-x$language /dev/null"
+
+    switch "$language" {
+	"c" { set compiler cc1 }
+	default { error "unknown language" }
+    }
+    set gcc_output [gcc_target_compile $src /dev/null executable $gcc_options]
+
+    if {![regexp -- "/$compiler -quiet.*$compiler_pattern" $gcc_output]} {
+	fail "$test (compiler options)"
+	return
+    }
+    if {![regexp -- " *as .*$as_pattern" $gcc_output]} {
+	fail "$test (assembler options)"
+	return
+    }
+    if {![regexp -- "/collect2 .*$ld_pattern" $gcc_output]} {
+	fail "$test (linker options)"
+	return
+    }
+    pass $test
+}
+
+check_for_options c {--coverage} {-fprofile-arcs -ftest-coverage} {} {-lgcov}
