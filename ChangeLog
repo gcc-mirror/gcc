@@ -1,3 +1,8 @@
+2003-03-09  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* configure.in (gxx_include_dir): Fix typo.
+	* configure: Regenerated.
+
 2003-03-04  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Reindent.
