@@ -1,3 +1,12 @@
+2004-06-22  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+
+	PR fortran/15750
+	* inquire.c (st_inquire): Add comment
+	* io.h (st_parameter): Add iolength.
+	(st_iolength, st_iolength_done): Declare.
+	* transfer.c (iolength_transfer, iolength_transfer_init,
+	st_iolength, st_iolength_done): New functions.
+
 2004-06-21  Steven G. Kargl  <kargls@comcast.net>
 
 	* etime.c (etime_sub): Remove array rank check;

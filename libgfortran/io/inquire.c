@@ -348,6 +348,8 @@ inquire_via_filename (void)
 }
 
 
+/* Library entry point for the INQUIRE statement (non-IOLENGTH
+   form).  */
 
 void
 st_inquire (void)

@@ -2353,7 +2353,7 @@ gfc_match_inquire (void)
 
       new_st.op = EXEC_IOLENGTH;
       new_st.expr = inquire->iolength;
-      gfc_free (inquire);
+      new_st.ext.inquire = inquire;
 
       if (gfc_pure (NULL))
 	{
@@ -2439,9 +2439,10 @@ gfc_resolve_inquire (gfc_inquire * inquire)
   RESOLVE_TAG (&tag_readwrite, inquire->readwrite);
   RESOLVE_TAG (&tag_s_delim, inquire->delim);
   RESOLVE_TAG (&tag_s_pad, inquire->pad);
+  RESOLVE_TAG (&tag_iolength, inquire->iolength);
 
   if (gfc_reference_st_label (inquire->err, ST_LABEL_TARGET) == FAILURE)
     return FAILURE;
 
-  return FAILURE;
+  return SUCCESS;
 }

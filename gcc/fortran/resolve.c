@@ -3452,7 +3452,6 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
 	{
 	case EXEC_NOP:
 	case EXEC_CYCLE:
-	case EXEC_IOLENGTH:
 	case EXEC_PAUSE:
 	case EXEC_STOP:
 	case EXEC_EXIT:
@@ -3619,6 +3618,14 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
 	  break;
 
 	case EXEC_INQUIRE:
+	  if (gfc_resolve_inquire (code->ext.inquire) == FAILURE)
+	      break;
+
+	  resolve_branch (code->ext.inquire->err, code);
+	  break;
+
+	case EXEC_IOLENGTH:
+	  assert(code->ext.inquire != NULL);
 	  if (gfc_resolve_inquire (code->ext.inquire) == FAILURE)
 	    break;
 
