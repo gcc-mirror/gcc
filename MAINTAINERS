@@ -95,6 +95,7 @@ C front end/ISO C99	Joseph Myers		jsm@polyomino.org.uk
 C front end/ISO C99	Richard Henderson	rth@redhat.com
 Ada front end		Geert Bosch		bosch@gnat.com
 Ada front end		Robert Dewar		dewar@gnat.com
+Ada front end		Arnaud Charlet		charlet@act-europe.fr
 fortran			Richard Henderson	rth@redhat.com
 fortran			Toon Moene		toon@moene.indiv.nluug.nl
 fortran 95		Paul Brook		paul@nowt.org
