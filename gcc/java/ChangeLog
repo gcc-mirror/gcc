@@ -1,3 +1,10 @@
+2002-03-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* parse.y (craft_constructor): Return the constructor decl.
+	(java_expand_classes): Update comments.
+	(lookup_method_invoke): Call fix_constructors immediately for
+	anonymous class. Fixes PR java/5935.
+
 2002-03-15  Anthony Green  <green@redhat.com>
 
 	* jcf-parse.c (yyparse): Don't emit class registration
