@@ -1564,7 +1564,7 @@ int list_jar(int fd, char **files, int file_num){
   int i, j;
   time_t tdate;
   struct tm *s_tm;
-  char ascii_date[30];
+  char ascii_date[31];
   zipentry ze;
 
 #ifdef DEBUG
@@ -1655,6 +1655,7 @@ int list_jar(int fd, char **files, int file_num){
         tdate = dos2unixtime(mdate);
         s_tm = localtime(&tdate);
         strftime(ascii_date, 30, "%a %b %d %H:%M:%S %Z %Y", s_tm);
+        ascii_date[30] = '\0';
       }
 
       if(filename_len < fnlen + 1){
@@ -1781,6 +1782,7 @@ int list_jar(int fd, char **files, int file_num){
           free(filename);
         
         filename = malloc(sizeof(ub1) * (fnlen + 1));
+        ascii_date[30] = '\0';
         filename_len = fnlen + 1;
       }
       
