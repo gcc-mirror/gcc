@@ -594,10 +594,6 @@ addr)
 #    define LOCK() EnterCriticalSection(&GC_allocate_ml);
 #    define UNLOCK() LeaveCriticalSection(&GC_allocate_ml);
 #  endif
-#  ifdef QUICK_THREADS
-#    define LOCK()
-#    define UNLOCK()
-#  endif
 #  ifndef SET_LOCK_HOLDER
 #      define SET_LOCK_HOLDER()
 #      define UNSET_LOCK_HOLDER()

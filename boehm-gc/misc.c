@@ -49,11 +49,7 @@
 #	        if defined(HPUX_THREADS)
 		  pthread_mutex_t GC_allocate_ml = PTHREAD_MUTEX_INITIALIZER;
 #		else 
-#                 if defined(QUICK_THREADS)
-				/* Nothing */
-#                 else
 	          --> declare allocator lock here
-#                 endif
 #		endif
 #	      endif
 #	   endif
@@ -469,7 +465,7 @@ void GC_init_inner()
 #   endif
 #   if !defined(THREADS) || defined(SOLARIS_THREADS) || defined(WIN32_THREADS) \
        || defined(IRIX_THREADS) || defined(LINUX_THREADS) \
-       || defined(HPUX_THREADS) || defined(QUICK_THREADS)
+       || defined(HPUX_THREADS)
       if (GC_stackbottom == 0) {
 	  GC_stackbottom = GC_get_stack_base();
       }
