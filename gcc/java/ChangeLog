@@ -1,5 +1,11 @@
 2003-06-10  Andrew Haley  <aph@redhat.com>
 
+	* resource.c (write_resource_constructor): Use expand_expr to
+	generate the address of the label attached to a resource.
+	* Make-lang.in (java/resource.o): Add expr.h
+
+2003-06-10  Andrew Haley  <aph@redhat.com>
+
 	* lang.c (LANG_HOOKS_DECL_OK_FOR_SIBCALL): New.
 	(java_decl_ok_for_sibcall): New.
 
