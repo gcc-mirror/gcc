@@ -1,3 +1,12 @@
+2003-09-22  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/JarURLConnection.java
+	(JarURLConnection): Modifed code to match classpath more, fixed comment.
+	(getCertificates): Made it more error prone.
+	(getMainAttributes): Likewise.
+	(getAttributes): Implemented.
+	(getManifest): Reformatted code.
+
 2003-09-20  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/Component.java: Indentation cleanup from Classpath.
