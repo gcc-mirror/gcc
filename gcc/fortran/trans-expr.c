@@ -140,6 +140,53 @@ gfc_conv_expr_present (gfc_symbol * sym)
 }
 
 
+/* Get the character length of an expression, looking through gfc_refs
+   if necessary.  */
+
+tree
+gfc_get_expr_charlen (gfc_expr *e)
+{
+  gfc_ref *r;
+  tree length;
+
+  gcc_assert (e->expr_type == EXPR_VARIABLE 
+	      && e->ts.type == BT_CHARACTER);
+  
+  length = NULL; /* To silence compiler warning.  */
+
+  /* First candidate: if the variable is of type CHARACTER, the
+     expression's length could be the length of the character
+     variable. */
+  if (e->symtree->n.sym->ts.type == BT_CHARACTER)
+    length = e->symtree->n.sym->ts.cl->backend_decl;
+
+  /* Look through the reference chain for component references.  */
+  for (r = e->ref; r; r = r->next)
+    {
+      switch (r->type)
+	{
+	case REF_COMPONENT:
+	  if (r->u.c.component->ts.type == BT_CHARACTER)
+	    length = r->u.c.component->ts.cl->backend_decl;
+	  break;
+
+	case REF_ARRAY:
+	  /* Do nothing.  */
+	  break;
+
+	default:
+	  /* We should never got substring references here.  These will be
+	     broken down by the scalarizer.  */
+	  gcc_unreachable ();
+	}
+    }
+
+  gcc_assert (length != NULL);
+  return length;
+}
+
+  
+
 /* Generate code to initialize a string length variable. Returns the
    value.  */
 

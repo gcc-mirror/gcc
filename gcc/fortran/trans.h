@@ -316,6 +316,8 @@ tree gfc_conv_expr_present (gfc_symbol *);
 
 /* Generate code to allocate a string temporary.  */
 tree gfc_conv_string_tmp (gfc_se *, tree, tree);
+/* Get the string length variable belonging to an expression.  */
+tree gfc_get_expr_charlen (gfc_expr *);
 /* Initialize a string length variable.  */
 void gfc_trans_init_string_length (gfc_charlen *, stmtblock_t *);
 

@@ -3486,6 +3486,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
   tree offset;
   int full;
   gfc_ss *vss;
+  gfc_ref *ref;
 
   gcc_assert (ss != gfc_ss_terminator);
 
@@ -3528,23 +3529,42 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	full = 0;
       else
 	{
-	  gcc_assert (info->ref->u.ar.type == AR_SECTION);
+	  ref = info->ref;
+	  gcc_assert (ref->u.ar.type == AR_SECTION);
 
 	  full = 1;
-	  for (n = 0; n < info->ref->u.ar.dimen; n++)
+	  for (n = 0; n < ref->u.ar.dimen; n++)
 	    {
 	      /* Detect passing the full array as a section.  This could do
 	         even more checking, but it doesn't seem worth it.  */
-	      if (info->ref->u.ar.start[n]
-		  || info->ref->u.ar.end[n]
-		  || (info->ref->u.ar.stride[n]
-		      && !gfc_expr_is_one (info->ref->u.ar.stride[n], 0)))
+	      if (ref->u.ar.start[n]
+		  || ref->u.ar.end[n]
+		  || (ref->u.ar.stride[n]
+		      && !gfc_expr_is_one (ref->u.ar.stride[n], 0)))
 		{
 		  full = 0;
 		  break;
 		}
 	    }
 	}
+
+      /* Check for substring references.  */
+      ref = expr->ref;
+      if (!need_tmp && ref && expr->ts.type == BT_CHARACTER)
+	{
+	  while (ref->next)
+	    ref = ref->next;
+	  if (ref->type == REF_SUBSTRING)
+	    {
+	      /* In general character substrings need a copy.  Character
+		 array strides are expressed as multiples of the element
+		 size (consistent with other array types), not in
+		 characters.  */
+	      full = 0;
+	      need_tmp = 1;
+	    }
+	}
+
       if (full)
 	{
 	  if (se->direct_byref)
@@ -3562,8 +3582,10 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	    {
 	      se->expr = desc;
 	    }
+
 	  if (expr->ts.type == BT_CHARACTER)
-	    se->string_length = expr->symtree->n.sym->ts.cl->backend_decl;
+	    se->string_length = gfc_get_expr_charlen (expr);
+
 	  return;
 	}
       break;
@@ -3634,7 +3656,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       loop.temp_ss->type = GFC_SS_TEMP;
       loop.temp_ss->next = gfc_ss_terminator;
       loop.temp_ss->data.temp.type = gfc_typenode_for_spec (&expr->ts);
-      /* Which can hold our string, if present.  */
+      /* ... which can hold our string, if present.  */
       if (expr->ts.type == BT_CHARACTER)
 	se->string_length = loop.temp_ss->string_length
 	  = TYPE_SIZE_UNIT (loop.temp_ss->data.temp.type);
@@ -3716,7 +3738,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       /* Set the string_length for a character array.  */
       if (expr->ts.type == BT_CHARACTER)
-	se->string_length = expr->symtree->n.sym->ts.cl->backend_decl;
+	se->string_length =  gfc_get_expr_charlen (expr);
 
       desc = info->descriptor;
       gcc_assert (secss && secss != gfc_ss_terminator);
