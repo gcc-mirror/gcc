@@ -1657,7 +1657,7 @@ fi
 echo $ac_n "checking f2c integer type""... $ac_c" 1>&6
 echo "configure:1659: checking f2c integer type" >&5
 late_ac_cpp=$ac_cpp
-ac_cpp="$late_ac_cpp -I$srcdir/.. -I../.. -I$srcdir/../.. -I$srcdir/../../config"
+ac_cpp="$late_ac_cpp -I$srcdir/../gcc/f -I../../gcc -I$srcdir/../gcc -I$srcdir/../gcc/config"
 if eval "test \"`echo '$''{'g77_cv_sys_f2cinteger'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1722,7 +1722,7 @@ ac_cpp=$late_ac_cpp
 echo $ac_n "checking f2c long int type""... $ac_c" 1>&6
 echo "configure:1724: checking f2c long int type" >&5
 late_ac_cpp=$ac_cpp
-ac_cpp="$late_ac_cpp -I$srcdir/.. -I../.. -I$srcdir/../.. -I$srcdir/../../config"
+ac_cpp="$late_ac_cpp -I$srcdir/../gcc/f -I../../gcc -I$srcdir/../gcc -I$srcdir/../gcc/config"
 if eval "test \"`echo '$''{'g77_cv_sys_f2clongint'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else

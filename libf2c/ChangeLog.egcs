@@ -1,3 +1,8 @@
+Mon Feb  2 11:08:49 1998  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in: Update F2C_INTEGER and F2C_LONGINT tests
+	for the new placement in the hierarchy.
+
 Sun Feb  1 02:36:33 1998  Richard Henderson  <rth@cygnus.com>
 
 	* Previous contents of gcc/f/runtime moved into toplevel
