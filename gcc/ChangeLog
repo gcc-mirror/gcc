@@ -1,3 +1,8 @@
+2000-10-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (c_expand_builtin_printf): Set the TREE_TYPE of a new
+	STRING_CST by calling combine_strings.
+
 2000-10-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (thumb_expand_movstrqi): Rewrite to support SSA form.

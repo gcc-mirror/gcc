@@ -5550,9 +5550,7 @@ c_expand_builtin_printf (arglist, target, tmode, modifier, ignore)
 	  memcpy (newstr, TREE_STRING_POINTER (stripped_string), newlen - 1);
 	  newstr[newlen - 1] = 0;
 	  
-	  arglist = build_string (newlen, newstr);
-	  TREE_TYPE (arglist) = 
-	    build_type_variant (char_array_type_node, 1, 0);
+	  arglist = combine_strings (build_string (newlen, newstr));
 	  arglist = build_tree_list (NULL_TREE, arglist);
 	  fn = fn_puts;
 	}
