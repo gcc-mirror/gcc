@@ -4747,7 +4747,9 @@ build_ivar_reference (id)
 #define HASH_ALLOC_LIST_SIZE	170
 #define ATTR_ALLOC_LIST_SIZE	170
 #define SIZEHASHTABLE 		257
-#define HASHFUNCTION(key)	((int)key & 0x7fffffff)	/* make positive */
+
+/* make positive */
+#define HASHFUNCTION(key)	((HOST_WIDE_INT) key & 0x7fffffff)
 
 static void
 hash_init ()
