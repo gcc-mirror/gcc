@@ -1,3 +1,7 @@
+2003-07-10  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* ffe.texi: Correctly use @var{srcdir}.
+
 2003-07-09  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR Fortran/11301
