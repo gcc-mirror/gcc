@@ -1,3 +1,8 @@
+2004-09-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/17558 
+	* gcc.c-torture/compile/pr17558.c: New test.
+
 2004-09-20  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/compat/sdata-section.h (SDATA_SECTION): Don't use an attribute
