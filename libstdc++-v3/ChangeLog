@@ -1,3 +1,7 @@
+2000-11-22  Richard Henderson  <rth@redhat.com>
+
+	* config/os/bsd/bits/ctype_inline.h (is): Fix order of expressions.
+	
 2000-11-22  Phil Edwards  <pme@sources.redhat.com>
 
 	* porting.texi:  Minor tweaks to vocabulary.
