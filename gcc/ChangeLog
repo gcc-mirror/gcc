@@ -1,3 +1,12 @@
+2003-08-19  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_mark_needed_node): Call notice_global_symbol.
+	(cgraph_varpool_mark_needed_node): Likewise.
+	* cgraph.h (notice_global_symbol): Declare
+	* varasm.c (notice_global_symbol): Break out from ...
+	(assemble_start_function): ... here; update for variables.
+	(assemble_variable): Use notice_global_symbol.
+
 2003-08-19  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_va_arg): If EABI_FLOAT_VARARGS_P,
