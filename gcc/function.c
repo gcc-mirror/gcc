@@ -296,6 +296,7 @@ static void prepare_function_start PARAMS ((void));
 static void do_clobber_return_reg PARAMS ((rtx, void *));
 static void do_use_return_reg PARAMS ((rtx, void *));
 static void instantiate_virtual_regs_lossage PARAMS ((rtx));
+static tree split_complex_args (tree);
 
 /* Pointer to chain of `struct function' for containing functions.  */
 static GTY(()) struct function *outer_function_chain;
@@ -4346,7 +4347,7 @@ assign_parms (fndecl)
      given as a constant and a tree-expression.  */
   struct args_size stack_args_size;
   tree fntype = TREE_TYPE (fndecl);
-  tree fnargs = DECL_ARGUMENTS (fndecl);
+  tree fnargs = DECL_ARGUMENTS (fndecl), orig_fnargs;
   /* This is used for the arg pointer when referring to stack args.  */
   rtx internal_arg_pointer;
   /* This is a dummy PARM_DECL that we used for the function result if
@@ -4400,8 +4401,13 @@ assign_parms (fndecl)
       fnargs = function_result_decl;
     }
 
+  orig_fnargs = fnargs;
+
   max_parm_reg = LAST_VIRTUAL_REGISTER + 1;
   parm_reg_stack_loc = (rtx *) ggc_alloc_cleared (max_parm_reg * sizeof (rtx));
+
+  if (SPLIT_COMPLEX_ARGS)
+    fnargs = split_complex_args (fnargs);
 
 #ifdef REG_PARM_STACK_SPACE
 #ifdef MAYBE_REG_PARM_STACK_SPACE
@@ -5189,6 +5195,35 @@ assign_parms (fndecl)
 	}
     }
 
+  if (SPLIT_COMPLEX_ARGS)
+    {
+      parm = orig_fnargs;
+
+      for (; parm; parm = TREE_CHAIN (parm))
+	{
+	  tree type = TREE_TYPE (parm);
+	  
+	  if (TREE_CODE (type) == COMPLEX_TYPE)
+	    {
+	      SET_DECL_RTL (parm,
+			    gen_rtx_CONCAT (DECL_MODE (parm),
+					    DECL_RTL (fnargs),
+					    DECL_RTL (TREE_CHAIN (fnargs))));
+	      DECL_INCOMING_RTL (parm)
+		= gen_rtx_CONCAT (DECL_MODE (parm),
+				  DECL_INCOMING_RTL (fnargs),
+				  DECL_INCOMING_RTL (TREE_CHAIN (fnargs)));
+	      fnargs = TREE_CHAIN (fnargs);
+	    }
+	  else
+	    {
+	      SET_DECL_RTL (parm, DECL_RTL (fnargs));
+	      DECL_INCOMING_RTL (parm) = DECL_INCOMING_RTL (fnargs);
+	    }
+	  fnargs = TREE_CHAIN (fnargs);
+	}
+    }
+
   /* Output all parameter conversion instructions (possibly including calls)
      now that all parameters have been copied out of hard registers.  */
   emit_insn (conversion_insns);
@@ -5291,6 +5326,36 @@ assign_parms (fndecl)
 	  current_function_return_rtx = real_decl_rtl;
 	}
     }
+}
+
+static tree
+split_complex_args (tree args)
+{
+  tree p;
+
+  args = copy_list (args);
+
+  for (p = args; p; p = TREE_CHAIN (p))
+    {
+      tree complex_type = TREE_TYPE (p);
+
+      if (TREE_CODE (complex_type) == COMPLEX_TYPE)
+	{
+	  tree decl;
+	  tree subtype = TREE_TYPE (complex_type);
+
+	  /* Rewrite the PARM_DECL's type with its component.  */
+	  TREE_TYPE (p) = subtype;
+	  DECL_ARG_TYPE (p) = TREE_TYPE (DECL_ARG_TYPE (p));
+
+	  decl = build_decl (PARM_DECL, NULL_TREE, subtype);
+	  DECL_ARG_TYPE (decl) = DECL_ARG_TYPE (p);
+	  TREE_CHAIN (decl) = TREE_CHAIN (p);
+	  TREE_CHAIN (p) = decl;
+	}
+    }
+
+  return args;
 }
 
 /* Indicate whether REGNO is an incoming argument to the current function

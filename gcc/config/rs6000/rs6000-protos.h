@@ -153,6 +153,7 @@ extern void setup_incoming_varargs PARAMS ((CUMULATIVE_ARGS *,
 					    enum machine_mode, tree,
 					    int *, int));
 extern rtx rs6000_function_value (tree, tree);
+extern rtx rs6000_libcall_value (enum machine_mode);
 extern struct rtx_def *rs6000_va_arg PARAMS ((tree, tree));
 extern int function_ok_for_sibcall PARAMS ((tree));
 #ifdef ARGS_SIZE_RTX

@@ -2071,6 +2071,7 @@ expand_call (exp, target, ignore)
   rtx tail_call_insns = NULL_RTX;
   /* Data type of the function.  */
   tree funtype;
+  tree type_arg_types;
   /* Declaration of the function being called,
      or 0 if the function is computed (not known by name).  */
   tree fndecl = 0;
@@ -2306,6 +2307,16 @@ expand_call (exp, target, ignore)
     abort ();
   funtype = TREE_TYPE (funtype);
 
+  /* Munge the tree to split complex arguments into their imaginary
+     and real parts.  */
+  if (SPLIT_COMPLEX_ARGS)
+    {
+      type_arg_types = split_complex_types (TYPE_ARG_TYPES (funtype));
+      actparms = split_complex_values (actparms);
+    }
+  else
+    type_arg_types = TYPE_ARG_TYPES (funtype);
+
   /* See if this is a call to a function that can return more than once
      or a call to longjmp or malloc.  */
   flags |= special_function_p (fndecl, flags);
@@ -2359,9 +2370,9 @@ expand_call (exp, target, ignore)
 
   if ((STRICT_ARGUMENT_NAMING
        || ! PRETEND_OUTGOING_VARARGS_NAMED)
-      && TYPE_ARG_TYPES (funtype) != 0)
+      && type_arg_types != 0)
     n_named_args
-      = (list_length (TYPE_ARG_TYPES (funtype))
+      = (list_length (type_arg_types)
 	 /* Don't include the last named arg.  */
 	 - (STRICT_ARGUMENT_NAMING ? 0 : 1)
 	 /* Count the struct value address, if it is passed as a parm.  */
@@ -3446,6 +3457,82 @@ expand_call (exp, target, ignore)
     }
 
   return target;
+}
+
+/* Traverse an argument list in VALUES and expand all complex
+   arguments into their components.  */
+tree
+split_complex_values (tree values)
+{
+  tree p;
+
+  values = copy_list (values);
+
+  for (p = values; p; p = TREE_CHAIN (p))
+    {
+      tree complex_value = TREE_VALUE (p);
+      tree complex_type;
+
+      complex_type = TREE_TYPE (complex_value);
+      if (!complex_type)
+	continue;
+
+      if (TREE_CODE (complex_type) == COMPLEX_TYPE)
+	{
+	  tree subtype;
+	  tree real, imag, next;
+
+	  subtype = TREE_TYPE (complex_type);
+	  complex_value = save_expr (complex_value);
+	  real = build1 (REALPART_EXPR, subtype, complex_value);
+	  imag = build1 (IMAGPART_EXPR, subtype, complex_value);
+
+	  TREE_VALUE (p) = real;
+	  next = TREE_CHAIN (p);
+	  imag = build_tree_list (NULL_TREE, imag);
+	  TREE_CHAIN (p) = imag;
+	  TREE_CHAIN (imag) = next;
+
+	  /* Skip the newly created node.  */
+	  p = TREE_CHAIN (p);
+	}
+    }
+
+  return values;
+}
+
+/* Traverse a list of TYPES and expand all complex types into their
+   components.  */
+tree
+split_complex_types (tree types)
+{
+  tree p;
+
+  types = copy_list (types);
+
+  for (p = types; p; p = TREE_CHAIN (p))
+    {
+      tree complex_type = TREE_VALUE (p);
+
+      if (TREE_CODE (complex_type) == COMPLEX_TYPE)
+	{
+	  tree next, imag;
+
+	  /* Rewrite complex type with component type.  */
+	  TREE_VALUE (p) = TREE_TYPE (complex_type);
+	  next = TREE_CHAIN (p);
+
+	  /* Add another component type for the imaginary part.  */
+	  imag = build_tree_list (NULL_TREE, TREE_VALUE (p));
+	  TREE_CHAIN (p) = imag;
+	  TREE_CHAIN (imag) = next;
+
+	  /* Skip the newly created node.  */
+	  p = TREE_CHAIN (p);
+	}
+    }
+
+  return types;
 }
 
 /* Output a library call to function FUN (a SYMBOL_REF rtx).

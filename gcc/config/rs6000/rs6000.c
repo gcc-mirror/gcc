@@ -312,6 +312,7 @@ static rtx rs6000_got_sym PARAMS ((void));
 static inline int rs6000_tls_symbol_ref_1 PARAMS ((rtx *, void *));
 static const char *rs6000_get_some_local_dynamic_name PARAMS ((void));
 static int rs6000_get_some_local_dynamic_name_1 PARAMS ((rtx *, void *));
+static rtx rs6000_complex_function_value (enum machine_mode);
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -14361,6 +14362,33 @@ rs6000_memory_move_cost (mode, class, in)
     return 4 + rs6000_register_move_cost (mode, class, GENERAL_REGS);
 }
 
+/* Return an RTX representing where to find the function value of a
+   function returning MODE.  */
+static rtx
+rs6000_complex_function_value (enum machine_mode mode)
+{
+  unsigned int regno;
+  rtx r1, r2;
+  enum machine_mode inner = GET_MODE_INNER (mode);
+
+  if (FLOAT_MODE_P (mode))
+    regno = FP_ARG_RETURN;
+  else
+    {
+      regno = GP_ARG_RETURN;
+
+      /* 32-bit is OK since it'll go in r3/r4.  */
+      if (TARGET_32BIT)
+	return gen_rtx_REG (mode, regno);
+    }
+
+  r1 = gen_rtx_EXPR_LIST (inner, gen_rtx_REG (inner, regno),
+			  const0_rtx);
+  r2 = gen_rtx_EXPR_LIST (inner, gen_rtx_REG (inner, regno + 1),
+			  GEN_INT (GET_MODE_UNIT_SIZE (inner)));
+  return gen_rtx_PARALLEL (mode, gen_rtvec (2, r1, r2));
+}
+
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
@@ -14386,8 +14414,32 @@ rs6000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 
   if (TREE_CODE (valtype) == REAL_TYPE && TARGET_HARD_FLOAT && TARGET_FPRS)
     regno = FP_ARG_RETURN;
+  else if (TREE_CODE (valtype) == COMPLEX_TYPE
+	   && TARGET_HARD_FLOAT
+	   && SPLIT_COMPLEX_ARGS)
+    return rs6000_complex_function_value (mode);
   else if (TREE_CODE (valtype) == VECTOR_TYPE && TARGET_ALTIVEC)
     regno = ALTIVEC_ARG_RETURN;
+  else
+    regno = GP_ARG_RETURN;
+
+  return gen_rtx_REG (mode, regno);
+}
+
+/* Define how to find the value returned by a library function
+   assuming the value has mode MODE.  */
+rtx
+rs6000_libcall_value (enum machine_mode mode)
+{
+  unsigned int regno;
+
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+	   && TARGET_HARD_FLOAT && TARGET_FPRS)
+    regno = FP_ARG_RETURN;
+  else if (ALTIVEC_VECTOR_MODE (mode))
+    regno = ALTIVEC_ARG_RETURN;
+  else if (COMPLEX_MODE_P (mode) && SPLIT_COMPLEX_ARGS)
+    return rs6000_complex_function_value (mode);
   else
     regno = GP_ARG_RETURN;
 

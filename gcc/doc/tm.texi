@@ -3782,6 +3782,17 @@ the structure-value address.  On many machines, no registers can be
 used for this purpose since all function arguments are pushed on the
 stack.
 
+@findex SPLIT_COMPLEX_ARGS
+@item SPLIT_COMPLEX_ARGS
+
+Define this macro to a nonzero value if complex function arguments
+should be split into their corresponding components.  By default, GCC
+will attempt to pack complex arguments into the target's word size.
+Some ABIs require complex arguments to be split and treated as their
+individual components.  For example, on AIX64, complex floats should
+be passed in a pair of floating point registers, even though a complex
+float would fit in one 64-bit floating point register.
+
 @findex LOAD_ARGS_REVERSED
 @item LOAD_ARGS_REVERSED
 If defined, the order in which arguments are loaded into their
