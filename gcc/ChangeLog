@@ -1,5 +1,9 @@
 2004-02-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/sh/sh.c: Fix formatting.
+
+2004-02-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/sh/sh.c: Convert to ISO-C.
 
 2004-02-28  Andrew Pinski  <pinskia@physics.uc.edu>
