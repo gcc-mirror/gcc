@@ -1,0 +1,1827 @@
+\input texinfo.tex    @c -*-texinfo-*-
+@c @ifnothtml
+@c %**start of header
+@setfilename install.info
+@settitle Installing GCC
+@setchapternewpage odd
+@c %**end of header
+@c @end ifnothtml
+
+@c Specify title for specific html page
+@ifset indexhtml
+@settitle Installing GCC
+@end ifset
+@ifset specifichtml
+@settitle Host/Target specific installation notes for GCC
+@end ifset
+@ifset downloadhtml
+@settitle Downloading GCC
+@end ifset
+@ifset configurehtml
+@settitle Installing GCC: Configuration
+@end ifset
+@ifset buildhtml
+@settitle Installing GCC: Building
+@end ifset
+@ifset testhtml
+@settitle Installing GCC: Testing
+@end ifset
+@ifset finalinstallhtml
+@settitle Installing GCC: Final installation
+@end ifset
+@ifset binarieshtml
+@settitle Installing GCC: Binaries
+@end ifset
+
+@comment $Id$
+@c Copyright (C) 2001 Free Software Foundation, Inc.
+@c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
+
+@c Include everything if we're not making html
+@ifnothtml
+@set indexhtml
+@set specifichtml
+@set downloadhtml
+@set configurehtml
+@set buildhtml
+@set testhtml
+@set finalinstallhtml
+@set binarieshtml
+@end ifnothtml
+
+@c Part 2 Summary Description and Copyright
+@ifinfo
+
+Copyright @copyright{} 2001 Free Software Foundation, Inc.
+@end ifinfo
+
+@c Part 3 Titlepage and Copyright
+@titlepage
+@sp 10
+@comment The title is printed in a large font.
+@center @titlefont{Sample Title}
+
+@c The following two commands start the copyright page.
+@page
+vskip 0pt plus 1filll
+Copyright @copyright{} 2001 Free Software Foundation, Inc.
+@end titlepage
+
+@c Part 4 Top node and Master Menu
+@ifinfo
+@node    Top, , , (dir)
+@comment node-name, next,          Previous, up
+
+@menu
+* Installing GCC::  This document describes the generic installation
+                    procedure for GCC as well as detailing some target
+                    specific installation instructions. 
+
+* Specific::        Host/target specific installation notes for GCC.
+* Binaries::        Where to get pre-compiled binaries.
+
+* Concept Index::   This index has two entries.
+@end menu
+@end ifinfo
+
+@c Part 5 The Body of the Document
+@c ***Installing GCC**********************************************************
+@ifinfo
+@comment node-name,     next,          previous, up
+@node    Installing GCC, Binaries, , Top
+@end ifinfo
+@ifset indexhtml
+@html
+<h1 align="center">Installing GCC</h1>
+@end html
+@ifnothtml
+@chapter Installing GCC
+@end ifnothtml
+
+The latest version of this document is always available at
+@uref{http://gcc.gnu.org/install/,,http://gcc.gnu.org/install/}. 
+
+This document describes the generic installation procedure for GCC as well
+as detailing some target specific installation instructions. 
+
+GCC includes several components that previously were separate distributions 
+with their own installation instructions. This document supersedes all 
+package specific installation instructions. We provide the component 
+specific installation information in the source distribution for historical 
+reference purposes only. 
+
+@emph{Before} starting the build/install procedure please check the 
+@ifnothtml
+@xref{Specific, host/target specific installation notes}.
+@end ifnothtml
+@ifnotinfo
+@uref{specific.html,,host/target specific installation notes}. 
+@end ifnotinfo
+We recommend you browse the entire generic installation instructions before 
+you proceed.
+
+The installation procedure itself is broken into five steps. 
+
+@ifinfo
+@menu
+* Downloading the source::
+* Configuration::
+* Building::
+* Testing:: (optional)
+* Final install::
+@end menu
+@end ifinfo
+@ifnotinfo
+@enumerate
+@item 
+@uref{download.html,,Downloading the source}
+@item 
+@uref{configure.html,,Configuration} 
+@item
+@uref{build.html,,Building} 
+@item 
+@uref{test.html,,Testing} (optional) 
+@item
+@uref{finalinstall.html,,Final install}
+@end enumerate
+@end ifnotinfo
+
+Please note that GCC does not support `@code{make uninstall}' and probably
+won't do so in the near future as this would open a can of worms. Instead, 
+we suggest that you install GCC into a directory of its own and simply
+remove that directory when you do not need that specific version of GCC any longer. 
+
+@html
+<hr>
+<p>
+@end html
+@ifhtml
+@uref{./index.html,,Return to the GCC Installation page}
+@end ifhtml
+@end ifset
+
+@c ***Downloading the source**************************************************
+@ifinfo
+@comment node-name,     next,          previous, up
+@node    Downloading the source, Configuration, , Installing GCC
+@end ifinfo
+@ifset downloadhtml
+@html
+<h1 align="center">Downloading GCC</h1>
+@end html
+@ifnothtml
+@chapter Downloading GCC
+@end ifnothtml
+@cindex Downloading GCC
+@cindex Downloading the Source
+
+GCC is distributed via CVS and FTP tarballs compressed with gzip or
+bzip2. It is possible to download a full distribution or specific
+components.
+
+Please refer to our @uref{http://gcc.gnu.org/releases.html,,releases web page}
+for information on how to obtain GCC.
+
+The full distribution includes the C, C++, Objective-C, Fortran, Java,
+and Chill compilers.  The full distribution also includes runtime libraries
+for C++, Objective-C and Fortran.  In the future the GNU compiler testsuites
+will be included in the full distribution.
+
+If you choose to download specific components, you must download the core
+gcc distribution plus any language specific distributions you wish to
+use.  The core distribution includes the C language front-end as well as the
+shared components. Each language has a tarball which includes the language
+front-end as well as the language runtime (when appropriate).
+
+Unpack the core distribution as well as any language specific
+distributions in the same directory.
+
+If you also intend to build binutils (either to upgrade an existing
+installation or for use in place of the corresponding tools of your
+OS), unpack the binutils distribution either in the same directory or
+a separate one.  In the latter case, add symbolic links to any
+components of the binutils you intend to build alongside the compiler
+(bfd, binutils, gas, gprof, ld, opcodes,...) to the directory containing
+the GCC sources.
+
+@html
+<hr>
+<p>
+@end html
+@ifhtml
+@uref{./index.html,,Return to the GCC Installation page}
+@end ifhtml
+@end ifset
+
+@c ***Configuration***********************************************************
+@ifinfo
+@comment node-name,     next,          previous, up
+@node    Configuration, Building, Downloading the source, Installing GCC
+@end ifinfo
+@ifset configurehtml
+@html
+<h1 align="center">Installing GCC: Configuration</h1>
+@end html
+@ifnothtml
+@chapter Installing GCC: Configuration
+@end ifnothtml
+@cindex Configuration
+@cindex Installing GCC: Configuration
+
+Like most GNU software, GCC must be configured before it can be built.
+This document describes the recommended configuration procedure
+for both native and cross targets.
+
+We use @emph{srcdir} to refer to the toplevel source directory for
+GCC; we use @emph{objdir} to refer to the toplevel build/object directory.
+
+First, we @strong{highly} recommend that GCC be built into a
+separate directory than the sources which does @strong{not} reside
+within the source tree.  This is how we generally build GCC; building
+where @emph{srcdir} == @emph{objdir} should still work, but doesn't
+get extensive testing; building where @emph{objdir} is a subdirectory
+of @emph{srcdir} is unsupported.
+
+Second, when configuring a native system, either ``@command{cc}'' or 
+``@command{gcc}'' must be in your path or you must set CC in your 
+environment before running configure.
+Otherwise the configuration scripts may fail.
+
+To configure GCC:
+
+@example
+   % mkdir @emph{objdir}
+   % cd @emph{objdir}
+   % @emph{srcdir}/configure @strong{[target] [options]}
+@end example
+
+
+@strong{target specification}
+@itemize @bullet
+@item
+GCC has code to correctly determine the correct value for @strong{target}
+for nearly all native systems.  Therefore, we highly recommend you not 
+provide a configure target when configuring a native compiler.
+
+@item
+@strong{target} must be specified as @option{--target=}@emph{target}
+when configuring a cross compiler; examples of valid targets would be 
+i960-rtems, m68k-coff, sh-elf, etc.
+
+@item
+Specifying just @strong{target} instead of @option{--target=}@emph{target}
+implies that the host defaults to @strong{target}.
+@end itemize
+
+
+@strong{options specification}
+
+Use @strong{options} to override several configure time options for
+GCC.  A partial list of supported @option{options}:
+
+@itemize @bullet
+@item
+@option{--prefix=}@emph{dirname} @minus{}@minus{} Specify the toplevel installation
+directory.  This is the recommended way to install the tools into a directory
+other than the default.  The toplevel installation directory defaults to
+@code{/usr/local}.
+
+We @strong{highly} recommend against @emph{dirname} being the same or a
+subdirectory of @emph{objdir} or vice versa.
+
+These additional options control where certain parts of the distribution
+are installed.  Normally you should not need to use these options.
+@itemize @bullet
+@item
+@option{--with-local-prefix=}@emph{dirname} @minus{}@minus{} Specify the installation
+directory for local include files.  The default is @code{/usr/local}.
+
+@item
+@option{--with-gxx-include-dir=}@emph{dirname} @minus{}@minus{} Specify the installation
+directory for g++ header files.  The default is @command{/usr/local/include/g++}.
+  
+@end itemize
+
+@item
+@option{--enable-shared} @minus{}@minus{} Build shared versions of the C++ runtime
+libraries if supported. This is the default on most systems. Use @option{--disable-shared} 
+for static libraries. Note that up to the gcc version 2.95.x series, static
+libraries were the default on all systems.
+
+@item
+@option{--with-gnu-as} @minus{}@minus{} Specify that the compiler should assume that the
+assembler it finds is the GNU assembler. However, this does not modify the rules to find an
+assembler and will result in confusion if found assembler is not actually the GNU assembler.
+If you have more than one assembler installed on your system, you may want to use this option
+in connection with @option{--with-as=/path/to/gas}.
+
+@item
+@option{--with-as=@emph{/path/to/as}} @minus{}@minus{} Specify that the compiler should use the
+assembler pointed to by @emph{pathname}, rather than the one found by the standard rules to
+find an assembler, which are:
+@itemize @bullet
+@item
+Check the @emph{$exec_prefix/lib/gcc-lib/$target/$version} directory, where @emph{$exec_prefix}
+defaults to @emph{$prefix} which defaults to @file{/usr/local} unless overridden by the 
+@option{--prefix=/pathname} switch described above. @emph{$target} is the target system triple, 
+such as @emph{sparc-sun-solaris2.7}, and @emph{$version} denotes the GCC version, such as 2.95.2.
+@item
+Check operating system specific directories (e.g. @file{/usr/ccs/bin} on Sun Solaris).
+@end itemize
+Note that these rules do not check for the value of @emph{$PATH}. You may want to use 
+@option{--with-as} if no assembler is installed in the directories listed above, or if you have
+multiple assemblers installed and want to choose one that is not found by the above rules.
+
+@item
+@option{--with-gnu-ld} @minus{}@minus{} Same as @option{--with-gnu-as} but for linker. 
+
+@item
+@option{--with-ld=@emph{/path/to/ld}} @minus{}@minus{} Same as @option{--with-as}, but for the
+linker.
+
+@item
+@option{--with-stabs} @minus{}@minus{} Specify that stabs debugging information should be used
+instead of whatever format the host normally uses.  Normally GCC uses the
+same debug format as the host system. 
+
+@item
+@option{--enable-multilib} @minus{}@minus{} Specify that multiple target libraries
+should be built to support different target variants, calling conventions,
+etc.  This is the default. 
+
+@item
+@option{--enable-threads} @minus{}@minus{} Specify that the target supports threads.
+This affects the Objective-C compiler and runtime library, and exception
+handling for other languages like C++ and Java.
+
+@item
+@option{--enable-threads=}@emph{lib} @minus{}@minus{} Specify that @emph{lib} is the thread
+support library.  This affects the Objective-C compiler and runtime library,
+and exception handling for other languages like C++ and Java.
+
+@item
+@option{--with-cpu=}@emph{cpu} @minus{}@minus{} Specify which cpu variant the
+compiler should generate code for by default.  This is currently
+only supported on the some ports, specifically arm, powerpc, and
+SPARC. If configure does not recognize the model name (e.g. arm700,
+603e, or ultrasparc) you provide, please check the configure script
+for a complete list of supported models.
+
+@item
+@option{--enable-target-optspace} @minus{}@minus{} Specify that target libraries
+should  be optimized for code space instead of code speed.  This is the
+default for the m32r platform.
+
+@item
+@option{--enable-cpp} @minus{}@minus{} Specify that a shell script which emulates
+traditional cpp functionality should be installed.
+
+@item
+@option{--enable-cpplib} @minus{}@minus{} Specify that the functionality of
+CPP should be integrated into the compiler itself.  This option is
+not supported by snapshots since November 2000.  In snapshots where
+it is supported, it is not enabled by default, except for snapshots
+very close to November 2000.
+
+@item
+@option{--without-fast-fixincludes} @minus{}@minus{} Specify that the old, slower
+method of fixing the system header files should be used. 
+EGCS 1.1.x and older releases default to the slow version. GCC 2.95 and
+newer releases will default to the fast version.
+
+@item
+@option{--enable-version-specific-runtime-libs} @minus{}@minus{} Specify that runtime
+libraries should be installed in the compiler specific subdirectory
+(@option{$@{libsubdir@}}) rather than the usual places.
+In addition, libstdc++'s include files will be installed in
+@option{$@{libsubdir@}/include/g++} unless you overruled it by using
+@option{--with-gxx-include-dir=}@emph{dirname}.
+Using this option is particularly useful if you intend to use several
+versions of GCC in parallel. This is currently supported by @option{libf2c}
+and @option{libstdc++}.
+
+@item
+@option{--enable-languages=}@emph{lang1}@option{,}@emph{lang2}@option{,...}
+@minus{}@minus{} Specify that only a particular subset of compilers and their runtime libraries
+should be built. For a list of valid values for @emph{lang}@option{x} you can issue
+the following command in the @option{gcc} directory of your GCC source tree:@*
+@command{grep language= */config-lang.in}@*
+Currently, you can use any of the following: @code{c++}, @code{f77}, @code{java} and @code{objc}.
+@code{CHILL} is not currently maintained, and will almost
+certainly fail to compile.  Note that this switch does not work with
+EGCS 1.1.2 or older versions of egcs.  It is supported in GCC 2.95
+and newer versions.@*
+If you do not pass this flag, all languages available in the @code{gcc} sub-tree
+will be configured.  Re-defining LANGUAGES when calling @command{make bootstrap}
+@strong{*does not*} work anymore, as those language sub-directories might not have been
+configured!
+
+@item
+@option{--disable-libgcj} @minus{}@minus{} Specify that the run-time libraries
+used by GCJ should not be built.  This is useful in case you intend
+to use GCJ with some other run-time, or you're going to install it
+separately, or it just happens not to build on your particular
+machine.  In general, if the Java front-end is enabled, the GCJ
+libraries will be enabled too, unless they're known to not work on
+the target platform.  If GCJ is enabled but libgcj isn't built, you
+may need to port it; in this case, before modifying the top-level
+configure.in so that libgcj is enabled by default on this platform,
+you may use @option{--enable-libgcj} to override the default.
+
+@item
+@option{--with-dwarf2} @minus{}@minus{} Specify that the compiler should use DWARF2
+debugging information as the default.
+@end itemize
+
+Some options which only apply to building cross compilers:
+@itemize @bullet
+@item
+@option{--with-headers=}@emph{dir} @minus{}@minus{} Specifies a directory which has
+target include files.
+@emph{This options is required} when building a cross
+compiler, if @code{$@{prefix@}/$@{target@}/sys-include} doesn't pre-exist.
+These include files will be copied into the @code{gcc} install directory.
+Fixincludes will be run on these files to make them compatible with @command{gcc}.
+@item
+@option{--with-libs=}@emph{``dir1 dir2 ... dirN''} @minus{}@minus{} Specifies a list of
+directories which contain the target runtime libraries.  These libraries will
+be copied into the @code{gcc} install directory.
+@item
+@option{--with-newlib} @minus{}@minus{} Specifies that ``newlib'' is being used as the target
+C library.   This causes @code{__eprintf} to be omitted from libgcc.a on the
+assumption that it will be provided by newlib.
+@end itemize
+ 
+Note that each @option{--enable} option has a corresponding @option{--disable} option and
+that each @option{--with} option has a corresponding @option{--without} option.
+
+@html
+<hr>
+<p>
+@end html
+@ifhtml
+@uref{./index.html,,Return to the GCC Installation page}
+@end ifhtml
+@end ifset
+
+@c ***Building****************************************************************
+@ifinfo
+@comment node-name,     next,          previous, up
+@node    Building, Testing, Configuration, Installing GCC
+@end ifinfo
+@ifset buildhtml
+@html
+<h1 align="center">Installing GCC: Building</h1>
+@end html
+@ifnothtml
+@chapter Building
+@end ifnothtml
+@cindex Installing GCC: Building
+
+Now that GCC is configured, you are ready to build the compiler and
+runtime libraries.
+
+We @strong{highly} recommend that GCC be built using GNU make;
+other versions may work, then again they might not.
+
+(For example, many broken versions of make will fail if you use the
+recommended setup where @emph{objdir} is different from @emph{srcdir}.)
+
+
+@section Building a native compiler
+
+For a native build issue the command `@code{make bootstrap}'.  This 
+will build the entire GCC system, which includes the following steps:
+
+@itemize @bullet
+@item
+Build host tools necessary to build the compiler such as texinfo, bison,
+gperf.
+
+@item
+Build target tools for use by the compiler such as binutils (bfd,
+binutils, gas, gprof, ld, and opcodes)@*
+if they have been individually linked 
+or moved into the top level GCC source tree before configuring.
+
+@item
+Perform a 3-stage bootstrap of the compiler.
+
+@item
+Perform a comparison test of the stage2 and stage3 compilers.
+
+@item
+Build runtime libraries using the stage3 compiler from the previous step.
+ 
+@end itemize
+
+If you are short on disk space you might consider `@code{make
+bootstrap-lean}' instead.  This is identical to `@code{make
+bootstrap}' except that object files from the stage1 and
+stage2 of the 3-stage bootstrap of the compiler are deleted as
+soon as they are no longer needed.
+
+
+If you want to save additional space during the bootstrap and in
+the final installation as well, you can build the compiler binaries
+without debugging information with ``@code{make CFLAGS='-O' LIBCFLAGS='-g
+-O2' LIBCXXFLAGS='-g -O2 -fno-implicit-templates' bootstrap}''.  This will save
+roughly 40% of disk space both for the bootstrap and the final installation.
+(Libraries will still contain debugging information.)
+
+If you used the flag @code{--enable-languages=...} to restrict
+the compilers to be built, only those you've actually enabled will be
+built. This will of course only build those runtime libraries, for
+which the particular compiler has been built.  Please note,
+that re-defining LANGUAGES when calling `@code{make bootstrap}'
+@strong{*does not*} work anymore!
+
+
+@section Building a cross compiler
+
+We recommend reading the
+@uref{http://www.objsw.com/CrossGCC/,,crossgcc FAQ}
+for information about building cross compilers.
+
+When building a cross compiler, it is not generally possible to do a
+3-stage bootstrap of the compiler.  This makes for an interesting problem
+as parts of GCC can only be built with GCC.
+
+To build a cross compiler, we first recommend building and installing a
+native compiler.  You can then use the native GCC compiler to build the
+cross compiler.
+
+Assuming you have already installed a native copy of GCC and configured
+your cross compiler, issue the command `@code{make}', which performs the
+following steps:
+
+@itemize @bullet
+@item
+Build host tools necessary to build the compiler such as texinfo, bison,
+gperf.
+
+@item
+Build target tools for use by the compiler such as binutils (bfd,
+binutils, gas, gprof, ld, and opcodes)
+if they have been individually linked or moved into the top level GCC source
+tree before configuring.
+
+@item
+Build the compiler (single stage only).
+
+@item
+Build runtime libraries using the compiler from the previous step.
+@end itemize
+
+Note that if an error occurs in any step the make process will exit.
+
+@section Building in parallel
+
+If you have a multiprocessor system you can use `@code{make bootstrap
+MAKE="make -j 2" -j 2}' or just `@code{make -j 2 bootstrap}'
+for GNU Make 3.79 and above instead of just `@code{make bootstrap}'
+when building GCC.  You can use a bigger number instead of two if
+you like.  In most cases, it won't help to use a number bigger than
+the number of processors in your machine.
+
+@html
+<hr>
+<p>
+@end html
+@ifhtml
+@uref{./index.html,,Return to the GCC Installation page}
+@end ifhtml
+@end ifset
+
+@c ***Testing*****************************************************************
+@ifinfo
+@comment node-name,     next,          previous, up
+@node    Testing, Final install, Building, Installing GCC
+@end ifinfo
+@ifset testhtml
+@html
+<h1 align="center">Installing GCC: Testing</h1>
+@end html
+@ifnothtml
+@chapter Installing GCC: Testing
+@end ifnothtml
+@cindex Testing
+@cindex Installing GCC: Testing
+@cindex Testsuite
+
+@strong{Please note that this is only applicable 
+to current development versions of GCC and GCC 3.0 or later. 
+GCC 2.95.x does not come with a testsuite.}
+
+Before you install GCC, you might wish to run the testsuite. This
+step is optional and may require you to download additional software.
+
+First, you must have @uref{download.html,,downloaded the testsuites}. 
+The full distribution contains testsuites; only if you downloaded the 
+``core'' compiler plus any front ends, you do not have the testsuites.
+
+Second, you must have a @uref{http://www.gnu.org/software/dejagnu/,,current version of DejaGnu} installed;
+dejagnu 1.3 is not sufficient.
+
+Now you may need specific preparations:
+
+@itemize @bullet
+@item
+In order to run the libio tests on targets which do not fully
+support Unix/POSIX commands (e.g. Cygwin), the references to the dbz
+directory have to be deleted from @code{libio/configure.in}.
+
+@item
+The following environment variables must be set appropriately, as in
+the following example (which assumes that DejaGnu has been installed
+under @code{/usr/local}):
+
+@example
+     TCL_LIBRARY = /usr/local/share/tcl8.0
+     DEJAGNULIBS = /usr/local/share/dejagnu
+@end example
+
+On systems such as Cygwin, these paths are required to be actual
+paths, not mounts or links; presumably this is due to some lack of
+portability in the DejaGnu code.
+
+@end itemize
+
+Finally, you can run the testsuite (which may take a long time):
+@example
+     cd @emph{objdir}; make -k check
+@end example
+
+The testing process will try to test as many components in the GCC
+distribution as possible, including the C, C++ and Fortran compilers as
+well as the C++ runtime libraries.
+
+@section How can I run the test suite on selected tests?
+
+As a first possibility to cut down the number of tests that are run it is
+possible to use `@code{make check-gcc}' or `@code{make check-g++}'
+in the gcc subdirectory of the object directory. To further cut down the
+tests the following is possible:
+
+@example
+    make check-gcc RUNTESTFLAGS="execute.exp <other options>"
+@end example
+
+This will run all gcc execute tests in the testsuite.
+
+@example
+    make check-g++ RUNTESTFLAGS="old-deja.exp=9805* <other options>"
+@end example
+
+This will run the g++ "old-deja" tests in the testsuite where the filename
+matches 9805*.
+
+The *.exp files are located in the testsuite directories of the GCC
+source, the most important ones being compile.exp, execute.exp, dg.exp
+and old-deja.exp. To get a list of the possible *.exp files, pipe the
+output of `@code{make check}' into a file and look at the
+"@code{Running ...  .exp}" lines.
+
+@section How to interpret test results
+
+After the testsuite has run you'll find various *.sum and *.log
+files in the testsuite subdirectories. The *.log files contain a
+detailed log of the compiler invocations and the corresponding
+results, the *.sum files summarize the results. These summaries list
+all the tests that have been run with a corresponding status code:
+
+@itemize @bullet
+@item
+PASS: the test passed as expected
+@item
+XPASS: the test unexpectedly passed
+@item
+FAIL: the test unexpectedly failed
+@item
+XFAIL: the test failed as expected
+@item
+UNSUPPORTED: the test is not supported on this platform
+@item
+ERROR: the testsuite detected an error
+@item
+WARNING: the testsuite detected a possible problem
+@end itemize
+
+It is normal for some tests to report unexpected failures.  At the current time 
+our testing harness does not allow fine grained control over whether or not a 
+test is expected to fail.  We expect to fix this problem in future releases.
+
+
+@section Submitting test results
+
+If you want to report the results to the GCC project, use the
+@code{contrib/test_summary} shell script. Start it in the @emph{objdir} with
+
+@example
+    @emph{srcdir}/contrib/test_summary -p your_commentary.txt -m gcc-testresults@@gcc.gnu.org |sh
+@end example
+
+This script uses the @code{Mail} program to send the results, so
+make sure it is in your @env{PATH}. The file @file{your_commentary.txt} is
+prepended to the testsuite summary and should contain any special
+remarks you have on your results or your build environment. Please
+do not edit the testsuite result block or the subject line, as these
+messages are automatically parsed and presented at the 
+@uref{http://gcc.gnu.org/testresults/,,GCC testresults} web
+page.  Here you can also gather information on how specific tests
+behave on different platforms and compare them with your results. A
+few failing testcases are possible even on released versions and you
+should look here first if you think your results are unreasonable.
+
+@end ifset
+
+@c ***Final install***********************************************************
+@ifinfo
+@comment node-name,     next,          previous, up
+@node    Final install, , Testing, Installing GCC
+@end ifinfo
+@ifset finalinstallhtml
+@html
+<h1 align="center">Installing GCC: Final installation</h1>
+@end html
+@ifnothtml
+@chapter Installing GCC: Final installation
+@end ifnothtml
+
+Now that GCC has been built and tested, you can install it with
+`@command{cd @emph{objdir}; make install}' for a native compiler or
+`@command{cd @emph{objdir}; make install LANGUAGES="c c++"}' for 
+a cross compiler (note installing cross compilers will be easier in the 
+next release!).
+
+That step completes the installation of GCC; user level binaries can
+be found in @code{@emph{prefix}/bin} where @code{@emph{prefix}} is the value you specified
+with the @option{--prefix} to configure (or @file{/usr/local} by default).
+
+If you don't mind, please quickly review the 
+@uref{http://gcc.gnu.org/gcc-2.95/buildstat.html,,build status page}.
+If your system is not listed, send a note to
+@uref{mailto:gcc@@gcc.gnu.org,,gcc@@gcc.gnu.org} indicating
+that you successfully built and installed GCC.
+
+Include the output from running @code{@emph{srcdir}/config.guess}.  (Do not
+send us the config.guess file itself, just the output from running
+it!)
+
+If you find a bug, please report it following our
+@uref{../bugs.html,,bug reporting guidelines}.
+
+@html
+<hr>
+<p>
+@end html
+@ifhtml
+@uref{./index.html,,Return to the GCC Installation page}
+@end ifhtml
+@end ifset
+
+@c ***Binaries****************************************************************
+@ifinfo
+@comment node-name,     next,          previous, up
+@node    Binaries, Specific, Installing GCC, Top
+@end ifinfo
+@ifset binarieshtml
+@html
+<h1 align="center">Installing GCC: Binaries</h1>
+@end html
+@ifnothtml
+@chapter Installing GCC: Binaries
+@end ifnothtml
+@cindex Binaries
+@cindex Installing GCC: Binaries
+
+We are often asked about pre-compiled versions of GCC. While we cannot
+provide these for all platforms, below you'll find links to binaries for
+various platforms where creating them by yourself is not easy due to various
+reasons.
+
+Please note that we did not create these binaries, nor do we
+support them.  If you have any problems installing them, please
+contact their makers.
+
+@itemize
+@item
+@uref{http://www-frec.bull.com/docs/download.htm,,AIX};
+
+@item
+DOS - @uref{http://www.delorie.com/djgpp/,,DJGPP};
+
+@item
+@uref{http://hpux.cae.wisc.edu/,,HP-UX Porting Center};
+
+@item
+@uref{http://www.sco.com/skunkware/devtools/index.html#gcc,,SCO OpenServer/Unixware};
+
+@item
+Solaris (SPARC, Intel) - @uref{http://www.sunfreeware.com/,,Sunfreeware};
+
+@item
+SGI - @uref{http://freeware.sgi.com/,,SGI Freeware};
+
+@item
+Windows 95, 98, and NT:
+@itemize
+@item
+The @uref{http://sources.redhat.com/cygwin/,,Cygwin} project;
+@item
+@uref{http://www.xraylith.wisc.edu/~khan/software/gnu-win32/,,GNU Win32}
+related projects by Mumit Khan.
+@end itemize
+
+@item
+@uref{ftp://ftp.thewrittenword.com/packages/free/by-name/gcc-2.95.2/,,The
+Written Word} offers binaries for Solaris 2.5.1, 2.6, 2.7/SPARC, 2.7/Intel,
+IRIX 6.2, 6.5, Digital UNIX 4.0D, HP-UX 10.20, and HP-UX 11.00.
+
+@item
+Hitachi H8/300[HS] - 
+@uref{http://h8300-hms.sourceforge.net/,,GNU Development Tools for the 
+Hitachi H8/300[HS] Series}
+
+@end itemize
+
+In addition to those specific offerings, you can get a binary
+distribution CD-ROM from the
+@uref{http://www.fsf.org/order/order.html,,Free Software Foundation}. 
+It contains binaries for a number of platforms, and
+includes not only GCC, but other stuff as well. The current CD does
+not contain the latest version of GCC, but it should allow
+bootstrapping the compiler. An updated version of that disk is in the
+works.
+
+@html
+<hr>
+<p>
+@end html
+@ifhtml
+@uref{./index.html,,Return to the GCC Installation page}
+@end ifhtml
+@end ifset
+
+@c ***Specific****************************************************************
+@ifinfo
+@comment node-name,     next,          previous, up
+@node    Specific, Concept Index, Binaries, Top
+@end ifinfo
+@ifset specifichtml
+@html
+<h1 align="center">Host/target specific installation notes for GCC</h1>
+@end html
+@ifnothtml
+@chapter Host/target specific installation notes for GCC
+@end ifnothtml
+@cindex Specific
+@cindex Specific installation notes
+@cindex Target specific installation
+@cindex Host specific installation
+@cindex Target specific installation notes
+
+Please read this document carefully @emph{before} installing the
+GNU Compiler Collection on your machine.
+
+@itemize
+@item
+@uref{#alpha*-dec-linux*,,alpha*-dec-linux*}
+@item
+@uref{#alpha*-dec-osf*,,alpha*-dec-osf*}
+@item
+@uref{#avr,,avr}
+@item
+@uref{#dos,,DOS}
+@item
+@uref{#h8300-hms,,h8300-hms}
+@item
+@uref{#hppa*-hp-hpux*,,hppa*-hp-hpux*}
+@item
+@uref{#hppa*-hp-hpux9,,hppa*-hp-hpux9}
+@item
+@uref{#hppa*-hp-hpux10,,hppa*-hp-hpux10}
+@item
+@uref{#hppa*-hp-hpux11,,hppa*-hp-hpux11}
+@item
+@uref{#*-*-linux-gnu,,*-*-linux-gnu}
+@item
+@uref{#ix86-*-linux*,,i?86-*-linux*}
+@item
+@uref{#ix86-*-sco3.2v5*,,i?86-*-sco3.2v5*}
+@item
+@uref{#ix86-*-solaris*,,i?86-*-solaris*}
+@item
+@uref{#ix86-*-udk,,i?86-*-udk}
+@item
+@uref{#*-ibm-aix*,,*-ibm-aix*}
+@item
+@uref{#m68k-*-nextstep*,,m68k-*-nextstep*}
+@item
+@uref{#m68k-sun-sunos4.1.1,,m68k-sun-sunos4.1.1}
+@item
+@uref{#mips*-sgi-irix[45],,mips*-sgi-irix[45]}
+@item
+@uref{#mips*-sgi-irix6,,mips*-sgi-irix6}
+@item
+@uref{#powerpc-*-linux-gnu*,,powerpc-*-linux-gnu*}
+@item
+@uref{#*-*-solaris*,,*-*-solaris*}
+@item
+@uref{#sparc-sun-solaris*,,sparc-sun-solaris*}
+@item
+@uref{#sparc-sun-solaris2.7,,sparc-sun-solaris2.7}
+@item
+@uref{#*-sun-solaris2.8,,*-sun-solaris2.8}
+@item
+@uref{#sunv5,,Sun V5.0 Compiler Bugs}
+@item
+@uref{#sparc-sun-sunos*,,sparc-sun-sunos*}
+@item
+@uref{#sparc-unknown-linux-gnulibc1,,sparc-unknown-linux-gnulibc1}
+@item
+@uref{#sparc64-*-*,,sparc64-*-*}
+@item
+@uref{#windows,,Microsoft Windows}
+@item
+@uref{#os2,,OS/2}
+@item
+@uref{#older,,Older systems}
+@end itemize
+
+@itemize
+@item
+@uref{#elf_targets,,all ELF targets} (SVR4, Solaris, etc.)
+@end itemize
+
+
+@html
+<!-- -------- host/target specific issues start here ---------------- -->
+<hr>
+<h3><a name="alpha*-dec-linux*">alpha*-dec-linux*</a></h3>
+@end html
+
+We strongly recommend to upgrade to binutils 2.10 (or newer).
+
+The following error:
+@example
+  Error: macro requires $at register while noat in effect
+@end example
+
+indicates that you should upgrade to a newer version of
+the assembler, 2.9 or later.  If you can not upgrade the assembler, the
+compiler option "-Wa,-m21164a" may work around this problem.
+
+@html
+</p>
+<hr>
+<h3><a name="alpha*-dec-osf*">alpha*-dec-osf*</a></h3>
+@end html
+
+If you install a shared libstdc++ and, when you link a non-trivial C++
+program (for example, @code{gcc/testsuite/g++.other/delete3.C}),
+the linker reports a couple of errors about multiply-defined symbols
+(for example, @code{nothrow}, @code{__throw} and
+@code{terminate(void)}), you've probably got a linker bug, for
+which there's no known fix.  The officially recommended work-around is
+to remove the shared libstdc++.
+
+An alternative solution is to arrange that all symbols from
+@code{libgcc} get copied to the shared @code{libstdc++};
+see detailed solution below.  (Surprising as it may seem, this does
+indeed fix the problem!)  @emph{Beware} that this may bring you
+binary-compatibility problems in the future, if you don't use the same
+work-around next time you build @code{libstdc++}: if programs
+start to depend on @code{libstdc++} to provide symbols that used
+to be only in @code{libgcc}, you must arrange that
+@code{libstdc++} keeps providing them, otherwise the programs
+will have to be relinked.
+
+The magic spell is to add @code{-Wl,-all,-lgcc,-none} to the
+definition of macro @code{SHDEPS} in
+@code{libstdc++/config/dec-osf.ml} @emph{before}
+@code{alpha*-dec-osf*/libstdc++/Makefile} is created (a 
+@uref{dec-osf-shlibstdc++.patch,,patch} 
+that does just that is available).  If the Makefile already exists, run
+@code{./config.status} within directory
+@code{alpha*-dec-osf*/libstdc++} (and
+@code{alpha*-dec-osf*/ieee/libstdc++}, if it also exists).
+Remove any existing @code{libstdc++.so*} from such directories,
+and run @code{make all-target-libstdc++} in the top-level
+directory, then @code{make install-target-libstdc++}.
+
+If you have already removed the build tree, you may just remove
+@code{libstdc++.so.2.10.0} from the install tree and re-create
+it with the command 
+@code{gcc -shared -o libstdc++.so.2.10.0 -Wl,-all,-lstdc++,-lgcc,-none -lm}.
+If the @code{ieee}
+sub-directory exists, repeat this command in it, with the additional
+flag @code{-mieee}.
+
+@html
+</p>
+<hr>
+<h3><a name="avr">avr</a></h3>
+@end html
+
+Use `@command{configure} @option{--target=avr} 
+@option{--enable-languages="c"}' to configure GCC.
+
+Further installation notes and other useful information about AVR tools
+can also be obtained from:
+
+@itemize @bullet
+@item
+@uref{http://home.overta.ru/users/denisc,,http://home.overta.ru/users/denisc}
+@item
+@uref{http://www.itnet.pl/amelektr/avr,,http://www.itnet.pl/amelektr/avr}
+@end itemize
+
+We strongly recommend to upgrade to binutils 2.11
+(or a current snapshot until 2.11 has been released).
+
+The following error:
+@example
+  Error: register required
+@end example
+
+indicates that you should upgrade to a newer version of the binutils.
+
+@html
+</p>
+<hr>
+<h3><a name="dos">DOS</a></h3>
+@end html
+
+Please have a look at our @uref{binaries.html,,binaries page}.
+
+@html
+</p>
+<hr>
+<h3><a name="h8300-hms">h8300-hms</a></h3>
+@end html
+
+Please have a look at our @uref{binaries.html,,binaries page}.
+
+@html
+</p>
+<hr>
+<h3><a name="hppa*-hp-hpux*">hppa*-hp-hpux*</a></h3>
+@end html
+
+We @emph{highly} recommend using gas/binutils-2.8 or newer on all hppa
+platforms; you may encounter a variety of problems when using the HP 
+assembler.
+
+Specifically, @option{-g} does not work on HP-UX (since that system
+uses a peculiar debugging format which GCC does not know about), unless you
+use GAS and GDB and configure GCC with the @option{--with-gnu-as}
+option.
+
+If you wish to use pa-risc 2.0 architecture support, you must use either
+the HP assembler or a recent
+@uref{ftp://sources.redhat.com/pub/binutils/snapshots,,snapshot of gas}.
+
+More specific information to hppa*-hp-hpux* targets follows.
+
+@html
+</p>
+<hr>
+<h3><a name="hppa*-hp-hpux9">hppa*-hp-hpux9</a></h3>
+@end html
+
+The HP assembler has major problems on this platform.  We've tried to work
+around the worst of the problems.  However, those workarounds may be causing
+linker crashes in some circumstances; the workarounds also probably prevent
+shared libraries from working.  Use the GNU assembler to avoid these problems.
+
+
+The configuration scripts for GCC will also trigger a bug in the hpux9
+shell.  To avoid this problem set CONFIG_SHELL to @file{/bin/ksh} and SHELL 
+to @file{/bin/ksh} in your environment.
+
+
+@html
+</p>
+<hr>
+<h3><a name="hppa*-hp-hpux10">hppa*-hp-hpux10</a></h3>
+@end html
+
+For hpux10.20, we @emph{highly} recommend you pick up the latest sed patch 
+@code{PHCO_19798} from HP.  HP has two sites which provide patches free of 
+charge:
+
+@itemize @bullet
+@item
+@html
+<a href="http://us-support.external.hp.com">US, Canada, Asia-Pacific, and
+Latin-America</a>
+@end html
+@ifnothtml
+@uref{http://us-support.external.hp.com,,}US, Canada, Asia-Pacific, and
+Latin-America
+@end ifnothtml
+@item
+@uref{http://europe-support.external.hp.com,,Europe}
+@end itemize
+
+The HP assembler on these systems is much better than the hpux9 assembler,
+but still has some problems.  Most notably the assembler inserts timestamps
+into each object file it creates, causing the 3-stage comparison test to fail
+during a `@code{make bootstrap}'.  You should be able to continue by 
+saying `@code{make all}' after getting the failure from `@code{make 
+bootstrap}'.
+
+
+@html
+</p>
+<hr>
+<h3><a name="hppa*-hp-hpux11">hppa*-hp-hpux11</a></h3>
+@end html
+
+GCC 2.95.2 does not support HP-UX 11, and it cannot generate 64-bit
+object files. Current (as of late 2000) snapshots and GCC 3.0 do support
+HP-UX 11.
+
+
+@html
+</p>
+<hr>
+<h3><a name="*-*-linux-gnu">*-*-linux-gnu</a></h3>
+@end html
+
+If you use glibc 2.2 (or 2.1.9x), GCC 2.95.2 won't install
+out-of-the-box.  You'll get compile errors while building libstdc++.
+The patch @uref{glibc-2.2.patch,,glibc-2.2.patch}, that is to be
+applied in the GCC source tree, fixes the compatibility problems.
+
+@html
+</p>
+<hr>
+<h3><a name="ix86-*-linux*">i?86-*-linux*</a></h3>
+@end html
+
+You will need binutils-2.9.1.0.15 or newer for exception handling to work.
+
+If you receive Signal 11 errors when building on GNU/Linux, then it is
+possible you have a hardware problem.  Further information on this can be
+found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
+
+@html
+</p>
+<hr>
+<h3><a name="ix86-*-sco3.2v5*">i?86-*-sco3.2v5*</a></h3>
+@end html
+
+Unlike earlier versions of GCC, the ability to generate COFF with this
+target is no longer provided.
+
+Earlier versions of GCC emitted Dwarf-1 when generating ELF to allow
+the system debugger to be used.  That support was too burdensome to
+maintain.  GCC now emits only dwarf-2 for this target.  This means you
+may use either the UDK debugger or GDB to debug programs built by this
+version of GCC.
+
+If you are building languages other than C, you must follow the instructions
+about invoking `@code{make bootstrap}' because the native OpenServer
+compiler will build a @code{cc1plus} that will not correctly parse many
+valid C++ programs including those in @code{libgcc.a}.  
+@strong{You must do a `@code{make bootstrap}' if you are building with the 
+native compiler.}
+
+Use of the `@option{-march-pentiumpro}' flag can result in
+unrecognized opcodes when using the native assembler on OS versions before
+5.0.6. (Support for P6 opcodes was added to the native ELF assembler in
+that version.)  While it's rather rare to see these emitted by GCC yet, 
+errors of the basic form:
+
+@example
+  /usr/tmp/ccaNlqBc.s:22:unknown instruction: fcomip
+  /usr/tmp/ccaNlqBc.s:50:unknown instruction: fucomip
+@end example
+
+are symptoms of this problem.  You may work around this by not
+building affected files with that flag, by using the GNU assembler, or
+by using the assembler provided with the current version of the OS.
+Users of GNU assembler should see the note below for hazards on doing
+so.
+
+The native SCO assembler that is provided with the OS at no
+charge is normally required.  If, however, you must be able to use
+the GNU assembler (perhaps you're compiling code with asms that
+require GAS syntax) you may configure this package using the flags
+@option{--with-gnu-as}.  You must use a recent version of GNU
+binutils; versions past 2.9.1 seem to work well.
+
+In general, the @option{--with-gnu-as} option isn't as well tested
+as the native assembler.
+
+Look in @file{gcc/config/i386/sco5.h} (search for "messy") for
+additional OpenServer-specific flags.
+
+Systems based on OpenServer before 5.0.4 (`@code{uname -X}'
+will tell you what you're running) require TLS597 from ftp.sco.com/TLS
+for C++ constructors and destructors to work right.
+
+The system linker in (at least) 5.0.4 and 5.0.5 will sometimes
+do the wrong thing for a construct that GCC will emit for PIC
+code.  This can be seen as execution testsuite failures when using
+-fPIC on 921215-1.c, 931002-1.c, nestfunc-1.c, and gcov-1.c.
+For 5.0.5, an updated linker that will cure this problem is
+available.  You must install both 
+@uref{ftp://ftp.sco.com/Supplements/rs505a/,,ftp://ftp.sco.com/Supplements/rs505a/} 
+and @uref{ftp://ftp.sco.com/SLS/,,OSS499A}.
+
+The dynamic linker in OpenServer 5.0.5 (earlier versions may show
+the same problem) aborts on certain g77-compiled programs.  It's particularly
+likely to be triggered by building Fortran code with the @option{-fPIC} flag.
+Although it's conceivable that the error could be triggered by other
+code, only G77-compiled code has been observed to cause this abort.
+If you are getting core dumps immediately upon execution of your
+g77 program - and especially if it's compiled with -fPIC - try applying
+@uref{sco_osr5_g77.patch,,@code{`sco_osr5_g77.patch'}} to your libf2c and 
+rebuilding GCC.  
+Affected faults, when analyzed in a debugger, will show a stack
+backtrace with a fault occurring in @code{rtld()} and the program
+running as @code{/usr/lib/ld.so.1}.  This problem has been reported to SCO 
+engineering and will hopefully be addressed in later releases.
+
+
+@html
+</p>
+<hr>
+<h3><a name="ix86-*-solaris*">i?86-*-solaris*</a></h3>
+@end html
+
+GCC 2.95.2, when configured to use the GNU assembler, would invoke
+it with the @code{-s} switch, that GNU as up to 2.9.5.0.12 does
+not support.  If you'd rather not use a newer GNU as nor the native
+assembler, you'll need the patch 
+@uref{x86-sol2-gas.patch,,@code{`x86-sol2-gas.patch'}}.
+
+
+@html
+</p>
+<hr>
+<h3><a name="ix86-*-udk">i?86-*-udk</a></h3>
+@end html
+
+This target emulates the SCO Universal Development Kit and requires that
+package be installed.  (If it is installed, you will have a 
+@file{/udk/usr/ccs/bin/cc } file present.)  It's very much like the 
+@code{i?86-*-unixware7*} target
+but is meant to be used when hosting on a system where UDK isn't the
+default compiler such as OpenServer 5 or Unixware 2.  This target will
+generate binaries that will run on OpenServer, Unixware 2, or Unixware 7, 
+with the same warnings and caveats as the SCO UDK.
+
+You can stage1 with either your native compiler or with UDK.   If you
+don't do a full bootstrap when initially building with your native compiler
+you will have an utterly unusable pile of bits as your reward.
+
+This target is a little tricky to build because we have to distinguish
+it from the native tools (so it gets headers, startups, and libraries
+from the right place) while making the tools not think we're actually 
+building a cross compiler.   The easiest way to do this is with a configure
+command like this:
+
+@command{  CC=/udk/usr/ccs/bin/cc <i>/your/path/to/</i>gcc/configure 
+--host=i686-pc-udk --target=i686-pc-udk --program-prefix=udk-}
+
+@emph{You should substitute 'i686' in the above command with the appropriate
+processor for your host.}
+
+You should follow this with a `@command{make bootstrap}'  then
+`@command{make install}'.  You can then access the UDK-targeted GCC 
+tools by adding @code{udk-} before the commonly known name.  For example, to 
+invoke the C compiler, you would use `@code{udk-gcc}'.  They will coexist 
+peacefully with any native-target GCC tools you may have installed.
+
+
+@html
+</p>
+<hr>
+<h3><a name="*-ibm-aix*">*-ibm-aix*</a></h3>
+<!-- rs6000-ibm-aix*, powerpc-ibm-aix* -->
+@end html
+
+AIX Make frequently has problems with GCC makefiles.  GNU Make 3.76 or
+newer is recommended to build on this platform.
+
+Errors involving "alloca" when building GCC generally are due
+to an incorrect definition of @command{CC} in the Makefile or mixing files
+compiled with the native C compiler and GCC.  During the stage1 phase of
+the build, the native AIX compiler @strong{must} be invoked as "cc"
+(not "xlc").  Once @command{configure} has been informed of
+"xlc", one needs to use "make distclean" to remove the
+configure cache files and ensure that @command{$CC} environment variable
+does not provide a definition that will confuse @command{configure}.
+If this error occurs during stage2 or later, then the problem most likely
+is the version of Make (see above).
+
+Some versions of the AIX binder (linker) can fail with a relocation
+overflow severe error when the @option{-bbigtoc} option is used to link
+GCC-produced object files into an executable that overflows the TOC.  A fix
+for APAR IX75823 (OVERFLOW DURING LINK WHEN USING GCC AND -BBIGTOC) is
+available from IBM Customer Support and from its
+@uref{http://service.boulder.ibm.com/,,service.boulder.ibm.com}
+website as PTF U455193.
+
+Binutils does not support AIX 4.3 (at least through release 2.9).
+GNU as and GNU ld will not work properly and one should not configure GCC
+to use those GNU utilities.  Use the native AIX tools which do interoperate
+with GCC.
+
+AIX 4.3 utilizes a new "large format" archive to support both
+32-bit and 64-bit object modules.  The routines provided in AIX 4.3.0 and
+AIX 4.3.1 to parse archive libraries did not handle the new format correctly.
+These routines are used by GCC and result in error messages during linking
+such as "not a COFF file".  The version of the routines shipped
+with AIX 4.3.1 should work for a 32-bit environment.  The @option{-g} option
+of the archive command may be used to create archives of 32-bit objects
+using the original "small format".  A correct version of the routines is
+shipped with AIX 4.3.2.
+
+The initial assembler shipped with AIX 4.3.0 generates incorrect object
+files.  A fix for APAR IX74254 (64BIT DISASSEMBLED OUTPUT FROM COMPILER FAILS
+TO ASSEMBLE/BIND) is available from IBM Customer Support and from its
+@uref{http://service.boulder.ibm.com/,,service.boulder.ibm.com}
+website as PTF U453956.  This fix is incorporated in AIX 4.3.1 and above.
+
+The AIX 4.3.2.1 linker (bos.rte.bind_cmds Level 4.3.2.1) will dump core
+with a segmentation fault when invoked by any version of GCC.  A fix for
+APAR IX87327 is available from IBM Customer Support and from its
+@uref{http://service.boulder.ibm.com/,,service.boulder.ibm.com}
+website as PTF U461879.  This fix is incorporated in AIX 4.3.3 and above.
+
+
+@html
+</p>
+<hr>
+<h3><a name="m68k-*-nextstep*">m68k-*-nextstep*</a></h3>
+@end html
+
+You absolutely @strong{must} use GNU sed and GNU make on this platform.
+
+
+On NEXTSTEP 3.x where x < 3 the build of GCC will abort during  
+stage1 with an error message like this:
+
+@example
+  _eh
+  /usr/tmp/ccbbsZ0U.s:987:Unknown pseudo-op: .section
+  /usr/tmp/ccbbsZ0U.s:987:Rest of line ignored. 1st junk character
+  valued 95 (_).
+@end example
+
+The reason for this is the fact that NeXT's assembler for these  
+versions of the operating system does not support the .section  
+pseudo op that's needed for full C++ exception functionality.
+
+As NeXT's assembler is a derived work from GNU as, a free  
+replacement that does can be obtained at 
+@uref{ftp://ftp.next.peak.org:/next-ftp/next/apps/devtools/as.3.3.NIHS.s.tar.gz,,ftp://ftp.next.peak.org:/next-ftp/next/apps/devtools/as.3.3.NIHS.s.tar.gz}.
+
+If you try to build the integrated C++ & C++ runtime libraries on this system
+you will run into trouble with include files.  The way to get around this is
+to use the following sequence.  Note you must have write permission to
+the directory @emph{prefix} you specified in the configuration process of GCC
+for this sequence to work.
+
+@example
+  cd bld-gcc
+  make all-texinfo all-bison all-byacc all-binutils all-gas all-ld
+  cd gcc
+  make bootstrap
+  make install-headers-tar
+  cd ..
+  make bootstrap3
+@end example
+
+
+@html
+</p>
+<hr>
+<h3><a name="m68k-sun-sunos4.1.1">m68k-sun-sunos4.1.1</a></h3>
+@end html
+
+It is reported that you may need the GNU assembler on this platform.
+
+
+@html
+</p>
+<hr>
+<h3><a name="mips*-sgi-irix[45]">mips*-sgi-irix[45]</a></h3>
+@end html
+
+You must use GAS on these platforms, as the native assembler can not handle 
+the code for exception handling support. Either of these messages indicates 
+that you are using the MIPS assembler when instead you should be using GAS:
+
+@samp{  as0: Error: ./libgcc2.c, line 1:Badly delimited numeric literal
+  .4byte $LECIE1-$LSCIE1
+  as0: Error: ./libgcc2.c, line 1:malformed statement}
+
+or:
+
+@samp{  as0: Error: /src/bld-gcc/gcc/libgcc2.c, line 1:undefined symbol in expression
+  .word $LECIE1-$LSCIE1}
+
+These systems don't have ranlib, which various components in GCC need; you
+should be able to avoid this problem by installing GNU binutils, which includes
+a functional ranlib for this system.
+
+You may get the following warning on irix4 platforms, it can be safely
+ignored.
+@example
+  warning: foo.o does not have gp tables for all its sections.
+@end example
+
+When building GCC, the build process loops rebuilding cc1 over and
+over again.  This happens on mips-sgi-irix5.2, and possibly other platforms.@*
+It has been reported that this is a known bug in the make shipped with
+IRIX 5.2.  We recommend you use GNU make instead of the vendor supplied
+make program; however, you may have success with "smake" on IRIX 5.2 if
+you do not have GNU make available.
+
+See @uref{http://reality.sgi.com/ariel/freeware/,,http://reality.sgi.com/ariel/freeware} for more information about
+using GCC on IRIX platforms.
+
+
+@html
+</p>
+<hr>
+<h3><a name="mips*-sgi-irix6">mips*-sgi-irix6</a></h3>
+@end html
+
+You must @emph{not} use GAS on irix6 platforms; doing so will only
+cause problems.
+
+These systems don't have ranlib, which various components in GCC need; you
+should be able to avoid this problem by making a dummy script called ranlib
+which just exits with zero status and placing it in your path.
+
+If you are using Irix cc as your bootstrap compiler, you must
+ensure that the N32 ABI is in use.  To test this, compile a simple C
+file with @command{cc} and then run @command{file} on the
+resulting object file.  The output should look like:
+
+@example
+@code{    test.o: ELF N32 MSB ...}
+@end example
+
+If you see:
+@example
+@code{    test.o: ELF 32-bit MSB}
+@end example
+
+then your version of @command{cc} uses the O32 ABI default.  You
+should set the environment variable @command{CC} to 'cc -n32'
+before configuring GCC.
+
+GCC does not currently support generating O32 ABI binaries in the
+mips-sgi-irix6 configurations.  It used to be possible to create a GCC
+with O32 ABI only support by configuring it for the mips-sgi-irix5
+target.  See the link below for details.
+
+GCC does not correctly pass/return structures which are
+smaller than 16 bytes and which are not 8 bytes. The problem is very
+involved and difficult to fix. It affects a number of other targets also,
+but IRIX 6 is affected the most, because it is a 64 bit target, and 4 byte
+structures are common. The exact problem is that structures are being padded
+at the wrong end, e.g. a 4 byte structure is loaded into the lower 4 bytes
+of the register when it should be loaded into the upper 4 bytes of the
+register.
+
+GCC is consistent with itself, but not consistent with the SGI C compiler
+(and the SGI supplied runtime libraries), so the only failures that can
+happen are when there are library functions that take/return such
+structures. There are very few such library functions. I can only recall
+seeing two of them: inet_ntoa, and semctl.
+
+See @uref{http://reality.sgi.com/ariel/freeware/,,http://reality.sgi.com/ariel/freeware} for more information about
+using GCC on IRIX platforms.
+
+
+@html
+</p>
+<hr>
+<h3><a name="powerpc-*-linux-gnu*">powerpc-*-linux-gnu*</a></h3>
+@end html
+
+You will need 
+@uref{ftp://ftp.varesearch.com/pub/support/hjl/binutils,,binutils-2.9.4.0.8} 
+or newer for a working GCC. It is strongly recommended to recompile binutils
+if you initially built it with gcc-2.7.2.x.
+
+
+@html
+</p>
+<hr>
+<h3><a name="*-*-solaris*">*-*-solaris*</a></h3>
+@end html
+
+Starting with Solaris, Sun does not ship a C compiler any more. To
+bootstrap and install GCC you first have to install a pre-built
+compiler, see our @uref{binaries.html,,binaries page} for
+details.
+
+Sun as 4.X is broken in that it cannot cope with long symbol names.
+A typical error message might look similar to the following:
+
+@samp{/usr/ccs/bin/as: "/var/tmp/ccMsw135.s", line 11041: 
+error: can't compute value of an expression involving an external symbol.}
+
+This is Sun bug 4237974.  See the @uref{../faq.html#squangle,,How to work around too long C++
+symbol names?} FAQ entry for further information and a workaround.  This is fixed with patch 
+108908-02 and has been fixed in later (5.x) versions of the assembler.
+
+Sun make in all known Solaris 1 (SunOS 4) and Solaris 2 releases has a
+broken @emph{VPATH} mechanism, which means you must either:
+@itemize @bullet
+@item
+Use GNU make (recommended), @emph{or:}
+@item
+Always build in the source directory, @emph{or:}
+@item
+@emph{(For GCC 2.95.1 only)}
+apply the patches mentioned at
+@uref{http://www.gnu.org/software/gcc/extensions.html#sun-make,,
+http://www.gnu.org/software/gcc/extensions.html#sun-make}.
+@end itemize
+
+
+@html
+<p>
+<hr>
+<h3><a name="sparc-sun-solaris*">sparc-sun-solaris*</a></h3>
+@end html
+
+binutils 2.9.1 has known bugs on this platform. We recommend to use
+binutils 2.10 or the vendor tools (Sun as, Sun ld).
+
+Unfortunately, C++ shared libraries, including libstdc++, won't work
+properly if assembled with Sun as: the linker will complain about
+relocations in read-only sections, in the definition of virtual
+tables. Also, Sun as fails to process long symbols resulting from
+mangling template-heavy C++ function names.
+
+
+@html
+</p>
+<hr>
+<h3><a name="sparc-sun-solaris2.7">sparc-sun-solaris2.7</a></h3>
+@end html
+
+Sun patch 107058-01 (1999-01-13) for SPARC Solaris 7 triggers a bug in
+the dynamic linker.  This problem (Sun bug 4210064) affects GCC 2.8
+and later, including all EGCS releases.  Sun formerly recommended
+107058-01 for all Solaris 7 users, but around 1999-09-01 it started to
+recommend it only for people who use Sun's compilers.
+  
+Here are some workarounds to this problem:
+@itemize @bullet
+@item
+Do not install Sun patch 107058-01 until after Sun releases a
+complete patch for bug 4210064.  This is the simplest course to take,
+unless you must also use Sun's C compiler.  Unfortunately 107058-01
+is preinstalled on some new Solaris-based hosts, so you may have to
+back it out.
+  
+@item
+Copy the original, unpatched Solaris 7
+@command{/usr/ccs/bin/as} into
+@command{/usr/local/lib/gcc-lib/sparc-sun-solaris2.7/2.95.1/as},
+adjusting the latter name to fit your local conventions and software
+version numbers.
+
+@item
+Install Sun patch 106950-03 (1999-05-25) or later.  Nobody with
+both 107058-01 and 106950-03 installed has reported the bug with GCC
+and Sun's dynamic linker.  This last course of action is riskiest,
+for two reasons.  First, you must install 106950 on all hosts that
+run code generated by GCC; it doesn't suffice to install it only on
+the hosts that run GCC itself.  Second, Sun says that 106950-03 is
+only a partial fix for bug 4210064, but Sun doesn't know whether the
+partial fix is adequate for GCC.  Revision -08 or later should fix
+the bug, but (as of 1999-10-06) it is still being tested.
+@end itemize 
+
+
+@html
+<p>
+<hr>
+<h3><a name="*-sun-solaris2.8">*-sun-solaris2.8</a></h3>
+<!-- ripped from the same FAQ that I answered -->
+@end html
+
+Sun bug 4296832 turns up when compiling X11 headers with GCC 2.95 or
+newer:  g++ will complain that types are missing.  These headers assume
+that omitting the type means 'int'; this assumption worked for C89 but
+is wrong for C++, and is now wrong for C99 also.
+
+g++ accepts such (illegal) constructs with the option @option{-fpermissive}; it
+will assume that any missing type is 'int' (as defined by C89).
+
+For Solaris 8, t<h3><a name="older"></a>Older systems</h3>
+
+<p>GCC contains support files for many older (1980s and early
+1990s) Unix variants.  For the most part, support for these systems
+has not been deliberately removed, but it has not been maintained for
+several years and may suffer from bitrot.  Support from some systems
+has been removed from GCC 3: fx80, ns32-ns-genix, pyramid, tahoe,
+gmicro, spur; most of these targets had not been updated since GCC
+version 1.</p>
+
+<p>Support for older systems as targets for cross-compilation is less
+problematic than support for them as hosts for GCC; if an
+enthusiast wishes to make such a target work again
+(including resurrecting any of the targets that never worked with GCC
+2, starting from the last CVS version before they were removed),
+patches <a href="../contribute.html">following the usual
+requirements</a> would be likely to be accepted, since they should not
+affect the support for more modern targets.</p>
+
+<p>Support for old systems as hosts for GCC can cause problems if the
+workarounds for compiler, library and operating system bugs affect the
+cleanliness or maintainability of the rest of GCC.  In some cases, to
+bring GCC up on such a system, if still possible with current GCC, may
+require first installing an old version of GCC which did work on that
+system, and using it to compile a more recent GCC, to avoid bugs in
+the vendor compiler.  Old releases of GCC 1 and GCC 2 are available in
+the old-releases directory on the <a href="../mirrors.html">GCC mirror
+sites</a>.  Header bugs may generally be avoided using
+<code>fixincludes</code>, but bugs or deficiencies in libraries and
+the operating system may still cause problems.</p>
+
+<p>For some systems, old versions of GNU binutils may also be useful,
+and are available from pub/binutils/old-releases on <a
+href="http://sources.redhat.com/mirrors.html">sources.redhat.com
+mirror sites</a>.</p>
+
+<p>Some of the information on specific systems above relates to
+such older systems, but much of the information
+about GCC on such systems (which may no longer be applicable to
+current GCC) is to be found in the GCC texinfo manual.</p>
+
+<hr>
+his is fixed by revision 24 or later of patch 108652
+(for SPARCs) or 108653 (for Intels).
+
+
+@html
+<p>
+<hr>
+<h3><a name="sunv5">Sun V5.0 Compiler Bugs</a></h3>
+@end html
+
+The Sun V5.0 compilers are known to mis-compile GCC 2.95 and GCC 2.95.1,
+which in turn causes GCC to fail its bootstrap comparison test.
+GCC 2.95.2 has a workaround.
+
+
+@html
+</p>
+<hr>
+<h3><a name="sparc-sun-sunos*">sparc-sun-sunos*</a></h3>
+@end html
+
+A bug in the SunOS4 linker will cause it to crash when linking
+-fPIC compiled objects (and will therefore not allow you to build
+shared libraries).
+
+To fix this problem you can either use the most recent version of
+binutils or get the latest SunOS4 linker patch (patch ID 100170-10)
+from Sun's patch site.
+
+
+@html
+</p>
+<hr>
+<h3><a name="sparc-unknown-linux-gnulibc1">sparc-unknown-linux-gnulibc1</a></h3>
+@end html
+
+It has been reported that you might need 
+@uref{ftp://ftp.yggdrasil.com/private/hjl,,binutils-2.8.1.0.23}
+for this platform, too.
+
+
+@html
+</p>
+<hr>
+<h3><a name="sparc64-*-*">sparc64-*-*</a></h3>
+@end html
+
+GCC version 2.95 is not able to compile code correctly for
+@code{sparc64} targets.  Users of the Linux kernel, at least,
+12~can use the @code{sparc32} program to start up a new shell
+invocation with an environment that causes @command{configure} to
+recognize (via @command{uname -a}) the system as @command{sparc-*-*} instead.
+
+
+@html
+</p>
+<hr>
+<h3><a name="windows"></a>Microsoft Windows (32 bit)</h3>
+@end html
+
+A port of GCC 2.95.x is included with the 
+@uref{http://www.cygwin.com/,,Cygwin environment}.
+
+Current (as of early 2001) snapshots of GCC will build under Cygwin
+without modification.
+
+@html
+</p>
+<hr>
+<h3><a name="os2"></a>OS/2</h3>
+@end html
+
+GCC does not currently support OS/2.  However, Andrew Zabolotny has been
+working on a generic OS/2 port with pgcc.  The current code code can be found
+at @uref{http://www.goof.com/pcg/os2/,,http://www.goof.com/pcg/os2/}.
+
+An older copy of GCC 2.8.1 is included with the EMX tools available at 
+@uref{ftp://ftp.leo.org/pub/comp/os/os2/leo/devtools/emx+gcc/,,
+ftp://ftp.leo.org/pub/comp/os/os2/leo/devtools/emx+gcc/}.
+
+@html
+</p>
+<hr>
+<h3><a name="older"></a>Older systems</h3> 
+@end html
+ 
+GCC contains support files for many older (1980s and early 
+1990s) Unix variants.  For the most part, support for these systems 
+has not been deliberately removed, but it has not been maintained for 
+several years and may suffer from bitrot.  Support from some systems 
+has been removed from GCC 3: fx80, ns32-ns-genix, pyramid, tahoe, 
+gmicro, spur; most of these targets had not been updated since GCC 
+version 1.
+ 
+Support for older systems as targets for cross-compilation is less 
+problematic than support for them as hosts for GCC; if an enthusiast 
+wishes to make such a target work again (including resurrecting any 
+of the targets that never worked with GCC 2, starting from the last 
+CVS version before they were removed), patches 
+@uref{../contribute.html,,following the usual requirements} 
+would be likely to be accepted, since they should not affect the 
+support for more modern targets.
+ 
+Support for old systems as hosts for GCC can cause problems if the 
+workarounds for compiler, library and operating system bugs affect the 
+cleanliness or maintainability of the rest of GCC.  In some cases, to 
+bring GCC up on such a system, if still possible with current GCC, may 
+require first installing an old version of GCC which did work on that 
+system, and using it to compile a more recent GCC, to avoid bugs in 
+the vendor compiler.  Old releases of GCC 1 and GCC 2 are available in 
+the old-releases directory on the 
+@uref{../mirrors.html,,GCC mirror sites}.  Header bugs may generally 
+be avoided using @code{fixincludes}, but bugs or deficiencies in libraries and 
+the operating system may still cause problems.
+ 
+For some systems, old versions of GNU binutils may also be useful, 
+and are available from pub/binutils/old-releases on 
+@uref{http://sources.redhat.com/mirrors.html,,sources.redhat.com mirror sites}.
+ 
+Some of the information on specific systems above relates to 
+such older systems, but much of the information 
+about GCC on such systems (which may no longer be applicable to 
+current GCC) is to be found in the GCC texinfo manual.
+ 
+@html
+</p>
+<hr>
+<h3><a name="elf_targets">all ELF targets (SVR4, Solaris, etc.)</a></h3>
+@end html
+
+C++ support is significantly better on ELF targets if you use the GNU
+linker; duplicate copies of inlines, vtables and template instantiations
+will be discarded automatically.
+
+
+@html
+</p>
+<hr>
+<p>
+@end html
+@ifhtml
+@uref{./index.html,,Return to the GCC Installation page}
+@end ifhtml
+@end ifset
+
+@c ***************************************************************************
+@c Part 6 The End of the Document
+@ifinfo
+@comment node-name,     next,          previous, up
+@node    Concept Index, , Specific, Top
+@end ifinfo
+
+@ifinfo
+@unnumbered Concept Index
+
+@printindex cp
+
+@contents
+@end ifinfo
+@bye

@@ -1,3 +1,8 @@
+2001-05-12  Dean Wakerley  <dean@wakerley.com>
+
+	* doc/install.texi: New file. Converted to texinfo from the HTML
+	documentation in wwwdocs/htdocs/install.
+
 Fri May 11 15:50:13 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* gcse.c (insert_insn_end_bb): Do not search for assignments to
@@ -1229,6 +1234,7 @@ Mon Apr 23 14:32:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (emit_swap_insn): Do not get pass CALL_INSNs.
 
+>>>>>>> 1.9986
 2001-04-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* loop.c (loop_delete_insns): Add prototype.
