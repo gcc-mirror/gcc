@@ -4,7 +4,8 @@
 	main manual to work both for info and HTML versions.
 	
 2001-08-11  Neil Booth  <neil@daikokuya.demon.co.uk>
-
+	    Matt Kraai <kraai@alumni.carnegiemellon.edu>
+	
 	* cpphash.c (_cpp_destroy_hashtable): Use ht_destroy.
 	* cpphash.h (CPP_IN_SYSTEM_HEADER): Fix.
 	(struct cpp_pool): New member first.
