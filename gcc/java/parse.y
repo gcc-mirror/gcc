@@ -13402,7 +13402,7 @@ patch_binop (node, wfl_op1, wfl_op2)
       if (code == URSHIFT_EXPR && ! flag_emit_class_files)
 	{
 	  tree to_return;
-          tree utype = unsigned_type (prom_type);
+          tree utype = java_unsigned_type (prom_type);
           op1 = convert (utype, op1);
 	  TREE_SET_CODE (node, RSHIFT_EXPR);
           TREE_OPERAND (node, 0) = op1;

@@ -1348,7 +1348,7 @@ tree_transform (gnat_node)
 		/* 'Length or 'Range_Length.  */
 		{
 		  tree gnu_compute_type
-		    = signed_or_unsigned_type
+		    = gnat_signed_or_unsigned_type
 		      (0, get_base_type (gnu_result_type));
 
 		  gnu_result
@@ -1867,10 +1867,10 @@ tree_transform (gnat_node)
 	   so we may need to choose a different type.  */
 	if (Nkind (gnat_node) == N_Op_Shift_Right
 	    && ! TREE_UNSIGNED (gnu_type))
-	  gnu_type = unsigned_type (gnu_type);
+	  gnu_type = gnat_unsigned_type (gnu_type);
 	else if (Nkind (gnat_node) == N_Op_Shift_Right_Arithmetic
 		 && TREE_UNSIGNED (gnu_type))
-	  gnu_type = signed_type (gnu_type);
+	  gnu_type = gnat_signed_type (gnu_type);
 
 	if (gnu_type != gnu_result_type)
 	  {
@@ -4674,17 +4674,17 @@ convert_with_check (gnat_type, gnu_expr, overflow_p, range_p, truncate_p)
 	 comparing them properly.  Likewise, convert the upper bounds
 	 to unsigned types.  */
       if (INTEGRAL_TYPE_P (gnu_in_basetype) && TREE_UNSIGNED (gnu_in_basetype))
-	gnu_in_lb = convert (signed_type (gnu_in_basetype), gnu_in_lb);
+	gnu_in_lb = convert (gnat_signed_type (gnu_in_basetype), gnu_in_lb);
 
       if (INTEGRAL_TYPE_P (gnu_in_basetype)
 	  && ! TREE_UNSIGNED (gnu_in_basetype))
-	gnu_in_ub = convert (unsigned_type (gnu_in_basetype), gnu_in_ub);
+	gnu_in_ub = convert (gnat_unsigned_type (gnu_in_basetype), gnu_in_ub);
 
       if (INTEGRAL_TYPE_P (gnu_base_type) && TREE_UNSIGNED (gnu_base_type))
-	gnu_out_lb = convert (signed_type (gnu_base_type), gnu_out_lb);
+	gnu_out_lb = convert (gnat_signed_type (gnu_base_type), gnu_out_lb);
 
       if (INTEGRAL_TYPE_P (gnu_base_type) && ! TREE_UNSIGNED (gnu_base_type))
-	gnu_out_ub = convert (unsigned_type (gnu_base_type), gnu_out_ub);
+	gnu_out_ub = convert (gnat_unsigned_type (gnu_base_type), gnu_out_ub);
 
       /* Check each bound separately and only if the result bound
 	 is tighter than the bound on the input type.  Note that all the

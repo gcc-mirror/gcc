@@ -1,3 +1,13 @@
+2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gigi.h (unsigned_type, signed_type, signed_or_unsigned_type):
+	Rename.
+	* misc.c (LANG_HOOKS_SIGNED_TYPE, LANG_HOOKS_UNSIGNED_TYPE,
+	LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): New.
+	* trans.c (tree_transform, convert_with_check): Update.
+	* utils.c (unsigned_type, signed_type, signed_or_unsigned_type):
+	Rename.
+
 2002-03-31  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gigi.h (finish_incomplete_decl): Rename.

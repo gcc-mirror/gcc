@@ -510,6 +510,9 @@ extern void c_common_insert_default_attributes	PARAMS ((tree));
 extern tree c_common_type_for_mode		PARAMS ((enum machine_mode,
 							 int));
 extern tree c_common_type_for_size		PARAMS ((unsigned int, int));
+extern tree c_common_unsigned_type		PARAMS ((tree));
+extern tree c_common_signed_type		PARAMS ((tree));
+extern tree c_common_signed_or_unsigned_type	PARAMS ((int, tree));
 extern void c_apply_type_quals_to_decl		PARAMS ((int, tree));
 extern tree c_sizeof				PARAMS ((tree));
 extern tree c_alignof				PARAMS ((tree));

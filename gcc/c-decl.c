@@ -4160,7 +4160,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       else if (type == char_type_node)
 	type = unsigned_char_type_node;
       else if (typedef_decl)
-	type = unsigned_type (type);
+	type = c_common_unsigned_type (type);
       else
 	type = unsigned_type_node;
     }
@@ -4370,7 +4370,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  tree itype = NULL_TREE;
 	  tree size = TREE_OPERAND (declarator, 1);
 	  /* The index is a signed object `sizetype' bits wide.  */
-	  tree index_type = signed_type (sizetype);
+	  tree index_type = c_common_signed_type (sizetype);
 
 	  array_ptr_quals = TREE_TYPE (declarator);
 	  array_parm_static = TREE_STATIC (declarator);

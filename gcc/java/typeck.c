@@ -226,7 +226,7 @@ java_type_for_size (bits, unsignedp)
    signed according to UNSIGNEDP.  */
 
 tree
-signed_or_unsigned_type (unsignedp, type)
+java_signed_or_unsigned_type (unsignedp, type)
      int unsignedp;
      tree type;
 {
@@ -246,20 +246,19 @@ signed_or_unsigned_type (unsignedp, type)
 /* Return a signed type the same as TYPE in other respects.  */
 
 tree
-signed_type (type)
+java_signed_type (type)
      tree type;
 {
-  return signed_or_unsigned_type (0, type);
+  return java_signed_or_unsigned_type (0, type);
 }
 
 /* Return an unsigned type the same as TYPE in other respects.  */
 
 tree
-unsigned_type (type)
+java_unsigned_type (type)
      tree type;
 {
-  return signed_or_unsigned_type (1, type);
-
+  return java_signed_or_unsigned_type (1, type);
 }
 
 /* Mark EXP saying that we need to be able to take the

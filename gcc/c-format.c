@@ -2386,8 +2386,8 @@ check_format_types (status, types)
 	  && TREE_CODE (cur_type) == INTEGER_TYPE
 	  && (! pedantic || i == 0 || (i == 1 && char_type_flag))
 	  && (TREE_UNSIGNED (wanted_type)
-	      ? wanted_type == unsigned_type (cur_type)
-	      : wanted_type == signed_type (cur_type)))
+	      ? wanted_type == c_common_unsigned_type (cur_type)
+	      : wanted_type == c_common_signed_type (cur_type)))
 	continue;
       /* Likewise, "signed char", "unsigned char" and "char" are
 	 equivalent but the above test won't consider them equivalent.  */

@@ -1,3 +1,11 @@
+2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_SIGNED_TYPE, LANG_HOOKS_UNSIGNED_TYPE,
+	LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): New.
+	* decl.c (grokdeclarator): Update.
+	* mangle.c (write_integer_cst): Update.
+	* typeck.c (build_binary_op): Update.
+
 2002-03-31  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-lang.c (LANG_HOOKS_UNSAFE_FOR_REEVAL): Redefine.

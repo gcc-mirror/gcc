@@ -1,3 +1,28 @@
+2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (unsigned_conversion_warning, convert_and_check,
+	unsigned_type, signed_type, shorten_compare,
+	c_common_get_alias_set, c_common_nodes_and_builtins): Use new hooks.
+	(unsigned_type, signed_type, signed_or_unsigned_type): Rename.
+	* c-common.h (unsigned_type, signed_type, signed_or_unsigned_type):
+	New.
+	* c-decl.c (grokdeclarator): Update.
+	* c-format.c (check_format_types): Update.
+	* c-lang.c (LANG_HOOKS_SIGNED_TYPE, LANG_HOOKS_UNSIGNED_TYPE,
+	LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): New.
+	* c-typeck.c (build_binary_op, convert_for_assignment): Update.
+	* convert.c (convert_to_integer): Use new hooks.
+	* expmed.c (make_tree): Use new hooks.
+	* expr.c (store_expr): Use new hooks.
+	* fold-const.c (operand_equal_for_comparison_p, build_range_check,
+	all_ones_mask_p, unextend, fold): Use new hooks.
+	* langhooks.h (struct lang_hooks_for_types): New hooks.
+	* tree.h (signed_or_unsigned_type, signed_type,
+	unsigned_type): Remove.
+objc:
+	* objc-lang.c (LANG_HOOKS_SIGNED_TYPE, LANG_HOOKS_UNSIGNED_TYPE,
+	LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): New.
+
 2002-03-31  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/unwind-ia64.c (alloc_spill_area): Fix offset.
