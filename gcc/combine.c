@@ -6687,6 +6687,11 @@ num_sign_bit_copies (x, mode)
 
   bitwidth = GET_MODE_BITSIZE (mode);
 
+  /* For a smaller object, just ignore the high bits. */
+  if (bitwidth < GET_MODE_BITSIZE (GET_MODE (x)))
+    return MAX (1, (num_sign_bit_copies (x, GET_MODE (x))
+		    - (GET_MODE_BITSIZE (GET_MODE (x)) - bitwidth)));
+     
   switch (code)
     {
     case REG:
@@ -7181,31 +7186,25 @@ simplify_shift_const (x, code, result_mode, varop, count)
       else if (count < 0)
 	abort ();
 
-      /* If we have replaced VAROP with something wider
-	 (such as, the SUBREG_REG), then this won't work;
-	 num_sign_bit_copies will give the wrong answer in that case.  */
-      if (shift_mode == GET_MODE (varop))
+      /* An arithmetic right shift of a quantity known to be -1 or 0
+	 is a no-op.  */
+      if (code == ASHIFTRT
+	  && (num_sign_bit_copies (varop, shift_mode)
+	      == GET_MODE_BITSIZE (shift_mode)))
 	{
-	  /* An arithmetic right shift of a quantity known to be -1 or 0
-	     is a no-op.  */
-	  if (code == ASHIFTRT
-	      && (num_sign_bit_copies (varop, shift_mode)
-		  == GET_MODE_BITSIZE (shift_mode)))
-	    {
-	      count = 0;
-	      break;
-	    }
-
-	  /* If we are doing an arithmetic right shift and discarding all but
-	     the sign bit copies, this is equivalent to doing a shift by the
-	     bitsize minus one.  Convert it into that shift because it will often
-	     allow other simplifications.  */
-
-	  if (code == ASHIFTRT
-	      && (count + num_sign_bit_copies (varop, shift_mode)
-		  >= GET_MODE_BITSIZE (shift_mode)))
-	    count = GET_MODE_BITSIZE (shift_mode) - 1;
+	  count = 0;
+	  break;
 	}
+
+      /* If we are doing an arithmetic right shift and discarding all but
+	 the sign bit copies, this is equivalent to doing a shift by the
+	 bitsize minus one.  Convert it into that shift because it will often
+	 allow other simplifications.  */
+
+      if (code == ASHIFTRT
+	  && (count + num_sign_bit_copies (varop, shift_mode)
+	      >= GET_MODE_BITSIZE (shift_mode)))
+	count = GET_MODE_BITSIZE (shift_mode) - 1;
 
       /* We simplify the tests below and elsewhere by converting
 	 ASHIFTRT to LSHIFTRT if we know the sign bit is clear.
