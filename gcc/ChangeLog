@@ -1,3 +1,23 @@
+Sat Dec 19 09:52:27 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genattr.c (fatal): Qualify a char* with the `const' keyword.
+	
+	* genattrtab.c (fatal, attr_printf, attr_string, write_attr_set,
+ 	write_unit_name, write_eligible_delay, expand_units,
+ 	make_length_attrs, write_attr_case, find_attr,
+	make_internal_attr): Likewise.
+	* gencheck.c (tree_codes): Likewise.
+	* gencodes.c (fatal): Likewise.
+	* genconfig.c (fatal): Likewise.
+	* genemit.c (fatal): Likewise.
+	* genextract.c (fatal, walk_rtx, copystr): Likewise.
+	* genflags.c (fatal): Likewise.
+	* genopinit.c (fatal, optabs, gen_insn): Likewise.
+	* genoutput.c (fatal, error, predicates): Likewise.
+	* genpeep.c (fatal): Likewise.
+	* genrecog.c (fatal, decision, pred_table, add_to_sequence,
+	write_tree_1, write_tree, change_state, copystr, indents): Likewise.
+
 Thu Dec 17 18:21:49 1998  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in (with-fast-fixincludes): Fix whitespace.

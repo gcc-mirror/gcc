@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define DEFTREECODE(SYM, NAME, TYPE, LEN)   STRINGIFY(SYM),
 
-char *tree_codes[] = {
+const char *tree_codes[] = {
 #include "tree.def"
 #include "gencheck.h"
 (char*)0

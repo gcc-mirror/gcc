@@ -30,7 +30,7 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-static void fatal PVPROTO ((char *, ...))
+static void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 
@@ -63,7 +63,7 @@ void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 /* The reason we use \% is to avoid sequences of the form %-capletter-%
    which SCCS treats as magic.  This gets warnings which you should ignore.  */
 
-char *optabs[] =
+const char *optabs[] =
 { "extendtab[(int) %B][(int) %A][0] = CODE_FOR_%(extend%a\%b2%)",
   "extendtab[(int) %B][(int) %A][1] = CODE_FOR_%(zero_extend%a\%b2%)",
   "fixtab[(int) %A][(int) %B][0] = CODE_FOR_%(fix%F\%a%I\%b2%)",
@@ -134,7 +134,7 @@ gen_insn (insn)
   int m1, m2, op;
   size_t pindex;
   int i;
-  char *np, *pp, *p, *q;
+  const char *np, *pp, *p, *q;
 
   /* Don't mention instructions whose names are the null string.
      They are in the machine description just to be recognized.  */
@@ -304,17 +304,17 @@ xrealloc (ptr, size)
 }
 
 static void
-fatal VPROTO ((char *format, ...))
+fatal VPROTO ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *format;
+  const char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
 #ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
+  format = va_arg (ap, const char *);
 #endif
 
   fprintf (stderr, "genopinit: ");

@@ -119,7 +119,7 @@ struct obstack *temp_obstack = &obstack2;
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 char **insn_name_ptr = 0;
 
-static void fatal PVPROTO ((char *, ...))
+static void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 
@@ -365,8 +365,9 @@ rtx pic_offset_table_rtx;
 static void attr_hash_add_rtx	PROTO((int, rtx));
 static void attr_hash_add_string PROTO((int, char *));
 static rtx attr_rtx		PVPROTO((enum rtx_code, ...));
-static char *attr_printf	PVPROTO((int, char *, ...));
-static char *attr_string        PROTO((char *, int));
+static char *attr_printf	PVPROTO((int, const char *, ...))
+  ATTRIBUTE_PRINTF_2;
+static char *attr_string        PROTO((const char *, int));
 static rtx check_attr_test	PROTO((rtx, int));
 static rtx check_attr_value	PROTO((rtx, struct attr_desc *));
 static rtx convert_set_attr_alternative PROTO((rtx, int, int));
@@ -430,25 +431,26 @@ static int or_attr_value	PROTO((rtx));
 static void walk_attr_value	PROTO((rtx));
 static void write_attr_get	PROTO((struct attr_desc *));
 static rtx eliminate_known_true PROTO((rtx, rtx, int, int));
-static void write_attr_set	PROTO((struct attr_desc *, int, rtx, char *,
-				       char *, rtx, int, int));
+static void write_attr_set	PROTO((struct attr_desc *, int, rtx,
+				       const char *, const char *, rtx,
+				       int, int));
 static void write_attr_case	PROTO((struct attr_desc *, struct attr_value *,
-				       int, char *, char *, int, rtx));
-static void write_unit_name	PROTO((char *, int, char *));
+				       int, const char *, const char *, int, rtx));
+static void write_unit_name	PROTO((const char *, int, const char *));
 static void write_attr_valueq	PROTO((struct attr_desc *, char *));
 static void write_attr_value	PROTO((struct attr_desc *, rtx));
 static void write_upcase	PROTO((char *));
 static void write_indent	PROTO((int));
-static void write_eligible_delay PROTO((char *));
+static void write_eligible_delay PROTO((const char *));
 static void write_function_unit_info PROTO((void));
-static void write_complex_function PROTO((struct function_unit *, char *,
-					  char *));
+static void write_complex_function PROTO((struct function_unit *, const char *,
+					  const char *));
 static int write_expr_attr_cache PROTO((rtx, struct attr_desc *));
 static void write_toplevel_expr	PROTO((rtx));
 static int n_comma_elts		PROTO((char *));
 static char *next_comma_elt	PROTO((char **));
-static struct attr_desc *find_attr PROTO((char *, int));
-static void make_internal_attr	PROTO((char *, rtx, int));
+static struct attr_desc *find_attr PROTO((const char *, int));
+static void make_internal_attr	PROTO((const char *, rtx, int));
 static struct attr_value *find_most_used  PROTO((struct attr_desc *));
 static rtx find_single_value	PROTO((struct attr_desc *));
 static rtx make_numeric_value	PROTO((int));
@@ -731,11 +733,11 @@ attr_rtx VPROTO((enum rtx_code code, ...))
 
 /*VARARGS2*/
 static char *
-attr_printf VPROTO((register int len, char *fmt, ...))
+attr_printf VPROTO((register int len, const char *fmt, ...))
 {
 #ifndef ANSI_PROTOTYPES
   register int len;
-  char *fmt;
+  const char *fmt;
 #endif
   va_list p;
   register char *str;
@@ -744,7 +746,7 @@ attr_printf VPROTO((register int len, char *fmt, ...))
 
 #ifndef ANSI_PROTOTYPES
   len = va_arg (p, int);
-  fmt = va_arg (p, char *);
+  fmt = va_arg (p, const char *);
 #endif
 
   /* Print the string into a temporary location.  */
@@ -775,7 +777,7 @@ attr_numeral (n)
 
 static char *
 attr_string (str, len)
-     char *str;
+     const char *str;
      int len;
 {
   register struct attr_hash *h;
@@ -1815,7 +1817,7 @@ expand_units ()
   rtx unitsmask;
   rtx readycost;
   rtx newexp;
-  char *str;
+  const char *str;
   int i, j, u, num, nvalues;
 
   /* Rebuild the condition for the unit to share the RTL expressions.
@@ -2384,9 +2386,9 @@ substitute_address (exp, no_address_fn, address_fn)
 static void
 make_length_attrs ()
 {
-  static char *new_names[] = {"*insn_default_length",
-			      "*insn_variable_length_p",
-			      "*insn_current_length"};
+  static const char *new_names[] = {"*insn_default_length",
+				      "*insn_variable_length_p",
+				      "*insn_current_length"};
   static rtx (*no_address_fn[]) PROTO((rtx)) = {identity_fn, zero_fn, zero_fn};
   static rtx (*address_fn[]) PROTO((rtx)) = {max_fn, one_fn, identity_fn};
   size_t i;
@@ -4921,8 +4923,8 @@ write_attr_set (attr, indent, value, prefix, suffix, known_true,
      struct attr_desc *attr;
      int indent;
      rtx value;
-     char *prefix;
-     char *suffix;
+     const char *prefix;
+     const char *suffix;
      rtx known_true;
      int insn_code, insn_index;
 {
@@ -5018,7 +5020,7 @@ write_attr_case (attr, av, write_case_lines, prefix, suffix, indent,
      struct attr_desc *attr;
      struct attr_value *av;
      int write_case_lines;
-     char *prefix, *suffix;
+     const char *prefix, *suffix;
      int indent;
      rtx known_true;
 {
@@ -5174,9 +5176,9 @@ write_toplevel_expr (p)
 
 static void
 write_unit_name (prefix, num, suffix)
-     char *prefix;
+     const char *prefix;
      int num;
-     char *suffix;
+     const char *suffix;
 {
   struct function_unit *unit;
 
@@ -5212,7 +5214,7 @@ write_attr_valueq (attr, s)
 	  else
 	    {
 	      int i;
-	      char *sep = " /* units: ";
+	      const char *sep = " /* units: ";
 	      for (i = 0, num = ~num; num; i++, num >>= 1)
 		if (num & 1)
 		  {
@@ -5284,7 +5286,7 @@ write_indent (indent)
 
 static void
 write_eligible_delay (kind)
-     char *kind;
+  const char *kind;
 {
   struct delay_desc *delay;
   int max_slots;
@@ -5473,7 +5475,7 @@ write_function_unit_info ()
 static void
 write_complex_function (unit, name, connection)
      struct function_unit *unit;
-     char *name, *connection;
+     const char *name, *connection;
 {
   struct attr_desc *case_attr, *attr;
   struct attr_value *av, *common_av;
@@ -5614,7 +5616,7 @@ next_comma_elt (pstr)
 
 static struct attr_desc *
 find_attr (name, create)
-     char *name;
+     const char *name;
      int create;
 {
   struct attr_desc *attr;
@@ -5652,7 +5654,7 @@ find_attr (name, create)
 
 static void
 make_internal_attr (name, value, special)
-     char *name;
+     const char *name;
      rtx value;
      int special;
 {
@@ -5812,17 +5814,17 @@ copy_rtx_unchanging (orig)
 }
 
 static void
-fatal VPROTO ((char *format, ...))
+fatal VPROTO ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *format;
+  const char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
 #ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
+  format = va_arg (ap, const char *);
 #endif
 
   fprintf (stderr, "genattrtab: ");

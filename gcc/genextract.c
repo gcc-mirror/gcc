@@ -96,11 +96,11 @@ static int dupnums[MAX_DUP_OPERANDS];
 static struct code_ptr *peepholes;
 
 static void gen_insn PROTO ((rtx));
-static void walk_rtx PROTO ((rtx, char *));
+static void walk_rtx PROTO ((rtx, const char *));
 static void print_path PROTO ((char *));
-static void fatal PVPROTO ((char *, ...))
+static void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-static char *copystr PROTO ((char *));
+static char *copystr PROTO ((const char *));
 static void mybzero ();
 void fancy_abort PROTO ((void)) ATTRIBUTE_NORETURN;
 
@@ -187,7 +187,7 @@ gen_insn (insn)
 static void
 walk_rtx (x, path)
      rtx x;
-     char *path;
+     const char *path;
 {
   register RTX_CODE code;
   register int i;
@@ -369,17 +369,17 @@ xrealloc (ptr, size)
 }
 
 static void
-fatal VPROTO ((char *format, ...))
+fatal VPROTO ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *format;
+  const char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
 #ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
+  format = va_arg (ap, const char *);
 #endif
 
   fprintf (stderr, "genextract: ");
@@ -400,7 +400,7 @@ fancy_abort ()
 
 static char *
 copystr (s1)
-     char *s1;
+  const char *s1;
 {
   register char *tem;
 

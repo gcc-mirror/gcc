@@ -49,7 +49,7 @@ static int max_insns_per_split = 1;
 static int clobbers_seen_this_insn;
 static int dup_operands_seen_this_insn;
 
-static void fatal PVPROTO ((char *, ...))
+static void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 
@@ -268,17 +268,17 @@ xrealloc (ptr, size)
 }
 
 static void
-fatal VPROTO ((char *format, ...))
+fatal VPROTO ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *format;
+  const char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
 #ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
+  format = va_arg (ap, const char *);
 #endif
 
   fprintf (stderr, "genconfig: ");
