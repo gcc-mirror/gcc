@@ -3166,6 +3166,9 @@ alpha_split_conditional_move (code, dest, cond, t_rtx, f_rtx)
       else
 	subtarget = target;
     }
+  /* Below, we must be careful to use copy_rtx on target and subtarget
+     in intermediate insns, as they may be a subreg rtx, which may not
+     be shared.  */
 
   if (f == 0 && exact_log2 (diff) > 0
       /* On EV6, we've got enough shifters to make non-arithmatic shifts
@@ -3174,33 +3177,35 @@ alpha_split_conditional_move (code, dest, cond, t_rtx, f_rtx)
       && (diff <= 8 || alpha_cpu == PROCESSOR_EV6))
     {
       tmp = gen_rtx_fmt_ee (code, DImode, cond, const0_rtx);
-      emit_insn (gen_rtx_SET (VOIDmode, subtarget, tmp));
+      emit_insn (gen_rtx_SET (VOIDmode, copy_rtx (subtarget), tmp));
 
-      tmp = gen_rtx_ASHIFT (DImode, subtarget, GEN_INT (exact_log2 (t)));
+      tmp = gen_rtx_ASHIFT (DImode, copy_rtx (subtarget),
+			    GEN_INT (exact_log2 (t)));
       emit_insn (gen_rtx_SET (VOIDmode, target, tmp));
     }
   else if (f == 0 && t == -1)
     {
       tmp = gen_rtx_fmt_ee (code, DImode, cond, const0_rtx);
-      emit_insn (gen_rtx_SET (VOIDmode, subtarget, tmp));
+      emit_insn (gen_rtx_SET (VOIDmode, copy_rtx (subtarget), tmp));
 
-      emit_insn (gen_negdi2 (target, subtarget));
+      emit_insn (gen_negdi2 (target, copy_rtx (subtarget)));
     }
   else if (diff == 1 || diff == 4 || diff == 8)
     {
       rtx add_op;
 
       tmp = gen_rtx_fmt_ee (code, DImode, cond, const0_rtx);
-      emit_insn (gen_rtx_SET (VOIDmode, subtarget, tmp));
+      emit_insn (gen_rtx_SET (VOIDmode, copy_rtx (subtarget), tmp));
 
       if (diff == 1)
-	emit_insn (gen_adddi3 (target, subtarget, GEN_INT (f)));
+	emit_insn (gen_adddi3 (target, copy_rtx (subtarget), GEN_INT (f)));
       else
 	{
 	  add_op = GEN_INT (f);
 	  if (sext_add_operand (add_op, mode))
 	    {
-	      tmp = gen_rtx_MULT (DImode, subtarget, GEN_INT (diff));
+	      tmp = gen_rtx_MULT (DImode, copy_rtx (subtarget),
+				  GEN_INT (diff));
 	      tmp = gen_rtx_PLUS (DImode, tmp, add_op);
 	      emit_insn (gen_rtx_SET (VOIDmode, target, tmp));
 	    }
