@@ -1,3 +1,8 @@
+2004-09-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* tree-tailcall.c (process_assignment): Only do accumulator transforms
+	for floating-point types if flag_unsafe_math_optimizations.
+
 2004-09-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/darwin.c, config/alpha/alpha.h, config/arm/arm.c,
