@@ -1,6 +1,6 @@
 // 2001-12-28  Phil Edwards  <pme@gcc.gnu.org>
 //
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,7 @@
 using namespace std;
 
 
-// PR libstdc++/2054
+// PR libstdc++/2054 and follow-up discussion
 struct indirectCompare
 {
   indirectCompare(const vector<string>& v) : V(v) {}
@@ -41,6 +41,11 @@ struct indirectCompare
   }
 
   bool operator()( int x, const string& a) const
+  {
+       return V[x] < a;
+  }
+
+  bool operator()( const string& a, int x) const
   {
        return V[x] < a;
   }
@@ -66,6 +71,9 @@ test2054( )
   string SearchTerm;
 
   lower_bound(Index.begin(), Index.end(), SearchTerm, aComparison);
+  upper_bound(Index.begin(), Index.end(), SearchTerm, aComparison);
+  equal_range(Index.begin(), Index.end(), SearchTerm, aComparison);
+  binary_search(Index.begin(), Index.end(), SearchTerm, aComparison);
 }
 
 int main()
