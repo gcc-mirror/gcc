@@ -1185,17 +1185,6 @@ struct alpha_compare
 
 extern struct alpha_compare alpha_compare;
 
-/* Machine specific function data.  */
-
-struct machine_function
-{
-  /* If non-null, this rtx holds the return address for the function.  */
-  struct rtx_def *ra_rtx;
-
-  /* If non-null, this rtx holds a saved copy of the GP for the function.  */
-  struct rtx_def *gp_save_rtx;
-};
-
 /* Make (or fake) .linkage entry for function call.
    IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.  */
 

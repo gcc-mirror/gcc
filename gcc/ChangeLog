@@ -1,3 +1,15 @@
+2001-06-21  DJ Delorie  <dj@redhat.com>
+
+	* config/alpha/alpha.h (struct machine_function): Remove.
+	* config/alpha/alpha.c (integrate.h): Include.
+	(override_options): Don't set up machine_status hooks.
+	(alpha_init_machine_status): Remove.
+	(alpha_mark_machine_status): Remove.
+	(alpha_free_machine_status): Remove.
+	(alpha_return_addr): Use get_hard_reg_initial_val.
+	(alpha_gp_save_rtx): Likewise.
+	(alpha_ra_ever_killed): Use has_hard_reg_initial_val.
+
 2001-06-20  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/sh/sh.md (interrupt_function): Use
