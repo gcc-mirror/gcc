@@ -1,3 +1,8 @@
+2002-09-05  Dale Johannesen  <dalej@apple.com>
+
+	* reload1.c (reload):  Retain only those memory clobbers
+	added for variable-array handling.
+
 2002-09-05  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/arm/arm.c (arm_return_in_memory): Implement ATPCS
