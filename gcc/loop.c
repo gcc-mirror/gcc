@@ -6000,6 +6000,7 @@ basic_induction_var (x, mode, dest_reg, p, inc_val, mult_val, location)
   rtx insn, set = 0;
 
   code = GET_CODE (x);
+  *location = NULL_RTX;
   switch (code)
     {
     case PLUS:

@@ -338,58 +338,13 @@ struct undobuf
 
 static struct undobuf undobuf;
 
-/* Substitute NEWVAL, an rtx expression, into INTO, a place in some
-   insn.  The substitution can be undone by undo_all.  If INTO is already
-   set to NEWVAL, do not record this change.  Because computing NEWVAL might
-   also call SUBST, we have to compute it before we put anything into
-   the undo table.  */
-
-#define SUBST(INTO, NEWVAL)  \
- do { rtx _new = (NEWVAL);					\
-      struct undo *_buf;					\
-								\
-      if (undobuf.frees)					\
-	_buf = undobuf.frees, undobuf.frees = _buf->next;	\
-      else							\
-	_buf = (struct undo *) xmalloc (sizeof (struct undo));	\
-								\
-      _buf->is_int = 0;						\
-      _buf->where.r = &INTO;					\
-      _buf->old_contents.r = INTO;				\
-      INTO = _new;						\
-      if (_buf->old_contents.r == INTO)				\
-	_buf->next = undobuf.frees, undobuf.frees = _buf;	\
-      else							\
-	_buf->next = undobuf.undos, undobuf.undos = _buf;	\
-    } while (0)
-
-/* Similar to SUBST, but NEWVAL is an int expression.  Note that substitution
-   for the value of a HOST_WIDE_INT value (including CONST_INT) is
-   not safe.  */
-
-#define SUBST_INT(INTO, NEWVAL)  \
- do { struct undo *_buf;					\
-								\
-      if (undobuf.frees)					\
-	_buf = undobuf.frees, undobuf.frees = _buf->next;	\
-      else							\
-	_buf = (struct undo *) xmalloc (sizeof (struct undo));	\
-								\
-      _buf->is_int = 1;						\
-      _buf->where.i = (int *) &INTO;				\
-      _buf->old_contents.i = INTO;				\
-      INTO = NEWVAL;						\
-      if (_buf->old_contents.i == INTO)				\
-	_buf->next = undobuf.frees, undobuf.frees = _buf;	\
-      else							\
-	_buf->next = undobuf.undos, undobuf.undos = _buf;	\
-     } while (0)
-
 /* Number of times the pseudo being substituted for
    was found and replaced.  */
 
 static int n_occurrences;
 
+static void do_SUBST			PROTO((rtx *, rtx));
+static void do_SUBST_INT		PROTO((int *, int));
 static void init_reg_last_arrays	PROTO((void));
 static void setup_incoming_promotions   PROTO((void));
 static void set_nonzero_bits_and_sign_copies  PROTO((rtx, rtx));
@@ -452,6 +407,66 @@ static void distribute_notes	PROTO((rtx, rtx, rtx, rtx, rtx, rtx));
 static void distribute_links	PROTO((rtx));
 static void mark_used_regs_combine PROTO((rtx));
 static int insn_cuid		PROTO((rtx));
+
+/* Substitute NEWVAL, an rtx expression, into INTO, a place in some
+   insn.  The substitution can be undone by undo_all.  If INTO is already
+   set to NEWVAL, do not record this change.  Because computing NEWVAL might
+   also call SUBST, we have to compute it before we put anything into
+   the undo table.  */
+
+static void
+do_SUBST(into, newval)
+     rtx *into, newval;
+{
+  struct undo *buf;
+  rtx oldval = *into;
+
+  if (oldval == newval)
+    return;
+
+  if (undobuf.frees)
+    buf = undobuf.frees, undobuf.frees = buf->next;
+  else
+    buf = (struct undo *) xmalloc (sizeof (struct undo));
+
+  buf->is_int = 0;
+  buf->where.r = into;
+  buf->old_contents.r = oldval;
+  *into = newval;
+
+  buf->next = undobuf.undos, undobuf.undos = buf;
+}
+
+#define SUBST(INTO, NEWVAL)	do_SUBST(&(INTO), (NEWVAL))
+
+/* Similar to SUBST, but NEWVAL is an int expression.  Note that substitution
+   for the value of a HOST_WIDE_INT value (including CONST_INT) is
+   not safe.  */
+
+static void
+do_SUBST_INT(into, newval)
+     int *into, newval;
+{
+  struct undo *buf;
+  int oldval = *into;
+
+  if (oldval == newval)
+    return;
+
+  if (undobuf.frees)
+    buf = undobuf.frees, undobuf.frees = buf->next;
+  else
+    buf = (struct undo *) xmalloc (sizeof (struct undo));
+
+  buf->is_int = 1;
+  buf->where.i = into;
+  buf->old_contents.i = oldval;
+  *into = newval;
+
+  buf->next = undobuf.undos, undobuf.undos = buf;
+}
+
+#define SUBST_INT(INTO, NEWVAL)  do_SUBST_INT(&(INTO), (NEWVAL))
 
 /* Main entry point for combiner.  F is the first insn of the function.
    NREGS is the first unused pseudo-reg number.  */

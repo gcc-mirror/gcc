@@ -64,10 +64,10 @@ void *ggc_alloc PROTO ((size_t));
 void ggc_collect PROTO ((void));
 
 /* Manipulate global roots that are needed between calls to gc.  */
-void ggc_add_root PROTO ((void *base, int nelt, int size,
-			   void (*)(void *)));
+void ggc_add_root PROTO ((void *base, int nelt, int size, void (*)(void *)));
 void ggc_add_rtx_root PROTO ((struct rtx_def **, int nelt));
 void ggc_add_tree_root PROTO ((union tree_node **, int nelt));
+void ggc_add_string_root PROTO ((char **, int nelt));
 void ggc_add_tree_varray_root PROTO ((struct varray_head_tag **, int nelt));
 void ggc_add_tree_hash_table_root PROTO ((struct hash_table **, int nelt));
 void ggc_del_root PROTO ((void *base));

@@ -828,6 +828,9 @@ extern void expand_float PROTO((rtx, rtx, int));
 /* Generate code for a FIX_EXPR.  */
 extern void expand_fix PROTO((rtx, rtx, int));
 
+/* Call this to initialize an optab function entry.  */
+extern rtx init_one_libfunc PROTO ((const char *));
+
 /* Call this once to initialize the contents of the optabs
    appropriately for the current target machine.  */
 extern void init_optabs	PROTO((void));

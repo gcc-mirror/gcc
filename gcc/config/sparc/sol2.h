@@ -194,15 +194,15 @@ Boston, MA 02111-1307, USA.  */
 #define UMODDI3_LIBCALL "__urem64"
 
 #undef INIT_SUBTARGET_OPTABS
-#define INIT_SUBTARGET_OPTABS	\
-  fixsfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, \
-	TARGET_ARCH64 ? "__ftol" : "__ftoll");	\
-  fixunssfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, \
-	TARGET_ARCH64 ? "__ftoul" : "__ftoull");	\
-  fixdfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, \
-	TARGET_ARCH64 ? "__dtol" : "__dtoll");	\
-  fixunsdfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, \
-	TARGET_ARCH64 ? "__dtoul" : "__dtoull")
+#define INIT_SUBTARGET_OPTABS						\
+  fixsfdi_libfunc							\
+    = init_one_libfunc (TARGET_ARCH64 ? "__ftol" : "__ftoll");		\
+  fixunssfdi_libfunc							\
+    = init_one_libfunc (TARGET_ARCH64 ? "__ftoul" : "__ftoull");	\
+  fixdfdi_libfunc							\
+    = init_one_libfunc (TARGET_ARCH64 ? "__dtol" : "__dtoll");		\
+  fixunsdfdi_libfunc							\
+    = init_one_libfunc (TARGET_ARCH64 ? "__dtoul" : "__dtoull")
 
 /* No weird SPARC variants on Solaris */
 #undef TARGET_LIVE_G0

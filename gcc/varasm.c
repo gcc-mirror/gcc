@@ -187,6 +187,7 @@ static void asm_output_aligned_bss	PROTO((FILE *, tree, char *, int, int));
 #endif
 #endif /* BSS_SECTION_ASM_OP */
 static void mark_pool_constant          PROTO((struct pool_constant *));
+static void mark_pool_sym_hash_table	PROTO((struct pool_sym **));
 
 static enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP
@@ -313,8 +314,7 @@ named_section (decl, name, reloc)
       abort ();
 #endif
 
-      in_named_name = obstack_alloc (&permanent_obstack, strlen (name) + 1);
-      strcpy (in_named_name, name);
+      in_named_name = ggc_alloc_string (name, -1);
       in_section = in_named;
     }
 }
@@ -528,7 +528,7 @@ make_function_rtl (decl)
 
       name = IDENTIFIER_POINTER (DECL_NAME (decl));
       ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
-      name = obstack_copy0 (saveable_obstack, label, strlen (label));
+      name = ggc_alloc_string (label, -1);
       var_labelno++;
     }
   else
@@ -539,10 +539,12 @@ make_function_rtl (decl)
          is not prefixed.  */
       if (flag_prefix_function_name)
         {
-          new_name = (char *) alloca (strlen (name) + CHKR_PREFIX_SIZE + 1);
-          strcpy (new_name, CHKR_PREFIX);
-          strcpy (new_name + CHKR_PREFIX_SIZE, name);
-          name = obstack_copy0 (saveable_obstack, new_name, strlen (new_name));
+	  size_t name_len = strlen (name);
+
+          new_name = ggc_alloc_string (NULL, name_len + CHKR_PREFIX_SIZE);
+	  memcpy (new_name, CHKR_PREFIX, CHKR_PREFIX_SIZE);
+	  memcpy (new_name + CHKR_PREFIX_SIZE, name, name_len + 1);
+          name = new_name;
         }
     }
 
@@ -678,10 +680,11 @@ make_decl_rtl (decl, asmspec, top_level)
   if (reg_number == -2)
     {
       /* ASMSPEC is given, and not the name of a register.  */
-      name = (char *) obstack_alloc (saveable_obstack,
-				     strlen (asmspec) + 2);
+      size_t len = strlen (asmspec);
+
+      name = ggc_alloc_string (NULL, len + 1);
       name[0] = '*';
-      strcpy (&name[1], asmspec);
+      memcpy (&name[1], asmspec, len + 1);
     }
 
   /* For a duplicate declaration, we can be called twice on the
@@ -771,7 +774,7 @@ make_decl_rtl (decl, asmspec, top_level)
 	      char *label;
 
 	      ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
-	      name = obstack_copy0 (saveable_obstack, label, strlen (label));
+	      name = ggc_alloc_string (label, -1);
 	      var_labelno++;
 	    }
 
@@ -783,13 +786,13 @@ make_decl_rtl (decl, asmspec, top_level)
 	     prefixed.  */
 	  if (flag_prefix_function_name && TREE_CODE (decl) == FUNCTION_DECL)
 	    {
+	      size_t name_len = strlen (name);
 	      char *new_name;
-	      new_name = (char *) alloca (strlen (name) + CHKR_PREFIX_SIZE 
-	      				  + 1);
-	      strcpy (new_name, CHKR_PREFIX);
-	      strcpy (new_name + CHKR_PREFIX_SIZE, name);
-	      name = obstack_copy0 (saveable_obstack,
-	      			   new_name, strlen (new_name));
+
+	      new_name = ggc_alloc_string (NULL, name_len + CHKR_PREFIX_SIZE);
+	      memcpy (new_name, CHKR_PREFIX, CHKR_PREFIX_SIZE);
+	      memcpy (new_name + CHKR_PREFIX_SIZE, name, name_len + 1);
+	      name = new_name;
 	    }
 
 	  DECL_RTL (decl) = gen_rtx_MEM (DECL_MODE (decl),
@@ -1770,10 +1773,7 @@ assemble_static_space (size)
 
   ASM_GENERATE_INTERNAL_LABEL (name, "LF", const_labelno);
   ++const_labelno;
-
-  namestring = (char *) obstack_alloc (saveable_obstack,
-				       strlen (name) + 2);
-  strcpy (namestring, name);
+  namestring = ggc_alloc_string (name, -1);
 
   x = gen_rtx_SYMBOL_REF (Pmode, namestring);
 
@@ -1829,8 +1829,7 @@ assemble_trampoline_template ()
 
   /* Record the rtl to refer to it.  */
   ASM_GENERATE_INTERNAL_LABEL (label, "LTRAMP", 0);
-  name
-    = (char *) obstack_copy0 (&permanent_obstack, label, strlen (label));
+  name = ggc_alloc_string (label, -1);
   return gen_rtx_SYMBOL_REF (Pmode, name);
 }
 #endif
@@ -2303,6 +2302,21 @@ struct constant_descriptor
 #define HASHBITS 30
 #define MAX_HASH_TABLE 1009
 static struct constant_descriptor *const_hash_table[MAX_HASH_TABLE];
+
+/* Mark a const_hash_table descriptor for GC.  */
+
+static void 
+mark_const_hash_entry (ptr)
+     void *ptr;
+{
+  struct constant_descriptor *desc = * (struct constant_descriptor **) ptr;
+
+  while (desc)
+    {
+      ggc_mark_string (desc->label);
+      desc = desc->next;
+    }
+}
 
 /* Compute a hash code for a constant expression.  */
 
@@ -3003,14 +3017,8 @@ output_constant_def (exp)
 
       desc = record_constant (exp);
       desc->next = const_hash_table[hash];
-      desc->label
-	= (char *) obstack_copy0 (&permanent_obstack, label, strlen (label));
+      desc->label = ggc_alloc_string (label, -1);
       const_hash_table[hash] = desc;
-    }
-  else
-    {
-      /* Create a string containing the label name, in LABEL.  */
-      ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
     }
   
   /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
@@ -3200,6 +3208,20 @@ mark_pool_constant (pc)
     }
 }
 
+/* Mark PPS for GC.  */
+
+static void
+mark_pool_sym_hash_table (pps)
+     struct pool_sym **pps;
+{
+  struct pool_sym *ps;
+  int i;
+
+  for (i = 0; i < MAX_RTX_HASH_TABLE; ++i)
+    for (ps = pps[i]; ps ; ps = ps->next)
+      ggc_mark_string (ps->label);
+}
+
 /* Mark P for GC.  */
 
 void
@@ -3207,6 +3229,7 @@ mark_varasm_state (p)
   struct varasm_status *p;
 {
   mark_pool_constant (p->x_first_pool);
+  mark_pool_sym_hash_table (p->x_const_rtx_sym_hash_table);
   ggc_mark_rtx (p->x_const_double_chain);
 }
 
@@ -3548,8 +3571,7 @@ force_const_mem (mode, x)
 
       ++const_labelno;
 
-      desc->label = found
-	= (char *) obstack_copy0 (saveable_obstack, label, strlen (label));
+      desc->label = found = ggc_alloc_string (label, -1);
 
       /* Add label to symbol hash table.  */
       hash = SYMHASH (found);
@@ -4537,4 +4559,12 @@ make_decl_one_only (decl)
     DECL_WEAK (decl) = 1;
   else
     abort ();
+}
+
+void
+init_varasm_once ()
+{
+  ggc_add_root (const_hash_table, MAX_HASH_TABLE, sizeof(const_hash_table[0]),
+		mark_const_hash_entry);
+  ggc_add_string_root (&in_named_name, 1);
 }
