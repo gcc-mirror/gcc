@@ -3510,8 +3510,8 @@ dbr_schedule (first, file)
      function.  The condition code never is and memory always is.  If the
      frame pointer is needed, it is and so is the stack pointer unless
      EXIT_IGNORE_STACK is non-zero.  If the frame pointer is not needed, the
-     stack pointer is.  In addition, registers used to return the function
-     value are needed.  */
+     stack pointer is.  Registers used to return the function value are
+     needed.  Registers holding global variables are needed.  */
 
   end_of_function_needs.cc = 0;
   end_of_function_needs.memory = 1;
@@ -3532,6 +3532,10 @@ dbr_schedule (first, file)
       && GET_CODE (current_function_return_rtx) == REG)
     mark_referenced_resources (current_function_return_rtx,
 			       &end_of_function_needs, 0);
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (global_regs[i])
+      SET_HARD_REG_BIT (end_of_function_needs.regs, i);
 
   /* Show we haven't computed an end-of-function label yet.  */
   end_of_function_label = 0;
