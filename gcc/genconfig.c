@@ -238,33 +238,6 @@ gen_peephole (peep)
   for (i = 0; i < XVECLEN (peep, 0); i++)
     walk_insn_part (XVECEXP (peep, 0, i), 1, 0);
 }
-
-PTR
-xmalloc (size)
-  size_t size;
-{
-  register PTR val = (PTR) malloc (size);
-
-  if (val == 0)
-    fatal ("virtual memory exhausted");
-
-  return val;
-}
-
-PTR
-xrealloc (old, size)
-  PTR old;
-  size_t size;
-{
-  register PTR ptr;
-  if (old)
-    ptr = (PTR) realloc (old, size);
-  else
-    ptr = (PTR) malloc (size);
-  if (!ptr)
-    fatal ("virtual memory exhausted");
-  return ptr;
-}
 
 extern int main PARAMS ((int, char **));
 
