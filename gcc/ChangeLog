@@ -1,3 +1,8 @@
+2001-06-25   Dale Johannesen    <dalej@apple.com>
+
+	* bitmap.c (bitmap_last_bit_set): Fix a non-c89 usage (null actual
+	argument to macro).
+
 Mon Jun 25 11:10:51 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movsi_insv_1, movsi_insv_1_rex64): Fix constraints.
