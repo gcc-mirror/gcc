@@ -84,4 +84,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define NO_DOLLAR_IN_LABEL 1
 
+/* Specify size_t types.  */
+#define SIZE_TYPE	"unsigned int"
+
 #include "mips.h"
