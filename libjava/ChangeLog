@@ -1,6 +1,9 @@
 2000-10-24  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/EventObject.java: Merged from classpath.
+	
+	* java/lang/ThreadGroup.java (uncaughtException): Print thread name
+	with stack dump.
 
 2000-10-23  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
@@ -263,7 +266,6 @@
 
 	* gnu/gcj/convert/natIconv.cc (init): Terminate buffer.
 
->>>>>>> 1.515
 2000-10-02  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* prims.cc (_Jv_argv, _Jv_argc): New fields.
