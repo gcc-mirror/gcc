@@ -9503,12 +9503,15 @@ instrument_loop_bct (loop_start, loop_end, loop_num_iterations)
       /* Insert new comparison on the count register instead of the
 	 old one, generating the needed BCT pattern (that will be
 	 later recognized by assembly generation phase).  */
-      emit_jump_insn_before (gen_decrement_and_branch_on_count (counter_reg,
-								start_label),
-			     loop_end);
+      sequence = emit_jump_insn_before (
+	gen_decrement_and_branch_on_count (counter_reg, start_label),
+	loop_end);
+
+      if (GET_CODE (sequence) != JUMP_INSN)
+	abort ();
+      JUMP_LABEL (sequence) = start_label;
       LABEL_NUSES (start_label)++;
     }
-
 }
 #endif /* HAVE_decrement_and_branch_on_count */
 
