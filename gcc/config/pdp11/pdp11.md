@@ -1699,9 +1699,6 @@
 ;  [(set_attr "length" "1,2")])
 
 ;;- divide
-;; how can I use the remainder ? - 
-;; modsidi and move upper register to lower ????
-
 (define_insn "divdf3"
   [(set (match_operand:DF 0 "register_operand" "=a,a,a")
 	(div:DF (match_operand:DF 1 "register_operand" "0,0,0")
@@ -1710,269 +1707,64 @@
   "divd %2, %0"
   [(set_attr "length" "1,2,5")])
 
-(define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=r,r")
-	(truncate:HI 
-	 (div:SI
-	  (match_operand:SI 1 "general_operand" "0,0")
-	  (sign_extend:SI (match_operand:HI 2 "general_operand" "rR,Q")))))]
-  "TARGET_45"
-  "div %2,%0"
-  [(set_attr "length" "1,2")])
-
-;; - problem matching the (sign_extend:SI (const_int ...))
-; used without -O 
-(define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=r")
-	(truncate:HI 
-	 (div:SI
-	  (match_operand:SI 1 "general_operand" "0")
-	  (sign_extend:SI (match_operand 2 "immediate_operand" "n")))))]
-  "TARGET_45"
-  "div %2,%0"
-  [(set_attr "length" "2")])
-
-; used with -O
-(define_insn ""
-  [(set (match_operand:HI 0 "general_operand" "=r")
-	(truncate:HI 
-	 (div:SI
-	  (match_operand:SI 1 "general_operand" "0")
-	  (match_operand:SI 2 "immediate_operand" "i"))))]
-  "TARGET_45"
-  "div %2,%0"
-  [(set_attr "length" "2")])
-
+	 
 (define_expand "divhi3"
-  [(set (match_dup 3)
-	(sign_extend:SI (match_operand:HI 1 "general_operand" "g")))
-   (set (match_operand:HI 0 "general_operand" "g")
-	(truncate:HI 
-	 (div:SI
-	  (match_dup 3)
-	  (sign_extend:SI (match_operand:HI 2 "general_operand" "g")))))]
+  [(set (subreg:HI (match_dup 1) 0)
+	(div:HI (match_operand:SI 1 "general_operand" "0")
+		(match_operand:HI 2 "general_operand" "g")))
+   (set (match_operand:HI 0 "general_operand" "=r")
+        (subreg:HI (match_dup 1) 0))]
   "TARGET_45"
-  "operands[3] = gen_reg_rtx (SImode);")
-
-(define_expand "udivqi"
-  [(set (subreg:HI (match_dup 3) 1)
-	(zero_extend:HI (match_operand:QI 1 "general_operand" "g")))
-   (set (subreg:HI (match_dup 3) 0)
-	(const_int 0))
-   (set (match_dup 4)
-	(sign_extend:HI (match_operand:QI 2 "general_operand" "g")))
-   (set (match_dup 5)
-	(and:HI (match_dup 4)
-		(const_int 255)))
-   (set (match_dup 6)
-	(truncate:HI 
-	 (div:SI
-	  (match_dup 3)
-	  (sign_extend:SI (match_dup 5)))))
-   (set (match_operand:QI 0 "general_operand" "g")
-	(truncate:QI (match_dup 6)))]
-  "TARGET_45"
-  "
-{
-  operands[3] = gen_reg_rtx (SImode);
-  operands[4] = gen_reg_rtx (HImode);
-  operands[5] = gen_reg_rtx (HImode);
-  operands[6] = gen_reg_rtx (HImode);
-}")
-   
-;; we must restrict it to divide by 15-bit constant...
-(define_expand "udivhi3"
-  [(set (subreg:HI (match_dup 3) 1)
-	(match_operand:HI 1 "general_operand" "g"))
-   (set (subreg:HI (match_dup 3) 0)
-	(const_int 0))
-   (set (match_operand:HI 0 "general_operand" "g")
-	(truncate:HI 
-	 (div:SI
-	  (match_dup 3)
-	  (sign_extend:SI (match_operand:HI 2 "immediate15_operand" "n")))))]
-  "TARGET_45"
-  "
-{
-  operands[3] = gen_reg_rtx (SImode);
-  
-  if (GET_CODE (operands[2]) != CONST_INT
-      || ((INTVAL (operands[2]) & 0x8000) != 0x0000))
-    FAIL;
-}")
+  "")
 
 (define_insn ""
-  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r,r") 1)
-	(truncate:HI 
-	 (mod:SI
-	  (match_operand:SI 1 "general_operand" "0,0")
-	  (sign_extend:SI (match_operand:HI 2 "nonimmediate_operand" "rR,Q")))))]
-  "TARGET_45"
-  "div %2,%0"
-  [(set_attr "length" "1,2")])
-
-;; (sign_extend:SI (const_int ))
-; w/o -O
-(define_insn ""
-  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 1)
-	(truncate:HI 
-	 (mod:SI
-	  (match_operand:SI 1 "general_operand" "0")
-	  (sign_extend:SI (match_operand 2 "immediate_operand" "i")))))]
-  "TARGET_45"
-  "div %2,%0"
-  [(set_attr "length" "2")])
-; w/ -O
-(define_insn ""
-  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 1)
-	(truncate:HI 
-	 (mod:SI
-	  (match_operand:SI 1 "general_operand" "0")
-	  (match_operand:SI 2 "immediate_operand" "i"))))]
+  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 0)
+	(div:HI (match_operand:SI 1 "general_operand" "0")
+		(match_operand:HI 2 "general_operand" "g")))]
   "TARGET_45"
   "div %2,%0"
   [(set_attr "length" "2")])
 
 (define_expand "modhi3"
-  [(set (match_dup 3)
-	(sign_extend:SI (match_operand:HI 1 "general_operand" "g")))
-   (set (subreg:HI (match_dup 3) 1)
-	(truncate:HI 
-	 (mod:SI
-	  (match_dup 3)
-	  (sign_extend:SI (match_operand:HI 2 "general_operand" "g")))))
-   (set (match_operand:HI 0 "general_operand" "g")
-	(subreg:HI (match_dup 3) 1))]
+  [(set (subreg:HI (match_dup 1) 1)
+	(mod:HI (match_operand:SI 1 "general_operand" "0")
+		(match_operand:HI 2 "general_operand" "g")))
+   (set (match_operand:HI 0 "general_operand" "=r")
+        (subreg:HI (match_dup 1) 1))]
   "TARGET_45"
-  "operands[3] = gen_reg_rtx (SImode);")
-
-;; we must restrict it to mod by 15 bit constant
-(define_expand "umodhi3"
-  [(set (subreg:HI (match_dup 3) 0)
-	(match_operand:HI 1 "general_operand" "g"))
-   (set (subreg:HI (match_dup 3) 1)
-	(const_int 0))
-   (set (subreg:HI (match_dup 3) 1)
-	(truncate:HI 
-	 (mod:SI
-	  (match_dup 3)
-	  (sign_extend:SI (match_operand:HI 2 "immediate15_operand" "n")))))
-   (set (match_operand:HI 0 "general_operand" "g")
-	(subreg:HI (match_dup 3) 1))]
-  "TARGET_45"
-  "
-{
-  operands[3] = gen_reg_rtx (SImode);
-  
-  if (GET_CODE (operands[2]) != CONST_INT
-      || ((INTVAL (operands[2]) & 0x8000) != 0x0000))
-    FAIL;
-}")
+  "")
 
 (define_insn ""
-  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r,r") 0)
-	(truncate:HI 
-	 (div:SI
-	  (match_operand:SI 1 "general_operand" "0,0")
-	  (sign_extend:SI (match_operand:HI 2 "nonimmediate_operand" "rR,Q")))))
-   (set (subreg:HI (match_dup 0) 1)
-	(truncate:HI 
-	 (mod:SI
-	  (match_dup 1)
-	  (sign_extend:SI (match_dup 2)))))]
+  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 1)
+	(mod:HI (match_operand:SI 1 "general_operand" "0")
+		(match_operand:HI 2 "general_operand" "g")))]
   "TARGET_45"
-  "div %2, %0"
-  [(set_attr "length" "1,2")])
-
-;; (sign_extend:SI (const_int))
-; w/o -O 
-(define_insn ""
-  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 0)
-	(truncate:HI 
-	 (div:SI
-	  (match_operand:SI 1 "general_operand" "0")
-	  (sign_extend:SI (match_operand 2 "immediate_operand" "i")))))
-   (set (subreg:HI (match_dup 0) 1)
-	(truncate:HI 
-	 (mod:SI
-	  (match_dup 1)
-	  (sign_extend:SI (match_dup 2)))))]
-  "TARGET_45"
-  "div %2, %0"
-  [(set_attr "length" "2")])
-; w/ -O
-(define_insn ""
-  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 0)
-	(truncate:HI 
-	 (div:SI
-	  (match_operand:SI 1 "general_operand" "0")
-	  (match_operand:SI 2 "immediate_operand" "i"))))
-   (set (subreg:HI (match_dup 0) 1)
-	(truncate:HI 
-	 (mod:SI
-	  (match_dup 1)
-	  (match_dup 2))))]
-  "TARGET_45"
-  "div %2, %0"
+  "div %2,%0"
   [(set_attr "length" "2")])
 
-(define_expand "divmodhi4"
-  [(set (match_dup 4)
-	(sign_extend:SI (match_operand:HI 1 "general_operand" "g")))
-   (set (subreg:HI (match_dup 4) 0)
-	(truncate:HI 
-	 (div:SI
-	  (match_dup 4)
-	  (sign_extend:SI (match_operand:HI 2 "general_operand" "g")))))
-   (set (subreg:HI (match_dup 4) 1)
-	(truncate:HI 
-	 (mod:SI
-	  (match_dup 4)
-	  (sign_extend:SI (match_dup 2)))))
-   (set (match_operand:HI 0 "general_operand" "g")
-	(subreg:HI (match_dup 4) 0))
-   (set (match_operand:HI 3 "general_operand" "g")
-	(subreg:HI (match_dup 4) 1))]
-  "TARGET_45"
-  "operands[4] = gen_reg_rtx(SImode);")
-
-(define_expand "udivmodhi4"
-  [(set (subreg:HI (match_dup 3) 1)
-	(match_operand:HI 1 "general_operand" "g"))
-   (set (subreg:HI (match_dup 3) 0)
-	(const_int 0))
-   (set (subreg:HI (match_dup 4) 0)
-	(truncate:HI 
-	 (div:SI
-	  (match_dup 4)
-	  (sign_extend:SI (match_operand:HI 2 "immediate15_operand" "n")))))
-   (set (subreg:HI (match_dup 4) 1)
-	(truncate:HI 
-	 (mod:SI
-	  (match_dup 4)
-	  (sign_extend:SI (match_dup 2)))))
-   (set (match_operand:HI 0 "general_operand" "g")
-	(subreg:HI (match_dup 4) 0))
-   (set (match_operand:HI 3 "general_operand" "g")
-	(subreg:HI (match_dup 4) 1))]
-  "TARGET_45"
-  "
-{
-  operands[3] = gen_reg_rtx (SImode);
-  
-  if (GET_CODE (operands[2]) != CONST_INT
-      || ((INTVAL (operands[2]) & 0x8000) != 0x0000))
-    FAIL;
-}")
-
-;; truncate used in div/mod patterns
-(define_insn ""
-  [(set (match_operand:QI 0 "general_operand" "=r,r")
-	(truncate:QI (match_operand:HI 1 "general_operand" "0,r")))]
-  "TARGET_45"
-  "@
-   ; nop
-   movb %1, %0"
-  [(set_attr "length" "0,1")])
+;(define_expand "divmodhi4"
+;  [(parallel [(set (subreg:HI (match_dup 1) 0)
+;	           (div:HI (match_operand:SI 1 "general_operand" "0")
+;		           (match_operand:HI 2 "general_operand" "g")))
+;              (set (subreg:HI (match_dup 1) 1)
+;	           (mod:HI (match_dup 1)
+;		           (match_dup 2)))])
+;   (set (match_operand:HI 3 "general_operand" "=r")
+;        (subreg:HI (match_dup 1) 1))
+;   (set (match_operand:HI 0 "general_operand" "=r")
+;        (subreg:HI (match_dup 1) 0))]
+;  "TARGET_45"
+;  "")
+;
+;(define_insn ""
+;  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 0)
+;	           (div:HI (match_operand:SI 1 "general_operand" "0")
+;		           (match_operand:HI 2 "general_operand" "g")))
+;   (set (subreg:HI (match_dup 0) 1)
+;	           (mod:HI (match_dup 1)
+;		           (match_dup 2)))]
+;  "TARGET_45"
+;  "div %2, %0")
+;
    
 ;; is rotate doing the right thing to be included here ????
