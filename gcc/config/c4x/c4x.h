@@ -2007,7 +2007,7 @@ const_section ()							\
     }									\
 }
 
-#define ASM_STABS_OP "\t.stabs"
+#define ASM_STABS_OP "\t.stabs\t"
 
 /* The ctors and dtors sections are not normally put into use 
    by EXTRA_SECTIONS and EXTRA_SECTION_FUNCTIONS as defined in svr3.h,
@@ -2611,7 +2611,7 @@ do { fprintf (asm_out_file, "\t.sdef\t");		\
 
 #define MOVE_RATIO 2		/* Default value.  */
 
-#define BSS_SECTION_ASM_OP ".bss"
+#define BSS_SECTION_ASM_OP "\t.bss"
 
 #define ASM_OUTPUT_REG_PUSH(FILE, REGNO)  \
   asm_fprintf (FILE, "\tpush\t%s\n", reg_names[REGNO])

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Clipper/Clix version.
-   Copyright (C) 1988, 1993, 1996, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1996, 1997, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -71,9 +71,9 @@ do {							\
 
 
 #define ASM_LONG ".long"
-#define BSS_SECTION_ASM_OP  ".bss"
+#define BSS_SECTION_ASM_OP  "\t.bss"
 #undef INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP ".section .init,\"x\""
+#define INIT_SECTION_ASM_OP "\t.section .init,\"x\""
 
 
 /* Define a few machine-specific details of the implementation of

@@ -3850,12 +3850,12 @@ extern const char *d30v_branch_cost_string;
 /* A C expression whose value is a string containing the assembler operation
    that should precede instructions and read-only data.  Normally `".text"' is
    right.  */
-#define TEXT_SECTION_ASM_OP ".text"
+#define TEXT_SECTION_ASM_OP "\t.text"
 
 /* A C expression whose value is a string containing the assembler operation to
    identify the following data as writable initialized data.  Normally
    `".data"' is right.  */
-#define DATA_SECTION_ASM_OP ".data"
+#define DATA_SECTION_ASM_OP "\t.data"
 
 /* if defined, a C expression whose value is a string containing the assembler
    operation to identify the following data as shared data.  If not defined,
@@ -3869,7 +3869,7 @@ extern const char *d30v_branch_cost_string;
    uninitialized global data will be output in the data section if
    `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
    used.  */
-#define BSS_SECTION_ASM_OP ".bss"
+#define BSS_SECTION_ASM_OP "\t.bss"
 
 /* If defined, a C expression whose value is a string containing the
    assembler operation to identify the following data as
