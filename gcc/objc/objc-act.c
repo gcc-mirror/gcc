@@ -36,7 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  *
  *      code generation `options':
  *
- *      - OBJC_INT_SELECTORS, OBJC_NONUNIQUE_SELECTORS
+ *      - OBJC_INT_SELECTORS, OBJC_NONUNIQUE_SELECTORS, NEXT_OBJC_RUNTIME
  */
 
 #include <stdio.h>
@@ -203,13 +203,12 @@ static void dump_interfaces ();
 
 /* some commonly used instances of "identifier_node". */
 
-static tree self_id, _cmd_id, _msg_id, _msgSuper_id;
-static tree objc_getClass_id, objc_getMetaClass_id;
+static tree self_id, _cmd_id;
 
 static tree self_decl, _msg_decl, _msgSuper_decl;
 static tree objc_getClass_decl, objc_getMetaClass_decl;
 
-static tree super_type, _selector_type, id_type, class_type;
+static tree super_type, selector_type, id_type, class_type;
 static tree instance_type;
 
 static tree interface_chain = NULLT;
@@ -267,9 +266,6 @@ static tree objc_symtab_template, objc_module_template;
 static tree objc_super_template, objc_object_reference;
 
 static tree objc_object_id, objc_class_id;
-#ifdef OBJC_NONUNIQUE_SELECTORS
-static tree _OBJC_SELECTOR_REFERENCES_id;
-#endif
 static tree _OBJC_SUPER_decl;
 
 static tree method_context = NULLT;
@@ -475,6 +471,27 @@ get_static_reference (interface)
   return xref_tag (RECORD_TYPE, CLASS_NAME (interface));
 }
 
+/* Create and push a decl for a built-in external variable or field NAME.
+   CODE says which.
+   TYPE is its data type.  */
+
+static tree
+create_builtin_decl (code, type, name)
+     enum tree_code code;
+     char *name;
+     tree type;
+{
+  tree decl = build_decl (code, get_identifier (name), type);
+  if (code == VAR_DECL)
+    {
+      TREE_EXTERNAL (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+      make_decl_rtl (decl, 0, 1);
+      pushdecl (decl);
+    }
+  return decl;
+}
+
 /*
  *	purpose: "play" parser, creating/installing representations
  *		 of the declarations that are required by Objective-C.
@@ -490,138 +507,68 @@ get_static_reference (interface)
 static void
 synth_module_prologue ()
 {
-  tree sc_spec, type_spec, decl_specs, expr_decl, parms, record;
+  tree expr_decl, temp_type;
 
   /* defined in `objc.h' */
   objc_object_id = get_identifier (TAG_OBJECT);
 
   objc_object_reference = xref_tag (RECORD_TYPE, objc_object_id);
 
-  id_type = groktypename (build_tree_list (
-					   build_tree_list (NULLT, objc_object_reference),
-					   build1 (INDIRECT_REF, NULLT, NULLT)));
+  id_type = build_pointer_type (objc_object_reference);
 
   objc_class_id = get_identifier (TAG_CLASS);
   
-  class_type = groktypename (build_tree_list
-			     (build_tree_list
-			      (NULLT, xref_tag (RECORD_TYPE, objc_class_id)),
-			      build1 (INDIRECT_REF, NULLT, NULLT)));
+  class_type = build_pointer_type (xref_tag (RECORD_TYPE, objc_class_id));
 
-/* Declare SEL type before prototypes for objc_msgSend(), or else those
-   struct tags are considered local to the prototype and won't match the one
-   in <objc/objc-runtime.h>. */
+  /* Declare type of selector-objects that represent an operation name.  */
 
 #ifdef OBJC_INT_SELECTORS
   /* `unsigned int' */
-  _selector_type = unsigned_type_node;
+  selector_type = unsigned_type_node;
 #else
   /* `struct objc_selector *' */
-  _selector_type = groktypename (build_tree_list (
-	     build_tree_list (NULLT,
-			      xref_tag (RECORD_TYPE,
-					get_identifier (TAG_SELECTOR))),
-	     build1 (INDIRECT_REF, NULLT, NULLT)));
+  selector_type
+    = build_pointer_type (xref_tag (RECORD_TYPE,
+				    get_identifier (TAG_SELECTOR)));
 #endif /* not OBJC_INT_SELECTORS */
-
-  /* forward declare type...or else the prototype for `super' will bitch */
-  groktypename (build_tree_list (build_tree_list (NULLT,
-						  xref_tag (RECORD_TYPE, get_identifier (TAG_SUPER))),
-				 build1 (INDIRECT_REF, NULLT, NULLT)));
-
-  _msg_id = get_identifier ("objc_msgSend");
-  _msgSuper_id = get_identifier ("objc_msgSendSuper");
-  objc_getClass_id = get_identifier ("objc_getClass");
-  objc_getMetaClass_id = get_identifier ("objc_getMetaClass");
 
   /* struct objc_object *objc_msgSend (id, SEL, ...); */
-  pushlevel (0);
-  decl_specs = build_tree_list (NULLT, objc_object_reference);
-  push_parm_decl (build_tree_list (decl_specs,
-				   build1 (INDIRECT_REF, NULLT, NULLT)));
 
-#ifdef OBJC_INT_SELECTORS
-  decl_specs = build_tree_list (NULLT, ridpointers[(int) RID_UNSIGNED]);
-  decl_specs = tree_cons (NULLT, ridpointers[(int) RID_INT], decl_specs);
-  expr_decl = NULLT;
-#else
-  decl_specs = build_tree_list (NULLT,
-				xref_tag (RECORD_TYPE,
-					  get_identifier (TAG_SELECTOR)));
-  expr_decl = build1 (INDIRECT_REF, NULLT, NULLT);
-#endif /* not OBJC_INT_SELECTORS */
+  temp_type
+    = build_function_type (id_type,
+			   tree_cons (NULL_TREE, id_type,
+				      tree_cons (NULLT, selector_type, NULLT)));
 
-  push_parm_decl (build_tree_list (decl_specs, expr_decl));
-  parms = get_parm_info (0);
-  poplevel (0, 0, 0);
+  _msg_decl = builtin_function ("objc_msgSend", temp_type, NOT_BUILT_IN, 0);
 
-  decl_specs = build_tree_list (NULLT, objc_object_reference);
-  expr_decl = build_nt (CALL_EXPR, _msg_id, parms, NULLT);
-  expr_decl = build1 (INDIRECT_REF, NULLT, expr_decl);
+  /* struct objc_object *objc_msgSendSuper (void *, SEL, ...); */
 
-  _msg_decl = define_decl (expr_decl, decl_specs);
+  temp_type
+    = build_function_type (id_type,
+			   tree_cons (NULL_TREE, ptr_type_node,
+				      tree_cons (NULLT, selector_type, NULLT)));
 
-  /* struct objc_object *objc_msgSendSuper (struct objc_super *, SEL, ...); */
-  pushlevel (0);
-  decl_specs = build_tree_list (NULLT, xref_tag (RECORD_TYPE,
-						 get_identifier (TAG_SUPER)));
-  push_parm_decl (build_tree_list (decl_specs,
-				   build1 (INDIRECT_REF, NULLT, NULLT)));
-
-#ifdef OBJC_INT_SELECTORS
-  decl_specs = build_tree_list (NULLT, ridpointers[(int) RID_UNSIGNED]);
-  decl_specs = tree_cons (NULLT, ridpointers[(int) RID_INT], decl_specs);
-  expr_decl = NULLT;
-#else /* not OBJC_INT_SELECTORS */
-  decl_specs = build_tree_list (NULLT,
-				xref_tag (RECORD_TYPE,
-					  get_identifier (TAG_SELECTOR)));
-  expr_decl = build1 (INDIRECT_REF, NULLT, NULLT);
-#endif /* not OBJC_INT_SELECTORS */
-
-  push_parm_decl (build_tree_list (decl_specs, expr_decl));
-  parms = get_parm_info (0);
-  poplevel (0, 0, 0);
-
-  decl_specs = build_tree_list (NULLT, objc_object_reference);
-  expr_decl = build_nt (CALL_EXPR, _msgSuper_id, parms, NULLT);
-  expr_decl = build1 (INDIRECT_REF, NULLT, expr_decl);
-
-  _msgSuper_decl = define_decl (expr_decl, decl_specs);
+  _msgSuper_decl = builtin_function ("objc_msgSendSuper",
+				     temp_type, NOT_BUILT_IN, 0);
 
   /* id objc_getClass (); */
-  parms = build_tree_list (NULLT, NULLT);
-  expr_decl = build_nt (CALL_EXPR, objc_getClass_id, parms, NULLT);
-  expr_decl = build1 (INDIRECT_REF, NULLT, expr_decl);
+  
+  temp_type = build_function_type (id_type, NULLT);
 
-  objc_getClass_decl = define_decl (expr_decl, decl_specs);
+  objc_getClass_decl
+    = builtin_function ("objc_getClass", temp_type, NOT_BUILT_IN, 0);
 
   /* id objc_getMetaClass (); */
-  parms = build_tree_list (NULLT, NULLT);
-  expr_decl = build_nt (CALL_EXPR, objc_getMetaClass_id, parms, NULLT);
-  expr_decl = build1 (INDIRECT_REF, NULLT, expr_decl);
 
-  objc_getMetaClass_decl = define_decl (expr_decl, decl_specs);
-
-#ifdef OBJC_NONUNIQUE_SELECTORS
-  _OBJC_SELECTOR_REFERENCES_id = get_identifier ("_OBJC_SELECTOR_REFERENCES");
+  objc_getMetaClass_decl
+    = builtin_function ("objc_getMetaClass", temp_type, NOT_BUILT_IN, 0);
 
   /* extern SEL _OBJC_SELECTOR_REFERENCES[]; */
-  sc_spec = tree_cons (NULLT, ridpointers[(int) RID_EXTERN], NULLT);
-  
-#ifdef OBJC_INT_SELECTORS
-  decl_specs = tree_cons (NULLT, ridpointers[(int) RID_UNSIGNED], sc_spec);
-  decl_specs = tree_cons (NULLT, ridpointers[(int) RID_INT], decl_specs);
-  expr_decl = _OBJC_SELECTOR_REFERENCES_id;
-#else  /* not OBJC_INT_SELECTORS */
-  decl_specs = build_tree_list (NULLT,
-				xref_tag (RECORD_TYPE,
-					  get_identifier (TAG_SELECTOR)));
-  expr_decl = build1 (INDIRECT_REF, NULLT, _OBJC_SELECTOR_REFERENCES_id);
-#endif /* not OBJC_INT_SELECTORS */
 
-  expr_decl = build_nt (ARRAY_REF, expr_decl, NULLT);
-  _OBJC_SELECTOR_REFERENCES_decl = define_decl (expr_decl, decl_specs);
+#ifdef OBJC_NONUNIQUE_SELECTORS
+  _OBJC_SELECTOR_REFERENCES_decl
+    = create_builtin_decl (VAR_DECL, build_array_type (selector_type, NULLT),
+			   "_OBJC_SELECTOR_REFERENCES");
 #endif
 }
 
@@ -650,72 +597,67 @@ my_build_string (len, str)
 
   return aString;
 }
+
+/* Take care of defining and initializing _OBJC_SYMBOLS.  */
 
-/*
- *	struct objc_symtab {
- *		long sel_ref_cnt;
- *		char *refs;
- *		long cls_def_cnt;
- *		long cat_def_cnt;
- *		void *defs[cls_def_cnt + cat_def_cnt];
- *	};
- */
+/* Predefine the following data type:
+
+	struct _objc_symtab {
+		long sel_ref_cnt;
+		SEL *refs;
+		short cls_def_cnt;
+		short cat_def_cnt;
+		void *defs[cls_def_cnt + cat_def_cnt];
+	}; */
+
 static void
 build_objc_symtab_template ()
 {
-  tree decl_specs, field_decl, field_decl_chain;
+  tree field_decl, field_decl_chain, index;
 
   objc_symtab_template = start_struct (RECORD_TYPE, get_identifier (_TAG_SYMTAB));
 
   /* long sel_ref_cnt; */
 
-  decl_specs = build_tree_list (NULLT, ridpointers[(int) RID_LONG]);
-  field_decl = get_identifier ("sel_ref_cnt");
-  field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
+  field_decl = create_builtin_decl (FIELD_DECL,
+				    long_integer_type_node,
+				    "sel_ref_cnt");
   field_decl_chain = field_decl;
 
-#ifdef OBJC_INT_SELECTORS
-  /* unsigned int *sel_ref; */
-  decl_specs = build_tree_list (NULLT, ridpointers[(int) RID_UNSIGNED]);
-  decl_specs = tree_cons (NULLT, ridpointers[(int) RID_INT], decl_specs);
-  field_decl = build1 (INDIRECT_REF, NULLT, get_identifier ("refs"));
-#else /* not OBJC_INT_SELECTORS */
-  /* struct objc_selector **sel_ref; */
-  decl_specs = build_tree_list (NULLT,
-				xref_tag (RECORD_TYPE,
-					  get_identifier (TAG_SELECTOR)));
-  field_decl = build1 (INDIRECT_REF, NULLT, get_identifier ("refs"));
-  field_decl = build1 (INDIRECT_REF, NULLT, field_decl);
-#endif /* not OBJC_INT_SELECTORS */
+  /* SEL *refs; */
 
-  field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
+  field_decl = create_builtin_decl (FIELD_DECL,
+				    build_pointer_type (selector_type),
+				    "refs");
   chainon (field_decl_chain, field_decl);
 
   /* short cls_def_cnt; */
 
-  decl_specs = build_tree_list (NULLT, ridpointers[(int) RID_SHORT]);
-  field_decl = get_identifier ("cls_def_cnt");
-  field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
+  field_decl = create_builtin_decl (FIELD_DECL,
+				    short_integer_type_node,
+				    "cls_def_cnt");
   chainon (field_decl_chain, field_decl);
 
   /* short cat_def_cnt; */
 
-  decl_specs = build_tree_list (NULLT, ridpointers[(int) RID_SHORT]);
-  field_decl = get_identifier ("cat_def_cnt");
-  field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
+  field_decl = create_builtin_decl (FIELD_DECL,
+				    short_integer_type_node,
+				    "cat_def_cnt");
   chainon (field_decl_chain, field_decl);
 
   /* void *defs[cls_def_cnt + cat_def_cnt]; */
 
-  decl_specs = build_tree_list (NULLT, ridpointers[(int) RID_VOID]);
-  field_decl = build_nt (ARRAY_REF, get_identifier ("defs"),
-			 build_int_2 (imp_count + cat_count, 0));
-  field_decl = build1 (INDIRECT_REF, NULLT, field_decl);
-  field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
+  index = build_index_type (build_int_2 (imp_count + cat_count - 1, 0));
+  field_decl = create_builtin_decl (FIELD_DECL,
+				    build_array_type (ptr_type_node, index),
+				    "defs");
   chainon (field_decl_chain, field_decl);
 
   finish_struct (objc_symtab_template, field_decl_chain);
 }
+
+/* Create the initial value for the `defs' field of _objc_symtab.
+   This is a CONSTRUCTOR.  */
 
 static tree
 init_def_list ()
@@ -745,15 +687,8 @@ init_def_list ()
   return build_nt (CONSTRUCTOR, NULLT, nreverse (initlist));
 }
 
-/*
- *	struct objc_symtab {
- *		long sel_ref_cnt;
- *		char *refs;
- *		long cls_def_cnt;
- *		long cat_def_cnt;
- *		void *defs[cls_def_cnt + cat_def_cnt];
- *	};
- */
+/* Construct the initial value for all of _objc_symtab.  */
+
 static tree
 init_objc_symtab ()
 {
@@ -793,6 +728,9 @@ init_objc_symtab ()
   return build_nt (CONSTRUCTOR, NULLT, nreverse (initlist));
 }
 
+/* Push forward-declarations of all the categories
+   so that init_def_list can use them in a CONSTRUCTOR.  */
+
 static void
 forward_declare_categories ()
 {
@@ -802,19 +740,18 @@ forward_declare_categories ()
     {
       if (TREE_CODE (impent->imp_context) == CATEGORY_TYPE)
 	{
-	  tree sc_spec, decl_specs, decl;
-
-	  sc_spec = build_tree_list (NULLT, ridpointers[(int) RID_EXTERN]);
-	  decl_specs = tree_cons (NULLT, objc_category_template, sc_spec);
-
+	  /* Set an invisible arg to synth_id_with_class_suffix.  */
 	  implementation_context = impent->imp_context;
-	  impent->class_decl = define_decl (
-					    synth_id_with_class_suffix ("_OBJC_CATEGORY"),
-					    decl_specs);
+	  impent->class_decl
+	    = create_builtin_decl (VAR_DECL, objc_category_template,
+				   synth_id_with_class_suffix ("_OBJC_CATEGORY"));
 	}
     }
   implementation_context = sav;
 }
+
+/* Create the declaration of _OBJC_SYMBOLS, with type `strict _objc_symtab'
+   and initialized appropriately.  */
 
 static void
 generate_objc_symtab_decl ()
@@ -838,7 +775,7 @@ generate_objc_symtab_decl ()
 
   finish_decl (_OBJC_SYMBOLS_decl, init_objc_symtab (), NULLT);
 }
-
+
 /*
  *	tree_node------->tree_node----->...
  *          |                |
@@ -1133,7 +1070,7 @@ build_selector_reference (idx)
     decl = IDENTIFIER_GLOBAL_VALUE (ident); /* set by pushdecl() */
   else 
     {
-      decl = build_decl (VAR_DECL, ident, _selector_type);
+      decl = build_decl (VAR_DECL, ident, selector_type);
       TREE_EXTERNAL (decl) = 1;
       TREE_PUBLIC (decl) = 1;
       TREE_USED (decl) = 1;
@@ -1153,7 +1090,7 @@ init_selector (offset)
      int offset;
 {
   tree expr = build_msg_pool_reference (offset);
-  TREE_TYPE (expr) = _selector_type; /* cast */
+  TREE_TYPE (expr) = selector_type; /* cast */
   return expr;
 }
 
@@ -1167,7 +1104,9 @@ build_selector_translation_table ()
   tree decl, var_decl;
   int idx = 0;
   char buf[256];
-#else/
+#else
+  tree _OBJC_SELECTOR_REFERENCES_id
+    = get_identifier ("_OBJC_SELECTOR_REFERENCES");
 
   sc_spec = tree_cons (NULLT, ridpointers[(int) RID_STATIC], NULLT);
 
@@ -2506,19 +2445,14 @@ build_method_decl (code, ret_type, selector, add_args)
 
 #define METHOD_DEF 0
 #define METHOD_REF 1
-/*
- * used by `build_message_expr' and `comp_method_types'.
- *
- * add_args is a tree_list node the following info on a parameter list:
- *
- *    The TREE_PURPOSE is a chain of decls of those parms.
- *    The TREE_VALUE is a list of structure, union and enum tags defined.
- *    The TREE_CHAIN is a list of argument types to go in the FUNCTION_TYPE.
- *    This tree_list node is later fed to `grokparms'.
- *
- *    VOID_AT_END nonzero means append `void' to the end of the type-list.
- *    Zero means the parmlist ended with an ellipsis so don't append `void'.
- */
+/* Used by `build_message_expr' and `comp_method_types'.
+   Return an argument list for method METH.
+   CONTEXT is either METHOD_DEF or METHOD_REF,
+    saying whether we are trying to define a method or call one.
+   SUPERFLAG says this is for a send to super;
+    this makes a difference for the NeXT calling sequence
+    in which the lookup and the method call are done together.  */
+
 static tree
 get_arg_type_list (meth, context, superflag)
      tree meth;
@@ -2527,10 +2461,14 @@ get_arg_type_list (meth, context, superflag)
 {
   tree arglist, akey;
 
+#ifdef NEXT_OBJC_RUNTIME
   /* receiver type */
   if (superflag)
-    arglist = build_tree_list (NULLT, super_type);
+    {
+      arglist = build_tree_list (NULLT, super_type);
+    }
   else
+#endif
     {
       if (context == METHOD_DEF)
 	arglist = build_tree_list (NULLT, TREE_TYPE (self_decl));
@@ -2539,7 +2477,7 @@ get_arg_type_list (meth, context, superflag)
     }
 
   /* selector type - will eventually change to `int' */
-  chainon (arglist, build_tree_list (NULLT, _selector_type));
+  chainon (arglist, build_tree_list (NULLT, selector_type));
 
   /* build a list of argument types */
   for (akey = METHOD_SEL_ARGS (meth); akey; akey = TREE_CHAIN (akey))
@@ -2616,11 +2554,11 @@ receiver_is_class_object (receiver)
 
 	  if (arg != 0
 	      && TREE_CODE (arg) == TREE_LIST
-	      && arg = TREE_VALUE (arg)
+	      && (arg = TREE_VALUE (arg))
 	      && TREE_CODE (arg) == NOP_EXPR
-	      && arg = TREE_OPERAND (arg, 0)
+	      && (arg = TREE_OPERAND (arg, 0))
 	      && TREE_CODE (arg) == ADDR_EXPR
-	      && arg = TREE_OPERAND (arg, 0)
+	      && (arg = TREE_OPERAND (arg, 0))
 	      && TREE_CODE (arg) == STRING_CST)
 	    /* finally, we have the class name */
 	    return get_identifier (TREE_STRING_POINTER (arg));
@@ -4166,7 +4104,7 @@ really_start_method (method, parmlist)
 {
   tree sc_spec, ret_spec, ret_decl, decl_specs;
   tree method_decl, method_id;
-  char buf[256];
+  char *buf;
 
   /* synth the storage class & assemble the return type */
   sc_spec = tree_cons (NULLT, ridpointers[(int) RID_STATIC], NULLT);
@@ -4174,28 +4112,41 @@ really_start_method (method, parmlist)
   decl_specs = chainon (sc_spec, ret_spec);
 
   if (TREE_CODE (implementation_context) == IMPLEMENTATION_TYPE)
+    {
+      /* Make sure this is big enough for any plausible method label.  */
+      buf = (char *) alloca (50
+			     + strlen (IDENTIFIER_POINTER (METHOD_SEL_NAME (method)))
+			     + strlen (IDENTIFIER_POINTER (CLASS_NAME (implementation_context))));
 #ifdef OBJC_GEN_METHOD_LABEL
-    OBJC_GEN_METHOD_LABEL (buf,
-      TREE_CODE (method) == INSTANCE_METHOD_DECL,
-      IDENTIFIER_POINTER (CLASS_NAME (implementation_context)),
-      NULL,
-      IDENTIFIER_POINTER (METHOD_SEL_NAME (method)));
+      OBJC_GEN_METHOD_LABEL (buf,
+			     TREE_CODE (method) == INSTANCE_METHOD_DECL,
+			     IDENTIFIER_POINTER (CLASS_NAME (implementation_context)),
+			     NULL,
+			     IDENTIFIER_POINTER (METHOD_SEL_NAME (method)));
 #else
-    sprintf (buf, "_%d_%s", ++method_slot,
-	     IDENTIFIER_POINTER (CLASS_NAME (implementation_context)));
+      sprintf (buf, "_%d_%s", ++method_slot,
+	       IDENTIFIER_POINTER (CLASS_NAME (implementation_context)));
 #endif
+    }
   else				/* we have a category */
+    {
+      /* Make sure this is big enough for any plausible method label.  */
+      buf = (char *) alloca (50
+			     + strlen (IDENTIFIER_POINTER (METHOD_SEL_NAME (method)))
+			     + strlen (IDENTIFIER_POINTER (CLASS_SUPER_NAME (implementation_context)))
+			     + strlen (IDENTIFIER_POINTER (CLASS_NAME (implementation_context))));
 #ifdef OBJC_GEN_METHOD_LABEL
-    OBJC_GEN_METHOD_LABEL (buf,
-      TREE_CODE (method) == INSTANCE_METHOD_DECL,
-      IDENTIFIER_POINTER (CLASS_NAME (implementation_context)),
-      IDENTIFIER_POINTER (CLASS_SUPER_NAME (implementation_context)),
-      IDENTIFIER_POINTER (METHOD_SEL_NAME (method)));
+      OBJC_GEN_METHOD_LABEL (buf,
+			     TREE_CODE (method) == INSTANCE_METHOD_DECL,
+			     IDENTIFIER_POINTER (CLASS_NAME (implementation_context)),
+			     IDENTIFIER_POINTER (CLASS_SUPER_NAME (implementation_context)),
+			     IDENTIFIER_POINTER (METHOD_SEL_NAME (method)));
 #else
-    sprintf (buf, "_%d_%s_%s", ++method_slot,
-	     IDENTIFIER_POINTER (CLASS_NAME (implementation_context)),
-	     IDENTIFIER_POINTER (CLASS_SUPER_NAME (implementation_context)));
+      sprintf (buf, "_%d_%s_%s", ++method_slot,
+	       IDENTIFIER_POINTER (CLASS_NAME (implementation_context)),
+	       IDENTIFIER_POINTER (CLASS_SUPER_NAME (implementation_context)));
 #endif
+    }
 
   method_id = get_identifier (buf);
 
