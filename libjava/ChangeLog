@@ -1,3 +1,66 @@
+2001-11-07  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Added JNIWeakRef.java.
+	* jni.cc: Include JNIWeakRef.h.
+	(unwrap): New function.
+	(_Jv_JNI_DefineClass): Use it.
+	(_Jv_JNI_GetSuperclass): Likewise.
+	(_Jv_JNI_IsAssignableFrom): Likewise.
+	(_Jv_JNI_Throw): Likewise.
+	(_Jv_JNI_ThrowNew): Likewise.
+	(_Jv_JNI_IsSameObject): Likewise.
+	(_Jv_JNI_AllocObject): Likewise.
+	(_Jv_JNI_GetObjectClass): Likewise.
+	(_Jv_JNI_IsInstanceOf): Likewise.
+	(_Jv_JNI_GetAnyMethodID): Likewise.
+	(array_from_valist): Likewise.
+	(_Jv_JNI_CallAnyMethodV): Likewise.
+	(_Jv_JNI_CallAnyMethodA): Likewise.
+	(_Jv_JNI_CallAnyVoidMethodV): Likewise.
+	(_Jv_JNI_CallAnyVoidMethodA): Likewise.
+	(_Jv_JNI_CallStaticMethodV): Likewise.
+	(_Jv_JNI_CallStaticMethod): Likewise.
+	(_Jv_JNI_CallStaticMethodA): Likewise.
+	(_Jv_JNI_NewObjectV): Likewise.
+	(_Jv_JNI_NewObject): Likewise.
+	(_Jv_JNI_NewObjectA): Likewise.
+	(_Jv_JNI_GetField): Likewise.
+	(_Jv_JNI_SetField): Likewise.
+	(_Jv_JNI_GetAnyFieldID): Likewise.
+	(_Jv_JNI_SetStaticField): Likewise.
+	(_Jv_JNI_GetStringLength): Likewise.
+	(_Jv_JNI_GetStringChars): Likewise.
+	(_Jv_JNI_ReleaseStringChars): Likewise.
+	(_Jv_JNI_GetStringUTFLength): Likewise
+	(_Jv_JNI_GetStringUTFChars): Likewise.
+	(_Jv_JNI_GetStringRegion): Likewise.
+	(_Jv_JNI_GetStringUTFRegion): Likewise.
+	(_Jv_JNI_GetStringCritical): Likewise.
+	(_Jv_JNI_GetArrayLength): Likewise.
+	(_Jv_JNI_NewObjectArray): Likewise.
+	(_Jv_JNI_GetObjectArrayElement): Likewise.
+	(_Jv_JNI_SetObjectArrayElement): Likewise.
+	(_Jv_JNI_GetPrimitiveArrayElements): Likewise.
+	(_Jv_JNI_ReleasePrimitiveArrayElements): Likewise.
+	(_Jv_JNI_GetPrimitiveArrayRegion): Likewise.
+	(_Jv_JNI_SetPrimitiveArrayRegion): Likewise.
+	(_Jv_JNI_MonitorEnter): Likewise.
+	(_Jv_JNI_MonitorExit): Likewise.
+	(_Jv_JNI_ToReflectedField): Likewise.
+	(_Jv_JNI_FromReflectedField): Likewise.
+	(_Jv_JNI_ToReflectedMethod): Likewise.
+	(_Jv_JNI_FromReflectedMethod): Likewise.
+	(_Jv_JNI_NewGlobalRef): Likewise.
+	(_Jv_JNI_DeleteGlobalRef): Likewise.
+	(_Jv_JNI_DeleteLocalRef): Likewise.
+	(_Jv_JNI_NewLocalRef): Likewise.
+	(_Jv_JNI_NewWeakGlobalRef): New function.
+	(_Jv_JNI_DeleteWeakGlobalRef): Likewise.
+	(_Jv_JNIFunctions): Updated for new methods.
+	(NOT_IMPL): Removed.
+	* gnu/gcj/runtime/JNIWeakRef.java: New file.
+
 2001-11-12  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* boehm.cc (_Jv_GCCanReclaimSoftReference): Fix warning.
