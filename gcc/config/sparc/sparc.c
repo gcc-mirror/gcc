@@ -342,6 +342,16 @@ sparc_override_options ()
       target_flags &= ~MASK_FPU_SET;
     }
 
+  /* Don't allow -mvis if FPU is disabled.  */
+  if (! TARGET_FPU)
+    target_flags &= ~MASK_VIS;
+
+  /* -mvis assumes UltraSPARC+, so we are sure v9 instructions
+     are available.
+     -m64 also implies v9.  */
+  if (TARGET_VIS || TARGET_ARCH64)
+    target_flags |= MASK_V9;
+
   /* Use the deprecated v8 insns for sparc64 in 32 bit mode.  */
   if (TARGET_V9 && TARGET_ARCH32)
     target_flags |= MASK_DEPRECATED_V8_INSNS;
@@ -354,10 +364,6 @@ sparc_override_options ()
   if (TARGET_ARCH32)
     target_flags &= ~MASK_STACK_BIAS;
     
-  /* Don't allow -mvis if FPU is disabled.  */
-  if (! TARGET_FPU)
-    target_flags &= ~MASK_VIS;
-
   /* Supply a default value for align_functions.  */
   if (align_functions == 0 && sparc_cpu == PROCESSOR_ULTRASPARC)
     align_functions = 32;

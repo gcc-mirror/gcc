@@ -6,6 +6,41 @@
 	non-optimizing TARGET_ARCH32 in DF or DI modes because it is not
 	offsetable.
 
+	* config/sparc/sparc.md (movdi_insn_sp64_novis): New pattern.
+	(movdi_insn_sp64_vis): Renamed from movdi_insn_sp64.
+	(movsf): Don't force any constant to memory if target is integer
+	hard register.
+	Move fp_zero_operand check below the const0_rtx check.
+	(movtf): Likewise. Also allow fp_zero_operand for stores into
+	memory.
+	(movdf): Likewise. Also allow fp_zero_operand for stores into
+	memory and into integer hard registers.
+	(clear_df, clear_dfp, movdf_const_intreg_sp32,
+	movdf_const_intreg_sp64): Remove.
+	(movdf_insn_sp32, movdf_no_e_insn_sp32): Redo constraints and
+	conditions.
+	(movdf_no_e_insn_v9_sp32): New pattern.
+	(movdf_insn_v9only): Remove.
+	(movdf_insn_v9only_novis, movdf_insn_v9only_vis): New patterns.
+	(movdf_insn_sp64): Remove.
+	(movdf_insn_sp64_novis, movdf_insn_sp64_vis): New patterns.
+	(movdf_no_e_insn_sp64): Allow storing 0.0 into memory.
+	(following splits): Rewrite conditions. Add two new splits
+	for storing 0.0 into memory and registers.
+	(clear_tf, clear_tf+1, clear_tfp, clear_tfp+1): Remove.
+	(movtf_insn_sp32): Redo constraints and conditions.
+	(movtf_insn_vis_sp32): New pattern.
+	(movtf_no_e_insn_sp32): Redo constraints and conditions.
+	(movtf_insn_hq_sp64): Likewise.
+	(movtf_insn_hq_vis_sp64): New pattern.
+	(movtf_insn_sp64): Redo constraints and conditions.
+	(movtf_insn_vis_sp64): New pattern.
+	(movtf_no_e_insn_sp64): Redo constraints and conditions.
+	(movtf_no_e_insn_sp64+1): New split for storing 0.0L into registers
+	or memory.
+	* config/sparc/sparc.c (sparc_override_options): Assume v9 if either
+	-mvis or -m64 to take down the number of various reload patterns.
+
 Tue Apr  4 00:41:53 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* pa/pa-64.h: New file.
