@@ -1787,8 +1787,13 @@ open_dump_file (index, decl)
   free (dump_name);
 
   if (decl)
-    fprintf (rtl_dump_file, "\n;; Function %s\n\n",
-	     (*lang_hooks.decl_printable_name) (decl, 2));
+    fprintf (rtl_dump_file, "\n;; Function %s%s\n\n",
+	     (*lang_hooks.decl_printable_name) (decl, 2),
+	     cfun->function_frequency == FUNCTION_FREQUENCY_HOT
+	     ? " (hot)"
+	     : cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED
+	     ? " (unlikely executed)"
+	     : "");
 
   timevar_pop (TV_DUMP);
   return 1;
