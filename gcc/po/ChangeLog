@@ -1,3 +1,7 @@
+2000-06-13  Philipp Thomas  <pthomas@suse.de>
+
+	* en_UK.po: Renamed to en_GB.po.
+
 2000-06-07  Philipp Thomas  <pthomas@suse.de>
 
 	* POTFILES.in: Remove dyn-string.[ch].

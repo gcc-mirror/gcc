@@ -6904,7 +6904,7 @@ EOF
 
 
 
-ALL_LINGUAS="en_UK"
+ALL_LINGUAS="en_GB"
 
 # Enable NLS support by default
 # Check whether --enable-nls or --disable-nls was given.
