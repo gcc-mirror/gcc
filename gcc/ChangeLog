@@ -1,5 +1,7 @@
 2000-12-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* local-alloc.c (update_equiv_regs): Don't use copy_rtx on PATTERN.
+
 	* toplev.c (main): Call xmalloc_set_program_name.
 	* gcc.c (main): Likewise.
 
