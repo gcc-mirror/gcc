@@ -1,3 +1,8 @@
+2003-10-17  Jan Hubicka  <jh@suse.cz>
+
+	* opts.c  (common_handle_option): Handle OPT_fweb
+	* invoke.texi (-fweb): Add missing parts of documentation.
+
 2003-10-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/linux.h (FUNCTION_NAME_ALREADY_DECLARED): Undef

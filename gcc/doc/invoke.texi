@@ -3687,7 +3687,7 @@ also turns on the following optimization flags:
 -fpeephole2 @gol
 -freorder-blocks  -freorder-functions @gol
 -fstrict-aliasing @gol
--funit-at-a-time @gol
+-funit-at-a-time -fweb @gol
 -falign-functions  -falign-jumps @gol
 -falign-loops  -falign-labels}
 
@@ -4377,6 +4377,15 @@ of registers left over after register allocation.  This optimization
 will most benefit processors with lots of registers.  It can, however,
 make debugging impossible, since variables will no longer stay in
 a ``home register''.
+
+@item -fweb
+@opindex fweb
+Constructs webs as commonly used for register allocation purposes and assign
+each web individual pseudo register.  This allows our register allocation pass
+to operate on pseudos directly, but also strengthens several other optimization
+passes, such as CSE, loop optimizer and trivial dead code remover.  It can,
+however, make debugging impossible, since variables will no longer stay in a
+``home register''.
 
 Enabled at levels @option{-O3}.
 
