@@ -1,3 +1,12 @@
+2005-01-05  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/19100
+	* c-common.c: Include real.h.
+	(c_common_truthvalue_conversion): Avoid destructively modifying expr.
+	Correctly handle TREE_CONSTANT_OVERFLOW for INTEGER_CST.
+	Correctly handle TREE_CONSTANT_OVERFLOW and NaNs for REAL_CST.
+	* Makefile.in (c-common.o): Update dependencies.
+
 2005-01-05  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-parse.in (asm_string): Add trailing semicolon.
