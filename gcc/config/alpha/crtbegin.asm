@@ -75,6 +75,11 @@ __DTOR_LIST__:
  # Invoke our destructors in order.
  #
 
+.data
+
+ # Support recursive calls to exit.
+9:	.quad	__DTOR_LIST__
+
 .text
 
 	.align 3
@@ -84,20 +89,22 @@ __do_global_dtors_aux:
 	ldgp	$29,0($27)
 	lda     $30,-16($30)
 	.frame  $30,16,$26,0
+	stq	$9,8($30)
 	stq     $26,0($30)
-	.mask   0x4000000,-16
+	.mask   0x4000200,-16
 	.prologue 1
 
-	lda     $1,__DTOR_LIST__
+	lda     $9,9b
 	br      1f
-0:	stq	$1,8($30)
+0:	stq	$1,0($9)
 	jsr     $26,($27)
-	ldq	$1,8($30)
-1:	ldq     $27,8($1)
+1:	ldq	$1,0($9)
+	ldq     $27,8($1)
 	addq    $1,8,$1
 	bne     $27,0b
 
 	ldq     $26,0($30)
+	ldq	$9,8($30)
 	lda     $30,16($30)
 	ret
 
