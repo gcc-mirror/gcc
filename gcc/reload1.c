@@ -7039,7 +7039,13 @@ delete_output_reload (insn, j, output_reload_insn)
 	  rtx set = single_set (i2);
 
 	  if (set != 0 && SET_DEST (set) == reg)
-	    delete_insn (i2);
+	    {
+	      /* This might be a basic block head,
+		 thus don't use delete_insn.  */
+	      PUT_CODE (i2, NOTE);
+	      NOTE_SOURCE_FILE (i2) = 0;
+	      NOTE_LINE_NUMBER (i2) = NOTE_INSN_DELETED;
+	    }
 	  if (GET_CODE (i2) == CODE_LABEL
 	      || GET_CODE (i2) == JUMP_INSN)
 	    break;
