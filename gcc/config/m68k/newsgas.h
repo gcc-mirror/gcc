@@ -4,4 +4,16 @@
 
 #define USE_GAS
 
+/* This is the assembler directive to equate two values.  */
+
+#undef SET_ASM_OP
+#define SET_ASM_OP    ".set"
+
+/* This is how we tell the assembler that a symbol is weak.  */
+
+#undef ASM_WEAKEN_LABEL
+#define ASM_WEAKEN_LABEL(FILE,NAME) \
+  do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
+       fputc ('\n', FILE); } while (0)
+
 #include "m68k/news.h"
