@@ -1,3 +1,8 @@
+Wed May 27 22:02:40 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.lang: Fix thinko when adding a definition for
+	target_alias to the Makefile.
+
 Wed May 27 02:50:00 1998  Catherine Moore (clm@cygnus.com)
 
         * config/sparc/lb1spc.asm (.rem and .urem):  Replace 
