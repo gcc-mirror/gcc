@@ -1,5 +1,5 @@
 // Test rtti hint flags
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 3 Apr 2000 <nathan@nathan@codesourcery.com>
 
 #include <typeinfo>
@@ -43,20 +43,20 @@ int expect (int flags, std::type_info const &info)
 
 int main ()
 {
-  if (! expect (0 | 8, typeid (C1)))
+  if (! expect (0, typeid (C1)))
     return 1;
-  if (! expect (2 | 8, typeid (D1)))
+  if (! expect (2, typeid (D1)))
     return 2;
-  if (! expect (1 | 8, typeid (E1)))
+  if (! expect (1, typeid (E1)))
     return 3;
-  if (! expect (1 | 8, typeid (E2)))
+  if (! expect (1, typeid (E2)))
     return 4;
-  if (! expect (3 | 8, typeid (F1)))
+  if (! expect (3, typeid (F1)))
     return 5;
   
-  if (!expect (4, typeid (P1)))
+  if (!expect (0, typeid (P1)))
     return 6;
-  if (!expect (12, typeid (P2)))
+  if (!expect (0, typeid (P2)))
     return 7;
   
   return 0;

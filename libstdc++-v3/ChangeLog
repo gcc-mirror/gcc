@@ -1,3 +1,11 @@
+2003-01-14  Jeffrey D. Oldham  <oldham@codesourcery.com>
+
+	Further conform g++'s __vmi_class_type_info to the C++ ABI
+	specification.
+	* libsupc++/cxxabi.h
+	(__vmi_class_type_info::__flags_masks): Remove enumerations not
+	required by the specification.
+
 2003-01-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Renames, namespaces for testsuite utilities.	

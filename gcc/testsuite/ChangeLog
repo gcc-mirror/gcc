@@ -1,3 +1,10 @@
+2003-01-14  Jeffrey D. Oldham  <oldham@codesourcery.com>
+
+	Further conform g++'s __vmi_class_type_info to the C++ ABI
+	specification.
+	* g++.old-deja/g++.abi/vmihint.C (main): Revise expected flags per
+	the specification.
+
 Tue Jan 14 00:45:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-fpcvt-1.c: New test.

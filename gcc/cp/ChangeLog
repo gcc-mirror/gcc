@@ -1,3 +1,11 @@
+2003-01-14  Jeffrey D. Oldham  <oldham@codesourcery.com>
+
+	Further conform g++'s __vmi_class_type_info to the C++ ABI
+	specification.
+	* rtti.c (dfs_class_hint_mark): Do not set hints not specified by
+	the specification.
+	(class_hint_flags): Likewise.
+
 2003-01-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* config-lang.in: Add semantics.c to gtfiles.
