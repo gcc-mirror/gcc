@@ -5329,14 +5329,29 @@ is_jump_table (insn)
   return NULL_RTX;
 }
 
+#ifndef JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 0
+#endif
+
 static HOST_WIDE_INT
 get_jump_table_size (insn)
      rtx insn;
 {
-  rtx body = PATTERN (insn);
-  int elt = GET_CODE (body) == ADDR_DIFF_VEC ? 1 : 0;
+  /* ADDR_VECs only take room if read-only data does into the text
+     section.  */
+  if (JUMP_TABLES_IN_TEXT_SECTION
+#if !defined(READONLY_DATA_SECTION)
+      || 1
+#endif
+      )
+    {
+      rtx body = PATTERN (insn);
+      int elt = GET_CODE (body) == ADDR_DIFF_VEC ? 1 : 0;
 
-  return GET_MODE_SIZE (GET_MODE (body)) * XVECLEN (body, elt);
+      return GET_MODE_SIZE (GET_MODE (body)) * XVECLEN (body, elt);
+    }
+
+  return 0;
 }
 
 /* Move a minipool fix MP from its current location to before MAX_MP.
