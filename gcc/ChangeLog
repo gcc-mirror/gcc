@@ -1,3 +1,9 @@
+2000-05-24  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* expr.c (expand_assignment, store_expr, expand_expr,
+	expand_expr_unaligned): Set in_check_memory_usage while emitting
+	chkr_check_addr libcall.
+
 2000-05-24  Nick Clifton  <nickc@cygnus.com>
 
 	* fold-const.c (extract_muldiv): When constructing a
