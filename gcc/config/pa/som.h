@@ -371,8 +371,17 @@ do {						\
     (*p++) ();					\
 } while (0)
 
-/* The .align directive in the HP assembler allows up to a 32 alignment.  */
-#define MAX_OFILE_ALIGNMENT 32768
+/* This macro specifies the biggest alignment supported by the object
+   file format of this machine.
+
+   The .align directive in the HP assembler allows alignments up to 4096
+   bytes.  However, the maximum alignment of a global common symbol is 8
+   bytes for objects smaller than the page size (4096 bytes).  For larger
+   objects, the linker provides an alignment of 32 bytes.  */
+#define MAX_OFILE_ALIGNMENT						\
+  (TREE_PUBLIC (decl) && DECL_COMMON (decl)				\
+   ? (host_integerp (DECL_SIZE_UNIT (decl), 1) >= 4096 ? 256 : 64)	\
+   : 32768)
 
 /* The SOM linker hardcodes paths into binaries.  As a result, dotdots
    must be removed from library prefixes to prevent binaries from depending

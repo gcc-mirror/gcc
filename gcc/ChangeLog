@@ -1,3 +1,21 @@
+2004-08-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (pa_asm_output_aligned_bss, pa_asm_output_aligned_common,
+	pa_asm_output_aligned_local): New functions.
+	* pa-protos.h: Add prototypes for pa_asm_output_aligned_bss,
+	pa_asm_output_aligned_common and pa_asm_output_aligned_local.
+	* pa-pro-end.h (ASM_OUTPUT_ALIGNED_COMMON): Use
+	pa_asm_output_aligned_common.
+	(ASM_OUTPUT_ALIGNED_LOCAL): Use pa_asm_output_aligned_local.
+	* pa.h (ASM_OUTPUT_ALIGNED_BSS): New macro.
+	(ASM_OUTPUT_ALIGNED_COMMON): Use pa_asm_output_aligned_common.
+	(ASM_OUTPUT_ALIGNED_LOCAL): Use pa_asm_output_aligned_local.
+	* pa64-hpux.h (MAX_OFILE_ALIGNMENT): New macro.
+	(ASM_OUTPUT_ALIGNED_COMMON): Use pa_asm_output_aligned_common.
+	(ASM_OUTPUT_ALIGNED_LOCAL): Use pa_asm_output_aligned_local.
+	* som.h (MAX_OFILE_ALIGNMENT): Provide maximum alignment of global
+	common data.
+
 2004-08-05  Andrew Pinski  <apinski@apple.com>
 
 	* objc/objc-act.c (build_objc_string_object): Mark the address
