@@ -3851,7 +3851,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	  if (v->giv_type == DEST_ADDR)
 	    /* Store reduced reg as the address in the memref where we found
 	       this giv.  */
-	    *v->location = v->new_reg;
+	    validate_change (v->insn, v->location, v->new_reg, 0);
 	  else if (v->replaceable)
 	    {
 	      reg_map[REGNO (v->dest_reg)] = v->new_reg;
