@@ -157,6 +157,8 @@ tree
 variable_size (size)
      tree size;
 {
+  tree save;
+
   /* If the language-processor is to take responsibility for variable-sized
      items (e.g., languages which have elaboration procedures like Ada),
      just return SIZE unchanged.  Likewise for self-referential sizes and
@@ -166,7 +168,12 @@ variable_size (size)
       || contains_placeholder_p (size))
     return size;
 
-  size = save_expr (size);
+  if (TREE_CODE (size) == MINUS_EXPR && integer_onep (TREE_OPERAND (size, 1)))
+    /* If this is the upper bound of a C array, leave the minus 1 outside
+       the SAVE_EXPR so it can be folded away.  */
+    TREE_OPERAND (size, 0) = save = save_expr (TREE_OPERAND (size, 0));
+  else
+    size = save = save_expr (size);
 
   /* If an array with a variable number of elements is declared, and
      the elements require destruction, we will emit a cleanup for the
@@ -176,8 +183,8 @@ variable_size (size)
      `unsaved', i.e., all SAVE_EXPRs are recalculated.  However, we do
      not wish to do that here; the array-size is the same in both
      places.  */
-  if (TREE_CODE (size) == SAVE_EXPR)
-    SAVE_EXPR_PERSISTENT_P (size) = 1;
+  if (TREE_CODE (save) == SAVE_EXPR)
+    SAVE_EXPR_PERSISTENT_P (save) = 1;
 
   if ((*lang_hooks.decls.global_bindings_p) ())
     {
@@ -190,16 +197,13 @@ variable_size (size)
     }
 
   if (immediate_size_expand)
-    /* NULL_RTX is not defined; neither is the rtx type.
-       Also, we would like to pass const0_rtx here, but don't have it.  */
-    expand_expr (size, expand_expr (integer_zero_node, NULL_RTX, VOIDmode, 0),
-		 VOIDmode, 0);
+    expand_expr (save, const0_rtx, VOIDmode, 0);
   else if (cfun != 0 && cfun->x_dont_save_pending_sizes_p)
     /* The front-end doesn't want us to keep a list of the expressions
        that determine sizes for variable size objects.  */
     ;
   else
-    put_pending_size (size);
+    put_pending_size (save);
 
   return size;
 }

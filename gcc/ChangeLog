@@ -1,3 +1,8 @@
+2003-02-28  Jason Merrill  <jason@redhat.com>
+
+	* stor-layout.c (variable_size): Leave a "minus 1" outside the
+	SAVE_EXPR.
+
 2003-02-28  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/power4.md: Add compare bypass.
