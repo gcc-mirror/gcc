@@ -1,3 +1,26 @@
+2004-12-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Add has_trivial_copy, has_trivial_assign,
+	has_nothrow_copy, has_nothrow_assign.
+	* testsuite/testsuite_tr1.h: Add test_copy_property and
+	test_assign_property.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_nothrow_assign/has_nothrow_assign.cc: New.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_nothrow_assign/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_nothrow_copy/has_nothrow_copy.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_nothrow_copy/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_assign/has_trivial_assign.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_assign/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_copy/has_trivial_copy.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	has_trivial_copy/typedefs.cc: Likewise.
+
 2004-12-29  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/bits/vector.tcc (erase(iterator, iterator),

@@ -277,12 +277,34 @@ namespace tr1
     : public integral_constant<bool, is_pod<_Tp>::value> { };
 
   template<typename _Tp>
+    struct has_trivial_copy
+    : public integral_constant<bool, (is_pod<_Tp>::value 
+				      && !is_volatile<_Tp>::value)> { };
+
+  template<typename _Tp>
+    struct has_trivial_assign
+    : public integral_constant<bool, (is_pod<_Tp>::value
+				      && !is_const<_Tp>::value
+				      && !is_volatile<_Tp>::value)> { };
+
+  template<typename _Tp>
     struct has_trivial_destructor
     : public integral_constant<bool, is_pod<_Tp>::value> { };
 
   template<typename _Tp>
     struct has_nothrow_constructor
     : public integral_constant<bool, is_pod<_Tp>::value> { };
+
+  template<typename _Tp>
+    struct has_nothrow_copy
+    : public integral_constant<bool, (is_pod<_Tp>::value 
+				      && !is_volatile<_Tp>::value)> { };
+
+  template<typename _Tp>
+    struct has_nothrow_assign
+    : public integral_constant<bool, (is_pod<_Tp>::value
+				      && !is_const<_Tp>::value
+				      && !is_volatile<_Tp>::value)> { };
 
   template<typename>
     struct has_virtual_destructor
