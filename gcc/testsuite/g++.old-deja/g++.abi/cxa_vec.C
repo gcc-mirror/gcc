@@ -6,7 +6,7 @@
 #include <cxxabi.h>
 #include <stdio.h>
 #include <new>
-#include <malloc.h>
+#include <stdlib.h>
 #include <setjmp.h>
 
 static int ctor_count = 0;
