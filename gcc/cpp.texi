@@ -545,6 +545,7 @@ in the C preprocessor.
 * Simple Macros::    Macros that always expand the same way.
 * Argument Macros::  Macros that accept arguments that are substituted
                        into the macro expansion.
+* Macro Varargs::    Macros with variable number of arguments.
 * Predefined::       Predefined macros that are always available.
 * Stringification::  Macro arguments converted into string constants.
 * Concatenation::    Building tokens from parts taken from macro arguments.
@@ -648,7 +649,7 @@ it too is the name of a macro.  It's only when you @emph{use} @samp{TABLESIZE}
 that the result of its expansion is checked for more macro names.
 @xref{Cascaded Macros}.
 
-@node Argument Macros, Predefined, Simple Macros, Macros
+@node Argument Macros, Macro Varargs, Simple Macros, Macros
 @subsection Macros with Arguments
 @cindex macros with argument
 @cindex arguments in macro definitions
@@ -802,7 +803,68 @@ Note that the @emph{uses} of a macro with arguments can have spaces before
 the left parenthesis; it's the @emph{definition} where it matters whether
 there is a space.
 
-@node Predefined, Stringification, Argument Macros, Macros
+@node Macro Varargs, Predefined, Argument Macros, Macros
+@subsection Macros with Variable Numbers of Arguments
+@cindex variable number of arguments
+@cindex macro with variable arguments
+@cindex rest argument (in macro)
+
+In GNU C, a macro can accept a variable number of arguments, much as a
+function can.  The syntax for defining the macro looks much like that
+used for a function.  Here is an example:
+
+@example
+#define eprintf(format, args...)  \
+ fprintf (stderr, format , ## args)
+@end example
+
+Here @code{args} is a @dfn{rest argument}: it takes in zero or more
+arguments, as many as the call contains.  All of them plus the commas
+between them form the value of @code{args}, which is substituted into
+the macro body where @code{args} is used.  Thus, we have this expansion:
+
+@example
+eprintf ("%s:%d: ", input_file_name, line_number)
+@expansion{}
+fprintf (stderr, "%s:%d: " , input_file_name, line_number)
+@end example
+
+@noindent
+Note that the comma after the string constant comes from the definition
+of @code{eprintf}, whereas the last comma comes from the value of
+@code{args}.
+
+The reason for using @samp{##} is to handle the case when @code{args}
+matches no arguments at all.  In this case, @code{args} has an empty
+value.  In this case, the second comma in the definition becomes an
+embarrassment: if it got through to the expansion of the macro, we would
+get something like this:
+
+@example
+fprintf (stderr, "success!\n" , )
+@end example
+
+@noindent
+which is invalid C syntax.  @samp{##} gets rid of the comma, so we get
+the following instead:
+
+@example
+fprintf (stderr, "success!\n")
+@end example
+
+This is a special feature of the GNU C preprocessor: @samp{##} before a
+rest argument that is empty discards the preceding sequence of
+non-whitespace characters from the macro definition.  (If another macro
+argument precedes, none of it is discarded.)
+
+It might be better to discard the last preprocessor token instead of the
+last preceding sequence of non-whitespace characters; in fact, we may
+someday change this feature to do so.  We advise you to write the macro
+definition so that the preceding sequence of non-whitespace characters
+is just a single token, so that the meaning will not change if we change
+the definition of this feature.
+
+@node Predefined, Stringification, Macro Varargs, Macros
 @subsection Predefined Macros
 
 @cindex predefined macros
