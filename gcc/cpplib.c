@@ -1520,7 +1520,6 @@ cpp_push_buffer (pfile, buffer, length)
   new->line_base = new->buf = new->cur = buffer;
   new->rlimit = buffer + length;
   new->prev = buf;
-  new->lineno = 1;
 
   CPP_BUFFER (pfile) = new;
   return new;
