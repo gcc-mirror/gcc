@@ -300,7 +300,7 @@ jcf-depend.o : jcf-depend.c $(CONFIG_H) $(srcdir)/../system.h jcf.h
 jcf-io.o : jcf-io.c $(CONFIG_H) $(srcdir)/../system.h
 jcf-parse.o : jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../input.h java-except.h $(srcdir)/../system.h \
-  $(srcdir)/../toplev.h
+  $(srcdir)/../toplev.h $(PARSE_H)
 jcf-write.o : jcf-write.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(RTL_H) \
   java-opcodes.h parse.h buffer.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 jv-scan.o : jv-scan.c $(CONFIG_H) $(srcdir)/../system.h
@@ -309,7 +309,7 @@ lang.o : lang.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../input.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h
 mangle.o : mangle.c $(CONFIG_H) jcf.h $(srcdir)/../system.h \
   $(srcdir)/../toplev.h
-parse-scan.o : $(CONFIG_H) $(srcdir)/../system.h
+parse-scan.o : $(CONFIG_H) $(srcdir)/../system.h $(srcdir)/../toplev.h
 typeck.o : typeck.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h convert.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h
 verify.o : verify.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h javaop.h java-opcodes.h \

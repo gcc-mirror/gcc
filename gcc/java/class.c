@@ -37,6 +37,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "parse.h"
 
 static tree mangle_class_field PROTO ((tree class));
+static tree make_method_value PROTO ((tree));
 
 static rtx registerClass_libfunc;
 
@@ -874,10 +875,9 @@ make_field_value (tree fdecl)
   return finit;
 }
 
-tree
-make_method_value (mdecl, this_class_addr)
+static tree
+make_method_value (mdecl)
      tree mdecl;
-     tree this_class_addr;
 {
   tree minit;
   tree code;
@@ -1042,7 +1042,7 @@ make_class_data (type)
       if (METHOD_PRIVATE (method)
 	  && (flag_inline_functions || optimize))
 	continue;
-      init = make_method_value (method, this_class_addr);
+      init = make_method_value (method);
       method_count++;
       methods = tree_cons (NULL_TREE, init, methods);
     }

@@ -139,8 +139,8 @@ DEFUN(jcf_parse_preamble, (jcf),
       JCF* jcf)
 {
   uint32 magic = (JCF_FILL (jcf, 8), JCF_readu4 (jcf));
-  uint16 minor_version = JCF_readu2 (jcf);
-  uint16 major_version = JCF_readu2 (jcf);
+  uint16 minor_version ATTRIBUTE_UNUSED = JCF_readu2 (jcf);
+  uint16 major_version ATTRIBUTE_UNUSED = JCF_readu2 (jcf);
 #ifdef HANDLE_MAGIC
   HANDLE_MAGIC (magic, minor_version, major_version);
 #endif

@@ -594,7 +594,7 @@ struct parser_ctxt {
   tree current_class;		    /* Current class */
   tree current_function_decl;	    /* Current function decl, save/restore */
 
-  JCF *current_jcf;		    /* CU jcf */
+  struct JCF *current_jcf;	    /* CU jcf */
 
   int prevent_ese;	            /* Prevent expression statement error */
   int class_err;		    /* Flag to report certain errors */
@@ -652,8 +652,11 @@ extern tree do_resolve_class PROTO ((tree, tree, tree));
 void java_push_parser_context PROTO ((void));
 void java_pop_parser_context PROTO ((int));
 void java_init_lex PROTO ((void));
+extern void java_parser_context_save_global PROTO ((void));
+extern void java_parser_context_restore_global PROTO ((void));
 int yyparse PROTO ((void));
+extern int java_parse PROTO ((void));
 int yylex ();
 void yyerror PROTO ((char *));
-
+extern void java_expand_classes PROTO ((void));
 #endif

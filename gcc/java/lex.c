@@ -57,7 +57,9 @@ static int java_lineterminator PROTO ((unicode_t));
 static char *java_sprint_unicode PROTO ((struct java_line *, int));
 static void java_unicode_2_utf8 PROTO ((unicode_t));
 static void java_lex_error PROTO ((char *, int));
+#ifndef JC1_LITE
 static int java_is_eol PROTO ((FILE *, int));
+#endif
 static void java_store_unicode PROTO ((struct java_line *, unicode_t, int));
 static unicode_t java_parse_escape_sequence PROTO (());
 static int java_letter_or_digit_p PROTO ((unicode_t));
@@ -74,9 +76,9 @@ static unicode_t java_sneak_unicode PROTO (());
 void
 java_init_lex ()
 {
+#ifndef JC1_LITE
   int java_lang_imported = 0;
 
-#ifndef JC1_LITE
   if (!java_lang_id)
     java_lang_id = get_identifier ("java.lang");
   if (!java_lang_cloneable)
@@ -398,7 +400,7 @@ static int
 java_parse_doc_section (c)
      unicode_t c;
 {
-  int valid_tag = 0, seen_star;
+  int valid_tag = 0, seen_star = 0;
 
   while (JAVA_WHITE_SPACE_P (c) || (c == '*') || c == '\n')
     {
@@ -604,7 +606,9 @@ java_lex (java_lval)
       char literal_token [256];
       int  literal_index = 0, radix = 10, long_suffix = 0, overflow = 0, bytes;
       int  i;
+#ifndef JC1_LITE
       int  number_beginning = ctxp->c_line->current;
+#endif
       
       /* We might have a . separator instead of a FP like .[0-9]* */
       if (c == '.')
@@ -1291,8 +1295,8 @@ build_wfl_node (node)
 
 static void
 java_lex_error (msg, forward)
-     char *msg;
-     int forward;
+     char *msg ATTRIBUTE_UNUSED;
+     int forward ATTRIBUTE_UNUSED;
 {
 #ifndef JC1_LITE
   ctxp->elc.line = ctxp->c_line->lineno;
@@ -1305,6 +1309,7 @@ java_lex_error (msg, forward)
 #endif
 }
 
+#ifndef JC1_LITE
 static int
 java_is_eol (fp, c)
   FILE *fp;
@@ -1324,11 +1329,12 @@ java_is_eol (fp, c)
       return 0;
     }  
 }
+#endif
 
 char *
 java_get_line_col (filename, line, col)
-     char *filename;
-     int line, col;
+     char *filename ATTRIBUTE_UNUSED;
+     int line ATTRIBUTE_UNUSED, col ATTRIBUTE_UNUSED;
 {
 #ifdef JC1_LITE
   return 0;
