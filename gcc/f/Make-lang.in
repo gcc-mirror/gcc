@@ -179,7 +179,7 @@ $(srcdir)/f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	esac
 	if [ -f lang-f77 ] && [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(srcdir)/f/g77.info-*; \
-	  cd $(srcdir)/f && $(MAKEINFO) -o g77.info g77.texi; \
+	  cd $(srcdir)/f && $(MAKEINFO) -I.. -o g77.info g77.texi; \
 	else true; fi
 
 f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
