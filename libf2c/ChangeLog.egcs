@@ -1,5 +1,7 @@
 Thu Jul 16 00:58:52 1998  Jeffrey A Law  (law@cygnus.com)
 
+        * libU77/Makefile.in: Missed one config.h.in -> config.hin change.
+
 	* g2c.hin: Renamed from g2c.h.in.
 	* Makefile.in, configure.in: Changed as needed.
 	* configure: Rebuilt.
