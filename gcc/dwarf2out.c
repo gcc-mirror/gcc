@@ -3812,14 +3812,10 @@ static int maybe_emit_file (int);
 #endif
 
 /* Section flags for .debug_str section.  */
-#ifdef HAVE_GAS_SHF_MERGE
 #define DEBUG_STR_SECTION_FLAGS \
-  (flag_merge_constants						\
+  (HAVE_GAS_SHF_MERGE && flag_merge_constants			\
    ? SECTION_DEBUG | SECTION_MERGE | SECTION_STRINGS | 1	\
    : SECTION_DEBUG)
-#else
-#define DEBUG_STR_SECTION_FLAGS	SECTION_DEBUG
-#endif
 
 /* Labels we insert at beginning sections we can reference instead of
    the section names themselves.  */

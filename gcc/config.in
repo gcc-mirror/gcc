@@ -453,7 +453,7 @@
 /* Define if your assembler mis-optimizes .eh_frame data. */
 #undef USE_AS_TRADITIONAL_FORMAT
 
-/* Define if your assembler supports marking sections with SHF_MERGE flag. */
+/* Define 0/1 if your assembler supports marking sections with SHF_MERGE flag. */
 #undef HAVE_GAS_SHF_MERGE
 
 /* Define if your assembler supports thread-local storage. */
