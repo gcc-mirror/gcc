@@ -188,7 +188,6 @@ static rtx compare		PROTO((tree, enum rtx_code, enum rtx_code));
 static rtx do_store_flag	PROTO((tree, rtx, enum machine_mode, int));
 static tree defer_cleanups_to	PROTO((tree));
 extern void (*interim_eh_hook)	PROTO((tree));
-extern tree get_set_constructor_words PROTO((tree, HOST_WIDE_INT*, int));
 
 /* Record for each mode whether we can move a register directly to or
    from an object of that mode in memory.  If we can't, we won't try
@@ -3111,7 +3110,6 @@ store_constructor (exp, target)
       rtx xtarget = XEXP (target, 0);
       int set_word_size = TYPE_ALIGN (type);
       int nbytes = int_size_in_bytes (type);
-      int nwords;
       tree non_const_elements;
       int need_to_clear_first;
       tree domain = TYPE_DOMAIN (type);
@@ -3137,10 +3135,6 @@ store_constructor (exp, target)
       if (nbytes < 0)
 	abort();
 
-      nwords = (nbytes * BITS_PER_UNIT) / set_word_size;
-      if (nwords == 0)
-	nwords = 1;
-
       domain_min = convert (sizetype, TYPE_MIN_VALUE (domain));
       domain_max = convert (sizetype, TYPE_MAX_VALUE (domain));
       bitlength = size_binop (PLUS_EXPR,
@@ -3157,32 +3151,46 @@ store_constructor (exp, target)
 	}
       else
 	{
-	  HOST_WIDE_INT *buffer
-	    = (HOST_WIDE_INT*) alloca (sizeof (HOST_WIDE_INT) * nwords);
-	  non_const_elements = get_set_constructor_words (exp, buffer, nwords);
-
-	  if (nbytes * BITS_PER_UNIT <= set_word_size)
+	  int nbits = nbytes * BITS_PER_UNIT;
+	  int set_word_size = TYPE_ALIGN (TREE_TYPE (exp));
+	  enum machine_mode mode = mode_for_size (set_word_size, MODE_INT, 1);
+	  char *bit_buffer = (char*) alloca (nbits);
+	  HOST_WIDE_INT word = 0;
+	  int bit_pos = 0;
+	  int ibit = 0;
+	  int offset = 0;  /* In bytes from beginning of set. */
+	  non_const_elements = get_set_constructor_bits (exp,
+							 bit_buffer, nbits);
+	  for (;;)
 	    {
-	      if (BITS_BIG_ENDIAN)
-		buffer[0] >>= set_word_size - nbytes * BITS_PER_UNIT;
-	      emit_move_insn (target, GEN_INT (buffer[0]));
-	    }
-	  else
-	    {
-	      rtx addr = XEXP (target, 0);
-	      rtx to_rtx;
-	      register int i;
-	      enum machine_mode mode
-		= mode_for_size (set_word_size, MODE_INT, 1);
-
-	      for (i = 0; i < nwords; i++)
+	      if (bit_buffer[ibit])
 		{
-		  int offset = i * set_word_size / BITS_PER_UNIT;
-		  rtx datum = GEN_INT (buffer[i]);
-		  rtx to_rtx = change_address (target, mode,
-					       plus_constant (addr, offset));
-		  MEM_IN_STRUCT_P (to_rtx) = 1;
+		  if (BITS_BIG_ENDIAN)
+		    word |= (1 << (set_word_size - 1 - bit_pos));
+		  else
+		    word |= 1 << bit_pos;
+		}
+	      bit_pos++;  ibit++;
+	      if (bit_pos >= set_word_size || ibit == nbits)
+		{
+		  rtx datum = GEN_INT (word);
+		  rtx to_rtx;
+		  /* The assumption here is that it is safe to use XEXP if
+		     the set is multi-word, but not if it's single-word. */
+		  if (GET_CODE (target) == MEM)
+		    to_rtx = change_address (target, mode,
+					     plus_constant (XEXP (target, 0),
+							    offset));
+		  else if (offset == 0) 
+		    to_rtx = target;
+		  else
+		    abort ();
 		  emit_move_insn (to_rtx, datum);
+		  if (ibit == nbits)
+		    break;
+		  word = 0;
+		  bit_pos = 0;
+		  offset += set_word_size / BITS_PER_UNIT;
 		}
 	    }
 	  need_to_clear_first = 0;
