@@ -548,7 +548,6 @@ classpath.  This process can be controlled to some degree via the
 @xref{libgcj Runtime Properties}.
 
 @item
-
 @code{libgcj} includes a special @samp{gcjlib} URL type.  A URL of
 this form is like a @code{jar} URL, and looks like
 @samp{gcjlib:/path/to/shared/library.so!/path/to/resource}.  An access
@@ -561,7 +560,20 @@ unloaded.  This means some care must be exercised to make sure that
 a @code{gcjlib} URL is not accessed by more than one class loader at once.
 In a future release this limitation will be lifted, and such
 libraries will be mapped privately.
+
+@item
+A program compiled by @command{gcj} will examine the
+@env{GCJ_PROPERTIES} environment variable and change its behavior in
+some ways.  In particular @env{GCJ_PROPERTIES} holds a list of
+assignments to global properties, such as would be set with the
+@option{-D} option to @command{java}.  For instance,
+@samp{java.compiler=gcj} is a valid (but currently meaningless)
+setting.
+@cindex GCJ_PROPERTIES
+@vindex GCJ_PROPERTIES
+
 @end itemize
+
 
 @node Invoking gcjh
 @chapter Invoking gcjh

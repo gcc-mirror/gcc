@@ -1,3 +1,7 @@
+2004-03-23  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (Extensions): Document GCJ_PROPERTIES.
+
 2004-03-06  Roger Sayle  <roger@eyesopen.com>
 
 	* jcf-parse.c (java_parse_file): Handle the case that input_filename
