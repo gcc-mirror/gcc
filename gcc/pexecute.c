@@ -217,11 +217,48 @@ pwait (pid, status, flags)
 
 #endif /* MSDOS */
 
-#if defined (_WIN32)
+#if defined (_WIN32) && !defined (__CYGWIN32__)
 
 #include <process.h>
 extern int _spawnv ();
 extern int _spawnvp ();
+
+/* This is a kludge to get around the Microsoft C spawn functions' propensity
+   to remove the outermost set of double quotes from all arguments.  */
+
+const char * const *
+fix_argv (argvec)
+     char **argvec;
+{
+  int i;
+
+  for (i = 1; argvec[i] != 0; i++)
+    {
+      int len, j;
+      char *temp, *newtemp;
+
+      temp = argvec[i];
+      len = strlen (temp);
+      for (j = 0; j < len; j++)
+        {
+          if (temp[j] == '"')
+            {
+              newtemp = xmalloc (len + 2);
+              strncpy (newtemp, temp, j);
+              newtemp [j] = '\\';
+              strncpy (&newtemp [j+1], &temp [j], len-j);
+              newtemp [len+1] = 0;
+              temp = newtemp;
+              len++;
+              j++;
+            }
+        }
+
+        argvec[i] = temp;
+      }
+
+  return (const char * const *) argvec;
+}
 
 int
 pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
@@ -236,7 +273,8 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 
   if ((flags & PEXECUTE_ONE) != PEXECUTE_ONE)
     abort ();
-  pid = (flags & PEXECUTE_SEARCH ? _spawnvp : _spawnv) (_P_NOWAIT, program, argv);
+  pid = (flags & PEXECUTE_SEARCH ? _spawnvp : _spawnv)
+    (_P_NOWAIT, program, fix_argv(argv));
   if (pid == -1)
     {
       *errmsg_fmt = install_error_msg;
@@ -254,7 +292,7 @@ pwait (pid, status, flags)
 {
   /* ??? Here's an opportunity to canonicalize the values in STATUS.
      Needed?  */
-  return cwait (status, pid, WAIT_CHILD);
+  return _cwait (status, pid, WAIT_CHILD);
 }
 
 #endif /* _WIN32 */
@@ -440,7 +478,7 @@ pfinish ()
 
 /* include for Unix-like environments but not for Dos-like environments */
 #if ! defined (__MSDOS__) && ! defined (OS2) && ! defined (MPW) \
-    && ! defined (_WIN32)
+    && (defined (__CYGWIN32__) || ! defined (_WIN32))
 
 #ifdef VMS
 #define vfork() (decc$$alloc_vfork_blocks() >= 0 ? \
