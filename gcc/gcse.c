@@ -837,9 +837,9 @@ compute_can_copy ()
 	if (recog (PATTERN (insn), insn, NULL_PTR) >= 0)
 	  can_copy_p[i] = 1;
 #endif
-	else
-	  can_copy_p[i] = 1;
       }
+    else
+      can_copy_p[i] = 1;
 
   end_sequence ();
 

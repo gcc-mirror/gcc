@@ -1,3 +1,8 @@
+2000-03-06  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* gcse.c (compute_can_copy): Adjust if/else blocks from rth's
+	patch from 2000-01-28.
+
 2000-03-06  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* config/sh/sh.c: (barrier_align): Handle a delay slot that is
