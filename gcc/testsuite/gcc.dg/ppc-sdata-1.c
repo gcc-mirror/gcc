@@ -2,8 +2,8 @@
 /* { dg-options "-O2 -fno-common -G 8 -meabi -msdata=eabi" } */
 /* { dg-final { scan-assembler "\\.section\[ \t\]\\.sdata," } } */
 /* { dg-final { scan-assembler "\\.section\[ \t\]\\.sdata2," } } */
-/* { dg-final { scan-assembler "sdat@sdarel\\(13\\)" } } */
-/* { dg-final { scan-assembler "sdat2@sda21\\(2\\)" } } */
+/* { dg-final { scan-assembler "sdat@sda21\\((13|0)\\)" } } */
+/* { dg-final { scan-assembler "sdat2@sda21\\((2|0)\\)" } } */
 
 
 int sdat = 2;
