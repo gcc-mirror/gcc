@@ -1233,11 +1233,9 @@ cp_convert (type, expr, convtype, flags)
 	{
 	  tree rval;
 	  rval = build_type_conversion (CONVERT_EXPR, type, e, 1);
-	  if (rval) return rval;
-	  if (code == BOOLEAN_TYPE)
-	    cp_error ("`%#T' used where a `bool' was expected", intype);
-	  else
-	    cp_error ("`%#T' used where an `int' was expected", intype);
+	  if (rval)
+	    return rval;
+	  cp_error ("`%#T' used where a `%T' was expected", intype, type);
 	  return error_mark_node;
 	}
       if (code == BOOLEAN_TYPE)

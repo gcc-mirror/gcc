@@ -992,20 +992,18 @@ add_method (type, fields, method)
    not duplicates, they are just anonymous fields.  This happens
    when we have unnamed bitfields, for example.  */
 static tree
-delete_duplicate_fields_1 (field, field_ptr, fields)
-     tree field, *field_ptr, fields;
+delete_duplicate_fields_1 (field, fields)
+     tree field, fields;
 {
   tree x;
-  tree prev = field_ptr ? *field_ptr : 0;
+  tree prev = 0;
   if (DECL_NAME (field) == 0)
     {
       if (TREE_CODE (TREE_TYPE (field)) != UNION_TYPE)
 	return fields;
 
       for (x = TYPE_FIELDS (TREE_TYPE (field)); x; x = TREE_CHAIN (x))
-	fields = delete_duplicate_fields_1 (x, field_ptr, fields);
-      if (prev)
-	TREE_CHAIN (prev) = fields;
+	fields = delete_duplicate_fields_1 (x, fields);
       return fields;
     }
   else
@@ -1017,7 +1015,7 @@ delete_duplicate_fields_1 (field, field_ptr, fields)
 	      if (TREE_CODE (TREE_TYPE (x)) != UNION_TYPE)
 		continue;
 	      TYPE_FIELDS (TREE_TYPE (x))
-		= delete_duplicate_fields_1 (field, (tree *)0, TYPE_FIELDS (TREE_TYPE (x)));
+		= delete_duplicate_fields_1 (field, TYPE_FIELDS (TREE_TYPE (x)));
 	      if (TYPE_FIELDS (TREE_TYPE (x)) == 0)
 		{
 		  if (prev == 0)
@@ -1039,7 +1037,7 @@ delete_duplicate_fields_1 (field, field_ptr, fields)
 				x);
 		  else if (TREE_CODE (field) == TYPE_DECL
 			   && TREE_CODE (x) == TYPE_DECL)
-		    cp_error_at ("duplicate class scope type `%D'", x);
+		    cp_error_at ("duplicate nested type `%D'", x);
 		  else if (TREE_CODE (field) == TYPE_DECL
 			   || TREE_CODE (x) == TYPE_DECL)
 		    cp_error_at ("duplicate field `%D' (as type and non-type)",
@@ -1063,7 +1061,7 @@ delete_duplicate_fields (fields)
 {
   tree x;
   for (x = fields; x && TREE_CHAIN (x); x = TREE_CHAIN (x))
-    TREE_CHAIN (x) = delete_duplicate_fields_1 (x, &x, TREE_CHAIN (x));
+    TREE_CHAIN (x) = delete_duplicate_fields_1 (x, TREE_CHAIN (x));
 }
 
 /* Change the access of FDECL to ACCESS in T.
@@ -1937,8 +1935,8 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 		  && CLASSTYPE_FRIEND_CLASSES (t) == NULL_TREE
 		  && DECL_FRIENDLIST (TYPE_NAME (t)) == NULL_TREE
 		  && warn_ctor_dtor_privacy)
-		warning ("class `%s' only defines a private destructor and has no friends",
-			 TYPE_NAME_STRING (t));
+		cp_warning ("`%#T' only defines a private destructor and has no friends",
+			    t);
 	      break;
 	    }
 	}
@@ -2774,17 +2772,12 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   TYPE_SIZE (t) = NULL_TREE;
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
 
-  /* A signature type will contain the fields of the signature table.
-     Therefore, it's not only an interface.  */
-  if (IS_SIGNATURE (t))
+  /* This is in general too late to do this.  I moved the main case up to
+     left_curly, what else needs to move?  */
+  if (! IS_SIGNATURE (t))
     {
-      CLASSTYPE_INTERFACE_ONLY (t) = 0;
-      SET_CLASSTYPE_INTERFACE_KNOWN (t);
-    }
-  else
-    {
-      CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
-      SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
+      my_friendly_assert (CLASSTYPE_INTERFACE_ONLY (t) == interface_only, 999);
+      my_friendly_assert (CLASSTYPE_INTERFACE_KNOWN (t) == ! interface_unknown, 999);
     }
 
   if (flag_dossier)
@@ -2848,14 +2841,13 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       needs_virtual_dtor = 0;
     }
 
+  /* Both of these should be done before now.  */
   if (write_virtuals == 3 && CLASSTYPE_INTERFACE_KNOWN (t)
       && ! IS_SIGNATURE (t))
     {
-      CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
-      CLASSTYPE_VTABLE_NEEDS_WRITING (t) = ! interface_only;
+      my_friendly_assert (CLASSTYPE_INTERFACE_ONLY (t) == interface_only, 999);
+      my_friendly_assert (CLASSTYPE_VTABLE_NEEDS_WRITING (t) == ! interface_only, 999);
     }
-  else if (IS_SIGNATURE (t))
-    CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 0;
 
   /* The three of these are approximations which may later be
      modified.  Needed at this point to make add_virtual_function
@@ -3519,6 +3511,31 @@ finish_struct (t, list_of_fieldlists, warn_anon)
     }
   /* Delete all duplicate fields from the fields */
   delete_duplicate_fields (fields);
+
+  /* Catch function/field name conflict, removing the field (since it's
+     easier).  */
+  {
+    int n_methods = method_vec ? TREE_VEC_LENGTH (method_vec) : 0;
+    tree last = NULL_TREE;
+    for (x = fields; x; x = TREE_CHAIN (x))
+      {
+	tree name = DECL_NAME (x);
+	int i;
+	for (i = 0; i < n_methods; ++i)
+	  if (DECL_NAME (TREE_VEC_ELT (method_vec, i)) == name)
+	    {
+	      cp_error_at ("data member `%#D' conflicts with", x);
+	      cp_error_at ("function member `%#D'",
+			   TREE_VEC_ELT (method_vec, i));
+	      if (last)
+		TREE_CHAIN (last) = TREE_CHAIN (x);
+	      else
+		fields = TREE_CHAIN (x);
+	      break;
+	    }
+	last = x;
+      }
+  }
 
   /* Now we have the final fieldlist for the data fields.  Record it,
      then lay out the structure or union (including the fields).  */
@@ -4701,11 +4718,42 @@ instantiate_type (lhstype, rhs, complain)
 	  {
 	    elem = get_first_fn (rhs);
 	    while (elem)
-	      if (TREE_TYPE (elem) != lhstype)
+	      if (! comptypes (lhstype, TREE_TYPE (elem), 1))
 		elem = DECL_CHAIN (elem);
 	      else
 		return elem;
-	    /* No exact match found, look for a compatible function.  */
+
+	    /* No exact match found, look for a compatible template.  */
+	    {
+	      tree save_elem = 0;
+	      for (elem = get_first_fn (rhs); elem; elem = DECL_CHAIN (elem))
+		if (TREE_CODE (elem) == TEMPLATE_DECL)
+		  {
+		    int n = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (elem));
+		    tree *t = (tree *) alloca (sizeof (tree) * n);
+		    int i, d;
+		    i = type_unification (DECL_TEMPLATE_PARMS (elem), t,
+					  TYPE_ARG_TYPES (TREE_TYPE (elem)),
+					  TYPE_ARG_TYPES (lhstype), &d, 0);
+		    if (i == 0)
+		      {
+			if (save_elem)
+			  {
+			    cp_error ("ambiguous template instantiation converting to `%#T'", lhstype);
+			    return error_mark_node;
+			  }
+			save_elem = instantiate_template (elem, t);
+			/* Check the return type.  */
+			if (! comptypes (TREE_TYPE (lhstype),
+					 TREE_TYPE (TREE_TYPE (save_elem)), 1))
+			  save_elem = 0;
+		      }
+		  }
+	      if (save_elem)
+		return save_elem;
+	    }
+
+	    /* No match found, look for a compatible function.  */
 	    elem = get_first_fn (rhs);
 	    while (elem && ! comp_target_types (lhstype, TREE_TYPE (elem), 1))
 	      elem = DECL_CHAIN (elem);
@@ -4726,18 +4774,6 @@ instantiate_type (lhstype, rhs, complain)
 			cp_error_at ("  and `%#D', at least", elem);
 		      }
 		    return error_mark_node;
-		  }
-		if (TREE_CODE (save_elem) == TEMPLATE_DECL)
-		  {
-		    int ntparms = TREE_VEC_LENGTH
-		      (DECL_TEMPLATE_PARMS (save_elem));
-		    tree *targs = (tree *) alloca (sizeof (tree) * ntparms);
-		    int i, dummy;
-		    i = type_unification
-		      (DECL_TEMPLATE_PARMS (save_elem), targs,
-		       TYPE_ARG_TYPES (TREE_TYPE (save_elem)),
-		       TYPE_ARG_TYPES (lhstype), &dummy, 0);
-		    save_elem = instantiate_template (save_elem, targs);
 		  }
 		return save_elem;
 	      }

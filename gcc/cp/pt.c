@@ -2408,16 +2408,19 @@ do_function_instantiation (declspecs, declarator, storage)
   if (flag_external_templates)
     return;
 
-  if (DECL_EXPLICIT_INSTANTIATION (result) && ! DECL_EXTERNAL (result))
+  if (DECL_EXPLICIT_INSTANTIATION (result) && TREE_PUBLIC (result))
     return;
 
   SET_DECL_EXPLICIT_INSTANTIATION (result);
-  TREE_PUBLIC (result) = 1;
 
   if (storage == NULL_TREE)
-    DECL_EXTERNAL (result) = DECL_INLINE (result) && ! flag_implement_inlines;
+    {
+      TREE_PUBLIC (result) = 1;
+      DECL_EXTERNAL (result) = (DECL_INLINE (result)
+				&& ! flag_implement_inlines);
+    }
   else if (storage == ridpointers[(int) RID_EXTERN])
-    DECL_EXTERNAL (result) = 1;
+    ;
   else
     cp_error ("storage class `%D' applied to template instantiation",
 	      storage);
@@ -2454,7 +2457,7 @@ do_type_instantiation (name, storage)
     }
 
   /* We've already instantiated this.  */
-  if (CLASSTYPE_EXPLICIT_INSTANTIATION (t) && ! CLASSTYPE_INTERFACE_ONLY (t))
+  if (CLASSTYPE_EXPLICIT_INSTANTIATION (t) && CLASSTYPE_INTERFACE_KNOWN (t))
     {
       if (! extern_p)
 	cp_pedwarn ("multiple explicit instantiation of `%#T'", t);
@@ -2462,11 +2465,11 @@ do_type_instantiation (name, storage)
     }
 
   SET_CLASSTYPE_EXPLICIT_INSTANTIATION (t);
-  CLASSTYPE_VTABLE_NEEDS_WRITING (t) = ! extern_p;
-  SET_CLASSTYPE_INTERFACE_KNOWN (t);
-  CLASSTYPE_INTERFACE_ONLY (t) = extern_p;
   if (! extern_p)
     {
+      SET_CLASSTYPE_INTERFACE_KNOWN (t);
+      CLASSTYPE_INTERFACE_ONLY (t) = 0;
+      CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
       CLASSTYPE_DEBUG_REQUESTED (t) = 1;
       TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 0;
       rest_of_type_compilation (t, 1);
@@ -2478,9 +2481,12 @@ do_type_instantiation (name, storage)
     for (; tmp; tmp = TREE_CHAIN (tmp))
       {
 	SET_DECL_EXPLICIT_INSTANTIATION (tmp);
-	TREE_PUBLIC (tmp) = 1;
-	DECL_EXTERNAL (tmp)
-	  = (extern_p || (DECL_INLINE (tmp) && ! flag_implement_inlines));
+	if (! extern_p)
+	  {
+	    TREE_PUBLIC (tmp) = 1;
+	    DECL_EXTERNAL (tmp) = (DECL_INLINE (tmp)
+				   && ! flag_implement_inlines);
+	  }
       }
 
 #if 0

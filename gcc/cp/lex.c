@@ -960,15 +960,6 @@ set_yydebug (value)
 #endif
 }
 
-#ifdef SPEW_DEBUG
-const char *
-debug_yytranslate (value)
-    int value;
-{
-  return yytname[YYTRANSLATE (value)];
-}
-
-#endif
 
 /* Functions and data structures for #pragma interface.
 
@@ -1786,13 +1777,6 @@ cons_up_default_function (type, name, fields, kind)
       warn_if_unknown_interface ();
     t->interface = (interface_unknown ? 1 : (interface_only ? 0 : 2));
     store_pending_inline (fn, t);
-    if (interface_unknown)
-      TREE_PUBLIC (fn) = 0;
-    else
-      {
-	TREE_PUBLIC (fn) = 1;
-	DECL_EXTERNAL (fn) = interface_only;
-      }
   }
 
   finish_method (fn);
@@ -2182,17 +2166,17 @@ check_for_missing_semicolon (type)
   if (yychar < 0)
     yychar = yylex ();
 
-  if (yychar > 255
-      && yychar != SCSPEC
-      && yychar != IDENTIFIER
-      && yychar != TYPENAME)
+  if ((yychar > 255
+       && yychar != SCSPEC
+       && yychar != IDENTIFIER
+       && yychar != TYPENAME)
+      || end_of_file)
     {
       if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (type)))
 	error ("semicolon missing after %s declaration",
 	       TREE_CODE (type) == ENUMERAL_TYPE ? "enum" : "struct");
       else
-	error ("semicolon missing after declaration of `%s'",
-	       TYPE_NAME_STRING (type));
+	cp_error ("semicolon missing after declaration of `%T'", type);
       shadow_tag (build_tree_list (0, type));
     }
   /* Could probably also hack cases where class { ... } f (); appears.  */

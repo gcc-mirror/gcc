@@ -734,8 +734,6 @@ comp_target_types (ttl, ttr, nptrs)
   ttr = TYPE_MAIN_VARIANT (ttr);
   if (ttl == ttr)
     return 1;
-  if (TREE_CODE (ttr) == TEMPLATE_TYPE_PARM)
-    return 1;
 
   if (TREE_CODE (ttr) != TREE_CODE (ttl))
     return 0;
@@ -813,12 +811,14 @@ common_base_type (tt1, tt2)
   if (UNIQUELY_DERIVED_FROM_P (tt2, tt1))
     return tt2;
 
+#if 0
   /* If they share a virtual baseclass, that's good enough.  */
   for (tmp = CLASSTYPE_VBASECLASSES (tt1); tmp; tmp = TREE_CHAIN (tmp))
     {
       if (binfo_member (BINFO_TYPE (tmp), CLASSTYPE_VBASECLASSES (tt2)))
 	return BINFO_TYPE (tmp);
     }
+#endif
 
   /* Otherwise, try to find a unique baseclass of TT1
      that is shared by TT2, and follow that down.  */
@@ -904,6 +904,8 @@ compparms (parms1, parms2, strict)
 	    return t2 == void_list_node && TREE_PURPOSE (t1);
 	  return TREE_PURPOSE (t1) || TREE_PURPOSE (t2);
 	}
+#if 0
+      /* Default parms are not part of the type of a function.  */
       if (strict != 3 && TREE_PURPOSE (t1) && TREE_PURPOSE (t2))
 	{
 	  int cmp = simple_cst_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2));
@@ -912,6 +914,7 @@ compparms (parms1, parms2, strict)
 	  if (cmp == 0)
 	    return 0;
 	}
+#endif
 
       t1 = TREE_CHAIN (t1);
       t2 = TREE_CHAIN (t2);
@@ -959,8 +962,6 @@ comp_target_parms (parms1, parms2, strict)
       p2 = TREE_VALUE (t2);
       if (p1 == p2)
 	continue;
-      if (TREE_CODE (p2) == TEMPLATE_TYPE_PARM)
-	continue;
 
       if ((TREE_CODE (p1) == POINTER_TYPE && TREE_CODE (p2) == POINTER_TYPE)
 	  || (TREE_CODE (p1) == REFERENCE_TYPE && TREE_CODE (p2) == REFERENCE_TYPE))
@@ -968,9 +969,6 @@ comp_target_parms (parms1, parms2, strict)
 	  if (strict <= 0
 	      && (TYPE_MAIN_VARIANT (TREE_TYPE (p1))
 		  == TYPE_MAIN_VARIANT (TREE_TYPE (p2))))
-	    continue;
-
-	  if (TREE_CODE (TREE_TYPE (p2)) == TEMPLATE_TYPE_PARM)
 	    continue;
 
 	  /* The following is wrong for contravariance,
@@ -2530,13 +2528,15 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	  && (type == 0 || TREE_CODE (type) != REFERENCE_TYPE))
 	val = TREE_OPERAND (val, 0);
 
-      if ((type == 0 || TREE_CODE (type) != REFERENCE_TYPE)
-	  && (TREE_CODE (TREE_TYPE (val)) == ARRAY_TYPE
+      if (type == 0 || TREE_CODE (type) != REFERENCE_TYPE)
+	{
+	  if (TREE_CODE (TREE_TYPE (val)) == ARRAY_TYPE
 	      || TREE_CODE (TREE_TYPE (val)) == FUNCTION_TYPE
-	      || TREE_CODE (TREE_TYPE (val)) == METHOD_TYPE))
-	val = default_conversion (val);
+	      || TREE_CODE (TREE_TYPE (val)) == METHOD_TYPE)
+	    val = default_conversion (val);
 
-      val = require_complete_type (val);
+	  val = require_complete_type (val);
+	}
 
       if (val == error_mark_node)
 	continue;
@@ -2555,7 +2555,8 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	    }
 	  else
 	    {
-#ifdef PROMOTE_PROTOTYPES
+#if 0 && defined (PROMOTE_PROTOTYPES)
+	      /* This breaks user-defined conversions.  */
 	      /* Rather than truncating and then reextending,
 		 convert directly to int, if that's the type we will want.  */
 	      if (! flag_traditional
@@ -4682,11 +4683,20 @@ build_conditional_expr (ifexp, op1, op2)
 	{
 	  if (result_type == error_mark_node)
 	    {
-	      message_2_types (error, "common base type of types `%s' and `%s' is ambiguous",
-			       TREE_TYPE (type1), TREE_TYPE (type2));
+	      cp_error ("common base type of types `%T' and `%T' is ambiguous",
+			TREE_TYPE (type1), TREE_TYPE (type2));
 	      result_type = ptr_type_node;
 	    }
-	  else result_type = TYPE_POINTER_TO (result_type);
+	  else
+	    {
+	      if (pedantic
+		  && result_type != TREE_TYPE (type1)
+		  && result_type != TREE_TYPE (type2))
+		cp_pedwarn ("`%T' and `%T' converted to `%T *' in conditional expression",
+			    type1, type2, result_type);
+
+	      result_type = TYPE_POINTER_TO (result_type);
+	    }
 	}
       else
 	{
@@ -7210,7 +7220,8 @@ c_expand_start_case (exp)
 	exp = index;
     }
 
-  expand_start_case (1, exp, type, "switch statement");
+  expand_start_case (1, build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp),
+		     type, "switch statement");
 
   return exp;
 }

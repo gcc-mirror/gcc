@@ -104,6 +104,8 @@ dump_readonly_or_volatile (t, p)
       if (p == before) OB_PUTC (' ');
       if (TYPE_READONLY (t))
 	OB_PUTS ("const");
+      if (TYPE_READONLY (t) && TYPE_VOLATILE (t))
+	OB_PUTC (' ');
       if (TYPE_VOLATILE (t))
 	OB_PUTS ("volatile");
       if (p == after) OB_PUTC (' ');
@@ -1227,6 +1229,14 @@ dump_expr (t, nop)
 	  }
 	break;
       }
+
+    case TREE_LIST:
+      if (TREE_VALUE (t) && TREE_CODE (TREE_VALUE (t)) == FUNCTION_DECL)
+	{
+	  OB_PUTID (DECL_NAME (TREE_VALUE (t)));
+	  break;
+	}
+      /* else fall through */	
 
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call

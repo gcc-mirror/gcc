@@ -217,6 +217,7 @@ perform_member_init (member, name, init, explicit)
 	  expand_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 	}
     }
+  expand_cleanups_to (NULL_TREE);
   if (flag_handle_exceptions && TYPE_NEEDS_DESTRUCTOR (type))
     cp_warning ("caution, member `%D' may not be destroyed in the presense of an exception during construction", member);
 }
@@ -230,11 +231,14 @@ sort_member_init (t)
   tree init_list = NULL_TREE;
   tree fields_to_unmark = NULL_TREE;
   int found;
+  int last_pos = 0;
+  tree last_field;
 
   for (member = TYPE_FIELDS (t); member ; member = TREE_CHAIN (member))
     {
+      int pos;
       found = 0;
-      for (x = current_member_init_list ; x ; x = TREE_CHAIN (x))
+      for (x = current_member_init_list, pos = 0; x; x = TREE_CHAIN (x), ++pos)
 	{
 	  /* If we cleared this out, then pay no attention to it.  */
 	  if (TREE_PURPOSE (x) == NULL_TREE)
@@ -263,6 +267,17 @@ sort_member_init (t)
 		    cp_error ("multiple initializations given for member `%D'",
 			      field);
 		  continue;
+		}
+	      else
+		{
+		  if (pos < last_pos && extra_warnings)
+		    {
+		      cp_warning_at ("member initializers for `%#D'", last_field);
+		      cp_warning_at ("  and `%#D'", field);
+		      warning ("  will be re-ordered to match declaration order");
+		    }
+		  last_pos = pos;
+		  last_field = field;
 		}
 
 	      init_list = chainon (init_list,
@@ -500,9 +515,10 @@ emit_base_init (t, immediately)
 	    continue;
 
 	  member = convert_pointer_to (binfo, current_class_decl);
-	  expand_aggr_init_1 (t_binfo, 0,
+	  expand_aggr_init_1 (binfo, 0,
 			      build_indirect_ref (member, NULL_PTR), init,
-			      BINFO_OFFSET_ZEROP (binfo), LOOKUP_COMPLAIN);
+			      BINFO_OFFSET_ZEROP (binfo), LOOKUP_NORMAL);
+	  expand_cleanups_to (NULL_TREE);
 	}
 
       if (pass == 0)
@@ -568,9 +584,10 @@ emit_base_init (t, immediately)
 			      current_class_decl, BINFO_OFFSET (base_binfo));
 
 	      ref = build_indirect_ref (base, NULL_PTR);
-	      expand_aggr_init_1 (t_binfo, 0, ref, NULL_TREE,
+	      expand_aggr_init_1 (base_binfo, 0, ref, NULL_TREE,
 				  BINFO_OFFSET_ZEROP (base_binfo),
-				  LOOKUP_COMPLAIN);
+				  LOOKUP_NORMAL);
+	      expand_cleanups_to (NULL_TREE);
 	    }
 	}
       CLEAR_BINFO_BASEINIT_MARKED (base_binfo);
@@ -655,11 +672,6 @@ emit_base_init (t, immediately)
 
   current_member_init_list = NULL_TREE;
 
-  /* It is possible for the initializers to need cleanups.
-     Expand those cleanups now that all the initialization
-     has been done.  */
-  expand_cleanups_to (NULL_TREE);
-
   if (! immediately)
     {
       extern rtx base_init_insns;
@@ -734,6 +746,7 @@ expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
   /* Call constructors, but don't set up vtables.  */
   expand_aggr_init_1 (binfo, exp, ref, init, 0,
 		      LOOKUP_COMPLAIN|LOOKUP_SPECULATIVELY);
+  expand_cleanups_to (NULL_TREE);
   CLEAR_BINFO_VBASE_INIT_MARKED (binfo);
 }
 
@@ -1966,12 +1979,6 @@ build_offset_ref (cname, name)
 				      name, NULL_TREE, 1);
 #endif
 
-  fnfields = lookup_fnfields (TYPE_BINFO (type), name, 1);
-  fields = lookup_field (type, name, 0, 0);
-
-  if (fields == error_mark_node || fnfields == error_mark_node)
-    return error_mark_node;
-
   if (current_class_type == 0
       || get_base_distance (type, current_class_type, 0, &basetypes) == -1)
     {
@@ -1985,6 +1992,12 @@ build_offset_ref (cname, name)
 		   error_mark_node);
   else
     decl = C_C_D;
+
+  fnfields = lookup_fnfields (basetypes, name, 1);
+  fields = lookup_field (basetypes, name, 0, 0);
+
+  if (fields == error_mark_node || fnfields == error_mark_node)
+    return error_mark_node;
 
   /* A lot of this logic is now handled in lookup_field and
      lookup_fnfield. */
@@ -2018,7 +2031,6 @@ build_offset_ref (cname, name)
 	{
 	  extern int flag_save_memoized_contexts;
 
-	  /* This does not handle access checking yet.  */
 	  if (DECL_CHAIN (t) == NULL_TREE || dtor)
 	    {
 	      enum access_type access;
@@ -3261,7 +3273,7 @@ build_new (placement, decl, init, use_global_new)
 							build_tree_list (NULL_TREE, rval))));
     }
 
-  return save_expr (rval);
+  return rval;
 }
 
 /* `expand_vec_init' performs initialization of a vector of aggregate

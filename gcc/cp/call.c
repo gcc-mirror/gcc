@@ -700,9 +700,15 @@ compute_conversion_costs (function, tta_in, cp, arglen)
 
   int strike_index = 0, win;
   struct harshness_code lose;
+  extern int cp_silent;
 
 #ifdef GATHER_STATISTICS
   n_compute_conversion_costs++;
+#endif
+
+#ifndef DEBUG_MATCHING
+  /* We don't emit any warnings or errors while trying out each candidate.  */
+  cp_silent = 1;
 #endif
 
   cp->function = function;
@@ -812,6 +818,7 @@ compute_conversion_costs (function, tta_in, cp, arglen)
 	{
 	  cp->h.code = EVIL_CODE;
 	  cp->u.bad_arg = -1;
+	  cp_silent = 0;
 	  return;
 	}
       else
@@ -833,6 +840,7 @@ compute_conversion_costs (function, tta_in, cp, arglen)
 	{
 	  cp->h.code = EVIL_CODE;
 	  cp->u.bad_arg = -2;
+	  cp_silent = 0;
 	  return;
 	}
       /* Store index of first default.  */
@@ -855,6 +863,7 @@ compute_conversion_costs (function, tta_in, cp, arglen)
       if (dont_convert_types)
 	{
 	  cp->h.code = EVIL_CODE;
+	  cp_silent = 0;
 	  return;
 	}
 
@@ -1002,6 +1011,7 @@ compute_conversion_costs (function, tta_in, cp, arglen)
     cp->h.code |= ELLIPSIS_CODE;
   if (user_strikes)
     cp->h.code |= USER_CODE;
+  cp_silent = 0;
 #ifdef DEBUG_MATCHING
   cp_error ("final eval %s", print_harshness (&cp->h));
 #endif
@@ -1428,7 +1438,9 @@ build_scoped_method_call (exp, scopes, name, parms)
       if (type != basetype)
 	cp_error ("type of `%E' does not match destructor type `%T' (type was `%T')",
 		  exp, basetype, type);
-      name = IDENTIFIER_TYPE_VALUE (TREE_OPERAND (name, 0));
+      name = TREE_OPERAND (name, 0);
+      if (IDENTIFIER_HAS_TYPE_VALUE (name))
+	name = IDENTIFIER_TYPE_VALUE (name);
       if (basetype != name)
 	cp_error ("qualified type `%T' does not match destructor type `%T'",
 		  basetype, name);
@@ -1604,17 +1616,19 @@ build_method_call (instance, name, parms, basetype_path, flags)
       if (parms)
 	error ("destructors take no parameters");
       basetype = TREE_TYPE (instance);
+      if (TREE_CODE (basetype) == REFERENCE_TYPE)
+	basetype = TREE_TYPE (basetype);
       if (! ((IS_AGGR_TYPE (basetype)
 	      && name == constructor_name (basetype))
 	     || basetype == get_type_value (name)))
 	{
 	  cp_error ("destructor name `~%D' does not match type `%T' of expression",
 		    name, basetype);
-	  return void_zero_node;
+	  return convert (void_type_node, instance);
 	}
 
       if (! TYPE_HAS_DESTRUCTOR (basetype))
-	return void_zero_node;
+	return convert (void_type_node, instance);
       instance = default_conversion (instance);
       instance_ptr = build_unary_op (ADDR_EXPR, instance, 0);
       return build_delete (build_pointer_type (basetype),
@@ -1891,6 +1905,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	{
 	  TREE_VALUE (parm) = build_unary_op (ADDR_EXPR, TREE_VALUE (parm), 0);
 	}
+#if 0
+      /* This breaks reference-to-array parameters.  */
       if (TREE_CODE (t) == ARRAY_TYPE)
 	{
 	  /* Perform the conversion from ARRAY_TYPE to POINTER_TYPE in place.
@@ -1898,6 +1914,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  TREE_VALUE (parm) = default_conversion (TREE_VALUE (parm));
 	  t = TREE_TYPE (TREE_VALUE (parm));
 	}
+#endif
       if (t == error_mark_node)
 	return error_mark_node;
       last = build_tree_list (NULL_TREE, t);

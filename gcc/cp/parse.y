@@ -895,7 +895,8 @@ paren_expr_or_null:
 			 cond_stmt_keyword);
 		  $$ = integer_zero_node; }
 	| '(' expr ')'
-		{ $$ = $2; }
+		{ $$ = build1 (CLEANUP_POINT_EXPR, bool_type_node, 
+			       bool_truthvalue_conversion ($2)); }
 	;
 
 paren_cond_or_null:
@@ -904,13 +905,16 @@ paren_cond_or_null:
 			 cond_stmt_keyword);
 		  $$ = integer_zero_node; }
 	| '(' condition ')'
-		{ $$ = $2; }
+		{ $$ = build1 (CLEANUP_POINT_EXPR, bool_type_node, 
+			       bool_truthvalue_conversion ($2)); }
 	;
 
 xcond:
 	/* empty */
 		{ $$ = NULL_TREE; }
 	| condition
+		{ $$ = build1 (CLEANUP_POINT_EXPR, bool_type_node, 
+			       bool_truthvalue_conversion ($$)); }
 	| error
 		{ $$ = NULL_TREE; }
 	;
@@ -1548,7 +1552,7 @@ primary:
 		  if (TREE_CODE (TREE_TYPE ($1)) 
 		      != TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE ($3))))
 		    cp_error ("`%E' is not of type `%T'", $1, $3);
-		  $$ = void_zero_node;
+		  $$ = convert (void_type_node, $1);
 		}
 	| object TYPESPEC SCOPE '~' TYPESPEC LEFT_RIGHT
 		{ 
@@ -1557,7 +1561,7 @@ primary:
 		  if (TREE_CODE (TREE_TYPE ($1))
 		      != TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE ($2))))
 		    cp_error ("`%E' is not of type `%T'", $1, $2);
-		  $$ = void_zero_node; 
+		  $$ = convert (void_type_node, $1);
 		}
 	;
 
@@ -2398,25 +2402,59 @@ base_class_access_list:
 	;
 
 left_curly: '{'
-		{ tree t;
+		{ tree t = $<ttype>0;
 		  push_obstacks_nochange ();
 		  end_temporary_allocation ();
 
-		  if (! IS_AGGR_TYPE ($<ttype>0))
+		  if (! IS_AGGR_TYPE (t))
 		    {
-		      $<ttype>0 = make_lang_type (RECORD_TYPE);
-		      TYPE_NAME ($<ttype>0) = get_identifier ("erroneous type");
+		      t = $<ttype>0 = make_lang_type (RECORD_TYPE);
+		      TYPE_NAME (t) = get_identifier ("erroneous type");
 		    }
-		  if (TYPE_SIZE ($<ttype>0))
-		    duplicate_tag_error ($<ttype>0);
-                  if (TYPE_SIZE ($<ttype>0) || TYPE_BEING_DEFINED ($<ttype>0))
+		  if (TYPE_SIZE (t))
+		    duplicate_tag_error (t);
+                  if (TYPE_SIZE (t) || TYPE_BEING_DEFINED (t))
                     {
-                      t = make_lang_type (TREE_CODE ($<ttype>0));
+                      t = make_lang_type (TREE_CODE (t));
                       pushtag (TYPE_IDENTIFIER ($<ttype>0), t, 0);
                       $<ttype>0 = t;
                     }
-		  pushclass ($<ttype>0, 0);
-		  TYPE_BEING_DEFINED ($<ttype>0) = 1;
+		  pushclass (t, 0);
+		  TYPE_BEING_DEFINED (t) = 1;
+		  /* Reset the interface data, at the earliest possible
+		     moment, as it might have been set via a class foo;
+		     before.  */
+		  /* Don't change signatures.  */
+		  if (! IS_SIGNATURE (t))
+		    {
+		      extern tree pending_vtables;
+		      int needs_writing;
+		      tree name = TYPE_IDENTIFIER (t);
+
+		      CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
+		      SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
+
+		      /* Record how to set the access of this class's
+			 virtual functions.  If write_virtuals == 2 or 3, then
+			 inline virtuals are ``extern inline''.  */
+		      switch (write_virtuals)
+			{
+			case 0:
+			case 1:
+			  needs_writing = 1;
+			  break;
+			case 2:
+			  needs_writing = !! value_member (name, pending_vtables);
+			  break;
+			case 3:
+			  needs_writing = ! CLASSTYPE_INTERFACE_ONLY (t)
+			    && CLASSTYPE_INTERFACE_KNOWN (t);
+			  break;
+			default:
+			  needs_writing = 0;
+			}
+		      CLASSTYPE_VTABLE_NEEDS_WRITING (t) = needs_writing;
+		    }
 #if 0
 		  t = TYPE_IDENTIFIER ($<ttype>0);
 		  if (t && IDENTIFIER_TEMPLATE (t))
@@ -3053,7 +3091,7 @@ simple_if:
 		{ cond_stmt_keyword = "if"; }
 	  .pushlevel paren_cond_or_null
 		{ emit_line_note (input_filename, lineno);
-		  expand_start_cond (bool_truthvalue_conversion ($4), 0); }
+		  expand_start_cond ($4, 0); }
 	  implicitly_scoped_stmt
 	;
 
@@ -3108,7 +3146,7 @@ simple_stmt:
 		  expand_start_loop (1);
 		  cond_stmt_keyword = "while"; }
 	  .pushlevel paren_cond_or_null
-		{ expand_exit_loop_if_false (0, bool_truthvalue_conversion ($4)); }
+		{ expand_exit_loop_if_false (0, $4); }
 	  already_scoped_stmt
 		{ expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  poplevel (kept_level_p (), 1, 0);
@@ -3124,7 +3162,7 @@ simple_stmt:
 		  cond_stmt_keyword = "do"; }
 	  paren_expr_or_null ';'
 		{ emit_line_note (input_filename, lineno);
-		  expand_exit_loop_if_false (0, bool_truthvalue_conversion ($6));
+		  expand_exit_loop_if_false (0, $6);
 		  expand_end_loop ();
 		  clear_momentary ();
 		  finish_stmt (); }
@@ -3135,7 +3173,7 @@ simple_stmt:
 		  expand_start_loop_continue_elsewhere (1); }
 	  .pushlevel xcond ';'
 		{ emit_line_note (input_filename, lineno);
-		  if ($4) expand_exit_loop_if_false (0, bool_truthvalue_conversion ($4)); }
+		  if ($4) expand_exit_loop_if_false (0, $4); }
 	  xexpr ')'
 		/* Don't let the tree nodes for $7 be discarded
 		   by clear_momentary during the parsing of the next stmt.  */
@@ -3156,7 +3194,7 @@ simple_stmt:
 		  expand_start_loop_continue_elsewhere (1); }
 	  .pushlevel xcond ';'
 		{ emit_line_note (input_filename, lineno);
-		  if ($4) expand_exit_loop_if_false (0, bool_truthvalue_conversion ($4)); }
+		  if ($4) expand_exit_loop_if_false (0, $4); }
 	  xexpr ')'
 		/* Don't let the tree nodes for $7 be discarded
 		   by clear_momentary during the parsing of the next stmt.  */
@@ -3175,7 +3213,7 @@ simple_stmt:
 		}
 	| SWITCH .pushlevel '(' condition ')'
 		{ emit_line_note (input_filename, lineno);
-		  c_expand_start_case ($4); 
+		  c_expand_start_case ($4);
 		  /* Don't let the tree nodes for $4 be discarded by
 		     clear_momentary during the parsing of the next stmt.  */
 		  push_momentary (); }
@@ -3761,3 +3799,13 @@ operator_name:
 	;
 
 %%
+
+#ifdef SPEW_DEBUG
+const char *
+debug_yytranslate (value)
+    int value;
+{
+  return yytname[YYTRANSLATE (value)];
+}
+
+#endif

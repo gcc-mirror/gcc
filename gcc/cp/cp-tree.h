@@ -2359,7 +2359,7 @@ extern void GNU_xref_end			PROTO((int));
 extern void GNU_xref_file			PROTO((char *));
 extern void GNU_xref_start_scope		PROTO((HOST_WIDE_INT));
 extern void GNU_xref_end_scope			PROTO((HOST_WIDE_INT, HOST_WIDE_INT, int, int, int));
-extern void GNU_xref_def			PROTO((tree, char *));
+extern void GNU_xref_ref			PROTO((tree, char *));
 extern void GNU_xref_decl			PROTO((tree, tree));
 extern void GNU_xref_call			PROTO((tree, char *));
 extern void GNU_xref_function			PROTO((tree, tree));
