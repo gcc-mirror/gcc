@@ -1407,6 +1407,12 @@ yylex ()
 	    if (garbage_chars > 0)
 	      error ("garbage at end of number");
 
+	    /* If the result is not a number, assume it must have been
+	       due to some error message above, so silently convert
+	       it to a zero.  */
+	    if (REAL_VALUE_ISNAN (value))
+	      value = dconst0;
+
 	    /* Create a node with determined type and value.  */
 	    if (imag)
 	      yylval.ttype = build_complex (convert (type, integer_zero_node),
