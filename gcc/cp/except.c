@@ -558,7 +558,8 @@ expand_start_catch_block (declspecs, declarator)
      that contains this catch block.
 
      Matches the end in expand_end_catch_block.  */
-  expand_eh_region_start ();
+  if (! exceptions_via_longjmp)
+    expand_eh_region_start ();
 
   /* Create a binding level for the eh_info and the exception object
      cleanup.  */
@@ -667,10 +668,6 @@ expand_start_catch_block (declspecs, declarator)
 void
 expand_end_catch_block ()
 {
-  rtx start_region_label_rtx;
-  rtx end_region_label_rtx;
-  tree decls, t;
-
   if (! doing_eh (1))
     return;
 
@@ -684,13 +681,6 @@ expand_end_catch_block ()
   /* Cleanup the EH object.  */
   expand_end_bindings (getdecls (), kept_level_p (), 0);
   poplevel (kept_level_p (), 1, 0);
-      
-  t = make_node (RTL_EXPR);
-  TREE_TYPE (t) = void_type_node;
-  RTL_EXPR_RTL (t) = const0_rtx;
-  TREE_SIDE_EFFECTS (t) = 1;
-  do_pending_stack_adjust ();
-  start_sequence_for_rtl_expr (t);
 
   if (! exceptions_via_longjmp)
     {
@@ -698,15 +688,22 @@ expand_end_catch_block ()
 	 region around the whole catch block to skip through the
 	 terminate region we are nested in.  */
 
-      expand_internal_throw (DECL_RTL (top_label_entry (&caught_return_label_stack)));
+      tree t = make_node (RTL_EXPR);
+      TREE_TYPE (t) = void_type_node;
+      RTL_EXPR_RTL (t) = const0_rtx;
+      TREE_SIDE_EFFECTS (t) = 1;
+      do_pending_stack_adjust ();
+      start_sequence_for_rtl_expr (t);
+
+      expand_internal_throw (outer_context_label_stack->u.rlabel);
+
+      do_pending_stack_adjust ();
+      RTL_EXPR_SEQUENCE (t) = get_insns ();
+      end_sequence ();
+
+      /* For the rethrow region.  */
+      expand_eh_region_end (t);
     }
-
-  do_pending_stack_adjust ();
-  RTL_EXPR_SEQUENCE (t) = get_insns ();
-  end_sequence ();
-
-  /* For the rethrow region.  */
-  expand_eh_region_end (t);
 
   /* Fall to outside the try statement when done executing handler and
      we fall off end of handler.  This is jump Lresume in the
