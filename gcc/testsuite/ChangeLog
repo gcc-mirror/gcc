@@ -1,3 +1,15 @@
+2004-11-13  James A. Morrison  <phython@gcc.gnu.org>
+
+	* gcc.target/sparc/fand.c, gcc.target/sparc/fands,
+	gcc.target/sparc/fnand.c, gcc.target/sparc/fnands.c,
+	gcc.target/sparc/fxor.c, gcc.target/sparc/fxors.c,
+	gcc.target/sparc/fxnor.c, gcc.target/sparc/fxnors.c,
+	gcc.target/sparc/fandnot.c, gcc.target/sparc/fandnots.c,
+	gcc.target/sparc/fornot.c, gcc.target/sparc/fornots.c,
+	gcc.target/sparc/fnot.c, gcc.target/sparc/fnots.c,
+	gcc.target/sparc/for.c, gcc.target/sparc/fors.c,
+	gcc.target/sparc/combined-1.c: New tests.
+
 2004-11-12  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc.dg/const-str-8.m, objc.dg/const-str-9.m:
