@@ -233,6 +233,10 @@ in the following sections.
 -mfpa -mnobitfield  -mrtd  -mshort  -msoft-float  -mpcrel
 -malign-int -mstrict-align
 
+@emph{M68hc1x Options}
+-m6811  -m6812  -m68hc11  -m68hc12
+-mauto-incdec  -mshort  -msoft-reg-count=@var{count}
+
 @emph{VAX Options}
 -mg  -mgnu  -munix
 
@@ -2360,6 +2364,9 @@ standard error.
 Annotate the assembler output with a comment indicating which
 pattern and alternative was used.  The length of each instruction is
 also printed.
+@item P
+Dump the RTL in the assembler output as a comment before each instruction.
+Also turns on @samp{-dp} annotation.
 @item v
 For each of the other indicated dump files (except for
 @file{@var{file}.00.rtl}), dump a representation of the control flow graph
@@ -3889,6 +3896,7 @@ that macro, which enables you to change the defaults.
 
 @menu
 * M680x0 Options::
+* M68hc1x Options::
 * VAX Options::
 * SPARC Options::
 * Convex Options::
@@ -4066,6 +4074,41 @@ not presently supported with -mpcrel, though this could be supported for
 @kindex -mstrict-align
 Do not (do) assume that unaligned memory references will be handled by
 the system.
+
+@end table
+
+@node M68hc1x Options
+@subsection M68hc1x Options
+@cindex M68hc1x options
+
+These are the @samp{-m} options defined for the 68hc11 and 68hc12
+microcontrollers.  The default values for these options depends on 
+which style of microcontroller was selected when the compiler was configured;
+the defaults for the most common choices are given below.
+
+@table @code
+@item -m6811
+@itemx -m68hc11
+Generate output for a 68HC11.  This is the default
+when the compiler is configured for 68HC11-based systems.
+
+@item -m6812
+@itemx -m68hc12
+Generate output for a 68HC12.  This is the default
+when the compiler is configured for 68HC12-based systems.
+
+@item -mauto-incdec
+Enable the use of 68HC12 pre and post auto-increment and auto-decrement
+addressing modes.
+
+@item -mshort
+Consider type @code{int} to be 16 bits wide, like @code{short int}.
+
+@item -msoft-reg-count=@var{count}
+Specify the number of pseudo-soft registers which are used for the
+code generation.  The maximum number is 32.  Using more pseudo-soft
+register may or may not result in better code depending on the program.
+The default is 4 for 68HC11 and 2 for 68HC12.
 
 @end table
 

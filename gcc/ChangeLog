@@ -1,3 +1,9 @@
+2000-09-13  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* md.texi (Machine Constraints): Document the 68HC11 constraints.
+	* install.texi (Configurations): Document the 68HC11&68HC12 port.
+	* invoke.texi (Option Summary, M68hc1x Options): Document the options.
+
 Tue Sep 12 13:51:13 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.h (ASSEMBLER_DIALECT): New macro declared.

@@ -1660,6 +1660,64 @@ Floating point constant that is not a 68881 constant
 Floating point constant that can be used by Sun FPA
 @end table
 
+@item Motorola 68HC11 & 68HC12 families---@file{m68hc11.h}
+@table @code
+@item a
+Register 'a'
+
+@item b
+Register 'b'
+
+@item d
+Register 'd'
+
+@item q
+An 8-bit register
+
+@item t
+Temporary soft register _.tmp
+
+@item u
+A soft register _.d1 to _.d31
+
+@item w
+Stack pointer register
+
+@item x
+Register 'x'
+
+@item y
+Register 'y'
+
+@item z
+Pseudo register 'z' (replaced by 'x' or 'y' at the end)
+
+@item A
+An address register: x, y or z
+
+@item B
+An address register: x or y
+
+@item D
+Register pair (x:d) to form a 32-bit value
+
+@item L
+Constants in the range -65536 to 65535
+
+@item M
+Constants whose 16-bit low part is zero
+
+@item N
+Constant integer 1 or -1
+
+@item O
+Constant integer 16
+
+@item P
+Constants in the range -8 to 2
+
+@end table
+
 @need 1000
 @item SPARC---@file{sparc.h}
 @table @code
