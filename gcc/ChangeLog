@@ -1,3 +1,8 @@
+2001-11-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips-protos.h (mips_output_conditional_branch): Const-ify.
+	* mips.c (mips_output_conditional_branch): Likewise.
+
 2001-11-12  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (shift_alg_si): Use special code for
