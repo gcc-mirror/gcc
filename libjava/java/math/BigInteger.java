@@ -750,6 +750,12 @@ public class BigInteger extends Number implements Comparable
     else if (ylen == 1)
       {
 	qlen = xlen;
+	// Need to leave room for a word of leading zeros if dividing by 1
+	// and the dividend has the high bit set.  It might be safe to
+	// increment qlen in all cases, but it certainly is only necessary
+	// in the following case.
+	if (ywords[0] == 1 && xwords[xlen-1] < 0)
+	  qlen++;
 	rlen = 1;
 	ywords[0] = MPN.divmod_1(xwords, xwords, xlen, ywords[0]);
       }
@@ -770,7 +776,7 @@ public class BigInteger extends Number implements Comparable
 	    // significant word.
 	    int x_high = MPN.lshift(xwords, 0, xwords, xlen, nshift);
 	    xwords[xlen++] = x_high;
-	}
+	  }
 
 	if (xlen == ylen)
 	  xwords[xlen++] = 0;
@@ -1381,7 +1387,10 @@ public class BigInteger extends Number implements Comparable
 	  {
 	    if (words == null || words.length < d_len)
 	      realloc(d_len);
-	    MPN.rshift(words, x.words, word_count, d_len, count);
+	    if (count == 0)
+	      System.arraycopy(x.words, word_count, words, 0, d_len);
+	    else
+	      MPN.rshift(words, x.words, word_count, d_len, count);
 	    ival = d_len;
 	    if (neg)
 	      words[ival-1] |= -1 << (32 - count);
