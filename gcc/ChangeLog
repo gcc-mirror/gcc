@@ -1,3 +1,7 @@
+Tue Oct 15 22:08:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (do_tablejump): Fix typo in my previous commit.
+
 2002-10-15  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/vr.h (DRIVER_SELF_SPECS): Change %<mgp32 to %{<mgp32}.
