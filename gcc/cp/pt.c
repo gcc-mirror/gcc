@@ -12027,7 +12027,9 @@ build_non_dependent_expr (tree expr)
     return expr;
   /* Preserve OVERLOADs; the functions must be available to resolve
      types.  */
-  if (TREE_CODE (expr) == OVERLOAD)
+  if (TREE_CODE (expr) == OVERLOAD 
+      || TREE_CODE (expr) == FUNCTION_DECL
+      || TREE_CODE (expr) == TEMPLATE_DECL)
     return expr;
   /* Preserve string constants; conversions from string constants to
      "char *" are allowed, even though normally a "const char *"

@@ -1,3 +1,14 @@
+2004-02-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13975
+	* tree.h (enum tree_index): Add TI_PUBLIC, TI_PROTECTED, and
+	TI_PRIVATE.
+	(access_public_node): Redefine.
+	(access_protected_node): Likewise.
+	(access_private_node): Likewise.
+	* tree.c (build_common_tree_nodes): Create access_public_node,
+	access_protected_node, and access_private_node.
+
 2004-02-03  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/13914
