@@ -1,5 +1,11 @@
 2004-06-06  Stephane Carrez  <stcarrez@nerim.fr>
 
+	PR target/14542
+	* config/m68hc11/m68hc11.md (move peephole2): Emit a use note to avoid
+	a live change of a register after peephole replacement.
+
+2004-06-06  Stephane Carrez  <stcarrez@nerim.fr>
+
 	PR target/14457
 	* config/m68hc11/m68hc11.c (splitable_operand): New predicate.
 	* config/m68hc11/m68hc11-protos.h (splitable_operand): Declare.
