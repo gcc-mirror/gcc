@@ -1377,7 +1377,143 @@ cd ${ORIG_DIR}
 
 echo 'Replacing <sys/byteorder.h>'
 rm -f ${LIB}/sys/byteorder.h
-cp ${SRCDIR}/byteorder.h ${LIB}/sys/byteorder.h
+cat <<'__EOF__' >${LIB}/sys/byteorder.h
+#ifndef _SYS_BYTEORDER_H
+#define _SYS_BYTEORDER_H
+
+/* Functions to convert `short' and `long' quantities from host byte order
+   to (internet) network byte order (i.e. big-endian).
+
+   Written by Ron Guilmette (rfg@ncd.com).
+
+   This isn't actually used by GCC.  It is installed by fixinc.svr4.
+
+   For big-endian machines these functions are essentially no-ops.
+
+   For little-endian machines, we define the functions using specialized
+   asm sequences in cases where doing so yields better code (e.g. i386).  */
+
+#if !defined (__GNUC__) && !defined (__GNUG__)
+#error You lose!  This file is only useful with GNU compilers.
+#endif
+
+#ifdef __GNUC__
+#define __STATIC static
+#else
+#define __STATIC
+#endif
+
+#ifdef __STDC__
+__STATIC __inline__ unsigned long htonl (unsigned long);
+__STATIC __inline__ unsigned short htons (unsigned int);
+__STATIC __inline__ unsigned long ntohl (unsigned long);
+__STATIC __inline__ unsigned short ntohs (unsigned int);
+#endif /* defined (__STDC__) */
+
+#if defined (__i386__)
+
+/* Convert a host long to a network long.  */
+
+/* We must use a new-style function definition, so that this will also
+   be valid for C++.  */
+__STATIC __inline__ unsigned long
+htonl (unsigned long __arg)
+{
+  register unsigned long __result;
+
+  __asm__ ("xchg%B0 %b0,%h0\n\
+	ror%L0 $16,%0\n\
+	xchg%B0 %b0,%h0" : "=q" (__result) : "0" (__arg));
+  return __result;
+}
+
+/* Convert a host short to a network short.  */
+
+__STATIC __inline__ unsigned short
+htons (unsigned int __arg)
+{
+  register unsigned short __result;
+
+  __asm__ ("xchg%B0 %b0,%h0" : "=q" (__result) : "0" (__arg));
+  return __result;
+}
+
+#elif ((defined (__i860__) && !defined (__i860_big_endian__))	\
+       || defined (__ns32k__) || defined (__vax__)		\
+       || defined (__spur__) || defined (__arm__))
+
+/* For other little-endian machines, using C code is just as efficient as
+   using assembly code.  */
+
+/* Convert a host long to a network long.  */
+
+__STATIC __inline__ unsigned long
+htonl (unsigned long __arg)
+{
+  register unsigned long __result;
+
+  __result = (__arg >> 24) & 0x000000ff;
+  __result |= (__arg >> 8) & 0x0000ff00;
+  __result |= (__arg << 8) & 0x00ff0000;
+  __result |= (__arg << 24) & 0xff000000;
+  return __result;
+}
+
+/* Convert a host short to a network short.  */
+
+__STATIC __inline__ unsigned short
+htons (unsigned int __arg)
+{
+  register unsigned short __result;
+
+  __result = (__arg << 8) & 0xff00;
+  __result |= (__arg >> 8) & 0x00ff;
+  return __result;
+}
+
+#else /* must be a big-endian machine */
+
+/* Convert a host long to a network long.  */
+
+__STATIC __inline__ unsigned long
+htonl (unsigned long __arg)
+{
+  return __arg;
+}
+
+/* Convert a host short to a network short.  */
+
+__STATIC __inline__ unsigned short
+htons (unsigned int __arg)
+{
+  return __arg;
+}
+
+#endif /* big-endian */
+
+/* Convert a network long to a host long.  */
+
+__STATIC __inline__ unsigned long
+ntohl (unsigned long __arg)
+{
+  return htonl (__arg);
+}
+
+/* Convert a network short to a host short.  */
+
+__STATIC __inline__ unsigned short
+ntohs (unsigned int __arg)
+{
+  return htons (__arg);
+}
+
+
+#undef __STATIC
+
+#endif /* !defined (_SYS_BYTEORDER_H) */
+__EOF__
+
+chmod a+r ${LIB}/sys/byteorder.h
 
 exit 0
 
