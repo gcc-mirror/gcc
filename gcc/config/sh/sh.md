@@ -406,7 +406,7 @@
   [(const_int 1)])
 
 ;; arith3 insns are always pairable at the start, but not inecessarily at
-;; the end; however, there doesn;t seem to be a way to express that.
+;; the end; however, there doesn't seem to be a way to express that.
 (define_function_unit "single_issue"     1 0
   (and (eq_attr "issues" "2")
        (eq_attr "type" "arith3"))

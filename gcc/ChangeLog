@@ -1,3 +1,18 @@
+2001-11-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* ChangeLog.2, ChangeLog.4, ChangeLog.5, ChangeLog,
+	FSFChangeLog.10, FSFChangeLog.11, alias.c, attribs.c,
+	caller-save.c, calls.c, cfg.c, cfganal.c, cfgcleanup.c, cfgrtl.c,
+	cppmacro.c, fold-const.c, ifcvt.c, local-alloc.c, profile.c,
+	sched-int.h, toplev.c, config/alpha/alpha.c,
+	config/alpha/alpha.md, config/c4x/c4x.h, config/cris/cris.h,
+	config/cris/cris.md, config/i370/i370.md, config/i386/i386.c,
+	config/i386/i386.h, config/i386/i386.md, config/i386/xm-djgpp.h,
+	config/ia64/ia64.c, config/m68hc11/m68hc11.c, config/m68k/m68k.md,
+	config/mcore/mcore.h, config/mmix/mmix.c, config/ns32k/ns32k.h,
+	config/ns32k/ns32k.md, config/rs6000/rs6000.c,
+	config/rs6000/sysv4.h, config/sh/sh.md: Fix spelling errors.
+
 2001-11-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (dbxout.o): Depend on function.h.
@@ -5351,7 +5366,7 @@ Wed Sep  5 17:28:49 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* i386.c (ix86_expand_prologue): Set use_fast_prologue_epilogue
 	properly;  Use current_function_calls_eh_return.
 	(ix86_expand_epilogue): Avoid dummy optimize_size tests;
-	use leave to avoid depdendancy chain.
+	use leave to avoid dependency chain.
 
 	* local-alloc.c (update_equiv_regs): Use CFG to iterate over INSN stream;
 	get BB loop_depth instead of computing it from LOOP notes.
@@ -8544,7 +8559,7 @@ Sat Aug  4 13:51:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(reload): Use it.
 
 	* flow.c (need_fake_edge_p): New function.
-	(flow_call_edges_add): Fix handling of noreturn and sibbling calls;
+	(flow_call_edges_add): Fix handling of noreturn and sibling calls;
 	avoid call insn to be very last insn in the insn stream.
 
 	* profile.c (branch_prob): Call flow_call_edges_add instead of
@@ -11581,7 +11596,7 @@ Mon Jul  9 17:23:10 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	over by line number note.
 
 	* flow.c (try_simplify_condjump): Verify that the condjump
-	is not always falling trought.
+	is not always falling through.
 
 	Re-install patch:
 	* flow.c (try_redirect_by_replacing_jump): Remove cc0 setter.

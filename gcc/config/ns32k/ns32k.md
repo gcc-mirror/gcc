@@ -386,7 +386,7 @@
     }
   else if (GET_CODE (operands[1]) == CONST && ! flag_pic)
     {
-	/* Must contain symbols so we don`t know how big it is. In
+	/* Must contain symbols so we don't know how big it is. In
 	 * that case addr might lead to overflow. For PIC symbolic
 	 * address loads always have to be done with addr.
 	 */

@@ -4259,7 +4259,7 @@ Wed Nov 29 14:06:13 1995  Jim Wilson  <wilson@cygnus.com>
 
 Wed Nov 29 13:59:58 1995  J"orn Rennecke (amylaar@meolyon.hanse.de)
 
-	* c-decl.c (duplicate_decls): Add new paramter different_binding_level.
+	* c-decl.c (duplicate_decls): Add new parameter different_binding_level.
 	Lots of changes to use new new parameter.
 	(pushdecl): Delete variable declared_global.  New variable
 	different_binding_level and code to set it.  Move extern/static
@@ -9913,7 +9913,7 @@ Fri Mar 10 05:50:11 1995  Oliver Kellogg  (Oliver.Kellogg@RST13.DASA.DBMAIL.d400
 
 	* 1750a.c (sectname): Reverse Init and Normal.
 	(print_operand_address, case PLUS): Add case for LABEL_REF.
-	(print_operand_address, case LABEL_REF): Split fom SYMBOL_REF.
+	(print_operand_address, case LABEL_REF): Split from SYMBOL_REF.
 	(print_operand_address, case CODE_LABEL): New case.
 	(ASM_FILE_END): Delete.
 	* 1750a.h (FUNCTION_EPILOGUE): Restore stack before freeing local vars.

@@ -4049,8 +4049,8 @@ Wed Oct 27 15:21:46 1999  Richard Henderson  <rth@cygnus.com>
 
 Wed Oct 27 12:33:40 1999  Mark Mitchell  <mark@codesourcery.com>
 
-	* rtl.h (note_stores): Add additional paramter.
-	* rtlanal.c (reg_set_p_1): Take additional paramter.
+	* rtl.h (note_stores): Add additional parameter.
+	* rtlanal.c (reg_set_p_1): Take additional parameter.
 	(reg_set_last_1): Likewise.
 	(reg_set_p): Adjust call to note_stores.
 	(reg_set_last): Likewise.
@@ -4110,7 +4110,7 @@ Wed Oct 27 12:33:40 1999  Mark Mitchell  <mark@codesourcery.com>
 	(prescan_loop): Adjust calls to note_stores.
 	(strength_reduce): Likewise.
 	(check_dbra_loop): Likewise.
-	* regmove.c (flags_set_1): Take additional paramter.
+	* regmove.c (flags_set_1): Take additional parameter.
 	(mark_flags_life_zones): Adjust calls to note_stores.
 	* reload1.c (mark_not_eliminable): Take additional parameter.
 	(forget_old_reloads_1): Likewise.
@@ -4124,7 +4124,7 @@ Wed Oct 27 12:33:40 1999  Mark Mitchell  <mark@codesourcery.com>
 	(reload_cse_regs_1): Likewise.
 	(reload_cse_record_set): Adjust calls to reload_cse_invalidate_rtx.
 	(reload_combine): Adjust calls to note_stores.
-	* resource.c (update_live_status): Take additional paramter.
+	* resource.c (update_live_status): Take additional parameter.
 	(mark_target_live_regs): Adjust calls to note_stores.
 	* stupid.c (find_clobbered_regs): Take additional parameter.
 	(stupid_life_analysis): Adjust calls to note_stores.
@@ -5833,7 +5833,7 @@ Thu Oct  7 23:06:50 1999  Richard Henderson  <rth@cygnus.com>
 Thu Oct  7 22:53:00 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 			  Mark Mitchell  <mark@codesourcery.com>
 
-	* tree.c (make_lang_type_fn): New funtion pointer.
+	* tree.c (make_lang_type_fn): New function pointer.
 	(make_lang_type): Call it.
 	* tree.h (make_lang_type): Declare.
 	(make_lang_type_fn): Likewise.
@@ -8622,7 +8622,7 @@ Tue Sep  7 00:47:52 1999  Mark Mitchell  <mark@codesourcery.com>
 	* except.c (mark_func_eh_entry): New function.
 	(mark_eh_node): Mark false_label and rethrow_label.
 	(init_eh): Add more GC roots.
-	* function.c (free_after_compilation): Take decl as a paramter.
+	* function.c (free_after_compilation): Take decl as a parameter.
 	Call free_stmt_status.
 	(mark_function_state): Don't assume x_parm_reg_stack_loc is
 	non-NULL.

@@ -356,7 +356,7 @@ extern int mcore_stack_increment;
 #define LK_REG	15	/* overloaded on general register */
 #define AP_REG  16	/* fake arg pointer register */
 /* RBE: mcore.md depends on CC_REG being set to 17 */
-#define CC_REG	17	/* cant name it C_REG */
+#define CC_REG	17	/* can't name it C_REG */
 #define FP_REG  18	/* fake frame pointer register */
 
 /* Specify the registers used for certain standard purposes.

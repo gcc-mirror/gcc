@@ -22,7 +22,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* This file contains low level functions to manipulate with CFG and analyze it.
    All other modules should not transform the datastructure directly and use
    abstraction instead.  The file is supposed to be ordered bottom-up and should
-   not contain any code depdendent on particular intermediate language (RTL or trees)
+   not contain any code dependent on particular intermediate language (RTL or trees)
 
    Available functionality:
      - Initialization/deallocation

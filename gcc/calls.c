@@ -1370,7 +1370,7 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
 
   /* For accumulate outgoing args mode we don't need to align, since the frame
      will be already aligned.  Align to STACK_BOUNDARY in order to prevent
-     backends from generating missaligned frame sizes.  */
+     backends from generating misaligned frame sizes.  */
   if (ACCUMULATE_OUTGOING_ARGS && preferred_stack_boundary > STACK_BOUNDARY)
     preferred_stack_boundary = STACK_BOUNDARY;
 
@@ -1387,7 +1387,7 @@ compute_argument_block_size (reg_parm_stack_space, args_size,
       if (preferred_stack_boundary > 1)
 	{
 	  /* We don't handle this case yet.  To handle it correctly we have
-	     to add the delta, round and substract the delta.
+	     to add the delta, round and subtract the delta.
 	     Currently no machine description requires this support.  */
 	  if (stack_pointer_delta & (preferred_stack_boundary - 1))
 	    abort ();
@@ -1466,7 +1466,7 @@ precompute_arguments (flags, num_actuals, args)
      function call which will store arguments on the stack.
      Otherwise, evaluating the parameter may clobber previous parameters
      which have already been stored into the stack.  (we have code to avoid
-     such case by saving the ougoing stack arguments, but it results in
+     such case by saving the outgoing stack arguments, but it results in
      worse code)  */
 
   for (i = 0; i < num_actuals; i++)
@@ -2487,7 +2487,7 @@ expand_call (exp, target, ignore)
 
 	 initialize_argument_information has ordered the array for the
 	 order to be pushed, and we must remember this when reconstructing
-	 the original argument orde.  */
+	 the original argument order.  */
 
       if (PUSH_ARGS_REVERSED)
 	{
@@ -2612,7 +2612,7 @@ expand_call (exp, target, ignore)
   for (pass = 0; pass < 2; pass++)
     {
       int sibcall_failure = 0;
-      /* We want to emit ay pending stack adjustments before the tail
+      /* We want to emit any pending stack adjustments before the tail
 	 recursion "call".  That way we know any adjustment after the tail
 	 recursion call can be ignored if we indeed use the tail recursion
 	 call expansion.  */
@@ -4550,7 +4550,7 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 #endif
 	{
 	  if (arg->offset.constant < reg_parm_stack_space && arg->offset.var)
-	    error ("variable offset is passed paritially in stack and in reg");
+	    error ("variable offset is passed partially in stack and in reg");
 	  else if (arg->offset.constant < reg_parm_stack_space && arg->size.var)
 	    error ("variable size is passed partially in stack and in reg");
 	  else if (arg->offset.constant < reg_parm_stack_space 

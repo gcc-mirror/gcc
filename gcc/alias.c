@@ -341,7 +341,7 @@ objects_must_conflict_p (t1, t2)
 /* T is an expression with pointer type.  Find the DECL on which this
    expression is based.  (For example, in `a[i]' this would be `a'.)
    If there is no such DECL, or a unique decl cannot be determined,
-   NULL_TREE is retured.  */
+   NULL_TREE is returned.  */
 
 static tree
 find_base_decl (t)
@@ -1253,7 +1253,7 @@ find_base_term (x)
 	rtx tmp1 = XEXP (x, 0);
 	rtx tmp2 = XEXP (x, 1);
 
-	/* This is a litle bit tricky since we have to determine which of
+	/* This is a little bit tricky since we have to determine which of
 	   the two operands represents the real base address.  Otherwise this
 	   routine may return the index register instead of the base register.
 
@@ -1816,7 +1816,7 @@ true_dependence (mem, mem_mode, x, varies)
   if (aliases_everything_p (x))
     return 1;
 
-  /* We cannot use aliases_everyting_p to test MEM, since we must look
+  /* We cannot use aliases_everything_p to test MEM, since we must look
      at MEM_MODE, rather than GET_MODE (MEM).  */
   if (mem_mode == QImode || GET_CODE (mem_addr) == AND)
     return 1;
@@ -1831,7 +1831,7 @@ true_dependence (mem, mem_mode, x, varies)
 }
 
 /* Canonical true dependence: X is read after store in MEM takes place.
-   Variant of true_dependece which assumes MEM has already been 
+   Variant of true_dependence which assumes MEM has already been 
    canonicalized (hence we no longer do that here).  
    The mem_addr argument has been added, since true_dependence computed 
    this value prior to canonicalizing.  */
@@ -1873,7 +1873,7 @@ canon_true_dependence (mem, mem_mode, mem_addr, x, varies)
   if (aliases_everything_p (x))
     return 1;
 
-  /* We cannot use aliases_everyting_p to test MEM, since we must look
+  /* We cannot use aliases_everything_p to test MEM, since we must look
      at MEM_MODE, rather than GET_MODE (MEM).  */
   if (mem_mode == QImode || GET_CODE (mem_addr) == AND)
     return 1;
@@ -2231,7 +2231,7 @@ init_alias_analysis ()
 	 start counting from zero each iteration of the loop.  */
       unique_id = 0;
 
-      /* We're at the start of the funtion each iteration through the
+      /* We're at the start of the function each iteration through the
 	 loop, so we're copying arguments.  */
       copying_arguments = 1;
 
@@ -2273,7 +2273,7 @@ init_alias_analysis ()
 	      rtx note, set;
 
 #if defined (HAVE_prologue) || defined (HAVE_epilogue)
-	      /* The prologue/epilouge insns are not threaded onto the
+	      /* The prologue/epilogue insns are not threaded onto the
 		 insn chain until after reload has completed.  Thus,
 		 there is no sense wasting time checking if INSN is in
 		 the prologue/epilogue until after reload has completed.  */

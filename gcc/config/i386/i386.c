@@ -1616,7 +1616,7 @@ classify_argument (mode, type, classes, bit_offset)
 	mode_alignment = 128;
       else if (mode == XCmode)
 	mode_alignment = 256;
-      /* Missalignmed fields are always returned in memory.  */
+      /* Misaligned fields are always returned in memory.  */
       if (bit_offset % mode_alignment)
 	return 0;
     }
@@ -1678,7 +1678,7 @@ classify_argument (mode, type, classes, bit_offset)
 }
 
 /* Examine the argument and return set number of register required in each
-   class.  Return 0 ifif parameter should be passed in memory.  */
+   class.  Return 0 iff parameter should be passed in memory.  */
 static int
 examine_argument (mode, type, in_return, int_nregs, sse_nregs)
      enum machine_mode mode;
@@ -2060,7 +2060,7 @@ ix86_function_value (valtype)
     return gen_rtx_REG (TYPE_MODE (valtype), VALUE_REGNO (TYPE_MODE (valtype)));
 }
 
-/* Return false ifif type is returned in memory.  */
+/* Return false iff type is returned in memory.  */
 int
 ix86_return_in_memory (type)
      tree type;
@@ -2853,7 +2853,7 @@ incdec_operand (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  /* On Pentium4, the inc and dec operations causes extra dependancy on flag
+  /* On Pentium4, the inc and dec operations causes extra dependency on flag
      registers, since carry flag is not set.  */
   if (TARGET_PENTIUM4 && !optimize_size)
     return 0;
@@ -4174,7 +4174,7 @@ ix86_expand_epilogue (style)
 	  }
       if (frame_pointer_needed)
 	{
-	  /* Leave results in shorter depdendancy chains on CPUs that are
+	  /* Leave results in shorter dependency chains on CPUs that are
 	     able to grok it fast.  */
 	  if (TARGET_USE_LEAVE)
 	    emit_insn (TARGET_64BIT ? gen_leave_rex64 () : gen_leave ());
@@ -9908,7 +9908,7 @@ ix86_flags_dependant (insn, dep_insn, insn_type)
   if (GET_CODE (set) != REG || REGNO (set) != FLAGS_REG)
     return 0;
 
-  /* This test is true if the dependant insn reads the flags but
+  /* This test is true if the dependent insn reads the flags but
      not any other potentially set register.  */
   if (!reg_overlap_mentioned_p (set, PATTERN (insn)))
     return 0;

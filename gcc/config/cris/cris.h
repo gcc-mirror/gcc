@@ -122,7 +122,7 @@ extern const char *cris_elinux_stacksize_str;
    Note that for -melinux and -mlinux, command-line -isystem options are
    emitted both before and after the synthesized one.  We can't remove all
    of them: a %{<isystem} will only remove the first one and %{<isystem*}
-   will not do TRT.  Those extra occurences are harmless anyway.  */
+   will not do TRT.  Those extra occurrences are harmless anyway.  */
 #define CPP_SPEC \
  "-$ -D__CRIS_ABI_version=2\
   %{mtune=*:-D__tune_%* %{mtune=v*:-D__CRIS_arch_tune=%*}}\
@@ -199,7 +199,7 @@ extern const char *cris_elinux_stacksize_str;
    are linked in (multilibbing).  The somewhat cryptic -rpath-link pair is
    to avoid *only* picking up the linux multilib subdir from the "-B./"
    option during build, while still giving it preference.  We'd need some
-   %s-variant that checked for existance of some specific file.  */
+   %s-variant that checked for existence of some specific file.  */
 /* Override previous definitions (svr4.h).  */
 #undef LINK_SPEC
 #define LINK_SPEC \
@@ -294,7 +294,7 @@ extern int target_flags;
 #define TARGET_MASK_DATA_ALIGN 128
 #define TARGET_DATA_ALIGN (target_flags & TARGET_MASK_DATA_ALIGN)
 
-/* If not to omit funtion prologue and epilogue.  */
+/* If not to omit function prologue and epilogue.  */
 #define TARGET_MASK_PROLOGUE_EPILOGUE 256
 #define TARGET_PROLOGUE_EPILOGUE (target_flags & TARGET_MASK_PROLOGUE_EPILOGUE)
 

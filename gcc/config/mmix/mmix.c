@@ -2505,7 +2505,7 @@ mmix_dbx_register_number (regno)
   return regno >= 224 ? (regno - 224) : (regno + 48);
 }
 
-/* End of target macro support funtions.
+/* End of target macro support functions.
 
    Now MMIX's own functions.  First the exported ones.  */
 

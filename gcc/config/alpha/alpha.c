@@ -7618,7 +7618,7 @@ alpha_align_insns (insns, max_align, next_group, next_nop)
     }
 }
 
-/* Machine dependant reorg pass.  */
+/* Machine dependent reorg pass.  */
 
 void
 alpha_reorg (insns)

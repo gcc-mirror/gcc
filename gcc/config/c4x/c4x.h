@@ -1555,7 +1555,7 @@ CUMULATIVE_ARGS;
    The problem is a subtle one and deals with the manner in which the
    negative condition (N) flag is used on the C4x.  This flag does not
    reflect the status of the actual result but of the ideal result had
-   no overflow occured (when considering signed operands).
+   no overflow occurred (when considering signed operands).
 
    For example, 0x7fffffff + 1 => 0x80000000 Z=0 V=1 N=0 C=0.  Here
    the flags reflect the untruncated result, not the actual result.
@@ -1591,7 +1591,7 @@ CUMULATIVE_ARGS;
    To handle the problem where the N flag is set differently whenever
    there is an overflow we use a different CC mode, CC_NOOVmode which
    says that the CC reflects the comparison of the result against zero
-   if no overflow occured.
+   if no overflow occurred.
 
    For example, 
 

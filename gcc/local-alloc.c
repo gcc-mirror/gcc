@@ -79,7 +79,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static int next_qty;
 
-/* Information we maitain about each quantity.  */
+/* Information we maintain about each quantity.  */
 struct qty
 {
   /* The number of refs to quantity Q.  */

@@ -252,7 +252,7 @@ init_attributes ()
    a decl attribute to the declaration rather than to its type).  If
    ATTR_FLAG_BUILT_IN is not set and *NODE is a DECL, then also consider
    whether there might be some default attributes to apply to this DECL;
-   if so, decl_attributes will be called recusrively with those attributes
+   if so, decl_attributes will be called recursively with those attributes
    and ATTR_FLAG_BUILT_IN set.  */
 
 tree

@@ -2635,7 +2635,7 @@
 ;; second operand, and the third operand is -256 or -65536, we can use
 ;; CLEAR instead.  Or, if the first operand is a register, and the third
 ;; operand is 255 or 65535, we can zero_extend.
-;; GCC isnt smart enough to recognize these cases (yet), and they seem
+;; GCC isn't smart enough to recognize these cases (yet), and they seem
 ;; to be common enough to be worthwhile.
 ;; FIXME: This should be made obsolete.
 

@@ -582,7 +582,7 @@ fini_section ()								\
    RELOC indicates whether the initial value of EXP requires
    link-time relocations.  If you do not define this macro, GCC will use
    the symbol name prefixed by `.' as the section name.  Note - this
-   macro can now be called for unitialised data items as well as
+   macro can now be called for uninitialized data items as well as
    initialised data and functions.  */
 
 /* Override elfos.h definition.  */
