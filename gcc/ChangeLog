@@ -1,3 +1,7 @@
+2003-11-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* final.c (final_scan_insn): Remove commented-out code.
+
 2003-11-27  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* doc/install.texi: Remove ADAC reference and make accurate.
