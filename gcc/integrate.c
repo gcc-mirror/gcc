@@ -182,16 +182,11 @@ function_cannot_inline_p (fndecl)
 	return N_("function too large to be inline");
     }
 
-  /* We cannot inline this function it has the addresses of its labels
-     taken.  This can mean that a label in this function was used as an
-     initializer either statically or dynamically or stored outside the
-     function.  Because labels can not be duplicated, all labels in the
-     function will be renamed when it is inlined.  However, there is no way
-     to find and fix all variables initialized with addresses of labels in this
-     function, hence inlining is impossible.  */
-
-  if (current_function_addresses_labels)
-    return N_("function with label addresses taken cannot inline");
+  /* We will not inline a function which uses computed goto.  The addresses of
+     its local labels, which may be tucked into global storage, are of course
+     not constant across instantiations, which causes unexpected behaviour.  */
+  if (current_function_has_computed_jump)
+    return N_("function with computed jump cannot inline");
 
   /* We cannot inline a nested function that jumps to a nonlocal label.  */
   if (current_function_has_nonlocal_goto)
@@ -303,7 +298,7 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
        + current_function_uses_const_pool * FUNCTION_FLAGS_USES_CONST_POOL
        + (current_function_uses_pic_offset_table
 	  * FUNCTION_FLAGS_USES_PIC_OFFSET_TABLE)
-       + current_function_addresses_labels * FUNCTION_FLAGS_ADDRESSES_LABELS);
+       + current_function_has_computed_jump * FUNCTION_FLAGS_HAS_COMPUTED_JUMP);
 
   /* Clear out PARMDECL_MAP.  It was allocated in the caller's frame.  */
   bzero ((char *) parmdecl_map, max_parm_reg * sizeof (tree));
@@ -3388,8 +3383,8 @@ output_inline_function (fndecl)
   stack_slot_list = STACK_SLOT_LIST (head);
   forced_labels = FORCED_LABELS (head);
 
-  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_ADDRESSES_LABELS)
-    current_function_addresses_labels = 1;
+  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_HAS_COMPUTED_JUMP)
+    current_function_has_computed_jump = 1;
 
   if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_CALLS_ALLOCA)
     current_function_calls_alloca = 1;

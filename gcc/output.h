@@ -389,10 +389,9 @@ extern int current_function_contains_functions;
 
 extern int current_function_sp_is_unchanging;
 
-/* Nonzero if the function being compiled has the address of its
-   labels taken. */
+/* Nonzero if the function being compiled issues a computed jump.  */
 
-extern int current_function_addresses_labels;
+extern int current_function_has_computed_jump;
 
 /* Nonzero if the current function returns a pointer type */
 

@@ -1,3 +1,19 @@
+Mon Feb  8 21:36:44 1999  Richard Henderson  <rth@cygnus.com>
+
+	* output.h (current_function_has_computed_jump): Rename from
+	current_function_addresses_labels.
+	* function.h (struct function): Likewise for addresses_labels member.
+	* rtl.h (FUNCTION_FLAGS_HAS_COMPUTED_JUMP): Likewise.
+	* function.c (current_function_has_computed_jump): Likewise.
+	Update all references.
+	* integrate.c (function_cannot_inline_p):
+	Test current_function_has_computed_jump instead of addresses_labels.
+	(initialize_for_inline): Likewise save.
+	(output_inline_function): Likewise restore.
+
+	* expr.c (expand_expr): Don't reference addresses_labels variables.
+	* stmt.c (expand_computed_goto): Set has_computed_jump.
+
 1999-02-08  Michael Meissner  <meissner@cygnus.com>
 
 	This is being installed only to get it into the repository to help

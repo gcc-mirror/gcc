@@ -5603,12 +5603,10 @@ expand_expr (exp, target, tmode, modifier)
 	    p->forced_labels = gen_rtx_EXPR_LIST (VOIDmode,
 						  label_rtx (exp),
 						  p->forced_labels);
-	    p->addresses_labels = 1;
 	    pop_obstacks ();
 	  }
 	else
 	  {
-	    current_function_addresses_labels = 1;
 	    if (modifier == EXPAND_INITIALIZER)
 	      forced_labels = gen_rtx_EXPR_LIST (VOIDmode,
 						 label_rtx (exp),
