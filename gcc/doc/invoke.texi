@@ -1357,7 +1357,7 @@ Ignore @code{namespace std}, instead of treating it as a real namespace.
 With this switch, the compiler will ignore
 @code{namespace-declarations}, @code{using-declarations},
 @code{using-directives}, and @code{namespace-names}, if they involve
-@code{std}.  
+@code{std}.
 
 This option is only useful if you have manually compiled the C++
 run-time library with the same switch.  Otherwise, your programs will
