@@ -1,3 +1,13 @@
+2004-07-12  Steve Ellcey  <sje@cup.hp.com>
+
+	* function.c (expand_function_start): Ensure r_save is in Pmode.
+	* calls.c (prepare_call_address): Ensure static_chain_value is
+	in Pmode.
+	* builtins.c (expand_builtin_nonlocal_goto): Ensure r_label and
+	r_save_area are in Pmode.
+	* config/ia64/ia64.c (ia64_initialize_trampoline): Ensure addr,
+	fnaddr, and static_chain are in Pmode.
+
 2004-07-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/16445

@@ -183,6 +183,7 @@ prepare_call_address (rtx funexp, rtx static_chain_value,
 
   if (static_chain_value != 0)
     {
+      static_chain_value = convert_memory_address (Pmode, static_chain_value);
       emit_move_insn (static_chain_rtx, static_chain_value);
 
       if (REG_P (static_chain_rtx))
