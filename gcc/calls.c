@@ -1929,7 +1929,7 @@ combine_pending_stack_adjustment_and_call (unadjusted_args_size,
      after the arguments are pushed.  */
   if (preferred_unit_stack_boundary > 1)
     {
-      if (unadjusted_alignment >= 0)
+      if (unadjusted_alignment > 0)
 	adjustment -= preferred_unit_stack_boundary - unadjusted_alignment;
       else
 	adjustment += unadjusted_alignment;
