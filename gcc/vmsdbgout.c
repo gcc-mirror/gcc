@@ -1,6 +1,6 @@
 /* Output VMS debug format symbol table information from the GNU C compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
 
 This file is part of GNU CC.
@@ -277,37 +277,49 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_DELTA2
-#define ASM_OUTPUT_DEBUG_DELTA2(FILE,LABEL1,LABEL2)			\
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_SHORT_ASM_OP);		\
-	assemble_name (FILE, LABEL1);					\
-	fprintf (FILE, "-");						\
-	assemble_name (FILE, LABEL2);					\
-  } while (0)
+#define ASM_OUTPUT_DEBUG_DELTA2(FILE,LABEL1,LABEL2)			 \
+  do									 \
+    {									 \
+      fprintf ((FILE), "\t%s\t", UNALIGNED_SHORT_ASM_OP);		 \
+      assemble_name (FILE, LABEL1);					 \
+      fprintf (FILE, "-");						 \
+      assemble_name (FILE, LABEL2);					 \
+    }									 \
+  while (0)
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_DELTA4
-#define ASM_OUTPUT_DEBUG_DELTA4(FILE,LABEL1,LABEL2)			\
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);		\
-	assemble_name (FILE, LABEL1);					\
-	fprintf (FILE, "-");						\
-	assemble_name (FILE, LABEL2);					\
-  } while (0)
+#define ASM_OUTPUT_DEBUG_DELTA4(FILE,LABEL1,LABEL2)			 \
+  do									 \
+    {									 \
+      fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);			 \
+      assemble_name (FILE, LABEL1);					 \
+      fprintf (FILE, "-");						 \
+      assemble_name (FILE, LABEL2);					 \
+    }									 \
+  while (0)
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_ADDR_DELTA
-#define ASM_OUTPUT_DEBUG_ADDR_DELTA(FILE,LABEL1,LABEL2)			\
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_PTR_ASM_OP);		\
-	assemble_name (FILE, LABEL1);					\
-	fprintf (FILE, "-");						\
-	assemble_name (FILE, LABEL2);					\
-  } while (0)
+#define ASM_OUTPUT_DEBUG_ADDR_DELTA(FILE,LABEL1,LABEL2)			 \
+  do									 \
+    {									 \
+      fprintf ((FILE), "\t%s\t", UNALIGNED_PTR_ASM_OP);			 \
+      assemble_name (FILE, LABEL1);					 \
+      fprintf (FILE, "-");						 \
+      assemble_name (FILE, LABEL2);					 \
+    }									 \
+  while (0)
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_ADDR
-#define ASM_OUTPUT_DEBUG_ADDR(FILE,LABEL)				\
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_PTR_ASM_OP);		\
-	assemble_name (FILE, LABEL);					\
-  } while (0)
+#define ASM_OUTPUT_DEBUG_ADDR(FILE,LABEL)				 \
+  do									 \
+    {									 \
+      fprintf ((FILE), "\t%s\t", UNALIGNED_PTR_ASM_OP);			 \
+      assemble_name (FILE, LABEL);					 \
+    }									 \
+  while (0)
 #endif
 
 #ifndef ASM_OUTPUT_DEBUG_ADDR_CONST
@@ -352,24 +364,25 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
    newline is produced.  When flag_verbose_asm is asserted, we add commnetary
    at the end of the line, so we must avoid output of a newline here.  */
 #ifndef ASM_OUTPUT_DEBUG_STRING
-#define ASM_OUTPUT_DEBUG_STRING(FILE,P)	\
-  do {					\
-    register int slen = strlen(P);      \
-    register char *p = (P);  	        \
-    register int i;			\
-    fprintf (FILE, "\t.ascii \"");	\
-    for (i = 0; i < slen; i++)		\
-      {					\
-	  register int c = p[i];	\
-	  if (c == '\"' || c == '\\')	\
-	    putc ('\\', FILE);		\
-	  if (c >= ' ' && c < 0177)	\
-	    putc (c, FILE);		\
-	  else				\
-	    fprintf (FILE, "\\%o", c);	\
-      }					\
-    fprintf (FILE, "\"");		\
-  }					\
+#define ASM_OUTPUT_DEBUG_STRING(FILE,P)		\
+  do						\
+    {						\
+      register int slen = strlen(P);		\
+      register char *p = (P);			\
+      register int i;				\
+      fprintf (FILE, "\t.ascii \"");		\
+      for (i = 0; i < slen; i++)		\
+	{					\
+	  register int c = p[i];		\
+	  if (c == '\"' || c == '\\')		\
+	    putc ('\\', FILE);			\
+	  if (c >= ' ' && c < 0177)		\
+	    putc (c, FILE);			\
+	  else					\
+	    fprintf (FILE, "\\%o", c);		\
+	}					\
+      fprintf (FILE, "\"");			\
+    }						\
   while (0)
 #endif
 
@@ -377,13 +390,14 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
    macro has the same effect as ASM_OUTPUT_LABELREF, but copies to
    a string rather than writing to a file.  */
 #ifndef ASM_NAME_TO_STRING
-#define ASM_NAME_TO_STRING(STR, NAME) \
-  do {									      \
-      if ((NAME)[0] == '*')						      \
-	strcpy (STR, NAME+1);						      \
-      else								      \
-	strcpy (STR, NAME);                                                   \
-  }                                                                           \
+#define ASM_NAME_TO_STRING(STR, NAME) 		\
+  do						\
+    {						\
+      if ((NAME)[0] == '*')			\
+	strcpy (STR, NAME+1);			\
+      else					\
+	strcpy (STR, NAME);			\
+    }						\
   while (0)
 #endif
 

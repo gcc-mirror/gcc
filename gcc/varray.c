@@ -1,5 +1,5 @@
 /* Virtual array support.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GCC.
@@ -62,7 +62,7 @@ varray_grow (va, n)
       size_t old_data_size = old_elements * element_size;
       size_t data_size = n * element_size;
 
-      va = (varray_type) xrealloc ((char *)va, VARRAY_HDR_SIZE + data_size);
+      va = (varray_type) xrealloc ((char *) va, VARRAY_HDR_SIZE + data_size);
       va->num_elements = n;
       if (n > old_elements)
 	memset (&va->data.c[old_data_size], 0, data_size - old_data_size);
