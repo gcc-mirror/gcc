@@ -5211,6 +5211,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
       rtx blk_object = copy_rtx (object);
 
       PUT_MODE (blk_object, BLKmode);
+      set_mem_alias_set (blk_object, 0);
 
       if (bitsize != (HOST_WIDE_INT) GET_MODE_BITSIZE (GET_MODE (target)))
 	emit_move_insn (object, target);
