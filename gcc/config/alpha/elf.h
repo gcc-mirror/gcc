@@ -686,8 +686,6 @@ void FN ()					\
 #undef UNALIGNED_INT_ASM_OP
 #undef UNALIGNED_DOUBLE_INT_ASM_OP
 
-/* ??? This should be possible for ECOFF as well, since the relocations
-   exist.  But the assembler doesn't seem to create them.  */
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
    true if the symbol may be affected by dynamic relocations.

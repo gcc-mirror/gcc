@@ -153,3 +153,17 @@ __enable_execute_stack (addr)						\
 #define HAS_INIT_SECTION
 #define LD_INIT_SWITCH "-init"
 #define LD_FINI_SWITCH "-fini"
+
+/* Select a format to encode pointers in exception handling data.  CODE
+   is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
+   true if the symbol may be affected by dynamic relocations.
+   
+   We really ought to be using the SREL32 relocations that ECOFF has,
+   but no version of the native assembler supports creating such things,
+   and Compaq has no plans to rectify this.  Worse, the dynamic loader
+   cannot handle unaligned relocations, so we have to make sure that
+   things get padded appropriately.  */
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)			     \
+  (TARGET_GAS								     \
+   ? (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4) \
+   : DW_EH_PE_aligned)

@@ -1820,6 +1820,28 @@ output_call_frame_info (for_eh)
 	  augmentation[0] = 'z';
           *p = '\0';
 	}
+
+      /* Ug.  Some platforms can't do unaligned dynamic relocations at all.  */
+      if (eh_personality_libfunc && per_encoding == DW_EH_PE_aligned)
+	{
+	  int offset = (  4		/* Length */
+			+ 4		/* CIE Id */
+			+ 1		/* CIE version */
+			+ strlen (augmentation) + 1	/* Augmentation */
+			+ size_of_uleb128 (1)		/* Code alignment */
+			+ size_of_sleb128 (DWARF_CIE_DATA_ALIGNMENT)
+			+ 1		/* RA column */
+			+ 1		/* Augmentation size */
+			+ 1		/* Personality encoding */ );
+	  int pad = -offset & (PTR_SIZE - 1);
+
+	  augmentation_size += pad;
+
+	  /* Augmentations should be small, so there's scarce need to
+	     iterate for a solution.  Die if we exceed one uleb128 byte.  */
+	  if (size_of_uleb128 (augmentation_size) != 1)
+	    abort ();
+	}
     }
   dw2_asm_output_nstring (augmentation, -1, "CIE Augmentation");
 
@@ -1909,8 +1931,22 @@ output_call_frame_info (for_eh)
 	{
 	  if (any_lsda_needed)
 	    {
-	      dw2_asm_output_data_uleb128 (
-		size_of_encoded_value (lsda_encoding), "Augmentation size");
+	      int size = size_of_encoded_value (lsda_encoding);
+
+	      if (lsda_encoding == DW_EH_PE_aligned)
+		{
+		  int offset = (  4		/* Length */
+				+ 4		/* CIE offset */
+				+ 2 * size_of_encoded_value (fde_encoding)
+				+ 1		/* Augmentation size */ );
+		  int pad = -offset & (PTR_SIZE - 1);
+
+		  size += pad;
+		  if (size_of_uleb128 (size) != 1)
+		    abort ();
+		}
+
+	      dw2_asm_output_data_uleb128 (size, "Augmentation size");
 
 	      if (fde->uses_eh_lsda)
 	        {
@@ -1921,8 +1957,12 @@ output_call_frame_info (for_eh)
 		 	"Language Specific Data Area");
 	        }
 	      else
-	        dw2_asm_output_data (size_of_encoded_value (lsda_encoding),
-				     0, "Language Specific Data Area (none)");
+		{
+		  if (lsda_encoding == DW_EH_PE_aligned)
+		    ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
+		  dw2_asm_output_data (size_of_encoded_value (lsda_encoding),
+				       0, "Language Specific Data Area (none)");
+		}
 	    }
 	  else
 	    dw2_asm_output_data_uleb128 (0, "Augmentation size");

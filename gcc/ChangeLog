@@ -1,3 +1,20 @@
+2001-06-05  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2.h (DW_EH_PE_aligned): New.
+	* dwarf2asm.c (eh_data_format_name): Name it.
+	(dw2_asm_output_encoded_addr_rtx): Align for it.
+	* dwarf2out.c (output_call_frame_info): Handle it for personality
+	routine and LSDA pointers.
+
+	* unwind-pe.h (DW_EH_PE_aligned): New.
+	(base_of_encoded_value): Handle it.
+	(read_encoded_value_with_base): Likewise.
+	* unwind-dw2-fde.c (base_from_object): Likewise.
+	(get_cie_encoding): Likewise.
+
+	* config/alpha/elf.h: Remove ecoff commentary.
+	* config/alpha/osf.h (ASM_PREFERRED_EH_DATA_FORMAT): New.
+
 2001-06-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* print-rtl.c (xspaces): Remove.
@@ -186,7 +203,7 @@ Tue Jun  5 21:08:39 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 	* README: Update references to installation instructions.
 
 2001-06-01  Laurent Guerby  <guerby@acm.org>
-            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi: Define srcdir when sources come from CVS.
 	Significantly improve markup.  Wrap overly long lines.

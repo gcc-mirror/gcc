@@ -490,6 +490,7 @@ eh_data_format_name (format)
 
   S(DW_EH_PE_absptr, "absolute")
   S(DW_EH_PE_omit, "omit")
+  S(DW_EH_PE_aligned, "aligned absolute")
 
   S(DW_EH_PE_uleb128, "uleb128")
   S(DW_EH_PE_udata2, "udata2")
@@ -946,6 +947,12 @@ dw2_asm_output_encoded_addr_rtx VPARAMS ((int encoding,
 #endif
 
   size = size_of_encoded_value (encoding);
+
+  if (encoding == DW_EH_PE_aligned)
+    {
+      assemble_align (POINTER_SIZE);
+      encoding = DW_EH_PE_absptr;
+    }
 
   /* NULL is _always_ represented as a plain zero.  */
   if (addr == const0_rtx)
