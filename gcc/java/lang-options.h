@@ -41,6 +41,9 @@ DEFINE_LANG_NAME ("Java")
   { "-MMD", "Print dependencies to FILE.d" },
   { "-M", "Print dependencies to stdout" },
   { "-MM", "Print dependencies to stdout" },
+  { "-MA", "Print dummy rules for included files" },
+  { "-MF", "Print dependencies to FILE" },
+  { "-MT", "Use TARGET as name of target in dependency file" },
 #endif /* ! USE_CPPLIB */
   { "--classpath", "Set class path and suppress system path" },
   { "--CLASSPATH", "Set class path" },

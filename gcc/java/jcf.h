@@ -264,6 +264,7 @@ extern void jcf_dependency_set_dep_file PARAMS ((const char *));
 extern void jcf_dependency_add_file PARAMS ((const char *, int));
 extern void jcf_dependency_write PARAMS ((void));
 extern void jcf_dependency_init PARAMS ((int));
+extern void jcf_dependency_print_dummies PARAMS ((void));
 
 /* Declarations for path handling code.  */
 extern void jcf_path_init PARAMS ((void));

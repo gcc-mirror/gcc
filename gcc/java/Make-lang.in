@@ -141,7 +141,7 @@ JCF_DUMP_SOURCES = $(srcdir)/java/jcf-dump.c $(srcdir)/java/jcf-io.c \
 
 jc1$(exeext) gcjh$(exeext) jv-scan$(exeext) jcf-dump$(exeext): s-java
 
-s-java: $(P) $(JAVA_SRCS) $(LIBDEPS) $(BACKEND) \
+s-java: $(P) $(JAVA_SRCS) $(LIBDEPS) $(BACKEND) mkdeps.o \
 	$(GCJH_SOURCES) $(LIBDEPS) $(TREE_H) \
 	$(JV_SCAN_SOURCES) $(BACKEND) $(LIBDEPS) \
 	$(JCF_DUMP_SOURCES)

@@ -262,9 +262,11 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	    saw_g = 1;
 	  else if (argv[i][1] == 'O')
 	    saw_O = 1;
-	  else if (((argv[i][2] == '\0'
-		     && (char *)strchr ("bBVDUoeTuIYmLiA", argv[i][1]) != NULL)
-		    || strcmp (argv[i], "-Tdata") == 0))
+	  else if ((argv[i][2] == '\0'
+		    && (char *)strchr ("bBVDUoeTuIYmLiA", argv[i][1]) != NULL)
+		   || strcmp (argv[i], "-Tdata") == 0
+		   || strcmp (argv[i], "-MT") == 0
+		   || strcmp (argv[i], "-MF") == 0)
 	    {
 	      if (strcmp (argv[i], "-o") == 0)
 		saw_o = 1;
