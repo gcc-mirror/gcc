@@ -175,6 +175,10 @@ extern tree shorten_compare ();
 /* Read the rest of the current #-directive line.  */
 extern char *get_directive_line ();
 
+/* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
+   or validate its data type for an `if' or `while' statement or ?..: exp. */
+extern tree truthvalue_conversion ();
+
 extern int maybe_objc_comptypes ();
 extern tree maybe_building_objc_message_expr ();
 
