@@ -99,10 +99,10 @@ objdir = .
 srcdir = @srcdir@
 VPATH = @srcdir@
 
-# Directory holding libjava.zip.
+# Directory holding libgcj.zip.
 prefix = @prefix@
 datadir = @datadir@
-libjava_zip = $(datadir)/libjava.zip
+libgcj_zip = $(datadir)/libgcj.zip
 
 # Additional system libraries to link with.
 CLIB=
@@ -252,7 +252,7 @@ keyword.h: keyword.gperf
 
 jcf-path.o : jcf-path.c $(CONFIG_H) $(srcdir)/../system.h jcf.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  -DLIBJAVA_ZIP_FILE='"$(libjava_zip)"' $(srcdir)/jcf-path.c
+	  -DLIBGCJ_ZIP_FILE='"$(libgcj_zip)"' $(srcdir)/jcf-path.c
 
 # These exist for maintenance purposes.
 

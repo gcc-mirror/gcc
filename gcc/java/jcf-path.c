@@ -1,6 +1,6 @@
 /* Handle CLASSPATH, -classpath, and path searching.
 
-   Copyright (C) 1998  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ struct entry
 
 /* We support several different ways to set the class path.
 
-   built-in system directory (only libjava.zip)
+   built-in system directory (only libgcj.zip)
    CLASSPATH environment variable
    -CLASSPATH overrides CLASSPATH
    -classpath option - overrides CLASSPATH, -CLASSPATH, and built-in
@@ -146,10 +146,10 @@ add_entry (entp, filename, is_system)
     {
       n->flags |= FLAG_ZIP;
       /* If the user uses -classpath then he'll have to include
-	 libjava.zip in the value.  We check for this in a simplistic
+	 libgcj.zip in the value.  We check for this in a simplistic
 	 way.  Symlinks will fool this test.  This is only used for
 	 -MM and -MMD, so it probably isn't terribly important.  */
-      if (! strcmp (filename, LIBJAVA_ZIP_FILE))
+      if (! strcmp (filename, LIBGCJ_ZIP_FILE))
 	n->flags |= FLAG_SYSTEM;
     }
 
@@ -220,7 +220,7 @@ jcf_path_init ()
   char *cp;
 
   add_entry (&sys_dirs, ".", 0);
-  add_entry (&sys_dirs, LIBJAVA_ZIP_FILE, 1);
+  add_entry (&sys_dirs, LIBGCJ_ZIP_FILE, 1);
 
   GET_ENV_PATH_LIST (cp, "CLASSPATH");
   add_path (&classpath_env, cp, 0);
