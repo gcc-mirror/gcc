@@ -2097,7 +2097,12 @@ simplejump_p (insn)
 }
 
 /* Return nonzero if INSN is a (possibly) conditional jump
-   and nothing more.  */
+   and nothing more.  
+ 
+   Use this function is depreached, since we need to support
+   branch and compare insns.  Use nontrivial_condjump_p instead
+   whenever possible.
+ */
 
 int
 condjump_p (insn)
@@ -2124,7 +2129,12 @@ condjump_p (insn)
 }
 
 /* Return nonzero if INSN is a (possibly) conditional jump inside a
-   PARALLEL.  */
+   PARALLEL.
+ 
+   Use this function is depreached, since we need to support
+   branch and compare insns.  Use any_condjump_p instead
+   whenever possible.
+ */
 
 int
 condjump_in_parallel_p (insn)
@@ -2154,6 +2164,79 @@ condjump_in_parallel_p (insn)
 	  || GET_CODE (XEXP (SET_SRC (x), 2)) == RETURN))
     return 1;
   return 0;
+}
+
+/* Return set of PC if available NULL otherwise.  */
+rtx
+pc_set (insn)
+     rtx insn;
+{
+  rtx pat;
+  if (GET_CODE (insn) != JUMP_INSN)
+    return NULL;
+  pat = PATTERN (insn);
+  /* The set is allowed to appear eighter as insn pattern or the first in
+     PARALLEL expression.  */
+  if (GET_CODE (pat) == SET && GET_CODE (SET_DEST (pat)) == PC)
+    return pat;
+  if (GET_CODE (pat) == PARALLEL)
+    {
+      rtx set = XVECEXP (pat, 0, 0);
+      if (GET_CODE (set) == SET && GET_CODE (SET_DEST (set)) == PC)
+	return set;
+    }
+  return NULL;
+}
+
+/* Return true when insn in unconditional jump possibly boundled inside
+   PARALLEL.  */
+int
+any_uncondjump_p (insn)
+     rtx insn;
+{
+  rtx x = pc_set (insn);
+  if (!x)
+    return 0;
+  if (GET_CODE (SET_SRC (x)) != LABEL_REF)
+    return 0;
+  return 1;
+}
+
+/* Return true when insn is conditional jump.  This function work for
+   instructions containing PC sets in PARALLELs.  The instruction may have
+   various other effects so before removing the jump you must verify
+   safe_to_remove_jump_p.
+
+   Note that unlike condjump_p it returns 0 for unconditionals jumps.
+  */
+int
+any_condjump_p (insn)
+     rtx insn;
+{
+  rtx x = pc_set (insn);
+  if (!x)
+    return 0;
+  if (XEXP (SET_SRC (x), 2) == pc_rtx
+      && (GET_CODE (XEXP (SET_SRC (x), 1)) == LABEL_REF
+	  || GET_CODE (XEXP (SET_SRC (x), 1)) == RETURN))
+    return 1;
+  if (XEXP (SET_SRC (x), 1) == pc_rtx
+      && (GET_CODE (XEXP (SET_SRC (x), 2)) == LABEL_REF
+	  || GET_CODE (XEXP (SET_SRC (x), 2)) == RETURN))
+    return 1;
+  return 0;
+}
+
+
+/* Return true when the condjump is safe to remove.  */
+int
+safe_to_remove_jump_p (insn)
+     rtx insn;
+{
+  /* For non-single set insns we may remove set of the other registers.  */
+  if (!pc_set (insn) || !single_set (insn))
+    return 0;
+  return 1;
 }
 
 /* Return the label of a conditional jump.  */
