@@ -1,3 +1,8 @@
+2005-01-16  Steven Bosscher  <stevenb@suse.de>
+
+	* ggc-page.c (ggc_alloc_stat): Use __builtin_ctzl instead of a
+	loop to look for a free slot in a page entry.
+
 2005-01-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/16304

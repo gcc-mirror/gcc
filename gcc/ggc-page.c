@@ -1139,8 +1139,14 @@ ggc_alloc_stat (size_t size MEM_STAT_DECL)
 	  word = bit = 0;
 	  while (~entry->in_use_p[word] == 0)
 	    ++word;
+
+#if GCC_VERSION >= 3004
+	  bit = __builtin_ctzl (~entry->in_use_p[word]);
+#else
 	  while ((entry->in_use_p[word] >> bit) & 1)
 	    ++bit;
+#endif
+
 	  hint = word * HOST_BITS_PER_LONG + bit;
 	}
 
