@@ -2174,6 +2174,8 @@ gnu/java/net/PlainDatagramSocketImpl.java \
 gnu/java/net/PlainSocketImpl.java \
 gnu/java/nio/DatagramChannelImpl.java \
 gnu/java/nio/FileLockImpl.java \
+gnu/java/nio/NIODatagramSocket.java \
+gnu/java/nio/NIOSocket.java \
 gnu/java/nio/PipeImpl.java \
 gnu/java/nio/SelectionKeyImpl.java \
 gnu/java/nio/SelectorImpl.java \

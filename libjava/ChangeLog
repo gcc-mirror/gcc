@@ -1,3 +1,12 @@
+2003-09-19  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/NIODatagramSocket.java,
+	gnu/java/nio/NIOSocket.java: New files.
+	* Makefile.am (ordinary_java_source_files):
+	Added gnu/java/nio/NIODatagramSocket.java and
+	gnu/java/nio/NIOSocket.java.
+	* Makefile.in: Regenerated.
+
 2003-09-19  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkDialogPeer.java (create()): Create a
