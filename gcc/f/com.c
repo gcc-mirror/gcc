@@ -806,6 +806,7 @@ ffecom_subscript_check_ (tree array, tree element, int dim, int total_dims,
   die = ffecom_call_gfrt (FFECOM_gfrtRANGE,
 			  args, NULL_TREE);
   TREE_SIDE_EFFECTS (die) = 1;
+  die = convert (void_type_node, die);
 
   element = ffecom_3 (COND_EXPR,
 		      TREE_TYPE (element),
@@ -14772,10 +14773,17 @@ ffe_truthvalue_conversion (expr)
 	return ffe_truthvalue_conversion (TREE_OPERAND (expr, 0));
 
     case COND_EXPR:
-      /* Distribute the conversion into the arms of a COND_EXPR.  */
-      return fold (build (COND_EXPR, integer_type_node, TREE_OPERAND (expr, 0),
-			  ffe_truthvalue_conversion (TREE_OPERAND (expr, 1)),
-			  ffe_truthvalue_conversion (TREE_OPERAND (expr, 2))));
+      {
+	/* Distribute the conversion into the arms of a COND_EXPR.  */
+	tree arg1 = TREE_OPERAND (expr, 1);
+	tree arg2 = TREE_OPERAND (expr, 2);
+	if (! VOID_TYPE_P (TREE_TYPE (arg1)))
+	  arg1 = ffe_truthvalue_conversion (arg1);
+	if (! VOID_TYPE_P (TREE_TYPE (arg2)))
+	  arg2 = ffe_truthvalue_conversion (arg2);
+	return fold (build (COND_EXPR, integer_type_node,
+			    TREE_OPERAND (expr, 0), arg1, arg2));
+      }
 
     case CONVERT_EXPR:
       /* Don't cancel the effect of a CONVERT_EXPR from a REFERENCE_TYPE,
