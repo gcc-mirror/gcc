@@ -1186,10 +1186,11 @@ kill_set_value (x, set, data)
      void *data;
 {
   struct value_data *vd = data;
-  if (GET_CODE (set) != CLOBBER && REG_P (x))
+  if (GET_CODE (set) != CLOBBER)
     {
       kill_value (x, vd);
-      set_value_regno (REGNO (x), GET_MODE (x), vd);
+      if (REG_P (x))
+        set_value_regno (REGNO (x), GET_MODE (x), vd);
     }
 }
 

@@ -1,3 +1,7 @@
+Mon Feb 18 11:55:55 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* regrename.c (kill_set_value): Handle subregs properly.
+
 2002-02-18  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* objc/objc-act.c (handle_impent): Remove leading '*'
