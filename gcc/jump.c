@@ -605,15 +605,6 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	  int this_is_simplejump, this_is_condjump, reversep = 0;
 	  int this_is_condjump_in_parallel;
 
-	  /* If one of our transformations has created more REGs we
-	     must rerun reg_scan or else we risk missed optimizations,
-	     erroneous optimizations, or even worse a crash.  */
-	  if (after_regscan &&
-	      old_max_reg < max_reg_num ())
-	    {
-	      reg_scan (f, max_reg_num (), 0);
-	      old_max_reg = max_reg_num ();
-	    }
 #if 0
 	  /* If NOT the first iteration, if this is the last jump pass
 	     (just before final), do the special peephole optimizations.
@@ -987,7 +978,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	     We set:
 
 	     TEMP to the "x = exp;" insn.
-	     TEMP1 to the single set in the "x = exp; insn.
+	     TEMP1 to the single set in the "x = exp;" insn.
 	     TEMP2 to "x".  */
 
 	  if (! reload_completed
@@ -1021,6 +1012,12 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 						   PREV_INSN (temp3), temp);
 		  delete_insn (temp);
 		  reallabelprev = prev_active_insn (JUMP_LABEL (insn));
+
+		  if (after_regscan)
+		    {
+		      reg_scan_update (temp3, NEXT_INSN (next), old_max_reg);
+		      old_max_reg = max_reg_num ();
+		    }
 		}
 	    }
 
@@ -1073,6 +1070,12 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		  delete_insn (temp);
 		  delete_insn (temp3);
 		  reallabelprev = prev_active_insn (JUMP_LABEL (insn));
+
+		  if (after_regscan)
+		    {
+		      reg_scan_update (temp6, NEXT_INSN (next), old_max_reg);
+		      old_max_reg = max_reg_num ();
+		    }
 		}
 	    }
 
@@ -1133,6 +1136,12 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		  delete_insn (temp);
 		  delete_insn (temp3);
 		  reallabelprev = prev_active_insn (JUMP_LABEL (insn));
+
+		  if (after_regscan)
+		    {
+		      reg_scan_update (temp6, NEXT_INSN (next), old_max_reg);
+		      old_max_reg = max_reg_num ();
+		    }
 		}
 	    }
 #endif /* HAVE_cc0 */
@@ -1244,7 +1253,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
 		if (target)
 		  {
-		    rtx seq1,seq2;
+		    rtx seq1,seq2,last;
 
 		    /* Save the conditional move sequence but don't emit it
 		       yet.  On some machines, like the alpha, it is possible
@@ -1266,13 +1275,20 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		    emit_insns_before (seq1, temp5);
 		    /* Insert conditional move after insn, to be sure that
 		       the jump and a possible compare won't be separated */
-		    emit_insns_after (seq2, insn);
+		    last = emit_insns_after (seq2, insn);
 
 		    /* ??? We can also delete the insn that sets X to A.
 		       Flow will do it too though.  */
 		    delete_insn (temp);
 		    next = NEXT_INSN (insn);
 		    delete_jump (insn);
+
+		    if (after_regscan)
+		      {
+			reg_scan_update (seq1, NEXT_INSN (last), old_max_reg);
+			old_max_reg = max_reg_num ();
+		      }
+
 		    changed = 1;
 		    continue;
 		  }
@@ -1455,6 +1471,13 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		      delete_insn (temp);
 		      next = NEXT_INSN (insn);
 		      delete_jump (insn);
+
+		      if (after_regscan)
+			{
+			  reg_scan_update (seq, NEXT_INSN (next), old_max_reg);
+			  old_max_reg = max_reg_num ();
+			}
+
 		      changed = 1;
 		      continue;
 		    }
@@ -1574,6 +1597,13 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		  delete_insn (prev_nonnote_insn (insn));
 #endif
 		  delete_insn (insn);
+
+		  if (after_regscan)
+		    {
+		      reg_scan_update (seq, NEXT_INSN (next), old_max_reg);
+		      old_max_reg = max_reg_num ();
+		    }
+
 		  changed = 1;
 		  continue;
 		}

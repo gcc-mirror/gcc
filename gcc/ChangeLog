@@ -1,3 +1,14 @@
+Mon Jul 13 02:24:08 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* regclass.c (reg_scan_mark_refs): New arg min_regno.  Only update
+	regscan information for REGs with numbers greater than or equal to
+	this.  All callers changed.
+	(reg_scan_update): New function to efficiently update regscan
+	information on the fly.
+	* rtl.h: Add prototype.
+	* jump.c (jump_optimize): Call it when we make a transformation
+	which generates new pseudo-REGs.
+
 Sun Jul 12 13:08:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* collect2.c (main): Use "-x c" instead of "-lang-c" for force the
