@@ -1,3 +1,7 @@
+Sun Nov 28 00:41:44 1999  William Bader (william@nscs.fast.net)
+
+	* gcc_update: Allow patches compressed by bzip2.
+
 1999-10-11  Martin v. Löwis <loewis@informatik.hu-berlin.de>
 
 	* newcvsroot: New file.
