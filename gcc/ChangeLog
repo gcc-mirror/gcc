@@ -1,3 +1,8 @@
+2005-03-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/i860/i860.h (PREDICATE_CODES): Remove nonexistent
+	predicates.
+
 2005-03-21  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/ip2k/ip2k.h (target_flags, TARGET_SWITCHES): Delete.

@@ -1230,8 +1230,6 @@ extern const char *i860_reg_prefix;
    {"logic_operand",		{REG, SUBREG, CONST_INT}},		\
    {"shift_operand",		{REG, SUBREG, CONST_INT}},		\
    {"compare_operand",		{REG, SUBREG, CONST_INT}},		\
-   {"arith_const_operand",	{CONST_INT}},				\
-   {"logic_const_operand",	{CONST_INT}},				\
    {"bte_operand",		{REG, SUBREG, CONST_INT}},		\
    {"indexed_operand",		{MEM}},					\
    {"load_operand",		{MEM}},					\
