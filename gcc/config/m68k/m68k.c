@@ -44,6 +44,18 @@ Boston, MA 02111-1307, USA.  */
 #include "debug.h"
 #include "flags.h"
 
+enum reg_class regno_reg_class[] =
+{
+  DATA_REGS, DATA_REGS, DATA_REGS, DATA_REGS,
+  DATA_REGS, DATA_REGS, DATA_REGS, DATA_REGS,
+  ADDR_REGS, ADDR_REGS, ADDR_REGS, ADDR_REGS,
+  ADDR_REGS, ADDR_REGS, ADDR_REGS, ADDR_REGS,
+  FP_REGS, FP_REGS, FP_REGS, FP_REGS,
+  FP_REGS, FP_REGS, FP_REGS, FP_REGS,
+  ADDR_REGS
+};
+
+
 /* The ASM_DOT macro allows easy string pasting to handle the differences
    between MOTOROLA and MIT syntaxes in asm_fprintf(), which doesn't
    support the %. option.  */
