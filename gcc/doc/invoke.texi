@@ -11251,11 +11251,11 @@ seen in the compilation.  As it searches for the included file
 (@pxref{Search Path,,Search Path,cpp.info,The C Preprocessor}) the
 compiler looks for a precompiled header in each directory just before it
 looks for the include file in that directory.  The name searched for is
-the name specified in the @code{#include} with @samp{.pch} appended.  If
+the name specified in the @code{#include} with @samp{.gch} appended.  If
 the precompiled header file can't be used, it is ignored.
 
 For instance, if you have @code{#include "all.h"}, and you have
-@file{all.h.pch} in the same directory as @file{all.h}, then the
+@file{all.h.gch} in the same directory as @file{all.h}, then the
 precompiled header file will be used if possible, and the original
 header will be used otherwise.
 
@@ -11276,7 +11276,7 @@ they've already been included (in the precompiled header).
 
 If you need to precompile the same header file for different
 languages, targets, or compiler options, you can instead make a
-@emph{directory} named like @file{all.h.pch}, and put each precompiled
+@emph{directory} named like @file{all.h.gch}, and put each precompiled
 header in the directory.  (It doesn't matter what you call the files
 in the directory, every precompiled header in the directory will be
 considered.)  The first precompiled header encountered in the

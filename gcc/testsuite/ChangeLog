@@ -1,3 +1,8 @@
+2003-02-28  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/pch/pch.exp: Change .pch to .gch.
+	* g++.dg/pch/pch.exp: Likewise.
+
 2003-02-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9879

@@ -1,4 +1,4 @@
-#   Copyright (C) 1997, 2002 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 2002, 2003 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,9 +36,9 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
     set nshort [file tail [file dirname $test]]/[file tail $test]
     set bname "[file rootname [file tail $test]]"
 
-    catch { file delete "$bname.h.pch" }
+    catch { file delete "$bname.h.gch" }
     catch { file delete "$bname.s" }
-    catch { file delete "$bname.s-pch" }
+    catch { file delete "$bname.s-gch" }
 
     # We don't try to use the loop-optimizing options, since they are highly
     # unlikely to make any difference to PCH.
@@ -54,17 +54,17 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
 	# For the rest, the default is to compile to .s.
 	set dg-do-what-default compile
 
-	if { [ file exists "$bname.h.pch" ] } {
+	if { [ file exists "$bname.h.gch" ] } {
 	    # Ensure that the PCH file is used, not the original header.
 	    file delete "$bname.h"
 
 	    dg-test -keep-output $test $flags "-I."
-	    file delete "$bname.h.pch"
+	    file delete "$bname.h.gch"
 	    if { [ file exists "$bname.s" ] } {
-		file rename "$bname.s" "$bname.s-pch"
+		file rename "$bname.s" "$bname.s-gch"
 		file copy "[file rootname $test].hs" "$bname.h"
 		dg-test -keep-output $test $flags "-I."
-		set tmp [ diff "$bname.s" "$bname.s-pch" ]
+		set tmp [ diff "$bname.s" "$bname.s-gch" ]
 		if { $tmp == 0 } {
 		    untested "$nshort $flags assembly comparison"
 		} elseif { $tmp == 1 } {
@@ -74,7 +74,7 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
 		}
 		file delete "$bname.h"
 		file delete "$bname.s"
-		file delete "$bname.s-pch"
+		file delete "$bname.s-gch"
 	    } else {
 		untested "$nshort $flags assembly comparison"
 	    }

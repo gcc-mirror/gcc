@@ -929,11 +929,11 @@ static const struct compiler default_compilers[] =
 	  %{save-temps|traditional-cpp:%(trad_capable_cpp) \
 		%(cpp_options) %b.i \n\
 		    cc1 -fpreprocessed %b.i %(cc1_options)\
-                        -o %g.s %{!o*:--output-pch=%i.pch}\
+                        -o %g.s %{!o*:--output-pch=%i.gch}\
                         %W{o*:--output-pch=%*}%V}\
 	  %{!save-temps:%{!traditional-cpp:\
 		cc1 %(cpp_unique_options) %(cc1_options)\
-                    -o %g.s %{!o*:--output-pch=%i.pch}\
+                    -o %g.s %{!o*:--output-pch=%i.gch}\
                     %W{o*:--output-pch=%*}%V}}}}}", 0},
   {".i", "@cpp-output", 0},
   {"@cpp-output",

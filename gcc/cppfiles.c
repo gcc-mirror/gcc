@@ -1,5 +1,5 @@
 /* Part of CPP library.  (include file handling)
-   Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1998,
+   Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1998, 2003,
    1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
@@ -362,7 +362,7 @@ open_file_pch (pfile, filename)
       splay_tree_node nd;
       
       memcpy (pchname, filename, namelen);
-      memcpy (pchname + namelen, ".pch", 5);
+      memcpy (pchname + namelen, ".gch", 5);
 
       nd = find_or_create_entry (pfile, pchname);
       file = (struct include_file *) nd->value;
