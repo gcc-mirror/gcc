@@ -1280,8 +1280,7 @@ extern struct rtx_def *(*i386_compare_gen)(), *(*i386_compare_gen_eq)();
    For non floating point regs, the following are the HImode names.
 
    For float regs, the stack top is sometimes referred to as "%st(0)"
-   instead of just "%st".  PRINT_REG in i386.c handles with with the
-   "y" code.  */
+   instead of just "%st".  PRINT_REG handles this with the "y" code.  */
 
 #define HI_REGISTER_NAMES \
 {"ax","dx","cx","bx","si","di","bp","sp",          \
@@ -1461,13 +1460,11 @@ do { union { float f; long l;} tem;			\
    If CODE is 'h', pretend the reg is the `high' byte register.
    If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op. */
 
-extern char *hi_reg_name[];
-extern char *qi_reg_name[];
-extern char *qi_high_reg_name[];
-
 #define PRINT_REG(X, CODE, FILE) \
-  do { if (REGNO (X) == ARG_POINTER_REGNUM)		\
-	 abort ();					\
+  do { static char *hi_reg_name[] = HI_REGISTER_NAMES;	\
+       static char *qi_reg_name[] = QI_REGISTER_NAMES;	\
+       static char *qi_high_reg_name[] = QI_HIGH_REGISTER_NAMES;	\
+       if (REGNO (X) == ARG_POINTER_REGNUM) abort ();	\
        fprintf (FILE, "%s", RP);			\
        switch ((CODE == 'w' ? 2 			\
 		: CODE == 'b' ? 1			\
@@ -1478,13 +1475,9 @@ extern char *qi_high_reg_name[];
 	 {						\
 	 case 3:					\
 	   if (STACK_TOP_P (X))				\
-	     {						\
-	       fputs ("st(0)", FILE);			\
-	       break;					\
-	     }						\
-	 case 4:					\
-	 case 8:					\
-	   if (!FP_REG_P (X)) fputs ("e", FILE);	\
+	     { fputs ("st(0)", FILE); break; }		\
+	 case 4: case 8:				\
+	   if (! FP_REG_P (X)) fputs ("e", FILE);	\
 	 case 2:					\
 	   fputs (hi_reg_name[REGNO (X)], FILE);	\
 	   break;					\
