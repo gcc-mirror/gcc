@@ -1,3 +1,8 @@
+2002-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/6037
+	* decl.c (start_enum): Don't set TREE_ADDRESSABLE on TREE_LIST node.
+
 2002-03-22  Jeff Knaggs  <jknaggs@redhat.com>
 
 	* typeck.c (expand_ptrmemfunc_cst): Scale idx down to an index
