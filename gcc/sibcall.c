@@ -758,7 +758,7 @@ optimize_sibling_and_tail_recursive_calls ()
 	}
 
       /* Similarly, invalidate RTX_UNCHANGING_P for any incoming
-	 arguments passed in registers. */
+	 arguments passed in registers.  */
       for (arg = DECL_ARGUMENTS (current_function_decl); 
 	   arg; 
 	   arg = TREE_CHAIN (arg))

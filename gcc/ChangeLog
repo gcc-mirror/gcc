@@ -1,3 +1,13 @@
+2002-04-30  Kazu Hirata  <kazu@hxi.com>
+
+	* cpplex.c: Fix comment formatting.
+	* function.c: Likewise.
+	* integrate.c: Likewise.
+	* regrename.c: Likewise.
+	* sibcall.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* tree-inline.c: Likewise.
+
 2002-04-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* config.gcc (hppa1.1-*-pro*, hppa1.1-*-osf*, hppa1.1-*-rtems*,

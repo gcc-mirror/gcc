@@ -1904,7 +1904,7 @@ simplify_relational_operation (code, mode, op0, op1)
       REAL_VALUE_FROM_CONST_DOUBLE (d0, trueop0);
       REAL_VALUE_FROM_CONST_DOUBLE (d1, trueop1);
 
-      /* Comparisons are unordered iff at least one of the values is NaN. */
+      /* Comparisons are unordered iff at least one of the values is NaN.  */
       if (REAL_VALUE_ISNAN (d0) || REAL_VALUE_ISNAN (d1))
 	switch (code)
 	  {

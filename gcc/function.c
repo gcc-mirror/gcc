@@ -2567,7 +2567,7 @@ fixup_memory_subreg (x, insn, promoted_mode, uncritical)
   if (BYTES_BIG_ENDIAN)
     /* If the PROMOTED_MODE is wider than the mode of the MEM, adjust
        the offset so that it points to the right location within the
-       MEM. */
+       MEM.  */
     offset -= (GET_MODE_SIZE (promoted_mode) - GET_MODE_SIZE (GET_MODE (mem)));
 
   if (!flag_force_addr

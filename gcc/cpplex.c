@@ -763,7 +763,7 @@ save_comment (pfile, token, from, type)
   buffer[0] = '/';
   memcpy (buffer + 1, from, len - 1);
 
-  /* Finish conversion to a C comment, if necessary. */
+  /* Finish conversion to a C comment, if necessary.  */
   if (pfile->state.in_directive && type == '/')
     {
       buffer[1] = '*';

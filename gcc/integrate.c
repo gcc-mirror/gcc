@@ -1396,7 +1396,7 @@ copy_insn_list (insns, map, static_chain_value)
              memory references via that register can then be
              identified as static chain references.  We assume that
              the register is only assigned once, and that the static
-             chain address is only live in one register at a time. */
+             chain address is only live in one register at a time.  */
 
 	  else if (static_chain_value != 0
 		   && set != 0
