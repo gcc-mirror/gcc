@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package java.nio.channels.spi;
 
+import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.List;
@@ -44,57 +45,70 @@ import java.util.Set;
 
 public abstract class AbstractSelector extends Selector
 {
-  boolean closed = true;
+  boolean closed = false;
   SelectorProvider provider;
 
-  protected AbstractSelector(SelectorProvider provider)
+  /**
+   * Initializes the slector.
+   */
+  protected AbstractSelector (SelectorProvider provider)
   {
     this.provider = provider;
   }
  
-  protected final void begin()
+  /**
+   * Marks the beginning of an I/O operation that might block indefinitely.
+   */
+  protected final void begin ()
   {
   }
 
   /**
+   * Closes the channel.
+   * 
    * @exception IOException If an error occurs
    */
-  public final void close()
+  public final void close () throws IOException
   {
     if (closed)
       return;
+    
     closed = true;
-    implCloseSelector();
+    implCloseSelector ();
   }
 
-  protected final void deregister(AbstractSelectionKey key)
+  /**
+   * Tells whether this channel is open or not.
+   */
+  public final boolean isOpen ()
   {
-    cancelledKeys().remove(key);
+    return ! closed;
+  }
+
+  protected final void deregister (AbstractSelectionKey key)
+  {
+    cancelledKeys ().remove (key);
   }
     
   protected final void end()
   {
   }
     
-  public final boolean isOpen()
-  {
-    return ! closed;
-  }
-    
-  public final SelectorProvider provider()
+  public final SelectorProvider provider ()
   {
     return provider;
   }
-    
+
   protected final Set cancelledKeys()
   {
     return null;
   }
-  
+
   /**
-   * @exception IOException If an error occurs
+   * Closes the channel.
    */
-  protected abstract void implCloseSelector();	
-  
-  protected abstract SelectionKey register(AbstractSelectableChannel ch, int ops, Object att);   
+  protected abstract void implCloseSelector () throws IOException;
+
+  protected abstract SelectionKey register (AbstractSelectableChannel ch,
+                                            int ops, Object att);   
 }
