@@ -18,7 +18,7 @@ details.  */
 #define HANDLE_FPE 1
 
 #define SIGNAL_HANDLER(_name) 						\
-static void _name (int _dummy, siginfo_t *_info, ucontext_t *_context)
+static void _name (int _dummy, siginfo_t *_info, void *arg)
 
 #define FLUSH_REGISTER_WINDOWS					\
   asm volatile ("ta 3");
@@ -26,6 +26,7 @@ static void _name (int _dummy, siginfo_t *_info, ucontext_t *_context)
 #define MAKE_THROW_FRAME					\
 do								\
 {								\
+  ucontext_t *_context = (ucontext_t *) arg;                    \
   (void)_dummy;							\
   (void)_info;							\
   register int sp = _context->uc_mcontext.gregs[REG_SP];	\
