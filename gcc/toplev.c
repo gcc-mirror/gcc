@@ -781,6 +781,7 @@ char *lang_options[] =
   "-Wno-selector",
   "-Wprotocol",
   "-Wno-protocol",
+  "-print-objc-runtime-info",
 
 #include "options.h"
   0
