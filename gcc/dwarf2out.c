@@ -1093,6 +1093,49 @@ initial_return_save (rtl)
   reg_save (NULL, DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa.offset);
 }
 
+/* Given a SET, calculate the amount of stack adjustment it
+   contains. */
+
+static long stack_adjust_offset (pattern)
+  rtx pattern;
+{
+  rtx src = SET_SRC (pattern);
+  rtx dest = SET_DEST (pattern);
+  long offset = 0;
+  enum rtx_code code;
+
+  if (dest == stack_pointer_rtx)
+    {
+      /* (set (reg sp) (plus (reg sp) (const_int))) */
+      code = GET_CODE (src);
+      if (! (code == PLUS || code == MINUS)
+	  || XEXP (src, 0) != stack_pointer_rtx
+	  || GET_CODE (XEXP (src, 1)) != CONST_INT)
+	return 0;
+
+      offset = INTVAL (XEXP (src, 1));
+    }
+  else if (GET_CODE (dest) == MEM)
+    {
+      /* (set (mem (pre_dec (reg sp))) (foo)) */
+      src = XEXP (dest, 0);
+      code = GET_CODE (src);
+
+      if (! (code == PRE_DEC || code == PRE_INC)
+	  || XEXP (src, 0) != stack_pointer_rtx)
+	return 0;
+
+      offset = GET_MODE_SIZE (GET_MODE (dest));
+    }
+  else
+    return 0;
+
+  if (code == PLUS || code == PRE_INC)
+    offset = -offset;
+
+  return offset;
+}
+
 /* Check INSN to see if it looks like a push or a stack adjustment, and
    make a note of it if it does.  EH uses this information to find out how
    much extra space it needs to pop off the stack.  */
@@ -1138,45 +1181,26 @@ dwarf2out_stack_adjust (insn)
     }
   else if (GET_CODE (PATTERN (insn)) == SET)
     {
-      rtx src, dest;
-      enum rtx_code code;
+      offset = stack_adjust_offset (PATTERN (insn));
+    }
+  else if (GET_CODE (PATTERN (insn)) == PARALLEL
+	   || GET_CODE (PATTERN (insn)) == SEQUENCE)
+    {
+      /* There may be stack adjustments inside compound insns.  Search
+         for them. */
+      int j;
 
-      insn = PATTERN (insn);
-      src = SET_SRC (insn);
-      dest = SET_DEST (insn);
-
-      if (dest == stack_pointer_rtx)
+      offset = 0;
+      for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
 	{
-	  /* (set (reg sp) (plus (reg sp) (const_int))) */
-	  code = GET_CODE (src);
-	  if (! (code == PLUS || code == MINUS)
-	      || XEXP (src, 0) != stack_pointer_rtx
-	      || GET_CODE (XEXP (src, 1)) != CONST_INT)
-	    return;
-
-	  offset = INTVAL (XEXP (src, 1));
+	  rtx pattern = XVECEXP (PATTERN (insn), 0, j);
+	  if (GET_CODE (pattern) == SET)
+	    offset += stack_adjust_offset (pattern);
 	}
-      else if (GET_CODE (dest) == MEM)
-	{
-	  /* (set (mem (pre_dec (reg sp))) (foo)) */
-	  src = XEXP (dest, 0);
-	  code = GET_CODE (src);
-
-	  if (! (code == PRE_DEC || code == PRE_INC)
-	      || XEXP (src, 0) != stack_pointer_rtx)
-	    return;
-
-	  offset = GET_MODE_SIZE (GET_MODE (dest));
-	}
-      else
-	return;
-
-      if (code == PLUS || code == PRE_INC)
-	offset = -offset;
     }
   else
     return;
-
+  
   if (offset == 0)
     return;
 
