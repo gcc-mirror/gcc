@@ -1841,6 +1841,22 @@ strip_offset (tree expr, bool inside_addr, unsigned HOST_WIDE_INT *offset)
   return fold_convert (orig_type, expr);
 }
 
+/* Returns variant of TYPE that can be used as base for different uses.
+   For integer types, we return unsigned variant of the type, which
+   avoids problems with overflows.  For pointer types, we return void *.  */
+
+static tree
+generic_type_for (tree type)
+{
+  if (POINTER_TYPE_P (type))
+    return ptr_type_node;
+
+  if (TYPE_UNSIGNED (type))
+    return type;
+
+  return unsigned_type_for (type);
+}
+
 /* Adds a candidate BASE + STEP * i.  Important field is set to IMPORTANT and
    position to POS.  If USE is not NULL, the candidate is set as related to
    it.  If both BASE and STEP are NULL, we add a pseudocandidate for the
@@ -1853,14 +1869,14 @@ add_candidate_1 (struct ivopts_data *data,
 {
   unsigned i;
   struct iv_cand *cand = NULL;
-  tree type;
+  tree type, orig_type;
   
   if (base)
     {
-      type = TREE_TYPE (base);
-      if (!TYPE_UNSIGNED (type))
+      orig_type = TREE_TYPE (base);
+      type = generic_type_for (orig_type);
+      if (type != orig_type)
 	{
-	  type = unsigned_type_for (type);
 	  base = fold_convert (type, base);
 	  if (step)
 	    step = fold_convert (type, step);

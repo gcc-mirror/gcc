@@ -1,3 +1,9 @@
+2005-04-06  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR target/20625
+	* tree-ssa-loop-ivopts.c (generic_type_for): New function.
+	(add_candidate_1): Use generic_type_for instead of unsigned_type_for.
+
 2005-04-05  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.md (*truncdfsf2_i387_1): New pattern.
