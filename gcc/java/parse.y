@@ -391,12 +391,6 @@ static GTY(()) tree java_lang_id;
    instance/field access functions.  */
 static GTY(()) tree inst_id;
 
-/* The "java.lang.Cloneable" qualified name.  */
-static GTY(()) tree java_lang_cloneable;
-
-/* The "java.io.Serializable" qualified name.  */
-static GTY(()) tree java_io_serializable;
-
 /* Context and flag for static blocks */
 static GTY(()) tree current_static_block;
 
@@ -13071,9 +13065,10 @@ valid_ref_assignconv_cast_p (source, dest, cast)
 	{
 	  /* Array */
 	  return (cast
-		  && (DECL_NAME (TYPE_NAME (source)) == java_lang_cloneable
+		  && (DECL_NAME (TYPE_NAME (source))
+		      == java_lang_cloneable_identifier_node
 		      || (DECL_NAME (TYPE_NAME (source))
-			  == java_io_serializable)));
+			  == java_io_serializable_identifier_node)));
 	}
     }
   if (TYPE_ARRAY_P (source))
@@ -13083,8 +13078,10 @@ valid_ref_assignconv_cast_p (source, dest, cast)
       /* Can't cast an array to an interface unless the interface is
 	 java.lang.Cloneable or java.io.Serializable.  */
       if (TYPE_INTERFACE_P (dest))
-	return (DECL_NAME (TYPE_NAME (dest)) == java_lang_cloneable
-		|| DECL_NAME (TYPE_NAME (dest)) == java_io_serializable);
+	return (DECL_NAME (TYPE_NAME (dest))
+		== java_lang_cloneable_identifier_node
+		|| (DECL_NAME (TYPE_NAME (dest))
+		    == java_io_serializable_identifier_node));
       else			/* Arrays */
 	{
 	  tree source_element_type = TYPE_ARRAY_ELEMENT (source);

@@ -258,6 +258,9 @@ typedef struct CPool constant_pool;
 #define COMPONENT_REF_SIGNATURE(CPOOL, IDX) \
   NAME_AND_TYPE_SIGNATURE (CPOOL, COMPONENT_REF_NAME_AND_TYPE(CPOOL, IDX))
 
+extern GTY(()) tree java_lang_cloneable_identifier_node;
+extern GTY(()) tree java_io_serializable_identifier_node;
+
 enum java_tree_index
 {
   JTI_PROMOTED_BYTE_TYPE_NODE,

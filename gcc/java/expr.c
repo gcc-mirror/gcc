@@ -1,5 +1,5 @@
 /* Process expressions for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -391,7 +391,12 @@ can_widen_reference_to (source_type, target_type)
 	{
 	  HOST_WIDE_INT source_length, target_length;
 	  if (TYPE_ARRAY_P (source_type) != TYPE_ARRAY_P (target_type))
-	    return 0;
+	    {
+	      /* An array implements Cloneable and Serializable.  */
+	      tree name = DECL_NAME (TYPE_NAME (target_type));
+	      return (name == java_lang_cloneable_identifier_node
+		      || name == java_io_serializable_identifier_node);
+	    }
 	  target_length = java_array_type_length (target_type);
 	  if (target_length >= 0)
 	    {
