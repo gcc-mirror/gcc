@@ -1328,9 +1328,8 @@ mips_move_2words (operands, insn)
 		    {
 		      if (TARGET_FLOAT64 && !TARGET_64BIT)
 			{
-			  operands[2] = GEN_INT (CONST_DOUBLE_LOW (op1));
-			  operands[3] = GEN_INT (CONST_DOUBLE_HIGH (op1));
-			  ret = "li\t%M0,%3\n\tli\t%L0,%2";
+			  split_double (op1, operands + 2, operands + 3);
+			  ret = "li\t%0,%2\n\tli\t%D0,%3";
 			}
 		      else
 			ret = "li.d\t%0,%1\n\tdsll\t%D0,%0,32\n\tdsrl\t%D0,32\n\tdsrl\t%0,32";
@@ -1345,9 +1344,8 @@ mips_move_2words (operands, insn)
 
 	      else
 		{
-		  operands[2] = GEN_INT (CONST_DOUBLE_LOW (op1));
-		  operands[3] = GEN_INT (CONST_DOUBLE_HIGH (op1));
-		  ret = "li\t%M0,%3\n\tli\t%L0,%2";
+		  split_double (op1, operands + 2, operands + 3);
+		  ret = "li\t%0,%2\n\tli\t%D0,%3";
 		}
 	    }
 
@@ -2481,19 +2479,22 @@ output_block_move (insn, operands, num_regs, move_type)
       /* ??? Fails because of a MIPS assembler bug?  */
       else if (TARGET_64BIT && bytes >= 8)
 	{
-#if BYTES_BIG_ENDIAN
-	  load_store[num].load       = "ldl\t%0,%1\n\tldr\t%0,%2";
-	  load_store[num].load_nop   = "ldl\t%0,%1\n\tldr\t%0,%2%#";
-	  load_store[num].store      = "sdl\t%0,%1\n\tsdr\t%0,%2";
-	  load_store[num].last_store = "sdr\t%0,%2";
-	  load_store[num].final      = "sdl\t%0,%1";
-#else
-	  load_store[num].load	     = "ldl\t%0,%2\n\tldr\t%0,%1";
-	  load_store[num].load_nop   = "ldl\t%0,%2\n\tldr\t%0,%1%#";
-	  load_store[num].store	     = "sdl\t%0,%2\n\tsdr\t%0,%1";
-	  load_store[num].last_store = "sdr\t%0,%1";
-	  load_store[num].final      = "sdl\t%0,%2";
-#endif
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      load_store[num].load       = "ldl\t%0,%1\n\tldr\t%0,%2";
+	      load_store[num].load_nop   = "ldl\t%0,%1\n\tldr\t%0,%2%#";
+	      load_store[num].store      = "sdl\t%0,%1\n\tsdr\t%0,%2";
+	      load_store[num].last_store = "sdr\t%0,%2";
+	      load_store[num].final      = "sdl\t%0,%1";
+	    }
+	  else
+	    {
+	      load_store[num].load	     = "ldl\t%0,%2\n\tldr\t%0,%1";
+	      load_store[num].load_nop   = "ldl\t%0,%2\n\tldr\t%0,%1%#";
+	      load_store[num].store	     = "sdl\t%0,%2\n\tsdr\t%0,%1";
+	      load_store[num].last_store = "sdr\t%0,%1";
+	      load_store[num].final      = "sdl\t%0,%2";
+	    }
 	  load_store[num].mode = DImode;
 	  offset += 8;
 	  bytes -= 8;
@@ -2514,19 +2515,22 @@ output_block_move (insn, operands, num_regs, move_type)
 
       else if (bytes >= 4)
 	{
-#if BYTES_BIG_ENDIAN
-	  load_store[num].load       = "lwl\t%0,%1\n\tlwr\t%0,%2";
-	  load_store[num].load_nop   = "lwl\t%0,%1\n\tlwr\t%0,%2%#";
-	  load_store[num].store      = "swl\t%0,%1\n\tswr\t%0,%2";
-	  load_store[num].last_store = "swr\t%0,%2";
-	  load_store[num].final      = "swl\t%0,%1";
-#else
-	  load_store[num].load	     = "lwl\t%0,%2\n\tlwr\t%0,%1";
-	  load_store[num].load_nop   = "lwl\t%0,%2\n\tlwr\t%0,%1%#";
-	  load_store[num].store	     = "swl\t%0,%2\n\tswr\t%0,%1";
-	  load_store[num].last_store = "swr\t%0,%1";
-	  load_store[num].final      = "swl\t%0,%2";
-#endif
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      load_store[num].load       = "lwl\t%0,%1\n\tlwr\t%0,%2";
+	      load_store[num].load_nop   = "lwl\t%0,%1\n\tlwr\t%0,%2%#";
+	      load_store[num].store      = "swl\t%0,%1\n\tswr\t%0,%2";
+	      load_store[num].last_store = "swr\t%0,%2";
+	      load_store[num].final      = "swl\t%0,%1";
+	    }
+	  else
+	    {
+	      load_store[num].load	     = "lwl\t%0,%2\n\tlwr\t%0,%1";
+	      load_store[num].load_nop   = "lwl\t%0,%2\n\tlwr\t%0,%1%#";
+	      load_store[num].store	     = "swl\t%0,%2\n\tswr\t%0,%1";
+	      load_store[num].last_store = "swr\t%0,%1";
+	      load_store[num].final      = "swl\t%0,%2";
+	    }
 	  load_store[num].mode = SImode;
 	  offset += 4;
 	  bytes -= 4;
@@ -3623,13 +3627,9 @@ print_operand (file, op, letter)
     {
       register int regnum = REGNO (op);
 
-      if (letter == 'M')
-	regnum += MOST_SIGNIFICANT_WORD;
-
-      else if (letter == 'L')
-	regnum += LEAST_SIGNIFICANT_WORD;
-
-      else if (letter == 'D')
+      if ((letter == 'M' && ! WORDS_BIG_ENDIAN)
+	  || (letter == 'L' && WORDS_BIG_ENDIAN)
+	  || letter == 'D')
 	regnum++;
 
       fprintf (file, "%s", reg_names[regnum]);

@@ -80,7 +80,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{!.S:%{!.s:	-D__LANGUAGE_C__  -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}} \
 %{mlong64:-D__PTRDIFF_TYPE__=long\\ int} \
 %{!mlong64:-D__PTRDIFF_TYPE__=int} \
-%{mips3:-U__mips -D__mips=3}"
+%{mips3:-U__mips -D__mips=3} \
+%{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
+%{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}}"
 
 /* ??? This assumes that GNU as is always used with GNU ld, and MIPS as is
    always used with MIPS ld.  */
