@@ -1,3 +1,7 @@
+Mon Oct 5 08:19:55 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Mon Oct  5 01:07:23 1998  Torbjorn Granlund  <tege@matematik.su.se>
 
 	* expmed.c (expand_divmod): Don't widen for computing remainder
