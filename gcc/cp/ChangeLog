@@ -1,5 +1,11 @@
 2000-10-21  Geoffrey Keating  <geoffk@cygnus.com>
 
+	* decl2.c (arg_assoc_type): Handle VECTOR_TYPE.
+	* error.c (dump_type): Handle VECTOR_TYPE like POINTER_TYPE.
+	(dump_type_prefix): Print vector-of-int as 'int vector'.
+	(dump_type_suffix): Handle VECTOR_TYPE like POINTER_TYPE.
+	* tree.c (walk_tree): Handle VECTOR_TYPE.
+
 	* decl.c (init_decl_processing): Call MD_INIT_BUILTINS.
 	
 2000-10-21  Jason Merrill  <jason@redhat.com>

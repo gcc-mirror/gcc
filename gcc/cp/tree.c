@@ -1351,6 +1351,7 @@ walk_tree (tp, func, data, htab)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
+    case VECTOR_TYPE:
       WALK_SUBTREE (TREE_TYPE (*tp));
       break;
 
