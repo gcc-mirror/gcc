@@ -51,8 +51,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define LINK_SPEC "-T512 -H512 -btextro -bhalt:4 -bnodelcsect"
 
-/* Add -lfp_p when running with -p or -pg.  */
-#define LIB_SPEC "%{pg:-lfp_p}%{p:-lfp_p} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
+/* Profiled library versions are used by linking with special directories.  */
+#define LIB_SPEC "%{pg:-L/lib/profiled -L/usr/lib/profiled}\
+   %{p:-L/lib/profiled -L/usr/lib/profiled} %{g*:-lg} -lc"
 
 /* gcc must do the search itself to find libgcc.a, not use -l.  */
 #define LINK_LIBGCC_SPECIAL
@@ -93,13 +94,11 @@ extern int target_flags;
     }					\
 }
 
-/* Define this to modify the options specified by the user.
-
-   We turn off profiling because we don't know how to do it.  */
+/* Define this to modify the options specified by the user.  */
 
 #define OVERRIDE_OPTIONS		\
 {					\
-   profile_flag = profile_block_flag = 0; \
+   profile_block_flag = 0;		\
 }
 
 /* target machine storage layout */
@@ -781,12 +780,10 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 #define FUNCTION_PROLOGUE(FILE, SIZE) output_prolog (FILE, SIZE)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.
-
-   I have no real idea what r3 should point to here.  */
+   for profiling a function entry.  */
 
 #define FUNCTION_PROFILER(FILE, LABELNO)	\
-  fprintf(FILE, "\tbl mcount\n");
+  output_function_profiler ((FILE), (LABELNO));
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter. No definition is equivalent to
