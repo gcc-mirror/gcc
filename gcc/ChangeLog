@@ -1,3 +1,10 @@
+2003-08-20  Gunther Nikl  <gni@gecko.de>
+
+	* config/m68k/m68k.c (m68k_output_function_prologue): use %U in
+	label name
+	* config/m68k/m68k.c (m68k_output_function_epilogue): replace
+	HOST_WIDE_INT_PRINT_DEC with %wd
+
 2003-08-20  Loren James Rittle  <ljrittle@acm.org>
 
 	* config/i386/freebsd.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Handle

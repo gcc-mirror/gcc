@@ -572,7 +572,7 @@ m68k_output_function_prologue (stream, size)
       asm_fprintf (stream, "\t%Olea (%Rpc, %U_GLOBAL_OFFSET_TABLE_@GOTPC), %s\n",
 		   reg_names[PIC_OFFSET_TABLE_REGNUM]);
 #else
-      asm_fprintf (stream, "\tmovel %I__GLOBAL_OFFSET_TABLE_, %s\n",
+      asm_fprintf (stream, "\tmovel %I%U_GLOBAL_OFFSET_TABLE_, %s\n",
 		   reg_names[PIC_OFFSET_TABLE_REGNUM]);
       asm_fprintf (stream, "\tlea %Rpc@(0,%s:l),%s\n",
 		   reg_names[PIC_OFFSET_TABLE_REGNUM],
@@ -713,10 +713,9 @@ m68k_output_function_epilogue (stream, size)
 			     reg_names[FRAME_POINTER_REGNUM],
 			     reg_names[i]);
 #else
-		fprintf (stream,
-			 "\tmovel %s@(-" HOST_WIDE_INT_PRINT_DEC "),%s\n",
-			 reg_names[FRAME_POINTER_REGNUM],
-			 offset + fsize, reg_names[i]);
+		asm_fprintf (stream, "\tmovel %s@(-%wd),%s\n",
+			     reg_names[FRAME_POINTER_REGNUM],
+			     offset + fsize, reg_names[i]);
 #endif
 	      }
             offset = offset - 4;
