@@ -84,6 +84,7 @@ int gfc_default_double_kind;
 int gfc_default_character_kind;
 int gfc_default_logical_kind;
 int gfc_default_complex_kind;
+int gfc_c_int_kind;
 
 /* Query the target to determine which machine modes are available for
    computation.  Choose KIND numbers for them.  */
@@ -232,6 +233,8 @@ gfc_init_kinds (void)
 
   /* Choose the integer kind the same size as "void*" for our index kind.  */
   gfc_index_integer_kind = POINTER_SIZE / 8;
+  /* Pick a kind the same size as the C "int" type.  */
+  gfc_c_int_kind = INT_TYPE_SIZE / 8;
 }
 
 /* Make sure that a valid kind is present.  Returns an index into the

@@ -286,6 +286,12 @@ enum gfc_generic_isym_id
   GFC_ISYM_ASSOCIATED,
   GFC_ISYM_ATAN,
   GFC_ISYM_ATAN2,
+  GFC_ISYM_J0,
+  GFC_ISYM_J1,
+  GFC_ISYM_JN,
+  GFC_ISYM_Y0,
+  GFC_ISYM_Y1,
+  GFC_ISYM_YN,
   GFC_ISYM_BTEST,
   GFC_ISYM_CEILING,
   GFC_ISYM_CHAR,
@@ -301,6 +307,8 @@ enum gfc_generic_isym_id
   GFC_ISYM_DOT_PRODUCT,
   GFC_ISYM_DPROD,
   GFC_ISYM_EOSHIFT,
+  GFC_ISYM_ERF,
+  GFC_ISYM_ERFC,
   GFC_ISYM_ETIME,
   GFC_ISYM_EXP,
   GFC_ISYM_EXPONENT,
@@ -1518,6 +1526,7 @@ extern int gfc_default_double_kind;
 extern int gfc_default_character_kind;
 extern int gfc_default_logical_kind;
 extern int gfc_default_complex_kind;
+extern int gfc_c_int_kind;
 
 /* symbol.c */
 void gfc_clear_new_implicit (void);

@@ -1,3 +1,11 @@
+2004-08-29  Steven G. Kargl  <kargls@comcast.net>
+	Paul Brook  <paul@codesourcery.com>
+
+	* gfortran.dg/g77/README: Update.
+	* gfortran.dg/g77/erfc.f: Copy from g77.f-torture.
+	* gfortran.dg/g77/intrinsic-unix-bessel.f: Ditto.
+	* gfortran.dg/g77/intrinsic-unix-erf.f: Ditto.
+
 2004-08-28  Paul Brook  <paul@codesourcery.com>
 
 	PR libfortran/17195
