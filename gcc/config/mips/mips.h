@@ -63,6 +63,15 @@ enum processor_type {
   PROCESSOR_R4000
 };
 
+/* Which type of block move to do (whether or not the last store is
+   split out so it can fill a branch delay slot).  */
+
+enum block_move_type {
+  BLOCK_MOVE_NORMAL,			/* generate complete block move */
+  BLOCK_MOVE_NOT_LAST,			/* generate all but last store */
+  BLOCK_MOVE_LAST			/* generate just the last store */
+};
+
 extern char mips_reg_names[][8];	/* register names (a0 vs. $4). */
 extern char mips_print_operand_punct[];	/* print_operand punctuation chars */
 extern char *current_function_name;	/* current function being compiled */
@@ -638,7 +647,7 @@ do {							\
 #define MASK_DEBUG_A	0x20000000	/* don't allow <label>($reg) addrs */
 #define MASK_DEBUG_B	0x10000000	/* GO_IF_LEGITIMATE_ADDRESS debug */
 #define MASK_DEBUG_C	0x08000000	/* suppress normal divmod patterns */
-#define MASK_DEBUG_D	0x04000000	/* make multiply cost 2 */
+#define MASK_DEBUG_D	0x04000000	/* don't do define_split's */
 #define MASK_DEBUG_E	0x02000000	/* function_arg debug */
 #define MASK_DEBUG_F	0x01000000	/* don't try to suppress load nop's */
 #define MASK_DEBUG_G	0x00800000	/* don't support 64 bit arithmetic */
@@ -2313,7 +2322,7 @@ while (0)
       if (xmode == DFmode)						\
 	return COSTS_N_INSNS (5);					\
 									\
-      return COSTS_N_INSNS ((TARGET_DEBUG_D_MODE) ? 2 : 12);		\
+      return COSTS_N_INSNS (12);					\
     }									\
 									\
   case DIV:								\
