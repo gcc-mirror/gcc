@@ -2133,7 +2133,7 @@ SYMBOL__MAIN ()
 /* We declare the lists here with two elements each,
    so that they are valid empty lists if no other definition is loaded.  */
 #if !defined(INIT_SECTION_ASM_OP) && !defined(CTOR_LISTS_DEFINED_EXTERNALLY)
-#ifdef __NeXT__
+#if defined(__NeXT__) || defined(_AIX)
 /* After 2.3, try this definition on all systems.  */
 func_ptr __CTOR_LIST__[2] = {0, 0};
 func_ptr __DTOR_LIST__[2] = {0, 0};
