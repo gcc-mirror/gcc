@@ -1278,7 +1278,7 @@ namespace std
 	}
 
       // Strip leading zeros.
-      while (__temp_units[0] == __ctype.widen('0'))
+      while (__temp_units.size() > 1 && __temp_units[0] == __ctype.widen('0'))
 	__temp_units.erase(__temp_units.begin());
 
       if (__sign.size() && __sign == __neg_sign)
