@@ -156,7 +156,7 @@ namespace std
       // unformatted input and output with non-required basic_ios
       // instantiations is possible even without imbuing the expected
       // ctype<char_type> facet.
-      _M_fill = 0;
+      _M_fill = _CharT();
       _M_fill_init = false;
 
       _M_exception = goodbit;

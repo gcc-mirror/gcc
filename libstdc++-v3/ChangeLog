@@ -1,3 +1,22 @@
+2002-07-04  Benjamin Kosnik  <bkoz@redhat.com>
+            Jack Reeves  <jackw_reeves@hotmail.com>
+
+	* include/std/std_streambuf.h (basic_streambuf::_M_buf): Change to
+	size_t, from int_type.
+ 	(basic_streambuf::_M_buf_size_opt): Same.
+ 	(basic_streambuf::_S_pback_sizex): Same.	
+	* include/bits/streambuf.tcc: Same.
+	* include/std/std_streambuf.h (basic_streambuf::snextc): Use
+	eq_int_type.
+	(basic_streambuf::uflow): Same.
+	* include/bits/sstream.tcc (basic_stringbuf::overflow): Use
+	to_char_type.
+	* include/bits/basic_ios.tcc (basic_ios::init): Use _CharT().
+	* include/bits/streambuf.tcc (basic_streambuf::xsgetn): Use
+	eq_int_type.
+	(basic_streambuf::xsputn): Same.
+	(__copy_streambufs): Same.
+
 2002-07-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/std_memory.h: Fix formatting.
