@@ -1,3 +1,8 @@
+2002-01-14  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* emit_rtl.c (gen_lowpart_common): Conversion from const_int 
+	to const_double needs to be done right for big-endian systems.
+
 2002-01-24  Jason Merrill  <jason@redhat.com>
 
 	* config/sparc/sparc.md (call-jump peepholes): Pass the right insn

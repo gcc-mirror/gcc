@@ -919,13 +919,11 @@ gen_lowpart_common (mode, x)
 	low = INTVAL (x), high = low >> (HOST_BITS_PER_WIDE_INT -1);
       else
 	low = CONST_DOUBLE_LOW (x), high = CONST_DOUBLE_HIGH (x);
-
 #ifdef HOST_WORDS_BIG_ENDIAN
       u.i[0] = high, u.i[1] = low;
 #else
       u.i[0] = low, u.i[1] = high;
 #endif
-
       return CONST_DOUBLE_FROM_REAL_VALUE (u.d, mode);
     }
 
@@ -1009,12 +1007,16 @@ gen_lowpart_common (mode, x)
 	  high = CONST_DOUBLE_HIGH (x);
 	}
 
+#if HOST_BITS_PER_WIDE_INT == 32
       /* REAL_VALUE_TARGET_DOUBLE takes the addressing order of the
 	 target machine.  */
       if (WORDS_BIG_ENDIAN)
 	i[0] = high, i[1] = low;
       else
 	i[0] = low, i[1] = high;
+#else
+      i[0] = low;
+#endif
 
       r = REAL_VALUE_FROM_TARGET_DOUBLE (i);
       return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
