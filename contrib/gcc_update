@@ -69,6 +69,9 @@ gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
 gcc/doc/gcov.1: gcc/doc/gcov.texi
 gcc/doc/cpp.1: gcc/doc/cpp.texi
 gcc/doc/gcc.1: gcc/doc/invoke.texi
+gcc/doc/fsf-funding.7: gcc/doc/include/funding.texi
+gcc/doc/gfdl.7: gcc/doc/include/fdl.texi
+gcc/doc/gpl.7: gcc/doc/include/gpl.texi
 # And then, language-specific files
 gcc/f/intdoc.texi: gcc/f/intdoc.in gcc/f/intdoc.c gcc/f/intrin.h gcc/f/intrin.def
 # And libraries, at last
