@@ -1083,11 +1083,19 @@ check_format_info (info, params)
 	}
       if (*format_chars == 'h' || *format_chars == 'l' || *format_chars == 'q' ||
 	  *format_chars == 'L')
-	length_char = *format_chars++;
+	{
+	  length_char = *format_chars++;
+	  if (pedantic)
+	    pedwarn ("ANSI C does not support the `q' length modifier");
+	}
       else
 	length_char = 0;
       if (length_char == 'l' && *format_chars == 'l')
-	length_char = 'q', format_chars++;
+	{
+	  length_char = 'q', format_chars++;
+	  if (pedantic)
+	    pedwarn ("ANSI C does not support the `ll' length modifier");
+	}
       aflag = 0;
       if (*format_chars == 'a')
 	{
