@@ -71,13 +71,11 @@ test_value(int result, want_value expected)
 int 
 test01()
 {
-  std::string 	str_0("costa rica");
-  std::string 	str_1("costa marbella");
-  std::string 	str_2;
+  using namespace std;
 
-  using std::strcmp;
-  using std::strncmp;
-  using std::memcmp;
+  string 	str_0("costa rica");
+  string 	str_1("costa marbella");
+  string 	str_2;
 
   //sanity check
   test_value(strcmp("costa marbella", "costa rica"), lt); 
