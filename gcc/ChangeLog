@@ -1,5 +1,9 @@
 2004-07-22  Richard Henderson  <rth@redhat.com>
 
+	* expr.c (emit_push_insn): Don't use set_mem_attributes.
+
+2004-07-22  Richard Henderson  <rth@redhat.com>
+
 	* tree-ssa-live.c (create_ssa_var_map): Avoid defined-but-not-used
 	variables due to conditional compilation.
 
