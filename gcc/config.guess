@@ -83,7 +83,12 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	echo m88k-motorola-sysv3
 	exit 0 ;;
     AViiON:dgux:*:*)
- 	echo m88k-dg-dgux${UNAME_RELEASE}
+	if [ ${TARGET_BINARY_INTERFACE}x = m88kdguxelfx \
+	     -o ${TARGET_BINARY_INTERFACE}x = x ] ; then
+		echo m88k-dg-dgux${UNAME_RELEASE}
+	else
+		echo m88k-dg-dguxbcs${UNAME_RELEASE}
+	fi
  	exit 0 ;;
     M88*:*:R3*:*)
 	# Delta 88k system running SVR3
