@@ -1,3 +1,20 @@
+1998-06-13  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (complete_type_or_else): Declare.
+	* init.c (build_new_1, build_delete): Use it.
+	* typeck.c (require_complete_type): Use complete_type, rather than
+	expanding it inline.
+	(complete_type_or_else): New function.
+	(build_component_ref): Use it.
+	(pointer_int_sum): Make sure the type pointed to is complete.
+	(pointer_diff): Likewise.
+
+	* pt.c (for_each_template_parm): Traverse the TYPE_CONTEXT for
+	types. 
+
+	* search.c (get_matching_virtual): Note that member templates
+	cannot override virtual functions.
+
 1998-06-12  Brendan Kehoe  <brendan@cygnus.com>
 
 	* pt.c (check_explicit_specialization): If DECLARATOR turned into
