@@ -1,3 +1,8 @@
+2005-03-23  Uros Bizjak  <uros@kss-loka.si>
+	
+	* simplify-rtx.c (simplify_unary_operation) <NOT>: Add missing break
+	in code that deals with logicals on floats.
+
 2005-03-22  Uros Bizjak  <uros@kss-loka.si>
 
 	PR target/14981
