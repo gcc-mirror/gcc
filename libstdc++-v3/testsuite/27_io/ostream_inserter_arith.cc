@@ -312,26 +312,26 @@ test03()
   ostream o(&strbuf);
 
   o << oct << s << ' ' << hex << s;
-  if (sizeof(short) == 2)
+  if (numeric_limits<short>::digits + 1 == 16)
     VERIFY( strbuf.str() == "177777 ffff" );
-  else // sizeof(short) == 4
+  else
     VERIFY( strbuf.str() == "37777777777 ffffffff" );
   strbuf.str(str_blank);
 
   o << oct << i << ' ' << hex << i;
-  if (sizeof(int) == 2)
+  if (numeric_limits<int>::digits + 1 == 16)
     VERIFY( strbuf.str() == "177777 ffff" );
-  else if (sizeof(int) == 4)
+  else if (numeric_limits<int>::digits + 1 == 32)
     VERIFY( strbuf.str() == "37777777777 ffffffff" );
-  else // sizeof(int) == 8
+  else
     VERIFY( strbuf.str() == "1777777777777777777777 "
 	    "ffffffffffffffff" );
   strbuf.str(str_blank);
 
   o << oct << l << ' ' << hex << l;
-  if (sizeof(long) == 4)
+  if (numeric_limits<long>::digits + 1 == 32)
     VERIFY( strbuf.str() == "37777777777 ffffffff" );
-  else // sizeof(long) == 8
+  else
     VERIFY( strbuf.str() == "1777777777777777777777 "
 	    "ffffffffffffffff" );
   strbuf.str(str_blank);
