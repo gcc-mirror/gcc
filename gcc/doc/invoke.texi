@@ -4724,7 +4724,7 @@ collection to occur at every opportunity.
 @itemx reorder-blocks-duplicate-feedback
 
 Used by basic block reordering pass to decide whether to use unconditional
-branch or duplicate the code on it's destination.  Code is duplicated when it's
+branch or duplicate the code on its destination.  Code is duplicated when its
 estimated size is smaller than this value multiplied by the estimated size of
 unconditional jump in the hot spots of the program.
 
@@ -9573,11 +9573,11 @@ option is on by default if you optimize.
 @itemx -mprolog-function
 @opindex mno-prolog-function
 @opindex mprolog-function
-Do not use (do use) external functions to save and restore registers at
-the prolog and epilog of a function.  The external functions are slower,
-but use less code space if more than one function saves the same number
-of registers.  The @option{-mprolog-function} option is on by default if
-you optimize.
+Do not use (do use) external functions to save and restore registers
+at the prologue and epilogue of a function.  The external functions
+are slower, but use less code space if more than one function saves
+the same number of registers.  The @option{-mprolog-function} option
+is on by default if you optimize.
 
 @item -mspace
 @opindex mspace
