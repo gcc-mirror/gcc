@@ -138,7 +138,6 @@ static rtx ia64_expand_compare_and_swap PARAMS ((enum machine_mode, int,
 static rtx ia64_expand_lock_test_and_set PARAMS ((enum machine_mode,
 						  tree, rtx));
 static rtx ia64_expand_lock_release PARAMS ((enum machine_mode, tree, rtx));
-const struct attribute_spec ia64_attribute_table[];
 static bool ia64_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void ia64_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void ia64_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
@@ -156,6 +155,14 @@ static int ia64_variable_issue PARAMS ((FILE *, int, rtx, int));
 static rtx ia64_cycle_display PARAMS ((int, rtx));
 
 
+/* Table of valid machine attributes.  */
+static const struct attribute_spec ia64_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "syscall_linkage", 0, 0, false, true,  true,  NULL },
+  { NULL,              0, 0, false, false, false, NULL }
+};
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE ia64_attribute_table
@@ -6808,14 +6815,6 @@ ia64_epilogue_uses (regno)
       return 0;
     }
 }
-
-/* Table of valid machine attributes.  */
-const struct attribute_spec ia64_attribute_table[] =
-{
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "syscall_linkage", 0, 0, false, true,  true,  NULL },
-  { NULL,              0, 0, false, false, false, NULL }
-};
 
 /* For ia64, SYMBOL_REF_FLAG set means that it is a function.
 
