@@ -1,3 +1,7 @@
+2000-02-23  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* execute/va-arg-13.c: New test.
+
 Wed Feb 23 14:16:06 2000  Donald Lindsay  <dlindsay@cygnus.com>
 
 	* execute/va-arg-12.c: New test.
