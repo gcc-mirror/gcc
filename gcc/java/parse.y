@@ -5006,6 +5006,8 @@ build_alias_initializer_parameter_list (mode, class_type, parm, artificial)
     int *artificial;
 {
   tree field;
+  tree additional_parms = NULL_TREE;
+
   for (field = TYPE_FIELDS (class_type); field; field = TREE_CHAIN (field))
     if (FIELD_LOCAL_ALIAS (field))
       {
@@ -5056,11 +5058,19 @@ build_alias_initializer_parameter_list (mode, class_type, parm, artificial)
 	      }
 	    break;
 	  }
-	parm = tree_cons (purpose, value, parm);
+	additional_parms = tree_cons (purpose, value, additional_parms);
 	if (artificial)
 	  *artificial +=1;
       }
-  return parm;
+  if (additional_parms)
+    {
+      if (ANONYMOUS_CLASS_P (class_type) 
+          && mode == AIPL_FUNCTION_CTOR_INVOCATION)
+        additional_parms = nreverse (additional_parms);
+      parm = chainon (additional_parms, parm);
+    }
+
+   return parm;
 }
 
 /* Craft a constructor for CLASS_DECL -- what we should do when none
@@ -9737,11 +9747,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
       args = build_alias_initializer_parameter_list
 	(AIPL_FUNCTION_CTOR_INVOCATION, DECL_CONTEXT (list), args, NULL);
 
-      /* We have to reverse things. Find out why. FIXME */
-      if (ANONYMOUS_CLASS_P (DECL_CONTEXT (list)))
-	args = nreverse (args);
-      
-      /* Secretely pass the current_this/primary as a second argument */
+      /* Secretly pass the current_this/primary as a second argument */
       if (primary || current_this)
 	args = tree_cons (NULL_TREE, (primary ? primary : current_this), args);
       else
