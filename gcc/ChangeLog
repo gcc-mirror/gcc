@@ -1,5 +1,15 @@
 2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* final.c (profile_function): Do not emit profile counters in
+	the data section, if NO_PROFILE_COUNTERS is defined.
+	* tm.texi: Document NO_PROFILE_COUNTERS.  Update doc for
+	FUNCTION_PROFILER.
+
+	* config/i386/linux.h (NO_PROFILE_COUNTERS): Define.
+	(FUNCTION_PROFILER): Just emit a call to mcount.
+
+2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* tradcpp.c (main): Rename 'perror' label to 'sys_error'.
 
 	* cppexp.c, cpphash.c, cpphash.h, cppinit.c, cpplex.c,
