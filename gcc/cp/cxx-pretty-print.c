@@ -39,6 +39,7 @@ static void pp_cxx_ptr_operator (cxx_pretty_printer *, tree);
 static void pp_cxx_type_id (cxx_pretty_printer *, tree);
 static void pp_cxx_direct_abstract_declarator (cxx_pretty_printer *, tree);
 static void pp_cxx_declarator (cxx_pretty_printer *, tree);
+static void pp_cxx_parameter_declaration_clause (cxx_pretty_printer *, tree);
 static void pp_cxx_abstract_declarator (cxx_pretty_printer *, tree);
 static void pp_cxx_template_parameter (cxx_pretty_printer *, tree);
 

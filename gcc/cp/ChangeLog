@@ -1,3 +1,7 @@
+2004-03-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.c (pp_cxx_parameter_declaration_clause): Declare.
+
 2004-03-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* error.c (enum pad): Remove.
