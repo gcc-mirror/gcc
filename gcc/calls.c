@@ -2200,12 +2200,20 @@ expand_call (exp, target, ignore)
 
   int initial_highest_arg_in_use = highest_outgoing_arg_in_use;
   char *initial_stack_usage_map = stack_usage_map;
-  int old_stack_arg_under_construction = 0;
 
+  int old_stack_allocated;
+
+  /* State variables to track stack modifications.  */
   rtx old_stack_level = 0;
+  int old_stack_arg_under_construction = 0;
   int old_pending_adj = 0;
   int old_inhibit_defer_pop = inhibit_defer_pop;
-  int old_stack_allocated;
+
+  /* Some stack pointer alterations we make are performed via
+     allocate_dynamic_stack_space. This modifies the stack_pointer_delta,
+     which we then also need to save/restore along the way.  */
+  int old_stack_pointer_delta;
+
   rtx call_fusage;
   tree p = TREE_OPERAND (exp, 0);
   tree addr = TREE_OPERAND (exp, 0);
@@ -2751,6 +2759,7 @@ expand_call (exp, target, ignore)
 	  if (old_stack_level == 0)
 	    {
 	      emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
+	      old_stack_pointer_delta = stack_pointer_delta;
 	      old_pending_adj = pending_stack_adjust;
 	      pending_stack_adjust = 0;
 	      /* stack_arg_under_construction says whether a stack arg is
@@ -2877,53 +2886,58 @@ expand_call (exp, target, ignore)
 		     VIRTUAL_OUTGOING_ARGS_RTX changes as well.  But might
 		     as well always do it.  */
 		  argblock = copy_to_reg (argblock);
-
-		  /* The save/restore code in store_one_arg handles all
-		     cases except one: a constructor call (including a C
-		     function returning a BLKmode struct) to initialize
-		     an argument.  */
-		  if (stack_arg_under_construction)
-		    {
-#ifndef OUTGOING_REG_PARM_STACK_SPACE
-		      rtx push_size = GEN_INT (reg_parm_stack_space
-					       + adjusted_args_size.constant);
-#else
-		      rtx push_size = GEN_INT (adjusted_args_size.constant);
-#endif
-		      if (old_stack_level == 0)
-			{
-			  emit_stack_save (SAVE_BLOCK, &old_stack_level,
-					   NULL_RTX);
-			  old_pending_adj = pending_stack_adjust;
-			  pending_stack_adjust = 0;
-			  /* stack_arg_under_construction says whether a stack
-			     arg is being constructed at the old stack level.
-			     Pushing the stack gets a clean outgoing argument
-			     block.  */
-			  old_stack_arg_under_construction
-			    = stack_arg_under_construction;
-			  stack_arg_under_construction = 0;
-			  /* Make a new map for the new argument list.  */
-			  stack_usage_map = (char *)
-			    alloca (highest_outgoing_arg_in_use);
-			  memset (stack_usage_map, 0, highest_outgoing_arg_in_use);
-			  highest_outgoing_arg_in_use = 0;
-			}
-		      allocate_dynamic_stack_space (push_size, NULL_RTX,
-						    BITS_PER_UNIT);
-		    }
-		  /* If argument evaluation might modify the stack pointer,
-		     copy the address of the argument list to a register.  */
-		  for (i = 0; i < num_actuals; i++)
-		    if (args[i].pass_on_stack)
-		      {
-			argblock = copy_addr_to_reg (argblock);
-			break;
-		      }
 		}
 	    }
 	}
 
+      if (ACCUMULATE_OUTGOING_ARGS)
+	{
+	  /* The save/restore code in store_one_arg handles all
+	     cases except one: a constructor call (including a C
+	     function returning a BLKmode struct) to initialize
+	     an argument.  */
+	  if (stack_arg_under_construction)
+	    {
+#ifndef OUTGOING_REG_PARM_STACK_SPACE
+	      rtx push_size = GEN_INT (reg_parm_stack_space
+				       + adjusted_args_size.constant);
+#else
+	      rtx push_size = GEN_INT (adjusted_args_size.constant);
+#endif
+	      if (old_stack_level == 0)
+		{
+		  emit_stack_save (SAVE_BLOCK, &old_stack_level,
+				   NULL_RTX);
+		  old_stack_pointer_delta = stack_pointer_delta;
+		  old_pending_adj = pending_stack_adjust;
+		  pending_stack_adjust = 0;
+		  /* stack_arg_under_construction says whether a stack
+		     arg is being constructed at the old stack level.
+		     Pushing the stack gets a clean outgoing argument
+		     block.  */
+		  old_stack_arg_under_construction
+		    = stack_arg_under_construction;
+		  stack_arg_under_construction = 0;
+		  /* Make a new map for the new argument list.  */
+		  stack_usage_map = (char *)
+		    alloca (highest_outgoing_arg_in_use);
+		  memset (stack_usage_map, 0, highest_outgoing_arg_in_use);
+		  highest_outgoing_arg_in_use = 0;
+		}
+	      allocate_dynamic_stack_space (push_size, NULL_RTX,
+					    BITS_PER_UNIT);
+	    }
+
+	  /* If argument evaluation might modify the stack pointer,
+	     copy the address of the argument list to a register.  */
+	  for (i = 0; i < num_actuals; i++)
+	    if (args[i].pass_on_stack)
+	      {
+		argblock = copy_addr_to_reg (argblock);
+		break;
+	      }
+	}
+      
       compute_argument_addresses (args, argblock, num_actuals);
 
       /* If we push args individually in reverse order, perform stack alignment
@@ -3086,11 +3100,6 @@ expand_call (exp, target, ignore)
 		   adjusted_args_size.constant, struct_value_size,
 		   next_arg_reg, valreg, old_inhibit_defer_pop, call_fusage,
 		   flags, & args_so_far);
-
-      /* Verify that we've deallocated all the stack we used.  */
-      if (pass
-	  && old_stack_allocated != stack_pointer_delta - pending_stack_adjust)
-	abort ();
 
       /* If call is cse'able, make appropriate pair of reg-notes around it.
 	 Test valreg so we don't crash; may safely ignore `const'
@@ -3313,6 +3322,7 @@ expand_call (exp, target, ignore)
       if (old_stack_level && ! (flags & ECF_SP_DEPRESSED))
 	{
 	  emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
+	  stack_pointer_delta = old_stack_pointer_delta;
 	  pending_stack_adjust = old_pending_adj;
 	  stack_arg_under_construction = old_stack_arg_under_construction;
 	  highest_outgoing_arg_in_use = initial_highest_arg_in_use;
@@ -3393,7 +3403,14 @@ expand_call (exp, target, ignore)
 	  sbitmap_free (stored_args_map);
 	}
       else
-	normal_call_insns = insns;
+	{
+	  normal_call_insns = insns;
+
+	  /* Verify that we've deallocated all the stack we used.  */
+	  if (old_stack_allocated !=
+	      stack_pointer_delta - pending_stack_adjust)
+	    abort ();
+	}
 
       /* If something prevents making this a sibling call,
 	 zero out the sequence.  */
