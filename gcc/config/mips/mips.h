@@ -2727,6 +2727,8 @@ typedef struct mips_args {
 				  UNSPEC_VOLATILE }},			\
   {"arith_operand",		{ REG, CONST_INT, CONST, SUBREG }},	\
   {"reg_or_0_operand",		{ REG, CONST_INT, CONST_DOUBLE, SUBREG }}, \
+  {"sle_operand",		{ CONST_INT }},				\
+  {"sleu_operand",		{ CONST_INT }},				\
   {"small_int",			{ CONST_INT }},				\
   {"const_float_1_operand",	{ CONST_DOUBLE }},			\
   {"reg_or_const_float_1_operand", { CONST_DOUBLE, REG}},               \

@@ -1,5 +1,24 @@
 2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips-protos.h (gen_int_relational): Delete.
+	(mips_emit_scc): Declare.
+	* config/mips/mips.c (internal_test): Delete.
+	(sle_operand, sleu_operand): New functions.
+	(map_test_to_internal_test, gen_int_relational): Delete.
+	(mips_emit_binary, mips_relational_operand_ok_p)
+	(mips_emit_int_relational, mips_zero_if_equal)
+	(mips_emit_scc): New functions.
+	(gen_conditional_branch): Rework to use mips_emit_int_relational.
+	* config/mips/mips.h (PREDICATE_CODES): Add sle_operand and
+	sleu_operand.
+	* config/mips/mips.md (seq, sne, sgt, sge, slt, sle, sgtu, sgeu)
+	(sltu, sleu): Use mips_emit_scc.
+	(*sge_[sd]i, *sgeu_[sd]i): New patterns.
+	(*sle_[sd]i, *sle_[sd]i_mips16): Use sle_operand.
+	(*sleu_[sd]i, *sleu_[sd]i_mips16): Use sleu_operand.
+
+2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (*sgt_di_mips16): Fix destination constraint.
 
 2004-07-16  Richard Sandiford  <rsandifo@redhat.com>

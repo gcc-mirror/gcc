@@ -6012,14 +6012,7 @@ dsrl\t%3,%3,1\n\
 	(eq:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
-{
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
-    FAIL;
-
-  gen_int_relational (EQ, operands[0], cmp_operands[0], cmp_operands[1], NULL);
-  DONE;
-})
-
+  { if (mips_emit_scc (EQ, operands[0])) DONE; else FAIL; })
 
 (define_insn "*seq_si"
   [(set (match_operand:SI 0 "register_operand" "=d")
@@ -6057,20 +6050,15 @@ dsrl\t%3,%3,1\n\
   [(set_attr "type" "slt")
    (set_attr "mode" "DI")])
 
-;; On the mips16 the default code is better than using sltu.
+;; "sne" uses sltu instructions in which the first operand is $0.
+;; This isn't possible in mips16 code.
 
 (define_expand "sne"
   [(set (match_operand:SI 0 "register_operand")
 	(ne:SI (match_dup 1)
 	       (match_dup 2)))]
   "!TARGET_MIPS16"
-{
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
-    FAIL;
-
-  gen_int_relational (NE, operands[0], cmp_operands[0], cmp_operands[1], NULL);
-  DONE;
-})
+  { if (mips_emit_scc (NE, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sne_si"
   [(set (match_operand:SI 0 "register_operand" "=d")
@@ -6095,13 +6083,7 @@ dsrl\t%3,%3,1\n\
 	(gt:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
-{
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
-    FAIL;
-
-  gen_int_relational (GT, operands[0], cmp_operands[0], cmp_operands[1], NULL);
-  DONE;
-})
+  { if (mips_emit_scc (GT, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sgt_si"
   [(set (match_operand:SI 0 "register_operand" "=d")
@@ -6144,26 +6126,32 @@ dsrl\t%3,%3,1\n\
 	(ge:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
-{
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
-    FAIL;
+  { if (mips_emit_scc (GE, operands[0])) DONE; else FAIL; })
 
-  gen_int_relational (GE, operands[0], cmp_operands[0], cmp_operands[1], NULL);
-  DONE;
-})
+(define_insn "*sge_si"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(ge:SI (match_operand:SI 1 "register_operand" "d")
+	       (const_int 1)))]
+  "!TARGET_MIPS16"
+  "slt\t%0,%.,%1"
+  [(set_attr "type" "slt")
+   (set_attr "mode" "SI")])
+
+(define_insn "*sge_di"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(ge:DI (match_operand:DI 1 "register_operand" "d")
+	       (const_int 1)))]
+  "TARGET_64BIT && !TARGET_MIPS16"
+  "slt\t%0,%.,%1"
+  [(set_attr "type" "slt")
+   (set_attr "mode" "DI")])
 
 (define_expand "slt"
   [(set (match_operand:SI 0 "register_operand")
 	(lt:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
-{
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
-    FAIL;
-
-  gen_int_relational (LT, operands[0], cmp_operands[0], cmp_operands[1], NULL);
-  DONE;
-})
+  { if (mips_emit_scc (LT, operands[0])) DONE; else FAIL; })
 
 (define_insn "*slt_si"
   [(set (match_operand:SI 0 "register_operand" "=d")
@@ -6216,19 +6204,13 @@ dsrl\t%3,%3,1\n\
 	(le:SI (match_dup 1)
 	       (match_dup 2)))]
   ""
-{
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
-    FAIL;
-
-  gen_int_relational (LE, operands[0], cmp_operands[0], cmp_operands[1], NULL);
-  DONE;
-})
+  { if (mips_emit_scc (LE, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sle_si"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(le:SI (match_operand:SI 1 "register_operand" "d")
-	       (match_operand:SI 2 "small_int" "I")))]
-  "!TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
+	       (match_operand:SI 2 "sle_operand" "")))]
+  "!TARGET_MIPS16"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
   return "slt\t%0,%1,%2";
@@ -6239,8 +6221,8 @@ dsrl\t%3,%3,1\n\
 (define_insn "*sle_si_mips16"
   [(set (match_operand:SI 0 "register_operand" "=t")
 	(le:SI (match_operand:SI 1 "register_operand" "d")
-	       (match_operand:SI 2 "small_int" "I")))]
-  "TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
+	       (match_operand:SI 2 "sle_operand" "")))]
+  "TARGET_MIPS16"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
   return "slt\t%1,%2";
@@ -6254,8 +6236,8 @@ dsrl\t%3,%3,1\n\
 (define_insn "*sle_di"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(le:DI (match_operand:DI 1 "register_operand" "d")
-	       (match_operand:DI 2 "small_int" "I")))]
-  "TARGET_64BIT && !TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
+	       (match_operand:DI 2 "sle_operand" "")))]
+  "TARGET_64BIT && !TARGET_MIPS16"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
   return "slt\t%0,%1,%2";
@@ -6266,8 +6248,8 @@ dsrl\t%3,%3,1\n\
 (define_insn "*sle_di_mips16"
   [(set (match_operand:DI 0 "register_operand" "=t")
 	(le:DI (match_operand:DI 1 "register_operand" "d")
-	       (match_operand:DI 2 "small_int" "I")))]
-  "TARGET_64BIT && TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
+	       (match_operand:DI 2 "sle_operand" "")))]
+  "TARGET_64BIT && TARGET_MIPS16"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
   return "slt\t%1,%2";
@@ -6283,13 +6265,7 @@ dsrl\t%3,%3,1\n\
 	(gtu:SI (match_dup 1)
 		(match_dup 2)))]
   ""
-{
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
-    FAIL;
-
-  gen_int_relational (GTU, operands[0], cmp_operands[0], cmp_operands[1], NULL);
-  DONE;
-})
+  { if (mips_emit_scc (GTU, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sgtu_si"
   [(set (match_operand:SI 0 "register_operand" "=d")
@@ -6332,26 +6308,32 @@ dsrl\t%3,%3,1\n\
         (geu:SI (match_dup 1)
                 (match_dup 2)))]
   ""
-{
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
-    FAIL;
+  { if (mips_emit_scc (GEU, operands[0])) DONE; else FAIL; })
 
-  gen_int_relational (GEU, operands[0], cmp_operands[0], cmp_operands[1], NULL);
-  DONE;
-})
+(define_insn "*sge_si"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(geu:SI (match_operand:SI 1 "register_operand" "d")
+	        (const_int 1)))]
+  "!TARGET_MIPS16"
+  "sltu\t%0,%.,%1"
+  [(set_attr "type" "slt")
+   (set_attr "mode" "SI")])
+
+(define_insn "*sge_di"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(geu:DI (match_operand:DI 1 "register_operand" "d")
+	        (const_int 1)))]
+  "TARGET_64BIT && !TARGET_MIPS16"
+  "sltu\t%0,%.,%1"
+  [(set_attr "type" "slt")
+   (set_attr "mode" "DI")])
 
 (define_expand "sltu"
   [(set (match_operand:SI 0 "register_operand")
 	(ltu:SI (match_dup 1)
 		(match_dup 2)))]
   ""
-{
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
-    FAIL;
-
-  gen_int_relational (LTU, operands[0], cmp_operands[0], cmp_operands[1], NULL);
-  DONE;
-})
+  { if (mips_emit_scc (LTU, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sltu_si"
   [(set (match_operand:SI 0 "register_operand" "=d")
@@ -6404,19 +6386,13 @@ dsrl\t%3,%3,1\n\
 	(leu:SI (match_dup 1)
 		(match_dup 2)))]
   ""
-{
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
-    FAIL;
-
-  gen_int_relational (LEU, operands[0], cmp_operands[0], cmp_operands[1], NULL);
-  DONE;
-})
+  { if (mips_emit_scc (LEU, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sleu_si"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(leu:SI (match_operand:SI 1 "register_operand" "d")
-		(match_operand:SI 2 "small_int" "I")))]
-  "!TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
+	        (match_operand:SI 2 "sleu_operand" "")))]
+  "!TARGET_MIPS16"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
   return "sltu\t%0,%1,%2";
@@ -6427,8 +6403,8 @@ dsrl\t%3,%3,1\n\
 (define_insn "*sleu_si_mips16"
   [(set (match_operand:SI 0 "register_operand" "=t")
 	(leu:SI (match_operand:SI 1 "register_operand" "d")
-		(match_operand:SI 2 "small_int" "I")))]
-  "TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
+	        (match_operand:SI 2 "sleu_operand" "")))]
+  "TARGET_MIPS16"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
   return "sltu\t%1,%2";
@@ -6442,8 +6418,8 @@ dsrl\t%3,%3,1\n\
 (define_insn "*sleu_di"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(leu:DI (match_operand:DI 1 "register_operand" "d")
-		(match_operand:DI 2 "small_int" "I")))]
-  "TARGET_64BIT && !TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
+	        (match_operand:DI 2 "sleu_operand" "")))]
+  "TARGET_64BIT && !TARGET_MIPS16"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
   return "sltu\t%0,%1,%2";
@@ -6454,8 +6430,8 @@ dsrl\t%3,%3,1\n\
 (define_insn "*sleu_di_mips16"
   [(set (match_operand:DI 0 "register_operand" "=t")
 	(leu:DI (match_operand:DI 1 "register_operand" "d")
-		(match_operand:DI 2 "small_int" "I")))]
-  "TARGET_64BIT && TARGET_MIPS16 && INTVAL (operands[2]) < 32767"
+	        (match_operand:DI 2 "sleu_operand" "")))]
+  "TARGET_64BIT && TARGET_MIPS16"
 {
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
   return "sltu\t%1,%2";
