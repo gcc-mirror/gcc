@@ -1,3 +1,13 @@
+2004-01-10  David Edelsohn  <edelsohn@gnu.org>
+	    James E Wilson  <wilson@specifixinc.com>
+
+	PR debug/12860
+	* dbxout.c (dbxout_symbol): Remove initialization of
+	current_sym_code, current_sym_value, and current_sym_addr.
+	(dbxout_symbol_location): Same.
+	(dbxout_prepare_symbol): Zero current_sym_code,
+	current_sym_value, and current_sym_addr.
+
 2004-01-10  Richard Sandiford  <rsandifo@redhat.com>
 
 	* tree.c (get_unwidened): Reorder conditions so that the null pointer
@@ -16,8 +26,8 @@
 2004-01-09  Andrew Pinski <pinskia@physics.uc.edu>
 
 	PR debug/11231
-	* dbxout.c (dbxout_type_fields): Return if any item is error_mark_node or the
-	type is error_mark_node.
+	* dbxout.c (dbxout_type_fields): Return if any item is
+	error_mark_node or the type is error_mark_node.
 
 2004-01-09  Geoffrey Keating  <geoffk@apple.com>
 

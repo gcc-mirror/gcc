@@ -2047,11 +2047,6 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
   /* "Intercept" dbxout_symbol() calls like we do all debug_hooks.  */
   ++debug_nesting;
 
-  /* Cast avoids warning in old compilers.  */
-  current_sym_code = (STAB_CODE_TYPE) 0;
-  current_sym_value = 0;
-  current_sym_addr = 0;
-
   /* Ignore nameless syms, but don't ignore type tags.  */
 
   if ((DECL_NAME (decl) == 0 && TREE_CODE (decl) != TYPE_DECL)
@@ -2578,10 +2573,6 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
       else
 	dbxout_symbol_location (decl, subtype, "$real", XEXP (home, 0));
 
-      /* Cast avoids warning in old compilers.  */
-      current_sym_code = (STAB_CODE_TYPE) 0;
-      current_sym_value = 0;
-      current_sym_addr = 0;
       dbxout_prepare_symbol (decl);
 
       if (WORDS_BIG_ENDIAN)
@@ -2649,6 +2640,14 @@ dbxout_prepare_symbol (tree decl ATTRIBUTE_UNUSED)
 
   dbxout_source_file (asmfile, filename);
 #endif
+
+  /* Initialize variables used to communicate each symbol's debug
+     information to dbxout_finish_symbol with zeroes.  */
+
+  /* Cast avoids warning in old compilers.  */
+  current_sym_code = (STAB_CODE_TYPE) 0;
+  current_sym_value = 0;
+  current_sym_addr = 0;
 }
 
 static void
