@@ -3345,6 +3345,20 @@ pushdecl (x)
 
 	      return t;
 	    }
+	  else if (DECL_MAIN_P (x))
+	    {
+	      /* A redeclaration of main, but not a duplicate of the
+		 previous one. 
+
+		 [basic.start.main]
+
+	         This function shall not be overloaded.  */
+	      cp_error_at ("invalid redeclaration of `%D'", t);
+	      cp_error ("as `%D'", x);
+	      /* We don't try to push this declaration since that
+		 causes a crash.  */
+	      return x;
+	    }
 	}
 
       if (TREE_CODE (x) == FUNCTION_DECL && ! DECL_FUNCTION_MEMBER_P (x))
@@ -7545,7 +7559,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   if (ctype)
     DECL_CLASS_CONTEXT (decl) = ctype;
 
-  if (ctype == NULL_TREE && ! strcmp (IDENTIFIER_POINTER (declarator), "main"))
+  if (ctype == NULL_TREE && MAIN_NAME_P (declarator))
     {
       if (inlinep)
 	error ("cannot declare `main' to be inline");
@@ -10077,9 +10091,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    if (current_lang_name == lang_name_cplusplus
 		&& ! processing_template_decl
-		&& ! (IDENTIFIER_LENGTH (original_name) == 4
-		      && IDENTIFIER_POINTER (original_name)[0] == 'm'
-		      && strcmp (IDENTIFIER_POINTER (original_name), "main") == 0)
+		&& ! MAIN_NAME_P (original_name)
 		&& ! (IDENTIFIER_LENGTH (original_name) > 10
 		      && IDENTIFIER_POINTER (original_name)[0] == '_'
 		      && IDENTIFIER_POINTER (original_name)[1] == '_'
@@ -11724,9 +11736,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 
       if (TREE_CODE (fntype) == METHOD_TYPE)
 	ctype = TYPE_METHOD_BASETYPE (fntype);
-      else if (IDENTIFIER_LENGTH (DECL_NAME (decl1)) == 4
-	       && ! strcmp (IDENTIFIER_POINTER (DECL_NAME (decl1)), "main")
-	       && DECL_CONTEXT (decl1) == NULL_TREE)
+      else if (DECL_MAIN_P (decl1))
 	{
 	  /* If this doesn't return integer_type, complain.  */
 	  if (TREE_TYPE (TREE_TYPE (decl1)) != integer_type_node)
@@ -12121,10 +12131,8 @@ store_parm_decls ()
 
   /* If this function is `main', emit a call to `__main'
      to run global initializers, etc.  */
-  if (DECL_NAME (fndecl)
-      && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 4
-      && strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)), "main") == 0
-      && DECL_CONTEXT (fndecl) == global_namespace)
+  if (DECL_MAIN_P (fndecl))
+    expand_main_function ();
     {
       expand_main_function ();
     }
@@ -12576,9 +12584,7 @@ finish_function (lineno, call_poplevel, nested)
 	  current_function_assigns_this = 0;
 	  current_function_just_assigned_this = 0;
 	}
-      else if (IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 4
-	       && ! strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)), "main")
-	       && DECL_CONTEXT (fndecl) == global_namespace)
+      else if (DECL_MAIN_P (fndecl))
 	{
 	  /* Make it so that `main' always returns 0 by default.  */
 #ifdef VMS
