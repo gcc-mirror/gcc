@@ -1,5 +1,4 @@
-/* Core target definitions for GNU compiler for PowerPC targeted to
-   little endian embedded ELF systems.
+/* Embedded ELF system support, using old AIX based calling sequence.
    Copyright (C) 1995 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
@@ -23,17 +22,17 @@ Boston, MA 02111-1307, USA.  */
 #include "rs6000/eabi.h"
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_LITTLE_ENDIAN)
+#define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_AIX_CALLS)
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
 %{posix: -D_POSIX_SOURCE} \
 %{mrelocatable: -D_RELOCATABLE} \
-%{mcall-sysv: -D_CALL_SYSV} %{mcall-aix: -D_CALL_AIX} %{!mcall-sysv: %{!mcall-aix: -D_CALL_SYSV}} \
+%{mcall-sysv: -D_CALL_SYSV} %{mcall-aix: -D_CALL_AIX} %{!mcall-sysv: %{!mcall-aix: -D_CALL_AIX}} \
 %{msoft-float: -D_SOFT_FLOAT} %{mcpu=403: -D_SOFT_FLOAT} \
-%{mbig: -D_BIG_ENDIAN -Amachine(bigendian)} \
-%{mbig-endian: -D_BIG_ENDIAN -Amachine(bigendian)} \
-%{!mbig: %{!mbig-endian: -D_LITTLE_ENDIAN -Amachine(littleendian)}} \
+%{mlittle: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
+%{mlittle-endian: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
+%{!mlittle: %{!mlittle-endian: -D_BIG_ENDIAN -Amachine(bigendian)}} \
 %{!mcpu*: \
   %{mpower: %{!mpower2: -D_ARCH_PWR}} \
   %{mpower2: -D_ARCH_PWR2} \

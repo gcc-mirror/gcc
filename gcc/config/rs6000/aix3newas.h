@@ -47,6 +47,29 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=603: -mppc} \
 %{mcpu=604: -mppc}"
 
+/* Define the options for the binder: Start text at 512, align all segments
+   to 512 bytes, and warn if there is text relocation.
+
+   The -bhalt:4 option supposedly changes the level at which ld will abort,
+   but it also suppresses warnings about multiply defined symbols and is
+   used by the AIX cc command.  So we use it here.
+
+   -bnodelcsect undoes a poor choice of default relating to multiply-defined
+   csects.  See AIX documentation for more information about this.
+
+   -bM:SRE tells the linker that the output file is Shared REusable.  Note
+   that to actually build a shared library you will also need to specify an
+   export list with the -Wl,-bE option.
+
+   If -mcpu=common, export the architecture dependent multiply/divide routines
+   as per README.RS6000.  */
+
+#undef	LINK_SPEC
+#define LINK_SPEC "-T512 -H512 %{!r:-btextro} -bhalt:4 -bnodelcsect\
+   %{static:-bnso -bI:/lib/syscalls.exp} \
+   %{mcpu=common: milli.exp%s} \
+   %{!shared:%{g*:-bexport:/usr/lib/libg.exp}} %{shared:-bM:SRE}"
+
 /* These are not necessary when we pass -u to the assembler, and undefining
    them saves a great deal of space in object files.  */
 

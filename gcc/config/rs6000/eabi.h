@@ -50,6 +50,11 @@ Boston, MA 02111-1307, USA.  */
 #define MINIMAL_TOC_SECTION_ASM_OP \
   ((TARGET_RELOCATABLE) ? "\t.section\t\".got2\",\"aw\"" : "\t.section\t\".got1\",\"aw\"")
 
+/* Put relocatable data in .data, not .rodata so initialized pointers can be updated */
+#undef	CONST_SECTION_ASM_OP
+#define CONST_SECTION_ASM_OP \
+  ((TARGET_RELOCATABLE) ? "\t.section\t\".data\"\t# .rodata" : "\t.section\t\".rodata\"")
+
 /* Invoke an initializer function to set up the GOT */
 #define NAME__MAIN "__eabi"
 #define INVOKE__main 1
@@ -73,4 +78,44 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	ENDFILE_SPEC
 #define	ENDFILE_SPEC ""
+
+/* This is how to output an assembler line defining an `int' constant.
+   For -mrelocatable, we mark all addresses that need to be fixed up
+   in the .fixup section.  */
+#undef	ASM_OUTPUT_INT
+#define ASM_OUTPUT_INT(FILE,VALUE)					\
+do {									\
+  static int recurse = 0;						\
+  if (TARGET_RELOCATABLE						\
+      && in_section != in_toc						\
+      && in_section != in_text						\
+      && in_section != in_ctors						\
+      && in_section != in_dtors						\
+      && !recurse							\
+      && GET_CODE (VALUE) != CONST_INT					\
+      && GET_CODE (VALUE) != CONST_DOUBLE)				\
+    {									\
+      static int labelno = 0;						\
+      char buf[256], *p;						\
+									\
+      recurse = 1;							\
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LCP", labelno++);		\
+      STRIP_NAME_ENCODING (p, buf);					\
+      fprintf (FILE, "%s:\n", p);					\
+      fprintf (FILE, "\t.long (");					\
+      output_addr_const (FILE, (VALUE));				\
+      fprintf (FILE, ")@fixup\n");					\
+      fprintf (FILE, "\t.section\t\".fixup\",\"aw\"\n");		\
+      ASM_OUTPUT_ALIGN (FILE, 2);					\
+      fprintf (FILE, "\t.long\t%s\n", p);				\
+      fprintf (FILE, "\t.previous\n");					\
+      recurse = 0;							\
+    }									\
+  else									\
+    {									\
+      fprintf (FILE, "\t.long ");					\
+      output_addr_const (FILE, (VALUE));				\
+      fprintf (FILE, "\n");						\
+    }									\
+} while (0)
 

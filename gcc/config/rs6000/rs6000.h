@@ -150,6 +150,10 @@ extern int target_flags;
 #define MASK_STRING		0x4000
 #define MASK_STRING_SET		0x8000
 
+/* Temporary debug switches */
+#define MASK_DEBUG_STACK	0x10000
+#define MASK_DEBUG_ARG		0x20000
+
 #define TARGET_POWER		(target_flags & MASK_POWER)
 #define TARGET_POWER2		(target_flags & MASK_POWER2)
 #define TARGET_POWERPC		(target_flags & MASK_POWERPC)
@@ -166,8 +170,22 @@ extern int target_flags;
 #define	TARGET_MULTIPLE_SET	(target_flags & MASK_MULTIPLE_SET)
 #define TARGET_STRING		(target_flags & MASK_STRING)
 #define TARGET_STRING_SET	(target_flags & MASK_STRING_SET)
+#define	TARGET_DEBUG_STACK	(target_flags & MASK_DEBUG_STACK)
+#define	TARGET_DEBUG_ARG	(target_flags & MASK_DEBUG_ARG)
 
 #define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
+
+/* Pseudo target to indicate whether the object format is ELF
+   (to get around not having conditional compilation in the md file)  */
+#ifndef	TARGET_ELF
+#define	TARGET_ELF		0
+#endif
+
+/* If this isn't V.4, don't support -mno-toc.  */
+#ifndef TARGET_NO_TOC
+#define TARGET_NO_TOC		0
+#define	TARGET_TOC		1
+#endif
 
 /* Run-time compilation parameters selecting different hardware subsets.
 
@@ -215,6 +233,8 @@ extern int target_flags;
   {"string",		MASK_STRING | MASK_STRING_SET},			\
   {"no-string",		- MASK_STRING},					\
   {"no-string",		MASK_STRING_SET},				\
+  {"debug-stack",	MASK_DEBUG_STACK},				\
+  {"debug-arg",		MASK_DEBUG_ARG},				\
   SUBTARGET_SWITCHES							\
   {"",			TARGET_DEFAULT}}
 
@@ -833,6 +853,32 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
 
 /* Stack layout; function entry, exit and calling.  */
 
+/* Structure used to define the rs6000 stack */
+typedef struct rs6000_stack {
+  int first_gp_reg_save;	/* first callee saved GP register used */
+  int first_fp_reg_save;	/* first callee saved FP register used */
+  int lr_save_p;		/* true if the link reg needs to be saved */
+  int cr_save_p;		/* true if the CR reg needs to be saved */
+  int push_p;			/* true if we need to allocate stack space */
+  int calls_p;			/* true if the function makes any calls */
+  int v4_call_p;		/* true if V.4 calling sequence used */
+  int gp_save_offset;		/* offset to save GP regs from inital SP */
+  int fp_save_offset;		/* offset to save FP regs from inital SP */
+  int lr_save_offset;		/* offset to save LR from initial SP */
+  int cr_save_offset;		/* offset to save CR from initial SP */
+  int varargs_save_offset;	/* offset to save the varargs registers */
+  int reg_size;			/* register size (4 or 8) */
+  int varargs_size;		/* size to hold V.4 args passed in regs */
+  int vars_size;		/* variable save area size */
+  int parm_size;		/* outgoing parameter size */
+  int save_size;		/* save area size */
+  int fixed_size;		/* fixed size of stack frame */
+  int gp_size;			/* size of saved GP registers */
+  int fp_size;			/* size of saved FP registers */
+  int cr_size;			/* size to hold CR if not in save_size */
+  int total_size;		/* total bytes allocated for stack */
+} rs6000_stack_t;
+
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
 #define STACK_GROWS_DOWNWARD
@@ -846,6 +892,29 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
    arguments.  */
 /* #define FRAME_GROWS_DOWNWARD */
 
+/* Size of the outgoing register save area */
+#define RS6000_REG_SAVE (TARGET_64BIT ? 64 : 32)
+
+/* Size of the fixed area on the stack */
+#define RS6000_SAVE_AREA (TARGET_64BIT ? 48 : 24)
+
+/* Size of the V.4 varargs area if needed */
+#define RS6000_VARARGS_AREA 0
+
+/* Whether a V.4 varargs area is needed */
+extern int rs6000_sysv_varargs_p;
+
+/* Align an address */
+#define ALIGN(n,a) (((n) + (a) - 1) & ~((a) - 1))
+
+/* Size of V.4 varargs area in bytes */
+#define RS6000_VARARGS_SIZE \
+  ((GP_ARG_NUM_REG * (TARGET_64BIT ? 8 : 4)) + (FP_ARG_NUM_REG * 8) + 8)
+
+/* Offset of V.4 varargs area */
+#define RS6000_VARARGS_OFFSET \
+  (ALIGN (current_function_outgoing_args_size, 8) + RS6000_SAVE_AREA)
+
 /* Offset within stack frame to start allocating local variables at.
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
    first local allocated.  Otherwise, it is the offset to the BEGINNING
@@ -855,8 +924,9 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
    except for dynamic allocations.  So we start after the fixed area and
    outgoing parameter area.  */
 
-#define STARTING_FRAME_OFFSET (current_function_outgoing_args_size \
-			       + (TARGET_64BIT ? 48 : 24))
+#define STARTING_FRAME_OFFSET (ALIGN (current_function_outgoing_args_size, 8) \
+			       + RS6000_VARARGS_AREA \
+			       + RS6000_SAVE_AREA)
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
@@ -866,12 +936,12 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
 /* Offset of first parameter from the argument pointer register value.
    On the RS/6000, we define the argument pointer to the start of the fixed
    area.  */
-#define FIRST_PARM_OFFSET(FNDECL) (TARGET_64BIT ? 48 : 24)
+#define FIRST_PARM_OFFSET(FNDECL) RS6000_SAVE_AREA
 
 /* Define this if stack space is still allocated for a parameter passed
    in a register.  The value is the number of bytes allocated to this
    area.  */
-#define REG_PARM_STACK_SPACE(FNDECL)	(TARGET_64BIT ? 64 : 32)
+#define REG_PARM_STACK_SPACE(FNDECL)	RS6000_REG_SAVE
 
 /* Define this if the above stack space is to be considered part of the
    space allocated by the caller.  */
@@ -880,7 +950,7 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
 /* This is the difference between the logical top of stack and the actual sp.
 
    For the RS/6000, sp points past the fixed area. */
-#define STACK_POINTER_OFFSET (TARGET_64BIT ? 48 : 24)
+#define STACK_POINTER_OFFSET RS6000_SAVE_AREA
 
 /* Define this if the maximum size of all the outgoing args is to be
    accumulated and pushed during the prologue.  The amount can be
@@ -922,18 +992,35 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
 #define RETURN_IN_MEMORY(TYPE) \
   (TYPE_MODE (TYPE) == BLKmode)
 
+/* Minimum and maximum general purpose registers used to hold arguments.  */
+#define GP_ARG_MIN_REG 3
+#define GP_ARG_MAX_REG 10
+#define GP_ARG_NUM_REG (GP_ARG_MAX_REG - GP_ARG_MIN_REG + 1)
+
+/* Minimum and maximum floating point registers used to hold arguments.  */
+#define FP_ARG_MIN_REG 33
+#define FP_ARG_MAX_REG 45
+#define FP_ARG_NUM_REG (FP_ARG_MAX_REG - FP_ARG_MIN_REG + 1)
+
+/* Return registers */
+#define GP_ARG_RETURN GP_ARG_MIN_REG
+#define FP_ARG_RETURN FP_ARG_MIN_REG
+
+/* Define cutoff for using external functions to save floating point */
+#define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) == 62 || (FIRST_REG) == 63)
+
 /* 1 if N is a possible register number for a function value
    as seen by the caller.
 
    On RS/6000, this is r3 and fp1.  */
-
-#define FUNCTION_VALUE_REGNO_P(N)  ((N) == 3 || ((N) == 33))
+#define FUNCTION_VALUE_REGNO_P(N)  ((N) == GP_ARG_RETURN || ((N) == FP_ARG_RETURN))
 
 /* 1 if N is a possible register number for function argument passing.
    On RS/6000, these are r3-r10 and fp1-fp13.  */
+#define FUNCTION_ARG_REGNO_P(N)						\
+  (((unsigned)((N) - GP_ARG_MIN_REG) < (unsigned)(GP_ARG_NUM_REG))	\
+   || ((unsigned)((N) - FP_ARG_MIN_REG) < (unsigned)(FP_ARG_NUM_REG)))
 
-#define FUNCTION_ARG_REGNO_P(N)	\
-  (((N) <= 10 && (N) >= 3) || ((N) >= 33 && (N) <= 45))
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -944,10 +1031,21 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
    On the RS/6000, this is a structure.  The first element is the number of
    total argument words, the second is used to store the next
    floating-point register number, and the third says how many more args we
-   have prototype types for.  */
+   have prototype types for.
 
-struct rs6000_args {int words, fregno, nargs_prototype; };
-#define CUMULATIVE_ARGS struct rs6000_args
+   The System V.4 varargs/stdarg support requires that this structure's size
+   be a multiple of sizeof(int), and that WORDS, FREGNO, NARGS_PROTOTYPE,
+   ORIG_NARGS, and VARARGS_OFFSET be the first five ints.  */
+
+typedef struct rs6000_args
+{
+  int words;			/* # words uses for passing GP registers */
+  int fregno;			/* next available FP register */
+  int nargs_prototype;		/* # args left in the current prototype */
+  int orig_nargs;		/* Original value of nargs_prototype */
+  int varargs_offset;		/* offset of the varargs save area */
+  int prototype;		/* Whether a prototype was defined */
+} CUMULATIVE_ARGS;
 
 /* Define intermediate macro to compute the size (in registers) of an argument
    for the RS/6000.  */
@@ -962,40 +1060,27 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)	\
-  (CUM).words = 0,				\
-  (CUM).fregno = 33,				\
-  (CUM).nargs_prototype = (FNTYPE && TYPE_ARG_TYPES (FNTYPE)		\
-			   ? (list_length (TYPE_ARG_TYPES (FNTYPE)) - 1 \
-			      + (TYPE_MODE (TREE_TYPE (FNTYPE)) == BLKmode \
-				 || RETURN_IN_MEMORY (TREE_TYPE (FNTYPE)))) \
-			   : 0)
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME) \
+  init_cumulative_args (&CUM, FNTYPE, LIBNAME, FALSE)
 
 /* Similar, but when scanning the definition of a procedure.  We always
    set NARGS_PROTOTYPE large so we never return an EXPR_LIST.  */
 
-#define INIT_CUMULATIVE_INCOMING_ARGS(CUM,FNTYPE,IGNORE) \
-  (CUM).words = 0,				\
-  (CUM).fregno = 33,				\
-  (CUM).nargs_prototype = 1000
+#define INIT_CUMULATIVE_INCOMING_ARGS(CUM,FNTYPE,LIBNAME) \
+  init_cumulative_args (&CUM, FNTYPE, LIBNAME, TRUE)
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-{ (CUM).nargs_prototype--;				\
-  if (NAMED)						\
-    {							\
-      (CUM).words += RS6000_ARG_SIZE (MODE, TYPE, NAMED); \
-      if (GET_MODE_CLASS (MODE) == MODE_FLOAT)		\
-	(CUM).fregno++;					\
-    }							\
-}
+  function_arg_advance (&CUM, MODE, TYPE, NAMED)
 
 /* Non-zero if we can use a floating-point register to pass this arg.  */
-#define USE_FP_FOR_ARG_P(CUM,MODE,TYPE)	\
-  (GET_MODE_CLASS (MODE) == MODE_FLOAT && (CUM).fregno < 46 && TARGET_HARD_FLOAT)
+#define USE_FP_FOR_ARG_P(CUM,MODE,TYPE) \
+  (GET_MODE_CLASS (MODE) == MODE_FLOAT  \
+   && (CUM).fregno <= FP_ARG_MAX_REG    \
+   && TARGET_HARD_FLOAT)
 
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
@@ -1019,30 +1104,24 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
    so we can pass the FP value just in one register.  emit_library_function
    doesn't support EXPR_LIST anyway.  */
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)				\
-  (! (NAMED) ? 0							\
-   : ((TYPE) != 0 && TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST) ? 0	\
-   : USE_FP_FOR_ARG_P (CUM, MODE, TYPE)					\
-   ? ((CUM).nargs_prototype > 0 || (TYPE) == 0				\
-      ? gen_rtx (REG, MODE, (CUM).fregno)				\
-      : ((CUM).words < 8						\
-	 ? gen_rtx (EXPR_LIST, VOIDmode,				\
-		    gen_rtx (REG, (MODE), 3 + (CUM).words),		\
-		    gen_rtx (REG, (MODE), (CUM).fregno))		\
-	 : gen_rtx (EXPR_LIST, VOIDmode, 0,				\
-		    gen_rtx (REG, (MODE), (CUM).fregno))))		\
-   : (CUM).words < 8 ? gen_rtx(REG, (MODE), 3 + (CUM).words) : 0)
+#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
+  function_arg (&CUM, MODE, TYPE, NAMED)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
    For args passed entirely in registers or entirely in memory, zero.  */
 
-#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)		\
-  (! (NAMED) ? 0							\
-   : USE_FP_FOR_ARG_P (CUM, MODE, TYPE) && (CUM).nargs_prototype >= 0 ? 0 \
-   : (((CUM).words < 8							\
-       && 8 < ((CUM).words + RS6000_ARG_SIZE (MODE, TYPE, NAMED)))	\
-      ? 8 - (CUM).words : 0))
+#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
+  function_arg_partial_nregs (&CUM, MODE, TYPE, NAMED)
+
+/* A C expression that indicates when an argument must be passed by
+   reference.  If nonzero for an argument, a copy of that argument is
+   made in memory and a pointer to the argument is passed instead of
+   the argument itself.  The pointer is passed in whatever way is
+   appropriate for passing a pointer to that type. */
+
+#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
+  function_arg_pass_by_reference(&CUM, MODE, TYPE, NAMED)
 
 /* Perform any needed actions needed for a function that is receiving a
    variable number of arguments. 
@@ -1058,27 +1137,23 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
    Normally, this macro will push all remaining incoming registers on the
    stack and set PRETEND_SIZE to the length of the registers pushed.  */
 
-#define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
-{ if ((CUM).words < 8)							\
-    {									\
-      int first_reg_offset = (CUM).words;				\
-									\
-      if (MUST_PASS_IN_STACK (MODE, TYPE))				\
-	first_reg_offset += RS6000_ARG_SIZE (TYPE_MODE (TYPE), TYPE, 1); \
-									\
-      if (first_reg_offset > 8)						\
-	first_reg_offset = 8;						\
-									\
-      if (! (NO_RTL) && first_reg_offset != 8)				\
-	move_block_from_reg						\
-	  (3 + first_reg_offset,					\
-	   gen_rtx (MEM, BLKmode,					\
-		    plus_constant (virtual_incoming_args_rtx,		\
-				   first_reg_offset * 4)),		\
-	   8 - first_reg_offset, (8 - first_reg_offset) * UNITS_PER_WORD); \
-      PRETEND_SIZE = (8 - first_reg_offset) * UNITS_PER_WORD;		\
-    }									\
-}
+#define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL) \
+  setup_incoming_varargs (&CUM, MODE, TYPE, &PRETEND_SIZE, NO_RTL)
+
+/* If defined, is a C expression that produces the machine-specific
+   code for a call to `__builtin_saveregs'.  This code will be moved
+   to the very beginning of the function, before any parameter access
+   are made.  The return value of this function should be an RTX that
+   contains the value to use as the return of `__builtin_saveregs'.
+
+   The argument ARGS is a `tree_list' containing the arguments that
+   were passed to `__builtin_saveregs'.
+
+   If this macro is not defined, the compiler will output an ordinary
+   call to the library function `__builtin_saveregs'.  */
+
+#define EXPAND_BUILTIN_SAVEREGS(ARGS) \
+  expand_builtin_saveregs (ARGS)
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
@@ -1210,34 +1285,21 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 #define CAN_ELIMINATE(FROM, TO)					\
  ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM	\
   ? ! frame_pointer_needed					\
-  : (FROM) == 30 ? ! TARGET_MINIMAL_TOC || get_pool_size () == 0 \
+  : (FROM) == 30 ? ! TARGET_MINIMAL_TOC || TARGET_NO_TOC || get_pool_size () == 0 \
   : 1)
 
 /* Define the offset between two registers, one to be eliminated, and the other
    its replacement, at the start of a routine.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
 {									\
-  int total_stack_size = (rs6000_sa_size () + get_frame_size ()		\
-			  + current_function_outgoing_args_size);	\
-									\
-  total_stack_size = (total_stack_size + 7) & ~7;			\
+  rs6000_stack_t *info = rs6000_stack_info ();				\
 									\
  if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
-    {									\
-      if (rs6000_pushes_stack ())					\
-	(OFFSET) = 0;							\
-      else								\
-	(OFFSET) = - total_stack_size;					\
-    }									\
-  else if ((FROM) == ARG_POINTER_REGNUM && (TO) == FRAME_POINTER_REGNUM) \
-      (OFFSET) = total_stack_size;					\
-  else if ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM) \
-    {									\
-      if (rs6000_pushes_stack ())					\
-	(OFFSET) = total_stack_size;					\
-      else								\
-	(OFFSET) = 0;							\
-    }									\
+   (OFFSET) = (info->push_p) ? 0 : - info->total_size;			\
+ else if ((FROM) == ARG_POINTER_REGNUM && (TO) == FRAME_POINTER_REGNUM)	\
+   (OFFSET) = info->total_size;						\
+ else if ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
+   (OFFSET) = (info->push_p) ? info->total_size : 0;			\
   else if ((FROM) == 30)						\
     (OFFSET) = 0;							\
   else									\
@@ -1341,12 +1403,14 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
    we must ensure that both words are addressable.  */
 
 #define LEGITIMATE_CONSTANT_POOL_BASE_P(X)				\
-  (GET_CODE (X) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (X)		\
+  (TARGET_TOC && GET_CODE (X) == SYMBOL_REF				\
+   && CONSTANT_POOL_ADDRESS_P (X)					\
    && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (X)))
 
 #define LEGITIMATE_CONSTANT_POOL_ADDRESS_P(X)				\
   (LEGITIMATE_CONSTANT_POOL_BASE_P (X)					\
-   || (GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS		\
+   || (TARGET_TOC							\
+       && GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS	\
        && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT			\
        && LEGITIMATE_CONSTANT_POOL_BASE_P (XEXP (XEXP (X, 0), 0))))
 
@@ -1374,6 +1438,16 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 #define LEGITIMATE_INDIRECT_ADDRESS_P(X)	\
   (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))
 
+#define LEGITIMATE_LO_SUM_ADDRESS_P(MODE, X)		\
+  (TARGET_ELF						\
+   && (MODE) != DImode					\
+   && (MODE) != TImode					\
+   && (TARGET_HARD_FLOAT || (MODE) != DFmode)		\
+   && GET_CODE (X) == LO_SUM				\
+   && GET_CODE (XEXP (X, 0)) == REG			\
+   && REG_OK_FOR_BASE_P (XEXP (X, 0))			\
+   && CONSTANT_P (XEXP (X, 1)))
+
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)		\
 { if (LEGITIMATE_INDIRECT_ADDRESS_P (X))		\
     goto ADDR;						\
@@ -1390,6 +1464,8 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
   if ((MODE) != DImode && (MODE) != TImode		\
       && (TARGET_HARD_FLOAT || (MODE) != DFmode)	\
       && LEGITIMATE_INDEXED_ADDRESS_P (X))		\
+    goto ADDR;						\
+  if (LEGITIMATE_LO_SUM_ADDRESS_P (MODE, X))		\
     goto ADDR;						\
 }
 
@@ -1416,32 +1492,42 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
    Then check for the sum of a register and something not constant, try to
    load the other things into a register and return the sum.  */
 
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)			\
-{ if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
-    && GET_CODE (XEXP (X, 1)) == CONST_INT			\
-    && (unsigned) (INTVAL (XEXP (X, 1)) + 0x8000) >= 0x10000)	\
-    { int high_int, low_int;					\
-      high_int = INTVAL (XEXP (X, 1)) >> 16;			\
-      low_int = INTVAL (XEXP (X, 1)) & 0xffff;			\
-      if (low_int & 0x8000)					\
-	high_int += 1, low_int |= 0xffff0000;			\
-      (X) = gen_rtx (PLUS, SImode,				\
-		     force_operand				\
-		     	(gen_rtx (PLUS, SImode, XEXP (X, 0), \
-				  gen_rtx (CONST_INT, VOIDmode, \
-						      high_int << 16)), 0),\
-		     gen_rtx (CONST_INT, VOIDmode, low_int));	\
-      goto WIN;							\
-    }								\
-  else if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG \
-	   && GET_CODE (XEXP (X, 1)) != CONST_INT		\
-	   && (TARGET_HARD_FLOAT || (MODE) != DFmode)		\
-	   && (MODE) != DImode && (MODE) != TImode) 		\
-    {								\
-      (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
+#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)				\
+{ if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG		\
+    && GET_CODE (XEXP (X, 1)) == CONST_INT				\
+    && (unsigned) (INTVAL (XEXP (X, 1)) + 0x8000) >= 0x10000)		\
+    { int high_int, low_int;						\
+      high_int = INTVAL (XEXP (X, 1)) >> 16;				\
+      low_int = INTVAL (XEXP (X, 1)) & 0xffff;				\
+      if (low_int & 0x8000)						\
+	high_int += 1, low_int |= 0xffff0000;				\
+      (X) = gen_rtx (PLUS, SImode,					\
+		     force_operand					\
+		     	(gen_rtx (PLUS, SImode, XEXP (X, 0),		\
+				  gen_rtx (CONST_INT, VOIDmode,		\
+						      high_int << 16)), 0), \
+		     gen_rtx (CONST_INT, VOIDmode, low_int));		\
+      goto WIN;								\
+    }									\
+  else if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
+	   && GET_CODE (XEXP (X, 1)) != CONST_INT			\
+	   && (TARGET_HARD_FLOAT || (MODE) != DFmode)			\
+	   && (MODE) != DImode && (MODE) != TImode)			\
+    {									\
+      (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),				\
 		     force_reg (SImode, force_operand (XEXP (X, 1), 0))); \
-      goto WIN;							\
-    }								\
+      goto WIN;								\
+    }									\
+  else if (TARGET_ELF && !TARGET_64BIT && TARGET_NO_TOC			\
+	   && GET_CODE (X) != CONST_INT					\
+	   && GET_CODE (X) != CONST_DOUBLE && CONSTANT_P (X)		\
+	   && (TARGET_HARD_FLOAT || (MODE) != DFmode)			\
+	   && (MODE) != DImode && (MODE) != TImode)			\
+    {									\
+      rtx reg = gen_reg_rtx (Pmode);					\
+      emit_insn (gen_elf_high (reg, (X)));				\
+      (X) = gen_rtx (LO_SUM, Pmode, reg, (X));				\
+    }									\
 }
 
 /* Go to LABEL if ADDR (a legitimate address expression)
@@ -1461,6 +1547,8 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
   if (GET_CODE (ADDR) == PRE_INC)				\
     goto LABEL;							\
   if (GET_CODE (ADDR) == PRE_DEC)				\
+    goto LABEL;							\
+  if (GET_CODE (ADDR) == LO_SUM)				\
     goto LABEL;							\
 }
 
@@ -1561,7 +1649,7 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
    The sle and sre instructions which allow SHIFT_COUNT_TRUNCATED
    have been dropped from the PowerPC architecture.  */
 
-#define SHIFT_COUNT_TRUNCATED TARGET_POWER ? 1 : 0
+#define SHIFT_COUNT_TRUNCATED (TARGET_POWER ? 1 : 0)
 
 /* Use atexit for static constructors/destructors, instead of defining
    our own exit function.  */
@@ -1575,12 +1663,13 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
    On the RS/6000, if it is valid in the insn, it is free.  So this
    always returns 0.  */
 
-#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
+#define CONST_COSTS(RTX,CODE,OUTER_CODE)			\
   case CONST_INT:						\
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
   case CONST_DOUBLE:						\
+  case HIGH:							\
     return 0;
 
 /* Provide the costs of a rtl expression.  This is in the body of a
@@ -1894,7 +1983,7 @@ toc_section ()						\
   fprintf (FILE, "\t.long .");					\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fprintf (FILE, ", TOC[tc0], 0\n");				\
-  fprintf (FILE, ".csect .text[PR]\n.");				\
+  fprintf (FILE, ".csect .text[PR]\n.");			\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fprintf (FILE, ":\n");					\
   if (write_symbols == XCOFF_DEBUG)				\
@@ -1909,15 +1998,16 @@ toc_section ()						\
    we can't check that since not every file that uses
    GO_IF_LEGITIMATE_ADDRESS_P includes real.h.  */
 
-#define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X)			\
-  (GET_CODE (X) == SYMBOL_REF					\
-   || (GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS	\
-       && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF)	\
-   || GET_CODE (X) == LABEL_REF					\
-   || (! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC)		\
-       && GET_CODE (X) == CONST_DOUBLE				\
-       && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
-       && BITS_PER_WORD == HOST_BITS_PER_INT))
+#define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X)				\
+  (TARGET_TOC								\
+   && (GET_CODE (X) == SYMBOL_REF					\
+       || (GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS	\
+	   && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF)		\
+       || GET_CODE (X) == LABEL_REF					\
+       || (! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC)		\
+	   && GET_CODE (X) == CONST_DOUBLE				\
+	   && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
+	   && BITS_PER_WORD == HOST_BITS_PER_INT)))
 
 /* Select section for constant in constant pool.
 
@@ -2230,15 +2320,23 @@ toc_section ()						\
 /* This is how to output code to push a register on the stack.
    It need not be very fast code.  */
 
-#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)  \
-  asm_fprintf (FILE, "\{tstu|stwu} %s,-4(r1)\n", reg_names[REGNO]);
+#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)					\
+do {									\
+  extern char *reg_names[];						\
+  asm_fprintf (FILE, "\{tstu|stwu} %s,-4(%s)\n", reg_names[REGNO],	\
+	       reg_names[1]);						\
+} while (0)
 
 /* This is how to output an insn to pop a register from the stack.
    It need not be very fast code.  */
 
-#define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
-  asm_fprintf (FILE, "\t{l|lwz} %s,0(r1)\n\t{ai|addic} r1,r1,4\n",  \
-    reg_names[REGNO])
+#define ASM_OUTPUT_REG_POP(FILE,REGNO)					\
+do {									\
+  extern char *reg_names[];						\
+  asm_fprintf (FILE, "\t{l|lwz} %s,0(%s)\n\t{ai|addic} %s,%s,4\n",	\
+	       reg_names[REGNO], reg_names[1], reg_names[1],		\
+	       reg_names[1]);						\
+} while (0)
 
 /* This is how to output an element of a case-vector that is absolute. 
    (RS/6000 does not use such vectors, but we must define this macro
@@ -2396,6 +2494,13 @@ extern int lwa_operand ();
 extern int call_operand ();
 extern int current_file_function_operand ();
 extern int input_operand ();
+extern void init_cumulative_args ();
+extern void function_arg_advance ();
+extern struct rtx_def *function_arg ();
+extern int function_arg_partial_nregs ();
+extern int function_arg_pass_by_reference ();
+extern void setup_incoming_varargs ();
+extern struct rtx_def *expand_builtin_saveregs ();
 extern int expand_block_move ();
 extern int load_multiple_operation ();
 extern int store_multiple_operation ();
@@ -2411,10 +2516,8 @@ extern void print_operand ();
 extern void print_operand_address ();
 extern int first_reg_to_save ();
 extern int first_fp_reg_to_save ();
-extern int must_save_cr ();
-extern int rs6000_sa_size ();
 extern int rs6000_makes_calls ();
-extern int rs6000_pushes_stack ();
+extern rs6000_stack_t *rs6000_stack_info ();
 extern void svr4_traceback ();
 extern void output_prolog ();
 extern void output_epilog ();

@@ -70,6 +70,9 @@ int rs6000_compare_fp_p;
    get the address of the GOT section */
 int rs6000_pic_labelno;
 #endif
+
+/* Whether a System V.4 varargs area was created.  */
+int rs6000_sysv_varargs_p;
 
 /* Override command line options.  Mostly we process the processor
    type and sometimes adjust other TARGET_ options.  */
@@ -212,11 +215,18 @@ rs6000_immed_double_const (i0, i1, mode)
 int
 direct_return ()
 {
-  return (reload_completed
-	  && first_reg_to_save () == 32
-	  && first_fp_reg_to_save () == 64
-	  && ! regs_ever_live[65]
-	  && ! rs6000_pushes_stack ());
+  if (reload_completed)
+    {
+      rs6000_stack_t *info = rs6000_stack_info ();
+
+      if (info->first_gp_reg_save == 32
+	  && info->first_fp_reg_save == 64
+	  && !info->lr_save_p
+	  && !info->push_p)
+	return 1;
+    }
+
+  return 0;
 }
 
 /* Returns 1 always.  */
@@ -621,6 +631,394 @@ input_operand (op, mode)
      for an add will be valid.  */
   return add_operand (op, mode);
 }
+
+/* Initialize a variable CUM of type CUMULATIVE_ARGS
+   for a call to a function whose data type is FNTYPE.
+   For a library call, FNTYPE is 0.
+
+   For incoming args we set the number of arguments in the prototype large
+   so we never return an EXPR_LIST.  */
+
+void
+init_cumulative_args (cum, fntype, libname, incoming)
+     CUMULATIVE_ARGS *cum;
+     tree fntype;
+     rtx libname;
+     int incoming;
+{
+  static CUMULATIVE_ARGS zero_cumulative;
+
+  *cum = zero_cumulative;
+  cum->words = 0;
+  cum->fregno = FP_ARG_MIN_REG;
+  cum->prototype = (fntype && TYPE_ARG_TYPES (fntype));
+
+  if (incoming)
+    {
+      cum->nargs_prototype = 1000;		/* don't return an EXPR_LIST */
+#ifdef TARGET_V4_CALLS
+      if (TARGET_V4_CALLS)
+	cum->varargs_offset = RS6000_VARARGS_OFFSET;
+#endif
+    }
+
+  else if (cum->prototype)
+    cum->nargs_prototype = (list_length (TYPE_ARG_TYPES (fntype)) - 1
+			    + (TYPE_MODE (TREE_TYPE (fntype)) == BLKmode
+			       || RETURN_IN_MEMORY (TREE_TYPE (fntype))));
+
+  else
+    cum->nargs_prototype = 0;
+
+  cum->orig_nargs = cum->nargs_prototype;
+  if (TARGET_DEBUG_ARG)
+    {
+      fprintf (stderr, "\ninit_cumulative_args:");
+      if (fntype)
+	{
+	  tree ret_type = TREE_TYPE (fntype);
+	  fprintf (stderr, " ret code = %s,",
+		   tree_code_name[ (int)TREE_CODE (ret_type) ]);
+	}
+
+#ifdef TARGET_V4_CALLS
+      if (TARGET_V4_CALLS && incoming)
+	fprintf (stderr, " varargs = %d, ", cum->varargs_offset);
+#endif
+
+      fprintf (stderr, " proto = %d, nargs = %d\n",
+	       cum->prototype, cum->nargs_prototype);
+    }
+}
+
+/* Update the data in CUM to advance over an argument
+   of mode MODE and data type TYPE.
+   (TYPE is null for libcalls where that information may not be available.)  */
+
+void
+function_arg_advance (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+{
+  cum->nargs_prototype--;
+
+#ifdef TARGET_V4_CALLS
+  if (TARGET_V4_CALLS)
+    {
+      /* Long longs must not be split between registers and stack */
+      if ((GET_MODE_CLASS (mode) != MODE_FLOAT || TARGET_SOFT_FLOAT)
+	  && type && !AGGREGATE_TYPE_P (type)
+	  && cum->words < GP_ARG_NUM_REG
+	  && cum->words + RS6000_ARG_SIZE (mode, type, named) > GP_ARG_NUM_REG)
+	{
+	  cum->words = GP_ARG_NUM_REG;
+	}
+
+      /* Aggregates get passed as pointers */
+      if (type && AGGREGATE_TYPE_P (type))
+	cum->words++;
+
+      /* Floats go in registers, & don't occupy space in the GP registers
+	 like they do for AIX unless software floating point.  */
+      else if (GET_MODE_CLASS (mode) == MODE_FLOAT
+	       && TARGET_HARD_FLOAT
+	       && cum->fregno <= FP_ARG_V4_MAX_REG)
+	cum->fregno++;
+
+      else
+	cum->words += RS6000_ARG_SIZE (mode, type, 1);
+    }
+  else
+#endif
+    if (named)
+      {
+	cum->words += RS6000_ARG_SIZE (mode, type, named);
+	if (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_HARD_FLOAT)
+	  cum->fregno++;
+      }
+
+  if (TARGET_DEBUG_ARG)
+    fprintf (stderr,
+	     "function_adv: words = %2d, fregno = %2d, nargs = %4d, proto = %d, mode = %4s, named = %d\n",
+	     cum->words, cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), named);
+}
+
+/* Determine where to put an argument to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).
+
+   On RS/6000 the first eight words of non-FP are normally in registers
+   and the rest are pushed.  Under AIX, the first 13 FP args are in registers.
+   Under V.4, the first 8 FP args are in registers.
+
+   If this is floating-point and no prototype is specified, we use
+   both an FP and integer register (or possibly FP reg and stack).  Library
+   functions (when TYPE is zero) always have the proper types for args,
+   so we can pass the FP value just in one register.  emit_library_function
+   doesn't support EXPR_LIST anyway.  */
+
+struct rtx_def *
+function_arg (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+{
+  if (TARGET_DEBUG_ARG)
+    fprintf (stderr,
+	     "function_arg: words = %2d, fregno = %2d, nargs = %4d, proto = %d, mode = %4s, named = %d\n",
+	     cum->words, cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), named);
+
+  /* Return a marker to indicate whether CR1 needs to set or clear the bit that V.4
+     uses to say fp args were passed in registers.  Assume that we don't need the
+     marker for software floating point, or compiler generated library calls.  */
+  if (mode == VOIDmode)
+    {
+#ifdef TARGET_V4_CALLS
+      if (TARGET_V4_CALLS && TARGET_HARD_FLOAT && cum->nargs_prototype < 0
+	  && type && (cum->prototype || TARGET_NO_PROTOTYPE))
+	return GEN_INT ((cum->fregno == FP_ARG_MIN_REG) ? -1 : 1);
+#endif
+
+      return GEN_INT (0);
+    }
+
+  if (!named)
+    {
+#ifdef TARGET_V4_CALLS
+      if (!TARGET_V4_CALLS)
+#endif
+	return NULL_RTX;
+    }
+
+  if (type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+    return NULL_RTX;
+
+  if (USE_FP_FOR_ARG_P (*cum, mode, type))
+    {
+      if ((cum->nargs_prototype > 0)
+#ifdef TARGET_V4_CALLS
+	  || TARGET_V4_CALLS	/* V.4 never passes FP values in GP registers */
+#endif
+	  || !type)
+	return gen_rtx (REG, mode, cum->fregno);
+
+      return gen_rtx (EXPR_LIST, VOIDmode,
+		      ((cum->words < GP_ARG_NUM_REG)
+		       ? gen_rtx (REG, mode, GP_ARG_MIN_REG + cum->words)
+		       : NULL_RTX),
+		      gen_rtx (REG, mode, cum->fregno));
+    }
+
+#ifdef TARGET_V4_CALLS
+  /* Long longs won't be split between register and stack */
+  else if (TARGET_V4_CALLS &&
+	   cum->words + RS6000_ARG_SIZE (mode, type, named) > GP_ARG_NUM_REG)
+    {
+      return NULL_RTX;
+    }
+#endif
+
+  else if (cum->words < GP_ARG_NUM_REG)
+    return gen_rtx (REG, mode, GP_ARG_MIN_REG + cum->words);
+
+  return NULL_RTX;
+}
+
+/* For an arg passed partly in registers and partly in memory,
+   this is the number of registers used.
+   For args passed entirely in registers or entirely in memory, zero.  */
+
+int
+function_arg_partial_nregs (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+{
+  if (! named)
+    return 0;
+
+#ifdef TARGET_V4_CALLS
+  if (TARGET_V4_CALLS)
+    return 0;
+#endif
+
+  if (USE_FP_FOR_ARG_P (*cum, mode, type))
+    {
+      if (cum->nargs_prototype >= 0)
+	return 0;
+    }
+
+  if (cum->words < GP_ARG_NUM_REG
+      && GP_ARG_NUM_REG < (cum->words + RS6000_ARG_SIZE (mode, type, named)))
+    {
+      int ret = GP_ARG_NUM_REG - cum->words;
+      if (ret && TARGET_DEBUG_ARG)
+	fprintf (stderr, "function_arg_partial_nregs: %d\n", ret);
+
+      return ret;
+    }
+
+  return 0;
+}
+
+/* A C expression that indicates when an argument must be passed by
+   reference.  If nonzero for an argument, a copy of that argument is
+   made in memory and a pointer to the argument is passed instead of
+   the argument itself.  The pointer is passed in whatever way is
+   appropriate for passing a pointer to that type.
+
+   Under V.4, structures and unions are passed by reference.  */
+
+int
+function_arg_pass_by_reference (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+{
+#ifdef TARGET_V4_CALLS
+  if (TARGET_V4_CALLS && type && AGGREGATE_TYPE_P (type))
+    {
+      if (TARGET_DEBUG_ARG)
+	fprintf (stderr, "function_arg_pass_by_reference: aggregate\n");
+
+      return 1;
+    }
+#endif
+
+  return 0;
+}
+
+
+/* Perform any needed actions needed for a function that is receiving a
+   variable number of arguments. 
+
+   CUM is as above.
+
+   MODE and TYPE are the mode and type of the current parameter.
+
+   PRETEND_SIZE is a variable that should be set to the amount of stack
+   that must be pushed by the prolog to pretend that our caller pushed
+   it.
+
+   Normally, this macro will push all remaining incoming registers on the
+   stack and set PRETEND_SIZE to the length of the registers pushed.  */
+
+void
+setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
+     CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int *pretend_size;
+     int no_rtl;
+
+{
+  rtx save_area = virtual_incoming_args_rtx;
+  int reg_size	= (TARGET_64BIT) ? 8 : 4;
+
+  if (TARGET_DEBUG_ARG)
+    fprintf (stderr,
+	     "setup_vararg: words = %2d, fregno = %2d, nargs = %4d, proto = %d, mode = %4s, no_rtl= %d\n",
+	     cum->words, cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), no_rtl);
+
+#ifdef TARGET_V4_CALLS
+  if (TARGET_V4_CALLS && !no_rtl)
+    {
+      rs6000_sysv_varargs_p = 1;
+      save_area = plus_constant (frame_pointer_rtx, RS6000_VARARGS_OFFSET);
+    }
+#endif
+
+  if (cum->words < 8)
+    {
+      int first_reg_offset = cum->words;
+
+      if (MUST_PASS_IN_STACK (mode, type))
+	first_reg_offset += RS6000_ARG_SIZE (TYPE_MODE (type), type, 1);
+
+      if (first_reg_offset > GP_ARG_NUM_REG)
+	first_reg_offset = GP_ARG_NUM_REG;
+
+      if (!no_rtl && first_reg_offset != GP_ARG_NUM_REG)
+	move_block_from_reg
+	  (GP_ARG_MIN_REG + first_reg_offset,
+	   gen_rtx (MEM, BLKmode,
+		    plus_constant (save_area, first_reg_offset * reg_size)),
+	   GP_ARG_NUM_REG - first_reg_offset,
+	   (GP_ARG_NUM_REG - first_reg_offset) * UNITS_PER_WORD);
+
+      *pretend_size = (GP_ARG_NUM_REG - first_reg_offset) * UNITS_PER_WORD;
+    }
+
+#ifdef TARGET_V4_CALLS
+  /* Save FP registers if needed.  */
+  if (TARGET_V4_CALLS && TARGET_HARD_FLOAT && !no_rtl)
+    {
+      int fregno     = cum->fregno;
+      int num_fp_reg = FP_ARG_V4_MAX_REG + 1 - fregno;
+
+      if (num_fp_reg >= 0)
+	{
+	  rtx cr1 = gen_rtx (REG, CCmode, 69);
+	  rtx lab = gen_label_rtx ();
+	  int off = (GP_ARG_NUM_REG * reg_size) + ((fregno - FP_ARG_MIN_REG) * 8);
+
+	  emit_jump_insn (gen_rtx (SET, VOIDmode,
+				   pc_rtx,
+				   gen_rtx (IF_THEN_ELSE, VOIDmode,
+					    gen_rtx (NE, VOIDmode, cr1, const0_rtx),
+					    gen_rtx (LABEL_REF, VOIDmode, lab),
+					    pc_rtx)));
+
+	  while ( num_fp_reg-- >= 0)
+	    {
+	      emit_move_insn (gen_rtx (MEM, DFmode, plus_constant (save_area, off)),
+			      gen_rtx (REG, DFmode, fregno++));
+	      off += 8;
+	    }
+
+	  emit_label (lab);
+	}
+    }
+#endif
+}
+
+/* If defined, is a C expression that produces the machine-specific
+   code for a call to `__builtin_saveregs'.  This code will be moved
+   to the very beginning of the function, before any parameter access
+   are made.  The return value of this function should be an RTX that
+   contains the value to use as the return of `__builtin_saveregs'.
+
+   The argument ARGS is a `tree_list' containing the arguments that
+   were passed to `__builtin_saveregs'.
+
+   If this macro is not defined, the compiler will output an ordinary
+   call to the library function `__builtin_saveregs'.
+   
+   On the Power/PowerPC return the address of the area on the stack
+   used to hold arguments.  Under AIX, this includes the 8 word register
+   save area.  Under V.4 this does not.  */
+
+struct rtx_def *
+expand_builtin_saveregs (args)
+     tree args;
+{
+  return virtual_incoming_args_rtx;
+}
+
 
 /* Expand a block move operation, and return 1 if successful.  Return 0
    if we should let the compiler generate normal code.
@@ -1205,7 +1603,7 @@ print_operand (file, x, code)
 
     case '*':
       /* Write the register number of the TOC register.  */
-      fputs (TARGET_MINIMAL_TOC ? "30" : "2", file);
+      fputs (TARGET_MINIMAL_TOC ? reg_names[30] : reg_names[2], file);
       return;
 
     case 'A':
@@ -1633,26 +2031,36 @@ print_operand_address (file, x)
      register rtx x;
 {
   if (GET_CODE (x) == REG)
-    fprintf (file, "0(%d)", REGNO (x));
+    fprintf (file, "0(%s)", reg_names[ REGNO (x) ]);
   else if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == CONST)
     {
       output_addr_const (file, x);
       /* When TARGET_MINIMAL_TOC, use the indirected toc table pointer instead
 	 of the toc pointer.  */
-      if (TARGET_MINIMAL_TOC)
-	fprintf (file, "(30)");
+#ifdef TARGET_NO_TOC
+      if (TARGET_NO_TOC)
+	;
       else
-	fprintf (file, "(2)");
+#endif
+	fprintf (file, "(%s)", reg_names[ TARGET_MINIMAL_TOC ? 30 : 2 ]);
     }
   else if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == REG)
     {
       if (REGNO (XEXP (x, 0)) == 0)
-	fprintf (file, "%d,%d", REGNO (XEXP (x, 1)), REGNO (XEXP (x, 0)));
+	fprintf (file, "%s,%s", reg_names[ REGNO (XEXP (x, 1)) ],
+		 reg_names[ REGNO (XEXP (x, 0)) ]);
       else
-	fprintf (file, "%d,%d", REGNO (XEXP (x, 0)), REGNO (XEXP (x, 1)));
+	fprintf (file, "%s,%s", reg_names[ REGNO (XEXP (x, 0)) ],
+		 reg_names[ REGNO (XEXP (x, 1)) ]);
     }
   else if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
-    fprintf (file, "%d(%d)", INTVAL (XEXP (x, 1)), REGNO (XEXP (x, 0)));
+    fprintf (file, "%d(%s)", INTVAL (XEXP (x, 1)), reg_names[ REGNO (XEXP (x, 0)) ]);
+  else if (TARGET_ELF && !TARGET_64BIT && GET_CODE (x) == LO_SUM
+	   && GET_CODE (XEXP (x, 0)) == REG && CONSTANT_P (XEXP (x, 1)))
+    {
+      output_addr_const (file, XEXP (x, 1));
+      fprintf (file, "@l(%s)", reg_names[ REGNO (XEXP (x, 0)) ]);
+    }
   else
     abort ();
 }
@@ -1678,9 +2086,11 @@ first_reg_to_save ()
      to 23 to do this.  Don't use the frame pointer in reg 31.
 
      For now, save enough room for all of the parameter registers.  */
+#ifndef USING_SVR4_H
   if (profile_flag)
     if (first_reg > 23)
       first_reg = 23;
+#endif
 
   return first_reg;
 }
@@ -1698,31 +2108,6 @@ first_fp_reg_to_save ()
       break;
 
   return first_reg;
-}
-
-/* Return 1 if we need to save CR.  */
-
-int
-must_save_cr ()
-{
-  return regs_ever_live[70] || regs_ever_live[71] || regs_ever_live[72];
-}
-
-/* Compute the size of the save area in the stack, including the space for
-   the fixed area.  */
-
-int
-rs6000_sa_size ()
-{
-  int size;
-
-  /* We have the six fixed words, plus the size of the register save 
-     areas, rounded to a double-word.  */
-  size = 6 + (32 - first_reg_to_save ()) + (64 - first_fp_reg_to_save ()) * 2;
-  if (size & 1)
-    size++;
-
-  return size * 4;
 }
 
 /* Return non-zero if this function makes calls.  */
@@ -1743,22 +2128,258 @@ rs6000_makes_calls ()
   return 0;
 }
 
-/* Return non-zero if this function needs to push space on the stack.  */
+
+/* Calculate the stack information for the current function.  This is
+   complicated by having two separate calling sequences, the AIX calling
+   sequence and the V.4 calling sequence.
 
-int
-rs6000_pushes_stack ()
+   AIX stack frames look like:
+
+	SP---->	+---------------------------------------+
+		| back chain to caller			| 0
+		+---------------------------------------+
+		| saved CR				| 4
+		+---------------------------------------+
+		| saved LR				| 8
+		+---------------------------------------+
+		| reserved for compilers		| 12
+		+---------------------------------------+
+		| reserved for binders			| 16
+		+---------------------------------------+
+		| saved TOC pointer			| 20
+		+---------------------------------------+
+		| Parameter save area (P)		| 24
+		+---------------------------------------+
+		| Alloca space (A)			| 24+P
+		+---------------------------------------+
+		| Local variable space (L)		| 24+P+A
+		+---------------------------------------+
+		| Save area for GP registers (G)	| 24+P+A+L
+		+---------------------------------------+
+		| Save area for FP registers (F)	| 24+P+A+L+G
+		+---------------------------------------+
+	old SP->| back chain to caller's caller		|
+		+---------------------------------------+
+
+   V.4 stack frames look like:
+
+	SP---->	+---------------------------------------+
+		| back chain to caller			| 0
+		+---------------------------------------+
+		| saved LR				| 4
+		+---------------------------------------+
+		| Parameter save area (P)		| 8
+		+---------------------------------------+
+		| Alloca space (A)			| 8+P
+		+---------------------------------------+
+		| Varargs save area (V)			| 8+P+A
+		+---------------------------------------+
+		| Local variable space (L)		| 8+P+A+V
+		+---------------------------------------+
+		| saved CR (C)				| 8+P+A+V+L
+		+---------------------------------------+
+		| Save area for GP registers (G)	| 8+P+A+V+L+C
+		+---------------------------------------+
+		| Save area for FP registers (F)	| 8+P+A+V+L+C+G
+		+---------------------------------------+
+	old SP->| back chain to caller's caller		|
+		+---------------------------------------+
+*/
+
+rs6000_stack_t *
+rs6000_stack_info ()
 {
-  int total_size = (rs6000_sa_size () + get_frame_size ()
-		    + current_function_outgoing_args_size);
+  static rs6000_stack_t info, zero_info;
+  rs6000_stack_t *info_ptr = &info;
+  int reg_size = TARGET_64BIT ? 8 : 4;
+  int v4_call_p = 0;
 
-  /* We need to push the stack if a frame pointer is needed (because the
-     stack might be dynamically adjusted), if we are debugging, if the
-     total stack size is more than 220 bytes, or if we make calls.  */
+  /* Zero all fields portably */
+  info = zero_info;
 
-  return (frame_pointer_needed || write_symbols != NO_DEBUG
-	  || total_size > 220
-	  || rs6000_makes_calls ());
+  /* Select which calling sequence */
+#ifdef TARGET_V4_CALLS
+  if (TARGET_V4_CALLS)
+    info_ptr->v4_call_p = v4_call_p = 1;
+#endif
+
+  /* Calculate which registers need to be saved & save area size */
+  info_ptr->first_gp_reg_save = first_reg_to_save ();
+  info_ptr->gp_size = reg_size * (32 - info_ptr->first_gp_reg_save);
+
+  info_ptr->first_fp_reg_save = first_fp_reg_to_save ();
+  info_ptr->fp_size = 8 * (64 - info_ptr->first_fp_reg_save);
+
+  /* Does this function call anything? */
+  info_ptr->calls_p = rs6000_makes_calls ();
+
+  /* Determine if we need to save the link register */
+  if (regs_ever_live[65] || profile_flag
+#ifdef TARGET_RELOCATABLE
+      || (TARGET_RELOCATABLE && (get_pool_size () != 0))
+#endif
+      || (info_ptr->first_fp_reg_save != 64
+	  && !FP_SAVE_INLINE (info_ptr->first_fp_reg_save))
+      || (v4_call_p && current_function_calls_alloca)
+      || info_ptr->calls_p)
+    {
+      info_ptr->lr_save_p = 1;
+      regs_ever_live[65] = 1;
+    }
+
+  /* Determine if we need to save the condition code registers */
+  if (regs_ever_live[70] || regs_ever_live[71] || regs_ever_live[72])
+    {
+      info_ptr->cr_save_p = 1;
+      if (v4_call_p)
+	info_ptr->cr_size = reg_size;
+    }
+
+  /* Determine various sizes */
+  info_ptr->reg_size     = reg_size;
+  info_ptr->fixed_size   = RS6000_SAVE_AREA;
+  info_ptr->varargs_size = RS6000_VARARGS_AREA;
+  info_ptr->vars_size    = ALIGN (get_frame_size (), 8);
+  info_ptr->parm_size    = ALIGN (current_function_outgoing_args_size, 8);
+  info_ptr->save_size    = ALIGN (info_ptr->fp_size + info_ptr->gp_size + info_ptr->cr_size, 8);
+  info_ptr->total_size   = ALIGN (info_ptr->vars_size
+				  + info_ptr->parm_size
+				  + info_ptr->save_size
+				  + info_ptr->varargs_size
+				  + info_ptr->fixed_size, STACK_BOUNDARY / BITS_PER_UNIT);
+
+  /* Determine if we need to allocate any stack frame.
+     For AIX We need to push the stack if a frame pointer is needed (because
+     the stack might be dynamically adjusted), if we are debugging, if the
+     total stack size is more than 220 bytes, or if we make calls.
+
+     For V.4 we don't have the stack cushion that AIX uses, but assume that
+     the debugger can handle stackless frames.  */
+
+  if (info_ptr->calls_p)
+    info_ptr->push_p = 1;
+
+  else if (v4_call_p)
+    info_ptr->push_p = (info_ptr->total_size > info_ptr->fixed_size
+			|| info_ptr->lr_save_p);
+
+  else
+    info_ptr->push_p = (frame_pointer_needed
+			|| write_symbols != NO_DEBUG
+			|| info_ptr->total_size > 220);
+
+  /* Calculate the offsets */
+  info_ptr->fp_save_offset = - info_ptr->fp_size;
+  info_ptr->gp_save_offset = info_ptr->fp_save_offset - info_ptr->gp_size;
+  if (v4_call_p)
+    {
+      info_ptr->cr_save_offset = info_ptr->gp_save_offset - reg_size;
+      info_ptr->lr_save_offset = - info_ptr->total_size + reg_size;
+    }
+  else
+    {
+      info_ptr->cr_save_offset = 4;
+      info_ptr->lr_save_offset = 8;
+    }
+
+  /* Zero offsets if we're not saving those registers */
+  if (!info_ptr->fp_size)
+    info_ptr->fp_save_offset = 0;
+
+  if (!info_ptr->gp_size)
+    info_ptr->gp_save_offset = 0;
+
+  if (!info_ptr->lr_save_p)
+    info_ptr->lr_save_offset = 0;
+
+  if (!info_ptr->cr_save_p)
+    info_ptr->cr_save_offset = 0;
+
+  return info_ptr;
 }
+
+void
+debug_stack_info (info)
+     rs6000_stack_t *info;
+{
+  if (!info)
+    info = rs6000_stack_info ();
+
+  fprintf (stderr, "\nStack information for function %s:\n",
+	   ((current_function_decl && DECL_NAME (current_function_decl))
+	    ? IDENTIFIER_POINTER (DECL_NAME (current_function_decl))
+	    : "<unknown>"));
+
+  if (info->first_gp_reg_save != 32)
+    fprintf (stderr, "\tfirst_gp_reg_save   = %5d\n", info->first_gp_reg_save);
+
+  if (info->first_fp_reg_save != 64)
+    fprintf (stderr, "\tfirst_fp_reg_save   = %5d\n", info->first_fp_reg_save);
+
+  if (info->lr_save_p)
+    fprintf (stderr, "\tlr_save_p           = %5d\n", info->lr_save_p);
+
+  if (info->cr_save_p)
+    fprintf (stderr, "\tcr_save_p           = %5d\n", info->cr_save_p);
+
+  if (info->push_p)
+    fprintf (stderr, "\tpush_p              = %5d\n", info->push_p);
+
+  if (info->calls_p)
+    fprintf (stderr, "\tcalls_p             = %5d\n", info->calls_p);
+
+  if (info->v4_call_p)
+    fprintf (stderr, "\tv4_call_p           = %5d\n", info->v4_call_p);
+
+  if (info->gp_save_offset)
+    fprintf (stderr, "\tgp_save_offset      = %5d\n", info->gp_save_offset);
+
+  if (info->fp_save_offset)
+    fprintf (stderr, "\tfp_save_offset      = %5d\n", info->fp_save_offset);
+
+  if (info->lr_save_offset)
+    fprintf (stderr, "\tlr_save_offset      = %5d\n", info->lr_save_offset);
+
+  if (info->cr_save_offset)
+    fprintf (stderr, "\tcr_save_offset      = %5d\n", info->cr_save_offset);
+
+  if (info->varargs_save_offset)
+    fprintf (stderr, "\tvarargs_save_offset = %5d\n", info->varargs_save_offset);
+
+  if (info->total_size)
+    fprintf (stderr, "\ttotal_size          = %5d\n", info->total_size);
+
+  if (info->varargs_size)
+    fprintf (stderr, "\tvarargs_size        = %5d\n", info->varargs_size);
+
+  if (info->vars_size)
+    fprintf (stderr, "\tvars_size           = %5d\n", info->vars_size);
+
+  if (info->parm_size)
+    fprintf (stderr, "\tparm_size           = %5d\n", info->parm_size);
+
+  if (info->fixed_size)
+    fprintf (stderr, "\tfixed_size          = %5d\n", info->fixed_size);
+
+  if (info->gp_size)
+    fprintf (stderr, "\tgp_size             = %5d\n", info->gp_size);
+
+  if (info->fp_size)
+    fprintf (stderr, "\tfp_size             = %5d\n", info->fp_size);
+
+  if (info->cr_size)
+    fprintf (stderr, "\tcr_size             = %5d\n", info->cr_size);
+
+  if (info->save_size)
+    fprintf (stderr, "\tsave_size           = %5d\n", info->save_size);
+
+  if (info->reg_size != 4)
+    fprintf (stderr, "\treg_size            = %5d\n", info->reg_size);
+
+  fprintf (stderr, "\n");
+}
+
+
 
 #ifdef USING_SVR4_H
 /* Write out a System V.4 style traceback table before the prologue
@@ -1781,77 +2402,62 @@ svr4_traceback (file, name, decl)
      FILE *file;
      tree name, decl;
 {
-
-  int first_reg		= first_reg_to_save ();
-  int first_fp_reg	= first_fp_reg_to_save ();
-  int pushes_stack	= rs6000_pushes_stack ();
+  rs6000_stack_t *info = rs6000_stack_info ();
   long tag;
-  long version		= 0;			/* version number */
-  long tag_type		= 0;			/* function type */
-  long extended_tag	= 0;			/* additional tag words needed */
-  long spare		= 0;			/* reserved for future use */
-  long alloca_reg;				/* stack/frame register */
-  long fpr_max		= 64 - first_fp_reg;	/* # of floating point registers saved */
-  long gpr_max		= 32 - first_reg;	/* # of general purpose registers saved */
-  long sp_max;					/* 1 if the function acquires a stack frame */
-  long lr_max;					/* 1 if the function stores the link register */
-  long cr_max;					/* 1 if the function has a CR save word */
-  long fpscr_max	= 0;			/* 1 if the function has a FPSCR save word */
+  long version		= 0;				/* version number */
+  long tag_type		= 0;				/* function type */
+  long extended_tag	= 0;				/* additional tag words needed */
+  long spare		= 0;				/* reserved for future use */
+  long fpscr_max	= 0;				/* 1 if the function has a FPSCR save word */
+  long fpr_max		= 64 - info->first_fp_reg_save;	/* # of floating point registers saved */
+  long gpr_max		= 32 - info->first_gp_reg_save;	/* # of general purpose registers saved */
+  long alloca_reg;					/* stack/frame register */
 
   if (frame_pointer_needed)
     alloca_reg = 31;
 
-  else if (pushes_stack != 0)
+  else if (info->push_p != 0)
     alloca_reg = 1;
 
   else
     alloca_reg = 0;
 
-  lr_max = (regs_ever_live[65] || first_fp_reg < 62 || profile_flag);
-  cr_max = (must_save_cr () != 0);
-  sp_max = (pushes_stack != 0);
-
-  tag = (((version & 3) << 24)
-	 | ((tag_type & 7) << 21)
-	 | ((extended_tag & 1) << 20)
-	 | ((spare & 1) << 19)
-	 | ((alloca_reg & 0x1f) << 14)
-	 | ((fpr_max & 0x1f) << 9)
-	 | ((gpr_max & 0x1f) << 4)
-	 | ((sp_max & 1) << 3)
-	 | ((lr_max & 1) << 2)
-	 | ((cr_max & 1) << 1)
-	 | ((fpscr_max & 1) << 0));
+  tag = ((version << 24)
+	 | (tag_type << 21)
+	 | (extended_tag << 20)
+	 | (spare << 19)
+	 | (alloca_reg << 14)
+	 | (fpr_max << 9)
+	 | (gpr_max << 4)
+	 | (info->push_p << 3)
+	 | (info->lr_save_p << 2)
+	 | (info->cr_save_p << 1)
+	 | (fpscr_max << 0));
 	   
   fprintf (file, "\t.long 0x%lx\n", tag);
 }
 
 #endif /* USING_SVR4_H */
-
+
 /* Write function prologue.  */
-
 void
 output_prolog (file, size)
      FILE *file;
      int size;
 {
-  int first_reg = first_reg_to_save ();
-  int must_push = rs6000_pushes_stack ();
-  int first_fp_reg = first_fp_reg_to_save ();
-  int basic_size = rs6000_sa_size ();
-  int total_size = (basic_size + size + current_function_outgoing_args_size);
-  char buf[256];
+  rs6000_stack_t *info = rs6000_stack_info ();
+  char *store_reg = (TARGET_64BIT) ? "\tstd %s,%d(%s)" : "\t{st|stw} %s,%d(%s)\n";
 
-  /* Round size to multiple of 8 bytes.  */
-  total_size = (total_size + 7) & ~7;
+  if (TARGET_DEBUG_STACK)
+    debug_stack_info (info);
 
   /* Write .extern for any function we will call to save and restore fp
      values.  */
 #ifndef USING_SVR4_H
-  if (first_fp_reg < 62)
+  if (info->first_fp_reg_save < 62)
     fprintf (file, "\t.extern %s%d%s\n\t.extern %s%d%s\n",
-	     SAVE_FP_PREFIX, first_fp_reg - 32, SAVE_FP_SUFFIX,
-	     RESTORE_FP_PREFIX, first_fp_reg - 32, RESTORE_FP_SUFFIX);
+	     SAVE_FP_PREFIX, info->first_fp_reg_save - 32, SAVE_FP_SUFFIX,
+	     RESTORE_FP_PREFIX, info->first_fp_reg_save - 32, RESTORE_FP_SUFFIX);
 #endif
 
   /* Write .extern for truncation routines, if needed.  */
@@ -1861,6 +2467,7 @@ output_prolog (file, size)
 	       RS6000_ITRUNC, RS6000_UITRUNC);
       trunc_defined = 1;
     }
+
   /* Write .extern for AIX common mode routines, if needed.  */
   if (! TARGET_POWER && ! TARGET_POWERPC && ! common_mode_defined)
     {
@@ -1873,100 +2480,79 @@ output_prolog (file, size)
       common_mode_defined = 1;
     }
 
-#ifdef USING_SVR4_H
-  /* If we have a relocatable GOT section, we need to save the LR. */
-  if (TARGET_RELOCATABLE && get_pool_size () != 0)
-    regs_ever_live[65] = 1;
-#endif
-
-  /* If we have to call a function to save fpr's, or if we are doing profiling,
-     then we will be using LR.  */
-  if (profile_flag)
-    regs_ever_live[65] = 1;
-
-#ifndef USING_SVR4_H
-  if (first_fp_reg < 62)
-    regs_ever_live[65] = 1;
-#endif
-
   /* If we use the link register, get it into r0.  */
-  if (regs_ever_live[65])
-    asm_fprintf (file, "\tmflr 0\n");
+  if (info->lr_save_p)
+    asm_fprintf (file, "\tmflr %s\n", reg_names[0]);
 
   /* If we need to save CR, put it into r12.  */
-  if (must_save_cr ())
-    asm_fprintf (file, "\tmfcr 12\n");
+  if (info->cr_save_p)
+    asm_fprintf (file, "\tmfcr %s\n", reg_names[12]);
 
   /* Do any required saving of fpr's.  If only one or two to save, do it
      ourself.  Otherwise, call function.  Note that since they are statically
      linked, we do not need a nop following them.  */
-  if (first_fp_reg == 62)
-    asm_fprintf (file, "\tstfd 30,-16(1)\n\tstfd 31,-8(1)\n");
-  else if (first_fp_reg == 63)
-    asm_fprintf (file, "\tstfd 31,-8(1)\n");
-  else if (first_fp_reg != 64)
+  if (FP_SAVE_INLINE (info->first_fp_reg_save))
     {
-#ifndef USING_SVR4_H
-      asm_fprintf (file, "\tbl %s%d%s\n", SAVE_FP_PREFIX, first_fp_reg - 32, SAVE_FP_SUFFIX);
-#else
-      int regno, loc;
+      int regno = info->first_fp_reg_save;
+      int loc   = info->fp_save_offset;
 
-      for (regno = first_fp_reg,
-	   loc = - (64 - first_fp_reg) * 8;
-	   regno < 64;
-	   regno++, loc += 8)
-	asm_fprintf (file, "\tstfd %d,%d(1)\n", regno - 32, loc);
-#endif
+      for ( ; regno < 64; regno++, loc += 8)
+	asm_fprintf (file, "\tstfd %s,%d(%s)\n", reg_names[regno], loc, reg_names[1]);
     }
+  else if (info->first_fp_reg_save != 64)
+    asm_fprintf (file, "\tbl %s%d%s\n", SAVE_FP_PREFIX,
+		 info->first_fp_reg_save - 32, SAVE_FP_SUFFIX);
 
   /* Now save gpr's.  */
-  if (! TARGET_MULTIPLE || first_reg == 31)
+  if (! TARGET_MULTIPLE || info->first_gp_reg_save == 31 || TARGET_64BIT)
     {
-      int regno, loc;
+      int regno    = info->first_gp_reg_save;
+      int loc      = info->gp_save_offset;
+      int reg_size = (TARGET_64BIT) ? 8 : 4;
 
-      for (regno = first_reg,
-	   loc = - (32 - first_reg) * 4 - (64 - first_fp_reg) * 8;
-	   regno < 32;
-	   regno++, loc += 4)
-	asm_fprintf (file, "\t{st|stw} %d,%d(1)\n", regno, loc);
+      for ( ; regno < 32; regno++, loc += reg_size)
+	asm_fprintf (file, store_reg, reg_names[regno], loc, reg_names[1]);
     }
 
-  else if (first_reg != 32)
-    asm_fprintf (file, "\t{stm|stmw} %d,%d(1)\n", first_reg,
-	     - (32 - first_reg) * 4 - (64 - first_fp_reg) * 8);
+  else if (info->first_gp_reg_save != 32)
+    asm_fprintf (file, "\t{stm|stmw} %s,%d(%s)\n",
+		 reg_names[info->first_gp_reg_save],
+		 info->gp_save_offset,
+		 reg_names[1]);
 
   /* Save lr if we used it.  */
-  if (regs_ever_live[65])
-    asm_fprintf (file, "\t{st|stw} 0,8(1)\n");
+  if (info->lr_save_p)
+    asm_fprintf (file, store_reg, reg_names[0], info->lr_save_offset, reg_names[1]);
 
   /* Save CR if we use any that must be preserved.  */
-  if (must_save_cr ())
-    asm_fprintf (file, "\t{st|stw} 12,4(1)\n");
+  if (info->cr_save_p)
+    asm_fprintf (file, store_reg, reg_names[12], info->cr_save_offset, reg_names[1]);
 
   /* Update stack and set back pointer.  */
-  if (must_push)
+  if (info->push_p)
     {
-      if (total_size < 32767)
-	asm_fprintf (file, "\t{stu|stwu} 1,%d(1)\n", - total_size);
+      if (info->total_size < 32767)
+	asm_fprintf (file,
+		     (TARGET_64BIT) ? "\tstdu %s,%d(%s)\n" : "\t{stu|stwu} %s,%d(%s)\n",
+		     reg_names[1], - info->total_size, reg_names[1]);
       else
 	{
-	  asm_fprintf (file, "\t{liu|lis} 0,%d\n\t{oril|ori} 0,0,%d\n",
-		   (total_size >> 16) & 0xffff, total_size & 0xffff);
-	  if (TARGET_POWERPC)
-	    asm_fprintf (file, "\tsubf 12,0,1\n");
-	  else
-	    asm_fprintf (file, "\t{sf|subfc} 12,0,1\n");
-	  asm_fprintf (file, "\t{st|stw} 1,0(12)\n\tmr 1,12\n");
+	  asm_fprintf (file, "\t{liu|lis} %s,%d\n\t{oril|ori} %s,%s,%d\n",
+		       reg_names[0], (info->total_size >> 16) & 0xffff,
+		       reg_names[0], reg_names[0], info->total_size & 0xffff);
+	  asm_fprintf (file,
+		       (TARGET_64BIT) ? "\tstdux %s,%s,%s\n" : "\tstwux %s,%s,%s\n",
+		       reg_names[1], reg_names[1], reg_names[0]);
 	}
     }
 
   /* Set frame pointer, if needed.  */
   if (frame_pointer_needed)
-    asm_fprintf (file, "\tmr 31,1\n");
+    asm_fprintf (file, "\tmr %s,%s\n", reg_names[31], reg_names[1]);
 
   /* If TARGET_MINIMAL_TOC, and the constant pool is needed, then load the
      TOC_TABLE address into register 30.  */
-  if (TARGET_MINIMAL_TOC && get_pool_size () != 0)
+  if (TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
     {
       char buf[256];
 
@@ -1979,43 +2565,54 @@ output_prolog (file, size)
 	  fprintf (file, "\n");
 
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCF", rs6000_pic_labelno);
-	  fprintf (file, "\tmflr 30\n");
+	  fprintf (file, "\tmflr %s\n", reg_names[30]);
 
 	  if (TARGET_POWERPC64)
-	    fprintf (file, "\tld 0,");
+	    fprintf (file, "\tld");
 	  else if (TARGET_NEW_MNEMONICS)
-	    fprintf (file, "\tlwz 0,");
+	    fprintf (file, "\tlwz");
 	  else
-	    fprintf (file, "\tl 0,");
+	    fprintf (file, "\tl");
 
-	  fprintf (file, "(");
+	  fprintf (file, " %s,(", reg_names[0]);
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
 	  assemble_name (file, buf);
 	  fprintf (file, "-");
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
 	  assemble_name (file, buf);
-	  fprintf (file, ")(30)\n");
-	  asm_fprintf (file, "\t{cax|add} 30,0,30\n");
+	  fprintf (file, ")(%s)\n", reg_names[30]);
+	  asm_fprintf (file, "\t{cax|add} %s,%s,%s\n",
+		       reg_names[30], reg_names[0], reg_names[30]);
 	  rs6000_pic_labelno++;
 	}
-      else if (TARGET_NO_TOC)
+      else if (!TARGET_64BIT)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
-	  asm_fprintf (file, "\t{cau|addis} 30,0,");
+	  asm_fprintf (file, "\t{cau|addis} %s,%s,", reg_names[30], reg_names[0]);
 	  assemble_name (file, buf);
 	  asm_fprintf (file, "@ha\n");
-	  asm_fprintf (file, "\t{cal|addi} 30,30,");
-	  assemble_name (file, buf);
-	  asm_fprintf (file, "@l\n");
+	  if (TARGET_NEW_MNEMONICS)
+	    {
+	      asm_fprintf (file, "\taddi %s,%s,", reg_names[30], reg_names[30]);
+	      assemble_name (file, buf);
+	      asm_fprintf (file, "@l\n");
+	    }
+	  else
+	    {
+	      asm_fprintf (file, "\tcal %s,", reg_names[30]);
+	      assemble_name (file, buf);
+	      asm_fprintf (file, "@l(%s)\n", reg_names[30]);
+	    }
 	}
       else
+	abort ();
+
+#else	/* !USING_SVR4_H */
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 0);
+      asm_fprintf (file, "\t{l|lwz} %s,", reg_names[30]);
+      assemble_name (file, buf);
+      asm_fprintf (file, "(%s)\n", reg_names[2]);
 #endif /* USING_SVR4_H */
-	{
-	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 0);
-	  asm_fprintf (file, "\t{l|lwz} 30,");
-	  assemble_name (file, buf);
-	  asm_fprintf (file, "(2)\n");
-	}
     }
 }
 
@@ -2026,15 +2623,9 @@ output_epilog (file, size)
      FILE *file;
      int size;
 {
-  int first_reg = first_reg_to_save ();
-  int must_push = rs6000_pushes_stack ();
-  int first_fp_reg = first_fp_reg_to_save ();
-  int basic_size = rs6000_sa_size ();
-  int total_size = (basic_size + size + current_function_outgoing_args_size);
+  rs6000_stack_t *info = rs6000_stack_info ();
+  char *load_reg = (TARGET_64BIT) ? "\tld %s,%d(%s)" : "\t{l|lwz} %s,%d(%s)\n";
   rtx insn = get_last_insn ();
-
-  /* Round size to multiple of 8 bytes.  */
-  total_size = (total_size + 7) & ~7;
 
   /* If the last insn was a BARRIER, we don't have to write anything except
      the trace table.  */
@@ -2046,71 +2637,68 @@ output_epilog (file, size)
 	 frame, restore the old stack pointer using the backchain.  Otherwise,
 	 we know what size to update it with.  */
       if (frame_pointer_needed || current_function_calls_alloca
-	  || total_size > 32767)
-	asm_fprintf (file, "\t{l|lwz} 1,0(1)\n");
-      else if (must_push)
-	asm_fprintf (file, "\t{cal 1,%d(1)|addi 1,1,%d}\n", total_size);
-
-      /* Get the old lr if we saved it.  */
-      if (regs_ever_live[65])
-	asm_fprintf (file, "\t{l|lwz} 0,8(1)\n");
-
-      /* Get the old cr if we saved it.  */
-      if (must_save_cr ())
-	asm_fprintf (file, "\t{l|lwz} 12,4(1)\n");
-
-      /* Set LR here to try to overlap restores below.  */
-      if (regs_ever_live[65])
-	asm_fprintf (file, "\tmtlr 0\n");
-
-      /* Restore gpr's.  */
-      if (! TARGET_MULTIPLE || first_reg == 31)
+	  || info->total_size > 32767)
+	asm_fprintf (file, load_reg, reg_names[1], 0, reg_names[1]);
+      else if (info->push_p)
 	{
-	  int regno, loc;
-
-	  for (regno = first_reg,
-	       loc = - (32 - first_reg) * 4 - (64 - first_fp_reg) * 8;
-	       regno < 32;
-	       regno++, loc += 4)
-	    asm_fprintf (file, "\t{l|lwz} %d,%d(1)\n", regno, loc);
+	  if (TARGET_NEW_MNEMONICS)
+	    asm_fprintf (file, "\taddi %s,%s,%d\n", reg_names[1], reg_names[1], info->total_size);
+	  else
+	    asm_fprintf (file, "\tcal %s,%d(%s)\n", reg_names[1], info->total_size, reg_names[1]);
 	}
 
-      else if (first_reg != 32)
-	asm_fprintf (file, "\t{lm|lmw} %d,%d(1)\n", first_reg,
-	     - (32 - first_reg) * 4 - (64 - first_fp_reg) * 8);
+      /* Get the old lr if we saved it.  */
+      if (info->lr_save_p)
+	asm_fprintf (file, load_reg, reg_names[0], info->lr_save_offset, reg_names[1]);
+
+      /* Get the old cr if we saved it.  */
+      if (info->cr_save_p)
+	asm_fprintf (file, load_reg, reg_names[12], info->cr_save_offset, reg_names[1]);
+
+      /* Set LR here to try to overlap restores below.  */
+      if (info->lr_save_p)
+	asm_fprintf (file, "\tmtlr %s\n", reg_names[0]);
+
+      /* Restore gpr's.  */
+      if (! TARGET_MULTIPLE || info->first_gp_reg_save == 31 || TARGET_64BIT)
+	{
+	  int regno    = info->first_gp_reg_save;
+	  int loc      = info->gp_save_offset;
+	  int reg_size = (TARGET_64BIT) ? 8 : 4;
+
+	  for ( ; regno < 32; regno++, loc += reg_size)
+	    asm_fprintf (file, load_reg, reg_names[regno], loc, reg_names[1]);
+	}
+
+      else if (info->first_gp_reg_save != 32)
+	asm_fprintf (file, "\t{lm|lmw} %s,%d(%s)\n",
+		     reg_names[info->first_gp_reg_save],
+		     info->gp_save_offset,
+		     reg_names[1]);
 
       /* Restore fpr's if we can do it without calling a function.  */
-      if (first_fp_reg == 62)
-	asm_fprintf (file, "\tlfd 30,-16(1)\n\tlfd 31,-8(1)\n");
-      else if (first_fp_reg == 63)
-	asm_fprintf (file, "\tlfd 31,-8(1)\n");
+      if (FP_SAVE_INLINE (info->first_fp_reg_save))
+	{
+	  int regno = info->first_fp_reg_save;
+	  int loc   = info->fp_save_offset;
+
+	  for ( ; regno < 64; regno++, loc += 8)
+	    asm_fprintf (file, "\tlfd %s,%d(%s)\n", reg_names[regno], loc, reg_names[1]);
+	}
 
       /* If we saved cr, restore it here.  Just those of cr2, cr3, and cr4
 	 that were used.  */
-      if (must_save_cr ())
-	asm_fprintf (file, "\tmtcrf %d,12\n",
+      if (info->cr_save_p)
+	asm_fprintf (file, "\tmtcrf %d,%s\n",
 		     (regs_ever_live[70] != 0) * 0x20
 		     + (regs_ever_live[71] != 0) * 0x10
-		     + (regs_ever_live[72] != 0) * 0x8);
+		     + (regs_ever_live[72] != 0) * 0x8, reg_names[12]);
 
       /* If we have to restore more than two FP registers, branch to the
 	 restore function.  It will return to our caller.  */
-      if (first_fp_reg < 62)
-	{
-#ifndef USING_SVR4_H
-	  asm_fprintf (file, "\tb %s%d%s\n", RESTORE_FP_PREFIX, first_fp_reg - 32, RESTORE_FP_SUFFIX);
-#else
-	  int regno, loc;
-
-	  for (regno = first_fp_reg,
-	       loc = - (64 - first_fp_reg) * 8;
-	       regno < 64;
-	       regno++, loc += 8)
-	    asm_fprintf (file, "\tlfd %d,%d(1)\n", regno - 32, loc);
-
-	  asm_fprintf (file, "\t{br|blr}\n");
-#endif
-	}
+      if (info->first_fp_reg_save != 64 && !FP_SAVE_INLINE (info->first_fp_reg_save))
+	asm_fprintf (file, "\tb %s%d%s\n", RESTORE_FP_PREFIX,
+		     info->first_fp_reg_save - 32, RESTORE_FP_SUFFIX);
       else
 	asm_fprintf (file, "\t{br|blr}\n");
     }
@@ -2184,7 +2772,7 @@ output_epilog (file, size)
 	 has controlled storage, function has no toc, function uses fp,
 	 function logs/aborts fp operations.  */
       /* Assume that fp operations are used if any fp reg must be saved.  */
-      fprintf (file, "%d,", (1 << 5) | ((first_fp_reg != 64) << 1));
+      fprintf (file, "%d,", (1 << 5) | ((info->first_fp_reg_save != 64) << 1));
 
       /* 6 bitfields: function is interrupt handler, name present in
 	 proc table, function calls alloca, on condition directives
@@ -2194,12 +2782,12 @@ output_epilog (file, size)
 	 set up as a frame pointer, even when there is no alloca call.  */
       fprintf (file, "%d,",
 	       ((1 << 6) | (frame_pointer_needed << 5)
-		| (must_save_cr () << 1) | (regs_ever_live[65])));
+		| (info->cr_save_p << 1) | (info->lr_save_p)));
 
       /* 3 bitfields: saves backchain, spare bit, number of fpr saved
 	 (6 bits).  */
       fprintf (file, "%d,",
-	       (must_push << 7) | (64 - first_fp_reg_to_save ()));
+	       (info->push_p << 7) | (64 - info->first_fp_reg_save));
 
       /* 2 bitfields: spare bits (2 bits), number of gpr saved (6 bits).  */
       fprintf (file, "%d,", (32 - first_reg_to_save ()));
@@ -2308,6 +2896,9 @@ output_epilog (file, size)
 	fprintf (file, "\t.byte 31\n");
     }
 #endif /* !USING_SVR4_H */
+
+  /* Reset varargs indicator */
+  rs6000_sysv_varargs_p = 0;
 }
 
 /* Output a TOC entry.  We derive the entry name from what is
@@ -2323,6 +2914,9 @@ output_toc (file, x, labelno)
   char *name = buf;
   rtx base = x;
   int offset = 0;
+
+  if (TARGET_NO_TOC)
+    abort ();
 
 #ifdef USING_SVR4_H
   if (TARGET_MINIMAL_TOC)

@@ -29,6 +29,8 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_SPEC "\
 %{posix: -D_POSIX_SOURCE} \
 %{mrelocatable: -D_RELOCATABLE} \
+%{mcall-sysv: -D_CALL_SYSV} %{mcall-aix: -D_CALL_AIX} %{!mcall-sysv: %{!mcall-aix: -D_CALL_SYSV}} \
+%{msoft-float: -D_SOFT_FLOAT} %{mcpu=403: -D_SOFT_FLOAT} \
 %{mbig: -D_BIG_ENDIAN -Amachine(bigendian)} \
 %{mbig-endian: -D_BIG_ENDIAN -Amachine(bigendian)} \
 %{!mbig: %{!mbig-endian: -D_LITTLE_ENDIAN -Amachine(littleendian)}} \

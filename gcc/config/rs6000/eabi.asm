@@ -27,6 +27,12 @@
 .Lgot2e = .-.LCTOC1
 	.long	_GOT2_END_			# -mrelocatable GOT pointers end
 
+.Lfixups = .-.LCTOC1
+	.long	_FIXUP_START_			# start of .fixup section
+
+.Lfixupe = .-.LCTOC1
+	.long	_FIXUP_END_			# end of .fixup section
+
 	.text
 .Lptr:
 	.long	.LCTOC1-.Laddr			# PC relative pointer to .got2
@@ -64,15 +70,35 @@ __eabi:	mflr	0
 	add	4,12,4
 
 	cmpw	1,3,4				# any pointers to adjust
-	bc	12,6,.Ldone
+	bc	12,6,.Lfix
 
 .Lloop:
-	lwz	11,0(3)				# next pointer
-	add	11,11,12			# adjust
-	stw	11,0(3)
+	lwz	5,0(3)				# next pointer
+	add	5,5,12				# adjust
+	stw	5,0(3)
 	addi	3,3,4				# bump to next word
 	cmpw	1,3,4				# more pointers to adjust?
 	bc	4,6,.Lloop
+
+# Fixup any user initialized pointers now (the compiler drops pointers to
+# each of the relocs that it does in the .fixup section).  Note, the pointers
+# themselves have already been fixed up by the previous loop.
+
+.Lfix:
+	lwz	3,.Lfixups(11)			# fixup pointers start
+	lwz	4,.Lfixupe(11)			# fixup pointers end
+
+	cmpw	1,3,4				# any user pointers to adjust
+	bc	12,6,.Ldone
+
+.Lfloop:
+	lwz	5,0(3)				# next pointer
+	lwz	6,0(5)				# get the pointer it points to
+	add	6,6,12				# adjust
+	stw	6,0(5)
+	addi	3,3,4				# bump to next word
+	cmpw	1,3,4				# more pointers to adjust?
+	bc	4,6,.Lfloop
 
 # Done adjusting pointers, return
 
