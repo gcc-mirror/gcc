@@ -1,3 +1,10 @@
+2000-06-04  Alex Samuel  <samuel@codesourcery.com>
+
+	* Makefile.in (OBJS): Remove dyn_string.o
+	(dyn-string.o): Delete rule.
+	* dyn-string.c: Delete file
+	* dyn-string.h: Likewise.
+	
 2000-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (intl.*): Honor non-zero exit codes in the intl
