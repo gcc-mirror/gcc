@@ -1,3 +1,8 @@
+2003-06-29  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* loop.c (count_one_set): Fix detection of registers set in more
+	than one basic block.	
+
 2003-06-29  Andreas Jaeger  <aj@suse.de>
 
 	* target-def.h: Remove usage of OBJECT_FORMAT_ROSE.
