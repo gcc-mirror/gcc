@@ -3094,7 +3094,12 @@ of bytes that the format occupies, @var{addr} is the @code{SYMBOL_REF}
 to be emitted.
 @end defmac
 
-@defmac MD_FALLBACK_FRAME_STATE_FOR (@var{context}, @var{fs}, @var{success})
+@defmac MD_UNWIND_SUPPORT
+A string specifying a file to be #include'd in unwind-dw2.c.  The file
+so included typically defines @code{MD_FALLBACK_FRAME_STATE_FOR}.
+@end defmac
+
+@defmac MD_FALLBACK_FRAME_STATE_FOR (@var{context}, @var{fs})
 This macro allows the target to add cpu and operating system specific
 code to the call-frame unwinder for use when there is no unwind data
 available.  The most common reason to implement this macro is to unwind
@@ -3105,9 +3110,9 @@ and @file{unwind-ia64.c}.  @var{context} is an @code{_Unwind_Context};
 @var{fs} is an @code{_Unwind_FrameState}.  Examine @code{context->ra}
 for the address of the code being executed and @code{context->cfa} for
 the stack pointer value.  If the frame can be decoded, the register save
-addresses should be updated in @var{fs} and the macro should branch to
-@var{success}.  If the frame cannot be decoded, the macro should do
-nothing.
+addresses should be updated in @var{fs} and the macro should evaluate to
+@code{_URC_NO_REASON}.  If the frame cannot be decoded, the macro should
+evaluate to @code{_URC_END_OF_STACK}.
 
 For proper signal handling in Java this macro is accompanied by
 @code{MAKE_THROW_FRAME}, defined in @file{libjava/include/*-signal.h} headers.

@@ -1,3 +1,37 @@
+2004-09-08  Alan Modra  <amodra@bigpond.net.au>
+
+	* doc/tm.texi (MD_UNWIND_SUPPORT): Document.
+	(MD_FALLBACK_FRAME_STATE_FOR): Update.
+	* unwind-dw2.c (MD_UNWIND_SUPPORT): #include if defined.
+	(uw_frame_state_for): Adjust MD_FALLBACK_FRAME_STATE_FOR invocation.
+	(MD_FROB_UPDATE_CONTEXT): Remove default.
+	(uw_update_context_1): Instead #ifdef invocation.
+	* config/ia64/unwind-ia64.c (MD_UNWIND_SUPPORT): #include if defined.
+	(uw_frame_state_for): Adjust MD_FALLBACK_FRAME_STATE_FOR invocation.
+	* config/alpha/gnu.h (MD_FALLBACK_FRAME_STATE_FOR): Don't undef.
+	(MD_UNWIND_SUPPORT): Undefine this instead.
+	* config/i386/gnu.h: Likewise.
+	* config/alpha/linux-unwind.h: New file, macro converted to
+	function, extracted from..
+	* config/alpha/linux.h (MD_FALLBACK_FRAME_STATE_FOR): ..this.
+	(MD_UNWIND_SUPPORT): Define.
+	* config/alpha/vms-unwind.h, config/alpha/vms.h: Likewise.
+	* config/i386/linux-unwind.h, config/i386/linux.h,
+	config/i386/linux64.h: Likewise.
+	* config/ia64/linux-unwind.h, config/ia64/linux.h: Likewise.
+	MD_HANDLE_UNWABI too.
+	* config/mips/linux-unwind.h, config/mips/linux.h: Likewise.
+	* config/pa/linux-unwind.h, config/pa/pa32-linux.h: Likewise.
+	* config/rs6000/darwin-unwind.h, config/rs6000/darwin.h: Likewise.
+	* config/s390/linux-unwind.h, config/s390/linux.h: Likewise.
+	* config/sparc/linux-unwind.h, config/sparc/linux.h,
+	config/sparc/linux64.h: Likewise.
+	* config/sh/linux-unwind.h, config/sh/linux.h: Likewise, but merge
+	SH_FALLBACK_FRAME_FLOAT_STATE into sh_fallback_frame_state.
+	* config/rs6000/linux-unwind.h, config/rs6000/linux.h,
+	config/rs6000/linux64.h: Likewise.  Split out get_sigcontext
+	function.  Use ARG_POINTER_REGNUM for 32-bit temp reg too.
+
 2004-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (fold_rtx):  Avoid building of
