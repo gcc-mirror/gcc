@@ -1,5 +1,5 @@
 /* JColorChooser.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,6 +57,8 @@ import javax.swing.plaf.ColorChooserUI;
  */
 public class JColorChooser extends JComponent implements Accessible {
 
+  private static final long serialVersionUID = 9168066781620640889L;
+  
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------
 	//-------------------------------------------------------------
@@ -66,6 +68,8 @@ public class JColorChooser extends JComponent implements Accessible {
 	 */
 	protected class AccessibleJColorChooser extends JComponent.AccessibleJComponent {
 
+	  private static final long serialVersionUID = -2038297864782299082L;
+  
 		//-------------------------------------------------------------
 		// Variables --------------------------------------------------
 		//-------------------------------------------------------------
@@ -79,15 +83,9 @@ public class JColorChooser extends JComponent implements Accessible {
 		 * Constructor AccessibleJColorChooser
 		 * @param component TODO
 		 */
-		protected AccessibleJColorChooser(JColorChooser component) {
-			super(component);
-			// TODO
-		} // AccessibleJColorChooser()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
+	  protected AccessibleJColorChooser()
+	  {
+	  }
 
 		/**
 		 * getAccessibleRole
@@ -355,16 +353,15 @@ public class JColorChooser extends JComponent implements Accessible {
 		return null; // TODO
 	} // paramString()
 
-	/**
-	 * getAccessibleContext
-	 * @returns AccessibleContext
-	 */
-	public AccessibleContext getAccessibleContext() {
-		if (accessibleContext == null) {
-			accessibleContext = new AccessibleJColorChooser(this);
-		} // if
-		return accessibleContext;
-	} // getAccessibleContext()
+  /**
+   * getAccessibleContext
+   * @return AccessibleContext
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJColorChooser();
 
-
-} // JColorChooser
+    return accessibleContext;
+  }
+}

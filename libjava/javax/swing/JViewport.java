@@ -45,6 +45,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 
+import javax.accessibility.Accessible;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ViewportUI;
@@ -91,19 +92,20 @@ import javax.swing.plaf.ViewportUI;
  * the underlying child at position <code>(-VX,-VY)</code></p>
  *
  */
-
 public class JViewport extends JComponent
 {
-  public static int BACKINGSTORE_SCROLL_MODE = 1;
-  public static int BLIT_SCROLL_MODE = 2;
-  public static int SIMPLE_SCROLL_MODE = 3;
+  private static final long serialVersionUID = -6925142919680527970L;
+  
+  public static final int SIMPLE_SCROLL_MODE = 0;
+  public static final int BLIT_SCROLL_MODE = 1;
+  public static final int BACKINGSTORE_SCROLL_MODE = 2;
 
   ChangeEvent changeEvent = new ChangeEvent(this);
 
   int scrollMode;
 
-  boolean scrollUnderway;
-  boolean isViewSizeSet;
+  protected boolean scrollUnderway;
+  protected boolean isViewSizeSet;
 
   /** 
    * The width and height of the Viewport's area in terms of view
@@ -133,9 +135,21 @@ public class JViewport extends JComponent
   public Dimension getExtentSize()
   {
     if (extentSize == null)
-      return getPreferredSize();
+      return toViewCoordinates(getSize());
     else
       return extentSize;
+  }
+
+  public Dimension toViewCoordinates(Dimension size)
+  {
+    return size;
+  }
+
+  public Point toViewCoordinates(Point p)
+  {
+    Point pos = getViewPosition();
+    return new Point(p.x + pos.x,
+                     p.y + pos.y);
   }
 
   public void setExtentSize(Dimension newSize)
@@ -146,10 +160,10 @@ public class JViewport extends JComponent
 
   public Dimension getViewSize()
   {
-    if (viewSize == null)
-      return getView().getPreferredSize();
-    else
+    if (isViewSizeSet)
       return viewSize;
+    else
+      return getView().getSize();
   }
 
 
@@ -158,9 +172,16 @@ public class JViewport extends JComponent
     viewSize = newSize;
     Component view = getView();
     if (view != null)
-      view.setSize(newSize);
+      view.setSize(viewSize);
+    isViewSizeSet = true;
     fireStateChanged();
   }
+
+  /**
+   * Get the viewport's position in view space. Despite confusing name,
+   * this really does return the viewport's (0,0) position in view space,
+   * not the view's position.
+   */
 
   public Point getViewPosition()
   {

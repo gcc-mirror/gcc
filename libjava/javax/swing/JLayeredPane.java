@@ -91,7 +91,9 @@ import javax.accessibility.Accessible;
  */
 public class JLayeredPane extends JComponent implements Accessible
 {
-  public static String LAYER_PROPERTY = "LAYER_PROPERTY";
+  private static final long serialVersionUID = 5534920399324590459L;
+  
+  public static final String LAYER_PROPERTY = "layeredContainerLayer";
 
   public static Integer FRAME_CONTENT_LAYER = new Integer (-30000);
 
@@ -104,7 +106,7 @@ public class JLayeredPane extends JComponent implements Accessible
   TreeMap layers;               // Layer Number (Integer) -> Layer Size (Integer)
   Hashtable componentToLayer;   // Component -> Layer Number (Integer)
 
-  JLayeredPane()
+  public JLayeredPane()
   {
     layers = new TreeMap ();
     componentToLayer = new Hashtable ();
@@ -492,6 +494,8 @@ public class JLayeredPane extends JComponent implements Accessible
     decrLayer (layer);
     componentToLayer.remove (c);
     super.remove (index);
+    revalidate();
+    repaint();
   }
 
   /**

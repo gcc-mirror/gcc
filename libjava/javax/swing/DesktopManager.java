@@ -1,5 +1,5 @@
 /* DesktopManager.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,118 +38,140 @@ exception statement from your version. */
 package javax.swing;
 
 /**
- * DesktopManager
- * @author	Andrew Selkirk
- * @version	1.0
+ * DesktopManagers are responsible for implementing the behaviours for the
+ * JInternalFrames that belong to JDesktopPanes. Actions such as maximizing,
+ * minimizing, iconifying, etc will be delegated to the DesktopManager.
  */
-public interface DesktopManager {
+public interface DesktopManager
+{
+  /**
+   * This method will cause the JInternalFrame to be displayed in the set
+   * location. This usually is not needed since the user will add the
+   * JInternalFrame to a Container separately.
+   *
+   * @param frame The JInternalFrame to open.
+   */
+  void openFrame(JInternalFrame frame);
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * This method should remove the JInternalFrame from its parent.
+   *
+   * @param frame The JInternalFrame to close.
+   */
+  void closeFrame(JInternalFrame frame);
 
-	/**
-	 * openFrame
-	 * @param frame TODO
-	 */
-	void openFrame(JInternalFrame frame);
+  /**
+   * This method should maximize the JInternalFrame to match its parent's
+   * bounds.
+   *
+   * @param frame The JInternalFrame to maximize.
+   */
+  void maximizeFrame(JInternalFrame frame);
 
-	/**
-	 * closeFrame
-	 * @param frame TODO
-	 */
-	void closeFrame(JInternalFrame frame);
+  /**
+   * This method should restore the JInternalFrame to its normal bounds.
+   *
+   * @param frame The JInternalFrame to minimize.
+   */
+  void minimizeFrame(JInternalFrame frame);
 
-	/**
-	 * maximizeFrame
-	 * @param frame TODO
-	 */
-	void maximizeFrame(JInternalFrame frame);
+  /**
+   * This method should remove the JInternalFrame from its parent and replace
+   * it with a JDesktopIcon.
+   *
+   * @param frame The JInternalFrame to iconify.
+   */
+  void iconifyFrame(JInternalFrame frame);
 
-	/**
-	 * minimizeFrame
-	 * @param frame TODO
-	 */
-	void minimizeFrame(JInternalFrame frame);
+  /**
+   * This method should remove the JDesktopIcon from its parent and replace it
+   * with the JInternalFrame that the JDesktopIcon represents.
+   *
+   * @param frame The JInternalFrame to deiconify.
+   */
+  void deiconifyFrame(JInternalFrame frame);
 
-	/**
-	 * iconifyFrame
-	 * @param frame TODO
-	 */
-	void iconifyFrame(JInternalFrame frame);
+  /**
+   * This method should give focus to the JInternalFrame and its default focus
+   * owner.
+   *
+   * @param frame The JInternalFrame to activate.
+   */
+  void activateFrame(JInternalFrame vframe);
 
-	/**
-	 * deiconifyFrame
-	 * @param frame TODO
-	 */
-	void deiconifyFrame(JInternalFrame frame);
+  /**
+   * This method should be called when the JInternalFrame gets deselected and
+   * subsequently loses focus.
+   *
+   * @param frame The JInternalFrame to deactivate.
+   */
+  void deactivateFrame(JInternalFrame frame);
 
-	/**
-	 * activateFrame
-	 * @param frame TODO
-	 */
-	void activateFrame(JInternalFrame vframe);
+  /**
+   * This method should be called in preparation for dragging. This needs to
+   * be called prior to dragFrame calls so that the DesktopManager can
+   * prepare any state information.
+   *
+   * @param frame The JInternalFrame to prepare for dragging.
+   */
+  void beginDraggingFrame(JComponent frame);
 
-	/**
-	 * deactivateFrame
-	 * @param frame TODO
-	 */
-	void deactivateFrame(JInternalFrame frame);
+  /**
+   * This method drags the given JInternalFrame to the given x and y
+   * coordinates.
+   *
+   * @param frame The JInternalFrame to drag.
+   * @param x The new x coordinate.
+   * @param y The new y coordinate.
+   */
+  void dragFrame(JComponent frame, int x, int y);
 
-	/**
-	 * beginDraggingFrame
-	 * @param frame TODO
-	 */
-	void beginDraggingFrame(JComponent frame);
+  /**
+   * This method should be called after dragFrame calls. Any information used
+   * by the DesktopManager for dragging the JInternalFrame can be cleared.
+   *
+   * @param frame The JInternalFrame that finished dragging.
+   */
+  void endDraggingFrame(JComponent frame);
 
-	/**
-	 * dragFrame
-	 * @param frame TODO
-	 * @param x TODO
-	 * @param y TODO
-	 */
-	void dragFrame(JComponent frame, int x, int y);
+  /**
+   * This method should be called prior to any resizeFrame calls. Any state
+   * information needed by the DesktopManager to resize the JInternalFrame
+   * will be prepared here.
+   *
+   * @param frame The JInternalFrame to resize.
+   * @param direction One of eight directions specified by SwingConstants.
+   */
+  void beginResizingFrame(JComponent frame, int direction);
 
-	/**
-	 * endDraggingFrame
-	 * @param frame TODO
-	 */
-	void endDraggingFrame(JComponent frame);
+  /**
+   * This method is called to resize the given JInternalFrame to the given
+   * bounds.
+   *
+   * @param frame The JInternalFrame to resize.
+   * @param x The new x coordinate.
+   * @param y The new y coordinate.
+   * @param width The new width.
+   * @param height The new height.
+   */
+  void resizeFrame(JComponent frame, int x, int y, int width, int height);
 
-	/**
-	 * beginResizingFrame
-	 * @param frame TODO
-	 * @param direction TODO
-	 */
-	void beginResizingFrame(JComponent frame, int direction);
+  /**
+   * This method is called to signify that the resize is finished. Any
+   * information used to resize the JInternalFrame can now be cleared.
+   *
+   * @param frame The JInternalFrame that just finished dragging.
+   */
+  void endResizingFrame(JComponent frame);
 
-	/**
-	 * resizeFrame
-	 * @param frame TODO
-	 * @param x TODO
-	 * @param y TODO
-	 * @param width TODO
-	 * @param height TODO
-	 */
-	void resizeFrame(JComponent frame, int x, int y, 
-					int width, int height);
-
-	/**
-	 * endResizingFrame
-	 * @param frame TODO
-	 */
-	void endResizingFrame(JComponent frame);
-
-	/**
-	 * setBoundsForFrame
-	 * @param frame TODO
-	 * @param x TODO
-	 * @param y TODO
-	 * @param width TODO
-	 * @param height TODO
-	 */
-	void setBoundsForFrame(JComponent frame, int x, int y, 
-					int width, int height);
-
-
+  /**
+   * This method does the actual work for reshaping the JInternalFrame.
+   *
+   * @param frame The JInternalFrame to resize.
+   * @param x The new x coordinate.
+   * @param y The new y coordinate.
+   * @param width The new width.
+   * @param height The new height.
+   */
+  void setBoundsForFrame(JComponent frame, int x, int y, int width, int height);
 } // DesktopManager

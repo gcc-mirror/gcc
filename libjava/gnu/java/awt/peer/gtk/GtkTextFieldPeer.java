@@ -60,7 +60,7 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
     // GtkComponent.create.
     if (f == null)
       {
-	f = new Font ("Fixed", Font.PLAIN, 12);
+	f = new Font ("Dialog", Font.PLAIN, 12);
 	awtComponent.setFont (f);
       }
 

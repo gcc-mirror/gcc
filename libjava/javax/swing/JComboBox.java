@@ -69,39 +69,21 @@ public class JComboBox extends JComponent
 {
   private static final long serialVersionUID = 5654585963292734470L;
 
+  /**
+   * AccessibleJComboBox
+   */
+  protected class AccessibleJComboBox extends AccessibleJComponent 
+    implements AccessibleAction, AccessibleSelection
+  {
+    private static final long serialVersionUID = 8217828307256675666L;
 
-	//-------------------------------------------------------------
-	// Classes ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * AccessibleJComboBox
-	 */
-	protected class AccessibleJComboBox extends AccessibleJComponent 
-			implements AccessibleAction, AccessibleSelection {
-
-		//-------------------------------------------------------------
-		// Variables --------------------------------------------------
-		//-------------------------------------------------------------
-
-
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * Constructor AccessibleJComboBox
-		 * @param component TODO
-		 */
-		protected AccessibleJComboBox(JComboBox component) {
-			super(component);
-			// TODO
-		} // AccessibleJComboBox()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
+    /**
+     * Constructor AccessibleJComboBox
+     * @param component TODO
+     */
+    protected AccessibleJComboBox()
+    {
+    }
 
 		/**
 		 * getAccessibleChildrenCount
@@ -804,16 +786,18 @@ public class JComboBox extends JComponent
 		return null; // TODO
 	} // paramString()
 
-	/**
-	 * getAccessibleContext
-	 * @returns AccessibleContext
-	 */
-	public AccessibleContext getAccessibleContext() {
-		if (accessibleContext == null) {
-			accessibleContext = new AccessibleJComboBox(this);
-		} // if
-		return accessibleContext;
-	} // getAccessibleContext()
+  /**
+   * getAccessibleContext
+   * @returns AccessibleContext
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJComboBox();
+
+    return accessibleContext;
+  }
+  
   /**
    * addActionListener
    * @param listener TODO

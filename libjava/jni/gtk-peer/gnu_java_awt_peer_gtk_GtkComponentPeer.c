@@ -565,8 +565,10 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetDispatchKeyEvent
       return;
     }
 
-  if (n_keys > 1)
-    g_printerr ("warning: using hardware keycode from first keymap entry, though multiple entries were found\n");
+  /* Note: if n_keys > 1 then there are multiple hardware keycodes
+     that translate to lookup_keyval.  We arbitrarily choose the first
+     hardware keycode from the list returned by
+     gdk_keymap_get_entries_for_keyval. */
 
   event->key.hardware_keycode = keymap_keys[0].keycode;
   event->key.group =  keymap_keys[0].group;
@@ -707,10 +709,14 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_setNativeBoun
   gdk_threads_enter ();
 
   widget = GTK_WIDGET (ptr);
+
+  /* We assume that -1 is a width or height and not a request for the
+     widget's natural size. */
+  width = width < 0 ? 0 : width;
+  height = height < 0 ? 0 : height;
+
   if (GTK_IS_VIEWPORT (widget->parent))
-    {
-      gtk_widget_set_size_request (widget, width, height);
-    }
+    gtk_widget_set_size_request (widget, width, height);
   else
     {
       gtk_widget_set_size_request (widget, width, height);
@@ -844,7 +850,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkSetFont
   gdk_threads_enter();
 
   font_desc = pango_font_description_from_string (font_name);
-  pango_font_description_set_size (font_desc, size * PANGO_SCALE);
+  pango_font_description_set_size (font_desc, size * dpi_conversion_factor);
 
   if (style & AWT_STYLE_BOLD)
     pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
@@ -1111,12 +1117,23 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_addExposeFilt
 
       filterobj = GTK_OBJECT(layout);
     }
+  else if (GTK_IS_SCROLLED_WINDOW(ptr))
+    {
+      // The event will go to the parent GtkLayout.
+      filterobj = GTK_OBJECT(GTK_WIDGET(ptr)->parent);
+    }
   else
     {
       filterobj = GTK_OBJECT(ptr);
     }
 
-  g_signal_handlers_block_by_func (filterobj, *pre_event_handler, *gref);
+  gulong hid = g_signal_handler_find(filterobj,
+                                     G_SIGNAL_MATCH_FUNC,
+                                     0, 0, NULL, *pre_event_handler, NULL);
+  if (hid > 0)
+  {
+    g_signal_handler_block(filterobj, hid);
+  }
   g_signal_connect( filterobj, "event",
                     G_CALLBACK(filter_expose_event_handler), *gref);
 
@@ -1155,6 +1172,11 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_removeExposeF
 
       filterobj = GTK_OBJECT(layout);
     }
+  else if (GTK_IS_SCROLLED_WINDOW(ptr))
+    {
+      // The event will go to the parent GtkLayout.
+      filterobj = GTK_OBJECT(GTK_WIDGET(ptr)->parent);
+    }
   else
     {
       filterobj = GTK_OBJECT(ptr);
@@ -1162,7 +1184,13 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_removeExposeF
 
   g_signal_handlers_disconnect_by_func (filterobj,
                                         *filter_expose_event_handler, *gref);
-  g_signal_handlers_unblock_by_func (filterobj, *pre_event_handler, *gref);
+  gulong hid = g_signal_handler_find(filterobj,
+                                     G_SIGNAL_MATCH_FUNC,
+                                     0, 0, NULL, *pre_event_handler, NULL);
+  if (hid > 0)
+  {
+    g_signal_handler_unblock(filterobj, hid);
+  }
 
   gdk_threads_leave ();
 }
@@ -1240,7 +1268,9 @@ find_fg_color_widget (GtkWidget *widget)
 {
   GtkWidget *fg_color_widget;
 
-  if (GTK_IS_EVENT_BOX (widget) || GTK_IS_BUTTON (widget))
+  if (GTK_IS_EVENT_BOX (widget)
+      || (GTK_IS_BUTTON (widget)
+          && !GTK_IS_OPTION_MENU (widget)))
     fg_color_widget = gtk_bin_get_child (GTK_BIN(widget));
   else
     fg_color_widget = widget;

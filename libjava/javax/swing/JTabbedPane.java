@@ -79,14 +79,16 @@ public class JTabbedPane extends JComponent implements Serializable,
   protected class AccessibleJTabbedPane extends JComponent.AccessibleJComponent
     implements AccessibleSelection, ChangeListener
   {
+    private static final long serialVersionUID = 7610530885966830483L;
+    
     /**
      * Creates a new AccessibleJTabbedPane object.
      *
      * @param c DOCUMENT ME!
      */
-    public AccessibleJTabbedPane(JTabbedPane c)
+    public AccessibleJTabbedPane()
     {
-      super(c);
+      super();
     }
 
     /**
@@ -224,6 +226,12 @@ public class JTabbedPane extends JComponent implements Serializable,
    */
   protected class ModelListener implements ChangeListener, Serializable
   {
+    private static final long serialVersionUID = 497359819958114132L;
+
+    protected ModelListener()
+    {
+    }
+    
     /**
      * This method is called whenever the model  is changed.
      *
@@ -304,7 +312,9 @@ public class JTabbedPane extends JComponent implements Serializable,
      */
     public void setComponent(Component c)
     {
+      JTabbedPane.this.remove(component);
       this.component = c;
+      JTabbedPane.this.add(c);
     }
 
     /**
@@ -542,10 +552,10 @@ public class JTabbedPane extends JComponent implements Serializable,
   protected SingleSelectionModel model;
 
   /** Indicates that the TabbedPane is in scrolling mode. */
-  public static int SCROLL_TAB_LAYOUT = 1;
+  public static final int SCROLL_TAB_LAYOUT = 1;
 
   /** Indicates that the TabbedPane is in wrap mode. */
-  public static int WRAP_TAB_LAYOUT = 0;
+  public static final int WRAP_TAB_LAYOUT = 0;
 
   /** The current tabPlacement of the TabbedPane. */
   protected int tabPlacement = SwingConstants.TOP;
@@ -825,12 +835,12 @@ public class JTabbedPane extends JComponent implements Serializable,
     checkIndex(index, -1, tabs.size());
     if (index != getSelectedIndex())
       {
-	if (getSelectedIndex() != -1)
+	if (getSelectedIndex() != -1 && getSelectedComponent() != null)
 	  getSelectedComponent().hide();
-	if (index != -1)
+	if (index != -1 && getComponentAt(index) != null)
 	  getComponentAt(index).show();
+        model.setSelectedIndex(index);	  
       }
-    model.setSelectedIndex(index);
   }
 
   /**
@@ -874,13 +884,17 @@ public class JTabbedPane extends JComponent implements Serializable,
 
     // Hide the component so we don't see it. Do it before we parent it
     // so we don't trigger a repaint.
-    component.hide();
-    super.add(component);
-  
+    if (component != null)
+    {
+      component.hide();
+      super.add(component);
+    }
+    
     if (getSelectedIndex() == -1)
       setSelectedIndex(0);
 
     layout();
+    repaint();
   }
 
   /**
@@ -1474,7 +1488,7 @@ public class JTabbedPane extends JComponent implements Serializable,
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
-      accessibleContext = new AccessibleJTabbedPane(this);
+      accessibleContext = new AccessibleJTabbedPane();
     return accessibleContext;
   }
 }

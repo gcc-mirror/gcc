@@ -1,5 +1,5 @@
 /* JRadioButton.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,8 @@ import javax.accessibility.AccessibleContext;
 
 public class JRadioButton extends JToggleButton
 {
+  private static final long serialVersionUID = 7751949583255506856L;
+
     public JRadioButton()
     {
 	this(null, null);

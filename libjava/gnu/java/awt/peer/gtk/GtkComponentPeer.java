@@ -199,7 +199,10 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public Graphics getGraphics ()
   {
-    return null;
+    if (GtkToolkit.useGraphics2D ())
+        return new GdkGraphics2D (this);
+    else
+        return new GdkGraphics (this);
   }
 
   public Point getLocationOnScreen () 

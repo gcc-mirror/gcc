@@ -60,6 +60,8 @@ public abstract class AbstractAction
    * enabled
    */
   protected boolean enabled = true;
+  
+  public static final String ENABLED_PROPERTY = "enabled";
 
   /**
    * changeSupport
@@ -162,7 +164,12 @@ public abstract class AbstractAction
    */
   public void putValue(String key, Object value)
   {
-    store.put(key, value);
+    Object old = getValue(key);
+    if (old != value)
+    {
+      store.put(key, value);
+      firePropertyChange(key, old, value);
+    }
   }
 
   /**
@@ -182,7 +189,11 @@ public abstract class AbstractAction
    */
   public void setEnabled(boolean enabled)
   {
-    this.enabled = enabled;
+    if (enabled != this.enabled)
+    {
+      this.enabled = enabled;
+      firePropertyChange(ENABLED_PROPERTY, !this.enabled, this.enabled);
+    }
   }
 
   /**
@@ -195,14 +206,28 @@ public abstract class AbstractAction
   }
 
   /**
-   * firePropertyChange
+   * This method fires a PropertyChangeEvent given the propertyName 
+   * and the old and new values.
    *
-   * @param propertyName TODO
-   * @param oldValue TODO
-   * @param newValue TODO
+   * @param propertyName The property that changed.
+   * @param oldValue The old value of the property.
+   * @param newValue The new value of the property.
    */
   protected void firePropertyChange(String propertyName, Object oldValue,
                                     Object newValue)
+  {
+    changeSupport.firePropertyChange(propertyName, oldValue, newValue);
+  }
+  
+  /**
+   * This convenience method fires a PropertyChangeEvent given 
+   * the propertyName and the old and new values.
+   *
+   * @param propertyName The property that changed.
+   * @param oldValue The old value of the property.
+   * @param newValue The new value of the property.
+   */
+  private void firePropertyChange(String propertyName, boolean oldValue, boolean newValue)
   {
     changeSupport.firePropertyChange(propertyName, oldValue, newValue);
   }

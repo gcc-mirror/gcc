@@ -67,14 +67,16 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
   protected class AccessibleJScrollBar extends JComponent.AccessibleJComponent
     implements AccessibleValue
   {
+    private static final long serialVersionUID = -7758162392045586663L;
+    
     /**
      * Creates a new AccessibleJSlider object.
      *
      * @param value0 DOCUMENT ME!
      */
-    protected AccessibleJScrollBar(JScrollBar value0)
+    protected AccessibleJScrollBar()
     {
-      super(value0);
+      super();
     }
 
     /**
@@ -150,6 +152,8 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
     }
   }
 
+  private static final long serialVersionUID = -8195169869225066566L;
+  
   /** Fired in a PropertyChangeEvent when the "blockIncrement" changes. */
   public static final String BLOCK_INCREMENT_CHANGED_PROPERTY = "blockIncrement";
 
@@ -725,7 +729,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
-      accessibleContext = new AccessibleJScrollBar(this);
+      accessibleContext = new AccessibleJScrollBar();
     return accessibleContext;
   }
 }

@@ -989,11 +989,9 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
       break;
     case GDK_CONFIGURE:
       {
-	/* GtkWidget *widget;
-
-	gdk_window_get_user_data (event->any.window, (void **) &widget); */
-	    
-	if (widget && GTK_WIDGET_TOPLEVEL (widget))
+        /* Only send configure events to visible top-level windows. */
+	if (widget && GTK_WIDGET_TOPLEVEL (widget)
+            && GTK_WIDGET_VISIBLE (widget))
 	  {
 	    /* Configure events are not posted to the AWT event
 	       queue, and as such, the gdk/gtk peer functions will

@@ -87,68 +87,49 @@ public interface DocumentEvent {
 
 	} // ElementChange
 
-	/**
-	 * EventType
-	 */
-	class EventType {
+  /**
+   * EventType
+   */
+  class EventType
+  {
+    /**
+     * INSERT
+     */
+    public static final EventType INSERT = new EventType("INSERT"); // TODO
 
-		//-------------------------------------------------------------
-		// Variables --------------------------------------------------
-		//-------------------------------------------------------------
+    /**
+     * REMOVE
+     */
+    public static final EventType REMOVE = new EventType("REMOVE"); // TODO
 
-		/**
-		 * INSERT
-		 */
-		EventType INSERT = new EventType("INSERT"); // TODO
+    /**
+     * CHANGE
+     */
+    public static final EventType CHANGE = new EventType("CHANGE"); // TODO
 
-		/**
-		 * REMOVE
-		 */
-		EventType REMOVE = new EventType("REMOVE"); // TODO
+    /**
+     * typeString
+     */
+    private String type;
 
-		/**
-		 * CHANGE
-		 */
-		EventType CHANGE = new EventType("CHANGE"); // TODO
+    /**
+     * Constructor EventType
+     * @param type TODO
+     */
+    private EventType(String type)
+    {
+      this.type = type;
+    }
 
-		/**
-		 * typeString
-		 */
-		private String type;
-
-
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * Constructor EventType
-		 * @param type TODO
-		 */
-		private EventType(String type) {
-			this.type = type;
-		} // EventType()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * toString
-		 * @returns String
-		 */
-		public String toString() {
-			return type; // TODO
-		} // toString()
-
-
-	} // EventType
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+    /**
+     * toString
+     * @returns String
+     */
+    public String toString()
+    {
+      return type;
+    }
+  }
 
 	/**
 	 * getType

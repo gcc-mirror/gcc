@@ -55,14 +55,15 @@ public class JSeparator extends JComponent implements SwingConstants,
    */
   protected class AccessibleJSeparator extends AccessibleJComponent
   {
+    private static final long serialVersionUID = 916332890553201095L;
+  
     /**
      * Constructor AccessibleJSeparator
      *
      * @param component TODO
      */
-    protected AccessibleJSeparator(JSeparator component)
+    protected AccessibleJSeparator()
     {
-      super(component);
     }
 
     /**
@@ -76,6 +77,8 @@ public class JSeparator extends JComponent implements SwingConstants,
     }
   }
 
+  private static final long serialVersionUID = 125301223445282357L;
+  
   /** The orientation of the JSeparator. */
   private transient int orientation = HORIZONTAL;
 
@@ -198,7 +201,8 @@ public class JSeparator extends JComponent implements SwingConstants,
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
-      accessibleContext = new AccessibleJSeparator(this);
+      accessibleContext = new AccessibleJSeparator();
+    
     return accessibleContext;
   }
 }

@@ -51,6 +51,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
 
@@ -375,8 +376,12 @@ public class SwingUtilities implements SwingConstants
 
     return pt;
   }
-
   
+  public static Point convertPoint(Component source, Point aPoint, Component destination)
+  {
+    return convertPoint(source, aPoint.x, aPoint.y, destination);
+  }
+
   /**
    * Converts a rectangle from the coordinate space of one component to
    * another. This is equivalent to converting the rectangle from
@@ -718,7 +723,6 @@ public class SwingUtilities implements SwingConstants
         iconR.y = centerLine - iconR.height/2;
         break;
       }
-
     // The two rectangles are laid out correctly now, but only assuming
     // that their upper left corner is at (0,0). If we have any alignment other
     // than TOP and LEFT, we need to adjust them.
@@ -845,6 +849,43 @@ public class SwingUtilities implements SwingConstants
       ownerFrame = new Frame();
     return ownerFrame;
   }
-  
 
+  /**
+   * Checks if left mouse button was clicked.
+   *
+   * @param event the event to check
+   *
+   * @return true if left mouse was clicked, false otherwise.
+   */
+  public static boolean isLeftMouseButton(MouseEvent event)
+  {
+    return ((event.getModifiers() & InputEvent.BUTTON1_DOWN_MASK)
+	     == InputEvent.BUTTON1_DOWN_MASK);
+  }
+
+  /**
+   * Checks if middle mouse button was clicked.
+   *
+   * @param event the event to check
+   *
+   * @return true if middle mouse was clicked, false otherwise.
+   */
+  public static boolean isMiddleMouseButton(MouseEvent event)
+  {
+    return ((event.getModifiers() & InputEvent.BUTTON2_DOWN_MASK)
+	     == InputEvent.BUTTON2_DOWN_MASK);
+  }
+
+  /**
+   * Checks if right mouse button was clicked.
+   *
+   * @param event the event to check
+   *
+   * @return true if right mouse was clicked, false otherwise.
+   */
+  public static boolean isRightMouseButton(MouseEvent event)
+  {
+    return ((event.getModifiers() & InputEvent.BUTTON3_DOWN_MASK)
+	     == InputEvent.BUTTON3_DOWN_MASK);
+  }
 }

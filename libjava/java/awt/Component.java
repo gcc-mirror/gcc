@@ -941,7 +941,7 @@ public abstract class Component
   {
     if (foreground != null)
       return foreground;
-    return parent == null ? null : parent.getForeground();
+    return parent == null ? SystemColor.windowText : parent.getForeground();
   }
 
   /**
@@ -982,7 +982,7 @@ public abstract class Component
   {
     if (background != null)
       return background;
-    return parent == null ? null : parent.getBackground();
+    return parent == null ? SystemColor.window : parent.getBackground();
   }
 
   /**
@@ -1031,7 +1031,7 @@ public abstract class Component
     if (parent != null)
       return parent.getFont ();
     else
-      return new Font ("Fixed", Font.PLAIN, 12);
+      return new Font ("Dialog", Font.PLAIN, 12);
   }
 
   /**

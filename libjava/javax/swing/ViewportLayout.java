@@ -71,7 +71,6 @@ public class ViewportLayout implements LayoutManager, Serializable
       {
         Scrollable sc = (Scrollable) view;
         Dimension d = sc.getPreferredScrollableViewportSize();
-        // System.err.println(this + ".preferredLayoutSize() : scrollable -> " + d);
         return d;
       }
     else
@@ -83,20 +82,84 @@ public class ViewportLayout implements LayoutManager, Serializable
     Component view = vp.getView();
     return view.getMinimumSize();
   }
+
+  /**
+   * Layout the view and viewport to respect the following rules. These are
+   * not precisely the rules described in sun's javadocs, but they are the
+   * rules which sun's swing implementation follows, if you watch its
+   * behavior:
+   *
+   * <ol> 
+   * 
+   * <li>If the port is larger than the view's minimum size, put the port
+   * at view position <code>(0,0)</code> and make the view's size equal to
+   * the port's.</li>
+   *
+   * <li>If the port is smaller than the view, leave the view at its
+   * minimum size. also, do not move the port, <em>unless</em> the port
+   * extends into space <em>past</em> the edge of the view. If so, move the
+   * port up or to the left, in view space, by the amount of empty space
+   * (keep the lower and right edges lined up)</li>
+   *
+   * </ol>
+   *
+   * @see JViewport#getViewSize
+   * @see JViewport#setViewSize
+   * @see JViewport#getViewPosition
+   * @see JViewport#setViewPosition
+   */
+
   public void layoutContainer(Container parent) 
   {
-    JViewport vp = (JViewport)parent;
-    Component view = vp.getView();
-    Rectangle portBounds = vp.getBounds();
+    // The way to interpret this function is basically to ignore the names
+    // of methods it calls, and focus on the variable names here. getViewRect
+    // doesn't, for example, return the view; it returns the port bounds in
+    // view space. Likwise setViewPosition doesn't reposition the view; it 
+    // positions the port, in view coordinates.
+
+    JViewport port = (JViewport) parent;    
+    Component view = port.getView();
+
+    // These dimensions and positions are in *view space*.  Do not mix
+    // variables in here from port space (eg. parent.getBounds()). This
+    // function should be entirely in view space, because the methods on
+    // the viewport require inputs in view space.
+
+    Rectangle portBounds = port.getViewRect();
+    Dimension viewSize = port.getViewSize();
     Dimension viewMinimum = view.getMinimumSize();
-    int width = Math.max(portBounds.width, 
-                         viewMinimum.width);
-    int height = Math.max(portBounds.height, 
-                          viewMinimum.height);
-    int x = Math.min(0, portBounds.width - width);
-    int y = Math.min(0, portBounds.height - height);
-    // System.err.println(this + ".layoutContainer() : width = " + width + ", height = " + height);
-    vp.setViewPosition(new Point(x, y));
-    vp.setViewSize(new Dimension(width, height));
+    Point portLowerRight = new Point(portBounds.x + portBounds.width,
+                                     portBounds.y + portBounds.height);
+        
+    // vertical implementation of the above rules
+    if (portBounds.height >= viewMinimum.height)
+      {
+        portBounds.y = 0;
+        viewSize.height = portBounds.height;
+      }
+    else
+      {
+        viewSize.height = viewMinimum.height;
+        int overextension = portLowerRight.y - viewSize.height;
+        if (overextension > 0)
+            portBounds.y -= overextension;
+      }
+
+    // horizontal implementation of the above rules
+    if (portBounds.width >= viewMinimum.width)
+      {
+        portBounds.x = 0;
+        viewSize.width = portBounds.width;
+      }
+    else
+      {
+        viewSize.width = viewMinimum.width;
+        int overextension = portLowerRight.x - viewSize.width;
+        if (overextension > 0)
+            portBounds.x -= overextension;
+      }
+
+    port.setViewPosition(portBounds.getLocation());
+    port.setViewSize(viewSize);
   }
 }

@@ -136,7 +136,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeer_setFont
   pango_font_description_set_family (pfont->desc, family_name);
   (*env)->ReleaseStringUTFChars(env, family_name_str, family_name);
 
-  pango_font_description_set_size (pfont->desc, size * PANGO_SCALE);  
+  pango_font_description_set_size (pfont->desc, size * dpi_conversion_factor);
 
   if (style & java_awt_font_BOLD)
     pango_font_description_set_weight (pfont->desc, PANGO_WEIGHT_BOLD);

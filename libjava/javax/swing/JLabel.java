@@ -331,9 +331,8 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
    */
   public Icon getDisabledIcon()
   {
-    //FIXME: We should be gray-scaling the active icon and then returning it
     if (disabledIcon == null && activeIcon instanceof ImageIcon)
-      setDisabledIcon(activeIcon);
+      disabledIcon = new ImageIcon(GrayFilter.createDisabledImage(((ImageIcon) activeIcon).getImage()));
     return disabledIcon;
   }
 

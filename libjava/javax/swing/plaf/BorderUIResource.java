@@ -270,6 +270,8 @@ public class BorderUIResource
     extends BevelBorder
     implements UIResource, Serializable
   {
+    private static final long serialVersionUID = -1275542891108351642L;
+    
     /**
      * Constructs a BevelBorderUIResource whose colors will be derived
      * from the background of the enclosed component. The background
@@ -399,6 +401,8 @@ public class BorderUIResource
     extends CompoundBorder
     implements UIResource, Serializable
   {
+    private static final long serialVersionUID = 7550017084975167341L;
+    
     /**
      * Constructs a CompoundBorderUIResource with the specified inside
      * and outside borders.
@@ -441,6 +445,8 @@ public class BorderUIResource
     extends EmptyBorder
     implements UIResource, Serializable
   {
+    private static final long serialVersionUID = -4914187529340071708L;
+    
     /**
      * Constructs an empty border given the number of pixels required
      * on each side.
@@ -496,6 +502,8 @@ public class BorderUIResource
     extends EtchedBorder
     implements UIResource, Serializable
   {
+    private static final long serialVersionUID = -8186391754165296656L;
+    
     /**
      * Constructs an EtchedBorderUIResource that appears lowered into
      * the surface. The colors will be derived from the background
@@ -597,6 +605,8 @@ public class BorderUIResource
     extends LineBorder
     implements UIResource, Serializable
   {
+    private static final long serialVersionUID = -6171232338180172310L;
+    
     /**
      * Constructs a LineBorderUIResource given its color.  The border
      * will be one pixel thick and have plain corners.
@@ -652,6 +662,8 @@ public class BorderUIResource
     extends MatteBorder
     implements UIResource, Serializable
   {
+    private static final long serialVersionUID = -8107923147541851122L;
+    
     /**
      * Constructs a MatteBorderUIResource given the width on each side
      * and a fill color.
@@ -731,6 +743,8 @@ public class BorderUIResource
     extends TitledBorder
     implements UIResource, Serializable
   {
+    private static final long serialVersionUID = 7667113547406407427L;
+    
     /**
      * Constructs a TitledBorderUIResource given the text of its title.
      *

@@ -62,6 +62,7 @@ public class DefaultListSelectionModel implements Cloneable,
                                                   ListSelectionModel,
                                                   Serializable
 {
+  private static final long serialVersionUID = -5718799865110415860L;
 
   /** The list of ListSelectionListeners subscribed to this selection model. */
   protected EventListenerList listenerList = new EventListenerList();

@@ -44,11 +44,9 @@ exception statement from your version. */
 #include <gdk/gdkx.h>
 #include <X11/Xatom.h>
 
-static int filter_added = 0;
-
-static GdkFilterReturn window_wm_protocols_filter (GdkXEvent *xev,
-                                                   GdkEvent  *event,
-                                                   gpointer   data);
+/* FIXME: we're currently seeing the double-activation that occurs
+   with metacity and GTK.  See
+   http://bugzilla.gnome.org/show_bug.cgi?id=140977 for details. */
 
 static void window_get_frame_extents (GtkWidget *window,
                                       int *top, int *left,
@@ -149,20 +147,6 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
   insets[1] = left;
   insets[2] = bottom;
   insets[3] = right;
-
-  /* We must filter out WM_TAKE_FOCUS messages.  Otherwise we get two
-     focus in events when a window becomes active and two focus out
-     events when a window becomes inactive. */
-  if (!filter_added)
-    {
-      GdkAtom wm_protocols_atom =
-        gdk_x11_xatom_to_atom (gdk_x11_get_xatom_by_name ("WM_PROTOCOLS"));
-
-      gdk_add_client_message_filter (wm_protocols_atom,
-                                     window_wm_protocols_filter,
-                                     NULL);
-      filter_added = 1;
-    }
 
   gdk_threads_leave ();
 
@@ -823,17 +807,4 @@ window_property_changed_cb (GtkWidget *widget __attribute__((unused)),
 				(jint) extents[1]); /* right */
 
   return FALSE;
-}
-
-static GdkFilterReturn
-window_wm_protocols_filter (GdkXEvent *xev,
-                            GdkEvent  *event __attribute__((unused)),
-                            gpointer data __attribute__((unused)))
-{
-  XEvent *xevent = (XEvent *)xev;
-
-  if ((Atom) xevent->xclient.data.l[0] == gdk_x11_get_xatom_by_name ("WM_TAKE_FOCUS"))
-    return GDK_FILTER_REMOVE;
-
-  return GDK_FILTER_CONTINUE;
 }

@@ -149,6 +149,7 @@ public class KeyStroke implements Serializable
 	 * @param keyChar TODO
 	 * @param onKeyRelease TODO
 	 * @returns KeyStroke
+	 * @deprecated Use getKeyStroke(char)
 	 */
 	public static KeyStroke getKeyStroke(char keyChar, boolean onKeyRelease) {
 		KeyStroke key = getKeyStroke(keyChar);

@@ -129,26 +129,58 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 
   public Image createImage (String filename)
   {
-    return new GtkImage (new GdkPixbufDecoder (filename), null);
+    if (useGraphics2D())
+      return GdkPixbufDecoder.createBufferedImage (filename);
+    else
+      {
+        GdkPixbufDecoder d = new GdkPixbufDecoder (filename);
+        GtkImage image = new GtkImage (d, null);
+        d.startProduction (image);
+        return image;        
+      }
   }
 
   public Image createImage (URL url)
   {
-    return new GtkImage (new GdkPixbufDecoder (url), null);
+    if (useGraphics2D())
+      return GdkPixbufDecoder.createBufferedImage (url);
+    else
+      {
+        GdkPixbufDecoder d = new GdkPixbufDecoder (url);
+        GtkImage image = new GtkImage (d, null);
+        d.startProduction (image);
+        return image;        
+      }
   }
 
   public Image createImage (ImageProducer producer) 
   {
-    return new GtkImage (producer, null);
+    if (useGraphics2D())
+      return GdkPixbufDecoder.createBufferedImage (producer);
+    else
+      {
+        GtkImage image = new GtkImage (producer, null);
+        producer.startProduction (image);
+        return image;        
+      }
   }
 
   public Image createImage (byte[] imagedata, int imageoffset,
 			    int imagelength)
   {
-    return new GtkImage (new GdkPixbufDecoder (imagedata,
-					       imageoffset,
-					       imagelength),
-			 null);
+    if (useGraphics2D())
+      return GdkPixbufDecoder.createBufferedImage (imagedata,
+                                                   imageoffset, 
+                                                   imagelength);
+    else
+      {
+        GdkPixbufDecoder d = new GdkPixbufDecoder (imagedata,
+                                                   imageoffset, 
+                                                   imagelength);
+        GtkImage image = new GtkImage (d, null);
+        d.startProduction (image);
+        return image;        
+      }
   }
 
   public ColorModel getColorModel () 
@@ -175,18 +207,12 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 
   public Image getImage (String filename) 
   {
-    GdkPixbufDecoder d = new GdkPixbufDecoder (filename);
-    GtkImage image = new GtkImage (d, null);
-    d.startProduction (image);
-    return image;
+    return createImage (filename);
   }
 
   public Image getImage (URL url) 
   {
-    GdkPixbufDecoder d = new GdkPixbufDecoder (url);
-    GtkImage image = new GtkImage (d, null);
-    d.startProduction (image);
-    return image;
+    return createImage (url);
   }
 
   public PrintJob getPrintJob (Frame frame, String jobtitle, Properties props) 

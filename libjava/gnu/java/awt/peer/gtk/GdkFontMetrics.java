@@ -50,19 +50,21 @@ public class GdkFontMetrics extends FontMetrics
                        MAX_ADVANCE = 4;
 
   private int[] metrics;
-  private native int[] initState (String fname, int size);
+  private native int[] initState (String fname, int style, int size);
 
   public GdkFontMetrics (Font font)
   {
     super (font);
-    metrics = initState (font.getName (), font.getSize ());
+    metrics = initState (font.getName (), font.getStyle (), font.getSize ());
   }
 
-  native public int stringWidth (String fname, int size, String str);
+  native public int stringWidth (String fname, int style, int size,
+                                 String str);
 
   public int stringWidth (String str)
   {
-    return stringWidth (font.getName (), font.getSize (), str);
+    return stringWidth (font.getName (), font.getStyle (), font.getSize (),
+                        str);
   }
 
   public int charWidth (char ch)

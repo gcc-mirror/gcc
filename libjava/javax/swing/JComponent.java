@@ -57,6 +57,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ImageObserver;
 import java.awt.peer.LightweightPeer;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
@@ -87,7 +88,7 @@ import javax.swing.plaf.ComponentUI;
  */
 public abstract class JComponent extends Container implements Serializable
 {
-  static final long serialVersionUID = -5242478962609715464L;
+  private static final long serialVersionUID = -7908749299918704233L;
 
   /** 
    * Accessibility support is currently missing.
@@ -101,7 +102,7 @@ public abstract class JComponent extends Container implements Serializable
     protected class AccessibleFocusHandler 
       implements FocusListener
     {
-      protected AccessibleFocusHandler(AccessibleJComponent component){}
+      protected AccessibleFocusHandler(){}
       public void focusGained(FocusEvent event){}
       public void focusLost(FocusEvent valevent){}
     }
@@ -109,15 +110,17 @@ public abstract class JComponent extends Container implements Serializable
     protected class AccessibleContainerHandler 
       implements ContainerListener
     {
-      protected AccessibleContainerHandler(AccessibleJComponent component) {}
+      protected AccessibleContainerHandler() {}
       public void componentAdded(ContainerEvent event) {}
       public void componentRemoved(ContainerEvent valevent) {}
     }
 
+    private static final long serialVersionUID = -7047089700479897799L;
+  
     protected ContainerListener accessibleContainerHandler;
     protected FocusListener accessibleFocusHandler;
 
-    protected AccessibleJComponent(JComponent component) {}
+    protected AccessibleJComponent() {}
     public void addPropertyChangeListener(PropertyChangeListener listener) {}
     public void removePropertyChangeListener(PropertyChangeListener listener) {}
     public int getAccessibleChildrenCount() { return 0; }
@@ -273,7 +276,7 @@ public abstract class JComponent extends Container implements Serializable
    * @see #getUI
    * @see #updateUI
    */
-  ComponentUI ui;
+  protected ComponentUI ui;
 
   /**
    * A hint to the focus system that this component should or should not
@@ -343,6 +346,7 @@ public abstract class JComponent extends Container implements Serializable
    */
   private static Locale defaultLocale;
   
+  public static final String TOOL_TIP_TEXT_KEY = "ToolTipText";
 
   /**
    * Constant used to indicate that no condition has been assigned to a
@@ -735,7 +739,12 @@ public abstract class JComponent extends Container implements Serializable
                                     Object newValue)
     throws PropertyVetoException
   {
-    //       Support for reporting constrained property changes.
+    VetoableChangeListener[] listeners = getVetoableChangeListeners();
+    
+    PropertyChangeEvent evt = new PropertyChangeEvent(this, propertyName, oldValue, newValue);
+    
+    for (int i = 0; i < listeners.length; i++)
+      listeners[i].vetoableChange(evt);
   }
 
   /**
@@ -1105,7 +1114,11 @@ public abstract class JComponent extends Container implements Serializable
   public JToolTip createToolTip()
   {
     if (toolTip == null)
-      toolTip = new JToolTip(toolTipText);
+      {
+	toolTip = new JToolTip();
+	toolTip.setTipText(toolTipText);
+      }
+    
     return toolTip;
   }
 
@@ -1378,7 +1391,7 @@ public abstract class JComponent extends Container implements Serializable
             g2 = doubleBuffer.getGraphics();
             g2.setClip(g.getClipBounds());
           }
-
+	  
         g2 = getComponentGraphics(g2);
         paintComponent(g2);
         paintBorder(g2);
@@ -1470,7 +1483,7 @@ public abstract class JComponent extends Container implements Serializable
    */
   public void paintImmediately(Rectangle r)
   {
-    Component root = this.getRootPane();
+    Component root = SwingUtilities.getRoot(this);
     if (root == null || ! root.isShowing())
       return;
     Graphics g = root.getGraphics();
@@ -1624,7 +1637,7 @@ public abstract class JComponent extends Container implements Serializable
   public void scrollRectToVisible(Rectangle r)
   {
     Component p = getParent();
-    if (p != null && p instanceof JComponent)
+    if (p instanceof JComponent)
       ((JComponent) p).scrollRectToVisible(r);
   }
 

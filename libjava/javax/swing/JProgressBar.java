@@ -85,14 +85,15 @@ public class JProgressBar extends JComponent implements SwingConstants,
   protected class AccessibleJProgressBar extends AccessibleJComponent
     implements AccessibleValue
   {
+    private static final long serialVersionUID = -2938130009392721813L;
+  
     /**
      * Constructor AccessibleJProgressBar
      *
      * @param component TODO
      */
-    protected AccessibleJProgressBar(JProgressBar component)
+    protected AccessibleJProgressBar()
     {
-      super(component);
     } 
 
     /**
@@ -168,6 +169,8 @@ public class JProgressBar extends JComponent implements SwingConstants,
     } 
   } 
 
+  private static final long serialVersionUID = 1980046021813598781L;
+  
   /** Fired in a PropertyChangeEvent when the "borderPainted" property changes. */
   public static final String BORDER_PAINTED_CHANGED_PROPERTY = "borderPainted";
   
@@ -661,7 +664,8 @@ public class JProgressBar extends JComponent implements SwingConstants,
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
-      accessibleContext = new AccessibleJProgressBar(this);
+      accessibleContext = new AccessibleJProgressBar();
+    
     return accessibleContext;
   } 
 }

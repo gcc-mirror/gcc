@@ -1,5 +1,5 @@
 /* ScrollPaneConstants.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,116 +42,110 @@ package javax.swing;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public interface ScrollPaneConstants {
+public interface ScrollPaneConstants
+{
+  /**
+   * VIEWPORT
+   */
+  String VIEWPORT = "VIEWPORT";
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * VERTICAL_SCROLLBAR
+   */
+  String VERTICAL_SCROLLBAR = "VERTICAL_SCROLLBAR";
 
-	/**
-	 * VIEWPORT
-	 */
-	String VIEWPORT = "VIEWPORT";
+  /**
+   * HORIZONTAL_SCROLLBAR
+   */
+  String HORIZONTAL_SCROLLBAR = "HORIZONTAL_SCROLLBAR";
 
-	/**
-	 * VERTICAL_SCROLLBAR
-	 */
-	String VERTICAL_SCROLLBAR = "VERTICAL_SCROLLBAR";
+  /**
+   * ROW_HEADER
+   */
+  String ROW_HEADER = "ROW_HEADER";
 
-	/**
-	 * HORIZONTAL_SCROLLBAR
-	 */
-	String HORIZONTAL_SCROLLBAR = "HORIZONTAL_SCROLLBAR";
+  /**
+   * COLUMN_HEADER
+   */
+  String COLUMN_HEADER = "COLUMN_HEADER";
 
-	/**
-	 * ROW_HEADER
-	 */
-	String ROW_HEADER = "ROW_HEADER";
+  /**
+   * LOWER_LEFT_CORNER
+   */
+  String LOWER_LEFT_CORNER = "LOWER_LEFT_CORNER";
 
-	/**
-	 * COLUMN_HEADER
-	 */
-	String COLUMN_HEADER = "COLUMN_HEADER";
+  /**
+   * LOWER_RIGHT_CORNER
+   */
+  String LOWER_RIGHT_CORNER = "LOWER_RIGHT_CORNER";
 
-	/**
-	 * LOWER_LEFT_CORNER
-	 */
-	String LOWER_LEFT_CORNER = "LOWER_LEFT_CORNER";
+  /**
+   * UPPER_LEFT_CORNER
+   */
+  String UPPER_LEFT_CORNER = "UPPER_LEFT_CORNER";
 
-	/**
-	 * LOWER_RIGHT_CORNER
-	 */
-	String LOWER_RIGHT_CORNER = "LOWER_RIGHT_CORNER";
+  /**
+   * UPPER_RIGHT_CORNER
+   */
+  String UPPER_RIGHT_CORNER = "UPPER_RIGHT_CORNER";
 
-	/**
-	 * UPPER_LEFT_CORNER
-	 */
-	String UPPER_LEFT_CORNER = "UPPER_LEFT_CORNER";
+  /**
+   * LOWER_LEADING_CORNER
+   */
+  String LOWER_LEADING_CORNER = "LOWER_LEADING_CORNER";
 
-	/**
-	 * UPPER_RIGHT_CORNER
-	 */
-	String UPPER_RIGHT_CORNER = "UPPER_RIGHT_CORNER";
+  /**
+   * LOWER_TRAILING_CORNER
+   */
+  String LOWER_TRAILING_CORNER = "LOWER_TRAILING_CORNER";
 
-	/**
-	 * LOWER_LEADING_CORNER
-	 */
-	String LOWER_LEADING_CORNER = "LOWER_LEADING_CORNER";
+  /**
+   * UPPER_LEADING_CORNER
+   */
+  String UPPER_LEADING_CORNER = "UPPER_LEADING_CORNER";
 
-	/**
-	 * LOWER_TRAILING_CORNER
-	 */
-	String LOWER_TRAILING_CORNER = "LOWER_TRAILING_CORNER";
+  /**
+   * UPPER_TRAILING_CORNER
+   */
+  String UPPER_TRAILING_CORNER = "UPPER_TRAILING_CORNER";
 
-	/**
-	 * UPPER_LEADING_CORNER
-	 */
-	String UPPER_LEADING_CORNER = "UPPER_LEADING_CORNER";
+  /**
+   * VERTICAL_SCROLLBAR_POLICY
+   */
+  String VERTICAL_SCROLLBAR_POLICY = "VERTICAL_SCROLLBAR_POLICY";
 
-	/**
-	 * UPPER_TRAILING_CORNER
-	 */
-	String UPPER_TRAILING_CORNER = "UPPER_TRAILING_CORNER";
+  /**
+   * HORIZONTAL_SCROLLBAR_POLICY
+   */
+  String HORIZONTAL_SCROLLBAR_POLICY = "HORIZONTAL_SCROLLBAR_POLICY";
 
-	/**
-	 * VERTICAL_SCROLLBAR_POLICY
-	 */
-	String VERTICAL_SCROLLBAR_POLICY = "VERTICAL_SCROLLBAR_POLICY";
+  /**
+   * VERTICAL_SCROLLBAR_AS_NEEDED
+   */
+  int VERTICAL_SCROLLBAR_AS_NEEDED = 20;
 
-	/**
-	 * HORIZONTAL_SCROLLBAR_POLICY
-	 */
-	String HORIZONTAL_SCROLLBAR_POLICY = "HORIZONTAL_SCROLLBAR_POLICY";
+  /**
+   * VERTICAL_SCROLLBAR_NEVER
+   */
+  int VERTICAL_SCROLLBAR_NEVER = 21;
 
-	/**
-	 * VERTICAL_SCROLLBAR_AS_NEEDED
-	 */
-	int VERTICAL_SCROLLBAR_AS_NEEDED = 20;
+  /**
+   * VERTICAL_SCROLLBAR_ALWAYS
+   */
+  int VERTICAL_SCROLLBAR_ALWAYS = 22;
 
-	/**
-	 * VERTICAL_SCROLLBAR_NEVER
-	 */
-	int VERTICAL_SCROLLBAR_NEVER = 21;
+  /**
+   * HORIZONTAL_SCROLLBAR_AS_NEEDED
+   */
+  int HORIZONTAL_SCROLLBAR_AS_NEEDED = 30;
 
-	/**
-	 * VERTICAL_SCROLLBAR_ALWAYS
-	 */
-	int VERTICAL_SCROLLBAR_ALWAYS = 22;
+  /**
+   * HORIZONTAL_SCROLLBAR_NEVER
+   */
+  int HORIZONTAL_SCROLLBAR_NEVER = 31;
 
-	/**
-	 * HORIZONTAL_SCROLLBAR_AS_NEEDED
-	 */
-	int HORIZONTAL_SCROLLBAR_AS_NEEDED = 30;
-
-	/**
-	 * HORIZONTAL_SCROLLBAR_NEVER
-	 */
-	int HORIZONTAL_SCROLLBAR_NEVER = 31;
-
-	/**
-	 * HORIZONTAL_SCROLLBAR_ALWAYS
-	 */
-	int HORIZONTAL_SCROLLBAR_ALWAYS = 32;
-
-
-} // ScrollPaneConstants
+  /**
+   * HORIZONTAL_SCROLLBAR_ALWAYS
+   */
+  int HORIZONTAL_SCROLLBAR_ALWAYS = 32;
+}
