@@ -1,5 +1,34 @@
 2000-01-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* pa-protos.h: New file.
+
+	* pa.c: Include recog.h and tm_p.h.
+	(compute_zdepwi_operands, compute_movstrsi_length,
+	remove_useless_addtr_insns, store_reg, load_reg, set_reg_plus_d,
+	find_addr_reg, import_milli): Add static prototypes.
+	(pa_cpu_string, pa_arch_string): Constify a char*.
+	(legitimize_pic_address): Pass argument `mode' to pic_label_operand.
+	(read_only_operand): Add argument `mode'.
+	(singlemove_string, output_move_double, output_fp_move_double,
+	output_block_move, output_and, output_ior, output_ascii,
+	remove_useless_addtr_insns, milli_names, output_mul_insn,
+	output_div_insn, output_mod_insn, output_arg_descriptor,
+	output_cbranch, output_bb, output_bvb, output_dbra, ,
+	output_millicode_call, output_call, hppa_encode_label,
+	output_parallel_movb, output_parallel_addb): Constify a char*.
+	(hppa_va_start): Mark parameter `stdarg_p' with ATTRIBUTE_UNUSED.
+	(output_parallel_addb): Remove extra arg to `constrain_operands'
+
+	* pa.h:  Move all prototypes to pa-protos.h.
+	(pa_cpu_string, pa_arch_string): Constify a char*.
+	(LEGITIMIZE_ADDRESS): Call `symbolic_operand' with mode argument.
+
+	* pa.md: Call `function_label_operand' with mode argument.
+	Likewise for `read_only_operand'.
+	Fix nesting of parens in call to `symbolic_operand'.
+	
+2000-01-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* i860-protos.h: New file.
 
 	* i860.c: Include tm_p.h.  Add static prototypes.  Fix compile
