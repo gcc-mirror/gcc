@@ -40,11 +40,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free  free
 
-#define output_formatted_integer(BUFFER, FORMAT, INTEGER) \
-  do {                                                    \
-    sprintf ((BUFFER)->digit_buffer, FORMAT, INTEGER);    \
-    output_add_string (BUFFER, (BUFFER)->digit_buffer);   \
-  } while (0)
+#define output_formatted_integer(BUFFER, FORMAT, INTEGER)	\
+  do								\
+    {								\
+      sprintf ((BUFFER)->digit_buffer, FORMAT, INTEGER);	\
+      output_add_string (BUFFER, (BUFFER)->digit_buffer);	\
+    }								\
+  while (0)
 
 #define output_text_length(BUFFER) (BUFFER)->line_length
 #define is_starting_newline(BUFFER) (output_text_length (BUFFER) == 0)
@@ -59,7 +61,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Prototypes.  */
 static void diagnostic_finish PARAMS ((output_buffer *));
 static void output_do_verbatim PARAMS ((output_buffer *,
-                                        const char *, va_list *));
+					const char *, va_list *));
 static void output_buffer_to_stream PARAMS ((output_buffer *));
 static void output_format PARAMS ((output_buffer *));
 static void output_indent PARAMS ((output_buffer *));
@@ -77,22 +79,22 @@ static void set_real_maximum_length PARAMS ((output_buffer *));
 static void output_unsigned_decimal PARAMS ((output_buffer *, unsigned int));
 static void output_long_decimal PARAMS ((output_buffer *, long int));
 static void output_long_unsigned_decimal PARAMS ((output_buffer *,
-                                                  long unsigned int));
+						  long unsigned int));
 static void output_octal PARAMS ((output_buffer *, unsigned int));
 static void output_long_octal PARAMS ((output_buffer *, unsigned long int));
 static void output_hexadecimal PARAMS ((output_buffer *, unsigned int));
 static void output_long_hexadecimal PARAMS ((output_buffer *,
-                                             unsigned long int));
+					     unsigned long int));
 static void output_append_r PARAMS ((output_buffer *, const char *, int));
 static void wrap_text PARAMS ((output_buffer *, const char *, const char *));
 static void maybe_wrap_text PARAMS ((output_buffer *, const char *,
-                                     const char *));
+				     const char *));
 static void clear_diagnostic_info PARAMS ((output_buffer *));
 
 static void default_diagnostic_starter PARAMS ((output_buffer *,
-                                                diagnostic_context *));
+						diagnostic_context *));
 static void default_diagnostic_finalizer PARAMS ((output_buffer *,
-                                                  diagnostic_context *));
+						  diagnostic_context *));
 
 static void error_recursion PARAMS ((void)) ATTRIBUTE_NORETURN;
 
@@ -203,13 +205,13 @@ set_real_maximum_length (buffer)
   else
     {
       int prefix_length =
-        output_prefix (buffer) ? strlen (output_prefix (buffer)) : 0;
+	output_prefix (buffer) ? strlen (output_prefix (buffer)) : 0;
       /* If the prefix is ridiculously too long, output at least
          32 characters.  */
       if (output_line_cutoff (buffer) - prefix_length < 32)
-        line_wrap_cutoff (buffer) = output_line_cutoff (buffer) + 32;
+	line_wrap_cutoff (buffer) = output_line_cutoff (buffer) + 32;
       else
-        line_wrap_cutoff (buffer) = output_line_cutoff (buffer);
+	line_wrap_cutoff (buffer) = output_line_cutoff (buffer);
     }
 }
 
@@ -245,7 +247,7 @@ output_last_position (buffer)
      const output_buffer *buffer;
 {
   const char *p = NULL;
-  
+
   if (obstack_base (&buffer->obstack) != obstack_next_free (&buffer->obstack))
     p = ((const char *) obstack_next_free (&buffer->obstack)) - 1;
   return p;
@@ -302,7 +304,7 @@ init_output_buffer (buffer, prefix, maximum_length)
   output_prefixing_rule (buffer) = diagnostic_prefixing_rule (global_dc);
   output_set_prefix (buffer, prefix);
   output_text_length (buffer) = 0;
-  clear_diagnostic_info (buffer);  
+  clear_diagnostic_info (buffer);
 }
 
 /* Reinitialize BUFFER.  */
@@ -352,28 +354,28 @@ output_emit_prefix (buffer)
   if (output_prefix (buffer) != NULL)
     {
       switch (output_prefixing_rule (buffer))
-        {
-        default:
-        case DIAGNOSTICS_SHOW_PREFIX_NEVER:
-          break;
+	{
+	default:
+	case DIAGNOSTICS_SHOW_PREFIX_NEVER:
+	  break;
 
-        case DIAGNOSTICS_SHOW_PREFIX_ONCE:
-          if (prefix_was_emitted_for (buffer))
-            {
-              output_indent (buffer);
-              break;
-            }
-          output_indentation (buffer) += 3;          
-          /* Fall through.  */
+	case DIAGNOSTICS_SHOW_PREFIX_ONCE:
+	  if (prefix_was_emitted_for (buffer))
+	    {
+	      output_indent (buffer);
+	      break;
+	    }
+	  output_indentation (buffer) += 3;
+	  /* Fall through.  */
 
-        case DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE:
-          {
-            int prefix_length = strlen (output_prefix (buffer));
-            output_append_r (buffer, output_prefix (buffer), prefix_length);
-            prefix_was_emitted_for (buffer) = 1;
-          }
-          break;
-        }
+	case DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE:
+	  {
+	    int prefix_length = strlen (output_prefix (buffer));
+	    output_append_r (buffer, output_prefix (buffer), prefix_length);
+	    prefix_was_emitted_for (buffer) = 1;
+	  }
+	  break;
+	}
     }
 }
 
@@ -511,8 +513,8 @@ output_append (buffer, start, end)
     {
       output_emit_prefix (buffer);
       if (output_is_line_wrapping (buffer))
-        while (start != end && *start == ' ')
-          ++start;
+	while (start != end && *start == ' ')
+	  ++start;
     }
   output_append_r (buffer, start, end - start);
 }
@@ -537,30 +539,30 @@ wrap_text (buffer, start, end)
      const char *end;
 {
   int is_wrapping = output_is_line_wrapping (buffer);
-  
+
   while (start != end)
     {
-      /* Dump anything bordered by whitespaces.  */ 
+      /* Dump anything bordered by whitespaces.  */
       {
-        const char *p = start;
-        while (p != end && *p != ' ' && *p != '\n')
-          ++p;
-        if (is_wrapping && p - start >= output_space_left (buffer))
-          output_add_newline (buffer);
-        output_append (buffer, start, p);
-        start = p;
+	const char *p = start;
+	while (p != end && *p != ' ' && *p != '\n')
+	  ++p;
+	if (is_wrapping && p - start >= output_space_left (buffer))
+	  output_add_newline (buffer);
+	output_append (buffer, start, p);
+	start = p;
       }
 
       if (start != end && *start == ' ')
-        {
-          output_add_space (buffer);
-          ++start;
-        }
+	{
+	  output_add_space (buffer);
+	  ++start;
+	}
       if (start != end && *start == '\n')
-        {
-          output_add_newline (buffer);
-          ++start;
-        }
+	{
+	  output_add_newline (buffer);
+	  ++start;
+	}
     }
 }
 
@@ -626,110 +628,110 @@ output_format (buffer)
 
       /* Ignore text.  */
       {
-        const char *p = output_buffer_text_cursor (buffer);
-        while (*p && *p != '%')
-          ++p;
-        wrap_text (buffer, output_buffer_text_cursor (buffer), p);
-        output_buffer_text_cursor (buffer) = p;
+	const char *p = output_buffer_text_cursor (buffer);
+	while (*p && *p != '%')
+	  ++p;
+	wrap_text (buffer, output_buffer_text_cursor (buffer), p);
+	output_buffer_text_cursor (buffer) = p;
       }
 
       if (!*output_buffer_text_cursor (buffer))
-        break;
+	break;
 
       /* We got a '%'.  Let's see what happens. Record whether we're
          parsing a long integer format specifier.  */
       if (*++output_buffer_text_cursor (buffer) == 'l')
-        {
-          long_integer = 1;
-          ++output_buffer_text_cursor (buffer);
-        }
+	{
+	  long_integer = 1;
+	  ++output_buffer_text_cursor (buffer);
+	}
 
       /* Handle %c, %d, %i, %ld, %li, %lo, %lu, %lx, %o, %s, %u,
          %x, %.*s; %%.  And nothing else.  Front-ends should install
          printers to grok language specific format specifiers.  */
       switch (*output_buffer_text_cursor (buffer))
-        {
-        case 'c':
-          output_add_character
-            (buffer, va_arg (output_buffer_format_args (buffer), int));
-          break;
-          
-        case 'd':
-        case 'i':
-          if (long_integer)
-            output_long_decimal
-              (buffer, va_arg (output_buffer_format_args (buffer), long int));
-          else
-            output_decimal
-              (buffer, va_arg (output_buffer_format_args (buffer), int));
-          break;
+	{
+	case 'c':
+	  output_add_character
+	    (buffer, va_arg (output_buffer_format_args (buffer), int));
+	  break;
 
-        case 'o':
-          if (long_integer)
-            output_long_octal (buffer,
-                               va_arg (output_buffer_format_args (buffer),
-                                       unsigned long int));
-          else
-            output_octal (buffer,
-                          va_arg (output_buffer_format_args (buffer),
-                                  unsigned int));
-          break;
+	case 'd':
+	case 'i':
+	  if (long_integer)
+	    output_long_decimal
+	      (buffer, va_arg (output_buffer_format_args (buffer), long int));
+	  else
+	    output_decimal
+	      (buffer, va_arg (output_buffer_format_args (buffer), int));
+	  break;
 
-        case 's':
-          output_add_string (buffer,
-                             va_arg (output_buffer_format_args (buffer),
-                                     const char *));
-          break;
+	case 'o':
+	  if (long_integer)
+	    output_long_octal (buffer,
+			       va_arg (output_buffer_format_args (buffer),
+				       unsigned long int));
+	  else
+	    output_octal (buffer,
+			  va_arg (output_buffer_format_args (buffer),
+				  unsigned int));
+	  break;
 
-        case 'u':
-          if (long_integer)
-            output_long_unsigned_decimal
-              (buffer, va_arg (output_buffer_format_args (buffer),
-                               long unsigned int));
-          else
-            output_unsigned_decimal
-              (buffer, va_arg (output_buffer_format_args (buffer),
-                               unsigned int));
-          break;
-          
-        case 'x':
-          if (long_integer)
-            output_long_hexadecimal
-              (buffer, va_arg (output_buffer_format_args (buffer),
-                               unsigned long int));
-          else
-            output_hexadecimal
-              (buffer, va_arg (output_buffer_format_args (buffer),
-                               unsigned int));
-          break;
+	case 's':
+	  output_add_string (buffer,
+			     va_arg (output_buffer_format_args (buffer),
+				     const char *));
+	  break;
 
-        case '%':
-          output_add_character (buffer, '%');
-          break;
+	case 'u':
+	  if (long_integer)
+	    output_long_unsigned_decimal
+	      (buffer, va_arg (output_buffer_format_args (buffer),
+			       long unsigned int));
+	  else
+	    output_unsigned_decimal
+	      (buffer, va_arg (output_buffer_format_args (buffer),
+			       unsigned int));
+	  break;
 
-        case '.':
-          {
-            int n;
-            const char *s;
-            /* We handle no precision specifier but `%.*s'.  */
-            if (*++output_buffer_text_cursor (buffer) != '*')
-              abort ();
-            else if (*++output_buffer_text_cursor (buffer) != 's')
-              abort ();
-            n = va_arg (output_buffer_format_args (buffer), int);
-            s = va_arg (output_buffer_format_args (buffer), const char *);
-            output_append (buffer, s, s + n);
-          }
-          break;
+	case 'x':
+	  if (long_integer)
+	    output_long_hexadecimal
+	      (buffer, va_arg (output_buffer_format_args (buffer),
+			       unsigned long int));
+	  else
+	    output_hexadecimal
+	      (buffer, va_arg (output_buffer_format_args (buffer),
+			       unsigned int));
+	  break;
 
-        default:
-          if (!buffer->format_decoder || !(*buffer->format_decoder) (buffer))
-            {
-              /* Hmmm.  The front-end failed to install a format translator
+	case '%':
+	  output_add_character (buffer, '%');
+	  break;
+
+	case '.':
+	  {
+	    int n;
+	    const char *s;
+	    /* We handle no precision specifier but `%.*s'.  */
+	    if (*++output_buffer_text_cursor (buffer) != '*')
+	      abort ();
+	    else if (*++output_buffer_text_cursor (buffer) != 's')
+	      abort ();
+	    n = va_arg (output_buffer_format_args (buffer), int);
+	    s = va_arg (output_buffer_format_args (buffer), const char *);
+	    output_append (buffer, s, s + n);
+	  }
+	  break;
+
+	default:
+	  if (!buffer->format_decoder || !(*buffer->format_decoder) (buffer))
+	    {
+	      /* Hmmm.  The front-end failed to install a format translator
                  but called us with an unrecognized format.  Sorry.  */
-              abort ();
-            }
-        }
+	      abort ();
+	    }
+	}
     }
 }
 
@@ -804,7 +806,7 @@ output_do_printf (buffer, msg)
      const char *msg;
 {
   char *message = vbuild_message_string (msg,
-                                         output_buffer_format_args (buffer));
+					 output_buffer_format_args (buffer));
 
   wrap_text (buffer, message, message + strlen (message));
   free (message);
@@ -837,7 +839,7 @@ format_with_decl (buffer, decl)
      tree decl;
 {
   const char *p;
-  
+
   /* Do magic to get around lack of varargs support for insertion
      of arguments into existing list.  We know that the decl is first;
      we ass_u_me that it will be printed with "%s".  */
@@ -856,7 +858,7 @@ format_with_decl (buffer, decl)
 
   /* Print the left-hand substring.  */
   maybe_wrap_text (buffer, output_buffer_text_cursor (buffer), p);
-  
+
   if (*p == '%')		/* Print the name.  */
     {
       const char *const n = (DECL_NAME (decl)
@@ -907,7 +909,7 @@ diagnostic_for_decl (decl, msgid, args_ptr, warn)
       format_with_decl (diagnostic_buffer, decl);
       diagnostic_finish ((output_buffer *) global_dc);
       output_destroy_prefix (diagnostic_buffer);
-  
+
       output_buffer_state (diagnostic_buffer) = os;
     }
   diagnostic_lock--;
@@ -1068,7 +1070,7 @@ announce_function (decl)
       if (rtl_dump_and_exit)
 	verbatim ("%s ", IDENTIFIER_POINTER (DECL_NAME (decl)));
       else
-        verbatim (" %s", (*lang_hooks.decl_printable_name) (decl, 2));
+	verbatim (" %s", (*lang_hooks.decl_printable_name) (decl, 2));
       fflush (stderr);
       output_needs_newline (diagnostic_buffer) = 1;
       record_last_error_function ();
@@ -1090,19 +1092,19 @@ lhd_print_error_function (context, file)
 
       os = diagnostic_state (context);
       output_set_prefix ((output_buffer *) context, prefix);
-      
+
       if (current_function_decl == NULL)
-          output_add_string ((output_buffer *) context, _("At top level:"));
+	output_add_string ((output_buffer *) context, _("At top level:"));
       else
 	{
 	  if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
-            output_printf
-              ((output_buffer *) context, "In member function `%s':",
-               (*lang_hooks.decl_printable_name) (current_function_decl, 2));
+	    output_printf
+	      ((output_buffer *) context, "In member function `%s':",
+	       (*lang_hooks.decl_printable_name) (current_function_decl, 2));
 	  else
-            output_printf
-              ((output_buffer *) context, "In function `%s':",
-               (*lang_hooks.decl_printable_name) (current_function_decl, 2));
+	    output_printf
+	      ((output_buffer *) context, "In function `%s':",
+	       (*lang_hooks.decl_printable_name) (current_function_decl, 2));
 	}
       output_add_newline ((output_buffer *) context);
 
@@ -1225,7 +1227,7 @@ internal_error VPARAMS ((const char *msgid, ...))
 
   if (internal_error_function != 0)
     (*internal_error_function) (_(msgid), &ap);
-  
+
   set_diagnostic_context
     (&dc, msgid, &ap, input_filename, lineno, /* warn = */0);
   report_diagnostic (&dc);
@@ -1487,10 +1489,10 @@ report_problematic_module (buffer)
       for (p = input_file_stack->next; p; p = p->next)
 	if (p == input_file_stack->next)
 	  output_verbatim
-            (buffer, "In file included from %s:%d", p->name, p->line);
+	    (buffer, "In file included from %s:%d", p->name, p->line);
 	else
 	  output_verbatim
-            (buffer, ",\n                 from %s:%d", p->name, p->line);
+	    (buffer, ",\n                 from %s:%d", p->name, p->line);
       output_verbatim (buffer, ":\n");
       record_last_error_module ();
     }
@@ -1503,9 +1505,9 @@ default_diagnostic_starter (buffer, dc)
 {
   report_error_function (diagnostic_file_location (dc));
   output_set_prefix (buffer,
-                     context_as_prefix (diagnostic_file_location (dc),
-                                        diagnostic_line_location (dc),
-                                        diagnostic_is_warning (dc)));
+		     context_as_prefix (diagnostic_file_location (dc),
+					diagnostic_line_location (dc),
+					diagnostic_is_warning (dc)));
 }
 
 static void
@@ -1516,7 +1518,7 @@ default_diagnostic_finalizer (buffer, dc)
   output_destroy_prefix (buffer);
 }
 
-void 
+void
 warn_deprecated_use (node)
      tree node;
 {
@@ -1537,7 +1539,7 @@ warn_deprecated_use (node)
       else if (TREE_CODE (TYPE_NAME (node)) == TYPE_DECL
 	       && DECL_NAME (TYPE_NAME (node)))
 	what = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (node)));
-	
+
       if (what)
 	{
 	  if (decl)

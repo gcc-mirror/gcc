@@ -263,7 +263,7 @@ doloop_valid_p (loop, jump_insn)
       || ! onlyjump_p (jump_insn))
     {
       if (loop_dump_stream)
-  	fprintf (loop_dump_stream,
+	fprintf (loop_dump_stream,
 		 "Doloop: Invalid jump at loop end.\n");
       return 0;
     }
@@ -801,7 +801,7 @@ doloop_optimize (loop)
 			     &increment, &mode))
     {
       if (loop_dump_stream)
-      	fprintf (loop_dump_stream,
+	fprintf (loop_dump_stream,
 		 "Doloop: Cannot precondition loop.\n");
       return 0;
     }

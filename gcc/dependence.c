@@ -149,7 +149,7 @@ typedef struct dependence
   int distance[MAX_SUBSCRIPTS];
   struct dependence *next;
 } dependence;
-  
+
 /* subscripts are represented by an array of these.  Each reflects one
    X * i + Y term, where X and Y are constants.  */
 
@@ -255,7 +255,7 @@ init_dependence_analysis (exp)
 }
 
 /* Build ARRAY_REF def/use info 'def_use_chain' starting at EXP which is a def
-   or use DU_TYPE */ 
+   or use DU_TYPE */
 
 static void
 build_def_use (exp, du_type)
@@ -277,7 +277,7 @@ build_def_use (exp, du_type)
       nloop = 0;
       du_idx = 0;
     }
-  
+
   while (node)
     switch (TREE_CODE (node))
       {
@@ -301,7 +301,7 @@ build_def_use (exp, du_type)
 				     TREE_OPERAND (node, 2), loop_def)
 	    == 0)
 	  loop_def->status = unnormal;
-	  
+
 	build_def_use (TREE_OPERAND (node, 3), 0);
 	nloop--;
 	current_loop = 0;
@@ -309,7 +309,7 @@ build_def_use (exp, du_type)
 	break;
       case MODIFY_EXPR:
 	/* Is an induction variable modified? */
-	if (loop_def 
+	if (loop_def
 	    && TREE_CODE (TREE_OPERAND (node, 0)) == VAR_DECL
 	    && have_induction_variable
 	       (loop_def->outer_loop,
@@ -362,7 +362,7 @@ build_def_use (exp, du_type)
 		    break;
 		  }
 	      }
-	    
+
 	    for (i = 0;
 		 i < du_idx
 		   && strcmp (IDENTIFIER_POINTER (DECL_NAME (array_ref)),
@@ -388,7 +388,7 @@ build_def_use (exp, du_type)
       case DECL_STMT:
 	node = TREE_CHAIN (node);
 	break;
-	
+
       case EXPR_STMT:
 	if (TREE_CODE (TREE_OPERAND (node, 0)) == MODIFY_EXPR)
 	  build_def_use (TREE_OPERAND (node, 0), def);
@@ -514,7 +514,7 @@ find_induction_variable (init_node, cond_node, incr_node, loop_def)
 
       ind_ptr->low_bound = get_low_bound (init_node, ind_ptr->variable);
       if (TREE_CODE (TREE_OPERAND (cond_node, 0)) == VAR_DECL
-	  && IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (cond_node, 0))) 
+	  && IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (cond_node, 0)))
 	     == ind_ptr->variable)
 	{
 	  if (TREE_CODE (TREE_OPERAND (cond_node, 1)) == INTEGER_CST)
@@ -732,7 +732,7 @@ check_node_dependence (du)
 			      ck_loop_ptr, j);
 		  /* ?? Add other tests: single variable exact test, banerjee */
 		}
-	    
+
 	      ck_loop_ptr = ck_loop_ptr->next_nest;
 	    }
 
@@ -752,8 +752,8 @@ check_node_dependence (du)
 	  dep_ptr->source = use_ptr->expression;
 	  dep_ptr->destination = def_ptr->expression;
 	  dep_ptr->next = 0;
-	  
-	  if (def_ptr < use_ptr && use_ptr->type == use) 
+
+	  if (def_ptr < use_ptr && use_ptr->type == use)
 	    dep_ptr->dependence = dt_flow;
 	  else if (def_ptr > use_ptr && use_ptr->type == use)
 	    dep_ptr->dependence = dt_anti;
@@ -832,7 +832,7 @@ get_coefficients (du, coefficients)
       coefficients[i].variable = 0;
       coefficients[i].next = 0;
     }
-  
+
   for (array_ref = du->expression;
        TREE_CODE (array_ref) == ARRAY_REF;
        array_ref = TREE_OPERAND (array_ref, 0))
@@ -951,7 +951,7 @@ normalize_coefficients (coefficients, loop_ptr, count)
 
   for (i = 1; i <= count; i++)
     {
-      for (ck_loop_ptr = loop_ptr; ck_loop_ptr; 
+      for (ck_loop_ptr = loop_ptr; ck_loop_ptr;
 	   ck_loop_ptr = ck_loop_ptr->next_nest)
 	for (ind_ptr = ck_loop_ptr->ind; ind_ptr; ind_ptr = ind_ptr->next)
 	  {
@@ -1014,7 +1014,7 @@ classify_dependence (icoefficients, ocoefficients, complexity, separability,
 	    }
 	}
     }
-  
+
   for (idx = 1; idx <= count; idx++)
     {
       if (iiv_used[idx] == 0 && oiv_used[idx] == 0)
@@ -1178,7 +1178,7 @@ gcd_test (icoefficients, ocoefficients, direction, distance, loop_ptr, sub)
     }
   /* ?? gcd does not yield direction and distance.  Wolfe's direction
      vector hierarchy can be used to give this.  */
-}     
+}
 
 /* Find the gcd of X and Y using Euclid's algorithm */
 
@@ -1213,7 +1213,7 @@ find_gcd (x, y)
 }
 
 /* Merge SUBSCRIPT_COUNT DIRECTIONs and DISTANCEs for LOOP_COUNT loops.
-   We use a predefined array to handle the direction merge.  
+   We use a predefined array to handle the direction merge.
    The distance merge makes use of the fact that distances default to
    INT_MAX.  Distances are '&' together.  Watch out for a negative distance.
 */
@@ -1228,7 +1228,7 @@ merge_dependencies (direction, distance, loop_count, subscript_count)
   int i, j;
   int sign;
 
-  static const enum direction_type direction_merge [8][8] = 
+  static const enum direction_type direction_merge [8][8] =
   {{lt, le, le, star, star, lt, independent, lt},
    {le, le, le, star, star, le, independent, le},
    {le, le, eq, ge, ge, eq, independent, eq},
@@ -1238,7 +1238,7 @@ merge_dependencies (direction, distance, loop_count, subscript_count)
    {independent, independent, independent, independent, independent},
    {independent, independent, independent}
   };
-  
+
   for (i = 1; i <= loop_count; i++)
     {
       distance[i][0] = INT_MAX;
@@ -1314,7 +1314,7 @@ dump_one_node (du, seen)
       for (array_ref = du_ptr->expression;
 	   TREE_CODE (array_ref) == ARRAY_REF;
 	   array_ref = TREE_OPERAND (array_ref, 0))
-	{	
+	{
 	  printf ("[");
 	  dump_array_ref (TREE_OPERAND (array_ref, 1));
 	  printf ("]");
@@ -1395,7 +1395,7 @@ search_dependence (node)
 	    return dep_idx + 1;
 	}
     }
-  
+
   return 0;
 }
 
@@ -1418,7 +1418,7 @@ remember_dest_for_dependence (node)
 #define MEM_DEPENDENCY(RTX) XCWINT (RTX, 2, MEM)
 #endif
 
-/* Return 1 along with the dependence DIRECTION and DISTANCE if there is a 
+/* Return 1 along with the dependence DIRECTION and DISTANCE if there is a
    dependence from dest_rtx to src_rtx.  */
 
 int

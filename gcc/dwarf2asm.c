@@ -60,7 +60,7 @@ dw2_assemble_integer (size, x)
   else
     assemble_integer (x, size, BITS_PER_UNIT, 1);
 }
-     
+
 
 /* Output an immediate constant in a given size.  */
 
@@ -316,7 +316,7 @@ size_of_sleb128 (value)
 }
 
 /* Given an encoding, return the number of bytes the format occupies.
-   This is only defined for fixed-size encodings, and so does not 
+   This is only defined for fixed-size encodings, and so does not
    include leb128.  */
 
 int
@@ -845,7 +845,7 @@ dw2_asm_output_encoded_addr_rtx VPARAMS ((int encoding,
     {
     restart:
       /* Allow the target first crack at emitting this.  Some of the
-	 special relocations require special directives instead of 
+	 special relocations require special directives instead of
 	 just ".4byte" or whatever.  */
 #ifdef ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX
       ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX (asm_out_file, encoding, size,
@@ -883,7 +883,7 @@ dw2_asm_output_encoded_addr_rtx VPARAMS ((int encoding,
 	  break;
 
 	default:
-	  /* Other encodings should have been handled by 
+	  /* Other encodings should have been handled by
 	     ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX.  */
 	  abort ();
 	}

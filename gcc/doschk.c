@@ -71,13 +71,13 @@ char *path;
   char *last_slash = strrchr (path, '/');
   char *cp, *dp;
   int dots_seen, chars_seen;
-  
+
   if (last_slash+1 == null)
     {
       * --null = '\0';
       last_slash = strrchr (path, '/');
     }
-  
+
   if (!last_slash)
     {
       last_slash = first-1;
@@ -239,7 +239,7 @@ display_problems ()
 {
   ENT **elist, *ent;
   int ecount, i, first, first_err;
-  
+
   for (ecount=0, ent=eroot; ent; ent=ent->next, ecount++);
   elist = (ENT **)malloc (sizeof (ENT *) * ecount);
   for (ecount=0, ent=eroot; ent; ent=ent->next, ecount++)
