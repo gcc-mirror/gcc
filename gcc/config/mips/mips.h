@@ -755,6 +755,21 @@ while (0)
 #define ASM_STABN_OP	((TARGET_GAS) ? ".stabn" : " #.stabn")
 #define ASM_STABD_OP	((TARGET_GAS) ? ".stabd" : " #.stabd")
 
+/* Local compiler-generated symbols must have a prefix that the assembler
+   understands.   By default, this is $, although some targets (e.g.,
+   NetBSD-ELF) need to override this. */
+
+#ifndef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX	"$"
+#endif
+
+/* By default on the mips, external symbols do not have an underscore
+   prepended, but some targets (e.g., NetBSD) require this. */
+
+#ifndef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX	""
+#endif
+
 /* Forward references to tags are allowed.  */
 #define SDB_ALLOW_FORWARD_REFERENCES
 
@@ -872,9 +887,11 @@ do {							\
 do {							\
   extern FILE *asm_out_text_file;			\
   fprintf (asm_out_text_file,				\
-	   "$Lb%d:\n\t%s.begin\t$Lb%d\t%d\n",		\
+	   "%sLb%d:\n\t%s.begin\t%sLb%d\t%d\n",		\
+	   LOCAL_LABEL_PREFIX,				\
 	   sdb_label_count,				\
 	   (TARGET_GAS) ? "" : "#",			\
+	   LOCAL_LABEL_PREFIX,				\
 	   sdb_label_count,				\
 	   (LINE));					\
   sdb_label_count++;					\
@@ -884,9 +901,11 @@ do {							\
 do {							\
   extern FILE *asm_out_text_file;			\
   fprintf (asm_out_text_file,				\
-	   "$Le%d:\n\t%s.bend\t$Le%d\t%d\n",		\
+	   "%sLe%d:\n\t%s.bend\t%sLe%d\t%d\n",		\
+	   LOCAL_LABEL_PREFIX,				\
 	   sdb_label_count,				\
 	   (TARGET_GAS) ? "" : "#",			\
+	   LOCAL_LABEL_PREFIX,				\
 	   sdb_label_count,				\
 	   (LINE));					\
   sdb_label_count++;					\
@@ -3426,13 +3445,14 @@ while (0)
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */
 
-#define ASM_OUTPUT_LABELREF(STREAM,NAME) fprintf (STREAM, "%s", NAME)
+#define ASM_OUTPUT_LABELREF(STREAM,NAME) 				\
+  fprintf (STREAM, "%s%s", USER_LABEL_PREFIX, NAME)
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
 
 #define ASM_OUTPUT_INTERNAL_LABEL(STREAM,PREFIX,NUM)			\
-  fprintf (STREAM, "$%s%d:\n", PREFIX, NUM)
+  fprintf (STREAM, "%s%s%d:\n", LOCAL_LABEL_PREFIX, PREFIX, NUM)
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
@@ -3440,7 +3460,7 @@ while (0)
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)			\
-  sprintf (LABEL, "*$%s%d", PREFIX, NUM)
+  sprintf (LABEL, "*%s%s%d", LOCAL_LABEL_PREFIX, PREFIX, NUM)
 
 /* This is how to output an assembler line defining a `double' constant.  */
 
@@ -3504,8 +3524,9 @@ do {									\
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)				\
-  fprintf (STREAM, "\t%s\t$L%d\n",					\
+  fprintf (STREAM, "\t%s\t%sL%d\n",					\
 	   TARGET_LONG64 ? ".dword" : ".word",				\
+	   LOCAL_LABEL_PREFIX,						\
 	   VALUE)
 
 /* This is how to output an element of a case-vector that is relative.
@@ -3515,14 +3536,15 @@ do {									\
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, VALUE, REL)			\
 do {									\
   if (TARGET_EMBEDDED_PIC)						\
-    fprintf (STREAM, "\t%s\t$L%d-$LS%d\n",				\
+    fprintf (STREAM, "\t%s\t%sL%d-%sLS%d\n",				\
 	     TARGET_LONG64 ? ".dword" : ".word",			\
-	     VALUE, REL);						\
+	     LOCAL_LABEL_PREFIX, VALUE, LOCAL_LABEL_PREFIX, REL);	\
   else if (! ABI_64BIT)							\
-    fprintf (STREAM, "\t%s\t$L%d\n",					\
+    fprintf (STREAM, "\t%s\t%sL%d\n",					\
 	     TARGET_LONG64 ? ".gpdword" : ".gpword",			\
-	     VALUE);							\
+	     LOCAL_LABEL_PREFIX, VALUE);				\
   else									\
+    /* ??? Why does this one use . and not LOCAL_LABEL_PREFIX?  */	\
     fprintf (STREAM, "\t%s\t.L%d\n",					\
 	     TARGET_LONG64 ? ".dword" : ".word",			\
 	     VALUE);							\
