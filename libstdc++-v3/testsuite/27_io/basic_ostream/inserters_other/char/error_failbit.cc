@@ -42,8 +42,8 @@ void test5()
 
   stream << &sbuf;
 
-  VERIFY(stream.rdstate() & ios_base::failbit);
-  VERIFY((stream.rdstate() & ios_base::badbit) == 0);
+  VERIFY( stream.rdstate() & ios_base::failbit );
+  VERIFY( (stream.rdstate() & ios_base::badbit) == 0 );
 }
 
 void test7()
@@ -54,8 +54,8 @@ void test7()
 
   stream << &bib;
 
-  VERIFY(stream.rdstate() & ios_base::failbit);
-  VERIFY((stream.rdstate() & ios_base::badbit) == 0);
+  VERIFY( stream.rdstate() & ios_base::failbit );
+  VERIFY( (stream.rdstate() & ios_base::badbit) == 0 );
 }
 
 // libstdc++/9371

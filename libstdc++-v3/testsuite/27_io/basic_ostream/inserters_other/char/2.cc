@@ -1,7 +1,7 @@
 // 1999-08-16 bkoz
 // 1999-11-01 bkoz
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,12 +49,12 @@ test03(void)
   ifstream in(TEST_IN);
   ofstream out(TEST_OUT);
   out << in.rdbuf();
-  in.seekg(0,ios_base::beg);
-  out.seekp(0,ios_base::beg);
+  in.seekg(0, ios_base::beg);
+  out.seekp(0, ios_base::beg);
   rs = in.tellg();
   ws = out.tellp();
-  in.seekg(0,ios_base::end);
-  out.seekp(0,ios_base::end);
+  in.seekg(0, ios_base::end);
+  out.seekp(0, ios_base::end);
   i_read = in.tellg() - rs;
   i_wrote = out.tellp() - ws;
   in.close();

@@ -1,4 +1,4 @@
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,17 +44,17 @@ void test9()
   try
     {
       stream << &sbuf;
-      VERIFY(false);
+      VERIFY( false );
     }
   catch (ios_base::failure&)
-    { VERIFY(false); }
+    { VERIFY( false ); }
   catch (__gnu_test::overflow_error&)
     { }
   catch (...)
-    { VERIFY(false); }
+    { VERIFY( false ); }
 
-  VERIFY(stream.rdstate() & ios_base::failbit);
-  VERIFY((stream.rdstate() & ios_base::badbit) == 0);
+  VERIFY( stream.rdstate() & ios_base::failbit );
+  VERIFY( (stream.rdstate() & ios_base::badbit) == 0 );
 }
 
 void test11()
@@ -67,17 +67,17 @@ void test11()
   try
     {
       stream << &bib;
-      VERIFY(false);
+      VERIFY( false );
     }
   catch (ios_base::failure&)
-    { VERIFY(false); }
+    { VERIFY( false ); }
   catch (__gnu_test::underflow_error&)
     { }
   catch (...)
-    { VERIFY(false); }
+    { VERIFY( false ); }
 
-  VERIFY(stream.rdstate() & ios_base::failbit);
-  VERIFY((stream.rdstate() & ios_base::badbit) == 0);
+  VERIFY( stream.rdstate() & ios_base::failbit );
+  VERIFY( (stream.rdstate() & ios_base::badbit) == 0 );
 }
 
 // libstdc++/9371

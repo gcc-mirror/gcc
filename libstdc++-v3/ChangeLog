@@ -1,5 +1,135 @@
 2005-01-23  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/27_io/basic_ostream/cons/wchar_t/9827.cc: New.
+	* testsuite/27_io/basic_ostream/endl/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/ends/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/ends/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/exceptions/wchar_t/9561.cc: Likewise.
+	* testsuite/27_io/basic_ostream/flush/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/flush/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/flush/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	wchar_t/4.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	wchar_t/4402.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	wchar_t/5.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	wchar_t/6.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	wchar_t/9555-oa.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	wchar_t/exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	wchar_t/exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/
+	wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/
+	wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/
+	wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/
+	wchar_t/4.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/
+	wchar_t/5.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/
+	wchar_t/6.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/
+	wchar_t/9555-oc.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/
+	wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/
+	wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/
+	wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/
+	wchar_t/4.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/
+	wchar_t/5.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/
+	wchar_t/9318-out.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/
+	wchar_t/9424-out.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/
+	wchar_t/9555-oo.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	error_failbit.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/put/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/put/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/char/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/wchar_t/
+	2346-fstream.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/wchar_t/
+	2346-sstream.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/sentry/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/sentry/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/tellp/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/tellp/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/tellp/wchar_t/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/write/wchar_t/1.cc: Likewise.
+
+	* testsuite/data/wostream_inserter_char-1.tst: Likewise.
+	* testsuite/data/wostream_inserter_char-1.txt: Likewise.
+	* testsuite/data/wostream_inserter_other-1.tst: Likewise.
+	* testsuite/data/wostream_inserter_other-2.tst: Likewise.
+	* testsuite/data/wostream_seeks-1.tst: Likewise.
+
+	* testsuite/27_io/basic_ostream/endl/char/1.cc: Minor tweaks.
+	* testsuite/27_io/basic_ostream/ends/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/exceptions/char/9561.cc: Likewise. 
+	* testsuite/27_io/basic_ostream/flush/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/flush/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/flush/char/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	char/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	char/3.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	char/4.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	char/4402.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	char/5.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/
+	char/6.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/
+	char/4.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	5.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	error_failbit.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/put/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/seekp/char/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/sentry/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/write/char/1.cc: Likewise.
+
+2005-01-23  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traits (aligned_storage): Use __aligned__ instead
 	of aligned.
 

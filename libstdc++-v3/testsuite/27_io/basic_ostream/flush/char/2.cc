@@ -1,6 +1,6 @@
 // 2003-09-22  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,7 +30,7 @@
 
 void test02()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   __gnu_test::sync_streambuf buf;
   std::ostream os(&buf);

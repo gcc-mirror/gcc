@@ -1,6 +1,6 @@
 // 2003-09-22  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,13 +34,14 @@
 class Buf : public std::streambuf
 {
 protected:
-  virtual int_type overflow(int_type = traits_type::eof())
+  virtual int_type
+  overflow(int_type = traits_type::eof())
   { throw 0; }
 };
 
 void test01()
 {
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   Buf buf;
   std::ostream os(&buf);
