@@ -11305,12 +11305,15 @@ friend declaration requires class-key, i.e. `friend %#T'",
 	  /* Only try to do this stuff if we didn't already give up.  */
 	  if (type != integer_type_node)
 	    {
+	      decl_type_access_control (TYPE_NAME (type));
+	      
 	      /* A friendly class?  */
 	      if (current_class_type)
 		make_friend_class (current_class_type, TYPE_MAIN_VARIANT (type));
 	      else
 		cp_error ("trying to make class `%T' a friend of global scope",
 		          type);
+              
 	      type = void_type_node;
 	    }
 	}

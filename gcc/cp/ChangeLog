@@ -1,3 +1,8 @@
+2000-11-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (grokdeclarator): Do type access control on friend
+	class.
+
 2000-11-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (grokfndecl): Undo COMPONENT_REF damage caused by
