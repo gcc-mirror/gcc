@@ -2659,8 +2659,9 @@ do {                                                                    \
 
 /* Return non-zero if MODE implies a floating point inequality can be
    reversed.  For Sparc this is always true because we have a full
-   compliment of ordered and unordered comparisons.  */
-#define REVERSIBLE_CC_MODE(MODE) 1
+   compliment of ordered and unordered comparisons, but until generic
+   code knows how to reverse it correctly we keep the old definition.  */
+#define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode && (MODE) != CCFPmode)
 
 /* A function address in a call instruction
    is a byte address (for indexing purposes)
