@@ -1,3 +1,11 @@
+2001-12-04  Douglas B. Rupp <rupp@gnat.com>
+
+	* bindgen.adb:
+	(Gen_Exception_Table_Ada): Write "begin" and then return if Num
+	 exceptions equals 0.
+	(Gen_Exception_Table_C): Return if Num exceptions equals 0.
+	Fixes PIWG E tests (which have to be run with -gnatL).
+
 2001-12-04  Robert Dewar <dewar@gnat.com>
 
 	* einfo.ads: Minor reformatting
