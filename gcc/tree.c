@@ -37,7 +37,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "function.h"
 #include "obstack.h"
+#ifdef __STDC__
+#include "gstdarg.h"
+#else
 #include "gvarargs.h"
+#endif
 #include <stdio.h>
 
 #define obstack_chunk_alloc xmalloc
@@ -2386,21 +2390,27 @@ stabilize_reference_1 (e)
    Constants, decls, types and misc nodes cannot be.  */
 
 tree
-build (va_alist)
-     va_dcl
+build VPROTO((enum tree_code code, tree tt, ...))
 {
-  va_list p;
+#ifndef __STDC__
   enum tree_code code;
+  tree tt;
+#endif
+  va_list p;
   register tree t;
   register int length;
   register int i;
 
-  va_start (p);
+  VA_START (p, tt);
 
+#ifndef __STDC__
   code = va_arg (p, enum tree_code);
+  tt = va_arg (p, tree);
+#endif
+
   t = make_node (code);
   length = tree_code_length[(int) code];
-  TREE_TYPE (t) = va_arg (p, tree);
+  TREE_TYPE (t) = tt;
 
   if (length == 2)
     {
@@ -2504,18 +2514,22 @@ build1 (code, type, node)
    or even garbage if their values do not matter.  */
 
 tree
-build_nt (va_alist)
-     va_dcl
+build_nt VPROTO((register enum tree_code code, ...))
 {
-  va_list p;
+#ifndef __STDC__
   register enum tree_code code;
+#endif
+  va_list p;
   register tree t;
   register int length;
   register int i;
 
-  va_start (p);
+  VA_START (p, code);
 
+#ifndef __STDC__
   code = va_arg (p, enum tree_code);
+#endif
+
   t = make_node (code);
   length = tree_code_length[(int) code];
 
@@ -2530,21 +2544,25 @@ build_nt (va_alist)
    on the temp_decl_obstack, regardless.  */
 
 tree
-build_parse_node (va_alist)
-     va_dcl
+build_parse_node VPROTO((register enum tree_code code, ...))
 {
+#ifndef __STDC__
+  register enum tree_code code;
+#endif
   register struct obstack *ambient_obstack = expression_obstack;
   va_list p;
-  register enum tree_code code;
   register tree t;
   register int length;
   register int i;
 
+  VA_START (p, code);
+
+#ifndef __STDC__
+  code = va_arg (p, enum tree_code);
+#endif
+
   expression_obstack = &temp_decl_obstack;
 
-  va_start (p);
-
-  code = va_arg (p, enum tree_code);
   t = make_node (code);
   length = tree_code_length[(int) code];
 
