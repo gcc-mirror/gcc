@@ -1687,7 +1687,11 @@ install-include-dir: install-dir
 
 # Install the include directory using tar.
 install-headers-tar: stmp-headers install-include-dir
-	cd include; tar cf - . | (cd $(libsubdir)/include; tar $(TAROUTOPTS) - )
+	cd include; \
+	 (tar cf - .; exit 0) | (cd $(libsubdir)/include; tar $(TAROUTOPTS) - )
+# /bin/sh on some systems returns the status of the first tar,
+# and that can lose with GNU tar which always writes a full block.
+# So use `exit 0' to ignore its exit status.
 
 # Install the include directory using cpio.
 install-headers-cpio: stmp-headers install-include-dir
