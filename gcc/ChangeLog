@@ -1,3 +1,7 @@
+2003-04-14  Janis Johnson  <janis287@us.ibm.com>
+
+	* rtl.h (SYMBOL_REF_TLS_MODEL): Fix mask value.
+
 2003-04-14  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in (c-opts.o): Use custom action.

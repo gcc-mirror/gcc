@@ -1276,7 +1276,7 @@ do {						\
    SYMBOL_REF_TLS_MODEL to extract the field as an enum tls_model.  */
 #define SYMBOL_FLAG_TLS_SHIFT	3
 #define SYMBOL_REF_TLS_MODEL(RTX) \
-  ((enum tls_model) ((SYMBOL_REF_FLAGS (RTX) >> SYMBOL_FLAG_TLS_SHIFT) & 3))
+  ((enum tls_model) ((SYMBOL_REF_FLAGS (RTX) >> SYMBOL_FLAG_TLS_SHIFT) & 7))
 /* Set if this symbol is not defined in this translation unit.  */
 #define SYMBOL_FLAG_EXTERNAL	(1 << 6)
 #define SYMBOL_REF_EXTERNAL_P(RTX) \
