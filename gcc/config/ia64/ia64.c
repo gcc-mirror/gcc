@@ -479,22 +479,7 @@ got_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
       op = XEXP (op, 1);
       if (GET_CODE (op) != CONST_INT)
 	return 0;
-
-	return 1;
-
-      /* Ok if we're not using GOT entries at all.  */
-      if (TARGET_NO_PIC || TARGET_AUTO_PIC)
-	return 1;
-
-      /* "Ok" while emitting rtl, since otherwise we won't be provided
-	 with the entire offset during emission, which makes it very
-	 hard to split the offset into high and low parts.  */
-      if (currently_expanding_to_rtl)
-	return 1;
-
-      /* Force the low 14 bits of the constant to zero so that we do not
-	 use up so many GOT entries.  */
-      return (INTVAL (op) & 0x3fff) == 0;
+      return 1;
 
     case SYMBOL_REF:
       if (SYMBOL_REF_SMALL_ADDR_P (op))
@@ -546,54 +531,6 @@ function_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
     return 1;
   else
     return 0;
-}
-
-/* Return 1 if OP is setjmp or a similar function.  */
-
-/* ??? This is an unsatisfying solution.  Should rethink.  */
-
-int
-setjmp_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  const char *name;
-  int retval = 0;
-
-  if (GET_CODE (op) != SYMBOL_REF)
-    return 0;
-
-  name = XSTR (op, 0);
-
-  /* The following code is borrowed from special_function_p in calls.c.  */
-
-  /* Disregard prefix _, __ or __x.  */
-  if (name[0] == '_')
-    {
-      if (name[1] == '_' && name[2] == 'x')
-	name += 3;
-      else if (name[1] == '_')
-	name += 2;
-      else
-	name += 1;
-    }
-
-  if (name[0] == 's')
-    {
-      retval
-	= ((name[1] == 'e'
-	    && (! strcmp (name, "setjmp")
-		|| ! strcmp (name, "setjmp_syscall")))
-	   || (name[1] == 'i'
-	       && ! strcmp (name, "sigsetjmp"))
-	   || (name[1] == 'a'
-	       && ! strcmp (name, "savectx")));
-    }
-  else if ((name[0] == 'q' && name[1] == 's'
-	    && ! strcmp (name, "qsetjmp"))
-	   || (name[0] == 'v' && name[1] == 'f'
-	       && ! strcmp (name, "vfork")))
-    retval = 1;
-
-  return retval;
 }
 
 /* Return 1 if OP is a general operand, excluding tls symbolic operands.  */
