@@ -2823,8 +2823,21 @@ void
 ia64_encode_section_info (decl)
      tree decl;
 {
+  const char *symbol_str;
+
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+    {
+      SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+      return;
+    }
+
+  /* Careful not to prod global register variables.  */
+  if (TREE_CODE (decl) != VAR_DECL
+      || GET_CODE (DECL_RTL (decl)) != SYMBOL_REF)
+    return;
+    
+  symbol_str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+
   /* We assume that -fpic is used only to create a shared library (dso).
      With -fpic, no global data can ever be sdata.
      Without -fpic, global common uninitialized data can never be sdata, since
@@ -2832,52 +2845,48 @@ ia64_encode_section_info (decl)
   /* ??? Actually, we can put globals in sdata, as long as we don't use gprel
      to access them.  The linker may then be able to do linker relaxation to
      optimize references to them.  Currently sdata implies use of gprel.  */
-  else if (! TARGET_NO_SDATA
-	   && TREE_CODE (decl) == VAR_DECL
-	   && TREE_STATIC (decl)
-	   && ! (DECL_ONE_ONLY (decl) || DECL_WEAK (decl))
-	   && ! (TREE_PUBLIC (decl)
-		 && (flag_pic
-		     || (DECL_COMMON (decl)
-			 && (DECL_INITIAL (decl) == 0
-			     || DECL_INITIAL (decl) == error_mark_node))))
-	   /* Either the variable must be declared without a section attribute,
-	      or the section must be sdata or sbss.  */
-	   && (DECL_SECTION_NAME (decl) == 0
-	       || ! strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
-			    ".sdata")
-	       || ! strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
-			    ".sbss")))
+  if (! TARGET_NO_SDATA
+      && TREE_STATIC (decl)
+      && ! (DECL_ONE_ONLY (decl) || DECL_WEAK (decl))
+      && ! (TREE_PUBLIC (decl)
+	    && (flag_pic
+		|| (DECL_COMMON (decl)
+		    && (DECL_INITIAL (decl) == 0
+			|| DECL_INITIAL (decl) == error_mark_node))))
+      /* Either the variable must be declared without a section attribute,
+	 or the section must be sdata or sbss.  */
+      && (DECL_SECTION_NAME (decl) == 0
+	  || ! strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+		       ".sdata")
+	  || ! strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+		       ".sbss")))
     {
       int size = int_size_in_bytes (TREE_TYPE (decl));
-      const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-
-      /* ??? We should redeclare CTOR_LIST, DTOR_END so that we don't have to
-	 special case them here.  Currently we put them in ctor/dtors sections
-	 behind the compiler's back.  We should use section attributes
-	 instead.  */
-      if (! strcmp (str, "__CTOR_LIST__")
-	  || ! strcmp (str, "__DTOR_END__"))
-	;
 
       /* If the variable has already been defined in the output file, then it
 	 is too late to put it in sdata if it wasn't put there in the first
 	 place.  The test is here rather than above, because if it is already
 	 in sdata, then it can stay there.  */
 
-      else if (TREE_ASM_WRITTEN (decl))
+      if (TREE_ASM_WRITTEN (decl))
 	;
 
       /* If this is an incomplete type with size 0, then we can't put it in
 	 sdata because it might be too big when completed.  */
       else if (size > 0 && size <= ia64_section_threshold
-	       && str[0] != SDATA_NAME_FLAG_CHAR)
+	       && symbol_str[0] != SDATA_NAME_FLAG_CHAR)
 	{
-	  int len = strlen (str);
-	  char *newstr = obstack_alloc (saveable_obstack, len + 2);
+	  int len = strlen (symbol_str);
+	  char *newstr;
 
-	  strcpy (newstr + 1, str);
+	  if (ggc_p)
+	    newstr = ggc_alloc_string (NULL, len + 1);
+	  else
+	    newstr = obstack_alloc (saveable_obstack, len + 2);
+
 	  *newstr = SDATA_NAME_FLAG_CHAR;
+	  memcpy (newstr + 1, symbol_str, len + 1);
+
 	  XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
 	}
     }
@@ -2885,16 +2894,13 @@ ia64_encode_section_info (decl)
      be; one likely explanation for this is that the decl has been
      moved into a different section from the one it was in when
      ENCODE_SECTION_INFO was first called.  Remove the '@'.*/
-  else if (TREE_CODE (decl) == VAR_DECL
-	   && (XSTR (XEXP (DECL_RTL (decl), 0), 0)[0]
-	       == SDATA_NAME_FLAG_CHAR))
+  else if (symbol_str[0] == SDATA_NAME_FLAG_CHAR)
     {
-      const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-      int len = strlen (str);
-      char *newstr = obstack_alloc (saveable_obstack, len);
-
-      strcpy (newstr, str + 1);
-      XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
+      if (ggc_p)
+	XSTR (XEXP (DECL_RTL (decl), 0), 0)
+	  = ggc_alloc_string (symbol_str + 1, -1);
+      else
+        XSTR (XEXP (DECL_RTL (decl), 0), 0) = symbol_str + 1;
     }
 }
 
