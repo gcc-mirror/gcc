@@ -527,6 +527,9 @@ static void
 recursively_demangle PARAMS ((struct work_stuff *, const char **, string *,
 			      int));
 
+static void
+grow_vect PARAMS ((void**, size_t*, size_t, int));
+
 /* Translate count to integer, consuming tokens in the process.
    Conversion terminates on the first non-digit character.
 
@@ -995,8 +998,8 @@ ada_demangle (mangled, option)
 	     sizeof (char));
   demangled = demangling_buffer;
   
-  if (isdigit (mangled[len0 - 1])) {
-    for (i = len0-2; i >= 0 && isdigit (mangled[i]); i -= 1)
+  if (isdigit ((unsigned char)mangled[len0 - 1])) {
+    for (i = len0-2; i >= 0 && isdigit ((unsigned char)mangled[i]); i -= 1)
       ;
     if (i > 1 && mangled[i] == '_' && mangled[i-1] == '_')
       {
@@ -1010,7 +1013,8 @@ ada_demangle (mangled, option)
       }
   }
   
-  for (i = 0, j = 0; i < len0 && ! isalpha (mangled[i]); i += 1, j += 1)
+  for (i = 0, j = 0; i < len0 && ! isalpha ((unsigned char)mangled[i]);
+       i += 1, j += 1)
     demangled[j] = mangled[i];
   
   at_start_name = 1;
@@ -1033,7 +1037,7 @@ ada_demangle (mangled, option)
   demangled[j] = '\000';
   
   for (i = 0; demangled[i] != '\0'; i += 1)
-    if (isupper (demangled[i]) || demangled[i] == ' ')
+    if (isupper ((unsigned char)demangled[i]) || demangled[i] == ' ')
       goto Suppress;
 
   if (! changed)
