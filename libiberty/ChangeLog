@@ -1,3 +1,11 @@
+2003-05-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport from mainline:
+	2003-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	
+	* vsprintf.c: Include "ansidecl.h" earlier, rely on
+	ANSI_PROTOTYPES and possibly include <stdarg.h>.
+
 2003-05-14  Carlo Wood  <carlo@alinoe.com>
 
 	* cp-demangle.c: Fix typo in "char_traints" string-literal.
