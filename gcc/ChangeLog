@@ -1,3 +1,7 @@
+2000-11-09  Christopher Faylor <cgf@cygnus.com>
+
+	* config/i386/cygwin.h: Add mingw startfile prefix.
+
 2000-11-09  Richard Henderson  <rth@redhat.com>
 
 	* flow.c (invalidate_mems_from_set): Split out from ...
