@@ -385,18 +385,18 @@ stamp-thread: ${thread_headers} ${thread_builddir}
 ${thread_builddir}/gthr.h:
 	sed -e '/^#/s/\(${uppercase}${uppercase}*\)/_GLIBCPP_\1/g' \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
-	    < ${glibcpp_srcdir}/../gcc/gthr.h > $@
+	    < ${toplevel_srcdir}/gcc/gthr.h > $@
 
 ${thread_builddir}/gthr-single.h:
 	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
-	    < ${glibcpp_srcdir}/../gcc/gthr-single.h > $@
+	    < ${toplevel_srcdir}/gcc/gthr-single.h > $@
 
 ${thread_builddir}/gthr-default.h:
 	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
 	    -e 's/\(${uppercase}*WEAK\)/_GLIBCPP_\1/g' \
-	    < ${glibcpp_srcdir}/../gcc/${glibcpp_thread_h} > $@
+	    < ${toplevel_srcdir}/gcc/${glibcpp_thread_h} > $@
 install-data-local:
 	for file in `find . ! -name stamp-\* ! -name Makefile -print`; do \
 	installFile=${gxx_include_dir}/$${file} ;\

@@ -1,3 +1,9 @@
+2001-08-28  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/Makefile.am: Use toplevel_srcdir to refer to src files
+	outside this component.
+	* include/Makefile.in: Regenerate.
+
 2001-08-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/locale/c_locale_gnu.cc: Move facet info to separate files...
