@@ -1,3 +1,7 @@
+2003-01-25  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloopmanip.c (force_single_succ_latches): Fix missindentation.
+
 2003-02-05  Hans Boehm <Hans.Boehm@hp.com>
 
 	* config/ia64/unwind-ia64.c: include coretypes.h, tm.h to get

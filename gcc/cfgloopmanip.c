@@ -159,8 +159,10 @@ force_single_succ_latches (loops)
       if (!loop->latch->succ->succ_next)
 	continue;
  
-      for (e = loop->header->pred; e->src != loop->latch; e = e->pred_next);
-	loop_split_edge_with (e, NULL_RTX, loops);
+      for (e = loop->header->pred; e->src != loop->latch; e = e->pred_next)
+	continue;
+
+      loop_split_edge_with (e, NULL_RTX, loops);
     }
   loops->state |= LOOPS_HAVE_SIMPLE_LATCHES;
 }
