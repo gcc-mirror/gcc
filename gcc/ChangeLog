@@ -1,3 +1,8 @@
+2004-11-13  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* doc/install.texi (automake): Correctly document that everything now 
+	will use automake 1.9.3.
+
 2004-11-13  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/18347
