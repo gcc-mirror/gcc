@@ -1106,8 +1106,12 @@ layout_type (type)
      of the type above, find it by division.  */
   if (TYPE_SIZE_UNIT (type) == 0 && TYPE_SIZE (type) != 0)
     {
-      TYPE_SIZE_UNIT (type) = size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (type),
-				          size_int (BITS_PER_UNIT));
+      /* TYPE_SIZE (type) is computed in bitsizetype.  After the division, the
+	 result will fit in sizetype.  We will get more efficient code using
+	 sizetype, so we force a conversion.  */
+      tree unit_size = size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (type),
+				   size_int (BITS_PER_UNIT));
+      TYPE_SIZE_UNIT (type) = convert (sizetype, unit_size);
     }
 
   /* Once again evaluate only once, either now or as soon as safe.  */

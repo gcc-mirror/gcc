@@ -1,3 +1,8 @@
+Fri Oct 29 17:00:42 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* stor-layout.c (layout_type): When compute TYPE_SIZE_UNIT from
+	TYPE_SIZE, convert type of result to sizetype.
+
 Fri Oct 29 14:34:17 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (count_or_remove_death_notes): Equate NULL with the
