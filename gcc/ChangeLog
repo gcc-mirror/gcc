@@ -1,3 +1,9 @@
+2004-08-24  Richard Henderson  <rth@redhat.com>
+                                                                                
+	PR target/16298
+	* config/i386/i386.c (legitimate_constant_p): Rework to not accept
+	random codes within CONST.
+
 2004-08-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/17113
