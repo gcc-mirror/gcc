@@ -30,8 +30,8 @@ extern int    mcore_byte_offset            	PARAMS ((unsigned int));
 extern int    mcore_halfword_offset        	PARAMS ((unsigned int));
 extern int    mcore_const_trick_uses_not   	PARAMS ((long));
 extern void   mcore_override_options       	PARAMS ((void));
-extern int    mcore_dllexport_name_p       	PARAMS ((char *));
-extern int    mcore_dllimport_name_p       	PARAMS ((char *));
+extern int    mcore_dllexport_name_p       	PARAMS ((const char *));
+extern int    mcore_dllimport_name_p       	PARAMS ((const char *));
 extern int    mcore_naked_function_p       	PARAMS ((void));
 
 #ifdef TREE_CODE

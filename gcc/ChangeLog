@@ -31,6 +31,20 @@
 
 	* Makefile.in (c-parse.o): Also depend on output.h.
 
+2000-06-09  Rodney Brown  <RodneyBrown@mynd.com>
+
+        * mcore-protos.h: discards const warning removal.
+        * mcore.c: discards const warning removal.
+
+2000-06-09  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/lib1funcs.asm: Declare the machine architecture at
+	the beginning of the file.
+
+2000-06-09  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* real.h:  Add prototype for ldexp.
+
 2000-06-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* ggc-none.c, ggc-simple.c, ggc-page.c (ggc_alloc_obj): Rename
