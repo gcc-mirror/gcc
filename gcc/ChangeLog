@@ -1,3 +1,8 @@
+Mon Feb 16 16:13:43 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (MY_ISCOFF): Add numeric value of U803XTOCMAGIC.
+	* x-aix31 (INSTALL): Delete.
+
 Mon Feb 16 09:24:32 1998  Gavin Koch  <gavin@cygnus.com>
 
 	* mips/mips.c (mips_expand_epilogue): Update tsize_rtx if 
