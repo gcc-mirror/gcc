@@ -1,3 +1,8 @@
+2001-11-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_reg_names): Remove leading "v" or
+	altivec registers.
+
 2001-11-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cppexp.c (parse_number): Use ISXDIGIT/hex_value.
