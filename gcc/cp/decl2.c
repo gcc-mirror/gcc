@@ -2756,6 +2756,8 @@ finish_file ()
 	  if (!DECL_SAVED_TREE (decl))
 	    continue;
 
+	  import_export_decl (decl);
+
 	  /* We lie to the back-end, pretending that some functions
 	     are not defined when they really are.  This keeps these
 	     functions from being put out unnecessarily.  But, we must

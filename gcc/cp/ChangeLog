@@ -1,3 +1,7 @@
+2003-04-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (finish_file): Fix merge botch.
+
 2003-04-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (finish_file): Don't call import_export_decl for
