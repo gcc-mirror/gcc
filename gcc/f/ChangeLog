@@ -5,6 +5,17 @@
 
 1999-02-26  Craig Burley  <craig@jcb-sc.com>
 
+	* intdoc.in (STAT_func, STAT_subr,
+	FSTAT_func, FSTAT_subr, LSTAT_func, LSTAT_subr):
+	Properly order array elements.  Specify N/A return values.
+
+1999-02-26  Craig Burley  <craig@jcb-sc.com>
+
+	* intdoc.in (DATE_AND_TIME): Explain that VALUES(7) holds
+	seconds, and VALUES(8), therefore, milliseconds.
+
+1999-02-26  Craig Burley  <craig@jcb-sc.com>
+
 	* news.texi: Clarify IOSTAT= fix.
 
 1999-02-25  Richard Henderson  <rth@cygnus.com>

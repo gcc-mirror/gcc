@@ -1715,16 +1715,13 @@ extracted from the @code{stat} structure as returned by
 
 @enumerate
 @item
-File mode
+Device ID
 
 @item
 Inode number
 
 @item
-ID of device containing directory entry for file
-
-@item
-Device id (if relevant)
+File mode
 
 @item
 Number of links
@@ -1734,6 +1731,10 @@ Owner's uid
 
 @item
 Owner's gid
+
+@item
+ID of device containing directory entry for file
+(0 if not available)
 
 @item
 File size (bytes)
@@ -1748,10 +1749,10 @@ Last modification time
 Last file status change time
 
 @item
-Preferred I/O block size
+Preferred I/O block size (-1 if not available)
 
 @item
-Number of blocks allocated
+Number of blocks allocated (-1 if not available)
 @end enumerate
 
 Not all these elements are relevant on all systems.
@@ -1769,16 +1770,13 @@ extracted from the @code{stat} structure as returned by
 
 @enumerate
 @item
-File mode
+Device ID
 
 @item
 Inode number
 
 @item
-ID of device containing directory entry for file
-
-@item
-Device id (if relevant)
+File mode
 
 @item
 Number of links
@@ -1788,6 +1786,10 @@ Owner's uid
 
 @item
 Owner's gid
+
+@item
+ID of device containing directory entry for file
+(0 if not available)
 
 @item
 File size (bytes)
@@ -1802,10 +1804,10 @@ Last modification time
 Last file status change time
 
 @item
-Preferred I/O block size
+Preferred I/O block size (-1 if not available)
 
 @item
-Number of blocks allocated
+Number of blocks allocated (-1 if not available)
 @end enumerate
 
 Not all these elements are relevant on all systems.
@@ -1833,16 +1835,13 @@ The values in this array are extracted from the
 
 @enumerate
 @item
-File mode
+Device ID
 
 @item
 Inode number
 
 @item
-ID of device containing directory entry for file
-
-@item
-Device id (if relevant)
+File mode
 
 @item
 Number of links
@@ -1852,6 +1851,10 @@ Owner's uid
 
 @item
 Owner's gid
+
+@item
+ID of device containing directory entry for file
+(0 if not available)
 
 @item
 File size (bytes)
@@ -1866,10 +1869,10 @@ Last modification time
 Last file status change time
 
 @item
-Preferred I/O block size
+Preferred I/O block size (-1 if not available)
 
 @item
-Number of blocks allocated
+Number of blocks allocated (-1 if not available)
 @end enumerate
 
 Not all these elements are relevant on all systems.
@@ -1893,16 +1896,13 @@ The values in this array are extracted from the
 
 @enumerate
 @item
-File mode
+Device ID
 
 @item
 Inode number
 
 @item
-ID of device containing directory entry for file
-
-@item
-Device id (if relevant)
+File mode
 
 @item
 Number of links
@@ -1912,6 +1912,10 @@ Owner's uid
 
 @item
 Owner's gid
+
+@item
+ID of device containing directory entry for file
+(0 if not available)
 
 @item
 File size (bytes)
@@ -1926,10 +1930,10 @@ Last modification time
 Last file status change time
 
 @item
-Preferred I/O block size
+Preferred I/O block size (-1 if not available)
 
 @item
-Number of blocks allocated
+Number of blocks allocated (-1 if not available)
 @end enumerate
 
 Not all these elements are relevant on all systems.
@@ -1955,16 +1959,13 @@ The values in this array are extracted from the
 
 @enumerate
 @item
-File mode
+Device ID
 
 @item
 Inode number
 
 @item
-ID of device containing directory entry for file
-
-@item
-Device id (if relevant)
+File mode
 
 @item
 Number of links
@@ -1974,6 +1975,10 @@ Owner's uid
 
 @item
 Owner's gid
+
+@item
+ID of device containing directory entry for file
+(0 if not available)
 
 @item
 File size (bytes)
@@ -1988,10 +1993,10 @@ Last modification time
 Last file status change time
 
 @item
-Preferred I/O block size
+Preferred I/O block size (-1 if not available)
 
 @item
-Number of blocks allocated
+Number of blocks allocated (-1 if not available)
 @end enumerate
 
 Not all these elements are relevant on all systems.
@@ -2011,16 +2016,13 @@ The values in this array are extracted from the
 
 @enumerate
 @item
-File mode
+Device ID
 
 @item
 Inode number
 
 @item
-ID of device containing directory entry for file
-
-@item
-Device id (if relevant)
+File mode
 
 @item
 Number of links
@@ -2030,6 +2032,10 @@ Owner's uid
 
 @item
 Owner's gid
+
+@item
+ID of device containing directory entry for file
+(0 if not available)
 
 @item
 File size (bytes)
@@ -2044,10 +2050,10 @@ Last modification time
 Last file status change time
 
 @item
-Preferred I/O block size
+Preferred I/O block size (-1 if not available)
 
 @item
-Number of blocks allocated
+Number of blocks allocated (-1 if not available)
 @end enumerate
 
 Not all these elements are relevant on all systems.
@@ -2677,7 +2683,8 @@ The difference between local time and UTC (GMT) in the form @var{Shhmm}:
 sign, hours and minutes, e.g.@: @samp{-0500} (winter in New York);
 @item @4@
 The year, month of the year, day of the month, time difference in
-minutes from UTC, hour of the day, minutes of the hour and milliseconds
+minutes from UTC, hour of the day, minutes of the hour, seconds
+of the minute, and milliseconds
 of the second in successive values of the array.
 @end table
 
