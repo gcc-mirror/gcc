@@ -617,99 +617,11 @@ output_branch (logic, insn, operands)
   return "bad";
 }
 
-/* A copy of the option structure defined in toplev.c.  */
-
-struct option
-{
-  char *string;
-  int *variable;
-  int on_value;
-};
-
-/* Output a single output option string NAME to FILE, without generating
-   lines longer than MAX.  */
-
-static int
-output_option (file, sep, type, name, indent, pos, max)
-     FILE *file;
-     char *sep;
-     char *type;
-     char *name;
-     char *indent;
-     int pos;
-     int max;
-{
-  if (strlen (sep) + strlen (type) + strlen (name) + pos > max)
-    {
-      fprintf (file, indent);
-      return fprintf (file, "%s%s", type, name);
-    }
-  return pos + fprintf (file, "%s%s%s", sep, type, name);
-}
-
-/* A copy of the target_switches variable in toplev.c.  */
-
-static struct
-{
-  char *name;
-  int value;
-} m_options[] = TARGET_SWITCHES;
-
-/* Output all options to the assembly language file.  */
-
-static void
-output_options (file, f_options, f_len, W_options, W_len,
-		pos, max, sep, indent, term)
-     FILE *file;
-     struct option *f_options;
-     struct option *W_options;
-     int f_len, W_len;
-     int pos;
-     int max;
-     char *sep;
-     char *indent;
-     char *term;
-{
-  register int j;
-
-  if (optimize)
-    pos = output_option (file, sep, "-O", "", indent, pos, max);
-  if (write_symbols != NO_DEBUG)
-    pos = output_option (file, sep, "-g", "", indent, pos, max);
-  if (profile_flag)
-    pos = output_option (file, sep, "-p", "", indent, pos, max);
-  if (profile_block_flag)
-    pos = output_option (file, sep, "-a", "", indent, pos, max);
-
-  for (j = 0; j < f_len; j++)
-    if (*f_options[j].variable == f_options[j].on_value)
-      pos = output_option (file, sep, "-f", f_options[j].string,
-			   indent, pos, max);
-
-  for (j = 0; j < W_len; j++)
-    if (*W_options[j].variable == W_options[j].on_value)
-      pos = output_option (file, sep, "-W", W_options[j].string,
-			   indent, pos, max);
-
-  for (j = 0; j < sizeof m_options / sizeof m_options[0]; j++)
-    if (m_options[j].name[0] != '\0'
-	&& m_options[j].value > 0
-	&& ((m_options[j].value & target_flags)
-	    == m_options[j].value))
-      pos = output_option (file, sep, "-m", m_options[j].name,
-			   indent, pos, max);
-
-  fprintf (file, term);
-}
-
 /* Output to FILE the start of the assembler file.  */
 
 void
-output_file_start (file, f_options, f_len, W_options, W_len)
+output_file_start (file);
      FILE *file;
-     struct option *f_options;
-     struct option *W_options;
-     int f_len, W_len;
 {
   register int pos;
 
@@ -718,10 +630,6 @@ output_file_start (file, f_options, f_len, W_options, W_len)
   /* Switch to the data section so that the coffsem symbol and the
      gcc2_compiled. symbol aren't in the text section.  */
   data_section ();
-
-  pos = fprintf (file, "\n! Hitachi SH cc1 (%s) arguments:", version_string);
-  output_options (file, f_options, f_len, W_options, W_len,
-		  pos, 75, " ", "\n! ", "\n\n");
 
   if (TARGET_LITTLE_ENDIAN)
     fprintf (file, "\t.little\n");
