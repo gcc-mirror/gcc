@@ -2,7 +2,7 @@
    hosting on Windows NT 3.x, using a Unix style C library and tools,
    as distinct from winnt.h, which is used to build GCC for use with a
    windows style library and tool set and uses the Microsoft tools.
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,7 +20,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
-
 
 #define YES_UNDERSCORES
 
@@ -149,6 +148,27 @@ do									\
 while (0)
 #endif
 
+/* This macro gets just the user-specified name out of the string in a
+   SYMBOL_REF.  Discard trailing @[NUM] encoded by ENCODE_SECTION_INFO.   */
+
+#undef  STRIP_NAME_ENCODING
+#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)				\
+do {									\
+  char *_p;								\
+  char *_name = ((SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'));		\
+  for (_p = _name; *_p && *_p != '@'; ++_p)				\
+    ;									\
+  if (*_p == '@')							\
+    {									\
+      int _len = _p - _name;						\
+      (VAR) = (char *) alloca (_len + 1);				\
+      strncpy ((VAR), _name, _len);					\
+      (VAR)[_len] = '\0';						\
+    }									\
+  else									\
+    (VAR) = _name;							\
+} while (0)
+      
 /* Emit code to check the stack when allocating more that 4000
    bytes in one go. */
 
