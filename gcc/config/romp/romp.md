@@ -1667,7 +1667,6 @@
   operands[0] = XEXP (operands[0], 0);
   if (GET_CODE (operands[0]) == SYMBOL_REF)
     {
-      extern rtx get_symref ();
       char *real_fcnname
 	= (char *) alloca (strlen (XSTR (operands[0], 0)) + 2);
 
@@ -1726,7 +1725,6 @@
   operands[1] = XEXP (operands[1], 0);
   if (GET_CODE (operands[1]) == SYMBOL_REF)
     {
-      extern rtx get_symref ();
       char *real_fcnname =
 		(char *) alloca (strlen (XSTR (operands[1], 0)) + 2);
 

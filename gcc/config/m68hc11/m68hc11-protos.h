@@ -34,7 +34,7 @@ extern int m68hc11_function_block_profiler PARAMS((FILE*,int));
 
 extern int m68hc11_block_profiler PARAMS((FILE*,int));
 
-extern void m68hc11_asm_file_start PARAMS((FILE*, char*));
+extern void m68hc11_asm_file_start PARAMS((FILE*, const char*));
 
 #ifdef TREE_CODE
 extern void m68hc11_function_arg_advance PARAMS((CUMULATIVE_ARGS*,

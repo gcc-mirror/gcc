@@ -38,6 +38,7 @@
 #include "except.h"
 #include "function.h"
 #include "toplev.h"
+#include "integrate.h"
 #include "ggc.h"
 #include "target.h"
 #include "target-def.h"
@@ -1952,7 +1953,7 @@ d30v_function_arg_boundary (mode, type)
 {
   int size = ((mode == BLKmode && type)
 	      ? int_size_in_bytes (type)
-	      : GET_MODE_SIZE (mode));
+	      : (int) GET_MODE_SIZE (mode));
 
   return (size > UNITS_PER_WORD) ? 2*UNITS_PER_WORD : UNITS_PER_WORD;
 }
@@ -1997,7 +1998,7 @@ d30v_function_arg (cum, mode, type, named, incoming)
 {
   int size = ((mode == BLKmode && type)
 	      ? int_size_in_bytes (type)
-	      : GET_MODE_SIZE (mode));
+	      : (int) GET_MODE_SIZE (mode));
   int adjust = (size > UNITS_PER_WORD && (*cum & 1) != 0);
   rtx ret;
 
@@ -2046,7 +2047,7 @@ d30v_function_arg_partial_nregs (cum, mode, type, named)
 {
   int bytes = ((mode == BLKmode)
 	       ? int_size_in_bytes (type)
-	       : GET_MODE_SIZE (mode));
+	       : (int) GET_MODE_SIZE (mode));
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   int adjust = (bytes > UNITS_PER_WORD && (*cum & 1) != 0);
   int arg_num = *cum + adjust;
@@ -2109,7 +2110,7 @@ d30v_function_arg_advance (cum, mode, type, named)
 {
   int bytes = ((mode == BLKmode)
 	       ? int_size_in_bytes (type)
-	       : GET_MODE_SIZE (mode));
+	       : (int) GET_MODE_SIZE (mode));
   int words = D30V_ALIGN (bytes, UNITS_PER_WORD) / UNITS_PER_WORD;
   int adjust = (bytes > UNITS_PER_WORD && (*cum & 1) != 0);
 
@@ -2719,7 +2720,7 @@ d30v_print_operand_memory_reference (stream, x)
 
   else
     {
-      char *suffix = "";
+      const char *suffix = "";
       int offset0  = 0;
 
       if (GET_CODE (x0) == SUBREG)
@@ -3366,7 +3367,7 @@ d30v_emit_comparison (test_int, result, arg1, arg2)
 /* Return appropriate code to move 2 words.  Since DImode registers must start
    on even register numbers, there is no possibility of overlap.  */
 
-char *
+const char *
 d30v_move_2words (operands, insn)
      rtx operands[];
      rtx insn;

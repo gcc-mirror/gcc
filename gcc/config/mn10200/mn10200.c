@@ -1029,7 +1029,7 @@ enum shift_type
 
 enum shift_mode
   {
-    HIshift, 
+    HIshift
   };
 
 /* For single bit shift insns, record assembler and what bits of the

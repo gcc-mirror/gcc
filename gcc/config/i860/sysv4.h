@@ -119,7 +119,7 @@ Boston, MA 02111-1307, USA.  */
 /* Output the special word the svr4 SDB wants to see just before
    the first word of each function's prologue code.  */
 
-extern char *current_function_original_name;
+extern const char *current_function_original_name;
 
 /* This special macro is used to output a magic word just before the
    first word of each function.  On some versions of UNIX running on

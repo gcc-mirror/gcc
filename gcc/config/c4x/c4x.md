@@ -5614,7 +5614,7 @@
    (use (label_ref (match_operand 4 "" "")))]
   ""
   "if (! TARGET_LOOP_UNSIGNED 
-       && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > (1U << 31))
+       && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > ((unsigned) 1 << 31))
      FAIL;
    if (INTVAL (operands[3]) > 1 || ! TARGET_RPTB)
      {

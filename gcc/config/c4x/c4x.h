@@ -1984,6 +1984,7 @@ if (REG_P (OP1) && ! REG_P (OP0))			\
   FINI_SECTION_FUNCTION
 
 #define INIT_SECTION_FUNCTION					\
+extern void init_section PARAMS ((void));			\
 void								\
 init_section ()							\
 {								\
@@ -2096,8 +2097,8 @@ const_section ()							\
     fprintf (FILE, "\t.file\t");				\
     if (TARGET_TI)						\
       {								\
-        char *p;						\
-        char *after_dir = main_input_filename;			\
+        const char *p;						\
+        const char *after_dir = main_input_filename;		\
 	for (p = main_input_filename; *p; p++)			\
 	  if (*p == '/')					\
 	    after_dir = p + 1;					\
@@ -2122,7 +2123,7 @@ const_section ()							\
     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
     REAL_VALUE_TO_DECIMAL (VALUE, "%20lf", str);	\
     if (sizeof (int) == sizeof (long))			\
-      fprintf (FILE, "\t.word\t0%08xh\t; %s\n", l, str);\
+      fprintf (FILE, "\t.word\t0%08xh\t; %s\n", (int) l, str);\
     else						\
       fprintf (FILE, "\t.word\t0%08lxh\t; %s\n", l, str);\
   } while (0);
@@ -2144,7 +2145,7 @@ const_section ()							\
     l[1] = (l[0] << 8) | ((l[1] >> 24) & 0xff);		\
     if (sizeof (int) == sizeof (long))			\
       fprintf (FILE, "\t.word\t0%08xh\t; %s\n\t.word\t0%08xh\n", \
-               l[0], str, l[1]);				\
+               (int) l[0], str, (int) l[1]);		\
     else							\
       fprintf (FILE, "\t.word\t0%08lxh\t; %s\n\t.word\t0%08lxh\n", \
                l[0], str, l[1]);				\

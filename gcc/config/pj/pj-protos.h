@@ -34,7 +34,7 @@ extern int pj_unsigned_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern rtx pj_workout_arg_words PARAMS ((rtx, rtx));
 extern void pj_machine_dependent_reorg PARAMS ((rtx));
 extern void pj_print_operand PARAMS ((FILE * stream, rtx x, int code));
-extern char *pj_output_addsi3 PARAMS ((rtx * operands));
+extern const char *pj_output_addsi3 PARAMS ((rtx * operands));
 
 #ifdef TREE_CODE
 extern rtx pj_expand_builtin_va_arg PARAMS ((tree valist, tree type));

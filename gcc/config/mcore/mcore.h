@@ -1111,6 +1111,7 @@ switch_to_section (section, decl)				\
 }
 
 /* Switch into a generic section.  */
+#undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  mcore_asm_named_section
 
 /* This is how to output an insn to push a register on the stack.

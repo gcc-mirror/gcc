@@ -126,12 +126,13 @@ extern rtx d30v_legitimize_address	PARAMS ((rtx, rtx,
 						 enum machine_mode, int));
 extern int d30v_mode_dependent_address_p PARAMS ((rtx));
 extern rtx d30v_emit_comparison		PARAMS ((int, rtx, rtx, rtx));
-extern char *d30v_move_2words		PARAMS ((rtx *, rtx));
+extern const char *d30v_move_2words	PARAMS ((rtx *, rtx));
 extern int d30v_emit_cond_move		PARAMS ((rtx, rtx, rtx, rtx));
 extern void d30v_machine_dependent_reorg PARAMS ((rtx));
 extern rtx d30v_return_addr		PARAMS ((void));
 #endif
 extern void d30v_init_expanders		PARAMS ((void));
+extern void debug_stack_info		PARAMS ((d30v_stack_t *));
 
 
 /* External variables referenced */
