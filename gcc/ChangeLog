@@ -4,6 +4,11 @@
 
 Sun Dec 13 00:24:14 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
+	* rtl.h (recompute_reg_usage): Add second argument.
+	* flow.c (recompute_reg_usage): Likewise.
+	* toplev.c (rest_of_compilation): Supply second argument to
+	recompute_reg_usage.
+
 	* reload1.c (compute_use_by_pseudos): Allow reg_renumber[regno] < 0
 	after reload.
 
