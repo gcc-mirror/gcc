@@ -29,6 +29,8 @@ echo 'srcdir = @srcdir@'
 echo 'VPATH = @srcdir@'
 echo 'EQ = ='
 echo
+echo 'force:'
+echo
 
 # Detect gcc as OLDCC.  This indicates a target for which LIB1FUNCS
 # is not needed.  This is not quite the same as libgcc1.null, even
@@ -237,7 +239,7 @@ for file in $LIB2ADD; do
     fprime=`cat $file`
     for f in $fprime; do
 
-      lastout=""
+      lastout="force"
       for ml in $MULTILIBS; do
         dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
         flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
@@ -317,7 +319,7 @@ for ml in $MULTILIBS; do
 done
 
 for f in $EXTRA_MULTILIB_PARTS; do
-  lastout=""
+  lastout="force"
   for ml in $MULTILIBS; do
     dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
     flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
