@@ -25,7 +25,7 @@
 # Initialization and sanity checks
 # --------------------------------
 
-AC_PREREQ(2.57)
+AC_PREREQ(2.59)
 AC_INIT
 AC_CONFIG_SRCDIR(tree.c)
 AC_CONFIG_HEADER(auto-host.h:config.in)
