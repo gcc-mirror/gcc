@@ -3131,10 +3131,12 @@ int_fits_type_p (c, type)
 {
   if (TREE_UNSIGNED (type))
     return (!INT_CST_LT_UNSIGNED (TYPE_MAX_VALUE (type), c)
-	    && !INT_CST_LT_UNSIGNED (c, TYPE_MIN_VALUE (type)));
+	    && !INT_CST_LT_UNSIGNED (c, TYPE_MIN_VALUE (type))
+	    && (TREE_INT_CST_HIGH (c) >= 0 || TREE_UNSIGNED (TREE_TYPE (c))));
   else
     return (!INT_CST_LT (TYPE_MAX_VALUE (type), c)
-	    && !INT_CST_LT (c, TYPE_MIN_VALUE (type)));
+	    && !INT_CST_LT (c, TYPE_MIN_VALUE (type))
+	    && (TREE_INT_CST_HIGH (c) >= 0 || !TREE_UNSIGNED (TREE_TYPE (c))));
 }
 
 /* Return the innermost context enclosing DECL that is
