@@ -838,9 +838,10 @@
 #   endif
 #   ifdef SUNOS5
 #	define OS_TYPE "SUNOS5"
-  	extern int etext, _start;
+  	extern int _etext, _end;
   	extern char * GC_SysVGetDataStart();
-#       define DATASTART GC_SysVGetDataStart(0x1000, &etext)
+#       define DATASTART GC_SysVGetDataStart(0x1000, &_etext)
+#	define DATAEND (&_end)
 /*	# define STACKBOTTOM ((ptr_t)(&_start)) worked through 2.7,  	*/
 /*      but reportedly breaks under 2.8.  It appears that the stack	*/
 /* 	base is a property of the executable, so this should not break	*/
@@ -849,7 +850,9 @@
 #       include <sys/vmparam.h>
 #	define STACKBOTTOM USRSTACK
 /** At least in Solaris 2.5, PROC_VDB gives wrong values for dirty bits. */
-/*#	define PROC_VDB*/
+#	ifdef SOLARIS25_PROC_VDB_BUG_FIXED
+#	  define PROC_VDB
+#	endif
 #	define DYNAMIC_LOADING
 #	ifndef USE_MMAP
 #	    define USE_MMAP
