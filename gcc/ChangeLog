@@ -1,3 +1,14 @@
+2001-05-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* defaults.h (TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER): New
+	macro.
+	* tm.texi (TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER):
+	Document it.
+	* toplev.c (main): If the target does not allow profiling without
+	a frame pointer, issue an error message.
+	* config/i386/linux.h (TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER): 
+	Define it to false.
+	
 Sat May 19 09:40:45 2001  Denis Chertykov  <denisc@overta.ru>
 
 	* regrename.c (regrename_optimize): frame pointer register can

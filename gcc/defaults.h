@@ -319,5 +319,12 @@ do {								\
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)  DW_EH_PE_absptr
 #endif
 
+/* True if it is possible to profile code that does not have a frame
+   pointer.  */
+
+#ifndef TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER
+#define TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER true
+#endif
+
 #endif  /* GCC_DEFAULTS_H */
 
