@@ -1035,7 +1035,7 @@ signed_or_unsigned_type (unsignedp, type)
      int unsignedp;
      tree type;
 {
-  if (TREE_CODE (type) != INTEGER_TYPE)
+  if (! INTEGRAL_TYPE_P (type))
     return type;
   if (TYPE_PRECISION (type) == TYPE_PRECISION (signed_char_type_node))
     return unsignedp ? unsigned_char_type_node : signed_char_type_node;
@@ -1134,9 +1134,11 @@ c_sizeof_nowarn (type)
 
   if (TYPE_SIZE (type) == 0)
     {
+#if 0
       /* ??? Tiemann, why have any diagnostic here?
 	 There is none in the corresponding function for C.  */
       warning ("sizeof applied to an incomplete type");
+#endif
       return size_int (0);
     }
 
@@ -1223,27 +1225,11 @@ default_conversion (exp)
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Leave such NOP_EXPRs, since RHS is being used in non-lvalue context.  */
 
-  /* Normally convert enums to int,
-     but convert wide enums to something wider.  */
-  if (code == ENUMERAL_TYPE)
+  if (code == ENUMERAL_TYPE || code == INTEGER_TYPE)
     {
-      type = type_for_size (MAX (TYPE_PRECISION (type),
-				 TYPE_PRECISION (integer_type_node)),
-			    ((flag_traditional
-			      || TYPE_PRECISION (type) >= TYPE_PRECISION (integer_type_node))
-			     && TREE_UNSIGNED (type)));
-      return convert (type, exp);
-    }
-
-  if (C_PROMOTING_INTEGER_TYPE_P (type))
-    {
-      /* Traditionally, unsignedness is preserved in default promotions.
-         Otherwise, retain unsignedness if really not getting bigger.  */
-      if (TREE_UNSIGNED (type)
-	  && (flag_traditional
-	      || TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)))
-	return convert (unsigned_type_node, exp);
-      return convert (integer_type_node, exp);
+      tree t = type_promotes_to (type);
+      if (t != TYPE_MAIN_VARIANT (type))
+	return convert (t, exp);
     }
   if (flag_traditional
       && TYPE_MAIN_VARIANT (type) == float_type_node)
@@ -1498,8 +1484,10 @@ build_component_ref (datum, component, basetype_path, protect)
 		&& DECL_CHAIN (TREE_VALUE (component)) == NULL_TREE), 309);
       return build (COMPONENT_REF, TREE_TYPE (component), datum, component);
     }
+#if 0
   if (TREE_CODE (component) == TYPE_EXPR)
     return build_component_type_expr (datum, component, NULL_TREE, protect);
+#endif
 
   if (! IS_AGGR_TYPE_CODE (code))
     {
@@ -1590,9 +1578,11 @@ build_component_ref (datum, component, basetype_path, protect)
 		return build (COMPONENT_REF, unknown_type_node, datum, fndecls);
 	    }
 
+#if 0
 	  if (component == ansi_opname[(int) TYPE_EXPR])
 	    cp_error ("`%#T' has no such type conversion operator", basetype);
 	  else
+#endif
 	    cp_error ("`%#T' has no member named `%D'", basetype, component);
 	  return error_mark_node;
 	}
@@ -2296,7 +2286,7 @@ tree
 build_function_call (function, params)
      tree function, params;
 {
-  return build_function_call_real (function, params, 1, 0);
+  return build_function_call_real (function, params, 1, LOOKUP_NORMAL);
 }
      
 tree
@@ -2702,17 +2692,14 @@ build_binary_op (code, arg1, arg2, convert_p)
    multiple inheritance, and deal with pointer to member functions.  */
 
 tree
-build_binary_op_nodefault (code, op0, op1, error_code)
+build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
      enum tree_code code;
-     tree op0, op1;
+     tree orig_op0, orig_op1;
      enum tree_code error_code;
 {
-  tree type0 = TREE_TYPE (op0), type1 = TREE_TYPE (op1);
-
-  /* The expression codes of the data types of the arguments tell us
-     whether the arguments are integers, floating, pointers, etc.  */
-  register enum tree_code code0 = TREE_CODE (type0);
-  register enum tree_code code1 = TREE_CODE (type1);
+  tree op0, op1;
+  register enum tree_code code0, code1;
+  tree type0, type1;
 
   /* Expression code to give to the expression when it is built.
      Normally this is CODE, which is what the caller asked for,
@@ -2751,6 +2738,18 @@ build_binary_op_nodefault (code, op0, op1, error_code)
 
   /* Nonzero means set RESULT_TYPE to the common type of the args.  */
   int common = 0;
+
+  /* Apply default conversions.  */
+  op0 = default_conversion (orig_op0);
+  op1 = default_conversion (orig_op1);
+
+  type0 = TREE_TYPE (op0);
+  type1 = TREE_TYPE (op1);
+
+  /* The expression codes of the data types of the arguments tell us
+     whether the arguments are integers, floating, pointers, etc.  */
+  code0 = TREE_CODE (type0);
+  code1 = TREE_CODE (type1);
 
   /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
   STRIP_TYPE_NOPS (op0);
@@ -3507,10 +3506,13 @@ pointer_int_sum (resultcode, ptrop, intop)
   if (TYPE_PRECISION (TREE_TYPE (intop)) != POINTER_SIZE)
     intop = convert (type_for_size (POINTER_SIZE, 0), intop);
 
-  /* Replace the integer argument
-     with a suitable product by the object size.  */
+  /* Replace the integer argument with a suitable product by the object size.
+     Do this multiplication as signed, then convert to the appropriate
+     pointer type (actually unsigned integral).  */
 
-  intop = build_binary_op (MULT_EXPR, intop, size_exp, 1);
+  intop = convert (result_type,
+		   build_binary_op (MULT_EXPR, intop,
+				    convert (TREE_TYPE (intop), size_exp), 1));
 
   /* Create the sum or difference.  */
 
@@ -3564,7 +3566,7 @@ pointer_diff (op0, op1)
 
   /* Do the division.  */
 
-  result = build (EXACT_DIV_EXPR, restype, op0, op1);
+  result = build (EXACT_DIV_EXPR, restype, op0, convert (restype, op1));
 
   folded = fold (result);
   if (folded == result)
@@ -3841,12 +3843,17 @@ build_unary_op (code, xarg, noconvert)
 	if (typecode == POINTER_TYPE)
 	  {
 	    enum tree_code tmp = TREE_CODE (TREE_TYPE (argtype));
-	    if (tmp == FUNCTION_TYPE || tmp == METHOD_TYPE
-		|| tmp == VOID_TYPE || tmp == OFFSET_TYPE)
+	    if (TYPE_SIZE (TREE_TYPE (argtype)) == 0)
+	      cp_error ("cannot %s a pointer to incomplete type `%T'",
+			((code == PREINCREMENT_EXPR
+			  || code == POSTINCREMENT_EXPR)
+			 ? "increment" : "decrement"), TREE_TYPE (argtype));
+	    else if (tmp == FUNCTION_TYPE || tmp == METHOD_TYPE
+		     || tmp == VOID_TYPE || tmp == OFFSET_TYPE)
 	      cp_pedwarn ("ANSI C++ forbids %sing a pointer of type `%T'",
-			    ((code == PREINCREMENT_EXPR
-			      || code == POSTINCREMENT_EXPR)
-			     ? "increment" : "decrement"), argtype);
+			  ((code == PREINCREMENT_EXPR
+			    || code == POSTINCREMENT_EXPR)
+			   ? "increment" : "decrement"), argtype);
 	    inc = c_sizeof_nowarn (TREE_TYPE (argtype));
 	  }
 	else
@@ -3901,12 +3908,7 @@ build_unary_op (code, xarg, noconvert)
       /* Note that this operation never does default_conversion
 	 regardless of NOCONVERT.  */
 
-      if (TREE_REFERENCE_EXPR (arg))
-	{
-	  error ("references are not lvalues");
-	  return error_mark_node;
-	}
-      else if (typecode == REFERENCE_TYPE)
+      if (typecode == REFERENCE_TYPE)
 	{
 	  arg = build1 (CONVERT_EXPR, build_pointer_type (TREE_TYPE (TREE_TYPE (arg))), arg);
 	  TREE_REFERENCE_EXPR (arg) = 1;
@@ -4623,7 +4625,6 @@ build_conditional_expr (ifexp, op1, op2)
 #endif
 	}
       result_type = type2;
-      op1 = null_pointer_node;
     }
 
   if (!result_type)
@@ -4852,7 +4853,9 @@ build_c_cast (type, expr)
   if (TREE_READONLY_DECL_P (value))
     value = decl_constant_value (value);
 
-  if (TREE_TYPE (value) == NULL_TREE
+  if (TREE_CODE (type) == VOID_TYPE)
+    value = build1 (NOP_EXPR, type, value);
+  else if (TREE_TYPE (value) == NULL_TREE
       || type_unknown_p (value))
     {
       value = instantiate_type (type, value, 1);
@@ -5665,6 +5668,11 @@ build_modify_expr (lhs, modifycode, rhs)
 
   if (TREE_CODE (lhstype) == ARRAY_TYPE)
     {
+      /* Allow array assignment in compiler-generated code.  */
+      if ((pedantic || flag_ansi)
+	  && ! DECL_SYNTHESIZED (current_function_decl))
+	pedwarn ("ANSI C++ forbids assignment between arrays");
+
       /* Have to wrap this in RTL_EXPR for two cases:
 	 in base or member initialization and if we
 	 are a branch of a ?: operator.  Since we
@@ -6774,7 +6782,7 @@ c_expand_return (retval)
 	 "may or may not return a value" in finish_function.  */
       returns_value = 0;
 
-      if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
+      if (retval)
 	pedwarn ("`return' with a value, in function returning void");
       expand_return (retval);
     }

@@ -218,7 +218,7 @@ signature_error (decl, type)
 	cp_error ("invalid return type for function `%#D'", decl);
     }
   else
-    error ("cannot allocate an object of signature type `%T'", type);
+    cp_error ("cannot allocate an object of signature type `%T'", type);
 }
 
 /* Print an error message for invalid use of an incomplete type.

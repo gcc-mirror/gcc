@@ -358,45 +358,20 @@ convert_harshness_ansi (type, parmtype, parm)
 
       if (coder == INTEGER_TYPE || coder == ENUMERAL_TYPE)
 	{
-	  if ((TREE_UNSIGNED (type) ^ TREE_UNSIGNED (parmtype))
-	      || codel != coder
-	      || TYPE_MODE (type) != TYPE_MODE (parmtype))
+	  if (TYPE_MAIN_VARIANT (type)
+	      == TYPE_MAIN_VARIANT (type_promotes_to (parmtype)))
 	    {
-	      /* Make sure a value-preserving condition [from a smaller type to
-		 a larger type] is preferred to a possibly value-destroying
-		 standard conversion [from a larger type to a smaller type].  */
-	      if (TYPE_PRECISION (type) >= TYPE_PRECISION (parmtype))
-		{
-		  h.code = PROMO_CODE;
-		  /* A char, short, wchar_t, etc., should promote to an int if
-		     it can handle it, otherwise to an unsigned.  So we'll make
-		     an unsigned.  */
-		  if (type != integer_type_node)
-		    h.int_penalty = 1;
-		}
-	      else
-		h.code = STD_CODE;
+	      h.code = PROMO_CODE;
+#if 0 /* What purpose does this serve?  -jason */
+	      /* A char, short, wchar_t, etc., should promote to an int if
+		 it can handle it, otherwise to an unsigned.  So we'll make
+		 an unsigned.  */
+	      if (type != integer_type_node)
+		h.int_penalty = 1;
+#endif
 	    }
-
-	  /* If the three above conditions didn't trigger, we have found two
-	     very similar types.  On systems where they're the same size, we
-	     can end up here with TYPE as `long' and PARMTYPE as `int'.  Make
-	     sure we realize that, even though they're the same mode, we will
-	     have to do some sort of integral promotion on the type, since
-	     they're not the same.  */
-	  if (! comptypes (type, parmtype, 1) && h.code == 0)
-	    {
-	      /* This call to common_type will return the best type for the
-		 combination.  If it matches TYPE, that means we'll be converting
-		 from a so-called smaller type (in PARMTYPE) to the larger in TYPE,
-		 thus an integral promotion.  Otherwise, it must be going from a
-		 larger type in PARMTYPE to a smaller expected type in TYPE, so we
-		 make it a standard conversion instead.  */
-	      if (common_type (type, parmtype) == type)
-		h.code = PROMO_CODE;
-	      else
-		h.code = STD_CODE;
-	    }
+	  else
+	    h.code = STD_CODE;
 	    
 	  return h;
 	}
@@ -412,9 +387,12 @@ convert_harshness_ansi (type, parmtype, parm)
     {
       if (coder == REAL_TYPE)
 	{
-	  /* Shun converting among float, double, and long double if a
-	     choice exists.  */
-	  h.code = PROMO_CODE;
+	  if (TYPE_MAIN_VARIANT (type)
+	      == TYPE_MAIN_VARIANT (type_promotes_to (parmtype)))
+	    h.code = PROMO_CODE;
+	  else
+	    h.code = STD_CODE;
+	    
 	  return h;
 	}
       else if (coder == INTEGER_TYPE || coder == ENUMERAL_TYPE)
@@ -549,7 +527,7 @@ convert_harshness_ansi (type, parmtype, parm)
     tree ttl, ttr;
     register tree intype = TYPE_MAIN_VARIANT (parmtype);
     register enum tree_code form = TREE_CODE (intype);
-    int penalty;
+    int penalty = 0;
 
     if (codel == REFERENCE_TYPE || coder == REFERENCE_TYPE)
       {
@@ -695,7 +673,9 @@ convert_harshness_ansi (type, parmtype, parm)
 	if (parm && codel != REFERENCE_TYPE)
 	  {
 	    h = convert_harshness_ansi (ttl, ttr, NULL_TREE);
-	    if (penalty)
+	    if (penalty == 2)
+	      h.code |= QUAL_CODE;
+	    else if (penalty == 4)
 	      h.code |= STD_CODE;
 	    h.distance = 0;
 	    return h;
@@ -1457,6 +1437,7 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
 	    {
 	      tree actual_type = TREE_TYPE (TREE_VALUE (tta));
 	      tree formal_type = TREE_VALUE (ttf);
+	      int extra_conversions = 0;
 
 	      dont_convert_types = 1;
 
@@ -1484,40 +1465,41 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
 		  if (TYPE_LANG_SPECIFIC (actual_type)
 		      && TYPE_HAS_CONVERSION (actual_type))
 		    {
-		      if (TREE_CODE (formal_type) == INTEGER_TYPE
-			  && TYPE_HAS_INT_CONVERSION (actual_type))
-			win++;
-		      else if (TREE_CODE (formal_type) == REAL_TYPE
-			       && TYPE_HAS_REAL_CONVERSION (actual_type))
-			win++;
-		      else
+		      tree conv;
+		      /* Don't issue warnings since we're only groping
+			 around for the right answer, we haven't yet
+			 committed to going with this solution.  */
+		      int old_inhibit_warnings = inhibit_warnings;
+
+		      inhibit_warnings = 1;
+		      conv = build_type_conversion
+			(CALL_EXPR, TREE_VALUE (ttf), TREE_VALUE (tta), 0);
+		      inhibit_warnings = old_inhibit_warnings;
+
+		      if (conv)
 			{
-			  tree conv;
-			  /* Don't issue warnings since we're only groping
-			     around for the right answer, we haven't yet
-			     committed to going with this solution.  */
-			  int old_inhibit_warnings = inhibit_warnings;
-
-			  inhibit_warnings = 1;
-			  conv = build_type_conversion (CALL_EXPR, TREE_VALUE (ttf), TREE_VALUE (tta), 0);
-			  inhibit_warnings = old_inhibit_warnings;
-
+			  if (conv == error_mark_node)
+			    win += 2;
+			  else
+			    {
+			      win++;
+			      if (TREE_CODE (conv) != CALL_EXPR)
+				extra_conversions = 1;
+			    }
+			}
+		      else if (TREE_CODE (TREE_VALUE (ttf)) == REFERENCE_TYPE)
+			{
+			  conv = build_type_conversion (CALL_EXPR, formal_type,
+							TREE_VALUE (tta), 0);
 			  if (conv)
 			    {
 			      if (conv == error_mark_node)
 				win += 2;
 			      else
-				win++;
-			    }
-			  else if (TREE_CODE (TREE_VALUE (ttf)) == REFERENCE_TYPE)
-			    {
-			      conv = build_type_conversion (CALL_EXPR, formal_type, TREE_VALUE (tta), 0);
-			      if (conv)
 				{
-				  if (conv == error_mark_node)
-				    win += 2;
-				  else
-				    win++;
+				  win++;
+				  if (TREE_CODE (conv) != CALL_EXPR)
+				    extra_conversions = 1;
 				}
 			    }
 			}
@@ -1528,7 +1510,8 @@ compute_conversion_costs_ansi (function, tta_in, cp, arglen)
 	      if (win == 1)
 		{
 		  user_strikes += 1;
-		  cp->v.ansi_harshness[strike_index].code = USER_CODE;
+		  cp->v.ansi_harshness[strike_index].code
+		    = USER_CODE | (extra_conversions ? STD_CODE : 0);
 		  win = 0;
 		}
 	      else
@@ -3976,7 +3959,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
       return error_mark_node;
     }
 
-  if (TREE_CODE (functions) == FUNCTION_DECL)
+  if (TREE_CODE (functions) == FUNCTION_DECL && ! IDENTIFIER_OPNAME_P (fnname))
     {
       functions = DECL_MAIN_VARIANT (functions);
       if (final_cp)

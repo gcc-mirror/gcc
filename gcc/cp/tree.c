@@ -38,66 +38,69 @@ lvalue_p (ref)
   register enum tree_code code = TREE_CODE (ref);
 
   if (language_lvalue_valid (ref))
-    switch (code)
-      {
-	/* preincrements and predecrements are valid lvals, provided
-	   what they refer to are valid lvals. */
-      case PREINCREMENT_EXPR:
-      case PREDECREMENT_EXPR:
-      case COMPONENT_REF:
-      case SAVE_EXPR:
-	return lvalue_p (TREE_OPERAND (ref, 0));
-
-      case STRING_CST:
+    {
+      if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
 	return 1;
+      
+      switch (code)
+	{
+	  /* preincrements and predecrements are valid lvals, provided
+	     what they refer to are valid lvals. */
+	case PREINCREMENT_EXPR:
+	case PREDECREMENT_EXPR:
+	case COMPONENT_REF:
+	case SAVE_EXPR:
+	  return lvalue_p (TREE_OPERAND (ref, 0));
 
-      case VAR_DECL:
-	if (TREE_READONLY (ref) && ! TREE_STATIC (ref)
-	    && DECL_LANG_SPECIFIC (ref)
-	    && DECL_IN_AGGR_P (ref))
-	  return 0;
-      case INDIRECT_REF:
-      case ARRAY_REF:
-      case PARM_DECL:
-      case RESULT_DECL:
-      case ERROR_MARK:
-	if (TREE_CODE (TREE_TYPE (ref)) != FUNCTION_TYPE
-	    && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE)
+	case STRING_CST:
 	  return 1;
-	break;
 
-      case TARGET_EXPR:
-      case WITH_CLEANUP_EXPR:
-	return 1;
+	case VAR_DECL:
+	  if (TREE_READONLY (ref) && ! TREE_STATIC (ref)
+	      && DECL_LANG_SPECIFIC (ref)
+	      && DECL_IN_AGGR_P (ref))
+	    return 0;
+	case INDIRECT_REF:
+	case ARRAY_REF:
+	case PARM_DECL:
+	case RESULT_DECL:
+	case ERROR_MARK:
+	  if (TREE_CODE (TREE_TYPE (ref)) != FUNCTION_TYPE
+	      && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE)
+	    return 1;
+	  break;
 
-      case CALL_EXPR:
-	if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE
-	    /* unary_complex_lvalue knows how to deal with this case.  */
-	    || TREE_ADDRESSABLE (TREE_TYPE (ref)))
+	case TARGET_EXPR:
+	case WITH_CLEANUP_EXPR:
 	  return 1;
-	break;
 
-	/* A currently unresolved scope ref.  */
-      case SCOPE_REF:
-	my_friendly_abort (103);
-      case OFFSET_REF:
-	if (TREE_CODE (TREE_OPERAND (ref, 1)) == FUNCTION_DECL)
+	case CALL_EXPR:
+	  /* unary_complex_lvalue knows how to deal with this case.  */
+	  if (TREE_ADDRESSABLE (TREE_TYPE (ref)))
+	    return 1;
+	  break;
+
+	  /* A currently unresolved scope ref.  */
+	case SCOPE_REF:
+	  my_friendly_abort (103);
+	case OFFSET_REF:
+	  if (TREE_CODE (TREE_OPERAND (ref, 1)) == FUNCTION_DECL)
+	    return 1;
+	  return lvalue_p (TREE_OPERAND (ref, 0))
+	    && lvalue_p (TREE_OPERAND (ref, 1));
+	  break;
+
+	case COND_EXPR:
+	  return (lvalue_p (TREE_OPERAND (ref, 1))
+		  && lvalue_p (TREE_OPERAND (ref, 2)));
+
+	case MODIFY_EXPR:
 	  return 1;
-	return lvalue_p (TREE_OPERAND (ref, 0))
-	  && lvalue_p (TREE_OPERAND (ref, 1));
-	break;
 
-      case ADDR_EXPR:
-	/* ANSI C++ June 5 1992 WP 5.4.14.  The result of a cast to a
-	   reference is an lvalue.  */
-	if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
-	  return 1;
-	break;
-
-      case COND_EXPR:
-	return (lvalue_p (TREE_OPERAND (ref, 1))
-		&& lvalue_p (TREE_OPERAND (ref, 2)));
-      }
+	case COMPOUND_EXPR:
+	  return lvalue_p (TREE_OPERAND (ref, 1));
+	}
+    }
   return 0;
 }
 

@@ -1521,6 +1521,7 @@ hack_identifier (value, name, yychar)
 }
 
 
+#if 0
 /* Given an object OF, and a type conversion operator COMPONENT
    build a call to the conversion operator, if a call is requested,
    or return the address (as a pointer to member function) if one is not.
@@ -1653,6 +1654,7 @@ build_component_type_expr (of, component, basetype_path, protect)
 	    TREE_TYPE (name));
   return error_mark_node;
 }
+#endif
 
 static char *
 thunk_printable_name (decl)
