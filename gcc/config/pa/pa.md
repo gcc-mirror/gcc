@@ -9359,6 +9359,12 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (match_operand 2 "const_int_operand" "")]
   "TARGET_PA_20"
 {
+  /* The PA 2.0 prefetch instructions only support short displacements
+     when a cache control completer needs to be supplied.  Thus, we
+     can't use LO_SUM DLT addresses with the spatial locality completer.  */
+  if (operands[2] == const0_rtx && IS_LO_SUM_DLT_ADDR_P (operands[0]))
+    FAIL;
+
   /* We change operand0 to a MEM as we don't have the infrastructure to
      output all the supported address modes for ldw/ldd but we do have
      it for MEMs.  */
@@ -9385,7 +9391,14 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(prefetch (match_operand:DI 0 "prefetch_operand" "A,RQ")
 	     (match_operand:DI 1 "const_int_operand" "n,n")
 	     (match_operand:DI 2 "const_int_operand" "n,n"))]
-  "TARGET_64BIT"
+  "TARGET_64BIT
+   && (operands[2] != const0_rtx
+       || REG_P (XEXP (operands[0], 0))
+       || IS_INDEX_ADDR_P (XEXP (operands[0], 0))
+       || (GET_CODE (XEXP (operands[0], 0)) == PLUS
+	   && REG_P (XEXP (XEXP (operands[0], 0), 0))
+	   && GET_CODE (XEXP (XEXP (operands[0], 0), 1)) == CONST_INT
+	   && VAL_5_BITS_P (XEXP (XEXP (operands[0], 0), 1))))"
 {
   /* The SL completor indicates good spatial locality but poor temporal
      locality.  The ldw instruction with a target of general register 0
@@ -9394,11 +9407,11 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   static const char * const instr[2][2][2] = {
     {
       {
-	"ldw,sl RT'%A0,%%r0",
+	"",
 	"ldw RT'%A0,%%r0",
       },
       {
-	"ldd,sl RT'%A0,%%r0",
+	"",
 	"ldd RT'%A0,%%r0",
       },
     },
@@ -9421,6 +9434,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
       || (locality < 0 || locality > 3))
     abort ();
 
+  if (which_alternative == 0 && locality == 0)
+    abort ();
+
   return instr [which_alternative][read_or_write][locality == 0 ? 0 : 1];
 }
   [(set_attr "type" "load")
@@ -9430,7 +9446,14 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(prefetch (match_operand:SI 0 "prefetch_operand" "A,RQ")
 	     (match_operand:SI 1 "const_int_operand" "n,n")
 	     (match_operand:SI 2 "const_int_operand" "n,n"))]
-  "TARGET_PA_20"
+  "TARGET_PA_20
+   && (operands[2] != const0_rtx
+       || REG_P (XEXP (operands[0], 0))
+       || IS_INDEX_ADDR_P (XEXP (operands[0], 0))
+       || (GET_CODE (XEXP (operands[0], 0)) == PLUS
+	   && REG_P (XEXP (XEXP (operands[0], 0), 0))
+	   && GET_CODE (XEXP (XEXP (operands[0], 0), 1)) == CONST_INT
+	   && VAL_5_BITS_P (XEXP (XEXP (operands[0], 0), 1))))"
 {
   /* The SL completor indicates good spatial locality but poor temporal
      locality.  The ldw instruction with a target of general register 0
@@ -9439,11 +9462,11 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   static const char * const instr[2][2][2] = {
     {
       {
-	"ldw,sl RT'%A0,%%r0",
+	"",
 	"ldw RT'%A0,%%r0",
       },
       {
-	"ldd,sl RT'%A0,%%r0",
+	"",
 	"ldd RT'%A0,%%r0",
       },
     },
@@ -9464,6 +9487,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   if ((which_alternative != 0 && which_alternative != 1)
       || (read_or_write != 0 && read_or_write != 1)
       || (locality < 0 || locality > 3))
+    abort ();
+
+  if (which_alternative == 0 && locality == 0)
     abort ();
 
   return instr [which_alternative][read_or_write][locality == 0 ? 0 : 1];
