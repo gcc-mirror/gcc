@@ -1,3 +1,8 @@
+Sun Feb 22 20:06:34 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* iris5.h (DWARF2_UNWIND_INFO): Define to 0.
+	* iris5gas.h (DWARF2_UNWIND_INFO): Define to 1.
+
 Thu Feb 19 09:41:23 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
 	* i386/x-cygwin32 (USE_COLLECT2): Disable collect2 for now on
