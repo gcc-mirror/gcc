@@ -1,5 +1,5 @@
 /* Definitions for AT&T assembler syntax for the Intel 80386.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -41,9 +41,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 {									\
   register int dx asm("dx");						\
   register int ax asm("ax");						\
+  register int cx asm("cx");						\
 									\
   ax = arg0;								\
-  asm ("cltd\n\tidivl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (arg1)); \
+  cx = arg1;								\
+  asm ("cltd\n\tidivl %3" : "=a" (ax), "=&d" (dx) : "a" (ax), "c" (cx)); \
   return ax;								\
 }
 
@@ -62,9 +64,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 {									\
   register int dx asm("dx");						\
   register int ax asm("ax");						\
+  register int cx asm("cx");						\
 									\
   ax = arg0;								\
-  asm ("cltd\n\tidivl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (arg1)); \
+  cx = arg1;								\
+  asm ("cltd\n\tidivl %3" : "=a" (ax), "=&d" (dx) : "a" (ax), "c" (cx)); \
   return dx;								\
 }
 
