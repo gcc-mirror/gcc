@@ -288,8 +288,9 @@ extern int target_flags;
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
 
-#define FIXED_REGISTERS \
-  { 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1}
+#define FIXED_REGISTERS				\
+/* r0 r1 r2 r3 r4 r5 r6 r7 mac ap rap fp */	\
+  { 0, 0, 0, 0, 0, 0, 0, 1,  0, 1,  1, 1 }
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -301,11 +302,13 @@ extern int target_flags;
 
    H8 destroys r0,r1,r2,r3.  */
 
-#define CALL_USED_REGISTERS \
-  { 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1 }
+#define CALL_USED_REGISTERS			\
+/* r0 r1 r2 r3 r4 r5 r6 r7 mac ap rap fp */	\
+  { 1, 1, 1, 1, 0, 0, 0, 1,  1, 1,  1, 1 }
 
-#define REG_ALLOC_ORDER \
-  { 2, 3, 0, 1, 4, 5, 6, 8, 7, 9, 10}
+#define REG_ALLOC_ORDER				\
+/* r0 r1 r2 r3 r4 r5 r6 r7 mac ap rap  fp */	\
+  { 2, 3, 0, 1, 4, 5, 6, 8,  7, 9, 10, 11 }
 
 #define CONDITIONAL_REGISTER_USAGE			\
 {							\
@@ -429,9 +432,9 @@ enum reg_class {
 
 #define REG_CLASS_CONTENTS			\
 {      {0},		/* No regs      */	\
-   {0x6ff},		/* GENERAL_REGS */	\
+   {0xeff},		/* GENERAL_REGS */	\
    {0x100},		/* MAC_REGS */	\
-   {0x7ff},		/* ALL_REGS	*/	\
+   {0xfff},		/* ALL_REGS	*/	\
 }
 
 /* The same information, inverted:
