@@ -1,3 +1,8 @@
+2003-07-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/11513
+	* cp-tree.h (PROCESSING_REAL_TEMPLATE_DECL_P): Use current_scope.
+
 2003-07-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11645
