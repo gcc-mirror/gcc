@@ -1,3 +1,16 @@
+2000-11-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin): Handle BUILT_IN_INDEX and
+	BUILT_IN_RINDEX.  Add missing checks for BUILT_IN_STRCHR and
+	BUILT_IN_STRRCHR.
+
+	* builtins.def (BUILT_IN_INDEX, BUILT_IN_RINDEX): New entries.
+
+	* c-common.c (c_common_nodes_and_builtins): Declare index and
+	rindex when nonansi builtins are allowed.
+
+	* extend.texi (index, rindex): Document new builtins.
+
 2000-11-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.in: Turn on libstdc++ V3 by default.

@@ -1,7 +1,7 @@
 /* Copyright (C) 2000  Free Software Foundation.
 
-   Ensure all expected transformations of builtin strlen, strcmp and strrchr
-   occur and perform correctly.
+   Ensure all expected transformations of builtin strlen, strcmp,
+   strrchr and rindex occur and perform correctly.
 
    Written by Jakub Jelinek, 11/7/2000.  */
 
@@ -55,8 +55,20 @@ int main()
     abort ();
   if (x != 8)
     abort ();
+  /* For systems which don't have rindex, we test the __builtin_
+     version to avoid spurious link failures at -O0.  We only need to
+     test one case since everything is handled in the same code path
+     as builtin strrchr.  */
+  if (__builtin_rindex ("hello", 'z') != 0)
+    abort ();
 
   return 0;
+}
+
+static char *
+rindex (const char *s, int c)
+{
+  abort ();
 }
 
 #ifdef __OPTIMIZE__

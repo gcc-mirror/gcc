@@ -5045,6 +5045,12 @@ c_common_nodes_and_builtins ()
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
 
+      temp = builtin_function ("index", string_ftype_string_int,
+			       BUILT_IN_INDEX, BUILT_IN_NORMAL, NULL_PTR);
+      DECL_BUILT_IN_NONANSI (temp) = 1;
+      temp = builtin_function ("rindex", string_ftype_string_int,
+			       BUILT_IN_RINDEX, BUILT_IN_NORMAL, NULL_PTR);
+      DECL_BUILT_IN_NONANSI (temp) = 1;
       /* The system prototypes for these functions have many
 	 variations, so don't specify parameters to avoid conflicts.
 	 The expand_* functions check the argument types anyway.  */
@@ -5175,6 +5181,10 @@ c_common_nodes_and_builtins ()
 		    BUILT_IN_BZERO, BUILT_IN_NORMAL, "bzero");
   builtin_function ("__builtin_bcmp", bcmp_ftype,
 		    BUILT_IN_BCMP, BUILT_IN_NORMAL, "bcmp");
+  builtin_function ("__builtin_index", string_ftype_string_int,
+		    BUILT_IN_INDEX, BUILT_IN_NORMAL, "index");
+  builtin_function ("__builtin_rindex", string_ftype_string_int,
+		    BUILT_IN_RINDEX, BUILT_IN_NORMAL, "rindex");
   builtin_function ("__builtin_strcmp", int_ftype_string_string,
 		    BUILT_IN_STRCMP, BUILT_IN_NORMAL, "strcmp");
   builtin_function ("__builtin_strstr", string_ftype_string_string,

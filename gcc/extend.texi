@@ -3247,12 +3247,14 @@ function as well.
 @findex fabsl
 @findex ffs
 @findex fputs
+@findex index
 @findex labs
 @findex llabs
 @findex memcmp
 @findex memcpy
 @findex memset
 @findex printf
+@findex rindex
 @findex sin
 @findex sinf
 @findex sinl
@@ -3289,9 +3291,10 @@ and presumed not to return, but otherwise are not built in.
 @samp{-std=c89} or @samp{-std=c99}).
 
 Outside strict ISO C mode, the functions @code{alloca}, @code{bcmp},
-@code{bzero}, and @code{ffs} may be handled as builtins.  Corresponding
-versions @code{__builtin_alloca}, @code{__builtin_bcmp},
-@code{__builtin_bzero}, and @code{__builtin_ffs} are also recognized in
+@code{bzero}, @code{index}, @code{rindex} and @code{ffs} may be handled
+as builtins.  Corresponding versions @code{__builtin_alloca},
+@code{__builtin_bcmp}, @code{__builtin_bzero}, @code{__builtin_index},
+@code{__builtin_rindex} and @code{__builtin_ffs} are also recognized in
 strict ISO C mode.
 
 The ISO C99 function @code{llabs} is handled as a builtin except in
