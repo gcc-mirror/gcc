@@ -19,8 +19,6 @@
 ### WARNING: this file contains embedded tabs.  Do not run untabify on this file.
 
 sinclude(config/acx.m4)
-sinclude(config/gcc-version.m4)
-sinclude(config/gxx-include-dir.m4)
 
 AC_INIT(move-if-change)
 AC_PREREQ(2.13)
@@ -100,22 +98,6 @@ fi
 topsrcdir=$srcpwd
 
 extra_host_args=
-
-# Define the trigger file to make sure configure will re-run whenever
-# the gcc version number changes.
-TL_AC_GCC_VERSION([$topsrcdir])
-if test -f $gcc_version_trigger ; then
-  case "$ac_configure_args" in
-    *--with-gcc-version-trigger=$gcc_version_trigger* )
-      ;;
-    * )
-      # Add to all subconfigure arguments: build, host, and target.
-      ac_configure_args="$ac_configure_args --with-gcc-version-trigger=$gcc_version_trigger"
-      ;;
-  esac
-else
-  gcc_version_trigger=
-fi
 
 ### To add a new directory to the tree, first choose whether it is a target
 ### or a host dependent tool.  Then put it into the appropriate list
@@ -1965,9 +1947,6 @@ fi
 
 # Pass the appropriate --host, --build, and --cache-file arguments.
 target_configargs="--cache-file=./config.cache --host=${target_alias} --build=${build_alias} ${target_configargs}"
-
-# provide a proper gxx_include_dir.
-TL_AC_GXX_INCLUDE_DIR
 
 FLAGS_FOR_TARGET=
 case " $target_configdirs " in
