@@ -1,3 +1,8 @@
+2004-02-23  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000.md (movsf_hardfloat): Accept CTR-to-CTR copy.
+	(movdf_hardfloat64):  Ditto.
+
 2004-02-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* convert.c, gcov-io.c, libgcov.c, sched-int.h, sibcall.c,
