@@ -1,3 +1,8 @@
+2004-09-18  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/17424
+	* gcc.dg/pr17424-1.c: New test.
+
 2004-09-18  Diego Novillo  <dnovillo@redhat.com>
 
 	* g++.dg/tree-ssa/pr17153.C: New test.
