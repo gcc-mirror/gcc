@@ -5846,7 +5846,8 @@ mips_file_end (void)
 	  name_tree = get_identifier (p->name);
 
 	  /* Positively ensure only one .extern for any given symbol.  */
-	  if (! TREE_ASM_WRITTEN (name_tree))
+	  if (!TREE_ASM_WRITTEN (name_tree)
+	      && TREE_SYMBOL_REFERENCED (name_tree))
 	    {
 	      TREE_ASM_WRITTEN (name_tree) = 1;
 	      /* In IRIX 5 or IRIX 6 for the O32 ABI, we must output a

@@ -1,5 +1,10 @@
 2003-12-16  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_file_end): Only write symbols that have
+	been referenced at some point.
+
+2003-12-16  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c: Include langhooks.h
 	(mips_build_builtin_va_list): Use lang_hooks.types.make_type.
 
