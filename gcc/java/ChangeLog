@@ -1,3 +1,9 @@
+2002-04-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	Fix for PR java/6294:
+	* parse.h (INNER_INTERFACE_MODIFIERS): Allow ACC_PRIVATE for inner
+	interfaces.
+	
 2002-04-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	Fix for PR java/6085:
@@ -33,7 +39,6 @@
 	* Make-lang.in: Compile jcf-path with version info for use in
 	identifying the appropriate libgcj.jar.
 
->>>>>>> 1.982
 2002-04-08  Tom Tromey  <tromey@redhat.com>
 
 	For PR libgcj/5303:
