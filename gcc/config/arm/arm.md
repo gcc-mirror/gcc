@@ -1263,14 +1263,14 @@
 ;; Unnamed template to match long long multiply-accumlate (smlal)
 
 (define_insn "*mulsidi3adddi"
-  [(set (match_operand:DI 0 "s_register_operand" "+&r,&r,&r")
+  [(set (match_operand:DI 0 "s_register_operand" "=&r")
 	(plus:DI
 	 (mult:DI
-	  (sign_extend:DI (match_operand:SI 2 "s_register_operand" "r,0,1"))
-	  (sign_extend:DI (match_operand:SI 1 "s_register_operand" "%r,r,r")))
-	 (match_dup 0)))]
+	  (sign_extend:DI (match_operand:SI 2 "s_register_operand" "%r"))
+	  (sign_extend:DI (match_operand:SI 3 "s_register_operand" "r")))
+	 (match_operand:DI 1 "s_register_operand" "0")))]
   "TARGET_ARM && arm_fast_multiply"
-  "smlal%?\\t%Q0, %R0, %1, %2"
+  "smlal%?\\t%Q0, %R0, %3, %2"
   [(set_attr "type" "mult")
    (set_attr "predicable" "yes")]
 )
@@ -1300,14 +1300,14 @@
 ;; Unnamed template to match long long unsigned multiply-accumlate (umlal)
 
 (define_insn "*umulsidi3adddi"
-  [(set (match_operand:DI 0 "s_register_operand" "+&r,&r,&r")
+  [(set (match_operand:DI 0 "s_register_operand" "=&r")
 	(plus:DI
 	 (mult:DI
-	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" "r,0,1"))
-	  (zero_extend:DI (match_operand:SI 1 "s_register_operand" "%r,r,r")))
-	 (match_dup 0)))]
+	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" "%r"))
+	  (zero_extend:DI (match_operand:SI 3 "s_register_operand" "r")))
+	 (match_operand:DI 1 "s_register_operand" "0")))]
   "TARGET_ARM && arm_fast_multiply"
-  "umlal%?\\t%Q0, %R0, %1, %2"
+  "umlal%?\\t%Q0, %R0, %3, %2"
   [(set_attr "type" "mult")
    (set_attr "predicable" "yes")]
 )

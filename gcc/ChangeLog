@@ -1,3 +1,9 @@
+2000-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (mulsidi3adddi, umulsidi3adddi): Revert previous change.
+	Rewrite to avoid use of match_dup.  Don't try to tie registers that
+	are not in the same mode.
+
 2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* invoke.texi: Update lists of languages and suffixes supported.
