@@ -1,4 +1,4 @@
-// Copyright (c) 1998, 1999  Red Hat, Inc.
+// Copyright (c) 1998, 1999  Free Software Foundation
 
 // Written by Tom Tromey <tromey@cygnus.com>
 

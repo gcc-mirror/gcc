@@ -1,6 +1,6 @@
 // Runtime.java - Runtime class.
 
-/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 

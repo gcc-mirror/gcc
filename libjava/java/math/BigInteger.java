@@ -1,6 +1,6 @@
 // BigInteger.java -- an arbitrary-precision integer
 
-/* Copyright (C) 1999, 2000  Red Hat, Inc.
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 

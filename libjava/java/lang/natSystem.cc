@@ -1,6 +1,6 @@
 // natSystem.cc - Native code implementing System class.
 
-/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -248,14 +248,14 @@ java::lang::System::init_properties (void)
   // A mixture of the Java Product Versioning Specification
   // (introduced in 1.2), and earlier versioning properties.
   SET ("java.version", VERSION);
-  SET ("java.vendor", "Red Hat, Inc.");
+  SET ("java.vendor", "Free Software Foundation");
   SET ("java.vendor.url", "http://sourceware.cygnus.com/java/");
   SET ("java.class.version", GCJVERSION);
   SET ("java.vm.specification.version", "1.1");
   SET ("java.vm.specification.name", "Java(tm) Virtual Machine Specification");
   SET ("java.vm.specification.vendor", "Sun Microsystems Inc.");
   SET ("java.vm.version", GCJVERSION);
-  SET ("java.vm.vendor", "Red Hat, Inc.");
+  SET ("java.vm.vendor", "Free Software Foundation");
   SET ("java.vm.name", "libgcj");
   SET ("java.specification.version", "1.1");
   SET ("java.specification.name", "Java(tm) Language Specification");
