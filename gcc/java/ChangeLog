@@ -1,3 +1,12 @@
+1998-10-13  Tom Tromey  <tromey@cygnus.com>
+
+	* jcf-dump.c (process_class): Use FATAL_EXIT_CODE, not -1.
+	(main): Likewise.  Exit with SUCCESS_EXIT_CODE at end of
+	function.
+	Include <config.h> and "system.h".
+	(disassemble_method): Undefine RET to avoid clash with
+	config/i386/i386.h.
+
 1998-10-09  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (decode_signature_piece): New function.

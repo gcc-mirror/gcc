@@ -46,6 +46,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
  */
     
 
+#include <config.h>
+#include "system.h"
+
 #include <stdio.h>
 #include "jcf.h"
 
@@ -667,13 +670,13 @@ DEFUN(process_class, (jcf),
   if (code != 0)
     {
       fprintf (stderr, "error while parsing constant pool\n");
-      exit (-1);
+      exit (FATAL_EXIT_CODE);
     }
   code = verify_constant_pool (jcf);
   if (code > 0)
     {
       fprintf (stderr, "error in constant pool entry #%d\n", code);
-      exit (-1);
+      exit (FATAL_EXIT_CODE);
     }
   if (flag_print_constant_pool)
     print_constant_pool (jcf);
@@ -683,19 +686,19 @@ DEFUN(process_class, (jcf),
   if (code != 0)
     {
       fprintf (stderr, "error while parsing fields\n");
-      exit (-1);
+      exit (FATAL_EXIT_CODE);
     }
   code = jcf_parse_methods (jcf);
   if (code != 0)
     {
       fprintf (stderr, "error while parsing methods\n");
-      exit (-1);
+      exit (FATAL_EXIT_CODE);
     }
   code = jcf_parse_final_attributes (jcf);
   if (code != 0)
     {
       fprintf (stderr, "error while parsing final attributes\n");
-      exit (-1);
+      exit (FATAL_EXIT_CODE);
     }
   jcf->filename = NULL;
 }
@@ -735,7 +738,7 @@ DEFUN(main, (argc, argv),
 	      else
 		{
 		  fprintf (stderr, "%s: illegal argument\n", argv[argi]);
-		  exit (-1);
+		  exit (FATAL_EXIT_CODE);
 		}
 	      
 	    }
@@ -750,7 +753,7 @@ DEFUN(main, (argc, argv),
 	  else
 	    {
 	      fprintf (stderr, "%s: illegal argument\n", argv[argi]);
-	      exit (-1);
+	      exit (FATAL_EXIT_CODE);
 	    }
 	}
       else
@@ -780,7 +783,7 @@ DEFUN(main, (argc, argv),
       if (out)
 	{
 	  fprintf (stderr, "Cannot open '%s' for output.\n", output_file);
-	  exit (-1);
+	  exit (FATAL_EXIT_CODE);
 	}
     }
   else
@@ -807,7 +810,7 @@ DEFUN(main, (argc, argv),
 	  if (class_filename == NULL)
 	    {
 	      perror ("Could not find class");
-	      exit (-1);
+	      exit (FATAL_EXIT_CODE);
 	    }
 	  JCF_FILL (jcf, 4);
 	  if (GET_u4 (jcf->read_ptr) == ZIPMAGIC)
@@ -830,7 +833,7 @@ DEFUN(main, (argc, argv),
 		  if (magic != 0x04034b50) /* ZIPMAGIC (little-endian) */
 		    {
 		      fprintf (stderr, "bad format of .zip archine\n");
-		      exit (-1);
+		      exit (FATAL_EXIT_CODE);
 		    }
 		  JCF_FILL (jcf, 26);
 		  JCF_SKIP (jcf, 2);
@@ -903,6 +906,8 @@ DEFUN(main, (argc, argv),
 	  JCF_FINISH(jcf);
 	}
     }
+
+  exit (SUCCESS_EXIT_CODE);
 }
 
 static void
@@ -1029,6 +1034,7 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
   saw_index = 0, INT_temp = (OPERAND_VALUE); \
   fprintf (out, " %d", saw_index ? INT_temp : oldpc + INT_temp)
 
+#undef RET /* Defined by config/i386/i386.h */
 #define RET(OPERAND_TYPE, OPERAND_VALUE) \
   INT_temp = saw_wide ? IMMEDIATE_u2 : (OPERAND_VALUE); \
   saw_wide = 0; \
