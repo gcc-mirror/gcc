@@ -4491,16 +4491,23 @@ append_random_chars (template)
 	 compiles since this can cause bootstrap comparison errors.  */
 
       if (stat (main_input_filename, &st) < 0)
-	abort ();
-
-      /* In VMS, ino is an array, so we have to use both values.  We
-	 conditionalize that.  */
+	{
+	  /* This can happen when preprocessed text is shipped between
+	     machines, e.g. with bug reports.  Assume that uniqueness
+	     isn't actually an issue.  */
+	  value = 1;
+	}
+      else
+	{
+	  /* In VMS, ino is an array, so we have to use both values.  We
+	     conditionalize that.  */
 #ifdef VMS
 #define INO_TO_INT(INO) ((int) (INO)[1] << 16 ^ (int) (INO)[2])
 #else
 #define INO_TO_INT(INO) INO
 #endif
-      value = st.st_dev ^ INO_TO_INT (st.st_ino) ^ st.st_mtime;
+	  value = st.st_dev ^ INO_TO_INT (st.st_ino) ^ st.st_mtime;
+	}
     }
 
   template += strlen (template);
