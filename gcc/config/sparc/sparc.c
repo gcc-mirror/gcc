@@ -52,145 +52,145 @@ Boston, MA 02111-1307, USA.  */
 /* Processor costs */
 static const
 struct processor_costs cypress_costs = {
-  2, /* int load */
-  2, /* int signed load */
-  2, /* int zeroed load */
-  2, /* float load */
-  5, /* fmov, fneg, fabs */
-  5, /* fadd, fsub */
-  1, /* fcmp */
-  1, /* fmov, fmovr */
-  7, /* fmul */
-  37, /* fdivs */
-  37, /* fdivd */
-  63, /* fsqrts */
-  63, /* fsqrtd */
-  1, /* imul */
-  1, /* imulX */
+  COSTS_N_INSNS (2), /* int load */
+  COSTS_N_INSNS (2), /* int signed load */
+  COSTS_N_INSNS (2), /* int zeroed load */
+  COSTS_N_INSNS (2), /* float load */
+  COSTS_N_INSNS (5), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (5), /* fadd, fsub */
+  COSTS_N_INSNS (1), /* fcmp */
+  COSTS_N_INSNS (1), /* fmov, fmovr */
+  COSTS_N_INSNS (7), /* fmul */
+  COSTS_N_INSNS (37), /* fdivs */
+  COSTS_N_INSNS (37), /* fdivd */
+  COSTS_N_INSNS (63), /* fsqrts */
+  COSTS_N_INSNS (63), /* fsqrtd */
+  COSTS_N_INSNS (1), /* imul */
+  COSTS_N_INSNS (1), /* imulX */
   0, /* imul bit factor */
-  1, /* idiv */
-  1, /* idivX */
-  1, /* movcc/movr */
+  COSTS_N_INSNS (1), /* idiv */
+  COSTS_N_INSNS (1), /* idivX */
+  COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
 };
 
 static const
 struct processor_costs supersparc_costs = {
-  1, /* int load */
-  1, /* int signed load */
-  1, /* int zeroed load */
-  0, /* float load */
-  3, /* fmov, fneg, fabs */
-  3, /* fadd, fsub */
-  3, /* fcmp */
-  1, /* fmov, fmovr */
-  3, /* fmul */
-  6, /* fdivs */
-  9, /* fdivd */
-  12, /* fsqrts */
-  12, /* fsqrtd */
-  4, /* imul */
-  4, /* imulX */
+  COSTS_N_INSNS (1), /* int load */
+  COSTS_N_INSNS (1), /* int signed load */
+  COSTS_N_INSNS (1), /* int zeroed load */
+  COSTS_N_INSNS (0), /* float load */
+  COSTS_N_INSNS (3), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (3), /* fadd, fsub */
+  COSTS_N_INSNS (3), /* fcmp */
+  COSTS_N_INSNS (1), /* fmov, fmovr */
+  COSTS_N_INSNS (3), /* fmul */
+  COSTS_N_INSNS (6), /* fdivs */
+  COSTS_N_INSNS (9), /* fdivd */
+  COSTS_N_INSNS (12), /* fsqrts */
+  COSTS_N_INSNS (12), /* fsqrtd */
+  COSTS_N_INSNS (4), /* imul */
+  COSTS_N_INSNS (4), /* imulX */
   0, /* imul bit factor */
-  4, /* idiv */
-  4, /* idivX */
-  1, /* movcc/movr */
+  COSTS_N_INSNS (4), /* idiv */
+  COSTS_N_INSNS (4), /* idivX */
+  COSTS_N_INSNS (1), /* movcc/movr */
   1, /* shift penalty */
 };
 
 static const
 struct processor_costs hypersparc_costs = {
-  1, /* int load */
-  1, /* int signed load */
-  1, /* int zeroed load */
-  1, /* float load */
-  1, /* fmov, fneg, fabs */
-  1, /* fadd, fsub */
-  1, /* fcmp */
-  1, /* fmov, fmovr */
-  1, /* fmul */
-  8, /* fdivs */
-  12, /* fdivd */
-  17, /* fsqrts */
-  17, /* fsqrtd */
-  17, /* imul */
-  17, /* imulX */
+  COSTS_N_INSNS (1), /* int load */
+  COSTS_N_INSNS (1), /* int signed load */
+  COSTS_N_INSNS (1), /* int zeroed load */
+  COSTS_N_INSNS (1), /* float load */
+  COSTS_N_INSNS (1), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (1), /* fadd, fsub */
+  COSTS_N_INSNS (1), /* fcmp */
+  COSTS_N_INSNS (1), /* fmov, fmovr */
+  COSTS_N_INSNS (1), /* fmul */
+  COSTS_N_INSNS (8), /* fdivs */
+  COSTS_N_INSNS (12), /* fdivd */
+  COSTS_N_INSNS (17), /* fsqrts */
+  COSTS_N_INSNS (17), /* fsqrtd */
+  COSTS_N_INSNS (17), /* imul */
+  COSTS_N_INSNS (17), /* imulX */
   0, /* imul bit factor */
-  17, /* idiv */
-  17, /* idivX */
-  1, /* movcc/movr */
+  COSTS_N_INSNS (17), /* idiv */
+  COSTS_N_INSNS (17), /* idivX */
+  COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
 };
 
 static const
 struct processor_costs sparclet_costs = {
-  3, /* int load */
-  3, /* int signed load */
-  1, /* int zeroed load */
-  1, /* float load */
-  1, /* fmov, fneg, fabs */
-  1, /* fadd, fsub */
-  1, /* fcmp */
-  1, /* fmov, fmovr */
-  1, /* fmul */
-  1, /* fdivs */
-  1, /* fdivd */
-  1, /* fsqrts */
-  1, /* fsqrtd */
-  5, /* imul */
-  5, /* imulX */
+  COSTS_N_INSNS (3), /* int load */
+  COSTS_N_INSNS (3), /* int signed load */
+  COSTS_N_INSNS (1), /* int zeroed load */
+  COSTS_N_INSNS (1), /* float load */
+  COSTS_N_INSNS (1), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (1), /* fadd, fsub */
+  COSTS_N_INSNS (1), /* fcmp */
+  COSTS_N_INSNS (1), /* fmov, fmovr */
+  COSTS_N_INSNS (1), /* fmul */
+  COSTS_N_INSNS (1), /* fdivs */
+  COSTS_N_INSNS (1), /* fdivd */
+  COSTS_N_INSNS (1), /* fsqrts */
+  COSTS_N_INSNS (1), /* fsqrtd */
+  COSTS_N_INSNS (5), /* imul */
+  COSTS_N_INSNS (5), /* imulX */
   0, /* imul bit factor */
-  5, /* idiv */
-  5, /* idivX */
-  1, /* movcc/movr */
+  COSTS_N_INSNS (5), /* idiv */
+  COSTS_N_INSNS (5), /* idivX */
+  COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
 };
 
 static const
 struct processor_costs ultrasparc_costs = {
-  2, /* int load */
-  3, /* int signed load */
-  2, /* int zeroed load */
-  2, /* float load */
-  1, /* fmov, fneg, fabs */
-  4, /* fadd, fsub */
-  1, /* fcmp */
-  2, /* fmov, fmovr */
-  4, /* fmul */
-  13, /* fdivs */
-  23, /* fdivd */
-  13, /* fsqrts */
-  23, /* fsqrtd */
-  4, /* imul */
-  4, /* imulX */
+  COSTS_N_INSNS (2), /* int load */
+  COSTS_N_INSNS (3), /* int signed load */
+  COSTS_N_INSNS (2), /* int zeroed load */
+  COSTS_N_INSNS (2), /* float load */
+  COSTS_N_INSNS (1), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (4), /* fadd, fsub */
+  COSTS_N_INSNS (1), /* fcmp */
+  COSTS_N_INSNS (2), /* fmov, fmovr */
+  COSTS_N_INSNS (4), /* fmul */
+  COSTS_N_INSNS (13), /* fdivs */
+  COSTS_N_INSNS (23), /* fdivd */
+  COSTS_N_INSNS (13), /* fsqrts */
+  COSTS_N_INSNS (23), /* fsqrtd */
+  COSTS_N_INSNS (4), /* imul */
+  COSTS_N_INSNS (4), /* imulX */
   2, /* imul bit factor */
-  37, /* idiv */
-  68, /* idivX */
-  2, /* movcc/movr */
+  COSTS_N_INSNS (37), /* idiv */
+  COSTS_N_INSNS (68), /* idivX */
+  COSTS_N_INSNS (2), /* movcc/movr */
   2, /* shift penalty */
 };
 
 static const
 struct processor_costs ultrasparc3_costs = {
-  2, /* int load */
-  3, /* int signed load */
-  3, /* int zeroed load */
-  2, /* float load */
-  3, /* fmov, fneg, fabs */
-  4, /* fadd, fsub */
-  5, /* fcmp */
-  3, /* fmov, fmovr */
-  4, /* fmul */
-  17, /* fdivs */
-  20, /* fdivd */
-  20, /* fsqrts */
-  29, /* fsqrtd */
-  6, /* imul */
-  6, /* imulX */
+  COSTS_N_INSNS (2), /* int load */
+  COSTS_N_INSNS (3), /* int signed load */
+  COSTS_N_INSNS (3), /* int zeroed load */
+  COSTS_N_INSNS (2), /* float load */
+  COSTS_N_INSNS (3), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (4), /* fadd, fsub */
+  COSTS_N_INSNS (5), /* fcmp */
+  COSTS_N_INSNS (3), /* fmov, fmovr */
+  COSTS_N_INSNS (4), /* fmul */
+  COSTS_N_INSNS (17), /* fdivs */
+  COSTS_N_INSNS (20), /* fdivd */
+  COSTS_N_INSNS (20), /* fsqrts */
+  COSTS_N_INSNS (29), /* fsqrtd */
+  COSTS_N_INSNS (6), /* imul */
+  COSTS_N_INSNS (6), /* imulX */
   0, /* imul bit factor */
-  40, /* idiv */
-  71, /* idivX */
-  2, /* movcc/movr */
+  COSTS_N_INSNS (40), /* idiv */
+  COSTS_N_INSNS (71), /* idivX */
+  COSTS_N_INSNS (2), /* movcc/movr */
   0, /* shift penalty */
 };
 
@@ -8350,12 +8350,13 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int *total)
 	      if (nbits < 3)
 		nbits = 3;
 	      bit_cost = (nbits - 3) / sparc_costs->int_mul_bit_factor;
+	      bit_cost = COSTS_N_INSNS (bit_cost);
 	    }
 
 	  if (mode == DImode)
-	    *total = COSTS_N_INSNS (sparc_costs->int_mulX) + bit_cost;
+	    *total = sparc_costs->int_mulX + bit_cost;
 	  else
-	    *total = COSTS_N_INSNS (sparc_costs->int_mul) + bit_cost;
+	    *total = sparc_costs->int_mul + bit_cost;
 	}
       return false;
 
