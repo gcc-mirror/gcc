@@ -1,3 +1,7 @@
+Sun Feb  8 00:09:59 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* function.c (assign_parms): Fix typo in last change.
+
 Sat Feb  7 23:54:29 1998   Robert Lipe  <robertl@dgii.com>
 
 	* gcc.c: Include <strings.h>/<string.h>, <stdlib.h>, <unistd.h>,
