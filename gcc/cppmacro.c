@@ -1136,6 +1136,10 @@ cpp_sys_macro_p (cpp_reader *pfile)
 void
 cpp_scan_nooutput (cpp_reader *pfile)
 {
+  /* Request a CPP_EOF token at the end of this file, rather than
+     transparently continuing with the including file.  */
+  pfile->buffer->return_at_eof = true;
+
   if (CPP_OPTION (pfile, traditional))
     while (_cpp_read_logical_line_trad (pfile))
       ;

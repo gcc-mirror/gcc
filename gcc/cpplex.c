@@ -744,6 +744,8 @@ _cpp_lex_token (cpp_reader *pfile)
 bool
 _cpp_get_fresh_line (cpp_reader *pfile)
 {
+  int return_at_eof;
+
   /* We can't get a new line until we leave the current directive.  */
   if (pfile->state.in_directive)
     return false;
@@ -776,9 +778,10 @@ _cpp_get_fresh_line (cpp_reader *pfile)
 			       CPP_BUF_COLUMN (buffer, buffer->cur),
 			       "no newline at end of file");
 	}
- 
+
+      return_at_eof = buffer->return_at_eof;
       _cpp_pop_buffer (pfile);
-      if (pfile->buffer == NULL)
+      if (pfile->buffer == NULL || return_at_eof)
 	return false;
     }
 }

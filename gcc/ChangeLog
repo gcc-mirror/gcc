@@ -1,3 +1,12 @@
+2004-02-18  Per Bothner  <per@bothner.com>
+
+	* cpphash.h (struct cpp_buffer):  Restore return_at_eof field.  This
+	partly reverts my 2003-10-01 change, because we're back to logically
+	including <command line> inside the main line.
+	* cpplex.c (_cpp_get_fresh_line):  Check return_at_eof field.
+	* cppmacro.c (cpp_scan_nooutput):  Set return_at_eof of current buffer.
+	Fixes PR preprocessor/14103.
+
 2004-02-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/13866
