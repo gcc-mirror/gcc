@@ -1,3 +1,14 @@
+2000-03-09  Jason Merrill  <jason@casey.cygnus.com>
+
+	* except.c (can_throw): See through a SEQUENCE.
+	(nothrow_function_p): New fn.
+	* except.h: Declare it.
+	* function.c (current_function_nothrow): New var.
+	(prepare_function_start): Initialize it.
+	* output.h: Declare it.
+	* toplev.c (rest_of_compilation): Set it.
+	* dwarf2out.c (dwarf2out_begin_prologue): Use it.
+
 2000-03-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c (collect_formal_parameters): strncmp returns 0 for
@@ -409,7 +420,7 @@ Mon Mar  6 15:22:29 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(struct tree_int_cst): int_cst_low is now unsigned HOST_WIDE_INT.
 	(attribute_hash_list, type_hash_canon): hashcode is now unsigned.
 	(type_hash_lookup, type_hash_add, type_hash_list): Likewise.
-	(min_precision): Result is unsignd.
+	(min_precision): Result is unsigned.
 	(add_double, neg_double, mul_double): Low word is unsigned.
 	(lshift_double, rshift_double, lrotate_double): Likewise.
 	(rrotate_double, div_and_round_double): Likewise.

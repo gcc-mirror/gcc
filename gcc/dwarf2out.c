@@ -1889,9 +1889,7 @@ dwarf2out_begin_prologue ()
   fde->dw_fde_current_label = NULL;
   fde->dw_fde_end = NULL;
   fde->dw_fde_cfi = NULL;
-
-  /* Normally, only calls can throw, so a leaf function will never throw.  */
-  fde->nothrow = (current_function_is_leaf && !asynchronous_exceptions);
+  fde->nothrow = current_function_nothrow;
 
   args_size = old_args_size = 0;
 }
@@ -7394,7 +7392,10 @@ add_abstract_origin_attribute (die, origin)
 
          Doing this for nested functions is wrong, however; functions are
 	 distinct units, and our context might not even be inline.  */
-      tree fn = decl_function_context (origin);
+      tree fn = origin;
+      if (TYPE_P (fn))
+	fn = TYPE_STUB_DECL (fn);
+      fn = decl_function_context (fn);
       if (fn)
 	gen_abstract_function (fn);
     }

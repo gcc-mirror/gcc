@@ -107,6 +107,11 @@ Boston, MA 02111-1307, USA.  */
    compiler passes. */
 int current_function_is_leaf;
 
+/* Nonzero if function being compiled doesn't contain any instructions
+   that can throw an exception.  This is set prior to final.  */
+
+int current_function_nothrow;
+
 /* Nonzero if function being compiled doesn't modify the stack pointer
    (ignoring the prologue and epilogue).  This is only valid after
    life_analysis has run. */
@@ -5760,6 +5765,7 @@ prepare_function_start ()
   current_function_calls_alloca = 0;
   current_function_contains_functions = 0;
   current_function_is_leaf = 0;
+  current_function_nothrow = 0;
   current_function_sp_is_unchanging = 0;
   current_function_uses_only_leaf_regs = 0;
   current_function_has_computed_jump = 0;

@@ -412,6 +412,11 @@ extern FILE *asm_out_file;
 
 extern int current_function_is_leaf;
 
+/* Nonzero if function being compiled doesn't contain any instructions
+   that can throw an exception.  This is set prior to final.  */
+
+extern int current_function_nothrow;
+
 /* Nonzero if function being compiled doesn't modify the stack pointer
    (ignoring the prologue and epilogue).  This is only valid after
    life_analysis has run. */

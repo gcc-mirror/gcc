@@ -427,6 +427,10 @@ extern struct label_node *outer_context_label_stack;
 
 extern rtx exception_handler_labels;
 
+/* Return nonzero if nothing in this function can throw.  */
+
+extern int nothrow_function_p			PARAMS ((void));
+
 /* Performs optimizations for exception handling, such as removing
    unnecessary exception regions. Invoked from jump_optimize ().  */
 
