@@ -1,3 +1,7 @@
+2001-01-19  "Billinghurst, David (CRTS)" <David.Billinghurst@riotinto.com>
+
+	* g77.f-torture/compile/20000601-2.f: New test.
+
 2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/init17.C: New test.
