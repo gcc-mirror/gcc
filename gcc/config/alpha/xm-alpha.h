@@ -46,7 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #if defined(__GNUC__) && !defined(USE_C_ALLOCA)
 #define alloca __builtin_alloca
 #else
-#if !defined(_WIN32) && !defined(USE_C_ALLOCA) && !defined(OPEN_VMS)
+#if !defined(_WIN32) && !defined(USE_C_ALLOCA) && !defined(OPEN_VMS) && !defined(__INTERIX)
 #include <alloca.h>
 #else
 extern void *alloca ();
