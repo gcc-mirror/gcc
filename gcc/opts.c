@@ -782,23 +782,35 @@ common_handle_option (size_t scode, const char *arg,
       break;
 
     case OPT_falign_functions:
-    case OPT_falign_functions_:
       align_functions = !value;
       break;
 
+    case OPT_falign_functions_:
+      align_functions = value;
+      break;
+
     case OPT_falign_jumps:
-    case OPT_falign_jumps_:
       align_jumps = !value;
       break;
 
+    case OPT_falign_jumps_:
+      align_jumps = value;
+      break;
+
     case OPT_falign_labels:
-    case OPT_falign_labels_:
       align_labels = !value;
       break;
 
+    case OPT_falign_labels_:
+      align_labels = value;
+      break;
+
     case OPT_falign_loops:
-    case OPT_falign_loops_:
       align_loops = !value;
+      break;
+
+    case OPT_falign_loops_:
+      align_loops = value;
       break;
 
     case OPT_fargument_alias:
