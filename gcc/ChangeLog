@@ -1,3 +1,9 @@
+Sat Oct 10 22:00:34 1998  Richard Henderson  <rth@cygnus.com>
+
+        * basic-block.h (EXECUTE_IF_SET_IN_SBITMAP): New macro.
+        (sbitmap_free, sbitmap_vector_free): New macros.
+        * output.h (rtl_dump_file): Declare.
+
 Sat Oct 10 17:01:42 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* regmove.c (optimize_reg_copy_3): Honor TRULY_NOOP_TRUNCATION.
