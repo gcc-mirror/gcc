@@ -298,7 +298,8 @@ forget_protocol_qualifiers ()
   int i, n = sizeof wordlist / sizeof (struct resword);
 
   for (i = 0; i < n; i++)
-    if (wordlist[i].rid >= RID_IN && wordlist[i].rid <= RID_ONEWAY)
+    if ((int) wordlist[i].rid >= (int) RID_IN
+        && (int) wordlist[i].rid <= (int) RID_ONEWAY)
       wordlist[i].name = "";
 }
 
