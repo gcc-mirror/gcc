@@ -2546,7 +2546,7 @@
        (unspec:CCFP
         [(compare:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
                        (match_operand:SF 2 "gpc_reg_operand" "r"))]
-        1004))]
+        1005))]
   "TARGET_HARD_FLOAT && !TARGET_FPRS && flag_unsafe_math_optimizations"
   "efststlt %0,%1,%2"
   [(set_attr "type" "veccmpsimple")])
