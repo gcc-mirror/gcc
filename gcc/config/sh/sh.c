@@ -1983,16 +1983,23 @@ find_barrier (num_mova, mova, from)
 	{
 	  if (num_mova)
 	    num_mova--;
-	  if (found_barrier == good_barrier)
+	  if (barrier_align (next_real_insn (from)) == CACHE_LOG)
 	    {
 	      /* We have just passed the barrier in front front of the
-		 ADDR_DIFF_VEC.  Since the ADDR_DIFF_VEC is accessed
-		 as data, just like our pool constants, this is a good
-		 opportunity to accommodate what we have gathered so far.
+		 ADDR_DIFF_VEC, which is stored in found_barrier.  Since
+		 the ADDR_DIFF_VEC is accessed as data, just like our pool
+		 constants, this is a good opportunity to accommodate what
+		 we have gathered so far.
 		 If we waited any longer, we could end up at a barrier in
 		 front of code, which gives worse cache usage for separated
 		 instruction / data caches.  */
+	      good_barrier = found_barrier;
 	      break;
+	    }
+	  else
+	    {
+	      rtx body = PATTERN (from);
+	      inc = XVECLEN (body, 1) * GET_MODE_SIZE (GET_MODE (body));
 	    }
 	}
 
@@ -3196,6 +3203,10 @@ split_branches (first)
 	delete_insn (far_branch_list->far_label);
       far_branch_list = far_branch_list->prev;
     }
+
+  /* Instruction length information is no longer valid due to the new
+     instructions that have been generated.  */
+  init_insn_lengths ();
 }
 
 /* Dump out instruction addresses, which is useful for debugging the
