@@ -1754,12 +1754,11 @@ allocate_reg_info (num_regs, new_p, renumber_p)
      int renumber_p;
 {
   static int regno_allocated = 0;
-  static int regno_max = 0;
   static short *renumber = (short *)0;
   int i;
   int size_info;
   int size_renumber;
-  int min = (new_p) ? 0 : regno_max;
+  int min = (new_p) ? 0 : reg_n_max;
 
   /* If this message come up, and you want to fix it, then all of the tables
      like reg_renumber, etc. that use short will have to be found and lengthed
@@ -1776,7 +1775,7 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 	  renumber = (short *)0;
 	}
       regno_allocated = 0;
-      regno_max = 0;
+      reg_n_max = 0;
       return;
     }
 
@@ -1823,7 +1822,7 @@ allocate_reg_info (num_regs, new_p, renumber_p)
   /* Tell the regset code about the new number of registers */
   MAX_REGNO_REG_SET (num_regs, new_p, renumber_p);
 
-  regno_max = num_regs;
+  reg_n_max = num_regs;
 }
 
 
