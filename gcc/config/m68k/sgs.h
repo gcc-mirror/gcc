@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for m68k targets using
    assemblers derived from AT&T "SGS" releases.
-   Copyright (C) 1991, 1993, 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1996, 2000, 2003 Free Software Foundation, Inc.
    Written by Fred Fish (fnf@cygnus.com)
 
 This file is part of GNU CC.
@@ -79,25 +79,10 @@ Boston, MA 02111-1307, USA.  */
 
 #undef REGISTER_NAMES
 
-#ifndef SUPPORT_SUN_FPA
-
 #define REGISTER_NAMES \
 {"%d0",   "%d1",   "%d2",   "%d3",   "%d4",   "%d5",   "%d6",   "%d7",	     \
  "%a0",   "%a1",   "%a2",   "%a3",   "%a4",   "%a5",   "%fp",   "%sp",	     \
  "%fp0",  "%fp1",  "%fp2",  "%fp3",  "%fp4",  "%fp5",  "%fp6",  "%fp7" }
-
-#else /* SUPPORTED_SUN_FPA */
-
-#define REGISTER_NAMES \
-{"%d0",   "%d1",   "%d2",   "%d3",   "%d4",   "%d5",   "%d6",   "%d7",	     \
- "%a0",   "%a1",   "%a2",   "%a3",   "%a4",   "%a5",   "%fp",   "%sp",	     \
- "%fp0",  "%fp1",  "%fp2",  "%fp3",  "%fp4",  "%fp5",  "%fp6",  "%fp7",	     \
- "%fpa0", "%fpa1", "%fpa2", "%fpa3", "%fpa4", "%fpa5", "%fpa6","%fpa7",	     \
- "%fpa8", "%fpa9", "%fpa10","%fpa11","%fpa12","%fpa13","%fpa14","%fpa15",    \
- "%fpa16","%fpa17","%fpa18","%fpa19","%fpa20","%fpa21","%fpa22","%fpa23",    \
- "%fpa24","%fpa25","%fpa26","%fpa27","%fpa28","%fpa29","%fpa30","%fpa31" }
-
-#endif /* defined SUPPORT_SUN_FPA */
 
 /* This is how to output an assembler line that says to advance the
    location counter to a multiple of 2**LOG bytes.  */

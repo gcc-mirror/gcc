@@ -45,16 +45,6 @@ Boston, MA 02111-1307, USA.  */
 /* Needed for use_return_insn.  */
 #include "flags.h"
 
-#ifdef SUPPORT_SUN_FPA
-
-/* Index into this array by (register number >> 3) to find the
-   smallest class which contains that register.  */
-const enum reg_class regno_reg_class[]
-  = { DATA_REGS, ADDR_REGS, FP_REGS,
-      LO_FPA_REGS, LO_FPA_REGS, FPA_REGS, FPA_REGS };
-
-#endif /* defined SUPPORT_SUN_FPA */
-
 /* This flag is used to communicate between movhi and ASM_OUTPUT_CASE_END,
    if SGS_SWITCH_TABLE.  */
 int switch_table_difference_label_flag;
@@ -480,31 +470,6 @@ m68k_output_function_prologue (stream, size)
 	  dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, cfa_offset);
 	}
     }
-#ifdef SUPPORT_SUN_FPA
-  for (regno = 24; regno < 56; regno++)
-    if (m68k_save_reg (regno))
-      {
-#ifdef MOTOROLA
-	asm_fprintf (stream, "\tfpmovd %s,-(%Rsp)\n",
-		     reg_names[regno]);
-#else
-	asm_fprintf (stream, "\tfpmoved %s,%Rsp@-\n",
-		     reg_names[regno]);
-#endif
-	if (dwarf2out_do_frame ())
-	  {
-	    char *l = dwarf2out_cfi_label ();
-
-	    cfa_store_offset += 8;
-	    if (! frame_pointer_needed)
-	      {
-		cfa_offset = cfa_store_offset;
-		dwarf2out_def_cfa (l, STACK_POINTER_REGNUM, cfa_offset);
-	      }
-	    dwarf2out_reg_save (l, regno, -cfa_store_offset);
-	  }
-      }
-#endif
   if (TARGET_68881)
     {
       for (regno = 16; regno < 24; regno++)
@@ -712,11 +677,11 @@ m68k_output_function_epilogue (stream, size)
   register int regno;
   register int mask, fmask;
   register int nregs;
-  HOST_WIDE_INT offset, foffset, fpoffset;
+  HOST_WIDE_INT offset, foffset;
   HOST_WIDE_INT fsize = ((size) + 3) & -4;
   int big = 0;
 
-  nregs = 0;  fmask = 0; fpoffset = 0;
+  nregs = 0;  fmask = 0;
   for (regno = 16; regno < 24; regno++)
     if (m68k_save_reg (regno))
       {
@@ -724,7 +689,7 @@ m68k_output_function_epilogue (stream, size)
 	fmask |= 1 << (23 - regno);
       }
 
-  foffset = fpoffset + nregs * 12;
+  foffset = nregs * 12;
   nregs = 0;  mask = 0;
 
   for (regno = 0; regno < 16; regno++)
@@ -737,7 +702,7 @@ m68k_output_function_epilogue (stream, size)
   offset = foffset + nregs * 4;
   if (offset + fsize >= 0x8000
       && frame_pointer_needed
-      && (mask || fmask || fpoffset))
+      && (mask || fmask))
     {
       fprintf (stream, "\tmovel $%d,a0\n", -fsize);
       fsize = 0, big = 1;
@@ -779,22 +744,6 @@ m68k_output_function_epilogue (stream, size)
 		 foffset + fsize, fmask);
     }
 
-  if (fpoffset != 0)
-    for (regno = 55; regno >= 24; regno--)
-      if (m68k_save_reg (regno))
-	{
-	  if (big)
-	    fprintf(stream, "\tfpmoved -%d(a6,a0.l), %s\n",
-		    fpoffset + fsize, reg_names[regno]);
-	  else if (! frame_pointer_needed)
-	    fprintf(stream, "\tfpmoved (sp)+, %s\n",
-		    reg_names[regno]);
-	  else
-	    fprintf(stream, "\tfpmoved -%d(a6), %s\n",
-		    fpoffset + fsize, reg_names[regno]);
-	  fpoffset -= 8;
-	}
-
   if (frame_pointer_needed)
     fprintf (stream, "\tunlk a6\n");
   else if (fsize)
@@ -824,7 +773,7 @@ m68k_output_function_epilogue (stream, size)
   register int regno;
   register int mask, fmask;
   register int nregs;
-  HOST_WIDE_INT offset, foffset, fpoffset;
+  HOST_WIDE_INT offset, foffset;
   HOST_WIDE_INT fsize = (size + 3) & -4;
   int big = 0;
   rtx insn = get_last_insn ();
@@ -844,14 +793,7 @@ m68k_output_function_epilogue (stream, size)
 #ifdef FUNCTION_EXTRA_EPILOGUE
   FUNCTION_EXTRA_EPILOGUE (stream, size);
 #endif
-  nregs = 0;  fmask = 0; fpoffset = 0;
-#ifdef SUPPORT_SUN_FPA
-  for (regno = 24 ; regno < 56 ; regno++)
-    if (m68k_save_reg (regno))
-      nregs++;
-  fpoffset = nregs * 8;
-#endif
-  nregs = 0;
+  nregs = 0;  fmask = 0;
   if (TARGET_68881)
     {
       for (regno = 16; regno < 24; regno++)
@@ -861,7 +803,7 @@ m68k_output_function_epilogue (stream, size)
 	    fmask |= 1 << (23 - regno);
 	  }
     }
-  foffset = fpoffset + nregs * 12;
+  foffset = nregs * 12;
   nregs = 0;  mask = 0;
   for (regno = 0; regno < 16; regno++)
     if (m68k_save_reg (regno))
@@ -877,7 +819,7 @@ m68k_output_function_epilogue (stream, size)
 	     || (! current_function_calls_alloca && leaf_function_p ());
   if (offset + fsize >= 0x8000
       && ! restore_from_sp
-      && (mask || fmask || fpoffset))
+      && (mask || fmask))
     {
 #ifdef MOTOROLA
       asm_fprintf (stream, "\t%Omove.l %0I%d,%Ra1\n", -fsize);
@@ -1012,50 +954,6 @@ m68k_output_function_epilogue (stream, size)
 #endif
 	}
     }
-  if (fpoffset != 0)
-    for (regno = 55; regno >= 24; regno--)
-      if (m68k_save_reg (regno))
-        {
-	  if (big)
-	    {
-#ifdef MOTOROLA
-	      asm_fprintf (stream, "\tfpmovd -%d(%s,%Ra1.l), %s\n",
-			   fpoffset + fsize,
-			   reg_names[FRAME_POINTER_REGNUM],
-			   reg_names[regno]);
-#else
-	      asm_fprintf (stream, "\tfpmoved %s@(-%d,%Ra1:l), %s\n",
-			   reg_names[FRAME_POINTER_REGNUM],
-			   fpoffset + fsize, reg_names[regno]);
-#endif
-	    }
-	  else if (restore_from_sp)
-	    {
-#ifdef MOTOROLA
-	      asm_fprintf (stream, "\tfpmovd (%Rsp)+,%s\n",
-			   reg_names[regno]);
-#else
-	      asm_fprintf (stream, "\tfpmoved %Rsp@+, %s\n",
-			   reg_names[regno]);
-#endif
-	    }
-	  else
-	    {
-#ifdef MOTOROLA
-	      fprintf (stream, "\tfpmovd -"HOST_WIDE_INT_PRINT_DEC
-		       "(%s), %s\n",
-		       fpoffset + fsize,
-		       reg_names[FRAME_POINTER_REGNUM],
-		       reg_names[regno]);
-#else
-	      fprintf (stream, "\tfpmoved %s@(-"HOST_WIDE_INT_PRINT_DEC
-		       "), %s\n",
-		       reg_names[FRAME_POINTER_REGNUM],
-		       fpoffset + fsize, reg_names[regno]);
-#endif
-	    }
-	  fpoffset -= 8;
-	}
   if (frame_pointer_needed)
     fprintf (stream, "\tunlk %s\n",
 	     reg_names[FRAME_POINTER_REGNUM]);
@@ -2133,10 +2031,6 @@ static const char *
 singlemove_string (operands)
      rtx *operands;
 {
-#ifdef SUPPORT_SUN_FPA
-  if (FPA_REG_P (operands[0]) || FPA_REG_P (operands[1]))
-    return "fpmoves %1,%0";
-#endif
   if (GET_CODE (operands[1]) == CONST_INT)
     return output_move_simode_const (operands);
   return "move%.l %1,%0";
@@ -2624,18 +2518,7 @@ notice_update_cc (exp, insn)
      rtx exp;
      rtx insn;
 {
-  /* If the cc is being set from the fpa and the expression is not an
-     explicit floating point test instruction (which has code to deal with
-     this), reinit the CC.  */
-  if (((cc_status.value1 && FPA_REG_P (cc_status.value1))
-       || (cc_status.value2 && FPA_REG_P (cc_status.value2)))
-      && !(GET_CODE (exp) == PARALLEL
-	   && GET_CODE (XVECEXP (exp, 0, 0)) == SET
-	   && XEXP (XVECEXP (exp, 0, 0), 0) == cc0_rtx))
-    {
-      CC_STATUS_INIT; 
-    }
-  else if (GET_CODE (exp) == SET)
+  if (GET_CODE (exp) == SET)
     {
       if (GET_CODE (SET_SRC (exp)) == CALL)
 	{
@@ -2696,8 +2579,7 @@ notice_update_cc (exp, insn)
       && ADDRESS_REG_P (cc_status.value2)
       && GET_MODE (cc_status.value2) == QImode)
     CC_STATUS_INIT;
-  if (cc_status.value2 != 0
-      && !(cc_status.value1 && FPA_REG_P (cc_status.value1)))
+  if (cc_status.value2 != 0)
     switch (GET_CODE (cc_status.value2))
       {
       case PLUS: case MINUS: case MULT:
@@ -2724,9 +2606,7 @@ notice_update_cc (exp, insn)
       && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))
     cc_status.value2 = 0;
   if (((cc_status.value1 && FP_REG_P (cc_status.value1))
-       || (cc_status.value2 && FP_REG_P (cc_status.value2)))
-      && !((cc_status.value1 && FPA_REG_P (cc_status.value1))
-	   || (cc_status.value2 && FPA_REG_P (cc_status.value2))))
+       || (cc_status.value2 && FP_REG_P (cc_status.value2))))
     cc_status.flags = CC_IN_68881;
 }
 
@@ -2734,68 +2614,32 @@ const char *
 output_move_const_double (operands)
      rtx *operands;
 {
-#ifdef SUPPORT_SUN_FPA
-  if (TARGET_FPA && FPA_REG_P (operands[0]))
+  int code = standard_68881_constant_p (operands[1]);
+
+  if (code != 0)
     {
-      int code = standard_sun_fpa_constant_p (operands[1]);
+      static char buf[40];
 
-      if (code != 0)
-	{
-	  static char buf[40];
-
-	  sprintf (buf, "fpmove%%.d %%%%%d,%%0", code & 0x1ff);
-	  return buf;
-	}
-      return "fpmove%.d %1,%0";
+      sprintf (buf, "fmovecr %%#0x%x,%%0", code & 0xff);
+      return buf;
     }
-  else
-#endif
-    {
-      int code = standard_68881_constant_p (operands[1]);
-
-      if (code != 0)
-	{
-	  static char buf[40];
-
-	  sprintf (buf, "fmovecr %%#0x%x,%%0", code & 0xff);
-	  return buf;
-	}
-      return "fmove%.d %1,%0";
-    }
+  return "fmove%.d %1,%0";
 }
 
 const char *
 output_move_const_single (operands)
      rtx *operands;
 {
-#ifdef SUPPORT_SUN_FPA
-  if (TARGET_FPA)
+  int code = standard_68881_constant_p (operands[1]);
+
+  if (code != 0)
     {
-      int code = standard_sun_fpa_constant_p (operands[1]);
+      static char buf[40];
 
-      if (code != 0)
-	{
-	  static char buf[40];
-
-	  sprintf (buf, "fpmove%%.s %%%%%d,%%0", code & 0x1ff);
-	  return buf;
-	}
-      return "fpmove%.s %1,%0";
+      sprintf (buf, "fmovecr %%#0x%x,%%0", code & 0xff);
+      return buf;
     }
-  else
-#endif /* defined SUPPORT_SUN_FPA */
-    {
-      int code = standard_68881_constant_p (operands[1]);
-
-      if (code != 0)
-	{
-	  static char buf[40];
-
-	  sprintf (buf, "fmovecr %%#0x%x,%%0", code & 0xff);
-	  return buf;
-	}
-      return "fmove%.s %f1,%0";
-    }
+  return "fmove%.s %f1,%0";
 }
 
 /* Return nonzero if X, a CONST_DOUBLE, has a value that we can get
@@ -2913,165 +2757,6 @@ floating_exact_log2 (x)
   return 0;
 }
 
-#ifdef SUPPORT_SUN_FPA
-/* Return nonzero if X, a CONST_DOUBLE, has a value that we can get
-   from the Sun FPA's constant RAM.
-   The value returned, anded with 0x1ff, gives the code to use in fpmove
-   to get the desired constant.  */
-
-static int inited_FPA_table = 0;
-
-static const char *const strings_FPA[38] = {
-/* small rationals */
-  "0.0",
-  "1.0",
-  "0.5",
-  "-1.0",
-  "2.0",
-  "3.0",
-  "4.0",
-  "8.0",
-  "0.25",
-  "0.125",
-  "10.0",
-  "-0.5",
-/* Decimal equivalents of double precision values */
-  "2.718281828459045091", /* D_E */
-  "6.283185307179586477", /* 2 pi */
-  "3.141592653589793116", /* D_PI */
-  "1.570796326794896619", /* pi/2 */
-  "1.414213562373095145", /* D_SQRT2 */
-  "0.7071067811865475244", /* 1/sqrt(2) */
-  "-1.570796326794896619", /* -pi/2 */
-  "1.442695040888963387", /* D_LOG2ofE */
-  "3.321928024887362182", /* D_LOG2of10 */
-  "0.6931471805599452862", /* D_LOGEof2 */
-  "2.302585092994045901", /* D_LOGEof10 */
-  "0.3010299956639811980", /* D_LOG10of2 */
-  "0.4342944819032518167", /* D_LOG10ofE */
-/* Decimal equivalents of single precision values */
-  "2.718281745910644531", /* S_E */
-  "6.283185307179586477", /* 2 pi */
-  "3.141592741012573242", /* S_PI */
-  "1.570796326794896619", /* pi/2 */
-  "1.414213538169860840", /* S_SQRT2 */
-  "0.7071067811865475244", /* 1/sqrt(2) */
-  "-1.570796326794896619", /* -pi/2 */
-  "1.442695021629333496", /* S_LOG2ofE */
-  "3.321928024291992188", /* S_LOG2of10 */
-  "0.6931471824645996094", /* S_LOGEof2 */
-  "2.302585124969482442", /* S_LOGEof10 */
-  "0.3010300099849700928", /* S_LOG10of2 */
-  "0.4342944920063018799", /* S_LOG10ofE */
-};
-
-
-static const int codes_FPA[38] = {
-/* small rationals */
-  0x200,
-  0xe,
-  0xf,
-  0x10,
-  0x11,
-  0xb1,
-  0x12,
-  0x13,
-  0x15,
-  0x16,
-  0x17,
-  0x2e,
-/* double precision */
-  0x8,
-  0x9,
-  0xa,
-  0xb,
-  0xc,
-  0xd,
-  0x27,
-  0x28,
-  0x29,
-  0x2a,
-  0x2b,
-  0x2c,
-  0x2d,
-/* single precision */
-  0x8,
-  0x9,
-  0xa,
-  0xb,
-  0xc,
-  0xd,
-  0x27,
-  0x28,
-  0x29,
-  0x2a,
-  0x2b,
-  0x2c,
-  0x2d
-  };
-
-REAL_VALUE_TYPE values_FPA[38];
-
-/* This code has been fixed for cross-compilation.  */
-
-static void init_FPA_table PARAMS ((void));
-static void
-init_FPA_table ()
-{
-  enum machine_mode mode;
-  int i;
-  REAL_VALUE_TYPE r;
-
-  mode = DFmode;
-  for (i = 0; i < 38; i++)
-    {
-      if (i == 25)
-        mode = SFmode;
-      r = REAL_VALUE_ATOF (strings_FPA[i], mode);
-      values_FPA[i] = r;
-    }
-  inited_FPA_table = 1;
-}
-
-
-int
-standard_sun_fpa_constant_p (x)
-     rtx x;
-{
-  REAL_VALUE_TYPE r;
-  int i;
-
-  if (! inited_FPA_table)
-    init_FPA_table ();
-
-  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-
-  for (i=0; i<12; i++)
-    {
-      if (REAL_VALUES_EQUAL (r, values_FPA[i]))
-        return (codes_FPA[i]);
-    }
-
-  if (GET_MODE (x) == SFmode)
-    {
-      for (i=25; i<38; i++)
-        {
-          if (REAL_VALUES_EQUAL (r, values_FPA[i]))
-            return (codes_FPA[i]);
-        }
-    }
-  else
-    {
-      for (i=12; i<25; i++)
-        {
-          if (REAL_VALUES_EQUAL (r, values_FPA[i]))
-            return (codes_FPA[i]);
-        }
-    }
-  return 0x0;
-}
-#endif /* define SUPPORT_SUN_FPA */
-
 /* A C compound statement to output to stdio stream STREAM the
    assembler syntax for an instruction operand X.  X is an RTL
    expression.
@@ -3113,13 +2798,8 @@ standard_sun_fpa_constant_p (x)
    'f' for float insn (print a CONST_DOUBLE as a float rather than in hex)
    'o' for operands to go directly to output_operand_address (bypassing
        print_operand_address--used only for SYMBOL_REFs under TARGET_PCREL)
-   'w' for FPA insn (print a CONST_DOUBLE as a SunFPA constant rather
-       than directly).  Second part of 'y' below.
    'x' for float insn (print a CONST_DOUBLE as a float rather than in hex),
        or print pair of registers as rx:ry.
-   'y' for a FPA insn (print pair of registers as rx:ry).  This also outputs
-       CONST_DOUBLE's as SunFPA constant RAM registers if
-       possible, so it should not be used except for the SunFPA.
 
    */
 
@@ -3129,10 +2809,6 @@ print_operand (file, op, letter)
      rtx op;			/* operand to print */
      int letter;		/* %<letter> or 0 */
 {
-#ifdef SUPPORT_SUN_FPA
-  int i;
-#endif
-
   if (letter == '.')
     {
 #if defined (MOTOROLA) && !defined (CRDS)
@@ -3199,24 +2875,12 @@ print_operand (file, op, letter)
     }
   else if (GET_CODE (op) == REG)
     {
-#ifdef SUPPORT_SUN_FPA
-      if (REGNO (op) < 16
-	  && (letter == 'y' || letter == 'x')
-	  && GET_MODE (op) == DFmode)
-	{
-	  fprintf (file, "%s:%s", reg_names[REGNO (op)],
-		   reg_names[REGNO (op)+1]);
-	}
+      if (letter == 'R')
+	/* Print out the second register name of a register pair.
+	   I.e., R (6) => 7.  */
+	fputs (reg_names[REGNO (op) + 1], file);
       else
-#endif
-	{
-	  if (letter == 'R')
-	    /* Print out the second register name of a register pair.
-	       I.e., R (6) => 7.  */
-	    fputs (reg_names[REGNO (op) + 1], file);
-	  else
-	    fputs (reg_names[REGNO (op)], file);
-	}
+	fputs (reg_names[REGNO (op)], file);
     }
   else if (GET_CODE (op) == MEM)
     {
@@ -3234,14 +2898,6 @@ print_operand (file, op, letter)
 #endif
 	}
     }
-#ifdef SUPPORT_SUN_FPA
-  else if ((letter == 'y' || letter == 'w')
-	   && GET_CODE (op) == CONST_DOUBLE
-	   && (i = standard_sun_fpa_constant_p (op)))
-    {
-      fprintf (file, "%%%d", i & 0x1ff);
-    }
-#endif
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == SFmode)
     {
       REAL_VALUE_TYPE r;
