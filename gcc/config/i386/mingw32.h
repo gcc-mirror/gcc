@@ -35,9 +35,10 @@ Boston, MA 02111-1307, USA.  */
     }								\
   while (0)
 
-/* Specific a different directory for the standard include files.  */
+/* Override the standard choice of /usr/include as the default prefix
+   to try when searching for header files.  */
 #undef STANDARD_INCLUDE_DIR
-#define STANDARD_INCLUDE_DIR "/usr/local/mingw32/include"
+#define STANDARD_INCLUDE_DIR "/mingw/include"
 #undef STANDARD_INCLUDE_COMPONENT
 #define STANDARD_INCLUDE_COMPONENT "MINGW"
 
@@ -67,6 +68,10 @@ Boston, MA 02111-1307, USA.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{shared|mdll:dllcrt2%O%s} \
   %{!shared:%{!mdll:crt2%O%s}} %{pg:gcrt2%O%s}"
+
+/* An additional prefix to try after the standard prefixes.  */
+#undef MD_STARTFILE_PREFIX
+#define MD_STARTFILE_PREFIX "/mingw/lib/"
 
 /* Output STRING, a string representing a filename, to FILE.
    We canonicalize it to be in Unix format (backslashes are replaced
