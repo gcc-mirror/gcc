@@ -1,6 +1,6 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -912,66 +912,68 @@ save_fixed_argument_area (reg_parm_stack_space, argblock,
      int *low_to_save;
      int *high_to_save;
 {
-  int i;
-  rtx save_area = NULL_RTX;
+  int low;
+  int high;
 
-  /* Compute the boundary of the that needs to be saved, if any.  */
+  /* Compute the boundary of the area that needs to be saved, if any.  */
+  high = reg_parm_stack_space;
 #ifdef ARGS_GROW_DOWNWARD
-  for (i = 0; i < reg_parm_stack_space + 1; i++)
-#else
-  for (i = 0; i < reg_parm_stack_space; i++)
+  high += 1;
 #endif
-    {
-      if (i >= highest_outgoing_arg_in_use
-	  || stack_usage_map[i] == 0)
-	continue;
+  if (high > highest_outgoing_arg_in_use)
+    high = highest_outgoing_arg_in_use;
 
-      if (*low_to_save == -1)
-	*low_to_save = i;
+  for (low = 0; low < high; low++)
+    if (stack_usage_map[low] != 0)
+      {
+	int num_to_save;
+	enum machine_mode save_mode;
+	int delta;
+	rtx stack_area;
+	rtx save_area;
 
-      *high_to_save = i;
-    }
+	while (stack_usage_map[--high] == 0)
+	  ;
 
-  if (*low_to_save >= 0)
-    {
-      int num_to_save = *high_to_save - *low_to_save + 1;
-      enum machine_mode save_mode
-	= mode_for_size (num_to_save * BITS_PER_UNIT, MODE_INT, 1);
-      rtx stack_area;
+	*low_to_save = low;
+	*high_to_save = high;
 
-      /* If we don't have the required alignment, must do this in BLKmode.  */
-      if ((*low_to_save & (MIN (GET_MODE_SIZE (save_mode),
-				BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
-	save_mode = BLKmode;
+	num_to_save = high - low + 1;
+	save_mode = mode_for_size (num_to_save * BITS_PER_UNIT, MODE_INT, 1);
+
+	/* If we don't have the required alignment, must do this
+	   in BLKmode.  */
+	if ((low & (MIN (GET_MODE_SIZE (save_mode),
+			 BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
+	  save_mode = BLKmode;
 
 #ifdef ARGS_GROW_DOWNWARD
-      stack_area
-	= gen_rtx_MEM (save_mode,
-		       memory_address (save_mode,
-				       plus_constant (argblock,
-						      - *high_to_save)));
+	delta = -high;
 #else
-      stack_area = gen_rtx_MEM (save_mode,
-				memory_address (save_mode,
-						plus_constant (argblock,
-							       *low_to_save)));
+	delta = low;
 #endif
+	stack_area = gen_rtx_MEM (save_mode,
+				  memory_address (save_mode,
+						  plus_constant (argblock,
+								 delta)));
 
-      set_mem_align (stack_area, PARM_BOUNDARY);
-      if (save_mode == BLKmode)
-	{
-	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
-	  emit_block_move (validize_mem (save_area), stack_area,
-			   GEN_INT (num_to_save), BLOCK_OP_CALL_PARM);
-	}
-      else
-	{
-	  save_area = gen_reg_rtx (save_mode);
-	  emit_move_insn (save_area, stack_area);
-	}
-    }
+	set_mem_align (stack_area, PARM_BOUNDARY);
+	if (save_mode == BLKmode)
+	  {
+	    save_area = assign_stack_temp (BLKmode, num_to_save, 0);
+	    emit_block_move (validize_mem (save_area), stack_area,
+			     GEN_INT (num_to_save), BLOCK_OP_CALL_PARM);
+	  }
+	else
+	  {
+	    save_area = gen_reg_rtx (save_mode);
+	    emit_move_insn (save_area, stack_area);
+	  }
 
-  return save_area;
+	return save_area;
+      }
+
+  return NULL_RTX;
 }
 
 static void
@@ -982,19 +984,18 @@ restore_fixed_argument_area (save_area, argblock, high_to_save, low_to_save)
      int low_to_save;
 {
   enum machine_mode save_mode = GET_MODE (save_area);
+  int delta;
+  rtx stack_area;
+
 #ifdef ARGS_GROW_DOWNWARD
-  rtx stack_area
-    = gen_rtx_MEM (save_mode,
-		   memory_address (save_mode,
-				   plus_constant (argblock,
-						  - high_to_save)));
+  delta = -high_to_save;
 #else
-  rtx stack_area
-    = gen_rtx_MEM (save_mode,
-		   memory_address (save_mode,
-				   plus_constant (argblock,
-						  low_to_save)));
+  delta = low_to_save;
 #endif
+  stack_area = gen_rtx_MEM (save_mode,
+			    memory_address (save_mode,
+					    plus_constant (argblock, delta)));
+  set_mem_align (stack_area, PARM_BOUNDARY);
 
   if (save_mode != BLKmode)
     emit_move_insn (stack_area, save_area);
@@ -2194,8 +2195,8 @@ expand_call (exp, target, ignore)
   int is_integrable = 0;
 #ifdef REG_PARM_STACK_SPACE
   /* Define the boundary of the register parm stack space that needs to be
-     save, if any.  */
-  int low_to_save = -1, high_to_save;
+     saved, if any.  */
+  int low_to_save, high_to_save;
   rtx save_area = 0;		/* Place that it is saved */
 #endif
 
@@ -2632,7 +2633,7 @@ expand_call (exp, target, ignore)
   /* We want to make two insn chains; one for a sibling call, the other
      for a normal call.  We will select one of the two chains after
      initial RTL generation is complete.  */
-  for (pass = 0; pass < 2; pass++)
+  for (pass = try_tail_call ? 0 : 1; pass < 2; pass++)
     {
       int sibcall_failure = 0;
       /* We want to emit any pending stack adjustments before the tail
@@ -2646,9 +2647,6 @@ expand_call (exp, target, ignore)
 
       if (pass == 0)
 	{
-	  if (! try_tail_call)
-	    continue;
-
 	  /* Emit any queued insns now; otherwise they would end up in
              only one of the alternates.  */
 	  emit_queue ();
@@ -3320,10 +3318,8 @@ expand_call (exp, target, ignore)
 	{
 #ifdef REG_PARM_STACK_SPACE
 	  if (save_area)
-	    {
-	      restore_fixed_argument_area (save_area, argblock,
-					   high_to_save, low_to_save);
-	    }
+	    restore_fixed_argument_area (save_area, argblock,
+					 high_to_save, low_to_save);
 #endif
 
 	  /* If we saved any argument areas, restore them.  */
@@ -3511,7 +3507,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 #ifdef REG_PARM_STACK_SPACE
   /* Define the boundary of the register parm stack space that needs to be
      save, if any.  */
-  int low_to_save = -1, high_to_save = 0;
+  int low_to_save, high_to_save;
   rtx save_area = 0;            /* Place that it is saved.  */
 #endif
 
@@ -3892,62 +3888,9 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
     {
       /* The argument list is the property of the called routine and it
 	 may clobber it.  If the fixed area has been used for previous
-	 parameters, we must save and restore it.
-
-	 Here we compute the boundary of the that needs to be saved, if any.  */
-
-#ifdef ARGS_GROW_DOWNWARD
-      for (count = 0; count < reg_parm_stack_space + 1; count++)
-#else
-      for (count = 0; count < reg_parm_stack_space; count++)
-#endif
-	{
-	  if (count >= highest_outgoing_arg_in_use
-	      || stack_usage_map[count] == 0)
-	    continue;
-
-	  if (low_to_save == -1)
-	    low_to_save = count;
-
-	  high_to_save = count;
-	}
-
-      if (low_to_save >= 0)
-	{
-	  int num_to_save = high_to_save - low_to_save + 1;
-	  enum machine_mode save_mode
-	    = mode_for_size (num_to_save * BITS_PER_UNIT, MODE_INT, 1);
-	  rtx stack_area;
-
-	  /* If we don't have the required alignment, must do this in BLKmode.  */
-	  if ((low_to_save & (MIN (GET_MODE_SIZE (save_mode),
-				   BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
-	    save_mode = BLKmode;
-
-#ifdef ARGS_GROW_DOWNWARD
-	  stack_area = gen_rtx_MEM (save_mode,
-				    memory_address (save_mode,
-						    plus_constant (argblock,
-								   -high_to_save)));
-#else
-	  stack_area = gen_rtx_MEM (save_mode,
-				    memory_address (save_mode,
-						    plus_constant (argblock,
-								   low_to_save)));
-#endif
-	  if (save_mode == BLKmode)
-	    {
-	      save_area = assign_stack_temp (BLKmode, num_to_save, 0);
-	      set_mem_align (save_area, PARM_BOUNDARY);
-	      emit_block_move (save_area, stack_area, GEN_INT (num_to_save),
-			       BLOCK_OP_CALL_PARM);
-	    }
-	  else
-	    {
-	      save_area = gen_reg_rtx (save_mode);
-	      emit_move_insn (save_area, stack_area);
-	    }
-	}
+	 parameters, we must save and restore it.  */
+      save_area = save_fixed_argument_area (reg_parm_stack_space, argblock,
+					    &low_to_save, &high_to_save);
     }
 #endif
 
@@ -4192,29 +4135,8 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
     {
 #ifdef REG_PARM_STACK_SPACE
       if (save_area)
-	{
-	  enum machine_mode save_mode = GET_MODE (save_area);
-#ifdef ARGS_GROW_DOWNWARD
-	  rtx stack_area
-	    = gen_rtx_MEM (save_mode,
-			   memory_address (save_mode,
-					   plus_constant (argblock,
-							  - high_to_save)));
-#else
-	  rtx stack_area
-	    = gen_rtx_MEM (save_mode,
-			   memory_address (save_mode,
-					   plus_constant (argblock, low_to_save)));
-#endif
-
-	  set_mem_align (stack_area, PARM_BOUNDARY);
-	  if (save_mode != BLKmode)
-	    emit_move_insn (stack_area, save_area);
-	  else
-	    emit_block_move (stack_area, save_area,
-			     GEN_INT (high_to_save - low_to_save + 1),
-			     BLOCK_OP_CALL_PARM);
-	}
+	restore_fixed_argument_area (save_area, argblock,
+				     high_to_save, low_to_save);
 #endif
 
       /* If we saved any argument areas, restore them.  */
