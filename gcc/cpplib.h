@@ -131,7 +131,6 @@ typedef struct cpp_name cpp_name;
   /* Obsolete - will be removed when no code uses them still.  */	\
   H(CPP_COMMENT,	0)		/* Only if output comments.  */ \
   N(CPP_HSPACE,		0)		/* Horizontal white space.  */	\
-  N(CPP_POP,		0)		/* End of buffer.  */		\
   N(CPP_DIRECTIVE,	0)		/* #define and the like */	\
   N(CPP_MACRO,		0)		/* Like a NAME, but expanded.  */
 
@@ -192,7 +191,6 @@ struct cpp_token
 #define SYNTAX_ASSERT  (1 << 9)
 
 typedef int (*directive_handler) PARAMS ((cpp_reader *));
-typedef int (*parse_cleanup_t) PARAMS ((cpp_buffer *, cpp_reader *));
 
 struct cpp_toklist
 {
@@ -238,8 +236,6 @@ struct cpp_buffer
      to record control macros. */
   struct ihash *ihash;
 
-  parse_cleanup_t cleanup;
-
   /* If the buffer is the expansion of a macro, this points to the
      macro's hash table entry.  */
   struct hashnode *macro;
@@ -253,9 +249,6 @@ struct cpp_buffer
 
   /* True if this is a header file included using <FILENAME>.  */
   char system_header_p;
-
-  /* True if end-of-file has already been hit once in this buffer.  */
-  char seen_eof;
 
   /* True if buffer contains escape sequences.
      Currently there are two kinds:
@@ -271,17 +264,15 @@ struct cpp_buffer
      from macro expansion text in collect_expansion and/or macarg.  */
   char has_escapes;
 
-  /* Used by the C++ frontend to implement redirected input (such as for
-     default argument and/or template parsing).  */
-  char manual_pop;
-
   /* True if we have already warned about C++ comments in this file.
      The warning happens only for C89 extended mode with -pedantic on,
      or for -Wtraditional, and only once per file (otherwise it would
      be far too noisy).  */
   char warned_cplusplus_comments;
 
-  /* True if this buffer's data is mmapped.  */
+  /* In a file buffer, true if this buffer's data is mmapped
+     (currently never the case).  In a macro buffer, true if this
+     buffer's data must be freed.  */
   char mapped;
 };
 

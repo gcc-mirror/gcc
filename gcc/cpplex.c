@@ -45,7 +45,6 @@ static int copy_comment		PARAMS ((cpp_reader *, int));
 static void skip_string		PARAMS ((cpp_reader *, int));
 static void parse_string	PARAMS ((cpp_reader *, int));
 static U_CHAR *find_position	PARAMS ((U_CHAR *, U_CHAR *, unsigned long *));
-static int null_cleanup		PARAMS ((cpp_buffer *, cpp_reader *));
 static void null_warning        PARAMS ((cpp_reader *, unsigned int));
 
 static void safe_fwrite		PARAMS ((cpp_reader *, const U_CHAR *,
@@ -77,14 +76,6 @@ _cpp_grow_token_buffer (pfile, n)
   CPP_SET_WRITTEN (pfile, old_written);
 }
 
-static int
-null_cleanup (pbuf, pfile)
-     cpp_buffer *pbuf ATTRIBUTE_UNUSED;
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
-
 /* Allocate a new cpp_buffer for PFILE, and push it on the input buffer stack.
    If BUFFER != NULL, then use the LENGTH characters in BUFFER
    as the new input buffer.
@@ -107,7 +98,6 @@ cpp_push_buffer (pfile, buffer, length)
   new = (cpp_buffer *) xcalloc (1, sizeof (cpp_buffer));
 
   new->if_stack = pfile->if_stack;
-  new->cleanup = null_cleanup;
   new->buf = new->cur = buffer;
   new->rlimit = buffer + length;
   new->prev = buf;
@@ -125,7 +115,32 @@ cpp_pop_buffer (pfile)
   cpp_buffer *buf = CPP_BUFFER (pfile);
   if (ACTIVE_MARK_P (pfile))
     cpp_ice (pfile, "mark active in cpp_pop_buffer");
-  (*buf->cleanup) (buf, pfile);
+
+  if (buf->ihash)
+    {
+      _cpp_unwind_if_stack (pfile, buf);
+      if (buf->buf)
+	free ((PTR) buf->buf);
+      if (pfile->system_include_depth)
+	pfile->system_include_depth--;
+      if (pfile->potential_control_macro)
+	{
+	  buf->ihash->control_macro = pfile->potential_control_macro;
+	  pfile->potential_control_macro = 0;
+	}
+      pfile->input_stack_listing_current = 0;
+    }
+  else if (buf->macro)
+    {
+      HASHNODE *m = buf->macro;
+  
+      m->disabled = 0;
+      if ((m->type == T_FMACRO && buf->mapped)
+	  || m->type == T_SPECLINE || m->type == T_FILE
+	  || m->type == T_BASE_FILE || m->type == T_INCLUDE_LEVEL
+	  || m->type == T_STDC)
+	free ((PTR) buf->buf);
+    }
   CPP_BUFFER (pfile) = CPP_PREV_BUFFER (buf);
   free (buf);
   pfile->buffer_stack_depth--;
@@ -321,7 +336,7 @@ _cpp_expand_to_buffer (pfile, buf, length)
      const U_CHAR *buf;
      int length;
 {
-  cpp_buffer *ip;
+  cpp_buffer *stop;
   enum cpp_ttype token;
   U_CHAR *buf1;
 
@@ -338,33 +353,27 @@ _cpp_expand_to_buffer (pfile, buf, length)
   memcpy (buf1, buf, length);
 
   /* Set up the input on the input stack.  */
-  ip = cpp_push_buffer (pfile, buf1, length);
-  if (ip == NULL)
+  stop = CPP_BUFFER (pfile);
+  if (cpp_push_buffer (pfile, buf1, length) == NULL)
     return;
-  ip->has_escapes = 1;
+  CPP_BUFFER (pfile)->has_escapes = 1;
 
   /* Scan the input, create the output.  */
   for (;;)
     {
       token = cpp_get_token (pfile);
-      if (token == CPP_EOF)
+      if (token == CPP_EOF && CPP_BUFFER (pfile) == stop)
 	break;
-      if (token == CPP_POP && CPP_BUFFER (pfile) == ip)
-	{
-	  cpp_pop_buffer (pfile);
-	  break;
-	}
     }
 }
 
-/* Scan until CPP_BUFFER (PFILE) is exhausted, discarding output.
-   Then pop the buffer.  */
+/* Scan until CPP_BUFFER (PFILE) is exhausted, discarding output.  */
 
 void
 cpp_scan_buffer_nooutput (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *buffer = CPP_BUFFER (pfile);
+  cpp_buffer *stop = CPP_PREV_BUFFER (CPP_BUFFER (pfile));
   enum cpp_ttype token;
   unsigned int old_written = CPP_WRITTEN (pfile);
   /* In no-output mode, we can ignore everything but directives.  */
@@ -373,45 +382,33 @@ cpp_scan_buffer_nooutput (pfile)
       if (! pfile->only_seen_white)
 	_cpp_skip_rest_of_line (pfile);
       token = cpp_get_token (pfile);
-      if (token == CPP_EOF)
+      if (token == CPP_EOF && CPP_BUFFER (pfile) == stop)
 	break;
-      if (token == CPP_POP && CPP_BUFFER (pfile) == buffer)
-	{
-	  cpp_pop_buffer (pfile);
-	  break;
-	}
     }
   CPP_SET_WRITTEN (pfile, old_written);
 }
 
-/* Scan until CPP_BUFFER (pfile) is exhausted, writing output to PRINT.
-   Then pop the buffer.  */
+/* Scan until CPP_BUFFER (pfile) is exhausted, writing output to PRINT.  */
 
 void
 cpp_scan_buffer (pfile, print)
      cpp_reader *pfile;
      cpp_printer *print;
 {
-  cpp_buffer *buffer = CPP_BUFFER (pfile);
+  cpp_buffer *stop = CPP_PREV_BUFFER (CPP_BUFFER (pfile));
   enum cpp_ttype token;
 
   for (;;)
     {
       token = cpp_get_token (pfile);
-      if ((token == CPP_POP && !CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
-	  || token == CPP_EOF || token == CPP_VSPACE
+      if (token == CPP_EOF || token == CPP_VSPACE
 	  /* XXX Temporary kluge - force flush after #include only */
 	  || (token == CPP_DIRECTIVE
 	      && CPP_BUFFER (pfile)->nominal_fname != print->last_fname))
 	{
 	  cpp_output_tokens (pfile, print);
-	  if (token == CPP_EOF)
+	  if (token == CPP_EOF && CPP_BUFFER (pfile) == stop)
 	    return;
-	  if (token == CPP_POP && CPP_BUFFER (pfile) == buffer)
-	    {
-	      cpp_pop_buffer (pfile);
-	      return;
-	    }
 	}
     }
 }
@@ -1611,21 +1608,13 @@ cpp_get_token (pfile)
     case CPP_EOF:
       if (CPP_BUFFER (pfile) == NULL)
 	return CPP_EOF;
-      if (CPP_BUFFER (pfile)->manual_pop)
-	/* If we've been reading from redirected input, the
-	   frontend will pop the buffer.  */
-	return CPP_EOF;
-
-      if (CPP_BUFFER (pfile)->seen_eof)
+      if (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
 	{
 	  cpp_pop_buffer (pfile);
 	  goto get_next;
 	}
-      else
-	{
-	  _cpp_handle_eof (pfile);
-	  return CPP_POP;
-	}
+      cpp_pop_buffer (pfile);
+      return CPP_EOF;
     }
 }
 
@@ -1646,8 +1635,7 @@ cpp_get_non_space_token (pfile)
 }
 
 /* Like cpp_get_token, except that it does not execute directives,
-   does not consume vertical space, discards horizontal space, and
-   automatically pops off macro buffers.  */
+   does not consume vertical space, and discards horizontal space.  */
 enum cpp_ttype
 _cpp_get_directive_token (pfile)
      cpp_reader *pfile;

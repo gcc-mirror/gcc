@@ -215,8 +215,8 @@ _cpp_handle_directive (pfile)
 	return 0;
 
       if (CPP_PEDANTIC (pfile)
-	  && ! CPP_OPTION (pfile, preprocessed)
-	  && ! CPP_BUFFER (pfile)->manual_pop)
+	  && CPP_BUFFER (pfile)->ihash
+	  && ! CPP_OPTION (pfile, preprocessed))
 	cpp_pedwarn (pfile, "# followed by integer");
       do_line (pfile);
       return 1;
@@ -1345,14 +1345,17 @@ skip_if_group (pfile)
   pfile->no_macro_expand++;
   for (;;)
     {
-      /* We are at the end of a line.  Only cpp_get_token knows how to
-	 advance the line number correctly.  */
-      token = cpp_get_token (pfile);
-      if (token == CPP_POP)
+      /* We are at the end of a line.
+	 XXX Serious layering violation here.  */
+      int c = CPP_BUF_PEEK (CPP_BUFFER (pfile));
+      if (c == EOF)
 	break;  /* Caller will issue error.  */
-      else if (token != CPP_VSPACE)
-	cpp_ice (pfile, "cpp_get_token returned %d in skip_if_group", token);
+      else if (c != '\n')
+	cpp_ice (pfile, "character %c at end of line in skip_if_group", c);
+      CPP_BUFFER (pfile)->cur++;
+      CPP_BUMP_LINE (pfile);
       CPP_SET_WRITTEN (pfile, old_written);
+      pfile->only_seen_white = 1;
 
       token = _cpp_get_directive_token (pfile);
 
@@ -1458,15 +1461,18 @@ validate_else (pfile, directive)
   pfile->no_macro_expand--;
 }
 
+/* Called when we reach the end of a macro buffer.  Walk back up the
+   conditional stack till we reach its level at entry to this file,
+   issuing error messages.  */
 void
-_cpp_handle_eof (pfile)
+_cpp_unwind_if_stack (pfile, pbuf)
      cpp_reader *pfile;
+     cpp_buffer *pbuf;
 {
   struct if_stack *ifs, *nifs;
 
-  /* Unwind the conditional stack and generate error messages.  */
   for (ifs = pfile->if_stack;
-       ifs != CPP_BUFFER (pfile)->if_stack;
+       ifs != pbuf->if_stack;
        ifs = nifs)
     {
       cpp_error_with_line (pfile, ifs->lineno, 0,
@@ -1477,7 +1483,6 @@ _cpp_handle_eof (pfile)
       free (ifs);
     }
   pfile->if_stack = ifs;
-  CPP_BUFFER (pfile)->seen_eof = 1;
 }
 
 static int
@@ -1658,7 +1663,7 @@ cpp_undef (pfile, macro)
   memcpy (buf, macro, len);
   buf[len]     = '\n';
   buf[len + 1] = '\0';
-  if (cpp_push_buffer (pfile, buf, len + 1))
+  if (cpp_push_buffer (pfile, buf, len + 1) != NULL)
     {
       do_undef (pfile);
       cpp_pop_buffer (pfile);

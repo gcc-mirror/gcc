@@ -113,7 +113,6 @@ static int dump_hash_helper	  PARAMS ((void **, void *));
 static void push_macro_expansion PARAMS ((cpp_reader *, const U_CHAR *,
 					  int, HASHNODE *));
 static int unsafe_chars		 PARAMS ((cpp_reader *, int, int));
-static int macro_cleanup	 PARAMS ((cpp_buffer *, cpp_reader *));
 static enum cpp_ttype macarg	 PARAMS ((cpp_reader *, int));
 static void special_symbol	 PARAMS ((cpp_reader *, HASHNODE *));
 static int compare_defs		 PARAMS ((cpp_reader *,
@@ -332,22 +331,6 @@ _cpp_free_definition (h)
   h->value.cpval = NULL;
 }
 
-static int
-macro_cleanup (pbuf, pfile)
-     cpp_buffer *pbuf;
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  HASHNODE *m = pbuf->macro;
-  
-  m->disabled = 0;
-  if ((m->type == T_FMACRO && pbuf->buf != m->value.fdefn->expansion)
-      || m->type == T_SPECLINE || m->type == T_FILE
-      || m->type == T_BASE_FILE || m->type == T_INCLUDE_LEVEL
-      || m->type == T_STDC)
-    free ((PTR) pbuf->buf);
-  return 0;
-}
-
 /* Create pat nodes.  */
 
 static void
@@ -485,7 +468,6 @@ collect_objlike_expansion (pfile, list)
     {
       switch (list->tokens[i].type)
 	{
-	case CPP_POP:
 	case CPP_EOF:
 	  cpp_ice (pfile, "EOF in collect_expansion");
 	  /* fall through */
@@ -576,7 +558,6 @@ collect_funlike_expansion (pfile, list, arglist, replacement)
       len = list->tokens[i].val.name.len;
       switch (token)
 	{
-	case CPP_POP:
 	case CPP_EOF:
 	  cpp_ice (pfile, "EOF in collect_expansion");
 	  /* fall through */
@@ -1034,14 +1015,9 @@ macarg (pfile, rest_args)
       switch (token)
 	{
 	case CPP_EOF:
+	  /* We've hit end of file; this is an error.
+	     Caller will report it.  */
 	  return token;
-	case CPP_POP:
-	  /* If we've hit end of file, it's an error (reported by caller).
-	     Ditto if it's the end of cpp_expand_to_buffer text.
-	     If we've hit end of macro, just continue.  */
-	  if (!CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
-	    return token;
-	  break;
 	case CPP_OPEN_PAREN:
 	  paren++;
 	  break;
@@ -1361,7 +1337,7 @@ scan_arguments (pfile, defn, args, name)
 	}
       else
 	token = macarg (pfile, 0);
-      if (token == CPP_EOF || token == CPP_POP)
+      if (token == CPP_EOF)
 	cpp_error_with_line (pfile, start_line, start_column,
 			     "unterminated macro call");
       i++;
@@ -1663,6 +1639,9 @@ funlike_macroexpand (pfile, hp, args)
   /* Now put the expansion on the input stack
      so our caller will commence reading from it.  */
   push_macro_expansion (pfile, xbuf, totlen, hp);
+
+  /* Overload buffer->mapped to indicate that xbuf needs to be freed.  */
+  CPP_BUFFER (pfile)->mapped = 1;
 }
 
 /* Return 1 iff a token ending in C1 followed directly by a token C2
@@ -1771,7 +1750,6 @@ push_macro_expansion (pfile, xbuf, len, hp)
     return;
   if (advance_cur)
     mbuf->cur += 2;
-  mbuf->cleanup = macro_cleanup;
   mbuf->macro = hp;
   mbuf->has_escapes = 1;
 

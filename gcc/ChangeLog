@@ -1,3 +1,30 @@
+2000-05-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h (CPP_POP, parse_cleanup_t): Delete.
+	(cpp_buffer): Remove cleanup, seen_eof, manual_pop members.
+
+	* cppfiles.c (file_cleanup): Delete.
+	* cpphash.c (macro_cleanup): Delete.
+	(collect_objlike_expansion, collect_funlike_expansion,
+	macarg, scan_arguments): Remove CPP_POP case.
+
+	* cpplex.c (null_cleanup): Delete.
+	(cpp_pop_buffer): Do the work that was done in the cleanups
+	here.  Call _cpp_unwind_if_stack from here.
+	(_cpp_expand_to_buffer, cpp_scan_buffer_nooutput,
+	cpp_scan_buffer): Run until we see CPP_EOF and the top of
+	stack is the buffer _below_ the one we stacked.
+	(cpp_get_token): Always pop an exhausted buffer.  Return
+	CPP_EOF unless it's a macro buffer.  Don't call _cpp_handle_eof.
+	* cpplib.c (skip_if_group): Don't call cpp_get_token to
+	increment the line number.
+	(_cpp_handle_eof): Rename to _cpp_unwind_if_stack.
+
+	* fix-header.c (read_scan_file) [parsing getchar()]: Run until
+	we see CPP_EOF and the top of stack is the buffer _below_ the
+	one we stacked.
+	* scan-decls.c: Likewise.
+
 2000-05-02  Andrew Haley  <aph@cygnus.com>
 
 	* config/ia64/ia64.c (ia64_encode_section_info): Handle the case
