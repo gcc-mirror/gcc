@@ -5005,15 +5005,6 @@ assign_parms (fndecl)
 	  set_mem_attributes (x, result, 1);
 	  SET_DECL_RTL (result, x);
 	}
-
-      if (GET_CODE (DECL_RTL (parm)) == REG)
-	REGNO_DECL (REGNO (DECL_RTL (parm))) = parm;
-      else if (GET_CODE (DECL_RTL (parm)) == CONCAT)
-	{
-	  REGNO_DECL (REGNO (XEXP (DECL_RTL (parm), 0))) = parm;
-	  REGNO_DECL (REGNO (XEXP (DECL_RTL (parm), 1))) = parm;
-	}
-
     }
 
   /* Output all parameter conversion instructions (possibly including calls)

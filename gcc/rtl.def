@@ -811,7 +811,7 @@ DEF_RTL_EXPR(VALUE, "value", "0", 'o')
    pseudo register that got turned into a hard register.
    This rtx needs to have as many (or more) fields as a MEM, since we
    can change REG rtx's into MEMs during reload.  */
-DEF_RTL_EXPR(REG, "reg", "i0", 'o')
+DEF_RTL_EXPR(REG, "reg", "i00", 'o')
 
 /* A scratch register.  This represents a register used only within a
    single insn.  It will be turned into a REG during register allocation

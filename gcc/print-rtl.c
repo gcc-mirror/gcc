@@ -409,6 +409,23 @@ print_rtx (in_rtx)
 	    else
 	      fprintf (outfile, " %d", value);
 
+	    if (GET_CODE (in_rtx) == REG && REG_ATTRS (in_rtx))
+	      {
+		fputs (" [", outfile);
+		if (ORIGINAL_REGNO (in_rtx) != REGNO (in_rtx))
+		  fprintf (outfile, "orig:%i", ORIGINAL_REGNO (in_rtx));
+		if (REG_EXPR (in_rtx))
+		  print_mem_expr (outfile, REG_EXPR (in_rtx));
+
+		if (REG_OFFSET (in_rtx))
+		  {
+		    fputc ('+', outfile);
+		    fprintf (outfile, HOST_WIDE_INT_PRINT_DEC,
+			     REG_OFFSET (in_rtx));
+		  }
+		fputs (" ]", outfile);
+	      }
+
 	    if (is_insn && &INSN_CODE (in_rtx) == &XINT (in_rtx, i)
 		&& XINT (in_rtx, i) >= 0
 		&& (name = get_insn_name (XINT (in_rtx, i))) != NULL)
