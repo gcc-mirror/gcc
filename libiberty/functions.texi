@@ -196,7 +196,7 @@ argument vector.
 
 @end deftypefn
 
-@c strerror.c:566
+@c strerror.c:567
 @deftypefn Extension int errno_max (void)
 
 Returns the maximum @code{errno} value for which a corresponding
@@ -359,7 +359,7 @@ or zero if it is not.  Note that the value you pass will be cast to
 @end deftypefn
 
 @c hex.c:47
-@deftypefn Extension unsigned int hex_value (int @var{c})
+@deftypefn Extension {unsigned int} hex_value (int @var{c})
 
 Returns the numeric equivalent of the given character when interpreted
 as a hexidecimal digit.  The result is undefined if you pass an
@@ -649,7 +649,7 @@ text of the error message with an optional argument (if not needed,
 
 @end deftypefn
 
-@c strsignal.c:547
+@c strsignal.c:546
 @deftypefn Supplemental void psignal (unsigned @var{signo}, char *@var{message})
 
 Print @var{message} to the standard error, followed by a colon,
@@ -746,7 +746,7 @@ environment.  This implementation is not safe for multithreaded code.
 
 @end deftypefn
 
-@c strsignal.c:353
+@c strsignal.c:352
 @deftypefn Extension int signo_max (void)
 
 Returns the maximum signal value for which a corresponding symbolic
@@ -837,7 +837,7 @@ Returns a pointer to a copy of @var{s} in memory obtained from
 
 @end deftypefn
 
-@c strerror.c:670
+@c strerror.c:671
 @deftypefn Replacement {const char*} strerrno (int @var{errnum})
 
 Given an error number returned from a system call (typically returned
@@ -857,7 +857,7 @@ valid until the next call to @code{strerrno}.
 
 @end deftypefn
 
-@c strerror.c:602
+@c strerror.c:603
 @deftypefn Supplemental char* strerror (int @var{errnoval})
 
 Maps an @code{errno} number to an error message string, the contents
@@ -902,7 +902,7 @@ null character, the results are undefined.
 
 @end deftypefn
 
-@c strsignal.c:388
+@c strsignal.c:387
 @deftypefn Supplemental {const char *} strsignal (int @var{signo})
 
 Maps an signal number to an signal message string, the contents of
@@ -923,7 +923,7 @@ call to @code{strsignal}.
 
 @end deftypefn
 
-@c strsignal.c:452
+@c strsignal.c:451
 @deftypefn Extension {const char*} strsigno (int @var{signo})
 
 Given an signal number, returns a pointer to a string containing the
@@ -965,7 +965,7 @@ the location referenced by @var{endptr}.
 
 @end deftypefn
 
-@c strerror.c:730
+@c strerror.c:731
 @deftypefn Extension int strtoerrno (const char *@var{name})
 
 Given the symbolic name of a error number (e.g., @code{EACCES}), map it
@@ -989,7 +989,7 @@ that the converted value is unsigned.
 
 @end deftypefn
 
-@c strsignal.c:507
+@c strsignal.c:506
 @deftypefn Extension int strtosigno (const char *@var{name})
 
 Given the symbolic name of a signal, map it to a signal number.  If no
@@ -1008,7 +1008,7 @@ not be used in new projects.  Use @code{mkstemp} instead.
 
 @end deftypefn
 
-@c vasprintf.c:48
+@c vasprintf.c:51
 @deftypefn Extension int vasprintf (char **@var{resptr}, const char *@var{format}, va_list @var{args})
 
 Like @code{vsprintf}, but instead of passing a pointer to a buffer,
