@@ -1,6 +1,7 @@
 Fri Jan 30 09:08:16 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in: Check for declaration of abort.
+	* acconfig.h: Corresponding changes.
 	* toplev.c: Use NEED_DECLARATION_ABORT to determine if abort should
 	be declared.
 
