@@ -483,7 +483,7 @@ extern void override_options ();
    Alpha we'll get better performance by aligning on an octaword
    boundary.  */
 
-#define ALIGN_LABEL_AFTER_BARRIER(FILE)	\
+#define LABEL_ALIGN_AFTER_BARRIER(FILE)	\
   (optimize > 0 && write_symbols != SDB_DEBUG ? 4 : 0)
 
 /* No data type wants to be aligned rounder than this.  */
@@ -1679,6 +1679,12 @@ do {									\
 
 /* The EV4 is dual issue; EV5/EV6 are quad issue.  */
 #define ISSUE_RATE  (alpha_cpu == PROCESSOR_EV4 ? 2 : 4)
+
+/* Describe the fact that MULTI instructions are multiple instructions
+   and so to assume they don't pair with anything.  */
+#define MD_SCHED_VARIABLE_ISSUE(DUMP, SCHED_VERBOSE, INSN, CAN_ISSUE_MORE) \
+  if (recog_memoized (INSN) < 0 || get_attr_type (INSN) == TYPE_MULTI)	   \
+     (CAN_ISSUE_MORE) = 0
 
 /* Compute the cost of computing a constant rtl expression RTX
    whose rtx-code is CODE.  The body of this macro is a portion
