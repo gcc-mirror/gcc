@@ -172,43 +172,35 @@
 		   (match_operand:V8QI 2 "gr_register_operand" "r")))]
   ""
 {
-  rtx l1, h1, l2, h2, lm, hm, lz, hz;
+  rtx r1, l1, r2, l2, rm, lm;
 
+  r1 = gen_reg_rtx (V4HImode);
   l1 = gen_reg_rtx (V4HImode);
-  h1 = gen_reg_rtx (V4HImode);
+  r2 = gen_reg_rtx (V4HImode);
   l2 = gen_reg_rtx (V4HImode);
-  h2 = gen_reg_rtx (V4HImode);
 
-  /* Zero-extend the QImode elements into two words of HImode elements.  */
-  emit_insn (gen_unpack1_l (gen_lowpart (V8QImode, l1),
-			    operands[1], CONST0_RTX (V8QImode)));
-  emit_insn (gen_unpack1_l (gen_lowpart (V8QImode, l2),
-			    operands[2], CONST0_RTX (V8QImode)));
-  emit_insn (gen_unpack1_h (gen_lowpart (V8QImode, h1),
-			    operands[1], CONST0_RTX (V8QImode)));
-  emit_insn (gen_unpack1_h (gen_lowpart (V8QImode, h2),
-			    operands[2], CONST0_RTX (V8QImode)));
+  /* Zero-extend the QImode elements into two words of HImode elements
+     by interleaving them with zero bytes.  */
+  emit_insn (gen_mix1_r (gen_lowpart (V8QImode, r1),
+                         operands[1], CONST0_RTX (V8QImode)));
+  emit_insn (gen_mix1_r (gen_lowpart (V8QImode, r2),
+                         operands[2], CONST0_RTX (V8QImode)));
+  emit_insn (gen_mix1_l (gen_lowpart (V8QImode, l1),
+                         operands[1], CONST0_RTX (V8QImode)));
+  emit_insn (gen_mix1_l (gen_lowpart (V8QImode, l2),
+                         operands[2], CONST0_RTX (V8QImode)));
 
   /* Multiply.  */
+  rm = gen_reg_rtx (V4HImode);
   lm = gen_reg_rtx (V4HImode);
-  hm = gen_reg_rtx (V4HImode);
+  emit_insn (gen_mulv4hi3 (rm, r1, r2));
   emit_insn (gen_mulv4hi3 (lm, l1, l2));
-  emit_insn (gen_mulv4hi3 (hm, h1, h2));
 
-  /* Zap the high order bytes of the HImode elements.  There are several
-     ways that this could be done.  On Itanium2, there's 1 cycle latency
-     moving between the ALU units and the PALU units, so using AND would
-     be 3 cycles latency into the eventual pack insn, whereas using MIX
-     is only 2 cycles.  */
-  lz = gen_reg_rtx (V4HImode);
-  hz = gen_reg_rtx (V4HImode);
-  emit_insn (gen_mix1_r (gen_lowpart (V8QImode, lz),
-			 gen_lowpart (V8QImode, lm), CONST0_RTX (V8QImode)));
-  emit_insn (gen_mix1_r (gen_lowpart (V8QImode, lz),
-			 gen_lowpart (V8QImode, lm), CONST0_RTX (V8QImode)));
-
-  /* Repack the HImode elements as QImode elements.  */
-  emit_insn (gen_pack2_sss (operands[0], lz, hz));
+  /* Zap the high order bytes of the HImode elements by overwriting those
+     in one part with the low order bytes of the other.  */
+  emit_insn (gen_mix1_r (operands[0],
+                         gen_lowpart (V8QImode, rm),
+                         gen_lowpart (V8QImode, lm)));
   DONE;
 })
 
@@ -218,7 +210,7 @@
 		   (match_operand:V4HI 2 "gr_register_operand" "r")))]
   ""
   "pmpyshr2 %0 = %1, %2, 0"
-  [(set_attr "itanium_class" "mmalua")])
+  [(set_attr "itanium_class" "mmmul")])
 
 (define_expand "umax<mode>3"
   [(set (match_operand:VECINT 0 "gr_register_operand" "")
@@ -450,7 +442,7 @@
   "mix1.r %0 = %r2, %r1"
   [(set_attr "itanium_class" "mmshf")])
 
-(define_insn "*mix1_l"
+(define_insn "mix1_l"
   [(set (match_operand:V8QI 0 "gr_register_operand" "=r")
 	(vec_select:V8QI
 	  (vec_concat:V16QI
@@ -948,45 +940,13 @@
   DONE;
 })
 
-(define_insn "*fpack_sfsf"
+(define_insn "*fpack"
   [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
 	(vec_concat:V2SF
 	  (match_operand:SF 1 "fr_reg_or_fp01_operand" "fG")
 	  (match_operand:SF 2 "fr_reg_or_fp01_operand" "fG")))]
   ""
   "fpack %0 = %F2, %F1"
-  [(set_attr "itanium_class" "fmisc")])
-
-(define_insn "*fpack_sfxf"
-  [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
-	(vec_concat:V2SF
-	  (match_operand:SF 1 "fr_reg_or_fp01_operand" "fG")
-	  (float_truncate:SF
-	    (match_operand 2 "fr_register_operand" "f"))))]
-  "GET_MODE (operands[2]) == DFmode || GET_MODE (operands[2]) == XFmode"
-  "fpack %0 = %2, %F1"
-  [(set_attr "itanium_class" "fmisc")])
-
-(define_insn "*fpack_xfsf"
-  [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
-	(vec_concat:V2SF
-	  (float_truncate:SF
-	    (match_operand 1 "fr_register_operand" "f"))
-	  (match_operand:SF 2 "fr_reg_or_fp01_operand" "fG")))]
-  "GET_MODE (operands[1]) == DFmode || GET_MODE (operands[1]) == XFmode"
-  "fpack %0 = %F2, %1"
-  [(set_attr "itanium_class" "fmisc")])
-
-(define_insn "*fpack_xfxf"
-  [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
-	(vec_concat:V2SF
-	  (float_truncate:SF
-	    (match_operand 1 "fr_register_operand" "f"))
-	  (float_truncate:SF
-	    (match_operand 2 "fr_register_operand" "f"))))]
-  "(GET_MODE (operands[1]) == DFmode || GET_MODE (operands[1]) == XFmode)
-   && (GET_MODE (operands[2]) == DFmode || GET_MODE (operands[2]) == XFmode)"
-  "fpack %0 = %2, %1"
   [(set_attr "itanium_class" "fmisc")])
 
 ;; Missing operations
