@@ -1,3 +1,7 @@
+2004-07-09  Loren James Rittle  <ljrittle@acm.org> 
+
+	* gcc.dg/builtins-config.h: Handle FreeBSD.
+
 2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20040708-1.c: New test.
