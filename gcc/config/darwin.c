@@ -998,8 +998,8 @@ darwin_make_decl_one_only (tree decl)
   tree sec = 0;
   if (textcoal_section == 0)
     {
-      static const char *ts = "__TEXT,__textcoal_nt,coalesced,no_toc";
-      static const char *ds = "__DATA,__datacoal_nt,coalesced,no_toc";
+      static const char *ts = "__TEXT,__textcoal_nt,coalesced";
+      static const char *ds = "__DATA,__datacoal_nt,coalesced";
       textcoal_section = build_string (strlen (ts), ts);
       datacoal_section = build_string (strlen (ds), ds);
     }

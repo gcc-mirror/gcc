@@ -1,3 +1,8 @@
+2004-09-22  Matt Austern  <austern@apple.com>
+
+	* config/darwin.c (darwin_make_decl_one_only)
+	Allow coalesced symbol to appear in static archive's table of contents
+	
 2004-09-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/17512
