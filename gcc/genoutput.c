@@ -1,5 +1,5 @@
 /* Generate code from to output assembler insns as recognized from rtl.
-   Copyright (C) 1987, 1988, 1992, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -222,7 +222,7 @@ output_epilogue ()
   printf ("\nrtx (*const insn_gen_function[]) () =\n  {\n");
   for (d = insn_data; d; d = d->next)
     {
-      if (d->name)
+      if (d->name && d->name[0] != '*')
 	printf ("    gen_%s,\n", d->name);
       else
 	printf ("    0,\n");
