@@ -7626,7 +7626,7 @@
 	* doc/install.texi (powerpc-*-darwin*): Mention cctools version
 	required.
 
-2004-08-02  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+2004-08-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* gdbinit.in: Reflect previous changes to rtunion_def.
 
