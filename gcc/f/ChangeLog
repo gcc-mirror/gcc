@@ -1,3 +1,8 @@
+2002-01-26  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* intrin.c (ffeintrin_cmp_name_): Correct comparison
+	for intrinsics in intrinsic table (intrin.def).
+
 2002-01-22  Zack Weinberg  <zack@codesourcery.com>
 
 	* bad.c: Include intl.h.
