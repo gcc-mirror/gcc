@@ -253,8 +253,8 @@ package body GNAT.Directory_Operations is
             Double_Result_Size;
          end loop;
 
-         Result (Result_Last + 1 .. Result_Last + S'Length - 1) := S;
-         Result_Last := Result_Last + S'Length - 1;
+         Result (Result_Last + 1 .. Result_Last + S'Length) := S;
+         Result_Last := Result_Last + S'Length;
       end Append;
 
       ------------------------
