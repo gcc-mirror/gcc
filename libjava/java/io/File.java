@@ -233,14 +233,26 @@ public class File implements Serializable
 				     File directory)
     throws IOException
   {
-    FileDescriptor desc = new FileDescriptor ();
-
-    SecurityManager s = System.getSecurityManager();
-    if (s != null)
-      s.checkWrite (desc);
+    // Grab the system temp directory if necessary
+    if (directory == null)
+      {
+	String dirname = tmpdir;
+	if (dirname == null)
+	  throw 
+	    new IOException("Cannot determine system temporary directory"); 
+	
+	directory = new File(dirname);
+	if (!directory.exists())
+	  throw new IOException("System temporary directory " 
+				+ directory.getName() + " does not exist.");
+	if (!directory.isDirectory())
+	  throw new IOException("System temporary directory " 
+				+ directory.getName() 
+				+ " is not really a directory.");
+      }
 
     if (prefix.length () < 3)
-      throw new IllegalArgumentException ();
+      throw new IllegalArgumentException ("Prefix too short: " + prefix);
     if (suffix == null)
       suffix = ".tmp";
 
@@ -259,8 +271,8 @@ public class File implements Serializable
 	  prefix = prefix.substring(0, max_length - 6 - suf_len);
       }
 
-    // We don't care about the name because we set it later.
-    File ret = new File ("");
+    File f;
+
     // How many times should we try?  We choose 100.
     for (int i = 0; i < 100; ++i)
       {
@@ -269,18 +281,33 @@ public class File implements Serializable
 	String l = prefix + t.substring(t.length() - 6) + suffix;
 	try
 	  {
-	    desc = new FileDescriptor 
-	      (l, FileDescriptor.WRITE | FileDescriptor.EXCL);
-	    desc.close ();
-	    ret.setPath(l);
-	    return ret;
+	    f = new File(directory, l);
+	    if (f.exists())
+	      continue;
+	    else
+	      {
+		String af = f.getAbsolutePath ();
+		
+		// Check to see if we're allowed to write to it.
+		SecurityManager s = System.getSecurityManager();
+		if (s != null)
+		  s.checkWrite (af);
+		
+		// Now create the file.
+		FileDescriptor fd = 
+		  new FileDescriptor (af, 
+				      FileDescriptor.WRITE
+				      | FileDescriptor.EXCL);
+		fd.close ();
+		return f;
+	      }
 	  }
 	catch (IOException _)
 	  {
 	  }
       }
 
-    throw new IOException ("couldn't make temp file");
+    throw new IOException ("cannot create temporary file");
   }
 
   public static File createTempFile (String prefix, String suffix)
