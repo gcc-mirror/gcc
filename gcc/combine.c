@@ -907,10 +907,14 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
       if ((inner_dest != dest
 	   && (reg_overlap_mentioned_p (i2dest, inner_dest)
 	       || (i1dest && reg_overlap_mentioned_p (i1dest, inner_dest))))
-	  /* This is the same test done in can_combine_p.  */
+	  /* This is the same test done in can_combine_p except that we
+	     allow a hard register with SMALL_REGISTER_CLASSES if SRC is a
+	     CALL operation.  */
 	  || (GET_CODE (inner_dest) == REG
 	      && REGNO (inner_dest) < FIRST_PSEUDO_REGISTER
-#ifndef SMALL_REGISTER_CLASSES
+#ifdef SMALL_REGISTER_CLASSES
+	      && GET_CODE (src) != CALL
+#else
 	      && ! HARD_REGNO_MODE_OK (REGNO (inner_dest),
 				       GET_MODE (inner_dest))
 #endif
@@ -1478,7 +1482,10 @@ try_combine (i3, i2, i1)
 			       i3);
 
       if (m_split && GET_CODE (m_split) == SEQUENCE
-	  && XVECLEN (m_split, 0) == 2)
+	  && XVECLEN (m_split, 0) == 2
+	  && (next_real_insn (i2) == i3
+	      || ! use_crosses_set_p (PATTERN (XVECEXP (m_split, 0, 0)),
+				      INSN_CUID (i2))))
 	{
 	  newi2pat = PATTERN (XVECEXP (m_split, 0, 0));
 	  newpat = PATTERN (XVECEXP (m_split, 0, 1));
@@ -3016,11 +3023,11 @@ subst (x, from, to, in_dest, unique_copy)
 	     if only the low-order bit is significant in X (such as when
 	     X is a ZERO_EXTRACT of one bit.  Similarly, we can convert
 	     EQ to (xor X 1).  */
-	  if (new_code == NE && mode != VOIDmode
+	  if (new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
 	      && op1 == const0_rtx
 	      && significant_bits (op0, GET_MODE (op0)) == 1)
 	    return gen_lowpart_for_combine (mode, op0);
-	  else if (new_code == EQ && mode != VOIDmode
+	  else if (new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
 		   && significant_bits (op0, GET_MODE (op0)) == 1)
 	    return gen_rtx_combine (XOR, mode,
@@ -3033,7 +3040,7 @@ subst (x, from, to, in_dest, unique_copy)
 	     to (neg x) if only the low-order bit of X is significant.
 	     This converts (ne (zero_extract X 1 Y) 0) to
 	     (sign_extract X 1 Y).  */
-	  if (new_code == NE && mode != VOIDmode
+	  if (new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
 	      && op1 == const0_rtx
 	      && significant_bits (op0, GET_MODE (op0)) == 1)
 	    {
@@ -3048,7 +3055,7 @@ subst (x, from, to, in_dest, unique_copy)
 	     where C puts the bit in the sign bit.  Remove any AND with
 	     STORE_FLAG_VALUE when we are done, since we are only going to
 	     test the sign bit.  */
-	  if (new_code == NE && mode != VOIDmode
+	  if (new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
 	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_INT
 	      && STORE_FLAG_VALUE == 1 << (GET_MODE_BITSIZE (mode) - 1)
 	      && op1 == const0_rtx
@@ -5140,7 +5147,9 @@ significant_bits (x, mode)
     case LT:  case LTU:
     case GE:  case GEU:
     case LE:  case LEU:
-      significant = 1;
+
+      if (GET_MODE_CLASS (mode) == MODE_INT)
+	significant = 1;
 
       /* A comparison operation only sets the bits given by its mode.  The
 	 rest are set undefined.  */
@@ -6007,6 +6016,33 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	    {
 	      count = 0;
 	      varop = XEXP (varop, 0);
+	      continue;
+	    }
+
+	  /* If we have (xshiftrt (plus FOO BAR) C), and the only bits
+	     significant in BAR are those being shifted out and those
+	     bits are known zero in FOO, we can replace the PLUS with FOO.
+	     Similarly in the other operand order.  This code occurs when
+	     we are computing the size of a variable-size array.  */
+
+	  if ((code == ASHIFTRT || code == LSHIFTRT)
+	      && count < HOST_BITS_PER_INT
+	      && significant_bits (XEXP (varop, 1), result_mode) >> count == 0
+	      && (significant_bits (XEXP (varop, 1), result_mode)
+		  & significant_bits (XEXP (varop, 0), result_mode)) == 0)
+	    {
+	      varop = XEXP (varop, 0);
+	      continue;
+	    }
+	  else if ((code == ASHIFTRT || code == LSHIFTRT)
+		   && count < HOST_BITS_PER_INT
+		   && 0 == (significant_bits (XEXP (varop, 0), result_mode)
+			    >> count)
+		   && 0 == (significant_bits (XEXP (varop, 0), result_mode)
+			    & significant_bits (XEXP (varop, 1),
+						 result_mode)))
+	    {
+	      varop = XEXP (varop, 1);
 	      continue;
 	    }
 
@@ -6970,6 +7006,7 @@ simplify_comparison (code, pop0, pop1)
 	  if (code == NE
 	      || (code == EQ && reversible_comparison_p (op0))
 	      || (GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_INT
+		  && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT
 		  && (STORE_FLAG_VALUE
 		      & (1 << (GET_MODE_BITSIZE (GET_MODE (op0)) - 1)))
 		  && (code == LT
