@@ -1,3 +1,11 @@
+2002-08-07  DJ Delorie  <dj@redhat.com>
+
+	* regex.c (re_error_msgid): Just use a simple array of strings.
+	(re_compile_pattern): Compensate.
+	(re_comp): Likewise.
+	(re_comp): Likewise.
+	(regerror): Likewise.
+
 2002-07-29  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cplus-dem.c (PREPEND_BLANK): Remove.
