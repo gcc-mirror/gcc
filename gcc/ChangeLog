@@ -1,3 +1,9 @@
+Mon Feb 22 08:55:05 1999  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* objc/objc-act.c (encode_type): Temporary revert to the old
+ 	behavior of encoding types as the new one seems to break the
+ 	encoding of bitfields.
+
 Mon Feb 22 11:40:44 1999  Craig Burley  <craig@jcb-sc.com>
 Sat Feb 20 09:59:36 1999  Craig Burley  <craig@jcb-sc.com>
 
