@@ -1521,6 +1521,42 @@ changequote([, ])
 		[Define if your assembler supports offsetable %lo().])
 	fi
     fi
+    AC_CACHE_CHECK([assembler R_SPARC_UA32 relocation support],
+	gcc_cv_as_ua32_reloc, [
+        gcc_cv_as_ua32_reloc=
+	cat >conftest.s << EOF
+	.byte 0x1
+	.uaword foo
+EOF
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+	  if (readelf -r conftest.o > conftest.elf) 2>/dev/null ; then
+	    true
+	  elif (elfdump -r conftest.o > conftest.elf) 2>/dev/null ; then
+	    true
+	  elif (`dirname $gcc_cv_as`/readelf -r conftest.o > conftest.elf) 2>/dev/null ; then
+	    true
+	  elif (`dirname $gcc_cv_as`/elfdump -r conftest.o > conftest.elf) 2>/dev/null ; then
+	    true
+	  else
+	    gcc_cv_as_ua32_reloc=unknown
+	  fi
+	  if test x$gcc_cv_as_ua32_reloc = x && test `grep -c R_SPARC_UA32 conftest.elf` = 1 ; then
+	    gcc_cv_as_ua32_reloc=yes
+	  else
+	    gcc_cv_as_ua32_reloc=no
+	  fi
+	else
+	  gcc_cv_as_ua32_reloc=unknown
+	fi
+	rm -f conftest.s conftest.o conftest.elf
+	])
+    if test "x$gcc_cv_as_ua32_reloc" = xno; then
+      AC_MSG_ERROR([Assembler does not support R_SPARC_UA32 correctly.
+Please use native assembler or upgrade to binutils >= 2.11.1])
+    elif test "x$gcc_cv_as_ua32_reloc" != xyes ; then
+      AC_MSG_WARN([Cannot determine whether assembler supports R_SPARC_UA32 correctly.
+The resulting compiler might not produce useable executables.])
+    fi
     ;;
 
 changequote(,)dnl
