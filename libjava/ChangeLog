@@ -58,8 +58,8 @@
 
 2002-02-06  Adam Megacz <adam@xwt.org>
 
-	* shs.h, shs.cc, natSimpleSHSStream.cc: use uint<n>_t instead
-	of LONG and BYTE
+	* gnu/gcj/io/shs.h, gnu/gcj/io/shs.cc, gnu/gcj/io/natSimpleSHSStream.cc:
+	use uint<n>_t instead of LONG and BYTE
 	
 2002-02-06  Adam Megacz <adam@xwt.org>
 
