@@ -2397,73 +2397,6 @@ schedule_block (b, file)
     return;
 #endif
 
-  /* Exclude certain insns at the end of the basic block by advancing TAIL.  */
-  /* This isn't correct.  Instead of advancing TAIL, should assign very
-     high priorities to these insns to guarantee that they get scheduled last.
-     If these insns are ignored, as is currently done, the register life info
-     may be incorrectly computed.  */
-  if (GET_CODE (tail) == INSN && GET_CODE (PATTERN (tail)) == USE)
-    {
-      /* Don't try to reorder any USE insns at the end of any block.
-	 They must be last to ensure proper register allocation.
-	 Exclude them all from scheduling.  */
-      do
-	{
-	  /* If we are down to one USE insn, then there are no insns to
-	     schedule.  */
-	  if (head == tail)
-	    return;
-
-	  tail = prev_nonnote_insn (tail);
-	}
-      while (GET_CODE (tail) == INSN
-	     && GET_CODE (PATTERN (tail)) == USE);
-
-#if 0
-      /* This short-cut does not work.  See comment above.  */
-      if (head == tail)
-	return;
-#endif
-    }
-  else if (GET_CODE (tail) == JUMP_INSN
-	   && SCHED_GROUP_P (tail) == 0
-	   && GET_CODE (PREV_INSN (tail)) == INSN
-	   && GET_CODE (PATTERN (PREV_INSN (tail))) == USE
-	   && REG_FUNCTION_VALUE_P (XEXP (PATTERN (PREV_INSN (tail)), 0)))
-    {
-      /* Don't let the setting of the function's return value register
-	 move from this jump.  For the same reason we want to get the
-	 parameters into pseudo registers as quickly as possible, we
-	 want to set the function's return value register as late as
-	 possible.  */
-
-      /* If this is the only insn in the block, then there is no need to
-	 schedule the block.  */
-      if (head == tail)
-	return;
-	
-      tail = PREV_INSN (tail);
-      if (head == tail)
-	return;
-
-      tail = prev_nonnote_insn (tail);
-
-#if 0
-      /* This shortcut does not work.  See comment above.  */
-      if (head == tail)
-	return;
-#endif
-    }
-
-#ifdef HAVE_cc0
-  /* This is probably wrong.  Instead of doing this, should give this insn
-     a very high priority to guarantee that it gets scheduled last.  */
-  /* Can not separate an insn that sets the condition code from one that
-     uses it.  So we must leave an insn that sets cc0 where it is.  */
-  if (sets_cc0_p (PATTERN (tail)))
-    tail = PREV_INSN (tail);
-#endif
-
   /* Now HEAD through TAIL are the insns actually to be rearranged;
      Let PREV_HEAD and NEXT_TAIL enclose them.  */
   prev_head = PREV_INSN (head);
@@ -2499,16 +2432,42 @@ schedule_block (b, file)
      Put those insns into the READY vector.  */
   insn = tail;
 
-  /* If the last insn is a branch, force it to be the last insn after
-     scheduling.  Also, don't try to reorder calls at the ends the basic
-     block -- this will only lead to worse register allocation.  */
-  if (GET_CODE (tail) == CALL_INSN || GET_CODE (tail) == JUMP_INSN)
+  /* For all branches, calls, uses, and cc0 setters, force them to remain
+     in order at the end of the block by giving them high priorities.
+     There may be notes present, and prev_head may also be a note.
+
+     Branches must obviously remain at the end.  Calls should remain at the
+     end since moving them results in worse register allocation.  Uses remain
+     at the end to ensure proper register allocation.  cc0 setters remaim
+     at the end because they can't be moved away from their cc0 user.  */
+  i = 0;
+  while (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN
+	 || (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE)
+#ifdef HAVE_cc0
+	 || sets_cc0_p (PATTERN (insn))
+#endif
+	 || GET_CODE (insn) == NOTE)
     {
-      priority (tail);
-      ready[n_ready++] = tail;
-      INSN_PRIORITY (tail) = TAIL_PRIORITY;
-      INSN_REF_COUNT (tail) = 0;
-      insn = PREV_INSN (tail);
+      if (GET_CODE (insn) != NOTE)
+	{
+	  priority (insn);
+	  ready[n_ready++] = insn;
+	  INSN_PRIORITY (insn) = TAIL_PRIORITY - i;
+	  i++;
+	  INSN_REF_COUNT (insn) = 0;
+
+	  /* Skip over insns that are part of a group.  */
+	  while (SCHED_GROUP_P (insn))
+	    {
+	      insn = prev_nonnote_insn (insn);
+	      priority (insn);
+	    }
+	}
+
+      insn = PREV_INSN (insn);
+      /* Don't overrun the bounds of the basic block.  */
+      if (insn == prev_head)
+	break;
     }
 
   /* Assign priorities to instructions.  Also check whether they
