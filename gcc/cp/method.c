@@ -1621,7 +1621,12 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
           typevec = NULL;
           while (t)
             {
-              TREE_USED (TREE_VALUE (t)) = 0;
+              tree temp = TREE_VALUE (t);
+              TREE_USED (temp) = 0;
+              /* clear out the type variant in case we used it */
+              temp = build_type_variant (TYPE_MAIN_VARIANT (temp),
+                    TYPE_READONLY (temp), TYPE_VOLATILE (temp));
+              TREE_USED (temp) = 0;
               t = TREE_CHAIN (t);
             }
         }

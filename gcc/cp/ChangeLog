@@ -1,3 +1,8 @@
+Thu May  7 17:09:25 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* method.c (build_decl_overload_real): Set TREE_USED flag to
+	zero for build_type_variants nodes as well.
+
 Wed May  6 19:27:09 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (tsubst): Don't tsubst the type of an IDENTIFIER_NODE.
@@ -40,7 +45,8 @@ Tue May  5 23:54:04 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 Tue May  5 18:24:13 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
-	* method.c: Add a call to build_type_variant to get the right type.
+	* method.c (build_mangled_name): Add a call to build_type_variant 
+	to get the right type.
 
 Tue May  5 01:25:03 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
