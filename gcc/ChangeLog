@@ -1,3 +1,10 @@
+Wed Sep 17 18:33:59 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* mips/abi64.h (LONG_MAX_SPEC): Define.
+	* mips.h (LONG_MAX_SPEC): Define.
+	(CPP_SPEC): Include long_max_spec.
+	(EXTRA_SPECS): Include long_max_spec.
+
 1997-09-17  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* configure.in, configure: Make sure to create the stage* and include
