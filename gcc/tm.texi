@@ -153,6 +153,9 @@ pass to @code{cc1plus}.  It can also specify how to translate options you
 give to GCC into options for GCC to pass to the @code{cc1plus}.
 
 Do not define this macro if it does not need to do anything.
+Note that everything defined in CC1_SPEC is already passed to
+@code{cc1plus} so there is no need to duplicate the contents of
+CC1_SPEC in CC1PLUS_SPEC.
 
 @findex ASM_SPEC
 @item ASM_SPEC

@@ -1,3 +1,8 @@
+Mon Oct 18 21:16:06 1999  Fred Fish  <fnf@be.com>
+
+	* tm.texi (CC1PLUS_SPEC): Make it clear in the docs that CC1_SPEC is
+	used by both cc1 and cc1plus.
+	
 Thu Oct 28 10:00:48 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.c: Initialise arm_structure_size_boundary to
