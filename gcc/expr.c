@@ -4870,6 +4870,9 @@ expand_expr (exp, target, tmode, modifier)
       return temp ? temp : gen_rtx (PLUS, mode, op0, op1);
 
     case MINUS_EXPR:
+      /* For initializers, we are allowed to return a MINUS of two
+	 symbolic constants.  Here we handle all cases when both operands
+	 are constant.  */
       /* Handle difference of two symbolic constants,
 	 for the sake of an initializer.  */
       if ((modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER)
@@ -4880,7 +4883,17 @@ expand_expr (exp, target, tmode, modifier)
 				 VOIDmode, modifier);
 	  rtx op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX,
 				 VOIDmode, modifier);
-	  return gen_rtx (MINUS, mode, op0, op1);
+
+	  /* If one operand is a CONST_INT, put it last.  */
+	  if (GET_CODE (op0) == CONST_INT)
+	    temp = op0, op0 = op1, op1 = temp;
+
+	  /* If the last operand is a CONST_INT, use plus_constant of
+	     the negated constant.  Else make the MINUS.  */
+	  if (GET_CODE (op1) == CONST_INT)
+	    return plus_constant (op0, - INTVAL (op1));
+	  else
+	    return gen_rtx (MINUS, mode, op0, op1);
 	}
       /* Convert A - const to A + (-const).  */
       if (TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST)
