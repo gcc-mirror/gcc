@@ -2434,7 +2434,7 @@ fi
 
 
 # Find some useful tools
-for ac_prog in gawk mawk nawk awk
+for ac_prog in mawk gawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -3102,7 +3102,7 @@ fi
 for ac_hdr in limits.h stddef.h string.h strings.h stdlib.h time.h \
 		 fcntl.h unistd.h sys/file.h sys/time.h \
 		 sys/resource.h sys/param.h sys/times.h sys/stat.h \
-		 direct.h malloc.h langinfo.h ldfcn.h
+		 direct.h malloc.h langinfo.h ldfcn.h wchar.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
@@ -3714,7 +3714,7 @@ fi
 for ac_func in times clock dup2 kill getrlimit setrlimit atoll atoq \
 	sysconf strsignal putc_unlocked fputc_unlocked fputs_unlocked \
 	fwrite_unlocked fprintf_unlocked getrusage nl_langinfo lstat \
-        scandir alphasort gettimeofday
+        scandir alphasort gettimeofday mbstowcs wcswidth
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:3721: checking for $ac_func" >&5

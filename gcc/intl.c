@@ -45,4 +45,35 @@ gcc_init_libintl ()
   (void) textdomain ("gcc");
 }
 
+#if defined HAVE_WCHAR_H && defined HAVE_MBSTOWCS && defined HAVE_WCSWIDTH
+#include <wchar.h>
+
+/* Returns the width in columns of MSGSTR, which came from gettext.
+   This is for indenting subsequent output.  */
+
+size_t
+gcc_gettext_width (msgstr)
+     const char *msgstr;
+{
+  size_t nwcs = mbstowcs (0, msgstr, 0);
+  wchar_t *wmsgstr = alloca ((nwcs + 1) * sizeof (wchar_t));
+
+  mbstowcs (wmsgstr, msgstr, nwcs + 1);
+  return wcswidth (wmsgstr, nwcs);
+}
+
+#else  /* no wcswidth */
+
+/* We don't have any way of knowing how wide the string is.  Guess
+   the length of the string.  */
+
+size_t
+gcc_gettext_width (msgstr)
+     const char *msgstr;
+{
+  return strlen (msgstr);
+}
+
 #endif
+
+#endif /* ENABLE_NLS */

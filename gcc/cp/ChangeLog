@@ -1,3 +1,8 @@
+2003-04-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* call.c (print_z_candidates): Use gcc_gettext_width, not
+	strlen, to determine how much padding to use.
+
 2003-04-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* decl.c: Update all calls to shadow_warning.
