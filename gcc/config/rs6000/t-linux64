@@ -2,5 +2,7 @@
 CRTSTUFF_T_CFLAGS_S =
 TARGET_LIBGCC2_CFLAGS =
 
+EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
+
 # Modify the shared lib version file
 SHLIB_MKMAP_OPTS = -v dotsyms=1
