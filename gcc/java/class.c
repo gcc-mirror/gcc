@@ -781,7 +781,7 @@ set_constant_value (field, constant)
 	  && ! (TREE_TYPE (constant) == int_type_node
 		&& INTEGRAL_TYPE_P (TREE_TYPE (field))
 		&& TYPE_PRECISION (TREE_TYPE (field)) <= 32))
-	error ("ConstantValue attribute of field '%s' has wrong type",
+	warning ("ConstantValue attribute of field '%s' has wrong type",
 	       IDENTIFIER_POINTER (DECL_NAME (field)));
       if (FIELD_FINAL (field))
 	DECL_FIELD_FINAL_IUD (field) = 1;
