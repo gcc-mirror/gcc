@@ -1,3 +1,7 @@
+2003-12-06  Richard Earnshaw  <reanrsha@arm.com>
+
+	* arm.md (IOR (COMPARISON) (AND)): New define_splits.
+
 2003-12-06  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in (program_transform_cross_name): Delete.
