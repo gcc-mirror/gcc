@@ -1,3 +1,7 @@
+2003-08-15  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2003-08-08  Kean Johnston  <jkj@sco.com>
 
 	* configure.in (sco3.2v5*): Enable building of libgcj
