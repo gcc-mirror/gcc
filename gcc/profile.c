@@ -1,5 +1,5 @@
 /* Calculate branch probabilities, and basic block execution counts. 
-   Copyright (C) 1990, 91, 92, 93, 94, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91-94, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -1633,7 +1633,8 @@ output_func_start_profiler ()
   expand_function_end (input_filename, lineno, 0);
   poplevel (1, 0, 1);
   rest_of_compilation (fndecl);
-  fflush (asm_out_file);
+  if (! quiet_flag)
+    fflush (asm_out_file);
   current_function_decl = NULL_TREE;
 
   assemble_constructor (IDENTIFIER_POINTER (DECL_NAME (fndecl)));
