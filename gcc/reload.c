@@ -3850,11 +3850,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		reload_when_needed[reload_secondary_out_reload[secondary_out_reload]] 
 		  = RELOAD_FOR_OPADDR_ADDR;
 	    }
-	  if (reload_when_needed[i] == RELOAD_FOR_INPADDR_ADDRESS
-	      || reload_when_needed[i] == RELOAD_FOR_OUTADDR_ADDRESS)
-	    reload_when_needed[i] = RELOAD_FOR_OPADDR_ADDR;
-	  else
-	    reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
+
+	  reload_when_needed[i] = RELOAD_FOR_OPERAND_ADDRESS;
 	}
 
       if ((reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS
