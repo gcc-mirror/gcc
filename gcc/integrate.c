@@ -134,10 +134,15 @@ function_cannot_inline_p (fndecl)
   if (int_size_in_bytes (TREE_TYPE (TREE_TYPE (fndecl))) < 0)
     return "function with varying-size return value cannot be inline";
 
-  /* Cannot inline a function with a varying size argument.  */
+  /* Cannot inline a function with a varying size argument or one that
+     receives a transparent union.  */
   for (parms = DECL_ARGUMENTS (fndecl); parms; parms = TREE_CHAIN (parms))
-    if (int_size_in_bytes (TREE_TYPE (parms)) < 0)
-      return "function with varying-size parameter cannot be inline";
+    {
+      if (int_size_in_bytes (TREE_TYPE (parms)) < 0)
+	return "function with varying-size parameter cannot be inline";
+      else if (TYPE_TRANSPARENT_UNION (TREE_TYPE (parms)))
+	return "function with transparent unit parameter cannot be inline";
+    }
 
   if (!DECL_INLINE (fndecl) && get_max_uid () > max_insns)
     {
