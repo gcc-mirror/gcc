@@ -1,3 +1,7 @@
+2002-05-31  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (builtin_define_std): Correct logic.
+
 2002-05-31  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (output_millicode_call): Correct "be,l" insn for TARGET_PA_20.
