@@ -1217,7 +1217,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 		      || NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_END))
 		{
 		  rtx label
-		    = get_label_from_map (map, NOTE_BLOCK_NUMBER (copy));
+		    = get_label_from_map (map, NOTE_EH_HANDLER (copy));
 
                   /* we have to duplicate the handlers for the original */
                   if (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG)
@@ -1225,14 +1225,14 @@ expand_inline_function (fndecl, parms, target, ignore, type,
                       /* We need to duplicate the handlers for the EH region
                          and we need to indicate where the label map is */
                       eif_eh_map = map;
-                      duplicate_eh_handlers (NOTE_BLOCK_NUMBER (copy), 
+                      duplicate_eh_handlers (NOTE_EH_HANDLER (copy), 
                                              CODE_LABEL_NUMBER (label),
                                              expand_inline_function_eh_labelmap);
                     }
 
 		  /* We have to forward these both to match the new exception
 		     region.  */
-		  NOTE_BLOCK_NUMBER (copy) = CODE_LABEL_NUMBER (label);
+		  NOTE_EH_HANDLER (copy) = CODE_LABEL_NUMBER (label);
 		}
 	    }
 	  else

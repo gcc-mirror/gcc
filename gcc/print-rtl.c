@@ -162,9 +162,13 @@ print_rtx (in_rtx)
 	if (i == 3 && GET_CODE (in_rtx) == NOTE)
 	  {
 	    if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_EH_REGION_BEG
-		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_EH_REGION_END
-		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BLOCK_BEG
-		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BLOCK_END)
+		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_EH_REGION_END)
+	      {
+		fprintf (outfile, " %d", NOTE_EH_HANDLER (in_rtx));
+		sawclose = 1;
+	      }
+	    else if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BLOCK_BEG
+		     || NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BLOCK_END)
 	      {
 		fprintf (outfile, " %d", NOTE_BLOCK_NUMBER (in_rtx));
 		sawclose = 1;

@@ -990,7 +990,7 @@ make_edges (label_value_list, bb_eh_end)
 	  int num;
 
 	  if (eh_list)
-	    eh_region = NOTE_BLOCK_NUMBER (XEXP (eh_list, 0));
+	    eh_region = NOTE_EH_HANDLER (XEXP (eh_list, 0));
 
 	  num = reachable_handlers (eh_region, eh_nest_info,
 				    insn, &handler_list);
