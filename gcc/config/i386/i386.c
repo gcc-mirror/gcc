@@ -866,7 +866,7 @@ static unsigned int ix86_select_alt_pic_regnum (void);
 static int ix86_save_reg (unsigned int, int);
 static void ix86_compute_frame_layout (struct ix86_frame *);
 static int ix86_comp_type_attributes (tree, tree);
-static int ix86_fntype_regparm (tree);
+static int ix86_function_regparm (tree, tree);
 const struct attribute_spec ix86_attribute_table[];
 static bool ix86_function_ok_for_sibcall (tree, tree);
 static tree ix86_handle_cdecl_attribute (tree *, tree, tree, int, bool *);
@@ -1532,19 +1532,14 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
      such registers are not used for passing parameters.  */
   if (!decl && !TARGET_64BIT)
     {
-      int regparm = ix86_regparm;
-      tree attr, type;
+      tree type;
 
       /* We're looking at the CALL_EXPR, we need the type of the function.  */
       type = TREE_OPERAND (exp, 0);		/* pointer expression */
       type = TREE_TYPE (type);			/* pointer type */
       type = TREE_TYPE (type);			/* function type */
 
-      attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type));
-      if (attr)
-        regparm = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
-
-      if (regparm >= 3)
+      if (ix86_function_regparm (type, NULL) >= 3)
 	{
 	  /* ??? Need to count the actual number of registers to be used,
 	     not the possible number of registers.  Fix later.  */
@@ -1637,9 +1632,9 @@ ix86_handle_regparm_attribute (tree *node, tree name, tree args,
 	}
 
       if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (*node)))
-    {
-      error ("fastcall and regparm attributes are not compatible");
-    }
+	{
+	  error ("fastcall and regparm attributes are not compatible");
+	}
     }
 
   return NULL_TREE;
@@ -1670,18 +1665,49 @@ ix86_comp_type_attributes (tree type1, tree type2)
   return 1;
 }
 
-/* Return the regparm value for a fuctio with the indicated TYPE.  */
+/* Return the regparm value for a fuctio with the indicated TYPE and DECL.
+   DECL may be NULL when calling function indirectly
+   or considerling a libcall.  */
 
 static int
-ix86_fntype_regparm (tree type)
+ix86_function_regparm (tree type, tree decl)
 {
   tree attr;
+  int regparm = ix86_regparm;
+  bool user_convention = false;
 
-  attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type));
-  if (attr)
-    return TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
-  else
-    return ix86_regparm;
+  if (!TARGET_64BIT)
+    {
+      attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type));
+      if (attr)
+	{
+	  regparm = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
+	  user_convention = true;
+	}
+
+      if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type)))
+	{
+	  regparm = 2;
+	  user_convention = true;
+	}
+
+      /* Use register calling convention for local functions when possible.  */
+      if (!TARGET_64BIT && !user_convention && decl
+	  && flag_unit_at_a_time)
+	{
+	  struct cgraph_local_info *i = cgraph_local_info (decl);
+	  if (i && i->local)
+	    {
+	      /* We can't use regparm(3) for nested functions as these use
+		 static chain pointer in third argument.  */
+	      if (DECL_CONTEXT (decl) && !DECL_NO_STATIC_CHAIN (decl))
+		regparm = 2;
+	      else
+		regparm = 3;
+	    }
+	}
+    }
+  return regparm;
 }
 
 /* Value is the number of bytes of arguments automatically
@@ -1725,7 +1751,7 @@ ix86_return_pops_args (tree fundecl, tree funtype, int size)
   if (aggregate_value_p (TREE_TYPE (funtype))
       && !TARGET_64BIT)
     {
-      int nregs = ix86_fntype_regparm (funtype);
+      int nregs = ix86_function_regparm (funtype, fundecl);
 
       if (!nregs)
 	return GET_MODE_SIZE (Pmode);
@@ -1767,7 +1793,6 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 {
   static CUMULATIVE_ARGS zero_cum;
   tree param, next_param;
-  bool user_convention = false;
 
   if (TARGET_DEBUG_ARG)
     {
@@ -1786,18 +1811,11 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
   *cum = zero_cum;
 
   /* Set up the number of registers to use for passing arguments.  */
-  cum->nregs = ix86_regparm;
+  if (fntype)
+    cum->nregs = ix86_function_regparm (fntype, fndecl);
+  else
+    cum->nregs = ix86_regparm;
   cum->sse_nregs = SSE_REGPARM_MAX;
-  if (fntype && !TARGET_64BIT)
-    {
-      tree attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (fntype));
-
-      if (attr)
-	{
-	  cum->nregs = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
-	  user_convention = true;
-	}
-    }
   cum->maybe_vaarg = false;
 
   /* Use ecx and edx registers if function has fastcall attribute */
@@ -1807,23 +1825,6 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 	{
 	  cum->nregs = 2;
 	  cum->fastcall = 1;
-	  user_convention = true;
-	}
-    }
-
-  /* Use register calling convention for local functions when possible.  */
-  if (!TARGET_64BIT && !user_convention && fndecl
-      && flag_unit_at_a_time)
-    {
-      struct cgraph_local_info *i = cgraph_local_info (fndecl);
-      if (i && i->local)
-	{
-	  /* We can't use regparm(3) for nested functions as these use
-	     static chain pointer in third argument.  */
-	  if (DECL_CONTEXT (fndecl) && !DECL_NO_STATIC_CHAIN (fndecl))
-	    cum->nregs = 2;
-	  else
-	    cum->nregs = 3;
 	}
     }
 
@@ -2501,7 +2502,7 @@ function_arg (CUMULATIVE_ARGS *cum,	/* current arg information */
 
 	        /* ECX not EAX is the first allocated register.  */
 	        if (regno == 0)
-		      regno = 2;
+		  regno = 2;
 	      }
 	    ret = gen_rtx_REG (mode, regno);
 	  }
@@ -15087,7 +15088,7 @@ x86_this_parameter (tree function)
       return gen_rtx_REG (DImode, x86_64_int_parameter_registers[n]);
     }
 
-  if (ix86_fntype_regparm (type) > 0)
+  if (ix86_function_regparm (type, function) > 0)
     {
       tree parm;
 
@@ -15097,9 +15098,14 @@ x86_this_parameter (tree function)
       for (; parm; parm = TREE_CHAIN (parm))
 	if (TREE_VALUE (parm) == void_type_node)
 	  break;
-      /* If not, the this parameter is in %eax.  */
+      /* If not, the this parameter is in the first argument.  */
       if (parm)
-	return gen_rtx_REG (SImode, 0);
+	{
+	  int regno = 0;
+	  if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type)))
+	    regno = 2;
+	  return gen_rtx_REG (SImode, 0);
+	}
     }
 
   if (aggregate_value_p (TREE_TYPE (type)))
@@ -15120,7 +15126,7 @@ x86_can_output_mi_thunk (tree thunk ATTRIBUTE_UNUSED,
     return true;
 
   /* For 32-bit, everything's fine if we have one free register.  */
-  if (ix86_fntype_regparm (TREE_TYPE (function)) < 3)
+  if (ix86_function_regparm (TREE_TYPE (function), function) < 3)
     return true;
 
   /* Need a free register for vcall_offset.  */
@@ -15191,7 +15197,13 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
       if (TARGET_64BIT)
 	tmp = gen_rtx_REG (DImode, FIRST_REX_INT_REG + 2 /* R10 */);
       else
-	tmp = gen_rtx_REG (SImode, 2 /* ECX */);
+	{
+	  int tmp_regno = 2 /* ECX */;
+	  if (lookup_attribute ("fastcall",
+	      TYPE_ATTRIBUTES (TREE_TYPE (function))))
+	    tmp_regno = 0 /* EAX */;
+	  tmp = gen_rtx_REG (SImode, tmp_regno);
+	}
 
       xops[0] = gen_rtx_MEM (Pmode, this_reg);
       xops[1] = tmp;

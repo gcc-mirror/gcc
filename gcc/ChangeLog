@@ -1,3 +1,28 @@
+2003-08-16  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_fntype_regparm): Rename from ...
+	(ix86_function_regparm): ... this one; add fastcall and local
+	functions.
+	(ix86_function_ok_for_sibcall): Update.
+	(ix86_return_pops_args): Likewise.
+	(init_cumulative_args): Likewise.
+	(x86_can_output_mi_thunk): Likewise.
+	(function_arg): Fix formating.
+	(x86_this_parameter): Fix fastcall.
+	(x86_output_mi_thunk): Likewise.
+
+	* cgraph.c (cgraph_mark_needed_node): Do not mark functions without
+	body as reachable; mark nested functions as needed too.
+	(dump_cgraph): Do not output global.calls.
+	* cgraph.h (cgraph_global_info): Kill.
+	* cgraphunit.c (cgraph_finalize_function): Enqueue needed functions.
+	(record_call_1): Speedup.
+	(cgraph_analyze_function): Break out from ...; compute inlining
+	parameters.
+	(cgraph_finalize_compilation_unit): ... here.
+	(cgraph_mark_inline): Kill computation of calls.
+	(cgraph_decide_inlining): Do not compute most of initial values.
+
 2003-08-14  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (negate_expr_p): MULT_EXPRs and RDIV_EXPRs are easy
