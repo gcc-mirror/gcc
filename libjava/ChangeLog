@@ -1,4 +1,4 @@
-2002-03-04  Eric Blake  <ebb9@email.byu.edu>
+2002-03-06  Eric Blake  <ebb9@email.byu.edu>
 
 	* scripts/unicode-decomp.pl: Move from chartables.pl, and remove
 	the code for generating include/java-chartables.h.
