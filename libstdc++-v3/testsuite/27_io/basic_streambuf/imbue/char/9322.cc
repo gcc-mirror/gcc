@@ -53,10 +53,10 @@ void test08()
   testbuf ob;
   VERIFY( ob.getloc() == loc );
 
-  locale::global(locale("en_US"));
+  locale::global(__gnu_cxx_test::try_named_locale("en_US"));
   VERIFY( ob.getloc() == loc );
 
-  locale loc_de ("de_DE");
+  locale loc_de = __gnu_cxx_test::try_named_locale("de_DE");
   locale ret = ob.pubimbue(loc_de);
   VERIFY( ob.getloc() == loc_de );
   VERIFY( ret == loc );
@@ -67,6 +67,6 @@ void test08()
 
 int main() 
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test08);
+  test08();
   return 0;
 }

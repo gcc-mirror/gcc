@@ -34,7 +34,7 @@ void test02()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_de("de_DE");
+  locale loc_de = __gnu_cxx_test::try_named_locale("de_DE");
 
   // cache the moneypunct facets
   typedef moneypunct<wchar_t, true> __money_true;

@@ -61,7 +61,7 @@ void test02()
     "\xff";
   int 			size = strlen(e_lit);
 
-  locale 		loc ("en_US.ISO-8859-1");
+  locale  loc = __gnu_cxx_test::try_named_locale("en_US.ISO-8859-1");
   locale::global(loc);
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc); 
 

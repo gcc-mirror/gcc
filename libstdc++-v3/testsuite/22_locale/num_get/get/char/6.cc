@@ -33,7 +33,7 @@ void test06()
   double d = 0.0;
 
   istringstream iss;
-  locale loc_de("de_DE");
+  locale loc_de = __gnu_cxx_test::try_named_locale("de_DE");
   iss.imbue(loc_de);
 
   const num_get<char>& ng = use_facet<num_get<char> >(iss.getloc()); 
@@ -49,7 +49,7 @@ void test06()
 
 int main()
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test06);
+  test06();
   return 0;
 }
 

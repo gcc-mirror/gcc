@@ -43,7 +43,7 @@ void test03()
   typedef std::ios_base::fmtflags fmtflags;
   typedef std::ios_base::iostate iostate;
   locale loc_c = locale::classic();
-  locale loc_de("de_DE");
+  locale loc_de = __gnu_cxx_test::try_named_locale("de_DE");
   std::ios ios_01(NULL);
   std::ios ios_02(NULL);
   ios_01.imbue(loc_c);
@@ -68,6 +68,6 @@ void test03()
 
 int main() 
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test03);
+  test03();
   return 0;
 }

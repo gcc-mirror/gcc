@@ -65,7 +65,7 @@ void test04()
   // Check that a "POSIX" LC_ALL is equivalent to "C".
   if (!setenv("LC_ALL", "POSIX", 1))
     {
-      locale loc("");
+      locale loc = __gnu_cxx_test::try_named_locale("");
       VERIFY( loc.name() == "C" );
     }
   setenv("LC_ALL", "", 1);
@@ -73,7 +73,7 @@ void test04()
   // Check that a "en_PH" LC_ALL is equivalent to "en_PH".
   if (!setenv("LC_ALL", "en_PH", 1))
     {
-      locale loc("");
+      locale loc = __gnu_cxx_test::try_named_locale("");
       VERIFY( loc.name() == "en_PH" );
     }
   setenv("LC_ALL", "", 1);
@@ -83,7 +83,7 @@ void test04()
     {
       if (!setenv("LC_ALL", "en_PH", 1))
 	{
-	  locale loc("");
+	  locale loc = __gnu_cxx_test::try_named_locale("");
 	  VERIFY( loc.name() == "en_PH" );
 	}
       setenv("LC_ALL", "", 1);
@@ -112,7 +112,7 @@ void test04()
   // Check the default set by LANG.
   if (!setenv("LANG", "fr_FR", 1))
     {
-      locale loc("");
+      locale loc = __gnu_cxx_test::try_named_locale("");
       VERIFY( loc.name() == "fr_FR" );
     }
 
@@ -126,7 +126,7 @@ void test04()
   // Setting a category in the "C" default.
   if (!setenv("LC_COLLATE", "de_DE", 1))
     {
-      locale loc("");
+      locale loc = __gnu_cxx_test::try_named_locale("");
 
 #if _GLIBCPP_NUM_CATEGORIES
       VERIFY( loc.name() == "LC_CTYPE=C;LC_NUMERIC=C;LC_TIME=C;"
@@ -142,7 +142,7 @@ void test04()
   // Changing the LANG default while LC_COLLATE is set.
   if (!setenv("LANG", "fr_FR", 1))
     {
-      locale loc("");
+      locale loc = __gnu_cxx_test::try_named_locale("");
 #if _GLIBCPP_NUM_CATEGORIES
       VERIFY( loc.name() == "LC_CTYPE=fr_FR;LC_NUMERIC=fr_FR;"
 	      "LC_TIME=fr_FR;LC_COLLATE=de_DE;LC_MONETARY=fr_FR;"
@@ -160,7 +160,7 @@ void test04()
 #if _GLIBCPP_NUM_CATEGORIES
   if (!setenv("LC_IDENTIFICATION", "it_IT", 1))
     {
-      locale loc("");
+      locale loc = __gnu_cxx_test::try_named_locale("");
       VERIFY( loc.name() == "LC_CTYPE=fr_FR;LC_NUMERIC=fr_FR;"
 	      "LC_TIME=fr_FR;LC_COLLATE=de_DE;LC_MONETARY=fr_FR;"
 	      "LC_MESSAGES=fr_FR;LC_PAPER=fr_FR;LC_NAME=fr_FR;"
@@ -193,6 +193,6 @@ void test04()
 
 int main()
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test04);
+  test04();
   return 0;
 }

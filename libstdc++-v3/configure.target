@@ -166,7 +166,7 @@ case "${target_os}" in
   solaris2.6*)
     os_include_dir="os/solaris/solaris2.6"
     ;;
-  solaris2.[78]*)
+  solaris2.[789]*)
     os_include_dir="os/solaris/solaris2.7"
     ;;
   windiss*)

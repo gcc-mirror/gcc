@@ -30,13 +30,13 @@ void test02()
 {
   bool test = true;
 
-  std::locale loc_1("");
-  std::locale loc_2("");
+  std::locale loc_1 = __gnu_cxx_test::try_named_locale("");
+  std::locale loc_2 = __gnu_cxx_test::try_named_locale("");
   VERIFY( loc_1 == loc_2 );
 }
  
 int main()
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test02);
+  test02();
   return 0;
 }

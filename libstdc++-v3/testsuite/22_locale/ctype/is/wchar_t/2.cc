@@ -67,7 +67,7 @@ void test02()
     }   
 
   // "de_DE"
-  locale loc_de("de_DE");
+  locale loc_de = __gnu_cxx_test::try_named_locale("de_DE");
   const ctype<wchar_t>& ctype_de = use_facet<ctype<wchar_t> >(loc_de); 
   for (int i = 0; i < max; ++i)
     {

@@ -88,7 +88,7 @@ void test02()
   wmemset(i_ref, 0xdeadbeef, size + 1);
   int_type*		ito_next;
 
-  locale 		loc ("en_US.ISO-8859-1");
+  locale loc = __gnu_cxx_test::try_named_locale("en_US.ISO-8859-1");
   locale::global(loc);
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc); 
 

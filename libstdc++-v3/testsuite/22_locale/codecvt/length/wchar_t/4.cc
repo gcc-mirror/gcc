@@ -100,7 +100,7 @@ void test04()
   int 			esize = strlen(e_lit);
   int 			isize = wcslen(i_lit);
 
-  locale 		loc ("en_US.UTF-8");
+  locale loc = __gnu_cxx_test::try_named_locale("en_US.UTF-8");
   locale::global(loc);
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc); 
 

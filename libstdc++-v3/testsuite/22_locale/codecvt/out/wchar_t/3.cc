@@ -100,7 +100,7 @@ void test03()
   memset(e_ref, 0xf0, size + 1);
   ext_type*		eto_next;
 
-  locale 		loc ("en_US.ISO-8859-15");
+  locale loc = __gnu_cxx_test::try_named_locale("en_US.ISO-8859-15");
   locale::global(loc);
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc); 
 

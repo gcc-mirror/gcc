@@ -33,7 +33,7 @@ void test05()
   bool test = true;
 
   // A locale that expects grouping.
-  locale loc_de("de_DE");
+  locale loc_de = __gnu_cxx_test::try_named_locale("de_DE");
 
   const string empty;
   string result;
@@ -63,7 +63,7 @@ void test05()
 
 int main()
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test05);
+  test05();
   return 0;
 }
 

@@ -36,9 +36,9 @@ void test04()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_hk("en_HK");
-  locale loc_fr("fr_FR@euro");
-  locale loc_de("de_DE@euro");
+  locale loc_hk = __gnu_cxx_test::try_named_locale("en_HK");
+  locale loc_fr = __gnu_cxx_test::try_named_locale("fr_FR@euro");
+  locale loc_de = __gnu_cxx_test::try_named_locale("de_DE@euro");
   VERIFY( loc_c != loc_de );
   VERIFY( loc_hk != loc_fr );
   VERIFY( loc_hk != loc_de );
@@ -86,6 +86,6 @@ void test04()
 
 int main()
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test04);
+  test04();
   return 0;
 }

@@ -38,7 +38,7 @@ void test02()
   using namespace std;
   bool test = true;
 
-  locale loc ("en_US.ISO-8859-1");
+  locale loc = __gnu_cxx_test::try_named_locale("en_US.ISO-8859-1");
   const ctype<wchar_t>& wct = use_facet<ctype<wchar_t> >(loc);
 
   char c = 0xff;

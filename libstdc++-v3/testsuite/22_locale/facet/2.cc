@@ -83,12 +83,12 @@ void test02()
   // 4: Named locale should destroy facets when it goes out of scope.
   // Not quite sure how to test for this w/o valgrind at the moment.
   {
-    locale loc03("es_MX");
+    locale loc03 = __gnu_cxx_test::try_named_locale("es_MX");
   }
 }
 
 int main ()
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test02);
+  test02();
   return 0;
 }

@@ -35,9 +35,9 @@ test02()
 
   // construct a locale object with the specialized facet.
   locale		loc_c = locale::classic();
+  locale		loc_fr = __gnu_cxx_test::try_named_locale("fr_FR");
   locale 		loc_1(locale::classic(), 
 			      new numpunct_byname<char>("fr_FR"));
-  locale		loc_fr("fr_FR");
 
   // check names
   VERIFY( loc_c.name() == name_c );
@@ -99,6 +99,6 @@ test02()
 
 int main()
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test02);
+  test02();
   return 0;
 }

@@ -67,7 +67,7 @@ void test02()
     }   
 
   // "de_DE"
-  locale loc_de("de_DE");
+  locale loc_de = __gnu_cxx_test::try_named_locale("de_DE");
   const ctype<char>& ctype_de = use_facet<ctype<char> >(loc_de); 
   for (int i = 0; i < max; ++i)
     {
@@ -99,6 +99,6 @@ void test02()
 
 int main() 
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test02);
+  test02();
   return 0;
 }
