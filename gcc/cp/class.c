@@ -725,12 +725,18 @@ modify_vtable_entry (tree t,
 void
 add_method (tree type, tree method, int error_p)
 {
-  int using = (DECL_CONTEXT (method) != type);
+  int using;
   int len;
   int slot;
   tree method_vec;
-  int template_conv_p = (TREE_CODE (method) == TEMPLATE_DECL
-			 && DECL_TEMPLATE_CONV_FN_P (method));
+  int template_conv_p;
+
+  if (method == error_mark_node)
+    return;
+  
+  using = (DECL_CONTEXT (method) != type);
+  template_conv_p = (TREE_CODE (method) == TEMPLATE_DECL
+                     && DECL_TEMPLATE_CONV_FN_P (method));
 
   if (!CLASSTYPE_METHOD_VEC (type))
     /* Make a new method vector.  We start with 8 entries.  We must
