@@ -3630,10 +3630,7 @@ dbr_schedule (first, file)
     {
       rtx target;
 
-      if (GET_CODE (insn) == JUMP_INSN
-	  || GET_CODE (insn) == CALL_INSN
-	  || GET_CODE (insn) == INSN)
-	INSN_ANNULLED_BRANCH_P (insn) = 0;
+      INSN_ANNULLED_BRANCH_P (insn) = 0;
       INSN_FROM_TARGET_P (insn) = 0;
 
       /* Skip vector tables.  We can't get attributes for them.  */
