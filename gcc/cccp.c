@@ -4099,7 +4099,7 @@ do_include (buf, limit, op, keyword)
   int angle_brackets = 0;	/* 0 for "...", 1 for <...> */
   int pcf = -1;
   char *pcfbuf;
-  int pcfbuflimit;
+  char *pcfbuflimit;
   int pcfnum;
   f= -1;			/* JF we iz paranoid! */
 
