@@ -9614,8 +9614,13 @@ instantiate_decl (d, defer_ok)
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {
+      htab_t saved_local_specializations;
+
+      /* Save away the current list, in case we are instantiating one
+	 template from within the body of another.  */
+      saved_local_specializations = local_specializations;
+
       /* Set up the list of local specializations.  */
-      my_friendly_assert (local_specializations == NULL, 20000422);
       local_specializations = htab_create (37, 
 					   htab_hash_pointer,
 					   htab_eq_pointer,
@@ -9635,7 +9640,7 @@ instantiate_decl (d, defer_ok)
 
       /* We don't need the local specializations any more.  */
       htab_delete (local_specializations);
-      local_specializations = NULL;
+      local_specializations = saved_local_specializations;
 
       /* Finish the function.  */
       expand_body (finish_function (0));
