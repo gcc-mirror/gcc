@@ -1,3 +1,24 @@
+2001-10-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* langhooks.h: New file.
+	* Makefile.in (OBJS): Added langhooks.o.
+	(c-lang.o): Depend on langhooks.h.
+	(c-common.o): Don't depend on tree-inline.h.
+	(tree-inline.o): Depend on toplev.h.
+	(langhooks.o): New rule.
+	* c-common.c: Don't include tree-inline.h.
+	(c_mark_lang_decl): Mark argument c as unused.
+	(c_common_lang_init): Don't initialize hooks here.
+	* c-lang.c: Include langhooks.h, then override some macros.
+	(lang_hooks): Initialize with macros in langhooks.h.
+	(c_init): Don't initialize hooks here.
+	* toplev.c (struct lang_hooks_for_tree_inlining): New struct.
+	(struct lang_hooks): Add tree_inlining.  Refer to langhooks.h.
+	* tree-inline.c: Include toplev.h.  Don't define hook variables.
+	* tree-inline.h: Don't define hook types nor declare hook
+	variables.  Move macros to...
+	* langhooks.c: ... new file, as functions.  Adjust all callers.
+
 2001-10-08  Jeffrey A Law  <law@cygnus.com>
 
 	* sibcall.c (optimize_sibling_and_tail_recursive_calls): Call

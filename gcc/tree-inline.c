@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "toplev.h"
 #include "tree.h"
 #include "tree-inline.h"
 #include "rtl.h"
@@ -37,17 +38,6 @@ Boston, MA 02111-1307, USA.  */
 /* This should be eventually be generalized to other languages, but
    this would require a shared function-as-trees infrastructure.  */
 #include "c-common.h" 
-
-/* Definitions of language hooks.  */
-
-treeopt_walk_subtrees_type *lang_walk_subtrees;
-treeopt_cannot_inline_tree_fn_type *lang_cannot_inline_tree_fn;
-treeopt_disregard_inline_limits_type *lang_disregard_inline_limits;
-treeopt_add_pending_fn_decls_type *lang_add_pending_fn_decls;
-treeopt_tree_chain_matters_p_type *lang_tree_chain_matters_p;
-treeopt_auto_var_in_fn_p_type *lang_auto_var_in_fn_p;
-treeopt_copy_res_decl_for_inlining_type *lang_copy_res_decl_for_inlining;
-treeopt_anon_aggr_type_p *lang_anon_aggr_type_p;
 
 /* 0 if we should not perform inlining.
    1 if we should expand functions calls inline at the tree level.  
@@ -139,7 +129,7 @@ remap_decl (decl, id)
 
   /* We only remap local variables in the current function.  */
   fn = VARRAY_TOP_TREE (id->fns);
-  if (! LANG_AUTO_VAR_IN_FN_P (decl, fn))
+  if (! (*lang_hooks.tree_inlining.auto_var_in_fn_p) (decl, fn))
     return NULL_TREE;
 
   /* See if we have remapped this declaration.  */
@@ -170,7 +160,7 @@ remap_decl (decl, id)
 	}
 
       if (! DECL_NAME (t) && TREE_TYPE (t)
-	  && LANG_ANON_AGGR_TYPE_P (TREE_TYPE (t)))
+	  && (*lang_hooks.tree_inlining.anon_aggr_type_p) (TREE_TYPE (t)))
 	{
 	  /* For a VAR_DECL of anonymous type, we must also copy the
 	     member VAR_DECLS here and rechain the
@@ -381,7 +371,7 @@ copy_body_r (tp, walk_subtrees, data)
      variables.  We don't want to copy static variables; there's only
      one of those, no matter how many times we inline the containing
      function.  */
-  else if (LANG_AUTO_VAR_IN_FN_P (*tp, fn))
+  else if ((*lang_hooks.tree_inlining.auto_var_in_fn_p) (*tp, fn))
     {
       tree new_decl;
 
@@ -423,7 +413,8 @@ copy_body_r (tp, walk_subtrees, data)
 	}
       else if (TREE_CODE (*tp) == MODIFY_EXPR
 	       && TREE_OPERAND (*tp, 0) == TREE_OPERAND (*tp, 1)
-	       && LANG_AUTO_VAR_IN_FN_P (TREE_OPERAND (*tp, 0), fn))
+	       && ((*lang_hooks.tree_inlining.auto_var_in_fn_p)
+		   (TREE_OPERAND (*tp, 0), fn)))
 	{
 	  /* Some assignments VAR = VAR; don't generate any rtl code
 	     and thus don't count as variable modification.  Avoid
@@ -614,9 +605,9 @@ declare_return_variable (id, use_stmt)
       return NULL_TREE;
     }
 
-  var = LANG_COPY_RES_DECL_FOR_INLINING (result, fn, VARRAY_TREE (id->fns, 0),
-					 id->decl_map, &need_return_decl,
-					 &id->target_exprs);
+  var = ((*lang_hooks.tree_inlining.copy_res_decl_for_inlining)
+	 (result, fn, VARRAY_TREE (id->fns, 0), id->decl_map,
+	  &need_return_decl, &id->target_exprs));
 
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that
      way, when the RESULT_DECL is encountered, it will be
@@ -682,7 +673,7 @@ inlinable_function_p (fn, id)
   /* We can't inline functions that are too big.  Only allow a single
      function to eat up half of our budget.  Make special allowance
      for extern inline functions, though.  */
-  else if (! LANG_DISREGARD_INLINE_LIMITS (fn)
+  else if (! (*lang_hooks.tree_inlining.disregard_inline_limits) (fn)
 	   && DECL_NUM_STMTS (fn) * INSNS_PER_STMT > MAX_INLINE_INSNS / 2)
     ;
   /* All is well.  We can inline this function.  Traditionally, GCC
@@ -699,13 +690,13 @@ inlinable_function_p (fn, id)
      be that we've done so much inlining already that we don't want to
      risk too much inlining any more and thus halve the acceptable
      size.  */
-  if (! LANG_DISREGARD_INLINE_LIMITS (fn)
+  if (! (*lang_hooks.tree_inlining.disregard_inline_limits) (fn)
       && ((DECL_NUM_STMTS (fn) + (id ? id->inlined_stmts : 0)) * INSNS_PER_STMT
 	  > MAX_INLINE_INSNS)
       && DECL_NUM_STMTS (fn) * INSNS_PER_STMT > MAX_INLINE_INSNS / 4)
     inlinable = 0;
 
-  if (inlinable && LANG_CANNOT_INLINE_TREE_FN (&fn))
+  if (inlinable && (*lang_hooks.tree_inlining.cannot_inline_tree_fn) (&fn))
     inlinable = 0;
   
   /* If we don't have the function body available, we can't inline
@@ -999,7 +990,8 @@ optimize_inline_calls (fn)
       prev_fn = current_function_decl;
     }
 
-  prev_fn = LANG_ADD_PENDING_FN_DECLS (&id.fns, prev_fn);
+  prev_fn = ((*lang_hooks.tree_inlining.add_pending_fn_decls)
+	     (&id.fns, prev_fn));
   
   /* Create the stack of TARGET_EXPRs.  */
   VARRAY_TREE_INIT (id.target_exprs, 32, "target_exprs");
@@ -1124,7 +1116,7 @@ walk_tree (tp, func, data, htab_)
   if (!walk_subtrees)
     {
       if (statement_code_p (code) || code == TREE_LIST
-	  || LANG_TREE_CHAIN_MATTERS_P (*tp))
+	  || (*lang_hooks.tree_inlining.tree_chain_matters_p) (*tp))
 	/* But we still need to check our siblings.  */
 	return walk_tree (&TREE_CHAIN (*tp), func, data, htab);
       else
@@ -1188,7 +1180,8 @@ walk_tree (tp, func, data, htab_)
       return NULL_TREE;
     }
 
-  result = LANG_WALK_SUBTREES (tp, &walk_subtrees, func, data, htab);
+  result = (*lang_hooks.tree_inlining.walk_subtrees) (tp, &walk_subtrees, func,
+						      data, htab);
   if (result || ! walk_subtrees)
     return result;
 
@@ -1316,7 +1309,7 @@ copy_tree_r (tp, walk_subtrees, data)
       || TREE_CODE_CLASS (code) == 's'
       || code == TREE_LIST
       || code == TREE_VEC
-      || LANG_TREE_CHAIN_MATTERS_P (*tp))
+      || (*lang_hooks.tree_inlining.tree_chain_matters_p) (*tp))
     {
       /* Because the chain gets clobbered when we make a copy, we save it
 	 here.  */
@@ -1328,7 +1321,7 @@ copy_tree_r (tp, walk_subtrees, data)
       /* Now, restore the chain, if appropriate.  That will cause
 	 walk_tree to walk into the chain as well.  */
       if (code == PARM_DECL || code == TREE_LIST
-	  || LANG_TREE_CHAIN_MATTERS_P (*tp)
+	  || (*lang_hooks.tree_inlining.tree_chain_matters_p) (*tp)
 	  || statement_code_p (code))
 	TREE_CHAIN (*tp) = chain;
 

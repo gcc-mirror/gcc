@@ -115,7 +115,31 @@ extern void check_global_declarations   PARAMS ((union tree_node **, int));
 extern const char *progname;
 extern const char *dump_base_name;
 
+/* The following hooks are documented in langhooks.c.  Must not be
+   NULL.  */
+
+struct lang_hooks_for_tree_inlining
+{
+  union tree_node *(*walk_subtrees) PARAMS ((union tree_node **, int *,
+					     union tree_node *(*)
+					     (union tree_node **,
+					      int *, void *),
+					     void *, void *));
+  int (*cannot_inline_tree_fn) PARAMS ((union tree_node **));
+  int (*disregard_inline_limits) PARAMS ((union tree_node *));
+  union tree_node *(*add_pending_fn_decls) PARAMS ((void*, union tree_node *));
+  int (*tree_chain_matters_p) PARAMS ((union tree_node *));
+  int (*auto_var_in_fn_p) PARAMS ((union tree_node *, union tree_node *));
+  union tree_node *(*copy_res_decl_for_inlining) PARAMS ((union tree_node *,
+							  union tree_node *,
+							  union tree_node *,
+							  void *, int *,
+							  void *));
+  int (*anon_aggr_type_p) PARAMS ((union tree_node *));
+};
+
 /* Language-specific hooks.  Can be NULL unless otherwise specified.  */
+
 struct lang_hooks
 {
   /* Called first, to initialize the front end.  */
@@ -141,6 +165,11 @@ struct lang_hooks
 
   /* Called when all command line options have been processed.  */
   void (*post_options) PARAMS ((void));
+
+  struct lang_hooks_for_tree_inlining tree_inlining;
+
+  /* Whenever you add entries here, make sure you adjust langhooks.h
+     and langhooks.c accordingly.  */
 };
 
 /* Each front end provides its own.  */

@@ -38,6 +38,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cpplib.h"
 #include "insn-config.h"
 #include "integrate.h"
+#include "langhooks.h"
 
 static int c_tree_printer PARAMS ((output_buffer *));
 static int c_missing_noreturn_ok_p PARAMS ((tree));
@@ -47,12 +48,26 @@ static void c_post_options PARAMS ((void));
 static int c_disregard_inline_limits PARAMS ((tree));
 static int c_cannot_inline_tree_fn PARAMS ((tree *));
 
+#undef LANG_HOOKS_INIT
+#define LANG_HOOKS_INIT c_init
+#undef LANG_HOOKS_INIT_OPTIONS
+#define LANG_HOOKS_INIT_OPTIONS c_init_options
+#undef LANG_HOOKS_DECODE_OPTION
+#define LANG_HOOKS_DECODE_OPTION c_decode_option
+#undef LANG_HOOKS_POST_OPTIONS
+#define LANG_HOOKS_POST_OPTIONS c_post_options
+#undef LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN
+#define LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN \
+  c_cannot_inline_tree_fn
+#undef LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS
+#define LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS \
+  c_disregard_inline_limits
+#undef LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P
+#define LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P \
+  anon_aggr_type_p
+
 /* Each front end provides its own.  */
-struct lang_hooks lang_hooks = {c_init,
-				NULL, /* c_finish */
-				c_init_options,
-				c_decode_option,
-				c_post_options};
+struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* Post-switch processing.  */
 static void
@@ -112,8 +127,6 @@ c_init ()
   diagnostic_format_decoder (global_dc) = &c_tree_printer;
   lang_expand_decl_stmt = &c_expand_decl_stmt;
   lang_missing_noreturn_ok_p = &c_missing_noreturn_ok_p;
-  lang_disregard_inline_limits = &c_disregard_inline_limits;
-  lang_cannot_inline_tree_fn = &c_cannot_inline_tree_fn;
 
   c_parse_init ();
 }
