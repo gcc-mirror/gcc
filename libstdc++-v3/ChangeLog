@@ -1,3 +1,28 @@
+2003-12-15  Jerry Quinn  <jlquinn@optonline.net>
+
+        * config/os/aix/ctype_noninline.h,
+	config/os/bsd/freebsd/ctype_noninline.h,
+	config/os/bsd/netbsd/ctype_noninline.h,
+	config/os/djgpp/ctype_noninline.h,
+	config/os/generic/ctype_noninline.h,
+	config/os/gnu-linux/ctype_noninline.h,
+	config/os/hpux/ctype_noninline.h,
+	config/os/irix/irix5.2/ctype_noninline.h,
+	config/os/irix/irix6.5/ctype_noninline.h,
+	config/os/mingw32/ctype_noninline.h,
+	config/os/newlib/ctype_noninline.h,
+	config/os/qnx/qnx6.1/ctype_noninline.h,
+	config/os/solaris/solaris2.5/ctype_noninline.h,
+	config/os/solaris/solaris2.6/ctype_noninline.h,
+	config/os/solaris/solaris2.7/ctype_noninline.h,
+	config/os/vxworks/ctype_noninline.h,
+	config/os/windiss/ctype_noninline.h (ctype):  Initialize
+	_M_narrow, _M_widen.
+	* include/bits/locale_facets.h (_M_widen, _M_widen_ok,
+	_M_narrow, _M_narrow_ok): New.
+	(widen, narrow): Use tables to bypass virtual functions.
+	(_M_widen_init, _M_narrow_init): New.
+
 2003-12-15  Carlo Wood  <carlo@alinoe.com>
 
 	* include/bits/ios_base.h (Init::_S_initialized): Change into
