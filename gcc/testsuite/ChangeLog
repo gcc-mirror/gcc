@@ -1,3 +1,8 @@
+Tue Jan 14 00:45:03 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/i386-fpcvt-1.c: New test.
+	* gcc.dg/i386-fpcvt-2.c: New test.
+
 2003-01-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/i386-mmx-3.c: New test.

@@ -2929,6 +2929,9 @@ extern tree fold_builtin				PARAMS ((tree));
 extern enum built_in_function builtin_mathfn_code	PARAMS ((tree));
 extern tree build_function_call_expr			PARAMS ((tree, tree));
 
+/* In convert.c */
+extern tree strip_float_extensions			PARAMS ((tree));
+
 /* In alias.c */
 extern void record_component_aliases		PARAMS ((tree));
 extern HOST_WIDE_INT get_alias_set		PARAMS ((tree));

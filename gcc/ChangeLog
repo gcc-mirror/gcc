@@ -1,3 +1,13 @@
+Tue Jan 14 00:45:33 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* convert.c (strip_float_extensions):  Look for narrowest type handling
+	FP constants.
+
+	* fold-const.c (fold):  Fold (double)float1 CMP (double)float2 into
+	float1 CMP float2.
+	* convert.c (strip_float_extensions): Make global.
+	* tree.h (strip_float_extensions): Declare.
+
 2003-01-14  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* timevar.def: define TV_NAME_LOOKUP.
