@@ -21,7 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-D_AM29K -D_AM29000 -D_EPI"
+#define CPP_PREDEFINES "-D_AM29K -D_AM29000 -D_EPI -Acpu(a29k) -Amachine(a29k)"
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION

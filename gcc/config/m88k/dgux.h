@@ -70,7 +70,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef	CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dm88000 -Dm88k -Dunix -DDGUX -D__CLASSIFY_TYPE__=2\
-   -D__svr4__ -Asystem(unix) -Acpu(m88k) -Amachine(m88k)"
+   -D__svr4__ -Asystem(unix) -Asystem(svr4) -Acpu(m88k) -Amachine(m88k)"
 
 /* If -m88100 is in effect, add -Dm88100; similarly for -m88110.
    Here, the CPU_DEFAULT is assumed to be -m88000.  If not -ansi,

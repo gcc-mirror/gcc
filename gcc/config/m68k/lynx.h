@@ -28,7 +28,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Dmc68000 -DM68K -DLynx -DIBITS32"
+#define CPP_PREDEFINES "-Dunix -Dmc68000 -DM68K -DLynx -DIBITS32 -Asystem(unix) -Asystem(lynx)  -Acpu(m68k) -Amachine(m68k)"
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 

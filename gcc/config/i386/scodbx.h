@@ -49,7 +49,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Di386 -DM_UNIX -DM_I386 -DM_COFF -DM_WORDSWAP"
+#define CPP_PREDEFINES "-Dunix -Di386 -DM_UNIX -DM_I386 -DM_COFF -DM_WORDSWAP -Asystem(unix) -Asystem(svr3) -Acpu(i386) -Amachine(i386)"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{scointl:-DM_INTERNAT}"

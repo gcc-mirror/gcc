@@ -110,7 +110,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #undef	CPP_PREDEFINES
-#define CPP_PREDEFINES "-Di386 -DNeXT -Dunix -D__MACH__ -D__LITTLE_ENDIAN__ -D__ARCHITECTURE__=\"i386\""
+#define CPP_PREDEFINES "-Di386 -DNeXT -Dunix -D__MACH__ -D__LITTLE_ENDIAN__ -D__ARCHITECTURE__=\"i386\" -Asystem(unix) -Asystem(mach) -Acpu(i386) -Amachine(i386)"
 
 /* This accounts for the return pc and saved fp on the i386. */
 

@@ -19,8 +19,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define MIPS_SYSV
 
-#define CPP_PREDEFINES "-Dmips -Dunix -Dhost_mips -DMIPSEB -DR3000 -DSYSTYPE_SYSV \
--D_mips -D_unix -D_host_mips -D_MIPSEB -D_R3000 -D_SYSTYPE_SYSV"
+#define CPP_PREDEFINES "\
+-Dmips -Dunix -Dhost_mips -DMIPSEB -DR3000 -DSYSTYPE_SYSV \
+-D_mips -D_unix -D_host_mips -D_MIPSEB -D_R3000 -D_SYSTYPE_SYSV \
+-Asystem(unix) -Asystem(svr3) -Acpu(mips) -Amachine(mips)"
 
 #define STANDARD_INCLUDE_DIR "/sysv/usr/include"
 

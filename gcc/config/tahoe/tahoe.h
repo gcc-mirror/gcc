@@ -44,7 +44,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_VERSION printf (" (hcx)");
 #else
 /* we want "tahoe" and "unix" defined for all future compilations */
-#define CPP_PREDEFINES "-Dtahoe -Dunix"
+#define CPP_PREDEFINES "-Dtahoe -Dunix -Asystem(unix) -Acpu(tahoe) -Amachine(tahoe)"
 /* have cc1 print that this is the tahoe version */
 #define TARGET_VERSION printf (" (tahoe)");
 #endif

@@ -25,7 +25,7 @@
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Di386 -Dlinux"
+#define CPP_PREDEFINES "-Dunix -Di386 -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(i386) -Amachine(i386)"
 
 #undef CPP_SPEC
 #if TARGET_CPU_DEFAULT == 2

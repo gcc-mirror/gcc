@@ -21,7 +21,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES	"-Dunix -Dmips -Dsgi -DSVR3 -Dhost_mips -DMIPSEB -DSYSTYPE_SYSV"
+#define CPP_PREDEFINES	"\
+-Dunix -Dmips -Dsgi -DSVR3 -Dhost_mips -DMIPSEB -DSYSTYPE_SYSV \
+-Asystem(unix) -Asystem(svr3) -Acpu(mips) -Amachine(mips)"
 
 #define STARTFILE_SPEC	"%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}"
 

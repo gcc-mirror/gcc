@@ -23,7 +23,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define CPP_PREDEFINES "\
 -Dunix -D__osf__ -D__alpha -D__alpha__ -D_LONGLONG -DSYSTYPE_BSD  \
--D_SYSTYPE_BSD"
+-D_SYSTYPE_BSD -Asystem(unix) -Asystem(xpg4) -Acpu(alpha) -Amachine(alpha)"
 
 /* Write out the correct language type definition for the header files.  */
 #define CPP_SPEC "\

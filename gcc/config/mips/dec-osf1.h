@@ -19,8 +19,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define DEC_OSF1
 
-#define CPP_PREDEFINES "-D__ANSI_COMPAT \
--DMIPSEL -DR3000 -DSYSTYPE_BSD -D_SYSTYPE_BSD -Dbsd4_2 -Dhost_mips -Dmips -Dosf -Dunix"
+#define CPP_PREDEFINES "\
+-D__ANSI_COMPAT -DMIPSEL -DR3000 -DSYSTYPE_BSD -D_SYSTYPE_BSD \
+-Dbsd4_2 -Dhost_mips -Dmips -Dosf -Dunix \
+-Asystem(unix) -Asystem(xpg4) -Acpu(mips) -Amachine(mips)"
 
 #define LINK_SPEC "\
 %{G*} \

@@ -149,7 +149,7 @@ extern int target_flags;
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -D_HPUX_SOURCE -Dhp9000 -Dhp800 -Dspectrum -DREVARGV"
+#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -D_HPUX_SOURCE -Dhp9000 -Dhp800 -Dspectrum -DREVARGV -Asystem(unix) -Asystem(bsd) -Acpu(hppa) -Amachine(hppa)"
 
 /* target machine storage layout */
 

@@ -33,7 +33,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    aligned such that we can correctly extract bitfields from them.
    Someone should check whether the usual compiler on the crds machine
    provides the equivalent behavior of STRUCTURE_SIZE_BOUNDARY.  */
-#error This doesn't define STRUCTURE_SIZE_BOUNDARY
+#error This does not define STRUCTURE_SIZE_BOUNDARY
 
 /* See m68k.h.  0 means 680[01]0 with no 68881.  */
 
@@ -101,7 +101,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmc68k -DM68000 -Dmc68000 -Dunos -Dunix -D__motorola__"
+#define CPP_PREDEFINES "-Dmc68k -DM68000 -Dmc68000 -Dunos -Dunix -D__motorola__ -Asystem(unix)  -Acpu(m68k) -Amachine(m68k)"
 
 /* Register in which address to store a structure value
    is passed to a function.  */

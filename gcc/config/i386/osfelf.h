@@ -21,7 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "config/i386/osfrose.h"
 
 #undef	CPP_PREDEFINES
-#define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Di386 -Asystem(unix) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Di386 -Asystem(unix) -Asystem(xpg4) -Acpu(i386) -Amachine(i386)"
 
 #undef  CPP_SPEC
 #define CPP_SPEC "\

@@ -29,7 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Di860 -Dunix"
+#define CPP_PREDEFINES "-Di860 -Dunix -Asystem(unix) -Asystem(svr4) -Acpu(i860) -Amachine(i860)"
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION fprintf (stderr, " (i860)");

@@ -86,7 +86,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    because gcc does "gvarargs.h" instead of <varargs.h>, and thus gets the
    wrong varargs file when it is compiled with a different version of gcc.  */
 
-#define CPP_PREDEFINES "-Dsparc -Dsun -Dunix -D__GCC_NEW_VARARGS__"
+#define CPP_PREDEFINES \
+  "-Dsparc -Dsun -Dunix -D__GCC_NEW_VARARGS__ \
+   -Asystem(unix) -Asystem(bsd) -Acpu(sparc) -Amachine(sparc)"
 
 /* Print subsidiary information on the compiler version in use.  */
 

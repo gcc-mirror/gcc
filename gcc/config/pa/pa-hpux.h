@@ -43,7 +43,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p: -L/lib/libp/ -lc}%{pg: -L/lib/libp/ -lc}"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -DPWB -Dhpux -Dunix -D_HPUX_SOURCE"
+#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -DPWB -Dhpux -Dunix -D_HPUX_SOURCE -Asystem(unix) -Asystem(hpux) -Acpu(hppa) -Amachine(hppa)"
 
 #undef LINK_SPEC
 #define LINK_SPEC "-u main %{static: -a archive}%{g: -a archive}"

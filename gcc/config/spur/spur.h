@@ -24,7 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dspur"
+#define CPP_PREDEFINES "-Dspur -Acpu(spur) -Amachine(spur)"
 
 /* Link with libg.a when debugging, for dbx's sake.  */
 

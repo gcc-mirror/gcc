@@ -43,9 +43,9 @@ extern char *output_arithmetic_with_immediate_multiply ();
   "%{pg:/usr/lib/gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
 
 #ifdef riscos
-#define CPP_PREDEFINES  "-Darm -Driscos"
+#define CPP_PREDEFINES  "-Darm -Driscos -Acpu(arm) -Amachine(arm)"
 #else
-#define CPP_PREDEFINES  "-Darm -Driscix -Dunix"
+#define CPP_PREDEFINES  "-Darm -Driscix -Dunix -Asystem(unix) -Acpu(arm) -Amachine(arm)"
 #endif
 
 /* Run-time Target Specification.  */

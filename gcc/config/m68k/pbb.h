@@ -44,7 +44,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dm68k -Dunix -DUnicomPBB -Dmc68k -Dmc68020 -Dmc68k32"
+#define CPP_PREDEFINES "-Dm68k -Dunix -DUnicomPBB -Dmc68k -Dmc68020 -Dmc68k32 -Asystem(unix)  -Acpu(m68k) -Amachine(m68k)"
 
 /* We want DBX format for use with gdb under COFF.  */
 

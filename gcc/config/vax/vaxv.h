@@ -23,6 +23,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define SCCS_DIRECTIVE
 
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-Dvax -Dunix -Asystem(unix) -Asystem(svr3) -Acpu(vax) -Amachine(vax)"
+
 /* Output #ident as a .ident.  */
 
 #define ASM_OUTPUT_IDENT(FILE, NAME) fprintf (FILE, "\t.ident \"%s\"\n", NAME);

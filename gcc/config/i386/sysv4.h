@@ -37,7 +37,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This used to define X86, but james@bigtex.cactus.org says that
    is supposed to be defined optionally by user programs--not by default.  */
 #define CPP_PREDEFINES \
-  "-Di386 -Dunix -D__svr4__ -Asystem(unix) -Acpu(i386) -Amachine(i386)"
+  "-Di386 -Dunix -D__svr4__ -Asystem(unix) -Asystem(svr4) -Acpu(i386) -Amachine(i386)"
 
 /* If the host and target formats match, output the floats as hex.  */
 #if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT

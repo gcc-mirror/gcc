@@ -24,7 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* We don't define AIX under MACH; instead we define `unix'.  */
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Drios -D_IBMR2 -Dunix"
+#define CPP_PREDEFINES "-Drios -D_IBMR2 -Dunix -Asystem(unix) -Asystem(mach) -Acpu(rs6000) -Amachine(rs6000)"
 
 /* Define different binder options for MACH.  */
 #undef LINK_SPEC

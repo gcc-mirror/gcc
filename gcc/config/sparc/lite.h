@@ -21,7 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "sparc/sparc.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -Dsparclite"
+#define CPP_PREDEFINES "-Dsparc -Dsparclite -Acpu(sparc) -Amachine(sparc)"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparclite)");

@@ -23,7 +23,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dclipper -Dunix"
+#define CPP_PREDEFINES "-Dclipper -Dunix -Asystem(unix) -Asystem(svr3) -Acpu(clipper) -Amachine(clipper)"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC  \

@@ -37,7 +37,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  "%{m68020:-mc68020}%{mc68020:-mc68020}%{!mc68020:%{!m68020:-mc68010}}"
 
 /* Names to predefine in the preprocessor for this target machine.  */
-#define CPP_PREDEFINES "-Dmc68000 -Dmc68k -Dunix -Dunixpc"
+#define CPP_PREDEFINES "-Dmc68000 -Dmc68k -Dunix -Dunixpc -Asystem(unix)  -Asystem(svr3) -Acpu(m68k) -Amachine(m68k)"
 
 /* This is (not really) BSD, so (but) it wants DBX format.  */
 #define DBX_DEBUGGING_INFO

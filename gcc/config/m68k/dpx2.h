@@ -34,12 +34,12 @@
  * define all the things the compiler should
  */
 #ifdef ncl_mr
-# define CPP_PREDEFINES "-Dunix -Dbull -DDPX2 -DSVR3 -Dmc68000 -Dmc68020 -Dncl_mr=1 -D_BULL_SOURCE -D_POSIX_SOURCE -D_XOPEN_SOURCE"
+# define CPP_PREDEFINES "-Dunix -Dbull -DDPX2 -DSVR3 -Dmc68000 -Dmc68020 -Dncl_mr=1 -D_BULL_SOURCE -D_POSIX_SOURCE -D_XOPEN_SOURCE -Asystem(unix) -Asystem(svr3)  -Acpu(m68k) -Amachine(m68k)"
 #else
 # ifdef ncl_el
-# define CPP_PREDEFINES "-Dunix -Dbull -DDPX2 -DSVR3 -Dmc68000 -Dmc68020 -Dncl_el-D_BULL_SOURCE -D_POSIX_SOURCE -D_XOPEN_SOURCE "
+# define CPP_PREDEFINES "-Dunix -Dbull -DDPX2 -DSVR3 -Dmc68000 -Dmc68020 -Dncl_el-D_BULL_SOURCE -D_POSIX_SOURCE -D_XOPEN_SOURCE -Asystem(unix) -Asystem(svr3)  -Acpu(m68k) -Amachine(m68k)"
 # else
-#   define CPP_PREDEFINES "-Dunix -Dbull -DDPX2 -DSVR3 -Dmc68000 -Dmc68020 -D_BULL_SOURCE -D_POSIX_SOURCE -D_XOPEN_SOURCE"
+#   define CPP_PREDEFINES "-Dunix -Dbull -DDPX2 -DSVR3 -Dmc68000 -Dmc68020 -D_BULL_SOURCE -D_POSIX_SOURCE -D_XOPEN_SOURCE -Asystem(unix) -Asystem(svr3)  -Acpu(m68k) -Amachine(m68k)"
 # endif
 #endif
 

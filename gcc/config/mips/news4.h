@@ -19,8 +19,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define MIPS_NEWS
 
-#define CPP_PREDEFINES "-Dr3000 -Dnews3700 -DLANGUAGE_C -DMIPSEB -DSYSTYPE_BSD \
--Dsony_news -Dsony -Dunix -Dmips -Dhost_mips"
+#define CPP_PREDEFINES "\
+-Dr3000 -Dnews3700 -DLANGUAGE_C -DMIPSEB -DSYSTYPE_BSD \
+-Dsony_news -Dsony -Dunix -Dmips -Dhost_mips \
+-Asystem(unix) -Asystem(bsd) -Acpu(mips) -Amachine(mips)"
 
 #define ASM_SPEC "\
 %{!mgas: \

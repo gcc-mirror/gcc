@@ -47,22 +47,22 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dunix -Dtower32 -Dtower32_200"
+#define CPP_PREDEFINES "-Dunix -Dtower32 -Dtower32_200 -Asystem(unix) -Asystem(svr3) -Acpu(m68k) -Amachine(m68k)"
 
 #if 0  /* It is incorrect to test these symbols.
 	  They describe the host, not the target.
 	  It should not matter which model is specified.  */
 #ifdef tower32_600
-#define CPP_PREDEFINES "-Dunix -Dtower32 -Dtower32_600"
+#define CPP_PREDEFINES "-Dunix -Dtower32 -Dtower32_600 -Asystem(unix) -Asystem(svr3) -Acpu(m68k) -Amachine(m68k)"
 #endif
 #ifdef tower32_700
-#define CPP_PREDEFINES "-Dunix -Dtower32 -Dtower32_700"
+#define CPP_PREDEFINES "-Dunix -Dtower32 -Dtower32_700 -Asystem(unix) -Asystem(svr3) -Acpu(m68k) -Amachine(m68k)"
 #endif
 #ifdef tower32_800
-#define CPP_PREDEFINES "-Dunix -Dtower32 -Dtower32_800"
+#define CPP_PREDEFINES "-Dunix -Dtower32 -Dtower32_800 -Asystem(unix) -Asystem(svr3) -Acpu(m68k) -Amachine(m68k)"
 #endif
 #ifdef tower32_850
-#define CPP_PREDEFINES "-Dunix -Dtower32 -Dtower32_850"
+#define CPP_PREDEFINES "-Dunix -Dtower32 -Dtower32_850 -Asystem(unix) -Asystem(svr3) -Acpu(m68k) -Amachine(m68k)"
 #endif
 #endif
 

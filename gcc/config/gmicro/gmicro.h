@@ -31,7 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dgmicro"
+#define CPP_PREDEFINES "-Dgmicro -Acpu(tron) -Amachine(tron)"
 
 /* #define CPP_SPEC    ** currently not defined **/
 
@@ -168,7 +168,7 @@ extern int target_flags;
 #define BIGGEST_ALIGNMENT 32
 
 /* Set this non-zero if move instructions will actually fail to work
-   when given unaligned data.  */
+   when given unaligned data.
    Unaligned data is allowed on Gmicro, though the access is slow. */
 
 #define STRICT_ALIGNMENT 1

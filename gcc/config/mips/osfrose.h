@@ -29,7 +29,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define WORD_SWITCH_TAKES_ARG(STR)					\
  (DEFAULT_WORD_SWITCH_TAKES_ARG (STR) || !strcmp (STR, "pic-names"))
 
-#define CPP_PREDEFINES "-DOSF -DOSF1 -Dbsd4_2 -DMIPSEL -Dhost_mips -Dmips -Dunix -DR3000 -DSYSTYPE_BSD"
+#define CPP_PREDEFINES "\
+-DOSF -DOSF1 -Dbsd4_2 -DMIPSEL -Dhost_mips -Dmips -Dunix -DR3000 -DSYSTYPE_BSD \
+-Asystem(unix) -Asystem(xpg4) -Acpu(mips) -Amachine(mips)"
 
 #define ASM_SPEC	"\
 %{mmips-as: \

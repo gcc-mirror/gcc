@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dmc68000 -Dalliant -Dunix"
+#define CPP_PREDEFINES "-Dmc68000 -Dalliant -Dunix -Asystem(unix) -Acpu(m68k) -Amachine(m68k)"
 
 /* Print subsidiary information on the compiler version in use.  */
 

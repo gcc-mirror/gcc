@@ -32,7 +32,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define SDB_DELIM ";"
 
-#define CPP_PREDEFINES "-D__sh__"
+#define CPP_PREDEFINES "-D__sh__ -Acpu(sh) -Amachine(sh)"
 
 
 /* Omitting the frame pointer is a very good idea on the SH */
