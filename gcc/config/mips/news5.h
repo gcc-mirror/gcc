@@ -35,7 +35,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{G*} \
 %{!mgas: %{mips1} %{mips2} %{mips3} \
 	 %{EB} %{!EB:-EB} %{EL: %e-EL not supported} \
-	 %{bestGnum}}"
+	 %{bestGnum} %{shared} %{non_shared}}"
 		    
 #define LIB_SPEC "\
 %{ZBSD43: -L/usr/ucblib -lucb -lresolv -lsocket -lnsl} \

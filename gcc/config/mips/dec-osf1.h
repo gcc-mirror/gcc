@@ -17,10 +17,20 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#define DECSTATION
 #define DEC_OSF1
 
 #define CPP_PREDEFINES "-D__ANSI_COMPAT \
 -DMIPSEL -DR3000 -DSYSTYPE_BSD -D_SYSTYPE_BSD -Dbsd4_2 -Dhost_mips -Dmips -Dosf -Dunix"
 
+#define LINK_SPEC "\
+%{G*} \
+%{!mgas: \
+	%{EL} %{!EL: -EL} \
+	%{EB: %e-EB not supported} \
+	%{mips1} %{mips2} %{mips3} \
+	%{bestGnum} %{shared} %{non_shared}}"
+
 #include "decstatn.h"
+
+/* turn off collect2 COFF support, since ldfcn now has elf declaration */
+#undef OBJECT_FORMAT_COFF
