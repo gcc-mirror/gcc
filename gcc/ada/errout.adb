@@ -601,52 +601,8 @@ package body Errout is
    -----------------
 
    procedure Error_Msg_F (Msg : String; N : Node_Id) is
-      SI : constant Source_File_Index := Source_Index (Get_Source_Unit (N));
-      SF : constant Source_Ptr        := Source_First (SI);
-      F  : Node_Id;
-      S  : Source_Ptr;
-
    begin
-      F := First_Node (N);
-      S := Sloc (F);
-
-      --  The following circuit is a bit subtle. When we have parenthesized
-      --  expressions, then the Sloc will not record the location of the
-      --  paren, but we would like to post the flag on the paren. So what
-      --  we do is to crawl up the tree from the First_Node, adjusting the
-      --  Sloc value for any parentheses we know are present. Yes, we know
-      --  this circuit is not 100% reliable (e.g. because we don't record
-      --  all possible paren level valoues), but this is only for an error
-      --  message so it is good enough.
-
-      Node_Loop : loop
-         Paren_Loop : for J in 1 .. Paren_Count (F) loop
-
-            --  We don't look more than 12 characters behind the current
-            --  location, and in any case not past the front of the source.
-
-            Search_Loop : for K in 1 .. 12 loop
-               exit Search_Loop when S = SF;
-
-               if Source_Text (SI) (S - 1) = '(' then
-                  S := S - 1;
-                  exit Search_Loop;
-
-               elsif Source_Text (SI) (S - 1) <= ' ' then
-                  S := S - 1;
-
-               else
-                  exit Search_Loop;
-               end if;
-            end loop Search_Loop;
-         end loop Paren_Loop;
-
-         exit Node_Loop when F = N;
-         F := Parent (F);
-         exit Node_Loop when Nkind (F) not in N_Subexpr;
-      end loop Node_Loop;
-
-      Error_Msg_NEL (Msg, N, N, S);
+      Error_Msg_NEL (Msg, N, N, First_Sloc (N));
    end Error_Msg_F;
 
    ------------------
@@ -1390,6 +1346,58 @@ package body Errout is
       return Earliest;
    end First_Node;
 
+   ----------------
+   -- First_Sloc --
+   ----------------
+
+   function First_Sloc (N : Node_Id) return Source_Ptr is
+      SI : constant Source_File_Index := Source_Index (Get_Source_Unit (N));
+      SF : constant Source_Ptr        := Source_First (SI);
+      F  : Node_Id;
+      S  : Source_Ptr;
+
+   begin
+      F := First_Node (N);
+      S := Sloc (F);
+
+      --  The following circuit is a bit subtle. When we have parenthesized
+      --  expressions, then the Sloc will not record the location of the
+      --  paren, but we would like to post the flag on the paren. So what
+      --  we do is to crawl up the tree from the First_Node, adjusting the
+      --  Sloc value for any parentheses we know are present. Yes, we know
+      --  this circuit is not 100% reliable (e.g. because we don't record
+      --  all possible paren level valoues), but this is only for an error
+      --  message so it is good enough.
+
+      Node_Loop : loop
+         Paren_Loop : for J in 1 .. Paren_Count (F) loop
+
+            --  We don't look more than 12 characters behind the current
+            --  location, and in any case not past the front of the source.
+
+            Search_Loop : for K in 1 .. 12 loop
+               exit Search_Loop when S = SF;
+
+               if Source_Text (SI) (S - 1) = '(' then
+                  S := S - 1;
+                  exit Search_Loop;
+
+               elsif Source_Text (SI) (S - 1) <= ' ' then
+                  S := S - 1;
+
+               else
+                  exit Search_Loop;
+               end if;
+            end loop Search_Loop;
+         end loop Paren_Loop;
+
+         exit Node_Loop when F = N;
+         F := Parent (F);
+         exit Node_Loop when Nkind (F) not in N_Subexpr;
+      end loop Node_Loop;
+
+      return S;
+   end First_Sloc;
 
    ----------------
    -- Initialize --

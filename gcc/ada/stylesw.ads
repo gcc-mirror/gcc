@@ -145,6 +145,11 @@ package Stylesw is
    --  zero (a value of zero resets it to False). If True, it activates
    --  checking the maximum nesting level against Style_Max_Nesting_Level.
 
+   Style_Check_Order_Subprograms : Boolean := False;
+   --  This can be set True by using the -gnatg or -gnatyo switch. If it
+   --  is True, then names of subprogram bodies must be in alphabetical
+   --  order (not taking casing into account).
+
    Style_Check_Pragma_Casing : Boolean := False;
    --  This can be set True by using the -gnatg or -gnatyp switches. If
    --  it is True, then pragma names must use mixed case.
@@ -216,10 +221,10 @@ package Stylesw is
    --  where horizontal tabs are permitted, a horizontal tab is acceptable
    --  for meeting the requirement for a space.
 
-   Style_Check_Subprogram_Order : Boolean := False;
-   --  This can be set True by using the -gnatg or -gnatyo switch. If it
-   --  is True, then names of subprogram bodies must be in alphabetical
-   --  order (not taking casing into account).
+   Style_Check_Xtra_Parens : Boolean := False;
+   --  This can be set True by using the -gnatg or -gnatyx switch. If true,
+   --  then it is not allowed to enclose entire conditional expressions
+   --  in parentheses (C style).
 
    Style_Max_Line_Length : Int := 0;
    --  Value used to check maximum line length. Gets reset as a result of

@@ -2978,7 +2978,7 @@ package body Sem_Ch6 is
       --  Check body in alpha order if this is option
 
       if Style_Check
-        and then Style_Check_Subprogram_Order
+        and then Style_Check_Order_Subprograms
         and then Nkind (N) = N_Subprogram_Body
         and then Comes_From_Source (N)
         and then In_Extended_Main_Source_Unit (N)

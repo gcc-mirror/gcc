@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,7 @@
 --  checking rules. For documentation of these rules, see comments on the
 --  individual procedures.
 
-with Casing;  use Casing;
+with Casing;   use Casing;
 with Csets;    use Csets;
 with Err_Vars; use Err_Vars;
 with Opt;      use Opt;
@@ -666,6 +666,17 @@ package body Styleg is
          Require_Following_Space;
       end if;
    end Check_Vertical_Bar;
+
+   -----------------------
+   -- Check_Xtra_Parens --
+   -----------------------
+
+   procedure Check_Xtra_Parens (Loc : Source_Ptr) is
+   begin
+      if Style_Check_Xtra_Parens then
+         Error_Msg ("redundant parentheses?", Loc);
+      end if;
+   end Check_Xtra_Parens;
 
    ----------------------------
    -- Determine_Token_Casing --

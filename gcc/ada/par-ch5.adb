@@ -1268,10 +1268,10 @@ package body Ch5 is
       --  Otherwise check for redundant parens
 
       else
-         if Warn_On_Redundant_Constructs
+         if Style_Check
            and then Paren_Count (Cond) > 0
          then
-            Error_Msg_F ("redundant parentheses?", Cond);
+            Style.Check_Xtra_Parens (First_Sloc (Cond));
          end if;
 
          --  And return the result
