@@ -3,7 +3,7 @@
 # Runs doxygen and massages the output files.
 # Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 #
-# Synopsis:  run_doxygen --mode=[user|maint|man] --build_alias=<alias> \
+# Synopsis:  run_doxygen --mode=[user|maint|man] --host_alias=<alias> \
 #                        v3srcdir  v3builddir
 #
 # Originally hacked together by Phil Edwards <pme@gcc.gnu.org>
@@ -44,7 +44,7 @@ find_doxygen() {
 
 print_usage() {
     cat 1>&2 <<EOF
-Usage:  run_doxygen --mode=MODE --build_alias=BUILD_ALIAS [<options>]
+Usage:  run_doxygen --mode=MODE --host_alias=BUILD_ALIAS [<options>]
                     <v3-src-dir> <v3-build-dir>
       MODE is one of:
           user           Generate user-level HTML library documentation.
@@ -76,9 +76,9 @@ parse_options() {
     case "$o" in
       --mode=*)
         mode=$arg ;;
-      --build_alias=*)
-        build_alias=$arg ;;
-      --mode | --build_alias | --help | -h)
+      --host_alias=*)
+        host_alias=$arg ;;
+      --mode | --host_alias | --help | -h)
         print_usage ;;
       *)
         # this turned out to be a mess, maybe change to --srcdir=, etc
@@ -99,7 +99,7 @@ parse_options() {
 
 # script begins here
 mode=unset
-build_alias=unset
+host_alias=unset
 srcdir=unset
 outdir=unset
 do_html=false
@@ -111,7 +111,7 @@ DATEtext=`date '+%Y-%m-%d'`
 parse_options $*
 find_doxygen
 
-if test $srcdir = unset || test $outdir = unset || test $mode = unset || test $build_alias = unset; then
+if test $srcdir = unset || test $outdir = unset || test $mode = unset || test $host_alias = unset; then
     # this could be better
     echo run_doxygen error:  You have not given enough information...! 1>&2
     print_usage
@@ -152,7 +152,7 @@ fi
   cd $builddir
   sed -e "s=@outdir@=${outdir}=g" \
       -e "s=@srcdir@=${srcdir}=g" \
-      -e "s=@build_alias@=${build_alias}=g" \
+      -e "s=@host_alias@=${host_alias}=g" \
       -e "s=@html_output_dir@=html_${mode}=" \
       -e "s=@enabled_sections@=${enabled_sections}=" \
       -e "s=@do_html@=${do_html}=" \

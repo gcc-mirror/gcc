@@ -1,3 +1,11 @@
+2004-11-16  Matthias Klose  <doko@debian.org>
+
+	* Makefile.am (doxygen, doxygen-maint, doxygen-man): Use host_alias
+	instead of build_alias.
+	* docs/doxygen/run_doxygen: Likewise.
+	* docs/doxygen/user.cfg.in: Likewise.
+	* Makefile.in: Regenerate.
+
 2004-11-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/streambuf.tcc (__copy_streambufs): Provide
