@@ -954,7 +954,9 @@ struct directive {
   enum node_type type;		/* Code which describes which directive.  */
   char angle_brackets;		/* Nonzero => <...> is special.  */
   char traditional_comments;	/* Nonzero: keep comments if -traditional.  */
-  char pass_thru;		/* Copy preprocessed directive to output file.  */
+  char pass_thru;		/* Copy directive to output:
+				   if 1, copy if dumping definitions;
+				   if 2, always copy, after preprocessing.  */
 };
 
 /* These functions are declared to return int instead of void since they
@@ -983,7 +985,7 @@ static int do_xifdef DO_PROTO;
 /* Here is the actual list of #-directives, most-often-used first.  */
 
 static struct directive directive_table[] = {
-  {  6, do_define, "define", T_DEFINE, 0, 1},
+  {  6, do_define, "define", T_DEFINE, 0, 1, 1},
   {  2, do_if, "if", T_IF},
   {  5, do_xifdef, "ifdef", T_IFDEF},
   {  6, do_xifdef, "ifndef", T_IFNDEF},
@@ -1000,7 +1002,7 @@ static struct directive directive_table[] = {
 #ifdef SCCS_DIRECTIVE
   {  4, do_sccs, "sccs", T_SCCS},
 #endif
-  {  6, do_pragma, "pragma", T_PRAGMA, 0, 0, 1},
+  {  6, do_pragma, "pragma", T_PRAGMA, 0, 0, 2},
   {  5, do_ident, "ident", T_IDENT},
   {  6, do_assert, "assert", T_ASSERT},
   {  8, do_unassert, "unassert", T_UNASSERT},
@@ -3776,9 +3778,14 @@ handle_directive (ip, op)
 	    bp = ip->bufp;
 	    /* No need to copy the directive because of a comment at the end;
 	       just don't include the comment in the directive.  */
-	    if (bp == limit || *bp == '\n') {
-	      bp = obp;
-	      goto endloop1;
+	    if (!put_out_comments) {
+	      U_CHAR *p;
+	      for (p = bp;  *p == ' ' || *p == '\t';  p++)
+		continue;
+	      if (*p == '\n') {
+		bp = obp;
+		goto endloop1;
+	      }
 	    }
 	    /* Don't remove the comments if -traditional.  */
 	    if (! keep_comments)
@@ -3809,7 +3816,8 @@ handle_directive (ip, op)
 
       /* If a directive should be copied through, and -E was given,
 	 pass it through before removing comments.  */
-      if (!no_output && kt->pass_thru && put_out_comments) {
+      if (!no_output && put_out_comments
+	  && (dump_macros != dump_definitions) < kt->pass_thru) {
         int len;
 
 	/* Output directive name.  */
@@ -3936,10 +3944,7 @@ handle_directive (ip, op)
 	 definitions through.  */
 
       if (!no_output && already_output == 0
-	  && (kt->pass_thru
-	      || (kt->type == T_DEFINE
-		  && (dump_macros == dump_names
-		      || dump_macros == dump_definitions)))) {
+	  && (dump_macros < dump_names) < kt->pass_thru) {
         int len;
 
 	/* Output directive name.  */
@@ -3948,7 +3953,7 @@ handle_directive (ip, op)
         bcopy (kt->name, (char *) op->bufp, kt->length);
         op->bufp += kt->length;
 
-	if (kt->pass_thru || dump_macros == dump_definitions) {
+	if ((dump_macros != dump_definitions) < kt->pass_thru) {
 	  /* Output arguments.  */
 	  len = (cp - buf);
 	  check_expand (op, len);
@@ -7577,8 +7582,6 @@ skip_to_end_of_comment (ip, line_counter, nowarn)
   }
   if (cplusplus_comments && bp[-1] == '/') {
     for (; bp < limit; bp++) {
-      if (op)
-	*op->bufp++ = *bp;
       if (*bp == '\n') {
 	if (bp[-1] != '\\')
 	  break;
@@ -7589,6 +7592,8 @@ skip_to_end_of_comment (ip, line_counter, nowarn)
 	if (op)
 	  ++op->lineno;
       }
+      if (op)
+	*op->bufp++ = *bp;
     }
     ip->bufp = bp;
     return bp;
