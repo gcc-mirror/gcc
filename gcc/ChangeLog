@@ -1,6 +1,6 @@
 2004-12-13  Danny Smith  <dannysmith@users.sourceforge.net>
 
-	PR/18549
+	PR target/18459
 	* defaults.h (TARGET_USE_JCR_SECTION): New macro.
 	* doc/tm.texi (TARGET_USE_JCR_SECTION): Document it.
 	* config/i386/cygming.h (TARGET_USE_JCR_SECTION): Override

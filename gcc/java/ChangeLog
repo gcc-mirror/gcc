@@ -1,6 +1,6 @@
 2004-12-13  Danny Smith  <dannysmith@users.sourceforge.net>
 
-	PR/18549
+	PR target/18459
 	* class.c (emit_register_classes): Use TARGET_USE_JCR_SECTION.
 	Update comment.
 
