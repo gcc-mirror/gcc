@@ -1,3 +1,7 @@
+2000-09-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/format-errmk-1.c: New test.
+
 2000-09-17  Greg McGary  <greg@mcgary.org>
 
 	* gcc.c-torture/execute/20000917-1.x: Remove.
