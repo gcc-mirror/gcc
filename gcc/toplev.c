@@ -2954,12 +2954,9 @@ rest_of_compilation (decl)
       goto exit_rest_of_compilation;
     }
 
-  /* From now on, allocate rtl in current_obstack, not in saveable_obstack.
-     Note that that may have been done above, in save_for_inline_copying.
-     The call to resume_temporary_allocation near the end of this function
-     goes back to the usual state of affairs.  */
-
-  rtl_in_current_obstack ();
+  /* Add an unwinder for exception handling, if needed.
+     This must be done before we finalize PIC code.  */
+  emit_unwinder ();
 
 #ifdef FINALIZE_PIC
   /* If we are doing position-independent code generation, now
@@ -2970,8 +2967,14 @@ rest_of_compilation (decl)
     FINALIZE_PIC;
 #endif
 
-  /* Add an unwinder for exception handling, if needed.  */
-  emit_unwinder ();
+  /* From now on, allocate rtl in current_obstack, not in saveable_obstack.
+     Note that that may have been done above, in save_for_inline_copying.
+     The call to resume_temporary_allocation near the end of this function
+     goes back to the usual state of affairs.  This must be done after
+     we've built up any unwinders for exception handling, and done
+     the FINALIZE_PIC work, if necessary.  */
+
+  rtl_in_current_obstack ();
 
   insns = get_insns ();
 
