@@ -1515,9 +1515,6 @@ thumb_expand_prologue ()
 {
   HOST_WIDE_INT amount = (get_frame_size ()
 			  + current_function_outgoing_args_size);
-  int regno;
-  int live_regs_mask;
-
 #ifdef THUMB_PE
   /* Naked functions don't have prologues.  */
   if (arm_naked_function_p (current_function_decl))
@@ -1526,34 +1523,66 @@ thumb_expand_prologue ()
   
   if (amount)
     {
-      live_regs_mask = 0;
-      for (regno = 0; regno < 8; regno++)
-	if (regs_ever_live[regno] && ! call_used_regs[regno]
-	    && ! (TARGET_SINGLE_PIC_BASE && (regno == thumb_pic_register)))
-	  live_regs_mask |= 1 << regno;
-
       if (amount < 512)
 	emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-			       GEN_INT (-amount)));
+			       GEN_INT (- amount)));
       else
 	{
-	  rtx reg, spare;
+	  int regno;
+	  rtx reg;
 
-	  if ((live_regs_mask & 0xff) == 0) /* Very unlikely */
-	    emit_insn (gen_movsi (spare = gen_rtx (REG, SImode, 12),
-				  reg = gen_rtx (REG, SImode, 4)));
+	  /* The stack decrement is too big for an immediate value in a single
+	     insn.  In theory we could issue multiple subtracts, but after
+	     three of them it becomes more space efficient to place the full
+	     value in the constant pool and load into a register.  (Also the
+	     ARM debugger really likes to see only one stack decrement per
+	     function).  So instead we look for a scratch register into which
+	     we can load the decrement, and then we subtract this from the
+	     stack pointer.  Unfortunately on the thumb the only available
+	     scratch registers are the argument registers, and we cannot use
+	     these as they may hold arguments to the function.  Instead we
+	     attempt to locate a call preserved register which is used by this
+	     function.  If we can find one, then we know that it will have
+	     been pushed at the start of the prologue and so we can corrupt
+	     it now.  */
+	  for (regno = 4; regno < 8; regno++)
+	    if (regs_ever_live[regno]
+		&& ! call_used_regs[regno] /* Paranoia */
+		&& ! (TARGET_SINGLE_PIC_BASE && (regno == thumb_pic_register)))
+	      break;
+
+	  if (regno == 8) /* Very unlikely */
+	    {
+	      rtx spare = gen_rtx (REG, SImode, 12);
+
+	      /* Choose an arbitary, non-argument low register.  */
+	      reg = gen_rtx (REG, SImode, 4);
+
+	      /* Save it by copying it into a high, scratch register.  */
+	      emit_insn (gen_movsi (spare, reg));
+
+	      /* Decrement the stack.  */
+	      emit_insn (gen_movsi (reg, GEN_INT (- amount)));
+	      emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+				     reg));
+
+	      /* Restore the low register's original value.  */
+	      emit_insn (gen_movsi (reg, spare));
+	      
+	      /* Emit a USE of the restored scratch register, so that flow
+		 analysis will not consider the restore redundant.  The
+		 register won't be used again in this function and isn't
+		 restored by the epilogue.  */
+	      emit_insn (gen_rtx_USE (VOIDmode, reg));
+	    }
 	  else
 	    {
-	      for (regno = 0; regno < 8; regno++)
-		if (live_regs_mask & (1 << regno))
-		  break;
 	      reg = gen_rtx (REG, SImode, regno);
-	    }
 
-	  emit_insn (gen_movsi (reg, GEN_INT (-amount)));
-	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, reg));
-	  if ((live_regs_mask & 0xff) == 0)
-	    emit_insn (gen_movsi (reg, spare));
+	      emit_insn (gen_movsi (reg, GEN_INT (- amount)));
+	      emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+				     reg));
+	    }
 	}
     }
 
