@@ -186,6 +186,45 @@ public final class DatagramPacket
     this(buf, 0, length, address, port);
   }
 
+  /**
+   * Initializes a new instance of <code>DatagramPacket</code> for
+   * transmitting packets across the network.
+   *
+   * @param buf A buffer containing the data to send
+   * @param offset The offset into the buffer to start writing from.
+   * @param length The length of the buffer (must be <= buf.length)
+   * @param address The socket address to send to
+   *
+   * @exception SocketException If an error occurs
+   *
+   * @since 1.4
+   */
+  public DatagramPacket(byte[] buf, int offset, int length, SocketAddress address)
+     throws SocketException
+  {
+    this(buf, offset, length, ((InetSocketAddress)address).getAddress(),
+         ((InetSocketAddress)address).getPort());
+  }
+
+  /**
+   * Initializes a new instance of <code>DatagramPacket</code> for
+   * transmitting packets across the network.
+   *
+   * @param buf A buffer containing the data to send
+   * @param length The length of the buffer (must be <= buf.length)
+   * @param address The socket address to send to
+   *
+   * @exception SocketException If an error occurs
+   *
+   * @since 1.4
+   */
+  public DatagramPacket(byte[] buf, int length, SocketAddress address)
+    throws SocketException
+  {
+    this(buf, 0, length, ((InetSocketAddress)address).getAddress(),
+         ((InetSocketAddress)address).getPort());
+  }
+
 /**
   * Returns the address that this packet is being sent to or, if it was used
   * to receive a packet, the address that is was received from.  If the
@@ -275,6 +314,38 @@ public final class DatagramPacket
       throw new IllegalArgumentException("Invalid port: " + iport);
 
     port = iport;
+  }
+
+  /**
+   * Sets the address of the remote host this package will be sent
+   *
+   * @param address The socket address of the remove host
+   *
+   * @exception IllegalArgumentException If an error occurs
+   *
+   * @since 1.4
+   */
+  public void setSocketAddress(SocketAddress address)
+    throws IllegalArgumentException
+  {
+    if (address == null) throw new IllegalArgumentException();
+
+    InetSocketAddress tmp = (InetSocketAddress)address;
+    this.address = tmp.getAddress();
+    this.port = tmp.getPort();
+  }
+
+  /**
+   * Gets the socket address of the host this packet
+   * will be sent to/is coming from
+   *
+   * @return The socket address of the remote host
+   * 
+   * @since 1.4
+   */
+  public SocketAddress getSocketAddress()
+  {
+    return new InetSocketAddress (address, port);
   }
 
 /**
