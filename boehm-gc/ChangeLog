@@ -1,3 +1,12 @@
+2001-12-16  Jeff Sturm  <jsturm@one-point.com>
+
+	* dyn_load.c: Define ElfW (if needed) for all targets,
+	not just GNU/Linux.
+	(GC_FirstDLOpenedLinkMap): Use it.
+	(GC_register_dynamic_libraries_dl): Use it.
+	* include/private/gcconfig.h: Define CPP_WORDSZ, ELF_CLASS
+	for sparcv9.
+
 2001-12-16  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR other/3725

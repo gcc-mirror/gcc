@@ -79,6 +79,15 @@
 #   define l_name	lm_name
 #endif
 
+/* Newer versions of GNU/Linux define this macro.  We
+ * define it similarly for any ELF systems that don't.  */
+#  ifndef ElfW
+#    if !defined(ELF_CLASS) || ELF_CLASS == ELFCLASS32
+#      define ElfW(type) Elf32_##type
+#    else
+#      define ElfW(type) Elf64_##type
+#    endif
+#  endif
 
 #if defined(SUNOS5DL) && !defined(USE_PROC_FOR_LIBRARIES)
 
@@ -89,11 +98,11 @@
 static struct link_map *
 GC_FirstDLOpenedLinkMap()
 {
-    extern Elf32_Dyn _DYNAMIC;
-    Elf32_Dyn *dp;
+    extern ElfW(Dyn) _DYNAMIC;
+    ElfW(Dyn) *dp;
     struct r_debug *r;
     static struct link_map * cachedResult = 0;
-    static Elf32_Dyn *dynStructureAddr = 0;
+    static ElfW(Dyn) *dynStructureAddr = 0;
     			/* BTL: added to avoid Solaris 5.3 ld.so _DYNAMIC bug */
 
 #   ifdef SUNOS53_SHARED_LIB
@@ -103,7 +112,7 @@ GC_FirstDLOpenedLinkMap()
 	/* at program startup.						*/
 	if( dynStructureAddr == 0 ) {
 	  void* startupSyms = dlopen(0, RTLD_LAZY);
-	  dynStructureAddr = (Elf32_Dyn*)dlsym(startupSyms, "_DYNAMIC");
+	  dynStructureAddr = (ElfW(Dyn)*)dlsym(startupSyms, "_DYNAMIC");
 		}
 #   else
 	dynStructureAddr = &_DYNAMIC;
@@ -114,7 +123,7 @@ GC_FirstDLOpenedLinkMap()
     }
     if( cachedResult == 0 ) {
         int tag;
-        for( dp = ((Elf32_Dyn *)(&_DYNAMIC)); (tag = dp->d_tag) != 0; dp++ ) {
+        for( dp = ((ElfW(Dyn) *)(&_DYNAMIC)); (tag = dp->d_tag) != 0; dp++ ) {
             if( tag == DT_DEBUG ) {
                 struct link_map *lm
                         = ((struct r_debug *)(dp->d_un.d_ptr))->r_map;
@@ -200,14 +209,14 @@ void GC_register_dynamic_libraries()
 		    TRUE);
 #     endif
 #     ifdef SUNOS5DL
-	Elf32_Ehdr * e;
-        Elf32_Phdr * p;
+	ElfW(Ehdr) * e;
+        ElfW(Phdr) * p;
         unsigned long offset;
         char * start;
         register int i;
         
-	e = (Elf32_Ehdr *) lm->l_addr;
-        p = ((Elf32_Phdr *)(((char *)(e)) + e->e_phoff));
+	e = (ElfW(Ehdr) *) lm->l_addr;
+        p = ((ElfW(Phdr) *)(((char *)(e)) + e->e_phoff));
         offset = ((unsigned long)(lm->l_addr));
         for( i = 0; i < (int)(e->e_phnum); ((i++),(p++)) ) {
           switch( p->p_type ) {
@@ -515,16 +524,6 @@ GC_bool GC_register_dynamic_libraries_dl_iterate_phdr()
 #include <link.h>
 
 # endif
-
-/* Newer versions of Linux/Alpha and Linux/x86 define this macro.  We
- * define it for those older versions that don't.  */
-#  ifndef ElfW
-#    if !defined(ELF_CLASS) || ELF_CLASS == ELFCLASS32
-#      define ElfW(type) Elf32_##type
-#    else
-#      define ElfW(type) Elf64_##type
-#    endif
-#  endif
 
 static struct link_map *
 GC_FirstDLOpenedLinkMap()
