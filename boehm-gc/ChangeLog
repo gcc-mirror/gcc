@@ -1,3 +1,14 @@
+2001-06-07  Tom Tromey  <tromey@redhat.com>
+
+	For PR bootstrap/3075:
+	* configure, aclocal.m4, Makefile.in: Rebuilt.
+	* configure.in: Don't call AC_CONFIG_AUX_DIR or
+	AC_CANONICAL_SYSTEM.
+	* acinclude.m4 (BOEHM_CONFIGURE): Call AC_CONFIG_AUX_DIR and
+	AC_CANONICAL_SYSTEM here.
+	* Makefile.am (CONFIG_STATUS_DEPENDENCIES): Use srcdir, not
+	boehm_gc_basedir.
+
 2001-05-24  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* Makefile.am: Override gctest_OBJECTS so tests/test.c can be built.

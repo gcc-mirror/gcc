@@ -2,11 +2,6 @@ dnl Process this file with autoconf to produce configure.
 
 AC_INIT(gcj_mlc.c)
 
-dnl Can't be done in BOEHM_CONFIGURE because that confuses automake. 
-AC_CONFIG_AUX_DIR(..)
-
-AC_CANONICAL_SYSTEM
-
 BOEHM_CONFIGURE(.)
 
 AM_PROG_LIBTOOL

@@ -28,8 +28,14 @@ else
   boehm_gc_basedir="[$]{srcdir}/$1"
 fi
 AC_SUBST(boehm_gc_basedir)
+AC_CONFIG_AUX_DIR($boehm_gc_basedir/..)
+if :; then :; else
+  # This overrides the previous occurrence for automake, but not for
+  # autoconf, which is exactly what we want.
+  AC_CONFIG_AUX_DIR(..)
+fi
 
-AC_CANONICAL_HOST
+AC_CANONICAL_SYSTEM
 
 AM_INIT_AUTOMAKE(boehm-gc, 5.1, no-define)
 

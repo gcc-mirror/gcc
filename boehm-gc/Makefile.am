@@ -117,7 +117,7 @@ AM_MAKEFLAGS = \
 	"RANLIB=$(RANLIB)" \
 	"DESTDIR=$(DESTDIR)"
 
-CONFIG_STATUS_DEPENDENCIES = $(boehm_gc_basedir)/configure.host
+CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
 # Multilib support.
 .PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \
