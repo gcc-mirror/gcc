@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987, 1988, 91-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 91-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1032,6 +1032,11 @@ nonmemory_operand (op, mode)
 	return general_operand (op, mode);
       op = SUBREG_REG (op);
     }
+
+  /* If we have an ADDRESSOF, consider it valid since it will be
+     converted into something that will not be a MEM. */
+  if (GET_CODE (op) == ADDRESSOF)
+    return 1;
 
   /* We don't consider registers whose class is NO_REGS
      to be a register operand.  */
