@@ -2701,6 +2701,8 @@ if_convert (x_life_data_ok)
   if (rtl_dump_file)
     fflush (rtl_dump_file);
 
+  clear_aux_for_blocks ();
+
   /* Rebuild life info for basic blocks that require it.  */
   if (num_removed_blocks && life_data_ok)
     {
@@ -2714,7 +2716,6 @@ if_convert (x_life_data_ok)
 					PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE
 					| PROP_KILL_DEAD_CODE);
     }
-  clear_aux_for_blocks ();
 
   /* Write the final stats.  */
   if (rtl_dump_file && num_possible_if_blocks > 0)
