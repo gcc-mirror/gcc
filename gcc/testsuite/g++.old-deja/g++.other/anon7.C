@@ -11,7 +11,7 @@ struct B {
   int b;	// { dg-error "" } conflicts with previous declaration
   union {
     int b;	// { dg-error "" } duplicate member
-  };		// { dg-error "" } declaration of
+  };
 };
 
 struct C {
@@ -20,5 +20,5 @@ struct C {
   };
   union {
     int c;	// { dg-error "" } duplicate member
-  };		// { dg-error "" } declaration of
+  };
 };

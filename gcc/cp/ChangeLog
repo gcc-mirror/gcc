@@ -1,5 +1,15 @@
 2003-06-19  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9649
+	* cp-tree.h (pushdecl_class_level): Change prototype.
+	(push_class_level_binding): Likewise.
+	* decl.c (add_binding): Reject duplicate static data members.
+	(pushdecl_class_level): Return a value indicating whether or not
+	the binding was valid.
+	(push_class_level_binding): Likewise.
+	* semantics.c (finish_member_declaration): Don't keep invalid
+	declarations.
+
 	PR c++/11041
 	* call.c (initialize_reference): Do not use cp_finish_decl to emit
 	temporary variables.
