@@ -3308,7 +3308,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		   In 2.4, do something about that.  */
 		struct temp_name *t;
 		char *suffix = p;
-		while (*p == '.' || isalpha (*p))
+		while (*p == '.' || isalpha (*p)
+		       || (p[0] == '%' && p[1] == 'O'))
 		  p++;
 
 		/* See if we already have an association of %g/%u/%U and
