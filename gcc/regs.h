@@ -29,6 +29,10 @@ Boston, MA 02111-1307, USA.  */
 #define REG_SIZE(R) \
   ((mode_size[(int) GET_MODE (R)] + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
+#ifndef SMALL_REGISTER_CLASSES
+#define SMALL_REGISTER_CLASSES 0
+#endif
+
 /* Maximum register number used in this function, plus one.  */
 
 extern int max_regno;

@@ -195,7 +195,7 @@ if [ \! -z "$file_to_fix" ]; then
   fi
 fi
 
-# /usr/include/sys/mc_param.h has an embedded asm for the cpuid intruction
+# /usr/include/sys/mc_param.h has an embedded asm for the cpuid instruction
 # on the P5. This is not used by anything else so we ifdef it out.
 file=sys/mc_param.h
 if [ -r ${LIB}/$file ]; then
@@ -224,7 +224,7 @@ if [ \! -z "$file_to_fix" ]; then
   fi
 fi
 
-# /usr/include/sys/mc_param.h has an embedded asm for the cpuid intruction
+# /usr/include/sys/mc_param.h has an embedded asm for the cpuid instruction
 # on the P5. This is not used by anything else so we ifdef it out.
 file=sys/mc_param.h
 if [ -r ${LIB}/$file ]; then

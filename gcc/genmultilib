@@ -1,6 +1,6 @@
 #!/bin/sh 
 # Generates multilib.h.
-#   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+#   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -243,7 +243,7 @@ echo "NULL"
 echo "};"
 
 # Output all of the matches now as option and that is the same as that, with
-# a semicolan trailer.  Include all of the normal options as well.
+# a semicolon trailer.  Include all of the normal options as well.
 # Note, the format of the matches is reversed compared
 # to what we want, so switch them around.
 echo ""

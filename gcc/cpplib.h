@@ -69,7 +69,7 @@ enum cpp_token {
 };
 
 #ifndef PARAMS
-#ifdef __STDC
+#ifdef __STDC__
 #define PARAMS(P) P
 #else
 #define PARAMS(P) ()
@@ -94,7 +94,7 @@ extern void parse_goto_mark PARAMS((struct parse_marker *, cpp_reader *));
 extern void parse_move_mark PARAMS((struct parse_marker *, cpp_reader *));
 
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
-extern enum cpp_token cpp_get_token PARAMS ((struct parse_marker *));
+extern enum cpp_token cpp_get_token PARAMS ((cpp_reader *));
 extern void cpp_skip_hspace PARAMS((cpp_reader *));
 extern enum cpp_token cpp_get_non_space_token PARAMS ((cpp_reader *));
 
@@ -179,7 +179,7 @@ struct cpp_reader {
 
   /* A buffer used for both for cpp_get_token's output, and also internally. */
   unsigned char *token_buffer;
-  /* Alocated size of token_buffer.  CPP_RESERVE allocates space.  */
+  /* Allocated size of token_buffer.  CPP_RESERVE allocates space.  */
   int token_buffer_size;
   /* End of the written part of token_buffer. */
   unsigned char *limit;
@@ -410,6 +410,10 @@ struct cpp_options {
 
   char no_output;
 
+  /* Nonzero means we should look for header.gcc files that remap file
+     names.  */
+  char remap;
+
   /* Nonzero means don't output line number information.  */
 
   char no_line_commands;
@@ -485,6 +489,10 @@ struct cpp_options {
    also be useful with -E to figure out how symbols are defined, and
    where they are defined.  */
   int debug_output;
+
+  /* Nonzero means pass #include lines through to the output,
+     even if they are ifdefed out.  */
+  int dump_includes;
 
   /* Pending -D, -U and -A options, in reverse order. */
   struct cpp_pending *pending;

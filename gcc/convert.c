@@ -1,5 +1,5 @@
 /* Utility routines for data type conversion for GNU C.
-   Copyright (C) 1987, 88, 91, 92, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 92, 94, 95, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU C.
 
@@ -397,7 +397,10 @@ convert_to_integer (type, expr)
 				      convert (type, TREE_OPERAND (expr, 2))));
 	      }
 	  }
+	  break;
 
+	default:
+	  break;
 	}
 
       return build1 (NOP_EXPR, type, expr);
