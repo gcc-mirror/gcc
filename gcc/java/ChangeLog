@@ -1,6 +1,6 @@
 Tue Oct 12 22:28:10 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-	* (RELOCATION_VALUE_1): Fixed integer value from 0 to 1.
+	* jcf-write.c (RELOCATION_VALUE_1): Fixed integer value from 0 to 1.
 
 1999-10-07  Anthony Green  <green@cygnus.com>
 
@@ -41,7 +41,7 @@ Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 Tue Sep 14 16:24:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-	* jcf-write.c: (RELOCATION_VALUE_0): New macro.
+	* jcf-write.c (RELOCATION_VALUE_0): New macro.
 	(RELOCATION_VALUE_1): Likewise.
 	(emit_iinc, emit_reloc, push_constant1, push_constant2,
  	push_in_const, push_long_const): Prototyped.
