@@ -1510,7 +1510,7 @@ tSCC zBroken_CabsList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zBroken_CabsSelect0[] =
-       "^extern double cabs";
+       "^extern[ \\t]+double[ \\t]+cabs";
 
 #define    BROKEN_CABS_TEST_CT  1
 static tTestDesc aBroken_CabsTests[] = {
@@ -1522,7 +1522,7 @@ static tTestDesc aBroken_CabsTests[] = {
 static const char* apzBroken_CabsPatch[] = {
     "format",
     "",
-    "^extern double cabs\\((struct dbl_hypot|)\\);",
+    "^extern[ \t]+double[ \t]+cabs\\((struct dbl_hypot|)\\);",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *

@@ -1,3 +1,8 @@
+2000-09-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* fixinc/inclhack.def (broken_cabs): Generalize regex.
+	* fixinc/fixincl.x: Regenerate.
+
 2000-09-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* loop.c (check_final_value): A GIV is not replaceable if used
