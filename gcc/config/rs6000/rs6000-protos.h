@@ -188,6 +188,10 @@ extern void rs6000_emit_epilogue PARAMS ((int));
 extern void debug_stack_info PARAMS ((rs6000_stack_t *));
 extern const char *output_isel PARAMS ((rtx *));
 extern int vrsave_operation PARAMS ((rtx, enum machine_mode));
+extern int rs6000_register_move_cost PARAMS ((enum machine_mode,
+					      enum reg_class, enum reg_class));
+extern int rs6000_memory_move_cost PARAMS ((enum machine_mode,
+					    enum reg_class, int));
 
 /* Declare functions in rs6000-c.c */
 

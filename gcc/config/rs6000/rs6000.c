@@ -13236,3 +13236,61 @@ rs6000_binds_local_p (decl)
 {
   return default_binds_local_p_1 (decl, flag_pic || rs6000_flag_pic);
 }
+
+/* A C expression returning the cost of moving data from a register of class
+   CLASS1 to one of CLASS2.  */
+
+int
+rs6000_register_move_cost (mode, from, to)
+     enum machine_mode mode;
+     enum reg_class from, to;
+{
+  /*  Moves from/to GENERAL_REGS.  */
+  if (reg_classes_intersect_p (to, GENERAL_REGS)
+      || reg_classes_intersect_p (from, GENERAL_REGS))
+    {
+      if (! reg_classes_intersect_p (to, GENERAL_REGS))
+	from = to;
+
+      if (from == FLOAT_REGS || from == ALTIVEC_REGS)
+	return (rs6000_memory_move_cost (mode, from, 0)
+		+ rs6000_memory_move_cost (mode, GENERAL_REGS, 0));
+
+/* It's more expensive to move CR_REGS than CR0_REGS because of the shift...*/
+      else if (from == CR_REGS)
+	return 4;
+
+      else
+/* A move will cost one instruction per GPR moved.  */
+	return 2 * HARD_REGNO_NREGS (0, mode);
+    }
+
+/* Moving between two similar registers is just one instruction.  */
+  else if (reg_classes_intersect_p (to, from))
+    return mode == TFmode ? 4 : 2;
+
+/* Everything else has to go through GENERAL_REGS.  */
+  else
+    return (rs6000_register_move_cost (mode, GENERAL_REGS, to) 
+	    + rs6000_register_move_cost (mode, from, GENERAL_REGS));
+}
+
+/* A C expressions returning the cost of moving data of MODE from a register to
+   or from memory.  */
+
+int
+rs6000_memory_move_cost (mode, class, in)
+  enum machine_mode mode;
+  enum reg_class class;
+  int in ATTRIBUTE_UNUSED;
+{
+  if (reg_classes_intersect_p (class, GENERAL_REGS))
+    return 4 * HARD_REGNO_NREGS (0, mode);
+  else if (reg_classes_intersect_p (class, FLOAT_REGS))
+    return 4 * HARD_REGNO_NREGS (32, mode);
+  else if (reg_classes_intersect_p (class, ALTIVEC_REGS))
+    return 4 * HARD_REGNO_NREGS (FIRST_ALTIVEC_REGNO, mode);
+  else
+    return 4 + rs6000_register_move_cost (mode, class, GENERAL_REGS);
+}
+

@@ -1,3 +1,11 @@
+2002-10-23  David Edelsohn  <edelsohn@gnu.org>
+	    Geoff Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_register_move_cost): New function.
+	(rs6000_memory_move_cost): New function.
+	* config/rs6000/rs6000-protos.h: Declare them.
+	* config/rs6000/rs6000.h: Use them.
+
 2002-10-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* libgcc2.c (__udiv_w_sdiv): Use attribute ((always_inline)) when 
