@@ -1,3 +1,11 @@
+2004-02-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* bb-reorder.c, cfgbuild.c, diagnostic.c, explow.c, profile.c,
+	ra-build.c, read-rtl.c, tracer.c, unwind-dw2-fde-glibc.c,
+	value-prof.c, config/darwin-protos.h, config/frv/frv-abi.h,
+	config/i386/pmmintrin.h, config/pa/pa-hpux.h: Update
+	copyright.
+
 2004-02-27  Paul Brook  <paul@codesourcery.com>
 
 	* function.c (assign_parms): Don't count pretend args for alignment.
