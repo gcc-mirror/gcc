@@ -50,7 +50,7 @@ extern tree lhd_return_null_tree_v (void);
 extern tree lhd_return_null_tree (tree);
 extern tree lhd_do_nothing_iii_return_null_tree (int, int, int);
 extern int lhd_safe_from_p (rtx, tree);
-extern int lhd_staticp (tree);
+extern bool lhd_staticp (tree);
 extern int lhd_unsafe_for_reeval (tree);
 extern void lhd_print_tree_nothing (FILE *, tree, int);
 extern const char *lhd_decl_printable_name (tree, int);
