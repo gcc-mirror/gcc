@@ -1,3 +1,13 @@
+2002-05-08  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (output_call_frame_info): Don't emit a CIE with no FDEs.
+
+	* dwarf2out.c (gen_type_die): Abort on broken recursion.
+
+	PR c++/6381
+	* dwarf2out.c (rtl_for_decl_location): Only expand INTEGER_CST and
+	REAL_CST.
+
 2002-05-08  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/t-arm-elf (MULTILIB): Do not allow big-endian/
