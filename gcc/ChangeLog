@@ -1,3 +1,40 @@
+Sat Jun 27 07:35:21 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (EXPR_H): New dependency variable.
+	(c-typeck.o): Depend on $(EXPR_H) instead of expr.h.
+	(c-iterate.o): Likewise.
+	(gencheck): Depend on $(TREE_H) instead of tree.h, etc.
+	(stor-layout.o): Depend on $(EXPR_H) instead of expr.h.
+	(toplev.o): Likewise.  Also depend on $(RECOG_H) instead of recog.h.
+	(varasm.o): Depend on $(EXPR_H) instead of expr.h.
+	(function.o): Likewise.
+	(stmt.o): Likewise.
+	(except.o): Likewise.
+	(expr.o): Likewise.
+	(calls.o): Likewise.
+	(expmed.o): Likewise.
+	(explow.o): Likewise.
+	(optabs.o): Likewise.
+	(sdbout.o): Likewise.
+	(dwarf2out.o): Likewise.
+	(emit-rtl.o): Likewise.
+	(integrate.o): Likewise.
+	(jump.o): Likewise.
+	(cse.o): Likewise.
+	(gcse.o): Likewise.  Also depend on $(BASIC_BLOCK_H) instead of
+	basic-block.h.
+	(loop.o): Depend on $(EXPR_H) instead of expr.h.
+	(unroll.o): Likewise.
+	(combine.o): Likewise.
+	(reload.o): Likewise.
+	(reload1.o): Likewise.
+	(caller-save.o): Likewise.
+	(reorg.o): Likewise.
+	(alias.o): Don't depend on insn-codes.h.
+	(regmove.o): Depend on $(RECOG_H)/$(EXPR_H) instead of recog.h/expr.h.
+	(insn-emit.o): Depend on $(EXPR_H) instead of expr.h.
+	(insn-opinit.o): Likewise.
+
 Sat Jun 27 01:35:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* choose-temp.c (choose_temp_base): Remove MPW bits.  Use mkstemp
