@@ -5435,6 +5435,7 @@ start_struct (code, name)
   ref = make_node (code);
   pushtag (name, ref);
   C_TYPE_BEING_DEFINED (ref) = 1;
+  TYPE_PACKED (ref) = flag_pack_struct;
   return ref;
 }
 
@@ -5862,6 +5863,9 @@ start_enum (name)
   enum_next_value = integer_zero_node;
   enum_overflow = 0;
 
+  if (flag_short_enums)
+    TYPE_PACKED (enumtype) = 1;
+
   return enumtype;
 }
 
@@ -5918,8 +5922,7 @@ finish_enum (enumtype, values, attributes)
   highprec = min_precision (maxnode, TREE_UNSIGNED (enumtype));
   precision = MAX (lowprec, highprec);
 
-  if (flag_short_enums || TYPE_PACKED (enumtype)
-      || precision > TYPE_PRECISION (integer_type_node))
+  if (TYPE_PACKED (enumtype) || precision > TYPE_PRECISION (integer_type_node))
     {
       tree narrowest = type_for_size (precision, 1);
       if (narrowest == 0)
