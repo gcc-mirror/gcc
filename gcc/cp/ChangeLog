@@ -1,3 +1,7 @@
+2003-03-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* lang-specs.h (c++-header): Change .pch to .gch.
+
 2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cp-tree.h (cxx_init): Update prototype.
