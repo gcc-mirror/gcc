@@ -373,9 +373,17 @@ public class GregorianCalendar extends Calendar
       year = 1 - year;
 
     int[] daysOfYear = getDayOfYear(year);
-    int hour = isSet[HOUR_OF_DAY] ? fields[HOUR_OF_DAY]
-      : (isSet[HOUR] && isSet[AM_PM]
-	 ? fields[AM_PM] * 12 + (fields[HOUR] % 12) : 0);
+
+    int hour = 0;
+    if (isSet[HOUR_OF_DAY])
+      hour = fields[HOUR_OF_DAY];
+    else if (isSet[HOUR])
+      {
+	hour = fields[HOUR];
+        if (isSet[AM_PM] && fields[AM_PM] == PM)
+	  hour += 12;
+      }
+
     int minute = isSet[MINUTE] ? fields[MINUTE] : 0;
     int second = isSet[SECOND] ? fields[SECOND] : 0;
     int millis = isSet[MILLISECOND] ? fields[MILLISECOND] : 0;
