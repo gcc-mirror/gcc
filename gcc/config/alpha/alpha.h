@@ -42,15 +42,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define SIGNED_CHAR_SPEC "%{funsigned-char:-D__CHAR_UNSIGNED__}"
 
-/* No point in running CPP on our assembler output.  */
-/* In OSF/1 v3.2c, the assembler by default does not output file names which
-   causes mips-tfile to fail.  Passing -g to the assembler fixes this problem.
-   ??? Stricly speaking, we only need -g if the user specifies -g.  Passing
-   it always means that we get slightly larger than necessary object files
-   if the user does not specify -g.  If we don't pass -g, then mips-tfile
-   will need to be fixed to work in this case.  */
-#define ASM_SPEC "-g -nocpp %{pg}"
-
 /* Under OSF/1, -p and -pg require -lprof1.  */
 
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} %{a:-lprof2} -lc"
@@ -2021,6 +2012,20 @@ do {							\
 #define PUT_SDB_FUNCTION_END(LINE)
 
 #define PUT_SDB_EPILOGUE_END(NAME)
+
+/* No point in running CPP on our assembler output.  */
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_GAS) != 0
+/* Don't pass -g to GNU as, because some versions don't accept this option.  */
+#define ASM_SPEC "%{malpha-as:-g} -nocpp %{pg}"
+#else
+/* In OSF/1 v3.2c, the assembler by default does not output file names which
+   causes mips-tfile to fail.  Passing -g to the assembler fixes this problem.
+   ??? Stricly speaking, we only need -g if the user specifies -g.  Passing
+   it always means that we get slightly larger than necessary object files
+   if the user does not specify -g.  If we don't pass -g, then mips-tfile
+   will need to be fixed to work in this case.  */
+#define ASM_SPEC "%{!mgas:-g} -nocpp %{pg}"
+#endif
 
 /* Specify to run a post-processor, mips-tfile after the assembler
    has run to stuff the ecoff debug information into the object file.
