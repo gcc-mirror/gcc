@@ -1066,7 +1066,10 @@ emit_move_sequence (operands, mode, scratch_reg)
   else if (reload_in_progress && GET_CODE (operand0) == SUBREG
 	   && GET_CODE (SUBREG_REG (operand0)) == REG
 	   && REGNO (SUBREG_REG (operand0)) >= FIRST_PSEUDO_REGISTER)
-    SUBREG_REG (operand0) = reg_equiv_mem[REGNO (SUBREG_REG (operand0))];
+    {
+      SUBREG_REG (operand0) = reg_equiv_mem[REGNO (SUBREG_REG (operand0))];
+      operand0 = alter_subreg (operand0);
+    }
 
   if (reload_in_progress && GET_CODE (operand1) == REG
       && REGNO (operand1) >= FIRST_PSEUDO_REGISTER)
@@ -1074,7 +1077,10 @@ emit_move_sequence (operands, mode, scratch_reg)
   else if (reload_in_progress && GET_CODE (operand1) == SUBREG
 	   && GET_CODE (SUBREG_REG (operand1)) == REG
 	   && REGNO (SUBREG_REG (operand1)) >= FIRST_PSEUDO_REGISTER)
-    SUBREG_REG (operand1) = reg_equiv_mem[REGNO (SUBREG_REG (operand1))];
+    {
+      SUBREG_REG (operand1) = reg_equiv_mem[REGNO (SUBREG_REG (operand1))];
+      operand1 = alter_subreg (operand1);
+    }
 
   /* Handle secondary reloads for loads/stores of FP registers from
      REG+D addresses where D does not fit in 5 bits, including 
