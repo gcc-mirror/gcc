@@ -2571,7 +2571,7 @@ while (0)
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE (TARGET_BIGTABLE ? SImode : HImode)
+#define CASE_VECTOR_MODE ((! optimize || TARGET_BIGTABLE) ? SImode : HImode)
 
 #define CASE_VECTOR_SHORTEN_MODE(MIN_OFFSET, MAX_OFFSET, BODY) \
 ((MIN_OFFSET) >= 0 && (MAX_OFFSET) <= 127 \
@@ -3041,7 +3041,7 @@ while (0)
 /* Output an absolute table element.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)  				\
-  if (TARGET_BIGTABLE) 							\
+  if (! optimize || TARGET_BIGTABLE)					\
     asm_fprintf ((STREAM), "\t.long\t%LL%d\n", (VALUE)); 		\
   else									\
     asm_fprintf ((STREAM), "\t.word\t%LL%d\n", (VALUE));
