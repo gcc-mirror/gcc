@@ -1162,7 +1162,7 @@ try_combine (i3, i2, i1)
   /* PATTERN (I2), or a copy of it in certain cases.  */
   rtx i2pat;
   /* Indicates if I2DEST or I1DEST is in I2SRC or I1_SRC.  */
-  int i2dest_in_i2src, i1dest_in_i1src = 0, i2dest_in_i1src = 0;
+  int i2dest_in_i2src = 0, i1dest_in_i1src = 0, i2dest_in_i1src = 0;
   int i1_feeds_i3 = 0;
   /* Notes that must be added to REG_NOTES in I3 and I2.  */
   rtx new_i3_notes, new_i2_notes;
@@ -1262,7 +1262,7 @@ try_combine (i3, i2, i1)
 	      subst_insn = i3;
 	      subst_low_cuid = INSN_CUID (i2);
 
-	      added_sets_2 = 0;
+	      added_sets_2 = added_sets_1 = 0;
 	      i2dest = SET_SRC (PATTERN (i3));
 
 	      /* Replace the dest in I2 with our dest and make the resulting
@@ -7257,7 +7257,7 @@ simplify_shift_const (x, code, result_mode, varop, count)
     = (GET_MODE_SIZE (mode) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
   /* We form (outer_op (code varop count) (outer_const)).  */
   enum rtx_code outer_op = NIL;
-  HOST_WIDE_INT outer_const;
+  HOST_WIDE_INT outer_const = 0;
   rtx const_rtx;
   int complement_p = 0;
   rtx new;
