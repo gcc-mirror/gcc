@@ -256,7 +256,16 @@ public class Main
 	  }	    
 	return;
       }
-    
+
+    if (s[0].equals("-p"))
+      {
+	insist (s.length == 1);
+	String result = System.getProperty("gnu.gcj.precompiled.db.path",
+					   "");
+	System.out.println (result);
+	return;
+      }
+
     usage(System.err);
     System.exit(1);	    
   }
@@ -284,6 +293,7 @@ public class Main
        + "    gcj-dbtool -t file.gcjdb            - Test a gcj map database\n"
        + "    gcj-dbtool -l file.gcjdb            - List a gcj map database\n"
        + "    gcj-dbtool -m dest.gcjdb [source.gcjdb]...\n"
+       + "    gcj-dbtool -p                       - Print default database name\n"
        + "             - Merge gcj map databases into dest\n"
        + "               Replaces dest\n"
        + "               To add to dest, include dest in the list of sources");
