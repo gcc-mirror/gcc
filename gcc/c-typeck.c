@@ -592,10 +592,8 @@ comptypes (tree type1, tree type2, int flags)
       break;
 
     case VECTOR_TYPE:
-      /* The target might allow certain vector types to be compatible.  */
-      val = targetm.vector_opaque_p (t1)
-	|| targetm.vector_opaque_p (t2)
-	|| TYPE_MODE (t1) == TYPE_MODE (t2);
+      val = TYPE_VECTOR_SUBPARTS (t1) == TYPE_VECTOR_SUBPARTS (t2)
+	    && comptypes (TREE_TYPE (t1), TREE_TYPE (t2), 0);
       break;
 
     default:
@@ -3292,7 +3290,7 @@ convert_for_assignment (tree type, tree rhs, const char *errtype,
     }
   /* Some types can interconvert without explicit casts.  */
   else if (codel == VECTOR_TYPE
-           && comptypes (type, TREE_TYPE (rhs), COMPARE_STRICT) == 1)
+           && vector_types_convertible_p (type, TREE_TYPE (rhs)))
     return convert (type, rhs);
   /* Arithmetic types all interconvert, and enum is treated like int.  */
   else if ((codel == INTEGER_TYPE || codel == REAL_TYPE
@@ -3937,11 +3935,11 @@ digest_init (tree type, tree init, int require_constant)
      vector constructor is not constant (e.g. {1,2,3,foo()}) then punt
      below and handle as a constructor.  */
     if (code == VECTOR_TYPE
-        && comptypes (TREE_TYPE (inside_init), type, COMPARE_STRICT)
+        && vector_types_convertible_p (TREE_TYPE (inside_init), type)
         && TREE_CONSTANT (inside_init))
       {
 	if (TREE_CODE (inside_init) == VECTOR_CST
-	    && comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (inside_init)),
+            && comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (inside_init)),
 			  TYPE_MAIN_VARIANT (type),
 			  COMPARE_STRICT))
 	  return inside_init;
@@ -4042,7 +4040,8 @@ digest_init (tree type, tree init, int require_constant)
   /* Handle scalar types, including conversions.  */
 
   if (code == INTEGER_TYPE || code == REAL_TYPE || code == POINTER_TYPE
-      || code == ENUMERAL_TYPE || code == BOOLEAN_TYPE || code == COMPLEX_TYPE)
+      || code == ENUMERAL_TYPE || code == BOOLEAN_TYPE || code == COMPLEX_TYPE
+      || code == VECTOR_TYPE)
     {
       /* Note that convert_for_assignment calls default_conversion
 	 for arrays and functions.  We must not call it in the

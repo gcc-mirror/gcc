@@ -1,3 +1,23 @@
+2004-05-04  Paolo Bonzini  <bonzini@gnu.org>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR target/14899
+
+	* c-common.c (vector_types_convertible_p): New function.
+	* c-typeck.c (comptypes): Recurse on vector types.
+	(convert_for_assignment): Use vector_types_convertible_p.
+	(digest_init): Use vector_types_convertible_p to check
+	validness of constant vector initializers; otherwise treat
+	them as scalars.
+	* tree.c (make_or_reuse_type): New.
+	(build_common_tree_nodes): Use it.
+	* cp/call.c (standard_conversion): Likewise.
+	* cp/typeck.c (comptypes): Recurse on vector types.
+	(convert_for_assignment): Use vector_types_convertible_p.
+	* config/rs6000/rs6000.c (build_opaque_vector_type):
+	New function.
+	(rs6000_init_builtins): Use it.
+
 2004-05-04  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.c (override_options): Default to no

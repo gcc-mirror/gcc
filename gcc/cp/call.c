@@ -660,8 +660,7 @@ standard_conversion (tree to, tree from, tree expr)
   else if (tcode == POINTER_TYPE && fcode == POINTER_TYPE
 	   && TREE_CODE (TREE_TYPE (to)) == VECTOR_TYPE
 	   && TREE_CODE (TREE_TYPE (from)) == VECTOR_TYPE
-	   && ((*targetm.vector_opaque_p) (TREE_TYPE (to))
-	       || (*targetm.vector_opaque_p) (TREE_TYPE (from))))
+	   && vector_types_convertible_p (TREE_TYPE (to), TREE_TYPE (from)))
     conv = build_conv (ck_std, to, conv);
   else if ((tcode == INTEGER_TYPE && fcode == POINTER_TYPE)
 	   || (tcode == POINTER_TYPE && fcode == INTEGER_TYPE))
@@ -820,8 +819,7 @@ standard_conversion (tree to, tree from, tree expr)
 	conv->rank = cr_promotion;
     }
   else if (fcode == VECTOR_TYPE && tcode == VECTOR_TYPE
-      && ((*targetm.vector_opaque_p) (from)
-	  || (*targetm.vector_opaque_p) (to)))
+	   && vector_types_convertible_p (from, to))
     return build_conv (ck_std, to, conv);
   else if (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
 	   && is_properly_derived_from (from, to))
