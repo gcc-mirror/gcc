@@ -529,7 +529,7 @@ extern enum reg_class regclass_map[];	/* smalled class containing REGNO   */
  ((CLASS1) != (CLASS2) && ((CLASS1) == FP_REGS || (CLASS2) == FP_REGS))
 
 /* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on 64bit
-   because the movsi and movsf patterns don't handle r/f moves. */
+   because the movsi and movsf patterns don't handle r/f moves.  */
 
 #define SECONDARY_MEMORY_NEEDED_MODE(MODE)		\
  (GET_MODE_BITSIZE (MODE) < 32				\
@@ -1559,7 +1559,7 @@ do {                                                                       \
    is set to reload_obstack, which does not live long enough. 
    Because of this we cannot use force_const_mem in addsi3.
    This leads to problems with gen_add2_insn with a constant greater
-   than a short. Because of that we give a addition of greater
+   than a short. Because of that we give an addition of greater
    constants a cost of 3 (reload1.c 10096).  */
 
 
@@ -1682,7 +1682,7 @@ do {                                                                       \
 
 #define BRANCH_COST 1
 
-/* Add any extra modes needed to represent the condition code. */
+/* Add any extra modes needed to represent the condition code.  */
 #define EXTRA_CC_MODES \
 	CC (CCZmode, "CCZ") \
 	CC (CCAmode, "CCA") \
@@ -1692,7 +1692,7 @@ do {                                                                       \
 	CC (CCTmode, "CCT")
  
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
-   return the mode to be used for the comparison. */
+   return the mode to be used for the comparison.  */
  
 #define SELECT_CC_MODE(OP, X, Y) s390_select_ccmode ((OP), (X), (Y))
  
