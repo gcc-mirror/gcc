@@ -1736,6 +1736,11 @@ make_class_data (type)
   FINISH_RECORD_CONSTRUCTOR (cons);
 
   DECL_INITIAL (decl) = cons;
+  
+  /* Hash synchronization requires at least 64-bit alignment. */
+  if (flag_hash_synchronization && POINTER_SIZE < 64)
+    DECL_ALIGN (decl) = 64; 
+  
   rest_of_decl_compilation (decl, (char*) 0, 1, 0);
 }
 

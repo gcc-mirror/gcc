@@ -1,3 +1,11 @@
+2002-04-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* class.c (make_class_data): Set DECL_ALIGN on static class data,
+	for hash synchronization.
+	* expr.c (java_expand_expr): Set DECL_ALIGN on static array objects.
+	* decl.c (java_init_decl_processing): Don't set TYPE_ALIGN for
+	class_type_node.
+	
 2002-04-16  Mark Wielaard  <mark@klomp.org>
 
 	* jcf-write.c (generate_bytecode_insns): Only write const_0 if not
