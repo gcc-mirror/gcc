@@ -1,3 +1,15 @@
+2004-03-17  James E Wilson  <wilson@specifixinc.com>
+
+	* config/mips/mips.md (zero_extendsidi2): Add length attribute.
+	(hazard_nop): Change type to nop.
+	(type): Split arith into arith, shift, slt, clz.  Delete darith.
+	Fix all uses.  Change arith to multi if more than one insn emitted.
+	* config/mips/5400.md (ir_vr54_arith): Likewise.
+	* config/mips/5500.md (ir_vr55_arith): Likewise.
+	* config/mips/7000.md (rm7_int_other): Likewise.
+	* config/mips/9000.md (rm9k_int): Likewise.
+	* config/mips/sr71k.md (ir_sr70_arith): Likewise.
+
 2004-03-17  Joel Brobecker  <brobecker@gnat.com>
 
 	* dwarf2out.c (subrange_type_die): Define new variable "subtype"

@@ -105,8 +105,10 @@
 ;; condmove	conditional moves
 ;; xfer		transfer to/from coprocessor
 ;; hilo		transfer of hi/lo registers
-;; arith	integer arithmetic instruction
-;; darith	double precision integer arithmetic instructions
+;; arith	integer arithmetic and logical instructions
+;; shift	integer shift instructions
+;; clz		the clz and clo instructions
+;; slt		set less than instructions
 ;; const	load constant
 ;; imul		integer multiply
 ;; imadd	integer multiply-add
@@ -125,7 +127,7 @@
 ;; multi	multiword sequence (or user asm statements)
 ;; nop		no operation
 (define_attr "type"
-  "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,prefetch,prefetchx,move,condmove,xfer,hilo,const,arith,darith,imul,imadd,idiv,icmp,fadd,fmul,fmadd,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,multi,nop"
+  "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,prefetch,prefetchx,move,condmove,xfer,hilo,const,arith,shift,slt,clz,imul,imadd,idiv,icmp,fadd,fmul,fmadd,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,multi,nop"
   (cond [(eq_attr "jal" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")]
 	(const_string "unknown")))
@@ -915,7 +917,7 @@
     ? "srl\t%3,%L0,31\;sll\t%M0,%M0,1\;sll\t%L0,%L1,1\;addu\t%M0,%M0,%3"
     : "addu\t%L0,%L1,%L2\;sltu\t%3,%L0,%L2\;addu\t%M0,%M1,%M2\;addu\t%M0,%M0,%3";
 }
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"16")])
 
@@ -989,7 +991,7 @@
    addu\t%L0,%L1,%2\;sltu\t%3,%L0,%2\;addu\t%M0,%M1,%3
    move\t%L0,%L1\;move\t%M0,%M1
    subu\t%L0,%L1,%n2\;sltu\t%3,%L0,%2\;subu\t%M0,%M1,1\;addu\t%M0,%M0,%3"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"12,8,16")])
 
@@ -1049,7 +1051,7 @@
   "@
     daddu\t%0,%z1,%2
     daddiu\t%0,%z1,%2"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")])
 
 ;; For the mips16, we need to recognize stack pointer additions
@@ -1281,7 +1283,7 @@
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
   "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16"
   "sltu\t%3,%L1,%L2\;subu\t%L0,%L1,%L2\;subu\t%M0,%M1,%M2\;subu\t%M0,%M0,%3"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"16")])
 
@@ -1347,7 +1349,7 @@
 		  (match_operand:DI 2 "register_operand" "d")))]
   "TARGET_64BIT"
   "dsubu\t%0,%1,%2"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")])
 
 (define_insn "subsi3_internal_2"
@@ -2863,7 +2865,7 @@ dsrl\t%3,%3,1\n\
 	(clz:SI (match_operand:SI 1 "register_operand" "d")))]
   "ISA_HAS_CLZ_CLO"
   "clz\t%0,%1"
-  [(set_attr "type" "arith")
+  [(set_attr "type" "clz")
    (set_attr "mode" "SI")])
 
 (define_insn "clzdi2"
@@ -2871,7 +2873,7 @@ dsrl\t%3,%3,1\n\
 	(clz:DI (match_operand:DI 1 "register_operand" "d")))]
   "ISA_HAS_DCLZ_DCLO"
   "dclz\t%0,%1"
-  [(set_attr "type" "arith")
+  [(set_attr "type" "clz")
    (set_attr "mode" "DI")])
 
 ;;
@@ -2915,7 +2917,7 @@ dsrl\t%3,%3,1\n\
    (clobber (match_operand:SI 2 "register_operand" "=d"))]
   "! TARGET_64BIT && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16"
   "subu\t%L0,%.,%L1\;subu\t%M0,%.,%M1\;sltu\t%2,%.,%L0\;subu\t%M0,%M0,%2"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"16")])
 
@@ -2966,7 +2968,7 @@ dsrl\t%3,%3,1\n\
   else
     return "nor\t%0,%.,%1";
 }
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")])
 
 ;;
@@ -3034,7 +3036,7 @@ dsrl\t%3,%3,1\n\
   "@
    and\t%0,%1,%2
    andi\t%0,%1,%x2"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")])
 
 (define_insn ""
@@ -3043,7 +3045,7 @@ dsrl\t%3,%3,1\n\
 		(match_operand:DI 2 "register_operand" "d")))]
   "TARGET_64BIT && TARGET_MIPS16"
   "and\t%0,%2"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")])
 
 (define_expand "iorsi3"
@@ -3100,7 +3102,7 @@ dsrl\t%3,%3,1\n\
   "@
    or\t%0,%1,%2
    ori\t%0,%1,%x2"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")])
 
 (define_insn ""
@@ -3109,7 +3111,7 @@ dsrl\t%3,%3,1\n\
 		(match_operand:DI 2 "register_operand" "d")))]
   "TARGET_64BIT && TARGET_MIPS16"
   "or\t%0,%2"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")])
 
 (define_expand "xorsi3"
@@ -3169,7 +3171,7 @@ dsrl\t%3,%3,1\n\
   "@
    xor\t%0,%1,%2
    xori\t%0,%1,%x2"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")])
 
 (define_insn ""
@@ -3205,7 +3207,7 @@ dsrl\t%3,%3,1\n\
 		(not:DI (match_operand:DI 2 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "nor\t%0,%z1,%z2"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"arith")
    (set_attr "mode"	"DI")])
 
 ;;
@@ -3245,7 +3247,7 @@ dsrl\t%3,%3,1\n\
   "@
     sll\t%0,%1,0
     sw\t%1,%0"
-  [(set_attr "type" "darith,store")
+  [(set_attr "type" "shift,store")
    (set_attr "mode" "SI")
    (set_attr "extended_mips16" "yes,*")])
 
@@ -3256,7 +3258,7 @@ dsrl\t%3,%3,1\n\
   "@
     sll\t%0,%1,0
     sh\t%1,%0"
-  [(set_attr "type" "darith,store")
+  [(set_attr "type" "shift,store")
    (set_attr "mode" "SI")
    (set_attr "extended_mips16" "yes,*")])
 
@@ -3267,7 +3269,7 @@ dsrl\t%3,%3,1\n\
   "@
     sll\t%0,%1,0
     sb\t%1,%0"
-  [(set_attr "type" "darith,store")
+  [(set_attr "type" "shift,store")
    (set_attr "mode" "SI")
    (set_attr "extended_mips16" "yes,*")])
 
@@ -3279,7 +3281,7 @@ dsrl\t%3,%3,1\n\
                                   (match_operand:DI 2 "small_int" "I"))))]
   "TARGET_64BIT && !TARGET_MIPS16 && INTVAL (operands[2]) >= 32"
   "dsra\t%0,%1,%2"
-  [(set_attr "type" "darith")
+  [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
 (define_insn ""
@@ -3288,7 +3290,7 @@ dsrl\t%3,%3,1\n\
                                   (const_int 32))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "dsra\t%0,%1,32"
-  [(set_attr "type" "darith")
+  [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
 
@@ -3334,7 +3336,7 @@ dsrl\t%3,%3,1\n\
                          (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "andi\t%0,%1,0xffff"
-  [(set_attr "type"     "darith")
+  [(set_attr "type"     "arith")
    (set_attr "mode"     "SI")])
 
 (define_insn ""
@@ -3343,7 +3345,7 @@ dsrl\t%3,%3,1\n\
                          (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "andi\t%0,%1,0xff"
-  [(set_attr "type"     "darith")
+  [(set_attr "type"     "arith")
    (set_attr "mode"     "SI")])
 
 (define_insn ""
@@ -3352,7 +3354,7 @@ dsrl\t%3,%3,1\n\
                          (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "andi\t%0,%1,0xff"
-  [(set_attr "type"     "darith")
+  [(set_attr "type"     "arith")
    (set_attr "mode"     "HI")])
 
 ;;
@@ -3376,8 +3378,9 @@ dsrl\t%3,%3,1\n\
    (set (match_dup 0)
         (lshiftrt:DI (match_dup 0) (const_int 32)))]
   "operands[1] = gen_lowpart (DImode, operands[1]);"
-  [(set_attr "type" "arith")
-   (set_attr "mode" "DI")])
+  [(set_attr "type" "multi")
+   (set_attr "mode" "DI")
+   (set_attr "length" "8")])
 
 (define_insn "*zero_extendsidi2_mem"
   [(set (match_operand:DI 0 "register_operand" "=d")
@@ -3575,7 +3578,7 @@ dsrl\t%3,%3,1\n\
   "@
    sll\t%0,%1,0
    lw\t%0,%1"
-  [(set_attr "type" "arith,load")
+  [(set_attr "type" "shift,load")
    (set_attr "mode" "DI")
    (set_attr "extended_mips16" "yes,*")])
 
@@ -5406,7 +5409,7 @@ dsrl\t%3,%3,1\n\
 
   return "sll\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"shift")
    (set_attr "mode"	"SI")])
 
 (define_insn "ashlsi3_internal1_extend"
@@ -5420,7 +5423,7 @@ dsrl\t%3,%3,1\n\
 
   return "sll\t%0,%1,%2";
 }
-  [(set_attr "type"    "arith")
+  [(set_attr "type"    "shift")
    (set_attr "mode"    "DI")])
 
 
@@ -5438,7 +5441,7 @@ dsrl\t%3,%3,1\n\
 
   return "sll\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"shift")
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -5523,7 +5526,7 @@ or\t%M0,%M0,%3\n\
 %~2:\;\
 sll\t%L0,%L1,%2\n\
 %~3:"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"SI")
    (set_attr "length"	"48")])
 
@@ -5539,7 +5542,7 @@ sll\t%L0,%L1,%2\n\
   operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
   return "sll\t%M0,%L1,%2\;move\t%L0,%.";
 }
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"8")])
 
@@ -5594,7 +5597,7 @@ sll\t%L0,%L1,%2\n\
 
   return "sll\t%M0,%M1,%2\;srl\t%3,%L1,%4\;or\t%M0,%M0,%3\;sll\t%L0,%L1,%2";
 }
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"16")])
 
@@ -5678,7 +5681,7 @@ sll\t%L0,%L1,%2\n\
 
   return "dsll\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"shift")
    (set_attr "mode"	"DI")])
 
 (define_insn ""
@@ -5695,7 +5698,7 @@ sll\t%L0,%L1,%2\n\
 
   return "dsll\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"shift")
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -5756,7 +5759,7 @@ sll\t%L0,%L1,%2\n\
 
   return "sra\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"shift")
    (set_attr "mode"	"SI")])
 
 (define_insn "ashrsi3_internal2"
@@ -5773,7 +5776,7 @@ sll\t%L0,%L1,%2\n\
 
   return "sra\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"shift")
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -5855,7 +5858,7 @@ or\t%L0,%L0,%3\n\
 %~2:\;\
 sra\t%M0,%M1,%2\n\
 %~3:"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"48")])
 
@@ -5870,7 +5873,7 @@ sra\t%M0,%M1,%2\n\
   operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
   return "sra\t%L0,%M1,%2\;sra\t%M0,%M1,31";
 }
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"8")])
 
@@ -5925,7 +5928,7 @@ sra\t%M0,%M1,%2\n\
 
   return "srl\t%L0,%L1,%2\;sll\t%3,%M1,%4\;or\t%L0,%L0,%3\;sra\t%M0,%M1,%2";
 }
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"16")])
 
@@ -6009,7 +6012,7 @@ sra\t%M0,%M1,%2\n\
 
   return "dsra\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"shift")
    (set_attr "mode"	"DI")])
 
 (define_insn ""
@@ -6023,7 +6026,7 @@ sra\t%M0,%M1,%2\n\
 
   return "dsra\t%0,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"shift")
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -6083,7 +6086,7 @@ sra\t%M0,%M1,%2\n\
 
   return "srl\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"shift")
    (set_attr "mode"	"SI")])
 
 (define_insn "lshrsi3_internal2"
@@ -6100,7 +6103,7 @@ sra\t%M0,%M1,%2\n\
 
   return "srl\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"shift")
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -6205,7 +6208,7 @@ or\t%L0,%L0,%3\n\
 %~2:\;\
 srl\t%M0,%M1,%2\n\
 %~3:"
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"48")])
 
@@ -6221,7 +6224,7 @@ srl\t%M0,%M1,%2\n\
   operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
   return "srl\t%L0,%M1,%2\;move\t%M0,%.";
 }
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"8")])
 
@@ -6276,7 +6279,7 @@ srl\t%M0,%M1,%2\n\
 
   return "srl\t%L0,%L1,%2\;sll\t%3,%M1,%4\;or\t%L0,%L0,%3\;srl\t%M0,%M1,%2";
 }
-  [(set_attr "type"	"darith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"16")])
 
@@ -6360,7 +6363,7 @@ srl\t%M0,%M1,%2\n\
 
   return "dsrl\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"shift")
    (set_attr "mode"	"DI")])
 
 (define_insn ""
@@ -6374,7 +6377,7 @@ srl\t%M0,%M1,%2\n\
 
   return "dsrl\t%0,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"shift")
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -6397,7 +6400,7 @@ srl\t%M0,%M1,%2\n\
 
   return "ror\t%0,%1,%2";
 }
-  [(set_attr "type"     "arith")
+  [(set_attr "type"     "shift")
    (set_attr "mode"     "SI")])
 
 (define_insn "rotrdi3"
@@ -6421,7 +6424,7 @@ srl\t%M0,%M1,%2\n\
 
   return "dror\t%0,%1,%2";
 }
-  [(set_attr "type"     "arith")
+  [(set_attr "type"     "shift")
    (set_attr "mode"     "DI")])
 
 
@@ -7036,7 +7039,7 @@ srl\t%M0,%M1,%2\n\
 	       (const_int 0)))]
   "!TARGET_MIPS16"
   "sltu\t%0,%1,1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")])
 
 (define_insn ""
@@ -7045,7 +7048,7 @@ srl\t%M0,%M1,%2\n\
 	       (const_int 0)))]
   "TARGET_MIPS16"
   "sltu\t%1,1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")])
 
 (define_insn "seq_di_zero"
@@ -7054,7 +7057,7 @@ srl\t%M0,%M1,%2\n\
 	       (const_int 0)))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "sltu\t%0,%1,1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")])
 
 (define_insn ""
@@ -7063,7 +7066,7 @@ srl\t%M0,%M1,%2\n\
 	       (const_int 0)))]
   "TARGET_64BIT && TARGET_MIPS16"
   "sltu\t%1,1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")])
 
 (define_insn "seq_si"
@@ -7074,7 +7077,7 @@ srl\t%M0,%M1,%2\n\
   "@
    xor\t%0,%1,%2\;sltu\t%0,%0,1
    xori\t%0,%1,%2\;sltu\t%0,%0,1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"SI")
    (set_attr "length"	"8")])
 
@@ -7100,7 +7103,7 @@ srl\t%M0,%M1,%2\n\
   "@
    xor\t%0,%1,%2\;sltu\t%0,%0,1
    xori\t%0,%1,%2\;sltu\t%0,%0,1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"8")])
 
@@ -7152,7 +7155,7 @@ srl\t%M0,%M1,%2\n\
 	       (const_int 0)))]
   "!TARGET_MIPS16"
   "sltu\t%0,%.,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")])
 
 (define_insn "sne_di_zero"
@@ -7161,7 +7164,7 @@ srl\t%M0,%M1,%2\n\
 	       (const_int 0)))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "sltu\t%0,%.,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")])
 
 (define_insn "sne_si"
@@ -7172,7 +7175,7 @@ srl\t%M0,%M1,%2\n\
   "@
     xor\t%0,%1,%2\;sltu\t%0,%.,%0
     xori\t%0,%1,%x2\;sltu\t%0,%.,%0"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"SI")
    (set_attr "length"	"8")])
 
@@ -7198,7 +7201,7 @@ srl\t%M0,%M1,%2\n\
   "@
     xor\t%0,%1,%2\;sltu\t%0,%.,%0
     xori\t%0,%1,%x2\;sltu\t%0,%.,%0"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"8")])
 
@@ -7248,7 +7251,7 @@ srl\t%M0,%M1,%2\n\
 	       (match_operand:SI 2 "reg_or_0_operand" "dJ")))]
   "!TARGET_MIPS16"
   "slt\t%0,%z2,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")])
 
 (define_insn ""
@@ -7257,7 +7260,7 @@ srl\t%M0,%M1,%2\n\
 	       (match_operand:SI 2 "register_operand" "d")))]
   "TARGET_MIPS16"
   "slt\t%2,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")])
 
 (define_insn "sgt_di"
@@ -7266,7 +7269,7 @@ srl\t%M0,%M1,%2\n\
 	       (match_operand:DI 2 "reg_or_0_operand" "dJ")))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "slt\t%0,%z2,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")])
 
 (define_insn ""
@@ -7275,7 +7278,7 @@ srl\t%M0,%M1,%2\n\
 	       (match_operand:DI 2 "register_operand" "d")))]
   "TARGET_64BIT && TARGET_MIPS16"
   "slt\t%2,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")])
 
 (define_expand "sge"
@@ -7306,7 +7309,7 @@ srl\t%M0,%M1,%2\n\
 	       (match_operand:SI 2 "arith_operand" "dI")))]
   "TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
   "slt\t%0,%1,%2\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"SI")
    (set_attr "length"	"8")])
 
@@ -7329,7 +7332,7 @@ srl\t%M0,%M1,%2\n\
 	       (match_operand:DI 2 "arith_operand" "dI")))]
   "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
   "slt\t%0,%1,%2\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"8")])
 
@@ -7375,7 +7378,7 @@ srl\t%M0,%M1,%2\n\
 	       (match_operand:SI 2 "arith_operand" "dI")))]
   "!TARGET_MIPS16"
   "slt\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")])
 
 (define_insn ""
@@ -7384,7 +7387,7 @@ srl\t%M0,%M1,%2\n\
 	       (match_operand:SI 2 "arith_operand" "d,I")))]
   "TARGET_MIPS16"
   "slt\t%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -7398,7 +7401,7 @@ srl\t%M0,%M1,%2\n\
 	       (match_operand:DI 2 "arith_operand" "dI")))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "slt\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")])
 
 (define_insn ""
@@ -7407,7 +7410,7 @@ srl\t%M0,%M1,%2\n\
 	       (match_operand:DI 2 "arith_operand" "d,I")))]
   "TARGET_64BIT && TARGET_MIPS16"
   "slt\t%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -7449,7 +7452,7 @@ srl\t%M0,%M1,%2\n\
   operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return "slt\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")])
 
 (define_insn ""
@@ -7461,7 +7464,7 @@ srl\t%M0,%M1,%2\n\
   operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return "slt\t%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")
    (set (attr "length") (if_then_else (match_operand:VOID 2 "m16_uimm8_m1_1" "")
 				      (const_int 4)
@@ -7476,7 +7479,7 @@ srl\t%M0,%M1,%2\n\
   operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return "slt\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")])
 
 (define_insn ""
@@ -7488,7 +7491,7 @@ srl\t%M0,%M1,%2\n\
   operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return "slt\t%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")
    (set (attr "length") (if_then_else (match_operand:VOID 2 "m16_uimm8_m1_1" "")
 				      (const_int 4)
@@ -7500,7 +7503,7 @@ srl\t%M0,%M1,%2\n\
 	       (match_operand:SI 2 "register_operand" "d")))]
   "TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
   "slt\t%0,%z2,%1\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"SI")
    (set_attr "length"	"8")])
 
@@ -7523,7 +7526,7 @@ srl\t%M0,%M1,%2\n\
 	       (match_operand:DI 2 "register_operand" "d")))]
   "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
   "slt\t%0,%z2,%1\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"8")])
 
@@ -7572,7 +7575,7 @@ srl\t%M0,%M1,%2\n\
 		(match_operand:SI 2 "reg_or_0_operand" "dJ")))]
   "!TARGET_MIPS16"
   "sltu\t%0,%z2,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")])
 
 (define_insn ""
@@ -7581,7 +7584,7 @@ srl\t%M0,%M1,%2\n\
 		(match_operand:SI 2 "register_operand" "d")))]
   "TARGET_MIPS16"
   "sltu\t%2,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")])
 
 (define_insn "sgtu_di"
@@ -7590,7 +7593,7 @@ srl\t%M0,%M1,%2\n\
 		(match_operand:DI 2 "reg_or_0_operand" "dJ")))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "sltu\t%0,%z2,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")])
 
 (define_insn ""
@@ -7599,7 +7602,7 @@ srl\t%M0,%M1,%2\n\
 		(match_operand:DI 2 "register_operand" "d")))]
   "TARGET_64BIT && TARGET_MIPS16"
   "sltu\t%2,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")])
 
 (define_expand "sgeu"
@@ -7630,7 +7633,7 @@ srl\t%M0,%M1,%2\n\
 		(match_operand:SI 2 "arith_operand" "dI")))]
   "TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
   "sltu\t%0,%1,%2\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"SI")
    (set_attr "length"	"8")])
 
@@ -7653,7 +7656,7 @@ srl\t%M0,%M1,%2\n\
 		(match_operand:DI 2 "arith_operand" "dI")))]
   "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
   "sltu\t%0,%1,%2\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"8")])
 
@@ -7699,7 +7702,7 @@ srl\t%M0,%M1,%2\n\
 		(match_operand:SI 2 "arith_operand" "dI")))]
   "!TARGET_MIPS16"
   "sltu\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")])
 
 (define_insn ""
@@ -7708,7 +7711,7 @@ srl\t%M0,%M1,%2\n\
 		(match_operand:SI 2 "arith_operand" "d,I")))]
   "TARGET_MIPS16"
   "sltu\t%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -7722,7 +7725,7 @@ srl\t%M0,%M1,%2\n\
 		(match_operand:DI 2 "arith_operand" "dI")))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "sltu\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")])
 
 (define_insn ""
@@ -7731,7 +7734,7 @@ srl\t%M0,%M1,%2\n\
 		(match_operand:DI 2 "arith_operand" "d,I")))]
   "TARGET_64BIT && TARGET_MIPS16"
   "sltu\t%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -7773,7 +7776,7 @@ srl\t%M0,%M1,%2\n\
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
   return "sltu\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")])
 
 (define_insn ""
@@ -7785,7 +7788,7 @@ srl\t%M0,%M1,%2\n\
   operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return "sltu\t%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"SI")
    (set (attr "length") (if_then_else (match_operand:VOID 2 "m16_uimm8_m1_1" "")
 				      (const_int 4)
@@ -7800,7 +7803,7 @@ srl\t%M0,%M1,%2\n\
   operands[2] = GEN_INT (INTVAL (operands[2]) + 1);
   return "sltu\t%0,%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")])
 
 (define_insn ""
@@ -7812,7 +7815,7 @@ srl\t%M0,%M1,%2\n\
   operands[2] = GEN_INT (INTVAL (operands[2])+1);
   return "sltu\t%1,%2";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"slt")
    (set_attr "mode"	"DI")
    (set (attr "length") (if_then_else (match_operand:VOID 2 "m16_uimm8_m1_1" "")
 				      (const_int 4)
@@ -7824,7 +7827,7 @@ srl\t%M0,%M1,%2\n\
 		(match_operand:SI 2 "register_operand" "d")))]
   "TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
   "sltu\t%0,%z2,%1\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"SI")
    (set_attr "length"	"8")])
 
@@ -7847,7 +7850,7 @@ srl\t%M0,%M1,%2\n\
 		(match_operand:DI 2 "register_operand" "d")))]
   "TARGET_64BIT && TARGET_DEBUG_C_MODE && !TARGET_MIPS16"
   "sltu\t%0,%z2,%1\;xori\t%0,%0,0x0001"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"multi")
    (set_attr "mode"	"DI")
    (set_attr "length"	"8")])
 
@@ -8865,7 +8868,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
     else
       return "#nop";
   }
-  [(set_attr "type"	"arith")])
+  [(set_attr "type"	"nop")])
 
 ;; MIPS4 Conditional move instructions.
 
