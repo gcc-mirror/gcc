@@ -1,3 +1,12 @@
+2002-03-02  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/22_locale/num_get_members_char.cc (test04):
+	Use a named locale expecting grouping (de_DE).
+	* testsuite/22_locale/num_get_members_wchar_t.cc (test04):
+	Ditto.
+	* testsuite/27_io/ios_manip_basefield.cc (test01):
+	Extend coverage, uniform treatment of hexs and octs.
+
 2002-02-28  Richard Henderson  <rth@redhat.com>
 
 	* config/linker-map.gnu: Export operator new with unsigned long,
