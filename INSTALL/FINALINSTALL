@@ -1,0 +1,17 @@
+Final install egcs-1.00
+
+Now that egcs has been built and tested, you can install it with
+"cd objdir; make install". 
+
+That step completes the installation of egcs; user level binaries can be found 
+in prefix/bin where prefix is the value you specified with the --prefix to
+configure (or /usr/local by default). 
+
+If you don't mind, please send egcs@cygnus.com a short mail message
+indicating that you successfully built and installed egcs. Include the output
+from running srcdirconfig.guess. 
+
+If you find a bug in egcs, please report it to egcs-bugs@cygnus.com. 
+
+
+

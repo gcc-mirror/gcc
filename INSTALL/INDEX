@@ -1,0 +1,28 @@
+			Installing egcs-1.00
+
+This document describes the generic installation procedure for egcs as well as
+detailing some target specific installation instructions for egcs. 
+
+egcs includes several components that previously were separate distributions
+with their own installation instructions. This document supercedes all package
+specific installation instructions. We provide the component specific
+installation information in the source distribution for historical reference
+purposes only. 
+
+We recommend you read the entire generic installation instructions as well as
+any target specific installation instructions before you proceed to configure,
+build, test and install egcs. 
+
+If something goes wrong in the configure, build, test or install procedures,
+first double check that you followed the generic and target specific
+installation instructions carefully. Then check the FAQ to see if your problem
+is covered before you file a bug report. 
+
+The installation procedure is broken into four steps. 
+
+     configure 		CONFIGURE
+     build 		BUILD
+     test (optional) 	TEST
+     install 		FINALINSTALL
+
+Before starting the build/install procedure please browse the host/target specific installation notes (SPECIFIC).
