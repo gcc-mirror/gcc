@@ -190,7 +190,7 @@ in the following sections.
 -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment
 -Wconversion  -Wdisabled-optimization -Werror
 -Wfloat-equal  -Wformat  -Wformat=2
--Wformat-nonliteral
+-Wformat-nonliteral -Wformat-security
 -Wid-clash-@var{len}  -Wimplicit -Wimplicit-int 
 -Wimplicit-function-declaration
 -Werror-implicit-function-declaration
@@ -1610,8 +1610,9 @@ Controlling C Dialect}.
 
 @samp{-Wformat} is included in @samp{-Wall}.  For more control over some
 aspects of format checking, the options @samp{-Wno-format-y2k},
-@samp{-Wno-format-extra-args}, @samp{-Wformat-nonliteral} and
-@samp{-Wformat=2} are available, but are not included in @samp{-Wall}.
+@samp{-Wno-format-extra-args}, @samp{-Wformat-nonliteral},
+@samp{-Wformat-security} and @samp{-Wformat=2} are available, but are
+not included in @samp{-Wall}.
 
 @item -Wno-format-y2k
 If @samp{-Wformat} is specified, do not warn about @code{strftime}
@@ -1627,10 +1628,21 @@ If @samp{-Wformat} is specified, also warn if the format string is not a
 string literal and so cannot be checked, unless the format function
 takes its format arguments as a @code{va_list}.
 
+@item -Wformat-security
+If @samp{-Wformat} is specified, also warn about uses of format
+functions that represent possible security problems.  At present, this
+warns about calls to @code{printf} and @code{scanf} functions where the
+format string is not a string literal and there are no format arguments,
+as in @code{printf (foo);}.  This may be a security hole if the format
+string came from untrusted input and contains @samp{%n}.  (This is
+currently a subset of what @samp{-Wformat-nonliteral} warns about, but
+in future warnings may be added to @samp{-Wformat-security} that are not
+included in @samp{-Wformat-nonliteral}.)
+
 @item -Wformat=2
 Enable @samp{-Wformat} plus format checks not included in
 @samp{-Wformat}.  Currently equivalent to @samp{-Wformat
--Wformat-nonliteral}.
+-Wformat-nonliteral -Wformat-security}.
 
 @item -Wimplicit-int
 Warn when a declaration does not specify a type.

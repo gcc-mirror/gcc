@@ -361,6 +361,10 @@ extern int warn_format_extra_args;
 
 extern int warn_format_nonliteral;
 
+/* Warn about possible security problems with calls to format functions.  */
+
+extern int warn_format_security;
+
 /* Warn about possible violations of sequence point rules.  */
 
 extern int warn_sequence_point;

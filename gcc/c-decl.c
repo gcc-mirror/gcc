@@ -719,6 +719,10 @@ c_decode_option (argc, argv)
     warn_format_nonliteral = 1;
   else if (!strcmp (p, "-Wno-format-nonliteral"))
     warn_format_nonliteral = 0;
+  else if (!strcmp (p, "-Wformat-security"))
+    warn_format_security = 1;
+  else if (!strcmp (p, "-Wno-format-security"))
+    warn_format_security = 0;
   else if (!strcmp (p, "-Wchar-subscripts"))
     warn_char_subscripts = 1;
   else if (!strcmp (p, "-Wno-char-subscripts"))

@@ -726,6 +726,8 @@ lang_decode_option (argc, argv)
 	warn_format_extra_args = setting;
       else if (!strcmp (p, "format-nonliteral"))
 	warn_format_nonliteral = setting;
+      else if (!strcmp (p, "format-security"))
+	warn_format_security = setting;
       else if (!strcmp (p, "missing-format-attribute"))
 	warn_missing_format_attribute = setting;
       else if (!strcmp (p, "conversion"))

@@ -1,5 +1,19 @@
 2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (warn_format_security): New variable.
+	(check_format_info): Warn about non-literal formats with no format
+	arguments if either -Wformat-nonliteral or -Wformat-security is
+	specified.
+	(set_Wformat): Set warn_format_security for settings other than 1.
+	* c-common.h (warn_format_security): Declare.
+	* c-decl.c (c_decode_option): Decode -Wformat-security and
+	-Wno-format-security.
+	* invoke.texi: Document -Wformat-security.
+	* toplev.c (documented_lang_options): Include -Wformat-security
+	and -Wno-format-security.
+
+2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (check_format_info): Warn for non-constant format
 	strings with strftime formats if -Wformat-nonliteral.  Where the
 	format can convert arguments, if the format is not a string

@@ -1,5 +1,9 @@
 2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* format-sec-1.c: New test.
+
+2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.dg/format-nonlit-3.c: New test.
 
 2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
