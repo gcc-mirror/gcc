@@ -3615,7 +3615,7 @@ move\\t%0,%z4\\n\\
   "TARGET_64BIT"
   "
 {
-  if (optimize && GET_CODE (operands[1]) == MEM)
+  if ((optimize || TARGET_MIPS16) && GET_CODE (operands[1]) == MEM)
     operands[1] = force_not_mem (operands[1]);
 
   if (GET_CODE (operands[1]) != MEM)

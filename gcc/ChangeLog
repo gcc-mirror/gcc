@@ -1,3 +1,8 @@
+2000-03-07  Clinton Popetz  <cpopetz@cygnus.com>
+	
+	* config/mips/mips.md (zero_extendsidi2): Always force operand
+	one to memory for mips16.
+
 Mon Mar  6 15:22:29 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.h (INT_CST_LT, INT_CST_LT_UNSIGNED): Remove unneeded casts.
