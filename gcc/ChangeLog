@@ -4,6 +4,8 @@
 	copy to a temporary first.
 	* expr.c (convert_move): When generating a libcall, make a libcall
 	block.
+	* calls.c (emit_library_call_value_1): Don't create a libcall
+	sequence here; our caller will in most cases do it.
 
 2000-09-15  Richard Henderson  <rth@cygnus.com>
 

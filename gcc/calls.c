@@ -3580,11 +3580,6 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 
   count = 0;
 
-  /* Now we are about to start emitting insns that can be deleted
-     if a libcall is deleted.  */
-  if (flags & (ECF_CONST | ECF_PURE))
-    start_sequence ();
-
   push_temp_slots ();
 
   /* If there's a structure value address to be passed,
@@ -4022,45 +4017,6 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   /* Now restore inhibit_defer_pop to its actual original value.  */
   OK_DEFER_POP;
 
-  /* If call is cse'able, make appropriate pair of reg-notes around it.
-     Test valreg so we don't crash; may safely ignore `const'
-     if return type is void.  Disable for PARALLEL return values, because
-     we have no way to move such values into a pseudo register.  */
-  if ((flags & (ECF_CONST | ECF_PURE))
-      && valreg != 0 && GET_CODE (valreg) != PARALLEL)
-    {
-      rtx note = 0;
-      rtx temp = gen_reg_rtx (GET_MODE (valreg));
-      rtx insns;
-      int i;
-
-      /* Construct an "equal form" for the value which mentions all the
-	 arguments in order as well as the function name.  */
-      for (i = 0; i < nargs; i++)
-	note = gen_rtx_EXPR_LIST (VOIDmode, argvec[i].value, note);
-      note = gen_rtx_EXPR_LIST (VOIDmode, fun, note);
-
-      insns = get_insns ();
-      end_sequence ();
-
-      if (flags & ECF_PURE)
-	note = gen_rtx_EXPR_LIST (VOIDmode,
-	   gen_rtx_USE (VOIDmode,
-			gen_rtx_MEM (BLKmode,
-				     gen_rtx_SCRATCH (VOIDmode))), note);
-
-      emit_libcall_block (insns, temp, valreg, note);
-
-      valreg = temp;
-    }
-  else if (flags & (ECF_CONST | ECF_PURE))
-    {
-      /* Otherwise, just write out the sequence without a note.  */
-      rtx insns = get_insns ();
-
-      end_sequence ();
-      emit_insns (insns);
-    }
   pop_temp_slots ();
 
   /* Copy the value to the right place.  */
