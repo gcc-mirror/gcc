@@ -1,3 +1,7 @@
+2004-07-09  Eric Christopher  <echristo@redhat.com>
+
+	* config/rs6000/40x.md: Split into two automatons.
+
 2004-07-09  Zack Weinberg  <zack@codesourcery.com>
 	    Andrew Pinski  <apinski@apple.com>
 
