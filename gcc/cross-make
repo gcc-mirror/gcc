@@ -15,3 +15,6 @@ CROSS_TOOLS = install-cross-tools
 
 # Cause installation using install-cross.
 INSTALL_TARGET = install-cross
+
+# Don't try to compile the things we can't compile.
+ALL = all.cross
