@@ -1,3 +1,8 @@
+2004-01-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* snapshot-README: Mention how the snapshot was generated.
+	* snapshot-index.html: Ditto.  Further sync with snapshot-README.
+
 2004-01-03  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* update_web_docs: Create tarballs of documentation sources and
