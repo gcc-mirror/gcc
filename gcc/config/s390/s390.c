@@ -50,11 +50,14 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "optabs.h"
 
+/* Machine-specific symbol_ref flags.  */
+#define SYMBOL_FLAG_ALIGN1	(SYMBOL_FLAG_MACH_DEP << 0)
+
+
 static bool s390_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void s390_select_rtx_section PARAMS ((enum machine_mode, rtx, 
 					     unsigned HOST_WIDE_INT));
 static void s390_encode_section_info PARAMS ((tree, int));
-static const char *s390_strip_name_encoding PARAMS ((const char *));
 static bool s390_cannot_force_const_mem PARAMS ((rtx));
 static rtx s390_delegitimize_address PARAMS ((rtx));
 static void s390_init_builtins PARAMS ((void));
@@ -89,8 +92,6 @@ static int s390_address_cost PARAMS ((rtx));
 
 #undef	TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO s390_encode_section_info
-#undef  TARGET_STRIP_NAME_ENCODING
-#define TARGET_STRIP_NAME_ENCODING s390_strip_name_encoding
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_HAVE_TLS
@@ -134,9 +135,6 @@ static int s390_sr_alias_set = 0;
 /* Save information from a "cmpxx" operation until the branch or scc is
    emitted.  */
 rtx s390_compare_op0, s390_compare_op1;
-
-/* The encoding characters for the four TLS models present in ELF.  */
-static char const tls_model_chars[] = " GLil";
 
 /* Structure used to hold the components of a S/390 memory
    address.  A legitimate address on S/390 is of the general
@@ -1050,12 +1048,10 @@ larl_operand (op, mode)
   /* Allow labels and local symbols.  */
   if (GET_CODE (op) == LABEL_REF)
     return 1;
-  if (GET_CODE (op) == SYMBOL_REF
-      && XSTR (op, 0)[0] != '@'
-      && !tls_symbolic_operand (op)
-      && (!flag_pic || SYMBOL_REF_FLAG (op) 
-          || CONSTANT_POOL_ADDRESS_P (op)))
-    return 1;
+  if (GET_CODE (op) == SYMBOL_REF)
+    return ((SYMBOL_REF_FLAGS (op) & SYMBOL_FLAG_ALIGN1) == 0
+	    && SYMBOL_REF_TLS_MODEL (op) == 0
+	    && (!flag_pic || SYMBOL_REF_LOCAL_P (op)));
 
   /* Everything else must have a CONST, so strip it.  */
   if (GET_CODE (op) != CONST)
@@ -1074,12 +1070,10 @@ larl_operand (op, mode)
   /* Labels and local symbols allowed here as well.  */
   if (GET_CODE (op) == LABEL_REF)
     return 1;
-  if (GET_CODE (op) == SYMBOL_REF
-      && XSTR (op, 0)[0] != '@'
-      && !tls_symbolic_operand (op)
-      && (!flag_pic || SYMBOL_REF_FLAG (op)
-          || CONSTANT_POOL_ADDRESS_P (op)))
-    return 1;
+  if (GET_CODE (op) == SYMBOL_REF)
+    return ((SYMBOL_REF_FLAGS (op) & SYMBOL_FLAG_ALIGN1) == 0
+	    && SYMBOL_REF_TLS_MODEL (op) == 0
+	    && (!flag_pic || SYMBOL_REF_LOCAL_P (op)));
 
   /* Now we must have a @GOTENT offset or @PLT stub
      or an @INDNTPOFF TLS offset.  */
@@ -1320,15 +1314,9 @@ int
 tls_symbolic_operand (op)
      register rtx op;
 {
-  const char *symbol_str;
-
   if (GET_CODE (op) != SYMBOL_REF)
     return 0;
-  symbol_str = XSTR (op, 0);
-
-  if (symbol_str[0] != '%')
-    return 0;
-  return strchr (tls_model_chars, symbol_str[1]) - tls_model_chars;
+  return SYMBOL_REF_TLS_MODEL (op);
 }
 
 /* Return true if OP is a load multiple operation.  It is known to be a
@@ -2159,7 +2147,7 @@ s390_load_address (dst, src)
 
    2. Static data references, constant pool addresses, and code labels
       compute the address as an offset from the GOT, whose base is in
-      the PIC reg.  Static data objects have SYMBOL_REF_FLAG set to
+      the PIC reg.  Static data objects have SYMBOL_FLAG_LOCAL set to
       differentiate them from global data objects.  The returned
       address is the PIC reg + an unspec constant.
 
@@ -2176,9 +2164,7 @@ legitimize_pic_address (orig, reg)
   rtx base;
 
   if (GET_CODE (addr) == LABEL_REF
-      || (GET_CODE (addr) == SYMBOL_REF
-	  && (SYMBOL_REF_FLAG (addr) 
-              || CONSTANT_POOL_ADDRESS_P (addr))))
+      || (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (addr)))
     {
       /* This is a local symbol.  */
       if (TARGET_64BIT && larl_operand (addr, VOIDmode))
@@ -2330,9 +2316,7 @@ legitimize_pic_address (orig, reg)
 	  /* Check first to see if this is a constant offset 
              from a local symbol reference.  */
 	  if ((GET_CODE (op0) == LABEL_REF
-		|| (GET_CODE (op0) == SYMBOL_REF
-		    && (SYMBOL_REF_FLAG (op0)
-                        || CONSTANT_POOL_ADDRESS_P (op0))))
+		|| (GET_CODE (op0) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (op0)))
 	      && GET_CODE (op1) == CONST_INT)
 	    {
               if (TARGET_64BIT && larl_operand (op0, VOIDmode))
@@ -5485,7 +5469,7 @@ s390_emit_prologue ()
   if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     {
       rtx got_symbol = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
-      SYMBOL_REF_FLAG (got_symbol) = 1;
+      SYMBOL_REF_FLAGS (got_symbol) = SYMBOL_FLAG_LOCAL;
 
       if (TARGET_64BIT)
 	{
@@ -6354,7 +6338,7 @@ s390_function_profiler (file, labelno)
 
   op[2] = gen_rtx_REG (Pmode, 1);
   op[3] = gen_rtx_SYMBOL_REF (Pmode, label);
-  SYMBOL_REF_FLAG (op[3]) = 1;
+  SYMBOL_REF_FLAGS (op[3]) = SYMBOL_FLAG_LOCAL;
 
   op[4] = gen_rtx_SYMBOL_REF (Pmode, "_mcount");
   if (flag_pic)
@@ -6419,101 +6403,20 @@ s390_select_rtx_section (mode, x, align)
 }
 
 /* Encode symbol attributes (local vs. global, tls model) of a SYMBOL_REF
-   into its name and SYMBOL_REF_FLAG.  */
+   into its SYMBOL_REF_FLAGS.  */
 
 static void
 s390_encode_section_info (decl, first)
      tree decl;
-     int first ATTRIBUTE_UNUSED;
+     int first;
 {
-  bool local_p = (*targetm.binds_local_p) (decl);
-  rtx rtl, symbol;
+  default_encode_section_info (decl, first);
 
-  rtl = DECL_P (decl) ? DECL_RTL (decl) : TREE_CST_RTL (decl);
-  if (GET_CODE (rtl) != MEM)
-    return;
-  symbol = XEXP (rtl, 0);
-  if (GET_CODE (symbol) != SYMBOL_REF)
-    return;
-
-  /* When using PIC, SYMBOL_REF_FLAG marks non-global symbols
-     that can be accessed directly.  */
-  if (flag_pic)
-    SYMBOL_REF_FLAG (symbol) = local_p;
-
-  /* Encode thread-local data with %[GLil] for "global dynamic",
-     "local dynamic", "initial exec" or "local exec" TLS models,
-     respectively.  */
-
-  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
-    {
-      const char *symbol_str = XSTR (symbol, 0);
-      char *newstr;
-      size_t len;
-      enum tls_model kind = decl_tls_model (decl);
-
-      if (!flag_pic)
-	{
-	  /* We don't allow non-pic code for shared libraries,
-	     so don't generate GD/LD TLS models for non-pic code.  */
-	  switch (kind)
-	    {
-	    case TLS_MODEL_GLOBAL_DYNAMIC:
-	      kind = TLS_MODEL_INITIAL_EXEC; break;
-	    case TLS_MODEL_LOCAL_DYNAMIC:
-	      kind = TLS_MODEL_LOCAL_EXEC; break;
-	    default:
-	      break;
-	    }
-	}
-
-      if (symbol_str[0] == '%')
-	{
-	  if (symbol_str[1] == tls_model_chars[kind])
-	    return;
-	  symbol_str += 2;
-	}
-      len = strlen (symbol_str) + 1;
-      newstr = alloca (len + 2);
-
-      newstr[0] = '%';
-      newstr[1] = tls_model_chars[kind];
-      memcpy (newstr + 2, symbol_str, len);
-
-      XSTR (symbol, 0) = ggc_alloc_string (newstr, len + 2 - 1);
-    }
-
-  /* If a variable has a forced alignment to < 2 bytes, mark it
-     with '@' to prevent it from being used as LARL operand.  */
-
-  else if (TREE_CODE (decl) == VAR_DECL 
-	   && DECL_USER_ALIGN (decl) && DECL_ALIGN (decl) < 16
-	   && XSTR (symbol, 0)[0] != '@')
-    {
-      const char *symbol_str = XSTR (symbol, 0);
-      size_t len = strlen (symbol_str) + 1;
-      char *newstr = alloca (len + 1);
-
-      newstr[0] = '@';
-      memcpy (newstr + 1, symbol_str, len);
-
-      XSTR (symbol, 0) = ggc_alloc_string (newstr, len + 1 - 1);
-    }
-}
-
-/* Undo the above when printing symbol names.  */
-
-static const char *
-s390_strip_name_encoding (str)
-     const char *str;
-{
-  if (str[0] == '%')
-    str += 2;
-  if (str[0] == '@')
-    str += 1;
-  if (str[0] == '*')
-    str += 1;
-  return str;
+  /* If a variable has a forced alignment to < 2 bytes, mark it with
+     SYMBOL_FLAG_ALIGN1 to prevent it from being used as LARL operand.  */
+  if (TREE_CODE (decl) == VAR_DECL 
+      && DECL_USER_ALIGN (decl) && DECL_ALIGN (decl) < 16)
+    SYMBOL_REF_FLAGS (XEXP (DECL_RTL (decl), 0)) |= SYMBOL_FLAG_ALIGN1;
 }
 
 /* Output thunk to FILE that implements a C++ virtual function call (with
@@ -6534,7 +6437,7 @@ s390_output_mi_thunk (file, thunk, delta, vcall_offset, function)
 
   /* Operand 0 is the target function.  */
   op[0] = XEXP (DECL_RTL (function), 0);
-  if (flag_pic && !SYMBOL_REF_FLAG (op[0]))
+  if (flag_pic && !SYMBOL_REF_LOCAL_P (op[0]))
     {
       op[0] = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op[0]), 113);
       op[0] = gen_rtx_CONST (Pmode, op[0]);
