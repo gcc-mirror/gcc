@@ -71,4 +71,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
     SIZE.constant = 32;                                                 \
 }
 
+/* Define this macro to control use of the character `$' in
+   identifier names.  The value should be 0, 1, or 2.  0 means `$'
+   is not allowed by default; 1 means it is allowed by default if
+   `-traditional' is used; 2 means it is allowed by default provided
+   `-ansi' is not used.  1 is the default; there is no need to
+   define this macro in that case. */
+
+#define DOLLARS_IN_IDENTIFIERS 0
+
+/* Tell G++ not to create constructors or destructors with $'s in them.  */
+
+#define NO_DOLLAR_IN_LABEL 1
+
 #include "mips.h"
