@@ -1324,12 +1324,7 @@ make sure it is in your @env{PATH}.  The file @file{your_commentary.txt} is
 prepended to the testsuite summary and should contain any special
 remarks you have on your results or your build environment.  Please
 do not edit the testsuite result block or the subject line, as these
-messages are automatically parsed and presented at the
-@uref{http://gcc.gnu.org/testresults/,,GCC testresults} web
-page.  Here you can also gather information on how specific tests
-behave on different platforms and compare them with your results.  A
-few failing testcases are possible even on released versions and you
-should look here first if you think your results are unreasonable.
+messages may be automatically processed.
 
 @html
 <hr />
@@ -1543,7 +1538,7 @@ Solaris 2 (SPARC, Intel)---@uref{http://www.sunfreeware.com/,,Sunfreeware}.
 SGI---@uref{http://freeware.sgi.com/,,SGI Freeware}.
 
 @item
-Windows 95, 98, and NT:
+Microsoft Windows:
 @itemize
 @item
 The @uref{http://sources.redhat.com/cygwin/,,Cygwin} project;
