@@ -4685,6 +4685,28 @@ build_unary_op (code, xarg, noconvert)
 	  return build1 (ADDR_EXPR, unknown_type_node, arg);
 	}
 
+      if (TREE_CODE (arg) == COMPONENT_REF && type_unknown_p (arg)
+	  && OVL_NEXT (TREE_OPERAND (arg, 1)) == NULL_TREE)
+	{
+	  /* They're trying to take the address of a unique non-static
+	     member function.  This is ill-formed, but let's try to DTRT.  */
+	  tree base, name;
+
+	  if (current_class_type
+	      && TREE_OPERAND (arg, 0) == current_class_ref)
+	    /* An expression like &memfn.  */
+	    pedwarn ("taking the address of a non-static member function");
+	  else
+	    pedwarn ("taking the address of a bound member function");
+
+	  base = TREE_TYPE (TREE_OPERAND (arg, 0));
+	  name = DECL_NAME (OVL_CURRENT (TREE_OPERAND (arg, 1)));
+
+	  cp_pedwarn ("  to form a pointer to member function, say `&%T::%D'",
+		      base, name);
+	  arg = build_offset_ref (base, name);
+	}
+
       if (type_unknown_p (arg))
 	return build1 (ADDR_EXPR, unknown_type_node, arg);
 

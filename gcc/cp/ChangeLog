@@ -1,3 +1,8 @@
+1999-04-14  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_unary_op): Handle taking the address of a unique
+	bound non-static member function.
+
 1999-04-13  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* lang-options.h (-Wdeprecated): New flag.
