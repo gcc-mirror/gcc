@@ -895,6 +895,17 @@ option (@pxref{Optimize Options}).
 On AIX and other platforms without weak symbol support, templates
 need to be instantiated explicitly and symbols for static members
 of templates will not be generated.
+
+@item
+On AIX, GCC scans object files and library archives for static
+constructors and destructors when linking an application before the
+linker prunes unreferenced symbols.  This is necessary to prevent the
+AIX linker from mistakenly assuming that static constructor or
+destructor are unused and removing them before the scanning can occur.
+All static constructors and destructors found will be referenced even
+though the modules in which they occur may not be used by the program.
+This may lead to increased executable size and unexpected dependencies
+on external symbols.
 @end itemize
 
 @node C++ Misunderstandings

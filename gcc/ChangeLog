@@ -1,3 +1,8 @@
+2002-08-12  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/trouble.texi (Disappointments): Add static constructor and
+	destructor dependency information for AIX.
+
 2002-08-12  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cpphash.h (struct printer): New from cppmain.c.
