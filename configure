@@ -56,6 +56,7 @@ exec_prefixoption=
 fatal=
 floating_point=default
 gas=default
+gcc_version=UNKNOWN
 host_alias=NOHOST
 host_makefile_frag=
 moveifchange=
@@ -700,6 +701,12 @@ if [ "${program_prefix}" != "" ] ; then
     program_transform_name="-e s,^,${program_prefix}, ${program_transform_name}"
 fi
 
+# If gcc's sources are available, extract its version number which is used by
+# $libsubdir.
+if [ -f $srcdir/gcc/version.c ]; then
+    gcc_version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < ${srcdir}/gcc/version.c`
+fi
+
 # If CC and CXX are not set in the environment, and the Makefile
 # exists, try to extract them from it.  This is to handle running
 # ./config.status by hand.
@@ -1227,6 +1234,12 @@ EOF
 	    else
 	        echo enable_shared = ${enable_shared} >> ${Makefile}
 	    fi
+
+	    # Emit a macro which is used to build the libsubdir macro where
+	    # compiler specific stuff can be found/installed.
+	    # FIXME: This works only if gcc's sources are available in a gcc
+	    # subdirectory!
+	    echo gcc_version = ${gcc_version} >> ${Makefile}
 
             # reset prefix, exec_prefix, srcdir, SUBDIRS, NONSUBDIRS,
             # remove any form feeds.
