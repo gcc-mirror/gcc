@@ -221,7 +221,7 @@ server_setup ()
   static int atexit_done = 0;
   
   if (atexit_done++ == 0)
-    atexit (&close_server);
+    atexit (close_server);
 
   signal (SIGPIPE, sig_handler);
   signal (SIGALRM, sig_handler);

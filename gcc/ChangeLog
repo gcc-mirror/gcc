@@ -1,3 +1,8 @@
+Sat Aug  7 01:39:27 1999  Philippe De Muyter  <phdm@macqel.be>
+
+	* fixinc/server.c (server_setup): Do not prefix function used as
+ 	parameter with `&'.
+
 Sat Aug  7 00:21:20 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (movhi and movqi patterns): Correct predicate for !BWX.
