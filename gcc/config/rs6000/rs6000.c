@@ -95,7 +95,7 @@ int rs6000_fprs = 1;
 const char *rs6000_isel_string;
 
 /* Set to nonzero once AIX common-mode calls have been defined.  */
-static int common_mode_defined;
+static GTY(()) int common_mode_defined;
 
 /* Private copy of original value of flag_pic for ABI_AIX.  */
 static int rs6000_flag_pic;

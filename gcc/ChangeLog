@@ -1,3 +1,7 @@
+2003-01-10  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (common_mode_defined): Mark for PCH.
+
 2003-01-10  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.in (parsedir): New variable.
