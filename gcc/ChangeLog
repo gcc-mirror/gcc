@@ -1,7 +1,14 @@
+2004-05-07  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.h (STACK_BOUNDARY): Use 128 bit for either
+	TARGET_ALTIVEC or TARGET_ALTIVEC_ABI.
+	* config/rs6000/sysv4.h (ABI_STACK_BOUNDARY): Likewise.
+	(STACK_BOUNDARY): Delete.
+
 2004-05-06  Stuart Hastings  <stuart@apple.com>
 	* gcc/doc/invoke.texi: Restore -fgcse-after-reload doc from 1.421,
 	mistakenly clobbered by 1.423.
-	
+
 2004-05-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: Document -mvr4130-align.
