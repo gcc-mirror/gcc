@@ -2023,9 +2023,17 @@ init_ready_list (ready)
      Count number of insns in the target block being scheduled.  */
   for (insn = NEXT_INSN (prev_head); insn != next_tail; insn = NEXT_INSN (insn))
     {
-      if (INSN_DEP_COUNT (insn) == 0)
+      rtx next;
+
+      if (! INSN_P (insn))
+	continue;
+      next = NEXT_INSN (insn);
+
+      if (INSN_DEP_COUNT (insn) == 0
+	  && (! INSN_P (next) || SCHED_GROUP_P (next) == 0))
 	ready_add (ready, insn);
-      target_n_insns++;
+      if (! SCHED_GROUP_P (insn))
+	target_n_insns++;
     }
 
   /* Add to ready list all 'ready' insns in valid source blocks.
@@ -2059,8 +2067,19 @@ init_ready_list (ready)
 							     insn, insn) <= 3)))
 			&& check_live (insn, bb_src)
 			&& is_exception_free (insn, bb_src, target_bb))))
-	      if (INSN_DEP_COUNT (insn) == 0)
-		ready_add (ready, insn);
+	      {
+		rtx next;
+
+		/* Note that we haven't squirreled away the notes for
+		   blocks other than the current.  So if this is a
+		   speculative insn, NEXT might otherwise be a note.  */
+		next = next_nonnote_insn (insn);
+		if (INSN_DEP_COUNT (insn) == 0
+		    && (! next
+			|| ! INSN_P (next)
+			|| SCHED_GROUP_P (next) == 0))
+		  ready_add (ready, insn);
+	      }
 	  }
       }
 }
@@ -2078,6 +2097,7 @@ can_schedule_ready_p (insn)
   /* An interblock motion?  */
   if (INSN_BB (insn) != target_bb)
     {
+      rtx temp;
       basic_block b1;
 
       if (IS_SPECULATIVE_INSN (insn))
@@ -2094,9 +2114,18 @@ can_schedule_ready_p (insn)
 	}
       nr_inter++;
 
+      /* Find the beginning of the scheduling group.  */
+      /* ??? Ought to update basic block here, but later bits of
+	 schedule_block assumes the original insn block is
+	 still intact.  */
+
+      temp = insn;
+      while (SCHED_GROUP_P (temp))
+	temp = PREV_INSN (temp);
+
       /* Update source block boundaries.  */
-      b1 = BLOCK_FOR_INSN (insn);
-      if (insn == b1->head && insn == b1->end)
+      b1 = BLOCK_FOR_INSN (temp);
+      if (temp == b1->head && temp == b1->end)
 	{
 	  /* We moved all the insns in the basic block.
 	     Emit a note after the last insn and update the
@@ -2110,9 +2139,9 @@ can_schedule_ready_p (insn)
 	  /* We took insns from the end of the basic block,
 	     so update the end of block boundary so that it
 	     points to the first insn we did not move.  */
-	  b1->end = PREV_INSN (insn);
+	  b1->end = PREV_INSN (temp);
 	}
-      else if (insn == b1->head)
+      else if (temp == b1->head)
 	{
 	  /* We took insns from the start of the basic block,
 	     so update the start of block boundary so that
@@ -2332,6 +2361,17 @@ add_branch_dependences (head, tail)
 	  CANT_MOVE (insn) = 1;
 
 	  last = insn;
+	  /* Skip over insns that are part of a group.
+	     Make each insn explicitly depend on the previous insn.
+	     This ensures that only the group header will ever enter
+	     the ready queue (and, when scheduled, will automatically
+	     schedule the SCHED_GROUP_P block).  */
+	  while (SCHED_GROUP_P (insn))
+	    {
+	      rtx temp = prev_nonnote_insn (insn);
+	      add_dependence (insn, temp, REG_DEP_ANTI);
+	      insn = temp;
+	    }
 	}
 
       /* Don't overrun the bounds of the basic block.  */
@@ -2353,6 +2393,10 @@ add_branch_dependences (head, tail)
 
 	add_dependence (last, insn, REG_DEP_ANTI);
 	INSN_REF_COUNT (insn) = 1;
+	
+	/* Skip over insns that are part of a group.  */
+	while (SCHED_GROUP_P (insn))
+	  insn = prev_nonnote_insn (insn);
       }
 }
 

@@ -83,12 +83,14 @@ static sbitmap *forward_dependency_cache;
 static int deps_may_trap_p PARAMS ((rtx));
 static void add_dependence_list PARAMS ((rtx, rtx, enum reg_note));
 static void add_dependence_list_and_free PARAMS ((rtx, rtx *, enum reg_note));
+static void remove_dependence PARAMS ((rtx, rtx));
 static void set_sched_group_p PARAMS ((rtx));
 
 static void flush_pending_lists PARAMS ((struct deps *, rtx, int, int));
 static void sched_analyze_1 PARAMS ((struct deps *, rtx, rtx));
 static void sched_analyze_2 PARAMS ((struct deps *, rtx, rtx));
 static void sched_analyze_insn PARAMS ((struct deps *, rtx, rtx, rtx));
+static rtx group_leader PARAMS ((rtx));
 
 static rtx get_condition PARAMS ((rtx));
 static int conditions_mutex_p PARAMS ((rtx, rtx));
@@ -235,13 +237,16 @@ add_dependence (insn, elem, dep_type)
       rtx nnext;
       while ((nnext = next_nonnote_insn (next)) != NULL
 	     && INSN_P (nnext)
-	     && next != insn
 	     && SCHED_GROUP_P (nnext))
 	next = nnext;
 
-      if (insn != next)
-	add_dependence (insn, next, REG_DEP_ANTI);
+      /* Again, don't depend an insn on itself.  */
+      if (insn == next)
+	return;
 
+      /* Make the dependence to NEXT, the last insn of the group,
+	 instead of the original ELEM.  */
+      elem = next;
     }
 
 
@@ -380,6 +385,76 @@ add_dependence_list_and_free (insn, listp, dep_type)
     }
 }
 
+/* Remove ELEM wrapped in an INSN_LIST from the LOG_LINKS
+   of INSN.  Abort if not found.  */
+
+static void
+remove_dependence (insn, elem)
+     rtx insn;
+     rtx elem;
+{
+  rtx prev, link, next;
+  int found = 0;
+
+  for (prev = 0, link = LOG_LINKS (insn); link; link = next)
+    {
+      next = XEXP (link, 1);
+      if (XEXP (link, 0) == elem)
+	{
+	  if (prev)
+	    XEXP (prev, 1) = next;
+	  else
+	    LOG_LINKS (insn) = next;
+
+#ifdef INSN_SCHEDULING
+	  /* If we are removing a dependency from the LOG_LINKS list,
+	     make sure to remove it from the cache too.  */
+	  if (true_dependency_cache != NULL)
+	    {
+	      if (REG_NOTE_KIND (link) == 0)
+		RESET_BIT (true_dependency_cache[INSN_LUID (insn)],
+			   INSN_LUID (elem));
+	      else if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
+		RESET_BIT (anti_dependency_cache[INSN_LUID (insn)],
+			   INSN_LUID (elem));
+	      else if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
+		RESET_BIT (output_dependency_cache[INSN_LUID (insn)],
+			   INSN_LUID (elem));
+	    }
+#endif
+
+	  free_INSN_LIST_node (link);
+
+	  found = 1;
+	}
+      else
+	prev = link;
+    }
+
+  if (!found)
+    abort ();
+  return;
+}
+
+/* Return an insn which represents a SCHED_GROUP, which is
+   the last insn in the group.  */
+
+static rtx
+group_leader (insn)
+     rtx insn;
+{
+  rtx prev;
+
+  do
+    {
+      prev = insn;
+      insn = next_nonnote_insn (insn);
+    }
+  while (insn && INSN_P (insn) && SCHED_GROUP_P (insn));
+
+  return prev;
+}
+
 /* Set SCHED_GROUP_P and care for the rest of the bookkeeping that
    goes along with that.  */
 
@@ -391,21 +466,22 @@ set_sched_group_p (insn)
 
   SCHED_GROUP_P (insn) = 1;
 
-  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
-    {
-      prev = insn;
-      do
-	{
-	  prev = prev_nonnote_insn (prev);
-	  if (XEXP (link, 0) == prev)
-	    break;
-	}
-      while (SCHED_GROUP_P (prev));
-      if (XEXP (link, 0) != prev)
-	add_dependence (prev, XEXP (link, 0), REG_DEP_ANTI);
-    }
+  /* There may be a note before this insn now, but all notes will
+     be removed before we actually try to schedule the insns, so
+     it won't cause a problem later.  We must avoid it here
+     though.  */
   prev = prev_nonnote_insn (insn);
-  add_dependence (insn, prev, REG_DEP_ANTI);
+  
+  /* Make a copy of all dependencies on the immediately previous
+     insn, and add to this insn.  This is so that all the
+     dependencies will apply to the group.  Remove an explicit
+     dependence on this insn as SCHED_GROUP_P now represents it.  */
+  
+  if (find_insn_list (prev, LOG_LINKS (insn)))
+    remove_dependence (insn, prev);
+  
+  for (link = LOG_LINKS (prev); link; link = XEXP (link, 1))
+    add_dependence (insn, XEXP (link, 0), REG_NOTE_KIND (link));
 }
 
 /* Process an insn's memory dependencies.  There are four kinds of
@@ -1370,9 +1446,11 @@ compute_forward_dependences (head, tail)
       if (! INSN_P (insn))
 	continue;
 
+      insn = group_leader (insn);
+      
       for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
 	{
-	  rtx x = XEXP (link, 0);
+	  rtx x = group_leader (XEXP (link, 0));
 	  rtx new_link;
 
 	  if (x != XEXP (link, 0))

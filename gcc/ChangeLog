@@ -1,3 +1,23 @@
+2003-01-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* haifa-sched.c (move_insn): Restore moving all schedule group.
+	(set_priorities): Restore taking SCHED_GROUP_P into account.
+
+	* sched-deps.c (add_dependence): Restore processing the last group
+	insn.
+	(remove_dependence, group_leader): Restore the functions.
+	(set_sched_group_p): Restore adding dependencies from previous insn
+	in the group.
+	(compute_forward_dependences): Restore usage of group_leader.
+
+	* sched-ebb.c (init_ready_list): Restore taking SCHED_GROUP_P into
+	account.
+
+	* sched-rgn.c (init_ready_list): Restore taking SCHED_GROUP_P into
+	account.
+	(can_schedule_ready_p): Ditto.
+	(add_branch_dependences): Restore skipping over the group insns.
+	
 2003-01-16  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (m68hc11_check_z_replacement): Fix handling
