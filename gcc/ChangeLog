@@ -1,3 +1,10 @@
+Fri Dec 15 14:48:37 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* genrecog.c (add_to_sequence): Remove special case for
+	const_int_operand.
+	(maybe_both_true): Return 1 when falling out of sequence when
+	trying to find common possition in the pattern.
+
 Fri Dec 15 14:44:51 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* integrate.c (copy_rtx_and_substitute): Copy mode too.
