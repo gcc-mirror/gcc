@@ -80,14 +80,13 @@ $(GCJ)-cross$(exeext): $(GCJ)$(exeext)
 $(INTL_TARGETS): $(srcdir)/java/parse.c $(srcdir)/java/parse-scan.c
 
 $(srcdir)/java/parse.c: $(srcdir)/java/parse.y
-	(cd $(srcdir)/java && \
-	$(BISON) -t --name-prefix=java_ $(BISONFLAGS) -o p$$$$.c parse.y && \
-	mv -f p$$$$.c parse.c)
+	$(BISON) -t --name-prefix=java_ $(BISONFLAGS) \
+	    -o p$$$$.c $(srcdir)/java/parse.y && \
+	mv -f p$$$$.c $(srcdir)/java/parse.c
 
 $(srcdir)/java/parse-scan.c:  $(srcdir)/java/parse-scan.y
-	(cd $(srcdir)/java && \
-	$(BISON) -t $(BISONFLAGS) -o ps$$$$.c parse-scan.y && \
-	mv -f ps$$$$.c parse-scan.c)
+	$(BISON) -t $(BISONFLAGS) -o ps$$$$.c $(srcdir)/java/parse-scan.y && \
+	mv -f ps$$$$.c $(srcdir)/java/parse-scan.c
 
 $(srcdir)/java/keyword.h: $(srcdir)/java/keyword.gperf
 	(cd $(srcdir)/java || exit 1; \
