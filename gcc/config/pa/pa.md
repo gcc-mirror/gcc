@@ -1549,65 +1549,65 @@
 ;; Load or store with base-register modification.
 
 (define_insn "pre_ldwm"
-  [(set (match_operand:SI 3 "register_operand" "=r")
-	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "0")
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "=r")
 			 (match_operand:SI 2 "pre_cint_operand" ""))))
-   (set (match_operand:SI 0 "register_operand" "=r")
+   (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
   "*
 {
   if (INTVAL (operands[2]) < 0)
-    return \"ldwm %2(0,%0),%3\";
-  return \"ldws,mb %2(0,%0),%3\";
+    return \"ldwm %2(0,%1),%0\";
+  return \"ldws,mb %2(0,%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
 (define_insn "pre_stwm"
-  [(set (mem:SI (plus:SI (match_operand:SI 1 "register_operand" "0")
-			 (match_operand:SI 2 "pre_cint_operand" "")))
-	(match_operand:SI 3 "reg_or_0_operand" "rM"))
-   (set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (match_dup 1) (match_dup 2)))]
+  [(set (mem:SI (plus:SI (match_operand:SI 0 "register_operand" "=r")
+			 (match_operand:SI 1 "pre_cint_operand" "")))
+	(match_operand:SI 2 "reg_or_0_operand" "rM"))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0) (match_dup 1)))]
   ""
   "*
 {
-  if (INTVAL (operands[2]) < 0)
-    return \"stwm %r3,%2(0,%0)\";
-  return \"stws,mb %r3,%2(0,%0)\";
+  if (INTVAL (operands[1]) < 0)
+    return \"stwm %r2,%1(0,%0)\";
+  return \"stws,mb %r2,%1(0,%0)\";
 }"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
 (define_insn "post_ldwm"
-  [(set (match_operand:SI 3 "register_operand" "r")
-	(mem:SI (match_operand:SI 1 "register_operand" "0")))
-   (set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (match_dup 1)
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(mem:SI (match_operand:SI 1 "register_operand" "=r")))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0)
 		 (match_operand:SI 2 "post_cint_operand" "")))]
   ""
   "*
 {
   if (INTVAL (operands[2]) > 0)
-    return \"ldwm %2(0,%0),%3\";
-  return \"ldws,ma %2(0,%0),%3\";
+    return \"ldwm %2(0,%1),%0\";
+  return \"ldws,ma %2(0,%1),%1\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
 (define_insn "post_stwm"
-  [(set (mem:SI (match_operand:SI 1 "register_operand" "0"))
-	(match_operand:SI 3 "reg_or_0_operand" "rM"))
-   (set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (match_dup 1)
+  [(set (mem:SI (match_operand:SI 0 "register_operand" "=r"))
+	(match_operand:SI 1 "reg_or_0_operand" "rM"))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0)
 		 (match_operand:SI 2 "post_cint_operand" "")))]
   ""
   "*
 {
   if (INTVAL (operands[2]) > 0)
-    return \"stwm %r3,%2(0,%0)\";
-  return \"stws,ma %r3,%2(0,%0)\";
+    return \"stwm %r1,%2(0,%0)\";
+  return \"stws,ma %r1,%2(0,%0)\";
 }"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
@@ -1887,24 +1887,24 @@
    (set_attr "length" "4")])
 
 (define_insn ""
-  [(set (match_operand:HI 3 "register_operand" "=r")
-	(mem:HI (plus:SI (match_operand:SI 1 "register_operand" "0")
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(mem:HI (plus:SI (match_operand:SI 1 "register_operand" "=r")
 			 (match_operand:SI 2 "int5_operand" "L"))))
-   (set (match_operand:SI 0 "register_operand" "=r")
+   (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldhs,mb %2(0,%0),%3"
+  "ldhs,mb %2(0,%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
 (define_insn ""
-  [(set (mem:HI (plus:SI (match_operand:SI 1 "register_operand" "0")
-			 (match_operand:SI 2 "int5_operand" "L")))
-	(match_operand:HI 3 "reg_or_0_operand" "rM"))
-   (set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (match_dup 1) (match_dup 2)))]
+  [(set (mem:HI (plus:SI (match_operand:SI 0 "register_operand" "=r")
+			 (match_operand:SI 1 "int5_operand" "L")))
+	(match_operand:HI 2 "reg_or_0_operand" "rM"))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0) (match_dup 1)))]
   ""
-  "sths,mb %r3,%2(0,%0)"
+  "sths,mb %r2,%1(0,%0)"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
@@ -1972,24 +1972,23 @@
    (set_attr "length" "4")])
 
 (define_insn ""
-  [(set (match_operand:QI 3 "register_operand" "=r")
-	(mem:QI (plus:SI (match_operand:SI 1 "register_operand" "0")
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(mem:QI (plus:SI (match_operand:SI 1 "register_operand" "=r")
 			 (match_operand:SI 2 "int5_operand" "L"))))
-   (set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (match_dup 1) (match_dup 2)))]
+   (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldbs,mb %2(0,%0),%3"
+  "ldbs,mb %2(0,%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
 (define_insn ""
-  [(set (mem:QI (plus:SI (match_operand:SI 1 "register_operand" "0")
-			 (match_operand:SI 2 "int5_operand" "L")))
-	(match_operand:QI 3 "reg_or_0_operand" "rM"))
-   (set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (match_dup 1) (match_dup 2)))]
+  [(set (mem:QI (plus:SI (match_operand:SI 0 "register_operand" "=r")
+			 (match_operand:SI 1 "int5_operand" "L")))
+	(match_operand:QI 2 "reg_or_0_operand" "rM"))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0) (match_dup 1)))]
   ""
-  "stbs,mb %r3,%2(0,%0)"
+  "stbs,mb %r2,%1(0,%0)"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 

@@ -718,10 +718,8 @@ hppa_legitimize_address (x, oldx, mode)
      only do so if indexing is safe.
 
      Indexing is safe when the second operand for the outer PLUS
-     is a REG, SUBREG, SYMBOL_REF or the like.
+     is a REG, SUBREG, SYMBOL_REF or the like.  */
 
-     For 2.5, indexing is also safe for (plus (symbol_ref) (const_int))
-     if the integer is > 0.  */
   if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == MULT
       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
       && shadd_constant_p (INTVAL (XEXP (XEXP (x, 0), 1)))
@@ -741,8 +739,64 @@ hppa_legitimize_address (x, oldx, mode)
 				 reg1));
     }
 
+  /* Similarly for (plus (plus (mult (a) (shadd_constant)) (b)) (c)).
+
+     Only do so for floating point modes since this is more speculative
+     and we lose if it's an integer store.  */
+  if ((mode == DFmode || mode == SFmode)
+      && GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT
+      && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == CONST_INT
+      && shadd_constant_p (INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))))
+    {
+      rtx regx1, regx2;
+
+      /* Add the two unscaled terms B and C; only force them into registers
+	 if it's absolutely necessary.  */
+      regx1 = XEXP (XEXP (x, 0), 1);
+      if (! (GET_CODE (regx1) == REG
+	     || (GET_CODE (regx1) == CONST_INT
+		 && INT_14_BITS (regx1))))
+	regx1 = force_reg (Pmode, force_operand (XEXP (XEXP (x, 0), 1), 0));
+      
+      regx2 = XEXP (x, 1);
+      if (! (GET_CODE (regx2) == REG
+	     || (GET_CODE (regx2) == CONST_INT
+		 && INT_14_BITS (regx2))))
+	regx2 = force_reg (Pmode, force_operand (XEXP (x, 1), 0));
+      
+      /* Add them, make sure the result is in canonical form.  */
+      if (GET_CODE (regx1) == REG)
+	regx1 = force_reg (Pmode, gen_rtx (PLUS, Pmode, regx1, regx2));
+      else if (GET_CODE (regx2) == REG)
+	regx1 = force_reg (Pmode, gen_rtx (PLUS, Pmode, regx2, regx1));
+      else
+	regx1 = force_reg (Pmode, gen_rtx (PLUS, Pmode,
+					   force_reg (Pmode, regx1),
+					   regx2));
+
+      /* Get the term to scale in a register.  */
+      regx2 = XEXP (XEXP (XEXP (x, 0), 0), 0);
+      if (GET_CODE (regx2) != REG)
+	regx2 = force_reg (Pmode, force_operand (regx2, 0));
+
+      /* And make an indexed address.  */
+      regx2 = gen_rtx (PLUS, Pmode,
+		       gen_rtx (MULT, Pmode, regx2,
+				XEXP (XEXP (XEXP (x, 0), 0), 1)),
+			regx1);
+
+      /* Return it.  */
+      return force_reg (Pmode, regx2);
+    }
+
   /* Uh-oh.  We might have an address for x[n-100000].  This needs
-     special handling.  */
+     special handling.
+
+     This is common enough that we want to try and rearrange the terms
+     so that we can use indexing for these addresses too.  Again, only
+     do the optimization for floatint point modes.  */
 
   if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == MULT
       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
@@ -757,7 +811,7 @@ hppa_legitimize_address (x, oldx, mode)
 	 to access memory, or better yet have the MI parts of the compiler
 	 handle this.  */
 
-      rtx regx1, regy1, regy2, y;
+      rtx regx1, regx2, regy1, regy2, y;
 
       /* Strip off any CONST.  */
       y = XEXP (x, 1);
@@ -766,11 +820,41 @@ hppa_legitimize_address (x, oldx, mode)
 
       if (GET_CODE (y) == PLUS || GET_CODE (y) == MINUS)
 	{
-	  regx1 = force_reg (Pmode, force_operand (XEXP (x, 0), 0));
-	  regy1 = force_reg (Pmode, force_operand (XEXP (y, 0), 0));
-	  regy2 = force_reg (Pmode, force_operand (XEXP (y, 1), 0));
-	  regx1 = force_reg (Pmode, gen_rtx (GET_CODE (y), Pmode, regx1, regy2));
-	  return force_reg (Pmode, gen_rtx (PLUS, Pmode, regx1, regy1));
+	  /* See if this looks like
+		(plus (mult (reg) (shadd_const))
+		      (const (plus (symbol_ref) (const_int))))
+
+	     Where const_int can be divided evenly by shadd_const and
+	     added to (reg).  This allows more scaled indexed addresses.  */
+	  if ((mode == DFmode || mode == SFmode)
+	      && GET_CODE (XEXP (y, 0)) == SYMBOL_REF
+	      && GET_CODE (XEXP (y, 1)) == CONST_INT
+	      && INTVAL (XEXP (y, 1)) % INTVAL (XEXP (XEXP (x, 0), 1)) == 0)
+	    {
+	      regx1
+		= force_reg (Pmode, GEN_INT (INTVAL (XEXP (y, 1))
+					     / INTVAL (XEXP (XEXP (x, 0), 1))));
+	      regx2 = XEXP (XEXP (x, 0), 0);
+	      if (GET_CODE (regx2) != REG)
+		regx2 = force_reg (Pmode, force_operand (regx2, 0));
+	      regx2 = force_reg (Pmode, gen_rtx (GET_CODE (y), Pmode,
+						 regx2, regx1));
+	      return force_reg (Pmode,
+				gen_rtx (PLUS, Pmode,
+					 gen_rtx (MULT, Pmode, regx2,
+						  XEXP (XEXP (x, 0), 1)),
+					 force_reg (Pmode, XEXP (y, 0))));
+	    }
+	  else
+	    {
+	      /* Doesn't look like one we can optimize.  */
+	      regx1 = force_reg (Pmode, force_operand (XEXP (x, 0), 0));
+	      regy1 = force_reg (Pmode, force_operand (XEXP (y, 0), 0));
+	      regy2 = force_reg (Pmode, force_operand (XEXP (y, 1), 0));
+	      regx1 = force_reg (Pmode,
+				 gen_rtx (GET_CODE (y), Pmode, regx1, regy2));
+	      return force_reg (Pmode, gen_rtx (PLUS, Pmode, regx1, regy1));
+	    }
 	}
     }
 
@@ -2077,9 +2161,7 @@ hppa_expand_prologue()
 	emit_move_insn (tmpreg, frame_pointer_rtx);
 	emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
 	if (VAL_14_BITS_P (actual_fsize))
-	  emit_insn (gen_post_stwm (stack_pointer_rtx,
-				    stack_pointer_rtx,
-				    size_rtx, tmpreg));
+	  emit_insn (gen_post_stwm (stack_pointer_rtx, tmpreg, size_rtx));
 	else
 	  {
 	    /* It is incorrect to store the saved frame pointer at *sp,
@@ -2088,9 +2170,7 @@ hppa_expand_prologue()
 	       So instead use stwm to store at *sp and post-increment the
 	       stack pointer as an atomic operation.  Then increment sp to
 	       finish allocating the new frame.  */
-	    emit_insn (gen_post_stwm (stack_pointer_rtx,
-				      stack_pointer_rtx,
-				      GEN_INT (64), tmpreg));
+	    emit_insn (gen_post_stwm (stack_pointer_rtx, tmpreg, GEN_INT (64)));
 	    set_reg_plus_d (STACK_POINTER_REGNUM,
 			    STACK_POINTER_REGNUM,
 			    actual_fsize - 64);
@@ -2209,9 +2289,8 @@ hppa_expand_prologue()
 	      {
 		merge_sp_adjust_with_store = 0;
 	        emit_insn (gen_post_stwm (stack_pointer_rtx,
-					  stack_pointer_rtx,
-					  GEN_INT (-offset),
-					  gen_rtx (REG, SImode, i)));
+					  gen_rtx (REG, SImode, i),
+					  GEN_INT (-offset)));
 	      }
 	    else
 	      store_reg (i, offset, STACK_POINTER_REGNUM);
@@ -2425,16 +2504,16 @@ hppa_expand_epilogue ()
 	 stream, doing so avoids some very obscure problems.  */
       emit_insn (gen_blockage ());
       set_reg_plus_d (STACK_POINTER_REGNUM, FRAME_POINTER_REGNUM, 64);
-      emit_insn (gen_pre_ldwm (stack_pointer_rtx, stack_pointer_rtx,
-			       GEN_INT (-64), frame_pointer_rtx));
+      emit_insn (gen_pre_ldwm (frame_pointer_rtx, 
+			       stack_pointer_rtx,
+			       GEN_INT (-64)));
     }
   /* If we were deferring a callee register restore, do it now.  */
   else if (! frame_pointer_needed  && merge_sp_adjust_with_load)
-    emit_insn (gen_pre_ldwm (stack_pointer_rtx,
+    emit_insn (gen_pre_ldwm (gen_rtx (REG, SImode,
+				      merge_sp_adjust_with_load),
 			     stack_pointer_rtx,
-			     GEN_INT (- actual_fsize),
-			     gen_rtx (REG, SImode,
-			     merge_sp_adjust_with_load)));
+			     GEN_INT (- actual_fsize)));
   else if (actual_fsize != 0)
     set_reg_plus_d (STACK_POINTER_REGNUM,
 		    STACK_POINTER_REGNUM,
