@@ -3250,6 +3250,7 @@ print_reg (x, code, file)
    R -- print the prefix for register names.
    z -- print the opcode suffix for the size of the current operand.
    * -- print a star (in certain assembler syntax)
+   A -- print an absolute memory reference.
    w -- print the operand as if it's a "word" (HImode) even if it isn't.
    s -- print a shift double count, followed by the assemblers argument
 	delimiter.
@@ -3275,6 +3276,26 @@ print_operand (file, x, code)
 	  if (ASSEMBLER_DIALECT == 0)
 	    putc ('*', file);
 	  return;
+
+	case 'A':
+	  if (ASSEMBLER_DIALECT == 0)
+	    putc ('*', file);
+	  else if (ASSEMBLER_DIALECT == 1)
+	    {
+	      /* Intel syntax. For absolute addresses, registers should not
+		 be surrounded by braces.  */
+	      if (GET_CODE (x) != REG)
+		{
+		  putc ('[', file);
+		  PRINT_OPERAND (file, x, 0);
+		  putc (']', file);
+		  return;
+		}
+	    }
+
+	  PRINT_OPERAND (file, x, 0);
+	  return;
+
 
 	case 'L':
 	  if (ASSEMBLER_DIALECT == 0)
@@ -3311,10 +3332,6 @@ print_operand (file, x, code)
 	     registers.  */
 
 	  if (STACK_REG_P (x))
-	    return;
-
-	  /* Intel syntax has no truck with instruction suffixes.  */
-	  if (ASSEMBLER_DIALECT != 0)
 	    return;
 
 	  /* this is the size of op from size of operand */
@@ -3422,6 +3439,15 @@ print_operand (file, x, code)
 	    default:
 	      abort ();
 	    }
+
+	  /* Check for explicit size override (codes 'b', 'w' and 'k')  */
+	  if (code == 'b')
+	    size = "BYTE";
+	  else if (code == 'w')
+	    size = "WORD";
+	  else if (code == 'k')
+	    size = "DWORD";
+
 	  fputs (size, file);
 	  fputs (" PTR ", file);
 	}
@@ -3519,7 +3545,11 @@ print_operand_address (file, addr)
       if (GET_CODE (disp) == CONST_INT)
 	{
 	  if (ASSEMBLER_DIALECT != 0)
-	    fputs ("ds:", file);
+	    {
+	      if (USER_LABEL_PREFIX[0] == 0)
+		putc ('%', file);
+	      fputs ("ds:", file);
+	    }
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (addr));
 	}
       else if (flag_pic)
