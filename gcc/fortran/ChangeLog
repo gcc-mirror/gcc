@@ -1,3 +1,9 @@
+2005-03-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (fortran-warn): Remove -Wno-error.
+	(expr.o-warn, resolve.o-warn, simplify.o-warn,
+	trans-common.o-warn): Specify -Wno-error.
+
 2005-03-17  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-array.c (gfc_trans_static_array_pointer,
