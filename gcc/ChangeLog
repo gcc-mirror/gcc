@@ -1,5 +1,7 @@
 2005-01-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.h (CALL_USED_REGISTERS): Fix comment pastos.
+
 	PR c/18946
 	* c-decl.c (warn_if_shadowing): Handle old_decl error_mark_node.
 	(pushdecl): Only use DECL_FILE_SCOPE_P if DECL_P.
