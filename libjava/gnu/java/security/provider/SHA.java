@@ -63,15 +63,15 @@ public class SHA extends MessageDigest implements Cloneable
 
   public void engineUpdate (byte b)
   {
-    int i = (int)bytecount % 64;
-    int shift = (3 - i % 4) * 8;
+    int i = ((int)bytecount) & 0x3f; //wgs
+    int shift = (3 - i % 4) << 3;
     int idx = i / 4;
 
-    // if you could index ints, this would be: W[idx][shift/8] = b
-    W[idx] = (W[idx] & ~(0xff << shift)) | ((b & 0xff) << shift);
+    i = (int)b;
+    W[idx] = (W[idx] & ~(0xff << shift)) | ((i & 0xff) << shift);
 
     // if we've filled up a block, then process it
-    if ((++ bytecount) % 64 == 0)
+    if (((++bytecount) & 0x3f) == 0)
       munch ();
   }
 
@@ -99,12 +99,12 @@ public class SHA extends MessageDigest implements Cloneable
 
   public byte[] engineDigest ()
   {
-    long bitcount = bytecount * 8;
+    long bitcount = bytecount << 3;
     engineUpdate ((byte)0x80); // 10000000 in binary; the start of the padding
 
     // add the rest of the padding to fill this block out, but leave 8
     // bytes to put in the original bytecount
-    while ((int)bytecount % 64 != 56)
+    while ((bytecount & 0x3f) != 56)
       engineUpdate ((byte)0);
 
     // add the length of the original, unpadded block to the end of

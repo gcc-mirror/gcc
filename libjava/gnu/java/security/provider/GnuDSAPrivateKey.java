@@ -1,5 +1,5 @@
-/* DefaultPolicy.java 
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+/* GnuDSAPrivateKey.java --- Gnu DSA Private Key
+   Copyright (C) 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,29 +35,51 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.security.provider;
 
-import java.security.*;
+import java.math.BigInteger;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAParams;
+import java.security.spec.DSAParameterSpec;
 
-/** 
-  * This is just a stub policy implementation which grants all permissions
-  * to any code source. FIXME: This should be replaced with a real
-  * implementation that reads the policy configuration from a file, like
-  * $JAVA_HOME/jre/lib/security/java.security.
-  */
-public class DefaultPolicy extends Policy
+public class GnuDSAPrivateKey implements DSAPrivateKey
 {
-  static Permission allPermission = new AllPermission();
+  BigInteger x;
+  BigInteger p;
+  BigInteger q;
+  BigInteger g;
 
-  public PermissionCollection getPermissions(CodeSource codesource)
+  public GnuDSAPrivateKey(BigInteger x, BigInteger p, BigInteger q, BigInteger g ) 
   {
-    Permissions perms = new Permissions();
-    perms.add(allPermission);
-    return perms;
+    this.x = x;
+    this.p = p;
+    this.q = q;
+    this.g = g;
   }
-  
-  public void refresh()
+
+  public String getAlgorithm()
   {
-    // Nothing.
+    return "DSA";
+  }
+
+  public String getFormat()
+  {
+    return null;
+  }
+
+  public byte[] getEncoded()
+  {
+    return null;
+  }
+
+  public DSAParams getParams()
+  {
+    return (DSAParams)(new DSAParameterSpec(p,q,g));
+  }
+
+  public BigInteger getX()
+  {
+    return x;
   }
 }
