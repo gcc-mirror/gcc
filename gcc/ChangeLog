@@ -1,5 +1,11 @@
 2001-12-11  Richard Henderson  <rth@redhat.com>
 
+	* emit-rtl.c (widen_memory_access): New.
+	* expr.h (widen_memory_access): Declare it.
+	* config/alpha/alpha.c (get_aligned_mem): Use it.
+
+2001-12-11  Richard Henderson  <rth@redhat.com>
+
 	* combine.c (simplify_shift_const): Move SHIFT_COUNT_TRUNCATED
 	simplification above out of range check.
 
