@@ -1,7 +1,7 @@
 /* PR middle-end/14694 */
 /* { dg-require-alias "" } */
-/* { dg-xfail-if "undefined alias" { "*-*-solaris2.*" } { "*" } { "" } } */
 
+unsigned int _rtld_global;
 extern unsigned int _rtld_local __attribute__ ((alias ("_rtld_global")));
 
 unsigned int
