@@ -1,3 +1,91 @@
+2002-11-23  Mark Wielaard  <mark@klomp.org>
+
+	* javax/naming/AuthenticationException.java: Update copyright header.
+	* javax/naming/AuthenticationNotSupportedException.java: Likewise.
+	* javax/naming/Binding.java: Likewise.
+	* javax/naming/CannotProceedException.java: Likewise.
+	* javax/naming/CommunicationException.java: Likewise.
+	* javax/naming/CompositeName.java: Likewise.
+	* javax/naming/CompoundName.java: Likewise.
+	* javax/naming/ConfigurationException.java: Likewise.
+	* javax/naming/Context.java: Likewise.
+	* javax/naming/ContextNotEmptyException.java: Likewise.
+	* javax/naming/InitialContext.java: Likewise.
+	* javax/naming/InsufficientResourcesException.java: Likewise.
+	* javax/naming/InterruptedNamingException.java: Likewise.
+	* javax/naming/LimitExceededException.java: Likewise.
+	* javax/naming/LinkException.java: Likewise.
+	* javax/naming/LinkLoopException.java: Likewise.
+	* javax/naming/LinkRef.java: Likewise.
+	* javax/naming/MalformedLinkException.java: Likewise.
+	* javax/naming/NameAlreadyBoundException.java: Likewise.
+	* javax/naming/NameClassPair.java: Likewise.
+	* javax/naming/NameNotFoundException.java: Likewise.
+	* javax/naming/NameParser.java: Likewise.
+	* javax/naming/NamingEnumeration.java: Likewise.
+	* javax/naming/NamingSecurityException.java: Likewise.
+	* javax/naming/NoInitialContextException.java: Likewise.
+	* javax/naming/NoPermissionException.java: Likewise.
+	* javax/naming/NotContextException.java: Likewise.
+	* javax/naming/OperationNotSupportedException.java: Likewise.
+	* javax/naming/PartialResultException.java: Likewise.
+	* javax/naming/Reference.java: Likewise.
+	* javax/naming/Referenceable.java: Likewise.
+	* javax/naming/ReferralException.java: Likewise.
+	* javax/naming/ServiceUnavailableException.java: Likewise.
+	* javax/naming/SizeLimitExceededException.java: Likewise.
+	* javax/naming/TimeLimitExceededException.java: Likewise.
+	* javax/naming/directory/Attribute.java: Likewise.
+	* javax/naming/directory/AttributeInUseException.java: Likewise.
+	* javax/naming/directory/AttributeModificationException.java: Likewise.
+	* javax/naming/directory/Attributes.java: Likewise.
+	* javax/naming/directory/BasicAttribute.java: Likewise.
+	* javax/naming/directory/BasicAttributes.java: Likewise.
+	* javax/naming/directory/DirContext.java: Likewise.
+	* javax/naming/directory/InitialDirContext.java: Likewise.
+	* javax/naming/directory/InvalidAttributeIdentifierException.java:
+	Likewise.
+	* javax/naming/directory/InvalidAttributeValueException.java: Likewise.
+	* javax/naming/directory/InvalidAttributesException.java: Likewise.
+	* javax/naming/directory/InvalidSearchControlsException.java: Likewise.
+	* javax/naming/directory/InvalidSearchFilterException.java: Likewise.
+	* javax/naming/directory/ModificationItem.java: Likewise.
+	* javax/naming/directory/NoSuchAttributeException.java: Likewise.
+	* javax/naming/directory/SchemaViolationException.java: Likewise.
+	* javax/naming/directory/SearchControls.java: Likewise.
+	* javax/naming/directory/SearchResult.java: Likewise.
+	* javax/naming/event/EventContext.java: Likewise.
+	* javax/naming/event/EventDirContext.java: Likewise.
+	* javax/naming/event/NamespaceChangeListener.java: Likewise.
+	* javax/naming/event/NamingEvent.java: Likewise.
+	* javax/naming/event/NamingExceptionEvent.java: Likewise.
+	* javax/naming/event/NamingListener.java: Likewise.
+	* javax/naming/event/ObjectChangeListener.java: Likewise.
+	* javax/naming/ldap/Control.java: Likewise.
+	* javax/naming/ldap/ControlFactory.java: Likewise.
+	* javax/naming/ldap/ExtendedRequest.java: Likewise.
+	* javax/naming/ldap/ExtendedResponse.java: Likewise.
+	* javax/naming/ldap/HasControls.java: Likewise.
+	* javax/naming/ldap/InitialLdapContext.java: Likewise.
+	* javax/naming/ldap/LdapContext.java: Likewise.
+	* javax/naming/ldap/LdapReferralException.java: Likewise.
+	* javax/naming/ldap/UnsolicitedNotification.java: Likewise.
+	* javax/naming/ldap/UnsolicitedNotificationEvent.java: Likewise.
+	* javax/naming/ldap/UnsolicitedNotificationListener.java: Likewise.
+	* javax/naming/spi/DirObjectFactory.java: Likewise.
+	* javax/naming/spi/DirStateFactory.java: Likewise.
+	* javax/naming/spi/DirectoryManager.java: Likewise.
+	* javax/naming/spi/InitialContextFactory.java: Likewise.
+	* javax/naming/spi/InitialContextFactoryBuilder.java: Likewise.
+	* javax/naming/spi/NamingManager.java: Likewise.
+	* javax/naming/spi/ObjectFactory.java: Likewise.
+	* javax/naming/spi/ObjectFactoryBuilder.java: Likewise.
+	* javax/naming/spi/ResolveResult.java: Likewise.
+	* javax/naming/spi/Resolver.java: Likewise.
+	* javax/naming/spi/StateFactory.java: Likewise.
+
+	* javax/naming/spi/NamingManager.java (ofb): Package private.
+
 2002-11-21  Mark Wielaard  <mark@klomp.org>
 
 	* java/net/URL.java: Merge with Classpath (partly).
