@@ -5591,6 +5591,12 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 	      || need_stable_sp))
 	return 0;
 
+#ifdef NON_SAVING_SETJMP 
+      if (NON_SAVING_SETJMP && GET_CODE (p) == NOTE
+	  && NOTE_LINE_NUMBER (p) == NOTE_INSN_SETJMP)
+	return 0;
+#endif
+
 #ifdef INSN_CLOBBERS_REGNO_P
       if ((valueno >= 0 && valueno < FIRST_PSEUDO_REGISTER
 	  && INSN_CLOBBERS_REGNO_P (p, valueno))
