@@ -1,6 +1,8 @@
 /* Demangler for IA64 / g++ standard C++ ABI.
-   Copyright (C) 2000 CodeSourcery LLC.
+   Copyright (C) 2000 Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>. 
+
+   This file is part of GNU CC.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
