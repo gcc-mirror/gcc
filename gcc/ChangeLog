@@ -1,3 +1,8 @@
+2004-09-09  Steve Ellcey  <sje@cup.hp.com>
+
+	* genrecog.c (compute_predicate_codes): Use op0_codes
+	instead of codes.
+
 2004-09-09  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* ra-colorize.c (hardregset_to_string): Adapt to HARD_REG_SET
