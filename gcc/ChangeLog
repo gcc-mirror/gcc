@@ -1,3 +1,16 @@
+2003-12-04  J"orn Rennecke <joern.rennecke@superh.com>
+
+	PR optimization/13260
+	* sh-protos.h (sh_expand_t_scc): Declare.
+	* sh.h (PREDICATE_CODES): Add cmpsi_operand.
+	* sh.c (cmpsi_operand, sh_expand_t_scc): New functions.
+	* sh.md (cmpsi): Use cmpsi_operand.  If T_REG is compared to
+	something that is not a CONST_INT, copy it into a pseudo register.
+	(subc): Fix description of new T value.
+	(slt, sgt, sge, sgtu): Don't clobber T after rtl generation is over.
+	(sltu, sleu, sgeu): Likewise.
+	(seq, sne): Likewise. Use sh_expand_t_scc.
+
 2003-12-04  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Generalize the CONFIG_HEADERS pattern under which
