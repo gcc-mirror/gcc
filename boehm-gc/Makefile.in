@@ -99,7 +99,7 @@ MULTISUBDIR =
 MULTIDO = true
 MULTICLEAN = true
 @USE_LIBDIR_TRUE@toolexeclibdir = \
-@USE_LIBDIR_TRUE@$(libdir)
+@USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
 @USE_LIBDIR_FALSE@toolexeclibdir = \
 @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
 @USE_LIBDIR_FALSE@toolexecdir = \

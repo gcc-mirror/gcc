@@ -1,3 +1,14 @@
+Mon Aug  9 18:33:38 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (toolexeclibdir): Add $(MULTISUBDIR) even for native
+	builds.
+
+	* configure: Rebuilt.
+	* configure.in: Properly align --help output, fix capitalization
+	and punctuation.
+	* acinclude.m4: Likewise.
+
 1999-08-04  Tom Tromey  <tromey@cygnus.com>
 
 	* configure.in: Added missing `;;'.  From Anthony Green.
