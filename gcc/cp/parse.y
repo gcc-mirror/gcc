@@ -816,11 +816,19 @@ fn.def1:
 		    YYERROR1; }
 	;
 
+/* ANSI allows optional parentheses around constructor class names.
+   See ISO/IEC 14882:1998(E) 12.1.  */
+
 component_constructor_declarator:
-	  SELFNAME '(' parmlist ')' cv_qualifiers exception_specification_opt
-		{ $$ = make_call_declarator ($1, $3, $5, $6); }
-	| SELFNAME LEFT_RIGHT cv_qualifiers exception_specification_opt
-		{ $$ = make_call_declarator ($1, empty_parms (), $3, $4); }
+          SELFNAME '(' parmlist ')' cv_qualifiers exception_specification_opt
+                { $$ = make_call_declarator ($1, $3, $5, $6); }
+        | '(' SELFNAME ')' '(' parmlist ')' cv_qualifiers
+                exception_specification_opt
+                { $$ = make_call_declarator ($2, $5, $7, $8); }
+        | SELFNAME LEFT_RIGHT cv_qualifiers exception_specification_opt
+                { $$ = make_call_declarator ($1, empty_parms (), $3, $4); }
+        | '(' SELFNAME ')' LEFT_RIGHT cv_qualifiers exception_specification_opt
+                { $$ = make_call_declarator ($2, empty_parms (), $5, $6); }
 	| self_template_type '(' parmlist ')' cv_qualifiers exception_specification_opt
 		{ $$ = make_call_declarator ($1, $3, $5, $6); }
 	| self_template_type LEFT_RIGHT cv_qualifiers exception_specification_opt

@@ -1,3 +1,8 @@
+2001-02-08  Aldy Hernandez  <aldyh@redhat.com>
+
+        * cp/parse.y (component_constructor_declarator): allow optional
+        parenthesess around constructor class name.
+
 2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (setup_vtbl_ptr): Move prototype to semantics.c
