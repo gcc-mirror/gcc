@@ -4619,7 +4619,7 @@ make_typename_type (context, name)
     my_friendly_abort (2000);
 
   if (! uses_template_parms (context)
-      || context == current_class_type)
+      || currently_open_class (context))
     {
       if (TREE_CODE (fullname) == TEMPLATE_ID_EXPR)
 	{
@@ -4797,7 +4797,10 @@ lookup_name_real (name, prefer_type, nonclass)
   locval = classval = NULL_TREE;
 
   if (!current_binding_level->namespace_p
-      && IDENTIFIER_LOCAL_VALUE (name))
+      && IDENTIFIER_LOCAL_VALUE (name)
+      /* Kludge to avoid infinite recursion with identifier_type_value.  */
+      && (prefer_type <= 0
+          || TREE_CODE (IDENTIFIER_LOCAL_VALUE (name)) == TYPE_DECL))
     locval = IDENTIFIER_LOCAL_VALUE (name);
 
   /* In C++ class fields are between local and global scope,
@@ -4908,7 +4911,7 @@ lookup_name_real (name, prefer_type, nonclass)
 	  || TREE_CODE (val) == TYPE_DECL || prefer_type <= 0)
 	;
       /* Caller wants a class-or-namespace-name. */
-      else if(prefer_type == 1 && TREE_CODE (val) == NAMESPACE_DECL)
+      else if (prefer_type == 1 && TREE_CODE (val) == NAMESPACE_DECL)
 	;
       else if (IDENTIFIER_HAS_TYPE_VALUE (name))
 	val = TYPE_MAIN_DECL (IDENTIFIER_TYPE_VALUE (name));
