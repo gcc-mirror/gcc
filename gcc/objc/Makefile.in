@@ -52,7 +52,7 @@ all:
 	cd ..; $(MAKE) sublibobjc.a
 
 OBJC_O = hash.o sarray.o class.o sendmsg.o init.o archive.o \
-         selctor.o objects.o misc.o Object.o Protocol.o
+         selector.o objects.o misc.o Object.o Protocol.o
 
 libobjc.a: $(OBJC_O)
 	-rm -f libobjc.a
