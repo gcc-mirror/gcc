@@ -1,3 +1,6 @@
+/* Define if your cpp understands the stringify operator.  */
+#undef HAVE_CPP_STRINGIFY
+
 /* Define if you have a working <inttypes.h> header file.  */
 #undef HAVE_INTTYPES_H
 

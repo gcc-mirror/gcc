@@ -35,7 +35,7 @@ struct rtx_definition
   const char *enumname, *name, *format;
 };
 
-#ifdef __STDC__
+#if defined(HAVE_CPP_STRINGIFY) || (defined(__GNUC__) && defined(__STDC__))
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS) { # ENUM, NAME, FORMAT },
 #else
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS) { "ENUM", NAME, FORMAT },
