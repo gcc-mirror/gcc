@@ -1,3 +1,23 @@
+2000-05-28  Neil Booth  <NeilB@earthling.net>
+
+	* cppexp.c (parse_assertion): Supply extra argument to
+	_cpp_init_toklist.
+	* cpplib.c (do_assert, do_unassert): Similarly.
+	* cpphash.h (_cpp_init_toklist) Update.
+	(_cpp_expand_token_space): New.
+	(DUMMY_TOKEN, NO_DUMMY_TOKEN): New.
+	* cpplex.c (_cpp_init_toklist): New argument.
+	(parse_string2): New argument multiline_ok.
+	(spell_token): Take a const cpp_token *.
+	(INIT_NAME): Replace with INIT_TOKEN_NAME.  Update tokens_used.
+	(SPELL_ macros): Replace with enum.
+	(expand_token_space): Replace with _cpp_expand_token_space.
+	Take COUNT argument.
+	(IS_DIRECTIVE): Update.
+	(_cpp_lex_line): Update token structure before parsing number.
+	Don't assume start at beginning of token list.
+	(save_comment): Use INIT_TOKEN_NAME.
+
 2000-05-27  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* configure.in (stage1_warn_cflags): Add -Wstrict-prototypes

@@ -54,7 +54,6 @@ static void output_line_command	PARAMS ((cpp_reader *, cpp_printer *,
 static void bump_column		PARAMS ((cpp_printer *, unsigned int,
 					 unsigned int));
 static void expand_name_space   PARAMS ((cpp_toklist *, unsigned int));
-static void expand_token_space	PARAMS ((cpp_toklist *));
 static void pedantic_whitespace	PARAMS ((cpp_reader *, U_CHAR *,
 					 unsigned int));
 
@@ -75,7 +74,7 @@ static void skip_whitespace PARAMS ((cpp_reader *, int));
 static void parse_name PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *));
 static void parse_number PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *));
 static void parse_string2 PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *,
-				  unsigned int));
+				  unsigned int, int));
 static int trigraph_ok PARAMS ((cpp_reader *, const unsigned char *));
 static void save_comment PARAMS ((cpp_toklist *, const unsigned char *,
 				  unsigned int, unsigned int, unsigned int));
@@ -83,18 +82,18 @@ void _cpp_lex_line PARAMS ((cpp_reader *, cpp_toklist *));
 
 static void _cpp_output_list PARAMS ((cpp_reader *, cpp_toklist *));
 
-static unsigned char * spell_token PARAMS ((cpp_reader *, cpp_token *,
+static unsigned char * spell_token PARAMS ((cpp_reader *, const cpp_token *,
 					    unsigned char *, int));
 
 typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
 					  cpp_token *));
 
 /* Macros on a cpp_name.  */
-#define INIT_NAME(list, name) \
-  do {(name).len = 0; \
-      (name).text = (list)->namebuf + (list)->name_used;} while (0)
-
-#define IS_DIRECTIVE(list) (TOK_TYPE (list, 0) == CPP_HASH)
+#define INIT_TOKEN_NAME(list, token) \
+  do {(token)->val.name.len = 0; \
+      (token)->val.name.text = (list)->namebuf + (list)->name_used; \
+      (list)->tokens_used = token - (list)->tokens + 1; \
+  } while (0)
 
 /* Maybe put these in the ISTABLE eventually.  */
 #define IS_HSPACE(c) ((c) == ' ' || (c) == '\t')
@@ -128,11 +127,14 @@ typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
 
 /* Order here matters.  Those beyond SPELL_NONE store their spelling
    in the token list, and it's length in the token->val.name.len.  */
-#define SPELL_OPERATOR 0
-#define SPELL_CHAR     2	/* FIXME: revert order after transition. */
-#define SPELL_NONE     1
-#define SPELL_IDENT    3
-#define SPELL_STRING   4
+enum spell_type
+{
+  SPELL_OPERATOR = 0,
+  SPELL_NONE,
+  SPELL_CHAR,    /* FIXME: revert order of NONE and CHAR after transition. */
+  SPELL_IDENT,
+  SPELL_STRING
+};
 
 #define T(e, s) {SPELL_OPERATOR, (const U_CHAR *) s},
 #define I(e, s) {SPELL_IDENT, s},
@@ -142,7 +144,7 @@ typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
 
 static const struct token_spelling
 {
-  U_CHAR type;
+  ENUM_BITFIELD(spell_type) type : CHAR_BIT;
   const U_CHAR *spelling;
 } token_spellings [N_TTYPES + 1] = {TTYPE_TABLE {0, 0} };
 
@@ -518,7 +520,8 @@ cpp_file_buffer (pfile)
 
 /* Token-buffer helper functions.  */
 
-/* Expand a token list's string space.  */
+/* Expand a token list's string space. It is *vital* that
+   list->tokens_used is correct, to get pointer fix-up right.  */
 static void
 expand_name_space (list, len)
      cpp_toklist *list;
@@ -542,43 +545,64 @@ expand_name_space (list, len)
 }
 
 /* Expand the number of tokens in a list.  */
-static void
-expand_token_space (list)
+void
+_cpp_expand_token_space (list, count)
      cpp_toklist *list;
+     unsigned int count;
 {
-  list->tokens_cap *= 2;
+  unsigned int n;
+
+  list->tokens_cap += count;
+  n = list->tokens_cap;
   if (list->flags & LIST_OFFSET)
-    list->tokens--;
+    list->tokens--, n++;
   list->tokens = (cpp_token *)
-    xrealloc (list->tokens, (list->tokens_cap + 1) * sizeof (cpp_token));
+    xrealloc (list->tokens, n * sizeof (cpp_token));
   if (list->flags & LIST_OFFSET)
     list->tokens++;		/* Skip the dummy.  */
 }
 
-/* Initialize a token list.  We allocate an extra token in front of
-   the token list, as this allows us to always peek at the previous
-   token without worrying about underflowing the list.  */
+/* Initialize a token list.  If flags is DUMMY_TOKEN, we allocate
+   an extra token in front of the token list, as this allows the lexer
+   to always peek at the previous token without worrying about
+   underflowing the list, and some initial space.  Otherwise, no
+   token- or name-space is allocated, and there is no dummy token.  */
 void
-_cpp_init_toklist (list)
+_cpp_init_toklist (list, flags)
      cpp_toklist *list;
+     int flags;
 {
-  /* Initialize token space.  Put a dummy token before the start
-     that will fail matches.  */
-  list->tokens_cap = 256;	/* 4K's worth.  */
-  list->tokens = (cpp_token *)
-    xmalloc ((list->tokens_cap + 1) * sizeof (cpp_token));
-  list->tokens[0].type = CPP_EOF;
-  list->tokens++;
+  /* We malloc zero bytes because we may want to realloc later, and
+     some old implementations don't like realloc-ing a null pointer.  */
+  if (flags == NO_DUMMY_TOKEN)
+    {
+      list->tokens_cap = 0;
+      list->tokens = (cpp_token *) malloc (0);
+      list->name_cap = 0;
+      list->flags = 0;
+    }
+  else
+    {
+      /* Initialize token space.  Put a dummy token before the start
+	 that will fail matches.  */
+      list->tokens_cap = 256;	/* 4K's worth.  */
+      list->tokens = (cpp_token *)
+	xmalloc ((list->tokens_cap + 1) * sizeof (cpp_token));
+      list->tokens[0].type = CPP_EOF;
+      list->tokens++;
 
-  /* Initialize name space.  */
-  list->name_cap = 1024;
+      /* Initialize name space.  */
+      list->name_cap = 1024;
+      list->flags = LIST_OFFSET;
+    }
+
+  /* Allocate name space.  */
   list->namebuf = (unsigned char *) xmalloc (list->name_cap);
 
   /* Only create a comment space on demand.  */
   list->comments_cap = 0;
   list->comments = 0;
 
-  list->flags = LIST_OFFSET;
   _cpp_clear_toklist (list);
 }
 
@@ -777,7 +801,7 @@ _cpp_scan_until (pfile, list, stop)
 	continue;
 
       if (list->tokens_used >= list->tokens_cap)
-	expand_token_space (list);
+	_cpp_expand_token_space (list, 256);
       if (list->name_used + len >= list->name_cap)
 	expand_name_space (list, list->name_used + len + 1 - list->name_cap);
 
@@ -2194,7 +2218,7 @@ _cpp_init_input_buffer (pfile)
   U_CHAR *tmp;
 
   init_chartab ();
-  _cpp_init_toklist (&pfile->directbuf);
+  _cpp_init_toklist (&pfile->directbuf, NO_DUMMY_TOKEN);
 
   /* Determine the appropriate size for the input buffer.  Normal C
      source files are smaller than eight K.  */
@@ -2702,11 +2726,12 @@ parse_number (pfile, list, name)
    allowed, except for within directives.  */
 
 static void
-parse_string2 (pfile, list, name, terminator)
+parse_string2 (pfile, list, name, terminator, multiline_ok)
      cpp_reader *pfile;
      cpp_toklist *list;
      cpp_name *name;
      unsigned int terminator;
+     int multiline_ok;
 {
   cpp_buffer *buffer = pfile->buffer;
   register const unsigned char *cur = buffer->cur;
@@ -2766,7 +2791,7 @@ parse_string2 (pfile, list, name, terminator)
 		 extend over multiple lines.  In Standard C, neither
 		 may strings.  We accept multiline strings as an
 		 extension, but not in directives.  */
-	      if (terminator != '"' || IS_DIRECTIVE (list))
+	      if (!multiline_ok)
 		goto unterminated;
 		
 	      cur++;  /* Move forwards again.  */
@@ -2857,14 +2882,16 @@ save_comment (list, from, len, tok_no, type)
   if (list->name_used + len > list->name_cap)
     expand_name_space (list, len);
 
-  buffer = list->namebuf + list->name_used;
-
   comment = &list->comments[list->comments_used++];
+  INIT_TOKEN_NAME (list, comment);
   comment->type = CPP_COMMENT;
   comment->aux = tok_no;
   comment->val.name.len = len;
-  comment->val.name.text = buffer;
 
+  buffer = list->namebuf + list->name_used;
+  list->name_used += len;
+
+  /* Copy the comment.  */
   if (type == '*')
     {
       *buffer++ = '/';
@@ -2875,9 +2902,7 @@ save_comment (list, from, len, tok_no, type)
       *buffer++ = type;
       *buffer++ = type;
     }
-
   memcpy (buffer, from, len - COMMENT_START_LEN);
-  list->name_used += len;
 }
 
 /*
@@ -2894,6 +2919,8 @@ save_comment (list, from, len, tok_no, type)
  *  even when enabled.
  */
 
+#define IS_DIRECTIVE() (list->tokens[first_token].type == CPP_HASH)
+
 void
 _cpp_lex_line (pfile, list)
      cpp_reader *pfile;
@@ -2903,6 +2930,7 @@ _cpp_lex_line (pfile, list)
   cpp_buffer *buffer = pfile->buffer;
   register const unsigned char *cur = buffer->cur;
   unsigned char flags = 0;
+  unsigned int first_token = list->tokens_used;
 
   pfile->col_adjust = 0;
  expanded:
@@ -2920,7 +2948,7 @@ _cpp_lex_line (pfile, list)
 	{
 	  /* Step back to get the null warning and tab correction.  */
 	  buffer->cur = cur - 1;
-	  skip_whitespace (pfile, IS_DIRECTIVE (list));
+	  skip_whitespace (pfile, IS_DIRECTIVE ());
 	  cur = buffer->cur;
 
 	  flags = PREV_WHITESPACE;
@@ -2938,27 +2966,31 @@ _cpp_lex_line (pfile, list)
 	{
 	case '0': case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8': case '9':
-	  cur--;		/* Backup character.  */
-	  if (PREV_TOKEN_TYPE == CPP_DOT && IMMED_TOKEN ())
-	    {
-	      /* Prepend an immediately previous CPP_DOT token.  */
+	  {
+	    int prev_dot;
+
+	    cur--;		/* Backup character.  */
+	    prev_dot = PREV_TOKEN_TYPE == CPP_DOT && IMMED_TOKEN ();
+	    if (prev_dot)
 	      cur_token--;
-	      if (list->name_cap == list->name_used)
-		auto_expand_name_space (list);
+	    INIT_TOKEN_NAME (list, cur_token);
+	    /* Prepend an immediately previous CPP_DOT token.  */
+	    if (prev_dot)
+	      {
+		if (list->name_cap == list->name_used)
+		  auto_expand_name_space (list);
 
-	      cur_token->val.name.len = 1;
-	      cur_token->val.name.text = list->namebuf + list->name_used;
-	      list->namebuf[list->name_used++] = '.';
-	    }
-	  else
-	    INIT_NAME (list, cur_token->val.name);
+		cur_token->val.name.len = 1;
+		list->namebuf[list->name_used++] = '.';
+	      }
 
-	continue_number:
-	  buffer->cur = cur;
-	  parse_number (pfile, list, &cur_token->val.name);
-	  cur = buffer->cur;
-
-	  PUSH_TOKEN (CPP_NUMBER); /* Number not yet interpreted.  */
+	  continue_number:
+	    cur_token->type = CPP_NUMBER; /* Before parse_number.  */
+	    buffer->cur = cur;
+	    parse_number (pfile, list, &cur_token->val.name);
+	    cur = buffer->cur;
+	    cur_token++;
+	  }
 	  break;
 
 	letter:
@@ -2974,7 +3006,7 @@ _cpp_lex_line (pfile, list)
 	case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
 	case 'Y': case 'Z':
 	  cur--;		     /* Backup character.  */
-	  INIT_NAME (list, cur_token->val.name);
+	  INIT_TOKEN_NAME (list, cur_token);
 	  cur_token->type = CPP_NAME; /* Identifier, macro etc.  */
 
 	continue_name:
@@ -2983,7 +3015,7 @@ _cpp_lex_line (pfile, list)
 	  cur = buffer->cur;
 
 	  /* Find handler for newly created / extended directive.  */
-	  if (IS_DIRECTIVE (list) && cur_token == &list->tokens[1])
+	  if (IS_DIRECTIVE () && cur_token == &list->tokens[first_token + 1])
 	    _cpp_check_directive (list, cur_token);
 	  cur_token++;
 	  break;
@@ -3005,9 +3037,10 @@ _cpp_lex_line (pfile, list)
 
 	do_parse_string:
 	  /* Here c is one of ' " or >.  */
-	  INIT_NAME (list, cur_token->val.name);
+	  INIT_TOKEN_NAME (list, cur_token);
 	  buffer->cur = cur;
-	  parse_string2 (pfile, list, &cur_token->val.name, c);
+	  parse_string2 (pfile, list, &cur_token->val.name, c,
+			 c == '"' && !IS_DIRECTIVE());
 	  cur = buffer->cur;
 	  cur_token++;
 	  break;
@@ -3325,14 +3358,14 @@ _cpp_lex_line (pfile, list)
   if (cur_token == token_limit)
     {
       list->tokens_used = cur_token - list->tokens;
-      expand_token_space (list);
+      _cpp_expand_token_space (list, 256);
       goto expanded;
     }
 
   cur_token->type = CPP_EOF;
   cur_token->flags = flags;
 
-  if (cur_token != &list->tokens[0])
+  if (cur_token != &list->tokens[first_token])
     {
       /* Next call back will get just a CPP_EOF.  */
       buffer->cur = cur;
@@ -3369,7 +3402,7 @@ _cpp_lex_line (pfile, list)
 static unsigned char *
 spell_token (pfile, token, buffer, whitespace)
      cpp_reader *pfile;		/* Would be nice to be rid of this...  */
-     cpp_token *token;
+     const cpp_token *token;
      unsigned char *buffer;
      int whitespace;
 {
@@ -3438,7 +3471,7 @@ _cpp_lex_file (pfile)
 
   init_trigraph_map ();
   list = (cpp_toklist *) xmalloc (sizeof (cpp_toklist));
-  _cpp_init_toklist (list);
+  _cpp_init_toklist (list, DUMMY_TOKEN);
 
   for (;;)
     {

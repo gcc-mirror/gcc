@@ -1550,7 +1550,7 @@ do_assert (pfile)
     ERROR ("missing token-sequence in #assert");
 
   pred = (struct predicate *) xmalloc (sizeof (struct predicate));
-  _cpp_init_toklist (&pred->answer);
+  _cpp_init_toklist (&pred->answer, NO_DUMMY_TOKEN);
 
   if (_cpp_scan_until (pfile, &pred->answer, CPP_CLOSE_PAREN)
       != CPP_CLOSE_PAREN)
@@ -1626,7 +1626,7 @@ do_unassert (pfile)
   if (type == CPP_OPEN_PAREN)
     {
       specific = 1;
-      _cpp_init_toklist (&ans);
+      _cpp_init_toklist (&ans, NO_DUMMY_TOKEN);
 
       if (_cpp_scan_until (pfile, &ans, CPP_CLOSE_PAREN)
 	  != CPP_CLOSE_PAREN)

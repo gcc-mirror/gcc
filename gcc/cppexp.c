@@ -423,7 +423,7 @@ parse_assertion (pfile)
       if (_cpp_get_directive_token (pfile) != CPP_OPEN_PAREN)
 	CPP_ICE ("impossible token, expecting ( in parse_assertion");
 
-      _cpp_init_toklist (&query);
+      _cpp_init_toklist (&query, NO_DUMMY_TOKEN);
       specific = 1;
       if (_cpp_scan_until (pfile, &query, CPP_CLOSE_PAREN) != CPP_CLOSE_PAREN)
 	SYNTAX_ERROR ("missing close paren on assertion answer");

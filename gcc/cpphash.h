@@ -218,6 +218,10 @@ extern unsigned char _cpp_IStable[256];
 #define ADJACENT_TO_MARK(PFILE) \
  (CPP_BUFFER(PFILE)->cur - CPP_BUFFER(PFILE)->mark == 1)
 
+/* Flags for _cpp_init_toklist.  */
+#define DUMMY_TOKEN     0
+#define NO_DUMMY_TOKEN	1
+
 /* In cpphash.c */
 extern unsigned int _cpp_calc_hash	PARAMS ((const U_CHAR *, size_t));
 extern HASHNODE *_cpp_lookup		PARAMS ((cpp_reader *,
@@ -260,7 +264,7 @@ extern enum cpp_ttype _cpp_get_define_token
 					PARAMS ((cpp_reader *));
 extern enum cpp_ttype _cpp_scan_until	PARAMS ((cpp_reader *, cpp_toklist *,
 						 enum cpp_ttype));
-extern void _cpp_init_toklist		PARAMS ((cpp_toklist *));
+extern void _cpp_init_toklist		PARAMS ((cpp_toklist *, int));
 extern void _cpp_clear_toklist		PARAMS ((cpp_toklist *));
 extern void _cpp_free_toklist		PARAMS ((cpp_toklist *));
 extern void _cpp_slice_toklist		PARAMS ((cpp_toklist *,
@@ -271,7 +275,7 @@ extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
 						 const cpp_token *));
 extern int _cpp_equiv_toklists		PARAMS ((const cpp_toklist *,
 						 const cpp_toklist *));
-
+extern void _cpp_expand_token_space	PARAMS ((cpp_toklist *, unsigned int));
 
 /* In cpplib.c */
 extern int _cpp_handle_directive	PARAMS ((cpp_reader *));
