@@ -1,3 +1,8 @@
+2004-09-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* parse.y (patch_anonymous_class): VEC_space returns true if there
+	is space.
+
 2004-09-21  Matt Austern  <austern@apple.com>
 
 	Fix bootstrap.

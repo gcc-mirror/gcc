@@ -3904,7 +3904,7 @@ patch_anonymous_class (tree type_decl, tree class_decl, tree wfl)
       if (parser_check_super_interface (type_decl, class_decl, wfl))
 	return;
 
-      if (VEC_space (tree, BINFO_BASE_BINFOS (binfo), 1))
+      if (!VEC_space (tree, BINFO_BASE_BINFOS (binfo), 1))
 	{
 	   /* Extend the binfo - by reallocating and copying it. */
 	  tree new_binfo;
