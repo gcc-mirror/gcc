@@ -1,4 +1,5 @@
 // { dg-do link }
+// { dg-options "-O2" }
 
 class Foo {
 public:

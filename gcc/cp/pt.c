@@ -3310,37 +3310,23 @@ fold_non_dependent_expr (tree expr)
    For instance, it could be a VAR_DECL with a constant initializer.
    Extract the innest constant expression.
    
-   This is basically a more powerful version of decl_constant_value, which
-   can be used also in templates where initializers can maintain a
-   syntactic rather than semantic form (even if they are non-dependent, for
-   access-checking purposes).  */
+   This is basically a more powerful version of
+   integral_constant_value, which can be used also in templates where
+   initializers can maintain a syntactic rather than semantic form
+   (even if they are non-dependent, for access-checking purposes).  */
 
 tree
 fold_decl_constant_value (tree expr)
 {
   while (true)
     {
-      tree const_expr = decl_constant_value (expr);
-      /* In a template, the initializer for a VAR_DECL may not be
-	 marked as TREE_CONSTANT, in which case decl_constant_value
-	 will not return the initializer.  Handle that special case
-	 here.  */
-      if (expr == const_expr
-	  && TREE_CODE (expr) == VAR_DECL
-	  && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (expr)
-	  && CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (expr))
-	  /* DECL_INITIAL can be NULL if we are processing a
-	     variable initialized to an expression involving itself.
-	     We know it is initialized to a constant -- but not what
-	     constant, yet.  */
-	  && DECL_INITIAL (expr))
-	const_expr = DECL_INITIAL (expr);
+      tree const_expr = integral_constant_value (expr);
       if (expr == const_expr)
 	break;
       expr = fold_non_dependent_expr (const_expr);
     }
 
-    return expr;
+  return expr;
 }
 
 /* Subroutine of convert_nontype_argument. Converts EXPR to TYPE, which
@@ -6985,7 +6971,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	   in that we want to fold it as much as possible.  */
 	max = tsubst_template_arg (omax, args, complain, in_decl);
 	if (!processing_template_decl)
-	  max = decl_constant_value (max);
+	  max = integral_constant_value (max);
 
 	if (integer_zerop (omax))
 	  {
@@ -7688,7 +7674,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  return t;
 	/* If ARGS is NULL, then T is known to be non-dependent.  */
 	if (args == NULL_TREE)
-	  return decl_constant_value (t);
+	  return integral_constant_value (t);
 
 	/* Unfortunately, we cannot just call lookup_name here.
 	   Consider:
@@ -10316,7 +10302,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
     case CONST_DECL:
       if (DECL_TEMPLATE_PARM_P (parm))
 	return unify (tparms, targs, DECL_INITIAL (parm), arg, strict);
-      if (arg != decl_constant_value (parm)) 
+      if (arg != integral_constant_value (parm)) 
 	return 1;
       return 0;
 

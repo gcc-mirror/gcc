@@ -428,8 +428,7 @@ null_ptr_cst_p (tree t)
 
      A null pointer constant is an integral constant expression
      (_expr.const_) rvalue of integer type that evaluates to zero.  */
-  if (DECL_INTEGRAL_CONSTANT_VAR_P (t))
-    t = decl_constant_value (t);
+  t = integral_constant_value (t);
   if (t == null_node
       || (CP_INTEGRAL_TYPE_P (TREE_TYPE (t)) && integer_zerop (t)))
     return true;
@@ -4227,12 +4226,11 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     case ck_identity:
       if (type_unknown_p (expr))
 	expr = instantiate_type (totype, expr, tf_error | tf_warning);
-      /* Convert a non-array constant variable to its underlying value, unless we
-	 are about to bind it to a reference, in which case we need to
+      /* Convert a constant to its underlying value, unless we are
+	 about to bind it to a reference, in which case we need to
 	 leave it as an lvalue.  */
-      if (inner >= 0
-	  && TREE_CODE (TREE_TYPE (expr)) != ARRAY_TYPE)
-	expr = decl_constant_value (expr);
+      if (inner >= 0)
+	expr = integral_constant_value (expr);
       if (convs->check_copy_constructor_p)
 	check_constructor_callable (totype, expr);
       return expr;

@@ -4853,6 +4853,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	  && !DECL_PRETTY_FUNCTION_P (decl)
 	  && !dependent_type_p (TREE_TYPE (decl)))
 	maybe_deduce_size_from_array_init (decl, init);
+      
       goto finish_end;
     }
 
@@ -6207,7 +6208,7 @@ compute_array_index_type (tree name, tree size)
   STRIP_TYPE_NOPS (size);
 
   /* It might be a const variable or enumeration constant.  */
-  size = decl_constant_value (size);
+  size = integral_constant_value (size);
 
   /* Normally, the array-bound will be a constant.  */
   if (TREE_CODE (size) == INTEGER_CST)
@@ -9792,7 +9793,7 @@ build_enumerator (tree name, tree value, tree enumtype)
       /* Validate and default VALUE.  */
       if (value != NULL_TREE)
 	{
-	  value = decl_constant_value (value);
+	  value = integral_constant_value (value);
 
 	  if (TREE_CODE (value) == INTEGER_CST)
 	    {

@@ -2613,10 +2613,7 @@ check_bitfield_decl (tree field)
       STRIP_NOPS (w);
 
       /* detect invalid field size.  */
-      if (TREE_CODE (w) == CONST_DECL)
-	w = DECL_INITIAL (w);
-      else
-	w = decl_constant_value (w);
+      w = integral_constant_value (w);
 
       if (TREE_CODE (w) != INTEGER_CST)
 	{

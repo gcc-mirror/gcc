@@ -1,3 +1,30 @@
+2004-12-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/18905
+	* cp-tree.h (integral_constant_value): Declare.
+	* call.c (null_ptr_cst_p): Use integral_constant_value, not
+	decl_constant_value.
+	(convert_like_real): Likewise.
+	* class.c (check_bitfield_decl): Likewise.
+	* cvt.c (ocp_convert): Likewise.
+	(convert): Remove unnecessary decl_constant_value call.
+	* decl.c (compute_array_index_type): Use integral_constant_value,
+	not decl_constant_value.
+	(build_enumerator): Likewise.
+	* decl2.c (grokfield): Likewise.
+	* init.c (decl_constant_value): Simplify.
+	(integral_constant_value): New.
+	* pt.c (fold_decl_constant_value): Use integral_constant_value,
+	remove subsequent check.
+	(tsubst): Use integral_constant_value, not decl_constant_value.
+	(tsubst_copy, unify): Likewise.
+	* typeck.c (decay_conversion): Likewise.
+	(build_compound_expr): Remove unnecessary decl_constant_value
+	calls.
+	(build_static_cast_1, build_reinterpret_cast_1):
+	(convert_for_assignment): Remove comment about not calling
+	decl_constant_value.
+
 2004-12-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/18825
