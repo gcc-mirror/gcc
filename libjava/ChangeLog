@@ -1,3 +1,40 @@
+2002-11-21  Michael Koch <konqueror@gmx.de>
+
+	* include/posix.h
+	(_Jv_socket): New method.
+	(_Jv_connect): New method.
+	(_Jv_close): New method.
+	(_Jv_platform_close_on_exec): Prefixed system function with "::".
+	(_Jv_bind): New method.
+	(_Jv_listen): New method.
+	(_Jv_write): New method.
+	(_Jv_read): New method.
+	* include/win32.h
+	(_Jv_socket): New method.
+	(_Jv_connect): New method.
+	(_Jv_close): New method.
+	(_Jv_bind): New method.
+	(_Jv_listen): New method.
+	(_Jv_write): New method.
+	(_Jv_read): New method.
+	* java/net/natNetworkInterface.cc:
+	Include platform.h, removed inclusion of socket.h
+	(getRealNetworkInterfaces): Replaced ::socket() by _Jv_socket() and
+	::close() by _Jv_close().
+	* java/net/natPlainDatagramSocketImpl.cc:
+	Removed include of socket.h, definition of NATIVE_CLOSE and _Jv_bind,
+	added some new lines to make code more readable.
+	(create): Replaced ::socket() by _Jv_socket().
+	(close): Replaced NATIVE_CLOSE() by _Jv_close().
+	* java/net/natPlainSocketImpl.cc:
+	Removed definition of NATIVE_CLOSE, _Jv_bind, Jv_connect and _Jv_accept,
+	removed include of socket.h, removed some windows defines
+	(now in include/win32.h).
+	(create): Replaced ::socket() by _Jv_socket().
+	(close): Replaced NATIVE_CLOSE() by _Jv_close().
+	(write): Replaced ::read by _Jv_write().
+	(read): Replaced ::read by _Jv_read().
+
 2002-11-20  Michael Koch <konqueror@gmx.de>
 
 	* Makefile.am (ordinary_java_source_files):
