@@ -51,8 +51,9 @@ start_l:
 
 	! arrange for exit to call fini
 	mov.l	atexit_k,r0
-	jsr	@r0
 	mov.l	fini_k,r4
+	jsr	@r0
+	nop
 
 	! call init
 	mov.l	init_k,r0
