@@ -62,6 +62,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* The structure return address arrives as an "argument" on VMS.  */
 #undef STRUCT_VALUE_REGNUM
 #define STRUCT_VALUE 0
+#undef PCC_STATIC_STRUCT_RETURN
 
 #define CALL_USED_REGISTERS {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1}
 
