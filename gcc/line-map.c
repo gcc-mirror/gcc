@@ -96,9 +96,15 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 
       if (MAIN_FILE_P (map - 1))
 	{
-	  set->depth--;
-	  set->used--;
-	  return NULL;
+	  if (to_file == NULL)
+	    {
+	      set->depth--;
+	      set->used--;
+	      return NULL;
+	    }
+	  error = true;
+          reason = LC_RENAME;
+          from = map - 1;
 	}
       else
 	{
