@@ -1,3 +1,8 @@
+2003-05-31  Roger Sayle  <roger@eyesopen.com>
+
+	* lang.c (java_init_options): Prescribe wrap-around two's
+	complement arithmetic overflow by setting flag_wrapv.
+
 2003-05-29  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (cos_builtin, sin_builtin, sqrt_builtin): Delete.

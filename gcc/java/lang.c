@@ -740,6 +740,9 @@ java_init_options (void)
 
   /* In Java floating point operations never trap.  */
   flag_trapping_math = 0;
+
+  /* In Java arithmetic overflow always wraps around.  */
+  flag_wrapv = 1;
 }
 
 static bool

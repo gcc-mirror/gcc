@@ -585,6 +585,9 @@ extern int frame_pointer_needed;
    for PLUS / SUB / MULT.  */
 extern int flag_trapv;
 
+/* Nonzero if the signed arithmetic overflow should wrap around.  */
+extern int flag_wrapv;
+
 /* Value of the -G xx switch, and whether it was passed or not.  */
 extern unsigned HOST_WIDE_INT g_switch_value;
 extern int g_switch_set;
