@@ -1741,6 +1741,7 @@ This macro returns the attributes on the type @var{type}.
 @tindex EXIT_EXPR
 @tindex CLEANUP_POINT_EXPR
 @tindex ARRAY_REF
+@tindex VTABLE_REF
 
 The internal representation for expressions is for the most part quite
 straightforward.  However, there are a few facts that one must bear in
@@ -2252,5 +2253,16 @@ is taken, and this value replaces the first argument in the argument
 list.  In this case, the value of the expression is the @code{VAR_DECL}
 given by the third operand to the @code{AGGR_INIT_EXPR}; constructors do
 not return a value.
+
+@item VTABLE_REF
+A @code{VTABLE_REF} indicates that the interior expression computes
+a value that is a vtable entry.  It is used with @option{-fvtable-gc}
+to track the reference through to front end to the middle end, at
+which point we transform this to a @code{REG_VTABLE_REF} note, which
+survives the balance of code generation.
+
+The first operand is the expression that computes the vtable reference.
+The second operand is the @code{VAR_DECL} of the vtable.  The third
+operand is an @code{INTEGER_CST} of the byte offset into the vtable.
 
 @end table
