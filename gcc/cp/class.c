@@ -1229,7 +1229,7 @@ add_method (type, fields, method)
 		}
 	    }
 
-	  if (IDENTIFIER_TYPENAME_P (DECL_NAME (method)))
+	  if (DECL_CONV_FN_P (method))
 	    {
 	      /* Type conversion operators have to come before
 		 ordinary methods; add_conversions depends on this to
@@ -1240,15 +1240,13 @@ add_method (type, fields, method)
 	      for (i = 2; i < len; ++i)
 		{
 		  tree fn = TREE_VEC_ELT (method_vec, i);
-		  tree name;
 
 		  if (!fn)
 		    /* There are no more entries in the vector, so we
 		       can insert the new conversion operator here.  */
 		    break;
 		  
-		  name = DECL_NAME (OVL_CURRENT (fn));
-		  if (!IDENTIFIER_TYPENAME_P (name))
+		  if (! DECL_CONV_FN_P (OVL_CURRENT (fn)))
 		    /* We can insert the new function right at the Ith
 		       position.  */
 		    break;

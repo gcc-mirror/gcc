@@ -1426,8 +1426,8 @@ check_classfn (ctype, function)
 	      break;		/* loser */
 	    }
 	  else if (TREE_CODE (fndecl) == TEMPLATE_DECL 
-		   && IDENTIFIER_TYPENAME_P (DECL_NAME (fndecl))
-		   && IDENTIFIER_TYPENAME_P (fn_name))
+		   && DECL_CONV_FN_P (fndecl)
+		   && DECL_CONV_FN_P (function))
 	    /* The method in the class is a member template
 	       conversion operator.  We are declaring another
 	       conversion operator.  It is possible that even though

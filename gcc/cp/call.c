@@ -1150,8 +1150,28 @@ add_function_candidate (candidates, fn, arglist, flags)
 
       if (parmnode == void_list_node)
 	break;
-      else if (parmnode)
-	t = implicit_conversion (TREE_VALUE (parmnode), argtype, arg, flags);
+
+      if (parmnode)
+	{
+	  tree parmtype = TREE_VALUE (parmnode);
+
+	  /* [over.match.funcs] For conversion functions, the function is
+	     considered to be a member of the class of the implicit object
+	     argument for the purpose of defining the type of the implicit
+	     object parameter.
+
+	     Since build_over_call ignores the ICS for the `this' parameter,
+	     we can just change the parm type.  */
+	  if (DECL_CONV_FN_P (fn) && i == 0)
+	    {
+	      parmtype
+		= build_qualified_type (TREE_TYPE (argtype),
+					TYPE_QUALS (TREE_TYPE (parmtype)));
+	      parmtype = build_pointer_type (parmtype);
+	    }
+
+	  t = implicit_conversion (parmtype, argtype, arg, flags);
+	}
       else
 	{
 	  t = build1 (IDENTITY_CONV, argtype, arg);

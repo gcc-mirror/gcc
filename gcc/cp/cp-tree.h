@@ -1128,7 +1128,15 @@ struct lang_decl
 
 /* For FUNCTION_DECLs: nonzero means that this function is a constructor.  */
 #define DECL_CONSTRUCTOR_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.constructor_attr)
-#define DECL_DESTRUCTOR_P(NODE) (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME(NODE)))
+
+/* There ought to be a better way to find out whether or not something is
+   a destructor.  */
+#define DECL_DESTRUCTOR_P(NODE)				\
+  (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (NODE))	\
+   && DECL_LANGUAGE (NODE) == lang_cplusplus)
+
+#define DECL_CONV_FN_P(NODE)						     \
+  (IDENTIFIER_TYPENAME_P (DECL_NAME (NODE)) && TREE_TYPE (DECL_NAME (NODE)))
 
 /* For FUNCTION_DECLs: nonzero means that this function is a constructor
    for an object with virtual baseclasses.  */
