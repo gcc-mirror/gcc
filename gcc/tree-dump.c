@@ -673,10 +673,11 @@ static struct dump_file_info dump_files[TDI_end] =
   {".nested", "tree-nested", TDF_TREE, 0, 4, 0},
   {".inlined", "tree-inlined", TDF_TREE, 0, 5, 0},
   {".vcg", "tree-vcg", TDF_TREE, 0, 6, 0},
-  /* FIXME  -fdump-call-graph is broken.  Set TDF_TREE when it is fixed.  */
-  {".xml", "call-graph", 0, 0, 7, 0},
   {NULL, "tree-all", TDF_TREE, 0, 0, 0},
   {NULL, "rtl-all", TDF_RTL, 0, 0, 0},
+  {NULL, "ipa-all", TDF_IPA, 0, 0, 0},
+
+  { ".cgraph", "ipa-cgraph",		TDF_IPA, 0,  1, 0},
 
   { ".sibling", "rtl-sibling",		TDF_RTL, 0,  1, 'i'},
   { ".eh", "rtl-eh",			TDF_RTL, 0,  2, 'h'},
@@ -803,10 +804,21 @@ get_dump_file_name (enum tree_dump_index phase)
   if (dfi->state == 0)
     return NULL;
 
-  if (dfi->num < 0
-      || snprintf (dump_id, sizeof (dump_id), ".%s%02d",
-		   (dfi->flags & TDF_TREE) ? "t" : "", dfi->num) < 0)
+  if (dfi->num < 0)
     dump_id[0] = '\0';
+  else
+    {
+      const char *template;
+      if (dfi->flags & TDF_TREE)
+	template = ".t%02d";
+      else if (dfi->flags & TDF_IPA)
+	template = ".i%02d";
+      else
+	template = ".%02d";
+
+      if (snprintf (dump_id, sizeof (dump_id), template, dfi->num) < 0)
+	dump_id[0] = '\0';
+    }
 
   return concat (dump_base_name, dump_id, dfi->suffix, NULL);
 }

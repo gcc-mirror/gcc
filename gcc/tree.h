@@ -3714,9 +3714,11 @@ enum tree_dump_index
 				   within it.  */
   TDI_vcg,			/* create a VCG graph file for each
 				   function's flowgraph.  */
-  TDI_xml,                      /* dump function call graph.  */
   TDI_tree_all,                 /* enable all the GENERIC/GIMPLE dumps.  */
   TDI_rtl_all,                  /* enable all the RTL dumps.  */
+  TDI_ipa_all,                  /* enable all the IPA dumps.  */
+
+  TDI_cgraph,                   /* dump function call graph.  */
 
   DFI_MIN,                      /* For now, RTL dumps are placed here.  */
   DFI_sibling = DFI_MIN,
@@ -3776,6 +3778,7 @@ enum tree_dump_index
 
 #define TDF_TREE	(1 << 9)	/* is a tree dump */
 #define TDF_RTL		(1 << 10)	/* is a RTL dump */
+#define TDF_IPA		(1 << 11)	/* is an IPA dump */
 
 typedef struct dump_info *dump_info_p;
 

@@ -147,7 +147,6 @@ extern GTY(()) int cgraph_n_nodes;
 extern GTY(()) int cgraph_max_uid;
 extern bool cgraph_global_info_ready;
 extern GTY(()) struct cgraph_node *cgraph_nodes_queue;
-extern FILE *cgraph_dump_file;
 
 extern GTY(()) int cgraph_varpool_n_nodes;
 extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
@@ -193,5 +192,6 @@ void verify_cgraph_node (struct cgraph_node *);
 void cgraph_mark_inline_edge (struct cgraph_edge *e);
 void cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate);
 void cgraph_build_static_cdtor (char which, tree body, int priority);
+void init_cgraph (void);
 
 #endif  /* GCC_CGRAPH_H  */
