@@ -17,6 +17,28 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+/* Add prototype support.  */
+#ifndef PROTO
+#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+#define PROTO(ARGS) ARGS
+#else
+#define PROTO(ARGS) ()
+#endif
+#endif
+
+#ifndef STDIO_PROTO
+#ifdef BUFSIZ
+#define STDIO_PROTO(ARGS) PROTO(ARGS)
+#else
+#define STDIO_PROTO(ARGS) ()
+#endif
+#endif
+
+#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+union tree_node;		/* forward reference */
+struct rtx_def;
+#endif
+
 /* Declare the variable flag_half_pic as 'int' instead of 'extern
    int', so that BSS variables are created (even though this is not
    strict ANSI).  This is because rtl.c now refers to the
@@ -29,14 +51,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 int flag_half_pic;			/* Global half-pic flag.  */
 int (*ptr_half_pic_address_p) ();	/* ptr to half_pic_address_p () */
 
-extern int  half_pic_number_ptrs;	/* # distinct pointers found */
-extern int  half_pic_number_refs;	/* # half-pic references */
-extern void half_pic_encode PROTO((tree));	/* encode whether half-pic */
-extern void half_pic_declare PROTO((char *));	/* declare object local */
-extern void half_pic_init PROTO((void));	/* half_pic initialization */
-extern void half_pic_finish PROTO((FILE *));	/* half_pic termination */
-extern int  half_pic_address_p PROTO((rtx));	/* true if an address is half-pic */
-extern struct rtx_def *half_pic_ptr PROTO((rtx));	/* return RTX for half-pic pointer */
+extern int  half_pic_number_ptrs;				/* # distinct pointers found */
+extern int  half_pic_number_refs;				/* # half-pic references */
+extern void half_pic_encode PROTO((union tree_node *));		/* encode whether half-pic */
+extern void half_pic_declare PROTO((char *));			/* declare object local */
+extern void half_pic_init PROTO((void));			/* half_pic initialization */
+extern void half_pic_finish STDIO_PROTO((FILE *));		/* half_pic termination */
+extern int  half_pic_address_p PROTO((struct rtx_def *));	/* true if an address is half-pic */
+extern struct rtx_def *half_pic_ptr PROTO((struct rtx_def *));	/* return RTX for half-pic pointer */
 
 /* Macros to provide access to the half-pic stuff (so they can easily
    be stubbed out.  */
