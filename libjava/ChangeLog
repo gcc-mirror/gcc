@@ -1,3 +1,22 @@
+2001-10-01  Mark Wielaard  <mark@klomp.org>
+
+	* java/io/FileWriter.java: Merge with Classpath.
+	* java/io/FilterInputStream.java: Ditto.
+	(mark): no longer synchronized
+	(reset): Likewise
+	* java/io/FilterOutputStream.java: Merge with Classpath.
+	* java/io/FilterReader.java: Ditto.
+	(mark): no longer synchronized
+	(reset): Likewise
+	* java/io/FilterWriter.java: Merge with Classpath.
+	* java/io/Writer.java: Ditto.
+	* java/lang/Compiler.java: Ditto.
+	* java/lang/Process.java: Ditto.
+	* java/lang/Void.java: Ditto.
+	* java/net/ContentHandler.java: Ditto.
+	* java/net/DatagramPacket.java: Ditto.
+	* java/net/MulticastSocket.java: Merge comments with Classpath.
+
 2001-09-30  Mark Wielaard  <mark@klomp.org>
 
 	* java/io/DataInput.java:  Merge with Classpath.
