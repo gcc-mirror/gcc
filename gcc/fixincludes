@@ -1143,6 +1143,26 @@ if test -d /etc/conf/kconfig.d \
   sed '/OPEN_MAX/s,/\* Max, Max,' < ${LIB}/$file. >${LIB}/$file
 fi
 
+# These files in Sun OS 4.x use /**/ to concatenate tokens.
+for file in sparc/asm_linkage.h sun3/asm_linkage.h sun3x/asm_linkage.h	\
+	sun4/asm_linkage.h sun4c/asm_linkage.h sun4m/asm_linkage.h	\
+	sun4c/debug/asm_linkage.h sun4m/debug/asm_linkage.h;
+do
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+
+  if [ -r ${LIB}/$file ]; then
+    sed -e 's|/\*\*/|##|g' ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm -f ${LIB}/$file
+    fi
+  fi
+done
+
 echo 'Removing unneeded directories:'
 cd $LIB
 files=`find . -type d -print | sort -r`
