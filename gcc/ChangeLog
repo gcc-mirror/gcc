@@ -1,3 +1,8 @@
+2005-01-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (add_to_sets): s1 may be NULL.
+	(compute_avail): Uses don't go in tmp_gen.
+
 2005-01-16  Steven Bosscher  <stevenb@suse.de>
 
 	* ggc-page.c (ggc_alloc_stat): Use __builtin_ctzl instead of a
