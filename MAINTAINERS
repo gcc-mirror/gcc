@@ -16,7 +16,7 @@ i960 port		Jim Wilson		wilson@cygnus.com
 a29k port		Jim Wilson		wilson@cygnus.com
 alpha port		Richard Henderson	rth@cygnus.com
 sparc port		Richard Henderson	rth@cygnus.com
-*sparc port (?)		David S. Miller		davem@dm.cobaltmicro.com
+sparc port (?) 		David S. Miller		davem@dm.cobaltmicro.com
 x86 ports		Stan Cox		scox@cygnus.com
 *fortran		Craig Burley
 fortran			Richard Henderson	rth@cygnus.com	
