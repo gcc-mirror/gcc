@@ -113,12 +113,12 @@ CONFIG_STATUS_DEPENDENCIES = $(boehm_gc_basedir)/configure.host
 .PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \
 	maintainer-clean-multi
 
-all-recursive: all-multi
-install-recursive: install-multi
-mostlyclean-recursive: mostlyclean-multi
-clean-recursive: clean-multi
-distclean-recursive: distclean-multi
-maintainer-clean-recursive: maintainer-clean-multi
+all-am: all-multi
+install-am: install-multi
+mostlyclean-am: mostlyclean-multi
+clean-am: clean-multi
+distclean-am: distclean-multi
+maintainer-clean-am: maintainer-clean-multi
 
 all-multi:
 	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do
