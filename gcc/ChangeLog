@@ -1,3 +1,9 @@
+2002-05-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	PR preprocessor/6844
+	* cppmacro.c (cpp_macro_definition): Reserve space for terminating
+	NUL.
+
 2002-05-29  Joel Sherrill <joel@OARcorp.com>
 
 	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Use -m403 and -m405.
