@@ -1,3 +1,7 @@
+2001-06-12  Bernd Schmidt  <bernds@redhat.com>
+
+	* g++.old-deja/g++.other/stepanov_v1p2.C: Remove.
+
 2001-06-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/compile/20010610-1.c: New test.
