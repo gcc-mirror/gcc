@@ -101,12 +101,7 @@ AC_MSG_CHECKING(f2c integer type)
 # Set this back later below!
 late_ac_cpp=$ac_cpp
 late_cflags=$CFLAGS
-##gcc -c  -DIN_GCC -DHAVE_CONFIG_H -I. -I/home/fx/c-e/egcs/gcc -I/home/fx/c-e/egcs/gcc/config -I/home/fx/c-e/egcs/gcc/../include /home/fx/c-e/egcs/gcc/f/proj.c
-if test "$srcdir" != . ; then
-  extra_includes="-I$srcdir/../gcc/f -I../../gcc -I$srcdir/../gcc -I$srcdir/../include -I$srcdir/../gcc/config"
-else
-  extra_includes="-I../../gcc/f -I../../gcc -I../../include -I../../gcc/config"
-fi
+extra_includes="-I$topsrcdir/gcc/f -I$topsrcdir/gcc -I$topsrcdir/include -I$topsrcdir/gcc/config -I$r/gcc"
 ac_cpp="$late_ac_cpp -DIN_GCC -DHAVE_CONFIG_H $extra_includes"
 
 # The AC_EGREP_CPPs below have been known to fail when the header

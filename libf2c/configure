@@ -632,7 +632,7 @@ else
   if { (eval echo configure:633: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
     for file in conftest.*; do
       case $file in
-      *.c | *.o | *.obj | *.ilk | *.pdb) ;;
+      *.c | *.o | *.obj) ;;
       *) ac_cv_exeext=`echo $file | sed -e s/conftest//` ;;
       esac
     done
@@ -1164,12 +1164,7 @@ echo "configure:1164: checking f2c integer type" >&5
 # Set this back later below!
 late_ac_cpp=$ac_cpp
 late_cflags=$CFLAGS
-##gcc -c  -DIN_GCC -DHAVE_CONFIG_H -I. -I/home/fx/c-e/egcs/gcc -I/home/fx/c-e/egcs/gcc/config -I/home/fx/c-e/egcs/gcc/../include /home/fx/c-e/egcs/gcc/f/proj.c
-if test "$srcdir" != . ; then
-  extra_includes="-I$srcdir/../gcc/f -I../../gcc -I$srcdir/../gcc -I$srcdir/../include -I$srcdir/../gcc/config"
-else
-  extra_includes="-I../../gcc/f -I../../gcc -I../../include -I../../gcc/config"
-fi
+extra_includes="-I$topsrcdir/gcc/f -I$topsrcdir/gcc -I$topsrcdir/include -I$topsrcdir/gcc/config -I$r/gcc"
 ac_cpp="$late_ac_cpp -DIN_GCC -DHAVE_CONFIG_H $extra_includes"
 
 # The AC_EGREP_CPPs below have been known to fail when the header
@@ -1178,7 +1173,7 @@ ac_cpp="$late_ac_cpp -DIN_GCC -DHAVE_CONFIG_H $extra_includes"
 # the headers.
 CFLAGS="$CFLAGS -DHAVE_CONFIG_H -DIN_GCC $extra_includes"
 cat > conftest.$ac_ext <<EOF
-#line 1182 "configure"
+#line 1177 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1187,7 +1182,7 @@ int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:1191: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1186: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   :
 else
   echo "configure: failed program was:" >&5
@@ -1201,9 +1196,9 @@ CFLAGS=$late_cflags
 if eval "test \"`echo '$''{'g77_cv_sys_f2cinteger'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  echo "configure:1205: using $ac_cpp" >&5
+  echo "configure:1200: using $ac_cpp" >&5
 cat > conftest.$ac_ext <<EOF
-#line 1207 "configure"
+#line 1202 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1225,9 +1220,9 @@ fi
 rm -f conftest*
 
 if test "$g77_cv_sys_f2cinteger" = ""; then
-echo "configure:1229: using $ac_cpp" >&5
+echo "configure:1224: using $ac_cpp" >&5
   cat > conftest.$ac_ext <<EOF
-#line 1231 "configure"
+#line 1226 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1261,13 +1256,13 @@ F2C_INTEGER=$g77_cv_sys_f2cinteger
 
 
 echo $ac_n "checking f2c long int type""... $ac_c" 1>&6
-echo "configure:1265: checking f2c long int type" >&5
+echo "configure:1260: checking f2c long int type" >&5
 if eval "test \"`echo '$''{'g77_cv_sys_f2clongint'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  echo "configure:1269: using $ac_cpp" >&5
+  echo "configure:1264: using $ac_cpp" >&5
 cat > conftest.$ac_ext <<EOF
-#line 1271 "configure"
+#line 1266 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1290,9 +1285,9 @@ rm -f conftest*
 
 
 if test "$g77_cv_sys_f2clongint" = ""; then
-echo "configure:1294: using $ac_cpp" >&5
+echo "configure:1289: using $ac_cpp" >&5
   cat > conftest.$ac_ext <<EOF
-#line 1296 "configure"
+#line 1291 "configure"
 #include "confdefs.h"
 #include "proj.h"
 #define FFECOM_DETERMINE_TYPES 1
@@ -1371,7 +1366,7 @@ else { echo "configure: error: can not run $ac_config_sub" 1>&2; exit 1; }
 fi
 
 echo $ac_n "checking host system type""... $ac_c" 1>&6
-echo "configure:1375: checking host system type" >&5
+echo "configure:1370: checking host system type" >&5
 
 host_alias=$host
 case "$host_alias" in
@@ -1392,7 +1387,7 @@ host_os=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$host" 1>&6
 
 echo $ac_n "checking target system type""... $ac_c" 1>&6
-echo "configure:1396: checking target system type" >&5
+echo "configure:1391: checking target system type" >&5
 
 target_alias=$target
 case "$target_alias" in
@@ -1410,7 +1405,7 @@ target_os=`echo $target | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$target" 1>&6
 
 echo $ac_n "checking build system type""... $ac_c" 1>&6
-echo "configure:1414: checking build system type" >&5
+echo "configure:1409: checking build system type" >&5
 
 build_alias=$build
 case "$build_alias" in
