@@ -1,3 +1,8 @@
+2001-09-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h (concat, concat_length, concat_copy, concat_copy2,
+	ACONCAT): Improve comments.
+
 2001-09-18  Alan Modra  <amodra@bigpond.net.au>
 
 	* objalloc.h (OBJALLOC_ALIGN): Define using offsetof.
