@@ -7793,6 +7793,13 @@ loc_descriptor_from_tree (loc, addressp)
     case ERROR_MARK:
       break;
 
+    case WITH_RECORD_EXPR:
+      /* This case involves extracting fields from an object to determine the
+	 position of other fields.  We don't try to encode this here.  The
+	 only user of this is Ada, which encodes the needed information using
+	 the names of types.  */
+      return ret;
+
     case VAR_DECL:
     case PARM_DECL:
       {
@@ -7828,6 +7835,7 @@ loc_descriptor_from_tree (loc, addressp)
     case NOP_EXPR:
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
+    case SAVE_EXPR:
       return loc_descriptor_from_tree (TREE_OPERAND (loc, 0), addressp);
       
     case COMPONENT_REF:

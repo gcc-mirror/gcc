@@ -1,3 +1,8 @@
+Sun Dec 31 19:20:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* dwarf2out.c (loc_descriptor_from_tree, case WITH_RECORD_EXPR): New.
+	(loc_descriptor_from_tree, case SAVE_EXPR): New.
+
 2001-01-01  Michael Hayes  <mhayes@redhat.com>
 
 	* loop.c (loop_giv_reduce_benefit): Break out from strength_reduce.
@@ -6,25 +11,17 @@
 	* loop.h (struct_iv_class): Add `final_value' and `all_reduced'.
 	(struct loop_info): Add `pre_header_has_call'.
 	
-2001-01-01  Michael Hayes  <mhayes@redhat.com>
-
 	* loop.c (loop_bivs_find): Break out from strength_reduce.
 	(loop_bivs_init_find, loop_bivs_check, loop_givs_find): Likewise.
 	(loop_givs_check, loop_biv_eliminable_p): Likewise.
 	
-2001-01-01  Michael Hayes  <mhayes@redhat.com>	
-
 	* loop.c (LOOP_REG_LIFETIME, LOOP_REG_GLOBAL_P): Define.
 	(scan_loop, record_giv): Use LOOP_REG_LIFETIME and LOOP_REG_GLOBAL_P.
 	
-2001-01-01  Michael Hayes  <mhayes@redhat.com>	
-
 	* loop.h (REGNO_FIRST_LUID, REGNO_LAST_LUID): Define.
 	* loop.c (REGNO_FIRST_LUID, REGNO_LAST_LUID): Use in place of
 	direct access to uid_luid array.
 	* unroll.c (REGNO_FIRST_LUID, REGNO_LAST_LUID): Likewise.
-
-2001-01-01  Michael Hayes  <mhayes@redhat.com>	
 
 	* loop.h (struct loop_movables): New.
 	(LOOP_MOVABLES): New.
@@ -37,7 +34,6 @@
 	(scan_loop): Use xmalloc instead of alloca for movables.
 	Call loop_movables_free.
 	
-2001-01-01  Michael Hayes  <mhayes@redhat.com>	
 
 	* loop.c (debug_loops): New.
 
