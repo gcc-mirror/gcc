@@ -1185,6 +1185,9 @@ namespace std
 	bool __negative = false;
 	// Sign size.
 	size_type __sign_size = 0;
+	// True if sign is mandatory.
+	const bool __mandatory_sign = (__lc->_M_positive_sign_size
+				       && __lc->_M_negative_sign_size);
 	// String of grouping info from thousands_sep plucked from __units.
 	string __grouping_tmp;
 	if (__lc->_M_use_grouping)
@@ -1211,21 +1214,30 @@ namespace std
 	    switch (__which)
 	      {
 	      case money_base::symbol:
-		if (__io.flags() & ios_base::showbase
-		    || __i < 2 || __sign_size > 1
-		    || ((static_cast<part>(__p.field[3]) != money_base::none)
-			&& __i == 2))
+		// According to 22.2.6.1.2, p2, symbol is required
+		// if (__io.flags() & ios_base::showbase), otherwise
+		// is optional and consumed only if other characters
+		// are needed to complete the format.
+		if (__io.flags() & ios_base::showbase || __sign_size > 1
+		    || __i == 0
+		    || (__i == 1 && (__mandatory_sign
+				     || (static_cast<part>(__p.field[0])
+					 == sign)
+				     || (static_cast<part>(__p.field[2])
+					 == space)))
+		    || (__i == 2 && ((static_cast<part>(__p.field[3])
+				      == money_base::value)
+				     || __mandatory_sign
+				     && (static_cast<part>(__p.field[3])
+					 == money_base::sign))))
 		  {
-		    // According to 22.2.6.1.2, p2, symbol is required
-		    // if (__io.flags() & ios_base::showbase), otherwise
-		    // is optional and consumed only if other characters
-		    // are needed to complete the format.
 		    const size_type __len = __lc->_M_curr_symbol_size;
 		    size_type __j = 0;
 		    for (; __beg != __end && __j < __len
 			   && *__beg == __lc->_M_curr_symbol[__j];
 			 ++__beg, ++__j);
-		    if (__j != __len && (__io.flags() & ios_base::showbase))
+		    if (__j != __len
+			&& (__j || __io.flags() & ios_base::showbase))
 		      __testvalid = false;
 		  }
 		break;
@@ -1249,12 +1261,8 @@ namespace std
 		  // "... if no sign is detected, the result is given the sign
 		  // that corresponds to the source of the empty string"
 		  __negative = true;
-		else if (__lc->_M_positive_sign_size
-			 && __lc->_M_negative_sign_size)
-		  {
-		    // Sign is mandatory.
-		    __testvalid = false;
-		  }
+		else if (__mandatory_sign)
+		  __testvalid = false;
 		break;
 	      case money_base::value:
 		// Extract digits, remove and stash away the
