@@ -1,3 +1,9 @@
+2003-09-13  Andrew Pinski <pinskia@physics.uc.edu>
+
+	* config/rs6000/rs6000.c (GEN_LOCAL_LABEL_FOR_SYMBOL): Remove.
+	(machopic_output_stub): Only generate pic base symbols when using pic
+	and generate them in the form L00000000$spb.
+
 2003-09-13  Richard Henderson  <rth@redhat.com>
 
 	* cgraphunit.c (cgraph_assemble_pending_functions): Export.
