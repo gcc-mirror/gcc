@@ -1,7 +1,283 @@
+1998-10-09  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (decode_signature_piece): New function.
+	(print_c_decl): Use it.  Added `name_override' argument.
+	(print_method_info): Use name_override argument to print_c_decl.
+	(seen_fields): Removed.
+	(print_field_info): Don't update seen_fields.
+	(struct method_name): New structure.
+	(method_name_list): New global.
+	(print_method_info): Add new method to list of methods.
+	(name_is_method_p): New function.
+	(print_field_info): If field name has same name as method, then
+	change field name.
+	(process_file): Parse methods before fields.
+	(field_pass): New global.
+	(HANDLE_END_FIELD): Take field_pass into account.
+
 Wed Oct  7 12:10:48 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (keyword.h): Add -L KR-C -F ', 0' flags to gperf.
 	(keyword.h): Regenerate using gperf 2.7.1 (19981006 egcs).
+
+Sat Oct  3 13:29:46 1998  Anthony Green  <green@cygnus.com>
+
+	* jvspec.c: Fix bug in jvgenmain_spec patch.
+
+Fri Oct  2 17:22:52 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Makefile.in (lang.o:): Install dependency on java-tree.def.
+	* decl.c (soft_exceptioninfo_call_node): New global variable.
+	(init_decl_processing): Fixed indentation. soft_badarrayindex_node
+ 	takes extra integer argument. soft_exceptioninfo_call_node
+ 	initialized.
+	* except.c (java_set_exception_lang_code): New function
+	(method_init_exceptions): Called here.
+	(prepare_eh_table_type): New function.
+	(expand_end_java_handler): Called here.
+	* expr.c (build_java_throw_out_of_bounds_exception): Now features
+ 	one argument. Modified generation of call to
+ 	soft_badarrayindex_node to use new argument.
+	(build_java_arrayaccess): Pass faulty index value to
+ 	build_java_throw_out_of_bounds_exception.
+	(generate_name): New function.
+	(java_lang_expand_expr): New local variables node, current,
+ 	has_finally_p. Expand TRY_EXPR node.
+	(process_jvm_instruction): Replace top of the stack with thrown
+ 	object reference when entering exception handler.
+	* java-tree.def (TRY_EXPR, CATCH_EXPR, FINALLY_EXPR): New Java
+ 	specific tree codes.
+	* java-tree.h (soft_exceptioninfo_call_node): Declaration of new
+ 	global.
+	(DECL_SPECIFIC_COUNT): New macro.
+	(prepare_eh_table_type, java_set_exception_lang_code,
+ 	generate_name): New function declarations.
+	(match_java_method): Declaration deleted.
+	(FINALLY_EXPR_LABEL, FINALLY_EXPR_BLOCK, CATCH_EXPR_GET_EXPR): New
+ 	macros.
+	* lex.c (TRY_TK, CATCH_TK): Generate location information.
+	* parse.h (redefinition_error, refine_accessible_methods_list,
+ 	can_cast_to_p): Function declaration removed.
+	(classitf_redefinition_error, variable_redefinition_error,
+ 	parse_jdk1_1_error, find_applicable_accessible_methods_list,
+ 	find_most_specific_methods_list, argument_types_convertible,
+ 	enter_a_block, valid_builtin_assignconv_identity_widening_p,
+ 	valid_cast_to_p, valid_method_invocation_conversion_p,
+ 	try_reference_assignconv, add_stmt_to_compound,
+ 	build_jump_to_finally, build_tree_list, patch_try_statement,
+ 	java_get_catch_block): New function declarations.
+	* parse.y (string_buffer_type): Global variable deleted.
+	(group_of_labels, catches, catch_clause, catch_clause_parameter,
+ 	finally): Rules tagged <node>.
+	(TRY_TK, CATCH_TK): Token tagged <operator>.
+	(class_body_declaration:, class_member_declaration:,
+ 	formal_parameter:, explicit_constructor_invocation:,
+ 	interface_member_declaration:, constant_declaration:,
+ 	primary_no_new_array:, class_instance_creation_expression:,
+ 	array_creation_expression:): Issue error on unsuported JDK1.1
+ 	features.
+	(try_statement:, catches:, finally:): Define actions.
+	(catch_clause_parameter): New rule.
+	(catch_clause:): Use new rule catch_clause_parameter.
+	(parse_jdk1_1_error): New function.
+	(redefinition_error): Renamed classitf_redefinition_error.
+	(variable_redefinition_error): New function.
+	(check_class_interface_creation): Call
+ 	classitf_redefinition_error.
+	(java_complete_tree): Added error message on JDEP_TYPE: case.
+	(complete_class_report_errors): Fixed indentation.
+	(declare_local_variables): Call variable_redefinition_error.
+	(source_end_java_method): Call java_set_exception_lang_code and
+ 	emit_handlers where appropriate.
+	(java_method_add_stmt): Call add_stmt_to_block.
+	(add_stmt_to_block): New function.
+	(lookup_method_invoke): Fixed outside comment. new local variable
+ 	candicates.  Call find_applicable_accessible_methods_list and
+ 	find_most_specific_methods_list when searching for a
+ 	method. Modified error report to list possible candidates when
+ 	applicable.
+	(find_applicable_accessible_methods_list,
+ 	find_most_specific_methods_list, argument_types_convertible): New
+ 	function.
+	(refine_accessible_methods_list): Function deleted.
+	(java_complete_tree): Handle TRY_EXPR. ARRAY_REF handling: save
+ 	expr (if applicable) before calling patch_array_ref.
+	(build_expr_block): Fixed BLOCK_EXPR_BODY assignment.
+	(enter_block): Fixed comment.
+	(enter_a_block): New function.
+	(patch_assignment): Reorganized. Call try_reference_assignconv for
+ 	references. Call valid_cast_to_p instead of can_cast_to_p.
+	(try_reference_assignconv,
+ 	valid_builtin_assignconv_identity_widening_p): New functions.
+	(valid_ref_assignconv_cast_p): Fixed inverted test on CLASS_FINAL.
+	(valid_cast_to_p, valid_method_invocation_conversion_p): New
+ 	functions.
+	(build_string_concatenation): Don't resolve StringBuffer.
+	(patch_cast): Fixed inverted arguments.
+	(patch_array_ref): Code to save array expr deleted. Call
+ 	valid_cast_to_p instead of can_cast_to_p.
+	(generate_labeled_block): Call generate_name.
+	(build_jump_to_finally, build_try_statement, java_get_catch_block,
+ 	patch_try_statement): New functions.
+	* typeck.c (match_java_method): Function deleted.
+	
+Fri Oct  2 13:48:36 1998  Anthony Green  <green@cygnus.com>
+
+	* jvspec.c: jvgenmain_spec uses different temporary file names.
+
+Fri Oct  2 12:50:19 1998  Anthony Green  <green@cygnus.com>
+
+	* jvspec.c (lang_specific_driver): Fail if user specifies
+	--main= when not linking.
+
+Mon Sep 28 13:48:33 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* class.c (make_class_data): Push value for `thread' field.
+	* decl.c (init_decl_processing): Added `thread' field to class.
+
+	* class.c (add_field): Always make static fields externally
+	visible.
+
+Sat Sep 26 08:22:47 1998  Anthony Green  <green@cygnus.com>
+
+	* expr.c (build_java_athrow,
+	build_java_throw_out_of_bounds_exception, expand_invoke,
+	build_newarray, expand_java_multianewarray, build_java_monitor):
+	Update comments to reflect _Jv_* function names.
+
+Fri Sep 25 16:03:02 1998  Per Bothner  <bothner@cygnus.com>
+
+	* decl.c (complete_start_java_method):  DECL_RESULT is always promoted.
+	* decl.c (start_java_method):  Handle PROMOTE_PROTOTYPES target macro.
+	* parse.y (expand_start_java_method):  Likewise.
+
+Thu Sep 24 12:20:35 1998  Per Bothner  <bothner@cygnus.com>
+
+	* expr.c (pop_arguments):  Handle PROMOTE_PROTOTYPES target macro.
+
+	* class.c (push_class):  IDENTIFIER_SIGNATURE_TYPE is now POINTER_TYPE.
+	(add_field):  No longer need to convert from RECORD_TYPE to pointer,
+	* expr.c:  Remove no-longer-needed calls to promote_type.
+	* decl.c (give_name_to_locals):  Liekwise.
+	* jcf-parse.c (get_class_constant):  Compensate for new signatures.
+	* parse.y:  Add/remove promote_type calls as appropriate.
+	* typeck.c (parse_signature_type):  Returns POINTER_TYPE for objects.
+	(parse_signature_string):  Likewise.
+ 	(build_java_array_type):  Fix for now signature convenions.
+
+	* lex.c (java_lex):  Fix (from Alex) for JC1_LITE problem.
+
+Wed Sep 23 14:49:35 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* class.c (init_class_processing): libjava function renamed to
+	_Jv_RegisterClass.
+
+Tue Sep 22 12:00:02 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (java_lang_expand_expr): New case for SWITCH_EXPR.
+	* java-tree.def: Fixed DEFTREECODE third argument.
+	(UNARY_PLUS_EXPR, NEW_ARRAY_EXPR, NEW_CLASS_EXPR, THIS_EXPR,
+ 	CASE_EXPR, DEFAULT_EXPR): New tree codes for Java.
+	* java-tree.h: (IS_CRAFTED_STRING_BUFFER_P): New macro.
+	(JAVA_UNARY_PLUS_EXPR, JAVA_NEW_ARRAY_EXPR, JAVA_NEW_CLASS_EXPR,
+ 	JAVA_THIS_EXPR): Now replaced by tree code definitions.
+	(CALL_CONSTRUCTOR_P): Now uses NEW_CLASS_EXPR.
+	* lang.c (java_tree_code_type, java_tree_code_length,
+ 	java_tree_code_name): New arrays.
+	(lang_init): Append Java tree node definitions to Gcc ones.
+	* lex.c (expression_obstack): Declared as extern when JC1_LITE
+ 	defined.
+	(java_init_lex): Initialize wfl_append, wfl_string_buffer,
+ 	wfl_to_string.
+	(java_lex): Allow declaration of empty string constants. Retain
+ 	location information on CASE_TK and DEFAULT_TK.
+	* parse.h (JFLOAT_TYPE_P, JINTEGRAL_TYPE_P, JNUMERIC_TYPE_P,
+ 	JPRIMITIVE_TYPE_P, JSTRING_TYPE_P, JSTRING_P, JREFERENCE_TYPE_P):
+ 	Modified to be more robust.
+	(BUILD_APPEND, BUILD_STRING_BUFFER): New macros.
+	(build_new_invocation, try_builtin_assignconv,
+ 	patch_switch_statement, string_constant_concatenation,
+ 	build_string_concatenation, patch_string_cst, patch_string,
+ 	java_expand_switch): New function declarations.
+	* parse.y: Rules related to switch and EH tagged <node>.
+	(label_id): Set to NULL_TREE
+	(wfl_string_buffer, wfl_append, wfl_to_string): New static global
+ 	tree nodes.
+	(this_or_super:): Fixed indentation.
+	(statement:, statement_nsi:, statement_without_trailing_substatement:,
+ 	statement_expression:): Removed call to RULE on all sub-rules.
+	(switch_expression:, switch_labels:): New rules.
+	(switch_statement:, switch_block:, switch_block_statement_groups:,
+ 	switch_block_statement_group:, switch_labels:, switch_label:):
+ 	Defined actions.
+	(throw_statement:, synchronized_statement:, try_statement:):
+ 	Defined temporary actions.
+	(class_instance_creation_expression:): Call
+ 	build_new_invocation. Fixed indentation.
+	(field_access): Fixed indentation.
+	(method_invocation): Likewise.
+	(make_qualified_primary): Use THIS_EXPR.
+	(resolve_qualified_expression_name): Use NEW_CLASS_EXPR. When
+ 	resolving from SUPER, set *type_found.
+	(qualify_ambiguous_name): Use NEW_CLASS_EXPR.
+	(java_complete_tree): Removed unused local variable `location'. Case
+ 	for SWITCH_EXPR, sharing code with LOOP_EXPR. Use NEW_ARRAY_EXPR,
+ 	NEW_CLASS_EXPR, UNARY_PLUS_EXPR and THIS_EXPR. New string handling
+ 	on MODIFY_EXPR: and all binary operator tree code cases. Removed
+ 	STRING_CST: case. default: checks for patchable strings.
+	(complete_function_arguments): Transform string constant or
+ 	crafted StringBuffer if necessary.
+	(build_method_invocation): Fixed comments.
+	(build_new_invocation): New function.
+	(patch_assignment): Call try_builtin_assignconv to figure a valid
+ 	assignment conversion between builtin types.
+	(try_builtin_assignconv): New function.
+	(build_binop): Use URSHIFT_EXPR directly to call build.
+	(operator_string): Use UNARY_PLUS_EXPR.
+	(patch_binop): Use UNARY_PLUS_EXPR. Handle string concatenation
+ 	operator.
+	(do_merge_string_cste, merge_string_cste,
+ 	string_constant_concatenation, build_string_concatenation,
+ 	patch_string, patch_string_cst): New function.
+	(build_unary_op): Use UNARY_PLUS_EXPR and CONVERT_EXPR.
+	(patch_unaryop): Likewise. New test of valid ++/-- operands.
+	(build_newarray_node): Use NEW_ARRAY_EXPR.
+	(build_this): Use THIS_EXPR.
+	(build_return): Enable debug information on return statement.
+	(build_if_else_statement): Likewise.
+	(complete_labeled_statement): Fixed related comment.
+	(build_loop_body): Fixed comment.
+	(build_bc_statement): Enable debug information on break/continue
+ 	statements.
+	(patch_bc_statement): Fixed typos. Handle SWITCH statement
+ 	context.
+	(patch_switch_statement, case_identity, java_expand_switch): New
+ 	functions.
+
+Mon Sep 21 13:21:35 1998  Per Bothner  <bothner@cygnus.com>
+
+	* buffer.h (BUFFER_INIT):  New macro.
+	* jcf-write.c (struct jcf_partial):  New type.  Put global stuff here.
+	Pass (struct jcf_partial *state) to most functions.
+	(jcf_block, jcf_relocation):  New types.
+	Support labels, branches, conditionals, loops.
+
+Mon Sep 21 15:08:48 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* decl.c (INT_TYPE_SIZE): Define as BITS_PER_WORD if not defined.
+
+Mon Sep 21 13:21:35 1998  Per Bothner  <bothner@cygnus.com>
+
+	* decl.c (integer_type_node):  Make it have INT_TYPE_SIZE.
+	* verify.c (verify_jvm_instructions):  Use int_type_not (32 bits),
+	not integer_type_node (INT_TYPE_SIZ bits).
+
+	* parse.y (patch_if_else_statement):  Accept promoted_boolean_type_node.
+
+	* jcf-reader.c (get_attribute):  New HANDLE_EXCEPTION_TABLE hook.
+	* jcf-dump.c (print_exception_table):  New function.
+	(disassemble_method):  Better handling of wide instructions.
+	Make more robust for bad input.
 
 Wed Sep 30 20:53:51 1998  Jeffrey A Law  (law@cygnus.com)
 
@@ -21,6 +297,11 @@ Thu Sep 17 01:57:07 1998  Jeffrey A Law  (law@cygnus.com)
 	* Makefile.in (JAVA_OBJS): Add memmove.o
 	(memmove.o): New target & rules.
 
+Tue Sep 15 23:21:55 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* expr.c (expand_invoke): Don't generate a call to the class init
+	code.
+
 Mon Sep 14 10:14:47 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in: Add many missing dependencies.
@@ -28,6 +309,14 @@ Mon Sep 14 10:14:47 1998  Jeffrey A Law  (law@cygnus.com)
 	as appropriate.
 	* except.c, expr.c, jcf-io.c jcf-parse.c, jcf-write.c: Likewise.
 	* jvgenmain.c lang.c mangle.c typeck.c verify.c: Likewise.
+
+Fri Sep 11 14:05:21 1998  Per Bothner  <bothner@cygnus.com>
+
+	* decl.c (complete_start_java_method):  If method is static (and
+	not private) call _Jv_InitClass.
+	* expr.c (expand_invoke):  Don't call build_class_init.
+
+	* jvspec.c (jvgenmain_spec):  Fix spec for generated .o file.
 
 Thu Sep 10 10:33:31 1998  Jeffrey A Law  (law@cygnus.com)
 
@@ -53,3 +342,2809 @@ Mon Sep  7 13:59:49 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (INCLUDES): Update for recent toplevel gcc changes.
 
+Sat Sep  5 16:08:01 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* Make-lang.in (java.maintainer-clean): Don't remove parse.h.
+	(java.mostlyclean): Remove parse.c and parse-scan.c, not parse.h.
+	* Makefile.in (PARSE_C): New macro.
+	(PARSE_H): Likewise.
+	(PARSE_SCAN_C): Likewise.
+	($(PARSE_C)): Target renamed from parse.c.
+	($(PARSE_SCAN_C)): Target renamed from parse-scan.c.
+	(clean): Remove parse-scan.c as well.
+	(parse.o): Depend on $(PARSE_C).
+
+Sat Sep  5 08:48:40 1998  Anthony Green  <green@cygnus.com>
+
+	* README, license.terms: Removed.
+
+	* Make-lang.in, Makefile.in, class.c, config-lang.in, constants.c,
+	decl.c, except.c, expr.c, gjavah.c, java-except.h, java-tree.h,
+	javaop.def, javaop.h, jcf-dump.c, jcf-io.c, jcf-parse.c,
+	jcf-reader.c, jcf-write.c, jcf.h, jvgenmain.c, jvspec.c,
+	keyword.gperf, keyword.h, lang-options.h, lang-specs.h, lang.c,
+	lex.c, lex.h, mangle.c, parse-scan.y, parse.h, parse.y, typeck.c,
+	verify.c, zextract.c, zipfile.h: Fixed copyright assignment,
+	and Java trademark attribution.
+
+Fri Sep  4 10:42:05 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Use gcjh, not gjavah.
+	* config-lang.in (stagestuff): Use gcjh, not gjavah.
+	* Make-lang.in: Changed gjavah to gcjh everywhere.
+
+Thu Sep  3 18:04:09 1998  Per Bothner  <bothner@cygnus.com>
+
+	* gjavah.c:  Support new -prepend -add -append flags.
+	(print_method_info):  Method is not virtual if class is final.	
+
+Thu Sep  3 12:03:53 1998  Alexandre Petit-Bianco  <apbianco@sendai.cygnus.com>
+
+	* jv-scan.c: Fixed copyright assignment.
+	* keyword.gperf: Likewise.
+	* keyword.h: Likewise.
+	* lex.c: Fixed copyright assignment.
+	(java_lex): Push unicode back when parsing '<'.
+	* lex.h: Fixed copyright assignment.
+	* parse-scan.y: Likewise.
+	* parse.h: Fixed copyright assignment.
+	(build_debugable_stmt, complete_for_loop): New function prototypes.
+	* parse.y: Fixed copyright assignment.
+	(for_statement:): Call complete_for_loop. Set EXIT_EXPR to be
+ 	size_zero_node when completing a loop with no exit condition.
+	(for_statement_nsi:): Define action.
+	(for_init:, for_update:): Return size_zero_node when empty.
+	(declare_local_variables): Call build_debugable_stmt.
+	(build_debugable_stmt): New function.
+	(build_loop_body): Build debugable statement around loop
+ 	condition part.
+	(complete_loop_body): Take into account the debugable statement
+	around the EXIT_EXPR.
+	(complete_loop_body): New function.
+	(patch_exit_expr): Fixed condition inversion.
+
+Wed Sep  2 11:53:58 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* Make-lang.in (jvspec.o): Use GCC_THREAD_FILE to compute correct
+	name of thread define.
+	* jvspec.c (THREAD_NAME): New macro.
+	(GCLIB): Likewise.
+	(THREADLIB): Likewise.
+	(lang_specific_driver): Recognize attempt to link with thread
+	library or gc library.  Recognize -ljava on command line so it
+	isn't linked against more than once.
+
+Wed Sep  2 11:28:35 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse-scan.y (report_main_declaration): Name of the class
+ 	containing `main' can be a qualified name.
+
+Mon Aug 31 13:25:58 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* config-lang.in: Changed gjavac to gjc everywhere.
+	* Make-lang.in: Changed gjavac to gjc everywhere.
+
+Thu Aug 27 02:28:27 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Make-lang.in (JAVA_TARGET_INDEPENDENT_BIN_TOOLS): New variable.
+	(java.install-common:): Loop over JAVA_TARGET_INDEPENDENT_BIN_TOOLS
+	and install the files.
+	* Makefile.in (JAVA_OBJS_LITE): New variable.
+	(compiler:): Now include jv-scan as a dependency.
+	(../jv-scan$(exeext), parse-scan.c): New targets.
+	(../jcf-dump$(exeext)): Was jcf-dump$(exeext) before.
+	* config-lang.in (compilers): Removed gcj, gjavah from the list.
+	* jcf-parse.c (parse_source_file): Call java_layout_classes and
+ 	check for errors even if parse_only.
+	* lex.c (java_init_lex): Reorganized and skip parts if JC1_LITE is
+ 	defined.
+	(yylex): New function. Uses java_lex body.
+	(java_lex): Removed commented out statement. Remove local variable
+ 	literal. Use SET_LVAL_NODE_TYPE and SET_LVAL_NODE where
+ 	appropriate.  Use macros FLOAT_TYPE_NODE, DOUBLE_TYPE_NODE,
+ 	DCONST0, SET_FLOAT_HANDLER, SET_REAL_VALUE_ATOF,
+ 	SET_LVAL_NODE_TYPE and GET_TYPE_PRECISION. Don't create STRING_CST
+ 	if JC1_LITE is defined. Use BUILD_ID_WFL to build identifiers. Use
+ 	SET_MODIFIER_CTX, SET_LVAL_NODE, BUILD_ID_WFL and GET_IDENTIFIER
+ 	where appropriate.
+	(java_lex_error): Empty if JC1_LITE is defined.
+	(java_get_line_col): Return 0 if JC1_LITE is defined.
+	* lex.h (JAVA_FLOAT_RANGE_ERROR, JAVA_INTEGRAL_RANGE_ERROR,
+ 	SET_MODIFIER_CTX): Moved into the section containing the macros
+ 	conditionally defined by JC1_LITE.
+	(BUILD_OPERATOR,BUILD_OPERATOR2): Just return the TOKEN
+ 	argument if JC1_LITE is defined.
+	(HOST_BITS_PER_WIDE_INT, HOST_WIDE_INT, REAL_VALUE_ATOF,
+ 	REAL_VALUE_ISINF, REAL_VALUE_ISNAN): Preset to values if JC1_LITE
+ 	is defined.
+	(DCONST0, SET_FLOAT_HANDLER, GET_IDENTIFIER, SET_REAL_VALUE_ATOF,
+ 	FLOAT_TYPE, DOUBLE_TYPE, SET_MODIFIER_CTX, GET_TYPE_PRECISION,
+ 	SET_LVAL_NODE, SET_LVAL_NODE_TYPE, BUILD_ID_WFL): New macros, set
+ 	to different values according to JC1_LITE.
+	* parse.h (int_fits_type_p, stabilize_reference): Prototype not
+ 	declared if JC1_LITE set.
+	(jdep_code, typedef struct _jdep, typedef struct _jdeplist): Not
+ 	defined if JC1_LITE not set.
+	(struct parser_ctx): Reorganized and skip the jc1 front end part
+ 	if JC1_LITE set.
+	(java_layout_classes): New function definition.
+	(java_push_parser_context, java_init_lex, yyparse, yylex,
+ 	yyerror): Prototype always declared. All other static function
+ 	prototypes declared only if JC1_LITE is not set.
+	* parse.y (yyparse, yylex, yyerror): No longer declared here. Now
+ 	declared in parse.h.
+	(java_layout_classes): New function.
+ 	(java_complete_expand_methods): No longer layout the class here.
+	* parse-scan.y: New file.
+	* jv-scan.c: New file.
+
+Tue Aug 25 10:17:54 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (main): Handle -friend option.
+	(friend_specs): New global.
+	(generate_access): Handle friend_specs.
+	(process_file): Likewise.
+	(MAX_FRIENDS): New macro.
+	(friend_count): New global.
+	(print_cxx_classname): Added `prefix' argument.  Ignore arrays.
+	Changed all callers.
+
+Mon Aug 24 20:19:27 1998  Per Bothner  <bothner@cygnus.com>
+
+	* jcf-dump.c (process_class):  Move JCF_FINISH use to main,
+	(main):  Handle processing all the entries of a named .zip archive.
+	* jcf-io.c (jcf_trim_old_input):  New function.
+	* jcf.h (GET_u2_le,GET_u4_le,JCF_readu2_le,JCF_readu4_le):  New macros.
+
+Mon Aug 24 07:35:13 1998  Per Bothner  <bothner@cygnus.com>
+
+	* lang.c (flag_assume_compiled):  Make default be on.
+
+Fri Aug 21 17:29:04 1998  Per Bothner  <bothner@cygnus.com>
+
+	* jcf-dump.c:  Add bunches of flags to control output more.
+	(process_class):  New function;  support printing more than one class.
+	(main): Support new --print-main and --javap flags.
+	* jcf-reader.c (IGNORE_ATTRIBUTE):  New hook.
+	* jcf.h (CPOOL_INDEX_IN_RANGE):  New macro.
+
+Thu Aug 20 14:24:47 1998  Per Bothner  <bothner@cygnus.com>
+
+	Change mangling of dispatch table to match C++ vtable (w/thunks).
+	* class.c (build_dtable_decl), java-tree.h:  New function.
+	(make_class_data):  Call it.
+	* decl.c (init_decl_processing):  Likewise.
+
+Wed Aug 19 17:57:07 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* decl.c (init_decl_processing): Use _Jv_NewObjectArray, not
+ 	soft_anewarray; adjust args passed.
+	* expr.c (build_anewarray): Adjust args for soft_anewarray_node to
+ 	match _Jv_NewObjectArray.
+	
+Wed Aug 19 09:33:23 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* decl.c (push_labeled_block, pop_labeled_block): New functions.
+	* expr.c (loopup_label): Call create_label_decl.
+	(create_label_decl): New function.
+	(java_lang_expand_expr): Call expand_start_bindings with argument
+ 	set to zero.
+	* java-tree.h Added space after PROTO in function declarations
+ 	when necessary.
+	(IS_FOR_LOOP_P, IS_BREAK_STMT_P): New macros.
+	(create_label_decl, push_labeled_block): New function
+ 	declarations.
+	* lex.c (label_id): Initialize.
+	(SUPER_TK, THIS_TK, RETURN_TK): Merged common actions in final
+ 	switch.
+	* parse.h Added space after PROTO in function declarations when
+ 	necessary.
+	(LOOP_EXPR_BODY_MAIN_BLOCK, LOOP_EXPR_BODY_UPDATE_BLOCK,
+ 	LOOP_EXPR_BODY_CONDITION_EXPR, LOOP_EXPR_BODY_LABELED_BODY,
+ 	LOOP_EXPR_BODY_BODY_EXPR, LOOP_HAS_LABEL_P, LOOP_HAS_LABEL_SKIP_P,
+ 	PUSH_LABELED_BLOCK, POP_LABELED_BLOCK, PUSH_LOOP, POP_LOOP): New
+ 	macros.
+	(struct parser_ctxt): New fields current_loop,
+ 	current_labeled_block.
+	(build_if_else_statement, patch_if_else_statement,
+ 	add_stmt_to_compound, patch_exit_expr, build_labeled_block,
+ 	generate_labeled_block, complete_labeled_statement,
+ 	build_bc_statement, patch_bc_statement, patch_loop_statement,
+ 	build_new_loop, build_loop_body, complete_loop_body): New function
+ 	declarations.  
+	* parse.y (java_warning_count): New global variable.
+	(label_id): New static variable.
+	(BREAK_TK, CONTINUE_TK): Token tagged <operator>.
+	(block:): Return size_zero_node when block is empty.
+	(empty_statement:): Return size_zero_node.
+	(statement:): Implement supplemental action when for_statement: is
+ 	reduced.
+	(label_decl:): New rule.
+	(labeled_statement:): Rewritten using label_decl. Actions
+ 	implemented.
+	(labeled_statement_nsi:): Likewise.
+	(if_then_statement): Actions implemented.
+	(while_expression): New rule.
+	(while_statement:): Rewritten using while_expression. Actions
+ 	implemented.
+	(while_statement_nsi:): Likewise.
+	(do_statement_begin:): New rule.
+	(do_statement:): Rewritten using do_statement_begin. Actions
+ 	implemented.
+	(for_statement:): Rewritten using for_begin. Actions implemented.
+	(for_statement_nsi:): Likewise.
+	(for_header:, for_begin:): New rules.
+	(for_init:): Actions implemented.
+	(statement_expression_list:, break_statement:,
+ 	continue_statement:): Likewise.
+	(yyerror): Count number of issued warning(s).
+	(java_report_errors): Report error(s) and/or warning(s).
+	(java_complete_class): Use build_java_argument_signature to
+ 	recompute completed method signature.
+	(java_check_regular_methods): New locals method_wfl and aflags.
+  	Use method_wfl instead of lookup_cl during error reports. Fixed
+ 	indentation and modified some error messages. Use
+ 	lang_printable_name in method instead of the DECL_NAME. New code
+ 	to issue warnings on methods not overriding corresponding methods
+ 	private to a different package.
+	(java_method_add_stmt): Call add_stmt_to_compound.
+	(add_stmt_to_compound): New function.
+	(java_complete_tree): Handle LABELED_BLOCK_EXPR, EXIT_BLOCK_EXPR,
+ 	LOOP_EXPR, EXIT_EXPR and COND_EXPR.
+	(build_if_else_statement, patch_if_else_statement,
+ 	build_labeled_block, generate_labeled_block,
+ 	complete_labeled_statement, build_new_loop, build_loop_body,
+ 	complete_loop_body, patch_loop_statement, build_bc_statement,
+ 	patch_bc_statement, patch_exit_expr): New functions.
+	* typeck.c (build_java_signature): Build argument signature before
+ 	enclosing it in between parenthesis.
+	
+Mon Aug 17 17:44:24 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* Make-lang.in (JAVA_SRCS): Created for dependencies * Makefile.in
+ 	(JAVA_OBJS): Added reminder comment
+
+Thu Aug 13 10:01:45 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* gjavah.c (D_NAN_MASK): Append LL to the constant to force it to
+	be interpreted as a long long.
+
+Thu Aug 13 14:34:07 1998  Warren Levy  <warrenl@cygnus.com>
+
+	* decl.c (init_decl_processing): Use _Jv_InitClass, not
+ 	soft_initialise_class.  Use _Jv_NewMultiArray, not
+ 	soft_multianewarray.  Use _Jv_ThrowBadArrayIndex, not
+ 	soft_badarrayindex.  Use _Jv_CheckCast, not soft_checkcast.  Use
+ 	_Jv_CheckArrayStore, not soft_checkarraystore.  Use
+ 	_Jv_LookupInterfaceMethod, not soft_lookupinterfacemethod.
+	
+Wed Aug 12 14:23:13 1998  Per Bothner  <bothner@cygnus.com>
+
+	* decl.c, java-tree.h (this_identifier_node, super_identifier_node,
+	length_identifier_node):  New global tree node constants.
+	* parse.y (kw_super, kw_this, kw_length):  Removed globals.
+	Replace uses by super_identifier_node etc.
+	* lex.c (kw_super, kw_this, kw_length):  Don't initialize.
+
+	* parse.y (resolve_field_access):  Don't special-case ".length" if
+	flag_emit_class_files.
+	(patch_array_ref):  Leave as ARRAY_REF if flag_emit_class_files.
+	* jcf-write.c (generate_bytecode_insns):  Handle ARRAY_REF opcode
+	and ARRAY.length.
+
+Tue Aug 11 11:31:55 1998  Per Bothner  <bothner@cygnus.com>
+
+	* decl.c (init_decl_processing): Remove unused method_type_node fields.
+	* class.c (make_method_value):  Remove init for removed fields.
+
+	* class.c (layout_class):  Use build_java_argument_signature.
+	* java-tree.h (TYPE_ARGUMENT_SIGNATURE):  New macro.
+
+	* typeck.c (push_java_argument_signature):  Removed.  Merged into ...
+	(build_java_argument_signature):  Use TYPE_ARGUMENT_SIGNATURE cache.
+	(build_java_signature):  Don't use push_java_argument_signature.
+
+	* typeck.c (lookup_argument_method):  New function.
+	* parse.y (java_check_regular_methods):  Use lookup_argument_method
+	instead of lookup_java_method2 followed by lookup_java_method.
+	
+	* parse.y (check_method_redefinition):  Minor optimization.
+	
+	* jcf-write.c (generate_bytecode_insns):  Handle RETURN_EXPR,
+	MINUS_EXPR, MULT_EXPR, TRUNC_DIV_EXPR, and RDIV_EXPR.
+
+Mon Aug 10 09:57:15 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* Make-lang.in (jc1$(exeext)): Don't depend on c-common.o or
+	c-pragma.o.
+
+	* gjavah.c (java_float_finite): Use K&R-style definition.
+	(java_double_finite): Likewise.
+	(generate_access): Now returns void.  Changed all callers.
+	(last_access_generated): Removed.
+	(process_file): Only make a single pass over the .class file.
+
+Wed Jul 29 17:50:23 1998  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (get_dispatch_table):  Add extra dummy vtable entry,
+	for compatibility for G++ (with -fvtable-thunks).
+	* expr.c (build_invokevirtual):  Add one for extra dummy vtable entry.
+
+	* gjavah.c (process_file):  Use public inheritance for super-class.
+
+Wed Jul 29 13:19:03 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* lex.c (java_init_lex): Initialize ctxp->package.
+	* parse.h (struct parser_ctxt): package and package_len replaced
+ 	by tree package, an identifier node. Field method_decl_list is
+ 	gone. Fixed comments.
+	(lookup_field_wrapper, merge_qualified_name, not_accessible,
+ 	class_in_current_package): New function prototypes.
+	* parse.y (array_type:): Set class loaded flag on primitive type
+ 	arrays.
+	(package_declaration:): Assign ctxp->package to the
+ 	identifier node.
+	(method_invocation:): Handle invocation of method qualified by
+ 	`super'.
+	(single_type_import_declaration:): Removed ambiguity check.
+	(java_pop_parser_context): New local variable `next'. Reset and
+ 	set IMPORT_CLASSFILE_NAME flags on current and previous import
+ 	list.
+	(java_accstring_lookup): Use new local macro COPY_RETURN.
+	(lookup_field_wrapper): New function.
+	(parser_qualified_classname): Use merge_qualified_name.
+	(parser_check_super_interface): Broaden error message.
+	(do_resolve_class): Check for qualified class name in the current
+ 	compilation unit if appropriate.
+	(process_imports): Check for already defined classes.
+	(check_pkg_class_access): Got rid of call to
+ 	get_access_flags_from_decl.
+	(java_complete_expand_methods): Call safe_layout_class based on
+ 	the current class size.
+	(make_qualified_primary): Build a WFL qualification on primary if
+ 	none exists.
+	(merge_qualified_name): New function.
+	(make_qualified_name): Use merge_qualified_name.
+	(resolve_expression_name): Use safe_lookup_field.
+	(resolve_field_access): Got rid of call to get_access_flags_from_decl.
+	(resolve_qualified_expression_name): Likewise. Check on resolved
+ 	element accessibility.
+	(not_accessible_p, class_in_current_package): New functions.
+	(maybe_access_field): Got rid of call to get_access_flags_from_decl.
+	(patch_method_invocation_stmt): Merged common pieces. Check
+ 	accessibility of invoked method.
+	(check_for_static_method_reference): Add returned type in error
+ 	message.
+	(invocation_mode): Get rid of bogus check on PRIVATE methods.
+	(refine_accessible_methods_list): Merged two conditions in test.
+	(java_complete_class): Sanity check on stabilize_ref gone.
+	* zextract.c (read_zip_archive): Cast lseek second argument to long.
+	
+Tue Jul 28 21:39:22 1998  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (hashUtf8String):  Fix - use new JavaSoft specification.
+
+Fri Jul 24 10:43:25 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (F_NAN): Removed.
+	(F_NAN_MASK): New macro.
+	(F_POSITIVE_INFINITY): Removed.
+	(F_NEGATIVE_INFINITY): Likewise.
+	(java_float_finite): Rewrote.
+	(D_NAN_MASK): Renamed.
+	(java_double_finite): Rewrote.
+	(D_POSITIVE_INFINITY): Removed.
+	(D_NEGATIVE_INFINITY): Likewise.
+
+	* jcf-dump.c (print_constant): [CONSTANT_Double, CONSTANT_Float]
+	If verbose, print underlying representation of value in hex.
+
+Fri Jul 24 14:14:32 1998  Per Bothner  <bothner@cygnus.com>
+
+	* buffer.h, buffer.c:  New files.
+	* Makefile.in (JAVA_OBJS):  Add buffer.o.
+
+	Support locals variables and writing their debug entries to .class.
+	* jcf-write.c:  Simplify some by user new buffer type.
+	(vode_buffer_grow):  Removed.
+	(struct localvar_info):  New type.
+	(localsvars, localvartable):  New buffers.
+	(localvar_alloc, localvar_free):  New functions.
+	(generate_bytecode_insns):  Handle local variables.
+	(generate_classfile):  Write LocalVariableTable attribute.
+
+Fri Jul 24 13:46:59 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-io.c (open_in_zip): Check the zipfile magic number.
+	* zipfile.h (ZIPMAGIC): New macro.
+
+Fri Jul 24 10:43:25 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in (gjavah.o): Updated dependencies.
+	(jcf-dump.o): Likewise.
+	(all.indirect): Use ../gjavah.
+	(../gjavah$(exeext)): Likewise.
+	(clean): Don't remove gjavah.
+	(clean): Remove parse.c, not java/parse.c.
+	* Make-lang.in (java): Added gjavah.
+	(gjavah$(exeext)): New target.
+	(GJAVAH_SOURCES): New macro.
+	(java.all.build): Added gjavah.
+	(java.all.cross): Likewise.
+	(java.rest.encap): Likewise.
+	* config-lang.in (compilers, stagestuff): Added gjavah.
+
+Thu Jul 23 18:33:56 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (java_float_finite): New function.
+	(java_double_finite): Likewise.
+	(F_POSITIVE_INFINITY): New macro.
+	(F_NEGATIVE_INFINITY): Likewise.
+	(F_NAN): Likewise.
+	(D_POSITIVE_INFINITY): Likewise.
+	(D_NEGATIVE_INFINITY): Likewise.
+	(D_NAN): Likewise.
+	(print_field_info): Use java_float_finite and java_double_finite.
+
+Thu Jul 23 15:28:24 1998  Per Bothner  <bothner@cygnus.com>
+
+	* parse.y (method_header):  Name "this" implicit argument.
+
+Wed Jul 22 15:47:30 1998  Per Bothner  <bothner@cygnus.com>
+
+	* jcf-write.c:  Write out LineNumberTable attribute in .class file.
+ 	(linenumber_buffer, linenumber_ptr, linenumber_limit):  New statics.
+	(put_linenumber):  New function.
+	(generate_bytecode_insns, generate_classfile):  Write line numbers.
+
+Wed Jul 22 14:39:00 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h (CALL_EXPR_FROM_PRIMARY_P): Changed in PRIMARY_P.
+	(lookup_name, build_known_method_ref, build_class_init,
+ 	build_invokevirtual, invoke_build_dtable, match_java_method,
+ 	build_field_ref, pushdecl_force_head, build_java_binop,
+ 	binary_numeric_promotion, build_decl_no_layout,
+ 	build_java_arrayaccess, build_newarray, build_anewarray,
+ 	build_java_array_length_access, build_java_arraynull_check): New
+ 	extern function prototypes.
+	(JAVA_UNARY_PLUS_EXPR, JAVA_NEW_ARRAY_EXPR, JAVA_NEW_CLASS_EXPR,
+ 	JAVA_THIS_EXPR, CALL_CONSTRUCTOR_P): Macro definition moved in
+ 	java-tree.h.
+	* jcf-parse.c (init_outgoing_cpool): Set current_constant_pool_data_ref
+	to NULL 
+	* jcf.h (jcf_out_of_synch): New extern function prototype.
+	* parse.h: Static/global function implemented in parse.y
+ 	prototyped and declarations moved at the end of the file.
+	(DECL_P): Check that the argument isn't null.
+	(JAVA_UNARY_PLUS_EXPR, JAVA_NEW_ARRAY_EXPR, JAVA_NEW_CLASS_EXPR,
+ 	JAVA_THIS_EXPR): No longer defined here. See java-tree.h
+	(QUAL_DECL_TYPE): New macro.
+	(PARAMS): Macro definition removed.
+	* parse.y: (yyparse, yyerror): Use PROTO instead of PARAMS.
+	(return_statement:): Call build_return.
+	(field_access:): Call make_qualified_primary in sub rule.
+	(method_invocation:): Build method invocation and call
+ 	make_qualified_primary when processing primaries.
+	(java_complete_class): Set IDENTIFIER_SIGNATURE_TYPE by calling
+ 	get_type_from_signature.
+	(java_check_regular_method): Extra integer 0 argument when calling
+ 	lookup_java_method2.
+	(lookup_java_interface_method2): Extra method DECL argument when
+ 	calling lookup_java_interface_method2.
+	(java_method_add_stmt): Set TREE_SIDE_EFFECTS on newly created
+ 	COMPOUND_EXPR node.
+	(java_complete_expand_method): Layout current class iff not
+ 	already done. Don't process interface's methods.
+	(java_complete_expand_method): Use super class only if it
+ 	exists. Use current class otherwise.
+	(make_qualified_primary): New function.
+	(resolve_expression_name): Process qualified expression or
+ 	expression from primary the same way.
+	(resolve_expression_name): Two last arguments to
+ 	resolve_field_access are now NULL_TREEs.
+	(resolve_field_access): New variable is_static. Local field must
+ 	be DECLs. is_static computed on field DECLs only. Append code in
+ 	where_found to the field access if necessary. Use QUAL_DECL_TYPE
+ 	to initialize field_type.
+	(resolve_qualified_expression_name): New local variable,
+ 	previous_call_static and is_static. Handle primaries with function
+ 	calls, casts, array references and `this'. `super' now handled as
+ 	`(super_class)this'. Use is_static to clarify boolean expressions.
+  	Added code to handle case where a proper handle is required to
+ 	access a field. Use QUAL_DECL_TYPE where applicable.
+	(maybe_access_field): New function.
+	(patch_method_invocation_stmt): New arguments primary, where,
+ 	is_static. Branch of the test on CALL_EXPR_FROM_PRIMARY_P
+ 	deleted. Use `where' as a type to search from if specified. Check
+ 	for static method reference where forbidden. Append primary or
+ 	current_this to the argument list if not calling constructor nor
+ 	static methods.
+	(check_for_static_method_reference): New function.
+	(patch_invoke): Layout the class on which new is done if
+ 	necessary.
+	(lookup_method_invoke): Changed format to report errors on
+ 	methods.
+	(qualify_ambiguous_name): New local variable this_found. Now
+ 	handle things from primaries. Method call are considered
+ 	expression names.
+	(identical_subpath_p): NULL_TREE arguments to breakdown_qualified
+ 	changed into NULLs.
+	(not_initialized_as_it_should_p): Comply with the new DECL_P.
+	(java_complete_tree): New case fo RETURN_EXPR. Process function
+ 	call arguments in separate function. 
+	(complete_function_arguments): New function.
+	(build_method_invocation): Don't use CALL_EXPR_FROM_PRIMARY_P
+ 	anymore.
+	(patch_assignment): Take the return function slot into account as
+ 	a RHS. Distinguish assignment from a return.
+	(valid_ref_assignconv_cast_p): Use build_java_argument_signature
+ 	when checking methods in interfaces.
+	(resolve_type_during_patch): NULL argument to unresolve_type_p
+ 	instead of NULL_TREE.
+	(patch_newarray): Fixed typo in comment.
+	(buid_this): Build a WFL with `kw_this' instead of a FIELD_DECL.
+	(build_return, patch_return): New functions.
+	* typeck.c (lookup_java_constructor): Fixed typo in comment.
+	
+Tue Jul 21 12:10:04 1998  Per Bothner  <bothner@cygnus.com>
+
+	* constants.c (find_name_and_type_constant, find_fieldref_index,
+	find_methodref_index):  New methods.
+	* expr.c (build_invoke_non_interface):  If flag_emit_class_files,
+	just return given method.  Also, rename to build_known_method_ref.
+	(expand_invoke):  Rename call to build_invoke_non_interface.
+	* java-tree.h, parse.h:  Update prototype.
+	* parse.y, decl.c, jcf-parse.c:  Suppress calls to back-end functions
+ 	(such as expand_expr_stmt) if flag_emit_class_files.
+	* jcf-write.c (RESERVE, OP1, OP2, OP4, NOTE_PUSH, NOTE_POP,
+	STACK_TARGET, IGNORE_TARGET):  New macros.
+ 	(code_buffer, code_ptr, code_limit, code_S, code_SP_max):  New globals.
+	(generate_bytecode_insn):  New function to generate method's bytecode.
+	(generate_classfile):  Node generate Code attribute for a method.
+	(code_buffer_grow, push_constant1, push_constant2, push_int_const,
+	push_long_const, field_op, adjust_typed_op, maybe_wide):
+	New functions used by generate_bytecode_insn.
+	
+	* typeck.c (signature_include_return):  Remove variable.
+	(push_java_argument_signature, build_java_argument_signature):  New.
+	(build_java_signature):  Use push_java_argument_signature.
+	* parse.y:  Use build_java_argument_signature instead of fiddling
+	with signature_include_return.
+
+Fri Jul 17 09:48:51 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (print_c_decl): Always generate JArray<>* for array
+	types.
+
+	* Makefile.in (all.indirect): Added gjavah$(exeext).
+	(gjavah$(exeext)): Added $(exeext).
+	(clean): Likewise.
+
+Thu Jul 16 15:29:20 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (layout_class): Call to java_layout_parsed_class replace
+ 	by safe_layout_class.
+	* expr.c (build_java_array_length_access): Removed static storage
+ 	class in the function definition.
+	(build_java_arraynull_check): Likewise.  
+	Also fixed typos in two comments.
+	* lex.c (java_init_lex): Initialize static global kw_length.
+	(java_lex): Use BUILD_OPERATOR on RETURN_TK.
+	* lex.h (JAVA_FLOAT_RANGE_ERROR): Add extra argument to
+ 	java_lex_error.
+	(JAVA_INTEGRAL_RANGE_ERROR): Likewise.
+	* parse.h (resolve_no_layout): New static function declaration.
+	(get_identifier_in_static): Declaration removed.
+	(java_layout_parsed_class): Function name declaration changed to
+ 	safe_layout_class.
+	(build_newarray_node, patch_newarray, resolve_type_during_patch,
+ 	not_initialized_as_it_should_p, build_this): New static function
+ 	declarations.
+	(pushdecl_force_head, build_java_binop, int_fits_type_p,
+ 	binary_numeric_promotion, stabilize_reference,
+ 	build_decl_no_layout, build_java_arrayaccess): Extern function
+ 	declarations moved into their own section.
+	(build_newarray, build_anewarray, build_java_array_length_access,
+ 	build_java_arraynull_check): New extern function declarations.
+	(UNARY_PLUS_EXPR): Macro renamed into JAVA_UNARY_PLUS_EXPR.
+	(JAVA_NEW_ARRAY_EXPR, JAVA_NEW_CLASS_EXPR, JAVA_THIS_EXPR): New
+ 	fake tree codes.
+	(CALL_CONSTRUCTOR_P): New macro.
+	* parse.y (kw_length): New static global tree node.
+	(return_statement): Tagged <node>.
+	(RETURN_TK): Tagged <operator>.
+	(variable_declarator_id:): Build variable declaration with an
+ 	empty initialization value if a syntax error was found in the
+ 	initialization part of the variable declaration.
+	(statement_without_trailing_substatement:): return_statement: now
+ 	uses the default rule.
+	(return_statement:): Temporarily fixed to return NULL_TREE.
+	(primary_no_new_array:): Call build_this when THIS_TK was parsed.
+	(class_instance_creation_expression:): Class creation rules now
+ 	call build_method_invocation upon reduction.
+	(array_creation_expression:): Rules call build_newarray_node upon
+ 	reduction.
+	(dim_exprs:): Build a list of dimension expressions.
+	(dim_expr:): Store location of the OSB_TK in the dimension
+ 	expression node.
+	(method_invocation:): Added a new error rule.
+	(build_unresolved_array_type): WFL argument may also be an array
+ 	on a primitive type. Name of the argument changed to reflect this.
+	(method_declarator): Insert argument type at the beginning of the
+ 	argument type list and later reverse the list.
+	(unresolved_type_p): Argument 'returned' may be optionally
+ 	NULL_TREE.
+	(java_layout_class_from_source): Function renamed
+ 	safe_layout_class.
+	(resolve_and_layout): Now call resolve_no_layout and
+ 	safe_layout_class.
+	(resolve_no_layout): New function.
+	(purify_type_name): New function.
+	(complete_class_report_errors): Call purify_type_name during error
+ 	report on a type not found.
+	(process_imports): error_found local variable doesn't need to be
+ 	initialized to zero.
+	(declare_local_variables): New local type_wfl. Fixed typo in error
+ 	message. type_wfl assigned to unresolved type and used to register
+ 	incomplete type. Build a WFL around the variable initialization
+ 	statement so that debug info can be generated on it.
+	(source_start_java_method): Reverse argument list after they've
+ 	been processed.
+	(current_this): New static global variable.
+	(java_complete_expand_methods): Set current_this when appropriate.
+	(resolve_expression_name): Build correct static and non static
+ 	field access bearing a simple name.
+	(resolve_field_access): Resolve the length field of arrays. Handle
+ 	f.m() cases.
+	(patch_method_invocation_stmt): Set the type of the method
+ 	invocation to error_mark_node. This value is later overridden by a
+ 	valid type, if any. Don't handle qualified constructor invocation
+ 	as qualified method invocation. Call lookup_method_invoke with its
+ 	new flag. It's no longer necessary to access the selected method
+ 	as the value of a tree list. Handle constructor invocation.
+	(patch_invoke): Reverse argument list when invoking non interface
+ 	methods. Insert call to new as the first argument of the
+ 	constructor.
+	(invocation_mode): Return a INVOKE_STATIC is the invoked method is
+ 	defined within a final class. Return INVOKE_STATIC if the invoked
+ 	method is a constructor.
+	(lookup_method_invoke): New lc argument is a flag to indicate a
+ 	constructor lookup. Now handle constructor lookup. Choose the most
+ 	specific method in case several were matching the invocation
+ 	requirements. Return a method decl instead of a tree list featuring
+ 	one single method decl element.
+	(refine_accessible_methods_list): New lc flag argument to
+ 	indicate that a constructor is being looked up.
+	(not_initialized_as_it_should_p): New function.
+	(java_complete_tree): Now process fake tree codes
+ 	JAVA_NEW_ARRAY_EXPR, JAVA_NEW_CLASS_EXPR and JAVA_THIS_EXPR. Call
+ 	save_expr on resolved function call arguments. Case on
+ 	UNARY_PLUS_EXPR changed into a case on JAVA_UNARY_PLUS_EXPR.
+	(patch_assignment): LHS can be a field access expression. When
+ 	dealing with reference, lhs_type is the promoted type of the
+ 	rhs_type, not the RHS. Use not_initialized_as_it_should_p where
+ 	applicable.
+	(operator_string): JAVA_UNARY_PLUS_EXPR replaces UNARY_PLUS_EXPR.
+	(patch_binop): Use not_initialized_as_it_should_p where
+ 	applicable.
+	(build_unaryop): JAVA_UNARY_PLUS_EXPR replaces UNARY_PLUS_EXPR.
+	(patch_unaryop): Likewise. And use not_initialized_as_it_should_p
+ 	where applicable.
+	(resolve_type_during_patch): New function.
+	(patch_cast): Call resolve_type_during_patch to resolve type and
+ 	report error accordingly.
+	(patch_array_ref): Use not_initialized_as_it_should_p where
+ 	applicable. Array base expression is saved before being
+ 	used. Promote the type of an array elements if it contains non
+ 	builtin types.
+	(build_newarray_node, patch_newarray, build_this): New functions.
+
+Thu Jul 16 10:46:47 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (print_c_decl): UTF8_GET increments pointer; don't
+	increment it in `for' statement.
+	(print_field_info): If number is inf or nan, don't print it.
+	(print_method_info): If method name is `delete', just ignore it.
+	(print_c_decl): Special-case jstringArray.
+
+	* gjavah.c (help): New function.
+	(no_argument): New function.
+	(usage): Changed text.
+	(main): Rewrote argument handling.  Now handles -v, --help,
+	--version.
+	(version): New function.
+	(found_error): New global.
+	(main): Return found_error.
+	(generate_access): Set found_error.
+	(print_c_decl): Likewise.
+
+Wed Jul 15 10:36:27 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (print_c_decl): Don't print "," when examining field.
+	Skip type name when looking at "[L" types.
+	(process_file): Now static.
+	(generate_access): Now returns int.
+	(last_access_generated): New global.
+	(process_file): Clear last_access_generated; make multiple passes
+	over the class.
+	(print_field_info): Just return if generate_access returns true.
+	(print_method_info): Likewise.  Also, allow <init> functions to
+	pass through.
+	(print_c_decl): Added is_init argument.  Print constructors
+	properly.
+	(print_cxx_classname): Use UTF8_GET to extract characters from
+	string.
+	(print_base_classname): New function.
+	(print_class_decls): New function.
+	(process_file): Use it.
+	(utf8_cmp): New function.
+
+Mon Jul 13 14:21:47 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* lang-options.h: Format changed to match changes in gcc/toplev.c
+	to implement a --help option.
+
+1998-07-10  Brendan Kehoe  <brendan@cygnus.com>
+
+	* decl.c (init_decl_processing): Revert change to dtable_type.
+
+Thu Jul  9 18:22:12 1998  Per Bothner  <bothner@cygnus.com>
+
+	* java-tree.h (CLASS_P):  Changed DECL_LANG_FLAG_7 -> TYPE_LANG_FLAG_4.
+
+1998-07-08  Brendan Kehoe  <brendan@cygnus.com>
+
+	* decl.c (init_decl_processing): Set CLASS_LOADED_P on dtable_type.
+
+	* lang.c (lang_init): Default flag_exceptions to 1, without
+	checking to see if it's 2 first.
+
+Wed Jul  8 03:01:32 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* constants.c: Include "system.h".
+	* decl.c: Likewise.
+	* lang.c (flag_new_exceptions): Get via extern now.
+	(lang_init_options): New functions.  Turn on flag_new_exceptions.
+	
+Tue Jul  7 12:56:48 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* lex.c (java_lex): Return 0 when we see an invalid character in
+ 	the input.
+
+	* lex.c (java_read_char): Specify extra argument when calling
+ 	java_lex_error.
+	(java_read_unicode, java_parse_end_comment,
+ 	java_parse_escape_sequence): Likewise,
+	(java_lex): Specify extra argument when calling
+ 	java_lex_error. Test that IDs are beginning with a legal character
+ 	for IDs. Handle invalid characters with an error message and a
+ 	call to java_lex_error.
+	(java_lex_error): Adjust column position by new argument
+ 	`forward'. Issue an error even if in the middle of reporting an
+ 	other error.
+
+1998-07-07  Brendan Kehoe  <brendan@cygnus.com>
+
+	* jcf-io.c (find_class): Zero out BUFFER before we use it, since
+	we don't explicitly put a null pointer when we're copying it.
+
+Tue Jul  7 09:38:38 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (print_cxx_classname): New function.
+	(super_class_name): Likewise.
+	(print_super_fields): Removed.
+	(in_super): Removed.
+	(print_field_info): Never generate #defines.
+	(print_c_decl): Changed generated types to match JNI.  No longer
+	print class name before method name.
+	(print_method_info): Print "static" before static methods.
+	Print "virtual" before non-final methods.
+	(usage): Use exit(1), not exit(-1).
+	(main): Likewise.
+	(print_field_info): Use %.17g to print a double.
+	(last_access): New globals.
+	(process_file): Initialize last_access.
+	(usage): Now static.
+	(ACC_VISIBILITY): New define.
+	(generate_access): New function.
+	(print_field_info): Call it.
+	(print_method_info): Likewise.  Also, generate information for all
+	methods, not just native methods.  Return void.
+	(print_c_decl): Return void.
+	(print_field_info): Return void.
+
+Thu Jul  2 16:53:16 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Makefile.in (JAVABISONFLAGS): Specific flag for bison when
+ 	processing the jc1 grammar file. Prefix bison functions and
+ 	variables with java_.
+	(parse.c): Dependencies on parse.h and lex.h
+	* expr.c (build_java_arrayaccess): Function now global.
+	* java-tree.h: Comment reorganized to carry on previous
+ 	classification effort.
+	(RESOLVE_EXPRESSION_NAME_P, RESOLVE_PACKAGE_NAME_P,
+ 	RESOLVE_TYPE_NAME_P): New flags on WFLs.
+	* jcf-parse.c (parse_source_file): java_parse_source_file renamed
+ 	java_parse (new prefix java_ generated by bison).
+	(java_layout_parsed_class, java_register_parsed_class): Function
+ 	call removed.
+	(yyparse): Removed unnecessary call to init_outgoing_cpool.
+	* lex.c (static tree wfl_op): Variable deleted.
+	(java_init_lex): Initialize kw_super and kw_this. Initialize more
+ 	ctxp fields to NULL_TREE.
+	(java_lex): No longer create WFL for operators. Filename caching
+ 	mechanism deleted. Call BUILD_OPERATOR for `.', '(', '['. Strings
+ 	created as STRING_CST and later expanded. Removed extra argument
+ 	to BUILD_OPERATOR and BUILD_OPERATOR2. Build operators for THIS
+ 	and SUPER.
+	(build_wfl_node): Removed code in comments.
+	* lex.h (BUILD_OPERATOR, BUILD_OPERATOR2): No longer build a WFL but
+ 	store token and location data in the current bison token.
+	* parse.h: Removed pre-processor based symbol prefixes hack. Moved
+ 	static/extern function declaration at the beginning of the file.
+	(struct qualification): Data structure definition deleted.
+	(RESOLVE_CHAIN_REMAINDER): Macro definition deleted.
+	(qualify_ambiguous_name): Function declaration modified. Function
+ 	now returns nothing.
+	(build_array_ref, patch_array_ref, make_qualified_name,
+ 	resolve_qualified_expression_name, maybe_generate_clinit,
+ 	resolve_field_access): New static function declarations.
+	(build_java_arrayaccess): New extern function declaration.
+	(enum { RESOLVE_EXPRESION_NAME...}): Enum deleted.
+	(CALL_EXPR_PRIMARY): Macro deleted.
+	(EXPR_WFL_QUALIFICATION, QUAL_WFL, QUAL_RESOLUTION): New macros.
+	(struct parser_ctxt): Field initialized_final
+ 	removed. non_static_initialized, static_initialized: New fields.
+	* parse.y (static tree kw_super, static tree kw_this): New global
+ 	static.
+	(%union): tree wfl field of operator member replaced by int
+ 	location. WFLs are non longer created for operators.
+	(OSB_TK, DOT_TK, THIS_TK, SUPER_TK): Tagged <operator>.
+	(qualified_name:): Now calls make_qualified_name to build the
+ 	identifier.
+	(type_declaration:): Consider generating <clinit> when class
+ 	parsing completed.
+	(variable_declarator:): Directly build an assignment node when the
+ 	variable is initialized when declared.
+	(this_or_super:): Build a WFL and set current location when THIS
+ 	or SUPER are parsed.
+	(expression_statement:): Wrap statement around a WFL.
+	(primary_no_new_array:): Fixed typo. Changed value returned by
+ 	THIS_TK because of its new type (temporary).
+	(dim_exprs:): Temporary fix because of OSB_TK's new type.
+	(field_access:): Build qualified name with SUPER.
+	(method_invocation:): Fixed returned value because of SUPER's new
+ 	type.
+	(array_access:): Use OSB_TK location information.
+	(post_increment_expression:, post_decrement_expression:,
+ 	unary_expression:, pre_increment_expression:,
+ 	pre_decrement_expression:, unary_expression_not_plus_minus:,
+ 	cast_expression:, multiplicative_expression:,
+ 	additive_expression:, shift_expression:, relational_expression:,
+ 	equality_expression:, and_expression:, exclusive_or_expression:,
+ 	inclusive_or_expression:, conditional_and_expression:,
+ 	conditional_or_expression:, assignment:): Use new location/token
+ 	information available on operators.
+	(create_class): Set super_decl_type to NULL_TREE when processing
+ 	java.lang.Object.
+	(register_fields): Field initialization is now a MODIFY_EXPR
+ 	node. Chain initialization code to the matching lists (according
+ 	the the field declaration modifiers).
+	(maybe_generate_clinit): New function.
+	(method_header): Don't set method's DECL_NAME to a WFL when adding
+ 	methods to java.lang.Object.
+	(resolve_and_layout): Now can return NULL_TREE if the type
+ 	resolution fails. Otherwise, return the class DECL instead of its
+ 	TYPE.
+	(check_method_redefinition): Don't patch method DECL_NAME if it
+ 	belongs to java.lang.Object.
+	(process_imports): Simply assign error_found to the value returned
+ 	by check_pkg_class_access.
+	(declare_local_variables): Don't use their init statements (if
+ 	any) when parsing error were previously found. Reuse MODIFY_EXPR
+ 	build during parsing as an init statement.
+	(java_method_add_stmt): Now return the current method body.
+	(java_layout_parsed_class, java_register_parsed_class): Functions
+ 	removed.
+	(java_complete_expand_methods): Initialize the constant pool on a
+ 	per class basis. Layout the classes before expanding their method
+ 	bodies. Don't try expand artificial constructor code if error were
+ 	found. Make the classes data and register them if no error were
+ 	found.
+	(java_complete_expand_method): Retrieve an artificial constructor
+ 	argument list before entering its body. Assign the top block to
+ 	the artificial constructor function body and set types of declared
+ 	blocks and compound statements to void. Walk method body if not an
+ 	artificial constructor.
+	(make_qualified_name, cut_identifier_in_qualified): New functions.
+	(resolve_expression_name): Fixed comments. Save/restore the
+ 	current class CLASS_LOADED_P flag value. Build non qualified
+ 	static field access and handle qualified expression names.
+	(resolve_field_access, resolve_qualified_expression_name): New
+ 	functions.
+	(patch_method_invocation_stmt): Use the new expression resolution
+ 	scheme, calling resolve_field_access when the function call is
+ 	resolved as an expression.
+	(qualify_ambiguous_name): Function rewritten to work on qualified
+ 	expression produced by make_qualified_name.
+	(java_complete_tree): Promote type when function's argument are
+ 	RECORD_TYPEs. While processing the MODIFY_EXPR case: don't patch
+ 	the assignment to discover further errors if RHS is a expression
+ 	name that fails to evaluate. Declare LHS initialized even though
+ 	the assignment failed. Don't use the location variable and removed
+ 	extra argument in patch function calls. Now handle the ARRAY_REF
+ 	case and build internal string representation when STRING_CSTs are
+ 	walked.
+	(build_method_invocation): Don't wrap function call around a WFL.
+	(build_assignment): Likewise. Use the operator location
+ 	information.
+	(patch_assignment): Handle array access LHSs. Handle error
+ 	provenance, resulting in a better error report.
+	(build_binop): Use op_location from operator as binop location
+ 	information.
+	(build_unaryop, build_incdec, build_cast): Likewise.
+	(patch_binop): Extract location information from the node. Fixed
+ 	typo in error message.
+	(patch_unary_op): Extract location information from the node.
+	(build_array_ref, patch_array_ref): New functions.
+	
+Wed Jul  1 13:11:36 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* expr.c (expand_java_INSTANCEOF): Changed calling convention to
+	match _Jv_IsInstanceOf.
+	* decl.c (init_decl_processing): Use _Jv_NewArray, not
+	soft_newarray.  Use _Jv_IsInstanceOf, not soft_instanceof.
+
+Tue Jun 30 14:12:54 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* decl.c (init_decl_processing): Functions are now named
+	_Jv_MonitorEnter and _Jv_MonitorExit, and return jint.
+
+Mon Jun 29 14:47:10 1998  Per Bothner  <bothner@cygnus.com>
+
+	* java-tree.h (load_class):  Add prototype.
+ 	* class.c (is_compiled_class):  Add missing arg to load_class.
+	* expr.c (expand_java_NEW):  Call load_class.
+	* parse.y (process_import):  Removed bogus use of void return value.
+
+Thu Jun 25 11:50:48 1998  Per Bothner  <bothner@cygnus.com>
+
+	* decl.c, java-tree.h (soft_athrow_node):  Renamed to soft_node.
+	Function name is "_Jv_Throw" instead of "soft_athrow".
+	* decl.c, java-tree.h (soft_new_node):  Renamed to alloc_object_node.
+	Function name is "_Jv_AllocObject" instead of "soft_new".
+	Takes an extra parameter (object size).
+	* expr.c:  Update calls.
+
+Wed Jun 24 13:59:02 1998  Per Bothner  <bothner@cygnus.com>
+
+	* lex.c (java_get_line_col):  Handle end-of-file.
+	* except.c (expand_end_java_handler):  Handle null type (i.e. finally).
+
+Wed Jun 24 09:22:34 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* lang.c (lang_init): Make -fexceptions the default.
+	* except.c (maybe_start_try, maybe_end_try): Don't do anything if
+	exception handling is not turned on.
+
+Tue Jun 23 10:17:09 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* lang.c (flag_new_exceptions): Make this this default.
+	* decl.c (end_java_method): Call emit_handlers.
+	* except.c (method_init_exceptions): Set language code and version.
+	(expand_start_java_handler): Enable exception, and call 
+	expand_eh_region_start.
+	(expand_end_java_handler): Enable exception, and set up catch blocks.
+	(emit_handlers): New routine to generate the saved handlers.
+	* java-except.h (emit_handlers): Add prototype.
+
+Fri Jun 12 11:31:24 1998  Per Bothner  <bothner@cygnus.com>
+
+	We used to have three different representations of the constant pool:
+	the CPool structure, the tree_constant_pool, and the constructures
+	used to build the Class object (which may need class and string
+	constants) in compiled code.  None were appropriate for compiling
+	to .class files, so I did a major overhaul.
+
+	First, the tree_constant_pool array was removed.  Things were
+	modified to the CPool structure in the JCF could be used.
+	Second, a "capacity" field was added to the CPool, and functions
+	written to search for a matching constant, adding one if not found.
+	The code that generated the Class object was changed to use a CPool.
+	The actual TREE_LISTs used to build the CONSTRUCTORs used for
+	the static Class object are now only in build_constants_constructor.
+	Finally, I wrote code which can generate a .class file (including its
+	constant pool) from the RECORD_TYPE of a class.  This is a big step
+	on the way to compiling Java source into .class files.
+	
+	* jcf-write.c:  New file. Writes out a RECORD_TYPE as a .class file.
+	* Makefile.in (JAVA_OBJS):  Added jcf-write.o.
+
+	* java-tree.h (CPOOL_UTF, CONSTANT_ResolvedFlag,
+	CONSTANT_ResolvedString, CONSTANT_ResolvedClass):  New macros.
+	(NAME_AND_TYPE_NAME, NAME_AND_TYPE_SIGNATURE, COMPONENT_REF_NAME,
+	COMPONENT_REF_NAME_AND_TYPE, COMPONENT_REF_SIGNATURE): Redefined.
+	(COMPONENT_REF_CLASS):  Replaced by COMPONENT_REF_CLASS_INDEX.
+	(lang_type):  Removed constant_pool field.
+	* jcf.h (CPool):  Renamed size to count.  Added field capacity.
+	(CPOO_COUNT, CPOOL_UINT, CPOOL_USHORT1, CPOOL_USHORT2,
+	CPOOL_FINISH, CPOOL_INIT, CPOOL_REINIT):  New macros.
+	Rewrite some of the old JCF_XXX in terms of CPOOL_XXX macros.
+
+	* constants.c (current_constant_pool_tags, current_constant_pool_data,
+	current_constant_pool_length), java-tree.h: Replaced by outgoing_cpool.
+	* constants.c (build_constants_constructor):  Use new outgoing_cpool.
+	(set_constant_entry, find_constant1, find_constant2,
+	find_class_constant, count_constant_pool_bytes, write_constant_pool,
+	find_utf8_constant, find_class_or_string_constant):  New functions.
+	
+	* jcf-parse.c (load_class):  Don't save/restore tree-constant_pool.
+ 	(get_constant):  Use current_jcf.cpool instead of tree_constant_pool.
+	(give_name_to_class, get_class_constant):  Likewise.
+	* jcf-parse.c, java-tree.h (tree_constant_pool):  Removed.
+ 	(get_name_and_type_constant, get_ref_constant):  Removed.
+	* parse.h (parser_ctxt):  Remove field tree_constant_pool.
+	* parse.y:  Don't save/restore tree_constant_pool.
+	* verify.c (verify_jvm_instructions):  Update for new approach.
+	* expr.c (expand_invoke, expand_java_field_op): Likewise.
+
+	* lang-options.h:  Added -femit-class-file, -femit-class-files.
+	* lang.c (flag_emit_class_files), java-tree.h:  New flag.
+	(lang_f_options):  Added "emit-class-file(s)".
+
+	* expr.c (build_java_arrayaccess):  Generate more efficient array
+	bounds checking, by using unsigned compare.
+
+	* expr.c (expand_invoke):  Re-arrange error checks to make more robust.
+
+Wed Jun 10 17:34:42 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.h: New comment on the handling of unresolved type
+ 	identifiers. JDEPs are now part of the jdep_code enum.
+	(typedef struct jdep): Now use enum jdep_code or int, depending on
+ 	availability. Both are narrowed down to an 8 bits bitfield.
+	(CALL_EXPR_PRIMARY): Fixed comment.
+
+Wed Jun 10 10:54:39 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* Make-lang.in (java): Added gjavac and jvgenmain.
+	(java.start.encap): Depend on gjavac.
+	(java.rest.encap): Depend on jvgenmain.
+
+	* Make-lang.in (JAVA_INSTALL_NAME): Name is gjavac, not c++.
+	(JAVA_CROSS_NAME): Likewise.
+	(java.all.build): Depend on jvgenmain and gjavac.
+	(java.all.cross): Depend on jvgenmain and gjavac-cross.
+	(jvgenmain$(exeext)): New target.
+	(java.install-common): Wrote.
+	* config-lang.in (compilers, stagestuff): Added gjavac and
+	jvgenmain.
+
+Wed Jun 10 12:19:04 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* lang.c (lang_decode_option): New argc/argv interface.
+
+Tue Jun  9 18:12:46 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* ChangeLog: Fixed entries not compliant with the Gnu Coding Standard.
+	* decl.c (build_decl_no_layout): New function.
+	* expr.c (java_lang_expand_expr): Layout declarations found in
+ 	blocks before they're pushed.
+	* jcf-parse.c (load_class): Save current line when parsing class
+ 	file.
+	(parse_source_file): Register class before expanding their
+ 	methods.
+	* lang.c (put_decl_node): Produce `null' when `void *' is
+ 	processed.
+	* lex.c (static tree wfl_op): New static global, for error report
+ 	on casts.
+	(java_init_lex): wfl_operator and wfl_op initialized
+ 	here. Filename caching added for wfl_op. Return wfl_op when `(' is
+ 	parsed.
+	* parse.h (build_unaryop, build_incdec, patch_unaryop, build_cast,
+ 	patch_cast, valid_ref_assignconv_cast_p, can_cast_to_p,
+ 	build_unresolved_array_type): New static function definitions.
+	(build_decl_no_layout): New extern function declared.
+	(OBSOLETE_MODIFIER_WARNING): Report error only if the WFL of the
+ 	faulty modifier exists.
+	(TYPE_INTERFACE_P, TYPE_CLASS_P): New macros.
+	(ERROR_CAST_NEEDED_TO_INTEGRAL): Error message tuned.
+	(UNARY_PLUS_EXPR): New fake operator.
+	(struct parser_ctxt): New field osb_number.
+	* parse.y (static tree wfl_operator): New static WFL for operator
+ 	bound error messages.
+	(DECR_TK, INCR_TK): Moved.
+	(OP_TK): Tagged <operator>.
+	(array_type:): Now call build_unresolved_array_type.
+	(dim_expr:): Count the number of '[' seen.
+	(post_increment_expression, post_decrement_expression,
+ 	pre_increment_expression, pre_decrement_expression,
+ 	unary_expression_not_plus_minus, unary_expression:): Actions are
+ 	now building the corresponding unary expressions.
+	(cast_expression:): Actions are now building cast expressions.
+	(build_unresolved_array_type): New function.
+	(create_interface): Reset the number of declared interfaces.
+	(create_class): Likewise.
+	(method_header): Methods declared within the scope of an interface
+ 	are now implicitly set public and abstract.
+	(java_complete_class): Variable's and parameter's type are patched
+ 	with a promoted type.
+	(declare_local_variables): Resolved non builtin types are promoted
+ 	before being used to build a variable decl. Removed type patch
+ 	posted on variable initialization statement.
+	(source_start_java_method): Use build_decl_no_layout to build the
+ 	decl of a parameter of incomplete type.
+	(java_register_parsed_class): Process interfaces too. Call
+ 	rest_of_decl_compilation on each processed class declarations.
+	(java_complete_expand_methods): Don't attempt to expand things in
+ 	interfaces.
+	(java_complete_tree): Process CONVERT_EXPR, even though it always
+ 	has a type. Propagate error_mark_node to node's type too. Promote
+ 	method's call argument type and return error_mark_node if
+ 	argument's completion didn't work. MODIFY_EXPR can have a WFL as a
+ 	RHS. Fixed bug in the handling of bogus RHS of a fixed type. Now
+ 	handle unary operator nodes.
+	(build_assignment): Added comment.
+	(print_int_node): New function.
+	(patch_assignment): New second argument. New error handling. Use
+ 	print_int_node. Handle references. Use can_cast_to_p to issue
+ 	different error message according to the context and check upon
+ 	the initialization of the RHS.
+	(can_cast_to_p, valid_ref_assignconv_cast_p): New functions.
+	(operator_string): Handle more operators.
+	(patch_binop): No longer use a function static
+ 	wfl_operator. Improved error message on shift distance.
+	(build_unaryop, build_incdec, build_cast, patch_unaryop,
+ 	patch_cast): New functions.
+	
+Fri Jun  5 18:03:07 1998  Per Bothner  <bothner@cygnus.com>
+
+	* jvspec.c:  New file.
+	* Make-lang.in:  New rules to build gjavac from jvspec.c and ../gcc.c.
+
+	* java-tree.h (identifier_subst):  Add declaration.
+
+Thu Jun  4 13:44:23 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* jvgenmain.c (main): Generate call to JvRunMain.
+
+	* class.c (make_class_data): Push value for "sync_info" field.
+	* decl.c (init_decl_processing): Push "sync_info" field.
+
+Wed Jun  3 20:39:14 1998  Per Bothner  <bothner@cygnus.com>
+
+	* typeck.c (build_java_array_type):  Set TYPE_NAME to actual
+	Java (source) name, not signature.
+	Set TYPE_ALIGN to (at least) that of element_type.
+
+Tue Jun  2 15:19:19 1998  Per Bothner  <bothner@cygnus.com>
+
+	* class.c:  Moved classname-mangling-rekated code to ...
+	* mangle.c:  ... this new file.
+	* jvgenmain.c:  New program (needs mangle.c) to generate main program.
+	* Makefile.in:  Update for above changes.	 
+
+Mon Jun  1 09:58:36 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (truthvalue_conversion): Convert integer and floating
+ 	point value to their truth value.
+	* lex.c (java_lex): Handle the `null' literal.
+	* parse.h (JREFERENCE_TYPE_P, DECL_P): New macros.
+	(ERROR_CANT_CONVERT_TO_BOOLEAN, ERROR_CANT_CONVERT_TO_NUMERIC,
+ 	ERROR_CAST_NEEDED_TO_INTEGRAL, ERROR_VARIABLE_NOT_INITIALIZED):
+ 	New macros.
+
+	* parse.y: Reorganization/documentation on token declaration.
+	(binop_lookup[]): New added new tree codes.
+	(relational_expression): Build corresponding binary operators.
+	(equality_expression, conditional_and_expression,
+ 	conditional_or_expression): Likewise.
+	(java_complete_class): Fix crash in debug message.
+	(java_complete_tree): Check initialization of method call
+ 	arguments. Further bogus node evaluation to detect more error
+ 	during assignments. Handles more binary operators.
+	(patch_assignment): Use DECL_P.
+	(build_binop): Fix crash when using URSHIFT_EXPR, a Java only tree
+ 	code.
+	(operator_string): Handle more case. Compacted source.
+	(patch_binop): Changed function comment. Checking for
+ 	uninitialized first operand takes the compound assignment into
+ 	account and uses DECL_P. Checking for uninitialized second operand
+ 	delayed to routine's end. Use macros to issue type bound error
+ 	messages and issue messages on both operands if their types are
+ 	different. Force fixed type into node. Handle all binary
+ 	operators.
+	
+Wed May 27 10:30:31 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h (COMPOUND_ASSIGN_P, INITIALIZED_P): New macros.
+        * lex.c (java_lex): Use BUILD_OPERATOR and BUILD_OPERATOR2 to
+        build operator node and return tokens.
+        * lex.h (BUILD_OPERATOR, BUILD_OPERATOR2): New macros.
+	* parse.h (java_complete_tree): Changed returned type in prototype.
+	(build_method_invocation, build_assignment, patch_assignment,
+ 	patch_binop): New static function declarations.
+        (JFLOAT_TYPE_P, JNUMERIC_TYPE_P, JPRIMITIVE_TYPE_P, JSTRING_P,
+ 	BUILD_EXPR_WFL): New macros.
+	* parse.y (enum tree_code binop_lookup[]): New static for token to
+ 	TREE_CODE lookup.
+	(%union): Parser union has new sub-structure `operator'.
+        (ASSIGN_TK, MULT_ASSIGN_TK, DIV_ASSIGN_TK, REM_ASSIGN_TK,
+        PLUS_ASSIGN_TK, MINUS_ASSIGN_TK, LS_ASSIGN_TK, SRS_ASSIGN_TK,
+        ZRS_ASSIGN_TK, AND_ASSIGN_TK, XOR_ASSIGN_TK, OR_ASSIGN_TK,
+        ASSIGN_ANY_TK): Tokens tagged `operator'.
+	(EQ_TK, GTE_TK, ZRS_TK, SRS_TK, GT_TK, LTE_TK, LS_TK, BOOL_AND_TK,
+ 	AND_TK, BOOL_OR_TK, OR_TK, INCR_TK, PLUS_TK, DECR_TK, MINUS_TK,
+ 	MULT_TK, DIV_TK, XOR_TK, REM_TK, NEQ_TK, NEG_TK, REL_QM_TK,
+ 	REL_CL_TK, NOT_TK, LT_TK): Tokens tagged `operator'.
+        (assignment_operator:): Rule tagged `operator'.
+	(expression_statement:): Re-installed default rule.
+        (method_invocation:): Sub rules call build_method_invocation.
+	(postfix_expression:): Don't attempt to resolve name here. Just
+ 	return an ID.
+	(multiplicative_expression:): Sub-rules build corresponding binop
+ 	expression node.
+	(additive_expression:, shift_expression:, and_expression:,
+ 	exclusive_or_expression:, inclusive_or_expression:): Likewise.
+        (assignment:): Sub rule invoke build_assignment.
+        (assignment_operator:): Default rules on sub rules.
+	(force_error): Added documentation on this variable.
+        (declare_local_variables): Build initialization calling
+        build_assignment.
+        (expand_start_java_method): Removed unused rtx declaration. Mark
+ 	arguments as already initialized.
+        (java_method_add_stmt): Type of built COMPOUND_EXPR set to NULL.
+	(java_complete_expand_methods): Don't process next method if
+ 	completion of the previous one triggered errors.
+	(java_complete_expand_method): Call source_end_java_method if no
+ 	error were found during completion.
+	(resolve_expression_name): Use IDENTIFIER_LOCAL_VALUE to retrieve
+ 	locals declaratilon. Handle names found within a class. Return
+ 	error_mark_node when things aren't found.
+	(patch_method_invocation_stmt): Return error_mark_node on failures.
+	(patch_invoke): Removed unused local. Return the correct node.
+	(java_complete_tree): Now returns a value. The BLOCK section binds
+ 	local identifiers and the type of a BLOCK is now void. Assign the
+ 	result of operand completion on COMPOUND_EXPR. Assign the
+ 	encapsulated node of a WFL to the result of its completion, except
+ 	when the node is an identifier. Now handle MODIFY_EXPR and several
+ 	binary operators. Return error_mark_node on errors.
+	(build_method_invocation, build_assignment, patch_assignment,
+ 	build_binop, operator_string, patch_binop): New functions.
+	* typeck.c (binary_numeric_promotion): New function.
+
+Thu May 21 12:01:04 1998  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (identifier_subst):  New convenience wrapper for ident_subst.
+	Replace most uses of ident_subst by identifier_subst.
+
+	* class.c (push_class_static_dummy_field):  Removed function.
+	(build_class_ref):  Find Class object decl by looking up "CNAME.class",
+	instead of looking got "class" static field.  Create that decl here.
+	(class_identifier_node):  Removed;  no longer needed.
+	(init_class_processing):  Don't init class_identifier_node.
+	* jcf-parse.c (jcf_parse):  Don't call push_class_static_dummy_field.
+	Do nreverse 0 times (instead of twice) for Object and Class.
+	* parse.y (java_layout_parsed_class): No push_class_static_dummy_field.
+
+Wed May 20 16:35:04 1998  Per Bothner  <bothner@cygnus.com>
+
+	* jcf-parse.c (parse_class-file):  Set lino to smallest line number,
+	while initializing linenumber_count and linenumber_table.
+	Do it before init_function_start (which calls emit_line_note).
+	* expr.c (expand_byte_code):  Don't need to clear lineno here.
+
+Mon May 18 16:23:32 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* class.c (append_gpp_mangled_type): If `qualifications' is >=9,
+	then mangle number as _N_.
+
+	* class.c (mangle_class_field): New function.
+	(build_class_ref): Set assembler name of class reference using
+	mangle_class_field.
+	(push_class_static_dummy_field): Likewise.
+
+Sun May 17 12:52:35 1998  Michael Tiemann <tiemann@cygnus.com>
+
+	* parse.y (source_start_java_method): Use TREE_SET_CODE instead
+	of assigning to TREE_CODE.  The latter method exploits a feature
+	of GCC that is not ANSI compliant.
+
+Thu May 12 13:44:27 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* decl.c (pushdecl_force_head): New function.
+	(pushlevel): Removed conditional printf.
+	(complete_start_java_method): Don't enter local variable scope if
+ 	function is compiled from source code.
+	* expr.c: parse.h now included
+	(java_lang_expand_expr): New function.
+	* jcf-io.c (find_class): Use SOURCE_FRONTEND_DEBUG instead of
+ 	printf. Terminate buffer when doing directories.
+	* jcf-parse.c (parse_source_file): Call lang_init_source before
+ 	parsing and before code generation.
+	* jcf.h (SOURCE_FRONTEND_DEBUG): Macro redefined to conditionally
+ 	use printf if the macro is defined.
+	* lang.c (lang_init): Install lang_expand_expr hook on
+ 	java_lang_expand_expr.
+	(java_dummy_print): New function.
+	(lang_init_source): New function.
+	* lex.c (java_lex): Remember location of an opening brace at the
+ 	second nesting level.
+	(java_is_eol): Unget character seen after a CR if it is EOF.
+	* parse.h: Now includes lex.h
+	(SOURCE_FRONTEND_DEBUG): Macro redefined to conditionally use
+ 	printf if the macro is defined.
+	(expand_start_java_method, build_expr_block, enter_block,
+ 	exit_block, lookup_name_in_blocks, maybe_absorb_scoping_blocks):
+ 	New static function declarations.
+	(pushdecl_force_head): New extern function declaration.
+	(INCOMPLETE_TYPE_P): New macro.
+	(JDEP_PARM, JDEP_TYPE): New entries in JDEPs enum.
+	(BLOCK_CHAIN_DECL, BLOCK_EXPR_DECLS, BLOCK_EXPR_BODY,
+ 	BLOCK_EXPR_ORIGIN): New macros.
+	(DECL_SOURCE_LINE_MERGE, DECL_SOURCE_LINE_FIRST,
+ 	DECL_SOURCE_LINE_LAST): New macros.
+	(struct parser_ctxt): Removed field current_method_decl, redundant
+ 	with the field current_function_decl. Added fields
+ 	first_ccb_indent1 and pending_block.
+	* parse.y (method_body, literal, INT_LIT_TK, FP_LIT_TK,
+ 	BOOL_LIT_TK, CHAR_LIT_TK, STRING_LIT_TK, NULL_TK, VOID_TK): Rules
+ 	tagged <node>
+	(SOURCE_FRONTEND_DEBUG): Used as macro accepting varargs.
+	(compilation_unit:): Cosmetic on sub rule.
+	(type_declaration:): Cosmetic on sub rules. Added an error rule.
+	(variable_initializer:): Installed default rule on expression:.
+	(method_declaration:): method_header: starts a new
+ 	method. method_body: installs the function body, absorbs blocks
+ 	emitted for temporary variable scopings, pops function's body block
+ 	and merges function's last statement lineno in DECL_SOURCE_LINE.
+	(method_body:): Installed default rules.
+	(block:): Call enter_block when an opening brace is seen.  Absorb
+ 	scoping blocks and call exit_block when a closing brace is seen.
+	(block_statement:): Cosmetic changes.
+	(method_invocation:): Create WFL around CALL_EXPR node.
+	(patch_stage): Added comment around definition.
+	(method_header): Try to use first_ccb_indent1 as the first line of
+ 	the method, so BP debug info are emitted at the first opening
+ 	brace of the function. If the function has no body, use the
+ 	location of the function's name. Override currently defined method
+ 	name with the matching WFL so we can point redefinition errors
+ 	using the location where the function's name was declared.
+	(check_abstract_method_header): Interprets DECL_NAME as an
+ 	identifier or as a WFL, accordingly.
+	(java_complete_class): New cases for JDEP_TYPE and JDEP_PARM.
+	(check_method_redefinition): Use DECL_NAME as a WFL. Extract
+ 	location and name information out of it and reinstall DECL_NAME to
+ 	its original identifier node value.
+	(lookup_cl): Use DECL_SOURCE_LINE_FIRST (first line of the
+ 	function's source code).
+	(read_import_dir): Test the value returned by find_class and issue
+ 	a fatal accordingly.
+	(declare_local_variables): Push a new block for the scope of the
+ 	new variable(s) if code has been already generated at that nesting
+ 	level. Pinpoint redefinition errors using the variable id
+ 	WFLs. Generate initialization code if necessary. If the variable
+ 	type is incomplete, register a patch on its decl.
+	(source_start_java_method): Rewritten. Define a new block for the
+ 	function's parameters. Build parameter decl out of function's
+ 	arguments and register them for a patch if their types are
+ 	incomplete.
+	(expand_start_java_method): Includes the part of
+ 	source_start_java_method that was pushing the parameter decls and
+ 	completing the method start code.
+	(source_end_java_method): Removed call the expand_end_bindings and
+ 	poplevel (already taken care of). Reinstall function's arguments
+ 	and get function's last line of code before calling
+ 	expand_function_end.
+	(java_method_add_stmt): New comment before the function's
+ 	code. Complement the second operand of the current COMPOUND_EXPR
+ 	if necessary.
+	(java_complete_expand_methods): Don't generate debug info on line
+ 	zero when expanding a generated constructor.
+	(java_complete_expand_method): Set start and end line numbers for
+ 	a artificially generated constructor to one and manually call
+ 	enter_block and exit_block when defining it. For all methods:
+ 	expand function's start calling the new expand_start_java_method
+ 	and invoke java_complete_tree on the effective method's body, if
+ 	any.
+	(resolve_expression_name): Now use lookup_name_in_blocks to search
+ 	local variable decls and print out an error when variables are
+ 	undefined.
+	(patch_method_invocation_stmt): Inserted comment before the
+ 	function's code.
+	(lookup_method_invoke): Chain method's arguments using chainon
+ 	with the current arg list as a second argument. Inserted missing
+ 	IDENTIFIER_POINTER when reporting an error on methods not found.
+	(refine_accessible_methods_list): Don't retain constructors.
+	(patch_arguments): Function removed.
+	(java_complete_tree): Inserted comment before the function's
+ 	code. New case for BLOCKs. Moved the WFL case a bit
+ 	further. Complete function's arguments.
+ 	(build_expr_block, enter_block, exit_block, lookup_name_in_blocks,
+ 	maybe_absorb_scoping_blocks): New functions.
+	
+Mon Apr 27 10:50:05 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-io.c (find_class): Reset jcf->java_source after JCF_ZERO, if
+ 	previously set.
+	* jcf-parse.c (parse_source_file, java_error_count): New forward
+ 	and extern declarations.
+	(java_parse_abort_on_error): Macro moved.
+	(jcf_parse_source): fatal called if fopen fails. Now calls
+ 	parse_source_file.
+	(parse_source_file): New parse_only parameter. Reflects the
+ 	elimination of the second pass.
+	(yyparse): parse_source_file called with argument set to 0.
+	* jcf.h (JCF_ZERO): Sets java_source to zero.
+	* lex.c (java_init_lex): pass argument is gone. Function modified
+ 	to be called once during the analysis of a file.
+	(java_unget_unicode): Fixed typo in fatal message.
+	(java_get_line_col): Likewise.
+	(java_lval): Likewise. String literals no longer built during
+ 	second pass.
+	* lex.h (JAVA_COLUMN_DELTA): Take the tabulation character into
+ 	account.
+	* parse.h (MODIFIER_WFL): New macro.
+	(parse_check_super, parser_check_super_interface): Now return int.
+	(parser_chain_incomplete_item, not_builtin_p,
+ 	complete_method_decl): Declarations removed.
+	(build_method_invocation_stmt, build_invoke): Renamed using the
+ 	`patch' instead of `build'
+	(register-incomplete_type, obtain_incomplete_type,
+ 	java_complete_tree, java_complete_expand_method,
+ 	unresolved_type_p, create_jdep_list): New function declarations.
+	(IC_TYPE, IC_DEPEND, DEPEND_DECL, DEPEND_WFL, BEGIN_ONLY_PASS,
+ 	END_ONLY_PASS, ELSE_ONLY_PASS): Macro deleted.
+	(jdep): New typedef on new struct _jdep.
+	(JDEP_DECL, JDEP_DECL_WFL, JDEP_KIND, JDEP_SOLV, JDEP_WFL,
+ 	JDEP_MISC, JDEP_APPLY_PATCH, JDEP_GET_PATCH, JDEP_CHAIN,
+ 	JDEP_TO_REVOLVE, JDEP_RESOLVED_DECL, JDEP_RESOLVED,
+ 	JDEP_RESOLVED_P): New macros.
+	(JDEP_NO_PATCH, JDEP_SUPER, JDEP_FIELD, JDEP_METHOD,
+ 	JDEP_METHOD_RETURN, JDEP_METHOD_END, JDEP_INTERFACE,
+ 	JDEP_VARIABLE): New enum values and jdep kinds.
+	(jdeplist): New typedef on struct _jdeplist.
+	(CLASSD_FIRST, CLASSD_LAST, CLASSD_CHAIN, JDEP_INSERT): New
+ 	macros.
+	(CALL_EXPR_PRIMARY): New macro.
+	(struct parser_ctxt): Fields java_pass, current_method_decl,
+ 	method_decl_list deleted. New field jdeplist.
+	(INCOMPLETE_P): Macro deleted.
+	* parse.y (single_type_import_declaration:): Removed pass switch.
+	(type_import_on_demand_declaration): Likewise.
+	(field_declaration:): Removed pass switch on all sub rules.
+	(class_declaration:): Call the complete_class_decl removed on
+ 	class_body rules.
+	(method_declaration:): Removed second pass switch. No longer chain
+ 	methods decl when method_header reduced.
+	(method_header:): Sub rules no longer depend on pass switch.
+	(method_declarator:): Likewise.
+	(method_body:): Likewise.
+	(abstract_method_declaration:): Likewise.
+	(block_statement:): Likewise.
+	(local_variable_declaration:): Likewise.
+	(argument_list:): Likewise.
+	(method_invocation:): Likewise. Call to	build_method_invocation_stmt
+	removed. Partial CLASS_EXPR tree node built instead.
+	(postfix_expression:): Removed pass switch on all sub rules.
+	(java_pop_parser_context): Free classd_list content.
+	(yyerror): Call obstrack_grow0 to finalize error message.
+	(check_class_interface_creation): Comment modified to reflect new
+ 	returned value meaning. Removed second pass switch. Return 1 if an
+ 	error was found, 0 otherwise. Adjust pointer on filename if a
+ 	leading path separator was found.
+	(maybe_create_class_interface_decl): Removed first pass switch
+ 	when linking the class decl to the class_list. Install a new
+ 	jdep_list for the class.
+	(add_superinterfaces): List of unresolved interfaces is
+ 	gone. Unresolved interfaces are directly added to the current
+ 	dependencies list.
+	(create_interface): Second pass shortcut removed. 
+	ctpx->modifier_ctx access through MODIFIER_WFL.
+	(create_class): Second pass shortcut removed. Call to
+ 	register_incomplete_type replaces the call to
+ 	parser_chain_incomplete_item.
+	(complete_class_decl): Function removed.
+	(duplicate_declaration_error): New way of retrieving redeclared
+ 	item type.
+	(register_fields): Call to lookup_modifier_cl replaced by
+ 	MODIFIER_WFL. New way of handling unresolved type, using
+ 	unresolved_type_p and obtain_incomplete_type.
+	register_incomplete_type replaces call to parser_chain_incomplete_item.
+	(patch_stage): New static global variable.
+	(method_header): New way of handling unresolved type, using
+ 	unresolved_type_p and obtain_incomplete_type. patch_stage used to
+ 	indicates that the method decl needs to be patched.
+	(check_abstract_method_header): Call to lookup_modifier_cl
+ 	replaced by MODIFIER_WFL.
+	(method_declarator): Incomplete argument type are registered
+ 	calling register_incomplete_type. Patch on the declared method is
+ 	issued in that case.
+	(unresolved_type_p): New function.
+	(parser_check_super_interface): New comment to reflect function's
+ 	modified returned type (int). Function and has a new argument
+ 	this_wfl. Call to parse_error_context uses this_wfl instead of
+ 	relying on lookup_cl.
+	(parser_check_super): Comment reflects function's new returned
+ 	type (int). Function returns non zero value on error.
+	(create_jdep_list, reverse_jdep_list, obtain_incomplete_type,
+ 	register_incomplete_type, jdep_resolve_class): New functions to
+ 	handle incomplete types in declarations.
+	(java_complete_class): Rewritten to work with the new incomplete
+ 	type handling scheme.
+	(complete_class_report_errors): Likewise.
+	(complete_method_decl): Removed: it jobs is now handled by
+ 	java_complete_class.
+	(do_resolve_class): Class loaded in not already loaded and not
+ 	found in Java source code.
+	(java_check_regular_methods, java_check_abstract_methods): Don't
+ 	call complete_method_decl anymore.
+	(lookup_modifier_cl, not_builtin_p): Functions deleted.
+	(read_import_dir): Got rid of the pass number dependency.
+	(declare_local_variables): New handling of unresolved types (patch
+ 	issued).
+	(source_start_java_method): New parameter level. Function called
+ 	with level set to 1 when argument types are potentially
+ 	unresolved.  Called to complete the job with level set to 2 once
+ 	types are complete.
+	(source_end_java_method): Call to permanent_allocation
+ 	removed. Waiting to be replaced by a more suitable obstack
+ 	management.
+	(java_complete_expand_methods, java_complete_expand_method,
+ 	java_expand_finals): New functions.
+	(build_method_invocation_stmt): Renamed
+ 	patch_method_invocation_stmt. Extracts function call expression
+ 	(wfl) and arguments (args) from CALL_EXPR tree operands.
+	(build_invoke): Renamed patch_invoke. Fixed typo in fatal
+ 	call. Patch the function and argument operand of the CALL_EXPR
+ 	tree argument.
+	(patch_argument, java_complete_tree): New functions.
+
+Mon Apr 20 18:26:57 1998  Per Bothner  <bothner@cygnus.com>
+
+	Recover from missing fields and methods (i.e. error instead of fatal).
+	* decl.c, java-tree.h (TYPE_identifier_node):  New global constant.
+	* expr.c (expand_invoke):  Recover from missing method.
+	(expand_java_field_op):  Recover from missing field.
+	Inline references to java.lang.{Integer,Char,...}.TYPE.
+	* typeck.c (get_type_from_signature), java-tree.h:  New function.
+	* class.c (add_method):  Use get_type_from_signature.
+	(build_class_ref):  Handle a class that was not found.
+	* typeck.c (convert):  Handle conversion to pointers (for convenience).
+	* verify.c (verify_jvm_instructions):  Use get_type_from_signature
+	instead of lookup_field to handle missing fields.
+	
+	* jcf-parse.c (process_zip_dir):  Set java_source.
+
+1998-04-20  Brendan Kehoe  <brendan@cygnus.com>
+
+	* jcf-parse.c (set_source_filename): Use TYPE_NAME, not DECL_NAME.
+
+Tue Apr 14 15:59:54 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-parse.c (load_class): Don't change input_filename before
+ 	calling jcf_parse_source (but still do it before calling
+ 	jcf_parse).
+	(jcf_parse_source): Assign input_filename after having saved the
+ 	parser context.
+	* lex.c (java_init_lex): Chain a WFL node to the import on demand
+ 	list. ctxp->modifier_ctx zeroed according to its new
+ 	definition. ctxp->filename initialized. Removed 
+	JAVA_MODIFIER_CTX_UNMARK.
+	(java_unget_unicode): Update the character based column position.
+	(java_allocate_new_line): ref_count not used anymore. Always free
+ 	ctxp->p_line. Initialize c_line->char_col to 0.
+	(java_get_unicode): Update the character based column position. 
+	(java_lex): Use ctxp->elc to store current position in source
+ 	file, at the beginning of the parsed token. Set modifier_ctx entry
+ 	corresponding to the parse modifier to a WFL node. Return a WFL
+ 	node when an identifier is parsed.
+	(java_lex_error): Now uses ctxp->elc to store current position in
+ 	source.
+	(build_wfl_node, java_is_eol, java_get_line_col): New functions.
+	* lex.h (build_wfl_node): New function definitions.
+	(struct java_line): ref_count and next fields are gone. New field
+ 	char_col.
+	(JAVA_LINE_CHECK, JAVA_LINE_MARK, JAVA_LINE_CHAIN,
+ 	JAVA_LINE_UNMARK, ID_NAME, ID_CL): Macro definitions deleted.
+	(JAVA_COLUMN_DELTA): New macro.
+	(java_lc): New typedef on new struct _java_lc.
+	* parse.h (lookup_cl, lookup_modifier_cl): Changed returned types.
+	(parse_error_context, parse_warning_context): Changed prototypes.
+	(java_get_line_col): Added as an available global function.
+	(JAVA_MODIFIER_CTX_UNMARK): Macro removed.
+	(IC_DECL): Replaced by macro IC_TYPE
+	(DEPEND_WFL): New macro.
+	(THIS_MODIFIER_ONLY): Now works with WFL and only remembers the first
+	wrong modifier.
+	(exit_java_complete_class): Removed a commented out statement.
+	(struct parser_ctxt): Added comments on fields. modifier_ctx is
+ 	now an array of tree nodes. Deleted fields line_list and
+ 	e_line. New field elc, to replace e_line.
+	* parse.y (array_type:): Build WFL node. 
+	(qualified_name:): Build a single WFL node out of two. Retain
+ 	the location information of the first node in the resulting node.
+	(package_declaration:): Use package name as a WFL node 
+	(single_type_import_declaration:): Use imported name as a WFL node.
+	(type_import_on_demand_declaration:): Use root of the imported
+ 	packages as a WFL node.
+	(field_declaration:): Removed unused local variable cl.
+	(method_declaration:): Don't call JAVA_MODIFIER_CTX_UNMARK.
+	(yyerror): New static elc. Removed static error_line, error_pos.
+  	New local code_from_source. Save ctxp->elc into elc at the first
+ 	pass. Call java_get_line_col to get a string of the line where
+ 	the error occured.
+	(debug_line): Removed static function.
+	(parse_error_context, parse_warning_context): Parameter cl is now
+ 	a WFL node. Use its value to initialize ctxp->elc.
+	(redefinition_error): Parameter cl is now a WFL node.
+	(parse_add_interface): New parameter wfl. No longer call
+ 	lookup_cl, use wfl instead.
+	(check_class_interface_creation): Parameter cl is now a WFL node.
+	(maybe_create_class_interface_decl): Likewise.
+	(add_superinterfaces): New function.
+	(create_interface): Removed local cl, node, super_decl,
+ 	super_decl_type.  Function now uses id as a WFL node. Better
+ 	warning/error report on obsolete or forbidden mix of
+ 	modifiers. Now calls add_superinterfaces to register interfaces.
+	(create_class): Removed local cl, node. Local variable id is used
+ 	as a WFL node. Better error report on forbidden modifier
+ 	mix. Uses add_superinterfaces to register interfaces.
+	(find_field): Argument cl is now a WFL node. Now store the WFL
+ 	node of a fields that needs to be checked for their
+ 	initialization.
+	(method_header): Local variable node non longer used. Local
+ 	variable id replaces cl.
+	(check_modifiers_consistency): Local variable cl is now a WFL
+ 	node.
+	(method_declarator): Local variable cl replaced by parameter id.
+	(parser_qualified_name): Now uses parameter name as a WFL node.
+	(parser_check_super_interface): New parameter wfl, for achieve
+ 	greater accuracy during error reports.
+	(parser_chain_incomplete_item): New parameter named location. Used,
+ 	along the decl, to construct the incomplete item node.
+	(java_complete_class): resolve_class now uses WFL node extracted
+ 	from the incomplete item node. Macro IC_TYPE replaces TREE_PURPOSE
+	where appropriate.
+	(complete_method_decl): Unresolved function's argument types are WFL.
+	(resolve_class): Parameter cl is now a WFL node.
+	(resolve_and_layout): Likewise.
+	(do_resolve_class): Likewise. Try first to use cl and then do the
+ 	lookup on the decl when calling check_pkg_class_access.
+	(complete_class_report_errors): Use IC_TYPE in place of
+ 	TREE_PURPOSE where appropriate. Use DEPEND_WFL on dependency
+ 	instead of doing a lookup over the decl.
+	(java_check_final): Use WFL info from field tree list.
+	(lookup_cl): Rewritten and returns a statically defined WFL node.
+	(lookup_modifier_cl): Now uses information from WFL nodes.
+	(process_imports): Likewise.
+	(read_import_dir): name and cl arguments replaced by a single WFL
+ 	node. Function modified accordingly.
+	(find_in_imports_on_demand): Now uses WFL node.
+	(check_pkg_class_access): cl argument is now a WFL node.
+	(declare_local_variables): Fixed to use WFL nodes.
+	(resolve_expression_name): Likewise.
+	(build_method_invocation_stmt): name_combo argument renamed
+ 	wfl. Function modified to use WFL nodes.
+	(build_invoke): cl used as a WFL node when calling build_expr_wfl.
+	(lookup_method_invoke): cl is now a WFL node. Added missing
+ 	IDENTIFIER_POINTER to class type decl name.
+	
+Tue Apr 14 15:23:29 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* lang.c (init_parse): Now returns char* containing the filename.
+
+Fri Apr 10 11:36:04 1998  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (layout_class):  Mangle repeated arg types to match cc1plus.
+
+	* decl.c, java-tree.h (integer_four_node):  New INTEGER_CST node.
+	* class.c (make_class_data):  If flag_assume_compiled, initial class
+	state is CSTATE_PREPARED; make superclass and interfaces direct
+	references, rather than constant pool indexes.
+
+Thu Apr  9 16:10:56 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parser.y: Include flags.h. Removed debug variable pl.
+	(method_declaration:): Uses ctxp->parser_ccb_indent instead of pl.
+	(block:): Likewise.
+	(labeled_statement_nsi:): Generate debug info when reducing
+ 	expression_statement:.
+	(check_pkg_class_access): get_access_flags_from_decl invokation
+ 	fixed for new CLASS_* flags location.
+	(source_end_java_method): Save/restore parser context when
+ 	entering/leaving this routine. Restore lineno to its right value
+ 	before calling expand_end_bindings.
+	(build_method_invocation_stmt): build_invoke called with the
+ 	current line information.
+	(build_invoke): New argument cl. Wrap the function call around a
+ 	wfl node.
+	(refine_accessible_methods_list): Changed comment, removed
+ 	unnecessary code.
+	* parse.h: Fixed typo in comments.
+	(CLASS_OR_INTERFACE): Handle the new CLASS_* flags location.
+	(JAVA_MAYBE_GENERATE_DEBUG_INFO): New macro.
+	(struct parser_ctxt): New fields ccb_indent, last_ccb_indent1,
+ 	parser_ccb_indent.
+	* lex.c (java_lex): Record the last closing curly bracket of a
+ 	function.
+	* jcf-parse.c (jcf_parse_source): Now calls
+ 	java_check_methods. Clarified comment, fixed typo.
+
+1998-04-09  Dave Brolley  <brolley@cygnus.com>
+
+	* lang.c (init_parse): Expose for non USE_CPPLIB builds.
+	(finish_parse): Expose for non USE_CPPLIB builds.
+
+Wed Apr  8 13:06:23 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* lang.c (lang_print_xnode): New function.
+
+Fri Apr  3 13:22:41 1998  Per Bothner  <bothner@cygnus.com>
+
+	* decl.c (class_dtable_decl), java-tree.h:  New tree node.
+	* class.c (get_dispatch_vector, get_dispatch_table):  New functions
+	used to build a class's dispatch table.
+	(make_class_data):  Generate dispatch table if flag_assume_compiled.
+	Set dtable of class object to address of class_dtable_decl.
+
+	* decl.c (int_decl_processing):  Make soft_badarrayindex_node
+	be volatile and have side effects - generates better code.
+
+	* class.c, expr.c, parse.y:  CLASS_INTERFACE, CLASS_FINAL, etc:
+	These flags were defined for TYPE_DECLs, but used on RECORD_TYPEs.
+
+	* expr.c (expand_invoke):  If class is final, method is
+	effectively final, so can call it directly.
+
+	* java-tree.h (TYPE_NVIRTUALS, TYPE_VTABLE):  New macros.
+
+	* Makefile.in, Make-lang.in:  Add missing $(exeext)s.
+
+Thu Mar 19 16:59:16 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (build_method_invocation_stmt): Removed extra argument
+ 	to build_invoke.
+
+Mon Mar 16 17:25:19 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (dtable_indent): Now static global.
+	(expand_invoke): Now call invoke_build_dtable and
+ 	build_invokevirtual.
+	(invoke_build_dtable, build_invokevirtual): New functions.
+	* jcf-io.c (find_class): Defer issuing a warning by setting
+ 	jcf->outofsynch to 1.
+	* jcf-parse.c (jcf_out_of_synch): New function.
+	(load_class): Test this_jcf.outofsynch flag and call
+ 	jcf_out_of_synch accordingly.
+	* jcf.h: (typedef struct JCF): New flag outofsynch. Fixed typo in
+ 	comment indentation.
+	* lex.c (java_get_unicode): Fixed code indentation.
+	(java_lex): Create string literal. Fixed typo. Removed several
+ 	premature obstack_free.
+	* parse.h: New enums for name resolution and invocation mode.
+	(struct qualification): New data structure.
+	(RESOLVE_CHAIN_REMAINDER, BUILD_PTR_FROM_NAME): New macros.
+	(do_resolve_class, build_method_invocation_stmt,
+ 	breakdown_qualified, qualify_ambiguous_name, resolve_and_layout,
+ 	debug_line, identical_subpath_p, invocation_mode,
+ 	refine_accessible_methods_list, build_invoke,
+ 	lookup_method_invoke): New functions declared.
+	(build_invokevirtual, invoke_build_dtable, match_java_method,
+ 	build_field_ref, jcf_out_of_synch): New references to external
+ 	functions.
+	(struct parse_ctxt): Removed artificial_constructor field.
+	* parse.y: (array_type:): Type defined for this rule.
+	(class_type:): Installed default rule for interface_type:.
+	(array_type:): Now build Java array type.
+	(qualified_name:): Now use obstack_grow0.
+	(method_declaration:): Skip the artificial constructor added to
+ 	the list, if any.
+	(abstract_method_declaration:): Execute the code only during pass 1.
+	(block:): Installed default rule in block_statements:.
+	(block_statement:): Add the statement to the method during pass 2.
+	(statement_expression): Installed default rule for
+ 	method_invocation:.
+	(argument_list:): Added code to build the argument list.
+ 	(method_invocation:): Added call to create the method invocation
+ 	node.
+	(yyerror): Now use obstack_grow0. Removed bogus obstack_free.
+	(debug_line): New function for debug.
+	(complete_class_decl): No longer do something during pass 1.
+	(method_header): Use BUILD_PTR_FROM_NAME.
+	(parser_qualified_classname): Use obstack_grow0. Removed bogus
+ 	obstack_free.
+	(parser_chain_incomplete_item): Use BUILD_PTR_FROM_NAME. Modified
+ 	function's main comment.
+	(java_complete_class): Set CLASS_LOADED_P on all fixed incomplete
+ 	classes.
+	(complete_method_decl): Use BUILD_PTR_FROM_NAME and promote types.
+	(resolve_class): Now works with arrays.
+	(do_resolve_class, resolve_and_layout): New functions.
+	(java_check_regular_methods): Reverse method list before and after
+ 	having processed it. No longer set ctxp->artificial_constructor.
+	(read_import_dir): Test jcf->outofsynch and call jcf_out_of_synch
+ 	accordingly. Fixed typo in issued error message. Now use
+ 	obstack_grow0.
+	(find_in_imports_on_demand): Now use obstack_grow0.
+	(declare_local_variables): Use BUILD_PTR_FROM_NAME.
+	(source_end_java_method): Call expand_expr_stmt instead of
+ 	expand_expr. Calls it before calling expand_function_end.
+	(java_method_add_stmt): Do nothing if errors were found during
+ 	parsing.
+	(java_layout_parsed_class): Set CLASS_LOADED_P and fixed typo.
+	(build_method_invocation_stmt, build_invoke, invocation_mode,
+ 	lookup_method_invoke, refine_accessible_methods_list,
+ 	qualify_ambiguous_name, breakdown_qualified, identical_subpath_p):
+ 	New functions.
+	* typeck.c (build_java_signature): Properly end method signature
+ 	if return type skipped.
+	(match_java_method): New function.	
+	
+Mon Mar 16 10:40:47 1998  Per Bothner  <bothner@cygnus.com>
+
+	* jcf-io.c (find_classfile):  If USE_JCF_STDIO, fopen in binary mode.
+
+Wed Feb 25 08:55:49 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (build_invoke_non_interface): New function.
+	(methods_ident, ncode_ident): Now static globals.
+	(expand_invoke): Use build_invoke_non_interface.
+	* java-tree.h (struct lang_decl): New field function_decl_body.
+	(DECL_FUNCTION_BODY): New macro.
+	* jcf-parse.c (jcf_parse_source): Deeper check before setting
+ 	CLASS_FROM_SOURCE_P.
+	(parse_source_file): Fixed typos. Call java_layout_parsed_class
+	before starting pass 2. Call to java_generate_parsed_class replaced
+	by java_register_parsed_class.
+	* lex.c: Fixed typo in header. Some line width related formating.
+	* lex.h: Some line width related formating.
+	* parse.h (source_end_java_method, resolve_expression_name,
+ 	complete_class_decl, maybe_create_class_interface_decl,
+ 	check_class_interface_creation): New static function declarations.
+	(java_layout_parsed_class, java_method_add_stmt): New function
+ 	declarations.
+	(struct parser_ctxt): Field mark_class_generate removed. New
+ 	fields class_list and artificial_constructor.
+	* parse.y: Fixed typo in header.
+	(class_declaration:): Call complete_class_decl when class body
+ 	parsed.
+	(method_declaration:): Call source_end_java_method in pass 2 when
+	the method body is defined.
+	(postfix_expression:): Do expression name resolution on sub-rule
+ 	name during pass 2.
+	(create_class, create_interface): Merged common pieces.
+ 	(check_class_interface_creation, maybe_create_class_interface_decl):
+	New functions.
+	(complete_class_decl): New function.
+	(register_fields): Fixed line width related typo.
+	(method_header): Correctly skip first argument when fixing
+ 	argument line. Changed the loop.
+	(java_check_circular_reference): Now use ctxp->class_list.
+	(java_complete_class): Removed start/stop marking.
+	(java_check_regular_methods): Now takes a class decl as an
+ 	argument.  Add default constructor if none were encountered.
+	(java_check_methods): Now use ctxp->class_list. Changed call to
+ 	java_check_regular_methods.
+	(source_start_java_method): Set DECL_ARG_TYPE for each function
+ 	arguments.
+	(source_end_java_method, java_method_add_stmt): New functions.
+	(java_generate_parsed_class): No longer exists.
+ 	(java_layout_parsed_class, java_register_parsed_class): New functions.
+	(resolve_expression_name): New function.	
+
+Thu Feb 12 11:54:28 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-parse.c: (parse_source_file): Check on errors after init lex.
+	* lex.c: (java_init_lex): Defer ctxp->java_pass initialization
+ 	until pass initializations are done. Call read_import_dir with
+ 	pass set to 0.
+	* parse.h: (lookup_modifier_cl): New function declared.
+	(INTERFACE_FIELD_MODIFIERS): New macro.
+	(OBSOLETE_MODIFIER_WARNING): New macro.
+	* parse.y: (register_fields): Class type and current field name in
+ 	local variables. Check modifier(s) if adding field(s) to an interface.
+	(check_abstract_method_header): Now use OBSOLETE_MODIFIER_WARNING
+ 	and report errors using the faulty modifier line context.
+	(lookup_modifier_cl): New function.
+	(read_import_dir): Detect and report default import processing
+ 	failure.
+
+1998-02-11  Brendan Kehoe  <brendan@cygnus.com>
+
+	Add a pair of -fassume-compiled/-fno-assume-compiled options.
+	* class.c (is_compiled_class): Return 1 after making sure it
+	qualifies as loaded, if FLAG_ASSUME_COMPILED is set.
+	* lang-options.h: Add -fassume-compiled/-fno-assume-compiled.
+	* java-tree.h (flag_assume_compiled): Add decl.
+	* lang.c (lang_f_options): Add the flag.
+	(flag_assume_compiled): Add decl, default to 0.
+
+Wed Feb 11 11:27:59 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (class_depth): Call to load_class uses extra VERBOSE arg.
+	(is_compiled_class): Likewise.
+	(layout_class): Likewise.
+	(layout_class): Detect and lay out classes defined in source code.
+	(interface_of_p, add_interface_do, may_add_interface): New
+ 	function.
+	(add_interface): Now use add_interface_do.
+	(add_method_1): New function.
+	(add_method): Now use add_method_1.
+	(pushlevel): Debug message conditional to SOURCE_FRONTEND_DEBUG.
+	(complete_start_java_method): New function.
+	(start_java_mehod): Now call complete_start_java_method.
+	* expr.c (lookup_field): Call to load_class uses extra VERBOSE arg.
+	(expand_invoke): Likewise and fixed typo.
+	*gjava.c: (print_super_field): Use new argument to find_class
+ 	DO_CLASS_FILE.
+	(main): Likewise.
+	*java-tree.h: (CLASS_FROM_SOURCE_P): New flag on RECORD_TYPE.
+ 	(IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P, IS_A_CLASSFILE_NAME,
+ 	QUALIFIED_P, IS_AN_IMPORT_ON_DEMAND_P): New flags on
+ 	IDENTIFIER_NODE.
+ 	(CLASS_COMPLETE_P): New flag on TYPE_DECL.
+	(add_method_1, push_class): New prototypes.
+	*jcf-dump.c: find_class now uses new DO_CLASS_FILE argument.
+	*jcf-io.c: (open_in_zip): jcf now stores a pointer to the Zip
+ 	directory where the class was found.
+	(find_class): New argument DO_CLASS_FILE. Function find_class
+ 	modified accordingly.
+	*jcf-parse.c: (fix_class_path): New function.
+	(load_class): Use new VERBOSE argument. load_class now finds and
+ 	loads/parses .class/.java files. Save read_state of current_jcf
+	if necessary.
+	(java_parser_abort_on_error): New macro.
+	(jcf_parse_source, parse_source_file): New function.
+	(jcf_parse): Fixed typo.
+	(yyparse): Call parse_source_file () only.
+	(process_zip_dir): Fixed typo, fix zdir->filename_length when
+ 	writing the real class name back in the zip directory entry.
+	(find_in_current_zip): IDENTIFIER_CLASS_VALUE may be null.
+	(jcf_figure_file_type): Fixed bogus alloc and bcopy.
+	*jcf.h: (typedef struct JCF): New fields java_source and zipd.
+	(find_class): Prototype fixed.
+	*lex.c: Added 1998 time stamp.
+	Removed all static global variables, moved into the parser
+ 	context data structure.. Now include unistd.h if SEEK_SET not
+ 	defined.
+	(java_init_lex): Rewritten.
+	(java_sneak_unicode): Modified current unicode access in current line.
+	(java_unget_unicode): Likewise.
+	(java_allocate_new_line): New allocation management.
+	(java_read_char): Modified access and storage of unget_utf8_value.
+	New way of processing current unicode.
+	(java_store_unicode, java_read_unicode): Fixed typo in declaration.
+	(java_get_unicode): Now use the parser context.
+	(java_lineterminator): Likewise.
+	(java_lex): Now used java_lval argument (pointer to YYSTYPE), part
+ 	of the reentrant parser implementation. Function now use the
+ 	parser context data structure and java_lval. Fixed production of
+ 	the float and double constant "out of range" error message. Fixed
+ 	obstack use. Return integer value when hitting a modifier. Now
+ 	return type for TRUE, FALSE and other predefined types. Return
+ 	identifier as a TREE_LIST list containing the current line context
+ 	as the TREE_VALUE sub-node.
+	(java_unicode_2_utf8): Fixed typo in declaration.
+	(java_lex_error): Now use the parser context data structure.
+	*lex.h: Added 1998 time stamp.
+	(struct java_line): New fields ref_count and next.
+	(JAVA_LINE_CHECK, JAVA_LINE_MARK, JAVA_LINE_CHAIN,
+ 	JAVA_LINE_UNMARK, ID_NAME, ID_CL): New macros.
+	(JAVA_FLOAT_RANGE_ERROR, JAVA_INTEGRAL_RANGE_ERROR, UNGETC): Fixed.
+	*parse.h: Added 1998 time stamp.
+	(java_parse_source_file): Renamed from parse_source_file.
+	(YYERROR_NOW, YYNOT_TWICE): Fixed.
+	(CLASS_MODIFIERS, FIELD_MODIFIERS, METHOD_MODIFIERS,
+ 	INTERFACE_MODIFIER, INTERFACE_METHOD_MODIFIERS,
+ 	JAVA_MODIFIER_CTX_UNMARK, IC_DECL, IC_DEPEND, DEPEND_DECL,
+ 	THIS_MODIFIER_ONLY, ABSTRACT_CHECK, BEGIN_ONLY_PASS,
+ 	END_ONLY_PASS, ELSE_ONLY_PASS, exit_java_complete_class,
+ 	CLASS_OR_INTERFACE, INCOMPLETE_P): New macros.
+	(struct parser_ctxt): New data structure to keep the parser context.
+	*parse.y: Added 1998 time stamp, got rid of static global variables.
+	(java_error_count, ctxp): New global variables.
+	(%union): New value field.
+	(numeric_type, integral_type): Rules removed.
+	(primitive_type): Rule defined to handle integral, float, double and
+ 	boolean types.
+	(qualified_name, package_declaration,
+ 	single_type_import_declaration, type_import_on_demand_declaration,
+ 	modifiers, class_declaration, super, interfaces,
+ 	interface_type_list, class_body, field_declaration,
+ 	field_declaration, variable_declarators, variable_declarator,
+ 	variable_declarator_id, method_declaration, method_header,
+ 	formal_parameter_list, formal_parameter, method_body, block,
+ 	static, interface_declaration, extends_interfaces,
+ 	abstract_method_declaration, local_variable_declarators): Rules now
+ 	define actions.
+	(force_error, do_warning): New global statics.
+	(push_parser_context, parser_context_save_global,
+ 	parser_context_restore_global, pop_parser_context): New functions.
+	(yyerror): Now uses the global parser context. Fixed use of obstack.
+	(parse_error, parse_error_context, parse_warning_context,
+ 	java_accstring_lookup, redefinition_error, check_modifiers,
+ 	parser_add_interface, create_interface, create_class, find_field,
+ 	duplicate_declaration_error, register_fields, method_header,
+ 	check_modifiers_consistency, check_abstract_method_header,
+ 	method_declarator, parser_qualified_classname,
+ 	parser_check_super_interface, parser_check_super,
+ 	parser_chain_incomplete_item, java_check_circular_reference,
+ 	layout_class_from_source, java_complete_class,
+ 	complete_method_decl, resolve_class, complete_class_report_errors,
+ 	java_check_final, check_method_redefinition,
+ 	java_check_regular_methods, java_check_abstract_methods,
+ 	java_check_methods, lookup_java_interface_method2,
+ 	lookup_java_method2, lookup_cl, find_name_in_single_imports,
+ 	process_imports, find_in_imports, read_import_entry,
+ 	read_import_dir, find_in_imports_on_demand,
+ 	check_pkg_class_access, not_builtin_p, declare_local_variables,
+ 	source_start_java_method, java_generate_parsed_class): New
+ 	functions.
+	*typeck.c: (signature_include_return): New global variable.
+	(build_java_signature): Use SIGNATURE_INCLUDE_RETURN figure whether
+ 	to add the function returned type in the signature.
+
+1998-02-09  Brendan Kehoe  <brendan@cygnus.com>
+
+	* jcf-io.c (open_in_zip): Use strncmp and LEN.
+
+Thu Jan 29 16:12:13 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* Make-lang.in (java.info): Added.
+	(java.install-info): Added
+
+1998-01-27  Brendan Kehoe  <brendan@cygnus.com>
+
+	* Makefile.in (clean): Also remove java/parse.c.
+
+1998-01-26  Brendan Kehoe  <brendan@cygnus.com>
+
+	Add a pair of -fbounds-check/-fno-bounds-check options.
+	* lang.c (lang_decode_option): Add code to grok arguments.
+	(flag_bounds_check): Add decl.
+	(lang_f_options): New array w/ the option in it.
+	* java-tree.h (flag_bounds_check): Add decl.
+	* lang-options.h: New file.
+	* expr.c (build_java_arrayaccess): Use flag_bounds_check instead
+	of a static macro value.
+	(JAVA_ARRAY_EXCEPTION): Delete macro.
+
+Fri Jan 23 14:19:47 1998  Per Bothner  <bothner@cygnus.com>
+
+	* typeck.c (build_java_array_type):  Fix two bugs in previous change.
+	* expr.c (build_anewarray):  Add missing promote_type.
+
+Thu Jan 22 17:43:45 1998  Per Bothner  <bothner@cygnus.com>
+
+	Add array types with known length to optimize bounds checking.
+	* typeck.c (build_java_array_type):  Take length parameter.
+	(java_array_type_length, build_prim_array_type):  New functions.
+	* java-tree.h:  Update for new functions.
+	* expr.c, typeck.c, verify.c: Update build_java_array_type calls.
+	* class.c:  Use build_prim_array_type.
+	* expr.c (can_widen_reference_to):  Handle known-length array types.
+	(verify_jvm_instructions):  Keep track of integer push instructions
+	followed by newarray/anewarray, so we can build known-length arrays.
+	(JAVA_ARRAY_DATA_OFFSET):  Replace by ...
+	(java_array_data_offset):  New function.
+	(build_java_array_length_access):  New function.  Optimize if constant.
+	(build_java_arrayaccess):  Constant fold bounds check.
+	(expand_java_newarray, expand_java_anewarray):  Replaced by ...
+	(build_newarray, build_anewarray):  New functions.
+	(ARRAY_NEW_NUM, ARRAY_NEW_PTR):  Use build_{a,}newarray.
+	* verify.c (merge_types):  Handle known-lengh array types.
+
+Mon Jan 19 13:09:25 1998  Per Bothner  <bothner@cygnus.com>
+
+	* expr.c (expand_byte_code):  Fix performace bug, which caused
+	searching linenumber_table to be linear rather than constant.
+
+Fri Dec 12 19:18:42 1997  Per Bothner  <bothner@cygnus.com>
+
+	* Makefile.in (BISON, BISONFLAGS):  Add missing macros.
+
+	* decl.c, java-tree.h (soft_fmod_node):  New global.
+	* decl.c (init_decl_processing):  Define __builtin_fmod.
+	* expr.c (build_java_binop):  Implement TRUNC_MOD_EXPR for REAL_TYPE
+	using __builtin_fmod.
+
+Thu Dec  4 13:22:59 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* keyword.h: New file, output of keyword.gperf as processed by
+ 	gperf.
+	* lex.c (java_lex_init): Initialize java_error_flag.
+	* parse.c (YYERROR_NOW): Uses java_error_flag.
+	* parse.y: New static java_error_flag. Useless definition of
+ 	buffer_error gone.
+	* parse.y (java_error): Portable error recovery using
+ 	java_error_flag	(not yet completely tuned).
+
+1997-12-04  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* Makefile.in (parse.c): Use $(srcdir) for parse.y.
+
+Wed Dec  3 18:37:42 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Makefile.in: (JAVA_OBJS): New object jcf-parse.o.
+	(parse.c, lex.c, keyword.h): New rules for Java source code
+ 	front-end.
+	* parse.c: Renamed into jcf-parse.c.
+	* jcf-parse.c (yyparse): Invoke the parser to process Java source code.
+	* keyword.gperf: New file, Java keywords.
+	* parse.y: New file, Java language grammar.
+	* parse.h: New file, Java language grammar definitions.
+	* lex.c: New file, Java language lexer.
+	* lex.h: New file, Java language lexer definitions.
+
+Wed Dec  3 17:00:17 1997  Per Bothner  <bothner@cygnus.com>
+
+	* decl.c (clinit_identifier_node), java-tree.h:  New global.
+	* java-tree.h (IS_METHOD_INIT_P, IS_METHOD_CLINIT_P):  Removed.
+	* verify.c (verify_jvm_instructions):  Inline use of removed macros.
+	* expr.c (expand_java_field_op):  Check for invalid assignment
+	to final field.
+
+	* jcf-reader.c (get_attribute):  Test for wrong attribute length.
+
+Mon Oct 27 17:46:36 1997  Per Bothner  <bothner@cygnus.com>
+
+	* verify.c (verify_jvm_instructions):  When processing a handler,
+	attempt to set the current_subr to the right value.
+	(More complicated code combines Sep 17 and Oct 22 versions.)
+
+Fri Oct 24 11:36:54 1997  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (push_class):  Figure out (guess) name of source file.
+	* parse.c  (set_source_filename):  Set DECL_SOURCE_FILE of class decl.
+	(give_name_to_class):  Don't guess source name;  use DECL_SOURCE_FILE.
+	(parse_class_file):  Change return type from int to void.
+	Call debug_start_source_file/debug_end_source_file.
+
+	* expr.c (build_java_binop):  Fix masking 2nd operand.
+	* decl.c (init_decl_processing):  Set sizetype first.
+
+Wed Oct 22 19:39:05 1997  Per Bothner  <bothner@cygnus.com>
+
+	* verify.c (verify_jvm_instructions):  Don't set current_subr to NULL.
+	(Revert Sep 17 change.)
+
+Tue Oct 21 15:09:02 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.c (process_zip_dir): Skip ZIP entries not bearing the
+ 	.class extension in their name and fix thing so we don't process
+ 	them parse_zip_file_entries().
+	(parse_zip_file_entries): Cleaned unused local variables.
+
+Mon Oct 20 14:52:42 1997  Per Bothner  <bothner@cygnus.com>
+
+	* expr.c (can_widen_reference_to):  Allows equal array element types.
+	(expand_byte_code):  PRE_RET must expand OPERAND_VALUE (to get index).
+	* jcf-dump.c (RET):  Get (and print) index.
+
+	* verify.c (verify_jvm_instructions case OPCODE_anewarray):
+	Promote element type to POINTER_TYPE.
+
+Mon Oct 20 13:40:41 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-reader.c, parse.c: (parse_zip_file, process_zip_dir,
+ 	find_in_current_zip, jcf_figure_file_type): Moved from
+ 	jcf-reader.c to parse.c.
+	* zextract.c: (read_zip_archive): takes file_comment_length possible
+	field into account.
+
+Mon Oct 20 11:45:06 1997  Per Bothner  <bothner@cygnus.com>
+
+	* verify.c (verify_jvm_instructions):  Var can also be promoted to int.
+
+	* verify.c (merge_types):  Handle array types even better ...
+
+Fri Oct 17 15:56:37 1997  Per Bothner  <bothner@cygnus.com>
+
+	* expr.c (java_stack_pop):  Fix use of NULL_TREE for TYPE_SECOND.
+
+	* java-tree.h (PUSH_FIELD):  Set DECL_ARTIFICIAL.
+	* class.c (make_class_data):  Don't build fields_decl if no fields.
+	When building fields_decl, skip if DECL_ARTIFICAL.  
+
+	* expr.c (java_stack_swap):  Update stack_type_map.
+	* verify.c (merge_types):  Handle array types better.
+
+Wed Oct 15 18:09:45 1997  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (add_field):  Don't promote short integral fields to
+	int any more (unless JAVA_PROMOTE_TO_INT), since Kaffe doesn't.
+	* expr.c (push_value):  Promote and convert short integral values.
+
+	* decl.c, java-tree.h (integer_two_node):  New constant node.
+	* verify.c (merge_types):  Check for TYPE_RETURN_ADDR.
+
+Wed Oct 15 17:04:50 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (append_gpp_mangled_type): Use function argument
+ 	unpromoted type to generate mangled name.
+
+Mon Oct 13 16:52:55 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* constants.c (build_constant_data_ref): Now uses current_class
+ 	instead of main_class.
+	(build_constants_constructor): Now uses current_class instead of
+ 	main_class.
+	* zipfile.h: (struct ZipFileCache): Now defined here. Declaration
+ 	of the global variable SeepZipFiles done here.
+	* zextract.c (read_zip_archive): extra_field optional field taken
+ 	into account while computing the position of the class file in the
+ 	archive.
+	* verify.c (verify_jvm_instructions): Use current_jcf to search
+ 	the constant pool.
+	* parse.c (load_class): First search for the class to load in the
+ 	current zip file. Saves current_jcf (restored before returning
+ 	from that function). Don't call JCF_FINISH in the class was found
+ 	in the current ZIP file.
+	(jcf_parse): If the class was found in the current ZIP file, save
+ 	its tree_constant_pool (for later reuse).
+	(parse_class_file): New function. Process each method defined in
+ 	the current class and record the class as to be later registered.
+	(yyparse): Rewritten. Figure the type of the current file and switch
+	accordingly.
+	* lang.c: New global variable current_jcf.
+	(lang_init): Removed compiling_from_source test (done later, in
+ 	yyparse). Removed call the jcf_parse ().
+	* jcf.h (JCF_ZIP, JCF_CLASS, JCF_SOURCE): New defined values.
+	(typedef struct JCF): New fields seen_in_zip (to mark a class found
+	in the current ZIP file) and zip_offset (offset to the class data in
+	the current zip file).
+	* jcf-reader.c: zipfile.h included.
+	localToFile: New ZipFileCache static global variable
+	(parse_zip_file_entries): New function. Browse the current ZIP
+ 	file directory and process each class found.
+	(process_zip_dir): New function. Register each class found in the
+ 	ZIP file directory. The class aren't parsed but a valid JCF is
+ 	link to each of them.
+	(find_in_current_zip): New function. Search for a class in the
+ 	current ZIP file directory. If found, prepare the class so that it
+ 	can be loaded.
+	(jcf_figure_file_type): New function. Examine the file structure
+ 	to figure a class file, a ZIP file. If none of these categories are
+ 	matched, a source file is assumed.
+	* jcf-io.c: Removed definition of ZipFileCache (moved in zipfile.h).
+  	SeenZipFile: New global variable.
+	(open_in_zip): Use zipmember's length to accelerate the search for
+ 	a member. If zipmember was NULL and zip file successfully read,
+ 	return 0.
+	* java-tree.h: New global variable current_jcf declared.  Added
+ 	declaration for current_constant_pool_tags, current_constant_pool_data,
+	current_constant_pool_length, current_constant_pool_data_ref.
+	(struct lang_type): Augmented with two fields. struct JCF *jcf (to
+ 	store the JCF of classes seen in a zip file) and tree *constant_pool
+	(to save a loaded class constant pool). current_class declared here.
+	* expr.c (expand_invoke): Use current_jcf instead of main_jcf to
+ 	retrieve method_ref_constant.
+	(PUSHC): java_push_constant_from_pool now uses current_jcf.
+	(OBJECT): get_class_constant now uses current_jcf.
+	(ARRAY_NEW_PTR): get_class_constant now uses current_jcf.
+	(ARRAY_NEW_MULTI): get_class_constant now uses current_jcf.
+	(expand_invoke): Now uses current_class instead of main_class
+	(build_class_init): Now uses current_class instead of main_class
+	* class.c: New static global variable registered_class.
+	(register_class): New function.
+	(emit_register_class): Modified to use registered_class instead of
+ 	main_class
+	(is_compiled_class): Now take into account class seen in the archive.
+
+Mon Oct  6 12:03:23 1997  Per Bothner  <bothner@cygnus.com>
+
+	* except.h:  Renamed to: java-except.h.
+	* parse.c, except.c, expr.c, verify.c:  Update #include accordingly.
+	* except.c:  Add semi-working (commented out) implementation.
+
+	* expr.c (expand_iinc):  Add needed flush_quick_stack.
+	* parse.c (set_source_filename):  New function.
+	(give_name_to_class):  Set input_filename from package.classname.java.
+
+	* jcf-io.c (find_class):  Don't look first in ".".
+
+Wed Oct  1 11:26:10 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* zextract.c (read_zip_archive): Now takes into account the
+ 	extra_field field.
+	* expr.c (can_widen_reference_to): Modified to handle sub-interfaces.
+	
+Sat Sep 20 12:44:28 1997  Per Bothner  <bothner@cygnus.com>
+
+	* constants.c, java-tree.h (build_internal_class_name):  New function.
+	(alloc_class_constant):  Re-implement using build_internal_class_name.
+	* class.c (make_class_data):  Likewise.
+	* class.c (hashUtf8String):  Make hash algorithm match String.hashCode.
+
+Wed Sep 17 13:15:23 1997  Per Bothner  <bothner@cygnus.com>
+
+	* verify.c (verify_jvm_instructions):  Temporarily set current_subr
+	to NULL before pushing an exception handler target.
+
+	* expr.c (flush_quick_stack):  Save from low stack indexes to high.
+	(java_stack_swap, java_stack_dup):  Re-write to be safe from
+	clobbering registers.
+	(build_class_init):  New function.
+
+Wed Sep 17 11:02:41 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* typeck.c (build_java_array_type): Temporary use
+ 	permanent_obstack to create the array 'length' field.
+	* expr.c (lookup_label): Temporay use permanent_obstack to create
+ 	label if not found.
+	* class.c (push_super_field): Tempory use permanent_obstack.
+
+Mon Sep 15 11:33:31 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* typeck.c (type_for_mode): Now handles double_type_node and
+ 	float_type_node.
+	* verify.c (verify_jvm_instructions): The instruction following
+ 	the wide bytecode is checked. OPCODE_ret added to the list of
+ 	wide.
+
+Thu Sep 11 19:45:18 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (make_class): Temporary use permanent_obstack. Set the
+ 	class CLASS_P field to 1.
+	(push_class): Temporary use permanent_obstack.
+	(set_super_info): Temporary use permanent_obstack.
+	(add_method): Temporary use permanent_obstack, set
+ 	METHOD_TRANSIENT().
+	(add_field): Temporary use permanent_obstack. Sets
+ 	FIELD_VOLATILE() and FIELD_TRANSIENT().
+	(build_class_ref): Temporary use permanent_obstack if the class
+ 	isn't compiled.
+	(build_static_field_ref): Temporary use permanent_obstack when
+ 	creating field's rtl.
+	(get_access_flags_from_decl): Handle ACC_VOLATILE, ACC_TRANSIENT,
+ 	ACC_SYNCHRONIZED, ACC_NATIVE, ACC_ABSTRACT flags for methods
+	and fields. Function finalized, as far as flag handling.
+	(push_class_static_dummy_field): Temporary use permanent_obstack.
+	(emit_register_class): Force generation of class registration at
+ 	-O3 or deeper.
+	* decl.c (end_java_method): Call permanent_allocation() before
+	returning.
+	* expr.c (can_widen_reference_to): Added comment to interface
+	handling, fixed typo.
+	(lookup_field): Now uses CLASS_P() to correct FIXME
+	(expand_invoke): Verification on public && !static && 
+	!abstract moved into soft_lookupinterfacemethod (kaffe).
+	Use Object class dtable if objectref is an array when expanding
+	invokeinterface.
+	(java_push_constant_from_pool): Temporary use permanent_obstack
+	for CONSTANT_string
+	* parse.c (get_ref_constant): Temporary use permanent_obstack to
+ 	create constant references.
+	(get_constant): Temporary use permanent_obstack to create constant.
+	(load_class): Temporary use permanent_obstack to load class.
+	(jcf_parse): Temporary use permanent_obstack to perform class
+	layout.
+	* typeck.c: (parse_signature_string): Temporary use permanent_obstack.
+	(build_java_signature): Temporary use permanent_obstack.
+	* verify.c: (verify_jvm_instruction): removed unecessary verification
+	on ACC_SUPER flag.
+	* java-tree.h (METHOD_NATIVE, METHOD_TRANSIENT): Defined.
+	(FIELD_VOLATILE, FIELD_TRANSIENT): Defined.
+	(CLASS_P): Defined
+
+Thu Sep 11 11:57:32 1997  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (append_gpp_mangled_type):  Fix typo.
+	(emit_register_class):  Use main_class to get class object, rather
+	than looking for no-longer-existing static decl starting with _CL.
+	* typeck.c (parse_signature_type):  Promote array element type
+	if it is a RECORD_TYPE.
+	
+Wed Sep 10 16:09:23 1997  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (push_class_static_dummy_field):  New function.
+	(mangle_static_field):  New. Do G++-style mangling of static fields.
+	(layout_class):  Mandle static fields here, not in add_field.
+	(build_class_ref):  The class object is now a dummy static field.
+	* decl.c (find_local_variable):  Look for best, instead of first match.
+	* expr.c (push_type):  Always promote_type, not just for RECORD_TYPE.
+	(build_java_athrow):  Don't check here if exception is Throwable.
+	* java-tree.h (TYPE_UNSET):  Renamed to TYPE_UNKNOWN.
+	(TYPE_USED):  Removed.  No longer used ...
+	* parse.c (jcf_parse):  Call push_class_static_dummy_field.
+	* verify.c (push_pending_label):  New function.
+	(push_pending_block):  Renamed to check_pending_block.
+	(merge_types):  Remove unneeded suuport for TYPE_UNUSED.
+	(verify_jvm_instructions):  Only reset prev_eh_ranges (to force
+	re-checking possible handlers) after a store (less wasted work).
+  	Check for null handler (finally) before calling add_handler.
+	Various changes to (finally?) correctly handle try/finally.
+
+1997-09-09  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* class.c: Include stdio.h.
+
+Thu Sep  4 21:30:55 1997  Per Bothner  <bothner@cygnus.com>
+
+	* expr.c (expand_invoke):  Use COMPOUND_EXPR (and TREE_SIDE_EFFECTS)
+	to make sure class is initialized before static/special invoke.
+
+	* verify.c (verify_jvm_instructions):  On a store instruction,
+	call find_local_variable to force pre-allocation of decl and rtx.
+	* decl.c (push_jvm_slot):  Set DECL_REGISTER on stack slots.
+
+Wed Sep  3 16:13:23 1997  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (build_class_ref):   Strip off "promoted_" if need be.
+	(make_field_value): Call build_java_signature when needed.
+	(layout_class):  Don't make_function_rtl if METHOD_ABSTRACT.
+	* expr.c (build_java_athrow):  Don't push_value of exception.
+	(build_java_binop):  Implement COMPARE_L_EXPR and COMPARE_G_EXPR to
+	match specification of [fd]cmp[lg] for NaNs.
+	(expand_byte_code):  Add support for exception handler ranges.
+	* except.c:  Add skeleton for EH code-generation.
+	* verify.c (merge_types):  Treat all promoted integral types as equal.
+	* constants.c (build_constants_constructor):  To force creation of
+ 	current_constant_pool_data_ref, call build_constant_data_ref.
+	
+	* javaop.def (lload):  Fix typo.
+	* jcf-dump.c (main):  Clear filename to prevent possibly-bad free.
+	
+Tue Sep  2 17:37:25 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* parse.c: Don't include function.h.
+
+Wed Aug 27 18:33:04 1997  Per Bothner  <bothner@cygnus.com>
+
+	* except.[ch]:  New files.
+	* Makefile.in (JAVA_OBJS):  Add except.o
+	* expr.c:  Temporary warning about unimplemented exceptions.
+	* verify.c:  Verify exception handlers.
+	
+	* jcf-dump.c (disassemble_method):  Print exception table.
+
+Wed Aug 27 13:26:58 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (verify_jvm_instructions): Started a thorough
+ 	verification of invoke* bytecodes.
+	(expand_byte_code): flush quick stack if PC is the target of a
+ 	branch.  and undef RET (conflicting with config/i386/i386.h).
+	(expand_java_arrayload): Fixed bogus cast, when Boolean type is
+ 	used.
+	(expand_invoke): Now handles invokeinterface and do more
+ 	verification according to the bytecode.
+	(lookup_field): Don't try to load the class if processing
+ 	dtable_type.
+	(can_widen_reference_to): Now handles interfaces.
+	* decl.c (init_decl_processing): New global variable
+ 	soft_lookupinterfacemethod_node, declared in java-tree.h. 
+	Call set_super_info on string_type_node.
+	* java-tree.h (CLASS_INTERFACE, CLASS_ABSTRACT, CLASS_SUPER): Now
+	defined.
+	* class.c (set_super_info): Fills the CLASS_* flags according to
+	access_flags.
+	(get_access_flags_from_decl): Handles all class flags.
+
+Tue Aug 26 18:54:34 1997  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (add_method):  Zero out newly-allocated DECL_LANG_SPECIFIC.
+	* parse.c (yyparse):  Check for abstract method, and missing code.
+	* expr.c (expand_byte_code):  Change interface.
+	* lang.c (put_decl_node):  Print promoted types prettier.
+	* verify.c (verify_jvm_instruction):  Change interface.
+	Partial support for scanning exception table.
+	For load instructions, handle promoted integral types.
+
+Thu Aug 21 13:48:01 1997  Per Bothner  <bothner@cygnus.com>
+
+	* verify.c:  New file, with contents moved from expr.c.
+	* expr.c:  Bunch of stuff (mostly verification) moved to verify.c.
+	* typeck.c (is_array_type_p):  Moved here from expr.c.
+	* java-tree.h:  Add some now-needed function declarations.
+	* Makefile.in (JAVA_OBJS): Added verify.o.
+
+Wed Aug 20 14:34:34 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (add_method): Sets the METHOD_SYNCHRONIZED flag, sets the
+	METHOD_ABSTRACT flag.
+
+	* java-tree.h (METHOD_SYNCHRONIZED): Set to DECL_LANG_FLAG_4.
+	(IS_METHOD_CLINIT_P, IS_METHOD_INIT_P): New macros.
+	(METHOD_ABSTRACT): Set to DECL_LANG_FLAG_5
+
+	* decl.c (soft_monitorenter_node, soft_monitorexit_node): New global
+	variables.
+	(start_java_method): Hook for SYNCHRONIZED methods.
+
+	* expr.c (build_java_jsr, build_java_ret): New functions
+	(JSR,PRE): New macros
+	(PRE_TABLE_SWITCH, PRE_LOOKUP_SWITCH): Fixed and secured.
+	(verify_jvm_instructions): tableswitch, lookupswitch, 
+	monitorenter, monitorexit, goto_w: verified.
+	(LOOKUP_SWITCH, TABLE_SWITCH): Fixed generation of default: label
+	(build_java_monitor): New function.
+	(MONITOR_OPERATION): Modified to call build_java_monitor()
+	(verify_jvm_instructions): Started a thorough verification of 
+	invoke* bytecodes.
+
+Tue Aug 19 13:35:49 1997  Per Bothner  <bothner@cygnus.com>
+
+	Support verification of jsr/ret subroutines (used for try/finally).
+	* decl.c (return_address_type_node):  New type node.
+	* java-tree.h (LABEL_RETURN_LABEL, LABEL_RETURN_TYPE_STATE,
+	RETURN_MAP_ADJUSTED, LABEL_RETURN_LABELS, LABEL_IN_SUBR,
+	LABEL_SUBR_START, LABEL_SUBR_CONTEXT, BCODE_VERIFIED):  New macros.
+	(TYPE_UNSET, TYPE_SECOND, TYPE_NULL, TYPE_RETURN_ADDR, TYPE_UNUSED,
+	TYPE_USED):  New macros for special types in type_map.
+
+	* java-tree.h (BCODE_JUMP_TARGET):  Renamed to BCODE_TARGET.
+	(BCODE_BACKWARDS_TARGET, CODE_FORWARDS_TARGET):  Replaced by
+	BCODE_JUMP_TARGET.
+	* expr.c (expand_byte_code):  Fix logic to warn of unused instructions.
+
+	* expr.c (can_widen_reference_to):  New function.
+	(pop_type):  Use it.
+	(merge_type_state):  Support handling start of subroutine.
+	(push_pending_block):  Return char* error message, instead of calling
+	fatal on an error.  Also handle subroutines.
+	(verify_jvm_instructions):  Handle errors from push_poending_block.
+	Support jsr and ret instructions.
+	
+Tue Aug 19 13:33:36 1997  Per Bothner  <bothner@cygnus.com>
+
+	* jcf-io.c (find_classfile):  Fix thinko.
+	* jcf-dump.c:  Add CONVERT2 (to match changed javaop.def).
+
+Tue Aug 12 20:14:45 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in (BISON): Remove.
+
+Thu Aug  7 23:08:24 1997  Per Bothner  <bothner@cygnus.com>
+
+	* Makefile.in:  Convert to autoconf.
+	* config-lang.in (outputs):  Added java/Makefile.
+
+	* Make-lang.in, lang-specs.h, config-lang.in, Makefile.in:
+	Rename cc1java to jc1.
+
+	* lang.c (init_parse, finihs_parse):  New functions #ifdef USE_CPPLIB.
+	* Makefile.in (INTERNAL_CFLAGS):  Add @extra_c_flags.
+
+	* class.c (class_depth):  Do load_class if needed.
+
+	Mostly better verification.
+	* decl.c (pushdecl):  Set TYPE_STUB_DECL for a type.
+	(init_decl_processing):  Change return type of soft_checkcast.
+	* expr.c (expand_java_CHECKCAST):  Do push_value of the "casted" value.
+	* lang.c (put_decl_string, put_decl_node, lang_printable_name,
+	lang_print_error):  New functions.
+	(lang_init):  Set global hook print_error_function to lang_print_error.
+	* expr.c:  In the type_map ptr_type_node is only used for null now.
+	(pop_type, merge_types):  Hence ptr_type_node matches any reference.
+	(merge_types):  Dererence pointer to record types before comparing.
+	(decode_newarray_type, merge_types):  On error just return NULL.
+	(build_java_binop):  Add preliminary implementation (with warning)
+	for COMPARE_L_EXPR and COMPARE_G_EXPR (i.e. [fd]cmp[lg]).
+	(lookup_label):  Set DECL_IGNORED_P (for dwarf2out).
+	(expand_compare, expand_java_goto, expand_java_call):  Don't
+	push_pending_block, since that only makes sense when verifying.
+	(merge_type_state):  Different return codes.
+	(push_pending_block):  A block may need to be verified more than once.
+	(expand_byte_code):  Warn about unused code at code generation time.
+	(verify_jvm_instruction):  Changed logic, since code may need to be
+	re-verified if type-state has changed.  Also, better error handling.
+	Implement acmpeq, acmpne, pop, pop2, swap, checkcast, instanceof.
+	Improve newarray, anewarray, ?aload, athrow,
+	* java-tree.h (LABEL_CHANGED):  New macro.
+	
+Tue Aug  5 12:21:27 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* decl.c (soft_athrow_node): New global variable initialized.
+	* javaop.def (i2b, i2c, i2s): Invoke CONVERT2
+	* typeck.c (convert): Added support for REAL_TYPE.
+	(convert_to_char): New function.
+	(convert): Handle CHAR_TYPE.
+	* expr.c (expand_java_arraystore): Modified because CHAR/BYTE/BOOLEAN/
+	SHORT now expect INT but store as CHAR/BYTE/BOOLEAN/SHORT.
+	(expand_java_arrayload): CHAR/BYTE/BOOLEAN/SHORT now convert result to
+	promoted type.
+	(verify_jvm_instructions): Added break a the end of bogus unop: label.
+	(OPCODE_<b|c|s>astore): Pop an int operand from the type stack
+	(OPCODE_<b|c|s>astore): Push the promoted type onto the stack
+	(process_jvm_instruction): New macro CONVERT2 for i2c, i2s and i2b.
+	(JAVA_ARRAY_LENGTH_OFFSET, JAVA_ARRAY_DATA_OFFSET): Modified
+	to Use The Right Things.
+	(pop_type): Accept CHAR/BYTE/BOOLEAN/SHORT promoted type as
+ 	compatible with INT. BOOLEAN is made equivalent to BYTE.
+	(OPCODE_athrow, OPCODE_aconst_null, OPCODE_ifnull, 
+	OPCODE_ifnonnull): Now supported.
+	(build_java_athrow): New function.
+
+Mon Aug  4 15:46:45 1997  Per Bothner  <bothner@cygnus.com>
+
+	Rename method name <init> to match G++ (and fix mangling).
+	* class.c (layout_class):  Replace method name of <init> by class name.
+	(make_method_value):  Do inverse renaming of constructor from <init>.
+	* java-tree.h (DECL_CONSTRUCTOR_P):  New macro.
+	* typeck.c (lookup_java_constructor):  New function.
+	* expr.c (expand_invoke):  If method_name is <init>, call
+	lookup_java_constructor to find constructor.
+
+	* parse.c (get_constant):  Handle CONSTANT_Float and CONSTANT_Double.
+
+Fri Aug  1 11:37:09 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.c (get_class_constant): Modified to handle array "classes"
+	* typeck.c (set_local_type): Bug fixed when filling type_map[] with
+	wide type.
+	(convert): Modified to handle real type.
+	* java-tree.h (soft_badarrayindex_node, soft_anewarray_node,
+	soft_multianewarray, soft_newarray_node, soft_throw_node): New global
+	variables declared.
+	* decl.c (soft_badarrayindex_node, soft_anewarray_node,
+	soft_multianewarray, soft_newarray_node, soft_throw_node): New
+	global variables initialized.
+	(find_local_variable): Handles the case of a pointer
+	(end_java_method): Restore the use of one more scope
+	* expr.c (build_java_arraynull_check, build_java_arrayaccess,
+	build_java_array_length_access, expand_java_arrayload,
+	expand_java_arraystore, expand_java_array_length,
+	expand_java_multianewarray, expand_java_anewarray, 
+	build_java_check_indexed_type, is_array_type_p,
+	build_java_throw_out_of_bound_exception): New functions.
+	(STORE_INTERNAL): Now forces type of the decl to be type of the value.
+	(OPCODE_arraylength, OPCODE_newarray, OPCODE_<t>astore,
+	OPCODE_<t>aload): Implemented code for verification.
+	(ARRAY_STORE, ARRAY_LOAD, ARRAY_LENGTH, ARRAY_NEW_PTR, ARRAY_NEW_NUM
+	ARRAY_NEW_MULTI): Macro defined.
+	(CONVERT): Modified to invoke convert().
+	(case OPCODE_aload2): Fixed index typo from 2 to 1.
+
+Thu Jul 31 12:48:18 1997  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (push_class):  Set DECL_ARTIFICIAL (for dbxout.c).
+	(build_class_ref, is_compiled_class):  Handle pointer-to-record types.
+	(make_class_data):  Field name needs '/' as package prefix.
+	* expr.c (type_stack_dup, java_stack_dup):  Fix fencepost errors.
+
+Fri Jul 25 11:44:21 1997  Per Bothner  <bothner@cygnus.com>
+
+	Implement debug information for local variables.
+	* java-tree.h (DECL_CODE_LENGTH, DECL_ARG_SLOT_COUNT,
+	DECL_LOCAL_SLOT_NUMBER, DECL_LOCAL_START_PC, DECL_LOCAL_END_PC,
+	DECL_LOCAL_SLOT_CHAIN):  New macros.
+	(struct lang_decl_var):  New type.
+	* parse.c (give_name_to_locals):  Move to decl.c.
+	* decl.c (give_name_to_locals):  Re-written to Do The Right Thing.
+	(start_java_method):  Re-write parameter handling.
+	(pending_local_decls):  New global variable.
+	(push_jvm_slot, maybe_pushlevels, maybe_poplevels):  New functions.
+	(find_local_variable):  Accept pc so we can skips decls not in range.
+	(struct binding_level):  Add end_pc field.
+	* expr.c (expand_byte_code): Call maybe_pushlevels and maybe_poplevels.
+	(various):  Change so current pc gets passed to find_local_variable.
+
+	* decl.c (init_decl_processing):  Re-arrange fields in
+	class_type_node and and method_type_node to match kaffe 0.9.1.
+	* class.c (make_method_value, make_class_data):  Update
+	initializations to match.
+	
+Wed Jul 16 17:17:50 1997  Per Bothner  <bothner@cygnus.com>
+
+	* class.c (unicode_mangling_length, emit_unicode_mangled_name,
+	append_gpp_mangled_name, append_gpp_mangled_type):  New functions.
+	(push_super_field):  New function.
+	(make_class_data):  Handle inheritance of class static initializer.
+	(layout_class):  New name mangling.
+	* constants.c (build_constant_data_ref):  Init type of data array
+	to a one-element array.
+	(build_constants_constructor):  Set DECL_SIZE from complete array type.
+	* decl.c:  Rename class_type, object_type etc to class_type_node,
+	object_type_node etc.  Make former inherit from latter. 
+	* expr.c (expand_invoke):  Add cast of function address.
+	* java-tree.h (TYPE_ARRAY_ELEMENT, PUSH_SUPER_VALUE):  New.
+	* parse.c (yyparse):  Don't call layout_class here.
+	* typeck.c (build_java_array_type):  Set TYPE_ARRAY_ELEMENT.
+
+Sat Jun 14 12:06:57 1997  Per Bothner  <bothner@cygnus.com>
+
+	* decl.c, class.c:  Update method type to match latest Kaffe snapshot.
+	* constants.c (lookup_name_constant):  Renamed to alloc_name_constant.
+	(alloc_class_constant):  New.
+	* expr.c (expand_invoke):  Make sure method's class is initialized.
+	* class.c (interits_from_p, emit_register_class):  New functions.
+	* parse.c (yyparse):  Call emit_register_class.
+
+Mon Jun  9 18:08:06 1997  Per Bothner  <bothner@cygnus.com>
+
+	* constants.c:  New file, to handle constant pool.
+	* Makefile.in (JAVA_OBJS):  Add constants.o.
+	* decl.c (init_decl_processing):  Update, fix, finish various structs.
+	(pushdecl_top_level):  New.
+	* parse.c (layout_class):  Moved to class.c.
+	* expr.c (java_push_constant_from_pool):  New function.
+	* class.c (build_class_ref):  Make work fully
+	(make_class_data):  Emit super-class, constant pool, interface vector.
+
+Tue Jun  3 10:14:31 1997  Per Bothner  <bothner@cygnus.com>
+
+	java-tree.h (DECL_SIGNATURE, BCODE_EMITTED):  Remove.
+	(LABEL_VERIFIED, BCODE_EXCEPTION_TARGET, TYPE_ARRAY_P):  New.
+	* class.c (class_depth):  New function.
+	(lookup_named_class):  Replaced by new function lookup_class.
+	* decl.c (object_type_node, string_type_node):  New.
+	Remove various types that we no longer need.
+	* expr.c (verify_jvm_instructions):  New separate verifier pass.
+	(push_type, pop_type):  New functions for verifier.
+	(type_stack_dup, pop_argument_types, merge_types):  Likewise.
+	(expand_byte_code):  Simplify, since we assume already verified.
+	(expand_invoke):  Now mostly works.
+	* javaop.def:  Rename ldc1->ldc, ldc2->ldc_w, ldc2w->ldc2_w.
+	* lang.c (main_class):  Move to parse.c.  Don't make_class yet.
+	* parse.c:  Wait to allocate class object until we know its name.
+	(layout_class):  Calculate DECL_VINDEX for each virtual method.
+	* typeck.c (get_array_type):  Rename to ...
+	(build_java_array_type):  ... and provide working implementation.
+	(build_java_signature):  New function - build Java signature of type.
+	(set_java_signature):  New function - cache signature with type.
+	(lookup_java_method):  New function.
+	
+Tue May  6 22:08:24 1997  Per Bothner  <bothner@deneb.cygnus.com>
+
+	* class.c (ident_subst):  Take extra SUFFIX parameter.
+	(add_field):  Set DECL_ASSEMBLER_NAME of static fields;  more.
+	(set_constant_value, build_static_field_ref, is_compiled_class):  New.
+	(build_class_ref):  Actually implement.
+	* decl.c, java-tree.h:  Renamed some xx_type to xx_type_node.
+	* decl.c (builtin_function):  New.
+	(init_decl_processing):  Update for current Kaffe.  Declare some
+	builtin Kaffe functions.
+	* expr.c (build_address_of):  New.
+	(expand_java_NEW, expand_java_INSTANCEOF, expand_java_CHECKCAST):
+	Renamed (from expand_java_new etc), and added working implementations.
+	(build_field_ref):  Now also handle static fields.
+	(expand_invoke):  Implement invokestatic, and start implement rest.
+	* java-opcodes.h:  Use javaop.def to avoid duplicated list.
+	* javaop.def:  Rename invokevirt -> invokevirtual.
+	* lang.c (use_handles):  Removed.
+	* parse.c:  Add support for ConstantValue atribute.
+	Handle nested loading of a class.  (JPOOL_UTF):  New.
+
+Tue Mar 11 20:11:05 1997  Per Bothner  <bothner@deneb.cygnus.com>
+
+	* expr.c (expand_java_pushc):  Support #ifndef REAL_ARITHMETIC case.
+
+Thu Feb 27 14:24:29 1997  Per Bothner  <bothner@deneb.cygnus.com>
+
+	* Make-lang.in (java.install-man):  New empty rule.
+	* typeck.c (set_local_type):  New function.
+	* expr.c (STORE_INTERNAL):  Call find_local_variable,
+	not find_stack_slot.  Call set_local_type.
+
+Wed Feb 12 16:11:05 1997  Per Bothner  <bothner@kalessin.cygnus.com>
+
+	* java-tree.h:  Various new macros for constructing RECORD_TYPEs,
+	and building RECORD_TYPE CONSTRUCTORs.
+	Also support for creating Utf8Const objects from an INDETIFIER_NODE.
+
+	* lang.c (use_handles):  Change the default to 0.
+	* decl.c:  Define and build class_type, field_type, utf8const_type.
+	* class.c (make_class_data, make_field_value,
+	get_access_flags_from_decl, build_class_ref, build_utf8_ref,
+	hashUtf8String, strLengthUtf8, mangled_classname:
+	Functions to build reflective data structures.
+	* parse.c (yyparse):  Call make_class_data.
+
+	* jcf-io.c (open_class, find_classfile):  New functions.
+	* jcf-dump.c:  Support reading classfile from explicitly-named
+	class file (without CLASSPATH searching).
+
+Thu Oct 24 14:10:16 1996  Per Bothner  <bothner@deneb.cygnus.com>
+
+	* jcf-reader.c:  Add parameter list to HANDLE_CONSTANT_Utf8.
+	* parse.c (JPOOL_UTF_LENGTH, JPOOL_UTF_DATA, HANDLE_CONSTANT_Utf8):
+	Override jcf-reader macros so CONSTANT_Utf8 becomes tree node here.
+	(get_constant):  Now trivial for CONSTANT_Utf8.
+
+	* jcf.h:  Make NEW_CPOOL the default.
+	* jcf.h, jcf-reader.c, parse.c:  Remove support for !NEW_CPOOL.
+	
+Thu Oct 24 13:52:45 1996  Per Bothner  <bothner@deneb.cygnus.com>
+
+	New directory.
