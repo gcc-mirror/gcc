@@ -1,3 +1,10 @@
+2005-03-16  James E. Wilson  <wilson@specifixinc.com>
+
+	* config/ia64/ia64.c (issue_nops_and_insn): Check first_insn attribute,
+	and return without creating new state if before_nops_num is nonzero.
+	* config/ia64/ia64.md (first_insn): New attribute.
+	(alloc): Set it to yes.
+
 2005-03-16  Richard Henderson  <rth@redhat.com>
 
         PR middle-end/15700
