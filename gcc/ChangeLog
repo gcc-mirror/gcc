@@ -5,6 +5,11 @@
 	* passes.c (rest_of_handle_loop_optimize): Adjust the call to
 	find_basic_blocks.
 
+	* flow.c (recompute_reg_usage): Remove all arguments.
+	* passes.c (rest_of_compilation): Adjust the call to
+	recompute_reg_usage.
+	* rtl.h: Adjust the prototype for recompute_reg_usage.
+
 2005-02-14  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* tree-dump.c (dump_files): Update to reflect new member

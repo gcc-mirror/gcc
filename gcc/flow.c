@@ -4205,17 +4205,11 @@ debug_regset (regset r)
    register allocators to prioritize pseudos for allocation to hard regs.
    More accurate reference counts generally lead to better register allocation.
 
-   F is the first insn to be scanned.
-
-   LOOP_STEP denotes how much loop_depth should be incremented per
-   loop nesting level in order to increase the ref count more for
-   references in a loop.
-
    It might be worthwhile to update REG_LIVE_LENGTH, REG_BASIC_BLOCK and
    possibly other information which is used by the register allocators.  */
 
 void
-recompute_reg_usage (rtx f ATTRIBUTE_UNUSED, int loop_step ATTRIBUTE_UNUSED)
+recompute_reg_usage (void)
 {
   allocate_reg_life_data ();
   /* distribute_notes in combiner fails to convert some of the REG_UNUSED notes
