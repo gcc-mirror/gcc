@@ -7358,7 +7358,8 @@ force_to_mode (x, mode, mask, reg, just_select)
 	      < GET_MODE_BITSIZE (GET_MODE (x)))
 	  && INTVAL (XEXP (XEXP (x, 0), 1)) < HOST_BITS_PER_WIDE_INT)
 	{
-	  temp = GEN_INT (mask << INTVAL (XEXP (XEXP (x, 0), 1)));
+	  temp = gen_int_mode (mask << INTVAL (XEXP (XEXP (x, 0), 1)),
+			       GET_MODE (x));
 	  temp = gen_binary (XOR, GET_MODE (x), XEXP (XEXP (x, 0), 0), temp);
 	  x = gen_binary (LSHIFTRT, GET_MODE (x), temp, XEXP (XEXP (x, 0), 1));
 
