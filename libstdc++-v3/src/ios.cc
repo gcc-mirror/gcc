@@ -226,32 +226,34 @@ namespace std
     // Precondition: _M_word_size <= ix
     int newsize = _S_local_word_size;
     _Words* words = _M_local_word;
-    int i = 0;
     if (ix > _S_local_word_size - 1)
       {
-	const int max = numeric_limits<int>::max();
-	if (ix < max)
-	  newsize = ix + 1;
-	else
-	  newsize = max;
-
-	try
-	  { words = new _Words[newsize]; }
-	catch (...)
+	if (ix < numeric_limits<int>::max())
 	  {
-	    delete [] _M_word;
-	    _M_word = 0;
-	    _M_streambuf_state |= badbit;
-	    if (_M_streambuf_state & _M_exception)
-	      __throw_ios_failure("ios_base::_M_grow_words caused exception");
-	    return _M_word_zero;
+	    newsize = ix + 1;
+	    try
+	      { words = new _Words[newsize]; }
+	    catch (...)
+	      {
+		delete [] _M_word;
+		_M_word = 0;
+		_M_streambuf_state |= badbit;
+		if (_M_streambuf_state & _M_exception)
+		  __throw_ios_failure("ios_base::_M_grow_words failure");
+		return _M_word_zero;
+	      }
+	    for (int i = 0; i < _M_word_size; i++) 
+	      words[i] = _M_word[i];
+	    if (_M_word && _M_word != _M_local_word) 
+	      {
+		delete [] _M_word;
+		_M_word = 0;
+	      }
 	  }
-	for (; i < _M_word_size; i++) 
-	  words[i] = _M_word[i];
-	if (_M_word && _M_word != _M_local_word) 
+	else
 	  {
-	    delete [] _M_word;
-	    _M_word = 0;
+	    _M_streambuf_state |= badbit;
+	    return _M_word_zero;
 	  }
       }
     _M_word = words;
@@ -351,4 +353,3 @@ namespace std
     return __ret; 
   }
 }  // namespace std
-

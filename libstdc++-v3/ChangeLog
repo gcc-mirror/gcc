@@ -1,3 +1,26 @@
+2002-04-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+        PR libstdc++/5820
+        * include/bits/fstream.tcc (basic_filebuf::_M_underflow_common):
+        Check for eof.
+        * include/bits/streambuf_iterator.h: Match stream_iterator.h.
+        (istreambuf_iterator::operator++): Invalidate on eof.
+        (istreambuf_iterator::operator++(int)): Same.
+        (istreambuf_iterator::operator*): Same.
+ 
+2002-04-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+        PR libstdc++/5820
+	* config/io/basic_file_stdio.h (__basic_file::sys_getc): Return int.
+        (__basic_file::sys_ungetc): Take int.
+        * config/io/basic_file_stdio.cc (__basic_file::sys_ungetc): Same.
+        * include/bits/fstream.tcc (basic_filebuf::_M_underflow_common):
+        Use sys_getc for unbuffered input.
+        * testsuite/27_io/narrow_stream_objects.cc (test06): New.
+        
+        * src/ios.cc (_M_grow_words): Adjust error checking.
+        * testsuite/27_io/ios_base_storage.cc: Same.
+
 2002-04-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Set all
@@ -47,6 +70,11 @@
 
 	* config/cpu/mmix/bits/cpu_limits.h: New file.
 	* configure.target (CPULIMITSH): Use it.
+
+2002-04-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/istream.tcc (istream::read): Fix.
+	* testsuite/27_io/istream_unformatted.cc (main): Add.
 
 2002-04-20  Jason Merrill  <jason@redhat.com>
 

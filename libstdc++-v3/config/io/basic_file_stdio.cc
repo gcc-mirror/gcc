@@ -81,11 +81,13 @@ namespace std
     return __ret;
   }
 
-  char
-  __basic_file<char>::sys_getc() { return getc (_M_cfile); }
+  int
+  __basic_file<char>::sys_getc() 
+  { return getc(_M_cfile); }
   
-  char
-  __basic_file<char>::sys_ungetc(char __s) { return ungetc (__s, _M_cfile); }
+  int
+  __basic_file<char>::sys_ungetc(int __c) 
+  { return ungetc(__c, _M_cfile); }
   
   __basic_file<char>* 
   __basic_file<char>::open(const char* __name, ios_base::openmode __mode, 

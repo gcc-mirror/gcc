@@ -1,6 +1,7 @@
 // Streambuf iterators
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,6 +42,107 @@
 
 namespace std
 {
+  // 24.5.3 Template class istreambuf_iterator
+  template<typename _CharT, typename _Traits>
+    class istreambuf_iterator
+    : public iterator<input_iterator_tag, _CharT, typename _Traits::off_type,
+    		      _CharT*, _CharT&>
+    {
+    public:
+      // Types:
+      typedef _CharT                         		char_type;
+      typedef _Traits                        		traits_type;
+      typedef typename _Traits::int_type     		int_type;
+      typedef basic_streambuf<_CharT, _Traits> 		streambuf_type;
+      typedef basic_istream<_CharT, _Traits>         	istream_type;
+
+    private:
+      // 24.5.3 istreambuf_iterator 
+      // p 1 
+      // If the end of stream is reached (streambuf_type::sgetc()
+      // returns traits_type::eof()), the iterator becomes equal to
+      // the "end of stream" iterator value.
+      // NB: This implementation assumes the "end of stream" value
+      // is EOF, or -1.
+      mutable streambuf_type* 	_M_sbuf;  
+      int_type 			_M_c;
+
+    public:
+      istreambuf_iterator() throw() 
+      : _M_sbuf(0), _M_c(-2) { }
+      
+      istreambuf_iterator(istream_type& __s) throw()
+      : _M_sbuf(__s.rdbuf()), _M_c(-2) { }
+
+      istreambuf_iterator(streambuf_type* __s) throw()
+      : _M_sbuf(__s), _M_c(-2) { }
+       
+      // NB: This should really have an int_type return
+      // value, so "end of stream" postion can be checked without
+      // hacking.
+      char_type 
+      operator*() const
+      { 
+	// The result of operator*() on an end of stream is undefined.
+	int_type __ret = traits_type::eof();
+	if (_M_sbuf)
+	  { 
+	    if (_M_c != static_cast<int_type>(-2))
+	      __ret = _M_c;
+	    else 
+	      if ((__ret = _M_sbuf->sgetc()) == traits_type::eof())
+		_M_sbuf = 0;
+	  }
+	return traits_type::to_char_type(__ret);
+      }
+	
+      istreambuf_iterator& 
+      operator++()
+      { 
+	if (_M_sbuf && _M_sbuf->sbumpc() == traits_type::eof())
+	  _M_sbuf = 0;
+	else
+	  _M_c = -2;
+	return *this; 
+      }
+
+      istreambuf_iterator
+      operator++(int)
+      {
+	istreambuf_iterator __old = *this;
+	if (_M_sbuf && (__old._M_c = _M_sbuf->sbumpc()) == traits_type::eof())
+	  _M_sbuf = 0;
+	else
+	  _M_c = -2;
+	return __old; 
+      }
+
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+      // 110 istreambuf_iterator::equal not const
+      // NB: there is also number 111 (NAD, Future) pending on this function.
+      bool 
+      equal(const istreambuf_iterator& __b) const
+      {
+	const int_type __eof = traits_type::eof();
+	bool __thiseof = traits_type::eq_int_type(this->operator*(), __eof);
+	bool __beof = traits_type::eq_int_type(__b.operator*(), __eof);
+	return (__thiseof && __beof || (!__thiseof && !__beof));
+      }
+#endif
+    };
+
+  template<typename _CharT, typename _Traits>
+    inline bool 
+    operator==(const istreambuf_iterator<_CharT, _Traits>& __a,
+	       const istreambuf_iterator<_CharT, _Traits>& __b)
+    { return __a.equal(__b); }
+
+  template<typename _CharT, typename _Traits>
+    inline bool 
+    operator!=(const istreambuf_iterator<_CharT, _Traits>& __a,
+	       const istreambuf_iterator<_CharT, _Traits>& __b)
+    { return !__a.equal(__b); }
+
   template<typename _CharT, typename _Traits>
     class ostreambuf_iterator
     : public iterator<output_iterator_tag, void, void, void, void>
@@ -89,116 +191,9 @@ namespace std
     ostreambuf_iterator<_CharT, _Traits>::operator=(_CharT __c)
     {
       if (!_M_failed && 
-          _Traits::eq_int_type(_M_sbuf->sputc(__c),_Traits::eof()))
-      _M_failed = true;
+          _Traits::eq_int_type(_M_sbuf->sputc(__c), _Traits::eof()))
+	_M_failed = true;
       return *this;
     }
-
-
-  // 24.5.3 Template class istreambuf_iterator
-  template<typename _CharT, typename _Traits>
-    class istreambuf_iterator
-    : public iterator<input_iterator_tag, _CharT, typename _Traits::off_type,
-    		      _CharT*, _CharT&>
-    {
-    public:
-      // Types:
-      typedef _CharT                         		char_type;
-      typedef _Traits                        		traits_type;
-      typedef typename _Traits::int_type     		int_type;
-      typedef basic_streambuf<_CharT, _Traits> 		streambuf_type;
-      typedef basic_istream<_CharT, _Traits>         	istream_type;
-
-    private:
-      // 24.5.3 istreambuf_iterator 
-      // p 1 
-      // If the end of stream is reached (streambuf_type::sgetc()
-      // returns traits_type::eof()), the iterator becomes equal to
-      // the "end of stream" iterator value.
-      // NB: This implementation assumes the "end of stream" value
-      // is EOF, or -1.
-      streambuf_type* 		_M_sbuf;  
-      int_type 			_M_c;
-
-    public:
-      istreambuf_iterator() throw() 
-      : _M_sbuf(NULL), _M_c(-2) { }
-      
-      istreambuf_iterator(istream_type& __s) throw()
-      : _M_sbuf(__s.rdbuf()), _M_c(-2) { }
-
-      istreambuf_iterator(streambuf_type* __s) throw()
-      : _M_sbuf(__s), _M_c(-2) { }
-       
-      // NB: This should really have an int_type return
-      // value, so "end of stream" postion can be checked without
-      // hacking.
-      char_type 
-      operator*() const
-      { 
-	// The result of operator*() on an end of stream is undefined.
-	char_type __ret;
-	if (_M_sbuf && _M_c != static_cast<int_type>(-2))
-	  __ret = _M_c;
-	else if (_M_sbuf)
-	  __ret = traits_type::to_char_type(_M_sbuf->sgetc()); 
-	else
-	  __ret = static_cast<char_type>(traits_type::eof());
-	return __ret;
-      }
-	
-      istreambuf_iterator& 
-      operator++()
-      { 
-	if (_M_sbuf)
-	  _M_sbuf->sbumpc();
-	_M_c = -2;
-	return *this; 
-      }
-
-      istreambuf_iterator
-      operator++(int)
-      {
-	istreambuf_iterator __old = *this;
-	if (_M_sbuf)
-	  __old._M_c = _M_sbuf->sbumpc();
-	_M_c = -2;
-	return __old; 
-      }
-
-      bool 
-      equal(const istreambuf_iterator& __b)
-      { 
-	int_type __eof = traits_type::eof();
-	bool __thiseof = !_M_sbuf || _M_sbuf->sgetc() == __eof;
-	bool __beof = !__b._M_sbuf || __b._M_sbuf->sgetc() == __eof;
-	return (__thiseof && __beof || (!__thiseof && !__beof));
-      }
-
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
-      // 110 istreambuf_iterator::equal not const
-      // NB: there is also number 111 (NAD, Future) pending on this function.
-      bool 
-      equal(const istreambuf_iterator& __b) const
-      {
-	int_type __eof = traits_type::eof();
-	bool __thiseof = !_M_sbuf || _M_sbuf->sgetc() == __eof;
-	bool __beof = !__b._M_sbuf || __b._M_sbuf->sgetc() == __eof;
-	return (__thiseof && __beof || (!__thiseof && !__beof));
-      }
-#endif
-    };
-
-  template<typename _CharT, typename _Traits>
-    inline bool 
-    operator==(const istreambuf_iterator<_CharT, _Traits>& __a,
-	       const istreambuf_iterator<_CharT, _Traits>& __b)
-    { return __a.equal(__b); }
-
-  template<typename _CharT, typename _Traits>
-    inline bool 
-    operator!=(const istreambuf_iterator<_CharT, _Traits>& __a,
-	       const istreambuf_iterator<_CharT, _Traits>& __b)
-    { return !__a.equal(__b); }
 } // namespace std
 #endif
