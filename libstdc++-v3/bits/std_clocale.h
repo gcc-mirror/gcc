@@ -35,7 +35,7 @@
 
 #ifndef _CPP_CLOCALE
 #define _CPP_CLOCALE     1
-# pragma system_header
+# pragma GCC system_header
 # include_next <locale.h>
 #endif
 

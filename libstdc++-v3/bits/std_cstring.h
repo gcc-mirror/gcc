@@ -39,6 +39,6 @@
 // We must not see the optimized string functions GNU libc defines.
 #  define __NO_STRING_INLINES
 # endif
-# pragma system_header
+# pragma GCC system_header
 # include_next <string.h>
 #endif

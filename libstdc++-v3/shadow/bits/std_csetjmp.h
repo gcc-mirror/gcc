@@ -37,7 +37,7 @@
   namespace _C_legacy {
     extern "C" {
 #     define _IN_C_LEGACY_
-#     pragma system_header
+#     pragma GCC system_header
 #     include_next <setjmp.h>
     }
     typedef jmp_buf   _CPP_jmp_buf_capture;

@@ -208,7 +208,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
   # Check for pragma system_header.
   AC_MSG_CHECKING([for g++ that supports pragma system_header])
   CXXFLAGS='-Wunknown-pragmas -Werror'
-  AC_TRY_COMPILE([#pragma system_header], [int foo;
+  AC_TRY_COMPILE([#pragma GCC system_header], [int foo;
   ], [ac_newpragma=yes], [ac_newpragma=no])
   if test "$ac_test_CXXFLAGS" = set; then
     CXXFLAGS="$ac_save_CXXFLAGS"
@@ -1526,7 +1526,7 @@ dnl Then, if any (well almost any) other make is called, and GNU make also
 dnl exists, then the other make wraps the GNU make.
 dnl
 dnl @author John Darrington <j.darrington@elvis.murdoch.edu.au>
-dnl @version $Id: acinclude.m4,v 1.42 2000/07/17 18:17:33 pme Exp $
+dnl @version $Id: acinclude.m4,v 1.43 2000/07/19 00:57:37 bkoz Exp $
 dnl
 dnl #### Changes for libstdc++-v3:  reformatting and linewrapping; prepending
 dnl #### GLIBCPP_ to the macro name; adding the :-make fallback in the

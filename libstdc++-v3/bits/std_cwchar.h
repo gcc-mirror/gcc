@@ -39,7 +39,7 @@
 #include <bits/c++config.h>
 
 #if _GLIBCPP_USE_WCHAR_T
- # pragma system_header
+ # pragma GCC system_header
  # include_next <wchar.h>
 #else
 # ifdef __cplusplus

@@ -35,7 +35,7 @@
 
 #ifndef _CPP_CSTDIO
 #define _CPP_CSTDIO 1
-# pragma system_header
+# pragma GCC system_header
 # include_next <stdio.h>
 
 #ifndef SEEK_CUR
