@@ -1,3 +1,8 @@
+2000-10-17  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* inclhack.def (hpux_maxint): Also apply fix to values.h.
+	* fixincl.x: Rebuilt.
+
 2000-10-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	* genrecog.c (write_switch): Return the first condition that needs a
@@ -37,6 +42,7 @@
 	to be used along with -shared, and document the subtle failure that
 	may occur otherwise.
 
+>>>>>>> 1.7984
 2000-10-16  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (return_internal): Move `use' after `return'.
