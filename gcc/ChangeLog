@@ -1,3 +1,7 @@
+2000-12-01  Rodney Brown  <RodneyBrown@mynd.com>
+
+	* config.gcc: Fix typo for UnixWare 7.
+
 2000-12-03  Phil Edwards  <pme@sources.redhat.com>
 
 	* invoke.texi:  Replace `pedwarns' with clearer text.
