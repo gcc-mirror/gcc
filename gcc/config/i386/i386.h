@@ -57,6 +57,11 @@ extern int target_flags;
 
 /* Macros used in the machine description to test the flags.  */
 
+/* configure can arrage to make this 2, to force a 486.  */
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT 0
+#endif
+
 /* Compile 80387 insns for floating point (not library calls).  */
 #define TARGET_80387 (target_flags & 1)
 /* Compile code for an i486. */
@@ -110,7 +115,7 @@ extern int target_flags;
     { "fp-ret-in-387", 0200},			\
     { "no-fp-ret-in-387", -0200},		\
     SUBTARGET_SWITCHES                          \
-    { "", TARGET_DEFAULT}}
+    { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
 
 /* This is meant to be redefined in the host dependent files */
 #define SUBTARGET_SWITCHES
