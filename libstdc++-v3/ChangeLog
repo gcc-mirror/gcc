@@ -1,3 +1,15 @@
+2003-06-10  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/fstream.tcc (overflow): According to
+	27.5.2.4.5, overflow() returns not_eof(eof()).
+	* testsuite/27_io/basic_filebuf/overflow/char/2.cc: New.
+	* testsuite/27_io/basic_filebuf/overflow/char/2-unbuf.cc: Ditto.
+
+2003-06-10  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/fstream.tcc (_M_underflow): Check overflow return
+	value; tweak slightly.
+
 2003-06-09  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/fstream.tcc (_M_underflow): Do not special
