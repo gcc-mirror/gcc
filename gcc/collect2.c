@@ -441,7 +441,7 @@ choose_temp_base ()
     }
 
   len = strlen (base);
-  temp_filename = xmalloc (len + sizeof("/ccXXXXXX"));
+  temp_filename = xmalloc (len + sizeof("/ccXXXXXX") + 1);
   strcpy (temp_filename, base);
   if (len > 0 && temp_filename[len-1] != '/')
     temp_filename[len++] = '/';
@@ -699,43 +699,43 @@ main (argc, argv)
      qualify the program name with the target machine.  */
 
   full_ld_suffix
-    = xcalloc (strlen (ld_suffix) + strlen (target_machine) + 1, 1);
+    = xcalloc (strlen (ld_suffix) + strlen (target_machine) + 2, 1);
   strcpy (full_ld_suffix, ld_suffix);
   strcat (full_ld_suffix, "-");
   strcat (full_ld_suffix, target_machine);
 
   full_real_ld_suffix
-    = xcalloc (strlen (real_ld_suffix) + strlen (target_machine) + 1, 1);
+    = xcalloc (strlen (real_ld_suffix) + strlen (target_machine) + 2, 1);
   strcpy (full_real_ld_suffix, real_ld_suffix);
   strcat (full_real_ld_suffix, "-");
   strcat (full_real_ld_suffix, target_machine);
 
   full_gld_suffix
-    = xcalloc (strlen (gld_suffix) + strlen (target_machine) + 1, 1);
+    = xcalloc (strlen (gld_suffix) + strlen (target_machine) + 2, 1);
   strcpy (full_gld_suffix, gld_suffix);
   strcat (full_gld_suffix, "-");
   strcat (full_gld_suffix, target_machine);
 
   full_nm_suffix
-    = xcalloc (strlen (nm_suffix) + strlen (target_machine) + 1, 1);
+    = xcalloc (strlen (nm_suffix) + strlen (target_machine) + 2, 1);
   strcpy (full_nm_suffix, nm_suffix);
   strcat (full_nm_suffix, "-");
   strcat (full_nm_suffix, target_machine);
 
   full_gnm_suffix
-    = xcalloc (strlen (gnm_suffix) + strlen (target_machine) + 1, 1);
+    = xcalloc (strlen (gnm_suffix) + strlen (target_machine) + 2, 1);
   strcpy (full_gnm_suffix, gnm_suffix);
   strcat (full_gnm_suffix, "-");
   strcat (full_gnm_suffix, target_machine);
 
   full_strip_suffix
-    = xcalloc (strlen (strip_suffix) + strlen (target_machine) + 1, 1);
+    = xcalloc (strlen (strip_suffix) + strlen (target_machine) + 2, 1);
   strcpy (full_strip_suffix, strip_suffix);
   strcat (full_strip_suffix, "-");
   strcat (full_strip_suffix, target_machine);
   
   full_gstrip_suffix
-    = xcalloc (strlen (gstrip_suffix) + strlen (target_machine) + 1, 1);
+    = xcalloc (strlen (gstrip_suffix) + strlen (target_machine) + 2, 1);
   strcpy (full_gstrip_suffix, gstrip_suffix);
   strcat (full_gstrip_suffix, "-");
   strcat (full_gstrip_suffix, target_machine);
@@ -796,7 +796,7 @@ main (argc, argv)
   if (c_file_name == 0)
     {
 #ifdef CROSS_COMPILE
-      c_file_name = xcalloc (strlen ("gcc") + strlen (target_machine) + 1, 1);
+      c_file_name = xcalloc (sizeof ("gcc-") + strlen (target_machine) + 1, 1);
       strcpy (c_file_name, "gcc-");
       strcat (c_file_name, target_machine);
 #else
