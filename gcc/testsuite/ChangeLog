@@ -1,3 +1,8 @@
+2004-10-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17976
+	* g++.dg/init/dtor3.C: New test.
+
 2004-10-15  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.dg/ppc-stackalign-1.c: Set dg-options to {}.
