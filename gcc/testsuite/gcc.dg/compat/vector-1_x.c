@@ -1,5 +1,6 @@
 /* { dg-options "-w" } */
-/* { dg-xfail-if "PR target/12916" "sparc*-*-*" "*" "" } */
+
+#ifndef SKIP_ATTRIBUTE
 
 #include "compat-common.h"
 #include "vector-defs.h"
@@ -15,9 +16,12 @@ SETUP (4, si);
 SETUP (1, di);
 SETUP (2, di);
 
+#endif
+
 void
 vector_1_x (void)
 {
+#ifndef SKIP_ATTRIBUTE
   DEBUG_INIT
 
   CHECK (8, qi);
@@ -34,4 +38,5 @@ vector_1_x (void)
 
   if (fails != 0)
     abort ();
+#endif
 }
