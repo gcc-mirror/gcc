@@ -1,3 +1,10 @@
+1999-04-10  Mike Stump  <mrs@wrs.com>
+
+	* configure.in (*-*-vxworks): Add vxWorks thread support for all
+	vxWorks targets.
+	* configure.in (thumb-wrs-xvworks): Add vxWorks support for thumb.
+	* configure: Rebuilt.
+
 Sat Apr 10 06:04:50 1999 Donn Terry (donn@interix.com) 
 
 	* i386/t-interix: Use mostly system headers unchanged.
