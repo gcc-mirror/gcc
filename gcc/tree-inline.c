@@ -667,8 +667,12 @@ inlinable_function_p (fn, id)
   if (! flag_inline_trees)
     ;
   /* If we're not inlining all functions and the function was not
-     declared `inline', we don't inline it.  */
-  else if (flag_inline_trees < 2 && ! DECL_INLINE (fn))
+     declared `inline', we don't inline it.  Don't think of
+     disregarding DECL_INLINE when flag_inline_trees == 2; it's the
+     front-end that must set DECL_INLINE in this case, because
+     dwarf2out loses if a function is inlined that doesn't have
+     DECL_INLINE set.  */
+  else if (! DECL_INLINE (fn))
     ;
   /* We can't inline functions that are too big.  Only allow a single
      function to eat up half of our budget.  Make special allowance
