@@ -1150,7 +1150,7 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
      rtx dep_insn;
      int cost;
 {
-  rtx set;
+  rtx set, set_src;
 
   /* If the dependence is an anti-dependence, there is no cost.  For an
      output dependence, there is sometimes a cost, but it doesn't seem
@@ -1159,12 +1159,12 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
   if (REG_NOTE_KIND (link) != 0)
     return 0;
 
-  /* EV5 costs are as given in alpha.md; exceptions are given here. */
   if (alpha_cpu == PROCESSOR_EV5)
     {
-      /* And the lord DEC sayeth:  "A special bypass provides an effective
-	 latency of 0 cycles for an ICMP or ILOG insn producing the test
-	 operand of an IBR or CMOV insn." */
+      /* On EV5, "A special bypass provides an effective latency of 0
+	 cycles for an ICMP or ILOG insn producing the test operand of an
+	 IBR or CMOV insn." */
+
       if (recog_memoized (dep_insn) >= 0
 	  && (get_attr_type (dep_insn) == TYPE_ICMP
 	      || get_attr_type (dep_insn) == TYPE_ILOG)
@@ -1173,67 +1173,104 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
 	      || (get_attr_type (insn) == TYPE_CMOV
 		  && !((set = single_set (dep_insn)) != 0
 		       && GET_CODE (PATTERN (insn)) == SET
-		       && GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE
-		       && (rtx_equal_p (SET_DEST (set),
-					XEXP (SET_SRC (PATTERN (insn)), 1))
-			   || rtx_equal_p (SET_DEST (set),
-					   XEXP (SET_SRC (PATTERN (insn)), 2)))))))
+		       && (set_src = SET_SRC (PATTERN (insn)),
+			   GET_CODE (set_src) == IF_THEN_ELSE)
+		       && (set = SET_DEST (set),
+			   rtx_equal_p (set, XEXP (set_src, 1))
+			   || rtx_equal_p (set, XEXP (set_src, 2)))))))
+	return 0;
+
+      /* On EV5 it takes longer to get data to the multiplier than to
+	 anywhere else, so increase costs.  */
+
+      if (recog_memoized (insn) >= 0
+	  && recog_memoized (dep_insn) >= 0
+	  && (get_attr_type (insn) == TYPE_IMULL
+	      || get_attr_type (insn) == TYPE_IMULQ
+	      || get_attr_type (insn) == TYPE_IMULH)
+	  && (set = single_set (dep_insn)) != 0
+	  && GET_CODE (PATTERN (insn)) == SET
+	  && (set_src = SET_SRC (PATTERN (insn)),
+	      GET_CODE (set_src) == MULT)
+	  && (set = SET_DEST (set),
+	      rtx_equal_p (set, XEXP (set_src, 0))
+	      || rtx_equal_p (set, XEXP (set_src, 1))))
+	{
+	  switch (get_attr_type (insn))
+	    {
+	    case TYPE_LD:
+	    case TYPE_CMOV:
+	    case TYPE_IMULL:
+	    case TYPE_IMULQ:
+	    case TYPE_IMULH:
+	      return cost + 1;
+	    case TYPE_JSR:
+	    case TYPE_IADD:
+	    case TYPE_ILOG:
+	    case TYPE_SHIFT:
+	    case TYPE_ICMP:
+	      return cost + 2;
+	    }
+	}
+    }
+  else
+    {
+      /* On EV4, if INSN is a store insn and DEP_INSN is setting the data
+	 being stored, we can sometimes lower the cost.  */
+
+      if (recog_memoized (insn) >= 0 && get_attr_type (insn) == TYPE_ST
+	  && (set = single_set (dep_insn)) != 0
+	  && GET_CODE (PATTERN (insn)) == SET
+	  && rtx_equal_p (SET_DEST (set), SET_SRC (PATTERN (insn))))
+	{
+	  switch (get_attr_type (dep_insn))
+	    {
+	    case TYPE_LD:
+	      /* No savings here.  */
+	      return cost;
+
+	    case TYPE_IMULL:
+	    case TYPE_IMULQ:
+	    case TYPE_IMULH:
+	      /* In these cases, we save one cycle.  */
+	      return cost - 1;
+
+	    default:
+	      /* In all other cases, we save two cycles.  */
+	      return MAX (0, cost - 2);
+	    }
+	}
+
+      /* Another case that needs adjustment is an arithmetic or logical
+	 operation.  It's cost is usually one cycle, but we default it to
+	 two in the MD file.  The only case that it is actually two is
+	 for the address in loads and stores.  */
+
+      if (recog_memoized (dep_insn) >= 0
+	  && (get_attr_type (dep_insn) == TYPE_IADD
+	      || get_attr_type (dep_insn) == TYPE_ILOG))
+	{
+	  switch (get_attr_type (insn))
+	    {
+	    case TYPE_LD:
+	    case TYPE_ST:
+	      return cost;
+	    default:
+	      return 1;
+	    }
+	}
+
+      /* The final case is when a compare feeds into an integer branch;
+	 the cost is only one cycle in that case.  */
+
+      if (recog_memoized (dep_insn) >= 0
+	  && get_attr_type (dep_insn) == TYPE_ICMP
+	  && recog_memoized (insn) >= 0
+	  && get_attr_type (insn) == TYPE_IBR)
 	return 1;
-      return cost;
-    } 
-
-  /* If INSN is a store insn and DEP_INSN is setting the data being stored,
-     we can sometimes lower the cost.  */
-
-  if (recog_memoized (insn) >= 0 && get_attr_type (insn) == TYPE_ST
-      && (set = single_set (dep_insn)) != 0
-      && GET_CODE (PATTERN (insn)) == SET
-      && rtx_equal_p (SET_DEST (set), SET_SRC (PATTERN (insn))))
-    switch (get_attr_type (dep_insn))
-      {
-      case TYPE_LD:
-	/* No savings here.  */
-	return cost;
-
-      case TYPE_IMULL:
-      case TYPE_IMULQ:
-	/* In these cases, we save one cycle.  */
-	return cost - 2;
-
-      default:
-	/* In all other cases, we save two cycles.  */
-	return MAX (0, cost - 4);
-      }
-
-  /* Another case that needs adjustment is an arithmetic or logical
-     operation.  It's cost is usually one cycle, but we default it to
-     two in the MD file.  The only case that it is actually two is
-     for the address in loads and stores.  */
-
-  if (recog_memoized (dep_insn) >= 0
-      && (get_attr_type (dep_insn) == TYPE_IADD
-	  || get_attr_type (dep_insn) == TYPE_ILOG))
-    switch (get_attr_type (insn))
-      {
-      case TYPE_LD:
-      case TYPE_ST:
-	return cost;
-
-      default:
-	return 2;
-      }
-
-  /* The final case is when a compare feeds into an integer branch.  The cost
-     is only one cycle in that case.  */
-
-  if (recog_memoized (dep_insn) >= 0
-      && get_attr_type (dep_insn) == TYPE_ICMP
-      && recog_memoized (insn) >= 0
-      && get_attr_type (insn) == TYPE_IBR)
-    return 2;
+    }
 
   /* Otherwise, return the default cost. */
-
   return cost;
 }
 
