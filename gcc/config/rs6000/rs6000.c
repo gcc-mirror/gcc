@@ -3457,7 +3457,26 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
   /* Handle the case of CONSTANT_P_RTX.  */
   if (GET_CODE (operands[1]) == CONSTANT_P_RTX)
     goto emit_set;
-  
+
+  /* 128-bit constant floating-point values on Darwin should really be
+     loaded as two parts.  */
+  if ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_DARWIN)
+      && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_LONG_DOUBLE_128
+      && mode == TFmode && GET_CODE (operands[1]) == CONST_DOUBLE)
+    {
+      /* DImode is used, not DFmode, because simplify_gen_subreg doesn't
+	 know how to get a DFmode SUBREG of a TFmode.  */
+      rs6000_emit_move (simplify_gen_subreg (DImode, operands[0], mode, 0),
+			simplify_gen_subreg (DImode, operands[1], mode, 0),
+			DImode);
+      rs6000_emit_move (simplify_gen_subreg (DImode, operands[0], mode,
+					     GET_MODE_SIZE (DImode)),
+			simplify_gen_subreg (DImode, operands[1], mode,
+					     GET_MODE_SIZE (DImode)),
+			DImode);
+      return;
+    }
+
   /* FIXME:  In the long term, this switch statement should go away
      and be replaced by a sequence of tests based on things like
      mode == Pmode.  */
@@ -8302,7 +8321,8 @@ addrs_ok_for_quad_peep (rtx addr1, rtx addr2)
 
 enum reg_class
 secondary_reload_class (enum reg_class class, 
-		enum machine_mode mode ATTRIBUTE_UNUSED, rtx in)
+			enum machine_mode mode ATTRIBUTE_UNUSED,
+			rtx in)
 {
   int regno;
 
@@ -10007,73 +10027,72 @@ rs6000_emit_minmax (rtx dest, enum rtx_code code, rtx op0, rtx op1)
     emit_move_insn (dest, target);
 }
 
-/* Called by splitter for multireg moves.
-   Input: 
-          operands[0] : Destination of move
-          operands[1] : Source of move
+/* Emit instructions to move SRC to DST.  Called by splitters for
+   multi-register moves.  It will emit at most one instruction for
+   each register that is accessed; that is, it won't emit li/lis pairs
+   (or equivalent for 64-bit code).  One of SRC or DST must be a hard
+   register.  */
 
-   Output:
-	  operands[2-n] : Destination slots
-	  operands[n-m] : Source slots
-   where n = 2 + HARD_REGNO_NREGS (reg, GET_MODE (operands[0]))
-         m = 2 + 2 * HARD_REGNO_NREGS (reg, GET_MODE (operands[0])) - 1
-
-   Splits the move of operands[1] to operands[0].
-   This is done, if GPRs are one of the operands.  In this case
-   a sequence of simple move insns has to be issued.  The sequence of these
-   move insns has to be done in correct order to avoid early clobber of the
-   base register or destructive overlap of registers. 
-*/
-	  
 void
-rs6000_split_multireg_move (rtx *operands)
+rs6000_split_multireg_move (rtx dst, rtx src)
 {
-  int nregs, reg, i, j, used_update = 0;
-  enum machine_mode mode; 
-  rtx dst = operands[0];
-  rtx src = operands[1];
-  rtx insn = 0;
+  /* The register number of the first register being moved.  */
+  int reg;
+  /* The mode that is to be moved.  */
+  enum machine_mode mode;
+  /* The mode that the move is being done in, and its size.  */
+  enum machine_mode reg_mode;
+  int reg_mode_size;
+  /* The number of registers that will be moved.  */
+  int nregs;
 
-  /* Calculate number to move (2/4 for 32/64 bit mode).  */ 
-
-  reg = REG_P (operands[0]) ? REGNO (operands[0]) : REGNO (operands[1]); 
-  mode = GET_MODE (operands[0]);
-  nregs = HARD_REGNO_NREGS (reg, mode);                                  
+  reg = REG_P (dst) ? REGNO (dst) : REGNO (src);
+  mode = GET_MODE (dst);
+  nregs = HARD_REGNO_NREGS (reg, mode);
+  if (FP_REGNO_P (reg))
+    reg_mode = DFmode;
+  else if (ALTIVEC_REGNO_P (reg))
+    reg_mode = V16QImode;
+  else
+    reg_mode = word_mode;
+  reg_mode_size = GET_MODE_SIZE (reg_mode);
   
-  if (REG_P (operands[1]) 
-      && REG_P (operands[0]) 
-      && (REGNO (operands[1]) < REGNO (operands[0])))
-    {  
-      /* Move register range backwards, if we have destructive overlap.  */
-
-      j = nregs;
-      for (i = 0; i < nregs; i++)
-        {
-          j--;
-          operands[i+2] = operand_subword (operands[0], j, 0, mode);
-          operands[i+2+nregs] = 
-            operand_subword (operands[1], j, 0, mode);   
-        }
-    }     
+  if (reg_mode_size * nregs != GET_MODE_SIZE (mode))
+    abort ();
+  
+  if (REG_P (src) && REG_P (dst) && (REGNO (src) < REGNO (dst)))
+    {
+      /* Move register range backwards, if we might have destructive
+	 overlap.  */
+      int i;
+      for (i = nregs - 1; i >= 0; i--)
+	emit_insn (gen_rtx_SET (VOIDmode, 
+				simplify_gen_subreg (reg_mode, dst, mode,
+						     i * reg_mode_size),
+				simplify_gen_subreg (reg_mode, src, mode,
+						     i * reg_mode_size)));
+    }
   else
     {
-      j = -1;
+      int i;
+      int j = -1;
+      bool used_update = false;
 
-      if (GET_CODE (operands[1]) == MEM)
+      if (GET_CODE (src) == MEM && INT_REGNO_P (reg))
         {
           rtx breg;
 
-	  if (GET_CODE (XEXP (operands[1], 0)) == PRE_INC
-	      || GET_CODE (XEXP (operands[1], 0)) == PRE_DEC)
+	  if (GET_CODE (XEXP (src, 0)) == PRE_INC
+	      || GET_CODE (XEXP (src, 0)) == PRE_DEC)
 	    {
 	      rtx delta_rtx;
-	      breg = XEXP (XEXP (operands[1], 0), 0);
-	      delta_rtx =  GET_CODE (XEXP (operands[1], 0)) == PRE_INC 
-		  ? GEN_INT (GET_MODE_SIZE (GET_MODE (operands[1]))) 
-		  : GEN_INT (-GET_MODE_SIZE (GET_MODE (operands[1]))); 
-	      insn = emit_insn (TARGET_32BIT
-				? gen_addsi3 (breg, breg, delta_rtx)
-				: gen_adddi3 (breg, breg, delta_rtx));
+	      breg = XEXP (XEXP (src, 0), 0);
+	      delta_rtx =  GET_CODE (XEXP (src, 0)) == PRE_INC 
+		  ? GEN_INT (GET_MODE_SIZE (GET_MODE (src))) 
+		  : GEN_INT (-GET_MODE_SIZE (GET_MODE (src))); 
+	      emit_insn (TARGET_32BIT
+			 ? gen_addsi3 (breg, breg, delta_rtx)
+			 : gen_adddi3 (breg, breg, delta_rtx));
 	      src = gen_rtx_MEM (mode, breg);
 	    }
 
@@ -10093,35 +10112,34 @@ rs6000_split_multireg_move (rtx *operands)
 	    j = REGNO (breg) - REGNO (dst);
         }
 
-      if (GET_CODE (operands[0]) == MEM)
+      if (GET_CODE (dst) == MEM && INT_REGNO_P (reg))
 	{
 	  rtx breg;
 
-	  if (GET_CODE (XEXP (operands[0], 0)) == PRE_INC
-	      || GET_CODE (XEXP (operands[0], 0)) == PRE_DEC)
+	  if (GET_CODE (XEXP (dst, 0)) == PRE_INC
+	      || GET_CODE (XEXP (dst, 0)) == PRE_DEC)
 	    {
 	      rtx delta_rtx;
-	      breg = XEXP (XEXP (operands[0], 0), 0);
-	      delta_rtx = GET_CODE (XEXP (operands[0], 0)) == PRE_INC 
-		? GEN_INT (GET_MODE_SIZE (GET_MODE (operands[0]))) 
-		: GEN_INT (-GET_MODE_SIZE (GET_MODE (operands[0]))); 
+	      breg = XEXP (XEXP (dst, 0), 0);
+	      delta_rtx = GET_CODE (XEXP (dst, 0)) == PRE_INC 
+		? GEN_INT (GET_MODE_SIZE (GET_MODE (dst))) 
+		: GEN_INT (-GET_MODE_SIZE (GET_MODE (dst))); 
 
 	      /* We have to update the breg before doing the store.
 		 Use store with update, if available.  */
 
 	      if (TARGET_UPDATE)
 		{
-		  insn = emit_insn (TARGET_32BIT
-				    ? gen_movsi_update (breg, breg, delta_rtx, 
-					operand_subword (src, 0, 0, mode))
-				    : gen_movdi_update (breg, breg, delta_rtx,
-					operand_subword (src, 0, 0, mode)));
-		  used_update = 1;
+		  rtx nsrc = simplify_gen_subreg (reg_mode, src, mode, 0);
+		  emit_insn (TARGET_32BIT
+			     ? gen_movsi_update (breg, breg, delta_rtx, nsrc)
+			     : gen_movdi_update (breg, breg, delta_rtx, nsrc));
+		  used_update = true;
 		}
 	      else
-		  insn = emit_insn (TARGET_32BIT
-				    ? gen_addsi3 (breg, breg, delta_rtx)
-				    : gen_adddi3 (breg, breg, delta_rtx));
+		emit_insn (TARGET_32BIT
+			   ? gen_addsi3 (breg, breg, delta_rtx)
+			   : gen_adddi3 (breg, breg, delta_rtx));
 	      dst = gen_rtx_MEM (mode, breg);
 	    }
 	}
@@ -10133,15 +10151,16 @@ rs6000_split_multireg_move (rtx *operands)
 	  if (j == nregs) 
 	    j = 0;
 
-	  operands[i+2] = operand_subword (dst, j, 0, mode);
-	  operands[i+2+nregs] = operand_subword (src, j, 0, mode);
-
+	  /* If compiler already emited move of first word by 
+	     store with update, no need to do anything.  */
 	  if (j == 0 && used_update)
-	    {
-	      /* Already emited move of first word by 
-		 store with update -> emit dead insn instead (r := r).  */
-	      operands[i+2] = operands[i+2+nregs];
-	    }
+	    continue;
+	  
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  simplify_gen_subreg (reg_mode, dst, mode,
+						       j * reg_mode_size),
+				  simplify_gen_subreg (reg_mode, src, mode,
+						       j * reg_mode_size)));
 	}
     }
 }

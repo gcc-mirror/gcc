@@ -125,7 +125,7 @@ extern int mfcr_operation (rtx, enum machine_mode);
 extern int mtcrf_operation (rtx, enum machine_mode);
 extern int lmw_operation (rtx, enum machine_mode);
 extern struct rtx_def *create_TOC_reference (rtx);
-extern void rs6000_split_multireg_move (rtx *);
+extern void rs6000_split_multireg_move (rtx, rtx);
 extern void rs6000_emit_move (rtx, rtx, enum machine_mode);
 extern rtx rs6000_legitimize_address (rtx, rtx, enum machine_mode);
 extern rtx rs6000_legitimize_reload_address (rtx, enum machine_mode,

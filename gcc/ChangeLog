@@ -1,3 +1,17 @@
+2003-12-08  Geoffrey Keating  <geoffk@apple.com>
+
+	PR target/11848
+	* rs6000.h (CANNOT_CHANGE_MODE_CLASS): Allow change of mode
+	in floating-point registers between TFmode and DImode.
+	* rs6000.c (rs6000_emit_move): Split moves early.
+	(secondary_reload_class): Random Whitespace Change.
+	(rs6000_split_multireg_move): Support moves involving FP registers.
+	Emit instructions directly.
+	* rs6000-protos.h (rs6000_split_multireg_move): Update prototype.
+	* altivec.md: Update for changes to rs6000_split_multireg_move.
+	* rs6000.md: Update for changes to rs6000_split_multireg_move.
+	(movtf_internal): Support moves to/from GPRs.
+
 2003-12-08  Stuart Hastings  <stuart@apple.com>
 
 	* config/i386/i386.md: Typo in split of fp-valued if_then_else.
