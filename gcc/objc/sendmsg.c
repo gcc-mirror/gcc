@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime message lookup 
-   Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -342,7 +342,7 @@ __objc_install_dispatch_table_for_class (Class class)
 {
   Class super;
 
-  /* If the class has not yet had it's class links resolved, we must 
+  /* If the class has not yet had its class links resolved, we must 
      re-compute all class links */
   if(!CLS_ISRESOLV(class))
     __objc_resolve_class_links();
