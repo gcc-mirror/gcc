@@ -5160,7 +5160,7 @@ rtx
 function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
 		enum machine_mode mode)
 {
-  unsigned int regnum;
+  unsigned int regnum, dummy;
   enum mode_class class;
 
 #ifdef ENABLE_CHECKING
@@ -5175,8 +5175,7 @@ function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
   switch (class)
     {
     case MODE_INT:
-      /* Do the same thing as PROMOTE_MODE.  */
-      mode = DImode;
+      PROMOTE_MODE (mode, dummy, valtype);
       /* FALLTHRU */
 
     case MODE_COMPLEX_INT:
