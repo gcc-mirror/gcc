@@ -2,6 +2,7 @@
 	   Loren J. Rittle <ljrittle@acm.org>
 	   Martin v. Loewis  <martin@v.loewis.de>
 
+	libstdc++/10556
 	* config/cpu/i386/atomicity.h: New file.
 
 2003-05-02  Richard Henderson  <rth@redhat.com>
