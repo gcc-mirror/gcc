@@ -1,3 +1,17 @@
+2002-03-07  Andreas Tobler  <toa@pop.agri.ch>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	* Makefile.am (EXTRA_DIST): Add Darwin and AIX closure files.
+	(TARGET_SRC_POWERPC_AIX): Add aix_closure.S.
+	(TARGET_SRC_POWERPC_DARWIN): Add darwin_closure.S.
+	* Makefile.in: Regenerate.
+	* include/ffi.h.in: Add AIX and Darwin closure definitions.
+	* src/powerpc/ffi_darwin.c (ffi_prep_closure): New function.
+	(flush_icache, flush_range): New functions.
+	(ffi_closure_helper_DARWIN): New function.
+	* src/powerpc/aix_closure.S: New file.
+	* src/powerpc/darwin_closure.S: New file.
+	
 2002-02-24  Jeff Sturm  <jsturm@one-point.com>
 
 	* include/ffi.h.in: Add typedef for ffi_arg.

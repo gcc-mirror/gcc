@@ -6,7 +6,7 @@
    Darwin ABI support (c) 2001 John Hornkvist
    AIX ABI support (c) 2002 Free Software Foundation, Inc.
 
-   $Id: ffi_darwin.c,v 1.2 2002/01/17 16:04:21 dje Exp $
+   $Id: ffi_darwin.c,v 1.4 2002/03/07 18:24:42 dje Exp $
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -31,6 +31,8 @@
 #include <ffi_common.h>
 
 #include <stdlib.h>
+   
+extern void ffi_closure_ASM(void);
 
 enum {
   /* The assembly depends on these exact flags.  */
@@ -381,4 +383,329 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
       FFI_ASSERT(0);
       break;
     }
+}
+
+static void flush_icache(char *);
+static void flush_range(char *, int);
+   
+/* The layout of a function descriptor.  A C function pointer really    */
+/* points to one of these.                                              */
+
+typedef struct aix_fd_struct {
+    void *code_pointer;
+    void *toc;
+} aix_fd;
+
+/* here I'd like to add the stack frame layout we use in darwin_closure.S
+ * and aix_clsoure.S
+ *
+/* SP previous -> +---------------------------------------+ <--- child frame
+                  | back chain to caller 4                | 
+                  +---------------------------------------+ 4
+                  | saved CR 4                            | 
+                  +---------------------------------------+ 8 
+                  | saved LR 4                            | 
+                  +---------------------------------------+ 12
+                  | reserved for compilers 4              | 
+                  +---------------------------------------+ 16
+                  | reserved for binders 4                | 
+                  +---------------------------------------+ 20
+                  | saved TOC pointer 4                   | 
+                  +---------------------------------------+ 24
+                  | always reserved 8*4=32  (revious GPRs)| 
+                  | according to the linkage convention   |
+                  | from AIX			          |
+                  +---------------------------------------+ 56
+                  | our FPR area 13*8=104   		  |
+                  | f1				   	  |
+                  | .	       				  |
+                  | f13    	        		  | 
+                  +---------------------------------------+ 160
+                  | result area 4                         | 
+SP current -->    +---------------------------------------+ 164 <- parent frame
+                  | back chain to caller 4                | 
+                  +---------------------------------------+ 168
+                  | saved CR 4                            | 
+                  +---------------------------------------+ 172
+                  | saved LR 4                            | 
+                  +---------------------------------------+ 176
+                  | reserved for compilers 4              | 
+                  +---------------------------------------+ 180
+                  | reserved for binders 4                | 
+                  +---------------------------------------+ 184
+                  | saved TOC pointer 4                   | 
+                  +---------------------------------------+ 188
+                  | always reserved 8*4=32  we store our  |
+                  | GPRs here	        		  |
+                  | r3		       			  |
+                  | .	        			  |
+                  | r10      				  |
+                  +---------------------------------------+ 220
+                  | PST area, overflow part	          | 
+                  +---------------------------------------+ xxx
+                  | ????				  | 
+                  +---------------------------------------+ xxx
+
+*/
+ffi_status
+ffi_prep_closure (ffi_closure* closure,    
+                  ffi_cif* cif,
+                  void (*fun)(ffi_cif*, void*, void**, void*),
+                  void *user_data)
+{
+  unsigned int *tramp;
+  struct ffi_aix_trampoline_struct *tramp_aix;
+ 
+  switch (cif->abi)
+    {  
+    case FFI_DARWIN:
+
+      FFI_ASSERT (cif->abi == FFI_DARWIN);
+
+      tramp = (unsigned int *) &closure->tramp[0];
+      tramp[0] = 0x7c0802a6;  /*   mflr    r0 */
+      tramp[1] = 0x4800000d;  /*   bl      10 <trampoline_initial+0x10> */
+      tramp[4] = 0x7d6802a6;  /*   mflr    r11 */
+      tramp[5] = 0x818b0000;  /*   lwz     r12,0(r11)  /* function address */
+      tramp[6] = 0x7c0803a6;  /*   mtlr    r0  */
+      tramp[7] = 0x7d8903a6;  /*   mtctr   r12 */
+      tramp[8] = 0x816b0004;  /*   lwz     r11,4(r11)  /* static chain */
+      tramp[9] = 0x4e800420;  /*   bctr */
+      *(void **) &tramp[2] = (void *)ffi_closure_ASM; /* function */
+      *(void **) &tramp[3] = (void *)closure;          /* context */
+
+      closure->cif = cif;
+      closure->fun = fun;
+      closure->user_data = user_data;
+
+      /* Flush the icache. Only necessary on Darwin  */
+      flush_range(&closure->tramp[0],FFI_TRAMPOLINE_SIZE);
+     
+      break;
+
+    case FFI_AIX:
+
+      tramp_aix = (struct ffi_aix_trampoline_struct *) (closure->tramp);
+      aix_fd *fd = (aix_fd *)(void *)ffi_closure_ASM;
+
+      FFI_ASSERT (cif->abi == FFI_AIX);
+
+      tramp_aix->code_pointer = fd->code_pointer;
+      tramp_aix->toc = fd->toc;
+      tramp_aix->static_chain = closure;
+      closure->cif = cif;
+      closure->fun = fun;
+      closure->user_data = user_data;
+
+    default:
+
+      FFI_ASSERT(0);
+      break;
+    }
+  return FFI_OK;
+}
+
+static void
+flush_icache(char *addr)
+{
+#ifndef _AIX
+  __asm__ volatile (
+                "dcbf 0,%0;"
+                "sync;"
+                "icbi 0,%0;"
+                "sync;"
+                "isync;"
+                : : "r"(addr) : "memory");
+#endif
+}
+
+static void
+flush_range(char * addr1, int size)
+{
+#define MIN_LINE_SIZE 32
+  int i;
+  for (i = 0; i < size; i += MIN_LINE_SIZE)
+    flush_icache(addr1+i);
+  flush_icache(addr1+size-1);
+}
+
+int ffi_closure_helper_DARWIN (ffi_closure*, void*, unsigned long*,
+                                     unsigned long*, unsigned long*);
+
+/* Basically the trampoline invokes ffi_closure_ASM, and on
+ * entry, r11 holds the address of the closure.
+ * After storing the registers that could possibly contain
+ * parameters to be passed into the stack frame and setting
+ * up space for a return value, ffi_closure_ASM invokes the
+ * following helper function to do most of the work
+ */
+
+int
+ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
+            unsigned long * pgr, unsigned long * pfr,
+            unsigned long * pst)
+{
+  /* rvalue is the pointer to space for return value in closure assembly */
+  /* pgr is the pointer to where r3-r10 are stored in ffi_closure_ASM */
+  /* pfr is the pointer to where f1-f13 are stored in ffi_closure_ASM */
+  /* pst is the pointer to outgoing parameter stack in original caller */
+
+  void **          avalue;
+  ffi_type **      arg_types;
+  long             i, avn;
+  long             nf;   /* number of floating registers already used */
+  long             ng;   /* number of general registers already used */
+  ffi_cif *        cif;
+  double           temp;
+
+  cif = closure->cif;
+  avalue = alloca(cif->nargs * sizeof(void *));
+
+  nf = 0;
+  ng = 0;
+
+  /* Copy the caller's structure return value address so that the closure
+     returns the data directly to the caller.  */
+  if (cif->rtype->type == FFI_TYPE_STRUCT)
+    {
+      rvalue = (void *)pgr;
+      ng++;      
+      pgr++;
+    }
+
+  i = 0;
+  avn = cif->nargs;
+  arg_types = cif->arg_types;
+
+  /* Grab the addresses of the arguments from the stack frame.  */
+  while (i < avn)
+    {
+      switch (arg_types[i]->type)
+        {
+        case FFI_TYPE_SINT8:
+        case FFI_TYPE_UINT8:
+        /* there are 8 gpr registers used to pass values */
+          if (ng < 8) {
+             avalue[i] = (((char *)pgr)+3);
+             ng++;
+             pgr++;
+          } else {
+             avalue[i] = (((char *)pst)+3);
+             pst++;
+          }
+          break;
+
+        case FFI_TYPE_SINT16:
+        case FFI_TYPE_UINT16:
+        /* there are 8 gpr registers used to pass values */
+          if (ng < 8) {
+             avalue[i] = (((char *)pgr)+2);
+             ng++;
+             pgr++;
+          } else {
+             avalue[i] = (((char *)pst)+2);
+             pst++;
+          }
+          break;
+
+        case FFI_TYPE_SINT32:
+        case FFI_TYPE_UINT32:
+        case FFI_TYPE_POINTER:
+        case FFI_TYPE_STRUCT:
+        /* there are 8 gpr registers used to pass values */
+          if (ng < 8) {  
+             avalue[i] = pgr;
+             ng++;
+             pgr++;
+          } else {
+             avalue[i] = pst;
+             pst++;
+          }
+          break;
+
+        case FFI_TYPE_SINT64:
+        case FFI_TYPE_UINT64:
+          /* long long ints are passed in two gpr's if available or in 
+           * the pst, one place is a bit odd, when a long long passes
+	   * the boundary between gpr and pst area we have to increment
+	   * the pst by one.
+           */
+           if (ng < 7) {
+              avalue[i] = pgr;
+              ng+=2;
+              pgr+=2;
+           } else if (ng == 7) {
+              avalue[i] = pgr;
+              ng++;
+              pgr++;
+              pst++;
+           } else {
+              avalue[i] = pst;
+              pst+=2;
+           }
+           break;
+
+        case FFI_TYPE_FLOAT:
+          /* a float value consumes a GPR
+           *
+           * there are 13 64bit floating point registers 
+	   */
+          
+	  if ((ng > 7) && (nf < 13)) {
+	     pst++;
+	  }
+          if (nf < 13) {
+	     temp = *(double*)pfr;
+             *(float*)pfr = (float)temp;
+             avalue[i] = pfr;
+             nf++;
+             pfr+=2;
+             ng++;
+	     pgr++;
+	         
+          } else {
+             avalue[i] = pst;
+             nf++;
+             pst++;
+          }
+          break;
+
+        case FFI_TYPE_DOUBLE:
+	  /* a double value consumes two GPRs
+           *  
+           * there are 13 64bit floating point registers 
+	   */
+
+	  if ((ng == 7) && (nf < 13)) {
+             pst++;	/* if only one gpr is left the double steals it */
+	  } else if ((ng > 7) && (nf < 13)) {
+	     pst+=2;	/* a double consumes two GPRs in Darwin/AIX */
+	  }
+          if (nf < 13) {
+             avalue[i] = pfr;
+             nf++;
+             pfr+=2;
+	     ng+=2;
+	     pgr+=2;
+
+          } else {
+             avalue[i] = pst;
+             nf++;
+             pst+=2;
+          }
+          break;
+
+        default:
+          FFI_ASSERT(0);
+       
+        }
+
+      i++;
+    }
+
+  (closure->fun) (cif, rvalue, avalue, closure->user_data);
+
+  /* Tell ffi_closure_ASM to perform return type promotions.  */
+  return cif->rtype->type;
+
 }

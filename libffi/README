@@ -52,7 +52,7 @@ Libffi has been ported to:
 
 	m68k - Linux (System V ABI)
 
-	PowerPC - Linux (System V ABI)
+	PowerPC - Linux (System V ABI, Darwin, AIX)
 
 	ARM - Linux (System V ABI)
 
@@ -67,7 +67,7 @@ Sun's probably won't either.
 	
 If you port libffi to another platform, please let me know! I assume
 that some will be easy (x86 NetBSD), and others will be more difficult
-(HP, AIX).
+(HP).
 
 
 Installing libffi
