@@ -1,3 +1,8 @@
+2003-10-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* aclocal.m4: Add ultrix* to /dev/zero blacklist.
+	* configure: Rebuilt.
+
 2003-10-01  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config.gcc (sparc-*-solaris2*): Handle Solaris 10 and up like
