@@ -156,9 +156,13 @@ Boston, MA 02111-1307, USA.  */
 
 /* Use the default action for outputting the case label.  */
 #undef ASM_OUTPUT_CASE_LABEL
-
-#define ASM_RETURN_CASE_JUMP \
-  return "jmp (2,%%pc,%0.w)"
+#define ASM_RETURN_CASE_JUMP			\
+  do {						\
+    if (TARGET_5200)				\
+      return "ext%.l %0\n\tjmp %%pc@(2,%0:l)";	\
+    else					\
+      return "jmp %%pc@(2,%0:w)";		\
+  } while (0)
 
 /* This is how to output an assembler line that says to advance the
    location counter to a multiple of 2**LOG bytes.  */

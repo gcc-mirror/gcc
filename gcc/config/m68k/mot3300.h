@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    SysV68 Motorola 3300 Delta Series.
-   Copyright (C) 1987, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Abramo and Roberto Bagnara (bagnara@dipisa.di.unipi.it)
    based on Alex Crain's 3B1 definitions.
    Maintained by Philippe De Muyter (phdm@info.ucl.ac.be).
@@ -566,7 +566,13 @@ do { long l;					\
 #define ASM_OUTPUT_CASE_FETCH(file, labelno, regname)\
 	asm_fprintf (file, "12(%Rpc,%s.", regname)
 
-#define ASM_RETURN_CASE_JUMP   return "jmp 8(%%pc,%0.w)"
+#define ASM_RETURN_CASE_JUMP \
+  do {						\
+    if (TARGET_5200)				\
+      return "ext%.l %0\n\tjmp 8(%%pc,%0.l)";	\
+    else					\
+      return "jmp 8(%%pc,%0.w)";		\
+  } while (0)
 	     
 #else /* USE_GAS */
 
