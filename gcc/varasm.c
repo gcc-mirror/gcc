@@ -1183,7 +1183,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 #ifdef DWARF2_DEBUGGING_INFO
 	  if (write_symbols == DWARF2_DEBUG && top_level
 	      && DECL_CONTEXT (decl))
-	    dwarf2out_file_scope_decl (decl, 0);
+	    dwarf2out_decl (decl);
 #endif
 	}
 
@@ -1316,7 +1316,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 #ifdef DWARF2_DEBUGGING_INFO
       if (write_symbols == DWARF2_DEBUG && top_level
 	  && DECL_CONTEXT (decl))
-	dwarf2out_file_scope_decl (decl, 0);
+	dwarf2out_decl (decl);
 #endif
 
       /* Only output DWARF debugging information for record-scope variables

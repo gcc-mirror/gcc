@@ -1324,6 +1324,10 @@ pushtag (name, type)
      tagged type.  */
 
   TYPE_STUB_DECL (type) = pushdecl (build_decl (TYPE_DECL, NULL_TREE, type));
+
+  /* An approximation for now, so we can tell this is a function-scope tag.
+     This will be updated in poplevel.  */
+  TYPE_CONTEXT (type) = DECL_CONTEXT (TYPE_STUB_DECL (type));
 }
 
 /* Handle when a new declaration NEWDECL

@@ -5793,18 +5793,16 @@ add_bit_size_attribute (die, decl)
 		   (unsigned) TREE_INT_CST_LOW (DECL_SIZE (decl)));
 }
 
-/* If the compiled language is GNU C, then add a 'prototyped'
+/* If the compiled language is ANSI C, then add a 'prototyped'
    attribute, if arg types are given for the parameters of a function.  */
 inline void
 add_prototyped_attribute (die, func_type)
      register dw_die_ref die;
      register tree func_type;
 {
-  if ((strcmp (language_string, "GNU C") == 0)
-      && (TYPE_ARG_TYPES (func_type) != NULL))
-    {
-      add_AT_flag (die, DW_AT_prototyped, 0);
-    }
+  if (get_AT_unsigned (comp_unit_die, DW_AT_language) == DW_LANG_C89
+      && TYPE_ARG_TYPES (func_type) != NULL)
+    add_AT_flag (die, DW_AT_prototyped, 1);
 }
 
 
@@ -5892,6 +5890,11 @@ scope_die_for (t, context_die)
   register dw_die_ref scope_die = NULL;
   register tree containing_scope;
   register unsigned long i;
+
+  /* Function-local tags and functions get stuck in limbo until they are
+     fixed up by decls_for_scope.  */
+  if (context_die == NULL)
+    return NULL;
 
   /* Walk back up the declaration tree looking for a place to define
      this type.  */
@@ -6037,7 +6040,7 @@ decl_start_label (decl)
 
 /* These routines generate the internnal representation of the DIE's for
    the compilation unit.  Debugging information is collected by walking
-   the declaration trees passed in from dwarf2out_file_scope_decl().  */
+   the declaration trees passed in from dwarf2out_decl().  */
 
 static void
 gen_array_type_die (type, context_die)
@@ -6488,6 +6491,10 @@ gen_subprogram_die (decl, context_die)
       assert (fp_reg >= 0 && fp_reg <= 31);
       fp_loc = new_loc_descr (DW_OP_reg0 + fp_reg);
       add_AT_loc (subr_die, DW_AT_frame_base, fp_loc);
+
+      if (current_function_needs_context)
+	add_AT_loc (subr_die, DW_AT_static_link,
+		    loc_descriptor (lookup_static_chain (decl)));
 
 #ifdef DWARF_GNU_EXTENSIONS
       ASM_GENERATE_INTERNAL_LABEL (label_id, BODY_BEGIN_LABEL,
@@ -7325,13 +7332,28 @@ decls_for_scope (stmt, context_die, depth)
       next_block_number++;
     }
 
-  /* Output the DIEs to represent all of the data objects, functions,
-     typedefs, and tagged types declared directly within this block but not
-     within any nested sub-blocks.  */
+  /* Output the DIEs to represent all of the data objects and typedefs
+     declared directly within this block but not within any nested
+     sub-blocks.  Also, nested function and tag DIEs have been
+     generated with a parent of NULL; fix that up now.  */
   for (decl = BLOCK_VARS (stmt);
        decl != NULL; decl = TREE_CHAIN (decl))
     {
-      gen_decl_die (decl, context_die);
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  register dw_die_ref die = lookup_decl_die (decl);
+	  add_child_die (context_die, die);
+	}
+      else if (TREE_CODE (decl) == TYPE_DECL && TYPE_DECL_IS_STUB (decl))
+	{
+	  register dw_die_ref die = lookup_type_die (TREE_TYPE (decl));
+	  if (die)
+	    add_child_die (context_die, die);
+	  else
+	    gen_decl_die (decl, context_die);
+	}
+      else
+	gen_decl_die (decl, context_die);
     }
 
   /* Output the DIEs to represent all sub-blocks (and the items declared
@@ -7478,10 +7500,11 @@ gen_decl_die (decl, context_die)
 
 /***************** Debug Information Generation Hooks ***********************/
 void
-dwarf2out_file_scope_decl (decl, set_finalizing)
+dwarf2out_decl (decl)
      register tree decl;
-     register int set_finalizing;
 {
+  register dw_die_ref context_die = comp_unit_die;
+
   if (TREE_CODE (decl) == ERROR_MARK)
     {
       return;
@@ -7544,6 +7567,13 @@ dwarf2out_file_scope_decl (decl, set_finalizing)
 	{
 	  return;
 	}
+
+      /* If we're a nested function, initially use a parent of NULL; if we're
+	 a plain function, this will be fixed up in decls_for_scope.  If
+	 we're a method, it will be ignored, since we already have a DIE.  */
+      if (decl_function_context (decl))
+	context_die = NULL;
+
       break;
 
     case VAR_DECL:
@@ -7574,17 +7604,22 @@ dwarf2out_file_scope_decl (decl, set_finalizing)
       if (DECL_SOURCE_LINE (decl) == 0)
 	return;
 
-      /* If we are in terse mode, don't generate any DIEs to represent any
-         actual typedefs.  */
+      /* If we are in terse mode, don't generate any DIEs for types.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
 	return;
+
+      /* If we're a function-scope tag, initially use a parent of NULL;
+	 this will be fixed up in decls_for_scope.  */
+      if (decl_function_context (decl))
+	context_die = NULL;
+
       break;
 
     default:
       return;
     }
 
-  gen_decl_die (decl, comp_unit_die);
+  gen_decl_die (decl, context_die);
 
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_INITIAL (decl) != NULL)
