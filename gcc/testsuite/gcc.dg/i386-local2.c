@@ -1,6 +1,6 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -funit-at-a-time -fomit-frame-pointer" } */
-/* { dg-final { scan-assembler-not "sub.*[re]sp" } } */
+/* { dg-final { scan-assembler-not "sub.*sp" } } */
 
 static __attribute__ ((noinline)) q ();
 int a;
