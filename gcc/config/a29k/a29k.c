@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on AMD Am29000.
-   Copyright (C) 1987, 1988, 1990, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1990, 1991, 1992 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -34,6 +34,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "expr.h"
 #include "obstack.h"
 #include "tree.h"
+#include "reload.h"
 
 #define min(A,B)	((A) < (B) ? (A) : (B))
 
@@ -99,7 +100,7 @@ cint_16_operand (op, mode)
   return GET_CODE (op) == CONST_INT && (INTVAL (op) & 0xffff0000) == 0;
 }
 
-/* Returns 1 if OP cannot be moved in a single insn.  */
+/* Returns 1 if OP is a constant that cannot be moved in a single insn.  */
 
 int
 long_const_operand (op, mode)
@@ -210,8 +211,18 @@ spec_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return GET_MODE (op) == SImode && GET_CODE (op) == REG
-	 && REGNO (op) >= R_BP && REGNO (op) <= R_EXO;
+  if (GET_CODE (op) != REG || GET_MODE (op) != mode)
+    return 0;
+
+  switch (GET_MODE_CLASS (mode))
+    {
+    case MODE_PARTIAL_INT:
+      return REGNO (op) >= R_BP && REGNO (op) <= R_CR;
+    case MODE_INT:
+      return REGNO (op) >= R_Q && REGNO (op) <= R_EXO;
+    detault:
+      return 0;
+    }
 }
 
 /* Returns 1 if OP is an accumulator register.  */
@@ -307,6 +318,29 @@ add_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
 	      && ((unsigned) ((- INTVAL (op)) & GET_MODE_MASK (mode)) < 256)));
 }
+
+/* Return 1 if OP is a valid address in a CALL_INSN.  These are a SYMBOL_REF
+   to the current function, all SYMBOL_REFs if TARGET_SMALL_MEMORY, or
+   a sufficiently-small constant.  */
+
+int
+call_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  switch (GET_CODE (op))
+    {
+    case SYMBOL_REF:
+      return (TARGET_SMALL_MEMORY
+	      || ! strcmp (XSTR (op, 0), current_function_name));
+
+    case CONST_INT:
+      return (unsigned HOST_WIDE_INT) INTVAL (op) < 0x40000;
+
+    default:
+      return 0;
+    }
+}
 
 /* Return 1 if OP can be used as the input operand for a move insn.  */
 
@@ -332,7 +366,8 @@ in_operand (op, mode)
       return (GET_MODE_SIZE (mode) >= UNITS_PER_WORD || TARGET_DW_ENABLE);
 
     case CONST_INT:
-      if (GET_MODE_CLASS (mode) != MODE_INT)
+      if (GET_MODE_CLASS (mode) != MODE_INT
+	  && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
 	return 0;
 
       return 1;
@@ -370,26 +405,51 @@ out_operand (op, mode)
     op = SUBREG_REG (op);
 
   if (GET_CODE (op) == REG)
-    return (mode == SImode || gpc_reg_operand (orig_op, mode)
+    return (gpc_reg_operand (orig_op, mode)
+	    || spec_reg_operand (orig_op, mode)
 	    || (GET_MODE_CLASS (mode) == MODE_FLOAT
 		&& accum_reg_operand (orig_op, mode)));
 
   else if (GET_CODE (op) == MEM)
-    return mode == SImode || mode == SFmode || TARGET_DW_ENABLE;
-
+    return (GET_MODE_SIZE (mode) >= UNITS_PER_WORD || TARGET_DW_ENABLE);
   else
     return 0;
 }
 
-/* Return 1 if OP is some extension operator.  */
+/* Return 1 if OP is an item in memory, given that we are in reload.  */
 
 int
-extend_operator (op, mode)
+reload_memory_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return ((mode == VOIDmode || GET_MODE (op) == mode)
-	  && (GET_CODE (op) == ZERO_EXTEND || GET_CODE (op) == SIGN_EXTEND));
+  int regno = true_regnum (op);
+
+  return (! CONSTANT_P (op)
+	  && (regno == -1
+	      || (GET_CODE (op) == REG
+		  && REGNO (op) >= FIRST_PSEUDO_REGISTER)));
+}
+
+/* Given an object for which reload_memory_operand is true, return the address
+   of the operand, taking into account anything that reload may do.  */
+
+rtx
+a29k_get_reloaded_address (op)
+     rtx op;
+{
+  if (GET_CODE (op) == SUBREG)
+    {
+      if (SUBREG_WORD (op) != 0)
+	abort ();
+
+      op = SUBREG_REG (op);
+    }
+
+  if (GET_CODE (op) == REG)
+    op = reg_equiv_mem[REGNO (op)];
+
+  return find_replacement (&XEXP (op, 0));
 }
 
 /* Return 1 if OP is a comparison operator that we have in floating-point.  */
@@ -591,19 +651,34 @@ secondary_reload_class (class, mode, in)
      rtx in;
 {
   int regno = -1;
+  enum rtx_code code = GET_CODE (in);
 
-  if (GET_CODE (in) == REG || GET_CODE (in) == SUBREG)
-    regno = true_regnum (in);
+  if (! CONSTANT_P (in))
+    {
+      regno = true_regnum (in);
 
-  /* We can place anything into GENERAL_REGS and can put GENERAL_REGS
-     into anything.  */
+      /* A pseudo is the same as memory.  */
+      if (regno == -1 || regno >= FIRST_PSEUDO_REGISTER)
+	code = MEM;
+    }
+
+  /* If we are transferring between memory and a multi-word mode or between
+     memory and a mode smaller than a word without DW being enabled, we need
+     BP.  */
+
+  if (code == MEM
+      && (GET_MODE_SIZE (mode) > UNITS_PER_WORD
+	  || (! TARGET_DW_ENABLE && GET_MODE_SIZE (mode) < UNITS_PER_WORD)))
+    return BP_REGS;
+
+  /* Otherwise, we can place anything into GENERAL_REGS and can put
+     GENERAL_REGS into anything.  */
   if (class == GENERAL_REGS || (regno != -1 && regno < R_BP))
     return NO_REGS;
 
   /* We can place 16-bit constants into a special register.  */
-  if (GET_CODE (in) == CONST_INT
-      && (GET_MODE_BITSIZE (mode) <= 16
-	  || (unsigned) INTVAL (in) <= 65535)
+  if (code == CONST_INT
+      && (GET_MODE_BITSIZE (mode) <= 16 || (unsigned) INTVAL (in) <= 65535)
       && (class == BP_REGS || class == Q_REGS || class == SPECIAL_REGS))
     return NO_REGS;
 
@@ -739,8 +814,8 @@ null_epilogue ()
 	%N means write the low-order 8 bits of the negative of the constant
 	%Q means write a QImode operand (truncate constants to 8 bits)
 	%M means write the low-order 16 bits of the constant
+	%m means write the low-order 16 bits shifted left 16 bits
 	%C means write the low-order 8 bits of the complement of the constant
-	%X means write the cntl values for LOAD with operand an extension op
 	%b means write `f' is this is a reversed condition, `t' otherwise
 	%B means write `t' is this is a reversed condition, `f' otherwise
 	%J means write the 29k opcode part for a comparison operation
@@ -807,11 +882,12 @@ print_operand (file, x, code)
       fprintf (file, "%d", INT_LOWPART (x) & 0xffff);
       return;
 
-    case 'X':
-      fprintf (file, "%d", ((GET_MODE (XEXP (x, 0)) == QImode ? 1 : 2)
-			    + (GET_CODE (x) == SIGN_EXTEND ? 16 : 0)));
+    case 'm':
+      if (! INT_P (x))
+	output_operand_lossage ("invalid %%m value");
+      fprintf (file, "%d", (INT_LOWPART (x) & 0xffff) << 16);
       return;
-  
+
     case 'b':
       if (GET_CODE (x) == GE)
 	fprintf (file, "f");
@@ -878,7 +954,8 @@ print_operand (file, x, code)
       output_addr_const (file, x);
       if (dbr_sequence_length () == 0)
 	{
-	  if (! strcmp (XSTR (x, 0), current_function_name))
+	  if (GET_CODE (x) == SYMBOL_REF
+	      && ! strcmp (XSTR (x, 0), current_function_name))
 	    fprintf (file, "+4\n\t%s,%d",
 		     a29k_regstack_size >= 64 ? "const gr121" : "sub gr1,gr1",
 		     a29k_regstack_size * 4);
