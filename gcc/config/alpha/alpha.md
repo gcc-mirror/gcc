@@ -785,21 +785,24 @@
 }"
   [(set_attr "type" "iaddlog,shiftcm")])
 
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI
-	 (subreg:SI (ashift:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-			       (match_operand:DI 2 "const_int_operand" "P"))
-		    0)))]
-  "INTVAL (operands[2]) >= 1 && INTVAL (operands[2]) <= 3"
-  "*
-{
-  if (operands[2] == const1_rtx)
-    return \"addl %r1,%r1,%0\";
-  else
-    return \"s%P2addl %r1,0,%0\";
-}"
-  [(set_attr "type" "iaddlog")])
+;; ??? The following pattern is made by combine, but earlier phases
+;; (specifically flow) can't handle it.  This occurs in jump.c.  Deal
+;; with this in a better way at some point.
+;;(define_insn ""
+;;  [(set (match_operand:DI 0 "register_operand" "=r")
+;;	(sign_extend:DI
+;;	 (subreg:SI (ashift:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+;;			       (match_operand:DI 2 "const_int_operand" "P"))
+;;		    0)))]
+;;  "INTVAL (operands[2]) >= 1 && INTVAL (operands[2]) <= 3"
+;;  "*
+;;{
+;;  if (operands[2] == const1_rtx)
+;;    return \"addl %r1,%r1,%0\";
+;;  else
+;;    return \"s%P2addl %r1,0,%0\";
+;; }"
+;;  [(set_attr "type" "iaddlog")])
 			  
 (define_insn "lshrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -1302,17 +1305,19 @@
   [(set_attr "type" "icmp")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
 	(if_then_else:DI
 	 (match_operator 2 "signed_comparison_operator"
-			 [(match_operand:DI 3 "reg_or_0_operand" "rJ,rJ")
-			  (const_int 0)])
-	 (match_operand:DI 1 "reg_or_8bit_operand" "rI,0")
-	 (match_operand:DI 4 "reg_or_8bit_operand" "0,rI")))]
-  ""
+			 [(match_operand:DI 3 "reg_or_0_operand" "rJ,rJ,J,J")
+			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
+	 (match_operand:DI 1 "reg_or_8bit_operand" "rI,0,rI,0")
+	 (match_operand:DI 5 "reg_or_8bit_operand" "0,rI,0,rI")))]
+  "operands[3] == const0_rtx || operands[4] == const0_rtx"
   "@
    cmov%C2 %r3,%1,%0
-   cmov%D2 %r3,%4,%0")
+   cmov%D2 %r3,%5,%0
+   cmov%c2 %r4,%1,%0
+   cmov%d2 %r4,%5,%0")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
