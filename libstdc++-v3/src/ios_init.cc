@@ -155,6 +155,9 @@ namespace std
     // currently synchronized.
     if (!__sync && __ret)
       {
+	// Make sure the standard streams are constructed.
+	ios_base::Init __init;
+
 	ios_base::Init::_S_synced_with_stdio = __sync;
 
 	// Explicitly call dtors to free any memory that is
