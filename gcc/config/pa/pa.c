@@ -123,6 +123,7 @@ static void pa_asm_out_destructor (rtx, int);
 static void pa_init_builtins (void);
 static rtx hppa_builtin_saveregs (void);
 static tree hppa_gimplify_va_arg_expr (tree, tree, tree *, tree *);
+static bool pa_scalar_mode_supported_p (enum machine_mode);
 static void copy_fp_args (rtx) ATTRIBUTE_UNUSED;
 static int length_fp_args (rtx) ATTRIBUTE_UNUSED;
 static struct deferred_plabel *get_plabel (const char *)
@@ -291,6 +292,9 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_EXPAND_BUILTIN_SAVEREGS hppa_builtin_saveregs
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR hppa_gimplify_va_arg_expr
+
+#undef TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P pa_scalar_mode_supported_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6216,6 +6220,50 @@ hppa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 	t = build_fold_indirect_ref (t);
 
       return t;
+    }
+}
+
+/* True if MODE is valid for the target.  By "valid", we mean able to
+   be manipulated in non-trivial ways.  In particular, this means all
+   the arithmetic is supported.
+
+   Currently, TImode is not valid as the HP 64-bit runtime documentation
+   doesn't document the alignment and calling conventions for this type. 
+   Thus, we return false when PRECISION is 2 * BITS_PER_WORD and
+   2 * BITS_PER_WORD isn't equal LONG_LONG_TYPE_SIZE.  */
+
+static bool
+pa_scalar_mode_supported_p (enum machine_mode mode)
+{
+  int precision = GET_MODE_PRECISION (mode);
+
+  switch (GET_MODE_CLASS (mode))
+    {
+    case MODE_PARTIAL_INT:
+    case MODE_INT:
+      if (precision == CHAR_TYPE_SIZE)
+	return true;
+      if (precision == SHORT_TYPE_SIZE)
+	return true;
+      if (precision == INT_TYPE_SIZE)
+	return true;
+      if (precision == LONG_TYPE_SIZE)
+	return true;
+      if (precision == LONG_LONG_TYPE_SIZE)
+	return true;
+      return false;
+
+    case MODE_FLOAT:
+      if (precision == FLOAT_TYPE_SIZE)
+	return true;
+      if (precision == DOUBLE_TYPE_SIZE)
+	return true;
+      if (precision == LONG_DOUBLE_TYPE_SIZE)
+	return true;
+      return false;
+
+    default:
+      gcc_unreachable ();
     }
 }
 
