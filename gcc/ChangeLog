@@ -1,3 +1,8 @@
+2001-10-26  DJ Delorie  <dj@redhat.com>
+
+	* config/rs6000/sysv4.h (LINK_SPEC): Allow -msdata=none to
+	override -G, and force -G0.
+
 2001-10-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* ChangeLog.2, ChangeLog.3, ChangeLog.4, FSFChangeLog.10,

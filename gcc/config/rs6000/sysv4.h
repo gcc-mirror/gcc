@@ -1019,7 +1019,7 @@ do {						\
 /* Override svr4.h definition.  */
 #undef	LINK_SPEC
 #define	LINK_SPEC "\
-%{h*} %{v:-V} %{G*} \
+%{h*} %{v:-V} %{!msdata=none:%{G*}} %{msdata=none:-G0} \
 %{YP,*} %{R*} \
 %{Qy:} %{!Qn:-Qy} \
 %(link_shlib) \
