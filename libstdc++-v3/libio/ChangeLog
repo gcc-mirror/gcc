@@ -1,3 +1,9 @@
+2000-10-08  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* Makefile.am (INCLUDES): Simplify.
+	* libioP.h (JUMP1): If compiling c++, use std headers.
+	* _G_config.h: Same.
+	
 2000-10-07  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* Makefile.am (CONFIG_INCLUDES): Remove.

@@ -16,7 +16,11 @@
 #define __need_wchar_t
 #define __need_wint_t
 #define __need_NULL
-#include <bits/std_cstddef.h>
+#ifdef __cplusplus
+# include <cstddef>
+#else
+# include <stddef.h>
+#endif
 
 
 #ifndef _WINT_T
@@ -72,19 +76,6 @@ typedef __off64_t _G_fpos64_t;
 #if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
 # include <iconv.h>
 typedef iconv_t _G_iconv_t;
-# if 0
-/* XXX Commented out because outside glibc we have to use iconv()
-   and not gconv().  */
-typedef union
-{
-  struct __gconv_info __cd;
-  struct
-  {
-    struct __gconv_info __cd;
-    struct __gconv_step_data __data;
-  } __combined;
-} _G_iconv_t;
-# endif
 #endif
 
 typedef int _G_int16_t __attribute__ ((__mode__ (__HI__)));
@@ -137,3 +128,4 @@ typedef unsigned int _G_uint32_t __attribute__ ((__mode__ (__SI__)));
 #endif
 
 #endif	/* _G_config.h */
+
