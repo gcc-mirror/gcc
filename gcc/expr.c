@@ -9938,9 +9938,9 @@ do_jump (exp, if_false_label, if_true_label)
 	start_sequence ();
 	do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
 	seq2 = get_insns ();
+	cleanups = defer_cleanups_to (old_cleanups);
 	end_sequence ();
 
-	cleanups = defer_cleanups_to (old_cleanups);
 	if (cleanups)
 	  {
 	    rtx flag = gen_reg_rtx (word_mode);
@@ -10002,9 +10002,9 @@ do_jump (exp, if_false_label, if_true_label)
 	start_sequence ();
 	do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
 	seq2 = get_insns ();
+	cleanups = defer_cleanups_to (old_cleanups);
 	end_sequence ();
 
-	cleanups = defer_cleanups_to (old_cleanups);
 	if (cleanups)
 	  {
 	    rtx flag = gen_reg_rtx (word_mode);
