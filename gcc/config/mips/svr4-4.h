@@ -36,13 +36,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{!.S:%{!.s:	-D__LANGUAGE_C -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}"
 
 #define LINK_SPEC "\
-%{G*} \
-%{!mgas: \
-	%{EB} %{!EB:-EB} \
-	%{EL: %e-EL not supported} \
-	%{bestGnum} %{shared} %{non_shared} \
-	%{mips1} %{mips2} %{mips3} \
-	-systype /svr4/}"
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
+%{bestGnum} %{shared} %{non_shared} \
+-systype /svr4/"
 		    
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc crtn.o%s"
 

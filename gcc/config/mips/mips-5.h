@@ -19,13 +19,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define LINK_SPEC "\
-%{G*} \
-%{!mgas: \
-	%{EB} %{!EB: -EB} \
-	%{EL: %e-EL not supported} \
-	%{mips1} %{mips2} %{mips3} %{bestGnum} \
-	%{shared} %{non_shared} %{call_shared} %{no_archive} %{exact_version} \
-	%{!shared: %{!non_shared: %{!call_shared: -non_shared}}}}"
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
+%{bestGnum} %{shared} %{non_shared} \
+%{call_shared} %{no_archive} %{exact_version} \
+%{!shared: %{!non_shared: %{!call_shared: -non_shared}}}"
 
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt1.o%s crtn.o%s}}"
 
