@@ -254,6 +254,18 @@ print_operand (file, x, code)
 	output_address (GEN_INT ((~INTVAL (x)) & 0xff));
 	break;
 
+      /* For shift counts.  The hardware ignores the upper bits of
+	 any immediate, but the assembler will flag an out of range
+	 shift count as an error.  So we mask off the high bits
+	 of the immediate here.  */
+      case 'S':
+	if (GET_CODE (x) == CONST_INT)
+	  {
+	    fprintf (file, "%d", INTVAL (x) & 0x1f);
+	    break;
+	  }
+	/* FALL THROUGH */
+
       default:
 	switch (GET_CODE (x))
 	  {
