@@ -21986,30 +21986,8 @@ configure-target-libstdc++-v3: $(TARGET_SUBDIR)/libstdc++-v3/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/libstdc++-v3 "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/libstdc++-v3"; \
 	  libsrcdir="$$s/libstdc++-v3"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -22088,30 +22066,8 @@ configure-target-newlib: $(TARGET_SUBDIR)/newlib/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/newlib "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/newlib"; \
 	  libsrcdir="$$s/newlib"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -22190,30 +22146,8 @@ configure-target-libf2c: $(TARGET_SUBDIR)/libf2c/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/libf2c "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/libf2c"; \
 	  libsrcdir="$$s/libf2c"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -22292,30 +22226,8 @@ configure-target-libobjc: $(TARGET_SUBDIR)/libobjc/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/libobjc "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/libobjc"; \
 	  libsrcdir="$$s/libobjc"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -22492,30 +22404,8 @@ configure-target-winsup: $(TARGET_SUBDIR)/winsup/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/winsup "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/winsup"; \
 	  libsrcdir="$$s/winsup"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -22594,30 +22484,8 @@ configure-target-libgloss: $(TARGET_SUBDIR)/libgloss/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/libgloss "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/libgloss"; \
 	  libsrcdir="$$s/libgloss"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -22794,30 +22662,8 @@ configure-target-gperf: $(TARGET_SUBDIR)/gperf/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/gperf "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/gperf"; \
 	  libsrcdir="$$s/gperf"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -22896,30 +22742,8 @@ configure-target-examples: $(TARGET_SUBDIR)/examples/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/examples "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/examples"; \
 	  libsrcdir="$$s/examples"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -22990,30 +22814,8 @@ configure-target-libffi: $(TARGET_SUBDIR)/libffi/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/libffi "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/libffi"; \
 	  libsrcdir="$$s/libffi"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -23093,30 +22895,8 @@ configure-target-libjava: $(TARGET_SUBDIR)/libjava/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/libjava "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/libjava"; \
 	  libsrcdir="$$s/libjava"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -23297,30 +23077,8 @@ configure-target-boehm-gc: $(TARGET_SUBDIR)/boehm-gc/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/boehm-gc "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/boehm-gc"; \
 	  libsrcdir="$$s/boehm-gc"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -23399,30 +23157,8 @@ configure-target-qthreads: $(TARGET_SUBDIR)/qthreads/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/qthreads "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/qthreads"; \
 	  libsrcdir="$$s/qthreads"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -23501,30 +23237,8 @@ configure-target-rda: $(TARGET_SUBDIR)/rda/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/rda "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/rda"; \
 	  libsrcdir="$$s/rda"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
