@@ -1,15 +1,17 @@
 // ExceptionInInitializerError.java
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
 This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
- 
+
 package java.lang;
- 
+import java.io.PrintStream;
+import java.io.PrintWriter;
+
 /**
  * @author Tom Tromey <tromey@cygnus.com>
  * @date October 1, 1998 
@@ -43,6 +45,21 @@ public class ExceptionInInitializerError extends LinkageError
   public Throwable getException ()
   {
     return exception;
+  }
+
+  public void printStackTrace ()
+  {
+    exception.printStackTrace ();
+  }
+
+  public void printStackTrace (PrintStream ps)
+  {
+    exception.printStackTrace (ps);
+  }
+
+  public void printStackTrace (PrintWriter pw)
+  {
+    exception.printStackTrace (pw);
   }
 
   // The exception that caused this error.

@@ -1,5 +1,5 @@
 /* java.util.PropertyPermission
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -68,13 +68,13 @@ public final class PropertyPermission extends BasicPermission
 
   private static final long serialVersionUID = 885438825399942851L;
 
-  private static final int READ  = 1;
+  private static final int READ = 1;
   private static final int WRITE = 2;
   private transient int actions;
 
-  private static String actionStrings[] = 
-  { 
-    "", "read", "write", "read,write" 
+  private static final String actionStrings[] =
+  {
+    "", "read", "write", "read,write"
   };
 
   /**
@@ -109,7 +109,7 @@ public final class PropertyPermission extends BasicPermission
 	else if ("write".equals(anAction))
 	  this.actions |= WRITE;
 	else
-	  throw new IllegalArgumentException("illegal action "+anAction);
+	  throw new IllegalArgumentException("illegal action " + anAction);
       }
   }
 
@@ -127,7 +127,7 @@ public final class PropertyPermission extends BasicPermission
   {
     if (!(p instanceof PropertyPermission))
       return false;
-    
+
     // We have to check the actions.
     PropertyPermission pp = (PropertyPermission) p;
     if ((pp.actions & ~actions) != 0)
@@ -151,10 +151,24 @@ public final class PropertyPermission extends BasicPermission
   }
 
   /**
+   * Check to see whether this object is the same as another
+   * PropertyPermission object.
+   *
+   * @param obj The other object
+   */
+  public boolean equals (Object obj)
+  {
+    if (! (obj instanceof PropertyPermission))
+      return false;
+    PropertyPermission p = (PropertyPermission) obj;
+    return actions == p.actions && super.equals (p);
+  }
+
+  /**
    * Reads an object from the stream. This converts the external to the
    * internal representation.
    */
-  private void readObject(ObjectInputStream s) 
+  private void readObject(ObjectInputStream s)
     throws IOException, ClassNotFoundException
   {
     ObjectInputStream.GetField fields = s.readFields();
@@ -165,8 +179,7 @@ public final class PropertyPermission extends BasicPermission
    * Writes an object to the stream. This converts the internal to the
    * external representation.
    */
-  private void writeObject(ObjectOutputStream s) 
-    throws IOException
+  private void writeObject(ObjectOutputStream s) throws IOException
   {
     ObjectOutputStream.PutField fields = s.putFields();
     fields.put("actions", getActions());
@@ -178,61 +191,61 @@ public final class PropertyPermission extends BasicPermission
    * PropertyPermission objects.
    * @return a new empty PermissionCollection.  
    */
-  public PermissionCollection newPermissionCollection() 
+  public PermissionCollection newPermissionCollection()
   {
-    return new PermissionCollection() 
+    return new PermissionCollection()
+    {
+      Hashtable permissions = new Hashtable();
+      int allActions = 0;
+
+      public void add(Permission permission)
       {
-	Hashtable permissions = new Hashtable();
-	int allActions = 0;
-	
-	public void add(Permission permission) 
-	  {
-	    if (isReadOnly())
-	      throw new IllegalStateException("readonly");
+	if (isReadOnly())
+	  throw new IllegalStateException("readonly");
 
-	    // also check that permission is of correct type.
-	    PropertyPermission pp = (PropertyPermission) permission;
-	    String name = pp.getName();
-	    if (name.equals("*"))
-	      allActions |= pp.actions;
-	    permissions.put(name, pp);
-	  }
-	
-	public boolean implies(Permission permission)
-	  {
-	    if (!(permission instanceof PropertyPermission))
-	      return false;
+	// also check that permission is of correct type.
+	PropertyPermission pp = (PropertyPermission) permission;
+	String name = pp.getName();
+	if (name.equals("*"))
+	  allActions |= pp.actions;
+	permissions.put(name, pp);
+      }
 
-	    PropertyPermission toImply = (PropertyPermission) permission;
-	    if ((toImply.actions & ~allActions) == 0)
+      public boolean implies(Permission permission)
+      {
+	if (!(permission instanceof PropertyPermission))
+	  return false;
+
+	PropertyPermission toImply = (PropertyPermission) permission;
+	if ((toImply.actions & ~allActions) == 0)
+	  return true;
+
+	String name = toImply.getName();
+	if (name.equals("*"))
+	  return false;
+
+	int prefixLength = name.length();
+	if (name.endsWith("*"))
+	  prefixLength -= 2;
+
+	while (true)
+	  {
+	    PropertyPermission forName =
+	      (PropertyPermission) permissions.get(name);
+	    if (forName != null && (toImply.actions & ~forName.actions) == 0)
 	      return true;
 
-	    String name = toImply.getName();
-	    if (name.equals("*"))
+	    prefixLength = name.lastIndexOf('.', prefixLength);
+	    if (prefixLength < 0)
 	      return false;
-
-	    int prefixLength = name.length();
-	    if (name.endsWith("*"))
-	      prefixLength -= 2;
-
-	    while (true) {
-	      PropertyPermission forName = 
-		(PropertyPermission) permissions.get(name);
-	      if (forName != null
-		  && (toImply.actions & ~forName.actions) == 0)
-		return true;
-
-	      prefixLength = name.lastIndexOf('.', prefixLength);
-	      if (prefixLength < 0)
-		return false;
-	      name = name.substring(0, prefixLength + 1) + '*';
-	    }
+	    name = name.substring(0, prefixLength + 1) + '*';
 	  }
-	
-	public Enumeration elements()
-	  {
-	    return permissions.elements();
-	  }
-      };
+      }
+
+      public Enumeration elements()
+      {
+	return permissions.elements();
+      }
+    };
   }
 }

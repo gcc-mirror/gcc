@@ -1,3 +1,28 @@
+2000-11-17  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natString.cc: Include Locale.h.
+	(toUpperCase): Added `locale' argument.  Handle locale
+	sensitivity.
+	(toLowerCase): Added `locale' argument.  Handle locale
+	sensitivity.
+	(ESSET, CAPITAL_S, SMALL_I, CAPITAL_I_WITH_DOT, SMALL_DOTLESS_I,
+	CAPITAL_I): New defines.
+	* java/lang/String.java (CASE_INSENSITIVE_ORDER): Now public and
+	final.
+	Import Locale.
+	(toUpperCase, toLowerCase): New methods.  Variants which accept
+	locale now native.
+
+	* java/lang/ExceptionInInitializerError.java (printStackTrace):
+	New methods.
+
+	* java/util/PropertyPermission.java: Re-merged from Classpath.
+
+	* java/text/RuleBasedCollator.java (getCollationElementIterator):
+	New method.
+	* java/text/StringCharacterIterator.java: Reindented.
+	(setText): New method.
+
 2000-11-17  Mark Wielaar <mark@klomp.org>
 
 	Merge with Classpath (changes by Bryce McKinlay)
