@@ -238,6 +238,9 @@ tree current_function_decl;
 
 char *language_string = "GNU F77";
 
+/* Stream for reading from the input file.  */
+FILE *finput;
+
 /* These definitions parallel those in c-decl.c so that code from that
    module can be used pretty much as is.  Much of these defs aren't
    otherwise used, i.e. by g77 code per se, except some of them are used
@@ -14793,10 +14796,26 @@ init_decl_processing ()
 }
 
 void
-init_lex ()
+init_parse (filename)
+     char *filename;
 {
 #if BUILT_FOR_270
   extern void (*print_error_function) (char *);
+#endif
+
+  /* Open input file.  */
+  if (filename == 0 || !strcmp (filename, "-"))
+    {
+      finput = stdin;
+      filename = "stdin";
+    }
+  else
+    finput = fopen (filename, "r");
+  if (finput == 0)
+    pfatal_with_name (filename);
+
+#ifdef IO_BUFFER_SIZE
+  setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
 #endif
 
   /* Make identifier nodes long enough for the language-specific slots.  */
@@ -14805,6 +14824,12 @@ init_lex ()
 #if BUILT_FOR_270
   print_error_function = lang_print_error_function;
 #endif
+}
+
+void
+finish_parse ()
+{
+  fclose (finput);
 }
 
 void
@@ -14851,8 +14876,6 @@ lang_identify ()
 void
 lang_init ()
 {
-  extern FILE *finput;		/* Don't pollute com.h with this. */
-
   /* If the file is output from cpp, it should contain a first line
      `# 1 "real-filename"', and the current design of gcc (toplev.c
      in particular and the way it sets up information relied on by
