@@ -1,3 +1,8 @@
+2004-08-21  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_ios.tcc (basic_ios<>::copyfmt): Don't deal
+	with _M_word != _M_local_word two times, redundantly.
+
 2004-08-20  Jason Merrill  <jason@redhat.com>
 
 	* include/Makefile.am (${host_builddir}/gthr.h): Don't add
