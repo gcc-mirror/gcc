@@ -211,7 +211,6 @@ char * temporary_firstobj;
 extern int prepends_underscore;
 
 extern char *getenv ();
-extern char *mktemp ();
 extern FILE *fdopen ();
 
 /* Structure to hold all the directories in which to search for files to
