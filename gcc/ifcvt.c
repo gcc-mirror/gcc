@@ -75,8 +75,8 @@ static int num_possible_if_blocks;
    execution.  */
 static int num_updated_if_blocks;
 
-/* # of basic blocks that were removed.  */
-static int num_removed_blocks;
+/* # of changes made which require life information to be updated.  */
+static int num_true_changes;
 
 /* Whether conditional execution changes were made.  */
 static int cond_exec_changed_p;
@@ -2016,7 +2016,7 @@ merge_if_block (struct ce_if_block * ce_info)
 	  if (post_dominators)
 	    delete_from_dominance_info (post_dominators, bb);
 	  merge_blocks (combo_bb, bb);
-	  num_removed_blocks++;
+	  num_true_changes++;
 	}
       while (bb != last_test_bb);
     }
@@ -2033,7 +2033,7 @@ merge_if_block (struct ce_if_block * ce_info)
       if (post_dominators)
 	delete_from_dominance_info (post_dominators, then_bb);
       merge_blocks (combo_bb, then_bb);
-      num_removed_blocks++;
+      num_true_changes++;
     }
 
   /* The ELSE block, if it existed, had a label.  That label count
@@ -2044,7 +2044,7 @@ merge_if_block (struct ce_if_block * ce_info)
       if (post_dominators)
 	delete_from_dominance_info (post_dominators, else_bb);
       merge_blocks (combo_bb, else_bb);
-      num_removed_blocks++;
+      num_true_changes++;
     }
 
   /* If there was no join block reported, that means it was not adjacent
@@ -2101,7 +2101,7 @@ merge_if_block (struct ce_if_block * ce_info)
       if (post_dominators)
 	delete_from_dominance_info (post_dominators, join_bb);
       merge_blocks (combo_bb, join_bb);
-      num_removed_blocks++;
+      num_true_changes++;
     }
   else
     {
@@ -2544,6 +2544,8 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
   if (seq == NULL)
     return FALSE;
 
+  num_true_changes++;
+
   /* Emit the new insns before cond_earliest.  */
   emit_insn_before_setloc (seq, cond_earliest, INSN_LOCATOR (trap));
 
@@ -2554,7 +2556,6 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
       if (post_dominators)
 	delete_from_dominance_info (post_dominators, trap_bb);
       delete_block (trap_bb);
-      num_removed_blocks++;
     }
 
   /* If the non-trap block and the test are now adjacent, merge them.
@@ -2753,7 +2754,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   /* We've possibly created jump to next insn, cleanup_cfg will solve that
      later.  */
 
-  num_removed_blocks++;
+  num_true_changes++;
   num_updated_if_blocks++;
 
   return TRUE;
@@ -2821,7 +2822,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
     delete_from_dominance_info (post_dominators, else_bb);
   delete_block (else_bb);
 
-  num_removed_blocks++;
+  num_true_changes++;
   num_updated_if_blocks++;
 
   /* ??? We may now fallthru from one of THEN's successors into a join
@@ -3112,7 +3113,7 @@ if_convert (int x_life_data_ok)
 
   num_possible_if_blocks = 0;
   num_updated_if_blocks = 0;
-  num_removed_blocks = 0;
+  num_true_changes = 0;
   life_data_ok = (x_life_data_ok != 0);
 
   if (! (* targetm.cannot_modify_jumps_p) ())
@@ -3173,7 +3174,7 @@ if_convert (int x_life_data_ok)
   clear_aux_for_blocks ();
 
   /* Rebuild life info for basic blocks that require it.  */
-  if (num_removed_blocks && life_data_ok)
+  if (num_true_changes && life_data_ok)
     {
       /* If we allocated new pseudos, we must resize the array for sched1.  */
       if (max_regno < max_reg_num ())
@@ -3196,8 +3197,8 @@ if_convert (int x_life_data_ok)
 	       "%d IF blocks converted.\n",
 	       num_updated_if_blocks);
       fprintf (rtl_dump_file,
-	       "%d basic blocks deleted.\n\n\n",
-	       num_removed_blocks);
+	       "%d true changes made.\n\n\n",
+	       num_true_changes);
     }
 
 #ifdef ENABLE_CHECKING
