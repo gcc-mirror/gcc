@@ -723,6 +723,9 @@
 /* Define if you have the <wchar.h> header file.  */
 #undef HAVE_WCHAR_H
 
+/* Define if you have the <wctype.h> header file.  */
+#undef HAVE_WCTYPE_H
+
 /* Define if you have the m library (-lm).  */
 #undef HAVE_LIBM
 

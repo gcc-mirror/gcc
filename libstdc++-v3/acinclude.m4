@@ -869,7 +869,7 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
 
   dnl Sanity check for existence of ISO C99 headers for extended encoding.
   AC_CHECK_HEADERS(wchar.h, ac_has_wchar_h=yes, ac_has_wchar_h=no)
-  AC_CHECK_HEADER(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
+  AC_CHECK_HEADERS(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
   
   dnl Only continue checking if the ISO C99 headers exist and support is on.
   if test x"$ac_has_wchar_h" = xyes &&
