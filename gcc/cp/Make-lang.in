@@ -1,5 +1,5 @@
 # Top level makefile fragment for GNU C++.
-#   Copyright (C) 1994 Free Software Foundation, Inc.
+#   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -100,26 +100,30 @@ c++.install-normal:
 # Install the driver program as $(target)-g++
 # and also as either g++ (if native) or $(tooldir)/bin/g++.
 c++.install-common:
-	-if [ -f cc1plus ] ; then \
-	  if [ -f g++-cross ] ; then \
-	    rm -f $(bindir)/$(GXX_CROSS_NAME); \
-	    $(INSTALL_PROGRAM) g++-cross $(bindir)/$(GXX_CROSS_NAME); \
-	    chmod a+x $(bindir)/$(GXX_CROSS_NAME); \
-	    rm -f $(bindir)/$(CXX_CROSS_NAME); \
-	    ln $(bindir)/$(GXX_CROSS_NAME) $(bindir)/$(CXX_CROSS_NAME); \
+	-if [ -f cc1plus$(exeext) ] ; then \
+	  if [ -f g++-cross$(exeext) ] ; then \
+	    rm -f $(bindir)/$(GXX_CROSS_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) g++-cross$(exeext) $(bindir)/$(GXX_CROSS_NAME)$(exeext); \
+	    chmod a+x $(bindir)/$(GXX_CROSS_NAME)$(exeext); \
+	    rm -f $(bindir)/$(CXX_CROSS_NAME)$(exeext); \
+	    ln $(bindir)/$(GXX_CROSS_NAME)$(exeext) $(bindir)/$(CXX_CROSS_NAME)$(exeext) \
+	      > /dev/null 2>&1 \
+	      || cp $(bindir)/$(GXX_CROSS_NAME)$(exeext) $(bindir)/$(CXX_CROSS_NAME)$(exeext) ; \
 	  else \
-	    rm -f $(bindir)/$(GXX_INSTALL_NAME); \
-	    $(INSTALL_PROGRAM) g++ $(bindir)/$(GXX_INSTALL_NAME); \
-	    chmod a+x $(bindir)/$(GXX_INSTALL_NAME); \
-	    rm -f $(bindir)/$(CXX_INSTALL_NAME); \
-	    ln $(bindir)/$(GXX_INSTALL_NAME) $(bindir)/$(CXX_INSTALL_NAME); \
+	    rm -f $(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) g++$(exeext) $(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
+	    chmod a+x $(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
+	    rm -f $(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
+	    ln $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(CXX_INSTALL_NAME)$(exeext) \
+	      > /dev/null 2>&1 \
+	      || cp $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(CXX_INSTALL_NAME)$(exeext) ; \
 	  fi ; \
 	fi
 
 c++.install-info:
 
 c++.install-man: $(srcdir)/cp/g++.1
-	-if [ -f cc1plus ] ; then \
+	-if [ -f cc1plus$(exeext) ] ; then \
 	  if [ -f g++-cross ] ; then \
 	    rm -f $(mandir)/$(GXX_CROSS_NAME)$(manext); \
 	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(mandir)/$(GXX_CROSS_NAME)$(manext); \
@@ -132,10 +136,10 @@ c++.install-man: $(srcdir)/cp/g++.1
 	else true; fi
 
 c++.uninstall:
-	-rm -rf $(bindir)/$(CXX_INSTALL_NAME)
-	-rm -rf $(bindir)/$(CXX_CROSS_NAME)
-	-rm -rf $(bindir)/$(GXX_INSTALL_NAME)
-	-rm -rf $(bindir)/$(GXX_CROSS_NAME)
+	-rm -rf $(bindir)/$(CXX_INSTALL_NAME)$(exeext)
+	-rm -rf $(bindir)/$(CXX_CROSS_NAME)$(exeext)
+	-rm -rf $(bindir)/$(GXX_INSTALL_NAME)$(exeext)
+	-rm -rf $(bindir)/$(GXX_CROSS_NAME)$(exeext)
 	-rm -rf $(mandir)/$(GXX_INSTALL_NAME)$(manext)
 	-rm -rf $(mandir)/$(GXX_CROSS_NAME)$(manext)
 
