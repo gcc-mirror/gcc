@@ -2514,27 +2514,8 @@ c_build_type_variant (type, constp, volatilep)
      int constp, volatilep;
 {
   if (TREE_CODE (type) == ARRAY_TYPE)
-    {
-      tree real_main_variant = TYPE_MAIN_VARIANT (type);
-
-      push_obstacks (TYPE_OBSTACK (real_main_variant),
-		     TYPE_OBSTACK (real_main_variant));
-      type = build_array_type (c_build_type_variant (TREE_TYPE (type),
-						     constp, volatilep),
-			       TYPE_DOMAIN (type));
-
-      /* TYPE must be on same obstack as REAL_MAIN_VARIANT.  If not,
-	 make a copy.  (TYPE might have come from the hash table and
-	 REAL_MAIN_VARIANT might be in some function's obstack.)  */
-
-      if (TYPE_OBSTACK (type) != TYPE_OBSTACK (real_main_variant))
-	{
-	  type = copy_node (type);
-	  TYPE_POINTER_TO (type) = TYPE_REFERENCE_TO (type) = 0;
-	}
-
-      TYPE_MAIN_VARIANT (type) = real_main_variant;
-      pop_obstacks ();
-    }
+    return build_array_type (c_build_type_variant (TREE_TYPE (type),
+						   constp, volatilep),
+			     TYPE_DOMAIN (type));
   return build_type_variant (type, constp, volatilep);
 }
