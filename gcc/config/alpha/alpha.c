@@ -718,7 +718,14 @@ normal_memory_operand (op, mode)
 {
   if (reload_in_progress && GET_CODE (op) == REG
       && REGNO (op) >= FIRST_PSEUDO_REGISTER)
-    op = reg_equiv_mem[REGNO (op)];
+    {
+      op = reg_equiv_mem[REGNO (op)];
+
+      /* This may not have been assigned an equivalent address if it will
+	 be eliminated.  In that case, it doesn't matter what we do.  */
+      if (op == 0)
+	return 1;
+    }
 
   return GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) != AND;
 }
