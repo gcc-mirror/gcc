@@ -8,7 +8,7 @@
 @c the word ``Java'.
 
 @c When this manual is copyrighted.
-@set copyrights-gcj 2001
+@set copyrights-gcj 2001, 2002
 
 @c Versions
 @set version-gcc 3.1
@@ -139,7 +139,7 @@ files and object files, and it can read both Java source code and
 
 @ignore
 @c man begin SYNOPSIS gcj
-gcj [@option{-I}@var{dir}@dots{}] [@option{-d}@var{dir}@dots{}]
+gcj [@option{-I}@var{dir}@dots{}] [@option{-d} @var{dir}@dots{}]
     [@option{--classpath}=@var{path}] [@option{--CLASSPATH}=@var{path}]
     [@option{-f}@var{option}@dots{}] [@option{--encoding}=@var{name}]
     [@option{--main}=@var{classname}] [@option{-D}@var{name}[=@var{value}]@dots{}]
@@ -497,10 +497,11 @@ required native methods.
 @ignore
 @c man begin SYNOPSIS gcjh
 gcjh [@option{-stubs}] [@option{-jni}]
-    [@option{-add}@var{text}] [@option{-append}@var{text}] [@option{-friend}@var{text}] [@option{-preprend}@var{text}]
+    [@option{-add} @var{text}] [@option{-append} @var{text}] [@option{-friend} @var{text}]
+    [@option{-preprend} @var{text}]
     [@option{--classpath}=@var{path}] [@option{--CLASSPATH}=@var{path}]
-    [@option{-I}@var{dir}@dots{}] [@option{-d}@var{dir}@dots{}]
-    [@option{-o}@var{file}] [@option{-td}@var{dir}]
+    [@option{-I}@var{dir}@dots{}] [@option{-d} @var{dir}@dots{}]
+    [@option{-o} @var{file}] [@option{-td} @var{dir}]
     [@option{-M}] [@option{-MM}] [@option{-MD}] [@option{-MMD}]
     [@option{--version}] [@option{--help}] [@option{-v}] [@option{--verbose}]
     @var{classname}@dots{}
@@ -594,10 +595,10 @@ source file (@file{.java} file).
 
 @ignore
 @c man begin SYNOPSIS jv-scan
-jv-scan [@option{--complexity}] [@option{--encoding}@var{name}]
+jv-scan [@option{--complexity}] [@option{--encoding}=@var{name}]
     [@option{--print-main}] [@option{--list-class}] [@option{--list-filename}]
     [@option{--version}] [@option{--help}]
-    [@option{-o}@var{file}] @var{inputfile}@dots{}
+    [@option{-o} @var{file}] @var{inputfile}@dots{}
 @c man end
 @c man begin SEEALSO jv-scan
 gcc(1), gcj(1), gcjh(1), gij(1), jcf-dump(1), gfdl(7),
@@ -647,7 +648,7 @@ Print version number, then exit.
 @c man begin SYNOPSIS jcf-dump
 jcf-dump [@option{-c}] [@option{--javap}]
     [@option{--classpath}=@var{path}] [@option{--CLASSPATH}=@var{path}]
-    [@option{-I}@var{dir}@dots{}] [@option{-o}@var{file}]
+    [@option{-I}@var{dir}@dots{}] [@option{-o} @var{file}]
     [@option{--version}] [@option{--help}] [@option{-v}] [@option{--verbose}]
     @var{classname}@dots{}
 @c man end
@@ -703,7 +704,6 @@ Print extra information while running.
 gij [@option{OPTION}] @dots{} @var{JARFILE} [@var{ARGS}@dots{}]
 
 gij [@option{-jar}] [@option{OPTION}] @dots{} @var{CLASS} [@var{ARGS}@dots{}]
-
   [@option{-D}@var{name}[=@var{value}]@dots{}]
   [@option{-ms=}@var{number}] [@option{-mx=}@var{number}]
   [@option{--version}] [@option{--help}]
