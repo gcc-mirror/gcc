@@ -89,10 +89,6 @@ int verbose = 0;
 int partial_count = 0;
 int warnings = 0;
 
-/* We no longer need to add extern "C", because cpp implicitly
-   forces the standard include files to be treated as C.  */
-/*#define ADD_MISSING_EXTERN_C 1 */
-
 #if ADD_MISSING_EXTERN_C
 int missing_extern_C_count = 0;
 #endif
@@ -415,11 +411,6 @@ int required_other = 0;
 static void
 write_lbrac ()
 {
-#if ADD_MISSING_EXTERN_C
-  if (missing_extern_C_count + required_unseen_count > 0)
-    fprintf (outf, "#ifdef __cplusplus\nextern \"C\" {\n#endif\n");
-#endif
-
   if (partial_count)
     {
       fprintf (outf, "#ifndef _PARAMS\n");
@@ -527,10 +518,6 @@ recognized_function (fname, line, kind, have_arg_list)
   struct partial_proto *partial;
   int i;
   struct fn_decl *fn;
-#if ADD_MISSING_EXTERN_C
-  if (kind == 'f')
-    missing_extern_C_count++;
-#endif
 
   fn = lookup_std_proto ((const char *) NODE_NAME (fname->val.node),
 			 NODE_LEN (fname->val.node));
@@ -734,11 +721,7 @@ read_scan_file (in_fname, argc, argv)
 	}
     }
 
-  if (required_unseen_count + partial_count + required_other
-#if ADD_MISSING_EXTERN_C
-      + missing_extern_C_count
-#endif
-      == 0)
+  if (required_unseen_count + partial_count + required_other == 0)
     {
       if (verbose)
 	fprintf (stderr, "%s: OK, nothing needs to be done.\n", inc_filename);
@@ -754,12 +737,6 @@ read_scan_file (in_fname, argc, argv)
       if (partial_count)
 	fprintf (stderr, "%s: %d non-prototype function declarations.\n",
 		 inc_filename, partial_count);
-#if ADD_MISSING_EXTERN_C
-      if (missing_extern_C_count)
-	fprintf (stderr,
-		 "%s: %d declarations not protected by extern \"C\".\n",
-		 inc_filename, missing_extern_C_count);
-#endif
     }
 }
 
@@ -891,11 +868,6 @@ write_rbrac ()
       break;
     }
 
-
-#if ADD_MISSING_EXTERN_C
-  if (missing_extern_C_count + required_unseen_count > 0)
-    fprintf (outf, "#ifdef __cplusplus\n}\n#endif\n");
-#endif
 }
 
 /* Returns 1 iff the file is properly protected from multiple inclusion:
