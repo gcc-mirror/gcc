@@ -1,3 +1,8 @@
+2003-09-07  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* Makefile.in: Define REMAKEFLAGS for LANGUAGES & BOOT_CFLAGS
+	and use it throughout.
+
 2003-09-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (real_dconstp, fold_builtin_logarithm,
