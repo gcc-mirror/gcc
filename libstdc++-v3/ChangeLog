@@ -1,3 +1,9 @@
+2003-10-14  Petur Runolfsson  <peturr02@ru.is>
+	    Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/locale.cc (locale::_S_initialize): Workaround a confusion
+	of the use of the gthr API when __gthread_active_p() returns true.
+
 2003-10-12  Petur Runolfsson  <peturr02@ru.is>
 	    Paolo Carlini  <pcarlini@unitus.it>
 

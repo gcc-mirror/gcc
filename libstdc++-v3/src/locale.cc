@@ -395,12 +395,9 @@ namespace std
 #ifdef __GTHREADS
     if (__gthread_active_p())
       __gthread_once(&_S_once, _S_initialize_once);
-    else
 #endif
-      {
-	if (!_S_classic)
-	  _S_initialize_once();
-      }
+    if (!_S_classic)
+      _S_initialize_once();
   }
 
   void
