@@ -328,7 +328,7 @@ cgraph_remove_node (struct cgraph_node *node)
       else
 	{
           htab_clear_slot (cgraph_hash, slot);
-	  if (!dump_enabled_p (TDI_all))
+	  if (!dump_enabled_p (TDI_tree_all))
 	    {
               DECL_SAVED_TREE (node->decl) = NULL;
 	      DECL_STRUCT_FUNCTION (node->decl) = NULL;
@@ -356,7 +356,7 @@ cgraph_remove_node (struct cgraph_node *node)
 	    || (!n->global.inlined_to
 		&& !TREE_ASM_WRITTEN (n->decl) && !DECL_EXTERNAL (n->decl)))
 	  break;
-      if (!n && !dump_enabled_p (TDI_all))
+      if (!n && !dump_enabled_p (TDI_tree_all))
 	{
 	  DECL_SAVED_TREE (node->decl) = NULL;
 	  DECL_STRUCT_FUNCTION (node->decl) = NULL;

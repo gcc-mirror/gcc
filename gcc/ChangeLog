@@ -1,3 +1,104 @@
+2004-09-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	Unify the management of RTL and tree-level dump files.
+
+	* cfgexpand.c (tree_expand_cfg): Fix incorrect comment.
+	Don't print function name to the dump file, the pass manager
+	would do this for us. Add code from the top of
+	rest_of_compilation, up to the initial RTL dump.
+	* passes.c (rest_of_handle_jump): Call fixup_tail_calls and
+	close the DFI_sibling dump file.
+	(rest_of_compilation): Don't do that here.  Remove code up to the
+	initial RTL dump.
+	(init_optimization_passes): Remove.
+	(pass_rest_of_compilation): Change pass name to NULL.
+	* toplev.c (lang_dependent_init): Do not use an empty dump file prefix.
+	Do not call init_optimization_passes.
+	* toplev.h (init_optimization_passes): Remove.
+
+	* graph.c (print_rtl_graph_with_bb, clean_graph_dump_file,
+	finish_graph_dump_file): Remove SUFFIX parameter.
+	* graph.h (print_rtl_graph_with_bb, clean_graph_dump_file,
+	finish_graph_dump_file): Likewise.
+
+	* tree-pass.h (struct tree_opt_pass): Add `letter' field.
+	* cfgexpand.c (pass_expand): Adjust.
+	* gimple-low.c (pass_lower_cf, pass_remove_useless_vars): Adjust.
+	* passes.c (pass_rest_of_compilation): Adjust.
+	* predict.c (pass_profile): Adjust.
+	* tree-alias-common.c (pass_build_pta, pass_del_pta): Adjust.
+	* tree-cfg.c (pass_build_cfg, pass_remove_useless_stmts,
+	pass_split_crit_edges, pass_warn_function_return): Adjust.
+	* tree-complex.c (pass_lower_vector_ssa, pass_pre_expand): Adjust.
+	* tree-dfa.c (pass_referenced_vars): Adjust.
+	* tree-eh.c (pass_lower_eh): Adjust.
+	* tree-if-conv.c (pass_build_ssa): Adjust.
+	* tree-into-ssa.c (pass_build_ssa): Adjust.
+	* tree-mudflap.c (pass_mudflap_1, pass_mudflap_2): Adjust.
+	* tree-nomudflap.c (pass_mudflap_1, pass_mudflap_2): Adjust.
+	* tree-nrv.c (pass_nrv): Adjust.
+	* tree-optimize.c (pass_gimple, pass_all_optimizations,
+	pass_cleanup_cfg_post_optimizing, pass_free_datastructures,
+	pass_init_datastructures): Adjust.
+	* tree-outof-ssa.c (pass_del_ssa): Adjust.
+	* tree-profile.c (pass_tree_profile): Adjust.
+	* tree-sra.c (pass_sra): Adjust.
+	* tree-ssa-alias.c (pass_may_alias): Adjust.
+	* tree-ssa-ccp.c (pass_ccp, pass_fold_builtins): Adjust.
+	* tree-ssa-copyrename.c (pass_rename_ssa_copies): Adjust.
+	* tree-ssa-dce.c (pass_dce, pass_cd_dce): Adjust.
+	* tree-ssa-dom.c (pass_dominator): Adjust.
+	* tree-ssa-dse.c (pass_dse): Adjust.
+	* tree-ssa-forwprop.c (pass_forwprop): Adjust.
+	* tree-ssa-if-conv.c (pass_if_conversion): Adjust.
+	* tree-ssa-loop-ch.c (pass_ch): Adjust.
+	* tree-ssa-loop.c (pass_loop, pass_loop_init, pass_lim,
+	pass_loop_done, pass_complete_unroll, pass_iv_canon,
+	pass_iv_optimize, pass_vectorize): Adjust.
+	* tree-ssa-phiopt.c (pass_phiopt): Adjust.
+	* tree-ssa-pre.c (pass_pre, pass_fre): Adjust.
+	* tree-ssa.c (pass_redundant_phi, pass_early_warn_uninitialized,
+	pass_late_warn_uninnitialized): Adjust.
+	* tree-tailcall.c (pass_tail_recursion, pass_tail_calls): Adjust.
+
+	* Makefile.in (tree-dump.o): Add new dependencies.
+	* cgraph.c (cgraph_remove_node): TDF_all -> TDF_tree_all.
+	* cgraphunit.c (cgraph_preserve_function_body_p, cgraph_optimize):
+	Likewise.
+	* toplev.c (dump_file_name): New.
+	* tree-dump.c (dump_enable_all): Add LETTER parameter.
+	(struct dump_file_info): Add NUM and LETTER fields.
+	(dump_files): Adjust and add RTL dump files.
+	(dump_register): Add NUM and LETTER fields.
+	(get_dump_file_name, dump_initialized_p, enable_rtl_dump_file): New.
+	(dump_begin): Use get_dump_file_name.
+	(dump_switch_p_1): Adjust call to dump_enable_all.
+	* tree-dump.h (dump_register): Adjust prototype.
+	* tree-optimize.c (register_one_dump_file): Take dump file index.
+	Support flags for RTL dumps.
+	(register_dump_files): Fill in NUM field of struct dump_file_info.
+	Track properties both when the gate is executed and when it is not.
+	(execute_todo): Dump RTL.  Add PROPERTIES parameter.
+	(execute_one_pass): Pass properties to execute_todo.  Handle VCG
+	dumps of RTL.
+	* tree-pass.h (dump_file_name): New.
+	* tree.h (TDF_TREE, TDF_RTL, get_dump_file_name, dump_initialized_p):
+	New.
+
+	* Makefile.in (passes.o): Add new dependencies.
+	* passes.c (struct dump_file_info, enum dump_file_index,
+	dump_file_tbl, init_optimization_passes): Remove.
+	(open_dump_file, close_dump_file): Use tree-dumping infrastructure.
+	(rest_of_handle_new_regalloc, rest_of_handle_old_regalloc): Use
+	dump_enabled_p.
+	(finish_optimization_passes): Update finish_graph_dump_file loop.
+	(enable_rtl_dump_file): Remove.
+	* tree-dump.c (dump_files): Adjust and add RTL dump files.
+	(enable_rtl_dump_file): Add here.
+	* tree.h (enum tree_dump_index): Add RTL dump file indices.
+	* doc/invoke.texi (Debugging options): Document new RTL debugging
+	options.  Update.
+
 2004-09-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-common.c, c-decl.c, combine.c, defaults.h, fold-const.c,

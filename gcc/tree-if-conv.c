@@ -1097,5 +1097,6 @@ struct tree_opt_pass pass_if_conversion =
   TODO_dump_func
     | TODO_verify_ssa
     | TODO_verify_stmts
-    | TODO_verify_flow               /* todo_flags_finish */
+    | TODO_verify_flow,              /* todo_flags_finish */
+  0				     /* letter */
 };

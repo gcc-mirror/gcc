@@ -1712,7 +1712,7 @@ cgraph_preserve_function_body_p (tree decl)
 {
   struct cgraph_node *node;
   /* Keep the body; we're going to dump it.  */
-  if (dump_enabled_p (TDI_all))
+  if (dump_enabled_p (TDI_tree_all))
     return true;
   if (!cgraph_global_info_ready)
     return (DECL_INLINE (decl) && !flag_really_no_inline);
@@ -1771,7 +1771,7 @@ cgraph_optimize (void)
   /* Double check that all inline clones are gone and that all
      function bodies have been released from memory.  */
   if (flag_unit_at_a_time
-      && !dump_enabled_p (TDI_all)
+      && !dump_enabled_p (TDI_tree_all)
       && !(sorrycount || errorcount))
     {
       struct cgraph_node *node;

@@ -78,7 +78,6 @@ extern void rest_of_type_compilation (tree, int);
 extern void rest_of_compilation (void);
 extern void tree_rest_of_compilation (tree, bool);
 extern void init_tree_optimization_passes (void);
-extern void init_optimization_passes (void);
 extern void finish_optimization_passes (void);
 extern bool enable_rtl_dump_file (int);
 

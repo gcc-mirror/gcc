@@ -1052,7 +1052,8 @@ struct tree_opt_pass pass_build_pta =
   PROP_pta,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
+  0,                                    /* todo_flags_finish */
+  0					/* letter */
 };
  
 
@@ -1097,7 +1098,8 @@ struct tree_opt_pass pass_del_pta =
   0,					/* properties_provided */
   PROP_pta,				/* properties_destroyed */
   0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
+  0,                                    /* todo_flags_finish */
+  0					/* letter */
 };
  
 

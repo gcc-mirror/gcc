@@ -1188,14 +1188,6 @@ tree_expand_cfg (void)
   basic_block bb, init_block;
   sbitmap blocks;
 
-  if (dump_file)
-    {
-      fprintf (dump_file, "\n;; Function %s",
-	       (*lang_hooks.decl_printable_name) (current_function_decl, 2));
-      fprintf (dump_file, " (%s)\n",
-	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
-    }
-
   profile_status = PROFILE_ABSENT;
 
   /* Some backends want to know that we are expanding to RTL.  */
@@ -1231,8 +1223,7 @@ tree_expand_cfg (void)
   currently_expanding_to_rtl = 0;
 
   /* Convert from NOTE_INSN_EH_REGION style notes, and do other
-     sorts of eh initialization.  Delay this until after the
-     initial rtl dump so that we can see the original nesting.  */
+     sorts of eh initialization.  */
   convert_from_eh_region_ranges ();
 
   rebuild_jump_labels (get_insns ());
@@ -1248,6 +1239,16 @@ tree_expand_cfg (void)
 #ifdef ENABLE_CHECKING
   verify_flow_info();
 #endif
+
+  /* There's no need to defer outputting this function any more; we
+     know we want to output it.  */
+  DECL_DEFER_OUTPUT (current_function_decl) = 0;
+
+  /* Now that we're done expanding trees to RTL, we shouldn't have any
+     more CONCATs anywhere.  */
+  generating_concat_p = 0;
+
+  finalize_block_changes ();
 }
 
 struct tree_opt_pass pass_expand =
@@ -1264,5 +1265,6 @@ struct tree_opt_pass pass_expand =
   PROP_rtl,                             /* properties_provided */
   PROP_gimple_leh,			/* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
+  0,					/* todo_flags_finish */
+  'r'					/* letter */
 };

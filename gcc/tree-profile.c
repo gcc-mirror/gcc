@@ -175,7 +175,8 @@ struct tree_opt_pass pass_tree_profile =
   PROP_gimple_leh | PROP_cfg,		/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_verify_stmts			/* todo_flags_finish */
+  TODO_verify_stmts,			/* todo_flags_finish */
+  0					/* letter */
 };
 
 struct profile_hooks tree_profile_hooks =

@@ -28,6 +28,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "diagnostic.h"
 #include "toplev.h"
 #include "tree-dump.h"
+#include "tree-pass.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
 
@@ -37,7 +38,7 @@ static void dequeue_and_dump (dump_info_p);
 static void dump_new_line (dump_info_p);
 static void dump_maybe_newline (dump_info_p);
 static void dump_string_field (dump_info_p, const char *, const char *);
-static void dump_enable_all (int);
+static int dump_enable_all (int, int);
 
 /* Add T to the end of the queue of nodes to dump.  Returns the index
    assigned to T.  */
@@ -658,30 +659,61 @@ dump_node (tree t, int flags, FILE *stream)
     }
   splay_tree_delete (di.nodes);
 }
-
-/* Define a tree dump switch.  */
-struct dump_file_info
-{
-  const char *suffix;		/* suffix to give output file.  */
-  const char *swtch;		/* command line switch */
-  int flags;			/* user flags */
-  int state;			/* state of play */
-};
+
 
 /* Table of tree dump switches. This must be consistent with the
    TREE_DUMP_INDEX enumeration in tree.h */
 static struct dump_file_info dump_files[TDI_end] =
 {
-  {NULL, NULL, 0, 0},
-  {".tu", "translation-unit", 0, 0},
-  {".class", "class-hierarchy", 0, 0},
-  {".original", "tree-original", 0, 0},
-  {".generic", "tree-generic", 0, 0},
-  {".nested", "tree-nested", 0, 0},
-  {".inlined", "tree-inlined", 0, 0},
-  {".vcg", "tree-vcg", 0, 0},
-  {".xml", "call-graph", 0, 0},
-  {NULL, "tree-all", 0, 0},
+  {NULL, NULL, 0, 0, 0, 0},
+  {".tu", "translation-unit", TDF_TREE, 0, 0, 0},
+  {".class", "class-hierarchy", TDF_TREE, 0, 1, 0},
+  {".original", "tree-original", TDF_TREE, 0, 2, 0},
+  {".generic", "tree-generic", TDF_TREE, 0, 3, 0},
+  {".nested", "tree-nested", TDF_TREE, 0, 4, 0},
+  {".inlined", "tree-inlined", TDF_TREE, 0, 5, 0},
+  {".vcg", "tree-vcg", TDF_TREE, 0, 6, 0},
+  /* FIXME  -fdump-call-graph is broken.  Set TDF_TREE when it is fixed.  */
+  {".xml", "call-graph", 0, 0, 7, 0},
+  {NULL, "tree-all", TDF_TREE, 0, 0, 0},
+  {NULL, "rtl-all", TDF_RTL, 0, 0, 0},
+
+  { ".sibling", "rtl-sibling",		TDF_RTL, 0,  1, 'i'},
+  { ".eh", "rtl-eh",			TDF_RTL, 0,  2, 'h'},
+  { ".jump", "rtl-jump",		TDF_RTL, 0,  3, 'j'},
+  { ".cse", "rtl-cse",			TDF_RTL, 0,  4, 's'},
+  { ".gcse", "rtl-gcse",		TDF_RTL, 0,  5, 'G'},
+  { ".loop", "rtl-loop",		TDF_RTL, 0,  6, 'L'},
+  { ".bypass", "rtl-bypass",		TDF_RTL, 0,  7, 'G'},
+  { ".cfg", "rtl-cfg",			TDF_RTL, 0,  8, 'f'},
+  { ".bp", "rtl-bp",			TDF_RTL, 0,  9, 'b'},
+  { ".vpt", "rtl-vpt",			TDF_RTL, 0, 10, 'V'},
+  { ".ce1", "rtl-ce1",			TDF_RTL, 0, 11, 'C'},
+  { ".tracer", "rtl-tracer",		TDF_RTL, 0, 12, 'T'},
+  { ".loop2", "rtl-loop2",		TDF_RTL, 0, 13, 'L'},
+  { ".web", "rtl-web",			TDF_RTL, 0, 14, 'Z'},
+  { ".cse2", "rtl-cse2",		TDF_RTL, 0, 15, 't'},
+  { ".life", "rtl-life",		TDF_RTL, 0, 16, 'f'},
+  { ".combine", "rtl-combine",		TDF_RTL, 0, 17, 'c'},
+  { ".ce2", "rtl-ce2",			TDF_RTL, 0, 18, 'C'},
+  { ".regmove", "rtl-regmove",		TDF_RTL, 0, 19, 'N'},
+  { ".sms", "rtl-sms",			TDF_RTL, 0, 20, 'm'},
+  { ".sched", "rtl-sched",		TDF_RTL, 0, 21, 'S'},
+  { ".lreg", "rtl-lreg",		TDF_RTL, 0, 22, 'l'},
+  { ".greg", "rtl-greg",		TDF_RTL, 0, 23, 'g'},
+  { ".postreload", "rtl-postreload",	TDF_RTL, 0, 24, 'o'},
+  { ".gcse2", "rtl-gcse2",		TDF_RTL, 0, 25, 'J'},
+  { ".flow2", "rtl-flow2",		TDF_RTL, 0, 26, 'w'},
+  { ".peephole2", "rtl-peephole2",	TDF_RTL, 0, 27, 'z'},
+  { ".ce3", "rtl-ce3",			TDF_RTL, 0, 28, 'E'},
+  { ".rnreg", "rtl-rnreg",		TDF_RTL, 0, 29, 'n'},
+  { ".bbro", "rtl-bbro",		TDF_RTL, 0, 30, 'B'},
+  { ".btl", "rtl-btl",			TDF_RTL, 0, 31, 'd'},
+  { ".sched2", "rtl-sched2",		TDF_RTL, 0, 32, 'R'},
+  { ".stack", "rtl-stack",		TDF_RTL, 0, 33, 'k'},
+  { ".vartrack", "rtl-vartrack",	TDF_RTL, 0, 34, 'V'},
+  { ".mach", "rtl-mach",		TDF_RTL, 0, 35, 'M'},
+  { ".dbr", "rtl-dbr",			TDF_RTL, 0, 36, 'd'}
 };
 
 /* Dynamically registered tree dump files and switches.  */
@@ -714,7 +746,8 @@ static const struct dump_option_value_info dump_options[] =
 };
 
 unsigned int
-dump_register (const char *suffix, const char *swtch)
+dump_register (const char *suffix, const char *swtch, int flags,
+	       unsigned int num, int letter)
 {
   size_t this = extra_dump_files_in_use++;
 
@@ -732,35 +765,35 @@ dump_register (const char *suffix, const char *swtch)
   memset (&extra_dump_files[this], 0, sizeof (struct dump_file_info));
   extra_dump_files[this].suffix = suffix;
   extra_dump_files[this].swtch = swtch;
+  extra_dump_files[this].flags = flags;
+  extra_dump_files[this].num = num;
+  extra_dump_files[this].letter = letter;
 
   return this + TDI_end;
 }
 
+
 /* Return the dump_file_info for the given phase.  */
 
-static struct dump_file_info *
+struct dump_file_info *
 get_dump_file_info (enum tree_dump_index phase)
 {
   if (phase < TDI_end)
     return &dump_files[phase];
   else if (phase - TDI_end >= extra_dump_files_in_use)
-    abort ();
+    return NULL;
   else
     return extra_dump_files + (phase - TDI_end);
 }
 
 
-/* Begin a tree dump for PHASE. Stores any user supplied flag in
-   *FLAG_PTR and returns a stream to write to. If the dump is not
-   enabled, returns NULL.
-   Multiple calls will reopen and append to the dump file.  */
+/* Return the name of the dump file for the given phase.
+   If the dump is not enabled, returns NULL.  */
 
-FILE *
-dump_begin (enum tree_dump_index phase, int *flag_ptr)
+char *
+get_dump_file_name (enum tree_dump_index phase)
 {
-  FILE *stream;
-  char *name;
-  char dump_id[10];
+  char dump_id[7];
   struct dump_file_info *dfi;
 
   if (phase == TDI_none)
@@ -770,10 +803,31 @@ dump_begin (enum tree_dump_index phase, int *flag_ptr)
   if (dfi->state == 0)
     return NULL;
 
-  if (snprintf (dump_id, sizeof (dump_id), ".t%02d", phase) < 0)
+  if (dfi->num < 0
+      || snprintf (dump_id, sizeof (dump_id), ".%s%02d",
+		   (dfi->flags & TDF_TREE) ? "t" : "", dfi->num) < 0)
     dump_id[0] = '\0';
 
-  name = concat (dump_base_name, dump_id, dfi->suffix, NULL);
+  return concat (dump_base_name, dump_id, dfi->suffix, NULL);
+}
+
+/* Begin a tree dump for PHASE. Stores any user supplied flag in
+   *FLAG_PTR and returns a stream to write to. If the dump is not
+   enabled, returns NULL.
+   Multiple calls will reopen and append to the dump file.  */
+
+FILE *
+dump_begin (enum tree_dump_index phase, int *flag_ptr)
+{
+  char *name;
+  struct dump_file_info *dfi;
+  FILE *stream;
+
+  if (phase == TDI_none || !dump_enabled_p (phase))
+    return NULL;
+
+  name = get_dump_file_name (phase);
+  dfi = get_dump_file_info (phase);
   stream = fopen (name, dfi->state < 0 ? "w" : "a");
   if (!stream)
     error ("could not open dump file `%s': %s", name, strerror (errno));
@@ -796,6 +850,15 @@ dump_enabled_p (enum tree_dump_index phase)
   return dfi->state;
 }
 
+/* Returns nonzero if tree dump PHASE has been initialized.  */
+
+int
+dump_initialized_p (enum tree_dump_index phase)
+{
+  struct dump_file_info *dfi = get_dump_file_info (phase);
+  return dfi->state > 0;
+}
+
 /* Returns the switch name of PHASE.  */
 
 const char *
@@ -814,28 +877,33 @@ dump_end (enum tree_dump_index phase ATTRIBUTE_UNUSED, FILE *stream)
   fclose (stream);
 }
 
-/* Enable all tree dumps.  */
+/* Enable all tree dumps.  Return number of enabled tree dumps.  */
 
-static void
-dump_enable_all (int flags)
+static int
+dump_enable_all (int flags, int letter)
 {
+  int n = 0;
   size_t i;
 
   for (i = TDI_none + 1; i < (size_t) TDI_end; i++)
-    {
-      dump_files[i].state = -1;
-      dump_files[i].flags = flags;
-    }
+    if ((dump_files[i].flags & flags)
+	&& (letter == 0 || letter == dump_files[i].letter))
+      {
+        dump_files[i].state = -1;
+        dump_files[i].flags = flags;
+        n++;
+      }
 
   for (i = 0; i < extra_dump_files_in_use; i++)
-    {
-      extra_dump_files[i].state = -1;
-      extra_dump_files[i].flags = flags;
-    }
+    if ((extra_dump_files[i].flags & flags)
+	&& (letter == 0 || letter == extra_dump_files[i].letter))
+      {
+        extra_dump_files[i].state = -1;
+        extra_dump_files[i].flags = flags;
+	n++;
+      }
 
-  /* FIXME  -fdump-call-graph is broken.  */
-  dump_files[TDI_xml].state = 0;
-  dump_files[TDI_xml].flags = 0;
+  return n;
 }
 
 /* Parse ARG as a dump switch. Return nonzero if it is, and store the
@@ -882,11 +950,12 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi)
     }
 
   dfi->state = -1;
-  dfi->flags = flags;
+  dfi->flags |= flags;
 
-  /* Process -fdump-tree-all by enabling all the known dumps.  */
+  /* Process -fdump-tree-all and -fdump-rtl-all, by enabling all the
+     known dumps.  */
   if (dfi->suffix == NULL)
-    dump_enable_all (flags);
+    dump_enable_all (dfi->flags, 0);
 
   return 1;
 }
@@ -921,3 +990,14 @@ dump_function (enum tree_dump_index phase, tree fn)
       dump_end (phase, stream);
     }
 }
+
+bool
+enable_rtl_dump_file (int letter)
+{
+  if (letter == 'a')
+    letter = 0;
+
+  return dump_enable_all (TDF_RTL, letter) > 0;
+}
+
+

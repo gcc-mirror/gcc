@@ -181,7 +181,6 @@ get_default_value (tree var)
   return val;
 }
 
-
 /* Get the constant value associated with variable VAR.  */
 
 static value *
@@ -1220,7 +1219,8 @@ struct tree_opt_pass pass_ccp =
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_rename_vars
     | TODO_ggc_collect | TODO_verify_ssa
-    | TODO_verify_stmts			/* todo_flags_finish */
+    | TODO_verify_stmts,		/* todo_flags_finish */
+  0					/* letter */
 };
 
 
@@ -2164,5 +2164,6 @@ struct tree_opt_pass pass_fold_builtins =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_verify_ssa	/* todo_flags_finish */
+  TODO_dump_func | TODO_verify_ssa,	/* todo_flags_finish */
+  0					/* letter */
 };

@@ -674,7 +674,8 @@ struct tree_opt_pass pass_phiopt =
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_ggc_collect	/* todo_flags_finish */
     | TODO_verify_ssa | TODO_rename_vars
-    | TODO_verify_flow
+    | TODO_verify_flow,
+  0					/* letter */
 };
 												
 

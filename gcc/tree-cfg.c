@@ -207,7 +207,8 @@ struct tree_opt_pass pass_build_cfg =
   PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_verify_stmts			/* todo_flags_finish */
+  TODO_verify_stmts,			/* todo_flags_finish */
+  0					/* letter */
 };
 
 /* Search the CFG for any computed gotos.  If found, factor them to a 
@@ -1647,7 +1648,8 @@ struct tree_opt_pass pass_remove_useless_stmts =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func			/* todo_flags_finish */
+  TODO_dump_func,			/* todo_flags_finish */
+  0					/* letter */
 };
 
 
@@ -4765,7 +4767,8 @@ struct tree_opt_pass pass_split_crit_edges =
   PROP_no_crit_edges,            /* properties_provided */
   0,                             /* properties_destroyed */
   0,                             /* todo_flags_start */
-  TODO_dump_func,                             /* todo_flags_finish */
+  TODO_dump_func,                /* todo_flags_finish */
+  0                              /* letter */
 };
 
 
@@ -4959,7 +4962,8 @@ struct tree_opt_pass pass_warn_function_return =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
+  0,					/* todo_flags_finish */
+  0					/* letter */
 };
 
 #include "gt-tree-cfg.h"

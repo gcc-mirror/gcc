@@ -1253,7 +1253,8 @@ struct tree_opt_pass pass_mudflap_1 =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func                        /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
+  0					/* letter */
 };
 
 struct tree_opt_pass pass_mudflap_2 = 
@@ -1270,7 +1271,8 @@ struct tree_opt_pass pass_mudflap_2 =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_verify_flow | TODO_verify_stmts
-  | TODO_dump_func                      /* todo_flags_finish */
+  | TODO_dump_func,                     /* todo_flags_finish */
+  0					/* letter */
 };
 
 #include "gt-tree-mudflap.h"

@@ -47,6 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree-alias-common.h"
 #include "ggc.h"
 #include "cgraph.h"
+#include "graph.h"
 
 
 /* Global variables used to communicate with passes.  */
@@ -72,7 +73,8 @@ static struct tree_opt_pass pass_gimple =
   PROP_gimple_any,			/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func			/* todo_flags_finish */
+  TODO_dump_func,			/* todo_flags_finish */
+  0					/* letter */
 };
 
 /* Gate: execute, or not, all of the non-trivial optimizations.  */
@@ -98,7 +100,8 @@ static struct tree_opt_pass pass_all_optimizations =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
+  0,					/* todo_flags_finish */
+  0					/* letter */
 };
 
 /* Pass: cleanup the CFG just before expanding trees to RTL.
@@ -127,7 +130,8 @@ static struct tree_opt_pass pass_cleanup_cfg_post_optimizing =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
+  0,					/* todo_flags_finish */
+  0					/* letter */
 };
 
 /* Pass: do the actions required to finish with tree-ssa optimization
@@ -170,7 +174,8 @@ static struct tree_opt_pass pass_free_datastructures =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
+  0,					/* todo_flags_finish */
+  0					/* letter */
 };
 
 
@@ -197,7 +202,8 @@ static struct tree_opt_pass pass_init_datastructures =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
+  0,					/* todo_flags_finish */
+  0					/* letter */
 };
 
 /* Iterate over the pass tree allocating dump file numbers.  We want
@@ -205,13 +211,10 @@ static struct tree_opt_pass pass_init_datastructures =
    enabled or not.  */
 
 static void
-register_one_dump_file (struct tree_opt_pass *pass)
+register_one_dump_file (struct tree_opt_pass *pass, int n)
 {
   char *dot_name, *flag_name;
   char num[10];
-
-  if (!pass->name)
-    return;
 
   /* See below in next_pass_1.  */
   num[0] = '\0';
@@ -220,31 +223,55 @@ register_one_dump_file (struct tree_opt_pass *pass)
 			 ? 1 : pass->static_pass_number));
 
   dot_name = concat (".", pass->name, num, NULL);
-  flag_name = concat ("tree-", pass->name, num, NULL);
-
-  pass->static_pass_number = dump_register (dot_name, flag_name);
+  if (pass->properties_provided & PROP_trees)
+    {
+      flag_name = concat ("tree-", pass->name, num, NULL);
+      pass->static_pass_number = dump_register (dot_name, flag_name,
+                                                TDF_TREE, n + TDI_tree_all, 0);
+    }
+  else
+    {
+      flag_name = concat ("rtl-", pass->name, num, NULL);
+      pass->static_pass_number = dump_register (dot_name, flag_name,
+                                                TDF_RTL, n, pass->letter);
+    }
 }
 
 static int 
 register_dump_files (struct tree_opt_pass *pass, int properties)
 {
+  static int n = 0;
   do
     {
-      /* Verify that all required properties are present.  */
-      if (pass->properties_required & ~properties)
-        abort ();
-
-      if (pass->properties_destroyed & pass->properties_provided)
-        abort ();
+      int new_properties;
+      int pass_number;
 
       pass->properties_required = properties;
-      pass->properties_provided = properties =
+      new_properties =
         (properties | pass->properties_provided) & ~pass->properties_destroyed;
 
-      if (properties & PROP_trees)
-        register_one_dump_file (pass);
+      /* Reset the counter when we reach RTL-based passes.  */
+      if ((pass->properties_provided ^ pass->properties_required) & PROP_rtl)
+        n = 0;
+
+      pass_number = n;
+      if (pass->name)
+        n++;
+
       if (pass->sub)
-	properties = register_dump_files (pass->sub, properties);
+        new_properties = register_dump_files (pass->sub, new_properties);
+
+      /* If we have a gate, combine the properties that we could have with
+         and without the pass being examined.  */
+      if (pass->gate)
+        properties &= new_properties;
+      else
+        properties = new_properties;
+
+      pass->properties_provided = properties;
+      if (pass->name)
+        register_one_dump_file (pass, pass_number);
+
       pass = pass->next;
     }
   while (pass);
@@ -386,7 +413,7 @@ static void execute_pass_list (struct tree_opt_pass *);
 static unsigned int last_verified;
 
 static void
-execute_todo (unsigned int flags)
+execute_todo (int properties, unsigned int flags)
 {
   if (flags & TODO_rename_vars)
     {
@@ -396,8 +423,13 @@ execute_todo (unsigned int flags)
 
   if ((flags & TODO_dump_func) && dump_file)
     {
-      dump_function_to_file (current_function_decl,
-			     dump_file, dump_flags);
+      if (properties & PROP_trees)
+        dump_function_to_file (current_function_decl,
+                               dump_file, dump_flags);
+      else if (properties & PROP_cfg)
+        print_rtl_with_bb (dump_file, get_insns ());
+      else
+        print_rtl (dump_file, get_insns ());
 
       /* Flush the file.  If verification fails, we won't be able to
 	 close the file before aborting.  */
@@ -433,11 +465,13 @@ execute_one_pass (struct tree_opt_pass *pass)
   /* Run pre-pass verification.  */
   todo = pass->todo_flags_start & ~last_verified;
   if (todo)
-    execute_todo (todo);
+    execute_todo (pass->properties_required, todo);
 
   /* If a dump file name is present, open it if enabled.  */
   if (pass->static_pass_number != -1)
     {
+      bool initializing_dump = !dump_initialized_p (pass->static_pass_number);
+      dump_file_name = get_dump_file_name (pass->static_pass_number);
       dump_file = dump_begin (pass->static_pass_number, &dump_flags);
       if (dump_file)
 	{
@@ -445,8 +479,19 @@ execute_one_pass (struct tree_opt_pass *pass)
 	  dname = lang_hooks.decl_printable_name (current_function_decl, 2);
 	  aname = (IDENTIFIER_POINTER
 		   (DECL_ASSEMBLER_NAME (current_function_decl)));
-	  fprintf (dump_file, "\n;; Function %s (%s)\n\n", dname, aname);
+          fprintf (dump_file, "\n;; Function %s (%s)%s\n\n", dname, aname,
+             cfun->function_frequency == FUNCTION_FREQUENCY_HOT
+             ? " (hot)"
+             : cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED
+             ? " (unlikely executed)"
+             : "");
 	}
+
+      if (initializing_dump
+          && graph_dump_format != no_graph
+	  && (pass->properties_provided & (PROP_cfg | PROP_rtl))
+	      == (PROP_cfg | PROP_rtl))
+        clean_graph_dump_file (dump_file_name);
     }
 
   /* If a timevar is present, start it.  */
@@ -457,15 +502,25 @@ execute_one_pass (struct tree_opt_pass *pass)
   if (pass->execute)
     pass->execute ();
 
+  if (dump_file
+      && (pass->properties_provided & (PROP_cfg | PROP_rtl))
+	  == (PROP_cfg | PROP_rtl))
+    print_rtl_graph_with_bb (dump_file_name, get_insns ());
+
   /* Run post-pass cleanup and verification.  */
   todo = pass->todo_flags_finish;
   last_verified = todo & TODO_verify_all;
   if (todo)
-    execute_todo (todo);
+    execute_todo (pass->properties_provided, todo);
 
   /* Close down timevar and dump file.  */
   if (pass->tv_id)
     timevar_pop (pass->tv_id);
+  if (dump_file_name)
+    {
+      free ((char *) dump_file_name);
+      dump_file_name = NULL;
+    }
   if (dump_file)
     {
       dump_end (pass->static_pass_number, dump_file);

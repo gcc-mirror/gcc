@@ -220,21 +220,19 @@ end_fct (FILE *fp)
 /* Like print_rtl, but also print out live information for the start of each
    basic block.  */
 void
-print_rtl_graph_with_bb (const char *base, const char *suffix, rtx rtx_first)
+print_rtl_graph_with_bb (const char *base, rtx rtx_first)
 {
   rtx tmp_rtx;
   size_t namelen = strlen (base);
-  size_t suffixlen = strlen (suffix);
   size_t extlen = strlen (graph_ext[graph_dump_format]) + 1;
-  char *buf = alloca (namelen + suffixlen + extlen);
+  char *buf = alloca (namelen + extlen);
   FILE *fp;
 
   if (basic_block_info == NULL)
     return;
 
   memcpy (buf, base, namelen);
-  memcpy (buf + namelen, suffix, suffixlen);
-  memcpy (buf + namelen + suffixlen, graph_ext[graph_dump_format], extlen);
+  memcpy (buf + namelen, graph_ext[graph_dump_format], extlen);
 
   fp = fopen (buf, "a");
   if (fp == NULL)
@@ -385,17 +383,15 @@ print_rtl_graph_with_bb (const char *base, const char *suffix, rtx rtx_first)
 /* Similar as clean_dump_file, but this time for graph output files.  */
 
 void
-clean_graph_dump_file (const char *base, const char *suffix)
+clean_graph_dump_file (const char *base)
 {
   size_t namelen = strlen (base);
-  size_t suffixlen = strlen (suffix);
   size_t extlen = strlen (graph_ext[graph_dump_format]) + 1;
-  char *buf = alloca (namelen + extlen + suffixlen);
+  char *buf = alloca (namelen + extlen);
   FILE *fp;
 
   memcpy (buf, base, namelen);
-  memcpy (buf + namelen, suffix, suffixlen);
-  memcpy (buf + namelen + suffixlen, graph_ext[graph_dump_format], extlen);
+  memcpy (buf + namelen, graph_ext[graph_dump_format], extlen);
 
   fp = fopen (buf, "w");
 
@@ -417,17 +413,15 @@ clean_graph_dump_file (const char *base, const char *suffix)
 
 /* Do final work on the graph output file.  */
 void
-finish_graph_dump_file (const char *base, const char *suffix)
+finish_graph_dump_file (const char *base)
 {
   size_t namelen = strlen (base);
-  size_t suffixlen = strlen (suffix);
   size_t extlen = strlen (graph_ext[graph_dump_format]) + 1;
-  char *buf = alloca (namelen + suffixlen + extlen);
+  char *buf = alloca (namelen + extlen);
   FILE *fp;
 
   memcpy (buf, base, namelen);
-  memcpy (buf + namelen, suffix, suffixlen);
-  memcpy (buf + namelen + suffixlen, graph_ext[graph_dump_format], extlen);
+  memcpy (buf + namelen, graph_ext[graph_dump_format], extlen);
 
   fp = fopen (buf, "a");
   if (fp != NULL)

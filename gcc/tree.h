@@ -3714,12 +3714,52 @@ enum tree_dump_index
   TDI_vcg,			/* create a VCG graph file for each
 				   function's flowgraph.  */
   TDI_xml,                      /* dump function call graph.  */
-  TDI_all,			/* enable all the dumps.  */
+  TDI_tree_all,                 /* enable all the GENERIC/GIMPLE dumps.  */
+  TDI_rtl_all,                  /* enable all the RTL dumps.  */
+
+  DFI_MIN,                      /* For now, RTL dumps are placed here.  */
+  DFI_sibling = DFI_MIN,
+  DFI_eh,
+  DFI_jump,
+  DFI_cse,
+  DFI_gcse,
+  DFI_loop,
+  DFI_bypass,
+  DFI_cfg,
+  DFI_bp,
+  DFI_vpt,
+  DFI_ce1,
+  DFI_tracer,
+  DFI_loop2,
+  DFI_web,
+  DFI_cse2,
+  DFI_life,
+  DFI_combine,
+  DFI_ce2,
+  DFI_regmove,
+  DFI_sms,
+  DFI_sched,
+  DFI_lreg,
+  DFI_greg,
+  DFI_postreload,
+  DFI_gcse2,
+  DFI_flow2,
+  DFI_peephole2,
+  DFI_ce3,
+  DFI_rnreg,
+  DFI_bbro,
+  DFI_branch_target_load,
+  DFI_sched2,
+  DFI_stack,
+  DFI_vartrack,
+  DFI_mach,
+  DFI_dbr,
+
   TDI_end
 };
 
-/* Bit masks to control tree dumping. Not all values are applicable to
-   all tree dumps. Add new ones at the end. When you define new
+/* Bit masks to control dumping. Not all values are applicable to
+   all dumps. Add new ones at the end. When you define new
    values, extend the DUMP_OPTIONS array in tree-dump.c */
 #define TDF_ADDRESS	(1 << 0)	/* dump node addresses */
 #define TDF_SLIM	(1 << 1)	/* don't go wild following links */
@@ -3733,11 +3773,15 @@ enum tree_dump_index
 #define TDF_LINENO	(1 << 7)	/* display statement line numbers */
 #define TDF_UID		(1 << 8)	/* display decl UIDs */
 
+#define TDF_TREE	(1 << 9)	/* is a tree dump */
+#define TDF_RTL		(1 << 10)	/* is a RTL dump */
 
 typedef struct dump_info *dump_info_p;
 
+extern char *get_dump_file_name (enum tree_dump_index);
 extern int dump_flag (dump_info_p, int, tree);
 extern int dump_enabled_p (enum tree_dump_index);
+extern int dump_initialized_p (enum tree_dump_index);
 extern FILE *dump_begin (enum tree_dump_index, int *);
 extern void dump_end (enum tree_dump_index, FILE *);
 extern void dump_node (tree, int, FILE *);
