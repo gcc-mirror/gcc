@@ -1,3 +1,10 @@
+Wed Mar 31 10:33:37 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * Makefile.in (c-gperf.h): Generate using gperf language 'C', not
+        'KR-C', so gperf uses the `const' keyword on strings.
+	 
+        * c-parse.gperf (resword): Const-ify a char*.
+
 Wed Mar 31 01:49:31 1999  Ian Lance Taylor  <ian@zembu.com>
 
 	* t-rtems (LIMITS_H_TEST, LIBGCC2_INCLUDES): Define.

@@ -1,7 +1,7 @@
 %{
 /* Command-line: gperf -L KR-C -F ', 0, 0' -p -j1 -i 1 -g -o -t -N is_reserved_word -k1,3,$ c-parse.gperf  */ 
 %}
-struct resword { char *name; short token; enum rid rid; };
+struct resword { const char *name; short token; enum rid rid; };
 %%
 @class, CLASS, NORID
 @compatibility_alias, ALIAS, NORID
