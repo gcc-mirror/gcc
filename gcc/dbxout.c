@@ -2750,7 +2750,10 @@ dbxout_parms (tree parms)
   emit_pending_bincls_if_required ();
 
   for (; parms; parms = TREE_CHAIN (parms))
-    if (DECL_NAME (parms) && TREE_TYPE (parms) != error_mark_node)
+    if (DECL_NAME (parms)
+	&& TREE_TYPE (parms) != error_mark_node
+	&& DECL_RTL_SET_P (parms)
+	&& DECL_INCOMING_RTL (parms))
       {
 	dbxout_prepare_symbol (parms);
 
