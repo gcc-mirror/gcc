@@ -1,5 +1,10 @@
 2003-06-05  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/border/Border.java:
+	New version from classpath.
+
+2003-06-05  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/border/AbstractBorder.java,
 	javax/swing/border/BevelBorder.java,
 	javax/swing/border/CompoundBorder.java,
