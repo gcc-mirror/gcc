@@ -1,5 +1,8 @@
 1999-09-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* dump.c (dequeue_and_dump): Handle START_CATCH_STMT,
+	CLEANUP_STMT, and SCOPE_STMT.
+
 	* decl2.c (lang_decode_option): Adjust, in the wake of recent
 	changes to option processing.
 
