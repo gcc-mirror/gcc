@@ -10,7 +10,7 @@
 2002-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/4192
-	* config/fr30/fr30.md (jump): Comment out clobber of fixed register.
+	* config/fr30/fr30.md (jump): Remove clobber of fixed register.
 
 	* genemit.c (output_added_clobbers_hard_reg_p): Only output return
 	stmt if some case has been output.
