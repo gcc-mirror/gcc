@@ -1,3 +1,11 @@
+2004-06-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/16089
+	* builtins.c (entry_of_function): Move to ...
+	* cfgrtl.c (entry_of_function): Here and make non-static.
+	* integrate.c (emit_initial_value_sets): Use entry_of_function.
+	* rtl.h (entry_of_function): Prototype.
+
 2004-06-20  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.c (pentium4_cost): Increase "lea" cost from 1 to 3.

@@ -440,6 +440,13 @@ free_bb_for_insn (void)
       BLOCK_FOR_INSN (insn) = NULL;
 }
 
+/* Return RTX to emit after when we want to emit code on the entry of function.  */
+rtx
+entry_of_function (void)
+{
+  return (n_basic_blocks ? BB_HEAD (ENTRY_BLOCK_PTR->next_bb) : get_insns ());
+}
+
 /* Update insns block within BB.  */
 
 void

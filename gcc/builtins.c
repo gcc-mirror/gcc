@@ -1206,13 +1206,6 @@ expand_builtin_apply_args_1 (void)
   return copy_addr_to_reg (XEXP (registers, 0));
 }
 
-/* Return RTX to emit after when we want to emit code on the entry of function.  */
-static rtx
-entry_of_function (void)
-{
-  return (n_basic_blocks ? BB_HEAD (ENTRY_BLOCK_PTR->next_bb) : get_insns ());
-}
-
 /* __builtin_apply_args returns block of memory allocated on
    the stack into which is stored the arg pointer, structure
    value address, static chain, and all the registers that might
