@@ -1385,8 +1385,7 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 
   while (!fibheap_empty (all_btr_defs))
     {
-      btr_def def =
-	(btr_def) fibheap_extract_min (all_btr_defs);
+      btr_def def = fibheap_extract_min (all_btr_defs);
       int min_cost = -fibheap_min_key (all_btr_defs);
       if (migrate_btr_def (def, min_cost))
 	{

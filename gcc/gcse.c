@@ -8366,7 +8366,7 @@ eliminate_partially_redundant_loads (basic_block bb, rtx insn,
 	  ok_count += pred->count;
           if (EDGE_CRITICAL_P (pred))
             critical_count += pred->count;
-	  occr = (struct unoccr *) gmalloc (sizeof (struct unoccr));
+	  occr = gmalloc (sizeof (struct unoccr));
 	  occr->insn = avail_insn;
 	  occr->pred = pred;
 	  occr->next = avail_occrs;
@@ -8377,7 +8377,7 @@ eliminate_partially_redundant_loads (basic_block bb, rtx insn,
 	  not_ok_count += pred->count;
           if (EDGE_CRITICAL_P (pred))
             critical_count += pred->count;
-	  unoccr = (struct unoccr *) gmalloc (sizeof (struct unoccr));
+	  unoccr = gmalloc (sizeof (struct unoccr));
 	  unoccr->insn = NULL_RTX;
 	  unoccr->pred = pred;
 	  unoccr->next = unavail_occrs;
@@ -8616,8 +8616,7 @@ compute_hash_table_after_reload (struct hash_table *table)
   clear_modify_mem_tables ();
 
   /* Some working arrays used to track first and last set in each block.  */
-  reg_avail_info = (struct reg_avail_info*)
-		   gmalloc (max_gcse_regno * sizeof (struct reg_avail_info));
+  reg_avail_info = gmalloc (max_gcse_regno * sizeof (struct reg_avail_info));
 
   for (i = 0; i < max_gcse_regno; ++i)
     reg_avail_info[i].last_bb = NULL;

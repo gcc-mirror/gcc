@@ -652,12 +652,12 @@ static inline char *
 alloc_anon (char *pref ATTRIBUTE_UNUSED, size_t size)
 {
 #ifdef HAVE_MMAP_ANON
-  char *page = (char *) mmap (pref, size, PROT_READ | PROT_WRITE,
-			      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  char *page = mmap (pref, size, PROT_READ | PROT_WRITE,
+		     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 #endif
 #ifdef HAVE_MMAP_DEV_ZERO
-  char *page = (char *) mmap (pref, size, PROT_READ | PROT_WRITE,
-			      MAP_PRIVATE, G.dev_zero_fd, 0);
+  char *page = mmap (pref, size, PROT_READ | PROT_WRITE,
+		     MAP_PRIVATE, G.dev_zero_fd, 0);
 #endif
 
   if (page == (char *) MAP_FAILED)

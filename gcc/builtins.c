@@ -4650,7 +4650,7 @@ expand_builtin_printf (tree arglist, rtx target, enum machine_mode mode,
 	    {
 	      /* Create a NUL-terminated string that's one char shorter
 		 than the original, stripping off the trailing '\n'.  */
-	      char *newstr = (char *) alloca (len);
+	      char *newstr = alloca (len);
 	      memcpy (newstr, fmt_str, len - 1);
 	      newstr[len - 1] = 0;
 
