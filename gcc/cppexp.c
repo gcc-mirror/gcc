@@ -103,13 +103,6 @@ static struct operation lex PARAMS ((cpp_reader *, int));
 #define INT 309
 #define CHAR 310
 
-#define LEFT_OPERAND_REQUIRED 1
-#define RIGHT_OPERAND_REQUIRED 2
-#define HAVE_VALUE 4
-/* SKIP_OPERAND is set for '&&' '||' '?' and ':' when the
-   following operand should be short-circuited instead of evaluated.  */
-#define SKIP_OPERAND 8
-
 struct operation
 {
   short op;
@@ -644,7 +637,7 @@ right_shift (pfile, a, unsignedp, b)
 }
 
 /* These priorities are all even, so we can handle associatively.  */
-#define PAREN_INNER_PRIO 0
+#define PAREN_INNER_PRIO 2
 #define COMMA_PRIO 4
 #define COND_PRIO (COMMA_PRIO+2)
 #define OROR_PRIO (COND_PRIO+2)
@@ -659,6 +652,11 @@ right_shift (pfile, a, unsignedp, b)
 #define MUL_PRIO (PLUS_PRIO+2)
 #define UNARY_PRIO (MUL_PRIO+2)
 #define PAREN_OUTER_PRIO (UNARY_PRIO+2)
+
+#define LEFT_OPERAND_REQUIRED 1
+#define RIGHT_OPERAND_REQUIRED 2
+#define HAVE_VALUE 4
+#define SIGN_QUALIFIED 8
 
 #define COMPARE(OP) \
   top->unsignedp = 0;\
@@ -722,9 +720,15 @@ _cpp_parse_expr (pfile)
 	      lprio = PLUS_PRIO;
 	      goto binop;
 	    }
+	  if (top->flags & SIGN_QUALIFIED)
+	    {
+	      cpp_error (pfile, "more than one sign operator given");
+	      goto syntax_error;
+	    }
+	  flags = SIGN_QUALIFIED;
 	  /* else fall through */
 	case '!':  case '~':
-	  flags = RIGHT_OPERAND_REQUIRED;
+	  flags |= RIGHT_OPERAND_REQUIRED;
 	  rprio = UNARY_PRIO;  lprio = rprio + 1;  goto maybe_reduce;
 	case '*':  case '/':  case '%':
 	  lprio = MUL_PRIO;  goto binop;
@@ -746,12 +750,13 @@ _cpp_parse_expr (pfile)
 	  goto maybe_reduce;
 	case ')':
 	  lprio = PAREN_INNER_PRIO;  rprio = PAREN_OUTER_PRIO;
+	  flags = HAVE_VALUE;	/* At least, we will have after reduction.  */
 	  goto maybe_reduce;
         case ':':
-	  lprio = COND_PRIO;  rprio = COND_PRIO;
+	  lprio = COND_PRIO;  rprio = COND_PRIO + 1;
 	  goto maybe_reduce;
         case '?':
-	  lprio = COND_PRIO + 1;  rprio = COND_PRIO;
+	  lprio = COND_PRIO;  rprio = COND_PRIO;
 	  goto maybe_reduce;
 	case ERROR:
 	  goto syntax_error;
@@ -974,8 +979,7 @@ _cpp_parse_expr (pfile)
 		}
 	      break;
 	    case ')':
-	      if ((top[1].flags & HAVE_VALUE)
-		  || ! (top[0].flags & HAVE_VALUE)
+	      if (! (top[0].flags & HAVE_VALUE)
 		  || top[0].op != '('
 		  || (top[-1].flags & HAVE_VALUE))
 		{
@@ -1002,6 +1006,8 @@ _cpp_parse_expr (pfile)
 	{
 	  if (top != stack)
 	    cpp_ice (pfile, "unbalanced stack in #if expression");
+	  if (!(top->flags & HAVE_VALUE))
+	    cpp_error (pfile, "#if with no expression");
 	  result = (top->value != 0);
 	  goto done;
 	}

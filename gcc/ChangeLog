@@ -1,3 +1,11 @@
+2000-03-31  Neil Booth <NeilB@earthling.net>
+
+	* cppexp.c: Delete SKIP_OPERAND.  Correct priority
+	PAREN_INNER_PRIO.
+	(_cpp_parse_expr): Check for multiple unary +/- operators.
+	Correct priorities of ':' and '?'.  Treat ')' as having a
+	value.	Ensure conditional expression is not void.
+	
 2000-03-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* alias.c (canon_rtx): Make it global.
