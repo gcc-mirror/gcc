@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the NS32000.
-   Copyright (C) 1988, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -225,6 +225,39 @@ reg_or_mem_operand (op, mode)
 	  && (GET_CODE (op) == REG
 	      || GET_CODE (op) == SUBREG
 	      || GET_CODE (op) == MEM));
+}
+
+/* Split one or more DImode RTL references into pairs of SImode
+   references.  The RTL can be REG, offsettable MEM, integer constant, or
+   CONST_DOUBLE.  "operands" is a pointer to an array of DImode RTL to
+   split and "num" is its length.  lo_half and hi_half are output arrays
+   that parallel "operands". */
+
+void
+split_di (operands, num, lo_half, hi_half)
+     rtx operands[];
+     int num;
+     rtx lo_half[], hi_half[];
+{
+  while (num--)
+    {
+      if (GET_CODE (operands[num]) == REG)
+	{
+	  lo_half[num] = gen_rtx (REG, SImode, REGNO (operands[num]));
+	  hi_half[num] = gen_rtx (REG, SImode, REGNO (operands[num]) + 1);
+	}
+      else if (CONSTANT_P (operands[num]))
+	{
+	  split_double (operands[num], &lo_half[num], &hi_half[num]);
+	}
+      else if (offsettable_memref_p (operands[num]))
+	{
+	  lo_half[num] = operands[num];
+	  hi_half[num] = adj_offsettable_operand (operands[num], 4);
+	}
+      else
+	abort();
+    }
 }
 
 /* Return the best assembler insn template
