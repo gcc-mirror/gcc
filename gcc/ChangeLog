@@ -1,8 +1,7 @@
 Mon Dec  7 21:35:31 1998  Paul Eggert  <eggert@twinsun.com>
 
-	* dwarf2out.c ("dyn-string.h"): Do not comment-out this #include.
-	* toplev.c (<sys/times.h>): Include if HAVE_SYS_TIMES_H is defined;
-	needed for struct tms.
+	* dwarf2out.c (dyn-string.h): Fix patching error.
+	* toplev.c (<sys/times.h>): Include if HAVE_SYS_TIMES_H is defined.
 
 Sun Dec  6 01:14:46 1998  Paul Eggert  <eggert@twinsun.com>
 
