@@ -927,7 +927,7 @@ enum reg_class
    ldi:32 FUNCTION, r0
    jmp    @r0
 
-   The no-ops are to guarantee that the the static chain and final
+   The no-ops are to guarantee that the static chain and final
    target are 32 bit ailgned within the trampoline.  That allows us to
    initialize those locations with simple SImode stores.   The alternative
    would be to use HImode stores.  */

@@ -3310,7 +3310,7 @@ alpha_emit_conditional_branch (code)
 	}
       else
 	{
-	  /* ??? We mark the the branch mode to be CCmode to prevent the
+	  /* ??? We mark the branch mode to be CCmode to prevent the
 	     compare and branch from being combined, since the compare 
 	     insn follows IEEE rules that the branch does not.  */
 	  branch_mode = CCmode;

@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 You Lose! This file can only be compiled with DEC C.
 #else
 
-/* This file can only be compiled with DEC C, due the the call to
+/* This file can only be compiled with DEC C, due to the call to
    lib$establish and the pragmas pointer_size.  */
 
 #pragma __pointer_size short

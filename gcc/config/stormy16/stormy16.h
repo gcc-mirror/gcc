@@ -3860,7 +3860,7 @@ do {									\
    Some machines can also perform `and' or `plus' operations on condition code
    values with less instructions than the corresponding `sCOND' insn followed
    by `and' or `plus'.  On those machines, define the appropriate patterns.
-   Use the names `incscc' and `decscc', respectively, for the the patterns
+   Use the names `incscc' and `decscc', respectively, for the patterns
    which perform `plus' or `minus' operations on condition code values.  See
    `rs6000.md' for some examples.  The GNU Superoptizer can be used to find
    such instruction sequences on other machines.

@@ -4612,7 +4612,7 @@ tree_class_check_failed (node, cl, file, line, function)
 #endif /* ENABLE_TREE_CHECKING */
 
 /* For a new vector type node T, build the information necessary for
-   debuggint output.  */
+   debugging output.  */
 
 static void
 finish_vector_type (t)

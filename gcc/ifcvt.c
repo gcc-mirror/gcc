@@ -343,7 +343,7 @@ cond_exec_get_condition (jump)
 
 /* Given a simple IF-THEN or IF-THEN-ELSE block, attempt to convert it
    to conditional execution.  Return TRUE if we were successful at
-   converting the the block.  */
+   converting the block.  */
 
 static int
 cond_exec_process_if_block (ce_info, do_multiple_p)
@@ -1687,7 +1687,7 @@ noce_operand_ok (op)
 
 /* Given a simple IF-THEN or IF-THEN-ELSE block, attempt to convert it
    without using conditional execution.  Return TRUE if we were
-   successful at converting the the block.  */
+   successful at converting the block.  */
 
 static int
 noce_process_if_block (ce_info)
@@ -2230,7 +2230,7 @@ block_jumps_and_fallthru_p (cur_bb, target_bb)
 
 /* Determine if a given basic block heads a simple IF-THEN or IF-THEN-ELSE
    block.  If so, we'll try to convert the insns to not require the branch.
-   Return TRUE if we were successful at converting the the block.  */
+   Return TRUE if we were successful at converting the block.  */
 
 static int
 find_if_block (ce_info)
@@ -2580,7 +2580,7 @@ block_has_only_trap (bb)
    transformable, but not necessarily the other.  There need be no
    JOIN block.
 
-   Return TRUE if we were successful at converting the the block.
+   Return TRUE if we were successful at converting the block.
 
    Cases we'd like to look at:
 
