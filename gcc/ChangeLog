@@ -1,3 +1,8 @@
+2003-12-15  Andreas Jaeger  <aj@suse.de>
+
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Remove
+	handling of obsolete language CHILL.
+
 2003-12-15  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
 
 	* tree.c (initializer_zerop): Add test for empty set.
