@@ -1,3 +1,128 @@
+2003-11-04  Doug Rupp  <rupp@gnat.com>
+
+	* sysdep.c: Problem discovered during IA64 VMS port.
+	[VMS] #include <unixio.h> to get proper prototypes.
+
+	* adaint.c: 
+	Issues discovered/problems fixed during IA64 VMS port.
+	[VMS] #define _POSIX_EXIT for proper semantics.
+	[VMS] #include <unixio.h> for proper prototypes.
+	[VMS] (fork): #define IA64 version.
+	(__gnat_os_exit): Remove unnecessary VMS specific code.
+
+2003-11-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	Part of PR ada/12806
+
+	* ada-tree.h (TYPE_DIGITS_VALUE, SET_TYPE_DIGITS_VALUE): Save count as
+	tree, not integer.
+
+	* decl.c: 
+	(gnat_to_gnu_entity, case E_Floating_Point_Type): Save count as tree,
+	not integer.
+
+	* targtyps.c, decl.c, misc.c,
+	gigi.h (fp_prec_to_size, fp_size_to_prec): Temporary
+	routines to work around change in FP sizing semantics in GCC.
+
+	* utils.c: 
+	(build_vms_descriptor): TYPE_DIGITS_VALUE is tree, not integer.
+
+	* gigi.h: (enumerate_modes): New function.
+
+	* Make-lang.in: (ada/misc.o): Add real.h.
+
+	* misc.c: (enumerate_modes): New function.
+
+2003-11-04  Robert Dewar  <dewar@gnat.com>
+
+	* 3vtrasym.adb: Minor reformatting
+	Use terminology encoded/decoded name, rather than C++ specific notion
+	of mangling (this is the terminology used throughout GNAT).
+
+	* einfo.h: Regenerated
+
+	* einfo.ads, einfo.adb: Add new flag Is_Thread_Body
+
+	* exp_ch6.adb: 
+	(Expand_N_Subprogram_Body): Handle expansion of thread body procedure
+
+	* par-prag.adb: Add dummy entry for Thread_Body pragma
+
+	* rtsfind.ads: 
+	Add entries for System.Threads entities for thread body processing
+
+	* sem_attr.adb: 
+	(Analyze_Pragma, Access attributes): Check these are not applied to a
+	thread body, since this is not permitted
+
+	* sem_prag.adb: Add processing for Thread_Body pragma.
+	Minor comment fix.
+
+	* sem_res.adb: 
+	(Resolve_Call): Check for incorrect attempt to call a thread body
+	 procedure with a direct call.
+
+	* snames.ads, snames.adb: Add entry for Thread_Body pragma
+	Add names associated with thread body expansion
+
+	* snames.h: Add entry for Thread_Body pragma
+
+	* s-thread.adb: Add entries for thread body processing
+	These are dummy bodies so far
+
+	* s-thread.ads: Add documentation on thread body handling.
+	Add entries for thread body processing.
+
+2003-11-04  Javier Miranda  <miranda@gnat.com>
+
+	* sem_ch10.adb: 
+	(Build_Limited_Views): Return after posting an error in case of limited
+	with_clause on subprograms, generics, instances or generic renamings
+	(Install_Limited_Withed_Unit): Do nothing in case of limited with_clause
+	on subprograms, generics, instances or generic renamings
+
+2003-11-04  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* raise.c (setup_to_install): Correct mistake in last revision; two
+	arguments out of order.
+
+	* trans.c, cuintp.c, argv.c, aux-io.c, cal.c, errno.c, exit.c,
+	gnatbl.c, init.c, stringt.h, utils.c, utils2.c: Update copyright
+	notice, missed in previous change.
+	Remove trailing blanks and other style errors introduced in previous
+	change.
+
+2003-11-04  Olivier Hainque  <hainque@act-europe.fr>
+
+	* decl.c (gnat_to_gnu_field): Adjust the conditions under which we get
+	rid of the wrapper for a LJM type, ensuring we don't do that if the
+	field is addressable.  This avoids potential low level type view
+	mismatches later on, for instance in a by-reference argument passing
+	process.
+
+2003-11-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (gnat_to_gnu_field): No longer check for BLKmode being
+	aligned at byte boundary.
+
+2003-11-04  Joel Brobecker  <brobecker@gnat.com>
+
+	* decl.c (components_to_record): Do not delete the empty variants from
+	the end of the union type.
+
+2003-11-04  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): Use base type when locating primitive
+	operation for a derived type, an explicit declaration may use a local
+	subtype of Boolean.
+
+2003-11-04  Vincent Celier  <celier@gnat.com>
+
+	* make.adb (Gnatmake): Allow main sources on the command line with a
+	library project when it is only for compilation (no binding or
+	linking).
+
 2003-11-04  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in: Remove many duplicate variables.
