@@ -1082,8 +1082,8 @@ update_equiv_regs ()
 	  && ! memref_used_between_p (SET_DEST (set),
 				      reg_equiv_init_insn[regno], insn))
 	REG_NOTES (reg_equiv_init_insn[regno])
-	  = gen_rtx (EXPR_LIST, REG_EQUIV, dest,
-		     REG_NOTES (reg_equiv_init_insn[regno]));
+	  = gen_rtx_EXPR_LIST (REG_EQUIV, dest,
+			       REG_NOTES (reg_equiv_init_insn[regno]));
 
       /* If this is a register-register copy where SRC is not dead, see if we
 	 can optimize it.  */
@@ -1158,8 +1158,8 @@ update_equiv_regs ()
       if (note == 0 && REG_BASIC_BLOCK (regno) >= 0
 	  && GET_CODE (SET_SRC (set)) == MEM
 	  && validate_equiv_mem (insn, dest, SET_SRC (set)))
-	REG_NOTES (insn) = note = gen_rtx (EXPR_LIST, REG_EQUIV, SET_SRC (set),
-					   REG_NOTES (insn));
+	REG_NOTES (insn) = note = gen_rtx_EXPR_LIST (REG_EQUIV, SET_SRC (set),
+						     REG_NOTES (insn));
 
       if (note)
 	{
@@ -1721,8 +1721,8 @@ block_alloc (b)
 	  {
 	    if (GET_CODE (qty_scratch_rtx[q]) == REG)
 	      abort ();
-	    qty_scratch_rtx[q] = gen_rtx (REG, GET_MODE (qty_scratch_rtx[q]),
-					  qty_phys_reg[q]);
+	    qty_scratch_rtx[q] = gen_rtx_REG (GET_MODE (qty_scratch_rtx[q]),
+					      qty_phys_reg[q]);
 	    scratch_block[scratch_index] = b;
 	    scratch_list[scratch_index++] = qty_scratch_rtx[q];
 

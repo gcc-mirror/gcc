@@ -758,15 +758,13 @@ get_eh_context ()
 
       current_function_ehc = gen_reg_rtx (Pmode);
       
-      insn = gen_rtx (USE,
-		      GET_MODE (current_function_ehc),
-		      current_function_ehc);
+      insn = gen_rtx_USE (GET_MODE (current_function_ehc),
+			  current_function_ehc);
       insn = emit_insn_before (insn, get_first_nonparm_insn ());
 
       REG_NOTES (insn)
-	= gen_rtx (EXPR_LIST, 
-		   REG_EH_CONTEXT, current_function_ehc,
-		   REG_NOTES (insn));
+	= gen_rtx_EXPR_LIST (REG_EH_CONTEXT, current_function_ehc,
+			     REG_NOTES (insn));
     }
   return current_function_ehc;
 }
@@ -791,7 +789,7 @@ get_dynamic_handler_chain ()
   result = copy_to_reg (dhc);
 
   /* We don't want a copy of the dcc, but rather, the single dcc.  */
-  return gen_rtx (MEM, Pmode, result);
+  return gen_rtx_MEM (Pmode, result);
 }
 
 /* Get a reference to the dynamic cleanup chain.  It points to the
@@ -811,7 +809,7 @@ get_dynamic_cleanup_chain ()
   result = copy_to_reg (dcc);
 
   /* We don't want a copy of the dcc, but rather, the single dcc.  */
-  return gen_rtx (MEM, Pmode, result);
+  return gen_rtx_MEM (Pmode, result);
 }
 
 /* Generate code to evaluate X and jump to LABEL if the value is nonzero.
@@ -878,10 +876,10 @@ start_dynamic_cleanup (func, arg)
 
   /* Store func and arg into the cleanup list element.  */
 
-  new_func = gen_rtx (MEM, Pmode, plus_constant (XEXP (buf, 0),
-						 GET_MODE_SIZE (Pmode)));
-  new_arg = gen_rtx (MEM, Pmode, plus_constant (XEXP (buf, 0),
-						GET_MODE_SIZE (Pmode)*2));
+  new_func = gen_rtx_MEM (Pmode, plus_constant (XEXP (buf, 0),
+						GET_MODE_SIZE (Pmode)));
+  new_arg = gen_rtx_MEM (Pmode, plus_constant (XEXP (buf, 0),
+					       GET_MODE_SIZE (Pmode)*2));
   x = expand_expr (func, new_func, Pmode, 0);
   if (x != new_func)
     emit_move_insn (new_func, x);
@@ -934,8 +932,8 @@ start_dynamic_handler ()
   /* Store dhc into the first word of the newly allocated buffer.  */
 
   dhc = get_dynamic_handler_chain ();
-  dcc = gen_rtx (MEM, Pmode, plus_constant (XEXP (arg, 0),
-					    GET_MODE_SIZE (Pmode)));
+  dcc = gen_rtx_MEM (Pmode, plus_constant (XEXP (arg, 0),
+					   GET_MODE_SIZE (Pmode)));
   emit_move_insn (arg, dhc);
 
   /* Zero out the start of the cleanup chain.  */
@@ -1574,15 +1572,15 @@ output_exception_table_entry (file, n)
   rtx sym;
 
   ASM_GENERATE_INTERNAL_LABEL (buf, "LEHB", n);
-  sym = gen_rtx (SYMBOL_REF, Pmode, buf);
+  sym = gen_rtx_SYMBOL_REF (Pmode, buf);
   assemble_integer (sym, POINTER_SIZE / BITS_PER_UNIT, 1);
 
   ASM_GENERATE_INTERNAL_LABEL (buf, "LEHE", n);
-  sym = gen_rtx (SYMBOL_REF, Pmode, buf);
+  sym = gen_rtx_SYMBOL_REF (Pmode, buf);
   assemble_integer (sym, POINTER_SIZE / BITS_PER_UNIT, 1);
 
   ASM_GENERATE_INTERNAL_LABEL (buf, "L", n);
-  sym = gen_rtx (SYMBOL_REF, Pmode, buf);
+  sym = gen_rtx_SYMBOL_REF (Pmode, buf);
   assemble_integer (sym, POINTER_SIZE / BITS_PER_UNIT, 1);
 
   putc ('\n', file);		/* blank line */
@@ -1717,8 +1715,8 @@ find_exception_handler_labels ()
 
 	      if (label)
 		exception_handler_labels
-		  = gen_rtx (EXPR_LIST, VOIDmode,
-			     label, exception_handler_labels);
+		  = gen_rtx_EXPR_LIST (VOIDmode,
+				       label, exception_handler_labels);
 	      else
 		warning ("didn't find handler for EH region %d",
 			 NOTE_BLOCK_NUMBER (insn));
@@ -2134,7 +2132,7 @@ eh_regs (r1, r2, outgoing)
       for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
 	if (call_used_regs[i] && ! fixed_regs[i] && i != REGNO (reg1))
 	  {
-	    reg2 = gen_rtx (REG, Pmode, i);
+	    reg2 = gen_rtx_REG (Pmode, i);
 	    break;
 	  }
 
@@ -2166,7 +2164,7 @@ expand_builtin_eh_stub ()
   emit_indirect_jump (handler);
 
   emit_label (after_stub);
-  return gen_rtx (LABEL_REF, Pmode, stub_start);
+  return gen_rtx_LABEL_REF (Pmode, stub_start);
 }
 
 /* Set up the registers for passing the handler address and stack offset
@@ -2184,6 +2182,6 @@ expand_builtin_set_eh_regs (handler, offset)
   store_expr (handler, reg1, 0);
 
   /* These will be used by the stub.  */
-  emit_insn (gen_rtx (USE, VOIDmode, reg1));
-  emit_insn (gen_rtx (USE, VOIDmode, reg2));
+  emit_insn (gen_rtx_USE (VOIDmode, reg1));
+  emit_insn (gen_rtx_USE (VOIDmode, reg2));
 }

@@ -1,5 +1,5 @@
 /* Generate code from machine description to perform peephole optimizations.
-   Copyright (C) 1987, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1989, 1992, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -48,7 +48,6 @@ struct link
 
 char *xmalloc ();
 static void match_rtx ();
-static void gen_exp ();
 static void fatal ();
 void fancy_abort ();
 
@@ -123,7 +122,7 @@ gen_peephole (peep)
      So use a simple regular form: a PARALLEL containing a vector
      of all the operands.  */
 
-  printf ("  PATTERN (ins1) = gen_rtx (PARALLEL, VOIDmode, gen_rtvec_v (%d, operands));\n", n_operands);
+  printf ("  PATTERN (ins1) = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (%d, operands));\n", n_operands);
 
 #if 0
   printf ("  if (want_jump && GET_CODE (ins1) != JUMP_INSN)\n");
@@ -264,6 +263,9 @@ match_rtx (x, path, fail_label)
     case ADDRESS:
       match_rtx (XEXP (x, 0), path, fail_label);
       return;
+      
+    default:
+      break;
     }
 
   printf ("  x = ");
@@ -455,6 +457,7 @@ main (argc, argv)
 from the machine description file `md'.  */\n\n");
 
   printf ("#include \"config.h\"\n");
+  printf ("#include <stdio.h>\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"output.h\"\n");

@@ -913,7 +913,7 @@ save_constants (px)
 	   && CONSTANT_POOL_ADDRESS_P (XEXP (x,0)))
     {
       enum machine_mode const_mode = get_pool_mode (XEXP (x, 0));
-      rtx new = gen_rtx (CONST, const_mode, get_pool_constant (XEXP (x, 0)));
+      rtx new = gen_rtx_CONST (const_mode, get_pool_constant (XEXP (x, 0)));
       RTX_INTEGRATED_P (new) = 1;
 
       /* If the MEM was in a different mode than the constant (perhaps we
@@ -922,7 +922,7 @@ save_constants (px)
 
       if (GET_MODE (x) != const_mode)
 	{
-	  new = gen_rtx (SUBREG, GET_MODE (x), new, 0);
+	  new = gen_rtx_SUBREG (GET_MODE (x), new, 0);
 	  RTX_INTEGRATED_P (new) = 1;
 	}
 
@@ -932,9 +932,9 @@ save_constants (px)
   else if (GET_CODE (x) == SYMBOL_REF
 	   && CONSTANT_POOL_ADDRESS_P (x))
     {
-      *px = gen_rtx (ADDRESS, GET_MODE (x),
-		     gen_rtx (CONST, get_pool_mode (x),
-			      get_pool_constant (x)));
+      *px = gen_rtx_ADDRESS (GET_MODE (x),
+			     gen_rtx_CONST (get_pool_mode (x),
+					    get_pool_constant (x)));
       save_constants (&XEXP (*px, 0));
       RTX_INTEGRATED_P (*px) = 1;
     }
@@ -1128,9 +1128,9 @@ copy_for_inline (orig)
     case LABEL_REF:
       /* If this is a non-local label, just make a new LABEL_REF.
 	 Otherwise, use the new label as well.  */
-      x = gen_rtx (LABEL_REF, GET_MODE (orig),
-		   LABEL_REF_NONLOCAL_P (orig) ? XEXP (orig, 0)
-		   : label_map[CODE_LABEL_NUMBER (XEXP (orig, 0))]);
+      x = gen_rtx_LABEL_REF (GET_MODE (orig),
+			     LABEL_REF_NONLOCAL_P (orig) ? XEXP (orig, 0)
+			     : label_map[CODE_LABEL_NUMBER (XEXP (orig, 0))]);
       LABEL_REF_NONLOCAL_P (x) = LABEL_REF_NONLOCAL_P (orig);
       LABEL_OUTSIDE_LOOP_P (x) = LABEL_OUTSIDE_LOOP_P (orig);
       return x;
@@ -1764,7 +1764,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	      target = gen_lowpart (departing_mode, reg_to_map);
 	    }
 	  else
-	    reg_to_map = gen_rtx (SUBREG, arriving_mode, target, 0);
+	    reg_to_map = gen_rtx_SUBREG (arriving_mode, target, 0);
 	}
       else
 	reg_to_map = target;
@@ -2089,8 +2089,9 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
   if (structure_value_addr)
     {
-      target = gen_rtx (MEM, TYPE_MODE (type),
-			memory_address (TYPE_MODE (type), structure_value_addr));
+      target = gen_rtx_MEM (TYPE_MODE (type),
+			    memory_address (TYPE_MODE (type),
+					    structure_value_addr));
       MEM_IN_STRUCT_P (target) = 1;
     }
 
@@ -2382,17 +2383,17 @@ copy_rtx_and_substitute (orig, map)
       copy = copy_rtx_and_substitute (SUBREG_REG (orig), map);
       /* SUBREG is ordinary, but don't make nested SUBREGs.  */
       if (GET_CODE (copy) == SUBREG)
-	return gen_rtx (SUBREG, GET_MODE (orig), SUBREG_REG (copy),
-			SUBREG_WORD (orig) + SUBREG_WORD (copy));
+	return gen_rtx_SUBREG (GET_MODE (orig), SUBREG_REG (copy),
+			       SUBREG_WORD (orig) + SUBREG_WORD (copy));
       else if (GET_CODE (copy) == CONCAT)
 	return (subreg_realpart_p (orig) ? XEXP (copy, 0) : XEXP (copy, 1));
       else
-	return gen_rtx (SUBREG, GET_MODE (orig), copy,
-			SUBREG_WORD (orig));
+	return gen_rtx_SUBREG (GET_MODE (orig), copy,
+			       SUBREG_WORD (orig));
 
     case ADDRESSOF:
-      copy = gen_rtx (ADDRESSOF, mode,
-		      copy_rtx_and_substitute (XEXP (orig, 0), map));
+      copy = gen_rtx_ADDRESSOF (mode,
+			copy_rtx_and_substitute (XEXP (orig, 0), map), 0);
       SET_ADDRESSOF_DECL (copy, ADDRESSOF_DECL (orig));
       regno = ADDRESSOF_REGNO (orig);
       if (map->reg_map[regno])
@@ -2423,7 +2424,7 @@ copy_rtx_and_substitute (orig, map)
       copy = copy_rtx_and_substitute (XEXP (orig, 0), map);
       if (GET_CODE (copy) == SUBREG && GET_CODE (XEXP (orig, 0)) != SUBREG)
 	copy = SUBREG_REG (copy);
-      return gen_rtx (code, VOIDmode, copy);
+      return gen_rtx_fmt_e (code, VOIDmode, copy);
 
     case CODE_LABEL:
       LABEL_PRESERVE_P (get_label_from_map (map, CODE_LABEL_NUMBER (orig)))
@@ -2431,10 +2432,10 @@ copy_rtx_and_substitute (orig, map)
       return get_label_from_map (map, CODE_LABEL_NUMBER (orig));
 
     case LABEL_REF:
-      copy = gen_rtx (LABEL_REF, mode,
-		      LABEL_REF_NONLOCAL_P (orig) ? XEXP (orig, 0)
-		      : get_label_from_map (map, 
-					    CODE_LABEL_NUMBER (XEXP (orig, 0))));
+      copy = gen_rtx_LABEL_REF (mode,
+				LABEL_REF_NONLOCAL_P (orig) ? XEXP (orig, 0)
+				: get_label_from_map (map, 
+						      CODE_LABEL_NUMBER (XEXP (orig, 0))));
       LABEL_OUTSIDE_LOOP_P (copy) = LABEL_OUTSIDE_LOOP_P (orig);
 
       /* The fact that this label was previously nonlocal does not mean
@@ -2578,9 +2579,9 @@ copy_rtx_and_substitute (orig, map)
 #ifndef NO_FUNCTION_CSE
       if (! (optimize && ! flag_no_function_cse))
 #endif
-	return gen_rtx (CALL, GET_MODE (orig),
-			gen_rtx (MEM, GET_MODE (XEXP (orig, 0)),
-				 copy_rtx_and_substitute (XEXP (XEXP (orig, 0), 0), map)),
+	return gen_rtx_CALL (GET_MODE (orig),
+			     gen_rtx_MEM (GET_MODE (XEXP (orig, 0)),
+					  copy_rtx_and_substitute (XEXP (XEXP (orig, 0), 0), map)),
 			copy_rtx_and_substitute (XEXP (orig, 1), map));
       break;
 
@@ -2605,12 +2606,12 @@ copy_rtx_and_substitute (orig, map)
 	  HOST_WIDE_INT loc_offset
 	    = GET_CODE (equiv_loc) == REG ? 0 : INTVAL (XEXP (equiv_loc, 1));
 	      
-	  return gen_rtx (SET, VOIDmode, SET_DEST (orig),
-			  force_operand
-			  (plus_constant
-			   (copy_rtx_and_substitute (SET_SRC (orig), map),
-			    - loc_offset),
-			   NULL_RTX));
+	  return gen_rtx_SET (VOIDmode, SET_DEST (orig),
+			      force_operand
+			      (plus_constant
+			       (copy_rtx_and_substitute (SET_SRC (orig), map),
+				- loc_offset),
+			       NULL_RTX));
 	}
       break;
 

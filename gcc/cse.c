@@ -2494,7 +2494,7 @@ canon_reg (x, insn)
 	first = qty_first_reg[reg_qty[REGNO (x)]];
 	return (first >= FIRST_PSEUDO_REGISTER ? regno_reg_rtx[first]
 		: REGNO_REG_CLASS (first) == NO_REGS ? x
-		: gen_rtx (REG, qty_mode[reg_qty[REGNO (x)]], first));
+		: gen_rtx_REG (qty_mode[reg_qty[REGNO (x)]], first));
       }
       
     default:
@@ -3696,11 +3696,11 @@ simplify_binary_operation (code, mode, op0, op1)
 
 	  /* Change subtraction from zero into negation.  */
 	  if (op0 == CONST0_RTX (mode))
-	    return gen_rtx (NEG, mode, op1);
+	    return gen_rtx_NEG (mode, op1);
 
 	  /* (-1 - a) is ~a.  */
 	  if (op0 == constm1_rtx)
-	    return gen_rtx (NOT, mode, op1);
+	    return gen_rtx_NOT (mode, op1);
 
 	  /* Subtracting 0 has no effect.  */
 	  if (op1 == CONST0_RTX (mode))
@@ -3784,9 +3784,9 @@ simplify_binary_operation (code, mode, op0, op1)
 	  if (GET_CODE (op1) == AND)
 	    {
 	     if (rtx_equal_p (op0, XEXP (op1, 0)))
-	       return cse_gen_binary (AND, mode, op0, gen_rtx (NOT, mode, XEXP (op1, 1)));
+	       return cse_gen_binary (AND, mode, op0, gen_rtx_NOT (mode, XEXP (op1, 1)));
 	     if (rtx_equal_p (op0, XEXP (op1, 1)))
-	       return cse_gen_binary (AND, mode, op0, gen_rtx (NOT, mode, XEXP (op1, 0)));
+	       return cse_gen_binary (AND, mode, op0, gen_rtx_NOT (mode, XEXP (op1, 0)));
 	   }
 	  break;
 
@@ -3795,7 +3795,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	    {
 	      tem = simplify_unary_operation (NEG, mode, op0, mode);
 
-	      return tem ? tem : gen_rtx (NEG, mode, op0);
+	      return tem ? tem : gen_rtx_NEG (mode, op0);
 	    }
 
 	  /* In IEEE floating point, x*0 is not always 0.  */
@@ -3821,7 +3821,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	      && (width <= HOST_BITS_PER_WIDE_INT
 		  || val != HOST_BITS_PER_WIDE_INT - 1)
 	      && ! rtx_equal_function_value_matters)
-	    return gen_rtx (ASHIFT, mode, op0, GEN_INT (val));
+	    return gen_rtx_ASHIFT (mode, op0, GEN_INT (val));
 
 	  if (GET_CODE (op1) == CONST_DOUBLE
 	      && GET_MODE_CLASS (GET_MODE (op1)) == MODE_FLOAT)
@@ -3841,10 +3841,10 @@ simplify_binary_operation (code, mode, op0, op1)
 
 	      /* x*2 is x+x and x*(-1) is -x */
 	      if (op1is2 && GET_MODE (op0) == mode)
-		return gen_rtx (PLUS, mode, op0, copy_rtx (op0));
+		return gen_rtx_PLUS (mode, op0, copy_rtx (op0));
 
 	      else if (op1ism1 && GET_MODE (op0) == mode)
-		return gen_rtx (NEG, mode, op0);
+		return gen_rtx_NEG (mode, op0);
 	    }
 	  break;
 
@@ -3869,7 +3869,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	    return op0;
 	  if (GET_CODE (op1) == CONST_INT
 	      && (INTVAL (op1) & GET_MODE_MASK (mode)) == GET_MODE_MASK (mode))
-	    return gen_rtx (NOT, mode, op0);
+	    return gen_rtx_NOT (mode, op0);
 	  if (op0 == op1 && ! side_effects_p (op0)
 	      && GET_MODE_CLASS (mode) != MODE_CC)
 	    return const0_rtx;
@@ -3897,7 +3897,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	     below).  */
 	  if (GET_CODE (op1) == CONST_INT
 	      && (arg1 = exact_log2 (INTVAL (op1))) > 0)
-	    return gen_rtx (LSHIFTRT, mode, op0, GEN_INT (arg1));
+	    return gen_rtx_LSHIFTRT (mode, op0, GEN_INT (arg1));
 
 	  /* ... fall through ...  */
 
@@ -3928,11 +3928,11 @@ simplify_binary_operation (code, mode, op0, op1)
 		{
 #if defined (REAL_ARITHMETIC)
 		  REAL_ARITHMETIC (d, rtx_to_tree_code (DIV), dconst1, d);
-		  return gen_rtx (MULT, mode, op0, 
-				  CONST_DOUBLE_FROM_REAL_VALUE (d, mode));
+		  return gen_rtx_MULT (mode, op0, 
+				       CONST_DOUBLE_FROM_REAL_VALUE (d, mode));
 #else
-		  return gen_rtx (MULT, mode, op0, 
-				  CONST_DOUBLE_FROM_REAL_VALUE (1./d, mode));
+		  return gen_rtx_MULT (mode, op0, 
+				       CONST_DOUBLE_FROM_REAL_VALUE (1./d, mode));
 #endif
 		}
 	    }
@@ -3943,7 +3943,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	  /* Handle modulus by power of two (mod with 1 handled below).  */
 	  if (GET_CODE (op1) == CONST_INT
 	      && exact_log2 (INTVAL (op1)) > 0)
-	    return gen_rtx (AND, mode, op0, GEN_INT (INTVAL (op1) - 1));
+	    return gen_rtx_AND (mode, op0, GEN_INT (INTVAL (op1) - 1));
 
 	  /* ... fall through ...  */
 
@@ -4375,7 +4375,7 @@ simplify_plus_minus (code, mode, op0, op1)
   for (i = 1; i < n_ops; i++)
     result = cse_gen_binary (negs[i] ? MINUS : PLUS, mode, result, ops[i]);
 
-  return negate ? gen_rtx (NEG, mode, result) : result;
+  return negate ? gen_rtx_NEG (mode, result) : result;
 }
 
 /* Make a binary operation by properly ordering the operands and 
@@ -4415,7 +4415,7 @@ cse_gen_binary (code, mode, op0, op1)
 	   && GET_MODE (op0) != VOIDmode)
     return plus_constant (op0, - INTVAL (op1));
   else
-    return gen_rtx (code, mode, op0, op1);
+    return gen_rtx_fmt_ee (code, mode, op0, op1);
 }
 
 /* Like simplify_binary_operation except used for relational operators.
@@ -4803,7 +4803,7 @@ fold_rtx (x, insn)
 	      && GET_CODE (NEXT_INSN (next)) == JUMP_INSN
 	      && (GET_CODE (PATTERN (NEXT_INSN (next))) == ADDR_VEC
 		  || GET_CODE (PATTERN (NEXT_INSN (next))) == ADDR_DIFF_VEC))
-	    return gen_rtx (LABEL_REF, Pmode, next);
+	    return gen_rtx_LABEL_REF (Pmode, next);
 	}
       break;
 
@@ -5102,17 +5102,17 @@ fold_rtx (x, insn)
 			< XVECLEN (table, 1)))
 		  {
 		    offset /= GET_MODE_SIZE (GET_MODE (table));
-		    new = gen_rtx (MINUS, Pmode, XVECEXP (table, 1, offset),
-				   XEXP (table, 0));
+		    new = gen_rtx_MINUS (Pmode, XVECEXP (table, 1, offset),
+					 XEXP (table, 0));
 
 		    if (GET_MODE (table) != Pmode)
-		      new = gen_rtx (TRUNCATE, GET_MODE (table), new);
+		      new = gen_rtx_TRUNCATE (GET_MODE (table), new);
 
 		    /* Indicate this is a constant.  This isn't a 
 		       valid form of CONST, but it will only be used
 		       to fold the next insns and then discarded, so
 		       it should be safe.  */
-		    return gen_rtx (CONST, GET_MODE (new), new);
+		    return gen_rtx_CONST (GET_MODE (new), new);
 		  }
 	      }
 	  }
@@ -5312,7 +5312,7 @@ fold_rtx (x, insn)
 					const_arg0 ? const_arg0 : folded_arg0,
 					mode_arg0);
 	if (new != 0 && is_const)
-	  new = gen_rtx (CONST, mode, new);
+	  new = gen_rtx_CONST (mode, new);
       }
       break;
       
@@ -5763,7 +5763,7 @@ gen_lowpart_if_possible (mode, x)
 	   unchanged.  */
 	offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
 		   - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (x))));
-      new = gen_rtx (MEM, mode, plus_constant (XEXP (x, 0), offset));
+      new = gen_rtx_MEM (mode, plus_constant (XEXP (x, 0), offset));
       if (! memory_address_p (mode, XEXP (new, 0)))
 	return 0;
       MEM_VOLATILE_P (new) = MEM_VOLATILE_P (x);
@@ -5859,7 +5859,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
       rtx tem = gen_lowpart_if_possible (inner_mode, op1);
 
       record_jump_cond (code, mode, SUBREG_REG (op0),
-			tem ? tem : gen_rtx (SUBREG, inner_mode, op1, 0),
+			tem ? tem : gen_rtx_SUBREG (inner_mode, op1, 0),
 			reversed_nonequality);
     }
 
@@ -5871,7 +5871,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
       rtx tem = gen_lowpart_if_possible (inner_mode, op0);
 
       record_jump_cond (code, mode, SUBREG_REG (op1),
-			tem ? tem : gen_rtx (SUBREG, inner_mode, op0, 0),
+			tem ? tem : gen_rtx_SUBREG (inner_mode, op0, 0),
 			reversed_nonequality);
     }
 
@@ -5891,7 +5891,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
       rtx tem = gen_lowpart_if_possible (inner_mode, op1);
 
       record_jump_cond (code, mode, SUBREG_REG (op0),
-			tem ? tem : gen_rtx (SUBREG, inner_mode, op1, 0),
+			tem ? tem : gen_rtx_SUBREG (inner_mode, op1, 0),
 			reversed_nonequality);
     }
 
@@ -5904,7 +5904,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
       rtx tem = gen_lowpart_if_possible (inner_mode, op0);
 
       record_jump_cond (code, mode, SUBREG_REG (op1),
-			tem ? tem : gen_rtx (SUBREG, inner_mode, op0, 0),
+			tem ? tem : gen_rtx_SUBREG (inner_mode, op0, 0),
 			reversed_nonequality);
     }
 
@@ -6602,7 +6602,7 @@ cse_insn (insn, in_libcall_block)
 	  && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	{
 	  enum machine_mode tmode;
-	  rtx new_and = gen_rtx (AND, VOIDmode, NULL_RTX, XEXP (src, 1));
+	  rtx new_and = gen_rtx_AND (VOIDmode, NULL_RTX, XEXP (src, 1));
 
 	  for (tmode = GET_MODE_WIDER_MODE (mode);
 	       GET_MODE_SIZE (tmode) <= UNITS_PER_WORD;
@@ -6864,7 +6864,7 @@ cse_insn (insn, in_libcall_block)
 		  && (GET_CODE (PATTERN (NEXT_INSN (trial))) == ADDR_DIFF_VEC
 		      || GET_CODE (PATTERN (NEXT_INSN (trial))) == ADDR_VEC))
 
-		trial = gen_rtx (LABEL_REF, Pmode, get_label_after (trial));
+		trial = gen_rtx_LABEL_REF (Pmode, get_label_after (trial));
 
 	      SET_SRC (sets[i].rtl) = trial;
  	      cse_jumps_altered = 1;
@@ -6929,7 +6929,7 @@ cse_insn (insn, in_libcall_block)
 
 	  src = SET_SRC (sets[i].rtl)
 	    = first >= FIRST_PSEUDO_REGISTER ? regno_reg_rtx[first]
-	      : gen_rtx (REG, GET_MODE (src), first);
+	      : gen_rtx_REG (GET_MODE (src), first);
 
 	  /* If we had a constant that is cheaper than what we are now
 	     setting SRC to, use that constant.  We ignored it when we
@@ -6968,8 +6968,8 @@ cse_insn (insn, in_libcall_block)
 	  if (tem)
 	    XEXP (tem, 0) = src_const;
 	  else
-	    REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL,
-				        src_const, REG_NOTES (insn));
+	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL,
+						  src_const, REG_NOTES (insn));
 
           /* If storing a constant value in a register that
 	     previously held the constant value 0,
@@ -6995,8 +6995,9 @@ cse_insn (insn, in_libcall_block)
 		  if (note)
 		    XEXP (note, 0) = const_insn;
 		  else
-		    REG_NOTES (insn) = gen_rtx (INSN_LIST, REG_WAS_0,
-						const_insn, REG_NOTES (insn));
+		    REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_WAS_0,
+							  const_insn,
+							  REG_NOTES (insn));
 		}
 	    }
 	}
@@ -7174,8 +7175,8 @@ cse_insn (insn, in_libcall_block)
 	  this_insn_cc0 = src_const && mode != VOIDmode ? src_const : src;
 	  this_insn_cc0_mode = mode;
 	  if (FLOAT_MODE_P (mode))
-	    this_insn_cc0 = gen_rtx (COMPARE, VOIDmode, this_insn_cc0,
-				     CONST0_RTX (mode));
+	    this_insn_cc0 = gen_rtx_COMPARE (VOIDmode, this_insn_cc0,
+					     CONST0_RTX (mode));
 	}
 #endif
     }
@@ -7453,7 +7454,7 @@ cse_insn (insn, in_libcall_block)
 
 		new_src = gen_lowpart_if_possible (new_mode, elt->exp);
 		if (new_src == 0)
-		  new_src = gen_rtx (SUBREG, new_mode, elt->exp, 0);
+		  new_src = gen_rtx_SUBREG (new_mode, elt->exp, 0);
 
 		src_hash = HASH (new_src, new_mode);
 		src_elt = lookup (new_src, src_hash, new_mode);
@@ -8277,7 +8278,7 @@ cse_main (f, nregs, after_loop, file)
 
   /* Allocate scratch rtl here.  cse_insn will fill in the memory reference
      and change the code and mode as appropriate.  */
-  memory_extend_rtx = gen_rtx (ZERO_EXTEND, VOIDmode, NULL_RTX);
+  memory_extend_rtx = gen_rtx_ZERO_EXTEND (VOIDmode, NULL_RTX);
 #endif
 
   /* Discard all the free elements of the previous function

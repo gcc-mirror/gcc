@@ -1,4 +1,17 @@
-Wed Jan 14 19:36:08 1998  Gavin Kock  (gavin@cygnus.com)
+Wed Jan 14 22:49:17 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alias.c: Change all uses of gen_rtx(FOO...) to gen_rtx_FOO;
+	change gen_rtx(expr...) to gen_rtx_fmt_foo(expr...).
+	* caller-save.c, calls.c, combine.c, cse.c: Likewise.
+	* dwarf2out.c, except.c, explow.c, expmed.c, expr.c: Likewise.
+	* final.c, flow.c, function.c, genpeep.c, haifa-sched.c: Likewise.
+	* halfpic.c, integrate.c, jump.c, local-alloc.c, loop.c: Likewise.
+	* profile.c, recog.c, reg-stack.c, regclass.c, regmove.c: Likewise.
+	* reload.c, reload1.c, reorg.c, sched.c, stmt.c, stupid.c: Likewise.
+	* unroll.c, varasm.c: Likewise.
+	* config/alpha/alpha.c, config/alpha/alpha.md: Likewise.
+
+Wed Jan 14 19:36:08 1998  Gavin Koch  (gavin@cygnus.com)
 
 	* mips.h: Fix some type-o's from a previous change.
 

@@ -3367,7 +3367,7 @@ flush_pending_lists (insn, only_write)
     add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
   last_pending_memory_flush =
-    gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
+    gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX);
 }
 
 /* Analyze a single SET or CLOBBER rtx, X, creating all dependencies generated
@@ -3583,8 +3583,8 @@ sched_analyze_2 (x, insn)
 	    while (--i >= 0)
 	      {
 		reg_last_uses[regno + i]
-		  = gen_rtx (INSN_LIST, VOIDmode,
-			     insn, reg_last_uses[regno + i]);
+		  = gen_rtx_INSN_LIST (VOIDmode,
+				       insn, reg_last_uses[regno + i]);
 
 		for (u = reg_last_sets[regno + i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
@@ -3598,7 +3598,7 @@ sched_analyze_2 (x, insn)
 	else
 	  {
 	    reg_last_uses[regno]
-	      = gen_rtx (INSN_LIST, VOIDmode, insn, reg_last_uses[regno]);
+	      = gen_rtx_INSN_LIST (VOIDmode, insn, reg_last_uses[regno]);
 
 	    for (u = reg_last_sets[regno]; u; u = XEXP (u, 1))
 	      add_dependence (insn, XEXP (u, 0), 0);
@@ -3835,7 +3835,7 @@ sched_analyze_insn (x, insn, loop_notes)
 			     {
 			       /* reg_last_sets[r] is now a list of insns */
 			       reg_last_sets[i]
-				 = gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
+				 = gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX);
 			     });
   CLEAR_REG_SET (reg_pending_sets);
 
@@ -3845,7 +3845,7 @@ sched_analyze_insn (x, insn, loop_notes)
 
 	/* reg_last_sets[r] is now a list of insns */
 	reg_last_sets[i]
-	  = gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
+	  = gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX);
 
       reg_pending_sets_all = 0;
     }
@@ -3945,12 +3945,12 @@ sched_analyze (head, tail)
 	      /* Add a pair of fake REG_NOTE which we will later
 		 convert back into a NOTE_INSN_SETJMP note.  See
 		 reemit_notes for why we use a pair of NOTEs.  */
-	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
-					  GEN_INT (0),
-					  REG_NOTES (insn));
-	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
-					  GEN_INT (NOTE_INSN_SETJMP),
-					  REG_NOTES (insn));
+	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_DEAD,
+						    GEN_INT (0),
+						    REG_NOTES (insn));
+	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_DEAD,
+						    GEN_INT (NOTE_INSN_SETJMP),
+						    REG_NOTES (insn));
 	    }
 	  else
 	    {
@@ -3993,7 +3993,7 @@ sched_analyze (head, tail)
 
 	  /* last_function_call is now a list of insns */
 	  last_function_call
-	    = gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
+	    = gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX);
 	}
 
       /* See comments on reemit_notes as to why we do this.  */
@@ -4005,10 +4005,12 @@ sched_analyze (head, tail)
 		   || (NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP
 		       && GET_CODE (PREV_INSN (insn)) != CALL_INSN)))
 	{
-	  loop_notes = gen_rtx (EXPR_LIST, REG_DEAD,
-				GEN_INT (NOTE_BLOCK_NUMBER (insn)), loop_notes);
-	  loop_notes = gen_rtx (EXPR_LIST, REG_DEAD,
-				GEN_INT (NOTE_LINE_NUMBER (insn)), loop_notes);
+	  loop_notes = gen_rtx_EXPR_LIST (REG_DEAD,
+					  GEN_INT (NOTE_BLOCK_NUMBER (insn)),
+					  loop_notes);
+	  loop_notes = gen_rtx_EXPR_LIST (REG_DEAD,
+					  GEN_INT (NOTE_LINE_NUMBER (insn)),
+					  loop_notes);
 	  CONST_CALL_P (loop_notes) = CONST_CALL_P (insn);
 	}
 
@@ -4480,7 +4482,7 @@ create_reg_dead_note (reg, insn)
 	    {
 	      link = rtx_alloc (EXPR_LIST);
 	      PUT_REG_NOTE_KIND (link, REG_DEAD);
-	      XEXP (link, 0) = gen_rtx (REG, word_mode, 0);
+	      XEXP (link, 0) = gen_rtx_REG (word_mode, 0);
 	      XEXP (link, 1) = NULL_RTX;
 	    }
 	     
@@ -4495,7 +4497,7 @@ create_reg_dead_note (reg, insn)
 	{
 	  rtx temp_reg, temp_link;
 
-	  temp_reg = gen_rtx (REG, word_mode, 0);
+	  temp_reg = gen_rtx_REG (word_mode, 0);
 	  temp_link = rtx_alloc (EXPR_LIST);
 	  PUT_REG_NOTE_KIND (temp_link, REG_DEAD);
 	  XEXP (temp_link, 0) = temp_reg;
@@ -4631,9 +4633,8 @@ attach_deaths (x, insn, set_p)
 			     i >= 0; i--)
 			  if (! REGNO_REG_SET_P (old_live_regs, regno+i)
 			      && ! dead_or_set_regno_p (insn, regno + i))
-			    create_reg_dead_note (gen_rtx (REG,
-							   reg_raw_mode[regno + i],
-							   regno + i),
+			    create_reg_dead_note (gen_rtx_REG (reg_raw_mode[regno + i],
+							       regno + i),
 						  insn);
 		      }
 		  }
@@ -7097,8 +7098,8 @@ init_rgn_data_dependences (n_bbs)
   for (bb = 0; bb < n_bbs; bb++)
     {
       bb_sched_before_next_call[bb] =
-	gen_rtx (INSN, VOIDmode, 0, NULL_RTX, NULL_RTX,
-		 NULL_RTX, 0, NULL_RTX, NULL_RTX);
+	gen_rtx_INSN (VOIDmode, 0, NULL_RTX, NULL_RTX,
+		      NULL_RTX, 0, NULL_RTX, NULL_RTX);
       LOG_LINKS (bb_sched_before_next_call[bb]) = 0;
     }
 }
@@ -7228,8 +7229,8 @@ compute_block_backward_dependences (bb)
       last_function_call = 0;
       last_pending_memory_flush = 0;
       sched_before_next_call
-	= gen_rtx (INSN, VOIDmode, 0, NULL_RTX, NULL_RTX,
-		   NULL_RTX, 0, NULL_RTX, NULL_RTX);
+	= gen_rtx_INSN (VOIDmode, 0, NULL_RTX, NULL_RTX,
+			NULL_RTX, 0, NULL_RTX, NULL_RTX);
       LOG_LINKS (sched_before_next_call) = 0;
     }
   else
@@ -7293,8 +7294,8 @@ compute_block_backward_dependences (bb)
 		      continue;
 
 		    (bb_reg_last_uses[bb_succ])[reg]
-		      = gen_rtx (INSN_LIST, VOIDmode, XEXP (u, 0),
-				 (bb_reg_last_uses[bb_succ])[reg]);
+		      = gen_rtx_INSN_LIST (VOIDmode, XEXP (u, 0),
+					   (bb_reg_last_uses[bb_succ])[reg]);
 		  }
 
 		/* reg-last-defs lists are inherited by bb_succ */
@@ -7304,8 +7305,8 @@ compute_block_backward_dependences (bb)
 		      continue;
 
 		    (bb_reg_last_sets[bb_succ])[reg]
-		      = gen_rtx (INSN_LIST, VOIDmode, XEXP (u, 0),
-				 (bb_reg_last_sets[bb_succ])[reg]);
+		      = gen_rtx_INSN_LIST (VOIDmode, XEXP (u, 0),
+					   (bb_reg_last_sets[bb_succ])[reg]);
 		  }
 	      }
 
@@ -7346,8 +7347,8 @@ compute_block_backward_dependences (bb)
 		  continue;
 
 		bb_last_function_call[bb_succ]
-		  = gen_rtx (INSN_LIST, VOIDmode, XEXP (u, 0),
-			     bb_last_function_call[bb_succ]);
+		  = gen_rtx_INSN_LIST (VOIDmode, XEXP (u, 0),
+				       bb_last_function_call[bb_succ]);
 	      }
 
 	    /* last_pending_memory_flush is inherited by bb_succ */
@@ -7357,8 +7358,8 @@ compute_block_backward_dependences (bb)
 		  continue;
 
 		bb_last_pending_memory_flush[bb_succ]
-		  = gen_rtx (INSN_LIST, VOIDmode, XEXP (u, 0),
-			     bb_last_pending_memory_flush[bb_succ]);
+		  = gen_rtx_INSN_LIST (VOIDmode, XEXP (u, 0),
+				       bb_last_pending_memory_flush[bb_succ]);
 	      }
 
 	    /* sched_before_next_call is inherited by bb_succ */
@@ -8122,8 +8123,9 @@ update_flow_info (notes, first, last, orig_insn)
 	  for (insn = first; insn != NEXT_INSN (last); insn = NEXT_INSN (insn))
 	    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 		&& reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
-	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL,
-					  XEXP (note, 0), REG_NOTES (insn));
+	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL,
+						    XEXP (note, 0),
+						    REG_NOTES (insn));
 	  break;
 
 	case REG_CC_SETTER:
