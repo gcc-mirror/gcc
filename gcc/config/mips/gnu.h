@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "mips/mips.h"
+#include <mips/mips.h>
 
 #undef SWITCH_TAKES_ARG
 #undef ASM_FILE_END
@@ -29,7 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef ASM_DECLARE_OBJECT_NAME
 /* #undef PREFERRED_DEBUGGING_TYPE */
 
-#include "svr4.h"
+#include <svr4.h>
 
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
@@ -145,4 +145,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define NO_MIPS_SELECT_SECTION
 
 /* Get machine-independent configuration parameters for the GNU system.  */
-#include "gnu.h"
+#include <gnu.h>
