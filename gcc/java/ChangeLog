@@ -1,5 +1,9 @@
 2005-01-10  Ranjit Mathew  <rmathew@hotmail.com>
 
+	* verify.c: Revert to the version before the BC-ABI merge.
+
+2005-01-10  Ranjit Mathew  <rmathew@hotmail.com>
+
 	PR java/19277
 	* check-init.c (check_init): Take care of references that do not
 	have an explicit final variable declaration (e.g. array length
