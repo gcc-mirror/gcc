@@ -1,3 +1,10 @@
+2004-08-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/17044
+	* tree-ssa-threadupdate.c (redirection_data): Make static.
+	(thread_block): Use ggc_alloc_cleared to allocate struct
+	redirection_data.  Don't free elements in redirection_data.
+
 2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/predicates.md (small_data_pattern): Match prefetches.

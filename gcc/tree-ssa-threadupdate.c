@@ -92,6 +92,9 @@ struct redirection_data
   edge outgoing_edge;
 };
 
+/* Main data structure to hold information for duplicates of BB.  */
+static varray_type redirection_data;
+
 /* For each PHI node in BB, find or create a PHI node in NEW_BB for the
    same PHI_RESULT.  Add an argument to the PHI node in NEW_BB which
    corresponds to the same PHI argument associated with edge E in BB.  */
@@ -239,8 +242,6 @@ thread_block (basic_block bb)
      be threaded to a duplicate of BB.  */
   bool all = true;
 
-  /* Main data structure to hold information for duplicates of BB.  */
-  varray_type redirection_data;
   unsigned int i;
 
   VARRAY_GENERIC_PTR_INIT (redirection_data, 2, "redirection data");
@@ -278,7 +279,7 @@ thread_block (basic_block bb)
 	    {
 	      struct redirection_data *rd;
 
-	      rd = xcalloc (1, sizeof (redirection_data));
+	      rd = ggc_alloc_cleared (sizeof (struct redirection_data));
 	      rd->outgoing_edge = e->aux;
 	      VARRAY_PUSH_GENERIC_PTR (redirection_data, rd);
 	    }
@@ -372,14 +373,7 @@ thread_block (basic_block bb)
       remove_last_stmt_and_useless_edges (bb, rd->outgoing_edge->dest);
     }
 
-  /* Done with this block.  Free any memory we have allocated, clear
-     REDIRECTION_DATA and unmark this block as needing incoming
-     edge redirections.  */
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (redirection_data); i++)
-    {
-      struct redirection_data *rd = VARRAY_GENERIC_PTR (redirection_data, i);
-      free (rd);
-    }
+  /* Done with this block.  Clear REDIRECTION_DATA.  */
   VARRAY_CLEAR (redirection_data);
 }
 
