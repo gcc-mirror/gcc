@@ -1,3 +1,7 @@
+2001-06-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.ext/anon3.C: New test.
+
 2001-06-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/conv7.C: New test.

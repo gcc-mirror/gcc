@@ -1,3 +1,8 @@
+2001-06-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/2914
+	* decl.c (pushtag): Don't push into a complete type's scope.
+
 2001-06-06  Jason Merrill  <jason_merrill@redhat.com>
 
 	* cp-tree.h (THUNK_GENERATE_WITH_VTABLE_P): Lose.

@@ -2812,7 +2812,13 @@ pushtag (name, type, globalize)
 
   b = current_binding_level;
   while (b->tag_transparent
-	 || (globalize && b->parm_flag == 2))
+	 || (b->parm_flag == 2
+	     && (globalize
+		 /* We may be defining a new type in the initializer
+		    of a static member variable. We allow this when
+		    not pedantic, and it is particularly useful for
+		    type punning via an anonymous union. */
+		 || COMPLETE_TYPE_P (b->this_class))))
     b = b->level_chain;
 
   b->tags = tree_cons (name, type, b->tags);
