@@ -6771,7 +6771,9 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	}
       return cp_convert (type, rhs);
     }
-  else if (codel == POINTER_TYPE && coder == INTEGER_TYPE)
+  else if (codel == POINTER_TYPE
+	   && (coder == INTEGER_TYPE
+	       || coder == BOOLEAN_TYPE))
     {
       /* An explicit constant 0 can convert to a pointer,
          but not a 0 that results from casting or folding.  */

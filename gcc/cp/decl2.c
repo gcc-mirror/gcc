@@ -4186,9 +4186,10 @@ qualified_lookup_using_namespace (name, scope, result, flags)
    outside scope. */
 
 void
-set_decl_namespace (decl, scope)
+set_decl_namespace (decl, scope, friendp)
      tree decl;
      tree scope;
+     int friendp;
 {
   tree old;
   if (scope == std_node)
@@ -4196,7 +4197,8 @@ set_decl_namespace (decl, scope)
   /* Get rid of namespace aliases. */
   scope = ORIGINAL_NAMESPACE (scope);
   
-  if (!is_namespace_ancestor (current_namespace, scope))
+  /* It is ok for friends to be qualified in parallel space.  */
+  if (!friendp && !is_namespace_ancestor (current_namespace, scope))
     cp_error ("declaration of `%D' not in a namespace surrounding `%D'",
 	      decl, scope);
   DECL_CONTEXT (decl) = FROB_CONTEXT (scope);

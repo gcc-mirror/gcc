@@ -2874,7 +2874,7 @@ extern tree build_expr_from_tree		PROTO((tree));
 extern tree reparse_decl_as_expr		PROTO((tree, tree));
 extern tree finish_decl_parsing			PROTO((tree));
 extern tree check_cp_case_value			PROTO((tree));
-extern void set_decl_namespace                  PROTO((tree, tree));
+extern void set_decl_namespace                  PROTO((tree, tree, int));
 extern tree current_decl_namespace              PROTO((void));
 extern void push_decl_namespace                 PROTO((tree));
 extern void pop_decl_namespace                  PROTO((void));
