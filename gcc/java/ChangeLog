@@ -1,3 +1,12 @@
+2004-09-29  Andrew Haley  <aph@redhat.com>
+
+	PR java/17007
+	* parse.y (patch_binop): Don't mess with the TREE_SIDE_EFFECTS of the
+	result of TRUNC_MOD_EXPR.
+	(patch_unaryop): Likewise for CONVERT_EXPR, which may throw.
+	* decl.c (java_init_decl_processing): Mark
+	soft_lookupinterfacemethod_node and soft_instanceof_node pure.
+
 2004-09-28  Tom Tromey  <tromey@redhat.com>
 
 	PR java/15710:

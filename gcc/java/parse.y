@@ -13277,8 +13277,6 @@ patch_binop (tree node, tree wfl_op1, tree wfl_op2)
 	{
 	  tree mod = build_java_binop (TRUNC_MOD_EXPR, prom_type, op1, op2);
 	  COMPOUND_ASSIGN_P (mod) = COMPOUND_ASSIGN_P (node);
-	  TREE_SIDE_EFFECTS (mod)
-	    = TREE_SIDE_EFFECTS (op1) | TREE_SIDE_EFFECTS (op2);
 	  return mod;
 	}
       break;
@@ -14153,7 +14151,6 @@ patch_unaryop (tree node, tree wfl_op)
       else
 	{
 	  value = fold (value);
-	  TREE_SIDE_EFFECTS (value) = TREE_SIDE_EFFECTS (op);
 	  return value;
 	}
       break;
