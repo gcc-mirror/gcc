@@ -301,8 +301,8 @@ yylex ()
 	    case PTYPENAME:
 	      lastiddecl = trrr;
 
-	      /* If this got special lookup, remember it.  In these cases,
-	         we don't have to worry about being a declarator-id. */
+	      /* If this got special lookup, remember it.  In these
+	         cases, we know it can't be a declarator-id. */
 	      if (got_scope || got_object)
 		tmp_token.yylval.ttype = trrr;
 	      break;
