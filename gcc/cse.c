@@ -3308,7 +3308,23 @@ simplify_unary_operation (code, mode, op, op_mode)
 	      && GET_CODE (XEXP (XEXP (op, 0), 0)) == LABEL_REF
 	      && GET_CODE (XEXP (XEXP (op, 0), 1)) == LABEL_REF)
 	    return XEXP (op, 0);
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (! POINTERS_EXTEND_UNSIGNED
+	      && mode == Pmode && GET_MODE (op) == ptr_mode
+	      && CONSTANT_P (op))
+	    return convert_memory_address (Pmode, op);
+#endif
 	  break;
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+	case ZERO_EXTEND:
+	  if (POINTERS_EXTEND_UNSIGNED
+	      && mode == Pmode && GET_MODE (op) == ptr_mode
+	      && CONSTANT_P (op))
+	    return convert_memory_address (Pmode, op);
+	  break;
+#endif
 	}
 
       return 0;
