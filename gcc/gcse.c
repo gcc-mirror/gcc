@@ -4089,28 +4089,42 @@ cprop_jump (bb, setcc, jump, from, src)
      rtx from;
      rtx src;
 {
-  rtx new, new_set;
+  rtx new, set_src, note_src;
   rtx set = pc_set (jump);
+  rtx note = find_reg_equal_equiv_note (jump);
 
-  /* First substitute in the INSN condition as the SET_SRC of the JUMP,
-     then substitute that given values in this expanded JUMP.  */
-  if (setcc != NULL
+  if (note)
+    {
+      note_src = XEXP (note, 0);
+      if (GET_CODE (note_src) == EXPR_LIST)
+	note_src = NULL_RTX;
+    }
+  else note_src = NULL_RTX;
+
+  /* Prefer REG_EQUAL notes except those containing EXPR_LISTs.  */
+  set_src = note_src ? note_src : SET_SRC (set);
+
+  /* First substitute the SETCC condition into the JUMP instruction,
+     then substitute that given values into this expanded JUMP.  */
+  if (setcc != NULL_RTX
       && !modified_between_p (from, setcc, jump)
       && !modified_between_p (src, setcc, jump))
     {
+      rtx setcc_src;
       rtx setcc_set = single_set (setcc);
-      new_set = simplify_replace_rtx (SET_SRC (set),
-				      SET_DEST (setcc_set),
-				      SET_SRC (setcc_set));
+      rtx setcc_note = find_reg_equal_equiv_note (setcc);
+      setcc_src = (setcc_note && GET_CODE (XEXP (setcc_note, 0)) != EXPR_LIST)
+		? XEXP (setcc_note, 0) : SET_SRC (setcc_set);
+      set_src = simplify_replace_rtx (set_src, SET_DEST (setcc_set),
+				      setcc_src);
     }
   else
-    new_set = set;
+    setcc = NULL_RTX;
 
-  new = simplify_replace_rtx (new_set, from, src);
+  new = simplify_replace_rtx (set_src, from, src);
 
-  /* If no simplification can be made, then try the next
-     register.  */
-  if (rtx_equal_p (new, new_set) || rtx_equal_p (new, SET_SRC (set)))
+  /* If no simplification can be made, then try the next register.  */
+  if (rtx_equal_p (new, SET_SRC (set)))
     return 0;
 
   /* If this is now a no-op delete it, otherwise this must be a valid insn.  */
@@ -4120,11 +4134,27 @@ cprop_jump (bb, setcc, jump, from, src)
     {
       /* Ensure the value computed inside the jump insn to be equivalent
          to one computed by setcc.  */
-      if (setcc 
-	  && modified_in_p (new, setcc))
+      if (setcc && modified_in_p (new, setcc))
 	return 0;
       if (! validate_change (jump, &SET_SRC (set), new, 0))
-	return 0;
+	{
+	  /* When (some) constants are not valid in a comparison, and there
+	     are two registers to be replaced by constants before the entire
+	     comparison can be folded into a constant, we need to keep
+	     intermediate information in REG_EQUAL notes.  For targets with
+	     separate compare insns, such notes are added by try_replace_reg.
+	     When we have a combined compare-and-branch instruction, however,
+	     we need to attach a note to the branch itself to make this
+	     optimization work.  */
+
+	  if (!rtx_equal_p (new, note_src))
+	    set_unique_reg_note (jump, REG_EQUAL, copy_rtx (new));
+	  return 0;
+	}
+
+      /* Remove REG_EQUAL note after simplification.  */
+      if (note_src)
+	remove_note (jump, note);
 
       /* If this has turned into an unconditional jump,
 	 then put a barrier after it so that the unreachable
@@ -4261,6 +4291,8 @@ cprop_insn (insn, alter_jumps)
 		  print_rtl (gcse_file, src);
 		  fprintf (gcse_file, "\n");
 		}
+	      if (INSN_DELETED_P (insn))
+		return 1;
 	    }
 	}
       else if (GET_CODE (src) == REG
@@ -4503,6 +4535,8 @@ local_cprop_pass (alter_jumps)
 		    changed = true;
 		    break;
 		  }
+	      if (INSN_DELETED_P (insn))
+		break;
 	    }
 	  while (reg_use_count);
 	}
