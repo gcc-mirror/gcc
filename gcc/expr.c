@@ -5001,6 +5001,7 @@ expand_expr (exp, target, tmode, modifier)
       target = original_target;
       temp = gen_label_rtx ();
       if (target == 0 || ! safe_from_p (target, TREE_OPERAND (exp, 0))
+	  || (GET_CODE (target) == MEM && MEM_VOLATILE_P (target))
 	  || (GET_CODE (target) == REG
 	      && REGNO (target) < FIRST_PSEUDO_REGISTER))
 	target = gen_reg_rtx (mode);
