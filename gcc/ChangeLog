@@ -1,3 +1,12 @@
+2002-01-02  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (limbo_die_node): Add created_for member.
+	(new_die): New argument created_for.  Update all callers.
+	(mark_limbo_die_list): New.
+	(dwarf2out_init): Register limbo_die_list as a root.
+	(dwarf2out_finish): Force insert limbo dies into their function
+	context.
+
 2002-01-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/5089
