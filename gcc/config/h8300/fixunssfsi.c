@@ -33,6 +33,8 @@ Boston, MA 02111-1307, USA.  */
    the H8/300, that's in lib1funcs.asm, for H8/300H and H8S, it's here.  */
 
 #ifndef __H8300__
+long __fixunssfsi (float a);
+
 long
 __fixunssfsi (float a)
 {

@@ -1,4 +1,4 @@
-2003-10-21  Kazu Hirata  <kazu@cs.umass.edu>
+2003-10-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/clzhi2.c: Fix warnings.
 	* config/h8300/ctzhi2.c: Likewise.
