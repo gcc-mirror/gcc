@@ -2176,7 +2176,7 @@ for machine in $build $host $target; do
 		tmake_file=mips/t-ecoff
 		;;
 	mips64orion-*-rtems*)
-		tm_file="mips/elforion.h mips/elfl64.h mips/rtems64.h"
+		tm_file="mips/elforion.h mips/elf64.h mips/rtems64.h"
 		tmake_file="mips/t-ecoff t-rtems"
 		;;
 	mipstx39el-*-elf*)
