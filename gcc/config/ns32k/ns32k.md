@@ -318,6 +318,8 @@
   ""
   "*
 {
+  extern int flag_pic;						\
+
   if (FP_REG_P (operands[0]))
     {
       if (GET_CODE (operands[1]) == REG && REGNO (operands[1]) < 8)
@@ -344,15 +346,24 @@
 	{
 	  if (i <= 7 && i >= -8)
 	    return \"movqd %1,%0\";
-	  if (i < 0x4000 && i >= -0x4000)
+	  if (i <= 0x1fffffff && i >= -0x20000000)
 #if defined (GNX_V3) || defined (UTEK_ASM)
 	    return \"addr %c1,%0\";
 #else
 	    return \"addr @%c1,%0\";
 #endif
+	  return \"movd %$%1,%0\";
 	}
       else
         return output_move_dconst(i, \"%$%1,%0\");
+    }
+  else if (GET_CODE (operands[1]) == CONST && ! flag_pic)
+    {
+	/* Must contain symbols so we don`t know how big it is. In
+	 * that case addr might lead to overflow. For PIC symbolic
+	 * address loads always have to be done with addr.
+	 */
+	return \"movd %$%1,%0\";
     }
   else if (GET_CODE (operands[1]) == REG)
     {
@@ -867,8 +878,8 @@
 
       if (i <= 7 && i >= -8)
 	return \"addqd %2,%0\";
-      else if (GET_CODE (operands[0]) == REG
-	       && i < 0x4000 && i >= -0x4000 && ! TARGET_32532)
+      else if (! TARGET_32532 && GET_CODE (operands[0]) == REG
+	       && i <= 0x1fffffff && i >= -0x20000000)
 	return \"addr %c2(%0),%0\";
     }
   return \"addd %2,%0\";
@@ -953,8 +964,8 @@
   "GET_CODE (operands[0]) == CONST_INT"
   "*
 {
-  if (GET_CODE(operands[0]) == CONST_INT && INTVAL(operands[0]) < 64
-      && INTVAL(operands[0]) > -64 && ! TARGET_32532)
+  if (! TARGET_32532 && GET_CODE(operands[0]) == CONST_INT 
+      && INTVAL(operands[0]) < 64 && INTVAL(operands[0]) > -64)
     return \"adjspb %$%0\";
   return \"adjspd %$%0\";
 }")
@@ -1443,7 +1454,7 @@
     {
       if (INTVAL (operands[2]) == 1)
 	return \"addw %0,%0\";
-      else if (INTVAL (operands[2]) == 2 && !TARGET_32532)
+      else if (! TARGET_32532 && INTVAL (operands[2]) == 2)
 	return \"addw %0,%0\;addw %0,%0\";
     }
   if (TARGET_32532)
@@ -1462,7 +1473,7 @@
     {
       if (INTVAL (operands[2]) == 1)
 	return \"addb %0,%0\";
-      else if (INTVAL (operands[2]) == 2 && !TARGET_32532)
+      else if (! TARGET_32532 && INTVAL (operands[2]) == 2)
 	return \"addb %0,%0\;addb %0,%0\";
     }
   if (TARGET_32532)
