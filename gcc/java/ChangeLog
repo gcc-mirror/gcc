@@ -1,5 +1,10 @@
 2004-12-02  Tom Tromey  <tromey@redhat.com>
 
+	PR java/16675:
+	* parse.y (craft_constructor): Special case null_pointer_node.
+
+2004-12-02  Tom Tromey  <tromey@redhat.com>
+
 	PR java/18741:
 	* java-gimplify.c (java_gimplify_expr): Don't call
 	SET_EXPR_LOCATION unless wrapped tree is an expression.
