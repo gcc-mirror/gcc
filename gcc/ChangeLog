@@ -1,3 +1,11 @@
+2001-04-30  Jan Hubicka  <jh@suse.cz>
+	    Richard Henderson  <rth@redhat.com>
+
+	* regmove.c (try_apply_stack_adjustment): Remove now redundant
+	sanity checks.
+	(combine_stack_adjustments_for_block): Don't combine stack
+	allocation followed by deallocations.  Handle grow-up stacks.
+
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* fdl.texi: New file.

@@ -41,6 +41,15 @@ Boston, MA 02111-1307, USA.  */
 #include "basic-block.h"
 #include "toplev.h"
 
+
+/* Turn STACK_GROWS_DOWNWARD into a boolean.  */
+#ifdef STACK_GROWS_DOWNWARD
+#undef STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
+#else
+#define STACK_GROWS_DOWNWARD 0
+#endif
+
 static int perhaps_ends_bb_p	PARAMS ((rtx));
 static int optimize_reg_copy_1	PARAMS ((rtx, rtx, rtx));
 static void optimize_reg_copy_2	PARAMS ((rtx, rtx, rtx));
@@ -2225,14 +2234,6 @@ try_apply_stack_adjustment (insn, memlist, new_adjust, delta)
   struct csa_memlist *ml;
   rtx set;
 
-  /* We know INSN matches single_set_for_csa, because that's what we
-     recognized earlier.  However, if INSN is not single_set, it is
-     doing double duty as a barrier for frame pointer memory accesses,
-     which we are not recording.  Therefore, an adjust insn that is not
-     single_set may not have a positive delta applied.  */
-
-  if (delta > 0 && ! single_set (insn))
-    return 0;
   set = single_set_for_csa (insn);
   validate_change (insn, &XEXP (SET_SRC (set), 1), GEN_INT (new_adjust), 1);
 
@@ -2241,13 +2242,6 @@ try_apply_stack_adjustment (insn, memlist, new_adjust, delta)
       HOST_WIDE_INT c = ml->sp_offset - delta;
       rtx new = gen_rtx_MEM (GET_MODE (*ml->mem),
 			     plus_constant (stack_pointer_rtx, c));
-
-      /* Don't reference memory below the stack pointer.  */
-      if (c < 0)
-	{
-	  cancel_changes (0);
-	  return 0;
-	}
 
       MEM_COPY_ATTRIBUTES (new, *ml->mem);
       validate_change (ml->insn, ml->mem, new, 1);
@@ -2363,35 +2357,63 @@ combine_stack_adjustments_for_block (bb)
 
 	      /* If not all recorded memrefs can be adjusted, or the
 		 adjustment is now too large for a constant addition,
-		 we cannot merge the two stack adjustments.  */
-	      if (! try_apply_stack_adjustment (last_sp_set, memlist,
-						last_sp_adjust + this_adjust,
-						this_adjust))
+		 we cannot merge the two stack adjustments.
+
+		 Also we need to be carefull to not move stack pointer
+		 such that we create stack accesses outside the allocated
+		 area.  We can combine an allocation into the first insn,
+		 or a deallocation into the second insn.  We can not
+		 combine an allocation followed by a deallocation.
+
+		 The only somewhat frequent ocurrence of the later is when
+		 a function allocates a stack frame but does not use it.
+		 For this case, we would need to analyze rtl stream to be
+		 sure that allocated area is really unused.  This means not
+		 only checking the memory references, but also all registers
+		 or global memory references possibly containing a stack
+		 frame address.
+
+		 Perhaps the best way to address this problem is to teach
+		 gcc not to allocate stack for objects never used.  */
+
+	      /* Combine an allocation into the first instruction.  */
+	      if (STACK_GROWS_DOWNWARD ? this_adjust <= 0 : this_adjust >= 0)
 		{
-		  free_csa_memlist (memlist);
-		  memlist = NULL;
-		  last_sp_set = insn;
-		  last_sp_adjust = this_adjust;
-		  goto processed;
+		  if (try_apply_stack_adjustment (last_sp_set, memlist,
+						  last_sp_adjust + this_adjust,
+						  this_adjust))
+		    {
+		      /* It worked!  */
+		      pending_delete = insn;
+		      last_sp_adjust += this_adjust;
+		      goto processed;
+		    }
 		}
 
-	      /* It worked!  */
-	      pending_delete = insn;
-	      last_sp_adjust += this_adjust;
-
-	      /* If, by some accident, the adjustments cancel out,
-		 delete both insns and start from scratch.  */
-	      if (last_sp_adjust == 0)
+	      /* Otherwise we have a deallocation.  Do not combine with
+		 a previous allocation.  Combine into the second insn.  */
+	      else if (STACK_GROWS_DOWNWARD
+		       ? last_sp_adjust >= 0 : last_sp_adjust <= 0)
 		{
-		  if (last_sp_set == bb->head)
-		    bb->head = NEXT_INSN (last_sp_set);
-		  flow_delete_insn (last_sp_set);
-
-		  free_csa_memlist (memlist);
-		  memlist = NULL;
-		  last_sp_set = NULL_RTX;
+		  if (try_apply_stack_adjustment (insn, memlist,
+						  last_sp_adjust + this_adjust,
+						  -last_sp_adjust))
+		    {
+		      /* It worked!  */
+		      flow_delete_insn (last_sp_set);
+		      last_sp_set = insn;
+		      last_sp_adjust += this_adjust;
+		      free_csa_memlist (memlist);
+		      memlist = NULL;
+		      goto processed;
+		    }
 		}
 
+	      /* Combination failed.  Restart processing from here.  */
+	      free_csa_memlist (memlist);
+	      memlist = NULL;
+	      last_sp_set = insn;
+	      last_sp_adjust = this_adjust;
 	      goto processed;
 	    }
 
