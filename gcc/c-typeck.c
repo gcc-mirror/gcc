@@ -4173,6 +4173,51 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 		pedwarn ("ANSI C prohibits argument conversion to union type");
 	      return build1 (NOP_EXPR, type, rhs);
 	    }
+	  else if (coder == POINTER_TYPE
+		   && TREE_CODE (TREE_TYPE (memb_types)) == POINTER_TYPE)
+	    {
+	      tree memb_type = TREE_TYPE (memb_types);
+	      register tree ttl = TREE_TYPE (memb_type);
+	      register tree ttr = TREE_TYPE (rhstype);
+
+	      /* Any non-function converts to a [const][volatile] void *
+		 and vice versa; otherwise, targets must be the same.
+		 Meanwhile, the lhs target must have all the qualifiers of the rhs.  */
+	      if (TYPE_MAIN_VARIANT (ttl) == void_type_node
+		  || TYPE_MAIN_VARIANT (ttr) == void_type_node
+		  || comp_target_types (memb_type, rhstype))
+		{
+		  /* Const and volatile mean something different for function types,
+		     so the usual warnings are not appropriate.  */
+		  if (TREE_CODE (ttr) != FUNCTION_TYPE
+		      || TREE_CODE (ttl) != FUNCTION_TYPE)
+		    {
+		      if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
+			warn_for_assignment ("%s discards `const' from pointer target type",
+					     get_spelling (errtype), funname, parmnum);
+		      if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
+			warn_for_assignment ("%s discards `volatile' from pointer target type",
+					     get_spelling (errtype), funname, parmnum);
+		    }
+		  else
+		    {
+		      /* Because const and volatile on functions are restrictions
+			 that say the function will not do certain things,
+			 it is okay to use a const or volatile function
+			 where an ordinary one is wanted, but not vice-versa.  */
+		      if (TYPE_READONLY (ttl) && ! TYPE_READONLY (ttr))
+			warn_for_assignment ("%s makes `const *' function pointer from non-const",
+					     get_spelling (errtype), funname, parmnum);
+		      if (TYPE_VOLATILE (ttl) && ! TYPE_VOLATILE (ttr))
+			warn_for_assignment ("%s makes `volatile *' function pointer from non-volatile",
+					     get_spelling (errtype), funname, parmnum);
+		    }
+		  if (pedantic
+		      && !(fundecl != 0 && DECL_IN_SYSTEM_HEADER (fundecl)))
+		    pedwarn ("ANSI C prohibits argument conversion to union type");
+		  return build1 (NOP_EXPR, type, rhs);
+		}
+	    }
 	}
     }
   /* Conversions among pointers */
