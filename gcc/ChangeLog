@@ -1,3 +1,8 @@
+2004-11-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (operand_equal_p): Remove kludge allowing ARG0 and
+	ARG1 to be null; instead define OP_SAME and OP_SAME_NULL and use them.
+
 2004-11-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* bitmap.c (INLINE): Do not define.
