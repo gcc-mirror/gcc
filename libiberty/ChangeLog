@@ -1,3 +1,9 @@
+2002-05-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (ORIGINAL_LD_FOR_MULTILIBS): Preserve LD at
+	script entry, and set LD to it when configuring multilibs.
+	* configure: Rebuilt.
+
 2002-05-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.in (AC_TYPE_PID_T): Use it.

@@ -1,6 +1,12 @@
 dnl Process this with autoconf to create configure
 AC_INIT(java/lang/System.java)
 
+# This works around the fact that libtool configuration may change LD
+# for this particular configuration, but some shells, instead of
+# keeping the changes in LD private, export them just because LD is
+# exported.
+ORIGINAL_LD_FOR_MULTILIBS=$LD
+
 AC_PROG_LN_S
 
 dnl We use these options to decide which functions to include.
@@ -964,6 +970,7 @@ AC_OUTPUT(Makefile libgcj.spec libgcj-test.spec gnu/classpath/Configuration.java
 [# Only add multilib support code if we just rebuilt top-level Makefile.
 case " $CONFIG_FILES " in
  *" Makefile "*)
+   LD="${ORIGINAL_LD_FOR_MULTILIBS}"
    ac_file=Makefile . ${libgcj_basedir}/../config-ml.in
    ;;
 esac

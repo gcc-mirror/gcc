@@ -3,6 +3,12 @@ dnl Process this file with autoconf to produce a configure script
 AC_PREREQ(2.13)
 AC_INIT(pexecute.c)
 
+# This works around the fact that libtool configuration may change LD
+# for this particular configuration, but some shells, instead of
+# keeping the changes in LD private, export them just because LD is
+# exported.  We don't use libtool yet, but some day we might, so...
+ORIGINAL_LD_FOR_MULTILIBS=$LD
+
 dnl We use these options to decide which functions to include.
 AC_ARG_WITH(target-subdir,
 [  --with-target-subdir=SUBDIR      Configuring in a subdirectory for target])
@@ -427,6 +433,7 @@ if test -n "$CONFIG_FILES"; then
   if test -n "${with_build_subdir}" || test -n "${with_target_subdir}"; then
     # FIXME: We shouldn't need to set ac_file
     ac_file=Makefile
+    LD="${ORIGINAL_LD_FOR_MULTILIBS}"
     . ${libiberty_topdir}/config-ml.in
   fi
 fi],
