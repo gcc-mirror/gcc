@@ -472,8 +472,8 @@ DEFTREECODE (METHOD_CALL_EXPR, "method_call_expr", 'e', 4)
 
 /* Specify a value to compute along with its corresponding cleanup.
    Operand 0 argument is an expression whose value needs a cleanup.
-   Operand 1 is an RTL_EXPR which will eventually represent that value.
-   Operand 2 is the cleanup expression for the object.
+   Operand 1 is the cleanup expression for the object.
+   Operand 2 is an RTL_EXPR which will eventually represent that value.
      The RTL_EXPR is used in this expression, which is how the expression
      manages to act on the proper value.
    The cleanup is executed by the first enclosing CLEANUP_POINT_EXPR, if

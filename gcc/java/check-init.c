@@ -537,7 +537,7 @@ check_init (exp, before)
 #endif
 	check_init (TREE_OPERAND (exp, 0), before);
 	UNION (alt->combined, alt->combined, before);
-	check_init (TREE_OPERAND (exp, 2), alt->combined);
+	check_init (TREE_OPERAND (exp, 1), alt->combined);
 	return;
       }
 

@@ -1958,7 +1958,7 @@ cp_tree_equal (t1, t2)
       cmp = cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
       if (cmp <= 0)
 	return cmp;
-      return cp_tree_equal (TREE_OPERAND (t1, 2), TREE_OPERAND (t1, 2));
+      return cp_tree_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t1, 1));
 
     case COMPONENT_REF:
       if (TREE_OPERAND (t1, 1) == TREE_OPERAND (t2, 1))

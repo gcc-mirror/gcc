@@ -1628,8 +1628,7 @@ first_rtl_op (code)
     case RTL_EXPR:
       return 0;
     case WITH_CLEANUP_EXPR:
-      /* Should be defined to be 2.  */
-      return 1;
+      return 2;
     case METHOD_CALL_EXPR:
       return 3;
     default:
@@ -3679,7 +3678,7 @@ simple_cst_equal (t1, t2)
       if (cmp <= 0)
 	return cmp;
 
-      return simple_cst_equal (TREE_OPERAND (t1, 2), TREE_OPERAND (t1, 2));
+      return simple_cst_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t1, 1));
 
     case COMPONENT_REF:
       if (TREE_OPERAND (t1, 1) == TREE_OPERAND (t2, 1))
