@@ -2065,6 +2065,7 @@ dbxout_parms (parms)
 	  {
 	    rtx best_rtl;
 	    char regparm_letter;
+	    tree parm_type;
 	    /* Parm passed in registers and lives in registers or nowhere.  */
 
 	    current_sym_code = DBX_REGPARM_STABS_CODE;
@@ -2074,14 +2075,23 @@ dbxout_parms (parms)
 	    /* If parm lives in a register, use that register;
 	       pretend the parm was passed there.  It would be more consistent
 	       to describe the register where the parm was passed,
-	       but in practice that register usually holds something else.  */
+	       but in practice that register usually holds something else.
+
+	       If we use DECL_RTL, then we must use the declared type of
+	       the variable, not the type that it arrived in.  */
 	    if (REGNO (DECL_RTL (parms)) >= 0
 		&& REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER)
-	      best_rtl = DECL_RTL (parms);
+	      {
+		best_rtl = DECL_RTL (parms);
+		parm_type = TREE_TYPE (parms);
+	      }
 	    /* If the parm lives nowhere,
 	       use the register where it was passed.  */
 	    else
-	      best_rtl = DECL_INCOMING_RTL (parms);
+	      {
+		best_rtl = DECL_INCOMING_RTL (parms);
+		parm_type = DECL_ARG_TYPE (parms);
+	      }
 	    current_sym_value = DBX_REGISTER_NUMBER (REGNO (best_rtl));
 
 	    FORCE_TEXT;
@@ -2099,7 +2109,7 @@ dbxout_parms (parms)
 			 regparm_letter);
 	      }
 
-	    dbxout_type (DECL_ARG_TYPE (parms), 0, 0);
+	    dbxout_type (parm_type, 0, 0);
 	    dbxout_finish_symbol (parms);
 	  }
 	else if (GET_CODE (DECL_RTL (parms)) == MEM
