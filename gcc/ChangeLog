@@ -1,3 +1,8 @@
+2001-07-16  Steve Ellcey <sje@cup.hp.com>
+
+	* dominance.c (calc_dfs_tree_nonrec): Reverse order of tests
+	in if statement so we don't access undefined memory.
+
 2001-07-16  Daniel Berlin  <dan@cgsoftware.com>
 
 	* ssa-ccp.c: (optimize_unexecutable_edges): Add note about removal

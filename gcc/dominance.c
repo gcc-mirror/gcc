@@ -242,7 +242,7 @@ calc_dfs_tree_nonrec (di, bb, reverse)
 	      /* If the next node BN is either already visited or a border
 	         block the current edge is useless, and simply overwritten
 	         with the next edge out of the current node.  */
-	      if (di->dfs_order[bn->index] || bn == ex_block)
+	      if (bn == ex_block || di->dfs_order[bn->index])
 		{
 		  e = e->pred_next;
 		  continue;
@@ -253,7 +253,7 @@ calc_dfs_tree_nonrec (di, bb, reverse)
 	  else
 	    {
 	      bn = e->dest;
-	      if (di->dfs_order[bn->index] || bn == ex_block)
+	      if (bn == ex_block || di->dfs_order[bn->index])
 		{
 		  e = e->succ_next;
 		  continue;
