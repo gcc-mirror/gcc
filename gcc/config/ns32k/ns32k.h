@@ -830,7 +830,17 @@ __transfer_from_trampoline ()		\
    || (GET_CODE (X) == PLUS						\
        && GET_CODE (XEXP (X, 0)) == REG					\
        && REG_OK_FOR_BASE_P (XEXP (X, 0))				\
-       && CONSTANT_ADDRESS_P (XEXP (X, 1))))
+       && CONSTANT_ADDRESS_P (XEXP (X, 1))				\
+       && (GET_CODE (X) != CONST_INT || NS32K_DISPLACEMENT_P (INTVAL (X)))))
+
+/* 1 if integer I will fit in a 4 byte displacement field.
+   Strictly speaking, we can't be sure that a symbol will fit this range.
+   But, in practice, it always will.  */
+
+#define NS32K_DISPLACEMENT(i) 				\
+ (((i) <= 16777215 && (i) >= -16777216)			\
+  || ((TARGET_32532 || TARGET_32332)			\
+      && (i) <= 536870913 && (i) >= -536870912))
 
 /* Check for frame pointer or stack pointer.  */
 #define MEM_REG(X) \
