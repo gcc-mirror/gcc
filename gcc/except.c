@@ -503,8 +503,9 @@ static int can_throw		PROTO((rtx));
 static rtx scan_region		PROTO((rtx, int, int *));
 static void eh_regs		PROTO((rtx *, rtx *, int));
 static void set_insn_eh_region	PROTO((rtx *, int));
+#ifdef DONT_USE_BUILTIN_SETJMP
 static void jumpif_rtx		PROTO((rtx, rtx));
-static void jumpifnot_rtx	PROTO((rtx, rtx));
+#endif
 
 
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
@@ -1052,6 +1053,7 @@ get_dynamic_cleanup_chain ()
   return gen_rtx_MEM (Pmode, result);
 }
 
+#ifdef DONT_USE_BUILTIN_SETJMP
 /* Generate code to evaluate X and jump to LABEL if the value is nonzero.
    LABEL is an rtx of code CODE_LABEL, in this function.  */
 
@@ -1062,17 +1064,7 @@ jumpif_rtx (x, label)
 {
   jumpif (make_tree (type_for_mode (GET_MODE (x), 0), x), label);
 }
-
-/* Generate code to evaluate X and jump to LABEL if the value is zero.
-   LABEL is an rtx of code CODE_LABEL, in this function.  */
-
-static void
-jumpifnot_rtx (x, label)
-     rtx x;
-     rtx label;
-{
-  jumpifnot (make_tree (type_for_mode (GET_MODE (x), 0), x), label);
-}
+#endif
 
 /* Start a dynamic cleanup on the EH runtime dynamic cleanup stack.
    We just need to create an element for the cleanup list, and push it
