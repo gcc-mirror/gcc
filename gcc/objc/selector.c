@@ -95,8 +95,8 @@ sel_get_uid (const char *name)
 const char*
 sel_get_name (SEL selector)
 {
-  if ((soffset_decode((unsigned)selector) > 0)
-      && (soffset_decode((unsigned)selector) <= __objc_selector_max_index))
+  if ((soffset_decode((sidx)selector) > 0)
+      && (soffset_decode((sidx)selector) <= __objc_selector_max_index))
     return sarray_get (__objc_selector_array, (sidx) selector);
   else
     return NULL;

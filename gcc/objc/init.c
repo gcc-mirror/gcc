@@ -241,7 +241,7 @@ __objc_init_protocols (struct objc_protocol_list* protos)
 
   for(i = 0; i < protos->count; i++)
     {
-      if (((int)((id)protos->list[i])->class_pointer) == PROTOCOL_VERSION)
+      if (((size_t)((id)protos->list[i])->class_pointer) == PROTOCOL_VERSION)
 	((id)protos->list[i])->class_pointer = proto_class;
       else
 	{

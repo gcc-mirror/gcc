@@ -46,10 +46,10 @@ sarray_at_put(struct sarray* array, sidx index, void* element)
   struct sindex** the_index;
   struct sbucket** the_bucket;
 #ifdef OBJC_SPARSE3
-  unsigned int ioffset;
+  size_t ioffset;
 #endif
-  unsigned int boffset;
-  unsigned int eoffset;
+  size_t boffset;
+  size_t eoffset;
 #ifdef PRECOMPUTE_SELECTORS
   union sofftype xx; 
   xx.idx = index;
@@ -139,9 +139,9 @@ struct sarray*
 sarray_new (int size, void* default_element)
 {
 #ifdef OBJC_SPARSE3
-  unsigned num_indices = ((size-1)/(INDEX_CAPACITY))+1;
+  size_t num_indices = ((size-1)/(INDEX_CAPACITY))+1;
 #else /* OBJC_SPARSE2 */
-  unsigned num_indices = ((size-1)/BUCKET_SIZE)+1;
+  size_t num_indices = ((size-1)/BUCKET_SIZE)+1;
 #endif
   int counter;
   struct sarray* arr;
@@ -314,9 +314,9 @@ sarray_realloc(struct sarray* array, int newsize)
 void 
 sarray_free(struct sarray* array) {
 #ifdef OBJC_SPARSE3
-  unsigned int old_max_index = (array->capacity-1)/INDEX_CAPACITY;
+  size_t old_max_index = (array->capacity-1)/INDEX_CAPACITY;
 #else
-  unsigned int old_max_index = (array->capacity-1)/BUCKET_SIZE;
+  size_t old_max_index = (array->capacity-1)/BUCKET_SIZE;
 #endif
   int counter = 0;
 
@@ -393,9 +393,9 @@ struct sarray*
 sarray_lazy_copy(struct sarray* oarr)
 {
 #ifdef OBJC_SPARSE3
-  unsigned num_indices = ((oarr->capacity-1)/INDEX_CAPACITY)+1;
+  size_t num_indices = ((oarr->capacity-1)/INDEX_CAPACITY)+1;
 #else /* OBJC_SPARSE2 */
-  unsigned num_indices = ((oarr->capacity-1)/BUCKET_SIZE)+1;
+  size_t num_indices = ((oarr->capacity-1)/BUCKET_SIZE)+1;
 #endif
   struct sarray* arr;
 
