@@ -3349,7 +3349,7 @@ build_conditional_expr (ifexp, op1, op2)
     {
       if (pedantic)
 	pedwarn ("ANSI C forbids omitting the middle term of a ?: expression");
-      ifexp = op1 = save_expr (ifexp);
+      ifexp = orig_op1 = op1 = save_expr (ifexp);
     }
 
   ifexp = truthvalue_conversion (default_conversion (ifexp));
