@@ -145,7 +145,6 @@ Fri Feb 18 20:08:57 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/alpha/alpha.h (INITIAL_ELIMINATION_OFFSET): Add abort
 	in unhandled case.
 
->>>>>>> 1.5739
 2000-02-18  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/elf.h (ASM_OUTPUT_ALIGN): Do not generate
