@@ -1577,19 +1577,15 @@ move_by_pieces_1 (genfun, mode, data)
       if (data->to)
 	{
 	  if (data->autinc_to)
-	    {
-	      to1 = replace_equiv_address (data->to, data->to_addr);
-	      to1 = adjust_address (to1, mode, 0);
-	    }
+	    to1 = adjust_automodify_address (data->to, mode, data->to_addr,
+					     data->offset);
 	  else
 	    to1 = adjust_address (data->to, mode, data->offset);
 	}
 
       if (data->autinc_from)
-	{
-	  from1 = replace_equiv_address (data->from, data->from_addr);
-	  from1 = adjust_address (from1, mode, 0);
-	}
+	from1 = adjust_automodify_address (data->from, mode, data->from_addr,
+					   data->offset);
       else
 	from1 = adjust_address (data->from, mode, data->offset);
 
@@ -2525,10 +2521,8 @@ store_by_pieces_2 (genfun, mode, data)
 	data->offset -= size;
 
       if (data->autinc_to)
-	{
-	  to1 = replace_equiv_address (data->to, data->to_addr);
-	  to1 = adjust_address (to1, mode, 0);
-	}
+	to1 = adjust_automodify_address (data->to, mode, data->to_addr,
+					 data->offset);
       else
 	to1 = adjust_address (data->to, mode, data->offset);
 

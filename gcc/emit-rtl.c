@@ -1870,14 +1870,16 @@ change_address (memref, mode, addr)
 
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address offset by OFFSET bytes.  If VALIDATE is
-   nonzero, the memory address is forced to be valid.  */
+   nonzero, the memory address is forced to be valid.
+   If ADJUST is zero, OFFSET is only used to update MEM_ATTRS
+   and caller is responsible for adjusting MEMREF base register.  */
 
 rtx
-adjust_address_1 (memref, mode, offset, validate)
+adjust_address_1 (memref, mode, offset, validate, adjust)
      rtx memref;
      enum machine_mode mode;
      HOST_WIDE_INT offset;
-     int validate;
+     int validate, adjust;
 {
   rtx addr = XEXP (memref, 0);
   rtx new;
@@ -1885,17 +1887,17 @@ adjust_address_1 (memref, mode, offset, validate)
   rtx size = 0;
   unsigned int memalign = MEM_ALIGN (memref);
 
-  /* If MEMREF is a LO_SUM and the offset is within the alignment of the
-     object, we can merge it into the LO_SUM.  */
-  if (GET_MODE (memref) != BLKmode && GET_CODE (addr) == LO_SUM
-      && offset >= 0
-      && (unsigned HOST_WIDE_INT) offset
-         < GET_MODE_ALIGNMENT (GET_MODE (memref)) / BITS_PER_UNIT)
-    addr = gen_rtx_LO_SUM (Pmode, XEXP (addr, 0),
-			   plus_constant (XEXP (addr, 1), offset));
-  else if (offset == 0)
+  if (adjust == 0 || offset == 0)
     /* ??? Prefer to create garbage instead of creating shared rtl.  */
     addr = copy_rtx (addr);
+  /* If MEMREF is a LO_SUM and the offset is within the alignment of the
+     object, we can merge it into the LO_SUM.  */
+  else if (GET_MODE (memref) != BLKmode && GET_CODE (addr) == LO_SUM
+	   && offset >= 0
+	   && (unsigned HOST_WIDE_INT) offset
+	      < GET_MODE_ALIGNMENT (GET_MODE (memref)) / BITS_PER_UNIT)
+    addr = gen_rtx_LO_SUM (Pmode, XEXP (addr, 0),
+			   plus_constant (XEXP (addr, 1), offset));
   else
     addr = plus_constant (addr, offset);
 
@@ -1924,6 +1926,23 @@ adjust_address_1 (memref, mode, offset, validate)
   /* At some point, we should validate that this offset is within the object,
      if all the appropriate values are known.  */
   return new;
+}
+
+/* Return a memory reference like MEMREF, but with its mode changed
+   to MODE and its address changed to ADDR, which is assumed to be
+   MEMREF offseted by OFFSET bytes.  If VALIDATE is
+   nonzero, the memory address is forced to be valid.  */
+
+rtx
+adjust_automodify_address_1 (memref, mode, addr, offset, validate)
+     rtx memref;
+     enum machine_mode mode;
+     rtx addr;
+     HOST_WIDE_INT offset;
+     int validate;
+{
+  memref = change_address_1 (memref, VOIDmode, addr, validate);
+  return adjust_address_1 (memref, mode, offset, validate, 0);
 }
 
 /* Return a memory reference like MEMREF, but whose address is changed by

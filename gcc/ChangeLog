@@ -1,3 +1,14 @@
+2001-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* emit-rtl.c (adjust_address_1): Add ADJUST argument.
+	(adjust_automodify_address_1): New.
+	* expr.h (adjust_address, adjust_address_nv): Adjust.
+	(adjust_automodify_address, adjust_automodify_address_nv): Define.
+	(adjust_address_1): Update prototype.
+	(adjust_automodify_address_1): Add prototype.
+	* expr.c (move_by_pieces_1): Use adjust_automodify_address.
+	(store_by_pieces_2): Likewise.
+
 Tue Nov 13 05:45:40 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (explow.o): Now depends on ggc.h.
