@@ -1371,7 +1371,7 @@ real_to_integer2 (plow, phigh, r)
       exp = r->exp;
       if (exp <= 0)
 	goto underflow;
-      if (exp >= 2*HOST_BITS_PER_WIDE_INT)
+      if (exp > 2*HOST_BITS_PER_WIDE_INT)
 	goto overflow;
 
       rshift_significand (&t, r, 2*HOST_BITS_PER_WIDE_INT - exp);
