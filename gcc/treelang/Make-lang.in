@@ -47,7 +47,7 @@ TREELANGSED = sed
 TREELANGSEDFLAGS = -n
 
 # back end compiler libraries etc
-TREE_BE_LIBS = $(BACKEND) $(LIBIBERTY) $(INTLLIBS) $(LIBS) $(LIBDEPS)
+TREE_BE_LIBS = $(C_TARGET_OBJS) $(BACKEND) $(LIBIBERTY) $(INTLLIBS) $(LIBS) $(LIBDEPS)
 GCC_EXTRAS = -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include
 
 # ./xgcc is the just built compiler. See GCC_FOR_TARGET in the GCC Makefile.in.

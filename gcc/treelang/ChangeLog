@@ -1,3 +1,18 @@
+2003-05-09  Tim Josling  <tej@melbpc.org.au>
+
+	* Make-lang.in (TREE_BE_LIBS): Add C_TARGET_OBJS to object files
+	to link (needed by some front ends such as PPC).
+
+	* treetree.c (tree_code_create_function_initial): Fix long line.
+	Initialize tree_code_int_size and tree_code_char_size to
+	meaningful values.
+	(tree_code_get_numeric_type): Add check that size1 parameter is
+	valid.
+
+	* parse.y: Fix extra long lines in prototypes.
+
+	* treelang.h: Fix extra long lines in macro definitions.
+
 2003-05-07  Zack Weinberg  <zack@codesourcery.com>
 
 	* Make-lang.in: Set -Wno-error for treelang/lex.o.
