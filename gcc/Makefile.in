@@ -668,11 +668,13 @@ $(srcdir)/configure: $(srcdir)/configure.in
 # nothing has changed.
 # It remains in the source directory and is part of the distribution.
 # This follows what is done in shellutils, fileutils, etc.
+# "echo timestamp" is used instead of touch to be consistent with other
+# packages that use autoconf (??? perhaps also to avoid problems with patch?).
 # ??? Newer versions have a maintainer mode that may be useful here.
 $(srcdir)/config.in: $(srcdir)/cstamp-h.in
 $(srcdir)/cstamp-h.in: $(srcdir)/configure.in $(srcdir)/acconfig.h
 	cd $(srcdir) && autoheader
-	touch $(srcdir)/cstamp-h.in
+	echo timestamp > $(srcdir)/cstamp-h.in
 config.h: cstamp-h ; @true
 cstamp-h: config.in config.status
 	CONFIG_HEADERS=config.h:config.in $(SHELL) config.status
