@@ -114,8 +114,10 @@ static void	 thumb_output_function_prologue PARAMS ((FILE *,
 							 HOST_WIDE_INT));
 static int	 arm_comp_type_attributes	PARAMS ((tree, tree));
 static void	 arm_set_default_type_attributes	PARAMS ((tree));
+#ifdef OBJECT_FORMAT_ELF
 static void	 arm_elf_asm_named_section	PARAMS ((const char *,
 							 unsigned int));
+#endif
 static int	 arm_adjust_cost		PARAMS ((rtx, rtx, rtx, int));
 
 #undef Hint
@@ -954,7 +956,8 @@ const_ok_for_arm (i)
       mask =
 	  (mask << 2) | ((mask & (unsigned HOST_WIDE_INT) 0xffffffff)
 			  >> (32 - 2)) | ~(unsigned HOST_WIDE_INT) 0xffffffff;
-    } while (mask != ~(unsigned HOST_WIDE_INT) 0xFF);
+    }
+  while (mask != ~(unsigned HOST_WIDE_INT) 0xFF);
 
   return FALSE;
 }
@@ -10833,6 +10836,7 @@ aof_dump_imports (f)
 }
 #endif /* AOF_ASSEMBLER */
 
+#ifdef OBJECT_FORMAT_ELF
 /* Switch to an arbitrary section NAME with attributes as specified
    by FLAGS.  ALIGN specifies any known alignment requirements for
    the section; 0 if the default should be used.
@@ -10874,3 +10878,4 @@ arm_elf_asm_named_section (name, flags)
     fprintf (asm_out_file, "\t.section\t%s,\"%s\",%%%s\n",
 	     name, flagchars, type);
 }
+#endif
