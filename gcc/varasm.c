@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -455,11 +455,11 @@ make_decl_rtl (decl, asmspec, top_level)
 
 	  if (top_level)
 	    {
-	      /* Make this register fixed, so not usable for anything else.  */
+	      /* Make this register global, so not usable for anything
+		 else.  */
 	      nregs = HARD_REGNO_NREGS (reg_number, DECL_MODE (decl));
 	      while (nregs > 0)
-		global_regs[reg_number + --nregs] = 1;
-	      init_reg_sets_1 ();
+		globalize_reg (reg_number + --nregs);
 	    }
 	}
 
