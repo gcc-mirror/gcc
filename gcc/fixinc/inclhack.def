@@ -1022,7 +1022,8 @@ fix = {
 fix = {
     hackname  = hpux_long_double;
     files     = stdlib.h;
-    select    = "long_double";
+    select    = "extern[ \t]long_double[ \t]strtold";
+    bypass    = "long_double_t";
     sed       = "/^#[ \t]*ifndef _LONG_DOUBLE/,/\\/\\* _LONG_DOUBLE \\*\\//D";
     sed       = "s/long_double/long double/g";
 

@@ -1,3 +1,9 @@
+2003-02-13  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
+
+	* inclhack.def (hpux_long_double): Tighten select and add bypass
+	regexp.
+	* fixincl.x: Rebuilt.
+
 2003-02-13  Josef Zlomek  <zlomekj@suse.cz>
 
 	* cfgcleanup.c (outgoing_edges_match): When there is single outgoing
