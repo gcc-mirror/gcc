@@ -1,3 +1,12 @@
+2002-10-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7754
+	* decl2.c (finish_anon_union): Do not expand anonymous unions when
+	procesing template functions.
+	* pt.c (tsubst_decl, case VAR_DECL): Try to complete the variable
+	type. Call layout_decl.
+	(tsubst_expr, case DECL_STMT): Handle anonymous unions.
+
 2002-10-07  Richard Henderson  <rth@redhat.com>
 
 	* decl2.c, pt.c: Revert c++/7754 fix.
