@@ -172,6 +172,10 @@ extern const char *xcoff_lastfile;
     }							\
 }
 
+/* .stabx has the type in a different place.  */
+#define DBX_OUTPUT_GCC_MARKER(FILE) \
+  fprintf ((FILE), "%s\"%s\",0,%d,0\n", ASM_STABS_OP, STABS_GCC_MARKER, N_OPT)
+
 /* Do not break .stabs pseudos into continuations.  */
 #define DBX_CONTIN_LENGTH 0
 

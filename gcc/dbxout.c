@@ -428,9 +428,13 @@ dbxout_init (asm_file, input_file_name, syms)
   ASM_OUTPUT_INTERNAL_LABEL (asmfile, "Ltext", 0);
 #endif /* no DBX_OUTPUT_MAIN_SOURCE_FILENAME */
 
+#ifdef DBX_OUTPUT_GCC_MARKER
+  DBX_OUTPUT_GCC_MARKER (asmfile);
+#else
   /* Emit an N_OPT stab to indicate that this file was compiled by GCC.  */
   fprintf (asmfile, "%s\"%s\",%d,0,0,0\n",
 	   ASM_STABS_OP, STABS_GCC_MARKER, N_OPT);
+#endif
 
   lastfile = input_file_name;
 
