@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -68,12 +68,6 @@ struct symbol
   void
   init(std::string& data);
 };
-
-struct symbol_error : public std::logic_error
-{
-  explicit symbol_error(const std::string& s) : std::logic_error(s) { }
-};
-
 
 typedef __gnu_cxx::hash_map<std::string, symbol> 	symbol_objects;
 

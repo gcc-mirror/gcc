@@ -151,31 +151,8 @@ namespace __gnu_test
 
     std::string w(wanted);
     if (w != s)
-      __throw_exception_again std::runtime_error(std::string(s));
+      std::__throw_runtime_error(s);
   }
-
-  
-  // Useful exceptions.
-  class locale_data : public std::runtime_error 
-  {
-  public:
-    explicit 
-    locale_data(const std::string&  __arg) : runtime_error(__arg) { }
-  };
-
-  class environment_variable: public std::runtime_error 
-  {
-  public:
-    explicit 
-    environment_variable(const std::string&  __arg) : runtime_error(__arg) { }
-  };
-
-  class not_found : public std::runtime_error 
-  {
-  public:
-    explicit 
-    not_found(const std::string&  __arg) : runtime_error(__arg) { }
-  };
 
   void 
   run_tests_wrapped_locale(const char* name, const func_callback& l)
@@ -198,8 +175,11 @@ namespace __gnu_test
 	VERIFY( preLC_ALL == postLC_ALL );
       }
     else
-      __throw_exception_again
-	environment_variable(string("LC_ALL for ") + string(name));
+      {
+	string s("LC_ALL for ");
+	s += name;
+	__throw_runtime_error(s.c_str());
+      }
   }
   
   void 
@@ -224,8 +204,12 @@ namespace __gnu_test
 	setenv(env, oldENV ? oldENV : "", 1);
       }
     else
-      __throw_exception_again
-	environment_variable(string(env) + string(" to ") + string(name));
+      {
+	string s(env);
+	s += string(" to ");
+	s += string(name);
+	__throw_runtime_error(s.c_str());
+      }
 #endif
   }
 
@@ -278,7 +262,8 @@ namespace __gnu_test
   };
 #endif
 
-  semaphore::semaphore() {
+  semaphore::semaphore() 
+  {
 #ifdef _GLIBCXX_SYSV_SEM
     // Remeber the PID for the process that created the semaphore set
     // so that only one process will destroy the set.
@@ -296,15 +281,13 @@ namespace __gnu_test
     // Get a semaphore set with one semaphore.
     sem_set_ = semget(IPC_PRIVATE, 1, SEM_R | SEM_A);
     if (sem_set_ == -1)
-      __throw_exception_again 
-	std::runtime_error ("could not obtain semaphore set");
+      std::__throw_runtime_error("could not obtain semaphore set");
 
     // Initialize the semaphore.
     union semun val;
     val.val = 0;
     if (semctl(sem_set_, 0, SETVAL, val) == -1)
-      __throw_exception_again
-	std::runtime_error("could not initialize semaphore");
+      std::__throw_runtime_error("could not initialize semaphore");
 #else
     // There are no semaphores on this system.  We have no way to mark
     // a test as "unsupported" at runtime, so we just exit, pretending
@@ -313,7 +296,8 @@ namespace __gnu_test
 #endif
   }
 
-  semaphore::~semaphore() {
+  semaphore::~semaphore() 
+  {
 #ifdef _GLIBCXX_SYSV_SEM
     union semun val;
     // Destroy the semaphore set only in the process that created it. 
@@ -323,26 +307,28 @@ namespace __gnu_test
   }
 
   void
-  semaphore::signal() {
+  semaphore::signal() 
+  {
 #ifdef _GLIBCXX_SYSV_SEM
-    struct sembuf op[1] = {
-      { 0, 1, 0 }
-    };
+    struct sembuf op[1] = 
+      {
+	{ 0, 1, 0 }
+      };
     if (semop(sem_set_, op, 1) == -1)
-      __throw_exception_again
-	std::runtime_error("could not signal semaphore");
+      std::__throw_runtime_error("could not signal semaphore");
 #endif
   }
 
   void
-  semaphore::wait() {
+  semaphore::wait() 
+  {
 #ifdef _GLIBCXX_SYSV_SEM
-    struct sembuf op[1] = {
-      { 0, -1, SEM_UNDO }
-    };
+    struct sembuf op[1] = 
+      {
+	{ 0, -1, SEM_UNDO }
+      };
     if (semop(sem_set_, op, 1) == -1)
-      __throw_exception_again
-	std::runtime_error("could not wait for semaphore");
+      std::__throw_runtime_error("could not wait for semaphore");
 #endif    
   }
 }; // namespace __gnu_test

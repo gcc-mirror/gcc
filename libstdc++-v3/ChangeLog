@@ -1,3 +1,22 @@
+2005-01-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/testsuite_hooks.h: 
+	(copy_constructor::mark_call):  Use __throw_runtime_error.
+	(assignment_operator::mark_call): Same.
+	* testsuite/testsuite_hooks.cc (verify_demangle): Same.
+	(locale_data): Remove, just use runtime_error directly.
+	(environment_variable): Same.
+	(not_found): Same.
+	(run_tests_wrapped_locale): Use __throw_runtime_error.
+	(run_tests_wrapped_env): Same.
+	(semaphore::semaphore): Same.
+	(semaphore::signal): Same.
+	(semaphore::wait): Same.
+	* testsuite/testsuite_abi.h (symbol_error): Remove, use logic_error.
+	* testsuite/testsuite_abi.cc (get_symbol): Use __throw_logic_error.
+	(create_symbols): Use __throw_runtime_error.
+	* src/bitmap_allocator.cc: Use __throw_bad_alloc.
+
 2005-01-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/27_io/basic_filebuf/open/char/9507.cc: Remove child
