@@ -41,11 +41,22 @@ Boston, MA 02111-1307, USA.  */
 	.mode mlong
 #endif
 
-#if defined(__USE_RTC__) && defined(mc68hc12)
+	.macro declare_near name
+	.globl \name
+	.type  \name,@function
+	.size  \name,.Lend-\name
+\name:
+	.endm
+
+#if defined(__USE_RTC__)
 # define ARG(N) N+1
 
 	.macro ret
+#if defined(mc68hc12)
 	rtc
+#else
+	jmp __return_32
+#endif
 	.endm
 
 	.macro declare name
@@ -181,10 +192,10 @@ REG(_.d32)
 ;; Specific initialization for 68hc11 before the main.
 ;; Nothing special for a generic routine; Just enable interrupts.
 ;;
-	declare	__premain
+	declare_near	__premain
 	clra
 	tap	; Clear both I and X.
-	ret
+	rts
 #endif
 
 #ifdef L__exit
@@ -299,7 +310,7 @@ L1:
 	puly			; Restore Y to return the DST
 End:
 	xgdy
-	rts
+	ret
 #endif
 #endif
 
@@ -349,7 +360,7 @@ L0:
 	pulx			; Restore X to return the DST
 End:
 	xgdx
-	rts
+	ret
 #endif
 #endif
 
@@ -438,10 +449,8 @@ End:
 #endif
 	
 #ifdef L_negsi2
-	.sect .text
-	.globl ___negsi2
+	declare_near ___negsi2
 
-___negsi2:
 	comb
 	coma
 	xgdx
@@ -456,10 +465,8 @@ done:
 #endif
 
 #ifdef L_one_cmplsi2
-	.sect .text
-	.globl ___one_cmplsi2
+	declare_near ___one_cmplsi2
 
-___one_cmplsi2:
 	comb
 	coma
 	xgdx
@@ -470,10 +477,8 @@ ___one_cmplsi2:
 #endif
 	
 #ifdef L_ashlsi3
-	.sect .text
-	.globl ___ashlsi3
+	declare_near ___ashlsi3
 
-___ashlsi3:
 	xgdy
 	clra
 	andb	#0x1f
@@ -492,10 +497,8 @@ Return:
 #endif
 
 #ifdef L_ashrsi3
-	.sect .text
-	.globl ___ashrsi3
+	declare_near ___ashrsi3
 
-___ashrsi3:
 	xgdy
 	clra
 	andb	#0x1f
@@ -515,10 +518,8 @@ Return:
 #endif
 
 #ifdef L_lshrsi3
-	.sect .text
-	.globl ___lshrsi3
+	declare_near ___lshrsi3
 
-___lshrsi3:
 	xgdy
 	clra
 	andb	#0x1f
@@ -537,10 +538,8 @@ Return:
 #endif
 
 #ifdef L_lshrhi3
-	.sect .text
-	.globl ___lshrhi3
+	declare_near ___lshrhi3
 
-___lshrhi3:
 	cpx	#16
 	bge	Return_zero
 	cpx	#0
@@ -558,10 +557,8 @@ Return_zero:
 #endif
 	
 #ifdef L_lshlhi3
-	.sect .text
-	.globl ___lshlhi3
+	declare_near ___lshlhi3
 
-___lshlhi3:
 	cpx	#16
 	bge	Return_zero
 	cpx	#0
@@ -579,8 +576,7 @@ Return_zero:
 #endif
 
 #ifdef L_rotrhi3
-	.sect .text
-	.globl ___rotrhi3
+	declare_near ___rotrhi3
 
 ___rotrhi3:
 	xgdx
@@ -599,8 +595,7 @@ Return:
 #endif
 
 #ifdef L_rotlhi3
-	.sect .text
-	.globl ___rotlhi3
+	declare_near ___rotlhi3
 
 ___rotlhi3:
 	xgdx
@@ -620,10 +615,8 @@ Return:
 #endif
 
 #ifdef L_ashrhi3
-	.sect .text
-	.globl ___ashrhi3
+	declare_near ___ashrhi3
 
-___ashrhi3:
 	cpx	#16
 	bge	Return_minus_1_or_zero
 	cpx	#0
@@ -646,10 +639,8 @@ Return_zero:
 #endif
 	
 #ifdef L_ashrqi3
-	.sect .text
-	.globl ___ashrqi3
+	declare_near ___ashrqi3
 
-___ashrqi3:
 	cmpa	#8
 	bge	Return_minus_1_or_zero
 	tsta
@@ -671,10 +662,8 @@ Return_zero:
 #endif
 
 #ifdef L_lshlqi3
-	.sect .text
-	.globl ___lshlqi3
+	declare_near ___lshlqi3
 
-___lshlqi3:
 	cmpa	#8
 	bge	Return_zero
 	tsta
@@ -694,8 +683,7 @@ Return_zero:
 #ifndef mc68hc12
 /* 68HC12 signed divisions are generated inline (idivs).  */
 
-	.sect .text
-	.globl __divmodhi4
+	declare_near __divmodhi4
 
 ;
 ;; D = numerator
@@ -704,7 +692,6 @@ Return_zero:
 ;; Result:	D = D / X
 ;;		X = D % X
 ;; 
-__divmodhi4:
 	tsta
 	bpl	Numerator_pos
 	comb			; D = -D <=> D = (~D) + 1
@@ -762,8 +749,7 @@ Numerator_neg_denominator_pos:
 #endif
 
 #ifdef L_mulqi3
-       .sect .text
-       .globl __mulqi3
+	declare_near ___mulqi3
 
 ;
 ; short __mulqi3(signed char a, signed char b);
@@ -773,7 +759,6 @@ Numerator_neg_denominator_pos:
 ;
 ; returns the signed result of A * B in register D.
 ;
-__mulqi3:
 	tsta
 	bmi	A_neg
 	tstb
@@ -800,8 +785,7 @@ AB_neg:
 #endif
 	
 #ifdef L_mulhi3
-	.sect .text
-	.globl ___mulhi3
+	declare_near ___mulhi3
 
 ;
 ;
@@ -810,7 +794,6 @@ AB_neg:
 ;	a = register D
 ;	b = register X
 ;
-___mulhi3:
 #ifdef mc68hc12
 	pshx			; Preserve X
 	exg	x,y
@@ -846,24 +829,6 @@ ___mulhi3:
 				; ---
 				; 91 cycles
 #else
-	stx	_.tmp		; (4/5)
-	pshb			; (3)
-	ldab	_.tmp+1		; (3/4)
-	mul			; (10) B.high * A.low
-	xgdx			; (3)
-	pulb			; (4)
-	stab	_.tmp		; (3/4)
-	mul			; (10) B.low * A.high
-	abx			; (3)
-	ldd	_.tmp		; (4/5)
-	mul			; (10) B.low * A.low
-	stx	_.tmp		; (4) 
-	adda	_.tmp+1		; (4/5)
-	rts			; (5) 20/26 bytes
-				; ---
-				; 70/76 cycles
-
-#ifdef OLD_MUL
 	stx	*_.tmp		; (4)
 	pshb			; (3)
 	ldab	*_.tmp+1	; (3)
@@ -881,7 +846,6 @@ ___mulhi3:
 	adda	*_.tmp		; (4)
 	rts			; (5) 24/32 bytes
 				; 77/85 cycles
-#endif
 #endif
 #endif
 #endif
@@ -920,13 +884,13 @@ ___mulhi3:
 ;      <A-low>    1,x
 ;      <A-high>   0,x
 ;
-	declare	__mulhi32
+	declare_near	__mulhi32
 
 #ifdef mc68hc12
-	ldy	ARG(2),sp
+	ldy	2,sp
 	emul
 	exg	x,y
-	ret
+	rts
 #else
 	pshx			; Room for temp value
 	pshb
@@ -1228,7 +1192,7 @@ dtors_done:
 
 #ifdef L_far_tramp
 #ifdef mc68hc12
-	.sect	.text
+	.sect	.tramp,"ax",@progbits
 	.globl	__far_trampoline
 
 ;; This is a trampoline used by the linker to invoke a function
@@ -1256,6 +1220,123 @@ __far_trampoline:
 				; and can jump to the far handler
 				; (whose memory bank is mapped due to the
 				; call to the trampoline).
+#endif
+
+#ifdef mc68hc11
+	.sect	.tramp,"ax",@progbits
+	.globl __far_trampoline
+
+;; Trampoline generated by gcc for 68HC11:
+;;
+;;	pshb
+;;	ldab	#%page(func)
+;;	ldy	#%addr(func)
+;;	jmp	__far_trampoline
+;;
+__far_trampoline:
+	psha				; (2) Save function parameter (high)
+	;; <Read current page in A>
+	psha				; (2)
+	;; <Set currenge page from B>
+	pshx				; (4)
+	tsx				; (3)
+	ldab	4,x			; (4) Restore function parameter (low)
+	ldaa	2,x			; (4) Get saved page number
+	staa	4,x			; (4) Save it below return PC
+	pulx				; (5)
+	pula				; (3)
+	pula				; (3) Restore function parameter (high)
+	jmp	0,y			; (4)
+#endif
+#endif
+
+#ifdef L_call_far
+#ifdef mc68hc11
+	.sect	.tramp,"ax",@progbits
+	.globl __call_a16
+	.globl __call_a32
+;;
+;; The call methods are used for 68HC11 to support memory bank switching.
+;; Every far call is redirected to these call methods.  Its purpose is to:
+;;
+;;  1/ Save the current page on the stack (1 byte to follow 68HC12 call frame)
+;;  2/ Install the new page
+;;  3/ Jump to the real function
+;;
+;; The page switching (get/save) is board dependent.  The default provided
+;; here does nothing (just create the appropriate call frame).
+;;
+;; Call sequence (10 bytes, 13 cycles):
+;;
+;;	ldx #page			; (3)
+;;	ldy #func			; (4)
+;;	jsr __call_a16			; (6)
+;;
+;; Call trampoline (11 bytes, 19 cycles):
+;;
+__call_a16:
+	;; xgdx				; (3)
+	;; <Read current page in A>	; (3) ldaa _current_page
+	psha				; (2)
+	;; <Set current page from B>	; (4) staa _current_page
+	;; xgdx				; (3)
+	jmp 0,y				; (4)
+
+;;
+;; Call sequence (10 bytes, 14 cycles):
+;;
+;;	pshb				; (2)
+;;	ldab #page			; (2)
+;;	ldy  #func			; (4)
+;;	jsr __call_a32			; (6)
+;;
+;; Call trampoline (87 bytes, 57 cycles):
+;;
+__call_a32:
+	pshx				; (4)
+	psha				; (2)
+	;; <Read current page in A>	; (3) ldaa _current_page
+	psha				; (2)
+	;; <Set current page from B>	; (4) staa _current_page
+	tsx				; (3)
+	ldab	6,x			; (4) Restore function parameter
+	ldaa	5,x			; (4) Move PC return at good place
+	staa	6,x			; (4)
+	ldaa	4,x			; (4)
+	staa	5,x			; (4)
+	pula				; (3)
+	staa	4,x			; (4)
+	pula				; (3)
+	pulx				; (5)
+	jmp	0,y			; (4)
+#endif
+#endif
+
+#ifdef L_return_far
+#ifdef mc68hc11
+	.sect	.tramp,"ax",@progbits
+       .globl __return_void
+       .globl __return_16
+       .globl __return_32
+
+__return_void:
+	;; pulb
+	;; <Set current page from B> (Board specific)
+	;; rts
+__return_16:
+	;; xgdx
+	;; pulb
+	;; <Set current page from B> (Board specific)
+	;; xgdx
+	;; rts
+__return_32:
+	;; xgdy
+	;; pulb
+	;; <Set current page from B> (Board specific)
+	;; xgdy
+	;; rts
+	ins
+	rts
 #endif
 #endif
 .Lend:
