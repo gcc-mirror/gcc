@@ -1,3 +1,10 @@
+2003-06-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (compute_mov_length): Adjust for the
+	new optimization.
+	* config/h8300/h8300.md (*movsi_h8300): Optimize the load of
+	an SImode constant whose upper and lower are the same.
+
 Wed Jun 25 11:31:59 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* varasm.c (assemble_name): Mark needed variables even when
