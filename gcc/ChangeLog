@@ -1,3 +1,7 @@
+2001-02-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* explow.c (trunc_int_for_mode): Sign-extend value to mode.
+
 2001-02-12  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/rs6000/sysv4.h (MASK_NO_BITFIELD_WORD): New macro.
