@@ -1,5 +1,9 @@
 2005-04-02  Geoffrey Keating  <geoffk@apple.com>
 
+	PR 20650
+	* config/rs6000/rs6000.md (fix_truncdfsi2): Make destination
+	a register.
+
 	* config/rs6000/t-darwin (TARGET_LIBGCC2_CFLAGS): Add -pipe.
 	* config/t-darwin (TARGET_LIBGCC2_CFLAGS): Likewise.
 

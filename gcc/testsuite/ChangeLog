@@ -1,3 +1,7 @@
+2005-04-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/rs6000-fpint.c: New.
+
 2005-04-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/old-style-then-proto-1.c: New test.
