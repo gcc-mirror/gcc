@@ -6,7 +6,7 @@ dnl and doesn't call AC_PROG_CXX_GNU, cause we test for that in  AC_PROG_CC_WORK
 dnl We are probably using a cross compiler, which will not be able to fully
 dnl link an executable.  This should really be fixed in autoconf itself.
 dnl Find a working G++ cross compiler. This only works for the GNU C++ compiler.
-AC_DEFUN(CYG_AC_PROG_CXX_CROSS,
+AC_DEFUN([CYG_AC_PROG_CXX_CROSS],
 [AC_BEFORE([$0], [AC_PROG_CXXCPP])
 AC_CHECK_PROGS(CXX, $CCC c++ g++ gcc CC cxx cc++, gcc)
 
@@ -35,7 +35,7 @@ fi
 ])
 
 dnl See if the G++ compiler we found works.
-AC_DEFUN(CYG_AC_PROG_GXX_WORKS,
+AC_DEFUN([CYG_AC_PROG_GXX_WORKS],
 [AC_MSG_CHECKING([whether the G++ compiler ($CXX $CXXFLAGS $LDFLAGS) actually works])
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
@@ -103,7 +103,7 @@ AC_SUBST(CXX)
 dnl ====================================================================
 dnl Find a working GCC cross compiler. This only works for the GNU gcc compiler.
 dnl This is based on the macros above for G++.
-AC_DEFUN(CYG_AC_PROG_CC_CROSS,
+AC_DEFUN([CYG_AC_PROG_CC_CROSS],
 [AC_BEFORE([$0], [AC_PROG_CCPP])
 AC_CHECK_PROGS(CC, cc, gcc)
 
@@ -132,7 +132,7 @@ fi
 ])
 
 dnl See if the GCC compiler we found works.
-AC_DEFUN(CYG_AC_PROG_GCC_WORKS,
+AC_DEFUN([CYG_AC_PROG_GCC_WORKS],
 [AC_MSG_CHECKING([whether the Gcc compiler ($CC $CFLAGS $LDFLAGS) actually works])
 AC_LANG_SAVE
 AC_LANG_C
@@ -199,7 +199,7 @@ AC_SUBST(CC)
 dnl ====================================================================
 dnl Find the BFD library in the build tree. This is used to access and
 dnl manipulate object or executable files.
-AC_DEFUN(CYG_AC_PATH_BFD, [
+AC_DEFUN([CYG_AC_PATH_BFD], [
 AC_MSG_CHECKING(for the bfd header in the build tree)
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 dnl Look for the header file
@@ -241,7 +241,7 @@ AC_SUBST(BFDLIB)
 dnl ====================================================================
 dnl Find the libiberty library. This defines many commonly used C
 dnl functions that exists in various states based on the underlying OS.
-AC_DEFUN(CYG_AC_PATH_LIBERTY, [
+AC_DEFUN([CYG_AC_PATH_LIBERTY], [
 AC_MSG_CHECKING(for the liberty library in the build tree)
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 AC_CACHE_VAL(ac_cv_c_liberty,[
@@ -262,7 +262,7 @@ AC_SUBST(LIBERTY)
 
 dnl ====================================================================
 dnl Find the opcodes library. This is used to do dissasemblies.
-AC_DEFUN(CYG_AC_PATH_OPCODES, [
+AC_DEFUN([CYG_AC_PATH_OPCODES], [
 AC_MSG_CHECKING(for the opcodes library in the build tree)
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 AC_CACHE_VAL(ac_cv_c_opc,[
@@ -284,7 +284,7 @@ AC_SUBST(OPCODESLIB)
 dnl ====================================================================
 dnl Look for the DejaGnu header file in the source tree. This file
 dnl defines the functions used to testing support.
-AC_DEFUN(CYG_AC_PATH_DEJAGNU, [
+AC_DEFUN([CYG_AC_PATH_DEJAGNU], [
 AC_MSG_CHECKING(for the testing support files in the source tree)
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 AC_CACHE_VAL(ac_cv_c_dejagnu,[
@@ -335,7 +335,7 @@ AC_SUBST(DEJAGNUHDIR)
 dnl ====================================================================
 dnl Find the libintl library in the build tree. This is for
 dnl  internationalization support.
-AC_DEFUN(CYG_AC_PATH_INTL, [
+AC_DEFUN([CYG_AC_PATH_INTL], [
 AC_MSG_CHECKING(for the intl header in the build tree)
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 dnl Look for the header file
@@ -375,7 +375,7 @@ AC_SUBST(INTLLIB)
 
 dnl ====================================================================
 dnl Find the simulator library.
-AC_DEFUN(CYG_AC_PATH_SIM, [
+AC_DEFUN([CYG_AC_PATH_SIM], [
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.. ../../../../../../../../../.."
 case "$target_cpu" in
     powerpc)	target_dir=ppc ;;
@@ -457,7 +457,7 @@ AC_SUBST(SIMLIB)
 
 dnl ====================================================================
 dnl Find the libiberty library.
-AC_DEFUN(CYG_AC_PATH_LIBIBERTY, [
+AC_DEFUN([CYG_AC_PATH_LIBIBERTY], [
 AC_MSG_CHECKING(for the libiberty library in the build tree)
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 AC_CACHE_VAL(ac_cv_c_libib,[
@@ -477,7 +477,7 @@ AC_SUBST(LIBIBERTY)
 ])
 
 dnl ====================================================================
-AC_DEFUN(CYG_AC_PATH_DEVO, [
+AC_DEFUN([CYG_AC_PATH_DEVO], [
 AC_MSG_CHECKING(for devo headers in the source tree)
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 AC_CACHE_VAL(ac_cv_c_devoh,[
@@ -498,7 +498,7 @@ AC_SUBST(DEVOHDIR)
 
 dnl ====================================================================
 dnl find the IDE library and headers.
-AC_DEFUN(CYG_AC_PATH_IDE, [
+AC_DEFUN([CYG_AC_PATH_IDE], [
 AC_MSG_CHECKING(for IDE headers in the source tree)
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 IDEHDIR=
@@ -591,7 +591,7 @@ AC_SUBST(IDETCLLIB)
 
 dnl ====================================================================
 dnl Find all the ILU headers and libraries
-AC_DEFUN(CYG_AC_PATH_ILU, [
+AC_DEFUN([CYG_AC_PATH_ILU], [
 AC_MSG_CHECKING(for ILU kernel headers in the source tree)
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 AC_CACHE_VAL(ac_cv_c_iluh,[
@@ -752,7 +752,7 @@ dnl ====================================================================
 dnl This defines the byte order for the host. We can't use
 dnl AC_C_BIGENDIAN, cause we want to create a config file and
 dnl substitue the real value, so the header files work right
-AC_DEFUN(CYG_AC_C_ENDIAN, [
+AC_DEFUN([CYG_AC_C_ENDIAN], [
 AC_MSG_CHECKING(to see if this is a little endian host)
 AC_CACHE_VAL(ac_cv_c_little_endian, [
 ac_cv_c_little_endian=unknown
@@ -809,7 +809,7 @@ AC_SUBST(ENDIAN)
 dnl ====================================================================
 dnl Look for the path to libgcc, so we can use it to directly link
 dnl in libgcc.a with LD.
-AC_DEFUN(CYG_AC_PATH_LIBGCC,
+AC_DEFUN([CYG_AC_PATH_LIBGCC],
 [AC_MSG_CHECKING([Looking for the path to libgcc.a])
 AC_LANG_SAVE
 AC_LANG_C
@@ -844,12 +844,12 @@ dnl Warning: transition of version 9 to 10 will break this algorithm
 dnl because 10 sorts before 9. We also look for just tcl. We have to
 dnl be careful that we don't match stuff like tclX by accident.
 dnl the alternative search directory is involked by --with-tclinclude
-AC_DEFUN(CYG_AC_PATH_TCL, [
+AC_DEFUN([CYG_AC_PATH_TCL], [
     CYG_AC_PATH_TCLH
     CYG_AC_PATH_TCLCONFIG
     CYG_AC_LOAD_TCLCONFIG
 ])
-AC_DEFUN(CYG_AC_PATH_TCLH, [
+AC_DEFUN([CYG_AC_PATH_TCLH], [
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 no_tcl=true
 AC_MSG_CHECKING(for Tcl headers in the source tree)
@@ -935,7 +935,7 @@ AC_SUBST(TCLHDIR)
 
 dnl ====================================================================
 dnl Ok, lets find the tcl configuration
-AC_DEFUN(CYG_AC_PATH_TCLCONFIG, [
+AC_DEFUN([CYG_AC_PATH_TCLCONFIG], [
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 dnl First, look for one uninstalled.  
 dnl the alternative search directory is invoked by --with-tclconfig
@@ -1024,7 +1024,7 @@ AC_SUBST(TCLCONFIG)
 
 dnl Defined as a separate macro so we don't have to cache the values
 dnl from PATH_TCLCONFIG (because this can also be cached).
-AC_DEFUN(CYG_AC_LOAD_TCLCONFIG, [
+AC_DEFUN([CYG_AC_LOAD_TCLCONFIG], [
     . $TCLCONFIG
 
 dnl AC_SUBST(TCL_VERSION)
@@ -1070,12 +1070,12 @@ dnl    AC_SUBST(TCL_UNSHARED_LIB_SUFFIX)
 ])
 
 dnl ====================================================================
-AC_DEFUN(CYG_AC_PATH_TK, [
+AC_DEFUN([CYG_AC_PATH_TK], [
     CYG_AC_PATH_TKH
     CYG_AC_PATH_TKCONFIG
     CYG_AC_LOAD_TKCONFIG
 ])
-AC_DEFUN(CYG_AC_PATH_TKH, [
+AC_DEFUN([CYG_AC_PATH_TKH], [
 #
 # Ok, lets find the tk source trees so we can use the headers
 # If the directory (presumably symlink) named "tk" exists, use that one
@@ -1168,7 +1168,7 @@ fi
 AC_SUBST(TKHDIR)
 ])
 
-AC_DEFUN(CYG_AC_PATH_TKCONFIG, [
+AC_DEFUN([CYG_AC_PATH_TKCONFIG], [
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 dnl First, look for one uninstalled.  
 dnl the alternative search directory is invoked by --with-tkconfig
@@ -1257,7 +1257,7 @@ AC_SUBST(TKCONFIG)
 
 dnl Defined as a separate macro so we don't have to cache the values
 dnl from PATH_TKCONFIG (because this can also be cached).
-AC_DEFUN(CYG_AC_LOAD_TKCONFIG, [
+AC_DEFUN([CYG_AC_LOAD_TKCONFIG], [
     if test -f "$TKCONFIG" ; then
       . $TKCONFIG
     fi
@@ -1287,13 +1287,13 @@ dnl    AC_SUBST(TK_EXEC_PREFIX)
 dnl ====================================================================
 dnl Ok, lets find the itcl source trees so we can use the headers
 dnl the alternative search directory is involked by --with-itclinclude
-AC_DEFUN(CYG_AC_PATH_ITCL, [
+AC_DEFUN([CYG_AC_PATH_ITCL], [
     CYG_AC_PATH_ITCLH
     CYG_AC_PATH_ITCLLIB
     CYG_AC_PATH_ITCLSH
     CYG_AC_PATH_ITCLMKIDX
 ])
-AC_DEFUN(CYG_AC_PATH_ITCLH, [
+AC_DEFUN([CYG_AC_PATH_ITCLH], [
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 no_itcl=true
 AC_MSG_CHECKING(for Itcl headers in the source tree)
@@ -1367,7 +1367,7 @@ AC_SUBST(ITCLHDIR)
 dnl Ok, lets find the itcl library
 dnl First, look for one uninstalled.  
 dnl the alternative search directory is invoked by --with-itcllib
-AC_DEFUN(CYG_AC_PATH_ITCLLIB, [
+AC_DEFUN([CYG_AC_PATH_ITCLLIB], [
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 if test x"${no_itcl}" = x ; then
     dnl we reset no_itcl incase something fails here
@@ -1454,7 +1454,7 @@ AC_SUBST(ITCLLIB)
 dnl ====================================================================
 dnl Ok, lets find the itcl source trees so we can use the itcl_sh script
 dnl the alternative search directory is involked by --with-itclinclude
-AC_DEFUN(CYG_AC_PATH_ITCLSH, [
+AC_DEFUN([CYG_AC_PATH_ITCLSH], [
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 no_itcl=true
 AC_MSG_CHECKING(for the itcl_sh script)
@@ -1516,7 +1516,7 @@ AC_SUBST(ITCLSH)
 dnl ====================================================================
 dnl Ok, lets find the itcl source trees so we can use the itcl_sh script
 dnl the alternative search directory is involked by --with-itclinclude
-AC_DEFUN(CYG_AC_PATH_ITCLMKIDX, [
+AC_DEFUN([CYG_AC_PATH_ITCLMKIDX], [
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 no_itcl=true
 AC_MSG_CHECKING(for itcl_mkindex.tcl script)
@@ -1582,11 +1582,11 @@ AC_SUBST(ITCLMKIDX)
 dnl ====================================================================
 dnl Ok, lets find the tix source trees so we can use the headers
 dnl the alternative search directory is involked by --with-tixinclude
-AC_DEFUN(CYG_AC_PATH_TIX, [
+AC_DEFUN([CYG_AC_PATH_TIX], [
     CYG_AC_PATH_TIXH
     CYG_AC_PATH_TIXLIB
 ])
-AC_DEFUN(CYG_AC_PATH_TIXH, [
+AC_DEFUN([CYG_AC_PATH_TIXH], [
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 no_tix=true
 AC_MSG_CHECKING(for Tix headers in the source tree)
@@ -1663,7 +1663,7 @@ fi
 AC_SUBST(TIXHDIR)
 ])
 
-AC_DEFUN(CYG_AC_PATH_TIXCONFIG, [
+AC_DEFUN([CYG_AC_PATH_TIXCONFIG], [
 #
 # Ok, lets find the tix configuration
 # First, look for one uninstalled.  
@@ -1737,7 +1737,7 @@ fi
 
 # Defined as a separate macro so we don't have to cache the values
 # from PATH_TIXCONFIG (because this can also be cached).
-AC_DEFUN(CYG_AC_LOAD_TIXCONFIG, [
+AC_DEFUN([CYG_AC_LOAD_TIXCONFIG], [
     if test -f "$TIXCONFIG" ; then
       . $TIXCONFIG
     fi
@@ -1746,7 +1746,7 @@ AC_DEFUN(CYG_AC_LOAD_TIXCONFIG, [
     AC_SUBST(TIX_LIB_FULL_PATH)
 ])
 
-AC_DEFUN(CYG_AC_PATH_ITCLCONFIG, [
+AC_DEFUN([CYG_AC_PATH_ITCLCONFIG], [
 #
 # Ok, lets find the itcl configuration
 # First, look for one uninstalled.  
@@ -1820,7 +1820,7 @@ fi
 
 # Defined as a separate macro so we don't have to cache the values
 # from PATH_ITCLCONFIG (because this can also be cached).
-AC_DEFUN(CYG_AC_LOAD_ITCLCONFIG, [
+AC_DEFUN([CYG_AC_LOAD_ITCLCONFIG], [
     if test -f "$ITCLCONFIG" ; then
       . $ITCLCONFIG
     fi
@@ -1833,7 +1833,7 @@ AC_DEFUN(CYG_AC_LOAD_ITCLCONFIG, [
 ])
 
 
-AC_DEFUN(CYG_AC_PATH_ITKCONFIG, [
+AC_DEFUN([CYG_AC_PATH_ITKCONFIG], [
 #
 # Ok, lets find the itk configuration
 # First, look for one uninstalled.  
@@ -1907,7 +1907,7 @@ fi
 
 # Defined as a separate macro so we don't have to cache the values
 # from PATH_ITKCONFIG (because this can also be cached).
-AC_DEFUN(CYG_AC_LOAD_ITKCONFIG, [
+AC_DEFUN([CYG_AC_LOAD_ITKCONFIG], [
     if test -f "$ITKCONFIG" ; then
       . $ITKCONFIG
     fi
@@ -1921,11 +1921,11 @@ AC_DEFUN(CYG_AC_LOAD_ITKCONFIG, [
 dnl ====================================================================
 dnl Ok, lets find the libgui source trees so we can use the headers
 dnl the alternative search directory is involked by --with-libguiinclude
-AC_DEFUN(CYG_AC_PATH_LIBGUI, [
+AC_DEFUN([CYG_AC_PATH_LIBGUI], [
     CYG_AC_PATH_LIBGUIH
     CYG_AC_PATH_LIBGUILIB
 ])
-AC_DEFUN(CYG_AC_PATH_LIBGUIH, [
+AC_DEFUN([CYG_AC_PATH_LIBGUIH], [
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../..../../../../../../../../../../.."
 no_libgui=true
 AC_MSG_CHECKING(for Libgui headers in the source tree)
@@ -1995,7 +1995,7 @@ AC_SUBST(LIBGUIHDIR)
 
 dnl ====================================================================
 dnl find the GUI library
-AC_DEFUN(CYG_AC_PATH_LIBGUILIB, [
+AC_DEFUN([CYG_AC_PATH_LIBGUILIB], [
 AC_MSG_CHECKING(for GUI library  in the build tree)
 dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
 dnl look for the library
