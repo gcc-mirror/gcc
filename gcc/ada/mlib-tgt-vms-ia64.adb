@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2004, Free Software Foundation, Inc.          --
+--            Copyright (C) 2004-2005 Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,10 +77,10 @@ package body MLib.Tgt is
    ------------------------------
 
    function Popen (Command, Mode : System.Address) return System.Address;
-   pragma Import (C, Popen);
+   pragma Import (C, Popen, "decc$popen");
 
    function Pclose (File : System.Address) return Integer;
-   pragma Import (C, Pclose);
+   pragma Import (C, Pclose, "decc$pclose");
 
    ---------------------
    -- Archive_Builder --
