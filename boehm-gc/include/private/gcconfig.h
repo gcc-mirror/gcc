@@ -1058,8 +1058,16 @@
 #	ifdef __ELF__
 #	    define DYNAMIC_LOADING
 #	endif
+/* Handle unmapped hole i386*-*-freebsd[45]* may put between etext and edata. */
 	extern char etext[];
+	extern char edata[];
+	extern char end[];
+#	define NEED_FIND_LIMIT
 #	define DATASTART ((ptr_t)(etext))
+#   	define MIN(x,y) ((x) < (y) ? (x) : (y))
+#	define DATAEND (MIN (GC_find_limit (DATASTART, TRUE), DATASTART2))
+#	define DATASTART2 ((ptr_t)(edata))
+#	define DATAEND2 ((ptr_t)(end))
 #   endif
 #   ifdef NETBSD
 #	define OS_TYPE "NETBSD"
