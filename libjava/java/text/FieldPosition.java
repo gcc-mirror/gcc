@@ -168,7 +168,7 @@ public class FieldPosition
    * <p>
    * <ul>
    * <li>The specified object is not <code>null</code>.
-   * <li>The specified object is an instance of <code>FieldPosition</code>.
+   * <li>The specified object has the same class as this object.
    * <li>The specified object has the same field identifier, field attribute 
    * and beginning and ending index as this object.
    * </ul>
