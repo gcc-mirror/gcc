@@ -1,5 +1,8 @@
 2001-06-18  Mark Mitchell  <mark@codesourcery.com>
 
+	* gcc_release (build_sources): Fix dates generated
+	for ChangeLogs.
+
 	* gcc_release: Add support for modifying ChangeLogs and
 	updating versions.
 

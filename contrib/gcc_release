@@ -114,7 +114,7 @@ build_sources() {
            error "Could not check out release sources"
     for x in `find ${SOURCE_DIRECTORY} -name ChangeLog`; do
       cat - ${x} > ${x}.new <<EOF
-${DATE} Release Manager
+`date "+%Y-%m-%d"` Release Manager
 
         * GCC ${RELEASE} Released.
 
