@@ -1,3 +1,16 @@
+Sat Feb 14 06:50:26 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (copy_args_p): Handle copy elision for types with virtual
+ 	bases.
+  	* call.c (build_over_call): Likewise.
+
+	* exception.cc (__cp_pop_exception): Lose handler arg.
+	* except.c (do_pop_exception): Likewise.
+	(push_eh_cleanup): Let the cleanup mechanism supply the handler.
+	(expand_end_catch_block): Likewise.
+
+	* method.c (make_thunk): Avoid name buffer overflow.
+
 Fri Feb  6 21:32:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config-lang.in (diff_excludes): Use basename only.
