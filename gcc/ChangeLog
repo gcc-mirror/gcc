@@ -1,3 +1,8 @@
+2001-05-24  Geoff Keating  <geoffk@redhat.com>
+
+	* config/rs6000/linux.h (SIGNAL_FRAMESIZE): Define.
+	(MD_FALLBACK_FRAME_STATE_FOR): Use it.
+
 Thu May 24 19:47:19 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* simplify-rtx.c (simplify_subreg): Fix CONCAT simplification;
