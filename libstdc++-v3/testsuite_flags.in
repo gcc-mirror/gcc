@@ -43,7 +43,7 @@ case ${query} in
       echo ${CXX}
       ;;
     --build-cxx)
-      PCHFLAGS="-include bits/stdc++.h"
+      PCHFLAGS="@glibcpp_PCHFLAGS@"
       CXX_build="@glibcpp_CXX@ ${PCHFLAGS}"
       CXX=`echo "$CXX_build" | sed 's,gcc/xgcc ,gcc/g++ ,'`
       echo ${CXX}

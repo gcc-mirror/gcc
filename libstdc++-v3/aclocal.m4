@@ -1476,6 +1476,12 @@ AC_DEFUN(GLIBCPP_CHECK_PCH, [
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   AM_CONDITIONAL(GLIBCPP_BUILD_PCH, test "$glibcpp_pch_comp" = yes)
+  if test "$glibcpp_pch_comp" = yes; then
+	glibcpp_PCHFLAGS="-include bits/stdc++.h"
+  else
+	glibcpp_PCHFLAGS=""
+  fi
+  AC_SUBST(glibcpp_PCHFLAGS)
 ])
 
 dnl

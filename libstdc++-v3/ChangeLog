@@ -1,3 +1,11 @@
+2003-06-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (GLIBCPP_CHECK_PCH): Only set glibcpp_PCHFLAGS if
+	.gch compilation works.
+	* aclocal.m4, configure: Regenerate.
+	* testsuite_flags.in (--build-cxx): Use glibcpp_PCHFLAGS to
+	initialize PCHFLAGS.
+
 2003-06-04  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/basic_string.h (_M_fold, insert(iterator, _CharT),
