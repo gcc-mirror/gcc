@@ -7310,14 +7310,14 @@ else
 fi
 
    fi
+fi
 
-   if test -z "${with_multisubdir}"; then
-      builddotdot=.
-   else
+if test -z "${with_multisubdir}"; then
+   builddotdot=.
+else
 
-      builddotdot=`echo ${with_multisubdir} | sed -e 's:[^/][^/]*:..:g'`
+   builddotdot=`echo ${with_multisubdir} | sed -e 's:[^/][^/]*:..:g'`
 
-   fi
 fi
 
 # Which gcj do we use?
