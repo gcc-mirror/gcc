@@ -1461,8 +1461,8 @@ expand_builtin_constant_p (exp)
   arglist = TREE_VALUE (arglist);
 
   /* We have taken care of the easy cases during constant folding.  This
-     case is not obvious, so emit (constant_p_rtx (ARGLIST)) and let CSE get a
-     chance to see if it can deduce whether ARGLIST is constant.  */
+     case is not obvious, so emit (constant_p_rtx (ARGLIST)) and let CSE
+     get a chance to see if it can deduce whether ARGLIST is constant.  */
 
   tmp = expand_expr (arglist, NULL_RTX, VOIDmode, 0);
   tmp = gen_rtx_CONSTANT_P_RTX (value_mode, tmp);
@@ -4496,3 +4496,32 @@ default_expand_builtin (exp, target, subtarget, mode, ignore)
 {
   return NULL_RTX;
 }
+
+/* Instantiate all remaining CONSTANT_P_RTX nodes.  */
+
+void
+purge_builtin_constant_p ()
+{
+  rtx insn, done, set;
+  rtx arg, new, note;
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      done = NEXT_INSN (bb->end);
+      for (insn = bb->head; insn != done; insn = NEXT_INSN (insn))
+	if (INSN_P (insn)
+	    && (set = single_set (insn)) != NULL_RTX
+	    && GET_CODE (SET_SRC (set)) == CONSTANT_P_RTX)
+	  {
+	    arg = XEXP (SET_SRC (set), 0);
+	    new = CONSTANT_P (arg) ? const1_rtx : const0_rtx;
+	    validate_change (insn, &SET_SRC (set), new, 0);
+
+	    /* Remove the REG_EQUAL note from the insn.  */
+	    if ((note = find_reg_note (insn, REG_EQUAL, NULL_RTX)) != 0)
+	      remove_note (insn, note);
+	  }
+    }
+}
+

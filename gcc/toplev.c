@@ -621,10 +621,6 @@ int flag_volatile_static;
 
 int flag_syntax_only = 0;
 
-/* Nonzero means perform global cse.  */
-
-static int flag_gcse;
-
 /* Nonzero means perform loop optimizer.  */
 
 static int flag_loop_optimize;
@@ -645,6 +641,10 @@ static int flag_if_conversion2;
    useless null pointer tests.  */
 
 static int flag_delete_null_pointer_checks;
+
+/* Nonzero means perform global CSE.  */
+
+int flag_gcse = 0;
 
 /* Nonzero means to do the enhanced load motion during gcse, which trys
    to hoist loads by not killing them when a store to the same location
@@ -2920,6 +2920,9 @@ rest_of_compilation (decl)
       verify_flow_info ();
 #endif
     }
+
+  /* Instantiate any remaining CONSTANT_P_RTX nodes.  */
+  purge_builtin_constant_p ();
 
   /* Move constant computations out of loops.  */
 

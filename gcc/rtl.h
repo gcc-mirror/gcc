@@ -1346,6 +1346,7 @@ extern int ceil_log2			PARAMS ((unsigned HOST_WIDE_INT));
 
 /* In builtins.c */
 extern rtx expand_builtin_expect_jump	PARAMS ((tree, rtx, rtx));
+extern void purge_builtin_constant_p	PARAMS ((void));
 
 /* In explow.c */
 extern void set_stack_check_libfunc PARAMS ((rtx));

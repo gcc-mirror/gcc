@@ -1305,6 +1305,7 @@ want_to_gcse_p (x)
     case CONST_DOUBLE:
     case CONST_VECTOR:
     case CALL:
+    case CONSTANT_P_RTX:
       return 0;
 
     default:
@@ -2216,7 +2217,8 @@ hash_scan_set (pat, insn, table)
 		    && REGNO (src) >= FIRST_PSEUDO_REGISTER
 		    && can_copy_p [GET_MODE (dest)]
 		    && REGNO (src) != regno)
-		   || CONSTANT_P (src))
+		   || (CONSTANT_P (src)
+		       && GET_CODE (src) != CONSTANT_P_RTX))
 	       /* A copy is not available if its src or dest is subsequently
 		  modified.  Here we want to search from INSN+1 on, but
 		  oprs_available_p searches from INSN on.  */
@@ -4277,7 +4279,8 @@ do_local_cprop (x, insn, alter_jumps, libcall_sp)
 	  if (l->in_libcall)
 	    continue;
 
-	  if (CONSTANT_P (this_rtx))
+	  if (CONSTANT_P (this_rtx)
+	      && GET_CODE (this_rtx) != CONSTANT_P_RTX)
 	    newcnst = this_rtx;
 	  if (REG_P (this_rtx) && REGNO (this_rtx) >= FIRST_PSEUDO_REGISTER
 	      /* Don't copy propagate if it has attached REG_EQUIV note.

@@ -1,6 +1,6 @@
 /* RTL simplification functions for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2729,11 +2729,15 @@ simplify_rtx (x)
 					     : GET_MODE (XEXP (x, 1))),
 					    XEXP (x, 0), XEXP (x, 1));
     case 'x':
-      /* The only case we try to handle is a SUBREG.  */
       if (code == SUBREG)
 	return simplify_gen_subreg (mode, SUBREG_REG (x),
 				    GET_MODE (SUBREG_REG (x)),
 				    SUBREG_BYTE (x));
+      if (code == CONSTANT_P_RTX)
+	{
+	  if (CONSTANT_P (XEXP (x,0)))
+	    return const1_rtx;
+	}
       return NULL;
     default:
       return NULL;

@@ -1,3 +1,21 @@
+2003-01-22  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/8423
+	* cse.c (fold_rtx): Only eliminate a CONSTANT_P_RTX to 1 when
+	its argument is constant, or 0 if !flag_gcse.
+	* simplify-rtx.c (simplify_rtx): Convert CONSTANT_P_RTX to 1
+	if it's argument is constant.
+	* gcse.c (want_to_gcse_p): Ignore CONSTANT_P_RTX nodes.
+	(hash_scan_set): Don't record CONSTANT_P_RTX expressions.
+	(do_local_cprop): Don't propagate CONSTANT_P_RTX constants.
+	* builtins.c (purge_builtin_constant_p): New function to force
+	instantiation of any remaining CONSTANT_P_RTX nodes.
+	* rtl.h (purge_builtin_constant_p): Prototype here.
+	* toplev.c (rest_of_compilation): Invoke purge_builtin_constant_p
+	pass after GCSE and before loop.
+	(flag_gcse): No longer static.
+	* flags.h (flag_gcse): Prototype here.
+
 2003-01-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (HARD_REGNO_MODE_OK): Fix warning regression
