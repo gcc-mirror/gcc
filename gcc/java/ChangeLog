@@ -1,3 +1,9 @@
+2004-08-05  Michael Chastain  <mec.gnu@mindspring.com>
+
+	PR bootstrap/14893
+	* Make-lang.in (java.install-man): Install from either build
+	tree or source tree, whichever has the file first.
+
 2004-08-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* jcf-parse.c (get_constant): Adjust force_fit_type call.
