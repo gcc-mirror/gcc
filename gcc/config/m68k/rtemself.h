@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a Motorola m68k using elf.
-   Copyright (C) 1999, National Research Council of Canada.
+   Copyright (C) 1999, 2000, National Research Council of Canada.
    Contributed by Charles-Antoine Gauthier (charles.gauthier@nrc.ca).
 
 This file is part of GNU CC.
@@ -64,4 +64,7 @@ Boston, MA 02111-1307, USA.  */
 /* Do I need this? */
 #undef INVOKE__main
 
+/* Get machine-independent configuration parameters for RTEMS.  */
+#include <rtems.h>
 
+/* end of m68k/rtemself.h */

@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a SH using COFF.
-   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 2000 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -32,4 +32,5 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_MEM_FUNCTIONS
 #endif
 
-/* end of sh/rtems.h */
+/* Get machine-independent configuration parameters for RTEMS.  */
+#include <rtems.h>

@@ -2272,13 +2272,13 @@ changequote([,])dnl
 		extra_headers=math-68881.h
 		float_format=m68k
 		;;
-	m68k-*-rtemscoff*|m68k-*-rtems*)
+	m68k-*-rtemscoff*)
 		tmake_file="m68k/t-m68kbare t-rtems"
 		tm_file=m68k/rtems.h
 		extra_headers=math-68881.h
 		float_format=m68k
 		;;
-	m68k-*-rtemself*)
+	m68k-*-rtemself*|m68k-*-rtems*)
 		tmake_file="m68k/t-m68kbare t-rtems m68k/t-crtstuff"
 		tm_file=m68k/rtemself.h
 		extra_headers=math-68881.h
@@ -2811,7 +2811,6 @@ changequote([,])dnl
 		;;
 	mips64orion-*-rtems*)
 		tm_file="mips/elforion.h mips/elf64.h mips/rtems64.h"
-                tm_file="mips/elforion.h mips/elf64.h mips/rtems64.h"
 		tmake_file="mips/t-elf t-rtems"
 		;;
 	mipstx39el-*-elf*)
@@ -3271,6 +3270,9 @@ changequote([,])dnl
 		tmake_file=sparc/t-sunos41
 		xmake_file=x-lynx
 		;;
+	sparc-*-rtemsaout*)
+		tmake_file="sparc/t-sparcbare t-rtems"
+		tm_file=sparc/rtems.h
 	sparc-*-rtems*|sparc-*-rtemself*)
 		tm_file="sparc/rtemself.h"
 		tmake_file="sparc/t-elf t-rtems"
@@ -3278,9 +3280,6 @@ changequote([,])dnl
 		#float_format=i128
 		float_format=i64
 		;;
-	sparc-*-rtemsaout*)
-		tmake_file="sparc/t-sparcbare t-rtems"
-		tm_file=sparc/rtems.h
 		;;
 	sparcv9-*-solaris2*)
 		if test x$gnu_ld = xyes
