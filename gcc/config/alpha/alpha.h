@@ -1359,15 +1359,13 @@ do {						\
    After reload, it makes no difference, since pseudo regs have
    been eliminated by then.  */
 
-#ifndef REG_OK_STRICT
-
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X) 0
 
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P(X)  \
+#define NONSTRICT_REG_OK_FOR_BASE_P(X)  \
   (REGNO (X) < 32 || REGNO (X) == 63 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
 /* ??? Nonzero if X is the frame pointer, or some virtual register
@@ -1375,92 +1373,40 @@ do {						\
    have offsets greater than 32K.  This is done because register
    elimination offsets will change the hi/lo split, and if we split
    before reload, we will require additional instructions.   */
-#define REG_OK_FP_BASE_P(X)			\
+#define NONSTRICT_REG_OK_FP_BASE_P(X)		\
   (REGNO (X) == 31 || REGNO (X) == 63		\
    || (REGNO (X) >= FIRST_PSEUDO_REGISTER	\
        && REGNO (X) < LAST_VIRTUAL_REGISTER))
 
-#else
-
-/* Nonzero if X is a hard reg that can be used as an index.  */
-#define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
-
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
-#define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
+#define STRICT_REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
 
-#define REG_OK_FP_BASE_P(X) 0
-
+#ifdef REG_OK_STRICT
+#define REG_OK_FOR_BASE_P(X)	STRICT_REG_OK_FOR_BASE_P (X)
+#else
+#define REG_OK_FOR_BASE_P(X)	NONSTRICT_REG_OK_FOR_BASE_P (X)
 #endif
 
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.
-   The MODE argument is the machine mode for the MEM expression
-   that wants to use this address. 
+/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression that is a
+   valid memory address for an instruction.  */
 
-   For Alpha, we have either a constant address or the sum of a register
-   and a constant address, or just a register.  For DImode, any of those
-   forms can be surrounded with an AND that clear the low-order three bits;
-   this is an "unaligned" access.
-
-   First define the basic valid address.  */
-
-#define GO_IF_LEGITIMATE_SIMPLE_ADDRESS(MODE, X, ADDR)			\
-{									\
-  rtx tmp = (X);							\
-  if (GET_CODE (tmp) == SUBREG						\
-      && (GET_MODE_SIZE (GET_MODE (tmp))				\
-	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (tmp)))))		\
-    tmp = SUBREG_REG (tmp);						\
-  if (REG_P (tmp) && REG_OK_FOR_BASE_P (tmp))				\
-    goto ADDR;								\
-  if (CONSTANT_ADDRESS_P (X))						\
-    goto ADDR;								\
-  if (GET_CODE (X) == PLUS)						\
-    {									\
-      tmp = XEXP (X, 0);						\
-      if (GET_CODE (tmp) == SUBREG					\
-          && (GET_MODE_SIZE (GET_MODE (tmp))				\
-	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (tmp)))))		\
-        tmp = SUBREG_REG (tmp);						\
-      if (REG_P (tmp))							\
-	{								\
-	  if (REG_OK_FP_BASE_P (tmp)					\
-	      && GET_CODE (XEXP (X, 1)) == CONST_INT)			\
-	    goto ADDR;							\
-	  if (REG_OK_FOR_BASE_P (tmp)					\
-	      && CONSTANT_ADDRESS_P (XEXP (X, 1)))			\
-	    goto ADDR;							\
-	}								\
-      else if (GET_CODE (tmp) == ADDRESSOF				\
-	       && CONSTANT_ADDRESS_P (XEXP (X, 1)))			\
-	goto ADDR;							\
-    }									\
-}
-
-/* Now accept the simple address, or, for DImode only, an AND of a simple
-   address that turns off the low three bits.  */
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) \
-{ GO_IF_LEGITIMATE_SIMPLE_ADDRESS (MODE, X, ADDR); \
-  if ((MODE) == DImode				\
-      && GET_CODE (X) == AND			\
-      && GET_CODE (XEXP (X, 1)) == CONST_INT	\
-      && INTVAL (XEXP (X, 1)) == -8)		\
-    GO_IF_LEGITIMATE_SIMPLE_ADDRESS (MODE, XEXP (X, 0), ADDR); \
-}
+#ifdef REG_OK_STRICT
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, WIN)	\
+do {						\
+  if (alpha_legitimate_address_p (MODE, X, 1))	\
+    goto WIN;					\
+} while (0)
+#else
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, WIN)	\
+do {						\
+  if (alpha_legitimate_address_p (MODE, X, 0))	\
+    goto WIN;					\
+} while (0)
+#endif
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
-   This macro is used in only one place: `memory_address' in explow.c.
-
-   OLDX is the address as it was before break_out_memory_refs was called.
-   In some cases it is useful to look at this to decide what needs to be done.
-
-   MODE and WIN are passed so that this macro can use
-   GO_IF_LEGITIMATE_ADDRESS.
-
-   It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output.  */
+   This macro is used in only one place: `memory_address' in explow.c.  */
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)		\
 do {							\
