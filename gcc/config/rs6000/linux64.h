@@ -110,7 +110,6 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES \
  "-D_PPC_ -D__PPC__ -D_PPC64_ -D__PPC64__ -D__powerpc__ -D__powerpc64__ \
   -D_PIC_ -D__PIC__ -D__ELF__ \
-  -D__LONG_MAX__=9223372036854775807L \
   -Acpu=powerpc64 -Amachine=powerpc64"
 
 #undef  CPP_OS_DEFAULT_SPEC

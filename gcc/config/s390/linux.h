@@ -55,7 +55,7 @@ Boston, MA 02111-1307, USA.  */
    -Acpu(s390) -Amachine(s390) -D__s390__"
 
 #define CPP_ARCH31_SPEC ""
-#define CPP_ARCH64_SPEC "-D__s390x__ -D__LONG_MAX__=9223372036854775807L"
+#define CPP_ARCH64_SPEC "-D__s390x__"
 
 #undef  CPP_SPEC
 #ifdef DEFAULT_TARGET_64BIT

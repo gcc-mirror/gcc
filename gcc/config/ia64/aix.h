@@ -81,8 +81,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=itanium:-D__itanium__} %{mbig-endian:-D__BIG_ENDIAN__} \
 %{ansi:-D_ANSI_C_SOURCE} \
 %{posix:-D_POSIX_SOURCE} \
-%{cpp_cpu} \
--D__LONG_MAX__=9223372036854775807L"
+%{cpp_cpu}"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
@@ -97,7 +96,6 @@ Boston, MA 02111-1307, USA.  */
    -D_XOPEN_SOURCE_EXTENDED=1                   \
    -D_LARGE_FILE_API                            \
    -D_ALL_SOURCE                                \
-   -D__LONG_MAX__=9223372036854775807L          \
    %{cpp_cpu}"
 
 /* Define this for shared library support.  */

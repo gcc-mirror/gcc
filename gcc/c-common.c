@@ -365,6 +365,7 @@ static bool get_nonnull_operand		PARAMS ((tree,
 void builtin_define_std PARAMS ((const char *));
 static void builtin_define_with_value PARAMS ((const char *, const char *,
 					       int));
+static void builtin_define_type_max PARAMS ((const char *, tree, int));
 
 /* Table of machine-independent attributes common to all C-like languages.  */
 const struct attribute_spec c_common_attribute_table[] =
@@ -4346,6 +4347,19 @@ cb_register_builtins (pfile)
   builtin_define_with_value ("__WCHAR_TYPE__", MODIFIED_WCHAR_TYPE, 0);
   builtin_define_with_value ("__WINT_TYPE__", WINT_TYPE, 0);
 
+  /* limits.h needs to know these.  */
+  builtin_define_type_max ("__SCHAR_MAX__", signed_char_type_node, 0);
+  builtin_define_type_max ("__SHRT_MAX__", short_integer_type_node, 0);
+  builtin_define_type_max ("__INT_MAX__", integer_type_node, 0);
+  builtin_define_type_max ("__LONG_MAX__", long_integer_type_node, 1);
+  builtin_define_type_max ("__LONG_LONG_MAX__", long_long_integer_type_node, 2);
+
+  {
+    char buf[8];
+    sprintf (buf, "%d", (int) TYPE_PRECISION (signed_char_type_node));
+    builtin_define_with_value ("__CHAR_BIT__", buf, 0);
+  }
+
   /* For use in assembly language.  */
   builtin_define_with_value ("__REGISTER_PREFIX__", REGISTER_PREFIX, 0);
   builtin_define_with_value ("__USER_LABEL_PREFIX__", user_label_prefix, 0);
@@ -4453,6 +4467,54 @@ builtin_define_with_value (macro, expansion, is_str)
     sprintf (buf, "%s=\"%s\"", macro, expansion);
   else
     sprintf (buf, "%s=%s", macro, expansion);
+
+  cpp_define (parse_in, buf);
+}
+
+/* Define MAX for TYPE based on the precision of the type, which is assumed
+   to be signed.  IS_LONG is 1 for type "long" and 2 for "long long".  */
+
+static void
+builtin_define_type_max (macro, type, is_long)
+     const char *macro;
+     tree type;
+     int is_long;
+{
+  const char *value;
+  char *buf;
+  size_t mlen, vlen, extra;
+
+  /* Pre-rendering the values mean we don't have to futz with printing a
+     multi-word decimal value.  There are also a very limited number of
+     precisions that we support, so it's really a waste of time.  */
+  switch (TYPE_PRECISION (type))
+    {
+    case 8:
+      value = "127";
+      break;
+    case 16:
+      value = "32767";
+      break;
+    case 32:
+      value = "2147483647";
+      break;
+    case 64:
+      value = "9223372036854775807";
+      break;
+    case 128:
+      value = "170141183460469231731687303715884105727";
+      break;
+    default:
+      abort ();
+    }
+
+  mlen = strlen (macro);
+  vlen = strlen (value);
+  extra = 2 + is_long;
+  buf = alloca (mlen + vlen + extra);
+
+  sprintf (buf, "%s=%s%s", macro, value,
+	   (is_long == 1 ? "L" : is_long == 2 ? "LL" : ""));
 
   cpp_define (parse_in, buf);
 }

@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-D__mn10200__ -D__MN10200__ -D__LONG_MAX__=2147483647L -D__LONG_LONG_MAX__=2147483647L -D__INT_MAX__=32767"
+#define CPP_PREDEFINES "-D__mn10200__ -D__MN10200__"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 

@@ -29,8 +29,8 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_SPEC      "%{m68hc11:-m m68hc11elf}%{!m68hc11:-m m68hc12elf}"
 
 #define CPP_SPEC  \
-"%{mshort:-D__HAVE_SHORT_INT__ -D__INT__=16 -D__INT_MAX__=32767}\
- %{!mshort:-D__INT__=32 -D__INT_MAX__=2147483647}\
+"%{mshort:-D__HAVE_SHORT_INT__ -D__INT__=16}\
+ %{!mshort:-D__INT__=32}\
  %{m68hc11:-Dmc6811 -DMC6811 -Dmc68hc11}\
  %{!m68hc11:-Dmc6812 -DMC6812 -Dmc68hc12}\
  %{fshort-double:-D__HAVE_SHORT_DOUBLE__}"

@@ -59,12 +59,6 @@ extern const char * const *h8_reg_names;
 	  builtin_assert ("cpu=h8300");			\
 	  builtin_assert ("machine=h8300");		\
 	}						\
-      if (TARGET_INT32)					\
-	builtin_define ("__INT_MAX__=2147483647");	\
-      else						\
-	builtin_define ("__INT_MAX__=32767");		\
-      builtin_define ("__LONG_MAX__=2147483647L");	\
-      builtin_define ("__LONG_LONG_MAX__=2147483647L");	\
     }							\
   while (0)
 
