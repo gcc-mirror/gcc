@@ -7389,7 +7389,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 (define_expand "builtin_zapnot"
   [(set (match_operand:DI 0 "register_operand" "")
 	(and:DI (unspec:DI
-		  [(not:QI (match_operand:QI 2 "reg_or_const_int_operand" ""))]
+		  [(not:QI (match_operand:DI 2 "reg_or_const_int_operand" ""))]
 		  UNSPEC_ZAP)
 		(match_operand:DI 1 "reg_or_const_int_operand" "")))]
   ""
