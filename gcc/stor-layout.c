@@ -618,6 +618,11 @@ layout_type (type)
       TYPE_MODE (type) = VOIDmode;
       break;
 
+    case OFFSET_TYPE:
+      TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (Pmode));
+      TYPE_MODE (type) = Pmode;
+      break;
+
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       TYPE_MODE (type) = mode_for_size (2 * GET_MODE_BITSIZE (Pmode),
