@@ -827,6 +827,7 @@ extern rtx single_set			PROTO((rtx));
 extern rtx find_last_value		PROTO((rtx, rtx *, rtx));
 extern int refers_to_regno_p		PROTO((int, int, rtx, rtx *));
 extern int reg_overlap_mentioned_p	PROTO((rtx, rtx));
+extern rtx find_use_as_address		PROTO((rtx, rtx, HOST_WIDE_INT));
 extern void note_stores			PROTO((rtx, void (*)()));
 extern rtx reg_set_last			PROTO((rtx, rtx));
 extern int rtx_equal_p			PROTO((rtx, rtx));
