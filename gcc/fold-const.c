@@ -106,10 +106,6 @@ static tree fold_binary_op_with_conditional_arg
   PARAMS ((enum tree_code, tree, tree, tree, int));
 static bool fold_real_zero_addition_p	PARAMS ((tree, tree, int));
 							 
-#ifndef BRANCH_COST
-#define BRANCH_COST 1
-#endif
-
 #if defined(HOST_EBCDIC)
 /* bit 8 is significant in EBCDIC */
 #define CHARMASK 0xff
