@@ -138,7 +138,7 @@ static int max_uid_for_flow;
    This is set up by find_basic_blocks and used there and in life_analysis,
    and then freed.  */
 
-static short *uid_block_number;
+static int *uid_block_number;
 
 /* INSN_VOLATILE (insn) is 1 if the insn refers to anything volatile.  */
 
@@ -168,7 +168,7 @@ static int num_scratch;
    This information remains valid for the rest of the compilation
    of the current function; it is used to control register allocation.  */
 
-short *reg_basic_block;
+int *reg_basic_block;
 
 /* Indexed by n, gives number of times (REG n) is used or set, each
    weighted by its loop-depth.
@@ -364,7 +364,7 @@ flow_analysis (f, nregs, file)
   basic_block_drops_in = (char *) alloca (n_basic_blocks);
   basic_block_loop_depth = (short *) alloca (n_basic_blocks * sizeof (short));
   uid_block_number
-    = (short *) alloca ((max_uid_for_flow + 1) * sizeof (short));
+    = (int *) alloca ((max_uid_for_flow + 1) * sizeof (int));
   uid_volatile = (char *) alloca (max_uid_for_flow + 1);
   bzero (uid_volatile, max_uid_for_flow + 1);
 
@@ -1113,7 +1113,7 @@ allocate_for_life_analysis ()
   reg_n_calls_crossed = (int *) oballoc (max_regno * sizeof (int));
   bzero (reg_n_calls_crossed, max_regno * sizeof (int));
 
-  reg_basic_block = (short *) oballoc (max_regno * sizeof (short));
+  reg_basic_block = (int *) oballoc (max_regno * sizeof (int));
   for (i = 0; i < max_regno; i++)
     reg_basic_block[i] = REG_BLOCK_UNKNOWN;
 
