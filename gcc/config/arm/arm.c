@@ -2900,10 +2900,22 @@ output_move_double (operands)
 	}
       else if (code1 == CONST_DOUBLE)
 	{
-	  otherops[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_HIGH (operands[1]));
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				 CONST_DOUBLE_LOW (operands[1]));
+	  if (GET_MODE (operands[1]) == DFmode)
+	    {
+	      long l[2];
+	      union real_extract u;
+
+	      bcopy ((char *) &CONST_DOUBLE_LOW (operands[1]), (char *) &u,
+		     sizeof (u));
+	      REAL_VALUE_TO_TARGET_DOUBLE (u.d, l);
+	      otherops[1] = GEN_INT(l[1]);
+	      operands[1] = GEN_INT(l[0]);
+	    }
+	  else
+	    {
+	      otherops[1] = GEN_INT (CONST_DOUBLE_HIGH (operands[1]));
+	      operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
+	    }
 	  output_mov_immediate (operands, FALSE, "");
 	  output_mov_immediate (otherops, FALSE, "");
 	}
