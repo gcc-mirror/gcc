@@ -2101,7 +2101,6 @@ gnu/java/math/MPN.java \
 gnu/java/nio/DatagramChannelImpl.java \
 gnu/java/nio/FileChannelImpl.java \
 gnu/java/nio/FileLockImpl.java \
-gnu/java/nio/MappedByteFileBuffer.java \
 gnu/java/nio/PipeImpl.java \
 gnu/java/nio/SelectionKeyImpl.java \
 gnu/java/nio/SelectorImpl.java \
@@ -2244,6 +2243,7 @@ java/nio/LongBuffer.java \
 java/nio/LongBufferImpl.java \
 java/nio/LongViewBufferImpl.java \
 java/nio/MappedByteBuffer.java \
+java/nio/MappedByteBufferImpl.java \
 java/nio/ReadOnlyBufferException.java \
 java/nio/ShortBuffer.java \
 java/nio/ShortBufferImpl.java \
@@ -2567,7 +2567,6 @@ gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/runtime/natVMClassLoader.cc \
 gnu/java/nio/natFileChannelImpl.cc \
 gnu/java/nio/natFileLockImpl.cc \
-gnu/java/nio/natMappedByteFileBuffer.cc \
 gnu/java/nio/natSelectorImpl.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
