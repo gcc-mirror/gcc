@@ -8676,13 +8676,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	break;
 
       {
-	rtx buf_addr
-	  = force_reg (Pmode,
-		       convert_modes (Pmode, ptr_mode,
-				      expand_expr (TREE_VALUE (arglist),
-						   subtarget,
-						   VOIDmode, 0),
-				      1));
+	rtx buf_addr = expand_expr (TREE_VALUE (arglist), subtarget,
+				    VOIDmode, 0);
 	rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
 	enum machine_mode sa_mode = Pmode;
 	rtx stack_save;
@@ -8692,6 +8687,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	rtx next_arg_reg;
 	CUMULATIVE_ARGS args_so_far;
 	int i;
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+	buf_addr = convert_memory_address (Pmode, buf_addr);
+#endif
+
+	buf_addr = force_reg (Pmode, buf_addr);
 
 	if (target == 0 || GET_CODE (target) != REG
 	    || REGNO (target) < FIRST_PSEUDO_REGISTER)
@@ -8827,13 +8828,19 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	tree dummy_id = get_identifier ("__dummy");
 	tree dummy_type = build_function_type (void_type_node, NULL_TREE);
 	tree dummy_decl = build_decl (FUNCTION_DECL, dummy_id, dummy_type); 
+#ifdef POINTERS_EXTEND_UNSIGNED
 	rtx buf_addr
 	  = force_reg (Pmode,
-		       convert_modes (Pmode, ptr_mode,
-				      expand_expr (TREE_VALUE (arglist),
-						   NULL_RTX,
-						   VOIDmode, 0),
-				      1));
+		       convert_memory_address
+		       (Pmode,
+			expand_expr (TREE_VALUE (arglist),
+				     NULL_RTX, VOIDmode, 0)));
+#else
+	rtx buf_addr
+	  = force_reg (Pmode, expand_expr (TREE_VALUE (arglist),
+					   NULL_RTX,
+					   VOIDmode, 0));
+#endif
 	rtx fp = gen_rtx (MEM, Pmode, buf_addr);
 	rtx lab = gen_rtx (MEM, Pmode,
 			   plus_constant (buf_addr, GET_MODE_SIZE (Pmode)));
