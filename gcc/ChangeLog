@@ -1,3 +1,9 @@
+1997-10-28  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* global.c (global_alloc): Use xmalloc instead of alloca for
+	CONFLICTS, since max_allocno * allocno_row_words alone can be more
+	than 2.5Mb sometimes.
+
 Tue Oct 28 15:29:15 1997  Richard Henderson  <rth@cygnus.com>
 
 	* reload1.c (eliminate_regs [SET]): If [SUBREG] widened the mode of
