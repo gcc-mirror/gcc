@@ -63,14 +63,14 @@ static output_buffer *scratch_buffer = &scratch_buffer_rec;
    output_clear_message_text (scratch_buffer)
 
 static const char *args_to_string (tree, int);
-static const char *assop_to_string (enum tree_code, int);
-static const char *code_to_string (enum tree_code, int);
+static const char *assop_to_string (enum tree_code);
+static const char *code_to_string (enum tree_code);
 static const char *cv_to_string (tree, int);
 static const char *decl_to_string (tree, int);
-static const char *expr_to_string (tree, int);
+static const char *expr_to_string (tree);
 static const char *fndecl_to_string (tree, int);
-static const char *op_to_string	(enum tree_code, int);
-static const char *parm_to_string (int, int);
+static const char *op_to_string	(enum tree_code);
+static const char *parm_to_string (int);
 static const char *type_to_string (tree, int);
 
 static void dump_type (tree, int);
@@ -185,10 +185,6 @@ dump_qualifiers (tree t, enum pad p)
     p = none;
   return p;
 }
-
-/* This must be large enough to hold any printed integer or floating-point
-   value.  */
-static char digit_buffer[128];
 
 /* Dump the template ARGument under control of FLAGS.  */
 
@@ -359,7 +355,7 @@ dump_type (tree t, int flags)
       break;
 
     case VECTOR_TYPE:
-      output_add_string (scratch_buffer, "vector ");
+      output_add_string (scratch_buffer, "__vector__ ");
       {
 	/* The subtype of a VECTOR_TYPE is something like intQI_type_node,
 	   which has no name and is not very useful for diagnostics.  So
@@ -1371,10 +1367,8 @@ dump_char (int c)
       if (ISPRINT (c))
 	output_add_character (scratch_buffer, c);
       else
-	{
-	  sprintf (digit_buffer, "\\%03o", (int) c);
-	  output_add_string (scratch_buffer, digit_buffer);
-	}
+        output_formatted_scalar (scratch_buffer, "\\%03o", (unsigned) c);
+      break;
     }
 }
 
@@ -1471,9 +1465,11 @@ dump_expr (tree t, int flags)
 				       ~TREE_INT_CST_HIGH (val)
 	                               + !TREE_INT_CST_LOW (val));
 	          }
-		sprintf (digit_buffer, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
+		sprintf (scratch_buffer->digit_buffer,
+                         HOST_WIDE_INT_PRINT_DOUBLE_HEX,
 			 TREE_INT_CST_HIGH (val), TREE_INT_CST_LOW (val));
-		output_add_string (scratch_buffer, digit_buffer);
+		output_add_string
+                  (scratch_buffer, scratch_buffer->digit_buffer);
 	      }
 	    else
 	      output_host_wide_integer (scratch_buffer, TREE_INT_CST_LOW (t));
@@ -1482,9 +1478,9 @@ dump_expr (tree t, int flags)
       break;
 
     case REAL_CST:
-      real_to_decimal (digit_buffer, &TREE_REAL_CST (t),
-		       sizeof (digit_buffer), 0, 1);
-      output_add_string (scratch_buffer, digit_buffer);
+      real_to_decimal (scratch_buffer->digit_buffer, &TREE_REAL_CST (t),
+		       sizeof (scratch_buffer->digit_buffer), 0, 1);
+      output_add_string (scratch_buffer, scratch_buffer->digit_buffer);
       break;
 
     case PTRMEM_CST:
@@ -2160,7 +2156,7 @@ decl_to_string (tree decl, int verbose)
 }
 
 static const char *
-expr_to_string (tree decl, int verbose ATTRIBUTE_UNUSED)
+expr_to_string (tree decl)
 {
   reinit_global_formatting_buffer ();
 
@@ -2186,13 +2182,13 @@ fndecl_to_string (tree fndecl, int verbose)
 
 
 static const char *
-code_to_string (enum tree_code c, int v ATTRIBUTE_UNUSED)
+code_to_string (enum tree_code c)
 {
   return tree_code_name [c];
 }
 
 const char *
-language_to_string (enum languages c, int v ATTRIBUTE_UNUSED)
+language_to_string (enum languages c)
 {
   switch (c)
     {
@@ -2214,22 +2210,23 @@ language_to_string (enum languages c, int v ATTRIBUTE_UNUSED)
 /* Return the proper printed version of a parameter to a C++ function.  */
 
 static const char *
-parm_to_string (int p, int v ATTRIBUTE_UNUSED)
+parm_to_string (int p)
 {
   if (p < 0)
-    return "`this'";
+    output_add_string (scratch_buffer, "'this'");
+  else
+    output_decimal (scratch_buffer, p + 1);
 
-  sprintf (digit_buffer, "%d", p+1);
-  return digit_buffer;
+  return output_finalize_message (scratch_buffer);
 }
 
 static const char *
-op_to_string (enum tree_code p, int v ATTRIBUTE_UNUSED)
+op_to_string (enum tree_code p)
 {
   tree id;
 
   id = operator_name_info[(int) p].identifier;
-  return id ? IDENTIFIER_POINTER (id) : "{unknown}";
+  return id ? IDENTIFIER_POINTER (id) : "<unknown>";
 }
 
 static const char *
@@ -2250,7 +2247,7 @@ type_to_string (tree typ, int verbose)
 }
 
 static const char *
-assop_to_string (enum tree_code p, int v ATTRIBUTE_UNUSED)
+assop_to_string (enum tree_code p)
 {
   tree id;
 
@@ -2478,14 +2475,14 @@ cp_printer (output_buffer *buffer, text_info *text)
   switch (*text->format_spec)
     {
     case 'A': result = args_to_string (next_tree, verbose);	break;
-    case 'C': result = code_to_string (next_tcode, verbose);	break;
+    case 'C': result = code_to_string (next_tcode);	        break;
     case 'D': result = decl_to_string (next_tree, verbose);	break;
-    case 'E': result = expr_to_string (next_tree, verbose);	break;
+    case 'E': result = expr_to_string (next_tree);      	break;
     case 'F': result = fndecl_to_string (next_tree, verbose);	break;
-    case 'L': result = language_to_string (next_lang, verbose); break;
-    case 'O': result = op_to_string (next_tcode, verbose);	break;
-    case 'P': result = parm_to_string (next_int, verbose);	break;
-    case 'Q': result = assop_to_string (next_tcode, verbose);	break;
+    case 'L': result = language_to_string (next_lang);          break;
+    case 'O': result = op_to_string (next_tcode);       	break;
+    case 'P': result = parm_to_string (next_int);	        break;
+    case 'Q': result = assop_to_string (next_tcode);	        break;
     case 'T': result = type_to_string (next_tree, verbose);	break;
     case 'V': result = cv_to_string (next_tree, verbose);	break;
  
