@@ -73,6 +73,18 @@ struct tree_binding
   tree value;
 };
 
+#define WRAPPER_PTR(NODE) (((struct tree_wrapper*)NODE)->u.ptr)
+#define WRAPPER_INT(NODE) (((struct tree_wrapper*)NODE)->u.i)
+
+struct tree_wrapper
+{
+  char common[sizeof (struct tree_common)];
+  union {
+    void *ptr;
+    int i;
+  } u;
+};
+
 /* To identify to the debug emitters if it should pay attention to the
    flag `-Wtemplate-debugging'.  */
 #define HAVE_TEMPLATES 1
@@ -2624,6 +2636,9 @@ extern tree hack_decl_function_context 		PROTO((tree));
 extern tree lvalue_type				PROTO((tree));
 extern tree error_type				PROTO((tree));
 extern tree make_temp_vec			PROTO((int));
+extern tree build_ptr_wrapper			PROTO((void *));
+extern tree build_expr_ptr_wrapper		PROTO((void *));
+extern tree build_int_wrapper			PROTO((int));
 extern int varargs_function_p			PROTO((tree));
 extern int really_overloaded_fn			PROTO((tree));
 extern int cp_tree_equal			PROTO((tree, tree));
