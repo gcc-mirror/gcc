@@ -1868,7 +1868,7 @@ gen_push (arg)
 static int 
 ix86_save_reg (regno, maybe_eh_return)
      int regno;
-     bool maybe_eh_return;
+     int maybe_eh_return;
 {
   if (flag_pic
       && regno == PIC_OFFSET_TABLE_REGNUM

@@ -1,4 +1,8 @@
-2001-05-12  Richard Henderson  <rth@redhat.com> 
+2001-05-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* i386.c (ix86_save_reg): Change `bool' parameter to `int'.
+
+2001-05-12  Richard Henderson  <rth@redhat.com>
 
 	EH merge from mainline, continued.
 
@@ -26,7 +30,7 @@
 	* final.c (final_start_function): Always call dwarf2out_begin_prologue.
 	(final_end_function): Don't call output_function_exception_table.
 	* toplev.c (compile_file): Call dw2_output_indirect_constants.
-	(rest_of_compilation): Invoke output_function_exception_table 
+	(rest_of_compilation): Invoke output_function_exception_table
 	for ia64 before assemble_end_function.
 	* tm.texi (ASM_PREFERRED_EH_DATA_FORMAT): Document.
 	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Document.
@@ -155,7 +159,7 @@
 	(LTI_unwind_sjlj_register, LTI_unwind_sjlj_unregister): Add.
 	* final.c (final): Don't call check_exception_handler_labels,
 	init_insn_eh_region, or free_insn_eh_region.
-	(final_scan_insn): Always emit debug labels for 
+	(final_scan_insn): Always emit debug labels for
 	NOTE_INSN_EH_REGION notes.
 	* flow.c (entry_exit_blocks): Remove eh_beg, eh_end.
 	(record_active_eh_regions): Remove.
@@ -171,7 +175,7 @@
 	(flow_delete_block): Use maybe_remove_eh_handler.
 	(delete_eh_regions): Remove.
 	(merge_blocks): Don't check for eh region match.
-	(mark_regs_live_at_end): Handle EH_RETURN_DATA_REGNO, 
+	(mark_regs_live_at_end): Handle EH_RETURN_DATA_REGNO,
 	EH_RETURN_STACKADJ_RTX, EH_RETURN_HANDLER_RTX.
 	(init_propagate_block_info): Disable dead frame store optimization
 	when current_function_calls_eh_return.
@@ -265,7 +269,7 @@
 	(EH_RETURN_DATA_REGNO): New.
 	(EH_RETURN_STACKADJ_RTX): New.
 	(EH_RETURN_HANDLER_RTX): New.
-	* config/sparc/sparc.md (call/short branch peepholes): Check    
+	* config/sparc/sparc.md (call/short branch peepholes): Check
 	can_throw_internal instead of in_same_eh_region.
 
 	2001-03-17  Richard Henderson  <rth@redhat.com>
@@ -474,7 +478,7 @@
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
 	EH merge from mainline, parts 1 - 4.
-	* gthr-single.h (UNUSED): New.  Distinguish between how C 
+	* gthr-single.h (UNUSED): New.  Distinguish between how C
 	and C++ mark unused function arguments.  Use throughout.
 
 	* bb-reorder.c, dwarf2out.c, except.c, except.h, flow.c,
@@ -532,7 +536,7 @@
 
 	* expr.c (emit_push_insn): Convert PUSH_ROUNDING argument to
 	bytes.  Reported by Kazu Hirata <kazu@hxi.com>.
-	
+
 Thu May 10 18:23:11 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (cse_insn): Mostly remove first hunk of code which collapsed
@@ -594,7 +598,7 @@ Thu May 10 18:23:11 2001  Jeffrey A Law  (law@cygnus.com)
 	* gcc.texi: Remove references to CHILL.
 	* invoke.texi: Likewise.
 	* install.texi: Likewise.
-	
+
 2001-05-06  Zack Weinberg  <zackw@stanford.edu>
 
 	* Makefile.in (tradcpp0): Correct typo in dependency list.
