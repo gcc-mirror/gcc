@@ -873,6 +873,11 @@ extern int warn_return_type;
 
 extern int flag_const_strings;
 
+/* If non-NULL, dump the tree structure for the entire translation
+   unit to this file.  */
+
+extern char *flag_dump_translation_unit;
+
 /* Nonzero means warn about deprecated conversion from string constant to
    `char *'.  */
 
