@@ -9085,10 +9085,17 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   if (!SPARC_SIMM13_P (delta))
     {
       rtx scratch = gen_rtx_REG (Pmode, 1);
-      if (TARGET_ARCH64)
-	sparc_emit_set_const64 (scratch, delta_rtx);
+
+      if (input_operand (delta_rtx, GET_MODE (scratch)))
+	emit_insn (gen_rtx_SET (VOIDmode, scratch, delta_rtx));
       else
-	sparc_emit_set_const32 (scratch, delta_rtx);
+	{
+	  if (TARGET_ARCH64)
+	    sparc_emit_set_const64 (scratch, delta_rtx);
+	  else
+	    sparc_emit_set_const32 (scratch, delta_rtx);
+	}
+
       delta_rtx = scratch;
     }
 

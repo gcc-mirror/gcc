@@ -1,3 +1,9 @@
+2003-12-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/13354
+	* config/sparc/sparc.c (sparc_output_mi_thunk): Load DELTA
+	manually if one can do that with only one instruction.
+
 2003-12-10  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (arm-linux): Include linux.h in tm_file so that
