@@ -112,6 +112,9 @@ Tue Jun 11 21:53:37 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-06-11  Jeffrey Law <law@redhat.com>
 
+	* emit-rtl.c (try_split): Use INSN_LAST, not LAST_INSN to get the
+	last insn created by the splitter.
+
 	* caller-save.c (init_caller_save): Move creation of SAVEINSN
 	and RESTINSN into into the scope of the sequence.
 
