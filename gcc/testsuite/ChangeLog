@@ -1,3 +1,7 @@
+2002-01-23  Bob Wilson  <bob.wilson@acm.org>
+
+	* gcc.c-torture/compile/20001226-1.x: xfail for Xtensa.
+
 2002-01-23  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/20020122-3.c: New.

@@ -3260,6 +3260,22 @@ xstormy16-*-elf)
 	tmake_file="stormy16/t-stormy16"
 	extra_parts="crtbegin.o crtend.o"
 	;;
+xtensa-*-elf*)
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h xtensa/elf.h"
+	with_newlib=yes
+	tmake_file=xtensa/t-xtensa
+	extra_parts="crtbegin.o crtend.o"
+	fixincludes=Makefile.in # newlib headers should be OK
+	;;
+xtensa-*-linux*)
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h xtensa/linux.h"
+	tmake_file="t-linux xtensa/t-xtensa"
+	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
+	gas=yes gnu_ld=yes
+	if test x$enable_threads = xyes; then
+		thread_file='posix'
+	fi
+	;;
 *)
 	echo "Configuration $machine not supported" 1>&2
 	exit 1
