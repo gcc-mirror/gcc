@@ -1492,33 +1492,34 @@ maybe_create_global_var (struct alias_info *ai)
   size_t i, n_clobbered;
   
   /* No need to create it, if we have one already.  */
-  if (global_var)
-    return;
+  if (global_var == NULL_TREE)
+    {
+      /* Count all the call-clobbered variables.  */
+      n_clobbered = 0;
+      EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, n_clobbered++);
 
-  /* Count all the call-clobbered variables.  */
-  n_clobbered = 0;
-  EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, n_clobbered++);
+      /* Create .GLOBAL_VAR if we have too many call-clobbered
+	 variables.  We also create .GLOBAL_VAR when there no
+	 call-clobbered variables to prevent code motion
+	 transformations from re-arranging function calls that may
+	 have side effects.  For instance,
 
-  /* Create .GLOBAL_VAR if we have too many call-clobbered variables.
-     We also create .GLOBAL_VAR when there no call-clobbered variables
-     to prevent code motion transformations from re-arranging function
-     calls that may have side effects.  For instance,
-
-     		foo ()
+		foo ()
 		{
 		  int a = f ();
 		  g ();
 		  h (a);
 		}
 
-     There are no call-clobbered variables in foo(), so it would be
-     entirely possible for a pass to want to move the call to f()
-     after the call to g().  If f() has side effects, that would be
-     wrong.  Creating .GLOBAL_VAR in this case will insert VDEFs for
-     it and prevent such transformations.  */
-  if (n_clobbered == 0
-      || ai->num_calls_found * n_clobbered >= (size_t) GLOBAL_VAR_THRESHOLD)
-    create_global_var ();
+	 There are no call-clobbered variables in foo(), so it would
+	 be entirely possible for a pass to want to move the call to
+	 f() after the call to g().  If f() has side effects, that
+	 would be wrong.  Creating .GLOBAL_VAR in this case will
+	 insert VDEFs for it and prevent such transformations.  */
+      if (n_clobbered == 0
+	  || ai->num_calls_found * n_clobbered >= (size_t) GLOBAL_VAR_THRESHOLD)
+	create_global_var ();
+    }
 
   /* If the function has calls to clobbering functions and .GLOBAL_VAR has
      been created, make it an alias for all call-clobbered variables.  */

@@ -1,5 +1,10 @@
 2004-07-28  Diego Novillo  <dnovillo@redhat.com>
 
+	* tree-ssa-alias.c (maybe_create_global_var): Don't just
+	return if .GLOBAL_VAR has been created.
+
+2004-07-28  Diego Novillo  <dnovillo@redhat.com>
+
 	* tree-ssa.c (verify_flow_insensitive_alias_info): Process
 	every variable that may have aliases, not just tags.
 
