@@ -94,7 +94,7 @@ AC_ARG_ENABLE(haifa,
 # Fast fixincludes
 #
 # This is a work in progress...
-AC_ARG_WITH(fast-fixincludes
+AC_ARG_WITH(fast-fixincludes,
 [  --with-fast-fixincludes    Use a faster fixinclude program.  Experimental],
 fast_fixinc="$with_fast_fixincludes",
 fast_fixinc=no)
@@ -229,7 +229,7 @@ for machine in $build $host $target; do
 	# Set this to override the default target model.
 	target_cpu_default=
 	# Set this to control which fixincludes program to use.
-	if [ x$fast_fixinc != xyes ] ; then
+	if [[ x$fast_fixinc != xyes ]] ; then
 		fixincludes=fixincludes
 	else fixincludes=fixinc.sh ; fi
 	# Set this to control how the header file directory is installed.
