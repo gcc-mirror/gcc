@@ -3881,6 +3881,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       && REG_MODE_OK_FOR_BASE_P (XEXP (x, 0), mode)
       && GET_CODE (XEXP (x, 1)) == CONST_INT
       && (INTVAL (XEXP (x, 1)) & 3) != 0
+      && !ALTIVEC_VECTOR_MODE (mode)
       && GET_MODE_SIZE (mode) >= UNITS_PER_WORD
       && TARGET_POWERPC64)
     {

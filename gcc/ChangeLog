@@ -1,3 +1,8 @@
+2005-02-24  Fariborz Jahanian <fjahanian@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address): Check for
+	vector types if to use base reg for misaligned non-word ld/std.
+
 2005-02-24  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/14619
