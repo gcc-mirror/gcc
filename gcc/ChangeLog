@@ -1,3 +1,11 @@
+2002-06-28  Neil Booth  <neil@daikokuya.co.uk>
+
+	PR preprocessor/7138
+	* cpplib.c (_cpp_handle_directive): Do traditional
+	preparation after setting state.angled_headers.
+	* cpptrad.c (scan_out_logical_line): Fix potential
+	quote bug.
+
 2002-06-27  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (rs6000_override_options): Move
