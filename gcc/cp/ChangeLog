@@ -1,3 +1,7 @@
+2000-03-01  Jason Merrill  <jason@casey.cygnus.com>
+
+	* pt.c (instantiate_decl): Clear TI_PENDING_TEMPLATE_FLAG.
+
 2000-03-02  Tom Tromey  <tromey@cygnus.com>
 
 	* cp-tree.h (build_java_class_ref): Declare.
@@ -770,7 +774,7 @@ Mon Jan 31 15:35:29 2000  Jim Wilson  <wilson@cygnus.com>
 
 Thu Jan 27 20:53:36 2000  Jim Wilson  <wilson@cygnus.com>
 
-	* cp/optimize.c (remap_decl): Add walk_tree calls for DECL_SIZE (t)
+	* optimize.c (remap_decl): Add walk_tree calls for DECL_SIZE (t)
 	and TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (t))).
 
 Thu Jan 27 13:54:12 2000  Mike Stump  <mrs@wrs.com>
@@ -784,7 +788,7 @@ Thu Jan 27 13:54:12 2000  Mike Stump  <mrs@wrs.com>
 
 Wed Jan 26 22:19:14 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
-	* cp/optimize.c (calls_setjmp_r): Supply new argument
+	* optimize.c (calls_setjmp_r): Supply new argument
 	to special_function_p.
 
 2000-01-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
