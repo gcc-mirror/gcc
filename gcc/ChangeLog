@@ -1,3 +1,8 @@
+Tue Jul  7 23:03:34 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (choose_reload_regs): Don't set reload_override_in
+	if EQUIV is clobbered in INSN and the reload is done after INSN.
+
 Tue Jul  7 21:23:36 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* expr.c (emit_queue): If emitting a SEQUENCE, set QUEUED_INSN
