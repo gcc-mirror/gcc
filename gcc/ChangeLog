@@ -1,3 +1,7 @@
+2004-10-29  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/darwin-tramp.asm: Make more 64-bit-friendly.
+
 2004-10-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-phinodes.c (allocate_phi_node): New.
