@@ -29,9 +29,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "i386/gstabs.h"
 
-/* Get perform_* macros to build libgcc.a.  */
-#include "i386/perform.h"
-
 /* This goes away when the math-emulator is fixed */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \

@@ -25,20 +25,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 FreeBSD/ELF)");
 
-/* The svr4 ABI for the i386 says that records and unions are returned
-   in memory.  */
-/* On FreeBSD, we do not. */
-#undef DEFAULT_PCC_STRUCT_RETURN
-#define DEFAULT_PCC_STRUCT_RETURN 0
-
-/* This gets defined in tm.h->linux.h->svr4.h, and keeps us from using
-   libraries compiled with the native cc, so undef it. */
-#undef NO_DOLLAR_IN_LABEL
-
-/* Use more efficient ``thunks'' to implement C++ vtables. */
-#undef DEFAULT_VTABLE_THUNKS
-#define DEFAULT_VTABLE_THUNKS 1
-
 /* Override the default comment-starter of "/".  */
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START "#"
@@ -57,15 +43,11 @@ Boston, MA 02111-1307, USA.  */
    i386.md for an explanation of the expression this outputs. */
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  fprintf (FILE, "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
+  fprintf ((FILE), "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
 
 /* Indicate that jump tables go in the text section.  This is
    necessary when compiling PIC code.  */
 #define JUMP_TABLES_IN_TEXT_SECTION (flag_pic)
-
-/* Use stabs instead of DWARF debug format.  */
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 /* Copy this from the svr4 specifications... */
 /* Define the register numbers to be used in Dwarf debugging information.
@@ -141,10 +123,12 @@ Boston, MA 02111-1307, USA.  */
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
 {									\
   if (flag_pic)								\
-      fprintf (FILE, "\tcall *.mcount@GOT(%%ebx)\n");			\
+      fprintf ((FILE), "\tcall *.mcount@GOT(%%ebx)\n");			\
   else									\
-      fprintf (FILE, "\tcall .mcount\n");				\
+      fprintf ((FILE), "\tcall .mcount\n");				\
 }
+
+/* Make gcc agree with <machine/ansi.h>.  */
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
@@ -152,32 +136,11 @@ Boston, MA 02111-1307, USA.  */
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
   
-#undef WCHAR_TYPE
-#define WCHAR_TYPE "int"
-
-#undef WCHAR_UNSIGNED
-#define WCHAR_UNSIGNED 0
-   
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
     
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Di386 -Dunix -D__ELF__ -D__FreeBSD__ -Asystem(unix) -Asystem(FreeBSD) -Acpu(i386) -Amachine(i386)"
-
-#undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"
-
-/* This defines which switch letters take arguments.  On FreeBSD, most of
-   the normal cases (defined in gcc.c) apply, and we also have -h* and
-   -z* options (for the linker) (comming from svr4).
-   We also have -R (alias --rpath), no -z, --soname (-h), --assert etc. */
-
-#undef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) \
-  (DEFAULT_SWITCH_TAKES_ARG (CHAR) \
-   || (CHAR) == 'h' \
-   || (CHAR) == 'z' \
-   || (CHAR) == 'R')
 
 /* Provide a STARTFILE_SPEC appropriate for FreeBSD.  Here we add
    the magical crtbegin.o file (see crtstuff.c) which provides part 
@@ -201,19 +164,6 @@ Boston, MA 02111-1307, USA.  */
 #undef	ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
-
-/* Provide a LIB_SPEC appropriate for FreeBSD.  Just select the appropriate
-   libc, depending on whether we're doing profiling or need threads support.
-   (simular to the default, except no -lg, and no -p.  */
-
-#undef LIB_SPEC
-#define LIB_SPEC "%{!shared: \
-   %{!pg:%{!pthread:%{!kthread:-lc} \
-     %{kthread:-lpthread -lc}} \
-     %{pthread:-lc_r}} \
-   %{pg:%{!pthread:%{!kthread:-lc_p} \
-     %{kthread:-lpthread_p -lc_p}} \
-     %{pthread:-lc_r_p}}}"
 
 /* Provide a LINK_SPEC appropriate for FreeBSD.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
@@ -249,9 +199,9 @@ Boston, MA 02111-1307, USA.  */
    This is used to align code labels according to Intel recommendations.  */
 
 #ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
-#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP) \
-  if ((LOG) != 0) {\
-    if ((MAX_SKIP) == 0) fprintf ((FILE), "\t.p2align %d\n", (LOG)); \
-    else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP)); \
+#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE, LOG, MAX_SKIP)					\
+  if ((LOG) != 0) {														\
+    if ((MAX_SKIP) == 0) fprintf ((FILE), "\t.p2align %d\n", (LOG));	\
+    else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
   }
 #endif

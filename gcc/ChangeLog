@@ -1,5 +1,16 @@
 Mon Nov 22 23:09:44 1999  David O'Brien  <obrien@FreeBSD.org>
 
+	* config/freebsd.h: New, FreeBSD architecture independent file.
+	* config/i386/freebsd-elf.h: removed FreeBSD architecturally
+	independent pieces.
+	* config/i386/freebsd.h: include i386/perform.h via tm.h rather than
+	directly by i386/freebsd.h.
+	* configure.in (*-*-freebsdelf): Include new FreeBSD architecturally
+	independent configuration file.
+	(*-*-freebsdelf): Include i386/perform.h via tm.h rather than
+	directly by i386/freebsd.h.
+	* configure: Rebuilt.
+
         * xm-i386.h: Define `__i386__' if not defined, rather than `i386'
 	which is in the user's namespace.
         * libgcc2.c: Look for the ANSI-C approved `__i386__' symbol, vs.
