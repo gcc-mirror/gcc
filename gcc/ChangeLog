@@ -1,3 +1,10 @@
+2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_check_legit_addr): Rename to
+	c4x_legitimate_address_p.  Fix post_modify check.
+	* config/c4x/c4x-protos.h (c4x_check_legit_addr): Adjust.
+	* config/c4x/c4x.h (c4x_check_legit_addr): Adjust.
+	
 2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/pa/pa-protos.h: Remove the prototype for
@@ -27,7 +34,7 @@
 	(PROMOTE_PROTOTYPES): Remove.
 
 2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
- 
+	
         * config/c4x/c4x.h (LEGITIMIZE_RELOAD_ADDRESS):  Handle symref.
  
 2003-04-25  Chris Demetriou  <cgd@broadcom.com>
