@@ -117,7 +117,8 @@ public class SimpleDateFormat extends DateFormat
       field = formatData.getLocalPatternChars().indexOf(thisChar);
       if (field == -1) {
 	current = null;
-	if (Character.isLetter(thisChar)) {
+	if (Character.isLowerCase (thisChar)
+	    || Character.isUpperCase (thisChar)) {
 	  // Not a valid letter
 	  tokens.add(new FieldSizePair(-1,0));
 	} else if (thisChar == '\'') {
