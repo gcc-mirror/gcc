@@ -35,33 +35,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "langhooks.h"
 #include "java-tree.h"
 
-enum builtin_type 
-{
-#define DEF_PRIMITIVE_TYPE(NAME, VALUE) NAME,
-#define DEF_FUNCTION_TYPE_0(NAME, RETURN) NAME,
-#define DEF_FUNCTION_TYPE_1(NAME, RETURN, ARG1) NAME,
-#define DEF_FUNCTION_TYPE_2(NAME, RETURN, ARG1, ARG2) NAME,
-#define DEF_FUNCTION_TYPE_3(NAME, RETURN, ARG1, ARG2, ARG3) NAME,
-#define DEF_FUNCTION_TYPE_4(NAME, RETURN, ARG1, ARG2, ARG3, ARG4) NAME,
-#define DEF_FUNCTION_TYPE_VAR_0(NAME, RETURN) NAME,
-#define DEF_FUNCTION_TYPE_VAR_1(NAME, RETURN, ARG1) NAME,
-#define DEF_FUNCTION_TYPE_VAR_2(NAME, RETURN, ARG1, ARG2) NAME,
-#define DEF_FUNCTION_TYPE_VAR_3(NAME, RETURN, ARG1, ARG2, ARG3) NAME,
-#define DEF_POINTER_TYPE(NAME, TYPE) NAME,
-#include "builtin-types.def"
-#undef DEF_PRIMITIVE_TYPE
-#undef DEF_FUNCTION_TYPE_0
-#undef DEF_FUNCTION_TYPE_1
-#undef DEF_FUNCTION_TYPE_2
-#undef DEF_FUNCTION_TYPE_3
-#undef DEF_FUNCTION_TYPE_4
-#undef DEF_FUNCTION_TYPE_VAR_0
-#undef DEF_FUNCTION_TYPE_VAR_1
-#undef DEF_FUNCTION_TYPE_VAR_2
-#undef DEF_FUNCTION_TYPE_VAR_3
-#undef DEF_POINTER_TYPE
-  BT_LAST
-};
 
 static tree max_builtin (tree, tree);
 static tree min_builtin (tree, tree);
