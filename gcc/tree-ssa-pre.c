@@ -1941,7 +1941,7 @@ init_pre (void)
   unary_node_pool = create_alloc_pool ("Unary tree nodes",
 				       tree_code_size (NEGATE_EXPR), 30);
   reference_node_pool = create_alloc_pool ("Reference tree nodes",
-					   tree_code_size (COMPONENT_REF), 30);
+					   tree_code_size (ARRAY_REF), 30);
   FOR_ALL_BB (bb)
     {
       EXP_GEN (bb) = set_new (true);
