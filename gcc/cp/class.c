@@ -1934,7 +1934,8 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
       /* A lot of properties from the bases also apply to the derived
 	 class.  */
       TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (basetype);
-      TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_NEEDS_DESTRUCTOR (basetype);
+      TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) 
+	|= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (basetype);
       TYPE_HAS_COMPLEX_ASSIGN_REF (t) 
 	|= TYPE_HAS_COMPLEX_ASSIGN_REF (basetype);
       TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_HAS_COMPLEX_INIT_REF (basetype);
@@ -2079,7 +2080,8 @@ finish_struct_bits (t)
       TYPE_HAS_CONSTRUCTOR (variants) = TYPE_HAS_CONSTRUCTOR (t);
       TYPE_HAS_DESTRUCTOR (variants) = TYPE_HAS_DESTRUCTOR (t);
       TYPE_NEEDS_CONSTRUCTING (variants) = TYPE_NEEDS_CONSTRUCTING (t);
-      TYPE_NEEDS_DESTRUCTOR (variants) = TYPE_NEEDS_DESTRUCTOR (t);
+      TYPE_HAS_NONTRIVIAL_DESTRUCTOR (variants) 
+	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t);
 
       TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (variants) 
 	= TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (t);
@@ -3503,14 +3505,14 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
   tree *f;
 
   /* Destructor.  */
-  if (TYPE_NEEDS_DESTRUCTOR (t) && !TYPE_HAS_DESTRUCTOR (t))
+  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) && !TYPE_HAS_DESTRUCTOR (t))
     {
       default_fn = cons_up_default_function (t, name, 0);
       check_for_override (default_fn, t);
 
       /* If we couldn't make it work, then pretend we didn't need it.  */
       if (default_fn == void_type_node)
-	TYPE_NEEDS_DESTRUCTOR (t) = 0;
+	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = 0;
       else
 	{
 	  TREE_CHAIN (default_fn) = implicit_fns;
@@ -3520,7 +3522,9 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
 	    virtual_dtor = default_fn;
 	}
     }
-  TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_HAS_DESTRUCTOR (t);
+  else
+    /* Any non-implicit destructor is non-trivial.  */
+    TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) |= TYPE_HAS_DESTRUCTOR (t);
 
   /* Default constructor.  */
   if (! TYPE_HAS_CONSTRUCTOR (t) && ! cant_have_default_ctor)
@@ -3744,7 +3748,7 @@ check_field_decl (field, t, cant_have_const_ctor,
 	  if (TYPE_NEEDS_CONSTRUCTING (type))
 	    cp_error_at ("member `%#D' with constructor not allowed in union",
 			 field);
-	  if (TYPE_NEEDS_DESTRUCTOR (type))
+	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 	    cp_error_at ("member `%#D' with destructor not allowed in union",
 			 field);
 	  if (TYPE_HAS_COMPLEX_ASSIGN_REF (type))
@@ -3754,7 +3758,8 @@ check_field_decl (field, t, cant_have_const_ctor,
       else
 	{
 	  TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (type);
-	  TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_NEEDS_DESTRUCTOR (type);
+	  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) 
+	    |= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type);
 	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) |= TYPE_HAS_COMPLEX_ASSIGN_REF (type);
 	  TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_HAS_COMPLEX_INIT_REF (type);
 	}
@@ -4268,6 +4273,7 @@ check_methods (t)
      tree t;
 {
   tree x;
+  int seen_one_arg_array_delete_p = 0;
 
   for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
     {
@@ -4290,6 +4296,37 @@ check_methods (t)
 	  if (DECL_PURE_VIRTUAL_P (x))
 	    CLASSTYPE_PURE_VIRTUALS (t)
 	      = tree_cons (NULL_TREE, x, CLASSTYPE_PURE_VIRTUALS (t));
+	}
+
+      if (DECL_ARRAY_DELETE_OPERATOR_P (x))
+	{
+	  tree second_parm;
+
+	  /* When dynamically allocating an array of this type, we
+	     need a "cookie" to record how many elements we allocated,
+	     even if the array elements have no non-trivial
+	     destructor, if the usual array deallocation function
+	     takes a second argument of type size_t.  The standard (in
+	     [class.free]) requires that the second argument be set
+	     correctly.  */
+	  second_parm = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (x)));
+	  /* This is overly conservative, but we must maintain this
+	     behavior for backwards compatibility.  */
+	  if (!flag_new_abi && second_parm != void_list_node)
+	    TYPE_VEC_DELETE_TAKES_SIZE (t) = 1;
+	  /* Under the new ABI, we choose only those function that are
+	     explicitly declared as `operator delete[] (void *,
+	     size_t)'.  */
+	  else if (flag_new_abi 
+		   && !seen_one_arg_array_delete_p
+		   && second_parm
+		   && TREE_CHAIN (second_parm) == void_list_node
+		   && same_type_p (TREE_VALUE (second_parm), sizetype))
+	    TYPE_VEC_DELETE_TAKES_SIZE (t) = 1;
+	  /* If there's no second parameter, then this is the usual
+	     deallocation function.  */
+	  else if (second_parm == void_list_node)
+	    seen_one_arg_array_delete_p = 1;
 	}
     }
 }

@@ -49,6 +49,8 @@ static tree initializing_context PARAMS ((tree));
 static void expand_cleanup_for_base PARAMS ((tree, tree));
 static tree get_temp_regvar PARAMS ((tree, tree));
 static tree dfs_initialize_vtbl_ptrs PARAMS ((tree, void *));
+static tree build_new_1	PARAMS ((tree));
+static tree get_cookie_size PARAMS ((tree));
 
 /* Set up local variable for this file.  MUST BE CALLED AFTER
    INIT_DECL_PROCESSING.  */
@@ -225,7 +227,7 @@ perform_member_init (member, name, init, explicit)
 	finish_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
     }
 
-  if (TYPE_NEEDS_DESTRUCTOR (type))
+  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
     {
       tree expr;
 
@@ -701,7 +703,7 @@ expand_cleanup_for_base (binfo, flag)
 {
   tree expr;
 
-  if (!TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (binfo)))
+  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (binfo)))
     return;
 
   /* Call the destructor.  */
@@ -2101,10 +2103,40 @@ build_java_class_ref (type)
   return class_decl;
 }
 
+/* Returns teh size of the cookie to use when allocating an array
+   whose elements have the indicated TYPE.  Assumes that it is already
+   known that a cookie is needed.  */
+
+static tree
+get_cookie_size (type)
+     tree type;
+{
+  tree cookie_size;
+
+  if (flag_new_abi)
+    {
+      /* Under the new ABI, we need to allocate an additional max
+	 (sizeof (size_t), alignof (true_type)) bytes.  */
+      tree sizetype_size;
+      tree type_align;
+
+      sizetype_size = size_in_bytes (sizetype);
+      type_align = size_int (TYPE_ALIGN_UNIT (type));
+      if (INT_CST_LT_UNSIGNED (type_align, sizetype_size))
+	cookie_size = sizetype_size;
+      else
+	cookie_size = type_align;
+    }
+  else
+    cookie_size = BI_header_size;
+
+  return cookie_size;
+}
+
 /* Called from cplus_expand_expr when expanding a NEW_EXPR.  The return
    value is immediately handed to expand_expr.  */
 
-tree
+static tree
 build_new_1 (exp)
      tree exp;
 {
@@ -2113,15 +2145,23 @@ build_new_1 (exp)
   tree nelts = NULL_TREE;
   tree alloc_expr, alloc_node = NULL_TREE;
   int has_array = 0;
-  enum tree_code code = NEW_EXPR;
+  enum tree_code code;
   int use_cookie, nothrow, check_new;
+  /* Nonzero if the user wrote `::new' rather than just `new'.  */
+  int globally_qualified_p;
+  /* Nonzero if we're going to call a global operator new, rather than
+     a class-specific version.  */
   int use_global_new;
   int use_java_new = 0;
+  /* If non-NULL, the number of extra bytes to allocate at the
+     beginning of the storage allocated for an array-new expression in
+     order to store the number of elements.  */
+  tree cookie_size = NULL_TREE;
 
   placement = TREE_OPERAND (exp, 0);
   type = TREE_OPERAND (exp, 1);
   init = TREE_OPERAND (exp, 2);
-  use_global_new = NEW_EXPR_USE_GLOBAL (exp);
+  globally_qualified_p = NEW_EXPR_USE_GLOBAL (exp);
 
   if (TREE_CODE (type) == ARRAY_REF)
     {
@@ -2130,6 +2170,8 @@ build_new_1 (exp)
       type = TREE_OPERAND (type, 0);
     }
   true_type = type;
+
+  code = has_array ? VEC_NEW_EXPR : NEW_EXPR;
 
   if (CP_TYPE_QUALS (type))
     type = TYPE_MAIN_VARIANT (type);
@@ -2161,31 +2203,43 @@ build_new_1 (exp)
   if (abstract_virtuals_error (NULL_TREE, true_type))
     return error_mark_node;
 
-  /* When we allocate an array, and the corresponding deallocation
-     function takes a second argument of type size_t, and that's the
-     "usual deallocation function", we allocate some extra space at
-     the beginning of the array to store the size of the array.
+  /* Figure out whether or not we're going to use the global operator
+     new.  */
+  if (!globally_qualified_p
+      && IS_AGGR_TYPE (true_type)
+      && ((!has_array && TYPE_HAS_NEW_OPERATOR (true_type))
+	  || (has_array && TYPE_HAS_ARRAY_NEW_OPERATOR (true_type))))
+    use_global_new = 0;
+  else
+    use_global_new = 1;
 
-     Well, that's what we should do.  For backwards compatibility, we
-     have to do this whenever there's a two-argument array-delete
-     operator. 
+  /* We only need cookies for arrays containing types for which we
+     need cookies.  */
+  if (!has_array || !TYPE_VEC_NEW_USES_COOKIE (true_type))
+    use_cookie = 0;
+  /* When using placement new, users may not realize that they need
+     the extra storage.  Under the old ABI, we don't allocate the
+     cookie whenever they use one placement argument of type `void
+     *'.  Under the new ABI, we require that the operator called be
+     the global placement operator delete[].  */
+  else if (placement && !TREE_CHAIN (placement) 
+	   && same_type_p (TREE_TYPE (TREE_VALUE (placement)),
+			   ptr_type_node))
+    use_cookie = (!flag_new_abi || !use_global_new);
+  /* Otherwise, we need the cookie.  */
+  else
+    use_cookie = 1;
 
-     FIXME: For -fnew-abi, we don't have to maintain backwards
-     compatibility and we should fix this.  */
-  use_cookie = (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type)
-		&& ! (placement && ! TREE_CHAIN (placement)
-		      && TREE_TYPE (TREE_VALUE (placement)) == ptr_type_node));
-
+  /* Compute the number of extra bytes to allocate, now that we know
+     whether or not we need the cookie.  */
   if (use_cookie)
-    size = size_binop (PLUS_EXPR, size, BI_header_size);
-
-  if (has_array)
     {
-      code = VEC_NEW_EXPR;
-
-      if (init && pedantic)
-	cp_pedwarn ("initialization in array new");
+      cookie_size = get_cookie_size (true_type);
+      size = size_binop (PLUS_EXPR, size, cookie_size);
     }
+
+  if (has_array && init && pedantic)
+    cp_pedwarn ("initialization in array new");
 
   /* Allocate the object.  */
   
@@ -2208,9 +2262,20 @@ build_new_1 (exp)
     }
   else
     {
-      rval = build_op_new_call
-	(code, true_type, tree_cons (NULL_TREE, size, placement),
-	 LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL));
+      tree fnname;
+      tree args;
+
+      args = tree_cons (NULL_TREE, size, placement);
+      fnname = ansi_opname[code];
+
+      if (use_global_new)
+	rval = (build_new_function_call 
+		(lookup_function_nonclass (fnname, args),
+		 args));
+      else
+	rval = build_method_call (build_dummy_object (true_type),
+				  fnname, args, NULL_TREE,
+				  LOOKUP_NORMAL);
       rval = cp_convert (build_pointer_type (true_type), rval);
     }
 
@@ -2249,18 +2314,36 @@ build_new_1 (exp)
   /* Finish up some magic for new'ed arrays */
   if (use_cookie && rval != NULL_TREE)
     {
-      tree extra = BI_header_size;
       tree cookie, exp1;
       rval = convert (string_type_node, rval); /* for ptr arithmetic */
-      rval = save_expr (build_binary_op (PLUS_EXPR, rval, extra));
-      /* Store header info.  */
-      cookie = build_indirect_ref (build (MINUS_EXPR,
-					  build_pointer_type (BI_header_type),
-					  rval, extra), NULL_PTR);
-      exp1 = build (MODIFY_EXPR, void_type_node,
-		    build_component_ref (cookie, nelts_identifier,
-					 NULL_TREE, 0),
-		    nelts);
+      rval = save_expr (build_binary_op (PLUS_EXPR, rval, cookie_size));
+      /* Store the number of bytes allocated so that we can know how
+	 many elements to destroy later.  */
+      if (flag_new_abi)
+	{
+	  /* Under the new ABI, we use the last sizeof (size_t) bytes
+	     to store the number of elements.  */
+	  cookie = build_indirect_ref (build (MINUS_EXPR,
+					      build_pointer_type (sizetype),
+					      rval,
+					      size_in_bytes (sizetype)),
+				       NULL_PTR);
+	  exp1 = build (MODIFY_EXPR, void_type_node, cookie, nelts);
+	}
+      else
+	{
+	  cookie 
+	    = build_indirect_ref (build (MINUS_EXPR,
+					 build_pointer_type (BI_header_type),
+					 rval, cookie_size), NULL_PTR);
+	  exp1 = build (MODIFY_EXPR, void_type_node,
+			build_component_ref (cookie, nelts_identifier,
+					     NULL_TREE, 0),
+			nelts);
+	}
+
+      /* Build `(cookie = nelts, rval)' and use that as the complete
+	 expression.  */
       rval = cp_convert (build_pointer_type (true_type), rval);
       rval = build_compound_expr
 	(tree_cons (NULL_TREE, exp1,
@@ -2372,7 +2455,8 @@ build_new_1 (exp)
 	{
 	  enum tree_code dcode = has_array ? VEC_DELETE_EXPR : DELETE_EXPR;
 	  tree cleanup, fn = NULL_TREE;
-	  int flags = LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL);
+	  int flags = (LOOKUP_NORMAL 
+		       | (globally_qualified_p * LOOKUP_GLOBAL));
 
 	  /* The Standard is unclear here, but the right thing to do
              is to use the same method for finding deallocation
@@ -2475,7 +2559,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
      This is also the containing expression returned by this function.  */
   tree controller = NULL_TREE;
 
-  if (! IS_AGGR_TYPE (type) || ! TYPE_NEEDS_DESTRUCTOR (type))
+  if (! IS_AGGR_TYPE (type) || TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     {
       loop = integer_zero_node;
       goto no_destructor;
@@ -2534,12 +2618,16 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
 	base_tbd = base;
       else
 	{
-	  base_tbd = cp_convert (ptype,
-				 build_binary_op (MINUS_EXPR,
-						  cp_convert (string_type_node, base),
-						  BI_header_size));
+	  tree cookie_size;
+
+	  cookie_size = get_cookie_size (type);
+	  base_tbd 
+	    = cp_convert (ptype,
+			  build_binary_op (MINUS_EXPR,
+					   cp_convert (string_type_node, base),
+					   cookie_size));
 	  /* True size with header.  */
-	  virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
+	  virtual_size = size_binop (PLUS_EXPR, virtual_size, cookie_size);
 	}
       deallocate_expr = build_x_delete (base_tbd,
 					2 | use_global_delete,
@@ -2708,7 +2796,7 @@ build_vec_init (decl, base, maxindex, init, from_array)
 
   /* Protect the entire array initialization so that we can destroy
      the partially constructed array if an exception is thrown.  */
-  if (flag_exceptions && TYPE_NEEDS_DESTRUCTOR (type))
+  if (flag_exceptions && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
     {
       try_block = begin_try_block ();
       try_body = begin_compound_stmt (/*has_no_scope=*/1);
@@ -2893,7 +2981,7 @@ build_vec_init (decl, base, maxindex, init, from_array)
     }
 
   /* Make sure to cleanup any partially constructed elements.  */
-  if (flag_exceptions && TYPE_NEEDS_DESTRUCTOR (type))
+  if (flag_exceptions && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
     {
       tree e;
 
@@ -3029,7 +3117,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
   my_friendly_assert (IS_AGGR_TYPE (type), 220);
 
-  if (! TYPE_NEEDS_DESTRUCTOR (type))
+  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     {
       if (auto_delete == integer_zero_node)
 	return void_zero_node;
@@ -3105,7 +3193,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       if (auto_delete == integer_zero_node)
 	cond = NULL_TREE;
       else if (base_binfo == NULL_TREE
-	       || ! TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (base_binfo)))
+	       || TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo)))
 	{
 	  cond = build (COND_EXPR, void_type_node,
 			build (BIT_AND_EXPR, integer_type_node, auto_delete, integer_one_node),
@@ -3120,7 +3208,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
       if (base_binfo
 	  && ! TREE_VIA_VIRTUAL (base_binfo)
-	  && TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (base_binfo)))
+	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo)))
 	{
 	  tree this_auto_delete;
 
@@ -3139,7 +3227,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       for (i = 1; i < n_baseclasses; i++)
 	{
 	  base_binfo = TREE_VEC_ELT (binfos, i);
-	  if (! TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (base_binfo))
+	  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo))
 	      || TREE_VIA_VIRTUAL (base_binfo))
 	    continue;
 
@@ -3154,7 +3242,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	{
 	  if (TREE_CODE (member) != FIELD_DECL)
 	    continue;
-	  if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (member)))
+	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (member)))
 	    {
 	      tree this_member = build_component_ref (ref, DECL_NAME (member), NULL_TREE, 0);
 	      tree this_type = TREE_TYPE (member);
@@ -3234,20 +3322,34 @@ build_vec_delete (base, maxindex, auto_delete_vec, use_global_delete)
   if (TREE_CODE (type) == POINTER_TYPE)
     {
       /* Step back one from start of vector, and read dimension.  */
-      tree cookie_addr = build (MINUS_EXPR, build_pointer_type (BI_header_type),
-				base, BI_header_size);
-      tree cookie = build_indirect_ref (cookie_addr, NULL_PTR);
-      maxindex = build_component_ref (cookie, nelts_identifier, NULL_TREE, 0);
-      do
-	type = TREE_TYPE (type);
-      while (TREE_CODE (type) == ARRAY_TYPE);
+      tree cookie_addr;
+
+      if (flag_new_abi)
+	{
+	  cookie_addr = build (MINUS_EXPR,
+			       build_pointer_type (sizetype),
+			       base,
+			       TYPE_SIZE_UNIT (sizetype));
+	  maxindex = build_indirect_ref (cookie_addr, NULL_PTR);
+	}
+      else
+	{
+	  tree cookie;
+
+	  cookie_addr = build (MINUS_EXPR, build_pointer_type (BI_header_type),
+			       base, BI_header_size);
+	  cookie = build_indirect_ref (cookie_addr, NULL_PTR);
+	  maxindex = build_component_ref (cookie, nelts_identifier, 
+					  NULL_TREE, 0);
+	}
+
+      type = strip_array_types (TREE_TYPE (type));
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
       /* get the total number of things in the array, maxindex is a bad name */
       maxindex = array_type_nelts_total (type);
-      while (TREE_CODE (type) == ARRAY_TYPE)
-	type = TREE_TYPE (type);
+      type = strip_array_types (type);
       base = build_unary_op (ADDR_EXPR, base, 1);
     }
   else

@@ -322,7 +322,7 @@ break_out_cleanups (exp)
   tree tmp = exp;
 
   if (TREE_CODE (tmp) == CALL_EXPR
-      && TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (tmp)))
+      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (tmp)))
     return build_cplus_new (TREE_TYPE (tmp), tmp);
 
   while (TREE_CODE (tmp) == NOP_EXPR
@@ -330,7 +330,7 @@ break_out_cleanups (exp)
 	 || TREE_CODE (tmp) == NON_LVALUE_EXPR)
     {
       if (TREE_CODE (TREE_OPERAND (tmp, 0)) == CALL_EXPR
-	  && TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (TREE_OPERAND (tmp, 0))))
+	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (TREE_OPERAND (tmp, 0))))
 	{
 	  TREE_OPERAND (tmp, 0)
 	    = build_cplus_new (TREE_TYPE (TREE_OPERAND (tmp, 0)),
@@ -505,8 +505,8 @@ build_cplus_array_type_1 (elt_type, index_type)
      more easily.  */
   TYPE_NEEDS_CONSTRUCTING (t) 
     = TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (elt_type));
-  TYPE_NEEDS_DESTRUCTOR (t) 
-    = TYPE_NEEDS_DESTRUCTOR (TYPE_MAIN_VARIANT (elt_type));
+  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) 
+    = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TYPE_MAIN_VARIANT (elt_type));
   return t;
 }
 
@@ -602,7 +602,7 @@ cp_build_qualified_type_real (type, type_quals, complain)
 	}
 
       /* Even if we already had this variant, we update
-	 TYPE_NEEDS_CONSTRUCTING and TYPE_NEEDS_DESTRUCTOR in case
+	 TYPE_NEEDS_CONSTRUCTING and TYPE_HAS_NONTRIVIAL_DESTRUCTOR in case
 	 they changed since the variant was originally created.  
 	 
 	 This seems hokey; if there is some way to use a previous
@@ -610,8 +610,8 @@ cp_build_qualified_type_real (type, type_quals, complain)
 	 TYPE_NEEDS_CONSTRUCTING will never be updated.  */
       TYPE_NEEDS_CONSTRUCTING (t) 
 	= TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (element_type));
-      TYPE_NEEDS_DESTRUCTOR (t) 
-	= TYPE_NEEDS_DESTRUCTOR (TYPE_MAIN_VARIANT (element_type));
+      TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) 
+	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TYPE_MAIN_VARIANT (element_type));
       return t;
     }
   else if (TYPE_PTRMEMFUNC_P (type))

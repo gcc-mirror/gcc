@@ -725,7 +725,7 @@ context_for_name_lookup (decl)
      
      For the purposes of name lookup, after the anonymous union
      definition, the members of the anonymous union are considered to
-     have been defined in the scope in which teh anonymous union is
+     have been defined in the scope in which the anonymous union is
      declared.  */ 
   tree context = CP_DECL_CONTEXT (decl);
 
@@ -1955,7 +1955,7 @@ tree_has_any_destructor_p (binfo, data)
      void *data ATTRIBUTE_UNUSED;
 {
   tree type = BINFO_TYPE (binfo);
-  return TYPE_NEEDS_DESTRUCTOR (type) ? binfo : NULL_TREE;
+  return TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type) ? binfo : NULL_TREE;
 }
 
 /* Returns > 0 if a function with type DRETTYPE overriding a function

@@ -81,7 +81,7 @@ Boston, MA 02111-1307, USA.  */
    1: TYPE_HAS_CONSTRUCTOR.
    2: TYPE_HAS_DESTRUCTOR.
    3: TYPE_FOR_JAVA.
-   4: TYPE_NEEDS_DESTRUCTOR.
+   4: TYPE_HAS_NONTRIVIAL_DESTRUCTOR
    5: IS_AGGR_TYPE.
    6: TYPE_BUILT_IN.
 
@@ -1310,7 +1310,8 @@ struct lang_type
   unsigned has_nonpublic_assign_ref : 2;
   unsigned vtable_needs_writing : 1;
   unsigned has_assign_ref : 1;
-  unsigned gets_new : 2;
+  unsigned has_new : 1;
+  unsigned has_array_new : 1;
 
   unsigned gets_delete : 2;
   unsigned has_call_overloaded : 1;
@@ -1391,9 +1392,7 @@ struct lang_type
 /* List of friends which were defined inline in this class definition.  */
 #define CLASSTYPE_INLINE_FRIENDS(NODE) (TYPE_NONCOPIED_PARTS (NODE))
 
-/* Nonzero for _CLASSTYPE means that operator new and delete are defined,
-   respectively.  */
-#define TYPE_GETS_NEW(NODE) (TYPE_LANG_SPECIFIC(NODE)->gets_new)
+/* Nonzero for _CLASSTYPE means that operator delete is defined.  */
 #define TYPE_GETS_DELETE(NODE) (TYPE_LANG_SPECIFIC(NODE)->gets_delete)
 #define TYPE_GETS_REG_DELETE(NODE) (TYPE_GETS_DELETE (NODE) & 1)
 
@@ -1401,9 +1400,15 @@ struct lang_type
    takes the optional size_t argument.  */
 #define TYPE_VEC_DELETE_TAKES_SIZE(NODE) \
   (TYPE_LANG_SPECIFIC(NODE)->vec_delete_takes_size)
-#define TYPE_VEC_NEW_USES_COOKIE(NODE) \
-  (TYPE_NEEDS_DESTRUCTOR (NODE) \
-   || (TYPE_LANG_SPECIFIC (NODE) && TYPE_VEC_DELETE_TAKES_SIZE (NODE)))
+
+/* Nonzero if `new NODE[x]' should cause the allocation of extra
+   storage to indicate how many array elements are in use.  The old
+   ABI had a bug in that we always allocate the extra storage if NODE
+   has a two-argument array operator delete.  */
+#define TYPE_VEC_NEW_USES_COOKIE(NODE)		\
+  (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (NODE)	\
+   || (TYPE_LANG_SPECIFIC (NODE) 		\
+       && TYPE_VEC_DELETE_TAKES_SIZE (NODE)))
 
 /* Nonzero means that this _CLASSTYPE node defines ways of converting
    itself to other types.  */
@@ -1416,6 +1421,15 @@ struct lang_type
 /* Nonzero means that this _CLASSTYPE node has an X(X&) constructor.  */
 #define TYPE_HAS_INIT_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_init_ref)
 #define TYPE_HAS_CONST_INIT_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_const_init_ref)
+
+/* Nonzero if this class defines an overloaded operator new.  (An
+   operator new [] doesn't count.)  */
+#define TYPE_HAS_NEW_OPERATOR(NODE) \
+  (TYPE_LANG_SPECIFIC (NODE)->has_new)
+
+/* Nonzero if this class defines an overloaded operator new[].  */
+#define TYPE_HAS_ARRAY_NEW_OPERATOR(NODE) \
+  (TYPE_LANG_SPECIFIC (NODE)->has_array_new)
 
 /* Nonzero means that this type is being defined.  I.e., the left brace
    starting the definition of this type has been seen.  */
@@ -1916,6 +1930,10 @@ struct lang_decl
 #define SET_DECL_TINFO_FN_P(NODE) \
   (DECL_LANG_SPECIFIC((NODE))->decl_flags.mutable_flag = 1)
 
+/* Nonzero if NODE is an overloaded `operator delete[]' function.  */
+#define DECL_ARRAY_DELETE_OPERATOR_P(NODE) \
+  (DECL_NAME (NODE) == ansi_opname[(int) VEC_DELETE_EXPR])
+
 /* Nonzero for _DECL means that this decl appears in (or will appear
    in) as a member in a RECORD_TYPE or UNION_TYPE node.  It is also for
    detecting circularity in case members are multiply defined.  In the
@@ -2410,10 +2428,26 @@ extern int flag_new_for_scope;
 #define TYPE_HAS_ABSTRACT_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_abstract_assign_ref)
 #define TYPE_HAS_COMPLEX_INIT_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_complex_init_ref)
 
-/* Nonzero for _TYPE node means that destroying an object of this type
-   will involve a call to a destructor.  This can apply to objects
-   of ARRAY_TYPE is the type of the elements needs a destructor.  */
-#define TYPE_NEEDS_DESTRUCTOR(NODE) (TYPE_LANG_FLAG_4(NODE))
+/* Nonzero if TYPE has a trivial destructor.  From [class.dtor]:
+   
+     A destructor is trivial if it is an implicitly declared
+     destructor and if:
+
+       - all of the direct base classes of its class have trivial
+         destructors, 
+
+       - for all of the non-static data members of its class that are
+         of class type (or array thereof), each such class has a 
+	 trivial destructor.  */
+#define TYPE_HAS_TRIVIAL_DESTRUCTOR(NODE) \
+  (!TYPE_HAS_NONTRIVIAL_DESTRUCTOR (NODE))
+
+/* Nonzero for _TYPE node means that this type does not have a trivial
+   destructor.  Therefore, destroying an object of this type will
+   involve a call to a destructor.  This can apply to objects of
+   ARRAY_TYPE is the type of the elements needs a destructor.  */
+#define TYPE_HAS_NONTRIVIAL_DESTRUCTOR(NODE) \
+  (TYPE_LANG_FLAG_4(NODE))
 
 /* Nonzero for class type means that initialization of this type can use
    a bitwise copy.  */
@@ -3578,7 +3612,6 @@ extern tree type_decays_to			PARAMS ((tree));
 extern tree build_user_type_conversion		PARAMS ((tree, tree, int));
 extern tree build_new_function_call		PARAMS ((tree, tree));
 extern tree build_new_op			PARAMS ((enum tree_code, int, tree, tree, tree));
-extern tree build_op_new_call			PARAMS ((enum tree_code, tree, tree, int));
 extern tree build_op_delete_call		PARAMS ((enum tree_code, tree, tree, int, tree));
 extern int can_convert				PARAMS ((tree, tree));
 extern int can_convert_arg			PARAMS ((tree, tree, tree));
@@ -3922,7 +3955,6 @@ extern tree build_offset_ref			PARAMS ((tree, tree));
 extern tree resolve_offset_ref			PARAMS ((tree));
 extern tree decl_constant_value			PARAMS ((tree));
 extern tree build_new				PARAMS ((tree, tree, tree, int));
-extern tree build_new_1				PARAMS ((tree));
 extern tree build_vec_init			PARAMS ((tree, tree, tree, tree, int));
 extern tree build_x_delete			PARAMS ((tree, int, tree));
 extern tree build_delete			PARAMS ((tree, tree, tree, int, int));

@@ -206,8 +206,21 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   real_arglist = (char **) xmalloc (num_args * sizeof (char *));
   arglist = (const char **) real_arglist;
 
+  i = 0;
+  j = 0;
+  
+  /* Copy the 0th argument, i.e., the name of the program itself.  */
+  arglist[i++] = arglist[j++];
+
+#if ENABLE_NEW_GXX_ABI
+  /* If we should use the new ABI by default, add the appropriate flag
+     to cc1plus here.  We put this first so that it can be overridden
+     by other command-line options.  */
+  arglist[j++] = "-fnew-abi";
+#endif
+
   /* NOTE: We start at 1 now, not 0.  */
-  for (i = 0, j = 0; i < argc; i++, j++)
+  while (i < argc)
     {
       arglist[j] = argv[i];
 
@@ -237,11 +250,10 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	  arglist[j++] = argv[i];
 	  arglist[j] = "-xnone";
 	}
-  }
 
-#if ENABLE_NEW_GXX_ABI
-  arglist[j++] = "-fnew-abi";
-#endif
+      i++;
+      j++;
+    }
 
   /* Add `-lstdc++' if we haven't already done so.  */
   if (library)
