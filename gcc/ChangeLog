@@ -1,3 +1,9 @@
+2003-07-01  Andreas Jaeger  <aj@suse.de>
+
+	* fold-const.c: Convert prototypes to ISO C90.
+	* function.c: Likewise.
+	* function.h: Likewise.
+
 2003-07-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/contrib.texi: Fix typos.
