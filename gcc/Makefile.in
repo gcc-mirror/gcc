@@ -1575,9 +1575,9 @@ deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
 	  $(srcdir)/scan-types.sh "$(srcdir)" >tmp-deduced.h
 	mv tmp-deduced.h deduced.h
 
-gen-protos: gen-protos.o scan.o
+gen-protos: gen-protos.o scan.o $(HOST_LIBDEPS)
 	${HOST_CC} $(HOST_CFLAGS) $(HOST_LDFLAGS) -o gen-protos \
-	  gen-protos.o scan.o
+	  gen-protos.o scan.o $(HOST_LIBS)
 
 gen-protos.o: gen-protos.c scan.h hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gen-protos.c
@@ -1592,9 +1592,9 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefil
 	  | ./gen-protos >xsys-protos.h
 	rm -rf fixtmp.c
 
-fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_OBSTACK)
+fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o fix-header \
-	  fix-header.o scan-decls.o scan.o $(HOST_OBSTACK)
+	  fix-header.o scan-decls.o scan.o $(HOST_LIBS)
 
 fix-header.o: fix-header.c obstack.h scan.h xsys-protos.h hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
