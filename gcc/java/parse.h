@@ -459,9 +459,6 @@ static jdeplist *reverse_jdep_list ();
     BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl)) = (NODE); \
   }
 
-#define BLOCK_EXPR_DECLS(NODE)  BLOCK_VARS(NODE)
-#define BLOCK_EXPR_BODY(NODE)   BLOCK_SUBBLOCKS(NODE)
-
 /* For an artificial BLOCK (created to house a local variable declaration not
    at the start of an existing block), the parent block;  otherwise NULL. */
 #define BLOCK_EXPR_ORIGIN(NODE) BLOCK_ABSTRACT_ORIGIN(NODE)
