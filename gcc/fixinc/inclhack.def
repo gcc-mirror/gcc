@@ -1017,6 +1017,26 @@ fix = {
 
 
 /*
+ * HP-UX long_double
+ */
+fix = {
+    hackname  = hpux_long_double;
+    files     = stdlib.h;
+    select    = "long_double";
+    sed       = "/^#[ \t]*ifndef _LONG_DOUBLE/,/\\/\\* _LONG_DOUBLE \\*\\//D";
+    sed       = "s/long_double/long double/g";
+
+    test_text = "#  ifndef _LONG_DOUBLE\n"
+		"#    define _LONG_DOUBLE\n"
+		"     typedef struct {\n"
+		"       unsigned int word1, word2, word3, word4;\n"
+		"     } long_double;\n"
+		"#  endif /* _LONG_DOUBLE */\n"
+		"extern long_double strtold(const char *, char **);\n";
+};
+
+
+/*
  *  Keep HP-UX 11 from stomping on C++ math namespace
  *  with defines for fabsf.
  */
@@ -1079,6 +1099,85 @@ fix = {
     test_text =
     "#define CONCAT_U__(__c)\t__CONCAT__(__c,u)\n"
     "#define UINT32_C(__c)\t__CONCAT__(__CONCAT_U__(__c),l)";
+};
+
+
+/*
+ *  Fix hpux 10.X missing ctype declarations 1
+ */
+fix = {
+    hackname = hpux10_ctype_declarations1;
+    files    = ctype.h;
+    select   = "^#[ \t]*define _toupper\\(__c\\)[ \t]*__toupper\\(__c\\)";
+    bypass   = "^[ \t]*extern[ \t]*int[ \t]*__tolower[ \t]*\\(";
+    c_fix     = format;
+    c_fix_arg = "#ifdef _PROTOTYPES\n"
+		"extern int __tolower(int);\n"
+		"extern int __toupper(int);\n"
+		"#else /* NOT _PROTOTYPES */\n"
+		"extern int __tolower();\n"
+		"extern int __toupper();\n"
+		"#endif /* _PROTOTYPES */\n\n"
+		"%0\n";
+
+    test_text = "#  define _toupper(__c)         __toupper(__c)\n";
+};
+
+
+/*
+ *  Fix hpux 10.X missing ctype declarations 2
+ */
+fix = {
+    hackname = hpux10_ctype_declarations2;
+    files    = ctype.h;
+    select   = "^#  if defined\\(_SB_CTYPE_MACROS\\) && \\!defined\\(__lint\\)";
+    bypass   = "^[ \t]*extern[ \t]*int[ \t]*_isalnum[ \t]*\\(";
+    c_fix     = format;
+    c_fix_arg = "%0\n\n"
+		"#ifdef _PROTOTYPES\n"
+		"     extern int _isalnum(int);\n"
+		"     extern int _isalpha(int);\n"
+		"     extern int _iscntrl(int);\n"
+		"     extern int _isdigit(int);\n"
+		"     extern int _isgraph(int);\n"
+		"     extern int _islower(int);\n"
+		"     extern int _isprint(int);\n"
+		"     extern int _ispunct(int);\n"
+		"     extern int _isspace(int);\n"
+		"     extern int _isupper(int);\n"
+		"     extern int _isxdigit(int);\n"
+		"#  else /* not _PROTOTYPES */\n"
+		"     extern int _isalnum();\n"
+		"     extern int _isalpha();\n"
+		"     extern int _iscntrl();\n"
+		"     extern int _isdigit();\n"
+		"     extern int _isgraph();\n"
+		"     extern int _islower();\n"
+		"     extern int _isprint();\n"
+		"     extern int _ispunct();\n"
+		"     extern int _isspace();\n"
+		"     extern int _isupper();\n"
+		"     extern int _isxdigit();\n"
+		"#endif /* _PROTOTYPES */\n";
+
+    test_text = "#  if defined(_SB_CTYPE_MACROS) && !defined(__lint)\n"
+		"     extern unsigned int *__SB_masks;\n";
+};
+
+
+/*
+ *  Fix hpux broken ctype macros
+ */
+fix = {
+    hackname = hpux_ctype_macros;
+    files    = ctype.h;
+    select   = '((: |\()__SB_masks \? )'
+	       '(__SB_masks\[__(alnum|c)\] & _IS)';
+    c_fix     = format;
+    c_fix_arg = "%1(int)%3";
+
+    test_text = ": __SB_masks ? __SB_masks[__alnum] & _ISCNTRL\n"
+		"# define isalpha(__c) (__SB_masks ? __SB_masks[__c] & _IS\n";
 };
 
 
