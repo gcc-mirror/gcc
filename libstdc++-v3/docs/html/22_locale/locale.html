@@ -68,14 +68,36 @@ public:
 The only other thing of interest in this class is the memory
 management of facets. Each constructor of a facet class takes a
 std::size_t __refs argument: if __refs == 0, the facet is deleted when
-no longer used. if __refs == 1, the facet is not destroyed, even when
-it is no longer reference.
+the locale containing it is destroyed. If __refs == 1, the facet is
+not destroyed, even when it is no longer referenced.
 
 
 class id
 Provides an index for looking up specific facets.
 
 class _Impl
+The internal representation of the std::locale object.
+
+<h2>
+5.  Relationship to traditional "C" locales.
+</h2>
+
+From Josuttis, p. 697-698, which says, that "there is only *one*
+relation (of the C++ locale mechanism) to the C locale mechanism: the
+global C locale is modified if a named C++ locale object is set as the
+global locale" (emphasis Paolo), that is:
+
+    std::locale::global(std::locale(""));
+
+affects the C functions as if the following call was made:
+
+    std::setlocale(LC_ALL, "");
+
+On the other hand, there is *no* viceversa, that is, calling setlocale
+has *no* whatsoever on the C++ locale mechanism, in particular on the
+working of locale(""), which constructs the locale object from the
+environment of the running program, that is, in practice, the set of
+LC_ALL, LANG, etc. variable of the shell.
 
 <h2>
 5.  Examples
@@ -87,8 +109,7 @@ class _Impl
 
 More information can be found in the following testcases:
 <ul>
-<li> testsuite/22_locale/ctype_char_members.cc    </li>
-<li> testsuite/22_locale/ctype_wchar_t_members.cc </li>
+<li> testsuite/22_locale/all   </li>
 </ul>
 
 <h2>

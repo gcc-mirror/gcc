@@ -1,6 +1,6 @@
 // 2000-08-31 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000 Free Software Foundation
+// Copyright (C) 2000, 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +25,7 @@
 #include <stdexcept>
 #include <string>
 #include <iterator>
+#include <limits>
 #include <testsuite_hooks.h>
 
 // 1 a class if a facet if it is publicly derived from another facet
@@ -233,9 +234,69 @@ void test01()
     }
 }
 
+// Static counter for use in checking ctors/dtors.
+static std::size_t counter;
+
+class surf : public std::locale::facet
+{
+public:
+  static std::locale::id 	       	id;
+  surf(size_t refs = 0): std::locale::facet(refs) { ++counter; }
+  ~surf() { --counter; }
+};
+
+std::locale::id surf::id;
+
+typedef surf facet_type;
+
+void test02()
+{
+  using namespace std;
+  bool test = true;
+
+  // 1: Destroyed when out of scope.
+  VERIFY( counter == 0 );
+  {
+    locale loc01(locale::classic(), new facet_type);
+    VERIFY( counter == 1 );
+  }
+  VERIFY( counter == 0 );
+
+  // 2: Not destroyed when out of scope, deliberately leaked.
+  VERIFY( counter == 0 );
+  {
+    // Default refs argument is zero.
+    locale loc02(locale::classic(), new facet_type(1));
+    VERIFY( counter == 1 );
+  }
+  VERIFY( counter == 1 );
+
+  // 3: Pathological.
+  counter = 0;
+  {
+    // Test bounds.
+    facet_type* f = new facet_type(numeric_limits<size_t>::max());
+    VERIFY( counter == 1 );
+    // Add a reference.
+    locale loc01(locale::classic(), f);
+    {
+      // Add another reference...
+      locale loc02(locale::classic(), f);
+    }
+    VERIFY( counter == 1 );
+  }
+
+  // 4: Named locale should destroy facets when it goes out of scope.
+  // Not quite sure how to test for this w/o valgrind at the moment.
+  {
+    locale loc03("es_MX");
+  }
+}
+
 int main ()
 {
   test01();
 
+  test02();
   return 0;
 }

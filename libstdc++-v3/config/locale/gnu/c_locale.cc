@@ -178,9 +178,29 @@ namespace std
   
   void
   locale::facet::_S_destroy_c_locale(__c_locale& __cloc)
-  { __freelocale(__cloc); }
+  {
+    if (_S_c_locale != __cloc)
+      __freelocale(__cloc); 
+  }
 
   __c_locale
   locale::facet::_S_clone_c_locale(__c_locale& __cloc)
   { return __duplocale(__cloc); }
+
+  const char* locale::_S_categories[_S_categories_size 
+				    + _S_extra_categories_size] =
+    {
+      "LC_CTYPE", 
+      "LC_NUMERIC", 
+      "LC_COLLATE", 
+      "LC_TIME", 
+      "LC_MONETARY",
+      "LC_MESSAGES", 
+      "LC_PAPER", 
+      "LC_NAME", 
+      "LC_ADDRESS",
+      "LC_TELEPHONE", 
+      "LC_MEASUREMENT", 
+      "LC_IDENTIFICATION" 
+    };
 }  // namespace std

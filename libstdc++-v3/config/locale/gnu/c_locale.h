@@ -40,6 +40,8 @@
 
 #define _GLIBCPP_C_LOCALE_GNU 1
 
+#define _GLIBCPP_NUM_CATEGORIES 6
+
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
 namespace __gnu_cxx
 {

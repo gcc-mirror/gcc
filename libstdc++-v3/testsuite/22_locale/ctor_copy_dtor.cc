@@ -121,7 +121,7 @@ void test01()
   string str1, str2;
 
   // construct a locale object with the C facet
-  const locale& 	loc01 = locale::classic();
+  const locale	loc01 = locale::classic();
 
   // 1
   // template <class Facet> locale(const locale& other, Facet* f)
@@ -315,13 +315,89 @@ void test03()
 {
   bool test = true;
 #ifdef _GLIBCPP_HAVE_SETENV 
-  const char* oldLANG = getenv("LANG");
-  if (!setenv("LANG", "it_IT", 1))
+  const char* oldLC_ALL = getenv("LC_ALL");
+  if (!setenv("LC_ALL", "it_IT", 1))
     {
       std::locale loc(""); 
       VERIFY( loc.name() == "it_IT" );
-      setenv("LANG", oldLANG ? oldLANG : "", 1);
+      setenv("LC_ALL", oldLC_ALL ? oldLC_ALL : "", 1);
     }
+#endif
+}
+
+
+// More tests for Posix locale::name. 
+void test04()
+{
+  bool test = true;
+#ifdef _GLIBCPP_HAVE_SETENV
+
+  const char* oldLC_ALL = getenv("LC_ALL") ? strdup(getenv("LC_ALL")) : "";
+  const char* oldLANG = getenv("LANG") ? strdup(getenv("LANG")) : "";
+
+  // Check that a "POSIX" LC_ALL is equivalent to "C".
+  if (!setenv("LC_ALL", "POSIX", 1))
+    {
+      std::locale loc("");
+      VERIFY( loc.name() == "C" );
+    }
+
+  // Check the default set by LANG.
+  if (!setenv("LC_ALL", "", 1) && !setenv("LANG", "fr_FR", 1))
+    {
+      std::locale loc("");
+      VERIFY( loc.name() == "fr_FR" );
+    }
+
+  // Check that a "POSIX" LANG is equivalent to "C".
+  if (!setenv("LANG", "POSIX", 1))
+    {
+      std::locale loc(""); 
+      VERIFY( loc.name() == "C" );
+    }
+
+  // Setting a category in the "C" default.
+  const char* oldLC_COLLATE =
+    getenv("LC_COLLATE") ? strdup(getenv("LC_COLLATE")) : "";
+  if (!setenv("LC_COLLATE", "de_DE", 1))
+    {
+      std::locale loc("");
+      VERIFY( loc.name() == "LC_CTYPE=C;LC_NUMERIC=C;LC_COLLATE=de_DE;"
+	      "LC_TIME=C;LC_MONETARY=C;LC_MESSAGES=C;LC_PAPER=C;"
+	      "LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=C;"
+	      "LC_IDENTIFICATION=C" );
+    }
+
+  // Changing the LANG default while LC_COLLATE is set.
+  if (!setenv("LANG", "fr_FR", 1))
+    {
+      std::locale loc("");
+      VERIFY( loc.name() == "LC_CTYPE=fr_FR;LC_NUMERIC=fr_FR;"
+	      "LC_COLLATE=de_DE;LC_TIME=fr_FR;LC_MONETARY=fr_FR;"
+	      "LC_MESSAGES=fr_FR;LC_PAPER=fr_FR;LC_NAME=fr_FR;"
+	      "LC_ADDRESS=fr_FR;LC_TELEPHONE=fr_FR;LC_MEASUREMENT=fr_FR;"
+	      "LC_IDENTIFICATION=fr_FR" );
+    }
+  
+  // Changing another (C only) category.
+  const char* oldLC_IDENTIFICATION =
+    getenv("LC_IDENTIFICATION") ? strdup(getenv("LC_IDENTIFICATION")) : "";
+  if (!setenv("LC_IDENTIFICATION", "it_IT", 1))
+    {
+      std::locale loc("");
+      VERIFY( loc.name() == "LC_CTYPE=fr_FR;LC_NUMERIC=fr_FR;"
+	      "LC_COLLATE=de_DE;LC_TIME=fr_FR;LC_MONETARY=fr_FR;"
+	      "LC_MESSAGES=fr_FR;LC_PAPER=fr_FR;LC_NAME=fr_FR;"
+	      "LC_ADDRESS=fr_FR;LC_TELEPHONE=fr_FR;LC_MEASUREMENT=fr_FR;"
+	      "LC_IDENTIFICATION=it_IT" );
+    }
+
+  // Restore the environment.
+  setenv("LC_ALL", oldLC_ALL ? oldLC_ALL : "", 1);
+  setenv("LANG", oldLANG ? oldLANG : "", 1);
+  setenv("LC_COLLATE", oldLC_COLLATE ? oldLC_COLLATE : "", 1);
+  setenv("LC_IDENTIFICATION",
+	 oldLC_IDENTIFICATION ? oldLC_IDENTIFICATION : "", 1);
 #endif
 }
 
@@ -335,6 +411,7 @@ int main()
 
   test02();
   test03();
+  test04();
 
   return 0;
 }

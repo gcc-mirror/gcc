@@ -35,6 +35,8 @@
 
 #include <clocale>
 
+#define _GLIBCPP_NUM_CATEGORIES 0
+
 namespace std
 {
   typedef int*			__c_locale;

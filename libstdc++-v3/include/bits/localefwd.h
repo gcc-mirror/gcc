@@ -207,8 +207,8 @@ namespace std
     static const category time 		= 1L << 3;
     static const category monetary 	= 1L << 4;
     static const category messages 	= 1L << 5;
-    static const category all 		= (collate | ctype | monetary |
-				 	   numeric | time  | messages);
+    static const category all 		= (ctype | numeric | collate |
+				 	   time  | monetary | messages);
 
     // Construct/copy/destroy:
     locale() throw();
@@ -267,7 +267,26 @@ namespace std
     // Current global reference locale
     static _Impl* 	_S_global;  
 
-    static const size_t	_S_num_categories = 6;
+    // Number of standard categories. For C++, these categories are
+    // collate, ctype, monetary, numeric, time, and messages. These
+    // directly correspond to ISO C99 macros LC_COLLATE, LC_CTYPE,
+    // LC_MONETARY, LC_NUMERIC, and LC_TIME. In addition, POSIX (IEEE
+    // 1003.1-2001) specifies LC_MESSAGES.
+    static const size_t	_S_categories_size = 6;
+
+    // In addition to the standard categories, the underlying
+    // operating system is allowed to define extra LC_*
+    // macros. For GNU systems, the following are also valid:
+    // LC_PAPER, LC_NAME, LC_ADDRESS, LC_TELEPHONE, LC_MEASUREMENT,
+    // and LC_IDENTIFICATION.
+    static const size_t	_S_extra_categories_size = _GLIBCPP_NUM_CATEGORIES;
+
+    // Names of underlying locale categories.  
+    // NB: locale::global() has to know how to modify all the
+    // underlying categories, not just the ones required by the C++
+    // standard.
+    static const char* 	_S_categories[_S_categories_size 
+				      + _S_extra_categories_size];
 
     explicit 
     locale(_Impl*) throw();
@@ -308,7 +327,9 @@ namespace std
     _Atomic_word			_M_references;
     facet** 				_M_facets;
     size_t 				_M_facets_size;
-    const char* 			_M_names[_S_num_categories];
+
+    char* 				_M_names[_S_categories_size
+						 + _S_extra_categories_size];
     static const locale::id* const 	_S_id_ctype[];
     static const locale::id* const 	_S_id_numeric[];
     static const locale::id* const 	_S_id_collate[];
@@ -348,8 +369,10 @@ namespace std
     _M_check_same_name()
     {
       bool __ret = true;
-      for (size_t i = 0; __ret && i < _S_num_categories - 1; ++i)
-	__ret &= (strcmp(_M_names[i], _M_names[i + 1]) == 0);
+      for (size_t __i = 0; 
+	   __ret && __i < _S_categories_size + _S_extra_categories_size - 1; 
+	   ++__i)
+	__ret &= (strcmp(_M_names[__i], _M_names[__i + 1]) == 0);
       return __ret;
     }
 
@@ -376,8 +399,14 @@ namespace std
     {
       _M_impl = new _Impl(*__other._M_impl, 1);
       _M_impl->_M_install_facet(&_Facet::id, __f);
-      for (size_t __i = 0; __i < _S_num_categories; ++__i)
-	_M_impl->_M_names[__i] = "*";
+      for (size_t __i = 0; 
+	   __i < _S_categories_size + _S_extra_categories_size; ++__i)
+	{
+	  delete [] _M_impl->_M_names[__i];
+	  char* __new = new char[2];
+	  strcpy(__new, "*");
+	  _M_impl->_M_names[__i] = __new;
+	}
     }
 
   // 22.1.1.1.2  Class locale::facet

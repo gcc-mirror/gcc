@@ -525,7 +525,7 @@ namespace std
 
       // For use at construction time only.
       void 
-      _M_initialize_numpunct(__c_locale __cloc = _S_c_locale);
+      _M_initialize_numpunct(__c_locale __cloc = NULL);
     };
 
   template<typename _CharT>
@@ -875,10 +875,7 @@ namespace std
   protected:
       virtual
       ~collate() 
-      {
-	if (_M_c_locale_collate != _S_c_locale)
-	  _S_destroy_c_locale(_M_c_locale_collate); 
-      }
+      { _S_destroy_c_locale(_M_c_locale_collate); }
 
       virtual int  
       do_compare(const _CharT* __lo1, const _CharT* __hi1,
@@ -924,8 +921,7 @@ namespace std
       collate_byname(const char* __s, size_t __refs = 0)
       : collate<_CharT>(__refs) 
       { 
-	if (_M_c_locale_collate != _S_c_locale)
-	  _S_destroy_c_locale(_M_c_locale_collate);
+	_S_destroy_c_locale(_M_c_locale_collate);
 	_S_create_c_locale(_M_c_locale_collate, __s); 
       }
 
@@ -1123,7 +1119,7 @@ namespace std
 
       // For use at construction time only.
       void 
-      _M_initialize_timepunct(__c_locale __cloc = _S_c_locale);
+      _M_initialize_timepunct(__c_locale __cloc = NULL);
     };
 
   template<typename _CharT>
@@ -1459,7 +1455,7 @@ namespace std
 
       // For use at construction time only.
        void 
-       _M_initialize_moneypunct(__c_locale __cloc = _S_c_locale, 
+       _M_initialize_moneypunct(__c_locale __cloc = NULL, 
 				const char* __name = NULL);
     };
 
@@ -1667,10 +1663,7 @@ namespace std
     protected:
       virtual 
       ~messages()
-       { 
-	 if (_M_c_locale_messages != _S_c_locale)
-	   _S_destroy_c_locale(_M_c_locale_messages); 
-       }
+       { _S_destroy_c_locale(_M_c_locale_messages); }
 
       virtual catalog 
       do_open(const basic_string<char>&, const locale&) const;
@@ -1759,8 +1752,7 @@ namespace std
       : messages<_CharT>(__refs) 
       { 
 	_M_name_messages = __s;
-	if (_M_c_locale_messages != _S_c_locale)
-	  _S_destroy_c_locale(_M_c_locale_messages);
+	_S_destroy_c_locale(_M_c_locale_messages);
 	_S_create_c_locale(_M_c_locale_messages, __s); 
       }
 

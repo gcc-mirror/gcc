@@ -40,10 +40,7 @@ namespace std
 {
   template<>
     __timepunct<char>::~__timepunct()
-    {
-      if (_M_c_locale_timepunct != _S_c_locale)
-	_S_destroy_c_locale(_M_c_locale_timepunct); 
-    }
+    { _S_destroy_c_locale(_M_c_locale_timepunct); }
 
   template<>
     void
@@ -123,10 +120,7 @@ namespace std
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<>
     __timepunct<wchar_t>::~__timepunct()
-    {
-      if (_M_c_locale_timepunct != _S_c_locale)
-	_S_destroy_c_locale(_M_c_locale_timepunct); 
-    }
+    { _S_destroy_c_locale(_M_c_locale_timepunct); }
 
   template<>
     void

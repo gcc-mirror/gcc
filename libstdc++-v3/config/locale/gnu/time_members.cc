@@ -41,10 +41,7 @@ namespace std
 {
   template<>
     __timepunct<char>::~__timepunct()
-    {
-      if (_M_c_locale_timepunct != _S_c_locale)
-	_S_destroy_c_locale(_M_c_locale_timepunct); 
-    }
+    { _S_destroy_c_locale(_M_c_locale_timepunct); }
 
   template<>
     void
@@ -67,11 +64,10 @@ namespace std
     void
     __timepunct<char>::_M_initialize_timepunct(__c_locale __cloc)
     {
-      if (__cloc == _S_c_locale)
+      if (!__cloc)
 	{
 	  // "C" locale
-
-	  _M_c_locale_timepunct = _S_c_locale; 
+	  _M_c_locale_timepunct = _S_c_locale;
 
 	  _M_date_format = "%m/%d/%y";
 	  _M_date_era_format = "%m/%d/%y";
@@ -194,10 +190,7 @@ namespace std
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<>
     __timepunct<wchar_t>::~__timepunct()
-    {
-      if (_M_c_locale_timepunct != _S_c_locale)
-	_S_destroy_c_locale(_M_c_locale_timepunct); 
-    }
+    { _S_destroy_c_locale(_M_c_locale_timepunct); }
 
   template<>
     void
@@ -220,11 +213,10 @@ namespace std
     void
     __timepunct<wchar_t>::_M_initialize_timepunct(__c_locale __cloc)
     {
-      if (__cloc == _S_c_locale)
+      if (!__cloc)
 	{
 	  // "C" locale
-
-	  _M_c_locale_timepunct = _S_c_locale; 
+	  _M_c_locale_timepunct = _S_c_locale;
 
 	  _M_date_format = L"%m/%d/%y";
 	  _M_date_era_format = L"%m/%d/%y";
