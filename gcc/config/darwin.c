@@ -361,7 +361,8 @@ machopic_indirection_name (rtx sym_ref, bool stub_p)
 const char*
 machopic_mcount_stub_name (void)
 {
-  return "&L*mcount$stub";
+  rtx symbol = gen_rtx_SYMBOL_REF (Pmode, "*mcount");
+  return machopic_indirection_name (symbol, /*stub_p=*/true);
 }
 
 /* If NAME is the name of a stub or a non-lazy pointer , mark the stub

@@ -1,3 +1,9 @@
+2004-09-10  Andrew Pinski  <apinski@apple.com>
+
+	* config/darwin.c (machopic_mcount_stub_name): Call
+	machopic_indirection_name instead of making the string
+	ourselves.
+
 2004-09-10  Diego Novillo  <dnovillo@redhat.com>
 
 	Revert
