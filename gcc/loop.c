@@ -3705,6 +3705,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   int n_extra_increment;
   struct loop_info loop_iteration_info;
   struct loop_info *loop_info = &loop_iteration_info;
+  int unrolled_insn_copies;
 
   /* If scan_start points to the loop exit test, we have to be wary of
      subversive use of gotos inside expression statements.  */
@@ -5133,11 +5134,40 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	INSN_CODE (p) = -1;
       }
 
+  if (loop_info->n_iterations > 0)
+    {
+      /* When we completely unroll a loop we will likely not need the increment
+	 of the loop BIV and we will not need the conditional branch at the
+	 end of the loop.  */
+      unrolled_insn_copies = insn_count - 2;
+
+#ifdef HAVE_cc0
+      /* When we completely unroll a loop on a HAVE_cc0 machine we will not
+	 need the comparison before the conditional branch at the end of the
+	 loop.  */
+      unrolled_insn_copies = insn_count - 2;
+#endif
+
+      /* We'll need one copy for each loop iteration.  */
+      unrolled_insn_copies *= loop_info->n_iterations;
+
+      /* A little slop to account for the ability to remove initialization
+	 code, better CSE, and other secondary benefits of completely
+	 unrolling some loops.  */
+      unrolled_insn_copies -= 1;
+
+      /* Clamp the value.  */
+      if (unrolled_insn_copies < 0)
+	unrolled_insn_copies = 0;
+    }
+  
   /* Unroll loops from within strength reduction so that we can use the
      induction variable information that strength_reduce has already
-     collected.  */
-  
-  if (unroll_p)
+     collected.  Always unroll loops that would be as small or smaller
+     unrolled than when rolled.  */
+  if (unroll_p
+      || (loop_info->n_iterations > 0
+	  && unrolled_insn_copies <= insn_count))
     unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 		 loop_info, 1);
 
