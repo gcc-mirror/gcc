@@ -1,3 +1,7 @@
+2003-02-21  Richard Henderson  <rth@redhat.com>
+
+        * gcc.dg/attr-invalid.c: Allow __used__ on static data.
+
 2003-02-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9749
