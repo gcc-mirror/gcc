@@ -2305,6 +2305,11 @@ process_command (argc, argv)
   /* Convert new-style -- options to old-style.  */
   translate_options (&argc, &argv);
 
+#ifdef LANG_SPECIFIC_DRIVER
+  /* Do language-specific adjustment/addition of flags.  */
+  lang_specific_driver (&fatal, &argc, &argv);
+#endif
+
   /* Scan argv twice.  Here, the first time, just count how many switches
      there will be in their vector, and how many input files in theirs.
      Here we also parse the switches that cc itself uses (e.g. -v).  */
