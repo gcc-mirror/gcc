@@ -919,8 +919,7 @@ expand_call (exp, target, ignore)
 	    {
 	      /* This is a variable-sized object.  Make space on the stack
 		 for it.  */
-	      rtx size_rtx = expand_expr (size_in_bytes (type), NULL_RTX,
-					  VOIDmode, 0);
+	      rtx size_rtx = expr_size (TREE_VALUE (p));
 
 	      if (old_stack_level == 0)
 		{
