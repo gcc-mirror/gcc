@@ -1,5 +1,9 @@
 2002-02-13  Douglas B Rupp  <rupp@gnat.com>
 
+	* mkconfig.sh: Avoid using a subshell redirect.
+	($output.T): Change to $(output)T.
+	(ENABLE_NLS): Remove unneeded undef.
+
 	* config/alpha/vms.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Define.
 	* config/alpha/x-vms (libsubdir): Define.
 
