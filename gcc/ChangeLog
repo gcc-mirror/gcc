@@ -1,3 +1,8 @@
+Sat Jan 25 16:11:22 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* df.c (read_modify_subreg_p):  When osize == UNITS_PER_WORD,
+	subreg is read/modify.
+
 Sat Jan 25 15:55:08 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_movstr, ix86_expand_clrstr): Consistently
