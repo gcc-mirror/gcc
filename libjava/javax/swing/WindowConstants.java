@@ -63,5 +63,10 @@ public interface WindowConstants {
 	 */
 	public static final int DISPOSE_ON_CLOSE = 2;
 
+	/**
+	 * EXIT_ON_CLOSE
+	 */
+	public static final int EXIT_ON_CLOSE =3;
+
 
 } // WindowConstants

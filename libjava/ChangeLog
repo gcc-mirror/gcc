@@ -1,5 +1,24 @@
 2003-03-21  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/Action.java
+	(ACCELERATOR_KEY): New constant.
+	(ACTION_COMMAND_KEY): Likewise.
+	(MNEMONIC_KEY): Likewise.
+	* javax/swing/UnsupportedLookAndFeelException.java
+	(UnsupportedLookAndFeelException): Must be public.
+	* javax/swing/WindowConstants.java
+	(EXIT_ON_CLOSE): New constant.
+	* javax/swing/text/BadLocationException.java
+	(offset): New member variable.
+	(BadLocationException): New implementation, documentation added.
+	(offsetRequested): New method.
+	* javax/swing/text/Caret.java:
+	Reformated.
+	* javax/swing/text/Document.java:
+	Reformated.
+
+2003-03-21  Michael Koch  <konqueror@gmx.de>
+
 	* java/rmi/activation/Activatable.java
 	(serialVersionUID): New member variable.
 	* java/rmi/activation/ActivationGroup.java

@@ -78,6 +78,21 @@ public interface Action extends ActionListener {
 	 */
 	public static final	String	SMALL_ICON			= "SmallIcon";
 
+	/**
+	 * ACCELERATOR_KEY
+	 */
+	public static final String ACCELERATOR_KEY = "AcceleratorKey";
+
+	/**
+	 * ACTION_COMMAND_KEY
+	 */
+	public static final String ACTION_COMMAND_KEY = "ActionCommandKey";
+
+	/**
+	 * MNEMONIC_KEY
+	 */
+	public static final String MNEMONIC_KEY = "MnemonicKey";
+
 
 	//-------------------------------------------------------------
 	// Interface: Action ------------------------------------------

@@ -40,7 +40,25 @@ package javax.swing.text;
 
 public class BadLocationException extends Exception
 {    
-    BadLocationException()
-    {
-    }
+  int offset;
+  
+  /**
+   * Constructs a <code>BadLocationException</code>
+   *
+   * @param str A string indicating what was wrong with the arguments
+   * @param offset Offset within the document that was requested &gt;= 0
+   */
+  public BadLocationException (String str, int offset)
+  {
+    super (str);
+    this.offset = offset;
+  }
+
+  /**
+   * Returns the offset into the document that was not legal
+   */
+  public int offsetRequested ()
+  {
+    return offset;
+  }
 }
