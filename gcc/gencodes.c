@@ -28,12 +28,9 @@ Boston, MA 02111-1307, USA.  */
 #include "errors.h"
 #include "gensupport.h"
 
-
 static int insn_code_number;
 
 static void gen_insn PARAMS ((rtx));
-static void output_predicate_decls PARAMS ((void));
-static int print_md_constant PARAMS ((void **, void *));
 
 static void
 gen_insn (insn)
@@ -45,30 +42,6 @@ gen_insn (insn)
   if (XSTR (insn, 0)[0] != 0 && XSTR (insn, 0)[0] != '*')
     printf ("  CODE_FOR_%s = %d,\n", XSTR (insn, 0),
 	    insn_code_number);
-}
-
-/* Print out declarations for all predicates mentioned in
-   PREDICATE_CODES.  */
-
-static void
-output_predicate_decls ()
-{
-#ifdef PREDICATE_CODES
-  static struct {
-    const char *name;
-    RTX_CODE codes[NUM_RTX_CODE];
-  } predicate[] = {
-    PREDICATE_CODES
-  };
-  size_t i;
-
-  putc ('\n', stdout);
-  puts ("struct rtx_def;\n#include \"machmode.h\"\n");
-  for (i = 0; i < sizeof predicate / sizeof *predicate; i++)
-    printf ("extern int %s PARAMS ((struct rtx_def *, enum machine_mode));\n",
-	    predicate[i].name);
-  putc ('\n', stdout);
-#endif
 }
 
 extern int main PARAMS ((int, char **));
@@ -114,10 +87,6 @@ main (argc, argv)
 
   printf ("\n#define MAX_INSN_CODE ((int) CODE_FOR_nothing)\n\n");
 
-  traverse_md_constants (print_md_constant, stdout);
-
-  output_predicate_decls ();
-
   puts("\n#endif /* GCC_INSN_CODES_H */");
 
   if (ferror (stdout) || fflush (stdout) || fclose (stdout))
@@ -133,19 +102,4 @@ get_insn_name (code)
      int code ATTRIBUTE_UNUSED;
 {
   return NULL;
-}
-
-/* Called via traverse_md_constants; emit a #define for
-   the current constant definition.  */
-
-static int
-print_md_constant (slot, info)
-     void **slot;
-     void *info;
-{
-  struct md_constant *def = *slot;
-  FILE *file = info;
-
-  fprintf (file, "#define %s %s\n", def->name, def->value);
-  return 1;
 }
