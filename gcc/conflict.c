@@ -206,7 +206,7 @@ conflict_graph_add (graph, reg1, reg2)
 
   dummy.smaller = smaller;
   dummy.larger = larger;
-  slot = htab_find_slot (graph->arc_hash_table, (void *) &dummy, 1);
+  slot = htab_find_slot (graph->arc_hash_table, (void *) &dummy, INSERT);
   
   /* If the conflict is already there, do nothing.  */
   if (*slot != NULL)

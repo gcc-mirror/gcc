@@ -3400,11 +3400,8 @@ build1 (code, type, node)
   TREE_SET_PERMANENT (t);
 
   TREE_OPERAND (t, 0) = node;
-  if (node && first_rtl_op (code) != 0)
-    {
-      if (TREE_SIDE_EFFECTS (node))
-	TREE_SIDE_EFFECTS (t) = 1;
-    }
+  if (node && first_rtl_op (code) != 0 && TREE_SIDE_EFFECTS (node))
+    TREE_SIDE_EFFECTS (t) = 1;
 
   switch (code)
     {
@@ -4082,8 +4079,8 @@ type_hash_add (hashcode, type)
   h = (struct type_hash *) permalloc (sizeof (struct type_hash));
   h->hash = hashcode;
   h->type = type;
-  loc = htab_find_slot_with_hash (type_hash_table, h, hashcode, 1);
-  *(struct type_hash**)loc = h;
+  loc = htab_find_slot_with_hash (type_hash_table, h, hashcode, INSERT);
+  *(struct type_hash**) loc = h;
 }
 
 /* Given TYPE, and HASHCODE its hash code, return the canonical
