@@ -2941,10 +2941,10 @@ bootstrap-lean : clean_s1 clean_s2 stage3_build
 
 bootstrap2: bootstrap
 
-bootstrap2-lean : bootstrap_lean
+bootstrap2-lean : bootstrap-lean
 
 bootstrap3 bootstrap3-lean: bootstrap
- 
+
 bootstrap4 bootstrap4-lean: stage4_build
 
 unstage1 unstage2 unstage3 unstage4:

@@ -1,3 +1,7 @@
+2001-01-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (bootstrap2-lean): Fix typo.
+
 2001-01-28  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cpphash.c (_cpp_cleanup_hashtable, _cpp_lookup_with_hash)
