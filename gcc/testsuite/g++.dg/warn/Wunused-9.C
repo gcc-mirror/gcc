@@ -29,7 +29,7 @@ void g() {
   f() - 7; // { dg-warning "not used" }
   f() * 8; // { dg-warning "not used" }
   f() / 9; // { dg-warning "not used" }
-  +f(); // { dg-warning "not used" "" { xfail *-*-* } }
+  +f(); // { dg-warning "not used" }
   -f(); // { dg-warning "not used" }
   ++f();
   --f();
