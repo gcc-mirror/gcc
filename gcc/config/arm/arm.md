@@ -2935,6 +2935,7 @@
 			   : preserve_subexpressions_p ()));
       DONE;
     }
+    
   if (flag_pic
       && (CONSTANT_P (operands[1])
 	 || symbol_mentioned_p (operands[1])

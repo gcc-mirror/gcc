@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991, 93, 94, 05, 96, 97, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 95, 96, 97, 98, 99, 2000 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -242,7 +242,10 @@ Unrecognized value in TARGET_CPU_DEFAULT.
   { "subtarget_cpp_spec",	SUBTARGET_CPP_SPEC },           \
   SUBTARGET_EXTRA_SPECS
 
+#ifndef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS
+#endif
+
 #ifndef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC      ""
 #endif
@@ -486,7 +489,7 @@ extern int arm_is_6_or_7;
 
 /* The frame pointer register used in gcc has nothing to do with debugging;
    that is controlled by the APCS-FRAME option.  */
-/* Not fully implemented yet */
+/* Not fully implemented yet.  */
 /* #define CAN_DEBUG_WITHOUT_FP 1 */
 
 #define TARGET_MEM_FUNCTIONS 1
