@@ -2578,7 +2578,7 @@ build_x_function_call (function, params, decl)
 
   if ((TREE_CODE (function) == FUNCTION_DECL
        && DECL_STATIC_FUNCTION_P (function))
-      || (TREE_CODE (function) == TEMPLATE_DECL
+      || (DECL_FUNCTION_TEMPLATE_P (function)
 	  && DECL_STATIC_FUNCTION_P (DECL_TEMPLATE_RESULT (function))))
       return build_member_call (DECL_CONTEXT (function), 
 				template_id 

@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "defaults.h"
 #include "ggc.h"
 #include "hashtab.h"
+#include "timevar.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -9530,6 +9531,8 @@ instantiate_decl (d, defer_ok)
   if (! push_tinst_level (d))
     return d;
 
+  timevar_push (TV_PARSE);
+
   /* Set TD to the template whose DECL_TEMPLATE_RESULT is the pattern
      for the instantiation.  This is not always the most general
      template.  Consider, for example:
@@ -9720,6 +9723,8 @@ out:
 
   pop_from_top_level ();
   pop_tinst_level ();
+
+  timevar_pop (TV_PARSE);
 
   return d;
 }

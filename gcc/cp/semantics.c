@@ -2789,10 +2789,13 @@ expand_body (fn)
       return;
     }
 
-  timevar_push (TV_EXPAND);
+  timevar_push (TV_INTEGRATION);
 
   /* Optimize the body of the function before expanding it.  */
   optimize_function (fn);
+
+  timevar_pop (TV_INTEGRATION);
+  timevar_push (TV_EXPAND);
 
   /* Save the current file name and line number.  When we expand the
      body of the function, we'll set LINENO and INPUT_FILENAME so that

@@ -211,6 +211,7 @@ PARSE_C = $(srcdir)/parse.c
 EXPR_H = $(srcdir)/../expr.h ../insn-codes.h
 GGC_H = $(srcdir)/../ggc.h $(srcdir)/../varray.h
 HTAB_H = $(srcdir)/../../include/hashtab.h
+TIMEVAR_H = $(srcdir)/../timevar.h $(srcdir)/../timevar.def
 
 parse.o : $(PARSE_C) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h \
 	$(srcdir)/../except.h $(srcdir)/../output.h $(srcdir)/../system.h \
@@ -306,7 +307,7 @@ repo.o : repo.c $(CXX_TREE_H) \
 semantics.o: semantics.c $(CXX_TREE_H) lex.h \
   $(srcdir)/../except.h $(srcdir)/../toplev.h \
   $(srcdir)/../flags.h $(GGC_H) \
-  $(srcdir)/../output.h $(RTL_H) 
+  $(srcdir)/../output.h $(RTL_H) $(TIMEVAR_H)
 dump.o: dump.c $(CXX_TREE_H)
 optimize.o: optimize.c $(CXX_TREE_H) \
   $(srcdir)/../rtl.h $(srcdir)/../integrate.h ../insn-config.h \
