@@ -22,8 +22,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_V850_H
 #define GCC_V850_H
 
-#include "svr4.h"	/* Automatically does #undef CPP_PREDEFINES */
-
 /* These are defiend in svr4.h but we want to override them.  */
 #undef ASM_FINAL_SPEC
 #undef LIB_SPEC

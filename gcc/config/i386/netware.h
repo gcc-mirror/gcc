@@ -21,9 +21,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "i386/sysv4.h"		/* Build on the base i386 SVR4 configuration */
-#include "netware.h"		/* Then add netware-specific goo. */
-
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 Netware 4)");
 

@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80386 running System V.4
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 2001 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com).
 
@@ -20,9 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "i386/i386.h"	/* Base i386 target machine definitions */
-#include "i386/att.h"	/* Use the i386 AT&T assembler syntax */
-#include "svr4.h"	/* Definitions common to all SVR4 targets */
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 System V Release 4)");

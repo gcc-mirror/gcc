@@ -20,7 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "i386/sysv4.h"
 
 /* We use stabs-in-elf for debugging, because that is what the native
    toolchain uses.  */

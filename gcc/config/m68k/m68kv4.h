@@ -25,8 +25,10 @@ Boston, MA 02111-1307, USA.  */
 
 #define SGS_SWITCH_TABLES	/* Different switch table handling */
 
+/* TODO: convert includes to ${tm_file} list in config.gcc.  */
 #include "m68k/sgs.h"		/* The m68k/SVR4 assembler is SGS based */
 
+#include "elfos.h"
 #include "svr4.h"		/* Pick up the generic SVR4 macros */
 
 /* See m68k.h.  7 means 68020 with 68881.  */

@@ -37,12 +37,9 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-#define SET_ASM_OP	"\t.set\t"
-
 /* Use stabs instead of DWARF debug format.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-#include "svr4.h"
 
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX

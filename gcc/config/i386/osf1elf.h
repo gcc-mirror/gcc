@@ -3,7 +3,6 @@
    Copyright (C) 2000 Free Software Foundation, Inc. */
 
 #include <stdio.h>
-#include "i386/sysv4.h"	/* Base i386 target machine definitions */
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 OSF/1)");

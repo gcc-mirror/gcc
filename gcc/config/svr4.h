@@ -1,7 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for some
    generic System V Release 4 system.
    Copyright (C) 1991, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000 Free Software Foundation, Inc.
+   2000, 2001 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
@@ -21,29 +21,22 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 
-   To use this file, make up a file with a name like:
+   To use this file, make up a line like that in config.gcc:
 
-	?????svr4.h
+	tm_file="$tm_file elfos.h svr4.h MACHINE/svr4.h"
 
-   where ????? is replaced by the name of the basic hardware that you
-   are targeting for.  Then, in the file ?????svr4.h, put something
-   like:
-
-	#include "?????.h"
-	#include "svr4.h"
-
-   followed by any really system-specific defines (or overrides of
-   defines) which you find that you need.  For example, CPP_PREDEFINES
-   is defined here with only the defined -Dunix and -DSVR4.  You should
-   probably override that in your target-specific ?????svr4.h file
-   with a set of defines that includes these, but also contains an
-   appropriate define for the type of hardware that you are targeting.
+   where MACHINE is replaced by the name of the basic hardware that you
+   are targeting for.  Then, in the file MACHINE/svr4.h, put any really
+   system-specific defines (or overrides of defines) which you find that
+   you need.  For example, CPP_PREDEFINES is defined here with only the
+   defined -Dunix and -DSVR4.  You should probably override that in your
+   target-specific MACHINE/svr4.h file with a set of defines that
+   includes these, but also contains an appropriate define for the type
+   of hardware that you are targeting.
 */
 
 /* Define a symbol indicating that we are using svr4.h.  */
 #define USING_SVR4_H
-
-#include "elfos.h"
 
 /* Cpp, assembler, linker, library, and startfile spec's.  */
 

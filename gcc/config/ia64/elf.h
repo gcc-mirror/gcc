@@ -1,5 +1,6 @@
 /* Definitions for embedded ia64-elf target.  */
 
+/* TODO: convert includes to ${tm_file} list in config.gcc.  */
 #include "ia64/ia64.h"
 #include "elfos.h"
 #include "sysv4.h"

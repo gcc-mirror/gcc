@@ -28,10 +28,6 @@
 #define D30V_ALIGN(addr,align) (((addr) + (align) - 1) & ~((align) - 1))
 
 
-/* Set up System V.4 (aka ELF) defaults.  */
-#include "svr4.h"
-
-
 /* Driver configuration */
 
 /* A C expression which determines whether the option `-CHAR' takes arguments.

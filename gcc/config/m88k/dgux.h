@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running DG/UX.
-   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 2000
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
@@ -26,7 +26,9 @@ Boston, MA 02111-1307, USA.  */
    supported.  The option -msvr4 specifies elf.  With these combinations, 
    -g means dwarf.  */
 /* DWARF_DEBUGGING_INFO defined in svr4.h.  */
+#undef SDB_DEBUGGING_INFO
 #define SDB_DEBUGGING_INFO
+#undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE \
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
@@ -36,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #define AS_BUG_FLDCR
 #endif
 
-#include "svr4.h"
+/* TODO: convert includes to ${tm_file} list in config.gcc.  */
 #include "m88k/m88k.h"
 
 /* Augment TARGET_SWITCHES with the MXDB options.  */

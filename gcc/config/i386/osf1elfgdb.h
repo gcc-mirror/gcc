@@ -2,6 +2,6 @@
    with gas and gdb.  */
 
 /* Use stabs instead of DWARF debug format.  */
+#undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-#include "i386/osf1elf.h"

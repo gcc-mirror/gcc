@@ -1,3 +1,64 @@
+2001-10-19  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config.gcc (i[34567]86-*-gnu*, arc-*-elf*, d30v-*,
+	fr30-*-elf, hppa*64*-*-linux*, parisc*64*-*-linux*, hppa*-*-linux*,
+	parisc*-*-linux*, i370-*-linux*, i[34567]86-*-chorusos*,
+	i[34567]86-*-elf*, i[34567]86-ncr-sysv4*, i[34567]86-*-netware,
+	i[34567]86-sequent-ptx4*, i[34567]86-sequent-sysv4*,
+	i[34567]86-*-beoself*, i[34567]86-*-beos*, i[34567]86-*-freebsd*,
+	i[34567]86-*-netbsdelf*, i[34567]86-*-linux*libc1,
+	i[34567]86-*-linux*, i[34567]86-moss-msdos*, i[34567]86-*-moss*,
+	i[34567]86-go32-rtems*, i[34567]86-*-rtems*, i[34567]86-*-rtemself*,
+	i[34567]86-*-solaris2*, i[34567]86-*-sysv5*, i[34567]86-*-sysv4*,
+	i[34567]86-*-udk*, i[34567]86-*-osf1*, i[34567]86-dg-dgux*,
+	i860-alliant-*, i860-*-sysv4*, ia64*-*-aix*, ia64*-*-linux*,
+	ia64*-*-hpux*, m32r-*-elf*, m88k-dg-dgux*, m88k-*-sysv4*, mcore-*-elf,
+	mips*-*-linux*, mn10200-*-*, mn10300-*-*, pj*-linux*, pjl-*,
+	powerpc64-*-linux*, powerpc-*-sysv*, powerpc-*-netbsd*,
+	powerpc-*-chorusos*, powerpc-*-eabiaix*, powerpc-*-eabisim*,
+	powerpc-*-elf*, powerpc-*-eabi*, powerpc-*-rtems*,
+	powerpc-*-linux*libc1, powerpc-*-linux*, powerpc-wrs-vxworks*,
+	powerpcle-wrs-vxworks*, powerpcle-*-sysv*, powerpcle-*-elf*,
+	powerpcle-*-eabisim*, powerpcle-*-eabi*, powerpcle-*-solaris2*,
+	rs6000-*-mach*, s390-*-linux*, s390x-*-linux*, sh-*-elf*,
+	sh-*-rtemself*, sh-*-rtems*, sh-*-linux*, stormy16-*-elf,
+	v850-*-rtems*, v850-*-*, x86_64-*-linux*), cris-*-aout, cris-*-elf,
+	cris-*-none, cris-*-linux*: Update ${tmfile} list.
+	(c4x-*-rtems*, c4x-*, i[34567]86-go32-rtems*, i[34567]86-*-rtemscoff*,
+	i[34567]86-*-rtems*, i[34567]86-*-rtemself*, i[34567]86-*-osf1*,
+	mn10200-*-*, mn10300-*-*, powerpc-*-beos*, powerpc-*-darwin*,
+	powerpc-wrs-vxworks*, powerpcle-wrs-vxworks*, v850-*-rtems*,
+	v850-*-*): Delete superflous ${cpu_type} setting.
+	* config/linux.h: Delete svr4.h include.
+	(SET_ASM_OP): Delete.
+	* config/netware.h (INT_ASM_OP): Undef before define.
+	* config/ptx4.h: Delete elfos.h include.
+	(PREFERRED_DEBUGGING_TYPE): Undef instead of wrapping.
+	* config/svr4.h: Delete elfos.h include. Update commentary.
+	* config/arc/arc.h, config/d30v/d30v.h, config/fr30/fr30.h,
+	config/m32r/m32r.h, config/m88k/sysv4.h, config/mn10200/mn10200.h,
+	config/mn10200/mn10300.h, config/stormy16/stormy16.h,
+	config/v850/v850.h: Delete svr4.h include.
+	* config/i370/linux.h, config/i386/osf1elf.h, config/m68k/linux.h,
+	config/m68k/m68kv4.h, config/m88k/sysv4.h,
+	config/sparc/sysv4.h: Update includes.
+	* config/i386/beos-elf.h, config/i386/netware.h, config/i386/ptx4-i.h,
+	config/i386/rtemself.h, config/i386/sol2.h, config/i386/sysv4.h,
+	config/i386/sysv5.h, config/i386/udk.h, config/ia64/linux.h,
+	config/m88k/dguxbcs.h: Delete includes.
+	* config/i386/dgux.h, config/i386/osf1elfgdb.h: Delete include.
+	(PREFERRED_DEBUGGING_TYPE): Undef before defining it.
+	* config/i860/fx2800.h (ASM_OUTPUT_SOURCE_LINE): Undef before defining
+	it.
+	* config/m88k/dgux.h: Delete include.
+	(SDB_DEBUGGING_INFO, PREFERRED_DEBUGGING_TYPE):  Undef before
+	defining it.
+	* config/pj/pj.h (ASM_GENERATE_INTERNAL_LABEL,
+	ASM_OUTPUT_INTERNAL_LABEL, ASM_OUTPUT_SKIP): Undef before defining it.
+	* config/sh/elf.h: Update include.
+	(SDB_DEBUGGING_INFO, DWARF2_DEBUGGING_INFO, PREFERRED_DEBUGGING_TYPE,
+	DWARF2_ASM_LINE_DEBUG_INFO): Move behind includes.
+
 2001-10-19  Catherine Moore  <clm@redhat.com>
 
         * config/stormy16/stormy-abi:  Updates to varargs descriptions.

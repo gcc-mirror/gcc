@@ -23,12 +23,15 @@ Boston, MA 02111-1307, USA.  */
 #define MOTOROLA		/* Use Motorola syntax */
 #define USE_GAS			/* But GAS wants jbsr instead of jsr */
 
+/* TODO: convert includes to ${tm_file} list in config.gcc.  */
 #include <m68k/m68k.h>
 
 /* Make sure CC1 is undefined. */
 #undef CC1_SPEC
 
-#include <linux.h>		/* some common stuff */
+#include "elfos.h"
+#include "svr4.h"
+#include "linux.h"		/* some common stuff */
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (68k GNU/Linux with ELF)");

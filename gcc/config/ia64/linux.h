@@ -1,7 +1,4 @@
 /* Definitions for ia64-linux target.  */
-#include "ia64/ia64.h"
-#include <linux.h>
-#include "sysv4.h"
 
 /* This is for -profile to use -lc_p instead of -lc. */
 #undef CC1_SPEC
