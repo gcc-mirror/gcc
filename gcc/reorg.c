@@ -53,6 +53,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    target that would only be safe to execute knowing that the branch
    is taken.
 
+   The HP-PA always has a branch delay slot.  For unconditional branches
+   its effects can be annulled when the branch is taken.  The effects 
+   of the delay slot in a conditional branch can be nullified for forward
+   taken branches, or for untaken backward branches.  This means
+   we can hoist insns from the fall-through path for forward branches or
+   steal insns from the target of backward branches.
+
    Three techniques for filling delay slots have been implemented so far:
 
    (1) `fill_simple_delay_slots' is the simplest, most efficient way
@@ -128,10 +135,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define obstack_chunk_free free
 
 #ifndef ANNUL_IFTRUE_SLOTS
-#define eligible_for_annul_true(INSN, SLOTS, TRIAL) 0
+#define eligible_for_annul_true(INSN, SLOTS, TRIAL, FLAGS) 0
 #endif
 #ifndef ANNUL_IFFALSE_SLOTS
-#define eligible_for_annul_false(INSN, SLOTS, TRIAL) 0
+#define eligible_for_annul_false(INSN, SLOTS, TRIAL, FLAGS) 0
 #endif
 
 /* Insns which have delay slots that have not yet been filled.  */
@@ -221,6 +228,7 @@ static void delete_from_delay_slot PROTO((rtx));
 static void delete_scheduled_jump PROTO((rtx));
 static void note_delay_statistics PROTO((int, int));
 static rtx optimize_skip	PROTO((rtx));
+static int get_jump_flags PROTO((rtx, rtx));
 static int mostly_true_jump	PROTO((rtx, rtx));
 static rtx get_branch_condition	PROTO((rtx, rtx));
 static int condition_dominates_p PROTO((rtx, rtx));
@@ -1048,13 +1056,16 @@ optimize_skip (insn)
   rtx next_trial = next_active_insn (trial);
   rtx delay_list = 0;
   rtx target_label;
+  int flags;
+
+  flags = get_jump_flags (insn, JUMP_LABEL (insn));
 
   if (trial == 0
       || GET_CODE (trial) != INSN
       || GET_CODE (PATTERN (trial)) == SEQUENCE
       || recog_memoized (trial) < 0
-      || (! eligible_for_annul_false (insn, 0, trial)
-	  && ! eligible_for_annul_true (insn, 0, trial)))
+      || (! eligible_for_annul_false (insn, 0, trial, flags)
+	  && ! eligible_for_annul_true (insn, 0, trial, flags)))
     return 0;
 
   /* There are two cases where we are just executing one insn (we assume
@@ -1070,11 +1081,11 @@ optimize_skip (insn)
 	  && (simplejump_p (next_trial)
 	      || GET_CODE (PATTERN (next_trial)) == RETURN)))
     {
-      if (eligible_for_annul_false (insn, 0, trial))
+      if (eligible_for_annul_false (insn, 0, trial, flags))
 	{
 	  if (invert_jump (insn, JUMP_LABEL (insn)))
 	    INSN_FROM_TARGET_P (trial) = 1;
-	  else if (! eligible_for_annul_true (insn, 0, trial))
+	  else if (! eligible_for_annul_true (insn, 0, trial, flags))
 	    return 0;
 	}
 
@@ -1104,6 +1115,74 @@ optimize_skip (insn)
 }
 #endif
 
+
+/*  Encode and return branch direction and prediction information for
+    INSN assuming it will jump to LABEL.
+
+    Non conditional branches return no direction information and
+    are predicted as very likely taken.  */
+static int
+get_jump_flags (insn, label)
+     rtx insn, label;
+{
+  int flags;
+
+  /* get_jump_flags can be passed any insn with delay slots, these may
+     be INSNs, CALL_INSNs, or JUMP_INSNs.  Only JUMP_INSNs have branch
+     direction information, and only if they are conditional jumps.
+
+     If LABEL is zero, then there is no way to determine the branch
+     direction.  */
+  if (GET_CODE (insn) == JUMP_INSN
+      && condjump_p (insn)
+      && INSN_UID (insn) <= max_uid
+      && INSN_UID (label) <= max_uid
+      && label != 0)
+    flags 
+      = (uid_to_ruid[INSN_UID (label)] > uid_to_ruid[INSN_UID (insn)])
+	 ? ATTR_FLAG_forward : ATTR_FLAG_backward;
+  /* No valid direction information.  */
+  else
+    flags = 0;
+  
+  /* If insn is a conditional branch call mostly_true_jump to get
+     determine the branch prediction.  
+
+     Non conditional branches are predicted as very likely taken.  */
+  if (GET_CODE (insn) == JUMP_INSN
+      && condjump_p (insn))
+    {
+      int prediction;
+
+      prediction = mostly_true_jump (insn, get_branch_condition (insn, label));
+      switch (prediction)
+	{
+	  case 2:
+	    flags |= (ATTR_FLAG_very_likely | ATTR_FLAG_likely);
+	    break;
+	  case 1:
+	    flags |= ATTR_FLAG_likely;
+	    break;
+
+	  case 0:
+	    flags |= ATTR_FLAG_unlikely;
+	    break;
+	  /* mostly_true_jump does not return -1 for very unlikely jumps
+	     yet, but it should in the future.  */
+	  case -1:
+	    flags |= (ATTR_FLAG_very_unlikely | ATTR_FLAG_unlikely);
+	    break;
+
+	  default:
+	    abort();
+	}
+    }
+  else
+    flags |= (ATTR_FLAG_very_likely | ATTR_FLAG_likely);
+
+  return flags;
+}
+
 /* Return truth value of the statement that this branch
    is mostly taken.  If we think that the branch is extremely likely
    to be taken, we return 2.  If the branch is slightly more likely to be
@@ -1315,6 +1394,7 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
   for (i = 1; i < XVECLEN (seq, 0); i++)
     {
       rtx trial = XVECEXP (seq, 0, i);
+      int flags;
 
       if (insn_references_resource_p (trial, sets, 0)
 	  || insn_sets_resource_p (trial, needed, 0)
@@ -1335,13 +1415,17 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
       if (redundant_insn_p (trial, insn, new_delay_list))
 	continue;
 
+      /* We will end up re-vectoring this branch, so compute flags
+	 based on jumping to the new label.  */
+      flags = get_jump_flags (insn, JUMP_LABEL (XVECEXP (seq, 0, 0)));
+
       if (! must_annul
 	  && ((condition == const_true_rtx
 	       || (! insn_sets_resource_p (trial, other_needed, 0)
 		   && ! may_trap_p (PATTERN (trial)))))
-	  ? eligible_for_delay (insn, total_slots_filled, trial)
+	  ? eligible_for_delay (insn, total_slots_filled, trial, flags)
 	  : (must_annul = 1,
-	     eligible_for_annul_false (insn, total_slots_filled, trial)))
+	     eligible_for_annul_false (insn, total_slots_filled, trial, flags)))
 	{
 	  temp = copy_rtx (trial);
 	  INSN_FROM_TARGET_P (temp) = 1;
@@ -1390,6 +1474,9 @@ steal_delay_list_from_fallthrough (insn, condition, seq,
      int *pannul_p;
 {
   int i;
+  int flags;
+
+  flags = get_jump_flags (insn, JUMP_LABEL (insn));
 
   /* We can't do anything if SEQ's delay insn isn't an
      unconditional branch.  */
@@ -1425,9 +1512,9 @@ steal_delay_list_from_fallthrough (insn, condition, seq,
 	  && ((condition == const_true_rtx
 	       || (! insn_sets_resource_p (trial, other_needed, 0)
 		   && ! may_trap_p (PATTERN (trial)))))
-	  ? eligible_for_delay (insn, *pslots_filled, trial)
+	  ? eligible_for_delay (insn, *pslots_filled, trial, flags)
 	  : (*pannul_p = 1,
-	     eligible_for_annul_true (insn, *pslots_filled, trial)))
+	     eligible_for_annul_true (insn, *pslots_filled, trial, flags)))
 	{
 	  delete_from_delay_slot (trial);
 	  delay_list = add_to_delay_list (trial, delay_list);
@@ -1464,6 +1551,9 @@ try_merge_delay_insns (insn, thread)
   struct resources set, needed;
   rtx merged_insns = 0;
   int i;
+  int flags;
+
+  flags = get_jump_flags (insn, JUMP_LABEL (insn));
 
   CLEAR_RESOURCE (&needed);
   CLEAR_RESOURCE (&set);
@@ -1500,7 +1590,7 @@ try_merge_delay_insns (insn, thread)
 	  && rtx_equal_p (PATTERN (next_to_match), PATTERN (trial))
 	  /* Have to test this condition if annul condition is different
 	     from (and less restrictive than) non-annulling one.  */
-	  && eligible_for_delay (delay_insn, slot_number - 1, trial))
+	  && eligible_for_delay (delay_insn, slot_number - 1, trial, flags))
 	{
 	  next_trial = next_nonnote_insn (trial);
 
@@ -1545,7 +1635,7 @@ try_merge_delay_insns (insn, thread)
 	      && ! sets_cc0_p (PATTERN (dtrial))
 #endif
 	      && rtx_equal_p (PATTERN (next_to_match), PATTERN (dtrial))
-	      && eligible_for_delay (delay_insn, slot_number - 1, dtrial))
+	      && eligible_for_delay (delay_insn, slot_number - 1, dtrial, flags))
 	    {
 	      if (! annul_p)
 		{
@@ -2396,6 +2486,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 
   for (i = 0; i < num_unfilled_slots; i++)
     {
+      int flags;
       /* Get the next insn to fill.  If it has already had any slots assigned,
 	 we can't do anything with it.  Maybe we'll improve this later.  */
 
@@ -2407,7 +2498,8 @@ fill_simple_delay_slots (first, non_jumps_p)
 	  || (GET_CODE (insn) == JUMP_INSN && non_jumps_p)
 	  || (GET_CODE (insn) != JUMP_INSN && ! non_jumps_p))
 	continue;
-
+     
+      flags = get_jump_flags (insn, JUMP_LABEL (insn));
       slots_to_fill = num_delay_slots (insn);
       if (slots_to_fill == 0)
 	abort ();
@@ -2433,7 +2525,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 	  && (trial = next_active_insn (insn))
 	  && GET_CODE (trial) == JUMP_INSN
 	  && simplejump_p (trial)
-	  && eligible_for_delay (insn, slots_filled, trial)
+	  && eligible_for_delay (insn, slots_filled, trial, flags)
 	  && no_labels_between_p (insn, trial))
 	{
 	  slots_filled++;
@@ -2497,7 +2589,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 		{
 		  trial = try_split (pat, trial, 1);
 		  next_trial = prev_nonnote_insn (trial);
-		  if (eligible_for_delay (insn, slots_filled, trial))
+		  if (eligible_for_delay (insn, slots_filled, trial, flags))
 		    {
 		      /* In this case, we are searching backward, so if we
 			 find insns to put on the delay list, we want
@@ -2653,7 +2745,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 #endif
 		  && ! (maybe_never && may_trap_p (pat))
 		  && (trial = try_split (pat, trial, 0))
-		  && eligible_for_delay (insn, slots_filled, trial))
+		  && eligible_for_delay (insn, slots_filled, trial, flags))
 		{
 		  next_trial = next_nonnote_insn (trial);
 		  delay_list = add_to_delay_list (trial, delay_list);
@@ -2704,7 +2796,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 #endif
 	      && ! (maybe_never && may_trap_p (PATTERN (next_trial)))
 	      && (next_trial = try_split (PATTERN (next_trial), next_trial, 0))
-	      && eligible_for_delay (insn, slots_filled, next_trial))
+	      && eligible_for_delay (insn, slots_filled, next_trial, flags))
 	    {
 	      rtx new_label = next_active_insn (next_trial);
 
@@ -2839,11 +2931,14 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
   rtx trial;
   int lose = 0;
   int must_annul = 0;
+  int flags;
 
   /* Validate our arguments.  */
   if ((condition == const_true_rtx && ! thread_if_true)
       || (! own_thread && ! thread_if_true))
     abort ();
+
+  flags = get_jump_flags (insn, JUMP_LABEL (insn));
 
   /* If our thread is the end of subroutine, we can't get any delay
      insns from that.  */
@@ -2930,7 +3025,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	    {
 	      trial = try_split (pat, trial, 0);
 	      pat = PATTERN (trial);
-	      if (eligible_for_delay (insn, *pslots_filled, trial))
+	      if (eligible_for_delay (insn, *pslots_filled, trial, flags))
 		goto winner;
 	    }
 	  else if (0
@@ -2945,8 +3040,8 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	      trial = try_split (pat, trial, 0);
 	      pat = PATTERN (trial);
 	      if ((thread_if_true
-		   ? eligible_for_annul_false (insn, *pslots_filled, trial)
-		   : eligible_for_annul_true (insn, *pslots_filled, trial)))
+		   ? eligible_for_annul_false (insn, *pslots_filled, trial, flags)
+		   : eligible_for_annul_true (insn, *pslots_filled, trial, flags)))
 		{
 		  rtx temp;
 
@@ -3075,7 +3170,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
       pat = PATTERN (trial);
 
       if (GET_CODE (trial) != INSN || GET_CODE (pat) != SET
-	  || ! eligible_for_delay (insn, 0, trial))
+	  || ! eligible_for_delay (insn, 0, trial, flags))
 	return 0;
 
       dest = SET_DEST (pat), src = SET_SRC (pat);
@@ -3589,6 +3684,8 @@ make_return_insns (first)
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
+      int flags;
+
       /* Only look at filled JUMP_INSNs that go to the end of function
 	 label.  */
       if (GET_CODE (insn) != INSN
@@ -3612,6 +3709,7 @@ make_return_insns (first)
 	 It can if it has more or an equal number of slots and the contents
 	 of each is valid.  */
 
+      flags = get_jump_flags (jump_insn, JUMP_LABEL (jump_insn));
       slots = num_delay_slots (jump_insn);
       if (slots >= XVECLEN (pat, 0) - 1)
 	{
@@ -3621,15 +3719,15 @@ make_return_insns (first)
 		   (INSN_ANNULLED_BRANCH_P (jump_insn)
 		    && INSN_FROM_TARGET_P (XVECEXP (pat, 0, i)))
 		   ? eligible_for_annul_false (jump_insn, i - 1,
-					       XVECEXP (pat, 0, i)) :
+					       XVECEXP (pat, 0, i), flags) :
 #endif
 #ifdef ANNUL_IFTRUE_SLOTS
 		   (INSN_ANNULLED_BRANCH_P (jump_insn)
 		    && ! INSN_FROM_TARGET_P (XVECEXP (pat, 0, i)))
 		   ? eligible_for_annul_true (jump_insn, i - 1,
-					      XVECEXP (pat, 0, i)) :
+					      XVECEXP (pat, 0, i), flags) :
 #endif
-		   eligible_for_delay (jump_insn, i -1, XVECEXP (pat, 0, i))))
+		   eligible_for_delay (jump_insn, i -1, XVECEXP (pat, 0, i), flags)))
 	      break;
 	}
       else
