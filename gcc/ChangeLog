@@ -1,3 +1,18 @@
+Tue Jun 30 14:03:34 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* aclocal.m4 (GCC_NEED_DECLARATION): Accept an optional second
+	argument, which is typically preprocessor code used to draw in
+	additional header files when looking for a function declaration.
+	(GCC_NEED_DECLARATIONS): Likewise.
+
+	* configure.in (GCC_NEED_DECLARATIONS): Add checks for getrlimit
+	and setrlimit, search for them in sys/resource.h.
+
+	* acconfig.h: Add stubs for NEED_DECLARATION_GETRLIMIT and
+	NEED_DECLARATION_SETRLIMIT.
+
+	* system.h: Prototype getrlimit/setrlimit if necessary.
+
 Tue Jun 30 10:54:48 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* rtl.texi: Don't say that RTX_INTEGRATED_P is unused.
