@@ -1,5 +1,9 @@
 2000-03-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (TI_SPEC_INFO): Remove.
+	(CLASSTYPE_TI_SPEC_INFO): Likewise.
+	* pt.c (process_partial_specialization): Likewise.
+
 	* class.c (build_base_field): Fix thinko in computation of binfo
 	offsets.
 
