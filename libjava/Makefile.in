@@ -283,7 +283,8 @@ lib_gnu_awt_xlib_la_SOURCES = $(x_nat_source_files)
 EXTRA_lib_gnu_awt_xlib_la_SOURCES = $(x_java_source_files)
 lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-@gcc_version@.jar $(x_javao_files)
 lib_gnu_awt_xlib_la_LIBADD = $(x_javao_files)
-lib_gnu_awt_xlib_la_LDFLAGS = @X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
+lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
+	@X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
         -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
