@@ -833,6 +833,10 @@ common_handle_option (size_t scode, const char *arg,
       flag_pie = value + value;
       break;
 
+    case OPT_fabi_version_:
+      flag_abi_version = value;
+      break;
+
     case OPT_falign_functions:
       align_functions = !value;
       break;
