@@ -1,3 +1,22 @@
+2002-01-03  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/stl_numeric.h (power + helpers, iota):  Move to...
+	* include/ext/numeric:  ...here, new file.
+        * include/bits/stl_function.h (identity_element, unary_compose,
+	binary_compose, compose1, compose2, identity, select1st,
+	select2nd, project1st + helper, project2nd + helper,
+	constant_void_fun + helper, constant_unary_fun + helper,
+	costant_binary_fun + helper, constant0, constant1, constant2,
+	subtractive_rng, mem_fun1, mem_fun1_ref):  Move to...
+        * include/ext/functional:  ...here, new file.
+        * include/Makefile.am (ext_headers):  Add new files.
+        * include/Makefile.in:  Regenerate.
+        * testsuite/ext/headers.cc:  Include <ext/numeric> and
+	<ext/functional>.
+	* include/backward/algo.h:  Include <ext/numeric>, tweak.
+	* include/backward/function.h:  Include <ext/functional>, tweak.
+        * include/ext/ropeimpl.h:  Include <ext/numeric>.
+
 Thu Jan  3 11:05:41 2002  Jeffrey A Law  (law@redhat.com)
 
         * config/os/hpux/bits/os_defines.h: Prefix __strtoll and

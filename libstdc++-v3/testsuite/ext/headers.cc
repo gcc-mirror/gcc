@@ -24,10 +24,12 @@
 // subdirectory that are meant to be directly included.
 
 #include <ext/algorithm>
+#include <ext/functional>
 #include <ext/hash_map>
 #include <ext/hash_set>
 #include <ext/iterator>
 #include <ext/memory>
+#include <ext/numeric>
 #include <ext/rope>
 #include <ext/slist>
 
