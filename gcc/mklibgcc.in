@@ -2,7 +2,7 @@
 # Construct makefile for libgcc.
 #   Copyright (C) 2000 Free Software Foundation, Inc.
 #
-# This file is part of GNU CC.
+# This file is part of GCC.
 
 # Arguments, taken from the environment, since there are a lot
 # of them, and positional args becomes quite ugly.
