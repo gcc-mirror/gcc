@@ -1,3 +1,9 @@
+2002-04-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	PR 5933
+	* pa.h (ASM_OUTPUT_MI_THUNK): Use indirect jump to target function when
+	generating 32-bit pic code.
+
 2002-04-06  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* cppinit.c (cpp_create_reader): Initialize
