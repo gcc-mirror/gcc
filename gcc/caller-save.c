@@ -28,8 +28,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "reload.h"
 #include "expr.h"
 
-#define CEIL(x,y) (((x) + (y) - 1) / (y))
-
 /* Modes for each hard register that we can save.  The smallest mode is wide
    enough to save the entire contents of the register.  When saving the
    register because it is live we first try to save in multi-register modes.
@@ -604,12 +602,13 @@ restore_referenced_regs (x, insn, insn_mode)
 
       else if (regno < FIRST_PSEUDO_REGISTER)
 	{
-	  int endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+	  int numregs = MIN (HARD_REGNO_NREGS (regno, GET_MODE (x)),
+			     MOVE_MAX / UNITS_PER_WORD);
+	  int endregno = regno + numregs;
 
 	  for (i = regno; i < endregno; i++)
 	    if (TEST_HARD_REG_BIT (hard_regs_need_restore, i))
-	      i += insert_save_restore (insn, 0, i, insn_mode, 
-		   CEIL (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD));
+	      i += insert_save_restore (insn, 0, i, insn_mode, numregs);
 	}
 
       return;
