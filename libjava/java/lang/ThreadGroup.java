@@ -31,8 +31,8 @@ import java.util.Enumeration;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Complete for 1.2.  Parts from the JDK 1.0 spec only are
+ * plus online API docs for JDK 1.2 from http://www.javasoft.com.
+ * Status:  Complete for 1.2.  Some parts from the JDK 1.0 spec only are
  * not implemented. 
  */
  
@@ -44,7 +44,8 @@ import java.util.Enumeration;
  *
  * @author John Keiser
  * @author Tom Tromey
- * @version 1.2.0, June 20, 2000
+ * @author Bryce McKinlay
+ * @version 1.2.0
  * @since JDK1.0
  */
 
@@ -58,7 +59,6 @@ public class ThreadGroup
   private Vector threads = new Vector();
   private Vector groups = new Vector();
   private boolean daemon_flag = false;
-  private boolean destroyed_flag = false;
   private int maxpri = Thread.MAX_PRIORITY;
 
   private ThreadGroup()
@@ -87,7 +87,7 @@ public class ThreadGroup
   {
     parent.checkAccess();
     this.parent = parent;
-    if (parent.destroyed_flag)
+    if (parent.isDestroyed())
       throw new IllegalArgumentException ();
     this.name = name;
     maxpri = parent.maxpri;
@@ -118,7 +118,7 @@ public class ThreadGroup
    *  @param maxpri the new maximum priority for this ThreadGroup.
    *  @exception SecurityException if you cannoy modify this ThreadGroup.
    */
-  public final void setMaxPriority(int maxpri)
+  public final synchronized void setMaxPriority(int maxpri)
   {
     checkAccess();
     if (maxpri < this.maxpri
@@ -168,9 +168,9 @@ public class ThreadGroup
   /** Tell whether this ThreadGroup has been destroyed or not.
     * @return whether this ThreadGroup has been destroyed or not.
     */
-  public boolean isDestroyed()
+  public synchronized boolean isDestroyed()
   {
-    return destroyed_flag;
+    return parent == null && this != root;
   }
 
   /** Check whether this ThreadGroup is an ancestor of the
@@ -200,6 +200,13 @@ public class ThreadGroup
     *
     * @return the number of active threads in this ThreadGroup and
     *	      its descendants.
+    * @specnote it isn't clear what the definition of an "Active" thread is.
+    *           Current JDKs regard all threads as active until they are 
+    *           finished, regardless of whether the thread has been started 
+    *           or not. We implement this behaviour.
+    *           There is open JDC bug, <A HREF="http://developer.java.sun.com/developer/bugParade/bugs/4089701.html">
+    *           4089701</A>, regarding this issue.
+    *           
     */
   public synchronized int activeCount()
   {
@@ -216,17 +223,17 @@ public class ThreadGroup
     * itself is not included in the count.
     * @specnote it is unclear what exactly constitutes an
     *		active ThreadGroup.  Currently we assume that
-    *		all sub-groups are active.
+    *		all sub-groups are active, per current JDKs.
     * @return the number of active groups in this ThreadGroup.
     */
-  public int activeGroupCount()
+  public synchronized int activeGroupCount()
   {
     int total = groups.size();
     for (int i=0; i < groups.size(); i++)
       {
 	ThreadGroup g = (ThreadGroup) groups.elementAt(i);
 	total += g.activeGroupCount();
-      }      
+      }
     return total;
   }
 
@@ -240,7 +247,7 @@ public class ThreadGroup
     */
   public int enumerate(Thread[] threads)
   {
-    return enumerate(threads, true);
+    return enumerate(threads, 0, true);
   }
 
   /** Copy all of the active Threads from this ThreadGroup and,
@@ -259,7 +266,8 @@ public class ThreadGroup
   }
 
   // This actually implements enumerate.
-  private int enumerate (Thread[] list, int next_index, boolean recurse)
+  private synchronized int enumerate(Thread[] list, int next_index, 
+				     boolean recurse)
   {
     Enumeration e = threads.elements();
     while (e.hasMoreElements() && next_index < list.length)
@@ -286,7 +294,7 @@ public class ThreadGroup
     */
   public int enumerate(ThreadGroup[] groups)
   {
-    return enumerate(groups, false);
+    return enumerate(groups, 0, true);
   }
 
   /** Copy all active ThreadGroups that are children of this
@@ -296,18 +304,19 @@ public class ThreadGroup
     * ThreadGroups simply will not be copied.
     *
     * @param groups the array to put the ThreadGroups into.
-    * @param useDescendants whether to include all descendants
+    * @param recurse whether to include all descendants
     *	     of this ThreadGroup's children in determining
     *	     activeness.
     * @return the number of ThreadGroups copied into the array.
     */
-  public int enumerate(ThreadGroup[] groups, boolean useDescendants)
+  public int enumerate(ThreadGroup[] groups, boolean recurse)
   {
-    return enumerate(groups, 0, useDescendants);
+    return enumerate(groups, 0, recurse);
   }
 
   // This actually implements enumerate.
-  private int enumerate (ThreadGroup[] list, int next_index, boolean recurse)
+  private synchronized int enumerate (ThreadGroup[] list, int next_index, 
+				      boolean recurse)
   {
     Enumeration e = groups.elements();
     while (e.hasMoreElements() && next_index < list.length)
@@ -326,7 +335,7 @@ public class ThreadGroup
     *		 ThreadGroups.
     * @since JDK1.2
     */
-  public final void interrupt()
+  public final synchronized void interrupt()
   {
     checkAccess();
     for (int i=0; i < threads.size(); i++)
@@ -347,7 +356,7 @@ public class ThreadGroup
     *		 ThreadGroups.
     * @deprecated This method calls Thread.stop(), which is dangerous.
     */
-  public final void stop()
+  public final synchronized void stop()
   {
     checkAccess();
     for (int i=0; i<threads.size(); i++)
@@ -368,7 +377,7 @@ public class ThreadGroup
     *		 ThreadGroups.
     * @deprecated This method calls Thread.suspend(), which is dangerous.
     */
-  public final void suspend()
+  public final synchronized void suspend()
   {
     checkAccess();
     for (int i=0; i<threads.size(); i++)
@@ -389,7 +398,7 @@ public class ThreadGroup
     *		 ThreadGroups.
     * @deprecated This method relies on Thread.suspend(), which is dangerous.
     */
-  public final void resume()
+  public final synchronized void resume()
   {
     checkAccess();
     for (int i=0; i < threads.size(); i++)
@@ -405,7 +414,7 @@ public class ThreadGroup
   }
 
   // This is a helper that is used to implement the destroy method.
-  private final void checkDestroy ()
+  private synchronized void checkDestroy ()
   {
     if (! threads.isEmpty())
       throw new IllegalThreadStateException ("ThreadGroup has threads");
@@ -425,15 +434,14 @@ public class ThreadGroup
     * @exception SecurityException if you cannot modify this
     *		 ThreadGroup or any of its descendants.
     */
-  public final void destroy()
+  public final synchronized void destroy()
   {
     checkAccess();
-    if (destroyed_flag)
+    if (isDestroyed())
       throw new IllegalThreadStateException("Already destroyed.");
     checkDestroy ();
     if (parent != null)
       parent.removeGroup(this);
-    destroyed_flag = true;
     parent = null;
 
     for (int i=0; i < groups.size(); i++)
@@ -450,7 +458,7 @@ public class ThreadGroup
     list("");
   }
 
-  private final void list (String indentation)
+  private synchronized void list(String indentation)
   {
     System.out.print(indentation);
     System.out.println(toString ());
@@ -531,18 +539,18 @@ public class ThreadGroup
   }
 
   // This is called to add a Thread to our internal list.
-  final void addThread(Thread t)
+  final synchronized void addThread(Thread t)
   {
-    if (destroyed_flag)
+    if (isDestroyed())
       throw new IllegalThreadStateException ("ThreadGroup is destroyed");
   
     threads.addElement(t);
   }
 
   // This is called to remove a Thread from our internal list.
-  final void removeThread(Thread t)
+  final synchronized void removeThread(Thread t)
   {
-    if (destroyed_flag)
+    if (isDestroyed())
       throw new IllegalThreadStateException ();
   
     threads.removeElement(t);
@@ -552,18 +560,18 @@ public class ThreadGroup
 	// We inline destroy to avoid the access check.
 	if (parent != null)
 	  parent.removeGroup(this);
-	destroyed_flag = true;
+	parent = null;
       }
   }
 
   // This is called to add a ThreadGroup to our internal list.
-  final void addGroup(ThreadGroup g)
+  final synchronized void addGroup(ThreadGroup g)
   {
     groups.addElement(g);
   }
 
   // This is called to remove a ThreadGroup from our internal list.
-  final void removeGroup(ThreadGroup g)
+  final synchronized void removeGroup(ThreadGroup g)
   {
     groups.removeElement(g);
     // Daemon groups are automatically destroyed when all their threads die.
@@ -571,8 +579,8 @@ public class ThreadGroup
       {
 	// We inline destroy to avoid the access check.
 	if (parent != null)
-	  parent.removeGroup(this);	
-	destroyed_flag = true;
+	  parent.removeGroup(this);
+	parent = null;
       }
   }
 }

@@ -1,3 +1,10 @@
+2000-06-28  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* ThreadGroup.java: Added synchronized flag to many methods.
+	(destroyed_flag): Removed.
+	(isDestroyed, removeGroup, removeThread): Test for parent == null.	
+	(activeCount): Added spec note.
+
 2000-06-27  Warren Levy  <warrenl@cygnus.com>
 
 	* java/security/Principal.java: New file.
