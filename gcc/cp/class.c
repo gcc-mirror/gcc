@@ -1109,7 +1109,11 @@ handle_using_decl (tree using_decl, tree t)
   binfo = lookup_base (t, ctype, ba_any, NULL);
   if (! binfo)
     {
+      location_t saved_loc = input_location;
+
+      input_location = DECL_SOURCE_LOCATION (using_decl);
       error_not_base_type (ctype, t);
+      input_location = saved_loc;
       return;
     }
   
