@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,10 +56,6 @@ package body System.Arith_64 is
    pragma Inline ("+");
    --  Length doubling additions
 
-   function "-" (A : Uns64; B : Uns32) return Uns64;
-   pragma Inline ("-");
-   --  Length doubling subtraction
-
    function "*" (A, B : Uns32) return Uns64;
    pragma Inline ("*");
    --  Length doubling multiplication
@@ -76,6 +72,9 @@ package body System.Arith_64 is
    pragma Inline ("&");
    --  Concatenate hi, lo values to form 64-bit result
 
+   function Le3 (X1, X2, X3 : Uns32; Y1, Y2, Y3 : Uns32) return Boolean;
+   --  Determines if 96 bit value X1&X2&X3 <= Y1&Y2&Y3
+
    function Lo (A : Uns64) return Uns32;
    pragma Inline (Lo);
    --  Low order half of 64-bit value
@@ -83,6 +82,9 @@ package body System.Arith_64 is
    function Hi (A : Uns64) return Uns32;
    pragma Inline (Hi);
    --  High order half of 64-bit value
+
+   procedure Sub3 (X1, X2, X3 : in out Uns32; Y1, Y2, Y3 : in Uns32);
+   --  Computes X1&X2&X3 := X1&X2&X3 - Y1&Y1&Y3 with mod 2**96 wrap
 
    function To_Neg_Int (A : Uns64) return Int64;
    --  Convert to negative integer equivalent. If the input is in the range
@@ -130,15 +132,6 @@ package body System.Arith_64 is
    begin
       return A + Uns64 (B);
    end "+";
-
-   ---------
-   -- "-" --
-   ---------
-
-   function "-" (A : Uns64; B : Uns32) return Uns64 is
-   begin
-      return A - Uns64 (B);
-   end "-";
 
    ---------
    -- "/" --
@@ -285,6 +278,25 @@ package body System.Arith_64 is
       return Uns32 (Shift_Right (A, 32));
    end Hi;
 
+   ---------
+   -- Le3 --
+   ---------
+
+   function Le3 (X1, X2, X3 : Uns32; Y1, Y2, Y3 : Uns32) return Boolean is
+   begin
+      if X1 < Y1 then
+         return True;
+      elsif X1 > Y1 then
+         return False;
+      elsif X2 < Y2 then
+         return True;
+      elsif X2 > Y2 then
+         return False;
+      else
+         return X3 <= Y3;
+      end if;
+   end Le3;
+
    --------
    -- Lo --
    --------
@@ -382,11 +394,11 @@ package body System.Arith_64 is
       Zhi : Uns32 := Hi (Zu);
       Zlo : Uns32 := Lo (Zu);
 
-      D1, D2, D3, D4 : Uns32;
-      --  The dividend, four digits (D1 is high order)
+      D : array (1 .. 4) of Uns32;
+      --  The dividend, four digits (D(1) is high order)
 
-      Q1, Q2 : Uns32;
-      --  The quotient, two digits (Q1 is high order)
+      Qd : array (1 .. 2) of Uns32;
+      --  The quotient digits, two digits (Qd(1) is high order)
 
       S1, S2, S3 : Uns32;
       --  Value to subtract, three digits (S1 is high order)
@@ -408,58 +420,58 @@ package body System.Arith_64 is
       --  First do the multiplication, giving the four digit dividend
 
       T1 := Xlo * Ylo;
-      D4 := Lo (T1);
-      D3 := Hi (T1);
+      D (4) := Lo (T1);
+      D (3) := Hi (T1);
 
       if Yhi /= 0 then
          T1 := Xlo * Yhi;
-         T2 := D3 + Lo (T1);
-         D3 := Lo (T2);
-         D2 := Hi (T1) + Hi (T2);
+         T2 := D (3) + Lo (T1);
+         D (3) := Lo (T2);
+         D (2) := Hi (T1) + Hi (T2);
 
          if Xhi /= 0 then
             T1 := Xhi * Ylo;
-            T2 := D3 + Lo (T1);
-            D3 := Lo (T2);
-            T3 := D2 + Hi (T1);
+            T2 := D (3) + Lo (T1);
+            D (3) := Lo (T2);
+            T3 := D (2) + Hi (T1);
             T3 := T3 + Hi (T2);
-            D2 := Lo (T3);
-            D1 := Hi (T3);
+            D (2) := Lo (T3);
+            D (1) := Hi (T3);
 
-            T1 := (D1 & D2) + Uns64'(Xhi * Yhi);
-            D1 := Hi (T1);
-            D2 := Lo (T1);
+            T1 := (D (1) & D (2)) + Uns64'(Xhi * Yhi);
+            D (1) := Hi (T1);
+            D (2) := Lo (T1);
 
          else
-            D1 := 0;
+            D (1) := 0;
          end if;
 
       else
          if Xhi /= 0 then
             T1 := Xhi * Ylo;
-            T2 := D3 + Lo (T1);
-            D3 := Lo (T2);
-            D2 := Hi (T1) + Hi (T2);
+            T2 := D (3) + Lo (T1);
+            D (3) := Lo (T2);
+            D (2) := Hi (T1) + Hi (T2);
 
          else
-            D2 := 0;
+            D (2) := 0;
          end if;
 
-         D1 := 0;
+         D (1) := 0;
       end if;
 
       --  Now it is time for the dreaded multiple precision division. First
       --  an easy case, check for the simple case of a one digit divisor.
 
       if Zhi = 0 then
-         if D1 /= 0 or else D2 >= Zlo then
+         if D (1) /= 0 or else D (2) >= Zlo then
             Raise_Error;
 
          --  Here we are dividing at most three digits by one digit
 
          else
-            T1 := D2 & D3;
-            T2 := Lo (T1 rem Zlo) & D4;
+            T1 := D (2) & D (3);
+            T2 := Lo (T1 rem Zlo) & D (4);
 
             Qu := Lo (T1 / Zlo) & Lo (T2 / Zlo);
             Ru := T2 rem Zlo;
@@ -467,12 +479,12 @@ package body System.Arith_64 is
 
       --  If divisor is double digit and too large, raise error
 
-      elsif (D1 & D2) >= Zu then
+      elsif (D (1) & D (2)) >= Zu then
          Raise_Error;
 
       --  This is the complex case where we definitely have a double digit
       --  divisor and a dividend of at least three digits. We use the classical
-      --  multiple division algorithm (see  section (4.3.1) of Knuth's "The Art
+      --  multiple division algorithm (see section (4.3.1) of Knuth's "The Art
       --  of Computer Programming", Vol. 2 for a description (algorithm D).
 
       else
@@ -511,115 +523,63 @@ package body System.Arith_64 is
 
          --  Note that when we scale up the dividend, it still fits in four
          --  digits, since we already tested for overflow, and scaling does
-         --  not change the invariant that (D1 & D2) >= Zu.
+         --  not change the invariant that (D (1) & D (2)) >= Zu.
 
-         T1 := Shift_Left (D1 & D2, Scale);
-         D1 := Hi (T1);
-         T2 := Shift_Left (0 & D3, Scale);
-         D2 := Lo (T1) or Hi (T2);
-         T3 := Shift_Left (0 & D4, Scale);
-         D3 := Lo (T2) or Hi (T3);
-         D4 := Lo (T3);
+         T1 := Shift_Left (D (1) & D (2), Scale);
+         D (1) := Hi (T1);
+         T2 := Shift_Left (0 & D (3), Scale);
+         D (2) := Lo (T1) or Hi (T2);
+         T3 := Shift_Left (0 & D (4), Scale);
+         D (3) := Lo (T2) or Hi (T3);
+         D (4) := Lo (T3);
 
-         --  Compute first quotient digit. We have to divide three digits by
-         --  two digits, and we estimate the quotient by dividing the leading
-         --  two digits by the leading digit. Given the scaling we did above
-         --  which ensured the first bit of the divisor is set, this gives an
-         --  estimate of the quotient that is at most two too high.
+         --  Loop to compute quotient digits, runs twice for Qd(1) and Qd(2).
 
-         if D1 = Zhi then
-            Q1 := 2 ** 32 - 1;
-         else
-            Q1 := Lo ((D1 & D2) / Zhi);
-         end if;
+         for J in 0 .. 1 loop
 
-         --  Compute amount to subtract
+            --  Compute next quotient digit. We have to divide three digits by
+            --  two digits. We estimate the quotient by dividing the leading
+            --  two digits by the leading digit. Given the scaling we did above
+            --  which ensured the first bit of the divisor is set, this gives
+            --  an estimate of the quotient that is at most two too high.
 
-         T1 := Q1 * Zlo;
-         T2 := Q1 * Zhi;
-         S3 := Lo (T1);
-         T1 := Hi (T1) + Lo (T2);
-         S2 := Lo (T1);
-         S1 := Hi (T1) + Hi (T2);
-
-         --  Adjust quotient digit if it was too high
-
-         loop
-            exit when S1 < D1;
-
-            if S1 = D1 then
-               exit when S2 < D2;
-
-               if S2 = D2 then
-                  exit when S3 <= D3;
-               end if;
+            if D (J + 1) = Zhi then
+               Qd (J + 1) := 2 ** 32 - 1;
+            else
+               Qd (J + 1) := Lo ((D (J + 1) & D (J + 2)) / Zhi);
             end if;
 
-            Q1 := Q1 - 1;
+            --  Compute amount to subtract
 
-            T1 := (S2 & S3) - Zlo;
+            T1 := Qd (J + 1) * Zlo;
+            T2 := Qd (J + 1) * Zhi;
             S3 := Lo (T1);
-            T1 := (S1 & S2) - Zhi;
+            T1 := Hi (T1) + Lo (T2);
             S2 := Lo (T1);
-            S1 := Hi (T1);
+            S1 := Hi (T1) + Hi (T2);
+
+            --  Adjust quotient digit if it was too high
+
+            loop
+               exit when Le3 (S1, S2, S3, D (J + 1), D (J + 2), D (J + 3));
+               Qd (J + 1) := Qd (J + 1) - 1;
+               Sub3 (S1, S2, S3, 0, Zhi, Zlo);
+            end loop;
+
+            --  Now subtract S1&S2&S3 from D1&D2&D3 ready for next step
+
+            Sub3 (D (J + 1), D (J + 2), D (J + 3), S1, S2, S3);
          end loop;
-
-         --  Subtract from dividend (note: do not bother to set D1 to
-         --  zero, since it is no longer needed in the calculation).
-
-         T1 := (D2 & D3) - S3;
-         D3 := Lo (T1);
-         T1 := (D1 & Hi (T1)) - S2;
-         D2 := Lo (T1);
-
-         --  Compute second quotient digit in same manner
-
-         if D2 = Zhi then
-            Q2 := 2 ** 32 - 1;
-         else
-            Q2 := Lo ((D2 & D3) / Zhi);
-         end if;
-
-         T1 := Q2 * Zlo;
-         T2 := Q2 * Zhi;
-         S3 := Lo (T1);
-         T1 := Hi (T1) + Lo (T2);
-         S2 := Lo (T1);
-         S1 := Hi (T1) + Hi (T2);
-
-         loop
-            exit when S1 < D2;
-
-            if S1 = D2 then
-               exit when S2 < D3;
-
-               if S2 = D3 then
-                  exit when S3 <= D4;
-               end if;
-            end if;
-
-            Q2 := Q2 - 1;
-
-            T1 := (S2 & S3) - Zlo;
-            S3 := Lo (T1);
-            T1 := (S1 & S2) - Zhi;
-            S2 := Lo (T1);
-            S1 := Hi (T1);
-         end loop;
-
-         T1 := (D3 & D4) - S3;
-         D4 := Lo (T1);
-         T1 := (D2 & Hi (T1)) - S2;
-         D3 := Lo (T1);
 
          --  The two quotient digits are now set, and the remainder of the
-         --  scaled division is in (D3 & D4). To get the remainder for the
+         --  scaled division is in D3&D4. To get the remainder for the
          --  original unscaled division, we rescale this dividend.
+
          --  We rescale the divisor as well, to make the proper comparison
          --  for rounding below.
 
-         Qu := Q1 & Q2;
-         Ru := Shift_Right (D3 & D4, Scale);
+         Qu := Qd (1) & Qd (2);
+         Ru := Shift_Right (D (3) & D (4), Scale);
          Zu := Shift_Right (Zu, Scale);
       end if;
 
@@ -655,8 +615,31 @@ package body System.Arith_64 is
             Q := To_Pos_Int (Qu);
          end if;
       end if;
-
    end Scaled_Divide;
+
+   ----------
+   -- Sub3 --
+   ----------
+
+   procedure Sub3 (X1, X2, X3 : in out Uns32; Y1, Y2, Y3 : in Uns32) is
+   begin
+      if Y3 > X3 then
+         if X2 = 0 then
+            X1 := X1 - 1;
+         end if;
+
+         X2 := X2 - 1;
+      end if;
+
+      X3 := X3 - Y3;
+
+      if Y2 > X2 then
+         X1 := X1 - 1;
+      end if;
+
+      X2 := X2 - Y2;
+      X1 := X1 - Y1;
+   end Sub3;
 
    -------------------------------
    -- Subtract_With_Ovflo_Check --
