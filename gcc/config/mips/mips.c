@@ -82,7 +82,6 @@ extern tree   lookup_name ();
 extern void   pfatal_with_name ();
 extern void   warning ();
 
-extern tree   current_function_decl;
 extern FILE  *asm_out_file;
 
 /* Enumeration for all of the relational tests, so that we can build
@@ -4829,6 +4828,7 @@ function_prologue (file, size)
      FILE *file;
      int size;
 {
+  char *fnname;
   long tsize = current_frame_info.total_size;
 
   ASM_OUTPUT_SOURCE_FILENAME (file, DECL_SOURCE_FILE (current_function_decl));
@@ -4838,12 +4838,17 @@ function_prologue (file, size)
     ASM_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl));
 #endif
 
+  /* Get the function name the same way that toplev.c does before calling
+     assemble_start_function.  This is needed so that the name used here
+     exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
+  fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+
   inside_function = 1;
   fputs ("\t.ent\t", file);
-  assemble_name (file, current_function_name);
+  assemble_name (file, fnname);
   fputs ("\n", file);
 
-  assemble_name (file, current_function_name);
+  assemble_name (file, fnname);
   fputs (":\n", file);
 
   fprintf (file, "\t.frame\t%s,%d,%s\t\t# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
@@ -5067,6 +5072,7 @@ function_epilogue (file, size)
      FILE *file;
      int size;
 {
+  char *fnname;
   long tsize;
   char *sp_str = reg_names[STACK_POINTER_REGNUM];
   char *t1_str = reg_names[MIPS_TEMP1_REGNUM];
@@ -5232,8 +5238,13 @@ function_epilogue (file, size)
 	}
     }
 
+  /* Get the function name the same way that toplev.c does before calling
+     assemble_start_function.  This is needed so that the name used here
+     exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
+  fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+
   fputs ("\t.end\t", file);
-  assemble_name (file, current_function_name);
+  assemble_name (file, fnname);
   fputs ("\n", file);
 
   if (TARGET_STATS)
@@ -5241,7 +5252,7 @@ function_epilogue (file, size)
       int num_gp_regs = current_frame_info.gp_reg_size / 4;
       int num_fp_regs = current_frame_info.fp_reg_size / 8;
       int num_regs    = num_gp_regs + num_fp_regs;
-      char *name      = current_function_name;
+      char *name      = fnname;
 
       if (name[0] == '*')
 	name++;
