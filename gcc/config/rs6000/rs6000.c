@@ -13138,14 +13138,8 @@ rs6000_elf_section_type_flags (decl, name, reloc)
      const char *name;
      int reloc;
 {
-  unsigned int flags
-    = default_section_type_flags_1 (decl, name, reloc,
-				    flag_pic || DEFAULT_ABI == ABI_AIX);
-
-  if (TARGET_RELOCATABLE)
-    flags |= SECTION_WRITE;
-
-  return flags;
+  return default_section_type_flags_1 (decl, name, reloc,
+				       flag_pic || DEFAULT_ABI == ABI_AIX);
 }
 
 /* Record an element in the table of global constructors.  SYMBOL is
