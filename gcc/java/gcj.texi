@@ -130,6 +130,7 @@ files and object files, and it can read both Java source code and
 * Invoking rmic::        Generate stubs for Remote Method Invocation.
 * Invoking rmiregistry:: The remote object registry.
 * About CNI::           Description of the Cygnus Native Interface
+* System properties::   Modifying runtime behavior of the libgcj library
 * Resources::		Where to look for more information
 @end menu
 
@@ -282,7 +283,7 @@ If @code{--bootclasspath} was specified, append its value.
 Otherwise, append the built-in system directory, @file{libgcj.jar}.
 
 @item
-Finaly, if @code{--extdirs} was specified, append the contents of the
+Finally, if @code{--extdirs} was specified, append the contents of the
 specified directories at the end of the class path.  Otherwise, append
 the contents of the built-in extdirs at @code{$(prefix)/share/java/ext}.
 @end itemize
@@ -428,7 +429,7 @@ using JNI, then you must use @code{-fjni}.  This option causes
 methods.
 
 @item -fno-optimize-static-class-initialization
-When the optimization level is greather or equal to @code{-O2},
+When the optimization level is greater or equal to @code{-O2},
 @command{gcj} will try to optimize the way calls into the runtime are made
 to initialize static classes upon their first use (this optimization
 isn't carried out if @code{-C} was specified.) When compiling to native
@@ -687,7 +688,7 @@ and the Info entries for @file{gcj} and @file{gcc}.
 @c man begin DESCRIPTION jcf-dump
 
 This is a class file examiner, similar to @code{javap}.  It will print
-information about a number of classes, which are specifed by class name
+information about a number of classes, which are specified by class name
 or file name.
 
 @c man end
@@ -1108,7 +1109,7 @@ class java::lang::String : public java::lang::Object
 @};
 @end example
 
-@noindent The @code{gcjh} tool automatically generates the nessary namespace
+@noindent The @code{gcjh} tool automatically generates the necessary namespace
 declarations.
 
 
@@ -1150,7 +1151,7 @@ import @var{package-name}.*;
 @end example
 
 @noindent Doing this allows any class from the package @var{package-name} to be
-refered to only by its class-name within the program text.
+referred to only by its class-name within the program text.
 
 
 @noindent The same effect can be achieved in C++ like this:
@@ -1182,7 +1183,7 @@ so CNI provides a special C++ type for each primitive Java type:
 @item @code{void}        @tab @code{void}           @tab no value
 @end multitable
 
-When refering to a Java type You should always use these C++ typenames (e.g.: @code{jint})
+When referring to a Java type You should always use these C++ typenames (e.g.: @code{jint})
 to avoid disappointment.
 
 
@@ -1580,7 +1581,7 @@ java::lang:Integer::doubleValue()
 @subsection Interface methods
 
 In Java you can call a method using an interface reference.  This is
-supported, but not completly.  @xref{Interfaces}.
+supported, but not completely.  @xref{Interfaces}.
 
 
 
@@ -1824,8 +1825,8 @@ the @code{synchronized} attribute is handled by the
 method implementation, it is up to the programmer
 of a synchronized native method to handle the synchronization
 (in the C++ implementation of the method).
-In otherwords, you need to manually add @code{JvSynchronize}
-in a @code{native synchornized} method.
+In other words, you need to manually add @code{JvSynchronize}
+in a @code{native synchronized} method.
 
 @node Invocation
 @section Invocation
@@ -1944,6 +1945,236 @@ are as in JNI@.
 
 @noindent will be added shortly, as will other functions corresponding to JNI@.
 
+
+@node System properties
+@chapter System properties
+
+The runtime behavior of the @code{libgcj} library can be modified by setting
+certain system properties.  These properties can be compiled into the program
+using the @code{-D@var{name}[=@var{value}]} option to @command{gcj} or by
+setting them explicitly in the program by calling the
+@code{java.lang.System.setProperty()} method.  Some system properties are only
+used for informational purposes (like giving a version number or a user name).
+A program can inspect the current value of a property by calling the
+@code{java.lang.System.getProperty()} method.
+
+@menu
+* Standard Properties::         Standard properties supported by @code{libgcj}
+* GNU Classpath Properties::    Properties found in Classpath based libraries
+* libgcj Runtime Properties::   Properties specific to @code{libgcj}
+@end menu
+
+@node Standard Properties
+@section Standard Properties
+
+The following properties are normally found in all implementations of the core
+libraries for the Java language.
+
+@table @gcctabopt
+
+@item java.version
+The @code{libgcj} version number.
+
+@item java.vendor
+Set to @samp{The Free Software Foundation, Inc.}
+
+@item java.vendor.url
+Set to @uref{http://gcc.gnu.org/java/}.
+
+@item java.home
+The directory where @code{gcj} was installed.  Taken from the @code{--prefix}
+option given to @command{configure}.
+
+@item java.class.version
+The class format version number supported by the libgcj byte code interpreter.
+(Currently @samp{46.0})
+
+@item java.vm.specification.version
+The Virtual Machine Specification version implemented by @code{libgcj}.
+(Currently @samp{1.0})
+
+@item java.vm.specification.vendor
+The name of the Virtual Machine specification designer.
+
+@item java.vm.specification.name
+The name of the Virtual Machine specification
+(Set to @samp{Java Virtual Machine Specification}).
+
+@item java.vm.version
+The @command{gcj} version number.
+
+@item java.vm.vendor
+Set to @samp{The Free Software Foundation, Inc.}
+
+@item java.vm.name
+Set to @samp{GNU libgcj}.
+
+@item java.specification.version
+The Runtime Environment specification version implemented by @code{libgcj}.
+(Currently set to @samp{1.3})
+
+@item java.specification.vendor
+The Runtime Environment specification designer.
+
+@item java.specification.name
+The name of the Runtime Environment specification
+(Set to @samp{Java Platform API Specification}).
+
+@item java.class.path
+The paths (jar files, zip files and directories) used for finding class files.
+
+@item java.library.path
+Directory path used for finding native libraries.  Currently not set.
+
+@item java.io.tmpdir
+The directory used to put temporary files in.
+
+@item java.compiler
+Name of the Just In Time compiler to use by the byte code interpreter.
+Currently not used in @code{libgcj}.
+
+@item java.ext.dirs
+Directories containing jar files with extra libraries.  Will be used when
+resolving classes.  Currently not used in @code{libgcj}.
+
+@item java.protocol.handler.pkgs
+A @samp{|} separated list of package names that is used to find classes that
+implement handlers for @code{java.net.URL}.
+
+@item java.rmi.server.codebase
+A list of URLs that is used by the @code{java.rmi.server.RMIClassLoader}
+to load classes from.
+
+@item jdbc.drivers
+A list of class names that will be loaded by the @code{java.sql.DriverManager}
+when it starts up.
+
+@item file.separator
+The separator used in when directories are included in a filename
+(normally @samp{/} or @samp{\} ).
+
+@item file.encoding
+The default character encoding used when converting platform native files to
+Unicode (usually set to @samp{8859_1}).
+
+@item path.separator
+The standard separator used when a string contains multiple paths
+(normally @samp{:} or @samp{;}), the string is usually not a valid character
+to use in normal directory names.)
+
+@item line.separator
+The default line separator used on the platform (normally @samp{\n}, @samp{\r}
+or a combination of those two characters).
+
+@item policy.provider
+The class name used for the default policy provider returned by
+@code{java.security.Policy.getPolicy}.
+
+@item user.name
+The name of the user running the program.  Can be the full name, the login name
+or empty if unknown.
+
+@item user.home
+The default directory to put user specific files in.
+
+@item user.dir
+The current working directory from which the program was started.
+
+@item user.language
+The default language as used by the @code{java.util.Locale} class.
+
+@item user.region
+The default region as used by the @code{java.util.Local} class.
+
+@item user.variant
+The default variant of the language and region local used.
+
+@item user.timezone
+The default timezone as used by the @code{java.util.TimeZone} class.
+
+@item os.name
+The operating system/kernel name that the program runs on.
+
+@item os.arch
+The hardware that we are running on.
+
+@item os.version
+The version number of the operating system/kernel.
+
+@item awt.appletWarning
+The string to display when an untrusted applet is displayed.
+Returned by @code{java.awt.Window.getWarningString()} when the window is
+``insecure''.
+
+@item awt.toolkit
+The class name used for initializing the default @code{java.awt.Toolkit}. 
+Defaults to @code{gnu.java.awt.peer.gtk.GtkToolkit}.
+
+@end table
+
+@node GNU Classpath Properties
+@section GNU Classpath Properties
+
+@code{libgcj} is based on the GNU Classpath (Essential Libraries for Java) a
+GNU project to create free core class libraries for use with virtual machines
+and compilers for the Java language.  The following properties are common to
+libraries based on GNU Classpath.
+
+@table @gcctabopt
+
+@item gcj.dumpobject
+Enables printing serialization debugging by the @code{java.io.ObjectInput} and
+@code{java.io.ObjectOutput} classes when set to something else then the empty
+string.  Only used when running a debug build of the library.
+
+@end table
+
+@node libgcj Runtime Properties
+@section libgcj Runtime Properties
+
+The following properties are specific to the @code{libgcj} runtime and will
+normally not be found in other core libraries for the java language.
+
+@table @gcctabopt
+
+@item java.fullversion
+The combination of @code{java.vm.name} and @code{java.vm.version}.
+
+@item java.vm.info
+Same as @code{java.fullversion}.
+
+@item impl.prefix
+Used by the @code{java.net.DatagramSocket} class when set to something else
+then the empty string.  When set all newly created @code{DatagramSocket}s will
+try to load a class @code{java.net.[impl.prefix]DatagramSocketImpl} instead of
+the normal @code{java.net.PlainDatagramSocketImpl}.
+
+@item gnu.gcj.runtime.NameFinder.demangle
+Whether names in a stack trace should be demangled.  Defaults to @code{true}.
+
+@item gnu.gcj.runtime.NameFinder.sanitize
+Whether calls to initialize exceptions and starting the runtime system
+should be removed from the stack trace.  Only done when names are
+demangled.  Defaults to @code{true}.
+
+@item gnu.gcj.runtime.NameFinder.remove_unknown
+Whether calls to unknown functions (class and method names are unknown)
+should be removed from the stack trace.  Only done when the stack is
+sanitized.  Ignored if this means no stack trace information would be
+available anymore.  Defaults to @code{true}.
+
+@item gnu.gcj.runtime.NameFinder.remove_interpreter
+Whether runtime interpreter calls (methods in the @code{_Jv_InterpMethod} class
+and functions starting with @samp{ffi_}) should be removed from the stack
+trace.  Only done when the stack is sanitized.  Defaults to @code{true}.
+
+
+@item gnu.gcj.runtime.NameFinder.use_addr2line
+Whether an external process (@command{addr2line} or @command{addr2name.awk})
+should be used as fallback to convert the addresses to function names when
+the runtime is unable to do it through @code{dladdr}.
+
+@end table
 
 
 @node Resources
