@@ -2071,6 +2071,14 @@ resolve_offset_ref (exp)
       addr = convert_pointer_to (basetype, addr);
       member = convert (ptrdiff_type_node,
 			build_unary_op (ADDR_EXPR, member, 0));
+      
+      /* Pointer to data mebers are offset by one, so that a null
+	 pointer with a real value of 0 is distinguishable from an
+	 offset of the first member of a structure.  */
+      member = build_binary_op (MINUS_EXPR, member,
+				convert (ptrdiff_type_node, integer_one_node),
+				0);
+
       return build1 (INDIRECT_REF, type,
 		     build (PLUS_EXPR, build_pointer_type (type),
 			    addr, member));
@@ -3399,13 +3407,31 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	    use_variable (DECL_RTL (base2));
 	}
       expand_end_loop ();
-      if (TYPE_NEEDS_DESTRUCTOR (type))
-	end_protect (build_array_eh_cleanup (rval,
-					     build_binary_op (MINUS_EXPR,
-							      maxindex,
-							      iterator,
-							      1),
-					     type));
+      if (TYPE_NEEDS_DESTRUCTOR (type) && flag_handle_exceptions)
+	{
+	  /* We have to ensure that this can live to the cleanup
+	     expansion time, since we know it is only ever needed
+	     once, generate code now.  */
+	  push_obstacks_nochange ();
+	  resume_temporary_allocation ();
+	  {
+	    tree e1, e2 = make_node (RTL_EXPR);
+	    TREE_TYPE (e2) = void_type_node;
+	    RTL_EXPR_RTL (e2) = const0_rtx;
+	    TREE_SIDE_EFFECTS (e2) = 1;
+	    start_sequence_for_rtl_expr (e2);
+
+	    e1 = build_array_eh_cleanup
+	      (rval,
+	       build_binary_op (MINUS_EXPR, maxindex, iterator, 1),
+	       type);
+	    expand_expr (e1, const0_rtx, VOIDmode, 0);
+	    RTL_EXPR_SEQUENCE (e2) = get_insns ();
+	    end_sequence ();
+	    end_protect (e2);
+	  }
+	  pop_obstacks ();
+	}
       expand_end_cond ();
       if (obey_regdecls)
 	use_variable (DECL_RTL (iterator));

@@ -34,6 +34,7 @@ typedef char* cp_printer ();
 #define L language_as_string
 #define O op_as_string
 #define P parm_as_string
+#define Q assop_as_string
 #define T type_as_string
 #define V cv_as_string
 
@@ -46,7 +47,7 @@ cp_printer * cp_printers[256] =
   _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x20 */
   _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x30 */
   _, A, _, C, D, E, _, _, _, _, _, _, L, _, _, O, /* 0x40 */
-  P, _, _, _, T, _, V, _, _, _, _, _, _, _, _, _, /* 0x50 */
+  P, Q, _, _, T, _, V, _, _, _, _, _, _, _, _, _, /* 0x50 */
   _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x60 */
   _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x70 */
 };
@@ -56,6 +57,7 @@ cp_printer * cp_printers[256] =
 #undef L
 #undef O
 #undef P
+#undef Q
 #undef T
 #undef V
 #undef _
@@ -1500,6 +1502,20 @@ op_as_string (p, v)
     return "{unknown}";
   
   strcpy (buf + 9, opname_tab [p]);
+  return buf;
+}
+
+char *
+assop_as_string (p, v)
+     enum tree_code p;
+     int v;
+{
+  static char buf[] = "operator                ";
+
+  if (p == 0)
+    return "{unknown}";
+  
+  strcpy (buf + 9, assignop_tab [p]);
   return buf;
 }
 

@@ -1967,6 +1967,7 @@ extern tree instantiate_type			PROTO((tree, tree, int));
 extern void print_class_statistics		PROTO((void));
 extern void maybe_push_cache_obstack		PROTO((void));
 extern unsigned HOST_WIDE_INT skip_rtti_stuff	PROTO((tree *));
+extern tree build_self_reference		PROTO((void));
 
 /* in cvt.c */
 extern tree convert_to_reference		PROTO((tree, tree, int, int, tree));
@@ -2254,6 +2255,7 @@ extern char *code_as_string			PROTO((enum tree_code, int));
 extern char *language_as_string			PROTO((enum languages, int));
 extern char *parm_as_string			PROTO((int, int));
 extern char *op_as_string			PROTO((enum tree_code, int));
+extern char *assop_as_string			PROTO((enum tree_code, int));
 extern char *cv_as_string			PROTO((tree, int));
 
 /* in method.c */
@@ -2290,7 +2292,6 @@ extern tree lookup_template_class		PROTO((tree, tree, tree));
 extern int uses_template_parms			PROTO((tree));
 extern tree instantiate_class_template		PROTO((tree));
 extern tree instantiate_template		PROTO((tree, tree *));
-extern void overload_template_name		PROTO((tree));
 extern int type_unification			PROTO((tree, tree *, tree, tree, int *, int));
 struct tinst_level *tinst_for_decl		PROTO((void));
 extern void mark_decl_instantiated		PROTO((tree, int));

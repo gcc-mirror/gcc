@@ -1,9 +1,133 @@
-Fri Mar 29 09:41:02 1996  Jeffrey A. Law  <law@cygnus.com
+Mon Apr  1 09:03:13 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* class.c (finish_struct_1): Propagate the TYPE_PACKED
+	flag for the type to the type's fields.
+
+Sat Mar 30 12:14:33 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* parse.y (complex_parmlist, ELLIPSES): Take out ARM-based warning.
+
+Fri Mar 29 15:51:36 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* class.c (base_info, finish_base_struct): Replace 
+	needs_virtual_dtor with base_has_virtual.
+
+	(finish_struct_1): Remove the old code that tried to make default
+ 	destructors virtual. Use base_has_virtual when checking if we need
+ 	to add a vtable entry for the rtti code.
+
+Fri Mar 29 14:02:36 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (push_template_decl): Complain about template decl with
+ 	inappropriate declaration.
+
+Fri Mar 29 12:15:35 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* typeck.c (build_x_unary_op): Remove bogus check for taking
+	the address of a member function.
+
+Fri Mar 29 11:56:02 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (constructor_declarator): Only push the class if
+	we are not already in the class.
+
+Fri Mar 29 09:41:02 1996  Jeffrey A. Law  <law@cygnus.com>
 
 	* method.c (emit_thunk): Remove current_call_is_indirect nonsense.
 	Add additional argument to INIT_CUMULATIVE_ARGS.
 
+Thu Mar 28 16:41:39 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (shadow_tag): Fix error about anon union with methods.
+
+	* parse.y (self_reference): Only generate a self-reference if this
+ 	is a non-template class.
+	(opt.component_decl_list): Only use it if it was generated.
+
+	* parse.y (component_decl_1): Use constructor_declarator.
+	(fn.def2): Ditto.
+	(notype_component_declarator0): Ditto.
+
+Thu Mar 28 15:11:35 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* typeck.c (build_x_unary_op): Add checks for taking the address
+	of a TARGET_EXPR or of a member function, and give appropriate
+	warnings.
+
+Thu Mar 28 14:49:26 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (process_template_parm): Allow template type parms to be
+ 	used as types for template const parms.
+
+Wed Mar 27 15:51:19 1996  Mike Stump  <mrs@cygnus.com>
+
+	* init.c (expand_vec_init): Ensure the eh cleanups are on the
+	function_obstack.
+
+Wed Mar 27 10:14:30 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (lookup_name_real): Be even more picky about the
+ 	ambiguous lookup warning.
+	(grokdeclarator): Tweak SCOPE_REF constructor declarators here.
+	* parse.y (constructor_declarator): Rather than here.
+
+	* parse.y (constructor_declarator): New nonterminal.
+	(fn.def1): Use it.
+	(explicit_instantiation): Ditto.
+
+Tue Mar 26 13:41:33 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	Add implicit declaration of class name at class scope.
+	* decl.c (lookup_name_real): Restrict pedwarn about ambiguous lookup.
+	* parse.y (self_reference): New nonterminal.
+	(opt.component_decl_list): Use it.
+	(fn.def1): Add nested_name_specifier type_name cases.
+	* class.c (build_self_reference): New function.
+	(finish_struct): Handle access_default later, move self-reference
+	decl to the end.
+	* pt.c (lookup_template_class): Handle getting a TYPE_DECL.
+	* cp-tree.h: Adjust.
+
+	* pt.c (do_function_instantiation): Separate handling of member
+ 	functions and non-member functions properly.
+
+Mon Mar 25 14:23:22 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (process_template_parm): Improve error for 'volatile class K'.
+
+	* class.c (finish_struct_1): Check the right slot for destructors.
+
+	* decl.c (start_enum): Complain about enum templates.
+
+Mon Mar 25 13:25:31 1996  Mike Stump  <mrs@cygnus.com>
+
+	* init.c (resolve_offset_ref): Offset pointers to member data by one.
+	* typeck.c (unary_complex_lvalue): Ditto.
+
+Mon Mar 25 13:30:42 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* typeck.c (c_expand_return): Check for a returned local
+	array name, similar to the check for an ADDR_EXPR.
+
+Mon Mar 25 13:07:19 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (cp_finish_decl): Don't build cleanups for static
+ 	variables here.
+
+Fri Mar 22 17:57:55 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (build_modify_expr): Fix error messages to be more
+	accurate.
+	* cp-tree.h (assop_as_string): Parallel to op_as_string, but for
+	assignment operators.
+	* error.c (assop_as_string): Ditto.  Add support for `%Q' for
+	assignment operators.
+
 Fri Mar 22 13:48:29 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): Call bad_specifiers for typedefs.  Also
+ 	give an error if initialized.  Pedwarn about nested type with the
+ 	same name as its enclosing class.
 
 	* pt.c (tsubst, case TYPE_DECL): Set DECL_CONTEXT.
 
