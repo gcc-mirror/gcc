@@ -1,3 +1,8 @@
+2004-07-16  Steve Ellcey  <sje@cup.hp.com>
+
+	* builtins.c (expand_builtin_stpcpy): Do not create temporary
+	reg with VOIDmode.
+
 2004-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/eabi.asm (__eabi_convert): Fix typo (cmpi vs. cmpwi).
