@@ -1,5 +1,10 @@
 2003-02-21  Mark Wielaard  <mark@klomp.org>
 
+	* java/util/zip/ZipEntry.java (ZipEntry(String)): When name is bigger
+	then 65535 chars throw IllegalArgumentException.
+
+2003-02-21  Mark Wielaard  <mark@klomp.org>
+
 	* java/util/zip/ZipFile.java (finalize): New method.
 
 2003-02-21  Michael Koch  <konqueror@gmx.de>
