@@ -61,6 +61,22 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    text section.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
+/* Pass -K to the assembler when PIC.  */
+#undef ASM_SPEC
+#define ASM_SPEC \
+  "%{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
+   %{fpic:-K PIC} %{fPIC:-K PIC}"
+
+/* Must use data section for relocatable constants when pic.  */
+#undef SELECT_RTX_SECTION
+#define SELECT_RTX_SECTION(MODE,RTX)		\
+{						\
+  if (flag_pic && symbolic_operand (RTX))	\
+    data_section ();				\
+  else						\
+    const_section ();				\
+}
+
 /* The specialized code which needs to appear in the .init section prior
    to the prologue code for `__do_global_ctors' (see crtstuff.c).
 
