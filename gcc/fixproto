@@ -264,6 +264,7 @@ for code in ALL STD ; do
 	then true
 	else
 	  $FIX_HEADER $rel_source_file $abs_source_file $abs_target_file ${DEFINES} $include_path
+	  if test $? != 0 ; then exit 1 ; fi
 	  echo "${rel_source_file}" >>fixproto.list
 	fi
       done
@@ -299,6 +300,7 @@ EOF
 #endif /* __${rel_source_ident} */
 EOF
     ${FIX_HEADER} $rel_source_file tmp.h $abs_target_dir/$rel_source_file ${DEFINES} $include_path
+    if test $? != 0 ; then exit 1 ; fi
     rm tmp.h
   fi
 done

@@ -1,3 +1,9 @@
+2000-04-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (stmp-fixproto): Acknowledge errors in fixproto.
+
+	* fixproto: If fix-header fails, exit with an error.
+
 Mon Apr 17 14:59:36 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (struct check_depdendence_data): New.
