@@ -1,3 +1,10 @@
+2002-07-30  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/elf.h (STARTFILE_SPEC): Define differently if
+	default ABI is MEABI.  (Undoes incorrect change in Eric Christopher's
+	patch on 2002-07-29.)
+	* config/mips/elf64.h (STARTFILE_SPEC): Likewise.
+
 2002-07-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alpha.h, arc.h, arm/aout.h, avr.h, cris.h, d30v.h, dsp16xx.h,
