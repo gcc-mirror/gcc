@@ -1,3 +1,8 @@
+2001-05-09  Thiemo Seufer  <seufer@csv.ica.uni-stuttgart.de>
+
+	* md5.c (md5_init_ctx): Declare constants as unsigned.
+	(md5_process_block): Likewise.
+
 2001-05-07  Zack Weinberg  <zackw@stanford.edu>
 
 	* cp-demangle.c (demangle_v3_with_details,
