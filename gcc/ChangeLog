@@ -1,3 +1,7 @@
+Tue Jul  7 10:07:20 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* print-rtl.c (print_rtx): Use REAL_VALUE_TYPE instead of "double".
+
 Tue Jul  7 08:41:27 1998  Richard Henderson  (rth@cygnus.com)
 
 	* print-rtl.c (print_rtx): Only print fp values when REAL_VALUE_TYPE
