@@ -2357,6 +2357,10 @@ extern struct rtx_def *legitimize_pic_address ();
 extern struct rtx_def *gen_cmp_fp ();
 extern void hppa_encode_label ();
 
+/* Declare functions defined in pa.c and used in templates.  */
+
+extern struct rtx_def *return_addr_rtx ();
+
 /* We want __gcc_plt_call to appear in every program built by
    gcc, so we make a reference to it out of __main.
    We use the asm statement to fool the optimizer into not
@@ -2373,17 +2377,14 @@ do {						\
     (*p++) ();					\
 } while (0)
 
-/* The current return address is in [%sp-20].  */
-#define RETURN_ADDR_RTX(COUNT, FRAME)						\
-  ((COUNT == 0)									\
-   ? gen_rtx (MEM, Pmode,							\
-	      memory_address (Pmode, plus_constant (FRAME,			\
-						    -5 * UNITS_PER_WORD)))	\
-   : (rtx) 0)
+/* Find the return address associated with the frame given by
+   FRAMEADDR.  */
+#define RETURN_ADDR_RTX(COUNT, FRAMEADDR)				 \
+  (return_addr_rtx (COUNT, FRAMEADDR))
 
 /* Used to mask out junk bits from the return address, such as
    processor state, interrupt status, condition codes and the like.  */
-#define MASK_RETURN_ADDR \
-  /* The priviledge level is in the two low order bits, mask em out	\
+#define MASK_RETURN_ADDR						\
+  /* The privilege level is in the two low order bits, mask em out	\
      of the return address.  */						\
   (GEN_INT (0xfffffffc))

@@ -3034,6 +3034,83 @@ hppa_expand_epilogue ()
 		    - actual_fsize);
 }
 
+/* Fetch the return address for the frame COUNT steps up from
+   the current frame, after the prologue.  FRAMEADDR is the
+   frame pointer of the COUNT frame.
+
+   We want to ignore any export stub remnants here.  */
+
+rtx
+return_addr_rtx (count, frameaddr)
+     int count;
+     rtx frameaddr;
+{
+  rtx label;
+  rtx saved_rp;
+  rtx ins;
+
+  saved_rp = gen_reg_rtx (Pmode);
+
+  /* First, we start off with the normal return address pointer from
+     -20[frameaddr].  */
+
+  emit_move_insn (saved_rp, plus_constant (frameaddr, -5 * UNITS_PER_WORD));
+
+  /* Get pointer to the instruction stream.  We have to mask out the
+     privilege level from the two low order bits of the return address
+     pointer here so that ins will point to the start of the first
+     instruction that would have been executed if we returned.  */
+  ins = copy_to_reg (gen_rtx (AND, Pmode,
+			      copy_to_reg (gen_rtx (MEM, Pmode, saved_rp)),
+			      MASK_RETURN_ADDR));
+  label = gen_label_rtx ();
+
+  /* Check the instruction stream at the normal return address for the
+     export stub:
+
+	0x4bc23fd1 | stub+8:   ldw -18(sr0,sp),rp
+	0x004010a1 | stub+12:  ldsid (sr0,rp),r1
+	0x00011820 | stub+16:  mtsp r1,sr0
+	0xe0400002 | stub+20:  be,n 0(sr0,rp)
+
+     If it is an export stub, than our return address is really in
+     -24[frameaddr].  */
+
+  emit_cmp_insn (gen_rtx (MEM, SImode, ins),
+		 GEN_INT (0x4bc23fd1),
+		 NE, NULL_RTX, SImode, 1, 0);
+  emit_jump_insn (gen_bne (label));
+
+  emit_cmp_insn (gen_rtx (MEM, SImode, plus_constant (ins, 4)),
+		 GEN_INT (0x004010a1),
+		 NE, NULL_RTX, SImode, 1, 0);
+  emit_jump_insn (gen_bne (label));
+
+  emit_cmp_insn (gen_rtx (MEM, SImode, plus_constant (ins, 8)),
+		 GEN_INT (0x00011820),
+		 NE, NULL_RTX, SImode, 1, 0);
+  emit_jump_insn (gen_bne (label));
+
+  emit_cmp_insn (gen_rtx (MEM, SImode, plus_constant (ins, 12)),
+		 GEN_INT (0xe0400002),
+		 NE, NULL_RTX, SImode, 1, 0);
+
+  /* If there is no export stub then just use our initial guess of
+     -20[frameaddr].  */
+
+  emit_jump_insn (gen_bne (label));
+
+  /* Here we know that our return address pointer points to an export
+     stub.  We don't want to return the address of the export stub,
+     but rather the return address that leads back into user code.
+     That return address is stored at -24[frameaddr].  */
+
+  emit_move_insn (saved_rp, plus_constant (frameaddr, -6 * UNITS_PER_WORD));
+
+  emit_label (label);
+  return gen_rtx (MEM, Pmode, memory_address (Pmode, saved_rp));
+}
+
 /* This is only valid once reload has completed because it depends on
    knowing exactly how much (if any) frame there is and...
 
