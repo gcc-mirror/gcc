@@ -5533,9 +5533,17 @@ finish_struct (t, fieldlist, attributes)
 
   old_momentary = suspend_momentary ();
 
-  if (fieldlist == 0 && pedantic)
-    pedwarn ((TREE_CODE (t) == UNION_TYPE ? "union has no members"
-	      : "structure has no members"));
+  if (pedantic)
+    {
+      for (x = fieldlist; x; x = TREE_CHAIN (x))
+	if (DECL_NAME (x) != 0)
+	  break;
+
+      if (x == 0)
+	pedwarn ("%s has no %smembers",
+		 (TREE_CODE (t) == UNION_TYPE ? "union" : "structure"),
+		 (fieldlist ? "named " : ""));
+    }
 
   /* Install struct as DECL_CONTEXT of each field decl.
      Also process specified field sizes.
