@@ -1902,17 +1902,6 @@ extern int flag_new_for_scope;
 #define SET_DECL_C_BIT_FIELD(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.bitfield = 1)
 
-/* Nonzero if the type T promotes to itself.
-   ANSI C states explicitly the list of types that promote;
-   in particular, short promotes to int even if they have the same width.  */
-#define C_PROMOTING_INTEGER_TYPE_P(t)				\
-  (TREE_CODE ((t)) == INTEGER_TYPE				\
-   && (TYPE_MAIN_VARIANT (t) == char_type_node			\
-       || TYPE_MAIN_VARIANT (t) == signed_char_type_node	\
-       || TYPE_MAIN_VARIANT (t) == unsigned_char_type_node	\
-       || TYPE_MAIN_VARIANT (t) == short_integer_type_node	\
-       || TYPE_MAIN_VARIANT (t) == short_unsigned_type_node))
-
 #define INTEGRAL_CODE_P(CODE) \
   (CODE == INTEGER_TYPE || CODE == ENUMERAL_TYPE || CODE == BOOLEAN_TYPE)
 
@@ -3751,7 +3740,6 @@ extern int compparms				PROTO((tree, tree));
 extern int comp_target_types			PROTO((tree, tree, int));
 extern int comp_cv_qualification                PROTO((tree, tree));
 extern int comp_cv_qual_signature               PROTO((tree, tree));
-extern int self_promoting_args_p		PROTO((tree));
 extern tree unsigned_type			PROTO((tree));
 extern tree signed_type				PROTO((tree));
 extern tree signed_or_unsigned_type		PROTO((int, tree));

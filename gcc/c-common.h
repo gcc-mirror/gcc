@@ -192,3 +192,17 @@ extern void c_common_nodes_and_builtins		PROTO((int, int, int));
 extern tree build_va_arg			PROTO((tree, tree));
 
 extern tree initializer_constant_valid_p	PROTO((tree, tree));
+
+/* Nonzero if the type T promotes to itself.
+   ANSI C states explicitly the list of types that promote;
+   in particular, short promotes to int even if they have the same width.  */
+#define C_PROMOTING_INTEGER_TYPE_P(t)				\
+  (TREE_CODE ((t)) == INTEGER_TYPE				\
+   && (TYPE_MAIN_VARIANT (t) == char_type_node			\
+       || TYPE_MAIN_VARIANT (t) == signed_char_type_node	\
+       || TYPE_MAIN_VARIANT (t) == unsigned_char_type_node	\
+       || TYPE_MAIN_VARIANT (t) == short_integer_type_node	\
+       || TYPE_MAIN_VARIANT (t) == short_unsigned_type_node))
+
+extern int self_promoting_args_p		PROTO((tree));
+extern tree simple_type_promotes_to		PROTO((tree));

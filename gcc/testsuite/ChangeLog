@@ -1,3 +1,7 @@
+1999-09-07  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.dg/va-arg-1.c: New.
+
 1999-09-05  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/compile/980519-2.f: New test.

@@ -48,7 +48,6 @@ static tree qualify_type		PROTO((tree, tree));
 static int comp_target_types		PROTO((tree, tree));
 static int function_types_compatible_p	PROTO((tree, tree));
 static int type_lists_compatible_p	PROTO((tree, tree));
-static int self_promoting_type_p	PROTO((tree));
 static tree decl_constant_value		PROTO((tree));
 static tree lookup_field		PROTO((tree, tree, tree *));
 static tree convert_arguments		PROTO((tree, tree, tree, tree));
@@ -626,12 +625,12 @@ type_lists_compatible_p (args1, args2)
 	 So match anything that self-promotes.  */
       if (TREE_VALUE (args1) == 0)
 	{
-	  if (! self_promoting_type_p (TREE_VALUE (args2)))
+	  if (simple_type_promotes_to (TREE_VALUE (args2)) != NULL_TREE)
 	    return 0;
 	}
       else if (TREE_VALUE (args2) == 0)
 	{
-	  if (! self_promoting_type_p (TREE_VALUE (args1)))
+	  if (simple_type_promotes_to (TREE_VALUE (args1)) != NULL_TREE)
 	    return 0;
 	}
       else if (! (newval = comptypes (TREE_VALUE (args1), TREE_VALUE (args2))))
@@ -679,48 +678,6 @@ type_lists_compatible_p (args1, args2)
       args1 = TREE_CHAIN (args1);
       args2 = TREE_CHAIN (args2);
     }
-}
-
-/* Return 1 if PARMS specifies a fixed number of parameters
-   and none of their types is affected by default promotions.  */
-
-int
-self_promoting_args_p (parms)
-     tree parms;
-{
-  register tree t;
-  for (t = parms; t; t = TREE_CHAIN (t))
-    {
-      register tree type = TREE_VALUE (t);
-
-      if (TREE_CHAIN (t) == 0 && type != void_type_node)
-	return 0;
-
-      if (type == 0)
-	return 0;
-
-      if (TYPE_MAIN_VARIANT (type) == float_type_node)
-	return 0;
-
-      if (C_PROMOTING_INTEGER_TYPE_P (type))
-	return 0;
-    }
-  return 1;
-}
-
-/* Return 1 if TYPE is not affected by default promotions.  */
-
-static int
-self_promoting_type_p (type)
-     tree type;
-{
-  if (TYPE_MAIN_VARIANT (type) == float_type_node)
-    return 0;
-
-  if (C_PROMOTING_INTEGER_TYPE_P (type))
-    return 0;
-
-  return 1;
 }
 
 /* Compute the value of the `sizeof' operator.  */

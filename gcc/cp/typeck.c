@@ -1623,33 +1623,6 @@ comp_target_parms (parms1, parms2, strict)
     }
   return warn_contravariance ? -1 : 1;
 }
-
-/* Return 1 if PARMS specifies a fixed number of parameters
-   and none of their types is affected by default promotions.  */
-
-int
-self_promoting_args_p (parms)
-     tree parms;
-{
-  register tree t;
-  for (t = parms; t; t = TREE_CHAIN (t))
-    {
-      register tree type = TREE_VALUE (t);
-
-      if (TREE_CHAIN (t) == 0 && type != void_type_node)
-	return 0;
-
-      if (type == 0)
-	return 0;
-
-      if (TYPE_MAIN_VARIANT (type) == float_type_node)
-	return 0;
-
-      if (C_PROMOTING_INTEGER_TYPE_P (type))
-	return 0;
-    }
-  return 1;
-}
 
 /* Compute the value of the `sizeof' operator.  */
 
