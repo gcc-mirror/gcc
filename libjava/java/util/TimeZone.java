@@ -447,6 +447,7 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
 	   Calendar.MARCH, -1, Calendar.SUNDAY, 2000 * 3600,
 	   Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600);
 	timezones0.put("CET", tz);
+	timezones0.put("CEST", tz);
 	timezones0.put("ECT", tz);
 	timezones0.put("MET", tz);
 	timezones0.put("Africa/Ceuta", tz);

@@ -1,3 +1,219 @@
+2005-02-21  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/java/locale/LocaleInformation_en.java: Extend
+	localPatternChars to "GyMdkHmsSEDFwWahKzYeugAZ".
+
+2005-02-21  Mark Wielaard  <mark@klomp.org>
+
+	* java/text/SimpleDateFormat.java
+	(SimpleDateFormat(String, DateFormatSymbols)): Throw
+	NullPointerException when formatData is null.
+
+2005-02-21  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/SimpleTimeZone.java (getOffset): Calculate beforeEnd by
+	taking dstSavings into account.
+
+2005-02-21  Sven de Marothy <sven@physto.se>
+
+	* java/text/SimpleDateFormat.java,
+	(parse): Set correct DST_OFFSET to the correct value.
+
+2005-02-21  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/SimpleTimeZone.java (checkRule): Throw
+	IllegalArgumentException when month out of range.
+
+2005-02-21  Sven de Marothy  <sven@physto.se>
+
+	* java/util/GregorianCalendar.java,
+	(add): Don't set fields directly anymore. Use set()
+
+2005-02-21  Mark Wielaard  <mark@klomp.org>
+
+	* java/text/SimpleDateFormat.java (CompiledField.toString):
+	Use StringBuffer, not StringBuilder.
+	(toString): Likewise.
+
+2005-02-21  Sven de Marothy  <sven@physto.se>
+
+	* java/util/Calendar.java 
+	(clear): Dates should clear to local time.
+	* java/util/GregorianCalendar.java      
+	(computeTime): Fix priority problem with DAY_OF_WEEK,
+	Handle non-sunday-startig weeks and minimumDaysInFirstWeek.
+
+2005-02-21  Sven de Marothy  <sven@physto.se>
+
+	* java/util/Calendar.java 
+	(Calendar): Constructor should clear fields.
+
+2005-02-21  Sven de Marothy  <sven@physto.se>
+
+	* java/text/SimpleDateFormat.java
+	(parse): Tweak handling of 2-year dates
+	* java/util/Calendar.java
+	(clear): Clear fields to correct value.
+	* java/util/GregorianCalendar.java
+	(computeTime): Correct handling of time zones.
+	Correct field minimum values.
+
+2005-02-21  Sven de Marothy  <sven@physto.se>
+
+	* java/util/Calendar.java
+	(set) Invalidate all fields on first call to set().
+
+2005-02-21  Sven de Marothy  <sven@physto.se>
+
+	* java/util/GregorianCalendar.java
+	(computeTime): Fixed handling of time zones.
+
+2005-02-21  Sven de Marothy  <sven@physto.se>
+
+	* java/util/Calendar.java
+	(clear): Set values to Epoch instead of zero.
+	(set): Set isSet to the relevant field pattern instead of just
+	the field.
+	* java/util/GregorianCalendar.java
+	(getBundle): Removed.
+	(getDayOfYear): Removed.
+	(getFirstDayOfMonth): New private method.
+	(nonLeniencyCheck): New private method.
+	(computeTime): Correct handling of insufficient data.
+
+2005-02-21  Sven de Marothy <sven@physto.se>
+
+	* java/util/Calendar.java: Invalidate ERA field on setting
+	the YEAR.
+	* java/util/SimpleTimeZone.java:
+	(getDaysInMonth): Reimplemented.
+	* java/util/GregorianCalendar.java:
+	(getLinearTime): Removed.
+	(isLeapYear(int,boolean)): Removed.
+	(before(), after()): Removed.
+	(computeTime): Reimplemented.
+
+2005-02-21  Sven de Marothy <sven@physto.se>
+
+	* java/util/Calendar.java: Reformatted.
+	* java/util/GregorianCalendar.java: Reformatted.
+	* java/util/SimpleTimeZone.java: Reformatted.
+
+2005-02-21  Sven de Marothy <sven@physto.se>
+
+        * java/util/GregorianCalendar.java
+        (GregorianCalendar): Update fields in the constructor
+
+2005-02-21  Noa Resare  <noa@resare.com>
+
+        * java/util/Calendar.java (explicitDSTOffset): New instance field.
+        (set(int,int)): Set and use new field.
+        (set(int,int,int)): Check new field.
+
+2005-02-21  Noa Resare  <address@hidden>
+
+	* java/util/Calendar.java(set):
+	Fix for DST related regression.
+
+2005-02-21  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/util/Calendar.java
+	(setTimeInMillis): Added call to clear, removed computeFields call.
+	* java/util/Date.java
+	(Date(int,int,int,int,int,int)): Removed workaround for
+	GregorianCalendar bug.
+	* java/util/GregorianCalendar.java
+	(GregorianCalendar): Chained all constructors to a (new)
+	common constructor.
+	(computeTime): Fixed support for lenient month treatment.
+	(getLinearDay): Return long instead of int.
+	(calculateDay): Added fields argument and changed day argument
+	to long.
+
+2005-02-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/text/SimpleDateFormat.java
+	Lots of documentation updates.
+	(readObject(java.io.ObjectInputStream)): Wraps
+	IllegalArgumentException as specified.
+	(compileFormat(String)): Uses standardChars
+	rather than the local pattern characters.
+	Throws IllegalArgumentException rather than
+	storing a -1 field.
+	(toString()): Extended to include all variables
+	in a better format.
+	(translateLocalizedPattern(String, String, String)):
+	Renamed to better define the use of this method.
+
+2005-02-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/text/DateFormat.java:
+	Documented pattern character offset constants and
+	added new ones.
+	(Field): Added new static fields for new pattern chars.
+	* java/text/SimpleDateFormat.java:
+	(CompiledField): Changed name of FieldSizePair class
+	to CompiledField after adding the character as an
+	attribute.  Changed fields to private and added
+	accessors to give encapsulation.
+	(CompiledField.CompiledField(int,int,char)): Extended
+	with character field.
+	(CompiledField.getField()): New accessor method.
+	(CompiledField.getSize()): New acceessor method.
+	(CompiledField.getCharacter()): New accessor method.
+	(CompiledField.toString()): Added primarily for debugging.
+	(standardChars): Now uses extended 24 character sequence.
+	(compileFormat(String)): Changed to use CompiledField.
+	(formatWithAttribute(java.util.Date, gnu.java.text.FormatBuffer,
+	java.text.FieldPosition)): Changed to use CompiledField.
+	New handler for RFC 822 timezones added.
+
+2005-02-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/text/SimpleDateFormat.java:
+	(parse(String, java.text.ParsePosition)):
+	Changed 'E' and 'M' cases to use both
+	short and long names.  Extended 'z'
+	case to also handle 'Z', and deal
+	with simple GMT offsets such as +0100.
+	(computeOffset(String)): New private method,
+	which converts a GMT offset specification,
+	such as GMT-0500 to a numeric offset in
+	milliseconds.
+	* java/util/TimeZone.java:
+	(timezones()): Added "CEST", the daylight
+	savings time version of "CET", or Central
+	European Time.
+
+2005-02-21  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* java/text/SimpleDateFormat.java:
+	(parse): Set the DST offset to 0 when parsing
+	GMT offset timezones.
+
+2005-02-21  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* java/text/SimpleDateFormat.java:
+	(parse): Use offset to set ZONE_OFFSET
+	rather than the DST_OFFSET, so that
+	GMT offset timezones change the right
+	one.
+
+2005-02-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/text/SimpleDateFormat.java:
+	(getDateFormatSymbols()): return a copy
+	(setDateFormatSymbols(java.text.DateFormatSymbols)):
+	throw exception on null input
+	(clone()): implemented to clone
+	internal fields
+
+2005-02-21  Sven de Marothy <sven@physto.se>
+
+	* java/text/SimpleDateFormat.java
+	(parse): comparison should be case-insensitive, ignore null
+	strings.
+
 2005-02-21  Robert Schuster  <theBohemian@gmx.net>
 
 	* gnu/java/beans/IntrospectionIncubator.java
