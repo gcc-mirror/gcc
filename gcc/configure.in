@@ -2320,6 +2320,13 @@ for machine in $build $host $target; do
 	sparc-*-bsd*)
 		tm_file=sparc/bsd.h
 		;;
+	sparc-*-elf*)
+		tm_file=sparc/elf.h
+		tmake_file=sparc/t-elf
+		extra_parts="crti.o crtn.o crtbegin.o crtend.o"
+		#float_format=i128
+		float_format=i64
+		;;
 	sparc-*-linux-gnuaout*)		# Sparc's running Linux, a.out
 		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
 		tm_file=sparc/linux-aout.h
@@ -2603,7 +2610,7 @@ for machine in $build $host $target; do
 			.)
 				target_cpu_default2=TARGET_CPU_"`echo $machine | sed 's/-.*$//'`"
 				;;
-			.supersparc | .ultrasparc | .v7 | .v8)
+			.supersparc | .ultrasparc | .v7 | .v8 | .v9)
 				target_cpu_default2="TARGET_CPU_$with_cpu"
 				;;
 			*)
