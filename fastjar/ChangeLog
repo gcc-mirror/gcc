@@ -1,3 +1,9 @@
+2003-08-13  Matthias Klose  <doko@debian.org>
+
+	* fastjar.texi: License manual under the GPL.
+	* Makefile.am: Remove reference to fdl.texi
+	* Makefile.in: Regenerate
+
 2003-07-29  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* mkinstalldirs: Import autoconf 2.57 / automake 1.7 version.

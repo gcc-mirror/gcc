@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -80,40 +80,7 @@ AUTOMAKE_OPTIONS = no-dependencies
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
-AM_MAKEFLAGS = \
-	"AR_FLAGS=$(AR_FLAGS)" \
-	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
-	"CFLAGS=$(CFLAGS)" \
-	"CXXFLAGS=$(CXXFLAGS)" \
-	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
-	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
-	"INSTALL=$(INSTALL)" \
-	"INSTALL_DATA=$(INSTALL_DATA)" \
-	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
-	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
-	"JC1FLAGS=$(JC1FLAGS)" \
-	"LDFLAGS=$(LDFLAGS)" \
-	"LIBCFLAGS=$(LIBCFLAGS)" \
-	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
-	"MAKE=$(MAKE)" \
-	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
-	"PICFLAG=$(PICFLAG)" \
-	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
-	"SHELL=$(SHELL)" \
-	"exec_prefix=$(exec_prefix)" \
-	"infodir=$(infodir)" \
-	"libdir=$(libdir)" \
-	"prefix=$(prefix)" \
-	"AR=$(AR)" \
-	"AS=$(AS)" \
-	"CC=$(CC)" \
-	"CXX=$(CXX)" \
-	"LD=$(LD)" \
-	"LIBCFLAGS=$(LIBCFLAGS)" \
-	"NM=$(NM)" \
-	"PICFLAG=$(PICFLAG)" \
-	"RANLIB=$(RANLIB)" \
-	"DESTDIR=$(DESTDIR)"
+AM_MAKEFLAGS =  	"AR_FLAGS=$(AR_FLAGS)" 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" 	"CFLAGS=$(CFLAGS)" 	"CXXFLAGS=$(CXXFLAGS)" 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" 	"INSTALL=$(INSTALL)" 	"INSTALL_DATA=$(INSTALL_DATA)" 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" 	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" 	"JC1FLAGS=$(JC1FLAGS)" 	"LDFLAGS=$(LDFLAGS)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" 	"MAKE=$(MAKE)" 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" 	"SHELL=$(SHELL)" 	"exec_prefix=$(exec_prefix)" 	"infodir=$(infodir)" 	"libdir=$(libdir)" 	"prefix=$(prefix)" 	"AR=$(AR)" 	"AS=$(AS)" 	"CC=$(CC)" 	"CXX=$(CXX)" 	"LD=$(LD)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"NM=$(NM)" 	"PICFLAG=$(PICFLAG)" 	"RANLIB=$(RANLIB)" 	"DESTDIR=$(DESTDIR)"
 
 
 INCLUDES = -I. -I$(top_srcdir) $(ZINCS) -I$(top_srcdir)/../include
@@ -121,14 +88,12 @@ INCLUDES = -I. -I$(top_srcdir) $(ZINCS) -I$(top_srcdir)/../include
 LIBIBERTY = ../libiberty/libiberty.a
 
 bin_PROGRAMS = jar grepjar
-jar_SOURCES = jartool.c dostime.c compress.c pushback.c jartool.h \
-zipfile.h dostime.h compress.h pushback.h
+jar_SOURCES = jartool.c dostime.c compress.c pushback.c jartool.h zipfile.h dostime.h compress.h pushback.h
 
 jar_LDADD = $(ZLIBS) $(LIBIBERTY)
 jar_DEPENDENCIES = $(ZDEPS) $(LIBIBERTY)
 
-grepjar_SOURCES = jargrep.c dostime.c compress.c pushback.c jartool.h \
-zipfile.h dostime.h compress.h pushback.h
+grepjar_SOURCES = jargrep.c dostime.c compress.c pushback.c jartool.h zipfile.h dostime.h compress.h pushback.h
 
 grepjar_LDADD = $(ZLIBS) $(LIBIBERTY)
 grepjar_DEPENDENCIES = $(ZDEPS) $(LIBIBERTY)
@@ -137,10 +102,7 @@ AM_CFLAGS = @fastjar_warn_cflags@
 
 TEXINFO_TEX = ../gcc/doc/include/texinfo.tex
 info_TEXINFOS = fastjar.texi
-fastjar_TEXINFOS = \
-	../gcc/doc/include/gcc-common.texi \
-	../gcc/doc/include/fdl.texi \
-	../gcc/doc/include/gpl.texi
+fastjar_TEXINFOS =  	../gcc/doc/include/gcc-common.texi 	../gcc/doc/include/gpl.texi
 
 man_MANS = jar.1 grepjar.1
 EXTRA_DIST = $(man_MANS)
@@ -185,7 +147,7 @@ missing mkinstalldirs
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 SOURCES = $(jar_SOURCES) $(grepjar_SOURCES)
 OBJECTS = $(jar_OBJECTS) $(grepjar_OBJECTS)
@@ -369,7 +331,7 @@ uninstall-info:
 	else ii=; fi; \
 	list='$(INFO_DEPS)'; \
 	for file in $$list; do \
-	  test -z "$ii" \
+	  test -z "$$ii" \
 	    || install-info --info-dir=$(DESTDIR)$(infodir) --remove $$file; \
 	done
 	@$(NORMAL_UNINSTALL)
@@ -464,7 +426,7 @@ TAGS:  $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) $(LISP)
 	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)config.h.in$$unique$(LISP)$$tags" \
-	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags config.h.in $$unique $(LISP) -o $$here/TAGS)
+	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags config.h.in $$unique $(LISP))
 
 mostlyclean-tags:
 

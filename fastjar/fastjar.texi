@@ -32,35 +32,19 @@
 @end format
 
 @c man begin COPYRIGHT
-Copyright (C) @value{copyrights-fastjar} Free Software Foundation, Inc.
+Copyright (C) @value{copyrights-fastjar} Matthias Klose
 
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.2 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'', the Front-Cover
-texts being (a) (see below), and with the Back-Cover Texts being (b)
-(see below).  A copy of the license is included in the
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2, or (at your option) any
+later version. A copy of the license is included in the
 @c man end
-section entitled
-``GNU Free Documentation License''.
+section entitled ``GNU General Public License''.
 @ignore
 @c man begin COPYRIGHT
-man page gfdl(7).
+man page gpl(7).
 @c man end
 @end ignore
-
-@c man begin COPYRIGHT
-
-(a) The FSF's Front-Cover Text is:
-
-     A GNU Manual
-
-(b) The FSF's Back-Cover Text is:
-
-     You have freedom to copy and modify this GNU Manual, like GNU
-     software.  Copies published by the Free Software Foundation raise
-     funds for GNU development.
-@c man end
 @end ifinfo
 
 @titlepage
@@ -69,7 +53,7 @@ man page gfdl(7).
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} @value{copyrights-gcj} Free Software Foundation, Inc.
+Copyright @copyright{} @value{copyrights-gcj} Matthias Klose
 @sp 2
 For the @value{which-gcj} Version*
 @sp 1
@@ -78,22 +62,10 @@ Published by the Free Software Foundation @*
 Boston, MA 02111-1307, USA@*
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.2 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'', the Front-Cover
-texts being (a) (see below), and with the Back-Cover Texts being (b)
-(see below).  A copy of the license is included in the section entitled
-``GNU Free Documentation License''.
-
-(a) The FSF's Front-Cover Text is:
-
-     A GNU Manual
-
-(b) The FSF's Back-Cover Text is:
-
-     You have freedom to copy and modify this GNU Manual, like GNU
-     software.  Copies published by the Free Software Foundation raise
-     funds for GNU development.
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2, or (at your option) any
+later version. A copy of the license is included in the
+section entitled ``GNU General Public License''.
 @end titlepage
 @contents
 @page
@@ -108,8 +80,6 @@ This manual describes how to use @command{jar} and @command{grepjar}.
 * Invoking jar::	Options supported by @command{jar}
 * Invoking grepjar::    Options supported by @command{grepjar}
 * Copying::		The GNU General Public License
-* GNU Free Documentation License::
-			How you can share and copy this manual
 @end menu
 
 @node Invoking jar
@@ -259,7 +229,5 @@ Print version number, then exit.
 @c man end
 
 @include gpl.texi
-
-@include fdl.texi
 
 @bye
