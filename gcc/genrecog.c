@@ -2452,10 +2452,15 @@ make_insn_sequence (insn, type)
 {
   rtx x;
   const char *c_test = XSTR (insn, type == RECOG ? 2 : 1);
+  int truth = maybe_eval_c_test (c_test);
   struct decision *last;
   struct decision_test *test, **place;
   struct decision_head head;
   char c_test_pos[2];
+
+  /* We should never see an insn whose C test is false at compile time.  */
+  if (truth == 0)
+    abort ();
 
   record_insn_name (next_insn_code, (type == RECOG ? XSTR (insn, 0) : NULL));
 
@@ -2504,7 +2509,8 @@ make_insn_sequence (insn, type)
     continue;
   place = &test->next;
 
-  if (c_test[0])
+  /* Skip the C test if it's known to be true at compile time.  */
+  if (truth == -1)
     {
       /* Need a new node if we have another test to add.  */
       if (test->type == DT_accept_op)
@@ -2577,7 +2583,9 @@ make_insn_sequence (insn, type)
 		  place = &last->tests;
 		}
 
-	      if (c_test[0])
+	      /* Skip the C test if it's known to be true at compile
+                 time.  */
+	      if (truth == -1)
 		{
 		  test = new_decision_test (DT_c_test, &place);
 		  test->u.c_test = c_test;
