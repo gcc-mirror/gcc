@@ -1855,7 +1855,8 @@ xmalloc (size)
   return value;
 }
 
-/* Same as `realloc' but report error if no memory available.  */
+/* Same as `realloc' but report error if no memory available.  
+   Also handle null PTR even if the vendor realloc gets it wrong.  */
 
 char *
 xrealloc (ptr, size)
