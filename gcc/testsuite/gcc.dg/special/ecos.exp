@@ -97,13 +97,19 @@ dg-finish
 # wkali-1.c
 ###########
 
-dg-init
-switch [check_alias_available "$srcdir/$subdir/wkali-1.c"] {
-    yes     { dg-runtest "$srcdir/$subdir/wkali-1.c" "" "" }
-    no      { unsupported "wkali-1.c" }
-    default { fail "wkali-1.c" }
+if { [ check_weak_available ] == 1 } {
+    dg-init
+    switch [check_alias_available "$srcdir/$subdir/wkali-1.c"] {
+        yes     { dg-runtest "$srcdir/$subdir/wkali-1.c" "" "" }
+        no      { unsupported "wkali-1.c" }
+        default { fail "wkali-1.c" }
+    }
+    dg-finish
+} elseif { [ check_weak_available ] == 0 } {
+    unsupported "wkali-1.c"
+} else {
+    unresolved "wkali-1.c"
 }
-dg-finish
 
 ###########
 # wkali-2.c
