@@ -1,5 +1,10 @@
 2003-06-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* postreload.c (reload_cse_simplify_set): Call cselib_lookup
+	earlier.  Don't check if SRC is a constant.
+
+2003-06-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* Makefile.in (OBJS): Add postreload.o.
 	Remove cselib.h from the dependency list for reload1.o.
 	Add a dependency list for postreload.o.

@@ -246,21 +246,19 @@ reload_cse_simplify_set (set, insn)
     return 0;
 #endif
 
+  val = cselib_lookup (src, GET_MODE (SET_DEST (set)), 0);
+  if (! val)
+    return 0;
+
   /* If memory loads are cheaper than register copies, don't change them.  */
   if (GET_CODE (src) == MEM)
     old_cost = MEMORY_MOVE_COST (GET_MODE (src), dclass, 1);
-  else if (CONSTANT_P (src))
-    old_cost = rtx_cost (src, SET);
   else if (GET_CODE (src) == REG)
     old_cost = REGISTER_MOVE_COST (GET_MODE (src),
 				   REGNO_REG_CLASS (REGNO (src)), dclass);
   else
-    /* ???   */
     old_cost = rtx_cost (src, SET);
 
-  val = cselib_lookup (src, GET_MODE (SET_DEST (set)), 0);
-  if (! val)
-    return 0;
   for (l = val->locs; l; l = l->next)
     {
       rtx this_rtx = l->loc;
