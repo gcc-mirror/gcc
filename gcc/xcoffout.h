@@ -47,30 +47,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define DBX_STATIC_CONST_VAR_CODE N_STSYM
 
-/* For static variables, output code to define the start of a static block.
-
-   ??? The IBM rs6000/AIX assembler has a bug that causes bss block debug
-   info to be occasionally lost.  A simple example is this:
-	int a; static int b;
-   The commands `gcc -g -c tmp.c; dump -t tmp.o' gives
-[10]	m   0x00000016         1     0    0x8f  0x0000            .bs
-[11]	m   0x00000000         1     0    0x90  0x0000            .es
-...
-[21]	m   0x00000000        -2     0    0x85  0x0000            b:S-1
-   which is wrong.  The `b:S-1' must be between the `.bs' and `.es'.
-   We can apparently work around the problem by forcing the text section
-   (even if we are already in the text section) immediately before outputting
-   the `.bs'.  This should be fixed in the next major AIX release (3.3?).  */
+/* For static variables, output code to define the start of a static block.  */
 
 #define DBX_STATIC_BLOCK_START(ASMFILE,CODE)				\
 {									\
   if ((CODE) == N_STSYM)						\
     fprintf ((ASMFILE), "\t.bs\t%s[RW]\n", xcoff_private_data_section_name);\
   else if ((CODE) == N_LCSYM)						\
-    {									\
-      fprintf ((ASMFILE), "%s\n", TEXT_SECTION_ASM_OP);			\
-      fprintf ((ASMFILE), "\t.bs\t%s\n", xcoff_bss_section_name);	\
-    }									\
+    fprintf ((ASMFILE), "\t.bs\t%s\n", xcoff_bss_section_name);	\
 }
 
 /* For static variables, output code to define the end of a static block.  */
