@@ -1,3 +1,8 @@
+2004-01-29  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.dg/parse/error11.C: New test.
+	* g++.dg/parse/error12.C: Likewise.
+
 2004-01-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13883
