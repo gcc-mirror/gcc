@@ -4853,7 +4853,7 @@ hp_symbol_characters ()
 static const char *
 gnu_new_abi_symbol_characters ()
 {
-  return "_";
+  return "_$.";
 }
 
 

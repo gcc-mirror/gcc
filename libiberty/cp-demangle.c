@@ -62,6 +62,10 @@
   (((CHAR) >= 'a' && (CHAR) <= 'z')                                     \
    || ((CHAR) >= 'A' && (CHAR) <= 'Z'))
 
+/* The prefix prepended by GCC to an identifier represnting the
+   anonymous namespace.  */
+#define ANONYMOUS_NAMESPACE_PREFIX "_GLOBAL_"
+
 /* If flag_verbose is zero, some simplifications will be made to the
    output to make it easier to read and supress details that are
    generally not of interest to the average C++ programmer.
@@ -92,16 +96,9 @@ struct substitution_def
   /* The demangled text of the substitution.  */
   dyn_string_t text;
 
-  /* The template parameter that this represents, indexed from zero.
-     If this is not a template paramter number, the value is
-     NOT_TEMPLATE_PARM.  */
-  int template_parm_number;
-
   /* Whether this substitution represents a template item.  */
   int template_p : 1;
 };
-
-#define NOT_TEMPLATE_PARM (-1)
 
 /* Data structure representing a template argument list.  */
 
@@ -206,7 +203,7 @@ static string_list_t result_pop
 static int substitution_start
   PARAMS ((demangling_t));
 static status_t substitution_add
-  PARAMS ((demangling_t, int, int, int));
+  PARAMS ((demangling_t, int, int));
 static dyn_string_t substitution_get
   PARAMS ((demangling_t, int, int *));
 #ifdef CP_DEMANGLE_DEBUG
@@ -286,6 +283,22 @@ static void demangling_delete
 /* Appends character CHAR to the demangled result.  */
 #define result_append_char(DM, CHAR)                                    \
   (dyn_string_append_char (&(DM)->result->string, (CHAR))               \
+   ? STATUS_OK : STATUS_ALLOCATION_FAILED)
+
+/* Inserts a dyn_string_t to the demangled result at position POS.  */
+#define result_insert_string(DM, POS, STRING)                           \
+  (dyn_string_insert (&(DM)->result->string, (POS), (STRING))           \
+   ? STATUS_OK : STATUS_ALLOCATION_FAILED)
+
+/* Inserts NUL-terminated string CSTR to the demangled result at
+   position POS.  */
+#define result_insert(DM, POS, CSTR)                                    \
+  (dyn_string_insert_cstr (&(DM)->result->string, (POS), (CSTR))        \
+   ? STATUS_OK : STATUS_ALLOCATION_FAILED)
+
+/* Inserts character CHAR to the demangled result at position POS.  */
+#define result_insert_char(DM, POS, CHAR)                               \
+  (dyn_string_insert_char (&(DM)->result->string, (POS), (CHAR))        \
    ? STATUS_OK : STATUS_ALLOCATION_FAILED)
 
 /* The length of the current demangled result.  */
@@ -458,19 +471,13 @@ substitution_start (dm)
 
 /* Adds the suffix of the current demangled result of DM starting at
    START_POSITION as a potential substitution.  If TEMPLATE_P is
-   non-zero, this potential substitution is a template-id.  
-
-   If TEMPLATE_PARM_NUMBER is not NOT_TEMPLATE_PARM, the substitution
-   is for that particular <template-param>, and is distinct from other
-   otherwise-identical types and other <template-param>s with
-   different indices.  */
+   non-zero, this potential substitution is a template-id.  */
 
 static status_t
-substitution_add (dm, start_position, template_p, template_parm_number)
+substitution_add (dm, start_position, template_p)
      demangling_t dm;
      int start_position;
      int template_p;
-     int template_parm_number;
 {
   dyn_string_t result = result_string (dm);
   dyn_string_t substitution = dyn_string_new (0);
@@ -513,7 +520,6 @@ substitution_add (dm, start_position, template_p, template_parm_number)
   i = dm->num_substitutions++;
   dm->substitutions[i].text = substitution;
   dm->substitutions[i].template_p = template_p;
-  dm->substitutions[i].template_parm_number = template_parm_number;
 
 #ifdef CP_DEMANGLE_DEBUG
   substitutions_print (dm, stderr);
@@ -815,7 +821,7 @@ static status_t demangle_special_name
 static status_t demangle_ctor_dtor_name
   PARAMS ((demangling_t));
 static status_t demangle_type_ptr
-  PARAMS ((demangling_t));
+  PARAMS ((demangling_t, int *, int));
 static status_t demangle_type
   PARAMS ((demangling_t));
 static status_t demangle_CV_qualifiers
@@ -823,15 +829,15 @@ static status_t demangle_CV_qualifiers
 static status_t demangle_builtin_type
   PARAMS ((demangling_t));
 static status_t demangle_function_type
-  PARAMS ((demangling_t, int));
+  PARAMS ((demangling_t, int *));
 static status_t demangle_bare_function_type
-  PARAMS ((demangling_t, int));
+  PARAMS ((demangling_t, int *));
 static status_t demangle_class_enum_type
   PARAMS ((demangling_t, int *));
 static status_t demangle_array_type
   PARAMS ((demangling_t));
 static status_t demangle_template_param
-  PARAMS ((demangling_t, int *));
+  PARAMS ((demangling_t));
 static status_t demangle_template_args
   PARAMS ((demangling_t));
 static status_t demangle_literal
@@ -859,7 +865,7 @@ static status_t cp_demangle_type
 
 /* When passed to demangle_bare_function_type, indicates that the
    function's return type is not encoded before its parameter types.  */
-#define BFT_NO_RETURN_TYPE    -1
+#define BFT_NO_RETURN_TYPE    NULL
 
 /* Check that the next character is C.  If so, consume it.  If not,
    return an error.  */
@@ -937,7 +943,7 @@ demangle_encoding (dm)
 	    /* Template functions have their return type encoded.  The
 	       return type should be inserted at start_position.  */
 	    RETURN_IF_ERROR 
-	      (demangle_bare_function_type (dm, start_position));
+	      (demangle_bare_function_type (dm, &start_position));
 	  else
 	    /* Non-template functions don't have their return type
 	       encoded.  */
@@ -974,6 +980,7 @@ demangle_name (dm, template_p)
 {
   int start = substitution_start (dm);
   char peek = peek_char (dm);
+  int is_std_substitution = 0;
 
   DEMANGLE_TRACE ("name", dm);
 
@@ -998,6 +1005,7 @@ demangle_name (dm, template_p)
 	  (void) next_char (dm);
 	  RETURN_IF_ERROR (result_append (dm, "std::"));
 	  RETURN_IF_ERROR (demangle_unqualified_name (dm));
+	  is_std_substitution = 1;
 	}
       else
 	{
@@ -1007,11 +1015,11 @@ demangle_name (dm, template_p)
 	 If so, then we just demangled an <unqualified-template-name>.  */
       if (peek_char (dm) == 'I') 
 	{
-	  /* The template name is a substitution candidate, unless it
-             was already a back-substitution.  */
-	  if (peek != 'S')
-	    RETURN_IF_ERROR (substitution_add (dm, start, 0, 
-					       NOT_TEMPLATE_PARM));
+	  /* A template name of the form std::<unqualified-name> is a
+             substitution candidate.  */
+	  if (is_std_substitution)
+	    RETURN_IF_ERROR (substitution_add (dm, start, 0));
+	  /* Demangle the <template-args> here.  */
 	  RETURN_IF_ERROR (demangle_template_args (dm));
 	  *template_p = 1;
 	}
@@ -1029,8 +1037,7 @@ demangle_name (dm, template_p)
       if (peek_char (dm) == 'I')
 	{
 	  /* Add a substitution for the unqualified template name.  */
-	  RETURN_IF_ERROR (substitution_add (dm, start, 0, 
-					     NOT_TEMPLATE_PARM));
+	  RETURN_IF_ERROR (substitution_add (dm, start, 0));
 
 	  RETURN_IF_ERROR (demangle_template_args (dm));
 	  *template_p = 1;
@@ -1185,8 +1192,7 @@ demangle_prefix (dm, template_p)
       if (peek != 'S'
 	  && peek_char (dm) != 'E')
 	/* Add a new substitution for the prefix thus far.  */
-	RETURN_IF_ERROR (substitution_add (dm, start, *template_p, 
-					   NOT_TEMPLATE_PARM));
+	RETURN_IF_ERROR (substitution_add (dm, start, *template_p));
     }
 }
 
@@ -1353,6 +1359,29 @@ demangle_identifier (dm, length, identifier)
 	return STATUS_ALLOCATION_FAILED;
     }
 
+  /* GCC encodes anonymous namespaces using a `_GLOBAL_[_.$]N.'
+     followed by the source file name and some random characters.
+     Unless we're in strict mode, decipher these names appropriately.  */
+  if (!flag_strict)
+    {
+      char *name = dyn_string_buf (identifier);
+      int prefix_length = strlen (ANONYMOUS_NAMESPACE_PREFIX);
+
+      /* Compare the first, fixed part.  */
+      if (strncmp (name, ANONYMOUS_NAMESPACE_PREFIX, prefix_length) == 0)
+        {
+	  name += prefix_length;
+	  /* The next character might be a period, an underscore, or
+	     dollar sign, depending on the target architecture's
+	     assembler's capabilities.  After that comes an `N'.  */
+	  if ((*name == '.' || *name == '_' || *name == '$')
+	      && *(name + 1) == 'N')
+	    /* This looks like the anonymous namespace identifier.
+	       Replace it with something comprehensible.  */
+	    dyn_string_copy_cstr (identifier, "(anonymous namespace)");
+	}
+    }
+
   return STATUS_OK;
 }
 
@@ -1411,7 +1440,7 @@ demangle_identifier (dm, length, identifier)
                   ::= qu        # ?
                   ::= sz        # sizeof 
                   ::= cv <type> # cast        
-                  ::= vx <source-name>  # vendor extended operator  */
+		  ::= v [0-9] <source-name>  # vendor extended operator  */
 
 static status_t
 demangle_operator_name (dm, short_name, num_args)
@@ -1491,10 +1520,10 @@ demangle_operator_name (dm, short_name, num_args)
 
   DEMANGLE_TRACE ("operator-name", dm);
 
-  /* Is this a vendor extended operator?  */
-  if (c0 == 'v' && c1 == 'x')
+  /* Is this a vendor-extended operator?  */
+  if (c0 == 'v' && IS_DIGIT (c1))
     {
-      RETURN_IF_ERROR (result_append (dm, "operator"));
+      RETURN_IF_ERROR (result_append (dm, "operator "));
       RETURN_IF_ERROR (demangle_source_name (dm));
       *num_args = 0;
       return STATUS_OK;
@@ -1832,6 +1861,19 @@ demangle_ctor_dtor_name (dm)
    a pointer to data or pointer to function to construct the right
    output syntax.  C++'s pointer syntax is hairy.  
 
+   This function adds substitution candidates for every nested
+   pointer/reference type it processes, including the outermost, final
+   type, assuming the substitution starts at SUBSTITUTION_START in the
+   demangling result.  For example, if this function demangles
+   `PP3Foo', it will add a substitution for `Foo', `Foo*', and
+   `Foo**', in that order.
+
+   *INSERT_POS is a quantity used internally, when this function calls
+   itself recursively, to figure out where to insert pointer
+   punctuation on the way up.  On entry to this function, INSERT_POS
+   should point to a temporary value, but that value need not be
+   initialized.
+
      <type> ::= P <type>
             ::= R <type>
             ::= <pointer-to-member-type>
@@ -1839,104 +1881,131 @@ demangle_ctor_dtor_name (dm)
      <pointer-to-member-type> ::= M </class/ type> </member/ type>  */
 
 static status_t
-demangle_type_ptr (dm)
+demangle_type_ptr (dm, insert_pos, substitution_start)
      demangling_t dm;
+     int *insert_pos;
+     int substitution_start;
 {
   char next;
   status_t status;
-
-  /* Collect pointer symbols into this string.  */
-  dyn_string_t symbols = dyn_string_new (10);
+  int is_substitution_candidate = 1;
 
   DEMANGLE_TRACE ("type*", dm);
 
-  if (symbols == NULL)
-    return STATUS_ALLOCATION_FAILED;
-
   /* Scan forward, collecting pointers and references into symbols,
      until we hit something else.  Then emit the type.  */
-  while (1)
+  next = peek_char (dm);
+  if (next == 'P')
     {
-      next = peek_char (dm);
-      if (next == 'P')
-	{
-	  if (!dyn_string_append_char (symbols, '*'))
-	    return STATUS_ALLOCATION_FAILED;
-	  advance_char (dm);
-	}
-      else if (next == 'R')
-	{
-	  if (!dyn_string_append_char (symbols, '&'))
-	    return STATUS_ALLOCATION_FAILED;
-	  advance_char (dm);
-	}
-      else if (next == 'M')
-	{
-	  /* Pointer-to-member.  */
-	  dyn_string_t class_type;
-
-	  /* Eat the 'M'.  */
-	  advance_char (dm);
-
-	  /* Capture the type of which this is a pointer-to-member.  */
-	  RETURN_IF_ERROR (result_push (dm));
-	  RETURN_IF_ERROR (demangle_type (dm));
-	  class_type = (dyn_string_t) result_pop (dm);
-
-	  /* Build the pointer-to-member notation.  It comes before
-	     other pointer and reference qualifiers -- */
-	  if (!dyn_string_prepend_cstr (symbols, "::*"))
-	    return STATUS_ALLOCATION_FAILED;
-	  if (!dyn_string_prepend (symbols, class_type))
-	    return STATUS_ALLOCATION_FAILED;
-	  dyn_string_delete (class_type);
-
-	  if (peek_char (dm) == 'F')
-	    continue;
-
-	  /* Demangle the type of the pointed-to member.  */
+      /* A pointer.  Snarf the `P'.  */
+      advance_char (dm);
+      /* Demangle the underlying type.  */
+      RETURN_IF_ERROR (demangle_type_ptr (dm, insert_pos, 
+					  substitution_start));
+      /* Insert an asterisk where we're told to; it doesn't
+	 necessarily go at the end.  */
+      RETURN_IF_ERROR (result_insert_char (dm, *insert_pos, '*'));
+    }
+  else if (next == 'R')
+    {
+      /* A reference.  Snarf the `R'.  */
+      advance_char (dm);
+      /* Demangle the underlying type.  */
+      RETURN_IF_ERROR (demangle_type_ptr (dm, insert_pos, 
+					  substitution_start));
+      /* Insert an ampersand where we're told to; it doesn't
+	 necessarily go at the end.  */
+      RETURN_IF_ERROR (result_insert_char (dm, *insert_pos, '&'));
+    }
+  else if (next == 'M')
+    {
+      /* A pointer-to-member.  */
+      dyn_string_t class_type;
+      
+      /* Eat the 'M'.  */
+      advance_char (dm);
+      
+      /* Capture the type of which this is a pointer-to-member.  */
+      RETURN_IF_ERROR (result_push (dm));
+      RETURN_IF_ERROR (demangle_type (dm));
+      class_type = (dyn_string_t) result_pop (dm);
+      
+      if (peek_char (dm) == 'F')
+	/* A pointer-to-member function.  We want output along the
+	   lines of `void (C::*) (int, int)'.  Demangle the function
+	   type, which would in this case give `void () (int, int)'
+	   and set *insert_pos to the spot between the first
+	   parentheses.  */
+	status = demangle_type_ptr (dm, insert_pos, substitution_start);
+      else
+        {
+	  /* A pointer-to-member variable.  Demangle the type of the
+             pointed-to member.  */
 	  status = demangle_type (dm);
 	  /* Make it pretty.  */
 	  if (STATUS_NO_ERROR (status))
 	    status = result_append_space (dm);
-	  /* Add the pointer-to-member syntax, and other pointer and
-	     reference symbols.  */
-	  if (STATUS_NO_ERROR (status))
-	    status = result_append_string (dm, symbols);
-	  /* Clean up.  */
-	  dyn_string_delete (symbols);
-
-	  RETURN_IF_ERROR (status);
-	  return STATUS_OK;
+	  /* The pointer-to-member notation (e.g. `C::*') follows the
+             member's type.  */
+	  *insert_pos = result_length (dm);
 	}
-      else if (next == 'F')
-	{
-	  /* Ooh, tricky, a pointer-to-function.  */
-	  int position = result_length (dm);
-	  status = result_append_char (dm, '(');
-	  if (STATUS_NO_ERROR (status))
-	    status = result_append_string (dm, symbols);
-	  if (STATUS_NO_ERROR (status))
-	    status = result_append_char (dm, ')');
-	  dyn_string_delete (symbols);
-	  RETURN_IF_ERROR (status);
 
-	  RETURN_IF_ERROR (demangle_function_type (dm, position));
-	  return STATUS_OK;
-	}
-      else
-	{
-	  /* No more pointer or reference tokens.  Finish up.  */
-	  status = demangle_type (dm);
+      /* Build the pointer-to-member notation.  */
+      if (STATUS_NO_ERROR (status))
+	status = result_insert (dm, *insert_pos, "::*");
+      if (STATUS_NO_ERROR (status))
+	status = result_insert_string (dm, *insert_pos, class_type);
+      /* There may be additional levels of (pointer or reference)
+	 indirection in this type.  If so, the `*' and `&' should be
+	 added after the pointer-to-member notation (e.g. `C::*&' for
+	 a reference to a pointer-to-member of class C).  */
+      *insert_pos += dyn_string_length (class_type) + 3;
 
-	  if (STATUS_NO_ERROR (status))
-	    status = result_append_string (dm, symbols);
-	  dyn_string_delete (symbols);
+      /* Clean up. */
+      dyn_string_delete (class_type);
 
-	  RETURN_IF_ERROR (status);
-	  return STATUS_OK;
-	}
+      RETURN_IF_ERROR (status);
     }
+  else if (next == 'F')
+    {
+      /* Ooh, tricky, a pointer-to-function.  When we demangle the
+	 function type, the return type should go at the very
+	 beginning.  */
+      *insert_pos = result_length (dm);
+      /* The parentheses indicate this is a function pointer or
+	 reference type.  */
+      RETURN_IF_ERROR (result_append (dm, "()"));
+      /* Now demangle the function type.  The return type will be
+	 inserted before the `()', and the argument list will go after
+	 it.  */
+      RETURN_IF_ERROR (demangle_function_type (dm, insert_pos));
+      /* We should now have something along the lines of 
+	 `void () (int, int)'.  The pointer or reference characters
+	 have to inside the first set of parentheses.  *insert_pos has
+	 already been updated to point past the end of the return
+	 type.  Move it one character over so it points inside the
+	 `()'.  */
+      ++(*insert_pos);
+    }
+  else
+    {
+      /* No more pointer or reference tokens; this is therefore a
+	 pointer to data.  Finish up by demangling the underlying
+	 type.  */
+      RETURN_IF_ERROR (demangle_type (dm));
+      /* The pointer or reference characters follow the underlying
+	 type, as in `int*&'.  */
+      *insert_pos = result_length (dm);
+      /* Because of the production <type> ::= <substitution>,
+	 demangle_type will already have added the underlying type as
+	 a substitution candidate.  Don't do it again.  */
+      is_substitution_candidate = 0;
+    }
+  
+  if (is_substitution_candidate)
+    RETURN_IF_ERROR (substitution_add (dm, substitution_start, 0));
+  
+  return STATUS_OK;
 }
 
 /* Demangles and emits a <type>.  
@@ -1965,7 +2034,7 @@ demangle_type (dm)
   char peek_next;
   int template_p = 0;
   template_arg_list_t old_arg_list = current_template_arg_list (dm);
-  int template_parm = NOT_TEMPLATE_PARM;
+  int insert_pos;
 
   /* A <type> can be a <substitution>; therefore, this <type> is a
      substitution candidate unless a special condition holds (see
@@ -2040,7 +2109,7 @@ demangle_type (dm)
 	/* It's either a <template-param> or a
 	   <template-template-param>.  In either case, demangle the
 	   `T' token first.  */
-	RETURN_IF_ERROR (demangle_template_param (dm, &template_parm));
+	RETURN_IF_ERROR (demangle_template_param (dm));
 
 	/* Check for a template argument list; if one is found, it's a
 	     <template-template-param> ::= <template-param>
@@ -2050,8 +2119,7 @@ demangle_type (dm)
 	    /* Add a substitution candidate.  The template parameter
 	       `T' token is a substitution candidate by itself,
 	       without the template argument list.  */
-	    RETURN_IF_ERROR (substitution_add (dm, start, template_p, 
-					       template_parm));
+	    RETURN_IF_ERROR (substitution_add (dm, start, template_p));
 
 	    /* Now demangle the template argument list.  */
 	    RETURN_IF_ERROR (demangle_template_args (dm));
@@ -2077,23 +2145,27 @@ demangle_type (dm)
 	       them.  */
 	    if (peek_char (dm) == 'I')
 	      RETURN_IF_ERROR (demangle_template_args (dm));
-
-	    /* A substitution token is not itself a substitution
-	       candidate.  */
-	    is_substitution_candidate = 0;
+	    else
+	      /* A substitution token is not itself a substitution
+		 candidate.  (However, if the substituted template is
+		 instantiated, the resulting type is.)  */
+	      is_substitution_candidate = 0;
 	  }
 	else
 	  /* While the special substitution token itself is not a
 	     substitution candidate, the <class-enum-type> is, so
 	     don't clear is_substitution_candidate.  */
-	  demangle_class_enum_type (dm, &template_p);
+	  RETURN_IF_ERROR (demangle_class_enum_type (dm, &template_p));
 
 	break;
 
       case 'P':
       case 'R':
       case 'M':
-	RETURN_IF_ERROR (demangle_type_ptr (dm));
+	RETURN_IF_ERROR (demangle_type_ptr (dm, &insert_pos, start));
+	/* demangle_type_ptr adds all applicable substitution
+	   candidates.  */
+	is_substitution_candidate = 0;
 	break;
 
       case 'C':
@@ -2111,7 +2183,7 @@ demangle_type (dm)
 	break;
 
       case 'U':
-	/* Vendor extended type qualifier.  */
+	/* Vendor-extended type qualifier.  */
 	advance_char (dm);
 	RETURN_IF_ERROR (demangle_source_name (dm));
 	RETURN_IF_ERROR (result_append_char (dm, ' '));
@@ -2127,7 +2199,7 @@ demangle_type (dm)
        <template-param>, pass its index since from the point of
        substitutions; a <template-param> token is a substitution
        candidate distinct from the type that is substituted for it.  */
-    RETURN_IF_ERROR (substitution_add (dm, start, template_p, template_parm));
+    RETURN_IF_ERROR (substitution_add (dm, start, template_p));
 
   /* Pop off template argument lists added during mangling of this
      type.  */
@@ -2266,16 +2338,18 @@ demangle_CV_qualifiers (dm, qualifiers)
     }
 }
 
-/* Demangles and emits a <function-type> FUNCTION_NAME_POS is the
+/* Demangles and emits a <function-type>.  *FUNCTION_NAME_POS is the
    position in the result string of the start of the function
-   identifier, at which the function's return type will be inserted.  
+   identifier, at which the function's return type will be inserted;
+   *FUNCTION_NAME_POS is updated to position past the end of the
+   function's return type.
 
     <function-type> ::= F [Y] <bare-function-type> E  */
 
 static status_t
 demangle_function_type (dm, function_name_pos)
      demangling_t dm;
-     int function_name_pos;
+     int *function_name_pos;
 {
   DEMANGLE_TRACE ("function-type", dm);
   RETURN_IF_ERROR (demangle_char (dm, 'F'));  
@@ -2301,7 +2375,7 @@ demangle_function_type (dm, function_name_pos)
 static status_t
 demangle_bare_function_type (dm, return_type_pos)
      demangling_t dm;
-     int return_type_pos;
+     int *return_type_pos;
 {
   /* Sequence is the index of the current function parameter, counting
      from zero.  The value -1 denotes the return type.  */
@@ -2326,10 +2400,16 @@ demangle_bare_function_type (dm, return_type_pos)
 
 	  /* Add a space to the end of the type.  Insert the return
              type where we've been asked to. */
-	  if (!dyn_string_append_space (return_type) 
-	      || !dyn_string_insert (result_string (dm), return_type_pos, 
-				     return_type))
+	  if (!dyn_string_append_space (return_type))
 	    status = STATUS_ALLOCATION_FAILED;
+	  if (STATUS_NO_ERROR (status))
+	    {
+	      if (!dyn_string_insert (result_string (dm), *return_type_pos, 
+				      return_type))
+		status = STATUS_ALLOCATION_FAILED;
+	      else
+		*return_type_pos += dyn_string_length (return_type);
+	    }
 
 	  dyn_string_delete (return_type);
 	  RETURN_IF_ERROR (status);
@@ -2436,16 +2516,14 @@ demangle_array_type (dm)
   return STATUS_OK;
 }
 
-/* Demangles and emits a <template-param>.  The zero-indexed position
-   in the parameter list is placed in *TEMPLATE_PARM_NUMBER.  
+/* Demangles and emits a <template-param>.  
 
     <template-param> ::= T_       # first template parameter
                      ::= T <parameter-2 number> _  */
 
 static status_t
-demangle_template_param (dm, template_parm_number)
+demangle_template_param (dm)
      demangling_t dm;
-     int *template_parm_number;
 {
   int parm_number;
   template_arg_list_t current_arg_list = current_template_arg_list (dm);
@@ -2475,7 +2553,6 @@ demangle_template_param (dm, template_parm_number)
     return "Template parameter number out of bounds.";
   RETURN_IF_ERROR (result_append_string (dm, (dyn_string_t) arg));
 
-  *template_parm_number = parm_number;
   return STATUS_OK;
 }
 
@@ -2784,12 +2861,11 @@ demangle_expr_primary (dm)
      demangling_t dm;
 {
   char peek = peek_char (dm);
-  int unused;
 
   DEMANGLE_TRACE ("expr-primary", dm);
 
   if (peek == 'T')
-    RETURN_IF_ERROR (demangle_template_param (dm, &unused));
+    RETURN_IF_ERROR (demangle_template_param (dm));
   else if (peek == 'L')
     {
       /* Consume the `L'.  */
@@ -2826,7 +2902,7 @@ demangle_expr_primary (dm)
                     ::= So   # ::std::basic_ostream<char,  
                                                     std::char_traits<char> >
                     ::= Sd   # ::std::basic_iostream<char, 
-                                                     std::char_traits<char> >
+                                                    std::char_traits<char> >
 */
 
 static status_t
@@ -3297,7 +3373,8 @@ static void print_usage
 
 /* Non-zero if CHAR is a character than can occur in a mangled name.  */
 #define is_mangled_char(CHAR)                                           \
-  (IS_ALPHA (CHAR) || IS_DIGIT (CHAR) || (CHAR) == '_')
+  (IS_ALPHA (CHAR) || IS_DIGIT (CHAR)                                   \
+   || (CHAR) == '_' || (CHAR) == '.' || (CHAR) == '$')
 
 /* The name of this program, as invoked.  */
 const char* program_name;

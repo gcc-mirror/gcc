@@ -59,6 +59,7 @@ typedef struct dyn_string
 #define dyn_string_prepend_cstr         __cxa_dyn_string_prepend_cstr
 #define dyn_string_insert               __cxa_dyn_string_insert
 #define dyn_string_insert_cstr          __cxa_dyn_string_insert_cstr
+#define dyn_string_insert_char          __cxa_dyn_string_insert_char
 #define dyn_string_append               __cxa_dyn_string_append
 #define dyn_string_append_cstr          __cxa_dyn_string_append_cstr
 #define dyn_string_append_char          __cxa_dyn_string_append_char
@@ -82,11 +83,10 @@ extern int dyn_string_insert            PARAMS ((dyn_string_t, int,
 						 dyn_string_t));
 extern int dyn_string_insert_cstr       PARAMS ((dyn_string_t, int,
 						 const char *));
+extern int dyn_string_insert_char       PARAMS ((dyn_string_t, int, int));
 extern int dyn_string_append            PARAMS ((dyn_string_t, dyn_string_t));
-extern int dyn_string_append_cstr   
-                                        PARAMS ((dyn_string_t, const char *));
-extern int dyn_string_append_char
-                                        PARAMS ((dyn_string_t, int));
+extern int dyn_string_append_cstr       PARAMS ((dyn_string_t, const char *));
+extern int dyn_string_append_char       PARAMS ((dyn_string_t, int));
 extern int dyn_string_substring         PARAMS ((dyn_string_t, 
 						 dyn_string_t, int, int));
 extern int dyn_string_eq                PARAMS ((dyn_string_t, dyn_string_t));

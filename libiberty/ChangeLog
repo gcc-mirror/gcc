@@ -1,3 +1,35 @@
+2000-09-03  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c (ANONYMOUS_NAMESPACE_PREFIX): New macro.
+	(substitution_def): Remove template_parm_number.
+	(NOT_TEMPLATE_PARM): Remove.
+	(result_insert_string): New macro.
+	(result_insert): Likewise.
+	(result_insert_char): Likewise.
+	(substitution_add): Remove last parameter.  Don't store template
+	parm number. 
+	(BFT_NO_RETURN_TYPE): Define as NULL.
+	(demangle_encoding): Adjust call to demangle_bare_function_type.
+	(demangle_name): Adjust substitution.  Adjust call to
+	substitution_add. 
+	(demangle_prefix): Adjust call to substitution_add.
+	(demangle_identifier): Handle anonymous namespaces.
+	(demangle_operator_name): Change demangling of vendor-extended
+	operator to match ABI changes.
+	(demangle_type_ptr): Change parameters.  Make recursive.  Handle
+	substitutions here.  
+	(demangle_type): Adjust calls to demangle_template_param,
+	substitution_add, and demangle_type_ptr.  Fix substitution of
+	templated types.
+	(demangle_function_type): Change parameter to a pointer.
+	(demangle_bare_function_type): Likewise.  Adjust insertion point.
+	(demangle_template_param): Remove last parameter.
+	(demangle_expr_primary): Remove unused variable.  Adjust call to
+	demangle_template_param. 
+	(is_mangled_char): Accept `$' and `.'.
+	* cplus-dem.c (gnu_new_abi_symbol_characters): Add '$' and '.'.
+	* dyn-string.c (dyn_string_insert_char): New function.
+
 2000-08-31  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/demangle-expected: Add nine tests for
