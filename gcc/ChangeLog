@@ -1,3 +1,18 @@
+Fri Mar  9 19:37:46 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Set to 128bit for x86_64
+	(BOOL_TYPE_SIZE, SHORT_TYPE_SIZE, INT_TYPE_SIZE,
+	 FLOAT_TYPE_SIZE, LONG_TYPE_SIZE, MAX_LONG_TYPE_SIZE,
+	 DOUBLE_TYPE_SIZE, LONG_LONG_TYPE_SIZE): New constants.
+	(BITS_PER_WORD, UNITS_PER_WORD, POINTER_SIZE, PARM_BOUNDARY,
+	 STACK_BOUNDARY): Set properly for 64bits.
+	(MAX_BITS_PER_WORD, MIN_UNITS_PER_WORD): New constants.
+	(EMPTY_FIELD_BOUNDARY): Define using BITS_PER_WORD.
+	(BIGGEST_FIELD_ALIGNMENT): Set to 128 for 64bits.
+	(MOVE_MAX): Set to 16.
+	(MOVE_MAX_PIECES): 8 for 64bit.
+	(Pmode): Set to SImode.
+
 Fri Mar  9 09:00:36 2001  Mike Stump  <mrs@wrs.com>
 
 	* cselib.c (hash_rtx): Ensure that hash isn't zero upon return.

@@ -511,10 +511,23 @@ extern int ix86_arch;
  */
 #define LONG_DOUBLE_TYPE_SIZE (TARGET_128BIT_LONG_DOUBLE ? 128 : 96)
 #define MAX_LONG_DOUBLE_TYPE_SIZE 128
+#ifdef __x86_64__
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
+#else
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 96
+#endif
 /* Tell real.c that this is the 80-bit Intel extended float format
    packaged in a 128-bit or 96bit entity.  */
 #define INTEL_EXTENDED_IEEE_FORMAT
 
+
+#define SHORT_TYPE_SIZE 16
+#define INT_TYPE_SIZE 32
+#define FLOAT_TYPE_SIZE 32
+#define LONG_TYPE_SIZE BITS_PER_WORD
+#define MAX_LONG_TYPE_SIZE 64
+#define DOUBLE_TYPE_SIZE 64
+#define LONG_LONG_TYPE_SIZE 64
 
 /* Define if you don't want extended real, but do want to use the
    software floating point emulator for REAL_ARITHMETIC and
@@ -542,20 +555,22 @@ extern int ix86_arch;
    Note that this is not necessarily the width of data type `int';
    if using 16-bit ints on a 80386, this would still be 32.
    But on a machine with 16-bit registers, this would be 16.  */
-#define BITS_PER_WORD 32
+#define BITS_PER_WORD (TARGET_64BIT ? 64 : 32)
+#define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */
-#define UNITS_PER_WORD 4
+#define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
+#define MIN_UNITS_PER_WORD 4
 
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE 32
+#define POINTER_SIZE BITS_PER_WORD
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
-#define PARM_BOUNDARY 32
+#define PARM_BOUNDARY BITS_PER_WORD
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
-#define STACK_BOUNDARY 32
+#define STACK_BOUNDARY BITS_PER_WORD
 
 /* Boundary (in *bits*) on which the stack pointer preferrs to be
    aligned; the compiler cannot rely on having this alignment.  */
@@ -567,7 +582,7 @@ extern int ix86_arch;
 
 /* Alignment of field after `int : 0' in a structure. */
 
-#define EMPTY_FIELD_BOUNDARY 32
+#define EMPTY_FIELD_BOUNDARY BITS_PER_WORD
 
 /* Minimum size in bits of the largest boundary to which any
    and all fundamental data types supported by the hardware
@@ -590,7 +605,7 @@ extern int ix86_arch;
 /* BIGGEST_FIELD_ALIGNMENT is also used in libobjc, where it must be
    constant.  Use the smaller value in that context.  */
 #ifndef IN_TARGET_LIBS
-#define BIGGEST_FIELD_ALIGNMENT (TARGET_ALIGN_DOUBLE ? 64 : 32)
+#define BIGGEST_FIELD_ALIGNMENT (TARGET_64BIT ? 128 : (TARGET_ALIGN_DOUBLE ? 64 : 32))
 #else
 #define BIGGEST_FIELD_ALIGNMENT 32
 #endif
@@ -2127,7 +2142,12 @@ while (0)
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
-#define MOVE_MAX 4
+#define MOVE_MAX 16
+
+/* MOVE_MAX_PIECES is the number of bytes at a time which we can
+   move efficiently, as opposed to  MOVE_MAX which is the maximum
+   number of bytes we can move with a single instruction. */
+#define MOVE_MAX_PIECES (TARGET_64BIT ? 8 : 4)
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
    move-instruction pairs, we will do a movstr or libcall instead.
@@ -2175,7 +2195,7 @@ while (0)
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode SImode
+#define Pmode (TARGET_64BIT ? DImode : SImode)
 
 /* A function address in a call instruction
    is a byte address (for indexing purposes)
