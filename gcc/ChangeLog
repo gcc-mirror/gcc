@@ -1,3 +1,8 @@
+2000-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* stor-layout.c (layout_type): If TYPE_ALIAS_SET was already set on the
+	incomplete type force it into alias set 0.
+
 Wed Oct 25 01:02:44 EDT 2000  John Wehle  (john@feith.com)
 
 	* alias.c: Include basic-block.h.

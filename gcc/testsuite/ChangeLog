@@ -1,3 +1,7 @@
+2000-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20001024-1.c: New test.
+
 2000-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.other/sibcall1.C: New test.
