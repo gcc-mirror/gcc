@@ -2941,7 +2941,7 @@ init_decl_processing ()
 		    tree_cons (NULL_TREE,
 			       ptr_type_node,
 			       tree_cons (NULL_TREE,
-					  integer_type_node,
+					  sizetype,
 					  endlink)));
   builtin_function ("__builtin_apply",
 		    build_function_type (ptr_type_node, temp),
