@@ -725,6 +725,7 @@ fix = {
 fix = {
     hackname = limits_ifndefs;
     files  = "limits.h";
+    files  = "sys/limits.h";
     bypass = "ifndef[ \t]+FLT_MIN";
 
     sed  = "/[ \t]FLT_MIN[ \t]/i\\\n#ifndef FLT_MIN\n";

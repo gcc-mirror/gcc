@@ -1275,7 +1275,8 @@ struct __file_s;
     #
     # Fix  40:  Limits_Ifndefs
     #
-    case "${file}" in ./limits.h )
+    case "${file}" in ./limits.h | \
+	./sys/limits.h )
     if ( test -z "`egrep 'ifndef[ 	]+FLT_MIN' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
