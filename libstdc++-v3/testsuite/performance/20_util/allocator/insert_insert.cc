@@ -171,20 +171,32 @@ int main(void)
 #endif
 
   typedef less<test_type> compare_type;
+  typedef pair<const test_type, test_type> pair_type;
+  typedef __gnu_cxx::malloc_allocator<pair_type> m_pair_alloc_type;
+  typedef __gnu_cxx::new_allocator<pair_type> n_pair_alloc_type;
+  typedef __gnu_cxx::__mt_alloc<pair_type> so_pair_alloc_type;
+  typedef __gnu_cxx::bitmap_allocator<pair_type> bit_pair_alloc_type;
+  typedef __gnu_cxx::__pool_alloc<pair_type> po_pair_alloc_type;
+
 #ifdef TEST_S15
-  test_container(map<test_type, test_type, compare_type, m_alloc_type>());
+  test_container(map<test_type, test_type, compare_type,
+		 m_pair_alloc_type>());
 #endif
 #ifdef TEST_S16
-  test_container(map<test_type, test_type, compare_type, n_alloc_type>());
+  test_container(map<test_type, test_type, compare_type,
+		 n_pair_alloc_type>());
 #endif
 #ifdef TEST_S17
-  test_container(map<test_type, test_type, compare_type, so_alloc_type>());
+  test_container(map<test_type, test_type, compare_type,
+		 so_pair_alloc_type>());
 #endif
 #ifdef TEST_S18
-  test_container(map<test_type, test_type, compare_type, bit_alloc_type>());
+  test_container(map<test_type, test_type, compare_type,
+		 bit_pair_alloc_type>());
 #endif
 #ifdef TEST_S19
-  test_container(map<test_type, test_type, compare_type, po_alloc_type>());
+  test_container(map<test_type, test_type, compare_type,
+		 po_pair_alloc_type>());
 #endif
 
 #ifdef TEST_S20

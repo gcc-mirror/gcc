@@ -1,5 +1,18 @@
 2004-08-19  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/performance/20_util/allocator/insert.cc: For std::map
+	instantiate the allocator for a correct pair type.
+	* testsuite/performance/20_util/allocator/insert_insert.cc: Likewise.
+	* testsuite/performance/20_util/allocator/map_thread.cc: Likewise.
+	* testsuite/performance/20_util/allocator/producer_consumer.cc:
+	Likewise.
+
+	* testsuite/performance/20_util/allocator/list_sort_search.cc: Very
+	minor formatting fixes.
+	* testsuite/performance/20_util/allocator/map_mt_find.cc: Likewise.
+
+2004-08-19  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/22_locale/time_put/put/char/1.cc: Add VERIFY on the
 	results.
 	* testsuite/22_locale/time_put/put/char/2.cc: Likewise.

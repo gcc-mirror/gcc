@@ -28,17 +28,16 @@
 // 2004-03-11  Dhruv Matani  <dhruvbird@HotPOP.com>
 
 #include <list>
-#include <map>
 #include <algorithm>
 #include <cstdlib>
 #include <typeinfo>
 #include <sstream>
 #include <ext/mt_allocator.h>
 #include <ext/malloc_allocator.h>
-#include <cxxabi.h>
-#include <testsuite_performance.h>
 #include <ext/bitmap_allocator.h>
 #include <ext/pool_allocator.h>
+#include <cxxabi.h>
+#include <testsuite_performance.h>
 
 using namespace std;
 using __gnu_cxx::malloc_allocator;
