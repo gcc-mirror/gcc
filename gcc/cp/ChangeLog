@@ -1,3 +1,10 @@
+Mon Mar 15 21:57:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * lex.c: Don't include setjmp.h.
+	(parse_float): New static function.
+	(pf_args): New struct.
+	(real_yylex): Use them in call to `do_float_handler'.
+
 1999-03-15  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (xref_basetypes): Set CLASSTYPE_VBASECLASSES here.
