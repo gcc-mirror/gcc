@@ -120,6 +120,7 @@ extern short *reg_renumber;	/* def in local_alloc.c */
 #define MASK_M6811              0010
 #define MASK_M6812              0020
 #define MASK_NO_DIRECT_MODE     0040
+#define MASK_MIN_MAX            0100
 #define MASK_LONG_CALLS         0200
 
 #define TARGET_OP_TIME		(optimize && optimize_size == 0)
@@ -127,6 +128,7 @@ extern short *reg_renumber;	/* def in local_alloc.c */
 #define TARGET_M6811            (target_flags & MASK_M6811)
 #define TARGET_M6812            (target_flags & MASK_M6812)
 #define TARGET_AUTO_INC_DEC     (target_flags & MASK_AUTO_INC_DEC)
+#define TARGET_MIN_MAX          (target_flags & MASK_MIN_MAX)
 #define TARGET_NO_DIRECT_MODE   (target_flags & MASK_NO_DIRECT_MODE)
 #define TARGET_RELAX            (TARGET_NO_DIRECT_MODE)
 #define TARGET_LONG_CALLS       (target_flags & MASK_LONG_CALLS)
@@ -162,6 +164,10 @@ extern short *reg_renumber;	/* def in local_alloc.c */
     N_("Auto pre/post decrement increment allowed")},		\
   { "noauto-incdec", - MASK_AUTO_INC_DEC,			\
     N_("Auto pre/post decrement increment not allowed")},	\
+  { "inmax", MASK_MIN_MAX,                                     \
+    N_("Min/max instructions allowed")},                        \
+  { "nominmax", MASK_MIN_MAX,                                   \
+    N_("Min/max instructions not allowed")},                    \
   { "long-calls", MASK_LONG_CALLS,				\
     N_("Use call and rtc for function calls and returns")},	\
   { "nolong-calls", - MASK_LONG_CALLS,				\

@@ -1,5 +1,17 @@
 2002-08-14  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* doc/invoke.texi: Document -minmax for 68HC12.
+
+	* config/m68hc11/m68hc11.md ("umaxqi3"): Use TARGET_MIN_MAX.
+	("uminqi3"): Likewise.
+	("uminhi3", "umaxhi3"): Likewise.
+
+	* config/m68hc11/m68hc11.h (MASK_MIN_MAX): Define.
+	(TARGET_MIN_MAX): Define.
+	(TARGET_SWITCHES): New option -minmax/-mnominmax.
+
+2002-08-14  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/t-m68hc11-gas (LIB1ASMFUNCS): Build __far_trampoline.
 	(MULTILIB_OPTIONS): Must also generate for -mlong-calls.
 

@@ -253,7 +253,7 @@ m68hc11_override_options ()
         target_flags &= ~TARGET_DEFAULT;
 
       if (!TARGET_M6812)
-        target_flags &= ~TARGET_AUTO_INC_DEC;
+        target_flags &= ~(TARGET_AUTO_INC_DEC | TARGET_MIN_MAX);
       m68hc11_cost = &m6811_cost;
       m68hc11_min_offset = 0;
       m68hc11_max_offset = 256;
@@ -284,7 +284,7 @@ m68hc11_override_options ()
       m68hc11_sp_correction = 0;
       m68hc11_tmp_regs_class = TMP_REGS;
       target_flags &= ~MASK_M6811;
-      target_flags |= MASK_NO_DIRECT_MODE;
+      target_flags |= MASK_NO_DIRECT_MODE | MASK_MIN_MAX;
       if (m68hc11_soft_reg_count == 0)
 	m68hc11_soft_reg_count = "0";
 
