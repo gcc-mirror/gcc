@@ -3203,18 +3203,12 @@
 ;; For all later processors.
 (define_insn "casesi_jump_2"
   [(set (pc) (plus:SI (match_operand:SI 0 "register_operand" "r")
-		      (match_operand 1 "braf_label_ref_operand" "")))
+		      (label_ref (match_operand 1 "" ""))))
    (use (label_ref (match_operand 2 "" "")))]
-  ""
+  "! INSN_UID (operands[1]) || prev_real_insn (operands[1]) == insn"
   "braf	%0%#"
   [(set_attr "needs_delay_slot" "yes")
    (set_attr "type" "jump_ind")])
-
-(define_insn "dummy_jump"
-  [(set (pc) (const_int 0))]
-  ""
-  ""
-  [(set_attr "length" "0")])
 
 ;; Call subroutine returning any type.
 ;; ??? This probably doesn't work.
@@ -3302,20 +3296,9 @@
 			   reg));
   emit_insn (gen_casesi_worker_0 (reg2, reg, operands[3]));
   if (TARGET_SH2)
-    {
-      rtx lab = gen_label_rtx ();
-      emit_jump_insn (gen_casesi_jump_2 (reg2,
-					 gen_rtx (LABEL_REF, VOIDmode, lab),
-					 operands[3]));
-      emit_label (lab);
-      /* Put a fake jump after the label, lest some optimization might
-	 delete the barrier and LAB.  */
-      emit_jump_insn (gen_dummy_jump ());
-    }
+    emit_jump_insn (gen_casesi_jump_2 (reg2, gen_label_rtx (), operands[3]));
   else
-    {
-      emit_jump_insn (gen_casesi_jump_1 (reg2, operands[3]));
-    }
+    emit_jump_insn (gen_casesi_jump_1 (reg2, operands[3]));
   /* For SH2 and newer, the ADDR_DIFF_VEC is not actually relative to
      operands[3], but to lab.  We will fix this up in
      machine_dependent_reorg.  */

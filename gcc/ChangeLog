@@ -3,6 +3,16 @@ Sun Aug  1 22:46:42 1999  Jeffrey A Law  (law@cygnus.com)
 	* m68k.c (output_function_prologue): Fix typo in CPU32 case.
 	(output_function_epilogue): Similarly.
 
+	Fri Jun  4 03:20:40 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+	* sh.c (fixup_addr_diff_vecs): Emit braf reference label.
+	(braf_label_ref_operand): Delete.
+	* sh.h (PREDICATE_CODES): Remove braf_label_ref_operand.
+	* sh.md (casesi_jump_2): Operand1 is now the inside of a
+	label_ref, and has no predicate.
+	The patten has a predicate to guard against invalid substitutions.
+	(dummy_jump): Delete.
+	(casesi): Update use of casesi_jump_2.
+
 Thu Jul 31 12:34:45 1999  Joe Buck  <jbuck@synopsys.com>
 
 	* gcc.texi: Use terms "GNU Compiler Collection" and "GCC".
