@@ -1,3 +1,8 @@
+2003-01-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (HARD_REGNO_MODE_OK): Fix warning regression
+	introduced by last change.
+
 2003-01-22  Andreas Schwab  <schwab@suse.de>
 
 	* ra-rewrite.c (rewrite_program2): Initialize bb to avoid warning.
