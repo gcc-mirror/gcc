@@ -5700,7 +5700,6 @@ tsubst_decl (t, args, type, in_decl)
 
 	DECL_ARGUMENTS (r) = tsubst (DECL_ARGUMENTS (t), args,
 				     /*complain=*/1, t);
-	DECL_MAIN_VARIANT (r) = r;
 	DECL_TEMPLATE_RESULT (r) = NULL_TREE;
 
 	TREE_STATIC (r) = 0;

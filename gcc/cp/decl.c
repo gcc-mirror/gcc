@@ -3632,8 +3632,6 @@ duplicate_decls (newdecl, olddecl)
 	  if (DECL_ARGUMENTS (olddecl))
 	    DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
 	}
-      if (DECL_LANG_SPECIFIC (olddecl))
-	DECL_MAIN_VARIANT (newdecl) = DECL_MAIN_VARIANT (olddecl);
     }
 
   if (TREE_CODE (newdecl) == NAMESPACE_DECL)
@@ -13393,7 +13391,6 @@ start_function (declspecs, declarator, attrs, flags)
 	  /* And make sure we have enough default args.  */
 	  check_default_args (decl1);
 	}
-      DECL_MAIN_VARIANT (decl1) = decl1;
       fntype = TREE_TYPE (decl1);
     }
 
@@ -14767,7 +14764,6 @@ lang_mark_tree (t)
 	    mark_binding_level (&NAMESPACE_LEVEL (t));
 	  if (CAN_HAVE_FULL_LANG_DECL_P (t))
 	    {
-	      ggc_mark_tree (ld->main_decl_variant);
 	      ggc_mark_tree (ld->befriending_classes);
 	      ggc_mark_tree (ld->saved_tree);
 	      if (TREE_CODE (t) == TYPE_DECL)

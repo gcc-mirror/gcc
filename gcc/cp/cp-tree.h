@@ -1892,7 +1892,6 @@ struct lang_decl
 {
   struct lang_decl_flags decl_flags;
 
-  tree main_decl_variant;
   tree befriending_classes;
 
   /* In a FUNCTION_DECL, this is DECL_SAVED_TREE.  */
@@ -2106,9 +2105,6 @@ struct lang_decl
 /* In a VAR_DECL for a variable declared in a for statement,
    this is the shadowed (local) variable.  */
 #define DECL_SHADOWED_FOR_VAR(NODE) DECL_RESULT_FLD(VAR_DECL_CHECK (NODE))
-
-/* Points back to the decl which caused this lang_decl to be allocated.  */
-#define DECL_MAIN_VARIANT(NODE) (DECL_LANG_SPECIFIC(NODE)->main_decl_variant)
 
 /* In a FUNCTION_DECL, this is nonzero if this function was defined in
    the class definition.  We have saved away the text of the function,

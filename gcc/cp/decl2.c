@@ -1982,7 +1982,6 @@ void
 defer_fn (fn)
      tree fn;
 {
-  fn = DECL_MAIN_VARIANT (fn);
   if (DECL_DEFERRED_FN (fn))
     return;
   DECL_DEFERRED_FN (fn) = 1;
