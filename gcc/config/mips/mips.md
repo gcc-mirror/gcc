@@ -1945,49 +1945,37 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"SF")
    (set_attr "length"	"1")])
 
-
-;; The optimizer doesn't deal well with truncate operators, so we completely
-;; avoid them by using define expands here.
-
-(define_expand "truncdisi2"
-  [(set (match_operand:DI 2 "register_operand" "=d")
-	(ashift:DI (match_operand:DI 1 "register_operand" "d")
-		     (const_int 32)))
-   (set (match_operand:DI 3 "register_operand" "=d")
-	(ashiftrt:DI (match_dup 2)
-		   (const_int 32)))
-   (set (match_operand:SI 0 "register_operand" "=d")
-	(subreg:SI (match_dup 3) 0))]
+;; ??? This should be a define expand.
+;; See the zero_extendsidi2 pattern.
+;; ??? We tried define expands, but they did not work.  Too many shift
+;; instructions were optimized away.  Perhaps add combiner patterns to
+;; recognize cases where shifts and truncates can be combined.
+(define_insn "truncdisi2"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(truncate:SI (match_operand:DI 1 "register_operand" "d")))]
   "TARGET_64BIT"
-  "
-{
-  operands[2] = gen_reg_rtx (DImode);
-  operands[3] = gen_reg_rtx (DImode);
-}")
+  "dsll\\t%0,%1,32\;dsra\\t%0,%0,32"
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"2")])
 
-(define_expand "truncdihi2"
-  [(set (match_operand:DI 2 "register_operand" "=d")
-	(and:DI (match_operand:DI 1 "register_operand" "d")
-		(const_int 65535)))
-   (set (match_operand:HI 0 "register_operand" "=d")
-	(subreg:HI (match_dup 2) 0))]
+(define_insn "truncdihi2"
+  [(set (match_operand:HI 0 "register_operand" "=d")
+	(truncate:HI (match_operand:DI 1 "register_operand" "d")))]
   "TARGET_64BIT"
-  "
-{
-  operands[2] = gen_reg_rtx (DImode);
-}")
+  "andi\\t%0,%1,0xffff"
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"HI")
+   (set_attr "length"	"1")])
 
-(define_expand "truncdiqi2"
-  [(set (match_operand:DI 2 "register_operand" "=d")
-	(and:DI (match_operand:DI 1 "register_operand" "d")
-		(const_int 255)))
-   (set (match_operand:QI 0 "register_operand" "=d")
-	(subreg:QI (match_dup 2) 0))]
+(define_insn "truncdiqi2"
+  [(set (match_operand:QI 0 "register_operand" "=d")
+	(truncate:QI (match_operand:DI 1 "register_operand" "d")))]
   "TARGET_64BIT"
-  "
-{
-  operands[2] = gen_reg_rtx (DImode);
-}")
+  "andi\\t%0,%1,0x00ff"
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"QI")
+   (set_attr "length"	"1")])
 
 ;;
 ;;  ....................
