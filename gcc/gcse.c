@@ -7464,7 +7464,7 @@ store_killed_in_insn (x, x_regs, insn)
 	 base of some of registers used in mem is stack pointer.  */
       for (reg = x_regs; reg; reg = XEXP (reg, 1))
 	{
-	  base = find_base_term (reg);
+	  base = find_base_term (XEXP (reg, 0));
 	  if (!base
 	      || (GET_CODE (base) == ADDRESS
 		  && GET_MODE (base) == Pmode
@@ -7830,7 +7830,6 @@ store_motion ()
       fprintf (gcse_file, "before store motion\n");
       print_rtl (gcse_file, get_insns ());
     }
-
 
   init_alias_analysis ();
 
