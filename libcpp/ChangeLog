@@ -1,5 +1,9 @@
 2005-03-14  Geoffrey Keating  <geoffk@apple.com>
 
+	* lex.c (forms_identifier_p): Disable UCNs in C89 mode.
+
+2005-03-14  Geoffrey Keating  <geoffk@apple.com>
+	
 	* init.c (cpp_create_reader): Default warn_normalize to normalized_C.
 	* charset.c: Update for new format of ucnid.h.
 	(ucn_valid_in_identifier): Update for new format of ucnid.h.

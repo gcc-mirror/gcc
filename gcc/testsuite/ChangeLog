@@ -15,6 +15,8 @@
 
 2005-03-14  Geoffrey Keating  <geoffk@apple.com>
 
+	* gcc.dg/cpp/ucnid-6.c: New.
+
 	* gcc.dg/cpp/normalize-1.c: New.
 	* gcc.dg/cpp/normalize-2.c: New.
 	* gcc.dg/cpp/normalize-3.c: New.

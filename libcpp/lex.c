@@ -476,7 +476,8 @@ forms_identifier_p (cpp_reader *pfile, int first,
     }
 
   /* Is this a syntactically valid UCN?  */
-  if (*buffer->cur == '\\'
+  if ((CPP_OPTION (pfile, cplusplus) || CPP_OPTION (pfile, c99))
+      && *buffer->cur == '\\'
       && (buffer->cur[1] == 'u' || buffer->cur[1] == 'U'))
     {
       buffer->cur += 2;
