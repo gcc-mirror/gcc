@@ -1,3 +1,8 @@
+2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (grok_op_properties): Merge conversion to void warning
+	with other silly op warnings.
+
 2000-03-08  Jason Merrill  <jason@casey.cygnus.com>
 
 	* typeck2.c (process_init_constructor): Set TREE_PURPOSE of
