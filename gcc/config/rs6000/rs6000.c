@@ -4678,29 +4678,7 @@ rs6000_va_arg (tree valist, tree type)
 	  return expand_expr (t, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 	}
       else
-	{
-	  /* Altivec arguments must be aligned to a 128-bit boundary.  */
-	  if (TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (TYPE_MODE (type)))
-	    {
-	      tree vtype = TREE_TYPE (valist);
-	      tree new_valist, modify;
-	      
-	      /* Round address up to multiple of 16.  Computes
-		 (addr+15)&~0xf.  */
-	      new_valist = fold (build (BIT_AND_EXPR, vtype,
-					fold (build (PLUS_EXPR, vtype, valist,
-						     build_int_2 (15, 0))),
-					build_int_2 (~15, -1)));
-
-	      /* Update valist.  */
-	      modify = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
-			      new_valist);
-	      TREE_SIDE_EFFECTS (modify) = 1;
-	      expand_expr (modify, const0_rtx, VOIDmode, EXPAND_NORMAL);
-	    }
-	  
-	  return std_expand_builtin_va_arg (valist, type);
-	}
+	return std_expand_builtin_va_arg (valist, type);
     }
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));

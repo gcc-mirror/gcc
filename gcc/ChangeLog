@@ -1,3 +1,8 @@
+2004-01-15  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_va_arg): No need to special-case
+	altivec operands.
+
 2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-common.h: Fix comment formatting.
