@@ -37,7 +37,6 @@ exception statement from your version. */
 
 package gnu.java.util;
 
-import java.io.*;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 

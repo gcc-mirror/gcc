@@ -232,7 +232,7 @@ public class BitwiseXORComposite
                         WritableRaster dstOut)
     {
       int aX, bX, dstX, aY, bY, dstY, width, height;
-      int xorPixel, transferType;
+      int xorPixel;
       int[] srcLine, dstLine;
 
       aX = src.getMinX();

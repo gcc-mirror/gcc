@@ -41,7 +41,6 @@ package java.awt;
 import java.awt.event.TextEvent;
 import java.awt.event.TextListener;
 import java.awt.peer.TextComponentPeer;
-import java.awt.peer.ComponentPeer;
 import java.io.Serializable;
 import java.util.EventListener;
 

@@ -38,11 +38,9 @@ exception statement from your version. */
 
 package gnu.classpath;
 
-import java.io.InputStream;
-import java.io.IOException;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URL;
 import java.security.AccessControlContext;
 import java.security.AccessController;
@@ -52,8 +50,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 
 /**
@@ -227,7 +225,6 @@ public final class ServiceFactory
   public static Iterator lookupProviders(Class spi,
                                          ClassLoader loader)
   {
-    InputStream stream;
     String resourceName;
     Enumeration urls;
 
@@ -407,7 +404,6 @@ public final class ServiceFactory
     private Object loadNextServiceProvider()
     {
       String line;
-      Class klass;
       
       if (reader == null)
         advanceReader();

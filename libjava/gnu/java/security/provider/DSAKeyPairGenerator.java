@@ -39,19 +39,17 @@ exception statement from your version. */
 package gnu.java.security.provider;
 
 import java.math.BigInteger;
-import java.security.AlgorithmParameters;
 import java.security.AlgorithmParameterGenerator;
-import java.security.KeyPairGeneratorSpi;
-import java.security.KeyPair;
-import java.security.SecureRandom;
-import java.security.InvalidParameterException;
+import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidParameterException;
+import java.security.KeyPair;
+import java.security.KeyPairGeneratorSpi;
+import java.security.SecureRandom;
 import java.security.interfaces.DSAParams;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.DSAParameterSpec;
 import java.util.Random;
-
-import gnu.java.security.util.Prime;
 
 public class DSAKeyPairGenerator extends KeyPairGeneratorSpi 
 	implements java.security.interfaces.DSAKeyPairGenerator

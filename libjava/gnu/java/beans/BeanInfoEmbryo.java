@@ -38,10 +38,17 @@ exception statement from your version. */
 
 package gnu.java.beans;
 
-import java.beans.*;
-import java.util.*;
-import gnu.java.lang.*;
-import java.lang.reflect.*;
+import java.beans.BeanDescriptor;
+import java.beans.BeanInfo;
+import java.beans.EventSetDescriptor;
+import java.beans.IndexedPropertyDescriptor;
+import java.beans.MethodDescriptor;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  ** A BeanInfoEmbryo accumulates information about a Bean

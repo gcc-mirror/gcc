@@ -37,13 +37,9 @@ exception statement from your version. */
 
 package java.lang;
 
-import java.io.Serializable;
-import java.io.PrintWriter;
 import java.io.PrintStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
 
 /**
  * Throwable is the superclass of all exceptions that can be raised.

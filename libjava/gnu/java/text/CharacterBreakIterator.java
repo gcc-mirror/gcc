@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package gnu.java.text;
 
-import java.text.BreakIterator;
 import java.text.CharacterIterator;
 
 /**
