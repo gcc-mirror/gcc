@@ -507,12 +507,12 @@ enum reg_class
   { 0x00020000, 0x00000000 }, /* PR_REGS	*/	\
   { 0x00040000, 0x00000000 }, /* T_REGS		*/	\
   { 0x00300000, 0x00000000 }, /* MAC_REGS	*/	\
-  { 0x0001FFFF, 0x00000000 }, /* GENERAL_REGS	*/	\
+  { 0x0081FFFF, 0x00000000 }, /* GENERAL_REGS	*/	\
   { 0x00400000, 0x00000000 }, /* FPUL_REGS	*/	\
   { 0x01000000, 0x00000000 }, /* FP0_REGS	*/	\
   { 0xFF000000, 0x000000FF }, /* FP_REGS	*/	\
-  { 0xFF01FFFF, 0x000000FF }, /* GENERAL_FP_REGS */	\
-  { 0xFF7FFFFF, 0x000000FF }, /* ALL_REGS	*/	\
+  { 0xFF81FFFF, 0x000000FF }, /* GENERAL_FP_REGS */	\
+  { 0xFFFFFFFF, 0x000000FF }, /* ALL_REGS	*/	\
 }
 
 /* The same information, inverted:
