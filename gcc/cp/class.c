@@ -2122,14 +2122,9 @@ method_name_cmp (m1, m2)
    list.  That allows them to be quickly deleted, and requires no
    extra storage.
 
-   If there are any constructors/destructors, they are moved to the
-   front of the list.  This makes pushclass more efficient.
-
-   @@ The above comment is obsolete.  It mostly describes what add_method
-   @@ and add_implicitly_declared_members do.
-
-   Sort methods that are not special (i.e., constructors, destructors, and
-   type conversion operators) so that we can find them faster in search.  */
+   Sort methods that are not special (i.e., constructors, destructors,
+   and type conversion operators) so that we can find them faster in
+   search.  */
 
 static void
 finish_struct_methods (t)
@@ -2137,7 +2132,6 @@ finish_struct_methods (t)
 {
   tree fn_fields;
   tree method_vec;
-  tree ctor_name = constructor_name (t);
   int slot, len;
 
   if (!TYPE_METHODS (t))
@@ -2158,50 +2152,8 @@ finish_struct_methods (t)
      and the next few with type conversion operators (if any).  */
   for (fn_fields = TYPE_METHODS (t); fn_fields; 
        fn_fields = TREE_CHAIN (fn_fields))
-    {
-      tree fn_name = DECL_NAME (fn_fields);
-
-      /* Clear out this flag.
-
-	 @@ Doug may figure out how to break
-	 @@ this with nested classes and friends.  */
-      DECL_IN_AGGR_P (fn_fields) = 0;
-
-      /* Note here that a copy ctor is private, so we don't dare generate
- 	 a default copy constructor for a class that has a member
- 	 of this type without making sure they have access to it.  */
-      if (fn_name == ctor_name)
- 	{
- 	  tree parmtypes = FUNCTION_ARG_CHAIN (fn_fields);
- 	  tree parmtype = parmtypes ? TREE_VALUE (parmtypes) : void_type_node;
-	  
- 	  if (TREE_CODE (parmtype) == REFERENCE_TYPE
- 	      && TYPE_MAIN_VARIANT (TREE_TYPE (parmtype)) == t)
- 	    {
- 	      if (TREE_CHAIN (parmtypes) == NULL_TREE
- 		  || TREE_CHAIN (parmtypes) == void_list_node
- 		  || TREE_PURPOSE (TREE_CHAIN (parmtypes)))
- 		{
- 		  if (TREE_PROTECTED (fn_fields))
- 		    TYPE_HAS_NONPUBLIC_CTOR (t) = 1;
- 		  else if (TREE_PRIVATE (fn_fields))
- 		    TYPE_HAS_NONPUBLIC_CTOR (t) = 2;
- 		}
- 	    }
-	}
-      else if (fn_name == ansi_opname[(int) MODIFY_EXPR])
-	{
-	  tree parmtype = TREE_VALUE (FUNCTION_ARG_CHAIN (fn_fields));
-
-	  if (copy_assignment_arg_p (parmtype, DECL_VIRTUAL_P (fn_fields)))
-	    {
-	      if (TREE_PROTECTED (fn_fields))
-		TYPE_HAS_NONPUBLIC_ASSIGN_REF (t) = 1;
-	      else if (TREE_PRIVATE (fn_fields))
-		TYPE_HAS_NONPUBLIC_ASSIGN_REF (t) = 2;
-	    }
-	}
-    }
+    /* Clear out this flag.  */
+    DECL_IN_AGGR_P (fn_fields) = 0;
 
   if (TYPE_HAS_DESTRUCTOR (t) && !TREE_VEC_ELT (method_vec, 1))
     /* We thought there was a destructor, but there wasn't.  Some
@@ -2921,8 +2873,6 @@ finish_struct_anon (t)
 	}
     }
 }
-
-extern int interface_only, interface_unknown;
 
 /* Create default constructors, assignment operators, and so forth for
    the type indicated by T, if they are needed.

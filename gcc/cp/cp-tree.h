@@ -1327,8 +1327,10 @@ struct lang_type
   unsigned has_const_assign_ref : 1;
   unsigned anon_aggr : 1;
 
-  unsigned has_nonpublic_ctor : 2;
-  unsigned has_nonpublic_assign_ref : 2;
+  unsigned has_mutable : 1;
+  unsigned com_interface : 1;
+  unsigned non_pod_class : 1;
+  unsigned nearly_empty_p : 1;
   unsigned vtable_needs_writing : 1;
   unsigned has_assign_ref : 1;
   unsigned has_new : 1;
@@ -1361,20 +1363,15 @@ struct lang_type
   unsigned has_abstract_assign_ref : 1;
   unsigned non_aggregate : 1;
   unsigned is_partial_instantiation : 1;
-  unsigned has_mutable : 1;
-
-  unsigned com_interface : 1;
-  unsigned non_pod_class : 1;
-  unsigned nearly_empty_p : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
      so, make sure to copy it in instantiate_class_template!  */
 
-  /* There are six bits left to fill out a 32-bit word.  Keep track of
-     this by updating the size of this bitfield whenever you add or
+  /* There are some bits left to fill out a 32-bit word.  Keep track
+     of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 5;
+  unsigned dummy : 9;
       
   int vsize;
   int vfield_parent;
@@ -1637,14 +1634,6 @@ struct lang_type
 
 /* Nonzero means that this type has an X() constructor.  */
 #define TYPE_HAS_DEFAULT_CONSTRUCTOR(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_default_ctor)
-
-/* Nonzero means the type declared a ctor as private or protected.  We
-   use this to make sure we don't try to generate a copy ctor for a 
-   class that has a member of type NODE.  */
-#define TYPE_HAS_NONPUBLIC_CTOR(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_nonpublic_ctor)
-
-/* Ditto, for operator=.  */
-#define TYPE_HAS_NONPUBLIC_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_nonpublic_assign_ref)
 
 /* Nonzero means that this type contains a mutable member */
 #define CLASSTYPE_HAS_MUTABLE(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_mutable)
