@@ -1,3 +1,17 @@
+2000-11-02  Zack Weinberg <zackw@Stanford.EDU>
+
+        Integrated CPP.
+	  
+        * c-lex.c (init_c_lex): Update cpp_start_read call.
+        (cb_ident): Update for new callback prototype.
+        (cb_def_pragma): Update for new cpp_get_token prototype.
+        (c_lex): Similarly.  Use cpp_get_line.
+	  
+        * c-parse.in (finish_parse): Update for new cpp_finish
+        prototype.
+	  
+        * cp/lex.c (finish_parse): Similarly.
+
 2000-11-01  Geoff Keating  <geoffk@cygnus.com>
 
 	* machmode.def: Add V16QImode.
