@@ -1,3 +1,9 @@
+2004-07-12  David S. Miller  <davem@nuts.davemloft.net>
+
+	* config/sparc/sparc.md (ashlsi3): Eliminate const 1
+	special case.
+	(ashldi3_sp64): Likewise.
+
 2004-07-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/16477
