@@ -51,6 +51,10 @@ Boston, MA 02111-1307, USA.  */
 #define OUTGOING_REGNO(IN) (IN)
 #endif
 
+#ifndef PAD_VARARGS_DOWN
+#define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
+#endif
+
 tree (*lang_type_promotes_to) PARAMS ((tree));
 
 static int get_pointer_alignment	PARAMS ((tree, unsigned));
@@ -1967,7 +1971,7 @@ std_expand_builtin_va_arg (valist, type)
 
   /* Get AP.  */
   addr_tree = valist;
-  if (BYTES_BIG_ENDIAN)
+  if (PAD_VARARGS_DOWN)
     {
       /* Small args are padded downward.  */
 

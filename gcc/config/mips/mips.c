@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for MIPS
-   Copyright (C) 1989, 90, 91, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90, 91, 93-98, 1999, 2000 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -4045,11 +4045,10 @@ mips_va_start (stdarg_p, valist, nextarg)
      tree valist;
      rtx nextarg;
 {
-  int arg_words, fp_arg_words;
+  int arg_words;
   tree t;
 
   arg_words = current_function_args_info.arg_words;
-  fp_arg_words = current_function_args_info.fp_arg_words;
 
   if (mips_abi == ABI_EABI)
     {
@@ -4058,6 +4057,11 @@ mips_va_start (stdarg_p, valist, nextarg)
 	  tree f_fpr, f_rem, f_gpr, fpr, rem, gpr;
 	  tree gprv, fprv;
 	  int gpro, fpro;
+
+  	  fpro = (8 - current_function_args_info.fp_arg_words);
+
+	  if (!TARGET_64BIT)
+		fpro /= 2;
 
 	  f_fpr = TYPE_FIELDS (va_list_type_node);
 	  f_rem = TREE_CHAIN (f_fpr);
@@ -4084,16 +4088,15 @@ mips_va_start (stdarg_p, valist, nextarg)
 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
 	  t = build (MODIFY_EXPR, integer_type_node, rem,
-		     build_int_2 (8 - fp_arg_words, 0));
+		     build_int_2 (fpro, 0));
 	  TREE_SIDE_EFFECTS (t) = 1;
 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-	  fpro = (8 - fp_arg_words) * 8;
 	  if (fpro == 0)
 	    fprv = gprv;
 	  else
 	    fprv = fold (build (PLUS_EXPR, ptr_type_node, gprv,
-				build_int_2 (-fpro, -1)));
+				build_int_2 (-(fpro*8), -1)));
 
 	  if (! TARGET_64BIT)
 	    fprv = fold (build (BIT_AND_EXPR, ptr_type_node, fprv,
@@ -4198,6 +4201,9 @@ mips_va_arg (valist, type)
 	      r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
 	      if (r != addr_rtx)
 		emit_move_insn (addr_rtx, r);
+
+	      /* Ensure that the POSTINCREMENT is emitted before lab_over */
+	      emit_queue();
 
 	      emit_jump (lab_over);
 	      emit_barrier ();

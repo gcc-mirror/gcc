@@ -1,3 +1,10 @@
+2000-01-14  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* builtins.c (PAD_VARARGS_DOWN): Define. 
+	(std_expand_builtin_va_arg): Use the above macro.
+	* config/mips/mips.c (PAD_VARARGS_DOWN): Define.
+	* tm.texi (Register Arguments): Document the above macro.
+	
 2000-01-14  Nick Clifton  <nickc@cygnus.com>
 
 	* emit-rtl.c (emit_insn): If checking is enabled, make sure
