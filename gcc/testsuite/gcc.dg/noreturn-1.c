@@ -7,8 +7,8 @@ extern void exit (int);
 extern void foo1(void) __attribute__ ((__noreturn__));
 void
 foo1(void)
-{
-} /* { dg-warning "`noreturn' function does return" "detect falling off end of noreturn" } */
+{ /* { dg-warning "`noreturn' function does return" "detect falling off end of noreturn" } */
+}
 
 extern void foo2(void) __attribute__ ((__noreturn__));
 void

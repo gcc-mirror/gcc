@@ -6496,11 +6496,18 @@ c_expand_body (fndecl, nested_p, can_defer_p)
      int nested_p, can_defer_p;
 {
   int uninlinable = 1;
+  int saved_lineno;
+  const char *saved_input_filename;
 
   /* There's no reason to do any of the work here if we're only doing
      semantic analysis; this code just generates RTL.  */
   if (flag_syntax_only)
     return;
+
+  saved_lineno = lineno;
+  saved_input_filename = input_filename;
+  lineno = DECL_SOURCE_LINE (fndecl);
+  input_filename = DECL_SOURCE_FILE (fndecl);
 
   if (flag_inline_trees)
     {
@@ -6519,6 +6526,8 @@ c_expand_body (fndecl, nested_p, can_defer_p)
 	  /* Let the back-end know that this function exists.  */
 	  (*debug_hooks->deferred_inline_function) (fndecl);
           timevar_pop (TV_INTEGRATION);
+          lineno = saved_lineno;
+          input_filename = saved_input_filename;
 	  return;
 	}
       
@@ -6540,7 +6549,6 @@ c_expand_body (fndecl, nested_p, can_defer_p)
 
   /* Initialize the RTL code for the function.  */
   current_function_decl = fndecl;
-  input_filename = DECL_SOURCE_FILE (fndecl);
   init_function_start (fndecl, input_filename, DECL_SOURCE_LINE (fndecl));
 
   /* This function is being processed in whole-function mode.  */
@@ -6677,6 +6685,9 @@ c_expand_body (fndecl, nested_p, can_defer_p)
     /* Return to the enclosing function.  */
     pop_function_context ();
   timevar_pop (TV_EXPAND);
+
+  lineno = saved_lineno;
+  input_filename = saved_input_filename;
 }
 
 /* Check the declarations given in a for-loop for satisfying the C99
