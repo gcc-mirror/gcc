@@ -216,7 +216,7 @@ check_bool2_init (code, exp0, exp1, before, when_false, when_true)
    the conditional when the conditional is false.
    On output, WHEN_TRUE is the set of variables definitely assigned after
    the conditional when the conditional is true.
-   (WHEN_FALSE and WHEN_TRUE are overwriten with initial values ignored.)
+   (WHEN_FALSE and WHEN_TRUE are overwritten with initial values ignored.)
    (None of BEFORE, WHEN_FALSE, or WHEN_TRUE can overlap, as they may
    be used as temporary working areas. */
 
