@@ -2038,7 +2038,7 @@ between these kinds.
 @findex EXTRA_CONSTRAINT
 @item EXTRA_CONSTRAINT (@var{value}, @var{c})
 A C expression that defines the optional machine-dependent constraint
-letters (@item @samp{Q}, @samp{R}, @samp{S}, @samp{T}, @samp{U}) that can
+letters (@samp{Q}, @samp{R}, @samp{S}, @samp{T}, @samp{U}) that can
 be used to segregate specific types of operands, usually memory
 references, for the target machine.  Normally this macro will not be
 defined.  If it is required for a particular target machine, it should

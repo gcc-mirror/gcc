@@ -5540,8 +5540,8 @@ functions defined in the code, and makes them publicly visible.
 @cindex aliasing of parameters
 @cindex parameters, aliased
 @item -fargument-alias
-@item -fargument-noalias
-@item -fargument-noalias-global
+@itemx -fargument-noalias
+@itemx -fargument-noalias-global
 Specify the possible relationships among parameters and between
 parameters and global data.
 
