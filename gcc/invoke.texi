@@ -342,7 +342,6 @@ in the following sections.
 
 @emph{System V Options}
 -Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}
-@end smallexample
 
 @emph{V850 Options}
 -mlong-calls -mno-long-calls -mep -mno-ep
