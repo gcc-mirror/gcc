@@ -1,5 +1,11 @@
 2004-10-04  Vincent Celier  <celier@gnat.com>
 
+	* a-dirval-mingw.adb (Invalid_Character): Add '\' as invalid character
+	in file name.
+	(Is_Valid_Path_Name): Take '/' as a directory separator.
+
+2004-10-04  Vincent Celier  <celier@gnat.com>
+
 	* prj-part.adb (Parse_Single_Project): Call Is_Extending_All
 	(Extended_Project) only if Extended_Project is defined, to avoid
 	assertion error.
