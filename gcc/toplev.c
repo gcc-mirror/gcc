@@ -2918,8 +2918,10 @@ compile_file (name)
       flag_function_sections = 0;
     }
 
+#ifndef OBJECT_FORMAT_ELF
   if (flag_function_sections && write_symbols != NO_DEBUG)
     warning ("-ffunction-sections may affect debugging on some targets.");
+#endif
 
   /* ??? Note: There used to be a conditional here
       to call assemble_zeros without fail if DBX_DEBUGGING_INFO is defined.
