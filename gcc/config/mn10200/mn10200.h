@@ -1,5 +1,4 @@
-/* Definitions of target machine for GNU compiler. 
-   Matsushita MN10200 series
+/* Definitions of target machine for GNU compiler. Matsushita MN10200 series
    Copyright (C) 1997 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -954,7 +953,7 @@ do { char dstr[30];					\
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (LOG))
 
-/* We don't have to worry about dbx compatability for the mn10200.  */
+/* We don't have to worry about dbx compatibility for the mn10200.  */
 #define DEFAULT_GDB_EXTENSIONS 1
 
 /* Use stabs debugging info by default.  */

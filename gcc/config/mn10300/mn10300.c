@@ -559,7 +559,7 @@ expand_epilogue ()
      Else leave it alone, it will be cut back as part of the
      ret/retf instruction, or there wasn't any stack to begin with.
 
-     Under no circumstanes should the register save area be
+     Under no circumstances should the register save area be
      deallocated here, that would leave a window where an interrupt
      could occur and trash the register save area.  */
   if (frame_pointer_needed)
@@ -581,7 +581,7 @@ expand_epilogue ()
      the stack with one instruction.
 
      ?!? Only save registers which are actually used.  Reduces
-     stack requireents and is faster.  */
+     stack requirements and is faster.  */
   if (regs_ever_live[2] || regs_ever_live[3]
       || regs_ever_live[6] || regs_ever_live[7]
       || frame_pointer_needed)

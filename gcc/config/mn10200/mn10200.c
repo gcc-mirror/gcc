@@ -896,7 +896,7 @@ secondary_reload_class (class, mode, in, input)
       && class == ADDRESS_REGS)
     return DATA_REGS;
 
-  /* Address register stores which are not PSImode need a scrach register.  */
+  /* Address register stores which are not PSImode need a scratch register.  */
   if (! input
       && GET_CODE (in) == MEM
       && (mode != PSImode)
