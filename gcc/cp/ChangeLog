@@ -1,3 +1,10 @@
+1998-09-08  Richard Henderson  <rth@cygnus.com>
+	    Mark Mitchell  <mark@markmitchell.com>	
+	
+	* pt.c (process_partial_specialization): Consistantly allocate
+	and zero tpd.parms based on ntparms.  Use tpd2.parms, not
+	tpd.parms, where appropriate.
+
 Sun Sep  6 00:00:51 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (INCLUDES): Update after recent toplevel gcc
