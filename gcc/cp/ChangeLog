@@ -1,3 +1,17 @@
+1998-06-04  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* error.c (dump_expr): Clean up NEW_EXPR case.
+
+1998-06-04  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* tree.c (mapcar): Support NEW_EXPR.
+
+	* error.c (dump_expr): Support NEW_EXPR.
+
+1998-06-04  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (arg_assoc_type): Return 0 for LANG_TYPE.
+
 1998-06-03  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* method.c (make_thunk): Use overload machinery to make name.

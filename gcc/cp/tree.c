@@ -1754,6 +1754,13 @@ mapcar (t, func)
       TREE_OPERAND (t, 2) = NULL_TREE;
       return t;
 
+    case NEW_EXPR:
+      t = copy_node (t);
+      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
+      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
+      TREE_OPERAND (t, 2) = mapcar (TREE_OPERAND (t, 2), func);
+      return t;
+
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
 	return build_ptrmemfunc_type
