@@ -1,3 +1,8 @@
+2005-02-13  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (__cxa_demangle): Change resolution of ambiguous
+	arguments.
+
 2004-11-04  Release Manager
 
 	* GCC 3.4.3 released.

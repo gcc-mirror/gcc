@@ -4048,21 +4048,6 @@ __cxa_demangle (mangled_name, output_buffer, length, status)
       return NULL;
     }
 
-  /* The specification for __cxa_demangle() is that if the mangled
-     name could be either an extern "C" identifier, or an internal
-     built-in type name, then we resolve it as the identifier.  All
-     internal built-in type names are a single lower case character.
-     Frankly, this simplistic disambiguation doesn't make sense to me,
-     but it is documented, so we implement it here.  */
-  if (IS_LOWER (mangled_name[0])
-      && mangled_name[1] == '\0'
-      && cplus_demangle_builtin_types[mangled_name[0] - 'a'].name != NULL)
-    {
-      if (status != NULL)
-	*status = -2;
-      return NULL;
-    }
-
   demangled = d_demangle (mangled_name, DMGL_PARAMS | DMGL_TYPES, &alc);
 
   if (demangled == NULL)
