@@ -1,3 +1,32 @@
+2004-07-09  Paolo Carlini  <pcarlini@suse.de>
+
+	Add wchar_t counterparts of the basic_stringbuf<char> tests.
+	* testsuite/27_io/basic_stringbuf/imbue/wchar_t/1.cc, 9322.cc: New.
+	* testsuite/27_io/basic_stringbuf/in_avail/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/overflow/wchar_t/1.cc, 2.cc,
+	3599.cc, 9988.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sbumpc/wchar_t/1.cc, 9825.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/wchar_t/1.cc, 2.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/wchar_t/1.cc, 2.cc, 3.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/setbuf/wchar_t/1.cc, 2.cc, 3.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/snextc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputbackc/wchar_t/1.cc, 9425.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/sputc/wchar_t/1.cc, 1057.cc,
+	9404-1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputn/wchar_t/1.cc, 1057.cc,
+	9404-2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/str/wchar_t/1.cc, 2.cc, 3.cc,
+	3955.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sungetc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sync/wchar_t/1057.cc: Likewise.
+
 2004-07-08  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/gslice.h: Trivial formatting fixes.
