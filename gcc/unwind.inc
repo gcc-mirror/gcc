@@ -236,7 +236,7 @@ _Unwind_Resume (struct _Unwind_Exception *exc)
 /* Resume propagation of an FORCE_UNWIND exception, or to rethrow
    a normal exception that was handled.  */
 
-void
+_Unwind_Reason_Code
 _Unwind_Resume_or_Rethrow (struct _Unwind_Exception *exc)
 {
   struct _Unwind_Context this_context, cur_context;

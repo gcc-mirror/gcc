@@ -1,3 +1,9 @@
+2003-06-03  Richard Henderson  <rth@redhat.com>
+
+	* unwind.inc (_Unwind_Resume_or_Rethrow): Fix return type.
+	* unwind.h (_Unwind_Resume_or_Rethrow): Update.
+	(_Unwind_SjLj_Resume_or_Rethrow): Likewise.
+
 2003-06-03  Douglas B Rupp  <rupp@gnat.com>
 
 	* Makefile.in (TEXI_GCC_FILES): Remove vms.texi entry.
