@@ -1,3 +1,11 @@
+2004-10-12  Fariborz Jahanian <fjahanian@apple.com>
+
+	PR 17892
+	* tree-ssa-dom.c (unsafe_associative_fp_binop): New function.
+	(simplify_rhs_and_lookup_avail_expr): Disallow associativity
+	and constant folding of floating point MULT_EXPR/PLUS_EXPR 
+	expressions.
+
 2004-10-12  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_va_start): Use build_va_arg_indirect_ref.
