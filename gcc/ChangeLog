@@ -1,3 +1,8 @@
+2005-01-26  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/19421
+	* tree-inline.c (copy_body_r): Do not walk subtrees after substituting.
+
 2005-01-26  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.h (LIB_SPEC) <sim*>: Use -lsyslinux, not
