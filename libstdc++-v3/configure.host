@@ -155,11 +155,13 @@ case "${host_os}" in
     # explicitly duplicate the directory for 4.[<3].
     os_include_dir="os/aix"
     atomicity_dir="os/aix"
+    atomic_word_dir="os/aix"
     OPT_LDFLAGS="-Wl,-G"
     ;;
   aix4.*)
     os_include_dir="os/generic"
     atomicity_dir="os/aix"
+    atomic_word_dir="os/aix"
     ;;
   aix*)
     os_include_dir="os/generic"
