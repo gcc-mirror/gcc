@@ -1116,9 +1116,11 @@ duplicate_decls (newdecl, olddecl)
   int types_match = comptypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
   int new_is_definition = (TREE_CODE (newdecl) == FUNCTION_DECL
 			   && DECL_INITIAL (newdecl) != 0);
+  tree oldtype = TREE_TYPE (olddecl);
+  tree newtype = TREE_TYPE (newdecl);
 
-  if (TREE_CODE (TREE_TYPE (newdecl)) == ERROR_MARK
-      || TREE_CODE (TREE_TYPE (olddecl)) == ERROR_MARK)
+  if (TREE_CODE (newtype) == ERROR_MARK
+      || TREE_CODE (oldtype) == ERROR_MARK)
     types_match = 0;
 
   /* New decl is completely inconsistent with the old one =>
@@ -1231,18 +1233,23 @@ duplicate_decls (newdecl, olddecl)
   else if (!types_match
 	   && TREE_CODE (olddecl) == FUNCTION_DECL
 	   && TREE_CODE (newdecl) == FUNCTION_DECL
-	   && TREE_CODE (TREE_TYPE (olddecl)) == POINTER_TYPE
-	   && TREE_CODE (TREE_TYPE (newdecl)) == POINTER_TYPE
-	   && ((TREE_TYPE (TREE_TYPE (newdecl)) == void_type_node
-		&& TYPE_ARG_TYPES (TREE_TYPE (olddecl)) == 0
-		&& TREE_TYPE (TREE_TYPE (olddecl)) == char_type_node)
+	   && TREE_CODE (TREE_TYPE (oldtype)) == POINTER_TYPE
+	   && TREE_CODE (TREE_TYPE (newtype)) == POINTER_TYPE
+	   && ((TREE_TYPE (TREE_TYPE (newtype)) == void_type_node
+		&& TYPE_ARG_TYPES (oldtype) == 0
+		&& self_promoting_args_p (TYPE_ARG_TYPES (newtype))
+		&& TREE_TYPE (TREE_TYPE (oldtype)) == char_type_node)
 	       ||
-	       (TREE_TYPE (TREE_TYPE (newdecl)) == char_type_node
-		&& TYPE_ARG_TYPES (TREE_TYPE (newdecl)) == 0
-		&& TREE_TYPE (TREE_TYPE (olddecl)) == void_type_node)))
+	       (TREE_TYPE (TREE_TYPE (newtype)) == char_type_node
+		&& TYPE_ARG_TYPES (newtype) == 0
+		&& self_promoting_args_p (TYPE_ARG_TYPES (oldtype))
+		&& TREE_TYPE (TREE_TYPE (oldtype)) == void_type_node)))
     {
       if (pedantic)
 	pedwarn_with_decl (newdecl, "conflicting types for `%s'");
+      /* Make sure we keep void * as ret type, not char *.  */
+      if (TREE_TYPE (TREE_TYPE (oldtype)) == void_type_node)
+	TREE_TYPE (newdecl) = newtype = oldtype;
     }
   else if (!types_match
 	   /* Permit char *foo (int, ...); followed by char *foo ();
@@ -1250,26 +1257,26 @@ duplicate_decls (newdecl, olddecl)
 	   && ! (TREE_CODE (olddecl) == FUNCTION_DECL
 		 && ! pedantic
 		 /* Return types must still match.  */
-		 && comptypes (TREE_TYPE (TREE_TYPE (olddecl)),
-			       TREE_TYPE (TREE_TYPE (newdecl)))
-		 && TYPE_ARG_TYPES (TREE_TYPE (newdecl)) == 0))
+		 && comptypes (TREE_TYPE (oldtype),
+			       TREE_TYPE (newtype))
+		 && TYPE_ARG_TYPES (newtype) == 0))
     {
       error_with_decl (newdecl, "conflicting types for `%s'");
       /* Check for function type mismatch
 	 involving an empty arglist vs a nonempty one.  */
       if (TREE_CODE (olddecl) == FUNCTION_DECL
-	  && comptypes (TREE_TYPE (TREE_TYPE (olddecl)),
-			TREE_TYPE (TREE_TYPE (newdecl)))
-	  && ((TYPE_ARG_TYPES (TREE_TYPE (olddecl)) == 0
+	  && comptypes (TREE_TYPE (oldtype),
+			TREE_TYPE (newtype))
+	  && ((TYPE_ARG_TYPES (oldtype) == 0
 	       && DECL_INITIAL (olddecl) == 0)
 	      ||
-	      (TYPE_ARG_TYPES (TREE_TYPE (newdecl)) == 0
+	      (TYPE_ARG_TYPES (newtype) == 0
 	       && DECL_INITIAL (newdecl) == 0)))
 	{
 	  /* Classify the problem further.  */
-	  register tree t = TYPE_ARG_TYPES (TREE_TYPE (olddecl));
+	  register tree t = TYPE_ARG_TYPES (oldtype);
 	  if (t == 0)
-	    t = TYPE_ARG_TYPES (TREE_TYPE (newdecl));
+	    t = TYPE_ARG_TYPES (newtype);
 	  for (; t; t = TREE_CHAIN (t))
 	    {
 	      register tree type = TREE_VALUE (t);
@@ -1305,15 +1312,15 @@ duplicate_decls (newdecl, olddecl)
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_INITIAL (olddecl) != 0
-	       && TYPE_ARG_TYPES (TREE_TYPE (olddecl)) == 0
-	       && TYPE_ARG_TYPES (TREE_TYPE (newdecl)) != 0)
+	       && TYPE_ARG_TYPES (oldtype) == 0
+	       && TYPE_ARG_TYPES (newtype) != 0)
 	{
 	  register tree type, parm;
 	  register int nargs;
 	  /* Prototype decl follows defn w/o prototype.  */
 
-	  for (parm = TYPE_ACTUAL_ARG_TYPES (TREE_TYPE (olddecl)),
-	       type = TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
+	  for (parm = TYPE_ACTUAL_ARG_TYPES (oldtype),
+	       type = TYPE_ARG_TYPES (newtype),
 	       nargs = 1;
 	       (TREE_VALUE (parm) != void_type_node
 		|| TREE_VALUE (type) != void_type_node);
@@ -1383,16 +1390,18 @@ duplicate_decls (newdecl, olddecl)
     }
 
   /* Copy all the DECL_... slots specified in the new decl
-     except for any that we copy here from the old type.  */
+     except for any that we copy here from the old type.
+
+     Past this point, we don't change OLDTYPE and NEWTYPE
+     even if we change the types of NEWDECL and OLDDECL.  */
 
   if (types_match)
     {
-      tree oldtype = TREE_TYPE (olddecl);
       /* Merge the data types specified in the two decls.  */
       if (TREE_CODE (newdecl) != FUNCTION_DECL || !DECL_BUILT_IN (olddecl))
 	TREE_TYPE (newdecl)
 	  = TREE_TYPE (olddecl)
-	    = common_type (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
+	    = common_type (newtype, oldtype);
 
       /* Lay the type out, unless already done.  */
       if (oldtype != TREE_TYPE (newdecl))
