@@ -352,7 +352,7 @@ do_define (pfile)
 
 
   if (list->tokens_used == 2 && list->tokens[1].type == CPP_VSPACE)
-    empty = 0;  /* Empty definition of object-like macro.  */
+    empty = 1;  /* Empty definition of object-like macro.  */
 
   /* If the next character, with no intervening whitespace, is '(',
      then this is a function-like macro.  Otherwise it is an object-
@@ -425,7 +425,8 @@ do_define (pfile)
     }
   else
     {
-      HASHNODE *hp = _cpp_make_hashnode (sym, len, T_MACRO, hash);
+      HASHNODE *hp = _cpp_make_hashnode (sym, len, empty ? T_EMPTY : T_MACRO,
+					 hash);
       hp->value.defn = def;
       *slot = hp;
     }
@@ -768,7 +769,7 @@ do_undef (pfile)
 	  if (CPP_OPTION (pfile, debug_output))
 	    pass_thru_directive (hp->name, len, pfile, T_UNDEF);
 
-	  if (hp->type != T_MACRO)
+	  if (hp->type != T_MACRO && hp->type != T_EMPTY)
 	    cpp_warning (pfile, "undefining `%s'", hp->name);
 
 	  htab_clear_slot (pfile->hashtab, (void **)slot);

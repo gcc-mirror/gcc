@@ -1,3 +1,18 @@
+2000-04-22  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (trad_stringify, add_pat): New functions.
+	(collect_expansion): Restore support for -traditional syntax.
+	Use trad_stringify and add_pat.
+	(_cpp_macroexpand): Restore support for -traditional semantics.
+	* cpplex.c (_cpp_scan_line): Don't change space_before if we
+	get a COMMENT token.
+	(_cpp_lex_token): Provide COMMENT tokens to caller if
+	traditional and parsing_define_directive.
+	(skip_comment): Warn about // comments if -Wtraditional.
+	* cpplib.c (do_define): Fix typo.  Create EMPTY nodes with
+	proper node type.
+	(do_undef): Don't warn about undefining EMPTY nodes.
+
 Sat Apr 22 22:35:38 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (strength_reduce): Fix biv removal code.

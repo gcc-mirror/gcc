@@ -79,7 +79,13 @@ static unsigned int collect_params PARAMS ((cpp_reader *, cpp_toklist *,
 
 static void warn_trad_stringify	PARAMS ((cpp_reader *, U_CHAR *, size_t,
 					 unsigned int, const struct arg *));
+static unsigned int trad_stringify PARAMS ((cpp_reader *, U_CHAR *, size_t,
+					    unsigned int, const struct arg *,
+					    struct reflist **,
+					    struct reflist **, unsigned int));
 static int duplicate_arg_p PARAMS ((U_CHAR *, U_CHAR *));
+static void add_pat PARAMS ((struct reflist **, struct reflist **,
+			     unsigned int, unsigned int, int, int, int, int));
 
 /* This structure represents one parsed argument in a macro call.
    `raw' points to the argument text as written (`raw_length' is its length).
@@ -279,6 +285,32 @@ macro_cleanup (pbuf, pfile)
   return 0;
 }
 
+/* Create pat nodes.  */
+
+static void
+add_pat (pat, endpat, nchars, argno, raw_before, raw_after, strize, rest)
+     struct reflist **pat, **endpat;
+     unsigned int nchars;
+     unsigned int argno;
+     int raw_before, raw_after, strize, rest;
+{
+  struct reflist *tpat;
+  tpat = (struct reflist *) xmalloc (sizeof (struct reflist));
+  tpat->next = NULL;
+  tpat->raw_before = raw_before;
+  tpat->raw_after = raw_after;
+  tpat->stringify = strize;
+  tpat->rest_args = rest;
+  tpat->argno = argno;
+  tpat->nchars = nchars;
+
+  if (*endpat == NULL)
+    *pat = tpat;
+  else
+    (*endpat)->next = tpat;
+  *endpat = tpat;
+}  
+
 /* Issue warnings for macro argument names seen inside strings.  */
 static void
 warn_trad_stringify (pfile, p, len, argc, argv)
@@ -287,7 +319,6 @@ warn_trad_stringify (pfile, p, len, argc, argv)
      size_t len;
      unsigned int argc;
      const struct arg *argv;
-     
 {
   U_CHAR *limit;
   unsigned int i;
@@ -315,6 +346,59 @@ warn_trad_stringify (pfile, p, len, argc, argv)
     }
 }
 
+/* Generate pat nodes for macro arguments seen inside strings.  */
+static unsigned int
+trad_stringify (pfile, base, len, argc, argv, pat, endpat, last)
+     cpp_reader *pfile;
+     U_CHAR *base;
+     size_t len;
+     unsigned int argc;
+     const struct arg *argv;
+     struct reflist **pat, **endpat;
+     unsigned int last;
+{
+  U_CHAR *p, *limit;
+  unsigned int i;
+
+  p = base;
+  limit = base + len;
+  for (;;)
+    {
+    proceed:
+      while (p < limit && !is_idstart (*p)) p++;
+      if (p >= limit)
+	break;
+
+      for (i = 0; i < argc; i++)
+	if (!strncmp (p, argv[i].name, argv[i].len)
+	    && ! is_idchar (p[argv[i].len]))
+	  {
+	    if (CPP_WTRADITIONAL (pfile))
+	      cpp_warning (pfile, "macro argument \"%s\" is stringified",
+			   argv[i].name);
+	    /* Write out the string up to this point, and add a pat
+	       node for the argument.  Note that the argument is NOT
+	       stringified.  */
+	    CPP_PUTS (pfile, base, p - base);
+	    add_pat (pat, endpat, CPP_WRITTEN (pfile) - last, i /* argno */,
+		     !is_hspace (p[-1]) /* raw_before */,
+		     !is_hspace (p[argv[i].len]) /* raw_after */,
+		     0 /* strize */,
+		     argv[i].rest_arg);
+	    last = CPP_WRITTEN (pfile);
+	    base = p + argv[i].len;
+	    goto proceed;
+	  }
+      p++;
+      while (p < limit && is_idchar (*p)) p++;
+      if (p >= limit)
+	break;
+    }
+  CPP_PUTS (pfile, base, p - base);
+  return last;
+}
+
+
 /* Read a replacement list for a macro, and build the DEFINITION
    structure.  LIST contains the replacement list, beginning at
    REPLACEMENT.  ARGLIST specifies the formal parameters to look for
@@ -332,7 +416,7 @@ collect_expansion (pfile, list, arglist, replacement)
   DEFINITION *defn;
   struct reflist *pat = 0, *endpat = 0;
   enum cpp_ttype token;
-  long start, last;
+  unsigned int start, last;
   unsigned int i;
   int j, argc;
   size_t len;
@@ -374,19 +458,21 @@ collect_expansion (pfile, list, arglist, replacement)
 	  /* # is not special in object-like macros.  It is special in
 	     function-like macros with no args.  (6.10.3.2 para 1.)
 	     However, it is not special after PASTE. (Implied by
-	     6.10.3.3 para 4.)  */
-	  if (arglist == NULL || last_token == PASTE)
-	    goto norm;
+	     6.10.3.3 para 4.)  Nor is it special if -traditional.  */
+	  if (arglist == NULL || last_token == PASTE
+	      || CPP_TRADITIONAL (pfile))
+	    break;
 	  last_token = STRIZE;
-	  break;
+	  continue;
 
 	case CPP_PASTE:
-	  if (last_token == PASTE)
-	    /* ## ## - the second ## is ordinary.  */
-	    goto norm;
-	  else if (last_token == START)
+	  /* ## is not special if it appears right after another ##;
+	     nor is it special if -traditional.  */
+	  if (last_token == PASTE || CPP_TRADITIONAL (pfile))
+	    break;
+
+	  if (last_token == START)
 	    cpp_error (pfile, "`##' at start of macro definition");
-	    
 	  else if (last_token == ARG)
 	    /* If the last token was an argument, mark it raw_after.  */
 	    endpat->raw_after = 1;
@@ -395,12 +481,33 @@ collect_expansion (pfile, list, arglist, replacement)
 	    CPP_PUTC (pfile, '#');
 
 	  last_token = PASTE;
-	  break;
+	  continue;
 
+	default:;
+	}
+
+      if (last_token != PASTE && last_token != START
+	  && (list->tokens[i].flags & HSPACE_BEFORE))
+	CPP_PUTC (pfile, ' ');
+      if (last_token == ARG && CPP_TRADITIONAL (pfile)
+	  && !(list->tokens[i].flags & HSPACE_BEFORE))
+	endpat->raw_after = 1;
+
+      switch (token)
+	{
 	case CPP_STRING:
 	case CPP_CHAR:
-	  if (argc && CPP_WTRADITIONAL (pfile))
-	    warn_trad_stringify (pfile, tok, len, argc, argv);
+	  if (argc)
+	    {
+	      if (CPP_TRADITIONAL (pfile))
+		{
+		  last = trad_stringify (pfile, tok, len, argc, argv,
+					 &pat, &endpat, last);
+		  break;
+		}
+	      if (CPP_WTRADITIONAL (pfile))
+		warn_trad_stringify (pfile, tok, len, argc, argv);
+	    }
 	  goto norm;
 	  
 	case CPP_NAME:
@@ -419,31 +526,20 @@ collect_expansion (pfile, list, arglist, replacement)
 	    CPP_PUTC (pfile, ' ');
 	  CPP_PUTS (pfile, tok, len);
 	  last_token = NORM;
-	  break;
 	}
       continue;
 
     addref:
       {
-	struct reflist *tpat;
-	if (last_token != PASTE && (list->tokens[i].flags & HSPACE_BEFORE))
-	  CPP_PUTC (pfile, ' ');
-
-	/* Make a pat node for this arg and add it to the pat list */
-	tpat = (struct reflist *) xmalloc (sizeof (struct reflist));
-	tpat->next = NULL;
-	tpat->raw_before = (last_token == PASTE);
-	tpat->raw_after = 0;
-	tpat->stringify = (last_token == STRIZE);
-	tpat->rest_args = argv[j].rest_arg;
-	tpat->argno = j;
-	tpat->nchars = CPP_WRITTEN (pfile) - last;
-
-	if (endpat == NULL)
-	  pat = tpat;
-	else
-	  endpat->next = tpat;
-	endpat = tpat;
+	int raw_before = (last_token == PASTE
+			  || (CPP_TRADITIONAL (pfile)
+			      && !(list->tokens[i].flags & HSPACE_BEFORE)));
+      
+	add_pat (&pat, &endpat,
+		 CPP_WRITTEN (pfile) - last /* nchars */, j /* argno */,
+		 raw_before, 0 /* raw_after */,
+		 (last_token == STRIZE), argv[j].rest_arg);
+      
 	last = CPP_WRITTEN (pfile);
       }
       last_token = ARG;
@@ -1028,8 +1124,11 @@ _cpp_macroexpand (pfile, hp)
 	}
       else if (i < nargs)
 	{
+	  /* traditional C allows foo() if foo wants one argument.  */
+	  if (nargs == 1 && i == 0 && CPP_TRADITIONAL (pfile))
+	    ;
 	  /* the rest args token is allowed to absorb 0 tokens */
-	  if (i == nargs - 1 && defn->rest_args)
+	  else if (i == nargs - 1 && defn->rest_args)
 	    rest_zero = 1;
 	  else if (i == 0)
 	    cpp_error (pfile, "macro `%s' used without args", hp->name);
@@ -1317,8 +1416,19 @@ _cpp_macroexpand (pfile, hp)
   /* Pop the space we've used in the token_buffer for argument expansion.  */
   CPP_SET_WRITTEN (pfile, old_written);
 
-  /* Per C89, a macro cannot be expanded recursively.  */
-  hp->type = T_DISABLED;
+  /* In C89, a macro cannot be expanded recursively.  Traditional C
+     permits it, but any use in an object-like macro must lead to
+     infinite recursion, so always follow C89 in object-like macros.
+
+     The only example known where this doesn't cause infinite recursion
+     in function-like macros is:
+	#define foo(x,y) bar(x(y, 0))
+	foo(foo, baz)
+     which expands to bar(foo(baz, 0)) in C89 and
+     bar(bar(baz(0, 0)) in K+R.  This looks pathological to me.
+     If someone has a real-world example I would love to see it.  */
+  if (nargs <= 0 || !CPP_TRADITIONAL (pfile))
+    hp->type = T_DISABLED;
 }
 
 /* Return 1 iff a token ending in C1 followed directly by a token C2
