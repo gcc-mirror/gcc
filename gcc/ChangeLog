@@ -1,3 +1,11 @@
+Thu Aug 21 23:52:16 1997  John F. Carr  <jfc@mit.edu>
+
+	* alias.c (find_base_value): Improve handling of PLUS, MINUS, and
+	LO_SUM.
+	(record_set): Handle LO_SUM like PLUS.
+	(init_alias_analysis): When following chains of base addresses,
+	do not stop on reaching a hard register.
+
 Thu Aug 21 20:17:37 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for new snapshot.

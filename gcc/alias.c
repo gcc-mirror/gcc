@@ -40,9 +40,17 @@ static int memrefs_conflict_p		PROTO((int, rtx, int, rtx,
    If all sets after the first add or subtract to the current value
    or otherwise modify it so it does not point to a different top level
    object, reg_base_value[N] is equal to the address part of the source
-   of the first set.  The value will be a SYMBOL_REF, a LABEL_REF, or
-   (address (reg)) to indicate that the address is derived from an
-   argument or fixed register.  */
+   of the first set.
+
+   A base address can be an ADDRESS, SYMBOL_REF, or LABEL_REF.  ADDRESS
+   expressions represent certain special values: function arguments and
+   the stack, frame, and argument pointers.  The contents of an address
+   expression are not used (but they are descriptive for debugging);
+   only the address and mode matter.  Pointer equality, not rtx_equal_p,
+   determines whether two ADDRESS expressions refer to the same base
+   address.  The mode determines whether it is a function argument or
+   other special value. */
+
 rtx *reg_base_value;
 unsigned int reg_base_value_size;	/* size of reg_base_value array */
 #define REG_BASE_VALUE(X) \
@@ -68,13 +76,12 @@ static int reg_known_value_size;
    here.  */
 char *reg_known_equiv_p;
 
-/* Inside SRC, the source of a SET, find a base address.  */
+/* True when scanning insns from the start of the rtl to the
+   NOTE_INSN_FUNCTION_BEG note.  */
 
-/* When copying arguments into pseudo-registers, record the (ADDRESS)
-   expression for the argument directly so that even if the argument
-   register is changed later (e.g. for a function call) the original
-   value is noted.  */
 static int copying_arguments;
+
+/* Inside SRC, the source of a SET, find a base address.  */
 
 static rtx
 find_base_value (src)
@@ -87,7 +94,11 @@ find_base_value (src)
       return src;
 
     case REG:
-      if (copying_arguments && REGNO (src) < FIRST_PSEUDO_REGISTER)
+      /* At the start of a function argument registers have known base
+	 values which may be lost later.  Returning an ADDRESS
+	 expression here allows optimization based on argument values
+	 even when the argument registers are used for other purposes.  */
+      if (REGNO (src) < FIRST_PSEUDO_REGISTER && copying_arguments)
 	return reg_base_value[REGNO (src)];
       return src;
 
@@ -107,43 +118,48 @@ find_base_value (src)
       if (GET_CODE (src) != PLUS && GET_CODE (src) != MINUS)
 	break;
       /* fall through */
+
     case PLUS:
     case MINUS:
-      /* Guess which operand to set the register equivalent to.  */
-      /* If the first operand is a symbol or the second operand is
-	 an integer, the first operand is the base address.  */
-      if (GET_CODE (XEXP (src, 0)) == SYMBOL_REF
-	  || GET_CODE (XEXP (src, 0)) == LABEL_REF
-	  || GET_CODE (XEXP (src, 1)) == CONST_INT)
-	return XEXP (src, 0);
-      /* If an operand is a register marked as a pointer, it is the base.  */
-      if (GET_CODE (XEXP (src, 0)) == REG
-	  && REGNO_POINTER_FLAG (REGNO (XEXP (src, 0))))
-	src = XEXP (src, 0);
-      else if (GET_CODE (XEXP (src, 1)) == REG
-	  && REGNO_POINTER_FLAG (REGNO (XEXP (src, 1))))
-	src = XEXP (src, 1);
-      else
+      {
+	rtx src_0 = XEXP (src, 0), src_1 = XEXP (src, 1);
+
+	/* Guess which operand is the base address.
+
+	   If the first operand is a symbol or the second operand is
+	   an integer, the first operand is the base address.  Else if
+	   either operand is a register marked as a pointer, it is the
+	   base address.  */
+
+	if (GET_CODE (src_1) == CONST_INT
+	    || GET_CODE (src_0) == SYMBOL_REF
+	    || GET_CODE (src_0) == LABEL_REF
+	    || GET_CODE (src_0) == CONST)
+	  return find_base_value (src_0);
+
+	if (GET_CODE (src_0) == REG && REGNO_POINTER_FLAG (REGNO (src_0)))
+	  return find_base_value (src_0);
+
+	if (GET_CODE (src_1) == REG && REGNO_POINTER_FLAG (REGNO (src_1)))
+	  return find_base_value (src_1);
+
 	return 0;
-      if (copying_arguments && REGNO (src) < FIRST_PSEUDO_REGISTER)
-	return reg_base_value[REGNO (src)];
-      return src;
+      }
+
+    case LO_SUM:
+      /* The standard form is (lo_sum reg sym) so look only at the
+	 second operand.  */
+      return find_base_value (XEXP (src, 1));
 
     case AND:
       /* If the second operand is constant set the base
 	 address to the first operand. */
-      if (GET_CODE (XEXP (src, 1)) == CONST_INT
-	  && GET_CODE (XEXP (src, 0)) == REG)
-	{
-	  src = XEXP (src, 0);
-	  if (copying_arguments && REGNO (src) < FIRST_PSEUDO_REGISTER)
-	    return reg_base_value[REGNO (src)];
-	  return src;
-	}
+      if (GET_CODE (XEXP (src, 1)) == CONST_INT && INTVAL (XEXP (src, 1)) != 0)
+	return find_base_value (XEXP (src, 0));
       return 0;
 
     case HIGH:
-      return XEXP (src, 0);
+      return find_base_value (XEXP (src, 0));
     }
 
   return 0;
@@ -155,8 +171,8 @@ find_base_value (src)
    register N has been set in this function.  */
 static char *reg_seen;
 
-static
-void record_set (dest, set)
+static void
+record_set (dest, set)
      rtx dest, set;
 {
   register int regno;
@@ -202,6 +218,7 @@ void record_set (dest, set)
   if (reg_base_value[regno])
     switch (GET_CODE (src))
       {
+      case LO_SUM:
       case PLUS:
       case MINUS:
 	if (XEXP (src, 0) != dest && XEXP (src, 1) != dest)
@@ -209,10 +226,6 @@ void record_set (dest, set)
 	break;
       case AND:
 	if (XEXP (src, 0) != dest || GET_CODE (XEXP (src, 1)) != CONST_INT)
-	  reg_base_value[regno] = 0;
-	break;
-      case LO_SUM:
-	if (XEXP (src, 0) != dest)
 	  reg_base_value[regno] = 0;
 	break;
       default:
@@ -931,8 +944,10 @@ init_alias_analysis ()
 	= gen_rtx (ADDRESS, Pmode, arg_pointer_rtx);
       reg_base_value[FRAME_POINTER_REGNUM]
 	= gen_rtx (ADDRESS, Pmode, frame_pointer_rtx);
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
       reg_base_value[HARD_FRAME_POINTER_REGNUM]
 	= gen_rtx (ADDRESS, Pmode, hard_frame_pointer_rtx);
+#endif
     }
 
   copying_arguments = 1;
@@ -947,7 +962,7 @@ init_alias_analysis ()
 	  rtx noalias_note;
 	  if (GET_CODE (PATTERN (insn)) == SET
 	      && (noalias_note = find_reg_note (insn, REG_NOALIAS, NULL_RTX)))
-	      record_set (SET_DEST (PATTERN (insn)), 0);
+	    record_set (SET_DEST (PATTERN (insn)), 0);
 	  else
 	    note_stores (PATTERN (insn), record_set);
 	}
