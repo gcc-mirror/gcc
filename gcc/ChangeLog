@@ -1,3 +1,8 @@
+2001-12-11  Richard Henderson  <rth@redhat.com>
+
+	* combine.c (simplify_shift_const): Move SHIFT_COUNT_TRUNCATED
+	simplification above out of range check.
+
 2001-12-11  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* config/sparc/sparc.md (prefetch): New.
