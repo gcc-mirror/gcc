@@ -33,12 +33,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Di386 -D__FreeBSD__ -D__386BSD__ -Asystem(unix) -Asystem(FreeBSD) -Acpu(i386) -Amachine(i386)"
 
-#define INCLUDE_DEFAULTS { \
-	{ "/usr/include", 0 }, \
-	{ "/usr/include/g++", 1 }, \
-	{ 0, 0} \
-	}
-
 /* Like the default, except no -lg.  */
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 
@@ -57,23 +51,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define WCHAR_TYPE_SIZE 16
 
 #define HAVE_ATEXIT
-
-/* Redefine this to use %eax instead of %edx.  */
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-{									\
-  if (flag_pic)								\
-    {									\
-      fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%eax\n",		\
-	       LPREFIX, (LABELNO));					\
-      fprintf (FILE, "\tcall *mcount@GOT(%%ebx)\n");			\
-    }									\
-  else									\
-    {									\
-      fprintf (FILE, "\tmovl $%sP%d,%%eax\n", LPREFIX, (LABELNO));	\
-      fprintf (FILE, "\tcall mcount\n");				\
-    }									\
-}
 
 /* There are conflicting reports about whether this system uses
    a different assembler syntax.  wilson@cygnus.com says # is right.  */
@@ -105,6 +82,25 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
+
+/* Profiling routines, partially copied from i386/osfrose.h.  */
+
+/* Redefine this to use %eax instead of %edx.  */
+#undef FUNCTION_PROFILER
+#define FUNCTION_PROFILER(FILE, LABELNO)  \
+{									\
+  if (flag_pic)								\
+    {									\
+      fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%eax\n",		\
+	       LPREFIX, (LABELNO));					\
+      fprintf (FILE, "\tcall *mcount@GOT(%%ebx)\n");			\
+    }									\
+  else									\
+    {									\
+      fprintf (FILE, "\tmovl $%sP%d,%%eax\n", LPREFIX, (LABELNO));	\
+      fprintf (FILE, "\tcall mcount\n");				\
+    }									\
+}
 
 /*
  * Some imports from svr4.h in support of shared libraries.
@@ -229,15 +225,23 @@ do {                                                                    \
 
 #ifdef FREEBSD_NATIVE
 
+#define INCLUDE_DEFAULTS { \
+	{ "/usr/include", 0 }, \
+	{ "/usr/include/g++", 1 }, \
+	{ 0, 0} \
+	}
+
 #undef MD_EXEC_PREFIX
 #define MD_EXEC_PREFIX "/usr/libexec/"
 
 #undef STANDARD_STARTFILE_PREFIX
 #define STANDARD_STARTFILE_PREFIX "/usr/lib"
 
+#if 0 /* This is very wrong!!! */
 #define DEFAULT_TARGET_MACHINE "i386-unknown-freebsd_1.0"
 #define GPLUSPLUS_INCLUDE_DIR "/usr/local/lib/gcc-lib/i386-unknown-freebsd_1.0/2.5.8/include"
 #define TOOL_INCLUDE_DIR "/usr/local/i386-unknown-freebsd_1.0/include"
 #define GCC_INCLUDE_DIR "/usr/local/lib/gcc-lib/i386-unknown-freebsd_1.0/2.5.8/include"
+#endif
 
 #endif /* FREEBSD_NATIVE */
