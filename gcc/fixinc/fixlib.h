@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "auto-host.h"
 #include "ansidecl.h"
+#include "config.h"
 #include "system.h"
 
 #include "gnu-regex.h"

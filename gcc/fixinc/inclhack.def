@@ -1985,6 +1985,7 @@ fix = {
                "|__STDC__[ \t]*!=[ \t]*1"
                "|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0"
                ")(.*)";
+    c_test   = stdc_0_in_system_headers;
 
     c_fix     = format;
     c_fix_arg = "%1 !defined(__STRICT_ANSI__)%3";
@@ -2011,6 +2012,7 @@ fix = {
     select   = "^([ \t]*[|&][|&][ \t(]*)"
                "(__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0"
                ")(.*)";
+    c_test   = stdc_0_in_system_headers;
 
     c_fix     = format;
     c_fix_arg = "%1 !defined(__STRICT_ANSI__)%3";
@@ -2031,6 +2033,7 @@ fix = {
                "|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*1"
                "|__STDC__[ \t]*-[ \t]*0[ \t]*!=[ \t]*0"
                ")(.*)";
+    c_test   = stdc_0_in_system_headers;
 
     c_fix     = format;
     c_fix_arg = "%1 defined(__STRICT_ANSI__)%3";

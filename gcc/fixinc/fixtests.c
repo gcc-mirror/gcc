@@ -55,7 +55,8 @@ typedef struct {
 } test_entry_t;
 
 #define FIX_TEST_TABLE \
-  _FT_( "machine_name",     machine_name_test )
+  _FT_( "machine_name",     machine_name_test )        \
+  _FT_( "stdc_0_in_system_headers",    stdc_0_in_system_headers_test )
 
 #define TEST_FOR_FIX_PROC_HEAD( test )          \
 static apply_fix_p_t test PARAMS(( tCC* file, tCC* text ));  \
@@ -112,6 +113,16 @@ TEST_FOR_FIX_PROC_HEAD( machine_name_test )
       /* Otherwise, keep looking... */
     }
   return SKIP_FIX;
+#endif
+}
+
+
+TEST_FOR_FIX_PROC_HEAD( stdc_0_in_system_headers_test )
+{
+#ifdef STDC_0_IN_SYSTEM_HEADERS
+  return SKIP_FIX;
+#else
+  return APPLY_FIX;
 #endif
 }
 
