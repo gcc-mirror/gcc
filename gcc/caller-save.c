@@ -424,32 +424,55 @@ save_call_clobbered_regs (insn_mode)
 		 live, call-used, not fixed, and not already saved.  We must
 		 test at this point because registers that die in a CALL_INSN
 		 are not live across the call and likewise for registers that
-		 are born in the CALL_INSN.  */
+		 are born in the CALL_INSN.
+		 
+		 If registers are filled with parameters for this function,
+		 and some of these are also being set by this function, then
+		 they will not appear to die (no REG_DEAD note for them),
+		 to check if in fact they do, collect the set registers in
+		 hard_regs_live first.  */
 
 	      if (code == CALL_INSN)
 		{
+		  HARD_REG_SET this_call_sets;
+		  {
+		    HARD_REG_SET old_hard_regs_live;
+
+		    /* Save the hard_regs_live information.  */
+		    COPY_HARD_REG_SET (old_hard_regs_live, hard_regs_live);
+
+		    /* Now calculate hard_regs_live for this CALL_INSN
+		       only.  */
+		    CLEAR_HARD_REG_SET (hard_regs_live);
+		    note_stores (PATTERN (insn), set_reg_live);
+		    COPY_HARD_REG_SET (this_call_sets, hard_regs_live);
+
+		    /* Restore the hard_regs_live information.  */
+		    COPY_HARD_REG_SET (hard_regs_live, old_hard_regs_live);
+		  }
+
 		  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 		    if (call_used_regs[regno] && ! call_fixed_regs[regno]
 		        && TEST_HARD_REG_BIT (hard_regs_live, regno)
+			/* It must not be set by this instruction.  */
+		        && ! TEST_HARD_REG_BIT (this_call_sets, regno)
 		        && ! TEST_HARD_REG_BIT (hard_regs_saved, regno))
 		      regno += insert_save_restore (insn, 1, regno, 
 						    insn_mode, 0);
-#ifdef HARD_REG_SET
-		  hard_regs_need_restore = hard_regs_saved;
-#else
-		  COPY_HARD_REG_SET (hard_regs_need_restore,
-				     hard_regs_saved);
-#endif
+
+		  /* Put the information for this CALL_INSN on top of what
+		     we already had.  */
+		  IOR_HARD_REG_SET (hard_regs_live, this_call_sets);
+		  COPY_HARD_REG_SET (hard_regs_need_restore, hard_regs_saved);
 
 		  /* Must recompute n_regs_saved.  */
 		  n_regs_saved = 0;
 		  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 		    if (TEST_HARD_REG_BIT (hard_regs_saved, regno))
 		      n_regs_saved++;
-		  
 		}
-	      
-	      note_stores (PATTERN (insn), set_reg_live);
+	      else
+		note_stores (PATTERN (insn), set_reg_live);
 
 	      for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 		if (REG_NOTE_KIND (link) == REG_UNUSED)
@@ -632,14 +655,6 @@ insert_save_restore (insn, save_p, regno, insn_mode, maxrestore)
 
   if (regno_save_mem[regno][1] == 0)
     abort ();
-
-  /* If INSN is a CALL_INSN, we must insert our insns before any
-     USE insns in front of the CALL_INSN.  */
-
-  if (GET_CODE (insn) == CALL_INSN)
-    while (GET_CODE (PREV_INSN (insn)) == INSN
-	   && GET_CODE (PATTERN (PREV_INSN (insn))) == USE)
-      insn = PREV_INSN (insn);
 
 #ifdef HAVE_cc0
   /* If INSN references CC0, put our insns in front of the insn that sets
