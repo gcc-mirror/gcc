@@ -4618,6 +4618,7 @@ java_check_regular_methods (class_decl)
       if (DECL_CONTEXT (found) != object_type_node
 	  && ((aflags & 0x7) == 0)
 	  && !class_in_current_package (DECL_CONTEXT (found))
+	  && DECL_NAME (found) != clinit_identifier_node
 	  && flag_not_overriding)
         {
 	  parse_warning_context 
@@ -7869,7 +7870,10 @@ java_complete_lhs (node)
 	COMPLETE_CHECK_OP_1 (node);
       TREE_TYPE (node) = void_type_node;
       POP_LABELED_BLOCK ();
-      if (CAN_COMPLETE_NORMALLY (LABELED_BLOCK_BODY (node)))
+
+      if (LABELED_BLOCK_BODY (node) == empty_stmt_node)
+	LABELED_BLOCK_BODY (node) = NULL_TREE;
+      else if (CAN_COMPLETE_NORMALLY (LABELED_BLOCK_BODY (node)))
 	CAN_COMPLETE_NORMALLY (node) = 1;
       return node;
 
