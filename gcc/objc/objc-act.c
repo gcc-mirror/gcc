@@ -5893,7 +5893,7 @@ is_public (expr, identifier)
                 {
                   int private = is_private (decl);
                   if (private)
-                    error ("instance variable '%s' si declared private",
+                    error ("instance variable '%s' is declared private",
                            IDENTIFIER_POINTER (DECL_NAME (decl)));
 
                   return !private;

@@ -1,3 +1,7 @@
+2004-01-24  Matthias Klose  <doko@debian.org>
+
+	* objc/objc-act.c (is_public): Fix typo in message.
+
 2004-01-23  Richard Henderson  <rth@redhat.com>
 
         PR opt/12941
