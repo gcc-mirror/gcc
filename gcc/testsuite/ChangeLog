@@ -1,3 +1,14 @@
+2002-04-01  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* g++.dg/ext/instantiate1.C, g++.dg/ext/instantiate2.C,
+	g++.dg/ext/instantiate3.C: Tweak match patterns.
+
+	* g++.old-deja/g++.pt/static11.C: Skip on mmix-knuth-mmixware.
+
+	* gcc.dg/weak-1.c: Fix typo in scan-assembler pattern.
+
+	* g++.old-deja/g++.law/bit-fields2.C: Skip on mmix-knuth-mmixware.
+
 2002-03-31  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/special/alias-2.c: New.
