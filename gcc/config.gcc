@@ -1978,6 +1978,7 @@ powerpc-*-darwin*)
 	tm_p_file="${tm_p_file} darwin-protos.h"
 	tmake_file=rs6000/t-darwin
 	extra_objs="darwin.o"
+	config_gtfiles="${config_gtfiles} \$(srcdir)/config/darwin.c"
 	c_target_objs="darwin-c.o"
 	cxx_target_objs="darwin-c.o"
 	# Darwin linker does collect2 functionality
