@@ -1693,7 +1693,8 @@ reload (first, global, dumpfile)
 			    && TEST_HARD_REG_BIT (reg_class_contents[class], j + 1)
 			    && HARD_REGNO_MODE_OK (j, group_mode[class])
 			    && ! TEST_HARD_REG_BIT (counted_for_nongroups,
-						    j + 1))
+						    j + 1)
+			    && ! TEST_HARD_REG_BIT (bad_spill_regs, j + 1))
 			  break;
 		      }
 
