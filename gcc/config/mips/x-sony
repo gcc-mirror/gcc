@@ -1,5 +1,5 @@
 # Make internal tables bigger.
-OLDCC=cc -Wf,-XNg1500,-XNh1500 -Olimit 3000 $(OPT)
+OLDCC=cc -Wf,-XNg1500,-XNh2000 -Olimit 3000 $(OPT)
 
 # Define CC and OLDCC as the same, so that the tests:
 #	if [ x"$(OLDCC)" = x"$(CC)" ] ...
