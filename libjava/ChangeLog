@@ -1,5 +1,11 @@
 2001-11-19  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (_Jv_BytecodeVerifier::require_array_type): Special
+	case for boolean arrays.
+
+	* verify.cc (_Jv_BytecodeVerifier::compute_jump): Put PC into
+	error message.
+
 	* verify.cc (_Jv_BytecodeVerifier::verify_instructions_0)
 	[op_lshl, op_lshr, op_lushr]: Shift argument is an int, not a
 	long.
