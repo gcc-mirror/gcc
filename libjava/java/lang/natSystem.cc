@@ -240,15 +240,28 @@ getpwuid_adaptor(T_passwd * (*getpwuid_r)(T_uid user_id, T_passwd *pwd_r,
 jstring
 java::lang::System::getSystemTimeZone (void)
 {
+  struct tm *tim;
   time_t current_time;
   char **tzinfo, *tzid;
   long tzoffset;
 
   current_time = time(0);
 
-  mktime(localtime(&current_time));
+  mktime(tim = localtime(&current_time));
+#ifdef STRUCT_TM_HAS_GMTOFF
+  tzoffset = -(tim->tm_gmtoff);	// tm_gmtoff is secs EAST of UTC.
+#elif HAVE_TIMEZONE
+  tzoffset = timezone;		// timezone is secs WEST of UTC.
+#else
+  // FIXME: there must be another global if neither tm_gmtoff nor timezone
+  // is available, esp. if tzname is valid.
+  // Richard Earnshaw <rearnsha@arm.com> has suggested using difftime to
+  // calculate between gmtime and localtime (and accounting for possible
+  // daylight savings time) as an alternative.  Also note that this same
+  // issue exists in java/util/natGregorianCalendar.cc.
+  tzoffset = 0L;
+#endif
   tzinfo = tzname;
-  tzoffset = timezone;
 
   if ((tzoffset % 3600) == 0)
     tzoffset = tzoffset / 3600;
