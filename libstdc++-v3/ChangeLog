@@ -1,3 +1,18 @@
+2001-09-13   Benjamin Kosnik  <bkoz@redhat.com>
+
+	Implement std::money_get.
+	* include/bits/locale_facets.tcc (money_get::do_get): Implement.
+	* include/bits/locale_facets.h (money_get): Correct signatures.
+	* testsuite/22_locale/money_get.cc: New file.
+	* testsuite/22_locale/money_get_members_char.cc: New file.
+
+	* include/bits/locale_facets.tcc (__verify_grouping): New
+	function. Consolidate num_get and money_get group checking into
+	one function.
+	(money_get): Use it.
+	* src/locale.cc (num_get::_M_extract): Use it.
+	* src/locale-inst.cc: Add instantiation.
+	
 2001-09-12  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/std_limits.h (numeric_limits<float>::radix,
