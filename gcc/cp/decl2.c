@@ -416,10 +416,16 @@ int max_tinst_depth = 17;
 /* The name-mangling scheme to use.  Must be 1 or greater to support
    template functions with identical types, but different template
    arguments.  */
-int name_mangling_version = 1;
+int name_mangling_version = 2;
 
 /* Nonzero means that guiding declarations are allowed.  */
 int flag_guiding_decls;
+
+/* Nonzero if squashed mangling is to be performed. 
+   This uses the B and K codes to reference previously seen class types 
+   and class qualifiers.       */
+int flag_do_squangling;
+
 
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
@@ -436,6 +442,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"short-enums", &flag_short_enums, 1},
   {"short-double", &flag_short_double, 1},
   {"cond-mismatch", &flag_cond_mismatch, 1},
+  {"squangle", &flag_do_squangling, 1},
   {"asm", &flag_no_asm, 0},
   {"builtin", &flag_no_builtin, 0},
   {"ident", &flag_no_ident, 0},
