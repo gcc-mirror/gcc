@@ -2640,7 +2640,7 @@ do_type (work, mangled, result)
 	  break;
 
 	case 'C':
-	  (*mangled)++;
+	case 'V':
 	  /*
 	    if ((*mangled)[1] == 'P')
 	    {
@@ -2651,8 +2651,10 @@ do_type (work, mangled, result)
 		{
 		  string_prepend (&decl, " ");
 		}
-	      string_prepend (&decl, "const");
+	      string_prepend (&decl, 
+			      (**mangled) == 'C' ? "const" : "volatile");
 	    }
+	  (*mangled)++;
 	  break;
 	  /*
 	    }
