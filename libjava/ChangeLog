@@ -1,3 +1,10 @@
+2002-02-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* acinclude.m4 (LIB_AC_PROG_CXX): Copied from libstdc++-v3.
+	Use it.
+	* Makefile.am (LIBLINK): Use CXX (and its tag) for linking.
+	* aclocal.m4, configure, Makefile.in: Rebuilt.
+
 2002-02-19  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/5696:
