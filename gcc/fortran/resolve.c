@@ -3736,14 +3736,22 @@ resolve_symbol (gfc_symbol * sym)
 	  || sym->as->type == AS_ASSUMED_SHAPE)
       && sym->attr.dummy == 0)
     {
-      gfc_error("Assumed %s array at %L must be a dummy argument",
-		sym->as->type == AS_ASSUMED_SIZE ? "size" : "shape",
-                &sym->declared_at);
+      gfc_error ("Assumed %s array at %L must be a dummy argument",
+		 sym->as->type == AS_ASSUMED_SIZE ? "size" : "shape",
+                 &sym->declared_at);
+      return;
+    }
+
+  if (sym->attr.flavor == FL_PARAMETER
+      && sym->as != NULL && sym->as->type != AS_EXPLICIT)
+    {
+      gfc_error ("Parameter array '%s' at %L must have an explicit shape",
+		 sym->name, &sym->declared_at);
       return;
     }
 
   /* Make sure that character string variables with assumed length are
-     dummy argument.  */
+     dummy arguments.  */
 
   if (sym->attr.flavor == FL_VARIABLE && !sym->attr.result
       && sym->ts.type == BT_CHARACTER
