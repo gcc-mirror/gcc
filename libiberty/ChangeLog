@@ -1,5 +1,12 @@
 2003-02-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* configure.in: Check for sys/sysmp.h and sysmp.
+	* physmem.c: Pull upstream copy, add support for irix6.
+
+	* config.in, configure: Regenerated.
+
+2003-02-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* physmem.c (physmem_total, physmem_available): De-ANSI-fy.
 	* configure.in (AC_CHECK_FUNCS): Add pstat_getstatic and
 	pstat_getdynamic.
