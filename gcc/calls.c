@@ -1345,6 +1345,22 @@ expand_call (exp, target, ignore)
 #endif
 	      )
 	    {
+	      /* C++ uses a TARGET_EXPR to indicate that we want to make a
+	         new object from the argument.  If we are passing by
+	         invisible reference, the callee will do that for us, so we
+	         can strip off the TARGET_EXPR.  This is not always safe,
+	         but it is safe in the only case where this is a useful
+	         optimization; namely, when the argument is a plain object.
+	         In that case, the frontend is just asking the backend to
+	         make a bitwise copy of the argument. */
+		 
+	      if (TREE_CODE (args[i].tree_value) == TARGET_EXPR
+		  && (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND
+						  (args[i].tree_value, 1)))
+		      == 'd')
+		  && ! REG_P (DECL_RTL (TREE_OPERAND (args[i].tree_value, 1))))
+		args[i].tree_value = TREE_OPERAND (args[i].tree_value, 1);
+
 	      args[i].tree_value = build1 (ADDR_EXPR,
 					   build_pointer_type (type),
 					   args[i].tree_value);
