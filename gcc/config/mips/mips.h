@@ -364,6 +364,16 @@ extern void		text_section ();
 
 #define TARGET_4300_MUL_FIX     (target_flags & MASK_4300_MUL_FIX)
 
+/* This is true if we must enable the assembly language file switching
+   code.  */
+
+#define TARGET_FILE_SWITCHING	(TARGET_GP_OPT && ! TARGET_GAS)
+
+/* We must disable the function end stabs when doing the file switching trick,
+   because the Lscope stabs end up in the wrong place, making it impossible
+   to debug the resulting code.  */
+#define NO_DBX_FUNCTION_END TARGET_FILE_SWITCHING
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
