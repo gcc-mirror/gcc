@@ -196,9 +196,10 @@ rtvec_alloc (n)
 			      + (( n - 1) * sizeof (rtunion)));
 
   /* clear out the vector */
-  PUT_NUM_ELEM(rt, n);
-  for (i=0; i < n; i++)
-    rt->elem[i].rtvec = NULL;	/* @@ not portable due to rtunion */
+  PUT_NUM_ELEM (rt, n);
+
+  for (i = 0; i < n; i++)
+    rt->elem[i].rtwint = 0;
 
   return rt;
 }
