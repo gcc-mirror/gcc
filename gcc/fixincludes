@@ -932,6 +932,7 @@ if [ -r ${LIB}/$file ]; then
 fi
 
 # Fix return type of free and {c,m,re}alloc in <malloc.h> on SunOS 4.1.
+# Also fix return type of {m,re}alloc in <malloc.h> on sysV68
 file=malloc.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
@@ -943,6 +944,8 @@ if [ -r ${LIB}/$file ]; then
   echo Fixing $file
   sed -e 's/typedef[ 	]char \*	malloc_t/typedef void \*	malloc_t/g' \
   -e 's/int[ 	][ 	]*free/void	free/g' \
+  -e 's/char\([ 	]*\*[ 	]*malloc\)/void\1/g' \
+  -e 's/char\([ 	]*\*[ 	]*realloc\)/void\1/g' \
   ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
