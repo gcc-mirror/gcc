@@ -1,3 +1,9 @@
+2002-09-18  Richard Earnshaw (rearnsha@arm.com)
+
+	PR optimization/7967
+	* arm.md (ne_zeroextractsi): Add clobber of the condition code
+	register.
+
 2002-09-17  Richard Henderson  <rth@redhat.com>
 
 	* sibcall.c (optimize_sibling_and_tail_recursive_call): Also remove
