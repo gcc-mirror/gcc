@@ -1,4 +1,11 @@
-2000-11-21  Gabriel Dos Reis  <gdr@codesourcery.com>
+2000-11-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* mkcheck.in (explanation): Don't paste output of passing compiles
+	into log file. Use -static. Get version info.
+
+	* testsuite/23_containers/vector_ctor.cc (test02): Fix thinko.
+
+2000-11-20  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* include/bits/std_complex.h (complex<double>): Constructor
 	complex<double>::complex(const complex<float>&) is not explicit;
@@ -17,8 +24,6 @@
 
 	* testsuite/23_containers/vector_ctor.cc (test02): Add test from
 	libstdc++/102.
-
-	* src/string-inst.cc: Tweaks.
 	
 2000-11-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 

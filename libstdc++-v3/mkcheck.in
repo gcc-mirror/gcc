@@ -112,18 +112,16 @@ CXX_FLAG="-ggdb3 -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
 SH_FLAG=""
 
 # specific libtool flag(s) to force the use of static libraries, if any
-#ST_FLAG="-static"
-ST_FLAG="-all-static"
+ST_FLAG="-static"
+#ST_FLAG="-all-static"
 
 # LTCXX == how to call libtool when creating an executable
-# LTEXE == how to call libtool when running an executable
 # LIBS == any extra needed -l switches, etc (may need more libs, lose lose)
 if [ $WHICH -eq 0 ]; then
   LTCXX="$LIBTOOL --tag=CXX --mode=link \
           $CXX $CXX_FLAG $INC_PATH   \
           $LIB_PATH/../libsupc++/libsupc++.la  $LIB_PATH/libstdc++.la   \
           -no-install"
-  LTEXE="$LIBTOOL --mode=execute"
   LIBS="-nodefaultlibs -lc -lgcc -lc"
 elif [ $WHICH -eq 1 ]; then
   # For the installed version, we really only need to use libtool and
@@ -131,9 +129,10 @@ elif [ $WHICH -eq 1 ]; then
   LTCXX="$LIBTOOL --tag=CXX --mode=link \
           $CXX $CXX_FLAG $INC_PATH -L$LIB_PATH   \
           $LIB_PATH/libstdc++.la -no-install -rpath $LIB_PATH"
-  LTEXE="$LIBTOOL --mode=execute"
   LIBS=
 fi
+# LTEXE == how to call libtool when running an executable
+LTEXE="$LIBTOOL --mode=execute"
 
 # Set up the testing directory, which should be in a directory called
 # "testsuite" in the root level of the build directory.
@@ -200,8 +199,7 @@ chmod u+w $TEST_DIR/*.tst
 
 # Emit useful info about compiler and platform
 echo "host: $(uname -mrsv)" >> $RESULTS_FILE
-echo "compiler: $($CXX -v 2>&1 | tail -1)" >> $RESULTS_FILE
-echo "$($CXX -v 2>&1 | grep ^Configured)" >> $RESULTS_FILE
+echo "compiler: $($CXX -v 2>&1)" >> $RESULTS_FILE
 echo "compiler flags: $CXX_FLAG" >> $RESULTS_FILE
 echo "date: $(date +%Y%m%d)" >> $RESULTS_FILE
 echo "" >> $RESULTS_FILE
@@ -377,12 +375,9 @@ test_file()
     # eventually have to calculate time_t anyhow.  Or 3) just grab two
     # time_t's (no more overhead than grabbing two date(1)'s).
     compiler_invocation="$LTCXX $S_FLAG $SRC_NAME -o $EXENAME $LIBS"
-    # Why the leading weird character, like a colon?  That way you can
-    # 'grep -v ^: *mkchecklog.txt' and just see the errors.
-    #printf "\n: " >> $LOG_FILE
     printf "\n" >> $LOG_FILE
     COMP_TIME_START=$($TEST_DIR/printnow)
-    $compiler_invocation
+    $compiler_invocation >> compile.out 2>&1
     COMP_TIME_END=$($TEST_DIR/printnow)
 
     if [ $COMP_TIME_START -lt $COMP_TIME_END ]; then
@@ -392,6 +387,7 @@ test_file()
     fi
 
     if [ -f $EXENAME ]; then
+        rm compile.out
         size_command TEXT
         size_command DATA
         size_command SIZE
@@ -427,7 +423,8 @@ test_file()
         fi
     else
         # the file did not compile/link.
-        $compiler_invocation >> $LOG_FILE 2>&1
+       `cat compile.out > $LOG_FILE` 
+	rm compile.out
         RESULT="-b"
         TEXT="0"
         DATA="0"
