@@ -3995,3 +3995,20 @@ init_optabs ()
   fixunsdfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunsdfsi");
   fixunsdfdi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunsdfdi");
 }
+
+#ifdef BROKEN_LDEXP
+
+/* SCO 3.2 apparently has a broken ldexp. */
+
+double
+ldexp(x,n)
+     double x;
+     int n;
+{
+  if (n > 0)
+    while (n--)
+      x *= 2;
+
+  return x;
+}
+#endif /* BROKEN_LDEXP */
