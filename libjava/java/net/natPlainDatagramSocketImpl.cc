@@ -184,7 +184,7 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
   union SockAddr u;
   struct sockaddr *ptr = (struct sockaddr *) &u.address;
   // FIXME: Use getaddrinfo() to get actual protocol instead of assuming ipv4.
-  jbyteArray haddress = host->address;
+  jbyteArray haddress = host->addr;
   jbyte *bytes = elements (haddress);
   int len = haddress->length;
 
@@ -257,7 +257,7 @@ java::net::PlainDatagramSocketImpl::peek (java::net::InetAddress *i)
   else
     throw new java::net::SocketException (JvNewStringUTF ("invalid family"));
 
-  i->address = raddr;
+  i->addr = raddr;
   return rport;
  error:
   char* strerr = strerror (errno);
@@ -270,7 +270,7 @@ java::net::PlainDatagramSocketImpl::send (java::net::DatagramPacket *p)
   // FIXME: Deal with Multicast and if the socket is connected.
   jint rport = p->getPort();
   union SockAddr u;
-  jbyteArray haddress = p->getAddress()->address;
+  jbyteArray haddress = p->getAddress()->addr;
   jbyte *bytes = elements (haddress);
   int len = haddress->length;
   struct sockaddr *ptr = (struct sockaddr *) &u.address;
@@ -391,7 +391,7 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
 					      jboolean join)
 {
   union McastReq u;
-  jbyteArray haddress = inetaddr->address;
+  jbyteArray haddress = inetaddr->addr;
   jbyte *bytes = elements (haddress);
   int len = haddress->length;
   int level, opname;
@@ -499,7 +499,7 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
 	int level, opname;
 	const char *ptr;
 
-	haddress = ((java::net::InetAddress *) value)->address;
+	haddress = ((java::net::InetAddress *) value)->addr;
 	bytes = elements (haddress);
 	len = haddress->length;
 	if (len == 4)

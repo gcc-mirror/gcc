@@ -134,7 +134,7 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
 {
   union SockAddr u;
   struct sockaddr *ptr = (struct sockaddr *) &u.address;
-  jbyteArray haddress = host->address;
+  jbyteArray haddress = host->addr;
   jbyte *bytes = elements (haddress);
   int len = haddress->length;
   int i = 1;
@@ -186,7 +186,7 @@ java::net::PlainSocketImpl::connect (java::net::InetAddress *host, jint rport)
 {
   union SockAddr u;
   socklen_t addrlen = sizeof(u);
-  jbyteArray haddress = host->address;
+  jbyteArray haddress = host->addr;
   jbyte *bytes = elements (haddress);
   int len = haddress->length;
   struct sockaddr *ptr = (struct sockaddr *) &u.address;

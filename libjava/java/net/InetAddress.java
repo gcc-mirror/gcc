@@ -1,6 +1,6 @@
 // INetAddress.java -- An Internet Protocol (IP) address.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -9,6 +9,9 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 package java.net;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
 
 /**
  * @author Per Bothner
@@ -24,37 +27,79 @@ package java.net;
 
 public final class InetAddress implements java.io.Serializable
 {
-  byte[] address;
-  String hostname;
+  // The Serialized Form specifies that an int 'address' is saved/restored.
+  // This class uses a byte array internally so we'll just do the conversion
+  // at serialization time and leave the rest of the algorithm as is.
+  private int address;
+  transient byte[] addr;
+  String hostName;
+  // The field 'family' seems to be the AF_ value.
+  // FIXME: Much of the code in the other java.net classes does not make
+  // use of this family field.  A better implementation would be to make
+  // use of getaddrinfo() and have other methods just check the family
+  // field rather than examining the length of the address each time.
+  int family;
+  private static final long serialVersionUID = 3286316764910316507L;
+
+  private void readObject(ObjectInputStream ois)
+    throws IOException, ClassNotFoundException
+  {
+    ois.defaultReadObject();
+    addr = new byte[4];
+    addr[3] = (byte) address;
+    for (int i = 2; i >= 0; --i)
+      addr[i] = (byte) (address >>= 8);
+    // Ignore family from serialized data.  Since the saved address is 32 bits
+    // the deserialized object will have an IPv4 address i.e. AF_INET family.
+    // FIXME: An alternative is to call the aton method on the deserialized
+    // hostname to get a new address.  The Serialized Form doc is silent
+    // on how these fields are used.
+    family = getFamily (addr);
+  }
+
+  private void writeObject(ObjectOutputStream oos) throws IOException
+  {
+    // Build a 32 bit address from the last 4 bytes of a 4 byte IPv4 address
+    // or a 16 byte IPv6 address.
+    int len = addr.length;
+    int i = len - 4;
+    for (; i < len; i++)
+      address = address << 8 | (((int) addr[i]) & 0xFF);
+    oos.defaultWriteObject();
+  }
+
+  private static native int getFamily (byte[] address);
 
   InetAddress (byte[] address, String hostname)
   {
-    this.address = address;
-    this.hostname = hostname;
+    addr = address;
+    hostName = hostname;
+    if (address != null)
+      family = getFamily (address);
   }
 
   public boolean isMulticastAddress ()
   {
-    int len = address.length;
+    int len = addr.length;
     if (len == 4)
-      return (address[0] & 0xF0) == 0xE0;
+      return (addr[0] & 0xF0) == 0xE0;
     if (len == 16)
-      return address[0] == (byte) 0xFF;
+      return addr[0] == (byte) 0xFF;
     return false;
   }
 
   public String getHostName ()
   {
-    if (hostname == null)
+    if (hostName == null)
       lookup (null, this, false);
-    return hostname;
+    return hostName;
   }
 
   public byte[] getAddress ()
   {
     // An experiment shows that JDK1.2 returns a different byte array each
     // time.  This makes sense, in terms of security.
-    return (byte[]) address.clone();
+    return (byte[]) addr.clone();
   }
 
   /* Helper function due to a CNI limitation.  */
@@ -83,7 +128,7 @@ public final class InetAddress implements java.io.Serializable
   public String getHostAddress ()
   {
     StringBuffer sbuf = new StringBuffer(40);
-    int len = address.length;
+    int len = addr.length;
     int i = 0;
     if (len == 16)
       { // An IPv6 address.
@@ -91,7 +136,7 @@ public final class InetAddress implements java.io.Serializable
 	  {
 	    if (i >= 16)
 	      return sbuf.toString();
-	    int x = ((address[i] & 0xFF) << 8) | (address[i+1] & 0xFF);
+	    int x = ((addr[i] & 0xFF) << 8) | (addr[i+1] & 0xFF);
 	    boolean empty = sbuf.length() == 0;
 	    if (empty)
 	      {
@@ -116,7 +161,7 @@ public final class InetAddress implements java.io.Serializable
       }
     for ( ;  ; )
       {
-	sbuf.append(address[i] & 0xFF);
+	sbuf.append(addr[i] & 0xFF);
 	i++;
 	if (i == len)
 	  break;
@@ -130,10 +175,10 @@ public final class InetAddress implements java.io.Serializable
     // There hashing algorithm is not specified, but a simple experiment
     // shows that it is equal to the address, as a 32-bit big-endian integer.
     int hash = 0;
-    int len = address.length;
+    int len = addr.length;
     int i = len > 4 ? len - 4 : 0;
     for ( ; i < len;  i++)
-      hash = (hash << 8) | (address[i] & 0xFF);
+      hash = (hash << 8) | (addr[i] & 0xFF);
     return hash;
   }
 
@@ -147,8 +192,8 @@ public final class InetAddress implements java.io.Serializable
     // different host names."  This violates the description in the
     // JDK 1.2 API documentation.  A little experiementation
     // shows that the latter is correct.
-    byte[] addr1 = address;
-    byte[] addr2 = ((InetAddress) obj).address;
+    byte[] addr1 = addr;
+    byte[] addr2 = ((InetAddress) obj).addr;
     if (addr1.length != addr2.length)
       return false;
     for (int i = addr1.length;  --i >= 0;  )
@@ -208,7 +253,7 @@ public final class InetAddress implements java.io.Serializable
     // However, if there is a security manager, and the cached result
     // is other than "localhost", we need to check again.
     if (localhost == null
-	|| (s != null && localhost.address != localhostAddress))
+	|| (s != null && localhost.addr != localhostAddress))
       getLocalHost(s);
     return localhost;
   }
