@@ -1505,7 +1505,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		     seem worth generating rtl to say that.  */
 		  reg = gen_rtx_REG (word_mode, REGNO (reg));
 		  x = expand_shift (LSHIFT_EXPR, word_mode, reg,
-				    build_int_cst (NULL_TREE, FIXMEFORMAT
+				    build_int_cst (NULL_TREE,
 						   shift, 0),
 				    reg, 1);
 		  if (x != reg)
