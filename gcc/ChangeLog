@@ -1,3 +1,7 @@
+2001-06-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/i386/sol2.h (CPP_SPEC): Pass -P for .S files.
+
 2001-06-26  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in (TARGET_H, TARGET_DEF_H): New.

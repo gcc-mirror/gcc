@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80386 running Solaris 2
-   Copyright (C) 1993, 1995, 1996, 1997, 1998, 1999
+   Copyright (C) 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com).
 
@@ -66,11 +66,14 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES \
   "-Dunix -D__svr4__ -D__SVR4 -Dsun -Asystem=svr4"
 
+/* Solaris 2/Intel as chokes on #line directives.  */
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) \
-  %{pthreads:-D_REENTRANT -D_PTHREADS} \
-  %{!pthreads:%{threads:-D_REENTRANT -D_SOLARIS_THREADS}} \
-  %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude}"
+#define CPP_SPEC \
+  "%{.S:-P} \
+   %(cpp_cpu) \
+   %{pthreads:-D_REENTRANT -D_PTHREADS} \
+   %{!pthreads:%{threads:-D_REENTRANT -D_SOLARIS_THREADS}} \
+   %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude}"
 
 #undef LIB_SPEC
 #define LIB_SPEC \
