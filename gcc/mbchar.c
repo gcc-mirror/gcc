@@ -281,7 +281,10 @@ local_mb_cur_max ()
 #ifdef CROSS_COMPILE
   return 1;
 #else
-  return MB_CUR_MAX;
+  if (MB_CUR_MAX > 0)
+    return MB_CUR_MAX;
+
+  return 1; /* default */
 #endif
 }
 #endif /* MULTIBYTE_CHARS */
