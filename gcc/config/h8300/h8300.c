@@ -444,7 +444,7 @@ compute_saved_regs ()
   int regno;
 
   /* Construct a bit vector of registers to be pushed/popped.  */
-  for (regno = 0; regno <= 6; regno++)
+  for (regno = 0; regno <= FRAME_POINTER_REGNUM; regno++)
     {
       if (WORD_REG_USED (regno))
 	saved_regs |= 1 << regno;
@@ -2401,37 +2401,32 @@ get_shift_alg (shift_type, shift_mode, count, info)
      unsigned int count;
      struct shift_info *info;
 {
-  int cpu;
+  enum h8_cpu cpu;
 
   /* Find the target CPU.  */
   if (TARGET_H8300)
-    cpu = 0;
+    cpu = H8_300;
   else if (TARGET_H8300H)
-    cpu = 1;
+    cpu = H8_300H;
   else
-    cpu = 2;
+    cpu = H8_S;
 
   /* Find the shift algorithm.  */
+  info->alg = SHIFT_LOOP;
   switch (shift_mode)
     {
     case QIshift:
-      if (GET_MODE_BITSIZE (QImode) <= count)
-	info->alg = SHIFT_LOOP;
-      else
+      if (count < GET_MODE_BITSIZE (QImode))
 	info->alg = shift_alg_qi[cpu][shift_type][count];
       break;
 
     case HIshift:
-      if (GET_MODE_BITSIZE (HImode) <= count)
-	info->alg = SHIFT_LOOP;
-      else
+      if (count < GET_MODE_BITSIZE (HImode))
 	info->alg = shift_alg_hi[cpu][shift_type][count];
       break;
 
     case SIshift:
-      if (GET_MODE_BITSIZE (SImode) <= count)
-	info->alg = SHIFT_LOOP;
-      else
+      if (count < GET_MODE_BITSIZE (SImode))
 	info->alg = shift_alg_si[cpu][shift_type][count];
       break;
 
@@ -2773,7 +2768,7 @@ h8300_shift_needs_scratch_p (count, mode)
      int count;
      enum machine_mode mode;
 {
-  int cpu;
+  enum h8_cpu cpu;
   int a, lr, ar;
 
   if (GET_MODE_BITSIZE (mode) <= count)
@@ -2781,11 +2776,11 @@ h8300_shift_needs_scratch_p (count, mode)
 
   /* Find out the target CPU.  */
   if (TARGET_H8300)
-    cpu = 0;
+    cpu = H8_300;
   else if (TARGET_H8300H)
-    cpu = 1;
+    cpu = H8_300H;
   else
-    cpu = 2;
+    cpu = H8_S;
 
   /* Find the shift algorithm.  */
   switch (mode)
