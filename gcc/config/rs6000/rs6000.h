@@ -60,6 +60,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{mcpu=rios2: -D_ARCH_PWR2} \
 %{mcpu=rsc: -D_ARCH_PWR} \
 %{mcpu=rsc1: -D_ARCH_PWR} \
+%{mcpu=403: -D_ARCH_PPC} \
+%{mcpu=mpc403: -D_ARCH_PPC} \
+%{mcpu=ppc403: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
 %{mcpu=mpc601: -D_ARCH_PPC -D_ARCH_PWR} \
 %{mcpu=ppc601: -D_ARCH_PPC -D_ARCH_PWR} \
@@ -218,6 +221,7 @@ extern int target_flags;
 enum processor_type
  {PROCESSOR_RIOS1,
   PROCESSOR_RIOS2,
+  PROCESSOR_PPC403,
   PROCESSOR_PPC601,
   PROCESSOR_PPC603,
   PROCESSOR_PPC604,
@@ -1595,6 +1599,7 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
     case PROCESSOR_PPC601:				\
     case PROCESSOR_PPC603:				\
       return COSTS_N_INSNS (5);				\
+    case PROCESSOR_PPC403:				\
     case PROCESSOR_PPC604:				\
     case PROCESSOR_PPC620:				\
       return COSTS_N_INSNS (4);				\
@@ -1613,6 +1618,8 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
       return COSTS_N_INSNS (19);			\
     case PROCESSOR_RIOS2:				\
       return COSTS_N_INSNS (13);			\
+    case PROCESSOR_PPC403:				\
+      return COSTS_N_INSNS (33);			\
     case PROCESSOR_PPC601:				\
       return COSTS_N_INSNS (36);			\
     case PROCESSOR_PPC603:				\
