@@ -55,6 +55,7 @@ Boston, MA 02111-1307, USA.  */
 extern void *alloca ();
 #else
 extern char *alloca ();
+#endif
 #undef ONLY_INT_FIELDS
 #define ONLY_INT_FIELDS
 #endif
