@@ -543,7 +543,7 @@ validate_equiv_mem_from_store (dest, set)
   if ((GET_CODE (dest) == REG
        && reg_overlap_mentioned_p (dest, equiv_mem))
       || (GET_CODE (dest) == MEM
-	  && true_dependence (dest, equiv_mem)))
+	  && true_dependence (dest, VOIDmode, equiv_mem, rtx_varies_p)))
     equiv_mem_modified = 1;
 }
 
@@ -632,7 +632,7 @@ memref_referenced_p (memref, x)
 				      reg_equiv_replacement[REGNO (x)]));
 
     case MEM:
-      if (true_dependence (memref, x))
+      if (true_dependence (memref, VOIDmode, x, rtx_varies_p))
 	return 1;
       break;
 

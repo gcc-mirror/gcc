@@ -111,8 +111,7 @@ int *loop_number_exit_count;
 
 unsigned HOST_WIDE_INT loop_n_iterations;
 
-/* Nonzero if there is a subroutine call in the current loop.
-   (unknown_address_altered is also nonzero in this case.)  */
+/* Nonzero if there is a subroutine call in the current loop.  */
 
 static int loop_has_call;
 
@@ -160,7 +159,7 @@ static char *moved_once;
 /* Array of MEMs that are stored in this loop. If there are too many to fit
    here, we just turn on unknown_address_altered.  */
 
-#define NUM_STORES 20
+#define NUM_STORES 30
 static rtx loop_store_mems[NUM_STORES];
 
 /* Index of first available slot in above array.  */
@@ -2199,7 +2198,8 @@ prescan_loop (start, end)
 	}
       else if (GET_CODE (insn) == CALL_INSN)
 	{
-	  unknown_address_altered = 1;
+	  if (! CONST_CALL_P (insn))
+	    unknown_address_altered = 1;
 	  loop_has_call = 1;
 	}
       else
@@ -2795,7 +2795,7 @@ invariant_p (x)
 
       /* See if there is any dependence between a store and this load.  */
       for (i = loop_store_mems_idx - 1; i >= 0; i--)
-	if (true_dependence (loop_store_mems[i], x))
+	if (true_dependence (loop_store_mems[i], VOIDmode, x, rtx_varies_p))
 	  return 0;
 
       /* It's not invalidated by a store in memory
@@ -4523,6 +4523,8 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
   v->final_value = 0;
   v->same_insn = 0;
   v->auto_inc_opt = 0;
+  v->unrolled = 0;
+  v->shared = 0;
 
   /* The v->always_computable field is used in update_giv_derive, to
      determine whether a giv can be used to derive another giv.  For a
@@ -5771,6 +5773,8 @@ emit_iv_add_mult (b, m, a, reg, insert_before)
   end_sequence ();
 
   emit_insn_before (seq, insert_before);
+
+  record_base_value (REGNO (reg), b);
 }
 
 /* Test whether A * B can be computed without

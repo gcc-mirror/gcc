@@ -1046,8 +1046,11 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
 	      for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; j++)
 		if (local_regno[j])
-		  map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
-
+		  {
+		    map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
+		    record_base_value (REGNO (map->reg_map[j]),
+				       regno_reg_rtx[j]);
+		  }
 	      /* The last copy needs the compare/branch insns at the end,
 		 so reset copy_end here if the loop ends with a conditional
 		 branch.  */
@@ -1191,7 +1194,11 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
       for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; j++)
 	if (local_regno[j])
-	  map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
+	  {
+	    map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
+	    record_base_value (REGNO (map->reg_map[j]),
+			       regno_reg_rtx[j]);
+	  }
 
       /* If loop starts with a branch to the test, then fix it so that
 	 it points to the test of the first unrolled copy of the loop.  */
@@ -1691,7 +1698,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 			/* Check for shared address givs, and avoid
 			   incrementing the shared pseudo reg more than
 			   once.  */
-			if (! tv->same_insn)
+			if (! tv->same_insn && ! tv->shared)
 			  {
 			    /* tv->dest_reg may actually be a (PLUS (REG)
 			       (CONST)) here, so we must call plus_constant
@@ -1817,6 +1824,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		      tem = gen_reg_rtx (GET_MODE (giv_src_reg));
 		      giv_dest_reg = tem;
 		      map->reg_map[regno] = tem;
+		      record_base_value (REGNO (tem), giv_src_reg);
 		    }
 		  else
 		    map->reg_map[regno] = giv_src_reg;
@@ -2505,7 +2513,8 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
 		      || ! invariant_p (bl->initial_value)))
 		{
 		  rtx tem = gen_reg_rtx (bl->biv->mode);
-		  
+
+		  record_base_value (REGNO (tem), bl->biv->add_val);
 		  emit_insn_before (gen_move_insn (tem, bl->biv->src_reg),
 				    loop_start);
 
@@ -2562,6 +2571,8 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
 		 this insn will always be executed, no matter how the loop
 		 exits.  */
 	      rtx tem = gen_reg_rtx (bl->biv->mode);
+	      record_base_value (REGNO (tem), bl->biv->add_val);
+
 	      emit_insn_before (gen_move_insn (tem, bl->biv->src_reg),
 				loop_start);
 	      emit_insn_before (gen_move_insn (bl->biv->src_reg,
@@ -2737,6 +2748,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	    {
 	      rtx tem = gen_reg_rtx (bl->biv->mode);
 
+	      record_base_value (REGNO (tem), bl->biv->add_val);
 	      emit_insn_before (gen_move_insn (tem, bl->biv->src_reg),
 				loop_start);
 	      biv_initial_value = tem;
@@ -2778,6 +2790,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		      || GET_CODE (XEXP (value, 1)) != CONST_INT))
 		{
 		  rtx tem = gen_reg_rtx (v->mode);
+		  record_base_value (REGNO (tem), v->add_val);
 		  emit_iv_add_mult (bl->initial_value, v->mult_val,
 				    v->add_val, tem, loop_start);
 		  value = tem;
@@ -2796,16 +2809,9 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		 what we want for split addr regs. We always create a new
 		 register for the split addr giv, just to be safe.  */
 
-	      /* ??? If there are multiple address givs which have been
-		 combined with the same dest_reg giv, then we may only need
-		 one new register for them.  Pulling out constants below will
-		 catch some of the common cases of this.  Currently, I leave
-		 the work of simplifying multiple address givs to the
-		 following cse pass.  */
-	      
-	      /* As a special case, if we have multiple identical address givs
-		 within a single instruction, then we do use a single pseudo
-		 reg for both.  This is necessary in case one is a match_dup
+	      /* If we have multiple identical address givs within a
+		 single instruction, then use a single pseudo reg for
+		 both.  This is necessary in case one is a match_dup
 		 of the other.  */
 
 	      v->const_adjust = 0;
@@ -2818,12 +2824,26 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 			     "Sharing address givs in insn %d\n",
 			     INSN_UID (v->insn));
 		}
+	      /* If multiple address GIVs have been combined with the
+		 same dest_reg GIV, do not create a new register for
+		 each.  */
+	      else if (unroll_type != UNROLL_COMPLETELY
+		       && v->giv_type == DEST_ADDR
+		       && v->same && v->same->giv_type == DEST_ADDR
+		       && v->same->unrolled)
+		{
+		  v->dest_reg = v->same->dest_reg;
+		  v->shared = 1;
+		}
 	      else if (unroll_type != UNROLL_COMPLETELY)
 		{
 		  /* If not completely unrolling the loop, then create a new
 		     register to hold the split value of the DEST_ADDR giv.
 		     Emit insn to initialize its value before loop start.  */
-		  tem = gen_reg_rtx (v->mode);
+
+		  rtx tem = gen_reg_rtx (v->mode);
+		  record_base_value (REGNO (tem), v->add_val);
+		  v->unrolled = 1;
 
 		  /* If the address giv has a constant in its new_reg value,
 		     then this constant can be pulled out and put in value,
@@ -2834,7 +2854,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		    {
 		      v->dest_reg
 			= plus_constant (tem, INTVAL (XEXP (v->new_reg,1)));
-		      
+
 		      /* Only succeed if this will give valid addresses.
 			 Try to validate both the first and the last
 			 address resulting from loop unrolling, if
@@ -3130,6 +3150,7 @@ final_biv_value (bl, loop_start, loop_end)
 	     case it is needed later.  */
 
 	  tem = gen_reg_rtx (bl->biv->mode);
+	  record_base_value (REGNO (tem), bl->biv->add_val);
 	  /* Make sure loop_end is not the last insn.  */
 	  if (NEXT_INSN (loop_end) == 0)
 	    emit_note_after (NOTE_INSN_DELETED, loop_end);
@@ -3228,6 +3249,7 @@ final_giv_value (v, loop_start, loop_end)
 
 	  /* Put the final biv value in tem.  */
 	  tem = gen_reg_rtx (bl->biv->mode);
+	  record_base_value (REGNO (tem), bl->biv->add_val);
 	  emit_iv_add_mult (increment, GEN_INT (loop_n_iterations),
 			    bl->initial_value, tem, insert_before);
 

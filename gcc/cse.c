@@ -519,27 +519,6 @@ static struct table_elt *last_jump_equiv_class;
 
 static int constant_pool_entries_cost;
 
-/* Bits describing what kind of values in memory must be invalidated
-   for a particular instruction.  If all three bits are zero,
-   no memory refs need to be invalidated.  Each bit is more powerful
-   than the preceding ones, and if a bit is set then the preceding
-   bits are also set.
-
-   Here is how the bits are set:
-   Pushing onto the stack invalidates only the stack pointer,
-   writing at a fixed address invalidates only variable addresses,
-   writing in a structure element at variable address
-     invalidates all but scalar variables,
-   and writing in anything else at variable address invalidates everything.  */
-
-struct write_data
-{
-  int sp : 1;			/* Invalidate stack pointer.  */
-  int var : 1;			/* Invalidate variable addresses.  */
-  int nonscalar : 1;		/* Invalidate all but scalar variables.  */
-  int all : 1;			/* Invalidate all memory refs.  */
-};
-
 /* Define maximum length of a branch path.  */
 
 #define PATHLENGTH	10
@@ -626,9 +605,10 @@ static struct table_elt *insert PROTO((rtx, struct table_elt *, unsigned,
 static void merge_equiv_classes PROTO((struct table_elt *,
 				       struct table_elt *));
 static void invalidate		PROTO((rtx, enum machine_mode));
+static int cse_rtx_varies_p	PROTO((rtx));
 static void remove_invalid_refs	PROTO((int));
 static void rehash_using_reg	PROTO((rtx));
-static void invalidate_memory	PROTO((struct write_data *));
+static void invalidate_memory	PROTO((void));
 static void invalidate_for_call	PROTO((void));
 static rtx use_related_value	PROTO((rtx, struct table_elt *));
 static unsigned canon_hash	PROTO((rtx, enum machine_mode));
@@ -638,9 +618,6 @@ static void set_nonvarying_address_components PROTO((rtx, int, rtx *,
 						     HOST_WIDE_INT *,
 						     HOST_WIDE_INT *));
 static int refers_to_p		PROTO((rtx, rtx));
-static int refers_to_mem_p	PROTO((rtx, rtx, HOST_WIDE_INT,
-				       HOST_WIDE_INT));
-static int cse_rtx_addr_varies_p PROTO((rtx));
 static rtx canon_reg		PROTO((rtx, rtx));
 static void find_best_addr	PROTO((rtx, rtx *));
 static enum rtx_code find_comparison_args PROTO((enum rtx_code, rtx *, rtx *,
@@ -656,8 +633,8 @@ static void record_jump_equiv	PROTO((rtx, int));
 static void record_jump_cond	PROTO((enum rtx_code, enum machine_mode,
 				       rtx, rtx, int));
 static void cse_insn		PROTO((rtx, int));
-static void note_mem_written	PROTO((rtx, struct write_data *));
-static void invalidate_from_clobbers PROTO((struct write_data *, rtx));
+static int note_mem_written	PROTO((rtx));
+static void invalidate_from_clobbers PROTO((rtx));
 static rtx cse_process_notes	PROTO((rtx, rtx));
 static void cse_around_loop	PROTO((rtx));
 static void invalidate_skipped_set PROTO((rtx, rtx));
@@ -1534,8 +1511,6 @@ invalidate (x, full_mode)
 {
   register int i;
   register struct table_elt *p;
-  rtx base;
-  HOST_WIDE_INT start, end;
 
   /* If X is a register, dependencies on its contents
      are recorded through the qty number mechanism.
@@ -1627,16 +1602,17 @@ invalidate (x, full_mode)
   if (full_mode == VOIDmode)
     full_mode = GET_MODE (x);
 
-  set_nonvarying_address_components (XEXP (x, 0), GET_MODE_SIZE (full_mode),
-				     &base, &start, &end);
-
   for (i = 0; i < NBUCKETS; i++)
     {
       register struct table_elt *next;
       for (p = table[i]; p; p = next)
 	{
 	  next = p->next_same_hash;
-	  if (refers_to_mem_p (p->exp, base, start, end))
+	  /* Invalidate ASM_OPERANDS which reference memory (this is easier
+	     than checking all the aliases).  */
+	  if (p->in_memory
+	      && (GET_CODE (p->exp) != MEM
+		  || true_dependence (x, full_mode, p->exp, cse_rtx_varies_p)))
 	    remove_from_table (p, i);
 	}
     }
@@ -1717,30 +1693,6 @@ rehash_using_reg (x)
       }
 }
 
-/* Remove from the hash table all expressions that reference memory,
-   or some of them as specified by *WRITES.  */
-
-static void
-invalidate_memory (writes)
-     struct write_data *writes;
-{
-  register int i;
-  register struct table_elt *p, *next;
-  int all = writes->all;
-  int nonscalar = writes->nonscalar;
-
-  for (i = 0; i < NBUCKETS; i++)
-    for (p = table[i]; p; p = next)
-      {
-	next = p->next_same_hash;
-	if (p->in_memory
-	    && (all
-		|| (nonscalar && p->in_struct)
-		|| cse_rtx_addr_varies_p (p->exp)))
-	  remove_from_table (p, i);
-      }
-}
-
 /* Remove from the hash table any expression that is a call-clobbered
    register.  Also update their TICK values.  */
 
@@ -1777,6 +1729,12 @@ invalidate_for_call ()
       for (p = table[hash]; p; p = next)
 	{
 	  next = p->next_same_hash;
+
+	  if (p->in_memory)
+	    {
+	      remove_from_table (p, hash);
+	      continue;
+	    }
 
 	  if (GET_CODE (p->exp) != REG
 	      || REGNO (p->exp) >= FIRST_PSEUDO_REGISTER)
@@ -2418,105 +2376,31 @@ set_nonvarying_address_components (addr, size, pbase, pstart, pend)
   *pend = end;
 }
 
-/* Return 1 iff any subexpression of X refers to memory
-   at an address of BASE plus some offset
-   such that any of the bytes' offsets fall between START (inclusive)
-   and END (exclusive).
-
-   The value is undefined if X is a varying address (as determined by
-   cse_rtx_addr_varies_p).  This function is not used in such cases.
-
-   When used in the cse pass, `qty_const' is nonzero, and it is used
-   to treat an address that is a register with a known constant value
-   as if it were that constant value.
-   In the loop pass, `qty_const' is zero, so this is not done.  */
+/* Return 1 if X has a value that can vary even between two
+   executions of the program.  0 means X can be compared reliably
+   against certain constants or near-constants.  */
 
 static int
-refers_to_mem_p (x, base, start, end)
-     rtx x, base;
-     HOST_WIDE_INT start, end;
-{
-  register HOST_WIDE_INT i;
-  register enum rtx_code code;
-  register char *fmt;
-
- repeat:
-  if (x == 0)
-    return 0;
-
-  code = GET_CODE (x);
-  if (code == MEM)
-    {
-      register rtx addr = XEXP (x, 0);	/* Get the address.  */
-      rtx mybase;
-      HOST_WIDE_INT mystart, myend;
-
-      set_nonvarying_address_components (addr, GET_MODE_SIZE (GET_MODE (x)),
-					 &mybase, &mystart, &myend);
-
-
-      /* refers_to_mem_p is never called with varying addresses. 
-	 If the base addresses are not equal, there is no chance
-	 of the memory addresses conflicting.  */
-      if (! rtx_equal_p (mybase, base))
-	return 0;
-
-      return myend > start && mystart < end;
-    }
-
-  /* X does not match, so try its subexpressions.  */
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    if (fmt[i] == 'e')
-      {
-	if (i == 0)
-	  {
-	    x = XEXP (x, 0);
-	    goto repeat;
-	  }
-	else
-	  if (refers_to_mem_p (XEXP (x, i), base, start, end))
-	    return 1;
-      }
-    else if (fmt[i] == 'E')
-      {
-	int j;
-	for (j = 0; j < XVECLEN (x, i); j++)
-	  if (refers_to_mem_p (XVECEXP (x, i, j), base, start, end))
-	    return 1;
-      }
-
-  return 0;
-}
-
-/* Nonzero if X refers to memory at a varying address;
-   except that a register which has at the moment a known constant value
-   isn't considered variable.  */
-
-static int
-cse_rtx_addr_varies_p (x)
-     rtx x;
+cse_rtx_varies_p (x)
+     register rtx x;
 {
   /* We need not check for X and the equivalence class being of the same
      mode because if X is equivalent to a constant in some mode, it
      doesn't vary in any mode.  */
 
-  if (GET_CODE (x) == MEM
-      && GET_CODE (XEXP (x, 0)) == REG
-      && REGNO_QTY_VALID_P (REGNO (XEXP (x, 0)))
-      && GET_MODE (XEXP (x, 0)) == qty_mode[reg_qty[REGNO (XEXP (x, 0))]]
-      && qty_const[reg_qty[REGNO (XEXP (x, 0))]] != 0)
+  if (GET_CODE (x) == REG
+      && REGNO_QTY_VALID_P (REGNO (x))
+      && GET_MODE (x) == qty_mode[reg_qty[REGNO (x)]]
+      && qty_const[reg_qty[REGNO (x)]] != 0)
     return 0;
 
-  if (GET_CODE (x) == MEM
-      && GET_CODE (XEXP (x, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-      && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
-      && REGNO_QTY_VALID_P (REGNO (XEXP (XEXP (x, 0), 0)))
-      && (GET_MODE (XEXP (XEXP (x, 0), 0))
-	  == qty_mode[reg_qty[REGNO (XEXP (XEXP (x, 0), 0))]])
-      && qty_const[reg_qty[REGNO (XEXP (XEXP (x, 0), 0))]])
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && GET_CODE (XEXP (x, 0)) == REG
+      && REGNO_QTY_VALID_P (REGNO (XEXP (x, 0)))
+      && (GET_MODE (XEXP (x, 0))
+	  == qty_mode[reg_qty[REGNO (XEXP (x, 0))]])
+      && qty_const[reg_qty[REGNO (XEXP (x, 0))]])
     return 0;
 
   /* This can happen as the result of virtual register instantiation, if
@@ -2524,21 +2408,20 @@ cse_rtx_addr_varies_p (x)
      us a three instruction sequence, load large offset into a register,
      load fp minus a constant into a register, then a MEM which is the
      sum of the two `constant' registers.  */
-  if (GET_CODE (x) == MEM
-      && GET_CODE (XEXP (x, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
-      && GET_CODE (XEXP (XEXP (x, 0), 1)) == REG
-      && REGNO_QTY_VALID_P (REGNO (XEXP (XEXP (x, 0), 0)))
-      && (GET_MODE (XEXP (XEXP (x, 0), 0))
-	  == qty_mode[reg_qty[REGNO (XEXP (XEXP (x, 0), 0))]])
-      && qty_const[reg_qty[REGNO (XEXP (XEXP (x, 0), 0))]]
-      && REGNO_QTY_VALID_P (REGNO (XEXP (XEXP (x, 0), 1)))
-      && (GET_MODE (XEXP (XEXP (x, 0), 1))
-	  == qty_mode[reg_qty[REGNO (XEXP (XEXP (x, 0), 1))]])
-      && qty_const[reg_qty[REGNO (XEXP (XEXP (x, 0), 1))]])
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == REG
+      && GET_CODE (XEXP (x, 1)) == REG
+      && REGNO_QTY_VALID_P (REGNO (XEXP (x, 0)))
+      && (GET_MODE (XEXP (x, 0))
+	  == qty_mode[reg_qty[REGNO (XEXP (x, 0))]])
+      && qty_const[reg_qty[REGNO (XEXP (x, 0))]]
+      && REGNO_QTY_VALID_P (REGNO (XEXP (x, 1)))
+      && (GET_MODE (XEXP (x, 1))
+	  == qty_mode[reg_qty[REGNO (XEXP (x, 1))]])
+      && qty_const[reg_qty[REGNO (XEXP (x, 1))]])
     return 0;
 
-  return rtx_addr_varies_p (x);
+  return rtx_varies_p (x);
 }
 
 /* Canonicalize an expression:
@@ -6161,8 +6044,6 @@ cse_insn (insn, in_libcall_block)
   /* Records what this insn does to set CC0.  */
   rtx this_insn_cc0 = 0;
   enum machine_mode this_insn_cc0_mode;
-  struct write_data writes_memory;
-  static struct write_data init = {0, 0, 0, 0};
 
   rtx src_eqv = 0;
   struct table_elt *src_eqv_elt = 0;
@@ -6174,7 +6055,6 @@ cse_insn (insn, in_libcall_block)
   struct set *sets;
 
   this_insn = insn;
-  writes_memory = init;
 
   /* Find all the SETs and CLOBBERs in this instruction.
      Record all the SETs in the array `set' and count them.
@@ -6276,15 +6156,11 @@ cse_insn (insn, in_libcall_block)
 	    }
 	  else if (GET_CODE (y) == CLOBBER)
 	    {
-	      /* If we clobber memory, take note of that,
-		 and canon the address.
+	      /* If we clobber memory, canon the address.
 		 This does nothing when a register is clobbered
 		 because we have already invalidated the reg.  */
 	      if (GET_CODE (XEXP (y, 0)) == MEM)
-		{
-		  canon_reg (XEXP (y, 0), NULL_RTX);
-		  note_mem_written (XEXP (y, 0), &writes_memory);
-		}
+		canon_reg (XEXP (y, 0), NULL_RTX);
 	    }
 	  else if (GET_CODE (y) == USE
 		   && ! (GET_CODE (XEXP (y, 0)) == REG
@@ -6303,10 +6179,7 @@ cse_insn (insn, in_libcall_block)
   else if (GET_CODE (x) == CLOBBER)
     {
       if (GET_CODE (XEXP (x, 0)) == MEM)
-	{
-	  canon_reg (XEXP (x, 0), NULL_RTX);
-	  note_mem_written (XEXP (x, 0), &writes_memory);
-	}
+	canon_reg (XEXP (x, 0), NULL_RTX);
     }
 
   /* Canonicalize a USE of a pseudo register or memory location.  */
@@ -6964,7 +6837,8 @@ cse_insn (insn, in_libcall_block)
 		   && (src_folded == 0
 		       || (GET_CODE (src_folded) != MEM
 			   && ! src_folded_force_flag))
-		   && GET_MODE_CLASS (mode) != MODE_CC)
+		   && GET_MODE_CLASS (mode) != MODE_CC
+		   && mode != VOIDmode)
 	    {
 	      src_folded_force_flag = 1;
 	      src_folded = trial;
@@ -7087,13 +6961,15 @@ cse_insn (insn, in_libcall_block)
 
       if (GET_CODE (dest) == MEM)
 	{
+#ifdef PUSH_ROUNDING
+	  /* Stack pushes invalidate the stack pointer.  */
+	  rtx addr = XEXP (dest, 0);
+	  if ((GET_CODE (addr) == PRE_DEC || GET_CODE (addr) == PRE_INC
+	       || GET_CODE (addr) == POST_DEC || GET_CODE (addr) == POST_INC)
+	      && XEXP (addr, 0) == stack_pointer_rtx)
+	    invalidate (stack_pointer_rtx, Pmode);
+#endif
 	  dest = fold_rtx (dest, insn);
-
-	  /* Decide whether we invalidate everything in memory,
-	     or just things at non-fixed places.
-	     Writing a large aggregate must invalidate everything
-	     because we don't know how long it is.  */
-	  note_mem_written (dest, &writes_memory);
 	}
 
       /* Compute the hash code of the destination now,
@@ -7338,17 +7214,15 @@ cse_insn (insn, in_libcall_block)
 	 so that the destination goes into that class.  */
       sets[i].src_elt = src_eqv_elt;
 
-  invalidate_from_clobbers (&writes_memory, x);
+  invalidate_from_clobbers (x);
 
   /* Some registers are invalidated by subroutine calls.  Memory is 
      invalidated by non-constant calls.  */
 
   if (GET_CODE (insn) == CALL_INSN)
     {
-      static struct write_data everything = {0, 1, 1, 1};
-
       if (! CONST_CALL_P (insn))
-	invalidate_memory (&everything);
+	invalidate_memory ();
       invalidate_for_call ();
     }
 
@@ -7369,8 +7243,7 @@ cse_insn (insn, in_libcall_block)
 	   Needed for memory if this is a nonvarying address, unless
 	   we have just done an invalidate_memory that covers even those.  */
 	if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
-	    || (GET_CODE (dest) == MEM && ! writes_memory.all
-		&& ! cse_rtx_addr_varies_p (dest)))
+	    || GET_CODE (dest) == MEM)
 	  invalidate (dest, VOIDmode);
 	else if (GET_CODE (dest) == STRICT_LOW_PART
 		 || GET_CODE (dest) == ZERO_EXTRACT)
@@ -7638,76 +7511,33 @@ cse_insn (insn, in_libcall_block)
   prev_insn = insn;
 }
 
-/* Store 1 in *WRITES_PTR for those categories of memory ref
-   that must be invalidated when the expression WRITTEN is stored in.
-   If WRITTEN is null, say everything must be invalidated.  */
-
+/* Remove from the ahsh table all expressions that reference memory.  */
 static void
-note_mem_written (written, writes_ptr)
-     rtx written;
-     struct write_data *writes_ptr;
+invalidate_memory ()
 {
-  static struct write_data everything = {0, 1, 1, 1};
+  register int i;
+  register struct table_elt *p, *next;
 
-  if (written == 0)
-    *writes_ptr = everything;
-  else if (GET_CODE (written) == MEM)
-    {
-      /* Pushing or popping the stack invalidates just the stack pointer.  */
-      rtx addr = XEXP (written, 0);
-      if ((GET_CODE (addr) == PRE_DEC || GET_CODE (addr) == PRE_INC
-	   || GET_CODE (addr) == POST_DEC || GET_CODE (addr) == POST_INC)
-	  && GET_CODE (XEXP (addr, 0)) == REG
-	  && REGNO (XEXP (addr, 0)) == STACK_POINTER_REGNUM)
-	{
-	  writes_ptr->sp = 1;
-	  return;
-	}
-      else if (GET_MODE (written) == BLKmode)
-	*writes_ptr = everything;
-      else if (cse_rtx_addr_varies_p (written))
-	{
-	  /* A varying address that is a sum indicates an array element,
-	     and that's just as good as a structure element
-	     in implying that we need not invalidate scalar variables.
-	     However, we must allow QImode aliasing of scalars, because the
-	     ANSI C standard allows character pointers to alias anything.
-	     We must also allow AND addresses, because they may generate
-	     accesses outside the object being referenced.  This is used to
-	     generate aligned addresses from unaligned addresses, for instance,
-	     the alpha storeqi_unaligned pattern.  */
-	  if (! ((MEM_IN_STRUCT_P (written)
-		  || GET_CODE (XEXP (written, 0)) == PLUS)
-		 && GET_MODE (written) != QImode
-		 && GET_CODE (XEXP (written, 0)) != AND))
-	    writes_ptr->all = 1;
-	  writes_ptr->nonscalar = 1;
-	}
-      writes_ptr->var = 1;
-    }
+  for (i = 0; i < NBUCKETS; i++)
+    for (p = table[i]; p; p = next)
+      {
+	next = p->next_same_hash;
+	if (p->in_memory)
+	  remove_from_table (p, i);
+      }
 }
 
-/* Perform invalidation on the basis of everything about an insn
-   except for invalidating the actual places that are SET in it.
-   This includes the places CLOBBERed, and anything that might
-   alias with something that is SET or CLOBBERed.
-
-   W points to the writes_memory for this insn, a struct write_data
-   saying which kinds of memory references must be invalidated.
-   X is the pattern of the insn.  */
-
-static void
-invalidate_from_clobbers (w, x)
-     struct write_data *w;
-     rtx x;
+/* XXX ??? The name of this function bears little resemblance to
+   what this function actually does.  FIXME.  */
+static int
+note_mem_written (addr)
+     register rtx addr;
 {
-  /* If W->var is not set, W specifies no action.
-     If W->all is set, this step gets all memory refs
-     so they can be ignored in the rest of this function.  */
-  if (w->var)
-    invalidate_memory (w);
-
-  if (w->sp)
+  /* Pushing or popping the stack invalidates just the stack pointer.  */
+  if ((GET_CODE (addr) == PRE_DEC || GET_CODE (addr) == PRE_INC
+       || GET_CODE (addr) == POST_DEC || GET_CODE (addr) == POST_INC)
+      && GET_CODE (XEXP (addr, 0)) == REG
+      && REGNO (XEXP (addr, 0)) == STACK_POINTER_REGNUM)
     {
       if (reg_tick[STACK_POINTER_REGNUM] >= 0)
 	reg_tick[STACK_POINTER_REGNUM]++;
@@ -7715,18 +7545,34 @@ invalidate_from_clobbers (w, x)
       /* This should be *very* rare.  */
       if (TEST_HARD_REG_BIT (hard_regs_in_table, STACK_POINTER_REGNUM))
 	invalidate (stack_pointer_rtx, VOIDmode);
+      return 1;
     }
+  return 0;
+}
 
+/* Perform invalidation on the basis of everything about an insn
+   except for invalidating the actual places that are SET in it.
+   This includes the places CLOBBERed, and anything that might
+   alias with something that is SET or CLOBBERed.
+
+   X is the pattern of the insn.  */
+
+static void
+invalidate_from_clobbers (x)
+     rtx x;
+{
   if (GET_CODE (x) == CLOBBER)
     {
       rtx ref = XEXP (x, 0);
-
-      if (GET_CODE (ref) == REG || GET_CODE (ref) == SUBREG
-	  || (GET_CODE (ref) == MEM && ! w->all))
-	invalidate (ref, VOIDmode);
-      else if (GET_CODE (ref) == STRICT_LOW_PART
-	       || GET_CODE (ref) == ZERO_EXTRACT)
-	invalidate (XEXP (ref, 0), GET_MODE (ref));
+      if (ref)
+	{
+	  if (GET_CODE (ref) == REG || GET_CODE (ref) == SUBREG
+	      || GET_CODE (ref) == MEM)
+	    invalidate (ref, VOIDmode);
+	  else if (GET_CODE (ref) == STRICT_LOW_PART
+		   || GET_CODE (ref) == ZERO_EXTRACT)
+	    invalidate (XEXP (ref, 0), GET_MODE (ref));
+	}
     }
   else if (GET_CODE (x) == PARALLEL)
     {
@@ -7737,15 +7583,12 @@ invalidate_from_clobbers (w, x)
 	  if (GET_CODE (y) == CLOBBER)
 	    {
 	      rtx ref = XEXP (y, 0);
-	      if (ref)
-		{
-		  if (GET_CODE (ref) == REG || GET_CODE (ref) == SUBREG
-		      || (GET_CODE (ref) == MEM && !w->all))
-		    invalidate (ref, VOIDmode);
-		  else if (GET_CODE (ref) == STRICT_LOW_PART
-			   || GET_CODE (ref) == ZERO_EXTRACT)
-		    invalidate (XEXP (ref, 0), GET_MODE (ref));
-		}
+	      if (GET_CODE (ref) == REG || GET_CODE (ref) == SUBREG
+		  || GET_CODE (ref) == MEM)
+		invalidate (ref, VOIDmode);
+	      else if (GET_CODE (ref) == STRICT_LOW_PART
+		       || GET_CODE (ref) == ZERO_EXTRACT)
+		invalidate (XEXP (ref, 0), GET_MODE (ref));
 	    }
 	}
     }
@@ -7907,10 +7750,6 @@ cse_around_loop (loop_start)
     }
 }
 
-/* Variable used for communications between the next two routines.  */
-
-static struct write_data skipped_writes_memory;
-
 /* Process one SET of an insn that was skipped.  We ignore CLOBBERs
    since they are done elsewhere.  This function is called via note_stores.  */
 
@@ -7919,14 +7758,21 @@ invalidate_skipped_set (dest, set)
      rtx set;
      rtx dest;
 {
-  if (GET_CODE (dest) == MEM)
-    note_mem_written (dest, &skipped_writes_memory);
+  enum rtx_code code = GET_CODE (dest);
 
-  /* There are times when an address can appear varying and be a PLUS
-     during this scan when it would be a fixed address were we to know
-     the proper equivalences.  So promote "nonscalar" to be "all".  */
-  if (skipped_writes_memory.nonscalar)
-    skipped_writes_memory.all = 1;
+  if (code == MEM
+      && ! note_mem_written (dest)	/* If this is not a stack push ... */
+      /* There are times when an address can appear varying and be a PLUS
+	 during this scan when it would be a fixed address were we to know
+	 the proper equivalences.  So invalidate all memory if there is
+	 a BLKmode or nonscalar memory reference or a reference to a
+	 variable address.  */
+      && (MEM_IN_STRUCT_P (dest) || GET_MODE (dest) == BLKmode
+	  || cse_rtx_varies_p (XEXP (dest, 0))))
+    {
+      invalidate_memory ();
+      return;
+    }
 
   if (GET_CODE (set) == CLOBBER
 #ifdef HAVE_cc0
@@ -7935,12 +7781,10 @@ invalidate_skipped_set (dest, set)
       || dest == pc_rtx)
     return;
 
-  if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
-      || (! skipped_writes_memory.all && ! cse_rtx_addr_varies_p (dest)))
-    invalidate (dest, VOIDmode);
-  else if (GET_CODE (dest) == STRICT_LOW_PART
-	   || GET_CODE (dest) == ZERO_EXTRACT)
+  if (code == STRICT_LOW_PART || code == ZERO_EXTRACT)
     invalidate (XEXP (dest, 0), GET_MODE (dest));
+  else if (code == REG || code == SUBREG || code == MEM)
+    invalidate (dest, VOIDmode);
 }
 
 /* Invalidate all insns from START up to the end of the function or the
@@ -7952,8 +7796,6 @@ invalidate_skipped_block (start)
      rtx start;
 {
   rtx insn;
-  static struct write_data init = {0, 0, 0, 0};
-  static struct write_data everything = {0, 1, 1, 1};
 
   for (insn = start; insn && GET_CODE (insn) != CODE_LABEL;
        insn = NEXT_INSN (insn))
@@ -7961,16 +7803,14 @@ invalidate_skipped_block (start)
       if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
 	continue;
 
-      skipped_writes_memory = init;
-
       if (GET_CODE (insn) == CALL_INSN)
 	{
+	  if (! CONST_CALL_P (insn))
+	    invalidate_memory ();
 	  invalidate_for_call ();
-	  skipped_writes_memory = everything;
 	}
 
       note_stores (PATTERN (insn), invalidate_skipped_set);
-      invalidate_from_clobbers (&skipped_writes_memory, PATTERN (insn));
     }
 }
 
@@ -8020,10 +7860,6 @@ cse_set_around_loop (x, insn, loop_start)
      rtx loop_start;
 {
   struct table_elt *src_elt;
-  static struct write_data init = {0, 0, 0, 0};
-  struct write_data writes_memory;
-
-  writes_memory = init;
 
   /* If this is a SET, see if we can replace SET_SRC, but ignore SETs that
      are setting PC or CC0 or whose SET_SRC is already a register.  */
@@ -8083,16 +7919,11 @@ cse_set_around_loop (x, insn, loop_start)
     }
 
   /* Now invalidate anything modified by X.  */
-  note_mem_written (SET_DEST (x), &writes_memory);
+  note_mem_written (SET_DEST (x));
 
-  if (writes_memory.var)
-    invalidate_memory (&writes_memory);
-
-  /* See comment on similar code in cse_insn for explanation of these
-     tests.  */
+  /* See comment on similar code in cse_insn for explanation of these tests.  */
   if (GET_CODE (SET_DEST (x)) == REG || GET_CODE (SET_DEST (x)) == SUBREG
-      || (GET_CODE (SET_DEST (x)) == MEM && ! writes_memory.all
-	  && ! cse_rtx_addr_varies_p (SET_DEST (x))))
+      || GET_CODE (SET_DEST (x)) == MEM)
     invalidate (SET_DEST (x), VOIDmode);
   else if (GET_CODE (SET_DEST (x)) == STRICT_LOW_PART
 	   || GET_CODE (SET_DEST (x)) == ZERO_EXTRACT)
@@ -8342,6 +8173,7 @@ cse_main (f, nregs, after_loop, file)
   val.path_size = 0;
 
   init_recog ();
+  init_alias_analysis ();
 
   max_reg = nregs;
 
