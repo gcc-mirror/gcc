@@ -3379,6 +3379,7 @@ relax_delay_slots (rtx first)
 	 annulled jumps, though.  Again, don't convert a jump to a RETURN
 	 here.  */
       if (! INSN_ANNULLED_BRANCH_P (delay_insn)
+	  && any_condjump_p (delay_insn)
 	  && next && JUMP_P (next)
 	  && (simplejump_p (next) || GET_CODE (PATTERN (next)) == RETURN)
 	  && next_active_insn (target_label) == next_active_insn (next)
