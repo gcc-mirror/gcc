@@ -32,6 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Just provide compatibility for mutex handling.  */
 
 typedef int __gthread_mutex_t;
+typedef int __gthread_recursive_mutex_t;
 
 #define __GTHREAD_MUTEX_INIT 0
 
@@ -230,6 +231,24 @@ static inline int
 __gthread_mutex_unlock (__gthread_mutex_t * UNUSED(mutex))
 {
   return 0;
+}
+
+static inline int
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
+{
+  return __gthread_mutex_lock (mutex);
+}
+
+static inline int
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
+{
+  return __gthread_mutex_trylock (mutex);
+}
+
+static inline int
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
+{
+  return __gthread_mutex_unlock (mutex);
 }
 
 #endif /* _LIBOBJC */

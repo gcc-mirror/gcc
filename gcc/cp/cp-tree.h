@@ -3801,7 +3801,7 @@ extern tree build_target_expr_with_type         (tree, tree);
 extern int local_variable_p                     (tree);
 extern int nonstatic_local_decl_p               (tree);
 extern tree declare_global_var                  (tree, tree);
-extern void register_dtor_fn                    (tree);
+extern tree register_dtor_fn                    (tree);
 extern tmpl_spec_kind current_tmpl_spec_kind    (int);
 extern tree cp_fname_init			(const char *, tree *);
 extern tree builtin_function (const char *name, tree type,
@@ -4198,6 +4198,7 @@ extern void lang_check_failed			(const char *, int,
 extern tree stabilize_expr			(tree, tree *);
 extern void stabilize_call			(tree, tree *);
 extern bool stabilize_init			(tree, tree *);
+extern tree add_stmt_to_compound		(tree, tree);
 extern tree cxx_maybe_build_cleanup		(tree);
 extern void init_tree			        (void);
 extern int pod_type_p				(tree);

@@ -182,7 +182,7 @@ in the following sections.
 -fno-nonansi-builtins  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -frepo  -fno-rtti  -fstats  -ftemplate-depth-@var{n} @gol
--fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
+-fno-threadsafe-statics -fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
 -fno-default-inline  -fvisibility-inlines-hidden @gol
 -Wabi  -Wctor-dtor-privacy @gol
 -Wnon-virtual-dtor  -Wreorder @gol
@@ -1469,6 +1469,13 @@ Set the maximum instantiation depth for template classes to @var{n}.
 A limit on the template instantiation depth is needed to detect
 endless recursions during template class instantiation.  ANSI/ISO C++
 conforming programs must not rely on a maximum depth greater than 17.
+
+@item -fno-threadsafe-statics
+@opindex fno-threadsafe-statics
+Do not emit the extra code to use the routines specified in the C++
+ABI for thread-safe initialization of local statics.  You can use this
+option to reduce code size slightly in code that doesn't need to be
+thread-safe.
 
 @item -fuse-cxa-atexit
 @opindex fuse-cxa-atexit
