@@ -1,5 +1,13 @@
 2003-12-04  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/MenuComponent.java: Import java.io.Serialization.
+	* java/awt/MenuItem.java: Likewise.
+	* java/awt/TextComponent.java: Likewise.
+	* java/awt/image/ImagingOpException.java
+	(serialVersionUID): Fixed.
+
+2003-12-04  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/http/Connection.java
 	(sendRequest): Merged writing http headers with classpath.
 	(getInputStream): Merged documentation from classpath.
