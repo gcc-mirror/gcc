@@ -1,3 +1,8 @@
+2000-01-02  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+
+	* expr.c (store_constructor_field): Fix typo introduced with last
+	gcc2 merge.
+
 2000-01-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (BINFO_N_BASETYPES): New macro.
