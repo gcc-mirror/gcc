@@ -121,7 +121,7 @@ extern int target_flags;
     {"int32",		8,     N_("Make integers 32 bits wide")},	\
     {"addresses",	64,    NULL},					\
     {"quickcall",	128,						\
-     N_("Use registers for argument passing")},  			\
+     N_("Use registers for argument passing")},			\
     {"no-quickcall",	-128,						\
      N_("Do not use registers for argument passing")},			\
     {"slowbyte",	256,						\
@@ -217,15 +217,15 @@ extern int target_flags;
    See also the macro `Pmode' defined below.  */
 #define POINTER_SIZE (TARGET_H8300H || TARGET_H8300S ? 32 : 16)
 
-#define SHORT_TYPE_SIZE 	16
-#define INT_TYPE_SIZE 		(TARGET_INT32 ? 32 : 16)
-#define LONG_TYPE_SIZE 		32
+#define SHORT_TYPE_SIZE	16
+#define INT_TYPE_SIZE		(TARGET_INT32 ? 32 : 16)
+#define LONG_TYPE_SIZE		32
 #define LONG_LONG_TYPE_SIZE	32
-#define FLOAT_TYPE_SIZE 	32
-#define DOUBLE_TYPE_SIZE 	32
-#define LONG_DOUBLE_TYPE_SIZE 	DOUBLE_TYPE_SIZE
+#define FLOAT_TYPE_SIZE	32
+#define DOUBLE_TYPE_SIZE	32
+#define LONG_DOUBLE_TYPE_SIZE	DOUBLE_TYPE_SIZE
 
-#define MAX_FIXED_MODE_SIZE 	32
+#define MAX_FIXED_MODE_SIZE	32
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY (TARGET_H8300H || TARGET_H8300S ? 32 : 16)
@@ -405,11 +405,11 @@ enum reg_class {
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS  			\
+#define REG_CLASS_CONTENTS			\
 {      {0},		/* No regs      */	\
-   {0x6ff},		/* GENERAL_REGS */    	\
-   {0x100},		/* MAC_REGS */    	\
-   {0x7ff},		/* ALL_REGS 	*/	\
+   {0x6ff},		/* GENERAL_REGS */ 	\
+   {0x100},		/* MAC_REGS */ 	\
+   {0x7ff},		/* ALL_REGS	*/	\
 }
 
 /* The same information, inverted:
@@ -904,9 +904,9 @@ struct cum_arg
    || (GET_CODE (X) == SUBREG && REG_P (SUBREG_REG (X))		\
        && REG_OK_FOR_BASE_P (SUBREG_REG (X))))
 
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)    	\
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) 	\
   if (RTX_OK_FOR_BASE_P (X)) goto ADDR;			\
-  if (CONSTANT_ADDRESS_P (X)) goto ADDR;    		\
+  if (CONSTANT_ADDRESS_P (X)) goto ADDR; 		\
   if (GET_CODE (X) == PLUS				\
       && CONSTANT_ADDRESS_P (XEXP (X, 1))		\
       && RTX_OK_FOR_BASE_P (XEXP (X, 0))) goto ADDR;
