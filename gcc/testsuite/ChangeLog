@@ -1,3 +1,10 @@
+2003-01-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9030
+	* g++.dg/template/friend12.C: New test.
+	* g++.dg/template/friend13.C: Likewise.
+	* g++.old-deja/g++.eh/spec6.C: Add missing error message.
+
 Wed Jan  8 11:41:47 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-cadd.c: New test.
