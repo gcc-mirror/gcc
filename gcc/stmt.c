@@ -3654,6 +3654,11 @@ check_for_full_enumeration_handling (type)
 	  }
       }
 
+#if 0
+  /* ??? This optimization is disabled because it causes valid programs to
+     fail.  ANSI C does not guarantee that an expression with enum type
+     will have a value that is the same as one of the enumation literals.  */
+
   /* If all values were found as case labels, make one of them the default
      label.  Thus, this switch will never fall through.  We arbitrarily pick
      the last one to make the default since this is likely the most
@@ -3669,6 +3674,7 @@ check_for_full_enumeration_handling (type)
       case_stack->data.case_stmt.default_label = (*l)->code_label;
       *l = 0;
     }
+#endif /* 0 */
 }
 
 /* Terminate a case (Pascal) or switch (C) statement
