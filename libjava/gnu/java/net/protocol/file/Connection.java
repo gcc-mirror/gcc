@@ -38,38 +38,71 @@
 */
 package gnu.java.net.protocol.file;
 
-import java.net.URL;
-import java.net.URLConnection;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilePermission;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ProtocolException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.security.Permission;
 import java.util.Map;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
 /**
+ * This subclass of java.net.URLConnection models a URLConnection via
+ * the "file" protocol.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Nic Ferrier <nferrier@tapsellferrier.co.uk>
  * @author Warren Levy <warrenl@cygnus.com>
- * @date April 13, 1999.
  */
 public class Connection extends URLConnection
 {
+  /**
+   * Default permission for a file
+   */
+  private static final String DEFAULT_PERMISSION = "read";
+
+  /**
+   * This is a File object for this connection
+   */
+  private File fileIn;
+
+  /**
+   * InputStream if we are reading from the file
+   */
+  private InputStream inputStream;
+
+  /**
+   * OutputStream if we are writing to the file
+   */
+  private OutputStream outputStream;
+  
   private Hashtable hdrHash = new Hashtable();
   private Vector hdrVec = new Vector();
   private boolean gotHeaders = false;
-  private File fileIn;
-  private InputStream inputStream;
-  private OutputStream outputStream;
 
+  /**
+   * FilePermission to read the file
+   */
+  private FilePermission permission;
+
+  /**
+   * Calls superclass constructor to initialize.
+   */
   public Connection(URL url)
   {
     super (url);
+
+    permission = new FilePermission(getURL().getFile(), DEFAULT_PERMISSION);
   }
   
   /**
@@ -82,8 +115,7 @@ public class Connection extends URLConnection
       return;
     
     // If not connected, then file needs to be openned.
-    String fname = url.getFile();
-    fileIn = new File(fname);
+    fileIn = new File(getURL().getFile());
     if (doInput)
       inputStream = new BufferedInputStream(new FileInputStream(fileIn));
     if (doOutput)
@@ -238,4 +270,17 @@ public class Connection extends URLConnection
     hdrHash.put(key.toLowerCase(), Long.toString(len));
   }
   
+  /**
+   * This method returns a <code>Permission</code> object representing the
+   * permissions required to access this URL.  This method returns a
+   * <code>java.io.FilePermission</code> for the file's path with a read
+   * permission.
+   *
+   * @return A Permission object
+   */
+  public Permission getPermission() throws IOException
+  {
+    return permission;
+  }
+
 } // class FileURLConnection
