@@ -346,15 +346,16 @@ typedef struct {
 typedef struct {
   long counter;
   long depth;
-  DWORD owner;
+  unsigned long owner;
   void *sema;
 } __gthread_recursive_mutex_t;
 
 #define __GTHREAD_ONCE_INIT {0, -1}
 #define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
 #define __GTHREAD_MUTEX_INIT_DEFAULT {-1, 0}
-#define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
-#define __GTHREAD_RECURSIVE_MUTEX_INIT_DEFAULT {-1, 0}
+#define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION \
+  __gthread_recursive_mutex_init_function
+#define __GTHREAD_RECURSIVE_MUTEX_INIT_DEFAULT {-1, 0, 0, 0}
 
 #if __MINGW32_MAJOR_VERSION >= 1 || \
   (__MINGW32_MAJOR_VERSION == 0 && __MINGW32_MINOR_VERSION > 2)
@@ -414,6 +415,12 @@ extern void __gthr_win32_mutex_init_function (__gthread_mutex_t *);
 extern int __gthr_win32_mutex_lock (__gthread_mutex_t *);
 extern int __gthr_win32_mutex_trylock (__gthread_mutex_t *);
 extern int __gthr_win32_mutex_unlock (__gthread_mutex_t *);
+extern void
+  __gthr_win32_recursive_mutex_init_function (__gthread_recursive_mutex_t *);
+extern int __gthr_win32_recursive_mutex_lock (__gthread_recursive_mutex_t *);
+extern int
+  __gthr_win32_recursive_mutex_trylock (__gthread_recursive_mutex_t *);
+extern int __gthr_win32_recursive_mutex_unlock (__gthread_recursive_mutex_t *);
 
 static inline int
 __gthread_once (__gthread_once_t *once, void (*func) (void))
@@ -479,6 +486,12 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
     return __gthr_win32_mutex_unlock (mutex);
   else
     return 0;
+}
+
+static inline void
+__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
+{
+   __gthr_win32_recursive_mutex_init_function (mutex);
 }
 
 static inline int
@@ -668,7 +681,7 @@ __gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
 	}
       else if (mutex->owner == me)
 	{
-	  InterlockedDecrement (&mx->lock_idx);
+	  InterlockedDecrement (&mutex->counter);
 	  ++(mutex->depth);
 	}
       else if (WaitForSingleObject (mutex->sema, INFINITE) == WAIT_OBJECT_0)
