@@ -5327,7 +5327,16 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 							(bitpos
 							 / BITS_PER_UNIT))));
       MEM_SET_IN_STRUCT_P (to_rtx, 1);
-      MEM_ALIAS_SET (to_rtx) = alias_set;
+      /* If the address of the structure varies, then it might be on
+	 the stack.  And, stack slots may be shared across scopes.
+	 So, two different structures, of different types, can end up
+	 at the same location.  We will give the structures alias set
+	 zero; here we must be careful not to give non-zero alias sets
+	 to their fields.  */
+      if (!rtx_varies_p (addr, /*for_alias=*/0))
+	MEM_ALIAS_SET (to_rtx) = alias_set;
+      else
+	MEM_ALIAS_SET (to_rtx) = 0;
 
       return store_expr (exp, to_rtx, value_mode != VOIDmode);
     }

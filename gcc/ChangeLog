@@ -1,3 +1,8 @@
+2001-06-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* expr.c (store_field): Don't set MEM_ALIAS_SET for a field
+	in a structure at a variable address.
+
 2001-06-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcov.texi: Use more logical markup.
