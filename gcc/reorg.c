@@ -522,8 +522,9 @@ mark_set_resources (x, res, in_dest, include_called_routine)
       return;
 
     case REG:
-      for (i = 0; i < HARD_REGNO_NREGS (REGNO (x), GET_MODE (x)); i++)
-	SET_HARD_REG_BIT (res->regs, REGNO (x) + i);
+      if (in_dest)
+        for (i = 0; i < HARD_REGNO_NREGS (REGNO (x), GET_MODE (x)); i++)
+	  SET_HARD_REG_BIT (res->regs, REGNO (x) + i);
       return;
     }
 
