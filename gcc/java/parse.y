@@ -9963,12 +9963,15 @@ patch_method_invocation (patch, primary, where, from_super,
       /* Calls to clone() on array types are permitted as a special-case. */
       && !is_array_clone_call)
     {
-      char *fct_name = (char *) IDENTIFIER_POINTER (DECL_NAME (list));
-      char *access = java_accstring_lookup (get_access_flags_from_decl (list));
-      char *klass = (char *) IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (list))));
-      char *refklass = (char *) IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class)));
-      char *what = (char *) (DECL_CONSTRUCTOR_P (list)
-			     ? "constructor" : "method");
+      const char *fct_name = IDENTIFIER_POINTER (DECL_NAME (list));
+      const char *access =
+	java_accstring_lookup (get_access_flags_from_decl (list));
+      const char *klass =
+	IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (list))));
+      const char *refklass =
+	IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class)));
+      const char *what = (DECL_CONSTRUCTOR_P (list)
+			  ? "constructor" : "method");
       /* FIXME: WFL yields the wrong message here but I don't know
 	 what else to use.  */
       parse_error_context (wfl,

@@ -1,3 +1,12 @@
+2001-03-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* expr.c (pop_type_0): Call `concat' rather than building the
+	string manually.
+	(pop_type): Add format specifier in call to `error'.
+
+	* parse.y (patch_method_invocation): Avoid casting away
+	const-ness.
+
 2001-03-21  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (qualify_ambiguous_name): Broaden `length'
