@@ -1,3 +1,8 @@
+Mon May  1 17:50:44 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.c (asm_file_start): output 0 as r0 and 1 as r1 in
+	__tmp_reg__ and __zero_reg__ initialization.
+
 2000-04-30  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (propagate_one_insn): Mark sets even when the insn is dead.
