@@ -1,0 +1,276 @@
+# This is the default mime.types file from the Apache web server distribution
+
+# This file controls what Internet media types are sent to the client for
+# given file extension(s).  Sending the correct media type to the client
+# is important so they know how to handle the content of the file.
+# Extra types can either be added here or by using an AddType directive
+# in your config files. For more information about Internet media types,
+# please read RFC 2045, 2046, 2047, 2048, and 2077.  The Internet media type
+# registry is at <ftp://ftp.iana.org/in-notes/iana/assignments/media-types/>.
+
+# MIME type			Extension
+application/EDI-Consent
+application/EDI-X12
+application/EDIFACT
+application/activemessage
+application/andrew-inset	ez
+application/applefile
+application/atomicmail
+application/cals-1840
+application/commonground
+application/cybercash
+application/dca-rft
+application/dec-dx
+application/eshop
+application/hyperstudio
+application/iges
+application/mac-binhex40	hqx
+application/mac-compactpro	cpt
+application/macwriteii
+application/marc
+application/mathematica
+application/msword		doc
+application/news-message-id
+application/news-transmission
+application/octet-stream	bin dms lha lzh exe class
+application/oda			oda
+application/pdf			pdf
+application/pgp-encrypted
+application/pgp-keys
+application/pgp-signature
+application/pkcs10
+application/pkcs7-mime
+application/pkcs7-signature
+application/postscript		ai eps ps
+application/prs.alvestrand.titrax-sheet
+application/prs.cww
+application/prs.nprend
+application/remote-printing
+application/riscos
+application/rtf			rtf
+application/set-payment
+application/set-payment-initiation
+application/set-registration
+application/set-registration-initiation
+application/sgml
+application/sgml-open-catalog
+application/slate
+application/smil		smi smil
+application/vemmi
+application/vnd.3M.Post-it-Notes
+application/vnd.FloGraphIt
+application/vnd.acucobol
+application/vnd.anser-web-certificate-issue-initiation
+application/vnd.anser-web-funds-transfer-initiation
+application/vnd.audiograph
+application/vnd.businessobjects
+application/vnd.claymore
+application/vnd.comsocaller
+application/vnd.dna
+application/vnd.dxr
+application/vnd.ecdis-update
+application/vnd.ecowin.chart
+application/vnd.ecowin.filerequest
+application/vnd.ecowin.fileupdate
+application/vnd.ecowin.series
+application/vnd.ecowin.seriesrequest
+application/vnd.ecowin.seriesupdate
+application/vnd.enliven
+application/vnd.epson.salt
+application/vnd.fdf
+application/vnd.ffsns
+application/vnd.framemaker
+application/vnd.fujitsu.oasys
+application/vnd.fujitsu.oasys2
+application/vnd.fujitsu.oasys3
+application/vnd.fujitsu.oasysgp
+application/vnd.fujitsu.oasysprs
+application/vnd.fujixerox.docuworks
+application/vnd.hp-HPGL
+application/vnd.hp-PCL
+application/vnd.hp-PCLXL
+application/vnd.hp-hps
+application/vnd.ibm.MiniPay
+application/vnd.ibm.modcap
+application/vnd.intercon.formnet
+application/vnd.intertrust.digibox
+application/vnd.intertrust.nncp
+application/vnd.is-xpr
+application/vnd.japannet-directory-service
+application/vnd.japannet-jpnstore-wakeup
+application/vnd.japannet-payment-wakeup
+application/vnd.japannet-registration
+application/vnd.japannet-registration-wakeup
+application/vnd.japannet-setstore-wakeup
+application/vnd.japannet-verification
+application/vnd.japannet-verification-wakeup
+application/vnd.koan
+application/vnd.lotus-1-2-3
+application/vnd.lotus-approach
+application/vnd.lotus-freelance
+application/vnd.lotus-organizer
+application/vnd.lotus-screencam
+application/vnd.lotus-wordpro
+application/vnd.meridian-slingshot
+application/vnd.mif		mif
+application/vnd.minisoft-hp3000-save
+application/vnd.mitsubishi.misty-guard.trustweb
+application/vnd.ms-artgalry
+application/vnd.ms-asf
+application/vnd.ms-excel
+application/vnd.ms-powerpoint	ppt
+application/vnd.ms-project
+application/vnd.ms-tnef
+application/vnd.ms-works
+application/vnd.music-niff
+application/vnd.musician
+application/vnd.netfpx
+application/vnd.noblenet-directory
+application/vnd.noblenet-sealer
+application/vnd.noblenet-web
+application/vnd.novadigm.EDM
+application/vnd.novadigm.EDX
+application/vnd.novadigm.EXT
+application/vnd.osa.netdeploy
+application/vnd.powerbuilder6
+application/vnd.powerbuilder6-s
+application/vnd.rapid
+application/vnd.seemail
+application/vnd.shana.informed.formtemplate
+application/vnd.shana.informed.interchange
+application/vnd.shana.informed.package
+application/vnd.street-stream
+application/vnd.svd
+application/vnd.swiftview-ics
+application/vnd.truedoc
+application/vnd.visio
+application/vnd.webturbo
+application/vnd.wrq-hp3000-labelled
+application/vnd.wt.stf
+application/vnd.xara
+application/vnd.yellowriver-custom-menu
+application/wita
+application/wordperfect5.1
+application/x-bcpio		bcpio
+application/x-cdlink		vcd
+application/x-chess-pgn		pgn
+application/x-compress
+application/x-cpio		cpio
+application/x-csh		csh
+application/x-director		dcr dir dxr
+application/x-dvi		dvi
+application/x-futuresplash	spl
+application/x-gtar		gtar
+application/x-gzip
+application/x-hdf		hdf
+application/x-javascript	js
+application/x-koan		skp skd skt skm
+application/x-latex		latex
+application/x-netcdf		nc cdf
+# The standard is that rpm is audio/x-pn-realaudio-plugin... oh well...
+application/x-rpm		rpm
+application/x-sh		sh
+application/x-shar		shar
+application/x-shockwave-flash	swf
+application/x-stuffit		sit
+application/x-sv4cpio		sv4cpio
+application/x-sv4crc		sv4crc
+application/x-tar		tar
+application/x-tcl		tcl
+application/x-tex		tex
+application/x-texinfo		texinfo texi
+application/x-troff		t tr roff
+application/x-troff-man		man
+application/x-troff-me		me
+application/x-troff-ms		ms
+application/x-ustar		ustar
+application/x-wais-source	src
+application/x400-bp
+application/xml
+application/zip			zip
+audio/32kadpcm
+audio/basic			au snd
+audio/midi			mid midi kar
+audio/mpeg			mpga mp2 mp3
+audio/vnd.qcelp
+audio/x-aiff			aif aiff aifc
+audio/x-pn-realaudio		ram rm
+audio/x-realaudio		ra
+audio/x-wav			wav
+chemical/x-pdb			pdb xyz
+image/cgm
+image/g3fax
+image/gif			gif
+image/ief			ief
+image/jpeg			jpeg jpg jpe
+image/naplps
+image/png			png
+image/prs.btif
+image/tiff			tiff tif
+image/vnd.dwg
+image/vnd.dxf
+image/vnd.fpx
+image/vnd.net-fpx
+image/vnd.svf
+image/vnd.xiff
+image/x-cmu-raster		ras
+image/x-portable-anymap		pnm
+image/x-portable-bitmap		pbm
+image/x-portable-graymap	pgm
+image/x-portable-pixmap		ppm
+image/x-rgb			rgb
+image/x-xbitmap			xbm
+image/x-xpixmap			xpm
+image/x-xwindowdump		xwd
+message/delivery-status
+message/disposition-notification
+message/external-body
+message/http
+message/news
+message/partial
+message/rfc822
+model/iges			igs iges
+model/mesh			msh mesh silo
+model/vnd.dwf
+model/vrml			wrl vrml
+multipart/alternative
+multipart/appledouble
+multipart/byteranges
+multipart/digest
+multipart/encrypted
+multipart/form-data
+multipart/header-set
+multipart/mixed
+multipart/parallel
+multipart/related
+multipart/report
+multipart/signed
+multipart/voice-message
+text/css			css
+text/directory
+text/enriched
+text/html			html htm
+text/plain			asc txt
+text/prs.lines.tag
+text/rfc822-headers
+text/richtext			rtx
+text/rtf			rtf
+text/sgml			sgml sgm
+text/tab-separated-values	tsv
+text/uri-list
+text/vnd.abc
+text/vnd.flatland.3dml
+text/vnd.fmi.flexstor
+text/vnd.in3d.3dml
+text/vnd.in3d.spot
+text/vnd.latex-z
+text/x-setext			etx
+text/xml			xml
+video/mpeg			mpeg mpg mpe
+video/quicktime			qt mov
+video/vnd.motorola.video
+video/vnd.motorola.videop
+video/vnd.vivo
+video/x-msvideo			avi
+video/x-sgi-movie		movie
+x-conference/x-cooltalk		ice

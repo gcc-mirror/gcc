@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
+import gnu.gcj.io.MimeTypes;
 
 /**
  * @author Warren Levy <warrenl@cygnus.com>
@@ -27,7 +28,7 @@ import java.util.StringTokenizer;
 /**
  * Written using on-line Java Platform 1.2 API Specification, as well
  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
- * Status:  Two guessContentTypeFrom... methods not implemented.
+ * Status:  One guessContentTypeFrom... methods not implemented.
  *	getContent method assumes content type from response; see comment there.
  */
 
@@ -312,9 +313,25 @@ public abstract class URLConnection
     factory = fac;
   }
 
-// TODO:  protected static String guessContentTypeFromName(String fname)
-//   {
-//   }
+  protected static String guessContentTypeFromName(String fname)
+  {
+    int dot = fname.lastIndexOf (".");
+    
+    if (dot != -1)
+      {
+	if (dot == fname.length())
+	  return ("application/octet-stream");
+	else
+	  fname = fname.substring (dot + 1);
+      }
+    
+    String type = MimeTypes.getMimeTypeFromExtension (fname);
+    
+    if (type == null)
+      return("application/octet-stream");
+
+    return(type);
+  }
 
 // TODO:  public static String guessContentTypeFromStream(InputStream is)
 //          throws IOException
