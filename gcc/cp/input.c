@@ -33,6 +33,12 @@ Boston, MA 02111-1307, USA.  */
 
 extern FILE *finput;
 
+struct putback_buffer {
+  char *buffer;
+  int   buffer_size;
+  int   index;
+};
+
 struct input_source {
   /* saved string */
   char *str;
@@ -45,7 +51,7 @@ struct input_source {
   char *filename;
   int lineno;
   struct pending_input *input;
-  int putback_char;
+  struct putback_buffer putback;
 };
 
 static struct input_source *input, *free_inputs;
@@ -98,7 +104,7 @@ free_input (inp)
   free_inputs = inp;
 }
 
-static int putback_char = -1;
+static struct putback_buffer putback = {NULL, 0, -1};
 
 /* Some of these external functions are declared inline in case this file
    is included in lex.c.  */
@@ -122,8 +128,10 @@ feed_input (str, len)
   inp->filename = input_filename;
   inp->lineno = lineno;
   inp->input = save_pending_input ();
-  inp->putback_char = putback_char;
-  putback_char = -1;
+  inp->putback = putback;
+  putback.buffer = NULL;
+  putback.buffer_size = 0;
+  putback.index = -1;
   input = inp;
 }
 
@@ -141,7 +149,7 @@ end_input ()
   lineno = inp->lineno;
   /* Get interface/implementation back in sync.  */
   extract_interface_info ();
-  putback_char = inp->putback_char;
+  putback = inp->putback;
   restore_pending_input (inp->input);
   free_input (inp);
 }
@@ -149,17 +157,17 @@ end_input ()
 static inline int
 sub_getch ()
 {
-  if (putback_char != -1)
+  if (putback.index != -1)
     {
-      int ch = putback_char;
-      putback_char = -1;
+      int ch = putback.buffer[putback.index];
+      --putback.index;
       return ch;
     }
   if (input)
     {
       if (input->offset >= input->length)
 	{
-	  my_friendly_assert (putback_char == -1, 223);
+	  my_friendly_assert (putback.index == -1, 223);
 	  ++(input->offset);
 	  if (input->offset - input->length < 64)
 	    return EOF;
@@ -180,8 +188,13 @@ put_back (ch)
 {
   if (ch != EOF)
     {
-      my_friendly_assert (putback_char == -1, 224);
-      putback_char = ch;
+      if (putback.index == putback.buffer_size - 1)
+	{
+	  putback.buffer_size += 16;
+	  putback.buffer = xrealloc (putback.buffer, putback.buffer_size);
+	}
+      my_friendly_assert (putback.buffer != NULL, 224);
+      putback.buffer[++putback.index] = ch;
     }
 }
 

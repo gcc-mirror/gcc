@@ -4074,12 +4074,17 @@ real_yylex ()
 		else
 		  {
 		    if (char_len == -1)
-		      warning ("Ignoring invalid multibyte character");
-		    if (wide_flag)
-		      c = wc;
+		      {
+			warning ("Ignoring invalid multibyte character");
+			/* Replace all but the first byte.  */
+			for (--i; i > 1; --i)
+			  put_back (token_buffer[i]);
+			wc = token_buffer[1];
+		      }
 #ifdef MAP_CHARACTER
-		    else
-		      c = MAP_CHARACTER (c);
+		      c = MAP_CHARACTER (wc);
+#else
+		      c = wc;
 #endif
 		  }
 #else /* ! MULTIBYTE_CHARS */
@@ -4203,20 +4208,24 @@ real_yylex ()
 		    c = getch ();
 		  }
 		if (char_len == -1)
-		  warning ("Ignoring invalid multibyte character");
-		else
 		  {
-		    /* mbtowc sometimes needs an extra char before accepting */
-		    if (char_len <= i)
-		      put_back (c);
-		    if (! wide_flag)
-		      {
-			p += (i + 1);
-			c = getch ();
-			continue;
-		      }
-		    c = wc;
+		    warning ("Ignoring invalid multibyte character");
+		    /* Replace all except the first byte.  */
+		    put_back (c);
+		    for (--i; i > 0; --i)
+		      put_back (p[i]);
+		    char_len = 1;
 		  }
+		/* mbtowc sometimes needs an extra char before accepting */
+		if (char_len <= i)
+		  put_back (c);
+		if (! wide_flag)
+		  {
+		    p += (i + 1);
+		    c = getch ();
+		    continue;
+		  }
+		c = wc;
 #endif /* MULTIBYTE_CHARS */
 	      }
 
