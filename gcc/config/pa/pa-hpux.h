@@ -18,7 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 8	/* TARGET_SHARED_LIBS */
+#define TARGET_DEFAULT 0
 #endif
 
 #include "pa.h"
