@@ -1791,6 +1791,9 @@ struct lang_decl GTY(())
     {
       struct full_lang_decl 
       {
+	/* For a non-thunk function decl, this is a tree list of
+  	   friendly classes. For a thunk function decl, it is the
+  	   thunked to function decl.  */
 	tree befriending_classes;
 	
 	/* For a non-virtual FUNCTION_DECL, this is
@@ -2977,14 +2980,20 @@ struct lang_decl GTY(())
 /* An integer indicating how many bytes should be subtracted from the
    this or result pointer when this function is called.  */
 #define THUNK_FIXED_OFFSET(DECL) \
-  (DECL_LANG_SPECIFIC (DECL)->u.f.fixed_offset)
+  (DECL_LANG_SPECIFIC (VAR_OR_FUNCTION_DECL_CHECK (DECL))->u.f.fixed_offset)
 
-/* A tree indicating how many bytes should be added to the
-   vtable for the this or result pointer to find the vcall or vbase
-   offset.  (The vptr is always located at offset zero from the
-   this or result pointer.)  If NULL, then there is no virtual adjust.  */
+/* A tree indicating how to perform the virtual adjustment. For a this
+   adjusting thunk it is the number of bytes to be added to the vtable
+   to find the vcall offset. For a result adjusting thunk, it is the
+   binfo of the relevant virtual base.  The vptr is always located at
+   offset zero from the this or result pointer.  If NULL, then there
+   is no virtual adjust.  */
 #define THUNK_VIRTUAL_OFFSET(DECL) \
-  (LANG_DECL_U2_CHECK (DECL, 0)->virtual_offset)
+  (LANG_DECL_U2_CHECK (VAR_OR_FUNCTION_DECL_CHECK (DECL), 0)->virtual_offset)
+
+/* For thunk NODE, this is the FUNCTION_DECL thunked to.  */
+#define THUNK_TARGET(NODE)				\
+  (DECL_LANG_SPECIFIC (NODE)->u.f.befriending_classes)
 
 /* These macros provide convenient access to the various _STMT nodes
    created when parsing template declarations.  */
@@ -3990,7 +3999,7 @@ extern void set_mangled_name_for_decl (tree);
 extern tree build_opfncall (enum tree_code, int, tree, tree, tree);
 extern tree hack_identifier (tree, tree);
 extern tree make_thunk (tree, bool, tree, tree);
-extern void finish_thunk (tree, tree, tree);
+extern void finish_thunk (tree);
 extern void use_thunk (tree, bool);
 extern void synthesize_method (tree);
 extern tree implicitly_declare_fn (special_function_kind, tree, bool);

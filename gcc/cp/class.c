@@ -2299,6 +2299,9 @@ find_final_overrider (derived, binfo, fn)
      
      The solution is to look at all paths to BINFO.  If we find
      different overriders along any two, then there is a problem.  */
+  if (DECL_THUNK_P (fn))
+    fn = THUNK_TARGET (fn);
+  
   ffod.fn = fn;
   ffod.declaring_base = binfo;
   ffod.most_derived_type = BINFO_TYPE (derived);
@@ -2328,8 +2331,8 @@ get_vcall_index (tree fn, tree type)
 {
   tree v;
 
-  if (DECL_RESULT_THUNK_P (fn))
-    fn = TREE_OPERAND (DECL_INITIAL (fn), 0);
+  if (DECL_THUNK_P (fn))
+    fn = THUNK_TARGET (fn);
 
   for (v = CLASSTYPE_VCALL_INDICES (type); v; v = TREE_CHAIN (v))
     if ((DECL_DESTRUCTOR_P (fn) && DECL_DESTRUCTOR_P (TREE_PURPOSE (v)))
@@ -2360,11 +2363,15 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
   tree first_defn;
   bool lost = false;
 
+  if (DECL_THUNK_P (fn))
+    fn = THUNK_TARGET (fn);
+  
   /* Find the nearest primary base (possibly binfo itself) which defines
      this function; this is the class the caller will convert to when
      calling FN through BINFO.  */
   for (b = binfo; ; b = get_primary_binfo (b))
     {
+      my_friendly_assert (b, 20021227);
       if (look_for_overrides_here (BINFO_TYPE (b), fn))
 	break;
 
@@ -2408,10 +2415,11 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
 		/* If the covariant type is within the class hierarchy
 		   we are currently laying out, the vbase index is not
 		   yet known, so we have to remember the virtual base
-		   binfo for the moment.  The thunk will be finished
-		   in build_vtbl_initializer, where we'll know the
-		   vtable index of the virtual base.  */
-		virtual_offset = binfo_for_vbase (BINFO_TYPE (binfo), t);
+		   binfo. */
+		virtual_offset = binfo_for_vbase (BINFO_TYPE (binfo),
+						  TREE_TYPE (over_return));
+		fixed_offset = size_diffop (fixed_offset,
+					    BINFO_OFFSET (virtual_offset));
 	      }
 	    
 	    /* Replace the overriding function with a covariant thunk.
@@ -2421,7 +2429,7 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
 				fixed_offset, virtual_offset);
 	    TREE_PURPOSE (overrider) = thunk;
 	    if (!virtual_offset && !DECL_NAME (thunk))
-	      finish_thunk (thunk, fixed_offset, NULL_TREE);
+	      finish_thunk (thunk);
 	  }
       }
   }
@@ -7739,18 +7747,12 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
       tree init = NULL_TREE;
       
       fn = BV_FN (v);
-      fn_original = (DECL_RESULT_THUNK_P (fn)
-		     ? TREE_OPERAND (DECL_INITIAL (fn), 0)
-		     : fn);
-      /* Finish an unfinished covariant thunk. */
-      if (DECL_RESULT_THUNK_P (fn) && !DECL_NAME (fn))
+      fn_original = fn;
+      if (DECL_THUNK_P (fn))
 	{
-	  tree binfo = THUNK_VIRTUAL_OFFSET (fn);
-	  tree fixed_offset = size_int (THUNK_FIXED_OFFSET (fn));
-	  tree virtual_offset = BINFO_VPTR_FIELD (binfo);
-	  
-	  fixed_offset = size_diffop (fixed_offset, BINFO_OFFSET (binfo));
-	  finish_thunk (fn, fixed_offset, virtual_offset);
+	  if (!DECL_NAME (fn))
+	    finish_thunk (fn);
+	  fn_original = THUNK_TARGET (fn);
 	}
       
       /* If the only definition of this function signature along our
@@ -7796,7 +7798,7 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
 	    {
 	      fn = make_thunk (fn, /*this_adjusting=*/1, delta, vcall_index);
 	      if (!DECL_NAME (fn))
-		finish_thunk (fn, delta, THUNK_VIRTUAL_OFFSET (fn));
+		finish_thunk (fn);
 	    }
 	  /* Take the address of the function, considering it to be of an
 	     appropriate generic type.  */
