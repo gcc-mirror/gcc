@@ -1,3 +1,15 @@
+2000-10-18  Jan Hubikca  <jh@suse.cz>
+
+        * i386.c (ix86_comparison_operator, put_condition_code,
+        ix86_match_ccmode, ix86_cc_mode): Handle CCRCmode.
+        (ix86_expand_strlensi_unroll_1): Use CCRCmode.
+        * i386.h (EXTRA_CC_MODES): Add CCRCmode.
+        * i386.md (adddi and negdi splitter): Use CCRCmode.
+        (add?i_3, add?i_4, add?i_5): Use CCRCmode; swap operands
+        (subsi3_carry): add '*'
+        (addsi3_carry_rc, subsi3_carry_rc, x86_movsicc_0_m1_rc): New.
+        (cmp to add peep2): Use CCRCmode; swap operands.
+
 2000-10-18  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md: Remove an unnecessary sign_extend
@@ -307,11 +319,9 @@ Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
 	* gengenrtl.c (gendef): Don't include
 	ggc_p conditionals.  
 	* ggc-callbacks.c (ggc_p): Remove.  
-	*
-	ggc-none.c (ggc_p): Remove.  
+	* ggc-none.c (ggc_p): Remove.  
 	* ggc.h (ggc_p): Don't declare.  
-	*
-	integrate.c (save_for_inline): Don't mess with obstacks.
+	* integrate.c (save_for_inline): Don't mess with obstacks.
 	(integrate_decl_tree): Likewise.
 	(output_inline_function): Likewise.  
 	* lists.c
