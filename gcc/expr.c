@@ -4185,7 +4185,7 @@ store_constructor (exp, target, align, cleared)
 		offset = build (WITH_RECORD_EXPR, sizetype,
 				offset, make_tree (TREE_TYPE (exp), target));
 
-	      offset = size_binop (FLOOR_DIV_EXPR, offset,
+	      offset = size_binop (EXACT_DIV_EXPR, offset,
 				   size_int (BITS_PER_UNIT));
 
 	      offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
