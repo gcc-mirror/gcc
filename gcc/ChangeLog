@@ -1,3 +1,8 @@
+2003-11-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (storehi): Avoid use of explicit subreg.
+	(storehi_bigend, storeinthi, movhi_bigend): Likewise.
+
 2003-11-12  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/sh/sh.md (prefetch): New pattern.
