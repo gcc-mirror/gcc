@@ -849,12 +849,12 @@ add_functions (void)
 
   int di, dr, dd, dl, dc, dz, ii;
 
-  di = gfc_default_integer_kind ();
-  dr = gfc_default_real_kind ();
-  dd = gfc_default_double_kind ();
-  dl = gfc_default_logical_kind ();
-  dc = gfc_default_character_kind ();
-  dz = gfc_default_complex_kind ();
+  di = gfc_default_integer_kind;
+  dr = gfc_default_real_kind;
+  dd = gfc_default_double_kind;
+  dl = gfc_default_logical_kind;
+  dc = gfc_default_character_kind;
+  dz = gfc_default_complex_kind;
   ii = gfc_index_integer_kind;
 
   add_sym_1 ("abs", 1, 1, BT_REAL, dr,
@@ -1806,10 +1806,10 @@ add_subroutines (void)
 
   int di, dr, dc, dl;
 
-  di = gfc_default_integer_kind ();
-  dr = gfc_default_real_kind ();
-  dc = gfc_default_character_kind ();
-  dl = gfc_default_logical_kind ();
+  di = gfc_default_integer_kind;
+  dr = gfc_default_real_kind;
+  dc = gfc_default_character_kind;
+  dl = gfc_default_logical_kind;
 
   add_sym_0s ("abort", 1, NULL);
 

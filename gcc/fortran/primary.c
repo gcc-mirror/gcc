@@ -204,7 +204,7 @@ match_integer_constant (gfc_expr ** result, int signflag)
 
   kind = get_kind ();
   if (kind == -2)
-    kind = gfc_default_integer_kind ();
+    kind = gfc_default_integer_kind;
   if (kind == -1)
     return MATCH_ERROR;
 
@@ -295,7 +295,7 @@ match_boz_constant (gfc_expr ** result)
   match_digits (0, radix, buffer);
   gfc_next_char ();
 
-  e = gfc_convert_integer (buffer, gfc_default_integer_kind (), radix,
+  e = gfc_convert_integer (buffer, gfc_default_integer_kind, radix,
 			   &gfc_current_locus);
 
   if (gfc_range_check (e) != ARITH_OK)
@@ -460,7 +460,7 @@ done:
 	    ("Real number at %C has a 'd' exponent and an explicit kind");
 	  goto cleanup;
 	}
-      kind = gfc_default_double_kind ();
+      kind = gfc_default_double_kind;
       break;
 
     case 'q':
@@ -475,7 +475,7 @@ done:
 
     default:
       if (kind == -2)
-	kind = gfc_default_real_kind ();
+	kind = gfc_default_real_kind;
 
       if (gfc_validate_kind (BT_REAL, kind, true) < 0)
 	{
@@ -758,7 +758,7 @@ match_string_constant (gfc_expr ** result)
   c = gfc_next_char ();
   if (c == '\'' || c == '"')
     {
-      kind = gfc_default_character_kind ();
+      kind = gfc_default_character_kind;
       goto got_delim;
     }
 
@@ -905,7 +905,7 @@ match_logical_constant (gfc_expr ** result)
   if (kind == -1)
     return MATCH_ERROR;
   if (kind == -2)
-    kind = gfc_default_logical_kind ();
+    kind = gfc_default_logical_kind;
 
   if (gfc_validate_kind (BT_LOGICAL, kind, true) < 0)
     gfc_error ("Bad kind for logical constant at %C");
@@ -972,7 +972,7 @@ match_sym_complex_part (gfc_expr ** result)
       break;
 
     case BT_INTEGER:
-      e = gfc_int2real (sym->value, gfc_default_real_kind ());
+      e = gfc_int2real (sym->value, gfc_default_real_kind);
       if (e == NULL)
 	goto error;
       break;
@@ -1098,7 +1098,7 @@ done:
   if (seen_dp == 0 && exp_char == ' ')
     {
       if (kind == -2)
-	kind = gfc_default_integer_kind ();
+	kind = gfc_default_integer_kind;
 
     }
   else
@@ -1111,13 +1111,13 @@ done:
 		("Real number at %C has a 'd' exponent and an explicit kind");
 	      return MATCH_ERROR;
 	    }
-	  kind = gfc_default_double_kind ();
+	  kind = gfc_default_double_kind;
 
 	}
       else
 	{
 	  if (kind == -2)
-	    kind = gfc_default_real_kind ();
+	    kind = gfc_default_real_kind;
 	}
 
       if (gfc_validate_kind (BT_REAL, kind, true) < 0)

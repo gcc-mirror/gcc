@@ -1576,12 +1576,12 @@ gfc_get_namespace (gfc_namespace * parent)
       if ('i' <= i && i <= 'n')
 	{
 	  ts->type = BT_INTEGER;
-	  ts->kind = gfc_default_integer_kind ();
+	  ts->kind = gfc_default_integer_kind;
 	}
       else
 	{
 	  ts->type = BT_REAL;
-	  ts->kind = gfc_default_real_kind ();
+	  ts->kind = gfc_default_real_kind;
 	}
     }
 

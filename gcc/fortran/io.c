@@ -842,7 +842,7 @@ gfc_match_format (void)
   e = gfc_get_expr();
   e->expr_type = EXPR_CONSTANT;
   e->ts.type = BT_CHARACTER;
-  e->ts.kind = gfc_default_character_kind();
+  e->ts.kind = gfc_default_character_kind;
   e->where = start;
   e->value.character.string = format_string = gfc_getmem(format_length+1);
   e->value.character.length = format_length;

@@ -78,12 +78,12 @@ int gfc_index_integer_kind;
 
 /* The default kinds of the various types.  */
 
-static int gfc_default_integer_kind_1;
-static int gfc_default_real_kind_1;
-static int gfc_default_double_kind_1;
-static int gfc_default_character_kind_1;
-static int gfc_default_logical_kind_1;
-static int gfc_default_complex_kind_1;
+int gfc_default_integer_kind;
+int gfc_default_real_kind;
+int gfc_default_double_kind;
+int gfc_default_character_kind;
+int gfc_default_logical_kind;
+int gfc_default_complex_kind;
 
 /* Query the target to determine which machine modes are available for
    computation.  Choose KIND numbers for them.  */
@@ -180,31 +180,31 @@ gfc_init_kinds (void)
     {
       if (!saw_i8)
 	fatal_error ("integer kind=8 not available for -i8 option");
-      gfc_default_integer_kind_1 = 8;
+      gfc_default_integer_kind = 8;
     }
   else if (saw_i4)
-    gfc_default_integer_kind_1 = 4;
+    gfc_default_integer_kind = 4;
   else
-    gfc_default_integer_kind_1 = gfc_integer_kinds[i_index - 1].kind;
+    gfc_default_integer_kind = gfc_integer_kinds[i_index - 1].kind;
 
   /* Choose the default real kind.  Again, we choose 4 when possible.  */
   if (gfc_option.r8)
     {
       if (!saw_r8)
 	fatal_error ("real kind=8 not available for -r8 option");
-      gfc_default_real_kind_1 = 8;
+      gfc_default_real_kind = 8;
     }
   else if (saw_r4)
-    gfc_default_real_kind_1 = 4;
+    gfc_default_real_kind = 4;
   else
-    gfc_default_real_kind_1 = gfc_real_kinds[0].kind;
+    gfc_default_real_kind = gfc_real_kinds[0].kind;
 
   /* Choose the default double kind.  If -r8 is specified, we use kind=16,
      if it's available, otherwise we do not change anything.  */
   if (gfc_option.r8 && saw_r16)
-    gfc_default_double_kind_1 = 16;
+    gfc_default_double_kind = 16;
   else if (saw_r4 && saw_r8)
-    gfc_default_double_kind_1 = 8;
+    gfc_default_double_kind = 8;
   else
     {
       /* F95 14.6.3.1: A nonpointer scalar object of type double precision
@@ -218,59 +218,20 @@ gfc_init_kinds (void)
 	 no GCC targets for which a two-word type does not exist, so we
 	 just let gfc_validate_kind abort and tell us if something breaks.  */
 
-      gfc_default_double_kind_1
-	= gfc_validate_kind (BT_REAL, gfc_default_real_kind_1 * 2, false);
+      gfc_default_double_kind
+	= gfc_validate_kind (BT_REAL, gfc_default_real_kind * 2, false);
     }
 
   /* The default logical kind is constrained to be the same as the
      default integer kind.  Similarly with complex and real.  */
-  gfc_default_logical_kind_1 = gfc_default_integer_kind_1;
-  gfc_default_complex_kind_1 = gfc_default_real_kind_1;
+  gfc_default_logical_kind = gfc_default_integer_kind;
+  gfc_default_complex_kind = gfc_default_real_kind;
 
   /* Choose the smallest integer kind for our default character.  */
-  gfc_default_character_kind_1 = gfc_integer_kinds[0].kind;
+  gfc_default_character_kind = gfc_integer_kinds[0].kind;
 
   /* Choose the integer kind the same size as "void*" for our index kind.  */
   gfc_index_integer_kind = POINTER_SIZE / 8;
-}
-
-/* ??? These functions should go away in favor of direct access to
-   the relevant variables.  */
-
-int
-gfc_default_integer_kind (void)
-{
-  return gfc_default_integer_kind_1;
-}
-
-int
-gfc_default_real_kind (void)
-{
-  return gfc_default_real_kind_1;
-}
-
-int
-gfc_default_double_kind (void)
-{
-  return gfc_default_double_kind_1;
-}
-
-int
-gfc_default_character_kind (void)
-{
-  return gfc_default_character_kind_1;
-}
-
-int
-gfc_default_logical_kind (void)
-{
-  return gfc_default_logical_kind_1;
-}
-
-int
-gfc_default_complex_kind (void)
-{
-  return gfc_default_complex_kind_1;
 }
 
 /* Make sure that a valid kind is present.  Returns an index into the
@@ -315,7 +276,7 @@ validate_logical (int kind)
 static int
 validate_character (int kind)
 {
-  return kind == gfc_default_character_kind_1 ? 0 : -1;
+  return kind == gfc_default_character_kind ? 0 : -1;
 }
 
 /* Validate a kind given a basic type.  The return value is the same
@@ -466,7 +427,7 @@ gfc_init_types (void)
     = build_int_cst_wide (long_unsigned_type_node, lo, hi);
 
   size_type_node = gfc_array_index_type;
-  boolean_type_node = gfc_get_logical_type (gfc_default_logical_kind ());
+  boolean_type_node = gfc_get_logical_type (gfc_default_logical_kind);
 
   boolean_true_node = build_int_cst (boolean_type_node, 1);
   boolean_false_node = build_int_cst (boolean_type_node, 0);

@@ -252,7 +252,7 @@ gfc_conv_mpfr_to_tree (mpfr_t f, int kind)
       edigits += 3;
     }
 
-  if (kind == gfc_default_double_kind())
+  if (kind == gfc_default_double_kind)
     p = mpfr_get_str (NULL, &exp, 10, 17, f, GFC_RND_MODE);
   else
     p = mpfr_get_str (NULL, &exp, 10, 8, f, GFC_RND_MODE);

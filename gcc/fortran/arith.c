@@ -1047,7 +1047,7 @@ gfc_arith_concat (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
   gfc_expr *result;
   int len;
 
-  result = gfc_constant_result (BT_CHARACTER, gfc_default_character_kind (),
+  result = gfc_constant_result (BT_CHARACTER, gfc_default_character_kind,
 				&op1->where);
 
   len = op1->value.character.length + op2->value.character.length;
@@ -1161,7 +1161,7 @@ gfc_arith_eq (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
 {
   gfc_expr *result;
 
-  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind (),
+  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind,
 				&op1->where);
   result->value.logical = (op1->ts.type == BT_COMPLEX) ?
     compare_complex (op1, op2) : (gfc_compare_expr (op1, op2) == 0);
@@ -1176,7 +1176,7 @@ gfc_arith_ne (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
 {
   gfc_expr *result;
 
-  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind (),
+  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind,
 				&op1->where);
   result->value.logical = (op1->ts.type == BT_COMPLEX) ?
     !compare_complex (op1, op2) : (gfc_compare_expr (op1, op2) != 0);
@@ -1191,7 +1191,7 @@ gfc_arith_gt (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
 {
   gfc_expr *result;
 
-  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind (),
+  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind,
 				&op1->where);
   result->value.logical = (gfc_compare_expr (op1, op2) > 0);
   *resultp = result;
@@ -1205,7 +1205,7 @@ gfc_arith_ge (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
 {
   gfc_expr *result;
 
-  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind (),
+  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind,
 				&op1->where);
   result->value.logical = (gfc_compare_expr (op1, op2) >= 0);
   *resultp = result;
@@ -1219,7 +1219,7 @@ gfc_arith_lt (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
 {
   gfc_expr *result;
 
-  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind (),
+  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind,
 				&op1->where);
   result->value.logical = (gfc_compare_expr (op1, op2) < 0);
   *resultp = result;
@@ -1233,7 +1233,7 @@ gfc_arith_le (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
 {
   gfc_expr *result;
 
-  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind (),
+  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind,
 				&op1->where);
   result->value.logical = (gfc_compare_expr (op1, op2) <= 0);
   *resultp = result;
@@ -1479,7 +1479,7 @@ eval_intrinsic (gfc_intrinsic_op operator,
 	goto runtime;
 
       temp.ts.type = BT_LOGICAL;
-      temp.ts.kind = gfc_default_logical_kind ();
+      temp.ts.kind = gfc_default_logical_kind;
 
       unary = 1;
       break;
@@ -1493,7 +1493,7 @@ eval_intrinsic (gfc_intrinsic_op operator,
 	goto runtime;
 
       temp.ts.type = BT_LOGICAL;
-      temp.ts.kind = gfc_default_logical_kind ();
+      temp.ts.kind = gfc_default_logical_kind;
 
       unary = 0;
       break;
@@ -1515,7 +1515,7 @@ eval_intrinsic (gfc_intrinsic_op operator,
       if (op1->ts.type == BT_COMPLEX || op2->ts.type == BT_COMPLEX)
 	{
 	  temp.ts.type = BT_LOGICAL;
-	  temp.ts.kind = gfc_default_logical_kind();
+	  temp.ts.kind = gfc_default_logical_kind;
 	  goto runtime;
 	}
 
@@ -1527,7 +1527,7 @@ eval_intrinsic (gfc_intrinsic_op operator,
 	{
 	  unary = 0;
 	  temp.ts.type = BT_LOGICAL;
-	  temp.ts.kind = gfc_default_logical_kind();
+	  temp.ts.kind = gfc_default_logical_kind;
 	  break;
 	}
 
@@ -1557,7 +1557,7 @@ eval_intrinsic (gfc_intrinsic_op operator,
 	  || operator == INTRINSIC_LE || operator == INTRINSIC_LT)
 	{
 	  temp.ts.type = BT_LOGICAL;
-	  temp.ts.kind = gfc_default_logical_kind ();
+	  temp.ts.kind = gfc_default_logical_kind;
 	}
 
       unary = 0;
@@ -1568,7 +1568,7 @@ eval_intrinsic (gfc_intrinsic_op operator,
 	goto runtime;
 
       temp.ts.type = BT_CHARACTER;
-      temp.ts.kind = gfc_default_character_kind ();
+      temp.ts.kind = gfc_default_character_kind;
 
       unary = 0;
       break;
@@ -1645,7 +1645,7 @@ eval_type_intrinsic0 (gfc_intrinsic_op operator, gfc_expr *op)
     case INTRINSIC_EQ:
     case INTRINSIC_NE:
       op->ts.type = BT_LOGICAL;
-      op->ts.kind = gfc_default_logical_kind();
+      op->ts.kind = gfc_default_logical_kind;
       break;
 
     default:

@@ -212,7 +212,7 @@ gfc_simplify_achar (gfc_expr * e)
       return &gfc_bad_expr;
     }
 
-  result = gfc_constant_result (BT_CHARACTER, gfc_default_character_kind (),
+  result = gfc_constant_result (BT_CHARACTER, gfc_default_character_kind,
 				&e->where);
 
   result->value.character.string = gfc_getmem (2);
@@ -382,7 +382,7 @@ gfc_simplify_dint (gfc_expr * e)
 
   mpfr_trunc (rtrunc->value.real, e->value.real);
 
-  result = gfc_real2real (rtrunc, gfc_default_double_kind ());
+  result = gfc_real2real (rtrunc, gfc_default_double_kind);
   gfc_free_expr (rtrunc);
 
   return range_check (result, "DINT");
@@ -445,13 +445,13 @@ gfc_simplify_dnint (gfc_expr * e)
     return NULL;
 
   result =
-    gfc_constant_result (BT_REAL, gfc_default_double_kind (), &e->where);
+    gfc_constant_result (BT_REAL, gfc_default_double_kind, &e->where);
 
   rtrunc = gfc_copy_expr (e);
 
   cmp = mpfr_cmp_ui (e->value.real, 0);
 
-  gfc_set_model_kind (gfc_default_double_kind ());
+  gfc_set_model_kind (gfc_default_double_kind);
   mpfr_init (half);
   mpfr_set_str (half, "0.5", 10, GFC_RND_MODE);
 
@@ -576,7 +576,7 @@ gfc_simplify_ceiling (gfc_expr * e, gfc_expr * k)
   gfc_expr *ceil, *result;
   int kind;
 
-  kind = get_kind (BT_REAL, k, "CEILING", gfc_default_real_kind ());
+  kind = get_kind (BT_REAL, k, "CEILING", gfc_default_real_kind);
   if (kind == -1)
     return &gfc_bad_expr;
 
@@ -602,7 +602,7 @@ gfc_simplify_char (gfc_expr * e, gfc_expr * k)
   gfc_expr *result;
   int c, kind;
 
-  kind = get_kind (BT_CHARACTER, k, "CHAR", gfc_default_character_kind ());
+  kind = get_kind (BT_CHARACTER, k, "CHAR", gfc_default_character_kind);
   if (kind == -1)
     return &gfc_bad_expr;
 
@@ -687,7 +687,7 @@ gfc_simplify_cmplx (gfc_expr * x, gfc_expr * y, gfc_expr * k)
       || (y != NULL && y->expr_type != EXPR_CONSTANT))
     return NULL;
 
-  kind = get_kind (BT_REAL, k, "CMPLX", gfc_default_real_kind ());
+  kind = get_kind (BT_REAL, k, "CMPLX", gfc_default_real_kind);
   if (kind == -1)
     return &gfc_bad_expr;
 
@@ -776,7 +776,7 @@ gfc_simplify_dcmplx (gfc_expr * x, gfc_expr * y)
       || (y != NULL && y->expr_type != EXPR_CONSTANT))
     return NULL;
 
-  return simplify_cmplx ("DCMPLX", x, y, gfc_default_double_kind ());
+  return simplify_cmplx ("DCMPLX", x, y, gfc_default_double_kind);
 }
 
 
@@ -791,15 +791,15 @@ gfc_simplify_dble (gfc_expr * e)
   switch (e->ts.type)
     {
     case BT_INTEGER:
-      result = gfc_int2real (e, gfc_default_double_kind ());
+      result = gfc_int2real (e, gfc_default_double_kind);
       break;
 
     case BT_REAL:
-      result = gfc_real2real (e, gfc_default_double_kind ());
+      result = gfc_real2real (e, gfc_default_double_kind);
       break;
 
     case BT_COMPLEX:
-      result = gfc_complex2real (e, gfc_default_double_kind ());
+      result = gfc_complex2real (e, gfc_default_double_kind);
       break;
 
     default:
@@ -880,10 +880,10 @@ gfc_simplify_dprod (gfc_expr * x, gfc_expr * y)
     return NULL;
 
   result =
-    gfc_constant_result (BT_REAL, gfc_default_double_kind (), &x->where);
+    gfc_constant_result (BT_REAL, gfc_default_double_kind, &x->where);
 
-  a1 = gfc_real2real (x, gfc_default_double_kind ());
-  a2 = gfc_real2real (y, gfc_default_double_kind ());
+  a1 = gfc_real2real (x, gfc_default_double_kind);
+  a2 = gfc_real2real (y, gfc_default_double_kind);
 
   mpfr_mul (result->value.real, a1->value.real, a2->value.real, GFC_RND_MODE);
 
@@ -957,7 +957,7 @@ gfc_simplify_exponent (gfc_expr * x)
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind (),
+  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
 				&x->where);
 
   gfc_set_model (x->value.real);
@@ -1006,7 +1006,7 @@ gfc_simplify_float (gfc_expr * a)
   if (a->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_int2real (a, gfc_default_real_kind ());
+  result = gfc_int2real (a, gfc_default_real_kind);
   return range_check (result, "FLOAT");
 }
 
@@ -1018,7 +1018,7 @@ gfc_simplify_floor (gfc_expr * e, gfc_expr * k)
   mpfr_t floor;
   int kind;
 
-  kind = get_kind (BT_REAL, k, "FLOOR", gfc_default_real_kind ());
+  kind = get_kind (BT_REAL, k, "FLOOR", gfc_default_real_kind);
   if (kind == -1)
     gfc_internal_error ("gfc_simplify_floor(): Bad kind");
 
@@ -1354,7 +1354,7 @@ gfc_simplify_index (gfc_expr * x, gfc_expr * y, gfc_expr * b)
   else
     back = 0;
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind (),
+  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
 				&x->where);
 
   len = x->value.character.length;
@@ -1488,7 +1488,7 @@ gfc_simplify_int (gfc_expr * e, gfc_expr * k)
   gfc_expr *rpart, *rtrunc, *result;
   int kind;
 
-  kind = get_kind (BT_REAL, k, "INT", gfc_default_real_kind ());
+  kind = get_kind (BT_REAL, k, "INT", gfc_default_real_kind);
   if (kind == -1)
     return &gfc_bad_expr;
 
@@ -1537,7 +1537,7 @@ gfc_simplify_ifix (gfc_expr * e)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind (),
+  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
 				&e->where);
 
   rtrunc = gfc_copy_expr (e);
@@ -1558,7 +1558,7 @@ gfc_simplify_idint (gfc_expr * e)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind (),
+  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
 				&e->where);
 
   rtrunc = gfc_copy_expr (e);
@@ -1809,7 +1809,7 @@ gfc_simplify_len (gfc_expr * e)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind (),
+  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
 				&e->where);
 
   mpz_set_si (result->value.integer, e->value.character.length);
@@ -1826,7 +1826,7 @@ gfc_simplify_len_trim (gfc_expr * e)
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind (),
+  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
 				&e->where);
 
   len = e->value.character.length;
@@ -1998,7 +1998,7 @@ gfc_simplify_logical (gfc_expr * e, gfc_expr * k)
   gfc_expr *result;
   int kind;
 
-  kind = get_kind (BT_LOGICAL, k, "LOGICAL", gfc_default_logical_kind ());
+  kind = get_kind (BT_LOGICAL, k, "LOGICAL", gfc_default_logical_kind);
   if (kind < 0)
     return &gfc_bad_expr;
 
@@ -2342,7 +2342,7 @@ simplify_nint (const char *name, gfc_expr * e, gfc_expr * k)
   int kind, cmp;
   mpfr_t half;
 
-  kind = get_kind (BT_INTEGER, k, name, gfc_default_integer_kind ());
+  kind = get_kind (BT_INTEGER, k, name, gfc_default_integer_kind);
   if (kind == -1)
     return &gfc_bad_expr;
 
@@ -2527,7 +2527,7 @@ gfc_simplify_real (gfc_expr * e, gfc_expr * k)
   if (e->ts.type == BT_COMPLEX)
     kind = get_kind (BT_REAL, k, "REAL", e->ts.kind);
   else
-    kind = get_kind (BT_REAL, k, "REAL", gfc_default_real_kind ());
+    kind = get_kind (BT_REAL, k, "REAL", gfc_default_real_kind);
 
   if (kind == -1)
     return &gfc_bad_expr;
@@ -2975,7 +2975,7 @@ gfc_simplify_scan (gfc_expr * e, gfc_expr * c, gfc_expr * b)
   else
     back = 0;
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind (),
+  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
 				&e->where);
 
   len = e->value.character.length;
@@ -3173,7 +3173,7 @@ gfc_simplify_shape (gfc_expr * source)
   if (source->rank == 0 || source->expr_type != EXPR_VARIABLE)
     return NULL;
 
-  result = gfc_start_constructor (BT_INTEGER, gfc_default_integer_kind (),
+  result = gfc_start_constructor (BT_INTEGER, gfc_default_integer_kind,
 				  &source->where);
 
   ar = gfc_find_array_ref (source);
@@ -3182,7 +3182,7 @@ gfc_simplify_shape (gfc_expr * source)
 
   for (n = 0; n < source->rank; n++)
     {
-      e = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind (),
+      e = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
 			       &source->where);
 
       if (t == SUCCESS)
@@ -3236,7 +3236,7 @@ gfc_simplify_size (gfc_expr * array, gfc_expr * dim)
 	return NULL;
     }
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind (),
+  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
 				&array->where);
 
   mpz_set (result->value.integer, size);
@@ -3350,7 +3350,7 @@ gfc_simplify_sngl (gfc_expr * a)
   if (a->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_real2real (a, gfc_default_real_kind ());
+  result = gfc_real2real (a, gfc_default_real_kind);
   return range_check (result, "SNGL");
 }
 
@@ -3654,7 +3654,7 @@ gfc_simplify_verify (gfc_expr * s, gfc_expr * set, gfc_expr * b)
   else
     back = 0;
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind (),
+  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
 				&s->where);
 
   len = s->value.character.length;
