@@ -1,3 +1,7 @@
+2002-01-24  Andris Pavenis  <pavenis@latnet.lv>
+
+        * config/i386/t-djgpp: Use NATIVE_SYSTEM_HEADER_DIR.
+
 2002-01-24  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.c (arm_hard_regno_mode_ok): Allow SImode
