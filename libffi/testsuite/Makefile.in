@@ -40,6 +40,7 @@ subdir = testsuite
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/accross.m4 \
+	$(top_srcdir)/../config/gcc-version.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -165,6 +166,8 @@ build_vendor = @build_vendor@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
 gcc_version = @gcc_version@
+gcc_version_full = @gcc_version_full@
+gcc_version_trigger = @gcc_version_trigger@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@

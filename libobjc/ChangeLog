@@ -1,3 +1,8 @@
+2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* configure.ac: Use TL_AC_GCC_VERSION to set gcc_version.
+	* configure, aclocal.m4: Regenerate.
+
 2004-11-29  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure: Regenerate for libtool change.

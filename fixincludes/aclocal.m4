@@ -1,5 +1,6 @@
 sinclude(../config/acx.m4)
 sinclude(../config/accross.m4)
+sinclude(../config/gcc-version.m4)
 sinclude(../config/gettext.m4)
 sinclude(../config/progtest.m4)
 

@@ -47,7 +47,8 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../config.guess \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/no-executables.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/gcc-version.m4 \
+	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -265,6 +266,8 @@ enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
 gcc_version = @gcc_version@
+gcc_version_full = @gcc_version_full@
+gcc_version_trigger = @gcc_version_trigger@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@

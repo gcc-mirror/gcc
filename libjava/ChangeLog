@@ -1,3 +1,9 @@
+2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* configure.ac: Use TL_AC_GCC_VERSION to set gcc_version.
+	* configure, aclocal.m4, Makefile.in, gcj/Makefile.in: Regenerate.
+	* include/Makefile.in, testsuite/Makefile.in: Regenerate.
+
 2004-12-01  Tom Tromey  <tromey@redhat.com>
 
 	* include/no-threads.h (_Jv_ThreadDestroyData): Removed argument

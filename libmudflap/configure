@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT multi_basedir CC ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CFLAGS CPP CPPFLAGS EGREP LN_S RANLIB ac_ct_RANLIB LIBTOOL enable_shared enable_static MF_HAVE_STDINT_H MF_HAVE_UINTPTR_T LIBMUDFLAPTH_TRUE LIBMUDFLAPTH_FALSE build_libmudflapth gcc_version toolexecdir toolexeclibdir NM ac_ct_NM SECTION_FLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT multi_basedir CC ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CFLAGS CPP CPPFLAGS EGREP LN_S RANLIB ac_ct_RANLIB LIBTOOL enable_shared enable_static MF_HAVE_STDINT_H MF_HAVE_UINTPTR_T LIBMUDFLAPTH_TRUE LIBMUDFLAPTH_FALSE build_libmudflapth gcc_version_trigger gcc_version_full gcc_version toolexecdir toolexeclibdir NM ac_ct_NM SECTION_FLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -6509,10 +6509,21 @@ _ACEOF
 fi
 
 
-# Process the option "--enable-version-specific-runtime-libs"
-gcc_version_trigger=${srcdir}/../gcc/version.c
-gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/'`
-gcc_version=`echo ${gcc_version_full} | sed -e 's/\(^ *\) .*/\1/'`
+
+if test "${with_gcc_version_trigger+set}" = set; then
+  gcc_version_trigger=$with_gcc_version_trigger
+else
+  gcc_version_trigger=$srcdir/../gcc/version.c
+fi
+if test -f "${gcc_version_trigger}"; then
+  gcc_version_full=`grep version_string "${gcc_version_trigger}" | sed -e 's/.*"\([^"]*\)".*/\1/'`
+else
+  gcc_version_full=`$CC -v 2>&1 | sed -n 's/^gcc version //p'`
+fi
+gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
+
+
+
 
 
 # Calculate toolexeclibdir
@@ -7577,6 +7588,8 @@ s,@MF_HAVE_UINTPTR_T@,$MF_HAVE_UINTPTR_T,;t t
 s,@LIBMUDFLAPTH_TRUE@,$LIBMUDFLAPTH_TRUE,;t t
 s,@LIBMUDFLAPTH_FALSE@,$LIBMUDFLAPTH_FALSE,;t t
 s,@build_libmudflapth@,$build_libmudflapth,;t t
+s,@gcc_version_trigger@,$gcc_version_trigger,;t t
+s,@gcc_version_full@,$gcc_version_full,;t t
 s,@gcc_version@,$gcc_version,;t t
 s,@toolexecdir@,$toolexecdir,;t t
 s,@toolexeclibdir@,$toolexeclibdir,;t t

@@ -1,3 +1,9 @@
+2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* configure.ac: Use TL_AC_GCC_VERSION to set gcc_version.
+	* aclocal.m4: Include ../config/gcc-version.m4.
+	* configure: Regenerate.
+
 2004-11-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* inclhack.def (gnu_types): Do not use on Solaris 2.1x.
