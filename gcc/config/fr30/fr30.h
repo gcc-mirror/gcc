@@ -1,7 +1,8 @@
 /*{{{  Comment.  */ 
 
 /* Definitions of FR30 target. 
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004
+   Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GCC.
@@ -602,12 +603,6 @@ enum reg_class
 /*}}}*/ 
 /*{{{  Passing Function Arguments on the Stack.  */ 
 
-/* Define this macro if an argument declared in a prototype as an integral type
-   smaller than `int' should actually be passed as an `int'.  In addition to
-   avoiding errors in certain cases of mismatch, it also makes for better code
-   on certain machines.  */
-#define PROMOTE_PROTOTYPES 1
-
 /* If defined, the maximum amount of space required for outgoing arguments will
    be computed and placed into the variable
    `current_function_outgoing_args_size'.  No space will be pushed onto the
@@ -902,17 +897,6 @@ enum reg_class
 #define SETUP_INCOMING_VARARGS(ARGS_SO_FAR, MODE, TYPE, PRETEND_ARGS_SIZE, SECOND_TIME) \
   if (! SECOND_TIME) \
     fr30_setup_incoming_varargs (ARGS_SO_FAR, MODE, TYPE, & PRETEND_ARGS_SIZE)
-
-/* Define this macro if the location where a function argument is passed
-   depends on whether or not it is a named argument.
-
-   This macro controls how the NAMED argument to `FUNCTION_ARG' is set for
-   varargs and stdarg functions.  With this macro defined, the NAMED argument
-   is always true for named arguments, and false for unnamed arguments.  If
-   this is not defined, but `SETUP_INCOMING_VARARGS' is defined, then all
-   arguments are treated as named.  Otherwise, all named arguments except the
-   last are treated as named.  */
-#define STRICT_ARGUMENT_NAMING 0
 
 /*}}}*/ 
 /*{{{  Trampolines for Nested Functions.  */ 
