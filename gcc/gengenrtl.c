@@ -268,9 +268,9 @@ gendef (const char *format)
      the memory and initializes it.  */
   puts ("{");
   puts ("  rtx rt;");
-  printf ("  rt = ggc_alloc_rtx (%d);\n", (int) strlen (format));
+  puts ("  rt = ggc_alloc_rtx (code);\n");
 
-  puts ("  memset (rt, 0, sizeof (struct rtx_def) - sizeof (rtunion));\n");
+  puts ("  memset (rt, 0, RTX_HDR_SIZE);\n");
   puts ("  PUT_CODE (rt, code);");
   puts ("  PUT_MODE (rt, mode);");
 

@@ -2629,8 +2629,7 @@ copy_most_rtx (rtx orig, rtx may_share)
 	  break;
 
 	case '0':
-	  /* Copy this through the wide int field; that's safest.  */
-	  X0WINT (copy, i) = X0WINT (orig, i);
+	  X0ANY (copy, i) = X0ANY (orig, i);
 	  break;
 
 	default:
@@ -2717,9 +2716,7 @@ copy_rtx_if_shared (rtx orig)
       rtx copy;
 
       copy = rtx_alloc (code);
-      memcpy (copy, x,
-	     (sizeof (*copy) - sizeof (copy->fld)
-	      + sizeof (copy->fld[0]) * GET_RTX_LENGTH (code)));
+      memcpy (copy, x, RTX_SIZE (code));
       x = copy;
       copied = 1;
     }
@@ -5110,7 +5107,7 @@ copy_insn_1 (rtx orig)
      all fields need copying, and then clear the fields that should
      not be copied.  That is the sensible default behavior, and forces
      us to explicitly document why we are *not* copying a flag.  */
-  memcpy (copy, orig, sizeof (struct rtx_def) - sizeof (rtunion));
+  memcpy (copy, orig, RTX_HDR_SIZE);
 
   /* We do not copy the USED flag, which is used as a mark bit during
      walks over the RTL.  */
@@ -5128,7 +5125,7 @@ copy_insn_1 (rtx orig)
 
   for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)
     {
-      copy->fld[i] = orig->fld[i];
+      copy->u.fld[i] = orig->u.fld[i];
       switch (*format_ptr++)
 	{
 	case 'e':

@@ -96,6 +96,18 @@ const char rtx_class[NUM_RTX_CODE] = {
 #undef DEF_RTL_EXPR
 };
 
+/* Indexed by rtx code, gives the size of the rtx in bytes.  */
+
+const unsigned char rtx_size[NUM_RTX_CODE] = {
+#define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)				\
+  ((ENUM) == CONST_INT || (ENUM) == CONST_DOUBLE			\
+   ? RTX_HDR_SIZE + (sizeof FORMAT - 1) * sizeof (HOST_WIDE_INT)	\
+   : RTX_HDR_SIZE + (sizeof FORMAT - 1) * sizeof (rtunion)),
+
+#include "rtl.def"
+#undef DEF_RTL_EXPR
+};
+
 /* Names for kinds of NOTEs and REG_NOTEs.  */
 
 const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS] =
@@ -150,15 +162,14 @@ rtx
 rtx_alloc (RTX_CODE code)
 {
   rtx rt;
-  int n = GET_RTX_LENGTH (code);
 
-  rt = ggc_alloc_rtx (n);
+  rt = ggc_alloc_rtx (code);
 
   /* We want to clear everything up to the FLD array.  Normally, this
      is one int, but we don't want to assume that and it isn't very
      portable anyway; this is.  */
 
-  memset (rt, 0, sizeof (struct rtx_def) - sizeof (rtunion));
+  memset (rt, 0, RTX_HDR_SIZE);
   PUT_CODE (rt, code);
   return rt;
 }
@@ -218,7 +229,7 @@ copy_rtx (rtx orig)
      all fields need copying, and then clear the fields that should
      not be copied.  That is the sensible default behavior, and forces
      us to explicitly document why we are *not* copying a flag.  */
-  memcpy (copy, orig, sizeof (struct rtx_def) - sizeof (rtunion));
+  memcpy (copy, orig, RTX_HDR_SIZE);
 
   /* We do not copy the USED flag, which is used as a mark bit during
      walks over the RTL.  */
@@ -234,7 +245,7 @@ copy_rtx (rtx orig)
 
   for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)
     {
-      copy->fld[i] = orig->fld[i];
+      copy->u.fld[i] = orig->u.fld[i];
       switch (*format_ptr++)
 	{
 	case 'e':
@@ -276,13 +287,10 @@ copy_rtx (rtx orig)
 rtx
 shallow_copy_rtx (rtx orig)
 {
-  RTX_CODE code = GET_CODE (orig);
-  size_t n = GET_RTX_LENGTH (code);
-  rtx copy = ggc_alloc_rtx (n);
+  rtx copy;
 
-  memcpy (copy, orig,
-	  sizeof (struct rtx_def) + sizeof (rtunion) * (n - 1));
-
+  copy = ggc_alloc_rtx (GET_CODE (orig));
+  memcpy (copy, orig, RTX_SIZE (GET_CODE (orig)));
   return copy;
 }
 

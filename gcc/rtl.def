@@ -39,7 +39,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    These names are stored in rtx_name[].
    By convention these are the internal (field 1) names in lower_case.
 
-   3.  The print format, and type of each rtx->fld[] (field) in this rtx.
+   3.  The print format, and type of each rtx->u.fld[] (field) in this rtx.
    These formats are stored in rtx_format[].
    The meaning of the formats is documented in front of this array in rtl.c
    
@@ -598,7 +598,7 @@ DEF_RTL_EXPR (ATTR_FLAG, "attr_flag", "s", 'x')
    All formats must start with "iuu" to handle the chain.
    Each insn expression holds an rtl instruction and its semantics
    during back-end processing.
-   See macros's in "rtl.h" for the meaning of each rtx->fld[].
+   See macros's in "rtl.h" for the meaning of each rtx->u.fld[].
 
    ---------------------------------------------------------------------- */
 
@@ -606,14 +606,14 @@ DEF_RTL_EXPR (ATTR_FLAG, "attr_flag", "s", 'x')
 DEF_RTL_EXPR(INSN, "insn", "iuuBieiee", 'i')
 
 /* An instruction that can possibly jump.
-   Fields ( rtx->fld[] ) have exact same meaning as INSN's.  */
+   Fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
 DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuuBieiee0", 'i')
 
 /* An instruction that can possibly call a subroutine
    but which will not change which instruction comes next
    in the current function.
-   Field ( rtx->fld[9] ) is CALL_INSN_FUNCTION_USAGE.
-   All other fields ( rtx->fld[] ) have exact same meaning as INSN's.  */
+   Field ( rtx->u.fld[9] ) is CALL_INSN_FUNCTION_USAGE.
+   All other fields ( rtx->u.fld[] ) have exact same meaning as INSN's.  */
 DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuuBieieee", 'i')
 
 /* A marker that indicates that control will not flow through.  */

@@ -2570,9 +2570,7 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
 	  if (new != XEXP (x, i) && ! copied)
 	    {
 	      rtx new_x = rtx_alloc (code);
-	      memcpy (new_x, x,
-		      (sizeof (*new_x) - sizeof (new_x->fld)
-		       + sizeof (new_x->fld[0]) * GET_RTX_LENGTH (code)));
+	      memcpy (new_x, x, RTX_SIZE (code));
 	      x = new_x;
 	      copied = 1;
 	    }
@@ -2591,10 +2589,7 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
 		  if (! copied)
 		    {
 		      rtx new_x = rtx_alloc (code);
-		      memcpy (new_x, x,
-			      (sizeof (*new_x) - sizeof (new_x->fld)
-			       + (sizeof (new_x->fld[0])
-				  * GET_RTX_LENGTH (code))));
+		      memcpy (new_x, x, RTX_SIZE (code));
 		      x = new_x;
 		      copied = 1;
 		    }
