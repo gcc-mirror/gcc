@@ -1,3 +1,8 @@
+2003-05-16  Nick Clifton  <nickc@redhat.com>
+
+	* config/mcore/mcore.md (jump): Use emit_jump_insn to generate the
+	jump insn.
+
 2003-05-15  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/invoke.texi (Warning Options): Mark -Wmissing-declarations
