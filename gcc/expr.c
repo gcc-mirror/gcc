@@ -3187,7 +3187,7 @@ store_constructor (exp, target)
 	    {
 	      if (bit_buffer[ibit])
 		{
-		  if (BITS_BIG_ENDIAN)
+		  if (BYTES_BIG_ENDIAN)
 		    word |= (1 << (set_word_size - 1 - bit_pos));
 		  else
 		    word |= 1 << bit_pos;
