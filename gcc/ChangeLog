@@ -2,6 +2,9 @@
 
 	* cccp.c: Accept and ignore -lang-fortran.
 
+	* c-typeck.c (build_c_cast): Issue -Wcast-qual warnings if the
+	qualifiers don't match at any level of pointerness.
+
 2000-01-12  Robert Lipe  <robertl@sco.com>
 
 	* i386/sysv5.h (CPP_SPEC, LIBSPEC): Add -pthreadT.
