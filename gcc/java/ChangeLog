@@ -3,6 +3,17 @@
 	* parse.y (patch_binop): Do a type conversion from signed to
 	unsigned and then back to signed when a ">>>" is found.
 
+Sun Jan 17 22:34:22 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h: (check_for_initialization): Added prototype.
+	* lex.c (java_parse_doc_section): `\n' breaks the `*/' string.
+	* parse.y (do_resolve_class): Removed unused locals.
+	(read_import_dir): Likewise.
+	(resolve_qualified_expression_name): Array creation
+ 	expressions are valid primary expressions.
+	(qualify_ambiguous_name): Likewise.
+	(patch_synchronized_statement): Removed unused local.
+
 Sun Jan 17 21:55:42 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (zextract.o): Add dependencies.

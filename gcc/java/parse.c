@@ -2250,7 +2250,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/local/aph/tx39/share/bison.simple"
+#line 3 "/usr/cygnus/gnupro-98r2/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2443,7 +2443,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/local/aph/tx39/share/bison.simple"
+#line 196 "/usr/cygnus/gnupro-98r2/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4701,7 +4701,7 @@ case 492:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/local/aph/tx39/share/bison.simple"
+#line 498 "/usr/cygnus/gnupro-98r2/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -6751,7 +6751,6 @@ do_resolve_class (class_type, decl, cl)
      tree cl;
 {
   tree new_class_decl;
-  tree new_name;
   tree original_name = NULL_TREE;
 
   /* Do not try to replace TYPE_NAME (class_type) by a variable, since
@@ -7595,7 +7594,7 @@ read_import_dir (wfl)
   char *package_name = IDENTIFIER_POINTER (package_id);
   int package_length = IDENTIFIER_LENGTH (package_id);
   DIR *dirp = NULL;
-  JCF jcfr, *jcf, *saved_jcf = current_jcf;
+  JCF *saved_jcf = current_jcf;
 
   int found = 0;
   int k;
@@ -7666,7 +7665,6 @@ read_import_dir (wfl)
 	  *filename->ptr++ = '/';
 	  for (;;)
 	    {
-	      int java_or_class = 0;
 	      int len; 
 	      char *d_name;
 	      struct dirent *direntp = readdir (dirp);
@@ -8848,6 +8846,14 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	    }
 	  continue;
 
+	case NEW_ARRAY_EXPR:
+	  *where_found = decl = java_complete_tree (qual_wfl);
+	  if (decl == error_mark_node)
+	    return 1;
+	  *type_found = type = QUAL_DECL_TYPE (decl);
+	  CLASS_LOADED_P (type) = 1;
+	  continue;
+
 	case CONVERT_EXPR:
 	  *where_found = decl = java_complete_tree (qual_wfl);
 	  if (decl == error_mark_node)
@@ -9889,7 +9895,7 @@ qualify_ambiguous_name (id)
      tree id;
 {
   tree qual, qual_wfl, name, decl, ptr_type, saved_current_class;
-  int again, super_found = 0, this_found = 0;
+  int again, super_found = 0, this_found = 0, new_array_found = 0;
 
   /* We first qualify the first element, then derive qualification of
      others based on the first one. If the first element is qualified
@@ -9917,6 +9923,10 @@ qualify_ambiguous_name (id)
 	    qual_wfl = QUAL_WFL (qual);
 	  }
 	break;
+      case NEW_ARRAY_EXPR:
+	qual = TREE_CHAIN (qual);
+	new_array_found = again = 1;
+	continue;
       case NEW_CLASS_EXPR:
       case CONVERT_EXPR:
 	qual_wfl = TREE_OPERAND (qual_wfl, 0);
@@ -9973,7 +9983,6 @@ qualify_ambiguous_name (id)
      declaration or parameter declaration, then it is an expression
      name. We don't carry this test out if we're in the context of the
      use of SUPER or THIS */
-
   if (!this_found && !super_found && (decl = IDENTIFIER_LOCAL_VALUE (name)))
     {
       RESOLVE_EXPRESSION_NAME_P (qual_wfl) = 1;
@@ -9982,11 +9991,13 @@ qualify_ambiguous_name (id)
 
   /* If within the class/interface NAME was found to be used there
      exists a (possibly inherited) field named NAME, then this is an
-     expression name. */
-  else if ((decl = lookup_field_wrapper (ptr_type, name)))
+     expression name. If we saw a NEW_ARRAY_EXPR before and want to
+     address length, it is OK. */
+  else if ((decl = lookup_field_wrapper (ptr_type, name))
+	   || (new_array_found && name == length_identifier_node))
     {
       RESOLVE_EXPRESSION_NAME_P (qual_wfl) = 1;
-      QUAL_RESOLUTION (qual) = decl;
+      QUAL_RESOLUTION (qual) = (new_array_found ? NULL_TREE : decl);
     }
 
   /* We reclassify NAME as a type name if:
@@ -11601,7 +11612,7 @@ patch_binop (node, wfl_op1, wfl_op2)
 	{
           tree utype = unsigned_type (prom_type);
           op1 = convert (utype, op1);
-	  TREE_SET_CODE (node, RSHIFT_EXPR);
+          TREE_SET_CODE (node, RSHIFT_EXPR);
           TREE_OPERAND (node, 0) = op1;
           TREE_OPERAND (node, 1) = op2;
           TREE_TYPE (node) = utype;
@@ -13471,7 +13482,7 @@ patch_synchronized_statement (node, wfl_op1)
   tree expr = java_complete_tree (TREE_OPERAND (node, 0));
   tree block = TREE_OPERAND (node, 1);
 
-  tree enter, exit, finally, expr_decl, assignment;
+  tree enter, exit, expr_decl, assignment;
 
   if (expr == error_mark_node)
     {

@@ -566,6 +566,7 @@ extern tree build_primtype_type_ref PROTO ((char *));
 extern tree java_get_real_method_name PROTO ((tree));
 extern void finish_class PROTO ((tree));
 extern void java_layout_seen_class_methods PROTO (());
+extern void check_for_initialization PROTO ((tree));
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
 
