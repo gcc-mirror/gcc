@@ -1,3 +1,7 @@
+2004-08-03  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* doc/install.texi: Update autoconf version requirements.
+
 2004-08-03  Zack Weinberg  <zack@codesourcery.com>
 
 	* defaults.h (LEGITIMATE_PIC_OPERAND_P): Provide default definition.
