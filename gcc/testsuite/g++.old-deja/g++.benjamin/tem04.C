@@ -24,8 +24,8 @@ protected:
   T4 value;
 public:
   Xfourteen(T4 init): value(init) {}
-  template <template <typename T4> class T5> 
-  friend bool isequal (Xfourteen<int>& lhs, Xfourteen<int>& rhs);// ERROR - .*
+  template <template <typename T4> class T5> // ERROR - .*
+  friend bool isequal (Xfourteen<int>& lhs, Xfourteen<int>& rhs);
 };
 
 
@@ -72,7 +72,7 @@ public:
   T9 value;
 };
 
-template <typename T10, template <typename T12> class C10>// ERROR - .*
+template <typename T10, template <typename T12> class C10>
 class Xseventeen {
 protected:
   C10<T10> value;
