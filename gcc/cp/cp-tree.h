@@ -2189,7 +2189,7 @@ struct lang_decl GTY(())
 #define DECL_PENDING_INLINE_INFO(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->u.f.u.pending_inline_info)
 
-/* For a TYPE_DECL: if this function has many fields, we'll sort them
+/* For a TYPE_DECL: if this structure has many fields, we'll sort them
    and put them into a TREE_VEC.  */
 #define DECL_SORTED_FIELDS(NODE) \
   (DECL_LANG_SPECIFIC (TYPE_DECL_CHECK (NODE))->u.f.u.sorted_fields)
