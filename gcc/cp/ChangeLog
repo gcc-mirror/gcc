@@ -1,3 +1,7 @@
+2000-11-16  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* lex.c (struct impl_files, internal_filename): Constify a char *.
+
 2000-11-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* mangle.c (write_special_name_constructor): Don't generate

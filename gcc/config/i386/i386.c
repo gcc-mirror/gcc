@@ -1675,9 +1675,9 @@ ix86_can_use_return_insn_p ()
   return tsize == 0 && nregs == 0;
 }
 
-static char *pic_label_name;
+static const char *pic_label_name;
 static int pic_label_output;
-static char *global_offset_table_name;
+static const char *global_offset_table_name;
 
 /* This function generates code for -fpic that loads %ebx with
    the return address of the caller and then returns.  */
@@ -1733,9 +1733,10 @@ load_pic_register ()
     {
       if (pic_label_name == NULL)
 	{
-	  pic_label_name = ggc_alloc_string (NULL, 32);
+	  char buf[32];
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LPR", 0);
+	  pic_label_name = ggc_alloc_string (buf, -1);
 	  ggc_add_string_root (&pic_label_name, 1);
-	  ASM_GENERATE_INTERNAL_LABEL (pic_label_name, "LPR", 0);
 	}
       pclab = gen_rtx_MEM (QImode, gen_rtx_SYMBOL_REF (Pmode, pic_label_name));
     }

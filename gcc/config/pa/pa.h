@@ -1494,7 +1494,7 @@ do							\
 	  _rtl = TREE_CST_RTL (DECL);			\
 	SYMBOL_REF_FLAG (XEXP (_rtl, 0)) = 1;		\
 	if (TREE_CODE (DECL) == FUNCTION_DECL)		\
-	  hppa_encode_label (XEXP (DECL_RTL (DECL), 0), 0);\
+	  hppa_encode_label (XEXP (DECL_RTL (DECL), 0));\
       }							\
   }							\
 while (0)

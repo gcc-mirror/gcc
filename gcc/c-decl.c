@@ -3634,7 +3634,7 @@ finish_decl (decl, init, asmspec_tree)
 {
   register tree type = TREE_TYPE (decl);
   int was_incomplete = (DECL_SIZE (decl) == 0);
-  char *asmspec = 0;
+  const char *asmspec = 0;
 
   /* If a name was specified, get the string.   */
   if (asmspec_tree)

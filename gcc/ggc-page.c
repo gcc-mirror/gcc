@@ -99,8 +99,6 @@ Boston, MA 02111-1307, USA.  */
 #define HOST_BITS_PER_PTR  HOST_BITS_PER_LONG
 #endif
 
-/* The "" allocated string.  */
-char *empty_string;
 
 /* A two-level tree is used to look up the page-entry for a given
    pointer.  Two chunks of the pointer's bits are extracted to index
@@ -839,9 +837,6 @@ init_ggc ()
     munmap (p, G.pagesize);
   }
 #endif
-
-  empty_string = ggc_alloc_string ("", 0);
-  ggc_add_string_root (&empty_string, 1);
 }
 
 /* Increment the `GC context'.  Objects allocated in an outer context

@@ -4944,7 +4944,7 @@ static int require_constant_elements;
 static tree constructor_decl;
 
 /* start_init saves the ASMSPEC arg here for really_start_incremental_init.  */
-static char *constructor_asmspec;
+static const char *constructor_asmspec;
 
 /* Nonzero if this is an initializer for a top-level decl.  */
 static int constructor_top_level;
@@ -4989,7 +4989,7 @@ struct initializer_stack
 {
   struct initializer_stack *next;
   tree decl;
-  char *asmspec;
+  const char *asmspec;
   struct constructor_stack *constructor_stack;
   tree elements;
   struct spelling *spelling;
@@ -5014,7 +5014,7 @@ start_init (decl, asmspec_tree, top_level)
   const char *locus;
   struct initializer_stack *p
     = (struct initializer_stack *) xmalloc (sizeof (struct initializer_stack));
-  char *asmspec = 0;
+  const char *asmspec = 0;
 
   if (asmspec_tree)
     asmspec = TREE_STRING_POINTER (asmspec_tree);

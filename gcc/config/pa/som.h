@@ -352,7 +352,7 @@ DTORS_SECTION_FUNCTION
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, RTL) \
   do { fputs ("\t.IMPORT ", FILE);					\
        if (!function_label_operand (RTL, VOIDmode))			\
-	 hppa_encode_label (RTL, 1);					\
+	 hppa_encode_label (RTL);					\
        assemble_name (FILE, XSTR ((RTL), 0));		       		\
        fputs (",CODE\n", FILE);						\
      } while (0)

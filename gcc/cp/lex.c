@@ -131,7 +131,7 @@ extern int *token_count;
 
 struct impl_files
 {
-  char *filename;
+  const char *filename;
   struct impl_files *next;
 };
 
@@ -140,7 +140,7 @@ static struct impl_files *impl_file_chain;
 /* The string used to represent the filename of internally generated
    tree nodes.  The variable, which is dynamically allocated, should
    be used; the macro is only used to initialize it.  */
-static char *internal_filename;
+static const char *internal_filename;
 #define INTERNAL_FILENAME ("<internal>")
 
 /* Return something to represent absolute declarators containing a *.

@@ -210,7 +210,7 @@ c_strlen (src)
 {
   tree offset_node;
   int offset, max;
-  char *ptr;
+  const char *ptr;
 
   src = string_constant (src, &offset_node);
   if (src == 0)

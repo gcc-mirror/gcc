@@ -213,7 +213,7 @@ static enum in_section { no_section, in_text, in_data, in_named
 #endif
      
 /* Text of section name when in_section == in_named.  */
-static char *in_named_name;
+static const char *in_named_name;
 
 /* Define functions like text_section for any extra sections.  */
 #ifdef EXTRA_SECTION_FUNCTIONS
@@ -1798,7 +1798,7 @@ assemble_static_space (size)
      int size;
 {
   char name[12];
-  char *namestring;
+  const char *namestring;
   rtx x;
 
 #if 0
@@ -2330,7 +2330,7 @@ struct rtx_const
 struct constant_descriptor
 {
   struct constant_descriptor *next;
-  char *label;
+  const char *label;
   rtx rtl;
   /* Make sure the data is reasonably aligned.  */
   union 
@@ -2352,7 +2352,7 @@ static struct constant_descriptor *const_hash_table[MAX_HASH_TABLE];
 
 struct deferred_string
 {
-  char *label;
+  const char *label;
   tree exp;
   int labelno;
 };
@@ -3335,7 +3335,7 @@ struct pool_constant
 {
   struct constant_descriptor *desc;
   struct pool_constant *next, *next_sym;
-  char *label;
+  const char *label;
   rtx constant;
   enum machine_mode mode;
   int labelno;
@@ -3613,7 +3613,7 @@ force_const_mem (mode, x)
   register int hash;
   register struct constant_descriptor *desc;
   char label[256];
-  char *found = 0;
+  const char *found = 0;
   rtx def;
 
   /* If we want this CONST_DOUBLE in the same mode as it is in memory

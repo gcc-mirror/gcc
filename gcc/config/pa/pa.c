@@ -5939,29 +5939,22 @@ output_call (insn, call_dest, sibcall)
 /* In HPUX 8.0's shared library scheme, special relocations are needed
    for function labels if they might be passed to a function
    in a shared library (because shared libraries don't live in code
-   space), and special magic is needed to construct their address.
-
-   For reasons too disgusting to describe storage for the new name
-   is allocated as a ggc string, or as a string on the saveable_obstack
-   (released at function exit) or on the permanent_obstack for things
-   that can never change (libcall names for example). */
+   space), and special magic is needed to construct their address.  */
 
 void
-hppa_encode_label (sym, permanent)
+hppa_encode_label (sym)
      rtx sym;
-     int permanent;
 {
   const char *str = XSTR (sym, 0);
   int len = strlen (str);
-  char *newstr;
-
-  newstr = ggc_alloc_string (NULL, len + 1);
+  char *newstr = alloca (len + 1);
 
   if (str[0] == '*')
     *newstr++ = *str++;
   strcpy (newstr + 1, str);
   *newstr = '@';
-  XSTR (sym,0) = newstr;
+
+  XSTR (sym,0) = ggc_alloc_string (newstr, len);
 }
 
 int
