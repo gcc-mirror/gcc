@@ -144,6 +144,10 @@ do {								\
 #undef DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP  "\t.section\t.fini_array,\t\"aw\",\"fini_array\""
 
+/* The init_array/fini_array technique does not permit the use of
+   initialization priorities.  */
+#define SUPPORTS_INIT_PRIORITY 0
+
 #undef READONLY_DATA_SECTION_ASM_OP
 #define READONLY_DATA_SECTION_ASM_OP "\t.section\t.rodata,\t\"a\",\t\"progbits\""
 
