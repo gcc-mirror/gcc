@@ -8,4 +8,4 @@ struct A{
 
 template<>
 template<typename ABC,typename DEF>
-void A<int>::function(ABC); // { dg-error "" }
+void A<int>::function(ABC); // { dg-error "match" }
