@@ -1,3 +1,12 @@
+2003-06-23  Loren J. Rittle  <ljrittle@acm.org>
+
+	* configure.host (freebsd*): Set abi_baseline_pair.
+	* config/abi/i386-freebsd4/baseline_symbols.txt: Update from 3.2
+	(at or near first release) to 3.3.
+	* config/abi/i386-freebsd5/baseline_symbols.txt: New file.
+	* config/abi/alpha-freebsd5/baseline_symbols.txt: New file.
+	* config/abi/sparc-freebsd5/baseline_symbols.txt: New file.
+
 2003-06-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/17_intro/libstdc++-assign.txt: Update address.

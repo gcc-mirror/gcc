@@ -192,7 +192,16 @@ case "${host}" in
   x86_64-*-linux*)
     abi_baseline_pair="x86_64-linux-gnu"
     ;;
+  alpha*-*-freebsd5*)
+    abi_baseline_pair="alpha-freebsd5"
+    ;;
   i*86-*-freebsd4*)
     abi_baseline_pair="i386-freebsd4"
+    ;;
+  i*86-*-freebsd5*)
+    abi_baseline_pair="i386-freebsd5"
+    ;;
+  sparc*-*-freebsd5*)
+    abi_baseline_pair="sparc-freebsd5"
     ;;
 esac
