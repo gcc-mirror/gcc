@@ -2,8 +2,10 @@
 // Contributed by Aldy Hernandez (aldy@quesejoda.com).
 // { dg-options "-O" }
 // { dg-options "-O -w" { target i?86-*-* } }
-// { dg-options "-O -w -maltivec" { target powerpc64-*-linux* } }
-// { dg-do run { xfail "powerpc64-*-linux*"}  }
+// { dg-options "-O -w -maltivec" { target powerpc*-*-linux* } }
+// { dg-do run }
+
+#include "check-vect.h"
 
 typedef int __attribute__((vector_size (16))) vecint;
 
@@ -43,10 +45,8 @@ void f1 (void)
 
 int main ()
 {
-#if defined(__powerpc64__) && defined(__linux__)
-  // Don't run on ppc64-linux, since not always AltiVec regs available   
-  return -1;  
-#endif
+  /* Exit with zero if the hardware does not support AltiVec instructions.  */
+  check_vect ();
   f1 ();
   return 0;
 }
