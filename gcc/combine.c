@@ -12999,6 +12999,8 @@ distribute_links (rtx links)
 	    place = insn;
 	    break;
 	  }
+	else if (INSN_P (insn) && reg_set_p (reg, insn))
+	  break;
 
       /* If we found a place to put the link, place it there unless there
 	 is already a link to the same insn as LINK at that point.  */
