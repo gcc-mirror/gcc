@@ -1,10 +1,10 @@
 // Test pointer chain catching
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 9 Apr 2000 <nathan@nathan@codesourcery.com>
 
 #include <stdio.h>
 
-void fn () {};
+void fn () {}
 struct A {void fn () {}};
 static int var = 1;
 static const int const_var = 2;

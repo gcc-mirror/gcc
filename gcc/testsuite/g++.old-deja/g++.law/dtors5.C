@@ -21,7 +21,7 @@ public:
 void
 sub(foo f) {
    ;
-};
+}
 
 
 int main() {

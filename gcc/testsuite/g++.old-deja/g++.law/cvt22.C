@@ -11,4 +11,4 @@ typedef int A[10];
 int main()
 {
    int* a1 = new A;
-};
+}

@@ -17,7 +17,7 @@ public :
 };
 
 template <class T >
-inline bool compare(const Expr<T> a, const Expr<T> b){ return true; };
+inline bool compare(const Expr<T> a, const Expr<T> b){ return true; }
 
 int main()
 {

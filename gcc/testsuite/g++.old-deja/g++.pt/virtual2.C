@@ -14,7 +14,7 @@ struct D : public B<T> {
 
 void g() {
   B<int>* bi = new D<int>;
-};
+}
 
 template <class T>
 void B<T>::f() {}

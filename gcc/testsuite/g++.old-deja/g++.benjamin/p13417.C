@@ -7,5 +7,5 @@ public:
   explicit Foo (int){}
 };
 Foo f(10);
-Foo blat() return f(4){}; //this should not give an error
+Foo blat() return f(4){} // ERROR - named return value
  

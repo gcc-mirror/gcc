@@ -14,6 +14,7 @@ public:
 };
 
 typedef char * cp;
+typedef int I;
 
 int main ()
 {
@@ -22,10 +23,10 @@ int main ()
   int i;
   cp c;
 
-  i.~int();
-  i.int::~int();
-  (&i)->~int();
-  (&i)->int::~int();
+  i.~I();
+  i.I::~I();
+  (&i)->~I();
+  (&i)->I::~I();
   c.~cp();
   c.cp::~cp();
   (&c)->~cp();

@@ -9,6 +9,7 @@ template<int>
 class Program {
 } ;
 
+template<>
 class Program<0> {
 public:
    inline friend float EvalNextArg()

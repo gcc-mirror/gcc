@@ -120,5 +120,5 @@ public:
 void Fixed_List::go_offleft() const
 {
     cursor_position = 0;// ERROR - 
-};
+}
 

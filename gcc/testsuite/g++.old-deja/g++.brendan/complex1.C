@@ -9,7 +9,7 @@ extern "C" {
 int printf (const char *, ...);
 void exit (int);
 void abort (void);
-};
+}
 
 __complex__ double cd;
 

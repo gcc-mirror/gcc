@@ -4,7 +4,7 @@
 struct A
 {
   static int i1;
-  int i2;
+  int i2; // { dg-error "inaccessible" "" }
   static void f1 ();
   void f2 ();
 };
@@ -15,7 +15,7 @@ struct C: public B
   void g ()
   {
     ::A::i1 = 1;
-    ::A::i2 = 1;		// { dg-error "access" "" }
+    ::A::i2 = 1;		// { dg-error "(access)|(context)" "" }
     ::A::f1 ();
     ::A::f2 ();			// { dg-error "access" "" { xfail *-*-* } }
   }

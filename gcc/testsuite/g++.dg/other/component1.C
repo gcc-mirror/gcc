@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 28 Dec 2001 <nathan@codesourcery.com>
 
 // PR 5123. ICE
@@ -26,4 +26,4 @@ void Foo () {
   c.g == 1;		// { dg-error "invalid use of" "" }
   c.f == 1;		// { dg-error "invalid use of" "" }
   c.f<int> == 1;	// { dg-error "invalid use of" "" }
-};
+}

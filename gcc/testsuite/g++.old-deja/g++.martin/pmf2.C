@@ -4,7 +4,7 @@
 
 struct A{
   int i;
-  A::A():i(1){}
+  A () :i(1){}
   virtual void foo();
 }a;
 

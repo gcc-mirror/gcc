@@ -83,13 +83,6 @@ return_foo ()
 }
 
 foo
-return_named_foo () return f
-{
-  printf ("returning named foo\n");
-  return f;
-}
-
-foo
 foo_parm_returns_foo (foo f)
 {
   return f;
@@ -133,12 +126,6 @@ warn_return_foo ()
 }                              // WARNING - control reaches end
 
 foo
-nowarn_return_named_foo () return f
-{
-  printf ("returning named foo\n");
-}
-
-foo
 warn_foo_parm_returns_foo (foo f)
 {
   f;
@@ -155,7 +142,7 @@ main ()
   int k = return_sum (-69, 69);
   if (k != 0)
     abort_because ("wrong value returned");
-  foo f1 = return_named_foo ();
+  foo f1 = return_foo ();
   if (foo::si != 1)
     abort_because ("wrong number of foos");
   f1.i = 5;

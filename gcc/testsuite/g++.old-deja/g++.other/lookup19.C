@@ -6,10 +6,10 @@ typedef int B;
 struct A
 {
   int B;
-  operator B *();
+  operator B *(); // ERROR - 
 };
 
-A::operator B * ()
+A::operator B * () // ERROR - 
 {
   return 0;
 }
@@ -48,7 +48,7 @@ struct G
 };
 
 typedef double H;
-G::operator H * ()		// ERROR - mismatch
+G::operator H * ()
 {
   return 0;
 }

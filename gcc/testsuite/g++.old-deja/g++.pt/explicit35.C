@@ -13,5 +13,5 @@ void S::foo<int>(int i) { }
 int main()
 {
   S s;
-  s.template foo<int>(3.0);
+  s.foo<int>(3.0);
 }

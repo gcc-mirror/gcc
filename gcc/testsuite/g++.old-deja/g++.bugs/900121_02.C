@@ -44,6 +44,6 @@ void function ()
   u0 u0_object_1;
 
   u0_object_0 = u0_object_1;
-};
+}
 
 int main () { return 0; }

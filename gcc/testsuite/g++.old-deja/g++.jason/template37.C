@@ -17,6 +17,7 @@
   {
   }
 
+  template <>
   class ONE<int>
   {
     public:

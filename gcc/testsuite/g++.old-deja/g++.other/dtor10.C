@@ -31,7 +31,7 @@ T f () {
 }
 
 void g (S) {
-};
+}
 
 int main ()
 {

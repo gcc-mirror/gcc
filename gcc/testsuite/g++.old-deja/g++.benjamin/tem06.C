@@ -17,7 +17,7 @@ template<class T>
 void blah (const T &) {
   T y;
   x (4);
-};
+}
 
 int main () {
   const foo<int> v;

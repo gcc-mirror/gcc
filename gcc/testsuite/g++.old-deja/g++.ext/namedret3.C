@@ -8,9 +8,9 @@ int f2(int *x)
   return 2;
 }
 
-int f1() return x
+int f1() return x // ERROR - 
 {
-  f2(&x);
+  f2(&x); // ERROR - 
 }
 
 void g()

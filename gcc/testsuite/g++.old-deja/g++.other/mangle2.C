@@ -13,7 +13,7 @@ inline bool operator!=(const c& x, const c& y)
 {
   return x.a != y.a;
 }
-};
+}
 
 void foo();
 

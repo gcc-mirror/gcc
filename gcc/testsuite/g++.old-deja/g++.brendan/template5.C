@@ -18,16 +18,16 @@ Vector<T>::Vector(int x)
 {
     sz = x;
     v = new T (sz);
-} ;
+} 
 
 template<class T>
 Vector<T>::~Vector()
-    { delete [] v; } ;
+    { delete [] v; } 
 
 template<class T>
 T &
 Vector<T>::operator [] (int i)
-    { return v[i]; } ;
+    { return v[i]; } 
 
 int
 main(int, char **)

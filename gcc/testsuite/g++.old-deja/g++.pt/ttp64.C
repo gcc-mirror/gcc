@@ -7,40 +7,40 @@
 
 template <class T> class A2 {
 public:
-   A2() {};
-   virtual ~A2() {};
+   A2() {}
+   virtual ~A2() {}
    template <class other> A2 & operator=(const A2<other> o) {
       i=o.i;
       return *this;
-   };
+   }
    T i;
    T j;
 };
 
 template <class T> class A1 {
 public:
-   A1() {};
-   virtual ~A1() {};
+   A1() {}
+   virtual ~A1() {}
    template <class other> A1 & operator=(const A1<other> o) {
       i=o.i;
       return *this;
-   };
+   }
    template <class other> A1 & operator=(const A2<other> o) {
       i=o.i;
       return *this;
-   };
+   }
    T i;
 };
 
 template <template <class U> class T> class B {
 public:
-   B(){};
-   virtual ~B(){};
+   B(){}
+   virtual ~B(){}
    template <template <class U2> class O> struct rebind { typedef B<O> other ;};
    template <template <class U2> class O> B & operator=(const B<O> o) {
       i=o.i;
       return *this;
-   };
+   }
    T<int> i;
 };
 

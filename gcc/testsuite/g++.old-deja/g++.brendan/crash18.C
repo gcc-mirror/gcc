@@ -13,5 +13,5 @@ public:
         { return v != index; }// ERROR - .*
 private:
 //    friend class List<T>;
-    element *index;
+    element *index; // ERROR - invalid use of member
 };

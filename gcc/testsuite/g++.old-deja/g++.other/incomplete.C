@@ -8,8 +8,8 @@ struct S; // ERROR - forward ref
 
 void f(S);            // ok
 void f(S s) {}        // ERROR - incomplete type
-void j (int){};       // ok
-void k (){};          // ok
+void j (int){}        // ok
+void k (){}           // ok
 void q (void){}       // ok
 void t (void t);      // ERROR - incomplete
 void r (void, ...);   // ERROR - incomplete

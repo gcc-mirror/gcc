@@ -14,4 +14,4 @@ main ()
 {
   X* p = new (bar) X;
   p->~foo();
-};
+}

@@ -1,4 +1,4 @@
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,7 @@ namespace N
   template<int> void f() {}
 }
 
-using N;             // { dg-error "parse error" "" }
+using N;             // { dg-error "(using-declaration)|(nested-name)" "" }
 using ::N;           // { dg-error "using-declaration" "" }
 using N::f< 0 >;     // { dg-error "using-declaration" "" }
 
@@ -41,6 +41,6 @@ struct B : A {
 
 struct C : A {
   using A::f<double>; // { dg-error "using-declaration" "" }
-  using A::X<int>;    // { dg-error "parse error" "" }
+  using A::X<int>;    // { dg-error "using-declaration" "" }
 };
 

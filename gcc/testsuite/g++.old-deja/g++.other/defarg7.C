@@ -1,15 +1,18 @@
 // Build don't link:
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 7 Jan 2001 <nathan@codesourcery.com>
+
+// As of G++ 3.4, we no longer attempt to detect dependencies; the
+// standard does not require that we do.
 
 // Bug 1038. Default args on class members can produce circular dependencies.
 // Make sure we spot them, and don't depend on a particular ordering.
 
 struct A
 {
-  static int Foo (int = Baz ());    // WARNING - circular
-  static int Baz (int = Foo ());    // WARNING - circular
+  static int Foo (int = Baz ()); // ERROR - 
+  static int Baz (int = Foo ());
 };
 
 struct Test
@@ -21,7 +24,7 @@ struct Test
 struct B
 {
   static int Bar (int = Foo (1));
-  static int Foo (int = Baz ());
+  static int Foo (int = Baz ()); // ERROR - 
   static int Baz (int = Foo (1));
 };
 

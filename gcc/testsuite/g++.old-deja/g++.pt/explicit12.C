@@ -16,5 +16,5 @@ void S<char*>::foo<int>(int) {}
 int main()
 {
   S<char*> s;
-  s.template foo<int>(3.0);
+  s.foo<int>(3.0);
 }

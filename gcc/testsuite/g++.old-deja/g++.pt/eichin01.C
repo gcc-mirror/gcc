@@ -15,8 +15,8 @@ public:
   void sz(X s) { sss = s; }
 };
 
-float TC<float>::sss;
-long TC<long>::sss;
+template <> float TC<float>::sss = 0.0;
+template <> long TC<long>::sss = 0;
 
 TC<long> xjj(1,2);
 

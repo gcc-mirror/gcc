@@ -12,7 +12,7 @@ struct S : public R <T, B> {
 
 template <class T> void f() 
 {
-  S<T>::X();
+  typename S<T>::X();
 }
 
 template void f<int>();

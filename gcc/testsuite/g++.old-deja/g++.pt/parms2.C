@@ -20,11 +20,11 @@ struct Ethel {
 struct Fred {
    
   template <class Q, class LA, class LB>
-  Ethel<typename Q::Sig<typename LA::WrappedType>::Third> baz ();
+  Ethel<typename Q::template Sig<typename LA::WrappedType>::Third> baz ();
 
 
   template <class Z, class A, class B>
-  Ethel<typename Z::Sig<A>::Third>
+  Ethel<typename Z::template Sig<A>::Third>
   foo ( const Z&, const Ethel<A>&, const Ethel<B>&) const;
 };
 

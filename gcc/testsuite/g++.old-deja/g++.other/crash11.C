@@ -18,4 +18,4 @@ struct string
   max_size() const { return size; }
 };
 
-template string <char>;
+template struct string <char>;

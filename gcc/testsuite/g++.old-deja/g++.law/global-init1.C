@@ -9,7 +9,7 @@
 struct S { int  a; int  c; };
 int i = 3;
 S s = {6, i};
-S * the_s  () { return &s; };
+S * the_s  () { return &s; }
 int main ()
 {
   S * cls = the_s ();

@@ -24,6 +24,6 @@ enum { first, last};
 
 void foo(void) {
   sanjose obj(first); // ERROR -  // ERROR -
-};
+}
 
 

@@ -5,4 +5,4 @@ struct A {
 };
 
 int A::B::c;			// { dg-error "parameters" }
-int A::C::d;			// { dg-error "no type" }
+int A::C::d;			// { dg-error "class" }

@@ -7,7 +7,7 @@ namespace N {
   void f () {
     i = 3;
   }
-};
+}
 
 int i;
 

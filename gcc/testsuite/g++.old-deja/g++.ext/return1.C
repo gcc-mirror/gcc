@@ -7,9 +7,9 @@ void f (int &i)
   i = 42;
 }
 
-int g () return r
+int g () return r // ERROR - named return value
 {
-  f (r);
+  f (r); // ERROR - undeclared
 }
 
 int main ()

@@ -19,7 +19,7 @@ protected:
   static const hand_table table_1[];
   static const AData 	  table_2;
 private:
-  void foo (void);                  // ERROR - candidate
+  void foo (void);
 };
 
 const hand_table Agent::table_1[] = 

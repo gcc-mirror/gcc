@@ -72,4 +72,4 @@ int main(int argc, char **argv) {
   Sim_Event_Manager foo;
   foo.post_event();
   return fail;
-};
+}

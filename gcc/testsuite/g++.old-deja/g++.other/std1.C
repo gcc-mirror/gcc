@@ -9,4 +9,4 @@ namespace std {
 void f () {
   memcmp (0, 0, 0);
 }
-};
+}

@@ -3,6 +3,11 @@
 
 class ostream;
 
+template <class TP> class smanip;
+
+template<class TP>
+ostream& operator<<(ostream& o, const smanip<TP>& m);
+
 template <class TP> class smanip {
 public:
   friend ostream& operator<< <>(ostream &o, const smanip<TP>&m);

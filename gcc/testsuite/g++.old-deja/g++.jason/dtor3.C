@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-void *operator new(size_t Size, void* pThing) { return pThing; };
+void *operator new(size_t Size, void* pThing) { return pThing; }
 
 template <class T> class Stack {
 public:

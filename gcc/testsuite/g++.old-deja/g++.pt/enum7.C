@@ -8,7 +8,7 @@ int f()
       E e;
       e = a;
       return (int) e;
-    };
+    }
   };
 
   S s;

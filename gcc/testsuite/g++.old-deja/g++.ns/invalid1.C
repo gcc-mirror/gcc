@@ -1,5 +1,5 @@
 //Build don't link:
-namespace x { };
+namespace x { }
 
 void f(int);
 

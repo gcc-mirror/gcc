@@ -3,13 +3,13 @@
 
 struct S
 {
-  int j; // ERROR - member
-  int i[2]; // ERROR - member
+  int j; // ERROR - non-static data member
+  int i[2]; // ERROR - non-static data member
 };
 
 void f ()
 {
-  sizeof (S::j); // ERROR - non-static data member
-  sizeof (S::i[0]); //  ERROR - non-static data member
+  sizeof (S::j); // ERROR - used here
+  sizeof (S::i[0]); //  ERROR - used here
 }
 

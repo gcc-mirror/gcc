@@ -11,6 +11,6 @@ X::x()
 {				// ERROR - 
 }
 
-X::~x()
-{				// ERROR - 
+X::~x()                         // ERROR - 
+{				
 }

@@ -8,7 +8,7 @@ private:
         int foo;
 };
 
-void x::fun() { };
+void x::fun() { }
 
 main ()
 {

@@ -1,4 +1,4 @@
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 26 Feb 2001 <nathan@codesourcery.com>
 
 // Bug 1981. using declarations in namespace scope were not remembered.
@@ -6,7 +6,7 @@
 namespace A
 {
   void swap () {}
-};
+}
 
 template <class T> void f()
 {
@@ -28,7 +28,7 @@ namespace B
     return foo (1);
   }
   template int baz<float> ();
-};
+}
 
 int main ()
 {

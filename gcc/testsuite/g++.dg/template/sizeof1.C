@@ -3,7 +3,7 @@
 
 // { dg-do compile }
 
-template <unsigned I> struct A {};
+template <unsigned I> struct A { static char *value; };
 
 template <typename SizeType>
 struct B

@@ -12,8 +12,8 @@ struct B: public A {
   static int (A::*fp)();
 };
 
-int A::* B::p = &A::i;
-int (A::* B::fp)() = &A::f;
+int A::* B::p = &A::i;         // ERROR - 
+int (A::* B::fp)() = &A::f;    // ERROR -
 
 struct C {
   static int A::*p;

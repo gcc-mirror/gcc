@@ -1,6 +1,6 @@
 // Build don't link:
 // 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 10 Aug 2000 <nathan@codesourcery.com>
 
 // bug 381. We gave slightly different diagnostics, when binding an rvalue to
@@ -8,7 +8,7 @@
 
 namespace A { 
 template <class T> void f(T) {}
-};
+}
 void (* &h)(int) = A::f<int>;       // ERROR - rvalue to non-const
 void (*const volatile &i)(int) = A::f<int>;  // ERROR - rvalue to volatile
 void (*const &j)(int) = A::f<int>;
