@@ -645,11 +645,13 @@ check_trad_stringification (pfile, info, string)
       const cpp_token *token;
 
       /* Find the start of an identifier.  */
-      while (!is_idstart (*p) && p < limit) p++;
+      while (p < limit && !is_idstart (*p))
+	p++;
 
       /* Find the end of the identifier.  */
       q = p;
-      while (is_idchar (*q) && q < limit) q++;
+      while (q < limit && is_idchar (*q))
+	q++;
      
       /* Loop over the function macro arguments to see if the
 	 identifier inside the string matches one of them.  */
