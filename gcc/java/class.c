@@ -2419,10 +2419,11 @@ emit_register_classes (tree *list_p)
   if (registered_class == NULL)
     return;
 
-  /* ??? This isn't quite the correct test.  We also have to know
-     that the target is using gcc's crtbegin/crtend objects rather
-     than the ones that come with the operating system.  */
-  if (SUPPORTS_WEAK && targetm.have_named_sections)
+  /* TARGET_USE_JCR_SECTION defaults to 1 if SUPPORTS_WEAK and
+     TARGET_ASM_NAMED_SECTION, else 0.  Some targets meet those conditions
+     but lack suitable crtbegin/end objects or linker support.  These
+     targets can overide the default in tm.h to use the fallback mechanism.  */
+  if (TARGET_USE_JCR_SECTION)
     {
 #ifdef JCR_SECTION_NAME
       tree t;
@@ -2432,6 +2433,8 @@ emit_register_classes (tree *list_p)
 	assemble_integer (XEXP (DECL_RTL (t), 0),
 			  POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 #else
+      /* A target has defined TARGET_USE_JCR_SECTION, but doesn't have a
+	 JCR_SECTION_NAME.  */
       abort ();
 #endif
     }

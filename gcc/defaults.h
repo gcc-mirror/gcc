@@ -339,6 +339,18 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #endif
 #endif
 
+/* This decision to use a .jcr section can be overriden by defining
+   USE_JCR_SECTION to 0 in target file.  This is necessary if target
+   can define JCR_SECTION_NAME but does not have crtstuff or
+   linker support for .jcr section.  */
+#ifndef TARGET_USE_JCR_SECTION
+#ifdef JCR_SECTION_NAME
+#define TARGET_USE_JCR_SECTION 1
+#else
+#define TARGET_USE_JCR_SECTION 0
+#endif
+#endif
+
 /* Number of hardware registers that go into the DWARF-2 unwind info.
    If not defined, equals FIRST_PSEUDO_REGISTER  */
 
