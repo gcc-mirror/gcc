@@ -1,3 +1,10 @@
+2004-06-20  Richard Henderson  <rth@redhat.com>
+
+	* stmt.c (warn_if_unused_value): Add locus argument.
+	* tree.h (warn_if_unused_value): Update decl.
+	* c-typeck.c (internal_build_compound_expr): Update call.
+	* c-gimplify.c (gimplify_expr_stmt): Likewise.
+
 2004-06-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/16089

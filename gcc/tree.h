@@ -3240,7 +3240,7 @@ extern tree expand_start_stmt_expr (int);
 extern tree expand_end_stmt_expr (tree);
 extern void expand_expr_stmt (tree);
 extern void expand_expr_stmt_value (tree, int, int);
-extern int warn_if_unused_value (tree);
+extern int warn_if_unused_value (tree, location_t);
 extern void expand_decl_init (tree);
 extern void clear_last_expr (void);
 extern void expand_label (tree);

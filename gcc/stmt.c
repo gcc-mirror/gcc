@@ -2097,7 +2097,7 @@ expand_expr_stmt_value (tree exp, int want_value, int maybe_last)
       && warn_unused_value)
     {
       if (TREE_SIDE_EFFECTS (exp))
-	warn_if_unused_value (exp);
+	warn_if_unused_value (exp, emit_locus);
       else if (!VOID_TYPE_P (TREE_TYPE (exp)) && !TREE_NO_WARNING (exp))
 	warning ("%Hstatement with no effect", &emit_locus);
     }
@@ -2155,11 +2155,13 @@ expand_expr_stmt_value (tree exp, int want_value, int maybe_last)
 }
 
 /* Warn if EXP contains any computations whose results are not used.
-   Return 1 if a warning is printed; 0 otherwise.  */
+   Return 1 if a warning is printed; 0 otherwise.  LOCUS is the 
+   (potential) location of the expression.  */
 
 int
-warn_if_unused_value (tree exp)
+warn_if_unused_value (tree exp, location_t locus)
 {
+ restart:
   if (TREE_USED (exp))
     return 0;
 
@@ -2168,6 +2170,9 @@ warn_if_unused_value (tree exp)
      to void.  */
   if (VOID_TYPE_P (TREE_TYPE (exp)))
     return 0;
+
+  if (EXPR_LOCUS (exp))
+    locus = *EXPR_LOCUS (exp);
 
   switch (TREE_CODE (exp))
     {
@@ -2187,25 +2192,29 @@ warn_if_unused_value (tree exp)
 
     case BIND_EXPR:
       /* For a binding, warn if no side effect within it.  */
-      return warn_if_unused_value (TREE_OPERAND (exp, 1));
+      exp = BIND_EXPR_BODY (exp);
+      goto restart;
 
     case SAVE_EXPR:
-      return warn_if_unused_value (TREE_OPERAND (exp, 0));
+      exp = TREE_OPERAND (exp, 0);
+      goto restart;
 
     case TRUTH_ORIF_EXPR:
     case TRUTH_ANDIF_EXPR:
       /* In && or ||, warn if 2nd operand has no side effect.  */
-      return warn_if_unused_value (TREE_OPERAND (exp, 1));
+      exp = TREE_OPERAND (exp, 1);
+      goto restart;
 
     case COMPOUND_EXPR:
       if (TREE_NO_WARNING (exp))
 	return 0;
-      if (warn_if_unused_value (TREE_OPERAND (exp, 0)))
+      if (warn_if_unused_value (TREE_OPERAND (exp, 0), locus))
 	return 1;
       /* Let people do `(foo (), 0)' without a warning.  */
       if (TREE_CONSTANT (TREE_OPERAND (exp, 1)))
 	return 0;
-      return warn_if_unused_value (TREE_OPERAND (exp, 1));
+      exp = TREE_OPERAND (exp, 1);
+      goto restart;
 
     case NOP_EXPR:
     case CONVERT_EXPR:
@@ -2233,7 +2242,10 @@ warn_if_unused_value (tree exp)
       /* Don't warn about automatic dereferencing of references, since
 	 the user cannot control it.  */
       if (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == REFERENCE_TYPE)
-	return warn_if_unused_value (TREE_OPERAND (exp, 0));
+	{
+	  exp = TREE_OPERAND (exp, 0);
+	  goto restart;
+	}
       /* Fall through.  */
 
     default:
@@ -2255,7 +2267,7 @@ warn_if_unused_value (tree exp)
       if (TREE_SIDE_EFFECTS (exp))
 	return 0;
 
-      warning ("%Hvalue computed is not used", &emit_locus);
+      warning ("%Hvalue computed is not used", &locus);
       return 1;
     }
 }
