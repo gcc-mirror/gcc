@@ -1,3 +1,13 @@
+2004-10-13  Andrew Haley  <aph@redhat.com>
+
+	* interpret.cc (_Jv_InterpMethod::run): Initialize
+	_Jv_StartOfInterpreter.
+	(_Jv_StartOfInterpreter, _Jv_EndOfInterpreter): Functions removed.
+	(_Jv_StartOfInterpreter, _Jv_EndOfInterpreter): New variables.
+	* gnu/gcj/runtime/natStackTrace.cc (fillInStackTrace): Use
+	_Unwind_FindEnclosingFunction to discover whether PC is within the
+	interpreter.
+
 2004-10-12  Rutger Ovidius  <ovidr@users.sourceforge.net>
 
 	PR libgcj/17903:
