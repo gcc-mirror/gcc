@@ -351,3 +351,18 @@ splay_tree_compare_ints (k1, k2)
   else 
     return 0;
 }
+
+/* Splay-tree comparison function, treating the keys as pointers.  */
+
+int
+splay_tree_compare_pointers (k1, k2)
+     splay_tree_key k1;
+     splay_tree_key k2;
+{
+  if ((char*) k1 < (char*) k2)
+    return -1;
+  else if ((char*) k1 > (char*) k2)
+    return 1;
+  else 
+    return 0;
+}
