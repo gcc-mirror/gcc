@@ -1,3 +1,10 @@
+2001-11-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* builtins.c (apply_args_size): Handle vector arguments.
+	(apply_result_size): Same.
+
+        * machmode.def: Set WIDER mode field for all vector entries.
+
 2001-11-02  Graham Stott  <grahams@redhat.com>
 
 	* recog.c (decode_asm_operands):  Check that the SRC is ASM_OPERANDS.
