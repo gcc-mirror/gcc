@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # mkcshadow: reads header names (like "features.h" or "sys/types.h")
 #   from stdin, and creates shadow headers under cshadow/, except where
@@ -8,7 +8,7 @@ SCRIPTDIR=${0%/*}
 
 if [ ! -d cshadow ]; then
   echo "Creating cshadow."
-  mkdir cshadow
+  mkdir ../cshadow
 fi
 
 echo "Creating..."
@@ -19,7 +19,7 @@ while read header; do
     # strip off directory names while making 
     #   any necessary directories
 
-    dir=cshadow
+    dir=../cshadow
     case "$header" in */*)
       right="$header"
       while [ "$right" != "${right##*/}" ] ; do
@@ -30,9 +30,9 @@ while read header; do
       ;;
     esac
 
-    echo "  cshadow/$header"
+    echo "  ../cshadow/$header"
     UPNAME=`echo $header | tr 'a-z./-' 'A-Z___'`
-    cat >"cshadow/$header" <<EOF
+    cat >"../cshadow/$header" <<EOF
 // -*- C++ -*- header wrapper.
 
 // Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
@@ -86,3 +86,9 @@ EOF
 #################### end ####################
   fi
 done
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-## Makefile for the math subdirectory of the GNU C++ Standard library.
+## Makefile for the libio subdirectory of the GNU C++ Standard library.
 ##
 ## Copyright (C) 1999, 2000 Cygnus Solutions
 ##
@@ -25,11 +25,7 @@ AUTOMAKE_OPTIONS = 1.3 cygnus
 
 noinst_LTLIBRARIES = libio.la
 
-if GLIBCPP_NEED_LIBIO_CONFIG_H
-LIBIO_CONFIG_H = _G_config.h
-else
-LIBIO_CONFIG_H = 
-endif
+LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 
 includes = 
 
@@ -43,17 +39,20 @@ else
 LIBIO_SRCS =
 endif
 
-
 EXTRA_DIST = iostreamP.h
 
 libio_la_LIBADD = $(LIBIO_SRCS) 
 libio_la_DEPENDENCIES = $(libio_la_LIBADD)
 libio_la_SOURCES = $(LIBIO_SRCS)
 
-# Specifying that *.o depend on this one header
-$(libio_la_OBJECTS): $(LIBIO_CONFIG_H)
+if GLIBCPP_NEED_LIBIO_CONFIG_H
+LIBIO_CONFIG_H = _G_config.h
+else
+LIBIO_CONFIG_H = 
+endif
 
-LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+# Specify that *.o depend on this one header
+$(libio_la_OBJECTS): $(LIBIO_CONFIG_H)
 
 # Generate this file.
 _G_config.h: $(srcdir)/gen-params
@@ -63,6 +62,11 @@ _G_config.h: $(srcdir)/gen-params
 	CONFIG_NM="$(NM)"; export CONFIG_NM; \
 	$(SHELL) $(srcdir)/gen-params LIB_VERSION=$(VERSION) $(G_CONFIG_ARGS) >tmp-params.h
 	mv tmp-params.h _G_config.h
+
+
+
+
+
 
 
 

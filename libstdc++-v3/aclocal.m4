@@ -190,7 +190,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
   WERROR='-Werror'
 
   # Sanity check that g++ is capable of dealing with v-3.
-  AC_MSG_CHECKING([for g++ that will successfullly compile this code])
+  AC_MSG_CHECKING([for g++ that will successfully compile this code])
   AC_EGREP_CPP([ok], [
   #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95) 
     ok
@@ -1010,15 +1010,18 @@ AC_MSG_RESULT($enable_cshadow_headers)
 dnl Option parsed, now set things appropriately
 case "$enable_cshadow_headers" in
     yes) 
-	SHADOW_INCLUDES="-I$srcdir/shadow -I$blddir/cshadow"
-        $srcdir/inclosure "-I $blddir/../../gcc/include/ -I /usr/include/ -G machine/ansi.h" | $srcdir/mkcshadow
+	CSHADOWFLAGS="-D_ISOC9X_SOURCE"
+	CSHADOW_INCLUDES=" -I$srcdir/shadow -I$blddir/cshadow"
 	;;
     no)   
-	SHADOW_INCLUDES=''
+	CSHADOWFLAGS=""
+	CSHADOW_INCLUDES=""
         ;;
 esac
-# SHADOW_INCLUDES is currently not used anywhere in the source
-AC_SUBST(SHADOW_INCLUDES)
+
+AC_SUBST(CSHADOWFLAGS)
+AC_SUBST(CSHADOW_INCLUDES)
+AM_CONDITIONAL(GLIBCPP_USE_CSHADOW, test "$enable_cshadow_headers" = yes)
 ])
 
 
