@@ -495,6 +495,125 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"verbose-asm", &flag_verbose_asm, 1},
   {"gnu-linker", &flag_gnu_linker, 1}
 };
+
+/* Table of language-specific options.  */
+
+char *lang_options[] =
+{
+  "-ftraditional",
+  "-traditional",
+  "-fnotraditional",
+  "-fno-traditional",
+  "-fsigned-char",
+  "-funsigned-char",
+  "-fno-signed-char",
+  "-fno-unsigned-char",
+  "-fsigned-bitfields",
+  "-funsigned-bitfields",
+  "-fno-signed-bitfields",
+  "-fno-unsigned-bitfields",
+  "-fshort-enums",
+  "-fno-short-enums",
+  "-fcond-mismatch",
+  "-fno-cond-mismatch",
+  "-fshort-double",
+  "-fno-short-double",
+  "-fasm",
+  "-fno-asm",
+  "-fbuiltin",
+  "-fno-builtin",
+  "-fno-ident",
+  "-fident",
+  "-ansi",
+  "-Wimplicit",
+  "-Wno-implicit",
+  "-Wwrite-strings",
+  "-Wno-write-strings",
+  "-Wcast-qual",
+  "-Wno-cast-qual",
+  "-Wpointer-arith",
+  "-Wno-pointer-arith",
+  "-Wstrict-prototypes",
+  "-Wno-strict-prototypes",
+  "-Wmissing-prototypes",
+  "-Wno-missing-prototypes",
+  "-Wredundant-decls",
+  "-Wno-redundant-decls",
+  "-Wnested-externs",
+  "-Wno-nested-externs",
+  "-Wtraditional",
+  "-Wno-traditional",
+  "-Wformat",
+  "-Wno-format",
+  "-Wchar-subscripts",
+  "-Wno-char-subscripts",
+  "-Wconversion",
+  "-Wno-conversion",
+  "-Wparentheses",
+  "-Wno-parentheses",
+  "-Wcomment",
+  "-Wno-comment",
+  "-Wcomments",
+  "-Wno-comments",
+  "-Wtrigraphs",
+  "-Wno-trigraphs",
+  "-Wimport",
+  "-Wno-import",
+  "-Wall",
+
+  /* These are for C++.  */
+  "+e0",
+  "+e1",
+  "+e2",
+  "-fsave-memoized",
+  "-fno-save-memoized",
+  "-fSOS",
+  "-fno-SOS",
+  "-fcadillac",
+  "-fno-cadillac",
+  "-fgc",
+  "-fno-gc",
+  "-flabels-ok",
+  "-fno-labels-ok",
+  "-fstats",
+  "-fno-stats",
+  "-fthis-is-variable",
+  "-fno-this-is-variable",
+  "-fstrict-prototype",
+  "-fno-strict-prototype",
+  "-fall-virtual",
+  "-fno-all-virtual",
+  "-fmemoize-lookups",
+  "-fno-memoize-lookups",
+  "-felide-constructors",
+  "-fno-elide-constructors",
+  "-finline-debug",
+  "-fno-inline-debug",
+  "-fhandle-exceptions",
+  "-fno-handle-exceptions",
+  "-fansi-exceptions",
+  "-fno-ansi-exceptions",
+  "-fspring-exceptions",
+  "-fno-spring-exceptions",
+  "-fdefault-inline",
+  "-fno-default-inline",
+  "-fenum-int-equiv",
+  "-fno-enum-int-equiv",
+  "-fdossier",
+  "-fno-dossier",
+  "-fxref",
+  "-fno-xref",
+  "-fnonnull-objects",
+  "-fno-nonnull-objects",
+
+  "-Wreturn-type",
+  "-Wno-return-type",
+  "-Woverloaded-virtual",
+  "-Wno-overloaded-virtual",
+  "-Wenum-clash",
+  "-Wno-enum-clash",
+  0
+};
 
 /* Options controlling warnings */
 
@@ -2692,7 +2811,18 @@ main (argc, argv, envp)
 
   for (i = 1; i < argc; i++)
     {
-      if (argv[i][0] == '-' && argv[i][1] != 0)
+      int j;
+      /* If this is a language-specific option,
+	 decode it in a language-specific way.  */
+      for (j = 0; lang_options[j] != 0; j++)
+	if (!strncmp (argv[i], lang_options[j],
+		      strlen (lang_options[j])))
+	  break;
+      if (lang_options[j] != 0)
+	/* If the option is valid for *some* language,
+	   treat it as valid even if this language doesn't understand it.  */
+	lang_decode_option (argv[i]);
+      else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
 	  register char *str = argv[i] + 1;
 	  if (str[0] == 'Y')
@@ -2784,7 +2914,6 @@ main (argc, argv, envp)
 	    }
 	  else if (str[0] == 'f')
 	    {
-	      int j;
 	      register char *p = &str[1];
 	      int found = 0;
 
@@ -2819,7 +2948,7 @@ main (argc, argv, envp)
 		fix_register (&p[10], 0, 1);
 	      else if (!strncmp (p, "call-saved-", 11))
 		fix_register (&p[11], 0, 0);
-	      else if (! lang_decode_option (argv[i]))
+	      else
 		error ("Invalid option `%s'", argv[i]);
 	    }
 	  else if (str[0] == 'O')
@@ -2836,8 +2965,6 @@ main (argc, argv, envp)
 	    pedantic = 1;
 	  else if (!strcmp (str, "pedantic-errors"))
 	    flag_pedantic_errors = pedantic = 1;
-	  else if (lang_decode_option (argv[i]))
-	    ;
 	  else if (!strcmp (str, "quiet"))
 	    quiet_flag = 1;
 	  else if (!strcmp (str, "version"))
@@ -2851,7 +2978,6 @@ main (argc, argv, envp)
 	    }
 	  else if (str[0] == 'W')
 	    {
-	      int j;
 	      register char *p = &str[1];
 	      int found = 0;
 
@@ -3049,12 +3175,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 	    error ("Invalid option `%s'", argv[i]);
 	}
       else if (argv[i][0] == '+')
-	{
-	  if (lang_decode_option (argv[i]))
-	    ;
-	  else
-	    error ("Invalid option `%s'", argv[i]);
-	}
+	error ("Invalid option `%s'", argv[i]);
       else
 	filename = argv[i];
     }
