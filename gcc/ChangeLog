@@ -1,3 +1,7 @@
+2001-12-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/sparc/sol2-sld-64.h: Include dbxelf.h again.
+
 Mon Dec 10 15:54:27 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* combine.c (known_cond): Check mode of each operand to determine
