@@ -2156,11 +2156,10 @@ extern int rs6000_trunc_used;
 
 /* Control the assembler format that we output.  */
 
-/* Common macro to output the options used to the asm file.  */
-#define ASM_OUTPUT_OPTIONS(FILE)					 \
-  output_options (FILE,							 \
-		  f_options, sizeof (f_options) / sizeof (f_options[0]), \
-		  W_options, sizeof (W_options) / sizeof (W_options[0])) \
+/* A C string constant describing how to begin a comment in the target
+   assembler language.  The compiler assumes that the comment will end at
+   the end of the line.  */
+#define ASM_COMMENT_START " #"
 
 /* Output at beginning of assembler file.
 
@@ -2179,7 +2178,6 @@ extern int rs6000_trunc_used;
 
 #define ASM_FILE_START(FILE)					\
 {								\
-  ASM_OUTPUT_OPTIONS (FILE);					\
   rs6000_gen_section_name (&xcoff_bss_section_name,		\
 			   main_input_filename, ".bss_");	\
   rs6000_gen_section_name (&xcoff_private_data_section_name,	\
