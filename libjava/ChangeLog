@@ -1,3 +1,8 @@
+2001-04-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in: Obtain THREADS with `gcc -v'.
+	* configure: Rebuilt.
+
 2001-04-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	Fix PR libgcj/2237:
