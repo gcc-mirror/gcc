@@ -114,6 +114,13 @@ namespace std {
     _M_name[_M_bufsize - 1] = '\0';
   }
 
+  ios_base::failure::~failure()
+  { }
+
+  const char*
+  ios_base::failure::what() const throw()
+  { return _M_name; }
+
   ios_base::Init::Init()
   {
     if (++_S_ios_base_init == 1)
