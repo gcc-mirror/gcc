@@ -1,5 +1,11 @@
 2002-02-06  Loren Rittle <ljrittle@acm.org>
 
+	* config/locale/c_locale_generic.cc: Do not trust
+	_GLIBCPP_HAVE_STRTOF or _GLIBCPP_HAVE_STRTOLD as
+	set by configure.
+
+2002-02-06  Loren Rittle <ljrittle@acm.org>
+
 	* acinclude.m4: Add C++ linkage check for strtof.
 	* aclocal.m4: Rebuilt.
 	* config.h.in: Rebuilt.
