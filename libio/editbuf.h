@@ -76,7 +76,7 @@ struct edit_string {
 };
 
 struct edit_streambuf : public streambuf {
-    friend edit_buffer;
+    friend class edit_buffer;
     edit_string *str;
     edit_streambuf* next; // Chain of edit_streambuf's for a edit_buffer.
     short _mode;
