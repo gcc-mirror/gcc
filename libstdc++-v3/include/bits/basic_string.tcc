@@ -207,10 +207,10 @@ namespace std
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const basic_string& __str, size_type __pos, size_type __n)
-    : _M_dataplus(_S_construct(__str._M_ibegin()
+    : _M_dataplus(_S_construct(__str._M_data()
 			       + __str._M_check(__pos,
 						"basic_string::basic_string"),
-			       __str._M_ibegin() + __pos
+			       __str._M_data() + __pos 
 			       + __str._M_limit(__pos, __n),
 			       _Alloc()), _Alloc())
     { }
@@ -219,10 +219,10 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const basic_string& __str, size_type __pos,
 		 size_type __n, const _Alloc& __a)
-    : _M_dataplus(_S_construct(__str._M_ibegin()
+    : _M_dataplus(_S_construct(__str._M_data()
 			       + __str._M_check(__pos,
 						"basic_string::basic_string"),
-			       __str._M_ibegin() + __pos
+			       __str._M_data() + __pos
 			       + __str._M_limit(__pos, __n), __a), __a)
     { }
 
