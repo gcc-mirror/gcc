@@ -834,6 +834,12 @@ For example, if @file{/usr/include/sys/stat.h} contains
 @code{@w{#include "types.h"}}, GCC looks for @file{types.h} first in
 @file{/usr/include/sys}, then in its usual search path.
 
+If you name a search directory with @option{-I@var{dir}} that is also a
+system include directory, the @option{-I} wins; the directory will be
+searched according to the @option{-I} ordering, and it will not be
+treated as a system include directory. GCC will warn you when a system
+include directory is hidden in this way.
+
 @samp{#line} (@pxref{Line Control}) does not change GCC's idea of the
 directory containing the current file.
 
@@ -1067,7 +1073,7 @@ All directories named by @option{-isystem} are searched @emph{after} all
 directories named by @option{-I}, no matter what their order was on the
 command line.  If the same directory is named by both @option{-I} and
 @option{-isystem}, @option{-I} wins; it is as if the @option{-isystem} option
-had never been specified at all.
+had never been specified at all. GCC warns you when this happens.
 
 @findex #pragma GCC system_header
 There is also a directive, @code{@w{#pragma GCC system_header}}, which

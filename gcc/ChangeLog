@@ -1,5 +1,15 @@
 2001-07-04  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cppinit.c (remove_dup_dirs): Inform if a system include
+        directory is being reordered.
+	* doc/invoke.texi (Directory Options): GCC warns if you hide a
+	system include.
+	* doc/cpp.texi (Search Paths): Likewise.
+	* doc/gcc.texi (Interoperation): Remove information about
+	-I/usr/include.
+
+2001-07-04  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* varray.h (VARRAY_TOP_GENERIC_PTR): Remove spurious parameter.
 	(VARRAY_TOP_CHAR_PTR): Likewise.
 

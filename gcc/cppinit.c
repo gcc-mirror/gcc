@@ -297,6 +297,21 @@ remove_dup_dirs (pfile, head)
       for (other = head; other != cur; other = other->next)
         if (INO_T_EQ (cur->ino, other->ino) && cur->dev == other->dev)
 	  {
+	    if (cur->sysp)
+	      {
+		cpp_warning (pfile,
+			     "changing search order for system directory \"%s\"",
+			     cur->name);
+		if (strcmp (cur->name, other->name))
+		  cpp_warning (pfile, other->sysp
+			       ? "  as it is the same as system directory \"%s\""
+			       : "  as it is the same as non-system directory \"%s\"",
+			       other->name);
+		else
+		  cpp_warning (pfile, other->sysp
+			       ? "  as it has already been specified as a system directory"
+			       : "  as it has already been specified as a non-system directory");
+	      }
 	    cur = remove_dup_dir (pfile, prev);
 	    break;
 	  }
