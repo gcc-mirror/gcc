@@ -1767,7 +1767,10 @@ pod_type_p (tree t)
     return 1; /* pointer to non-member */
   if (TYPE_PTR_TO_MEMBER_P (t))
     return 1; /* pointer to member */
-  
+
+  if (TREE_CODE (t) == VECTOR_TYPE)
+    return 1; /* vectors are (small) arrays if scalars */
+
   if (! CLASS_TYPE_P (t))
     return 0; /* other non-class type (reference or function) */
   if (CLASSTYPE_NON_POD_P (t))
