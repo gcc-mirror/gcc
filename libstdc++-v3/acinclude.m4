@@ -159,7 +159,6 @@ dnl specific precautions need to be taken.
 dnl 
 dnl GLIBCPP_CHECK_COMPILER_VERSION
 AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
-
   # Sanity check that g++ is capable of dealing with v-3.
   AC_MSG_CHECKING([for g++ that will successfully compile this code])
   AC_EGREP_CPP([ok], [
@@ -264,13 +263,14 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
   # Check for -Wl,--gc-sections
   AC_MSG_CHECKING([for ld that supports -Wl,--gc-sections])
   CXXFLAGS='-Wl,--gc-sections'
-  AC_TRY_COMPILE(, [
-   try
-     {
-       throw 1;
-     }
-   catch (...) {};
-  ], [ac_sectionLDflags=yes], [ac_sectionLFflags=no])
+  AC_TRY_RUN([
+   int main() 
+   {
+     try { throw 1; }
+     catch (...) { };
+     return 0;
+   }
+  ], [ac_sectionLDflags=yes], [ac_sectionLFflags=no], [ac_sectionLDflags=yes])
   if test "$ac_test_CXXFLAGS" = set; then
     CXXFLAGS="$ac_save_CXXFLAGS"
   else
@@ -894,49 +894,247 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
 
 
 dnl
+dnl Check to see if the argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl
+dnl Define HAVE_CARGF etc if "cargf" is declared and links
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a math function with ONE parameter
+dnl
+dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1
+AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1, [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  AC_MSG_CHECKING([for $1 declaration])
+  AC_TRY_COMPILE([#include <math.h>], 
+  [ $1(0);], 
+  [use_$1=yes], [use_$1=no])
+  AC_MSG_RESULT($use_$1)
+  AC_LANG_RESTORE
+  if test x$use_$1 = x"yes"; then
+    AC_CHECK_FUNCS($1)    
+  fi
+])
+
+
+dnl
+dnl Check to see if the argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl
+dnl Define HAVE_CARGF etc if "cargf" is declared and links
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a math function with TWO parameters
+dnl
+dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2
+AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2, [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  AC_MSG_CHECKING([for $1 declaration])
+  AC_TRY_COMPILE([#include <math.h>], 
+  [ $1(0, 0);], 
+  [use_$1=yes], [use_$1=no])
+  AC_MSG_RESULT($use_$1)
+  AC_LANG_RESTORE
+  if test x$use_$1 = x"yes"; then
+    AC_CHECK_FUNCS($1)    
+  fi
+])
+
+
+dnl
+dnl Check to see if the argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl
+dnl Define HAVE_CARGF etc if "cargf" is declared and links
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a math function with THREE parameters
+dnl
+dnl GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3
+AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3, [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  AC_MSG_CHECKING([for $1 declaration])
+  AC_TRY_COMPILE([#include <math.h>], 
+  [ $1(0, 0, 0);], 
+  [use_$1=yes], [use_$1=no])
+  AC_MSG_RESULT($use_$1)
+  AC_LANG_RESTORE
+  if test x$use_$1 = x"yes"; then
+    AC_CHECK_FUNCS($1)    
+  fi
+])
+
+
+dnl
 dnl Check to see what the underlying c library or math library is like.
+dnl These checks need to do two things: 
+dnl 1) make sure the name is declared when using the c++ compiler
+dnl 2) make sure the name has "C" linkage
+dnl This might seem like overkill but experience has shown that it's not...
 dnl
 dnl Define HAVE_CARGF etc if "cargf" is found.
 dnl
 dnl GLIBCPP_CHECK_MATH_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
-  dnl Work around bug on powerpc compiler, where no long double is
-  dnl declared, yet functions defined with long double are in libm. Thus,
-  dnl the "C" math library has the prototypes implicitly declared, and
-  dnl everything works.
-  ac_test_CFLAGS="${CFLAGS+set}"
-  ac_save_CFLAGS="$CFLAGS"
-  CFLAGS='-Werror-implicit-function-declaration -fno-builtins'
+  ac_test_CXXFLAGS="${CXXFLAGS+set}"
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS='-fno-builtins'
 
   dnl Check libm
   AC_CHECK_LIB(m, sin, libm="-lm")
-  save_LIBS="$LIBS"
+  ac_save_LIBS="$LIBS"
   LIBS="$LIBS $libm"
 
-  dnl Check to see if basic C math functions have float, long double versions.
-  AC_REPLACE_MATHFUNCS(cosf fabsf sinf sqrtf)
-  AC_CHECK_FUNCS(isnan isnanf isnanl isinf isinff isinfl copysign copysignl \
-  acosf acosl asinf asinl atanf atanl atan2f atan2l ceilf ceill cosl \
-  coshf coshl expf expl fabsl floorf floorl fmodf fmodl frexpf frexpl ldexpf \
-  ldexpl logf logl log10f log10l modff modfl powf powl sinl sinhf \
-  sinhl sqrtl tanf tanl tanhf tanhl strtof strtold sincos sincosf \
-  sincosl finite finitef finitel fqfinite fpclass qfpclass)
+  dnl Although not math functions, needed and for some reason checked here.
+  AC_CHECK_FUNCS(strtof strtold)
 
-#Some runtimes have these functions with a preceding underscore. Please
-# keep this sync'd with the one above. And if you add any new symbol,
-# please add the corresponding block in the @BOTTOM@ section of
-# acconfig.h.
+  dnl Check to see if certain C math functions exist.
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isinf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isnan)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(finite)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(copysign)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(sincos)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(fpclass)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(qfpclass)
 
-  AC_CHECK_FUNCS(_isnan _isnanf _isnanl _isinf _isinff _isinfl _copysign \
-  _copysignl _acosf _acosl _asinf _asinl _atanf _atanl _atan2f _atan2l \
-  _ceilf _ceill _cosf _cosl _coshf _coshl _expf _expl _fabsf _fabsl \
-  _floorf _floorl _fmodf _fmodl _frexpf _frexpl _ldexpf _ldexpl _logf _logl \
-  _log10f _log10l _modff _modfl _powf _powl _sinf _sinl _sinhf _sinhl \
-  _sqrtf _sqrtl _tanf _tanl _tanhf _tanhl _strtof _strtold _sincos _sincosf \
-  _sincosl _finite _finitef _finitel _fqfinite _fpclass _qfpclass)
+  dnl Check to see if basic C math functions have float versions.
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isnanf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isinff)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(acosf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(asinf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(atanf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(atan2f)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(ceilf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(cosf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(coshf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(expf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(fabsf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(floorf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(fmodf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(frexpf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(ldexpf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(logf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(log10f)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(modff)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(powf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(sinf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(sinhf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(sqrtf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(tanf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(tanhf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(sincosf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(finitef)
 
-  LIBS="$save_LIBS"
-#  CFLAGS="$ac_save_CFLAGS"
+  dnl Check to see if basic C math functions have long double versions.
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isnanl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isinfl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(copysignl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(acosl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(asinl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(atanl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(atan2l)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(ceill)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(cosl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(coshl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(expl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(fabsl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(floorl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(fmodl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(frexpl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(ldexpl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(logl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(log10l)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(modfl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(powl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(sinl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(sinhl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(sqrtl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(tanl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(tanhl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(sincosl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(finitel)
+
+  dnl Some runtimes have these functions with a preceding underscore. Please
+  dnl keep this sync'd with the one above. And if you add any new symbol,
+  dnl please add the corresponding block in the @BOTTOM@ section of acconfig.h.
+  dnl Check to see if certain C math functions exist.
+  dnl Check to see if certain C math functions exist.
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isinf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isnan)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_finite)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_copysign)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(_sincos)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_fpclass)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_qfpclass)
+
+  dnl Check to see if basic C math functions have float versions.
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isnanf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isinff)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_acosf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_asinf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_atanf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_atan2f)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_ceilf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_cosf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_coshf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_expf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_fabsf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_floorf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_fmodf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_frexpf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_ldexpf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_logf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_log10f)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_modff)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_powf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_sinf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_sinhf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_sqrtf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_tanf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_tanhf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(_sincosf)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_finitef)
+
+  dnl Check to see if basic C math functions have long double versions.
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isnanl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isinfl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_copysignl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_acosl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_asinl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_atanl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_atan2l)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_ceill)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_cosl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_coshl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_expl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_fabsl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_floorl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_fmodl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_frexpl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_ldexpl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_logl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_log10l)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_modfl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_powl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_sinl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_sinhl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_sqrtl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_tanl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_tanhl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(_sincosl)
+  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_finitel)
+
+  LIBS="$ac_save_LIBS"
+  CXXFLAGS="$ac_save_CXXFLAGS"
 ])
 
 
