@@ -27,6 +27,8 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START "#"
 
+#undef DBX_REGISTER_NUMBER
+#define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]
 
 /* This goes away when the math-emulator is fixed */
 #undef TARGET_DEFAULT

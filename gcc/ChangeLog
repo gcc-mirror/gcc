@@ -1,3 +1,10 @@
+2005-01-31  Marc Espie <espie@openbsd.org>
+
+	* config.gcc: Don't include embedded systems fragment, switches default
+	debugging format to ELF.
+	* config/i386/openbsdelf.h: Add DBX_REGISTER_NUMBER since we no 
+	longer pick it up there.
+
 2005-01-31  Dale Johannesen  <dalej@apple.com>
 	
 	* config/rs6000/darwin.md (movsf_low_di):  Make work.
