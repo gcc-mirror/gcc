@@ -76,7 +76,6 @@ bool ffe_is_f2c_library_ = FFETARGET_defaultIS_F2C_LIBRARY;
 bool ffe_is_ffedebug_ = FALSE;
 bool ffe_is_free_form_ = FFETARGET_defaultIS_FREE_FORM;
 bool ffe_is_globals_ = TRUE;
-bool ffe_is_ident_ = TRUE;
 bool ffe_is_init_local_zero_ = FFETARGET_defaultIS_INIT_LOCAL_ZERO;
 bool ffe_is_mainprog_;		/* TRUE if current prog unit known to be
 				   main. */
@@ -177,10 +176,6 @@ ffe_decode_option (argc, argv)
 	}
       else if (strcmp (&opt[2], "null-version") == 0)
 	ffe_set_is_null_version (TRUE);
-      else if (strcmp (&opt[2], "ident") == 0)
-	ffe_set_is_ident (TRUE);
-      else if (strcmp (&opt[2], "no-ident") == 0)
-	ffe_set_is_ident (FALSE);
       else if (strcmp (&opt[2], "f66") == 0)
 	{
 	  ffe_set_is_onetrip (TRUE);

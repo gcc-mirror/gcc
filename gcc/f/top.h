@@ -92,7 +92,6 @@ extern bool ffe_is_f2c_library_;
 extern bool ffe_is_ffedebug_;
 extern bool ffe_is_free_form_;
 extern bool ffe_is_globals_;
-extern bool ffe_is_ident_;
 extern bool ffe_is_init_local_zero_;
 extern bool ffe_is_mainprog_;
 extern bool ffe_is_null_version_;
@@ -180,7 +179,6 @@ void ffe_terminate_4 (void);
 #define ffe_is_ffedebug() ffe_is_ffedebug_
 #define ffe_is_free_form() ffe_is_free_form_
 #define ffe_is_globals() ffe_is_globals_
-#define ffe_is_ident() ffe_is_ident_
 #define ffe_is_init_local_zero() ffe_is_init_local_zero_
 #define ffe_is_mainprog() ffe_is_mainprog_
 #define ffe_is_null_version() ffe_is_null_version_
@@ -232,7 +230,6 @@ void ffe_terminate_4 (void);
 #define ffe_set_is_ffedebug(f) (ffe_is_ffedebug_ = (f))
 #define ffe_set_is_free_form(f) (ffe_is_free_form_ = (f))
 #define ffe_set_is_globals(f) (ffe_is_globals_ = (f))
-#define ffe_set_is_ident(f) (ffe_is_ident_ = (f))
 #define ffe_set_is_init_local_zero(f) (ffe_is_init_local_zero_ = (f))
 #define ffe_set_is_mainprog(f) (ffe_is_mainprog_ = (f))
 #define ffe_set_is_null_version(f) (ffe_is_null_version_ = (f))
