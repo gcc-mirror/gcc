@@ -511,7 +511,8 @@ emit_delay_sequence (insn, list, length)
 
 	    case REG_LABEL:
 	      /* Keep the label reference count up to date.  */
-	      LABEL_NUSES (XEXP (note, 0)) ++;
+	      if (GET_CODE (XEXP (note, 0)) == CODE_LABEL)
+		LABEL_NUSES (XEXP (note, 0)) ++;
 	      break;
 
 	    default:
@@ -2732,12 +2733,13 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 			 temporarily increment the use count on any referenced
 			 label lest it be deleted by delete_related_insns.  */
 		      note = find_reg_note (trial, REG_LABEL, 0);
-		      if (note)
+		      /* REG_LABEL could be NOTE_INSN_DELETED_LABEL too.  */
+		      if (note && GET_CODE (XEXP (note, 0)) == CODE_LABEL)
 			LABEL_NUSES (XEXP (note, 0))++;
 
 		      delete_related_insns (trial);
 
-		      if (note)
+		      if (note && GET_CODE (XEXP (note, 0)) == CODE_LABEL)
 			LABEL_NUSES (XEXP (note, 0))--;
 		    }
 		  else

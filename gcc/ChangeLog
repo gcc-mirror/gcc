@@ -1,5 +1,12 @@
 2002-03-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/6096, middle-end/6098, middle-end/6099
+	* reorg.c (emit_delay_sequence): Only increment LABEL_NUSES for
+	CODE_LABELs.
+	(fill_slots_from_thread): Likewise.
+
+2002-03-31  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/sparc/sparc.c (function_arg_record_value_1): Pass complex
 	floating fields in float regs.
 	(function_arg_record_value_2): Likewise.
