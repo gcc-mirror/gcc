@@ -31,6 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-attr.h"
 #include "tree.h"
 #include "flags.h"
+#include "function.h"
 
 #ifdef EXTRA_CONSTRAINT
 /* If EXTRA_CONSTRAINT is defined, then the 'S'
@@ -2052,9 +2053,37 @@ output_fp_cc0_set (insn)
 
 static rtx i386_stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
 
+/* Define the structure for the machine field in struct function.  */
+struct machine_function
+{
+  rtx i386_stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
+};
+
+/* Functions to save and restore i386_stack_locals.
+   These will be called, via pointer variables,
+   from push_function_context and pop_function_context.  */
+
+void
+save_386_machine_status (p)
+     struct function *p;
+{
+  p->machine = (struct machine_function *) xmalloc (sizeof i386_stack_locals);
+  bcopy (i386_stack_locals, p->machine->i386_stack_locals,
+	 sizeof i386_stack_locals);
+}
+
+void
+restore_386_machine_status (p)
+     struct function *p;
+{
+  bcopy (p->machine->i386_stack_locals, i386_stack_locals,
+	 sizeof i386_stack_locals);
+  free (p->machine);
+}
+
 /* Clear stack slot assignments remembered from previous functions.
    This is called from INIT_EXPANDERS once before RTL is emitted for each
-   function. */
+   function.  */
 
 void
 clear_386_stack_locals ()
@@ -2066,6 +2095,10 @@ clear_386_stack_locals ()
        mode = (enum machine_mode) ((int) mode + 1))
     for (n = 0; n < MAX_386_STACK_LOCALS; n++)
       i386_stack_locals[(int) mode][n] = NULL_RTX;
+
+  /* Arrange to save and restore i386_stack_locals around nested functions.  */
+  save_machine_status = save_386_machine_status;
+  restore_machine_status = restore_386_machine_status;
 }
 
 /* Return a MEM corresponding to a stack slot with mode MODE.
