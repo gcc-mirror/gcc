@@ -1,3 +1,9 @@
+Tue Aug  4 16:59:39 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_convert_narrow_, ffecom_convert_widen_):
+	Allow conversion from pointer to same-sized integer,
+	to fix invoking SIGNAL as a function.
+
 1998-07-26  Dave Love  <d.love@dl.ac.uk>
 
 	* BUGS, INSTALL, NEWS: Rebuilt.

@@ -922,8 +922,11 @@ ffecom_convert_narrow_ (type, expr)
   assert (code != ENUMERAL_TYPE);
   if (code == INTEGER_TYPE)
     {
-      assert (TREE_CODE (TREE_TYPE (e)) == INTEGER_TYPE);
-      assert (TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (e)));
+      assert ((TREE_CODE (TREE_TYPE (e)) == INTEGER_TYPE
+	       && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (e)))
+	      || (TREE_CODE (TREE_TYPE (e)) == POINTER_TYPE
+		  && (TYPE_PRECISION (type)
+		      == TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (e))))));
       return fold (convert_to_integer (type, e));
     }
   if (code == POINTER_TYPE)
@@ -992,8 +995,11 @@ ffecom_convert_widen_ (type, expr)
   assert (code != ENUMERAL_TYPE);
   if (code == INTEGER_TYPE)
     {
-      assert (TREE_CODE (TREE_TYPE (e)) == INTEGER_TYPE);
-      assert (TYPE_PRECISION (type) >= TYPE_PRECISION (TREE_TYPE (e)));
+      assert ((TREE_CODE (TREE_TYPE (e)) == INTEGER_TYPE
+	       && TYPE_PRECISION (type) >= TYPE_PRECISION (TREE_TYPE (e)))
+	      || (TREE_CODE (TREE_TYPE (e)) == POINTER_TYPE
+		  && (TYPE_PRECISION (type)
+		      == TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (e))))));
       return fold (convert_to_integer (type, e));
     }
   if (code == POINTER_TYPE)
