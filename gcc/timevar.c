@@ -133,11 +133,11 @@ struct timevar_def
   /* The name of this timing variable.  */
   const char *name;
 
-  /* Non-zero if this timing variable is running as a standalone
+  /* Nonzero if this timing variable is running as a standalone
      timer.  */
   unsigned standalone : 1;
 
-  /* Non-zero if this timing variable was ever started or pushed onto
+  /* Nonzero if this timing variable was ever started or pushed onto
      the timing stack.  */
   unsigned used : 1;
 };

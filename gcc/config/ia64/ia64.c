@@ -8223,7 +8223,7 @@ ia64_aix_select_rtx_section (mode, x, align)
 /* Output the assembler code for a thunk function.  THUNK_DECL is the
    declaration for the thunk function itself, FUNCTION is the decl for
    the target function.  DELTA is an immediate constant offset to be
-   added to THIS.  If VCALL_OFFSET is non-zero, the word at
+   added to THIS.  If VCALL_OFFSET is nonzero, the word at
    *(*this + vcall_offset) should be added to THIS.  */
 
 static void

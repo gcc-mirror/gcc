@@ -423,7 +423,7 @@ int time_report = 0;
 
 int mem_report = 0;
 
-/* Non-zero means to collect statistics which might be expensive
+/* Nonzero means to collect statistics which might be expensive
    and to print them when we are done.  */
 int flag_detailed_statistics = 0;
 
@@ -4105,7 +4105,7 @@ decode_g_option (arg)
      selected type.  It is an error to specify more than one
      debugging type.  */
   static enum debug_info_type selected_debug_type = NO_DEBUG;
-  /* Non-zero if debugging format has been explicitly set.
+  /* Nonzero if debugging format has been explicitly set.
      -g and -ggdb don't explicitly set the debugging format so
      -gdwarf -g3 is equivalent to -gdwarf3.  */
   static int type_explicitly_set_p = 0;

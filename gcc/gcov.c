@@ -597,7 +597,7 @@ create_file_names (file_name)
   return;
 }
 
-/* Read the graph file. Return non-zero on fatal error.  */
+/* Read the graph file. Return nonzero on fatal error.  */
 
 static int
 read_graph_file ()
@@ -851,7 +851,7 @@ read_graph_file ()
 }
 
 /* Reads profiles from the count file and attach to each
-   function. Return non-zero if fatal error.  */
+   function. Return nonzero if fatal error.  */
 
 static int
 read_count_file ()

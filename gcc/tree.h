@@ -604,7 +604,7 @@ extern void tree_vec_elt_check_failed PARAMS ((int, int, const char *,
    when the node is a type).  */
 #define TREE_READONLY(NODE) ((NODE)->common.readonly_flag)
 
-/* Non-zero if NODE is a _DECL with TREE_READONLY set.  */
+/* Nonzero if NODE is a _DECL with TREE_READONLY set.  */
 #define TREE_READONLY_DECL_P(NODE) (TREE_READONLY (NODE) && DECL_P (NODE))
 
 /* Value of expression is constant.

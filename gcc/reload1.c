@@ -305,7 +305,7 @@ struct elim_table
   int from;			/* Register number to be eliminated.  */
   int to;			/* Register number used as replacement.  */
   int initial_offset;		/* Initial difference between values.  */
-  int can_eliminate;		/* Non-zero if this elimination can be done.  */
+  int can_eliminate;		/* Nonzero if this elimination can be done.  */
   int can_eliminate_previous;	/* Value of CAN_ELIMINATE in previous scan over
 				   insns made by reload.  */
   int offset;			/* Current offset between the two regs.  */
@@ -5935,7 +5935,7 @@ choose_reload_regs (chain)
     if (reload_override_in[j])
       rld[j].in = reload_override_in[j];
 
-  /* If this reload won't be done because it has been cancelled or is
+  /* If this reload won't be done because it has been canceled or is
      optional and not inherited, clear reload_reg_rtx so other
      routines (such as subst_reloads) don't get confused.  */
   for (j = 0; j < n_reloads; j++)

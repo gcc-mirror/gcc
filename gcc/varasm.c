@@ -4117,7 +4117,7 @@ output_constructor (exp, size, align)
   /* Number of bytes output or skipped so far.
      In other words, current position within the constructor.  */
   HOST_WIDE_INT total_bytes = 0;
-  /* Non-zero means BYTE contains part of a byte, to be output.  */
+  /* Nonzero means BYTE contains part of a byte, to be output.  */
   int byte_buffer_in_use = 0;
   int byte = 0;
 
