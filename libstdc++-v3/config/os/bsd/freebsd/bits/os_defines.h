@@ -35,6 +35,7 @@
 /* System-specific #define, typedefs, corrections, etc, go here.  This
    file will come before all others. */
 
+#define _GLIBCPP_AVOID_FSEEK 1
 
 #endif
 

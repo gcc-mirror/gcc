@@ -91,6 +91,20 @@ namespace std
 
       return __ret;
     }
+
+  template<typename _CharT>
+    _CharT
+    __basic_file<_CharT>::sys_getc()
+    {
+      return getc (_M_cfile);
+    }
+
+  template<typename _CharT>
+    _CharT
+    __basic_file<_CharT>::sys_ungetc(_CharT __s)
+    {
+      return ungetc (__s, _M_cfile);
+    }
   
   template<typename _CharT>
     __basic_file<_CharT>* 

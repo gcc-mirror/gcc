@@ -261,6 +261,10 @@ namespace std
 	    {
 	      if (__testout)
 		_M_really_overflow();
+#if _GLIBCPP_AVOID_FSEEK
+	      else if ((_M_in_cur - _M_in_beg) == 1)
+		_M_file->sys_getc();
+#endif
 	      else 
 		_M_file->seekoff(_M_in_cur - _M_in_beg, 
 				 ios_base::cur, ios_base::in);
@@ -276,12 +280,21 @@ namespace std
 		  if (__testout)
 		    _M_out_cur = _M_in_cur;
 		  __ret = traits_type::to_int_type(*_M_in_cur);
+#if _GLIBCPP_AVOID_FSEEK
+		  if (__size == 1)
+		    _M_file->sys_ungetc(*_M_in_cur);
+		  else
+		    {
+#endif
 		  streamoff __p = _M_file->seekoff(0 - __size, ios_base::cur, 
 						   ios_base::in);
 		  if (__p == -1)
 		    {
 		      // XXX Something is wrong, do error checking.
 		    }
+#if _GLIBCPP_AVOID_FSEEK
+		    }
+#endif
 		}	   
 	    }
 	}
