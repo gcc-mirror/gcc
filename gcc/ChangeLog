@@ -1,3 +1,7 @@
+Mon Oct  5 18:28:33 1998  Hans-Peter Nilsson  <hp@axis.se>
+
+	* Makefile.in (version.c): Apply basename when using VERSION_DEP.s
+
 Mon Oct  5 18:08:31 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 	* rs6000.c (rs6000_stack_info): Remove extra paren.
