@@ -3780,6 +3780,7 @@ fold_range_test (exp)
      short-circuited branch and the underlying object on both sides
      is the same, make a non-short-circuit operation.  */
   else if (BRANCH_COST >= 2
+	   && lhs != 0 && rhs != 0
 	   && (TREE_CODE (exp) == TRUTH_ANDIF_EXPR
 	       || TREE_CODE (exp) == TRUTH_ORIF_EXPR)
 	   && operand_equal_p (lhs, rhs, 0))
