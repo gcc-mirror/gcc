@@ -36,6 +36,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifdef HAVE_MMAP_FILE
 # include <sys/mman.h>
+# ifdef HAVE_MINCORE
+/* This is on Solaris.  */
+#  include <sys/types.h> 
+# endif
+#endif
+
+#ifndef MAP_FAILED
+# define MAP_FAILED ((void *)-1)
 #endif
 
 #ifdef ENABLE_VALGRIND_CHECKING
@@ -449,7 +457,7 @@ gt_pch_save (FILE *f)
   mmi.preferred_base = mmap (NULL, mmi.size,
 			     PROT_READ | PROT_WRITE, MAP_PRIVATE,
 			     fileno (state.f), 0);
-  if (mmi.preferred_base == (void *)-1)
+  if (mmi.preferred_base == MAP_FAILED)
     mmi.preferred_base = NULL;
   else
     munmap (mmi.preferred_base, mmi.size);
@@ -567,10 +575,41 @@ gt_pch_restore (FILE *f)
   addr = mmap (mmi.preferred_base, mmi.size,
 	       PROT_READ | PROT_WRITE, MAP_PRIVATE,
 	       fileno (f), mmi.offset);
-#else
-  addr = (void *)-1;
-#endif
-  if (addr == (void *)-1)
+
+#if HAVE_MINCORE
+  if (addr != mmi.preferred_base)
+    {
+      size_t page_size = getpagesize();
+      char one_byte;
+
+      if (addr != MAP_FAILED)
+	munmap (addr, mmi.size);
+
+      /* We really want to be mapped at mmi.preferred_base
+	 so we're going to resort to MAP_FIXED.  But before,
+	 make sure that we can do so without destroying a
+	 previously mapped area, by looping over all pages
+	 that would be affected by the fixed mapping.  */
+      errno = 0;
+
+      for (i = 0; i < mmi.size; i+= page_size)
+	if (mincore ((char *)mmi.preferred_base + i, page_size, (void *)&one_byte) == -1
+	    && errno == ENOMEM)
+	  continue; /* The page is not mapped.  */
+	else
+	  break;
+
+      if (i >= mmi.size)
+	addr = mmap (mmi.preferred_base, mmi.size, 
+		     PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
+		     fileno (f), mmi.offset);
+    }
+#endif /* HAVE_MINCORE */
+
+#else /* HAVE_MMAP_FILE */
+  addr = MAP_FAILED;
+#endif /* HAVE_MMAP_FILE */
+  if (addr == MAP_FAILED)
     {
       addr = xmalloc (mmi.size);
       if (fseek (f, mmi.offset, SEEK_SET) != 0
