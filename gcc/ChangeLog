@@ -1,3 +1,8 @@
+2003-05-22 Rekha Bhintade <rekhad@kpitcummins.com>
+
+	* gcc/config/sh/sh.h (TARGET_SWITCHES): Display all the target
+	switches when --target-help option is specified. 
+
 2003-05-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR bootstrap/10805

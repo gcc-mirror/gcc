@@ -279,23 +279,23 @@ extern int target_flags;
 
 #define TARGET_SWITCHES  			\
 { {"1",	        TARGET_NONE, "" },		\
-  {"1",	        SELECT_SH1, "" },		\
+  {"1",	        SELECT_SH1, "Generate SH1 code" },		\
   {"2",	        TARGET_NONE, "" },		\
-  {"2",	        SELECT_SH2, "" },		\
+  {"2",	        SELECT_SH2, "Generate SH2 code" },		\
   {"2e",        TARGET_NONE, "" },		\
-  {"2e",        SELECT_SH2E, "" },		\
+  {"2e",        SELECT_SH2E, "Generate SH2e code" },		\
   {"3",	        TARGET_NONE, "" },		\
-  {"3",	        SELECT_SH3, "" },		\
+  {"3",	        SELECT_SH3, "Generate SH3 code" },		\
   {"3e",	TARGET_NONE, "" },		\
-  {"3e",	SELECT_SH3E, "" },		\
+  {"3e",	SELECT_SH3E, "Generate SH3e code" },		\
   {"4-single-only",	TARGET_NONE, "" },	\
-  {"4-single-only",	SELECT_SH4_SINGLE_ONLY, "" },	\
+  {"4-single-only",	SELECT_SH4_SINGLE_ONLY, "Generate only single-precision SH4 code" },	\
   {"4-single",	TARGET_NONE, "" },		\
-  {"4-single",	SELECT_SH4_SINGLE, "" },	\
+  {"4-single",	SELECT_SH4_SINGLE, "Generate default single-precision SH4 code" },	\
   {"4-nofpu",	TARGET_NONE, "" },		\
-  {"4-nofpu",	SELECT_SH4_NOFPU, "" },		\
+  {"4-nofpu",	SELECT_SH4_NOFPU, "Generate SH4 FPU-less code" },		\
   {"4",	        TARGET_NONE, "" },		\
-  {"4",	        SELECT_SH4, "" }, 		\
+  {"4",	        SELECT_SH4, "Generate SH4 code" }, 		\
   {"5-64media",	TARGET_NONE, "" },		\
   {"5-64media", SELECT_SH5_64, "Generate 64-bit SHmedia code" }, \
   {"5-64media-nofpu", TARGET_NONE, "" },	\
@@ -308,21 +308,21 @@ extern int target_flags;
   {"5-compact",	SELECT_SH5_COMPACT, "Generate SHcompact code" }, \
   {"5-compact-nofpu", TARGET_NONE, "" },	\
   {"5-compact-nofpu", SELECT_SH5_COMPACT_NOFPU, "Generate FPU-less SHcompact code" }, \
-  {"b",		-LITTLE_ENDIAN_BIT, "" },  	\
-  {"bigtable", 	BIGTABLE_BIT, "" },		\
-  {"dalign",  	DALIGN_BIT, "" },		\
+  {"b",		-LITTLE_ENDIAN_BIT, "Generate code in big endian mode" },  	\
+  {"bigtable", 	BIGTABLE_BIT, "Generate 32-bit offsets in switch tables" },		\
+  {"dalign",  	DALIGN_BIT, "Aligns doubles at 64-bit boundaries" },		\
   {"fmovd",  	FMOVD_BIT, "" },		\
-  {"hitachi",	HITACHI_BIT, "" },		\
-  {"nomacsave", NOMACSAVE_BIT, "" },		\
-  {"ieee",  	IEEE_BIT, "" },			\
+  {"hitachi",	HITACHI_BIT, "Follow Renesas (formerly Hitachi) / SuperH calling conventions" },		\
+  {"nomacsave", NOMACSAVE_BIT, "Mark MAC register as call-clobbered" },		\
+  {"ieee",  	IEEE_BIT, "Increase the IEEE compliance for floating-point code" },			\
   {"isize", 	ISIZE_BIT, "" },		\
-  {"l",		LITTLE_ENDIAN_BIT, "" },  	\
+  {"l",		LITTLE_ENDIAN_BIT, "Generate code in little endian mode" },  	\
   {"no-ieee",  	-IEEE_BIT, "" },		\
   {"padstruct", PADSTRUCT_BIT, "" },    	\
-  {"prefergot",	PREFERGOT_BIT, "" },		\
-  {"relax",	RELAX_BIT, "" },		\
-  {"space", 	SPACE_BIT, "" },		\
-  {"usermode",	USERMODE_BIT, "" },		\
+  {"prefergot",	PREFERGOT_BIT, "Emit function-calls using global offset table when generating PIC" },		\
+  {"relax",	RELAX_BIT, "Shorten address references during linking" },		\
+  {"space", 	SPACE_BIT, "Deprecated. Use -Os instead" },		\
+  {"usermode",	USERMODE_BIT, "Generate library function call to invalidate instruction cache entries after fixing trampoline" },		\
   SUBTARGET_SWITCHES                            \
   {"",   	TARGET_DEFAULT, "" } 		\
 }
