@@ -218,6 +218,7 @@ public abstract class URLStreamHandler
               }
             catch (IOException e)
               {
+		// Do nothing.
               }
           }
 
@@ -243,6 +244,9 @@ public abstract class URLStreamHandler
     setURL(url, url.getProtocol(), host, port, file, ref);
   }
   
+  /*
+   * Canonicalize a filename.
+   */
   private static String canonicalizeFilename(String file)
   {
     // XXX - GNU Classpath has an implementation that might be more appropriate
@@ -275,6 +279,8 @@ public abstract class URLStreamHandler
    * @param url1 The first url
    * @param url2 The second url to compare with the first
    * 
+   * @return True if both URLs point to the same file, false otherwise.
+   *
    * @specnote Now protected
    */
   protected boolean sameFile(URL url1, URL url2)
@@ -363,6 +369,8 @@ public abstract class URLStreamHandler
    *
    * @param url1 An URL object
    * @param url2 An URL object
+   *
+   * @return True if both given URLs are equal, false otherwise.
    */
   protected boolean equals (URL url1, URL url2)
   {
@@ -395,6 +403,11 @@ public abstract class URLStreamHandler
   /**
    * Compares the host components of two URLs.
    *
+   * @param url1 The first URL.
+   * @param url2 The second URL.
+   *
+   * @return True if both URLs contain the same host.
+   *
    * @exception UnknownHostException If an unknown host is found
    */
   protected boolean hostsEqual (URL url1, URL url2)
@@ -417,12 +430,16 @@ public abstract class URLStreamHandler
   /**
    * Get the IP address of our host. An empty host field or a DNS failure will
    * result in a null return.
+   *
+   * @param url The URL to return the host address for.
+   *
+   * @return The address of the hostname in url.
    */
   protected InetAddress getHostAddress (URL url)
   {
     String hostname = url.getHost ();
 
-    if (hostname == "")
+    if (hostname.equals(""))
       return null;
     
     try
@@ -438,6 +455,8 @@ public abstract class URLStreamHandler
   /**
    * Returns the default port for a URL parsed by this handler. This method is
    * meant to be overidden by handlers with default port numbers.
+   *
+   * @return The default port number.
    */
   protected int getDefaultPort ()
   {
@@ -447,6 +466,10 @@ public abstract class URLStreamHandler
   /**
    * Provides the default hash calculation. May be overidden by handlers for
    * other protocols that have different requirements for hashCode calculation.
+   *
+   * @param url The URL to calc the hashcode for.
+   * 
+   * @return The hashcode for the given URL.
    */
   protected int hashCode (URL url)
   {
@@ -462,6 +485,8 @@ public abstract class URLStreamHandler
    * that have a different syntax should override this method
    *
    * @param url The URL object to convert
+   *
+   * @return A string representation of the url
    */
   protected String toExternalForm(URL u)
   {
