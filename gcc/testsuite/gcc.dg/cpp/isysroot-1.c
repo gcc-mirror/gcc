@@ -1,5 +1,5 @@
 /* { dg-options "-isysroot ${srcdir}/gcc.dg/cpp" } */
-/* { dg-do compile } */
+/* { dg-do compile  { target *-*-darwin* } } */
 
 #include <stdio.h>
 int main()

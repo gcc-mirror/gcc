@@ -1,3 +1,8 @@
+2004-11-30  Devang Patel  <dpatel@apple.com>
+
+	PR 18702
+	* gcc.dg/cpp/isysroot-1.c: Make this test darwin specific.
+	
 2004-11-30  Janis Johnson  <janis187@us.ibm.com>
 
 	* g++.dg/ext/altivec-13.C: New test.
