@@ -507,11 +507,10 @@ sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
     }
 
   while (GET_CODE (dest) == STRICT_LOW_PART || GET_CODE (dest) == SUBREG
-	 || GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SIGN_EXTRACT)
+	 || GET_CODE (dest) == ZERO_EXTRACT)
     {
       if (GET_CODE (dest) == STRICT_LOW_PART
 	 || GET_CODE (dest) == ZERO_EXTRACT
-	 || GET_CODE (dest) == SIGN_EXTRACT
 	 || read_modify_subreg_p (dest))
         {
 	  /* These both read and modify the result.  We must handle
@@ -522,7 +521,7 @@ sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
 
 	  sched_analyze_2 (deps, XEXP (dest, 0), insn);
 	}
-      if (GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SIGN_EXTRACT)
+      if (GET_CODE (dest) == ZERO_EXTRACT)
 	{
 	  /* The second and third arguments are values read by this insn.  */
 	  sched_analyze_2 (deps, XEXP (dest, 1), insn);

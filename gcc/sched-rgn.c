@@ -1146,8 +1146,8 @@ check_live_1 (int src, rtx x)
   if (reg == 0)
     return 1;
 
-  while (GET_CODE (reg) == SUBREG || GET_CODE (reg) == ZERO_EXTRACT
-	 || GET_CODE (reg) == SIGN_EXTRACT
+  while (GET_CODE (reg) == SUBREG
+	 || GET_CODE (reg) == ZERO_EXTRACT
 	 || GET_CODE (reg) == STRICT_LOW_PART)
     reg = XEXP (reg, 0);
 
@@ -1223,8 +1223,8 @@ update_live_1 (int src, rtx x)
   if (reg == 0)
     return;
 
-  while (GET_CODE (reg) == SUBREG || GET_CODE (reg) == ZERO_EXTRACT
-	 || GET_CODE (reg) == SIGN_EXTRACT
+  while (GET_CODE (reg) == SUBREG
+	 || GET_CODE (reg) == ZERO_EXTRACT
 	 || GET_CODE (reg) == STRICT_LOW_PART)
     reg = XEXP (reg, 0);
 

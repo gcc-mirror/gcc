@@ -5793,6 +5793,9 @@ expand_compound_operation (rtx x)
 
     case ZERO_EXTRACT:
       unsignedp = 1;
+
+      /* ... fall through ...  */
+
     case SIGN_EXTRACT:
       /* If the operand is a CLOBBER, just return it.  */
       if (GET_CODE (XEXP (x, 0)) == CLOBBER)
@@ -11429,7 +11432,6 @@ mark_used_regs_combine (rtx x)
 
 	while (GET_CODE (testreg) == SUBREG
 	       || GET_CODE (testreg) == ZERO_EXTRACT
-	       || GET_CODE (testreg) == SIGN_EXTRACT
 	       || GET_CODE (testreg) == STRICT_LOW_PART)
 	  testreg = XEXP (testreg, 0);
 
@@ -12302,7 +12304,6 @@ distribute_links (rtx links)
 
       reg = SET_DEST (set);
       while (GET_CODE (reg) == SUBREG || GET_CODE (reg) == ZERO_EXTRACT
-	     || GET_CODE (reg) == SIGN_EXTRACT
 	     || GET_CODE (reg) == STRICT_LOW_PART)
 	reg = XEXP (reg, 0);
 

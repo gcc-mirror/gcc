@@ -2554,15 +2554,17 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 		      flags);
       return;
 
-    case ZERO_EXTRACT:
     case SIGN_EXTRACT:
+      /* SIGN_EXTRACT cannot be an lvalue.  */
+      gcc_unreachable ();
+
+    case ZERO_EXTRACT:
     case STRICT_LOW_PART:
       /* ??? Assumes STRICT_LOW_PART not used on multi-word registers.  */
       do
 	reg = XEXP (reg, 0);
       while (GET_CODE (reg) == SUBREG
 	     || GET_CODE (reg) == ZERO_EXTRACT
-	     || GET_CODE (reg) == SIGN_EXTRACT
 	     || GET_CODE (reg) == STRICT_LOW_PART);
       if (MEM_P (reg))
 	break;
@@ -3844,7 +3846,6 @@ mark_used_regs (struct propagate_block_info *pbi, rtx x, rtx cond, rtx insn)
 	   then this SET is not needed.  */
 	while (GET_CODE (testreg) == STRICT_LOW_PART
 	       || GET_CODE (testreg) == ZERO_EXTRACT
-	       || GET_CODE (testreg) == SIGN_EXTRACT
 	       || GET_CODE (testreg) == SUBREG)
 	  {
 #ifdef CANNOT_CHANGE_MODE_CLASS

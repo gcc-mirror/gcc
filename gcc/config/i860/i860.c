@@ -145,7 +145,6 @@ reg_clobbered_p (rtx reg, rtx in)
 
       while (GET_CODE (dest) == STRICT_LOW_PART
 	     || GET_CODE (dest) == SUBREG
-	     || GET_CODE (dest) == SIGN_EXTRACT
 	     || GET_CODE (dest) == ZERO_EXTRACT)
 	dest = XEXP (dest, 0);
 

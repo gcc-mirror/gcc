@@ -587,10 +587,12 @@ DEF_RTL_EXPR(PARITY, "parity", "e", RTX_UNARY)
    If BITS_BIG_ENDIAN is defined, the first bit is the msb and
    operand 2 counts from the msb of the memory unit.
    Otherwise, the first bit is the lsb and operand 2 counts from
-   the lsb of the memory unit.  */
+   the lsb of the memory unit.
+   This kind of expression can not appear as an lvalue in RTL.  */
 DEF_RTL_EXPR(SIGN_EXTRACT, "sign_extract", "eee", RTX_BITFIELD_OPS)
 
-/* Similar for unsigned bit-field.  */
+/* Similar for unsigned bit-field.
+   But note!  This kind of expression _can_ appear as an lvalue.  */
 DEF_RTL_EXPR(ZERO_EXTRACT, "zero_extract", "eee", RTX_BITFIELD_OPS)
 
 /* For RISC machines.  These save memory when splitting insns.  */
