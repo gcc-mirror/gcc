@@ -1,5 +1,12 @@
 2004-02-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.am: Remove bogus duplicate setting of AM_CFLAGS.
+	* Makefile.in: Regenerate.
+
+	* configure.in: Remove bogus duplicate invocation of
+	AM_MAINTAINER_MODE.  Remove obsolete comment.
+	* configure: Regenerate.
+
 	* acinclude.m4: Remove GC_CONFIGURE macro; move contents
 	to configure.in.
 	* aclocal.m4: Regenerate.

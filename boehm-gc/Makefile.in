@@ -154,7 +154,6 @@ libgcjgc_convenience_la_LIBADD = @addobjs@
 libgcjgc_convenience_la_DEPENDENCIES = @addobjs@
 
 AM_CXXFLAGS = @GC_CFLAGS@
-
 AM_CFLAGS = @GC_CFLAGS@
 
 check_PROGRAMS = gctest
