@@ -1,3 +1,15 @@
+1999-11-15  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c (scope_die_for): Don't rely on the decl_scope_table
+	notion of nesting to find the DIE for a type or function.
+	DIEs can go in limbo even if we got a context_die.
+	(push_decl_scope): Our context doesn't need to be in decl_scope_table.
+	(gen_struct_or_union_type_die): Don't use TREE_PERMANENT to test
+	for local type.
+	(gen_decl_die): Ignore NAMESPACE_DECLs for now.
+	(gen_type_die): Writing out the context doesn't cause member class
+	template instantiations to be written out as well.
+
 Mon Nov 15 15:33:18 1999  Richard Henderson  <rth@cygnus.com>
 
 	* rs6000.h (ASM_OUTPUT_DEF): New.
@@ -11923,7 +11935,3 @@ Wed May 19 00:34:40 1999  Jeffrey A Law  (law@cygnus.com)
 	gcc-2.95 branch.
 
 See ChangeLog.1 for earlier changes.
-
-Local Variables:
-add-log-time-format: current-time-string
-End:
