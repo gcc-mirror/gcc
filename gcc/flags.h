@@ -1,5 +1,5 @@
 /* Compilation switch flag definitions for GNU CC.
-   Copyright (C) 1987, 1988, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -369,6 +369,10 @@ extern int flag_gnu_linker;
 
 /* Tag all structures with __attribute__(packed) */
 extern int flag_pack_struct;
+
+/* Emit code to check for stack overflow; also may cause large objects
+   to be allocated dynamically.  */
+extern int flag_stack_check;
 
 /* Other basic status info about current function.  */
 
