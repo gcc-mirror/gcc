@@ -91,7 +91,6 @@ void operator delete[](void* p, const std::nothrow_t&) throw()
 // libstdc++/12352
 void test01(int iters)
 {
-  using namespace std;
   bool test __attribute__((unused)) = true;
 
   for (int j = 0; j < iters; ++j)
@@ -101,10 +100,11 @@ void test01(int iters)
 	  times_to_fail = i;
 	  try
 	    {
-	      locale loc1("");
-	      locale loc2(loc1, locale::classic(), locale::numeric);
+	      std::locale loc1("");
+	      std::locale loc2(loc1, std::locale::classic(),
+			       std::locale::numeric);
 	    }
-	  catch (exception&)
+	  catch (std::exception&)
 	    {
 	    }
 	}
