@@ -257,19 +257,10 @@ inline bool
 operator==(const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm1,
            const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm2);
 
-template <class _Key, class _Tp, class _HashFcn, class _EqualKey, 
-          class _Alloc>
+template <class _Key, class _Tp, class _HashFcn, class _EqualKey, class _Alloc>
 class hash_multimap
 {
   // requirements:
-
-  __STL_CLASS_REQUIRES(_Key, _Assignable);
-  __STL_CLASS_REQUIRES(_Tp, _Assignable);
-  __STL_CLASS_UNARY_FUNCTION_CHECK(_HashFcn, size_t, _Key);
-  __STL_CLASS_BINARY_FUNCTION_CHECK(_EqualKey, bool, _Key, _Key);
-
-  // requirements:
-
   __STL_CLASS_REQUIRES(_Key, _Assignable);
   __STL_CLASS_REQUIRES(_Tp, _Assignable);
   __STL_CLASS_UNARY_FUNCTION_CHECK(_HashFcn, size_t, _Key);
