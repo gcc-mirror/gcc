@@ -175,7 +175,7 @@ strstreambuf::int_type strstreambuf::pbackfail(int_type c)
       gbump(-1);
       return _Traits::not_eof(c);
     }
-    else if (c == (unsigned int)(gptr()[-1])) {   // (u int) added KLUDGE
+    else if (c == static_cast<int_type>(gptr()[-1])) {  // KLUDGE
       gbump(-1);
       return c;
     }
