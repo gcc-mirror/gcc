@@ -130,6 +130,7 @@ static void pa_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 static void pa_asm_out_constructor PARAMS ((rtx, int));
 static void pa_asm_out_destructor PARAMS ((rtx, int));
 #endif
+static void pa_init_builtins PARAMS ((void));
 static void copy_fp_args PARAMS ((rtx)) ATTRIBUTE_UNUSED;
 static int length_fp_args PARAMS ((rtx)) ATTRIBUTE_UNUSED;
 static struct deferred_plabel *get_plabel PARAMS ((const char *))
@@ -221,6 +222,9 @@ static size_t n_deferred_plabels = 0;
 #undef TARGET_ASM_DESTRUCTOR
 #define TARGET_ASM_DESTRUCTOR pa_asm_out_destructor
 #endif
+
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS pa_init_builtins
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS hppa_rtx_costs
@@ -336,6 +340,14 @@ override_options ()
       targetm.asm_out.unaligned_op.si = NULL;
       targetm.asm_out.unaligned_op.di = NULL;
     }
+}
+
+void
+pa_init_builtins ()
+{
+#ifdef DONT_HAVE_FPUTC_UNLOCKED
+  built_in_decls[(int) BUILT_IN_FPUTC_UNLOCKED] = NULL_TREE;
+#endif
 }
 
 /* Return nonzero only if OP is a register of mode MODE,
