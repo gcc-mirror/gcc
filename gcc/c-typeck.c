@@ -1994,6 +1994,11 @@ convert_arguments (typelist, values, name)
 			warn_for_assignment ("%s with different width due to prototype", (char *) 0, name, parmnum + 1);
 		      else if (TREE_UNSIGNED (type) == TREE_UNSIGNED (type1))
 			;
+		      /* Don't complain if the formal parameter type
+			 is an enum, because we can't tell now whether
+			 the value was an enum--even the same enum.  */
+		      else if (TREE_CODE (type) == ENUMERAL_TYPE)
+			;
 		      else if (TREE_CODE (val) == INTEGER_CST
 			       && int_fits_type_p (val, type))
 			/* Change in signedness doesn't matter
