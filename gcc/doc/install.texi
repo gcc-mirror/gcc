@@ -1318,12 +1318,13 @@ Note that if an error occurs in any step the make process will exit.
 
 @section Building in parallel
 
-If you have a multiprocessor system you can use @samp{make bootstrap
-MAKE="make -j 2" -j 2} or just @samp{make -j 2 bootstrap}
-for GNU Make 3.79 and above instead of just @samp{make bootstrap}
-when building GCC@.  You can use a bigger number instead of two if
-you like.  In most cases, it won't help to use a number bigger than
-the number of processors in your machine.
+You can use @samp{make bootstrap MAKE="make -j 2" -j 2}, or just
+@samp{make -j 2 bootstrap} for GNU Make 3.79 and above, instead of
+@samp{make bootstrap} to build GCC in parallel.
+You can also specify a bigger number, and in most cases using a value
+greater than the number of processors in your machine will result in
+fewer and shorter I/O latency hits, thus improving overall throughput;
+this is especially true for slow drives and network filesystems.
 
 @section Building the Ada compiler
 
