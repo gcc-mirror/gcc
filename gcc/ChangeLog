@@ -1,3 +1,12 @@
+Tue Oct  7 11:41:21 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* tree.h (get_file_function_name): Add declaration.
+	* dwarf2out.c (output_call_frame_info): No need to cast
+	get_file_function_name call anymore.
+	* profile.c (toplevel): Remove get_file_function_name
+	declaration.
+	* c-lang.c (finish_file): Ditto.
+
 Tue Oct  7 10:01:45 1997  Chip Salzenberg <chip@rio.atlantic.net>
 
 	* Makefile.in (program_transform_name): Let autoconf substitute
