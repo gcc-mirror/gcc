@@ -1,3 +1,13 @@
+2003-06-17  Andreas Jaeger  <aj@suse.de>
+
+	* rtl.h: Remove declarations from coverage.h.
+	* toplev.c: Include coverage.h.
+	* Makefile.in (toplev.o): Depend on coverage.h.
+
+	* toplev.h: Remove extra declaration of print_time.
+
+	* gengtype.c (close_output_files): Remove duplicated declaration.
+
 2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/sparc/sysv4.h: Remove target-independent comment;

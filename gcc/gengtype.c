@@ -1271,8 +1271,6 @@ get_output_file_name (const char *input_file)
 /* Copy the output to its final destination,
    but don't unnecessarily change modification times.  */
 
-static void close_output_files (void);
-
 static void
 close_output_files (void)
 {
