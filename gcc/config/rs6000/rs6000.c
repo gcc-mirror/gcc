@@ -1802,6 +1802,7 @@ rs6000_legitimize_reload_address (x, mode, opnum, type, ind_levels, win)
       *win = 1;
       return x;
     }
+
 #if TARGET_MACHO
   if (DEFAULT_ABI == ABI_DARWIN && flag_pic
       && GET_CODE (x) == LO_SUM
@@ -4161,15 +4162,11 @@ altivec_init_builtins (void)
 
   /* void foo (void).  */
   tree void_ftype_void
-    = build_function_type (void_type_node,
-			   tree_cons (NULL_TREE, void_type_node,
-				      endlink));
+    = build_function_type (void_type_node, void_list_node);
 
   /* vshort foo (void).  */
   tree v8hi_ftype_void
-    = build_function_type (V8HI_type_node,
-			   tree_cons (NULL_TREE, void_type_node,
-				      endlink));
+    = build_function_type (V8HI_type_node, void_list_node);
 
   tree v4si_ftype_v4si_v4si
     = build_function_type (V4SI_type_node,
