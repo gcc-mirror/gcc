@@ -1,5 +1,5 @@
 /* Define per-register tables for data flow info and register allocation.
-   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -52,6 +52,12 @@ extern short *reg_n_sets;
    for registers that are contained in one basic block.  */
 
 extern short *reg_n_deaths;
+
+/* Indexed by N; says whether a psuedo register N was ever used
+   within a SUBREG that changes the size of the reg.  Some machines prohibit
+   such objects to be in certain (usually floating-point) registers.  */
+
+extern char *reg_changes_size;
 
 /* Get the number of consecutive words required to hold pseudo-reg N.  */
 
