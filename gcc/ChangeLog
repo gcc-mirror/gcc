@@ -1,3 +1,7 @@
+2001-05-18  Jason Merrill  <jason_merrill@redhat.com>
+
+	* README.DWARF: Move into dwarfout.c.
+
 2001-05-18  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/rs6000.c (secondary_reload_class): Fix Darwin
@@ -1609,7 +1613,7 @@ Wed May  2 13:09:36 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-04-29  Toomas Rosin <toomas at ns dot tklabor dot ee>
 
-	* Makefile.in(stmp-fixinc): quote shell assignment values
+	* Makefile.in (stmp-fixinc): quote shell assignment values
 
 2001-04-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
