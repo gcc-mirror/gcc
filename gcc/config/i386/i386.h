@@ -2532,6 +2532,18 @@ while (0)
    possible, to allow for more combinations.  */
 
 #define SELECT_CC_MODE(OP,X,Y) ix86_cc_mode (OP, X, Y)
+
+/* Return non-zero if MODE implies a floating point inequality can be
+   reversed.  */
+
+#define REVERSIBLE_CC_MODE(MODE) 1
+
+/* A C expression whose value is reversed condition code of the CODE for
+   comparison done in CC_MODE mode.  */
+#define REVERSE_CONDITION(CODE, MODE) \
+  ((MODE) != CCFPmode && (MODE) != CCFPUmode ? reverse_condition (CODE) \
+   : reverse_condition_maybe_unordered (CODE))
+
 
 /* Control the assembler format that we output, to the extent
    this does not vary between assemblers.  */
@@ -2842,10 +2854,13 @@ do { long l;						\
   {"nonmemory_no_elim_operand", {CONST_INT, REG, SUBREG}},		\
   {"q_regs_operand", {SUBREG, REG}},					\
   {"non_q_regs_operand", {SUBREG, REG}},				\
-  {"fcmov_comparison_operator", {EQ, NE, LTU, GTU, LEU, GEU}},		\
+  {"fcmov_comparison_operator", {EQ, NE, LTU, GTU, LEU, GEU, UNORDERED, \
+				 ORDERED, LT, UNLT, GT, UNGT, LE, UNLE,	\
+				 GE, UNGE, LTGT, UNEQ}},		\
   {"sse_comparison_operator", {EQ, LT, LE, UNORDERED }},		\
   {"ix86_comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU,	\
-			       GTU, UNORDERED, ORDERED}},		\
+			       GTU, UNORDERED, ORDERED, UNLE, UNLT,	\
+			       UNGE, UNGT, LTGT, UNEQ }},		\
   {"cmp_fp_expander_operand", {CONST_DOUBLE, SUBREG, REG, MEM}},	\
   {"ext_register_operand", {SUBREG, REG}},				\
   {"binary_fp_operator", {PLUS, MINUS, MULT, DIV}},			\

@@ -4857,6 +4857,21 @@ inequality comparisons are always given @code{CCFPEmode}:
 #define REVERSIBLE_CC_MODE(MODE)  ((MODE) != CCFPEmode)
 @end smallexample
 
+@findex REVERSE_CONDITION (@var{code}, @var{mode})
+A C expression whose value is reversed condition code of the @var{code} for
+comparison done in CC_MODE @var{mode}.  The macro is used only in case
+@code{REVERSIBLE_CC_MODE (@var{mode})} is nonzero.  Define this macro in case
+machine has some non-standard way how to reverse certain conditionals.  For
+instance in case all floating point conditions are non-trapping, compiler may
+freely convert unordered compares to ordered one.  Then definition may look
+like:
+
+@smallexample
+#define REVERSE_CONDITION(CODE, MODE) \
+   ((MODE) != CCFPmode ? reverse_condtion (CODE) \
+    : reverse_condition_maybe_unordered (CODE))
+@end smallexample
+
 @end table
 
 @node Costs

@@ -439,6 +439,12 @@ static void ix86_fp_comparison_codes PARAMS ((enum rtx_code code,
 					      enum rtx_code *,
 					      enum rtx_code *,
 					      enum rtx_code *));
+static rtx ix86_expand_fp_compare PARAMS ((enum rtx_code, rtx, rtx, rtx,
+					  rtx *, rtx *));
+static int ix86_fp_comparison_arithmetics_cost PARAMS ((enum rtx_code code));
+static int ix86_fp_comparison_fcomi_cost PARAMS ((enum rtx_code code));
+static int ix86_fp_comparison_sahf_cost PARAMS ((enum rtx_code code));
+static int ix86_fp_comparison_cost PARAMS ((enum rtx_code code));
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
@@ -3169,10 +3175,10 @@ put_condition_code (code, mode, reverse, fp, file)
       suffix = "be";
       break;
     case UNORDERED:
-      suffix = "p";
+      suffix = fp ? "u" : "p";
       break;
     case ORDERED:
-      suffix = "np";
+      suffix = fp ? "nu" : "np";
       break;
     default:
       abort ();
@@ -4647,35 +4653,12 @@ enum machine_mode
 ix86_fp_compare_mode (code)
      enum rtx_code code;
 {
-  int unordered;
-
-  switch (code)
-    {
-    case NE: case EQ:
-      /* When not doing IEEE compliant compares, fault on NaNs.  */
-      unordered = (TARGET_IEEE_FP != 0);
-      break;
-
-    case LT: case LE: case GT: case GE:
-      unordered = 0;
-      break;
-
-    case UNORDERED: case ORDERED:
-    case UNEQ: case UNGE: case UNGT: case UNLE: case UNLT: case LTGT:
-      unordered = 1;
-      break;
-
-    default:
-      abort ();
-    }
-
-  /* ??? If we knew whether invalid-operand exceptions were masked,
-     we could rely on fcom to raise an exception and take care of
-     NaNs.  But we don't.  We could know this from c99 math pragmas.  */
-  if (TARGET_IEEE_FP)
-    unordered = 1;
-
-  return unordered ? CCFPUmode : CCFPmode;
+  /* ??? In order to make all comparisons reversible, we do all comparisons
+     non-trapping when compiling for IEEE.  Once gcc is able to distinguish
+     all forms trapping and nontrapping comparisons, we can make inequality
+     comparisons trapping again, since it results in better code when using
+     FCOM based compares.  */
+  return TARGET_IEEE_FP ? CCFPUmode : CCFPmode;
 }
 
 enum machine_mode
@@ -4725,13 +4708,12 @@ ix86_cc_mode (code, op0, op1)
 
 int
 ix86_use_fcomi_compare (code)
-     enum rtx_code code;
+     enum rtx_code code ATTRIBUTE_UNUSED;
 {
-  return (TARGET_CMOVE
-	  && (code == ORDERED || code == UNORDERED
-	      /* All other unordered compares require checking
-		 multiple sets of bits.  */
-	      || ix86_fp_compare_mode (code) == CCFPmode));
+  enum rtx_code swapped_code = swap_condition (code);
+  return ((ix86_fp_comparison_cost (code) == ix86_fp_comparison_fcomi_cost (code))
+	  || (ix86_fp_comparison_cost (swapped_code)
+	      == ix86_fp_comparison_fcomi_cost (swapped_code)));
 }
 
 /* Swap, force into registers, or otherwise massage the two operands
@@ -4785,6 +4767,18 @@ ix86_prepare_fp_compare_args (code, pop0, pop1)
 	  else
 	    op1 = validize_mem (force_const_mem (op_mode, op1));
 	}
+    }
+
+  /* Try to rearrange the comparison to make it cheaper.  */
+  if (ix86_fp_comparison_cost (code)
+      > ix86_fp_comparison_cost (swap_condition (code))
+      && (GET_CODE (op0) == REG || !reload_completed))
+    {
+      rtx tmp;
+      tmp = op0, op0 = op1, op1 = tmp;
+      code = swap_condition (code);
+      if (GET_CODE (op0) != REG)
+	op0 = force_reg (op_mode, op0);
     }
 
   *pop0 = op0;
@@ -4892,29 +4886,123 @@ ix86_fp_comparison_codes (code, bypass_code, first_code, second_code)
     }
 }
 
+/* Return cost of comparison done fcom + arithmetics operations on AX.
+   All following functions do use number of instructions as an cost metrics.
+   In future this should be tweaked to compute bytes for optimize_size and
+   take into account performance of various instructions on various CPUs.  */
+static int
+ix86_fp_comparison_arithmetics_cost (code)
+     enum rtx_code code;
+{
+  if (!TARGET_IEEE_FP)
+    return 4;
+  /* The cost of code output by ix86_expand_fp_compare.  */
+  switch (code)
+    {
+    case UNLE:
+    case UNLT:
+    case LTGT:
+    case GT:
+    case GE:
+    case UNORDERED:
+    case ORDERED:
+    case UNEQ:
+      return 4;
+      break;
+    case LT:
+    case NE:
+    case EQ:
+    case UNGE:
+      return 5;
+      break;
+    case LE:
+    case UNGT:
+      return 6;
+      break;
+    default:
+      abort ();
+    }
+}
+
+/* Return cost of comparison done using fcomi operation.
+   See ix86_fp_comparison_arithmetics_cost for the metrics.  */
+static int
+ix86_fp_comparison_fcomi_cost (code)
+     enum rtx_code code;
+{
+  enum rtx_code bypass_code, first_code, second_code;
+  /* Return arbitarily high cost when instruction is not supported - this
+     prevents gcc from using it.  */
+  if (!TARGET_CMOVE)
+    return 1024;
+  ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
+  return (bypass_code != NIL || second_code != NIL) + 2;
+}
+
+/* Return cost of comparison done using sahf operation.
+   See ix86_fp_comparison_arithmetics_cost for the metrics.  */
+static int
+ix86_fp_comparison_sahf_cost (code)
+     enum rtx_code code;
+{
+  enum rtx_code bypass_code, first_code, second_code;
+  /* Return arbitarily high cost when instruction is not preferred - this
+     avoids gcc from using it.  */
+  if (!TARGET_USE_SAHF && !optimize_size)
+    return 1024;
+  ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
+  return (bypass_code != NIL || second_code != NIL) + 3;
+}
+
+/* Compute cost of the comparison done using any method.
+   See ix86_fp_comparison_arithmetics_cost for the metrics.  */
+static int
+ix86_fp_comparison_cost (code)
+     enum rtx_code code;
+{
+  int fcomi_cost, sahf_cost, arithmetics_cost = 1024;
+  int min;
+
+  fcomi_cost = ix86_fp_comparison_fcomi_cost (code);
+  sahf_cost = ix86_fp_comparison_sahf_cost (code);
+
+  min = arithmetics_cost = ix86_fp_comparison_arithmetics_cost (code);
+  if (min > sahf_cost)
+    min = sahf_cost;
+  if (min > fcomi_cost)
+    min = fcomi_cost;
+  return min;
+}
 
 /* Generate insn patterns to do a floating point compare of OPERANDS.  */
 
-rtx
-ix86_expand_fp_compare (code, op0, op1, scratch)
+static rtx
+ix86_expand_fp_compare (code, op0, op1, scratch, second_test, bypass_test)
      enum rtx_code code;
      rtx op0, op1, scratch;
+     rtx *second_test;
+     rtx *bypass_test;
 {
   enum machine_mode fpcmp_mode, intcmp_mode;
   rtx tmp, tmp2;
+  int cost = ix86_fp_comparison_cost (code);
   enum rtx_code bypass_code, first_code, second_code;
 
   fpcmp_mode = ix86_fp_compare_mode (code);
   code = ix86_prepare_fp_compare_args (code, &op0, &op1);
 
+  if (second_test)
+    *second_test = NULL_RTX;
+  if (bypass_test)
+    *bypass_test = NULL_RTX;
+
   ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
 
-  /* %%% fcomi is probably always faster, even when dealing with memory,
-     since compare-and-branch would be three insns instead of four.  */
-  if (bypass_code == NIL && second_code == NIL 
-      && (TARGET_CMOVE || TARGET_USE_SAHF || optimize_size))
+  /* Do fcomi/sahf based test when profitable.  */
+  if ((bypass_code == NIL || bypass_test)
+      && (second_code == NIL || second_test)
+      && ix86_fp_comparison_arithmetics_cost (code) > cost)
     {
-      do_sahf:
       if (TARGET_CMOVE)
 	{
 	  tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
@@ -4932,6 +5020,15 @@ ix86_expand_fp_compare (code, op0, op1, scratch)
 
       /* The FP codes work out to act like unsigned.  */
       intcmp_mode = fpcmp_mode;
+      code = first_code;
+      if (bypass_code != NIL)
+	*bypass_test = gen_rtx_fmt_ee (bypass_code, VOIDmode,
+				       gen_rtx_REG (intcmp_mode, FLAGS_REG),
+				       const0_rtx);
+      if (second_code != NIL)
+	*second_test = gen_rtx_fmt_ee (second_code, VOIDmode,
+				       gen_rtx_REG (intcmp_mode, FLAGS_REG),
+				       const0_rtx);
     }
   else
     {
@@ -5072,7 +5169,8 @@ ix86_expand_compare (code)
   op1 = ix86_compare_op1;
 
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
-    ret = ix86_expand_fp_compare (code, op0, op1, gen_reg_rtx (HImode));
+    ret = ix86_expand_fp_compare (code, op0, op1, gen_reg_rtx (HImode),
+		    		  NULL, NULL);
   else
     ret = ix86_expand_int_compare (code, op0, op1);
 
@@ -5247,6 +5345,59 @@ ix86_expand_branch (code, label)
     default:
       abort ();
     }
+}
+
+/* Split branch based on floating point condition.  */
+void
+ix86_split_fp_branch (condition, op1, op2, target1, target2, tmp)
+     rtx condition, op1, op2, target1, target2, tmp;
+{
+  rtx second, bypass;
+  rtx label = NULL_RTX;
+  enum rtx_code code = GET_CODE (condition);
+  enum rtx_code bypass_code, second_code, first;
+
+  if (target2 != pc_rtx)
+    {
+      rtx tmp = target2;
+      code = reverse_condition_maybe_unordered (code);
+      target2 = target1;
+      target1 = tmp;
+    }
+
+  condition = ix86_expand_fp_compare (code, op1, op2,
+				      tmp, &second, &bypass);
+  if (bypass != NULL_RTX)
+    {
+      label = gen_label_rtx ();
+      emit_jump_insn (gen_rtx_SET
+		      (VOIDmode, pc_rtx,
+		       gen_rtx_IF_THEN_ELSE (VOIDmode,
+					     bypass,
+					     gen_rtx_LABEL_REF (VOIDmode,
+								label),
+					     pc_rtx)));
+    }
+  /* AMD Athlon and probably other CPUs too have fast bypass path between the
+     comparison and first branch.  The second branch takes longer to execute
+     so place first branch the worse predicable one if possible.  */
+  if (second != NULL_RTX
+      && (GET_CODE (second) == UNORDERED || GET_CODE (second) == ORDERED))
+    {
+      rtx tmp = condition;
+      condition = second;
+      second = tmp;
+    }
+  emit_jump_insn (gen_rtx_SET
+		  (VOIDmode, pc_rtx,
+		   gen_rtx_IF_THEN_ELSE (VOIDmode,
+					 condition, target1, target2)));
+  if (second != NULL_RTX)
+    emit_jump_insn (gen_rtx_SET
+		    (VOIDmode, pc_rtx,
+		     gen_rtx_IF_THEN_ELSE (VOIDmode, second, target1, target2)));
+  if (label != NULL_RTX)
+    emit_label (label);
 }
 
 int
@@ -5662,44 +5813,30 @@ ix86_expand_fp_movcc (operands)
   enum rtx_code code;
   enum machine_mode mode;
   rtx tmp;
+  rtx compare_op;
 
   /* The floating point conditional move instructions don't directly
      support conditions resulting from a signed integer comparison.  */
 
   code = GET_CODE (operands[1]);
-  switch (code)
+  compare_op = ix86_expand_compare (code);
+
+  /* The floating point conditional move instructions don't directly
+     support signed integer comparisons.  */
+
+  if (!fcmov_comparison_operator (compare_op, GET_MODE (XEXP (compare_op, 0))))
     {
-    case LT:
-    case LE:
-    case GE:
-    case GT:
-    case UNEQ:
-    case UNGE:
-    case UNGT:
-    case UNLE:
-    case UNLT:
-    case LTGT:
       tmp = gen_reg_rtx (QImode);
       ix86_expand_setcc (code, tmp);
       code = NE;
       ix86_compare_op0 = tmp;
       ix86_compare_op1 = const0_rtx;
-      break;
-
-    default:
-      break;
+      compare_op = ix86_expand_compare (code);
     }
 
-  mode = SELECT_CC_MODE (code, ix86_compare_op0, ix86_compare_op1);
-  emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_REG (mode, FLAGS_REG),
-			  gen_rtx_COMPARE (mode,
-					   ix86_compare_op0,
-					   ix86_compare_op1)));
   emit_insn (gen_rtx_SET (VOIDmode, operands[0],
 			  gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
-				gen_rtx_fmt_ee (code, VOIDmode,
-						gen_rtx_REG (mode, FLAGS_REG),
-						const0_rtx),
+				compare_op,
 				operands[2],
 				operands[3])));
 
