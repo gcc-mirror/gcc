@@ -1,3 +1,8 @@
+2002-06-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6695
+	* g++.dg/template/friend7.C: New file.
+
 2002-06-23  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.c-torture/execute/complex-6.c: New.

@@ -1,3 +1,9 @@
+2002-06-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6695
+	* pt.c (tsubst_friend_class): Substitute into the context of the
+	friend before using it.
+
 2002-06-23  Matt Thomas  <matt@3am-software.com>
 
 	* decl.c (finish_function): Change "#ifdef VMS_TARGET" to
