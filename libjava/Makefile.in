@@ -120,29 +120,43 @@ here = @here@
 libgcj_basedir = @libgcj_basedir@
 
 AUTOMAKE_OPTIONS = foreign no-installinfo
-@TESTSUBDIR_TRUE@SUBDIRS = @TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
-@TESTSUBDIR_FALSE@SUBDIRS = @TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
-@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
-@NO_X_TRUE@cond_x_ltlibrary = 
-@NO_X_FALSE@cond_x_ltlibrary = @NO_X_FALSE@libgcjx.la
+@TESTSUBDIR_TRUE@SUBDIRS = \
+@TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
+@TESTSUBDIR_FALSE@SUBDIRS = \
+@TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
+@USE_LIBDIR_TRUE@toolexeclibdir = \
+@USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = \
+@USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = \
+@USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@NO_X_TRUE@cond_x_ltlibrary = \
+@NO_X_FALSE@cond_x_ltlibrary = \
+@NO_X_FALSE@libgcjx.la
 
 toolexeclib_LTLIBRARIES = libgcj.la $(cond_x_ltlibrary)
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
 
-@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = @NEEDS_DATA_START_TRUE@libgcjdata.a
-@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = @NEEDS_DATA_START_TRUE@libgcjdata.c
+@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = \
+@NEEDS_DATA_START_TRUE@libgcjdata.a
+@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = \
+@NEEDS_DATA_START_TRUE@libgcjdata.c
 
-@NATIVE_TRUE@bin_PROGRAMS = @NATIVE_TRUE@jv-convert gij
+@NATIVE_TRUE@bin_PROGRAMS = \
+@NATIVE_TRUE@jv-convert gij
 
 bin_SCRIPTS = addr2name.awk
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_FALSE@zip
-@CANADIAN_FALSE@ZIP = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
-@CANADIAN_TRUE@GCJH = @CANADIAN_TRUE@gcjh
-@CANADIAN_FALSE@GCJH = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = \
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = \
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@zip
+@CANADIAN_FALSE@ZIP = \
+@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_TRUE@GCJH = \
+@CANADIAN_TRUE@gcjh
+@CANADIAN_FALSE@GCJH = \
+@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
 
 GCJCOMPILE = $(LIBTOOL) --tag=GCJ --mode=compile $(GCJ) -fassume-compiled -fclasspath=$(here) -L$(here) $(JC1FLAGS) -MD -MT $@ -MF $(@:.lo=.d) -c
 GCJLINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
@@ -157,8 +171,10 @@ AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fasynchronous-exceptions \
 	-fdollars-in-identifiers \
 	@LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ @X_CFLAGS@ $(WARNINGS) -D_GNU_SOURCE
 
-@USING_GCC_TRUE@AM_CFLAGS = @USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
-@USING_GCC_FALSE@AM_CFLAGS = @USING_GCC_FALSE@@LIBGCJ_CFLAGS@
+@USING_GCC_TRUE@AM_CFLAGS = \
+@USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
+@USING_GCC_FALSE@AM_CFLAGS = \
+@USING_GCC_FALSE@@LIBGCJ_CFLAGS@
 
 JCFLAGS = -g
 JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
@@ -225,7 +241,8 @@ extra_headers = java/lang/Object.h java/lang/Class.h
 
 NM = nm
 
-@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
+@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = \
+@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
 
 CONVERT_DIR = gnu/gcj/convert
 
@@ -567,6 +584,7 @@ java/lang/Process.java \
 java/lang/Runnable.java	\
 java/lang/Runtime.java \
 java/lang/RuntimeException.java	\
+java/lang/RuntimePermission.java \
 java/lang/SecurityException.java \
 java/lang/SecurityManager.java \
 java/lang/Short.java \
@@ -692,6 +710,7 @@ java/util/EventListener.java \
 java/util/EventObject.java \
 java/util/GregorianCalendar.java \
 java/util/HashMap.java \
+java/util/HashSet.java \
 java/util/Hashtable.java \
 java/util/Iterator.java	\
 java/util/LinkedList.java \
@@ -719,6 +738,8 @@ java/util/TimeZone.java	\
 java/util/Timer.java \
 java/util/TimerTask.java \
 java/util/TooManyListenersException.java \
+java/util/TreeMap.java \
+java/util/TreeSet.java \
 java/util/Vector.java
 
 
@@ -1167,7 +1188,7 @@ libgcj-test.spec.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -1497,10 +1518,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/NumberFormatException.P .deps/java/lang/Object.P \
 .deps/java/lang/OutOfMemoryError.P .deps/java/lang/Process.P \
 .deps/java/lang/Runnable.P .deps/java/lang/Runtime.P \
-.deps/java/lang/RuntimeException.P .deps/java/lang/SecurityException.P \
-.deps/java/lang/SecurityManager.P .deps/java/lang/Short.P \
-.deps/java/lang/StackOverflowError.P .deps/java/lang/String.P \
-.deps/java/lang/StringBuffer.P \
+.deps/java/lang/RuntimeException.P .deps/java/lang/RuntimePermission.P \
+.deps/java/lang/SecurityException.P .deps/java/lang/SecurityManager.P \
+.deps/java/lang/Short.P .deps/java/lang/StackOverflowError.P \
+.deps/java/lang/String.P .deps/java/lang/StringBuffer.P \
 .deps/java/lang/StringIndexOutOfBoundsException.P \
 .deps/java/lang/System.P .deps/java/lang/Thread.P \
 .deps/java/lang/ThreadDeath.P .deps/java/lang/ThreadGroup.P \
@@ -1647,11 +1668,11 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/EmptyStackException.P .deps/java/util/Enumeration.P \
 .deps/java/util/EventListener.P .deps/java/util/EventObject.P \
 .deps/java/util/GregorianCalendar.P .deps/java/util/HashMap.P \
-.deps/java/util/Hashtable.P .deps/java/util/Iterator.P \
-.deps/java/util/LinkedList.P .deps/java/util/List.P \
-.deps/java/util/ListIterator.P .deps/java/util/ListResourceBundle.P \
-.deps/java/util/Locale.P .deps/java/util/Map.P \
-.deps/java/util/MissingResourceException.P \
+.deps/java/util/HashSet.P .deps/java/util/Hashtable.P \
+.deps/java/util/Iterator.P .deps/java/util/LinkedList.P \
+.deps/java/util/List.P .deps/java/util/ListIterator.P \
+.deps/java/util/ListResourceBundle.P .deps/java/util/Locale.P \
+.deps/java/util/Map.P .deps/java/util/MissingResourceException.P \
 .deps/java/util/NoSuchElementException.P .deps/java/util/Observable.P \
 .deps/java/util/Observer.P .deps/java/util/Properties.P \
 .deps/java/util/PropertyPermission.P \
@@ -1661,7 +1682,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/SortedSet.P .deps/java/util/Stack.P \
 .deps/java/util/StringTokenizer.P .deps/java/util/TimeZone.P \
 .deps/java/util/Timer.P .deps/java/util/TimerTask.P \
-.deps/java/util/TooManyListenersException.P .deps/java/util/Vector.P \
+.deps/java/util/TooManyListenersException.P .deps/java/util/TreeMap.P \
+.deps/java/util/TreeSet.P .deps/java/util/Vector.P \
 .deps/java/util/jar/Attributes.P .deps/java/util/jar/JarEntry.P \
 .deps/java/util/jar/JarException.P .deps/java/util/jar/JarFile.P \
 .deps/java/util/jar/JarInputStream.P \
@@ -2058,7 +2080,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+	    cp -pr $$/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

@@ -1,5 +1,13 @@
 2000-11-26  Tom Tromey  <tromey@cygnus.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (core_java_source_files): Added
+	RuntimePermission.java.
+	* java/lang/RuntimePermission.java: Imported from Classpath.
+	* java/lang/Thread.java (getContextClassLoader): Now
+	synchronized.  Added security code.
+	(setContextClassLoader): Likewise.
+
 	* prims.cc (_Jv_NewObjectArray): Use const_cast to initialize
 	length field of array.
 	(_Jv_NewPrimArray): Likewise.
