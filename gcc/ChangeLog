@@ -1,3 +1,7 @@
+Sun Sep 19 14:18:39 1999  Richard Henderson  <rth@cygnus.com>
+
+	* c-pragma.c (mark_align_stack): Dereference the void* properly.
+
 Sun Sep 19 09:03:40 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* rtl.h (insns_safe_to_move_p): New function.
