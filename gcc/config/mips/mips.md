@@ -4607,7 +4607,7 @@ move\\t%0,%z4\\n\\
 {
   int amount = INTVAL (operands[2]);
   operands[2] = GEN_INT (amount & 31);
-  operands[4] = GEN_INT ((-amount) & 31));
+  operands[4] = GEN_INT ((-amount) & 31);
 }")
 
 

@@ -953,7 +953,7 @@ mips_fill_delay_slot (ret, type, operands, cur_insn)
   mips_load_reg = set_reg;
   if (GET_MODE_SIZE (mode)
       > (FP_REG_P (REGNO (set_reg)) ? UNITS_PER_FPREG : UNITS_PER_WORD))
-    mips_load_reg2 = gen_rtx_SImode (REGNO (set_reg) + 1);
+    mips_load_reg2 = gen_rtx_REG (SImode, REGNO (set_reg) + 1);
   else
     mips_load_reg2 = 0;
 

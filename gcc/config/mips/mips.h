@@ -2395,7 +2395,7 @@ typedef struct mips_args {
      the system has a write-back cache.  */				    \
   /* ??? Should check the return value for errors.  */			    \
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, CACHE_FLUSH_FUNC),	    \
-		     0, VOIDmode, 3, addr4, Pmode,			    \
+		     0, VOIDmode, 3, addr, Pmode,			    \
 		     GEN_INT (TRAMPOLINE_SIZE), TYPE_MODE (integer_type_node),\
 		     GEN_INT (3), TYPE_MODE (integer_type_node));	    \
 }
@@ -2737,7 +2737,7 @@ typedef struct mips_args {
 									\
 	  emit_insn (gen_rtx_SET (VOIDmode,				\
 				  ptr_reg,				\
-				  gen_rtx_PLUS (Pmode, xplus0, int_reg))); 
+				  gen_rtx_PLUS (Pmode, xplus0, int_reg))); \
 									\
 	  X = gen_rtx_PLUS (Pmode, ptr_reg,				\
 			    GEN_INT (INTVAL (xplus1) & 0x7fff));	\
