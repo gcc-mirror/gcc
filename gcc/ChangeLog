@@ -1,3 +1,156 @@
+Wed May 13 15:43:44 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (c-lang.o): Depend on c-tree.h, c-lex.h and toplev.h.
+	(c-lex.o): Depend on output.h.
+	(c-common.o): Likewise.
+	(stmt.o): Likewise.
+	(calls.o): Likewise.
+	(integrate.o): Depend on toplev.h.
+	(regclass.o): Depend on output.h.
+	(final.o): Depend on reload.h.
+
+	* c-common.c: Include output.h.
+	(check_format_info): Remove unused variable `integral_format'.
+
+	* c-decl.c (print_lang_decl): Mark parameters `file', `node' and
+	`indent' with ATTRIBUTE_UNUSED.
+	(print_lang_type): Likewise.
+	(maybe_build_cleanup): Likewise for parameter `decl'.
+	(copy_lang_decl): Likewise for parameter `node'.
+
+	* c-lang.c: Include c-tree.h, c-lex.h and toplev.h.
+	(lang_print_xnode): Mark parameters `file', `node' and `indent'
+ 	with ATTRIBUTE_UNUSED.
+	(lookup_interface): Likewise for parameter `arg'.
+	(is_class_name): Likewise.
+	(maybe_objc_check_decl): Likewise for parameter `decl'.
+	(maybe_objc_comptypes): Likewise for parameters `lhs', `rhs' and
+	`reflexive'.
+	(maybe_objc_method_name): Likewise for parameter `decl'.
+	(build_objc_string): Likewise for parameters `len' and `str'.
+
+	* c-lex.c: Include output.h.
+
+	* c-lex.h (position_after_white_space): Correct typo in prototype.
+
+	* c-tree.h (finish_file, c_expand_start_cond, c_expand_start_else,
+ 	c_expand_end_cond, init_iterators): Add prototypes.
+
+	* caller-save.c (set_reg_live): Mark parameters `reg' and `setter'
+	with ATTRIBUTE_UNUSED.
+
+	* calls.c: Include output.h.
+
+	* cccp.c (pipe_closed): Mark parameter `signo' with
+ 	ATTRIBUTE_UNUSED.
+
+	* combine.c: Move inclusion of expr.h to after insn-config.h.
+
+	* iris6.h (ASM_IDENTIFY_GCC, ASM_IDENTIFY_LANGUAGE): Don't define
+	as empty, rather define as ((void)0).
+
+	* sparc.c (sparc_check_64): Add braces around ambiguous `else'.
+	Add parentheses around assignment used as truth value.
+
+	* cplus-dem.c (squangle_mop_up): Change return type to void.
+	(internal_cplus_demangle): Remove unused parameter `options'.
+	All callers changed.
+	(cplus_demangle_opname): Remove function wide variable `int i' and
+ 	replace with `size_t i' at each location where it is used.
+	(cplus_demangle_opname): change type of `i' from int to size_t.
+
+	* cppexp.c (right_shift): Mark parameter `pfile' with
+	ATTRIBUTE_UNUSED.
+
+	* cpphash.c (cpp_lookup): Likewise.
+	(cpp_hash_cleanup): Likewise.
+
+	* cpplib.c (parse_name): Add a prototype and make it static.
+	(null_underflow): Mark parameter `pfile' with ATTRIBUTE_UNUSED.
+	(null_cleanup): Likewise for parameters `pbuf' and `pfile'.
+	(macro_cleanup): Likewise for parameter `pfile'.
+	(file_cleanup): Likewise.
+
+	* cpplib.h (cpp_reader_init, cpp_options_init, cpp_start_read,
+ 	cpp_read_check_assertion, skip_rest_of_line): Add prototypes.
+
+	* crtstuff.c (force_to_data, __CTOR_LIST__, force_to_data,
+	__DTOR_END__, __FRAME_END__): Mark with ATTRIBUTE_UNUSED.
+
+	* cse.c (cse_check_loop_start): Mark parameter `set' with
+ 	ATTRIBUTE_UNUSED.
+
+	* dbxout.c (flag_minimal_debug, have_used_extensions,
+	source_label_number): Move inside macro wrapper check against
+	defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO).
+
+	* dwarf2out.c (gen_entry_point_die): Hide prototype and definition.
+
+	* except.h (doing_eh): Provide prototype.
+
+	* expr.c: Move inclusion of expr.h to after insn-config.h.
+
+	* final.c: Include reload.h.
+	(shorten_branches): Cast the first argument of bzero to char *.
+
+	* fix-header.c (cpp_print_containing_files): Mark parameter
+ 	`pfile' with ATTRIBUTE_UNUSED.
+	(cpp_fatal): Likewise.
+
+	* flow.c (find_basic_blocks_1): Cast the first argument of bzero
+	to char *.
+
+	* genattrtab.c (make_length_attrs): Change the type of variable
+	`i' from int to size_t.
+	(zero_fn): Mark parameter `exp' with ATTRIBUTE_UNUSED.
+	(one_fn): Likewise.
+	
+	* genextract.c (main): When generating insn-extract.c, mark
+	variable `junk' with ATTRIBUTE_UNUSED.
+
+	* gengenrtl.c (gencode): When generating genrtl.c, cast the first
+	argument of bzero to char*.
+
+	* integrate.c: Include toplev.h.
+
+	* libgcc2.c: Wrap `struct exception_table' and
+	`find_exception_handler' in macro DWARF2_UNWIND_INFO.
+
+	* objc/Make-lang.in (objc-act.o): Depend on toplev.h.
+	
+	* objc/objc-act.c: Include toplev.h.
+	(lang_print_xnode): Mark parameters `file', `node' and `indent'
+	with ATTRIBUTE_UNUSED.
+	(finish_protocol): Likewise for parameter `protocol'.
+
+	* output.h (declare_weak): Add prototype.
+	(decode_reg_name): Don't wrap with TREE_CODE macro.
+	(assemble_alias): Add prototype.
+
+	* regclass.c: Include output.h.
+
+	* reload.h (reloads_conflict): Add prototype.
+
+	* rtl.h (print_rtl_single, mark_elimiation, reg_class_subset_p,
+	output_func_start_profiler): Add prototypes.
+
+	* rtlanal.c (reg_set_p_1): Mark parameters `x' and `pat' with
+ 	ATTRIBUTE_UNUSED.
+
+	* scan-decls.c: Include scan.h.
+
+	* scan.h (recognized_function, recognized_extern): Add prototypes.
+
+	* stmt.c: Include output.h.
+
+	* toplev.c (error_for_asm, warning_for_asm): Remove prototypes.
+	(output_lang_identify): Hide prototype and definition.
+	(float_signal): Mark parameter `signo' with ATTRIBUTE_UNUSED.
+	(pipe_closed): Likewise.
+
+	* toplev.h (count_error, strip_off_ending, error_for_asm,
+ 	warning_for_asm): Add prototypes.
+
 Wed May 13 12:54:19 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* toplev.c (rest_of_compilation): "Charge" final for any time
