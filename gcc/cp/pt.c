@@ -6208,6 +6208,16 @@ tsubst (t, args, complain, in_decl)
 		  {
 		    my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (arg))
 					== 't', 0);
+
+		    /* If we're not COMPLAINing, don't let an attempt
+		       to qualify a FUNCTION_TYPE reach
+		       cp_build_qualified_type.  That will result in
+		       an error message.  */
+		    if (!complain
+			&& TREE_CODE (arg) == FUNCTION_TYPE
+			&& CP_TYPE_QUALS (t) != TYPE_UNQUALIFIED)
+		      return error_mark_node;
+
 		    return cp_build_qualified_type
 		      (arg, CP_TYPE_QUALS (arg) | CP_TYPE_QUALS (t));
 		  }
@@ -8022,10 +8032,20 @@ check_cv_quals_for_unify (strict, arg, parm)
      tree arg;
      tree parm;
 {
-  return !((!(strict & UNIFY_ALLOW_MORE_CV_QUAL)
-	    && !at_least_as_qualified_p (arg, parm))
-	   || (!(strict & UNIFY_ALLOW_LESS_CV_QUAL)
-	       && (!at_least_as_qualified_p (parm, arg))));
+  if (!(strict & UNIFY_ALLOW_MORE_CV_QUAL)
+      && !at_least_as_qualified_p (arg, parm))
+    return 0;
+
+  if (!(strict & UNIFY_ALLOW_LESS_CV_QUAL)
+      && !at_least_as_qualified_p (parm, arg))
+    return 0;
+
+  /* Don't allow unification to create a qualified function type.  */
+  if (TREE_CODE (arg) == FUNCTION_TYPE 
+      && CP_TYPE_QUALS (parm) != TYPE_UNQUALIFIED)
+    return 0;
+
+  return 1;
 }
 
 /* Takes parameters as for type_unification.  Returns 0 if the

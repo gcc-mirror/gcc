@@ -1,3 +1,10 @@
+1999-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (tsubst): Don't issue error messages when we're not
+	complaining, even if we see a qualified function type.
+	(check_cv_quals_for_unify): Don't allow a qualified function
+	type.
+
 1999-05-20  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (instantiate_type): Downgrade errors for object-dependent
