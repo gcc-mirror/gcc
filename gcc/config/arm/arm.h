@@ -763,7 +763,7 @@ extern int arm_is_6_or_7;
    supports no vector modes, cut out the complexity and fall back
    on BIGGEST_FIELD_ALIGNMENT.  */
 #ifdef IN_TARGET_LIBS
-#define BIGGEST_FIELD_ALIGNMENT BIGGEST_ALIGNMENT
+#define BIGGEST_FIELD_ALIGNMENT 64
 #else
 /* An expression for the alignment of a structure field FIELD if the
    alignment computed in the usual way is COMPUTED.  GCC uses this
