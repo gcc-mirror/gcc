@@ -59,8 +59,7 @@ public class AccessibleObject
 {
   /**
    * True if this object is marked accessible, which means the reflected
-   * object bypasses normal security checks. <em>NOTE</em>Don't try messing
-   * with this by reflection.  You'll mess yourself up.
+   * object bypasses normal security checks.
    */
   // default visibility for use by inherited classes
   boolean flag = false;
@@ -88,19 +87,11 @@ public class AccessibleObject
    * security check. If a security manager exists, it is checked for
    * <code>ReflectPermission("suppressAccessChecks")</code>.<p>
    *
-   * If <code>flag</code> is true, and the initial security check succeeds,
-   * this can still fail if a forbidden object is encountered, leaving the
-   * array half-modified. At the moment, the forbidden members are:<br>
-   * <ul>
-   *  <li>Any Constructor for java.lang.Class</li>
-   *  <li>Any AccessibleObject for java.lang.reflect.AccessibleObject
-   *      (this is not specified by Sun, but it closes a big security hole
-   *      where you can use reflection to bypass the security checks that
-   *      reflection is supposed to provide)</li>
-   * </ul>
-   * (Sun has not specified others, but good candidates might include
-   * ClassLoader, String, and such. However, the more checks we do, the
-   * slower this method gets).
+   * It is forbidden to set the accessibility flag to true on any constructor
+   * for java.lang.Class. This will result in a SecurityException. If the 
+   * SecurityException is thrown for any of the passed AccessibleObjects,
+   * the accessibility flag will be set on AccessibleObjects in the array prior 
+   * to the one which resulted in the exception.
    *
    * @param array the array of accessible objects
    * @param flag the desired state of accessibility, true to bypass security
@@ -121,19 +112,8 @@ public class AccessibleObject
    * manager exists, it is checked for
    * <code>ReflectPermission("suppressAccessChecks")</code>.<p>
    *
-   * If <code>flag</code> is true, and the initial security check succeeds,
-   * this will still fail for a forbidden object. At the moment, the
-   * forbidden members are:<br>
-   * <ul>
-   *  <li>Any Constructor for java.lang.Class</li>
-   *  <li>Any AccessibleObject for java.lang.reflect.AccessibleObject
-   *      (this is not specified by Sun, but it closes a big security hole
-   *      where you can use reflection to bypass the security checks that
-   *      reflection is supposed to provide)</li>
-   * </ul>
-   * (Sun has not specified others, but good candidates might include
-   * ClassLoader, String, and such. However, the more checks we do, the
-   * slower this method gets).
+   * It is forbidden to set the accessibility flag to true on any constructor for 
+   * java.lang.Class. This will result in a SecurityException.
    *
    * @param flag the desired state of accessibility, true to bypass security
    * @throws NullPointerException if array is null
@@ -165,15 +145,14 @@ public class AccessibleObject
    * after calling checkPermission.
    *
    * @param flag the desired status
-   * @throws SecurityException if flag is true and this is one of the
-   *         forbidden members mentioned in {@link setAccessible(boolean)}.
+   * @throws SecurityException if flag is true and this is a constructor
+   * for <code>java.lang.Class</code>.
    */
   private final void secureSetAccessible(boolean flag)
   {
     if (flag &&
-        ((this instanceof Constructor
-          && ((Constructor) this).getDeclaringClass() == Class.class)
-         || ((Member) this).getDeclaringClass() == AccessibleObject.class))
+        (this instanceof Constructor
+          && ((Constructor) this).getDeclaringClass() == Class.class))
       throw new SecurityException("Cannot make object accessible: " + this);
     this.flag = flag;
   }

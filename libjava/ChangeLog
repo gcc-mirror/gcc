@@ -1,5 +1,10 @@
 2003-10-26  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
+	* java/lang/reflect/AccessibleObject.java (secureSetAccessible):
+	Don't check for AccessibleObject. Update javadocs.
+
+2003-10-26  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
 	* java/lang/reflect/Constructor.java (toString): Avoid extra 
 	whitespace on constructor with no modifiers.
 	* java/lang/reflect/natConstructor.java (newInstance): Look up
