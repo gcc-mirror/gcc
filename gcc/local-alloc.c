@@ -1250,6 +1250,7 @@ block_alloc (b)
 	      && (r0 = XEXP (PATTERN (insn), 0),
 		  GET_CODE (r0) == REG)
 	      && (link = find_reg_note (insn, REG_LIBCALL, NULL_RTX)) != 0
+	      && XEXP (link, 0) != 0
 	      && GET_CODE (XEXP (link, 0)) == INSN
 	      && (set = single_set (XEXP (link, 0))) != 0
 	      && SET_DEST (set) == r0 && SET_SRC (set) == r0
