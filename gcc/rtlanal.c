@@ -1161,6 +1161,7 @@ rtx_equal_p (x, y)
 	  break;
 
 	case '0':
+	case 't':
 	  break;
 
 	  /* It is believed that rtx's at this level will never

@@ -1,3 +1,68 @@
+1999-08-19 14:44 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* rtl.def (NOTE): Change format to "iuu0n".
+	(ADDR_DIFF_VEC): Change format to "eEee0".
+	(ADDRESSOF): Change format to "eit".
+
+	* rtl.h (rtvec): Make "elem" an array of rtx, not rtunion.
+	(RTVEC_ELT): Change to match.
+	(XVECEXP): Use XVEC and RTVEC_ELT.
+	(INSN_UID, INSN_CODE, CODE_LABEL_NUMBER, NOTE_LINE_NUMBER,
+	ADDRESSOF_REGNO, REGNO, SUBREG_WORD): Use XINT.
+	(PREV_INSN, NEXT_INSN, PATTERN, REG_NOTES, 
+	CALL_INSN_FUNCTION_USAGE, SUBREG_REG, SET_SRC, SET_DEST,
+	TRAP_CONDITION, TRAP_CODE): Use XEXP.
+	(INTVAL): Use XWINT.
+	(ADDRESSOF_DECL): Use XTREE.
+	(SET_ADDRESSOF_DECL): Delete.
+	(NOTE_DECL_NAME, NOTE_DECL_CODE, NOTE_DECL_RTL,
+	NOTE_DECL_IDENTIFIER, NOTE_DECL_TYPE): Kill.  These have been
+	ifdefed out since 2.6 at least.
+	(gen_rtvec_vv): Delete prototype.
+
+	* rtl.h (rtvec_alloc): rt->elem is now an array of rtx,
+	not rtunion.
+	(copy_most_rtx): Handle 't' format letter.
+	* emit-rtl.c (gen_rtvec_v): rt_val->elem is an array of rtx.
+	(gen_rtvec_vv): Delete function.  All callers changed to use
+	gen_rtvec_v instead.
+	* print-rtl.c (print_rtx): Move special casing of NOTEs to 
+	the '0' format letter.
+
+	* function.c (gen_mem_addressof): Don't use
+	SET_ADDRESSOF_DECL; provide `decl' to gen_rtx_ADDRESSOF
+	instead.
+	* integrate.c (copy_rtx_and_substitute): Likewise.
+	Copy 't' slots with XTREE.
+	(subst_constants): Treat 't' slots like '[swi]' slots.
+	* cse.c (canon_hash, exp_equiv_p): Treat 't' slots like	'0' slots.
+	* jump.c (rtx_equal_for_thread_p): Likewise.
+	* rtlanal.c (rtx_equal_p): Likewise.
+	* stmt.c (expand_end_case): gen_rtx_ADDR_DIFF_VEC now takes
+	only four arguments.
+	* gengenrtl.c (type_from_format): Provide correct types for
+	'b' and 't' slots.
+
+
+	* tree.h [ENABLE_CHECKING] (TREE_CHECK, TREE_CLASS_CHECK):
+	If a recent gcc is in use (always in stage2 and beyond), use
+	statement expressions, so we don't make a function call unless
+	the check fails.  Evaluate arguments exactly once.
+	(CHAIN_CHECK, DO_CHECK, DO_CHECK1, TREE_CHECK1,
+	TREE_CLASS_CHECK1, TYPE_CHECK1, DECL_CHECK1, CST_CHECK1):
+	Delete.
+	(CST_OR_CONSTRUCTOR_CHECK, EXPR_CHECK): Redefine such that
+	they evaluate their arguments exactly once, irrespective of
+	the compiler in use.
+
+	* tree.c [ENABLE_CHECKING]: Define whichever set of functions
+	is used by the currently-enabled check macros.  This is:
+	(tree_check_failed, tree_class_check_failed): For gcc.
+	(tree_check, tree_class_check, cst_or_constructor_check,
+	expr_check): For other compilers.
+
+	* gencheck.c: Do not define any *_CHECK1 macros.
+
 Thu Aug 19 14:42:38 1999  Mike Stump <mrs@wrs.com>
 	                  Mark Mitchell <mark@codesourcery.com>
 

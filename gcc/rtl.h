@@ -200,15 +200,13 @@ typedef struct rtx_def
 
 typedef struct rtvec_def{
   int num_elem;		/* number of elements */
-  rtunion elem[1];
+  struct rtx_def *elem[1];
 } *rtvec;
 
 #define NULL_RTVEC (rtvec) 0
 
 #define GET_NUM_ELEM(RTVEC)		((RTVEC)->num_elem)
 #define PUT_NUM_ELEM(RTVEC, NUM)	((RTVEC)->num_elem = (NUM))
-
-#define RTVEC_ELT(RTVEC, I)  ((RTVEC)->elem[(I)].rtx)
 
 /* 1 if X is a REG.  */
 
@@ -224,40 +222,44 @@ typedef struct rtvec_def{
 
 /* General accessor macros for accessing the fields of an rtx.  */
 
-#define XEXP(RTX, N)	((RTX)->fld[N].rtx)
-#define XINT(RTX, N)	((RTX)->fld[N].rtint)
-#define XWINT(RTX, N)	((RTX)->fld[N].rtwint)
-#define XSTR(RTX, N)	((RTX)->fld[N].rtstr)
-#define XVEC(RTX, N)	((RTX)->fld[N].rtvec)
-#define XVECLEN(RTX, N)	((RTX)->fld[N].rtvec->num_elem)
-#define XVECEXP(RTX,N,M)((RTX)->fld[N].rtvec->elem[M].rtx)
-#define XBITMAP(RTX, N) ((RTX)->fld[N].rtbit)
-#define XTREE(RTX, N)   ((RTX)->fld[N].rttree)
+#define XWINT(RTX, N)	((RTX)->fld[N].rtwint)			/* w */
+#define XINT(RTX, N)	((RTX)->fld[N].rtint)			/* i,n */
+#define XSTR(RTX, N)	((RTX)->fld[N].rtstr)			/* s,S */
+#define XEXP(RTX, N)	((RTX)->fld[N].rtx)			/* e,u */
+#define XVEC(RTX, N)	((RTX)->fld[N].rtvec)			/* E,V */
+#define XVECLEN(RTX, N)	((RTX)->fld[N].rtvec->num_elem)		/* E,V */
+#define XMODE(RTX, N)	((RTX)->fld[N].rttype)			/* M */
+#define XBITMAP(RTX, N) ((RTX)->fld[N].rtbit)			/* b */
+#define XTREE(RTX, N)   ((RTX)->fld[N].rttree)			/* t */
+#define XBBDEF(RTX, N)	((RTX)->fld[N].bb)			/* B */
+
+#define RTVEC_ELT(RTVEC, I)	((RTVEC)->elem[I])
+#define XVECEXP(RTX,N,M)	RTVEC_ELT (XVEC (RTX, N), M)
 
 
 /* ACCESS MACROS for particular fields of insns.  */
 
 /* Holds a unique number for each insn.
    These are not necessarily sequentially increasing.  */
-#define INSN_UID(INSN)	((INSN)->fld[0].rtint)
+#define INSN_UID(INSN)  XINT(INSN, 0)
 
 /* Chain insns together in sequence.  */
-#define PREV_INSN(INSN)	((INSN)->fld[1].rtx)
-#define NEXT_INSN(INSN)	((INSN)->fld[2].rtx)
+#define PREV_INSN(INSN)	XEXP(INSN, 1)
+#define NEXT_INSN(INSN)	XEXP(INSN, 2)
 
 /* The body of an insn.  */
-#define PATTERN(INSN)	((INSN)->fld[3].rtx)
+#define PATTERN(INSN)	XEXP(INSN, 3)
 
 /* Code number of instruction, from when it was recognized.
    -1 means this instruction has not been recognized yet.  */
-#define INSN_CODE(INSN) ((INSN)->fld[4].rtint)
+#define INSN_CODE(INSN) XINT(INSN, 4)
 
 /* Set up in flow.c; empty before then.
    Holds a chain of INSN_LIST rtx's whose first operands point at
    previous insns with direct data-flow connections to this one.
    That means that those insns set variables whose next use is in this insn.
    They are always in the same basic block as this insn.  */
-#define LOG_LINKS(INSN)		((INSN)->fld[5].rtx)
+#define LOG_LINKS(INSN)	XEXP(INSN, 5)
 
 /* 1 if insn has been deleted.  */
 #define INSN_DELETED_P(INSN) ((INSN)->volatil)
@@ -353,7 +355,7 @@ typedef struct rtvec_def{
    non standard flow edges required for a rethrow. */
    
 
-#define REG_NOTES(INSN)	((INSN)->fld[6].rtx)
+#define REG_NOTES(INSN)	XEXP(INSN, 6)
 
 #define ADDR_DIFF_VEC_FLAGS(RTX) ((RTX)->fld[4].rt_addr_diff_vec_flags)
 
@@ -386,12 +388,12 @@ extern char *reg_note_name[];
      CLOBBER expressions document the registers explicitly clobbered
    by this CALL_INSN.
      Pseudo registers can not be mentioned in this list.  */
-#define CALL_INSN_FUNCTION_USAGE(INSN)	((INSN)->fld[7].rtx)
+#define CALL_INSN_FUNCTION_USAGE(INSN)	XEXP(INSN, 7)
 
 /* The label-number of a code-label.  The assembler label
    is made from `L' and the label-number printed in decimal.
    Label numbers are unique in a compilation.  */
-#define CODE_LABEL_NUMBER(INSN)	((INSN)->fld[3].rtint)
+#define CODE_LABEL_NUMBER(INSN)	XINT(INSN, 3)
 
 #define LINE_NUMBER NOTE
 
@@ -414,7 +416,7 @@ extern char *reg_note_name[];
 
 /* In a NOTE that is a line number, this is the line number.
    Other kinds of NOTEs are identified by negative numbers here.  */
-#define NOTE_LINE_NUMBER(INSN) ((INSN)->fld[4].rtint)
+#define NOTE_LINE_NUMBER(INSN) XINT(INSN, 4)
 
 /* Codes that appear in the NOTE_LINE_NUMBER field
    for kinds of notes that are not line numbers.
@@ -475,14 +477,6 @@ extern char *reg_note_name[];
 /* Record the struct for the following basic block.  */
 #define NOTE_INSN_BASIC_BLOCK -20
 
-#if 0 /* These are not used, and I don't know what they were for. --rms.  */
-#define NOTE_DECL_NAME(INSN) ((INSN)->fld[3].rtstr)
-#define NOTE_DECL_CODE(INSN) ((INSN)->fld[4].rtint)
-#define NOTE_DECL_RTL(INSN) ((INSN)->fld[5].rtx)
-#define NOTE_DECL_IDENTIFIER(INSN) ((INSN)->fld[6].rtint)
-#define NOTE_DECL_TYPE(INSN) ((INSN)->fld[7].rtint)
-#endif /* 0 */
-
 /* Names for NOTE insn's other than line numbers.  */
 
 extern char *note_insn_name[];
@@ -490,18 +484,17 @@ extern char *note_insn_name[];
 
 /* The name of a label, in case it corresponds to an explicit label
    in the input source code.  */
-#define LABEL_NAME(LABEL) ((LABEL)->fld[4].rtstr)
+#define LABEL_NAME(LABEL) XSTR(LABEL, 4)
 
 /* In jump.c, each label contains a count of the number
    of LABEL_REFs that point at it, so unused labels can be deleted.  */
 #define LABEL_NUSES(LABEL) ((LABEL)->fld[5].rtint)
 
 /* The original regno this ADDRESSOF was built for.  */
-#define ADDRESSOF_REGNO(RTX) ((RTX)->fld[1].rtint)
+#define ADDRESSOF_REGNO(RTX) XINT(RTX, 1)
 
 /* The variable in the register we took the address of.  */
-#define ADDRESSOF_DECL(X) ((tree) XEXP ((X), 2))
-#define SET_ADDRESSOF_DECL(X, T) (XEXP ((X), 2) = (rtx) (T))
+#define ADDRESSOF_DECL(RTX) XTREE(RTX, 2)
 
 /* In jump.c, each JUMP_INSN can point to a label that it can jump to,
    so that if the JUMP_INSN is deleted, the label's LABEL_NUSES can
@@ -527,7 +520,7 @@ extern char *note_insn_name[];
 
 /* For a REG rtx, REGNO extracts the register number.  */
 
-#define REGNO(RTX) ((RTX)->fld[0].rtint)
+#define REGNO(RTX) XINT(RTX, 0)
 
 /* For a REG rtx, REG_FUNCTION_VALUE_P is nonzero if the reg
    is the current function's return value.  */
@@ -539,13 +532,13 @@ extern char *note_insn_name[];
 
 /* For a CONST_INT rtx, INTVAL extracts the integer.  */
 
-#define INTVAL(RTX) ((RTX)->fld[0].rtwint)
+#define INTVAL(RTX) XWINT(RTX, 0)
 
 /* For a SUBREG rtx, SUBREG_REG extracts the value we want a subreg of.
    SUBREG_WORD extracts the word-number.  */
 
-#define SUBREG_REG(RTX) ((RTX)->fld[0].rtx)
-#define SUBREG_WORD(RTX) ((RTX)->fld[1].rtint)
+#define SUBREG_REG(RTX) XEXP(RTX, 0)
+#define SUBREG_WORD(RTX) XINT(RTX, 1)
 
 /* 1 if the REG contained in SUBREG_REG is already known to be
    sign- or zero-extended from the mode of the SUBREG to the mode of
@@ -640,12 +633,12 @@ extern char *note_insn_name[];
 
 /* For a SET rtx, SET_DEST is the place that is set
    and SET_SRC is the value it is set to.  */
-#define SET_DEST(RTX) ((RTX)->fld[0].rtx)
-#define SET_SRC(RTX) ((RTX)->fld[1].rtx)
+#define SET_DEST(RTX) XEXP(RTX, 0)
+#define SET_SRC(RTX) XEXP(RTX, 1)
 
 /* For a TRAP_IF rtx, TRAP_CONDITION is an expression.  */
-#define TRAP_CONDITION(RTX) ((RTX)->fld[0].rtx)
-#define TRAP_CODE(RTX) (RTX)->fld[1].rtx
+#define TRAP_CONDITION(RTX) XEXP(RTX, 0)
+#define TRAP_CODE(RTX) XEXP(RTX, 1)
 
 /* 1 in a SYMBOL_REF if it addresses this function's constants pool.  */
 #define CONSTANT_POOL_ADDRESS_P(RTX) ((RTX)->unchanging)
@@ -870,7 +863,6 @@ extern rtx copy_rtx_if_shared		PROTO((rtx));
 extern rtx copy_most_rtx		PROTO((rtx, rtx));
 extern rtx shallow_copy_rtx		PROTO((rtx));
 extern rtvec gen_rtvec_v		PROTO((int, rtx *));
-extern rtvec gen_rtvec_vv		PROTO((int, rtunion *));
 extern rtx gen_reg_rtx			PROTO((enum machine_mode));
 extern rtx gen_label_rtx		PROTO((void));
 extern rtx gen_lowpart_common		PROTO((enum machine_mode, rtx));

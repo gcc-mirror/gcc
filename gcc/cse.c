@@ -2261,7 +2261,7 @@ canon_hash (x, mode)
 	  register unsigned tem = XINT (x, i);
 	  hash += tem;
 	}
-      else if (fmt[i] == '0')
+      else if (fmt[i] == '0' || fmt[i] == 't')
 	/* unused */;
       else
 	abort ();
@@ -2444,6 +2444,7 @@ exp_equiv_p (x, y, validate, equal_values)
 	break;
 
 	case '0':
+	case 't':
 	  break;
 
 	default:

@@ -390,7 +390,7 @@ DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuis00", 'x')
       are really changed to NOTEs with a number of -1.
    -2 means beginning of a name binding contour; output N_LBRAC.
    -3 means end of a contour; output N_RBRAC.  */
-DEF_RTL_EXPR(NOTE, "note", "iuusn", 'x')
+DEF_RTL_EXPR(NOTE, "note", "iuu0n", 'x')
 
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.
@@ -462,7 +462,7 @@ DEF_RTL_EXPR(ADDR_VEC, "addr_vec", "E", 'x')
    CASE_VECTOR_SHORTEN_MODE is defined, and only in an optimizing
    compilations.  */
      
-DEF_RTL_EXPR(ADDR_DIFF_VEC, "addr_diff_vec", "eEeei", 'x')
+DEF_RTL_EXPR(ADDR_DIFF_VEC, "addr_diff_vec", "eEee0", 'x')
 
 /* ----------------------------------------------------------------------
    At the top level of an instruction (perhaps under PARALLEL).
@@ -610,7 +610,7 @@ DEF_RTL_EXPR(CC0, "cc0", "", 'o')
    3rd operand: the decl for the object in the register, for
      put_reg_in_stack.  */
 
-DEF_RTL_EXPR(ADDRESSOF, "addressof", "ei0", 'o')
+DEF_RTL_EXPR(ADDRESSOF, "addressof", "eit", 'o')
 
 /* =====================================================================
    A QUEUED expression really points to a member of the queue of instructions

@@ -5253,6 +5253,7 @@ rtx_equal_for_thread_p (x, y, yinsn)
 	  break;
 
 	case '0':
+	case 't':
 	  break;
 
 	  /* It is believed that rtx's at this level will never

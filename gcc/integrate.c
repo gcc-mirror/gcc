@@ -1233,7 +1233,7 @@ copy_for_inline (orig)
 	    {
 	      register int j;
 
-	      XVEC (x, i) = gen_rtvec_vv (XVECLEN (x, i), XVEC (x, i)->elem);
+	      XVEC (x, i) = gen_rtvec_v (XVECLEN (x, i), XVEC (x, i)->elem);
 	      for (j = 0; j < XVECLEN (x, i); j++)
 		XVECEXP (x, i, j)
 		  = copy_for_inline (XVECEXP (x, i, j));
@@ -2428,8 +2428,8 @@ copy_rtx_and_substitute (orig, map)
 
     case ADDRESSOF:
       copy = gen_rtx_ADDRESSOF (mode,
-			copy_rtx_and_substitute (XEXP (orig, 0), map), 0);
-      SET_ADDRESSOF_DECL (copy, ADDRESSOF_DECL (orig));
+				copy_rtx_and_substitute (XEXP (orig, 0), map),
+				0, ADDRESSOF_DECL(orig));
       regno = ADDRESSOF_REGNO (orig);
       if (map->reg_map[regno])
 	regno = REGNO (map->reg_map[regno]);
@@ -2730,6 +2730,10 @@ copy_rtx_and_substitute (orig, map)
 	  XSTR (copy, i) = XSTR (orig, i);
 	  break;
 
+	case 't':
+	  XTREE (copy, i) = XTREE (orig, i);
+	  break;
+
 	default:
 	  abort ();
 	}
@@ -3002,6 +3006,7 @@ subst_constants (loc, insn, map)
 	case 'i':
 	case 's':
 	case 'w':
+	case 't':
 	  break;
 
 	case 'E':

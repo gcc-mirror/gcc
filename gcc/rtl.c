@@ -212,13 +212,13 @@ rtvec_alloc (n)
 
   rt = (rtvec) obstack_alloc (rtl_obstack,
 			      sizeof (struct rtvec_def)
-			      + (( n - 1) * sizeof (rtunion)));
+			      + (( n - 1) * sizeof (rtx)));
 
   /* clear out the vector */
   PUT_NUM_ELEM (rt, n);
 
   for (i = 0; i < n; i++)
-    rt->elem[i].rtwint = 0;
+    rt->elem[i] = 0;
 
   return rt;
 }
@@ -475,6 +475,10 @@ copy_most_rtx (orig, may_share)
 	case 'n':
 	case 'i':
 	  XINT (copy, i) = XINT (orig, i);
+	  break;
+
+	case 't':
+	  XTREE (copy, i) = XTREE (orig, i);
 	  break;
 
 	case 's':
