@@ -2505,6 +2505,7 @@ distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f float.h
 	-rm -f site.exp site.bak testsuite/site.exp testsuite/site.bak
 	-rm -f testsuite/{gcc,g++}.{log,sum}
+	-rm -rf ${QMTEST_DIR} stamp-qmtest
 	-rm -f intl/libintl.h libintl.h
 	-rm -f cxxmain.c
 	-rm -f mklibgcc gccbug .gdbinit configargs.h
@@ -2986,6 +2987,74 @@ check-consistency: testsuite/site.exp
 	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; ${PWD}` ; \
 	   export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool consistency $(RUNTESTFLAGS)
+
+# QMTest targets
+
+# The path to qmtest.
+QMTEST_PATH=qmtest
+
+# The flags to pass to qmtest.
+QMTESTFLAGS=
+
+# The flags to pass to "qmtest run".
+QMTESTRUNFLAGS=
+
+# The command to use to invoke qmtest.
+QMTEST=${QMTEST_PATH} ${QMTESTFLAGS}
+
+# The tests (or suites) to run.
+QMTEST_GPP_TESTS=gpp
+
+# The subdirectory of the OBJDIR that will be used to store the QMTest
+# test database configuration and that will be used for temporary
+# scratch space during QMTest's execution.
+QMTEST_DIR=${objdir}/qmtestsuite
+
+# Create the QMTest database configuration.
+${QMTEST_DIR} stamp-qmtest:
+	debug_options=""; \
+	    ${STAMP} empty.C; \
+	    for option in \
+	        -gdwarf-2 -gstabs -gstabs+ -gxcoff -gxcoff+ -gcoff; do \
+		(./cc1plus -q $${option} empty.C 2>&1 | \
+		     grep "unknown or unsupported -g option" > /dev/null) || \
+		debug_options="$${debug_options}$${option} "; done; \
+	    ${QMTEST} -D ${QMTEST_DIR} create-tdb \
+	        -c gcc_database.GCCDatabase \
+	        -a GCCDatabase.testsuite_root=`cd ${srcdir}/testsuite && pwd` \
+	        -a GCCDatabase.debug_options="$${debug_options}"
+	rm -f empty.C empty.s
+	$(STAMP) stamp-qmtest
+
+# Create the QMTest context file.
+${QMTEST_DIR}/context: stamp-qmtest
+	echo "GCCTest.flags=-B${objdir}" >> $@
+	echo "GCCTest.objdir=${objdir}/.." >> $@
+	echo "GCCTest.host=${host_canonical}" >> $@
+	echo "GCCTest.target=${target}" >> $@
+	echo "GCCTest.gcov=${objdir}/gcov" >> $@
+	echo "GPPTest.gpp=${objdir}/g++" >> $@
+	echo "DGTest.demangler=${objdir}/c++filt" >> $@
+
+# Run the G++ testsuite using QMTest.
+qmtest-g++: ${QMTEST_DIR}/context ${QMTEST_DIR}/gpp-expected.qmr
+	cd ${QMTEST_DIR} && ${QMTEST} run ${QMTESTRUNFLAGS} -C context \
+	   -o gpp.qmr -O ${QMTEST_DIR}/gpp-expected.qmr \
+	   ${QMTEST_GPP_TESTS}
+
+# Use the QMTest GUI.
+qmtest-gui: ${QMTEST_DIR}/context
+	cd ${QMTEST_DIR} && ${QMTEST} gui -C context
+
+# Build the set of expected G++ failures.
+${QMTEST_DIR}/gpp-expected.qmr: ${QMTEST_DIR}/context
+	echo "Determining expected results..."
+	cd ${QMTEST_DIR} && ${QMTEST} run ${QMTESTRUNFLAGS} -C context \
+           -c "GCCTest.generate_xfails=1" -o gpp-expected.qmr \
+	   ${QMTEST_GPP_TESTS} \
+	   > /dev/null
+
+.PHONY: qmtest-g++
 
 # These exist for maintenance purposes.
 

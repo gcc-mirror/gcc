@@ -1,0 +1,186 @@
+Testing with QMTest
+===================
+
+You can use QMTest to test G++.  (In the future, it may be possible to
+test other parts of GCC with QMTest as well, but it is not possible
+yet.)
+
+The use of QMTest to run the G++ tests has not been approved as an
+officially supported testing procedure.  Therefore, you must run the
+tests using DejaGNU (with "make check-g++") before committing changes
+that affect G++.
+
+Differences from DejaGNU
+========================
+
+Although QMTest can be used to run the G++ test suite, it works
+somewhat differently from DejaGNU.  In particular:
+
+- In DejaGNU, a single source file contains many tests.  Each 
+  line where a diagnostic is expected is considered a separate
+  test.  Testing for successful compilation and testing for 
+  successful execution of the generated program are considered
+  separate tests.  Thus, a test "test.C" could contain, say, 
+  seven tests; some of which might pass and some of which might
+  fail.
+
+  With QMTest, each source file is considered a single test.  If any
+  of the seven sub-tests fail, the entire test is considered to fail.
+  However, QMTest does present information about *why* the test
+  failed, so the same information is effectively available.
+
+  It is true that, therefore, causing an already failing test to "fail
+  more" is not immediately detectable through an additional unexpected
+  failure messages when using QMTest.  On the other hand, most people
+  seem to think of each source file as "a test", not "twelve tests",
+  so the model QMTest uses may be more natural.
+
+- In DejaGNU, tests themselves keep track of expected and unexpected
+  failures.  The QMTest philosophy is that expected failures should be
+  stored separately from the tests themselves; in particular, that
+  tonights results can be tomorrow's expectations.  In order to
+  preserve compatibility with DejaGNU, the first time you use QMTest
+  to test G++, QMTest computes the set of expected failures indicated
+  by the tests, and then compares the actual results with these
+  results.  Therefore, if you change the expected failure notations in
+  the DejaGNU tests, you must rebuild the set of expected failures.
+
+  To do this, remove the file "qmtestsuite/gpp-expected.qmr".  Then,
+  when you rerun the tests, the expected failures will be
+  automatically recalculated.
+
+Setting Up
+==========
+
+You must download and install the following software:
+
+- Python 2.1 (or greater)
+
+  See http://www.python.org.
+
+  You may already have Python on your system; in particular, many
+  GNU/Linux systems ship with Python installed.
+
+  Installation instructions are available on the web-site.
+
+- QMTest 1.1.4 (or greater)
+
+  See http://www.qmtest.com.
+
+  QMTest is available at:
+
+    http://www.codesourcery.com/qm/qmtest_download
+    
+  or:
+
+    ftp://ftp.codesourcery.com/pub/qmtest
+
+  Installation instructions are available on the web-site.
+
+- QMTC 1.1
+
+  This package is available from:
+
+  ftp://ftp.codesourcery.com/pub/qmtest/qmtest/qmtc/qmtc-<version>.tar.gz
+
+  See the file called INSTALL in the distribution.
+
+Running the Tests
+=================
+
+To run the tests, run "make qmtest-g++" in the gcc directory of your
+build tree.  The first time that you do this, QMTest will calculate
+the set of tests that are expected to fail on your platform, so it
+will take several minutes before you see any test results.  After the
+first time, QMTest will start running the tests much more quickly.
+
+If the test summary printed at the test run indicates no unexpected
+failures, then G++ is behaving as expected on your target.  (Some
+unexpected passes are normal.)
+
+You can obtain detailed information about why tests failed in one 
+of two ways: 
+
+1. By invoking QMTest with the "-f full" option.  For example:
+
+     make QMTESTRUNFLAGS="-f full" qmtest-g++
+
+2. Examining the log file qmtestsuite/gpp.qmr after the tests have
+   run.
+
+Here are some more advanced usage instructions:
+
+1. To run a particular set of tests (rather than all of the tests),
+   use the make variable "QMTEST_GPP_TESTS".  For example, 
+
+     make QMTEST_GPP_TESTS="gpp.dg" qmtest-g++
+
+   will run only the tests in the g++.dg subdirectory, and:
+
+     make QMTEST_GPP_TESTS="gpp.dg.special.conpr1 gpp.old-deja.other.access2"
+          qmtest-g++
+
+   will run only the two tests indicated.
+     
+2. To run qmtest with particular flags, use the make variables
+   "QMTESTFLAGS" and "QMTESTRUNFLAGS".  For example:
+
+      make QMTESTFLAGS="-v" QMTESTRUNFLAGS="-f full" qmtest-g++
+
+   will run qmtest like this:
+
+      qmtest -v run -f full ... 
+
+3. To run the compiler with particular flags, use QMTESTRUNFLAGS to
+   set the QMTest context variable "GPPTest.flags", like this:
+
+      make QMTESTRUNFLAGS='-c GPPTest.flags="-funroll-loops"' qmtest-g++
+
+   The compiler will then use the "-funroll-loops" switch when
+   compiling.
+
+4. If qmtest is not in your path, you can indicate the full path to
+   QMTest by using the make variable "QMTEST_PATH", like this:
+
+      make QMTEST_PATH=/path/to/qmtest qmtest-g++
+
+5. To start the QMTest GUI, use:
+
+      make qmtest-gui
+
+   (Note that this will run the program called "netscape" in your path.
+   If you want to use another browser, you must configure qmtest as
+   described in its manual.)
+
+   Bear in mind that the QMTest GUI is insecure; malicious users with
+   access to your machine may be able to run commands as if they were
+   you.  The QMTest GUI only binds to the loopback IP addresss, which
+   provides a measure of security, but not enough for use in untrusted
+   environments.
+
+6. If you have a multiprocessor, you can run the tests in parallel by
+   passing the "-j" option to qmtest:
+
+      make QMTESTRUNFLAGS="-j 4" qmtest-g++
+
+   will run tests in four threads.  (It is also possible to run tests
+   across multiple machines; for more information see the QMTest
+   manual.)
+
+7. If you are testing a cross compiler, you must specify an interpreter
+   that is capable of running the generated program.  It must be a 
+   program "p" such that:
+
+      p program arg1 arg2 arg3 ...
+
+   behaves exactly like running:
+
+      program arg1 arg2 arg3 ...
+
+   would on the target machine.  You specify this program via the 
+   "CompilerTest.interpreter" context variable:
+
+      make QMTESTRUNFLAGS='-c CompilerTest.interpreter=/path/to/interpreter'
+           qmtest-g++
+
+

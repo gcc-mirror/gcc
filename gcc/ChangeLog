@@ -1,3 +1,17 @@
+2002-05-19  Mark Mitchell  <mitchell@doubledemon.codesourcery.com>
+
+	* Makefile.in (distclean): Remove QMTest stuff.
+	(QMTEST_PATH): New variable.
+	(QMTESTFLAGS): Likewise.
+	(QMTESTRUNFLAGS): Likewise.
+	(QMTEST): Likewise.
+	(QMTEST_GPP_TESTS): Likewise.
+	(QMTEST_DIR): Likewise.
+	(QMTEST_DIR/context): New target.
+	(qmtest-g++): Likeise.
+	(qmtest-gui): Likewise.
+	(QMTEST_DIR/gpp-expected.qmr): Likewise.
+
 2002-05-19  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.h (FUNCTION_VALUE): Only return vectors in
