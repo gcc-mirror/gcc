@@ -1614,6 +1614,39 @@
   "insql %1,%2,%0"
   [(set_attr "type" "shift")])
 
+;; Combine has this sometimes habit of moving the and outside of the
+;; shift, making life more interesting.
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
+		   	   (match_operand:DI 2 "mul8_operand" "I"))
+		(match_operand:DI 3 "immediate_operand" "i")))]
+  "HOST_BITS_PER_WIDE_INT == 64
+   && GET_CODE (operands[3]) == CONST_INT
+   && (((unsigned HOST_WIDE_INT) 0xff << INTVAL (operands[2])
+        == INTVAL (operands[3]))
+       || ((unsigned HOST_WIDE_INT) 0xffff << INTVAL (operands[2])
+        == INTVAL (operands[3]))
+       || ((unsigned HOST_WIDE_INT) 0xffffffff << INTVAL (operands[2])
+        == INTVAL (operands[3])))"
+  "*
+{
+#if HOST_BITS_PER_WIDE_INT == 64
+  if ((unsigned HOST_WIDE_INT) 0xff << INTVAL (operands[2])
+      == INTVAL (operands[3]))
+    return \"insbl %1,%s2,%0\";
+  if ((unsigned HOST_WIDE_INT) 0xffff << INTVAL (operands[2])
+      == INTVAL (operands[3]))
+    return \"inswl %1,%s2,%0\";
+  if ((unsigned HOST_WIDE_INT) 0xffffffff << INTVAL (operands[2])
+      == INTVAL (operands[3]))
+    return \"insll %1,%s2,%0\";
+#endif
+  abort();
+}"
+  [(set_attr "type" "shift")])
+
 ;; We do not include the insXh insns because they are complex to express
 ;; and it does not appear that we would ever want to generate them.
 ;;
