@@ -1,3 +1,7 @@
+2004-03-08  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* gcc.c-torture/execute/20040308-1.c: New test.
+
 2004-03-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/torture/mips-sdata-1.c: Restrict to mips*-*-elf*.

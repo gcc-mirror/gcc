@@ -161,7 +161,7 @@ static rtx store_field (rtx, HOST_WIDE_INT, HOST_WIDE_INT, enum machine_mode,
 static rtx var_rtx (tree);
 
 static unsigned HOST_WIDE_INT highest_pow2_factor (tree);
-static unsigned HOST_WIDE_INT highest_pow2_factor_for_type (tree, tree);
+static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (tree, tree);
 
 static int is_aligning_offset (tree, tree);
 static rtx expand_increment (tree, int, int);
@@ -3804,8 +3804,8 @@ expand_assignment (tree to, tree from, int want_value)
 	    }
 
 	  to_rtx = offset_address (to_rtx, offset_rtx,
-				   highest_pow2_factor_for_type (TREE_TYPE (to),
-								 offset));
+				   highest_pow2_factor_for_target (to,
+				   				   offset));
 	}
 
       if (GET_CODE (to_rtx) == MEM)
@@ -6035,17 +6035,22 @@ highest_pow2_factor (tree exp)
   return 1;
 }
 
-/* Similar, except that it is known that the expression must be a multiple
-   of the alignment of TYPE.  */
+/* Similar, except that the alignment requirements of TARGET are
+   taken into account.  Assume it is at least as aligned as its
+   type, unless it is a COMPONENT_REF in which case the layout of
+   the structure gives the alignment.  */
 
 static unsigned HOST_WIDE_INT
-highest_pow2_factor_for_type (tree type, tree exp)
+highest_pow2_factor_for_target (tree target, tree exp)
 {
-  unsigned HOST_WIDE_INT type_align, factor;
+  unsigned HOST_WIDE_INT target_align, factor;
 
   factor = highest_pow2_factor (exp);
-  type_align = TYPE_ALIGN (type) / BITS_PER_UNIT;
-  return MAX (factor, type_align);
+  if (TREE_CODE (target) == COMPONENT_REF)
+    target_align = DECL_ALIGN (TREE_OPERAND (target, 1)) / BITS_PER_UNIT;
+  else
+    target_align = TYPE_ALIGN (TREE_TYPE (target)) / BITS_PER_UNIT;
+  return MAX (factor, target_align);
 }
 
 /* Return an object on the placeholder list that matches EXP, a

@@ -1,3 +1,10 @@
+2004-03-08  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* expr.c (highest_pow2_factor_for_type): Rename into
+	highest_pow2_factor_for_target.  Use DECL_ALIGN instead of
+	TYPE_ALIGN when the target is a COMPONENT_REF.
+	(expand_assignment): Ajust call to highest_pow2_factor_for_type.
+
 2004-03-08  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c: Formatting fix.
