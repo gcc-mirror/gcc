@@ -1,5 +1,11 @@
 2002-09-27  Richard Henderson  <rth@redhat.com>
 
+	* unroll.c (simplify_cmp_and_jump_insns): New.
+	(unroll_loop): Use it.  Use simplify_gen_foo+force_operand
+	instead of expand_simple_foo.
+
+2002-09-27  Richard Henderson  <rth@redhat.com>
+
 	PR optimization/7520
 	* cfganal.c (flow_active_insn_p): New.
 	(forwarder_block_p): Use it.
