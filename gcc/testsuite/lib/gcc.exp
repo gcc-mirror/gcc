@@ -106,7 +106,9 @@ proc gcc_init { args } {
     if ![info exists tmpdir] then {
 	set tmpdir /tmp
     }
-    if { [target_info needs_status_wrapper]!="" && ![info exists gluefile] } {
+    if {[target_info needs_status_wrapper] != "" && \
+	    [target_info needs_status_wrapper] != "0" && \
+	    ![info exists gluefile]} {
 	set gluefile ${tmpdir}/testglue.o;
 	set result [build_wrapper $gluefile];
 	if { $result != "" } {
@@ -127,8 +129,10 @@ proc gcc_target_compile { source dest type options } {
     global gluefile wrap_flags;
     global GCC_UNDER_TEST
     global TOOL_OPTIONS
-
-    if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
+	
+    if {[target_info needs_status_wrapper] != "" && \
+	    [target_info needs_status_wrapper] != "0" && \
+	    [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
 	lappend options "ldflags=$wrap_flags"
     }
