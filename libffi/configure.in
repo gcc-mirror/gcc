@@ -67,14 +67,16 @@ AC_SUBST(TARGETDIR)
 
 AC_SUBST(SHELL)
 
-AC_ARG_ENABLE(debug,[  --enable-debug          Debugging mode], AC_DEFINE(FFI_DEBUG))
+AC_ARG_ENABLE(debug,[  --enable-debug          debugging mode], AC_DEFINE(FFI_DEBUG))
 
-AC_ARG_ENABLE(debug,[  --disable-structs       Omit code for struct support], AC_DEFINE(FFI_NO_STRUCTS))
+AC_ARG_ENABLE(debug,[  --disable-structs       omit code for struct support], AC_DEFINE(FFI_NO_STRUCTS))
 
-AC_ARG_ENABLE(debug,[  --disable-raw-api       Make the raw api unavailable], AC_DEFINE(FFI_NO_RAW_API))
+AC_ARG_ENABLE(debug,[  --disable-raw-api       make the raw api unavailable], AC_DEFINE(FFI_NO_RAW_API))
 
 AC_ARG_ENABLE(purify-safety,
-[  --enable-purify-safety  Purify-safe mode], AC_DEFINE(USING_PURIFY))
+[  --enable-purify-safety  purify-safe mode], AC_DEFINE(USING_PURIFY))
+
+AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
 
 AC_OUTPUT(include/Makefile include/ffi.h Makefile,, 
 test ! -d include && mkdir include
