@@ -1,3 +1,23 @@
+2003-06-27  Paolo Carlini  <pcarlini@unitus.it>
+	    Nathan C. Myers  <ncm-nospam@cantrip.org>
+
+	PR libstdc++/9178
+	* include/bits/fstream.tcc (_M_underflow): Properly estimate
+	the worst-case number of external bytes for a given get area.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/9178.cc: New.
+
+2003-06-27  Paolo Carlini  <pcarlini@unitus.it>
+	    Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/11305
+	* include/bits/fstream.tcc (overflow): Properly estimate the
+	worst-case number of external bytes for a given put area
+	(by using codecvt::max_length()).
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-1: New.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-2: New.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-3: New.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-4: New.
+
 2003-06-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/linker-map.gnu: Remove ; after __numpunct_cache.

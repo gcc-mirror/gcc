@@ -213,16 +213,19 @@ namespace std
 	    }
 	  else
 	    {
-	      char* __buf = static_cast<char*>(__builtin_alloca(__buflen));
-	      __elen = _M_file.xsgetn(__buf, __buflen);
- 
-	      const char* __eend;
+	      // Worst-case number of external bytes.
+	      // XXX Not done encoding() == -1.
+	      const streamsize __blen = __buflen * _M_codecvt->max_length();
+	      char* __buf = static_cast<char*>(__builtin_alloca(__blen));
+	      __elen = _M_file.xsgetn(__buf, __blen);
+
+ 	      const char* __eend;
 	      char_type* __iend;
 	      codecvt_base::result __r;
 	      __r = _M_codecvt->in(_M_state_cur, __buf, __buf + __elen, 
 				   __eend, this->eback(), 
 				   this->eback() + __buflen, __iend);
-	      if (__r == codecvt_base::ok)
+	      if (__r == codecvt_base::ok || __r == codecvt_base::partial)
 		__ilen = __iend - this->eback();
 	      else if (__r == codecvt_base::noconv)
 		{
@@ -391,11 +394,10 @@ namespace std
       else
 	{
 	  // Worst-case number of external bytes needed.
-	  int __ext_multiplier = _M_codecvt->encoding();
-	  if (__ext_multiplier ==  -1 || __ext_multiplier == 0)
-	    __ext_multiplier = sizeof(char_type);
-	  streamsize __blen = __ilen * __ext_multiplier;
+	  // XXX Not done encoding() == -1.
+	  streamsize __blen = __ilen * _M_codecvt->max_length();
 	  char* __buf = static_cast<char*>(__builtin_alloca(__blen));
+
 	  char* __bend;
 	  const char_type* __iend;
 	  codecvt_base::result __r;
