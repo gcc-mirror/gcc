@@ -1173,5 +1173,5 @@ synthesize_tinfo_fn (fndecl)
   tmp = build_indirect_ref (tmp, 0);
   c_expand_return (tmp);
   pop_momentary ();
-  finish_function (lineno, 0, 0);
+  finish_function (lineno, 0);
 }

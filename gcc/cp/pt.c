@@ -9730,7 +9730,7 @@ instantiate_decl (d)
 
       /* Clean up.  */
       pop_obstacks ();
-      finish_function (lineno, 0, nested);
+      finish_function (lineno, 0);
       expanding_p = saved_expanding_p;
 
       /* Now, generate RTL for the function.  */
