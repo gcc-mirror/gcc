@@ -1437,8 +1437,8 @@ __transfer_from_trampoline ()					\
    relative to an average of the time for add and the time for shift,
    taking away a little more because sometimes move insns are needed.  */
 /* div?.w is relatively cheaper on 68000 counted in COSTS_N_INSNS terms.  */
-#define MULL_COST (TARGET_68040 ? 5 : 13)
-#define MULW_COST (TARGET_68040 ? 3 : TARGET_68020 ? 8 : 5)
+#define MULL_COST (TARGET_68060 ? 2 : TARGET_68040 ? 5 : 13)
+#define MULW_COST (TARGET_68060 ? 2 : TARGET_68040 ? 3 : TARGET_68020 ? 8 : 5)
 #define DIVW_COST (TARGET_68020 ? 27 : 12)
 
 #define RTX_COSTS(X,CODE,OUTER_CODE)				\
@@ -1456,7 +1456,9 @@ __transfer_from_trampoline ()					\
     break;							\
   case ASHIFT:							\
   case ASHIFTRT:						\
-  case LSHIFTRT:							\
+  case LSHIFTRT:						\
+    if (TARGET_68060)						\
+      return COSTS_N_INSNS(1);					\
     if (! TARGET_68020)							\
       {									\
 	if (GET_CODE (XEXP (X, 1)) == CONST_INT)			\
