@@ -114,6 +114,8 @@ public class MulticastSocket extends DatagramSocket
    * @exception IOException If an error occurs
    *
    * @deprecated 1.2 Replaced by getTimeToLive()
+   *
+   * @see Multicastsocket:getTimeToLive
    */
   public byte getTTL() throws IOException
   {
@@ -151,6 +153,42 @@ public class MulticastSocket extends DatagramSocket
   }
 
   /**
+   * Disable/Enable local loopback of multicast packets.  The option is used by
+   * the platform's networking code as a hint for setting whether multicast
+   * data will be looped back to the local socket. 
+   *
+   * Because this option is a hint, applications that want to verify what
+   * loopback mode is set to should call #getLoopbackMode
+   *
+   * @param disable True to disable loopback mode
+   *
+   * @exception SocketException If an error occurs
+   *
+   * @since 1.4
+   */
+  public void setLoopbackMode(boolean disable) throws SocketException
+  {
+    impl.setOption (SocketOptions.IP_MULTICAST_LOOP, new Boolean (disable));
+  }
+
+  /**
+   * Checks if local loopback mode is enabled or not
+   *
+   * @exception SocketException If an error occurs
+   *
+   * @since 1.4
+   */
+  public boolean getLoopbackMode() throws SocketException
+  {
+    Object obj = impl.getOption (SocketOptions.IP_MULTICAST_LOOP);
+
+    if (obj instanceof Boolean)
+      return ((Boolean) obj).booleanValue ();
+    else
+      throw new SocketException ("Unexpected type");
+  }
+
+  /**
    * Sets the "Time to Live" value for a socket.  The value must be between
    * 1 and 255.
    *
@@ -159,6 +197,8 @@ public class MulticastSocket extends DatagramSocket
    * @exception IOException If an error occurs
    *
    * @deprecated 1.2 Replaced by <code>setTimeToLive</code>
+   *
+   * @see MulticastSocket:setTimeToLive
    */
   public void setTTL(byte ttl) throws IOException
   {

@@ -747,7 +747,19 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
         if (::setsockopt (fnum, SOL_SOCKET, SO_KEEPALIVE, (char *) &val,
 	    val_len) != 0)
 	  goto error;
-
+	break;
+      
+      case _Jv_SO_BROADCAST_ :
+        throw new java::net::SocketException (
+          JvNewStringUTF ("SO_BROADCAST not valid for TCP"));
+	break;
+	
+      case _Jv_SO_OOBINLINE_ :
+        if (::setsockopt (fnum, SOL_SOCKET, SO_OOBINLINE, (char *) &val,
+	    val_len) != 0)
+	  goto error;
+	break;
+	
       case _Jv_SO_LINGER_ :
 #ifdef SO_LINGER
         struct linger l_val;
@@ -781,6 +793,23 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
         throw new java::net::SocketException (
           JvNewStringUTF ("IP_MULTICAST_IF: not valid for TCP"));
         return;
+	
+      case _Jv_IP_MULTICAST_IF2_ :
+        throw new java::net::SocketException (
+          JvNewStringUTF ("IP_MULTICAST_IF2: not valid for TCP"));
+        break;
+	
+      case _Jv_IP_MULTICAST_LOOP_ :
+        throw new java::net::SocketException (
+          JvNewStringUTF ("IP_MULTICAST_LOOP: not valid for TCP"));
+	break;
+	
+      case _Jv_IP_TOS_ :
+        if (::setsockopt (fnum, SOL_SOCKET, IP_TOS, (char *) &val,
+	   val_len) != 0)
+	  goto error;    
+	break;
+	
       case _Jv_SO_REUSEADDR_ :
         throw new java::net::SocketException (
           JvNewStringUTF ("SO_REUSEADDR: not valid for TCP"));
@@ -830,7 +859,7 @@ java::net::PlainSocketImpl::getOption (jint optID)
         if (l_val.l_onoff)
           return new java::lang::Integer (l_val.l_linger);
         else
-	  return new java::lang::Boolean ((__java_boolean)false);
+	  return new java::lang::Boolean ((jboolean)false);
 #else
         throw new java::lang::InternalError (
           JvNewStringUTF ("SO_LINGER not supported"));
@@ -844,6 +873,18 @@ java::net::PlainSocketImpl::getOption (jint optID)
         else
 	  return new java::lang::Boolean (val != 0);
 
+      case _Jv_SO_BROADCAST_ :
+        if (::getsockopt (fnum, SOL_SOCKET, SO_BROADCAST, (char *) &val,
+	   &val_len) != 0)
+	  goto error;    
+        return new java::lang::Boolean ((__java_boolean)val);
+	
+      case _Jv_SO_OOBINLINE_ :
+        if (::getsockopt (fnum, SOL_SOCKET, SO_OOBINLINE, (char *) &val,
+	    &val_len) != 0)
+	  goto error;    
+        return new java::lang::Boolean ((__java_boolean)val);
+	
       case _Jv_SO_RCVBUF_ :
       case _Jv_SO_SNDBUF_ :
 #if defined(SO_SNDBUF) && defined(SO_RCVBUF)
@@ -888,6 +929,24 @@ java::net::PlainSocketImpl::getOption (jint optID)
 	throw new java::net::SocketException (
 	  JvNewStringUTF ("IP_MULTICAST_IF: not valid for TCP"));
 	break;
+	
+      case _Jv_IP_MULTICAST_IF2_ :
+	throw new java::net::SocketException (
+	  JvNewStringUTF ("IP_MULTICAST_IF2: not valid for TCP"));
+	break;
+	
+      case _Jv_IP_MULTICAST_LOOP_ :
+	throw new java::net::SocketException(
+          JvNewStringUTF ("IP_MULTICAST_LOOP: not valid for TCP"));
+	break;
+	
+      case _Jv_IP_TOS_ :
+        if (::getsockopt (fnum, SOL_SOCKET, IP_TOS, (char *) &val,
+           &val_len) != 0)
+          goto error;
+        return new java::lang::Integer (val);
+	break;
+	
       case _Jv_SO_REUSEADDR_ :
 	throw new java::net::SocketException (
 	  JvNewStringUTF ("SO_REUSEADDR: not valid for TCP"));

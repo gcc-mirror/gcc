@@ -31,11 +31,26 @@ public class DatagramSocket
     this(0, null);
   }
 
+  /**
+   * Creates a datagram socket that is bound to a specific port
+   *
+   * @param port The port number to bind to
+   *
+   * @exception SocketException If an error occurs
+   */
   public DatagramSocket(int port) throws SocketException
   {
     this(port, null);
   }
 
+  /**
+   * Creates a datagram socket that is bound to a specific port/inet address
+   *
+   * @param port The port number to bind to
+   * @param laddr The local address to bind to
+   *
+   * @exception SocketException If an error occurs
+   */
   public DatagramSocket(int port, InetAddress laddr) throws SocketException
   {
     if (port < 0 || port > 65535)
@@ -69,11 +84,19 @@ public class DatagramSocket
     impl.bind(port, laddr == null ? InetAddress.ANY_IF : laddr);
   }
 
+  /**
+   * Closes the datagram socket
+   */
   public void close()
   {
     impl.close();
   }
 
+  /**
+   * Returns the local address of the datagram socket
+   * 
+   * @since 1.1
+   */
   public InetAddress getLocalAddress()
   {
     SecurityManager s = System.getSecurityManager();
@@ -112,12 +135,23 @@ public class DatagramSocket
       }
   }
 
+  /**
+   * Returns the local port this socket uses
+   *
+   * @return The local port number
+   */
   public int getLocalPort()
   {
     return impl.getLocalPort();
   }
 
   /**
+   * Gets the SO_TIMEOUT value
+   *
+   * @return The current timeout in milliseconds
+   *
+   * @exception SocketException If an error occurs
+   * 
    * @since 1.1
    */
   public synchronized int getSoTimeout() throws SocketException
@@ -129,6 +163,13 @@ public class DatagramSocket
       return 0;
   }
 
+  /**
+   * Receive a datagram packet
+   *
+   * @param p The datagram packet to put the incoming data into
+   * 
+   * @exception IOException If an error occurs
+   */
   public synchronized void receive(DatagramPacket p) throws IOException
   {
     SecurityManager s = System.getSecurityManager();
@@ -138,6 +179,13 @@ public class DatagramSocket
     impl.receive(p);
   }
 
+  /**
+   * Sends a datagram packet
+   *
+   * @param p The datagram packet to send
+   *
+   * @exception IOException If an error occurs
+   */
   public void send(DatagramPacket p) throws IOException
   {
     // JDK1.2: Don't do security checks if socket is connected; see jdk1.2 api.
@@ -151,11 +199,17 @@ public class DatagramSocket
 	  s.checkConnect(addr.getHostAddress(), p.getPort());
       }
 
-    // FIXME: if this is a subclass of MulticastSocket, use getTTL for TTL val.
+    // FIXME: if this is a subclass of MulticastSocket, use getTimeToLive for TTL val.
     impl.send(p);
   }
 
   /**
+   * Sets a new value for SO_TIMEOUT
+   *
+   * @param timeout The timeout in milliseconds
+   *
+   * @exception SocketException If an error occurs
+   *
    * @since 1.1
    */
   public synchronized void setSoTimeout(int timeout) throws SocketException
@@ -166,25 +220,53 @@ public class DatagramSocket
     impl.setOption(SocketOptions.SO_TIMEOUT, new Integer(timeout));
   }
 
-  // JDK1.2
-  // public void connect(InetAddress address, int port)
-  // {
-  // }
+  /**
+   * Connects the datagrem socket to a specified address/port
+   *
+   * @param address The address to connect to
+   * @param port The port to connect to
+   *
+   * @exception SocketException If an error occurs
+   *
+   * @since 1.2
+   */
+  public void connect(InetAddress address, int port)
+    throws SocketException
+  {
+    //impl.connect(address, port);
+  }
 
-  // JDK1.2
-  // public void disconnect()
-  // {
-  // }
+  /**
+   * Disconnects the datagram socket
+   *
+   * @since 1.2
+   */
+  public void disconnect()
+  {
+    //impl.disconnect();
+  }
 
-  // JDK1.2
-  // public InetAddress getInetAddress()
-  // {
-  // }
+  /**
+   * Returns the InetAddress the socket is connected to
+   * or null if the socket is not connected
+   * 
+   * @since 1.2
+   */
+  public InetAddress getInetAddress()
+  {
+    // FIXME:
+    return null;
+  }
 
-  // JDK1.2
-  // public int getPort()
-  // {
-  // }
+  /**
+   * Returns the local port number of the socket
+   * 
+   * @since 1.2
+   */
+  public int getPort()
+  {
+    return impl.localPort;
+  }
 
   /**
    * This method returns the value of the system level socket option
@@ -207,6 +289,108 @@ public class DatagramSocket
       throw new SocketException("Unexpected type");
   }
 
+  /**
+   * Enables/Disables SO_REUSEADDR
+   * 
+   * @param on Whether or not to have SO_REUSEADDR turned on
+   *
+   * @exception SocketException If an error occurs
+   *
+   * @since 1.4
+   */
+  public void setReuseAddress(boolean on) throws SocketException
+  {
+    impl.setOption (SocketOptions.SO_REUSEADDR, new Boolean (on));
+  }
+
+  /**
+   * Checks if SO_REUSEADDR is enabled
+   *
+   * @exception SocketException If an error occurs
+   * 
+   * @since 1.4
+   */
+  public boolean getReuseAddress() throws SocketException
+  {
+    Object obj = impl.getOption (SocketOptions.SO_REUSEADDR);
+  
+    if (obj instanceof Boolean)
+      return(((Boolean) obj).booleanValue ());
+    else 
+      throw new SocketException ("Unexpected type");
+  }
+
+  /**
+   * Enables/Disables SO_BROADCAST
+   * 
+   * @param on Whether or not to have SO_BROADCAST turned on
+   *
+   * @exception SocketException If an error occurs
+   *
+   * @since 1.4
+   */
+  public void setBroadcast(boolean on) throws SocketException
+  {
+    impl.setOption (SocketOptions.SO_BROADCAST, new Boolean (on));
+  }
+
+  /**
+   * Checks if SO_BROADCAST is enabled
+   * 
+   * @exception SocketException If an error occurs
+   * 
+   * @since 1.4
+   */
+  public boolean getBroadcast() throws SocketException
+  {
+    Object obj = impl.getOption (SocketOptions.SO_BROADCAST);
+  
+    if (obj instanceof Boolean)
+      return ((Boolean) obj).booleanValue ();
+    else 
+      throw new SocketException ("Unexpected type");
+  }
+
+  /**
+   * Sets the traffic class value
+   *
+   * @param tc The traffic class
+   *
+   * @exception SocketException If an error occurs
+   * @exception IllegalArgumentException If tc < 0 or rc > 255
+   *
+   * @see DatagramSocket:getTrafficClass
+   * 
+   * @since 1.4
+   */
+  public void setTrafficClass(int tc)
+    throws SocketException
+  {
+    if (tc < 0 || tc > 255)
+      throw new IllegalArgumentException();
+
+    impl.setOption (SocketOptions.IP_TOS, new Integer (tc));
+  }
+  
+  /**
+   * Returns the current traffic class
+   * 
+   * @see DatagramSocket:setTrafficClass
+   *
+   * @exception SocketException If an error occurs
+   * 
+   * @since 1.4
+   */
+  public int getTrafficClass() throws SocketException
+  {
+    Object obj = impl.getOption(SocketOptions.IP_TOS);
+
+    if (obj instanceof Integer)
+      return ((Integer) obj).intValue ();
+    else
+      throw new SocketException ("Unexpected type");
+  }
+  
   /**
    * This method returns the value of the system level socket option
    * SO_SNDBUF, which is used by the operating system to tune buffer
