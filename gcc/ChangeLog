@@ -1,3 +1,8 @@
+Fri Sep  7 12:56:26 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* genattrtab.c (attr_printf): First arg is unsigned.
+	Clean up formatting of callers.
+
 2001-09-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/mips/mips.c (override_options): Allow abi32 with 64 bit
