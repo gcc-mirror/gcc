@@ -1,3 +1,9 @@
+Tue Jan 13 09:07:44 1998  John Carr  <jfc@mit.edu>
+
+	* gengenrtl.c (gencode): Emit new function obstack_alloc_rtx
+	to allocate rtx.
+	(gendef): Call obstack_alloc_rtx.
+
 Tue Jan 13 01:16:36 1998   Robert Lipe (robertl@dgii.com)
 
 	* configure.in: (i[3456]86-UnixWare7-sysv5): Treat much like SVR4
