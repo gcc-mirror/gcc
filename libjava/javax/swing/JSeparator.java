@@ -1,5 +1,5 @@
 /* JSeparator.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,10 +37,12 @@ exception statement from your version. */
 
 package javax.swing;
 
-// Imports
-import java.io.*;
-import javax.accessibility.*;
-import javax.swing.plaf.*;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.swing.plaf.SeparatorUI;
 
 /**
  * JSeparator

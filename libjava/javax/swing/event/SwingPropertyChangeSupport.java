@@ -1,5 +1,5 @@
 /* SwingPropertyChangeSupport.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,10 +37,14 @@ exception statement from your version. */
 
 package javax.swing.event;
 
-// Imports
-import java.beans.*;
-import java.io.*;
-import java.util.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.EventListener;
+import java.util.Hashtable;
 
 /**
  * SwingPropertyChangeSupport

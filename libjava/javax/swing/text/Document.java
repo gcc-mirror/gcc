@@ -1,5 +1,5 @@
 /* Document.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,8 +37,8 @@ exception statement from your version. */
 
 package javax.swing.text;
 
-
-import javax.swing.event.*;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.UndoableEditListener;
 
 public interface Document
 { 

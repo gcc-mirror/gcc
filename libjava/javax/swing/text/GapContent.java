@@ -1,5 +1,5 @@
 /* GapContent.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,8 +40,7 @@ package javax.swing.text;
 // too lazy to make a real gapcontent.
 // lets just use a stringbuffer instead.
 
-import javax.swing.undo.*;
-
+import javax.swing.undo.UndoableEdit;
 
 public class GapContent implements AbstractDocument.Content
 {

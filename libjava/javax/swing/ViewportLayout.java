@@ -1,5 +1,5 @@
 /* ViewportLayout.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,9 +37,11 @@ exception statement from your version. */
 
 package javax.swing;
 
-// Imports
-import java.awt.*;
-import java.io.*;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.LayoutManager;
+import java.io.Serializable;
 
 /**
  * ViewportLayout
