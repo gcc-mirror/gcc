@@ -1201,12 +1201,13 @@ get_access_flags_from_decl (tree decl)
 static GTY (()) int alias_labelno = 0;
 
 /* Create a private alias for METHOD. Using this alias instead of the method
-decl ensures that ncode entries in the method table point to the real function 
-at runtime, not a PLT entry.  */
+   decl ensures that ncode entries in the method table point to the real function 
+   at runtime, not a PLT entry.  */
 
 static tree
 make_local_function_alias (tree method)
 {
+#ifdef ASM_OUTPUT_DEF
   tree alias;
   const char *method_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (method));
   char *name = alloca (strlen (method_name) + 1);
@@ -1234,6 +1235,9 @@ make_local_function_alias (tree method)
   if (!flag_syntax_only)
     assemble_alias (alias, DECL_ASSEMBLER_NAME (method));
   return alias;
+#else
+  return method;
+#endif
 }
 
 /** Make reflection data (_Jv_Field) for field FDECL. */

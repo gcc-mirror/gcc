@@ -1,3 +1,8 @@
+2004-08-18  Andrew Pinski  <apinski@apple.com>
+
+	* class.c (make_local_function_alias): Only make a new decl if we support
+	alias attribute on all decls.
+
 2004-08-18  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* class.c (make_local_function_alias): New function. Create local
