@@ -1,3 +1,9 @@
+2005-02-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/alpha/t-osf4, config/arm/t-netbsd, config/ia64/t-hpux
+	* config/pa/t-hpux-shlib (SHLIB_INSTALL): Create the
+	installation directory first.
+
 2005-02-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR rtl-optimization/17728
@@ -262,9 +268,9 @@
 2005-02-22  Devang Patel  <dpatel@apple.com>
 
 	PR 19952
-	* tree-if-conv.c (process_phi_nodes): Use bsi_after_labels and skip 
+	* tree-if-conv.c (process_phi_nodes): Use bsi_after_labels and skip
 	all labels
-	
+
 2005-02-22  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix.h (WINT_TYPE): Define.
@@ -310,7 +316,7 @@
 	numbering at LAST_VIRTUAL_REGISTER+1 to avoid possibly using hard
 	registers in unsupported ways.
 	* expmed.c (init_expmed): Likewise.
-	
+
 2005-02-21  Stan Cox  <scox@redhat.com>
 
 	* config/iq2000/iq2000.h (DWARF_FRAME_RETURN_COLUMN): Change to 31.

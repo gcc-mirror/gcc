@@ -38,7 +38,9 @@ SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 	$(LN_S) @shlib_base_name@.so @multilib_dir@/@shlib_base_name@.so.0
 # $(slibdir) double quoted to protect it from expansion while building
 # libgcc.mk.  We want this delayed until actual install time.
-SHLIB_INSTALL = $(INSTALL_DATA) @multilib_dir@/@shlib_base_name@.so \
+SHLIB_INSTALL = \
+        $$(mkinstalldirs) $$(DESTDIR)$$(slibdir)@shlib_slibdir_qual@; \
+	$(INSTALL_DATA) @multilib_dir@/@shlib_base_name@.so \
 	$$(DESTDIR)$$(slibdir)@shlib_slibdir_qual@/@shlib_base_name@.so.0; \
 	rm -f $$(DESTDIR)$$(slibdir)@shlib_slibdir_qual@/@shlib_base_name@.so; \
 	$(LN_S) @shlib_base_name@.so.0 \
