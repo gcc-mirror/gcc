@@ -1,6 +1,7 @@
 /* Functions related to mangling class names for the GNU compiler
    for the Java(TM) language.
-   Copyright (C) 1998, 1999, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 

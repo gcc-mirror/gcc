@@ -1,6 +1,6 @@
 /* Write cross reference information extracted from Java(TM)
    source and bytecode files, in one of formats documented below.
-   Copyright (C) 1999, 2000, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GCC.

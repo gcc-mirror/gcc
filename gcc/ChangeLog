@@ -1,3 +1,8 @@
+2003-01-02  Steven Bosscher <s.bosscher@student.tudelft.nl>
+
+	* objc/Make-lang.in, objc/config-lang.in, objc/lang-specs.h,
+	objc/objc-act.h: Fix copyright years.
+
 2003-01-02  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	* doc/passes.texi: Fix documentation for -fssa-ccp
