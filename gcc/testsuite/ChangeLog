@@ -1,3 +1,8 @@
+2004-12-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/18975
+	* g++.dg/other/synth1.C: New.
+
 2004-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20041213-1.c: Move...

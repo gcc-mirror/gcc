@@ -1,3 +1,10 @@
+2004-12-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/18975
+	* method.c (do_build_copy_constructor): Refactor. Don't const
+	qualify a mutable field.
+	(do_build_assign_ref): Likewise.
+
 2004-12-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/18731
