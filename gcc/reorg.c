@@ -3257,6 +3257,8 @@ relax_delay_slots (first)
 #endif
 	  )
 	{
+	  int i;
+
 	  /* All this insn does is execute its delay list and jump to the
 	     following insn.  So delete the jump and just execute the delay
 	     list insns.
@@ -3265,6 +3267,11 @@ relax_delay_slots (first)
 	     re-emitting the insns separately, and then deleting the jump.
 	     This allows the count of the jump target to be properly
 	     decremented.  */
+
+	  /* Clear the from target bit, since these insns are no longer
+	     in delay slots.  */
+	  for (i = 0; i < XVECLEN (pat, 0); i++)
+	    INSN_FROM_TARGET_P (XVECEXP (pat, 0, i)) = 0;
 
 	  trial = PREV_INSN (insn);
 	  delete_insn (insn);
