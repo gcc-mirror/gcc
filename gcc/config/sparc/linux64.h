@@ -26,6 +26,9 @@ Boston, MA 02111-1307, USA.  */
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
 
+#undef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 1
+
 #include <sparc/sysv4.h>
 
 #undef MD_EXEC_PREFIX
@@ -328,11 +331,6 @@ do {									\
 #undef  ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*.L%s%d", PREFIX, NUM)
-
-/* Stabs doesn't use this, and it confuses a simulator.  */
-/* ??? Need to see what DWARF needs, if anything.  */
-#undef ASM_IDENTIFY_GCC
-#define ASM_IDENTIFY_GCC(FILE)
 
 /* Define the names of various pseudo-ops used by the Sparc/svr4 assembler.
    ??? If ints are 64 bits then UNALIGNED_INT_ASM_OP (defined elsewhere) is
