@@ -1,5 +1,9 @@
 1999-02-14  Craig Burley  <craig@jcb-sc.com>
 
+	* news.texi: Mention fix for SIGNAL invocation circa egcs-1.1.
+
+1999-02-14  Craig Burley  <craig@jcb-sc.com>
+
 	* intdoc.in (MCLOCK8, TIME8): Warn about lower range on
 	32-bit systems.
 

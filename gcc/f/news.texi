@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1998-11-03
+@c 1999-02-14
 
 @ifclear NEWSONLY
 @node News
@@ -291,6 +291,10 @@ vis-a-vis their types, require initial padding.
 @code{g77} no longer crashes when compiling code
 containing specification statements such as
 @samp{INTEGER(KIND=7) PTR}.
+
+@item
+@code{g77} no longer crashes when compiling code
+such as @samp{J = SIGNAL(1, 2)}.
 
 @item
 @code{g77} now treats @samp{%LOC(@var{expr})} and
