@@ -86,7 +86,7 @@ variable_size (size)
     }
 
   if (immediate_size_expand)
-    expand_expr (size, NULL_PTR, VOIDmode, 0);
+    expand_expr (size, NULL_RTX, VOIDmode, 0);
   else
     pending_sizes = tree_cons (NULL_TREE, size, pending_sizes);
 
