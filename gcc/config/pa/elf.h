@@ -21,31 +21,9 @@ Boston, MA 02111-1307, USA.  */
 /* So we can conditionalize small amounts of code in pa.c or pa.md.  */
 #define OBJ_ELF
 
-/* Dummy definitions.  We do not care about this stuff for ELF.  */
-#define TEXT_SPACE_P(DECL) 0
-#define FUNCTION_NAME_P(NAME) 0
-
 #define TEXT_SECTION_ASM_OP "\t.text"
 #define DATA_SECTION_ASM_OP "\t.data"
 #define BSS_SECTION_ASM_OP "\t.section\t.bss"
-
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)  \
-  (fputs ("\t.globl ", FILE), assemble_name (FILE, NAME), fputs ("\n", FILE))
-
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-{ fputs ("\t.word ", FILE);			\
-  output_addr_const (FILE, (VALUE));		\
-  fputs ("\n", FILE);}
-
-#define ASM_OUTPUT_DOUBLE_INT(FILE,VALUE)  \
-{ fputs ("\t.dword ", FILE);			\
-  output_addr_const (FILE, (VALUE));		\
-  fputs ("\n", FILE);}
 
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) \
@@ -57,7 +35,57 @@ do {  \
      else \
        fputs("\t.LEVEL 1.0\n", FILE); \
      if (profile_flag)\
-       fprintf (FILE, "\t.IMPORT _mcount, CODE\n");\
+       fprintf (FILE, "\t.IMPORT _mcount, ENTRY\n");\
      if (write_symbols != NO_DEBUG) \
        output_file_directive ((FILE), main_input_filename); \
    } while (0)
+
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
+do {  \
+  if (TREE_PUBLIC (DECL)) \
+    { \
+      fputs ("\t.EXPORT ", FILE); \
+      assemble_name (FILE, NAME); \
+      fputs (",ENTRY\n", FILE); \
+    } \
+   } while (0)
+
+/* This is how to output a command to make the user-level label named NAME
+   defined for reference from other files.
+
+   We call assemble_name, which in turn sets TREE_SYMBOL_REFERENCED.  This
+   macro will restore the original value of TREE_SYMBOL_REFERENCED to avoid
+   placing useless function definitions in the output file.
+
+   Also note that the SOM based tools need the symbol imported as a CODE
+   symbol, while the ELF based tools require the symbol to be imported as
+   an ENTRY symbol.  What a crock.  */
+
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)	\
+  do { int save_referenced;					\
+       save_referenced = TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (DECL)); \
+       fputs ("\t.IMPORT ", FILE);					\
+	 assemble_name (FILE, NAME);				\
+       if (FUNCTION_NAME_P (NAME))     				\
+	 fputs (",ENTRY\n", FILE);				\
+       else							\
+	 fputs (",DATA\n", FILE);				\
+       TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (DECL)) = save_referenced; \
+     } while (0)
+
+/* The bogus HP assembler requires ALL external references to be
+   "imported", even library calls. They look a bit different, so
+   here's this macro.
+
+   Also note not all libcall names are passed to ENCODE_SECTION_INFO
+   (__main for example).  To make sure all libcall names have section
+   info recorded in them, we do it here.  */
+
+#define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, RTL) \
+  do { fputs ("\t.IMPORT ", FILE);					\
+       if (!function_label_operand (RTL, VOIDmode))			\
+	 hppa_encode_label (RTL, 1);					\
+       assemble_name (FILE, XSTR ((RTL), 0));		       		\
+       fputs (",ENTRY\n", FILE);					\
+     } while (0)
+
