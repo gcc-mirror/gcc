@@ -1,3 +1,12 @@
+2000-03-15  Geoff Keating  <geoffk@cygnus.com>
+
+	See the ChangeLog on the branch for more details.
+	
+	* configure.in: Merge in changes from newppc-branch.
+	* configure: Regenerate.
+	* config/rs6000/*: Merge in changes from newppc-branch.
+	Also correct copyright notices.
+
 Wed Mar 15 15:43:38 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* acconfig.h (HAVE_GAS_WEAK): New define.

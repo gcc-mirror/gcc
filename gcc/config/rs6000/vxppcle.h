@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks PowerPC version.
-   Copyright (C) 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,7 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* This file just exists to give specs for the PowerPC running on VxWorks.  */
 
-#include "rs6000/sysv4.h"
+#include "rs6000/sysv4le.h"
 
 /* Reset defaults */
 #undef	CPP_OS_DEFAULT_SPEC

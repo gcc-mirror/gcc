@@ -49,3 +49,11 @@ MULTILIB_MATCHES	= msoft-float=mcpu?403 \
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
+
+# Both 32-bit and 64-bit objects in archives
+AR_FLAGS_FOR_TARGET=-X32_64 rc
+
+# We need -lld for collect2 (actually this only matters
+# for a native compiler, but this is as good a place as any
+# to define the symbol).
+CLIB=-lld

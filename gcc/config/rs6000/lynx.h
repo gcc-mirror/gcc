@@ -1,5 +1,5 @@
 /* Definitions for Rs6000 running LynxOS.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000 Free Software Foundation, Inc.
    Contributed by David Henkel-Wallace, Cygnus Support (gumby@cygnus.com)
 
 This file is part of GNU CC.
@@ -96,7 +96,6 @@ do {								\
 #undef OBJECT_FORMAT_ROSE
 #undef MD_EXEC_PREFIX
 #undef REAL_LD_FILE_NAME
-#undef REAL_NM_FILE_NAME
 #undef REAL_STRIP_FILE_NAME
 
 /* LynxOS doesn't have mcount. */

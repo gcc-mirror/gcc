@@ -3078,6 +3078,15 @@ changequote([,])dnl
 		extra_headers=ppc-asm.h
 		thread_file='vxworks'
                 ;;
+        powerpcle-wrs-vxworks*)
+                cpu_type=rs6000
+		xm_file="rs6000/xm-sysv4.h"
+		xm_defines="USG POSIX"
+                tm_file=rs6000/vxppcle.h
+                tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
+		extra_headers=ppc-asm.h
+		thread_file='vxworks'
+                ;;
 	powerpcle-*-sysv* | powerpcle-*-elf*)
 		tm_file=rs6000/sysv4le.h
 		xm_file="rs6000/xm-sysv4.h"
@@ -3104,27 +3113,6 @@ changequote([,])dnl
 		else
 			tmake_file="rs6000/t-ppc rs6000/t-ppccomm"
 		fi
-		extra_headers=ppc-asm.h
-		;;
-        powerpcle-*-winnt* )
-                tm_file=rs6000/win-nt.h
-                tmake_file=rs6000/t-winnt
-#               extra_objs=pe.o
- 		if test x$enable_threads = xyes; then
-			thread_file='win32'
-		fi
-		extra_headers=ppc-asm.h
-		;;
-	powerpcle-*-pe | powerpcle-*-cygwin*)
-		tm_file=rs6000/cygwin.h
-		xm_file="rs6000/xm-cygwin.h ${xm_file}"
-		tmake_file=rs6000/t-winnt
-		xmake_file=rs6000/x-cygwin
-#		extra_objs=pe.o
- 		if test x$enable_threads = xyes; then
-			thread_file='win32'
-		fi
-		exeext=.exe
 		extra_headers=ppc-asm.h
 		;;
 	powerpcle-*-solaris2*)
@@ -3171,12 +3159,7 @@ changequote([,])dnl
 		else
 			tmake_file=rs6000/t-newas
 		fi
-		if test "$gnu_ld" = yes
-		then
-			xmake_file=rs6000/x-aix41-gld
-		else
-			xmake_file=rs6000/x-aix41
-		fi
+		xmake_file=rs6000/x-aix41
 		float_format=none
 		use_collect2=yes
 		;;
@@ -3184,13 +3167,8 @@ changequote(,)dnl
 	rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 changequote([,])dnl
 		tm_file=rs6000/aix43.h
-		if test x$host != x$target
-		then
-			tmake_file=rs6000/t-xaix43
-		else
-			tmake_file=rs6000/t-aix43
-		fi
-		xmake_file=rs6000/x-aix43
+		tmake_file=rs6000/t-aix43
+		xmake_file=rs6000/x-aix41
 		float_format=none
 		use_collect2=yes
 		;;
@@ -3198,13 +3176,8 @@ changequote(,)dnl
 	rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 changequote([,])dnl
 		tm_file=rs6000/aix43.h
-		if test x$host != x$target
-		then
-			tmake_file=rs6000/t-xaix43
-		else
-			tmake_file=rs6000/t-aix43
-		fi
-		xmake_file=rs6000/x-aix43
+		tmake_file=rs6000/t-aix43
+		xmake_file=rs6000/x-aix41
 		float_format=none
 		use_collect2=yes
 		;;

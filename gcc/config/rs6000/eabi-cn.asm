@@ -1,6 +1,6 @@
 # crtn.s for eabi
 
-#   Copyright (C) 1996 Free Software Foundation, Inc.
+#   Copyright (C) 1996, 2000 Free Software Foundation, Inc.
 #   Written By Michael Meissner
 # 
 # This file is free software; you can redistribute it and/or modify it
@@ -93,6 +93,12 @@ __SBSS2_END__:
 	.globl	__EXCEPT_END__
 	.type	__EXCEPT_END__,@object
 __EXCEPT_END__:
+
+	.section ".eh_frame","aw"
+	.globl	__EH_FRAME_END__
+	.type	__EH_FRAME_END__,@object
+__EH_FRAME_END__:
+        .long   0
 
 # Tail of __init used for static constructors in Solaris
 	.section ".init","ax"
