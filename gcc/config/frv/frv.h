@@ -280,16 +280,13 @@
 
 /* Run-time target specifications */
 
-/* Define this to be a string constant containing `-D' options to define the
-   predefined macros that identify this machine and system.  These macros will
-   be predefined unless the `-ansi' option is specified.
-
-   In addition, a parallel set of macros are predefined, whose names are made
-   by appending `__' at the beginning and at the end.  These `__' macros are
-   permitted by the ANSI standard, so they are predefined regardless of whether
-   `-ansi' is specified.  */
-
-#define CPP_PREDEFINES "-D__frv__ -Amachine(frv)"
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("__frv__");		\
+      builtin_assert ("machine=frv");		\
+    }						\
+  while (0)
 
 
 /* This declaration should be present.  */

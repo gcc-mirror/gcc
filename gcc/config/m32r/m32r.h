@@ -105,7 +105,14 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 /* __M32R__ is defined by the existing compiler so we use that.  */
-#define CPP_PREDEFINES "-Acpu=m32r -Amachine=m32r -D__M32R__"
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("__M32R__");		\
+      builtin_assert ("cpu=m32r");		\
+      builtin_assert ("machine=m32r");		\
+    }						\
+  while (0)
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition

@@ -27,26 +27,15 @@ Boston, MA 02111-1307, USA.  */
 #include "elfos.h"
 #undef ASM_SPEC			/* But we have a GAS assembler.  */
 
-#define CPP_PREDEFINES \
-  "-DIP2K -D_DOUBLE_IS_32BITS -D__BUFSIZ__=512 -D__FILENAME_MAX__=128"
-/* Define this to be a string constant containing `-D' options to
-   define the predefined macros that identify this machine and system.
-   These macros will be predefined unless the `-ansi' option is
-   specified.
-
-   In addition, a parallel set of macros are predefined, whose names
-   are made by appending `__' at the beginning and at the end.  These
-   `__' macros are permitted by the ANSI standard, so they are
-   predefined regardless of whether `-ansi' is specified.
-
-   For example, on the Sun, one can use the following value:
-
-   "-Dmc68000 -Dsun -Dunix"
-
-   The result is to define the macros `__mc68000__', `__sun__' and
-   `__unix__' unconditionally, and the macros `mc68000', `sun' and
-   `unix' provided `-ansi' is not specified.  */
-
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define_std ("IP2K");		\
+      builtin_define ("_DOUBLE_IS_32BITS");	\
+      builtin_define ("_BUFSIZ=512");		\
+      builtin_define ("__FILENAME_MAX__=128");	\
+    }						\
+  while (0)
 
 /* This declaration should be present.  */
 extern int target_flags;
