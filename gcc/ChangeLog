@@ -1,3 +1,9 @@
+Tue Nov  4 18:49:42 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* rtl.def (CODE_LABEL): Use separate fields for LABEL_NUSES
+	and LABEL_REFS fields.
+	* rtl.h (LABEL_REFS): Update.
+
 Tue Nov  4 16:55:11 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* mips.md (insv, extzv, extv): Add change_address call.
