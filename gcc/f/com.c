@@ -1558,7 +1558,6 @@ ffecom_overlap_ (tree dest_decl, tree dest_offset, tree dest_size,
     case FIX_FLOOR_EXPR:
     case FIX_ROUND_EXPR:
     case FLOAT_EXPR:
-    case EXPON_EXPR:
     case NEGATE_EXPR:
     case MIN_EXPR:
     case MAX_EXPR:
@@ -9044,7 +9043,6 @@ ffecom_tree_canonize_ref_ (tree *decl, tree *offset,
     case FIX_FLOOR_EXPR:
     case FIX_ROUND_EXPR:
     case FLOAT_EXPR:
-    case EXPON_EXPR:
     case NEGATE_EXPR:
     case MIN_EXPR:
     case MAX_EXPR:

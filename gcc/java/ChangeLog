@@ -1,3 +1,7 @@
+2001-07-14  Tim Josling  <tej@melbpc.org.au>
+
+	* check-init.c (check_init): Remove references to EXPON_EXPR.
+
 2001-07-13  Tom Tromey  <tromey@redhat.com>
 
 	* jvspec.c (jvgenmain_spec): Remove -ffilelist-file from cc1

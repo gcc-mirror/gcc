@@ -1,3 +1,7 @@
+2001-07-14  Tim Josling  <tej@melbpc.org.au>
+
+	* tree.def (EXPON_EXPR) remove. Never supported anyway.
+
 2001-07-14  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md: Remove unused constraints from define_split's.
