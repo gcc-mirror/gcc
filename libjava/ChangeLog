@@ -1,3 +1,8 @@
+1999-07-01  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/String.java (toString): Check for this == null and throw
+	NullPointerException.
+
 1999-07-01  Warren Levy  <warrenl@cygnus.com>
 
 	* gnu/gcj/convert/BytesToUnicode.java (read): Changed outlength
