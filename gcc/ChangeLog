@@ -1,3 +1,10 @@
+Tue Sep 28 14:33:47 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* c-decl.c (init_decl_processing): If MD_INIT_BUILTINS is defined,
+	call it.
+	* reg-stack.c (straighten_stack): Copy hard reg set with
+	COPY_HARD_REG_SET.
+
 Tue Sep 28 01:11:05 1999  Richard Henderson  <rth@cygnus.com>
 
 	* builtins.c (stabilize_va_list): Stabilize array type va_list
