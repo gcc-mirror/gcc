@@ -278,7 +278,7 @@ static bool
 handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
 		_Unwind_Ptr old_cfa)
 {
-  struct ucontext *uctx;
+  ucontext_t *uctx;
   bool is_64, is_vector;
   ppc_float_state_t *float_state;
   ppc_vector_state_t *vector_state;
@@ -293,7 +293,7 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
   
   if (gprs[0] == 0x67 /* SYS_SIGRETURN */)
     {
-      uctx = (struct ucontext *) gprs[3];
+      uctx = (ucontext_t *) gprs[3];
       is_vector = (uctx->uc_mcsize == UC_FLAVOR64_VEC_SIZE
 		   || uctx->uc_mcsize == UC_FLAVOR_VEC_SIZE);
       is_64 = (uctx->uc_mcsize == UC_FLAVOR64_VEC_SIZE
@@ -302,7 +302,7 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
   else if (gprs[0] == 0 && gprs[3] == 184)
     {
       int ctxstyle = gprs[5];
-      uctx = (struct ucontext *) gprs[4];
+      uctx = (ucontext_t *) gprs[4];
       is_vector = (ctxstyle == UC_FLAVOR_VEC || ctxstyle == UC_FLAVOR64_VEC
 		   || ctxstyle == UC_TRAD_VEC || ctxstyle == UC_TRAD64_VEC);
       is_64 = (ctxstyle == UC_FLAVOR64_VEC || ctxstyle == UC_TRAD64_VEC
