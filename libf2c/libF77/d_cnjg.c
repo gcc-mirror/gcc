@@ -1,6 +1,6 @@
 #include "f2c.h"
 
- VOID
+void
 d_cnjg(doublecomplex *r, doublecomplex *z)
 {
 	doublereal zi = z->i;

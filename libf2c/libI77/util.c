@@ -8,7 +8,7 @@
 #include "f2c.h"
 #include "fio.h"
 
- VOID
+void
 g_char(char *a, ftnlen alen, char *b)
 {
 	char *x = a + alen, *y = b + alen;
@@ -26,7 +26,7 @@ g_char(char *a, ftnlen alen, char *b)
 		while(x-- > a);
 	}
 
- VOID
+void
 b_char(char *a, char *b, ftnlen blen)
 {	int i;
 	for(i=0;i<blen && *a!=0;i++) *b++= *a++;

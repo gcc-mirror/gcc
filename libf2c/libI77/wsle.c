@@ -21,7 +21,7 @@ integer s_wsle(cilist *a)
 	return(0);
 	}
 
-integer e_wsle(Void)
+integer e_wsle(void)
 {
 	int n;
 	f__init = 1;

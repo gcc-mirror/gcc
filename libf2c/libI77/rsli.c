@@ -10,7 +10,7 @@ extern char *f__icend;
 extern icilist *f__svic;
 extern int f__icnum, f__recpos;
 
-static int i_getc(Void)
+static int i_getc(void)
 {
 	if(f__recpos >= f__svic->icirlen) {
 		if (f__recpos++ == f__svic->icirlen)
@@ -69,7 +69,7 @@ integer s_rsli(icilist *a)
 	return(0);
 	}
 
-integer e_rsli(Void)
+integer e_rsli(void)
 { f__init = 1; return 0; }
 
 extern int x_rsne(cilist*);

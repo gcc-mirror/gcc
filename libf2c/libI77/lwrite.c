@@ -6,14 +6,14 @@
 ftnint L_len;
 int f__Aquote;
 
- static VOID
-donewrec(Void)
+static void
+donewrec(void)
 {
 	if (f__recpos)
 		(*f__donewrec)();
 	}
 
- static VOID
+static void
 lwrt_I(longint n)
 {
 	char *p;
@@ -28,14 +28,14 @@ lwrt_I(longint n)
 	while(*p)
 		PUT(*p++);
 }
- static VOID
+static void
 lwrt_L(ftnint n, ftnlen len)
 {
 	if(f__recpos+LLOGW>=L_len)
 		donewrec();
 	wrt_L((Uint *)&n,LLOGW, len);
 }
- static VOID
+static void
 lwrt_A(char *p, ftnlen len)
 {
 	int a;
@@ -150,7 +150,7 @@ l_g(char *buf, double n)
 #endif
 	}
 
- static VOID
+static void
 l_put(register char *s)
 {
 	register void (*pn)(int) = f__putn;
@@ -160,7 +160,7 @@ l_put(register char *s)
 		(*pn)(c);
 	}
 
- static VOID
+static void
 lwrt_F(double n)
 {
 	char buf[LEFBL];
@@ -169,7 +169,7 @@ lwrt_F(double n)
 		donewrec();
 	l_put(buf);
 }
- static VOID
+static void
 lwrt_C(double a, double b)
 {
 	char *ba, *bb, bufa[LEFBL], bufb[LEFBL];

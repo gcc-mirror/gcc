@@ -5,7 +5,7 @@
 
 extern char *f__fmtbuf;
 
-integer e_rsfe(Void)
+integer e_rsfe(void)
 {	int n;
 	f__init = 1;
 	n=en_fio();
@@ -21,7 +21,7 @@ c_sfe(cilist *a) /* check */
 	if(!p->ufmt) err(a->cierr,102,"sfe");
 	return(0);
 }
-integer e_wsfe(Void)
+integer e_wsfe(void)
 {
 	int n;
 	f__init = 1;

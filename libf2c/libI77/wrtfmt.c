@@ -7,7 +7,7 @@ extern icilist *f__svic;
 extern char *f__icptr;
 
  static int
-mv_cur(Void)	/* shouldn't use fseek because it insists on calling fflush */
+mv_cur(void)	/* shouldn't use fseek because it insists on calling fflush */
 		/* instead we know too much about stdio */
 {
 	int cursor = f__cursor;

@@ -487,12 +487,12 @@ loop:	switch(type_f((p= &f__syl[f__pc])->op))
 	}
 	return(0);
 }
-en_fio(Void)
+en_fio(void)
 {	ftnint one=1;
 	return(do_fio(&one,(char *)NULL,(ftnint)0));
 }
- VOID
-fmt_bg(Void)
+void
+fmt_bg(void)
 {
 	f__workdone=f__cp=f__rp=f__pc=f__cursor=0;
 	f__cnt[0]=f__ret[0]=0;

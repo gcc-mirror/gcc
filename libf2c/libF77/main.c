@@ -3,12 +3,7 @@
 #include <stdio.h>
 #include "signal1.h"
 
-#undef VOID
 #include <stdlib.h>
-
-#ifndef VOID
-#define VOID void
-#endif
 
 extern void f_exit(void);
 #ifndef NO_ONEXIT

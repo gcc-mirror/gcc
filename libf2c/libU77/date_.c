@@ -23,7 +23,7 @@ static integer c__5 = 5;
     /* Local variables */
     static char cbuf[24];
     extern longint G77_time_0 ();
-    extern /* Character */ VOID G77_ctime_0 ();
+    extern /* Character */ void G77_ctime_0 ();
 
     i__1 = G77_time_0 ();
     G77_ctime_0 (ch__1, 24L, &i__1);

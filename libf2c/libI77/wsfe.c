@@ -6,7 +6,7 @@
 extern int f__hiwater;
 
  int
-x_wSL(Void)
+x_wSL(void)
 {
 	int n = f__putbuf('\n');
 	f__hiwater = f__recpos = f__cursor = 0;
@@ -14,7 +14,7 @@ x_wSL(Void)
 }
 
  static int
-xw_end(Void)
+xw_end(void)
 {
 	int n;
 
@@ -29,7 +29,7 @@ xw_end(Void)
 }
 
  static int
-xw_rev(Void)
+xw_rev(void)
 {
 	int n = 0;
 	if(f__workdone) {

@@ -9,7 +9,7 @@ extern int f__icnum;
 extern void z_putc(int);
 
  static int
-z_wSL(Void)
+z_wSL(void)
 {
 	while(f__recpos < f__svic->icirlen)
 		z_putc(' ');
@@ -59,7 +59,7 @@ s_wsli(icilist *a)
 	return(0);
 	}
 
-integer e_wsli(Void)
+integer e_wsli(void)
 {
 	f__init = 1;
 	z_wSL();

@@ -37,7 +37,7 @@
 
  extern flag f__lquit;
  extern int f__lcount, nml_read;
- extern t_getc(Void);
+ extern t_getc(void);
 
 #undef abs
 #undef min
@@ -123,8 +123,8 @@ mk_hashtab(Namelist *nl)
 
 static char Alpha[256], Alphanum[256];
 
- static VOID
-nl_init(Void) {
+static void
+nl_init(void) {
 	register char *s;
 	register int c;
 
@@ -227,7 +227,7 @@ getdimen(int *chp, dimen *d, ftnlen delta, ftnlen extent, ftnlen *x1)
 	}
 
 #ifndef No_Namelist_Questions
- static Void
+static void
 print_ne(cilist *a)
 {
 	flag intext = f__external;

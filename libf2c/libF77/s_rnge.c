@@ -3,7 +3,7 @@
 
 /* called when a subscript is out of range */
 
-extern VOID sig_die(char*,int);
+extern void sig_die(char*,int);
 integer s_rnge(char *varn, ftnint offset, char *procn, ftnint line)
 {
 register int i;

@@ -6,8 +6,8 @@
 
 extern int f__Aquote;
 
- static VOID
-nl_donewrec(Void)
+static void
+nl_donewrec(void)
 {
 	(*f__donewrec)();
 	PUT(' ');
@@ -15,7 +15,7 @@ nl_donewrec(Void)
 
 #include <string.h>
 
- VOID
+void
 x_wsne(cilist *a)
 {
 	Namelist *nl;

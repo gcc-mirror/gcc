@@ -22,5 +22,5 @@ typedef Sigret_t (*sig_pf)(Sigarg_t);
 
 #define signal1(a,b) signal(a,(sig_pf)b)
 
-#define Sigarg Int n
+#define Sigarg int n
 #define Use_Sigarg n = n	/* shut up compiler warning */

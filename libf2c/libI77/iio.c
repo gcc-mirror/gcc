@@ -6,7 +6,7 @@ char *f__icend;
 extern icilist *f__svic;
 int f__icnum;
 extern int f__hiwater;
-z_getc(Void)
+z_getc(void)
 {
 	if(f__recpos++ < f__svic->icirlen) {
 		if(f__icptr >= f__icend) err(f__svic->iciend,(EOF),"endfile");
@@ -21,7 +21,7 @@ z_putc(int c)
 	if (f__icptr < f__icend && f__recpos++ < f__svic->icirlen)
 		*f__icptr++ = c;
 }
-z_rnew(Void)
+z_rnew(void)
 {
 	f__icptr = f__svic->iciunit + (++f__icnum)*f__svic->icirlen;
 	f__recpos = 0;
@@ -31,7 +31,7 @@ z_rnew(Void)
 }
 
  static int
-z_endp(Void)
+z_endp(void)
 {
 	(*f__donewrec)();
 	return 0;
@@ -62,7 +62,7 @@ c_si(icilist *a)
 }
 
  int
-iw_rev(Void)
+iw_rev(void)
 {
 	if(f__workdone)
 		z_endp();
@@ -83,7 +83,7 @@ integer s_rsfi(icilist *a)
 	return(0);
 }
 
-z_wnew(Void)
+z_wnew(void)
 {
 	if (f__recpos < f__hiwater) {
 		f__icptr += f__hiwater - f__recpos;
@@ -109,14 +109,14 @@ integer s_wsfi(icilist *a)
 	f__doend = z_endp;
 	return(0);
 }
-integer e_rsfi(Void)
+integer e_rsfi(void)
 {	int n;
 	f__init &= ~2;
 	n = en_fio();
 	f__fmtbuf = NULL;
 	return(n);
 }
-integer e_wsfi(Void)
+integer e_wsfi(void)
 {
 	int n;
 	f__init &= ~2;
