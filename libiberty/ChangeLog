@@ -1,3 +1,7 @@
+2002-03-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* dyn-string.c: Add libgcc exception to copyright notice.
+
 2002-03-26  H.J. Lu  (hjl@gnu.org)
 
 	* config.table: Support --with-build-subdir.
