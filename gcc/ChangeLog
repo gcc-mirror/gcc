@@ -8741,7 +8741,17 @@ Tue Oct 27 23:32:34 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 	regs_ever_live for regs used as spills.
 	For every pseudo in spilled_pseudos, spill it and mark the previous
 	hard reg it had in pseudo_previous_regs.  Compute which hard regs
-	arseudo): New static function.
+	are used as spills in insns during which it is live, and retry global
+	register allocation.  Update all life information in the
+	reload_insn_chain not to include pseudos without hard regs.
+	Call alter_reg for all affected speudos.
+ 
+	(scan_paradoxical_subregs): Disable SMALL_REGISTER_CLASSES special
+	case, it's not clear what it's supposed to do.
+ 
+	(hard_reg_use_compare): Take bad_spill_regs into account.
+	(pseudos_counted): New static variable.
+	(count_pseudo): New static function.
 	(order_regs_for_reload): Take CHAIN arg.  All callers changed.
 	Initialize bad_spill_regs from bad_spill_regs_global, then merge any
 	hard registers explicitly used across the current insn into the set.
