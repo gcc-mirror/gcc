@@ -367,10 +367,6 @@ struct cpp_options
      traditional C.  */
   unsigned char warn_traditional;
 
-  /* Nonzero means warn if ## is applied to two tokens that cannot be
-     pasted together.  */
-  unsigned char warn_paste;
-
   /* Nonzero means turn warnings into errors.  */
   unsigned char warnings_are_errors;
 

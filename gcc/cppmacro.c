@@ -379,17 +379,20 @@ paste_tokens (pfile, lhs, rhs)
   
   if (type == CPP_EOF)
     {
-      if (CPP_OPTION (pfile, warn_paste))
+      /* Mandatory warning for all apart from assembler.  */
+      if (CPP_OPTION (pfile, lang) != CLK_ASM)
 	cpp_warning (pfile,
 	 "pasting \"%s\" and \"%s\" does not give a valid preprocessing token",
 		     cpp_token_as_text (pfile, lhs),
 		     cpp_token_as_text (pfile, rhs));
 
       /* The standard states that behaviour is undefined.  By the
-	 principle of least surpise, we step back before the RHS, and
-	 mark it to prevent macro expansion.  Tests in the testsuite
-	 rely on clearing PREV_WHITE here, though you could argue we
-	 should actually set it.  */
+         principle of least surpise, we step back before the RHS, and
+         mark it to prevent macro expansion.  Tests in the testsuite
+         rely on clearing PREV_WHITE here, though you could argue we
+         should actually set it.  Assembler can have '.' in labels and
+         so requires that we don't insert spaces there.  Maybe we should
+	 change this to put out a space unless it's assembler.  */
       rhs->flags &= ~PREV_WHITE;
       rhs->flags |= NO_EXPAND;
       return 1;
