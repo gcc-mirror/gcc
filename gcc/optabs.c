@@ -3618,7 +3618,7 @@ expand_fix (to, from, unsignedp)
       end_sequence ();
 
       emit_libcall_block (insns, target, value,
-			  gen_rtx (unsignedp ? FIX : UNSIGNED_FIX,
+			  gen_rtx (unsignedp ? UNSIGNED_FIX : FIX,
 				   GET_MODE (to), from));
     }
       
