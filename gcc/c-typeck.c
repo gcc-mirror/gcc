@@ -4690,6 +4690,7 @@ digest_init (type, init, require_constant, constructor_constant)
 
 	  TREE_TYPE (inside_init) = type;
 	  if (TYPE_DOMAIN (type) != 0
+	      && TYPE_SIZE (type) != 0
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	      /* Subtract 1 (or sizeof (wchar_t))
 		 because it's ok to ignore the terminating null char
