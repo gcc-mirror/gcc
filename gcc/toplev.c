@@ -1,5 +1,5 @@
 /* Top level of GNU C compiler
-   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -662,6 +662,10 @@ char *lang_options[] =
   "-fno-asm",
   "-fbuiltin",
   "-fno-builtin",
+  "-fhosted",
+  "-fno-hosted",
+  "-ffreestanding",
+  "-fno-freestanding",
   "-fcond-mismatch",
   "-fno-cond-mismatch",
   "-fdollars-in-identifiers",
@@ -692,6 +696,8 @@ char *lang_options[] =
   "-Wno-import",
   "-Wimplicit",
   "-Wno-implicit",
+  "-Wmain",
+  "-Wno-main",
   "-Wmissing-braces",
   "-Wno-missing-braces",
   "-Wmissing-declarations",
