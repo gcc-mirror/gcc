@@ -1738,7 +1738,7 @@ yylex ()
 	    /* ignore_escape_flag is set for reading the filename in #line.  */
 	    if (!ignore_escape_flag && c == '\\')
 	      {
-		int ignore;
+		int ignore = 0;
 		c = readescape (&ignore);
 		if (ignore)
 		  goto skipnewline;
