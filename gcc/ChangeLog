@@ -1,3 +1,23 @@
+2003-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* optabs.c (prepare_cmp_insn): Try cmpmemM first if it exists,
+	then fall back to cmpstrM.
+	* builtins.c (expand_builtin_memcmp): Likewise.
+	* config/s390/s390-protos.h (s390_expand_cmpstr): Rename to...
+	(s390_expand_cmpmem): ... this.
+	* config/s390/s390.md (cmpmemdi, cmpmemsi, cmpmem_short_64,
+	cmpmem_short_31, cmpmem_long_64, cmpmem_long_31): Renamed
+	from cmpstr* patterns.  Rename call to s390_expand_cmpstr
+	to s390_expand_cmpmem.
+	* config/s390/s390.c (s390_expand_cmpstr): Rename to...
+	(s390_expand_cmpstr): ... this.  Rename cmpstr* instructions
+	to cmpmem*.
+	* config/i370/i370.md (cmpmemsi, cmpmemsi_1): Renamed from
+	cmpstr* patterns.
+	* doc/md.texi (cmpstrM): Describe as String compare insn, not
+	Block compare insn.
+	(cmpmemM): Add.
+
 2003-07-11  Loren James Rittle  <ljrittle@acm.org>
 
 	* config/i386/freebsd.h (SET_ASM_OP): Remove.
