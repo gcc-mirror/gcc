@@ -1320,6 +1320,37 @@ EOF
   chmod a+r ${LIB}/$file
 fi
 
+# In math.h, put #ifndefs around things that might be defined in a gcc
+# specific math-*.h file.
+
+file=math.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  sed -e '/define[ 	]HUGE_VAL[ 	]/i\
+#ifndef HUGE_VAL'\
+      -e '/define[ 	]HUGE_VAL[ 	]/a\
+#endif' $file_to_fix > /tmp/$base
+  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+    true
+  else
+    echo Fixed $file_to_fix
+    rm -f ${LIB}/$file
+    cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
+  fi
+  rm -f /tmp/$base
+fi
+
 echo 'Removing unneeded directories:'
 cd $LIB
 files=`find . -type d -print | sort -r`
