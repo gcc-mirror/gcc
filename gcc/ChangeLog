@@ -1,3 +1,25 @@
+2001-12-20 Alan Shieh <ashieh@hkn.eecs.berkeley.edu>
+
+	* config/arm/arm.c (arm_output_epilogue): Changed IP restore
+	to use ldmfd instead of ldmea.
+	* config/arm/arm.c (arm_compute_initial_elimination_offset):
+	Modified to reflect behavior of arm_expand_prologue when generating
+	interrupt handlers
+
+2001-12-20  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.c (arm_compute_save_reg0_reg12_mask):  New
+        function. Compute which of registers r0 through r12 should be
+	saved onto the stack during a function's prologue.
+        (arm_compute_save_reg_mask): Use
+        arm_compute_save_reg0_reg12_mask. 
+        (arm_compute_initial_elimination_offset): Use
+        arm_compute_save_reg0_reg12_mask.
+
+        (arm_expand_prologue): Do not mark as save of the IP register
+        for an interrupt handler as being part of the frame creation
+        code.
+
 2001-12-20  Richard Henderson  <rth@redhat.com>
 
 	* varasm.c (assemble_real): Use REAL_VALUE_TO_x and assemble_integer

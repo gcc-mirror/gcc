@@ -104,6 +104,7 @@ static void	 push_minipool_barrier	        PARAMS ((rtx, Hint));
 static void	 push_minipool_fix		PARAMS ((rtx, Hint, rtx *, Mmode, rtx));
 static void	 note_invalid_constants	        PARAMS ((rtx, Hint));
 static int       current_file_function_operand	PARAMS ((rtx));
+static Ulong arm_compute_save_reg0_reg12_mask   PARAMS ((void));
 static Ulong     arm_compute_save_reg_mask	PARAMS ((void));
 static Ulong     arm_isr_value 			PARAMS ((tree));
 static Ulong     arm_compute_func_type		PARAMS ((void));
@@ -7001,38 +7002,20 @@ output_ascii_pseudo_op (stream, p, len)
   fputs ("\"\n", stream);
 }
 
-/* Compute a bit mask of which registers need to be
-   saved on the stack for the current function.  */
+/* Compute the register sabe mask for registers 0 through 12
+   inclusive.  This code is used by both arm_compute_save_reg_mask
+   and arm_compute_initial_elimination_offset.  */
 
 static unsigned long
-arm_compute_save_reg_mask ()
+arm_compute_save_reg0_reg12_mask ()
 {
+  unsigned long func_type = arm_current_func_type ();
   unsigned int save_reg_mask = 0;
   unsigned int reg;
-  unsigned long func_type = arm_current_func_type ();
-
-  if (IS_NAKED (func_type))
-    /* This should never really happen.  */
-    return 0;
-
-  /* If we are creating a stack frame, then we must save the frame pointer,
-     IP (which will hold the old stack pointer), LR and the PC.  */
-  if (frame_pointer_needed)
-    save_reg_mask |=
-      (1 << ARM_HARD_FRAME_POINTER_REGNUM)
-      | (1 << IP_REGNUM)
-      | (1 << LR_REGNUM)
-      | (1 << PC_REGNUM);
-
-  /* Volatile functions do not return, so there
-     is no need to save any other registers.  */
-  if (IS_VOLATILE (func_type))
-    return save_reg_mask;
 
   if (IS_INTERRUPT (func_type))
     {
       unsigned int max_reg;
-      
       /* Interrupt functions must not corrupt any registers,
 	 even call clobbered ones.  If this is a leaf function
 	 we can just examine the registers used by the RTL, but
@@ -7042,7 +7025,7 @@ arm_compute_save_reg_mask ()
       if (ARM_FUNC_TYPE (func_type) == ARM_FT_FIQ)
 	/* FIQ handlers have registers r8 - r12 banked, so
 	   we only need to check r0 - r7, Normal ISRs only
-	   bank r14 and r15, so ew must check up to r12.
+	   bank r14 and r15, so we must check up to r12.
 	   r13 is the stack pointer which is always preserved,
 	   so we do not need to consider it here.  */
 	max_reg = 7;
@@ -7076,6 +7059,38 @@ arm_compute_save_reg_mask ()
 	  && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
 	save_reg_mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
     }
+
+  return save_reg_mask;
+}
+
+/* Compute a bit mask of which registers need to be
+   saved on the stack for the current function.  */
+
+static unsigned long
+arm_compute_save_reg_mask ()
+{
+  unsigned int save_reg_mask = 0;
+  unsigned long func_type = arm_current_func_type ();
+
+  if (IS_NAKED (func_type))
+    /* This should never really happen.  */
+    return 0;
+
+  /* If we are creating a stack frame, then we must save the frame pointer,
+     IP (which will hold the old stack pointer), LR and the PC.  */
+  if (frame_pointer_needed)
+    save_reg_mask |=
+      (1 << ARM_HARD_FRAME_POINTER_REGNUM)
+      | (1 << IP_REGNUM)
+      | (1 << LR_REGNUM)
+      | (1 << PC_REGNUM);
+
+  /* Volatile functions do not return, so there
+     is no need to save any other registers.  */
+  if (IS_VOLATILE (func_type))
+    return save_reg_mask;
+
+  save_reg_mask |= arm_compute_save_reg0_reg12_mask ();
 
   /* Decide if we need to save the link register.
      Interrupt routines have their own banked link register,
@@ -7535,7 +7550,7 @@ arm_output_epilogue (really_return)
       if (IS_INTERRUPT (func_type))
 	/* Interrupt handlers will have pushed the
 	   IP onto the stack, so restore it now.  */
-	print_multi_reg (f, "ldmea\t%r", SP_REGNUM, 1 << IP_REGNUM);
+	print_multi_reg (f, "ldmfd\t%r", SP_REGNUM, 1 << IP_REGNUM);
     }
   else
     {
@@ -7946,27 +7961,22 @@ arm_compute_initial_elimination_offset (from, to)
   call_saved_registers = 0;
   if (! IS_VOLATILE (func_type))
     {
+      unsigned int reg_mask;
       unsigned int reg;
 
-      /* In theory we should check all of the hard registers to
-	 see if they will be saved onto the stack.  In practice
-	 registers 11 upwards have special meanings and need to
-	 be check individually.  */
-      for (reg = 0; reg <= 10; reg ++)
-	if (regs_ever_live[reg] && ! call_used_regs[reg])
+      /* Makre sure that we compute which registers will be saved
+	 on the stack using the same algorithm that is used by
+	 arm_compute_save_reg_mask().  */
+      reg_mask = arm_compute_save_reg0_reg12_mask ();
+
+      /* Now count the number of bits set in save_reg_mask.
+	 For each set bit we need 4 bytes of stack space.  */
+
+      while (reg_mask)
+	{
 	  call_saved_registers += 4;
-
-      /* Determine if register 11 will be clobbered.  */
-      if (! TARGET_APCS_FRAME
-	  && ! frame_pointer_needed
-	  && regs_ever_live[HARD_FRAME_POINTER_REGNUM]
-	  && ! call_used_regs[HARD_FRAME_POINTER_REGNUM])
-	call_saved_registers += 4;
-
-      /* The PIC register is fixed, so if the function will
-	 corrupt it, it has to be saved onto the stack.  */
-      if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
-	call_saved_registers += 4;
+	  reg_mask = reg_mask & ~ (reg_mask & - reg_mask);
+	}
 
       if (regs_ever_live[LR_REGNUM]
 	  /* If a stack frame is going to be created, the LR will
@@ -8097,7 +8107,18 @@ arm_expand_prologue ()
 	     Creating a frame pointer however, corrupts the IP
 	     register, so we must push it first.  */
 	  insn = emit_multi_reg_push (1 << IP_REGNUM);
-	  RTX_FRAME_RELATED_P (insn) = 1;
+
+	  /* Do not set RTX_FRAME_RELATED_P on this insn.
+	     The dwarf stack unwinding code only wants to see one
+	     stack decrement per function, and this is not it.  If
+	     this instruction is labeled as being part of the frame
+	     creation sequence then dwarf2out_frame_debug_expr will
+	     abort when it encounters the assignment of IP to FP
+	     later on, since the use of SP here establishes SP as
+	     the CFA register and not IP.
+
+	     Anyway this instruction is not really part of the stack
+	     frame creation although it is part of the prologue.  */
 	}
       else if (IS_NESTED (func_type))
 	{
