@@ -1,3 +1,7 @@
+2004-12-15 Jan Beulich  <jbeulich@novell.com>
+
+	* mklibgcc.in (libgcc2_c_dep): Add dependency on libgcc2.h.
+
 2004-12-15  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.md (floathisf2, *floathisf2_1, floatsisf2,
