@@ -27,13 +27,8 @@ touch Make-lang
 # Some shells can't pass arguments to source'd scripts.
 # ??? This needs some rethinking.
 
-if [ x"$1" != x ] ; then
-	savesrcdir=$1
-	savesubdirs=$2
-else
-	savesrcdir=$srcdir
-	savesubdirs=$subdirs
-fi
+savesrcdir=$srcdir
+savesubdirs=$subdirs
 
 for subdir in . $savesubdirs
 do
