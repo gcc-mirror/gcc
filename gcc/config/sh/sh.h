@@ -320,13 +320,18 @@ extern int target_flags;
 #define SUBTARGET_CPP_SPEC ""
 #endif
 
+#ifndef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS
+#endif
+
 #define EXTRA_SPECS						\
   { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },			\
   { "link_emul_prefix", LINK_EMUL_PREFIX },			\
   { "link_default_cpu_emul", LINK_DEFAULT_CPU_EMUL },		\
   { "subtarget_link_emul_suffix", SUBTARGET_LINK_EMUL_SUFFIX },	\
   { "subtarget_link_spec", SUBTARGET_LINK_SPEC },		\
-  { "subtarget_asm_endian_spec", SUBTARGET_ASM_ENDIAN_SPEC },
+  { "subtarget_asm_endian_spec", SUBTARGET_ASM_ENDIAN_SPEC },	\
+  SUBTARGET_EXTRA_SPECS
 
 #define ASM_SPEC  "%(subtarget_asm_endian_spec) %{mrelax:-relax}"
 
