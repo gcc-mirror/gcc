@@ -1,3 +1,7 @@
+Mon Oct 19 14:03:07 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* 981019-1.c: New test.
+
 Wed Oct 14 21:11:19 1998  Robert Lipe <robertl@dgii.com>
 
 	* lib/objc-torture.exp (objc-torture-execute): Add -I so we can
