@@ -1994,7 +1994,7 @@ lookup_anon_field (t, type)
 
       /* If we find it directly, return the field.  */
       if (DECL_NAME (field) == NULL_TREE
-	  && type == TREE_TYPE (field))
+	  && type == TYPE_MAIN_VARIANT (TREE_TYPE (field)))
 	{
 	  return field;
 	}
