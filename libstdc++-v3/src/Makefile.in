@@ -203,6 +203,7 @@ sources = \
 	complex_io.cc \
 	concept-inst.cc \
 	ctype.cc \
+	demangle.cc \
 	ext-inst.cc \
 	fstream.cc \
 	fstream-inst.cc \
@@ -305,9 +306,9 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libstdc___la_OBJECTS =  codecvt.lo complex_io.lo concept-inst.lo \
-ctype.lo ext-inst.lo fstream.lo fstream-inst.lo functexcept.lo \
-globals.lo io-inst.lo ios.lo istream-inst.lo limits.lo locale.lo \
-locale-inst.lo localename.lo misc-inst.lo ostream-inst.lo \
+ctype.lo demangle.lo ext-inst.lo fstream.lo fstream-inst.lo \
+functexcept.lo globals.lo io-inst.lo ios.lo istream-inst.lo limits.lo \
+locale.lo locale-inst.lo localename.lo misc-inst.lo ostream-inst.lo \
 sstream-inst.lo stdexcept.lo stl-inst.lo streambuf-inst.lo \
 string-inst.lo strstream.lo valarray-inst.lo wstring-inst.lo \
 codecvt_members.lo collate_members.lo ctype_members.lo \
@@ -581,6 +582,13 @@ concept-inst.lo: concept-inst.cc
 	$(LTCXXCOMPILE) -D_GLIBCPP_CONCEPT_CHECKS -fimplicit-templates -c $<
 concept-inst.o: concept-inst.cc
 	$(CXXCOMPILE) -D_GLIBCPP_CONCEPT_CHECKS -fimplicit-templates -c $<
+
+# Use special rules for the demangler, so that an additional implicit
+# instantiation file is not necessary.
+demangle.lo: demangle.cc
+	$(LTCXXCOMPILE) -fimplicit-templates -c $<
+demangle.o: demangle.cc
+	$(CXXCOMPILE) -fimplicit-templates -c $<
 
 # Added bits to build debug library.
 @GLIBCPP_BUILD_DEBUG_TRUE@all-local: build_debug

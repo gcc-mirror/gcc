@@ -1,3 +1,96 @@
+2003-02-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am (sources): Add demangle.cc.
+	(demangle.o): Add.
+	(demangle.lo): Add.	
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am: Remove old __cxa_demangle bits.
+	* libsupc++/Makefile.in: Regenerate.
+
+	* testsuite/testsuite_hooks.h
+	(__gnu_cxx_test::verify_demangle): New.
+	* testsuite/testsuite_hooks.cc: Define.
+	
+2003-02-27  Carlo Wood  <carlo@alinoe.com>
+
+	* src/demangle.cc: New.
+	* libsupc++/demangle.h: New.
+
+2003-02-27  Benjamin Kosnik  <bkoz@redhat.com>
+            Carlo Wood  <carlo@alinoe.com>
+
+	* testsuite/demangle/abi_examples/01.cc: New.
+	* testsuite/demangle/abi_examples/02.cc: New.
+	* testsuite/demangle/abi_examples/03.cc: New.
+	* testsuite/demangle/abi_examples/04.cc: New.
+	* testsuite/demangle/abi_examples/05.cc: New.
+	* testsuite/demangle/abi_examples/06.cc: New.
+	* testsuite/demangle/abi_examples/07.cc: New.
+	* testsuite/demangle/abi_examples/08.cc: New.
+	* testsuite/demangle/abi_examples/09.cc: New.
+	* testsuite/demangle/abi_examples/10.cc: New.
+	* testsuite/demangle/abi_examples/11.cc: New.
+	* testsuite/demangle/abi_examples/12.cc: New.
+	* testsuite/demangle/abi_examples/13.cc: New.
+	* testsuite/demangle/abi_examples/14.cc: New.
+	* testsuite/demangle/abi_examples/15.cc: New.
+	* testsuite/demangle/abi_examples/16.cc: New.
+	* testsuite/demangle/abi_examples/17.cc: New.
+	* testsuite/demangle/abi_examples/18.cc: New.
+	* testsuite/demangle/abi_examples/19.cc: New.
+	* testsuite/demangle/abi_examples/20.cc: New.
+	* testsuite/demangle/abi_examples/21.cc: New.
+	* testsuite/demangle/abi_examples/22.cc: New.
+	* testsuite/demangle/abi_examples/23.cc: New.
+	* testsuite/demangle/abi_examples/24.cc: New.
+	* testsuite/demangle/abi_examples/25.cc: New.
+	* testsuite/demangle/abi_examples/26.cc: New.
+	* testsuite/demangle/abi_text/01.cc: New.
+	* testsuite/demangle/abi_text/02.cc: New.
+	* testsuite/demangle/abi_text/03.cc: New.
+	* testsuite/demangle/abi_text/04.cc: New.
+	* testsuite/demangle/abi_text/05.cc: New.
+	* testsuite/demangle/abi_text/06.cc: New.
+	* testsuite/demangle/abi_text/07.cc: New.
+	* testsuite/demangle/abi_text/08.cc: New.
+	* testsuite/demangle/abi_text/09.cc: New.
+	* testsuite/demangle/abi_text/10.cc: New.
+	* testsuite/demangle/abi_text/11.cc: New.
+	* testsuite/demangle/abi_text/12.cc: New.
+	* testsuite/demangle/abi_text/13.cc: New.
+	* testsuite/demangle/abi_text/14.cc: New.
+	* testsuite/demangle/regression/3111-1.cc: New.
+	* testsuite/demangle/regression/3111-2.cc: New.
+	* testsuite/demangle/regression/7986-01.cc: New.
+	* testsuite/demangle/regression/7986-02.cc: New.
+	* testsuite/demangle/regression/7986-03.cc: New.
+	* testsuite/demangle/regression/7986-04.cc: New.
+	* testsuite/demangle/regression/7986-05.cc: New.
+	* testsuite/demangle/regression/7986-06.cc: New.
+	* testsuite/demangle/regression/7986-07.cc: New.
+	* testsuite/demangle/regression/7986-08.cc: New.
+	* testsuite/demangle/regression/7986-09.cc: New.
+	* testsuite/demangle/regression/7986-10.cc: New.
+	* testsuite/demangle/regression/7986-11.cc: New.
+	* testsuite/demangle/regression/7986-12.cc: New.
+	* testsuite/demangle/regression/7986.cc: New.
+	* testsuite/demangle/regression/8897.cc: New.
+	* testsuite/demangle/regression/cw-01.cc: New.
+	* testsuite/demangle/regression/cw-02.cc: New.
+	* testsuite/demangle/regression/cw-03.cc: New.
+	* testsuite/demangle/regression/cw-04.cc: New.
+	* testsuite/demangle/regression/cw-05.cc: New.
+	* testsuite/demangle/regression/cw-06.cc: New.
+	* testsuite/demangle/regression/cw-07.cc: New.
+	* testsuite/demangle/regression/cw-08.cc: New.
+	* testsuite/demangle/regression/cw-09.cc: New.
+	* testsuite/demangle/regression/cw-10.cc: New.
+	* testsuite/demangle/regression/cw-11.cc: New.
+	* testsuite/demangle/regression/cw-12.cc: New.
+	* testsuite/demangle/regression/cw-13.cc: New.
+	* testsuite/demangle/regression/cw-14.cc: New.
+	* testsuite/demangle/regression/old.cc: New.
+
 2003-02-25  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/Intro.3:  Update with new (proper) names.
