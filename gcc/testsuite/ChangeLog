@@ -1,3 +1,7 @@
+2004-10-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.c-torture/compile/acc1.c: New.
+
 2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/darwin-longdouble.c: Include stdlib.h and string.h.
@@ -22329,7 +22333,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/compile/labels-2.c: New test.
 
-1999-12-27  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
+1999-12-27  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* gcc.c-torture/execute/991227-1.c: New test.
 
@@ -22337,7 +22341,7 @@ Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* g++.old-deja/g++.pt/instantiate6.C: Remove excess errors XFAIL.
 
-1999-12-21  Martin von LÃ¶wis  <loewis@informatik.hu-berlin.de>
+1999-12-21  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* gcc.c-torture/execute/991221-1.c: New test.
 
