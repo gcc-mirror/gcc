@@ -1,5 +1,16 @@
 2005-01-26  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/ext/mt_allocator.h
+	(struct __per_type_pool_policy<,, false>::_S_get_pool,
+	struct __per_type_pool_policy<,, true>::_S_get_pool): Scale
+	_M_chunk_size too with sizeof(_Tp), otherwise the allocator
+	breaks down as soon as sizeof(_Tp) >~ _S_chunk_size / 128;
+	reduce to 64 the multiplier for _M_max_bytes (safer wrt
+	_Binmap_type being a short); trivial reformattings.
+	* testsuite/ext/mt_allocator/check_allocate_big_per_type.cc: New.
+
+2005-01-26  Paolo Carlini  <pcarlini@suse.de>
+
 	* acinclude.m4 ([GLIBCXX_ENABLE_C99]): Add ac_c99_complex
 	to the final test for enable_c99, thus robustifying it; remove
 	duplicate final test on ac_99_math.
