@@ -1,3 +1,8 @@
+2003-04-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10381
+	* g++.dg/parse/lookup3.C: New test.
+
 2003-04-15  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/compile/20030415-1.c : New test.

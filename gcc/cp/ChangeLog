@@ -1,3 +1,9 @@
+2003-04-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10381
+	* parser.c (cp_parser_primary_expression): Reorganize logic for
+	dealing with name lookup failures.
+
 2003-04-15  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (mark_used): Don't instantiate anything if
