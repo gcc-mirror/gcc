@@ -1,3 +1,10 @@
+2004-04-28  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* a-exexpr.adb (Unwind_Word): New data type.
+	(Unwind_Exception): Use it as type of Private1 and Private2.
+
+	* raise.c (db_action_for): Fix debug printf.
+
 2004-04-27  Ed Schonberg  <schonberg@gnat.com>
 
 	* a-wtmoio.ads: Formal type must be a modular type, not a signed

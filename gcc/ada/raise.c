@@ -671,7 +671,7 @@ db_action_for (action_descriptor *action, _Unwind_Context *uw_context)
      {
      case unknown:
        db (DB_ACTIONS, "lpad @ 0x%x, record @ 0x%x\n",
-	   ip, action->landing_pad, action->table_entry);
+	   action->landing_pad, action->table_entry);
        break;
 
      case nothing:

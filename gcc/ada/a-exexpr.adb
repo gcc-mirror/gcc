@@ -102,11 +102,14 @@ package body Exception_Propagation is
    GNAT_Exception_Class : constant Exception_Class := 16#474e552d41646100#;
    --  "GNU-Ada\0"
 
+   type Unwind_Word is mod 2 ** System.Word_Size;
+   for Unwind_Word'Size use System.Word_Size;
+
    type Unwind_Exception is record
       Class    : Exception_Class := GNAT_Exception_Class;
       Cleanup  : System.Address  := System.Null_Address;
-      Private1 : Integer;
-      Private2 : Integer;
+      Private1 : Unwind_Word;
+      Private2 : Unwind_Word;
    end record;
 
    pragma Convention (C, Unwind_Exception);
