@@ -3932,7 +3932,6 @@ legitimize_operands (enum rtx_code code, rtx *operands, enum machine_mode mode)
 	  && TARGET_HOIST
 	  && optimize > 0
 	  && GET_CODE (operands[1]) == CONST_INT 
-	  && preserve_subexpressions_p ()
 	  && rtx_cost (operands[1], code) > 1)
 	operands[1] = force_reg (mode, operands[1]);
       
@@ -3950,7 +3949,6 @@ legitimize_operands (enum rtx_code code, rtx *operands, enum machine_mode mode)
       && TARGET_HOIST
       && optimize > 1
       && GET_CODE (operands[2]) == CONST_INT
-      && preserve_subexpressions_p ()
       && rtx_cost (operands[2], code) > 1)
     operands[2] = force_reg (mode, operands[2]);
 
