@@ -1,3 +1,14 @@
+2003-12-07  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/2294
+	* name-lookup.c (push_overloaded_decl): Always construct an 
+	OVERLOAD unless the declaration is a built-in.
+	(set_namespace_binding): While binding OVERLOADs with only one
+	declaration, we still need to call supplement_binding.
+	* init.c (build_new_1): Deal with an OVERLOAD set when
+	looking up for _Jv_AllocObject.
+	* except.c (build_throw): Likewise for _Jv_Throw.
+
 2003-12-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13323
