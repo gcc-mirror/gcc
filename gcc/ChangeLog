@@ -1,3 +1,12 @@
+2002-05-14  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (override_options): Override TARGET_JUMP_IN_DELAY when scheduling
+	for PA8000 or generating dwarf2 call frame information.
+	(output_call): Remove DO_FRAME_NOTES check from return pointer
+	optimization.
+	(following_call): Return 0 when scheduling for PA8000 or generating
+	dwarf2 call frame information.  Revise comment.
+
 2002-05-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 config/alpha:

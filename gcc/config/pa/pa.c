@@ -250,6 +250,14 @@ override_options ()
       warning ("unknown -march= option (%s).\nValid options are 1.0, 1.1, and 2.0\n", pa_arch_string);
     }
 
+  /* Unconditional branches in the delay slot are not compatible with dwarf2
+     call frame information.  There is no benefit in using this optimization
+     on PA8000 and later processors.  */
+  if (pa_cpu >= PROCESSOR_8000
+      || (! USING_SJLJ_EXCEPTIONS && flag_exceptions)
+      || flag_unwind_tables)
+    target_flags &= ~MASK_JUMP_IN_DELAY;
+
   if (flag_pic && TARGET_PORTABLE_RUNTIME)
     {
       warning ("PIC code generation is not supported in the portable runtime model\n");
@@ -6377,17 +6385,13 @@ output_call (insn, call_dest, sibcall)
   distance = INSN_ADDRESSES (INSN_UID (JUMP_LABEL (NEXT_INSN (insn))))
 	       - INSN_ADDRESSES (INSN_UID (seq_insn)) - 8;
 
-  /* If the branch was too far away, emit a normal call followed
-     by a nop, followed by the unconditional branch.  We also don't
-     adjust %r2 when generating dwarf2 frame or unwind info since
-     the adjustment confuses the dwarf2 output.
-
-     If the branch is close, then adjust %r2 from within the
-     call's delay slot.  */
+  /* If the branch is too far away, emit a normal call followed
+     by a nop, followed by the unconditional branch.  If the branch
+     is close, then adjust %r2 in the call's delay slot.  */
 
   xoperands[0] = call_dest;
   xoperands[1] = XEXP (PATTERN (NEXT_INSN (insn)), 1);
-  if (DO_FRAME_NOTES || ! VAL_14_BITS_P (distance))
+  if (! VAL_14_BITS_P (distance))
     output_asm_insn ("{bl|b,l} %0,%%r2\n\tnop\n\tb,n %1", xoperands);
   else
     {
@@ -6763,22 +6767,20 @@ output_parallel_addb (operands, length)
     }
 }
 
-/* Return nonzero if INSN (a jump insn) immediately follows a call to
-   a named function.  This is used to discourage creating parallel movb/addb
-   insns since a jump which immediately follows a call can execute in the
-   delay slot of the call.
-
-   It is also used to avoid filling the delay slot of a jump which
-   immediately follows a call since the jump can usually be eliminated
-   completely by modifying RP in the delay slot of the call.  */
+/* Return nonzero if INSN (a jump insn) immediately follows a call
+   to a named function.  This is used to avoid filling the delay slot
+   of the jump since it can usually be eliminated by modifying RP in
+   the delay slot of the call.  */
 
 int
 following_call (insn)
      rtx insn;
 {
-  /* We do not parallel movb,addb or place jumps into call delay slots when
-     optimizing for the PA8000.  */
-  if (pa_cpu != PROCESSOR_8000)
+  /* We do not place jumps into call delay slots when optimizing for the
+     PA8000 processor or when generating dwarf2 call frame information.  */
+  if (pa_cpu >= PROCESSOR_8000
+      || (! USING_SJLJ_EXCEPTIONS && flag_exceptions)
+      || flag_unwind_tables)
     return 0;
 
   /* Find the previous real insn, skipping NOTEs.  */
