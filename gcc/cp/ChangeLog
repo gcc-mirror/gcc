@@ -1,3 +1,7 @@
+1999-06-14  Nathan Sidwell  <nathan@acm.org>
+
+	* call.c (build_new_op): Remove REF_BIND from all operands.
+
 1999-06-13  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* init.c (build_new_1): Look up operator delete even if there was
