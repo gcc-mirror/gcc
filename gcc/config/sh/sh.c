@@ -2654,7 +2654,7 @@ gen_far_branch (bp)
     emit_barrier_after (jump);
   emit_label_after (bp->near_label, insn);
   JUMP_LABEL (jump) = bp->far_label;
-  if (! invert_jump (insn, label))
+  if (! invert_jump (insn, label, 1))
     abort ();
   /* Prevent reorg from undoing our splits.  */
   gen_block_redirect (jump, bp->address += 2, 2);
@@ -3387,7 +3387,7 @@ split_branches (first)
 		    bp->insert_place = insn;
 		    bp->address = addr;
 		  }
-		if (! redirect_jump (insn, label))
+		if (! redirect_jump (insn, label, 1))
 		  abort ();
 	      }
 	    else
@@ -3450,7 +3450,7 @@ split_branches (first)
 			JUMP_LABEL (insn) = far_label;
 			LABEL_NUSES (far_label)++;
 		      }
-		    redirect_jump (insn, NULL_RTX);
+		    redirect_jump (insn, NULL_RTX, 1);
 		    far_label = 0;
 		  }
 	      }
@@ -5156,7 +5156,8 @@ sh_insn_length_adjustment (insn)
     {
       int sum = 0;
       rtx body = PATTERN (insn);
-      char *template, c;
+      const char *template;
+      char c;
       int maybe_label = 1;
 
       if (GET_CODE (body) == ASM_INPUT)
