@@ -90,11 +90,36 @@ AC_ARG_WITH(gnu-ld,
 gnu_ld_flag="$with_gnu_ld",
 gnu_ld_flag=no)
 
+# With pre-defined ld
+AC_ARG_WITH(ld,
+[  --with-ld               arrange to use the specified ld (full pathname).],
+LD="$with_ld")
+if test x"${LD+set}" = x"set"; then
+  if test ! -x "$LD"; then
+    AC_MSG_WARN([cannot execute: $LD: check --with-ld or env. var. LD])
+  elif test "GNU" = `$LD -v </dev/null 2>&1 | sed '1s/^GNU.*/GNU/;q'`; then
+    gnu_ld_flag=yes
+  fi
+  AC_DEFINE_UNQUOTED(DEFAULT_LINKER,"$LD")
+fi
+
 # With GNU as
 AC_ARG_WITH(gnu-as,
 [  --with-gnu-as           arrange to work with GNU as.],
 gas_flag="$with_gnu_as",
 gas_flag=no)
+
+AC_ARG_WITH(as,
+[  --with-as               arrange to use the specified as (full pathname).],
+AS="$with_as")
+if test x"${AS+set}" = x"set"; then
+  if test ! -x "$AS"; then
+    AC_MSG_WARN([cannot execute: $AS: check --with-as or env. var. AS])
+  elif test "GNU" = `$AS -v </dev/null 2>&1 | sed '1s/^GNU.*/GNU/;q'`; then
+    gas_flag=yes
+  fi
+  AC_DEFINE_UNQUOTED(DEFAULT_ASSEMBLER,"$AS")
+fi
 
 # With stabs
 AC_ARG_WITH(stabs,
@@ -253,6 +278,28 @@ fi
 AC_SUBST(stage1_warn_cflags)
 
 AC_PROG_MAKE_SET
+
+AC_MSG_CHECKING([whether a default assembler was specified])
+if test x"${AS+set}" = x"set"; then
+    if test x"$with_gas" = x"no"; then
+    	AC_MSG_RESULT([yes ($AS)])
+    else
+	AC_MSG_RESULT([yes ($AS - GNU as)])
+    fi
+else
+    AC_MSG_RESULT(no)
+fi
+
+AC_MSG_CHECKING([whether a default linker was specified])
+if test x"${LD+set}" = x"set"; then
+    if test x"$with_gnu_ld" = x"no"; then
+	AC_MSG_RESULT([yes ($LD)])
+    else
+	AC_MSG_RESULT([yes ($LD - GNU ld)])
+    fi
+else
+    AC_MSG_RESULT(no)
+fi
 
 # Find some useful tools
 AC_PROG_AWK
@@ -3621,7 +3668,9 @@ AC_MSG_CHECKING(assembler alignment features)
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
-if test -x as$host_exeext; then
+if test -x "$AS"; then
+	gcc_cv_as=$AS
+elif test -x as$host_exeext; then
 	# Build using assembler in the current directory.
 	gcc_cv_as=./as$host_exeext
 elif test -f $gcc_cv_as_gas_srcdir/configure.in; then

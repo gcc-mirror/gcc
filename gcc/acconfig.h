@@ -86,4 +86,11 @@
 
 /* Define if you want expensive run-time checks. */
 #undef ENABLE_CHECKING
+
+/* Define to enable the use of a default assembler. */
+#undef DEFAULT_ASSEMBLER
+
+/* Define to enable the use of a default linker. */
+#undef DEFAULT_LINKER
+
 @TOP@

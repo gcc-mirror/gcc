@@ -1983,6 +1983,26 @@ find_a_file (pprefix, name, mode)
   struct prefix_list *pl;
   int len = pprefix->max_len + strlen (name) + strlen (file_suffix) + 1;
 
+#ifdef DEFAULT_ASSEMBLER
+  if (! strcmp(name, "as") && access (DEFAULT_ASSEMBLER, mode) == 0) {
+    name = DEFAULT_ASSEMBLER;
+    len = strlen(name)+1;
+    temp = xmalloc (len);
+    strcpy (temp, name);
+    return temp;
+  }
+#endif
+
+#ifdef DEFAULT_LINKER
+  if (! strcmp(name, "ld") && access (DEFAULT_LINKER, mode) == 0) {
+    name = DEFAULT_LINKER;
+    len = strlen(name)+1;
+    temp = xmalloc (len);
+    strcpy (temp, name);
+    return temp;
+  }
+#endif
+
   if (machine_suffix)
     len += strlen (machine_suffix);
 
@@ -1995,7 +2015,7 @@ find_a_file (pprefix, name, mode)
       || (DIR_SEPARATOR == '\\' && name[1] == ':'
 	  && (name[2] == DIR_SEPARATOR || name[2] == '/')))
     {
-      if (access (name, mode))
+      if (access (name, mode) == 0)
 	{
 	  strcpy (temp, name);
 	  return temp;

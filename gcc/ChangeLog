@@ -1,3 +1,20 @@
+Mon Sep 28 19:41:24 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* configure.in: new flags --with-ld and --with-as, equivalent
+	to setting LD and AS environment variables.  Test whether
+	specified arguments are GNU commands, and report them with
+	checking messages.  Use the specified AS for configure
+	tests too.
+	* configure: ditto
+	* acconfig.h: add DEFAULT_ASSEMBLER and DEFAULT_LINKER
+	* config.in: ditto
+	* gcc.c (find_a_file): when looking for `as' and `ld', return
+	the DEFAULT program if it exists
+	* collect2.c (main): use DEFAULT_LINKER if it exists
+
+	* gcc.c (find_a_file): the test for existence of a full
+	pathname was reversed
+
 Mon Sep 28 17:34:35 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.h (ASM_OUTPUT_MI_THUNK): Only define on ELF systems.
