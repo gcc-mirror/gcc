@@ -37,10 +37,7 @@
 #if _GLIBCXX_C_LOCALE_GNU
   const ctype_base::mask*
   ctype<char>::classic_table() throw()
-  {
-    locale::classic();
-    return _S_c_locale->__ctype_b;
-  }
+  { return _S_get_c_locale()->__ctype_b; }
 #else
   const ctype_base::mask*
   ctype<char>::classic_table() throw()
@@ -87,7 +84,7 @@
 #endif
     setlocale(LC_CTYPE, __old);
     free(__old);
-    _M_c_locale_ctype = _S_c_locale;
+    _M_c_locale_ctype = _S_get_c_locale();
   }
 #endif
 
@@ -95,7 +92,7 @@
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) : 
   __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del)
   {
-    _M_c_locale_ctype = _S_c_locale; 
+    _M_c_locale_ctype = _S_get_c_locale(); 
     _M_toupper = _M_c_locale_ctype->__ctype_toupper;
     _M_tolower = _M_c_locale_ctype->__ctype_tolower;
     _M_table = __table ? __table : _M_c_locale_ctype->__ctype_b;
@@ -117,7 +114,7 @@
 #endif
     setlocale(LC_CTYPE, __old);
     free(__old);
-    _M_c_locale_ctype = _S_c_locale;
+    _M_c_locale_ctype = _S_get_c_locale();
   }
 #endif
 

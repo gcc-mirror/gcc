@@ -66,7 +66,7 @@ namespace std
       if (!__cloc)
 	{
 	  // "C" locale
-	  _M_c_locale_timepunct = _S_c_locale;
+	  _M_c_locale_timepunct = _S_get_c_locale();
 
 	  _M_data->_M_date_format = "%m/%d/%y";
 	  _M_data->_M_date_era_format = "%m/%d/%y";
@@ -214,7 +214,7 @@ namespace std
       if (!__cloc)
 	{
 	  // "C" locale
-	  _M_c_locale_timepunct = _S_c_locale;
+	  _M_c_locale_timepunct = _S_get_c_locale();
 
 	  _M_data->_M_date_format = L"%m/%d/%y";
 	  _M_data->_M_date_era_format = L"%m/%d/%y";

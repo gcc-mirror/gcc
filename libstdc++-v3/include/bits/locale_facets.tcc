@@ -432,7 +432,7 @@ namespace std
 
 	  unsigned long __ul; 
 	  std::__convert_to_v(__xtrc.c_str(), __ul, __err, 
-			      _S_c_locale, __base);
+			      _S_get_c_locale(), __base);
 	  if (!(__err & ios_base::failbit) && __ul <= 1)
 	    __v = __ul;
 	  else 
@@ -493,7 +493,8 @@ namespace std
       string __xtrc;
       int __base;
       __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err,
+			  _S_get_c_locale(), __base);
       return __beg;
     }
 
@@ -507,7 +508,8 @@ namespace std
       int __base;
       __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
       unsigned long __ul;
-      std::__convert_to_v(__xtrc.c_str(), __ul, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __ul, __err,
+			  _S_get_c_locale(), __base);
       if (!(__err & ios_base::failbit) 
 	  && __ul <= numeric_limits<unsigned short>::max())
 	__v = static_cast<unsigned short>(__ul);
@@ -526,7 +528,8 @@ namespace std
       int __base;
       __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
       unsigned long __ul;
-      std::__convert_to_v(__xtrc.c_str(), __ul, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __ul, __err,
+			  _S_get_c_locale(), __base);
       if (!(__err & ios_base::failbit) 
 	  && __ul <= numeric_limits<unsigned int>::max())
 	__v = static_cast<unsigned int>(__ul);
@@ -544,7 +547,8 @@ namespace std
       string __xtrc;
       int __base;
       __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err,
+			  _S_get_c_locale(), __base);
       return __beg;
     }
 
@@ -558,7 +562,8 @@ namespace std
       string __xtrc;
       int __base;
       __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err,
+			  _S_get_c_locale(), __base);
       return __beg;
     }
 
@@ -571,7 +576,8 @@ namespace std
       string __xtrc;
       int __base;
       __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err,
+			  _S_get_c_locale(), __base);
       return __beg;
     }
 #endif
@@ -585,7 +591,8 @@ namespace std
       string __xtrc;
       __xtrc.reserve(32);
       __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
-      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err,
+			  _S_get_c_locale());
       return __beg;
     }
 
@@ -598,7 +605,7 @@ namespace std
       string __xtrc;
       __xtrc.reserve(32);
       __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
-      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_get_c_locale());
       return __beg;
     }
 
@@ -611,7 +618,7 @@ namespace std
       string __xtrc;
       __xtrc.reserve(32);
       __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
-      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_get_c_locale());
       return __beg;
     }
 
@@ -636,7 +643,8 @@ namespace std
       __io.flags(__fmt);
 
       unsigned long __ul;
-      std::__convert_to_v(__xtrc.c_str(), __ul, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __ul, __err,
+			  _S_get_c_locale(), __base);
       if (!(__err & ios_base::failbit))
 	__v = reinterpret_cast<void*>(__ul);
       else 
@@ -929,7 +937,7 @@ namespace std
 
 	_S_format_float(__io, __fbuf, __mod);
 	__len = std::__convert_from_v(__cs, __cs_size, __fbuf, __v,
-				      _S_c_locale, __prec);
+				      _S_get_c_locale(), __prec);
 
 	// If the buffer was not large enough, try again with the correct size.
 	if (__len >= __cs_size)
@@ -937,7 +945,7 @@ namespace std
 	    __cs_size = __len + 1; 
 	    __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 	    __len = std::__convert_from_v(__cs, __cs_size, __fbuf, __v,
-					  _S_c_locale, __prec);
+					  _S_get_c_locale(), __prec);
 	  }
 #else
 	// Consider the possibility of long ios_base::fixed outputs
@@ -956,7 +964,7 @@ namespace std
 
 	_S_format_float(__io, __fbuf, __mod);
 	__len = std::__convert_from_v(__cs, 0, __fbuf, __v, 
-				      _S_c_locale, __prec);
+				      _S_get_c_locale(), __prec);
 #endif
 
       // [22.2.2.2.2] Stage 2, convert to char_type, using correct
@@ -1124,7 +1132,7 @@ namespace std
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
       const _CharT* __wcs = __str.c_str();
       __ctype.narrow(__wcs, __wcs + __str.size() + 1, char(), __cs);      
-      std::__convert_to_v(__cs, __units, __err, _S_c_locale);
+      std::__convert_to_v(__cs, __units, __err, _S_get_c_locale());
       return __beg;
     }
 
@@ -1349,14 +1357,14 @@ namespace std
       int __cs_size = 64;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
       int __len = std::__convert_from_v(__cs, __cs_size, "%.01Lf", __units, 
-					_S_c_locale);
+					_S_get_c_locale());
       // If the buffer was not large enough, try again with the correct size.
       if (__len >= __cs_size)
 	{
 	  __cs_size = __len + 1;
 	  __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 	  __len = std::__convert_from_v(__cs, __cs_size, "%.01Lf", __units, 
-					_S_c_locale);
+					_S_get_c_locale());
 	}
 #else
       // max_exponent10 + 1 for the integer part, + 4 for sign, decimal point,
@@ -1364,7 +1372,7 @@ namespace std
       const int __cs_size = numeric_limits<long double>::max_exponent10 + 5;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
       int __len = std::__convert_from_v(__cs, 0, "%.01Lf", __units, 
-					_S_c_locale);
+					_S_get_c_locale());
 #endif
       _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							   * __cs_size));
@@ -1983,7 +1991,8 @@ namespace std
       if (__i == 2 || __i == 4)
 	{
 	  long __l;
-	  std::__convert_to_v(__digits.c_str(), __l, __err, _S_c_locale);
+	  std::__convert_to_v(__digits.c_str(), __l, __err,
+			      _S_get_c_locale());
 	  if (!(__err & ios_base::failbit) && __l <= INT_MAX)
 	    {
 	      __l = __i == 2 ? __l : __l - 1900; 

@@ -245,15 +245,9 @@ namespace std
 
   // Construct "C" _Impl.
   locale::_Impl::
-  _Impl(facet**, size_t __refs, bool) 
+  _Impl(size_t __refs) throw() 
   : _M_references(__refs), _M_facets_size(_GLIBCXX_NUM_FACETS)
   {
-    // Initialize the underlying locale model.
-    locale::facet::_S_c_name[0] = 'C';
-    locale::facet::_S_c_name[1] = '\0';
-    locale::facet::_S_create_c_locale(locale::facet::_S_c_locale, 
-				      locale::facet::_S_c_name);
-
     _M_facets = new (&facet_vec) const facet*[_M_facets_size];
     _M_caches = new (&cache_vec) const facet*[_M_facets_size];
     for (size_t __i = 0; __i < _M_facets_size; ++__i)

@@ -41,7 +41,7 @@
 #if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2))
        _M_name_messages = _S_c_name;
 #endif
-       _M_c_locale_messages = _S_c_locale; 
+       _M_c_locale_messages = _S_get_c_locale(); 
      }
 
   template<typename _CharT>
@@ -51,8 +51,9 @@
      : facet(__refs)
      {
 #if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)) 
-       _M_name_messages = new char[strlen(__s) + 1];
-       strcpy(_M_name_messages, __s);
+       char* __tmp = new char[std::strlen(__s) + 1];
+       std::strcpy(__tmp, __s);
+       _M_name_messages = __tmp;
 #endif
        _M_c_locale_messages = _S_clone_c_locale(__cloc); 
      }
@@ -101,8 +102,9 @@
 #if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2))
        if (this->_S_c_name != this->_M_name_messages)
 	 delete [] this->_M_name_messages;
-       this->_M_name_messages = new char[strlen(__s) + 1];
-       strcpy(this->_M_name_messages, __s);
+       char* __tmp = new char[std::strlen(__s) + 1];
+       std::strcpy(__tmp, __s);
+       this->_M_name_messages = __tmp;
 #endif
        _S_destroy_c_locale(this->_M_c_locale_messages);
        _S_create_c_locale(this->_M_c_locale_messages, __s); 

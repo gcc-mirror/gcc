@@ -46,6 +46,7 @@
 #include <cstring>		// For strcmp.
 #include <string>
 #include <bits/atomicity.h>
+#include <bits/gthr.h>
 
 namespace std
 {
@@ -139,7 +140,7 @@ namespace std
     _Impl* 		_M_impl;  
 
     // The "C" reference locale
-    static _Impl* 	_S_classic; 
+    static _Impl*       _S_classic;
 
     // Current global locale
     static _Impl* 	_S_global;  
@@ -148,7 +149,7 @@ namespace std
     // NB: locale::global() has to know how to modify all the
     // underlying categories, not just the ones required by the C++
     // standard.
-    static const char** _S_categories;
+    static const char* const* const _S_categories;
 
     // Number of standard categories. For C++, these categories are
     // collate, ctype, monetary, numeric, time, and messages. These
@@ -162,15 +163,18 @@ namespace std
     // and LC_IDENTIFICATION.
     static const size_t _S_categories_size = 6 + _GLIBCXX_NUM_CATEGORIES;
 
+#ifdef __GTHREADS
+    static __gthread_once_t _S_once;
+#endif
+
     explicit 
     locale(_Impl*) throw();
 
-    static inline void  
-    _S_initialize()
-    { 
-      if (!_S_classic) 
-	classic();  
-    }
+    static void  
+    _S_initialize();
+
+    static void
+    _S_initialize_once();
 
     static category  
     _S_normalize_category(category);
@@ -189,13 +193,20 @@ namespace std
 
     mutable _Atomic_word		_M_references;
 
-  protected:
     // Contains data from the underlying "C" library for the classic locale.
-    static __c_locale		     	_S_c_locale;
+    static __c_locale                   _S_c_locale;
 
     // String literal for the name of the classic locale.
-    static char				_S_c_name[2];
-    
+    static const char			_S_c_name[2];
+
+#ifdef __GTHREADS
+    static __gthread_once_t 		_S_once;
+#endif
+
+    static void 
+    _S_initialize_once();
+
+  protected:
     explicit 
     facet(size_t __refs = 0) throw() : _M_references(__refs ? 1 : 0)
     { }
@@ -212,6 +223,10 @@ namespace std
 
     static void
     _S_destroy_c_locale(__c_locale& __cloc);
+
+    // Returns data from the underlying "C" library for the classic locale.
+    static __c_locale
+    _S_get_c_locale();
 
   private:
     inline void
@@ -332,7 +347,7 @@ namespace std
 
     _Impl(const _Impl&, size_t);
     _Impl(const char*, size_t);
-    _Impl(facet**, size_t, bool);
+    _Impl(size_t) throw();
 
    ~_Impl() throw();
 
