@@ -1378,6 +1378,7 @@ extern rtx gen_int_mode			PARAMS ((HOST_WIDE_INT,
 extern rtx emit_copy_of_insn_after	PARAMS ((rtx, rtx));
 extern void set_reg_attrs_from_mem	PARAMS ((rtx, rtx));
 extern void set_mem_attrs_from_reg	PARAMS ((rtx, rtx));
+extern void set_reg_attrs_for_parm	PARAMS ((rtx, rtx));
 
 /* In rtl.c */
 extern rtx rtx_alloc			PARAMS ((RTX_CODE));

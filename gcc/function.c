@@ -4460,7 +4460,7 @@ assign_parms (fndecl)
 
 	/* Set also REG_ATTRS if parameter was passed in a register.  */
 	if (entry_parm)
-	  set_reg_attrs_from_mem (entry_parm, stack_parm);
+	  set_reg_attrs_for_parm (entry_parm, stack_parm);
       }
 
       /* If this parameter was passed both in registers and in the stack,
