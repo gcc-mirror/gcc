@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libjava.
 
@@ -377,6 +377,14 @@ public abstract class Rectangle2D extends RectangularShape
       this.y = (float) y;
       this.width = (float) w;
       this.height = (float) h;
+    }
+
+    public void setRect (float x, float y, float w, float h)
+    {
+      this.x = x;
+      this.y = y;
+      this.width = w;
+      this.height = h;
     }
 
     public void setRect (Rectangle2D r)

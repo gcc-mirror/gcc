@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libjava.
 
@@ -40,7 +40,13 @@ public class Menu extends MenuItem implements MenuContainer
 
   public void addNotify()
   {
-    // FIXME
+    if (peer != null)
+      {
+	// This choice of toolkit seems unsatisfying, but I'm not sure
+	// what else to do.
+	peer = Toolkit.getDefaultToolkit ().createMenu (this);
+      }
+    super.addNotify ();
   }
 
   public void removeNotify()

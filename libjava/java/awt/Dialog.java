@@ -63,6 +63,7 @@ public class Dialog extends Window
   {
     if (peer == null)
       peer = getToolkit ().createDialog (this);
+    super.addNotify ();
   }
 
   public boolean isModal ()

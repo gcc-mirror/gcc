@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -55,6 +55,7 @@ public class CheckboxMenuItem extends MenuItem implements ItemSelectable
 	// what else to do.
 	peer = Toolkit.getDefaultToolkit ().createCheckboxMenuItem (this);
       }
+    super.addNotify ();
   }
 
   /** Returns this checkbox's label if this checkbox is selected.  */

@@ -1,3 +1,51 @@
+2001-04-21  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added Line2D.java.
+	* java/awt/geom/Line2D.java: Wrote.
+
+	* java/awt/Menu.java (addNotify): Wrote.
+
+	* java/awt/PopupMenu.java (addNotify): Implemented.
+	(show): Likewise.
+
+	* java/awt/Scrollbar.java (addNotify): Call super.addNotify.
+	* java/awt/List.java (addNotify): Call super.addNotify.
+	* java/awt/Label.java (addNotify): Call super.addNotify.
+	* java/awt/FileDialog.java (addNotify): Call super.addNotify.
+	* java/awt/Dialog.java (addNotify): Call super.addNotify.
+	* java/awt/Choice.java (addNotify): Call super.addNotify.
+	* java/awt/CheckboxMenuItem.java (addNotify): Call super.addNotify.
+	* java/awt/Checkbox.java (addNotify): Call super.addNotify.
+
+	* java/awt/List.java (replaceItem): Notify peer.
+
+	* java/awt/geom/Rectangle2D.java
+	(Float.setRect(float,float,float,float)): New method.
+
+	* java/awt/event/ContainerEvent.java (getContainer): Now returns
+	Container.
+
+	* java/awt/RenderingHints.java (Key): Class now public.
+
+	* java/awt/Rectangle.java (Rectangle): Now implements
+	Serializable.
+	(getPathIterator): Removed.
+
+	* java/awt/GraphicsConfiguration.java (GraphicsConfiguration): New
+	constructor.
+
+	* java/awt/FileDialog.java: Wrote.
+
+	* java/awt/EventQueue.java (isDispatchThread): Now public.
+	(invokeLater): Likewise.
+
+	* java/awt/Component.java (setCursor): Update peer.
+	(getFontMetrics): Use peer.
+
+	* java/awt/ComponentOrientation.java (ComponentOrientation): Class
+	now final.
+
 2001-04-20  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/List.java: Wrote.

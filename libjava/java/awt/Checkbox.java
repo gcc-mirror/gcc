@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -63,6 +63,7 @@ public class Checkbox extends Component implements ItemSelectable
   {
     if (peer == null)
       peer = getToolkit ().createCheckbox (this);
+    super.addNotify ();
   }
 
   /** Returns the current CheckboxGroup associated with this

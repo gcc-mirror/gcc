@@ -52,6 +52,7 @@ public class List extends Component implements ItemSelectable
   {
     if (peer != null)
       peer = getToolkit ().createList (this);
+    super.addNotify ();
   }
 
   public int getItemCount ()
@@ -107,7 +108,12 @@ public class List extends Component implements ItemSelectable
   public void replaceItem (String item, int index)
   {
     items.setElementAt (item, index);
-    // FIXME: notify peer
+    if (peer != null)
+      {
+	ListPeer l = (ListPeer) peer;
+	l.delItems (index, index);
+	l.add (item, index);
+      }
   }
 
   public void removeAll ()
