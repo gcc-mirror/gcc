@@ -1,3 +1,10 @@
+2002-01-26  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md: Remove bit test patterns that cannot
+	be triggered.
+	Restrict each bit test pattern to a variant on which the
+	pattern is tested.
+
 2002-01-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_strncat): Remove redundant check for
