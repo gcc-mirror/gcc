@@ -108,11 +108,12 @@ Boston, MA 02111-1307, USA.  */
 
 /* The system header files are C++ aware. */
 /* ??? Unfortunately, most but not all of the headers are C++ aware.
-   Specifically, curses.h is not, and libg++ won't build because of it
-   if this is defined.  On the other hand, SGI has C++ packages with
-   header files in /usr/include, and they won't work unless this is
-   defined.  We need some way to fix just those files that need fixing.  */
-/* #define NO_IMPLICIT_EXTERN_C 1 */
+   Specifically, curses.h is not, and as a consequence, defining this
+   used to prevent libg++ building.  This is no longer the case so
+   define it again to prevent other problems, e.g. with getopt in
+   unistd.h.  We still need some way to fix just those files that need
+   fixing.  */
+#define NO_IMPLICIT_EXTERN_C 1
 
 /* We don't support debugging info for now. */
 #undef DBX_DEBUGGING_INFO
