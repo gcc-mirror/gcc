@@ -1603,9 +1603,9 @@ static const format_flag_pair strftime_flag_pairs[] =
 static const format_char_info print_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   T99_I,   T89_I,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "-wp0 +'I", "i" },
-  { "oxX", 0, STD_C89, { T89_UI,  T99_UI,  T89_UI,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0#",    "i" },
-  { "u",   0, STD_C89, { T89_UI,  T99_UI,  T89_UI,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0'I",   "i" },
+  { "di",  0, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "-wp0 +'I", "i" },
+  { "oxX", 0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0#",    "i" },
+  { "u",   0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0'I",   "i" },
   { "fgG", 0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'", ""  },
   { "eE",  0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#",  ""  },
   { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T94_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       ""  },
@@ -2864,6 +2864,7 @@ check_format_types (status, types)
       tree cur_type;
       tree orig_cur_type;
       tree wanted_type;
+      tree promoted_type;
       int arg_num;
       int i;
       int char_type_flag;
@@ -2880,6 +2881,13 @@ check_format_types (status, types)
 	abort ();
       if (wanted_type == void_type_node && types->pointer_count == 0)
 	abort ();
+
+      if (types->pointer_count == 0)
+	{
+	  promoted_type = simple_type_promotes_to (wanted_type);
+	  if (promoted_type != NULL_TREE)
+	    wanted_type = promoted_type;
+	}
 
       STRIP_NOPS (cur_param);
 

@@ -1,3 +1,10 @@
+2000-10-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (print_char_table): Use the unpromoted type for
+	lengths "h" and "hh" with conversions dioxXu.
+	(check_format_types): Apply the default argument promotions where
+	the wanted type is not a pointer target.
+
 2000-10-11  Michael Meeks  <mmeeks@gnu.org>
             Joseph S. Myers  <jsm28@cam.ac.uk>
 
