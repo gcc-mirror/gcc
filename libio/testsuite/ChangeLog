@@ -1,3 +1,8 @@
+Fri Sep  5 15:38:37 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* lib/libio.exp  (test_libio): Use libstdc++_{include,link}_flags
+	instead of g++_{include,link}_flags.
+
 Fri Jun 27 18:19:21 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* lib/libio.exp(libio_init): New procedure.
