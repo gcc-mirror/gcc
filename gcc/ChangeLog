@@ -1,3 +1,11 @@
+2004-06-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (emit_move_sequence): Fix loading of non 14-bit CONST operands
+	when generating PIC code.
+
+	* pa.md: Disable the peephole2 patterns that generate indexed
+	floating-point stores when indexing is disabled.
+
 2004-06-07  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/14765
