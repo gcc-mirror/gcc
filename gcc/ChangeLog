@@ -1,4 +1,4 @@
-2001-02-05  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+2001-02-08  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 	    David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (output_toc): Allow 32-bit targets to
