@@ -47,6 +47,8 @@ int __spawnvp ();
 
 #include "config.h"
 #include "obstack.h"
+#include "gansidecl.h"
+
 #ifdef __STDC__
 #include <stdarg.h>
 #else
@@ -76,61 +78,14 @@ int __spawnvp ();
 #define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
 #endif
 
-/* Add prototype support.  */
-#ifndef PROTO
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define PROTO(ARGS) ARGS
-#else
-#define PROTO(ARGS) ()
-#endif
-#endif
-
-#ifndef VPROTO
-#ifdef __STDC__
-#define PVPROTO(ARGS)		ARGS
-#define VPROTO(ARGS)		ARGS
-#define VA_START(va_list,var)	va_start(va_list,var)
-#else
-#define PVPROTO(ARGS)		()
-#define VPROTO(ARGS)		(va_alist) va_dcl
-#define VA_START(va_list,var)	va_start(va_list)
-#endif
-#endif
-
-/* Define a generic NULL if one hasn't already been defined.  */
-
-#ifndef NULL
-#define NULL 0
-#endif
-
 /* Define O_RDONLY if the system hasn't defined it for us. */
 #ifndef O_RDONLY
 #define O_RDONLY 0
 #endif
 
-#ifndef GENERIC_PTR
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define GENERIC_PTR void *
-#else
-#define GENERIC_PTR char *
-#endif
-#endif
-
-#ifndef NULL_PTR
-#define NULL_PTR ((GENERIC_PTR)0)
-#endif
-
 #ifdef USG
 #define vfork fork
 #endif /* USG */
-
-/* On MSDOS, write temp files in current dir
-   because there's no place else we can expect to use.  */
-#ifdef __MSDOS__
-#ifndef P_tmpdir
-#define P_tmpdir "."
-#endif
-#endif
 
 /* Test if something is a normal file.  */
 #ifndef S_ISREG
@@ -170,6 +125,8 @@ static char dir_separator_str[] = {DIR_SEPARATOR, 0};
 
 extern void free ();
 extern char *getenv ();
+
+extern char *choose_temp_base PROTO((void));
 
 #ifndef errno
 extern int errno;
@@ -279,16 +236,10 @@ static void delete_if_ordinary	PROTO((char *));
 static void delete_temp_files	PROTO((void));
 static void delete_failure_queue PROTO((void));
 static void clear_failure_queue PROTO((void));
-static char *choose_temp_base_try PROTO((char *, char *));
-static void choose_temp_base	PROTO((void));
 static int check_live_switch	PROTO((int, int));
 static char *handle_braces	PROTO((char *));
 static char *save_string	PROTO((char *, int));
-static char *concat		PROTO((char *, char *));
-static char *concat3		PROTO((char *, char *, char *));
-static char *concat4		PROTO((char *, char *, char *, char *));
-static char *concat6		PROTO((char *, char *, char *, char *, char *, \
-                                       char *));
+static char *concat		PVPROTO((char *, ...));
 static int do_spec		PROTO((char *));
 static int do_spec_1		PROTO((char *, int, char *));
 static char *find_file		PROTO((char *));
@@ -961,7 +912,8 @@ translate_options (argcp, argvp)
 
 		  /* Store the translation as one argv elt or as two.  */
 		  if (arg != 0 && index (arginfo, 'j') != 0)
-		    newv[newindex++] = concat (option_map[j].equivalent, arg);
+		    newv[newindex++] = concat (option_map[j].equivalent, arg,
+					       NULL_PTR);
 		  else if (arg != 0)
 		    {
 		      newv[newindex++] = option_map[j].equivalent;
@@ -1226,7 +1178,7 @@ set_spec (name, spec)
 
   old_spec = sl->spec;
   if (name && spec[0] == '+' && isspace (spec[1]))
-    sl->spec = concat (old_spec, spec + 1);
+    sl->spec = concat (old_spec, spec + 1, NULL_PTR);
   else
     sl->spec = save_string (spec, strlen (spec));
 
@@ -1448,7 +1400,8 @@ store_arg (arg, delete_always, delete_failure)
 
    This prefix comes from the envvar TMPDIR if it is defined;
    otherwise, from the P_tmpdir macro if that is defined;
-   otherwise, in /usr/tmp or /tmp.  */
+   otherwise, in /usr/tmp or /tmp;
+   or finally the current directory if all else fails.  */
 
 static char *temp_filename;
 
@@ -1561,65 +1514,7 @@ clear_failure_queue ()
 {
   failure_delete_queue = 0;
 }
-
-/* Compute a string to use as the base of all temporary file names.
-   It is substituted for %g.  */
-
-static char *
-choose_temp_base_try (try, base)
-     char *try;
-     char *base;
-{
-  char *rv;
-  if (base)
-    rv = base;
-  else if (try == (char *)0)
-    rv = 0;
-  else if (access (try, R_OK | W_OK) != 0)
-    rv = 0;
-  else
-    rv = try;
-  return rv;
-}
-
-static void
-choose_temp_base ()
-{
-  char *base = 0;
-  int len;
-
-  base = choose_temp_base_try (getenv ("TMPDIR"), base);
-  base = choose_temp_base_try (getenv ("TMP"), base);
-  base = choose_temp_base_try (getenv ("TEMP"), base);
-
-#ifdef P_tmpdir
-  base = choose_temp_base_try (P_tmpdir, base);
-#endif
-
-  base = choose_temp_base_try (concat4 (dir_separator_str, "usr", 
-                                        dir_separator_str, "tmp"), 
-                                base);
-  base = choose_temp_base_try (concat (dir_separator_str, "tmp"), base);
- 
-  /* If all else fails, use the current directory! */  
-  if (base == (char *)0) base = concat(".", dir_separator_str);
-
-  len = strlen (base);
-  temp_filename = xmalloc (len + strlen (concat (dir_separator_str, 
-                                                 "ccXXXXXX")) + 1);
-  strcpy (temp_filename, base);
-  if (len > 0 && temp_filename[len-1] != '/'
-      && temp_filename[len-1] != DIR_SEPARATOR)
-    temp_filename[len++] = DIR_SEPARATOR;
-  strcpy (temp_filename + len, "ccXXXXXX");
-
-  mktemp (temp_filename);
-  temp_filename_length = strlen (temp_filename);
-  if (temp_filename_length == 0)
-    abort ();
-}
 
-
 /* Routine to add variables to the environment.  We do this to pass
    the pathname of the gcc driver, and the directories search to the
    collect2 program, which is being run as ld.  This way, we can be
@@ -2425,7 +2320,7 @@ process_command (argc, argv)
 	    {
 	      strncpy (nstore, startp, endp-startp);
 	      if (endp == startp)
-		strcpy (nstore, concat (".", dir_separator_str));
+		strcpy (nstore, concat (".", dir_separator_str, NULL_PTR));
 	      else if (endp[-1] != '/' && endp[-1] != DIR_SEPARATOR)
 		{
 		  nstore[endp-startp] = DIR_SEPARATOR;
@@ -2456,7 +2351,7 @@ process_command (argc, argv)
 	    {
 	      strncpy (nstore, startp, endp-startp);
 	      if (endp == startp)
-		strcpy (nstore, concat (".", dir_separator_str));
+		strcpy (nstore, concat (".", dir_separator_str, NULL_PTR));
 	      else if (endp[-1] != '/' && endp[-1] != DIR_SEPARATOR)
 		{
 		  nstore[endp-startp] = DIR_SEPARATOR;
@@ -2488,7 +2383,7 @@ process_command (argc, argv)
 	    {
 	      strncpy (nstore, startp, endp-startp);
 	      if (endp == startp)
-		strcpy (nstore, concat (".", dir_separator_str));
+		strcpy (nstore, concat (".", dir_separator_str, NULL_PTR));
 	      else if (endp[-1] != '/' && endp[-1] != DIR_SEPARATOR)
 		{
 		  nstore[endp-startp] = DIR_SEPARATOR;
@@ -2680,7 +2575,7 @@ process_command (argc, argv)
 		  value = p + 1;
 		add_prefix (&exec_prefixes, value, 1, 0, &warn_B);
 		add_prefix (&startfile_prefixes, value, 1, 0, &warn_B);
-		add_prefix (&include_prefixes, concat (value, "include"),
+		add_prefix (&include_prefixes, concat (value, "include", NULL_PTR),
 			    1, 0, NULL_PTR);
 
 		/* As a kludge, if the arg is "[foo/]stageN/", just add
@@ -2779,8 +2674,8 @@ process_command (argc, argv)
   add_prefix (&startfile_prefixes, standard_exec_prefix, 0, 1, warn_std_ptr);
   add_prefix (&startfile_prefixes, standard_exec_prefix_1, 0, 1, warn_std_ptr);
 
-  tooldir_prefix = concat3 (tooldir_base_prefix, spec_machine, 
-                            dir_separator_str);
+  tooldir_prefix = concat (tooldir_base_prefix, spec_machine, 
+			   dir_separator_str, NULL_PTR);
 
   /* If tooldir is relative, base it on exec_prefixes.  A relative
      tooldir lets us move the installed tree as a unit.
@@ -2794,29 +2689,29 @@ process_command (argc, argv)
       if (gcc_exec_prefix)
 	{
 	  char *gcc_exec_tooldir_prefix
-	    = concat6 (gcc_exec_prefix, spec_machine, dir_separator_str,
-		      spec_version, dir_separator_str, tooldir_prefix);
+	    = concat (gcc_exec_prefix, spec_machine, dir_separator_str,
+		      spec_version, dir_separator_str, tooldir_prefix, NULL_PTR);
 
 	  add_prefix (&exec_prefixes,
-		      concat3 (gcc_exec_tooldir_prefix, "bin", 
-                               dir_separator_str),
+		      concat (gcc_exec_tooldir_prefix, "bin", 
+			      dir_separator_str, NULL_PTR),
 		      0, 0, NULL_PTR);
 	  add_prefix (&startfile_prefixes,
-		      concat3 (gcc_exec_tooldir_prefix, "lib", 
-                               dir_separator_str),
+		      concat (gcc_exec_tooldir_prefix, "lib", 
+			      dir_separator_str, NULL_PTR),
 		      0, 0, NULL_PTR);
 	}
 
-      tooldir_prefix = concat6 (standard_exec_prefix, spec_machine,
-			        dir_separator_str, spec_version, 
-                                dir_separator_str, tooldir_prefix);
+      tooldir_prefix = concat (standard_exec_prefix, spec_machine,
+			       dir_separator_str, spec_version, 
+			       dir_separator_str, tooldir_prefix, NULL_PTR);
     }
 
   add_prefix (&exec_prefixes, 
-              concat3 (tooldir_prefix, "bin", dir_separator_str),
+              concat (tooldir_prefix, "bin", dir_separator_str, NULL_PTR),
 	      0, 0, NULL_PTR);
   add_prefix (&startfile_prefixes,
-	      concat3 (tooldir_prefix, "lib", dir_separator_str),
+	      concat (tooldir_prefix, "lib", dir_separator_str, NULL_PTR),
 	      0, 0, NULL_PTR);
 
   /* More prefixes are enabled in main, after we read the specs file
@@ -3376,7 +3271,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		    t->length = p - suffix;
 		    t->suffix = save_string (suffix, p - suffix);
 		    t->unique = (c != 'g');
-		    choose_temp_base ();
+		    temp_filename = choose_temp_base ();
+		    temp_filename_length = strlen (temp_filename);
 		    t->filename = temp_filename;
 		    t->filename_length = temp_filename_length;
 		  }
@@ -4245,12 +4141,12 @@ is_directory (path1, path2, linker)
   /* Exclude directories that the linker is known to search.  */
   if (linker
       && ((cp - path == 6
-	   && strcmp (path, concat4 (dir_separator_str, "lib", 
-                                     dir_separator_str, ".")) == 0)
+	   && strcmp (path, concat (dir_separator_str, "lib", 
+				    dir_separator_str, ".", NULL_PTR)) == 0)
 	  || (cp - path == 10
-	      && strcmp (path, concat6 (dir_separator_str, "usr", 
-                                        dir_separator_str, "lib", 
-                                        dir_separator_str, ".")) == 0)))
+	      && strcmp (path, concat (dir_separator_str, "usr", 
+				       dir_separator_str, "lib", 
+				       dir_separator_str, ".", NULL_PTR)) == 0)))
     return 0;
 
   return (stat (path, &st) >= 0 && S_ISDIR (st.st_mode));
@@ -4320,7 +4216,8 @@ main (argc, argv)
 
   /* Choose directory for temp files.  */
 
-  choose_temp_base ();
+  temp_filename = choose_temp_base ();
+  temp_filename_length = strlen (temp_filename);
 
   /* Make a table of what switches there are (switches, n_switches).
      Make a table of specified input files (infiles, n_infiles).
@@ -4338,9 +4235,9 @@ main (argc, argv)
 
   /* Read specs from a file if there is one.  */
 
-  machine_suffix = concat4 (spec_machine, dir_separator_str,
-                            spec_version, dir_separator_str);
-  just_machine_suffix = concat (spec_machine, dir_separator_str);
+  machine_suffix = concat (spec_machine, dir_separator_str,
+			   spec_version, dir_separator_str, NULL_PTR);
+  just_machine_suffix = concat (spec_machine, dir_separator_str, NULL_PTR);
 
   specs_file = find_a_file (&startfile_prefixes, "specs", R_OK);
   /* Read the specs file unless it is a default one.  */
@@ -4387,13 +4284,13 @@ main (argc, argv)
 	{
 	  if (gcc_exec_prefix)
 	    add_prefix (&startfile_prefixes,
-			concat3 (gcc_exec_prefix, machine_suffix,
-				 standard_startfile_prefix),
+			concat (gcc_exec_prefix, machine_suffix,
+				standard_startfile_prefix, NULL_PTR),
 			0, 0, NULL_PTR);
 	  add_prefix (&startfile_prefixes,
-		      concat3 (standard_exec_prefix,
-			       machine_suffix,
-			       standard_startfile_prefix),
+		      concat (standard_exec_prefix,
+			      machine_suffix,
+			      standard_startfile_prefix, NULL_PTR),
 		      0, 0, NULL_PTR);
 	}		       
 
@@ -4409,8 +4306,8 @@ main (argc, argv)
     {
       if (*standard_startfile_prefix != DIR_SEPARATOR && gcc_exec_prefix)
 	add_prefix (&startfile_prefixes,
-		    concat3 (gcc_exec_prefix, machine_suffix,
-			     standard_startfile_prefix),
+		    concat (gcc_exec_prefix, machine_suffix,
+			    standard_startfile_prefix, NULL_PTR),
 		    0, 0, NULL_PTR);
     }
 
@@ -4749,42 +4646,58 @@ xrealloc (ptr, size)
   return value;
 }
 
-/* Return a newly-allocated string whose contents concatenate those of s1, s2 */
+/* This function is based on the one in libiberty.  */
 
 static char *
-concat (s1, s2)
-     char *s1, *s2;
+concat VPROTO((char *first, ...))
 {
-  int len1 = strlen (s1);
-  int len2 = strlen (s2);
-  char *result = xmalloc (len1 + len2 + 1);
+  register int length;
+  register char *newstr;
+  register char *end;
+  register char *arg;
+  va_list args;
+#ifndef __STDC__
+  char *first;
+#endif
 
-  strcpy (result, s1);
-  strcpy (result + len1, s2);
-  *(result + len1 + len2) = 0;
+  /* First compute the size of the result and get sufficient memory. */
 
-  return result;
-}
+  VA_START (args, first);
+#ifndef __STDC__
+  first = va_arg (args, char *);
+#endif
 
-static char *
-concat3 (s1, s2, s3)
-     char *s1, *s2, *s3;
-{
-  return concat (concat (s1, s2), s3);
-}
+  arg = first;
+  length = 0;
 
-static char *
-concat4 (s1, s2, s3, s4)
-     char *s1, *s2, *s3, *s4;
-{
-  return concat (concat (s1, s2), concat (s3, s4));
-}
+  while (arg != 0)
+    {
+      length += strlen (arg);
+      arg = va_arg (args, char *);
+    }
 
-static char *
-concat6 (s1, s2, s3, s4, s5, s6)
-     char *s1, *s2, *s3, *s4, *s5, *s6;
-{
-  return concat3 (concat (s1, s2), concat (s3, s4), concat (s5, s6));
+  newstr = (char *) xmalloc (length + 1);
+  va_end (args);
+
+  /* Now copy the individual pieces to the result string. */
+
+  VA_START (args, first);
+#ifndef __STDC__
+  first = va_arg (args, char *);
+#endif
+
+  end = newstr;
+  arg = first;
+  while (arg != 0)
+    {
+      while (*arg)
+	*end++ = *arg++;
+      arg = va_arg (args, char *);
+    }
+  *end = '\000';
+  va_end (args);
+
+  return (newstr);
 }
 
 static char *
