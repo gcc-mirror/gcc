@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in arm.c and pe.c
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
 
@@ -194,6 +194,7 @@ extern int  arm_dllexport_p 		PARAMS ((tree));
 extern int  arm_dllimport_p 		PARAMS ((tree));
 extern void arm_mark_dllexport 		PARAMS ((tree));
 extern void arm_mark_dllimport 		PARAMS ((tree));
+extern void arm_output_mi_thunk         PARAMS ((FILE *, tree, int, tree));
 #endif
 
 extern void arm_init_builtins		PARAMS ((void));

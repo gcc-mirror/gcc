@@ -2869,8 +2869,7 @@ do {									\
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
-  sparc_output_mi_thunk (FILE, THUNK_FNDECL, DELTA, FUNCTION)
+#define TARGET_ASM_OUTPUT_MI_THUNK sparc_output_mi_thunk
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
   ((CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^' || (CHAR) == '(' || (CHAR) == '_')

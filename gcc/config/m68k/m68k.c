@@ -3835,3 +3835,31 @@ m68k_svr3_asm_out_constructor (symbol, priority)
   output_asm_insn (output_move_simode (xop), xop);
 }
 #endif
+
+void
+m68k_output_mi_thunk (file, thunk, delta, function)
+     FILE *file;
+     tree thunk ATTRIBUTE_UNUSED;
+     int delta;
+     tree function;
+{
+  if (delta > 0 && delta <= 8)						
+    asm_fprintf (file, "\taddq.l %I%d,4(%Rsp)\n", delta);		
+  else if (delta < 0 && delta >= -8)					
+    asm_fprintf (file, "\tsubq.l %I%d,4(%Rsp)\n", -delta);		
+  else									
+    asm_fprintf (file, "\tadd.l %I%d,4(%Rsp)\n", delta);		
+									
+  if (flag_pic)								
+    {									
+      fprintf (file, "\tbra.l ");					
+      assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));	
+      fprintf (file, "@PLTPC\n");					
+    }									
+  else									
+    {									
+      fprintf (file, "\tjmp ");						
+      assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));	
+      fprintf (file, "\n");						
+    }									
+}

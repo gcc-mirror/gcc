@@ -750,6 +750,7 @@ static int ix86_variable_issue PARAMS ((FILE *, int, rtx, int));
 static int ia32_use_dfa_pipeline_interface PARAMS ((void));
 static int ia32_multipass_dfa_lookahead PARAMS ((void));
 static void ix86_init_mmx_sse_builtins PARAMS ((void));
+static rtx ia32_this_parameter PARAMS ((tree));
 
 struct ix86_address
 {
@@ -788,6 +789,7 @@ static unsigned int ix86_select_alt_pic_regnum PARAMS ((void));
 static int ix86_save_reg PARAMS ((unsigned int, int));
 static void ix86_compute_frame_layout PARAMS ((struct ix86_frame *));
 static int ix86_comp_type_attributes PARAMS ((tree, tree));
+static int ix86_fntype_regparm PARAMS ((tree));
 const struct attribute_spec ix86_attribute_table[];
 static tree ix86_handle_cdecl_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static tree ix86_handle_regparm_attribute PARAMS ((tree *, tree, tree, int, bool *));
@@ -1295,6 +1297,10 @@ override_options ()
     internal_label_prefix_len = p - internal_label_prefix;
     *p = '\0';
   }
+
+  /* In 64-bit mode, we do not have support for vcall thunks.  */
+  if (TARGET_64BIT)
+    targetm.asm_out.output_mi_vcall_thunk = NULL;
 }
 
 void
@@ -1431,6 +1437,21 @@ ix86_comp_type_attributes (type1, type2)
   return 1;
 }
 
+/* Return the regparm value for a fuctio with the indicated TYPE.  */
+
+static int
+ix86_fntype_regparm (type)
+     tree type;
+{
+  tree attr;
+
+  attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type));
+  if (attr)
+    return TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
+  else
+    return ix86_regparm;
+}
+
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
    FUNDECL is the declaration node of the function (as a tree),
@@ -1474,15 +1495,7 @@ ix86_return_pops_args (fundecl, funtype, size)
   if (aggregate_value_p (TREE_TYPE (funtype))
       && !TARGET_64BIT)
     {
-      int nregs = ix86_regparm;
-
-      if (funtype)
-	{
-	  tree attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (funtype));
-
-	  if (attr)
-	    nregs = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
-	}
+      int nregs = ix86_fntype_regparm (funtype);
 
       if (!nregs)
 	return GET_MODE_SIZE (Pmode);
@@ -13860,27 +13873,51 @@ x86_order_regs_for_local_alloc ()
      reg_alloc_order [pos++] = 0;
 }
 
-void
-x86_output_mi_thunk (file, delta, function)
-     FILE *file;
-     int delta;
+/* Returns an expression indicating where the this parameter is
+   located on entry to the FUNCTION.  */
+
+static rtx
+ia32_this_parameter (function)
      tree function;
 {
-  tree parm;
+  tree type = TREE_TYPE (function);
+
+  if (ix86_fntype_regparm (type) > 0)
+    {
+      tree parm;
+
+      parm = TYPE_ARG_TYPES (type);
+      /* Figure out whether or not the function has a variable number of
+	 arguments.  */
+      for (; parm; parm = TREE_CHAIN (parm))\
+	if (TREE_VALUE (parm) == void_type_node)
+	  break;
+      /* If not, the this parameter is in %eax.  */
+      if (parm)
+	return gen_rtx_REG (SImode, 0);
+    }
+
+  if (aggregate_value_p (TREE_TYPE (type)))
+    return gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 8));
+  else
+    return gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 4));
+}
+
+
+void
+x86_output_mi_vcall_thunk (file, thunk, delta, vcall_index, function)
+     FILE *file;
+     tree thunk ATTRIBUTE_UNUSED;
+     int delta;
+     int vcall_index;
+     tree function;
+{
   rtx xops[3];
 
-  if (ix86_regparm > 0)
-    parm = TYPE_ARG_TYPES (TREE_TYPE (function));
-  else
-    parm = NULL_TREE;
-  for (; parm; parm = TREE_CHAIN (parm))
-    if (TREE_VALUE (parm) == void_type_node)
-      break;
-
-  xops[0] = GEN_INT (delta);
   if (TARGET_64BIT)
     {
       int n = aggregate_value_p (TREE_TYPE (TREE_TYPE (function))) != 0;
+      xops[0] = GEN_INT (delta);
       xops[1] = gen_rtx_REG (DImode, x86_64_int_parameter_registers[n]);
       output_asm_insn ("add{q} {%0, %1|%1, %0}", xops);
       if (flag_pic)
@@ -13898,13 +13935,49 @@ x86_output_mi_thunk (file, delta, function)
     }
   else
     {
-      if (parm)
-	xops[1] = gen_rtx_REG (SImode, 0);
-      else if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function))))
-	xops[1] = gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 8));
-      else
-	xops[1] = gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 4));
-      output_asm_insn ("add{l} {%0, %1|%1, %0}", xops);
+      /* Adjust the this parameter by a fixed constant.  */
+      if (delta)
+	{
+	  xops[0] = GEN_INT (delta);
+	  xops[1] = ia32_this_parameter (function);
+	  output_asm_insn ("add{l}\t{%0, %1|%1, %0}", xops);
+	}
+
+      /* Adjust the this parameter by a value stored in the vtable.  */
+      if (vcall_index)
+	{
+	  rtx this_parm;
+
+	  /* Put the this parameter into %eax.  */
+	  this_parm = ia32_this_parameter (function);
+	  if (!REG_P (this_parm))
+	    {
+	      xops[0] = this_parm;
+	      xops[1] = gen_rtx_REG (Pmode, 0);
+	      output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
+	    }
+	  /* Load the virtual table pointer into %edx.  */
+	  if (ix86_fntype_regparm (TREE_TYPE (function)) > 2)
+	    error ("virtual function `%D' cannot have more than two register parameters",
+		   function);
+	  xops[0] = gen_rtx_MEM (Pmode, 
+				 gen_rtx_REG (Pmode, 0));
+	  xops[1] = gen_rtx_REG (Pmode, 1);
+	  output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
+	  /* Adjust the this parameter.  */
+	  xops[0] = gen_rtx_MEM (SImode, 
+				 plus_constant (gen_rtx_REG (Pmode, 1), 
+						vcall_index));
+	  xops[1] = gen_rtx_REG (Pmode, 0);
+	  output_asm_insn ("add{l}\t{%0, %1|%1, %0}", xops);
+	  /* Put the this parameter back where it came from.  */
+	  if (!REG_P (this_parm))
+	    {
+	      xops[0] = gen_rtx_REG (Pmode, 0);
+	      xops[1] = ia32_this_parameter (function);
+	      output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
+	    }
+	}
 
       if (flag_pic)
 	{
@@ -13928,11 +14001,22 @@ x86_output_mi_thunk (file, delta, function)
 	}
       else
 	{
-	  fprintf (file, "\tjmp ");
+	  fprintf (file, "\tjmp\t");
 	  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
 	  fprintf (file, "\n");
 	}
     }
+}
+
+void
+x86_output_mi_thunk (file, thunk, delta, function)
+     FILE *file;
+     tree thunk;
+     int delta;
+     tree function;
+{
+  x86_output_mi_vcall_thunk (file, thunk, delta, /*vcall_index=*/0, 
+			     function);
 }
 
 int

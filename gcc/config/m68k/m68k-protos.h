@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -63,6 +63,10 @@ extern int memory_src_operand PARAMS ((rtx, enum machine_mode));
 extern int pcrel_address PARAMS ((rtx, enum machine_mode));
 extern rtx legitimize_pic_address PARAMS ((rtx, enum machine_mode, rtx));
 #endif /* RTX_CODE */
+
+#ifdef TREE_CODE
+extern void m68k_output_mi_thunk PARAMS ((FILE *, tree, int, tree));
+#endif /* TREE_CODE */
 
 extern int flags_in_68881 PARAMS ((void));
 extern int use_return_insn PARAMS ((void));

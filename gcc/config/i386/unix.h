@@ -1,5 +1,5 @@
 /* Definitions for Unix assembler syntax for the Intel 80386.
-   Copyright (C) 1988, 1994, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -68,5 +68,5 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
-    x86_output_mi_thunk (FILE, DELTA, FUNCTION);
+#define TARGET_ASM_OUTPUT_MI_THUNK x86_output_mi_thunk
+#define TARGET_ASM_OUTPUT_MI_VCALL_THUNK x86_output_mi_vcall_thunk

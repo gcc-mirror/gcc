@@ -5582,3 +5582,78 @@ s390_encode_section_info (decl, first)
 	}
     }
 }
+
+void
+s390_output_mi_thunk (file, thunk, delta, function)
+     FILE *file;
+     tree thunk ATTRIBUTE_UNUSED;
+     int delta;
+     tree function;
+{
+  if (TARGET_64BIT)                                                           
+    {                                                                         
+      if (flag_pic)                                                           
+        {                                                                     
+          fprintf (file, "\tlarl  1,0f\n");                                   
+          fprintf (file, "\tagf   %d,0(1)\n",                                 
+                   aggregate_value_p (TREE_TYPE                               
+                                      (TREE_TYPE (function))) ? 3 :2 );       
+          fprintf (file, "\tlarl  1,");                                       
+          assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));      
+          fprintf (file, "@GOTENT\n");                                        
+          fprintf (file, "\tlg    1,0(1)\n");                                 
+          fprintf (file, "\tbr    1\n");                                      
+          fprintf (file, "0:\t.long  ");	                              
+          fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));                   
+          fprintf (file, "\n");			                              
+        }                                                                     
+      else                                                                    
+        {                                                                     
+          fprintf (file, "\tlarl  1,0f\n");                                   
+          fprintf (file, "\tagf   %d,0(1)\n",                                 
+          aggregate_value_p (TREE_TYPE                                        
+                             (TREE_TYPE (function))) ? 3 :2 );                
+          fprintf (file, "\tjg  ");                                           
+          assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));      
+          fprintf (file, "\n");                                               
+          fprintf (file, "0:\t.long  ");		                      
+          fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));                   
+          fprintf (file, "\n");			                              
+        }                                                                     
+    }                                                                         
+  else                                                                        
+    {                                                                         
+      if (flag_pic)                                                           
+        {                                                                     
+          fprintf (file, "\tbras  1,0f\n");                                   
+          fprintf (file, "\t.long _GLOBAL_OFFSET_TABLE_-.\n");                
+          fprintf (file, "\t.long  ");                                        
+          assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));      
+          fprintf (file, "@GOT\n");                                           
+          fprintf (file, "\t.long  ");		                              
+          fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));                   
+          fprintf (file, "\n");			                              
+          fprintf (file, "0:\tal  %d,8(1)\n",                                 
+                   aggregate_value_p (TREE_TYPE                               
+                                      (TREE_TYPE (function))) ? 3 : 2 );      
+          fprintf (file, "\tl     0,4(1)\n");                                 
+          fprintf (file, "\tal    1,0(1)\n");                                 
+          fprintf (file, "\talr   1,0\n");                                    
+          fprintf (file, "\tl     1,0(1)\n");                                 
+          fprintf (file, "\tbr    1\n");                                      
+        } else {                                                              
+          fprintf (file, "\tbras  1,0f\n");                                   
+          fprintf (file, "\t.long  ");                                        
+          assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));      
+          fprintf (file, "-.\n");                                             
+          fprintf (file, "\t.long  ");		                              
+          fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));                   
+          fprintf (file, "\n");			                              
+          fprintf (file, "0:\tal  %d,4(1)\n",                                 
+                   aggregate_value_p (TREE_TYPE                               
+                                      (TREE_TYPE (function))) ? 3 : 2 );      
+          fprintf (file, "\tal    1,0(1)\n");                                 
+          fprintf (file, "\tbr    1\n");                                      
+       }                                                                      
+    }                                                                         
+}

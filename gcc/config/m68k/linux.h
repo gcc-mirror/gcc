@@ -357,25 +357,4 @@ do {									\
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
-do {									\
-  if (DELTA > 0 && DELTA <= 8)						\
-    asm_fprintf (FILE, "\taddq.l %I%d,4(%Rsp)\n", DELTA);		\
-  else if (DELTA < 0 && DELTA >= -8)					\
-    asm_fprintf (FILE, "\tsubq.l %I%d,4(%Rsp)\n", -DELTA);		\
-  else									\
-    asm_fprintf (FILE, "\tadd.l %I%d,4(%Rsp)\n", DELTA);		\
-									\
-  if (flag_pic)								\
-    {									\
-      fprintf (FILE, "\tbra.l ");					\
-      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
-      fprintf (FILE, "@PLTPC\n");					\
-    }									\
-  else									\
-    {									\
-      fprintf (FILE, "\tjmp ");						\
-      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
-      fprintf (FILE, "\n");						\
-    }									\
-} while (0)
+#define TARGET_ASM_OUTPUT_MI_THUNK m68k_output_mi_thunk

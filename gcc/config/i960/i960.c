@@ -2824,3 +2824,25 @@ i960_scan_opcode (p)
       break;
     }
 }
+
+void
+i960_output_mi_thunk (file, thunk, delta, function)
+     FILE *file;
+     tree thunk ATTRIBUTE_UNUSED;
+     int delta;
+     tree function;
+{
+  int d = delta;
+  if (d < 0 && d > -32)							
+    fprintf (file, "\tsubo %d,g0,g0\n", -d);				
+  else if (d > 0 && d < 32)						
+    fprintf (file, "\taddo %d,g0,g0\n", d);				
+  else									
+    {									
+      fprintf (file, "\tldconst %d,r5\n", d);				
+      fprintf (file, "\taddo r5,g0,g0\n");				
+    }									
+  fprintf (file, "\tbx ");						
+  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));	
+  fprintf (file, "\n");							
+}

@@ -856,76 +856,7 @@ CUMULATIVE_ARGS;
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)              \
-do {                                                                          \
-  if (TARGET_64BIT)                                                           \
-    {                                                                         \
-      if (flag_pic)                                                           \
-        {                                                                     \
-          fprintf (FILE, "\tlarl  1,0f\n");                                   \
-          fprintf (FILE, "\tagf   %d,0(1)\n",                                 \
-                   aggregate_value_p (TREE_TYPE                               \
-                                      (TREE_TYPE (FUNCTION))) ? 3 :2 );       \
-          fprintf (FILE, "\tlarl  1,");                                       \
-          assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));      \
-          fprintf (FILE, "@GOTENT\n");                                        \
-          fprintf (FILE, "\tlg    1,0(1)\n");                                 \
-          fprintf (FILE, "\tbr    1\n");                                      \
-          fprintf (FILE, "0:\t.long  ");	                              \
-          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));                   \
-          fprintf (FILE, "\n");			                              \
-        }                                                                     \
-      else                                                                    \
-        {                                                                     \
-          fprintf (FILE, "\tlarl  1,0f\n");                                   \
-          fprintf (FILE, "\tagf   %d,0(1)\n",                                 \
-          aggregate_value_p (TREE_TYPE                                        \
-                             (TREE_TYPE (FUNCTION))) ? 3 :2 );                \
-          fprintf (FILE, "\tjg  ");                                           \
-          assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));      \
-          fprintf (FILE, "\n");                                               \
-          fprintf (FILE, "0:\t.long  ");		                      \
-          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));                   \
-          fprintf (FILE, "\n");			                              \
-        }                                                                     \
-    }                                                                         \
-  else                                                                        \
-    {                                                                         \
-      if (flag_pic)                                                           \
-        {                                                                     \
-          fprintf (FILE, "\tbras  1,0f\n");                                   \
-          fprintf (FILE, "\t.long _GLOBAL_OFFSET_TABLE_-.\n");                \
-          fprintf (FILE, "\t.long  ");                                        \
-          assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));      \
-          fprintf (FILE, "@GOT\n");                                           \
-          fprintf (FILE, "\t.long  ");		                              \
-          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));                   \
-          fprintf (FILE, "\n");			                              \
-          fprintf (FILE, "0:\tal  %d,8(1)\n",                                 \
-                   aggregate_value_p (TREE_TYPE                               \
-                                      (TREE_TYPE (FUNCTION))) ? 3 : 2 );      \
-          fprintf (FILE, "\tl     0,4(1)\n");                                 \
-          fprintf (FILE, "\tal    1,0(1)\n");                                 \
-          fprintf (FILE, "\talr   1,0\n");                                    \
-          fprintf (FILE, "\tl     1,0(1)\n");                                 \
-          fprintf (FILE, "\tbr    1\n");                                      \
-        } else {                                                              \
-          fprintf (FILE, "\tbras  1,0f\n");                                   \
-          fprintf (FILE, "\t.long  ");                                        \
-          assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));      \
-          fprintf (FILE, "-.\n");                                             \
-          fprintf (FILE, "\t.long  ");		                              \
-          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));                   \
-          fprintf (FILE, "\n");			                              \
-          fprintf (FILE, "0:\tal  %d,4(1)\n",                                 \
-                   aggregate_value_p (TREE_TYPE                               \
-                                      (TREE_TYPE (FUNCTION))) ? 3 : 2 );      \
-          fprintf (FILE, "\tal    1,0(1)\n");                                 \
-          fprintf (FILE, "\tbr    1\n");                                      \
-       }                                                                      \
-    }                                                                         \
-} while (0)
-
+#define TARGET_ASM_OUTPUT_MI_THUNK s390_output_mi_thunk
 
 /* Addressing modes, and classification of registers for them.  */
 

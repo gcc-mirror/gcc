@@ -11130,3 +11130,38 @@ arm_encode_section_info (decl, first)
     }
 }
 #endif /* !ARM_PE */
+
+void
+arm_output_mi_thunk (file, thunk, delta, function)
+     FILE *file;
+     tree thunk ATTRIBUTE_UNUSED;
+     int delta;
+     tree function;
+{
+  int mi_delta = delta;
+  const char *const mi_op = mi_delta < 0 ? "sub" : "add";
+  int shift = 0;
+  int this_regno = (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)))
+                    ? 1 : 0);
+  if (mi_delta < 0)
+    mi_delta = - mi_delta;
+  while (mi_delta != 0)
+    {
+      if ((mi_delta & (3 << shift)) == 0)
+        shift += 2;
+      else
+        {
+          asm_fprintf (file, "\t%s\t%r, %r, #%d\n",
+                       mi_op, this_regno, this_regno,
+                       mi_delta & (0xff << shift));
+          mi_delta &= ~(0xff << shift);
+          shift += 8;
+        }
+    }
+  fputs ("\tb\t", file);
+  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+  if (NEED_PLT_RELOC)
+    fputs ("(PLT)", file);
+  fputc ('\n', file);
+}
+
