@@ -971,6 +971,18 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
       stmt_ann (stmt)->has_volatile_ops = true;
       return;
 
+    case CONSTRUCTOR:
+      {
+	/* General aggregate CONSTRUCTORs have been decomposed, but they
+	   are still in use as the COMPLEX_EXPR equivalent for vectors.  */
+
+	tree t;
+	for (t = TREE_OPERAND (expr, 0); t ; t = TREE_CHAIN (t))
+	  get_expr_operands (stmt, &TREE_VALUE (t), opf_none, prev_vops);
+
+	return;
+      }
+
     case TRUTH_NOT_EXPR:
     case BIT_FIELD_REF:
     do_unary:
@@ -1025,7 +1037,6 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
     case EXC_PTR_EXPR:
     case FILTER_EXPR:
     case LABEL_DECL:
-    case CONSTRUCTOR:
       /* Expressions that make no memory references.  */
       return;
 
