@@ -1,5 +1,8 @@
 2000-08-06  Kazu Hirata  <kazu@hxi.com>
 
+	* h8300.c (dosize): Rearrange code for conciseness.
+	(split_adds_subs): Likewise.
+
 	* loop.c: Fix formatting.
 
 	* dwarf2out.c: Fix formatting.
