@@ -258,12 +258,12 @@ empty_parms ()
 %type <ttype> template_type template_arg_list template_arg
 %type <ttype> condition xcond paren_cond_or_null
 %type <ttype> type_name nested_name_specifier nested_type ptr_to_mem
-%type <ttype> complete_type_name notype_identifier
+%type <ttype> complete_type_name notype_identifier nonnested_type
 %type <ttype> complex_type_name nested_name_specifier_1
 %type <itype> nomods_initdecls nomods_initdcl0
 %type <ttype> new_initializer new_placement
 %type <ttype> using_decl .poplevel
-
+%type <ttype> typename_sub typename_sub0 typename_sub1 typename_sub2
 /* in order to recognize aggr tags as defining and thus shadowing.  */
 %token TYPENAME_DEFN IDENTIFIER_DEFN PTYPENAME_DEFN
 %type <ttype> named_class_head_sans_basetype_defn
@@ -2190,11 +2190,8 @@ structsp:
 	| ENUM complex_type_name
 		{ $$.t = xref_tag (enum_type_node, $2, NULL_TREE, 1); 
 		  $$.new_type_flag = 0; }
-	| TYPENAME_KEYWORD nested_name_specifier identifier
-		{ $$.t = make_typename_type ($2, $3); 
-		  $$.new_type_flag = 0; }
-	| TYPENAME_KEYWORD global_scope nested_name_specifier identifier
-		{ $$.t = make_typename_type ($3, $4); 
+	| TYPENAME_KEYWORD typename_sub
+		{ $$.t = $2;
 		  $$.new_type_flag = 0; }
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
 	| class_head left_curly opt.component_decl_list '}' maybe_attribute
@@ -2437,11 +2434,8 @@ base_class:
 	;
 
 base_class.1:
-	  complete_type_name
-	| TYPENAME_KEYWORD nested_name_specifier identifier
-		{ $$ = TYPE_MAIN_DECL (make_typename_type ($2, $3)); }
-	| TYPENAME_KEYWORD global_scope nested_name_specifier identifier
-		{ $$ = TYPE_MAIN_DECL (make_typename_type ($3, $4)); }
+	  typename_sub
+	| nonnested_type
 	| SIGOF '(' expr ')'
 		{
 		  if (current_aggr == signature_type_node)
@@ -2945,7 +2939,7 @@ after_type_declarator:
 	| direct_after_type_declarator
 	;
 
-complete_type_name:
+nonnested_type:
 	  type_name  %prec EMPTY
 		{
 		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
@@ -2974,6 +2968,10 @@ complete_type_name:
 		    $$ = $2;
 		  got_scope = NULL_TREE;
 		}
+	;
+
+complete_type_name:
+	  nonnested_type
 	| nested_type
 	| global_scope nested_type
 		{ $$ = $2; }
@@ -3119,11 +3117,7 @@ nested_name_specifier_1:
 		{
 		  if (TREE_CODE ($$) == IDENTIFIER_NODE)
 		    $$ = lastiddecl;
-		  if (TREE_CODE ($$) == NAMESPACE_DECL
-		      && DECL_NAME ($$) == get_identifier ("std"))
-		    got_scope = void_type_node;
-		  else
-		    got_scope = $$;
+		  got_scope = $$;
 		}
 	| template_type SCOPE
 		{ got_scope = $$ = complete_type (TREE_TYPE ($1)); }
@@ -3137,6 +3131,66 @@ nested_name_specifier_1:
 		}
 	| PTYPENAME SCOPE
 		{ goto failed_scope; } */
+	;
+
+typename_sub:
+	  typename_sub0
+	| global_scope typename_sub0
+		{ $$ = $2; }
+	;
+
+typename_sub0:
+	  typename_sub1 identifier
+		{
+		  if (TREE_CODE_CLASS (TREE_CODE ($1)) == 't')
+		    $$ = make_typename_type ($1, $2);
+		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
+		    cp_error ("`%T' is not a class or namespace", $2);
+		  else
+		    $$ = $2;
+		}
+	;
+
+typename_sub1:
+	  typename_sub2
+		{
+		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
+		    cp_error ("`%T' is not a class or namespace", $1);
+		}
+	| typename_sub1 typename_sub2
+		{
+		  if (TREE_CODE_CLASS (TREE_CODE ($1)) == 't')
+		    $$ = make_typename_type ($1, $2);
+		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
+		    cp_error ("`%T' is not a class or namespace", $2);
+		  else
+		    $$ = $2;
+		}
+	;
+
+typename_sub2:
+	  TYPENAME SCOPE
+		{
+		  if (TREE_CODE ($1) != IDENTIFIER_NODE)
+		    $$ = lastiddecl;
+		  got_scope = $$ = complete_type (TREE_TYPE ($$));
+		}
+	| SELFNAME SCOPE
+		{
+		  if (TREE_CODE ($1) != IDENTIFIER_NODE)
+		    $$ = lastiddecl;
+		  got_scope = $$ = complete_type (TREE_TYPE ($$));
+		}
+	| template_type SCOPE
+		{ got_scope = $$ = complete_type (TREE_TYPE ($$)); }
+	| PTYPENAME SCOPE
+	| IDENTIFIER SCOPE
+	| NSNAME SCOPE
+		{
+		  if (TREE_CODE ($$) == IDENTIFIER_NODE)
+		    $$ = lastiddecl;
+		  got_scope = $$;
+		}
 	;
 
 complex_type_name:

@@ -4317,7 +4317,9 @@ make_typename_type (context, name)
 {
   tree t, d;
 
-  if (TREE_CODE (name) == TYPE_DECL)
+  if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
+    name = TYPE_IDENTIFIER (name);
+  else if (TREE_CODE (name) == TYPE_DECL)
     name = DECL_NAME (name);
   else if (TREE_CODE (name) != IDENTIFIER_NODE)
     my_friendly_abort (2000);
@@ -4377,6 +4379,10 @@ lookup_name_real (name, prefer_type, nonclass)
 
       yylex = 1;
       prefer_type = looking_for_typename;
+
+      /* std:: becomes :: for now.  */
+      if (got_scope == std_node)
+	got_scope = void_type_node;
 
       if (got_scope)
 	type = got_scope;

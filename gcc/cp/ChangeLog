@@ -1,3 +1,20 @@
+Thu Sep 25 11:11:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	Handle multi-level typenames and implicit typename in base list.
+	* parse.y (typename_sub{,[0-2]}): New rules.
+	(structsp, rule TYPENAME_KEYWORD): Use typename_sub.
+	(nonnested_type): New rule.
+	(complete_type_name): Use it.
+	(base_class.1): Use typename_sub and nonnested_type.
+	(nested_name_specifier): Don't elide std:: here.
+	* decl.c (make_typename_type): Handle getting a type for NAME.
+	(lookup_name_real): Turn std:: into :: here.
+
+	Rvalue conversions were removed in London.
+	* call.c (is_subseq): Don't consider lvalue transformations.
+	(build_conv): LVALUE_CONV and RVALUE_CONV get IDENTITY_RANK.
+	(joust): Reenable ?: kludge.
+
 1997-09-22  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* decl.c (start_function): Up warning of no return type to be a
