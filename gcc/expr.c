@@ -8858,11 +8858,39 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	{
 	  tree arg = TREE_VALUE (arglist);
 
+	  /* We return 1 for a numeric type that's known to be a constant
+	     value at compile-time or for an aggregate type that's a
+	     literal constant.  */
 	  STRIP_NOPS (arg);
-	  return (TREE_CODE_CLASS (TREE_CODE (arg)) == 'c'
-		  || (TREE_CODE (arg) == ADDR_EXPR
-		      && TREE_CODE (TREE_OPERAND (arg, 0)) == STRING_CST)
-		  ? const1_rtx : const0_rtx);
+
+	  /* If we know this is a constant, emit the constant of one.  */
+	  if (TREE_CODE_CLASS (TREE_CODE (arg)) == 'c'
+	      || (TREE_CODE (arg) == CONSTRUCTOR
+		  && TREE_CONSTANT (arg))
+	      || (TREE_CODE (arg) == ADDR_EXPR
+		  && TREE_CODE (TREE_OPERAND (arg, 0)) == STRING_CST))
+	    return const1_rtx;
+
+	  /* If we aren't going to be running CSE or this expression
+	     has side effects, show we don't know it to be a constant.
+	     Likewise if it's a pointer or aggregate type since in those
+	     case we only want literals, since those are only optimized
+	     when generating RTL, not later.  */
+	  else if (TREE_SIDE_EFFECTS (arg) || cse_not_expected
+		   || AGGREGATE_TYPE_P (TREE_TYPE (arg))
+		   || POINTER_TYPE_P (TREE_TYPE (arg)))
+	    return const0_rtx;
+
+	  /* Otherwise, emit (const (constant_p_rtx (ARG))) and let CSE
+	     get a chance to see if it can deduce whether ARG is constant.  */
+	  else
+	    return
+	      gen_rtx_CONST
+		(mode,
+		 gen_rtx_CONSTANT_P_RTX (mode,
+					 expand_expr (arg, NULL_RTX,
+						      VOIDmode, 0)));
+	  
 	}
 
     case BUILT_IN_FRAME_ADDRESS:
