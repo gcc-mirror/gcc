@@ -1,3 +1,8 @@
+Mon Dec  6 15:12:14 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* combine.c (force_to_mode, case LSHIFTRT): New local inner_mask.  Set
+	inner_mask instead of mask.
+
 1999-12-06  Brendan Kehoe  <brendan@cygnus.com>
 
 	* dwarf2out.c (field_byte_offset): As with dwarfout.c, size can be
