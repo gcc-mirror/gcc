@@ -2266,22 +2266,6 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
       return;
     }
 
-  /* Inline references to java.lang.PRIMTYPE.TYPE.
-     In addition to being a useful (minor) optimization,
-     this is also needed to avoid circularities in the implementation
-     of these fields in libjava. */
-  if (field_name == TYPE_identifier_node && ! is_putting
-      && ! flag_emit_class_files && field_type == class_ptr_type
-      && strncmp (self_name, "java.lang.", 10) == 0)
-    {
-      tree typ = build_primtype_type_ref (self_name);
-      if (typ)
-	{
-	  push_value (typ);
-	  return;
-	}
-    }
-
   field_ref = build_field_ref (field_ref, self_type, field_name);
   if (is_static)
     field_ref = build_class_init (self_type, field_ref);
@@ -2311,38 +2295,6 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
     }
   else
     push_value (field_ref);
-}
-
-tree
-build_primtype_type_ref (self_name)
-    const char *self_name;
-{
-  const char *class_name = self_name+10;
-  tree typ;
-  if (strncmp(class_name, "Byte", 4) == 0)
-    typ = byte_type_node;
-  else if (strncmp(class_name, "Short", 5) == 0)
-    typ = short_type_node;
-  else if (strncmp(class_name, "Integer", 7) == 0)
-    typ = int_type_node;
-  else if (strncmp(class_name, "Long", 4) == 0)
-    typ = long_type_node;
-  else if (strncmp(class_name, "Float", 5) == 0)
-    typ = float_type_node;
-  else if (strncmp(class_name, "Double", 6) == 0)
-    typ = double_type_node;
-  else if (strncmp(class_name, "Boolean", 7) == 0)
-    typ = boolean_type_node;
-  else if (strncmp(class_name, "Char", 4) == 0)
-    typ = char_type_node;
-  else if (strncmp(class_name, "Void", 4) == 0)
-    typ = void_type_node;
-  else
-    typ = NULL_TREE;
-  if (typ != NULL_TREE)
-    return build_class_ref (typ);
-  else
-    return NULL_TREE;
 }
 
 void
