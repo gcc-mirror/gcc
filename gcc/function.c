@@ -4965,11 +4965,20 @@ expand_function_start (subr, parms_have_cleanups)
 
   /* Fetch static chain values for containing functions.  */
   tem = decl_function_context (current_function_decl);
-  /* If not doing stupid register allocation, then start off with the static
-     chain pointer in a pseudo register.  Otherwise, we use the stack
-     address that was generated above.  */
+  /* If not doing stupid register allocation copy the static chain
+     pointer into a psuedo.  If we have small register classes, copy the
+     value from memory if static_chain_incoming_rtx is a REG.  If we do
+     stupid register allocation, we use the stack address generated above.  */
   if (tem && ! obey_regdecls)
-    last_ptr = copy_to_reg (static_chain_incoming_rtx);
+    {
+#ifdef SMALL_REGISTER_CLASSES
+      if (GET_CODE (static_chain_incoming_rtx) == REG)
+	last_ptr = copy_to_reg (last_ptr);
+      else
+#endif
+	last_ptr = copy_to_reg (static_chain_incoming_rtx);
+    }
+
   context_display = 0;
   while (tem)
     {
