@@ -1,3 +1,16 @@
+2000-11-06  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c: Include expr.h before c-tree.h.
+	(remove_useless_addtr_insns): Use reverse_condition_maybe_unordered
+	instead of reverse_condition.
+	(print_operand): Correct predicates for GT, GE, LT and LE.  Add
+	predicates for LTGT, UNLE, UNLT, UNGE, UNGT, UNEQ, UNORDERED and
+	ORDERED.
+	(cmpib_comparison_operator): Add GEU and LTU codes.
+	* pa.h (PREDICATE_CODES): Add codes for cmpib_comparison_operator.
+	* pa.md (bltgt, bunle, bunlt, bunge, bungt, buneq, bunordered,
+	bordered): New float conditional branch patterns.
+
 Wed Dec  6 21:03:41 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* final.c (final_addr_vec_align): Fix clipping to BIGGEST_ALIGNMENT.

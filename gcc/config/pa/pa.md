@@ -1369,6 +1369,126 @@
   operands[2] = hppa_compare_op1;
 }")
 
+(define_expand "bltgt"
+  [(set (pc)
+	(if_then_else (ltgt (match_dup 1) (match_dup 2))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (hppa_branch_type == CMP_SI)
+    FAIL;
+  emit_insn (gen_cmp_fp (LTGT, hppa_compare_op0, hppa_compare_op1));
+  emit_bcond_fp (NE, operands[0]);
+  DONE;
+}")
+
+(define_expand "bunle"
+  [(set (pc)
+	(if_then_else (unle (match_dup 1) (match_dup 2))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (hppa_branch_type == CMP_SI)
+    FAIL;
+  emit_insn (gen_cmp_fp (UNLE, hppa_compare_op0, hppa_compare_op1));
+  emit_bcond_fp (NE, operands[0]);
+  DONE;
+}")
+
+(define_expand "bunlt"
+  [(set (pc)
+	(if_then_else (unlt (match_dup 1) (match_dup 2))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (hppa_branch_type == CMP_SI)
+    FAIL;
+  emit_insn (gen_cmp_fp (UNLT, hppa_compare_op0, hppa_compare_op1));
+  emit_bcond_fp (NE, operands[0]);
+  DONE;
+}")
+
+(define_expand "bunge"
+  [(set (pc)
+	(if_then_else (unge (match_dup 1) (match_dup 2))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (hppa_branch_type == CMP_SI)
+    FAIL;
+  emit_insn (gen_cmp_fp (UNGE, hppa_compare_op0, hppa_compare_op1));
+  emit_bcond_fp (NE, operands[0]);
+  DONE;
+}")
+
+(define_expand "bungt"
+  [(set (pc)
+	(if_then_else (ungt (match_dup 1) (match_dup 2))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (hppa_branch_type == CMP_SI)
+    FAIL;
+  emit_insn (gen_cmp_fp (UNGT, hppa_compare_op0, hppa_compare_op1));
+  emit_bcond_fp (NE, operands[0]);
+  DONE;
+}")
+
+(define_expand "buneq"
+  [(set (pc)
+	(if_then_else (uneq (match_dup 1) (match_dup 2))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (hppa_branch_type == CMP_SI)
+    FAIL;
+  emit_insn (gen_cmp_fp (UNEQ, hppa_compare_op0, hppa_compare_op1));
+  emit_bcond_fp (NE, operands[0]);
+  DONE;
+}")
+
+(define_expand "bunordered"
+  [(set (pc)
+	(if_then_else (unordered (match_dup 1) (match_dup 2))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (hppa_branch_type == CMP_SI)
+    FAIL;
+  emit_insn (gen_cmp_fp (UNORDERED, hppa_compare_op0, hppa_compare_op1));
+  emit_bcond_fp (NE, operands[0]);
+  DONE;
+}")
+
+(define_expand "bordered"
+  [(set (pc)
+	(if_then_else (ordered (match_dup 1) (match_dup 2))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  if (hppa_branch_type == CMP_SI)
+    FAIL;
+  emit_insn (gen_cmp_fp (ORDERED, hppa_compare_op0, hppa_compare_op1));
+  emit_bcond_fp (NE, operands[0]);
+  DONE;
+}")
+
 ;; Match the branch patterns.
 
 

@@ -34,9 +34,9 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "tree.h"
 #include "reload.h"
+#include "expr.h"
 #include "c-tree.h"
 #include "function.h"
-#include "expr.h"
 #include "obstack.h"
 #include "toplev.h"
 #include "ggc.h"
@@ -2642,7 +2642,8 @@ remove_useless_addtr_insns (insns, check_notes)
 		  /* Reverse our condition.  */
 		  tmp = PATTERN (insn);
 		  PUT_CODE (XEXP (tmp, 1),
-			    reverse_condition (GET_CODE (XEXP (tmp, 1))));
+		    reverse_condition_maybe_unordered (GET_CODE (XEXP (tmp,
+		      1))));
 		}
 	    }
 	}
@@ -3921,8 +3922,8 @@ print_operand (file, x, code)
 	  abort ();
 	}
       return;
-    /* For floating point comparisons.  Need special conditions to deal
-       with NaNs properly.  */
+    /* For floating point comparisons. Note that the output predicates are the
+       complement of the desired mode. */
     case 'Y':
       switch (GET_CODE (x))
 	{
@@ -3931,13 +3932,29 @@ print_operand (file, x, code)
 	case NE:
 	  fputs ("=", file);  break;
 	case GT:
-	  fputs ("<=", file);  break;
+	  fputs ("!>", file);  break;
 	case GE:
-	  fputs ("<", file);  break;
+	  fputs ("!>=", file);  break;
 	case LT:
-	  fputs (">=", file);  break;
+	  fputs ("!<", file);  break;
 	case LE:
+	  fputs ("!<=", file);  break;
+	case LTGT:
+	  fputs ("!<>", file);  break;
+	case UNLE:
 	  fputs (">", file);  break;
+	case UNLT:
+	  fputs (">=", file);  break;
+	case UNGE:
+	  fputs ("<", file);  break;
+	case UNGT:
+	  fputs ("<=", file);  break;
+	case UNEQ:
+	  fputs ("<>", file);  break;
+	case UNORDERED:
+	  fputs ("<=>", file);  break;
+	case ORDERED:
+	  fputs ("!<=>", file);  break;
 	default:
 	  abort ();
 	}
@@ -7046,9 +7063,11 @@ cmpib_comparison_operator (op, mode)
           && (GET_CODE (op) == EQ
 	      || GET_CODE (op) == NE
 	      || GET_CODE (op) == GT
-	      || GET_CODE (op) == GE
 	      || GET_CODE (op) == GTU
+	      || GET_CODE (op) == GE
+	      || GET_CODE (op) == GEU
 	      || GET_CODE (op) == LT
+	      || GET_CODE (op) == LTU
 	      || GET_CODE (op) == LE
 	      || GET_CODE (op) == LEU));
 }

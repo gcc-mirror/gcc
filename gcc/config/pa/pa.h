@@ -2052,4 +2052,6 @@ while (0)
   {"basereg_operand", {REG}},						\
   {"div_operand", {REG, CONST_INT}},					\
   {"ireg_operand", {REG}},						\
+  {"cmpib_comparison_operator", {EQ, NE, LT, LTU, LE, LEU,		\
+   GT, GTU, GE, GEU}},							\
   {"movb_comparison_operator", {EQ, NE, LT, GE}},
