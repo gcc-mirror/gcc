@@ -1,5 +1,10 @@
 2004-10-19  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-cfg.c (thread_jumps): Use a do-while loop instead of a
+	loop with goto.
+
+2004-10-19  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* expr.c (expand_assignment): Remove the last argument.
 	Change the return type to void.
 	* expr.h: Update the prototype of expand_assignment.
