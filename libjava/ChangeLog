@@ -1,3 +1,10 @@
+2004-11-03  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (_Jv_JNI_NewObjectArray): Fixed return type.
+	* include/jni.h (struct JNINativeInterface) <NewObjectArray>: Now
+	returns jobjectArray.
+	(_Jv_JNIEnv::NewObjectArray): Likewise.
+
 2004-11-01  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (state::check_no_uninitialized_objects): Removed.
