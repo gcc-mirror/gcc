@@ -926,12 +926,12 @@ do {						\
  : GET_MODE (RTX) != BLKmode ? GEN_INT (GET_MODE_SIZE (GET_MODE (RTX)))	\
  : 0)
 
-/* For a MEM rtx, the alignment in bits.  */
+/* For a MEM rtx, the alignment in bits.  We can use the alignment of the
+   mode as a default when STRICT_ALIGNMENT, but not if not.  */
 #define MEM_ALIGN(RTX)							\
 (MEM_ATTRS (RTX) != 0 ? MEM_ATTRS (RTX)->align				\
- : GET_MODE (RTX) != BLKmode ? GET_MODE_ALIGNMENT (GET_MODE (RTX))	\
- : BITS_PER_UNIT)
-
+ : (STRICT_ALIGNMENT && GET_MODE (RTX) != BLKmode			\
+    ? GET_MODE_ALIGNMENT (GET_MODE (RTX)) : BITS_PER_UNIT))
 
 /* Copy the attributes that apply to memory locations from RHS to LHS.  */
 #define MEM_COPY_ATTRIBUTES(LHS, RHS)				\
