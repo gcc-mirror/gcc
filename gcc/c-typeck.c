@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 88, 91, 92-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1151,10 +1151,13 @@ lookup_field (type, component, indirect)
 	      /* Step through all anon unions in linear fashion.  */
 	      while (DECL_NAME (field_array[bot]) == NULL_TREE)
 		{
-		  tree anon, junk;
+		  tree anon = 0, junk;
 
 		  field = field_array[bot++];
-		  anon = lookup_field (TREE_TYPE (field), component, &junk);
+		  if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
+		      || TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
+		    anon = lookup_field (TREE_TYPE (field), component, &junk);
+
 		  if (anon != NULL_TREE)
 		    {
 		      *indirect = field;
@@ -1190,7 +1193,12 @@ lookup_field (type, component, indirect)
 	  if (DECL_NAME (field) == NULL_TREE)
 	    {
 	      tree junk;
-	      tree anon = lookup_field (TREE_TYPE (field), component, &junk);
+	      tree anon = 0;
+
+	      if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
+		  || TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
+		anon = lookup_field (TREE_TYPE (field), component, &junk);
+
 	      if (anon != NULL_TREE)
 		{
 		  *indirect = field;
