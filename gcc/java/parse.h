@@ -494,7 +494,6 @@ typedef struct _jdep {
 #define JDEP_DECL(J)          ((J)->decl)
 #define JDEP_DECL_WFL(J)      ((J)->decl)
 #define JDEP_KIND(J)          ((J)->kind)
-#define JDEP_SOLV(J)          ((J)->solv)
 #define JDEP_WFL(J)           ((J)->wfl)
 #define JDEP_MISC(J)          ((J)->misc)
 #define JDEP_ENCLOSING(J)     ((J)->enclosing)
