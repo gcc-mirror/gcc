@@ -524,6 +524,7 @@ prepare_scc_operands (code)
   if ((code != EQ && code != NE
        && (sh_compare_op1 != const0_rtx
 	   || code == GTU  || code == GEU || code == LTU || code == LEU))
+      || (mode == DImode && sh_compare_op1 != const0_rtx)
       || (TARGET_SH3E && GET_MODE_CLASS (mode) == MODE_FLOAT))
     sh_compare_op1 = force_reg (mode, sh_compare_op1);
 
