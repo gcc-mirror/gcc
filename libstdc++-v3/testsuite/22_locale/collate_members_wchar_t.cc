@@ -146,6 +146,20 @@ void test02()
     }
 #endif
 }
+
+void test03()
+{
+  bool test = true;
+  std::wstring str1(L"fffff");
+  std::wstring str2(L"ffffffffffff");
+
+  const std::locale cloc = std::locale::classic();
+  const std::collate<wchar_t> &col = std::use_facet<std::collate<wchar_t> >(cloc);
+
+  long l1 = col.hash(str1.c_str(), str1.c_str() + str1.size());
+  long l2 = col.hash(str2.c_str(), str2.c_str() + str2.size());
+  VERIFY( l1 != l2 );
+}
 #endif
 
 int main()
@@ -153,10 +167,7 @@ int main()
 #if _GLIBCPP_USE_WCHAR_T
   test01();
   test02();
+  test03();
 #endif
   return 0;
 }
-
-
-
-
