@@ -1,3 +1,7 @@
+2003-02-04  Nathan Myers  <ncm@cantrip.org>
+
+	* testsuite/25_algorithms/min_max.cc (test02): Add.
+            
 2003-02-04  Paolo Carlini  <pcarlini@unitus.it>
 	
 	PR libstdc++/9439, PR libstdc++/9425
