@@ -1,3 +1,9 @@
+1998-02-02  Mark Mitchell  <mmitchell@usa.net>
+
+	* calls.c (expand_call): Don't confuse member functions named
+	realloc, setjmp, and so forth with the standard library
+	functions of the same names.
+
 Thu Feb  5 21:59:49 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* stmt.c (expand_asm_operands): Correctly identify asm statements

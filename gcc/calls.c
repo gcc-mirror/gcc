@@ -851,7 +851,11 @@ expand_call (exp, target, ignore)
   is_longjmp = 0;
   is_malloc = 0;
 
-  if (name != 0 && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) <= 15)
+  if (name != 0 && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) <= 15
+      /* Exclude functions not at the file scope, or not `extern',
+	 since they are not the magic functions we would otherwise
+	 think they are.  */
+      && DECL_CONTEXT (fndecl) == NULL_TREE && TREE_PUBLIC (fndecl))
     {
       char *tname = name;
 
