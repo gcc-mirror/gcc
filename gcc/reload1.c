@@ -2465,7 +2465,8 @@ alter_reg (i, from_reg)
       if (from_reg == -1)
 	{
 	  /* No known place to spill from => no slot to reuse.  */
-	  x = assign_stack_local (GET_MODE (regno_reg_rtx[i]), total_size, -1);
+	  x = assign_stack_local (GET_MODE (regno_reg_rtx[i]), total_size,
+				  inherent_size == total_size ? 0 : -1);
 	  if (BYTES_BIG_ENDIAN)
 	    /* Cancel the  big-endian correction done in assign_stack_local.
 	       Get the address of the beginning of the slot.
@@ -2497,7 +2498,8 @@ alter_reg (i, from_reg)
 		total_size = spill_stack_slot_width[from_reg];
 	    }
 	  /* Make a slot with that size.  */
-	  x = assign_stack_local (mode, total_size, -1);
+	  x = assign_stack_local (mode, total_size,
+				  inherent_size == total_size ? 0 : -1);
 	  stack_slot = x;
 	  if (BYTES_BIG_ENDIAN)
 	    {
