@@ -2326,10 +2326,6 @@ c_common_get_alias_set (t)
 {
   tree u;
   
-  /* We know nothing about vector types */
-  if (TREE_CODE (t) == VECTOR_TYPE)
-    return 0;          
-  
   /* Permit type-punning when accessing a union, provided the access
      is directly through the union.  For example, this code does not
      permit taking the address of a union member and then storing
@@ -2343,17 +2339,17 @@ c_common_get_alias_set (t)
 	&& TREE_CODE (TREE_TYPE (TREE_OPERAND (u, 0))) == UNION_TYPE)
       return 0;
 
-  /* If this is a char *, the ANSI C standard says it can alias
-     anything.  Note that all references need do this.  */
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == 'r'
-      && TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
-      && TYPE_PRECISION (TREE_TYPE (t)) == TYPE_PRECISION (char_type_node))
-    return 0;
-
   /* That's all the expressions we handle specially.  */
   if (! TYPE_P (t))
     return -1;
 
+  /* The C standard guarantess that any object may be accessed via an
+     lvalue that has character type.  */
+  if (t == char_type_node
+      || t == signed_char_type_node
+      || t == unsigned_char_type_node)
+    return 0;
+  
   /* The C standard specifically allows aliasing between signed and
      unsigned variants of the same type.  We treat the signed
      variant as canonical.  */
