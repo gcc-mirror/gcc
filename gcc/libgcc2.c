@@ -96,7 +96,7 @@ typedef union
   DItype ll;
 } DIunion;
 
-#if defined (L_udivmoddi4) || defined (L_muldi3) || defined (L_udiv_using_sdiv)
+#if defined (L_udivmoddi4) || defined (L_muldi3) || defined (L_udiv_w_sdiv)
 
 #include "longlong.h"
 
@@ -273,9 +273,9 @@ __muldi3 (u, v)
 }
 #endif
 
-#ifdef L_udiv_using_sdiv
+#ifdef L_udiv_w_sdiv
 USItype
-__udiv_using_sdiv (rp, a1, a0, d)
+__udiv_w_sdiv (rp, a1, a0, d)
      USItype *rp, a1, a0, d;
 {
   USItype q, r;
