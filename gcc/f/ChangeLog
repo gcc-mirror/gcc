@@ -1,5 +1,9 @@
 1999-02-26  Craig Burley  <craig@jcb-sc.com>
 
+	* bugs.texi: Mention bugs known fixed in egcs 1.2 as of now.
+
+1999-02-26  Craig Burley  <craig@jcb-sc.com>
+
 	Fix what evidently remains of these, for 4.4bsd:
 	Tue Aug 18 21:41:31 1998  Jeffrey A Law  (law@cygnus.com)
 	* Make-lang.in: Add several "else true" clauses to deal with lame
@@ -117,15 +121,15 @@ Tue Jul 21 04:33:37 1998  Craig Burley  <burley@gnu.org>
 
 Sat Jul 18 19:16:48 1998  Craig Burley  <burley@gnu.org>
 
-        * lang-options.h: Fix up doc strings.
-        Remove the unimplemented -fdcp-intrinsics-* options.
+	* lang-options.h: Fix up doc strings.
+	Remove the unimplemented -fdcp-intrinsics-* options.
 
-        * str-1t.fin: Change mixed-case spelling of `GoTo' from
-        `Goto'.
+	* str-1t.fin: Change mixed-case spelling of `GoTo' from
+	`Goto'.
 
 Thu Jul 16 13:26:36 1998  Craig Burley  <burley@gnu.org>
 
-	* (ffecom_finish_symbol_transform_): Revert change
+	* com.c (ffecom_finish_symbol_transform_): Revert change
 	of 1998-05-23, as it was too aggressive, in that it
 	prevented transformation of (used) functions before
 	primary code generation.
@@ -350,7 +354,7 @@ Mon Jun 15 22:21:57 1998  Craig Burley  <burley@gnu.org>
 	* ste.c:
 	* top.c:
 	* toplev.j: New file.
-	
+
 	Conditionalize all dumping/reporting routines so they don't
 	get built for gcc/egcs:
 	* bld.c:
@@ -677,21 +681,21 @@ Fri Feb 20 12:45:53 1998  Craig Burley  <burley@gnu.org>
 Fri Feb 13 00:14:56 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.c (type_for_mode): Add explicit braces to avoid ambiguous `else'.
- 
+
 	* expr.c (ffeexpr_type_combine): Likewise.
 	(ffeexpr_reduce_): Likewise.
 	(ffeexpr_declare_parenthesized_): Likewise.
- 
+
 	* src.c (ffesrc_strcmp_1ns2i): Likewise.
 	(ffesrc_strcmp_2c): Likewise.
 	(ffesrc_strncmp_2c): Likewise.
- 
+
 	* stb.c (ffestb_halt1_): Likewise.
 	(ffestb_R90910_): Likewise.
 	(ffestb_R9109_): Likewise.
 
 	* stc.c (ffestc_R544_equiv_): Likewise.
- 
+
 	* std.c (ffestd_subr_copy_easy_): Likewise.
 	(ffestd_R1001dump_): Likewise.
 	(ffestd_R1001dump_1005_1_): Likewise.
@@ -700,16 +704,16 @@ Fri Feb 13 00:14:56 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	(ffestd_R1001dump_1005_4_): Likewise.
 	(ffestd_R1001dump_1005_5_): Likewise.
 	(ffestd_R1001dump_1010_2_): Likewise.
- 
+
 	* ste.c (ffeste_R840): Likewise.
- 
+
 	* sts.c (ffests_puttext): Likewise.
- 
+
 	* symbol.c (ffesymbol_check_token_): Likewise.
- 
+
 	* target.c (ffetarget_real1): Likewise.
 	(ffetarget_real2): Likewise.
- 
+
 Sun Jan 25 12:32:15 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (f77.stage1): Depend on stage1-start so parallel
@@ -906,7 +910,7 @@ Mon Sep 29 16:18:21 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 Fri Sep 19 01:12:27 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
-	* expr.c (ffeexpr_reduced_eqop2_): 
+	* expr.c (ffeexpr_reduced_eqop2_):
 	(ffeexpr_reduced_relop2_): Minor fixes to diagnostic code.
 
 	* fini.c (main): Change return type to `int'.
@@ -2478,7 +2482,7 @@ Thu Sep 26 00:18:40 1996  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	* lang-options.h, top.c, top.h (-fno-debug-kludge):
 	New option.
-  
+
 1996-09-24  Dave Love  <d.love@dl.ac.uk>
 
 	* Make-lang.in (include/f2c.h):

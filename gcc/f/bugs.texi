@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1998-09-01
+@c 1999-02-26
 
 @ifclear BUGSONLY
 @node Actual Bugs
@@ -25,6 +25,22 @@ configure, port, build, and install @code{g77},
 @ref{Problems Installing}.
 
 @itemize @bullet
+@item
+@code{g77} crashes when compiling
+I/O statements using keywords that define @code{INTEGER} values,
+such as @samp{IOSTAT=@var{j}},
+where @var{j} is other than default @code{INTEGER}
+(such as @code{INTEGER*2}).
+
+Fixed in @code{egcs} 1.2.
+
+@item
+@code{g77} fails to warn about a reference to a function
+when the corresponding @emph{subsequent} function program unit
+disagrees with the reference concerning the type of the function.
+
+Fixed in @code{egcs} 1.2.
+
 @item
 @code{g77} sometimes crashes when compiling code
 containing the construct @samp{CMPLX(0.)} or similar.
