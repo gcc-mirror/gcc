@@ -24,7 +24,8 @@
 
 #include <locale>
 #include <pthread.h>
- 
+#include <testsuite_hooks.h>
+
 const int max_thread_count = 20;
 //const int max_loop_count = 1000000; // orig value
 const int max_loop_count = 100000;
@@ -51,7 +52,7 @@ main()
   pthread_t tid[max_thread_count];
   
   for (int j = 0; j < max_locales; ++j)
-    loc[j] = std::locale(j % 2 ? "en_US" : "fr_FR");  
+    loc[j] = __gnu_test::try_named_locale(j % 2 ? "en_US" : "fr_FR");  
 
   for (int i = 0; i < max_thread_count; i++)
     pthread_create(&tid[i], NULL, thread_main, 0);
