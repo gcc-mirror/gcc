@@ -1655,10 +1655,7 @@ typedef struct rs6000_args
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)		\
 { if (LEGITIMATE_INDIRECT_ADDRESS_P (X))		\
     goto ADDR;						\
-  if (GET_CODE (X) == PRE_INC				\
-      && LEGITIMATE_INDIRECT_ADDRESS_P (XEXP (X, 0)))	\
-    goto ADDR;						\
-  if (GET_CODE (X) == PRE_DEC				\
+  if ((GET_CODE (X) == PRE_INC || GET_CODE (X) == PRE_DEC) \
       && LEGITIMATE_INDIRECT_ADDRESS_P (XEXP (X, 0)))	\
     goto ADDR;						\
   if (LEGITIMATE_CONSTANT_POOL_ADDRESS_P (X))		\
@@ -1705,9 +1702,9 @@ typedef struct rs6000_args
       low_int = INTVAL (XEXP (X, 1)) & 0xffff;				\
       if (low_int & 0x8000)						\
 	high_int += 1, low_int |= 0xffff0000;				\
-      (X) = gen_rtx (PLUS, SImode,					\
+      (X) = gen_rtx (PLUS, Pmode,					\
 		     force_operand					\
-		     	(gen_rtx (PLUS, SImode, XEXP (X, 0),		\
+		     	(gen_rtx (PLUS, Pmode, XEXP (X, 0),		\
 				  gen_rtx (CONST_INT, VOIDmode,		\
 						      high_int << 16)), 0), \
 		     gen_rtx (CONST_INT, VOIDmode, low_int));		\
@@ -1718,8 +1715,8 @@ typedef struct rs6000_args
 	   && (TARGET_HARD_FLOAT || (MODE) != DFmode)			\
 	   && (MODE) != DImode && (MODE) != TImode)			\
     {									\
-      (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),				\
-		     force_reg (SImode, force_operand (XEXP (X, 1), 0))); \
+      (X) = gen_rtx (PLUS, Pmode, XEXP (X, 0),				\
+		     force_reg (Pmode, force_operand (XEXP (X, 1), 0))); \
       goto WIN;								\
     }									\
   else if (TARGET_ELF && !TARGET_64BIT && TARGET_NO_TOC			\
@@ -1763,7 +1760,7 @@ typedef struct rs6000_args
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE SImode
+#define CASE_VECTOR_MODE (TARGET_64BIT ? DImode : SImode)
 
 /* Define this if the tablejump instruction expects the table
    to contain offsets from the address of the table.
