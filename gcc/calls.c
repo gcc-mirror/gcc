@@ -3558,6 +3558,14 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
 	    }
 	}
     }
+
+  /* Now that we have saved any slots that will be overwritten by this
+     store, mark all slots this store will use.  We must do this before
+     we actually expand the argument since the expansion itself may
+     trigger library calls which might need to use the same stack slot.  */
+  if (argblock && ! variable_size && arg->stack)
+    for (i = lower_bound; i < upper_bound; i++)
+      stack_usage_map[i] = 1;
 #endif
 
   /* If this isn't going to be placed on both the stack and in registers,
@@ -3733,11 +3741,4 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
   preserve_temp_slots (NULL_RTX);
   free_temp_slots ();
   pop_temp_slots ();
-
-#ifdef ACCUMULATE_OUTGOING_ARGS
-  /* Now mark the segment we just used.  */
-  if (argblock && ! variable_size && arg->stack)
-    for (i = lower_bound; i < upper_bound; i++)
-      stack_usage_map[i] = 1;
-#endif
 }
