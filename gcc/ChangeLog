@@ -1,3 +1,9 @@
+2000-05-11  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (collect_funlike_expansion): Make "# is not
+	followed by a macro argument name" a pedwarn, not an error.
+	Preserve the # in the output.  Suppress the warning if lang_asm.
+
 Thu May 11 01:19:31 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (hppa*64*-*-hpux11*): New target for PA64 support.

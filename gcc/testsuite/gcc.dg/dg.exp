@@ -63,7 +63,8 @@ if ![info exists DEFAULT_CFLAGS] then {
 dg-init
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] "" $DEFAULT_CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
+	"" $DEFAULT_CFLAGS
 
 # All done.
 dg-finish
