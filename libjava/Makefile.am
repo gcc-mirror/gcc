@@ -1243,7 +1243,6 @@ gnu/gcj/RawData.java \
 gnu/gcj/io/DefaultMimeTypes.java \
 gnu/gcj/io/MimeTypes.java \
 gnu/gcj/io/SimpleSHSStream.java	\
-gnu/gcj/math/MPN.java \
 gnu/gcj/protocol/core/Connection.java \
 gnu/gcj/protocol/core/Handler.java \
 gnu/gcj/protocol/core/CoreInputStream.java \
@@ -1275,6 +1274,7 @@ gnu/java/locale/LocaleInformation_de.java \
 gnu/java/locale/LocaleInformation_en.java \
 gnu/java/locale/LocaleInformation_en_US.java \
 gnu/java/locale/LocaleInformation_nl.java \
+gnu/java/math/MPN.java \
 gnu/java/security/provider/DefaultPolicy.java \
 gnu/java/security/provider/Gnu.java \
 gnu/java/security/provider/SHA.java \
