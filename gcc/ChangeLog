@@ -1,3 +1,8 @@
+2001-08-11  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config/rs6000/rs6000.c: Include integrate.h to silence warning.
+	(rs6000_elf_section_type_flags): Actually return a value.
+
 2001-08-11  Ulrich Weigand  <uweigand@de.ibm.com>
  
 	* s390.c, s390.h, s390.md, s390-protos.h, linux.h, t-linux: 
