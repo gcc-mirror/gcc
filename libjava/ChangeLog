@@ -1,5 +1,10 @@
 2002-09-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/natNetworkInterface.cc:
+	Removed unneed and yet wrong includes.
+
+2002-09-17  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/NetworkInterface.java: New file.
 	* java/net/natNetworkInterface.java: New file.
 	* configure.in: Added check for net/if.h.

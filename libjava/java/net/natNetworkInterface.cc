@@ -52,8 +52,7 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java/net/NetworkInterface.h>
-#include <java/net/Inet4Address.h>
-#include <java/net/Inet6Address.h>
+#include <java/net/InetAddress.h>
 #include <java/net/SocketException.h>
 #include <java/util/Vector.h>
 
@@ -122,8 +121,8 @@ java::net::NetworkInterface::getRealNetworkInterfaces ()
       jbyteArray baddr = JvNewByteArray (len);
       memcpy (elements (baddr), &(sa.sin_addr), len);
       jstring if_name = JvNewStringLatin1 (if_record->ifr_name);
-      Inet4Address* address =
-        new java::net::Inet4Address (baddr, JvNewStringLatin1 (""));
+      InetAddress* address =
+        new java::net::InetAddress (baddr, JvNewStringLatin1 (""));
       ht->add (new NetworkInterface (if_name, address));
       if_record++;
     }
