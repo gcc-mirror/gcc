@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 
 extern tree get_file_function_name ();
 extern tree cleanups_this_call;
-static void grok_function_init ();
+static void grok_function_init PROTO((tree, tree));
 void import_export_decl ();
 extern int current_class_depth;
 
@@ -318,7 +318,7 @@ int flag_int_enum_equivalence;
 
 /* Controls whether compiler generates 'type descriptor' that give
    run-time type information.  */
-int flag_rtti;
+int flag_rtti = 1;
 
 /* Nonzero if we wish to output cross-referencing information
    for the GNU class browser.  */
@@ -2430,6 +2430,14 @@ mark_vtable_entries (decl)
 {
   tree entries = CONSTRUCTOR_ELTS (DECL_INITIAL (decl));
 
+  if (flag_rtti)
+    {
+      tree fnaddr = (flag_vtable_thunks ? TREE_VALUE (TREE_CHAIN (entries))
+		     : FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (entries)));
+      tree fn = TREE_OPERAND (fnaddr, 0);
+      TREE_ADDRESSABLE (fn) = 1;
+      mark_used (fn);
+    }
   skip_rtti_stuff (&entries);
 
   for (; entries; entries = TREE_CHAIN (entries))
@@ -2500,7 +2508,10 @@ import_export_vtable (decl, type, final)
 	    cp_error ("all virtual functions redeclared inline");
 #endif
 	  if (flag_weak)
-	    DECL_WEAK (decl) = 1;
+	    {
+	      TREE_PUBLIC (decl) = 1;
+	      DECL_WEAK (decl) = 1;
+	    }
 	  else
 	    TREE_PUBLIC (decl) = 0;
 	  DECL_EXTERNAL (decl) = 0;
@@ -2557,21 +2568,6 @@ finish_prevtable_vardecl (prev, vars)
     }
 
   import_export_vtable (vars, ctype, 1);
-
-  /* We cannot use TREE_USED here, as it may be set by the expanding of a
-     ctor that is used to build a global object.  The long term plan is to
-     make the TD entries statically initialized and move this to
-     finish_vtable_vardecl time.  */
-  if (flag_rtti && write_virtuals >= 0
-      && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || 1 || TREE_USED (vars)))
-    {
-      /* Kick out the type descriptor before we dump out global
-	 initializers, as they are initialized at run time and
-	 we have to find them when we scan for things that need initialized
-	 at the top level.  */
-      build_t_desc (ctype, 1);
-    }
-
   return 1;
 }
     
@@ -2583,15 +2579,6 @@ finish_vtable_vardecl (prev, vars)
       && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || TREE_USED (vars))
       && ! TREE_ASM_WRITTEN (vars))
     {
-#if 0
-      /* The long term plan it to make the TD entries statically initialized,
-	 have the entries built and emitted here.  When that happens, this
-	 can be enabled, and the other call to build_t_desc removed.  */
-      /* Kick out the type descriptor before writing out the vtable.  */
-      if (flag_rtti)
-	build_t_desc (DECL_CONTEXT (vars), 1);
-#endif
-
       /* Write it out.  */
       mark_vtable_entries (vars);
       if (TREE_TYPE (DECL_INITIAL (vars)) == 0)
@@ -2763,6 +2750,23 @@ import_export_decl (decl)
       else
 	TREE_PUBLIC (decl) = 0;
     }
+  /* tinfo function */
+  else if (DECL_ARTIFICIAL (decl) && DECL_MUTABLE_P (decl))
+    {
+      tree ctype = TREE_TYPE (DECL_NAME (decl));
+      if (IS_AGGR_TYPE (ctype) && CLASSTYPE_INTERFACE_KNOWN (ctype))
+	{
+	  DECL_NOT_REALLY_EXTERN (decl)
+	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
+		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
+	}
+      else if (TYPE_BUILT_IN (ctype) && ctype == TYPE_MAIN_VARIANT (ctype))
+	DECL_NOT_REALLY_EXTERN (decl) = 0;
+      else if (flag_weak)
+	DECL_WEAK (decl) = 1;
+      else
+	TREE_PUBLIC (decl) = 0;
+    } 
   else if (DECL_C_STATIC (decl))
     TREE_PUBLIC (decl) = 0;
   else if (flag_weak)
@@ -3095,10 +3099,6 @@ finish_file ()
     {
       tree decl = TREE_VALUE (fnname);
       import_export_decl (decl);
-      if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
-	  && TREE_PUBLIC (decl) && ! DECL_WEAK (decl)
-	  && DECL_NOT_REALLY_EXTERN (decl))
-	synthesize_method (decl);
     }
 
   /* Now write out inline functions which had their addresses taken and
@@ -3126,14 +3126,21 @@ finish_file ()
 	    tree decl = TREE_VALUE (*p);
 
 	    if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
-		&& TREE_USED (decl))
+		&& TREE_USED (decl)
+		&& (! DECL_REALLY_EXTERN (decl) || DECL_INLINE (decl)))
 	      {
-		synthesize_method (decl);
+		if (DECL_MUTABLE_P (decl))
+		  synthesize_tinfo_fn (decl);
+		else
+		  synthesize_method (decl);
 		reconsider = 1;
 	      }
 
-	    if (TREE_ASM_WRITTEN (decl)
-		|| (DECL_SAVED_INSNS (decl) == 0 && ! DECL_ARTIFICIAL (decl)))
+	    if (decl != TREE_VALUE (*p))
+	      ;
+	    else if (TREE_ASM_WRITTEN (decl)
+		     || (DECL_SAVED_INSNS (decl) == 0
+			 && ! DECL_ARTIFICIAL (decl)))
 	      *p = TREE_CHAIN (*p);
 	    else
 	      p = &TREE_CHAIN (*p);
@@ -3619,7 +3626,7 @@ do_namespace_alias (alias, namespace)
   sorry ("namespace alias");
 }
 
-tree
+void
 do_toplevel_using_decl (decl)
      tree decl;
 {

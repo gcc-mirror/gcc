@@ -3164,7 +3164,7 @@ pushdecl (x)
 	     Any artificial decls that need DECL_NESTED_TYPENAME will have it
 	     set in pushtag.  */
 	  if (! DECL_NESTED_TYPENAME (x) && ! DECL_ARTIFICIAL (x))
-	    set_nested_typename (x, current_class_name, DECL_NAME (x), type);
+	    set_nested_typename (x, current_class_type != NULL_TREE ? TYPE_NESTED_NAME (current_class_type) : current_class_name, DECL_NAME (x), type);
 
 	  if (type != error_mark_node
 	      && TYPE_NAME (type)
@@ -3491,7 +3491,7 @@ pushdecl_class_level (x)
 	     Any artificial decls that need DECL_NESTED_TYPENAME will have it
 	     set in pushtag.  */
 	  if (! DECL_NESTED_TYPENAME (x) && ! DECL_ARTIFICIAL (x))
-	    set_nested_typename (x, current_class_name, name, TREE_TYPE (x));
+	    set_nested_typename (x, current_class_type != NULL_TREE ? TYPE_NESTED_NAME (current_class_type) : current_class_name, name, TREE_TYPE (x));
 	}
     }
   return x;
@@ -4655,32 +4655,6 @@ record_builtin_type (rid_index, name, type)
 	  set_identifier_type_value (rname, NULL_TREE);
 	}
     }
-
-  if (flag_rtti)
-    {
-      if (builtin_type_tdescs_len+5 >= builtin_type_tdescs_max)
-	{
-	  builtin_type_tdescs_max *= 2;
-	  builtin_type_tdescs_arr
-	    = (tree *)xrealloc (builtin_type_tdescs_arr,
-				builtin_type_tdescs_max * sizeof (tree));
-	}
-      builtin_type_tdescs_arr[builtin_type_tdescs_len++] = type;
-      if (TREE_CODE (type) != POINTER_TYPE)
-	{
-	  builtin_type_tdescs_arr[builtin_type_tdescs_len++]
-	    = build_pointer_type (type);
-	  builtin_type_tdescs_arr[builtin_type_tdescs_len++]
-	    = build_pointer_type (build_type_variant (type, 1, 0));
-	}
-      if (TREE_CODE (type) != VOID_TYPE)
-	{
-	  builtin_type_tdescs_arr[builtin_type_tdescs_len++]
-	    = build_reference_type (type);
-	  builtin_type_tdescs_arr[builtin_type_tdescs_len++]
-	    = build_reference_type (build_type_variant (type, 1, 0));
-	}
-    }
 }
 
 /* Push overloaded decl, in global scope, with one argument so it
@@ -4695,7 +4669,8 @@ push_overloaded_decl_1 (x)
 #ifdef __GNUC__
 __inline
 #endif
-tree auto_function (name, type, code)
+tree
+auto_function (name, type, code)
      tree name, type;
      enum built_in_function code;
 {
@@ -4772,11 +4747,6 @@ init_decl_processing ()
 #endif
 
   gcc_obstack_init (&decl_obstack);
-  if (flag_rtti)
-    {
-      builtin_type_tdescs_max = 100;
-      builtin_type_tdescs_arr = (tree *)xmalloc (100 * sizeof (tree));
-    }
 
   /* Must lay these out before anything else gets laid out.  */
   error_mark_node = make_node (ERROR_MARK);
@@ -4944,7 +4914,9 @@ init_decl_processing ()
   string_type_node = build_pointer_type (char_type_node);
   const_string_type_node =
     build_pointer_type (build_type_variant (char_type_node, 1, 0));
+#if 0
   record_builtin_type (RID_MAX, NULL_PTR, string_type_node);
+#endif
 
   /* Make a type to be the domain of a few array types
      whose domains don't really matter.
@@ -4972,7 +4944,9 @@ init_decl_processing ()
   ptr_type_node = build_pointer_type (void_type_node);
   const_ptr_type_node =
     build_pointer_type (build_type_variant (void_type_node, 1, 0));
+#if 0
   record_builtin_type (RID_MAX, NULL_PTR, ptr_type_node);
+#endif
   endlink = void_list_node;
   int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
   double_endlink = tree_cons (NULL_TREE, double_type_node, endlink);
@@ -5471,17 +5445,6 @@ init_decl_processing ()
       finish_builtin_type (__m_desc_type_node, "__m_desc", fields, 7,
 			   integer_type_node);
     }
-
-  if (flag_rtti)
-    {
-      int i = builtin_type_tdescs_len;
-      while (i > 0)
-	{
-	  tree tdesc = build_t_desc (builtin_type_tdescs_arr[--i], 0);
-	  TREE_ASM_WRITTEN (tdesc) = 1;
-	  TREE_PUBLIC (TREE_OPERAND (tdesc, 0)) = 1;
-	}
-    }
 #endif /*flag_rtti*/
 
   /* Now, C++.  */
@@ -5517,6 +5480,7 @@ init_decl_processing ()
   init_class_processing ();
   init_init_processing ();
   init_search_processing ();
+  init_rtti_processing ();
 
   if (flag_handle_exceptions)
     init_exception_processing ();
@@ -9029,7 +8993,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	    tree d = TYPE_NAME (type), c = DECL_CONTEXT (d);
 
 	    if (!c)
-	      set_nested_typename (d, 0, declarator, type);
+	      set_nested_typename (d, NULL_TREE, declarator, type);
 	    else if (TREE_CODE (c) == FUNCTION_DECL)
 	      set_nested_typename (d, DECL_ASSEMBLER_NAME (c),
 				   declarator, type);

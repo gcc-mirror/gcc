@@ -1,5 +1,6 @@
 /* RunTime Type Identification
    Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Mostly written by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
 
@@ -32,16 +33,50 @@ extern tree define_function ();
 extern tree build_t_desc_overload ();
 extern struct obstack *permanent_obstack;
 
+tree type_info_type_node;
+tree tinfo_fn_id;
+tree tinfo_fn_type;
+
 /* in c-common.c */
 extern tree combine_strings PROTO((tree));
 
-/* Given the expression EXP of type `class *', return the head
-   of the object pointed to by EXP.  */
+void
+init_rtti_processing ()
+{
+  type_info_type_node = xref_tag
+    (class_type_node, get_identifier ("type_info"), NULL_TREE, 1);
+  tinfo_fn_id = get_identifier ("__tf");
+  tinfo_fn_type = build_function_type
+    (build_reference_type (build_type_variant (type_info_type_node, 1, 0)),
+     void_list_node);
+}
+
+/* Given a pointer to an object with at least one virtual table
+   pointer somewhere, return a pointer to a possible sub-object that
+   has a virtual table pointer in it that is the vtable parent for
+   that sub-object.  */
+static tree
+build_headof_sub (exp)
+     tree exp;
+{
+  tree type = TREE_TYPE (TREE_TYPE (exp));
+  tree basetype = CLASSTYPE_RTTI (type);
+  tree binfo = get_binfo (basetype, type, 0);
+
+  exp = convert_pointer_to_real (binfo, exp);
+  return exp;
+}
+
+/* Given the expression EXP of type `class *', return the head of the
+   object pointed to by EXP with type cv void*, if the class has any
+   virtual functions (TYPE_VIRTUAL_P), else just return the
+   expression.  */
 static tree
 build_headof (exp)
      tree exp;
 {
   tree type = TREE_TYPE (exp);
+  tree aref;
   tree vptr, offset;
 
   if (TREE_CODE (type) != POINTER_TYPE)
@@ -51,22 +86,22 @@ build_headof (exp)
     }
   type = TREE_TYPE (type);
 
-  if (!TYPE_VIRTUAL_P (type) || CLASSTYPE_VFIELD (type) == NULL_TREE)
+  if (!TYPE_VIRTUAL_P (type))
     return exp;
 
-  vptr = fold (size_binop (PLUS_EXPR, 
-	   size_binop (FLOOR_DIV_EXPR, 
-  	     DECL_FIELD_BITPOS (CLASSTYPE_VFIELD (type)),
-	     size_int (BITS_PER_UNIT)),
- 	   exp)); 
-  vptr = build1 (INDIRECT_REF, build_pointer_type (vtable_entry_type), vptr);
+  /* If we don't have rtti stuff, get to a sub-object that does.  */
+  if (!CLASSTYPE_VFIELDS (TREE_TYPE (TREE_TYPE (exp))))
+    exp = build_headof_sub (exp);
+
+  /* We use this a couple of times below, protect it.  */
+  exp = save_expr (exp);
+
+  aref = build_vtbl_ref (build_indirect_ref (exp, NULL_PTR), integer_zero_node);
 
   if (flag_vtable_thunks)
-    offset = build_array_ref (vptr, integer_zero_node);
+    offset = aref;
   else
-    offset = build_component_ref (build_array_ref (vptr, integer_zero_node),
-				  delta_identifier,
-				  NULL_TREE, 0);
+    offset = build_component_ref (aref, delta_identifier, NULL_TREE, 0);
 
   type = build_type_variant (ptr_type_node, TREE_READONLY (exp),
 			     TREE_THIS_VOLATILE (exp));
@@ -82,9 +117,6 @@ build_typeid (exp)
      tree exp;
 {
   tree type;
-
-  if (!flag_rtti)
-    cp_error ("cannot take typeid of object when -frtti is not specified");
 
   if (exp == error_mark_node)
     return error_mark_node;
@@ -116,62 +148,181 @@ build_typeid (exp)
       /* build reference to type_info from vtable.  */
       tree t;
 
-      if (flag_vtable_thunks)
-	t = build_vfn_ref ((tree *) NULL_TREE, exp, integer_one_node);
-      else
-	t = build_vfn_ref ((tree *) NULL_TREE, exp, integer_zero_node);
+      if (! flag_rtti)
+	warning ("taking dynamic typeid of object without -frtti");
 
-      TREE_TYPE (t) = build_pointer_type (__class_desc_type_node);
-      t = build_indirect_ref (t, NULL);
-      return t;
+      /* If we don't have rtti stuff, get to a sub-object that does.  */
+      if (!CLASSTYPE_VFIELDS (TREE_TYPE (type)))
+	{
+	  exp = build_unary_op (ADDR_EXPR, exp, 0);
+	  exp = build_headof_sub (exp);
+	  exp = build_indirect_ref (exp, NULL_PTR);
+	}
+
+      if (flag_vtable_thunks)
+	t = build_vfn_ref ((tree *) 0, exp, integer_one_node);
+      else
+	t = build_vfn_ref ((tree *) 0, exp, integer_zero_node);
+      TREE_TYPE (t) = build_pointer_type (tinfo_fn_type);
+
+      t = build (CALL_EXPR, TREE_TYPE (tinfo_fn_type), t, NULL_TREE, 0);
+      TREE_SIDE_EFFECTS (t) = 1;
+      return convert_from_reference (t);
     }
 
   /* otherwise return the type_info for the static type of the expr.  */
   return get_typeid (type);
 }
 
+tree
+get_tinfo_var (type)
+     tree type;
+{
+  tree tname = build_overload_with_type (get_identifier ("__ti"), type);
+  tree tdecl, arrtype;
+  int size;
+
+  if (IDENTIFIER_GLOBAL_VALUE (tname))
+    return IDENTIFIER_GLOBAL_VALUE (tname);
+    
+  /* Figure out how much space we need to allocate for the type_info object.
+     If our struct layout or the type_info classes are changed, this will
+     need to be modified.  */
+  if (TYPE_VOLATILE (type) || TYPE_READONLY (type))
+    size = 4 * POINTER_SIZE;
+  else if (TREE_CODE (type) == POINTER_TYPE
+	   && ! (TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE
+		 || TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE))
+    size = 3 * POINTER_SIZE;
+  else if (IS_AGGR_TYPE (type))
+    {
+      if (CLASSTYPE_N_BASECLASSES (type) == 0)
+	size = 2 * POINTER_SIZE;
+      else if (! TYPE_USES_COMPLEX_INHERITANCE (type)
+	       && (TREE_VIA_PUBLIC
+		   (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), 0))))
+	size = 3 * POINTER_SIZE;
+      else
+	size = 4 * POINTER_SIZE;
+    }
+  else
+    size = 2 * POINTER_SIZE;
+
+  push_obstacks (&permanent_obstack, &permanent_obstack);
+
+  /* The type for a character array of the appropriate size.  */
+  arrtype = build_cplus_array_type
+    (unsigned_char_type_node,
+     build_index_type (size_int (size / BITS_PER_UNIT - 1)));
+
+  tdecl = build_decl (VAR_DECL, tname, arrtype);
+  TREE_PUBLIC (tdecl) = 1;
+  DECL_EXTERNAL (tdecl) = 1;
+  DECL_ARTIFICIAL (tdecl) = 1;
+  pushdecl_top_level (tdecl);
+  cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0, 0);
+
+  pop_obstacks ();
+
+  return tdecl;
+}
+
+tree
+get_tinfo_fn (type)
+     tree type;
+{
+  tree name = build_overload_with_type (tinfo_fn_id, type);
+  tree d;
+
+  if (IDENTIFIER_GLOBAL_VALUE (name))
+    return IDENTIFIER_GLOBAL_VALUE (name);
+
+  push_obstacks (&permanent_obstack, &permanent_obstack);
+
+  d = build_lang_decl (FUNCTION_DECL, name, tinfo_fn_type);
+  DECL_EXTERNAL (d) = 1;
+  TREE_PUBLIC (d) = 1;
+  DECL_ARTIFICIAL (d) = 1;
+  DECL_NOT_REALLY_EXTERN (d) = 1;
+  DECL_MUTABLE_P (d) = 1;
+  TREE_TYPE (name) = type;
+  pushdecl_top_level (d);
+  make_function_rtl (d);
+  mark_inline_for_output (d);
+  if (at_eof)
+    import_export_decl (d);
+
+  pop_obstacks ();
+
+  return d;
+}
+
+tree
+get_typeid_1 (type)
+     tree type;
+{
+  tree t = build (CALL_EXPR, TREE_TYPE (tinfo_fn_type),
+		  default_conversion (get_tinfo_fn (type)), NULL_TREE, 0);
+  TREE_SIDE_EFFECTS (t) = 1;
+  return convert_from_reference (t);
+}
+  
 /* Return the type_info object for TYPE, creating it if necessary.  */
 tree
 get_typeid (type)
      tree type;
 {
-  tree t, td;
+  tree t;
 
   if (type == error_mark_node)
     return error_mark_node;
   
-  /* Is it useful (and/or correct) to have different typeids for `T &'
-     and `T'?  */
+  /* If the type of the type-id is a reference type, the result of the
+     typeid expression refers to a type_info object representing the
+     referenced type.  */
   if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
 
-  td = build_t_desc (type, 1);
-  if (td == error_mark_node)
-    return error_mark_node;
+  /* The top-level cv-qualifiers of the lvalue expression or the type-id
+     that is the operand of typeid are always ignored. */
+  type = TYPE_MAIN_VARIANT (type);
 
-  t = TREE_OPERAND (td, 0);
-  return t;
+  return get_typeid_1 (type);
 }
 
 /* Get a bad_cast node for the program to throw...
 
-   See libstdc++::exception{,.cc} for __bad_cast_object */
+   See libstdc++/exception.cc for __throw_bad_cast */
+
 static tree
-get_bad_cast_node ()
+throw_bad_cast ()
 {
-  static tree t;
-  if (t == NULL_TREE
-      && (t = lookup_name (get_identifier ("__bad_cast_object"), 0))
-         == NULL_TREE)
-    {
-      error ("you must #include <typeinfo>");
-      return error_mark_node;
-    }
-  return t;
+  tree d = get_identifier ("__throw_bad_cast");
+  tree type;
+  
+  if (IDENTIFIER_GLOBAL_VALUE (d))
+    return IDENTIFIER_GLOBAL_VALUE (d);
+
+  push_obstacks (&permanent_obstack, &permanent_obstack);
+
+  type = build_function_type (void_type_node, void_list_node);
+  d = build_lang_decl (FUNCTION_DECL, d, type);
+  DECL_EXTERNAL (d) = 1;
+  TREE_PUBLIC (d) = 1;
+  DECL_ARTIFICIAL (d) = 1;
+  pushdecl_top_level (d);
+  make_function_rtl (d);
+
+  pop_obstacks ();
+
+  d = build (CALL_EXPR, void_type_node, default_conversion (d), NULL_TREE, 0);
+  TREE_SIDE_EFFECTS (d) = 1;
+  return d;
 }
 
 /* Execute a dynamic cast, as described in section 5.2.6 of the 9/93 working
    paper.  */
+
 tree
 build_dynamic_cast (type, expr)
      tree type, expr;
@@ -179,6 +330,7 @@ build_dynamic_cast (type, expr)
   enum tree_code tc = TREE_CODE (type);
   tree exprtype = TREE_TYPE (expr);
   enum tree_code ec = TREE_CODE (exprtype);
+  tree dcast_fn;
 
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
@@ -264,12 +416,15 @@ build_dynamic_cast (type, expr)
 	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == RECORD_TYPE)
 	    return build1 (NOP_EXPR, type, expr);
 
-	  return build_headof (expr);
+	  expr = build_headof (expr);
+	  if (TREE_TYPE (expr) != type)
+	    expr = build1 (NOP_EXPR, type, expr);
+	  return expr;
 	}
       else
 	{
 	  tree retval;
-          tree result, td1, td2, elems, expr1;
+          tree result, td1, td2, td3, elems, expr1, expr2;
 
  	  /* If we got here, we can't convert statically.  Therefore,
 	     dynamic_cast<D&>(b) (b an object) cannot succeed.  */
@@ -280,7 +435,7 @@ build_dynamic_cast (type, expr)
 		{
 		  cp_warning ("dynamic_cast of `%#D' to `%#T' can never succeed",
 			      expr, type);
-		  return build_throw (get_bad_cast_node ());
+		  return throw_bad_cast ();
 		}
 	    }
 	  /* Ditto for dynamic_cast<D*>(&b).  */
@@ -298,29 +453,66 @@ build_dynamic_cast (type, expr)
 		}
 	    }
 
+	  /* Since expr is used twice below, save it.  */
+	  expr = save_expr (expr);
+
 	  expr1 = expr;
 	  if (tc == REFERENCE_TYPE)
 	    expr1 = build_unary_op (ADDR_EXPR, expr1, 0);
 
 	  /* Build run-time conversion.  */
-	  expr1 = build_headof (expr1);
+	  expr2 = build_headof (expr1);
 
 	  if (ec == POINTER_TYPE)
 	    td1 = build_typeid (build_indirect_ref (expr, NULL_PTR));
 	  else
 	    td1 = build_typeid (expr);
 	  
-	  td2 = get_typeid (TYPE_MAIN_VARIANT (TREE_TYPE (type)));
+	  td2 = get_typeid (TREE_TYPE (type));
+	  td3 = get_typeid (TREE_TYPE (exprtype));
 
-          elems = tree_cons (NULL_TREE, td2,
-            tree_cons (NULL_TREE, build_int_2 (1, 0),
-	      tree_cons (NULL_TREE, expr1, NULL_TREE)));
-          result = build_method_call (td1,
-            get_identifier ("__rtti_match"), elems, NULL_TREE, LOOKUP_NORMAL);
+          elems = tree_cons
+	    (NULL_TREE, TREE_OPERAND (td1, 0), tree_cons
+	     (NULL_TREE, TREE_OPERAND (td2, 0), tree_cons
+	      (NULL_TREE, build_int_2 (1, 0), tree_cons
+	       (NULL_TREE, expr2, tree_cons
+		(NULL_TREE, TREE_OPERAND (td3, 0), tree_cons
+		 (NULL_TREE, expr1, NULL_TREE))))));
+
+	  dcast_fn = get_identifier ("__dynamic_cast");
+	  if (IDENTIFIER_GLOBAL_VALUE (dcast_fn))
+	    dcast_fn = IDENTIFIER_GLOBAL_VALUE (dcast_fn);
+	  else
+	    {
+	      tree tmp;
+
+	      push_obstacks (&permanent_obstack, &permanent_obstack);
+	      tmp = build_reference_type
+		(build_type_variant (type_info_type_node, 1, 0));
+	      tmp = tree_cons
+		(NULL_TREE, tmp, tree_cons
+		 (NULL_TREE, tmp, tree_cons
+		  (NULL_TREE, integer_type_node, tree_cons
+		   (NULL_TREE, ptr_type_node, tree_cons
+		    (NULL_TREE, tmp, tree_cons
+		     (NULL_TREE, ptr_type_node, void_list_node))))));
+	      tmp = build_function_type (ptr_type_node, tmp);
+	      dcast_fn = build_lang_decl (FUNCTION_DECL, dcast_fn, tmp);
+	      DECL_EXTERNAL (dcast_fn) = 1;
+	      TREE_PUBLIC (dcast_fn) = 1;
+	      DECL_ARTIFICIAL (dcast_fn) = 1;
+	      pushdecl_top_level (dcast_fn);
+	      make_function_rtl (dcast_fn);
+	      pop_obstacks ();
+	    }
+	  
+          result = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (dcast_fn)),
+			  decay_conversion (dcast_fn), elems, 0);
+	  TREE_SIDE_EFFECTS (result) = 1;
 
 	  if (tc == REFERENCE_TYPE)
 	    {
-	      expr1 = build_throw (get_bad_cast_node ());
+	      expr1 = throw_bad_cast ();
 	      expr1 = build_compound_expr (tree_cons (NULL_TREE, expr1,
 						      build_tree_list (NULL_TREE, convert (type, integer_zero_node))));
 	      TREE_TYPE (expr1) = type;
@@ -354,129 +546,67 @@ build_dynamic_cast (type, expr)
    Note: these constructors always return the address of the descriptor
    info, since that is simplest for their mutual interaction.  */
 
-static tree
-build_generic_desc (tdecl, type, elems)
-     tree tdecl;
-     tree type;
-     tree elems;
-{
-  tree init = elems;
-  int toplev = global_bindings_p ();
+extern tree const_string_type_node;
 
-  TREE_CONSTANT (init) = 1;
-  TREE_STATIC (init) = 1;
-  TREE_READONLY (init) = 1;
+/* Build an initializer for a __si_type_info node.  */
 
-  TREE_TYPE (tdecl) = type;
-  DECL_INITIAL (tdecl) = init;
-  TREE_STATIC (tdecl) = 1;
-  DECL_SIZE (tdecl) = NULL_TREE;
-  layout_decl (tdecl, 0);
-  if (! toplev)
-    push_to_top_level ();
-  cp_finish_decl (tdecl, init, NULL_TREE, 0, 0);
-  if (! toplev)
-    pop_from_top_level ();
-
-  if (! TREE_USED (tdecl))
-    {
-      assemble_external (tdecl);
-      TREE_USED (tdecl) = 1;
-    }
-
-  return IDENTIFIER_AS_DESC (DECL_NAME (tdecl));
-}
-
-/* Build an initializer for a __bltn_desc node.  */
-static tree
-build_bltn_desc (tdecl, type)
+static void
+expand_si_desc (tdecl, type)
      tree tdecl;
      tree type;
 {
-  tree elems, t;
+  tree t, elems, fn;
+  char *name = build_overload_name (type, 1, 1);
+  tree name_string = combine_strings (build_string (strlen (name), name));
 
-  if (type == boolean_type_node)
-    t = lookup_field (__bltn_desc_type_node, get_identifier("_RTTI_BI_BOOL"),
-		      0, 0);
-  else if (type == char_type_node)
-    t = lookup_field (__bltn_desc_type_node, get_identifier("_RTTI_BI_CHAR"),
-		      0, 0);
-  else if (type == short_integer_type_node)
-    t = lookup_field (__bltn_desc_type_node, get_identifier("_RTTI_BI_SHORT"),
-		      0, 0);
-  else if (type == integer_type_node)
-    t = lookup_field (__bltn_desc_type_node, get_identifier("_RTTI_BI_INT"),
-		      0, 0);
-  else if (type == long_integer_type_node)
-    t = lookup_field (__bltn_desc_type_node, get_identifier("_RTTI_BI_LONG"),
-		      0, 0);
-  else if (type == long_long_integer_type_node)
-    t = lookup_field (__bltn_desc_type_node, 
-		      get_identifier("_RTTI_BI_LONGLONG"), 0, 0);
-  else if (type == float_type_node)
-    t = lookup_field (__bltn_desc_type_node, get_identifier("_RTTI_BI_FLOAT"),
-		      0, 0);
-  else if (type == double_type_node)
-    t = lookup_field (__bltn_desc_type_node, 
-		      get_identifier("_RTTI_BI_DOUBLE"), 0, 0);
-  else if (type == long_double_type_node)
-    t = lookup_field (__bltn_desc_type_node, 
-		      get_identifier("_RTTI_BI_LDOUBLE"), 0, 0);
-  else if (type == unsigned_char_type_node)
-    t = lookup_field (__bltn_desc_type_node, get_identifier("_RTTI_BI_UCHAR"),
-		      0, 0);
-  else if (type == short_unsigned_type_node)
-    t = lookup_field (__bltn_desc_type_node, get_identifier("_RTTI_BI_USHORT"),
-		      0, 0);
-  else if (type == unsigned_type_node)
-    t = lookup_field (__bltn_desc_type_node, get_identifier("_RTTI_BI_UINT"),
-		      0, 0);
-  else if (type == long_unsigned_type_node)
-    t = lookup_field (__bltn_desc_type_node, get_identifier("_RTTI_BI_ULONG"),
-		      0, 0);
-  else if (type == long_long_unsigned_type_node)
-    t = lookup_field (__bltn_desc_type_node, 
-		      get_identifier("_RTTI_BI_ULONGLONG"), 0, 0);
-  else if (type == signed_char_type_node)
-    t = lookup_field (__bltn_desc_type_node, get_identifier("_RTTI_BI_SCHAR"),
-		      0, 0);
-  else if (type == wchar_type_node)
-    t = lookup_field (__bltn_desc_type_node, get_identifier("_RTTI_BI_WCHAR"),
-		      0, 0);
-  else if (type == void_type_node)
-    t = lookup_field (__bltn_desc_type_node, get_identifier("_RTTI_BI_VOID"),
-		      0, 0);
+  type = BINFO_TYPE (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), 0));
+  expand_expr_stmt (get_typeid_1 (type));
+  t = decay_conversion (get_tinfo_var (type));
+  elems = tree_cons
+    (NULL_TREE, decay_conversion (tdecl), tree_cons
+     (NULL_TREE, decay_conversion (name_string), tree_cons
+      (NULL_TREE, t, NULL_TREE)));
+
+  fn = get_identifier ("__rtti_si");
+  if (IDENTIFIER_GLOBAL_VALUE (fn))
+    fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
     {
-      cp_compiler_error ("type `%T' not handled as a built-in type");
+      tree tmp;
+      push_obstacks (&permanent_obstack, &permanent_obstack);
+      tmp = tree_cons
+	(NULL_TREE, ptr_type_node, tree_cons
+	 (NULL_TREE, const_string_type_node, tree_cons
+	  (NULL_TREE, build_pointer_type (type_info_type_node),
+	   void_list_node)));
+      tmp = build_function_type	(void_type_node, tmp);
+  
+      fn = build_lang_decl (FUNCTION_DECL, fn, tmp);
+      DECL_EXTERNAL (fn) = 1;
+      TREE_PUBLIC (fn) = 1;
+      DECL_ARTIFICIAL (fn) = 1;
+      pushdecl_top_level (fn);
+      make_function_rtl (fn);
+      pop_obstacks ();
     }
 
-  elems = tree_cons (NULL_TREE, t, NULL_TREE);
-  return build_generic_desc (tdecl, __bltn_desc_type_node, elems);
-}
-
-/* Build an initializer for a __user_desc node.  */
-static tree
-build_user_desc (tdecl)
-     tree tdecl;
-{
-  tree elems, name_string;
-  tree tname = DECL_NAME (tdecl);
-
-  name_string = combine_strings (build_string 
-    (IDENTIFIER_LENGTH (tname)+1, IDENTIFIER_POINTER (tname)));
-  elems = name_string;
-  return build_generic_desc (tdecl, __user_desc_type_node, elems);
+  fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+	      decay_conversion (fn), elems, 0);
+  TREE_SIDE_EFFECTS (fn) = 1;
+  expand_expr_stmt (fn);
 }
 
 /* Build an initializer for a __class_type_info node. */
-static tree
-build_class_desc (tdecl, type)
+
+static void
+expand_class_desc (tdecl, type)
      tree tdecl;
      tree type;
 {
-  tree tname = DECL_NAME (tdecl);
+  tree tname = TYPE_NESTED_NAME (type);
   tree name_string;
+  tree fn, tmp;
+  char *name;
 
   int i = CLASSTYPE_N_BASECLASSES (type);
   int base_cnt = 0;
@@ -487,30 +617,50 @@ build_class_desc (tdecl, type)
   int n_base = i;
 #endif
   tree base, elems, access, offset, isvir;
-  tree base_list, off_list, acc_list, isvir_list;
-  static tree acc_pub = NULL_TREE;
-  static tree acc_pro = NULL_TREE;
-  static tree acc_pri = NULL_TREE;
+  tree elt, elts = NULL_TREE;
+  static tree base_info_type_node;
 
-  if (acc_pub == NULL_TREE) 
+  if (base_info_type_node == NULL_TREE)
     {
-      acc_pub = lookup_field (__class_desc_type_node, 
-                                get_identifier("_RTTI_ACCESS_PUBLIC"), 0, 0);
-      acc_pro = lookup_field (__class_desc_type_node,
-                                get_identifier("_RTTI_ACCESS_PROTECTED"), 0, 0);
-      acc_pri = lookup_field (__class_desc_type_node,
-                                get_identifier("_RTTI_ACCESS_PRIVATE"), 0, 0);
+      tree fields [4];
+
+      /* A reasonably close approximation of __class_type_info::base_info */
+
+      push_obstacks (&permanent_obstack, &permanent_obstack);
+      base_info_type_node = make_lang_type (RECORD_TYPE);
+
+      /* Actually const __user_type_info * */
+      fields [0] = build_lang_field_decl
+	(FIELD_DECL, NULL_TREE,
+	 build_pointer_type (build_type_variant (type_info_type_node, 1, 0)));
+      fields [1] = build_lang_field_decl
+	(FIELD_DECL, NULL_TREE, sizetype);
+      DECL_BIT_FIELD (fields[1]) = 1;
+      DECL_FIELD_SIZE (fields[1]) = 29;
+
+      fields [2] = build_lang_field_decl
+	(FIELD_DECL, NULL_TREE, boolean_type_node);
+      DECL_BIT_FIELD (fields[2]) = 1;
+      DECL_FIELD_SIZE (fields[2]) = 1;
+
+      /* Actually enum access */
+      fields [3] = build_lang_field_decl
+	(FIELD_DECL, NULL_TREE, integer_type_node);
+      DECL_BIT_FIELD (fields[3]) = 1;
+      DECL_FIELD_SIZE (fields[3]) = 2;
+
+      finish_builtin_type (base_info_type_node, "__base_info", fields,
+			   3, ptr_type_node);
+      pop_obstacks ();
     }
 
-  base_list = build_tree_list (NULL_TREE, integer_zero_node);
-  off_list = build_tree_list (NULL_TREE, integer_zero_node);
-  acc_list = build_tree_list (NULL_TREE, integer_zero_node);
-  isvir_list = build_tree_list (NULL_TREE, integer_zero_node);
   while (--i >= 0)
     {
       tree binfo = TREE_VEC_ELT (binfos, i);
 
-      base = build_t_desc (BINFO_TYPE (binfo), 1);
+      expand_expr_stmt (get_typeid_1 (BINFO_TYPE (binfo)));
+      base = decay_conversion (get_tinfo_var (BINFO_TYPE (binfo)));
+
       if (TREE_VIA_VIRTUAL (binfo))
 	{
 	  tree t = BINFO_TYPE (binfo);
@@ -527,20 +677,24 @@ build_class_desc (tdecl, type)
 	offset = BINFO_OFFSET (binfo);
 
       if (TREE_VIA_PUBLIC (binfo))
-        access = acc_pub;
+        access = access_public_node;
       else if (TREE_VIA_PROTECTED (binfo))
-	access = acc_pro;
+	access = access_protected_node;
       else
-	access = acc_pri;
+	access = access_private_node;
       if (TREE_VIA_VIRTUAL (binfo))
-	isvir = build_int_2 (1, 0);
+	isvir = boolean_true_node;
       else
-	isvir = build_int_2 (0, 0);
+	isvir = boolean_false_node;
 
-      base_list = tree_cons (NULL_TREE, base, base_list);
-      isvir_list = tree_cons (NULL_TREE, isvir, isvir_list);
-      acc_list = tree_cons (NULL_TREE, access, acc_list);
-      off_list = tree_cons (NULL_TREE, offset, off_list);
+      elt = build
+	(CONSTRUCTOR, base_info_type_node, NULL_TREE, tree_cons
+	 (NULL_TREE, base, tree_cons
+	  (NULL_TREE, offset, tree_cons
+	   (NULL_TREE, isvir, tree_cons
+	    (NULL_TREE, access, NULL_TREE)))));
+      TREE_HAS_CONSTRUCTOR (elt) = TREE_CONSTANT (elt) = TREE_STATIC (elt) = 1;
+      elts = tree_cons (NULL_TREE, elt, elts);
       base_cnt++;
     }
 #if 0
@@ -548,18 +702,18 @@ build_class_desc (tdecl, type)
   while (vb)
     {
       tree b;
-      access = acc_pub;
+      access = access_public_node;
       while (--i >= 0)
 	{
 	  b = TREE_VEC_ELT (binfos, i);
 	  if (BINFO_TYPE (vb) == BINFO_TYPE (b) && TREE_VIA_VIRTUAL (b))
 	    {
 	      if (TREE_VIA_PUBLIC (b))
-		access = acc_pub;
+		access = access_public_node;
 	      else if (TREE_VIA_PROTECTED (b))
-		access = acc_pro;
+		access = access_protected_node;
 	      else
-		access = acc_pri;
+		access = access_private_node;
 	      break;
 	    }
 	}
@@ -576,278 +730,271 @@ build_class_desc (tdecl, type)
       vb = TREE_CHAIN (vb);
     }
 #endif
-  base_list = finish_table (NULL_TREE, build_pointer_type (__t_desc_type_node), 
-			    base_list, 0);
-  off_list = finish_table (NULL_TREE, integer_type_node, 
-			    off_list, 0);
-  isvir_list = finish_table (NULL_TREE, integer_type_node, 
-			    isvir_list, 0);
-  acc_list = finish_table (NULL_TREE, __access_mode_type_node, 
-			    acc_list, 0);
 
+  name = build_overload_name (type, 1, 1);
+  name_string = combine_strings (build_string (strlen (name), name));
 
-  name_string = combine_strings (build_string (IDENTIFIER_LENGTH (tname)+1, IDENTIFIER_POINTER (tname)));
+  {
+    tree arrtype = build_array_type (base_info_type_node, NULL_TREE);
+    elts = build (CONSTRUCTOR, arrtype, NULL_TREE, elts);
+    TREE_HAS_CONSTRUCTOR (elts) = TREE_CONSTANT (elts) =
+      TREE_STATIC (elts) = 1;
+    complete_array_type (arrtype, elts, 1);
+  }
 
-  elems = tree_cons (NULL_TREE, name_string,
-	    tree_cons (NULL_TREE, default_conversion (base_list),
-	      tree_cons (NULL_TREE, default_conversion (off_list),
-		tree_cons (NULL_TREE, default_conversion (isvir_list),
-		  tree_cons (NULL_TREE, default_conversion (acc_list),
-	      	    tree_cons (NULL_TREE, build_int_2 (base_cnt, 0), NULL_TREE))))));
+  elems = tree_cons
+    (NULL_TREE, decay_conversion (tdecl), tree_cons
+     (NULL_TREE, decay_conversion (name_string), tree_cons
+      (NULL_TREE, decay_conversion (elts), tree_cons
+       (NULL_TREE, build_int_2 (base_cnt, 0), NULL_TREE))));
 
-  return build_generic_desc (tdecl, __class_desc_type_node, elems);
+  fn = get_identifier ("__rtti_class");
+  if (IDENTIFIER_GLOBAL_VALUE (fn))
+    fn = IDENTIFIER_GLOBAL_VALUE (fn);
+  else
+    {
+      push_obstacks (&permanent_obstack, &permanent_obstack);
+      tmp = tree_cons
+	(NULL_TREE, ptr_type_node, tree_cons
+	 (NULL_TREE, const_string_type_node, tree_cons
+	  (NULL_TREE, build_pointer_type (base_info_type_node), tree_cons
+	   (NULL_TREE, sizetype, void_list_node))));
+      tmp = build_function_type	(void_type_node, tmp);
+  
+      fn = build_lang_decl (FUNCTION_DECL, fn, tmp);
+      DECL_EXTERNAL (fn) = 1;
+      TREE_PUBLIC (fn) = 1;
+      DECL_ARTIFICIAL (fn) = 1;
+      pushdecl_top_level (fn);
+      make_function_rtl (fn);
+      pop_obstacks ();
+    }
+
+  fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+	      decay_conversion (fn), elems, 0);
+  TREE_SIDE_EFFECTS (fn) = 1;
+  expand_expr_stmt (fn);
 }
 
 /* Build an initializer for a __pointer_type_info node.  */
-static tree
-build_ptr_desc (tdecl, type)
+static void
+expand_ptr_desc (tdecl, type)
      tree tdecl;
      tree type;
 {
-  tree t, elems;
+  tree t, elems, fn;
+  char *name = build_overload_name (type, 1, 1);
+  tree name_string = combine_strings (build_string (strlen (name), name));
 
-  t = TREE_TYPE (type);
-  t = build_t_desc (t, 1);
-  t = build_indirect_ref (t, NULL);
-  elems = tree_cons (NULL_TREE, t, NULL_TREE);
-  return build_generic_desc (tdecl, __ptr_desc_type_node,  elems);
+  type = TREE_TYPE (type);
+  expand_expr_stmt (get_typeid_1 (type));
+  t = decay_conversion (get_tinfo_var (type));
+  elems = tree_cons
+    (NULL_TREE, decay_conversion (tdecl), tree_cons
+     (NULL_TREE, decay_conversion (name_string), tree_cons
+      (NULL_TREE, t, NULL_TREE)));
+
+  fn = get_identifier ("__rtti_ptr");
+  if (IDENTIFIER_GLOBAL_VALUE (fn))
+    fn = IDENTIFIER_GLOBAL_VALUE (fn);
+  else
+    {
+      tree tmp;
+      push_obstacks (&permanent_obstack, &permanent_obstack);
+      tmp = tree_cons
+	(NULL_TREE, ptr_type_node, tree_cons
+	 (NULL_TREE, const_string_type_node, tree_cons
+	  (NULL_TREE, build_pointer_type (type_info_type_node),
+	   void_list_node)));
+      tmp = build_function_type	(void_type_node, tmp);
+  
+      fn = build_lang_decl (FUNCTION_DECL, fn, tmp);
+      DECL_EXTERNAL (fn) = 1;
+      TREE_PUBLIC (fn) = 1;
+      DECL_ARTIFICIAL (fn) = 1;
+      pushdecl_top_level (fn);
+      make_function_rtl (fn);
+      pop_obstacks ();
+    }
+
+  fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+	      decay_conversion (fn), elems, 0);
+  TREE_SIDE_EFFECTS (fn) = 1;
+  expand_expr_stmt (fn);
 }
 
 /* Build an initializer for a __attr_type_info node.  */
-static tree
-build_attr_desc (tdecl, type)
-     tree tdecl;
-     tree type;
-{
-  tree elems, t, attrval;
-
-  if (TYPE_READONLY (type))
-    {
-      if (TYPE_VOLATILE (type))
-	attrval = lookup_field (__attr_desc_type_node, 
-				get_identifier("_RTTI_ATTR_CONSTVOL"), 0, 0);
-      else
-	attrval = lookup_field (__attr_desc_type_node, 
-				get_identifier("_RTTI_ATTR_CONST"), 0, 0);
-    }
-  else
-    {
-      if (TYPE_VOLATILE (type))
-	attrval = lookup_field (__attr_desc_type_node, 
-				get_identifier("_RTTI_ATTR_VOLATILE"), 0, 0);
-    }
-  t = build_t_desc (TYPE_MAIN_VARIANT (type), 1);
-  t = build_indirect_ref (t , NULL);
-  elems = tree_cons (NULL_TREE, attrval, tree_cons (NULL_TREE, t, NULL_TREE));
-  return build_generic_desc (tdecl, __attr_desc_type_node,  elems);
-}
-
-/* Build an initializer for a __func_type_info node.  */
-static tree
-build_func_desc (tdecl)
-     tree tdecl;
-{
-  tree elems, name_string;
-  tree tname = DECL_NAME (tdecl);
-
-  name_string = combine_strings (build_string 
-    (IDENTIFIER_LENGTH (tname)+1, IDENTIFIER_POINTER (tname)));
-  elems = name_string; 
-  return build_generic_desc (tdecl, __func_desc_type_node,  elems);
-}
-
-/* Build an initializer for a __ptmf_type_info node.  */
-static tree
-build_ptmf_desc (tdecl)
-     tree tdecl;
-{ 
-  tree elems, name_string;
-  tree tname = DECL_NAME (tdecl);
-
-  name_string = combine_strings (build_string 
-    (IDENTIFIER_LENGTH (tname)+1, IDENTIFIER_POINTER (tname)));
-  elems = name_string; 
-  return build_generic_desc (tdecl, __ptmf_desc_type_node,  elems);
-}
-
-/* Build an initializer for a __ptmd_type_info node.  */
-static tree
-build_ptmd_desc (tdecl, type)
-     tree tdecl;
-     tree type;
-{
-  tree tc, t, elems;
-  tc = build_t_desc (TYPE_OFFSET_BASETYPE (type), 1);
-  tc = build_indirect_ref (tc , NULL);
-  t = build_t_desc (TREE_TYPE (type), 1);
-  t = build_indirect_ref (t , NULL);
-  elems = tree_cons (NULL_TREE, tc,
-	    tree_cons (NULL_TREE, t, NULL_TREE));
-  return build_generic_desc (tdecl, __ptmd_desc_type_node,  elems);
-}
-
-struct uninst_st {
-  tree type;
-  struct uninst_st *next;
-};
-typedef struct uninst_st uninst_node;
-static uninst_node * uninst_desc = (uninst_node *)NULL;
 
 static void
-add_uninstantiated_desc (type)
+expand_attr_desc (tdecl, type)
+     tree tdecl;
      tree type;
 {
-  uninst_node *t;
+  tree elems, t, fn;
+  char *name = build_overload_name (type, 1, 1);
+  tree name_string = combine_strings (build_string (strlen (name), name));
+  tree attrval = build_int_2
+    (TYPE_READONLY (type) | TYPE_VOLATILE (type) * 2, 0);
 
-  t = (uninst_node *) xmalloc (sizeof (struct uninst_st));
-  t->type = type;
-  t->next = uninst_desc;
-  uninst_desc = t;
-}
+  expand_expr_stmt (get_typeid_1 (TYPE_MAIN_VARIANT (type)));
+  t = decay_conversion (get_tinfo_var (TYPE_MAIN_VARIANT (type)));
+  elems = tree_cons
+    (NULL_TREE, decay_conversion (tdecl), tree_cons
+     (NULL_TREE, decay_conversion (name_string), tree_cons
+      (NULL_TREE, attrval, tree_cons (NULL_TREE, t, NULL_TREE))));
 
-/* We may choose to link the emitting of certain high use TDs for certain
-   objects, we do that here.  Return the type to link against if such a
-   link exists, otherwise just return TYPE.  */
-
-static tree
-get_def_to_follow (type)
-     tree type;
-{
-#if 0
-  /* For now we don't lay out T&, T* TDs with the main TD for the object.  */
-  /* Let T* and T& be written only when T is written (if T is an aggr).
-     We do this for const, but not for volatile, since volatile
-     is rare and const is not.  */
-  if (!TYPE_VOLATILE (taggr)
-      && (TREE_CODE (taggr) == POINTER_TYPE
-	  || TREE_CODE (taggr) == REFERENCE_TYPE)
-      && IS_AGGR_TYPE (TREE_TYPE (taggr)))
-    taggr = TREE_TYPE (taggr);
-#endif
-  return type;
-}
-
-/* build a general type_info node. */
-tree
-build_t_desc (type, definition)
-     tree type;
-     int definition;
-{
-  tree tdecl, tname;
-  tree t, taggr;
-
-  if (__ptmd_desc_type_node == NULL_TREE)
-    {
-      init_type_desc();
-      if (__ptmd_desc_type_node)
-	{
-          for ( ; uninst_desc; uninst_desc = uninst_desc->next )
-	    build_t_desc (uninst_desc->type, 1);
-	}
-    }
-  if (__t_desc_type_node == NULL_TREE)
-    {
-      static int warned = 0;
-      if (! warned)
-	{
-	  cp_error ("failed to build type descriptor node of '%T', maybe <typeinfo> not included", type);
-	}
-      warned = 1;
-      return error_mark_node;
-    }
-  if (__ptmd_desc_type_node == NULL_TREE)
-    {
-      add_uninstantiated_desc (type);
-      definition = 0;
-    }
-
-  push_obstacks (&permanent_obstack, &permanent_obstack);
-  tname = build_t_desc_overload (type);
-
-  if (!IDENTIFIER_AS_DESC (tname))
-    {
-      tdecl = build_decl (VAR_DECL, tname, __t_desc_type_node);
-      DECL_EXTERNAL (tdecl) = 1;
-      TREE_PUBLIC (tdecl) = 1;
-      tdecl = pushdecl_top_level (tdecl);
-      SET_IDENTIFIER_AS_DESC (tname, build_unary_op (ADDR_EXPR, tdecl, 0));
-      if (!definition)
-	cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0, 0);
-    }
-  else
-    tdecl = TREE_OPERAND (IDENTIFIER_AS_DESC (tname), 0);
-
-  /* If it's not a definition, don't do anything more.  */
-  if (!definition)
-    return IDENTIFIER_AS_DESC (tname);
-
-  /* If it has already been written, don't to anything more.  */
-  /* Should this be on tdecl? */
-  if (TREE_ASM_WRITTEN (IDENTIFIER_AS_DESC (tname)))
-    return IDENTIFIER_AS_DESC (tname);
-
-  /* If we previously defined it, return the defined result.  */
-  if (DECL_INITIAL (tdecl))
-    return IDENTIFIER_AS_DESC (tname);
-    
-  taggr = get_def_to_follow (type);
-
-  /* If we know that we don't need to write out this type's
-     vtable, then don't write out it's type_info.  Somebody
-     else will take care of that.  */
-  if (IS_AGGR_TYPE (taggr) && CLASSTYPE_VFIELD (taggr))
-    {
-      /* Let's play follow the vtable. */
-      TREE_PUBLIC (tdecl) = CLASSTYPE_INTERFACE_KNOWN (taggr);
-      DECL_EXTERNAL (tdecl) = CLASSTYPE_INTERFACE_ONLY (taggr);
-    }
+  fn = get_identifier ("__rtti_attr");
+  if (IDENTIFIER_GLOBAL_VALUE (fn))
+    fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
     {
-      DECL_EXTERNAL (tdecl) = 0;
-      TREE_PUBLIC (tdecl) = (definition > 1);
+      tree tmp;
+      push_obstacks (&permanent_obstack, &permanent_obstack);
+      tmp = tree_cons
+	(NULL_TREE, ptr_type_node, tree_cons
+	 (NULL_TREE, const_string_type_node, tree_cons
+	  (NULL_TREE, integer_type_node, tree_cons
+	   (NULL_TREE, build_pointer_type (type_info_type_node),
+	    void_list_node))));
+      tmp = build_function_type	(void_type_node, tmp);
+  
+      fn = build_lang_decl (FUNCTION_DECL, fn, tmp);
+      DECL_EXTERNAL (fn) = 1;
+      TREE_PUBLIC (fn) = 1;
+      DECL_ARTIFICIAL (fn) = 1;
+      pushdecl_top_level (fn);
+      make_function_rtl (fn);
+      pop_obstacks ();
     }
 
-  if (DECL_EXTERNAL (tdecl))
-    return IDENTIFIER_AS_DESC (tname);
+  fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+	      decay_conversion (fn), elems, 0);
+  TREE_SIDE_EFFECTS (fn) = 1;
+  expand_expr_stmt (fn);
+}
 
-  /* Show that we are defining the t_desc for this type.  */
-  DECL_INITIAL (tdecl) = error_mark_node;
-  t = DECL_CONTEXT (tdecl);
-  if ( t && TREE_CODE_CLASS (TREE_CODE (t)) == 't') 
-    pushclass (t, 2);
+/* Build an initializer for a type_info node that just has a name.  */
+
+static void
+expand_generic_desc (tdecl, type, fnname)
+     tree tdecl;
+     tree type;
+     char *fnname;
+{
+  char *name = build_overload_name (type, 1, 1);
+  tree name_string = combine_strings (build_string (strlen (name), name));
+  tree elems = tree_cons
+    (NULL_TREE, decay_conversion (tdecl), tree_cons
+     (NULL_TREE, decay_conversion (name_string), NULL_TREE));
+
+  tree fn = get_identifier (fnname);
+  if (IDENTIFIER_GLOBAL_VALUE (fn))
+    fn = IDENTIFIER_GLOBAL_VALUE (fn);
+  else
+    {
+      tree tmp;
+      push_obstacks (&permanent_obstack, &permanent_obstack);
+      tmp = tree_cons
+	(NULL_TREE, ptr_type_node, tree_cons
+	 (NULL_TREE, const_string_type_node, void_list_node));
+      tmp = build_function_type (void_type_node, tmp);
+  
+      fn = build_lang_decl (FUNCTION_DECL, fn, tmp);
+      DECL_EXTERNAL (fn) = 1;
+      TREE_PUBLIC (fn) = 1;
+      DECL_ARTIFICIAL (fn) = 1;
+      pushdecl_top_level (fn);
+      make_function_rtl (fn);
+      pop_obstacks ();
+    }
+
+  fn = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+	      decay_conversion (fn), elems, 0);
+  TREE_SIDE_EFFECTS (fn) = 1;
+  expand_expr_stmt (fn);
+}
+
+/* Generate the code for a type_info initialization function.
+   Note that we take advantage of the passage
+
+   5.2.7  Type identification                               [expr.typeid]
+   
+   Whether or not the destructor is called for the type_info object at the
+   end of the program is unspecified.
+
+   and don't bother to arrange for these objects to be destroyed.  It
+   doesn't matter, anyway, since the destructors don't do anything.
+       
+   This must only be called from toplevel (i.e. from finish_file)!  */
+
+void
+synthesize_tinfo_fn (fndecl)
+     tree fndecl;
+{
+  tree type = TREE_TYPE (DECL_NAME (fndecl));
+  tree tmp, addr;
+
+  tree tdecl = get_tinfo_var (type);
+  DECL_EXTERNAL (tdecl) = 0;
+  TREE_STATIC (tdecl) = 1;
+  DECL_COMMON (tdecl) = 1;
+  TREE_USED (tdecl) = 1;
+  DECL_ALIGN (tdecl) = TYPE_ALIGN (ptr_type_node);
+  cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0, 0);
+
+  start_function (NULL_TREE, fndecl, NULL_TREE, NULL_TREE, 1);
+  store_parm_decls ();
+  clear_last_expr ();
+  push_momentary ();
+
+  /* If the first word of the array (the vtable) is non-zero, we've already
+     initialized the object, so don't do it again.  */
+  addr = decay_conversion (tdecl);
+  tmp = convert (build_pointer_type (ptr_type_node), addr);
+  tmp = build_indirect_ref (tmp, 0);
+  tmp = build_binary_op (EQ_EXPR, tmp, integer_zero_node, 1);
+  expand_start_cond (tmp, 0);
 
   if (TYPE_VOLATILE (type) || TYPE_READONLY (type))
-    t = build_attr_desc (tdecl, type);
+    expand_attr_desc (tdecl, type);
   else if (TREE_CODE (type) == ARRAY_TYPE)
-    t = build_ptr_desc (tdecl, type);
+    expand_generic_desc (tdecl, type, "__rtti_array");
   else if (TREE_CODE (type) == POINTER_TYPE)
     {
       if (TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE)
-	{
-	  type = TREE_TYPE (type);
-	  t = build_ptmd_desc (tdecl, type);
-	}
+	expand_generic_desc (tdecl, type, "__rtti_ptmd");
+      else if (TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE)
+	expand_generic_desc (tdecl, type, "__rtti_ptmf");
       else
-	{
-	  t = build_ptr_desc (tdecl, type);
-	}
+	expand_ptr_desc (tdecl, type);
     }
-  else if (TYPE_BUILT_IN (type))
-    t = build_bltn_desc (tdecl, type);
+  else if (TYPE_PTRMEMFUNC_P (type))
+    expand_generic_desc (tdecl, type, "__rtti_ptmf");
   else if (IS_AGGR_TYPE (type))
     {
-      if (TYPE_PTRMEMFUNC_P (type))
-	t = build_ptmf_desc (tdecl);
+      if (CLASSTYPE_N_BASECLASSES (type) == 0)
+	expand_generic_desc (tdecl, type, "__rtti_user");
+      else if (! TYPE_USES_COMPLEX_INHERITANCE (type)
+	       && (TREE_VIA_PUBLIC
+		   (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), 0))))
+	expand_si_desc (tdecl, type);
       else
-	t = build_class_desc (tdecl, type);
+	expand_class_desc (tdecl, type);
     }
+  else if (TREE_CODE (type) == ENUMERAL_TYPE)
+    expand_generic_desc (tdecl, type, "__rtti_user");
   else if (TREE_CODE (type) == FUNCTION_TYPE)
-    t = build_func_desc (tdecl);
-  else 
-    t = build_user_desc (tdecl);
+    expand_generic_desc (tdecl, type, "__rtti_func");
+  else
+    my_friendly_abort (252);
 
-  pop_obstacks ();
-  return t;
+  expand_end_cond ();
+
+  /* OK, now return the type_info object.  */
+  tmp = convert (build_pointer_type (type_info_type_node), addr);
+  tmp = build_indirect_ref (tmp, 0);
+  c_expand_return (tmp);
+  finish_function (lineno, 0, 0);
 }
 
 #if 0
