@@ -1,7 +1,8 @@
 2003-11-12  Andreas Jaeger  <aj@suse.de>
 
-	* intdoc.texi (Signal Intrinsic (subroutine)): Fix texinfo warning
+	* intdoc.in (Signal Intrinsic (subroutine)): Fix texinfo warning
 	using @code.
+	* intdoc.texi: Regenerated.
 
 2003-11-03  Kelley Cook  <kcook@gcc.gnu.org>
 
