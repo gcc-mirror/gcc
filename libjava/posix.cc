@@ -1,6 +1,6 @@
 // posix.cc -- Helper functions for POSIX-flavored OSs.
 
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -13,6 +13,10 @@ details.  */
 #include "posix.h"
 
 #include <errno.h>
+
+#include <jvm.h>
+#include <java/lang/Thread.h>
+#include <java/io/InterruptedIOException.h>
 
 #if defined (ECOS)
 extern "C" unsigned long long _clock (void);
@@ -75,6 +79,10 @@ _Jv_select (int n, fd_set *readfds, fd_set  *writefds,
 		      timeout ? &delay : NULL);
       if (r != -1 || errno != EINTR)
 	return r;
+
+      // Here we know we got EINTR.
+      if (java::lang::Thread::interrupted ())
+	throw new java::io::InterruptedIOException (JvNewStringLatin1 ("select interrupted"));
 
       struct timeval after;
       if (timeout)
