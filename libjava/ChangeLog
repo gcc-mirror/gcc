@@ -1,3 +1,8 @@
+2001-10-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/lang/natClassLoader.cc (_Jv_RegisterClassHookDefault): Use
+	snprintf, not asprintf.
+
 2001-10-24  Loren J. Rittle  <ljrittle@acm.org>
 
 	* configure.in (case $THREADS): Add *-*-freebsd* configuration.

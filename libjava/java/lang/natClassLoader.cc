@@ -453,15 +453,14 @@ _Jv_RegisterClassHookDefault (jclass klass)
 	{
 	  // If you get this, it means you have the same class in two
 	  // different libraries.
-	  char *message;
-	  asprintf (&message, "Duplicate class registration: %s", 
+	  char message[200];
+	  snprintf (&message[0], 200, "Duplicate class registration: %s",
 		    klass->name->data);
 	  if (! gcj::runtimeInitialized)
 	    JvFail (message);
 	  else
 	    {
 	      java::lang::String *str = JvNewStringLatin1 (message);
-	      free (message);
 	      throw new java::lang::VirtualMachineError (str);
 	    }
 	}
