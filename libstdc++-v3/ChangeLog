@@ -1,3 +1,7 @@
+2004-12-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Rework the _DEFINE_SPEC* macros.
+
 2004-12-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits (__is_enum_helper): Slightly simplify,
