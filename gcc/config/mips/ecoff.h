@@ -20,7 +20,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* US Software GOFAST library support.  */
-#include "gofast.h"
 #define INIT_SUBTARGET_OPTABS INIT_GOFAST_OPTABS
 
 #include "mips/mips.h"
