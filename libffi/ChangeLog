@@ -1,3 +1,12 @@
+2003-11-08  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libffi.call/cls_double.c: Do a check on the result.
+	* testsuite/libffi.call/cls_uchar.c: Likewise.
+	* testsuite/libffi.call/cls_uint.c: Likewise.
+	* testsuite/libffi.call/cls_ulonglong.c: Likewise.
+	* testsuite/libffi.call/cls_ushort.c: Likewise.
+	* testsuite/libffi.call/return_sc.c: Cleanup whitespaces.
+
 2003-11-06  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* src/prep_cif.c (ffi_prep_cif): Move the validity check after
