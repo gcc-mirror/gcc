@@ -69,7 +69,7 @@ static unsigned int yylex_ctr = 0;
 static int debug_yychar ();
 #endif
 
-/* Initialize token_obstack. Called once, from init_lex.  */
+/* Initialize token_obstack. Called once, from init_parse.  */
 
 void
 init_spew ()

@@ -2345,9 +2345,7 @@ extern void init_filename_times			PROTO((void));
 #if 0
 extern void reinit_lang_specific		PROTO((void));
 #endif
-extern void init_lex				PROTO((void));
 extern void reinit_parse_for_function		PROTO((void));
-extern int *init_parse				PROTO((void));
 extern void print_parse_statistics		PROTO((void));
 extern void extract_interface_info		PROTO((void));
 extern void do_pending_inlines			PROTO((void));
