@@ -20,9 +20,9 @@ proc gcj_jar_interpret {jarfile} {
   global INTERPRETER srcdir
 
   set gij [libjava_find_gij]
-  # libjava_find_gij will return `gij' if it couldn't find the
+  # libjava_find_gij will return "" if it couldn't find the
   # program; in this case we want to skip the test.
-  if {$INTERPRETER != "yes" || $gij == "gij"} {
+  if {$INTERPRETER != "yes" || $gij == ""} {
     untested "$jarfile execution - gij test"
     untested "$jarfile output - gij test"
     return
