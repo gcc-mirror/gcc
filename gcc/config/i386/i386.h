@@ -1419,30 +1419,7 @@ do {								\
    its replacement, at the start of a routine.  */
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
-{									\
-  if ((FROM) == ARG_POINTER_REGNUM && (TO) == FRAME_POINTER_REGNUM)	\
-    (OFFSET) = 8;	/* Skip saved PC and previous frame pointer */	\
-  else									\
-    {									\
-      int nregs;							\
-      int offset;							\
-      int preferred_alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT; \
-      HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (),	\
-						     &nregs);		\
-									\
-      (OFFSET) = (tsize + nregs * UNITS_PER_WORD);			\
-									\
-      offset = 4;							\
-      if (frame_pointer_needed)						\
-	offset += UNITS_PER_WORD;					\
-									\
-      if ((FROM) == ARG_POINTER_REGNUM)					\
-	(OFFSET) += offset;						\
-      else								\
-	(OFFSET) -= ((offset + preferred_alignment - 1)			\
-		     & -preferred_alignment) - offset;			\
-    }									\
-}
+  (OFFSET) = ix86_initial_elimination_offset (FROM, TO)
 
 /* Addressing modes, and classification of registers for them.  */
 

@@ -27,7 +27,7 @@ extern int ix86_can_use_return_insn_p PARAMS ((void));
 
 extern void asm_output_function_prefix PARAMS ((FILE *, char *));
 extern void load_pic_register PARAMS ((void));
-extern HOST_WIDE_INT ix86_compute_frame_size PARAMS ((HOST_WIDE_INT, int *));
+extern HOST_WIDE_INT ix86_initial_elimination_offset PARAMS((int, int));
 extern void ix86_expand_prologue PARAMS ((void));
 extern void ix86_expand_epilogue PARAMS ((void));
 
