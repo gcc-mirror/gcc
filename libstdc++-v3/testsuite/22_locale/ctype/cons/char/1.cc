@@ -57,7 +57,7 @@ void test01()
 
   comma_ctype obj2(tmp);
   const ctype_base::mask* ctable = obj2.get_table();
-  VERIFY ( tmp = ctable );
+  VERIFY ( tmp == ctable );
 }
 
 int main() 
