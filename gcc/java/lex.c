@@ -903,8 +903,7 @@ java_lex (java_lval)
 	  if (c == '\\')
 	    c = java_parse_escape_sequence ();
 	  no_error &= (c != JAVA_CHAR_ERROR ? 1 : 0);
-	  if (c)
-	    java_unicode_2_utf8 (c);
+	  java_unicode_2_utf8 (c);
 	}
       if (c == '\n' || c == UEOF) /* ULT */
 	{
