@@ -25,19 +25,19 @@ Boston, MA 02111-1307, USA.  */
   {"@objective-c",
 #if USE_CPPLIB
      "%{E|M|MM:cpp0 -lang-objc %{ansi:-std=c89} %(cpp_options)}\
-      %{!E:%{!M:%{!MM:cc1obj -lang-objc %(cpp_options) %(cc1_options)\
-			     %{gen-decls} %{!S:-o %{|!pipe:%g.s} |\n\
-      as %(asm_options) %{!pipe:%g.s} %A }}}}"
+      %{!E:%{!M:%{!MM:cc1obj -lang-objc %(cpp_options) %(cc1_options) %{gen-decls}\
+             %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
+      as %(asm_options) %{!pipe:%g.s} %A }}}}}"
 #else /* ! USE_CPPLIB */
      "%(trad_capable_cpp) -lang-objc %{ansi:-std=c89} %(cpp_options)\
 			  %{!M:%{!MM:%{!E:%{!pipe:%g.mi} |\n\
       cc1obj -lang-objc %{!pipe:%g.mi} %(cc1_options) %{gen-decls}\
-	     %{!S:-o %{|!pipe:%g.s} |\n\
-      as %(asm_options) %{!pipe:%g.s} %A }}}}\n"
+	     %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
+      as %(asm_options) %{!pipe:%g.s} %A }}}}}\n"
 #endif /* ! USE_CPPLIB */
     },
   {".mi", "@objc-cpp-output"},
   {"@objc-cpp-output",
      "%{!M:%{!MM:%{!E:cc1obj -lang-objc %i %(cc1_options) %{gen-decls}\
-			     %{!S:-o %{|!pipe:%g.s} |\n\
-      as %(asm_options) %{!pipe:%g.s} %A }}}}"},
+			     %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
+      as %(asm_options) %{!pipe:%g.s} %A }}}}}"},
