@@ -1,3 +1,8 @@
+2000-01-26  Tom Tromey  <tromey@cygnus.com>
+
+	* resolve.cc (get_ffi_type_from_signature): Handle case where
+	boolean is an int.
+
 Tue Jan 25 08:51:16 2000  Tom Tromey  <tromey@ferrule.cygnus.com>
 
 	* interpret.cc (run): Don't call println.

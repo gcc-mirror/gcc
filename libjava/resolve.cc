@@ -856,6 +856,16 @@ get_ffi_type_from_signature (unsigned char* ptr)
       break;
 
     case 'Z':
+      // On some platforms a bool is a byte, on others an int.
+      if (sizeof (jboolean) == sizeof (jbyte))
+	return &ffi_type_sint8;
+      else
+	{
+	  JvAssert (sizeof (jbyte) == sizeof (jint));
+	  return &ffi_type_sint32;
+	}
+      break;
+
     case 'B':
       return &ffi_type_sint8;
       break;
