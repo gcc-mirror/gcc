@@ -1118,6 +1118,10 @@ if test "$host_xm_file" != "$build_xm_file"; then
 	fi
 fi
 
+# ---------
+# Threading
+# ---------
+
 # Check if a valid thread package
 case ${enable_threads_flag} in
   "" | no)
@@ -1143,6 +1147,19 @@ if test x${thread_file} = x; then
   # so use file chosen by default logic above
   thread_file=${target_thread_file}
 fi
+
+# Make gthr-default.h if we have a thread file.
+gthread_flags=
+if test $thread_file != single; then
+  rm -f gthr-default.h
+  echo "#include \"gthr-${thread_file}.h\"" > gthr-default.h
+  gthread_flags=-DHAVE_GTHR_DEFAULT
+fi
+AC_SUBST(gthread_flags)
+
+# --------
+# UNSORTED
+# --------
 
 if test x$enable___cxa_atexit = xyes || \
    test x$enable___cxa_atexit = x -a x$default_use_cxa_atexit = xyes; then
@@ -2760,15 +2777,6 @@ if test "x$missing_languages" != x; then
 The following requested languages were not found:${missing_languages}
 The following languages were available: c${found_languages}])
 fi
-
-# Make gthr-default.h if we have a thread file.
-gthread_flags=
-if test $thread_file != single; then
-    rm -f gthr-default.h
-    echo "#include \"gthr-${thread_file}.h\"" > gthr-default.h
-    gthread_flags=-DHAVE_GTHR_DEFAULT
-fi
-AC_SUBST(gthread_flags)
 
 # Find out what GC implementation we want, or may, use.
 AC_ARG_WITH(gc,

@@ -1,3 +1,9 @@
+2004-02-29  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.ac: Rearrange some threading code for clarity;
+	add section comment.
+	* configure: Regenerate.
+
 2004-02-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* passes.c, config/frv/frv.c, config/sh/sh.c: Fix comment
