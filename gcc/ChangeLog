@@ -1,3 +1,7 @@
+2001-02-26  Mark Mitchell  <mark@codesourcery.com>
+
+	Revert the two previous changes.
+
 Sun Feb 25 08:34:23 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/i386/i386-protos.h (ix86_set_move_mem_attrs): Move decl.
