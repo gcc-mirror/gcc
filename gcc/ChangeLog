@@ -1,3 +1,8 @@
+Thu Nov 13 20:29:08 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* prefix.c: Use stdarg.h only ifdef __STDC__.  Otherwise,
+	use varargs.h.  Wrap header with <>, not "".
+
 Thu Nov 13 20:21:17 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* integrate.c (save_for_inline_copying): Add return value from

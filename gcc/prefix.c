@@ -65,7 +65,11 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "gansidecl.h"
-#include "stdarg.h"
+#ifdef __STDC__
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
 
 #ifdef _WIN32
 #include <windows.h>
