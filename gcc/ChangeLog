@@ -1,3 +1,8 @@
+2003-10-24  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygwin.asm. Add copyright notice. Add comment
+	on why this code is needed.
+
 2003-10-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/clzhi2.c: Fix warnings.
