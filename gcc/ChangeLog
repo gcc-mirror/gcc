@@ -1,3 +1,9 @@
+2004-01-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR optimization/13567
+	* cse.c (cse_basic_block): Call cse_insn with a non-null
+	libcall_insn for the last SET insn of a no-confilict block.
+
 2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in (target_noncanonical, program_transform_name): Use 
