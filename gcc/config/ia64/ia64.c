@@ -3915,6 +3915,10 @@ ia64_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 
 	  offset = 0;
 	  bytesize = int_size_in_bytes (valtype);
+	  /* An empty PARALLEL is invalid here, but the return value
+	     doesn't matter for empty structs.  */
+	  if (bytesize == 0)
+	    return gen_rtx_REG (mode, GR_RET_FIRST);
 	  for (i = 0; offset < bytesize; i++)
 	    {
 	      loc[i] = gen_rtx_EXPR_LIST (VOIDmode,

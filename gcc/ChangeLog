@@ -1,3 +1,9 @@
+2005-03-07  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/ia64/hpux.h (LINK_SPEC): Add -z.
+	* config/ia64/ia64.c (ia64_function_value): Return a REG not a
+	PARALLEL for an empty structure.
+
 2005-03-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c (fold_binary): Remove handling of RANGE_EXPR.
