@@ -292,17 +292,22 @@
 ;; Division instructions
 ;; -------------------------------------------------------------------------
 
-
 ;; we take advantage of the library routines which don't clobber as many
 ;; registers as a normal function call would.
 
+;; We must use a psuedo-reg forced to reg 0 in the SET_DEST rather than
+;; hard register 0.  If we used hard register 0, then the next instruction
+;; would be a move from hard register 0 to a pseudo-reg.  If the pseudo-reg
+;; gets allocated to a stack slot that needs its address reloaded, then
+;; there is nothing to prevent reload from using r0 to reload the address.
+;; This reload would clobber the value in r0 we are trying to store.
+;; If we let reload allocate r0, then this problem can never happen.
 
 (define_insn ""
-  [(set (reg:SI 0)
+  [(set (match_operand:SI 1 "register_operand" "=z")
 	(udiv:SI (reg:SI 4) (reg:SI 5)))
    (clobber (reg:SI 18))
    (clobber (reg:SI 17))
-   (clobber (reg:SI 6))
    (clobber (reg:SI 4))
    (use (match_operand:SI 0 "arith_reg_operand" "r"))]
   ""
@@ -314,22 +319,18 @@
   [(set (reg:SI 4) (match_operand:SI 1 "general_operand" "g"))
    (set (reg:SI 5) (match_operand:SI 2 "general_operand" "g"))
    (set (match_dup 3) (symbol_ref:SI "__udivsi3"))
-   (parallel[(set (reg:SI 0)
+   (parallel[(set (match_operand:SI 0 "register_operand" "=z")
 		  (udiv:SI (reg:SI 4)
 			   (reg:SI 5)))
 	     (clobber (reg:SI 18))
 	     (clobber (reg:SI 17))
-	     (clobber (reg:SI 6))
 	     (clobber (reg:SI 4))
-	     (use (match_dup 3))])
-   (set (match_operand:SI 0 "general_operand" "=g")
-	(reg:SI 0))]
+	     (use (match_dup 3))])]
   ""
   "operands[3] = gen_reg_rtx(SImode);")
 
-
 (define_insn ""
-  [(set (reg:SI 0)
+  [(set (match_operand:SI 1 "register_operand" "=z")
 	(div:SI (reg:SI 4) (reg:SI 5)))
    (clobber (reg:SI 18))
    (clobber (reg:SI 17))
@@ -346,7 +347,7 @@
   [(set (reg:SI 4) (match_operand:SI 1 "general_operand" "g"))
    (set (reg:SI 5) (match_operand:SI 2 "general_operand" "g"))
    (set (match_dup 3) (symbol_ref:SI "__sdivsi3"))
-   (parallel[(set (reg:SI 0)
+   (parallel[(set (match_operand:SI 0 "register_operand" "=z")
 		  (div:SI (reg:SI 4)
 			   (reg:SI 5)))
 	     (clobber (reg:SI 18))
@@ -354,9 +355,7 @@
 	     (clobber (reg:SI 1))
 	     (clobber (reg:SI 2))
 	     (clobber (reg:SI 3))
-	     (use (match_dup 3))])
-   (set (match_operand:SI 0 "general_operand" "=g")
-	(reg:SI 0))]
+	     (use (match_dup 3))])]
   ""
   "operands[3] = gen_reg_rtx(SImode);")
 
@@ -408,7 +407,7 @@
 ;; a call to a routine which clobbers known registers.
 
 (define_insn ""
-  [(set (reg:SI 0)
+  [(set (match_operand:SI 1 "register_operand" "=z")
 	(mult:SI (reg:SI 4) (reg:SI 5)))
    (clobber (reg:SI 21))
    (clobber (reg:SI 18))
@@ -426,7 +425,7 @@
   [(set (reg:SI 4) (match_operand:SI 1 "general_operand" "g"))
    (set (reg:SI 5) (match_operand:SI 2 "general_operand" "g"))
    (set (match_dup 3) (symbol_ref:SI "__mulsi3"))
-   (parallel[(set (reg:SI 0)
+   (parallel[(set (match_operand:SI 0 "register_operand" "=z")
 		  (mult:SI (reg:SI 4)
 			   (reg:SI 5)))
 	     (clobber (reg:SI 21))
@@ -435,9 +434,7 @@
 	     (clobber (reg:SI 3))
 	     (clobber (reg:SI 2))
 	     (clobber (reg:SI 1))
-	     (use (match_dup 3))])
-   (set (match_operand:SI 0 "general_operand" "=g")
-	(reg:SI 0))]
+	     (use (match_dup 3))])]
   ""
   "operands[3] = gen_reg_rtx(SImode);")
 
@@ -1675,8 +1672,6 @@
 		   (mem:BLK (reg:SI 5)))
 	      (use (match_operand:SI 0 "arith_reg_operand" "r"))
 	      (clobber (reg:SI 17))
-	      (clobber (reg:SI 4))
-	      (clobber (reg:SI 5))
 	      (clobber (reg:SI 0))])]
   ""
   "jsr	@%0%#"
