@@ -1255,7 +1255,6 @@ int
 standard_68881_constant_p (x)
      rtx x;
 {
-  union {double d; int i[2];} u;
   register double d;
 
   /* fmovecr must be emulated on the 68040, so it shouldn't be used at all. */
@@ -1267,14 +1266,7 @@ standard_68881_constant_p (x)
     return 0;
 #endif
 
-#ifdef HOST_WORDS_BIG_ENDIAN
-  u.i[0] = CONST_DOUBLE_LOW (x);
-  u.i[1] = CONST_DOUBLE_HIGH (x);
-#else
-  u.i[0] = CONST_DOUBLE_HIGH (x);
-  u.i[1] = CONST_DOUBLE_LOW (x);
-#endif 
-  d = u.d;
+  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
 
   if (d == 0)
     return 0x0f;
@@ -1306,7 +1298,6 @@ int
 floating_exact_log2 (x)
      rtx x;
 {
-  union {double d; int i[2];} u;
   register double d, d1;
   int i;
 
@@ -1315,14 +1306,7 @@ floating_exact_log2 (x)
     return 0;
 #endif
 
-#ifdef HOST_WORDS_BIG_ENDIAN
-  u.i[0] = CONST_DOUBLE_LOW (x);
-  u.i[1] = CONST_DOUBLE_HIGH (x);
-#else
-  u.i[0] = CONST_DOUBLE_HIGH (x);
-  u.i[1] = CONST_DOUBLE_LOW (x);
-#endif 
-  d = u.d;
+  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
 
   if (! (d > 0))
     return 0;
@@ -1366,7 +1350,6 @@ int
 standard_sun_fpa_constant_p (x)
      rtx x;
 {
-  union {double d; int i[2];} u;
   register double d;
 
 #if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
@@ -1374,10 +1357,7 @@ standard_sun_fpa_constant_p (x)
     return 0;
 #endif
 
-
-  u.i[0] = CONST_DOUBLE_LOW (x);
-  u.i[1] = CONST_DOUBLE_HIGH (x);
-  d = u.d;
+  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
 
   if (d == 0.0)
     return 0x200;		/* 0 once 0x1ff is anded with it */
@@ -1619,17 +1599,17 @@ print_operand (file, op, letter)
 #endif
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == SFmode)
     {
-      union { double d; int i[2]; } u;
+      double d;
       union { float f; int i; } u1;
-      PRINT_OPERAND_EXTRACT_FLOAT (op);
-      u1.f = u.d;
+      REAL_VALUE_FROM_CONST_DOUBLE (d, op);
+      u1.f = d;
       PRINT_OPERAND_PRINT_FLOAT (letter, file);
     }
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) != DImode)
     {
-      union { double d; int i[2]; } u;
-      PRINT_OPERAND_EXTRACT_FLOAT (op);
-      ASM_OUTPUT_DOUBLE_OPERAND (file, u.d);
+      double d;
+      REAL_VALUE_FROM_CONST_DOUBLE (d, op);
+      ASM_OUTPUT_DOUBLE_OPERAND (file, d);
     }
   else
     {
