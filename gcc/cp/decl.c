@@ -7793,6 +7793,14 @@ reshape_init (tree type, tree *initp)
   old_init_value = (TREE_CODE (*initp) == TREE_LIST
 		    ? TREE_VALUE (*initp) : old_init);
 
+  /* For some parse errors, OLD_INIT_VALUE may be NULL.  */
+  if (!old_init_value)
+    {
+      my_friendly_assert (TREE_CODE (old_init) == TREE_LIST, 20021202);
+      TREE_VALUE (old_init) = error_mark_node;
+      return old_init;
+    }
+
   /* If the initializer is brace-enclosed, pull initializers from the
      enclosed elements.  Advance past the brace-enclosed initializer
      now.  */

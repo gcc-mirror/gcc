@@ -1,3 +1,8 @@
+2002-12-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8688
+	* g++.dg/init/brace3.C: New test.
+
 2002-12-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.dg/20020210-1.c: Fix a comment typo.
