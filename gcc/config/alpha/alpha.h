@@ -471,16 +471,22 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
    type, but kept valid in the wider mode.  The signedness of the
    extension may differ from that of the type.
 
-   For Alpha, we always store objects in a full register.  32-bit objects
-   are always sign-extended, but smaller objects retain their signedness.  */
+   For Alpha, we always store objects in a full register.  32-bit integers
+   are always sign-extended, but smaller objects retain their signedness.
 
-#define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)  \
-  if (GET_MODE_CLASS (MODE) == MODE_INT		\
-      && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)	\
-    {						\
-      if ((MODE) == SImode)			\
-	(UNSIGNEDP) = 0;			\
-      (MODE) = DImode;				\
+   Note that small vector types can get mapped onto integer modes at the
+   whim of not appearing in alpha-modes.def.  We never promoted these
+   values before; don't do so now that we've trimed the set of modes to
+   those actually implemented in the backend.  */
+
+#define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)			\
+  if (GET_MODE_CLASS (MODE) == MODE_INT				\
+      && (TYPE == NULL || TREE_CODE (TYPE) != VECTOR_TYPE)	\
+      && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)			\
+    {								\
+      if ((MODE) == SImode)					\
+	(UNSIGNEDP) = 0;					\
+      (MODE) = DImode;						\
     }
 
 /* Define this if most significant bit is lowest numbered
