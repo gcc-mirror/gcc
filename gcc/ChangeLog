@@ -1,3 +1,8 @@
+Tue Jun 30 23:46:53 1998  Dmitrij Tejblum <tejblum@arc.hq.cti.ru>
+
+	* i386/freebsd.h (WCHAR_TYPE): Chagne to an "int".
+	(WCHAR_TYPE_SIZE): Update appropriately.
+
 Tue Jun 30 23:16:39 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (recompute_reg_usage): Does not return a value.

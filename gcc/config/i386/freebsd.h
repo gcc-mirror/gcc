@@ -47,12 +47,12 @@ Boston, MA 02111-1307, USA.  */
 #define PTRDIFF_TYPE "int"
 
 #undef WCHAR_TYPE
-#define WCHAR_TYPE "short unsigned int"
+#define WCHAR_TYPE "int"
 
-#define WCHAR_UNSIGNED 1
+#define WCHAR_UNSIGNED 0
 
 #undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE 16
+#define WCHAR_TYPE_SIZE BITS_PER_WORD
 
 #define HAVE_ATEXIT
 
