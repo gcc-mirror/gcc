@@ -71,6 +71,7 @@ INSTALL = install -c
 INSTALL_PROGRAM = $(INSTALL)
 INSTALL_DATA = $(INSTALL)
 MAKEINFO = makeinfo
+MAKEINFOFLAGS =
 TEXI2DVI = texi2dvi
 # For GNUmake: let us decide what gets passed to recursive makes.
 MAKEOVERRIDES =
@@ -1874,11 +1875,11 @@ doc: info
 info: $(srcdir)/cpp.info $(srcdir)/gcc.info lang.info
 
 $(srcdir)/cpp.info: cpp.texi
-	cd $(srcdir); $(MAKEINFO) cpp.texi
+	cd $(srcdir); $(MAKEINFO) $(MAKEINFOFLAGS) cpp.texi
 
 $(srcdir)/gcc.info: gcc.texi extend.texi install.texi invoke.texi \
 		md.texi rtl.texi tm.texi 
-	cd $(srcdir); $(MAKEINFO) gcc.texi
+	cd $(srcdir); $(MAKEINFO) $(MAKEINFOFLAGS) gcc.texi
 
 dvi: $(srcdir)/gcc.dvi $(srcdir)/cpp.dvi lang.dvi
 
