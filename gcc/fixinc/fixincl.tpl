@@ -135,7 +135,7 @@ tTestDesc a[=hackname _cap=]Tests[] = {[=
  */
 const char* apz[=hackname _cap=]Patch[] = {[=
     _IF   sed         _exist =] "sed"[=_FOR sed=],
-    "-e" [=sed _str=][=/sed=][=
+    "-e", [=sed _str=][=/sed=][=
     _ELIF replacement _exist =] "sed",
     "s@[=select[]=]@[=replacement=]@"[=
     _ELIF shell       _exist =] "sh", "-c",
