@@ -471,9 +471,14 @@ int explicit_flag_signed_bitfields = 0;
 
 int flag_no_ident = 0;
 
-/* Nonzero means warn about implicit declarations.  */
+/* Nonzero means warn about use of implicit int. */
 
-int warn_implicit;
+int warn_implicit_int;
+
+/* Nonzero means message about use of implicit function declarations;
+ 1 means warning; 2 means error. */
+
+int mesg_implicit_function_declaration;
 
 /* Nonzero means give string constants the type `const char *'
    to get extra warnings from them.  These warnings will be too numerous
@@ -648,10 +653,24 @@ c_decode_option (p)
     flag_no_ident = 0;
   else if (!strcmp (p, "-ansi"))
     flag_no_asm = 1, flag_no_nonansi_builtin = 1;
+  else if (!strcmp (p, "-Werror-implicit-function-declaration"))
+    mesg_implicit_function_declaration = 2;
+  else if (!strcmp (p, "-Wimplicit-function-declaration"))
+    mesg_implicit_function_declaration = 1;
+  else if (!strcmp (p, "-Wno-implicit-function-declaration"))
+    mesg_implicit_function_declaration = 0;
+  else if (!strcmp (p, "-Wimplicit-int"))
+    warn_implicit_int = 1;
+  else if (!strcmp (p, "-Wno-implicit-int"))
+    warn_implicit_int = 0;
   else if (!strcmp (p, "-Wimplicit"))
-    warn_implicit = 1;
+    {
+      warn_implicit_int = 1;
+      if (mesg_implicit_function_declaration != 2)
+        mesg_implicit_function_declaration = 1;
+    }
   else if (!strcmp (p, "-Wno-implicit"))
-    warn_implicit = 0;
+    warn_implicit_int = 0, mesg_implicit_function_declaration = 0;
   else if (!strcmp (p, "-Wwrite-strings"))
     warn_write_strings = 1;
   else if (!strcmp (p, "-Wno-write-strings"))
@@ -751,7 +770,8 @@ c_decode_option (p)
 	 warning about not using it without also specifying -O.  */
       if (warn_uninitialized != 1)
 	warn_uninitialized = 2;
-      warn_implicit = 1;
+      warn_implicit_int = 1;
+      mesg_implicit_function_declaration = 1;
       warn_return_type = 1;
       warn_unused = 1;
       warn_switch = 1;
@@ -2467,9 +2487,15 @@ implicitly_declare (functionid)
 
   rest_of_decl_compilation (decl, NULL_PTR, 0, 0);
 
-  if (warn_implicit && implicit_warning)
-    warning ("implicit declaration of function `%s'",
-	     IDENTIFIER_POINTER (functionid));
+  if (mesg_implicit_function_declaration && implicit_warning)
+    {
+      if (mesg_implicit_function_declaration == 2)
+        error ("implicit declaration of function `%s'",
+                 IDENTIFIER_POINTER (functionid));
+      else
+        warning ("implicit declaration of function `%s'",
+                 IDENTIFIER_POINTER (functionid));
+    }
   else if (warn_traditional && traditional_warning)
     warning ("function `%s' was previously declared within a block",
 	     IDENTIFIER_POINTER (functionid));
@@ -4364,9 +4390,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	     For now, issue a warning if -Wreturn-type and this is a function,
 	     or if -Wimplicit; prefer the former warning since it is more
 	     explicit.  */
-	  if ((warn_implicit || warn_return_type) && funcdef_flag)
+	  if ((warn_implicit_int || warn_return_type) && funcdef_flag)
 	    warn_about_return_type = 1;
-	  else if (warn_implicit)
+	  else if (warn_implicit_int)
 	    warning ("type defaults to `int' in declaration of `%s'", name);
 	}
 
