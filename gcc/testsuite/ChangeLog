@@ -1,3 +1,9 @@
+2005-02-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/17788
+	* g++.dg/init/ctor4.C: New.
+	* g++.old-deja/g++.bugs/900205_04.C: Adjust.
+
 2005-02-15  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/overflow-warn-1.c, gcc.dg/overflow-warn-2.c,
