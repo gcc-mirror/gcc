@@ -1,3 +1,7 @@
+2001-09-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* concat.c (reconcat): New function.
+
 2001-09-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* concat.c (vconcat_length, vconcat_copy, concat_length,

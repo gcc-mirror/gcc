@@ -171,6 +171,31 @@ concat VPARAMS ((const char *first, ...))
   return newstr;
 }
 
+char *
+reconcat VPARAMS ((char *optr, const char *first, ...))
+{
+  char *newstr;
+
+  /* First compute the size of the result and get sufficient memory.  */
+  VA_OPEN (args, first);
+  VA_FIXEDARG (args, char *, optr);
+  VA_FIXEDARG (args, const char *, first);
+  newstr = (char *) xmalloc (vconcat_length (first, args) + 1);
+  VA_CLOSE (args);
+
+  /* Now copy the individual pieces to the result string. */
+  VA_OPEN (args, first);
+  VA_FIXEDARG (args, char *, optr);
+  VA_FIXEDARG (args, const char *, first);
+  vconcat_copy (newstr, first, args);
+  VA_CLOSE (args);
+
+  if (optr)
+    free (optr);
+
+  return newstr;
+}
+
 #ifdef MAIN
 #define NULLP (char *)0
 
