@@ -22,11 +22,6 @@ Sun Aug 17 15:42:17 1997  Dave Love  (d.love@dl.ac.uk)
 	* configure.lang: Substitute autoconfed ${INSTALL} (not currently
 	relevant).
 
-Sun Aug 17 15:15:53 1997  Jeffrey A Law  (law@cygnus.com)
-
-	* gcc.c (default_compilers): Add __EGCS__ and __EGCS_MINOR__
-	predefines.
-
 Sat Aug 16 01:08:12 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (is_power_of_2, is_conditional_branch): Delete unused
