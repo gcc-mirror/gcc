@@ -112,11 +112,11 @@
 	* tree-gimple.h: Declare new fns.
 	* config/i386/i386.c (TARGET_GIMPLIFY_VA_ARG_EXPR): Define.
 	(ix86_gimplify_va_arg): New fn.
-	* config/i386/ia64.c (TARGET_GIMPLIFY_VA_ARG_EXPR): Define.
+	* config/ia64/ia64.c (TARGET_GIMPLIFY_VA_ARG_EXPR): Define.
 	(ia64_gimplify_va_arg): New fn.
-	* config/i386/rs6000.c (rs6000_gimplify_va_arg): New fn.
+	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): New fn.
 	(TARGET_GIMPLIFY_VA_ARG_EXPR): Define.
-	* config/i386/sparc.c (sparc_gimplify_va_arg): New fn.
+	* config/sparc/sparc.c (sparc_gimplify_va_arg): New fn.
 	* alias.c (get_varargs_alias_set): Just return 0 for now.
 	
 	* c-objc-common.c (c_tree_printer): Improve handling of %T.
