@@ -1,3 +1,17 @@
+Fri Feb 19 13:00:56 1999  Per Bothner  <bothner@cygnus.com>
+
+	* parse.y (obtain_incomplete_type):  Don't wrap unknown types
+	in TREE_LIST - just chain the POINTER_TYPEs together.
+	(resolve_class):  If type already resolved, return decl.
+	After resolving, update TREE_TYPE(class_type), and name (if array).
+	* parse.h (do_resolve_class), parse.y:  Make non-static.	
+	* class.c (maybe_layout_super_class):  Take this_class argument.
+	Do do_resolve_class if necessary.
+	(layout_class, layout_class_methods): Adjust calls appropriately.
+	* parse.h (JDEP_TO_RESOLVE, JDEP_RESOLVED_DECL, JDEP_RESOLVED,
+	JDEP_RESOLVED_P):  Redefined for new TREE_LIST-less convention.
+	* typeck.c (build_java_array_type):  Don't call layout_class.
+
 Wed Feb 17 15:47:20 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (check_pkg_class_access): Allow private class access
