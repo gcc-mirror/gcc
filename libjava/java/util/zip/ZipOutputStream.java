@@ -237,6 +237,7 @@ public class ZipOutputStream extends DeflaterOutputStream
     def.reset();
     def.setLevel(compr);
     sum.reset();
+    uncompressed_size = 0;
   }
 
   public void setLevel (int level)

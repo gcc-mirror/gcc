@@ -1,3 +1,8 @@
+2002-01-19  Per Bothner  <per@bothner.com>
+
+	* java/util/zip/ZipOutputStream.java (putNextEntry):  Clear
+	uncompressed_size in readiness for next entry.
+
 2002-01-18  Tom Tromey  <tromey@redhat.com>
 
 	* java/net/natPlainSocketImpl.cc: Include
