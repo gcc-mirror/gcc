@@ -147,13 +147,8 @@ Boston, MA 02111-1307, USA.  */
       asm_fprintf (FILE, "\tmov.l %Ra0,%Rd0\n"); } 
 
 #undef FUNCTION_PROFILER
-#ifndef USE_GAS
 #define FUNCTION_PROFILER(FILE, LABEL_NO)	\
-    asm_fprintf (FILE, "\tmov.l %ILP%%%d,%Ra0\n\tjsr mcount%%\n", (LABEL_NO))
-#else /* USE_GAS */
-#define FUNCTION_PROFILER(FILE, LABEL_NO)	\
-    asm_fprintf (FILE, "\tmov.l %I%.LP%d,%Ra0\n\tjsr mcount%%\n", (LABEL_NO))
-#endif /* USE_GAS */
+    asm_fprintf (FILE, "\tmov.l %I%LLP%d,%Ra0\n\tjsr mcount%%\n", (LABEL_NO))
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
@@ -806,11 +801,7 @@ do {(CUM).offset = 0;\
 
 #define EXIT_BODY	\
   do								\
-    { extern void monitor ();					\
-      extern long mcount asm ("mcount%");			\
-      extern long etext;					\
-								\
-      if (&mcount < &etext)					\
-	monitor (0);						\
+    { 								\
+      __stop_monitor ();					\
       _cleanup ();						\
     } while (0)
