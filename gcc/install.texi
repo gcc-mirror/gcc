@@ -248,7 +248,8 @@ If you want to install its files somewhere else, specify
 is a directory name to use instead of @file{/usr/local} for all purposes
 with one exception: the directory @file{/usr/local/include} is searched
 for header files no matter where you install the compiler.  To override
-this name, use the @code{--local-prefix} option below.
+this name, use the @code{--local-prefix} option below.  The directory
+you specify need not exist, but its parent directory must exist.
 
 @item
 Specify @samp{--local-prefix=@var{dir}} if you want the compiler to
