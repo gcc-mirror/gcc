@@ -2264,19 +2264,17 @@ find_case_label_for_value (tree switch_expr, tree val)
 static bool
 phi_alternatives_equal (basic_block dest, edge e1, edge e2)
 {
-  tree phi, val1, val2;
-  int n1, n2;
+  int n1 = e1->dest_idx;
+  int n2 = e2->dest_idx;
+  tree phi;
 
   for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
     {
-      n1 = phi_arg_from_edge (phi, e1);
-      n2 = phi_arg_from_edge (phi, e2);
+      tree val1 = PHI_ARG_DEF (phi, n1);
+      tree val2 = PHI_ARG_DEF (phi, n2);
 
-      gcc_assert (n1 >= 0);
-      gcc_assert (n2 >= 0);
-
-      val1 = PHI_ARG_DEF (phi, n1);
-      val2 = PHI_ARG_DEF (phi, n2);
+      gcc_assert (val1 != NULL_TREE);
+      gcc_assert (val2 != NULL_TREE);
 
       if (!operand_equal_for_phi_arg_p (val1, val2))
 	return false;
