@@ -564,7 +564,7 @@ extern tree lookup_name PARAMS ((tree));
 extern tree build_known_method_ref PARAMS ((tree, tree, tree, tree, tree));
 extern tree build_class_init PARAMS ((tree, tree));
 extern tree build_invokevirtual PARAMS ((tree, tree));
-extern tree build_invokeinterface PARAMS ((tree, tree, tree));
+extern tree build_invokeinterface PARAMS ((tree, tree));
 extern tree invoke_build_dtable PARAMS ((int, tree));
 extern tree build_field_ref PARAMS ((tree, tree, tree));
 extern void pushdecl_force_head PARAMS ((tree));

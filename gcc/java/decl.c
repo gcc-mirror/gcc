@@ -661,6 +661,9 @@ init_decl_processing ()
   PUSH_FIELD (class_type_node, field, "interface_count", short_type_node);
   PUSH_FIELD (class_type_node, field, "state", byte_type_node);
   PUSH_FIELD (class_type_node, field, "thread", ptr_type_node);
+  PUSH_FIELD (class_type_node, field, "depth", short_type_node);
+  PUSH_FIELD (class_type_node, field, "ancestors", ptr_type_node);
+  PUSH_FIELD (class_type_node, field, "idt", ptr_type_node);  
   for (t = TYPE_FIELDS (class_type_node);  t != NULL_TREE;  t = TREE_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
   push_super_field (class_type_node, object_type_node);
@@ -815,9 +818,9 @@ init_decl_processing ()
 			0, NOT_BUILT_IN, NULL_PTR);
   t = tree_cons (NULL_TREE, ptr_type_node,
 		 tree_cons (NULL_TREE, ptr_type_node,
-			    tree_cons (NULL_TREE, ptr_type_node, endlink)));
+			    tree_cons (NULL_TREE, int_type_node, endlink)));
   soft_lookupinterfacemethod_node 
-    = builtin_function ("_Jv_LookupInterfaceMethod",
+    = builtin_function ("_Jv_LookupInterfaceMethodIdx",
 			build_function_type (ptr_type_node, t),
 			0, NOT_BUILT_IN, NULL_PTR);
   t = tree_cons (NULL_TREE, double_type_node,

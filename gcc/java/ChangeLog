@@ -1,3 +1,17 @@
+2000-03-06  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* decl.c (init_decl_processing): Added new class fields `depth',
+	`ancestors', and `idt' to class_type_node. Use
+	_Jv_LookupInterfaceMethodIdx for soft_lookupinterfacemthod_node.
+	* class.c (make_class_data): Push initial values for new fields.
+	* java-tree.h: Updated prototype for `build_invokeinterface'.
+	* expr.c (build_invokeinterface): Changed parameters to accept
+	`method' tree. Calculate index of `method' in its declaring
+	interface. Build call to _Jv_LookupInterfaceMethodIdx.
+	(expand_invoke): Call `build_invokeinterface' with new parameters.
+	* parse.y (patch_invoke): Call `build_invokeinterface' with new
+	parameters.
+
 2000-03-06  Bryce McKinlay <bryce@albatross.co.nz>
 
 	* typeck.c (lookup_do): Search superinterfaces first
