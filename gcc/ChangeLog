@@ -1,3 +1,7 @@
+2000-08-07  Nick Clifton  <nickc@cygnus.com>
+
+	* mn10300.h (TARGET_SWITCHES): Document `-mam33'.
+
 2000-08-07  Graham Stott  <grahams@cygnus.co.uk>
 
 	* mn10300.md: Use nonimmediate_operand instead of general_operand
