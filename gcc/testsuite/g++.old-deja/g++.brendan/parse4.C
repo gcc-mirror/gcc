@@ -12,7 +12,7 @@ public:
     void f() {}
 };
 
-int g() { return 0; } // ERROR - global decl of g
+int g() { return 0; } // gets bogus error - referenced below XFAIL *-*-*
 
 main()
 {
@@ -20,5 +20,5 @@ main()
     B( try1 ).f();   // no syntax error
     B b( g() );      // no syntax error
     B( ::g() ).f();  // no syntax error 
-    B( g() ).f();    // syntax error before `.' // ERROR - parse error
+    B( g() ).f();    // gets bogus error - treated as decl XFAIL *-*-*
 }
