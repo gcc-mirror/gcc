@@ -1,3 +1,9 @@
+2005-04-05  Steven Bosscher  <stevenb@suse.de>
+
+	* typeck.c (comptypes): First determine if the types are compatible
+	from a target-independent point of view.  Check target attributes
+	last.
+
 2005-04-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20679
