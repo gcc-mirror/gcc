@@ -1,3 +1,9 @@
+2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* COPYING: Update to current
+	ftp://ftp.gnu.org/pub/gnu/Licenses/COPYING-2.0 (fixes references
+	to 19yy as example year in copyright notice).
+
 2000-12-16  Herman A.J. ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
 
 	* safe-ctype.h: Make code work on all targets and not just on

@@ -1,3 +1,7 @@
+2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77.texi: Update GPL copy not to refer to years 19@var{yy}.
+
 2000-12-18  Toon Moene <toon@moene.indiv.nluug.nl>
 
 	* bugs.texi: Correct copyright years.

@@ -1,3 +1,9 @@
+2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* COPYING: Update to current
+	ftp://ftp.gnu.org/pub/gnu/Licenses/COPYING-2.0 (fixes references
+	to 19yy as example year in copyright notice).
+
 2000-12-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* Makefile.in (BASE_FLAGS_TO_PASS): Alphabetize. 
