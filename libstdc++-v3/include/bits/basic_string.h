@@ -981,13 +981,32 @@ namespace std
        *  The value of the string doesn't change if an error is thrown.
       */
       iterator
-      insert(iterator __p, _CharT __c = _CharT())
+      insert(iterator __p, _CharT __c)
       {
 	const size_type __pos = __p - _M_ibegin();
 	this->insert(_M_check(__pos), size_type(1), __c);
 	_M_rep()->_M_set_leaked();
  	return this->_M_ibegin() + __pos;
       }
+
+#ifdef _GLIBCXX_DEPRECATED
+      /**
+       *  @brief  Insert one default-constructed character.
+       *  @param p  Iterator referencing position in string to insert at.
+       *  @return  Iterator referencing newly inserted char.
+       *  @throw  std::length_error  If new length exceeds @c max_size().
+       *  @throw  std::out_of_range  If @a p is beyond the end of this string.
+       *
+       *  Inserts a default-constructed character at position
+       *  referenced by @a p.  If adding character causes the length
+       *  to exceed max_size(), length_error is thrown.  If @a p is
+       *  beyond end of string, out_of_range is thrown.  The value of
+       *  the string doesn't change if an error is thrown.
+      */
+      iterator
+      insert(iterator __p)
+      { return this->insert(__p, _CharT()); }
+#endif /* _GLIBCXX_DEPRECATED */
 
       /**
        *  @brief  Remove characters.
