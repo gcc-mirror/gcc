@@ -90,6 +90,7 @@ static const char *c_getstr (tree);
 static rtx c_readstr (const char *, enum machine_mode);
 static int target_char_cast (tree, char *);
 static rtx get_memory_rtx (tree);
+static tree build_string_literal (int, const char *);
 static int apply_args_size (void);
 static int apply_result_size (void);
 #if defined (HAVE_untyped_call) || defined (HAVE_untyped_return)
@@ -140,7 +141,9 @@ static rtx expand_builtin_strrchr (tree, rtx, enum machine_mode);
 static rtx expand_builtin_alloca (tree, rtx);
 static rtx expand_builtin_unop (enum machine_mode, tree, rtx, rtx, optab);
 static rtx expand_builtin_frame_address (tree, tree);
-static rtx expand_builtin_fputs (tree, int, int);
+static rtx expand_builtin_fputs (tree, rtx, bool);
+static rtx expand_builtin_printf (tree, rtx, enum machine_mode, bool);
+static rtx expand_builtin_fprintf (tree, rtx, enum machine_mode, bool);
 static rtx expand_builtin_sprintf (tree, rtx, enum machine_mode);
 static tree stabilize_va_list (tree, int);
 static rtx expand_builtin_expect (tree, rtx);
@@ -820,10 +823,10 @@ expand_builtin_prefetch (tree arglist)
       if ((! (*insn_data[(int) CODE_FOR_prefetch].operand[0].predicate)
 	     (op0,
 	      insn_data[(int) CODE_FOR_prefetch].operand[0].mode))
-	  || (GET_MODE(op0) != Pmode))
+	  || (GET_MODE (op0) != Pmode))
 	{
 #ifdef POINTERS_EXTEND_UNSIGNED
-	  if (GET_MODE(op0) != Pmode)
+	  if (GET_MODE (op0) != Pmode)
 	    op0 = convert_memory_address (Pmode, op0);
 #endif
 	  op0 = force_reg (Pmode, op0);
@@ -2137,7 +2140,7 @@ expand_powi (rtx x, enum machine_mode mode, HOST_WIDE_INT n)
 
   val = (n < 0) ? -n : n;
 
-  memset (cache, 0, sizeof(cache));
+  memset (cache, 0, sizeof (cache));
   cache[1] = x;
 
   result = expand_powi_1 (mode, (n < 0) ? -n : n, cache);
@@ -4258,7 +4261,7 @@ expand_builtin_unop (enum machine_mode target_mode, tree arglist, rtx target,
    long, we attempt to transform this call into __builtin_fputc().  */
 
 static rtx
-expand_builtin_fputs (tree arglist, int ignore, int unlocked)
+expand_builtin_fputs (tree arglist, rtx target, bool unlocked)
 {
   tree len, fn;
   tree fn_fputc = unlocked ? implicit_built_in_decls[BUILT_IN_FPUTC_UNLOCKED]
@@ -4268,7 +4271,7 @@ expand_builtin_fputs (tree arglist, int ignore, int unlocked)
 
   /* If the return value is used, or the replacement _DECL isn't
      initialized, don't do the transformation.  */
-  if (!ignore || !fn_fputc || !fn_fwrite)
+  if (target != const0_rtx || !fn_fputc || !fn_fwrite)
     return 0;
 
   /* Verify the arguments in the original call.  */
@@ -4330,8 +4333,7 @@ expand_builtin_fputs (tree arglist, int ignore, int unlocked)
     }
 
   return expand_expr (build_function_call_expr (fn, arglist),
-		      (ignore ? const0_rtx : NULL_RTX),
-		      VOIDmode, EXPAND_NORMAL);
+		      const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
 
 /* Expand a call to __builtin_expect.  We return our argument and emit a
@@ -4551,6 +4553,227 @@ expand_builtin_cabs (tree arglist, rtx target)
   return expand_complex_abs (mode, op0, target, 0);
 }
 
+/* Create a new constant string literal and return a char* pointer to it.
+   The STRING_CST value is the LEN characters at STR.  */
+static tree
+build_string_literal (int len, const char *str)
+{
+  tree t, elem, index, type;
+
+  t = build_string (len, str);
+  elem = build_type_variant (char_type_node, 1, 0);
+  index = build_index_type (build_int_2 (len - 1, 0));
+  type = build_array_type (elem, index);
+  TREE_TYPE (t) = type;
+  TREE_CONSTANT (t) = 1;
+  TREE_READONLY (t) = 1;
+  TREE_STATIC (t) = 1;
+
+  type = build_pointer_type (type);
+  t = build1 (ADDR_EXPR, type, t);
+
+  type = build_pointer_type (elem);
+  t = build1 (NOP_EXPR, type, t);
+  return t;
+}
+
+/* Expand a call to printf or printf_unlocked with argument list ARGLIST.
+   Return 0 if a normal call should be emitted rather than transforming
+   the function inline.  If convenient, the result should be placed in
+   TARGET with mode MODE.  UNLOCKED indicates this is a printf_unlocked 
+   call.  */
+static rtx
+expand_builtin_printf (tree arglist, rtx target, enum machine_mode mode,
+		       bool unlocked)
+{
+  tree fn_putchar = unlocked
+		    ? implicit_built_in_decls[BUILT_IN_PUTCHAR_UNLOCKED]
+		    : implicit_built_in_decls[BUILT_IN_PUTCHAR];
+  tree fn_puts = unlocked ? implicit_built_in_decls[BUILT_IN_PUTS_UNLOCKED]
+			  : implicit_built_in_decls[BUILT_IN_PUTS];
+  const char *fmt_str;
+  tree fn, fmt, arg;
+
+  /* If the return value is used, don't do the transformation.  */
+  if (target != const0_rtx)
+    return 0;
+
+  /* Verify the required arguments in the original call.  */
+  if (! arglist)
+    return 0;
+  fmt = TREE_VALUE (arglist);
+  if (TREE_CODE (TREE_TYPE (fmt)) != POINTER_TYPE)
+    return 0;
+  arglist = TREE_CHAIN (arglist);
+
+  /* Check whether the format is a literal string constant.  */
+  fmt_str = c_getstr (fmt);
+  if (fmt_str == NULL)
+    return 0;
+
+  /* If the format specifier was "%s\n", call __builtin_puts(arg).  */
+  if (strcmp (fmt_str, "%s\n") == 0)
+    {
+      if (! arglist
+          || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+	  || TREE_CHAIN (arglist))
+	return 0;
+      fn = fn_puts;
+    }
+  /* If the format specifier was "%c", call __builtin_putchar(arg).  */
+  else if (strcmp (fmt_str, "%c") == 0)
+    {
+      if (! arglist
+	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != INTEGER_TYPE
+	  || TREE_CHAIN (arglist))
+	return 0;
+      fn = fn_putchar;
+    }
+  else
+    {
+      /* We can't handle anything else with % args or %% ... yet.  */
+      if (strchr (fmt_str, '%'))
+        return 0;
+
+      if (arglist)
+	return 0;
+
+      /* If the format specifier was "", printf does nothing.  */
+      if (fmt_str[0] == '\0')
+	return const0_rtx;
+      /* If the format specifier has length of 1, call putchar.  */
+      if (fmt_str[1] == '\0')
+	{
+	  /* Given printf("c"), (where c is any one character,)
+	     convert "c"[0] to an int and pass that to the replacement
+	     function.  */
+	  arg = build_int_2 (fmt_str[0], 0);
+	  arglist = build_tree_list (NULL_TREE, arg);
+	  fn = fn_putchar;
+	}
+      else
+	{
+	  /* If the format specifier was "string\n", call puts("string").  */
+	  size_t len = strlen (fmt_str);
+	  if (fmt_str[len - 1] == '\n')
+	    {
+	      /* Create a NUL-terminalted string that's one char shorter
+		 than the original, stripping off the trailing '\n'.  */
+	      char *newstr = (char *) alloca (len);
+	      memcpy (newstr, fmt_str, len - 1);
+	      newstr[len - 1] = 0;
+
+	      arg = build_string_literal (len, newstr);
+	      arglist = build_tree_list (NULL_TREE, arg);
+	      fn = fn_puts;
+	    }
+	  else
+	    /* We'd like to arrange to call fputs(string,stdout) here,
+	       but we need stdout and don't have a way to get it yet.  */
+	    return 0;
+	}
+    }
+
+  if (!fn)
+    return 0;
+  return expand_expr (build_function_call_expr (fn, arglist),
+		      target, mode, EXPAND_NORMAL);
+}
+
+/* Expand a call to fprintf or fprintf_unlocked with argument list ARGLIST.
+   Return 0 if a normal call should be emitted rather than transforming
+   the function inline.  If convenient, the result should be placed in
+   TARGET with mode MODE.  UNLOCKED indicates this is a fprintf_unlocked 
+   call.  */
+static rtx
+expand_builtin_fprintf (tree arglist, rtx target, enum machine_mode mode,
+		        bool unlocked)
+{
+  tree fn_fputc = unlocked ? implicit_built_in_decls[BUILT_IN_FPUTC_UNLOCKED]
+			   : implicit_built_in_decls[BUILT_IN_FPUTC];
+  tree fn_fputs = unlocked ? implicit_built_in_decls[BUILT_IN_FPUTS_UNLOCKED]
+			   : implicit_built_in_decls[BUILT_IN_FPUTS];
+  const char *fmt_str;
+  tree fn, fmt, fp, arg;
+
+  /* If the return value is used, don't do the transformation.  */
+  if (target != const0_rtx)
+    return 0;
+
+  /* Verify the required arguments in the original call.  */
+  if (! arglist)
+    return 0;
+  fp = TREE_VALUE (arglist);
+  if (TREE_CODE (TREE_TYPE (fp)) != POINTER_TYPE)
+    return 0;
+  arglist = TREE_CHAIN (arglist);
+  if (! arglist)
+    return 0;
+  fmt = TREE_VALUE (arglist);
+  if (TREE_CODE (TREE_TYPE (fmt)) != POINTER_TYPE)
+    return 0;
+  arglist = TREE_CHAIN (arglist);
+
+  /* Check whether the format is a literal string constant.  */
+  fmt_str = c_getstr (fmt);
+  if (fmt_str == NULL)
+    return 0;
+
+  /* If the format specifier was "%s", call __builtin_fputs(arg,fp).  */
+  if (strcmp (fmt_str, "%s") == 0)
+    {
+      if (! arglist
+          || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+	  || TREE_CHAIN (arglist))
+	return 0;
+      arg = TREE_VALUE (arglist);
+      arglist = build_tree_list (NULL_TREE, fp);
+      arglist = tree_cons (NULL_TREE, arg, arglist);
+      fn = fn_fputs;
+    }
+  /* If the format specifier was "%c", call __builtin_fputc(arg,fp).  */
+  else if (strcmp (fmt_str, "%c") == 0)
+    {
+      if (! arglist
+	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != INTEGER_TYPE
+	  || TREE_CHAIN (arglist))
+	return 0;
+      arg = TREE_VALUE (arglist);
+      arglist = build_tree_list (NULL_TREE, fp);
+      arglist = tree_cons (NULL_TREE, arg, arglist);
+      fn = fn_fputc;
+    }
+  else
+    {
+      /* We can't handle anything else with % args or %% ... yet.  */
+      if (strchr (fmt_str, '%'))
+        return 0;
+
+      if (arglist)
+	return 0;
+
+      /* If the format specifier was "", fprintf does nothing.  */
+      if (fmt_str[0] == '\0')
+	{
+	  /* Evaluate and ignore FILE* argument for side-effects.  */
+	  expand_expr (fp, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  return const0_rtx;
+	}
+
+      /* When "string" doesn't contain %, replace all cases of
+	 fprintf(stream,string) with fputs(string,stream).  The fputs
+	 builtin will take care of special cases like length == 1.  */
+      arglist = build_tree_list (NULL_TREE, fp);
+      arglist = tree_cons (NULL_TREE, fmt, arglist);
+      fn = fn_fputs;
+    }
+
+  if (!fn)
+    return 0;
+  return expand_expr (build_function_call_expr (fn, arglist),
+		      target, mode, EXPAND_NORMAL);
+}
+
 /* Expand a call to sprintf with argument list ARGLIST.  Return 0 if
    a normal call should be emitted rather than expanding the function
    inline.  If convenient, the result should be placed in TARGET with
@@ -4574,7 +4797,7 @@ expand_builtin_sprintf (tree arglist, rtx target, enum machine_mode mode)
   if (! arglist)
     return 0;
   fmt = TREE_VALUE (arglist);
-  if (TREE_CODE (TREE_TYPE (dest)) != POINTER_TYPE)
+  if (TREE_CODE (TREE_TYPE (fmt)) != POINTER_TYPE)
     return 0;
   arglist = TREE_CHAIN (arglist);
 
@@ -4721,12 +4944,14 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       case BUILT_IN_FPUTC:
       case BUILT_IN_FPUTS:
       case BUILT_IN_FWRITE:
+      case BUILT_IN_FPRINTF:
       case BUILT_IN_PUTCHAR_UNLOCKED:
       case BUILT_IN_PUTS_UNLOCKED:
       case BUILT_IN_PRINTF_UNLOCKED:
       case BUILT_IN_FPUTC_UNLOCKED:
       case BUILT_IN_FPUTS_UNLOCKED:
       case BUILT_IN_FWRITE_UNLOCKED:
+      case BUILT_IN_FPRINTF_UNLOCKED:
       case BUILT_IN_FLOOR:
       case BUILT_IN_FLOORF:
       case BUILT_IN_FLOORL:
@@ -5167,13 +5392,38 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       expand_builtin_trap ();
       return const0_rtx;
 
-    case BUILT_IN_FPUTS:
-      target = expand_builtin_fputs (arglist, ignore,/*unlocked=*/ 0);
+    case BUILT_IN_PRINTF:
+      target = expand_builtin_printf (arglist, target, mode, false);
       if (target)
 	return target;
       break;
+
+    case BUILT_IN_PRINTF_UNLOCKED:
+      target = expand_builtin_printf (arglist, target, mode, true);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_FPUTS:
+      target = expand_builtin_fputs (arglist, target, false);
+      if (target)
+	return target;
+      break;
+
     case BUILT_IN_FPUTS_UNLOCKED:
-      target = expand_builtin_fputs (arglist, ignore,/*unlocked=*/ 1);
+      target = expand_builtin_fputs (arglist, target, true);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_FPRINTF:
+      target = expand_builtin_fprintf (arglist, target, mode, false);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_FPRINTF_UNLOCKED:
+      target = expand_builtin_fprintf (arglist, target, mode, true);
       if (target)
 	return target;
       break;

@@ -70,9 +70,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, BT_LAST,	\
                false, false, false, ATTRS, true)
 
-
 /* A fallback builtin is a builtin (like __builtin_puts) that falls
-   back to the corresopnding library function if necessary -- but
+   back to the corresponding library function if necessary -- but
    for which we should not introduce the non-`__builtin' variant of
    the name.  */
 #undef DEF_FALLBACK_BUILTIN				
@@ -124,21 +123,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\
    	       true, true, !flag_isoc99, ATTRS, TARGET_C99_FUNCTIONS)
 
-/* Like DEF_LIB_BUILTIN, except that the function is expanded in the
-   front-end.  */
-#undef DEF_FRONT_END_LIB_BUILTIN			
-#define DEF_FRONT_END_LIB_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
-  DEF_BUILTIN (ENUM, NAME, BUILT_IN_FRONTEND, TYPE, TYPE,	\
-	       true, true, false, ATTRS, true)
-
-/* Like DEF_FRONT_END_LIB_BUILTIN, except that the function is not one
-   that is specified by ANSI/ISO C.  So, when we're being fully
-   conformant we ignore the version of these builtins that does not
-   begin with __builtin.  */
-#undef DEF_EXT_FRONT_END_LIB_BUILTIN			
-#define DEF_EXT_FRONT_END_LIB_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
-  DEF_BUILTIN (ENUM, NAME, BUILT_IN_FRONTEND, TYPE, TYPE,	\
-	       true, true, true, ATTRS, true)
 
 DEF_EXT_LIB_BUILTIN(BUILT_IN_ALLOCA,
 		    "__builtin_alloca",
@@ -769,10 +753,10 @@ DEF_GCC_BUILTIN(BUILT_IN_PREFETCH,
 
 /* stdio.h builtins (without FILE *).  */
 
-DEF_FRONT_END_LIB_BUILTIN(BUILT_IN_PRINTF,
-			  "__builtin_printf",
-			  BT_FN_INT_CONST_STRING_VAR,
-			  ATTR_FORMAT_PRINTF_1_2)
+DEF_LIB_BUILTIN(BUILT_IN_PRINTF,
+		"__builtin_printf",
+		BT_FN_INT_CONST_STRING_VAR,
+		ATTR_FORMAT_PRINTF_1_2)
 DEF_LIB_BUILTIN(BUILT_IN_PUTCHAR,
 		"__builtin_putchar",
 		BT_FN_INT_INT,
@@ -840,10 +824,10 @@ DEF_FALLBACK_BUILTIN(BUILT_IN_FWRITE,
 		     "__builtin_fwrite",
 		     BT_FN_SIZE_CONST_PTR_SIZE_SIZE_PTR,
 		      ATTR_NOTHROW_NONNULL_1_4)
-DEF_FRONT_END_LIB_BUILTIN(BUILT_IN_FPRINTF,
-			 "__builtin_fprintf",
-			 BT_FN_INT_PTR_CONST_STRING_VAR,
-			 ATTR_FORMAT_PRINTF_2_3)
+DEF_LIB_BUILTIN(BUILT_IN_FPRINTF,
+		"__builtin_fprintf",
+		BT_FN_INT_PTR_CONST_STRING_VAR,
+		ATTR_FORMAT_PRINTF_2_3)
 
 /* stdio unlocked builtins (without FILE *).  */
 
@@ -853,10 +837,10 @@ DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_PUTCHAR_UNLOCKED,
 DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_PUTS_UNLOCKED,
 			 "__builtin_puts_unlocked",
 			 BT_FN_INT_CONST_STRING, ATTR_NOTHROW_NONNULL_1)
-DEF_EXT_FRONT_END_LIB_BUILTIN(BUILT_IN_PRINTF_UNLOCKED,
-			      "__builtin_printf_unlocked",
-			      BT_FN_INT_CONST_STRING_VAR,
-			      ATTR_FORMAT_PRINTF_1_2)
+DEF_EXT_LIB_BUILTIN(BUILT_IN_PRINTF_UNLOCKED,
+		    "__builtin_printf_unlocked",
+		    BT_FN_INT_CONST_STRING_VAR,
+		    ATTR_FORMAT_PRINTF_1_2)
 
 /* stdio unlocked builtins (with FILE *).  */
 
@@ -876,11 +860,12 @@ DEF_BUILTIN (BUILT_IN_FPUTS_UNLOCKED,
 	     true, true, true, ATTR_NOTHROW_NONNULL_1_2, true)
 DEF_EXT_FALLBACK_BUILTIN(BUILT_IN_FWRITE_UNLOCKED,
 			 "__builtin_fwrite_unlocked",
-			 BT_FN_SIZE_CONST_PTR_SIZE_SIZE_PTR, ATTR_NOTHROW_NONNULL_1_4)
-DEF_EXT_FRONT_END_LIB_BUILTIN(BUILT_IN_FPRINTF_UNLOCKED,
-			      "__builtin_fprintf_unlocked",
-			      BT_FN_INT_PTR_CONST_STRING_VAR,
-			      ATTR_FORMAT_PRINTF_2_3)
+			 BT_FN_SIZE_CONST_PTR_SIZE_SIZE_PTR,
+			 ATTR_NOTHROW_NONNULL_1_4)
+DEF_EXT_LIB_BUILTIN(BUILT_IN_FPRINTF_UNLOCKED,
+		    "__builtin_fprintf_unlocked",
+		    BT_FN_INT_PTR_CONST_STRING_VAR,
+		    ATTR_FORMAT_PRINTF_2_3)
 
   /* ISO C99 floating point unordered comparisons.  */
 DEF_GCC_BUILTIN(BUILT_IN_ISGREATER, 
