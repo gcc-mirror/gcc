@@ -5929,10 +5929,13 @@ output_comp_unit (die)
 {
   const char *secname;
 
-  if (die->die_child == 0)
-    return;
-
-  /* Mark all the DIEs in this CU so we know which get local refs.  */
+  /* Even if there are no children of this DIE, we must output the
+     information about the compilation unit.  Otherwise, on an empty
+     translation unit, we will generate a present, but empty,
+     .debug_info section.  IRIX 6.5 `nm' will then complain when
+     examining the file.
+     
+     Mark all the DIEs in this CU so we know which get local refs.  */
   mark_dies (die);
 
   build_abbrev_table (die);
@@ -11250,26 +11253,27 @@ dwarf2out_finish ()
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, BSS_END_LABEL, 0);
 #endif
 
-  /* Output the source line correspondence table.  */
-  if (line_info_table_in_use > 1 || separate_line_info_table_in_use)
+  /* Output the source line correspondence table.  We must do this
+     even if there is no line information.  Otherwise, on an empty
+     translation unit, we will generate a present, but empty,
+     .debug_info section.  IRIX 6.5 `nm' will then complain when
+     examining the file.  */
+  if (! DWARF2_ASM_LINE_DEBUG_INFO)
     {
-      if (! DWARF2_ASM_LINE_DEBUG_INFO)
-	{
-	  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_LINE_SECTION);
-	  output_line_info ();
-	}
-
-      /* We can only use the low/high_pc attributes if all of the code
-	 was in .text.  */
-      if (separate_line_info_table_in_use == 0)
-	{
-	  add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, text_section_label);
-	  add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, text_end_label);
-	}
-
-      add_AT_lbl_offset (comp_unit_die, DW_AT_stmt_list,
-			 debug_line_section_label);
+      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_LINE_SECTION);
+      output_line_info ();
     }
+
+  /* We can only use the low/high_pc attributes if all of the code was
+     in .text.  */
+  if (separate_line_info_table_in_use == 0)
+    {
+      add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, text_section_label);
+      add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, text_end_label);
+    }
+
+  add_AT_lbl_offset (comp_unit_die, DW_AT_stmt_list,
+		     debug_line_section_label);
 
 #if 0 /* unimplemented */
   if (debug_info_level >= DINFO_LEVEL_VERBOSE && primary)
