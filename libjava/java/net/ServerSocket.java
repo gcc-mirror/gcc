@@ -164,6 +164,14 @@ public class ServerSocket
     bind (new InetSocketAddress (bindAddr, port), backlog);
   }
 
+  /*
+   * This method may only be used by java.nio.channels.ServerSocketChannel.open.
+   */
+  void setChannel (ServerSocketChannel ch)
+  {
+    this.ch = ch;
+  }
+
   /**
    * Binds the server socket to a specified socket address
    *

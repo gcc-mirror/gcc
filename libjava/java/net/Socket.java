@@ -305,6 +305,15 @@ public class Socket
     // that default.  JDK 1.2 doc infers not to do a bind.
   }
 
+  /*
+   * This method may only be used by java.nio.channels.ServerSocketChannel.accept and
+   * java.nio.channels.SocketChannel.open.
+   */
+  void setChannel (SocketChannel ch)
+  {
+    this.ch = ch;
+  }
+
   /**
    * Binds the socket to the givent local address/port
    *

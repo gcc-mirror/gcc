@@ -1,3 +1,10 @@
+2003-06-28  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/ServerSocket.java
+	(setChannel): New method.
+	* java/net/Socket.java
+	(setChannel): New method.
+
 2003-06-27  Michael Koch  <konqueror@gmx.de>
 
 	* java/beans/beancontext/BeanContextSupport.java:
