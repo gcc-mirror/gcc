@@ -33,8 +33,7 @@ static tree perm_manip PROTO((tree));
 static tree build_cplus_array_type_1 PROTO((tree, tree));
 static void list_hash_add PROTO((int, tree));
 static int list_hash PROTO((tree, tree, tree));
-static tree list_hash_lookup PROTO((int, int, int, int, tree, tree,
-				    tree));
+static tree list_hash_lookup PROTO((int, tree, tree, tree));
 static void propagate_binfo_offsets PROTO((tree, tree));
 static int avoid_overlap PROTO((tree, tree));
 static int lvalue_p_1 PROTO((tree, int));
@@ -978,18 +977,14 @@ list_hash (purpose, value, chain)
    If one is found, return it.  Otherwise return 0.  */
 
 static tree
-list_hash_lookup (hashcode, via_public, via_protected, via_virtual,
-		  purpose, value, chain)
-     int hashcode, via_public, via_virtual, via_protected;
+list_hash_lookup (hashcode, purpose, value, chain)
+     int hashcode;
      tree purpose, value, chain;
 {
   register struct list_hash *h;
 
   for (h = list_hash_table[hashcode % TYPE_HASH_SIZE]; h; h = h->next)
     if (h->hashcode == hashcode
-	&& TREE_VIA_VIRTUAL (h->list) == via_virtual
-	&& TREE_VIA_PUBLIC (h->list) == via_public
-	&& TREE_VIA_PROTECTED (h->list) == via_protected
 	&& TREE_PURPOSE (h->list) == purpose
 	&& TREE_VALUE (h->list) == value
 	&& TREE_CHAIN (h->list) == chain)
@@ -1014,24 +1009,16 @@ list_hash_add (hashcode, list)
   list_hash_table[hashcode % TYPE_HASH_SIZE] = h;
 }
 
-/* Given TYPE, and HASHCODE its hash code, return the canonical
-   object for an identical list if one already exists.
-   Otherwise, return TYPE, and record it as the canonical object
-   if it is a permanent object.
-
-   To use this function, first create a list of the sort you want.
-   Then compute its hash code from the fields of the list that
-   make it different from other similar lists.
-   Then call this function and use the value.
-   This function frees the list you pass in if it is a duplicate.  */
+/* Given list components PURPOSE, VALUE, AND CHAIN, return the canonical
+   object for an identical list if one already exists.  Otherwise, build a
+   new one, and record it as the canonical object.  */
 
 /* Set to 1 to debug without canonicalization.  Never set by program.  */
 
 static int debug_no_list_hash = 0;
 
 tree
-hash_tree_cons (via_public, via_virtual, via_protected, purpose, value, chain)
-     int via_public, via_virtual, via_protected;
+hash_tree_cons (purpose, value, chain)
      tree purpose, value, chain;
 {
   struct obstack *ambient_obstack = current_obstack;
@@ -1041,8 +1028,7 @@ hash_tree_cons (via_public, via_virtual, via_protected, purpose, value, chain)
   if (! debug_no_list_hash)
     {
       hashcode = list_hash (purpose, value, chain);
-      t = list_hash_lookup (hashcode, via_public, via_protected, via_virtual,
-			    purpose, value, chain);
+      t = list_hash_lookup (hashcode, purpose, value, chain);
       if (t)
 	return t;
     }
@@ -1050,9 +1036,6 @@ hash_tree_cons (via_public, via_virtual, via_protected, purpose, value, chain)
   current_obstack = &class_obstack;
 
   t = tree_cons (purpose, value, chain);
-  TREE_VIA_PUBLIC (t) = via_public;
-  TREE_VIA_PROTECTED (t) = via_protected;
-  TREE_VIA_VIRTUAL (t) = via_virtual;
 
   /* If this is a new list, record it for later reuse.  */
   if (! debug_no_list_hash)
@@ -1068,7 +1051,7 @@ tree
 hash_tree_chain (value, chain)
      tree value, chain;
 {
-  return hash_tree_cons (0, 0, 0, NULL_TREE, value, chain);
+  return hash_tree_cons (NULL_TREE, value, chain);
 }
 
 /* Similar, but used for concatenating two lists.  */

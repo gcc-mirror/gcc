@@ -1465,7 +1465,7 @@ finish_class_definition (t, attributes, semi)
    the processing of a class definition.  */
 
 void
-finish_default_args ()
+begin_inline_definitions ()
 {
   if (pending_inlines 
       && current_scope () == current_function_decl)
@@ -1476,7 +1476,7 @@ finish_default_args ()
    processing of a class definition.  */
 
 void
-begin_inline_definitions ()
+finish_inline_definitions ()
 {
   if (current_class_type == NULL_TREE)
     clear_inline_text_obstack (); 

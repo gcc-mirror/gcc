@@ -5834,8 +5834,8 @@ tsubst_arg_types (arg_types, args, complain, in_decl)
   /* Note that we do not substitute into default arguments here.  The
      standard mandates that they be instantiated only when needed,
      which is done in build_over_call.  */
-  return hash_tree_cons_simple (TREE_PURPOSE (arg_types), type,
-				remaining_arg_types);
+  return hash_tree_cons (TREE_PURPOSE (arg_types), type,
+			 remaining_arg_types);
 			 
 }
 
@@ -6195,14 +6195,9 @@ tsubst (t, args, complain, in_decl)
     case TREE_LIST:
       {
 	tree purpose, value, chain, result;
-	int via_public, via_virtual, via_protected;
 
 	if (t == void_list_node)
 	  return t;
-
-	via_public = TREE_VIA_PUBLIC (t);
-	via_protected = TREE_VIA_PROTECTED (t);
-	via_virtual = TREE_VIA_VIRTUAL (t);
 
 	purpose = TREE_PURPOSE (t);
 	if (purpose)
@@ -6229,8 +6224,7 @@ tsubst (t, args, complain, in_decl)
 	    && value == TREE_VALUE (t)
 	    && chain == TREE_CHAIN (t))
 	  return t;
-	result = hash_tree_cons (via_public, via_virtual, via_protected,
-				 purpose, value, chain);
+	result = hash_tree_cons (purpose, value, chain);
 	TREE_PARMLIST (result) = TREE_PARMLIST (t);
 	return result;
       }

@@ -1,3 +1,19 @@
+1999-03-31  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* semantics.c (begin_inline_definitions,
+	finish_inline_definitions): Rename from finish_default_args and
+	begin_inline_definitions, respectively, to something that isn't a
+	total lie.  :)
+	* parse.y (structsp): Adjust.
+
+	* tree.c (hash_tree_cons): Remove obsolete via_* parms.
+	(list_hash_lookup): Likewise.
+	(hash_tree_chain): Adjust.
+	* pt.c (tsubst): Adjust.
+	(tsubst_arg_types): Use plain hash_tree_cons.
+	* cp-tree.h (hash_tree_cons_simple): Lose.
+	* parse.y (declmods, nonempty_cv_qualifiers): Use hash_tree_cons.
+
 Wed Mar 31 10:48:29 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * Makefile.in (hash.h): Generate using gperf language 'C', not

@@ -3252,6 +3252,7 @@ extern tree begin_class_definition              PROTO((tree));
 extern tree finish_class_definition             PROTO((tree, tree, int));
 extern void finish_default_args                 PROTO((void));
 extern void begin_inline_definitions            PROTO((void));
+extern void finish_inline_definitions           PROTO((void));
 extern tree finish_member_class_template        PROTO((tree));
 extern void finish_template_decl                PROTO((tree));
 extern tree finish_template_type                PROTO((tree, tree, int));
@@ -3295,7 +3296,7 @@ extern tree build_cplus_array_type		PROTO((tree, tree));
 extern int layout_basetypes			PROTO((tree, int));
 extern tree build_vbase_pointer_fields		PROTO((tree));
 extern tree build_base_fields			PROTO((tree));
-extern tree hash_tree_cons			PROTO((int, int, int, tree, tree, tree));
+extern tree hash_tree_cons			PROTO((tree, tree, tree));
 extern tree hash_tree_chain			PROTO((tree, tree));
 extern tree hash_chainon			PROTO((tree, tree));
 extern tree make_binfo				PROTO((tree, tree, tree, tree));
@@ -3347,13 +3348,12 @@ extern tree build_dummy_object			PROTO((tree));
 extern tree maybe_dummy_object			PROTO((tree, tree *));
 extern int is_dummy_object			PROTO((tree));
 extern tree search_tree                         PROTO((tree, tree (*)(tree)));
+
 #define scratchalloc expralloc
 #define scratch_tree_cons expr_tree_cons
 #define build_scratch_list build_expr_list
 #define make_scratch_vec make_temp_vec
 #define push_scratch_obstack push_expression_obstack
-#define hash_tree_cons_simple(PURPOSE, VALUE, CHAIN) \
-  hash_tree_cons (0, 0, 0, (PURPOSE), (VALUE), (CHAIN))
 
 /* in typeck.c */
 extern int string_conv_p			PROTO((tree, tree, int));
