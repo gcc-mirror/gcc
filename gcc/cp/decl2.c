@@ -2813,15 +2813,15 @@ finish_file ()
    	 vtables then we remove the class from our list so we don't
    	 have to look at it again. */
    
-        while (keyed_classes != NULL_TREE
+      while (keyed_classes != NULL_TREE
    	     && maybe_emit_vtables (TREE_VALUE (keyed_classes)))
    	{
     	  reconsider = 1;
    	  keyed_classes = TREE_CHAIN (keyed_classes);
    	}
    
-        t = keyed_classes;
-        if (t != NULL_TREE)
+      t = keyed_classes;
+      if (t != NULL_TREE)
    	{
    	  tree next = TREE_CHAIN (t);
    
