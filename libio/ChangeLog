@@ -1,3 +1,10 @@
+Thu Nov 27 01:32:43 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (insatll): Change gxx_includedir to gcc_include_dir.
+	* config.shared (gxx_includedir): Remove default definition.
+	* config/linux.mt: Change gxx_includedir to gxx_include_dir.
+	* config/linuxaxp1.mt: Likewise.
+
 Wed Nov 26 16:08:50 1997  Richard Henderson  (rth@cygnus.com)
 
 	* configure.in (target frags): Add powerpc*-linux-gnulibc1.
