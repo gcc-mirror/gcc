@@ -1,6 +1,10 @@
+Sat Oct 23 23:36:03 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/991023-1.c: New test.
+
 Tue Oct 19 02:11:29 1999  Jeffrey A Law  (law@cygnus.com)
 
-	* gcc.c-torture/execute/991016-1.c: New test.
+	* gcc.c-torture/execute/991019-1.c: New test.
 
 Sat Oct 16 00:05:48 1999  Richard Henderson  <rth@cygnus.com>
 
