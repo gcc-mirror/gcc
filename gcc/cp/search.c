@@ -1281,7 +1281,8 @@ static int
 lookup_fnfields_1 (type, name)
      tree type, name;
 {
-  register tree method_vec = CLASSTYPE_METHOD_VEC (type);
+  register tree method_vec 
+    = CLASS_TYPE_P (type) ? CLASSTYPE_METHOD_VEC (type) : NULL_TREE;
 
   if (method_vec != 0)
     {
@@ -3006,6 +3007,7 @@ dfs_pushdecls (binfo)
 
 	  /* If the class value is not an envelope of the kind described in
 	     the comment above, we create a new envelope.  */
+	  maybe_push_cache_obstack ();
 	  if (class_value == NULL_TREE || TREE_CODE (class_value) != TREE_LIST
 	      || TREE_PURPOSE (class_value) == NULL_TREE
 	      || TREE_CODE (TREE_PURPOSE (class_value)) == IDENTIFIER_NODE)
@@ -3018,10 +3020,11 @@ dfs_pushdecls (binfo)
 	    }
 
 	  envelope_add_decl (type, fields, &TREE_PURPOSE (class_value));
+	  pop_obstacks ();
 	}
     }
 
-  method_vec = CLASSTYPE_METHOD_VEC (type);
+  method_vec = CLASS_TYPE_P (type) ? CLASSTYPE_METHOD_VEC (type) : NULL_TREE;
   if (method_vec && ! dummy)
     {
       tree *methods;
@@ -3043,6 +3046,8 @@ dfs_pushdecls (binfo)
 	  name = DECL_NAME (OVL_CURRENT (*methods));
 	  class_value = IDENTIFIER_CLASS_VALUE (name);
 
+	  maybe_push_cache_obstack ();
+
 	  /* If the class value is not an envelope of the kind described in
 	     the comment above, we create a new envelope.  */
 	  if (class_value == NULL_TREE || TREE_CODE (class_value) != TREE_LIST
@@ -3059,7 +3064,6 @@ dfs_pushdecls (binfo)
 	  /* Here we try to rule out possible ambiguities.
 	     If we can't do that, keep a TREE_LIST with possibly ambiguous
 	     decls in there.  */
-	  maybe_push_cache_obstack ();
 	  /* Arbitrarily choose the first function in the list.  This is OK
 	     because this is only used for initial lookup; anything that
 	     actually uses the function will look it up again.  */
@@ -3081,7 +3085,8 @@ dfs_compress_decls (binfo)
      tree binfo;
 {
   tree type = BINFO_TYPE (binfo);
-  tree method_vec = CLASSTYPE_METHOD_VEC (type);
+  tree method_vec 
+    = CLASS_TYPE_P (type) ? CLASSTYPE_METHOD_VEC (type) : NULL_TREE;
 
   if (processing_template_decl && type != current_class_type
       && dependent_base_p (binfo))
@@ -3130,6 +3135,11 @@ push_class_decls (type)
 {
   struct obstack *ambient_obstack = current_obstack;
   search_stack = push_search_level (search_stack, &search_obstack);
+
+  /* Build up all the relevant bindings and such on the cache
+     obstack.  That way no memory is wasted when we throw away the
+     cache later.  */
+  maybe_push_cache_obstack ();
 
   /* Push class fields into CLASS_VALUE scope, and mark.  */
   dfs_walk (TYPE_BINFO (type), dfs_pushdecls, unmarked_pushdecls_p);
@@ -3198,6 +3208,10 @@ push_class_decls (type)
 	pushdecl_class_level (new);
       closed_envelopes = TREE_CHAIN (closed_envelopes);
     }
+  
+  /* Undo the call to maybe_push_cache_obstack above.  */
+  pop_obstacks ();
+
   current_obstack = ambient_obstack;
 }
 

@@ -209,7 +209,7 @@ build_signature_pointer_or_reference_type (to_type, type_quals, refp)
 			  TYPE_ALIGN (optr_type));
 
     /* A signature pointer/reference type isn't a `real' class type.  */
-    IS_AGGR_TYPE (t) = 0;
+    SET_IS_AGGR_TYPE (t, 0);
   }
 
   {

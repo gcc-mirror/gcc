@@ -72,6 +72,19 @@ Boston, MA 02111-1307, USA.  */
    5: DECL_INTERFACE_KNOWN.
    6: DECL_THIS_STATIC (in VAR_DECL or FUNCTION_DECL).
    7: DECL_DEAD_FOR_LOCAL (in VAR_DECL).
+
+   Usage of language-independent fields in a language-dependent manner:
+   
+   TYPE_ALIAS_SET
+     This field is used by TYPENAME_TYPEs, TEMPLATE_TYPE_PARMs, and so
+     forth as a substitute for the mark bits provided in `lang_type'.
+     At present, only the six low-order bits are used.
+
+   TYPE_BINFO
+     For an ENUMERAL_TYPE, this is ENUM_TEMPLATE_INFO.
+     For a TYPENAME_TYPE, this is TYPENAME_TYPE_FULLNAME.
+     For a TEMPLATE_TEMPLATE_PARM, this is
+     TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
 */
 
 /* Language-dependent contents of an identifier.  */
@@ -517,12 +530,21 @@ enum languages { lang_c, lang_cplusplus, lang_java };
    for template type parameters and typename types.  Despite its name,
    this macro has nothing to do with the definition of aggregate given
    in the standard.  Think of this macro as MAYBE_CLASS_TYPE_P.  */
-#define IS_AGGR_TYPE(t)		(TYPE_LANG_FLAG_5 (t))
+#define IS_AGGR_TYPE(t)				\
+  (TREE_CODE (t) == TEMPLATE_TYPE_PARM 		\
+   || TREE_CODE (t) == TYPENAME_TYPE 		\
+   || TREE_CODE (t) == TYPEOF_TYPE		\
+   || TYPE_LANG_FLAG_5 (t))
+
+/* Set IS_AGGR_TYPE for T to VAL.  T must be a class, struct, or 
+   union type.  */ 
+#define SET_IS_AGGR_TYPE(T, VAL) \
+  (TYPE_LANG_FLAG_5 (T) = (VAL))
 
 /* Nonzero if T is a class type.  Zero for template type parameters,
    typename types, and so forth.  */
 #define CLASS_TYPE_P(t) \
-  (IS_AGGR_TYPE (t) && IS_AGGR_TYPE_CODE (TREE_CODE (t)))
+  (IS_AGGR_TYPE_CODE (TREE_CODE (t)) && IS_AGGR_TYPE (t))
 
 #define IS_AGGR_TYPE_CODE(t)	(t == RECORD_TYPE || t == UNION_TYPE)
 #define IS_AGGR_TYPE_2(TYPE1,TYPE2) \
@@ -591,11 +613,19 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 #define ACCESSIBLY_UNIQUELY_DERIVED_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 1, (tree *)0) >= 0)
 #define DERIVED_FROM_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 0, (tree *)0) != -1)
 
-/* Statistics show that while the GNU C++ compiler may generate
-   thousands of different types during a compilation run, it
-   generates relatively few (tens) of classtypes.  Because of this,
-   it is not costly to store a generous amount of information
-   in classtype nodes.  This struct must fill out to a multiple of 4 bytes.  */
+/* This structure provides additional information above and beyond
+   what is provide in the ordinary tree_type.  In the past, we used it
+   for the types of class types, template parameters types, typename
+   types, and so forth.  However, there can be many (tens to hundreds
+   of thousands) of template parameter types in a compilation, and
+   there's no need for this additional information in that case.
+   Therefore, we now use this data structure only for class types.
+
+   In the past, it was thought that there would be relatively few
+   class types.  However, in the presence of heavy use of templates,
+   many (i.e., thousands) of classes can easily be generated.
+   Therefore, we should endeavor to keep the size of this structure to
+   a minimum.  */
 struct lang_type
 {
   struct
@@ -621,25 +651,20 @@ struct lang_type
       unsigned has_arrow_overloaded : 1;
       unsigned interface_only : 1;
       unsigned interface_unknown : 1;
-
       unsigned needs_virtual_reinit : 1;
+
+      unsigned marks: 6;
       unsigned vec_delete_takes_size : 1;
       unsigned declared_class : 1;
+
       unsigned being_defined : 1;
       unsigned redefined : 1;
-      unsigned marked : 1;
-      unsigned marked2 : 1;
-      unsigned marked3 : 1;
-
-      unsigned marked4 : 1;
-      unsigned marked5 : 1;
-      unsigned marked6 : 1;
       unsigned debug_requested : 1;
       unsigned use_template : 2;
       unsigned got_semicolon : 1;
       unsigned ptrmemfunc_flag : 1;
-
       unsigned is_signature : 1;
+
       unsigned is_signature_pointer : 1;
       unsigned is_signature_reference : 1;
       unsigned has_opaque_typedecls : 1;
@@ -647,8 +672,8 @@ struct lang_type
       unsigned was_anonymous : 1;
       unsigned has_real_assignment : 1;
       unsigned has_real_assign_ref : 1;
-
       unsigned has_const_init_ref : 1;
+
       unsigned has_complex_init_ref : 1;
       unsigned has_complex_assign_ref : 1;
       unsigned has_abstract_assign_ref : 1;
@@ -695,11 +720,7 @@ struct lang_type
   union tree_node *signature_reference_to;
 
   union tree_node *template_info;
-
-  int linenum;
 };
-
-#define CLASSTYPE_SOURCE_LINE(NODE) (TYPE_LANG_SPECIFIC(NODE)->linenum)
 
 /* Indicates whether or not (and how) a template was expanded for this class.
      0=no information yet/non-template class
@@ -839,25 +860,45 @@ struct lang_type
 #define CLASSTYPE_BASELINK_VEC(NODE) (TYPE_LANG_SPECIFIC(NODE)->baselink_vec)
 
 /* Mark bits for depth-first and breath-first searches.  */
-#define CLASSTYPE_MARKED(NODE)  (TYPE_LANG_SPECIFIC(NODE)->type_flags.marked)
-#define CLASSTYPE_MARKED2(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.marked2)
-#define CLASSTYPE_MARKED3(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.marked3)
-#define CLASSTYPE_MARKED4(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.marked4)
-#define CLASSTYPE_MARKED5(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.marked5)
-#define CLASSTYPE_MARKED6(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.marked6)
+
+/* Get the value of the Nth mark bit.  */
+#define CLASSTYPE_MARKED_N(NODE, N)					\
+  (((CLASS_TYPE_P (NODE) ? TYPE_LANG_SPECIFIC (NODE)->type_flags.marks	\
+     : TYPE_ALIAS_SET (NODE)) & (1 << N)) != 0)
+
+/* Set the Nth mark bit.  */
+#define SET_CLASSTYPE_MARKED_N(NODE, N)					\
+  (CLASS_TYPE_P (NODE)							\
+   ? (TYPE_LANG_SPECIFIC (NODE)->type_flags.marks |= (1 << (N)))	\
+   : (TYPE_ALIAS_SET (NODE) |= (1 << (N))))
+
+/* Clear the Nth mark bit.  */
+#define CLEAR_CLASSTYPE_MARKED_N(NODE, N)				\
+  (CLASS_TYPE_P (NODE)							\
+   ? (TYPE_LANG_SPECIFIC (NODE)->type_flags.marks &= ~(1 << (N)))	\
+   : (TYPE_ALIAS_SET (NODE) &= ~(1 << (N))))
+
+/* Get the value of the mark bits.  */
+#define CLASSTYPE_MARKED(NODE) CLASSTYPE_MARKED_N(NODE, 0)
+#define CLASSTYPE_MARKED2(NODE) CLASSTYPE_MARKED_N(NODE, 1)
+#define CLASSTYPE_MARKED3(NODE) CLASSTYPE_MARKED_N(NODE, 2)
+#define CLASSTYPE_MARKED4(NODE) CLASSTYPE_MARKED_N(NODE, 3)
+#define CLASSTYPE_MARKED5(NODE) CLASSTYPE_MARKED_N(NODE, 4)
+#define CLASSTYPE_MARKED6(NODE) CLASSTYPE_MARKED_N(NODE, 5)
+
 /* Macros to modify the above flags */
-#define SET_CLASSTYPE_MARKED(NODE)	(CLASSTYPE_MARKED(NODE) = 1)
-#define CLEAR_CLASSTYPE_MARKED(NODE)	(CLASSTYPE_MARKED(NODE) = 0)
-#define SET_CLASSTYPE_MARKED2(NODE)	(CLASSTYPE_MARKED2(NODE) = 1)
-#define CLEAR_CLASSTYPE_MARKED2(NODE)	(CLASSTYPE_MARKED2(NODE) = 0)
-#define SET_CLASSTYPE_MARKED3(NODE)	(CLASSTYPE_MARKED3(NODE) = 1)
-#define CLEAR_CLASSTYPE_MARKED3(NODE)	(CLASSTYPE_MARKED3(NODE) = 0)
-#define SET_CLASSTYPE_MARKED4(NODE)	(CLASSTYPE_MARKED4(NODE) = 1)
-#define CLEAR_CLASSTYPE_MARKED4(NODE)	(CLASSTYPE_MARKED4(NODE) = 0)
-#define SET_CLASSTYPE_MARKED5(NODE)	(CLASSTYPE_MARKED5(NODE) = 1)
-#define CLEAR_CLASSTYPE_MARKED5(NODE)	(CLASSTYPE_MARKED5(NODE) = 0)
-#define SET_CLASSTYPE_MARKED6(NODE)	(CLASSTYPE_MARKED6(NODE) = 1)
-#define CLEAR_CLASSTYPE_MARKED6(NODE)	(CLASSTYPE_MARKED6(NODE) = 0)
+#define SET_CLASSTYPE_MARKED(NODE)    SET_CLASSTYPE_MARKED_N(NODE, 0)
+#define CLEAR_CLASSTYPE_MARKED(NODE)  CLEAR_CLASSTYPE_MARKED_N(NODE, 0)
+#define SET_CLASSTYPE_MARKED2(NODE)   SET_CLASSTYPE_MARKED_N(NODE, 1)
+#define CLEAR_CLASSTYPE_MARKED2(NODE) CLEAR_CLASSTYPE_MARKED_N(NODE, 1)
+#define SET_CLASSTYPE_MARKED3(NODE)   SET_CLASSTYPE_MARKED_N(NODE, 2)
+#define CLEAR_CLASSTYPE_MARKED3(NODE) CLEAR_CLASSTYPE_MARKED_N(NODE, 2)	
+#define SET_CLASSTYPE_MARKED4(NODE)   SET_CLASSTYPE_MARKED_N(NODE, 3)
+#define CLEAR_CLASSTYPE_MARKED4(NODE) CLEAR_CLASSTYPE_MARKED_N(NODE, 3)
+#define SET_CLASSTYPE_MARKED5(NODE)   SET_CLASSTYPE_MARKED_N(NODE, 4)
+#define CLEAR_CLASSTYPE_MARKED5(NODE) CLEAR_CLASSTYPE_MARKED_N(NODE, 4)
+#define SET_CLASSTYPE_MARKED6(NODE)   SET_CLASSTYPE_MARKED_N(NODE, 5)
+#define CLEAR_CLASSTYPE_MARKED6(NODE) CLEAR_CLASSTYPE_MARKED_N(NODE, 5)
 
 /* A list of the nested tag-types (class, struct, union, or enum)
    found within this class.  The TREE_PURPOSE of each node is the name
@@ -1301,10 +1342,16 @@ struct lang_decl
    non-type template parameters.  */
 #define ENUM_TEMPLATE_INFO(NODE) (TYPE_BINFO (NODE))
 
+/* Template information for a template template parameter.  */
+#define TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO(NODE) (TYPE_BINFO (NODE))
+
 /* Template information for an ENUMERAL_, RECORD_, or UNION_TYPE.  */
-#define TYPE_TEMPLATE_INFO(NODE)					\
-  (TREE_CODE (NODE) == ENUMERAL_TYPE 					\
-   ? ENUM_TEMPLATE_INFO (NODE) : CLASSTYPE_TEMPLATE_INFO (NODE))
+#define TYPE_TEMPLATE_INFO(NODE)			\
+  (TREE_CODE (NODE) == ENUMERAL_TYPE			\
+   ? ENUM_TEMPLATE_INFO (NODE) : 			\
+   (TREE_CODE (NODE) == TEMPLATE_TEMPLATE_PARM		\
+    ? TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (NODE)	\
+    : CLASSTYPE_TEMPLATE_INFO (NODE)))
 
 /* Set the template information for an ENUMERAL_, RECORD_, or
    UNION_TYPE to VAL.  */
@@ -1387,7 +1434,7 @@ struct lang_decl
    this is an IDENTIFIER_NODE, and the same as the DECL_NAME on the
    corresponding TYPE_DECL.  However, this may also be a
    TEMPLATE_ID_EXPR if we had something like `typename X::Y<T>'.  */
-#define TYPENAME_TYPE_FULLNAME(NODE)	CLASSTYPE_SIZE (NODE)
+#define TYPENAME_TYPE_FULLNAME(NODE) TYPE_BINFO (NODE)
 
 /* Nonzero in INTEGER_CST means that this int is negative by dint of
    using a twos-complement negated operand.  */

@@ -1616,7 +1616,6 @@ finish_typeof (expr)
       end_temporary_allocation ();
 
       t = make_lang_type (TYPEOF_TYPE);
-      CLASSTYPE_GOT_SEMICOLON (t) = 1;
       TYPE_FIELDS (t) = expr;
 
       pop_obstacks ();

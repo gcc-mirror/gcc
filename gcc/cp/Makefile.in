@@ -184,8 +184,8 @@ CXX_OBJS = call.o decl.o errfn.o expr.o pt.o sig.o typeck2.o \
  repo.o @extra_cxx_objs@
 
 # Language-independent object files.
-OBJS = `cat ../stamp-objlist` ../c-common.o ../c-pragma.o
-OBJDEPS = ../stamp-objlist ../c-common.o ../c-pragma.o
+OBJS = `cat ../stamp-objlist` ../c-common.o ../c-pragma.o ../hash.o
+OBJDEPS = ../stamp-objlist ../c-common.o ../c-pragma.o ../hash.o
 
 compiler: ../cc1plus$(exeext)
 ../cc1plus$(exeext): $(P) $(OBJDEPS) $(CXX_OBJS) $(LIBDEPS)
@@ -249,7 +249,8 @@ lex.o : lex.c $(CONFIG_H) $(CXX_TREE_H) \
   $(srcdir)/../output.h $(srcdir)/../mbchar.h
 decl.o : decl.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(srcdir)/../stack.h $(srcdir)/../output.h  \
-  $(srcdir)/../except.h $(srcdir)/../system.h $(srcdir)/../toplev.h
+  $(srcdir)/../except.h $(srcdir)/../system.h $(srcdir)/../toplev.h \
+  $(srcdir)/../hash.h
 decl2.o : decl2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(EXPR_H) $(srcdir)/../except.h \
   $(srcdir)/../output.h $(srcdir)/../except.h $(srcdir)/../system.h \

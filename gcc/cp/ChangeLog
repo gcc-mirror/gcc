@@ -1,3 +1,73 @@
+1998-11-17  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (TYPE_ALIAS_SET): Document language-dependent uses.
+	(TYPE_BINFO): Likewise.
+	(IS_AGGR_TYPE): Tweak.
+	(SET_IS_AGGR_TYPE): New macro.
+	(CLASS_TYPE_P): Tweak.
+	(lang_type): Group mark bitfields together.  Remove linenum.
+	(CLASSTYPE_SOURCE_LINE): Remove macro.
+	(CLASSTYPE_MARKED_N): New macro.
+	(SET_CLASSTYPE_MARKED_N): Likewise.
+	(CLEAR_CLASSTYPE_MARKED_N): Likewise.
+	(CLASS_TYPE_MARKED_*): Use them.
+	(SET_CLASSTYPE_MARKED_*): Likewise.
+	(CLEAR_CLASSTYPE_MARKED_*): Likewise.
+	(TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO): Likewise.
+	(TYPE_TEMPLATE_INFO): Handle TEMPLATE_TEMPLATE_PARMs as well.
+	(TYPENAME_TYPE_FULLNAME): Use TYPE_BINFO rather than CLASSTYPE_SIZE.
+	* class.c (class_cache_obstack): New variable.
+	(class_cache_firstobj): Likewise.
+	(finish_struct): Don't set CLASSTYPE_SOURCE_LINE.
+	(pushclass): Free the cache, when appropriate.
+	(popclass): Tidy.
+	(maybe_push_cache_obstack): Use class_cache_obstack.
+	* decl.c (include hash.h).
+	(typename_hash): New function.
+	(typename_compare): Likewise.
+	(build_typename_type): Check the hash table to avoid creating
+	duplicates.
+	(build_ptrmemfunc_type): Use SET_IS_AGGR_TYPE.
+	(grokdeclarator): Use CLASS_TYPE_P.
+	(xref_basetypes): Likewise.
+	(start_function): Likewise.  Don't put current_class_ref on the
+	permanent obstack.
+	* error.c (dump_type_real): Use	TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO
+	and TYPE_TI_ARGS.
+	* lex.c (note_got_semicolon): Use CLASS_TYPE_P.
+	(make_lang_type): Don't create TYPE_LANG_SPECIFIC and associated
+	fields for types other than class types.  Do clear TYPE_ALIAS_SET
+	for types other than class types, though.
+	* method.c (build_overload_identifier): Use CLASS_TYPE_P and
+	TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
+	* pt.c (process_template_parm): Don't set
+	CLASSTYPE_GOT_SEMICOLON.  
+	(lookup_template_class) Use TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
+	Coerce arguments on the momentary obstack.
+	(for_each_template_parm): Use TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
+	(instantiate_class_template): Calculate template arguments on the
+	momentary obstack.  Tidy.
+	(tsubst_template_arg_vector): Use make_temp_vec.
+	(tsubst_aggr_type): Put template arguments on the momentary
+	obstack. 
+	(tsubst_decl): Likewise.
+	(tsubst): Copy the array bounds index to the permanent obstack
+	before building index types.  Use new macros.
+	(unify): Use new macros.
+	(do_type_instantiation): Likewise.
+	* search.c (lookup_fnfields_1): Use new macros.
+	(dfs_pushdecls): Build envelopes on the cache obstack.
+	(dfs_compress_decls): Use new macros.
+	(push_class_decls): Build on the cache obstack.
+	* semantics.c (finish_typeof): Don't set CLASSTYPE_GOT_SEMICOLON.
+	* sign.c (build_signature_pointer_or_reference_type): Use
+	SET_IS_AGGR_TYPE.
+	* tree.c (make_binfo): Check CLASS_TYPE_P.
+	(copy_template_template_parm): Adjust.
+	(make_temp_vec): Use push_expresion_obstack.
+	* typeck.c (complete_type): Use new macros.
+	(comptypes): Likewise.
+	
 1998-11-17  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (tsubst): Add diagnostics for invalid array, reference

@@ -82,6 +82,12 @@ tree previous_class_type;	/* _TYPE: the previous type that was a class */
 tree previous_class_values;	/* TREE_LIST: copy of the class_shadowed list
 				   when leaving an outermost class scope.  */
 
+/* The obstack on which the cached class declarations are kept.  */
+static struct obstack class_cache_obstack;
+/* The first object allocated on that obstack.  We can use
+   obstack_free with tis value to free the entire obstack.  */
+static char *class_cache_firstobj;
+
 struct base_info;
 
 static tree get_vfield_name PROTO((tree));
@@ -4404,7 +4410,6 @@ finish_struct (t, attributes, warn_anon)
 	 will fill in the right line number.  (mrs) */
       if (DECL_SOURCE_LINE (name))
 	DECL_SOURCE_LINE (name) = lineno;
-      CLASSTYPE_SOURCE_LINE (t) = lineno;
       name = DECL_NAME (name);
     }
 
@@ -4701,6 +4706,11 @@ pushclass (type, modify)
       /* Forcibly remove any old class remnants.  */
       popclass (-1);
       previous_class_type = NULL_TREE;
+
+      /* Now, free the obstack on which we cached all the values.  */
+      obstack_free (&class_cache_obstack, class_cache_firstobj);
+      class_cache_firstobj 
+	= (char*) obstack_finish (&class_cache_obstack);
     }
 
   pushlevel_class ();
@@ -4794,7 +4804,8 @@ popclass (modify)
 	  TREE_NONLOCAL_FLAG (TREE_VALUE (tags)) = 0;
 	  tags = TREE_CHAIN (tags);
 	}
-      goto ret;
+
+      return;
     }
 
   if (modify)
@@ -4824,9 +4835,6 @@ popclass (modify)
   current_class_name = current_class_stack[current_class_depth].name;
   current_class_type = current_class_stack[current_class_depth].type;
   current_access_specifier = current_class_stack[current_class_depth].access;
-
- ret:
-  ;
 }
 
 /* Returns 1 if current_class_type is either T or a nested type of T.  */
@@ -5443,16 +5451,24 @@ print_class_statistics ()
 }
 
 /* Push an obstack which is sufficiently long-lived to hold such class
-   decls that may be cached in the previous_class_values list.  For now, let's
-   use the permanent obstack, later we may create a dedicated obstack just
-   for this purpose.  The effect is undone by pop_obstacks.  */
+   decls that may be cached in the previous_class_values list. The
+   effect is undone by pop_obstacks.  */
 
 void
 maybe_push_cache_obstack ()
 {
+  static int cache_obstack_initialized;
+
+  if (!cache_obstack_initialized)
+    {
+      gcc_obstack_init (&class_cache_obstack);
+      class_cache_firstobj 
+	= (char*) obstack_finish (&class_cache_obstack);
+      cache_obstack_initialized = 1;
+    }
+
   push_obstacks_nochange ();
-  if (current_class_depth == 1)
-    current_obstack = &permanent_obstack;
+  current_obstack = &class_cache_obstack;
 }
 
 /* Build a dummy reference to ourselves so Derived::Base (and A::A) works,
