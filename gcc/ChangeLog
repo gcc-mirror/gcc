@@ -1,3 +1,26 @@
+2003-09-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* target.h (struct gcc_target): New member external_libcall.
+	* target-def.h (TARGET_ASM_EXTERNAL_LIBCALL): Provide default.
+	(TARGET_ASM_OUT): Use it.
+	* doc/tm.texi (TARGET_ASM_EXTERNAL_LIBCALL): Document.
+	* targhooks.c: Convert to ISO C 90.
+	(default_external_libcall): New function.
+	* targhooks.h (default_external_libcall): Declare.
+	* varasm.c (assemble_external_libcall): Use
+	targetm.asm_out.external_libcall instead of
+	ASM_OUTPUT_EXTERNAL_LIBCALL.
+	* config/mips/mips-protos.h [TARGET_IRIX5 || TARGET_IRIX 6]
+	(mips_output_external_libcall): Declare.
+	* config/mips/mips.c (mips_output_external_libcall): Change
+	definition guard.
+	Change to match TARGET_ASM_EXTERNAL_LIBCALL.
+	Only operate for O32 ABI.
+	* config/mips/iris5.h (TARGET_ASM_EXTERNAL_LIBCALL): Define
+	instead of ASM_OUTPUT_EXTERNAL_LIBCALL.
+	* config/mips/iris6.h (ASM_OUTPUT_EXTERNAL_LIBCALL): Don't undef,
+	superceded by TARGET_ASM_EXTERNAL_LIBCALL.
+
 2003-09-22  Nathnael Nerode  <neroden@gcc.gnu.org>
 
 	* config.host: Allow unknown hosts (not targets).  Allow
