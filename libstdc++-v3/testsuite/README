@@ -1,0 +1,9 @@
+We're in the process of converting the existing testsuite machinery to
+use the new style DejaGnu framework.  Eventually, we'll abandon
+../mkcheck.in in favor of this new testsuite framework.  
+
+  Basically, a testcase contains dg-keywords (see dg.exp) indicating
+what to do and what kind of behaviour are to be expected.  New
+testsuite should be written with the new style DejaGnu framework in mind.
+
+-- Gaby
