@@ -3107,7 +3107,11 @@ main (argc, argv, envp)
 	  else if (!strcmp (str, "W"))
 	    {
 	      extra_warnings = 1;
-	      warn_uninitialized = 1;
+	      /* We save the value of warn_uninitialized, since if they put
+		 -Wuninitialized on the command line, we need to generate a
+		 warning about not using it without also specifying -O.  */
+	      if (warn_uninitialized != 1)
+		warn_uninitialized = 2;
 	    }
 	  else if (str[0] == 'W')
 	    {
