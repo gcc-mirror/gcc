@@ -223,6 +223,7 @@ if $LINKS; then
   done
 fi
 
+required=
 set x $treetops
 shift
 while [ $# != 0 ]; do
@@ -324,11 +325,34 @@ while [ $# != 0 ]; do
 	   rm $2/$file
 	else
 	   echo Fixed $file
+	   # Find any include directives that use "file".
+	   for include in `egrep '^[ 	]*#[ 	]*include[ 	]*"[^/]' $2/$file | sed -e 's/^[ 	]*#[ 	]*include[ 	]*"\([^"]*\)".*$/\1/'`; do
+	      dir=`echo $file | sed -e s'|/[^/]*$||'`
+	      required="$required $1 $dir/$include $2/$dir/$include"
+	   done
 	fi
       fi
     fi
   done
   shift; shift
+done
+
+# Make sure that any include files referenced using double quotes
+# exist in the fixed directory.
+set x $required
+shift
+while [ $# != 0 ]; do
+  # $1 is the directory to copy from, $2 is the unfixed file,
+  # $3 is the fixed file name.
+  cd ${INPUT}
+  cd $1
+  if [ -r $2 ] && [ ! -r $3 ]; then
+    cp $2 $3 >/dev/null 2>&1 || echo "Can't copy $2"
+    chmod +w $3 2>/dev/null
+    chmod a+r $3 2>/dev/null
+    echo Copied $2
+  fi
+  shift; shift; shift
 done
 
 cd ${INPUT}
@@ -470,20 +494,6 @@ if [ -r ${LIB}/$file ] ; then
   sed -e 's,"../machine/inline.h",<machine/inline.h>,' \
     -e 's,"../machine/psl.h",<machine/psl.h>,' \
   ${LIB}/$file > ${LIB}/${file}.sed
-  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
-  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    rm ${LIB}/$file
-  fi
-fi
-
-# Fix AIX use of "XDPS.h" to refer to <DPS/XDPS.h>
-file=DPS/XDPSlib.h
-if [ -r $file ] && [ ! -r ${LIB}/$file ] ; then
-  cp $file ${LIB}/$file
-fi
-if [ -r ${LIB}/$file ] ; then
-  echo Fixing $file
-  sed -e 's,"XDPS.h",<DPS/XDPS.h>,' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm ${LIB}/$file
