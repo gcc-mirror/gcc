@@ -1,5 +1,21 @@
 2003-09-29  Paolo Carlini  <pcarlini@unitus.it>
 
+	PR libstdc++/12296
+	* include/bits/istream.tcc (peek): Set eofbit if sgetc
+	returns eof.
+	* testsuite/27_io/basic_istream/peek/char/12296.cc:
+	New, from the PR.
+
+2003-09-29  Nathan Myers  <ncm@cantrip.org>
+	    Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/11400
+	* include/bits/stl_algo.h (search_n):
+	Use iterator_traits<>::difference_type for __n.
+	* testsuite/25_algorithms/search_n/11400.cc: New, from the PR.
+
+2003-09-29  Paolo Carlini  <pcarlini@unitus.it>
+
 	* testsuite/22_locale/locale/cons/12352.cc:
 	Use __attribute__((unused)) for test.
 
