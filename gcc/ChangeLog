@@ -1,5 +1,10 @@
 2000-02-05  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cppalloc.c: Update copyright.
+	* cpplib.c: Merge all the static function prototypes into one
+	block.
+	* cpplib.h: Remove #if 0 block.
+
 	* cpperror.c: Remove #ifdef EMACS block.
 	* cppmain.c: Likewise.
 	* cpphash.c: Remove #if 0 blocks.

@@ -35,22 +35,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    (Note that it is false while we're expanding macro *arguments*.) */
 #define CPP_IS_MACRO_BUFFER(PBUF) ((PBUF)->data != NULL)
 
-/* Forward declarations.  */
-
-static const char *my_strerror		PARAMS ((int));
-static void validate_else		PARAMS ((cpp_reader *, const char *));
-static HOST_WIDEST_INT eval_if_expression	PARAMS ((cpp_reader *));
-
-static void conditional_skip		PARAMS ((cpp_reader *, int,
-						enum node_type, U_CHAR *));
-static void skip_if_group		PARAMS ((cpp_reader *));
-
-static void parse_name			PARAMS ((cpp_reader *, int));
-static void parse_string		PARAMS ((cpp_reader *, int));
-static int parse_assertion		PARAMS ((cpp_reader *));
-static const char *if_directive_name	PARAMS ((cpp_reader *,
-						 struct if_stack *));
-
 /* External declarations.  */
 
 extern HOST_WIDEST_INT cpp_parse_expr PARAMS ((cpp_reader *));
@@ -87,26 +71,45 @@ static int do_sccs PARAMS ((cpp_reader *, const struct directive *));
 static int do_assert PARAMS ((cpp_reader *, const struct directive *));
 static int do_unassert PARAMS ((cpp_reader *, const struct directive *));
 static int do_warning PARAMS ((cpp_reader *, const struct directive *));
-static enum cpp_token null_underflow PARAMS ((cpp_reader *));
-static int null_cleanup PARAMS ((cpp_buffer *, cpp_reader *));
-static int skip_comment PARAMS ((cpp_reader *, int));
-static int copy_comment PARAMS ((cpp_reader *, int));
-static void copy_rest_of_line PARAMS ((cpp_reader *));
-static int handle_directive PARAMS ((cpp_reader *));
-static void pass_thru_directive PARAMS ((const U_CHAR *, size_t, cpp_reader *,
-					 const struct directive *));
+
+/* Forward declarations.  */
+
+static const char *my_strerror		PARAMS ((int));
+static void validate_else		PARAMS ((cpp_reader *, const char *));
+static HOST_WIDEST_INT eval_if_expression PARAMS ((cpp_reader *));
+static void conditional_skip		PARAMS ((cpp_reader *, int,
+						enum node_type, U_CHAR *));
+static void skip_if_group		PARAMS ((cpp_reader *));
+static void parse_name			PARAMS ((cpp_reader *, int));
+static void parse_string		PARAMS ((cpp_reader *, int));
+static int parse_assertion		PARAMS ((cpp_reader *));
+static const char *if_directive_name	PARAMS ((cpp_reader *,
+						 struct if_stack *));
+static enum cpp_token null_underflow	PARAMS ((cpp_reader *));
+static int null_cleanup			PARAMS ((cpp_buffer *, cpp_reader *));
+static int skip_comment			PARAMS ((cpp_reader *, int));
+static int copy_comment			PARAMS ((cpp_reader *, int));
+static void copy_rest_of_line		PARAMS ((cpp_reader *));
+static int handle_directive		PARAMS ((cpp_reader *));
+static void pass_thru_directive		PARAMS ((const U_CHAR *, size_t,
+						 cpp_reader *,
+						 const struct directive *));
 static enum cpp_token get_directive_token PARAMS ((cpp_reader *));
-static int read_line_number PARAMS ((cpp_reader *, int *));
-static void cpp_print_file_and_line PARAMS ((cpp_reader *));
-static void v_cpp_error PARAMS ((cpp_reader *, const char *, va_list));
-static void v_cpp_warning PARAMS ((cpp_reader *, const char *, va_list));
-static void v_cpp_error_with_line PARAMS ((cpp_reader *, int, int,
-					   const char *, va_list));
-static void v_cpp_warning_with_line PARAMS ((cpp_reader *, int, int, const char *, va_list));
-static U_CHAR *detect_if_not_defined PARAMS ((cpp_reader *));
-static int consider_directive_while_skipping PARAMS ((cpp_reader *, IF_STACK_FRAME *));
-static void skip_block_comment PARAMS ((cpp_reader *));
-static void skip_line_comment PARAMS ((cpp_reader *));
+static int read_line_number		PARAMS ((cpp_reader *, int *));
+static void cpp_print_file_and_line	PARAMS ((cpp_reader *));
+static void v_cpp_error			PARAMS ((cpp_reader *, const char *,
+						 va_list));
+static void v_cpp_warning		PARAMS ((cpp_reader *, const char *,
+						 va_list));
+static void v_cpp_error_with_line	PARAMS ((cpp_reader *, int, int,
+						 const char *, va_list));
+static void v_cpp_warning_with_line	PARAMS ((cpp_reader *, int, int,
+						 const char *, va_list));
+static U_CHAR *detect_if_not_defined	PARAMS ((cpp_reader *));
+static int consider_directive_while_skipping PARAMS ((cpp_reader *,
+						      IF_STACK_FRAME *));
+static void skip_block_comment		PARAMS ((cpp_reader *));
+static void skip_line_comment		PARAMS ((cpp_reader *));
 
 /* Here is the actual list of #-directives.
    This table is ordered by frequency of occurrence; the numbers
@@ -2329,6 +2332,7 @@ cpp_get_token (pfile)
 	      CPP_PUTC (pfile, c);
 	      return CPP_HSPACE;
 	    }
+
 	case '#':
 	  if (!pfile->only_seen_white)
 	    goto randomchar;
