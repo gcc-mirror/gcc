@@ -1,3 +1,8 @@
+Sun Jan  9 17:50:23 2000  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/ns32k/ns32k.md (load or push effective address): Operand 1
+	must have SImode.
+
 2000-01-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* elfos.h (ASM_OUTPUT_LIMITED_STRING): Add parentheses around
