@@ -1,7 +1,7 @@
-2001-01-02  Toon Moene  <toon@moene.indiv.nluug.nl>
+2001-12-02  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/4885
-	* endfile.c (t_runc): After ftruncate. seek to end-of-file.
+	* endfile.c (t_runc): After ftruncate, seek to end-of-file.
 
 2001-11-25  Toon Moene  <toon@moene.indiv.nluug.nl>
 
