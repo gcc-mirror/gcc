@@ -1,5 +1,13 @@
 2001-11-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/gcc.texi: Move several chapters out to ...
+	* doc/bugreport.texi, doc/contribute.texi, doc/frontends.texi,
+	doc/service.texi, doc/standards.texi, doc/trouble.texi,
+	doc/vms.texi: ... here.  New files.
+	* Makefile.in ($(docdir)/gcc.info, gcc.dvi): Update dependencies.
+
+2001-11-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* ChangeLog.2, ChangeLog.3, ChangeLog.4, ChangeLog.5, ChangeLog,
 	cfg.c, cfganal.c, cfgcleanup.c, cfglayout.c, cfgloop.c, cfgrtl.c,
 	collect2.c, combine.c, config.in, configure, configure.in,

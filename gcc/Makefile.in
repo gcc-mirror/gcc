@@ -2315,7 +2315,10 @@ $(docdir)/gcc.info: $(docdir)/gcc.texi $(docdir)/extend.texi \
 	 $(docdir)/c-tree.texi $(docdir)/rtl.texi $(docdir)/tm.texi \
 	 $(docdir)/gcov.texi $(docdir)/contrib.texi $(docdir)/objc.texi \
 	 $(docdir)/include/fdl.texi $(docdir)/include/gpl.texi \
-	 $(docdir)/include/funding.texi
+	 $(docdir)/include/funding.texi $(docdir)/bugreport.texi \
+	 $(docdir)/contribute.texi $(docdir)/frontends.texi \
+	 $(docdir)/service.texi $(docdir)/standards.texi \
+	 $(docdir)/trouble.texi $(docdir)/vms.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/gcc.info doc/gcc.texi
 
 $(docdir)/cppinternals.info: $(docdir)/cppinternals.texi
@@ -2333,7 +2336,10 @@ gcc.dvi: $(docdir)/gcc.texi $(docdir)/extend.texi $(docdir)/install-old.texi \
 	 $(docdir)/rtl.texi $(docdir)/tm.texi $(docdir)/gcov.texi \
 	 $(docdir)/contrib.texi $(docdir)/objc.texi \
 	 $(docdir)/include/fdl.texi $(docdir)/include/gpl.texi \
-	 $(docdir)/include/funding.texi
+	 $(docdir)/include/funding.texi $(docdir)/bugreport.texi \
+	 $(docdir)/contribute.texi $(docdir)/frontends.texi \
+	 $(docdir)/service.texi $(docdir)/standards.texi \
+	 $(docdir)/trouble.texi $(docdir)/vms.texi
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/gcc.texi
 
 cppinternals.dvi: $(docdir)/cppinternals.texi
