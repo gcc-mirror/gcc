@@ -27,13 +27,11 @@ Boston, MA 02111-1307, USA.  */
 #define VMS
 #endif
 
-#define GCC_INCLUDE_DIR ""
 /* Specify the list of include file directories.  */
 #define INCLUDE_DEFAULTS		\
 {					\
-  { "GNU_GXX_INCLUDE:", "G++", 1, 1 },	\
-  { "GNU_CC_INCLUDE:", "GCC", 0, 0 },	\
-  { ".", 0, 0, 1 },			\
+  { "/gnu_gxx_include", "G++", 1, 1 },	\
+  { "/gnu_cc_include", "GCC", 0, 0 },	\
   { 0, 0, 0, 0 }			\
 }
 
