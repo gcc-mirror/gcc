@@ -38,8 +38,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define JAVA_FILE_ARG	(1<<3)
 /* True if this arg is a .class input file name. */
 #define CLASS_FILE_ARG	(1<<4)
+/* True if this arg is a .zip or .jar input file name. */
+#define ZIP_FILE_ARG	(1<<5)
 /* True if this arg is @FILE - where FILE contains a list of filenames. */
-#define INDIRECT_FILE_ARG (1<<5)
+#define INDIRECT_FILE_ARG (1<<6)
 
 static char *find_spec_file	PARAMS ((const char *));
 
@@ -117,12 +119,10 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   /* Number of .java and .class source file arguments seen. */
   int java_files_count = 0;
   int class_files_count = 0;
+  /* Number of .zip or .jar file arguments seen. */
+  int zip_files_count = 0;
   /* Number of '@FILES' arguments seen. */
   int indirect_files_count = 0;
-
-  /* Cumulative length of the  .java and .class source file names. */
-  int java_files_length = 0;
-  int class_files_length = 0;
 
   /* Name of file containing list of files to compile. */
   char *filelist_filename;
@@ -130,8 +130,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   FILE *filelist_file;
 
   /* The number of arguments being added to what's in argv, other than
-     libraries.  We use this to track the number of times we've inserted
-     -xc++/-xnone.  */
+     libraries.  */
   int added = 2;
 
   /* Used to track options that take arguments, so we don't go wrapping
@@ -327,6 +326,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	    {
 	      args[i] |= INDIRECT_FILE_ARG;
 	      indirect_files_count++;
+	      added += 2;  /* for -xjava and -xnone */
 	    }
 
 	  len = strlen (argv[i]);
@@ -334,14 +334,20 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	    {
 	      args[i] |= JAVA_FILE_ARG;
 	      java_files_count++;
-	      java_files_length += len;
 	      last_input_index = i;
 	    }
 	  if (len > 6 && strcmp (argv[i] + len - 6, ".class") == 0)
 	    {
 	      args[i] |= CLASS_FILE_ARG;
 	      class_files_count++;
-	      class_files_length += len;
+	      last_input_index = i;
+	    }
+	  if (len > 4
+	      && (strcmp (argv[i] + len - 4, ".zip") == 0
+		  || strcmp (argv[i] + len - 4, ".jar") == 0))
+	    {
+	      args[i] |= ZIP_FILE_ARG;
+	      zip_files_count++;
 	      last_input_index = i;
 	    }
 	}
@@ -357,20 +363,21 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   if (saw_C)
     {
       num_args += 3;
-      if (class_files_count > 0)
+      if (class_files_count + zip_files_count > 0)
 	{
 	  error ("Warning: already-compiled .class files ignored with -C"); 
+	  num_args -= class_files_count + zip_files_count;
 	  class_files_count = 0;
-	  num_args -= class_files_count;
+	  zip_files_count = 0;
 	}
       num_args += 2;  /* For -o NONE. */
       if (saw_o)
 	fatal ("cannot specify both -C and -o");
     }
-  if ((saw_o && java_files_count + class_files_count > 1)
-      || (saw_C && java_files_count > 1))
-    combine_inputs = 1;
-  if (class_files_count > 1)
+  if ((saw_o && java_files_count + class_files_count + zip_files_count > 1)
+      || (saw_C && java_files_count > 1)
+      || (indirect_files_count > 0
+	  && java_files_count + class_files_count + zip_files_count > 0))
     combine_inputs = 1;
 
   if (combine_inputs)
@@ -382,8 +389,8 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
       filelist_file = fopen (filelist_filename, "w");
       if (filelist_file == NULL)
 	pfatal_with_name (filelist_filename);
-      num_args -= java_files_count + class_files_count;
-      num_args++;  /* Add one for the combined arg. */
+      num_args -= java_files_count + class_files_count + zip_files_count;
+      num_args += 2;  /* for the combined arg and "-xjava" */
     }
   /* If we know we don't have to do anything, bail now.  */
 #if 0
@@ -403,7 +410,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   num_args++;
 
   if (combine_inputs || indirect_files_count > 0)
-    num_args += 2;
+    num_args += 1; /* for "-ffilelist-file" */
   if (combine_inputs && indirect_files_count > 0)
     fatal("using both @FILE with multiple files not implemented");
 
@@ -420,12 +427,6 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
   for (i = 0; i < argc; i++, j++)
     {
-      if (i == 1 && (combine_inputs || indirect_files_count > 0))
-	{
-	  arglist[j++] = "-ffilelist-file";
-	  arglist[j++] = "-xjava";
-	}
-
       arglist[j] = argv[i];
 
       if ((args[i] & PARAM_ARG) || i == 0)
@@ -465,16 +466,19 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
       if ((args[i] & INDIRECT_FILE_ARG) != 0)
 	{
-	  arglist[j] = argv[i]+1;  /* Drop '@'. */
+	  arglist[j++] = "-xjava";
+	  arglist[j++] = argv[i]+1;  /* Drop '@'. */
+	  arglist[j] = "-xnone";
 	}
 
-      if ((args[i] & CLASS_FILE_ARG) && saw_C)
+      if ((args[i] & (CLASS_FILE_ARG|ZIP_FILE_ARG)) && saw_C)
 	{
 	  --j;
 	  continue;
 	}
 
-      if (combine_inputs && (args[i] & (CLASS_FILE_ARG|JAVA_FILE_ARG)) != 0)
+      if (combine_inputs
+	  && (args[i] & (CLASS_FILE_ARG|JAVA_FILE_ARG|ZIP_FILE_ARG)) != 0)
 	{
 	  fputs (argv[i], filelist_file);
 	  fputc ('\n', filelist_file);
@@ -483,10 +487,14 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	}
   }
 
+  if (combine_inputs || indirect_files_count > 0)
+    arglist[j++] = "-ffilelist-file";
+
   if (combine_inputs)
     {
       if (fclose (filelist_file))
 	pfatal_with_name (filelist_filename);
+      arglist[j++] = "-xjava";
       arglist[j++] = filelist_filename;
     }
 

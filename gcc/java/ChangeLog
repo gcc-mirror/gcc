@@ -1,3 +1,10 @@
+2001-03-19  Per Bothner  <per@bothner.com>
+
+	* jvspec.c (lang_specific_driver):  Check for .zip and .jar files.
+	Add constructed filelist-file at end, following -xjava.  Thus any .o
+	and library files are not affected by the -xjava.  Also wrap
+	explicit @FILE with -xjava and -xnone.
+
 2001-03-19  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* class.c (build_static_field_ref): Call make_decl_rtl() after
