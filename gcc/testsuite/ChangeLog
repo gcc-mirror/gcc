@@ -1,3 +1,23 @@
+1998-10-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.pt/friend34.C: New test; name injection of
+	friend template declared within template class conflicts with
+	nested class of the same name
+
+	* g++.old-deja/g++.other/badopt1.C: New test; post-increment
+ 	is ignored
+
+	* g++.old-deja/g++.other/decl1.C: New test; incorrect parsing of
+	object with direct initializer as function declaration
+
+	* g++.old-deja/g++.other/decl2.C: New test; duplicate initializers
+
+	* g++.old-deja/g++.other/null2.C: New test; conditional operator
+ 	involving const pointer and NULL produces incorrect result
+
+	* g++.old-deja/g++.other/typename1.C: New test; template-dependent
+ 	type name without `typename' should be rejected with -pedantic
+
 Fri Oct  2 21:55:58 1998  Richard Henderson  <rth@cygnus.com>
 
 	* g++.old-deja/g++.other/addrof1.C: New test.
