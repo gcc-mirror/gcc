@@ -1,4 +1,4 @@
-# generated automatically by aclocal 1.7.6 -*- Autoconf -*-
+# generated automatically by aclocal 1.7.9 -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
 # Free Software Foundation, Inc.
@@ -10,34 +10,6 @@
 # but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
-
-sinclude(../config/accross.m4)
-
-dnl See if stdbool.h properly defines bool and true/false.
-AC_DEFUN(gcc_AC_HEADER_STDBOOL,
-[AC_CACHE_CHECK([for working stdbool.h],
-  ac_cv_header_stdbool_h,
-[AC_TRY_COMPILE([#include <stdbool.h>],
-[bool foo = false;],
-ac_cv_header_stdbool_h=yes, ac_cv_header_stdbool_h=no)])
-if test $ac_cv_header_stdbool_h = yes; then
-  AC_DEFINE(HAVE_STDBOOL_H, 1,
-  [Define if you have a working <stdbool.h> header file.])
-fi
-])
-
-dnl Check whether _Bool is built-in.
-AC_DEFUN(gcc_AC_C__BOOL,
-[AC_CACHE_CHECK(for built-in _Bool, gcc_cv_c__bool,
-[AC_TRY_COMPILE(,
-[_Bool foo;],
-gcc_cv_c__bool=yes, gcc_cv_c__bool=no)
-])
-if test $gcc_cv_c__bool = yes; then
-  AC_DEFINE(HAVE__BOOL, 1, [Define if the \`_Bool' type is built-in.])
-fi
-])
-
 
 # Do all the work for Automake.                            -*- Autoconf -*-
 
@@ -191,7 +163,7 @@ AC_DEFUN([AM_AUTOMAKE_VERSION],[am__api_version="1.7"])
 # Call AM_AUTOMAKE_VERSION so it can be traced.
 # This function is AC_REQUIREd by AC_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-	 [AM_AUTOMAKE_VERSION([1.7.6])])
+	 [AM_AUTOMAKE_VERSION([1.7.9])])
 
 # Helper functions for option handling.                    -*- Autoconf -*-
 
@@ -860,32 +832,6 @@ AC_CONFIG_COMMANDS_PRE(
   AC_MSG_ERROR([conditional "$1" was never defined.
 Usually this means the macro was only invoked conditionally.])
 fi])])
-
-# Like AC_CONFIG_HEADER, but automatically create stamp file. -*- Autoconf -*-
-
-# Copyright 1996, 1997, 2000, 2001 Free Software Foundation, Inc.
-
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2, or (at your option)
-# any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-# 02111-1307, USA.
-
-AC_PREREQ([2.52])
-
-# serial 6
-
-# AM_CONFIG_HEADER is obsolete.  It has been replaced by AC_CONFIG_HEADERS.
-AU_DEFUN([AM_CONFIG_HEADER], [AC_CONFIG_HEADERS($@)])
 
 # Add --enable-maintainer-mode option to configure.
 # From Jim Meyering
