@@ -1,3 +1,14 @@
+2003-03-02  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-incpath.c (remove_component_p, simplify_path): Move back to
+	cppfiles.c.
+	(remove_duplicates): Use cpp_simplify_path.
+	* c-incpath.h (simplify_path): Remove.
+	* c-lex.c: Don't include c-incpath.h.
+	(init_c_lex): Remove simplify_path.
+	* cppfiles.c (remove_component_p, cpp_simplify_path): Restore.
+	(find_or_create_entry, validate_pch): Revert.
+
 2003-03-02  Ashif Harji  <asharji@uwaterloo.ca>
 
 	* gcc.c (default_compilers): Add -no-integrated-cpp flag to invoke

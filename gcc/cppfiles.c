@@ -153,6 +153,7 @@ static int report_missing_guard		PARAMS ((splay_tree_node, void *));
 static splay_tree_node find_or_create_entry PARAMS ((cpp_reader *,
 						     const char *));
 static void handle_missing_header PARAMS ((cpp_reader *, const char *, int));
+static int remove_component_p PARAMS ((const char *));
 
 /* Set up the splay tree we use to store information about all the
    file names seen in this compilation.  We also have entries for each
@@ -160,7 +161,7 @@ static void handle_missing_header PARAMS ((cpp_reader *, const char *, int));
    don't try to open it again in future.
 
    The key of each node is the file name, after processing by
-   simplify_path.  The path name may or may not be absolute.
+   cpp_simplify_path.  The path name may or may not be absolute.
    The path string has been malloced, as is automatically freed by
    registering free () as the splay tree key deletion function.
 
@@ -216,15 +217,8 @@ find_or_create_entry (pfile, fname)
   splay_tree_node node;
   struct include_file *file;
   char *name = xstrdup (fname);
-  int saved_errno = 0;
 
-  if (pfile->cb.simplify_path)
-    {
-      errno = 0;
-      (pfile->cb.simplify_path) (name);
-      saved_errno = errno;
-    }
-
+  cpp_simplify_path (name);
   node = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) name);
   if (node)
     free (name);
@@ -233,7 +227,7 @@ find_or_create_entry (pfile, fname)
       file = xcnew (struct include_file);
       file->name = name;
       file->header_name = name;
-      file->err_no = saved_errno;
+      file->err_no = errno;
       node = splay_tree_insert (pfile->all_include_files,
 				(splay_tree_key) file->name,
 				(splay_tree_value) file);
@@ -343,7 +337,7 @@ validate_pch (pfile, filename, pchname)
   if (INCLUDE_PCH_P (file))
     {
       char *f = xstrdup (filename);
-      (pfile->cb.simplify_path) (f);
+      cpp_simplify_path (f);
       file->header_name = f;
       return file;
     }
@@ -1170,4 +1164,157 @@ cpp_set_include_chains (pfile, quote, bracket, quote_ignores_source_dir)
       if (quote == bracket)
 	pfile->bracket_include = bracket;
     }
+}
+
+/* Returns true if it is safe to remove the final component of path,
+   when it is followed by a ".." component.  We use lstat to avoid
+   symlinks if we have it.  If not, we can still catch errors with
+   stat ().  */
+static int
+remove_component_p (path)
+     const char *path;
+{
+  struct stat s;
+  int result;
+
+#ifdef HAVE_LSTAT
+  result = lstat (path, &s);
+#else
+  result = stat (path, &s);
+#endif
+
+  /* There's no guarantee that errno will be unchanged, even on
+     success.  Cygwin's lstat(), for example, will often set errno to
+     ENOSYS.  In case of success, reset errno to zero.  */
+  if (result == 0)
+    errno = 0;
+
+  return result == 0 && S_ISDIR (s.st_mode);
+}
+
+/* Simplify a path name in place, deleting redundant components.  This
+   reduces OS overhead and guarantees that equivalent paths compare
+   the same (modulo symlinks).
+
+   Transforms made:
+   foo/bar/../quux	foo/quux
+   foo/./bar		foo/bar
+   foo//bar		foo/bar
+   /../quux		/quux
+   //quux		//quux  (POSIX allows leading // as a namespace escape)
+
+   Guarantees no trailing slashes.  All transforms reduce the length
+   of the string.  Returns PATH.  errno is 0 if no error occurred;
+   nonzero if an error occurred when using stat () or lstat ().  */
+void
+cpp_simplify_path (path)
+     char *path ATTRIBUTE_UNUSED;
+{
+#ifndef VMS
+  char *from, *to;
+  char *base, *orig_base;
+  int absolute = 0;
+
+  errno = 0;
+  /* Don't overflow the empty path by putting a '.' in it below.  */
+  if (*path == '\0')
+    return;
+
+#if defined (HAVE_DOS_BASED_FILE_SYSTEM)
+  /* Convert all backslashes to slashes.  */
+  for (from = path; *from; from++)
+    if (*from == '\\') *from = '/';
+
+  /* Skip over leading drive letter if present.  */
+  if (ISALPHA (path[0]) && path[1] == ':')
+    from = to = &path[2];
+  else
+    from = to = path;
+#else
+  from = to = path;
+#endif
+
+  /* Remove redundant leading /s.  */
+  if (*from == '/')
+    {
+      absolute = 1;
+      to++;
+      from++;
+      if (*from == '/')
+	{
+	  if (*++from == '/')
+	    /* 3 or more initial /s are equivalent to 1 /.  */
+	    while (*++from == '/');
+	  else
+	    /* On some hosts // differs from /; Posix allows this.  */
+	    to++;
+	}
+    }
+
+  base = orig_base = to;
+  for (;;)
+    {
+      int move_base = 0;
+
+      while (*from == '/')
+	from++;
+
+      if (*from == '\0')
+	break;
+
+      if (*from == '.')
+	{
+	  if (from[1] == '\0')
+	    break;
+	  if (from[1] == '/')
+	    {
+	      from += 2;
+	      continue;
+	    }
+	  else if (from[1] == '.' && (from[2] == '/' || from[2] == '\0'))
+	    {
+	      /* Don't simplify if there was no previous component.  */
+	      if (absolute && orig_base == to)
+		{
+		  from += 2;
+		  continue;
+		}
+	      /* Don't simplify if the previous component was "../",
+		 or if an error has already occurred with (l)stat.  */
+	      if (base != to && errno == 0)
+		{
+		  /* We don't back up if it's a symlink.  */
+		  *to = '\0';
+		  if (remove_component_p (path))
+		    {
+		      while (to > base && *to != '/')
+			to--;
+		      from += 2;
+		      continue;
+		    }
+		}
+	      move_base = 1;
+	    }
+	}
+
+      /* Add the component separator.  */
+      if (to > orig_base)
+	*to++ = '/';
+
+      /* Copy this component until the trailing null or '/'.  */
+      while (*from != '\0' && *from != '/')
+	*to++ = *from++;
+
+      if (move_base)
+	base = to;
+    }
+
+  /* Change the empty string to "." so that it is not treated as stdin.
+     Null terminate.  */
+  if (to == path)
+    *to++ = '.';
+  *to = '\0';
+#else  /* VMS */
+  errno = 0;
+#endif /* !VMS  */
 }

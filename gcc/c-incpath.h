@@ -19,6 +19,5 @@ extern void split_quote_chain	PARAMS ((void));
 extern void add_path		PARAMS ((char *, int, int));
 extern void register_include_chains PARAMS ((cpp_reader *, const char *,
 					     const char *, int, int, int));
-extern void simplify_path	PARAMS ((char *));
 
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
