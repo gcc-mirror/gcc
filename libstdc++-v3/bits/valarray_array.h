@@ -73,7 +73,7 @@ namespace std
     // For fundamental types, it suffices to say 'memset()'
     inline static void
     _S_do_it(_Tp* __restrict__ __b, _Tp* __restrict__ __e)
-    { memset(__b, 0, __e - __b); }
+    { memset(__b, 0, (__e - __b)*sizeof(_Tp)); }
   };
 
   template<typename _Tp>
@@ -135,7 +135,7 @@ namespace std
     inline static void
     _S_do_it(const _Tp* __restrict__ __b, const _Tp* __restrict__ __e,
              _Tp* __restrict__ __o)
-    { memcpy(__o, __b, __e - __b); }
+    { memcpy(__o, __b, (__e - __b)*sizeof(_Tp)); }
   };
 
   template<typename _Tp>
