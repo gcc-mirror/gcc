@@ -461,9 +461,6 @@
 /* Define if you have the iconv_open function.  */
 #undef HAVE_ICONV_OPEN
 
-/* Define if you have the isatty function.  */
-#undef HAVE_ISATTY
-
 /* Define if you have the isinf function.  */
 #undef HAVE_ISINF
 

@@ -102,7 +102,7 @@ namespace std
 	      // using underflow.
  	      if (__mode & ios_base::in && _M_buf_allocated)
  		this->underflow();
-	      
+
 	      if ((__mode & ios_base::ate)
 		  && this->seekoff(0, ios_base::end, __mode) < 0)
 		{
@@ -276,10 +276,13 @@ namespace std
     {
       const locale __loc = this->getloc();
       const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
-      
+      // Sync with stdio.
+      bool __sync = this->_M_buf_size == 1;
+
       if (__cvt.always_noconv() && __ilen)
 	{
-	  __elen += _M_file.xsputn(reinterpret_cast<char*>(__ibuf), __ilen);
+	  __elen +=
+	    _M_file.xsputn(reinterpret_cast<char*>(__ibuf), __ilen, __sync);
 	  __plen += __ilen;
 	}
       else
@@ -309,7 +312,7 @@ namespace std
 	  
 	  if (__blen)
 	    {
-	      __elen += _M_file.xsputn(__buf, __blen);
+	      __elen += _M_file.xsputn(__buf, __blen, __sync);
 	      __plen += __blen;
 	    }
 
@@ -331,7 +334,7 @@ namespace std
 		}
 	      if (__rlen)
 		{
-		  __elen += _M_file.xsputn(__buf, __rlen);
+		  __elen += _M_file.xsputn(__buf, __rlen, __sync);
 		  __plen += __rlen;
 		}
 	    }
@@ -346,6 +349,8 @@ namespace std
       int_type __ret = traits_type::eof();
       bool __testput = this->_M_out_cur && this->_M_out_beg < this->_M_out_lim;
       bool __testunbuffered = _M_file.is_open() && !this->_M_buf_size_opt;
+      // Sync with stdio.
+      bool __sync = this->_M_buf_size == 1;
 
       if (__testput || __testunbuffered)
 	{
@@ -359,7 +364,7 @@ namespace std
 	  if (_M_filepos && _M_filepos != this->_M_out_beg)
 	    {
 	      off_type __off = this->_M_out_beg - _M_filepos;
-	      _M_file.seekoff(__off, ios_base::cur);
+	      _M_file.seekoff(__off, ios_base::cur, __sync);
 	    }
 
 	  // Convert internal buffer to external representation, output.
@@ -434,7 +439,9 @@ namespace std
       pos_type __ret =  pos_type(off_type(-1)); 
       bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
       bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
-
+      // Sync with stdio.
+      bool __sync = this->_M_buf_size == 1;
+      
       // Should probably do has_facet checks here.
       int __width = use_facet<__codecvt_type>(this->_M_buf_locale).encoding();
       if (__width < 0)
@@ -468,7 +475,7 @@ namespace std
 		__computed_off += this->_M_in_cur - _M_filepos;
 
 	      // Return pos_type(off_type(-1)) in case of failure.
-	      __ret = _M_file.seekoff(__computed_off, __way, __mode);
+	      __ret = _M_file.seekoff(__computed_off, __way, __sync, __mode);
 	      _M_set_indeterminate();
 	    }
 	  // NB: Need to do this in case _M_file in indeterminate
@@ -476,7 +483,8 @@ namespace std
 	  else
 	    {
 	      pos_type __tmp =
-		_M_file.seekoff(__off, ios_base::cur, __mode);
+		_M_file.seekoff(__off, ios_base::cur,
+				__sync, __mode);
 	      if (__tmp >= 0)
 		{
 		  // Seek successful.

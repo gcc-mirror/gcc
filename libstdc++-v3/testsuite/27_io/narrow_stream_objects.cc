@@ -204,6 +204,22 @@ test10()
   cout << "_M_gcount: "<< cin.gcount() << endl;
 }
 
+// libstdc++/7744
+void test11()
+{
+  std::ios::sync_with_stdio(false);
+
+  std::cout
+    << "\n:: f2() ::\n"
+    << "Type in the characters 'abc' and press <ENTER>: ";
+  std::cin.peek();
+ 
+  std::cout
+    << "The number of unread characters should be 4 (a, b, c, \\n): "
+    << std::cin.rdbuf()->in_avail()
+    << '\n';
+}
+
 int 
 main()
 {
@@ -218,5 +234,6 @@ main()
   // test08();
   // test09();
   // test10();
+  // test11();
   return 0;
 }

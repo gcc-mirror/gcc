@@ -38,9 +38,6 @@
 #include <fstream>
 #include <bits/atomicity.h>
 #include <ext/stdio_filebuf.h>
-#ifdef _GLIBCPP_HAVE_UNISTD_H
-#include <unistd.h>
-#endif
 
 namespace __gnu_cxx
 {
@@ -160,12 +157,7 @@ namespace std
   ios_base::Init::_S_ios_create(bool __sync)
   {
     size_t __out_size = __sync ? 0 : static_cast<size_t>(BUFSIZ);
-#ifdef _GLIBCPP_HAVE_ISATTY
-    size_t __in_size =
-      (__sync || isatty (0)) ? 1 : static_cast<size_t>(BUFSIZ);
-#else
-    size_t __in_size = 1;
-#endif
+    size_t __in_size = __sync ? 1 : static_cast<size_t>(BUFSIZ);
 
     // NB: The file globals.cc creates the four standard files
     // with NULL buffers. At this point, we swap out the dummy NULL

@@ -1,4 +1,28 @@
 2003-03-09  Paolo Carlini  <pcarlini@unitus.it>
+            Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/7744
+	* config/io/basic_file_stdio.h (__basic_file<>::xsgetn, xsputn,
+	seekoff, seekpos): Add a boolean parameter __stdio.
+	* config/io/basic_file_stdio.cc (__basic_file<>::xsgetn, xsputn,
+	seekoff, seekpos): If __stdio == true, use fread (fwrite, fseek/ftell,
+	fseek/ftell, respectively), otherwise read (write, lseek, lseek,
+	respectively).
+	* include/bits/fstream.tcc (basic_filebuf<>::_M_convert_to_external,
+	_M_really_overflow, seekoff): Use the boolean parameter in the calls.
+	* include/std/std_fstream.h (sync): Likewise.
+	* src/fstream.cc (basic_filebuf<>::_M_underflow_common): Likewise.
+	* src/ios.cc (ios_base::Init::_S_ios_create(bool)): Revert libstdc++/8399
+	commit involving isatty(0).
+	* acinclude.m4 (GLIBCPP_CHECK_UNISTD_DECL_AND_LINKAGE_1): Remove.
+	(GLIBCPP_CHECK_UNISTD_SUPPORT): Remove
+	* configure.in: Remove call.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* testsuite/27_io/narrow_stream_objects.cc (test11): Add.
+
+2003-03-09  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/9988
 	* include/bits/fstream.tcc (overflow): don't write EOF to file.

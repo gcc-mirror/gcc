@@ -1,6 +1,6 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,6 +33,7 @@
 
 #include <bits/basic_file.h>
 #include <fcntl.h>
+#include <errno.h>
 
 namespace std 
 {
@@ -191,33 +192,69 @@ namespace std
     return __retval;
   }
  
+  // In the next four functions we want to use stdio functions only
+  // when synced with stdio (_M_buf_size == 1): I/O primitives do not
+  // block until the asked number of bytes are available.
   streamsize 
-  __basic_file<char>::xsgetn(char* __s, streamsize __n)
-  { return fread(__s, 1, __n, _M_cfile); }
-  
+  __basic_file<char>::xsgetn(char* __s, streamsize __n, bool __stdio)
+  {
+    if (__stdio)
+      return fread(__s, 1, __n, _M_cfile);
+    else
+      {
+	streamsize __ret;
+        do
+	  __ret = read(this->fd(), __s, __n);
+	while (__ret == -1L && errno == EINTR);
+	return __ret;
+      }
+  }
+    
   streamsize 
-  __basic_file<char>::xsputn(const char* __s, streamsize __n)
-  { return fwrite(__s, 1, __n, _M_cfile); }
+  __basic_file<char>::xsputn(const char* __s, streamsize __n, bool __stdio)
+  {
+    if (__stdio)
+      return fwrite(__s, 1, __n, _M_cfile);
+    else
+      {
+	streamsize __ret;
+        do
+	  __ret = write(this->fd(), __s, __n);
+	while (__ret == -1L && errno == EINTR);
+	return __ret;
+      }
+  }
   
   streamoff
   __basic_file<char>::seekoff(streamoff __off, ios_base::seekdir __way, 
-			      ios_base::openmode /*__mode*/)
+			      bool __stdio, ios_base::openmode /*__mode*/)
   { 
-    if (!fseek(_M_cfile, __off, __way))
-      return ftell(_M_cfile); 
+    if (!__stdio)
+      return lseek(this->fd(), __off, __way);
     else
-      // Fseek failed.
-      return -1L;
+      {
+	if (!fseek(_M_cfile, __off, __way))
+	  return ftell(_M_cfile); 
+	else
+	  // Fseek failed.
+	  return -1L;
+      }
   }
 
   streamoff
-  __basic_file<char>::seekpos(streamoff __pos, ios_base::openmode /*__mode*/)
+  __basic_file<char>::seekpos(streamoff __pos, bool __stdio,
+			      ios_base::openmode /*__mode*/)
   { 
-    if (!fseek(_M_cfile, __pos, ios_base::beg))
-      return ftell(_M_cfile);
+    if (!__stdio)
+      return lseek(this->fd(), __pos, ios_base::beg);
     else
-      // Fseek failed.
-      return -1L;
+      {
+	if (!fseek(_M_cfile, __pos, ios_base::beg))
+	  return ftell(_M_cfile);
+	else
+	  // Fseek failed.
+	  return -1L;
+      }
   }
   
   int 
