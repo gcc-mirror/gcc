@@ -2192,6 +2192,8 @@ dbxout_symbol_location (decl, type, suffix, home)
 	{
 	  letter = 'r';
 	  current_sym_code = N_RSYM;
+	  if (REGNO (XEXP (home, 0)) >= FIRST_PSEUDO_REGISTER)
+	    return 0;
 	  current_sym_value = DBX_REGISTER_NUMBER (REGNO (XEXP (home, 0)));
 	}
       else
