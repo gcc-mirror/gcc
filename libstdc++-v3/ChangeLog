@@ -1,3 +1,12 @@
+2000-11-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* testsuite/22_locale/codecvt_wchar_t_char.cc (main): Add
+	_GLIBCPP_USE_WCHAR_T guards.
+
+	* configure.in (AC_OUTPUT_COMMANDS): Remove, just run scripts as
+	is, so that checks for existence of generated files actually work.
+	* configure: Regenerate.
+
 2000-11-23  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/os/gnu-linux/bits/os_defines.h: Include <features.h>.

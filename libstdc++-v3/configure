@@ -19337,11 +19337,11 @@ test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
 
 # Generate bits/c++config.h
 # NB: This must be the first generated file as others include it. . .
-
+$srcdir/mkc++config $blddir $srcdir
 
 # Generate bits/std_limits.h and src/limitsMEMBERS.cc
 if test ! -f stamp-limits; then
-  
+  $srcdir/mknumeric_limits $blddir $srcdir $xcompiling
   touch stamp-limits
 fi
 
@@ -19370,7 +19370,7 @@ if test ! -f stamp-sanity-warned; then
 fi
 
 
-$srcdir/mkc++config $blddir $srcdir
-$srcdir/mknumeric_limits $blddir $srcdir $xcompiling
+
+
 
 
