@@ -1,3 +1,8 @@
+2002-08-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (VF_DERIVED_VALUE): Remove.
+	* class.c (finish_struct_1): Use VF_BINFO_VALUE not VF_DERIVED_VALUE.
+
 2002-08-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR 7470.

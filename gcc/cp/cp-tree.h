@@ -1620,8 +1620,6 @@ struct lang_type GTY(())
 #define VF_BASETYPE_VALUE(NODE) TREE_VALUE (NODE)
 
 /* Accessor macros for the BINFO_VIRTUALS list. */
-#define VF_DERIVED_VALUE(NODE) \
-   (VF_BINFO_VALUE (NODE) ? BINFO_TYPE (VF_BINFO_VALUE (NODE)) : NULL_TREE)
 
 /* The number of bytes by which to adjust the `this' pointer when
    calling this virtual function.  Subtract this value from the this
@@ -1637,8 +1635,7 @@ struct lang_type GTY(())
 #define BV_FN(NODE) (TREE_VALUE (NODE))
 
 /* Nonzero if we should use a virtual thunk for this entry.  */
-#define BV_USE_VCALL_INDEX_P(NODE) \
-   (TREE_LANG_FLAG_0 (NODE))
+#define BV_USE_VCALL_INDEX_P(NODE) (TREE_LANG_FLAG_0 (NODE))
 
 /* Nonzero for TREE_LIST node means that this list of things
    is a list of parameters, as opposed to a list of expressions.  */

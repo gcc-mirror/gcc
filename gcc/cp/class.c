@@ -5120,15 +5120,13 @@ finish_struct_1 (t)
     {
       tree vfields = CLASSTYPE_VFIELDS (t);
 
-      while (vfields)
-	{
-	  /* Mark the fact that constructor for T
-	     could affect anybody inheriting from T
-	     who wants to initialize vtables for VFIELDS's type.  */
-	  if (VF_DERIVED_VALUE (vfields))
-	    TREE_ADDRESSABLE (vfields) = 1;
-	  vfields = TREE_CHAIN (vfields);
-	}
+      for (vfields = CLASSTYPE_VFIELDS (t);
+	   vfields; vfields = TREE_CHAIN (vfields))
+	/* Mark the fact that constructor for T could affect anybody
+	   inheriting from T who wants to initialize vtables for
+	   VFIELDS's type.  */
+	if (VF_BINFO_VALUE (vfields))
+	  TREE_ADDRESSABLE (vfields) = 1;
     }
 
   /* Make the rtl for any new vtables we have created, and unmark
