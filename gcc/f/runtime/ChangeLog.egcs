@@ -1,3 +1,9 @@
+Thu Sep 18 16:58:46 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (stamp-lib): Don't use '$?', explicitly
+	list the variables containing the object files to include
+	in libf2c.a
+
 Fri Sep  5 00:18:17 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (clean): Don't remove config.cache.
