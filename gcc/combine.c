@@ -970,13 +970,10 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 		 inputs.  */
 	      || (REGNO (src) < FIRST_PSEUDO_REGISTER
 		  && (! HARD_REGNO_MODE_OK (REGNO (src), GET_MODE (src))
-#ifdef SMALL_REGISTER_CLASSES
 		      || (SMALL_REGISTER_CLASSES
 			  && ((! all_adjacent && ! REG_USERVAR_P (src))
 			      || (FUNCTION_VALUE_REGNO_P (REGNO (src))
-				  && ! REG_USERVAR_P (src))))
-#endif
-		      ))))
+				  && ! REG_USERVAR_P (src))))))))
 	return 0;
     }
   else if (GET_CODE (dest) != CC0)
@@ -1079,7 +1076,7 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
    If I1_NOT_IN_SRC is non-zero, it means that finding I1 in the source
    of a SET must prevent combination from occurring.
 
-   On machines where SMALL_REGISTER_CLASSES is defined, we don't combine
+   On machines where SMALL_REGISTER_CLASSES is non-zero, we don't combine
    if the destination of a SET is a hard register that isn't a user
    variable.
 
@@ -1156,12 +1153,9 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
 	      && REGNO (inner_dest) < FIRST_PSEUDO_REGISTER
 	      && (! HARD_REGNO_MODE_OK (REGNO (inner_dest),
 					GET_MODE (inner_dest))
-#ifdef SMALL_REGISTER_CLASSES
-		 || (SMALL_REGISTER_CLASSES
-		     && GET_CODE (src) != CALL && ! REG_USERVAR_P (inner_dest)
-		     && FUNCTION_VALUE_REGNO_P (REGNO (inner_dest)))
-#endif
-		  ))
+		 || (SMALL_REGISTER_CLASSES && GET_CODE (src) != CALL
+		     && ! REG_USERVAR_P (inner_dest)
+		     && FUNCTION_VALUE_REGNO_P (REGNO (inner_dest)))))
 	  || (i1_not_in_src && reg_overlap_mentioned_p (i1dest, src)))
 	return 0;
 
@@ -1301,12 +1295,10 @@ try_combine (i3, i2, i1)
   if (i1 == 0 && GET_CODE (i3) == INSN && GET_CODE (PATTERN (i3)) == SET
       && GET_CODE (SET_SRC (PATTERN (i3))) == REG
       && REGNO (SET_SRC (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER
-#ifdef SMALL_REGISTER_CLASSES
       && (! SMALL_REGISTER_CLASSES
-	  || GET_CODE (SET_DEST (PATTERN (i3))) != REG
-	  || REGNO (SET_DEST (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER
-	  || REG_USERVAR_P (SET_DEST (PATTERN (i3))))
-#endif
+	  || (GET_CODE (SET_DEST (PATTERN (i3))) != REG
+	      || REGNO (SET_DEST (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER
+	      || REG_USERVAR_P (SET_DEST (PATTERN (i3)))))
       && find_reg_note (i3, REG_DEAD, SET_SRC (PATTERN (i3)))
       && GET_CODE (PATTERN (i2)) == PARALLEL
       && ! side_effects_p (SET_DEST (PATTERN (i3)))
