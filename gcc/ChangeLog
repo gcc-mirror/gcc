@@ -25,6 +25,17 @@ Thu Dec 17 12:31:12 1998  Jim Wilson  <wilson@cygnus.com>
 	* Makefile.in (INTERNAL_CFLAGS): Add SCHED_CFLAGS.
 	(ALL_CFLAGS): Delete SCHED_CFLAGS.
 
+1998-12-17  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	* config/i60/i960.md (extendqihi2): Fix typo (usage ',' instead of
+	';').
+
+1998-12-17  Michael Tiemann  <tiemann@axon.cygnus.com>
+
+	* i960.md (extend*, zero_extend*): Don't generate rtl that looks
+	like (subreg:SI (reg:SI N) 0), because it's wrong, and it hides
+	optimizations from the combiner.
+
 Thu Dec 17 08:27:03 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (combine_givs_used_by_other): Don't depend on n_times_set.
