@@ -2154,8 +2154,12 @@ dbxout_parms (parms)
 	  }
 	else if (GET_CODE (DECL_RTL (parms)) == MEM
 		 && GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG
-		 && (REGNO (XEXP (DECL_RTL (parms), 0))
-		     >= FIRST_PSEUDO_REGISTER))
+		 && REGNO (XEXP (DECL_RTL (parms), 0)) != HARD_FRAME_POINTER_REGNUM
+		 && REGNO (XEXP (DECL_RTL (parms), 0)) != STACK_POINTER_REGNUM
+#if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
+		 && REGNO (XEXP (DECL_RTL (parms), 0)) != ARG_POINTER_REGNUM
+#endif
+		 )
 	  {
 	    /* Parm was passed via invisible reference.
 	       That is, its address was passed in a register.
