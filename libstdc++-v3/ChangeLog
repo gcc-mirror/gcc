@@ -1,5 +1,12 @@
 2002-07-24  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/7219
+	* testsuite/27_io/ios_base_type.cc: New.
+	* include/bits/ios_base.h (ios_base::streampos): Add.
+	(ios_base::streamoff): Add.
+
+2002-07-24  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/7286
 	* libsupc++/new: Add placement delete.
 	* testsuite/18_support/new_delete_placement.cc: New.
