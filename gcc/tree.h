@@ -1012,6 +1012,8 @@ struct tree_type
 
 /* Define fields and accessors for nodes representing declared names.  */
 
+/* Nonzero if DECL represents a decl.  */
+#define DECL_P(DECL)	(TREE_CODE_CLASS (TREE_CODE (DECL)) == 'd')
 /* This is the name of the object as written by the user.
    It is an IDENTIFIER_NODE.  */
 #define DECL_NAME(NODE) (DECL_CHECK (NODE)->decl.name)
