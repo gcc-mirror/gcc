@@ -1,3 +1,8 @@
+2003-10-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* function.c (pad_to_arg_alignment): Move 'boundary_in_bytes'
+	definition to above SPARC_STACK_BOUNDARY_HACK.
+
 2003-10-08  Jason Merrill  <jason@redhat.com>
 
 	* c-pretty-print.c (pp_c_postfix_expression)
