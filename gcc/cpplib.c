@@ -7546,6 +7546,7 @@ cpp_error_from_errno (pfile, name)
      cpp_reader *pfile;
      char *name;
 {
+  int e = errno;
   int i;
   cpp_buffer *ip = cpp_file_buffer (pfile);
 
@@ -7554,7 +7555,7 @@ cpp_error_from_errno (pfile, name)
   if (ip != NULL)
     cpp_file_line_for_message (pfile, ip->nominal_fname, ip->lineno, -1);
 
-  cpp_message (pfile, 1, "%s: %s", name, my_strerror (errno));
+  cpp_message (pfile, 1, "%s: %s", name, my_strerror (e));
 }
 
 void
