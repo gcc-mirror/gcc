@@ -4301,20 +4301,15 @@ reload_reg_free_p (regno, opnum, type)
 {
   int i;
 
-  /* In use for a RELOAD_OTHER means it's not available for anything except
-     RELOAD_FOR_OTHER_ADDRESS.  Recall that RELOAD_FOR_OTHER_ADDRESS is known
-     to be used only for inputs.  */
-
-  if (type != RELOAD_FOR_OTHER_ADDRESS
-      && TEST_HARD_REG_BIT (reload_reg_used, regno))
+  /* In use for a RELOAD_OTHER means it's not available for anything.  */
+  if (TEST_HARD_REG_BIT (reload_reg_used, regno))
     return 0;
 
   switch (type)
     {
     case RELOAD_OTHER:
-      /* In use for anything except RELOAD_FOR_OTHER_ADDRESS means
-	 we can't use it for RELOAD_OTHER.  */
-      if (TEST_HARD_REG_BIT (reload_reg_used, regno)
+      /* In use for anything means we can't use it for RELOAD_OTHER.  */
+      if (TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno)
 	  || TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno)
 	  || TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno))
 	return 0;
@@ -4665,10 +4660,8 @@ reloads_conflict (r1, r2)
   int r1_opnum = reload_opnum[r1];
   int r2_opnum = reload_opnum[r2];
 
-  /* RELOAD_OTHER conflicts with everything except
-     RELOAD_FOR_OTHER_ADDRESS.  */
-  
-  if (r2_type == RELOAD_OTHER && r1_type != RELOAD_FOR_OTHER_ADDRESS)
+  /* RELOAD_OTHER conflicts with everything.  */
+  if (r2_type == RELOAD_OTHER)
     return 1;
 
   /* Otherwise, check conflicts differently for each type.  */
@@ -4712,7 +4705,7 @@ reloads_conflict (r1, r2)
       return r2_type == RELOAD_FOR_OTHER_ADDRESS;
 
     case RELOAD_OTHER:
-      return r2_type != RELOAD_FOR_OTHER_ADDRESS;
+      return 1;
 
     default:
       abort ();
@@ -6508,7 +6501,7 @@ emit_reload_insns (insn)
 
      RELOAD_FOR_OTHER_ADDRESS reloads for input addresses.
 
-     RELOAD_OTHER reloads, output in ascending order by reload number.
+     RELOAD_OTHER reloads.
 
      For each operand, any RELOAD_FOR_INPUT_ADDRESS reloads followed by
      the RELOAD_FOR_INPUT reload for the operand.
