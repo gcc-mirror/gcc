@@ -1233,7 +1233,7 @@ output_prolog (file, size)
       fprintf (file, "\tlda $30,-%d($4)\n", leftover);
 
       if (leftover > 4096)
-	fprintf (file, "\tldq $2,%d(sp)\n", leftover - 4096);
+	fprintf (file, "\tldq $2,%d($30)\n", leftover - 4096);
     }
 
   /* Describe our frame.  */
