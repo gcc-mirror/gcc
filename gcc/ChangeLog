@@ -1,3 +1,7 @@
+Sun Feb  7 15:37:10 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.h (DECL_P): New macro.
+
 Sun Feb 7 01:15:04 PST 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
