@@ -583,6 +583,7 @@ if [ -r ${LIB}/$file ]; then
 fi
 
 # Check for superfluous `static' (in Ultrix 4.2)
+# On Ultrix 4.3, includes of other files (r3_cpu.h,r4_cpu.h) is broken.
 file=machine/cpu.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/machine 2>/dev/null
@@ -592,8 +593,11 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
 fi
 
 if [ -r ${LIB}/$file ]; then
-  echo Fixing $file, superfluous static
-  sed -e 's/^static struct tlb_pid_state/struct tlb_pid_state/' ${LIB}/$file > ${LIB}/${file}.sed
+  echo Fixing $file, superfluous static and broken includes of other files.
+  sed -e 's/^static struct tlb_pid_state/struct tlb_pid_state/' \
+      -e 's/^#include "r3_cpu\.h"$/#include <machine\/r3_cpu\.h>/' \
+      -e 's/^#include "r4_cpu\.h"$/#include <machine\/r4_cpu\.h>/' \
+      ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm ${LIB}/$file
@@ -601,7 +605,8 @@ if [ -r ${LIB}/$file ]; then
 # This file has an alternative name, mips/cpu.h.  Fix that name, too.
     if cmp machine/cpu.h mips/cpu.h > /dev/null 2>&1; then
       mkdir ${LIB}/mips 2>&-
-      ln ${LIB}/$file ${LIB}/mips/cpu.h 
+# Don't remove the file first, they may be the same file!
+      ln ${LIB}/$file ${LIB}/mips/cpu.h > /dev/null 2>&1
     fi
   fi
 fi
