@@ -142,7 +142,7 @@ repo_template_used (t)
   if (! IDENTIFIER_REPO_USED (id))
     {
       IDENTIFIER_REPO_USED (id) = 1;
-      pending_repo = perm_tree_cons (NULL_TREE, id, pending_repo);
+      pending_repo = tree_cons (NULL_TREE, id, pending_repo);
     }
 }
 
@@ -156,7 +156,7 @@ repo_vtable_used (t)
   if (! flag_use_repository)
     return;
 
-  pending_repo = perm_tree_cons (NULL_TREE, t, pending_repo);
+  pending_repo = tree_cons (NULL_TREE, t, pending_repo);
 }
 
 /* Note that an inline with external linkage has been used, and offer to
@@ -176,7 +176,7 @@ repo_inline_used (fn)
       return;
     }
 
-  pending_repo = perm_tree_cons (NULL_TREE, fn, pending_repo);
+  pending_repo = tree_cons (NULL_TREE, fn, pending_repo);
 }
 
 /* Note that a particular typeinfo node has been used, and offer to
@@ -347,7 +347,7 @@ init_repo (filename)
 	    else
 	      orig = NULL_TREE;
 
-	    original_repo = perm_tree_cons (orig, id, original_repo);
+	    original_repo = tree_cons (orig, id, original_repo);
 	  }
 	  break;
 	default:

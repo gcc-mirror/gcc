@@ -2833,7 +2833,7 @@ build_x_function_call (function, params, decl)
 	function = TREE_OPERAND (function, 1);
 
       function = get_member_function_from_ptrfunc (&decl_addr, function);
-      params = expr_tree_cons (NULL_TREE, decl_addr, params);
+      params = tree_cons (NULL_TREE, decl_addr, params);
       return build_function_call (function, params);
     }
 
@@ -2884,7 +2884,7 @@ build_x_function_call (function, params, decl)
 	}
       else
 	decl = build_c_cast (ctypeptr, decl);
-      params = expr_tree_cons (NULL_TREE, decl, params);
+      params = tree_cons (NULL_TREE, decl, params);
     }
 
   return build_function_call (function, params);
@@ -3260,14 +3260,14 @@ convert_arguments (typelist, values, fndecl, flags)
 	  if (parmval == error_mark_node)
 	    return error_mark_node;
 
-	  result = expr_tree_cons (NULL_TREE, parmval, result);
+	  result = tree_cons (NULL_TREE, parmval, result);
 	}
       else
 	{
 	  if (TREE_CODE (TREE_TYPE (val)) == REFERENCE_TYPE)
 	    val = convert_from_reference (val);
 
-	  result = expr_tree_cons (NULL_TREE,
+	  result = tree_cons (NULL_TREE,
 				   convert_arg_to_ellipsis (val),
 				   result);
 	}
@@ -3291,7 +3291,7 @@ convert_arguments (typelist, values, fndecl, flags)
 	      if (parmval == error_mark_node)
 		return error_mark_node;
 
-	      result = expr_tree_cons (0, parmval, result);
+	      result = tree_cons (0, parmval, result);
 	      typetail = TREE_CHAIN (typetail);
 	      /* ends with `...'.  */
 	      if (typetail == NULL_TREE)
@@ -5155,7 +5155,7 @@ build_x_compound_expr (list)
   result = build_opfncall (COMPOUND_EXPR, LOOKUP_NORMAL,
 			   TREE_VALUE (list), TREE_VALUE (rest), NULL_TREE);
   if (result)
-    return build_x_compound_expr (expr_tree_cons (NULL_TREE, result,
+    return build_x_compound_expr (tree_cons (NULL_TREE, result,
 						  TREE_CHAIN (rest)));
 
   if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)))
@@ -5174,7 +5174,7 @@ build_x_compound_expr (list)
 #endif
 
   return build_compound_expr
-    (expr_tree_cons (NULL_TREE, TREE_VALUE (list),
+    (tree_cons (NULL_TREE, TREE_VALUE (list),
 		     build_expr_list (NULL_TREE,
 				      build_x_compound_expr (rest))));
 }
@@ -6182,18 +6182,18 @@ build_ptrmemfunc1 (type, delta, idx, pfn, delta2)
   if (pfn)
     {
       u = build_nt (CONSTRUCTOR, NULL_TREE,
-		    expr_tree_cons (pfn_identifier, pfn, NULL_TREE));
+		    tree_cons (pfn_identifier, pfn, NULL_TREE));
     }
   else
     {
       u = build_nt (CONSTRUCTOR, NULL_TREE,
-		    expr_tree_cons (delta2_identifier, delta2, NULL_TREE));
+		    tree_cons (delta2_identifier, delta2, NULL_TREE));
     }
 
   u = build_nt (CONSTRUCTOR, NULL_TREE,
-		expr_tree_cons (NULL_TREE, delta,
-			   expr_tree_cons (NULL_TREE, idx,
-				      expr_tree_cons (NULL_TREE, u, NULL_TREE))));
+		tree_cons (NULL_TREE, delta,
+			   tree_cons (NULL_TREE, idx,
+				      tree_cons (NULL_TREE, u, NULL_TREE))));
 
   return digest_init (type, u, (tree*)0);
 #else
@@ -6212,14 +6212,14 @@ build_ptrmemfunc1 (type, delta, idx, pfn, delta2)
     {
       allconstant = TREE_CONSTANT (pfn);
       allsimple = !! initializer_constant_valid_p (pfn, TREE_TYPE (pfn));
-      u = expr_tree_cons (pfn_field, pfn, NULL_TREE);
+      u = tree_cons (pfn_field, pfn, NULL_TREE);
     }
   else
     {
       delta2 = convert_and_check (delta_type_node, delta2);
       allconstant = TREE_CONSTANT (delta2);
       allsimple = !! initializer_constant_valid_p (delta2, TREE_TYPE (delta2));
-      u = expr_tree_cons (delta2_field, delta2, NULL_TREE);
+      u = tree_cons (delta2_field, delta2, NULL_TREE);
     }
 
   delta = convert_and_check (delta_type_node, delta);
@@ -6231,9 +6231,9 @@ build_ptrmemfunc1 (type, delta, idx, pfn, delta2)
       && initializer_constant_valid_p (idx, TREE_TYPE (idx));
 
   u = build (CONSTRUCTOR, subtype, NULL_TREE, u);
-  u = expr_tree_cons (delta_field, delta,
-		 expr_tree_cons (idx_field, idx,
-			    expr_tree_cons (pfn_or_delta2_field, u, NULL_TREE)));
+  u = tree_cons (delta_field, delta,
+		 tree_cons (idx_field, idx,
+			    tree_cons (pfn_or_delta2_field, u, NULL_TREE)));
   u = build (CONSTRUCTOR, type, NULL_TREE, u);
   TREE_CONSTANT (u) = allconstant;
   TREE_STATIC (u) = allconstant && allsimple;

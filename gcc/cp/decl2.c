@@ -2151,7 +2151,7 @@ build_anon_union_vars (anon_decl, elems, static_p, external_p)
 
       /* If there's a cleanup to do, it belongs in the
 	 TREE_PURPOSE of the following TREE_LIST.  */
-      *elems = scratch_tree_cons (NULL_TREE, decl, *elems);
+      *elems = tree_cons (NULL_TREE, decl, *elems);
       TREE_TYPE (*elems) = type;
     }
   
@@ -2952,8 +2952,8 @@ start_static_storage_duration_function ()
 
   /* Create the parameters.  */
   parm_types = void_list_node;
-  parm_types = perm_tree_cons (NULL_TREE, integer_type_node, parm_types);
-  parm_types = perm_tree_cons (NULL_TREE, integer_type_node, parm_types);
+  parm_types = tree_cons (NULL_TREE, integer_type_node, parm_types);
+  parm_types = tree_cons (NULL_TREE, integer_type_node, parm_types);
   type = build_function_type (void_type_node, parm_types);
 
   /* Create the FUNCTION_DECL itself.  */
@@ -3986,7 +3986,7 @@ build_expr_from_tree (t)
 	chain = TREE_CHAIN (t);
 	if (chain && chain != void_type_node)
 	  chain = build_expr_from_tree (chain);
-	return expr_tree_cons (purpose, value, chain);
+	return tree_cons (purpose, value, chain);
       }
 
     case COMPONENT_REF:
@@ -4185,14 +4185,14 @@ add_using_namespace (user, used, indirect)
 
   /* Add used to the user's using list. */
   DECL_NAMESPACE_USING (user) 
-    = perm_tree_cons (used, namespace_ancestor (user, used), 
-		      DECL_NAMESPACE_USING (user));
+    = tree_cons (used, namespace_ancestor (user, used), 
+		 DECL_NAMESPACE_USING (user));
 
   TREE_INDIRECT_USING (DECL_NAMESPACE_USING (user)) = indirect;
 
   /* Add user to the used's users list. */
   DECL_NAMESPACE_USERS (used)
-    = perm_tree_cons (user, 0, DECL_NAMESPACE_USERS (used));
+    = tree_cons (user, 0, DECL_NAMESPACE_USERS (used));
 
   /* Recursively add all namespaces used. */
   for (t = DECL_NAMESPACE_USING (used); t; t = TREE_CHAIN (t))
@@ -4335,8 +4335,8 @@ lookup_using_namespace (name, val, usings, scope, flags, spacesp)
     if (TREE_VALUE (iter) == scope)
       {
 	if (spacesp)
-	  *spacesp = scratch_tree_cons (TREE_PURPOSE (iter), NULL_TREE,
-					*spacesp);
+	  *spacesp = tree_cons (TREE_PURPOSE (iter), NULL_TREE,
+				*spacesp);
 	val1 = binding_for_name (name, TREE_PURPOSE (iter));
 	/* Resolve ambiguities. */
 	val = ambiguous_decl (name, val, val1, flags);

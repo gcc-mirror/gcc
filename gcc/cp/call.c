@@ -162,7 +162,7 @@ build_field_call (basetype_path, instance_ptr, name, parms)
 	  else if (TREE_CODE (TREE_TYPE (TREE_TYPE (instance)))
 		   == METHOD_TYPE)
 	    return build_function_call
-	      (instance, expr_tree_cons (NULL_TREE, instance_ptr, parms));
+	      (instance, tree_cons (NULL_TREE, instance_ptr, parms));
 	}
     }
 
@@ -1992,10 +1992,10 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
 	  if (code == COND_EXPR)
 	    {
 	      if (real_lvalue_p (args[i]))
-		types[i] = scratch_tree_cons
+		types[i] = tree_cons
 		  (NULL_TREE, build_reference_type (argtypes[i]), types[i]);
 
-	      types[i] = scratch_tree_cons
+	      types[i] = tree_cons
 		(NULL_TREE, TYPE_MAIN_VARIANT (argtypes[i]), types[i]);
 	    }
 
@@ -2012,37 +2012,37 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
 		continue;
 
 	      if (code == COND_EXPR && TREE_CODE (type) == REFERENCE_TYPE)
-		types[i] = scratch_tree_cons (NULL_TREE, type, types[i]);
+		types[i] = tree_cons (NULL_TREE, type, types[i]);
 
 	      type = non_reference (type);
 	      if (i != 0 || ! ref1)
 		{
 		  type = TYPE_MAIN_VARIANT (type_decays_to (type));
 		  if (code == COND_EXPR && TREE_CODE (type) == ENUMERAL_TYPE)
-		    types[i] = scratch_tree_cons (NULL_TREE, type, types[i]);
+		    types[i] = tree_cons (NULL_TREE, type, types[i]);
 		  if (INTEGRAL_TYPE_P (type))
 		    type = type_promotes_to (type);
 		}
 
 	      if (! value_member (type, types[i]))
-		types[i] = scratch_tree_cons (NULL_TREE, type, types[i]);
+		types[i] = tree_cons (NULL_TREE, type, types[i]);
 	    }
 	}
       else
 	{
 	  if (code == COND_EXPR && real_lvalue_p (args[i]))
-	    types[i] = scratch_tree_cons
+	    types[i] = tree_cons
 	      (NULL_TREE, build_reference_type (argtypes[i]), types[i]);
 	  type = non_reference (argtypes[i]);
 	  if (i != 0 || ! ref1)
 	    {
 	      type = TYPE_MAIN_VARIANT (type_decays_to (type));
 	      if (code == COND_EXPR && TREE_CODE (type) == ENUMERAL_TYPE)
-		types[i] = scratch_tree_cons (NULL_TREE, type, types[i]);
+		types[i] = tree_cons (NULL_TREE, type, types[i]);
 	      if (INTEGRAL_TYPE_P (type))
 		type = type_promotes_to (type);
 	    }
-	  types[i] = scratch_tree_cons (NULL_TREE, type, types[i]);
+	  types[i] = tree_cons (NULL_TREE, type, types[i]);
 	}
     }
 
@@ -2256,8 +2256,8 @@ build_user_type_conversion_1 (totype, expr, flags)
       TREE_TYPE (t) = build_pointer_type (totype);
       args = build_scratch_list (NULL_TREE, expr);
       if (TYPE_USES_VIRTUAL_BASECLASSES (totype))
-	args = scratch_tree_cons (NULL_TREE, integer_one_node, args);
-      args = scratch_tree_cons (NULL_TREE, t, args);
+	args = tree_cons (NULL_TREE, integer_one_node, args);
+      args = tree_cons (NULL_TREE, t, args);
 
       ctors = TREE_VALUE (ctors);
     }
@@ -2269,7 +2269,7 @@ build_user_type_conversion_1 (totype, expr, flags)
 
       if (TREE_CODE (ctor) == TEMPLATE_DECL) 
 	{
-	  templates = scratch_tree_cons (NULL_TREE, ctor, templates);
+	  templates = tree_cons (NULL_TREE, ctor, templates);
 	  candidates = 
 	    add_template_candidate (candidates, ctor,
 				    NULL_TREE, args, NULL_TREE, flags,
@@ -2319,7 +2319,7 @@ build_user_type_conversion_1 (totype, expr, flags)
 
 	    if (TREE_CODE (fn) == TEMPLATE_DECL)
 	      {
-		templates = scratch_tree_cons (NULL_TREE, fn, templates);
+		templates = tree_cons (NULL_TREE, fn, templates);
 		candidates = 
 		  add_template_candidate (candidates, fn, NULL_TREE,
 					  args, totype, flags,
@@ -2476,7 +2476,7 @@ build_new_function_call (fn, args)
 
 	  if (TREE_CODE (t) == TEMPLATE_DECL)
 	    {
-	      templates = scratch_tree_cons (NULL_TREE, t, templates);
+	      templates = tree_cons (NULL_TREE, t, templates);
 	      candidates = add_template_candidate
 		(candidates, t, explicit_targs, args, NULL_TREE,
 		 LOOKUP_NORMAL, DEDUCE_CALL);  
@@ -2555,7 +2555,7 @@ build_object_call (obj, args)
   if (fns)
     {
       tree base = TREE_PURPOSE (fns);
-      mem_args = scratch_tree_cons (NULL_TREE, build_this (obj), args);
+      mem_args = tree_cons (NULL_TREE, build_this (obj), args);
 
       for (fns = TREE_VALUE (fns); fns; fns = OVL_NEXT (fns))
 	{
@@ -3139,10 +3139,10 @@ build_new_op (code, flags, arg1, arg2, arg3)
     arg2 = integer_zero_node;
 
   if (arg2 && arg3)
-    arglist = scratch_tree_cons (NULL_TREE, arg1, scratch_tree_cons
+    arglist = tree_cons (NULL_TREE, arg1, tree_cons
 		      (NULL_TREE, arg2, build_scratch_list (NULL_TREE, arg3)));
   else if (arg2)
-    arglist = scratch_tree_cons (NULL_TREE, arg1, build_scratch_list (NULL_TREE, arg2));
+    arglist = tree_cons (NULL_TREE, arg1, build_scratch_list (NULL_TREE, arg2));
   else
     arglist = build_scratch_list (NULL_TREE, arg1);
 
@@ -3155,7 +3155,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
       tree fn = OVL_CURRENT (fns);
       if (TREE_CODE (fn) == TEMPLATE_DECL)
 	{
-	  templates = scratch_tree_cons (NULL_TREE, fn, templates);
+	  templates = tree_cons (NULL_TREE, fn, templates);
 	  candidates 
 	    = add_template_candidate (candidates, fn, NULL_TREE,
 				      arglist, TREE_TYPE (fnname),
@@ -3177,7 +3177,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
   if (fns)
     {
       tree basetype = TREE_PURPOSE (fns);
-      mem_arglist = scratch_tree_cons (NULL_TREE, build_this (arg1), TREE_CHAIN (arglist));
+      mem_arglist = tree_cons (NULL_TREE, build_this (arg1), TREE_CHAIN (arglist));
       for (fns = TREE_VALUE (fns); fns; fns = OVL_NEXT (fns))
 	{
 	  tree fn = OVL_CURRENT (fns);
@@ -3191,7 +3191,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	  if (TREE_CODE (fn) == TEMPLATE_DECL)
 	    {
 	      /* A member template. */
-	      templates = scratch_tree_cons (NULL_TREE, fn, templates);
+	      templates = tree_cons (NULL_TREE, fn, templates);
 	      candidates 
 		= add_template_candidate (candidates, fn, NULL_TREE,
 					  this_arglist,  TREE_TYPE (fnname),
@@ -3521,7 +3521,7 @@ build_op_delete_call (code, addr, size, flags, placement)
       if (TREE_CODE (fns) == TREE_LIST)
 	/* Member functions.  */
 	enforce_access (TREE_PURPOSE (fns), fn);
-      return build_function_call (fn, expr_tree_cons (NULL_TREE, addr, args));
+      return build_function_call (fn, tree_cons (NULL_TREE, addr, args));
     }
 
   /* If we are doing placement delete we do nothing if we don't find a
@@ -3542,8 +3542,8 @@ build_op_delete_call (code, addr, size, flags, placement)
 	/* Member functions.  */
 	enforce_access (TREE_PURPOSE (fns), fn);
       return build_function_call
-	(fn, expr_tree_cons (NULL_TREE, addr,
-			     build_expr_list (NULL_TREE, size)));
+	(fn, tree_cons (NULL_TREE, addr,
+			build_expr_list (NULL_TREE, size)));
     }
 
   /* finish_function passes LOOKUP_SPECULATIVELY if we're in a
@@ -3628,8 +3628,8 @@ convert_like (convs, expr)
 
 	    args = build_scratch_list (NULL_TREE, expr);
 	    if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
-	      args = scratch_tree_cons (NULL_TREE, integer_one_node, args);
-	    args = scratch_tree_cons (NULL_TREE, t, args);
+	      args = tree_cons (NULL_TREE, integer_one_node, args);
+	    args = tree_cons (NULL_TREE, t, args);
 	  }
 	else
 	  args = build_this (expr);
@@ -3856,12 +3856,12 @@ build_over_call (cand, args, flags)
      resolution, and must be of the proper type.  */
   if (DECL_CONSTRUCTOR_P (fn))
     {
-      converted_args = expr_tree_cons (NULL_TREE, TREE_VALUE (arg), converted_args);
+      converted_args = tree_cons (NULL_TREE, TREE_VALUE (arg), converted_args);
       arg = TREE_CHAIN (arg);
       parm = TREE_CHAIN (parm);
       if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
 	{
-	  converted_args = expr_tree_cons
+	  converted_args = tree_cons
 	    (NULL_TREE, TREE_VALUE (arg), converted_args);
 	  arg = TREE_CHAIN (arg);
 	  parm = TREE_CHAIN (parm);
@@ -3885,7 +3885,7 @@ build_over_call (cand, args, flags)
 	 optimize accordingly.  */
       my_friendly_assert (TREE_CODE (parmtype) == POINTER_TYPE, 19990811);
       t = convert_pointer_to_real (TREE_TYPE (parmtype), TREE_VALUE (arg));
-      converted_args = expr_tree_cons (NULL_TREE, t, converted_args);
+      converted_args = tree_cons (NULL_TREE, t, converted_args);
       parm = TREE_CHAIN (parm);
       arg = TREE_CHAIN (arg);
       ++i;
@@ -3933,24 +3933,24 @@ build_over_call (cand, args, flags)
 	      || TREE_CODE (type) == ENUMERAL_TYPE)
 	  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 	val = default_conversion (val);
-      converted_args = expr_tree_cons (NULL_TREE, val, converted_args);
+      converted_args = tree_cons (NULL_TREE, val, converted_args);
     }
 
   /* Default arguments */
   for (; parm && parm != void_list_node; parm = TREE_CHAIN (parm))
     converted_args 
-      = expr_tree_cons (NULL_TREE, 
-			convert_default_arg (TREE_VALUE (parm), 
-					     TREE_PURPOSE (parm),
-					     fn),
-			converted_args);
+      = tree_cons (NULL_TREE, 
+		   convert_default_arg (TREE_VALUE (parm), 
+					TREE_PURPOSE (parm),
+					fn),
+		   converted_args);
 
   /* Ellipsis */
   for (; arg; arg = TREE_CHAIN (arg))
     converted_args 
-      = expr_tree_cons (NULL_TREE,
-			convert_arg_to_ellipsis (TREE_VALUE (arg)),
-			converted_args);
+      = tree_cons (NULL_TREE,
+		   convert_arg_to_ellipsis (TREE_VALUE (arg)),
+		   converted_args);
 
   converted_args = nreverse (converted_args);
 
@@ -4206,9 +4206,9 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	  && ! (flags & LOOKUP_HAS_IN_CHARGE))
 	{
 	  flags |= LOOKUP_HAS_IN_CHARGE;
-	  args = scratch_tree_cons (NULL_TREE, integer_one_node, args);
+	  args = tree_cons (NULL_TREE, integer_one_node, args);
 	}
-      mem_args = scratch_tree_cons (NULL_TREE, instance_ptr, args);
+      mem_args = tree_cons (NULL_TREE, instance_ptr, args);
       for (; fn; fn = OVL_NEXT (fn))
 	{
 	  tree t = OVL_CURRENT (fn);
@@ -4227,7 +4227,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	  if (TREE_CODE (t) == TEMPLATE_DECL)
 	    {
 	      /* A member template. */
-	      templates = scratch_tree_cons (NULL_TREE, t, templates);
+	      templates = tree_cons (NULL_TREE, t, templates);
 	      candidates = 
 		add_template_candidate (candidates, t, explicit_targs,
 					this_arglist,
@@ -4774,9 +4774,9 @@ static void
 add_warning (winner, loser)
      struct z_candidate *winner, *loser;
 {
-  winner->warnings = expr_tree_cons (NULL_PTR,
-				     build_expr_ptr_wrapper (loser),
-				     winner->warnings);
+  winner->warnings = tree_cons (NULL_PTR,
+				build_expr_ptr_wrapper (loser),
+				winner->warnings);
 }
 
 /* Returns true iff functions are equivalent. Equivalent functions are

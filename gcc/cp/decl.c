@@ -2687,7 +2687,7 @@ maybe_process_template_type_declaration (type, globalize, b)
 		 that won't happen below because B is not the class
 		 binding level, but is instead the pseudo-global level.  */
 	      b->level_chain->tags = 
-		saveable_tree_cons (name, type, b->level_chain->tags);
+		tree_cons (name, type, b->level_chain->tags);
 	      if (TYPE_SIZE (current_class_type) == NULL_TREE)
 		CLASSTYPE_TAGS (current_class_type) = b->level_chain->tags;
 	    }
@@ -2737,10 +2737,7 @@ pushtag (name, type, globalize)
 	 || (globalize && b->parm_flag == 2))
     b = b->level_chain;
 
-  if (toplevel_bindings_p ())
-    b->tags = perm_tree_cons (name, type, b->tags);
-  else
-    b->tags = saveable_tree_cons (name, type, b->tags);
+  b->tags = tree_cons (name, type, b->tags);
 
   if (name)
     {
@@ -4401,7 +4398,7 @@ push_using_directive (used)
 
   ancestor = namespace_ancestor (current_decl_namespace (), used);
   ud = current_binding_level->using_directives;
-  ud = perm_tree_cons (used, ancestor, ud);
+  ud = tree_cons (used, ancestor, ud);
   current_binding_level->using_directives = ud;
   return ud;
 }
@@ -5483,7 +5480,7 @@ unqualified_namespace_lookup (name, flags, spacesp)
   for (; !val; scope = CP_DECL_CONTEXT (scope))
     {
       if (spacesp)
-	*spacesp = scratch_tree_cons (scope, NULL_TREE, *spacesp);
+	*spacesp = tree_cons (scope, NULL_TREE, *spacesp);
       val = binding_for_name (name, scope);
 
       /* Initialize binding for this context. */
@@ -8185,9 +8182,9 @@ expand_static_init (decl, init)
 	  mark_addressable (cleanup);
 	  cleanup = build_unary_op (ADDR_EXPR, cleanup, 0);
 	  fcall = build_function_call (Atexit, 
-				       expr_tree_cons (NULL_TREE, 
-						       cleanup, 
-						       NULL_TREE));
+				       tree_cons (NULL_TREE, 
+						  cleanup, 
+						  NULL_TREE));
 	  finish_expr_stmt (fcall);
 	}
 
@@ -8205,7 +8202,7 @@ expand_static_init (decl, init)
 	 currently in the temporary obstack.  */
       if (!TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
 	preserve_initializer ();
-      static_aggregates = perm_tree_cons (init, decl, static_aggregates);
+      static_aggregates = tree_cons (init, decl, static_aggregates);
     }
 }
 
@@ -8535,9 +8532,9 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	     the information in the TEMPLATE_ID_EXPR.  */
 	  SET_DECL_IMPLICIT_INSTANTIATION (decl);
 	  DECL_TEMPLATE_INFO (decl)
-	    = perm_tree_cons (TREE_OPERAND (orig_declarator, 0),
-			      TREE_OPERAND (orig_declarator, 1),
-			      NULL_TREE);
+	    = tree_cons (TREE_OPERAND (orig_declarator, 0),
+			 TREE_OPERAND (orig_declarator, 1),
+			 NULL_TREE);
 
 	  if (has_default_arg)
 	    {
@@ -11614,7 +11611,7 @@ grokparms (first_parm, funcdef_flag)
 		  TREE_CHAIN (list_node) = NULL_TREE;
 		}
 	      else
-		list_node = saveable_tree_cons (init, type, NULL_TREE);
+		list_node = tree_cons (init, type, NULL_TREE);
 	      if (result == NULL_TREE)
 		{
 		  result = list_node;
@@ -12796,7 +12793,7 @@ build_enumerator (name, value, type)
      enum_overflow = tree_int_cst_lt (enum_next_value, value);
    }
 
-  result = saveable_tree_cons (name, decl, NULL_TREE);
+  result = tree_cons (name, decl, NULL_TREE);
   return result;
 }
 
@@ -14034,9 +14031,9 @@ finish_function (lineno, flags)
     }
 
   if (DECL_STATIC_CONSTRUCTOR (fndecl))
-    static_ctors = perm_tree_cons (NULL_TREE, fndecl, static_ctors);
+    static_ctors = tree_cons (NULL_TREE, fndecl, static_ctors);
   if (DECL_STATIC_DESTRUCTOR (fndecl))
-    static_dtors = perm_tree_cons (NULL_TREE, fndecl, static_dtors);
+    static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
 
   if (! nested)
     {
@@ -14296,7 +14293,7 @@ maybe_build_cleanup_1 (decl, auto_delete)
 
       if (TYPE_USES_VIRTUAL_BASECLASSES (type)
 	  && ! TYPE_HAS_DESTRUCTOR (type))
-	rval = build_compound_expr (expr_tree_cons (NULL_TREE, rval,
+	rval = build_compound_expr (tree_cons (NULL_TREE, rval,
 					       build_expr_list (NULL_TREE, build_vbase_delete (type, decl))));
 
       if (TREE_CODE (decl) != PARM_DECL)

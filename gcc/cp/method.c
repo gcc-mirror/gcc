@@ -2140,9 +2140,9 @@ emit_thunk (thunk_fndecl)
     t = build_int_2 (delta, -1 * (delta < 0));
     TREE_TYPE (t) = signed_type (sizetype);
     t = fold (build (PLUS_EXPR, TREE_TYPE (a), a, t));
-    t = expr_tree_cons (NULL_TREE, t, NULL_TREE);
+    t = tree_cons (NULL_TREE, t, NULL_TREE);
     for (a = TREE_CHAIN (a); a; a = TREE_CHAIN (a))
-      t = expr_tree_cons (NULL_TREE, a, t);
+      t = tree_cons (NULL_TREE, a, t);
     t = nreverse (t);
     t = build_call (function, TREE_TYPE (TREE_TYPE (function)), t);
     c_expand_return (t);

@@ -2751,9 +2751,9 @@ handle_cp_pragma (pname)
 	}
 
       pending_vtables
-	= perm_tree_cons (NULL_TREE,
-			  get_identifier (TREE_STRING_POINTER (yylval.ttype)),
-			  pending_vtables);
+	= tree_cons (NULL_TREE,
+		     get_identifier (TREE_STRING_POINTER (yylval.ttype)),
+		     pending_vtables);
       token = real_yylex ();
       if (token != END_OF_LINE)
 	warning ("trailing characters ignored");

@@ -1333,14 +1333,12 @@ lookup_field_r (binfo, data)
 	      /* This is the first time we noticed an ambiguity.  Add
 		 what we previously thought was a reasonable candidate
 		 to the list.  */
-	      lfi->ambiguous = scratch_tree_cons (NULL_TREE, lfi->rval,
-						  NULL_TREE);
+	      lfi->ambiguous = tree_cons (NULL_TREE, lfi->rval, NULL_TREE);
 	      TREE_TYPE (lfi->ambiguous) = error_mark_node;
 	    }
 
 	  /* Add the new value.  */
-	  lfi->ambiguous = scratch_tree_cons (NULL_TREE, nval, 
-					      lfi->ambiguous);
+	  lfi->ambiguous = tree_cons (NULL_TREE, nval, lfi->ambiguous);
 	  TREE_TYPE (lfi->ambiguous) = error_mark_node;
 	  lfi->errstr = "request for member `%D' is ambiguous";
 	}
@@ -1484,7 +1482,7 @@ lookup_member (xbasetype, name, protect, want_type)
 
   if (rval && is_overloaded_fn (rval)) 
     {
-      rval = scratch_tree_cons (basetype_path, rval, NULL_TREE);
+      rval = tree_cons (basetype_path, rval, NULL_TREE);
       SET_BASELINK_P (rval);
     }
 
@@ -1774,10 +1772,9 @@ get_virtuals_named_this_r (binfo, data)
   idx = lookup_fnfields_here (BINFO_TYPE (binfo), gvnti->name);
   if (idx >= 0)
     gvnti->fields
-      = scratch_tree_cons (binfo, 
-			   TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type),
-					 idx),
-			   gvnti->fields);
+      = tree_cons (binfo, 
+		   TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx),
+		   gvnti->fields);
 
   return NULL_TREE;
 }
@@ -3150,8 +3147,6 @@ reinit_search_statistics ()
 #endif /* GATHER_STATISTICS */
 }
 
-#define scratch_tree_cons expr_tree_cons
-
 static tree
 add_conversions (binfo, data)
      tree binfo;
@@ -3178,7 +3173,7 @@ add_conversions (binfo, data)
       /* Make sure we don't already have this conversion.  */
       if (! IDENTIFIER_MARKED (name))
 	{
-	  *conversions = scratch_tree_cons (binfo, tmp, *conversions);
+	  *conversions = tree_cons (binfo, tmp, *conversions);
 	  IDENTIFIER_MARKED (name) = 1;
 	}
     }

@@ -3709,7 +3709,6 @@ extern tree cp_build_qualified_type_real        PROTO((tree, int, int));
   cp_build_qualified_type_real ((TYPE), (QUALS), /*complain=*/1)
 
 #define scratchalloc expralloc
-#define scratch_tree_cons expr_tree_cons
 #define build_scratch_list build_expr_list
 #define make_scratch_vec make_temp_vec
 #define push_scratch_obstack push_expression_obstack
