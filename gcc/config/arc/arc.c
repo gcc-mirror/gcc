@@ -94,7 +94,6 @@ static tree arc_handle_interrupt_attribute PARAMS ((tree *, tree, tree, int, boo
 static bool arc_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void arc_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void arc_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-static void arc_encode_section_info PARAMS ((tree, int));
 static void arc_internal_label PARAMS ((FILE *, const char *, unsigned long));
 static bool arc_rtx_costs PARAMS ((rtx, int, int, int *));
 static int arc_address_cost PARAMS ((rtx));
@@ -113,8 +112,6 @@ static int arc_address_cost PARAMS ((rtx));
 #define TARGET_ASM_FUNCTION_EPILOGUE arc_output_function_epilogue
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE arc_attribute_table
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO arc_encode_section_info
 #undef TARGET_ASM_INTERNAL_LABEL
 #define TARGET_ASM_INTERNAL_LABEL arc_internal_label
 
@@ -1194,7 +1191,7 @@ arc_assemble_integer (x, size, aligned_p)
      int aligned_p;
 {
   if (size == UNITS_PER_WORD && aligned_p
-      && ((GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FLAG (x))
+      && ((GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (x))
 	  || GET_CODE (x) == LABEL_REF))
     {
       fputs ("\t.word\t%st(", asm_out_file);
@@ -1777,7 +1774,7 @@ arc_print_operand (file, x, code)
 	output_operand_lossage ("invalid operand to %%R code");
       return;
     case 'S' :
-      if ((GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FLAG (x))
+      if ((GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (x))
 	  || GET_CODE (x) == LABEL_REF)
 	{
 	  fprintf (file, "%%st(");
@@ -1902,7 +1899,7 @@ arc_print_operand_address (file, addr)
       fputs (reg_names[REGNO (addr)], file);
       break;
     case SYMBOL_REF :
-      if (/*???*/ 0 && SYMBOL_REF_FLAG (addr))
+      if (/*???*/ 0 && SYMBOL_REF_FUNCTION_P (addr))
 	{
 	  fprintf (file, "%%st(");
 	  output_addr_const (file, addr);
@@ -2412,20 +2409,6 @@ arc_va_arg (valist, type)
   expand_expr (incr, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   return addr_rtx;
-}
-
-/* On the ARC, function addresses are not the same as normal addresses.
-   Branch to absolute address insns take an address that is right-shifted
-   by 2.  We encode the fact that we have a function here, and then emit a
-   special assembler op when outputting the address.  */
-
-static void
-arc_encode_section_info (decl, first)
-     tree decl;
-     int first ATTRIBUTE_UNUSED;
-{
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }
 
 /* This is how to output a definition of an internal numbered label where
