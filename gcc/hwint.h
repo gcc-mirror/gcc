@@ -72,11 +72,14 @@
 #ifndef HOST_WIDE_INT_PRINT_DEC
 # if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
 #  define HOST_WIDE_INT_PRINT_DEC "%d"
+#  define HOST_WIDE_INT_PRINT_DEC_C "%d"
 # else
 #  if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
 #   define HOST_WIDE_INT_PRINT_DEC "%ld"
+#   define HOST_WIDE_INT_PRINT_DEC_C "%ldL"
 #  else
 #   define HOST_WIDE_INT_PRINT_DEC "%lld"
+#   define HOST_WIDE_INT_PRINT_DEC_C "%lldLL"
 #  endif
 # endif
 #endif /* ! HOST_WIDE_INT_PRINT_DEC */
