@@ -1,3 +1,8 @@
+2000-04-14  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (find_auto_inc): Don't autoinc eliminable registers.
+	If the original source is dead in the incr insn, it's dead now.
+
 Fri Apr 14 07:40:32 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stor-layout.c (layout_decl): Properly compare KNOWN_ALIGN to
