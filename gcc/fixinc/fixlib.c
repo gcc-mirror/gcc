@@ -24,6 +24,20 @@ Boston, MA 02111-1307, USA.  */
 
 #include "fixlib.h"
 
+void *
+must_malloc( siz )
+    size_t  siz;
+{
+  void*  res = malloc( siz );
+
+  if (res == (void*)NULL) {
+    fprintf( stderr, "fixincl failed to malloc %d bytes\n", siz );
+    exit( 3 );
+  }
+
+  return res;
+}
+
 /* * * * * * * * * * * * *
  
    load_file_data loads all the contents of a file into malloc-ed memory.

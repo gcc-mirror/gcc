@@ -733,13 +733,13 @@ fix = {
     files    = stropts.h;
     files    = time.h;
     files    = unistd.h;
+
     sed      =
-        "s/^[ \t]*#[ \t]*define[ \t]+\\([^(]*\\)\\(([^)]*)\\)[ \t]*"
-               "\\(_.\\)\\1\\2[ \t]*$/#define \\1 \\3\\1/";
+        "s/^[ \t]*#[ \t]*define[ \t][ \t]*\\([^(]*\\)\\(([^)]*)\\)[ \t]*"
+               "\\(_.*\\)\\1\\2[ \t]*$/#define \\1 \\3\\1/";
 
     test_text = '#pragma extern_prefix "_FOO"'"\n"
                 "#define something(x,y,z) _FOOsomething(x,y,z)\n"
-                "#define otherwise(x,y,z) BAR_Something(x,y,z)\n"
                 "#define mumble _FOOmumble";
 };
 
@@ -748,12 +748,12 @@ fix = {
  *  check for broken assert.h that needs stdio.h
  */
 fix = {
-    hackname = broken_assert_stdio;
-    files    = assert.h;
-    select   = stderr;
-    bypass   = "include.*stdio\\.h";
-    sed      = "1i\\\n"
-               "#include <stdio.h>\n";
+    hackname  = broken_assert_stdio;
+    files     = assert.h;
+    select    = stderr;
+    bypass    = "include.*stdio\\.h";
+    c_fix     = wrap;
+    c_fix_arg = "#include <stdio.h>\n";
     test_text = "extern FILE* stderr;";
 };
 
@@ -762,14 +762,14 @@ fix = {
  *  check for broken assert.h that needs stdlib.h
  */
 fix = {
-    hackname = broken_assert_stdlib;
-    files    = assert.h;
-    select   = 'exit *\(|abort *\(';
-    bypass   = "include.*stdlib\\.h";
-    sed      = "1i\\\n"
-               "#ifdef __cplusplus\\\n"
-               "#include <stdlib.h>\\\n"
-               "#endif /* BROKEN_ASSERT_STDLIB_CHECK fix stamp */\n";
+    hackname  = broken_assert_stdlib;
+    files     = assert.h;
+    select    = 'exit *\(|abort *\(';
+    bypass    = "include.*stdlib\\.h";
+    c_fix     = wrap;
+    c_fix_arg = "#ifdef __cplusplus\n"
+                "#include <stdlib.h>\n"
+                "#endif\n";
     test_text = "extern void exit ( int );";
 };
 
@@ -861,18 +861,17 @@ fix = {
     hackname = cxx_unready;
     files    = sys/mman.h;
     files    = rpc/types.h;
-    select   = '[^#]+malloc.*;';  /* Should catch any form of a declaration
-				     but not mention within a macro.  */
+    select   = '[^#]+malloc.*;';  /* Catch any form of declaration
+				     not within a macro.  */
     bypass   = '"C"|__BEGIN_DECLS';
 
-    sed      = "1i\\\n"
-               "#ifdef __cplusplus\\\n"
-               "extern \"C\" {\\\n"
-               "#endif /* CXX_UNREADY_CHECK */\\\n\n";
-    sed      = "$a\\\n"
-               "#ifdef __cplusplus\\\n"
-               "}\\\n"
-               "#endif /* CXX_UNREADY_CHECK */\n";
+    c_fix     = wrap;
+    c_fix_arg = "#ifdef __cplusplus\n"
+                "extern \"C\" {\n"
+                "#endif\n";
+    c_fix_arg = "#ifdef __cplusplus\n"
+                "}\n"
+                "#endif\n";
     test_text = "extern void* malloc( size_t );";
 };
 
@@ -1310,18 +1309,21 @@ fix = {
  *  additional references to struct exception.
  */
 fix = {
-    hackname = math_exception;
-    files    = math.h;
-    select   = "struct exception";
-    bypass   = "We have a problem when using C\\+\\+";
-    sed      = "1i\\\n"
-               "#ifdef __cplusplus\\\n"
-               "#define exception __math_exception\\\n"
-               "#endif\n";
-    sed      = "$a\\\n"
-               "#ifdef __cplusplus\\\n"
-               "#undef exception\\\n"
-               "#endif\n";
+    hackname  = math_exception;
+    files     = math.h;
+    select    = "struct exception";
+    bypass    = "We have a problem when using C\\+\\+";
+    c_fix     = wrap;
+
+    c_fix_arg = "#ifdef __cplusplus\n"
+                "#define exception __math_exception\n"
+                "#endif\n";
+
+    c_fix_arg = "#ifdef __cplusplus\n"
+                "#undef exception\n"
+                "#endif\n";
+
+    test_text = "typedef struct exception t_math_exception;";
 };
 
 fix = {
@@ -1687,11 +1689,11 @@ fix = {
     files    = stdio.h;
     bypass   = "include.*(stdarg\.h|machine/ansi\.h)";
 
-    sed      = '1i\\
-\#define __need___va_list\\
-\#include <stdarg.h>
-';
+    c_fix     = wrap;
 
+    c_fix_arg = "#define __need___va_list\n#include <stdarg.h>\n";
+
+    test_text = "";
 };
 
 
@@ -2038,8 +2040,11 @@ fix = {
     files    = sys/cmn_err.h;
     files    = sys/kdebugger.h;
     bypass   = '_KERNEL';
-    sed      = "1i\\\n#ifdef _KERNEL";
-    sed      = "$a\\\n#endif /* _KERNEL */";
+    c_fix     = wrap;
+
+    c_fix_arg = "#ifdef _KERNEL\n";
+    c_fix_arg = "#endif /* _KERNEL */\n";
+    test_text = "";
 };
 #endif
 

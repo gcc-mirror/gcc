@@ -19,7 +19,7 @@ Here are the rules:
 2.  Use the "FIX_PROC_HEAD()" macro _with_ the "_fix" suffix
     (I cannot use the ## magic from ANSI C) for defining your entry point.
 
-3.  Put your test name into the FIXUP_TABLE
+3.  Put your test name into the FIXUP_TABLE.
 
 4.  Do not read anything from stdin.  It is closed.
 
@@ -27,17 +27,16 @@ Here are the rules:
     In such an event, call "exit(1)".
 
 6.  You have access to the fixDescList entry for the fix in question.
-    This may be useful, for example, if there are pre-compiled
-    selection expressions stored there.
+    This may be useful, for example, if there are interesting strings
+    or pre-compiled regular expressions stored there.
 
-    For example, you may do this if you know that the first 
-    test contains a useful regex.  This is okay because, remember,
-    this code perforce works closely with the inclhack.def fixes!!
+    It is also possible to access fix descriptions by using the
+    index of a known fix, "my_fix_name" for example:
 
-    tFixDesc*  pMyDesc = fixDescList + MY_FIX_NAME_FIXIDX;
-    tTestDesc* pTestList = pMyDesc->p_test_desc;
+        tFixDesc*  p_desc  = fixDescList + MY_FIX_NAME_FIXIDX;
+        tTestDesc* p_tlist = p_desc->p_test_desc;
 
-    regexec (pTestList->p_test_regex, ...)
+        regexec (p_tlist->p_test_regex, ...)
 
 = = = = = = = = = = = = = = = = = = = = = = = = =
 
@@ -66,10 +65,11 @@ typedef struct {
 } fix_entry_t;
 
 #define FIXUP_TABLE \
-  _FT_( "format",           format_fix ) \
-  _FT_( "char_macro_use",   char_macro_use_fix ) \
   _FT_( "char_macro_def",   char_macro_def_fix ) \
-  _FT_( "machine_name",     machine_name_fix )
+  _FT_( "char_macro_use",   char_macro_use_fix ) \
+  _FT_( "format",           format_fix )         \
+  _FT_( "machine_name",     machine_name_fix )   \
+  _FT_( "wrap",             wrap_fix )
 
 
 #define FIX_PROC_HEAD( fix ) \
@@ -234,6 +234,7 @@ FIX_PROC_HEAD( format_fix )
     fputs (text, stdout);
 }
 
+
 /* Scan the input file for all occurrences of text like this:
 
    #define TIOCCONS _IO(T, 12)
@@ -332,7 +333,7 @@ FIX_PROC_HEAD( char_macro_use_fix )
    you provide in the STR argument.  */
 FIX_PROC_HEAD( char_macro_def_fix )
 {
-  /* This regexp looks for any traditional-syntax #define (# in column 1).  */
+  /* This regexp looks for any traditional-syntax #define (# in col 1). */
   static const char pat[] =
     "^#[ \t]*define[ \t]+";
   static regex_t re;
@@ -515,6 +516,57 @@ FIX_PROC_HEAD( machine_name_fix )
  done:
 #endif
   fputs (text, stdout);
+}
+
+
+FIX_PROC_HEAD( wrap_fix )
+{
+  char   z_fixname[ 64 ];
+  tCC*   pz_src  = p_fixd->fix_name;
+  tCC*   pz_name = z_fixname;
+  char*  pz_dst  = z_fixname;
+  size_t len     = 0;
+
+  for (;;) {
+    char ch = *(pz_src++);
+
+    if (islower(ch))
+      *(pz_dst++) = toupper( ch );
+
+    else if (isalnum( ch ))
+      *(pz_dst++) = ch;
+
+    else if (ch == NUL) {
+      *(pz_dst++) = ch;
+      break;
+    }
+    else
+      *(pz_dst++) = '_';
+
+    if (++len >= sizeof( z_fixname )) {
+      void* p = must_malloc( len + strlen( pz_src ) + 1 );
+      memcpy( p, (void*)z_fixname, len );
+      pz_name = (tCC*)p;
+      pz_dst  = (char*)pz_name + len;
+    }
+  }
+
+  printf( "#ifndef FIXINC_%s_CHECK\n", pz_name );
+  printf( "#define FIXINC_%s_CHECK 1\n\n", pz_name );
+
+  if (p_fixd->patch_args[1] == (tCC*)NULL)
+    fputs( text, stdout );
+
+  else {
+    fputs( p_fixd->patch_args[1], stdout );
+    fputs( text, stdout );
+    if (p_fixd->patch_args[2] != (tCC*)NULL)
+      fputs( p_fixd->patch_args[2], stdout );
+  }
+
+  printf( "\n#endif  /* FIXINC_%s_CHECK */\n", pz_name );
+  if (pz_name != z_fixname)
+    free( (void*)pz_name );
 }
 
 

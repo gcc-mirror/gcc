@@ -1173,7 +1173,7 @@ tTestDesc aBad_LvalTests[] = {
  *  Fix Command Arguments for Bad_Lval
  */
 const char* apzBad_LvalPatch[] = { "sed",
-    "-e", "s/^[ \t]*#[ \t]*define[ \t]+\\([^(]*\\)\\(([^)]*)\\)[ \t]*\\(_.\\)\\1\\2[ \t]*$/#define \\1 \\3\\1/",
+    "-e", "s/^[ \t]*#[ \t]*define[ \t][ \t]*\\([^(]*\\)\\(([^)]*)\\)[ \t]*\\(_.*\\)\\1\\2[ \t]*$/#define \\1 \\3\\1/",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1214,9 +1214,9 @@ tTestDesc aBroken_Assert_StdioTests[] = {
 /*
  *  Fix Command Arguments for Broken_Assert_Stdio
  */
-const char* apzBroken_Assert_StdioPatch[] = { "sed",
-    "-e", "1i\\\n\
-#include <stdio.h>\n",
+const char* apzBroken_Assert_StdioPatch[] = {
+    "wrap",
+    "#include <stdio.h>\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1257,11 +1257,11 @@ tTestDesc aBroken_Assert_StdlibTests[] = {
 /*
  *  Fix Command Arguments for Broken_Assert_Stdlib
  */
-const char* apzBroken_Assert_StdlibPatch[] = { "sed",
-    "-e", "1i\\\n\
-#ifdef __cplusplus\\\n\
-#include <stdlib.h>\\\n\
-#endif /* BROKEN_ASSERT_STDLIB_CHECK fix stamp */\n",
+const char* apzBroken_Assert_StdlibPatch[] = {
+    "wrap",
+    "#ifdef __cplusplus\n\
+#include <stdlib.h>\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1466,16 +1466,14 @@ tTestDesc aCxx_UnreadyTests[] = {
 /*
  *  Fix Command Arguments for Cxx_Unready
  */
-const char* apzCxx_UnreadyPatch[] = { "sed",
-    "-e", "1i\\\n\
-#ifdef __cplusplus\\\n\
-extern \"C\" {\\\n\
-#endif /* CXX_UNREADY_CHECK */\\\n\
-\n",
-    "-e", "$a\\\n\
-#ifdef __cplusplus\\\n\
-}\\\n\
-#endif /* CXX_UNREADY_CHECK */\n",
+const char* apzCxx_UnreadyPatch[] = {
+    "wrap",
+    "#ifdef __cplusplus\n\
+extern \"C\" {\n\
+#endif\n",
+    "#ifdef __cplusplus\n\
+}\n\
+#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2468,14 +2466,13 @@ tTestDesc aMath_ExceptionTests[] = {
 /*
  *  Fix Command Arguments for Math_Exception
  */
-const char* apzMath_ExceptionPatch[] = { "sed",
-    "-e", "1i\\\n\
-#ifdef __cplusplus\\\n\
-#define exception __math_exception\\\n\
+const char* apzMath_ExceptionPatch[] = {
+    "wrap",
+    "#ifdef __cplusplus\n\
+#define exception __math_exception\n\
 #endif\n",
-    "-e", "$a\\\n\
-#ifdef __cplusplus\\\n\
-#undef exception\\\n\
+    "#ifdef __cplusplus\n\
+#undef exception\n\
 #endif\n",
     (char*)NULL };
 
@@ -3292,9 +3289,9 @@ tTestDesc aStdio_Stdarg_HTests[] = {
 /*
  *  Fix Command Arguments for Stdio_Stdarg_H
  */
-const char* apzStdio_Stdarg_HPatch[] = { "sed",
-    "-e", "1i\\\n\
-#define __need___va_list\\\n\
+const char* apzStdio_Stdarg_HPatch[] = {
+    "wrap",
+    "#define __need___va_list\n\
 #include <stdarg.h>\n",
     (char*)NULL };
 
@@ -4821,12 +4818,12 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zBroken_Assert_StdioName,    zBroken_Assert_StdioList,
      apzBroken_Assert_StdioMachs,
-     BROKEN_ASSERT_STDIO_TEST_CT, FD_MACH_ONLY,
+     BROKEN_ASSERT_STDIO_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aBroken_Assert_StdioTests,   apzBroken_Assert_StdioPatch },
 
   {  zBroken_Assert_StdlibName,    zBroken_Assert_StdlibList,
      apzBroken_Assert_StdlibMachs,
-     BROKEN_ASSERT_STDLIB_TEST_CT, FD_MACH_ONLY,
+     BROKEN_ASSERT_STDLIB_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aBroken_Assert_StdlibTests,   apzBroken_Assert_StdlibPatch },
 
   {  zBroken_CabsName,    zBroken_CabsList,
@@ -4856,7 +4853,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zCxx_UnreadyName,    zCxx_UnreadyList,
      apzCxx_UnreadyMachs,
-     CXX_UNREADY_TEST_CT, FD_MACH_ONLY,
+     CXX_UNREADY_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aCxx_UnreadyTests,   apzCxx_UnreadyPatch },
 
   {  zHpux_MaxintName,    zHpux_MaxintList,
@@ -4991,7 +4988,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zMath_ExceptionName,    zMath_ExceptionList,
      apzMath_ExceptionMachs,
-     MATH_EXCEPTION_TEST_CT, FD_MACH_ONLY,
+     MATH_EXCEPTION_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aMath_ExceptionTests,   apzMath_ExceptionPatch },
 
   {  zMath_Huge_Val_From_Dbl_MaxName,    zMath_Huge_Val_From_Dbl_MaxList,
@@ -5101,7 +5098,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zStdio_Stdarg_HName,    zStdio_Stdarg_HList,
      apzStdio_Stdarg_HMachs,
-     STDIO_STDARG_H_TEST_CT, FD_MACH_ONLY,
+     STDIO_STDARG_H_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aStdio_Stdarg_HTests,   apzStdio_Stdarg_HPatch },
 
   {  zStdio_Va_ListName,    zStdio_Va_ListList,
