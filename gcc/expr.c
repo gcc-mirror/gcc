@@ -7004,9 +7004,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  if (code == UNION_TYPE || code == QUAL_UNION_TYPE)
 	    return GEN_INT (union_type_class);
 	  if (code == ARRAY_TYPE)
-	    return GEN_INT (array_type_class);
-	  if (code == STRING_TYPE)
-	    return GEN_INT (string_type_class);
+	    {
+	      if (TYPE_STRING_FLAG (type))
+		return GEN_INT (string_type_class);
+	      else
+		return GEN_INT (array_type_class);
+	    }
 	  if (code == SET_TYPE)
 	    return GEN_INT (set_type_class);
 	  if (code == FILE_TYPE)

@@ -1409,7 +1409,6 @@ type_is_fundamental (type)
       case METHOD_TYPE:
       case POINTER_TYPE:
       case REFERENCE_TYPE:
-      case STRING_TYPE:
       case FILE_TYPE:
       case OFFSET_TYPE:
       case LANG_TYPE:
@@ -4003,11 +4002,6 @@ output_type (type, containing_scope)
 	abort ();	/* No way to represent these in Dwarf yet!  */
 	break;
 
-      case STRING_TYPE:
-	output_type (TREE_TYPE (type), containing_scope);
-	output_die (output_string_type_die, type);
-	break;
-
       case FUNCTION_TYPE:
 	/* Force out return type (in case it wasn't forced out already).  */
 	output_type (TREE_TYPE (type), containing_scope);
@@ -4024,17 +4018,23 @@ output_type (type, containing_scope)
 	end_sibling_chain ();
 	break;
 
-      case ARRAY_TYPE:
-	{
-	  register tree element_type;
+      case ARRAY_TYPE:	
+	if (TYPE_STRING_FLAG (type) && TREE_CODE(TREE_TYPE(type)) == CHAR_TYPE)
+	  {
+	    output_type (TREE_TYPE (type), containing_scope);
+	    output_die (output_string_type_die, type);
+	  }
+	else
+	  {
+	    register tree element_type;
 
-	  element_type = TREE_TYPE (type);
-	  while (TREE_CODE (element_type) == ARRAY_TYPE)
-	    element_type = TREE_TYPE (element_type);
+	    element_type = TREE_TYPE (type);
+	    while (TREE_CODE (element_type) == ARRAY_TYPE)
+	      element_type = TREE_TYPE (element_type);
 
-	  output_type (element_type, containing_scope);
-	  output_die (output_array_type_die, type);
-	}
+	    output_type (element_type, containing_scope);
+	    output_die (output_array_type_die, type);
+	  }
 	break;
 
       case ENUMERAL_TYPE:
