@@ -1,3 +1,7 @@
+2003-07-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in: Remove orphan reference to acconfig.h.
+
 2003-07-13  Andreas Jaeger  <aj@suse.de>
 
 	* cgraphunit.c: Convert prototypes to ISO C90.
