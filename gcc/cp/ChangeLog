@@ -1,11 +1,27 @@
+2003-07-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11596
+	* pt.c (maybe_fold_nontype_arg, maybe_fold_nontype_args): Remove.
+	(tsubst_template_arg): New.
+	(tsubst_template_arg_vector): Rename to ...
+	(tsubst_template_args): ... this. Accept a TREE_LIST form. Use
+	tsubst_template_arg.
+	(coerce_template_parms): Use tsubst_template_arg for default
+	value.
+	(tsubst_template_parms): Likewise.
+	(tsubst_aggr_type): Adjust.
+	(tsubst_decl): Likewise.
+	(tsubst): Use tsubst_template_arg for a DOMAIN. Adjust.
+	(tsubst_copy) <TEMPLATE_ID_EXPR case>: Use tsubst_template_args.
+
 2003-07-25 Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* Make-lang.in (cp/error.o): Depend on DIAGNOSTIC_H.
-	* error.c: Use the new pretty-printer fraamework.
+	* error.c: Use the new pretty-printer framework.
 
 2003-07-24  Per Bothner  <pbothner@apple.com>
 
-	* decl.c (pushdecl_class_level):   Don't use push_srcloc/pop_srcloc
+	* decl.c (pushdecl_class_level): Don't use push_srcloc/pop_srcloc
 	which causes errors messages to incorrectly mention included files.
 
 2003-07-24  Mark Mitchell  <mark@codesourcery.com>
