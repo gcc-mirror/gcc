@@ -1,5 +1,5 @@
 /* Implement looping actions for CHILL.
-   Copyright (C) 1992, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
