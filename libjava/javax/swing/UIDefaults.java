@@ -80,11 +80,11 @@ public class UIDefaults extends Hashtable
   public static class LazyInputMap implements LazyValue
   {
     Object[] bind;
-    public LazyInputMap (Object[] bindings)
+    public LazyInputMap(Object[] bindings)
     {
       bind = bindings;
     }
-    public Object createValue (UIDefaults table)
+    public Object createValue(UIDefaults table)
     {
       InputMap im = new InputMap ();
       for (int i = 0; 2*i+1 < bind.length; ++i)
@@ -104,7 +104,7 @@ public class UIDefaults extends Hashtable
   public static class ProxyLazyValue implements LazyValue
   {
     LazyValue inner;
-    public ProxyLazyValue (String s)
+    public ProxyLazyValue(String s)
     {
       final String className = s;
       inner = new LazyValue ()
@@ -126,7 +126,7 @@ public class UIDefaults extends Hashtable
         };
     }
 
-    public ProxyLazyValue (String c, String m)
+    public ProxyLazyValue(String c, String m)
     {
       final String className = c;
       final String methodName = m;
@@ -168,9 +168,9 @@ public class UIDefaults extends Hashtable
                   .forName (className)
                   .getConstructor (clss)
                   .newInstance (objs);
-              }
+    }
             catch (Exception e)
-              {
+    {
                 return null;
               }
           }
@@ -184,13 +184,13 @@ public class UIDefaults extends Hashtable
       final Object[] objs = os;
       final Class[] clss = new Class[objs.length];
       for (int i = 0; i < objs.length; ++i)
-        {
+    {
           clss[i] = objs[i].getClass ();
-        }      
+    }
       inner = new LazyValue ()
         { 
-          public Object createValue (UIDefaults table) 
-          {            
+    public Object createValue(UIDefaults table)
+    {
             try 
               {
                 return Class
@@ -214,14 +214,14 @@ public class UIDefaults extends Hashtable
 
   private static final long serialVersionUID = 7341222528856548117L;
 
-  public UIDefaults ()
+  public UIDefaults()
   {
     bundles = new LinkedList ();
     listeners = new HashSet ();
     defaultLocale = Locale.getDefault ();
   }
 
-  public UIDefaults (Object[] entries)
+  public UIDefaults(Object[] entries)
   {
     bundles = new LinkedList ();
     listeners = new HashSet ();
@@ -233,7 +233,7 @@ public class UIDefaults extends Hashtable
       }
   }
 
-  public Object get (Object key)
+  public Object get(Object key)
   {
     return this.get (key, getDefaultLocale ());
   }
@@ -251,7 +251,7 @@ public class UIDefaults extends Hashtable
         String keyString = (String) key;
         ListIterator i = bundles.listIterator (0);
         while (i.hasNext ())
-          {
+  {
             String bundle_name = (String) i.next ();
             ResourceBundle res =
               ResourceBundle.getBundle (bundle_name, loc);
@@ -303,7 +303,7 @@ public class UIDefaults extends Hashtable
   public void putDefaults(Object[] entries)
   {
     for (int i = 0; (2*i+1) < entries.length; ++i)
-      {
+  {
         super.put (entries[2*i], entries[2*i+1]);
       }
     firePropertyChange ("UIDefaults", null, null);
@@ -311,79 +311,79 @@ public class UIDefaults extends Hashtable
 
   public Font getFont(Object key)
   {
-    Object o = get (key);
+    Object o = get(key);
     return o instanceof Font ? (Font) o : null;
   }
 
   public Font getFont(Object key, Locale l)
   {
-    Object o = get (key, l);
+    Object o = get(key, l);
     return o instanceof Font ? (Font) o : null;
   }
 
   public Color getColor(Object key)
   {
-    Object o = get (key);
+    Object o = get(key);
     return o instanceof Color ? (Color) o : null;
   }
 
   public Color getColor(Object key, Locale l)
   {
-    Object o = get (key, l);
+    Object o = get(key, l);
     return o instanceof Color ? (Color) o : null;
   }
 
   public Icon getIcon(Object key)
   {
-    Object o = get (key);
+    Object o = get(key);
     return o instanceof Icon ? (Icon) o : null;
   }
 
   public Icon getIcon(Object key, Locale l)
   {
-    Object o = get (key, l);
+    Object o = get(key, l);
     return o instanceof Icon ? (Icon) o : null;
   }
 
   public Border getBorder(Object key)
   {
-    Object o = get (key);
+    Object o = get(key);
     return o instanceof Border ? (Border) o : null;
   }
 
   public Border getBorder(Object key, Locale l)
   {
-    Object o = get (key, l);
+    Object o = get(key, l);
     return o instanceof Border ? (Border) o : null;
   }
 
   public String getString(Object key)
   {
-    Object o = get (key);
+    Object o = get(key);
     return o instanceof String ? (String) o : null;
   }
 
   public String getString(Object key, Locale l)
   {
-    Object o = get (key, l);
+    Object o = get(key, l);
     return o instanceof String ? (String) o : null;
   }
 
   int getInt(Object key)
   {
-    Object o = get (key);
+    Object o = get(key);
     return o instanceof Integer ? ((Integer) o).intValue() : 0;
   }
 
   int getInt(Object key, Locale l)
   {
-    Object o = get (key, l);
+    Object o = get(key, l);
     return o instanceof Integer ? ((Integer) o).intValue() : 0;
   }
 
   public boolean getBoolean(Object key)
   {
-    return Boolean.TRUE.equals (get (key));
+    return Boolean.TRUE.equals(get(key));
   }
 
   public boolean getBoolean(Object key, Locale l)
@@ -393,25 +393,25 @@ public class UIDefaults extends Hashtable
 
   public Insets getInsets(Object key) 
   {
-    Object o = get (key);
+    Object o = get(key);
     return o instanceof Insets ? (Insets) o : null;
   }
 
   public Insets getInsets(Object key, Locale l) 
   {
-    Object o = get (key, l);
+    Object o = get(key, l);
     return o instanceof Insets ? (Insets) o : null;
   }
 
   public Dimension getDimension(Object key) 
   {
-    Object o = get (key);
+    Object o = get(key);
     return o instanceof Dimension ? (Dimension) o : null;
   }
 
   public Dimension getDimension(Object key, Locale l) 
   {
-    Object o = get (key, l);
+    Object o = get(key, l);
     return o instanceof Dimension ? (Dimension) o : null;
   }
 
@@ -436,7 +436,7 @@ public class UIDefaults extends Hashtable
   {
     return getUIClass (id, null);
   }
-  
+
   protected void getUIError(String msg)
   {
     System.err.println ("UIDefaults.getUIError: " + msg);
@@ -462,21 +462,21 @@ public class UIDefaults extends Hashtable
       {
         getUIError ("failed to locate createUI method on " + cls.toString ());
         return null;
-      }
+  }
 
     try
-      {
+  {
         return (ComponentUI) factory.invoke (null, new Object[] { target });
-      }
+  }
     catch (java.lang.reflect.InvocationTargetException ite)
 	{
         getUIError ("InvocationTargetException ("+ ite.getTargetException() 
 		    +") calling createUI(...) on " + cls.toString ());
         return null;        
-	    
+
 	}
     catch (Exception e)
-      {
+  {
         getUIError ("exception calling createUI(...) on " + cls.toString ());
         return null;        
       }
