@@ -1,3 +1,7 @@
+2001-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/gcc.dg/20011009-1.c: New test.
+
 2001-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR g++/4476
