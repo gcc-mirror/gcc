@@ -337,7 +337,8 @@ c_finish_incomplete_decl (tree decl)
 	  && ! DECL_EXTERNAL (decl)
 	  && TYPE_DOMAIN (type) == 0)
 	{
-	  warning_with_decl (decl, "array `%s' assumed to have one element");
+	  warning ("%Harray '%D' assumed to have one element",
+                   &DECL_SOURCE_LOCATION (decl), decl);
 
 	  complete_array_type (type, NULL_TREE, 1);
 
@@ -611,12 +612,14 @@ poplevel (int keep, int reverse, int functionbody)
 
 	  if (DECL_INITIAL (label) == 0)
 	    {
-	      error_with_decl (label, "label `%s' used but not defined");
+	      error ("%Hlabel '%D' used but not defined",
+                     &DECL_SOURCE_LOCATION (label), label);
 	      /* Avoid crashing later.  */
 	      define_label (input_location, DECL_NAME (label));
 	    }
 	  else if (warn_unused_label && !TREE_USED (label))
-	    warning_with_decl (label, "label `%s' defined but not used");
+	    warning ("%Hlabel '%D' defined but not used",
+                     &DECL_SOURCE_LOCATION (label), label);
 	  IDENTIFIER_LABEL_VALUE (DECL_NAME (label)) = 0;
 
 	  /* Put the labels into the "variables" of the
@@ -701,14 +704,16 @@ pop_label_level (void)
 	{
 	  if (DECL_SOURCE_LINE (TREE_VALUE (link)) == 0)
 	    {
-	      error_with_decl (TREE_VALUE (link),
-			       "label `%s' used but not defined");
+	      error ("%Hlabel '%D' used but not defined",
+                     &DECL_SOURCE_LOCATION (TREE_VALUE (link)),
+                     TREE_VALUE (link));
 	      /* Avoid crashing later.  */
 	      define_label (input_location, DECL_NAME (TREE_VALUE (link)));
 	    }
 	  else if (warn_unused_label && !TREE_USED (TREE_VALUE (link)))
-	    warning_with_decl (TREE_VALUE (link),
-			       "label `%s' defined but not used");
+	    warning ("%Hlabel '%D' defined but not used",
+                     &DECL_SOURCE_LOCATION (TREE_VALUE (link)),
+                     TREE_VALUE (link));
 	  IDENTIFIER_LABEL_VALUE (DECL_NAME (TREE_VALUE (link))) = 0;
 
 	  /* Delete this element from the list.  */
@@ -823,19 +828,20 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 		   && DECL_UNINLINABLE (olddecl)
 		   && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
 	    {
-	      warning_with_decl (newdecl,
-				 "function `%s' redeclared as inline");
-	      warning_with_decl (olddecl,
-				 "previous declaration of function `%s' with attribute noinline");
+	      warning ("%Hfunction '%D' redeclared as inline",
+                       &DECL_SOURCE_LOCATION (newdecl), newdecl);
+	      warning ("%Hprevious declaration of function '%D' "
+                       "with attribute noinline",
+                       &DECL_SOURCE_LOCATION (olddecl), olddecl);
 	    }
 	  else if (DECL_DECLARED_INLINE_P (olddecl)
 		   && DECL_UNINLINABLE (newdecl)
 		   && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
 	    {
-	      warning_with_decl (newdecl,
-				 "function `%s' redeclared with attribute noinline");
-	      warning_with_decl (olddecl,
-				 "previous declaration of function `%s' was inline");
+	      warning ("%Hfunction '%D' redeclared with attribute noinline",
+                       &DECL_SOURCE_LOCATION (newdecl), newdecl);
+	      warning ("%Hprevious declaration of function '%D' was inline",
+                       &DECL_SOURCE_LOCATION (olddecl), olddecl);
 	    }
 	}
 
@@ -861,16 +867,19 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	  if (!TREE_PUBLIC (newdecl))
 	    {
 	      if (warn_shadow)
-		warning_with_decl (newdecl, "shadowing built-in function `%s'");
+		warning ("%Hshadowing built-in function '%D'",
+                         &DECL_SOURCE_LOCATION (newdecl), newdecl);
 	    }
 	  else
-	    warning_with_decl (newdecl,
-			       "built-in function `%s' declared as non-function");
+	    warning ("%Hbuilt-in function '%D' declared as non-function",
+                     &DECL_SOURCE_LOCATION (newdecl), newdecl);
 	}
       else
 	{
-	  error_with_decl (newdecl, "`%s' redeclared as different kind of symbol");
-	  error_with_decl (olddecl, "previous declaration of `%s'");
+	  error ("%H'%D' redeclared as different kind of symbol",
+                 &DECL_SOURCE_LOCATION (newdecl), newdecl);
+	  error ("%Hprevious declaration of '%D'",
+                 &DECL_SOURCE_LOCATION (olddecl), olddecl);
 	}
 
       return 0;
@@ -899,7 +908,8 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	     built-in definition is overridden,
 	     but optionally warn this was a bad choice of name.  */
 	  if (warn_shadow)
-	    warning_with_decl (newdecl, "shadowing built-in function `%s'");
+	    warning ("%Hshadowing built-in function '%D'",
+                     &DECL_SOURCE_LOCATION (newdecl), newdecl);
 	  /* Discard the old built-in function.  */
 	  return 0;
 	}
@@ -968,7 +978,8 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
       if (!types_match)
 	{
 	  /* If types don't match for a built-in, throw away the built-in.  */
-	  warning_with_decl (newdecl, "conflicting types for built-in function `%s'");
+	  warning ("%Hconflicting types for built-in function '%D'",
+                   &DECL_SOURCE_LOCATION (newdecl), newdecl);
 	  return 0;
 	}
     }
@@ -1011,7 +1022,8 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 		&& TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (oldtype))) == void_type_node)))
     {
       if (pedantic)
-	pedwarn_with_decl (newdecl, "conflicting types for `%s'");
+	pedwarn ("%Hconflicting types for '%D'",
+                 &DECL_SOURCE_LOCATION (newdecl), newdecl);
       /* Make sure we keep void * as ret type, not char *.  */
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (oldtype))) == void_type_node)
 	TREE_TYPE (newdecl) = newtype = oldtype;
@@ -1029,7 +1041,8 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	   && TYPE_MAIN_VARIANT (TREE_TYPE (newtype)) == integer_type_node
 	   && C_FUNCTION_IMPLICIT_INT (newdecl))
     {
-      pedwarn_with_decl (newdecl, "conflicting types for `%s'");
+      pedwarn ("%Hconflicting types for '%D'",
+               &DECL_SOURCE_LOCATION (newdecl), newdecl);
       /* Make sure we keep void as the return type.  */
       TREE_TYPE (newdecl) = newtype = oldtype;
       C_FUNCTION_IMPLICIT_INT (newdecl) = 0;
@@ -1044,7 +1057,8 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 			       TREE_TYPE (newtype), comptype_flags)
 		 && TYPE_ARG_TYPES (newtype) == 0))
     {
-      error_with_decl (newdecl, "conflicting types for `%s'");
+      error ("%Hconflicting types for '%D'",
+             &DECL_SOURCE_LOCATION (newdecl), newdecl);
       /* Check for function type mismatch
 	 involving an empty arglist vs a nonempty one.  */
       if (TREE_CODE (olddecl) == FUNCTION_DECL
@@ -1079,9 +1093,11 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	    }
 	}
       if (C_DECL_IMPLICIT (olddecl))
-	error_with_decl (olddecl, "previous implicit declaration of `%s'");
+	error ("%Hprevious implicit declaration of '%D'",
+               &DECL_SOURCE_LOCATION (olddecl), olddecl);
       else
-	error_with_decl (olddecl, "previous declaration of `%s'");
+	error ("%Hprevious declaration of '%D'",
+               &DECL_SOURCE_LOCATION (olddecl), olddecl);
 
       /* This is safer because the initializer might contain references
 	 to variables that were declared between olddecl and newdecl. This
@@ -1094,54 +1110,62 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
   else if (TREE_CODE (olddecl) == VAR_DECL && TREE_CODE (newdecl) == VAR_DECL
 	   && !DECL_THREAD_LOCAL (olddecl) && DECL_THREAD_LOCAL (newdecl))
     {
-      error_with_decl (newdecl, "thread-local declaration of `%s' follows non thread-local declaration");
-      error_with_decl (olddecl, "previous declaration of `%s'");
+      error ("%Hthread-local declaration of '%D' follows non thread-local "
+             "declaration", &DECL_SOURCE_LOCATION (newdecl), newdecl);
+      error ("%Hprevious declaration of '%D'",
+             &DECL_SOURCE_LOCATION (olddecl), olddecl);
     }
   /* non-TLS declaration cannot follow TLS declaration.  */
   else if (TREE_CODE (olddecl) == VAR_DECL && TREE_CODE (newdecl) == VAR_DECL
 	   && DECL_THREAD_LOCAL (olddecl) && !DECL_THREAD_LOCAL (newdecl))
     {
-      error_with_decl (newdecl, "non thread-local declaration of `%s' follows thread-local declaration");
-      error_with_decl (olddecl, "previous declaration of `%s'");
+      error ("%Hnon thread-local declaration of '%D' follows "
+             "thread-local declaration",
+             &DECL_SOURCE_LOCATION (newdecl), newdecl);
+      error ("%Hprevious declaration of '%D'",
+             &DECL_SOURCE_LOCATION (olddecl), olddecl);
     }
   else
     {
       errmsg = redeclaration_error_message (newdecl, olddecl);
       if (errmsg)
 	{
+          const location_t *locus = &DECL_SOURCE_LOCATION (newdecl);
 	  switch (errmsg)
 	    {
 	    case 1:
-	      error_with_decl (newdecl, "redefinition of `%s'");
+	      error ("%Hredefinition of '%D'", locus, newdecl);
 	      break;
 	    case 2:
-	      error_with_decl (newdecl, "redeclaration of `%s'");
+	      error ("%Hredeclaration of '%D'", locus, newdecl);
 	      break;
 	    case 3:
-	      error_with_decl (newdecl, "conflicting declarations of `%s'");
+	      error ("%Hconflicting declarations of '%D'", locus, newdecl);
 	      break;
 	    default:
 	      abort ();
 	    }
 
-	  error_with_decl (olddecl,
-			   ((DECL_INITIAL (olddecl)
-			     && current_binding_level == global_binding_level)
-			    ? "`%s' previously defined here"
-			    : "`%s' previously declared here"));
+          locus = &DECL_SOURCE_LOCATION (olddecl);
+          if (DECL_INITIAL (olddecl)
+              && current_binding_level == global_binding_level)
+            error ("%H'%D' previously defined here", locus, olddecl);
+          else
+            error ("%H'%D' previously declared here", locus, olddecl);
 	  return 0;
 	}
       else if (TREE_CODE (newdecl) == TYPE_DECL
                && (DECL_IN_SYSTEM_HEADER (olddecl)
                    || DECL_IN_SYSTEM_HEADER (newdecl)))
 	{
-	  warning_with_decl (newdecl, "redefinition of `%s'");
-	  warning_with_decl
-	    (olddecl,
-	     ((DECL_INITIAL (olddecl)
-	       && current_binding_level == global_binding_level)
-	      ? "`%s' previously defined here"
-	      : "`%s' previously declared here"));
+          const location_t *locus = &DECL_SOURCE_LOCATION (newdecl);
+	  warning ("%Hredefinition of '%D'", locus, newdecl);
+          locus = &DECL_SOURCE_LOCATION (olddecl);
+          if (DECL_INITIAL (olddecl)
+              && current_binding_level == global_binding_level)
+            warning ("%H'%D' previously defined here", locus, olddecl);
+          else
+            warning ("%H'%D' previously declared here", locus, olddecl);
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_INITIAL (olddecl) != 0
@@ -1162,16 +1186,20 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	      if (TYPE_MAIN_VARIANT (TREE_VALUE (parm)) == void_type_node
 		  && TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
 		{
-		  warning_with_decl (newdecl, "prototype for `%s' follows");
-		  warning_with_decl (olddecl, "non-prototype definition here");
+                  const location_t *locus = &DECL_SOURCE_LOCATION (newdecl);
+		  warning ("%Hprototype for '%D' follows", locus, newdecl);
+                  locus = &DECL_SOURCE_LOCATION (olddecl);
+		  warning ("%Hnon-prototype definition here", locus);
 		  break;
 		}
 	      if (TYPE_MAIN_VARIANT (TREE_VALUE (parm)) == void_type_node
 		  || TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
 		{
-		  error_with_decl (newdecl,
-				   "prototype for `%s' follows and number of arguments doesn't match");
-		  error_with_decl (olddecl, "non-prototype definition here");
+                  const location_t *locus = &DECL_SOURCE_LOCATION (newdecl);
+		  error ("%Hprototype for '%D' follows and number of "
+                         "arguments doesn't match", locus, newdecl);
+                  locus = &DECL_SOURCE_LOCATION (olddecl);
+		  error ("%Hnon-prototype definition here", locus);
 		  errmsg = 1;
 		  break;
 		}
@@ -1180,10 +1208,11 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	      if (! comptypes (TREE_VALUE (parm), TREE_VALUE (type),
 			       comptype_flags))
 		{
-		  error_with_decl (newdecl,
-				   "prototype for `%s' follows and argument %d doesn't match",
-				   nargs);
-		  error_with_decl (olddecl, "non-prototype definition here");
+                  const location_t *locus = &DECL_SOURCE_LOCATION (newdecl);
+		  error ("%Hprototype for '%D' follows and argument %d "
+                         "doesn't match", locus, newdecl, nargs);
+                  locus = &DECL_SOURCE_LOCATION (olddecl);
+		  error ("%Hnon-prototype definition here", locus);
 		  errmsg = 1;
 		  break;
 		}
@@ -1198,21 +1227,22 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	      && ! DECL_DECLARED_INLINE_P (olddecl)
 	      && DECL_DECLARED_INLINE_P (newdecl)
 	      && TREE_USED (olddecl))
-	    warning_with_decl (newdecl,
-			       "`%s' declared inline after being called");
+	    warning ("%H'%D' declared inline after being called",
+                     &DECL_SOURCE_LOCATION (newdecl), newdecl);
 	  if (TREE_CODE (olddecl) == FUNCTION_DECL
 	      && ! DECL_DECLARED_INLINE_P (olddecl)
 	      && DECL_DECLARED_INLINE_P (newdecl)
 	      && DECL_INITIAL (olddecl) != 0)
-	    warning_with_decl (newdecl,
-			       "`%s' declared inline after its definition");
+	    warning ("%H'%D' declared inline after its definition",
+                     &DECL_SOURCE_LOCATION (newdecl), newdecl);
 
 	  /* If pedantic, warn when static declaration follows a non-static
 	     declaration.  Otherwise, do so only for functions.  */
 	  if ((pedantic || TREE_CODE (olddecl) == FUNCTION_DECL)
 	      && TREE_PUBLIC (olddecl)
 	      && !TREE_PUBLIC (newdecl))
-	    warning_with_decl (newdecl, "static declaration for `%s' follows non-static");
+	    warning ("%Hstatic declaration for '%D' follows non-static",
+                     &DECL_SOURCE_LOCATION (newdecl), newdecl);
 
 	  /* If warn_traditional, warn when a non-static function
 	     declaration follows a static one.  */
@@ -1220,21 +1250,24 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	      && TREE_CODE (olddecl) == FUNCTION_DECL
 	      && !TREE_PUBLIC (olddecl)
 	      && TREE_PUBLIC (newdecl))
-	    warning_with_decl (newdecl, "non-static declaration for `%s' follows static");
+	    warning ("%Hnon-static declaration for '%D' follows static",
+                     &DECL_SOURCE_LOCATION (newdecl), newdecl);
 
 	  /* Warn when const declaration follows a non-const
 	     declaration, but not for functions.  */
 	  if (TREE_CODE (olddecl) != FUNCTION_DECL
 	      && !TREE_READONLY (olddecl)
 	      && TREE_READONLY (newdecl))
-	    warning_with_decl (newdecl, "const declaration for `%s' follows non-const");
+	    warning ("%Hconst declaration for '%D' follows non-const",
+                     &DECL_SOURCE_LOCATION (newdecl), newdecl);
 	  /* These bits are logically part of the type, for variables.
 	     But not for functions
 	     (where qualifiers are not valid ANSI anyway).  */
 	  else if (pedantic && TREE_CODE (olddecl) != FUNCTION_DECL
 	      && (TREE_READONLY (newdecl) != TREE_READONLY (olddecl)
 		  || TREE_THIS_VOLATILE (newdecl) != TREE_THIS_VOLATILE (olddecl)))
-	    pedwarn_with_decl (newdecl, "type qualifiers for `%s' conflict with previous decl");
+	    pedwarn ("%Htype qualifiers for '%D' conflict with previous "
+                     "declaration", &DECL_SOURCE_LOCATION (newdecl), newdecl);
 	}
     }
 
@@ -1247,8 +1280,10 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
       /* Don't warn about extern decl followed by (tentative) definition.  */
       && !(DECL_EXTERNAL (olddecl) && ! DECL_EXTERNAL (newdecl)))
     {
-      warning_with_decl (newdecl, "redundant redeclaration of `%s' in same scope");
-      warning_with_decl (olddecl, "previous declaration of `%s'");
+      warning ("%Hredundant redeclaration of '%D' in same scope",
+               &DECL_SOURCE_LOCATION (newdecl), newdecl);
+      warning ("%Hprevious declaration of '%D'",
+               &DECL_SOURCE_LOCATION (olddecl), olddecl);
     }
 
   /* Copy all the DECL_... slots specified in the new decl
@@ -1875,7 +1910,8 @@ implicitly_declare (tree functionid)
 	{
 	  implicit_decl_warning (DECL_NAME (decl));
 	  if (! C_DECL_FILE_SCOPE (decl))
-	    warning_with_decl (decl, "previous declaration of `%s'");
+	    warning ("%Hprevious declaration of '%D'",
+                     &DECL_SOURCE_LOCATION (decl), decl);
 	  C_DECL_IMPLICIT (decl) = 1;
 	}
       /* If this function is global, then it must already be in the
@@ -2083,10 +2119,9 @@ shadow_label (tree name)
       for (dup = named_labels; dup; dup = TREE_CHAIN (dup))
 	if (TREE_VALUE (dup) == decl)
 	  {
-	    error ("duplicate label declaration `%s'",
-		   IDENTIFIER_POINTER (name));
-	    error_with_decl (TREE_VALUE (dup),
-			     "this is a previous declaration");
+	    error ("duplicate label declaration '%E'", name);
+	    error ("%Hthis is a previous declaration",
+                   &DECL_SOURCE_LOCATION (TREE_VALUE (dup)));
 	    /* Just use the previous declaration.  */
 	    return lookup_label (name);
 	  }
@@ -2620,7 +2655,8 @@ start_decl (tree declarator, tree declspecs, int initialized, tree attributes)
 
   if (warn_main > 0 && TREE_CODE (decl) != FUNCTION_DECL
       && MAIN_NAME_P (DECL_NAME (decl)))
-    warning_with_decl (decl, "`%s' is usually a function");
+    warning ("%H'%D' is usually a function",
+             &DECL_SOURCE_LOCATION (decl), decl);
 
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?
@@ -2727,8 +2763,8 @@ start_decl (tree declarator, tree declspecs, int initialized, tree attributes)
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
-    warning_with_decl (decl,
-		       "inline function `%s' given attribute noinline");
+    warning ("%Hinline function '%D' given attribute noinline",
+             &DECL_SOURCE_LOCATION (decl), decl);
 
   /* Add this decl to the current binding level.
      TEM may equal DECL or it may be a previous decl of the same name.  */
@@ -2800,12 +2836,14 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
       type = TREE_TYPE (decl);
 
       if (failure == 1)
-	error_with_decl (decl, "initializer fails to determine size of `%s'");
+	error ("%Hinitializer fails to determine size of '%D'",
+               &DECL_SOURCE_LOCATION (decl), decl);
 
       else if (failure == 2)
 	{
 	  if (do_default)
-	    error_with_decl (decl, "array size missing in `%s'");
+	    error ("%Harray size missing in '%D'",
+                   &DECL_SOURCE_LOCATION (decl), decl);
 	  /* If a `static' var's size isn't known,
 	     make it extern as well as static, so it does not get
 	     allocated.
@@ -2821,7 +2859,8 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	 warn only if the value is less than zero.  */
       else if (pedantic && TYPE_DOMAIN (type) != 0
 	      && tree_int_cst_sgn (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) < 0)
-	error_with_decl (decl, "zero or negative size array `%s'");
+	error ("%Hzero or negative size array '%D'",
+               &DECL_SOURCE_LOCATION (decl), decl);
 
       layout_decl (decl, 0);
     }
@@ -2849,7 +2888,8 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 		   is an error.  */
 		!DECL_EXTERNAL (decl)))
 	{
-	  error_with_decl (decl, "storage size of `%s' isn't known");
+	  error ("%Hstorage size of '%D' isn't known",
+                 &DECL_SOURCE_LOCATION (decl), decl);
 	  TREE_TYPE (decl) = error_mark_node;
 	}
 
@@ -2859,7 +2899,8 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	  if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
 	    constant_expression_warning (DECL_SIZE (decl));
 	  else
-	    error_with_decl (decl, "storage size of `%s' isn't constant");
+	    error ("%Hstorage size of '%D' isn't constant",
+                   &DECL_SOURCE_LOCATION (decl), decl);
 	}
 
       if (TREE_USED (type))
@@ -2938,8 +2979,8 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	      if (TREE_CODE (decl) == VAR_DECL
 		  && !DECL_REGISTER (decl)
 		  && !TREE_STATIC (decl))
-		warning_with_decl (decl,
-				   "ignoring asm-specifier for non-static local variable `%s'");
+		warning ("%Hignoring asm-specifier for non-static local "
+                         "variable '%D'", &DECL_SOURCE_LOCATION (decl), decl);
 	      else
 		SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
 	    }
@@ -4426,7 +4467,8 @@ grokdeclarator (tree declarator, tree declspecs,
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
 
 	if (inlinep)
-	  pedwarn_with_decl (decl, "variable `%s' declared `inline'");
+	  pedwarn ("%Hvariable '%D' declared `inline'",
+                   &DECL_SOURCE_LOCATION (decl), decl);
 
 	DECL_EXTERNAL (decl) = extern_ref;
 
@@ -4609,8 +4651,8 @@ get_parm_info (int void_at_end)
 	}
       else if (TREE_ASM_WRITTEN (decl))
 	{
-	  error_with_decl (decl,
-			   "parameter `%s' has just a forward declaration");
+	  error ("%Hparameter '%D' has just a forward declaration",
+                 &DECL_SOURCE_LOCATION (decl), decl);
 	  TREE_CHAIN (decl) = new_parms;
 	  new_parms = decl;
 	}
@@ -4892,7 +4934,8 @@ detect_field_duplicates (tree fieldlist)
 	    for (y = fieldlist; y != x; y = TREE_CHAIN (y))
 	      if (DECL_NAME (y) == DECL_NAME (x))
 		{
-		  error_with_decl (x, "duplicate member `%s'");
+		  error ("%Hduplicate member '%D'",
+                         &DECL_SOURCE_LOCATION (x), x);
 		  DECL_NAME (x) = NULL_TREE;
 		}
 	  }
@@ -4908,7 +4951,8 @@ detect_field_duplicates (tree fieldlist)
 	    slot = htab_find_slot (htab, y, INSERT);
 	    if (*slot)
 	      {
-		error_with_decl (x, "duplicate member `%s'");
+		error ("%Hduplicate member '%D'",
+                       &DECL_SOURCE_LOCATION (x), x);
 		DECL_NAME (x) = NULL_TREE;
 	      }
 	    *slot = y;
@@ -5009,8 +5053,8 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	    constant_expression_warning (DECL_INITIAL (x));
 	  else
 	    {
-	      error_with_decl (x,
-			       "bit-field `%s' width not an integer constant");
+	      error ("%Hbit-field '%D' width not an integer constant",
+                     &DECL_SOURCE_LOCATION (x), x);
 	      DECL_INITIAL (x) = NULL;
 	    }
 	}
@@ -5021,7 +5065,8 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	  && TREE_CODE (TREE_TYPE (x)) != BOOLEAN_TYPE
 	  && TREE_CODE (TREE_TYPE (x)) != ENUMERAL_TYPE)
 	{
-	  error_with_decl (x, "bit-field `%s' has invalid type");
+	  error ("%Hbit-field '%D' has invalid type",
+                 &DECL_SOURCE_LOCATION (x), x);
 	  DECL_INITIAL (x) = NULL;
 	}
 
@@ -5033,7 +5078,8 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	  && !(TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
 	       && (TYPE_PRECISION (TREE_TYPE (x))
 		   == TYPE_PRECISION (integer_type_node))))
-	pedwarn_with_decl (x, "bit-field `%s' type invalid in ISO C");
+	pedwarn ("%Hbit-field '%D' type invalid in ISO C",
+                 &DECL_SOURCE_LOCATION (x), x);
 
       /* Detect and ignore out of range field width and process valid
 	 field widths.  */
@@ -5044,11 +5090,14 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	       ? CHAR_TYPE_SIZE : TYPE_PRECISION (TREE_TYPE (x)));
 
 	  if (tree_int_cst_sgn (DECL_INITIAL (x)) < 0)
-	    error_with_decl (x, "negative width in bit-field `%s'");
+	    error ("%Hnegative width in bit-field '%D'",
+                   &DECL_SOURCE_LOCATION (x), x);
 	  else if (0 < compare_tree_int (DECL_INITIAL (x), max_width))
-	    pedwarn_with_decl (x, "width of `%s' exceeds its type");
+	    pedwarn ("%Hwidth of '%D' exceeds its type",
+                     &DECL_SOURCE_LOCATION (x), x);
 	  else if (integer_zerop (DECL_INITIAL (x)) && DECL_NAME (x) != 0)
-	    error_with_decl (x, "zero width for bit-field `%s'");
+	    error ("%Hzero width for bit-field '%D'",
+                   &DECL_SOURCE_LOCATION (x), x);
 	  else
 	    {
 	      /* The test above has assured us that TREE_INT_CST_HIGH is 0.  */
@@ -5061,8 +5110,8 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 		      || (width
 			  < min_precision (TYPE_MAX_VALUE (TREE_TYPE (x)),
 					   TREE_UNSIGNED (TREE_TYPE (x))))))
-		warning_with_decl (x,
-				   "`%s' is narrower than values of its type");
+		warning ("%H'%D' is narrower than values of its type",
+                         &DECL_SOURCE_LOCATION (x), x);
 
 	      DECL_SIZE (x) = bitsize_int (width);
 	      DECL_BIT_FIELD (x) = 1;
@@ -5079,16 +5128,20 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	  && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (x))) == NULL_TREE)
 	{
 	  if (TREE_CODE (t) == UNION_TYPE)
-	    error_with_decl (x, "flexible array member in union");
+	    error ("%Hflexible array member in union",
+                   &DECL_SOURCE_LOCATION (x));
 	  else if (TREE_CHAIN (x) != NULL_TREE)
-	    error_with_decl (x, "flexible array member not at end of struct");
+	    error ("%Hflexible array member not at end of struct",
+                   &DECL_SOURCE_LOCATION (x));
 	  else if (! saw_named_field)
-	    error_with_decl (x, "flexible array member in otherwise empty struct");
+	    error ("%Hflexible array member in otherwise empty struct",
+                   &DECL_SOURCE_LOCATION (x));
 	}
 
       if (pedantic && TREE_CODE (t) == RECORD_TYPE
 	  && flexible_array_type_p (TREE_TYPE (x)))
-	pedwarn_with_decl (x, "invalid use of structure with flexible array member");
+	pedwarn ("%Hinvalid use of structure with flexible array member",
+                 &DECL_SOURCE_LOCATION (x));
 
       if (DECL_NAME (x))
 	saw_named_field = 1;
@@ -5545,8 +5598,8 @@ start_function (tree declspecs, tree declarator, tree attributes)
   if (DECL_DECLARED_INLINE_P (decl1)
       && DECL_UNINLINABLE (decl1)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl1)))
-    warning_with_decl (decl1,
-		       "inline function `%s' given attribute noinline");
+    warning ("%Hinline function '%D' given attribute noinline",
+             &DECL_SOURCE_LOCATION (decl1), decl1);
 
   announce_function (decl1);
 
@@ -5595,27 +5648,29 @@ start_function (tree declspecs, tree declarator, tree attributes)
 	   && TREE_PUBLIC (decl1)
 	   && ! MAIN_NAME_P (DECL_NAME (decl1))
 	   && C_DECL_ISNT_PROTOTYPE (old_decl))
-    warning_with_decl (decl1, "no previous prototype for `%s'");
+    warning ("%Hno previous prototype for '%D'",
+             &DECL_SOURCE_LOCATION (decl1), decl1);
   /* Optionally warn of any def with no previous prototype
      if the function has already been used.  */
   else if (warn_missing_prototypes
 	   && old_decl != 0 && TREE_USED (old_decl)
 	   && TYPE_ARG_TYPES (TREE_TYPE (old_decl)) == 0)
-    warning_with_decl (decl1,
-		       "`%s' was used with no prototype before its definition");
+    warning ("%H'%D' was used with no prototype before its definition",
+             &DECL_SOURCE_LOCATION (decl1), decl1);
   /* Optionally warn of any global def with no previous declaration.  */
   else if (warn_missing_declarations
 	   && TREE_PUBLIC (decl1)
 	   && old_decl == 0
 	   && ! MAIN_NAME_P (DECL_NAME (decl1)))
-    warning_with_decl (decl1, "no previous declaration for `%s'");
+    warning ("%Hno previous declaration for '%D'",
+             &DECL_SOURCE_LOCATION (decl1), decl1);
   /* Optionally warn of any def with no previous declaration
      if the function has already been used.  */
   else if (warn_missing_declarations
 	   && old_decl != 0 && TREE_USED (old_decl)
 	   && C_DECL_IMPLICIT (old_decl))
-    warning_with_decl (decl1,
-		       "`%s' was used with no declaration before its definition");
+    warning ("%H`%D' was used with no declaration before its definition",
+             &DECL_SOURCE_LOCATION (decl1), decl1);
 
   /* This is a definition, not a reference.
      So normally clear DECL_EXTERNAL.
@@ -5636,10 +5691,11 @@ start_function (tree declspecs, tree declarator, tree attributes)
     {
       tree args;
       int argct = 0;
+      const location_t *locus = &DECL_SOURCE_LOCATION (decl1);
 
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl1)))
 	  != integer_type_node)
-	pedwarn_with_decl (decl1, "return type of `%s' is not `int'");
+	pedwarn ("%Hreturn type of '%D' is not `int'", locus, decl1);
 
       for (args = TYPE_ARG_TYPES (TREE_TYPE (decl1)); args;
 	   args = TREE_CHAIN (args))
@@ -5654,8 +5710,8 @@ start_function (tree declspecs, tree declarator, tree attributes)
 	    {
 	    case 1:
 	      if (TYPE_MAIN_VARIANT (type) != integer_type_node)
-		pedwarn_with_decl (decl1,
-				   "first argument of `%s' should be `int'");
+		pedwarn ("%Hfirst argument of '%D' should be `int'",
+                         locus, decl1);
 	      break;
 
 	    case 2:
@@ -5663,8 +5719,8 @@ start_function (tree declspecs, tree declarator, tree attributes)
 		  || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
 		  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
 		      != char_type_node))
-		pedwarn_with_decl (decl1,
-				   "second argument of `%s' should be `char **'");
+		pedwarn ("%Hsecond argument of '%D' should be 'char **'",
+                         locus, decl1);
 	      break;
 
 	    case 3:
@@ -5672,8 +5728,8 @@ start_function (tree declspecs, tree declarator, tree attributes)
 		  || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
 		  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
 		      != char_type_node))
-		pedwarn_with_decl (decl1,
-				   "third argument of `%s' should probably be `char **'");
+		pedwarn ("%Hthird argument of '%D' should probably be "
+                         "'char **'", locus, decl1);
 	      break;
 	    }
 	}
@@ -5682,10 +5738,10 @@ start_function (tree declspecs, tree declarator, tree attributes)
 	 argument because it's only mentioned in an appendix of the
 	 standard.  */
       if (argct > 0 && (argct < 2 || argct > 3))
-	pedwarn_with_decl (decl1, "`%s' takes only zero or two arguments");
+	pedwarn ("%H'%D' takes only zero or two arguments", locus, decl1);
 
       if (! TREE_PUBLIC (decl1))
-	pedwarn_with_decl (decl1, "`%s' is normally a non-static function");
+	pedwarn ("%H'%D' is normally a non-static function", locus, decl1);
     }
 
   /* Record the decl so that the function name is defined.
@@ -5781,8 +5837,8 @@ store_parm_decls (void)
 	{
 	  tree decl, link;
 
-	  error_with_decl (fndecl,
-			   "parm types given both in parmlist and separately");
+	  error ("%Hparm types given both in parmlist and separately",
+                 &DECL_SOURCE_LOCATION (fndecl));
 	  /* Get rid of the erroneous decls; don't keep them on
 	     the list of parms, since they might not be PARM_DECLs.  */
 	  for (decl = current_binding_level->names;
@@ -5799,15 +5855,16 @@ store_parm_decls (void)
       specparms = nreverse (specparms);
       for (parm = specparms; parm; parm = next)
 	{
+          const location_t *locus = &DECL_SOURCE_LOCATION (parm);
 	  next = TREE_CHAIN (parm);
 	  if (TREE_CODE (parm) == PARM_DECL)
 	    {
 	      if (DECL_NAME (parm) == 0)
-		error_with_decl (parm, "parameter name omitted");
+                error ("%Hparameter name omitted", locus);
 	      else if (TREE_CODE (TREE_TYPE (parm)) != ERROR_MARK
 		       && VOID_TYPE_P (TREE_TYPE (parm)))
 		{
-		  error_with_decl (parm, "parameter `%s' declared void");
+		  error ("%Hparameter '%D' declared void", locus, parm);
 		  /* Change the type to error_mark_node so this parameter
 		     will be ignored by assign_parms.  */
 		  TREE_TYPE (parm) = error_mark_node;
@@ -5866,8 +5923,8 @@ store_parm_decls (void)
 
 	  if (TREE_VALUE (parm) == 0)
 	    {
-	      error_with_decl (fndecl,
-			       "parameter name missing from parameter list");
+	      error ("%Hparameter name missing from parameter list",
+                     &DECL_SOURCE_LOCATION (fndecl));
 	      TREE_PURPOSE (parm) = 0;
 	      continue;
 	    }
@@ -5886,14 +5943,16 @@ store_parm_decls (void)
 	     Complain, and don't use this decl twice.  */
 	  if (found && DECL_WEAK (found))
 	    {
-	      error_with_decl (found, "multiple parameters named `%s'");
+	      error ("%Hmultiple parameters named '%D'",
+                     &DECL_SOURCE_LOCATION (found), found);
 	      found = 0;
 	    }
 
 	  /* If the declaration says "void", complain and ignore it.  */
 	  if (found && VOID_TYPE_P (TREE_TYPE (found)))
 	    {
-	      error_with_decl (found, "parameter `%s' declared void");
+	      error ("%Hparameter '%D' declared void",
+                     &DECL_SOURCE_LOCATION (found), found);
 	      TREE_TYPE (found) = integer_type_node;
 	      DECL_ARG_TYPE (found) = integer_type_node;
 	      layout_decl (found, 0);
@@ -5907,9 +5966,11 @@ store_parm_decls (void)
 	      DECL_ARG_TYPE (found) = TREE_TYPE (found);
 	      DECL_SOURCE_LOCATION (found) = DECL_SOURCE_LOCATION (fndecl);
 	      if (flag_isoc99)
-		pedwarn_with_decl (found, "type of `%s' defaults to `int'");
+		pedwarn ("%Htype of '%D' defaults to `int'",
+                         &DECL_SOURCE_LOCATION (found), found);
 	      else if (extra_warnings)
-		warning_with_decl (found, "type of `%s' defaults to `int'");
+		warning ("%Htype of '%D' defaults to `int'",
+                         &DECL_SOURCE_LOCATION (found), found);
 	      pushdecl (found);
 	    }
 
@@ -5928,6 +5989,7 @@ store_parm_decls (void)
       nonparms = 0;
       for (parm = parmdecls; parm;)
 	{
+          const location_t *locus = &DECL_SOURCE_LOCATION (parm);
 	  tree next = TREE_CHAIN (parm);
 	  TREE_CHAIN (parm) = 0;
 
@@ -5938,14 +6000,14 @@ store_parm_decls (void)
 	      /* Complain about args with incomplete types.  */
 	      if (!COMPLETE_TYPE_P (TREE_TYPE (parm)))
 		{
-		  error_with_decl (parm, "parameter `%s' has incomplete type");
+		  error ("%Hparameter '%D' has incomplete type", locus, parm);
 		  TREE_TYPE (parm) = error_mark_node;
 		}
 
 	      if (! DECL_WEAK (parm))
 		{
-		  error_with_decl (parm,
-				   "declaration for parameter `%s' but no such parameter");
+		  error ("%Hdeclaration for parameter '%D' but no such "
+                         "parameter", locus, parm);
 	          /* Pretend the parameter was not missing.
 		     This gets us to a standard state and minimizes
 		     further error messages.  */
@@ -6170,8 +6232,9 @@ finish_function (int nested, int can_defer_p)
 	{
 	  /* If warn_main is 1 (-Wmain) or 2 (-Wall), we have already warned.
 	     If warn_main is -1 (-Wno-main) we don't want to be warned.  */
-	  if (! warn_main)
-	    pedwarn_with_decl (fndecl, "return type of `%s' is not `int'");
+	  if (!warn_main)
+	    pedwarn ("%Hreturn type of '%D' is not `int'",
+                     &DECL_SOURCE_LOCATION (fndecl), fndecl);
 	}
       else
 	{
@@ -6422,17 +6485,16 @@ c_expand_body_1 (tree fndecl, int nested_p)
 	  && 0 < compare_tree_int (TYPE_SIZE_UNIT (ret_type),
 				   larger_than_size))
 	{
+          const location_t *locus = &DECL_SOURCE_LOCATION (fndecl);
 	  unsigned int size_as_int
 	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ret_type));
 
 	  if (compare_tree_int (TYPE_SIZE_UNIT (ret_type), size_as_int) == 0)
-	    warning_with_decl (fndecl,
-			       "size of return value of `%s' is %u bytes",
-			       size_as_int);
+	    warning ("%Hsize of return value of '%D' is %u bytes",
+                     locus, fndecl, size_as_int);
 	  else
-	    warning_with_decl (fndecl,
-			       "size of return value of `%s' is larger than %d bytes",
-			       larger_than_size);
+	    warning ("%Hsize of return value of '%D' is larger than %wd bytes",
+                     locus, fndecl, larger_than_size);
 	}
     }
 
@@ -6531,12 +6593,16 @@ check_for_loop_decls (void)
 
   for (t = getdecls (); t; t = TREE_CHAIN (t))
     {
+      const location_t *locus = &DECL_SOURCE_LOCATION (t);
       if (TREE_CODE (t) != VAR_DECL && DECL_NAME (t))
-	error_with_decl (t, "declaration of non-variable `%s' in `for' loop initial declaration");
+	error ("%Hdeclaration of non-variable '%D' in 'for' loop "
+               "initial declaration", locus, t);
       else if (TREE_STATIC (t))
-	error_with_decl (t, "declaration of static variable `%s' in `for' loop initial declaration");
+	error ("%Hdeclaration of static variable '%D' in 'for' loop "
+               "initial declaration", locus, t);
       else if (DECL_EXTERNAL (t))
-	error_with_decl (t, "declaration of `extern' variable `%s' in `for' loop initial declaration");
+	error ("%Hdeclaration of 'extern' variable '%D' in 'for' loop "
+               "initial declaration", locus, t);
     }
 }
 
@@ -6860,8 +6926,10 @@ merge_translation_unit_decls (void)
 		}
 	      else
 		{
-		  error_with_decl (decl, "redefinition of global `%s'");
-		  error_with_decl (old_decl, "`%s' previously defined here");
+		  error ("%Hredefinition of global '%D'",
+                         &DECL_SOURCE_LOCATION (decl), decl);
+		  error ("%H'%D' previously defined here",
+                         &DECL_SOURCE_LOCATION (old_decl), old_decl);
 		}
 	    }
 	  else
