@@ -187,7 +187,8 @@ namespace std
 	    // If LC_ALL is set we are done.
 	    if (__env && std::strcmp(__env, "") != 0)
 	      {
-		if (std::strcmp(__env, "C") == 0 || std::strcmp(__env, "POSIX") == 0)
+		if (std::strcmp(__env, "C") == 0 
+		    || std::strcmp(__env, "POSIX") == 0)
 		  (_M_impl = _S_classic)->_M_add_reference();
 		else
 		  _M_impl = new _Impl(__env, 1);
@@ -197,7 +198,8 @@ namespace std
 		char* __res;
 		// LANG may set a default different from "C".
 		char* __env = getenv("LANG");
-		if (!__env || std::strcmp(__env, "") == 0 || std::strcmp(__env, "C") == 0
+		if (!__env || std::strcmp(__env, "") == 0 
+		    || std::strcmp(__env, "C") == 0 
 		    || std::strcmp(__env, "POSIX") == 0)
 		  __res = strdup("C");
 		else 
@@ -481,7 +483,7 @@ namespace std
     }
 #endif
 
-  // Definitions for static const data members of time_base
+  // Definitions for static const data members of time_base.
   template<> 
     const char*
     __timepunct<char>::_S_timezones[14] =
@@ -500,7 +502,7 @@ namespace std
     };
 #endif
 
-  // Definitions for static const data members of money_base
+  // Definitions for static const data members of money_base.
   const money_base::pattern 
   money_base::_S_default_pattern =  { {symbol, sign, none, value} };
 

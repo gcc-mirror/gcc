@@ -152,7 +152,7 @@ namespace std
 
       static char_type* 
       copy(char_type* __s1, const char_type* __s2, size_t __n)
-      {  return static_cast<char_type*>(memcpy(__s1, __s2, __n)); }
+      { return static_cast<char_type*>(memcpy(__s1, __s2, __n)); }
 
       static char_type* 
       assign(char_type* __s, size_t __n, char_type __a)

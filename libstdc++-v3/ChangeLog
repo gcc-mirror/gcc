@@ -1,3 +1,13 @@
+2003-07-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/locale/generic/numeric_members.cc: Correct type info.
+	* config/locale/gnu/numeric_members.cc: Same.
+	* include/bits/locale_facets.h: Same.
+	
+	* include/bits/char_traits.h: Correct spacing.
+
+	* src/locale.cc: Wrap to 80 col.
+	
 2003-07-07  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_complex.h: Partially revert last
@@ -67,7 +77,9 @@
 2003-07-05  Gawain Bolton  <gp.bolton@computer.org>
 
 	* include/bits/stl_list.h: Performance and memory usage
-	improvements.
+	improvements. In particular, the behaviour of the constructor and
+	destructor as the list header node is no longer dynamically
+	allocated/de-allocated.
 	* include/bits/list.tcc: Likewise.
 
 2003-07-05  Paolo Carlini  <pcarlini@unitus.it>
