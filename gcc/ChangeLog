@@ -1,3 +1,8 @@
+2005-04-05  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/invoke.texi (Optimize Options): Mention -ftree-lrs, not
+	-ftree-live_range_split.  Perhaps renamed at some point?
+	
 2005-04-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/19317
