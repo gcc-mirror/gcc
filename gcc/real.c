@@ -2130,8 +2130,8 @@ emdnorm (s, lost, subflg, exp, rcntrl)
 	 s[6] = 0;
 	 }
 	 */
-      s[rw] &= ~rmsk;
     }
+  s[rw] &= ~rmsk;
   if ((r & rmbit) != 0)
     {
       if (r == rmbit)
