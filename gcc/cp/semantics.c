@@ -1057,7 +1057,7 @@ finish_stmt_expr (rtl_expr, expr)
 
   if (TREE_CODE (expr) == BLOCK)
     {
-      /* Make a CP_BIND_EXPR for the BLOCK already made.  */
+      /* Make a BIND_EXPR for the BLOCK already made.  */
       if (building_stmt_tree ())
 	{
 	  result = build_min (STMT_EXPR, last_expr_type, last_tree);

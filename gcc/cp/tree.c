@@ -1668,6 +1668,8 @@ search_tree (t, func)
     case CLEANUP_POINT_EXPR:
     case LOOKUP_EXPR:
     case THROW_EXPR:
+    case EXIT_EXPR:
+    case LOOP_EXPR:
       TRY (TREE_OPERAND (t, 0));
       break;
 
@@ -2001,6 +2003,8 @@ mapcar (t, func)
       return t;
 
     case LOOKUP_EXPR:
+    case EXIT_EXPR:
+    case LOOP_EXPR:
       t = copy_node (t);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       return t;
