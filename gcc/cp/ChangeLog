@@ -1,3 +1,8 @@
+1999-10-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (tsubst_decl): If the type of a template instantiation is
+	bogus, so is the whole instantiation.
+
 1999-09-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (initialize_local_var): Handle static variables here.
