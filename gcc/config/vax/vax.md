@@ -1926,53 +1926,80 @@
 ;; because we don't want pushl $1 turned into pushad 1.
 ;; or addl3 r1,r2,r3 turned into movab 0(r1)[r2],r3.
 
-(define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=<,g")
-	(match_operand:QI 1 "address_operand" "p,p"))]
-  ""
-  "@
-   pushab %a1
-   movab %a1,%0")
+;; It does not work to use constraints to distinguish pushes from moves,
+;; because < matches any autodecrement, not just a push.
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=<,g")
-	(match_operand:HI 1 "address_operand" "p,p"))]
+  [(set (match_operand:SI 0 "general_operand" "=g")
+	(match_operand:QI 1 "address_operand" "p"))]
   ""
-  "@
-   pushaw %a1
-   movaw %a1,%0")
+  "*
+{
+  if (push_operand (operands[0], SImode))
+    return \"pushab %a1\";
+  else
+    return \"movab %a1,%0\";
+}")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=<,g")
-	(match_operand:SI 1 "address_operand" "p,p"))]
+  [(set (match_operand:SI 0 "general_operand" "=g")
+	(match_operand:HI 1 "address_operand" "p"))]
   ""
-  "@
-   pushal %a1
-   moval %a1,%0")
+  "*
+{
+  if (push_operand (operands[0], SImode))
+    return \"pushaw %a1\";
+  else
+    return \"movaw %a1,%0\";
+}")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=<,g")
-	(match_operand:DI 1 "address_operand" "p,p"))]
+  [(set (match_operand:SI 0 "general_operand" "=g")
+	(match_operand:SI 1 "address_operand" "p"))]
   ""
-  "@
-   pushaq %a1
-   movaq %a1,%0")
+  "*
+{
+  if (push_operand (operands[0], SImode))
+    return \"pushal %a1\";
+  else
+    return \"movabl %a1,%0\";
+}")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=<,g")
-	(match_operand:SF 1 "address_operand" "p,p"))]
+  [(set (match_operand:SI 0 "general_operand" "=g")
+	(match_operand:DI 1 "address_operand" "p"))]
   ""
-  "@
-   pushaf %a1
-   movaf %a1,%0")
+  "*
+{
+  if (push_operand (operands[0], SImode))
+    return \"pushaq %a1\";
+  else
+    return \"movaq %a1,%0\";
+}")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "=<,g")
-	(match_operand:DF 1 "address_operand" "p,p"))]
+  [(set (match_operand:SI 0 "general_operand" "=g")
+	(match_operand:SF 1 "address_operand" "p"))]
   ""
-  "@
-   pushad %a1
-   movad %a1,%0")
+  "*
+{
+  if (push_operand (operands[0], SImode))
+    return \"pushaf %a1\";
+  else
+    return \"movaf %a1,%0\";
+}")
+
+(define_insn ""
+  [(set (match_operand:SI 0 "general_operand" "=g")
+	(match_operand:DF 1 "address_operand" "p"))]
+  ""
+  "*
+{
+  if (push_operand (operands[0], SImode))
+    return \"pushad %a1\";
+  else
+    return \"movad %a1,%0\";
+}")
 
 ;; These used to be peepholes, but it is more straightforward to do them
 ;; as single insns.  However, we must force the output to be a register
