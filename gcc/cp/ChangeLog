@@ -1,10 +1,31 @@
+2002-12-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (LOOKUP_TEMPLATES_EXPECTED): Remove.
+	(lookup_name_namespace_only): Likewise.
+	(begin_only_namespace_names): Likewise.
+	(end_only_namespace_names): Likewise.
+	* decl.c (only_namespace_names): Remove.
+	(qualify_lookup): Do not check LOOKUP_TEMPLATES_EXPECTED.
+	(lookup_name_real): Do not check only_namespace_names.
+	(lookup_name_namespace_only): Remove.
+	(begin_only_namespace_names): Likewise.
+	(end_only_namespace_names): Likewise.
+	* parser.c (cp_parser_nested_name_specifier_opt): Handle erroneous
+	nested-name-specifiers more gracefully.
+	(cp_parser_class_or_namespace_name): Avoid looking up namespace
+	names when they cannot possibly appear.
+	(cp_parser_template_name): Adjust call to cp_parser_lookup_name.
+	(cp_parser_elaborated_type_specifier): Likewise.
+	(cp_parser_namespace_name): Only look for namespace names.
+	(cp_parser_lookup_name): Add is_namespace parameter.
+	(cp_parser_lookup_name_simple): Adjust call to
+	cp_parser_lookup_name.
+
+	* parser.c (cp_parser_dependent_type_p): Fix thinko.
+
 2002-12-31  Neil Booth  <neil@daikokuya.co.uk>
 
 	* .cvsignore: Update.
-
-2002-12-31  Mark Mitchell  <mark@codesourcery.com>
-
-	* parser.c (cp_parser_dependent_type_p): Fix thinko.
 
 2002-12-31  Nathan Sidwell  <nathan@codesourcery.com>
 
