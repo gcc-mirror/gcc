@@ -1,3 +1,31 @@
+2003-01-07  Daniel Berlin  <dberlin@dberlin.org>
+
+	* cfg.c: Include alloc-pool.h
+	(edge_pool): New pool.
+	(bb_pool): New pool.
+	(first_deleted_edge): Remove.
+	(first_deleted_block): Remove.
+	(init_flow): Alloc/free the pools.
+	(free_edge): Use pools.
+	(alloc_block): Ditto.
+	(expunge_block): Ditto.
+	(cached_make_edge): Ditto.
+
+	* Makefile.in (cfg.o): Add alloc-pool.h dependency.
+
+2003-01-07  Daniel Berlin  <dberlin@dberlin.org>
+
+	* et-forest.c: Include alloc-pool.h.
+	(struct et_forest): Add node_pool and occur_pool.
+	(et_forest_create): Create the new pools.
+	(et_forest_delete): Delete them.
+	(et_forest_add_node): Allocate and free using pools.
+	(et_forest_add_edge): Ditto.
+	(et_forest_remove_node): Ditto.
+	(et_forest_remove_edge): Ditto.
+
+	* Makefile.in (et-forest.o): Add alloc-pool.h dependency.
+
 2003-01-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (output_logical_op): Simplify and
