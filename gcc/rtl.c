@@ -1038,6 +1038,7 @@ read_rtx (infile)
 	{
 	  int saw_paren = 0;
 	  register char *stringbuf;
+	  int saw_anything = 0;
 
 	  c = read_skip_spaces (infile);
 	  if (c == '(')
@@ -1070,6 +1071,28 @@ read_rtx (infile)
 		break;
 
 	      obstack_1grow (&rtl_obstack, c);
+	      saw_anything = 1;
+	    }
+
+	  /* For insn patterns, we want to provide a default name
+	     based on the file and line, like "*foo.md:12", if the
+	     given name is blank.  These are only for define_insn and
+	     define_insn_and_split, to aid debugging.  */
+	  if (!saw_anything
+	      && i == 0
+	      && (GET_CODE (return_rtx) == DEFINE_INSN
+		  || GET_CODE (return_rtx) == DEFINE_INSN_AND_SPLIT))
+	    {
+	      char line_name[20];
+	      const char *fn = (read_rtx_filename ? read_rtx_filename : "rtx");
+	      char *slash;
+	      for (slash = fn; *slash; slash ++)
+		if (*slash == '/' || *slash == '\\' || *slash == ':')
+		  fn = slash + 1;
+	      obstack_1grow (&rtl_obstack, '*');
+	      obstack_grow (&rtl_obstack, fn, strlen (fn));
+	      sprintf (line_name, ":%d", read_rtx_lineno);
+	      obstack_grow (&rtl_obstack, line_name, strlen (line_name));
 	    }
 
 	  obstack_1grow (&rtl_obstack, 0);
