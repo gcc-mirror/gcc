@@ -1,3 +1,9 @@
+2002-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/5748
+	* stmt.c (expand_anon_union_decl): Set TREE_USED on the anon union
+	decl if any of elements was TREE_USED.
+
 2002-02-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sparc/sol2.h: Don't include sys/mman.h.
