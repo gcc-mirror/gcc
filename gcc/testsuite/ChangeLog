@@ -1,3 +1,7 @@
+2002-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/warn/Wunused-1.C: New test.
+
 2002-02-13  Richard Sandiford  <rsandifo@redhat.com>
 
 	* g++.dg/abi/mangle6.C: New test.
