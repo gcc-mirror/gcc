@@ -1,3 +1,7 @@
+2004-11-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gfortranspec.c: Replace GNU CC with GCC.
+
 2004-11-05  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortranspec.c (lang_specific_driver): Change year to 2004.
