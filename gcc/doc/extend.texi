@@ -1224,16 +1224,13 @@ provided as built-in functions by GCC@.
 
 GCC can allocate complex automatic variables in a noncontiguous
 fashion; it's even possible for the real part to be in a register while
-the imaginary part is on the stack (or vice-versa).  None of the
-supported debugging info formats has a way to represent noncontiguous
-allocation like this, so GCC describes a noncontiguous complex
-variable as if it were two separate variables of noncomplex type.
+the imaginary part is on the stack (or vice-versa).  Only the DWARF2
+debug info format can represent this, so use of DWARF2 is recommended.
+If you are using the stabs debug info format, GCC describes a noncontiguous
+complex variable as if it were two separate variables of noncomplex type.
 If the variable's actual name is @code{foo}, the two fictitious
 variables are named @code{foo$real} and @code{foo$imag}.  You can
 examine and set these two fictitious variables with your debugger.
-
-A future version of GDB will know how to recognize such pairs and treat
-them as a single variable with a complex type.
 
 @node Hex Floats
 @section Hex Floats
