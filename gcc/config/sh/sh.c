@@ -1548,23 +1548,33 @@ machine_dependent_reorg (first)
              make sure that the only insns which use REG are
              themselves function calls.  */
 
+	  /* ??? This doesn't work for call targets that were allocated
+	     by reload, since there may not be a REG_DEAD note for the
+	     register.  */
+
 	  dies = NULL_RTX;
 	  for (scan = NEXT_INSN (link); scan; scan = NEXT_INSN (scan))
 	    {
 	      rtx scanset;
+
+	      /* Don't try to trace forward past a CODE_LABEL if we haven't
+		 seen INSN yet.  Ordinarily, we will only find the setting insn
+		 in LOG_LINKS if it is in the same basic block.  However,
+		 cross-jumping can insert code labels in between the load and
+		 the call, and can result in situations where a single call
+		 insn may have two targets depending on where we came from.  */
+
+	      if (GET_CODE (scan) == CODE_LABEL && ! foundinsn)
+		break;
 
 	      if (GET_RTX_CLASS (GET_CODE (scan)) != 'i')
 		continue;
 
 	      /* Don't try to trace forward past a JUMP.  To optimize
                  safely, we would have to check that all the
-                 instructions at the jump destination did not use REG.
-                 It should be safe to trace past a CODE_LABEL, because
-                 we will only find the setting insn in LOG_LINKS if it
-                 is in the same basic block (so probably we should
-                 never find a CODE_LABEL anyhow).  */
+                 instructions at the jump destination did not use REG.  */
 
-	      if (GET_CODE (insn) == JUMP_INSN)
+	      if (GET_CODE (scan) == JUMP_INSN)
 		break;
 
 	      if (! reg_mentioned_p (reg, scan))
