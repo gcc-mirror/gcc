@@ -1,3 +1,8 @@
+2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/16891
+	* gcc.dg/empty2.c: New.
+
 2004-12-23  Richard Henderson  <rth@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_no_align): 
