@@ -2469,7 +2469,7 @@ expand_call (exp, target, ignore)
 	 != RETURN_POPS_ARGS (current_function_decl,
 			      TREE_TYPE (current_function_decl),
 			      current_function_args_size))
-  try_tail_call = 0;
+    try_tail_call = 0;
 
   if (try_tail_call || try_tail_recursion)
     {
