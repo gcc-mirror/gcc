@@ -1,3 +1,7 @@
+2003-10-31  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (STRICT2_WARN): Add -Wold-style-definition.
+
 2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/11271
