@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for AMD Am29000 CPU
    running over UDI using COFF.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

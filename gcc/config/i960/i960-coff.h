@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler, for "naked" Intel
    80960 using coff object format and coff debugging symbols.
    Copyright (C) 1988, 1989, 1991 Intel Corp.
+   Copyright (C) 1996 Free Software Foundation.
    Contributed by Steven McGeady (mcg@omepd.intel.com)
    Additional work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
    Converted to GCC 2.0 by Michael Tiemann, Cygnus Support.
