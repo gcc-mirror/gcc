@@ -8969,9 +8969,7 @@ mips_adjust_insn_length (rtx insn, int length)
   /* A unconditional jump has an unfilled delay slot if it is not part
      of a sequence.  A conditional jump normally has a delay slot, but
      does not on MIPS16.  */
-  if (simplejump_p (insn)
-      || (!TARGET_MIPS16  && (GET_CODE (insn) == JUMP_INSN
-			      || GET_CODE (insn) == CALL_INSN)))
+  if (CALL_P (insn) || (TARGET_MIPS16 ? simplejump_p (insn) : JUMP_P (insn)))
     length += 4;
 
   /* See how many nops might be needed to avoid hardware hazards.  */
