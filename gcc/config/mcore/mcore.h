@@ -66,105 +66,26 @@
 #undef  LINK_SPEC
 #define LINK_SPEC "%{mbig-endian:-EB} %{m210:-EB} -X"
 
-/* Can only count on 16 bits of availability; change to long would affect
-   many architecture specific files (other architectures...).  */
-extern int target_flags;
-
-#define HARDLIT_BIT	   (1 << 0) /* Build in-line literals using 2 insns.  */
-#define ALIGN8_BIT	   (1 << 1) /* Max alignment goes to 8 instead of 4.  */
-#define DIV_BIT		   (1 << 2) /* Generate divide instructions.  */
-#define RELAX_IMM_BIT	   (1 << 3) /* Arbitrary immediates in and, or, tst.  */
-#define W_FIELD_BIT	   (1 << 4) /* Generate bit insv/extv using SImode.  */
-#define	OVERALIGN_FUNC_BIT (1 << 5) /* Align functions to 4 byte boundary.  */
-#define CGDATA_BIT	   (1 << 6) /* Generate callgraph data.  */
-#define SLOW_BYTES_BIT     (1 << 7) /* Slow byte access.  */
-#define LITTLE_END_BIT     (1 << 8) /* Generate little endian code.  */
-#define M340_BIT           (1 << 9) /* Generate code for the m340.  */
-
-#define TARGET_DEFAULT     \
- (HARDLIT_BIT | ALIGN8_BIT | DIV_BIT | RELAX_IMM_BIT | M340_BIT | LITTLE_END_BIT)
+#define TARGET_DEFAULT	\
+  (MASK_HARDLIT		\
+   | MASK_8ALIGN	\
+   | MASK_DIV		\
+   | MASK_RELAX_IMM	\
+   | MASK_M340		\
+   | MASK_LITTLE_END)
 
 #ifndef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS { "mlittle-endian", "m340" }
 #endif
 
-#define TARGET_HARDLIT		(target_flags & HARDLIT_BIT)
 /* The ability to have 4 byte alignment is being suppressed for now.
-   If this ability is reenabled, you must enable the definition below
+   If this ability is reenabled, you must disable the definition below
    *and* edit t-mcore to enable multilibs for 4 byte alignment code.  */
-#if 0 
-#define TARGET_8ALIGN		(target_flags & ALIGN8_BIT)
-#else
-#define TARGET_8ALIGN		1
-#endif
-#define TARGET_DIV		(target_flags & DIV_BIT)
-#define TARGET_RELAX_IMM        (target_flags & RELAX_IMM_BIT)
-#define TARGET_W_FIELD          (target_flags & W_FIELD_BIT)
-#define TARGET_OVERALIGN_FUNC   (target_flags & OVERALIGN_FUNC_BIT)
-#define TARGET_CG_DATA 		(target_flags & CGDATA_BIT)
-#define TARGET_CG_DATA 		(target_flags & CGDATA_BIT)
-#define TARGET_SLOW_BYTES 	(target_flags & SLOW_BYTES_BIT)
-#define TARGET_LITTLE_END	(target_flags & LITTLE_END_BIT)
-#define TARGET_M340 		(target_flags & M340_BIT)
-
-
-#define TARGET_SWITCHES							\
-{ {"hardlit", 	            HARDLIT_BIT,				\
-     N_("Inline constants if it can be done in 2 insns or less") },	\
-  {"no-hardlit",          - HARDLIT_BIT,				\
-     N_("Inline constants if it only takes 1 instruction") },		\
-  {"4align",              - ALIGN8_BIT,					\
-     N_("Set maximum alignment to 4") },				\
-  {"8align",	            ALIGN8_BIT,					\
-     N_("Set maximum alignment to 8") },				\
-  {"div",                   DIV_BIT,					\
-     "" },								\
-  {"no-div",	          - DIV_BIT,					\
-     N_("Do not use the divide instruction") },				\
-  {"relax-immediates",      RELAX_IMM_BIT,				\
-     "" },								\
-  {"no-relax-immediates", - RELAX_IMM_BIT,				\
-     N_("Do not arbitrary sized immediates in bit operations") },	\
-  {"wide-bitfields",        W_FIELD_BIT,				\
-     N_("Always treat bit-field as int-sized") },			\
-  {"no-wide-bitfields",   - W_FIELD_BIT,				\
-     "" },								\
-  {"4byte-functions",       OVERALIGN_FUNC_BIT,				\
-     N_("Force functions to be aligned to a 4 byte boundary") },	\
-  {"no-4byte-functions",  - OVERALIGN_FUNC_BIT,				\
-     N_("Force functions to be aligned to a 2 byte boundary") },	\
-  {"callgraph-data",        CGDATA_BIT,					\
-     N_("Emit call graph information") },				\
-  {"no-callgraph-data",   - CGDATA_BIT,					\
-     "" },								\
-  {"slow-bytes",            SLOW_BYTES_BIT,				\
-     N_("Prefer word accesses over byte accesses") },			\
-  {"no-slow-bytes",       - SLOW_BYTES_BIT,				\
-     "" },								\
-  { "no-lsim",              0, "" },			 		\
-  {"little-endian",         LITTLE_END_BIT,				\
-     N_("Generate little endian code") },				\
-  {"big-endian",          - LITTLE_END_BIT,				\
-     "" },								\
-  {"210",                 - M340_BIT,					\
-     "" },								\
-  {"340",                   M340_BIT,					\
-     N_("Generate code for the M*Core M340") },				\
-  {"",   	            TARGET_DEFAULT,				\
-     "" }								\
-}
+#undef TARGET_8ALIGN
+#define TARGET_8ALIGN 1
 
 extern char * mcore_current_function_name;
  
-/* Target specific options (as opposed to the switches above).  */
-extern const char * mcore_stack_increment_string;
-
-#define	TARGET_OPTIONS							\
-{									\
-  {"stack-increment=", & mcore_stack_increment_string,			\
-     N_("Maximum amount for a single stack increment operation"), 0}	\
-}
-
 /* The MCore ABI says that bitfields are unsigned by default.  */
 #define CC1_SPEC "-funsigned-bitfields"
 
@@ -189,7 +110,7 @@ extern const char * mcore_stack_increment_string;
     }						\
   if (SIZE)					\
     {						\
-      target_flags &= ~ HARDLIT_BIT;		\
+      target_flags &= ~MASK_HARDLIT;		\
     }						\
 }
 

@@ -49,8 +49,7 @@
 /* Maximum size we are allowed to grow the stack in a single operation.
    If we want more, we must do it in increments of at most this size.
    If this value is 0, we don't check at all.  */
-const char * mcore_stack_increment_string = 0;
-int          mcore_stack_increment = STACK_UNITS_MAXSTEP;
+int mcore_stack_increment = STACK_UNITS_MAXSTEP;
 
 /* For dumping information about frame sizes.  */
 char * mcore_current_function_name = 0;
@@ -176,6 +175,8 @@ static int        mcore_arg_partial_bytes       (CUMULATIVE_ARGS *,
 #define TARGET_ASM_UNIQUE_SECTION 	mcore_unique_section
 #undef  TARGET_ASM_FUNCTION_RODATA_SECTION
 #define TARGET_ASM_FUNCTION_RODATA_SECTION default_no_function_rodata_section
+#undef  TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS	TARGET_DEFAULT
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO 	mcore_encode_section_info
 #undef  TARGET_STRIP_NAME_ENCODING
@@ -2981,21 +2982,9 @@ mcore_is_same_reg (rtx x, rtx y)
 void
 mcore_override_options (void)
 {
-  if (mcore_stack_increment_string)
-    {
-      mcore_stack_increment = atoi (mcore_stack_increment_string);
-      
-      if (mcore_stack_increment < 0
-	  || (mcore_stack_increment == 0
-	      && (mcore_stack_increment_string[0] != '0'
-		  || mcore_stack_increment_string[1] != 0)))
-	error ("invalid option %<-mstack-increment=%s%>",
-	       mcore_stack_increment_string);	
-    }
-  
   /* Only the m340 supports little endian code.  */
   if (TARGET_LITTLE_END && ! TARGET_M340)
-    target_flags |= M340_BIT;
+    target_flags |= MASK_M340;
 }
 
 /* Compute the number of word sized registers needed to 

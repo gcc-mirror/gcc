@@ -1,3 +1,21 @@
+2005-04-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mcore/mcore.h (target_flags, HARDLIT_BIT, ALIGN8_BIT, DIV_BIT)
+	(RELAX_IMM_BIT, W_FIELD_BIT, OVERALIGN_FUNC_BIT, CGDATA_BIT)
+	(SLOW_BYTES_BIT, LITTLE_END_BIT, M340_BIT, TARGET_HARDLIT)
+	(TARGET_DIV, TARGET_RELAX_IMM, TARGET_W_FIELD, TARGET_OVERALIGN_FUNC)
+	(TARGET_CG_DATA, TARGET_SLOW_BYTES, TARGET_LITTLE_END, TARGET_M340)
+	(TARGET_SWITCHES, mcore_stack_increment_string)
+	(TARGET_OPTIONS): Delete.
+	(TARGET_DEFAULT, OPTIMIZATION_OPTIONS): Use MASK_* constants rather
+	than *_BIT constants.
+	(TARGET_8ALIGN): #undef old definition before redefining to 1.
+	* config/mcore/mcore.c (mcore_stack_increment_string): Delete.
+	(TARGET_DEFAULT_TARGET_FLAGS): Override default to TARGET_DEFAULT.
+	(mcore_override_options): Delete mcore_stack_increment code.
+	Change use of M340_BIT to MASK_M340.
+	* config/mcore/mcore.opt: New file.
+
 2005-04-04  Ian Lance Taylor  <ian@airs.com>
 
 	* config/arm/arm.c (replace_symbols_in_block): Remove static
