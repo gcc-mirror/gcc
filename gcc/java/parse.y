@@ -12778,6 +12778,20 @@ valid_ref_assignconv_cast_p (source, dest, cast)
     source = TREE_TYPE (source);
   if (TREE_CODE (dest) == POINTER_TYPE)
     dest = TREE_TYPE (dest);
+
+  /* If source and dest are being compiled from bytecode, they may need to
+     be loaded. */
+  if (CLASS_P (source) && !CLASS_LOADED_P (source))
+    {
+      load_class (source, 1);
+      safe_layout_class (source);
+    }
+  if (CLASS_P (dest) && !CLASS_LOADED_P (dest))
+    {
+      load_class (dest, 1);
+      safe_layout_class (dest);
+    }
+
   /* Case where SOURCE is a class type */
   if (TYPE_CLASS_P (source))
     {
