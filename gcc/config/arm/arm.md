@@ -3693,6 +3693,13 @@
    (set_attr "pool_range" "32,32")]
 )
 
+(define_expand "extendsfdf2"
+  [(set (match_operand:DF                  0 "s_register_operand" "")
+	(float_extend:DF (match_operand:SF 1 "s_register_operand"  "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  ""
+)
+
 (define_insn "*arm_extendsfdf2"
   [(set (match_operand:DF                  0 "s_register_operand" "=f")
 	(float_extend:DF (match_operand:SF 1 "s_register_operand"  "f")))]
