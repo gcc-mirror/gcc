@@ -1,5 +1,9 @@
 2000-09-30  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* i386.c: Move include of "config.h" to before that of <setjmp.h>.
+
+2000-09-30  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-tree.texi, contrib.texi, gcc.texi, install.texi, invoke.texi:
 	Consistently use @email for formatting email addresses.
 
