@@ -713,7 +713,9 @@
 	/* with 2GB physical memory will usually move the user		*/
 	/* address space limit, and hence initial SP to 0x80000000.	*/
 #       if !defined(LINUX_THREADS) || !defined(REDIRECT_MALLOC)
-#	    define MPROTECT_VDB
+	/* libgcj: Linux threads don't interact well with the read() wrapper.
+	   Not defining MPROTECT_VDB fixes this.  */
+/* #	    define MPROTECT_VDB */
 #	else
 	    /* We seem to get random errors in incremental mode,	*/
 	    /* possibly because Linux threads is itself a malloc client */
