@@ -206,6 +206,14 @@ optimize_reg_copy_1 (insn, dest, src)
 		  || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
 	break;
 
+      /* ??? We can't scan past the end of a basic block without updating
+	 the register lifetime info (REG_DEAD/basic_block_live_at_start).
+	 A CALL_INSN might be the last insn of a basic block, if it is inside
+	 an EH region.  There is no easy way to tell, so we just always break
+	 when we see a CALL_INSN if flag_exceptions is nonzero.  */
+      if (flag_exceptions && GET_CODE (p) == CALL_INSN)
+	break;
+
       if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
 	continue;
 
@@ -380,6 +388,14 @@ optimize_reg_copy_2 (insn, dest, src)
 		  || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
 	break;
 
+      /* ??? We can't scan past the end of a basic block without updating
+	 the register lifetime info (REG_DEAD/basic_block_live_at_start).
+	 A CALL_INSN might be the last insn of a basic block, if it is inside
+	 an EH region.  There is no easy way to tell, so we just always break
+	 when we see a CALL_INSN if flag_exceptions is nonzero.  */
+      if (flag_exceptions && GET_CODE (p) == CALL_INSN)
+	break;
+
       if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
 	continue;
 
@@ -451,10 +467,22 @@ optimize_reg_copy_3 (insn, dest, src)
     return;
   for (p = PREV_INSN (insn); ! reg_set_p (src_reg, p); p = PREV_INSN (p))
     {
+      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN
+	  || (GET_CODE (p) == NOTE
+	      && (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG
+		  || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
+	return;
+
+      /* ??? We can't scan past the end of a basic block without updating
+	 the register lifetime info (REG_DEAD/basic_block_live_at_start).
+	 A CALL_INSN might be the last insn of a basic block, if it is inside
+	 an EH region.  There is no easy way to tell, so we just always break
+	 when we see a CALL_INSN if flag_exceptions is nonzero.  */
+      if (flag_exceptions && GET_CODE (p) == CALL_INSN)
+	return;
+
       if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
 	continue;
-      if (GET_CODE (p) == JUMP_INSN)
-	return;
     }
   if (! (set = single_set (p))
       || GET_CODE (SET_SRC (set)) != MEM
@@ -541,7 +569,8 @@ reg_is_remote_constant_p (reg, insn, first)
 
 /* cse disrupts preincrement / postdecrement squences when it finds a
    hard register as ultimate source, like the frame pointer.  */
-int fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
+int
+fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
      rtx insn, dst, src, offset;
      FILE *regmove_dump_file;
 {
@@ -567,13 +596,21 @@ int fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
                   || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
         break;
 
+      /* ??? We can't scan past the end of a basic block without updating
+	 the register lifetime info (REG_DEAD/basic_block_live_at_start).
+	 A CALL_INSN might be the last insn of a basic block, if it is inside
+	 an EH region.  There is no easy way to tell, so we just always break
+	 when we see a CALL_INSN if flag_exceptions is nonzero.  */
+      if (flag_exceptions && GET_CODE (p) == CALL_INSN)
+	break;
+
       if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
         continue;
 
-  if (find_regno_note (p, REG_DEAD, REGNO (dst)))
-    dst_death = p;
-  if (! dst_death)
-    length++;
+      if (find_regno_note (p, REG_DEAD, REGNO (dst)))
+	dst_death = p;
+      if (! dst_death)
+	length++;
 
       pset = single_set (p);
       if (pset && SET_DEST (pset) == dst
@@ -978,6 +1015,16 @@ regmove_optimize (f, nregs, regmove_dump_file)
 			      || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
 		    break;
 
+		  /* ??? We can't scan past the end of a basic block without
+		     updating the register lifetime info
+		     (REG_DEAD/basic_block_live_at_start).
+		     A CALL_INSN might be the last insn of a basic block, if
+		     it is inside an EH region.  There is no easy way to tell,
+		     so we just always break when we see a CALL_INSN if
+		     flag_exceptions is nonzero.  */
+		  if (flag_exceptions && GET_CODE (p) == CALL_INSN)
+		    break;
+
 		  if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
 		    continue;
 
@@ -1245,6 +1292,14 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 		  || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
 	break;
 
+      /* ??? We can't scan past the end of a basic block without updating
+	 the register lifetime info (REG_DEAD/basic_block_live_at_start).
+	 A CALL_INSN might be the last insn of a basic block, if it is
+	 inside an EH region.  There is no easy way to tell, so we just
+	 always break when we see a CALL_INSN if flag_exceptions is nonzero.  */
+      if (flag_exceptions && GET_CODE (p) == CALL_INSN)
+	break;
+
       if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
 	continue;
 
@@ -1281,6 +1336,20 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 		      q = 0;
 		      break;
 		    }
+
+		  /* ??? We can't scan past the end of a basic block without
+		     updating the register lifetime info
+		     (REG_DEAD/basic_block_live_at_start).
+		     A CALL_INSN might be the last insn of a basic block, if
+		     it is inside an EH region.  There is no easy way to tell,
+		     so we just always break when we see a CALL_INSN if
+		     flag_exceptions is nonzero.  */
+		  if (flag_exceptions && GET_CODE (p) == CALL_INSN)
+		    {
+		      q = 0;
+		      break;
+		    }
+
 		  if (GET_RTX_CLASS (GET_CODE (q)) != 'i')
 		    continue;
 		  if (reg_overlap_mentioned_p (src, PATTERN (q))
@@ -1434,11 +1503,28 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	{
 	  for (q = PREV_INSN (insn); q; q = PREV_INSN(q))
 	    {
-	      if (GET_CODE (q) == JUMP_INSN)
+	      if (GET_CODE (q) == CODE_LABEL || GET_CODE (q) == JUMP_INSN
+		  || (GET_CODE (q) == NOTE
+		      && (NOTE_LINE_NUMBER (q) == NOTE_INSN_LOOP_BEG
+			  || NOTE_LINE_NUMBER (q) == NOTE_INSN_LOOP_END)))
 		{
 		  q = 0;
 		  break;
 		}
+
+	      /* ??? We can't scan past the end of a basic block without
+		 updating the register lifetime info
+		 (REG_DEAD/basic_block_live_at_start).
+		 A CALL_INSN might be the last insn of a basic block, if
+		 it is inside an EH region.  There is no easy way to tell,
+		 so we just always break when we see a CALL_INSN if
+		 flag_exceptions is nonzero.  */
+	      if (flag_exceptions && GET_CODE (p) == CALL_INSN)
+		{
+		  q = 0;
+		  break;
+		}
+
 	      if (GET_RTX_CLASS (GET_CODE (q)) != 'i')
 		continue;
 	      s_length2++;
@@ -1510,6 +1596,16 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 		  && (NOTE_LINE_NUMBER (q) == NOTE_INSN_LOOP_BEG
 		      || NOTE_LINE_NUMBER (q) == NOTE_INSN_LOOP_END)))
 	    break;
+
+	  /* ??? We can't scan past the end of a basic block without updating
+	     the register lifetime info (REG_DEAD/basic_block_live_at_start).
+	     A CALL_INSN might be the last insn of a basic block, if it
+	     is inside an EH region.  There is no easy way to tell so we
+	     just always break when we see a CALL_INSN if flag_exceptions
+	     is nonzero.  */
+	  if (flag_exceptions && GET_CODE (p) == CALL_INSN)
+	    break;
+
 	  if (GET_RTX_CLASS (GET_CODE (q)) != 'i')
 	    continue;
 	  if (src != inc_dest && (reg_overlap_mentioned_p (src, PATTERN (q))
