@@ -1,3 +1,7 @@
+Sat Oct  2 11:16:00 1999  Jim Kingdon  <http://developer.redhat.com>
+
+	* extend.texi: Grammar fix in __extension__ text.
+
 Sat Oct  2 11:06:31 1999  Richard Henderson  <rth@cygnus.com>
 
 	* md.texi (define_peephole2): New section.
