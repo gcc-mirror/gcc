@@ -4875,8 +4875,18 @@ build_common_tree_nodes_2 (short_double)
   TYPE_MODE (V8QI_type_node) = V8QImode;
   finish_vector_type (V8QI_type_node);
 
+  V8HI_type_node = make_node (VECTOR_TYPE);
+  TREE_TYPE (V8HI_type_node) = intHI_type_node;
+  TYPE_MODE (V8HI_type_node) = V8HImode;
+  finish_vector_type (V8HI_type_node);
+
   V2SF_type_node = make_node (VECTOR_TYPE);
   TREE_TYPE (V2SF_type_node) = float_type_node;
   TYPE_MODE (V2SF_type_node) = V2SFmode;
   finish_vector_type (V2SF_type_node);
+
+  V16QI_type_node = make_node (VECTOR_TYPE);
+  TREE_TYPE (V16QI_type_node) = intQI_type_node;
+  TYPE_MODE (V16QI_type_node) = V16QImode;
+  finish_vector_type (V16QI_type_node);
 }
