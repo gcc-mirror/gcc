@@ -1,3 +1,8 @@
+2001-06-22  Richard Henderson  <rth@redhat.com>
+
+	* doc/invoke.texi (-funsafe-math-optimizations): Document its
+	possible effects at link time.
+
 2001-06-22  Diego Novillo  <dnovillo@redhat.com>
 
 	* basic-block.h (dump_edge_info): Declare.
