@@ -1235,6 +1235,10 @@ FLAGS_FOR_TARGET=
 case " $skipdirs " in
 *" target-newlib "*) ;;
 *)
+ case " $target_configdirs " in
+ *" newlib "*)
+  case " $targargs " in
+  *" --with-newlib "*)
    case "$target" in
    *-cygwin*)
      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/winsup -L$$r/$(TARGET_SUBDIR)/winsup/cygwin -L$$r/$(TARGET_SUBDIR)/winsup/w32api/lib -isystem $$s/winsup/include -isystem $$s/winsup/cygwin/include -isystem $$s/winsup/w32api/include -isystem $$s/newlib/libc/sys/cygwin -isystem $$s/newlib/libc/sys/cygwin32' ;;
@@ -1252,6 +1256,10 @@ case " $skipdirs " in
    # switch).
    FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$$r/$(TARGET_SUBDIR)/newlib/ -isystem $$r/$(TARGET_SUBDIR)/newlib/targ-include -isystem $$s/newlib/libc/include'
    ;;
+  esac
+  ;;
+ esac
+ ;;
 esac
 
 # On Canadian crosses, we'll be searching the right directories for
