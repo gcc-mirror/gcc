@@ -1084,7 +1084,7 @@ local-clean:
 
 local-distclean:
 	-rm -f Makefile config.status config.cache mh-frag mt-frag
-	-rm -f multilib.out multilib.ts multilib.tmp maybedep.tmp serdep.tmp
+	-rm -f multilib.out multilib.tmp maybedep.tmp serdep.tmp
 	-if [ "$(TARGET_SUBDIR)" != "." ]; then \
 	  rm -rf $(TARGET_SUBDIR); \
 	else true; fi
@@ -1232,9 +1232,10 @@ TAGS: do-TAGS
 
 .PHONY: configure-build-libiberty maybe-configure-build-libiberty
 maybe-configure-build-libiberty:
-configure-build-libiberty: $(BUILD_SUBDIR)/libiberty/Makefile
-$(BUILD_SUBDIR)/libiberty/Makefile: config.status
-	@[ -d $(BUILD_SUBDIR)/libiberty ] || mkdir $(BUILD_SUBDIR)/libiberty;\
+configure-build-libiberty:
+	@test ! -f $(BUILD_SUBDIR)/libiberty/Makefile || exit 0; \
+	    [ -d $(BUILD_SUBDIR)/libiberty ] || \
+		mkdir $(BUILD_SUBDIR)/libiberty;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    AR="$(AR_FOR_BUILD)"; export AR; \
@@ -1305,10 +1306,9 @@ all-build-libiberty: configure-build-libiberty
 
 .PHONY: configure-ash maybe-configure-ash
 maybe-configure-ash:
-configure-ash: ash/Makefile
-
-ash/Makefile: config.status
-	@[ -d ash ] || mkdir ash; \
+configure-ash:
+	@test ! -f ash/Makefile || exit 0; \
+	[ -d ash ] || mkdir ash; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -1373,10 +1373,9 @@ install-ash: installdirs
 
 .PHONY: configure-autoconf maybe-configure-autoconf
 maybe-configure-autoconf:
-configure-autoconf: autoconf/Makefile
-
-autoconf/Makefile: config.status
-	@[ -d autoconf ] || mkdir autoconf; \
+configure-autoconf:
+	@test ! -f autoconf/Makefile || exit 0; \
+	[ -d autoconf ] || mkdir autoconf; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -1441,10 +1440,9 @@ install-autoconf: installdirs
 
 .PHONY: configure-automake maybe-configure-automake
 maybe-configure-automake:
-configure-automake: automake/Makefile
-
-automake/Makefile: config.status
-	@[ -d automake ] || mkdir automake; \
+configure-automake:
+	@test ! -f automake/Makefile || exit 0; \
+	[ -d automake ] || mkdir automake; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -1509,10 +1507,9 @@ install-automake: installdirs
 
 .PHONY: configure-bash maybe-configure-bash
 maybe-configure-bash:
-configure-bash: bash/Makefile
-
-bash/Makefile: config.status
-	@[ -d bash ] || mkdir bash; \
+configure-bash:
+	@test ! -f bash/Makefile || exit 0; \
+	[ -d bash ] || mkdir bash; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -1577,10 +1574,9 @@ install-bash: installdirs
 
 .PHONY: configure-bfd maybe-configure-bfd
 maybe-configure-bfd:
-configure-bfd: bfd/Makefile
-
-bfd/Makefile: config.status
-	@[ -d bfd ] || mkdir bfd; \
+configure-bfd:
+	@test ! -f bfd/Makefile || exit 0; \
+	[ -d bfd ] || mkdir bfd; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -1645,10 +1641,9 @@ install-bfd: installdirs
 
 .PHONY: configure-opcodes maybe-configure-opcodes
 maybe-configure-opcodes:
-configure-opcodes: opcodes/Makefile
-
-opcodes/Makefile: config.status
-	@[ -d opcodes ] || mkdir opcodes; \
+configure-opcodes:
+	@test ! -f opcodes/Makefile || exit 0; \
+	[ -d opcodes ] || mkdir opcodes; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -1713,10 +1708,9 @@ install-opcodes: installdirs
 
 .PHONY: configure-binutils maybe-configure-binutils
 maybe-configure-binutils:
-configure-binutils: binutils/Makefile
-
-binutils/Makefile: config.status
-	@[ -d binutils ] || mkdir binutils; \
+configure-binutils:
+	@test ! -f binutils/Makefile || exit 0; \
+	[ -d binutils ] || mkdir binutils; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -1781,10 +1775,9 @@ install-binutils: installdirs
 
 .PHONY: configure-bison maybe-configure-bison
 maybe-configure-bison:
-configure-bison: bison/Makefile
-
-bison/Makefile: config.status
-	@[ -d bison ] || mkdir bison; \
+configure-bison:
+	@test ! -f bison/Makefile || exit 0; \
+	[ -d bison ] || mkdir bison; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -1852,10 +1845,9 @@ install-bison: installdirs
 
 .PHONY: configure-byacc maybe-configure-byacc
 maybe-configure-byacc:
-configure-byacc: byacc/Makefile
-
-byacc/Makefile: config.status
-	@[ -d byacc ] || mkdir byacc; \
+configure-byacc:
+	@test ! -f byacc/Makefile || exit 0; \
+	[ -d byacc ] || mkdir byacc; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -1923,10 +1915,9 @@ install-byacc: installdirs
 
 .PHONY: configure-bzip2 maybe-configure-bzip2
 maybe-configure-bzip2:
-configure-bzip2: bzip2/Makefile
-
-bzip2/Makefile: config.status
-	@[ -d bzip2 ] || mkdir bzip2; \
+configure-bzip2:
+	@test ! -f bzip2/Makefile || exit 0; \
+	[ -d bzip2 ] || mkdir bzip2; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -1991,10 +1982,9 @@ install-bzip2: installdirs
 
 .PHONY: configure-db maybe-configure-db
 maybe-configure-db:
-configure-db: db/Makefile
-
-db/Makefile: config.status
-	@[ -d db ] || mkdir db; \
+configure-db:
+	@test ! -f db/Makefile || exit 0; \
+	[ -d db ] || mkdir db; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2059,10 +2049,9 @@ install-db: installdirs
 
 .PHONY: configure-dejagnu maybe-configure-dejagnu
 maybe-configure-dejagnu:
-configure-dejagnu: dejagnu/Makefile
-
-dejagnu/Makefile: config.status
-	@[ -d dejagnu ] || mkdir dejagnu; \
+configure-dejagnu:
+	@test ! -f dejagnu/Makefile || exit 0; \
+	[ -d dejagnu ] || mkdir dejagnu; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2127,10 +2116,9 @@ install-dejagnu: installdirs
 
 .PHONY: configure-diff maybe-configure-diff
 maybe-configure-diff:
-configure-diff: diff/Makefile
-
-diff/Makefile: config.status
-	@[ -d diff ] || mkdir diff; \
+configure-diff:
+	@test ! -f diff/Makefile || exit 0; \
+	[ -d diff ] || mkdir diff; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2195,10 +2183,9 @@ install-diff: installdirs
 
 .PHONY: configure-dosutils maybe-configure-dosutils
 maybe-configure-dosutils:
-configure-dosutils: dosutils/Makefile
-
-dosutils/Makefile: config.status
-	@[ -d dosutils ] || mkdir dosutils; \
+configure-dosutils:
+	@test ! -f dosutils/Makefile || exit 0; \
+	[ -d dosutils ] || mkdir dosutils; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2259,10 +2246,9 @@ install-dosutils: installdirs
 
 .PHONY: configure-etc maybe-configure-etc
 maybe-configure-etc:
-configure-etc: etc/Makefile
-
-etc/Makefile: config.status
-	@[ -d etc ] || mkdir etc; \
+configure-etc:
+	@test ! -f etc/Makefile || exit 0; \
+	[ -d etc ] || mkdir etc; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2327,10 +2313,9 @@ install-etc: installdirs
 
 .PHONY: configure-fastjar maybe-configure-fastjar
 maybe-configure-fastjar:
-configure-fastjar: fastjar/Makefile
-
-fastjar/Makefile: config.status
-	@[ -d fastjar ] || mkdir fastjar; \
+configure-fastjar:
+	@test ! -f fastjar/Makefile || exit 0; \
+	[ -d fastjar ] || mkdir fastjar; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2398,10 +2383,9 @@ install-fastjar: installdirs
 
 .PHONY: configure-fileutils maybe-configure-fileutils
 maybe-configure-fileutils:
-configure-fileutils: fileutils/Makefile
-
-fileutils/Makefile: config.status
-	@[ -d fileutils ] || mkdir fileutils; \
+configure-fileutils:
+	@test ! -f fileutils/Makefile || exit 0; \
+	[ -d fileutils ] || mkdir fileutils; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2466,10 +2450,9 @@ install-fileutils: installdirs
 
 .PHONY: configure-findutils maybe-configure-findutils
 maybe-configure-findutils:
-configure-findutils: findutils/Makefile
-
-findutils/Makefile: config.status
-	@[ -d findutils ] || mkdir findutils; \
+configure-findutils:
+	@test ! -f findutils/Makefile || exit 0; \
+	[ -d findutils ] || mkdir findutils; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2534,10 +2517,9 @@ install-findutils: installdirs
 
 .PHONY: configure-find maybe-configure-find
 maybe-configure-find:
-configure-find: find/Makefile
-
-find/Makefile: config.status
-	@[ -d find ] || mkdir find; \
+configure-find:
+	@test ! -f find/Makefile || exit 0; \
+	[ -d find ] || mkdir find; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2602,10 +2584,9 @@ install-find: installdirs
 
 .PHONY: configure-flex maybe-configure-flex
 maybe-configure-flex:
-configure-flex: flex/Makefile
-
-flex/Makefile: config.status
-	@[ -d flex ] || mkdir flex; \
+configure-flex:
+	@test ! -f flex/Makefile || exit 0; \
+	[ -d flex ] || mkdir flex; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2673,10 +2654,9 @@ install-flex: installdirs
 
 .PHONY: configure-gas maybe-configure-gas
 maybe-configure-gas:
-configure-gas: gas/Makefile
-
-gas/Makefile: config.status
-	@[ -d gas ] || mkdir gas; \
+configure-gas:
+	@test ! -f gas/Makefile || exit 0; \
+	[ -d gas ] || mkdir gas; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2741,10 +2721,9 @@ install-gas: installdirs
 
 .PHONY: configure-gawk maybe-configure-gawk
 maybe-configure-gawk:
-configure-gawk: gawk/Makefile
-
-gawk/Makefile: config.status
-	@[ -d gawk ] || mkdir gawk; \
+configure-gawk:
+	@test ! -f gawk/Makefile || exit 0; \
+	[ -d gawk ] || mkdir gawk; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2809,10 +2788,9 @@ install-gawk: installdirs
 
 .PHONY: configure-gettext maybe-configure-gettext
 maybe-configure-gettext:
-configure-gettext: gettext/Makefile
-
-gettext/Makefile: config.status
-	@[ -d gettext ] || mkdir gettext; \
+configure-gettext:
+	@test ! -f gettext/Makefile || exit 0; \
+	[ -d gettext ] || mkdir gettext; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2877,10 +2855,9 @@ install-gettext: installdirs
 
 .PHONY: configure-gnuserv maybe-configure-gnuserv
 maybe-configure-gnuserv:
-configure-gnuserv: gnuserv/Makefile
-
-gnuserv/Makefile: config.status
-	@[ -d gnuserv ] || mkdir gnuserv; \
+configure-gnuserv:
+	@test ! -f gnuserv/Makefile || exit 0; \
+	[ -d gnuserv ] || mkdir gnuserv; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -2945,10 +2922,9 @@ install-gnuserv: installdirs
 
 .PHONY: configure-gprof maybe-configure-gprof
 maybe-configure-gprof:
-configure-gprof: gprof/Makefile
-
-gprof/Makefile: config.status
-	@[ -d gprof ] || mkdir gprof; \
+configure-gprof:
+	@test ! -f gprof/Makefile || exit 0; \
+	[ -d gprof ] || mkdir gprof; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3013,10 +2989,9 @@ install-gprof: installdirs
 
 .PHONY: configure-grep maybe-configure-grep
 maybe-configure-grep:
-configure-grep: grep/Makefile
-
-grep/Makefile: config.status
-	@[ -d grep ] || mkdir grep; \
+configure-grep:
+	@test ! -f grep/Makefile || exit 0; \
+	[ -d grep ] || mkdir grep; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3081,10 +3056,9 @@ install-grep: installdirs
 
 .PHONY: configure-gzip maybe-configure-gzip
 maybe-configure-gzip:
-configure-gzip: gzip/Makefile
-
-gzip/Makefile: config.status
-	@[ -d gzip ] || mkdir gzip; \
+configure-gzip:
+	@test ! -f gzip/Makefile || exit 0; \
+	[ -d gzip ] || mkdir gzip; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3149,10 +3123,9 @@ install-gzip: installdirs
 
 .PHONY: configure-hello maybe-configure-hello
 maybe-configure-hello:
-configure-hello: hello/Makefile
-
-hello/Makefile: config.status
-	@[ -d hello ] || mkdir hello; \
+configure-hello:
+	@test ! -f hello/Makefile || exit 0; \
+	[ -d hello ] || mkdir hello; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3217,10 +3190,9 @@ install-hello: installdirs
 
 .PHONY: configure-indent maybe-configure-indent
 maybe-configure-indent:
-configure-indent: indent/Makefile
-
-indent/Makefile: config.status
-	@[ -d indent ] || mkdir indent; \
+configure-indent:
+	@test ! -f indent/Makefile || exit 0; \
+	[ -d indent ] || mkdir indent; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3285,10 +3257,9 @@ install-indent: installdirs
 
 .PHONY: configure-intl maybe-configure-intl
 maybe-configure-intl:
-configure-intl: intl/Makefile
-
-intl/Makefile: config.status
-	@[ -d intl ] || mkdir intl; \
+configure-intl:
+	@test ! -f intl/Makefile || exit 0; \
+	[ -d intl ] || mkdir intl; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3353,10 +3324,9 @@ install-intl: installdirs
 
 .PHONY: configure-tcl maybe-configure-tcl
 maybe-configure-tcl:
-configure-tcl: tcl/Makefile
-
-tcl/Makefile: config.status
-	@[ -d tcl ] || mkdir tcl; \
+configure-tcl:
+	@test ! -f tcl/Makefile || exit 0; \
+	[ -d tcl ] || mkdir tcl; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3421,10 +3391,9 @@ install-tcl: installdirs
 
 .PHONY: configure-itcl maybe-configure-itcl
 maybe-configure-itcl:
-configure-itcl: itcl/Makefile
-
-itcl/Makefile: config.status
-	@[ -d itcl ] || mkdir itcl; \
+configure-itcl:
+	@test ! -f itcl/Makefile || exit 0; \
+	[ -d itcl ] || mkdir itcl; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3489,10 +3458,9 @@ install-itcl: installdirs
 
 .PHONY: configure-ld maybe-configure-ld
 maybe-configure-ld:
-configure-ld: ld/Makefile
-
-ld/Makefile: config.status
-	@[ -d ld ] || mkdir ld; \
+configure-ld:
+	@test ! -f ld/Makefile || exit 0; \
+	[ -d ld ] || mkdir ld; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3557,10 +3525,9 @@ install-ld: installdirs
 
 .PHONY: configure-libgui maybe-configure-libgui
 maybe-configure-libgui:
-configure-libgui: libgui/Makefile
-
-libgui/Makefile: config.status
-	@[ -d libgui ] || mkdir libgui; \
+configure-libgui:
+	@test ! -f libgui/Makefile || exit 0; \
+	[ -d libgui ] || mkdir libgui; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3625,10 +3592,9 @@ install-libgui: installdirs
 
 .PHONY: configure-libiberty maybe-configure-libiberty
 maybe-configure-libiberty:
-configure-libiberty: libiberty/Makefile
-
-libiberty/Makefile: config.status
-	@[ -d libiberty ] || mkdir libiberty; \
+configure-libiberty:
+	@test ! -f libiberty/Makefile || exit 0; \
+	[ -d libiberty ] || mkdir libiberty; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3693,10 +3659,9 @@ install-libiberty: installdirs
 
 .PHONY: configure-libtool maybe-configure-libtool
 maybe-configure-libtool:
-configure-libtool: libtool/Makefile
-
-libtool/Makefile: config.status
-	@[ -d libtool ] || mkdir libtool; \
+configure-libtool:
+	@test ! -f libtool/Makefile || exit 0; \
+	[ -d libtool ] || mkdir libtool; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3761,10 +3726,9 @@ install-libtool: installdirs
 
 .PHONY: configure-m4 maybe-configure-m4
 maybe-configure-m4:
-configure-m4: m4/Makefile
-
-m4/Makefile: config.status
-	@[ -d m4 ] || mkdir m4; \
+configure-m4:
+	@test ! -f m4/Makefile || exit 0; \
+	[ -d m4 ] || mkdir m4; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3829,10 +3793,9 @@ install-m4: installdirs
 
 .PHONY: configure-make maybe-configure-make
 maybe-configure-make:
-configure-make: make/Makefile
-
-make/Makefile: config.status
-	@[ -d make ] || mkdir make; \
+configure-make:
+	@test ! -f make/Makefile || exit 0; \
+	[ -d make ] || mkdir make; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3897,10 +3860,9 @@ install-make: installdirs
 
 .PHONY: configure-mmalloc maybe-configure-mmalloc
 maybe-configure-mmalloc:
-configure-mmalloc: mmalloc/Makefile
-
-mmalloc/Makefile: config.status
-	@[ -d mmalloc ] || mkdir mmalloc; \
+configure-mmalloc:
+	@test ! -f mmalloc/Makefile || exit 0; \
+	[ -d mmalloc ] || mkdir mmalloc; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -3961,10 +3923,9 @@ install-mmalloc: installdirs
 
 .PHONY: configure-patch maybe-configure-patch
 maybe-configure-patch:
-configure-patch: patch/Makefile
-
-patch/Makefile: config.status
-	@[ -d patch ] || mkdir patch; \
+configure-patch:
+	@test ! -f patch/Makefile || exit 0; \
+	[ -d patch ] || mkdir patch; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4029,10 +3990,9 @@ install-patch: installdirs
 
 .PHONY: configure-perl maybe-configure-perl
 maybe-configure-perl:
-configure-perl: perl/Makefile
-
-perl/Makefile: config.status
-	@[ -d perl ] || mkdir perl; \
+configure-perl:
+	@test ! -f perl/Makefile || exit 0; \
+	[ -d perl ] || mkdir perl; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4097,10 +4057,9 @@ install-perl: installdirs
 
 .PHONY: configure-prms maybe-configure-prms
 maybe-configure-prms:
-configure-prms: prms/Makefile
-
-prms/Makefile: config.status
-	@[ -d prms ] || mkdir prms; \
+configure-prms:
+	@test ! -f prms/Makefile || exit 0; \
+	[ -d prms ] || mkdir prms; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4165,10 +4124,9 @@ install-prms: installdirs
 
 .PHONY: configure-rcs maybe-configure-rcs
 maybe-configure-rcs:
-configure-rcs: rcs/Makefile
-
-rcs/Makefile: config.status
-	@[ -d rcs ] || mkdir rcs; \
+configure-rcs:
+	@test ! -f rcs/Makefile || exit 0; \
+	[ -d rcs ] || mkdir rcs; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4233,10 +4191,9 @@ install-rcs: installdirs
 
 .PHONY: configure-readline maybe-configure-readline
 maybe-configure-readline:
-configure-readline: readline/Makefile
-
-readline/Makefile: config.status
-	@[ -d readline ] || mkdir readline; \
+configure-readline:
+	@test ! -f readline/Makefile || exit 0; \
+	[ -d readline ] || mkdir readline; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4301,10 +4258,9 @@ install-readline: installdirs
 
 .PHONY: configure-release maybe-configure-release
 maybe-configure-release:
-configure-release: release/Makefile
-
-release/Makefile: config.status
-	@[ -d release ] || mkdir release; \
+configure-release:
+	@test ! -f release/Makefile || exit 0; \
+	[ -d release ] || mkdir release; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4361,10 +4317,9 @@ install-release:
 
 .PHONY: configure-recode maybe-configure-recode
 maybe-configure-recode:
-configure-recode: recode/Makefile
-
-recode/Makefile: config.status
-	@[ -d recode ] || mkdir recode; \
+configure-recode:
+	@test ! -f recode/Makefile || exit 0; \
+	[ -d recode ] || mkdir recode; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4429,10 +4384,9 @@ install-recode: installdirs
 
 .PHONY: configure-sed maybe-configure-sed
 maybe-configure-sed:
-configure-sed: sed/Makefile
-
-sed/Makefile: config.status
-	@[ -d sed ] || mkdir sed; \
+configure-sed:
+	@test ! -f sed/Makefile || exit 0; \
+	[ -d sed ] || mkdir sed; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4497,10 +4451,9 @@ install-sed: installdirs
 
 .PHONY: configure-send-pr maybe-configure-send-pr
 maybe-configure-send-pr:
-configure-send-pr: send-pr/Makefile
-
-send-pr/Makefile: config.status
-	@[ -d send-pr ] || mkdir send-pr; \
+configure-send-pr:
+	@test ! -f send-pr/Makefile || exit 0; \
+	[ -d send-pr ] || mkdir send-pr; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4565,10 +4518,9 @@ install-send-pr: installdirs
 
 .PHONY: configure-shellutils maybe-configure-shellutils
 maybe-configure-shellutils:
-configure-shellutils: shellutils/Makefile
-
-shellutils/Makefile: config.status
-	@[ -d shellutils ] || mkdir shellutils; \
+configure-shellutils:
+	@test ! -f shellutils/Makefile || exit 0; \
+	[ -d shellutils ] || mkdir shellutils; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4633,10 +4585,9 @@ install-shellutils: installdirs
 
 .PHONY: configure-sid maybe-configure-sid
 maybe-configure-sid:
-configure-sid: sid/Makefile
-
-sid/Makefile: config.status
-	@[ -d sid ] || mkdir sid; \
+configure-sid:
+	@test ! -f sid/Makefile || exit 0; \
+	[ -d sid ] || mkdir sid; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4701,10 +4652,9 @@ install-sid: installdirs
 
 .PHONY: configure-sim maybe-configure-sim
 maybe-configure-sim:
-configure-sim: sim/Makefile
-
-sim/Makefile: config.status
-	@[ -d sim ] || mkdir sim; \
+configure-sim:
+	@test ! -f sim/Makefile || exit 0; \
+	[ -d sim ] || mkdir sim; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4769,10 +4719,9 @@ install-sim: installdirs
 
 .PHONY: configure-snavigator maybe-configure-snavigator
 maybe-configure-snavigator:
-configure-snavigator: snavigator/Makefile
-
-snavigator/Makefile: config.status
-	@[ -d snavigator ] || mkdir snavigator; \
+configure-snavigator:
+	@test ! -f snavigator/Makefile || exit 0; \
+	[ -d snavigator ] || mkdir snavigator; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4837,10 +4786,9 @@ install-snavigator: installdirs
 
 .PHONY: configure-tar maybe-configure-tar
 maybe-configure-tar:
-configure-tar: tar/Makefile
-
-tar/Makefile: config.status
-	@[ -d tar ] || mkdir tar; \
+configure-tar:
+	@test ! -f tar/Makefile || exit 0; \
+	[ -d tar ] || mkdir tar; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4905,10 +4853,9 @@ install-tar: installdirs
 
 .PHONY: configure-texinfo maybe-configure-texinfo
 maybe-configure-texinfo:
-configure-texinfo: texinfo/Makefile
-
-texinfo/Makefile: config.status
-	@[ -d texinfo ] || mkdir texinfo; \
+configure-texinfo:
+	@test ! -f texinfo/Makefile || exit 0; \
+	[ -d texinfo ] || mkdir texinfo; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -4969,10 +4916,9 @@ install-texinfo:
 
 .PHONY: configure-textutils maybe-configure-textutils
 maybe-configure-textutils:
-configure-textutils: textutils/Makefile
-
-textutils/Makefile: config.status
-	@[ -d textutils ] || mkdir textutils; \
+configure-textutils:
+	@test ! -f textutils/Makefile || exit 0; \
+	[ -d textutils ] || mkdir textutils; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -5037,10 +4983,9 @@ install-textutils: installdirs
 
 .PHONY: configure-time maybe-configure-time
 maybe-configure-time:
-configure-time: time/Makefile
-
-time/Makefile: config.status
-	@[ -d time ] || mkdir time; \
+configure-time:
+	@test ! -f time/Makefile || exit 0; \
+	[ -d time ] || mkdir time; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -5105,10 +5050,9 @@ install-time: installdirs
 
 .PHONY: configure-uudecode maybe-configure-uudecode
 maybe-configure-uudecode:
-configure-uudecode: uudecode/Makefile
-
-uudecode/Makefile: config.status
-	@[ -d uudecode ] || mkdir uudecode; \
+configure-uudecode:
+	@test ! -f uudecode/Makefile || exit 0; \
+	[ -d uudecode ] || mkdir uudecode; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -5173,10 +5117,9 @@ install-uudecode: installdirs
 
 .PHONY: configure-wdiff maybe-configure-wdiff
 maybe-configure-wdiff:
-configure-wdiff: wdiff/Makefile
-
-wdiff/Makefile: config.status
-	@[ -d wdiff ] || mkdir wdiff; \
+configure-wdiff:
+	@test ! -f wdiff/Makefile || exit 0; \
+	[ -d wdiff ] || mkdir wdiff; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -5241,10 +5184,9 @@ install-wdiff: installdirs
 
 .PHONY: configure-zip maybe-configure-zip
 maybe-configure-zip:
-configure-zip: zip/Makefile
-
-zip/Makefile: config.status
-	@[ -d zip ] || mkdir zip; \
+configure-zip:
+	@test ! -f zip/Makefile || exit 0; \
+	[ -d zip ] || mkdir zip; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -5312,10 +5254,9 @@ install-zip: installdirs
 
 .PHONY: configure-zlib maybe-configure-zlib
 maybe-configure-zlib:
-configure-zlib: zlib/Makefile
-
-zlib/Makefile: config.status
-	@[ -d zlib ] || mkdir zlib; \
+configure-zlib:
+	@test ! -f zlib/Makefile || exit 0; \
+	[ -d zlib ] || mkdir zlib; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -5372,10 +5313,9 @@ install-zlib:
 
 .PHONY: configure-gdb maybe-configure-gdb
 maybe-configure-gdb:
-configure-gdb: gdb/Makefile
-
-gdb/Makefile: config.status
-	@[ -d gdb ] || mkdir gdb; \
+configure-gdb:
+	@test ! -f gdb/Makefile || exit 0; \
+	[ -d gdb ] || mkdir gdb; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -5440,10 +5380,9 @@ install-gdb: installdirs
 
 .PHONY: configure-expect maybe-configure-expect
 maybe-configure-expect:
-configure-expect: expect/Makefile
-
-expect/Makefile: config.status
-	@[ -d expect ] || mkdir expect; \
+configure-expect:
+	@test ! -f expect/Makefile || exit 0; \
+	[ -d expect ] || mkdir expect; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -5508,10 +5447,9 @@ install-expect: installdirs
 
 .PHONY: configure-guile maybe-configure-guile
 maybe-configure-guile:
-configure-guile: guile/Makefile
-
-guile/Makefile: config.status
-	@[ -d guile ] || mkdir guile; \
+configure-guile:
+	@test ! -f guile/Makefile || exit 0; \
+	[ -d guile ] || mkdir guile; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -5576,10 +5514,9 @@ install-guile: installdirs
 
 .PHONY: configure-tk maybe-configure-tk
 maybe-configure-tk:
-configure-tk: tk/Makefile
-
-tk/Makefile: config.status
-	@[ -d tk ] || mkdir tk; \
+configure-tk:
+	@test ! -f tk/Makefile || exit 0; \
+	[ -d tk ] || mkdir tk; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -5644,10 +5581,9 @@ install-tk: installdirs
 
 .PHONY: configure-tix maybe-configure-tix
 maybe-configure-tix:
-configure-tix: tix/Makefile
-
-tix/Makefile: config.status
-	@[ -d tix ] || mkdir tix; \
+configure-tix:
+	@test ! -f tix/Makefile || exit 0; \
+	[ -d tix ] || mkdir tix; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -5712,10 +5648,9 @@ install-tix: installdirs
 
 .PHONY: configure-libtermcap maybe-configure-libtermcap
 maybe-configure-libtermcap:
-configure-libtermcap: libtermcap/Makefile
-
-libtermcap/Makefile: config.status
-	@[ -d libtermcap ] || mkdir libtermcap; \
+configure-libtermcap:
+	@test ! -f libtermcap/Makefile || exit 0; \
+	[ -d libtermcap ] || mkdir libtermcap; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -5776,10 +5711,9 @@ install-libtermcap: installdirs
 
 .PHONY: configure-utils maybe-configure-utils
 maybe-configure-utils:
-configure-utils: utils/Makefile
-
-utils/Makefile: config.status
-	@[ -d utils ] || mkdir utils; \
+configure-utils:
+	@test ! -f utils/Makefile || exit 0; \
+	[ -d utils ] || mkdir utils; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -5845,15 +5779,18 @@ install-utils: installdirs
 
 .PHONY: configure-target-libstdc++-v3 maybe-configure-target-libstdc++-v3
 maybe-configure-target-libstdc++-v3:
-configure-target-libstdc++-v3: $(TARGET_SUBDIR)/libstdc++-v3/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libstdc++-v3/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libstdc++-v3 ] || mkdir $(TARGET_SUBDIR)/libstdc++-v3;\
+	@[ -d $(TARGET_SUBDIR)/libstdc++-v3 ] || \
+	    mkdir $(TARGET_SUBDIR)/libstdc++-v3; \
+	rm -f $(TARGET_SUBDIR)/libstdc++-v3/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libstdc++-v3/multilib.out
 
-$(TARGET_SUBDIR)/libstdc++-v3/Makefile: config.status $(TARGET_SUBDIR)/libstdc++-v3/multilib.out
-	@[ -d $(TARGET_SUBDIR)/libstdc++-v3 ] || mkdir $(TARGET_SUBDIR)/libstdc++-v3;\
+configure-target-libstdc++-v3: $(TARGET_SUBDIR)/libstdc++-v3/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/libstdc++-v3/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/libstdc++-v3 ] || \
+		mkdir $(TARGET_SUBDIR)/libstdc++-v3;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -5942,15 +5879,18 @@ install-target-libstdc++-v3: installdirs
 
 .PHONY: configure-target-newlib maybe-configure-target-newlib
 maybe-configure-target-newlib:
-configure-target-newlib: $(TARGET_SUBDIR)/newlib/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/newlib/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/newlib ] || mkdir $(TARGET_SUBDIR)/newlib;\
+	@[ -d $(TARGET_SUBDIR)/newlib ] || \
+	    mkdir $(TARGET_SUBDIR)/newlib; \
+	rm -f $(TARGET_SUBDIR)/newlib/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/newlib/multilib.out
 
-$(TARGET_SUBDIR)/newlib/Makefile: config.status $(TARGET_SUBDIR)/newlib/multilib.out
-	@[ -d $(TARGET_SUBDIR)/newlib ] || mkdir $(TARGET_SUBDIR)/newlib;\
+configure-target-newlib: $(TARGET_SUBDIR)/newlib/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/newlib/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/newlib ] || \
+		mkdir $(TARGET_SUBDIR)/newlib;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -6038,15 +5978,18 @@ install-target-newlib: installdirs
 
 .PHONY: configure-target-libf2c maybe-configure-target-libf2c
 maybe-configure-target-libf2c:
-configure-target-libf2c: $(TARGET_SUBDIR)/libf2c/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libf2c/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libf2c ] || mkdir $(TARGET_SUBDIR)/libf2c;\
+	@[ -d $(TARGET_SUBDIR)/libf2c ] || \
+	    mkdir $(TARGET_SUBDIR)/libf2c; \
+	rm -f $(TARGET_SUBDIR)/libf2c/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libf2c/multilib.out
 
-$(TARGET_SUBDIR)/libf2c/Makefile: config.status $(TARGET_SUBDIR)/libf2c/multilib.out
-	@[ -d $(TARGET_SUBDIR)/libf2c ] || mkdir $(TARGET_SUBDIR)/libf2c;\
+configure-target-libf2c: $(TARGET_SUBDIR)/libf2c/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/libf2c/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/libf2c ] || \
+		mkdir $(TARGET_SUBDIR)/libf2c;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -6134,15 +6077,18 @@ install-target-libf2c: installdirs
 
 .PHONY: configure-target-libobjc maybe-configure-target-libobjc
 maybe-configure-target-libobjc:
-configure-target-libobjc: $(TARGET_SUBDIR)/libobjc/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libobjc/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libobjc ] || mkdir $(TARGET_SUBDIR)/libobjc;\
+	@[ -d $(TARGET_SUBDIR)/libobjc ] || \
+	    mkdir $(TARGET_SUBDIR)/libobjc; \
+	rm -f $(TARGET_SUBDIR)/libobjc/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libobjc/multilib.out
 
-$(TARGET_SUBDIR)/libobjc/Makefile: config.status $(TARGET_SUBDIR)/libobjc/multilib.out
-	@[ -d $(TARGET_SUBDIR)/libobjc ] || mkdir $(TARGET_SUBDIR)/libobjc;\
+configure-target-libobjc: $(TARGET_SUBDIR)/libobjc/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/libobjc/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/libobjc ] || \
+		mkdir $(TARGET_SUBDIR)/libobjc;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -6230,15 +6176,18 @@ install-target-libobjc: installdirs
 
 .PHONY: configure-target-libtermcap maybe-configure-target-libtermcap
 maybe-configure-target-libtermcap:
-configure-target-libtermcap: $(TARGET_SUBDIR)/libtermcap/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libtermcap/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libtermcap ] || mkdir $(TARGET_SUBDIR)/libtermcap;\
+	@[ -d $(TARGET_SUBDIR)/libtermcap ] || \
+	    mkdir $(TARGET_SUBDIR)/libtermcap; \
+	rm -f $(TARGET_SUBDIR)/libtermcap/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libtermcap/multilib.out
 
-$(TARGET_SUBDIR)/libtermcap/Makefile: config.status $(TARGET_SUBDIR)/libtermcap/multilib.out
-	@[ -d $(TARGET_SUBDIR)/libtermcap ] || mkdir $(TARGET_SUBDIR)/libtermcap;\
+configure-target-libtermcap: $(TARGET_SUBDIR)/libtermcap/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/libtermcap/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/libtermcap ] || \
+		mkdir $(TARGET_SUBDIR)/libtermcap;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -6322,15 +6271,18 @@ install-target-libtermcap: installdirs
 
 .PHONY: configure-target-winsup maybe-configure-target-winsup
 maybe-configure-target-winsup:
-configure-target-winsup: $(TARGET_SUBDIR)/winsup/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/winsup/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/winsup ] || mkdir $(TARGET_SUBDIR)/winsup;\
+	@[ -d $(TARGET_SUBDIR)/winsup ] || \
+	    mkdir $(TARGET_SUBDIR)/winsup; \
+	rm -f $(TARGET_SUBDIR)/winsup/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/winsup/multilib.out
 
-$(TARGET_SUBDIR)/winsup/Makefile: config.status $(TARGET_SUBDIR)/winsup/multilib.out
-	@[ -d $(TARGET_SUBDIR)/winsup ] || mkdir $(TARGET_SUBDIR)/winsup;\
+configure-target-winsup: $(TARGET_SUBDIR)/winsup/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/winsup/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/winsup ] || \
+		mkdir $(TARGET_SUBDIR)/winsup;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -6418,15 +6370,18 @@ install-target-winsup: installdirs
 
 .PHONY: configure-target-libgloss maybe-configure-target-libgloss
 maybe-configure-target-libgloss:
-configure-target-libgloss: $(TARGET_SUBDIR)/libgloss/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libgloss/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libgloss ] || mkdir $(TARGET_SUBDIR)/libgloss;\
+	@[ -d $(TARGET_SUBDIR)/libgloss ] || \
+	    mkdir $(TARGET_SUBDIR)/libgloss; \
+	rm -f $(TARGET_SUBDIR)/libgloss/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libgloss/multilib.out
 
-$(TARGET_SUBDIR)/libgloss/Makefile: config.status $(TARGET_SUBDIR)/libgloss/multilib.out
-	@[ -d $(TARGET_SUBDIR)/libgloss ] || mkdir $(TARGET_SUBDIR)/libgloss;\
+configure-target-libgloss: $(TARGET_SUBDIR)/libgloss/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/libgloss/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/libgloss ] || \
+		mkdir $(TARGET_SUBDIR)/libgloss;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -6510,15 +6465,18 @@ install-target-libgloss: installdirs
 
 .PHONY: configure-target-libiberty maybe-configure-target-libiberty
 maybe-configure-target-libiberty:
-configure-target-libiberty: $(TARGET_SUBDIR)/libiberty/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libiberty/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libiberty ] || mkdir $(TARGET_SUBDIR)/libiberty;\
+	@[ -d $(TARGET_SUBDIR)/libiberty ] || \
+	    mkdir $(TARGET_SUBDIR)/libiberty; \
+	rm -f $(TARGET_SUBDIR)/libiberty/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libiberty/multilib.out
 
-$(TARGET_SUBDIR)/libiberty/Makefile: config.status $(TARGET_SUBDIR)/libiberty/multilib.out
-	@[ -d $(TARGET_SUBDIR)/libiberty ] || mkdir $(TARGET_SUBDIR)/libiberty;\
+configure-target-libiberty: $(TARGET_SUBDIR)/libiberty/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/libiberty/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/libiberty ] || \
+		mkdir $(TARGET_SUBDIR)/libiberty;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -6606,15 +6564,18 @@ install-target-libiberty: installdirs
 
 .PHONY: configure-target-gperf maybe-configure-target-gperf
 maybe-configure-target-gperf:
-configure-target-gperf: $(TARGET_SUBDIR)/gperf/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/gperf/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/gperf ] || mkdir $(TARGET_SUBDIR)/gperf;\
+	@[ -d $(TARGET_SUBDIR)/gperf ] || \
+	    mkdir $(TARGET_SUBDIR)/gperf; \
+	rm -f $(TARGET_SUBDIR)/gperf/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/gperf/multilib.out
 
-$(TARGET_SUBDIR)/gperf/Makefile: config.status $(TARGET_SUBDIR)/gperf/multilib.out
-	@[ -d $(TARGET_SUBDIR)/gperf ] || mkdir $(TARGET_SUBDIR)/gperf;\
+configure-target-gperf: $(TARGET_SUBDIR)/gperf/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/gperf/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/gperf ] || \
+		mkdir $(TARGET_SUBDIR)/gperf;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -6702,15 +6663,18 @@ install-target-gperf: installdirs
 
 .PHONY: configure-target-examples maybe-configure-target-examples
 maybe-configure-target-examples:
-configure-target-examples: $(TARGET_SUBDIR)/examples/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/examples/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/examples ] || mkdir $(TARGET_SUBDIR)/examples;\
+	@[ -d $(TARGET_SUBDIR)/examples ] || \
+	    mkdir $(TARGET_SUBDIR)/examples; \
+	rm -f $(TARGET_SUBDIR)/examples/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/examples/multilib.out
 
-$(TARGET_SUBDIR)/examples/Makefile: config.status $(TARGET_SUBDIR)/examples/multilib.out
-	@[ -d $(TARGET_SUBDIR)/examples ] || mkdir $(TARGET_SUBDIR)/examples;\
+configure-target-examples: $(TARGET_SUBDIR)/examples/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/examples/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/examples ] || \
+		mkdir $(TARGET_SUBDIR)/examples;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -6790,15 +6754,18 @@ install-target-examples:
 
 .PHONY: configure-target-libffi maybe-configure-target-libffi
 maybe-configure-target-libffi:
-configure-target-libffi: $(TARGET_SUBDIR)/libffi/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libffi/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libffi ] || mkdir $(TARGET_SUBDIR)/libffi;\
+	@[ -d $(TARGET_SUBDIR)/libffi ] || \
+	    mkdir $(TARGET_SUBDIR)/libffi; \
+	rm -f $(TARGET_SUBDIR)/libffi/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libffi/multilib.out
 
-$(TARGET_SUBDIR)/libffi/Makefile: config.status $(TARGET_SUBDIR)/libffi/multilib.out
-	@[ -d $(TARGET_SUBDIR)/libffi ] || mkdir $(TARGET_SUBDIR)/libffi;\
+configure-target-libffi: $(TARGET_SUBDIR)/libffi/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/libffi/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/libffi ] || \
+		mkdir $(TARGET_SUBDIR)/libffi;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -6882,15 +6849,18 @@ install-target-libffi:
 
 .PHONY: configure-target-libjava maybe-configure-target-libjava
 maybe-configure-target-libjava:
-configure-target-libjava: $(TARGET_SUBDIR)/libjava/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/libjava/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/libjava ] || mkdir $(TARGET_SUBDIR)/libjava;\
+	@[ -d $(TARGET_SUBDIR)/libjava ] || \
+	    mkdir $(TARGET_SUBDIR)/libjava; \
+	rm -f $(TARGET_SUBDIR)/libjava/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/libjava/multilib.out
 
-$(TARGET_SUBDIR)/libjava/Makefile: config.status $(TARGET_SUBDIR)/libjava/multilib.out
-	@[ -d $(TARGET_SUBDIR)/libjava ] || mkdir $(TARGET_SUBDIR)/libjava;\
+configure-target-libjava: $(TARGET_SUBDIR)/libjava/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/libjava/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/libjava ] || \
+		mkdir $(TARGET_SUBDIR)/libjava;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -6979,15 +6949,18 @@ install-target-libjava: installdirs
 
 .PHONY: configure-target-zlib maybe-configure-target-zlib
 maybe-configure-target-zlib:
-configure-target-zlib: $(TARGET_SUBDIR)/zlib/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/zlib/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/zlib ] || mkdir $(TARGET_SUBDIR)/zlib;\
+	@[ -d $(TARGET_SUBDIR)/zlib ] || \
+	    mkdir $(TARGET_SUBDIR)/zlib; \
+	rm -f $(TARGET_SUBDIR)/zlib/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/zlib/multilib.out
 
-$(TARGET_SUBDIR)/zlib/Makefile: config.status $(TARGET_SUBDIR)/zlib/multilib.out
-	@[ -d $(TARGET_SUBDIR)/zlib ] || mkdir $(TARGET_SUBDIR)/zlib;\
+configure-target-zlib: $(TARGET_SUBDIR)/zlib/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/zlib/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/zlib ] || \
+		mkdir $(TARGET_SUBDIR)/zlib;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -7075,15 +7048,18 @@ install-target-zlib: installdirs
 
 .PHONY: configure-target-boehm-gc maybe-configure-target-boehm-gc
 maybe-configure-target-boehm-gc:
-configure-target-boehm-gc: $(TARGET_SUBDIR)/boehm-gc/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/boehm-gc/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/boehm-gc ] || mkdir $(TARGET_SUBDIR)/boehm-gc;\
+	@[ -d $(TARGET_SUBDIR)/boehm-gc ] || \
+	    mkdir $(TARGET_SUBDIR)/boehm-gc; \
+	rm -f $(TARGET_SUBDIR)/boehm-gc/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/boehm-gc/multilib.out
 
-$(TARGET_SUBDIR)/boehm-gc/Makefile: config.status $(TARGET_SUBDIR)/boehm-gc/multilib.out
-	@[ -d $(TARGET_SUBDIR)/boehm-gc ] || mkdir $(TARGET_SUBDIR)/boehm-gc;\
+configure-target-boehm-gc: $(TARGET_SUBDIR)/boehm-gc/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/boehm-gc/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/boehm-gc ] || \
+		mkdir $(TARGET_SUBDIR)/boehm-gc;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -7171,15 +7147,18 @@ install-target-boehm-gc: installdirs
 
 .PHONY: configure-target-qthreads maybe-configure-target-qthreads
 maybe-configure-target-qthreads:
-configure-target-qthreads: $(TARGET_SUBDIR)/qthreads/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/qthreads/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/qthreads ] || mkdir $(TARGET_SUBDIR)/qthreads;\
+	@[ -d $(TARGET_SUBDIR)/qthreads ] || \
+	    mkdir $(TARGET_SUBDIR)/qthreads; \
+	rm -f $(TARGET_SUBDIR)/qthreads/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/qthreads/multilib.out
 
-$(TARGET_SUBDIR)/qthreads/Makefile: config.status $(TARGET_SUBDIR)/qthreads/multilib.out
-	@[ -d $(TARGET_SUBDIR)/qthreads ] || mkdir $(TARGET_SUBDIR)/qthreads;\
+configure-target-qthreads: $(TARGET_SUBDIR)/qthreads/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/qthreads/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/qthreads ] || \
+		mkdir $(TARGET_SUBDIR)/qthreads;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -7267,15 +7246,18 @@ install-target-qthreads: installdirs
 
 .PHONY: configure-target-rda maybe-configure-target-rda
 maybe-configure-target-rda:
-configure-target-rda: $(TARGET_SUBDIR)/rda/Makefile
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/rda/multilib.out: multilib.out
-	@[ -d $(TARGET_SUBDIR)/rda ] || mkdir $(TARGET_SUBDIR)/rda;\
+	@[ -d $(TARGET_SUBDIR)/rda ] || \
+	    mkdir $(TARGET_SUBDIR)/rda; \
+	rm -f $(TARGET_SUBDIR)/rda/Makefile || : ; \
 	cp multilib.out $(TARGET_SUBDIR)/rda/multilib.out
 
-$(TARGET_SUBDIR)/rda/Makefile: config.status $(TARGET_SUBDIR)/rda/multilib.out
-	@[ -d $(TARGET_SUBDIR)/rda ] || mkdir $(TARGET_SUBDIR)/rda;\
+configure-target-rda: $(TARGET_SUBDIR)/rda/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/rda/Makefile || exit 0; \
+	    [ -d $(TARGET_SUBDIR)/rda ] || \
+		mkdir $(TARGET_SUBDIR)/rda;\
 	    r=`${PWD}`; export r; \
 	    s=`cd $(srcdir); ${PWD}`; export s; \
 	    $(SET_LIB_PATH) \
@@ -7373,10 +7355,9 @@ install-target-rda: installdirs
 # gcc is the only module which uses GCC_FLAGS_TO_PASS.
 .PHONY: configure-gcc maybe-configure-gcc
 maybe-configure-gcc:
-configure-gcc: gcc/Makefile
-
-gcc/Makefile: config.status
-	@[ -d gcc ] || mkdir gcc; \
+configure-gcc:
+	@test ! -f gcc/Makefile || exit 0; \
+	[ -d gcc ] || mkdir gcc; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	CC="$(CC)"; export CC; \
@@ -7676,17 +7657,11 @@ configure-target-qthreads: $(ALL_GCC_C)
 # work around various timestamp bugs on some systems.
 # We use move-if-change so that it's only considered updated when it
 # actually changes, because it has to depend on a phony target.
-multilib.out: multilib.ts
-	@if [ -f multilib.out ] ; then : else \
-	  rm -f multilib.ts; $(MAKE) multilib.ts; \
-	fi
-
-multilib.ts: maybe-all-gcc
+multilib.out: maybe-all-gcc
 	@r=`${PWD}`; export r; \
 	echo "Checking multilib configuration..."; \
 	$(CC_FOR_TARGET) --print-multi-lib > multilib.tmp 2> /dev/null ; \
 	$(SHELL) $(srcdir)/move-if-change multilib.tmp multilib.out ; \
-	echo timestamp > multilib.ts
 
 # Rebuilding Makefile.in, using autogen.
 AUTOGEN = autogen
