@@ -23,12 +23,13 @@
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"
 
 if ![info exists TORTURE_OPTIONS] {
-    # FIXME: We should test -g at least once.
     set TORTURE_OPTIONS [list \
 	{ -O0 } { -O1 } { -O2 } \
 	{ -O2 -fomit-frame-pointer -finline-functions } \
 	{ -O2 -fomit-frame-pointer -finline-functions -funroll-loops } \
 	{ -O2 -fomit-frame-pointer -finline-functions -funroll-all-loops } \
+	{ -O3 -g } \
+	{ -O3 -fssa } \
 	{ -Os }]
 }
 
