@@ -1800,16 +1800,16 @@ expand_call (exp, target, ignore)
 	    {
 	      rtx reg = gen_reg_rtx (word_mode);
 	      rtx word = operand_subword_force (args[i].value, j, BLKmode);
-	      int bitsize = TYPE_ALIGN (TREE_TYPE (args[i].tree_value));
-	      int bitpos;
+	      int bitsize = MIN (bytes * BITS_PER_UNIT, BITS_PER_WORD);
+	      int bitalign = TYPE_ALIGN (TREE_TYPE (args[i].tree_value));
 
 	      args[i].aligned_regs[j] = reg;
 
-	      /* Clobber REG and move each partword into it.  Ensure we don't
-		 go past the end of the structure.  Note that the loop below
-		 works because we've already verified that padding
-		 and endianness are compatible.
+	      /* There is no need to restrict this code to loading items
+		 in TYPE_ALIGN sized hunks.  The bitfield instructions can
+		 load up entire word sized registers efficiently.
 
+		 ??? This may not be needed anymore.
 		 We use to emit a clobber here but that doesn't let later
 		 passes optimize the instructions we emit.  By storing 0 into
 		 the register later passes know the first AND to zero out the
@@ -1818,20 +1818,14 @@ expand_call (exp, target, ignore)
 
 	      emit_move_insn (reg, const0_rtx);
 
-	      for (bitpos = 0;
-		   bitpos < BITS_PER_WORD && bytes > 0;
-		   bitpos += bitsize, bytes -= bitsize / BITS_PER_UNIT)
-		{
-		  int xbitpos = bitpos + big_endian_correction;
-
-		  store_bit_field (reg, bitsize, xbitpos, word_mode,
-				   extract_bit_field (word, bitsize, bitpos, 1,
-						      NULL_RTX, word_mode,
-						      word_mode,
-						      bitsize / BITS_PER_UNIT,
-						      BITS_PER_WORD),
-				   bitsize / BITS_PER_UNIT, BITS_PER_WORD);
-		}
+	      bytes -= bitsize / BITS_PER_UNIT;
+	      store_bit_field (reg, bitsize, big_endian_correction, word_mode,
+			       extract_bit_field (word, bitsize, 0, 1,
+						  NULL_RTX, word_mode,
+						  word_mode,
+						  bitalign / BITS_PER_UNIT,
+						  BITS_PER_WORD),
+			       bitalign / BITS_PER_UNIT, BITS_PER_WORD);
 	    }
 	}
 
