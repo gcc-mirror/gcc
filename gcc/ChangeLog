@@ -1,3 +1,11 @@
+2000-08-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	* sh.h (EXTRA_CONSTRAINT_Q): Adjust to GNU Coding Standards.
+	* sh.c (expand_block_move): Break long lines.
+	(expand_ashiftrt, fpscr_set_from_mem): Likewise.
+	* sh.md (mulsi3): Likewise.
+	(movdi): Adjust spacing.
+
 2000-08-07  Richard Henderson  <rth@cygnus.com>
 
 	* expmed.c (store_bit_field): Don't require MEM_IN_STRUCT_P.
