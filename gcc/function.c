@@ -3309,7 +3309,8 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
 	  || ((TREE_INT_CST_LOW (sizetree) * BITS_PER_UNIT) % PARM_BOUNDARY)))
     sizetree = round_up (sizetree, PARM_BOUNDARY / BITS_PER_UNIT);
   SUB_PARM_SIZE (*offset_ptr, sizetree);
-  pad_to_arg_alignment (offset_ptr, boundary);
+  if (where_pad != downward)
+    pad_to_arg_alignment (offset_ptr, boundary);
   if (initial_offset_ptr->var)
     {
       arg_size_ptr->var = size_binop (MINUS_EXPR,
