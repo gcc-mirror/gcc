@@ -17,6 +17,7 @@ extern int memcmp (const void *, const void *, __SIZE_TYPE__);
 int x = 6;
 int y = 1;
 char *bar = "hi world";
+char buf [64];
 
 int main()
 {
@@ -79,7 +80,28 @@ int main()
     abort ();
   memset (dst, ' ', sizeof dst);
   if (strncpy (dst, "hello", 8) != dst || memcmp (dst, "hello\0\0\0 ", 9))
-    abort();
+    abort ();
+  x = '!';
+  memset (buf, ' ', sizeof buf);
+  if (memset (buf, x++, ++y) != buf
+      || x != '!' + 1
+      || y != 3
+      || memcmp (buf, "!!!", 3))
+    abort ();
+  if (memset (buf + y++, '-', 8) != buf + 3
+      || y != 4
+      || memcmp (buf, "!!!--------", 11))
+    abort ();
+  x = 10;
+  if (memset (buf + ++x, 0, y++) != buf + 11
+      || x != 11
+      || y != 5
+      || memcmp (buf + 8, "---\0\0\0", 7))
+    abort ();
+  if (memset (buf + (x += 4), 0, 6) != buf + 15
+      || x != 15
+      || memcmp (buf + 10, "-\0\0\0\0\0\0\0\0\0", 11))
+    abort ();
 
   return 0;
 }

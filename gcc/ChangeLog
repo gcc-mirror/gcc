@@ -1,3 +1,13 @@
+2000-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.c (target_char_cast): New function.
+	(expand_builtin_strchr): Use it.
+	(expand_builtin_strrchr): Use it.
+	(builtin_memset_read_str): New function.
+	(expand_builtin_memset): Use target_char_cast.
+	Try to optimize memset with second argument non-zero using
+	store_by_pieces.
+
 2000-11-30  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* install.texi (avr): Replace incomplete list of supported MCU
