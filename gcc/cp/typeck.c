@@ -286,14 +286,15 @@ common_type (t1, t2)
 	  attributes = a2;
        else
 	{
-	  /* Pick the longest list, and hang on the other
-	     list.  */
+	  /* Pick the longest list, and hang on the other list.  */
+	  /* ??? For the moment we punt on the issue of attrs with args.  */
 	
 	  if (list_length (a1) < list_length (a2))
 	     attributes = a2, a2 = a1;
 
 	  for (; a2; a2 = TREE_CHAIN (a2))
-	     if (!value_member (attributes, a2))
+	    if (lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (a2)),
+				  attributes) == NULL_TREE)
 	      {
 		a1 = copy_node (a2);
 		TREE_CHAIN (a1) = attributes;
