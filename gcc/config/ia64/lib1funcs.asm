@@ -602,11 +602,6 @@ __ia64_nonlocal_goto:
 	adds r2=8,in2
 	ld8 r12=[in2],16
 	mov.ret.sptk.few.dc.dc rp = r33, .L0
-// ??? flushrs must be first instruction of a group.  Gas is unfortunately
-// putting the stop bit before the padding nop instead of after it, making
-// flushrs the first instruction of its bundle, but the second instruction
-// of its group.  We explicitly add the nop to avoid this problem.
-	nop.i 0
 	;;
 	flushrs
 	ld8 r16=[r2],16
@@ -632,4 +627,44 @@ __ia64_nonlocal_goto:
 	}
 	;;
 	.endp __ia64_nonlocal_goto
+#endif
+
+#ifdef L__restore_stack_nonlocal
+// This is mostly the same as nonlocal_goto above.
+// ??? This has not been tested yet.
+
+// void __ia64_restore_stack_nonlocal(void *save_area)
+
+	.text
+	.align 16
+	.global __ia64_restore_stack_nonlocal
+	.proc __ia64_restore_stack_nonlocal
+__ia64_restore_stack_nonlocal:
+	alloc r20=ar.pfs,4,0,0,0
+	mov r19=ar.rsc
+	adds r2=8,in0
+	ld8 r12=[in0],16
+	;;
+	flushrs
+	ld8 r16=[r2],16
+	and r19=0x1c,r19
+	ld8 r17=[in0]
+	;;
+	ld8 r18=[r2]
+	mov ar.rsc=r19
+	;;
+	mov ar.bspstore=r16
+	;;
+	mov ar.rnat=r17
+	mov ar.pfs=r18
+	or r19=0x3,r19
+	;;
+	loadrs
+	invala
+.L0:	{
+	mov ar.rsc=r19
+	br.ret.sptk.few rp
+	}
+	;;
+	.endp __ia64_restore_stack_nonlocal
 #endif

@@ -1,3 +1,10 @@
+Wed Mar 15 11:34:27 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.md (restore_stack_nonlocal): New.
+	* config/ia64/lib1funcs.asm (__ia64_nonlocal_goto): Delete padding nop.
+	(__ia64_restore_stack_nonlocal): New.
+	* config/ia64/t-ia64 (LIB1ASMFUNCS): Add __restore_stack_nonlocal.
+
 2000-03-15  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* cpphash.c (collect_formal_parameters): Do not complain about
