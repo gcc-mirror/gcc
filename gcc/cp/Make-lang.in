@@ -109,8 +109,9 @@ cxxmain.o: $(srcdir)/../libiberty/cplus-dem.c demangle.h
 	$(CC) -c -DMAIN $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DVERSION=\"$(version)\" cxxmain.c
 
+# Apparently OpenVM needs the -o to be at the beginning of the link line.
 $(DEMANGLER_PROG): cxxmain.o underscore.o getopt.o getopt1.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+	$(CC) -o $@ $(ALL_CFLAGS) $(LDFLAGS) \
 	  cxxmain.o underscore.o getopt.o getopt1.o $(LIBS)
 
 CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \

@@ -1964,24 +1964,15 @@ finish_struct_bits (t, max_has_virtual)
 
   if (n_baseclasses && max_has_virtual)
     {
-      /* Done by `finish_struct' for classes without baseclasses.  */
-      int might_have_abstract_virtuals = CLASSTYPE_ABSTRACT_VIRTUALS (t) != 0;
-      tree binfos = TYPE_BINFO_BASETYPES (t);
-      for (i = n_baseclasses-1; i >= 0; i--)
-	{
-	  might_have_abstract_virtuals
-	    |= (CLASSTYPE_ABSTRACT_VIRTUALS (BINFO_TYPE (TREE_VEC_ELT (binfos, i))) != 0);
-	  if (might_have_abstract_virtuals)
-	    break;
-	}
-      if (might_have_abstract_virtuals)
-	{
-	  /* We use error_mark_node from override_one_vtable to signal
-	     an artificial abstract.  */
-	  if (CLASSTYPE_ABSTRACT_VIRTUALS (t) == error_mark_node)
-	    CLASSTYPE_ABSTRACT_VIRTUALS (t) = NULL_TREE;
-	  CLASSTYPE_ABSTRACT_VIRTUALS (t) = get_abstract_virtuals (t);
-	}
+      /* for a class w/o baseclasses, `finish_struct' has set
+       * CLASS_TYPE_ABSTRACT_VIRTUALS correctly (by definition). Similarly
+       * for a class who's base classes do not have vtables. When neither of
+       * these is true, we might have removed abstract virtuals (by
+       * providing a definition), added some (by declaring new ones), or
+       * redeclared ones from a base class. We need to recalculate what's
+       * really an abstract virtual at this point (by looking in the vtables).
+       */
+      CLASSTYPE_ABSTRACT_VIRTUALS (t) = get_abstract_virtuals (t);
     }
 
   if (n_baseclasses)

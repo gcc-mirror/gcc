@@ -6462,6 +6462,7 @@ check_tag_decl (declspecs)
      tree declspecs;
 {
   int found_type = 0;
+  int friendp = 0;
   tree ob_modifier = NULL_TREE;
   register tree link;
   register tree t = NULL_TREE;
@@ -6480,15 +6481,19 @@ check_tag_decl (declspecs)
 	      t = value;
 	    }
 	}
+      else if (value == ridpointers[(int) RID_FRIEND])
+	{
+	  friendp = 1;
+	  if (current_class_type == NULL_TREE
+	      || current_scope () != current_class_type)
+	    ob_modifier = value;
+	}
       else if (value == ridpointers[(int) RID_STATIC]
 	       || value == ridpointers[(int) RID_EXTERN]
 	       || value == ridpointers[(int) RID_AUTO]
 	       || value == ridpointers[(int) RID_REGISTER]
 	       || value == ridpointers[(int) RID_INLINE]
 	       || value == ridpointers[(int) RID_VIRTUAL]
-	       || (value == ridpointers[(int) RID_FRIEND]
-		   && (current_class_type == NULL_TREE
-		       || current_scope () != current_class_type))
 	       || value == ridpointers[(int) RID_CONST]
 	       || value == ridpointers[(int) RID_VOLATILE]
 	       || value == ridpointers[(int) RID_EXPLICIT])
@@ -6499,28 +6504,25 @@ check_tag_decl (declspecs)
     error ("multiple types in one declaration");
     
   if (t == NULL_TREE)
-    pedwarn ("declaration does not declare anything");
-  else if (ANON_UNION_TYPE_P (t))
-    return t;
-  else
     {
-      /* Anonymous unions are objects, that's why we only check for
-	 inappropriate specifiers in this branch.  */
-
-      if (ob_modifier)
-	{
-	  if (ob_modifier == ridpointers[(int) RID_INLINE]
-	      || ob_modifier == ridpointers[(int) RID_VIRTUAL])
-	    cp_error ("`%D' can only be specified for functions", ob_modifier);
-	  else if (ob_modifier == ridpointers[(int) RID_FRIEND])
-	    cp_error ("`%D' can only be specified inside a class", ob_modifier);
-	  else if (ob_modifier == ridpointers[(int) RID_EXPLICIT])
-	    cp_error ("`%D' can only be specified for constructors",
-		      ob_modifier);
-	  else
-	    cp_error ("`%D' can only be specified for objects and functions",
-		      ob_modifier);
-	}
+      if (! friendp)
+	pedwarn ("declaration does not declare anything");
+    }
+  else if (ANON_UNION_TYPE_P (t))
+    /* Anonymous unions are objects, so they can have specifiers.  */;
+  else if (ob_modifier)
+    {
+      if (ob_modifier == ridpointers[(int) RID_INLINE]
+	  || ob_modifier == ridpointers[(int) RID_VIRTUAL])
+	cp_error ("`%D' can only be specified for functions", ob_modifier);
+      else if (ob_modifier == ridpointers[(int) RID_FRIEND])
+	cp_error ("`%D' can only be specified inside a class", ob_modifier);
+      else if (ob_modifier == ridpointers[(int) RID_EXPLICIT])
+	cp_error ("`%D' can only be specified for constructors",
+		  ob_modifier);
+      else
+	cp_error ("`%D' can only be specified for objects and functions",
+		  ob_modifier);
     }
 
   return t;

@@ -1952,7 +1952,7 @@ get_abstract_virtuals (type)
      tree type;
 {
   tree vbases;
-  tree abstract_virtuals = CLASSTYPE_ABSTRACT_VIRTUALS (type);
+  tree abstract_virtuals = NULL;
 
   /* First get all from non-virtual bases.  */
   abstract_virtuals
