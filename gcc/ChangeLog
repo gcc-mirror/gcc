@@ -1,3 +1,11 @@
+2002-06-12  Daniel Jacobowitz  <drow@mvista.com>
+
+	* config/mips/elf.h (DWARF2_DEBUG_INFO): Define.
+	* config/mips/mips.c (mips_output_filename): Don't print a
+	".file" directive if we are using DWARF-2.
+	(mips_output_function_prologue): Do not emit source file
+	name for TARGET_GAS.
+
 Wed Jun 12 16:45:13 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (shift patterns): Use (TARGET_SHIFT1 || optimize_size) to
@@ -6,9 +14,9 @@ Wed Jun 12 16:45:13 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(TARGET_SHIFT1): New macro.
 	* i386.c (x86_shift1): New global variable.
 
-	* toplev.c (rest_of_compilation): Call find_basic_block pre-loop unconditionally;
-	make loop to rebuild CFG; kill unnecesary find_basic_block calls;
-	kill compute_bb_for_insn call.
+	* toplev.c (rest_of_compilation): Call find_basic_block pre-loop
+	unconditionally; make loop to rebuild CFG; kill unnecesary
+	find_basic_block calls; kill compute_bb_for_insn call.
 	* cfgbuild.c (find_basic_blocks): Kill compute_bb_for_insn call.
 	* haifa-sched.c (sched_init): Likewise.
 	* ssa-ccp.c (ssa_const_prop): Likewise.
