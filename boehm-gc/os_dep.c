@@ -2174,7 +2174,7 @@ SIG_PF GC_old_segv_handler;	/* Also old MSWIN32 ACCESS_VIOLATION filter */
 	char * addr = (char *) (scp -> si_addr);
 #   endif
 #   ifdef LINUX
-#     ifdef I386
+#     if defined(I386) || defined (X86_64)
 	char * addr = (char *) (sc.cr2);
 #     else
 #	if defined(M68K)

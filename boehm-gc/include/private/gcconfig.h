@@ -193,6 +193,10 @@
 #    define I386
 #    define mach_type_known
 # endif
+# if defined(LINUX) && defined(__x86_64__)
+#    define X86_64
+#    define mach_type_known
+# endif
 # if defined(LINUX) && (defined(__ia64__) || defined(__ia64))
 #    define IA64
 #    define mach_type_known
@@ -427,6 +431,7 @@
 		    /* 			(HPUX)				*/
 		    /*		   SH	      ==> Hitachi SuperH	*/
 		    /* 			(LINUX & MSWINCE)		*/
+		    /* 		   X86_64     ==> AMD x86-64		*/
 
 
 /*
@@ -1624,6 +1629,44 @@
 #   define DATAEND /* not needed */
 # endif
 
+# ifdef X86_64
+#   define MACH_TYPE "X86_64"
+#   define ALIGNMENT 8
+#   define CPP_WORDSZ 64
+#   define CACHE_LINE_SIZE 64
+#   define USE_GENERIC_PUSH_REGS
+#   endif
+#   ifdef LINUX
+#	define OS_TYPE "LINUX"
+#       define LINUX_STACKBOTTOM
+#       if !defined(GC_LINUX_THREADS) || !defined(REDIRECT_MALLOC)
+#	    define MPROTECT_VDB
+#	else
+	    /* We seem to get random errors in incremental mode,	*/
+	    /* possibly because Linux threads is itself a malloc client */
+	    /* and can't deal with the signals.				*/
+#	endif
+#       ifdef __ELF__
+#            define DYNAMIC_LOADING
+#	     ifdef UNDEFINED	/* includes ro data */
+	       extern int _etext[];
+#              define DATASTART ((ptr_t)((((word) (_etext)) + 0xfff) & ~0xfff))
+#	     endif
+#	     include <features.h>
+#	     define LINUX_DATA_START
+	     extern int _end[];
+#	     define DATAEND (_end)
+#	else
+	     extern int etext[];
+#            define DATASTART ((ptr_t)((((word) (etext)) + 0xfff) & ~0xfff))
+#       endif
+#	define PREFETCH(x) \
+	  __asm__ __volatile__ ("	prefetch	%0": : "m"(*(char *)(x)))
+#	define PREFETCH_FOR_WRITE(x) \
+	  __asm__ __volatile__ ("	prefetchw	%0": : "m"(*(char *)(x)))
+#   endif
+# endif
+
 #ifdef LINUX_DATA_START
     /* Some Linux distributions arrange to define __data_start.  Some	*/
     /* define data_start as a weak symbol.  The latter is technically	*/
@@ -1817,7 +1860,7 @@
 # define CAN_SAVE_CALL_STACKS
 # define CAN_SAVE_CALL_ARGS
 #endif
-#if defined(I386) && defined(LINUX)
+#if (defined(I386) || defined(X86_64)) && defined(LINUX)
     /* SAVE_CALL_CHAIN is supported if the code is compiled to save	*/
     /* frame pointers by default, i.e. no -fomit-frame-pointer flag.	*/
 # define CAN_SAVE_CALL_STACKS

@@ -73,7 +73,7 @@ case "$THREADS" in
     THREADS=posix
     THREADLIBS=-lpthread
     case "$host" in
-     x86-*-linux* | ia64-*-linux* | i586-*-linux* | i686-*-linux*)
+     x86-*-linux* | ia64-*-linux* | i586-*-linux* | i686-*-linux* | x86_64-*-linux* )
 	AC_DEFINE(GC_LINUX_THREADS)
 	AC_DEFINE(_REENTRANT)
         if test "${enable_parallel_mark}"; then
@@ -259,7 +259,7 @@ AC_ARG_ENABLE(full-debug,
       ia64-*-linux* )
 	AC_DEFINE(MAKE_BACK_GRAPH)
       ;;
-      x86-*-linux* | i586-*-linux* | i686-*-linux* )
+      x86-*-linux* | i586-*-linux* | i686-*-linux* | x86_64-*-linux* )
 	AC_DEFINE(MAKE_BACK_GRAPH)
 	AC_MSG_WARN("Client must not use -fomit-frame-pointer.")
 	AC_DEFINE(SAVE_CALL_COUNT, 8)
