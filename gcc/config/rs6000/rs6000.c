@@ -3041,6 +3041,16 @@ output_toc (file, x, labelno)
   if (TARGET_NO_TOC)
     abort ();
 
+  /* if we're going to put a double constant in the TOC, make sure it's
+     aligned properly when strict alignment is on. */
+  if (GET_CODE (x) == CONST_DOUBLE
+      && STRICT_ALIGNMENT
+      && GET_MODE (x) == DFmode
+      && ! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC)) {
+    ASM_OUTPUT_ALIGN (file, 3);
+  }
+
+
 #ifdef USING_SVR4_H
   if (TARGET_MINIMAL_TOC)
     {
