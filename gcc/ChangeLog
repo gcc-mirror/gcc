@@ -1,3 +1,8 @@
+Thu Mar  8 23:29:37 2001  John Wehle  (john@feith.com)
+
+	* rtlanal.c (rtx_varies_p): Check operand 0 of a
+	LO_SUM unless for_alias is set.
+
 2001-03-08  Stan Shebs  <shebs@apple.com>
 
 	* objc/objc-act.c: Fix old typos in comments, add comments for
