@@ -1,6 +1,6 @@
 /* Gcov.c: prepend line execution counts and branch probabilities to a
    source file.
-   Copyright (C) 1990, 91, 92, 93, 94, 96, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91-94, 96, 97, 98, 1999 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
    Mangled by Bob Manson of Cygnus Support.
 
