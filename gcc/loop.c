@@ -2292,7 +2292,7 @@ count_nonfixed_reads (loop, x)
 }
 
 /* Scan a loop setting the elements `cont', `vtop', `loops_enclosed',
-   `has_call', `has_volatile', `has_tablejump',
+   `has_call', `has_nonconst_call', `has_volatile', `has_tablejump',
    `unknown_address_altered', `unknown_constant_address_altered', and
    `num_mem_sets' in LOOP.  Also, fill in the array `mems' and the
    list `store_mems' in LOOP.  */
@@ -2315,6 +2315,7 @@ prescan_loop (loop)
   loop_info->has_indirect_jump = indirect_jump_in_function;
   loop_info->pre_header_has_call = 0;
   loop_info->has_call = 0;
+  loop_info->has_nonconst_call = 0;
   loop_info->has_volatile = 0;
   loop_info->has_tablejump = 0;
   loop_info->has_multiple_exit_targets = 0;
@@ -2357,7 +2358,10 @@ prescan_loop (loop)
       else if (GET_CODE (insn) == CALL_INSN)
 	{
 	  if (! CONST_CALL_P (insn))
-	    loop_info->unknown_address_altered = 1;
+	    {
+	      loop_info->unknown_address_altered = 1;
+	      loop_info->has_nonconst_call = 1;
+	    }
 	  loop_info->has_call = 1;
 	}
       else if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
@@ -2424,7 +2428,7 @@ prescan_loop (loop)
   /* Now, rescan the loop, setting up the LOOP_MEMS array.  */
   if (/* An exception thrown by a called function might land us
 	 anywhere.  */
-      ! loop_info->has_call
+      ! loop_info->has_nonconst_call
       /* We don't want loads for MEMs moved to a location before the
 	 one at which their stack memory becomes allocated.  (Note
 	 that this is not a problem for malloc, etc., since those
@@ -7462,7 +7466,7 @@ check_dbra_loop (loop, insn_count)
 	 about all these things.  */
 
       if ((num_nonfixed_reads <= 1
-	   && ! loop_info->has_call
+	   && ! loop_info->has_nonconst_call
 	   && ! loop_info->has_volatile
 	   && reversible_mem_store
 	   && (bl->giv_count + bl->biv_count + loop_info->num_mem_sets
