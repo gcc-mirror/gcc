@@ -2765,7 +2765,7 @@ extern char *output_int_conditional_move ();
 extern char *output_fp_conditional_move ();
 extern int ix86_can_use_return_insn_p ();
 extern int small_shift_operand ();
-extern char *output_ashlsi3 ();
+extern char *output_ashl ();
 extern int memory_address_info ();
 
 #ifdef NOTYET

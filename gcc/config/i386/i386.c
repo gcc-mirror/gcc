@@ -5497,7 +5497,7 @@ x86_adjust_cost (insn, link, dep_insn, cost)
 
       /* Stores stalls one cycle longer than other insns.  */
       if (is_fp_insn (insn) && cost && is_fp_store (dep_insn))
-        cost++;
+	cost++;
 
     case PROCESSOR_K6:
     default:
@@ -5543,34 +5543,50 @@ x86_adjust_cost (insn, link, dep_insn, cost)
      TARGET_DOUBLE_WITH_ADD.  */
 
 char *
-output_ashlsi3 (operands)
-     rtx *operands;
+output_ashl (insn, operands)
+     rtx insn, *operands;
 {
   /* Handle case where srcreg != dstreg.  */
   if (REG_P (operands[0]) && REGNO (operands[0]) != REGNO (operands[1]))
     {
       if (TARGET_DOUBLE_WITH_ADD && INTVAL (operands[2]) == 1)
-	{
-	  output_asm_insn (AS2 (mov%L0,%1,%0), operands);
-	  return AS2 (add%L0,%1,%0);
-	}
+	switch (GET_MODE (operands[0]))
+	  {
+	  case SImode:
+	    output_asm_insn (AS2 (mov%L0,%1,%0), operands);
+	    return AS2 (add%L0,%1,%0);
+	  case HImode:
+	    output_asm_insn (AS2 (mov%L0,%k1,%k0), operands);
+	    if (i386_cc_probably_useless_p (insn))
+	      {
+		CC_STATUS_INIT;
+		return AS2 (add%L0,%k1,%k0);
+	      }
+	    return AS2 (add%W0,%k1,%k0);
+	  case QImode:
+	    output_asm_insn (AS2 (mov%B0,%1,%0), operands);
+	    return AS2 (add%B0,%1,%0);
+	  default:
+	    abort ();
+	  }
       else
-        {
-          CC_STATUS_INIT;
+	{
+	  CC_STATUS_INIT;
 
 	  /* This should be extremely rare (impossible?).  We can not encode a
 	     shift of the stack pointer using an lea instruction.  So copy the
 	     stack pointer into the destination register and use an lea.  */
 	  if (operands[1] == stack_pointer_rtx)
 	    {
-	      output_asm_insn (AS2 (mov%L0,%1,%0), operands);
+	      output_asm_insn (AS2 (mov%L0,%k1,%k0), operands);
 	      operands[1] = operands[0];
 	    }
 
 	  /* For shifts up to and including 3 bits, use lea.  */
-          operands[1] = gen_rtx_MULT (SImode, operands[1],
+	  operands[1] = gen_rtx_MULT (SImode,
+				      gen_rtx_REG (SImode, REGNO (operands[1])),
 				      GEN_INT (1 << INTVAL (operands[2])));
-	  return AS2 (lea%L0,%a1,%0);
+	  return AS2 (lea%L0,%a1,%k0);
 	}
     }
 
@@ -5578,17 +5594,47 @@ output_ashlsi3 (operands)
 
   /* Handle variable shift.  */
   if (REG_P (operands[2]))
-    return AS2 (sal%L0,%b2,%0);
+    switch (GET_MODE (operands[0]))
+      {
+      case SImode:
+	return AS2 (sal%L0,%b2,%0);
+      case HImode:
+	if (REG_P (operands[0]) && i386_cc_probably_useless_p (insn))
+	  {
+	    CC_STATUS_INIT;
+	    return AS2 (sal%L0,%b2,%k0);
+	  }
+	else
+	  return AS2 (sal%W0,%b2,%0);
+      case QImode:
+	return AS2 (sal%B0,%b2,%0);
+      default:
+	abort ();
+      }
 
   /* Always perform shift by 1 using an add instruction.  */
   if (REG_P (operands[0]) && operands[2] == const1_rtx)
-    return AS2 (add%L0,%0,%0);
+    switch (GET_MODE (operands[0]))
+      {
+      case SImode:
+	return AS2 (add%L0,%0,%0);
+      case HImode:
+	if (REG_P (operands[0]) && i386_cc_probably_useless_p (insn))
+	  {
+	    CC_STATUS_INIT;
+	    return AS2 (add%L0,%k0,%k0);
+	  }
+	else
+	  return AS2 (add%W0,%0,%0);
+      case QImode:
+	  return AS2 (add%B0,%0,%0);
+      default:
+	  abort ();
+      }
 
 #if 0
-  /* ??? Currently disabled.  reg-stack currently stomps on the mode of
-     each insn.  Thus, we can not easily detect when we should use lea to
-     improve issue characteristics.  Until reg-stack is fixed, fall back to
-     sal instruction for Pentiums to avoid AGI stall.  */
+  /* ??? Currently disabled.  Because our model of Pentium is far from being
+     exact, this change will need some benchmarking.  */
   /* Shift reg by 2 or 3 use an lea instruction for Pentium if this is
      insn is expected to issue into the V pipe (the insn's mode will be
      TImode for a U pipe, and !TImode for a V pipe instruction).  */
@@ -5600,14 +5646,30 @@ output_ashlsi3 (operands)
       && GET_MODE (insn) != TImode)
     {
       CC_STATUS_INIT;
-      operands[1] = gen_rtx_MULT (SImode, operands[1],
+      operands[1] = gen_rtx_MULT (SImode, gen_rtx_REG (SImode, REGNO (operands[1])),
 				  GEN_INT (1 << INTVAL (operands[2])));
       return AS2 (lea%L0,%a1,%0);
     }
 #endif
 
   /* Otherwise use a shift instruction.  */
-  return AS2 (sal%L0,%2,%0);
+  switch (GET_MODE (operands[0]))
+    {
+    case SImode:
+      return AS2 (sal%L0,%2,%0);
+    case HImode:
+      if (REG_P (operands[0]) && i386_cc_probably_useless_p (insn))
+	{
+	  CC_STATUS_INIT;
+	  return AS2 (sal%L0,%2,%k0);
+	}
+      else
+	return AS2 (sal%W0,%2,%0);
+    case QImode:
+      return AS2 (sal%B0,%2,%0);
+    default:
+      abort ();
+    }
 }
 
 /* Given the memory address ADDR, calculate the length of the address or

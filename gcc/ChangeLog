@@ -1,6 +1,14 @@
 Thu Apr 15 01:03:21 1999  Jan Hubicka <hubicka@freesoft.cz>
 			  Jeff Law <law@cygnus.com>
 
+	* i386.md (ashlsi patterns): Call output_ashl instead of output_ashlsi3.
+	(ashlqi): Use expander, separate LEA and SAL / ADD patterns; call
+	output_ashl.
+	(ashlhi): Likewise.
+	* i386.h (output_ashl): Renamed from output_ashlsi3.
+	* i386.c (output_ashl): Likewise; support HImode and QImode operands
+	as well.
+
 	* i386.md (notsi, nothi, xorsi, xorhi, and xorqi patterns): Call
 	memory_address_displacement_length instead of memory_address_length.
 	* i386.c (memory_address_info): Renamed from memory_address_length.
