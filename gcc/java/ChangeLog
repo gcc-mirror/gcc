@@ -16,6 +16,11 @@
 	Include flags.h.
 	* jv-scan.c (pedantic): New global.
 
+2000-10-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+ 
+	* Make-lang.in (LIBGCJ_ZIP_FILE): Define with `$(prefix)'.
+	Fixes gcj/365.
+
 2000-10-27  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* Make-lang.in: Move all build rules here from Makefile.in,
