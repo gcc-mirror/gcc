@@ -1,3 +1,7 @@
+2003-04-02  Mike Stump  <mrs@apple.com>
+
+	* doc/install.texi (Specific): Update pointers to apple.com.
+
 Thu Apr  3 00:18:49 CEST 2003  Jan HUbicka  <jh@suse.cz>
 
 	* i386.c (override_options):  Disable red zone by default on i386.
