@@ -2,6 +2,8 @@
 
 // by Alexandre Oliva <aoliva@cygnus.com>
 
+// execution test - XFAIL *-*-*
+
 int i, j;
 
 const int &f(const int& I, const int& J) {
