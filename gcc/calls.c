@@ -2106,11 +2106,18 @@ expand_call (exp, target, ignore)
      pushed these optimizations into -O2.  Don't try if we're already
      expanding a call, as that means we're an argument.  Similarly, if
      there's pending loops or cleanups we know there's code to follow
-     the call.  */
+     the call.
+
+     If rtx_equal_function_value_matters is false, that means we've 
+     finished with regular parsing.  Which means that some of the
+     machinery we use to generate tail-calls is no longer in place.
+     This is most often true of sjlj-exceptions, which we couldn't
+     tail-call to anyway.  */
 
   try_tail_call = 0;
   if (flag_optimize_sibling_calls
       && currently_expanding_call == 1
+      && rtx_equal_function_value_matters
       && stmt_loop_nest_empty ()
       && ! any_pending_cleanups (1))
     {
