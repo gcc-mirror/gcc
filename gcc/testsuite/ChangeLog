@@ -1,3 +1,9 @@
+Thu Sep 02 09:27:34 BST 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.other/ambig2.C: New test.
+	* g++.old-deja/g++.other/cond5.C: New test.
+	* g++.old-deja/g++.other/lookup16.C: New test.
+
 Thu Sep  2 01:17:51 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* gcc.dg/980414-1.c: Fix assembler syntax to work with old
