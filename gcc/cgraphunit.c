@@ -823,7 +823,7 @@ cgraph_expand_function (struct cgraph_node *node)
       DECL_SAVED_TREE (node->decl) = NULL;
       DECL_STRUCT_FUNCTION (node->decl) = NULL;
       DECL_INITIAL (node->decl) = error_mark_node;
-      /* Elliminate all call edges.  This is important so the call_expr no longer
+      /* Eliminate all call edges.  This is important so the call_expr no longer
 	 points to the dead function body.  */
       while (node->callees)
 	cgraph_remove_edge (node->callees);

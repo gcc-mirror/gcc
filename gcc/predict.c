@@ -313,7 +313,7 @@ dump_prediction (FILE *file, enum br_predictor predictor, int probability,
   fprintf (file, "\n");
 }
 
-/* We can not predict the probabilities of ougtoing edges of bb.  Set them
+/* We can not predict the probabilities of outgoing edges of bb.  Set them
    evenly and hope for the best.  */
 static void
 set_even_probabilities (basic_block bb)
@@ -846,7 +846,7 @@ estimate_probability (struct loops *loops_info)
     profile_status = PROFILE_GUESSED;
 }
 
-/* Set edge->probability for each succestor edge of BB.  */
+/* Set edge->probability for each successor edge of BB.  */
 void
 guess_outgoing_edge_probabilities (basic_block bb)
 {

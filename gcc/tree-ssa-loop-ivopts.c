@@ -1559,7 +1559,7 @@ add_standard_iv_candidates (struct ivopts_data *data)
       		 build_int_cst (unsigned_intSI_type_node, 1),
 		 true, NULL);
 
-  /* The same for a long type if it is still fast enought.  */
+  /* The same for a long type if it is still fast enough.  */
   if (BITS_PER_WORD > 32)
     add_candidate (data,
 		   build_int_cst (unsigned_intDI_type_node, 0),
