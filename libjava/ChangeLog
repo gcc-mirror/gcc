@@ -1,3 +1,7 @@
+2001-11-17  Anthony Green  <green@redhat.com>
+
+	* jni.cc (unwrap): Fix test for wrapped objects.
+
 2001-11-16  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (_Jv_BytecodeVerifier::check_field_constant): Handle
