@@ -1,3 +1,9 @@
+2005-04-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR treelang/20604
+	* lang-spec.c: Simplify @treelang to what the other
+	languages do.
+
 2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* treelang/treelang.texi: Fix typos.

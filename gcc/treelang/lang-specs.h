@@ -34,31 +34,6 @@ Boston, MA 02111-1307, USA.  */
 {".tre", "@treelang", NULL, 0, 0},
 {".TRE", "@treelang", NULL, 0, 0},
 {"@treelang",
-    "tree1\
-       %{!Q:-quiet}\
-       -dumpbase %B \
-       %{d*}\
-       %{m*}\
-       %{a}\
-       %{g*}\
-       %{O*}\
-       %{W*}\
-       %{w}\
-       %{ansi}\
-       %{v}\
-       %{--help:--help}\
-       %{pg:-p}\
-       %{p}\
-       %{f*}\
-       %{pg|p:%{fomit-frame-pointer:%e-pg or -p and -fomit-frame-pointer are incompatible}}\
-       %{S:%W{o*}%{!o*:-o %b.s}}\
-       %{!S:-o %g.s}\
-       %i\n\
-       %{!S:as %a\
-       %Y\
-       %{c:%W{o*}%{!o*:-o %w%b%O}}\
-       %{!c:-o %d%w%u%O}\
-       %g.s\
-       %A\n}\
-       ", NULL , 0, 0
+    "%{!E:tree1 %i %(cc1_options) %{J*} %{I*}\
+         %{!fsyntax-only:%(invoke_as)}}", NULL , 0, 0
 },
