@@ -15,7 +15,7 @@ foo (a,b)
     if (b)
       bar ();
     else
-      com ();	/* { dg-bogus ".*warning.*" "bogus warning" { xfail *-*-* } } */
+      com ();	/* { dg-bogus ".*warning.*" "bogus warning" } */
   else
     baz ();
 }
