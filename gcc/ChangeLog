@@ -1,3 +1,12 @@
+Wed May  5 16:26:13 1999  Vladimir Makarov  <vmakarov@tofu.to.cygnus.com>
+
+	* function.c (purge_addressof_replacements): Rename into
+ 	purge_bitfield_addressof_replacements.
+	(purge_addressof_replacements): New variable.
+	(purge_addressof_1): Add code for changing addressof in notes for
+ 	field values which are extracted by usage MEM with narrower mode.
+	(purge_addressof): Initialize purge_bitfield_addressof_replacements.
+
 Wed May  5 07:40:02 1999  Nick Clifton  <nickc@cygnus.com>
 
 	Patch from: Nick Burrett  <nick.burrett@btinternet.com>
