@@ -1,3 +1,9 @@
+2003-11-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* combine.c (distribute_notes): When re-distributing the notes from
+	an insn we are about to delete, ensure we can't end up with a cyclic
+	list of notes.
+
 2003-11-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/12926

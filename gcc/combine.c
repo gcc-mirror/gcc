@@ -12702,11 +12702,12 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 			     This might delete other dead insns recursively.
 			     First set the pattern to something that won't use
 			     any register.  */
+			  rtx old_notes = REG_NOTES (tem);
 
 			  PATTERN (tem) = pc_rtx;
+			  REG_NOTES (tem) = NULL;
 
-			  distribute_notes (REG_NOTES (tem), tem, tem,
-					    NULL_RTX);
+			  distribute_notes (old_notes, tem, tem, NULL_RTX);
 			  distribute_links (LOG_LINKS (tem));
 
 			  PUT_CODE (tem, NOTE);
@@ -12718,10 +12719,11 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 			  if (cc0_setter)
 			    {
 			      PATTERN (cc0_setter) = pc_rtx;
+			      old_notes = REG_NOTES (cc0_setter);
+			      REG_NOTES (cc0_setter) = NULL;
 
-			      distribute_notes (REG_NOTES (cc0_setter),
-						cc0_setter, cc0_setter,
-						NULL_RTX);
+			      distribute_notes (old_notes, cc0_setter,
+						cc0_setter, NULL_RTX);
 			      distribute_links (LOG_LINKS (cc0_setter));
 
 			      PUT_CODE (cc0_setter, NOTE);
