@@ -61,7 +61,7 @@ Boston, MA 02111-1307, USA.
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)					\
   do { output_file_directive ((FILE), main_input_filename);	\
-       if (optimize) ASM_FILE_START_1 (FILE);			\
+       if (optimize) { ASM_FILE_START_1 (FILE); }		\
      } while (0)
 
 /* By default, do nothing: a few machines support .optim, but not most.  */

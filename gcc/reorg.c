@@ -188,7 +188,9 @@ static rtx add_to_delay_list		PROTO((rtx, rtx));
 static rtx delete_from_delay_slot	PROTO((rtx));
 static void delete_scheduled_jump	PROTO((rtx));
 static void note_delay_statistics	PROTO((int, int));
+#if defined(ANNUL_IFFALSE_SLOTS) || defined(ANNUL_IFTRUE_SLOTS)
 static rtx optimize_skip		PROTO((rtx));
+#endif
 static int get_jump_flags		PROTO((rtx, rtx));
 static int rare_destination		PROTO((rtx));
 static int mostly_true_jump		PROTO((rtx, rtx));

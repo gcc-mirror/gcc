@@ -652,7 +652,7 @@ clear_secondary_mem ()
 
 static enum reg_class
 find_valid_class (m1, n)
-     enum machine_mode  m1;
+     enum machine_mode m1 ATTRIBUTE_UNUSED;
      int n;
 {
   int class;
@@ -1975,7 +1975,7 @@ hard_reg_set_here_p (beg_regno, end_regno, x)
 
 int
 strict_memory_address_p (mode, addr)
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      register rtx addr;
 {
   GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);

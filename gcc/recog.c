@@ -1230,7 +1230,7 @@ pop_operand (op, mode)
 
 int
 memory_address_p (mode, addr)
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      register rtx addr;
 {
   if (GET_CODE (addr) == ADDRESSOF)
