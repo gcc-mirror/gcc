@@ -27,11 +27,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "varray.h"
 #include "partition.h"
 
-#ifndef TREE_CODE
-union tree_node;
-#define tree union tree_node *
-#endif
-
 /* Head of register set linked list.  */
 typedef bitmap_head regset_head;
 /* A pointer to a regset_head.  */
