@@ -1,3 +1,7 @@
+2005-04-02  Steven G. Kargl  <kargls@comcast.net>
+
+	* intrinsic.texi: Document ALLOCATED, ANINT, ANY, ASIN; Fix typos.
+
 2005-03-30  Canqun Yang  <canqun@nudt.edu.cn>
 
 	* trans-common.c (create_common): Build RECORD_NODE for common blocks
