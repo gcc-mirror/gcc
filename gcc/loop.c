@@ -2338,6 +2338,8 @@ find_and_verify_loops (f)
 	  {
 	    rtx p;
 	    rtx our_next = next_real_insn (insn);
+	    int dest_loop = uid_loop_num[INSN_UID (JUMP_LABEL (insn))];
+	    int outer_loop;
 
 	    /* Go backwards until we reach the start of the loop, a label,
 	       or a JUMP_INSN.  */
@@ -2349,6 +2351,19 @@ find_and_verify_loops (f)
 		 p = PREV_INSN (p))
 	      ;
 
+	    /* Check for the case where we have a jump to an inner nested
+	       loop, and do not perform the optimization in that case.  */
+
+	    if (dest_loop != -1)
+	      {
+		for (outer_loop = dest_loop; outer_loop != -1;
+		     outer_loop = loop_outer_loop[outer_loop])
+		  if (outer_loop == this_loop_num)
+		    break;
+	      }
+	    else
+	      outer_loop = -1;
+
 	    /* If we stopped on a JUMP_INSN to the next insn after INSN,
 	       we have a block of code to try to move.
 
@@ -2358,7 +2373,8 @@ find_and_verify_loops (f)
 	       of the block, invert the jump in P and point it to that label,
 	       and move the block of code to the spot we found.  */
 
-	    if (GET_CODE (p) == JUMP_INSN
+	    if (outer_loop == -1
+		&& GET_CODE (p) == JUMP_INSN
 		&& JUMP_LABEL (p) != 0
 		/* Just ignore jumps to labels that were never emitted.
 		   These always indicate compilation errors.  */
@@ -2522,7 +2538,19 @@ mark_loop_jump (x, loop_num)
 	 mark this LABEL_REF so we know that this branch should predict
 	 false.  */
 
-      if (dest_loop != loop_num && loop_num != -1)
+      /* A check to make sure the label is not in an inner nested loop,
+	 since this does not count as a loop exit.  */
+      if (dest_loop != -1)
+	{
+	  for (outer_loop = dest_loop; outer_loop != -1;
+	       outer_loop = loop_outer_loop[outer_loop])
+	    if (outer_loop == loop_num)
+	      break;
+	}
+      else
+	outer_loop = -1;
+
+      if (loop_num != -1 && outer_loop == -1)
 	{
 	  LABEL_OUTSIDE_LOOP_P (x) = 1;
 	  LABEL_NEXTREF (x) = loop_number_exit_labels[loop_num];
