@@ -1,3 +1,8 @@
+Tue Feb 19 20:13:57 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/sparc/sparc.md (nonlocal_goto): Use hard_frame_pointer_rtx
+	now that we have one.
+
 2002-02-19  Zack Weinberg  <zack@codesourcery.com>
 
 	* tree.h (struct tree_common): Remove aux.  Add unused_0 at
