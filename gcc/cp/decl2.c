@@ -1012,9 +1012,7 @@ grokclassfn (ctype, function, flags, quals)
     }
 
   DECL_ARGUMENTS (function) = last_function_parms;
-  /* First approximations.  */
   DECL_CONTEXT (function) = ctype;
-  DECL_VIRTUAL_CONTEXT (function) = ctype;
 
   if (flags == DTOR_FLAG || DECL_CONSTRUCTOR_P (function))
     maybe_retrofit_in_chrg (function);

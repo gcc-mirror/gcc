@@ -1428,10 +1428,8 @@ void
 add_method (type, fields, method)
      tree type, *fields, method;
 {
-  /* Setting the DECL_CONTEXT and DECL_VIRTUAL_CONTEXT 
-     here is probably redundant.  */
+  /* Setting the DECL_CONTEXT here is probably redundant.  */
   DECL_CONTEXT (method) = type;
-  DECL_VIRTUAL_CONTEXT (method) = type;
   
   if (fields && *fields)
     *fields = build_overload (method, *fields);
