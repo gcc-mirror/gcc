@@ -799,7 +799,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
     _fixunsdfsi _fixunssfsi _fixunsdfdi _fixdfdi _fixunssfdi _fixsfdi \
     _fixxfdi _fixunsxfdi _floatdixf _fixunsxfsi \
     _fixtfdi _fixunstfdi _floatditf \
-    __gcc_bcmp _varargs __dummy _eprintf \
+    __gcc_bcmp _eprintf \
     _bb _clear_cache _trampoline __main _exit \
     _absvsi2 _absvdi2 _addvsi3 _addvdi3 _subvsi3 _subvdi3 \
     _mulvsi3 _mulvdi3 _negvsi2 _negvdi2 \

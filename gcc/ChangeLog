@@ -1,3 +1,13 @@
+2001-04-24  Zack Weinberg  <zackw@stanford.edu>
+
+	* Makefile.in (LIB2FUNCS): Remove _varargs and __dummy.
+	* libgcc-std.ver: Remove __builtin_saveregs, __dummy, and __empty.
+	* libgcc2.c: Remove __dummy and __empty functions, and all
+	code for __builtin_saveregs.
+	* libgcc2.h: Don't prototype __builtin_saveregs, __dummy, or __empty.
+	* config/i860/varargs.asm: New file - preserve i860 __builtin_saveregs
+	for future reference.
+
 2001-04-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-convert.c (convert): When converting to a BOOLEAN_TYPE, avoid
@@ -9,7 +19,7 @@
 	if the decl is abstract.
 	(add_bound_info): Don't try to get the location of an abstract
 	declaration.
-	
+
 2001-04-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* loop.c (loop_delete_insns): Add prototype.
@@ -23,7 +33,7 @@
 	(loop_delete_insns): New function.
 	* unroll.c (initial_reg_note_copy): Copy INSN_LIST notes, even if
 	we're not substituting into them yet.
-	
+
 2001-04-21  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (general_operand_src): Fix a comment typo.
@@ -685,7 +695,7 @@ Wed Mar 21 14:27:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	REG_EQUAL notes.
 
 	* sdbout.c: #include ggc.h.
- 	(sdbout_init): Move to end of file.
+	(sdbout_init): Move to end of file.
 	Call ggc_add_tree_root for anonymous_types.
 	(sdbout_symbol): Use DECL_NAME for local, not DECL_ASSEMBLER_NAME.
 	(sdbout_one_type): Use DECL_NAME for field name.
