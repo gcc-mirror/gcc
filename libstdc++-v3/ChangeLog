@@ -1,3 +1,7 @@
+2000-10-15  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/configopts.html:  Remove libgcc-rebuild; HTML formatting.
+
 2000-10-13  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
             Mark Harig  <markh@landmark.com>
 
