@@ -1,5 +1,12 @@
 2003-12-30  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/ObjectInputStream.java,
+	java/io/ObjectOutputStream.java,
+	java/io/ObjectStreamClass.java:
+	Reformated, no functional code changes.
+
+2003-12-30  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/http/Connection.java
 	(outputStream): New field.
 	(bufferedOutputStream): New field.
