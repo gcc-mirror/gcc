@@ -392,6 +392,28 @@ mips*-*-*)
 	esac
 	;;
 powerpc*-*-* | rs6000*-*-*)
+	if [ x$enable_aix64 = xno ]
+	then
+	  old_multidirs="${multidirs}"
+	  multidirs=""
+	  for x in ${old_multidirs}; do
+	    case "$x" in
+	      *ppc64* ) : ;;
+	      *) multidirs="${multidirs} ${x}" ;;
+	    esac
+	  done
+	fi
+	if [ x$enable_pthread = xno ]
+	then
+	  old_multidirs="${multidirs}"
+	  multidirs=""
+	  for x in ${old_multidirs}; do
+	    case "$x" in
+	      *pthread* ) : ;;
+	      *) multidirs="${multidirs} ${x}" ;;
+	    esac
+	  done
+	fi
 	if [ x$enable_softfloat = xno ]
 	then
 	  old_multidirs="${multidirs}"
