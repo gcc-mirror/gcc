@@ -804,6 +804,7 @@ enum node_type {
  T_WCHAR_TYPE,   /* `__WCHAR_TYPE__' */
  T_USER_LABEL_PREFIX_TYPE, /* `__USER_LABEL_PREFIX__' */
  T_REGISTER_PREFIX_TYPE,   /* `__REGISTER_PREFIX__' */
+ T_IMMEDIATE_PREFIX_TYPE,  /* `__IMMEDIATE_PREFIX__' */
  T_TIME,	/* `__TIME__' */
  T_CONST,	/* Constant value, used by `__STDC__' */
  T_MACRO,	/* macro defined by `#define' */
@@ -883,6 +884,12 @@ char * wchar_type = WCHAR_TYPE;
 
 #ifndef REGISTER_PREFIX
 #define REGISTER_PREFIX ""
+#endif
+
+/* The string value for __IMMEDIATE_PREFIX__ */
+
+#ifndef IMMEDIATE_PREFIX
+#define IMMEDIATE_PREFIX ""
 #endif
 
 /* In the definition of a #assert name, this structure forms
@@ -4160,6 +4167,10 @@ special_symbol (hp, op)
 
   case T_REGISTER_PREFIX_TYPE:
     buf = REGISTER_PREFIX;
+    break;
+
+  case T_IMMEDIATE_PREFIX_TYPE:
+    buf = IMMEDIATE_PREFIX;
     break;
 
   case T_CONST:
@@ -9578,6 +9589,8 @@ initialize_builtins (inp, outp)
   install ((U_CHAR *) "__USER_LABEL_PREFIX__", -1, T_USER_LABEL_PREFIX_TYPE,
 	   NULL_PTR, -1);
   install ((U_CHAR *) "__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE,
+	   NULL_PTR, -1);
+  install ((U_CHAR *) "__IMMEDIATE_PREFIX__", -1, T_IMMEDIATE_PREFIX_TYPE,
 	   NULL_PTR, -1);
   install ((U_CHAR *) "__TIME__", -1, T_TIME, NULL_PTR, -1);
   if (!traditional) {
