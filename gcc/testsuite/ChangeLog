@@ -1,3 +1,20 @@
+Wed Feb 10 13:08:12 1999  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* gcc.dg/special/ecos.exp: New test driver for new tests with
+	special requirements.
+
+	* gcc.dg/special/alias-1.c: New test.
+	* gcc.dg/special/gcsec-1.c: New test.
+	* gcc.dg/special/weak-1.c: New test.
+	* gcc.dg/special/weak-1a.c: Accompanying file to weak-1.c.
+	* gcc.dg/special/weak-2.c: New test.
+	* gcc.dg/special/weak-2a.c: Accompanying file to weak-2.c.
+	* gcc.dg/special/weak-2b.c: Accompanying file to weak-2.c.
+	* gcc.dg/special/wkali-1.c: New test.
+	* gcc.dg/special/wkali-2.c: New test.
+	* gcc.dg/special/wkali-2a.c: Accompanying file to wkali-2.c.
+	* gcc.dg/special/wkali-2b.c: Accompanying file to wkali-2.c.
+
 Wed Feb 10 12:15:35 1999  Felix Lee  <flee@cygnus.com>
 
         * lib/c-torture.exp (c-torture-compile): Pull out code for
