@@ -314,12 +314,12 @@ static int in_class;
 
 /* Forward declarations for functions defined in this file.  */
 
-static char *dwarf_tag_name		PROTO((unsigned));
-static char *dwarf_attr_name		PROTO((unsigned));
-static char *dwarf_stack_op_name	PROTO((unsigned));
-static char *dwarf_typemod_name		PROTO((unsigned));
-static char *dwarf_fmt_byte_name	PROTO((unsigned));
-static char *dwarf_fund_type_name	PROTO((unsigned));
+static const char *dwarf_tag_name	PROTO((unsigned));
+static const char *dwarf_attr_name	PROTO((unsigned));
+static const char *dwarf_stack_op_name	PROTO((unsigned));
+static const char *dwarf_typemod_name	PROTO((unsigned));
+static const char *dwarf_fmt_byte_name	PROTO((unsigned));
+static const char *dwarf_fund_type_name	PROTO((unsigned));
 static tree decl_ultimate_origin	PROTO((tree));
 static tree block_ultimate_origin	PROTO((tree));
 static tree decl_class_context 		PROTO((tree));
@@ -351,7 +351,7 @@ static void location_attribute		PROTO((rtx));
 static void data_member_location_attribute PROTO((tree));
 static void const_value_attribute	PROTO((rtx));
 static void location_or_const_value_attribute PROTO((tree));
-static inline void name_attribute	PROTO((char *));
+static inline void name_attribute	PROTO((const char *));
 static inline void fund_type_attribute	PROTO((unsigned));
 static void mod_fund_type_attribute	PROTO((tree, int, int));
 static inline void user_def_type_attribute PROTO((tree));
@@ -364,22 +364,22 @@ static void byte_size_attribute		PROTO((tree));
 static inline void bit_offset_attribute	PROTO((tree));
 static inline void bit_size_attribute	PROTO((tree));
 static inline void element_list_attribute PROTO((tree));
-static inline void stmt_list_attribute	PROTO((char *));
-static inline void low_pc_attribute	PROTO((char *));
-static inline void high_pc_attribute	PROTO((char *));
-static inline void body_begin_attribute	PROTO((char *));
-static inline void body_end_attribute	PROTO((char *));
+static inline void stmt_list_attribute	PROTO((const char *));
+static inline void low_pc_attribute	PROTO((const char *));
+static inline void high_pc_attribute	PROTO((const char *));
+static inline void body_begin_attribute	PROTO((const char *));
+static inline void body_end_attribute	PROTO((const char *));
 static inline void language_attribute	PROTO((unsigned));
 static inline void member_attribute	PROTO((tree));
 #if 0
 static inline void string_length_attribute PROTO((tree));
 #endif
-static inline void comp_dir_attribute	PROTO((char *));
-static inline void sf_names_attribute	PROTO((char *));
-static inline void src_info_attribute	PROTO((char *));
-static inline void mac_info_attribute	PROTO((char *));
+static inline void comp_dir_attribute	PROTO((const char *));
+static inline void sf_names_attribute	PROTO((const char *));
+static inline void src_info_attribute	PROTO((const char *));
+static inline void mac_info_attribute	PROTO((const char *));
 static inline void prototyped_attribute	PROTO((tree));
-static inline void producer_attribute	PROTO((char *));
+static inline void producer_attribute	PROTO((const char *));
 static inline void inline_attribute	PROTO((tree));
 static inline void containing_type_attribute PROTO((tree));
 static inline void abstract_origin_attribute PROTO((tree));
@@ -439,13 +439,15 @@ static void output_decls_for_scope	PROTO((tree, int));
 static void output_decl			PROTO((tree, tree));
 static void shuffle_filename_entry	PROTO((filename_entry *));
 static void generate_new_sfname_entry	PROTO((void));
-static unsigned lookup_filename		PROTO((char *));
+static unsigned lookup_filename		PROTO((const char *));
 static void generate_srcinfo_entry	PROTO((unsigned, unsigned));
-static void generate_macinfo_entry	PROTO((char *, char *));
+static void generate_macinfo_entry	PROTO((const char *, const char *));
 static int is_pseudo_reg		PROTO((rtx));
 static tree type_main_variant		PROTO((tree));
 static int is_tagged_type		PROTO((tree));
 static int is_redundant_typedef		PROTO((tree));
+static void add_incomplete_type		PROTO((tree));
+static void retry_incomplete_types	PROTO((void));
 
 /* Definitions of defaults for assembler-dependent names of various
    pseudo-ops and section names.
@@ -924,7 +926,7 @@ is_tagged_type (type)
 	  || code == QUAL_UNION_TYPE || code == ENUMERAL_TYPE);
 }
 
-static char *
+static const char *
 dwarf_tag_name (tag)
      register unsigned tag;
 {
@@ -974,7 +976,7 @@ dwarf_tag_name (tag)
     }
 }
 
-static char *
+static const char *
 dwarf_attr_name (attr)
      register unsigned attr;
 {
@@ -1052,7 +1054,7 @@ dwarf_attr_name (attr)
     }
 }
 
-static char *
+static const char *
 dwarf_stack_op_name (op)
      register unsigned op;
 {
@@ -1069,7 +1071,7 @@ dwarf_stack_op_name (op)
     }
 }
 
-static char *
+static const char *
 dwarf_typemod_name (mod)
      register unsigned mod;
 {
@@ -1083,7 +1085,7 @@ dwarf_typemod_name (mod)
     }
 }
 
-static char *
+static const char *
 dwarf_fmt_byte_name (fmt)
      register unsigned fmt;
 {
@@ -1102,7 +1104,7 @@ dwarf_fmt_byte_name (fmt)
     }
 }
 
-static char *
+static const char *
 dwarf_fund_type_name (ft)
      register unsigned ft;
 {
@@ -1369,7 +1371,8 @@ fundamental_type_code (type)
 	    && DECL_NAME (TYPE_NAME (type)) != 0
 	    && TREE_CODE (DECL_NAME (TYPE_NAME (type))) == IDENTIFIER_NODE)
 	  {
-	    char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+	    const char *name =
+	      IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
 
 	    if (!strcmp (name, "unsigned char"))
 	      return FT_unsigned_char;
@@ -1424,7 +1427,8 @@ fundamental_type_code (type)
 	    && DECL_NAME (TYPE_NAME (type)) != 0
 	    && TREE_CODE (DECL_NAME (TYPE_NAME (type))) == IDENTIFIER_NODE)
 	  {
-	    char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+	    const char *name =
+	      IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
 
 	    /* Note that here we can run afowl of a serious bug in "classic"
 	       svr4 SDB debuggers.  They don't seem to understand the
@@ -2492,7 +2496,7 @@ location_or_const_value_attribute (decl)
 
 static inline void
 name_attribute (name_string)
-     register char *name_string;
+     register const char *name_string;
 {
   if (name_string && *name_string)
     {
@@ -2836,7 +2840,7 @@ element_list_attribute (element)
 
 static inline void
 stmt_list_attribute (label)
-    register char *label;
+    register const char *label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_stmt_list);
   /* Don't use ASM_OUTPUT_DWARF_DATA4 here.  */
@@ -2848,7 +2852,7 @@ stmt_list_attribute (label)
 
 static inline void
 low_pc_attribute (asm_low_label)
-     register char *asm_low_label;
+     register const char *asm_low_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_low_pc);
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, asm_low_label);
@@ -2859,7 +2863,7 @@ low_pc_attribute (asm_low_label)
 
 static inline void
 high_pc_attribute (asm_high_label)
-    register char *asm_high_label;
+    register const char *asm_high_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_high_pc);
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, asm_high_label);
@@ -2869,7 +2873,7 @@ high_pc_attribute (asm_high_label)
 
 static inline void
 body_begin_attribute (asm_begin_label)
-     register char *asm_begin_label;
+     register const char *asm_begin_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_body_begin);
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, asm_begin_label);
@@ -2879,7 +2883,7 @@ body_begin_attribute (asm_begin_label)
 
 static inline void
 body_end_attribute (asm_end_label)
-     register char *asm_end_label;
+     register const char *asm_end_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_body_end);
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, asm_end_label);
@@ -2932,7 +2936,7 @@ string_length_attribute (upper_bound)
 
 static inline void
 comp_dir_attribute (dirname)
-     register char *dirname;
+     register const char *dirname;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_comp_dir);
   ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, dirname);
@@ -2940,7 +2944,7 @@ comp_dir_attribute (dirname)
 
 static inline void
 sf_names_attribute (sf_names_start_label)
-     register char *sf_names_start_label;
+     register const char *sf_names_start_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_sf_names);
   /* Don't use ASM_OUTPUT_DWARF_DATA4 here.  */
@@ -2949,7 +2953,7 @@ sf_names_attribute (sf_names_start_label)
 
 static inline void
 src_info_attribute (src_info_start_label)
-     register char *src_info_start_label;
+     register const char *src_info_start_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_src_info);
   /* Don't use ASM_OUTPUT_DWARF_DATA4 here.  */
@@ -2958,7 +2962,7 @@ src_info_attribute (src_info_start_label)
 
 static inline void
 mac_info_attribute (mac_info_start_label)
-     register char *mac_info_start_label;
+     register const char *mac_info_start_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_mac_info);
   /* Don't use ASM_OUTPUT_DWARF_DATA4 here.  */
@@ -2979,7 +2983,7 @@ prototyped_attribute (func_type)
 
 static inline void
 producer_attribute (producer)
-     register char *producer;
+     register const char *producer;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_producer);
   ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, producer);
@@ -5512,7 +5516,7 @@ generate_new_sfname_entry ()
 
 static unsigned
 lookup_filename (file_name)
-     char *file_name;
+     const char *file_name;
 {
   register filename_entry *search_p;
   register filename_entry *limit_p = &filename_table[ft_entries];
@@ -5579,7 +5583,7 @@ generate_srcinfo_entry (line_entry_num, files_entry_num)
 
 void
 dwarfout_line (filename, line)
-     register char *filename;
+     register const char *filename;
      register unsigned line;
 {
   if (debug_info_level >= DINFO_LEVEL_NORMAL
@@ -5613,7 +5617,7 @@ dwarfout_line (filename, line)
         }
 
       {
-        register char *tail = rindex (filename, '/');
+        register const char *tail = rindex (filename, '/');
 
         if (tail != NULL)
           filename = tail;
@@ -5636,8 +5640,8 @@ dwarfout_line (filename, line)
 
 static void
 generate_macinfo_entry (type_and_offset, string)
-     register char *type_and_offset;
-     register char *string;
+     register const char *type_and_offset;
+     register const char *string;
 {
   if (! use_gnu_debug_info_extensions)
     return;
@@ -5651,7 +5655,7 @@ generate_macinfo_entry (type_and_offset, string)
 
 void
 dwarfout_start_new_source_file (filename)
-     register char *filename;
+     register const char *filename;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   char type_and_offset[MAX_ARTIFICIAL_LABEL_BYTES*3];
@@ -5684,7 +5688,7 @@ dwarfout_resume_previous_source_file (lineno)
 void
 dwarfout_define (lineno, buffer)
      register unsigned lineno;
-     register char *buffer;
+     register const char *buffer;
 {
   static int initialized = 0;
   char type_and_offset[MAX_ARTIFICIAL_LABEL_BYTES*2];
@@ -5707,7 +5711,7 @@ dwarfout_define (lineno, buffer)
 void
 dwarfout_undef (lineno, buffer)
      register unsigned lineno;
-     register char *buffer;
+     register const char *buffer;
 {
   char type_and_offset[MAX_ARTIFICIAL_LABEL_BYTES*2];
 

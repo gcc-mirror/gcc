@@ -22,10 +22,10 @@ extern void dwarfout_init 		PROTO ((FILE *asm_out_file,
 						char *main_input_filename));
 extern void dwarfout_finish		PROTO ((void));
 
-extern void dwarfout_define		PROTO ((unsigned, char *));
-extern void dwarfout_undef 		PROTO ((unsigned, char *));                                       
+extern void dwarfout_define		PROTO ((unsigned, const char *));
+extern void dwarfout_undef 		PROTO ((unsigned, const char *));
 extern void dwarfout_file_scope_decl 	PROTO ((tree , int));
-extern void dwarfout_start_new_source_file 	PROTO ((char *));
+extern void dwarfout_start_new_source_file 	PROTO ((const char *));
 extern void dwarfout_resume_previous_source_file	PROTO((unsigned));
 
 extern void dwarfout_begin_function	PROTO ((void));
@@ -38,5 +38,5 @@ extern void dwarfout_end_block		PROTO ((unsigned));
 #ifdef RTX_CODE
 extern void dwarfout_label		PROTO ((rtx));
 #endif
-extern void dwarfout_line		PROTO ((char *, unsigned));
+extern void dwarfout_line		PROTO ((const char *, unsigned));
 
