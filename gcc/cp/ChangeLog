@@ -9,7 +9,8 @@
 	* parser.c (cp_parser_late_parsing_default_args): Check that there
 	are no extra tokens after the end of the default-argument
 	expression.
-	
+
+	PR c++/14359
 	Backport 2004-02-12  Mark Mitchell  <mark@codesourcery.com>
 	* decl.c (redeclaration_error_message): Correct handling of
 	templates.
