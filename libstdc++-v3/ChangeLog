@@ -1,3 +1,16 @@
+2005-03-05  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* testsuite/22_locale/collate/compare/wchar_t/2.cc,
+	testsuite/22_locale/collate/compare/wchar_t/wrapped_env.cc,
+	testsuite/22_locale/collate/compare/wchar_t/wrapped_locale.cc,
+	testsuite/22_locale/collate/hash/wchar_t/2.cc,
+	testsuite/22_locale/collate/hash/wchar_t/wrapped_env.cc,
+	testsuite/22_locale/collate/hash/wchar_t/wrapped_locale.cc,
+	testsuite/22_locale/collate/transform/wchar_t/2.cc,
+	testsuite/22_locale/collate/transform/wchar_t/wrapped_env.cc,
+	testsuite/22_locale/collate/transform/wchar_t/wrapped_locale.cc:
+	XFAIL on *-*-hpux11.23.
+
 2005-03-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Implemenet is_polymorphic.
