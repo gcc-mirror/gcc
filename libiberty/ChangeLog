@@ -1,3 +1,7 @@
+2005-03-28  Mark Kettenis  <kettenis@gnu.org>
+	
+	* unlink-if-ordinary.c: Include <sys/types.h>.
+
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Convert libiberty to use ISO C prototype style 7/n.
