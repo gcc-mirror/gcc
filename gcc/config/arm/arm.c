@@ -2744,7 +2744,7 @@ arm_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
 
   /* After reload constants split into minipools will have addresses
      from a LABEL_REF.  */
-  else if (GET_MODE_SIZE (mode) >= 4 && reload_completed
+  else if (reload_completed
 	   && (GET_CODE (x) == LABEL_REF
 	       || (GET_CODE (x) == CONST
 		   && GET_CODE (XEXP (x, 0)) == PLUS
