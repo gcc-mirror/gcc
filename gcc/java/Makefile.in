@@ -262,7 +262,7 @@ clean:  mostlyclean
 force:
 
 parse.o : $(PARSE_C) jcf-reader.c $(CONFIG_H) $(srcdir)/../system.h \
-  $(srcdir)/../function.h
+  $(srcdir)/../function.h $(JAVA_TREE_H)
 jcf-dump.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) jcf-dump.c \
   jcf-reader.c jcf.h javaop.h javaop.def
 gjavah.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) gjavah.c \

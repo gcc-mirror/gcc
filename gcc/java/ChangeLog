@@ -1,3 +1,7 @@
+1999-09-15  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in (parse.o): Depend on $(JAVA_TREE_H).
+
 1999-09-20  Nick Clifton  <nickc@cygnus.com>
 
 	* lang.c (lang_decode_option): Extend comment.
