@@ -1,3 +1,8 @@
+Thu Sep  4 09:53:20 1997  Jim Wilson  (wilson@cygnus.com)
+
+	* profile.c (output_arc_profiler): Verify next_insert_after is an
+	INSN before and after skipping a stack pop.
+
 Thu Sep  4 07:39:19 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* final.c (shorten_branches): Don't count the lengths of deleted
