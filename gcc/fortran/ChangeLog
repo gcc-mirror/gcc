@@ -1,3 +1,8 @@
+2004-08-23  Richard Henderson  <rth@redhat.com>
+
+	* trans-const.c (gfc_conv_mpz_to_tree): Use mpz_getlimbn instead
+	of going through an intermediate string.  Fix 32/64 int/long bug.
+
 2004-08-23  Eric Christopher  <echristo@redhat.com>
 
 	* trans-types.c (gfc_type_for_mode): Remove VECTOR_TYPE_SUPPORTED_P

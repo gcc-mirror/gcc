@@ -161,71 +161,63 @@ gfc_init_constants (void)
 			    gfc_option.source);
 }
 
-#define BITS_PER_HOST_WIDE_INT (8 * sizeof (HOST_WIDE_INT))
 /* Converts a GMP integer into a backend tree node.  */
 tree
 gfc_conv_mpz_to_tree (mpz_t i, int kind)
 {
-  int val;
-  tree res;
   HOST_WIDE_INT high;
   unsigned HOST_WIDE_INT low;
-  int negate;
-  char buff[10];
-  char *p;
-  char *q;
-  int n;
 
-  /* TODO: could be wrong if sizeof(HOST_WIDE_INT) != SIZEOF (int).  */
   if (mpz_fits_slong_p (i))
     {
-      val = mpz_get_si (i);
-      res = build_int_cst (gfc_get_int_type (kind),
-			   val, (val < 0) ? (HOST_WIDE_INT)-1 : 0);
-      return (res);
-    }
-
-  n = mpz_sizeinbase (i, 16);
-  if (n > 8)
-    q = gfc_getmem (n + 2);
-  else
-    q = buff;
-
-  low = 0;
-  high = 0;
-  p = mpz_get_str (q, 16, i);
-  if (p[0] == '-')
-    {
-      negate = 1;
-      p++;
+      /* Note that HOST_WIDE_INT is never smaller than long.  */
+      low = mpz_get_si (i);
+      high = mpz_sgn (i) < 0 ? -1 : 0;
     }
   else
-    negate = 0;
-
-  while (*p)
     {
-      n = *(p++);
-      if (n >= '0' && n <= '9')
-	n = n - '0';
-      else if (n >= 'a' && n <= 'z')
-	n = n + 10 - 'a';
-      else if (n >= 'A' && n <= 'Z')
-	n = n + 10 - 'A';
-      else
-	abort ();
+      /* Note that mp_limb_t can be anywhere from short to long long,
+	 which gives us a nice variety of cases to choose from.  */
 
-      assert (n >= 0 && n < 16);
-      high = (high << 4) + (low >> (BITS_PER_HOST_WIDE_INT - 4));
-      low = (low << 4) + n;
+      if (sizeof (mp_limb_t) == sizeof (HOST_WIDE_INT))
+	{
+	  low = mpz_getlimbn (i, 0);
+	  high = mpz_getlimbn (i, 1);
+	}
+      else if (sizeof (mp_limb_t) == 2 * sizeof (HOST_WIDE_INT))
+	{
+	  mp_limb_t limb0 = mpz_getlimbn (i, 0);
+	  int count = (sizeof (mp_limb_t) - sizeof (HOST_WIDE_INT)) * CHAR_BIT;
+	  low = limb0;
+	  high = limb0 >> count;
+	}
+      else if (sizeof (mp_limb_t) < sizeof (HOST_WIDE_INT))
+	{
+	  int n, count = sizeof (HOST_WIDE_INT) / sizeof (mp_limb_t);
+	  for (low = n = 0; n < count; ++n)
+	    {
+	      low <<= sizeof (mp_limb_t) * CHAR_BIT;
+	      low |= mpz_getlimbn (i, n);
+	    }
+	  for (high = 0; n < 2*count; ++n)
+	    {
+	      high <<= sizeof (mp_limb_t) * CHAR_BIT;
+	      high |= mpz_getlimbn (i, n);
+	    }
+	}
+
+      /* By extracting limbs we constructed the absolute value of the
+	 desired number.  Negate if necessary.  */
+      if (mpz_sgn (i) < 0)
+	{
+	  if (low == 0)
+	    high = -high;
+	  else
+	    low = -low, high = ~high;
+	}
     }
-  res = build_int_cst (gfc_get_int_type (kind), low, high);
-  if (negate)
-    res = fold (build1 (NEGATE_EXPR, TREE_TYPE (res), res));
 
-  if (q != buff)
-    gfc_free (q);
-
-  return res;
+  return build_int_cst (gfc_get_int_type (kind), low, high);
 }
 
 /* Converts a real constant into backend form.  Uses an intermediate string
