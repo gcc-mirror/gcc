@@ -380,7 +380,8 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
   // nothing else when installing gcj.  Plus, people are free to
   // redefine `java.home' with `-D' if necessary.
   SET ("java.home", PREFIX);
-  
+  SET ("gnu.classpath.home", PREFIX);
+
   SET ("file.encoding", default_file_encoding);
 
 #ifdef HAVE_UNAME
