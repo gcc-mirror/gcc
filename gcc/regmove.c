@@ -2116,14 +2116,21 @@ combine_stack_adjustments ()
 /* Recognize a MEM of the form (sp) or (plus sp const).  */
 
 static int
-stack_memref_p (mem)
-     rtx mem;
+stack_memref_p (x)
+     rtx x;
 {
-  return (GET_CODE (mem) == MEM
-	  && (XEXP (mem, 0) == stack_pointer_rtx
-	      || (GET_CODE (XEXP (mem, 0)) == PLUS
-		  && XEXP (XEXP (mem, 0), 0) == stack_pointer_rtx
-		  && GET_CODE (XEXP (XEXP (mem, 0), 0)) == CONST_INT)));
+  if (GET_CODE (x) != MEM)
+    return 0;
+  x = XEXP (x, 0);
+
+  if (x == stack_pointer_rtx)
+    return 1;
+  if (GET_CODE (x) == PLUS
+      && XEXP (x, 0) == stack_pointer_rtx
+      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+    return 1;
+
+  return 0;
 }
 
 /* Recognize either normal single_set or the hack in i386.md for
@@ -2330,14 +2337,16 @@ combine_stack_adjustments_for_block (bb)
 	    }
 
 	  /* Find loads from stack memory and record them.  */
-	  if (last_sp_set && stack_memref_p (src))
+	  if (last_sp_set && stack_memref_p (src)
+	      && ! reg_mentioned_p (stack_pointer_rtx, dest))
 	    {
 	      memlist = record_one_stack_memref (insn, src, memlist);
 	      goto processed;
 	    }
 
 	  /* Find stores to stack memory and record them.  */
-	  if (last_sp_set && stack_memref_p (dest))
+	  if (last_sp_set && stack_memref_p (dest)
+	      && ! reg_mentioned_p (stack_pointer_rtx, src))
 	    {
 	      memlist = record_one_stack_memref (insn, dest, memlist);
 	      goto processed;
@@ -2351,6 +2360,7 @@ combine_stack_adjustments_for_block (bb)
 	      && GET_CODE (dest) == MEM
 	      && GET_CODE (XEXP (dest, 0)) == PRE_DEC
 	      && XEXP (XEXP (dest, 0), 0) == stack_pointer_rtx
+	      && ! reg_mentioned_p (stack_pointer_rtx, src)
 	      && validate_change (insn, &SET_DEST (set),
 				  change_address (dest, VOIDmode,
 						  stack_pointer_rtx), 0))
