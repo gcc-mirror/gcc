@@ -3844,11 +3844,8 @@ get_filename:
   default:
   fail:
     if (retried) {
-      if (importing)
-        error ("`#import' expects \"fname\" or <fname>");
-      else
-        error ("`#include' expects \"fname\" or <fname>");
-      return 0;
+      fend = fbeg;
+      break;
     } else {
       trybuf = expand_to_temp_buffer (buf, limit, 0, 0);
       buf = (U_CHAR *) alloca (trybuf.bufp - trybuf.buf + 1);
@@ -3875,6 +3872,13 @@ get_filename:
   }
 
   flen = fend - fbeg;
+
+  if (flen == 0)
+    {
+      error ("`#%s' expects \"fname\" or <fname>", keyword->name);
+      return 0;
+    }
+
   /* Allocate this permanently, because it gets stored in the definitions
      of macros.  */
   fname = (char *) xmalloc (max_include_len + flen + 2);
