@@ -2540,18 +2540,11 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		   IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (function)));
 
   {
-    int is_constructor;
-    
-    if (TREE_CODE (function) == FUNCTION_DECL)
-      {
-	is_constructor = DECL_CONSTRUCTOR_P (function);
-	function = default_conversion (function);
-      }
-    else
-      {
-	is_constructor = 0;
-	function = default_conversion (function);
-      }
+    int is_constructor
+      = TREE_CODE (function) == FUNCTION_DECL
+	&& DECL_CONSTRUCTOR_P (function);
+
+    function = default_conversion (function);
 
     result = build_nt (CALL_EXPR, function, parms, NULL_TREE);
 

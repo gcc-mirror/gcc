@@ -1747,9 +1747,9 @@ struct saved_scope {
   int minimal_parse_mode;
   tree last_function_parms;
   tree template_parms;
+  tree previous_class_type, previous_class_values;
 };
 static struct saved_scope *current_saved_scope;
-extern tree prev_class_type;
 
 tree
 store_bindings (names, old_bindings)
@@ -1803,6 +1803,9 @@ maybe_push_to_top_level (pseudo)
   struct binding_level *b = inner_binding_level;
   tree old_bindings = NULL_TREE;
 
+  if (previous_class_type)
+    old_bindings = store_bindings (previous_class_values, old_bindings);
+
   /* Have to include global_binding_level, because class-level decls
      aren't listed anywhere useful.  */
   for (; b; b = b->level_chain)
@@ -1840,6 +1843,8 @@ maybe_push_to_top_level (pseudo)
   s->minimal_parse_mode = minimal_parse_mode;
   s->last_function_parms = last_function_parms;
   s->template_parms = current_template_parms;
+  s->previous_class_type = previous_class_type;
+  s->previous_class_values = previous_class_values;
   current_class_name = current_class_type = NULL_TREE;
   current_function_decl = NULL_TREE;
   class_binding_level = (struct binding_level *)0;
@@ -1850,6 +1855,7 @@ maybe_push_to_top_level (pseudo)
   strict_prototype = strict_prototypes_lang_cplusplus;
   named_labels = NULL_TREE;
   minimal_parse_mode = 0;
+  previous_class_type = previous_class_values = NULL_TREE;
   if (!pseudo)
     current_template_parms = NULL_TREE;
 
@@ -1913,6 +1919,8 @@ pop_from_top_level ()
   minimal_parse_mode = s->minimal_parse_mode;
   last_function_parms = s->last_function_parms;
   current_template_parms = s->template_parms;
+  previous_class_type = s->previous_class_type;
+  previous_class_values = s->previous_class_values;
 
   free (s);
 }
@@ -5839,12 +5847,10 @@ start_decl (declarator, declspecs, initialized, raises)
 
 #if ! defined (ASM_OUTPUT_BSS) && ! defined (ASM_OUTPUT_ALIGNED_BSS)
   /* Tell the back-end to use or not use .common as appropriate.  If we say
-     -fconserve-space, we want this to save space, at the expense of wrong
-     semantics.  If we say -fno-conserve-space, we want this to produce
-     errors about redefs; to do this we force variables into the data
-     segment.  Common storage is okay for non-public uninitialized data;
-     the linker can't match it with storage from other files, and we may
-     save some disk space.  */
+     -fconserve-space, we want this to save .data space, at the expense of
+     wrong semantics.  If we say -fno-conserve-space, we want this to
+     produce errors about redefs; to do this we force variables into the
+     data segment.  */
   DECL_COMMON (tem) = flag_conserve_space || ! TREE_PUBLIC (tem);
 #endif
 
