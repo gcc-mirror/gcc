@@ -2822,9 +2822,7 @@ type_hash_canon (hashcode, type)
   t1 = type_hash_lookup (hashcode, type);
   if (t1 != 0)
     {
-      struct obstack *o
-	= TREE_PERMANENT (type) ? &permanent_obstack : saveable_obstack;
-      obstack_free (o, type);
+      obstack_free (TYPE_OBSTACK (type), type);
 #ifdef GATHER_STATISTICS
       tree_node_counts[(int)t_kind]--;
       tree_node_sizes[(int)t_kind] -= sizeof (struct tree_type);
@@ -2832,8 +2830,8 @@ type_hash_canon (hashcode, type)
       return t1;
     }
 
-  /* If this is a new type, record it for later reuse.  */
-  if (current_obstack == &permanent_obstack)
+  /* If this is a permanent type, record it for later reuse.  */
+  if (TREE_PERMANENT (type))
     type_hash_add (hashcode, type);
 
   return type;
