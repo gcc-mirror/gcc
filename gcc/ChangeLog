@@ -1,3 +1,8 @@
+2003-04-06  Geoffrey Keating  <geoffk@apple.com>
+
+	* dbxout.c (dbxout_handle_pch): Move prototype out from
+	#if defined DBX_DEBUGGING_INFO.
+
 2003-04-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov.c (struct arc_info): Replace local_span with cycle.
