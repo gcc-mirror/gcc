@@ -264,9 +264,10 @@ higher_prime_number (n)
 }
 
 void
-cpp_forall_identifiers (pfile, cb)
+cpp_forall_identifiers (pfile, cb, v)
      cpp_reader *pfile;
-     int (*cb) PARAMS ((cpp_reader *, cpp_hashnode *));
+     int (*cb) PARAMS ((cpp_reader *, cpp_hashnode *, void *));
+     void *v;
 {
     cpp_hashnode **p, **limit;
 
@@ -275,7 +276,7 @@ cpp_forall_identifiers (pfile, cb)
   do
     {
       if (*p)
-	if ((*cb) (pfile, *p) == 0)
+	if ((*cb) (pfile, *p, v) == 0)
 	  break;
     }
   while (++p < limit);
