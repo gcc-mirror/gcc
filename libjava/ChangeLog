@@ -1,5 +1,7 @@
 2001-05-29  Tom Tromey  <tromey@redhat.com>
 
+	* include/jvm.h (_Jv_ThrowNoMemory): Mark as noreturn.
+
 	* configure: Rebuilt.
 	* configure.in: Only add multilib support code if we just rebuilt
 	top-level Makefile.
