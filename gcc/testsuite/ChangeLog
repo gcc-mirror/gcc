@@ -1,3 +1,8 @@
+2002-05-05  Tim Josling  <tej@melbpc.org.au>
+
+	* treelang: Added directory for new sample language treelang. Also
+	lib/treelang.exp: New file to signal treelang should be tested. 
+
 2002-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/cpp/cmdlne-dM-M.c: New test.
