@@ -208,7 +208,7 @@ do {									\
 #define PROCESSOR_DEFAULT  PROCESSOR_PPC7400
 
 /* Default target flag settings.  Despite the fact that STMW/LMW
-   serializes, it's still a big codesize win to use them.  Use FSEL by
+   serializes, it's still a big code size win to use them.  Use FSEL by
    default as well.  */
 
 #undef  TARGET_DEFAULT

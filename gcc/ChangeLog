@@ -1,3 +1,17 @@
+2003-07-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/pa/fptr.c: Fix comment typos.
+	* config/pa/pa-64.h: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/pa/pa.h: Likewise.
+	* config/rs6000/603.md: Likewise.
+	* config/rs6000/7xx.md: Likewise.
+	* config/rs6000/darwin.h: Likewise.
+	* config/rs6000/freebsd.h: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/rs6000/rs6000.md: Likewise.
+	* config/rs6000/spe.h: Likewise.
+
 2003-07-04  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/2064.md: Change GNU CC to GCC.

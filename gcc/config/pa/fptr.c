@@ -94,7 +94,7 @@ __canonicalize_funcptr_for_compare (fptr)
       /* Find the first "bl" branch in the offset search list.  This is a
 	 call to fixup or a magic branch to fixup at the beginning of the
 	 trampoline template.  The fixup function does the actual runtime
-	 resolution of function decriptors.  We only look for "bl" branches
+	 resolution of function descriptors.  We only look for "bl" branches
 	 with a 17-bit pc-relative displacement.  */
       for (i = 0; i < NOFFSETS; i++)
 	{

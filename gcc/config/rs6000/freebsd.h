@@ -40,7 +40,7 @@
 #define	LINK_OS_DEFAULT_SPEC "%(link_os_freebsd)"
 
 /* XXX: This is wrong for many platforms in sysv4.h.
-   We should work on getting that defination fixed.  */
+   We should work on getting that definition fixed.  */
 #undef  LINK_SHLIB_SPEC
 #define LINK_SHLIB_SPEC "%{shared:-shared} %{!shared: %{static:-static}}"
 

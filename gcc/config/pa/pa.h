@@ -197,7 +197,7 @@ extern int target_flags;
    difference calls.  This is a call variant similar to the long pic
    pc-relative call.  Long pic symbol difference calls are only used with
    the HP SOM linker.  Currently, only the HP assembler supports these
-   calls.  GAS doesn't allow an arbritrary difference of two symbols.  */
+   calls.  GAS doesn't allow an arbitrary difference of two symbols.  */
 #define TARGET_LONG_PIC_SDIFF_CALL (!TARGET_GAS)
 
 /* Define to a C expression evaluating to true to use long pic
