@@ -1,3 +1,7 @@
+Fri Oct 20 13:54:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* typeck.c (dubious_conversion_warning): Suppress if TYPE_IS_SIZETYPE.
+
 2000-10-20  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* decl.c (revert_static_member_fn): Fixed typo.
