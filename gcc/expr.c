@@ -9615,7 +9615,14 @@ expand_builtin_apply (function, arguments, argsize)
 
   /* Push a new argument block and copy the arguments.  */
   do_pending_stack_adjust ();
-  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
+
+  /* Save the stack with nonlocal if available */
+#ifdef HAVE_save_stack_nonlocal
+  if (HAVE_save_stack_nonlocal)
+    emit_stack_save (SAVE_NONLOCAL, &old_stack_level, NULL_RTX);
+  else
+#endif
+    emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
 
   /* Push a block of memory onto the stack to store the memory arguments.
      Save the address in a register, and copy the memory arguments.  ??? I
@@ -9741,7 +9748,12 @@ expand_builtin_apply (function, arguments, argsize)
     CALL_INSN_FUNCTION_USAGE (call_insn) = call_fusage;
 
   /* Restore the stack.  */
-  emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
+#ifdef HAVE_save_stack_nonlocal
+  if (HAVE_save_stack_nonlocal)
+    emit_stack_restore (SAVE_NONLOCAL, &old_stack_level, NULL_RTX);
+  else
+#endif
+    emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
 
   /* Return the address of the result block.  */
   return copy_addr_to_reg (XEXP (result, 0));
