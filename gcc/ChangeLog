@@ -1,3 +1,8 @@
+2002-05-03  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/alpha/netbsd.h (CPP_PREDEFINES): Add -D_LP64.
+	(LINK_SPEC): Undef before defining.
+
 2002-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/6489
