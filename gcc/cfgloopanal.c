@@ -359,12 +359,12 @@ variable_initial_value (insn, invariant_regs, var, set_insn)
     {
       for (; insn != bb->head; insn = PREV_INSN (insn))
 	{
-	  if (modified_between_p (var, PREV_INSN (insn), NEXT_INSN (insn)))
-	    break;
 	  if (INSN_P (insn))
 	    note_stores (PATTERN (insn),
 		(void (*) PARAMS ((rtx, rtx, void *))) unmark_altered,
 		invariant_regs);
+	  if (modified_between_p (var, PREV_INSN (insn), NEXT_INSN (insn)))
+	    break;
 	}
 
       if (insn != bb->head)
