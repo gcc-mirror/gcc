@@ -559,10 +559,14 @@ _Jv_FindClassFromSignature (char *sig, java::lang::ClassLoader *loader)
 
       }
     case '[':
-      return _Jv_GetArrayClass (_Jv_FindClassFromSignature (&sig[1], loader),
-				loader);
+      {
+	jclass klass = _Jv_FindClassFromSignature (&sig[1], loader);
+	if (! klass)
+	  return NULL;
+	return _Jv_GetArrayClass (klass, loader);
+      }
     }
-  JvFail ("couldn't understand class signature");
+
   return NULL;			// Placate compiler.
 }
 
