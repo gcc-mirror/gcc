@@ -2506,6 +2506,9 @@ const_hash (exp)
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
       return const_hash (TREE_OPERAND (exp, 0)) * 7 + 2;
+      
+    default:
+      abort ();
     }
 
   /* Compute hashing function */
@@ -2693,6 +2696,9 @@ compare_constant_1 (exp, p)
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
       return compare_constant_1 (TREE_OPERAND (exp, 0), p);
+
+    default:
+      abort ();
     }
 
   /* Compare constant contents.  */
@@ -3368,6 +3374,9 @@ decode_rtx_const (mode, x, value)
 	   for the sake of addresses of library routines.
 	   For a LABEL_REF, compare labels.  */
 	value->un.addr.base = XEXP (value->un.addr.base, 0);
+	
+      default:
+	break;
       }
 }
 
@@ -3894,7 +3903,7 @@ output_addressed_constants (exp)
       }
       break;
 
-    case ERROR_MARK:
+    default:
       break;
     }
   return reloc;
@@ -4030,6 +4039,9 @@ output_constant (exp, size)
       else
 	error ("unknown set constructor type");
       return;
+
+    default:
+      break; /* ??? */
     }
 
   if (size > 0)
