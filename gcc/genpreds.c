@@ -437,7 +437,8 @@ write_insn_preds_c (void)
 #include \"hard-reg-set.h\"\n\
 #include \"resource.h\"\n\
 #include \"toplev.h\"\n\
-#include \"reload.h\"\n");
+#include \"reload.h\"\n\
+#include \"regs.h\"\n");
 
   FOR_ALL_PREDICATES (p)
     write_one_predicate_function (p);
