@@ -977,54 +977,54 @@ alpha_emit_conditional_move (cmp, mode)
      rtx cmp;
      enum machine_mode mode;
 {
+  enum rtx_code code = GET_CODE (cmp);
   rtx op0 = alpha_compare_op0;
   rtx op1 = alpha_compare_op1;
-  rtx zero = CONST0_RTX (mode);
-  rtx tmp;
-  enum rtx_code code = GET_CODE (cmp), code2;
+  enum machine_mode cmp_mode
+    = (GET_MODE (op0) == VOIDmode ? DImode : GET_MODE (op0));
+  enum machine_mode cmp_op_mode = alpha_compare_fp_p ? DFmode : DImode;
+  rtx tem;
 
-  if (alpha_compare_fp_p != FLOAT_MODE_P(mode))
+  if (alpha_compare_fp_p != FLOAT_MODE_P (mode))
     return 0;
 
   /* We may be able to use a conditional move directly.
      This avoids emitting spurious compares. */
-  if (signed_comparison_operator (cmp, mode) && (op0 == zero || op1 == zero))
-    return gen_rtx (code, mode, op0, op1);
+  if (signed_comparison_operator (cmp, cmp_op_mode)
+      && (op0 == CONST0_RTX (cmp_mode) || op1 == CONST0_RTX (cmp_mode)))
+    return gen_rtx (code, VOIDmode, op0, op1);
 
   /* We can't put the comparison insides a conditional move;
      emit a compare instruction and put that inside the
-     conditional move. */
+     conditional move.  Make sure we emit only comparisons we have;
+     swap or reverse as necessary.  */
 
-  /* The alpha does not have NE GE GT compares for any mode.  Avoid them. */
-  code2 = NE;
   switch (code)
     {
-    /* We have these compares: */
-    case EQ: case LE: case LT:
+    case EQ:  case LE:  case LT:  case LEU:  case LTU:
+      /* We have these compares: */
       break;
-    /* These must be inverted: */
+
     case NE:
-      code = code2 = EQ;
+      /* This must be reversed. */
+      code = reverse_condition (code);
       break;
-    case GE:
-      code = LE;
-      op0 = force_reg (mode, alpha_compare_op1);
-      op1 = alpha_compare_op0;
+
+    case GE:  case GT:  case GEU:  case GTU:
+      /* These must be swapped.  Make sure the new first operand is in
+	 a register.  */
+      code = swap_condition (code);
+      tem = op0, op0 = op1, op1 = tem;
+      op0 = force_reg (cmp_mode, op0);
       break;
-    case GT:
-      code = LT;
-      op0 = force_reg (mode, alpha_compare_op1);
-      op1 = alpha_compare_op0;
-      break;
+
     default:
-      return 0;
+      abort ();
     }
 
-  cmp = gen_rtx (code, mode, op0, op1);
-  tmp = gen_reg_rtx (mode);
-  emit_insn (gen_rtx (SET, VOIDmode, tmp, cmp));
-  cmp = gen_rtx (code2, VOIDmode, tmp, zero);
-  return cmp;
+  tem = gen_reg_rtx (cmp_op_mode);
+  emit_move_insn (tem, gen_rtx (code, cmp_op_mode, op0, op1));
+  return gen_rtx (code == NE ? EQ : NE, VOIDmode, tem, CONST0_RTX (mode));
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
