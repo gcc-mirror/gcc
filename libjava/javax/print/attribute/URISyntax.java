@@ -46,7 +46,7 @@ import java.net.URI;
 public abstract class URISyntax
   implements Cloneable, Serializable
 {
-  private static final long serialVersionUID = 3666874174847632203L;
+  private static final long serialVersionUID = -7842661210486401678L;
 
   private URI uri;
 
