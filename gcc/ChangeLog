@@ -1,5 +1,12 @@
 2000-04-26  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (count_reg_sets_1): Remove.
+	(count_reg_sets, count_reg_references): Remove.
+	(recompute_reg_usage): Implement with update_life_info.
+	Reallocate life data.
+
+2000-04-26  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (update_life_info): Consider blocks null to mean the
 	universal set.
 	(calculate_global_regs_live): Likewise.
