@@ -1303,6 +1303,28 @@ reg_or_0_operand (rtx op, enum machine_mode mode)
     }
 }
 
+/* Accept a register or the floating point constant 1 in the appropriate mode.  */
+
+int
+reg_or_const_float_1_operand (rtx op, enum machine_mode mode)
+{
+  REAL_VALUE_TYPE d;
+
+  switch (GET_CODE (op))
+    {
+    case CONST_DOUBLE:
+      if (mode != GET_MODE (op)
+	  || (mode != DFmode && mode != SFmode))
+	return 0;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (d, op);
+      return REAL_VALUES_EQUAL (d, dconst1);
+
+    default:
+      return register_operand (op, mode);
+    }
+}
+
 /* Accept the floating point constant 1 in the appropriate mode.  */
 
 int
@@ -6714,7 +6736,7 @@ mips_expand_prologue (void)
   /* If struct value address is treated as the first argument, make it so.  */
   if (aggregate_value_p (DECL_RESULT (fndecl), fndecl)
       && ! current_function_returns_pcc_struct
-      && struct_value_incoming_rtx == 0)
+      && targetm.calls.struct_value_rtx (fndecl, 0) == 0)
     {
       tree type = build_pointer_type (fntype);
       tree function_result_decl = build_decl (PARM_DECL, NULL_TREE, type);
