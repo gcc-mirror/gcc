@@ -6640,18 +6640,6 @@ output_loc_list (dw_loc_list_ref list_head)
 
   ASM_OUTPUT_LABEL (asm_out_file, list_head->ll_symbol);
 
-  /* ??? This shouldn't be needed now that we've forced the
-     compilation unit base address to zero when there is code
-     in more than one section.  */
-  if (strcmp (curr->section, ".text") == 0)
-    {
-      /* dw2_asm_output_data will mask off any extra bits in the ~0.  */
-      dw2_asm_output_data (DWARF2_ADDR_SIZE, ~(unsigned HOST_WIDE_INT) 0,
-			   "Location list base address specifier fake entry");
-      dw2_asm_output_offset (DWARF2_ADDR_SIZE, curr->section,
-			     "Location list base address specifier base");
-    }
-
   /* Walk the location list, and output each range + expression.  */
   for (curr = list_head; curr != NULL; curr = curr->dw_loc_next)
     {
@@ -9676,7 +9664,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 	  secname = TREE_STRING_POINTER (sectree);
 	}
       else
-	secname = TEXT_SECTION_NAME;
+	secname = text_section_label;
 
       /* Now that we know what section we are using for a base,
          actually construct the list of locations.
