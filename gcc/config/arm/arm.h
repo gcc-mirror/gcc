@@ -1960,6 +1960,7 @@ extern struct rtx_def * arm_compare_op1;
   {"reg_or_int_operand", {SUBREG, REG, CONST_INT}},			\
   {"multi_register_push", {PARALLEL}},					\
   {"cc_register", {REG}},						\
+  {"logical_binary_operator", {AND, IOR, XOR}},				\
   {"dominant_cc_register", {REG}},
 
 
@@ -2262,6 +2263,7 @@ int    soft_df_operand PROTO ((Rtx, Mmode));
 int    index_operand PROTO ((Rtx, Mmode));
 int    const_shift_operand PROTO ((Rtx, Mmode));
 int    shiftable_operator PROTO ((Rtx, Mmode));
+int    logical_binary_operator PROTO ((Rtx, Mmode));
 int    shift_operator PROTO ((Rtx, Mmode));
 int    equality_operator PROTO ((Rtx, Mmode));
 int    minmax_operator PROTO ((Rtx, Mmode));
