@@ -145,11 +145,6 @@ extern void clear_secondary_mem PROTO((void));
    reload TO.  */
 extern void transfer_replacements PROTO((int, int));
 
-/* Return 1 if ADDR is a valid memory address for mode MODE,
-   and check that each pseudo reg has the proper kind of
-   hard reg.  */
-extern int strict_memory_address_p PROTO((enum machine_mode, rtx));
-
 /* Like rtx_equal_p except that it allows a REG and a SUBREG to match
    if they are the same hard reg, and has special hacks for
    autoincrement and autodecrement.  */
