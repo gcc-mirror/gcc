@@ -1,3 +1,37 @@
+Sun Dec  6 13:45:00 1998  Per Bothner  <bothner@cygnus.com>
+
+	* constants.c (find_methodref_index):  When the class is an interface,
+	generate CONSTANT_InterfaceMethodref instead of a CONSTANT_MethodRef.
+
+	* decl.c (finit_identifier_node):  Use "$finit$", rather than
+	"<finit>" (which Sun's verifier rejects).
+	* parse.y (maybe_generate_finit):  Leave out meaningless final flag.
+	(generate_field_initialization_code):  Removed.
+	(fix_constructors)  Don't add call to $finit$ here (wrong order).
+	(patch_method_invocation):  Add $finit$ call here.
+
+	* java-tree.h (CALL_USING_SUPER):  New macro.
+	* parse.y (patch_invoke):  Remove im local variable.
+ 	(patch_method_invocation, patch_invoke):  Don't pass super parameter.
+	(patch_invoke):  Use CALL_USING_SUPER instead of from_super parameter. 
+	(resolve_qualified_expression_name):  Maybe set CALL_USING_SUPER.
+
+	* jcf-write.c (get_access_flags):  Fix typo ACC_PUBLIC -> ACC_FINAL.
+
+	* parse.y (java_complete_tree):  Don't complain about unreachable
+	statement if it is empty_stmt_node.
+
+	* jcf-write.c (find_constant_wide):  New function.
+	(push_long_const):  Use find_constant_wide.
+
+	* jcf-write.c (generate_bytecode_insn):  Fix bug in switch handling.
+	(generate_bytecode_insn):  Use correct dup variant for MODIFY_EXPR.
+	Add "redundant" NOTE_PUSH/NOTE_POP uses so code_SP_max gets set.
+	Emit invokeinterface when calling an interface method.
+	Emit invokespecial also when calling super or private methods.
+
+	* jcf-write.c (generate_classfile):  Emit ConstantValue attributes.
+
 Sun Dec  6 13:21:18 1998  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-dump.c (INVOKE):  If invokeinterface, print number of args.
