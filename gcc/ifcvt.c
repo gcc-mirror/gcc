@@ -647,8 +647,8 @@ noce_emit_store_flag (if_info, x, reversep, normalize)
       end_sequence ();
     }
 
-  /* Don't even try if the comparison operands are weird.  */
-  if (cond_complex)
+  /* Don't even try if the comparison operands or the mode of X are weird.  */
+  if (cond_complex || !SCALAR_INT_MODE_P (GET_MODE (x)))
     return NULL_RTX;
 
   return emit_store_flag (x, code, XEXP (cond, 0),
