@@ -9506,7 +9506,7 @@ add_name_attribute (dw_die_ref die, const char *name_string)
 static void
 add_comp_dir_attribute (dw_die_ref die)
 {
-  const char *wd = getpwd ();
+  const char *wd = get_src_pwd ();
   if (wd != NULL)
     add_AT_string (die, DW_AT_comp_dir, wd);
 }

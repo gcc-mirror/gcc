@@ -370,6 +370,11 @@ struct cpp_options
 
   /* Nonzero means __STDC__ should have the value 0 in system headers.  */
   unsigned char stdc_0_in_system_headers;
+
+  /* Nonzero means output a directory line marker right after the
+     initial file name line marker, and before a duplicate initial
+     line marker.  */
+  bool working_directory;
 };
 
 /* Call backs to cpplib client.  */
@@ -378,6 +383,7 @@ struct cpp_callbacks
   /* Called when a new line of preprocessed output is started.  */
   void (*line_change) (cpp_reader *, const cpp_token *, int);
   void (*file_change) (cpp_reader *, const struct line_map *);
+  void (*dir_change) (cpp_reader *, const char *);
   void (*include) (cpp_reader *, unsigned int, const unsigned char *,
 		   const char *, int);
   void (*define) (cpp_reader *, unsigned int, cpp_hashnode *);

@@ -469,7 +469,8 @@ dbxout_init (const char *input_file_name)
   /* Put the current working directory in an N_SO symbol.  */
   if (use_gnu_debug_info_extensions)
     {
-      if (!cwd && (cwd = getpwd ()) && (!*cwd || cwd[strlen (cwd) - 1] != '/'))
+      if (!cwd && (cwd = get_src_pwd ())
+	  && (!*cwd || cwd[strlen (cwd) - 1] != '/'))
 	cwd = concat (cwd, FILE_NAME_JOINER, NULL);
       if (cwd)
 	{

@@ -4043,7 +4043,7 @@ output_compile_unit_die (void *arg)
     stmt_list_attribute (LINE_BEGIN_LABEL);
 
   {
-    const char *wd = getpwd ();
+    const char *wd = get_src_pwd ();
     if (wd)
       comp_dir_attribute (wd);
   }
@@ -6114,7 +6114,7 @@ dwarfout_init (const char *main_input_filename)
 	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SFNAMES_SECTION);
 	  ASM_OUTPUT_LABEL (asm_out_file, SFNAMES_BEGIN_LABEL);
 	  {
-	    const char *pwd = getpwd ();
+	    const char *pwd = get_src_pwd ();
 	    char *dirname;
 
 	    if (!pwd)

@@ -72,6 +72,7 @@ static tree lex_charconst (const cpp_token *);
 static void update_header_times (const char *);
 static int dump_one_header (splay_tree_node, void *);
 static void cb_line_change (cpp_reader *, const cpp_token *, int);
+static void cb_dir_change (cpp_reader *, const char *);
 static void cb_ident (cpp_reader *, unsigned int, const cpp_string *);
 static void cb_def_pragma (cpp_reader *, unsigned int);
 static void cb_define (cpp_reader *, unsigned int, cpp_hashnode *);
@@ -98,6 +99,7 @@ init_c_lex (void)
   cb = cpp_get_callbacks (parse_in);
 
   cb->line_change = cb_line_change;
+  cb->dir_change = cb_dir_change;
   cb->ident = cb_ident;
   cb->def_pragma = cb_def_pragma;
   cb->valid_pch = c_common_valid_pch;
@@ -198,6 +200,13 @@ cb_line_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const cpp_token *token,
 		int parsing_args ATTRIBUTE_UNUSED)
 {
   src_lineno = SOURCE_LINE (map, token->line);
+}
+
+static void
+cb_dir_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const char *dir)
+{
+  if (! set_src_pwd (dir))
+    warning ("too late for # directive to set debug directory");
 }
 
 void

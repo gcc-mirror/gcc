@@ -1,4 +1,4 @@
-@c Copyright (c) 1999, 2000, 2001, 2002
+@c Copyright (c) 1999, 2000, 2001, 2002, 2003
 @c Free Software Foundation, Inc.
 @c This is part of the CPP and GCC manuals.
 @c For copying conditions, see the file gcc.texi.
@@ -512,6 +512,22 @@ corresponds to the width of @code{wchar_t}.  As with
 @option{-ftarget-charset}, @var{charset} can be any encoding supported
 by the system's @code{iconv} library routine; however, you will have
 problems with encodings that do not fit exactly in @code{wchar_t}.
+
+@item -fworking-directory
+@opindex fworking-directory
+@opindex fno-working-directory
+Enable generation of linemarkers in the preprocessor output that will
+let the compiler know the current working directory at the time of
+preprocessing.  When this option is enabled, the preprocessor will
+emit, after the initial linemarker, a second linemarker with the
+current working directory followed by two slashes.  GCC will use this
+directory, when it's present in the preprocessed input, as the
+directory emitted as the current working directory in some debugging
+information formats.  This option is implicitly enabled if debugging
+information is enabled, but this can be inhibited with the negated
+form @option{-fno-working-directory}.  If the @option{-P} flag is
+present in the command line, this option has no effect, since no
+@code{#line} directives are emitted whatsoever.
 
 @item -fno-show-column
 @opindex fno-show-column

@@ -28,6 +28,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 static void init_library (void);
 static void mark_named_operators (cpp_reader *);
 static void read_original_filename (cpp_reader *);
+static void read_original_directory (cpp_reader *);
 static void post_options (cpp_reader *);
 
 /* If we have designated initializers (GCC >2.7) these tables can be
@@ -470,6 +471,24 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
   if (CPP_OPTION (pfile, preprocessed))
     read_original_filename (pfile);
 
+  if (CPP_OPTION (pfile, working_directory))
+    {
+      const char *name = pfile->map->to_file;
+      const char *dir = getpwd ();
+      char *dir_with_slashes = alloca (strlen (dir) + 3);
+
+      memcpy (dir_with_slashes, dir, strlen (dir));
+      memcpy (dir_with_slashes + strlen (dir), "//", 3);
+
+      if (pfile->cb.dir_change)
+	pfile->cb.dir_change (pfile, dir);
+      /* Emit file renames that will be recognized by
+	 read_directory_filename, since dir_change doesn't output
+	 anything.  */
+      _cpp_do_file_change (pfile, LC_RENAME, dir_with_slashes, 1, 0);
+      _cpp_do_file_change (pfile, LC_RENAME, name, 1, 0);
+    }
+
   return pfile->map->to_file;
 }
 
@@ -494,12 +513,67 @@ read_original_filename (cpp_reader *pfile)
       if (token1->type == CPP_NUMBER)
 	{
 	  _cpp_handle_directive (pfile, token->flags & PREV_WHITE);
+	  read_original_directory (pfile);
 	  return;
 	}
     }
 
   /* Backup as if nothing happened.  */
   _cpp_backup_tokens (pfile, 1);
+}
+
+/* For preprocessed files, if the tokens following the first filename
+   line is of the form # <line> "/path/name//", handle the
+   directive so we know the original current directory.  */
+static void
+read_original_directory (cpp_reader *pfile)
+{
+  const cpp_token *hash, *token;
+
+  /* Lex ahead; if the first tokens are of the form # NUM, then
+     process the directive, otherwise back up.  */
+  hash = _cpp_lex_direct (pfile);
+  if (hash->type != CPP_HASH)
+    {
+      _cpp_backup_tokens (pfile, 1);
+      return;
+    }
+
+  token = _cpp_lex_direct (pfile);
+
+  if (token->type != CPP_NUMBER)
+    {
+      _cpp_backup_tokens (pfile, 2);
+      return;
+    }
+
+  token = _cpp_lex_direct (pfile);
+
+  if (token->type != CPP_STRING
+      || ! (token->val.str.len >= 5
+	    && token->val.str.text[token->val.str.len-2] == '/'
+	    && token->val.str.text[token->val.str.len-3] == '/'))
+    {
+      _cpp_backup_tokens (pfile, 3);
+      return;
+    }
+
+  if (pfile->cb.dir_change)
+    {
+      char *debugdir = alloca (token->val.str.len - 3);
+
+      memcpy (debugdir, (const char *) token->val.str.text + 1,
+	      token->val.str.len - 4);
+      debugdir[token->val.str.len - 4] = '\0';
+
+      pfile->cb.dir_change (pfile, debugdir);
+    }      
+
+  /* We want to process the fake line changes as regular changes, to
+     get them output.  */
+  _cpp_backup_tokens (pfile, 3);
+
+  CPP_OPTION (pfile, working_directory) = false;
 }
 
 /* This is called at the end of preprocessing.  It pops the last

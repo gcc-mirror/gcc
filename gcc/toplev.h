@@ -155,4 +155,10 @@ extern bool fast_math_flags_set_p	(void);
 extern int exact_log2_wide             (unsigned HOST_WIDE_INT);
 extern int floor_log2_wide             (unsigned HOST_WIDE_INT);
 
+/* Functions used to get and set GCC's notion of in what directory
+   compilation was started.  */
+
+extern const char *get_src_pwd	       (void);
+extern bool set_src_pwd		       (const char *);
+
 #endif /* ! GCC_TOPLEV_H */
