@@ -263,7 +263,7 @@ static int compare_defs ();
 static int compare_token_lists ();
 static int eval_if_expression ();
 static int discard_comments ();
-static int delete_newlines ();
+static int change_newlines ();
 static int line_for_error ();
 static int hashf ();
 static int file_size_and_mode ();
@@ -7260,11 +7260,11 @@ macroexpand (hp, op)
 	     lines which don't correspond to any input line, which confuses
 	     gdb and gcov.  */
 	  if (arg->use_count > 1 && arg->newlines > 0) {
-	    /* Don't bother doing delete_newlines for subsequent
+	    /* Don't bother doing change_newlines for subsequent
 	       uses of arg.  */
 	    arg->use_count = 1;
 	    arg->expand_length
-	      = delete_newlines (arg->expanded, arg->expand_length);
+	      = change_newlines (arg->expanded, arg->expand_length);
 	  }
 	}
 
@@ -7659,12 +7659,12 @@ discard_comments (start, length, newlines)
   return obp - start;
 }
 
-/* Delete newlines in the string of length LENGTH at START, except inside
-   of string constants.  The string is copied into itself with its beginning
-   staying fixed.  */
+/* Turn newlines to spaces in the string of length LENGTH at START,
+   except inside of string constants.
+   The string is copied into itself with its beginning staying fixed.  */
 
 static int
-delete_newlines (start, length)
+change_newlines (start, length)
      U_CHAR *start;
      int length;
 {
@@ -7682,11 +7682,13 @@ delete_newlines (start, length)
     switch (c) {
     case '\n':
       /* If this is a NEWLINE NEWLINE, then this is a real newline in the
-	 output.  Skip past the newline and its duplicate.  */
+	 string.  Skip past the newline and its duplicate.
+	 Put a space in the output.  */
       if (*ibp == '\n')
 	{
 	  ibp++;
 	  obp--;
+	  *obp++ = ' ';
 	}
       break;
 
