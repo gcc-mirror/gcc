@@ -1,3 +1,13 @@
+2004-02-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/file-format.exp (gcc_target_object_format): Use
+	${tool}_target_compile, not gcc_target_compile.
+	* lib/target-supports.exp (check_alias_available): Likewise.
+	(check_gc_sections_available): Likewise.
+	* g++.dg/ext/attrib10.C: Use dg-require-alias.
+	* g++.old-deja/g++.ext/attrib5.C: Use dg-require-weak and
+	dg-require-alias.
+
 2004-02-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13086
