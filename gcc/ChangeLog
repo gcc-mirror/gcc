@@ -1,3 +1,13 @@
+2003-03-27  David Mosberger  <davidm@hpl.hp.com>
+
+        * unwind-libunwind.c (uw_frame_state_for): Adjust for libunwind
+        v0.9 API change: replace read of UNW_REG_HANDLER with
+        unw_get_proc_info().
+        (_Unwind_GetLanguageSpecificData): Replace read of UNW_REG_LSDA
+        with unw_get_proc_info().
+        (_Unwind_GetRegionStart): Replace UNW_REG_PROC_START with
+        unw_get_proc_info().
+
 2003-03-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/rs6000/8540.md: Use presence_set instead of absence_set.
