@@ -1,3 +1,8 @@
+Fri Jul 14 10:25:53 2000  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/mips/mips.md: (absdi2): Handle sign_extend for
+	second operand.
+
 2000-07-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cpplib.c (do_pragma_dependency): Tidy warning messages.
