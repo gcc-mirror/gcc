@@ -1,5 +1,8 @@
 2003-08-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* typeck.c (build_compound_expr): If RHS is a TARGET_EXPR, put the
+	compound expr inside the target's initializer.
+	
 	PR c++/11525
 	* parser.c (cp_parser_primary_expression): Do not set
 	non-constant-p merely because it is a dependent scope.
