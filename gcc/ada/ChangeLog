@@ -1,7 +1,10 @@
+2003-10-23  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* init.c, adaint.c: Minor reformatting.
+
 2003-10-23  Danny Smith  <dannysmith@users.sourceforge.net>
 
-	* ada/adaint.c (w32_epoch_offset): Define static const at file
-	level.
+	* adaint.c (w32_epoch_offset): Define static const at file level.
 	(win32_filetime): Replace offset with w32_epoch_offset. Use NULL
 	rather than t_create, t_access in call to GetFileTime. Use union
 	to convert between FILETIME and  unsigned long long.
@@ -34,7 +37,7 @@
 
 2003-10-22  Arnaud Charlet  <charlet@act-europe.fr>
 
-	* Makefile.in: Disable build of gnatpa. PR ada/10110.
+	* Makefile.in: Disable build of gnatpsta. PR ada/10110.
 	* cstreams.c (__gnat_full_name): Minor improvements and clean up
 	of previous change.
 
@@ -55,7 +58,7 @@
 	* mingw32.h: New file.
 	* gnat_wrapper.adb: New file.
 
-2003/10/22  Jerome Roussel  <roussel@act-europe.fr>
+2003-10-22  Jerome Roussel  <roussel@act-europe.fr>
 
 	* g-regpat.ads, g-regpat.adb (Match): new function, to know if a
 	string match a pre compiled regular expression (the corresponding
@@ -63,7 +66,7 @@
 	Fix typos in various comments
 	Update copyright notice in spec
 
-2003/10/21  Gary Dismukes  <dismukes@gnat.com>
+2003-10-21  Gary Dismukes  <dismukes@gnat.com>
 
 	* exp_ch3.adb: 
 	(Component_Needs_Simple_Initialization): Return False when the type is a
@@ -75,7 +78,7 @@
 	covers the case of zero-initialization of bit arrays).
 	Update copyright notice.
 
-2003/10/21  Ed Schonberg  <schonberg@gnat.com>
+2003-10-21  Ed Schonberg  <schonberg@gnat.com>
 
 	* sem_ch12.adb: 
 	(Load_Parent_Of_Generic): If parent is compilation unit, stop search,
