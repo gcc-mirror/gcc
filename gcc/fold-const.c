@@ -53,6 +53,10 @@ void rshift_double ();
 void lrotate_double ();
 void rrotate_double ();
 static tree const_binop ();
+
+#ifndef BRANCH_COST
+#define BRANCH_COST 1
+#endif
 
 /* To do constant folding on INTEGER_CST nodes requires 64-bit arithmetic.
    We do that by representing the 64-bit integer as 8 shorts,
