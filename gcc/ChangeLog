@@ -1,3 +1,8 @@
+Wed Oct 13 10:20:58 1999  Richard Henderson  <rth@cygnus.com>
+
+	* genrecog.c (write_subroutine): Careful for null trees.
+	(process_tree): Don't elide empty functions.
+
 Wed Oct 13 10:07:54 1999  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (genrtl.o): Depend on ggc.h.

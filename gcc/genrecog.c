@@ -1859,7 +1859,7 @@ peephole2%s (x0, insn, _plast_insn)\n\
      rtx *_plast_insn ATTRIBUTE_UNUSED;\n"
   };
      
-  int subfunction = head->first->subroutine_number;
+  int subfunction = head->first ? head->first->subroutine_number : 0;
   const char *s_or_e;
   char extension[32];
   int i;
@@ -1884,7 +1884,10 @@ peephole2%s (x0, insn, _plast_insn)\n\
     printf ("  register rtx _last_insn = insn;\n");
   printf ("  %s tem ATTRIBUTE_UNUSED;\n", IS_SPLIT (type) ? "rtx" : "int");
 
-  write_tree (head, "", type, 1);
+  if (head->first)
+    write_tree (head, "", type, 1);
+  else
+    printf ("  goto ret0;\n");
 
   if (type == PEEPHOLE2)
     printf (" ret1:\n  *_plast_insn = _last_insn;\n  return tem;\n");
@@ -2128,17 +2131,17 @@ process_tree (head, subroutine_type)
      struct decision_head *head;
      enum routine_type subroutine_type;
 {
-  if (head->first == NULL)
-    return;
+  if (head->first != NULL)
+    {
+      factor_tests (head);
+      simplify_tests (head);
 
-  factor_tests (head);
-  simplify_tests (head);
+      next_subroutine_number = 0;
+      break_out_subroutines (head, 1);
+      find_afterward (head, NULL);
 
-  next_subroutine_number = 0;
-  break_out_subroutines (head, 1);
-  find_afterward (head, NULL);
-
-  write_subroutines (head, subroutine_type);
+      write_subroutines (head, subroutine_type);
+    }
   write_subroutine (head, subroutine_type);
 }
 
