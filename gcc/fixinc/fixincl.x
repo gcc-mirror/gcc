@@ -4577,7 +4577,7 @@ tSCC zThread_KeywordName[] =
  *  File name selection pattern
  */
 tSCC zThread_KeywordList[] =
-  "|bits/sigthread.h|pthread.h|";
+  "|pthread.h|bits/sigthread.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -4587,7 +4587,7 @@ tSCC zThread_KeywordList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zThread_KeywordSelect0[] =
-       "__thread";
+       "pthread_t __thread([^a-z0-9_])";
 
 #define    THREAD_KEYWORD_TEST_CT  1
 static tTestDesc aThread_KeywordTests[] = {
@@ -4596,8 +4596,9 @@ static tTestDesc aThread_KeywordTests[] = {
 /*
  *  Fix Command Arguments for Thread_Keyword
  */
-static const char* apzThread_KeywordPatch[] = { "sed",
-    "-e", "s/\\([^a-z0-9_]\\)__thread\\([^a-z0-9_]\\)/\\1__thr\\2/g",
+static const char* apzThread_KeywordPatch[] = {
+    "format",
+    "pthread_t __thr%1",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -6445,7 +6446,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zThread_KeywordName,    zThread_KeywordList,
      apzThread_KeywordMachs,
-     THREAD_KEYWORD_TEST_CT, FD_MACH_ONLY,
+     THREAD_KEYWORD_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aThread_KeywordTests,   apzThread_KeywordPatch, 0 },
 
   {  zTinfo_CplusplusName,    zTinfo_CplusplusList,
