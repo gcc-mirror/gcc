@@ -816,6 +816,12 @@ static status_t demangle_identifier
   PARAMS ((demangling_t, int, dyn_string_t));
 static status_t demangle_operator_name
   PARAMS ((demangling_t, int, int *));
+static status_t demangle_nv_offset
+  PARAMS ((demangling_t));
+static status_t demangle_v_offset
+  PARAMS ((demangling_t));
+static status_t demangle_call_offset
+  PARAMS ((demangling_t));
 static status_t demangle_special_name
   PARAMS ((demangling_t));
 static status_t demangle_ctor_dtor_name
@@ -1569,18 +1575,153 @@ demangle_operator_name (dm, short_name, num_args)
     }
 }
 
+/* Demangles and omits an <nv-offset>.
+
+    <nv-offset> ::= <offset number>   # non-virtual base override  */
+
+static status_t
+demangle_nv_offset (dm)
+     demangling_t dm;
+{
+  dyn_string_t number;
+  status_t status = STATUS_OK;
+
+  DEMANGLE_TRACE ("h-offset", dm);
+
+  /* Demangle the offset.  */
+  number = dyn_string_new (4);
+  if (number == NULL)
+    return STATUS_ALLOCATION_FAILED;
+  demangle_number_literally (dm, number, 10, 1);
+
+  /* Don't display the offset unless in verbose mode.  */
+  if (flag_verbose)
+    {
+      status = result_append (dm, " [nv:");
+      if (STATUS_NO_ERROR (status))
+	status = result_append_string (dm, number);
+      if (STATUS_NO_ERROR (status))
+	status = result_append_char (dm, ']');
+    }
+
+  /* Clean up.  */
+  dyn_string_delete (number);
+  RETURN_IF_ERROR (status);
+  return STATUS_OK;
+}
+
+/* Demangles and emits a <v-offset>. 
+
+    <v-offset>  ::= <offset number> _ <virtual offset number>
+			# virtual base override, with vcall offset  */
+
+static status_t
+demangle_v_offset (dm)
+     demangling_t dm;
+{
+  dyn_string_t number;
+  status_t status = STATUS_OK;
+
+  DEMANGLE_TRACE ("v-offset", dm);
+
+  /* Demangle the offset.  */
+  number = dyn_string_new (4);
+  if (number == NULL)
+    return STATUS_ALLOCATION_FAILED;
+  demangle_number_literally (dm, number, 10, 1);
+
+  /* Don't display the offset unless in verbose mode.  */
+  if (flag_verbose)
+    {
+      status = result_append (dm, " [v:");
+      if (STATUS_NO_ERROR (status))
+	status = result_append_string (dm, number);
+      if (STATUS_NO_ERROR (status))
+	result_append_char (dm, ',');
+    }
+  dyn_string_delete (number);
+  RETURN_IF_ERROR (status);
+
+  /* Demangle the separator.  */
+  RETURN_IF_ERROR (demangle_char (dm, '_'));
+
+  /* Demangle the vcall offset.  */
+  number = dyn_string_new (4);
+  if (number == NULL)
+    return STATUS_ALLOCATION_FAILED;
+  demangle_number_literally (dm, number, 10, 1);
+
+  /* Don't display the vcall offset unless in verbose mode.  */
+  if (flag_verbose)
+    {
+      status = result_append_string (dm, number);
+      if (STATUS_NO_ERROR (status))
+	status = result_append_char (dm, ']');
+    }
+  dyn_string_delete (number);
+  RETURN_IF_ERROR (status);
+
+  return STATUS_OK;
+}
+
+/* Demangles and emits a <call-offset>.
+
+    <call-offset> ::= h <nv-offset> _
+		  ::= v <v-offset> _  */
+
+static status_t
+demangle_call_offset (dm)
+     demangling_t dm;
+{
+  DEMANGLE_TRACE ("call-offset", dm);
+
+  switch (peek_char (dm))
+    {
+    case 'h':
+      advance_char (dm);
+      /* Demangle the offset.  */
+      RETURN_IF_ERROR (demangle_nv_offset (dm));
+      /* Demangle the separator.  */
+      RETURN_IF_ERROR (demangle_char (dm, '_'));
+      break;
+
+    case 'v':
+      advance_char (dm);
+      /* Demangle the offset.  */
+      RETURN_IF_ERROR (demangle_v_offset (dm));
+      /* Demangle the separator.  */
+      RETURN_IF_ERROR (demangle_char (dm, '_'));
+      break;
+
+    default:
+      return "Unrecognized <call-offset>.";
+    }
+
+  return STATUS_OK;
+}
+
 /* Demangles and emits a <special-name>.  
 
     <special-name> ::= GV <object name>   # Guard variable
-                   ::= Th[n] <offset number> _ <base name> <base encoding>
-                                          # non-virtual base override thunk
-                   ::= Tv[n] <offset number> _ <vcall offset number> 
-                         _ <base encoding>
-                                          # virtual base override thunk
                    ::= TV <type>          # virtual table
                    ::= TT <type>          # VTT
                    ::= TI <type>          # typeinfo structure
 		   ::= TS <type>          # typeinfo name  
+
+   Other relevant productions include thunks:
+
+    <special-name> ::= T <call-offset> <base encoding>
+ 			 # base is the nominal target function of thunk
+
+    <special-name> ::= Tc <call-offset> <call-offset> <base encoding>
+			 # base is the nominal target function of thunk
+			 # first call-offset is 'this' adjustment
+			 # second call-offset is result adjustment
+
+   where
+
+    <call-offset>  ::= h <nv-offset> _
+		   ::= v <v-offset> _
 
    Also demangles the special g++ manglings,
 
@@ -1662,20 +1803,7 @@ demangle_special_name (dm)
 	  /* Non-virtual thunk.  */
 	  advance_char (dm);
 	  RETURN_IF_ERROR (result_append (dm, "non-virtual thunk"));
-	  /* Demangle and emit the offset.  */
-	  number = dyn_string_new (4);
-	  if (number == NULL)
-	    return STATUS_ALLOCATION_FAILED;
-	  demangle_number_literally (dm, number, 10, 1);
-	  /* Don't display the offset unless in verbose mode.  */
-	  if (flag_verbose)
-	    {
-	      status = result_append_char (dm, ' ');
-	      if (STATUS_NO_ERROR (status))
-		status = result_append_string (dm, number);
-	    }
-	  dyn_string_delete (number);
-	  RETURN_IF_ERROR (status);
+	  RETURN_IF_ERROR (demangle_nv_offset (dm));
 	  /* Demangle the separator.  */
 	  RETURN_IF_ERROR (demangle_char (dm, '_'));
 	  /* Demangle and emit the target name and function type.  */
@@ -1686,41 +1814,23 @@ demangle_special_name (dm)
 	case 'v':
 	  /* Virtual thunk.  */
 	  advance_char (dm);
-	  RETURN_IF_ERROR (result_append (dm, "virtual thunk "));
-	  /* Demangle and emit the offset.  */
-	  number = dyn_string_new (4);
-	  if (number == NULL)
-	    return STATUS_ALLOCATION_FAILED;
-	  demangle_number_literally (dm, number, 10, 1);
-	  /* Don't display the offset unless in verbose mode.  */
-	  if (flag_verbose)
-	    {
-	      status = result_append_string (dm, number);
-	      if (STATUS_NO_ERROR (status))
-		result_append_char (dm, ' ');
-	    }
-	  dyn_string_delete (number);
-	  RETURN_IF_ERROR (status);
-	  /* Demangle the separator.  */
-	  RETURN_IF_ERROR (demangle_char (dm, '_'));
-	  /* Demangle and emit the vcall offset.  */
-	  number = dyn_string_new (4);
-	  if (number == NULL)
-	    return STATUS_ALLOCATION_FAILED;
-	  demangle_number_literally (dm, number, 10, 1);
-	  /* Don't display the vcall offset unless in verbose mode.  */
-	  if (flag_verbose)
-	    {
-	      status = result_append_string (dm, number);
-	      if (STATUS_NO_ERROR (status))
-		status = result_append_char (dm, ' ');
-	    }
-	  dyn_string_delete (number);
-	  RETURN_IF_ERROR (status);
+	  RETURN_IF_ERROR (result_append (dm, "virtual thunk"));
+	  RETURN_IF_ERROR (demangle_v_offset (dm));
 	  /* Demangle the separator.  */
 	  RETURN_IF_ERROR (demangle_char (dm, '_'));
 	  /* Demangle and emit the target function.  */
-	  RETURN_IF_ERROR (result_append (dm, "to "));
+	  RETURN_IF_ERROR (result_append (dm, " to "));
+	  RETURN_IF_ERROR (demangle_encoding (dm));
+	  break;
+
+	case 'c':
+	  /* Covariant return thunk.  */
+	  advance_char (dm);
+	  RETURN_IF_ERROR (result_append (dm, "covariant return thunk"));
+	  RETURN_IF_ERROR (demangle_call_offset (dm));
+	  RETURN_IF_ERROR (demangle_call_offset (dm));
+	  /* Demangle and emit the target function.  */
+	  RETURN_IF_ERROR (result_append (dm, " to "));
 	  RETURN_IF_ERROR (demangle_encoding (dm));
 	  break;
 

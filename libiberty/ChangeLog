@@ -1,3 +1,11 @@
+2000-09-04  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c (demangle_nv_offset): New function.
+	(demangle_v_offset): Likewise.
+	(demangle_call_offset): Likewise.
+	(demangle_special_name): Update thunk demangling to comply with
+	ABI changes.
+	
 2000-09-03  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (ANONYMOUS_NAMESPACE_PREFIX): New macro.
