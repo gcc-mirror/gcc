@@ -196,7 +196,7 @@ libstdc___la_SOURCES = $(sources)
 
 libinst_wstring_la_SOURCES = $(wstring_sources)
 
-libstdc___la_LIBADD =  	../math/libmath.la ../libio/libio.la 	@libinst_wstring_la@
+libstdc___la_LIBADD =  	../math/libmath.la ../libio/libio.la 	../libsupc++/libsupc++convenience.la 	@libinst_wstring_la@
 
 
 libstdc___la_LDFLAGS = -version-info 3:0:0 -lm

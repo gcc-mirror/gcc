@@ -148,7 +148,7 @@ fi
 # -> top_srcdir/Makefile.am -> top_srcdir/src/Makefile.am, manually
 # append it here.
 
-AC_OUTPUT(mkcheck Makefile src/Makefile math/Makefile libio/Makefile,
+AC_OUTPUT(mkcheck Makefile src/Makefile math/Makefile libio/Makefile libsupc++/Makefile,
 [if test -n "$CONFIG_FILES"; then
   ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
   grep '^MULTISUBDIR =' Makefile >> src/Makefile

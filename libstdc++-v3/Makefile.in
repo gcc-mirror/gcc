@@ -117,7 +117,7 @@ MAINT_CHARSET = latin1
 INTERFACE = v3
 gxx_include_dir = $(includedir)/g++
 
-SUBDIRS = math libio src
+SUBDIRS = math libio libsupc++ src
 
 #all-local:  stamp-rebuild
 
