@@ -1,3 +1,13 @@
+Wed Jul 21 00:46:58 1999  Mark P. Mitchell  <mark@codesourcery.com>
+
+	* defaults.h (DWARF2_GENERATE_TEXT_SECTION_LABEL): New macro.
+	* tm.texi (DWARF2_GENERATE_TEXT_SECTION_LABEL): Define it.
+ 	* dwarf2out.c (dwarf2out_init): Don't output a label to mark the
+ 	start of the text section if DWARF2_GENERATE_TEXT_SECTION_LABEL is
+	false.
+	* config/mips/iris6.h (DWARF2_GENERATE_TEXT_SECTION_LABEL): 
+	Define to zero.
+	
 1999-07-21  Michael Meissner  <meissner@cygnus.com>
 
 	* print-rtl.c (print_rtx): Print the names of the virtual

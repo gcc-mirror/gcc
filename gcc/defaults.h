@@ -154,3 +154,13 @@ do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
 #if !defined (DWARF2_UNWIND_INFO) && defined (INCOMING_RETURN_ADDR_RTX)
 #define DWARF2_UNWIND_INFO 1
 #endif
+
+/* By default, we generate a label at the beginning and end of the
+   text section, and compute the size of the text section by
+   subtracting the two.  However, on some platforms that doesn't 
+   work, and we use the section itself, rather than a label at the
+   beginning of it, to indicate the start of the section.  On such
+   platforms, define this to zero.  */
+#ifndef DWARF2_GENERATE_TEXT_SECTION_LABEL
+#define DWARF2_GENERATE_TEXT_SECTION_LABEL 1
+#endif

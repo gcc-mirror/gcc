@@ -34,6 +34,11 @@ Boston, MA 02111-1307, USA.  */
  irix5.h file.  */
 #undef DWARF2_UNWIND_INFO
 
+/* The Irix6 assembler will sometimes assign labels to the wrong
+   section unless the labels are within .ent/.end blocks.  Therefore,
+   we avoid creating such labels.  */
+#define DWARF2_GENERATE_TEXT_SECTION_LABEL 0
+
 /* For Irix 6, -mabi=64 implies TARGET_LONG64.  */
 /* This is handled in override_options.  */
 
