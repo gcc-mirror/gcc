@@ -1623,7 +1623,7 @@ i960-*-*)			# Default i960 environment.
 	use_collect2=yes
 	;;
 ia64*-*-elf*)
-	tm_file=ia64/elf.h
+	tm_file="${tm_file} elfos.h ia64/sysv4.h ia64/elf.h"
 	tmake_file="ia64/t-ia64"
 	target_cpu_default="0"
 	if test x$gas = xyes
@@ -1636,8 +1636,15 @@ ia64*-*-elf*)
 	fi
 	float_format=i386
 	;;
+ia64*-*-freebsd*)
+	tm_file="${tm_file} ${fbsd_tm_file} elfos.h ia64/sysv4.h ia64/freebsd.h"
+	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
+	tmake_file="${tmake_file} ia64/t-ia64"
+	xmake_file=none
+	float_format=i386
+	;;
 ia64*-*-linux*)
-	tm_file=ia64/linux.h
+	tm_file="${tm_file} linux.h ia64/sysv4.h ia64/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux ia64/t-ia64 ia64/t-glibc"
 	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
 	if test x$enable_threads = xyes; then

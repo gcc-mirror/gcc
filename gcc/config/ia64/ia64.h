@@ -31,11 +31,11 @@ Boston, MA 02111-1307, USA.  */
 
 /* Run-time target specifications */
 
-/* Define this to be a string constant containing `-D' options to define the
-   predefined macros that identify this machine and system.  These macros will
-   be predefined unless the `-ansi' option is specified.  */
-/* ??? This is undefed in svr4.h.  */
-#define CPP_PREDEFINES "-Dia64 -Amachine=ia64"
+#define CPP_CPU_SPEC "\
+  -Acpu=ia64 -Amachine=ia64 \
+  %{!ansi:%{!std=c*:%{!std=i*:-Dia64}}} -D__ia64 -D__ia64__"
+
+#define CC1_SPEC "%(cc1_cpu) "
 
 /* This declaration should be present.  */
 extern int target_flags;
@@ -169,11 +169,6 @@ extern const char *ia64_fixed_range_string;
       N_("Specify range of registers to make fixed.")},			\
 }
 
-/* This macro is a C statement to print on `stderr' a string describing the
-   particular machine description choice.  */
-
-#define TARGET_VERSION fprintf (stderr, " (IA-64)");
-
 /* Sometimes certain combinations of command options do not make sense on a
    particular target machine.  You can define a macro `OVERRIDE_OPTIONS' to
    take account of this.  This macro, if defined, is executed once just after
@@ -201,6 +196,7 @@ extern const char *ia64_fixed_range_string;
    defines in other tm.h files.  */
 #define CPP_SPEC \
   "%{mcpu=itanium:-D__itanium__} %{mbig-endian:-D__BIG_ENDIAN__}	\
+   %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__}		\
    -D__LONG_MAX__=9223372036854775807L"
 
 /* If this macro is defined, the preprocessor will not define the builtin macro
@@ -235,36 +231,6 @@ extern const char *ia64_fixed_range_string;
    into options for GNU CC to pass to the `cc1plus'.  */
 
 /* #define CC1PLUS_SPEC "" */
-
-/* A C string constant that tells the GNU CC driver program options to pass to
-   the assembler.  It can also specify how to translate options you give to GNU
-   CC into options for GNU CC to pass to the assembler.  */
-
-#if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GNU_AS) != 0
-/* GNU AS.  */
-#define ASM_SPEC \
-  "%{mno-gnu-as:-N so} %{!mno-gnu-as:-x} %{mconstant-gp} %{mauto-pic}"
-#else
-/* Intel ias.  */
-#define ASM_SPEC \
-  "%{!mgnu-as:-N so} %{mgnu-as:-x} %{mconstant-gp:-M const_gp}\
-   %{mauto-pic:-M no_plabel}"
-#endif
-
-/* A C string constant that tells the GNU CC driver program options to pass to
-   the linker.  It can also specify how to translate options you give to GNU CC
-   into options for GNU CC to pass to the linker.  */
-
-/* The Intel linker does not support dynamic linking, so we need -dn.
-   The Intel linker gives annoying messages unless -N so is used.  */
-#if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GNU_LD) != 0
-/* GNU LD.  */
-#define LINK_SPEC "%{mno-gnu-ld:-dn -N so}"
-#else
-/* Intel ild.  */
-#define LINK_SPEC "%{!mgnu-ld:-dn -N so}"
-#endif
-
 
 /* Storage Layout */
 

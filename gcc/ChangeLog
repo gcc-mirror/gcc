@@ -1,3 +1,25 @@
+2001-10-28  David O'Brien  <obrien@FreeBSD.org>
+
+	* config.gcc: Add FreeBSD/IA-64 target.  Move inclusion of IA-64
+	target headers to tm_file.
+	* config/i64/ia64.h (TARGET_VERSION,ASM_SPEC,LINK_SPEC): Remove,
+	they are OS specific.  Use CPP_CPU_SPEC rather than CPP_PREDEFINES,
+	so OS specific files and use CPP_PREDEFINES for their needs.
+	* config/i64/elf.h (TARGET_VERSION): Add.  Also, move inclusion of
+	target headers to tm_file.
+	* config/i64/linux.h (TARGET_VERSION): Likewise.
+	* config/i64/frebsd.h: New file.
+	* config/frebsd.h: Tidy up.
+	(_USING_CONFIG_FREEBSD): Define.
+	(FBSD_CPP_PREDEFINES): Add __KPRINTF_ATTRIBUTE__.
+	(FBSD_CPP_SPEC): Define generic FreeBSD spec.
+	(FBSD_STARTFILE_SPEC): Likewise.
+	(FBSD_ENDFILE_SPEC): Likewise.
+	(FBSD_LIB_SPEC): Likewise.
+	(WCHAR_UNSIGNED): Undefine, FreeBSD's wchars are signed.
+	(USER_LABEL_PREFIX): Define to ELF compatible value as some CPU headers
+	set an ELF-improper one.
+
 2001-11-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/extend.texi, doc/gcc.texi, doc/install.texi, doc/tm.texi:

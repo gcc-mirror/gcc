@@ -1,8 +1,44 @@
 /* Definitions for embedded ia64-elf target.  */
 
-#include "ia64/ia64.h"
-#include "elfos.h"
-#include "sysv4.h"
+/* This macro is a C statement to print on `stderr' a string describing the
+   particular machine description choice.  */
+
+#define TARGET_VERSION fprintf (stderr, " (IA-64) ELF");
+
+/* Define this to be a string constant containing `-D' options to define the
+   predefined macros that identify this machine and system.  These macros will
+   be predefined unless the `-ansi' option is specified.  */
+/* ??? This is undefed in svr4.h.  */
+#define CPP_PREDEFINES "-Dia64 -Amachine=ia64"
+
+/* A C string constant that tells the GNU CC driver program options to pass to
+   the assembler.  It can also specify how to translate options you give to GNU
+   CC into options for GNU CC to pass to the assembler.  */
+
+#if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GNU_AS) != 0
+/* GNU AS.  */
+#define ASM_SPEC \
+  "%{mno-gnu-as:-N so} %{!mno-gnu-as:-x} %{mconstant-gp} %{mauto-pic}"
+#else
+/* Intel ias.  */
+#define ASM_SPEC \
+  "%{!mgnu-as:-N so} %{mgnu-as:-x} %{mconstant-gp:-M const_gp}\
+   %{mauto-pic:-M no_plabel}"
+#endif
+
+/* A C string constant that tells the GNU CC driver program options to pass to
+   the linker.  It can also specify how to translate options you give to GNU CC
+   into options for GNU CC to pass to the linker.  */
+
+/* The Intel linker does not support dynamic linking, so we need -dn.
+   The Intel linker gives annoying messages unless -N so is used.  */
+#if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GNU_LD) != 0
+/* GNU LD.  */
+#define LINK_SPEC "%{mno-gnu-ld:-dn -N so}"
+#else
+/* Intel ild.  */
+#define LINK_SPEC "%{!mgnu-ld:-dn -N so}"
+#endif
 
 /* svr4.h links with crti.o/crtn.o, but elfos.h does not.  We override elfos.h
    so that we can use the standard ELF Unix method.  */

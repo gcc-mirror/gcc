@@ -20,6 +20,11 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* This macro is a C statement to print on `stderr' a string describing the
+   particular machine description choice.  */
+
+#define TARGET_VERSION fprintf (stderr, " (IA-64) HP-UX");
+
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
   -D__IA64__ -D__ia64 -D__ia64__ -D__hpux -D__hpux__ -Dhpux -Dunix \
