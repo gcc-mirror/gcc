@@ -1572,6 +1572,12 @@ struct tree_block GTY(())
    compact a way as possible.  */
 #define TYPE_PACKED(NODE) (TYPE_CHECK (NODE)->type.packed_flag)
 
+/* Used by type_contains_placeholder_p to avoid recomputation.
+   Values are: 0 (unknown), 1 (false), 2 (true).  Never access
+   this field directly.  */
+#define TYPE_CONTAINS_PLACEHOLDER_INTERNAL(NODE) \
+  (TYPE_CHECK (NODE)->type.contains_placeholder_bits)
+
 struct die_struct;
 
 struct tree_type GTY(())
@@ -1592,7 +1598,7 @@ struct tree_type GTY(())
   unsigned transparent_union_flag : 1;
   unsigned packed_flag : 1;
   unsigned restrict_flag : 1;
-  unsigned spare : 2;
+  unsigned contains_placeholder_bits : 2;
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
