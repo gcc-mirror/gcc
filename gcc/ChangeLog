@@ -1,3 +1,31 @@
+2004-03-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_legitimate_address_p): New argument, OUTER.  Pass through
+	to arm_legitimate_index_p.  Update all callers with SET as default
+	value.
+	(arm_legitimate_index_p): New argument, OUTER.  Restrict the index
+	range if OUTER is a sign-extend operation on QImode.  Correctly
+	reject shift operations on sign-extended QImode addresses.
+	(bad_signed_byte_operand): Delete.
+	(arm_extendqisi_mem_op): New function.
+	* arm.h (EXTRA_CONSTRAINT_ARM): Delete.  Replace with...
+	(EXTRA_CONSTRAINT_STR_ARM): ... this.  Handle extended address
+	constraints.
+	(CONSTRAINT_LEN): New.
+	(EXTRA_CONSTRAINT): Delete.  Replace with...
+	(EXTRA_CONSTRAINT_STR): ... this.
+	(PREDICATE_CODES): Remove bad_signed_byte_operand.
+	* arm.md (extendqihi_insn): Use new constraint Uq.  Rework.  Length
+	is now always default.
+	(define_splits for bad sign-extend loads): Delete.
+	(arm_extendqisi, arm_extendqisi_v5): Likewise.
+	* arm/vfp.md (arm_movsi_vfp, arm_movdi_vfp, movsf_vfp, movdf_vfp):
+	Rework 'U' constraint to 'Uv'.
+	* arm-protos.h: Remove bad_signed_byte_operand.  Add
+	arm_extendqisi_mem_op.
+	* doc/md.texi (ARM constraints): Rename VFP constraint (now Uv).
+	Add Uq constraint.
+
 2004-03-13  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_va_arg): Replace SPLIT_COMPLEX_ARGS
