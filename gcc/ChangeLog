@@ -1,3 +1,11 @@
+Tue Apr  6 15:45:28 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (create_basic_block): Make sure the bb note is in the block.
+	(can_delete_note_p): Rename from delete_note_p.
+	(delete_insn_chain): Preserve undeleteable labels too.
+	(tidy_fallthru_edge): Use next_real_insn instead of confusing
+	inline code.
+
 1999-04-06 12:56 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cppexp.c (parse_charconst): Initialize c.
