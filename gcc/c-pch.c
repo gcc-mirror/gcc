@@ -393,8 +393,6 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
 {
   FILE *f;
   struct c_pch_header h;
-  char *buf;
-  unsigned long written;
   struct save_macro_data *smd;
   
   f = fdopen (fd, "rb");
@@ -412,18 +410,30 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
       return;
     }
 
-  buf = xmalloc (16384);
-  for (written = 0; written < h.asm_size; )
+  if (!flag_preprocess_only)
     {
-      long size = h.asm_size - written;
-      if (size > 16384)
-	size = 16384;
-      if (fread (buf, size, 1, f) != 1
-	  || fwrite (buf, size, 1, asm_out_file) != 1)
-	cpp_errno (pfile, CPP_DL_ERROR, "reading");
-      written += size;
+      unsigned long written;
+      char * buf = xmalloc (16384);
+
+      for (written = 0; written < h.asm_size; )
+	{
+	  long size = h.asm_size - written;
+	  if (size > 16384)
+	    size = 16384;
+	  if (fread (buf, size, 1, f) != 1
+	      || fwrite (buf, size, 1, asm_out_file) != 1)
+	    cpp_errno (pfile, CPP_DL_ERROR, "reading");
+	  written += size;
+	}
+      free (buf);
     }
-  free (buf);
+  else
+    {
+      /* If we're preprocessing, don't write to a NULL
+	 asm_out_file.  */
+      if (fseek (f, h.asm_size, SEEK_CUR) != 0)
+	cpp_errno (pfile, CPP_DL_ERROR, "seeking");
+    }
 
   cpp_prepare_state (pfile, &smd);
 
@@ -445,4 +455,48 @@ c_common_no_more_pch (void)
       cpp_get_callbacks (parse_in)->valid_pch = NULL;
       host_hooks.gt_pch_use_address (NULL, 0, -1, 0);
     }
+}
+
+/* Handle #pragma GCC pch_preprocess, to load in the PCH file.  */
+
+#ifndef O_BINARY
+# define O_BINARY 0
+#endif
+
+void
+c_common_pch_pragma (cpp_reader *pfile)
+{
+  tree name_t;
+  const char *name;
+  int fd;
+
+  if (c_lex (&name_t) != CPP_STRING)
+    {
+      error ("malformed #pragma GCC pch_preprocess, ignored");
+      return;
+    }
+
+  if (! cpp_get_options (pfile)->preprocessed)
+    {
+      error ("pch_preprocess pragma should only be used with -fpreprocessed");
+      inform ("use #include instead");
+      return;
+    }
+
+  name = TREE_STRING_POINTER (name_t);
+  
+  fd = open (name, O_RDONLY | O_BINARY, 0666);
+  if (fd == -1)
+    fatal_error ("%s: couldn't open PCH file: %m\n", name);
+  
+  if (c_common_valid_pch (pfile, name, fd) != 1)
+    {
+      if (!cpp_get_options (pfile)->warn_invalid_pch)
+	inform ("use -Winvalid-pch for more information");
+      fatal_error ("%s: PCH file was invalid", name);
+    }
+  
+  c_common_read_pch (pfile, name, fd, name);
+  
+  close (fd);
 }

@@ -625,7 +625,7 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
   /* Handle PCH files immediately; don't stack them.  */
   if (file->pch)
     {
-      pfile->cb.read_pch (pfile, file->path, file->fd, file->pchname);
+      pfile->cb.read_pch (pfile, file->pchname, file->fd, file->path);
       close (file->fd);
       file->fd = -1;
       return false;

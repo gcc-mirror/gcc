@@ -1,3 +1,8 @@
+2004-06-21  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/pch/save-temps-1.c: New file.
+	* gcc.dg/pch/save-temps-1.hs: New file.
+
 2004-06-22  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	* gfortran.fortran-torture/execute/iolength_1.f90: New test.

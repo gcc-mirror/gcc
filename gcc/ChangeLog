@@ -1,3 +1,21 @@
+2004-06-21  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-opts.c (c_common_handle_option): Handle -fpch-preprocess.
+	* c-common.h (flag_pch_preprocess): Declare.
+	(c_common_pch_pragma): Likewise.
+	* c-common.c (flag_pch_preprocess): New.
+	* c-pch.c (c_common_read_pch): Support -fpreprocess-only.
+	(c_common_pch_pragma): New.
+	* c-ppoutput.c (cb_read_pch): New.
+	(init_pp_output): Support -fpch-preprocess.
+	* c-pragma.c (init_pragma): Support #pragma GNUC pch_preprocess.
+	* c.opt (fpch-preprocess): New.
+	* gcc.c (cpp_options): When save-temps, pass -fpch-preprocess.
+	* doc/cppopts.texi: Document -fpch-preprocess.
+	* doc/invoke.texi (Precompiled Headers): Mention that
+	-fpreprocessed is safe for PCH.  Mention that if an option is
+	listed as safe that doesn't mean it does what you expect.
+
 2004-06-22  Ben Elliston  <bje@au.ibm.com>
 
 	* tree-ssa.c (ssa_redirect_edge): Correct leading comment.

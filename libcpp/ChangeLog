@@ -1,3 +1,9 @@
+2004-06-21  Geoffrey Keating  <geoffk@apple.com>
+
+	* files.c (should_stack_file): Correct swapped parameters to call
+	to cb.read_pch.
+	* pch.c (cpp_valid_state): Handle -fpreprocessed.
+
 2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in: Regenerate with automake 1.8.5.
