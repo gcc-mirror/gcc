@@ -1,3 +1,36 @@
+2003-11-26  Sascha Brawer  <brawer@dandelis.ch>
+
+	* javax/swing/undo/StateEdit.java (getPresentationName): Docfix.
+	* javax/swing/undo/AbstractUndoableEdit.java (canUndo, canRedo,
+	isSignificant): Likewise.
+
+2003-11-26  Sascha Brawer  <brawer@dandelis.ch>
+
+	* javax/swing/undo/CompoundEdit.java: Re-format, document.
+	(inProgress): Set initial value to true.
+	(undo, redo, die, canUndo, canRedo): Also call inherited
+	implementation; simplify code structure.
+	(getPresentationName, getUndoPresentationName,
+	getRedoPresentationName): Make behavior dependent on lastEdit.
+	(addEdit, isSignificant): Completely re-written.
+
+2003-11-26  Sascha Brawer  <brawer@dandelis.ch>
+
+	* javax/swing/undo/StateEdit.java: Re-format, document.
+	(undo, redo): Also call inherited implementation.
+
+2003-11-26  Sascha Brawer  <brawer@dandelis.ch>
+
+	* javax/swing/undo/StateEditable.java: Re-format, document.
+
+2003-11-26  Sascha Brawer  <brawer@dandelis.ch>
+
+	* javax/swing/undo/AbstractUndoableEdit.java: Re-format, document.
+	(AbstractUndoableEdit): Initialize hasBeenDone to true.
+	(canUndo, canRedo): Simplify.
+	(getUndoPresentationName, getRedoPresentationName): Support
+	localized message; call getPresentationName() only once.
+
 2003-11-26  David Belanger  <dbelan2@cs.mcgill.ca>
 
 	* java/util/zip/ZipFile (Zipfile(File)): Set file path as name.

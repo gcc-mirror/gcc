@@ -1,5 +1,5 @@
-/* AbstractTableModel.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* CannotRedoException.java
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,17 +38,19 @@ exception statement from your version. */
 package javax.swing.undo;
 
 /**
- * CannotRedoException
- * @author Andrew Selkirk
+ * An exception which indicates that an editing action cannot be
+ * redone.
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public class CannotRedoException extends RuntimeException {
-
-	/**
-	 * Create exception
-	 */
-	public CannotRedoException() {
-		super();
-	} // CannotRedoException()
-
-
-} // CannotRedoException
+public class CannotRedoException
+  extends RuntimeException
+{
+  /**
+   * Constructs a new instance of a <code>CannotRedoException</code>.
+   */
+  public CannotRedoException()
+  {
+  }
+}
