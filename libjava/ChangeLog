@@ -1,3 +1,14 @@
+2004-06-18  Graydon Hoare  <graydon@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c:
+	Fix up non-ansi comments.
+
+2004-06-18  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* javax/swing/text/AbstractDocument.java: Adding missing import
+	for javax.swing.event.EventListenerList.
+	* javax/swing/text/DefaultCaret.java: Likewise.
+
 2004-06-17  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/JToolBar.java
