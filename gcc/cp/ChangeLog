@@ -1,3 +1,22 @@
+2004-09-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c++/17596
+
+	* parser.c (cp_parser_token_tree_map_node,
+	cp_parser_pm_expression, cp_parser_additive_expression,
+	cp_parser_multiplicative_expression, cp_parser_shift_expression,
+	cp_parser_relational_expression, cp_parser_equality_expression,
+	cp_parser_and_expression, cp_parser_exclusive_or_expression,
+	cp_parser_inclusive_or_expression,
+	cp_parser_logical_and_expression,
+	cp_parser_logical_or_expression): Removed.
+	(enum cp_parser_prec, struct cp_parser_token_tree_map_node,
+	binops, binops_by_token): New.
+	(cp_parser_assignment_expression): Use cp_parser_binary_expression.
+	(cp_parser_new): Initialize binops_by_token.
+	(cp_parser_binary_expression): Rewritten.
+	(N_CP_TTYPES): New.
+
 2004-09-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* parser.c: Fix a comment typo.
