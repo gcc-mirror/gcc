@@ -5,19 +5,6 @@ LIB2FUNCS_EXTRA = tramp.S
 # This one can't end up in shared libgcc
 LIB2FUNCS_STATIC_EXTRA = eabi.S
 
-# We want fine grained libraries, so use the new code to build the
-# floating point emulation libraries.
-FPBIT = fp-bit.c
-DPBIT = dp-bit.c
-
-
-dp-bit.c: $(srcdir)/config/fp-bit.c
-	cat $(srcdir)/config/fp-bit.c > dp-bit.c
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#define FLOAT' > fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
-
 eabi.S: $(srcdir)/config/rs6000/eabi.asm
 	cat $(srcdir)/config/rs6000/eabi.asm > eabi.S
 
@@ -25,19 +12,9 @@ tramp.S: $(srcdir)/config/rs6000/tramp.asm
 	cat $(srcdir)/config/rs6000/tramp.asm > tramp.S
 
 # Switch synonyms
-MULTILIB_MATCHES_FLOAT	= msoft-float=mcpu?401 \
-			  msoft-float=mcpu?403 \
-			  msoft-float=mcpu?405 \
-			  msoft-float=mcpu?ec603e \
-			  msoft-float=mcpu?801 \
-			  msoft-float=mcpu?821 \
-			  msoft-float=mcpu?823 \
-			  msoft-float=mcpu?860
 MULTILIB_MATCHES_ENDIAN	= mlittle=mlittle-endian mbig=mbig-endian
 MULTILIB_MATCHES_SYSV	= mcall-sysv=mcall-sysv-eabi mcall-sysv=mcall-sysv-noeabi mcall-sysv=mcall-linux mcall-sysv=mcall-netbsd
 
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
 EXTRA_MULTILIB_PARTS = crtbegin$(objext) crtend$(objext) \
   crtbeginS$(objext) crtendS$(objext) crtbeginT$(objext) \
   ecrti$(objext) ecrtn$(objext) \

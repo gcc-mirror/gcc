@@ -1,5 +1,16 @@
 2002-11-18  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/t-rs6000: Move contents to t-fprules,
+	add rules for dependencies of rs6000.o and to build rs6000-c.o
+	* config/rs6000/t-fprules: New file from t-rs6000.
+	* config/rs6000/t-beos: Remove soft-fp rules.
+	* config/rs6000/t-ppccomm: Likewise.
+	* config/rs6000/t-newas: Likewise.
+	* config/rs6000/t-rs6000-c-rule: Delete.
+	* config.gcc: Use t-fprules for rs6000/ ports when appropriate.
+	Use t-rs6000 for all rs6000/ ports instead of t-rs6000-c-rule.
+	Create generic Darwin rules.
+
 	* gengenrtl.c (gencode): Delete unnecessary rtl_obstack declaration.
 
 2002-12-18  Doug Evans  <dje@sebabeach.org>
