@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1998-09-01
+@c 1998-09-04
 
 @ifclear NEWSONLY
 @node News
@@ -114,6 +114,10 @@ Assumed arrays with negative bounds
 no longer elicit spurious diagnostics from @code{g77},
 even on systems with pointers having
 different sizes than integers.
+
+This bug is not known to have existed in any
+recent version of @code{gcc}.
+It was introduced in an early release of @code{egcs}.
 
 @item
 Valid combinations of @code{EXTERNAL},
