@@ -1238,7 +1238,7 @@ cselib_record_sets (insn)
 	  rtx src = sets[i].src;
 	  if (cond)
 	    src = gen_rtx_IF_THEN_ELSE (GET_MODE (src), cond, src, dest);
-	  sets[i].src_elt = cselib_lookup (sets[i].src, GET_MODE (dest), 1);
+	  sets[i].src_elt = cselib_lookup (src, GET_MODE (dest), 1);
 	  if (GET_CODE (dest) == MEM)
 	    sets[i].dest_addr_elt = cselib_lookup (XEXP (dest, 0), Pmode, 1);
 	  else
