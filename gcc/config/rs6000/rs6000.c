@@ -7245,8 +7245,17 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
   rtx op0 = rs6000_compare_op0;
   rtx op1 = rs6000_compare_op1;
   REAL_VALUE_TYPE c1;
-  enum machine_mode mode = GET_MODE (op0);
+  enum machine_mode compare_mode = GET_MODE (op0);
+  enum machine_mode result_mode = GET_MODE (dest);
   rtx temp;
+
+  /* These modes should always match. */
+  if ( GET_MODE (op1) != compare_mode )
+    return 0;
+  if ( GET_MODE (true_cond) != result_mode )
+    return 0;
+  if ( GET_MODE (false_cond) != result_mode )
+    return 0;
 
   /* First, work out if the hardware can do this at all, or
      if it's too slow...  */
@@ -7290,11 +7299,11 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
   /* At this point we know we can use fsel.  */
 
   /* Reduce the comparison to a comparison against zero.  */
-  temp = gen_reg_rtx (mode);
+  temp = gen_reg_rtx (compare_mode);
   emit_insn (gen_rtx_SET (VOIDmode, temp,
-			  gen_rtx_MINUS (mode, op0, op1)));
+			  gen_rtx_MINUS (compare_mode, op0, op1)));
   op0 = temp;
-  op1 = CONST0_RTX (mode);
+  op1 = CONST0_RTX (compare_mode);
 
   /* If we don't care about NaNs we can reduce some of the comparisons
      down to faster ones.  */
@@ -7324,52 +7333,52 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
       break;
 
     case LE:
-      temp = gen_reg_rtx (mode);
-      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_NEG (mode, op0)));
+      temp = gen_reg_rtx (compare_mode);
+      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_NEG (compare_mode, op0)));
       op0 = temp;
       break;
 
     case ORDERED:
-      temp = gen_reg_rtx (mode);
-      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_ABS (mode, op0)));
+      temp = gen_reg_rtx (compare_mode);
+      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_ABS (compare_mode, op0)));
       op0 = temp;
       break;
 
     case EQ:
-      temp = gen_reg_rtx (mode);
+      temp = gen_reg_rtx (compare_mode);
       emit_insn (gen_rtx_SET (VOIDmode, temp, 
-			      gen_rtx_NEG (mode,
-					   gen_rtx_ABS (mode, op0))));
+			      gen_rtx_NEG (compare_mode,
+					   gen_rtx_ABS (compare_mode, op0))));
       op0 = temp;
       break;
 
     case UNGE:
-      temp = gen_reg_rtx (mode);
+      temp = gen_reg_rtx (result_mode);
       emit_insn (gen_rtx_SET (VOIDmode, temp,
-			      gen_rtx_IF_THEN_ELSE (mode, 
+			      gen_rtx_IF_THEN_ELSE (result_mode,
 						    gen_rtx_GE (VOIDmode,
 								op0, op1),
 						    true_cond, false_cond)));
       false_cond = temp;
       true_cond = false_cond;
 
-      temp = gen_reg_rtx (mode);
-      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_NEG (mode, op0)));
+      temp = gen_reg_rtx (compare_mode);
+      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_NEG (compare_mode, op0)));
       op0 = temp;
       break;
 
     case GT:
-      temp = gen_reg_rtx (mode);
+      temp = gen_reg_rtx (result_mode);
       emit_insn (gen_rtx_SET (VOIDmode, temp,
-			      gen_rtx_IF_THEN_ELSE (mode, 
+			      gen_rtx_IF_THEN_ELSE (result_mode, 
 						    gen_rtx_GE (VOIDmode,
 								op0, op1),
 						    true_cond, false_cond)));
       true_cond = temp;
       false_cond = true_cond;
 
-      temp = gen_reg_rtx (mode);
-      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_NEG (mode, op0)));
+      temp = gen_reg_rtx (compare_mode);
+      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_NEG (compare_mode, op0)));
       op0 = temp;
       break;
 
@@ -7378,7 +7387,7 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
     }
 
   emit_insn (gen_rtx_SET (VOIDmode, dest,
-			  gen_rtx_IF_THEN_ELSE (GET_MODE (dest),
+			  gen_rtx_IF_THEN_ELSE (result_mode,
 						gen_rtx_GE (VOIDmode,
 							    op0, op1),
 						true_cond, false_cond)));

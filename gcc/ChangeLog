@@ -1,3 +1,9 @@
+2002-04-16  Dale Johannesen <dalej@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_cmove): Fail if modes of
+	comparison operands do not match each other or if modes of
+	conditions do not match result.
+
 2002-04-16  Hartmut Penner <hpenner@de.ibm.com>
 
 	PR target/6305
