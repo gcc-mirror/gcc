@@ -1,5 +1,11 @@
 2001-01-01  Michael Hayes  <mhayes@redhat.com>
 
+	* loop.c (loop_bivs_find): Break out from strength_reduce.
+	(loop_bivs_init_find, loop_bivs_check, loop_givs_find): Likewise.
+	(loop_givs_check, loop_biv_eliminable_p): Likewise.
+	
+2001-01-01  Michael Hayes  <mhayes@redhat.com>	
+
 	* loop.c (LOOP_REG_LIFETIME, LOOP_REG_GLOBAL_P): Define.
 	(scan_loop, record_giv): Use LOOP_REG_LIFETIME and LOOP_REG_GLOBAL_P.
 	
