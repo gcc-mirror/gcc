@@ -3136,10 +3136,8 @@ expand_start_bindings (exit_flag)
   nesting_stack = thisblock;
 
   if (!output_bytecode)
-    {
-      /* Make a new level for allocating stack slots.  */
-      push_temp_slots ();
-    }
+    /* Make a new level for allocating stack slots.  */
+    push_temp_slots_for_block ();
 }
 
 /* Specify the scope of temporaries created by TARGET_EXPRs.  Similar
