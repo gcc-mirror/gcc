@@ -1555,11 +1555,14 @@ dnl #### GLIBCPP_ to the macro name; adding the :-make fallback in the
 dnl #### conditional's subshell (" --version" is not a command), using a
 dnl #### different option to grep(1).
 dnl #### -pme
+dnl #### Fixed Bourne shell portability bug (use ${MAKE-make}, not
+dnl #### ${MAKE:-make}).
+dnl #### -msokolov
 AC_DEFUN(
   GLIBCPP_CHECK_GNU_MAKE, [AC_CACHE_CHECK( for GNU make,_cv_gnu_make_command,
           _cv_gnu_make_command='' ;
 dnl Search all the common names for GNU make
-          for a in "${MAKE:-make}" make gmake gnumake ; do
+          for a in "${MAKE-make}" make gmake gnumake ; do
                   if ( $a --version 2> /dev/null | grep -c GNU > /dev/null )
                   then
                           _cv_gnu_make_command=$a ;
