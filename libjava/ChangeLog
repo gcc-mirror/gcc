@@ -1,3 +1,10 @@
+2003-02-14  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/natServerSocketChannelImpl.cc: Removed.
+	* gnu/java/nio/ServerSocketChannelImpl.java
+	(SocketAccept): Removed.
+	(accept): Commented out use of SocketAccept.
+
 2003-02-14  Mark Wielaard  <mark@klomp.org>
 
 	* java/math/BigDecimal.java (BigDecimal(String)): Always set scale to
