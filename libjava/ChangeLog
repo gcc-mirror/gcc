@@ -1,3 +1,8 @@
+2002-01-02  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/ieeefp.h: Fix bug in my hand-application of previous
+	patch.
+
 2002-1-1  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* libjava/java/lang/ieeefp.h: Define __IEEE_BIG_ENDIAN for
