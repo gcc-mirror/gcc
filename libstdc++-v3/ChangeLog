@@ -1,3 +1,22 @@
+2005-02-17  Matt Austern  <austern@apple.com>
+
+	* include/tr1/functional (hash): New function object.
+	* include/tr1/hashtable: New file.
+	* include/tr1/unordered_set: New file.
+	* include/tr1/unordered_map: New file.
+	* include/Makefile.am: Add three new TR1 headers.
+	* include/Makefile.in: Likewise.
+	* testsuite/tr1/6_containers/unordered/insert/array_syntax.cc: New test.
+	* testsuite/tr1/6_containers/unordered/insert/map_single.cc: New test.
+	* testsuite/tr1/6_containers/unordered/insert/multimap_single.cc: New test.
+	* testsuite/tr1/6_containers/unordered/insert/multiset_single.cc: New test.
+	* testsuite/tr1/6_containers/unordered/insert/set_single.cc: New test.
+	* testsuite/tr1/6_containers/unordered/instantiate/hash.cc: New test.
+	* testsuite/tr1/6_containers/unordered/instantiate/map.cc: New test.
+	* testsuite/tr1/6_containers/unordered/instantiate/multimap.cc: New test.
+	* testsuite/tr1/6_containers/unordered/instantiate/multiset.cc: New test.
+	* testsuite/tr1/6_containers/unordered/instantiate/set.cc: New test.
+	
 2005-02-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/23_containers/set/modifiers/16728.cc:
