@@ -360,10 +360,18 @@
 #endif
 
 #if defined __powerpc__
-# if !#cpu(powerpc) || !#machine(powerpc)
-#  error
+# if defined __powerpc64__
+#  if (#cpu(powerpc) || #machine(powerpc) \
+       || !#cpu(powerpc64) || !#machine(powerpc64))
+#   error
+# else
+#  if (!#cpu(powerpc) || !#machine(powerpc) \
+       || #cpu(powerpc64) || #machine(powerpc64))
+#   error
+#  endif
 # endif
-#elif #cpu(powerpc) || #machine(powerpc)
+#elif (#cpu(powerpc) || #machine(powerpc) \
+       || #cpu(powerpc64) || #machine(powerpc64))
 # error
 #endif
 

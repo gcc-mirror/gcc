@@ -1,5 +1,7 @@
 2004-02-10  Alan Modra  <amodra@bigpond.net.au>
 
+	* gcc.dg/cpp/assert4.c: Handle powerpc64.
+
 	* gcc.dg/debug/20020327-1.c: xfail for powerpc64.
 
 2004-02-08  Joseph S. Myers  <jsm@polyomino.org.uk>
