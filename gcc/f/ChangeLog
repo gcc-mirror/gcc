@@ -1,3 +1,8 @@
+2000-03-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* com.c (ffecom_decl_field): Use DECL_ALIGN for a FIELD_DECL.
+	(ffecom_init_0): Likewise.
+
 Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* com.c (ffecom_tree_canonize_ptr_): Use bitsize_zero_node.

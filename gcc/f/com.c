@@ -11000,7 +11000,7 @@ ffecom_decl_field (tree context, tree prevfield,
 
   field = build_decl (FIELD_DECL, get_identifier (name), type);
   DECL_CONTEXT (field) = context;
-  DECL_FRAME_SIZE (field) = 0;
+  DECL_ALIGN (field) = 0;
   if (prevfield != NULL_TREE)
     TREE_CHAIN (prevfield) = field;
 
@@ -12056,7 +12056,7 @@ ffecom_init_0 ()
 						 ffecom_tree_type[i][j]);
 	DECL_CONTEXT (ffecom_multi_fields_[i][j])
 	  = ffecom_multi_type_node_;
-	DECL_FRAME_SIZE (ffecom_multi_fields_[i][j]) = 0;
+	DECL_ALIGN (ffecom_multi_fields_[i][j]) = 0;
 	TREE_CHAIN (ffecom_multi_fields_[i][j]) = field;
 	field = ffecom_multi_fields_[i][j];
       }
