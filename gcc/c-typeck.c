@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -6202,12 +6202,36 @@ c_expand_return (retval)
       tree t = convert_for_assignment (valtype, retval, "return",
 				       NULL_TREE, NULL_TREE, 0);
       tree res = DECL_RESULT (current_function_decl);
+      tree inner;
 
       if (t == error_mark_node)
 	return;
 
-      t = build (MODIFY_EXPR, TREE_TYPE (res),
-		 res, convert (TREE_TYPE (res), t));
+      inner = t = convert (TREE_TYPE (res), t);
+
+      /* Strip any conversions, additions, and subtractions, and see if
+	 we are returning the address of a local variable.  Warn if so.  */
+      while (TREE_CODE (inner) == NOP_EXPR
+	     || TREE_CODE (inner) == NON_LVALUE_EXPR
+	     || TREE_CODE (inner) == CONVERT_EXPR
+	     || TREE_CODE (inner) == PLUS_EXPR
+	     || TREE_CODE (inner) == MINUS_EXPR)
+	inner = TREE_OPERAND (inner, 0);
+
+      if (TREE_CODE (inner) == ADDR_EXPR)
+	{
+	  inner = TREE_OPERAND (inner, 0);
+
+	  while (TREE_CODE_CLASS (TREE_CODE (inner)) == 'r')
+	    inner = TREE_OPERAND (inner, 0);
+
+	  if (TREE_CODE (inner) == VAR_DECL
+	      && ! TREE_STATIC (inner)
+	      && DECL_CONTEXT (inner) == current_function_decl)
+	    warning ("function returns address of local variable");
+	}
+
+      t = build (MODIFY_EXPR, TREE_TYPE (res), res, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_return (t);
       current_function_returns_value = 1;
