@@ -6465,7 +6465,8 @@
 (define_expand "sibcall"
   [(parallel [(call (match_operand 0 "memory_operand" "")
 		    (match_operand 1 "general_operand" ""))
-	      (use (match_operand 2 "" ""))])]
+	      (use (match_operand 2 "" ""))
+	      (use (reg:SI LR_REGNUM))])]
   "TARGET_ARM"
   "
   {
@@ -6478,7 +6479,8 @@
   [(parallel [(set (match_operand 0 "register_operand" "")
 		   (call (match_operand 1 "memory_operand" "")
 			 (match_operand 2 "general_operand" "")))
-	      (use (match_operand 3 "" ""))])]
+	      (use (match_operand 3 "" ""))
+	      (use (reg:SI LR_REGNUM))])]
   "TARGET_ARM"
   "
   {
@@ -6490,7 +6492,8 @@
 (define_insn "*sibcall_insn"
  [(call (mem:SI (match_operand:SI 0 "" "X"))
 	(match_operand 1 "" ""))
-  (use (match_operand 2 "" ""))]
+  (use (match_operand 2 "" ""))
+  (use (reg:SI LR_REGNUM))]
   "TARGET_ARM && GET_CODE (operands[0]) == SYMBOL_REF"
   "*
   return NEED_PLT_RELOC ? \"b%?\\t%a0(PLT)\" : \"b%?\\t%a0\";
@@ -6502,7 +6505,8 @@
  [(set (match_operand 0 "s_register_operand" "=r,f")
        (call (mem:SI (match_operand:SI 1 "" "X,X"))
 	     (match_operand 2 "" "")))
-  (use (match_operand 3 "" ""))]
+  (use (match_operand 3 "" ""))
+  (use (reg:SI LR_REGNUM))]
   "TARGET_ARM && GET_CODE (operands[1]) == SYMBOL_REF"
   "*
   return NEED_PLT_RELOC ? \"b%?\\t%a1(PLT)\" : \"b%?\\t%a1\";
