@@ -781,7 +781,7 @@ gfloat.h: $(FLOAT_H)
 # Make it empty if we can use the system float.h without changes.
 float.h-nat: enquire
 	-./enquire -f > tmp-float.h
-	grep '#define [^_]' tmp-float.h >/dev/null || echo > tmp-float.h
+	grep '#define [^_]' tmp-float.h >/dev/null || true > tmp-float.h
 	mv tmp-float.h float.h-nat
 
 # Create a dummy float.h source for a cross-compiler.
