@@ -1,3 +1,14 @@
+1999-06-09  Bryce McKinlay <bryce@albatross.co.nz>
+
+	* java/lang/Runtime.java (exec): Convert prog name and arguments
+	to string array.
+	* java/lang/natPosixProcess.cc (startProcess): Fix typo in
+	environment array conversion. Preserve current environment if envp
+	not passed. Preserve PATH unless explicitly specified.
+	* java/io/DataInputStream.java (readLine): Fix case where '\r' is
+	followed by EOF. Set a flag when a line is terminated by '\r' and
+	ignore following '\n' if set.
+
 1999-06-02  Warren Levy  <warrenl@cygnus.com>
 
 	* java/net/URL.java (URL(URL,String)): Initialize port to -1.

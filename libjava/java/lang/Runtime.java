@@ -13,6 +13,7 @@ package java.lang;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.StringTokenizer;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -30,15 +31,15 @@ public class Runtime
 {
   public Process exec (String prog) throws IOException
   {
-    String[] a = new String[1];
-    a[0] = prog;
-    return exec (a, null);
+    return exec (prog, null);
   }
 
   public Process exec (String prog, String[] envp) throws IOException
   {
-    String[] a = new String[1];
-    a[0] = prog;
+    StringTokenizer st = new StringTokenizer(prog);
+    String[] a = new String[st.countTokens ()];
+    for (int i = 0; i < a.length; i++)
+      a[i] = st.nextToken ();
     return exec (a, envp);
   }
 
