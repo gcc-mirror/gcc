@@ -87,4 +87,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define NO_SYS_SIGLIST
 #define NO_DUP2
 
-#define SIZE_TYPE int
+#define SIZE_TYPE "int"
