@@ -14904,10 +14904,11 @@ insert_block (block)
 }
 
 int
-lang_decode_option (p)
-     char *p;
+lang_decode_option (argc, argv)
+     int argc;
+     char **argv;
 {
-  return ffe_decode_option (p);
+  return ffe_decode_option (argc, argv);
 }
 
 /* used by print-tree.c */

@@ -160,8 +160,11 @@ ffe_is_digit_string_ (char *s)
    recognized and handled.  */
 
 int
-ffe_decode_option (char *opt)
+ffe_decode_option (argc, argv)
+     int argc;
+     char **argv;
 {
+  char *opt = argv[0];
   if (opt[0] != '-')
     return 0;
   if (opt[1] == 'f')
