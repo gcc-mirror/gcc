@@ -1,3 +1,7 @@
+2000-12-22  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* release: Change some EGCS references to GCC.
+
 2000-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* warn_summary: Fix subdirectory filtering.  Add -intl and -fixinc
