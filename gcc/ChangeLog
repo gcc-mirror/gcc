@@ -5,7 +5,7 @@
 	(thumb_legitimate_address_p): New function.
 	(thumb_legitimate_offset_p): New function.
 	* arm.h (REG_STRICT_P): Define according to setting of REG_OK_STRICT.
-	(ARM_GO_IF_LEGITIMATE_ADDRESS): Use REG_STRICT_P to avoid dumplicate
+	(ARM_GO_IF_LEGITIMATE_ADDRESS): Use REG_STRICT_P to avoid duplicate
 	definitions.
 	(THUMB_GO_IF_LEGITIMATE_ADDRESS): Use thumb_legitimate_address_p.
 	(THUMB_LEGITIMATE_OFFSET): Delte.
