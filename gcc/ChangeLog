@@ -1,3 +1,7 @@
+Sun Feb 28 15:57:06 1999  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.md (blockage, nonlocal_goto_receiver): Set length to 0.
+
 Sun Feb 28 14:47:53 1999  Arturo Montes  <mitosys@colomsat.com.co>
 
         * config/i386/t-sco5gas (crti.o): New target.
