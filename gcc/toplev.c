@@ -1700,7 +1700,7 @@ static void
 crash_signal (signo)
      int signo;
 {
-  internal_error ("internal error: %s", strsignal (signo));
+  internal_error ("%s", strsignal (signo));
 }
 
 /* Strip off a legitimate source ending from the input string NAME of

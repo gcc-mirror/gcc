@@ -1,3 +1,8 @@
+2002-08-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* diagnostic.c (fancy_abort): Don't repeat "internal error".
+	* toplev.c (crash_signal): Likewise.
+
 Fri Aug 30 00:33:37 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* doc/cpp.texi (__NEXT_RUNTIME__): Extended documentation.
