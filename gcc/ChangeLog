@@ -1,3 +1,7 @@
+Mon Jun 8 22:45:08 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Mon Jun  8 23:24:58 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (mulsidi3): Add !TARGET_POWERPC64 constraint.
