@@ -1,3 +1,7 @@
+2004-05-29  Steven G. Kargl  <kargls@comcast.net>
+
+	* simplify.c (gfc_simplify_log): Remove useless line of code.
+
 2004-05-29  Paul Brook  <paul@codesourcery.com>
 
 	* trans-common.c (find_equivalence): Find multiple rules.

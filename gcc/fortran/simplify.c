@@ -2035,7 +2035,6 @@ gfc_simplify_log (gfc_expr * x)
       mpf_init (xr);
       mpf_init (xi);
 
-      mpf_div (xr, x->value.complex.i, x->value.complex.r);
       arctangent2 (&x->value.complex.i, &x->value.complex.r,
 	&result->value.complex.i);
 
