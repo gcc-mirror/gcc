@@ -1,3 +1,10 @@
+2003-10-02  Steven Bosscher <s.bosscher@student.tudelft.nl>
+
+	* config/mcore/mcore.c: Convert to ISO C90 function declarations
+	and definitions.
+	* config/mcore/mcore.h: Likewise.
+	* config/mcore/mcore-protos.h: Likewise.
+
 2003-10-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/frv/frv.c (frv_use_dfa_pipeline_interface): New function.
