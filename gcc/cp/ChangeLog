@@ -1,3 +1,8 @@
+1999-08-26  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* cp-tree.h (cplus_unsave_expr_now) : Correct return type.
+	* tree.h (cplus_unsave_expr_now) : Same.
+
 1999-08-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (grokdeclarator): Amend comment.

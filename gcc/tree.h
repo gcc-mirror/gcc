@@ -1738,7 +1738,7 @@ extern tree unsave_expr_now		PROTO((tree));
 
 /* If non-null, a language specific helper for unsave_expr_now. */
 
-extern int (*lang_unsave_expr_now)      PROTO((tree));
+extern void (*lang_unsave_expr_now)      PROTO((tree));
   
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
    or offset that depends on a field within a record.
