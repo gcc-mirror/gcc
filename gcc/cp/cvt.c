@@ -41,8 +41,6 @@ extern tree static_aggregates;
 static tree cp_convert_to_pointer PROTO((tree, tree));
 static tree convert_to_pointer_force PROTO((tree, tree));
 static tree build_up_reference PROTO((tree, tree, int, int));
-static tree build_type_conversion_1 PROTO((tree, tree, tree, tree,
-					   int));
 
 /* Change of width--truncation and extension of integers or reals--
    is represented with NOP_EXPR.  Proper functioning of many things
@@ -900,42 +898,6 @@ convert_force (type, expr, convtype)
     }
 
   return ocp_convert (type, e, CONV_C_CAST|convtype, LOOKUP_NORMAL);
-}
-
-/* Subroutine of build_type_conversion.  */
-
-static tree
-build_type_conversion_1 (xtype, basetype, expr, typename, for_sure)
-     tree xtype, basetype;
-     tree expr;
-     tree typename;
-     int for_sure;
-{
-  tree rval;
-  int flags;
-
-  if (for_sure == 0)
-    flags = LOOKUP_PROTECT|LOOKUP_ONLYCONVERTING;
-  else
-    flags = LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING;
-
-  rval = build_method_call (expr, typename, NULL_TREE, NULL_TREE, flags);
-  if (rval == error_mark_node)
-    {
-      if (for_sure == 0)
-	return NULL_TREE;
-      return error_mark_node;
-    }
-
-  if (IS_AGGR_TYPE (TREE_TYPE (rval)))
-    return rval;
-
-  if (warn_cast_qual
-      && TREE_TYPE (xtype)
-      && (TREE_READONLY (TREE_TYPE (TREE_TYPE (rval)))
-	  > TREE_READONLY (TREE_TYPE (xtype))))
-    warning ("user-defined conversion casting away `const'");
-  return cp_convert (xtype, rval);
 }
 
 /* Convert an aggregate EXPR to type XTYPE.  If a conversion
