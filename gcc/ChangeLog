@@ -1,3 +1,8 @@
+2004-06-24  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (record_dominating_conditions): New function.
+	(dom_opt_finalize_block, get_eq_expr_value): Use it.
+
 2004-06-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* calls.c (shift_returned_value): Fix handling of non-integer
