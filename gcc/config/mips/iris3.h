@@ -96,4 +96,35 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Plain char is unsigned in the SGI compiler.  */
 #define DEFAULT_SIGNED_CHAR 0
 
+
+/* A C statement to initialize the variable parts of a trampoline. 
+   ADDR is an RTX for the address of the trampoline; FNADDR is an
+   RTX for the address of the nested function; STATIC_CHAIN is an
+   RTX for the static chain value that should be passed to the
+   function when it is called.
+
+   Silicon Graphics machines are supposed to not have a mprotect
+   function to enable execute protection, but the stack already
+   has execute protection turned on.  Because the MIPS chips have
+   no method to flush the icache without a system call, this can lose
+   if the same address is used for multiple trampolines.  */
+
+#define INITIALIZE_TRAMPOLINE(ADDR, FUNC, CHAIN)			    \
+{									    \
+  rtx addr = ADDR;							    \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 28)), FUNC);   \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 32)), CHAIN);  \
+}
+
+
+/* Attempt to turn on access permissions for the stack.  */
+
+#define TRANSFER_FROM_TRAMPOLINE					\
+									\
+void									\
+__enable_execute_stack (addr)						\
+     char *addr;							\
+{									\
+}
+
 #include "mips/mips.h"
