@@ -2771,6 +2771,7 @@ extern int agi_dependent ();
 extern int reg_mentioned_in_mem ();
 extern char *output_int_conditional_move ();
 extern char *output_fp_conditional_move ();
+extern int ix86_can_use_return_insn_p ();
 
 #ifdef NOTYET
 extern struct rtx_def *copy_all_rtx ();
