@@ -446,7 +446,7 @@ build_overload_nested_name (decl)
       build_mangled_name_for_type (context);
     else
     {
-      if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
+      if (TYPE_P (context))
         context = TYPE_NAME (context);
       build_overload_nested_name (context);
     }
@@ -692,7 +692,7 @@ build_overload_value (type, value, flags)
      tree type, value;
      mangling_flags flags;
 {
-  my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (type)) == 't', 0);
+  my_friendly_assert (TYPE_P (type), 0);
 
   while (TREE_CODE (value) == NON_LVALUE_EXPR
 	 || TREE_CODE (value) == NOP_EXPR)
@@ -1044,7 +1044,7 @@ build_qualified_name (decl)
   tree context;
   int i = 1;
 
-  if (TREE_CODE_CLASS (TREE_CODE (decl)) == 't')
+  if (TYPE_P (decl))
     decl = TYPE_NAME (decl);
 
   /* If DECL_ASSEMBLER_NAME has been set properly, use it.  */
@@ -1072,7 +1072,7 @@ build_qualified_name (decl)
 	  if (check_ktype (context, FALSE) != -1)
 	    /* Found one!  */
 	    break;
-	  if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
+	  if (TYPE_P (context))
 	    context = TYPE_NAME (context);
 	}
     }
@@ -1985,7 +1985,7 @@ hack_identifier (value, name)
 	}
     }
 
-  if (TREE_CODE_CLASS (TREE_CODE (value)) == 'd' && DECL_NONLOCAL (value))
+  if (DECL_P (value) && DECL_NONLOCAL (value))
     {
       if (DECL_CLASS_SCOPE_P (value)
 	  && DECL_CONTEXT (value) != current_class_type)

@@ -3467,7 +3467,7 @@ decl_class_context (decl)
     context = TYPE_MAIN_VARIANT
       (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl)))));
 
-  if (context && TREE_CODE_CLASS (TREE_CODE (context)) != 't')
+  if (context && !TYPE_P (context))
     context = NULL_TREE;
 
   return context;
@@ -7386,9 +7386,9 @@ add_abstract_origin_attribute (die, origin)
 	gen_abstract_function (fn);
     }
 
-  if (TREE_CODE_CLASS (TREE_CODE (origin)) == 'd')
+  if (DECL_P (origin))
     origin_die = lookup_decl_die (origin);
-  else if (TREE_CODE_CLASS (TREE_CODE (origin)) == 't')
+  else if (TYPE_P (origin))
     origin_die = lookup_type_die (origin);
 
   if (origin_die == NULL)

@@ -4013,11 +4013,8 @@ aggregate_value_p (exp)
 {
   int i, regno, nregs;
   rtx reg;
-  tree type;
-  if (TREE_CODE_CLASS (TREE_CODE (exp)) == 't')
-    type = exp;
-  else
-    type = TREE_TYPE (exp);
+
+  tree type = (TYPE_P (exp)) ? exp : TREE_TYPE (exp);
 
   if (RETURN_IN_MEMORY (type))
     return 1;

@@ -7295,7 +7295,7 @@ case 644:
 case 645:
 #line 2947 "parse.y"
 {
-		  if (TREE_CODE_CLASS (TREE_CODE (yyvsp[-1].ttype)) == 't')
+		  if (TYPE_P (yyvsp[-1].ttype))
 		    yyval.ttype = make_typename_type (yyvsp[-1].ttype, yyvsp[0].ttype, /*complain=*/1);
 		  else if (TREE_CODE (yyvsp[0].ttype) == IDENTIFIER_NODE)
 		    cp_error ("`%T' is not a class or namespace", yyvsp[0].ttype);
@@ -7329,7 +7329,7 @@ case 649:
 case 650:
 #line 2974 "parse.y"
 {
-		  if (TREE_CODE_CLASS (TREE_CODE (yyvsp[-1].ttype)) == 't')
+		  if (TYPE_P (yyvsp[-1].ttype))
 		    yyval.ttype = make_typename_type (yyvsp[-1].ttype, yyvsp[0].ttype, /*complain=*/1);
 		  else if (TREE_CODE (yyvsp[0].ttype) == IDENTIFIER_NODE)
 		    cp_error ("`%T' is not a class or namespace", yyvsp[0].ttype);

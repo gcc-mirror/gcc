@@ -301,8 +301,7 @@ named_section (decl, name, reloc)
      const char *name;
      int reloc ATTRIBUTE_UNUSED;
 {
-  if (decl != NULL_TREE
-      && TREE_CODE_CLASS (TREE_CODE (decl)) != 'd')
+  if (decl != NULL_TREE && !DECL_P (decl))
     abort ();
   if (name == NULL)
     name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
@@ -1727,8 +1726,7 @@ assemble_external (decl)
      tree decl ATTRIBUTE_UNUSED;
 {
 #ifdef ASM_OUTPUT_EXTERNAL
-  if (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd'
-      && DECL_EXTERNAL (decl) && TREE_PUBLIC (decl))
+  if (DECL_P (decl) && DECL_EXTERNAL (decl) && TREE_PUBLIC (decl))
     {
       rtx rtl = DECL_RTL (decl);
 

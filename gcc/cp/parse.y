@@ -2945,7 +2945,7 @@ typename_sub:
 typename_sub0:
 	  typename_sub1 identifier %prec EMPTY
 		{
-		  if (TREE_CODE_CLASS (TREE_CODE ($1)) == 't')
+		  if (TYPE_P ($1))
 		    $$ = make_typename_type ($1, $2, /*complain=*/1);
 		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
 		    cp_error ("`%T' is not a class or namespace", $2);
@@ -2972,7 +2972,7 @@ typename_sub1:
 		}
 	| typename_sub1 typename_sub2
 		{
-		  if (TREE_CODE_CLASS (TREE_CODE ($1)) == 't')
+		  if (TYPE_P ($1))
 		    $$ = make_typename_type ($1, $2, /*complain=*/1);
 		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
 		    cp_error ("`%T' is not a class or namespace", $2);

@@ -221,8 +221,7 @@ dump_template_argument (arg, flags)
      tree arg;
      enum tree_string_flags flags;
 {
-  if (TREE_CODE_CLASS (TREE_CODE (arg)) == 't'
-      || TREE_CODE (arg) == TEMPLATE_DECL)
+  if (TYPE_P (arg) || TREE_CODE (arg) == TEMPLATE_DECL)
     dump_type (arg, flags & ~TS_AGGR_TAGS);
   else
     dump_expr (arg, (flags | TS_EXPR_PARENS) & ~TS_AGGR_TAGS);
@@ -1965,7 +1964,7 @@ dump_expr (t, flags)
 	  my_friendly_assert (TREE_CODE (t) == ALIGNOF_EXPR, 0);
 	  OB_PUTS ("__alignof__ (");
 	}
-      if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t, 0))) == 't')
+      if (TYPE_P (TREE_OPERAND (t, 0)))
 	dump_type (TREE_OPERAND (t, 0), flags);
       else
 	dump_unary_op ("*", t, flags | TS_EXPR_PARENS);
@@ -2165,7 +2164,7 @@ cp_file_of (t)
 {
   if (TREE_CODE (t) == PARM_DECL && DECL_CONTEXT (t))
     return DECL_SOURCE_FILE (DECL_CONTEXT (t));
-  else if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
+  else if (TYPE_P (t))
     return DECL_SOURCE_FILE (TYPE_MAIN_DECL (t));
   else if (TREE_CODE (t) == OVERLOAD)
     return DECL_SOURCE_FILE (OVL_FUNCTION (t));
@@ -2184,7 +2183,7 @@ cp_line_of (t)
       && TYPE_MAIN_DECL (TREE_TYPE (t)))
     t = TREE_TYPE (t);
 
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
+  if (TYPE_P (t))
     line = DECL_SOURCE_LINE (TYPE_MAIN_DECL (t));
   else if (TREE_CODE (t) == OVERLOAD)
     line = DECL_SOURCE_LINE (OVL_FUNCTION (t));
@@ -2365,7 +2364,7 @@ args_to_string (p, verbose)
   if (p == NULL_TREE)
     return "";
 
-  if (TREE_CODE_CLASS (TREE_CODE (TREE_VALUE (p))) == 't')
+  if (TYPE_P (TREE_VALUE (p)))
     return type_as_string (p, flags);
 
   OB_INIT ();

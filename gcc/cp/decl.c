@@ -1128,8 +1128,7 @@ push_class_binding (id, decl)
 	    context = CP_DECL_CONTEXT (OVL_CURRENT (decl));
 	  else
 	    {
-	      my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd',
-				  0);
+	      my_friendly_assert (DECL_P (decl), 0);
 	      context = CP_DECL_CONTEXT (decl);
 	    }
 
@@ -1453,7 +1452,7 @@ poplevel (keep, reverse, functionbody)
 	  decl = link;
 	  if (TREE_CODE (decl) == TREE_LIST)
 	    decl = TREE_VALUE (decl);
-	  if (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd')
+	  if (DECL_P (decl))
 	    pop_binding (DECL_NAME (decl), decl);
 	  else if (TREE_CODE (decl) == OVERLOAD)
 	    pop_binding (DECL_NAME (OVL_FUNCTION (decl)), decl);
@@ -2788,8 +2787,7 @@ pushtag (name, type, globalize)
 
 	      if (! globalize)
 		context = cs;
-	      else if (cs != NULL_TREE
-		       && TREE_CODE_CLASS (TREE_CODE (cs)) == 't')
+	      else if (cs != NULL_TREE && TYPE_P (cs))
 		/* When declaring a friend class of a local class, we want
 		   to inject the newly named class into the scope
 		   containing the local class, not the namespace scope.  */
@@ -5229,7 +5227,7 @@ lookup_namespace_name (namespace, name)
       name = TREE_OPERAND (name, 0);
       if (TREE_CODE (name) == OVERLOAD)
 	name = DECL_NAME (OVL_CURRENT (name));
-      else if (TREE_CODE_CLASS (TREE_CODE (name)) == 'd')
+      else if (DECL_P (name))
 	name = DECL_NAME (name);
     }
 
@@ -5379,7 +5377,7 @@ make_typename_type (context, name, complain)
 {
   tree fullname;
 
-  if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
+  if (TYPE_P (name))
     {
       if (!(TYPE_LANG_SPECIFIC (name)
 	    && (CLASSTYPE_IS_TEMPLATE (name)
@@ -7549,7 +7547,7 @@ check_initializer (decl, init)
     }
   else if (DECL_EXTERNAL (decl))
     ;
-  else if (TREE_CODE_CLASS (TREE_CODE (type)) == 't'
+  else if (TYPE_P (type)
 	   && (IS_AGGR_TYPE (type) || TYPE_NEEDS_CONSTRUCTING (type)))
     {
       tree core_type = strip_array_types (type);
@@ -7902,7 +7900,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 
   if (type == error_mark_node)
     return;
-
+  
   /* Add this declaration to the statement-tree.  */
   if (building_stmt_tree () && at_function_scope_p ())
     add_decl_stmt (decl);
@@ -8050,7 +8048,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
       {
 	tree context = CP_DECL_CONTEXT (decl);
 	if (context
-	    && TREE_CODE_CLASS (TREE_CODE (context)) == 't'
+	    && TYPE_P (context)
 	    && (TREE_CODE (decl) == VAR_DECL
 		/* We also have a pushclass done that we need to undo here
 		   if we're at top level and declare a method.  */
@@ -12376,7 +12374,7 @@ xref_tag (code_type_node, name, globalize)
 
   /* If a cross reference is requested, look up the type
      already defined for this tag and return it.  */
-  if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
+  if (TYPE_P (name))
     {
       t = name;
       name = TYPE_IDENTIFIER (t);

@@ -1086,9 +1086,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
 	         make a bitwise copy of the argument. */
 		 
 	      if (TREE_CODE (args[i].tree_value) == TARGET_EXPR
-		  && (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND
-						  (args[i].tree_value, 1)))
-		      == 'd')
+		  && (DECL_P (TREE_OPERAND (args[i].tree_value, 1)))
 		  && ! REG_P (DECL_RTL (TREE_OPERAND (args[i].tree_value, 1))))
 		args[i].tree_value = TREE_OPERAND (args[i].tree_value, 1);
 
