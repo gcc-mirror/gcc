@@ -1,3 +1,7 @@
+2000-08-15  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/ByteArrayOutputStream.java: Merged with Classpath.
+
 Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 
 	* THANKS: More thanks.
