@@ -1,3 +1,8 @@
+2002-05-09  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.md: Use define_constants for unspec numbers.
+	* config/ia64/ia64.c: Likewise.
+
 2002-05-09  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_add_large_offset_to_sp): Remove FILE arg.
