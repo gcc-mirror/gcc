@@ -57,6 +57,7 @@ enum processor_type {
   PROCESSOR_R4100,
   PROCESSOR_R4111,
   PROCESSOR_R4120,
+  PROCESSOR_R4130,
   PROCESSOR_R4300,
   PROCESSOR_R4600,
   PROCESSOR_R4650,
@@ -321,6 +322,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TARGET_MIPS3900             (mips_arch == PROCESSOR_R3900)
 #define TARGET_MIPS4000             (mips_arch == PROCESSOR_R4000)
 #define TARGET_MIPS4120             (mips_arch == PROCESSOR_R4120)
+#define TARGET_MIPS4130             (mips_arch == PROCESSOR_R4130)
 #define TARGET_MIPS5400             (mips_arch == PROCESSOR_R5400)
 #define TARGET_MIPS5500             (mips_arch == PROCESSOR_R5500)
 #define TARGET_MIPS7000             (mips_arch == PROCESSOR_R7000)
@@ -883,6 +885,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 /* ISA has three operand multiply instructions that  the result
    from a 4th operand and puts the result in an accumulator.  */
 #define ISA_HAS_MACC            ((TARGET_MIPS4120 && !TARGET_MIPS16)	\
+                                 || (TARGET_MIPS4130 && !TARGET_MIPS16)	\
                                  || TARGET_MIPS5400                     \
                                  || TARGET_MIPS5500                     \
                                  || TARGET_SR71K                        \

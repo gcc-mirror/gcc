@@ -646,6 +646,7 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   { "vr4100", PROCESSOR_R4100, 3 },
   { "vr4111", PROCESSOR_R4111, 3 },
   { "vr4120", PROCESSOR_R4120, 3 },
+  { "vr4130", PROCESSOR_R4130, 3 },
   { "vr4300", PROCESSOR_R4300, 3 },
   { "r4400", PROCESSOR_R4000, 3 }, /* = r4000 */
   { "r4600", PROCESSOR_R4600, 3 },
@@ -4657,6 +4658,7 @@ override_options (void)
 	case PROCESSOR_R4100:
 	case PROCESSOR_R4111:
 	case PROCESSOR_R4120:
+	case PROCESSOR_R4130:
 	  target_flags |= MASK_SOFT_FLOAT;
 	  break;
 

@@ -1,3 +1,14 @@
+2004-03-24  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (PROCESSOR_R4130): New processor_type.
+	(TARGET_MIPS4130): New macro.
+	(ISA_HAS_MACC): Return true if TARGET_MIPS4130 && !TARGET_MIPS16.
+	* config/mips/mips.c (mips_cpu_info_table): Add a vr4130 entry.
+	(override_options): Extend MIPS_MARCH_CONTROLS_SOFT_FLOAT to deal
+	with PROCESSOR_R4130.
+	* config/mips/mips.md (define_attr cpu): Add r4130.
+	* doc/invoke.texi: Document vr4130 as a supported MIPS architecture.
+
 2004-03-24  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
 	    Richard Sandiford  <rsandifo@redhat.com>
 
