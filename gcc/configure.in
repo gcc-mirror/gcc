@@ -1199,22 +1199,20 @@ changequote([,])dnl
 changequote(,)dnl
 	i[34567]86-go32-msdos | i[34567]86-*-go32*)
 changequote([,])dnl
-		xm_file=i386/xm-go32.h
-		tm_file=i386/go32.h
-		tmake_file=i386/t-go32
+		echo "GO32/DJGPP V1.X is no longer supported. Use *-pc-msdosdjgpp for DJGPP V2.X instead."
+		exit (1)
 		;;
 changequote(,)dnl
 	i[34567]86-pc-msdosdjgpp*)
 changequote([,])dnl
-		xm_file=i386/xm-go32.h
-		tm_file=i386/go32.h
-		tmake_file=i386/t-go32
-                xmake_file=i386/x-go32
+		xm_file=i386/xm-djgpp.h
+		tm_file=i386/djgpp.h
+		tmake_file=i386/t-djgpp
+		xmake_file=i386/x-djgpp
 		gnu_ld=yes
 		gas=yes
 		exeext=.exe
-		case $host in
-		*pc-msdosdjgpp*)
+		case $host in *pc-msdosdjgpp*)
 			target_alias=djgpp
 			;;
 		esac

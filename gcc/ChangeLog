@@ -12,6 +12,23 @@ Wed Mar 17 23:00:18 1999  Robert Lipe <robertlipe@usa.net>
 
 Wed Mar 17 22:46:13 1999  Mark Elbrecht  <snowball3@usa.net.
 
+	* config/i386/go32.h: Delete.
+	* config/i386/djgpp.h: New. Renamed from go32.h.
+  	Added -DDJGPP=2 to CPP_PREDEFINES.
+	* config/i386/go32-rtems.h: Delete.
+	* config/i386/djgpp-rtems.h: New. Renamed from go32-rtems.h.
+  	Added -DDJGPP=2 to CPP_PREDEFINES.
+	* config/i386/xm-go32.h: Delete.
+	* config/i386/xm-djgpp.h: New. Renamed from xm-go32.h.
+	* config/i386/x-go32: Delete.
+	* config/i386/x-djgpp: New. Renamed from x-go32.
+	* config/i386/t-go32: Delete.
+	* config/i386/t-djgpp: New. Renamed from t-go32.
+	* configure.in(pc-msdosdjgpp): Set xm_file to i386/xm-djgpp.h.
+  	Set tm_file to i386/djgpp.h. Set tmake_file to i386/t-djgpp.
+  	Set xmake_file to i386/x-djgpp.
+	* configure: Rebuilt.
+
 	* gcc.c (process_command): Dump link_command_spec too.
 
 Wed Mar 17 20:38:08 1999  Jerry Quinn <jquinn@nortelnetworks.com>
