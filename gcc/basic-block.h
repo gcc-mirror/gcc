@@ -535,6 +535,11 @@ enum update_life_extent
 #define PROP_AUTOINC		32	/* Create autoinc mem references.  */
 #define PROP_FINAL		63	/* All of the above.  */
 
+#define CLEANUP_EXPENSIVE	1	/* Do relativly expensive optimizations
+					   except for edge forwarding */
+#define CLEANUP_CROSSJUMP	2	/* Do crossjumping.  */
+#define CLEANUP_POST_REGSTACK	4	/* We run after reg-stack and need
+					   to care REG_DEAD notes.  */
 /* Flags for loop discovery.  */
 
 #define LOOP_TREE		1 	/* Build loop hierarchy tree.  */

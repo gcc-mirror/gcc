@@ -1,3 +1,24 @@
+Wed Jul 11 21:27:25 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* flow.c (merge_blocks_move_successor_nojumps): Do not crash
+	when fallthru edge is present.
+	(mege_blocks): Handle case where creation of jump insn
+	is required.
+
+	* basic-block.h (CLEANUP_EXPENSIVE, CLEANUP_CROSSJUMP,
+	CLEANUP_POST_REGSTACK): New constants.
+	* except.c (finish_eh_generation): Update call of cleanup_cfg,
+	* jump.c (rtx_renumbered_equal_p): Handle 't' fields.
+	* output.h (cleanup_cfg): Update prototype.
+	* reg-stack.c (reg_to_stack): Use cleanup_cfg instead of jump_optimize
+	* sibcall.c (optimize_sibling_and_tail_recursive_call): Update 
+	cleanup_cfg call; kill missleading comment.
+	* toplev.c (rest_of_compilation): Update all cleanup_cfg calls.
+	* flow.c (merge_blocks, try_optimize_cfg, cleanup_cfg): Accept mode
+	parameter; control optimizations performed using it.
+	(flow_find_cross_jump, outgoing_edges_match, try_crossjump_to_edge,
+	try_crossjump_bb): New functions.
+
 2001-07-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (pa_output_function_prologue): Delete prototype.  Make function

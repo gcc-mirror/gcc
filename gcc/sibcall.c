@@ -565,15 +565,11 @@ optimize_sibling_and_tail_recursive_calls ()
      ahead and find all the EH labels.  */
   find_exception_handler_labels ();
 
-  /* Run a jump optimization pass to clean up the CFG.  We primarily want
-     this to thread jumps so that it is obvious which blocks jump to the
-     epilouge.  */
   jump_optimize_minimal (insns);
-
   /* We need cfg information to determine which blocks are succeeded
      only by the epilogue.  */
   find_basic_blocks (insns, max_reg_num (), 0);
-  cleanup_cfg ();
+  cleanup_cfg (0);
 
   /* If there are no basic blocks, then there is nothing to do.  */
   if (n_basic_blocks == 0)
