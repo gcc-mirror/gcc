@@ -1,3 +1,8 @@
+2003-07-04  Benjamin Kosnik  <bkoz@redhat.com>
+            Petur Runolfsson  <peturr02@ru.is>
+	
+	* config/io/basic_file_stdio.cc: Revert.
+
 2003-07-04  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/deque.tcc: Fully qualify standard
