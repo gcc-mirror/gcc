@@ -3434,14 +3434,38 @@ split_di (operands, num, lo_half, hi_half)
    There is no guarantee that the operands are the same mode, as they
    might be within FLOAT or FLOAT_EXTEND expressions. */
 
+#ifndef SYSV386_COMPAT
+/* Set to 1 for compatibility with brain-damaged assemblers.  No-one
+   wants to fix the assemblers because that causes incompatibility
+   with gcc.  No-one wants to fix gcc because that causes
+   incompatibility with assemblers...  You can use the option of
+   -DSYSV386_COMPAT=0 if you recompile both gcc and gas this way.  */
+#define SYSV386_COMPAT 1
+#endif
+
 const char *
 output_387_binary_op (insn, operands)
      rtx insn;
      rtx *operands;
 {
-  static char buf[100];
-  rtx temp;
+  static char buf[30];
   const char *p;
+
+#ifdef ENABLE_CHECKING
+  /* Even if we do not want to check the inputs, this documents input
+     constraints.  Which helps in understanding the following code.  */
+  if (STACK_REG_P (operands[0])
+      && ((REG_P (operands[1])
+	   && REGNO (operands[0]) == REGNO (operands[1])
+	   && (STACK_REG_P (operands[2]) || GET_CODE (operands[2]) == MEM))
+	  || (REG_P (operands[2])
+	      && REGNO (operands[0]) == REGNO (operands[2])
+	      && (STACK_REG_P (operands[1]) || GET_CODE (operands[1]) == MEM)))
+      && (STACK_TOP_P (operands[1]) || STACK_TOP_P (operands[2])))
+    ; /* ok */
+  else
+    abort ();
+#endif
 
   switch (GET_CODE (operands[3]))
     {
@@ -3489,10 +3513,12 @@ output_387_binary_op (insn, operands)
     case PLUS:
       if (REG_P (operands[2]) && REGNO (operands[0]) == REGNO (operands[2]))
 	{
-	  temp = operands[2];
+	  rtx temp = operands[2];
 	  operands[2] = operands[1];
 	  operands[1] = temp;
 	}
+
+      /* know operands[0] == operands[1].  */
 
       if (GET_CODE (operands[2]) == MEM)
 	{
@@ -3503,16 +3529,23 @@ output_387_binary_op (insn, operands)
       if (find_regno_note (insn, REG_DEAD, REGNO (operands[2])))
 	{
 	  if (STACK_TOP_P (operands[0]))
-	    p = "p\t{%0,%2|%2, %0}";
+	    /* How is it that we are storing to a dead operand[2]?
+	       Well, presumably operands[1] is dead too.  We can't
+	       store the result to st(0) as st(0) gets popped on this
+	       instruction.  Instead store to operands[2] (which I
+	       think has to be st(1)).  st(1) will be popped later.
+	       gcc <= 2.8.1 didn't have this check and generated
+	       assembly code that the Unixware assembler rejected.  */
+	    p = "p\t{%0, %2|%2, %0}";	/* st(1) = st(0) op st(1); pop */
 	  else
-	    p = "p\t{%2,%0|%0, %2}";
+	    p = "p\t{%2, %0|%0, %2}";	/* st(r1) = st(r1) op st(0); pop */
 	  break;
 	}
 
       if (STACK_TOP_P (operands[0]))
-	p = "\t{%y2,%0|%0, %y2}";
+	p = "\t{%y2, %0|%0, %y2}";	/* st(0) = st(0) op st(r2) */
       else
-	p = "\t{%2,%0|%0, %2}";
+	p = "\t{%2, %0|%0, %2}";	/* st(r1) = st(r1) op st(0) */
       break;
 
     case MINUS:
@@ -3529,42 +3562,69 @@ output_387_binary_op (insn, operands)
 	  break;
 	}
 
-      if (! STACK_REG_P (operands[1]) || ! STACK_REG_P (operands[2]))
-	abort ();
-
-      /* Note that the Unixware assembler, and the AT&T assembler before
-	 that, are confusingly not reversed from Intel syntax in this
-	 area.  */
       if (find_regno_note (insn, REG_DEAD, REGNO (operands[2])))
 	{
+#if SYSV386_COMPAT
+	  /* The SystemV/386 SVR3.2 assembler, and probably all AT&T
+	     derived assemblers, confusingly reverse the direction of
+	     the operation for fsub{r} and fdiv{r} when the
+	     destination register is not st(0).  The Intel assembler
+	     doesn't have this brain damage.  Read !SYSV386_COMPAT to
+	     figure out what the hardware really does.  */
 	  if (STACK_TOP_P (operands[0]))
-	    p = "p\t%0,%2";
+	    p = "{p\t%0, %2|rp\t%2, %0}";
 	  else
-	    p = "rp\t%2,%0";
+	    p = "{rp\t%2, %0|p\t%0, %2}";
+#else
+	  if (STACK_TOP_P (operands[0]))
+	    /* As above for fmul/fadd, we can't store to st(0).  */
+	    p = "rp\t{%0, %2|%2, %0}";	/* st(1) = st(0) op st(1); pop */
+	  else
+	    p = "p\t{%2, %0|%0, %2}";	/* st(r1) = st(r1) op st(0); pop */
+#endif
 	  break;
 	}
 
       if (find_regno_note (insn, REG_DEAD, REGNO (operands[1])))
 	{
+#if SYSV386_COMPAT
 	  if (STACK_TOP_P (operands[0]))
-	    p = "rp\t%0,%1";
+	    p = "{rp\t%0, %1|p\t%1, %0}";
 	  else
-	    p = "p\t%1,%0";
+	    p = "{p\t%1, %0|rp\t%0, %1}";
+#else
+	  if (STACK_TOP_P (operands[0]))
+	    p = "p\t{%0, %1|%1, %0}";	/* st(1) = st(1) op st(0); pop */
+	  else
+	    p = "rp\t{%1, %0|%0, %1}";	/* st(r2) = st(0) op st(r2); pop */
+#endif
 	  break;
 	}
 
       if (STACK_TOP_P (operands[0]))
 	{
 	  if (STACK_TOP_P (operands[1]))
-	    p = "\t%y2,%0";
+	    p = "\t{%y2, %0|%0, %y2}";	/* st(0) = st(0) op st(r2) */
 	  else
-	    p = "r\t%y1,%0";
+	    p = "r\t{%y1, %0|%0, %y1}";	/* st(0) = st(r1) op st(0) */
 	  break;
 	}
       else if (STACK_TOP_P (operands[1]))
-	p = "\t%1,%0";
+	{
+#if SYSV386_COMPAT
+	  p = "{\t%1, %0|r\t%0, %1}";
+#else
+	  p = "r\t{%1, %0|%0, %1}";	/* st(r2) = st(0) op st(r2) */
+#endif
+	}
       else
-	p = "r\t%2,%0";
+	{
+#if SYSV386_COMPAT
+	  p = "{r\t%2, %0|\t%0, %2}";
+#else
+	  p = "\t{%2, %0|%0, %2}";	/* st(r1) = st(r1) op st(0) */
+#endif
+	}
       break;
 
     default:
@@ -3628,7 +3688,7 @@ output_fix_trunc (insn, operands)
 	  output_asm_insn ("mov{l}\t{%3, %1|%1, %3}", xops);
 	}
       else
-	output_asm_insn ("mov{l}\t{%3,%0|%0, %3}", operands);
+	output_asm_insn ("mov{l}\t{%3, %0|%0, %3}", operands);
     }
 
   return "";
