@@ -1,4 +1,9 @@
-2000-05-13  Geoffrey Keating  <geoffk@cygnus.com>
+2000-08-13  Geoff Keating  <geoffk@cygnus.com>
+
+	* expr.c (expand_expr): Call convert_modes when turning a large
+	multiply into a small one.
+
+2000-08-12  Geoff Keating  <geoffk@cygnus.com>
 
 	* tree.h (DECL_OFFSET_ALIGN): Make the off_align field of
 	the tree structure an exponent rather than an explicit alignment

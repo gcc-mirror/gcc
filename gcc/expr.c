@@ -7473,8 +7473,10 @@ expand_expr (exp, target, tmode, modifier)
 		  op0 = expand_expr (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
 				     NULL_RTX, VOIDmode, 0);
 		  if (TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST)
-		    op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX,
-				       VOIDmode, 0);
+		    op1 = convert_modes (innermode, mode,
+					 expand_expr (TREE_OPERAND (exp, 1),
+						      NULL_RTX, VOIDmode, 0),
+					 unsignedp);
 		  else
 		    op1 = expand_expr (TREE_OPERAND (TREE_OPERAND (exp, 1), 0),
 				       NULL_RTX, VOIDmode, 0);
