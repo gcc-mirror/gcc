@@ -76,28 +76,19 @@
   "efsdiv %0,%1,%2"
   [(set_attr "type" "vecfdiv")])
 
-(define_insn "spe_efsctuiz"
+(define_insn "spe_fixuns_truncsfsi2"
   [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
-        (unspec:SI [(match_operand:SF 1 "gpc_reg_operand" "r")] 700))]
+	(unsigned_fix:SI (match_operand:SF 1 "gpc_reg_operand" "r")))]
   "TARGET_HARD_FLOAT && !TARGET_FPRS"
   "efsctuiz %0,%1"
   [(set_attr "type" "fp")])
 
-; These instructions aren't IEEE compliant.  They get some corner cases
-; wrong.  Don't enable them!
-;(define_insn "spe_fixuns_truncsfsi2"
-;  [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
-;	(unsigned_fix:SI (match_operand:SF 1 "gpc_reg_operand" "r")))]
-;  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-;  "efsctui %0,%1"
-;  [(set_attr "type" "fp")])
-;
-;(define_insn "spe_fix_truncsfsi2"
-;  [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
-;	(fix:SI (match_operand:SF 1 "gpc_reg_operand" "r")))]
-;  "TARGET_HARD_FLOAT && !TARGET_FPRS"
-;  "efsctsi %0,%1"
-;  [(set_attr "type" "fp")])
+(define_insn "spe_fix_truncsfsi2"
+  [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
+	(fix:SI (match_operand:SF 1 "gpc_reg_operand" "r")))]
+  "TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "efsctsiz %0,%1"
+  [(set_attr "type" "fp")])
 
 (define_insn "spe_floatunssisf2"
   [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
