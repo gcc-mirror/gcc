@@ -406,8 +406,6 @@ toc_section ()						\
 
 /* Output before instructions.  */
 #define TEXT_SECTION_ASM_OP "\t.csect .text[PR]"
-#define HOT_TEXT_SECTION_NAME ".text[PR]"
-#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME ".text[PR]"
 
 /* Output before writable data.
    Align entire section to BIGGEST_ALIGNMENT.  */
