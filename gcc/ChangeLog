@@ -1,5 +1,9 @@
 2002-10-03  Steve Ellcey  <sje@cup.hp.com>
 
+	* config/pa/pa64-hpux.h (INIT_ENVIRONMENT): New.
+
+2002-10-03  Steve Ellcey  <sje@cup.hp.com>
+
 	* config.gcc (hppa*64*-*-hpux11*): Check gnu_ld.
 	* config/pa/pa.h (MASK_GNU_LD): New.
 	(TARGET_GNU_LD): New.
