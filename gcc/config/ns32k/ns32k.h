@@ -1062,7 +1062,6 @@ do									\
 		   ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));		\
 	SYMBOL_REF_FLAG (XEXP (rtl, 0))					\
 	  = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'			\
-	     || TREE_CODE (DECL) == FUNCTION_DECL			\
 	     || ! TREE_PUBLIC (DECL));					\
       }									\
   }									\
