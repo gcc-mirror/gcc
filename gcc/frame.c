@@ -71,6 +71,25 @@ typedef unsigned int  uaddr __attribute__ ((mode (pointer)));
 typedef          int  saddr __attribute__ ((mode (pointer)));
 typedef unsigned char ubyte;
 
+/* Terminology:
+   CIE - Common Information Element
+   FDE - Frame Descriptor Element
+
+   There is one per function, and it describes where the function code
+   is located, and what the register lifetimes and stack layout are
+   within the function.
+
+   The data structures are defined in the DWARF specfication, although
+   not in a very readable way (see LITERATURE).
+
+   Every time an exception is thrown, the code needs to locate the FDE
+   for the current function, and starts to look for exception regions
+   from that FDE. This works in a two-level search:
+   a) in a linear search, find the shared image (i.e. DLL) containing
+      the PC
+   b) using the FDE table for that shared object, locate the FDE using
+      binary search (which requires the sorting).  */   
+
 /* The first few fields of a CIE.  The CIE_id field is 0 for a CIE,
    to distinguish it from a valid FDE.  FDEs are aligned to an addressing
    unit boundary, but the fields within are unaligned.  */

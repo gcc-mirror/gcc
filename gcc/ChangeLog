@@ -1,3 +1,8 @@
+Fri Oct 23 11:19:06 1998  Martin v. Löwis <loewis@informatik.hu-berlin.de>
+
+	* frame.c: Somewhat explain `FDE'.
+	Suggested by Brendan Kehoe
+
 Fri Oct 23 00:56:11 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* expr.c (pending_chain): Move up.
