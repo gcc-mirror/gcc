@@ -30,24 +30,24 @@ ffi_closure_LINUX64:
 	std	%r0, 16(%r1)
 
 	# mandatory 48 bytes special reg save area + 64 bytes parm save area
-	# + 8 bytes retval area + 13*8 bytes fpr save area
-	stdu	%r1, -224(%r1)
+	# + 16 bytes retval area + 13*8 bytes fpr save area + round to 16
+	stdu	%r1, -240(%r1)
 .LCFI0:
 
 	# next save fpr 1 to fpr 13
-	stfd  %f1, 120+(0*8)(%r1)
-	stfd  %f2, 120+(1*8)(%r1)
-	stfd  %f3, 120+(2*8)(%r1)
-	stfd  %f4, 120+(3*8)(%r1)
-	stfd  %f5, 120+(4*8)(%r1)
-	stfd  %f6, 120+(5*8)(%r1)
-	stfd  %f7, 120+(6*8)(%r1)
-	stfd  %f8, 120+(7*8)(%r1)
-	stfd  %f9, 120+(8*8)(%r1)
-	stfd  %f10, 120+(9*8)(%r1)
-	stfd  %f11, 120+(10*8)(%r1)
-	stfd  %f12, 120+(11*8)(%r1)
-	stfd  %f13, 120+(12*8)(%r1)
+	stfd  %f1, 128+(0*8)(%r1)
+	stfd  %f2, 128+(1*8)(%r1)
+	stfd  %f3, 128+(2*8)(%r1)
+	stfd  %f4, 128+(3*8)(%r1)
+	stfd  %f5, 128+(4*8)(%r1)
+	stfd  %f6, 128+(5*8)(%r1)
+	stfd  %f7, 128+(6*8)(%r1)
+	stfd  %f8, 128+(7*8)(%r1)
+	stfd  %f9, 128+(8*8)(%r1)
+	stfd  %f10, 128+(9*8)(%r1)
+	stfd  %f11, 128+(10*8)(%r1)
+	stfd  %f12, 128+(11*8)(%r1)
+	stfd  %f13, 128+(12*8)(%r1)
 
 	# set up registers for the routine that actually does the work
 	# get the context pointer from the trampoline
@@ -58,10 +58,10 @@ ffi_closure_LINUX64:
 
 	# now load up the pointer to the parameter save area
 	# in the previous frame
-	addi %r5, %r1, 224 + 48
+	addi %r5, %r1, 240 + 48
 
 	# now load up the pointer to the saved fpr registers */
-	addi %r6, %r1, 120
+	addi %r6, %r1, 128
 
 	# make the call
 	bl .ffi_closure_helper_LINUX64
@@ -76,7 +76,7 @@ ffi_closure_LINUX64:
 	mflr %r4		# move address of .Lret to r4
 	sldi %r3, %r3, 4	# now multiply return type by 16
 	addi %r4, %r4, .Lret_type0 - .Lret
-	ld %r0, 224+16(%r1)
+	ld %r0, 240+16(%r1)
 	add %r3, %r3, %r4	# add contents of table to table address
 	mtctr %r3
 	bctr			# jump to it
@@ -89,33 +89,33 @@ ffi_closure_LINUX64:
 .Lret_type0:
 # case FFI_TYPE_VOID
 	mtlr %r0
-	addi %r1, %r1, 224
+	addi %r1, %r1, 240
 	blr
 	nop
 # case FFI_TYPE_INT
 	lwa %r3, 112+4(%r1)
 	mtlr %r0
-	addi %r1, %r1, 224
+	addi %r1, %r1, 240
 	blr
 # case FFI_TYPE_FLOAT
 	lfs %f1, 112+0(%r1)
 	mtlr %r0
-	addi %r1, %r1, 224
+	addi %r1, %r1, 240
 	blr
 # case FFI_TYPE_DOUBLE
 	lfd %f1, 112+0(%r1)
 	mtlr %r0
-	addi %r1, %r1, 224
+	addi %r1, %r1, 240
 	blr
 # case FFI_TYPE_LONGDOUBLE
 	lfd %f1, 112+0(%r1)
 	mtlr %r0
-	addi %r1, %r1, 224
-	blr
+	lfd %f2, 112+8(%r1)
+	b .Lfinish
 # case FFI_TYPE_UINT8
 	lbz %r3, 112+7(%r1)
 	mtlr %r0
-	addi %r1, %r1, 224
+	addi %r1, %r1, 240
 	blr
 # case FFI_TYPE_SINT8
 	lbz %r3, 112+7(%r1)
@@ -126,42 +126,42 @@ ffi_closure_LINUX64:
 	lhz %r3, 112+6(%r1)
 	mtlr %r0
 .Lfinish:
-	addi %r1, %r1, 224
+	addi %r1, %r1, 240
 	blr
 # case FFI_TYPE_SINT16
 	lha %r3, 112+6(%r1)
 	mtlr %r0
-	addi %r1, %r1, 224
+	addi %r1, %r1, 240
 	blr
 # case FFI_TYPE_UINT32
 	lwz %r3, 112+4(%r1)
 	mtlr %r0
-	addi %r1, %r1, 224
+	addi %r1, %r1, 240
 	blr
 # case FFI_TYPE_SINT32
 	lwa %r3, 112+4(%r1)
 	mtlr %r0
-	addi %r1, %r1, 224
+	addi %r1, %r1, 240
 	blr
 # case FFI_TYPE_UINT64
 	ld %r3, 112+0(%r1)
 	mtlr %r0
-	addi %r1, %r1, 224
+	addi %r1, %r1, 240
 	blr
 # case FFI_TYPE_SINT64
 	ld %r3, 112+0(%r1)
 	mtlr %r0
-	addi %r1, %r1, 224
+	addi %r1, %r1, 240
 	blr
 # case FFI_TYPE_STRUCT
 	mtlr %r0
-	addi %r1, %r1, 224
+	addi %r1, %r1, 240
 	blr
 	nop
 # case FFI_TYPE_POINTER
 	ld %r3, 112+0(%r1)
 	mtlr %r0
-	addi %r1, %r1, 224
+	addi %r1, %r1, 240
 	blr
 # esac
 .LFE1:
@@ -196,7 +196,7 @@ ffi_closure_LINUX64:
 	.byte	0x2	 # DW_CFA_advance_loc1
 	.byte	.LCFI0-.LFB1
 	.byte	0xe	 # DW_CFA_def_cfa_offset
-	.uleb128 224
+	.uleb128 240
 	.byte	0x11	 # DW_CFA_offset_extended_sf
 	.uleb128 0x41
 	.sleb128 -2
