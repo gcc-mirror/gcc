@@ -1,3 +1,11 @@
+2000-07-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-write.c (generate_classfile): Properly install the
+	ConstantValue attribute and the initial value constant pool index
+	on string constants.
+	* parse.y (java_complete_lhs): Keep DECL_INITIAL when emitting
+	class files.
+
 2000-07-06  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.h (BUILD_PTR_FROM_NAME): Surround with a do/while

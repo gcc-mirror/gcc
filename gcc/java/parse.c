@@ -13802,7 +13802,6 @@ java_complete_lhs (node)
     case NEW_CLASS_EXPR:
     case CALL_EXPR:
       /* Complete function's argument(s) first */
-
       if (complete_function_arguments (node))
 	return error_mark_node;
       else
@@ -13847,7 +13846,8 @@ java_complete_lhs (node)
 		  (type == string_ptr_type_node && ! flag_emit_class_files))
 		return empty_stmt_node;
 	    }
-	  DECL_INITIAL (nn) = NULL_TREE;
+	  if (! flag_emit_class_files)
+	    DECL_INITIAL (nn) = NULL_TREE;
 	}
       wfl_op2 = TREE_OPERAND (node, 1);
 

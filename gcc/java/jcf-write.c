@@ -2874,8 +2874,11 @@ generate_classfile (clas, state)
       i = find_utf8_constant (&state->cpool, 
 			      build_java_signature (TREE_TYPE (part)));
       PUT2(i);
-      have_value = DECL_INITIAL (part) != NULL_TREE && FIELD_STATIC (part)
-	&& TREE_CODE (TREE_TYPE (part)) != POINTER_TYPE;
+      have_value = DECL_INITIAL (part) != NULL_TREE 
+	&& FIELD_STATIC (part)
+	&& (TREE_CODE (DECL_INITIAL (part)) == STRING_CST
+	    || TREE_CODE (DECL_INITIAL (part)) == INTEGER_CST
+	    || TREE_CODE (DECL_INITIAL (part)) == REAL_CST);
       if (have_value)
 	attr_count++;
 
