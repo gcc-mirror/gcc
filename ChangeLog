@@ -1,5 +1,9 @@
 2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
+	* fastjar: Imported.
+
+2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
 	* Makefile.in (TARGET_CONFIGDIRS): Wrong place. Removed note about
 	libjava.
 	* configure.in (target_libs): Removed `target-libjava'.

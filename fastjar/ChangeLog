@@ -1,0 +1,33 @@
+Tue Nov 16 15:11:36 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Makefile.am: New file.
+	* Makefile.in: Rebuilt.
+	* aclocal.m4: Likewise.
+	* stamp-h.in: Likewise.
+	* config.h.in: Likewise.
+	* configure.in (AM_INIT_AUTOMAKE): Added.
+	(AM_CONFIG_HEADER): Likewise.
+	(AC_CHECK_HEADERS): Check for sys/param.h
+	(AC_CHECK_LIB): Don't check for system's zlib.
+	(AC_CHECK_FUNC): Removed system's zlib function checks.
+	(ZDEPS. ZLIBS, ZINCS): Added.
+	* configure: Rebuilt.
+	* jartool.c (sys/param.h): Conditionally included or define MAXPATHLEN.
+	(init_args, get_next_arg): New function.
+	(use_explicit_list_only, read_names_from_stdin): New global
+	(main): Parse new non standard options 'E' and '@', check and
+	report their usage if necessary. Use init_args and get_next_arg.
+	Fixed indentation.
+	(add_to_jar): Don't read directory content if `use_explicit_list_only'.
+	(usage): Added `-E' and `-@'.
+	* jartool.h (VERSION): Macro removed.
+
+Tue Nov 14 15:10:44 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* fastjar imported from sourceforge.net/projects/fastjar with
+	Bryan Burns' permission. Check `CHANGES' for post import changes.
+	* ChangeLog: Created.
+	* NEWS: Likewise.
+	* mkinstalldirs: Likewise.
+	* COPYING: Likewise.
+	* AUTHORS: Likewise.
