@@ -1,3 +1,9 @@
+Sat Jun 13 03:13:18 1998  Craig Burley  <burley@gnu.org>
+
+	* g77spec.c (lang_specific_driver): Print out egcs
+	version info first, to be compatible with what some
+	test facilities expect.
+
 Wed Jun 10 13:17:32 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* top.h (ffe_decode_option): New argc/argv interface.
