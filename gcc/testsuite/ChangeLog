@@ -1,3 +1,7 @@
+2001-11-23  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.dg/cpp/charconst-2.c: New test.
+
 2001-11-22  Geoffrey Keating  <geoffk@redhat.com>
 
 	* lib/old-dejagnu.exp (old-dejagnu): Copy extra source files
@@ -340,7 +344,7 @@ Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 2001-09-27  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gcc.c-torture/execute/loop-2e.x: This is a manifestation of a
-	long-standing bug on i686, apparently.  
+	long-standing bug on i686, apparently.
 	* gcc.c-torture/execute/loop-2c.x: New file.
 	* gcc.c-torture/execute/loop-2d.x: New file.
 	* gcc.c-torture/execute/loop-3c.x: New file.
@@ -360,7 +364,7 @@ Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 2001-09-24  DJ Delorie  <dj@redhat.com>
 
 	* gcc.c-torture/execute/20010924-1.c: New test.
-	
+
 2001-09-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* testsuite/objc/execute/paste.m: Remove.
@@ -408,7 +412,7 @@ Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2001-09-15  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.c-torture/execute/980223.c: Change type of addr from long 
+        * gcc.c-torture/execute/980223.c: Change type of addr from long
 	to char *.
 
 2001-09-15  Hans-Peter Nilsson  <hp@axis.com>
@@ -474,7 +478,7 @@ Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 2001-09-05  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc.dg/method-2.m: New.
-	
+
 2001-09-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/4203
@@ -566,8 +570,8 @@ Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 2001-08-14  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* lib/g77-dg.exp:  Use prune.exp for common procedures
-	(g77-dg-prune): Replace prune_g77_output with prune_gcc_output 
-	* lib/g77.exp: (g77-dg-prune) Remove 
+	(g77-dg-prune): Replace prune_g77_output with prune_gcc_output
+	* lib/g77.exp: (g77-dg-prune) Remove
 
 2001-08-13  Jason Merrill  <jason_merrill@redhat.com>
 

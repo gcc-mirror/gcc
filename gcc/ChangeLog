@@ -1,3 +1,8 @@
+2001-11-23  Andreas Jaeger  <aj@suse.de>
+
+	* cpplex.c (cpp_interpret_charconst): Use HOST_WIDE_INT for sign
+	extension.
+
 2001-11-23  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/xscale-coff.h (SUBTARGET_CPU_DEFAULT): Override
@@ -67,9 +72,9 @@ Thu Nov 22 06:49:14 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-dump.c: Rename from c-dump.c. Include c-tree.h, not c-common.h.
 	(lang_type_quals): Declare.
-	(dequeue_and_dump): Use lang_hooks.tree_dump.type_quals function to 
-	retrieve language-specific qualifiers for a type node, instead of 
-	C_TYPE_QUALS. Likewise for lang_hooks.tree_dump.dump_tree instead of 
+	(dequeue_and_dump): Use lang_hooks.tree_dump.type_quals function to
+	retrieve language-specific qualifiers for a type node, instead of
+	C_TYPE_QUALS. Likewise for lang_hooks.tree_dump.dump_tree instead of
 	lang_dump_tree.
 	* tree-dump.h: Rename from c-dump.h.
 	* c-common.h (C_TYPE_QUALS): Removed.
@@ -120,7 +125,7 @@ Thu Nov 22 06:49:14 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* v850.h (DBX_REGISTER_NUMBER): Likewise.
 	* vax.h (DBX_REGISTER_NUMBER): Likewise.
 	* we32k.h (DBX_REGISTER_NUMBER): Likewise.
-	
+
 	* defaults.h (DBX_REGISTER_NUMBER): Provide a default.
 	* doc/tm.texi (DBX_REGISTER_NUMBER): Update.
 
