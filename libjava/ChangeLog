@@ -1,3 +1,9 @@
+2001-09-10  Manfred Hollstein  <manfredh@redhat.com>
+
+	* configure.in (LIBFFIINCS): Quote uses of $(top_srcdir)
+	and $(MULTIBUILDTOP).
+	* configure: Re-generate.
+
 2001-09-10  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* include/jvm.h (_Jv_AllocRawObj): New prototype.
