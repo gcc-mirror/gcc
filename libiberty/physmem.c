@@ -97,7 +97,7 @@ physmem_total ()
   }
 #endif
 
-#if HAVE_GETSYSINFO
+#if HAVE_GETSYSINFO && defined GSI_PHYSMEM
   { /* This works on Tru64 UNIX V4/5.  */
     int physmem;
 
@@ -174,7 +174,7 @@ physmem_available ()
   }
 #endif
 
-#if HAVE_TABLE && HAVE_SYS_TABLE_H
+#if HAVE_TABLE && defined TBL_VMSTATS
   { /* This works on Tru64 UNIX V4/5.  */
     struct tbl_vmstats vmstats;
 
