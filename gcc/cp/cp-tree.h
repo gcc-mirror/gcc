@@ -4194,7 +4194,6 @@ extern int is_overloaded_fn			PARAMS ((tree));
 extern tree get_first_fn			PARAMS ((tree));
 extern int bound_pmf_p				PARAMS ((tree));
 extern tree ovl_cons                            PARAMS ((tree, tree));
-extern int ovl_member                           PARAMS ((tree, tree));
 extern tree build_overload                      PARAMS ((tree, tree));
 extern tree function_arg_chain			PARAMS ((tree));
 extern int promotes_to_aggr_type		PARAMS ((tree, enum tree_code));
