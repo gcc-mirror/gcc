@@ -452,7 +452,7 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
 	 know where we might end up next.  That means that we have to
 	 assume that whatever we have already marked as live really is
 	 live.  */
-      if (can_throw (insn))
+      if (can_throw_internal (insn))
 	break;
 
       switch (GET_CODE (insn))

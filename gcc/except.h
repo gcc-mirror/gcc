@@ -442,7 +442,7 @@ extern rtx exception_handler_labels;
 
 /* Determine if the given INSN can throw an exception.  */
 
-extern int can_throw                            PARAMS ((rtx));
+extern int can_throw_internal                   PARAMS ((rtx));
 
 /* Return nonzero if nothing in this function can throw.  */
 
