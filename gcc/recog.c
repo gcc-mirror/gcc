@@ -3019,8 +3019,9 @@ peephole2_optimize (dump_file)
   int i, b;
 #ifdef HAVE_conditional_execution
   sbitmap blocks;
-  int changed;
+  bool changed;
 #endif
+  bool do_cleanup_cfg = false;
 
   /* Initialize the regsets we're going to use.  */
   for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
@@ -3030,7 +3031,7 @@ peephole2_optimize (dump_file)
 #ifdef HAVE_conditional_execution
   blocks = sbitmap_alloc (n_basic_blocks);
   sbitmap_zero (blocks);
-  changed = 0;
+  changed = false;
 #else
   count_or_remove_death_notes (NULL, 1);
 #endif
@@ -3156,20 +3157,46 @@ peephole2_optimize (dump_file)
 						REG_EH_REGION, NULL_RTX)))
 		    {
 		      rtx x;
+		      edge eh_edge;
+
+		      for (eh_edge = bb->succ; eh_edge
+			   ; eh_edge = eh_edge->succ_next)
+			if (eh_edge->flags & EDGE_EH)
+			  break;
+
 		      for (x = NEXT_INSN (peep2_insn_data[i].insn);
 			   x != NEXT_INSN (try); x = NEXT_INSN (x))
 			if (GET_CODE (x) == CALL_INSN
 			    || (flag_non_call_exceptions
 				&& may_trap_p (PATTERN (x))))
-			  REG_NOTES (x)
-			    = gen_rtx_EXPR_LIST (REG_EH_REGION,
-						 XEXP (note, 0),
-						 REG_NOTES (x));
+			  {
+			    REG_NOTES (x)
+			      = gen_rtx_EXPR_LIST (REG_EH_REGION,
+						   XEXP (note, 0),
+						   REG_NOTES (x));
+
+			    if (x != bb->end && eh_edge)
+			      {
+				edge nfte = split_block (bb, x);
+				edge nehe = make_edge (nfte->src, eh_edge->dest,
+						       eh_edge->flags);
+				nehe->probability = eh_edge->probability;
+				nfte->probability
+				  = REG_BR_PROB_BASE - nehe->probability;
+
+			        do_cleanup_cfg |= purge_dead_edges (nfte->dest);
+#ifdef HAVE_conditional_execution
+				SET_BIT (blocks, nfte->dest->index);
+				changed = true;
+#endif
+				bb = nfte->src;
+			      }
+			  }
+
+		      /* Converting possibly trapping insn to non-trapping is
+			 possible.  Zap dummy outgoing edges.  */
+		      do_cleanup_cfg |= purge_dead_edges (bb);
 		    }
-		  /* Converting possibly trapping insn to non-trapping is
-		     possible.  Zap dummy outgoing edges.  */
-		  if (try == bb->end)
-		    purge_dead_edges (bb);
 
 #ifdef HAVE_conditional_execution
 		  /* With conditional execution, we cannot back up the
@@ -3178,7 +3205,7 @@ peephole2_optimize (dump_file)
 		     So record that we've made a modification to this
 		     block and update life information at the end.  */
 		  SET_BIT (blocks, b);
-		  changed = 1;
+		  changed = true;
 
 		  for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
 		    peep2_insn_data[i].insn = NULL_RTX;
@@ -3224,9 +3251,20 @@ peephole2_optimize (dump_file)
     FREE_REG_SET (peep2_insn_data[i].live_before);
   FREE_REG_SET (live);
 
+  /* If we eliminated EH edges, we may be able to merge blocks.  Further,
+     we've changed global life since exception handlers are no longer
+     reachable.  */
+  if (do_cleanup_cfg)
+    {
+      cleanup_cfg (0);
+      update_life_info (0, UPDATE_LIFE_GLOBAL_RM_NOTES, PROP_DEATH_NOTES);
+    }
 #ifdef HAVE_conditional_execution
-  count_or_remove_death_notes (blocks, 1);
-  update_life_info (blocks, UPDATE_LIFE_LOCAL, PROP_DEATH_NOTES);
+  else
+    {
+      count_or_remove_death_notes (blocks, 1);
+      update_life_info (blocks, UPDATE_LIFE_LOCAL, PROP_DEATH_NOTES);
+    }
   sbitmap_free (blocks);
 #endif
 }

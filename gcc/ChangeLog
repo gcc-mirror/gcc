@@ -1,5 +1,11 @@
 2002-03-24  Richard Henderson  <rth@redhat.com>
 
+	* recog.c (peephole2_optimize): Split blocks when EH insns are 
+	generated in the middle of a block.  Do global life update if
+	zapped EH edges.
+
+2002-03-24  Richard Henderson  <rth@redhat.com>
+
 	* mips.c (mips_function_value): Only promote_mode for non-libcalls.
 
 2002-03-24  Neil Booth  <neil@daikokuya.demon.co.uk>
