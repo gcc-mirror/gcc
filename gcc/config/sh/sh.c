@@ -1020,7 +1020,8 @@ addsubcosts (x)
      rtx x;
 {
   /* Adding a register is a single cycle insn.  */
-  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+  if (GET_CODE (XEXP (x, 1)) == REG
+      || GET_CODE (XEXP (x, 1)) == SUBREG)
     return 1;
 
   /* Likewise for small constants.  */
@@ -2247,26 +2248,31 @@ find_barrier (num_mova, mova, from)
 	      inc = XVECLEN (body, 1) * GET_MODE_SIZE (GET_MODE (body));
 	    }
 	}
+      /* For the SH1, we generate alignments even after jumps-around-jumps.  */
+      else if (GET_CODE (from) == JUMP_INSN
+	       && ! TARGET_SH2
+	       && ! TARGET_SMALLCODE)
+	new_align = 4;
 
       if (found_si)
 	{
+	  count_si += inc;
 	  if (new_align > si_align)
 	    {
 	      si_limit -= (count_si - 1) & (new_align - si_align);
 	      si_align = new_align;
 	    }
 	  count_si = (count_si + new_align - 1) & -new_align;
-	  count_si += inc;
 	}
       if (found_hi)
 	{
+	  count_hi += inc;
 	  if (new_align > hi_align)
 	    {
 	      hi_limit -= (count_hi - 1) & (new_align - hi_align);
 	      hi_align = new_align;
 	    }
 	  count_hi = (count_hi + new_align - 1) & -new_align;
-	  count_hi += inc;
 	}
       from = NEXT_INSN (from);
     }
