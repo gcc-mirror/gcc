@@ -14810,11 +14810,8 @@ fold_constant_for_init (node, context)
   tree op0, op1, val;
   enum tree_code code = TREE_CODE (node);
 
-  if (code == STRING_CST)
+  if (code == STRING_CST || code == INTEGER_CST || code == REAL_CST)
     return node;
-
-  if (code == INTEGER_CST || code == REAL_CST)
-    return convert (TREE_TYPE (context), node);
 
   switch (code)
     {
