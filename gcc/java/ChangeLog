@@ -1,3 +1,20 @@
+Sat Mar 27 15:49:18 1999  Per Bothner  <bothner@cygnus.com>
+
+	* parse.y (complete_loop_body):  Rename to finish_loop_body.
+ 	(complete_labeled_statement):  Rename to finish_labeled_statement.
+	(complete_for_loop):  Rename to finish_for_loop.
+	(complete_method_declaration):  Rename to finish_method_declaration.
+
+	* java-tree.h (continue_identifier_node):  New global node.
+	* decl.c:  Define and initialize continue_identifier_node.
+	* parse.y (generate_labeled_block):  Remove - no longer needed.
+	(build_loop_body):  Use continue_identifier_node for continue block.
+	(finish_labeled_statement):  Also do pop_labeled_block actions.
+	(java_complete_lhs):  POP_LOOP even if error.
+	(build_labeled_block):  Special handling for continue_identifier_node.
+	(patch_loop_statement):  Re-organize.
+	(patch_bc_statement):  Re-write.
+
 1999-03-25  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* java/Make-lang.in: Remove all references to gcj.o/gcj.c.
