@@ -1,5 +1,5 @@
 /* ScrollPane.java -- Scrolling window
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -134,9 +134,9 @@ ScrollPane(int scrollbarDisplayPolicy)
 {
   this.scrollbarDisplayPolicy = scrollbarDisplayPolicy;
 
-  if ((scrollbarDisplayPolicy != SCROLLBARS_ALWAYS) ||
-      (scrollbarDisplayPolicy != SCROLLBARS_AS_NEEDED) ||
-      (scrollbarDisplayPolicy != SCROLLBARS_NEVER))
+  if (scrollbarDisplayPolicy != SCROLLBARS_ALWAYS
+      && scrollbarDisplayPolicy != SCROLLBARS_AS_NEEDED
+      && scrollbarDisplayPolicy != SCROLLBARS_NEVER)
     throw new IllegalArgumentException("Bad scrollbarDisplayPolicy: " +
                                        scrollbarDisplayPolicy);
 
