@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1922,8 +1922,8 @@ cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
   if (token->type == CPP_CHAR && chars_seen)
     {
       unsigned int nbits = chars_seen * width;
-      unsigned int mask = (unsigned int) ~0 >> (HOST_BITS_PER_INT - nbits);
 
+      mask = (unsigned HOST_WIDE_INT) ~0 >> (HOST_BITS_PER_WIDE_INT - nbits);
       if (pfile->spec_nodes.n__CHAR_UNSIGNED__->type == NT_MACRO
 	  || ((result >> (nbits - 1)) & 1) == 0)
 	result &= mask;
