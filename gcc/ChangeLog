@@ -1,3 +1,9 @@
+2003-02-15  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
+
+        PR optimization/7702
+        * reload1.c (reload_cse_simplify_set): Honor
+        CANNOT_CHANGE_MODE_CLASS.
+
 2003-02-15  Jan Hubicka  <jh@suse.cz>
 
 	PR optimization/9258, PR fortran/7681
