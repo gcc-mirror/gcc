@@ -497,12 +497,6 @@ arm_override_options ()
   if (write_symbols != NO_DEBUG && flag_omit_frame_pointer)
     warning ("-g with -fomit-frame-pointer may not give sensible debugging");
   
-  if (TARGET_BUGGY_RETURN_IN_MEMORY && TARGET_ATPCS)
-    {
-      warning ("-mbuggy-return-in-memory is overriden by -matpcs.");
-      target_flags &= ~ARM_FLAG_BUGGY_RETURN_IN_MEMORY;
-    }
-  
   /* If stack checking is disabled, we can use r10 as the PIC register,
      which keeps r9 available.  */
   if (flag_pic && ! TARGET_APCS_STACK)
@@ -1399,18 +1393,13 @@ arm_return_in_memory (type)
      tree type;
 {
   if (! AGGREGATE_TYPE_P (type))
-    /* All simple types are returned in registers. */
+    /* All simple types are returned in registers.  */
     return 0;
 
   if (int_size_in_bytes (type) > 4)
-    /* All structures/unions bigger than one word are returned in memory. */
+    /* All structures/unions bigger than one word are returned in memory.  */
     return 1;
 
-  if (TARGET_ATPCS)
-    /* The ATPCS says that any structure or union of no larger than
-       one word is returned in a register.  */
-    return 0;
-  
   if (TREE_CODE (type) == RECORD_TYPE)
     {
       tree field;
@@ -1429,25 +1418,13 @@ arm_return_in_memory (type)
 	continue;
       
       if (field == NULL)
-	return 0; /* An empty structure.  Allowed by an extension to ANSI C. */
+	return 0; /* An empty structure.  Allowed by an extension to ANSI C.  */
 
       /* Check that the first field is valid for returning in a register...  */
-
-      /* The APCS only says that the structrue must be integer-like.  It
-	 does not say that it may not contain integer values.  Thus
-	 struct { float a; } should be returned in a register.  Earlier
-	 implementations got this wrong.  */
-      if (TARGET_BUGGY_RETURN_IN_MEMORY
-	  && FLOAT_TYPE_P (TREE_TYPE (field)))
+      if (FLOAT_TYPE_P (TREE_TYPE (field)))
 	return 1;
 
-      /* Similarly the APCS only insists that all the sub-fields of a
-	 structure be addressible.  It does not insist that if these
-	 sub-fields themselves are structures that they also conform
-	 to the integer-like specification.  This is another thing
-	 that the old compiler did incorrectly.  */
-      if (TARGET_BUGGY_RETURN_IN_MEMORY
-	  && RETURN_IN_MEMORY (TREE_TYPE (field)))
+      if (RETURN_IN_MEMORY (TREE_TYPE (field)))
 	return 1;
 
       /* Now check the remaining fields, if any.  Only bitfields are allowed,
