@@ -850,7 +850,7 @@ OBJS-common = \
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	   \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
  loop.o optabs.o options.o opts.o params.o postreload.o predict.o	   \
- print-rtl.o print-tree.o value-prof.o					   \
+ print-rtl.o print-tree.o value-prof.o 								   \
  profile.o ra.o ra-build.o ra-colorize.o ra-debug.o ra-rewrite.o	   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
  reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	   \
@@ -1460,6 +1460,9 @@ ggc-simple.o: ggc-simple.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) 
 	flags.h $(GGC_H) varray.h $(TIMEVAR_H) $(TM_P_H) $(PARAMS_H)
 
 ggc-page.o: ggc-page.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
+	flags.h toplev.h $(GGC_H) $(TIMEVAR_H) $(TM_P_H) $(PARAMS_H)
+
+ggc-zone.o: ggc-zone.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
 	flags.h toplev.h $(GGC_H) $(TIMEVAR_H) $(TM_P_H) $(PARAMS_H)
 
 stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \

@@ -28,9 +28,23 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "ggc.h"
+struct alloc_zone *rtl_zone = NULL;
+struct alloc_zone *garbage_zone = NULL;
+
+void *
+ggc_alloc_typed (enum gt_types_enum gte ATTRIBUTE_UNUSED, size_t size)
+{
+  return xmalloc (size);
+}
 
 void *
 ggc_alloc (size_t size)
+{
+  return xmalloc (size);
+}
+
+void *
+ggc_alloc_zone (size_t size, struct alloc_zone *zone ATTRIBUTE_UNUSED)
 {
   return xmalloc (size);
 }
