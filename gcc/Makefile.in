@@ -599,7 +599,7 @@ BC_ALL = bc-arity.h bc-opcode.h bc-opname.h
 OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
  function.o stmt.o except.o expr.o calls.o expmed.o explow.o optabs.o \
  intl.o varasm.o genrtl.o rtl.o print-rtl.o rtlanal.o emit-rtl.o real.o \
- dbxout.o sdbout.o dwarfout.o dwarf2out.o xcoffout.o bitmap.o \
+ dbxout.o sdbout.o dwarfout.o dwarf2out.o xcoffout.o bitmap.o dyn-string.o \
  integrate.o jump.o cse.o loop.o unroll.o flow.o stupid.o combine.o \
  regclass.o regmove.o local-alloc.o global.o reload.o reload1.o caller-save.o \
  insn-peep.o reorg.o sched.o final.o recog.o reg-stack.o \
@@ -1375,7 +1375,7 @@ dwarfout.o : dwarfout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf.h \
    flags.h insn-config.h reload.h output.h defaults.h
 dwarf2out.o : dwarf2out.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf2.h \
    flags.h insn-config.h reload.h output.h defaults.h hard-reg-set.h regs.h \
-   expr.h
+   expr.h dyn-string.h
 xcoffout.o : xcoffout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) xcoffout.h \
    flags.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
@@ -1410,6 +1410,7 @@ regclass.o : regclass.c $(CONFIG_H) system.h $(RTL_H) hard-reg-set.h flags.h \
    $(BASIC_BLOCK_H) regs.h insn-config.h $(RECOG_H) reload.h real.h bytecode.h
 local-alloc.o : local-alloc.c $(CONFIG_H) system.h $(RTL_H) flags.h \
    $(BASIC_BLOCK_H) regs.h hard-reg-set.h insn-config.h $(RECOG_H) output.h
+dyn-string.o : dyn-string.c dyn-string.h $(CONFIG_H) system.h
 bitmap.o : bitmap.c $(CONFIG_H) system.h $(RTL_H) flags.h $(BASIC_BLOCK_H) \
    regs.h
 global.o : global.c $(CONFIG_H) system.h $(RTL_H) flags.h  \
