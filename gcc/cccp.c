@@ -5375,6 +5375,11 @@ create_definition (buf, limit, op)
       if (*bp == ',') {
 	bp++;
 	SKIP_WHITE_SPACE (bp);
+	/* A comma at this point can only be followed by an identifier.  */
+	if (!is_idstart[*bp]) {
+	  error ("badly punctuated parameter list in `#define'");
+	  goto nope;
+	}
       }
       if (bp >= limit) {
 	error ("unterminated parameter list in `#define'");
@@ -5776,7 +5781,7 @@ collect_expansion (buf, end, nargs, arglist)
 	     Don't leave the # in the expansion.  */
 	  exp_p--;
 	  SKIP_WHITE_SPACE (p);
-	  if (p == limit || ! is_idstart[*p])
+	  if (p == limit || ! is_idstart[*p] || nargs == 0)
 	    error ("`#' operator is not followed by a macro argument name");
 	  else
 	    stringify = p;
