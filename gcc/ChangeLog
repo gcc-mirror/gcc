@@ -1,3 +1,9 @@
+2000-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-common.c (ggc_mark_rtx_children): Mark NOTE_EXPECTED_VALUE
+	from NOTE_INSN_EXPECTED_VALUE notes and NOTE_SOURCE_FILE from
+	NOTE_INSN_DELETED_LABEL.
+
 2000-05-18  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/unknown-elf.h (UNIQUE_SECTION): Place constant,
