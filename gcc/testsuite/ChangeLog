@@ -1,6 +1,7 @@
 Tue Jun  2 20:51:43 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980602-1.c: New test.
+	* gcc.c-torture/execute/980602-2.c: Likewise.
 
 1998-06-02  Dave Love  <d.love@dl.ac.uk>
 
