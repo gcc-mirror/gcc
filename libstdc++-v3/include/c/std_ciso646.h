@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,8 +28,8 @@
 // the GNU General Public License.
 
 /** @file ciso646
- *  This is a Standard C++ Library file.  You should @c #include_next this file
- *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
+ *  This is a Standard C++ Library file.  You should @c #include this file
+ *  in your programs, rather than any of the "*.h" implementation files.
  *
  *  This is the C++ version of the Standard C Library header @c iso646.h,
  *  and its contents are (mostly) the same as that header, but are all
