@@ -202,7 +202,7 @@ jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
 	$(GCLIBS) $(THREADLIBS) $(ZLIBS)
 
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
-	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la
+	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
 
 
 gen_from_JIS_SOURCES = 

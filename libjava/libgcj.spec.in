@@ -3,5 +3,5 @@
 # It is used to specify the standard libraries we need in order
 # to link with libgcj.
 #
-# We need a space after the `+' to placate gcc.
-*lib: + -lgcj -lm @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@
+%rename lib liborig
+*lib: -lgcj -lm @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(liborig)

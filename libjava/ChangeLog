@@ -1,6 +1,11 @@
 1999-05-11  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
+	* Makefile.am (jv_convert_DEPENDENCIES): Include libgcj.spec.
+	* libgcj.spec.in: Don't use `+'.  Instead, put old lib spec after
+	our libraries.
+
+	* Makefile.in: Rebuilt.
 	* Makefile.am (jv_convert_LDADD): Removed `-L.'; it is not needed
 	and it causes problems with libtool.
 
