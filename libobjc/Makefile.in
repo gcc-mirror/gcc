@@ -297,7 +297,7 @@ objc-features.info: $(srcdir)/objc-features.texi
 	makeinfo -I$(srcdir) $(srcdir)/objc-features.texi
 
 objc-features.dvi: $(srcdir)/objc-features.texi
-	TEXINPUTS="$(srcdir):${TEXINTPUTS}" texi2dvi $(srcdir)/objc-features.texi
+	TEXINPUTS="$(srcdir):${TEXINPUTS}" texi2dvi $(srcdir)/objc-features.texi
 
 objc-features_toc.html: objc-features.texi
 	texi2html -split_node $(srcdir)/objc-features.texi
