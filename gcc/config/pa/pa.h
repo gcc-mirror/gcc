@@ -554,21 +554,9 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-/* SOM ABI says that objects larger than 64 bits are returned in memory.
-   PA64 ABI says that objects larger than 128 bits are returned in memory.
-   Note, int_size_in_bytes can return -1 if the size of the object is
-   variable or larger than the maximum value that can be expressed as
-   a HOST_WIDE_INT.   It can also return zero for an empty type.  The
-   simplest way to handle variable and empty types is to pass them in
-   memory.  This avoids problems in defining the boundaries of argument
-   slots, allocating registers, etc.  */
-#define RETURN_IN_MEMORY(TYPE)	\
-  (int_size_in_bytes (TYPE) > (TARGET_64BIT ? 16 : 8)	\
-   || int_size_in_bytes (TYPE) <= 0)
-
 /* Register in which address to store a structure value
    is passed to a function.  */
-#define STRUCT_VALUE_REGNUM 28
+#define PA_STRUCT_VALUE_REGNUM 28
 
 /* Describe how we implement __builtin_eh_return.  */
 #define EH_RETURN_DATA_REGNO(N)	\
@@ -804,7 +792,7 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
   (CUM).nargs_prototype = (FNTYPE && TYPE_ARG_TYPES (FNTYPE)		\
 			   ? (list_length (TYPE_ARG_TYPES (FNTYPE)) - 1	\
 			      + (TYPE_MODE (TREE_TYPE (FNTYPE)) == BLKmode \
-				 || RETURN_IN_MEMORY (TREE_TYPE (FNTYPE)))) \
+				 || pa_return_in_memory (TREE_TYPE (FNTYPE), 0))) \
 			   : 0)
 
 
@@ -1152,13 +1140,6 @@ extern int may_call_alloca;
    
 #define TRAMPOLINE_ADJUST_ADDRESS(ADDR) \
   if (!TARGET_64BIT) (ADDR) = memory_address (Pmode, plus_constant ((ADDR), 46))
-
-/* Emit code for a call to builtin_saveregs.  We must emit USE insns which
-   reference the 4 integer arg registers and 4 fp arg registers.
-   Ordinarily they are not call used registers, but they are for
-   _builtin_saveregs, so we must make this explicit.  */
-
-#define EXPAND_BUILTIN_SAVEREGS() hppa_builtin_saveregs ()
 
 /* Implement `va_start' for varargs and stdarg.  */
 
@@ -1733,10 +1714,6 @@ do { 									\
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
-/* When a prototype says `char' or `short', really pass an `int'.  */
-#define PROMOTE_PROTOTYPES 1
-#define PROMOTE_FUNCTION_RETURN 1
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
