@@ -2482,7 +2482,7 @@ pa_adjust_insn_length (insn, length)
     return compute_movstrsi_length (insn) - 1;
   /* Conditional branch with an unfilled delay slot.  */
   else if (GET_CODE (insn) == JUMP_INSN && ! simplejump_p (insn)
-	   && length != 2 && length != 4))
+	   && length != 2 && length != 4)
     return 1;
   else
     return 0;
