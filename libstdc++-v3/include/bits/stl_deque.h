@@ -729,7 +729,7 @@ public:
    *  @param  first  An input iterator.
    *  @param  last  An input iterator.
    * 
-   *  Creats a %deque consisting of copies of the elements from [first,last).
+   *  Create a %deque consisting of copies of the elements from [first,last).
    *
    *  If the iterators are forward, bidirectional, or random-access, then
    *  this will call the elements' copy constructor N times (where N is
