@@ -45,7 +45,7 @@ __exchange_and_add (volatile _Atomic_word *__mem, int __val)
   __asm__ __volatile__ ("1: move%.l %0,%1\n\t"
 			"add%.l %2,%1\n\t"
 			"cas%.l %0,%1,%3\n\t"
-			"jbne 1b"
+			"jne 1b"
 			: "=d" (__result), "=&d" (__temp)
 			: "d" (__val), "m" (*__mem), "0" (__result)
 			: "memory");

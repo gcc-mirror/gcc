@@ -1,3 +1,8 @@
+2002-06-03  Marc Espie <espie@openbsd.org>
+
+	* config/cpu/m68k/bits/atomicity.h(__exchange_and_add):  Fix inline     
+	assembly for old assemblers.
+
 2002-06-03  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/stl_bvector.h (swap(_Bit_reference,_Bit_reference)):
