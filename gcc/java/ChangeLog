@@ -1,3 +1,14 @@
+2005-02-11  Per Bothner  <per@bothner.com>
+
+	PR java/15543
+	* parse-scan.y (input_location): Remove variable.
+	(main_input_filename): New - replaces input_filename, which isn't
+	settable if USE_MAPPED_LOCATION.
+	* lex.c (java_init_lex): Wrap some more places in #ifndef JC1-LITE,
+	so we don't reference input_location or wfl_operator in that case.
+	* jv-scan.c (expand_location): Remove - no longer used.
+	(main): Set main_input_filename rather than input_filename.
+
 2005-02-09  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (initialize_builtins): Call build_common_builtin_nodes.
