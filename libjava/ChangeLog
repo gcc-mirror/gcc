@@ -1,3 +1,10 @@
+2003-02-13  Michael Koch  <konqueror@gmx.de>
+ 
+	* gnu/java/awt/peer/gtk/GdkGraphics.java
+	(drawString): New stubbed method.
+	* java/awt/Graphics.java
+	(drawString): New method.
+
 2003-02-13  Casey Marshall  <rsdio@metastatic.org>
 
 	PR libgcj/9271:
