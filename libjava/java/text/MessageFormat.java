@@ -1,5 +1,5 @@
 /* MessageFormat.java - Localized message formatting.
-   Copyright (C) 1999, 2001, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -193,27 +193,36 @@ public class MessageFormat extends Format
   {
     int max = pat.length();
     buffer.setLength(0);
+    boolean quoted = false;
     for (; index < max; ++index)
       {
 	char c = pat.charAt(index);
-	if (c == '\'' && index + 2 < max && pat.charAt(index + 2) == '\'')
+	if (quoted)
 	  {
-	    buffer.append(pat.charAt(index + 1));
-	    index += 2;
+	    // In a quoted context, a single quote ends the quoting.
+	    if (c == '\'')
+	      quoted = false;
+	    else
+	      buffer.append(c);
 	  }
-	else if (c == '\'' && index + 1 < max
-		 && pat.charAt(index + 1) == '\'')
+	// Check for '', which is a single quote.
+	else if (c == '\'' && index + 1 < max && pat.charAt(index + 1) == '\'')
 	  {
 	    buffer.append(c);
 	    ++index;
 	  }
+	else if (c == '\'')
+	  {
+	    // Start quoting.
+	    quoted = true;
+	  }
 	else if (c == '{')
 	  break;
-	else if (c == '}')
-	  throw new IllegalArgumentException("Found '}' without '{'");
 	else
 	  buffer.append(c);
       }
+    // Note that we explicitly allow an unterminated quote.  This is
+    // done for compatibility.
     return index;
   }
 
@@ -225,39 +234,42 @@ public class MessageFormat extends Format
     int max = pat.length();
     buffer.setLength(0);
     int brace_depth = 1;
+    boolean quoted = false;
 
     for (; index < max; ++index)
       {
 	char c = pat.charAt(index);
-	if (c == '\'' && index + 2 < max && pat.charAt(index + 2) == '\'')
+	// First see if we should turn off quoting.
+	if (quoted)
 	  {
-	    buffer.append(c);
-	    buffer.append(pat.charAt(index + 1));
-	    buffer.append(c);
-	    index += 2;
+	    if (c == '\'')
+	      quoted = false;
+	    // In both cases we fall through to inserting the
+	    // character here.
 	  }
+	// See if we have just a plain quote to insert.
 	else if (c == '\'' && index + 1 < max
 		 && pat.charAt(index + 1) == '\'')
 	  {
 	    buffer.append(c);
 	    ++index;
 	  }
+	// See if quoting should turn on.
+	else if (c == '\'')
+	  quoted = true;
 	else if (c == '{')
-	  {
-	    buffer.append(c);
-	    ++brace_depth;
-	  }
+	  ++brace_depth;
 	else if (c == '}')
 	  {
 	    if (--brace_depth == 0)
 	      break;
-	    buffer.append(c);
 	  }
 	// Check for TERM after braces, because TERM might be `}'.
 	else if (c == term)
 	  break;
-	else
-	  buffer.append(c);
+	// All characters, including opening and closing quotes, are
+	// inserted here.
+	buffer.append(c);
       }
     return index;
   }

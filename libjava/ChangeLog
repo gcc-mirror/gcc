@@ -1,3 +1,9 @@
+2005-01-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/MessageFormat.java (scanString): Changed how quoting
+	is handled.
+	(scanFormatElement): Likewise.
+
 2004-12-07  Mark Wielaard  <mark@klomp.org>
 
 	* java/text/MessageFormat.java (scanFormat): Chain thrown exception.
