@@ -3581,6 +3581,9 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
       else if (TREE_CODE (exp) != NON_LVALUE_EXPR
 	       && ! ((TREE_CODE (exp) == NOP_EXPR
 		      || TREE_CODE (exp) == CONVERT_EXPR)
+		     && ! (TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
+			   && (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0)))
+			       != UNION_TYPE))
 		     && (TYPE_MODE (TREE_TYPE (exp))
 			 == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))))
 	break;
@@ -4981,21 +4984,6 @@ expand_expr (exp, target, tmode, modifier)
     case NOP_EXPR:
     case CONVERT_EXPR:
     case REFERENCE_EXPR:
-      if (mode == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
-	{
-	  op0 = expand_expr (TREE_OPERAND (exp, 0), target, VOIDmode,
-			     modifier);
-
-	  /* If the signedness of the conversion differs and OP0 is
-	     a promoted SUBREG, clear that indication since we now
-	     have to do the proper extension.  */
-	  if (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))) != unsignedp
-	      && GET_CODE (op0) == SUBREG)
-	    SUBREG_PROMOTED_VAR_P (op0) = 0;
-
-	  return op0;
-	}
-
       if (TREE_CODE (type) == UNION_TYPE)
 	{
 	  tree valtype = TREE_TYPE (TREE_OPERAND (exp, 0));
@@ -5032,6 +5020,21 @@ expand_expr (exp, target, tmode, modifier)
 
 	  /* Return the entire union.  */
 	  return target;
+	}
+
+      if (mode == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	{
+	  op0 = expand_expr (TREE_OPERAND (exp, 0), target, VOIDmode,
+			     modifier);
+
+	  /* If the signedness of the conversion differs and OP0 is
+	     a promoted SUBREG, clear that indication since we now
+	     have to do the proper extension.  */
+	  if (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))) != unsignedp
+	      && GET_CODE (op0) == SUBREG)
+	    SUBREG_PROMOTED_VAR_P (op0) = 0;
+
+	  return op0;
 	}
 
       op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, 0);
