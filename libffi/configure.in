@@ -57,7 +57,7 @@ ia64*-*-*) TARGET=IA64; TARGETDIR=ia64;;
 m68k-*-linux*) TARGET=M68K; TARGETDIR=m68k;;
 powerpc-*-linux* | powerpc-*-sysv*) TARGET=POWERPC; TARGETDIR=powerpc;;
 powerpc-*-beos*) TARGET=POWERPC; TARGETDIR=powerpc;;
-arm-*-linux-*) TARGET=ARM; TARGETDIR=arm;;
+arm*-*-linux-*) TARGET=ARM; TARGETDIR=arm;;
 esac
 
 if test $TARGETDIR = unknown; then
