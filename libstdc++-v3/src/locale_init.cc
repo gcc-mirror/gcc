@@ -108,8 +108,7 @@ namespace std
     _Impl* __old = _S_global;
     __other._M_impl->_M_add_reference();
     _S_global = __other._M_impl; 
-    if (_S_global->_M_check_same_name() 
-	&& (std::strcmp(_S_global->_M_names[0], "*") != 0))
+    if (__other.name() != "*")
       setlocale(LC_ALL, __other.name().c_str());
 
     // Reference count sanity check: one reference removed for the
