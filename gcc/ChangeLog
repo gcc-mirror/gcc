@@ -1,3 +1,8 @@
+2000-02-10  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c (add_abstract_origin_attribute): Check TREE_CODE (origin)
+	rather than die->die_tag.
+
 Thu Feb 10 16:26:49 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (make_extraction, force_to_mode): Avoid warning on
