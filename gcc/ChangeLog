@@ -1,3 +1,8 @@
+2004-03-06  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_swapped_comparison_operator): Fix
+	botched rtx class conversion.
+
 2004-03-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tree.h (BUILTIN_EXP10_P, BUILTIN_EXPONENT_P, BUILTIN_SQRT_P,
