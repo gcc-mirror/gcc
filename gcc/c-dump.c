@@ -504,6 +504,8 @@ dequeue_and_dump (di)
 	dump_string (di, "extern");
       else
 	dump_string (di, "static");
+      if (DECL_LANG_SPECIFIC (t))
+	dump_child ("body", DECL_SAVED_TREE (t));
       break;
 
     case ASM_STMT:
