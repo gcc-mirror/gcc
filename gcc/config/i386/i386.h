@@ -61,6 +61,11 @@ extern int target_flags;
    Meaningful only on svr3.  */
 #define TARGET_SVR3_SHLIB (target_flags & 040)
 
+/* Use IEEE floating point comparisons.  These handle correctly the cases
+   where the result of a comparison is unordered.  Normally SIGFPE is
+   generated in such cases, in which case this isn't needed.  */
+#define TARGET_IEEE_FP (target_flags & 0100)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -79,6 +84,8 @@ extern int target_flags;
     { "noregparm", -020},			\
     { "svr3-shlib", 040},			\
     { "nosvr3-shlib", -040},			\
+    { "ieee-fp", 0100},				\
+    { "noieee-fp", -0100},			\
     { "", TARGET_DEFAULT}}
 
 /* target machine storage layout */
@@ -1146,6 +1153,33 @@ while (0)
    : REG_P (RTX) ? 1						\
    : 2)
 
+/* Add any extra modes needed to represent the condition code.
+
+   For the i386, we need separate modes when floating-point equality
+   comparisons are being done.  */
+
+#define EXTRA_CC_MODES CCFPEQmode
+
+/* Define the names for the modes specified above.  */
+#define EXTRA_CC_NAMES "CCFPEQ"
+
+/* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
+   return the mode to be used for the comparison.
+
+   For floating-point equality comparisons, CCFPEQmode should be used.
+   VOIDmode should be used in all other cases.  */
+
+#define SELECT_CC_MODE(OP,X) \
+  (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT			\
+   && ((OP) == EQ || (OP) == NE) ? CCFPEQmode : CCmode)
+
+/* Define the information needed to generate branch and scc insns.  This is
+   stored from the compare operation.  Note that we can't use "rtx" here
+   since it hasn't been defined!  */
+
+extern struct rtx_def *i386_compare_op0, *i386_compare_op1;
+extern struct rtx_def *(*i386_compare_gen)(), *(*i386_compare_gen_eq)();
+
 /* Tell final.c how to eliminate redundant test instructions.  */
 
 /* Here we define machine-dependent flags and fields in cc_status
