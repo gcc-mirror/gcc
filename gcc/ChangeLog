@@ -1,3 +1,9 @@
+Mon Sep 24 18:57:59 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.c (type_hash_marked_p): Consider as marked if debug symbol
+	number has been set.
+	(type_hash_mark): Mark type itself.
+
 2001-09-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-lex.c (cb_def_pragma): Update.

@@ -3139,22 +3139,31 @@ type_hash_canon (hashcode, type)
     }
 }
 
-/* See if the data pointed to by the type hash table is marked.  */
+/* See if the data pointed to by the type hash table is marked.  We consider
+   it marked if the type is marked or if a debug type number or symbol
+   table entry has been made for the type.  This reduces the amount of
+   debugging output and eliminates that dependency of the debug output on
+   the number of garbage collections.  */
 
 static int
 type_hash_marked_p (p)
      const void *p;
 {
-  return ggc_marked_p (((struct type_hash *) p)->type);
+  tree type = ((struct type_hash *) p)->type;
+
+  return ggc_marked_p (type) || TYPE_SYMTAB_POINTER (type);
 }
 
-/* Mark the entry in the type hash table the type it points to is marked. */
+/* Mark the entry in the type hash table the type it points to is marked.
+   Also mark the type in case we are considering this entry "marked" by
+   virtue of TYPE_SYMTAB_POINTER being set.  */
 
 static void
 type_hash_mark (p)
      const void *p;
 {
   ggc_mark (p);
+  ggc_mark_tree (((struct type_hash *) p)->type);
 }
 
 /* Mark the hashtable slot pointed to by ENTRY (which is really a
