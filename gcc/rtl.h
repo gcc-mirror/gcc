@@ -1196,7 +1196,6 @@ extern rtx operand_subword_force	PARAMS ((rtx, unsigned int,
 extern int subreg_lowpart_p		PARAMS ((rtx));
 extern rtx make_safe_from		PARAMS ((rtx, rtx));
 extern rtx convert_memory_address	PARAMS ((enum machine_mode, rtx));
-extern rtx memory_address		PARAMS ((enum machine_mode, rtx));
 extern rtx get_insns			PARAMS ((void));
 extern const char *get_insn_name	PARAMS ((int));
 extern rtx get_last_insn		PARAMS ((void));
@@ -1211,9 +1210,6 @@ extern rtx gen_sequence			PARAMS ((void));
 /* In varasm.c  */
 extern rtx immed_double_const		PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT, enum machine_mode));
 extern rtx force_const_mem		PARAMS ((enum machine_mode, rtx));
-
-/* In explow.c  */
-extern rtx force_reg			PARAMS ((enum machine_mode, rtx));
 
 /* In varasm.c  */
 extern rtx get_pool_constant		PARAMS ((rtx));
@@ -1230,10 +1226,6 @@ extern rtx assign_stack_temp		PARAMS ((enum machine_mode,
 					       HOST_WIDE_INT, int));
 extern rtx assign_temp			PARAMS ((union tree_node *,
 					       int, int, int));
-/* In expr.c  */
-extern void emit_queue			PARAMS ((void));
-extern rtx emit_move_insn		PARAMS ((rtx, rtx));
-
 /* In emit-rtl.c */
 extern rtx emit_insn_before		PARAMS ((rtx, rtx));
 extern rtx emit_jump_insn_before	PARAMS ((rtx, rtx));
@@ -1332,9 +1324,6 @@ extern rtx simplify_gen_relational	PARAMS ((enum rtx_code,
 						 rtx, rtx));
 extern rtx simplify_replace_rtx		PARAMS ((rtx, rtx, rtx));
 extern rtx simplify_rtx			PARAMS ((rtx));
-
-/* In optabs.c  */
-extern rtx gen_move_insn		PARAMS ((rtx, rtx));
 
 /* In function.c  */
 extern rtx gen_mem_addressof		PARAMS ((rtx, union tree_node *));
