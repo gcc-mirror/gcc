@@ -1,3 +1,9 @@
+2004-08-11  James E Wilson  <wilson@specifixinc.com>
+
+	PR rtl-optimization/16490
+	* cfgrtl.c (cfg_layout_split_edge): Set global_live_at_start and
+	global_live_at_end for new basic block if already set for other blocks.
+
 2004-08-11 David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (MAX_FIXED_MODE_SIZE): Define.

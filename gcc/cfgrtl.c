@@ -2781,6 +2781,18 @@ cfg_layout_split_edge (edge e)
 			? NEXT_INSN (BB_END (e->src)) : get_insns (),
 			NULL_RTX, e->src);
 
+  /* ??? This info is likely going to be out of date very soon, but we must
+     create it to avoid getting an ICE later.  */
+  if (e->dest->global_live_at_start)
+    {
+      new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      COPY_REG_SET (new_bb->global_live_at_start,
+		    e->dest->global_live_at_start);
+      COPY_REG_SET (new_bb->global_live_at_end,
+		    e->dest->global_live_at_start);
+    }
+
   new_e = make_edge (new_bb, e->dest, EDGE_FALLTHRU);
   redirect_edge_and_branch_force (e, new_bb);
 
