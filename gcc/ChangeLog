@@ -1,3 +1,14 @@
+2002-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* except.c (remove_unreachable_regions): New.
+	(free_eh_status): Clear exception_handler_labels.
+	(convert_from_eh_region_ranges): Call remove_unreachable_regions.
+	(find_exception_handler_labels): Don't add the same label more than
+	once.
+	(remove_exception_handler_label): Don't die if
+	find_exception_handler_labels hasn't been called for the current
+	function yet.
+
 Mon Jan 14 21:26:13 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Rebuild jump labels after
