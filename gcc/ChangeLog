@@ -1,4 +1,8 @@
-2001-09-15  Hans-Peter Nilsson  <hp@bitrange.com>
+2001-09-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* rtl.h (FIND_REG_INC_NOTE) [HAVE_PRE_INCREMENT
+	|| HAVE_PRE_DECREMENT || HAVE_POST_INCREMENT
+	|| HAVE_POST_DECREMENT]: Call find_regno_note for REGs.
 
 	* reorg.c (fill_slots_from_thread): After call to
 	steal_delay_list_from_target, update own_thread as new_thread may
