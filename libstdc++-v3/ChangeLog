@@ -1,5 +1,12 @@
 2003-04-28  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/bits/streambuf.tcc (__copy_streambufs): Don't use
+	_M_buf_size (synced input is now correctly dealt with
+	elsewhere); when the output buffer is full don't fall back
+	to a snextc-sputc loop, call overflow instead.
+
+2003-04-28  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/bits/sstream.tcc (pbackfail): Shorten a bit (6 lines)
 	the innermost 'if' by factoring out some code.
 
