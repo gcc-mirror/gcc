@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "c-pragma.h"
 #include "tm_p.h"
+#include "ggc.h"
 
 /* Forward declarations.  */
 static int h8300_interrupt_function_p PARAMS ((tree));
