@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,20 +38,22 @@ exception statement from your version. */
 package java.rmi.server;
 
 public abstract class RemoteStub
-	extends RemoteObject {
+  extends RemoteObject
+{
+  static final long serialVersionUID = -1585587260594494182l;
 
-public static final long serialVersionUID = -1585587260594494182l;
+  protected RemoteStub ()
+  {
+    super ();
+  }
 
-protected RemoteStub() {
-	super();
-}
+  protected RemoteStub (RemoteRef ref)
+  {
+    super (ref);
+  }
 
-protected RemoteStub(RemoteRef ref) {
-	super(ref);
-}
-
-protected static void setRef(RemoteStub stub, RemoteRef ref) {
-	stub.ref = ref;
-}
-
-}
+  protected static void setRef (RemoteStub stub,  RemoteRef ref)
+  {
+    stub.ref = ref;
+  }
+} // class RemoteSub

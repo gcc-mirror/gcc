@@ -37,8 +37,10 @@ exception statement from your version. */
 
 package java.rmi.server;
 
-public interface RMIFailureHandler {
-
-public boolean failure(Exception ex);
-
+public interface RMIFailureHandler
+{
+  /**
+   * @exception IOException If an error occurs
+   */
+  public boolean failure (Exception ex);
 }

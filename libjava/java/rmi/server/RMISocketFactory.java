@@ -43,42 +43,64 @@ import java.io.IOException;
 import gnu.java.rmi.server.RMIDefaultSocketFactory;
 
 public abstract class RMISocketFactory
-	implements RMIClientSocketFactory, RMIServerSocketFactory {
+  implements RMIClientSocketFactory, RMIServerSocketFactory
+{
+  static private RMISocketFactory defaultFactory;
+  static private RMISocketFactory currentFactory;
+  static private RMIFailureHandler currentHandler;
 
-static private RMISocketFactory defaultFactory;
-static private RMISocketFactory currentFactory;
-static private RMIFailureHandler currentHandler;
+  static
+    {
+      defaultFactory = new RMIDefaultSocketFactory();
+      currentFactory = defaultFactory;
+    }
 
-static {
-	defaultFactory = new RMIDefaultSocketFactory();
-	currentFactory = defaultFactory;
-}
+  public RMISocketFactory ()
+  {
+  }
 
-public RMISocketFactory() {
-}
+  /**
+   * @exception IOException If an error occurs
+   */
+  public abstract Socket createSocket (String host, int port)
+    throws IOException;
 
-public abstract Socket createSocket(String host, int port) throws IOException;
+  /**
+   * @exception IOException If an error occurs
+   */
+  public abstract ServerSocket createServerSocket (int port)
+    throws IOException;
 
-public abstract ServerSocket createServerSocket(int port) throws IOException;
+  /**
+   * @exception IOException If an error occurs
+   * @exception SecurityException FIXME
+   */
+  public static void setSocketFactory (RMISocketFactory fac)
+    throws IOException
+  {
+    currentFactory = fac;
+  }
 
-public static void setSocketFactory(RMISocketFactory fac) throws IOException {
-	currentFactory = fac;
-}
+  public static RMISocketFactory getSocketFactory ()
+  {
+    return currentFactory;
+  }
 
-public static RMISocketFactory getSocketFactory() {
-	return (currentFactory);
-}
+  public static RMISocketFactory getDefaultSocketFactory ()
+  {
+    return defaultFactory;
+  }
 
-public static RMISocketFactory getDefaultSocketFactory() {
-	return (defaultFactory);
-}
+  /**
+   * @exception SecurityException FIXME
+   */
+  public static void setFailureHandler (RMIFailureHandler fh)
+  {
+    currentHandler = fh;
+  }
 
-public static void setFailureHandler(RMIFailureHandler fh) {
-	currentHandler = fh;
-}
-
-public static RMIFailureHandler getFailureHandler() {
-	return (currentHandler);
-}
-
+  public static RMIFailureHandler getFailureHandler ()
+  {
+    return currentHandler;
+  }
 }

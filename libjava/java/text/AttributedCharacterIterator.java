@@ -70,6 +70,8 @@ public interface AttributedCharacterIterator extends CharacterIterator
 public static class Attribute implements Serializable
 {
 
+  private static final long serialVersionUID = -9142742483513960612L;
+
 /*************************************************************************/
 
 /*
