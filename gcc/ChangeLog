@@ -1,3 +1,7 @@
+Sat Jan 25 11:10:03 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.c (fold_trunc_transparent_mathfn):  Undo accidental commit.
+
 2002-01-24  Stuart Hastings  <stuart@apple.com>
 
 	* config/i386/i386.c (x86_output_mi_thunk): Add Darwin/x86 support.
