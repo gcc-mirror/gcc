@@ -241,6 +241,17 @@ $set verify
 $	 'BISON' /define /verbose 'flnm'.y
 $	 'RENAME' 'flnm'_tab.c 'flnm'.c
 $	 'RENAME' 'flnm'_tab.h 'flnm'.h
+$	if flnm.eqs."cp-parse"
+$		then
+$		search cp-parse.c "#define YYEMPTY"/output=t.tmp
+$		open jfile$ t.tmp
+$		read jfile$ empty_line
+$		close jfile$
+$		open jfile$ cp-parse.h/append
+$		write jfile$ empty_line
+$		close jfile$
+$		delete/nolog t.tmp;
+$		endif
 $!'f$verify(0)
 $no_bison:
 $	endif
