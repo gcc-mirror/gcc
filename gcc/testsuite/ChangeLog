@@ -1,3 +1,12 @@
+2001-09-07  Janis Johnson  <janis187@us.ibm.com>
+	* gcc.misc-tests/gcov.exp: Add support for a .x file to control
+	XFAIL and which kinds of gcov output to verify.
+	* gcc.misc-tests/gcov-4b.x: New file.
+	* gcc.misc-tests/gcov-5b.x: New file.
+	* gcc.misc-tests/gcov-6.x: New file.
+	* gcc.misc-tests/gcov-7.c: New test.
+	* gcc.misc-tests/gcov-7.x: New file.
+
 2001-09-06  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.misc-tests/gcov.exp: Add support for call return percentages.
