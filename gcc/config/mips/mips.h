@@ -2241,22 +2241,6 @@ typedef struct mips_args {
 
 #define FUNCTION_EPILOGUE(FILE, SIZE) function_epilogue(FILE, SIZE)
 
-/* Define the number of delay slots needed for the function epilogue.
-
-   On the mips, we need a slot if either no stack has been allocated,
-   or the only register saved is the return register.  */
-
-#define DELAY_SLOTS_FOR_EPILOGUE mips_epilogue_delay_slots ()
-
-/* Define whether INSN can be placed in delay slot N for the epilogue.
-   No references to the stack must be made, since on the MIPS, the
-   delay slot is done after the stack has been cleaned up.  */
-
-#define ELIGIBLE_FOR_EPILOGUE_DELAY(INSN,N)				\
-  (get_attr_dslot (INSN) == DSLOT_NO					\
-   && get_attr_length (INSN) == 1					\
-   && ! epilogue_reg_mentioned_p (PATTERN (INSN)))
-
 /* Tell prologue and epilogue if register REGNO should be saved / restored.  */
 
 #define MUST_SAVE_REGISTER(regno) \

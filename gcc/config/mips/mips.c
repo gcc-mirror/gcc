@@ -4730,71 +4730,6 @@ mips_output_float (stream, value)
 }
 
 
-/* Return TRUE if any register used in the epilogue is used.  This to insure
-   any insn put into the epilogue delay slots is safe.  */
-
-int
-epilogue_reg_mentioned_p (insn)
-     rtx insn;
-{
-  register char *fmt;
-  register int i;
-  register enum rtx_code code;
-  register int regno;
-
-  if (insn == (rtx)0)
-    return 0;
-
-  if (GET_CODE (insn) == LABEL_REF)
-    return 0;
-
-  code = GET_CODE (insn);
-  switch (code)
-    {
-    case REG:
-      regno = REGNO (insn);
-      if (regno == STACK_POINTER_REGNUM)
-	return 1;
-
-      if (regno == FRAME_POINTER_REGNUM && frame_pointer_needed)
-	return 1;
-
-      if (!call_used_regs[regno])
-	return 1;
-
-      if (regno != MIPS_TEMP1_REGNUM && regno != MIPS_TEMP2_REGNUM)
-	return 0;
-
-      if (!current_frame_info.initialized)
-	compute_frame_size (get_frame_size ());
-
-      return (current_frame_info.total_size >= 32768);
-
-    case SCRATCH:
-    case CC0:
-    case PC:
-    case CONST_INT:
-    case CONST_DOUBLE:
-      return 0;
-    }
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'E')
-	{
-	  register int j;
-	  for (j = XVECLEN (insn, i) - 1; j >= 0; j--)
-	    if (epilogue_reg_mentioned_p (XVECEXP (insn, i, j)))
-	      return 1;
-	}
-      else if (fmt[i] == 'e' && epilogue_reg_mentioned_p (XEXP (insn, i)))
-	return 1;
-    }
-
-  return 0;
-}
-
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.
 
@@ -5525,170 +5460,6 @@ function_epilogue (file, size)
      int size;
 {
   char *fnname;
-  long tsize;
-  char *sp_str = reg_names[STACK_POINTER_REGNUM];
-  char *t1_str = reg_names[MIPS_TEMP1_REGNUM];
-  rtx epilogue_delay = current_function_epilogue_delay_list;
-  int noreorder = (epilogue_delay != 0);
-  int noepilogue = FALSE;
-  int load_nop = FALSE;
-  int load_only_r31;
-  rtx tmp_rtx = (rtx)0;
-  rtx restore_rtx;
-  int i;
-
-  /* The epilogue does not depend on any registers, but the stack
-     registers, so we assume that if we have 1 pending nop, it can be
-     ignored, and 2 it must be filled (2 nops occur for integer
-     multiply and divide).  */
-
-  if (dslots_number_nops > 0)
-    {
-      if (dslots_number_nops == 1)
-	{
-	  dslots_number_nops = 0;
-	  dslots_load_filled++;
-	}
-      else
-	{
-	  while (--dslots_number_nops > 0)
-	    fputs ("\t#nop\n", asm_out_file);
-	}
-    }
-
-  if (set_noat != 0)
-    {
-      set_noat = 0;
-      fputs ("\t.set\tat\n", file);
-      error ("internal gcc error: .set noat left on in epilogue");
-    }
-
-  if (set_nomacro != 0)
-    {
-      set_nomacro = 0;
-      fputs ("\t.set\tmacro\n", file);
-      error ("internal gcc error: .set nomacro left on in epilogue");
-    }
-
-  if (set_noreorder != 0)
-    {
-      set_noreorder = 0;
-      fputs ("\t.set\treorder\n", file);
-      error ("internal gcc error: .set noreorder left on in epilogue");
-    }
-
-  if (set_volatile != 0)
-    {
-      set_volatile = 0;
-      fprintf (file, "\t%s.set\tnovolatile\n", (TARGET_MIPS_AS) ? "" : "#");
-      error ("internal gcc error: .set volatile left on in epilogue");
-    }
-
-  size = MIPS_STACK_ALIGN (size);
-  tsize = (!current_frame_info.initialized)
-		? compute_frame_size (size)
-		: current_frame_info.total_size;
-
-  if (tsize == 0 && epilogue_delay == 0)
-    {
-      rtx insn = get_last_insn ();
-
-      /* If the last insn was a BARRIER, we don't have to write any code
-	 because a jump (aka return) was put there.  */
-      if (GET_CODE (insn) == NOTE)
-	insn = prev_nonnote_insn (insn);
-      if (insn && GET_CODE (insn) == BARRIER)
-	noepilogue = TRUE;
-
-      noreorder = FALSE;
-    }
-
-  if (!noepilogue)
-    {
-      /* In the reload sequence, we don't need to fill the load delay
-	 slots for most of the loads, also see if we can fill the final
-	 delay slot if not otherwise filled by the reload sequence.  */
-
-      if (noreorder)
-	fprintf (file, "\t.set\tnoreorder\n");
-
-      if (tsize > 32767)
-	{
-	  fprintf (file, "\tli\t%s,0x%.08lx\t# %ld\n", t1_str, (long)tsize, (long)tsize);
-	  tmp_rtx = gen_rtx (REG, Pmode, MIPS_TEMP1_REGNUM);
-	}
-
-      if (frame_pointer_needed)
-	fprintf (file, "\tmove\t%s,%s\t\t\t# sp not trusted here\n",
-		 sp_str, reg_names[FRAME_POINTER_REGNUM]);
-
-      save_restore_insns (FALSE, tmp_rtx, tsize, file);
-
-      load_only_r31 = (((current_frame_info.mask
-			 & ~ (TARGET_ABICALLS && mips_abi == ABI_32
-			      ? PIC_OFFSET_TABLE_MASK : 0))
-			== RA_MASK)
-		       && current_frame_info.fmask == 0);
-
-      if (noreorder)
-	{
-	  /* If the only register saved is the return address, we need a
-	     nop, unless we have an instruction to put into it.  Otherwise
-	     we don't since reloading multiple registers doesn't reference
-	     the register being loaded.  */
-
-	  if (load_only_r31)
-	    {
-	      if (epilogue_delay)
-		  final_scan_insn (XEXP (epilogue_delay, 0),
-				   file,
-				   1,	 		/* optimize */
-				   -2,	 		/* prescan */
-				   1);			/* nopeepholes */
-	      else
-		{
-		  fprintf (file, "\tnop\n");
-		  load_nop = TRUE;
-		}
-	    }
-
-	  fprintf (file, "\tj\t%s\n", reg_names[GP_REG_FIRST + 31]);
-
-	  if (tsize > 32767)
-	    fprintf (file, "\t%s\t%s,%s,%s\n",
-		     TARGET_LONG64 ? "daddu" : "addu",
-		     sp_str, sp_str, t1_str);
-
-	  else if (tsize > 0)
-	    fprintf (file, "\t%s\t%s,%s,%d\n",
-		     TARGET_LONG64 ? "daddu" : "addu",
-		     sp_str, sp_str, tsize);
-
-	  else if (!load_only_r31 && epilogue_delay != 0)
-	    final_scan_insn (XEXP (epilogue_delay, 0),
-			     file,
-			     1, 		/* optimize */
-			     -2, 		/* prescan */
-			     1);		/* nopeepholes */
-
-	  fprintf (file, "\t.set\treorder\n");
-	}
-
-      else
-	{
-	  if (tsize > 32767)
-	    fprintf (file, "\t%s\t%s,%s,%s\n",
-		     TARGET_LONG64 ? "daddu" : "addu",
-		     sp_str, sp_str, t1_str);
-
-	  else if (tsize > 0)
-	    fprintf (file, "\t%s\t%s,%s,%d\n",
-		     TARGET_LONG64 ? "daddu" : "addu",
-		     sp_str, sp_str, tsize);
-
-	  fprintf (file, "\tj\t%s\n", reg_names[GP_REG_FIRST + 31]);
-	}
-    }
 
 #ifndef FUNCTION_NAME_ALREADY_DECLARED
   /* Get the function name the same way that toplev.c does before calling
@@ -5712,23 +5483,6 @@ function_epilogue (file, size)
 	name++;
 
       dslots_load_total += num_regs;
-
-      if (!noepilogue)
-	dslots_jump_total++;
-
-      if (noreorder)
-	{
-	  dslots_load_filled += num_regs;
-
-	  /* If the only register saved is the return register, we
-	     can't fill this register's delay slot.  */
-
-	  if (load_only_r31 && epilogue_delay == 0)
-	    dslots_load_filled--;
-
-	  if (tsize > 0 || (!load_only_r31 && epilogue_delay != 0))
-	    dslots_jump_filled++;
-	}
 
       fprintf (stderr,
 	       "%-20s fp=%c leaf=%c alloca=%c setjmp=%c stack=%4ld arg=%3ld reg=%2d/%d delay=%3d/%3dL %3d/%3dJ refs=%3d/%3d/%3d",
@@ -5791,6 +5545,12 @@ mips_expand_epilogue ()
   rtx tsize_rtx = GEN_INT (tsize);
   rtx tmp_rtx = (rtx)0;
 
+  if (mips_can_use_return_insn ())
+    {
+      emit_insn (gen_return ());
+      return;
+    }
+
   if (tsize > 32767)
     {
       tmp_rtx = gen_rtx (REG, Pmode, MIPS_TEMP1_REGNUM);
@@ -5802,6 +5562,7 @@ mips_expand_epilogue ()
     {
       if (frame_pointer_needed)
 	{
+	  emit_insn (gen_blockage ());
 	  if (TARGET_LONG64)
 	    emit_insn (gen_movdi (stack_pointer_rtx, frame_pointer_rtx));
 	  else
@@ -5810,6 +5571,7 @@ mips_expand_epilogue ()
 
       save_restore_insns (FALSE, tmp_rtx, tsize, (FILE *)0);
 
+      emit_insn (gen_blockage ());
       if (TARGET_LONG64)
 	emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
 			       tsize_rtx));
@@ -5818,28 +5580,7 @@ mips_expand_epilogue ()
 			       tsize_rtx));
     }
 
-  emit_jump_insn (gen_return_internal (gen_rtx (REG, Pmode, GP_REG_FIRST+31)));
-}
-
-
-/* Define the number of delay slots needed for the function epilogue.
-
-   On the mips, we need a slot if either no stack has been allocated,
-   or the only register saved is the return register.  */
-
-int
-mips_epilogue_delay_slots ()
-{
-  if (!current_frame_info.initialized)
-    (void) compute_frame_size (get_frame_size ());
-
-  if (current_frame_info.total_size == 0)
-    return 1;
-
-  if (current_frame_info.mask == RA_MASK && current_frame_info.fmask == 0)
-    return 1;
-
-  return 0;
+  emit_jump_insn (gen_return_internal ());
 }
 
 
@@ -5848,9 +5589,12 @@ mips_epilogue_delay_slots ()
    was created.  */
 
 int
-simple_epilogue_p ()
+mips_can_use_return_insn ()
 {
   if (!reload_completed)
+    return 0;
+
+  if (regs_ever_live[31] || profile_flag)
     return 0;
 
   if (current_frame_info.initialized)
