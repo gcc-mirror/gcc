@@ -79,7 +79,7 @@ The @code{libmudflap} library, used for instrumenting pointer and array
 dereferencing operations.
 
 @item libobjc
-The Objective-C runtime library.
+The Objective-C and Objective-C++ runtime library.
 
 @item libstdc++-v3
 The C++ runtime library.
@@ -128,11 +128,11 @@ The @file{gcc} directory contains the following subdirectories:
 @item @var{language}
 Subdirectories for various languages.  Directories containing a file
 @file{config-lang.in} are language subdirectories.  The contents of
-the subdirectories @file{cp} (for C++) and @file{objc} (for
-Objective-C) are documented in this manual (@pxref{Passes, , Passes
-and Files of the Compiler}); those for other languages are not.
-@xref{Front End, , Anatomy of a Language Front End}, for details of
-the files in these directories.
+the subdirectories @file{cp} (for C++), @file{objc} (for Objective-C)
+and @file{objcp} (for Objective-C++) are documented in this manual
+(@pxref{Passes, , Passes and Files of the Compiler}); those for other
+languages are not. @xref{Front End, , Anatomy of a Language Front End},
+for details of the files in these directories.
 
 @item config
 Configuration files for supported architectures and operating
