@@ -1,3 +1,7 @@
+Mon Jul 27 22:08:12 1998  Mike Stump  (mrs@wrs.com)
+
+	* compare_tests: New script.
+
 1998-07-28  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* test_summary: assigned copyright to FSF

@@ -1,0 +1,98 @@
+#!/bin/sh
+# This script automatically test the given tool with the tool's test cases,
+# reporting anything of interest.
+
+# exits with 1 if there is nothing of interest
+# exits with 0 if there is something interesting
+# exits with 2 if an error occurred
+
+# Give two .sum files to compare them
+
+# Written by Mike Stump <mrs@cygnus.com>
+
+tmp1=/tmp/$tool-testing.$$a
+tmp2=/tmp/$tool-testing.$$b
+now_s=/tmp/$tool-testing.$$d
+before_s=/tmp/$tool-testing.$$e
+
+if [ "$2" = "" ]; then
+	echo "Usage: $0 previous current" >&2
+	exit 2
+fi
+
+sed 's/^XFAIL/FAIL/; s/^XPASS/PASS/' < "$1" >$tmp1
+sed 's/^XFAIL/FAIL/; s/^XPASS/PASS/' < "$2" >$tmp2
+
+before=$tmp1
+now=$tmp2
+
+trap "rm -f $tmp1 $tmp2 $now_s $before_s" 0 1 2 3 5 9 13 15
+
+sort +0.4 "$now" > "$now_s"
+sort +0.4 "$before" > "$before_s"
+
+grep '^FAIL' "$now_s" | sed 's/^....:	//' >$tmp1
+grep '^PASS' "$before_s" | sed 's/^....:	//' | comm -12 $tmp1 - >$tmp2
+
+grep -s . $tmp2 >/dev/null
+if [ $? = 0 ]; then
+	echo "Tests that now fail, but worked before:"
+	echo
+	cat $tmp2
+	echo
+fi
+
+grep '^PASS' "$now_s" | sed 's/^....:	//' >$tmp1
+grep '^FAIL' "$before_s" | sed 's/^....:	//' | comm -12 $tmp1 - >$tmp2
+
+grep -s . $tmp2 >/dev/null
+if [ $? = 0 ]; then
+	echo "Tests that now work, but didn't before:"
+	echo
+	cat $tmp2
+	echo
+fi
+
+grep '^FAIL' "$now_s" | sed 's/^....:	//' >$tmp1
+grep '^[PF]A[SI][SL]' "$before_s" | sed 's/^....:	//' | comm -23 $tmp1 - >$tmp2
+
+grep -s . $tmp2 >/dev/null
+if [ $? = 0 ]; then
+	echo "New tests that FAIL:"
+	echo
+	cat $tmp2
+	echo
+fi
+
+grep '^PASS' "$now_s" | sed 's/^....:	//' >$tmp1
+grep '^[PF]A[SI][SL]' "$before_s" | sed 's/^....:	//' | comm -23 $tmp1 - >$tmp2
+
+grep -s . $tmp2 >/dev/null
+if [ $? = 0 ]; then
+	echo "New tests that PASS:"
+	echo
+	cat $tmp2
+	echo
+fi
+
+grep '^[PF]A[SI][SL]' "$now_s" | sed 's/^....:	//' >$tmp1
+grep '^PASS' "$before_s" | sed 's/^....:	//' | comm -13 $tmp1 - >$tmp2
+
+grep -s . $tmp2 >/dev/null
+if [ $? = 0 ]; then
+	echo "Old tests that passed, that have disappeared: (Eeek!)"
+	echo
+	cat $tmp2
+	echo
+fi
+
+grep '^[PF]A[SI][SL]' "$now_s" | sed 's/^....:	//' >$tmp1
+grep '^FAIL' "$before_s" | sed 's/^....:	//' | comm -13 $tmp1 - >$tmp2
+
+grep -s . $tmp2 >/dev/null
+if [ $? = 0 ]; then
+	echo "Old tests that failed, that have disappeared: (Eeek!)"
+	echo
+	cat $tmp2
+	echo
+fi
