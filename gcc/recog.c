@@ -2659,6 +2659,7 @@ split_all_insns (upd_life)
 
   if (changed && upd_life)
     {
+      compute_bb_for_insn (get_max_uid ());
       count_or_remove_death_notes (blocks, 1);
       update_life_info (blocks, UPDATE_LIFE_LOCAL);
     }
@@ -2759,6 +2760,7 @@ peephole2_optimize (dump_file)
 
   free_resource_info ();
 
+  compute_bb_for_insn (get_max_uid ());
   count_or_remove_death_notes (blocks, 1);
   update_life_info (blocks, UPDATE_LIFE_LOCAL);
 }

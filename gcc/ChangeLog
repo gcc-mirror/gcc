@@ -1,3 +1,16 @@
+Mon Oct 18 15:19:41 1999  Richard Henderson  <rth@cygnus.com>
+
+	* basic-block.h (set_block_num): Declare.
+	* flow.c (update_life_info): Don't call compute_bb_for_insn
+	or free_basic_block_vars.
+	* haifa-sched.c (remove_dependence): Conditionalize on HAVE_cc0.
+	(insn_orig_block): Remove.
+	(INSN_BLOCK): Remove.  Update all callers to use BLOCK_NUM.
+	(schedule_block): Keep BLOCK_NUM up-to-date.
+	(schedule_insns): Use compute_bb_for_insn.
+	* recog.c (split_all_insns): Likewise.
+	(peephole2_optimize): Likewise.
+
 Mon Oct 18 18:50:51 1999  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.h (INITIAL_FRAME_POINTER_OFFSET): Add one word
