@@ -1,3 +1,9 @@
+2001-09-17  Jeff Sturm  <jsturm@one-point.com>
+
+	* except.c (dw2_build_landing_pads): New local
+	clobbers_hard_regs.  Emit an ASM_INPUT as a scheduling
+	barrier after clobbers.  Fixes c++/4012.
+
 2001-09-17  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcse.c (hash_scan_set): Fix merge glitch in last patch.

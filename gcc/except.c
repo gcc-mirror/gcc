@@ -1865,6 +1865,7 @@ dw2_build_landing_pads ()
     {
       struct eh_region *region = cfun->eh->region_array[i];
       rtx seq;
+      bool clobbers_hard_regs = false;
 
       /* Mind we don't process a region more than once.  */
       if (!region || region->region_number != i)
@@ -1901,7 +1902,19 @@ dw2_build_landing_pads ()
 	  if (r == INVALID_REGNUM)
 	    break;
 	  if (! call_used_regs[r])
-	    emit_insn (gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, r)));
+	    {
+	      emit_insn (gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, r)));
+	      clobbers_hard_regs = true;
+	    }
+	}
+
+      if (clobbers_hard_regs)
+	{
+	  /* @@@ This is a kludge.  Not all machine descriptions define a
+	     blockage insn, but we must not allow the code we just generated
+	     to be reordered by scheduling.  So emit an ASM_INPUT to act as
+	     blockage insn. */
+	  emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
 	}
 
       emit_move_insn (cfun->eh->exc_ptr,
