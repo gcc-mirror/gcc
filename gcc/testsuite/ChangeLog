@@ -1,3 +1,9 @@
+1999-12-02  Alex Samuel  <samuel@codesourcery.com>
+
+	* g++.old-deja/g++.abi/align.C: New test.
+	* g++.old-deja/g++.abi/aggregates.C: Likewise.
+	* g++.old-deja/g++.abi/bitfields.C: Likewise.
+
 1999-12-01  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/991201-1.c: New.
