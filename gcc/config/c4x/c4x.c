@@ -5032,12 +5032,12 @@ c4x_init_builtins (endlink)
 		    build_function_type 
 		    (integer_type_node,
 		     tree_cons (NULL_TREE, double_type_node, endlink)),
-		    C4X_BUILTIN_FIX, BUILT_IN_MD, NULL_PTR);
+		    C4X_BUILTIN_FIX, BUILT_IN_MD, NULL);
   builtin_function ("ansi_ftoi",
 		    build_function_type 
 		    (integer_type_node, 
 		     tree_cons (NULL_TREE, double_type_node, endlink)),
-		    C4X_BUILTIN_FIX_ANSI, BUILT_IN_MD, NULL_PTR);
+		    C4X_BUILTIN_FIX_ANSI, BUILT_IN_MD, NULL);
   if (TARGET_C3X)
     builtin_function ("fast_imult",
 		      build_function_type
@@ -5045,24 +5045,24 @@ c4x_init_builtins (endlink)
 		       tree_cons (NULL_TREE, integer_type_node,
 				  tree_cons (NULL_TREE,
 					     integer_type_node, endlink))),
-		      C4X_BUILTIN_MPYI, BUILT_IN_MD, NULL_PTR);
+		      C4X_BUILTIN_MPYI, BUILT_IN_MD, NULL);
   else
     {
       builtin_function ("toieee",
 		        build_function_type 
 			(double_type_node,
 			 tree_cons (NULL_TREE, double_type_node, endlink)),
-		        C4X_BUILTIN_TOIEEE, BUILT_IN_MD, NULL_PTR);
+		        C4X_BUILTIN_TOIEEE, BUILT_IN_MD, NULL);
       builtin_function ("frieee",
 		        build_function_type
 			(double_type_node, 
 			 tree_cons (NULL_TREE, double_type_node, endlink)),
-		        C4X_BUILTIN_FRIEEE, BUILT_IN_MD, NULL_PTR);
+		        C4X_BUILTIN_FRIEEE, BUILT_IN_MD, NULL);
       builtin_function ("fast_invf",
 		        build_function_type 
 			(double_type_node, 
 			 tree_cons (NULL_TREE, double_type_node, endlink)),
-		        C4X_BUILTIN_RCPF, BUILT_IN_MD, NULL_PTR);
+		        C4X_BUILTIN_RCPF, BUILT_IN_MD, NULL);
     }
 }
 

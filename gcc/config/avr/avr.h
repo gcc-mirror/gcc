@@ -1677,22 +1677,22 @@ do {									    \
 	    {								    \
 	      int regno = REGNO (XEXP (X, 0));				    \
 	      rtx mem = make_memloc (X, regno);				    \
-	      push_reload (XEXP (mem,0), NULL_PTR, &XEXP (mem,0), NULL_PTR, \
+	      push_reload (XEXP (mem,0), NULL, &XEXP (mem,0), NULL,         \
 		           POINTER_REGS, Pmode, VOIDmode, 0, 0,		    \
 		           1, ADDR_TYPE (TYPE));			    \
-	      push_reload (mem, NULL_RTX, &XEXP (X, 0), NULL_PTR,	    \
+	      push_reload (mem, NULL_RTX, &XEXP (X, 0), NULL,		    \
 		           BASE_POINTER_REGS, GET_MODE (X), VOIDmode, 0, 0, \
 		           OPNUM, TYPE);				    \
 	      goto WIN;							    \
 	    }								    \
-	  push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL_PTR,	    \
+	  push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,	    \
 		       BASE_POINTER_REGS, GET_MODE (X), VOIDmode, 0, 0,	    \
 		       OPNUM, TYPE);					    \
           goto WIN;							    \
 	}								    \
       else if (! (frame_pointer_needed && XEXP (X,0) == frame_pointer_rtx)) \
 	{								    \
-	  push_reload (X, NULL_RTX, &X, NULL_PTR,			    \
+	  push_reload (X, NULL_RTX, &X, NULL,				    \
 		       POINTER_REGS, GET_MODE (X), VOIDmode, 0, 0,	    \
 		       OPNUM, TYPE);					    \
           goto WIN;							    \

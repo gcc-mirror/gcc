@@ -9019,7 +9019,7 @@ x86_initialize_trampoline (tramp, fnaddr, cxt)
 }
 
 #define def_builtin(NAME, TYPE, CODE) \
-  builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL_PTR)
+  builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL)
 struct builtin_description
 {
   enum insn_code icode;

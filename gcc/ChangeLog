@@ -1,5 +1,29 @@
 2001-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* alpha.h: NULL_PTR -> NULL.
+	* arm.c: Likewise.
+	* arm.h: Likewise.
+	* avr.h: Likewise.
+	* c4x.c: Likewise.
+	* c4x.h: Likewise.
+	* i386.c: Likewise.
+	* i386.md: Likewise.
+	* i860.c: Likewise.
+	* ia64.c: Likewise.
+	* m68hc11.h: Likewise.
+	* rs6000.h: Likewise.
+	* sh.c: Likewise.
+	* sh.h: Likewise.
+	* sparc.h: Likewise.
+	* v850.c: Likewise.
+
+	* expr.c: Likewise.
+	* final.c: Likewise.
+	* gcc.c: Likewise.
+	* recog.c: Likewise.
+
+2001-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* i386.c (ix86_emit_restore_regs_using_mov, ix86_save_reg): Change
 	`bool' parameter to `int'.
 

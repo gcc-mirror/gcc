@@ -1734,7 +1734,7 @@ CUMULATIVE_ARGS;
       	  X = gen_rtx_LO_SUM (GET_MODE (X),				\
 			      gen_rtx_HIGH (GET_MODE (X), X), X);	\
           i = push_reload (XEXP (X, 0), NULL_RTX,			\
-			   &XEXP (X, 0), NULL_PTR,			\
+			   &XEXP (X, 0), NULL,				\
 		           DP_REG, GET_MODE (X), VOIDmode, 0, 0,	\
 		           OPNUM, TYPE);				\
           /* The only valid reg is DP. This is a fixed reg and will	\
@@ -1757,7 +1757,7 @@ CUMULATIVE_ARGS;
       if (! TARGET_SMALL)						\
 	{								\
           int i = push_reload (XEXP (X, 0), NULL_RTX,			\
-			       &XEXP (X, 0), NULL_PTR,			\
+			       &XEXP (X, 0), NULL,			\
 		               DP_REG, GET_MODE (X), VOIDmode, 0, 0,	\
 		               OPNUM, TYPE);				\
           /* The only valid reg is DP. This is a fixed reg and will	\

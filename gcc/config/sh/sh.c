@@ -5266,7 +5266,7 @@ sh_insn_length_adjustment (insn)
 	template = XSTR (body, 0);
       else if (asm_noperands (body) >= 0)
 	template
-	  = decode_asm_operands (body, NULL_PTR, NULL_PTR, NULL_PTR, NULL_PTR);
+	  = decode_asm_operands (body, NULL, NULL, NULL, NULL);
       else
 	return 0;
       do

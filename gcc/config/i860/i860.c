@@ -1451,7 +1451,7 @@ output_delayed_branch (template, operands, insn)
 	 We must do this after outputting the branch insn,
 	 since operands may just be a pointer to `recog_data.operand'.  */
       INSN_CODE (delay_insn) = insn_code_number
-	= recog (pat, delay_insn, NULL_PTR);
+	= recog (pat, delay_insn, NULL);
       if (insn_code_number == -1)
 	abort ();
 
