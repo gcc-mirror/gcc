@@ -1,3 +1,8 @@
+2003-11-10  Andreas Jaeger  <aj@suse.de>
+
+	* 7sosprim.adb: tv_usec of struct_timeval and time_t are long
+	integer.
+
 2003-11-10  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* misc.c, lang.opt: Add handling of -nostdlib, now recognized/needed
