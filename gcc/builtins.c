@@ -5081,6 +5081,69 @@ expand_builtin_signbit (tree exp, rtx target)
     }
   return temp;
 }
+
+/* Expand fork or exec calls.  TARGET is the desired target of the
+   call.  ARGLIST is the list of arguments of the call.  FN is the
+   identificator of the actual function.  IGNORE is nonzero if the
+   value is to be ignored.  */
+
+static rtx
+expand_builtin_fork_or_exec (tree fn, tree arglist, rtx target, int ignore)
+{
+  tree id, decl;
+  tree call;
+
+  /* If we are not profiling, just call the function.  */
+  if (!profile_arc_flag)
+    return NULL_RTX;
+
+  /* Otherwise call the wrapper.  This should be equivalent for the rest of
+     compiler, so the code does not diverge, and the wrapper may run the
+     code neccesary for keeping the profiling sane.  */
+
+  switch (DECL_FUNCTION_CODE (fn))
+    {
+    case BUILT_IN_FORK:
+      id = get_identifier ("__gcov_fork");
+      break;
+
+    case BUILT_IN_EXECL:
+      id = get_identifier ("__gcov_execl");
+      break;
+
+    case BUILT_IN_EXECV:
+      id = get_identifier ("__gcov_execv");
+      break;
+
+    case BUILT_IN_EXECLP:
+      id = get_identifier ("__gcov_execlp");
+      break;
+
+    case BUILT_IN_EXECLE:
+      id = get_identifier ("__gcov_execle");
+      break;
+
+    case BUILT_IN_EXECVP:
+      id = get_identifier ("__gcov_execvp");
+      break;
+
+    case BUILT_IN_EXECVE:
+      id = get_identifier ("__gcov_execve");
+      break;
+
+    default:
+      abort ();
+    }
+
+  decl = build_decl (FUNCTION_DECL, id, TREE_TYPE (fn));
+  DECL_EXTERNAL (decl) = 1;
+  TREE_PUBLIC (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  TREE_NOTHROW (decl) = 1;
+  call = build_function_call_expr (decl, arglist);
+
+  return expand_call (call, target, ignore);
+}
 
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
@@ -5653,6 +5716,17 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       expand_builtin_prefetch (arglist);
       return const0_rtx;
 
+    case BUILT_IN_FORK:
+    case BUILT_IN_EXECL:
+    case BUILT_IN_EXECV:
+    case BUILT_IN_EXECLP:
+    case BUILT_IN_EXECLE:
+    case BUILT_IN_EXECVP:
+    case BUILT_IN_EXECVE:
+      target = expand_builtin_fork_or_exec (fndecl, arglist, target, ignore);
+      if (target)
+	return target;
+      break;
 
     default:	/* just do library call, if unknown builtin */
       if (!DECL_ASSEMBLER_NAME_SET_P (fndecl))

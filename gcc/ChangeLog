@@ -1,3 +1,26 @@
+2004-03-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* Makefile.in (LIBGCOV): Add _gcov_fork, _gcov_execl, _gcov_execlp,
+	_gcov_execle, _gcov_execv, _gcov_execvp, _gcov_execve.
+	* builtin-types.def (BT_PID, BT_PTR_CONST_STRING, BT_FN_PID,
+	BT_FN_INT_CONST_STRING_PTR_CONST_STRING,
+	BT_FN_INT_CONST_STRING_PTR_CONST_STRING_PTR_CONST_STRING): New.
+	* builtins.c (expand_builtin_fork_or_exec): New.
+	(expand_builtin): Call it.
+	* builtins.def (BUILT_IN_EXECL, BUILT_IN_EXECLP,BUILT_IN_EXECLE,
+	BUILT_IN_EXECV, BUILT_IN_EXECVP, BUILT_IN_EXECVE, BUILT_IN_FORK): New.
+	* c-common.c (PID_TYPE): New macro.
+	(c_common_nodes_and_builtins): Initialize pid_type_node.
+	* calls.c (special_function_p): Do not handle fork and exec.
+	(expand_call): Do not handle ECF_FORK_OR_EXEC.
+	* gcov-io.h (__gcov_fork, __gcov_execl, __gcov_execlp, __gcov_execle,
+	__gcov_execv, __gcov_execvp, __gcov_execve): Declare.
+	* libgcov.c (__gcov_fork, __gcov_execl, __gcov_execlp, __gcov_execle,
+	__gcov_execv, __gcov_execvp, __gcov_execve): New.
+	* tree.h (enum tree_index): Add TI_PID_TYPE.
+	(pid_type_node): New macro.
+	(ECF_FORK_OR_EXEC): Removed.
+
 2004-04-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/13985

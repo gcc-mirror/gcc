@@ -653,21 +653,8 @@ special_function_p (tree fndecl, int flags)
       else if (tname[0] == 'l' && tname[1] == 'o'
 	       && ! strcmp (tname, "longjmp"))
 	flags |= ECF_LONGJMP;
-
-      else if ((tname[0] == 'f' && tname[1] == 'o'
-		&& ! strcmp (tname, "fork"))
-	       /* Linux specific: __clone.  check NAME to insist on the
-		  leading underscores, to avoid polluting the ISO / POSIX
-		  namespace.  */
-	       || (name[0] == '_' && name[1] == '_'
-		   && ! strcmp (tname, "clone"))
-	       || (tname[0] == 'e' && tname[1] == 'x' && tname[2] == 'e'
-		   && tname[3] == 'c' && (tname[4] == 'l' || tname[4] == 'v')
-		   && (tname[5] == '\0'
-		       || ((tname[5] == 'p' || tname[5] == 'e')
-			   && tname[6] == '\0'))))
-	flags |= ECF_FORK_OR_EXEC;
     }
+
   return flags;
 }
 
@@ -2624,18 +2611,6 @@ expand_call (tree exp, rtx target, int ignore)
 	 normal call cases below.  */
       pending_stack_adjust = save_pending_stack_adjust;
       stack_pointer_delta = save_stack_pointer_delta;
-    }
-
-  if (profile_arc_flag && (flags & ECF_FORK_OR_EXEC))
-    {
-      /* A fork duplicates the profile information, and an exec discards
-	 it.  We can't rely on fork/exec to be paired.  So write out the
-	 profile information we have gathered so far, and clear it.  */
-      /* ??? When Linux's __clone is called with CLONE_VM set, profiling
-	 is subject to race conditions, just as with multithreaded
-	 programs.  */
-
-      emit_library_call (gcov_flush_libfunc, LCT_ALWAYS_RETURN, VOIDmode, 0);
     }
 
   /* Ensure current function's preferred stack boundary is at least
