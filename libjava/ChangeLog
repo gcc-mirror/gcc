@@ -1,3 +1,13 @@
+2004-04-14  Andrew Haley  <aph@redhat.com>
+            Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Use
+	_Jv_LookupInterfaceMethodIdx for calls to interfaces.
+	* include/jvm.h (_Jv_CallAnyMethodA): Add new `iface' arg.
+
+	* testsuite/libjava.lang/InvokeInterface.java: New file.
+	* testsuite/libjava.lang/InvokeInterface.out: New file.
+
 2004-04-09  Ranjit Mathew  <rmathew@hotmail.com>
 	
 	* java/lang/VMThrowable.java (getStackTrace): Pass trace as-is to

@@ -1246,10 +1246,15 @@ make_method_value (tree mdecl)
   tree minit;
   tree index;
   tree code;
+  tree class_decl;
 #define ACC_TRANSLATED          0x4000
   int accflags = get_access_flags_from_decl (mdecl) | ACC_TRANSLATED;
-
-  if (!flag_indirect_dispatch && DECL_VINDEX (mdecl) != NULL_TREE)
+  
+  class_decl = DECL_CONTEXT (mdecl);
+  /* For interfaces, the index field contains the dispatch index. */
+  if (CLASS_INTERFACE (TYPE_NAME (class_decl)))
+    index = build_int_2 (get_interface_method_index (mdecl, class_decl), 0);
+  else if (!flag_indirect_dispatch && DECL_VINDEX (mdecl) != NULL_TREE)
     index = DECL_VINDEX (mdecl);
   else
     index = integer_minus_one_node;
@@ -2131,6 +2136,23 @@ layout_class_methods (tree this_class)
 					method_decl, dtable_count);
 
   TYPE_NVIRTUALS (this_class) = dtable_count;
+}
+
+/* Return the index of METHOD in INTERFACE.  This index begins at 1 and is used as an
+   argument for _Jv_LookupInterfaceMethodIdx(). */
+int
+get_interface_method_index (tree method, tree interface)
+{
+  tree meth;
+  int i = 1;
+
+  for (meth = TYPE_METHODS (interface); ; meth = TREE_CHAIN (meth), i++)
+    {
+      if (meth == method)
+	return i;
+      if (meth == NULL_TREE)
+	abort ();
+    }
 }
 
 /* Lay METHOD_DECL out, returning a possibly new value of
