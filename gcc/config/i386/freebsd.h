@@ -86,9 +86,13 @@ Boston, MA 02111-1307, USA.  */
 
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
-/* Don't default to pcc-struct-return, because gcc is the only compiler, and
-   we want to retain compatibility with older gcc versions.  */
+/* Don't default to pcc-struct-return, because in FreeBSD we prefer the
+   superior nature of the older gcc way.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
+
+/* Ensure we the configuration knows our system correctly so we can link with
+   libraries compiled with the native cc. */
+#undef NO_DOLLAR_IN_LABEL
 
 /* i386 freebsd still uses old binutils that don't insert nops by default
    when the .align directive demands to insert extra space in the text
