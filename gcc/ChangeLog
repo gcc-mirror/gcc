@@ -1,3 +1,7 @@
+Thu Mar 25 02:12:42 1999  Finn Hakansson  <finn@axis.com>
+
+        * rtl.h (MEM_COPY_ATTRIBUTES): Remove unnecessary ending backslash.
+
 Thu Mar 25 02:02:13 1999  Axel Thimm <Axel.Thimm@physik.fu-berlin.de>
 
 	* Makefile.in (RANLIB_TEST): Improve test.
