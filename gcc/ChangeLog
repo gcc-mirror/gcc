@@ -1,3 +1,9 @@
+2004-06-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR tree-optimization/15993
+	* tree-ssa-dom.c (thread_across_edge): Do not thread edge if its
+	destination is unchanged.
+
 2004-06-16  Andreas Jaeger  <aj@suse.de>
 
 	* doc/install.texi (Configuration): Update description for
