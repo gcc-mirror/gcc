@@ -3974,11 +3974,11 @@ thread_jumps (void)
 	 among BB's predecessors.  */
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
-	  /* We are not interested in threading jumps from a forwarder
-	     block.  */
-	  if (!bb_ann (e->src)->forwardable
-	      /* We don't want to put a duplicate into WORKLIST.  */
-	      && (e->src->flags & BB_VISITED) == 0)
+	  /* We don't want to put a duplicate into WORKLIST.  */
+	  if ((e->src->flags & BB_VISITED) == 0
+	      /* We are not interested in threading jumps from a forwarder
+		 block.  */
+	      && !bb_ann (e->src)->forwardable)
 	    {
 	      e->src->flags |= BB_VISITED;
 	      worklist[size] = e->src;
@@ -4013,11 +4013,11 @@ thread_jumps (void)
 		 predecessors.  */
 	      FOR_EACH_EDGE (f, ej, bb->preds)
 		{
-		  /* We are not interested in threading jumps from a
-		     forwarder block.  */
-		  if (!bb_ann (f->src)->forwardable
-		      /* We don't want to put a duplicate into WORKLIST.  */
-		      && (f->src->flags & BB_VISITED) == 0)
+		  /* We don't want to put a duplicate into WORKLIST.  */
+		  if ((f->src->flags & BB_VISITED) == 0
+		      /* We are not interested in threading jumps from a
+			 forwarder block.  */
+		      && !bb_ann (f->src)->forwardable)
 		    {
 		      f->src->flags |= BB_VISITED;
 		      worklist[size] = f->src;
