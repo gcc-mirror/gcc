@@ -1,3 +1,8 @@
+2005-03-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config.gcc: Obsolete i860-*-sysv4*, ip2k-*-elf,
+	ns32k-*-netbsdelf*, and ns32k-*-netbsd*.
+
 2005-03-31  Alan Modra  <amodra@bigpond.net.au>
 
 	* config.gcc (cpu_is_64bit): Set for 64-bit powerpc cpus.
