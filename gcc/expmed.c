@@ -217,7 +217,7 @@ negate_rtx (mode, x)
    into a bit-field within structure STR_RTX
    containing BITSIZE bits starting at bit BITNUM.
    FIELDMODE is the machine-mode of the FIELD_DECL node for this field.
-   ALIGN is the alignment that STR_RTX is known to have, measured in bytes.
+   ALIGN is the alignment that STR_RTX is known to have.
    TOTAL_SIZE is the size of the structure in bytes, or -1 if varying.  */
 
 /* ??? Note that there are two different ideas here for how
@@ -309,7 +309,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       && (GET_CODE (op0) != MEM
 	  || ! SLOW_UNALIGNED_ACCESS (fieldmode, align)
 	  || (offset * BITS_PER_UNIT % bitsize == 0
-	      && align % GET_MODE_SIZE (fieldmode) == 0))
+	      && align % GET_MODE_BITSIZE (fieldmode) == 0))
       && (BYTES_BIG_ENDIAN ? bitpos + bitsize == unit : bitpos == 0)
       && bitsize == GET_MODE_BITSIZE (fieldmode))
     {
@@ -515,14 +515,14 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	  if (GET_MODE (op0) == BLKmode
 	      || GET_MODE_SIZE (GET_MODE (op0)) > GET_MODE_SIZE (maxmode))
 	    bestmode
-	      = get_best_mode (bitsize, bitnum, align * BITS_PER_UNIT, maxmode,
+	      = get_best_mode (bitsize, bitnum, align, maxmode,
 			       MEM_VOLATILE_P (op0));
 	  else
 	    bestmode = GET_MODE (op0);
 
 	  if (bestmode == VOIDmode
 	      || (SLOW_UNALIGNED_ACCESS (bestmode, align)
-		  && GET_MODE_SIZE (bestmode) > align))
+		  && GET_MODE_BITSIZE (bestmode) > align))
 	    goto insv_loses;
 
 	  /* Adjust address to point to the containing unit of that mode.  */
@@ -533,7 +533,8 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	  op0 = change_address (op0, bestmode, 
 				plus_constant (XEXP (op0, 0), offset));
 
-	  /* Fetch that unit, store the bitfield in it, then store the unit.  */
+	  /* Fetch that unit, store the bitfield in it, then store
+	     the unit.  */
 	  tempreg = copy_to_reg (op0);
 	  store_bit_field (tempreg, bitsize, bitpos, fieldmode, value,
 			   align, total_size);
@@ -628,7 +629,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
     (If OP0 is a register, it may be a full word or a narrower mode,
      but BITPOS still counts within a full word,
      which is significant on bigendian machines.)
-   STRUCT_ALIGN is the alignment the structure is known to have (in bytes).
+   STRUCT_ALIGN is the alignment the structure is known to have.
 
    Note that protect_from_queue has already been done on OP0 and VALUE.  */
 
@@ -798,7 +799,7 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
    BITSIZE is the field width; BITPOS the position of its first bit
    (within the word).
    VALUE is the value to store.
-   ALIGN is the known alignment of OP0, measured in bytes.
+   ALIGN is the known alignment of OP0.
    This is also the size of the memory objects to be used.
 
    This does not yet handle fields wider than BITS_PER_WORD.  */
@@ -818,7 +819,7 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
   if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
     unit = BITS_PER_WORD;
   else
-    unit = MIN (align * BITS_PER_UNIT, BITS_PER_WORD);
+    unit = MIN (align, BITS_PER_WORD);
 
   /* If VALUE is a constant other than a CONST_INT, get it into a register in
      WORD_MODE.  If we can do this using gen_lowpart_common, do so.  Note
@@ -885,8 +886,7 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 		 GET_MODE (value) == VOIDmode
 		 ? UNITS_PER_WORD
 		 : (GET_MODE (value) == BLKmode
-		    ? 1
-		    : GET_MODE_ALIGNMENT (GET_MODE (value)) / BITS_PER_UNIT));
+		    ? 1 : GET_MODE_ALIGNMENT (GET_MODE (value))));
 	}
       else
 	{
@@ -902,8 +902,7 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 		 GET_MODE (value) == VOIDmode
 		 ? UNITS_PER_WORD
 		 : (GET_MODE (value) == BLKmode
-		    ? 1
-		    : GET_MODE_ALIGNMENT (GET_MODE (value)) / BITS_PER_UNIT));
+		    ? 1 : GET_MODE_ALIGNMENT (GET_MODE (value))));
 	}
 
       /* If OP0 is a register, then handle OFFSET here.
