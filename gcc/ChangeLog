@@ -1,6 +1,10 @@
 2004-12-31  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/18701
+	* combine.c (combine_simplify_rtx): Do not allow paradoxical
+	subregs of MEM.
+
+	PR target/18701
 	* combine.c (gen_lowpart_for_combine): When stripping SUBREG of
 	MEM, adjust imode and isize.
 
