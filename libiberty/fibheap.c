@@ -37,7 +37,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define FIBHEAPKEY_MIN	LONG_MIN
 
-static void fibheap_init PARAMS ((fibheap_t));
 static void fibheap_ins_root PARAMS ((fibheap_t, fibnode_t));
 static void fibheap_rem_root PARAMS ((fibheap_t, fibnode_t));
 static void fibheap_consolidate PARAMS ((fibheap_t));
@@ -49,62 +48,29 @@ static int fibheap_compare PARAMS ((fibheap_t, fibnode_t, fibnode_t));
 static int fibheap_comp_data PARAMS ((fibheap_t, fibheapkey_t, void *,
 				      fibnode_t));
 static fibnode_t fibnode_new PARAMS ((void));
-static void fibnode_init PARAMS ((fibnode_t));
 static void fibnode_insert_after PARAMS ((fibnode_t, fibnode_t));
 #define fibnode_insert_before(a, b) fibnode_insert_after (a->left, b)
 static fibnode_t fibnode_remove PARAMS ((fibnode_t));
 
 
-/* Initialize the passed in fibonacci heap.  */
-static inline void
-fibheap_init (heap)
-     fibheap_t heap;
-{
-  heap->nodes = 0;
-  heap->min = NULL;
-  heap->root = NULL;
-}
-
 /* Create a new fibonacci heap.  */
 fibheap_t
 fibheap_new ()
 {
-  fibheap_t result;
-
-  if ((result = xmalloc (sizeof (*result))) == NULL)
-    return NULL;
-
-  fibheap_init (result);
-
-  return result;
-}
-
-/* Initialize the passed in fibonacci heap node.  */
-static inline void
-fibnode_init (node)
-     fibnode_t node;
-{
-  node->degree = 0;
-  node->mark = 0;
-  node->parent = NULL;
-  node->child = NULL;
-  node->left = node;
-  node->right = node;
-  node->data = NULL;
+  return (fibheap_t) xcalloc (1, sizeof (struct fibheap));
 }
 
 /* Create a new fibonacci heap node.  */
-static inline fibnode_t
+static fibnode_t
 fibnode_new ()
 {
-  fibnode_t e;
+  fibnode_t node;
 
-  if ((e = xmalloc (sizeof *e)) == NULL)
-    return NULL;
+  node = xcalloc (1, sizeof *node);
+  node->left = node;
+  node->right = node;
 
-  fibnode_init (e);
-
-  return e;
+  return node;
 }
 
 static inline int
@@ -144,9 +110,8 @@ fibheap_insert (heap, key, data)
 {
   fibnode_t node;
 
-  /* Create the new node, if we fail, return NULL.  */
-  if ((node = fibnode_new ()) == NULL)
-    return NULL;
+  /* Create the new node.  */
+  node = fibnode_new ();
 
   /* Set the node's data.  */
   node->data = data;
