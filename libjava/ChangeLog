@@ -1,3 +1,9 @@
+2002-11-29  Scott Gilbertson  <scottg@mantatest.com>
+
+	* java/awt/image/ColorModel.java (getUnnormalizedComponents,
+	getNormalizedComponents): Fix calculation which was using one too
+	many bits in the unnormalized format.
+
 2002-11-29  Gary Benson  <gbenson@redhat.com>
 
 	For PR libgcj/8759:

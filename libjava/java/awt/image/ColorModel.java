@@ -424,7 +424,7 @@ public abstract class ColorModel implements Transparency
     for (int i=0; i<numComponents; i++)
     {
       float in = normComponents[normOffset++];
-      int out = (int) (in * ((2<<getComponentSize(i)) - 1));
+      int out = (int) (in * ((1<<getComponentSize(i)) - 1));
       components[offset++] = out;
     }
     return components;
@@ -447,7 +447,7 @@ public abstract class ColorModel implements Transparency
     for (int i=0; i<numComponents; i++)
     {
       float in = components[offset++];
-      float out = in / ((2<<getComponentSize(i)) - 1);
+      float out = in / ((1<<getComponentSize(i)) - 1);
       normComponents[normOffset++] = out;
     }
     return normComponents;
