@@ -136,9 +136,9 @@ static tree process_partial_specialization PROTO((tree));
 static void set_current_access_from_decl PROTO((tree));
 static void check_default_tmpl_args PROTO((tree, tree, int, int));
 static tree tsubst_call_declarator_parms PROTO((tree, tree, tree));
-static tree get_template_base_recursive PROTO((tree, tree, int *, tree, tree,
+static tree get_template_base_recursive PROTO((tree, tree, tree, tree,
 					       tree, int)); 
-static tree get_template_base PROTO((tree, tree, int *, tree, tree));
+static tree get_template_base PROTO((tree, tree, tree, tree));
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -7365,12 +7365,11 @@ try_one_overload (tparms, orig_targs, targs, parm, arg, strict,
 /* Subroutine of get_template_base.  */
 
 static tree
-get_template_base_recursive (tparms, targs, explicit_mask,
+get_template_base_recursive (tparms, targs,
 			     binfo, rval, template,
 			     via_virtual)
      tree tparms;
      tree targs;
-     int *explicit_mask;
      tree binfo;
      tree rval;
      tree template;
@@ -7384,22 +7383,15 @@ get_template_base_recursive (tparms, targs, explicit_mask,
   if (CLASSTYPE_TEMPLATE_INFO (type)
       && CLASSTYPE_TI_TEMPLATE (type) == tmpl)
     {
-      /* Copy the TPARMS and TARGS since we're only doing a
-	 speculative unification here.  */
-      tree copy_of_tparms;
-      tree copy_of_targs;
-      
       push_momentary ();
-      push_expression_obstack ();
-      copy_of_tparms = copy_node (tparms);
-      copy_of_targs = copy_node (targs);
-      pop_obstacks ();
       
-      i = unify (copy_of_tparms,
-		 copy_of_targs,
+      i = unify (tparms, 
+		 /* Use a temporary vector since we're doing
+		    speculative unification here.  */
+		 make_temp_vec (TREE_VEC_LENGTH (targs)),
 		 CLASSTYPE_TI_ARGS (template),
 		 CLASSTYPE_TI_ARGS (type),
-		 UNIFY_ALLOW_NONE, explicit_mask);
+		 UNIFY_ALLOW_NONE, 0);
 
       pop_momentary ();
 
@@ -7431,7 +7423,7 @@ get_template_base_recursive (tparms, targs, explicit_mask,
 	  if (! this_virtual)
 	    SET_BINFO_MARKED (base_binfo);
 
-	  rval = get_template_base_recursive (tparms, targs, explicit_mask,
+	  rval = get_template_base_recursive (tparms, targs,
 					      base_binfo, rval,
 					      template, this_virtual);
 	  if (rval == error_mark_node)
@@ -7449,10 +7441,9 @@ get_template_base_recursive (tparms, targs, explicit_mask,
    template type.  Used by unify.  */
 
 static tree
-get_template_base (tparms, targs, explicit_mask, template, binfo)
+get_template_base (tparms, targs, template, binfo)
      tree tparms;
      tree targs;
-     int *explicit_mask;
      tree template;
      tree binfo;
 {
@@ -7468,7 +7459,7 @@ get_template_base (tparms, targs, explicit_mask, template, binfo)
   else
     my_friendly_abort (92);
 
-  rval = get_template_base_recursive (tparms, targs, explicit_mask,
+  rval = get_template_base_recursive (tparms, targs, 
 				      binfo, NULL_TREE,
 				      template, 0); 
   dfs_walk (binfo, dfs_unmark, markedp);
@@ -7882,8 +7873,7 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 	       The call to get_template_base also handles the case
 	       where PARM and ARG are the same type, i.e., where no
 	       derivation is involved.  */
-	    t = get_template_base (tparms, targs, explicit_mask,
-				   parm, arg);
+	    t = get_template_base (tparms, targs, parm, arg);
 	  else if (CLASSTYPE_TEMPLATE_INFO (arg) 
 		   && (CLASSTYPE_TI_TEMPLATE (parm) 
 		       == CLASSTYPE_TI_TEMPLATE (arg)))
