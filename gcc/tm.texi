@@ -5439,8 +5439,11 @@ A C statement to output something to the assembler file to switch to section
 @var{name} for object @var{decl} which is either a @code{FUNCTION_DECL}, a
 @code{VAR_DECL} or @code{NULL_TREE}.  @var{reloc}
 indicates whether the initial value of @var{exp} requires link-time
-relocations.  Some target formats do not support
-arbitrary sections.  Do not define this macro in such cases.
+relocations.  The string given by @var{name} will always be the
+canonical version stored in the global stringpool.
+
+Some target formats do not support arbitrary sections.  Do not define
+this macro in such cases.
 
 At present this macro is only used to support section attributes.
 When this macro is undefined, section attributes are disabled.
