@@ -1,3 +1,9 @@
+2000-06-27  Warren Levy  <warrenl@cygnus.com>
+
+	* java/security/Principal.java: New file.
+	* Makefile.am: Added Principal.java.
+	* Makefile.in: Rebuilt.
+
 2000-06-27  Rolf W. Rasmussen  <rolfwr@ii.uib.no>
 
 	* java/awt/event/MouseEvent.java: Fixed coordinate space
