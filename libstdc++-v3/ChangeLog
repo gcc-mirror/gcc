@@ -1,3 +1,66 @@
+2002-08-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* include/std/std_limits.h (__glibcpp_f32_infinity_bytes,
+	__glibcpp_f32_has_infinity, __glibcpp_f32_QNaN_bytes,
+	__glibcpp_f32_has_QNaN, __glibcpp_f32_SNaN_bytes,
+	__glibcpp_f32_has_SNaN, __glibcpp_f32_denorm_min_bytes,
+	__glibcpp_f32_has_denorm, __glibcpp_f32_is_iec559,
+	__glibcpp_f64_infinity_bytes,
+	__glibcpp_f64_has_infinity, __glibcpp_f64_QNaN_bytes,
+	__glibcpp_f64_has_QNaN, __glibcpp_f64_SNaN_bytes,
+	__glibcpp_f64_has_SNaN, __glibcpp_f64_denorm_min_bytes,
+	__glibcpp_f64_has_denorm, __glibcpp_f64_is_iec559,
+	__glibcpp_f80_infinity_bytes,
+	__glibcpp_f80_has_infinity, __glibcpp_f80_QNaN_bytes,
+	__glibcpp_f80_has_QNaN, __glibcpp_f80_SNaN_bytes,
+	__glibcpp_f80_has_SNaN, __glibcpp_f80_denorm_min_bytes,
+	__glibcpp_f80_has_denorm, __glibcpp_f80_is_iec559,
+	__glibcpp_f96_infinity_bytes,
+	__glibcpp_f96_has_infinity, __glibcpp_f96_QNaN_bytes,
+	__glibcpp_f96_has_QNaN, __glibcpp_f96_SNaN_bytes,
+	__glibcpp_f96_has_SNaN, __glibcpp_f96_denorm_min_bytes,
+	__glibcpp_f96_has_denorm, __glibcpp_f96_is_iec559,
+	__glibcpp_f128_infinity_bytes,
+	__glibcpp_f128_has_infinity, __glibcpp_f128_QNaN_bytes,
+	__glibcpp_f128_has_QNaN, __glibcpp_f128_SNaN_bytes,
+	__glibcpp_f128_has_SNaN, __glibcpp_f128_denorm_min_bytes,
+	__glibcpp_f128_has_denorm, __glibcpp_f128_is_iec559,
+	__glibcpp_float_infinity_bytes,
+	__glibcpp_float_has_infinity, __glibcpp_float_QNaN_bytes,
+	__glibcpp_float_has_QNaN, __glibcpp_float_SNaN_bytes,
+	__glibcpp_float_has_SNaN, __glibcpp_float_denorm_min_bytes,
+	__glibcpp_float_has_denorm, __glibcpp_float_is_iec559,
+	__glibcpp_double_infinity_bytes,
+	__glibcpp_double_has_infinity, __glibcpp_double_QNaN_bytes,
+	__glibcpp_double_has_QNaN, __glibcpp_double_SNaN_bytes,
+	__glibcpp_double_has_SNaN, __glibcpp_double_denorm_min_bytes,
+	__glibcpp_double_has_denorm, __glibcpp_double_is_iec559,
+	__glibcpp_long_double_infinity_bytes,
+	__glibcpp_long_double_has_infinity, __glibcpp_long_double_QNaN_bytes,
+	__glibcpp_long_double_has_QNaN, __glibcpp_long_double_SNaN_bytes,
+	__glibcpp_long_double_has_SNaN, __glibcpp_long_double_denorm_min_bytes,
+	__glibcpp_long_double_has_denorm, __glibcpp_long_double_is_iec559:
+	New macros.
+	(__glibcpp_word_bits, __glibcpp_word): Likewise.
+	(__glibcpp_byte): New typedef.
+	(__float_storage, __double_storage, __long_double_storage): New types.
+	(__glibcpp_float_infinity, __glibcpp_float_QNaN,
+	__glibcpp_float_SNaN, __glibcpp_float_denorm_min): Now
+	objects. Declare.
+	(__glibcpp_double_infinity, __glibcpp_double_QNaN,
+	__glibcpp_double_SNaN, __glibcpp_double_denorm_min): Likewise.
+	(__glibcpp_long_double_infinity, __glibcpp_long_double_QNaN,
+	__glibcpp_long_double_SNaN, __glibcpp_long_double_denorm_min):
+	Likewise.
+	
+	* src/limits.cc (__glibcpp_float_infinity, __glibcpp_float_QNaN,
+	__glibcpp_float_SNaN, __glibcpp_float_denorm_min): Define.
+	(__glibcpp_double_infinity, __glibcpp_double_QNaN,
+	__glibcpp_double_SNaN, __glibcpp_double_denorm_min): Likewise.
+	(__glibcpp_long_double_infinity, __glibcpp_long_double_QNaN,
+	__glibcpp_long_double_SNaN, __glibcpp_long_double_denorm_min):
+	Likewise.
+	
 2002-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* include/std/std_limits.h: Indent conditional macro definitions.
