@@ -1,3 +1,9 @@
+2003-01-09  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* Make-lang.in (f77.install-common, f77.install-info,
+	f77.install-man, f77.uninstall): Prepend $(DESTDIR) to
+	destination paths in all (un)installation commands.
+
 2003-01-05  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* news.texi: Revise history again:
