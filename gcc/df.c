@@ -2593,13 +2593,9 @@ df_insn_delete (df, bb, insn)
   /* We should not be deleting the NOTE_INSN_BASIC_BLOCK or label.  */
   if (insn == bb->head)
     abort ();
-  if (insn == bb->end)
-    bb->end = PREV_INSN (insn);  
 
   /* Delete the insn.  */
-  PUT_CODE (insn, NOTE);
-  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-  NOTE_SOURCE_FILE (insn) = 0;
+  delete_insn (insn);
 
   df_insn_modify (df, bb, insn);
 

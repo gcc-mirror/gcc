@@ -1047,7 +1047,7 @@ scan_loop (loop, flags)
 
       if (update_end && GET_CODE (update_end) == CODE_LABEL
 	  && --LABEL_NUSES (update_end) == 0)
-	delete_insn (update_end);
+	delete_related_insns (update_end);
     }
 
 
@@ -1774,7 +1774,7 @@ move_movables (loop, movables, threshold, insn_count)
 		    = gen_rtx_EXPR_LIST (VOIDmode, r1,
 					 gen_rtx_EXPR_LIST (VOIDmode, r2,
 							    regs_may_share));
-		  delete_insn (m->insn);
+		  delete_related_insns (m->insn);
 
 		  if (new_start == 0)
 		    new_start = i1;
@@ -1805,11 +1805,11 @@ move_movables (loop, movables, threshold, insn_count)
 			{
 			  temp = XEXP (temp, 0);
 			  while (temp != p)
-			    temp = delete_insn (temp);
+			    temp = delete_related_insns (temp);
 			}
 
 		      temp = p;
-		      p = delete_insn (p);
+		      p = delete_related_insns (p);
 
 		      /* simplify_giv_expr expects that it can walk the insns
 			 at m->insn forwards and see this old sequence we are
@@ -1936,7 +1936,7 @@ move_movables (loop, movables, threshold, insn_count)
 			      if (temp == fn_address_insn)
 				fn_address_insn = i1;
 			      REG_NOTES (i1) = REG_NOTES (temp);
-			      delete_insn (temp);
+			      delete_related_insns (temp);
 			    }
 			  if (new_start == 0)
 			    new_start = first;
@@ -2031,7 +2031,7 @@ move_movables (loop, movables, threshold, insn_count)
 			}
 
 		      temp = p;
-		      delete_insn (p);
+		      delete_related_insns (p);
 		      p = NEXT_INSN (p);
 
 		      /* simplify_giv_expr expects that it can walk the insns
@@ -2110,9 +2110,9 @@ move_movables (loop, movables, threshold, insn_count)
 			{
 			  for (temp = XEXP (temp, 0); temp != m1->insn;
 			       temp = NEXT_INSN (temp))
-			    delete_insn (temp);
+			    delete_related_insns (temp);
 			}
-		      delete_insn (m1->insn);
+		      delete_related_insns (m1->insn);
 
 		      /* Any other movable that loads the same register
 			 MUST be moved.  */
@@ -2799,7 +2799,7 @@ find_and_verify_loops (f, loops)
 			if (JUMP_LABEL (insn) != 0
 			    && (next_real_insn (JUMP_LABEL (insn))
 				== next_real_insn (insn)))
-			  delete_insn (insn);
+			  delete_related_insns (insn);
 		      }
 
 		    /* Continue the loop after where the conditional
@@ -2809,7 +2809,7 @@ find_and_verify_loops (f, loops)
 		    insn = NEXT_INSN (cond_label);
 
 		    if (--LABEL_NUSES (cond_label) == 0)
-		      delete_insn (cond_label);
+		      delete_related_insns (cond_label);
 
 		    /* This loop will be continued with NEXT_INSN (insn).  */
 		    insn = PREV_INSN (insn);
@@ -7628,7 +7628,7 @@ check_dbra_loop (loop, insn_count)
 	      end_sequence ();
 
 	      p = loop_insn_emit_before (loop, 0, bl->biv->insn, tem);
-	      delete_insn (bl->biv->insn);
+	      delete_related_insns (bl->biv->insn);
 
 	      /* Update biv info to reflect its new status.  */
 	      bl->biv->insn = p;
@@ -7656,9 +7656,9 @@ check_dbra_loop (loop, insn_count)
 		loop_insn_sink (loop, gen_move_insn (reg, final_value));
 
 	      /* Delete compare/branch at end of loop.  */
-	      delete_insn (PREV_INSN (loop_end));
+	      delete_related_insns (PREV_INSN (loop_end));
 	      if (compare_and_branch == 2)
-		delete_insn (first_compare);
+		delete_related_insns (first_compare);
 
 	      /* Add new compare/branch insn at end of loop.  */
 	      start_sequence ();

@@ -460,7 +460,7 @@ save_for_inline (fndecl)
      for basic_block structures on already freed obstack.  */
   for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK)
-      delete_insn (insn);
+      delete_related_insns (insn);
 
   /* If there are insns that copy parms from the stack into pseudo registers,
      those insns are not copied.  `expand_inline_function' must
@@ -1492,13 +1492,13 @@ copy_insn_list (insns, map, static_chain_value)
 #ifdef HAVE_cc0
 	      /* If the previous insn set cc0 for us, delete it.  */
 	      if (only_sets_cc0_p (PREV_INSN (copy)))
-		delete_insn (PREV_INSN (copy));
+		delete_related_insns (PREV_INSN (copy));
 #endif
 
 	      /* If this is now a no-op, delete it.  */
 	      if (map->last_pc_value == pc_rtx)
 		{
-		  delete_insn (copy);
+		  delete_related_insns (copy);
 		  copy = 0;
 		}
 	      else

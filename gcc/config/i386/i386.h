@@ -720,6 +720,12 @@ extern int ix86_arch;
 
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) ix86_local_alignment (TYPE, ALIGN)
 
+/* If defined, a C expression that gives the alignment boundary, in
+   bits, of an argument with the specified mode and type.  If it is
+   not defined, `PARM_BOUNDARY' is used for all arguments.  */
+
+#define FUNCTION_ARG_BOUNDARY(MODE,TYPE) ix86_function_arg_boundary (MODE, TYPE)
+
 /* Set this non-zero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 0
@@ -1062,10 +1068,7 @@ extern int ix86_arch;
    `DEFAULT_PCC_STRUCT_RETURN' to indicate this.  */
 
 #define RETURN_IN_MEMORY(TYPE)						\
-  ((TYPE_MODE (TYPE) == BLKmode)					\
-   || (VECTOR_MODE_P (TYPE_MODE (TYPE)) && int_size_in_bytes (TYPE) == 8)\
-   || (int_size_in_bytes (TYPE) > 12 && TYPE_MODE (TYPE) != TImode	\
-       && TYPE_MODE (TYPE) != TFmode && ! VECTOR_MODE_P (TYPE_MODE (TYPE))))
+  ix86_return_in_memory (TYPE)
 
 
 /* Define the classes of registers for register constraints in the
@@ -1517,14 +1520,16 @@ enum reg_class
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-   gen_rtx_REG (TYPE_MODE (VALTYPE), \
-		VALUE_REGNO (TYPE_MODE (VALTYPE)))
+   ix86_function_value (VALTYPE)
+
+#define FUNCTION_VALUE_REGNO_P(N) \
+  ix86_function_value_regno_p (N)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE) \
-  gen_rtx_REG (MODE, VALUE_REGNO (MODE))
+  ix86_libcall_value (MODE)
 
 /* Define the size of the result block used for communication between
    untyped_call and untyped_return.  The block contains a DImode value
@@ -1533,7 +1538,7 @@ enum reg_class
 #define APPLY_RESULT_SIZE (8+108)
 
 /* 1 if N is a possible register number for function argument passing.  */
-#define FUNCTION_ARG_REGNO_P(N) ((N) < REGPARM_MAX)
+#define FUNCTION_ARG_REGNO_P(N) ix86_function_arg_regno_p (N)
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -1548,6 +1553,7 @@ typedef struct ix86_args {
   int sse_words;		/* # sse words passed so far */
   int sse_nregs;		/* # sse registers available for passing */
   int sse_regno;		/* next available sse register number */
+  int maybe_vaarg;		/* true for calls to possibly vardic fncts. */
 } CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS

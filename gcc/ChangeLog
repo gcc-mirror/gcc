@@ -1,3 +1,103 @@
+Fri Sep 21 14:24:29 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (flow_delete_insn, flow_delete_insn_chain): Kill.
+	* cfg.c (delete_insn): Rename from ....; use remove_insn; do not
+	remove some labels.
+	(flow_delete_insn): This one.
+	(delete_insn_chain): Rename from ...; do not care labels.
+	(flow_delete_insn_chain): ... this one.
+	(flow_delete_block): Remove the insns one BB has been expunged.
+	(merge_blocks_nomove): Likewise.
+	(try_redirect_by_replacing_jump): Use delete_insn[_chain]; do not care
+	updating BB boundaries.
+	(tidy_fallthru_edge): Likewise.
+	(commit_one_edge_insertion): Likewise.
+	* cfgbuild.c (find_basic_block): Likewise.
+	(find_basic_blocks_1): Likewise.
+	* cfgcleanup.c (merge_blocks_move_predecessor_nojumps): Likewise.
+	(try_crossjump_to_edge): Likewise.
+	(try_optimize_cfg): Likewise.
+	* cse.c (delete_trivially_dead_insns): Likewise.
+	* df.c (df_insn_delete): Likewise.
+	* doloop.c (doloop_modify): Use delete_related_insns.
+	* emit-rtl.c (try_split): Likewise.
+	(remove_insn): Update BB boundaries.
+	* expect.c (connect_post_landing_pads): Use delete_related_insns.
+	* flow.c (delete_dead_jumptables): Use delete_insn[_chain]; do not care
+	updating BB boundaries.
+	(propagate_block_delete_insn): Likewise.
+	(propagate_block_delete_libcall): Likewise.
+	* function.c (delete_handlers): Use delete_related_insns.
+	(thread_prologue_and_epilogue_insns): Likewise.
+	* gcse.c (delete_null_pointer_checks): Use delete_related_insns.
+	* genpeep.c (gen_peephole): Use delete_related_insns.
+	* ifcvt.c (noce_process_if_block): Use delete_insn; do not care updating
+	BB boundaries.
+	(find_cond_trap): Likewise.
+	* integrate.c (save_for_inline): Use delete_related_insns.
+	(copy_insn_list): Likewise.
+	* jump.c (pruge_linie_number_notes): Likewise.
+	(duplicate_loop_exit_test): Likewise.
+	(delete_computation): Likewise.
+	(delete_related_insn): Rename from ...; use delete_insn
+	(delete_insn): ... this one.
+	(redirect_jump): Use delete_related_insns.
+	* loop.c (scan_loop): Likewise.
+	(move_movables): Likewise.
+	(find_and_verify_loops): Likewise.
+	(check_dbra_loop): Likewise.
+	* recog.c (peephole2_optimize): Likewise.
+	* reg-stack.c (delete_insn_for_stacker): Remove.
+	(move_for_stack_reg): Use delete_insn.
+	* regmove.c (combine_stack_adjustments_for_block): Likewise.
+	* reload1.c (delete_address_reloads): Use delete_related_insns.
+	(fixup_abnormal_edges): Use delete_insn.
+	* recog.c (emit_delay_sequence): Use delete_related_insns.
+	(delete_from-delay_slot): Likewise.
+	(delete_scheduled_jump): likewise.
+	(optimize_skip): Likewise.
+	(try_merge_delay_insns): Likewise.
+	(full_simple_delay_slots): Likewise.
+	(fill_slots_from_thread): Likewise.
+	(relax_delay_slots): Likewise.
+	(make_return_insns): Likewise.
+	(dbr_schedule): Likewise.
+	* rtl.h (delete_insn): Rename to delete_related_insns.
+	(delete_insn, delete_insn_chain): New prototypes.
+	* ssa-ccp (sse_fast_dce):  Remove deleting of DEF, as it is done
+	by df_insn_delete already.
+	* ssa-dce.c (delete_insn_bb): Use delete_insn.
+	* ssa.c (convert_from_ssa): Use delete_related_insns.
+	* unroll.c (unroll_loop): Likewise.
+	(calculate_giv_inc): Likewise.
+	(copy_loop_body): Likewise.
+
+	* i386-protos.h (ix86_libcall_value, ix86_function_value,
+	ix86_function_arg_regno_p, ix86_function_arg_boundary,
+	ix86_return_in_memory, ix86_function_value): Declare.
+	* i386.c (x86_64_int_parameter_registers, x86_64_int_return_registers):
+	new static valurables.
+	(x86_64_reg_class): New enum
+	(x86_64_reg_class_name): New array.
+	(classify_argument, examine_argument, construct_container,
+	 merge_classes): New static functions.
+	(optimization_options): Enable flag_omit_frame_pointer and disable
+	flag_pcc_struct_return on 64bit.
+	(ix86_libcall_value, ix86_function_value,
+	ix86_function_arg_regno_p, ix86_function_arg_boundary,
+	ix86_return_in_memory, ix86_function_value): New global functions.
+	(init_cumulative_args): Refuse regparm on x86_64, set maybe_vaarg.
+	(function_arg_advance): Handle x86_64 passing conventions.
+	(function_arg): Likewise.
+	* i386.h (FUNCTION_ARG_BOUNDARY): New macro.
+	(RETURN_IN_MEMORY): Move offline.
+	(FUNCTION_VALUE, LIBCALL_VALUE): Likewise.
+	(FUNCTION_VALUE_REGNO_P): New macro.
+	(FUNCTION_ARG_REGNO_P): Move offline.
+	(struct ix86_args): Add maybe_vaarg.
+	* next.h (FUNCTION_VALUE_REGNO_P): Delete.
+	* unix.h (FUNCTION_VALUE_REGNO_P): Delete.
+
 2001-09-21  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* s390.md: Changed attributes for scheduling.

@@ -1208,32 +1208,6 @@ ssa_fast_dce (df)
 	     deleted.  */
 	  df_insn_delete (df, BLOCK_FOR_INSN (def), def);
 
-	  if (PHI_NODE_P (def))
-	    {
-	      if (def == BLOCK_FOR_INSN (def)->head
-		  && def == BLOCK_FOR_INSN (def)->end)
-		{
-		  /* Delete it.  */
-		  PUT_CODE (def, NOTE);
-		  NOTE_LINE_NUMBER (def) = NOTE_INSN_DELETED;
-		}
-	      else if (def == BLOCK_FOR_INSN (def)->head)
-	        {
-		  BLOCK_FOR_INSN (def)->head = NEXT_INSN (def);
-		  flow_delete_insn (def);
-		}
-	      else if (def == BLOCK_FOR_INSN (def)->end)
-		{
-		  BLOCK_FOR_INSN (def)->end = PREV_INSN (def);
-		  flow_delete_insn (def);
-		}
-	      else
-		flow_delete_insn (def);
-	    }
-	  else
-	    {
-	      flow_delete_insn (def);
-	    }
 	  VARRAY_RTX (ssa_definition, reg) = NULL;
 	}
     }

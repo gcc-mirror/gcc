@@ -182,7 +182,7 @@ purge_line_number_notes (f)
 		&& NOTE_SOURCE_FILE (insn) == NOTE_SOURCE_FILE (last_note)
 		&& NOTE_LINE_NUMBER (insn) == NOTE_LINE_NUMBER (last_note))
 	      {
-		delete_insn (insn);
+		delete_related_insns (insn);
 		continue;
 	      }
 
@@ -529,7 +529,7 @@ duplicate_loop_exit_test (loop_start)
   /* Mark the exit code as the virtual top of the converted loop.  */
   emit_note_before (NOTE_INSN_LOOP_VTOP, exitcode);
 
-  delete_insn (next_nonnote_insn (loop_start));
+  delete_related_insns (next_nonnote_insn (loop_start));
 
   /* Clean up.  */
   if (reg_map)
@@ -1710,24 +1710,24 @@ delete_computation (insn)
       delete_prior_computation (note, insn);
     }
 
-  delete_insn (insn);
+  delete_related_insns (insn);
 }
 
-/* Delete insn INSN from the chain of insns and update label ref counts.
-   May delete some following insns as a consequence; may even delete
-   a label elsewhere and insns that follow it.
+/* Delete insn INSN from the chain of insns and update label ref counts
+   and delete insns now unreachable. 
 
-   Returns the first insn after INSN that was not deleted.  */
+   Returns the first insn after INSN that was not deleted. 
+
+   Usage of this instruction is deprecated.  Use delete_insn instead and
+   subsequent cfg_cleanup pass to delete unreachable code if needed.  */
 
 rtx
-delete_insn (insn)
+delete_related_insns (insn)
      register rtx insn;
 {
-  register rtx next = NEXT_INSN (insn);
-  register rtx prev = PREV_INSN (insn);
   register int was_code_label = (GET_CODE (insn) == CODE_LABEL);
-  register int dont_really_delete = 0;
   rtx note;
+  rtx next = NEXT_INSN (insn), prev = PREV_INSN (insn);
 
   while (next && INSN_DELETED_P (next))
     next = NEXT_INSN (next);
@@ -1736,58 +1736,13 @@ delete_insn (insn)
   if (INSN_DELETED_P (insn))
     return next;
 
-  if (was_code_label)
-    remove_node_from_expr_list (insn, &nonlocal_goto_handler_labels);
-
-  /* Don't delete user-declared labels.  When optimizing, convert them
-     to special NOTEs instead.  When not optimizing, leave them alone.  */
-  if (was_code_label && LABEL_NAME (insn) != 0)
-    {
-      if (optimize)
-	{
-	  const char *name = LABEL_NAME (insn);
-	  PUT_CODE (insn, NOTE);
-	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED_LABEL;
-	  NOTE_SOURCE_FILE (insn) = name;
-	}
-
-      dont_really_delete = 1;
-    }
-  else
-    /* Mark this insn as deleted.  */
-    INSN_DELETED_P (insn) = 1;
+  delete_insn (insn);
 
   /* If instruction is followed by a barrier,
      delete the barrier too.  */
 
   if (next != 0 && GET_CODE (next) == BARRIER)
-    {
-      INSN_DELETED_P (next) = 1;
-      next = NEXT_INSN (next);
-    }
-
-  /* Patch out INSN (and the barrier if any) */
-
-  if (! dont_really_delete)
-    {
-      if (prev)
-	{
-	  NEXT_INSN (prev) = next;
-	  if (GET_CODE (prev) == INSN && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	    NEXT_INSN (XVECEXP (PATTERN (prev), 0,
-				XVECLEN (PATTERN (prev), 0) - 1)) = next;
-	}
-
-      if (next)
-	{
-	  PREV_INSN (next) = prev;
-	  if (GET_CODE (next) == INSN && GET_CODE (PATTERN (next)) == SEQUENCE)
-	    PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = prev;
-	}
-
-      if (prev && NEXT_INSN (prev) == 0)
-	set_last_insn (prev);
-    }
+    delete_insn (next);
 
   /* If deleting a jump, decrement the count of the label,
      and delete the label if it is now unused.  */
@@ -1796,12 +1751,12 @@ delete_insn (insn)
     {
       rtx lab = JUMP_LABEL (insn), lab_next;
 
-      if (--LABEL_NUSES (lab) == 0)
+      if (LABEL_NUSES (lab) == 0)
 	{
 	  /* This can delete NEXT or PREV,
 	     either directly if NEXT is JUMP_LABEL (INSN),
 	     or indirectly through more levels of jumps.  */
-	  delete_insn (lab);
+	  delete_related_insns (lab);
 
 	  /* I feel a little doubtful about this loop,
 	     but I see no clean and sure alternative way
@@ -1820,7 +1775,7 @@ delete_insn (insn)
 	     We may not be able to kill the label immediately preceeding
 	     just yet, as it might be referenced in code leading up to
 	     the tablejump.  */
-	  delete_insn (lab_next);
+	  delete_related_insns (lab_next);
 	}
     }
 
@@ -1835,8 +1790,8 @@ delete_insn (insn)
       int len = XVECLEN (pat, diff_vec_p);
 
       for (i = 0; i < len; i++)
-	if (--LABEL_NUSES (XEXP (XVECEXP (pat, diff_vec_p, i), 0)) == 0)
-	  delete_insn (XEXP (XVECEXP (pat, diff_vec_p, i), 0));
+	if (LABEL_NUSES (XEXP (XVECEXP (pat, diff_vec_p, i), 0)) == 0)
+	  delete_related_insns (XEXP (XVECEXP (pat, diff_vec_p, i), 0));
       while (next && INSN_DELETED_P (next))
 	next = NEXT_INSN (next);
       return next;
@@ -1848,8 +1803,8 @@ delete_insn (insn)
       if (REG_NOTE_KIND (note) == REG_LABEL
 	  /* This could also be a NOTE_INSN_DELETED_LABEL note.  */
 	  && GET_CODE (XEXP (note, 0)) == CODE_LABEL)
-	if (--LABEL_NUSES (XEXP (note, 0)) == 0)
-	  delete_insn (XEXP (note, 0));
+	if (LABEL_NUSES (XEXP (note, 0)) == 0)
+	  delete_related_insns (XEXP (note, 0));
 
   while (prev && (INSN_DELETED_P (prev) || GET_CODE (prev) == NOTE))
     prev = PREV_INSN (prev);
@@ -1863,7 +1818,7 @@ delete_insn (insn)
       && GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
       && (GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_VEC
 	  || GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_DIFF_VEC))
-    next = delete_insn (NEXT_INSN (insn));
+    next = delete_related_insns (NEXT_INSN (insn));
 
   /* If INSN was a label, delete insns following it if now unreachable.  */
 
@@ -1886,7 +1841,7 @@ delete_insn (insn)
 	       deletion of unreachable code, after a different label.
 	       As long as the value from this recursive call is correct,
 	       this invocation functions correctly.  */
-	    next = delete_insn (next);
+	    next = delete_related_insns (next);
 	}
     }
 
@@ -2128,7 +2083,7 @@ redirect_jump (jump, nlabel, delete_unused)
     emit_note_after (NOTE_INSN_FUNCTION_END, nlabel);
 
   if (olabel && --LABEL_NUSES (olabel) == 0 && delete_unused)
-    delete_insn (olabel);
+    delete_related_insns (olabel);
 
   return 1;
 }

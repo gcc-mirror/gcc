@@ -771,7 +771,7 @@ delete_noop_moves (f)
 	  next = NEXT_INSN (insn);
 	  if (INSN_P (insn) && noop_move_p (insn))
 	    {
-	      /* Do not call flow_delete_insn here to not confuse backward
+	      /* Do not call delete_insn here to not confuse backward
 	         pointers of LIBCALL block.  */
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
@@ -802,8 +802,8 @@ delete_dead_jumptables ()
 	{
 	  if (rtl_dump_file)
 	    fprintf (rtl_dump_file, "Dead jumptable %i removed\n", INSN_UID (insn));
-	  flow_delete_insn (NEXT_INSN (insn));
-	  flow_delete_insn (insn);
+	  delete_insn (NEXT_INSN (insn));
+	  delete_insn (insn);
 	  next = NEXT_INSN (next);
 	}
     }
@@ -1323,6 +1323,7 @@ propagate_block_delete_insn (bb, insn)
      rtx insn;
 {
   rtx inote = find_reg_note (insn, REG_LABEL, NULL_RTX);
+  bool purge = false;
 
   /* If the insn referred to a label, and that label was attached to
      an ADDR_VEC, it's safe to delete the ADDR_VEC.  In fact, it's
@@ -1360,16 +1361,15 @@ propagate_block_delete_insn (bb, insn)
 	  for (i = 0; i < len; i++)
 	    LABEL_NUSES (XEXP (XVECEXP (pat, diff_vec_p, i), 0))--;
 
-	  flow_delete_insn (next);
+	  delete_insn (next);
 	}
     }
 
   if (bb->end == insn)
-    {
-      bb->end = PREV_INSN (insn);
-      purge_dead_edges (bb);
-    }
-  flow_delete_insn (insn);
+    purge = true;
+  delete_insn (insn);
+  if (purge)
+    purge_dead_edges (bb);
 }
 
 /* Delete dead libcalls for propagate_block.  Return the insn
@@ -1383,10 +1383,7 @@ propagate_block_delete_libcall (bb, insn, note)
   rtx first = XEXP (note, 0);
   rtx before = PREV_INSN (first);
 
-  if (insn == bb->end)
-    bb->end = before;
-
-  flow_delete_insn_chain (first, insn);
+  delete_insn_chain (first, insn);
   return before;
 }
 

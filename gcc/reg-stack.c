@@ -245,7 +245,6 @@ static void replace_reg			PARAMS ((rtx *, int));
 static void remove_regno_note		PARAMS ((rtx, enum reg_note,
 						 unsigned int));
 static int get_hard_regnum		PARAMS ((stack, rtx));
-static void delete_insn_for_stacker	PARAMS ((rtx));
 static rtx emit_pop_insn		PARAMS ((rtx, stack, rtx,
 					       enum emit_where));
 static void emit_swap_insn		PARAMS ((rtx, stack, rtx));
@@ -907,19 +906,6 @@ get_hard_regnum (regstack, reg)
 
   return i >= 0 ? (FIRST_STACK_REG + regstack->top - i) : -1;
 }
-
-/* Delete INSN from the RTL.  Mark the insn, but don't remove it from
-   the chain of insns.  Doing so could confuse block_begin and block_end
-   if this were the only insn in the block.  */
-
-static void
-delete_insn_for_stacker (insn)
-     rtx insn;
-{
-  PUT_CODE (insn, NOTE);
-  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-  NOTE_SOURCE_FILE (insn) = 0;
-}
 
 /* Emit an insn to pop virtual register REG before or after INSN.
    REGSTACK is the stack state after INSN and is updated to reflect this
@@ -1114,7 +1100,7 @@ move_for_stack_reg (insn, regstack, pat)
 	    {
 	      emit_pop_insn (insn, regstack, src, EMIT_AFTER);
 
-	      delete_insn_for_stacker (insn);
+	      delete_insn (insn);
 	      return;
 	    }
 
@@ -1123,7 +1109,7 @@ move_for_stack_reg (insn, regstack, pat)
 	  SET_HARD_REG_BIT (regstack->reg_set, REGNO (dest));
 	  CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (src));
 
-	  delete_insn_for_stacker (insn);
+	  delete_insn (insn);
 
 	  return;
 	}
@@ -1140,7 +1126,7 @@ move_for_stack_reg (insn, regstack, pat)
 	  if (find_regno_note (insn, REG_UNUSED, REGNO (dest)))
 	    emit_pop_insn (insn, regstack, dest, EMIT_AFTER);
 
-	  delete_insn_for_stacker (insn);
+	  delete_insn (insn);
 	  return;
 	}
 

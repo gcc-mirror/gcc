@@ -135,6 +135,11 @@ extern enum machine_mode ix86_fp_compare_mode PARAMS ((enum rtx_code));
 
 extern int x86_64_sign_extended_value PARAMS ((rtx));
 extern int x86_64_zero_extended_value PARAMS ((rtx));
+extern rtx ix86_libcall_value PARAMS ((enum machine_mode));
+extern bool ix86_function_value_regno_p PARAMS ((int));
+extern bool ix86_function_arg_regno_p PARAMS ((int));
+extern int ix86_function_arg_boundary PARAMS ((enum machine_mode, tree));
+extern int ix86_return_in_memory PARAMS ((tree));
 
 extern rtx ix86_force_to_memory PARAMS ((enum machine_mode, rtx));
 extern void ix86_free_from_memory PARAMS ((enum machine_mode));
@@ -160,6 +165,7 @@ extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx));
 extern rtx function_arg PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
 extern void function_arg_advance PARAMS ((CUMULATIVE_ARGS *, enum machine_mode,
 					tree, int));
+extern rtx ix86_function_value PARAMS ((tree));
 extern void ix86_init_builtins PARAMS ((void));
 extern void ix86_init_mmx_sse_builtins PARAMS ((void));
 extern rtx ix86_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));

@@ -423,7 +423,7 @@ doloop_modify (loop, iterations, iterations_max,
 
   /* Discard original jump to continue loop.  The original compare
      result may still be live, so it cannot be discarded explicitly.  */
-  delete_insn (jump_insn);
+  delete_related_insns (jump_insn);
 
   counter_reg = XEXP (condition, 0);
   if (GET_CODE (counter_reg) == PLUS)

@@ -2613,7 +2613,7 @@ try_split (pat, trial, last)
 
 	  tem = emit_insn_after (seq, trial);
 
-	  delete_insn (trial);
+	  delete_related_insns (trial);
 	  if (has_barrier)
 	    emit_barrier_after (tem);
 
@@ -2873,6 +2873,8 @@ remove_insn (insn)
 {
   rtx next = NEXT_INSN (insn);
   rtx prev = PREV_INSN (insn);
+  basic_block bb;
+
   if (prev)
     {
       NEXT_INSN (prev) = next;
@@ -2920,6 +2922,21 @@ remove_insn (insn)
 
       if (stack == 0)
 	abort ();
+    }
+  if (basic_block_for_insn
+      && (unsigned int)INSN_UID (insn) < basic_block_for_insn->num_elements
+      && (bb = BLOCK_FOR_INSN (insn)))
+    {
+      if (bb->head == insn)
+	{
+	  /* Never ever delete the basic block note without deleting whole basic
+	     block.  */
+	  if (GET_CODE (insn) == NOTE)
+	    abort ();
+	  bb->head = next;
+	}
+      if (bb->end == insn)
+	bb->end = prev;
     }
 }
 

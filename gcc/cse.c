@@ -7646,7 +7646,7 @@ delete_trivially_dead_insns (insns, nreg, preserve_basic_blocks)
 	if (! live_insn)
 	  {
 	    count_reg_usage (insn, counts, NULL_RTX, -1);
-	    delete_insn (insn);
+	    delete_related_insns (insn);
 	  }
 
 	if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
@@ -7687,9 +7687,7 @@ delete_trivially_dead_insns (insns, nreg, preserve_basic_blocks)
 	  if (! live_insn)
 	    {
 	      count_reg_usage (insn, counts, NULL_RTX, -1);
-	      if (insn == bb->end)
-		bb->end = PREV_INSN (insn);
-	      flow_delete_insn (insn);
+	      delete_insn (insn);
 	    }
 
 	  if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
