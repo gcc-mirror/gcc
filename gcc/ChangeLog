@@ -1,5 +1,7 @@
 2000-08-06  Kazu Hirata  <kazu@hxi.com>
 
+	* dwarf2out.c: Fix formatting.
+
 	* tm.texi (FUNCTION_ARG_PARTIAL_NREGS): Fix a typo.
 
 	* expr.c: Fix formatting.
