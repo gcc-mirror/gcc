@@ -1,3 +1,16 @@
+Fri Jan 29 14:36:11 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c (error): Fix typo in declaration.
+
+	* cpperror.c (cpp_message): Likewise.
+
+	* cpplib.c (cpp_warning): Likewise.
+
+	* cpplib.h (cpp_notice): Use PVPROTO not VPROTO, also add
+ 	ATTRIBUTE_PRINTF_1.
+
+	* toplev.c (error): Fix typo in declaration.
+
 Fri Jan 29 15:44:13 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (strength_reduce): Fix HAVE_cc0 handling when scanning
