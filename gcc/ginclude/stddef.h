@@ -50,6 +50,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #ifndef _SIZE_T_
 #ifndef ___int_size_t_h
 #ifndef _GCC_SIZE_T
+#ifndef _SIZET_
 #define _SIZE_T
 #define _T_SIZE_
 #define _T_SIZE
@@ -57,10 +58,12 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #define _SIZE_T_
 #define ___int_size_t_h
 #define _GCC_SIZE_T
+#define _SIZET_
 #ifndef __SIZE_TYPE__
 #define __SIZE_TYPE__ long unsigned int
 #endif
 typedef __SIZE_TYPE__ size_t;
+#endif /* _SIZET_ */
 #endif /* _GCC_SIZE_T */
 #endif /* ___int_size_t_h */
 #endif /* _SIZE_T_ */
