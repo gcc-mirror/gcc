@@ -227,7 +227,7 @@ cp/lex.o: cp/lex.c $(CXX_TREE_H) $(TM_H) flags.h \
 cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) $(TM_H) toplev.h debug.h langhooks.h \
   $(LANGHOOKS_DEF_H) c-common.h gtype-cp.h $(CXX_PRETTY_PRINT_H) $(DIAGNOSTIC_H) \
   cp/cp-objcp-common.h
-cp/decl.o: cp/decl.c $(CXX_TREE_H) $(TM_H) flags.h cp/decl.h stack.h \
+cp/decl.o: cp/decl.c $(CXX_TREE_H) $(TM_H) flags.h cp/decl.h \
   output.h $(EXPR_H) except.h toplev.h $(HASHTAB_H) $(RTL_H) \
   cp/operators.def $(TM_P_H) tree-inline.h diagnostic.h c-pragma.h \
   debug.h gt-cp-decl.h timevar.h $(TREE_FLOW_H)
@@ -250,7 +250,7 @@ cp/init.o: cp/init.c $(CXX_TREE_H) $(TM_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \
 cp/method.o: cp/method.c $(CXX_TREE_H) $(TM_H) toplev.h $(RTL_H) $(EXPR_H) \
   $(TM_P_H) $(TARGET_H) gt-cp-method.h
 cp/cvt.o: cp/cvt.c $(CXX_TREE_H) $(TM_H) cp/decl.h flags.h toplev.h convert.h
-cp/search.o: cp/search.c $(CXX_TREE_H) $(TM_H) stack.h flags.h toplev.h $(RTL_H)
+cp/search.o: cp/search.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h $(RTL_H)
 cp/tree.o: cp/tree.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h $(RTL_H) \
   insn-config.h integrate.h tree-inline.h real.h gt-cp-tree.h $(TARGET_H)
 cp/ptree.o: cp/ptree.c $(CXX_TREE_H) $(TM_H)
