@@ -1772,7 +1772,7 @@ move_movables (loop, movables, threshold, insn_count)
 		    = gen_rtx_EXPR_LIST (VOIDmode, r1,
 					 gen_rtx_EXPR_LIST (VOIDmode, r2,
 							    regs_may_share));
-		  delete_related_insns (m->insn);
+		  delete_insn (m->insn);
 
 		  if (new_start == 0)
 		    new_start = i1;
@@ -1803,11 +1803,11 @@ move_movables (loop, movables, threshold, insn_count)
 			{
 			  temp = XEXP (temp, 0);
 			  while (temp != p)
-			    temp = delete_related_insns (temp);
+			    temp = delete_insn (temp);
 			}
 
 		      temp = p;
-		      p = delete_related_insns (p);
+		      p = delete_insn (p);
 
 		      /* simplify_giv_expr expects that it can walk the insns
 			 at m->insn forwards and see this old sequence we are
@@ -1934,7 +1934,8 @@ move_movables (loop, movables, threshold, insn_count)
 			      if (temp == fn_address_insn)
 				fn_address_insn = i1;
 			      REG_NOTES (i1) = REG_NOTES (temp);
-			      delete_related_insns (temp);
+			      REG_NOTES (temp) = NULL;
+			      delete_insn (temp);
 			    }
 			  if (new_start == 0)
 			    new_start = first;
@@ -1999,6 +2000,7 @@ move_movables (loop, movables, threshold, insn_count)
 		      if (REG_NOTES (i1) == 0)
 			{
 			  REG_NOTES (i1) = REG_NOTES (p);
+			  REG_NOTES (p) = NULL;
 
 			  /* If there is a REG_EQUAL note present whose value
 			     is not loop invariant, then delete it, since it
@@ -2029,7 +2031,7 @@ move_movables (loop, movables, threshold, insn_count)
 			}
 
 		      temp = p;
-		      delete_related_insns (p);
+		      delete_insn (p);
 		      p = NEXT_INSN (p);
 
 		      /* simplify_giv_expr expects that it can walk the insns
@@ -2101,16 +2103,12 @@ move_movables (loop, movables, threshold, insn_count)
 			 and prevent further processing of it.  */
 		      m1->done = 1;
 
-		      /* if library call, delete all insn except last, which
-			 is deleted below */
+		      /* if library call, delete all insns.  */
 		      if ((temp = find_reg_note (m1->insn, REG_RETVAL,
 						 NULL_RTX)))
-			{
-			  for (temp = XEXP (temp, 0); temp != m1->insn;
-			       temp = NEXT_INSN (temp))
-			    delete_related_insns (temp);
-			}
-		      delete_related_insns (m1->insn);
+			delete_insn_chain (XEXP (temp, 0), m1->insn);
+		      else
+		        delete_insn (m1->insn);
 
 		      /* Any other movable that loads the same register
 			 MUST be moved.  */
@@ -7626,7 +7624,7 @@ check_dbra_loop (loop, insn_count)
 	      end_sequence ();
 
 	      p = loop_insn_emit_before (loop, 0, bl->biv->insn, tem);
-	      delete_related_insns (bl->biv->insn);
+	      delete_insn (bl->biv->insn);
 
 	      /* Update biv info to reflect its new status.  */
 	      bl->biv->insn = p;

@@ -2186,7 +2186,7 @@ convert_from_ssa()
 	    {
 	      if (insn == BLOCK_END (bb))
 		BLOCK_END (bb) = PREV_INSN (insn);
-	      insn = delete_related_insns (insn);
+	      insn = delete_insn (insn);
 	    }
 	  /* Since all the phi nodes come at the beginning of the
 	     block, if we find an ordinary insn, we can stop looking
