@@ -1,3 +1,21 @@
+Thu Apr  5 18:25:56 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (function_arg): Return constm1_rtx for last argument.
+	(ix86_expand_prologue): Update gen_call calls.
+	* i386.h (FUNCTION_BLOCK_PROFILER_EXIT): Likewise.
+	* i386.md (call_pop): Likewise.
+	(call): Second operand is VOIDmode.
+	(call_0): Likewise; Support 64bits.
+	(call_exp): New expander.
+	(call_1): Get to the sync.
+	(call_1_exp): New pattern.
+	(call_value): Support 64bit.
+	(call_value_exp): New pattern.
+	(untyped_call): Update gen_call call.
+	(call_value_pop): Disable for 64bit.
+	(call_value_0_rex64): New pattern.
+	(call_value_1_rex64): Likewise.
+
 2001-04-05  Bo Thorsen  <bo@suse.de>
 
 	* i386.md: Don't allow "builtin_setjmp_receiver" for TARGET_64BIT.
