@@ -1,3 +1,19 @@
+2000-11-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (arm_adddi3, adddi_sesidi_di, adddi_zesidi_di, arm_addsi3,
+	arm_subsi3_insn, anddi_zesidi_di, arm_andsi3_insn, anddi_notdi_di,
+	anddi_notzesidi_di, anddi_notsesidi_di, arm_iorsi3, 
+	one_cmpldi2): Merge with splitters to create define_insn_and_split
+ 	patterns.  Remove redundant splits.
+	(peephole2 for add:SI of invalid immediate): New.
+	(peephole2 for minus:SI of invalid immediate): New.
+	(peephole2 for ior:SI of invalid immediate): New.
+	(peephole for merge of move and compare): Convert ot peephole2.
+	(addsf3, adddf3): Mark as commutative.
+
+	* arm.md (thumb peephole for merging stack adjustments): Convert to
+	peephole2.
+
 2000-11-27  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* haifa-sched.c (print_pattern): Prettier output for COND_EXEC.
