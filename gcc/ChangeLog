@@ -1,3 +1,11 @@
+
+2004-03-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_parse_abi_options): SPE and
+	AltiVec abi cannot co-exist.
+
+	* config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Same.
+
 2004-03-07  Jan Hubicka  <jh@suse.cz>
 
 	* except.c (emit_to_new_bb_before):  Break fallthru edges.
