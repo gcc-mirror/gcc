@@ -73,7 +73,6 @@ INSTALL_DATA = @INSTALL_DATA@
 # Miscellaneous non-standard autoconf-set variables
 # -------------------------------------------------
 
-links=@configlinks@
 # The file containing GCC's version number.
 gcc_version_trigger = @gcc_version_trigger@
 gcc_version = @gcc_version@
