@@ -128,6 +128,8 @@ int lr_save_eliminated;
 
 static int return_used_this_function;
 
+static int after_arm_reorg = 0;
+
 static int arm_constant_limit = 3;
 
 /* For an explanation of these variables, see final_prescan_insn below.  */
@@ -604,8 +606,15 @@ arm_split_constant (code, mode, val, target, source, subtargets)
       || (GET_CODE (target) == REG && GET_CODE (source) == REG
 	  && REGNO (target) != REGNO (source)))
     {
-      if (arm_gen_constant (code, mode, val, target, source, 1, 0)
-	  > arm_constant_limit + (code != SET))
+      /* After arm_reorg has been called, we can't fix up expensive
+	 constants by pushing them into memory so we must synthesise
+	 them in-line, regardless of the cost.  This is only likely to
+	 be more costly on chips that have load delay slots and we are
+	 compiling without running the scheduler (so no splitting
+	 occurred before the final instruction emission.  */
+      if (! after_arm_reorg
+	  && (arm_gen_constant (code, mode, val, target, source, 1, 0)
+	      > arm_constant_limit + (code != SET)))
 	{
 	  if (code == SET)
 	    {
@@ -4022,6 +4031,8 @@ arm_reorg (first)
 	  insn = scan;
 	}
     }
+
+  after_arm_reorg = 1;
 }
 
 
@@ -5378,7 +5389,9 @@ output_func_epilogue (f, frame_size)
 
 epilogue_done:
 
+  /* Reset the ARM-specific per-function variables.  */
   current_function_anonymous_args = 0;
+  after_arm_reorg = 0;
 }
 
 static void
