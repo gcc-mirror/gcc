@@ -938,10 +938,8 @@ static status_t demangle_discriminator
   PARAMS ((demangling_t, int));
 static status_t cp_demangle
   PARAMS ((const char *, dyn_string_t, int));
-#ifdef IN_LIBGCC2
 static status_t cp_demangle_type
   PARAMS ((const char*, dyn_string_t));
-#endif
 
 /* When passed to demangle_bare_function_type, indicates that the
    function's return type is not encoded before its parameter types.  */
@@ -3533,14 +3531,13 @@ cp_demangle (name, result, style)
    dyn_string_t.  On success, returns STATUS_OK.  On failiure, returns
    an error message, and the contents of RESULT are unchanged.  */
 
-#ifdef IN_LIBGCC2
 static status_t
 cp_demangle_type (type_name, result)
      const char* type_name;
      dyn_string_t result;
 {
   status_t status;
-  demangling_t dm = demangling_new (type_name);
+  demangling_t dm = demangling_new (type_name, 0);
   
   if (dm == NULL)
     return STATUS_ALLOCATION_FAILED;
@@ -3571,6 +3568,7 @@ cp_demangle_type (type_name, result)
   return status;
 }
 
+#ifdef IN_LIBGCC2
 extern char *__cxa_demangle PARAMS ((const char *, char *, size_t *, int *));
 
 /* ia64 ABI-mandated entry point in the C++ runtime library for performing
@@ -3693,14 +3691,15 @@ cplus_demangle_v3 (mangled)
   dyn_string_t demangled;
   status_t status;
 
-  /* If this isn't a mangled name, don't pretend to demangle it.  */
-  if (strncmp (mangled, "_Z", 2) != 0)
-    return NULL;
-
   /* Create a dyn_string to hold the demangled name.  */
   demangled = dyn_string_new (0);
   /* Attempt the demangling.  */
-  status = cp_demangle ((char *) mangled, demangled, 0);
+  if (mangled[0] == '_' && mangled[1] == 'Z')
+    /* Appears to be a function or variable name.  */
+    status = cp_demangle (mangled, demangled, 0);
+  else
+    /* Try to demangle it as the name of a type.  */
+    status = cp_demangle_type (mangled, demangled);
 
   if (STATUS_NO_ERROR (status))
     /* Demangling succeeded.  */
