@@ -1,3 +1,8 @@
+2004-11-15  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.am: Remove -no-dependencies.
+	* Makefile.in: Regenerate.
+
 2004-11-13  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am: Define ACLOCAL_AMFLAGS.

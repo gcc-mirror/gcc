@@ -1,7 +1,5 @@
 # Process this with automake to create Makefile.in
 
-## We definitely don't want dependency tracking when using automake 1.4.
-AUTOMAKE_OPTIONS = no-dependencies
 ACLOCAL_AMFLAGS = -I ../config
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
