@@ -2069,6 +2069,7 @@ gnu/gcj/runtime/natNameFinder.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natStackTrace.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
+gnu/gcj/runtime/natVMClassLoader.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/io/natObjectInputStream.cc \
@@ -2239,12 +2240,13 @@ gnu/gcj/io/shs.lo gnu/gcj/protocol/core/natCoreInputStream.lo \
 gnu/gcj/runtime/natFinalizerThread.lo gnu/gcj/runtime/natFirstThread.lo \
 gnu/gcj/runtime/natNameFinder.lo gnu/gcj/runtime/natSharedLibLoader.lo \
 gnu/gcj/runtime/natStackTrace.lo gnu/gcj/runtime/natStringBuffer.lo \
-java/io/natFile.lo java/io/natFileDescriptor.lo \
-java/io/natObjectInputStream.lo java/io/natObjectOutputStream.lo \
-java/lang/natCharacter.lo java/lang/natClass.lo \
-java/lang/natClassLoader.lo java/lang/natConcreteProcess.lo \
-java/lang/natDouble.lo java/lang/natFloat.lo java/lang/natMath.lo \
-java/lang/natObject.lo java/lang/natRuntime.lo java/lang/natString.lo \
+gnu/gcj/runtime/natVMClassLoader.lo java/io/natFile.lo \
+java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
+java/io/natObjectOutputStream.lo java/lang/natCharacter.lo \
+java/lang/natClass.lo java/lang/natClassLoader.lo \
+java/lang/natConcreteProcess.lo java/lang/natDouble.lo \
+java/lang/natFloat.lo java/lang/natMath.lo java/lang/natObject.lo \
+java/lang/natRuntime.lo java/lang/natString.lo \
 java/lang/natStringBuffer.lo java/lang/natSystem.lo \
 java/lang/natThread.lo java/lang/natVMSecurityManager.lo \
 java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
@@ -2363,7 +2365,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/runtime/natNameFinder.P \
 .deps/gnu/gcj/runtime/natSharedLibLoader.P \
 .deps/gnu/gcj/runtime/natStackTrace.P \
-.deps/gnu/gcj/runtime/natStringBuffer.P .deps/gnu/gcj/xlib/Clip.P \
+.deps/gnu/gcj/runtime/natStringBuffer.P \
+.deps/gnu/gcj/runtime/natVMClassLoader.P .deps/gnu/gcj/xlib/Clip.P \
 .deps/gnu/gcj/xlib/Colormap.P .deps/gnu/gcj/xlib/Display.P \
 .deps/gnu/gcj/xlib/Drawable.P .deps/gnu/gcj/xlib/Font.P \
 .deps/gnu/gcj/xlib/GC.P .deps/gnu/gcj/xlib/Pixmap.P \
