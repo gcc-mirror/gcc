@@ -1,3 +1,8 @@
+2000-04-20  Greg McGary  <gkm@gnu.org>
+
+	* compile/20000420-2.c: New test for stack misalignment
+	when optimizing, but without sibling-call optimizations (-O1).
+
 Wed Apr 19 09:16:32 2000  Catherine Moore  <clm@cygnus.com>
 
 	* execute/921017-1.c: Check for NO_TRAMPOLINES.
