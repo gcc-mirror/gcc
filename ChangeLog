@@ -1,3 +1,7 @@
+Mon Feb 23 15:09:18 1998  Bruno Haible <bruno@linuix.mathematik.uni-karlsruhe.de
+>
+        * config.sub (sco5): Fix typo.
+
 1998-02-16  Dave Love  <d.love@dl.ac.uk>
 
 	* Makefile.in ($(CONFIGURE_TARGET_MODULES)): Run configure with
