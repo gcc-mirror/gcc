@@ -1183,15 +1183,20 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 /* Print an instruction operand X on file FILE.
    CODE is the code from the %-spec that requested printing this operand;
    if `%z3' was used to print operand 3, then CODE is 'z'.
-   On the Vax, the codes used are:
-   `#', indicating that either `d' or `g' should be printed,
-   depending on whether we're using dfloat or gfloat.
-   `C', indicating the reverse of the condition name specified by the
-   operand.
-   `P', indicating one plus a constant operand
-   `N', indicating the one's complement of a constant operand
-   `H', indicating the low-order 16 bits of the one's complement of a constant
-   `B', similarly for the low-order 8 bits.  */
+
+VAX operand formatting codes:
+
+ letter	   print
+   C	reverse branch condition
+   B	the low 8 bits of the complement of a constant operand
+   H	the low 16 bits of the complement of a constant operand
+   M	(1 << const) - 1
+   N	the complement of a constant integer operand
+   P	constant operand plus 1
+   R	32 - constant operand
+   b	the low 8 bits of a negated constant operand
+   h	the low 16 bits of a negated constant operand
+   #	'd' or 'g' depending on whether dfloat or gfloat is used  */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
   ((CODE) == '#')
@@ -1210,8 +1215,14 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
     fprintf (FILE, "$%d", 32 - INTVAL (X));				\
   else if (CODE == 'H' && GET_CODE (X) == CONST_INT)			\
     fprintf (FILE, "$%d", 0xffff & ~ INTVAL (X));			\
+  else if (CODE == 'h' && GET_CODE (X) == CONST_INT)			\
+    fprintf (FILE, "$%d", (short) - INTVAL (x));			\
   else if (CODE == 'B' && GET_CODE (X) == CONST_INT)			\
     fprintf (FILE, "$%d", 0xff & ~ INTVAL (X));				\
+  else if (CODE == 'b' && GET_CODE (X) == CONST_INT)			\
+    fprintf (FILE, "$%d", 0xff & - INTVAL (X));				\
+  else if (CODE == 'M' && GET_CODE (X) == CONST_INT)			\
+    fprintf (FILE, "$%d", ~((1 << INTVAL (x)) - 1));			\
   else if (GET_CODE (X) == REG)						\
     fprintf (FILE, "%s", reg_names[REGNO (X)]);				\
   else if (GET_CODE (X) == MEM)						\
