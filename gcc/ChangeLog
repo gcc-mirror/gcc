@@ -1,3 +1,7 @@
+Thu Apr  3 22:27:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cfgrtl.c (update_bb_for_insn): Do not set block for barriers.
+
 2003-04-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/10157
