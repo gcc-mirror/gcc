@@ -73,8 +73,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    also use the condition code; but in practice such insns would not
    combine anyway.  */
 
-#include <stdio.h>
-
 #include "config.h"
 #include "gvarargs.h"
 #include "rtl.h"
@@ -88,6 +86,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-attr.h"
 #include "recog.h"
 #include "real.h"
+#include <stdio.h>
 
 /* It is not safe to use ordinary gen_lowpart in combine.
    Use gen_lowpart_for_combine instead.  See comments there.  */

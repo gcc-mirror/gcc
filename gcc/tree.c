@@ -33,12 +33,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    by all passes of the compiler.  */
 
 #include "config.h"
-#include <stdio.h>
 #include "flags.h"
 #include "tree.h"
 #include "function.h"
 #include "obstack.h"
 #include "gvarargs.h"
+#include <stdio.h>
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free

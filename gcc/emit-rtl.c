@@ -34,7 +34,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    is the kind of rtx's they make and what arguments they use.  */
 
 #include "config.h"
-#include <stdio.h>
 #include "gvarargs.h"
 #include "rtl.h"
 #include "flags.h"
@@ -43,6 +42,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "regs.h"
 #include "insn-config.h"
 #include "real.h"
+#include <stdio.h>
 
 /* This is reset to LAST_VIRTUAL_REGISTER + 1 at the start of each function.
    After rtl generation, it is 1 plus the largest register number used.  */
