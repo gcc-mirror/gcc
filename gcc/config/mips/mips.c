@@ -4038,8 +4038,9 @@ mips_output_lineno (stream, line)
   if (write_symbols == DBX_DEBUG)
     {
       ++sym_lineno;
-      fprintf (stream, "$LM%d:\n\t%s %d,0,%d,$LM%d\n",
-	       sym_lineno, ASM_STABN_OP, N_SLINE, line, sym_lineno);
+      fprintf (stream, "%sLM%d:\n\t%s %d,0,%d,%sLM%d\n",
+	       LOCAL_LABEL_PREFIX, sym_lineno, ASM_STABN_OP, N_SLINE, line,
+	       LOCAL_LABEL_PREFIX, sym_lineno);
     }
 
   else
