@@ -45,5 +45,5 @@ Boston, MA 02111-1307, USA.  */
 #ifndef USE_GNULIBC_1
 #undef LIB_SPEC
 #define LIB_SPEC \
-"%{shared:-lc}%{!shared:%{pthread:-lpthread }%{profile:-lc_p}%{!profile:-lc}} "
+"%{pthread:-lpthread }%{shared:-lc}%{!shared:%{profile:-lc_p}%{!profile:-lc}} "
 #endif

@@ -37,9 +37,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef LIB_SPEC
 #define LIB_SPEC \
-  "%{shared: -lc} \
-   %{!shared: %{pthread:-lpthread} \
-              %{profile:-lc_p} %{!profile: -lc}}"
+  "%{pthread:-lpthread} \
+   %{shared:-lc} \
+   %{!shared: %{profile:-lc_p}%{!profile:-lc}}"
 
 /* Show that we need a GP when profiling.  */
 #undef TARGET_PROFILING_NEEDS_GP

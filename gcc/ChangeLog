@@ -1,3 +1,14 @@
+2002-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux.h (LIB_SPEC): If -pthread, add -lpthread even if
+	-shared.
+	* config/alpha/linux-elf.h (LIB_SPEC): Likewise.
+	* config/alpha/linux.h (LIB_SPEC): Likewise.
+	* config/arm/linux-elf.h (LIB_SPEC): Likewise.
+	* config/pa/pa-linux.h (LIB_SPEC): Likewise.
+	* config/sparc/linux.h (LIB_SPEC): Likewise.
+	* config/sparc/linux64.h (LIB_SPEC): Likewise.
+
 2002-12-09  Larin Hennessy  <larin@science.oregonstate.edu>
 
 	* doc/invoke.texi: Document UltraSparc III option.
