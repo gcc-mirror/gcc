@@ -1,3 +1,14 @@
+2000-01-28  Ulrich Drepper  <drepper@redhat.com>
+
+	* c-common.c: Adjust variable names, comments, help strings to c99.
+	* c-lex.c: Likewise.
+	* c-parse.y: Likewise.
+	* c-tree.h: Likewise.
+	* cccp.c: Likewise.
+	* cpplib.h: Likewise.
+	* c-decl.c: Likewise.  Recognize options with names "*99" as well.
+	* cppinit.c: Likewise.
+
 2000-01-29 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
         * c4x.h (INIT_TARGET_OPTABS): Add all missing local optab entries.
