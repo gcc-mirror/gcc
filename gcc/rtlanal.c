@@ -38,6 +38,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static int global_reg_mentioned_p_1 PARAMS ((rtx *, void *));
 static void set_of_1		PARAMS ((rtx, rtx, void *));
 static void insn_dependent_p_1	PARAMS ((rtx, rtx, void *));
+static int subrtx_p_1		PARAMS ((rtx *, void *));
 static int computed_jump_p_1	PARAMS ((rtx));
 static void parms_set 		PARAMS ((rtx, rtx, void *));
 static bool hoist_test_store		PARAMS ((rtx, rtx, regset));
@@ -2789,6 +2790,90 @@ replace_regs (x, reg_map, nregs, replace_dest)
 	}
     }
   return x;
+}
+
+/* Replace occurrences of the old label in *X with the new one.
+   DATA is an rtx_pair containing the old and new labels, respectively.  */
+
+int
+replace_label (x, data)
+     rtx *x;
+     void *data;
+{
+  rtx l = *x;
+  rtx old_label = ((rtx_pair *) data)->r1;
+  rtx new_label = ((rtx_pair *) data)->r2;
+
+  if (l == NULL_RTX)
+    return 0;
+
+  /* If this is a JUMP_INSN, then we also need to fix the JUMP_LABEL
+     field.  This is not handled by for_each_rtx because it doesn't
+     handle unprinted ('0') fields.  */
+  if (GET_CODE (l) == JUMP_INSN && JUMP_LABEL (l) == old_label)
+    JUMP_LABEL (l) = new_label;
+  
+  if (GET_CODE (l) != LABEL_REF)
+    return 0;
+
+  if (XEXP (l, 0) != old_label)
+    return 0;
+
+  XEXP (l, 0) = new_label;
+  ++LABEL_NUSES (new_label);
+  --LABEL_NUSES (old_label);
+
+  return 0;
+}
+
+/* Return RTX_EQUAL_P (*PX, SUBX).  If *PX and SUBX are not equal
+   FOR_EACH_RTX continues traversing, if they are equal FOR_EACH_RTX
+   stops traversing and returns the same value as this function.  */
+
+static int
+subrtx_p_1 (px, subx)
+     rtx *px;
+     void *subx;
+{
+  return rtx_equal_p (*px, (rtx) subx);
+}
+
+/* Return true if SUBX is equal to some subexpression of X.  */
+
+int
+subrtx_p (subx, x)
+     rtx subx;
+     rtx x;
+{
+  return for_each_rtx (&x, subrtx_p_1, subx);
+}
+
+/* If INSN is a jump to jumptable insn rturn true and store the label (which
+   INSN jumps to) to *LABEL and the tablejump insn to *TABLE.
+   LABEL and TABLE may be NULL.  */
+
+bool
+tablejump_p (insn, label, table)
+     rtx insn;
+     rtx *label;
+     rtx *table;
+{
+  rtx l, t;
+
+  if (onlyjump_p (insn)
+      && (l = JUMP_LABEL (insn)) != NULL_RTX
+      && (t = NEXT_INSN (l)) != NULL_RTX
+      && GET_CODE (t) == JUMP_INSN
+      && (GET_CODE (PATTERN (t)) == ADDR_VEC
+	  || GET_CODE (PATTERN (t)) == ADDR_DIFF_VEC))
+    {
+      if (label)
+	*label = l;
+      if (table)
+	*table = t;
+      return true;
+    }
+  return false;
 }
 
 /* A subroutine of computed_jump_p, return 1 if X contains a REG or MEM or
