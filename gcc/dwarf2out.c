@@ -326,6 +326,13 @@ static unsigned reg_number		PROTO((rtx));
   fprintf ((FILE), "\t%s\t%s", UNALIGNED_WORD_ASM_OP, (ADDR))
 #endif
 
+#ifndef ASM_OUTPUT_DWARF_OFFSET4
+#define ASM_OUTPUT_DWARF_OFFSET4(FILE,LABEL) \
+ do {	fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);		\
+	assemble_name (FILE, LABEL);					\
+  } while (0)
+#endif
+
 #ifndef ASM_OUTPUT_DWARF_OFFSET
 #define ASM_OUTPUT_DWARF_OFFSET(FILE,LABEL)				\
  do {	fprintf ((FILE), "\t%s\t", UNALIGNED_OFFSET_ASM_OP);		\
@@ -371,11 +378,6 @@ static unsigned reg_number		PROTO((rtx));
   } while (0)
 #endif
 
-#ifndef ASM_OUTPUT_DWARF_VALUE4
-#define ASM_OUTPUT_DWARF_VALUE4(FILE,LABEL) \
-  fprintf ((FILE), "\t%s\t%s", UNALIGNED_INT_ASM_OP, LABEL)
-#endif
-
 #else /* UNALIGNED_INT_ASM_OP */
 
 /* We don't have unaligned support, let's hope the normal output works for
@@ -383,6 +385,9 @@ static unsigned reg_number		PROTO((rtx));
 
 #define ASM_OUTPUT_DWARF_ADDR(FILE,LABEL) \
   assemble_integer (gen_rtx (SYMBOL_REF, Pmode, LABEL), PTR_SIZE, 1)
+
+#define ASM_OUTPUT_DWARF_OFFSET4(FILE,LABEL) \
+  assemble_integer (gen_rtx (SYMBOL_REF, SImode, LABEL), 4, 1)
 
 #define ASM_OUTPUT_DWARF_OFFSET(FILE,LABEL) \
   assemble_integer (gen_rtx (SYMBOL_REF, SImode, LABEL), 4, 1)
@@ -411,15 +416,19 @@ static unsigned reg_number		PROTO((rtx));
 #define ASM_OUTPUT_DWARF_DATA4(FILE,VALUE) \
   assemble_integer (GEN_INT (VALUE), 4, 1)
 
-#define ASM_OUTPUT_DWARF_VALUE4(FILE,LABEL) \
-  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, LABEL), 4, 1)
-
 #endif /* UNALIGNED_INT_ASM_OP */
 
 #ifdef SET_ASM_OP
 #ifndef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
-#define ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL(FILE, SY, HI, LO)	\
-   fprintf (FILE, "\t%s\t%s,%s-%s\n", SET_ASM_OP, SY, HI, LO)
+#define ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL(FILE, SY, HI, LO)    	\
+ do {									\
+  fprintf (FILE, "\t%s\t", SET_ASM_OP);					\
+  assemble_name (FILE, SY);						\
+  fputc (',', FILE);							\
+  assemble_name (FILE, HI);						\
+  fputc ('-', FILE);							\
+  assemble_name (FILE, LO);						\
+ } while (0)
 #endif
 #endif /* SET_ASM_OP */
 
@@ -1566,7 +1575,7 @@ output_call_frame_info (for_eh)
 #ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
   ASM_GENERATE_INTERNAL_LABEL (ld, CIE_LENGTH_LABEL, for_eh);
   if (for_eh)
-    ASM_OUTPUT_DWARF_VALUE4 (asm_out_file, ld);
+    ASM_OUTPUT_DWARF_OFFSET4 (asm_out_file, ld);
   else
     ASM_OUTPUT_DWARF_OFFSET (asm_out_file, ld);
 #else
@@ -1659,6 +1668,9 @@ output_call_frame_info (for_eh)
   ASM_OUTPUT_LABEL (asm_out_file, l2);
 #ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
   ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (asm_out_file, ld, l2, l1);
+  if (flag_debug_asm)
+    fprintf (asm_out_file, "\t%s CIE Length Symbol", ASM_COMMENT_START);
+  fputc ('\n', asm_out_file);
 #endif
 
   /* Loop through all of the FDE's.  */
@@ -1671,7 +1683,7 @@ output_call_frame_info (for_eh)
 #ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
       ASM_GENERATE_INTERNAL_LABEL (ld, FDE_LENGTH_LABEL, for_eh + i*2);
       if (for_eh)
-	ASM_OUTPUT_DWARF_VALUE4 (asm_out_file, ld);
+	ASM_OUTPUT_DWARF_OFFSET4 (asm_out_file, ld);
       else
 	ASM_OUTPUT_DWARF_OFFSET (asm_out_file, ld);
 #else
@@ -1716,6 +1728,9 @@ output_call_frame_info (for_eh)
       ASM_OUTPUT_LABEL (asm_out_file, l2);
 #ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
       ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (asm_out_file, ld, l2, l1);
+      if (flag_debug_asm)
+	fprintf (asm_out_file, "\t%s FDE Length Symbol", ASM_COMMENT_START);
+      fputc ('\n', asm_out_file);
 #endif
     }
 #ifndef EH_FRAME_SECTION
