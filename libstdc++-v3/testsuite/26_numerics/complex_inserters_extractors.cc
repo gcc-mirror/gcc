@@ -108,8 +108,8 @@ void test02()
   bool test = true;
 
   // Construct locale with specialized facets.
-  typedef gnu_sstream::__numput_type numput_type;
-  typedef gnu_sstream::__numget_type numget_type;
+  typedef gnu_sstream::__num_put_type numput_type;
+  typedef gnu_sstream::__num_get_type numget_type;
   std::locale loc_c = std::locale::classic();
   std::locale loc_1(loc_c, new numput_type);
   std::locale loc_2(loc_1, new numget_type);

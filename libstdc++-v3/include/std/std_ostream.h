@@ -69,8 +69,8 @@ namespace std
       typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
       typedef basic_ios<_CharT, _Traits>		__ios_type;
       typedef basic_ostream<_CharT, _Traits>		__ostream_type;
-      typedef ostreambuf_iterator<_CharT, _Traits>	__ostreambuf_iter;
-      typedef num_put<_CharT, __ostreambuf_iter>        __numput_type;
+      typedef num_put<_CharT, ostreambuf_iterator<_CharT, _Traits> >        
+      							__num_put_type;
       typedef ctype<_CharT>           			__ctype_type;
 
       template<typename _CharT2, typename _Traits2>

@@ -76,10 +76,10 @@ namespace std
        *  @endif
       */
       typedef ctype<_CharT>                          __ctype_type;
-      typedef ostreambuf_iterator<_CharT, _Traits>   __ostreambuf_iter;
-      typedef num_put<_CharT, __ostreambuf_iter>     __numput_type;
-      typedef istreambuf_iterator<_CharT, _Traits>   __istreambuf_iter;
-      typedef num_get<_CharT, __istreambuf_iter>     __numget_type;
+      typedef num_put<_CharT, ostreambuf_iterator<_CharT, _Traits> >     
+						     __num_put_type;
+      typedef num_get<_CharT, istreambuf_iterator<_CharT, _Traits> >     
+      						     __num_get_type;
       //@}
       
       // Data members:
@@ -92,9 +92,9 @@ namespace std
       // Cached use_facet<ctype>, which is based on the current locale info.
       const __ctype_type*                            _M_ctype;      
       // For ostream.
-      const __numput_type*                           _M_num_put;
+      const __num_put_type*                          _M_num_put;
       // For istream.
-      const __numget_type*                           _M_num_get;
+      const __num_get_type*                          _M_num_get;
 
     public:
       //@{
