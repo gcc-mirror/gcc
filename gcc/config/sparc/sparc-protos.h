@@ -83,10 +83,11 @@ extern void sparc_emit_set_const64 (rtx, rtx);
 extern void sparc_emit_set_symbolic_const64 (rtx, rtx, rtx);
 extern int sparc_splitdi_legitimate (rtx, rtx);
 extern int sparc_absnegfloat_split_legitimate (rtx, rtx);
-extern char *output_cbranch (rtx, rtx, int, int, int, int, rtx);
+extern const char *output_cbranch (rtx, rtx, int, int, int, int, rtx);
 extern const char *output_return (rtx);
 extern const char *output_sibcall (rtx, rtx);
-extern char *output_v9branch (rtx, rtx, int, int, int, int, int, rtx);
+extern const char *output_v8plus_shift (rtx *, rtx, const char *);
+extern const char *output_v9branch (rtx, rtx, int, int, int, int, int, rtx);
 extern void emit_v9_brxx_insn (enum rtx_code, rtx, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern int mems_ok_for_ldd_peep (rtx, rtx, rtx);
@@ -110,7 +111,6 @@ extern int reg_unused_after (rtx, rtx);
 extern int register_ok_for_ldd (rtx);
 extern int registers_ok_for_ldd_peep (rtx, rtx);
 extern int v9_regcmp_p (enum rtx_code);
-extern char *sparc_v8plus_shift (rtx *, rtx, const char *);
 /* Function used for V8+ code generation.  Returns 1 if the high
    32 bits of REG are 0 before INSN.  */   
 extern int sparc_check_64 (rtx, rtx);

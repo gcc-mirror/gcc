@@ -5825,11 +5825,11 @@ sparc_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 
    INSN, if set, is the insn.  */
 
-char *
+const char *
 output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
 		int noop, rtx insn)
 {
-  static char string[50];
+  static char string[64];
   enum rtx_code code = GET_CODE (op);
   rtx cc_reg = XEXP (op, 0);
   enum machine_mode mode = GET_MODE (cc_reg);
@@ -5845,7 +5845,7 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
      to
 
      be,pn %xcc, .+12
-     nop
+      nop
      ba .LC30
 
      and
@@ -5855,7 +5855,7 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
      to
 
      fbe,pt %fcc2, .+16
-     nop
+      nop
      ba .LC29  */
 
   far = get_attr_length (insn) >= 3;
@@ -6048,10 +6048,10 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
   p = strchr (p, '\0');
   if (far)
     {
-      strcpy (p, ".+12\n\tnop\n\tb\t");
+      strcpy (p, ".+12\n\t nop\n\tb\t");
       if (annul || noop)
         p[3] = '6';
-      p += 13;
+      p += 14;
     }
   *p++ = '%';
   *p++ = 'l';
@@ -6060,7 +6060,7 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
   *p++ = label + '0';
   *p = '\0';
   if (noop)
-    strcpy (p, "\n\tnop");
+    strcpy (p, "\n\t nop");
 
   return string;
 }
@@ -6289,11 +6289,11 @@ sparc_emit_fixunsdi (rtx *operands, enum machine_mode mode)
 
    NOOP is nonzero if we have to follow this branch by a noop.  */
 
-char *
+const char *
 output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
 		 int annul, int noop, rtx insn)
 {
-  static char string[50];
+  static char string[64];
   enum rtx_code code = GET_CODE (op);
   enum machine_mode mode = GET_MODE (XEXP (op, 0));
   rtx note;
@@ -6308,7 +6308,7 @@ output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
      to
      
      brz,pn %g1, .+12
-     nop
+      nop
      ba,pt %xcc, .LC30
      
      and
@@ -6318,7 +6318,7 @@ output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
      to
      
      brlz,pt %o1, .+16
-     nop
+      nop
      ba,pt %xcc, .LC29  */
 
   far = get_attr_length (insn) >= 3;
@@ -6399,10 +6399,10 @@ output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
 	    veryfar = 0;
 	}
 
-      strcpy (p, ".+12\n\tnop\n\t");
+      strcpy (p, ".+12\n\t nop\n\t");
       if (annul || noop)
         p[3] = '6';
-      p += 11;
+      p += 12;
       if (veryfar)
 	{
 	  strcpy (p, "b\t");
@@ -6420,7 +6420,7 @@ output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
   *p = '\0';
 
   if (noop)
-    strcpy (p, "\n\tnop");
+    strcpy (p, "\n\t nop");
 
   return string;
 }
@@ -7721,8 +7721,8 @@ sparc_check_64 (rtx x, rtx insn)
 
 /* Returns assembly code to perform a DImode shift using
    a 64-bit global or out register on SPARC-V8+.  */
-char *
-sparc_v8plus_shift (rtx *operands, rtx insn, const char *opcode)
+const char *
+output_v8plus_shift (rtx *operands, rtx insn, const char *opcode)
 {
   static char asm_code[60];
 

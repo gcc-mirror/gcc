@@ -6978,7 +6978,7 @@
 		   (match_operand:SI 2 "arith_operand" "rI,rI,rI")))
    (clobber (match_scratch:SI 3 "=X,X,&h"))]
   "TARGET_V8PLUS"
-  { return sparc_v8plus_shift (operands, insn, "sllx"); }
+  "* return output_v8plus_shift (operands, insn, \"sllx\");"
   [(set_attr "type" "multi")
    (set_attr "length" "5,5,6")])
 
@@ -7095,7 +7095,7 @@
 		     (match_operand:SI 2 "arith_operand" "rI,rI,rI")))
    (clobber (match_scratch:SI 3 "=X,X,&h"))]
   "TARGET_V8PLUS"
-  { return sparc_v8plus_shift (operands, insn, "srax"); }
+  "* return output_v8plus_shift (operands, insn, \"srax\");"
   [(set_attr "type" "multi")
    (set_attr "length" "5,5,6")])
 
@@ -7184,7 +7184,7 @@
 		     (match_operand:SI 2 "arith_operand" "rI,rI,rI")))
    (clobber (match_scratch:SI 3 "=X,X,&h"))]
   "TARGET_V8PLUS"
-  { return sparc_v8plus_shift (operands, insn, "srlx"); }
+  "* return output_v8plus_shift (operands, insn, \"srlx\");"
   [(set_attr "type" "multi")
    (set_attr "length" "5,5,6")])
 
@@ -7435,7 +7435,7 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) > 0"
-  "call\t%a0, %1\n\tnop\n\tunimp\t%2"
+  "call\t%a0, %1\n\t nop\n\tunimp\t%2"
   [(set_attr "type" "call_no_delay_slot")
    (set_attr "length" "3")])
 
@@ -7448,7 +7448,7 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) > 0"
-  "call\t%a0, %1\n\tnop\n\tunimp\t%2"
+  "call\t%a0, %1\n\t nop\n\tunimp\t%2"
   [(set_attr "type" "call_no_delay_slot")
    (set_attr "length" "3")])
 
@@ -7461,7 +7461,7 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0"
-  "call\t%a0, %1\n\tnop\n\tnop"
+  "call\t%a0, %1\n\t nop\n\tnop"
   [(set_attr "type" "call_no_delay_slot")
    (set_attr "length" "3")])
 
@@ -7474,7 +7474,7 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0"
-  "call\t%a0, %1\n\tnop\n\tnop"
+  "call\t%a0, %1\n\t nop\n\tnop"
   [(set_attr "type" "call_no_delay_slot")
    (set_attr "length" "3")])
 
