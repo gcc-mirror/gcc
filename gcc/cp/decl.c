@@ -324,9 +324,9 @@ tree current_function_decl;
 
 tree current_function_return_value;
 
-/* Nonzero means use the ISO C9x dialect of C.  */
+/* Nonzero means use the ISO C99 dialect of C.  */
 
-int flag_isoc9x;
+int flag_isoc99;
 
 /* Nonzero means give `double' the same size as `float'.  */
 
