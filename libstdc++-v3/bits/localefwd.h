@@ -209,8 +209,15 @@ namespace std
   // 22.1.1 Class locale
   class locale
   {
-    // Forwrd decls and friends:
+  public:
+    // Types:
+    typedef int category;
+
+    // Forward decls and friends:
+    class facet;
+    class id;
     class _Impl;
+
     friend class _Impl;
 
     template<typename _Facet>
@@ -221,12 +228,6 @@ namespace std
       friend bool 
       has_facet(const locale&) throw();
  
-  public:
-    // Types:
-    class facet;
-    class id;
-    typedef int category;
-
     // Category values:
     // NB much depends on the order in which these appear:
     static const category none		= 0;
@@ -317,13 +318,14 @@ namespace std
   // locale implementation object
   class locale::_Impl
   {
+  public:
     // Types.
     typedef vector<facet*, allocator<facet*> > __vec_facet;
     typedef vector<string, allocator<string> > __vec_string;
 
     // Friends.
     friend class locale;
-    friend class facet;
+    friend class locale::facet;
 
     template<typename _Facet>
       friend const _Facet&  
@@ -333,13 +335,21 @@ namespace std
       friend bool  
       has_facet(const locale&) throw();
 
+  private:
     // Data Members.
-    size_t 		_M_num_references;
-    __vec_facet* 	_M_facets;
-    __vec_string* 	_M_category_names;
-    bool 		_M_has_name;
-    bool 		_M_cached_name_ok;
-    string 		_M_cached_name;
+    size_t 				_M_num_references;
+    __vec_facet* 			_M_facets;
+    __vec_string* 			_M_category_names;
+    bool 				_M_has_name;
+    bool 				_M_cached_name_ok;
+    string 				_M_cached_name;
+    static const locale::id* const 	_S_id_collate[];
+    static const locale::id* const 	_S_id_ctype[];
+    static const locale::id* const 	_S_id_monetary[];
+    static const locale::id* const 	_S_id_numeric[];
+    static const locale::id* const 	_S_id_time[];
+    static const locale::id* const 	_S_id_messages[];
+    static const locale::id* const* const _S_facet_categories[];
 
     inline void 
     _M_add_reference() throw()
@@ -400,14 +410,6 @@ namespace std
 
     category 
     _M_normalize_category_names(const string&, category __cats);
-
-    static const locale::id* const _S_id_collate[];
-    static const locale::id* const _S_id_ctype[];
-    static const locale::id* const _S_id_monetary[];
-    static const locale::id* const _S_id_numeric[];
-    static const locale::id* const _S_id_time[];
-    static const locale::id* const _S_id_messages[];
-    static const locale::id* const* const _S_facet_categories[];
   };
 
   // class locale inlines, that need declaration of locale::_Imp
