@@ -338,6 +338,36 @@ if [ \! -z "$file_to_fix" ]; then
   rm -f /tmp/$base
 fi
 
+#
+# Also, the static functions lstat() and fchmod() in <sys/stat.h> 
+# cause G++ grief since they're not wrapped in "if __cplusplus".   
+# Fix that up now.
+#
+file=sys/stat.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, static definitions not C++-aware.
+  sed -e '/^static int[ 	]*/i\
+#if __cplusplus\
+extern "C"\
+{\
+#endif /* __cplusplus */ \
+' \
+-e '/^}$/a\
+#if __cplusplus\
+}\
+#endif /* __cplusplus */ \
+' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
 
 echo 'Removing unneeded directories:'
 cd $LIB
