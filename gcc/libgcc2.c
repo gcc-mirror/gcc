@@ -933,17 +933,13 @@ XFtype
 __floatdixf (DItype u)
 {
   XFtype d;
-  SItype negate = 0;
 
-  if (u < 0)
-    u = -u, negate = 1;
-
-  d = (USItype) (u >> WORD_SIZE);
+  d = (SItype) (u >> WORD_SIZE);
   d *= HIGH_HALFWORD_COEFF;
   d *= HIGH_HALFWORD_COEFF;
   d += (USItype) (u & (HIGH_WORD_COEFF - 1));
 
-  return (negate ? -d : d);
+  return d;
 }
 #endif
 
@@ -956,17 +952,13 @@ TFtype
 __floatditf (DItype u)
 {
   TFtype d;
-  SItype negate = 0;
 
-  if (u < 0)
-    u = -u, negate = 1;
-
-  d = (USItype) (u >> WORD_SIZE);
+  d = (SItype) (u >> WORD_SIZE);
   d *= HIGH_HALFWORD_COEFF;
   d *= HIGH_HALFWORD_COEFF;
   d += (USItype) (u & (HIGH_WORD_COEFF - 1));
 
-  return (negate ? -d : d);
+  return d;
 }
 #endif
 
@@ -979,17 +971,13 @@ DFtype
 __floatdidf (DItype u)
 {
   DFtype d;
-  SItype negate = 0;
 
-  if (u < 0)
-    u = -u, negate = 1;
-
-  d = (USItype) (u >> WORD_SIZE);
+  d = (SItype) (u >> WORD_SIZE);
   d *= HIGH_HALFWORD_COEFF;
   d *= HIGH_HALFWORD_COEFF;
   d += (USItype) (u & (HIGH_WORD_COEFF - 1));
 
-  return (negate ? -d : d);
+  return d;
 }
 #endif
 
@@ -1034,10 +1022,6 @@ __floatdisf (DItype u)
      so that we don't lose any of the precision of the high word
      while multiplying it.  */
   DFtype f;
-  SItype negate = 0;
-
-  if (u < 0)
-    u = -u, negate = 1;
 
   /* Protect against double-rounding error.
      Represent any low-order bits, that might be truncated in DFmode,
@@ -1049,18 +1033,19 @@ __floatdisf (DItype u)
       && DF_SIZE > (DI_SIZE - DF_SIZE + SF_SIZE))
     {
 #define REP_BIT ((USItype) 1 << (DI_SIZE - DF_SIZE))
-      if (u >= ((UDItype) 1 << DF_SIZE))
+      if (! (- ((UDItype) 1 << DF_SIZE) < u
+	     && u < ((UDItype) 1 << DF_SIZE)))
 	{
 	  if ((USItype) u & (REP_BIT - 1))
 	    u |= REP_BIT;
 	}
     }
-  f = (USItype) (u >> WORD_SIZE);
+  f = (SItype) (u >> WORD_SIZE);
   f *= HIGH_HALFWORD_COEFF;
   f *= HIGH_HALFWORD_COEFF;
   f += (USItype) (u & (HIGH_WORD_COEFF - 1));
 
-  return (SFtype) (negate ? -f : f);
+  return (SFtype) f;
 }
 #endif
 
