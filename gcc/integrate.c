@@ -2572,15 +2572,16 @@ mark_stores (dest, x, data)
 
   if (regno >= 0)
     {
-      int last_reg = (regno >= FIRST_PSEUDO_REGISTER ? regno
-		      : regno + HARD_REGNO_NREGS (regno, mode) - 1);
-      int i;
+      unsigned int uregno = regno;
+      unsigned int last_reg = (uregno >= FIRST_PSEUDO_REGISTER ? uregno
+			      : uregno + HARD_REGNO_NREGS (uregno, mode) - 1);
+      unsigned int i;
 
       /* Ignore virtual stack var or virtual arg register since those
 	 are handled separately.  */
-      if (regno != VIRTUAL_INCOMING_ARGS_REGNUM
-	  && regno != VIRTUAL_STACK_VARS_REGNUM)
-	for (i = regno; i <= last_reg; i++)
+      if (uregno != VIRTUAL_INCOMING_ARGS_REGNUM
+	  && uregno != VIRTUAL_STACK_VARS_REGNUM)
+	for (i = uregno; i <= last_reg; i++)
 	  if ((size_t) i < VARRAY_SIZE (global_const_equiv_varray))
 	    VARRAY_CONST_EQUIV (global_const_equiv_varray, i).rtx = 0;
     }

@@ -185,8 +185,9 @@ mark_referenced_resources (x, res, include_delayed_effects)
      register struct resources *res;
      register int include_delayed_effects;
 {
-  register enum rtx_code code = GET_CODE (x);
-  register int i, j;
+  enum rtx_code code = GET_CODE (x);
+  int i, j;
+  unsigned int r;
   register const char *format_ptr;
 
   /* Handle leaf items for which we set resource flags.  Also, special-case
@@ -206,16 +207,18 @@ mark_referenced_resources (x, res, include_delayed_effects)
 	mark_referenced_resources (SUBREG_REG (x), res, 0);
       else
 	{
-	  int regno = REGNO (SUBREG_REG (x)) + SUBREG_WORD (x);
-	  int last_regno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
-	  for (i = regno; i < last_regno; i++)
-	    SET_HARD_REG_BIT (res->regs, i);
+	  unsigned int regno = REGNO (SUBREG_REG (x)) + SUBREG_WORD (x);
+	  unsigned int last_regno
+	    = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+
+	  for (r = regno; r < last_regno; r++)
+	    SET_HARD_REG_BIT (res->regs, r);
 	}
       return;
 
     case REG:
-      for (i = 0; i < HARD_REGNO_NREGS (REGNO (x), GET_MODE (x)); i++)
-	SET_HARD_REG_BIT (res->regs, REGNO (x) + i);
+      for (r = 0; r < HARD_REGNO_NREGS (REGNO (x), GET_MODE (x)); r++)
+	SET_HARD_REG_BIT (res->regs, REGNO (x) + r);
       return;
 
     case MEM:
@@ -594,9 +597,10 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
      int in_dest;
      int include_delayed_effects;
 {
-  register enum rtx_code code;
-  register int i, j;
-  register const char *format_ptr;
+  enum rtx_code code;
+  int i, j;
+  unsigned int r;
+  const char *format_ptr;
 
  restart:
 
@@ -634,9 +638,9 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 	  rtx link;
 
 	  res->cc = res->memory = 1;
-	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    if (call_used_regs[i] || global_regs[i])
-	      SET_HARD_REG_BIT (res->regs, i);
+	  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
+	    if (call_used_regs[r] || global_regs[r])
+	      SET_HARD_REG_BIT (res->regs, r);
 
 	  /* If X is part of a delay slot sequence, then NEXT should be
 	     the first insn after the sequence.  */
@@ -731,18 +735,20 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 				in_dest, include_delayed_effects);
 	  else
 	    {
-	      int regno = REGNO (SUBREG_REG (x)) + SUBREG_WORD (x);
-	      int last_regno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
-	      for (i = regno; i < last_regno; i++)
-		SET_HARD_REG_BIT (res->regs, i);
+	      unsigned int regno = REGNO (SUBREG_REG (x)) + SUBREG_WORD (x);
+	      unsigned int last_regno
+		= regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+
+	      for (r = regno; r < last_regno; r++)
+		SET_HARD_REG_BIT (res->regs, r);
 	    }
 	}
       return;
 
     case REG:
       if (in_dest)
-        for (i = 0; i < HARD_REGNO_NREGS (REGNO (x), GET_MODE (x)); i++)
-	  SET_HARD_REG_BIT (res->regs, REGNO (x) + i);
+        for (r = 0; r < HARD_REGNO_NREGS (REGNO (x), GET_MODE (x)); r++)
+	  SET_HARD_REG_BIT (res->regs, REGNO (x) + r);
       return;
 
     case UNSPEC_VOLATILE:
@@ -905,8 +911,8 @@ mark_target_live_regs (insns, target, res)
   if (b != -1)
     {
       regset regs_live = BASIC_BLOCK (b)->global_live_at_start;
-      int j;
-      int regno;
+      unsigned int j;
+      unsigned int regno;
       rtx start_insn, stop_insn;
 
       /* Compute hard regs live at start of block -- this is the real hard regs
@@ -918,12 +924,15 @@ mark_target_live_regs (insns, target, res)
       EXECUTE_IF_SET_IN_REG_SET
 	(regs_live, FIRST_PSEUDO_REGISTER, i,
 	 {
-	   if ((regno = reg_renumber[i]) >= 0)
-	     for (j = regno;
-		  j < regno + HARD_REGNO_NREGS (regno,
-						PSEUDO_REGNO_MODE (i));
-		  j++)
-	       SET_HARD_REG_BIT (current_live_regs, j);
+	   if (reg_renumber[i] >= 0)
+	     {
+	       regno = reg_renumber[i];
+	       for (j = regno;
+		    j < regno + HARD_REGNO_NREGS (regno,
+						  PSEUDO_REGNO_MODE (i));
+		    j++)
+		 SET_HARD_REG_BIT (current_live_regs, j);
+	     }
 	 });
 
       /* Get starting and ending insn, handling the case where each might

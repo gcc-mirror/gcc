@@ -1063,27 +1063,30 @@ struct tree_type
     containing function, the RECORD_TYPE or UNION_TYPE for the containing
     type, or NULL_TREE if the given decl has "file scope".  */
 #define DECL_CONTEXT(NODE) (DECL_CHECK (NODE)->decl.context)
-#define DECL_FIELD_CONTEXT(NODE) (DECL_CHECK (NODE)->decl.context)
+#define DECL_FIELD_CONTEXT(NODE) (FIELD_DECL_CHECK (NODE)->decl.context)
 /* In a DECL this is the field where configuration dependent machine
    attributes are store */
 #define DECL_MACHINE_ATTRIBUTES(NODE) (DECL_CHECK (NODE)->decl.machine_attributes)
-/* In a FIELD_DECL, this is the field position, counting in bits,
-   of the bit closest to the beginning of the structure.  */
-#define DECL_FIELD_BITPOS(NODE) (DECL_CHECK (NODE)->decl.arguments)
+/* In a FIELD_DECL, this is the field position, counting in bytes, of the
+   byte containing the bit closest to the beginning of the structure.  */
+#define DECL_FIELD_OFFSET(NODE) (FIELD_DECL_CHECK (NODE)->decl.arguments)
+/* In a FIELD_DECL, this is the offset, in bits, of the first bit of the
+   field from DECL_FIELD_OFFSET.  */
+#define DECL_FIELD_BIT_OFFSET(NODE) (FIELD_DECL_CHECK (NODE)->decl.u2.t)
 /* In a FIELD_DECL, this indicates whether the field was a bit-field and
    if so, the type that was originally specified for it.
    TREE_TYPE may have been modified (in finish_struct).  */
-#define DECL_BIT_FIELD_TYPE(NODE) (DECL_CHECK (NODE)->decl.result)
+#define DECL_BIT_FIELD_TYPE(NODE) (FIELD_DECL_CHECK (NODE)->decl.result)
 /* In FUNCTION_DECL, a chain of ..._DECL nodes.  */
 /* VAR_DECL and PARM_DECL reserve the arguments slot
    for language-specific uses.  */
 #define DECL_ARGUMENTS(NODE) (DECL_CHECK (NODE)->decl.arguments)
 /* In FUNCTION_DECL, holds the decl for the return value.  */
-#define DECL_RESULT(NODE) (DECL_CHECK (NODE)->decl.result)
+#define DECL_RESULT(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.result)
 /* For a TYPE_DECL, holds the "original" type.  (TREE_TYPE has the copy.) */
-#define DECL_ORIGINAL_TYPE(NODE) (DECL_CHECK (NODE)->decl.result)
+#define DECL_ORIGINAL_TYPE(NODE) (TYPE_DECL_CHECK (NODE)->decl.result)
 /* In PARM_DECL, holds the type as written (perhaps a function or array).  */
-#define DECL_ARG_TYPE_AS_WRITTEN(NODE) (DECL_CHECK (NODE)->decl.result)
+#define DECL_ARG_TYPE_AS_WRITTEN(NODE) (PARM_DECL_CHECK (NODE)->decl.result)
 /* For a FUNCTION_DECL, holds the tree of BINDINGs.
    For a VAR_DECL, holds the initial value.
    For a PARM_DECL, not used--default
@@ -1092,10 +1095,10 @@ struct tree_type
 #define DECL_INITIAL(NODE) (DECL_CHECK (NODE)->decl.initial)
 /* For a PARM_DECL, records the data type used to pass the argument,
    which may be different from the type seen in the program.  */
-#define DECL_ARG_TYPE(NODE) (DECL_CHECK (NODE)->decl.initial)
+#define DECL_ARG_TYPE(NODE) (PARM_DECL_CHECK (NODE)->decl.initial)
 /* For a FIELD_DECL in a QUAL_UNION_TYPE, records the expression, which
    if nonzero, indicates that the field occupies the type.  */
-#define DECL_QUALIFIER(NODE) (DECL_CHECK (NODE)->decl.initial)
+#define DECL_QUALIFIER(NODE) (FIELD_DECL_CHECK (NODE)->decl.initial)
 /* These two fields describe where in the source code the declaration was.  */
 #define DECL_SOURCE_FILE(NODE) (DECL_CHECK (NODE)->decl.filename)
 #define DECL_SOURCE_LINE(NODE) (DECL_CHECK (NODE)->decl.linenum)
@@ -1105,7 +1108,9 @@ struct tree_type
 /* Likewise for the size in bytes.  */
 #define DECL_SIZE_UNIT(NODE) (DECL_CHECK (NODE)->decl.size_unit)
 /* Holds the alignment required for the datum.  */
-#define DECL_ALIGN(NODE) (DECL_CHECK (NODE)->decl.u1.u)
+#define DECL_ALIGN(NODE) (DECL_CHECK (NODE)->decl.u1.a.align)
+/* For FIELD_DECLs, holds the alignment that DECL_FEILD_OFFSET has.  */
+#define DECL_OFFSET_ALIGN(NODE) (FIELD_DECL_CHECK (NODE)->decl.u1.a.off_align)
 /* Holds the machine mode corresponding to the declaration of a variable or
    field.  Always equal to TYPE_MODE (TREE_TYPE (decl)) except for a
    FIELD_DECL.  */
@@ -1121,15 +1126,15 @@ struct tree_type
 #define DECL_LIVE_RANGE_RTL(NODE) (DECL_CHECK (NODE)->decl.live_range_rtl)
 /* For PARM_DECL, holds an RTL for the stack slot or register
    where the data was actually passed.  */
-#define DECL_INCOMING_RTL(NODE) (DECL_CHECK (NODE)->decl.u2.r)
+#define DECL_INCOMING_RTL(NODE) (PARM_DECL_CHECK (NODE)->decl.u2.r)
 /* For FUNCTION_DECL, if it is inline, holds the saved insn chain.  */
-#define DECL_SAVED_INSNS(NODE) (DECL_CHECK (NODE)->decl.u2.f)
+#define DECL_SAVED_INSNS(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u2.f)
 /* For FUNCTION_DECL, if it is inline,
    holds the size of the stack frame, as an integer.  */
-#define DECL_FRAME_SIZE(NODE) (DECL_CHECK (NODE)->decl.u1.i)
+#define DECL_FRAME_SIZE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u1.i)
 /* For FUNCTION_DECL, if it is built-in,
    this identifies which built-in operation it is.  */
-#define DECL_FUNCTION_CODE(NODE) (DECL_CHECK (NODE)->decl.u1.f)
+#define DECL_FUNCTION_CODE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u1.f)
 
 /* The DECL_VINDEX is used for FUNCTION_DECLS in two different ways.
    Before the struct containing the FUNCTION_DECL is laid out,
@@ -1142,7 +1147,7 @@ struct tree_type
 /* For FIELD_DECLS, DECL_FCONTEXT is the *first* baseclass in
    which this FIELD_DECL is defined.  This information is needed when
    writing debugging information about vfield and vbase decls for C++.  */
-#define DECL_FCONTEXT(NODE) (DECL_CHECK (NODE)->decl.vindex)
+#define DECL_FCONTEXT(NODE) (FIELD_DECL_CHECK (NODE)->decl.vindex)
 
 /* Every ..._DECL node gets a unique number.  */
 #define DECL_UID(NODE) (DECL_CHECK (NODE)->decl.uid)
@@ -1206,19 +1211,20 @@ struct tree_type
    nonzero means the detail info about this type is not dumped into stabs.
    Instead it will generate cross reference ('x') of names. 
    This uses the same flag as DECL_EXTERNAL. */
-#define TYPE_DECL_SUPPRESS_DEBUG(NODE) (DECL_CHECK (NODE)->decl.external_flag)
-   
+#define TYPE_DECL_SUPPRESS_DEBUG(NODE) \
+(TYPE_DECL_CHECK (NODE)->decl.external_flag)
 
 /* In VAR_DECL and PARM_DECL nodes, nonzero means declared `register'.  */
 #define DECL_REGISTER(NODE) (DECL_CHECK (NODE)->decl.regdecl_flag)
 /* In LABEL_DECL nodes, nonzero means that an error message about
    jumping into such a binding contour has been printed for this label.  */
-#define DECL_ERROR_ISSUED(NODE) (DECL_CHECK (NODE)->decl.regdecl_flag)
+#define DECL_ERROR_ISSUED(NODE) (LABEL_DECL_CHECK (NODE)->decl.regdecl_flag)
 /* In a FIELD_DECL, indicates this field should be bit-packed.  */
-#define DECL_PACKED(NODE) (DECL_CHECK (NODE)->decl.regdecl_flag)
+#define DECL_PACKED(NODE) (FIELD_DECL_CHECK (NODE)->decl.regdecl_flag)
 /* In a FUNCTION_DECL with a non-zero DECL_CONTEXT, indicates that a
    static chain is not needed.  */
-#define DECL_NO_STATIC_CHAIN(NODE) (DECL_CHECK (NODE)->decl.regdecl_flag)
+#define DECL_NO_STATIC_CHAIN(NODE) \
+(FUNCTION_DECL_CHECK (NODE)->decl.regdecl_flag)
 
 /* Nonzero in a ..._DECL means this variable is ref'd from a nested function.
    For VAR_DECL nodes, PARM_DECL nodes, and FUNCTION_DECL nodes.
@@ -1231,35 +1237,37 @@ struct tree_type
 
 /* Nonzero in a FUNCTION_DECL means this function can be substituted
    where it is called.  */
-#define DECL_INLINE(NODE) (DECL_CHECK (NODE)->decl.inline_flag)
+#define DECL_INLINE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.inline_flag)
 
 /* Nonzero in a FUNCTION_DECL means this is a built-in function
    that is not specified by ansi C and that users are supposed to be allowed
    to redefine for any purpose whatever.  */
-#define DECL_BUILT_IN_NONANSI(NODE) ((NODE)->common.unsigned_flag)
+#define DECL_BUILT_IN_NONANSI(NODE) \
+(FUNCTION_DECL_CHECK (NODE)->common.unsigned_flag)
 
 /* Nonzero in a FUNCTION_DECL means this function should be treated
    as if it were a malloc, meaning it returns a pointer that is
    not an alias.  */
-#define DECL_IS_MALLOC(NODE) (DECL_CHECK (NODE)->decl.malloc_flag)
+#define DECL_IS_MALLOC(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.malloc_flag)
 
 /* Nonzero in a FIELD_DECL means it is a bit field, and must be accessed
    specially.  */
-#define DECL_BIT_FIELD(NODE) (DECL_CHECK (NODE)->decl.bit_field_flag)
+#define DECL_BIT_FIELD(NODE) (FIELD_DECL_CHECK (NODE)->decl.bit_field_flag)
 /* In a LABEL_DECL, nonzero means label was defined inside a binding
    contour that restored a stack level and which is now exited.  */
-#define DECL_TOO_LATE(NODE) (DECL_CHECK (NODE)->decl.bit_field_flag)
+#define DECL_TOO_LATE(NODE) (LABEL_DECL_CHECK (NODE)->decl.bit_field_flag)
 
 /* Unused in FUNCTION_DECL.  */
 
 /* In a VAR_DECL that's static,
    nonzero if the space is in the text section.  */
-#define DECL_IN_TEXT_SECTION(NODE) (DECL_CHECK (NODE)->decl.bit_field_flag)
+#define DECL_IN_TEXT_SECTION(NODE) (VAR_DECL_CHECK (NODE)->decl.bit_field_flag)
 
 /* In a FUNCTION_DECL, nonzero means a built in function.  */
 #define DECL_BUILT_IN(NODE) (DECL_BUILT_IN_CLASS (NODE) != NOT_BUILT_IN)
 /* For a builtin function, identify which part of the compiler defined it.  */
-#define DECL_BUILT_IN_CLASS(NODE) (DECL_CHECK (NODE)->decl.built_in_class)
+#define DECL_BUILT_IN_CLASS(NODE) \
+(FUNCTION_DECL_CHECK (NODE)->decl.built_in_class)
 
 /* Used in VAR_DECLs to indicate that the variable is a vtable.
    Used in FIELD_DECLs for vtable pointers.
@@ -1273,12 +1281,16 @@ struct tree_type
 /* Used in PARM_DECLs whose type are unions to indicate that the
    argument should be passed in the same way that the first union
    alternative would be passed.  */
-#define DECL_TRANSPARENT_UNION(NODE) (DECL_CHECK (NODE)->decl.transparent_union)
+#define DECL_TRANSPARENT_UNION(NODE) \
+(PARM_DECL_CHECK (NODE)->decl.transparent_union)
 
 /* Used in FUNCTION_DECLs to indicate that they should be run automatically
    at the beginning or end of execution.  */
-#define DECL_STATIC_CONSTRUCTOR(NODE) (DECL_CHECK (NODE)->decl.static_ctor_flag)
-#define DECL_STATIC_DESTRUCTOR(NODE) (DECL_CHECK (NODE)->decl.static_dtor_flag)
+#define DECL_STATIC_CONSTRUCTOR(NODE) \
+(FUNCTION_DECL_CHECK (NODE)->decl.static_ctor_flag)
+
+#define DECL_STATIC_DESTRUCTOR(NODE) \
+(FUNCTION_DECL_CHECK (NODE)->decl.static_dtor_flag)
 
 /* Used to indicate that this DECL represents a compiler-generated entity.  */
 #define DECL_ARTIFICIAL(NODE) (DECL_CHECK (NODE)->decl.artificial_flag)
@@ -1303,15 +1315,18 @@ struct tree_type
 
 /* Used in FUNCTION_DECLs to indicate that function entry and exit should
    be instrumented with calls to support routines.  */
-#define DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT(NODE) ((NODE)->decl.no_instrument_function_entry_exit)
+#define DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT(NODE) \
+(FUNCTION_DECL_CHECK (NODE)->decl.no_instrument_function_entry_exit)
 
 /* Used in FUNCTION_DECLs to indicate that check-memory-usage should be
    disabled in this function.  */
-#define DECL_NO_CHECK_MEMORY_USAGE(NODE) ((NODE)->decl.no_check_memory_usage)
+#define DECL_NO_CHECK_MEMORY_USAGE(NODE) \
+(FUNCTION_DECL_CHECK (NODE)->decl.no_check_memory_usage)
 
 /* Used in FUNCTION_DECLs to indicate that limit-stack-* should be
    disabled in this function.  */
-#define DECL_NO_LIMIT_STACK(NODE) ((NODE)->decl.no_limit_stack)
+#define DECL_NO_LIMIT_STACK(NODE) \
+(FUNCTION_DECL_CHECK (NODE)->decl.no_limit_stack)
 
 /* Additional flags for language-specific uses.  */
 #define DECL_LANG_FLAG_0(NODE) (DECL_CHECK (NODE)->decl.lang_flag_0)
@@ -1391,17 +1406,17 @@ struct tree_decl
 
   /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
      If built-in, this is the code for which built-in function.
-     For other kinds of decls, this is DECL_ALIGN.  */
+     For other kinds of decls, this is DECL_ALIGN and DECL_OFFSET_ALIGN.  */
   union {
     HOST_WIDE_INT i;
-    unsigned int u;
     enum built_in_function f;
+    struct {unsigned int align : 24; unsigned int off_align : 8;} a;
   } u1;
 
   union tree_node *size_unit;
   union tree_node *name;
   union tree_node *context;
-  union tree_node *arguments;	/* Also used for DECL_FIELD_BITPOS */
+  union tree_node *arguments;	/* Also used for DECL_FIELD_OFFSET */
   union tree_node *result;	/* Also used for DECL_BIT_FIELD_TYPE */
   union tree_node *initial;	/* Also used for DECL_QUALIFIER */
   union tree_node *abstract_origin;
@@ -1412,6 +1427,7 @@ struct tree_decl
   struct rtx_def *live_range_rtl;
 
   /* In FUNCTION_DECL, if it is inline, holds the saved insn chain.
+     In FIELD_DECL, is DECL_FIELD_BIT_OFFSET.
      In PARM_DECL, holds an RTL for the stack slot
      of register where the data was actually passed.
      Used by Chill and Java in LABEL_DECL and by C++ and Java in VAR_DECL.  */
@@ -1471,7 +1487,11 @@ enum tree_index
 
   TI_SIZE_ZERO,
   TI_SIZE_ONE,
-    
+
+  TI_BITSIZE_ZERO,
+  TI_BITSIZE_ONE,
+  TI_BITSIZE_UNIT,
+
   TI_COMPLEX_INTEGER_TYPE,
   TI_COMPLEX_FLOAT_TYPE,
   TI_COMPLEX_DOUBLE_TYPE,
@@ -1510,6 +1530,10 @@ extern tree global_trees[TI_MAX];
 #define integer_one_node		global_trees[TI_INTEGER_ONE]
 #define size_zero_node			global_trees[TI_SIZE_ZERO]
 #define size_one_node			global_trees[TI_SIZE_ONE]
+#define bitsize_zero_node		global_trees[TI_BITSIZE_ZERO]
+#define bitsize_one_node		global_trees[TI_BITSIZE_ONE]
+#define bitsize_unit_node		global_trees[TI_BITSIZE_UNIT]
+
 #define null_pointer_node		global_trees[TI_NULL_POINTER]
 
 #define float_type_node			global_trees[TI_FLOAT_TYPE]
@@ -1749,37 +1773,37 @@ extern void layout_type			PARAMS ((tree));
 /* These functions allow a front-end to perform a manual layout of a
    RECORD_TYPE.  (For instance, if the placement of subsequent fields
    depends on the placement of fields so far.)  Begin by calling
-   new_record_layout_info.  Then, call layout_field for each of the
+   start_record_layout.  Then, call place_field for each of the
    fields.  Then, call finish_record_layout.  See layout_type for the
    default way in which these functions are used.  */
 
-struct record_layout_info_s
+typedef struct record_layout_info
 {
   /* The RECORD_TYPE that we are laying out.  */
   tree t;
-  /* The size of the record so far, in bits.  */
-  unsigned HOST_WIDE_INT const_size;
+  /* The offset into the record so far, in bytes, not including bits in
+     BITPOS.  */
+  tree offset;
+  /* The last known alignment of SIZE.  */
+  unsigned int offset_align;
+  /* The bit position within the last OFFSET_ALIGN bits, in bits.  */
+  tree bitpos;
   /* The alignment of the record so far, in bits.  */
   unsigned int record_align;
-  /* If the record can have a variable size, then this will be
-     non-NULL, and the total size will be CONST_SIZE + VAR_SIZE.  */
-  tree var_size;
-  /* If the record can have a variable size, then this will be the
-     maximum alignment that we know VAR_SIZE has.  */
-  unsigned int var_align;
+  /* The alignment of the record so far, not including padding, in bits.  */
+  unsigned int unpacked_align;
   /* The static variables (i.e., class variables, as opposed to
      instance variables) encountered in T.  */
   tree pending_statics;
-  unsigned int unpacked_align;
   int packed_maybe_necessary;
-};
+} *record_layout_info;
 
-typedef struct record_layout_info_s *record_layout_info;
-
-extern record_layout_info new_record_layout_info 
-                                        PARAMS ((tree));
-extern void layout_field                PARAMS ((record_layout_info, tree));
-extern void finish_record_layout        PARAMS ((record_layout_info));
+extern record_layout_info start_record_layout PARAMS ((tree));
+extern tree rli_size_unit_so_far	PARAMS ((record_layout_info));
+extern tree rli_size_so_far		PARAMS ((record_layout_info));
+extern void normalize_rli		PARAMS ((record_layout_info));
+extern void place_field			PARAMS ((record_layout_info, tree));
+extern void finish_record_layout	PARAMS ((record_layout_info));
 
 /* Given a hashcode and a ..._TYPE node (for which the hashcode was made),
    return a canonicalized ..._TYPE node, so that duplicates are not made.
@@ -1817,6 +1841,8 @@ extern tree size_in_bytes		PARAMS ((tree));
 extern HOST_WIDE_INT int_size_in_bytes	PARAMS ((tree));
 extern tree bit_position		PARAMS ((tree));
 extern HOST_WIDE_INT int_bit_position	PARAMS ((tree));
+extern tree byte_position		PARAMS ((tree));
+extern HOST_WIDE_INT int_byte_position	PARAMS ((tree));
 
 /* Define data structures, macros, and functions for handling sizes
    and the various types used to represent sizes.  */
@@ -2060,9 +2086,10 @@ extern tree maybe_build_cleanup		PARAMS ((tree));
    look for nested component-refs or array-refs at constant positions
    and find the ultimate containing object, which is returned.  */
 
-extern tree get_inner_reference		PARAMS ((tree, int *, int *, tree *,
-					       enum machine_mode *, int *,
-					       int *, unsigned int *));
+extern tree get_inner_reference		PARAMS ((tree, HOST_WIDE_INT *,
+						 HOST_WIDE_INT *, tree *,
+						 enum machine_mode *, int *,
+						 int *, unsigned int *));
 
 /* Given a DECL or TYPE, return the scope in which it was declared, or
    NUL_TREE if there is no containing scope.  */

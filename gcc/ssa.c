@@ -1,22 +1,22 @@
 /* Static Single Assignment conversion routines for the GNU compiler.
    Copyright (C) 2000 Free Software Foundation, Inc.
 
-   This file is part of GNU CC.
+This file is part of GNU CC.
 
-   GNU CC is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+GNU CC is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2, or (at your option) any
+later version.
 
-   GNU CC is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+GNU CC is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with GNU CC; see the file COPYING.  If not, write to
-   the Free Software Foundation, 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to the Free
+Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.  */
 
 /* References:
 
@@ -73,7 +73,7 @@ varray_type ssa_rename_from;
 static rtx *ssa_rename_to;
 
 /* The number of registers that were live on entry to the SSA routines.  */
-static int ssa_max_reg_num;
+static unsigned int ssa_max_reg_num;
 
 /* Local function prototypes.  */
 
@@ -689,7 +689,7 @@ rename_block (bb, idom)
       while (PHI_NODE_P (insn))
 	{
 	  rtx phi = PATTERN (insn);
-	  int regno;
+	  unsigned int regno;
 	  rtx reg;
 
 	  /* Find out which of our outgoing registers this node is

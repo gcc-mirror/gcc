@@ -247,7 +247,8 @@ static rtx assign_stack_temp_for_type PARAMS ((enum machine_mode,
 static struct temp_slot *find_temp_slot_from_address  PARAMS ((rtx));
 static void put_reg_into_stack	PARAMS ((struct function *, rtx, tree,
 					 enum machine_mode, enum machine_mode,
-					 int, int, int, struct hash_table *));
+					 int, unsigned int, int,
+					 struct hash_table *));
 static void fixup_var_refs	PARAMS ((rtx, enum machine_mode, int, 
 					 struct hash_table *));
 static struct fixup_replacement
@@ -262,7 +263,7 @@ static rtx fixup_stack_1	PARAMS ((rtx, rtx));
 static void optimize_bit_field	PARAMS ((rtx, rtx, rtx *));
 static void instantiate_decls	PARAMS ((tree, int));
 static void instantiate_decls_1	PARAMS ((tree, int));
-static void instantiate_decl	PARAMS ((rtx, int, int));
+static void instantiate_decl	PARAMS ((rtx, HOST_WIDE_INT, int));
 static int instantiate_virtual_regs_1 PARAMS ((rtx *, rtx, int));
 static void delete_handlers	PARAMS ((void));
 static void pad_to_arg_alignment PARAMS ((struct args_size *, int,
@@ -1451,19 +1452,20 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
      tree type;
      enum machine_mode promoted_mode, decl_mode;
      int volatile_p;
-     int original_regno;
+     unsigned int original_regno;
      int used_p;
      struct hash_table *ht;
 {
   struct function *func = function ? function : cfun;
   rtx new = 0;
-  int regno = original_regno;
+  unsigned int regno = original_regno;
 
   if (regno == 0)
     regno = REGNO (reg);
 
   if (regno < func->x_max_parm_reg)
     new = func->x_parm_reg_stack_loc[regno];
+
   if (new == 0)
     new = assign_stack_local_1 (decl_mode, GET_MODE_SIZE (decl_mode), 0, func);
 
@@ -3328,7 +3330,7 @@ instantiate_virtual_regs (fndecl, insns)
      rtx insns;
 {
   rtx insn;
-  int i;
+  unsigned int i;
 
   /* Compute the offsets to use for this function.  */
   in_arg_offset = FIRST_PARM_OFFSET (fndecl);
@@ -3446,7 +3448,7 @@ instantiate_decls_1 (let, valid_only)
 static void
 instantiate_decl (x, size, valid_only)
      rtx x;
-     int size;
+     HOST_WIDE_INT size;
      int valid_only;
 {
   enum machine_mode mode;
@@ -3476,21 +3478,23 @@ instantiate_decl (x, size, valid_only)
 
   instantiate_virtual_regs_1 (&addr, NULL_RTX, 0);
 
-  if (valid_only)
+  if (valid_only && size >= 0)
     {
+      unsigned HOST_WIDE_INT decl_size = size;
+
       /* Now verify that the resulting address is valid for every integer or
 	 floating-point mode up to and including SIZE bytes long.  We do this
 	 since the object might be accessed in any mode and frame addresses
 	 are shared.  */
 
       for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   mode != VOIDmode && GET_MODE_SIZE (mode) <= size;
+	   mode != VOIDmode && GET_MODE_SIZE (mode) <= decl_size;
 	   mode = GET_MODE_WIDER_MODE (mode))
 	if (! memory_address_p (mode, addr))
 	  return;
 
       for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
-	   mode != VOIDmode && GET_MODE_SIZE (mode) <= size;
+	   mode != VOIDmode && GET_MODE_SIZE (mode) <= decl_size;
 	   mode = GET_MODE_WIDER_MODE (mode))
 	if (! memory_address_p (mode, addr))
 	  return;
@@ -4523,7 +4527,7 @@ assign_parms (fndecl)
 	     may need to do it in a wider mode.  */
 
 	  register rtx parmreg;
-	  int regno, regnoi = 0, regnor = 0;
+	  unsigned int regno, regnoi = 0, regnor = 0;
 
 	  unsignedp = TREE_UNSIGNED (TREE_TYPE (parm));
 
@@ -4917,7 +4921,7 @@ assign_parms (fndecl)
 
 rtx
 promoted_input_arg (regno, pmode, punsignedp)
-     int regno;
+     unsigned int regno;
      enum machine_mode *pmode;
      int *punsignedp;
 {

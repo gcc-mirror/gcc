@@ -830,7 +830,7 @@ expand_constant_to_buffer (value, buffer, buf_size)
 	      if (DECL_BIT_FIELD (field))
 		return 0;
 
-	      offset = int_bit_position (field) / BITS_PER_UNIT;
+	      offset = int_byte_position (field);
 	      if (!expand_constant_to_buffer (TREE_VALUE (list),
 					      buffer + offset,
 					      buf_size - offset))
@@ -946,7 +946,7 @@ extract_constant_from_buffer (type, buffer, buf_size)
 	tree field = TYPE_FIELDS (type);
 	for (; field != NULL_TREE; field = TREE_CHAIN (field))
 	  {
-	    HOST_WIDE_INT offset = int_bit_position (field) / BITS_PER_UNIT;
+	    HOST_WIDE_INT offset = int_byte_position (field);
 
 	    if (DECL_BIT_FIELD (field))
 	      return 0;

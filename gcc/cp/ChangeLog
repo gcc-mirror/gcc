@@ -1,3 +1,25 @@
+Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* class.c (build_vbase_pointer_fields): layout_field now place_field.
+	(get_vfield_offset): Use byte_position.
+	(set_rtti_entry): Set OFFSET to ssizetype zero.
+	(get_binfo_offset_as_int): Deleted.
+	(dfs_record_base_offsets): Use tree_low_cst.
+	(dfs_search_base_offsets): Likewise.
+	(layout_nonempty_base_or_field): Reflect changes in RLI format
+	and call byte_position.
+	(layout_empty_base): Convert offset to ssizetype.
+	(build_base_field): use rli_size_unit_so_far.
+	(dfs_propagate_binfo_offsets): Do computation in proper type.
+	(layout_virtual_bases): Pass ssizetype to propagate_binfo_offsets.
+	(layout_class_type): Reflect changes in RLI names and fields.
+	(finish_struct_1): Set DECL_FIELD_OFFSET.
+	* dump.c (dequeue_and_dump): Call bit_position.
+	* expr.c (cplus_expand_constant): Use byte_position.
+	* rtti.c (expand_class_desc): Use bitsize_one_node.
+	* typeck.c (build_component_addr): Use byte_position and don't
+	special case for zero offset.
+	
 2000-03-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (vtype_decl_p): Use TYPE_POLYMORPHIC_P.

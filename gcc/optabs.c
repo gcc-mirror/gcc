@@ -829,7 +829,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       && GET_MODE_SIZE (mode) > UNITS_PER_WORD
       && binoptab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing)
     {
-      int i;
+      unsigned int i;
       rtx insns;
       rtx equiv_value;
 
@@ -1120,10 +1120,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       && GET_MODE_SIZE (mode) >= 2 * UNITS_PER_WORD
       && binoptab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing)
     {
-      int i;
+      unsigned int i;
       rtx carry_tmp = gen_reg_rtx (word_mode);
       optab otheroptab = binoptab == add_optab ? sub_optab : add_optab;
-      int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
+      unsigned int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
       rtx carry_in = NULL_RTX, carry_out = NULL_RTX;
       rtx xop0, xop1;
 
@@ -2090,7 +2090,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       && GET_MODE_SIZE (mode) > UNITS_PER_WORD
       && unoptab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing)
     {
-      int i;
+      unsigned int i;
       rtx insns;
 
       if (target == 0 || target == op0)

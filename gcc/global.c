@@ -1585,11 +1585,11 @@ static void
 set_preference (dest, src)
      rtx dest, src;
 {
-  int src_regno, dest_regno;
+  unsigned int src_regno, dest_regno;
   /* Amount to add to the hard regno for SRC, or subtract from that for DEST,
      to compensate for subregs in SRC or DEST.  */
   int offset = 0;
-  int i;
+  unsigned int i;
   int copy = 1;
 
   if (GET_RTX_FORMAT (GET_CODE (src))[0] == 'e')
@@ -1633,7 +1633,7 @@ set_preference (dest, src)
       && reg_allocno[src_regno] >= 0)
     {
       dest_regno -= offset;
-      if (dest_regno >= 0 && dest_regno < FIRST_PSEUDO_REGISTER)
+      if (dest_regno < FIRST_PSEUDO_REGISTER)
 	{
 	  if (copy)
 	    SET_REGBIT (hard_reg_copy_preferences,
@@ -1652,7 +1652,7 @@ set_preference (dest, src)
       && reg_allocno[dest_regno] >= 0)
     {
       src_regno += offset;
-      if (src_regno >= 0 && src_regno < FIRST_PSEUDO_REGISTER)
+      if (src_regno < FIRST_PSEUDO_REGISTER)
 	{
 	  if (copy)
 	    SET_REGBIT (hard_reg_copy_preferences,

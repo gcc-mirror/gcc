@@ -68,12 +68,12 @@ extern const enum mode_class mode_class[];
 
 /* Get the size in bytes of an object of mode MODE.  */
 
-extern const int mode_size[];
+extern const unsigned int mode_size[];
 #define GET_MODE_SIZE(MODE)		(mode_size[(int) (MODE)])
 
 /* Get the size in bytes of the basic parts of an object of mode MODE.  */
 
-extern const int mode_unit_size[];
+extern const unsigned int mode_unit_size[];
 #define GET_MODE_UNIT_SIZE(MODE)	(mode_unit_size[(int) (MODE)])
 
 /* Get the number of units in the object.  */
@@ -106,12 +106,13 @@ extern const unsigned char mode_wider_mode[];
    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
    The value is BLKmode if no other mode is found.  */
 
-extern enum machine_mode mode_for_size PARAMS ((int, enum mode_class, int));
+extern enum machine_mode mode_for_size PARAMS ((unsigned int,
+						enum mode_class, int));
 
 /* Similar, but find the smallest mode for a given width.  */
 
 extern enum machine_mode smallest_mode_for_size 
-				PARAMS ((int, enum mode_class));
+				PARAMS ((unsigned int, enum mode_class));
 
 
 /* Return an integer mode of the exact same size as the input mode,

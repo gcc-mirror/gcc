@@ -158,7 +158,7 @@ static rtx *alias_invariant;
 rtx *reg_known_value;
 
 /* Indicates number of valid entries in reg_known_value.  */
-static int reg_known_value_size;
+static unsigned int reg_known_value_size;
 
 /* Vector recording for each reg_known_value whether it is due to a
    REG_EQUIV note.  Future passes (viz., reload) may replace the

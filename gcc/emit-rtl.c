@@ -924,7 +924,8 @@ subreg_realpart_p (x)
   if (GET_CODE (x) != SUBREG)
     abort ();
 
-  return SUBREG_WORD (x) * UNITS_PER_WORD < GET_MODE_UNIT_SIZE (GET_MODE (SUBREG_REG (x)));
+  return ((unsigned int) SUBREG_WORD (x) * UNITS_PER_WORD
+	  < GET_MODE_UNIT_SIZE (GET_MODE (SUBREG_REG (x))));
 }
 
 /* Assuming that X is an rtx (e.g., MEM, REG or SUBREG) for a value,
@@ -1104,7 +1105,7 @@ subreg_lowpart_p (x)
 rtx
 operand_subword (op, i, validate_address, mode)
      rtx op;
-     int i;
+     unsigned int i;
      int validate_address;
      enum machine_mode mode;
 {
@@ -1181,7 +1182,9 @@ operand_subword (op, i, validate_address, mode)
     return gen_rtx_SUBREG (word_mode, SUBREG_REG (op), i + SUBREG_WORD (op));
   else if (GET_CODE (op) == CONCAT)
     {
-      int partwords = GET_MODE_UNIT_SIZE (GET_MODE (op)) / UNITS_PER_WORD;
+      unsigned int partwords
+	= GET_MODE_UNIT_SIZE (GET_MODE (op)) / UNITS_PER_WORD;
+
       if (i < partwords)
 	return operand_subword (XEXP (op, 0), i, validate_address, mode);
       return operand_subword (XEXP (op, 1), i - partwords,
@@ -1428,7 +1431,7 @@ operand_subword (op, i, validate_address, mode)
 rtx
 operand_subword_force (op, i, mode)
      rtx op;
-     int i;
+     unsigned int i;
      enum machine_mode mode;
 {
   rtx result = operand_subword (op, i, 1, mode);

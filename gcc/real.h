@@ -119,7 +119,7 @@ typedef struct {
 #endif /* no TFmode support */
 #endif /* no XFmode support */
 
-extern int significand_size	PARAMS ((enum machine_mode));
+extern unsigned int significand_size	PARAMS ((enum machine_mode));
 
 /* If emulation has been enabled by defining REAL_ARITHMETIC or by
    setting LONG_DOUBLE_TYPE_SIZE to 96 or 128, then define macros so that

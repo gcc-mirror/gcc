@@ -6843,7 +6843,7 @@ esqrt (x, y)
    floating point mode.  The mode can hold an integer value
    that many bits wide, without losing any bits.  */
 
-int
+unsigned int
 significand_size (mode)
      enum machine_mode mode;
 {

@@ -1584,17 +1584,20 @@ hard_function_value (valtype, func, outgoing)
      int outgoing ATTRIBUTE_UNUSED;
 {
   rtx val;
+
 #ifdef FUNCTION_OUTGOING_VALUE
   if (outgoing)
     val = FUNCTION_OUTGOING_VALUE (valtype, func);
   else
 #endif
     val = FUNCTION_VALUE (valtype, func);
+
   if (GET_CODE (val) == REG
       && GET_MODE (val) == BLKmode)
     {
-      int bytes = int_size_in_bytes (valtype);
+      unsigned HOST_WIDE_INT bytes = int_size_in_bytes (valtype);
       enum machine_mode tmpmode;
+
       for (tmpmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
            tmpmode != VOIDmode;
            tmpmode = GET_MODE_WIDER_MODE (tmpmode))

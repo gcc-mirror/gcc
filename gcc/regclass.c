@@ -140,7 +140,7 @@ static unsigned int_reg_class_contents[N_REG_CLASSES][N_REG_INTS]
 
 /* For each reg class, number of regs it contains.  */
 
-int reg_class_size[N_REG_CLASSES];
+unsigned int reg_class_size[N_REG_CLASSES];
 
 /* For each reg class, table listing all the containing classes.  */
 
@@ -554,8 +554,8 @@ memory_move_secondary_cost (mode, class, in)
 
 enum machine_mode
 choose_hard_reg_mode (regno, nregs)
-     int regno ATTRIBUTE_UNUSED;
-     int nregs;
+     unsigned int regno ATTRIBUTE_UNUSED;
+     unsigned int nregs;
 {
   enum machine_mode found_mode = VOIDmode, mode;
 
@@ -730,7 +730,7 @@ static void record_address_regs	PARAMS ((rtx, enum reg_class, int));
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 static int auto_inc_dec_reg_p	PARAMS ((rtx, enum machine_mode));
 #endif
-static void reg_scan_mark_refs	PARAMS ((rtx, rtx, int, int));
+static void reg_scan_mark_refs	PARAMS ((rtx, rtx, int, unsigned int));
 
 /* Return the reg_class in which pseudo reg number REGNO is best allocated.
    This function is sometimes called before the info has been computed.
@@ -1681,10 +1681,10 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
     for (i = 0; i <= 1; i++)
       if (REGNO (ops[i]) >= FIRST_PSEUDO_REGISTER)
 	{
-	  int regno = REGNO (ops[!i]);
+	  unsigned int regno = REGNO (ops[!i]);
 	  enum machine_mode mode = GET_MODE (ops[!i]);
 	  int class;
-	  int nr;
+	  unsigned int nr;
 
 	  if (regno >= FIRST_PSEUDO_REGISTER && reg_pref != 0)
 	    {
@@ -1704,13 +1704,14 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 		    op_costs[i].cost[class] = -1;
 		  else
 		    {
-		      for (nr = 0; nr < HARD_REGNO_NREGS(regno, mode); nr++)
+		      for (nr = 0; nr < HARD_REGNO_NREGS (regno, mode); nr++)
 			{
-			  if (!TEST_HARD_REG_BIT (reg_class_contents[class], regno + nr))
+			  if (! TEST_HARD_REG_BIT (reg_class_contents[class],
+						   regno + nr))
 			    break;
 			}
 
-		      if (nr == HARD_REGNO_NREGS(regno,mode))
+		      if (nr == HARD_REGNO_NREGS (regno,mode))
 			op_costs[i].cost[class] = -1;
 		    }
 		}
@@ -2142,7 +2143,7 @@ int max_parallel;
 void
 reg_scan (f, nregs, repeat)
      rtx f;
-     int nregs;
+     unsigned int nregs;
      int repeat ATTRIBUTE_UNUSED;
 {
   register rtx insn;
@@ -2171,10 +2172,10 @@ reg_scan (f, nregs, repeat)
    such a REG.  We only update information for those.  */
 
 void
-reg_scan_update(first, last, old_max_regno)
+reg_scan_update (first, last, old_max_regno)
      rtx first;
      rtx last;
-     int old_max_regno;
+     unsigned int old_max_regno;
 {
   register rtx insn;
 
@@ -2205,7 +2206,7 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
      rtx x;
      rtx insn;
      int note_flag;
-     int min_regno;
+     unsigned int min_regno;
 {
   register enum rtx_code code;
   register rtx dest;
@@ -2227,7 +2228,7 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 
     case REG:
       {
-	register int regno = REGNO (x);
+	unsigned int regno = REGNO (x);
 
 	if (regno >= min_regno)
 	  {

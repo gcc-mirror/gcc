@@ -1,3 +1,11 @@
+Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* class.c (make_field_value): Use byte_position.
+	* expr.c (JAVA_ARRAY_LENGTH_OFFSET): Use byte_position.
+	(java_array_data_offset): Likewise.
+	* java-tree.h (MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC): Add case to
+	bzero call.
+
 2000-03-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (check_abstract_method_definitions): New local

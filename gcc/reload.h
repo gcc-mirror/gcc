@@ -104,7 +104,7 @@ struct reload
   enum machine_mode mode;
 
   /* the largest number of registers this reload will require.  */
-  int nregs;
+  unsigned int nregs;
 
   /* Positive amount to increment or decrement by if
      reload_in is a PRE_DEC, PRE_INC, POST_DEC, POST_INC.
@@ -319,7 +319,8 @@ extern rtx find_replacement PARAMS ((rtx *));
 /* Return nonzero if register in range [REGNO, ENDREGNO)
    appears either explicitly or implicitly in X
    other than being stored into.  */
-extern int refers_to_regno_for_reload_p PARAMS ((int, int, rtx, rtx *));
+extern int refers_to_regno_for_reload_p PARAMS ((unsigned int, unsigned int,
+						 rtx, rtx *));
 
 /* Nonzero if modifying X will affect IN.  */
 extern int reg_overlap_mentioned_for_reload_p PARAMS ((rtx, rtx));
@@ -334,7 +335,7 @@ extern rtx find_equiv_reg PARAMS ((rtx, rtx, enum reg_class, int, short *,
 				 int, enum machine_mode));
 
 /* Return 1 if register REGNO is the subject of a clobber in insn INSN.  */
-extern int regno_clobbered_p PARAMS ((int, rtx));
+extern int regno_clobbered_p PARAMS ((unsigned int, rtx));
 
 /* Return 1 if X is an operand of an insn that is being earlyclobbered.  */
 int earlyclobber_operand_p PARAMS ((rtx));

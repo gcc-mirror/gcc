@@ -550,7 +550,7 @@ dequeue_and_dump (di)
 	{
 	  if (DECL_C_BIT_FIELD (t))
 	    dump_string (di, "bitfield");
-	  dump_child ("bpos", DECL_FIELD_BITPOS (t));
+	  dump_child ("bpos", bit_position (t));
 	}
       break;
 

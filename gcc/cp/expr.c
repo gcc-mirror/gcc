@@ -52,7 +52,6 @@ cplus_expand_constant (cst)
       {
 	tree type = TREE_TYPE (cst);
 	tree member;
-	tree offset;
       
 	/* Find the member.  */
 	member = PTRMEM_CST_MEMBER (cst);
@@ -60,10 +59,7 @@ cplus_expand_constant (cst)
 	if (TREE_CODE (member) == FIELD_DECL) 
 	  {
 	    /* Find the offset for the field.  */
-	    offset = convert (sizetype,
-			      size_binop (EASY_DIV_EXPR,
-					  bit_position (member),
-					  bitsize_int (BITS_PER_UNIT)));
+	    tree offset = byte_position (member);
 
 	    if (flag_new_abi)
 	      /* Under the new ABI, we use -1 to represent the NULL
@@ -80,15 +76,10 @@ cplus_expand_constant (cst)
 	  }
 	else
 	  {
-	    tree delta;
-	    tree idx;
-	    tree pfn;
-	    tree delta2;
+	    tree delta, idx, pfn, delta2;
 
 	    expand_ptrmemfunc_cst (cst, &delta, &idx, &pfn, &delta2);
-
-	    cst = build_ptrmemfunc1 (type, delta, idx,
-				     pfn, delta2);
+	    cst = build_ptrmemfunc1 (type, delta, idx, pfn, delta2);
 	  }
       }
       break;

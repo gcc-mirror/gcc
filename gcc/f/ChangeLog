@@ -1,3 +1,8 @@
+Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (ffecom_tree_canonize_ptr_): Use bitsize_zero_node.
+	(ffecom_tree_canonize_ref_): Likewise.
+
 Mon Mar 20 15:49:40 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* f/target.h (FFETARGET_32bit_longs): New.  Define for alpha, sparc64,

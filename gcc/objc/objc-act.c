@@ -3817,13 +3817,8 @@ build_ivar_list_initializer (type, field_decl)
 	   ivar);
       obstack_free (&util_obstack, util_firstobj);
 
-      /* set offset */
-      ivar
-	= tree_cons
-	  (NULL_TREE,
-	   build_int_2 ((int_bit_position (field_decl) / BITS_PER_UNIT), 0),
-	   ivar);
-
+      /* Set offset. */
+      ivar = tree_cons (NULL_TREE, byte_position (field_decl), ivar);
       initlist = tree_cons (NULL_TREE, 
 			    build_constructor (type, nreverse (ivar)),
 			    initlist);

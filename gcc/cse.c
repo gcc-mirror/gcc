@@ -246,7 +246,7 @@ struct qty_table_elem
   rtx const_insn;
   rtx comparison_const;
   int comparison_qty;
-  int first_reg, last_reg;
+  unsigned int first_reg, last_reg;
   enum machine_mode mode;
   enum rtx_code comparison_code;
 };
@@ -302,7 +302,7 @@ struct cse_reg_info
   struct cse_reg_info *next;
 
   /* Search key */
-  int regno;
+  unsigned int regno;
 
   /* The quantity number of the register's current contents.  */
   int reg_qty;
@@ -336,7 +336,7 @@ static struct cse_reg_info *reg_hash[REGHASH_SIZE];
 
 /* The last lookup we did into the cse_reg_info_tree.  This allows us
    to cache repeated lookups.  */
-static int cached_regno;
+static unsigned int cached_regno;
 static struct cse_reg_info *cached_cse_reg_info;
 
 /* A HARD_REG_SET containing all the hard registers for which there is 
@@ -531,7 +531,7 @@ struct table_elt
 /* Determine if the quantity number for register X represents a valid index
    into the qty_table.  */
 
-#define REGNO_QTY_VALID_P(N) (REG_QTY (N) != (N))
+#define REGNO_QTY_VALID_P(N) (REG_QTY (N) != (int) (N))
 
 #ifdef ADDRESS_COST
 /* The ADDRESS_COST macro does not deal with ADDRESSOF nodes.  But,
@@ -653,9 +653,9 @@ struct cse_basic_block_data
 
 static int notreg_cost		PARAMS ((rtx));
 static void new_basic_block	PARAMS ((void));
-static void make_new_qty	PARAMS ((int, enum machine_mode));
-static void make_regs_eqv	PARAMS ((int, int));
-static void delete_reg_equiv	PARAMS ((int));
+static void make_new_qty	PARAMS ((unsigned int, enum machine_mode));
+static void make_regs_eqv	PARAMS ((unsigned int, unsigned int));
+static void delete_reg_equiv	PARAMS ((unsigned int));
 static int mention_regs		PARAMS ((rtx));
 static int insert_regs		PARAMS ((rtx, struct table_elt *, int));
 static void remove_from_table	PARAMS ((struct table_elt *, unsigned));
@@ -668,8 +668,9 @@ static void merge_equiv_classes PARAMS ((struct table_elt *,
 					 struct table_elt *));
 static void invalidate		PARAMS ((rtx, enum machine_mode));
 static int cse_rtx_varies_p	PARAMS ((rtx));
-static void remove_invalid_refs	PARAMS ((int));
-static void remove_invalid_subreg_refs	PARAMS ((int, int, enum machine_mode));
+static void remove_invalid_refs	PARAMS ((unsigned int));
+static void remove_invalid_subreg_refs	PARAMS ((unsigned int, unsigned int,
+						 enum machine_mode));
 static void rehash_using_reg	PARAMS ((rtx));
 static void invalidate_memory	PARAMS ((void));
 static void invalidate_for_call	PARAMS ((void));
@@ -699,7 +700,7 @@ static void cse_set_around_loop	PARAMS ((rtx, rtx, rtx));
 static rtx cse_basic_block	PARAMS ((rtx, rtx, struct branch_path *, int));
 static void count_reg_usage	PARAMS ((rtx, int *, rtx, int));
 extern void dump_class          PARAMS ((struct table_elt*));
-static struct cse_reg_info* get_cse_reg_info PARAMS ((int));
+static struct cse_reg_info * get_cse_reg_info PARAMS ((unsigned int));
 
 static void flush_hash_table	PARAMS ((void));
 
@@ -845,7 +846,7 @@ rtx_cost (x, outer_code)
 
 static struct cse_reg_info *
 get_cse_reg_info (regno)
-     int regno;
+     unsigned int regno;
 {
   struct cse_reg_info **hash_head = &reg_hash[REGHASH_FN (regno)];
   struct cse_reg_info *p;
@@ -949,8 +950,8 @@ new_basic_block ()
 
 static void
 make_new_qty (reg, mode)
-     register int reg;
-     register enum machine_mode mode;
+     unsigned int reg;
+     enum machine_mode mode;
 {
   register int q;
   register struct qty_table_elem *ent;
@@ -976,11 +977,11 @@ make_new_qty (reg, mode)
 
 static void
 make_regs_eqv (new, old)
-     register int new, old;
+     unsigned int new, old;
 {
-  register int lastr, firstr;
-  register int q = REG_QTY (old);
-  register struct qty_table_elem *ent;
+  unsigned int lastr, firstr;
+  int q = REG_QTY (old);
+  struct qty_table_elem *ent;
 
   ent = &qty_table[q];
 
@@ -1040,14 +1041,14 @@ make_regs_eqv (new, old)
 
 static void
 delete_reg_equiv (reg)
-     register int reg;
+     unsigned int reg;
 {
   register struct qty_table_elem *ent;
   register int q = REG_QTY (reg);
   register int p, n;
 
   /* If invalid, do nothing.  */
-  if (q == reg)
+  if (q == (int) reg)
     return;
 
   ent = &qty_table[q];
@@ -1094,11 +1095,11 @@ mention_regs (x)
   code = GET_CODE (x);
   if (code == REG)
     {
-      register int regno = REGNO (x);
-      register int endregno
+      unsigned int regno = REGNO (x);
+      unsigned int endregno
 	= regno + (regno >= FIRST_PSEUDO_REGISTER ? 1
 		   : HARD_REGNO_NREGS (regno, GET_MODE (x)));
-      int i;
+      unsigned int i;
 
       for (i = regno; i < endregno; i++)
 	{
@@ -1117,7 +1118,7 @@ mention_regs (x)
   if (code == SUBREG && GET_CODE (SUBREG_REG (x)) == REG
       && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER)
     {
-      int i = REGNO (SUBREG_REG (x));
+      unsigned int i = REGNO (SUBREG_REG (x));
 
       if (REG_IN_TABLE (i) >= 0 && REG_IN_TABLE (i) != REG_TICK (i))
 	{
@@ -1193,8 +1194,8 @@ insert_regs (x, classp, modified)
 {
   if (GET_CODE (x) == REG)
     {
-      register int regno = REGNO (x);
-      register int qty_valid;
+      unsigned int regno = REGNO (x);
+      int qty_valid;
 
       /* If REGNO is in the equivalence table already but is of the
 	 wrong mode for that equivalence, don't do anything here.  */
@@ -1237,7 +1238,7 @@ insert_regs (x, classp, modified)
   else if (GET_CODE (x) == SUBREG && GET_CODE (SUBREG_REG (x)) == REG
 	   && ! REGNO_QTY_VALID_P (REGNO (SUBREG_REG (x))))
     {
-      int regno = REGNO (SUBREG_REG (x));
+      unsigned int regno = REGNO (SUBREG_REG (x));
 
       insert_regs (SUBREG_REG (x), NULL_PTR, 0);
       /* Mention_regs checks if REG_TICK is exactly one larger than
@@ -1324,6 +1325,7 @@ remove_from_table (elt, hash)
   if (elt->related_value != 0 && elt->related_value != elt)
     {
       register struct table_elt *p = elt->related_value;
+
       while (p->related_value != elt)
 	p = p->related_value;
       p->related_value = elt->related_value;
@@ -1374,7 +1376,8 @@ lookup_for_remove (x, hash, mode)
 
   if (GET_CODE (x) == REG)
     {
-      int regno = REGNO (x);
+      unsigned int regno = REGNO (x);
+
       /* Don't check the machine mode when comparing registers;
 	 invalidating (REG:SI 0) also invalidates (REG:DF 0).  */
       for (p = table[hash]; p; p = p->next_same_hash)
@@ -1400,8 +1403,9 @@ lookup_as_function (x, code)
      rtx x;
      enum rtx_code code;
 {
-  register struct table_elt *p = lookup (x, safe_hash (x, VOIDmode) & HASH_MASK,
-					 GET_MODE (x));
+  register struct table_elt *p
+    = lookup (x, safe_hash (x, VOIDmode) & HASH_MASK, GET_MODE (x));
+
   /* If we are looking for a CONST_INT, the mode doesn't really matter, as
      long as we are narrowing.  So if we looked in vain for a mode narrower
      than word_mode before, look for word_mode now.  */
@@ -1417,12 +1421,10 @@ lookup_as_function (x, code)
     return 0;
 
   for (p = p->first_same_value; p; p = p->next_same_value)
-    {
-      if (GET_CODE (p->exp) == code
-	  /* Make sure this is a valid entry in the table.  */
-	  && exp_equiv_p (p->exp, p->exp, 1, 0))
-	return p->exp;
-    }
+    if (GET_CODE (p->exp) == code
+	/* Make sure this is a valid entry in the table.  */
+	&& exp_equiv_p (p->exp, p->exp, 1, 0))
+      return p->exp;
   
   return 0;
 }
@@ -1470,12 +1472,12 @@ insert (x, classp, hash, mode)
   /* If X is a hard register, show it is being put in the table.  */
   if (GET_CODE (x) == REG && REGNO (x) < FIRST_PSEUDO_REGISTER)
     {
-      int regno = REGNO (x);
-      int endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
-      int i;
+      unsigned int regno = REGNO (x);
+      unsigned int endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+      unsigned int i;
 
       for (i = regno; i < endregno; i++)
-	    SET_HARD_REG_BIT (hard_regs_in_table, i);
+	SET_HARD_REG_BIT (hard_regs_in_table, i);
     }
 
   /* If X is a label, show we recorded it.  */
@@ -1488,9 +1490,7 @@ insert (x, classp, hash, mode)
 
   elt = free_element_chain;
   if (elt)
-    {
-      free_element_chain = elt->next_same_hash;
-    }
+    free_element_chain = elt->next_same_hash;
   else
     {
       n_elements_made++;
@@ -1538,12 +1538,15 @@ insert (x, classp, hash, mode)
 	  /* Insert not at head of the class.  */
 	  /* Put it after the last element cheaper than X.  */
 	  register struct table_elt *p, *next;
+
 	  for (p = classp; (next = p->next_same_value) && CHEAPER (next, elt);
 	       p = next);
+
 	  /* Put it after P and before NEXT.  */
 	  elt->next_same_value = next;
 	  if (next)
 	    next->prev_same_value = elt;
+
 	  elt->prev_same_value = p;
 	  p->next_same_value = elt;
 	  elt->first_same_value = classp;
@@ -1591,7 +1594,8 @@ insert (x, classp, hash, mode)
 	      int x_q = REG_QTY (REGNO (x));
 	      struct qty_table_elem *x_ent = &qty_table[x_q];
 
-	      x_ent->const_rtx = gen_lowpart_if_possible (GET_MODE (x), p->exp);
+	      x_ent->const_rtx
+		= gen_lowpart_if_possible (GET_MODE (x), p->exp);
 	      x_ent->const_insn = this_insn;
 	      break;
 	    }
@@ -1661,7 +1665,7 @@ merge_equiv_classes (class1, class2)
 
   for (elt = class2; elt; elt = next)
     {
-      unsigned hash;
+      unsigned int hash;
       rtx exp = elt->exp;
       enum machine_mode mode = elt->mode;
 
@@ -1740,8 +1744,8 @@ invalidate (x, full_mode)
 	   through the qty number mechanism.  Just change the qty number of
 	   the register, mark it as invalid for expressions that refer to it,
 	   and remove it itself.  */
-	register int regno = REGNO (x);
-	register unsigned hash = HASH (x, GET_MODE (x));
+	unsigned int regno = REGNO (x);
+	unsigned int hash = HASH (x, GET_MODE (x));
 
 	/* Remove REGNO from any quantity list it might be on and indicate
 	   that its value might have changed.  If it is a pseudo, remove its
@@ -1768,18 +1772,19 @@ invalidate (x, full_mode)
 	  {
 	    HOST_WIDE_INT in_table
 	      = TEST_HARD_REG_BIT (hard_regs_in_table, regno);
-	    int endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
-	    int tregno, tendregno;
+	    unsigned int endregno
+	      = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+	    unsigned int tregno, tendregno, rn;
 	    register struct table_elt *p, *next;
 
 	    CLEAR_HARD_REG_BIT (hard_regs_in_table, regno);
 
-	    for (i = regno + 1; i < endregno; i++)
+	    for (rn = regno + 1; rn < endregno; rn++)
 	      {
-		in_table |= TEST_HARD_REG_BIT (hard_regs_in_table, i);
-		CLEAR_HARD_REG_BIT (hard_regs_in_table, i);
-		delete_reg_equiv (i);
-		REG_TICK (i)++;
+		in_table |= TEST_HARD_REG_BIT (hard_regs_in_table, rn);
+		CLEAR_HARD_REG_BIT (hard_regs_in_table, rn);
+		delete_reg_equiv (rn);
+		REG_TICK (rn)++;
 	      }
 
 	    if (in_table)
@@ -1851,10 +1856,10 @@ invalidate (x, full_mode)
 
 static void
 remove_invalid_refs (regno)
-     int regno;
+     unsigned int regno;
 {
-  register int i;
-  register struct table_elt *p, *next;
+  unsigned int i;
+  struct table_elt *p, *next;
 
   for (i = 0; i < HASH_SIZE; i++)
     for (p = table[i]; p; p = next)
@@ -1869,13 +1874,13 @@ remove_invalid_refs (regno)
 /* Likewise for a subreg with subreg_reg WORD and mode MODE.  */
 static void
 remove_invalid_subreg_refs (regno, word, mode)
-     int regno;
-     int word;
+     unsigned int regno;
+     unsigned int word;
      enum machine_mode mode;
 {
-  register int i;
-  register struct table_elt *p, *next;
-  int end = word + (GET_MODE_SIZE (mode) - 1) / UNITS_PER_WORD;
+  unsigned int i;
+  struct table_elt *p, *next;
+  unsigned int end = word + (GET_MODE_SIZE (mode) - 1) / UNITS_PER_WORD;
 
   for (i = 0; i < HASH_SIZE; i++)
     for (p = table[i]; p; p = next)
@@ -1956,8 +1961,8 @@ rehash_using_reg (x)
 static void
 invalidate_for_call ()
 {
-  int regno, endregno;
-  int i;
+  unsigned int regno, endregno;
+  unsigned int i;
   unsigned hash;
   struct table_elt *p, *next;
   int in_table = 0;
@@ -2111,7 +2116,7 @@ canon_hash (x, mode)
     {
     case REG:
       {
-	register int regno = REGNO (x);
+	unsigned int regno = REGNO (x);
 
 	/* On some machines, we can't record any non-fixed hard register,
 	   because extending its life will cause reload problems.  We
@@ -2136,6 +2141,7 @@ canon_hash (x, mode)
 	    do_not_record = 1;
 	    return 0;
 	  }
+
 	hash += ((unsigned) REG << 7) + (unsigned) REG_QTY (regno);
 	return hash;
       }
@@ -2374,11 +2380,11 @@ exp_equiv_p (x, y, validate, equal_values)
 
     case REG:
       {
-	int regno = REGNO (y);
-	int endregno
+	unsigned int regno = REGNO (y);
+	unsigned int endregno
 	  = regno + (regno >= FIRST_PSEUDO_REGISTER ? 1
 		     : HARD_REGNO_NREGS (regno, GET_MODE (y)));
-	int i;
+	unsigned int i;
 
 	/* If the quantities are not the same, the expressions are not
 	   equivalent.  If there are and we are not to validate, they
@@ -5703,11 +5709,11 @@ cse_insn (insn, libcall_insn)
 		 This code is similar to the REG case in mention_regs,
 		 but it knows that reg_tick has been incremented, and
 		 it leaves reg_in_table as -1 .  */
-	      register int regno = REGNO (x);
-	      register int endregno
+	      unsigned int regno = REGNO (x);
+	      unsigned int endregno
 		= regno + (regno >= FIRST_PSEUDO_REGISTER ? 1
 			   : HARD_REGNO_NREGS (regno, GET_MODE (x)));
-	      int i;
+	      unsigned int i;
 
 	      for (i = regno; i < endregno; i++)
 		{

@@ -4279,18 +4279,8 @@ build_component_addr (arg, argtype)
     /* This conversion is harmless.  */
     rval = convert_force (argtype, rval, 0);
 
-  if (! integer_zerop (bit_position (field)))
-    {
-      tree offset = size_binop (EASY_DIV_EXPR, bit_position (field),
-				bitsize_int (BITS_PER_UNIT));
-      int flag = TREE_CONSTANT (rval);
-
-      offset = convert (sizetype, offset);
-      rval = fold (build (PLUS_EXPR, argtype,
-			  rval, cp_convert (argtype, offset)));
-      TREE_CONSTANT (rval) = flag;
-    }
-  return rval;
+  return fold (build (PLUS_EXPR, argtype, rval,
+		      cp_convert (argtype, byte_position (field))));
 }
    
 /* Construct and perhaps optimize a tree representation

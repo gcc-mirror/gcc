@@ -243,7 +243,7 @@ build_vbase_pointer_fields (rli, empty_p)
 					    empty_p);
 	  BINFO_VPTR_FIELD (base_binfo) = decl;
 	  TREE_CHAIN (decl) = vbase_decls;
-	  layout_field (rli, decl);
+	  place_field (rli, decl);
 	  vbase_decls = decl;
 	  *empty_p = 0;
 
@@ -912,13 +912,9 @@ tree
 get_vfield_offset (binfo)
      tree binfo;
 {
-  tree tmp
-    = size_binop (FLOOR_DIV_EXPR,
-		  bit_position (TYPE_VFIELD (BINFO_TYPE (binfo))),
-		  bitsize_int (BITS_PER_UNIT));
-
-  return size_binop (PLUS_EXPR, convert (sizetype, tmp),
-		     BINFO_OFFSET (binfo));
+  return
+    size_binop (PLUS_EXPR, byte_position (TYPE_VFIELD (BINFO_TYPE (binfo))),
+		BINFO_OFFSET (binfo));
 }
 
 /* Get the offset to the start of the original binfo that we derived
@@ -981,7 +977,7 @@ set_rtti_entry (virtuals, offset, type)
 
       /* The next node holds the decl.  */
       virtuals = TREE_CHAIN (virtuals);
-      offset = integer_zero_node;
+      offset = ssize_int (0);
     }
 
   /* This slot holds the function to call.  */
@@ -2794,7 +2790,6 @@ dfs_accumulate_vtbl_inits (binfo, data)
       && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo))
       && BINFO_NEW_VTABLE_MARKED (binfo, t))
     {
-
       /* If this is a secondary vtable, record its location.  */
       if (binfo != TYPE_BINFO (t))
 	{
@@ -4122,22 +4117,6 @@ build_vtbl_or_vbase_field (name, assembler_name, type, class_type, fcontext,
   return field;
 }
 
-/* Return the BINFO_OFFSET for BINFO as a native integer, not an
-   INTEGER_CST.  */
-
-static unsigned HOST_WIDE_INT
-get_binfo_offset_as_int (binfo)
-     tree binfo;
-{
-  tree offset;
-
-  offset = BINFO_OFFSET (binfo);
-  my_friendly_assert (TREE_CODE (offset) == INTEGER_CST, 20000313);
-  my_friendly_assert (TREE_INT_CST_HIGH (offset) == 0, 20000313);
-
-  return (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (offset);
-}
-
 /* Record the type of BINFO in the slot in DATA (which is really a
    `varray_type *') corresponding to the BINFO_OFFSET.  */
 
@@ -4147,7 +4126,7 @@ dfs_record_base_offsets (binfo, data)
      void *data;
 {
   varray_type *v;
-  unsigned HOST_WIDE_INT offset = get_binfo_offset_as_int (binfo);
+  unsigned HOST_WIDE_INT offset = tree_low_cst (BINFO_OFFSET (binfo), 1);
 
   v = (varray_type *) data;
   while (VARRAY_SIZE (*v) <= offset)
@@ -4184,11 +4163,10 @@ dfs_search_base_offsets (binfo, data)
   if (is_empty_class (BINFO_TYPE (binfo)))
     {
       varray_type v = (varray_type) data;
-      unsigned HOST_WIDE_INT offset;
+      /* Find the offset for this BINFO.  */
+      unsigned HOST_WIDE_INT offset = tree_low_cst (BINFO_OFFSET (binfo), 1);
       tree t;
 
-      /* Find the offset for this BINFO.  */
-      offset = get_binfo_offset_as_int (binfo);
       /* If we haven't yet encountered any objects at offsets that
 	 big, then there's no conflict.  */
       if (VARRAY_SIZE (v) <= offset)
@@ -4238,14 +4216,14 @@ layout_nonempty_base_or_field (rli, decl, binfo, v)
   while (1)
     {
       tree offset;
+      struct record_layout_info old_rli = *rli;
 
-      /* Layout this field.  */
-      layout_field (rli, decl);
+      /* Place this field.  */
+      place_field (rli, decl);
       
       /* Now that we know where it wil be placed, update its
 	 BINFO_OFFSET.  */
-      offset = size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (decl)),
-			       BITS_PER_UNIT));
+      offset = convert (ssizetype, byte_position (decl));
       if (binfo)
 	propagate_binfo_offsets (binfo, offset);
  
@@ -4267,17 +4245,20 @@ layout_nonempty_base_or_field (rli, decl, binfo, v)
       if (binfo && flag_new_abi && layout_conflict_p (binfo, v))
 	{
 	  /* Undo the propogate_binfo_offsets call.  */
-	  offset = convert (sizetype,
-			    size_diffop (size_zero_node, offset));
+	  offset = size_diffop (size_zero_node, offset);
 	  propagate_binfo_offsets (binfo, offset);
-
+	 
 	  /* Strip off the size allocated to this field.  That puts us
 	     at the first place we could have put the field with
 	     proper alignment.  */
-	  rli->const_size -= TREE_INT_CST_LOW (DECL_SIZE (decl));
-	  /* Bump up by th alignment required for the type, without
+	  *rli = old_rli;
+
+	  /* Bump up by the alignment required for the type, without
 	     virtual base classes.  */
-	  rli->const_size += CLASSTYPE_ALIGN (BINFO_TYPE (binfo));
+	  rli->bitpos
+	    = size_binop (PLUS_EXPR, rli->bitpos,
+			  bitsize_int (CLASSTYPE_ALIGN (BINFO_TYPE (binfo))));
+	  normalize_rli (rli);
 	}
       else
 	/* There was no conflict.  We're done laying out this field.  */
@@ -4312,7 +4293,7 @@ layout_empty_base (binfo, eoc, binfo_offsets)
     {
       /* That didn't work.  Now, we move forward from the next
 	 available spot in the class.  */
-      propagate_binfo_offsets (binfo, eoc);
+      propagate_binfo_offsets (binfo, convert (ssizetype, eoc));
       while (1) 
 	{
 	  if (!layout_conflict_p (binfo, binfo_offsets))
@@ -4320,7 +4301,7 @@ layout_empty_base (binfo, eoc, binfo_offsets)
 	    break;
 
 	  /* There's overlap here, too.  Bump along to the next spot.  */
-	  propagate_binfo_offsets (binfo, size_one_node);
+	  propagate_binfo_offsets (binfo, ssize_int (1));
 	}
     }
 }
@@ -4379,9 +4360,7 @@ build_base_field (rli, binfo, empty_p, base_align, v)
       layout_nonempty_base_or_field (rli, decl, binfo, *v);
     }
   else
-    layout_empty_base (binfo,
-		       size_int (CEIL (rli->const_size, BITS_PER_UNIT)),
-		       *v);
+    layout_empty_base (binfo, rli_size_unit_so_far (rli), *v);
 
   /* Check for inaccessible base classes.  If the same base class
      appears more than once in the hierarchy, but isn't virtual, then
@@ -4749,12 +4728,12 @@ dfs_propagate_binfo_offsets (binfo, data)
 {
   tree offset = (tree) data;
 
-  /* Update the BINFO_OFFSET for this base.  */
-  BINFO_OFFSET (binfo) = fold (build (PLUS_EXPR,
-				      sizetype,
-				      BINFO_OFFSET (binfo), 
-				      offset));
-
+  /* Update the BINFO_OFFSET for this base.  Allow for the case where it
+     might be negative.  */
+  BINFO_OFFSET (binfo)
+    = convert (sizetype, size_binop (PLUS_EXPR,
+				     convert (ssizetype, BINFO_OFFSET (binfo)),
+					      offset));
   SET_BINFO_MARKED (binfo);
 
   return NULL_TREE;
@@ -4890,7 +4869,7 @@ layout_virtual_bases (t, base_offsets)
 	    dsize = CEIL (dsize, desired_align) * desired_align;
 	    /* And compute the offset of the virtual base.  */
 	    propagate_binfo_offsets (vbase, 
-				     size_int (CEIL (dsize, BITS_PER_UNIT)));
+				     ssize_int (CEIL (dsize, BITS_PER_UNIT)));
 	    /* Every virtual baseclass takes a least a UNIT, so that
 	       we can take it's address and get something different
 	       for each base.  */
@@ -4934,8 +4913,8 @@ layout_virtual_bases (t, base_offsets)
   dsize = CEIL (dsize, TYPE_ALIGN (t)) * TYPE_ALIGN (t);
   TYPE_SIZE (t) = bitsize_int (dsize);
   TYPE_SIZE_UNIT (t) = convert (sizetype,
-				size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (t),
-					    bitsize_int (BITS_PER_UNIT)));
+				size_binop (CEIL_DIV_EXPR, TYPE_SIZE (t),
+					    bitsize_unit_node));
 
   /* Check for ambiguous virtual bases.  */
   if (extra_warnings)
@@ -5009,8 +4988,8 @@ layout_class_type (t, empty_p, has_virtual_p,
   /* Keep track of the first non-static data member.  */
   non_static_data_members = TYPE_FIELDS (t);
 
-  /* Initialize the layout information.  */
-  rli = new_record_layout_info (t);
+  /* Start laying out the record.  */
+  rli = start_record_layout (t);
 
   /* If possible, we reuse the virtual function table pointer from one
      of our base classes.  */
@@ -5025,7 +5004,7 @@ layout_class_type (t, empty_p, has_virtual_p,
   if (flag_new_abi && vptr)
     {
       TYPE_FIELDS (t) = chainon (vptr, TYPE_FIELDS (t));
-      layout_field (rli, vptr);
+      place_field (rli, vptr);
     }
 
   /* Add pointers to all of our virtual base-classes.  */
@@ -5040,9 +5019,7 @@ layout_class_type (t, empty_p, has_virtual_p,
   fixup_inline_methods (t);
 
   /* Layout the non-static data members.  */
-  for (field = non_static_data_members; 
-       field; 
-       field = TREE_CHAIN (field))
+  for (field = non_static_data_members; field; field = TREE_CHAIN (field))
     {
       tree binfo;
       tree type;
@@ -5052,7 +5029,7 @@ layout_class_type (t, empty_p, has_virtual_p,
 	 the back-end, in case it wants to do something with them.  */
       if (TREE_CODE (field) != FIELD_DECL)
 	{
-	  layout_field (rli, field);
+	  place_field (rli, field);
 	  continue;
 	}
 
@@ -5067,9 +5044,9 @@ layout_class_type (t, empty_p, has_virtual_p,
 	  && ((flag_new_abi 
 	       && INT_CST_LT (TYPE_SIZE (type), DECL_SIZE (field)))
 	      || (!flag_new_abi
-		  && compare_tree_int (DECL_SIZE (field),
-				       TYPE_PRECISION
-				       (long_long_unsigned_type_node)) > 0)))
+		  && 0 < compare_tree_int (DECL_SIZE (field),
+					   TYPE_PRECISION
+					   (long_long_unsigned_type_node)))))
 	{
 	  integer_type_kind itk;
 	  tree integer_type;
@@ -5087,8 +5064,8 @@ layout_class_type (t, empty_p, has_virtual_p,
 	     field.  We have to back up by one to find the largest
 	     type that fits.  */
 	  integer_type = integer_types[itk - 1];
-	  padding = size_diffop (DECL_SIZE (field), 
-				 TYPE_SIZE (integer_type));
+	  padding = size_binop (MINUS_EXPR, DECL_SIZE (field), 
+				TYPE_SIZE (integer_type));
 	  DECL_SIZE (field) = TYPE_SIZE (integer_type);
 	  DECL_ALIGN (field) = TYPE_ALIGN (integer_type);
 	}
@@ -5122,13 +5099,15 @@ layout_class_type (t, empty_p, has_virtual_p,
      offset.  However, now we need to make sure that RLI is big enough
      to reflect the entire class.  */
   eoc = end_of_class (t, /*include_virtuals_p=*/0);
-  if (eoc * BITS_PER_UNIT > rli->const_size)
+  if (TREE_CODE (rli_size_unit_so_far (rli)) == INTEGER_CST
+      && compare_tree_int (rli_size_unit_so_far (rli), eoc) < 0)
     {
       /* We don't handle zero-sized base classes specially under the
 	 old ABI, so if we get here, we had better be operating under
 	 the new ABI rules.  */
       my_friendly_assert (flag_new_abi, 20000321);
-      rli->const_size = (eoc + 1) * BITS_PER_UNIT;
+      rli->offset = size_binop (MAX_EXPR, rli->offset, size_int (eoc + 1));
+      rli->bitpos = bitsize_zero_node;
     }
 
   /* We make all structures have at least one element, so that they
@@ -5141,7 +5120,7 @@ layout_class_type (t, empty_p, has_virtual_p,
       tree padding;
 
       padding = build_lang_decl (FIELD_DECL, NULL_TREE, char_type_node);
-      layout_field (rli, padding);
+      place_field (rli, padding);
       TYPE_NONCOPIED_PARTS (t) 
 	= tree_cons (NULL_TREE, padding, TYPE_NONCOPIED_PARTS (t));
       TREE_STATIC (TYPE_NONCOPIED_PARTS (t)) = 1;
@@ -5151,7 +5130,7 @@ layout_class_type (t, empty_p, has_virtual_p,
      class.   */
   if (!flag_new_abi && vptr)
     {
-      layout_field (rli, vptr);
+      place_field (rli, vptr);
       TYPE_FIELDS (t) = chainon (TYPE_FIELDS (t), vptr);
     }
   
@@ -5170,7 +5149,7 @@ layout_class_type (t, empty_p, has_virtual_p,
      the virtual bases.  */
   if (*empty_p && flag_new_abi)
     {
-      CLASSTYPE_SIZE (t) = bitsize_int (0);
+      CLASSTYPE_SIZE (t) = bitsize_zero_node;
       CLASSTYPE_SIZE_UNIT (t) = size_zero_node;
     }
   else if (flag_new_abi && TYPE_HAS_COMPLEX_INIT_REF (t)
@@ -5283,18 +5262,15 @@ finish_struct_1 (t)
   if (vfield != NULL_TREE
       && DECL_FIELD_CONTEXT (vfield) != t)
     {
-      tree binfo = get_binfo (DECL_FIELD_CONTEXT (vfield), t, 0);
-      tree offset = convert (bitsizetype, BINFO_OFFSET (binfo));
-
       vfield = copy_node (vfield);
       copy_lang_decl (vfield);
 
-      if (! integer_zerop (offset))
-	offset = size_binop (MULT_EXPR, offset, bitsize_int (BITS_PER_UNIT));
-
       DECL_FIELD_CONTEXT (vfield) = t;
-      DECL_FIELD_BITPOS (vfield)
-	= size_binop (PLUS_EXPR, offset, bit_position (vfield));
+      DECL_FIELD_OFFSET (vfield)
+	= size_binop (PLUS_EXPR,
+		      BINFO_OFFSET (get_binfo (DECL_FIELD_CONTEXT (vfield),
+					       t, 0)),
+		      DECL_FIELD_OFFSET (vfield));
       TYPE_VFIELD (t) = vfield;
     }
 

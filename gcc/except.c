@@ -2924,7 +2924,7 @@ eh_regs (pcontext, psp, pra, outgoing)
      int outgoing ATTRIBUTE_UNUSED;
 {
   rtx rcontext, rsp, rra;
-  int i;
+  unsigned int i;
 
 #ifdef FUNCTION_OUTGOING_VALUE
   if (outgoing)
