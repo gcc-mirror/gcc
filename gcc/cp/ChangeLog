@@ -1,3 +1,7 @@
+2000-06-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (grokfndecl): Set DECL_CONTEXT for static functions too.
+
 2000-06-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* search.c (hides): Remove.

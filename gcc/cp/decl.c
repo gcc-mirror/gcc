@@ -8862,7 +8862,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   /* If this decl has namespace scope, set that up.  */
   if (in_namespace)
     set_decl_namespace (decl, in_namespace, friendp);
-  else if (publicp && ! ctype)
+  else if (!ctype)
     DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 
   /* `main' and builtins have implicit 'C' linkage.  */
