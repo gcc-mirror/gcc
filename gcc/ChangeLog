@@ -1,3 +1,12 @@
+2004-12-23  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/18896
+	* function.c (split_complex_args): Set DECL_ARTIFICIAL and DECL_IGNORED_P
+	for real and imaginary parts if the parm is addressable.
+	(assign_parms_unsplit_complex): If parm addressable, save real
+	and imaginary parts to a stack temp.  Pass assign_parm_data_all.
+	(assign_parms): Adjust assign_parms_unsplit_complex call.
+
 2004-12-22  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* tree.h (DECL_PTA_ALIASVAR): Dead.

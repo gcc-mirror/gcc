@@ -2049,6 +2049,7 @@ split_complex_args (tree args)
 	{
 	  tree decl;
 	  tree subtype = TREE_TYPE (type);
+	  bool addressable = TREE_ADDRESSABLE (p);
 
 	  /* Rewrite the PARM_DECL's type with its component.  */
 	  TREE_TYPE (p) = subtype;
@@ -2056,11 +2057,20 @@ split_complex_args (tree args)
 	  DECL_MODE (p) = VOIDmode;
 	  DECL_SIZE (p) = NULL;
 	  DECL_SIZE_UNIT (p) = NULL;
+	  /* If this arg must go in memory, put it in a pseudo here.
+	     We can't allow it to go in memory as per normal parms,
+	     because the usual place might not have the imag part
+	     adjacent to the real part.  */
+	  DECL_ARTIFICIAL (p) = addressable;
+	  DECL_IGNORED_P (p) = addressable;
+	  TREE_ADDRESSABLE (p) = 0;
 	  layout_decl (p, 0);
 
 	  /* Build a second synthetic decl.  */
 	  decl = build_decl (PARM_DECL, NULL_TREE, subtype);
 	  DECL_ARG_TYPE (decl) = DECL_ARG_TYPE (p);
+	  DECL_ARTIFICIAL (decl) = addressable;
+	  DECL_IGNORED_P (decl) = addressable;
 	  layout_decl (decl, 0);
 
 	  /* Splice it in; skip the new decl.  */
@@ -2924,9 +2934,10 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
    undo the frobbing that we did in assign_parms_augmented_arg_list.  */
 
 static void
-assign_parms_unsplit_complex (tree orig_fnargs, tree fnargs)
+assign_parms_unsplit_complex (struct assign_parm_data_all *all, tree fnargs)
 {
   tree parm;
+  tree orig_fnargs = all->orig_fnargs;
 
   for (parm = orig_fnargs; parm; parm = TREE_CHAIN (parm))
     {
@@ -2943,7 +2954,26 @@ assign_parms_unsplit_complex (tree orig_fnargs, tree fnargs)
 	      real = gen_lowpart_SUBREG (inner, real);
 	      imag = gen_lowpart_SUBREG (inner, imag);
 	    }
-	  tmp = gen_rtx_CONCAT (DECL_MODE (parm), real, imag);
+
+	  if (TREE_ADDRESSABLE (parm))
+	    {
+	      rtx rmem, imem;
+	      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (parm));
+
+	      /* split_complex_arg put the real and imag parts in
+		 pseudos.  Move them to memory.  */
+	      tmp = assign_stack_local (DECL_MODE (parm), size, 0);
+	      set_mem_attributes (tmp, parm, 1);
+	      rmem = adjust_address_nv (tmp, inner, 0);
+	      imem = adjust_address_nv (tmp, inner, GET_MODE_SIZE (inner));
+	      push_to_sequence (all->conversion_insns);
+	      emit_move_insn (rmem, real);
+	      emit_move_insn (imem, imag);
+	      all->conversion_insns = get_insns ();
+	      end_sequence ();
+	    }
+	  else
+	    tmp = gen_rtx_CONCAT (DECL_MODE (parm), real, imag);
 	  SET_DECL_RTL (parm, tmp);
 
 	  real = DECL_INCOMING_RTL (fnargs);
@@ -3055,7 +3085,7 @@ assign_parms (tree fndecl)
     }
 
   if (targetm.calls.split_complex_arg && fnargs != all.orig_fnargs)
-    assign_parms_unsplit_complex (all.orig_fnargs, fnargs);
+    assign_parms_unsplit_complex (&all, fnargs);
 
   /* Output all parameter conversion instructions (possibly including calls)
      now that all parameters have been copied out of hard registers.  */
