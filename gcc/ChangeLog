@@ -1,3 +1,8 @@
+2004-05-31  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* c-incpath.c (add_path): Canonicalize paths to use '/' if
+	HAVE_DOS_BASED_FILESYSTEM.
+
 2004-05-31  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-ssa-dom.c (record_equivalences_from_incoming_edge):
