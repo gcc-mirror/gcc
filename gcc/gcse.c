@@ -641,6 +641,8 @@ static void pre_insert_copies         PROTO ((void));
 static int pre_delete                 PROTO ((void));
 static int pre_gcse                   PROTO ((void));
 static int one_pre_gcse_pass          PROTO ((rtx, int));
+
+static void add_label_notes	      PROTO ((rtx, rtx));
 
 /* Entry point for global common subexpression elimination.
    F is the first instruction in the function.  */
@@ -4354,6 +4356,7 @@ pre_insert_insn (expr, bb)
 #endif
       /* FIXME: What if something in cc0/jump uses value set in new insn?  */
       new_insn = emit_insn_before (pat, insn);
+      add_label_notes (SET_SRC (pat), new_insn);
       if (BLOCK_HEAD (bb) == insn)
 	BLOCK_HEAD (bb) = new_insn;
       /* Keep block number table up to date.  */
@@ -4364,6 +4367,7 @@ pre_insert_insn (expr, bb)
   else
     {
       new_insn = emit_insn_after (pat, insn);
+      add_label_notes (SET_SRC (pat), new_insn);
       BLOCK_END (bb) = new_insn;
       /* Keep block number table up to date.  */
       set_block_num (new_insn, bb);
@@ -4694,4 +4698,51 @@ one_pre_gcse_pass (f, pass)
     }
 
   return changed;
+}
+
+/* If X contains any LABEL_REF's, add REG_LABEL notes for them to INSN.
+   We have to add REG_LABEL notes, because the following loop optimization
+   pass requires them.  */
+
+/* ??? This is very similar to the loop.c add_label_notes function.  We
+   could probably share code here.  */
+
+/* ??? If there was a jump optimization pass after gcse and before loop,
+   then we would not need to do this here, because jump would add the
+   necessary REG_LABEL notes.  */
+
+static void
+add_label_notes (x, insn)
+     rtx x;
+     rtx insn;
+{
+  enum rtx_code code = GET_CODE (x);
+  int i, j;
+  char *fmt;
+
+  if (code == LABEL_REF && !LABEL_REF_NONLOCAL_P (x))
+    {
+      rtx next = next_real_insn (XEXP (x, 0));
+
+      /* Don't record labels that refer to dispatch tables.
+	 This is not necessary, since the tablejump references the same label.
+	 And if we did record them, flow.c would make worse code.  */
+      if (next == 0
+	  || ! (GET_CODE (next) == JUMP_INSN
+		&& (GET_CODE (PATTERN (next)) == ADDR_VEC
+		    || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC)))
+	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, XEXP (x, 0),
+					      REG_NOTES (insn));
+      return;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	add_label_notes (XEXP (x, i), insn);
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  add_label_notes (XVECEXP (x, i, j), insn);
+    }
 }
