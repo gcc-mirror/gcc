@@ -1,3 +1,8 @@
+2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
+
+	PR middle-end/13779
+	* gcc.dg/darwin-longlong.c: New test.
+
 2004-01-26  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* gcc.dg/20040124-1.c: Moved test from here...
