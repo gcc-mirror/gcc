@@ -1982,8 +1982,7 @@ enum shift_alg
   SHIFT_INLINE,
   SHIFT_ROT_AND,
   SHIFT_SPECIAL,
-  SHIFT_LOOP,
-  SHIFT_MAX
+  SHIFT_LOOP
 };
 
 /* Symbols of the various shifts which can be used as indices.  */
@@ -2212,7 +2211,6 @@ get_shift_alg (shift_type, shift_mode, count, info)
   info->cc_valid_p = shift_one[cpu_type][shift_type][shift_mode].cc_valid;
 
   /* Now look for cases we want to optimize.  */
-
   switch (shift_mode)
     {
     case QIshift:
@@ -2238,8 +2236,6 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    goto return_shift_loop;
 
 	  /* Other shifts by 5, 6, or 7 bits use SHIFT_ROT_AND.  */
-	  info->shift1 = rotate_one[cpu_type][shift_type][shift_mode];
-	  info->shift2 = rotate_two[shift_type][shift_mode];
 	  goto return_shift_rot_and;
 	}
 
@@ -2316,8 +2312,6 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    }
 	  else if (shift_type != SHIFT_ASHIFTRT)
 	    {
-	      info->shift1 = rotate_one[cpu_type][shift_type][shift_mode];
-	      info->shift2 = rotate_two[shift_type][shift_mode];
 	      goto return_shift_rot_and;
 	    }
 	}
@@ -2409,8 +2403,6 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    }
 	  else
 	    {
-	      info->shift1 = rotate_one[cpu_type][shift_type][shift_mode];
-	      info->shift2 = rotate_two[shift_type][shift_mode];
 	      goto return_shift_rot_and;
 	    }
 	}
@@ -2436,8 +2428,6 @@ get_shift_alg (shift_type, shift_mode, count, info)
 		}
 	      else
 		{
-		  info->shift1 = rotate_one[cpu_type][shift_type][shift_mode];
-		  info->shift2 = rotate_two[shift_type][shift_mode];
 		  goto return_shift_rot_and;
 		}
 	    }
@@ -2464,6 +2454,8 @@ get_shift_alg (shift_type, shift_mode, count, info)
   goto end;
 
  return_shift_rot_and:
+  info->shift1 = rotate_one[cpu_type][shift_type][shift_mode];
+  info->shift2 = rotate_two[shift_type][shift_mode];
   info->cc_valid_p = 0;
   info->alg = SHIFT_ROT_AND;
   goto end;

@@ -1,5 +1,10 @@
 2001-11-11  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300.c (shift_alg): Remove SHIFT_MAX.
+	(get_shift_alg): Remove redundant code.
+
+2001-11-11  Kazu Hirata  <kazu@hxi.com>
+
 	* config/pa/milli64.S: Fix comment formatting.
 	* config/pa/pa-64.h: Likewise.
 	* config/pa/pa-linux.h: Likewise.
