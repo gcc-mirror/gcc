@@ -1,3 +1,11 @@
+2002-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/4461
+	* varasm.c (get_pool_constant_mark): New.
+	* rtl.h (get_pool_constant_mark): Add prototype.
+	* dwarf2out.c (mem_loc_descriptor): A pool constant cannot
+	be represented if it has not been output.
+
 2002-02-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* combine.c (do_SUBST): Sanity check substitutions of

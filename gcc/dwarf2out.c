@@ -7801,10 +7801,24 @@ mem_loc_descriptor (rtl, mode)
 	 by a different symbol.  */
       if (GET_CODE (rtl) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (rtl))
 	{
-	  rtx tmp = get_pool_constant (rtl);
+	  bool marked;
+	  rtx tmp = get_pool_constant_mark (rtl, &marked);
 
 	  if (GET_CODE (tmp) == SYMBOL_REF)
-	    rtl = tmp;
+	    {
+	      rtl = tmp;
+	      if (CONSTANT_POOL_ADDRESS_P (tmp))
+		get_pool_constant_mark (tmp, &marked);
+	      else
+		marked = true;
+	    }
+
+	  /* If all references to this pool constant were optimized away,
+	     it was not output and thus we can't represent it.
+	     FIXME: might try to use DW_OP_const_value here, though
+	     DW_OP_piece complicates it.  */
+	  if (!marked)
+	    return 0;
 	}
 
       mem_loc_result = new_loc_descr (DW_OP_addr, 0, 0);

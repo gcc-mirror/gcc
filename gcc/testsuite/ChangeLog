@@ -12,6 +12,8 @@
 
 	* g++.dg/opt/ptrintsum1.C: New test.
 
+	* gcc.dg/debug/20020220-1.c: New test.
+
 2002-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20020216-1.c: New test.
