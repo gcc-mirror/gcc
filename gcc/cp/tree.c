@@ -1388,7 +1388,13 @@ walk_tree (tp, func, data, htab)
 
     case FUNCTION_TYPE:
       WALK_SUBTREE (TREE_TYPE (*tp));
-      WALK_SUBTREE (TYPE_ARG_TYPES (*tp));
+      {
+	tree arg = TYPE_ARG_TYPES (*tp);
+
+	/* We never want to walk into default arguments.  */
+	for (; arg; arg = TREE_CHAIN (arg))
+	  WALK_SUBTREE (TREE_VALUE (arg));
+      }
       break;
 
     case ARRAY_TYPE:
