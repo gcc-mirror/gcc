@@ -3321,6 +3321,40 @@ propagate_block (old, first, last, significant, bnum, flags)
 	     can cause trouble for first or last insn in a basic block.  */
 	  if ((flags & PROP_KILL_DEAD_CODE) && insn_is_dead)
 	    {
+	      rtx inote;
+	      /* If the insn referred to a label, note that the label is
+		 now less used.  */
+	      for (inote = REG_NOTES (insn); inote; inote = XEXP (inote, 1))
+		{
+		  if (REG_NOTE_KIND (inote) == REG_LABEL)
+		    {
+		      rtx label = XEXP (inote, 0);
+		      rtx next;
+		      LABEL_NUSES (label)--;
+
+		      /* If this label was attached to an ADDR_VEC, it's
+			 safe to delete the ADDR_VEC.  In fact, it's pretty much
+			 mandatory to delete it, because the ADDR_VEC may
+			 be referencing labels that no longer exist.  */
+		      if (LABEL_NUSES (label) == 0
+			  && (next = next_nonnote_insn (label)) != NULL
+			  && GET_CODE (next) == JUMP_INSN
+			  && (GET_CODE (PATTERN (next)) == ADDR_VEC
+			      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
+			{
+			  rtx pat = PATTERN (next);
+			  int diff_vec_p = GET_CODE (pat) == ADDR_DIFF_VEC;
+			  int len = XVECLEN (pat, diff_vec_p);
+			  int i;
+			  for (i = 0; i < len; i++)
+			    LABEL_NUSES (XEXP (XVECEXP (pat, diff_vec_p, i), 0))--;
+			  PUT_CODE (next, NOTE);
+			  NOTE_LINE_NUMBER (next) = NOTE_INSN_DELETED;
+			  NOTE_SOURCE_FILE (next) = 0;
+			}
+		    }
+		}
+
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
