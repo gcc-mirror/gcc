@@ -1,3 +1,10 @@
+2004-09-03  Richard Henderson  <rth@redhat.com>
+
+	* intrinsics/cshift0.c (DEF_COPY_LOOP, copy_loop_int, copy_loop_long,
+	copy_loop_double, copy_loop_ldouble): New.
+	(__cshift0): Make shift type ssize_t.  Use % operator instead of
+	div.  Use specialized versions of copy loop depending on the shape.
+
 2004-09-02  Paul Brook  <paul@codesourcery.com>
 
 	* io/format.c (parse_format_list): Set repeat count for P descriptors.
