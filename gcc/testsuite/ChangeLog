@@ -1,3 +1,7 @@
+2005-01-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/darwin-weakimport-2.c: Remove stray 'APPLE LOCAL' marker.
+
 2005-01-05  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/19100
