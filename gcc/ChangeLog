@@ -1,3 +1,9 @@
+2003-02-24  Jeff Law  <law@redhat.com>
+
+	* i386.md (testdi_1_rex64): Discourage reload from using the %eax
+	alternative.
+	(testsi_1, testhi_1, testqi_1): Likewise.
+
 2003-02-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/alpha/osf.h (TARGET_OS_CPP_BUILTINS): Rename
