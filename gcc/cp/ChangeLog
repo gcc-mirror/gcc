@@ -1,5 +1,6 @@
 2004-04-08  Danny Smith  <dannysmith@users.sourceforge.net>
 
+	PR c++/14808
 	* method.c (make_alias_for_thunk): Just return function decl
 	for one_only functions if __CYGWIN__ or __MINGW32__
 	(use_thunk): Don't put function and thunk in same one_only
