@@ -1,3 +1,8 @@
+2003-12-01  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 11433
+	* objc.dg/proto-lossage-3.m: New test.
+
 2003-12-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	Backport from mainline:
@@ -12,8 +17,8 @@
 
 	2003-06-25  Giovanni Bajo  <giovannibajo@libero.it>
 
-        PR c++/2094
-        * g++.dg/template/ptrmem6.C: New test.
+	PR c++/2094
+	* g++.dg/template/ptrmem6.C: New test.
 
 2003-11-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -103,7 +108,7 @@
 
 	PR c++/12337
 	* g++.dg/init/new9.C: New test.
-	
+
 	PR c++/12334, c++/12236, c++/8656
 	* g++.dg/ext/attrib8.C: New test.
 
@@ -134,7 +139,7 @@
 
 	PR c++/12486
 	* g++.dg/inherit/error1.C: New test.
-	
+
 2003-10-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/parse/parameter-declaration-1.C: Fix line number of
@@ -267,7 +272,7 @@
 
 	Revert this patch:
 	* g++.dg/abi/layout4.C: New test.
-	
+
 2003-09-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12053
@@ -377,7 +382,7 @@
 
 2003-07-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
-        PR optimization/11536
+	PR optimization/11536
 	* gcc.dg/20030721-1.c: New test.
 
 2003-07-19  Mark Mitchell  <mark@codesourcery.com>
@@ -480,7 +485,7 @@
 	* g++.dg/opt/strength-reduce.C: New test.
 
 2003-07-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/stack1.C: New test.
 
@@ -514,7 +519,7 @@
 
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
 
-        * g++.dg/other/error5.C: Change line number of expected error.
+	* g++.dg/other/error5.C: Change line number of expected error.
 
 2003-07-01  Mark Mitchell  <mark@codesourcery.com>
 
@@ -531,12 +536,12 @@
 
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
 
-        * g++.dg/other/error6.C: New test.
+	* g++.dg/other/error6.C: New test.
 
 2003-06-30  Giovanni Bajo <giovannibajo@libero.it>
 
-        PR c++/11106
-        * g++.dg/other/error5.C: New test.
+	PR c++/11106
+	* g++.dg/other/error5.C: New test.
 
 2003-06-27  Mark Mitchell  <mark@codesourcery.com>
 
@@ -564,7 +569,7 @@
 	* g++.dg/abi/mangle4.C: Correct base-specifier access.
 	* g++.dg/lookup/scoped1.C: Remove XFAIL.
 	* g++.old-deja/g++.martin/pmf1.C: Correct base-specifier access.
-	
+
 	PR c++/10931
 	* g++.dg/expr/static_cast1.C: New test.
 
@@ -600,7 +605,7 @@
 2003-06-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10888
-	* g++.dg/warn/Winline-2.C: New test. 
+	* g++.dg/warn/Winline-2.C: New test.
 
 	PR c++/10845
 	* g++.dg/template/member3.C: New test.
@@ -626,9 +631,9 @@
 	* g++.dg/anew2.C: New test.
 	* g++.dg/anew3.C: New test.
 	* g++.dg/anew4.C: New test.
-	
+
 2003-06-19  Loren James Rittle  <ljrittle@acm.org>
-	
+
 	* gcc.dg/cpp/redef3.c: New file.
 
 2003-06-17  Mark Mitchell  <mark@codesourcery.com>
@@ -659,12 +664,12 @@
 
 2003-06-10  Richard Henderson  <rth@redhat.com>
 
-        * gcc.dg/asm-7.c: Adjust expected warning text.
+	* gcc.dg/asm-7.c: Adjust expected warning text.
 
 2003-06-08  Richard Henderson  <rth@redhat.com>
 
-        * gcc.dg/20011029-2.c: Fix the array reference.
-        * gcc.dg/asm-7.c: New.
+	* gcc.dg/20011029-2.c: Fix the array reference.
+	* gcc.dg/asm-7.c: New.
 
 2003-06-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
@@ -711,7 +716,7 @@
 	* g++.dg/template/access10.C: New test.
 
 2003-05-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Kaveh R. Ghazi <ghazi@caip.rutgers.edu>
+	    Kaveh R. Ghazi <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/compile/simd-5.x: XFAIL on SPARC64.
 
@@ -748,10 +753,10 @@
 	* g++.dg/other/packed1.C: Mark xfail for sparc*- not sparc-.
 
 2003-05-05  Mark Mitchell  <mark@codesourcery.com>
-            Kean Johnston <jkj@sco.com>
+	    Kean Johnston <jkj@sco.com>
 
 	* gcc.dg/unused-4.c: Update.
-	
+
 2003-05-02  Zack Weinberg  <zack@codesourcery.com>
 
 	PR c/10604

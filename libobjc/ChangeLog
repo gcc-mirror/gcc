@@ -1,3 +1,10 @@
+2003-12-01  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 11433
+	* Protocol.m (descriptionForInstanceMethod): Don't dereference
+	instance_methods if it's NULL.
+	(descriptionForClassMethod): Likewise for class_methods.
+
 2003-10-16  Release Manager
 
 	* GCC 3.3.2 Released.
@@ -188,7 +195,7 @@ Mon Dec 17 17:02:12 2001  Nicola Pero  <nicola@brainstorm.co.uk>
 
 2001-11-14  Aldy Hernandez  <aldyh@redhat.com>
 
-        * encoding.c: Add target_flags.
+	* encoding.c: Add target_flags.
 
 2001-11-07  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -199,18 +206,18 @@ Mon Dec 17 17:02:12 2001  Nicola Pero  <nicola@brainstorm.co.uk>
 Mon Oct 29 21:29:21 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* class.c: Rewritten the class table to use optimized, lock-free
-        lookup.  This more than doubles the speed of class method
-        invocations.  (class_table_setup), (class_table_insert),
-        (class_table_replace), (class_table_get_safe),
-        (class_table_next), (class_table_print),
-        (class_table_print_histogram): New functions.
-        (__objc_init_class_tables): Use class_table_setup.
-        (__objc_add_class_to_hash): Use class_table_get_safe and
-        class_table_insert.  (objc_lookup_class), (objc_get_class): Do not
-        assert the existence of the table; do not lock the runtime; use
-        class_table_get_safe.  (objc_next_class): Use class_table_next.
-        (__objc_resolve_class_links): Use class_table_next.
-        (class_pose_as): Use class_table_replace.
+	lookup.  This more than doubles the speed of class method
+	invocations.  (class_table_setup), (class_table_insert),
+	(class_table_replace), (class_table_get_safe),
+	(class_table_next), (class_table_print),
+	(class_table_print_histogram): New functions.
+	(__objc_init_class_tables): Use class_table_setup.
+	(__objc_add_class_to_hash): Use class_table_get_safe and
+	class_table_insert.  (objc_lookup_class), (objc_get_class): Do not
+	assert the existence of the table; do not lock the runtime; use
+	class_table_get_safe.  (objc_next_class): Use class_table_next.
+	(__objc_resolve_class_links): Use class_table_next.
+	(class_pose_as): Use class_table_replace.
 
 2001-09-10  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
