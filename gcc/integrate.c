@@ -653,6 +653,10 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   if (max_regno < FIRST_PSEUDO_REGISTER)
     abort ();
 
+  /* Pull out the decl for the function definition; fndecl may be a
+     local declaration, which would break DECL_ABSTRACT_ORIGIN.  */
+  fndecl = inl_f->decl;
+
   nargs = list_length (DECL_ARGUMENTS (fndecl));
 
   if (cfun->preferred_stack_boundary < inl_f->preferred_stack_boundary)
