@@ -1,3 +1,23 @@
+2002-09-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*adddi3_cc", "*adddi3_cconly", 
+	"*adddi3_cconly2", "*adddi3_64", "*adddi3_31", "adddi3",
+	"*addsi3_carry1_cc", "*addsi3_carry1_cconly",	
+	"*addsi3_carry2_cc", "*addsi3_carry2_cconly",
+	"*addsi3_cc", "*addsi3_cconly", "*addsi3_cconly2", "addsi3",
+	"adddf3", "*adddf3", "*adddf3_ibm", 
+	"addsf3", "*addsf3", "*addsf3_ibm",
+	"muldi3", "mulsi3", "mulsidi3",
+	"muldf3", "*muldf3", "*muldf3_ibm",
+	"mulsf3", "*mulsf3", "*mulsf3_ibm",
+	"*anddi3_cc", "*anddi3_cconly", "anddi3",
+	"*andsi3_cc", "*andsi3_cconly", "andsi3",
+	"*iordi3_cc", "*iordi3_cconly", "iordi3",
+	"*iorsi3_cc", "*iorsi3_cconly", "iorsi3",
+	"*xordi3_cc", "*xordi3_cconly", "xordi3",
+	"*xorsi3_cc", "*xorsi3_cconly", "xorsi3"): Use "nonimmediate_operand"
+	instead of "register_operand" as predicate for "%0" operand.
+
 2002-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in (HAVE_AS_OFFSETABLE_LO10): Use -xarch=v9
