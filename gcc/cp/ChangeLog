@@ -1,3 +1,8 @@
+2000-03-07  Jason Merrill  <jason@casey.cygnus.com>
+
+	* search.c (note_debug_info_needed): Walk the bases even if we 
+	weren't deferring the type itself.
+
 2000-03-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl2.c (finish_objects): Constify a char*.
