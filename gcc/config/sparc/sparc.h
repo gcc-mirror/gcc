@@ -1582,7 +1582,12 @@ extern const char leaf_reg_remap[];
   {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}, \
    { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM} }
 
-#define CAN_ELIMINATE(FROM, TO) 1
+/* The way this is structured, we can't eliminate SFP in favor of SP
+   if the frame pointer is required: we want to use the SFP->HFP elimination
+   in that case.  But the test in update_eliminables doesn't know we are
+   assuming below that we only do the former elimination.  */
+#define CAN_ELIMINATE(FROM, TO) \
+  ((TO) == HARD_FRAME_POINTER_REGNUM || !FRAME_POINTER_REQUIRED)
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   do {								\

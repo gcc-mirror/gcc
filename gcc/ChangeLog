@@ -1,3 +1,8 @@
+Tue Mar 19 14:12:32 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/sparc/sparc.h (CAN_ELMINIATE): Can only eliminate FP
+	in favor of SP if FRAME_POINTER_REQUIRED is false.
+
 2002-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/5656
