@@ -1,3 +1,10 @@
+2002-02-01  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR java/5080
+	* jcf-parse.c : Check for HAVE_LOCALE_H before using
+	setlocale() with LC_CTYPE as a parameter.
+	* jv-scan.c: Same.
+
 2002-01-31  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gjavah.c (version), jcf-dump.c (version), jv-scan.c (version):
