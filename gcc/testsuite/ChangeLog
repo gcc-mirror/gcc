@@ -1,3 +1,8 @@
+2005-04-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20673
+	* g++.dg/ext/attrib21.C: New test.
+
 2005-04-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/20527
