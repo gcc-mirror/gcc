@@ -1,3 +1,8 @@
+Tue Oct 10 23:14:33 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.c (valid_machine_decl_attribute): Allow `extern'
+	declaration for data with "progmem" attribute.
+
 2000-10-09  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* config/avr/avr.c (out_shift_with_cnt): Use AS2 macro.

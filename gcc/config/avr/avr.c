@@ -4318,7 +4318,7 @@ valid_machine_decl_attribute (decl, attributes, attr, args)
   if (is_attribute_p ("progmem", attr)
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     {
-      if (DECL_INITIAL (decl) == NULL_TREE)
+      if (DECL_INITIAL (decl) == NULL_TREE && !DECL_EXTERNAL (decl))
 	{
 	  warning ("Only initialized variables can be placed into "
 		   "program memory area.");
