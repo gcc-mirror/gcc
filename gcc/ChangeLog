@@ -335,7 +335,7 @@
 	Endorse:
 	2004-01-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 	PR optimization/13472
-	* reload.c (reload): Don't record unchanging memory locations.
+	* reload1.c (reload): Don't record unchanging memory locations.
 
 2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
