@@ -18,6 +18,10 @@
 
 2002-09-15  Adam Megacz <adam@xwt.org>
 	
+	* java/net/natPlainSocketImpl.cc: fixed typo.
+
+2002-09-15  Adam Megacz <adam@xwt.org>
+	
 	* java/net/natPlainSocketImpl.cc: #ifdef-shielded socket timeouts,
 	which don't work on Win32 (yet).
 
