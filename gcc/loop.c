@@ -6467,6 +6467,8 @@ get_condition (jump, earliest)
 	      reverse_code = 1;
 	      x = SET_SRC (set);
 	    }
+	  else
+	    break;
 	}
 
       else if (reg_set_p (op0, prev))
