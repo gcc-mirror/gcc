@@ -2893,6 +2893,34 @@ fix = {
 
 
 /*
+ * Some SVR4 systems supposedly use these non-ANSI preprocessor directives.
+ */
+#ifdef SVR4
+fix = {
+    hackname  = svr4_preproc_lint_on;
+    select    = '#lint\(on\)';
+    c_fix     = format;
+    c_fix_arg = 'defined(lint)';
+    test_text = "#if #lint(on)";
+};
+fix = {
+    hackname  = svr4_preproc_lint_off;
+    select    = '#lint\(off\)';
+    c_fix     = format;
+    c_fix_arg = '!defined(lint)';
+    test_text = "#if #lint(off)";
+};
+fix = {
+    hackname  = svr4_preproc_machine;
+    select    = '#(machine|system|cpu)\(([^)]*)\)';
+    c_fix     = format;
+    c_fix_arg = 'defined(__%1__)';
+    test_text = "#if #machine(i386) || #system(vax) || #cpu(sparc)";
+};
+#endif
+
+
+/*
  *   Fix broken decl of profil present on some svr4 systems.
  */
 fix = {

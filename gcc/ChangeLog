@@ -1,3 +1,9 @@
+2003-08-26  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/inclhack.def (svr4_preproc_lint_on, 
+	svr4_preproc_lint_off, svr4_preproc_machine): New disabled 
+	fixes, ported from fixinc.svr4.
+
 2003-08-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/install.texi (Prerequisites): Mention GNU make requirement.
