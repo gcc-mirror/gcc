@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002 Free Software Foundation, Inc.
 
-timestamp='2002-01-10'
+timestamp='2002-01-30'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -837,7 +837,9 @@ EOF
 	# The BFD linker knows what the default object file format is, so
 	# first see if it will tell us. cd to the root directory to prevent
 	# problems with other programs or directories called `ld' in the path.
-	ld_supported_targets=`cd /; ld --help 2>&1 \
+	# Export LANG=C to prevent ld from outputting information in other
+	# languages.
+	ld_supported_targets=`LANG=C; export LANG; cd /; ld --help 2>&1 \
 			 | sed -ne '/supported targets:/!d
 				    s/[ 	][ 	]*/ /g
 				    s/.*supported targets: *//
@@ -874,7 +876,11 @@ EOF
 	LIBC=gnulibc1
 	# endif
 	#else
+	#ifdef __INTEL_COMPILER
+	LIBC=gnu
+	#else
 	LIBC=gnuaout
+	#endif
 	#endif
 EOF
 	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep ^LIBC=`
@@ -1061,8 +1067,10 @@ EOF
     *:procnto*:*:* | *:QNX:[0123456789]*:*)
 	if test "${UNAME_MACHINE}" = "x86pc"; then
 		UNAME_MACHINE=pc
+		echo i386-${UNAME_MACHINE}-nto-qnx
+	else
+		echo `uname -p`-${UNAME_MACHINE}-nto-qnx
 	fi
-	echo `uname -p`-${UNAME_MACHINE}-nto-qnx
 	exit 0 ;;
     *:QNX:*:4*)
 	echo i386-pc-qnx
