@@ -1432,8 +1432,8 @@ fatal VPARAMS ((const char *msgid, ...))
   report_diagnostic (&dc);
   va_end (ap);
 
-  fprintf (stderr, "Please submit a full bug report, with preprocessed source\n");
-  fprintf (stderr, "if appropriate.  See %s for instructions.\n", GCCBUGURL);
+  fprintf (stderr, "Please submit a full bug report, with preprocessed source if appropriate.\n");
+  fprintf (stderr, "See %s for instructions.\n", GCCBUGURL);
   exit (FATAL_EXIT_CODE);
 }
 

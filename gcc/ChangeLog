@@ -1,3 +1,7 @@
+2001-01-30  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* diagnostic.c (fatal): Fix word wrap.
+
 2001-01-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	* combine.c (try_combine): Fix SUBREG setting for
