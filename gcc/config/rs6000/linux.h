@@ -33,15 +33,15 @@
 #define TARGET_C99_FUNCTIONS 1
 
 #undef  TARGET_OS_CPP_BUILTINS
-#define TARGET_OS_CPP_BUILTINS()          \
-  do                                      \
-    {                                     \
-      builtin_define_std ("PPC");         \
-      builtin_define_std ("powerpc");     \
-      builtin_assert ("cpu=powerpc");     \
-      builtin_assert ("machine=powerpc"); \
-      TARGET_OS_SYSV_CPP_BUILTINS ();	  \
-    }                                     \
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define_std ("PPC");		\
+      builtin_define_std ("powerpc");		\
+      builtin_assert ("cpu=powerpc");		\
+      builtin_assert ("machine=powerpc");	\
+      TARGET_OS_SYSV_CPP_BUILTINS ();		\
+    }						\
   while (0)
 
 #undef	CPP_OS_DEFAULT_SPEC
