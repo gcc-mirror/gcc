@@ -112,7 +112,7 @@ javao_files = $(java_source_files:.java=.lo) \
 libffi_files = `$(AR) t ../libffi/.libs/libffi.a 2>/dev/null | sed 's/\.o/\.lo/g' | sed 's/^/..\/libffi\//g'`
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
-	resolve.cc defineclass.cc interpret.cc
+	resolve.cc defineclass.cc interpret.cc name-finder.cc
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
 libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
@@ -804,6 +804,7 @@ java/lang/natRuntime.cc	\
 java/lang/natString.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
+java/lang/natThrowable.cc \
 java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \
 java/lang/reflect/natField.cc \

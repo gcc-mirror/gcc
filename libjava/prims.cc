@@ -16,6 +16,10 @@ details.  */
 #include <string.h>
 #include <signal.h>
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java-signal.h>
@@ -68,6 +72,10 @@ const char **_Jv_Compiler_Properties;
 // Property key/value pairs.
 property_pair *_Jv_Environment_Properties;
 #endif
+
+// The name of this executable.
+static char * _Jv_execName;
+
 
 
 #ifdef HANDLE_SEGV
@@ -75,6 +83,7 @@ static java::lang::NullPointerException *nullp;
 SIGNAL_HANDLER (catch_segv)
 {
   MAKE_THROW_FRAME;
+  nullp->fillInStackTrace ();
   _Jv_Throw (nullp);
 }
 #endif
@@ -89,6 +98,7 @@ SIGNAL_HANDLER (catch_fpe)
 #else
   MAKE_THROW_FRAME;
 #endif
+  arithexception->fillInStackTrace ();
   _Jv_Throw (arithexception);
 }
 #endif
@@ -638,8 +648,24 @@ static java::lang::ThreadGroup *main_group;
 // The primary thread.
 static java::lang::Thread *main_thread;
 
+char *
+_Jv_ThisExecutable (void)
+{
+  return _Jv_execName;
+}
+
+void
+_Jv_ThisExecutable (const char *name)
+{
+  if (name)
+    {
+      _Jv_execName = new char[strlen (name) + 1];
+      strcpy (_Jv_execName, name);
+    }
+}
+
 static void
-main_init (void)
+main_init ()
 {
   INIT_SEGV;
 #ifdef HANDLE_FPE
@@ -812,6 +838,13 @@ JvRunMain (jclass klass, int argc, const char **argv)
   PROCESS_GCJ_PROPERTIES;
 
   main_init ();
+#ifdef HAVE_PROC_SELF_EXE
+  char exec_name[20];
+  sprintf (exec_name, "/proc/%d/exe", getpid ());
+  _Jv_ThisExecutable (exec_name);
+#else
+  _Jv_ThisExecutable (argv[0]);
+#endif
 
   arg_vec = JvConvertArgv (argc - 1, argv + 1);
   main_group = new java::lang::ThreadGroup (23);

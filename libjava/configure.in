@@ -86,7 +86,7 @@ fi
 FORCELIBGCCSPEC=
 dnl Work around libgcc design flaw.
 if test "$ac_cv_prog_gnu_ld" = yes; then
-   FORCELIBGCCSPEC="-u __rethrow -lgcc"
+   FORCELIBGCCSPEC="-u __rethrow -u __frame_state_for -lgcc"
 fi   
 
 AC_MSG_CHECKING([for data_start])
@@ -360,6 +360,10 @@ else
    AC_CHECK_FUNCS(access stat mkdir rename rmdir unlink realpath)
    AC_CHECK_FUNCS(inet_aton inet_addr, break)
    AC_CHECK_FUNCS(inet_pton uname inet_ntoa)
+   AC_CHECK_FUNCS(backtrace fork execvp pipe)
+   AC_CHECK_HEADERS(execinfo.h unistd.h dlfcn.h) 
+   AC_CHECK_FILES(/proc/self/exe, [
+     AC_DEFINE(HAVE_PROC_SELF_EXE)])
 
    AC_CHECK_FUNCS(gethostbyname_r, [
      AC_DEFINE(HAVE_GETHOSTBYNAME_R)

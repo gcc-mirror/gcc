@@ -1,3 +1,33 @@
+2000-01-14  Andrew Haley  <aph@cygnus.com>
+
+	* java/lang/natThrowable.cc: New file.
+
+	* java/lang/Throwable.java (fillInStackTrace): Make native.
+	(printStackTrace): Call native method to do this.
+	(Throwable): Call fillInStackTrace.
+	(stackTrace): New variable.
+	
+	* include/jvm.h: Add _Jv_ThisExecutable functions.
+	
+	* prims.cc: (_Jv_execName): New variable.
+	(catch_segv): Call fillInStackTrace.
+	(catch_fpe): Ditto.
+	(_Jv_ThisExecutable): New functions.
+	(JvRunMain): Set the name of this executable.
+
+	* Makefile.am: Add java/lang/natThrowable.cc.
+	Add name-finder.cc.
+	* Makefile.in: Rebuilt.
+
+	* acconfig.h: Add HAVE_PROC_SELF_EXE.
+
+	* configure.in: Force link with __frame_state_for in
+	FORCELIBGCCSPEC.  Add new checks for backtrace.
+	* include/config.h.in: Rebuilt.
+
+	* name-finder.cc: New file.
+	* include/name-finder.h: New file.
+	
 2000-01-16  Anthony Green  <green@cygnus.com>
 
 	* java/lang/StringBuffer.java (StringBuffer): Don't special case

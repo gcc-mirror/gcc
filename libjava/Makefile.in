@@ -184,7 +184,7 @@ javao_files = $(java_source_files:.java=.lo) \
 libffi_files = `$(AR) t ../libffi/.libs/libffi.a 2>/dev/null | sed 's/\.o/\.lo/g' | sed 's/^/..\/libffi\//g'`
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
-	resolve.cc defineclass.cc interpret.cc
+	resolve.cc defineclass.cc interpret.cc name-finder.cc
 
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
@@ -618,6 +618,7 @@ java/lang/natRuntime.cc	\
 java/lang/natString.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
+java/lang/natThrowable.cc \
 java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \
 java/lang/reflect/natField.cc \
@@ -699,7 +700,7 @@ libgcjdata_a_LIBADD =
 LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
 
 libgcj_la_OBJECTS =  prims.lo jni.lo exception.lo resolve.lo \
-defineclass.lo interpret.lo
+defineclass.lo interpret.lo name-finder.lo
 @NATIVE_TRUE@bin_PROGRAMS =  jv-convert$(EXEEXT) gij$(EXEEXT)
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS =  \
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS$(EXEEXT)
@@ -923,8 +924,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/zip/ZipException.P .deps/java/util/zip/ZipFile.P \
 .deps/java/util/zip/ZipInputStream.P \
 .deps/java/util/zip/ZipOutputStream.P .deps/jni.P .deps/libgcjdata.P \
-.deps/no-threads.P .deps/nogc.P .deps/posix-threads.P .deps/prims.P \
-.deps/resolve.P
+.deps/name-finder.P .deps/no-threads.P .deps/nogc.P \
+.deps/posix-threads.P .deps/prims.P .deps/resolve.P
 SOURCES = $(libgcjdata_a_SOURCES) $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(EXTRA_gij_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
 OBJECTS = $(libgcjdata_a_OBJECTS) $(libgcj_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(gen_from_JIS_OBJECTS)
 

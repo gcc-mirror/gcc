@@ -12,6 +12,7 @@ package java.lang;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.OutputStreamWriter;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -26,55 +27,51 @@ import java.io.Serializable;
 
 public class Throwable implements Serializable
 {
-  public Throwable fillInStackTrace ()
-    {
-      return this;
-    }
+  public native Throwable fillInStackTrace ();
 
   public String getLocalizedMessage ()
-    {
-      return getMessage ();
-    }
+  {
+    return getMessage ();
+  }
 
   public String getMessage ()
-    {
-      return detailMessage;
-    }
+  {
+    return detailMessage;
+  }
 
   public void printStackTrace ()
-    {
-      printStackTrace (System.err);
-    }
+  {
+    printStackTrace (System.err);
+  }
 
-  public void printStackTrace (PrintStream s)
-    {
-      // No stack trace, but we can still print this object.
-      s.println(toString ());
-    }
-
-  public void printStackTrace (PrintWriter wr)
-    {
-      // No stack trace, but we can still print this object.
-      wr.println(toString ());
-    }
-
+  public void printStackTrace (PrintStream ps)
+  {
+    printStackTrace (new PrintWriter(new OutputStreamWriter(ps)));
+  }
+  
+  public native void printStackTrace (PrintWriter wr);
+  
   public Throwable ()
-    {
-      detailMessage = null;
-    }
+  {
+    detailMessage = null;
+    fillInStackTrace ();
+  }
 
   public Throwable (String message)
-    {
-      detailMessage = message;
-    }
+  {
+    detailMessage = message;
+    fillInStackTrace ();
+  }
 
   public String toString ()
-    {
-      return ((detailMessage == null)
-	      ? getClass().getName()
-	      : getClass().getName() + ": " + getMessage ());
-    }
+  {
+    return ((detailMessage == null)
+	    ? getClass().getName()
+	    : getClass().getName() + ": " + getMessage ());
+  }
 
   // Name of this field comes from serialization spec.
   private String detailMessage;
+
+  private byte stackTrace[];
 }

@@ -182,4 +182,8 @@ extern "C"
   jlong _Jv_remJ (jlong, jlong);
 }
 
+/* get/set the name of the running executable. */
+extern char *_Jv_ThisExecutable (void);
+extern void _Jv_ThisExecutable (const char *);
+
 #endif /* __JAVA_JVM_H__ */
