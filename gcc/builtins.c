@@ -157,7 +157,6 @@ static tree fold_builtin_classify_type	PARAMS ((tree));
 static tree fold_builtin_inf		PARAMS ((tree, int));
 static tree fold_builtin_nan		PARAMS ((tree, tree, int));
 static int validate_arglist		PARAMS ((tree, ...));
-static tree fold_trunc_transparent_mathfn PARAMS ((tree));
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
