@@ -1,3 +1,8 @@
+2000-12-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* lcm.c (optimize_mode_switching): Check whether an insn is a NOTE
+	before taking its NOTE_LINE_NUMBER.
+
 2000-12-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.md (load_indirect_jump): Add pool ranges.
