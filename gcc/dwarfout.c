@@ -977,8 +977,91 @@ dwarf_fund_type_name (ft)
     case FT_real96:		return "FT_real96";
     case FT_real128:		return "FT_real128";
 
-    default:			return "<unknown fundamental type>";
+    default:			return "FT_<unknown>";
     }
+}
+
+/* Determine the "ultimate origin" of a decl.  The decl may be an
+   inlined instance of an inlined instance of a decl which is local
+   to an inline function, so we have to trace all of the way back
+   through the origin chain to find out what sort of node actually
+   served as the original seed for the given block.  */
+
+static tree
+decl_ultimate_origin (decl)
+     register tree decl;
+{
+  register tree immediate_origin = DECL_ABSTRACT_ORIGIN (decl);
+
+  if (immediate_origin == NULL)
+    return NULL;
+  else
+    {
+      register tree ret_val;
+      register tree lookahead = immediate_origin;
+
+      do
+	{
+	  ret_val = lookahead;
+	  lookahead = DECL_ABSTRACT_ORIGIN (ret_val);
+	}
+      while (lookahead != NULL && lookahead != ret_val);
+      return ret_val;
+    }
+}
+
+static void
+output_unsigned_leb128 (value)
+     register unsigned long value;
+{
+  register unsigned long orig_value = value;
+
+  do
+    {
+      register unsigned byte = (value & 0x7f);
+
+      value >>= 7;
+      if (value != 0)	/* more bytes to follow */
+	byte |= 0x80;
+      fprintf (asm_out_file, "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) byte);
+      if (flag_verbose_asm && value == 0)
+	fprintf (asm_out_file, "\t%s ULEB128 number - value = %u",
+		 ASM_COMMENT_START, orig_value);
+      fputc ('\n', asm_out_file);
+    }
+  while (value != 0);
+}
+
+static void
+output_signed_leb128 (value)
+     register long value;
+{
+  register long orig_value = value;
+  register int negative = (value < 0);
+  register int more;
+
+  do
+    {
+      register unsigned byte = (value & 0x7f);
+
+      value >>= 7;
+      if (negative)
+	value |= 0xfe000000;  /* manually sign extend */
+      if (((value == 0) && ((byte & 0x40) == 0))
+          || ((value == -1) && ((byte & 0x40) == 1)))
+	more = 0;
+      else
+	{
+	  byte |= 0x80;
+	  more = 1;
+	}
+      fprintf (asm_out_file, "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) byte);
+      if (flag_verbose_asm && more == 0)
+	fprintf (asm_out_file, "\t%s SLEB128 number - value = %d",
+		 ASM_COMMENT_START, orig_value);
+      fputc ('\n', asm_out_file);
+    }
+  while (more);
 }
 
 /**************** utility functions for attribute functions ******************/
