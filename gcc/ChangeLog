@@ -1,5 +1,11 @@
 2004-04-04  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/14804
+	* varasm.c (initializer_constant_valid_p): Allow NOP_EXPRs to
+	RECORD_TYPEs.
+
+2004-04-04  Mark Mitchell  <mark@codesourcery.com>
+
 	* doc/invoke.texi (-mabi=o64): Create link to O64 ABI
 	documentation.
 
