@@ -1,5 +1,11 @@
 2005-02-17  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/PlainSocketImpl.java
+	(shutdownInput): Added javadoc.
+	(shutdownOutput): Likewise.
+
+2005-02-17  Michael Koch  <konqueror@gmx.de>
+
 	* javax/print/attribute/standard/Chromaticity.java,
 	javax/print/attribute/standard/Destination.java,
 	javax/print/attribute/standard/MediaPrintableArea.java,
