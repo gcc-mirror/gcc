@@ -1,3 +1,26 @@
+2002-03-28  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/5998:
+	* decl.c (cxx_init_decl_processing): Re-enable built-in functions
+	in the g++ front-end.
+	(duplicate_decl): Allow redefinition of anticipated built-ins.
+	Fix inlining problem by over-writing the old DECL_RTL.
+	(lookup_namespace_name): Fail to find an identifier in the
+	specified namespace if its still anticipated.
+	(builtin_function_1): New function split out from builtin_function
+	to create a builtin in the current namespace with given context.
+	(builtin_function): Call builtin_function_1 to define the
+	appropriate builtins in both the std and global namespaces.
+	(select_decl): Don't test for anticipated decls here.
+	(unqualified_namespace_lookup): Instead ignore them whilst
+	searching through scopes and namespaces.
+	* decl2.c (do_nonmember_using_decl): If a using declaration
+	specifies an anticipated built-in function, mark it as no longer
+	anticipated in that scope.
+	(ambiguous_decl):  Avoid resolving to an anticipated decl.
+	* lex.c (do_scoped_id): Fail to find an identifier in the global
+	namespace if its still anticipated.
+
 2002-03-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-lang.c (LANG_HOOKS_MAKE_TYPE): Redefine.

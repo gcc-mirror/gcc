@@ -1,3 +1,9 @@
+2002-03-27  Roger Sayle  <roger@eyesopen.com>
+
+	* include/c_std/std_cmath.h:  To prevent problems overloading
+	g++ builtins, use the double variants from the global namespace
+	before defining float and long double variants in std::.
+
 2002-03-28  Loren J. Rittle <ljrittle@acm.org>
 
 	* testsuite/18_support/numeric_limits.cc (test_extrema): Fix typo.
