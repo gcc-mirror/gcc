@@ -1,3 +1,7 @@
+2000-12-12  Mike Stump  <mrs@wrs.com>
+
+	* Makefile.in (distclean): Remove safe-ctype.c as well.
+
 2000-12-12  Brad Lucier <lucier@math.purdue.edu>
 
         * tradcpp.c (do_error): Cast difference of pointers to int
