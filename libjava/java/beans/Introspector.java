@@ -1,5 +1,5 @@
 /* java.beans.Introspector
-   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -518,40 +518,54 @@ class ExplicitInfo
   
   static BeanInfo reallyFindExplicitBeanInfo(Class beanClass) 
   {
-    try 
+    ClassLoader beanClassLoader = beanClass.getClassLoader();
+    BeanInfo beanInfo;
+
+    beanInfo = getBeanInfo(beanClassLoader, beanClass.getName() + "BeanInfo");
+    if (beanInfo == null)
       {
-      try 
-	{
-	  return (BeanInfo)Class.forName(beanClass.getName()+"BeanInfo").newInstance();
-	} 
-      catch(ClassNotFoundException E) 
-	{
-	}
-      String newName = ClassHelper.getTruncatedClassName(beanClass) + "BeanInfo";
-      for(int i=0;i<Introspector.beanInfoSearchPath.length;i++) 
-	{
-	  try 
-	    {
-	      if(Introspector.beanInfoSearchPath[i].equals("")) 
-		{
-		  return (BeanInfo)Class.forName(newName).newInstance();
-		} 
-	      else 
-		{
-		  return (BeanInfo)Class.forName(Introspector.beanInfoSearchPath[i] + "." + newName).newInstance();
-		}
-	    } 
-	  catch(ClassNotFoundException E) 
-	    {
-	    }
-	}
-      } 
-    catch(IllegalAccessException E) 
-      {
-      } 
-    catch(InstantiationException E) 
-      {
+	String newName;
+	newName = ClassHelper.getTruncatedClassName(beanClass) + "BeanInfo";
+
+	for(int i = 0; i < Introspector.beanInfoSearchPath.length; i++) 
+	  {
+	    if (Introspector.beanInfoSearchPath[i].equals("")) 
+	      beanInfo = getBeanInfo(beanClassLoader, newName);
+	    else 
+	      beanInfo = getBeanInfo(beanClassLoader,
+				     Introspector.beanInfoSearchPath[i] + "."
+				     + newName);
+
+	    if (beanInfo != null)
+	      return beanInfo;
+	  } 
       }
-    return null;
+
+    return beanInfo;
   }
+
+  /**
+   * Returns an instance of the given class name when it can be loaded
+   * through the given class loader, or null otherwise.
+   */
+  private static BeanInfo getBeanInfo(ClassLoader cl, String infoName)
+  {
+    try
+      {
+	return (BeanInfo) Class.forName(infoName, true, cl).newInstance();
+      }
+    catch (ClassNotFoundException cnfe)
+      {
+	return null;
+      }
+    catch (IllegalAccessException iae)
+      {
+	return null;
+      }
+    catch (InstantiationException ie)
+      {
+	return null;
+      }
+  }
+  
 }

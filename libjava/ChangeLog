@@ -1,3 +1,10 @@
+2003-10-21  Mark Wielaard  <mark@klomp.org>
+
+	Reported by M.Negovanovic
+	* java/beans/Introspector.java (getBeanInfo(ClassLoader, String)): New
+	method.
+	(reallyFindExplicitBeanInfo): Use new getBeanInfo() method.
+
 2003-10-21  Sascha Brawer  <brawer@dandelis.ch>
 
 	Fix for Classpath bug #6076.
