@@ -473,13 +473,13 @@ do {									\
      to the pressure on R0.  */						\
   flag_schedule_insns = 0;						\
 									\
-  /* Allocation boundary (in *bits*) for the code of a function.	\
+  /* Allocation boundary (in *bytes*) for the code of a function.	\
      SH1: 32 bit alignment is faster, because instructions are always	\
      fetched as a pair from a longword boundary.			\
      SH2 .. SH5 : align to cache line start.  */			\
   if (align_functions == 0)						\
     align_functions							\
-      = TARGET_SMALLCODE ? FUNCTION_BOUNDARY : (1 << CACHE_LOG) * 8;	\
+      = TARGET_SMALLCODE ? FUNCTION_BOUNDARY/8 : (1 << CACHE_LOG);	\
 } while (0)
 
 /* Target machine storage layout.  */
