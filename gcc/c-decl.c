@@ -4650,8 +4650,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
      controlled separately by its own initializer.  */
 
   if (type != 0 && typedef_type != 0
-      && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (typedef_type)
-      && TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type) == 0)
+      && TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type) == 0
+      && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (typedef_type))
     {
       type = build_array_type (TREE_TYPE (type), 0);
       if (size_varies)
