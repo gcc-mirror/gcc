@@ -105,11 +105,12 @@ make_string_token (pool, token, text, len)
      const U_CHAR *text;
      unsigned int len;
 {
-  U_CHAR *buf = _cpp_pool_alloc (pool, len * 4);
+  U_CHAR *buf = _cpp_pool_alloc (pool, len * 4 + 1);
 
   token->type = CPP_STRING;
   token->val.str.text = buf;
   token->val.str.len = quote_string (buf, text, len) - buf;
+  token->val.str.text[token->val.str.len] = '\0';
   token->flags = 0;
 }
 
