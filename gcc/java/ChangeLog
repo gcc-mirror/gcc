@@ -1,5 +1,10 @@
 2000-05-25  Tom Tromey  <tromey@cygnus.com>
 
+	* parse.y (resolve_field_access): Don't check DECL_LANG_SPECIFIC
+	when trying to see if field's class should be initialized.  Always
+	initialize field's declaring class, not qualified class.
+	For PR gcj/162.
+
 	* parse.y (array_constructor_check_entry): Pass `wfl_value', not
 	`wfl_operator', to maybe_build_primttype_type_ref.
 	Fixes PR gcj/235.

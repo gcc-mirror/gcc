@@ -8604,7 +8604,6 @@ resolve_field_access (qual_wfl, field_decl, field_type)
       is_static = JDECL_P (decl) && FIELD_STATIC (decl);
       if (FIELD_FINAL (decl) 
 	  && JPRIMITIVE_TYPE_P (TREE_TYPE (decl))
-	  && DECL_LANG_SPECIFIC (decl)
 	  && DECL_INITIAL (decl))
 	{
 	  field_ref = DECL_INITIAL (decl);
@@ -8618,7 +8617,7 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 	return error_mark_node;
       if (is_static && !static_final_found 
 	  && !flag_emit_class_files && !flag_emit_xref)
-	field_ref = build_class_init (type_found, field_ref);
+	field_ref = build_class_init (DECL_CONTEXT (decl), field_ref);
     }
   else
     field_ref = decl;
