@@ -359,7 +359,7 @@ static int max_include_len;
 
 /* Nonzero means turn NOTREACHED into #pragma NOTREACHED etc */
 
-static int lint = 0;
+static int for_lint = 0;
 
 /* Nonzero means copy comments into the output file.  */
 
@@ -1343,7 +1343,7 @@ main (argc, argv)
  	if (! strcmp (argv[i], "-lang-asm"))
  	  lang_asm = 1;
  	if (! strcmp (argv[i], "-lint"))
- 	  lint = 1;
+ 	  for_lint = 1;
 	break;
 
       case '+':
@@ -2728,7 +2728,7 @@ do { ip = &instack[indepth];		\
       ++ibp;			/* Skip the star. */
 
       /* If this cpp is for lint, we peek inside the comments: */
-      if (lint) {
+      if (for_lint) {
 	U_CHAR *argbp;
 	int cmdlen, arglen;
 	char *lintcmd = get_lintcmd (ibp, limit, &argbp, &arglen, &cmdlen);
