@@ -1,3 +1,7 @@
+2004-07-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (tsubst) <TREE_BINFO case>: We should never get here.
+
 2004-07-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (lang_type_class): Remove has_real_assign_ref and
@@ -432,10 +436,10 @@
 	push_base_cleanups): Likewise.
 	* method.c (do_build_copy_constructor, do_build_assign_reg,
 	synthesize_exception_spec): Likewise.
-	* name-lookup.c (arg_assoc_class):
+	* name-lookup.c (arg_assoc_class): Likewise.
 	* pt.c (instantiate_class_template, tsubst,
-	get_template_base_recursive):
-	* ptree.c (cxx_print_type):
+	get_template_base_recursive): Likewise.
+	* ptree.c (cxx_print_type): Likewise.
 	* rtti.c (get_psuedo_ti_init, get_pseudo_ti_desc): Likewise.
 	* search.c (lookup_base_r, dynamic_cast_base_recurse,
 	dfs_access_in_type, access_in_type, lookup_field_queue_p,
