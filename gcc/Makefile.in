@@ -2049,7 +2049,7 @@ cppulp.o:   cppulp.c   $(CONFIG_H) system.h output.h
 cpperror.o: cpperror.c $(CONFIG_H) $(LIBCPP_DEPS)
 cppexp.o:   cppexp.c   $(CONFIG_H) $(LIBCPP_DEPS)
 cppfiles.o: cppfiles.c $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H)
-cpphash.o:  cpphash.c  $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H) version.h
+cpphash.o:  cpphash.c  $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H)
 cpplib.o:   cpplib.c   $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H) mkdeps.h
 
 cppinit.o:  cppinit.c  $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H) mkdeps.h \

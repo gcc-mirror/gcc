@@ -28,7 +28,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "cpphash.h"
 #include "hashtab.h"
-#include "version.h"
 #undef abort
 
 static unsigned int hash_HASHNODE PARAMS ((const void *));
@@ -876,10 +875,10 @@ special_symbol (hp, pfile)
       }
 
     case T_VERSION:
-      len = strlen (version_string);
+      len = strlen (hp->value.cpval);
       CPP_RESERVE (pfile, 3 + len);
       CPP_PUTC_Q (pfile, '"');
-      CPP_PUTS_Q (pfile, version_string, len);
+      CPP_PUTS_Q (pfile, hp->value.cpval, len);
       CPP_PUTC_Q (pfile, '"');
       CPP_NUL_TERMINATE_Q (pfile);
       return;
