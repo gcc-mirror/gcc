@@ -2216,6 +2216,17 @@ libbackend.o : $(OBJS-common:.o=.c) $(out_file) \
   insn-emit.c insn-recog.c insn-extract.c insn-output.c insn-peep.c \
   insn-attr.h insn-attrtab.c insn-preds.c
 
+# Dependencies for the md file.  The first time through, we just assume
+# the md file itself and the generated dependency file (in order to get
+# it built).  The second time through we have the dependency file.
+-include mddeps.mk
+MD_DEPS = s-mddeps $(md_file) $(MD_INCLUDES)
+
+s-mddeps: $(md_file) $(MD_INCLUDES) build/genmddeps$(build_exeext)
+	$(RUN_GEN) build/genmddeps$(build_exeext) $(md_file) > tmp-mddeps
+	$(SHELL) $(srcdir)/../move-if-change tmp-mddeps mddeps.mk
+	$(STAMP) s-mddeps
+
 # The following pair of rules has this effect:
 # genconfig is run only if the md has changed since genconfig was last run;
 # but the file insn-config.h is touched only when its contents actually change.
@@ -2236,13 +2247,13 @@ libbackend.o : $(OBJS-common:.o=.c) $(out_file) \
 # trailing `;'), we call true for each.
 
 insn-config.h: s-config ; @true
-s-config : $(md_file) build/genconfig$(build_exeext)
+s-config : $(MD_DEPS) build/genconfig$(build_exeext)
 	$(RUN_GEN) build/genconfig$(build_exeext) $(md_file) > tmp-config.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-config.h insn-config.h
 	$(STAMP) s-config
 
 insn-conditions.c: s-conditions ; @true
-s-conditions : $(md_file) build/genconditions$(build_exeext)
+s-conditions : $(MD_DEPS) build/genconditions$(build_exeext)
 	$(RUN_GEN) build/genconditions$(build_exeext) $(md_file) > tmp-conditions.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-conditions.c insn-conditions.c
 	$(STAMP) s-conditions
@@ -2255,19 +2266,19 @@ build/insn-conditions.o : insn-conditions.c $(CONFIG_H) $(SYSTEM_H) \
 build/dummy-conditions.o : dummy-conditions.c
 
 insn-flags.h: s-flags ; @true
-s-flags : $(md_file) build/genflags$(build_exeext)
+s-flags : $(MD_DEPS) build/genflags$(build_exeext)
 	$(RUN_GEN) build/genflags$(build_exeext) $(md_file) > tmp-flags.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-flags.h insn-flags.h
 	$(STAMP) s-flags
 
 insn-codes.h: s-codes ; @true
-s-codes : $(md_file) build/gencodes$(build_exeext)
+s-codes : $(MD_DEPS) build/gencodes$(build_exeext)
 	$(RUN_GEN) build/gencodes$(build_exeext) $(md_file) > tmp-codes.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-codes.h insn-codes.h
 	$(STAMP) s-codes
 
 insn-constants.h: s-constants ; @true
-s-constants : $(md_file) build/genconstants$(build_exeext)
+s-constants : $(MD_DEPS) build/genconstants$(build_exeext)
 	$(RUN_GEN) build/genconstants$(build_exeext) $(md_file) > tmp-constants.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-constants.h insn-constants.h
 	$(STAMP) s-constants
@@ -2279,7 +2290,7 @@ insn-emit.o : insn-emit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	  $(OUTPUT_OPTION)
 
 insn-emit.c: s-emit ; @true
-s-emit : $(md_file) build/genemit$(build_exeext)
+s-emit : $(MD_DEPS) build/genemit$(build_exeext)
 	$(RUN_GEN) build/genemit$(build_exeext) $(md_file) > tmp-emit.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-emit.c insn-emit.c
 	$(STAMP) s-emit
@@ -2291,7 +2302,7 @@ insn-recog.o : insn-recog.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	  $(OUTPUT_OPTION)
 
 insn-recog.c: s-recog ; @true
-s-recog : $(md_file) build/genrecog$(build_exeext)
+s-recog : $(MD_DEPS) build/genrecog$(build_exeext)
 	$(RUN_GEN) build/genrecog$(build_exeext) $(md_file) > tmp-recog.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-recog.c insn-recog.c
 	$(STAMP) s-recog
@@ -2302,7 +2313,7 @@ insn-opinit.o : insn-opinit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	  $(OUTPUT_OPTION)
 
 insn-opinit.c: s-opinit ; @true
-s-opinit : $(md_file) build/genopinit$(build_exeext)
+s-opinit : $(MD_DEPS) build/genopinit$(build_exeext)
 	$(RUN_GEN) build/genopinit$(build_exeext) $(md_file) > tmp-opinit.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-opinit.c insn-opinit.c
 	$(STAMP) s-opinit
@@ -2313,7 +2324,7 @@ insn-extract.o : insn-extract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	  $(OUTPUT_OPTION)
 
 insn-extract.c: s-extract ; @true
-s-extract : $(md_file) build/genextract$(build_exeext)
+s-extract : $(MD_DEPS) build/genextract$(build_exeext)
 	$(RUN_GEN) build/genextract$(build_exeext) $(md_file) > tmp-extract.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-extract.c insn-extract.c
 	$(STAMP) s-extract
@@ -2325,7 +2336,7 @@ insn-peep.o : insn-peep.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	  $(OUTPUT_OPTION)
 
 insn-peep.c: s-peep ; @true
-s-peep : $(md_file) build/genpeep$(build_exeext)
+s-peep : $(MD_DEPS) build/genpeep$(build_exeext)
 	$(RUN_GEN) build/genpeep$(build_exeext) $(md_file) > tmp-peep.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-peep.c insn-peep.c
 	$(STAMP) s-peep
@@ -2337,13 +2348,13 @@ insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	  $(OUTPUT_OPTION)
 
 insn-attr.h: s-attr ; @true
-s-attr : $(md_file) build/genattr$(build_exeext)
+s-attr : $(MD_DEPS) build/genattr$(build_exeext)
 	$(RUN_GEN) build/genattr$(build_exeext) $(md_file) > tmp-attr.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-attr.h insn-attr.h
 	$(STAMP) s-attr
 
 insn-attrtab.c: s-attrtab ; @true
-s-attrtab : $(md_file) build/genattrtab$(build_exeext)
+s-attrtab : $(MD_DEPS) build/genattrtab$(build_exeext)
 	$(RUN_GEN) build/genattrtab$(build_exeext) $(md_file) > tmp-attrtab.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-attrtab.c insn-attrtab.c
 	$(STAMP) s-attrtab
@@ -2356,7 +2367,7 @@ insn-output.o : insn-output.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	  $(OUTPUT_OPTION)
 
 insn-output.c: s-output ; @true
-s-output : $(md_file) build/genoutput$(build_exeext)
+s-output : $(MD_DEPS) build/genoutput$(build_exeext)
 	$(RUN_GEN) build/genoutput$(build_exeext) $(md_file) > tmp-output.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-output.c insn-output.c
 	$(STAMP) s-output
@@ -2388,7 +2399,7 @@ s-modes: build/genmodes$(build_exeext)
 
 insn-preds.c tm-preds.h: s-preds; @true
 
-s-preds: $(md_file) build/genpreds$(build_exeext)
+s-preds: $(MD_DEPS) build/genpreds$(build_exeext)
 	$(RUN_GEN) build/genpreds$(build_exeext) -h $(md_file) > tmp-preds.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-preds.h tm-preds.h
 	$(RUN_GEN) build/genpreds$(build_exeext) $(md_file) > tmp-preds.c
@@ -2506,7 +2517,7 @@ genobjnames=$(genprognames:%=%.o) read-rtl.o gensupport.o genattrtab.o \
 	genconstants.o gen-protos.o scan.o fix-header.o scan-decls.o \
 	gencheck.o dummy-conditions.o genconditions.o errors.o ggc-none.o \
 	min-insn-modes.o rtl.o print-rtl.o varray.o gcov-iov.o \
-	insn-conditions.o gengtype-lex.o gengtype-yacc.o
+	insn-conditions.o gengtype-lex.o gengtype-yacc.o genmddeps.o
 
 genobjs=$(genobjnames:%=build/%)
 
@@ -2535,6 +2546,15 @@ build/genflags.o : genflags.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H) \
 
 build/gencodes.o : gencodes.c $(RTL_BASE_H) $(BCONFIG_H) \
   $(SYSTEM_H) coretypes.h $(GTM_H) errors.h gensupport.h
+
+build/genmddeps$(build_exeext) : build/genmddeps.o $(BUILD_RTL) \
+  $(BUILD_EARLY_SUPPORT) $(BUILD_ERRORS) $(BUILD_LIBDEPS)
+	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
+	 build/genmddeps.o $(BUILD_EARLY_SUPPORT) $(BUILD_RTL) \
+	 $(BUILD_ERRORS) $(BUILD_LIBS)
+
+build/genmddeps.o: genmddeps.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h \
+  $(GTM_H) $(RTL_BASE_H) errors.h gensupport.h
 
 build/genconstants$(build_exeext) : build/genconstants.o $(BUILD_RTL) \
   $(BUILD_EARLY_SUPPORT) $(BUILD_ERRORS) $(BUILD_LIBDEPS)
@@ -3068,6 +3088,7 @@ mostlyclean: lang.mostlyclean
 	-rm -rf libgcc
 # Delete build programs
 	-rm -f build/*
+	-rm -f mddeps.mk
 # Delete the temp files made in the course of building libgcc.a.
 	-rm -f xlimits.h
 # Delete other built files.

@@ -37,6 +37,10 @@ int insn_elision = 1;
 
 const char *in_fname;
 
+/* This callback will be invoked whenever an rtl include directive is
+   processed.  To be used for creation of the dependency file.  */
+void (*include_callback) (const char *);
+
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
@@ -244,6 +248,9 @@ process_include (rtx desc, int lineno)
   old_lineno = read_rtx_lineno;
   read_rtx_filename = pathname;
   read_rtx_lineno = 1;
+
+  if (include_callback)
+    include_callback (pathname);
 
   /* Read the entire file.  */
   while (read_rtx (input_file, &desc, &lineno))

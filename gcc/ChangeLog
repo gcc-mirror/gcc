@@ -1,3 +1,17 @@
+2004-12-16  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (MD_DEPS, s-mddeps): New.
+	(s-config, s-conditions, s-flags, s-codes, s-constants, s-emit,
+	s-recog, s-opinit, s-extract, s-peep, s-attr, s-attrtab, s-output,
+	s-preds): Depend on MD_DEPS instead of md_file.
+	(genobjnames): Add genmddeps.o
+	(build/genmddeps, build/genmddeps.o): New.
+	(mostlyclean): Remove mddeps.mk.
+	* genmddeps.c: New file.
+	* gensupport.c (include_callback): New.
+	(process_include): Call it.
+	* gensupport.h (include_callback): Declare.
+
 2004-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* local-alloc.c (block_alloc): Replace IN_RANGE with simple
