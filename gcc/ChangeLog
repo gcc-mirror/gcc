@@ -1,3 +1,15 @@
+Tue Sep 14 15:28:00 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	Undo some changes from the gcc2 merge:
+	* rtl.def (CONSTANT_P_RTX): Fix the comment for this rtx code.
+	* emit-rtl.c (gen_rtx_REG): Don't test special reg rtx's for null
+	pointers.
+
+	Undo this change:
+	Sat Oct  3 07:20:28 1998  Stephen L Moshier  <moshier@world.std.com>
+	* emit-rtl.c (gen_lowpart_common): Disable optimization of
+	initialized float-int union if the value is a NaN.
+
 Tue Sep 14 04:03:44 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* gthr-win32.h: New file.
