@@ -1,5 +1,5 @@
 /* Definitions of MCore target. 
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GNU CC.
@@ -158,11 +158,9 @@ exports_section ()						\
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC  "%{!mno-lsim:-lsim} crtend.o%s crtn.o%s"
 
-
 /* The subroutine calls in the .init and .fini sections create literal
    pools which must be jumped around...  */
-#define FORCE_INIT_SECTION_ALIGN	asm ("br 1f ; .literals ; 1:")
-#define FORCE_FINI_SECTION_ALIGN	asm ("br 1f ; .literals ; 1:")
+#define FORCE_CODE_SECTION_ALIGN	asm ("br 1f ; .literals ; 1:");
 
 #undef  CTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"aw\""

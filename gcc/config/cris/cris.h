@@ -1451,14 +1451,20 @@ struct cum_args {int regs;};
 /* We pull a little trick to register the _fini function with atexit,
    after (presumably) registering the eh frame info, since we don't handle
    _fini (a.k.a. ___fini_start) in crt0 or have a crti for "pure" ELF.  */
-#ifdef CRT_BEGIN
-#define FORCE_INIT_SECTION_ALIGN		\
- do						\
-   {						\
-     extern void __fini__start (void);		\
-     atexit (__fini__start);			\
-   }						\
- while (0)
+#ifdef CRT_END
+# define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)		\
+static void __attribute__((__used__))				\
+call_ ## FUNC (void)						\
+{								\
+  asm (SECTION_OP);						\
+  if (__builtin_strcmp (#FUNC, "__do_global_ctors_aux") == 0)	\
+   {								\
+     extern void __fini__start (void);				\
+     atexit (__fini__start);					\
+   }								\
+  FUNC ();							\
+  asm (TEXT_SECTION_ASM_OP);					\
+}
 #endif
 
 /* Node: PIC */

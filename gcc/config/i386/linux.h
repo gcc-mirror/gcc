@@ -1,5 +1,6 @@
 /* Definitions for Intel 386 running Linux-based GNU systems with ELF format.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2002
+   Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
 
@@ -167,20 +168,20 @@ Boston, MA 02111-1307, USA.  */
 
 #if defined(__PIC__) && defined (USE_GNULIBC_1)
 /* This is a kludge. The i386 GNU/Linux dynamic linker needs ___brk_addr,
-   __environ and atexit (). We have to make sure they are in the .dynsym
-   section. We accomplish it by making a dummy call here. This
-   code is never reached.  */
-         
-#define CRT_END_INIT_DUMMY		\
-  do					\
-    {					\
-      extern void *___brk_addr;		\
-      extern char **__environ;		\
-					\
-      ___brk_addr = __environ;		\
-      atexit (0);			\
-    }					\
-  while (0)
+   __environ and atexit.  We have to make sure they are in the .dynsym
+   section.  We do this by forcing the assembler to create undefined 
+   references to these symbols in the object file.  */
+#undef CRT_CALL_STATIC_FUNCTION
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)	\
+   asm (SECTION_OP "\n\t"				\
+	"call " USER_LABEL_PREFIX #FUNC "\n"		\
+	TEXT_SECTION_ASM_OP "\n\t"			\
+	".extern ___brk_addr\n\t"			\
+	".type ___brk_addr,@object\n\t"			\
+	".extern __environ\n\t"				\
+	".type __environ,@object\n\t"			\
+	".extern atexit\n\t"				\
+	".type atexit,@function");
 #endif
 
 /* Handle special EH pointer encodings.  Absolute, pc-relative, and

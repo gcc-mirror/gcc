@@ -102,8 +102,8 @@ Boston, MA 02111-1307, USA.  */
 /* Node: Sections */
 
 /* GNU/Linux has crti and crtn and does not need the
-   FORCE_INIT_SECTION_ALIGN trick in cris.h.  */
-#undef FORCE_INIT_SECTION_ALIGN
+   CRT_CALL_STATIC_FUNCTION trick in cris.h.  */
+#undef CRT_CALL_STATIC_FUNCTION
 
 /*
  * Local variables:

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha w/ELF.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Richard Henderson (rth@tamu.edu).
 
@@ -642,3 +642,25 @@ do {									\
   alpha_this_gpdisp_sequence_number = 0)
 extern int alpha_this_literal_sequence_number;
 extern int alpha_this_gpdisp_sequence_number;
+
+/* Since the bits of the _init and _fini function is spread across
+   many object files, each potentially with its own GP, we must assume
+   we need to load our GP.  Further, the .init/.fini section can
+   easily be more than 4MB away from the function to call so we can't
+   use bsr.  */
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)	\
+   asm (SECTION_OP "\n"					\
+"	br $29,1f\n"					\
+"1:	ldgp $29,0($29)\n"				\
+"	unop\n"						\
+"	jsr $26," USER_LABEL_PREFIX #FUNC "\n"		\
+"	.align 3\n"					\
+"	.previous");
+
+/* If we have the capability create headers for efficient EH lookup.
+   As of Jan 2002, only glibc 2.2.4 can actually make use of this, but
+   I imagine that other systems will catch up.  In the meantime, it
+   doesn't harm to make sure that the data exists to be used later.  */
+#if defined(HAVE_LD_EH_FRAME_HDR)
+#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
+#endif

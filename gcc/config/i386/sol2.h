@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80386 running Solaris 2
-   Copyright (C) 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com).
 
@@ -56,9 +56,7 @@ Boston, MA 02111-1307, USA.  */
    two 0x00000090 ints, which generates a segmentation violation when
    executed.  This macro forces the assembler to do the padding, since
    it knows what it is doing.  */
-
-#define FORCE_INIT_SECTION_ALIGN asm (ALIGN_ASM_OP ## "16")
-#define FORCE_FINI_SECTION_ALIGN FORCE_INIT_SECTION_ALIGN
+#define FORCE_CODE_SECTION_ALIGN  asm(ALIGN_ASM_OP "16");
 
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is

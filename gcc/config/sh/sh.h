@@ -2301,21 +2301,15 @@ extern struct rtx_def *fpscr_rtx;
 
 /* SH constant pool breaks the devices in crtstuff.c to control section
    in where code resides.  We have to write it as asm code.  */
-#define CRT_CALL_STATIC_FUNCTION(func) \
-  if (0) \
-     /* This avoids warnings about the static function being unused.  */ \
-     func (); \
-  else \
-    /* We should be passing FUNC to the asm statement as an asm input	\
-       operand, but this breaks with -fPIC.  FIXME.  */			\
-    asm \
-      ("mov.l	1f,r1\n\
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC) \
+   asm (SECTION_OP "\n\
+	mov.l	1f,r1\n\
 	mova	2f,r0\n\
 	braf	r1\n\
 	lds	r0,pr\n\
 0:	.p2align 2\n\
-1:	.long	" USER_LABEL_PREFIX #func " - 0b\n\
-2:")
+1:	.long	" USER_LABEL_PREFIX #FUNC " - 0b\n\
+2:\n" TEXT_SECTION_ASM_OP);
 
 #define ALLOCATE_INITIAL_VALUE(hard_reg) \
   (REGNO (hard_reg) == PR_REG \
