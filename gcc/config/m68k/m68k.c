@@ -68,6 +68,10 @@ int m68k_align_jumps;
 /* Specify power of two alignment used for functions. */
 int m68k_align_funcs;
 
+/* Nonzero if the last compare/test insn had FP operands.  The
+   sCC expanders peek at this to determine what to do for the
+   68060, which has no fsCC instructions.  */
+int m68k_last_compare_had_fp_operands;
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
