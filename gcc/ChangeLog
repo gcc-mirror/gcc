@@ -1,3 +1,23 @@
+Sat Jan  9 12:24:10 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* cccp.c (main): Add support for parsing --help.
+	(print_help): New function: display command line switches.
+	* cpplib.c (cpp_handle_option): Add support for parsing --help.
+	(print_help): New function: display command line switches.
+	* gcc.c (process_command): Add support for parsing --help, and
+	passing it on to the sub-processes invoked by gcc.
+	(main): Add code to display help messages and bug reporting
+	information. 
+	(display_help): New function: display comman line switches.	
+	(add_{preprocessor,linker,assembler}_option): New functions.
+	* toplev.c (main): Add support for parsing --help.
+	Add documentation strings to command line option tables.
+	(show_lang_option): New function: Display a single command
+	line switch.
+	(display_help): New function: Display command line switches.
+	(check_lang_option): New function: Compare user specified and
+	language specific command line options.
+
 Sat Jan  9 08:19:14 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* toplev.c (rest_of_compilation): Set cse_not_expected earlier.
