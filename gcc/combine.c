@@ -7416,7 +7416,14 @@ gen_lowpart_for_combine (mode, x)
   if (GET_MODE (x) == mode)
     return x;
 
-  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+  /* We can only support MODE being wider than a word if X is a
+     constant integer or has a mode the same size.  */
+
+  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
+      && ! ((GET_MODE (x) == VOIDmode
+	     && (GET_CODE (x) == CONST_INT
+		 || GET_CODE (x) == CONST_DOUBLE))
+	    || GET_MODE_SIZE (GET_MODE (x)) == GET_MODE_SIZE (mode)))
     return gen_rtx (CLOBBER, GET_MODE (x), const0_rtx);
 
   /* X might be a paradoxical (subreg (mem)).  In that case, gen_lowpart
