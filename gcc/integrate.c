@@ -1074,6 +1074,11 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   else
     abort ();
 
+  /* Remap the exception handler data pointer from one to the other.  */
+  temp = get_exception_pointer (inl_f);
+  if (temp)
+    map->reg_map[REGNO (temp)] = get_exception_pointer (cfun);
+
   /* Initialize label_map.  get_label_from_map will actually make
      the labels.  */
   memset ((char *) &map->label_map[min_labelno], 0,
