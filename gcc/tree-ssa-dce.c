@@ -500,7 +500,7 @@ mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el)
       SET_BIT (last_stmt_necessary, cd_bb->index);
 
       t = last_stmt (cd_bb);
-      if (is_ctrl_stmt (t))
+      if (t && is_ctrl_stmt (t))
 	mark_stmt_necessary (t, true);
     });
 }

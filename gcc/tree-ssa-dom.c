@@ -95,6 +95,10 @@ static bitmap nonzero_vars;
 /* Track whether or not we have changed the control flow graph.  */
 static bool cfg_altered;
 
+/* Bitmap of blocks that have had EH statements cleaned.  We should
+   remove thier dead edges eventually.  */
+static bitmap need_eh_cleanup;
+
 /* Statistics for dominator optimizations.  */
 struct opt_stats_d
 {
@@ -554,6 +558,7 @@ tree_ssa_dominator_optimize (void)
   nonzero_vars = BITMAP_XMALLOC ();
   VARRAY_EDGE_INIT (redirection_edges, 20, "redirection_edges");
   VARRAY_GENERIC_PTR_INIT (vrp_data, num_ssa_names, "vrp_data");
+  need_eh_cleanup = BITMAP_XMALLOC ();
 
   /* Setup callbacks for the generic dominator tree walker.  */
   walk_data.walk_stmts_backward = false;
@@ -599,15 +604,24 @@ tree_ssa_dominator_optimize (void)
       if (VARRAY_ACTIVE_SIZE (redirection_edges) > 0)
 	redirect_edges_and_update_ssa_graph (redirection_edges);
 
+      if (bitmap_first_set_bit (need_eh_cleanup) >= 0)
+	{
+	  cfg_altered = tree_purge_all_dead_eh_edges (need_eh_cleanup);
+	  bitmap_zero (need_eh_cleanup);
+	}
+
       /* We may have made some basic blocks unreachable, remove them.  */
       cfg_altered |= delete_unreachable_blocks ();
 
       /* If the CFG was altered, then recompute the dominator tree.  This
 	 is not strictly needed if we only removed unreachable blocks, but
 	 may produce better results.  If we threaded jumps, then rebuilding
-	 the dominator tree is strictly necessary.  */
+	 the dominator tree is strictly necessary.  Likewise with EH cleanup.
+	 Free the dominance info first so that cleanup_tree_cfg doesn't try
+	 to verify it.  */
       if (cfg_altered)
 	{
+          free_dominance_info (CDI_DOMINATORS);
 	  cleanup_tree_cfg ();
 	  calculate_dominance_info (CDI_DOMINATORS);
 	}
@@ -656,6 +670,7 @@ tree_ssa_dominator_optimize (void)
 
   /* Free nonzero_vars.   */
   BITMAP_XFREE (nonzero_vars);
+  BITMAP_XFREE (need_eh_cleanup);
 }
 
 static bool
@@ -2985,8 +3000,7 @@ cprop_into_stmt (tree stmt, varray_type const_and_copies)
       the variable in the LHS in the CONST_AND_COPIES table.  */
 
 static void
-optimize_stmt (struct dom_walk_data *walk_data,
-	       basic_block bb ATTRIBUTE_UNUSED,
+optimize_stmt (struct dom_walk_data *walk_data, basic_block bb,
 	       block_stmt_iterator si)
 {
   stmt_ann_t ann;
@@ -3100,11 +3114,19 @@ optimize_stmt (struct dom_walk_data *walk_data,
       else if (TREE_CODE (stmt) == SWITCH_EXPR)
 	val = SWITCH_COND (stmt);
 
-      if (val && TREE_CODE (val) == INTEGER_CST
-	  && find_taken_edge (bb_for_stmt (stmt), val))
+      if (val && TREE_CODE (val) == INTEGER_CST && find_taken_edge (bb, val))
 	cfg_altered = true;
+
+      /* If we simplified a statement in such a way as to be shown that it
+	 cannot trap, update the eh information and the cfg to match.  */
+      if (maybe_clean_eh_stmt (stmt))
+	{
+	  bitmap_set_bit (need_eh_cleanup, bb->index);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  Flagged to clear EH edges.\n");
+	}
     }
-                                                                                
+
   if (may_have_exposed_new_symbols)
     {
       if (! bd->stmts_to_rescan)

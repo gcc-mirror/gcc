@@ -1,3 +1,22 @@
+2004-06-28  Richard Henderson  <rth@redhat.com>
+
+	* tree-cfg.c (verify_stmt): Add last_in_block parameter.  Verify
+	that eh stmts can throw.
+	(verify_stmts): Update verify_stmt call.
+	(tree_purge_dead_eh_edges, tree_purge_all_dead_eh_edges): New.
+	* tree-eh.c (remove_stmt_from_eh_region): New.
+	(lower_eh_constructs): Fix throw_stmt_table delete routine.
+	(tree_could_trap_p): Match may_trap_p.
+	(maybe_clean_eh_stmt): New.
+	* tree-flow.h: Update decls.
+	* tree-ssa-ccp.c (pass_ccp): Add TODO_verify_stmts.
+	(substitute_and_fold): Clean eh edges.
+	* tree-ssa-dce.c (mark_control_dependent_edges_necessary): Handle
+	empty basic blocks.
+	* tree-ssa-dom.c (need_eh_cleanup): New.
+	(tree_ssa_dominator_optimize): Allocate it.  Cleanup eh edges.
+	(optimize_stmt): Cleanup eh stmts; set need_eh_cleanup.
+	
 2004-06-29  Alan Modra  <amodra@bigpond.net.au>
 
 	* function.c (assign_parms): Don't abort with zero size stack

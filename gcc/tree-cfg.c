@@ -3316,15 +3316,14 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
    TODO: Implement type checking.  */
 
 static bool
-verify_stmt (tree stmt)
+verify_stmt (tree stmt, bool last_in_block)
 {
   tree addr;
 
   if (!is_gimple_stmt (stmt))
     {
       error ("Is not a valid GIMPLE statement.");
-      debug_generic_stmt (stmt);
-      return true;
+      goto fail;
     }
 
   addr = walk_tree (&stmt, verify_expr, NULL, NULL);
@@ -3334,7 +3333,30 @@ verify_stmt (tree stmt)
       return true;
     }
 
+  /* If the statement is marked as part of an EH region, then it is
+     expected that the statement could throw.  Verify that when we
+     have optimizations that simplify statements such that we prove
+     that they cannot throw, that we update other data structures
+     to match.  */
+  if (lookup_stmt_eh_region (stmt) >= 0)
+    {
+      if (!tree_could_throw_p (stmt))
+	{
+	  error ("Statement marked for throw, but doesn't.");
+	  goto fail;
+	}
+      if (!last_in_block && tree_can_throw_internal (stmt))
+	{
+	  error ("Statement marked for throw in middle of block.");
+	  goto fail;
+	}
+    }
+
   return false;
+
+ fail:
+  debug_generic_stmt (stmt);
+  return true;
 }
 
 
@@ -3449,10 +3471,11 @@ verify_stmts (void)
 	    }
 	}
 
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); )
 	{
 	  tree stmt = bsi_stmt (bsi);
-	  err |= verify_stmt (stmt);
+	  bsi_next (&bsi);
+	  err |= verify_stmt (stmt, bsi_end_p (bsi));
 	  addr = walk_tree (&stmt, verify_node_sharing, htab, NULL);
 	  if (addr)
 	    {
@@ -4637,6 +4660,40 @@ tree_flow_call_edges_add (sbitmap blocks)
   return blocks_split;
 }
 
+bool
+tree_purge_dead_eh_edges (basic_block bb)
+{
+  bool changed = false;
+  edge e, next;
+  tree stmt = last_stmt (bb);
+
+  if (stmt && tree_can_throw_internal (stmt))
+    return false;
+
+  for (e = bb->succ; e ; e = next)
+    {
+      next = e->succ_next;
+      if (e->flags & EDGE_EH)
+	{
+	  ssa_remove_edge (e);
+	  changed = true;
+	}
+    }
+
+  return changed;
+}
+
+bool
+tree_purge_all_dead_eh_edges (bitmap blocks)
+{
+  bool changed = false;
+  size_t i;
+
+  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i,
+    { changed |= tree_purge_dead_eh_edges (BASIC_BLOCK (i)); });
+
+  return changed;
+}
 
 struct cfg_hooks tree_cfg_hooks = {
   "tree",

@@ -497,6 +497,8 @@ extern void compute_dominance_frontiers (bitmap *);
 extern void verify_stmts (void);
 extern tree tree_block_label (basic_block bb);
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
+extern bool tree_purge_dead_eh_edges (basic_block);
+extern bool tree_purge_all_dead_eh_edges (bitmap);
 
 /* In tree-pretty-print.c.  */
 extern void dump_generic_bb (FILE *, basic_block, int, int);
@@ -600,7 +602,10 @@ extern bool tree_could_trap_p (tree);
 extern bool tree_could_throw_p (tree);
 extern bool tree_can_throw_internal (tree);
 extern bool tree_can_throw_external (tree);
+extern int lookup_stmt_eh_region (tree);
 extern void add_stmt_to_eh_region (tree, int);
+extern bool remove_stmt_from_eh_region (tree);
+extern bool maybe_clean_eh_stmt (tree);
 
 /* In tree-ssa-pre.c  */
 void add_to_value (tree, tree);

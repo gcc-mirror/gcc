@@ -119,7 +119,27 @@ add_stmt_to_eh_region (tree t, int num)
     abort ();
   *slot = n;
 }
-  
+
+bool
+remove_stmt_from_eh_region (tree t)
+{
+  struct throw_stmt_node dummy;
+  void **slot;
+
+  if (!throw_stmt_table)
+    return false;
+
+  dummy.stmt = t;
+  slot = htab_find_slot (throw_stmt_table, &dummy, NO_INSERT);
+  if (slot)
+    {
+      htab_clear_slot (throw_stmt_table, slot);
+      return true;
+    }
+  else
+    return false;
+}
+
 int
 lookup_stmt_eh_region (tree t)
 {
@@ -1600,7 +1620,8 @@ lower_eh_constructs (void)
   tree *tp = &DECL_SAVED_TREE (current_function_decl);
 
   finally_tree = htab_create (31, struct_ptr_hash, struct_ptr_eq, free);
-  throw_stmt_table = htab_create_ggc (31, struct_ptr_hash, struct_ptr_eq, free);
+  throw_stmt_table = htab_create_ggc (31, struct_ptr_hash, struct_ptr_eq,
+				      ggc_free);
 
   collect_finally_tree (*tp, NULL);
 
@@ -1670,14 +1691,31 @@ make_eh_edges (tree stmt)
 
 
 
-/* Return true if the expr can trap, as in dereferencing an
-   invalid pointer location.  */
+/* Return true if the expr can trap, as in dereferencing an invalid pointer
+   location or floating point arithmetic.  C.f. the rtl version, may_trap_p.
+   This routine expects only GIMPLE lhs or rhs input.  */
 
 bool
 tree_could_trap_p (tree expr)
 {
   enum tree_code code = TREE_CODE (expr);
+  bool honor_nans = false;
+  bool honor_snans = false;
+  bool fp_operation = false;
   tree t;
+
+  if (TREE_CODE_CLASS (code) == '<'
+      || TREE_CODE_CLASS (code) == '1'
+      || TREE_CODE_CLASS (code) == '2')
+    {
+      t = TREE_TYPE (expr);
+      fp_operation = FLOAT_TYPE_P (t);
+      if (fp_operation)
+	{
+	  honor_nans = flag_trapping_math && !flag_finite_math_only;
+	  honor_snans = flag_signaling_nans != 0;
+	}
+    }
 
   switch (code)
     {
@@ -1691,7 +1729,10 @@ tree_could_trap_p (tree expr)
       return !t || tree_could_trap_p (t);
 
     case INDIRECT_REF:
-      return (TREE_THIS_NOTRAP (expr) == false);
+      return !TREE_THIS_NOTRAP (expr);
+
+    case ASM_EXPR:
+      return TREE_THIS_VOLATILE (expr);
 
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
@@ -1702,15 +1743,56 @@ tree_could_trap_p (tree expr)
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
     case TRUNC_MOD_EXPR:
-      return true;
+    case RDIV_EXPR:
+      if (honor_snans)
+	return true;
+      if (fp_operation && flag_trapping_math)
+	return true;
+      t = TREE_OPERAND (expr, 1);
+      if (!TREE_CONSTANT (t) || integer_zerop (t))
+        return true;
+      return false;
+
+    case LT_EXPR:
+    case LE_EXPR:
+    case GT_EXPR:
+    case GE_EXPR:
+    case LTGT_EXPR:
+      /* Some floating point comparisons may trap.  */
+      return honor_nans;
+
+    case EQ_EXPR:
+    case NE_EXPR:
+    case UNORDERED_EXPR:
+    case ORDERED_EXPR:
+    case UNLT_EXPR:
+    case UNLE_EXPR:
+    case UNGT_EXPR:
+    case UNGE_EXPR:
+    case UNEQ_EXPR:
+      return honor_snans;
+
+    case CONVERT_EXPR:
+    case FIX_TRUNC_EXPR:
+    case FIX_CEIL_EXPR:
+    case FIX_FLOOR_EXPR:
+    case FIX_ROUND_EXPR:
+      /* Conversion of floating point might trap.  */
+      return honor_nans;
+
+    case NEGATE_EXPR:
+    case ABS_EXPR:
+    case CONJ_EXPR:
+      /* These operations don't trap even with floating point.  */
+      return false;
 
     default:
-      break;
+      /* Any floating arithmetic may trap.  */
+      if (fp_operation && flag_trapping_math)
+	return true;
+      return false;
     }
-
-  return false;
 }
-
 
 bool
 tree_could_throw_p (tree t)
@@ -1748,6 +1830,15 @@ tree_can_throw_external (tree stmt)
   if (region_nr < 0)
     return false;
   return can_throw_external_1 (region_nr);
+}
+
+bool
+maybe_clean_eh_stmt (tree stmt)
+{
+  if (!tree_could_throw_p (stmt))
+    if (remove_stmt_from_eh_region (stmt))
+      return true;
+  return false;
 }
 
 #include "gt-tree-eh.h"
