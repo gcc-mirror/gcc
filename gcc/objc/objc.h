@@ -19,10 +19,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.2 1991/11/07 22:31:42 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.3 1991/11/16 15:57:35 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/07 22:31:42 $
+  $Date: 1991/11/16 15:57:35 $
   $Log: ObjC.h,v $
+ * Revision 0.3  1991/11/16  15:57:35  dennisg
+ * changed the defs for class structures for new implementation of run-time.
+ * changed def of SEL back to its original type.
+ *
  * Revision 0.2  1991/11/07  22:31:42  dennisg
  * added copyleft.
  *
@@ -121,9 +125,8 @@ typedef id  ( *IMP )( id, SEL, ... );
                                                   first message sent to a
                                                   class.  It isn't guaranteed
                                                   to be sent only once. */
-#define CLS_POSING        0x8L                  /* Class is posing as another.
-                                                  Used to fix broken 
-                                                  classes. */
+#define CLS_POSING        0x8L                  /* Class is posing as 
+																									another. */
 #define CLS_MAPPED        0x10L                 /* Unknown. */
 
 
@@ -262,7 +265,8 @@ typedef struct objc_metaClass {
   struct objc_metaClass*	isa;                /* Pointer to Object meta
 																								class. */
   struct objc_metaClass*	super_class;        /* Pointer to meta class's
-																								super meta class. */
+																								super class. NULL for 
+																								Object. */
   char*         					name;               /* Name of the meta class. */
   long         					 	version;            /* Unknown. */
   long          					info;               /* Bit mask.  See class masks 
@@ -298,7 +302,8 @@ typedef struct objc_class {
   MetaClass_t   			isa;                    /* Pointer to the class's
                                                 meta class. */
   struct objc_class*	super_class;            /* Pointer to the super 
-																								class. */
+																								class. NULL for class 
+																								Object. */
   char*         			name;                   /* Name of the class. */
   long          			version;                /* Unknown. */
   long          			info;                   /* Bit mask.  See class masks 
@@ -354,11 +359,9 @@ typedef struct objc_category {
  *  structures and passes it to objc_msgSuper(). 
  */
 typedef struct objc_super {
-  id    receiver;                             /* Id of the object sending
+  id    	receiver;                           /* Id of the object sending
                                                 the message. */
-  char* class;                                /* Name of the object's super
-                                                class.  Passed to remove a 
-                                                level of indirection? */
+  Class_t class;                              /* Object's super class. */
 } Super, *Super_t;
 
 
