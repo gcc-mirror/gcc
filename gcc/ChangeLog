@@ -1,3 +1,11 @@
+1999-10-04 21:58 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* resource.c (find_free_register): Mark class_str argument const.
+	* resource.h: Update prototype to match.
+
+	* i386.h (PREDICATE_CODES): Add entry for long_memory_operand.
+	* i386.md: Give all anonymous insns names.
+
 Mon Oct  4 21:12:02 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (merge_blocks): Avoid assing BASIC_BLOCK for non-existent

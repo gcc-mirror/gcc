@@ -2395,7 +2395,8 @@ do { long l;						\
 				 LSHIFTRT, ROTATERT}},			\
   {"memory_displacement_operand", {MEM}},				\
   {"cmpsi_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
-		     LABEL_REF, SUBREG, REG, MEM, AND}},
+		     LABEL_REF, SUBREG, REG, MEM, AND}},		\
+  {"long_memory_operand", {MEM}},
 
 /* Variables in i386.c */
 extern const char *ix86_cpu_string;		/* for -mcpu=<xxx> */
