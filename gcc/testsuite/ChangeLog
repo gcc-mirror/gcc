@@ -1,3 +1,9 @@
+2003-04-02  Aldy Hernandez  <aldyh@redhat.com>
+
+        * g++.dg/eh/simd-2.C (vecfunc): Fix typo.
+
+        * g++.dg/eh/simd-1.C (vecfunc): Same.
+
 2003-04-01  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/20030401-1.c: New test case.
