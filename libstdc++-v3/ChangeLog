@@ -1,3 +1,7 @@
+2001-06-15  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/html/documentation.html:  Point to new doxygen'ed collection.
+
 2001-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* configure.in (auxdir): Replace by ...
