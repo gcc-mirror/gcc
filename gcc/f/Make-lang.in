@@ -88,7 +88,7 @@ g77-cross$(exeext): g77$(exeext)
 
 F77_OBJS = f/bad.o f/bit.o f/bld.o f/com.o f/data.o f/equiv.o f/expr.o \
  f/global.o f/implic.o f/info.o f/intrin.o f/lab.o f/lex.o f/malloc.o \
- f/name.o f/f-options.o f/parse.o f/src.o f/st.o f/sta.o f/stb.o f/stc.o \
+ f/name.o f/parse.o f/src.o f/st.o f/sta.o f/stb.o f/stc.o \
  f/std.o f/ste.o f/storag.o f/stp.o f/str.o f/sts.o f/stt.o f/stu.o \
  f/stv.o f/stw.o f/symbol.o f/target.o f/top.o f/type.o f/where.o
 
@@ -320,7 +320,6 @@ f77.uninstall: installdirs
 f77.mostlyclean:
 	-rm -f f/*$(objext)
 	-rm -f f/*$(coverageexts)
-	-rm -f f/f-options.c f/f-options.h
 	-rm -f f/fini$(build_exeext) f/stamp-str f/str-*.h f/str-*.j
 	-rm -f f/intdoc$(build_exeext) f/ansify$(build_exeext) f/intdoc.h0
 	-rm -f g77.aux g77.cps g77.ky g77.toc g77.vr g77.fn g77.kys \
@@ -543,14 +542,8 @@ f/top.o: f/top.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/top.h f/malloc.h f/where.h \
  f/info-w.def f/target.h f/lex.h f/type.h f/lab.h f/storag.h \
  f/symbol.h f/symbol.def f/equiv.h f/global.h f/name.h f/intrin.h \
  f/intrin.def f/data.h f/expr.h f/implic.h f/src.h f/st.h flags.h \
- toplev.h coretypes.h $(TM_H) opts.h f/f-options.h
+ toplev.h coretypes.h $(TM_H) opts.h options.h
 f/type.o: f/type.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/type.h f/malloc.h \
  coretypes.h $(TM_H)
 f/where.o: f/where.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/where.h glimits.h \
  f/top.h f/malloc.h f/lex.h $(GGC_H) gt-f-where.h coretypes.h $(TM_H)
-
-f/f-options.c: f/lang.opt opts.sh f/f-options.h
-
-f/f-options.h: f/lang.opt opts.sh
-	AWK=$(AWK) $(SHELL) $(srcdir)/opts.sh f/f-options.c \
-		f/f-options.h $(srcdir)/f/lang.opt

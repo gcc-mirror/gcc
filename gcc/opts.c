@@ -26,8 +26,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree.h"
 #include "langhooks.h"
 #include "opts.h"
+#include "options.h"
+#include "flags.h"
+#include "toplev.h"
 
 static size_t find_opt (const char *, int);
+static int common_handle_option (size_t scode, const char *arg, int value);
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and N_OPTS on
@@ -134,7 +138,8 @@ handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
     {
       opt_index = cl_options_count;
       arg = opt;
-      result = 1;
+      main_input_filename = opt;
+      result = (*lang_hooks.handle_option) (opt_index, arg, on);
     }
   else
     {
@@ -152,8 +157,7 @@ handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
 	  on = false;
 	}
 
-      /* Skip over '-'.  */
-      opt_index = find_opt (opt + 1, lang_mask);
+      opt_index = find_opt (opt + 1, lang_mask | CL_COMMON);
       if (opt_index == cl_options_count)
 	goto done;
 
@@ -191,14 +195,51 @@ handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
 	  if (*arg == '\0')
 	    arg = NULL;
 	}
-    }
 
-  temp = (*lang_hooks.handle_option) (opt_index, arg, on);
-  if (temp <= 0)
-    result = temp;
+      if (option->flags & lang_mask)
+	{
+	  temp = (*lang_hooks.handle_option) (opt_index, arg, on);
+	  if (temp <= 0)
+	    result = temp;
+	}
+
+      if (result > 0 && (option->flags & CL_COMMON))
+	{
+	  if (common_handle_option (opt_index, arg, on) == 0)
+	    result = 0;
+	}
+    }
 
  done:
   if (dup)
     free (dup);
   return result;
+}
+
+/* Handle target- and language-independent options.  Return zero to
+   generate an "unknown option" message.  */
+static int
+common_handle_option (size_t scode, const char *arg,
+		      int value ATTRIBUTE_UNUSED)
+{
+  const struct cl_option *option = &cl_options[scode];
+  enum opt_code code = (enum opt_code) scode;
+
+  if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
+    {
+      error ("missing argument to \"-%s\"", option->opt_text);
+      return 1;
+    }
+
+  switch (code)
+    {
+    default:
+      abort ();
+
+    case OPT_quiet:
+      quiet_flag = 1;
+      break;
+    }
+
+  return 1;
 }

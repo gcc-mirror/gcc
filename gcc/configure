@@ -2440,7 +2440,7 @@ fi
 
 
 # Find some useful tools
-for ac_prog in gawk mawk nawk awk
+for ac_prog in mawk gawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -8799,11 +8799,15 @@ fi
 # Make empty files to contain the specs and options for each language.
 # Then add #include lines to for a compiler that has specs and/or options.
 
+lang_opt_files=
 lang_specs_files=
 lang_options_files=
 lang_tree_files=
 for subdir in . $subdirs
 do
+	if test -f $srcdir/$subdir/lang.opt; then
+	    lang_opt_files="$lang_opt_files $srcdir/$subdir/lang.opt"
+	fi
 	if test -f $srcdir/$subdir/lang-specs.h; then
 	    lang_specs_files="$lang_specs_files $srcdir/$subdir/lang-specs.h"
 	fi
@@ -9011,6 +9015,7 @@ objdir=`${PWDCMD-pwd}`
 ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xmake_file" "$dep_tmake_file"
 
 # Substitute configuration variables
+
 
 
 
@@ -9387,6 +9392,7 @@ s%@host_xm_file@%$host_xm_file%g
 s%@host_xm_defines@%$host_xm_defines%g
 s%@out_host_hook_obj@%$out_host_hook_obj%g
 s%@install@%$install%g
+s%@lang_opt_files@%$lang_opt_files%g
 s%@lang_options_files@%$lang_options_files%g
 s%@lang_specs_files@%$lang_specs_files%g
 s%@lang_tree_files@%$lang_tree_files%g

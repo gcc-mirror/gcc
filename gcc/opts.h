@@ -27,7 +27,7 @@ struct cl_option
 {
   const char *opt_text;
   unsigned char opt_len;
-  unsigned char flags;
+  unsigned int flags;
 };
 
 extern const struct cl_option cl_options[];
@@ -37,8 +37,14 @@ extern const unsigned int cl_options_count;
 #define CL_OBJC			(1 << 1) /* Only ObjC.  */
 #define CL_CXX			(1 << 2) /* Only C++.  */
 #define CL_OBJCXX		(1 << 3) /* Only ObjC++.  */
-#define CL_JOINED		(1 << 4) /* If takes joined argument.  */
-#define CL_SEPARATE		(1 << 5) /* If takes a separate argument.  */
-#define CL_REJECT_NEGATIVE	(1 << 6) /* Reject no- form.  */
+#define CL_F77			(1 << 4) /* Only Fortran.  */
+#define CL_JAVA			(1 << 5) /* Only Java.  */
+#define CL_ADA			(1 << 6) /* Only Ada.  */
+#define CL_TREELANG		(1 << 7) /* Only Treelang.  */
+#define CL_COMMON		(1 << 8) /* Language-independent.  */
+
+#define CL_JOINED		(1 << 24) /* If takes joined argument.  */
+#define CL_SEPARATE		(1 << 25) /* If takes a separate argument.  */
+#define CL_REJECT_NEGATIVE	(1 << 26) /* Reject no- form.  */
 
 #endif

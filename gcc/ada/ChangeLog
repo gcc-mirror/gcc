@@ -1,5 +1,12 @@
 2003-06-14  Neil Booth  <neil@daikokuya.co.uk>
 
+	* Make-lang.in: Update to use options.c and options.h.
+	* misc.c: Include options.h not aoptions.h.
+	(gnat_handle_option): Abort on unrecognized switch.
+	(gnat_init_options): Request Ada switches.
+
+2003-06-14  Neil Booth  <neil@daikokuya.co.uk>
+
 	* lang.opt: Add -Wall.
 	* misc.c (gnat_handle_option): Handle it.
 

@@ -47,7 +47,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "lex.h"
 #include "malloc.h"
 #include "name.h"
-#include "f-options.h"
+#include "options.h"
 #include "opts.h"
 #include "src.h"
 #include "st.h"
@@ -155,6 +155,21 @@ ffe_is_digit_string_ (const char *s)
   return (p != s) && (*p == '\0');
 }
 
+/* Get ready for options handling.  */
+int
+ffe_init_options ()
+{
+  /* Set default options for Fortran.  */
+  flag_move_all_movables = 1;
+  flag_reduce_all_givs = 1;
+  flag_argument_noalias = 2;
+  flag_merge_constants = 2;
+  flag_errno_math = 0;
+  flag_complex_divide_method = 1;
+
+  return CL_F77;
+}
+
 /* Handle command-line options.	 Returns 0 if unrecognized, 1 if
    recognized and handled.  */
 int
@@ -176,7 +191,7 @@ ffe_handle_option (size_t scode, const char *arg, int value)
   switch (code)
     {
     default:
-      return 0;
+      abort();
 
     case OPT_fversion:
       ffe_set_is_version (TRUE);

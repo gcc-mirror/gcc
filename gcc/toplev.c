@@ -359,7 +359,6 @@ static void close_dump_file (enum dump_file_index,
 int rtl_dump_and_exit;
 int flag_print_asm_name;
 static int version_flag;
-static const char *filename;
 enum graph_dump_types graph_dump_format;
 
 /* Name for output file of assembly code, specified with -o.  */
@@ -4594,14 +4593,7 @@ independent_decode_option (int argc, char **argv)
   char *arg = argv[0];
 
   if (arg[0] != '-' || arg[1] == 0)
-    {
-      if (arg[0] == '+')
-	return 0;
-
-      filename = arg;
-
-      return 1;
-    }
+    return 1;
 
   arg++;
 
@@ -4701,13 +4693,6 @@ independent_decode_option (int argc, char **argv)
 	flag_pedantic_errors = pedantic = 1;
       else if (arg[1] == 0)
 	profile_flag = 1;
-      else
-	return 0;
-      break;
-
-    case 'q':
-      if (!strcmp (arg, "quiet"))
-	quiet_flag = 1;
       else
 	return 0;
       break;
@@ -5385,8 +5370,8 @@ process_options (void)
      initialization based on the command line options.  This hook also
      sets the original filename if appropriate (e.g. foo.i -> foo.c)
      so we can correctly initialize debug output.  */
-  no_backend = (*lang_hooks.post_options) (&filename);
-  main_input_filename = input_filename = filename;
+  no_backend = (*lang_hooks.post_options) (&main_input_filename);
+  input_filename = main_input_filename;
 
 #ifdef OVERRIDE_OPTIONS
   /* Some machines may reject certain combinations of options.  */
@@ -5396,9 +5381,9 @@ process_options (void)
   /* Set aux_base_name if not already set.  */
   if (aux_base_name)
     ;
-  else if (filename)
+  else if (main_input_filename)
     {
-      char *name = xstrdup (lbasename (filename));
+      char *name = xstrdup (lbasename (main_input_filename));
 
       strip_off_ending (name, strlen (name));
       aux_base_name = name;
@@ -5738,7 +5723,7 @@ do_compile (void)
 	backend_init ();
 
       /* Language-dependent initialization.  Returns true on success.  */
-      if (lang_dependent_init (filename))
+      if (lang_dependent_init (main_input_filename))
 	compile_file ();
 
       finalize ();

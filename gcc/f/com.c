@@ -14125,7 +14125,6 @@ insert_block (tree block)
 static bool ffe_init PARAMS ((void));
 static void ffe_finish PARAMS ((void));
 static bool ffe_post_options PARAMS ((const char **));
-static int ffe_init_options PARAMS ((void));
 static void ffe_print_identifier PARAMS ((FILE *, tree, int));
 
 struct language_function GTY(())
@@ -14263,20 +14262,6 @@ ffe_finish ()
     malloc_pool_display (malloc_pool_image ());
 
   fclose (finput);
-}
-
-static int
-ffe_init_options ()
-{
-  /* Set default options for Fortran.  */
-  flag_move_all_movables = 1;
-  flag_reduce_all_givs = 1;
-  flag_argument_noalias = 2;
-  flag_merge_constants = 2;
-  flag_errno_math = 0;
-  flag_complex_divide_method = 1;
-
-  return 0;
 }
 
 static bool
