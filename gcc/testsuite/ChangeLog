@@ -1,3 +1,8 @@
+2003-03-19  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/10073
+	* gcc.c-torture/compile/20030319-1.c: New.
+
 Tue Mar 18 13:14:05 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-cvt-1.c: New test.
