@@ -1,3 +1,8 @@
+2003-10-17  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* combine.c (simplify_set): Do not clear out undobuf.other_insn
+	already set elsewhere.
+
 2003-10-17  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* config/i386/i386.c (ix86_expand_prologue):  Use

@@ -5084,10 +5084,12 @@ simplify_set (rtx x)
 	 undobuf.other_insn.  */
       if (new_code != old_code)
 	{
+	  int other_changed_previously = other_changed;
 	  unsigned HOST_WIDE_INT mask;
 
 	  SUBST (*cc_use, gen_rtx_fmt_ee (new_code, GET_MODE (*cc_use),
 					  dest, const0_rtx));
+	  other_changed = 1;
 
 	  /* If the only change we made was to change an EQ into an NE or
 	     vice versa, OP0 has only one bit that might be nonzero, and OP1
@@ -5097,7 +5099,7 @@ simplify_set (rtx x)
 
 	  if (((old_code == NE && new_code == EQ)
 	       || (old_code == EQ && new_code == NE))
-	      && ! other_changed && op1 == const0_rtx
+	      && ! other_changed_previously && op1 == const0_rtx
 	      && GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT
 	      && exact_log2 (mask = nonzero_bits (op0, GET_MODE (op0))) >= 0)
 	    {
@@ -5107,13 +5109,11 @@ simplify_set (rtx x)
 		   && ! check_asm_operands (pat)))
 		{
 		  PUT_CODE (*cc_use, old_code);
-		  other_insn = 0;
+		  other_changed = 0;
 
 		  op0 = gen_binary (XOR, GET_MODE (op0), op0, GEN_INT (mask));
 		}
 	    }
-
-	  other_changed = 1;
 	}
 
       if (other_changed)
