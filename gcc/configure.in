@@ -405,7 +405,7 @@ AC_CACHE_VAL(gcc_cv_glibc,
   [gcc_cv_glibc=yes], 
   gcc_cv_glibc=no)])
 AC_MSG_RESULT($gcc_cv_glibc)
-if test $gcc_cv_glibc" = yes; then
+if test $gcc_cv_glibc = yes; then
   AC_DEFINE(_GNU_SOURCE, 1, [Always define this when using the GNU C Library])
 fi
 
