@@ -791,6 +791,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 	    {
 	      rtx temp = reload_in_progress ? operand0 : gen_reg_rtx (Pmode);
 	      operands[1] = legitimize_pic_address (operand1, mode, temp);
+              emit_insn (gen_rtx (SET, VOIDmode, operand0, operands[1]));
 	    }
 	  /* On the HPPA, references to data space are supposed to */
 	  /* use dp, register 27, but showing it in the RTL inhibits various
