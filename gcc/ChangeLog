@@ -1,5 +1,11 @@
 2005-01-29  Richard Henderson  <rth@redhat.com>
 
+	PR middle-end/19689
+	* expr.c (store_field): Don't strip sub-mode cast when the input
+	data is even smaller.
+
+2005-01-29  Richard Henderson  <rth@redhat.com>
+
 	PR middle-end/19687
 	* expr.c (categorize_ctor_elements_1): Check for CONSTRUCTOR of a
 	union being empty.
