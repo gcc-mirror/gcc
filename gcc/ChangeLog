@@ -1,5 +1,13 @@
 2002-04-18  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_function_arg_pass_by_reference): New.
+	(ia64_va_arg): Expect variable sized types by reference.
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/ia64.h (FUNCTION_ARG_PASS_BY_REFERENCE): Use 
+	ia64_function_arg_pass_by_reference.
+
+2002-04-18  Richard Henderson  <rth@redhat.com>
+
         * ifcvt.c: Include except.h.
         (block_has_only_trap): Break out from find_cond_trap.
         (find_cond_trap): Use it.  Always delete the trap block.
