@@ -1135,7 +1135,7 @@ do_identifier (token, parsing, args)
      tree args;
 {
   register tree id;
-  int lexing = (parsing == 1);
+  int lexing = (parsing == 1 || parsing == 3);
 
   if (! lexing)
     id = lookup_name (token, 0);
@@ -1157,7 +1157,7 @@ do_identifier (token, parsing, args)
 
   /* Remember that this name has been used in the class definition, as per
      [class.scope0] */
-  if (id && parsing)
+  if (id && parsing && parsing != 3)
     maybe_note_name_used_in_class (token, id);
 
   if (id == error_mark_node)

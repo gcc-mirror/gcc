@@ -4,7 +4,7 @@ template <class T>
 struct S1 {};
 
 template <class T>
-void f(T); // ERROR - original declaration.
+void f(T);
 
 template <class C>
 struct S2

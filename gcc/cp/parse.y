@@ -1516,7 +1516,7 @@ do_id:
 		     do_identifier; we only do that for unqualified
 		     identifiers.  */
 	          if (!lastiddecl || !BASELINK_P (lastiddecl))
-		    $$ = do_identifier ($<ttype>-1, 1, NULL_TREE);
+		    $$ = do_identifier ($<ttype>-1, 3, NULL_TREE);
 		  else
 		    $$ = $<ttype>-1;
 		}
