@@ -90,7 +90,7 @@ DEFUN(jcf_filbuf_from_stdio, (jcf, count),
 
 #include "zipfile.h"
 
-struct ZipFileCache *SeenZipFiles = NULL;
+struct ZipFile *SeenZipFiles = NULL;
 
 /* Open a zip file with the given name, and cache directory and file
    descriptor.  If the file is missing, treat it as an empty archive.
@@ -101,29 +101,29 @@ ZipFile *
 DEFUN(opendir_in_zip, (zipfile, is_system),
       const char *zipfile AND int is_system)
 {
-  struct ZipFileCache* zipf;
+  struct ZipFile* zipf;
   char magic [4];
   int fd;
   for (zipf = SeenZipFiles;  zipf != NULL;  zipf = zipf->next)
     {
       if (strcmp (zipf->name, zipfile) == 0)
-	return &zipf->z;
+	return zipf;
     }
 
-  zipf = ALLOC (sizeof (struct ZipFileCache) + strlen (zipfile) + 1);
+  zipf = ALLOC (sizeof (struct ZipFile) + strlen (zipfile) + 1);
   zipf->next = SeenZipFiles;
   zipf->name = (char*)(zipf+1);
   strcpy (zipf->name, zipfile);
   SeenZipFiles = zipf;
   fd = open (zipfile, O_RDONLY | O_BINARY);
-  zipf->z.fd = fd;
+  zipf->fd = fd;
   if (fd < 0)
     {
       /* A missing zip file is not considered an error.
        We may want to re-consider that.  FIXME. */
-      zipf->z.count = 0;
-      zipf->z.dir_size = 0;
-      zipf->z.central_directory = NULL;
+      zipf->count = 0;
+      zipf->dir_size = 0;
+      zipf->central_directory = NULL;
     }
   else
     {
@@ -131,10 +131,10 @@ DEFUN(opendir_in_zip, (zipfile, is_system),
       if (read (fd, magic, 4) != 4 || GET_u4 (magic) != (JCF_u4)ZIPMAGIC)
 	return NULL;
       lseek (fd, 0L, SEEK_SET);
-      if (read_zip_archive (&zipf->z) != 0)
+      if (read_zip_archive (zipf) != 0)
 	return NULL;
     }
-  return &zipf->z;
+  return zipf;
 }
 
 /* Returns:
@@ -151,17 +151,12 @@ DEFUN(open_in_zip, (jcf, zipfile, zipmember, is_system),
   ZipDirectory *zipd;
   int i, len;
   ZipFile *zipf = opendir_in_zip (zipfile, is_system);
-  z_stream d_stream; /* decompression stream */
 
   if (zipf == NULL)
     return -2;
 
   if (!zipmember)
     return 0;
-
-  d_stream.zalloc = (alloc_func) 0;
-  d_stream.zfree = (free_func) 0;
-  d_stream.opaque = (voidpf) 0;
 
   len = strlen (zipmember);
   
@@ -173,9 +168,21 @@ DEFUN(open_in_zip, (jcf, zipfile, zipmember, is_system),
 	{
 	  JCF_ZERO (jcf);
 
-	  jcf->filbuf = jcf_unexpected_eof;
 	  jcf->filename = xstrdup (zipfile);
 	  jcf->classname = xstrdup (zipmember);
+	  return read_zip_member(jcf, zipd, zipf);
+	}
+    }
+  return -1;
+}
+
+/* Read data from zip archive member. */
+
+int
+DEFUN(read_zip_member, (jcf, zipd, zipf),
+      JCF *jcf AND  ZipDirectory *zipd AND ZipFile *zipf)
+{
+	  jcf->filbuf = jcf_unexpected_eof;
 	  jcf->zipd = (void *)zipd;
 
 	  if (zipd->compression_method == Z_NO_COMPRESSION)
@@ -191,6 +198,11 @@ DEFUN(open_in_zip, (jcf, zipfile, zipmember, is_system),
 	  else
 	    {
 	      char *buffer;
+	      z_stream d_stream; /* decompression stream */
+	      d_stream.zalloc = (alloc_func) 0;
+	      d_stream.zfree = (free_func) 0;
+	      d_stream.opaque = (voidpf) 0;
+
 	      jcf->buffer = ALLOC (zipd->uncompressed_size);
 	      d_stream.next_out = jcf->buffer;
 	      d_stream.avail_out = zipd->uncompressed_size;
@@ -212,9 +224,6 @@ DEFUN(open_in_zip, (jcf, zipfile, zipmember, is_system),
 	    }
 
 	  return 0;
-	}
-    }
-  return -1;
 }
 
 #if JCF_USE_STDIO

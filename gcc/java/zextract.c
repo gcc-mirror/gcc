@@ -331,6 +331,7 @@ read_zip_archive (zipf)
       zipd->compression_method = compression_method;
       zipd->size = size;
       zipd->uncompressed_size = uncompressed_size;
+      zipd->zipf = zipf;
 #ifdef __GNUC__
 #define DIR_ALIGN __alignof__(ZipDirectory)
 #else

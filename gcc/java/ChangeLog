@@ -1,5 +1,26 @@
 2001-01-21  Per Bothner  <per@bothner.com>
 
+	Various fixes to allow compiling a compressed .jar/.zip archive.
+	* zipfile.h (struct ZipFileCache):  Replace by struct ZipFile.
+	(struct ZipFile):  Add fields name and next (from  ZipFileCache).
+	(struct ZipDirectory):  New field zipf points to owning ZipFile.
+	* jcf.h (struct ZipDirectory):  Add forward declaration.
+	(struct JCF):   Declare zipd field to have type struct ZipDirectory.
+	Remove seen_in_zip and zip_offset fields.
+	(JCF_SEEN_IN_ZIP):  New macro.
+	* zextract.c (read_zip_archive):  Set ZipDirectory's zipf field.
+	* jcf-io.c:  Change all ZipFileCache to ZipFile.
+	(read_zip_member):  New function.
+	(open_in_zip):  Call read_zip_member.
+	* jcf-parse.c (find_in_current_zip):  Remove function.
+	(read_class):  Merge in find_in_current_zip functionality.
+	Call read_zip_member if needed.
+	(parse_zip_file_entries):  Use read_zip_member.
+	(process_zip_dir):  Update for removed and added JCF fields.
+	(jcf_figure_file_type):  Re-use, don't copy initial ZipFile struct.
+
+2001-01-21  Per Bothner  <per@bothner.com>
+
 	Minor optimization of static ggc roots.
 	* jcf-parse.c (parse_roots):  New static field.
 	(current_field, current_method, current_file_list):  Replace by macros

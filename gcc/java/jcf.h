@@ -83,6 +83,8 @@ typedef struct CPool {
   jword*	data;
 } CPool;
 
+struct ZipDirectory;
+
 /* JCF encapsulates the state of reading a Java Class File. */
 
 typedef struct JCF {
@@ -90,18 +92,18 @@ typedef struct JCF {
   unsigned char *buffer_end;
   unsigned char *read_ptr;
   unsigned char *read_end;
-  int seen_in_zip;
   int java_source;
-  long zip_offset;    
   jcf_filbuf_t filbuf;
   void *read_state;
   const char *filename;
   const char *classname;
-  void *zipd;			/* Directory entry where it was found */
+  struct ZipDirectory *zipd;	/* Directory entry where it was found */
   JCF_u2 access_flags, this_class, super_class;
   CPool cpool;
 } JCF;
 /*typedef JCF*  JCF_FILE;*/
+
+#define JCF_SEEN_IN_ZIP(JCF) ((JCF)->zipd != NULL)
 
 /* The CPOOL macros take a (pointer to a) CPool.
    The JPOOL macros take a (pointer to a) JCF.
