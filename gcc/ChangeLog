@@ -1,3 +1,9 @@
+2004-10-13  Jakub Jelinek  <jakub@redhat.com>
+	    Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/17724
+	* tree-cfg.c (tree_purge_dead_eh_edges): Free dominance info.
+
 2004-10-13  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* rs6000.c (altivec_builtin_mask_for_load): Made static GTY(()).

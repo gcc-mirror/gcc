@@ -5016,6 +5016,26 @@ tree_purge_dead_eh_edges (basic_block bb)
 	ei_next (&ei);
     }
 
+  /* Removal of dead EH edges might change dominators of not
+     just immediate successors.  E.g. when bb1 is changed so that
+     it no longer can throw and bb1->bb3 and bb1->bb4 are dead
+     eh edges purged by this function in:
+           0
+	  / \
+	 v   v
+	 1-->2
+        / \  |
+       v   v |
+       3-->4 |
+        \    v
+	 --->5
+	     |
+	     -
+     idom(bb5) must be recomputed.  For now just free the dominance
+     info.  */
+  if (changed)
+    free_dominance_info (CDI_DOMINATORS);
+
   return changed;
 }
 

@@ -1,3 +1,13 @@
+2004-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/17724
+	* g++.dg/opt/pr17724-1.C: New test.
+	* g++.dg/opt/pr17724-2.C: New test.
+	* g++.dg/opt/pr17724-3.C: New test.
+	* g++.dg/opt/pr17724-4.C: New test.
+	* g++.dg/opt/pr17724-5.C: New test.
+	* g++.dg/opt/pr17724-6.C: New test.
+
 2004-10-12  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/17301
