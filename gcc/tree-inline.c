@@ -1262,6 +1262,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case EXIT_EXPR:
     case LOOP_EXPR:
     case PHI_NODE:
+    case WITH_SIZE_EXPR:
       break;
 
     /* We don't account constants for now.  Assume that the cost is amortized
@@ -1779,6 +1780,11 @@ expand_calls_inline (tree *stmt_p, inline_data *id)
     case MODIFY_EXPR:
       stmt_p = &TREE_OPERAND (stmt, 1);
       stmt = *stmt_p;
+      if (TREE_CODE (stmt) == WITH_SIZE_EXPR)
+	{
+	  stmt_p = &TREE_OPERAND (stmt, 0);
+	  stmt = *stmt_p;
+	}
       if (TREE_CODE (stmt) != CALL_EXPR)
 	break;
 

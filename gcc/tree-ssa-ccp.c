@@ -2085,13 +2085,16 @@ get_rhs (tree stmt)
     {
     case RETURN_EXPR:
       stmt = TREE_OPERAND (stmt, 0);
-      if (stmt)
-	return get_rhs (stmt);
-      else
-	return NULL;
+      if (!stmt || TREE_CODE (stmt) != MODIFY_EXPR)
+	return stmt;
+      /* FALLTHRU */
 
     case MODIFY_EXPR:
-      return TREE_OPERAND (stmt, 1);
+      stmt = TREE_OPERAND (stmt, 1);
+      if (TREE_CODE (stmt) == WITH_SIZE_EXPR)
+	return TREE_OPERAND (stmt, 0);
+      else
+	return stmt;
 
     case COND_EXPR:
       return COND_EXPR_COND (stmt);
@@ -2143,6 +2146,9 @@ set_rhs (tree *stmt_p, tree expr)
       /* FALLTHRU */
 
     case MODIFY_EXPR:
+      op = TREE_OPERAND (stmt, 1);
+      if (TREE_CODE (op) == WITH_SIZE_EXPR)
+	stmt = op;
       TREE_OPERAND (stmt, 1) = expr;
       break;
 

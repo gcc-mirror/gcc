@@ -72,8 +72,6 @@ typedef struct gimple_temp_hash_elt
 } elt_t;
 
 /* Forward declarations.  */
-static enum gimplify_status gimplify_modify_expr_rhs (tree *, tree *, tree *,
-						      tree *, tree *, bool);
 static enum gimplify_status gimplify_compound_expr (tree *, tree *, bool);
 
 
@@ -1788,6 +1786,27 @@ gimplify_self_mod_expr (tree *expr_p, tree *pre_p, tree *post_p,
     }
 }
 
+/* If *EXPR_P has a variable sized type, wrap it in a WITH_SIZE_EXPR.  */
+
+static void
+maybe_with_size_expr (tree *expr_p)
+{
+  tree expr, type, size;
+
+  expr = *expr_p;
+  type = TREE_TYPE (expr);
+  if (type == error_mark_node)
+    return;
+
+  size = TYPE_SIZE_UNIT (type);
+  if (size && TREE_CODE (size) != INTEGER_CST)
+    {
+      size = unshare_expr (size);
+      size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, expr);
+      *expr_p = build2 (WITH_SIZE_EXPR, type, expr, size);
+    }
+}
+
 /* Subroutine of gimplify_call_expr:  Gimplify a single argument.  */
 
 static enum gimplify_status
@@ -1805,6 +1824,9 @@ gimplify_arg (tree *expr_p, tree *pre_p)
     test = is_gimple_val, fb = fb_rvalue;
   else
     test = is_gimple_lvalue, fb = fb_either;
+
+  /* If this is a variable sized type, we must remember the size.  */
+  maybe_with_size_expr (expr_p);
 
   /* There is a sequence point before a function call.  Side effects in
      the argument list must occur before the actual call. So, when
@@ -2316,18 +2338,14 @@ gimplify_cond_expr (tree *expr_p, tree *pre_p, tree target)
    a call to __builtin_memcpy.  */
 
 static enum gimplify_status
-gimplify_modify_expr_to_memcpy (tree *expr_p, bool want_value)
+gimplify_modify_expr_to_memcpy (tree *expr_p, tree size, bool want_value)
 {
   tree args, t, to, to_ptr, from;
 
   to = TREE_OPERAND (*expr_p, 0);
   from = TREE_OPERAND (*expr_p, 1);
 
-  t = TYPE_SIZE_UNIT (TREE_TYPE (from));
-  t = unshare_expr (t);
-  t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, to);
-  t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, from);
-  args = tree_cons (NULL, t, NULL);
+  args = tree_cons (NULL, size, NULL);
 
   t = build_fold_addr_expr (from);
   args = tree_cons (NULL, t, args);
@@ -2352,16 +2370,13 @@ gimplify_modify_expr_to_memcpy (tree *expr_p, bool want_value)
    a CONSTRUCTOR with an empty element list.  */
 
 static enum gimplify_status
-gimplify_modify_expr_to_memset (tree *expr_p, bool want_value)
+gimplify_modify_expr_to_memset (tree *expr_p, tree size, bool want_value)
 {
   tree args, t, to, to_ptr;
 
   to = TREE_OPERAND (*expr_p, 0);
 
-  t = TYPE_SIZE_UNIT (TREE_TYPE (TREE_OPERAND (*expr_p, 1)));
-  t = unshare_expr (t);
-  t = SUBSTITUTE_PLACEHOLDER_IN_EXPR (t, to);
-  args = tree_cons (NULL, t, NULL);
+  args = tree_cons (NULL, size, NULL);
 
   args = tree_cons (NULL, integer_zero_node, args);
 
@@ -2771,24 +2786,13 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
   if (ret != GS_UNHANDLED)
     return ret;
 
-  /* If the value being copied is of variable width, expose the length
-     if the copy by converting the whole thing to a memcpy/memset.
-     Note that we need to do this before gimplifying any of the operands
-     so that we can resolve any PLACEHOLDER_EXPRs in the size. 
-     Also note that the RTL expander uses the size of the expression to
-     be copied, not of the destination, so that is what we must here.
-     The types on both sides of the MODIFY_EXPR should be the same,
-     but they aren't always and there are problems with class-wide types
-     in Ada where it's hard to make it "correct".  */
-  if (TREE_CODE (TREE_TYPE (*from_p)) != ERROR_MARK
-      && TYPE_SIZE_UNIT (TREE_TYPE (*from_p))
-      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (*from_p))) != INTEGER_CST)
-    {
-      if (TREE_CODE (*from_p) == CONSTRUCTOR)
-	return gimplify_modify_expr_to_memset (expr_p, want_value);
-      else
-	return gimplify_modify_expr_to_memcpy (expr_p, want_value);
-    }
+  /* If the value being copied is of variable width, compute the length
+     of the copy into a WITH_SIZE_EXPR.   Note that we need to do this
+     before gimplifying any of the operands so that we can resolve any
+     PLACEHOLDER_EXPRs in the size.  Also note that the RTL expander uses
+     the size of the expression to be copied, not of the destination, so
+     that is what we must here.  */
+  maybe_with_size_expr (from_p);
 
   ret = gimplify_expr (to_p, pre_p, post_p, is_gimple_lvalue, fb_lvalue);
   if (ret == GS_ERROR)
@@ -2804,6 +2808,23 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
 				  want_value);
   if (ret != GS_UNHANDLED)
     return ret;
+
+  /* If we've got a variable sized assignment between two lvalues (i.e. does
+     not involve a call), then we can make things a bit more straightforward
+     by converting the assignment to memcpy or memset.  */
+  if (TREE_CODE (*from_p) == WITH_SIZE_EXPR)
+    {
+      tree from = TREE_OPERAND (*from_p, 0);
+      tree size = TREE_OPERAND (*from_p, 1);
+
+      if (TREE_CODE (from) == CONSTRUCTOR)
+	return gimplify_modify_expr_to_memset (expr_p, size, want_value);
+      if (is_gimple_addr_expr_arg (from))
+	{
+	  *from_p = from;
+	  return gimplify_modify_expr_to_memcpy (expr_p, size, want_value);
+	}
+    }
 
   /* If the destination is already simple, nothing else needed.  */
   if (is_gimple_tmp_var (*to_p) || !want_value)
@@ -3782,6 +3803,17 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 
 	case STATEMENT_LIST:
 	  ret = gimplify_statement_list (expr_p);
+	  break;
+
+	case WITH_SIZE_EXPR:
+	  {
+	    enum gimplify_status r0, r1;
+	    r0 = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, 
+				post_p == &internal_post ? NULL : post_p,
+				gimple_test_f, fallback);
+	    r1 = gimplify_expr (&TREE_OPERAND (*expr_p, 1), pre_p, post_p,
+				is_gimple_val, fb_rvalue);
+	  }
 	  break;
 
 	case VAR_DECL:

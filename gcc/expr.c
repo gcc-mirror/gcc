@@ -8651,6 +8651,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       expand_asm_expr (exp);
       return const0_rtx;
 
+    case WITH_SIZE_EXPR:
+      /* WITH_SIZE_EXPR expands to its first argument.  The caller should
+	 have pulled out the size to use in whatever context it needed.  */
+      return expand_expr_real (TREE_OPERAND (exp, 0), original_target, tmode,
+			       modifier, alt_rtl);
+
     default:
       return lang_hooks.expand_expr (exp, original_target, tmode,
 				     modifier, alt_rtl);

@@ -731,6 +731,11 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 	   type other than the one we've scalarized.  */
 	goto use_all;
 
+      case WITH_SIZE_EXPR:
+	/* This is a transparent wrapper.  The entire inner expression really
+	   is being used.  */
+	goto use_all;
+
       use_all:
         expr_p = &TREE_OPERAND (inner, 0);
 	inner = expr = *expr_p;

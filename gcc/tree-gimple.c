@@ -118,12 +118,22 @@ Boston, MA 02111-1307, USA.  */
    addr-expr-arg: ID
 		| compref
 
+   with-size-arg: addr-expr-arg
+		| indirectref
+		| call-stmt
+
+   indirectref	: INDIRECT_REF
+			op0 -> val
+
    lhs		: addr-expr-arg
-		| '*' val
 		| bitfieldref
+		| indirectref
+		| WITH_SIZE_EXPR
+			op0 -> with-size-arg
+			op1 -> val
 
    min-lval	: ID
-		| '*' val
+		| indirectref
 
    bitfieldref	: BIT_FIELD_REF
 			op0 -> inner-compref
@@ -155,18 +165,26 @@ Boston, MA 02111-1307, USA.  */
 			op0 -> inner-compref
 
    condition	: val
-		| val RELOP val
+		| RELOP
+			op0 -> val
+			op1 -> val
 
    val		: ID
 		| CONST
 
    rhs		: lhs
 		| CONST
-		| '&' addr-expr-arg
-		| call_expr
-		| UNOP val
-		| val BINOP val
-		| val RELOP val
+		| call-stmt
+		| ADDR_EXPR
+			op0 -> addr-expr-arg
+		| UNOP
+			op0 -> val
+		| BINOP
+			op0 -> val
+			op1 -> val
+		| RELOP
+			op0 -> val
+			op1 -> val
 */
 
 static inline bool is_gimple_id (tree);
@@ -286,6 +304,7 @@ is_gimple_lvalue (tree t)
 {
   return (is_gimple_addr_expr_arg (t)
 	  || TREE_CODE (t) == INDIRECT_REF
+	  || TREE_CODE (t) == WITH_SIZE_EXPR
 	  /* These are complex lvalues, but don't have addresses, so they
 	     go here.  */
 	  || TREE_CODE (t) == BIT_FIELD_REF);
@@ -506,6 +525,8 @@ get_call_expr_in (tree t)
 {
   if (TREE_CODE (t) == MODIFY_EXPR)
     t = TREE_OPERAND (t, 1);
+  if (TREE_CODE (t) == WITH_SIZE_EXPR)
+    t = TREE_OPERAND (t, 0);
   if (TREE_CODE (t) == CALL_EXPR)
     return t;
   return NULL_TREE;

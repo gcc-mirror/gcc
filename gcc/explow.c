@@ -240,7 +240,12 @@ eliminate_constant_term (rtx x, rtx *constptr)
 rtx
 expr_size (tree exp)
 {
-  tree size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (lang_hooks.expr_size (exp), exp);
+  tree size;
+
+  if (TREE_CODE (exp) == WITH_SIZE_EXPR)
+    size = TREE_OPERAND (exp, 1);
+  else
+    size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (lang_hooks.expr_size (exp), exp);
 
   return expand_expr (size, NULL_RTX, TYPE_MODE (sizetype), 0);
 }
@@ -251,17 +256,17 @@ expr_size (tree exp)
 HOST_WIDE_INT
 int_expr_size (tree exp)
 {
-  tree t = lang_hooks.expr_size (exp);
+  tree size;
 
-  if (t == 0
-      || TREE_CODE (t) != INTEGER_CST
-      || TREE_OVERFLOW (t)
-      || TREE_INT_CST_HIGH (t) != 0
-      /* If the result would appear negative, it's too big to represent.  */
-      || (HOST_WIDE_INT) TREE_INT_CST_LOW (t) < 0)
+  if (TREE_CODE (exp) == WITH_SIZE_EXPR)
+    size = TREE_OPERAND (exp, 1);
+  else
+    size = lang_hooks.expr_size (exp);
+
+  if (size == 0 || !host_integerp (size, 0))
     return -1;
 
-  return TREE_INT_CST_LOW (t);
+  return tree_low_cst (size, 0);
 }
 
 /* Return a copy of X in which all memory references
