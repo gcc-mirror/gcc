@@ -26,10 +26,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* The data type used to bundle information necessary for pretty-printing
    a C or C++ entity.  */
-typedef struct c_pretty_print_info c_pretty_print_info;
+typedef struct c_pretty_print_info *c_pretty_printer;
 
 /* The type of a C pretty-printer 'member' function.  */
-typedef void (*c_pretty_print_fn) PARAMS ((c_pretty_print_info *, tree));
+typedef void (*c_pretty_print_fn) PARAMS ((c_pretty_printer, tree));
 
 struct c_pretty_print_info
 {
@@ -59,7 +59,6 @@ struct c_pretty_print_info
   c_pretty_print_fn assignment_expression;
 };
 
-#define pp_buffer(PPI) (PPI)->base.buffer
 #define pp_c_left_paren(PPI)             \
    do {                                  \
      pp_left_paren (PPI);                \
@@ -100,6 +99,7 @@ struct c_pretty_print_info
 #define pp_c_tree_identifier(PPI, ID)    \
    pp_c_identifier (PPI, IDENTIFIER_POINTER (ID))
 
+#define pp_buffer(PPI) (PPI)->base.buffer
 
 #define pp_declaration(PPI, T)            (*(PPI)->declaration) (PPI, T)
 #define pp_declaration_specifiers(PPI, D) \
@@ -125,19 +125,21 @@ struct c_pretty_print_info
    (*(PPI)->assignment_expression) (PPI, E)
 
 
+extern void pp_c_pretty_printer_init   PARAMS ((c_pretty_printer));
+
 /* Declarations.  */
-void pp_c_cv_qualifier PARAMS ((c_pretty_print_info *, int));
-void pp_c_parameter_declaration_clause PARAMS ((c_pretty_print_info *, tree));
-void pp_c_declaration PARAMS ((c_pretty_print_info *, tree));
-void pp_c_statement PARAMS ((c_pretty_print_info *, tree));
-void pp_c_expression PARAMS ((c_pretty_print_info *, tree));
+void pp_c_cv_qualifier                 PARAMS ((c_pretty_printer, int));
+void pp_c_parameter_declaration_clause PARAMS ((c_pretty_printer, tree));
+void pp_c_declaration                  PARAMS ((c_pretty_printer, tree));
+void pp_c_statement                    PARAMS ((c_pretty_printer, tree));
+void pp_c_expression                   PARAMS ((c_pretty_printer, tree));
 /* Statements.  */
-void pp_c_statement PARAMS ((c_pretty_print_info *, tree));
+void pp_c_statement                    PARAMS ((c_pretty_printer, tree));
 /* Expressions.  */
-void pp_c_expression PARAMS ((c_pretty_print_info *, tree));
-void pp_c_logical_or_expression PARAMS ((c_pretty_print_info *, tree));
-void pp_c_expression_list PARAMS ((c_pretty_print_info *, tree));
-void pp_c_cast_expression PARAMS ((c_pretty_print_info *, tree));
-void pp_c_postfix_expression PARAMS ((c_pretty_print_info *, tree));
-void pp_c_initializer PARAMS ((c_pretty_print_info *, tree));
-void pp_c_literal PARAMS ((c_pretty_print_info *, tree));
+void pp_c_expression                   PARAMS ((c_pretty_printer, tree));
+void pp_c_logical_or_expression        PARAMS ((c_pretty_printer, tree));
+void pp_c_expression_list              PARAMS ((c_pretty_printer, tree));
+void pp_c_cast_expression              PARAMS ((c_pretty_printer, tree));
+void pp_c_postfix_expression           PARAMS ((c_pretty_printer, tree));
+void pp_c_initializer                  PARAMS ((c_pretty_printer, tree));
+void pp_c_literal                      PARAMS ((c_pretty_printer, tree));

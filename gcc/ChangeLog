@@ -1,3 +1,16 @@
+2002-08-13  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* c-pretty-print.c: #include "c-tree.h".
+	(pp_c_simple_type_specifier): Tweak.
+	(pp_c_storage_class_specifier): New.
+	(pp_c_function_specifier): Likewise.
+	(pp_c_declaration_specifiers): Likewise.
+	(pp_c_init_declarator): Likewise.
+	(pp_c_declaration): Likewise.
+	(pp_c_direct_declarator): Stub.
+	(pp_c_declarator): Likewise.
+	(pp_c_parameter_declaration): Likewise.
+
 2002-08-13  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (deps_seen, deps_file, deferred_count, deferred_size,
