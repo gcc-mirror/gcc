@@ -243,6 +243,10 @@ tree_size (tree node)
       return (sizeof (struct tree_phi_node)
 	      + (PHI_ARG_CAPACITY (node) - 1) * sizeof (struct phi_arg_d));
 
+    case TREE_BINFO:
+      return (offsetof (struct tree_binfo, base_binfos)
+	      + VEC_embedded_size (tree, BINFO_N_BASE_BINFOS (node)));
+
     case TREE_VEC:
       return (sizeof (struct tree_vec)
 	      + (TREE_VEC_LENGTH (node) - 1) * sizeof(char *));
