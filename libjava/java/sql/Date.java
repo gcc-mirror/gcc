@@ -86,9 +86,11 @@ public class Date extends java.util.Date
    * date in JDBC format into a Java date.
    *
    * @param str The string to parse.
-   * @return The resulting <code>java.sql.Date</code> value. 
+   * @return The resulting <code>java.sql.Date</code> value.
+   *
+   * @deprecated
    */
-  public static Date valueOf(String str)
+  public static Date valueOf (String str)
   {
     try
       {
@@ -105,9 +107,11 @@ public class Date extends java.util.Date
    * This method returns this date in JDBC format.
    *
    * @return This date as a string.
+   *
+   * @deprecated
    */
   public String toString()
   {
-    return(sdf.format(this));
+    return sdf.format(this);
   }
 }

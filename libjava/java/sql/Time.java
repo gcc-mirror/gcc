@@ -61,9 +61,11 @@ public class Time extends java.util.Date
    * date in JDBC format into a Java date.
    *
    * @param str The string to parse.
-   * @return The resulting <code>java.sql.Time</code> value. 
+   * @return The resulting <code>java.sql.Time</code> value.
+   *
+   * @deprecated
    */
-  public static Time valueOf(String str)
+  public static Time valueOf (String str)
   {
     try
       {
@@ -110,11 +112,12 @@ public class Time extends java.util.Date
    * This method returns this date in JDBC format.
    *
    * @return This date as a string.
+   *
+   * @deprecated
    */
-  public String
-  toString()
+  public String toString ()
   {
-    return sdf.format(this);
+    return sdf.format (this);
   }
 
 }

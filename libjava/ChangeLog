@@ -1,5 +1,14 @@
 2003-03-31  Michael Koch  <konqueror@gmx.de>
 
+	* java/sql/Date.java
+	(valueOf): Deprecated, reformatted.
+	(toString): Deprecated, reformatted.
+	* java/sql/Time.java
+	(valueOf): Deprecated, reformatted.
+	(toString): Deprecated, reformatted.
+
+2003-03-31  Michael Koch  <konqueror@gmx.de>
+
 	* java/rmi/dgc/VMID.java
 	(isUnique): Deprecated.
 
