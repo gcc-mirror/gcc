@@ -215,7 +215,7 @@ public class OutputStreamWriter extends Writer
   private void writeChars(char[] buf, int offset, int count)
     throws IOException
   {
-    while (count > 0)
+    while (count > 0 || converter.havePendingBytes())
       {
 	// We must flush if out.count == out.buf.length.
 	// It is probably a good idea to flush if out.buf is almost full.
@@ -228,6 +228,13 @@ public class OutputStreamWriter extends Writer
 	  }
 	converter.setOutput(out.buf, out.count);
 	int converted = converter.write(buf, offset, count);
+	// Flush if we cannot make progress.
+	if (converted == 0 && out.count == converter.count)
+	  {
+	    out.flush();
+	    if (out.count != 0)
+	      throw new IOException("unable to flush output byte buffer");
+	  }
 	offset += converted;
 	count -= converted;
 	out.count = converter.count;

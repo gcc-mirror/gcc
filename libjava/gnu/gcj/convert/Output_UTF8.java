@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -104,6 +104,7 @@ public class Output_UTF8 extends UnicodeToBytes
 	      {
 		value = (hi_part - 0xD800) * 0x400 + (ch - 0xDC00) + 0x10000;
 		buf[count++] = (byte) (0xF0 | (value >> 18));
+		avail--;
 		bytes_todo = 3;
 		hi_part = 0;
 	      }
@@ -118,4 +119,10 @@ public class Output_UTF8 extends UnicodeToBytes
       }
     return inpos - start_pos;
   }
+
+  public boolean havePendingBytes()
+  {
+    return bytes_todo > 0;
+  }
+
 }

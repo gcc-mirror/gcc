@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -144,6 +144,17 @@ public abstract class UnicodeToBytes extends IOConverter
     int srcEnd = inpos + (inlength > work.length ? work.length : inlength);
     str.getChars(inpos, srcEnd, work, 0);
     return write(work, 0, srcEnd - inpos);
+  }
+
+  /**
+   * Returns true when the converter has consumed some bytes that are
+   * not yet converted to characters because further continuation
+   * bytes are needed.  Defaults to false, should be overridden by
+   * decoders that internally store some bytes.
+   */
+  public boolean havePendingBytes()
+  {
+    return false;
   }
 
   /** Indicate that the converter is resuable.
