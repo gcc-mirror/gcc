@@ -1,3 +1,14 @@
+2004-02-22  Matthias Klose  <doko@debian.org>
+
+	Taken from mainline:
+
+	2004-02-12  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (install-man): Use $(CPP_INSTALL_NAME) and
+	$(GCOV_INSTALL_NAME) to install manpages.  Remove generic rule
+	for installing .1 manpages.  Add rules for installing cpp
+	and gcov manpages under their installed names.
+
 2004-02-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/14209
@@ -57,10 +68,10 @@
 	message about warranty.
 
 2004-02-19  Aldy Hernandez  <aldyh@redhat.com>
- 
+
         * config/rs6000/spe.md (spe_fixunssfsi2): Rename to
         spe_fixuns_truncsfsi2.
- 
+
         * config/rs6000/rs6000.md (fixunssfsi2): Rename to
         fixuns_truncsfsi2.
 
@@ -3325,4 +3336,3 @@
 	* invoke.texi (-O1): Document change.
 
 See ChangeLog.10 for earlier changes.
-
