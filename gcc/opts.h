@@ -22,7 +22,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GCC_OPTS_H
 
 extern void decode_options (unsigned int argc, const char **argv);
-extern void add_input_filename (const char *filename);
 
 struct cl_option
 {

@@ -1,3 +1,8 @@
+2004-11-18  Ben Elliston  <bje@au.ibm.com>
+
+	* opts.h (add_input_filename): Remove extern declaration.
+	* opts.c (add_input_filename): Make static.
+
 2004-11-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/i386/i386.c (i386_solaris_elf_named_section): Mark with
