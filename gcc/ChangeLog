@@ -1,3 +1,8 @@
+2000-11-08  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/sparc/sparc.c (sparc_va_arg): When the required alignment
+	is more than that provided, copy to a temporary.
+
 2000-11-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* mklibgcc.in (EXTRA_MULTILIB_PARTS): Prevent `make' from

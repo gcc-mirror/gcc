@@ -4793,12 +4793,6 @@ sparc_va_arg (valist, type)
 	  indirect = 1;
 	  size = rsize = UNITS_PER_WORD;
 	}
-      else
-	{
-	  /* ??? The old va-sparc.h implementation, for 8 byte objects
-	     copied stuff to a temporary -- I don't see that that 
-	     provides any more alignment than the stack slot did.  */
-	}
     }
 
   incr = valist;
@@ -4824,6 +4818,37 @@ sparc_va_arg (valist, type)
   expand_expr (incr, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   addr_rtx = expand_expr (addr, NULL, Pmode, EXPAND_NORMAL);
+
+  /* If the address isn't aligned properly for the type,
+     we may need to copy to a temporary.  
+     FIXME: This is inefficient.  Usually we can do this
+     in registers.  */
+  if (align == 0
+      && TYPE_ALIGN (type) > BITS_PER_WORD
+      && !indirect)
+    {
+      /* FIXME: We really need to specify that the temporary is live
+	 for the whole function because expand_builtin_va_arg wants
+	 the alias set to be get_varargs_alias_set (), but in this
+	 case the alias set is that for TYPE and if the memory gets
+	 reused it will be reused with alias set TYPE.  */
+      rtx tmp = assign_temp (type, 0, 1, 0);
+      rtx dest_addr;
+
+      addr_rtx = force_reg (Pmode, addr_rtx);
+      addr_rtx = gen_rtx_MEM (BLKmode, addr_rtx);
+      MEM_ALIAS_SET (addr_rtx) = get_varargs_alias_set ();
+      tmp = shallow_copy_rtx (tmp);
+      PUT_MODE (tmp, BLKmode);
+      MEM_ALIAS_SET (tmp) = 0;
+      
+      dest_addr = emit_block_move (tmp, addr_rtx, GEN_INT (rsize), 
+				   BITS_PER_WORD);
+      if (dest_addr != NULL_RTX)
+	addr_rtx = dest_addr;
+      else
+	addr_rtx = XCEXP (tmp, 0, MEM);
+    }
 
   if (indirect)
     {
