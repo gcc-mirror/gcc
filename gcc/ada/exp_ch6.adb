@@ -1051,7 +1051,7 @@ package body Exp_Ch6 is
          end if;
       end if;
 
-      --  The call node itself is re-analyzed in Expand_Call.
+      --  The call node itself is re-analyzed in Expand_Call
 
    end Expand_Actuals;
 
@@ -1974,6 +1974,10 @@ package body Exp_Ch6 is
       --  appropriate expansion to the corresponding tree node and we
       --  are all done (since after that the call is gone!)
 
+      --  In the case where the intrinsic is to be processed by the back end,
+      --  the call to Expand_Intrinsic_Call will do nothing, which is fine,
+      --  since the idea in this case is to pass the call unchanged.
+
       if Is_Intrinsic_Subprogram (Subp) then
          Expand_Intrinsic_Call (N, Subp);
          return;
@@ -2300,7 +2304,7 @@ package body Exp_Ch6 is
       Temp_Typ : Entity_Id;
 
       procedure Make_Exit_Label;
-      --  Build declaration for exit label to be used in Return statements.
+      --  Build declaration for exit label to be used in Return statements
 
       function Process_Formals (N : Node_Id) return Traverse_Result;
       --  Replace occurrence of a formal with the corresponding actual, or
@@ -2331,7 +2335,7 @@ package body Exp_Ch6 is
 
       procedure Make_Exit_Label is
       begin
-         --  Create exit label for subprogram, if one doesn't exist yet.
+         --  Create exit label for subprogram if one does not exist yet
 
          if No (Exit_Lab) then
             Lab_Id := Make_Identifier (Loc, New_Internal_Name ('L'));
@@ -2509,15 +2513,13 @@ package body Exp_Ch6 is
          elsif Nkind (N) = N_Identifier
            and then Nkind (Parent (Entity (N))) = N_Object_Declaration
          then
-
-            --  The block assigns the result of the call to the temporary.
+            --  The block assigns the result of the call to the temporary
 
             Insert_After (Parent (Entity (N)), Blk);
 
          elsif Nkind (Parent (N)) = N_Assignment_Statement
            and then Is_Entity_Name (Name (Parent (N)))
          then
-
             --  Replace assignment with the block
 
             declare
@@ -2660,7 +2662,7 @@ package body Exp_Ch6 is
          Set_Declarations (Blk, New_List);
       end if;
 
-      --  If this is a derived function, establish the proper return type.
+      --  If this is a derived function, establish the proper return type
 
       if Present (Orig_Subp)
         and then Orig_Subp /= Subp
@@ -2797,7 +2799,7 @@ package body Exp_Ch6 is
             Targ := Name (Parent (N));
 
          else
-            --  Replace call with temporary, and create its declaration.
+            --  Replace call with temporary and create its declaration
 
             Temp :=
               Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
@@ -2815,7 +2817,7 @@ package body Exp_Ch6 is
          end if;
       end if;
 
-      --  Traverse the tree and replace  formals with actuals or their thunks.
+      --  Traverse the tree and replace formals with actuals or their thunks.
       --  Attach block to tree before analysis and rewriting.
 
       Replace_Formals (Blk);
@@ -2879,7 +2881,7 @@ package body Exp_Ch6 is
 
       Restore_Env;
 
-      --  Cleanup mapping between formals and actuals, for other expansions.
+      --  Cleanup mapping between formals and actuals for other expansions
 
       F := First_Formal (Subp);
 
@@ -3493,9 +3495,9 @@ package body Exp_Ch6 is
             end loop;
          end if;
 
-      --  For a function, we must deal with the case where there is at
-      --  least one missing return. What we do is to wrap the entire body
-      --  of the function in a block:
+      --  For a function, we must deal with the case where there is at least
+      --  one missing return. What we do is to wrap the entire body of the
+      --  function in a block:
 
       --    begin
       --      ...
@@ -3732,7 +3734,7 @@ package body Exp_Ch6 is
       if Is_Subprogram (Proc)
         and then Proc /= Corr
       then
-         --  Protected function or procedure.
+         --  Protected function or procedure
 
          Set_Entity (Rec, Param);
 
