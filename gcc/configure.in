@@ -1859,6 +1859,27 @@ changequote([,])dnl
 	i960-*-*)			# Default i960 environment.
 		use_collect2=yes
 		;;
+	ia64*-*-elf*)
+		tm_file=ia64/elf.h
+		tmake_file="ia64/t-ia64"
+		target_cpu_default="0"
+		if test x$gas = xyes
+		then
+			target_cpu_default="${target_cpu_default}|MASK_GNU_AS"
+		fi
+		if test x$gnu_ld = xyes
+		then
+			target_cpu_default="${target_cpu_default}|MASK_GNU_LD"
+		fi
+		;;
+	ia64*-*-linux*)
+		tm_file=ia64/linux.h
+		tmake_file="t-linux ia64/t-ia64"
+		target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
+ 		if test x$enable_threads = xyes; then
+ 			thread_file='posix'
+ 		fi
+		;;
 	m32r-*-elf*)
 		extra_parts="crtinit.o crtfini.o"
 		;;
