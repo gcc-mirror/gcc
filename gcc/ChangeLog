@@ -1,3 +1,8 @@
+Mon Nov  1 14:22:51 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/thumb.c (thumb_expand_prologue): Add comments
+	explaining what is goin on in this function.
+
 Mon Nov  1 08:03:15 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* regclass.c (record_reg_classes): In matching case, recompute
