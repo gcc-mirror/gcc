@@ -1,3 +1,7 @@
+Sun Aug 16 00:57:48 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Aug 16 01:53:21 1998  Richard Henderson  <rth@cygnus.com>
 
 	* reload.c (find_equiv_reg): Reject equivalences separated
