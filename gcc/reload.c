@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -5558,7 +5558,7 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
   /* Reject VALUE if it was loaded from GOAL
      and is also a register that appears in the address of GOAL.  */
 
-  if (goal_mem && value == SET_DEST (PATTERN (where))
+  if (goal_mem && value == SET_DEST (single_set (where))
       && refers_to_regno_for_reload_p (valueno,
 				       (valueno
 					+ HARD_REGNO_NREGS (valueno, mode)),
