@@ -1868,7 +1868,7 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
 	;
       else if (IS_AGGR_TYPE (argtypes[i]))
 	{
-	  tree convs = lookup_conversions (argtypes[i]);
+	  tree convs;
 
 	  if (i == 0 && code == MODIFY_EXPR && code2 == NOP_EXPR)
 	    return candidates;
@@ -1890,7 +1890,7 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
 
 	  for (; convs; convs = TREE_CHAIN (convs))
 	    {
-	      type = TREE_TYPE (TREE_TYPE (TREE_VALUE (convs)));
+	      type = TREE_TYPE (TREE_TYPE (OVL_CURRENT (TREE_VALUE (convs))));
 
 	      if (i == 0 && ref1
 		  && (TREE_CODE (type) != REFERENCE_TYPE
