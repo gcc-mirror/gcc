@@ -1,3 +1,8 @@
+Thu Jul 31 19:49:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (create_edge): Fix typo.
+	* i386.c (pic_symbolic_operand): Reorder tests.
+
 2003-07-31  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/gcov.texi (Invoking Gcov): Describe output name mangling
