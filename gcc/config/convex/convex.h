@@ -414,7 +414,7 @@ extern int target_flags;
 
 /* Use /path/libgcc.a instead of -lgcc, makes bootstrap work more smoothly. */
 
-#define LINK_LIBGCC_SPECIAL
+#define LINK_LIBGCC_SPECIAL_1
 
 /* Allow $ in identifiers. */
 
