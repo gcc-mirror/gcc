@@ -4051,11 +4051,9 @@ finclude (f, fname, op, system_header_p, dirptr)
 	  bufp = basep + st_size;	/* May have moved */
 	}
     }
-    fp->buf = (U_CHAR *) alloca (st_size + 2);
+    fp->buf = basep;
     fp->bufp = fp->buf;
-    bcopy (basep, fp->buf, st_size);
     fp->length = st_size;
-    free (basep);
   }
 
   /* Close descriptor now, so nesting does not use lots of descriptors.  */
