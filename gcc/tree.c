@@ -4123,10 +4123,10 @@ get_unwidened (tree op, tree for_type)
 	 The resulting extension to its nominal type (a fullword type)
 	 must fit the same conditions as for other extensions.  */
 
-      if (INT_CST_LT_UNSIGNED (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (op)))
+      if (type != 0
+	  && INT_CST_LT_UNSIGNED (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (op)))
 	  && (for_type || ! DECL_BIT_FIELD (TREE_OPERAND (op, 1)))
-	  && (! uns || final_prec <= innerprec || unsignedp)
-	  && type != 0)
+	  && (! uns || final_prec <= innerprec || unsignedp))
 	{
 	  win = build (COMPONENT_REF, type, TREE_OPERAND (op, 0),
 		       TREE_OPERAND (op, 1));

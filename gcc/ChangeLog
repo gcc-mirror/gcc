@@ -1,3 +1,8 @@
+2004-01-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* tree.c (get_unwidened): Reorder conditions so that the null pointer
+	check is done first.
+
 2004-01-09  Eric Christopher  <echristo@redhat.com>
 
 	* toplev.c (rest_of_handle_cfg): Add reg_scan pass
