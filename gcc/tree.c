@@ -3731,7 +3731,7 @@ dump_tree_statistics ()
 #ifndef NO_DOT_IN_LABEL
 #define FILE_FUNCTION_FORMAT "_GLOBAL_.D.%s"
 #else /* NO_DOT_IN_LABEL */
-#define FILE_FUNCTION_FORMAT "__GLOBAL_D_%s"
+#define FILE_FUNCTION_FORMAT "_GLOBAL__D_%s"
 #endif	/* NO_DOT_IN_LABEL */
 #endif	/* NO_DOLLAR_IN_LABEL */
 
