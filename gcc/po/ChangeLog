@@ -1,3 +1,9 @@
+2000-06-07  Philipp Thomas  <pthomas@suse.de>
+
+	* POTFILES.in: Remove dyn-string.[ch].
+	* gcc.pot: Regenerated.
+	* cat-id-tbl.c: Ditto.
+
 2000-06-06  Philipp Thomas  <pthomas@suse.de>
 
 	* Makefile.in.in: Add --define switch for xgettext.
