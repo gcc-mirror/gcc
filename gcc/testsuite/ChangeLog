@@ -1,3 +1,7 @@
+2004-07-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/init/call1.C: XFAIL.
+
 2004-07-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c-torture/execute/builtins/mempcpy-2.c: Rename movstr*,
