@@ -1,3 +1,7 @@
+Thu Oct  8 22:03:45 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (RTX_COSTS): Add PROCESSOR_PPC604e cases.
+
 Thu Oct  8 17:00:18 1998  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (find_basic_blocks): Correctly determine when a call
