@@ -529,21 +529,16 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
    reloaded into floating registers (since no move-insn can do that)
    and we ensure that QImodes aren't reloaded into the esi or edi reg.  */
 
-/* Don't put float CONST_DOUBLE into fp regs.
+/* Put float CONST_DOUBLE in the constant pool instead of fp regs.
    QImode must go into class Q_REGS.
-   MODE_INT must not go into FLOAT_REGS. */
+   Narrow ALL_REGS to GENERAL_REGS.  This supports allowing movsf and
+   movdf to do mem-to-mem moves through integer regs. */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)	\
   (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode ? NO_REGS	\
    : GET_MODE (X) == QImode && ! reg_class_subset_p (CLASS, Q_REGS) ? Q_REGS \
-   : (FLOAT_CLASS_P (CLASS)						\
-      && (GET_MODE (X) == VOIDmode					\
-	  || GET_MODE_CLASS (GET_MODE (X)) == MODE_INT)) ? GENERAL_REGS	\
-   : (CLASS) == ALL_REGS ? GENERAL_REGS					\
-   : (CLASS))
-
-#define PREFERRED_OUTPUT_RELOAD_CLASS(X,CLASS)	\
-  ((CLASS) == ALL_REGS ? GENERAL_REGS		\
+   : ((CLASS) == ALL_REGS						\
+      && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT) ? GENERAL_REGS	\
    : (CLASS))
 
 /* If we are copying between general and FP registers, we need a memory
@@ -1090,6 +1085,13 @@ do									\
       }									\
   }									\
 while (0)
+
+/* Initialize data used by insn expanders.  This is called from
+   init_emit, once for each function, before code is generated.
+   For 386, clear stack slot assignments remembered from previous
+   functions. */
+
+#define INIT_EXPANDERS clear_386_stack_locals ()
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
