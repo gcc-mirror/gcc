@@ -1,4 +1,3 @@
-/* APPLE LOCAL file put in 4.1 */
 /* { dg-do compile { target *-*-darwin* } } */
 /* { dg-require-weak "" } */
 
