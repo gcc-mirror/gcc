@@ -4861,7 +4861,7 @@ emit_reload_insns (insn)
 	     then load RELOADREG from OLDEQUIV.  */
 
 	  if (GET_MODE (reloadreg) != mode)
-	    reloadreg = gen_rtx (REG, mode, REGNO (reloadreg));
+	    reloadreg = gen_lowpart_common (mode, reloadreg);
 	  while (GET_CODE (oldequiv) == SUBREG && GET_MODE (oldequiv) != mode)
 	    oldequiv = SUBREG_REG (oldequiv);
 	  if (GET_MODE (oldequiv) != VOIDmode
@@ -5366,7 +5366,7 @@ emit_reload_insns (insn)
 	    }
 
 	  if (GET_MODE (reloadreg) != mode)
-	    reloadreg = gen_rtx (REG, mode, REGNO (reloadreg));
+	    reloadreg = gen_lowpart_common (mode, reloadreg);
 
 #ifdef SECONDARY_OUTPUT_RELOAD_CLASS
 
