@@ -59,7 +59,7 @@ extern void *alloca ();
    include these in the sources since other machines might define them
    differently.  */
 
-extern void *malloc (), *realloc (), *calloc ();
+extern void *malloc (), *realloc (), *calloc (), *sbrk ();
 
 #ifndef inhibit_libc
 #include "string.h"
