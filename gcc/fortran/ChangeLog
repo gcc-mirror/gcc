@@ -1,3 +1,15 @@
+2004-01-23  Paul Brook  <paul@codesourcery.com>
+	Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/17941
+	* arith.c (gfc_convert_real): Remove sign handling.
+	* primary.c (match_digits): Allow whitespace after initial sign.
+	(match_real_const): Handle signs here.  Allow whitespace after
+	initial sign.  Remove dead code.
+	(match_const_complex_part): Remove.
+	(match_complex_part): Use match_{real,integer}_const.
+	(match_complex_constant): Cross-promote integer types.
+
 2005-01-23  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR fortran/19294
