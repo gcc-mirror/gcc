@@ -1,6 +1,6 @@
 // Runtime.java - Runtime class.
 
-/* Copyright (C) 1998, 1999  Cygnus Solutions
+/* Copyright (C) 1998, 1999, 2000  Cygnus Solutions
 
    This file is part of libgcj.
 
@@ -96,6 +96,12 @@ public class Runtime
 
   public native void load (String pathname);
   public native void loadLibrary (String libname);
+
+  // This is a helper function for the ClassLoader which can load
+  // compiled libraries.  Returns true if library (which is just the
+  // base name -- path searching is done by this function) was loaded,
+  // false otherwise.
+  native boolean loadLibraryInternal (String libname);
 
   public native void runFinalization ();
 

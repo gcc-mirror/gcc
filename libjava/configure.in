@@ -17,7 +17,20 @@ LIBGCJ_CONFIGURE(.)
 
 AM_CONFIG_HEADER(include/config.h)
 
+# Only use libltdl for native builds.
+if test -z "${with_cross_host}"; then
+   AC_LIBLTDL_CONVENIENCE
+   AC_LIBTOOL_DLOPEN
+   DIRLTDL=libltdl
+   AC_DEFINE(USE_LTDL)
+   # Sigh.  Libtool's macro doesn't do the right thing.
+   INCLTDL="-I\$(top_srcdir)/libltdl $INCLTDL"
+fi
+AC_SUBST(INCLTDL)
+AC_SUBST(LIBLTDL)
+AC_SUBST(DIRLTDL)
 AM_PROG_LIBTOOL
+AC_CONFIG_SUBDIRS($DIRLDL)
 
 if test -z "$with_target_subdir" || test "$with_target_subdir" = "."; then
    COMPPATH=.

@@ -322,7 +322,7 @@ done<<>>dnl>>)
 changequote([,]))])
 
 
-# serial 35 AC_PROG_LIBTOOL
+# serial 40 AC_PROG_LIBTOOL
 AC_DEFUN(AC_PROG_LIBTOOL,
 [AC_REQUIRE([AC_LIBTOOL_SETUP])dnl
 
@@ -331,10 +331,11 @@ AC_CACHE_SAVE
 
 # Actually configure libtool.  ac_aux_dir is where install-sh is found.
 CC="$CC" CFLAGS="$CFLAGS" CPPFLAGS="$CPPFLAGS" \
-LD="$LD" NM="$NM" RANLIB="$RANLIB" LN_S="$LN_S" \
-DLLTOOL="$DLLTOOL" AS="$AS" \
+LD="$LD" LDFLAGS="$LDFLAGS" LIBS="$LIBS" \
+LN_S="$LN_S" NM="$NM" RANLIB="$RANLIB" \
+DLLTOOL="$DLLTOOL" AS="$AS" OBJDUMP="$OBJDUMP" \
 ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/ltconfig --no-reexec \
-$libtool_flags --no-verify $ac_aux_dir/ltmain.sh $host \
+$libtool_flags --no-verify $ac_aux_dir/ltmain.sh $lt_target \
 || AC_MSG_ERROR([libtool configure failed])
 
 # Reload cache, that may have been modified by ltconfig
@@ -363,24 +364,33 @@ AC_REQUIRE([AC_PROG_RANLIB])dnl
 AC_REQUIRE([AC_PROG_CC])dnl
 AC_REQUIRE([AC_PROG_LD])dnl
 AC_REQUIRE([AC_PROG_NM])dnl
-AC_REQUIRE([AC_SYS_NM_PARSE])dnl
-AC_REQUIRE([AC_SYS_SYMBOL_UNDERSCORE])dnl
 AC_REQUIRE([AC_PROG_LN_S])dnl
 dnl
+
+case "$target" in
+NONE) lt_target="$host" ;;
+*) lt_target="$target" ;;
+esac
 
 # Check for any special flags to pass to ltconfig.
 libtool_flags="--cache-file=$cache_file"
 test "$enable_shared" = no && libtool_flags="$libtool_flags --disable-shared"
 test "$enable_static" = no && libtool_flags="$libtool_flags --disable-static"
 test "$enable_fast_install" = no && libtool_flags="$libtool_flags --disable-fast-install"
-test "$lt_dlopen" = yes && libtool_flags="$libtool_flags --enable-dlopen"
-test "$silent" = yes && libtool_flags="$libtool_flags --silent"
 test "$ac_cv_prog_gcc" = yes && libtool_flags="$libtool_flags --with-gcc"
 test "$ac_cv_prog_gnu_ld" = yes && libtool_flags="$libtool_flags --with-gnu-ld"
+ifdef([AC_PROVIDE_AC_LIBTOOL_DLOPEN],
+[libtool_flags="$libtool_flags --enable-dlopen"])
+ifdef([AC_PROVIDE_AC_LIBTOOL_WIN32_DLL],
+[libtool_flags="$libtool_flags --enable-win32-dll"])
+AC_ARG_ENABLE(libtool-lock,
+  [  --disable-libtool-lock  avoid locking (might break parallel builds)])
+test "x$enable_libtool_lock" = xno && libtool_flags="$libtool_flags --disable-lock"
+test x"$silent" = xyes && libtool_flags="$libtool_flags --silent"
 
 # Some flags need to be propagated to the compiler or linker for good
 # libtool support.
-case "$host" in
+case "$lt_target" in
 *-*-irix6*)
   # Find out which ABI we are using.
   echo '[#]line __oline__ "configure"' > conftest.$ac_ext
@@ -412,33 +422,28 @@ case "$host" in
   fi
   ;;
 
-*-*-cygwin*)
-  AC_SYS_LIBTOOL_CYGWIN
+ifdef([AC_PROVIDE_AC_LIBTOOL_WIN32_DLL],
+[*-*-cygwin* | *-*-mingw*)
+  AC_CHECK_TOOL(DLLTOOL, dlltool, false)
+  AC_CHECK_TOOL(AS, as, false)
+  AC_CHECK_TOOL(OBJDUMP, objdump, false)
   ;;
-
+])
 esac
-
-# enable the --disable-libtool-lock switch
-
-AC_ARG_ENABLE(libtool-lock,
-[  --disable-libtool-lock  force libtool not to do file locking],
-need_locks=$enableval,
-need_locks=yes)
-
-if test x"$need_locks" = xno; then
-  libtool_flags="$libtool_flags --disable-lock"
-fi
 ])
 
-# AC_LIBTOOL_DLOPEN - check for dlopen support
-AC_DEFUN(AC_LIBTOOL_DLOPEN, [lt_dlopen=yes])
+# AC_LIBTOOL_DLOPEN - enable checks for dlopen support
+AC_DEFUN(AC_LIBTOOL_DLOPEN, [AC_BEFORE([$0],[AC_LIBTOOL_SETUP])])
+
+# AC_LIBTOOL_WIN32_DLL - declare package support for building win32 dll's
+AC_DEFUN(AC_LIBTOOL_WIN32_DLL, [AC_BEFORE([$0], [AC_LIBTOOL_SETUP])])
 
 # AC_ENABLE_SHARED - implement the --enable-shared flag
 # Usage: AC_ENABLE_SHARED[(DEFAULT)]
 #   Where DEFAULT is either `yes' or `no'.  If omitted, it defaults to
 #   `yes'.
-AC_DEFUN(AC_ENABLE_SHARED,
-[define([AC_ENABLE_SHARED_DEFAULT], ifelse($1, no, no, yes))dnl
+AC_DEFUN(AC_ENABLE_SHARED, [dnl
+define([AC_ENABLE_SHARED_DEFAULT], ifelse($1, no, no, yes))dnl
 AC_ARG_ENABLE(shared,
 changequote(<<, >>)dnl
 <<  --enable-shared[=PKGS]  build shared libraries [default=>>AC_ENABLE_SHARED_DEFAULT],
@@ -463,15 +468,15 @@ enable_shared=AC_ENABLE_SHARED_DEFAULT)dnl
 ])
 
 # AC_DISABLE_SHARED - set the default shared flag to --disable-shared
-AC_DEFUN(AC_DISABLE_SHARED,
-[AC_ENABLE_SHARED(no)])
+AC_DEFUN(AC_DISABLE_SHARED, [AC_BEFORE([$0],[AC_LIBTOOL_SETUP])dnl
+AC_ENABLE_SHARED(no)])
 
 # AC_ENABLE_STATIC - implement the --enable-static flag
 # Usage: AC_ENABLE_STATIC[(DEFAULT)]
 #   Where DEFAULT is either `yes' or `no'.  If omitted, it defaults to
 #   `yes'.
-AC_DEFUN(AC_ENABLE_STATIC,
-[define([AC_ENABLE_STATIC_DEFAULT], ifelse($1, no, no, yes))dnl
+AC_DEFUN(AC_ENABLE_STATIC, [dnl
+define([AC_ENABLE_STATIC_DEFAULT], ifelse($1, no, no, yes))dnl
 AC_ARG_ENABLE(static,
 changequote(<<, >>)dnl
 <<  --enable-static[=PKGS]  build static libraries [default=>>AC_ENABLE_STATIC_DEFAULT],
@@ -496,16 +501,16 @@ enable_static=AC_ENABLE_STATIC_DEFAULT)dnl
 ])
 
 # AC_DISABLE_STATIC - set the default static flag to --disable-static
-AC_DEFUN(AC_DISABLE_STATIC,
-[AC_ENABLE_STATIC(no)])
+AC_DEFUN(AC_DISABLE_STATIC, [AC_BEFORE([$0],[AC_LIBTOOL_SETUP])dnl
+AC_ENABLE_STATIC(no)])
 
 
 # AC_ENABLE_FAST_INSTALL - implement the --enable-fast-install flag
 # Usage: AC_ENABLE_FAST_INSTALL[(DEFAULT)]
 #   Where DEFAULT is either `yes' or `no'.  If omitted, it defaults to
 #   `yes'.
-AC_DEFUN(AC_ENABLE_FAST_INSTALL,
-[define([AC_ENABLE_FAST_INSTALL_DEFAULT], ifelse($1, no, no, yes))dnl
+AC_DEFUN(AC_ENABLE_FAST_INSTALL, [dnl
+define([AC_ENABLE_FAST_INSTALL_DEFAULT], ifelse($1, no, no, yes))dnl
 AC_ARG_ENABLE(fast-install,
 changequote(<<, >>)dnl
 <<  --enable-fast-install[=PKGS]  optimize for fast installation [default=>>AC_ENABLE_FAST_INSTALL_DEFAULT],
@@ -530,9 +535,8 @@ enable_fast_install=AC_ENABLE_FAST_INSTALL_DEFAULT)dnl
 ])
 
 # AC_ENABLE_FAST_INSTALL - set the default to --disable-fast-install
-AC_DEFUN(AC_DISABLE_FAST_INSTALL,
-[AC_ENABLE_FAST_INSTALL(no)])
-
+AC_DEFUN(AC_DISABLE_FAST_INSTALL, [AC_BEFORE([$0],[AC_LIBTOOL_SETUP])dnl
+AC_ENABLE_FAST_INSTALL(no)])
 
 # AC_PROG_LD - find the path to the GNU or non-GNU linker
 AC_DEFUN(AC_PROG_LD,
@@ -550,7 +554,7 @@ if test "$ac_cv_prog_gcc" = yes; then
   case "$ac_prog" in
     # Accept absolute paths.
 changequote(,)dnl
-    /* | [A-Za-z]:[\\/]*)
+    [\\/]* | [A-Za-z]:[\\/]*)
       re_direlt='/[^/][^/]*/\.\./'
 changequote([,])dnl
       # Canonicalize the path of ld
@@ -576,10 +580,10 @@ else
 fi
 AC_CACHE_VAL(ac_cv_path_LD,
 [if test -z "$LD"; then
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}${PATH_SEPARATOR-:}"
   for ac_dir in $PATH; do
     test -z "$ac_dir" && ac_dir=.
-    if test -f "$ac_dir/$ac_prog"; then
+    if test -f "$ac_dir/$ac_prog" || test -f "$ac_dir/$ac_prog$ac_exeext"; then
       ac_cv_path_LD="$ac_dir/$ac_prog"
       # Check to see if the program is GNU ld.  I'd rather use --version,
       # but apparently some GNU ld's only accept -v.
@@ -602,7 +606,6 @@ else
   AC_MSG_RESULT(no)
 fi
 test -z "$LD" && AC_MSG_ERROR([no acceptable ld found in \$PATH])
-AC_SUBST(LD)
 AC_PROG_LD_GNU
 ])
 
@@ -624,10 +627,10 @@ AC_CACHE_VAL(ac_cv_path_NM,
   # Let the user override the test.
   ac_cv_path_NM="$NM"
 else
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:"
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}${PATH_SEPARATOR-:}"
   for ac_dir in $PATH /usr/ccs/bin /usr/ucb /bin; do
     test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/nm; then
+    if test -f $ac_dir/nm || test -f $ac_dir/nm$ac_exeext ; then
       # Check to see if the nm accepts a BSD-compat flag.
       # Adding the `sed 1q' prevents false positives on HP-UX, which says:
       #   nm: unknown option "B" ignored
@@ -648,230 +651,24 @@ else
 fi])
 NM="$ac_cv_path_NM"
 AC_MSG_RESULT([$NM])
-AC_SUBST(NM)
-])
-
-# AC_SYS_NM_PARSE - Check for command to grab the raw symbol name followed
-# by C symbol name from nm.
-AC_DEFUN(AC_SYS_NM_PARSE,
-[AC_REQUIRE([AC_CANONICAL_HOST])dnl
-AC_REQUIRE([AC_PROG_NM])dnl
-# Check for command to grab the raw symbol name followed by C symbol from nm.
-AC_MSG_CHECKING([command to parse $NM output])
-AC_CACHE_VAL(ac_cv_sys_global_symbol_pipe,
-[# These are sane defaults that work on at least a few old systems.
-# {They come from Ultrix.  What could be older than Ultrix?!! ;)}
-
-changequote(,)dnl
-# Character class describing NM global symbol codes.
-ac_symcode='[BCDEGRST]'
-
-# Regexp to match symbols that can be accessed directly from C.
-ac_sympat='\([_A-Za-z][_A-Za-z0-9]*\)'
-
-# Transform the above into a raw symbol and a C symbol.
-ac_symxfrm='\1 \2\3 \3'
-
-# Transform an extracted symbol line into a proper C declaration
-ac_global_symbol_to_cdecl="sed -n -e 's/^. .* \(.*\)$/extern char \1;/p'"
-
-# Define system-specific variables.
-case "$host_os" in
-aix*)
-  ac_symcode='[BCDT]'
-  ;;
-cygwin* | mingw*)
-  ac_symcode='[ABCDGISTW]'
-  ;;
-hpux*)
-  ac_global_symbol_to_cdecl="sed -n -e 's/^T .* \(.*\)$/extern char \1();/p' -e 's/^. .* \(.*\)$/extern char \1;/p'"
-  ;;
-irix*)
-  ac_symcode='[BCDEGRST]'
-  ;;
-solaris*)
-  ac_symcode='[BDT]'
-  ;;
-esac
-
-# If we're using GNU nm, then use its standard symbol codes.
-if $NM -V 2>&1 | egrep '(GNU|with BFD)' > /dev/null; then
-  ac_symcode='[ABCDGISTW]'
-fi
-changequote([,])dnl
-
-# Try without a prefix undercore, then with it.
-for ac_symprfx in "" "_"; do
-
-  ac_cv_sys_global_symbol_pipe="sed -n -e 's/^.*[ 	]\($ac_symcode\)[ 	][ 	]*\($ac_symprfx\)$ac_sympat$/$ac_symxfrm/p'"
-
-  # Check to see that the pipe works correctly.
-  ac_pipe_works=no
-  rm -f conftest.$ac_ext
-  cat > conftest.$ac_ext <<EOF
-#ifdef __cplusplus
-extern "C" {
-#endif
-char nm_test_var;
-void nm_test_func(){}
-#ifdef __cplusplus
-}
-#endif
-int main(){nm_test_var='a';nm_test_func;return 0;}
-EOF
-
-  if AC_TRY_EVAL(ac_compile); then
-    # Now try to grab the symbols.
-    ac_nlist=conftest.nm
-  
-    if AC_TRY_EVAL(NM conftest.$ac_objext \| $ac_cv_sys_global_symbol_pipe \> $ac_nlist) && test -s "$ac_nlist"; then
-
-      # Try sorting and uniquifying the output.
-      if sort "$ac_nlist" | uniq > "$ac_nlist"T; then
-	mv -f "$ac_nlist"T "$ac_nlist"
-      else
-	rm -f "$ac_nlist"T
-      fi
-
-      # Make sure that we snagged all the symbols we need.
-      if egrep ' nm_test_var$' "$ac_nlist" >/dev/null; then
-	if egrep ' nm_test_func$' "$ac_nlist" >/dev/null; then
-	  cat <<EOF > conftest.c
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-EOF
-	  # Now generate the symbol file.
-	  eval "$ac_global_symbol_to_cdecl"' < "$ac_nlist" >> conftest.c'
-
-	  cat <<EOF >> conftest.c
-#if defined (__STDC__) && __STDC__
-# define lt_ptr_t void *
-#else
-# define lt_ptr_t char *
-# define const
-#endif
-
-/* The mapping between symbol names and symbols. */
-const struct {
-  const char *name;
-  lt_ptr_t address;
-}
-changequote(,)dnl
-lt_preloaded_symbols[] =
-changequote([,])dnl
-{
-EOF
-	sed 's/^. \(.*\) \(.*\)$/  {"\2", (lt_ptr_t) \&\2},/' < "$ac_nlist" >> conftest.c
-	cat <<\EOF >> conftest.c
-  {0, (lt_ptr_t) 0}
-};
-
-#ifdef __cplusplus
-}
-#endif
-EOF
-	  # Now try linking the two files.
-	  mv conftest.$ac_objext conftestm.$ac_objext
-	  ac_save_LIBS="$LIBS"
-	  ac_save_CFLAGS="$CFLAGS"
-	  LIBS="conftestm.$ac_objext"
-	  CFLAGS="$CFLAGS$no_builtin_flag"
-	  if AC_TRY_EVAL(ac_link) && test -s conftest; then
-	    ac_pipe_works=yes
-	  else
-	    echo "configure: failed program was:" >&AC_FD_CC
-	    cat conftest.c >&AC_FD_CC
-	  fi
-	  LIBS="$ac_save_LIBS"
-	  CFLAGS="$ac_save_CFLAGS"
-	else
-	  echo "cannot find nm_test_func in $ac_nlist" >&AC_FD_CC
-	fi
-      else
-	echo "cannot find nm_test_var in $ac_nlist" >&AC_FD_CC
-      fi
-    else
-      echo "cannot run $ac_cv_sys_global_symbol_pipe" >&AC_FD_CC
-    fi
-  else
-    echo "$progname: failed program was:" >&AC_FD_CC
-    cat conftest.c >&AC_FD_CC
-  fi
-  rm -rf conftest*
-
-  # Do not use the global_symbol_pipe unless it works.
-  if test "$ac_pipe_works" = yes; then
-    if test x"$ac_symprfx" = x"_"; then
-      ac_cv_sys_symbol_underscore=yes
-    else
-      ac_cv_sys_symbol_underscore=no
-    fi
-    break
-  else
-    ac_cv_sys_global_symbol_pipe=
-  fi
-done
-])
-
-ac_result=yes
-if test -z "$ac_cv_sys_global_symbol_pipe"; then
-   ac_result=no
-fi
-AC_MSG_RESULT($ac_result)
-])
-
-# AC_SYS_LIBTOOL_CYGWIN - find tools needed on cygwin
-AC_DEFUN(AC_SYS_LIBTOOL_CYGWIN,
-[AC_CHECK_TOOL(DLLTOOL, dlltool, false)
-AC_CHECK_TOOL(AS, as, false)
-])
-
-# AC_SYS_SYMBOL_UNDERSCORE - does the compiler prefix global symbols
-#                            with an underscore?
-AC_DEFUN(AC_SYS_SYMBOL_UNDERSCORE,
-[AC_REQUIRE([AC_PROG_NM])dnl
-AC_REQUIRE([AC_SYS_NM_PARSE])dnl
-AC_MSG_CHECKING([for _ prefix in compiled symbols])
-AC_CACHE_VAL(ac_cv_sys_symbol_underscore,
-[ac_cv_sys_symbol_underscore=no
-cat > conftest.$ac_ext <<EOF
-void nm_test_func(){}
-int main(){nm_test_func;return 0;}
-EOF
-if AC_TRY_EVAL(ac_compile); then
-  # Now try to grab the symbols.
-  ac_nlist=conftest.nm
-  if AC_TRY_EVAL(NM conftest.$ac_objext \| $ac_cv_sys_global_symbol_pipe \> $ac_nlist) && test -s "$ac_nlist"; then
-    # See whether the symbols have a leading underscore.
-    if egrep '^. _nm_test_func' "$ac_nlist" >/dev/null; then
-      ac_cv_sys_symbol_underscore=yes
-    else
-      if egrep '^. nm_test_func ' "$ac_nlist" >/dev/null; then
-	:
-      else
-	echo "configure: cannot find nm_test_func in $ac_nlist" >&AC_FD_CC
-      fi
-    fi
-  else
-    echo "configure: cannot run $ac_cv_sys_global_symbol_pipe" >&AC_FD_CC
-  fi
-else
-  echo "configure: failed program was:" >&AC_FD_CC
-  cat conftest.c >&AC_FD_CC
-fi
-rm -rf conftest*
-])
-AC_MSG_RESULT($ac_cv_sys_symbol_underscore)
-USE_SYMBOL_UNDERSCORE=${ac_cv_sys_symbol_underscore=no}
-AC_SUBST(USE_SYMBOL_UNDERSCORE)dnl
 ])
 
 # AC_CHECK_LIBM - check for math library
-AC_DEFUN(AC_CHECK_LIBM, [
-AC_CHECK_LIB(mw, _mwvalidcheckl)
-AC_CHECK_LIB(m, cos)
+AC_DEFUN(AC_CHECK_LIBM,
+[AC_REQUIRE([AC_CANONICAL_HOST])dnl
+LIBM=
+case "$lt_target" in
+*-*-beos* | *-*-cygwin*)
+  # These system don't have libm
+  ;;
+*-ncr-sysv4.3*)
+  AC_CHECK_LIB(mw, _mwvalidcheckl, LIBM="-lmw")
+  AC_CHECK_LIB(m, main, LIBM="$LIBM -lm")
+  ;;
+*)
+  AC_CHECK_LIB(m, main, LIBM="-lm")
+  ;;
+esac
 ])
 
 # AC_LIBLTDL_CONVENIENCE[(dir)] - sets LIBLTDL to the link flags for
@@ -882,13 +679,14 @@ AC_CHECK_LIB(m, cos)
 # '${top_builddir}/' (note the single quotes!) if your package is not
 # flat, and, if you're not using automake, define top_builddir as
 # appropriate in the Makefiles.
-AC_DEFUN(AC_LIBLTDL_CONVENIENCE, [
+AC_DEFUN(AC_LIBLTDL_CONVENIENCE, [AC_BEFORE([$0],[AC_LIBTOOL_SETUP])dnl
   case "$enable_ltdl_convenience" in
   no) AC_MSG_ERROR([this package needs a convenience libltdl]) ;;
   "") enable_ltdl_convenience=yes
       ac_configure_args="$ac_configure_args --enable-ltdl-convenience" ;;
   esac
   LIBLTDL=ifelse($#,1,$1,['${top_builddir}/libltdl'])/libltdlc.la
+  INCLTDL=ifelse($#,1,-I$1,['-I${top_builddir}/libltdl'])
 ])
 
 # AC_LIBLTDL_INSTALLABLE[(dir)] - sets LIBLTDL to the link flags for
@@ -900,16 +698,23 @@ AC_DEFUN(AC_LIBLTDL_CONVENIENCE, [
 # flat, and, if you're not using automake, define top_builddir as
 # appropriate in the Makefiles.
 # In the future, this macro may have to be called after AC_PROG_LIBTOOL.
-AC_DEFUN(AC_LIBLTDL_INSTALLABLE, [
-  AC_CHECK_LIB(ltdl, main, LIBLTDL="-lltdl", [
-    case "$enable_ltdl_install" in
-    no) AC_MSG_WARN([libltdl not installed, but installation disabled]) ;;
-    "") enable_ltdl_install=yes
-        ac_configure_args="$ac_configure_args --enable-ltdl-install" ;;
-    esac
+AC_DEFUN(AC_LIBLTDL_INSTALLABLE, [AC_BEFORE([$0],[AC_LIBTOOL_SETUP])dnl
+  AC_CHECK_LIB(ltdl, main,
+  [test x"$enable_ltdl_install" != xyes && enable_ltdl_install=no],
+  [if test x"$enable_ltdl_install" = xno; then
+     AC_MSG_WARN([libltdl not installed, but installation disabled])
+   else
+     enable_ltdl_install=yes
+   fi
   ])
-  if test x"$enable_ltdl_install" != x"no"; then
+  if test x"$enable_ltdl_install" = x"yes"; then
+    ac_configure_args="$ac_configure_args --enable-ltdl-install"
     LIBLTDL=ifelse($#,1,$1,['${top_builddir}/libltdl'])/libltdl.la
+    INCLTDL=ifelse($#,1,-I$1,['-I${top_builddir}/libltdl'])
+  else
+    ac_configure_args="$ac_configure_args --enable-ltdl-install=no"
+    LIBLTDL="-lltdl"
+    INCLTDL=
   fi
 ])
 
@@ -921,7 +726,7 @@ AC_DEFUN(AM_DISABLE_SHARED, [indir([AC_DISABLE_SHARED], $@)])dnl
 AC_DEFUN(AM_DISABLE_STATIC, [indir([AC_DISABLE_STATIC], $@)])dnl
 AC_DEFUN(AM_PROG_LD, [indir([AC_PROG_LD])])dnl
 AC_DEFUN(AM_PROG_NM, [indir([AC_PROG_NM])])dnl
-AC_DEFUN(AM_SYS_NM_PARSE, [indir([AC_SYS_NM_PARSE])])dnl
-AC_DEFUN(AM_SYS_SYMBOL_UNDERSCORE, [indir([AC_SYS_SYMBOL_UNDERSCORE])])dnl
-AC_DEFUN(AM_SYS_LIBTOOL_CYGWIN, [indir([AC_SYS_LIBTOOL_CYGWIN])])dnl
+
+dnl This is just to silence aclocal about the macro not being used
+ifelse([AC_DISABLE_FAST_INSTALL])dnl
 

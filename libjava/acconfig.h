@@ -125,3 +125,6 @@
  
 /* Define if getuid() and friends are missing.  */
 #undef NO_GETUID
+
+/* Define if libltdl is in use.  */
+#undef USE_LTDL

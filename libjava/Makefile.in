@@ -71,6 +71,7 @@ COMPPATH = @COMPPATH@
 CPP = @CPP@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
+DIRLTDL = @DIRLTDL@
 DIVIDESPEC = @DIVIDESPEC@
 DLLTOOL = @DLLTOOL@
 EXCEPTIONSPEC = @EXCEPTIONSPEC@
@@ -81,15 +82,17 @@ GCINCS = @GCINCS@
 GCLIBS = @GCLIBS@
 GCOBJS = @GCOBJS@
 GCSPEC = @GCSPEC@
-LD = @LD@
+INCLTDL = @INCLTDL@
 LIBDATASTARTSPEC = @LIBDATASTARTSPEC@
 LIBGCJ_CFLAGS = @LIBGCJ_CFLAGS@
 LIBGCJ_CXXFLAGS = @LIBGCJ_CXXFLAGS@
 LIBGCJ_JAVAFLAGS = @LIBGCJ_JAVAFLAGS@
+LIBLTDL = @LIBLTDL@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 PERL = @PERL@
 RANLIB = @RANLIB@
@@ -99,7 +102,6 @@ THREADINCS = @THREADINCS@
 THREADLIBS = @THREADLIBS@
 THREADOBJS = @THREADOBJS@
 THREADSPEC = @THREADSPEC@
-USE_SYMBOL_UNDERSCORE = @USE_SYMBOL_UNDERSCORE@
 VERSION = @VERSION@
 ZDEPS = @ZDEPS@
 ZINCS = @ZINCS@
@@ -110,9 +112,9 @@ libgcj_basedir = @libgcj_basedir@
 
 AUTOMAKE_OPTIONS = foreign no-installinfo
 @TESTSUBDIR_TRUE@SUBDIRS = \
-@TESTSUBDIR_TRUE@testsuite gcj include
+@TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
 @TESTSUBDIR_FALSE@SUBDIRS = \
-@TESTSUBDIR_FALSE@gcj include
+@TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
 @USE_LIBDIR_TRUE@toolexeclibdir = \
 @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
 @USE_LIBDIR_FALSE@toolexeclibdir = \
@@ -171,7 +173,7 @@ JC1FLAGS = -g -L$(here) @LIBGCJ_JAVAFLAGS@
 LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I../libffi/include
 
 INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
-	$(GCINCS) $(THREADINCS) \
+	$(GCINCS) $(THREADINCS) $(INCLTDL) \
 	$(EH_COMMON_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
 
@@ -190,10 +192,10 @@ EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
 
 libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
-	$(c_files) $(GCOBJS) $(THREADOBJS)
+	$(c_files) $(GCOBJS) $(THREADOBJS) $(LIBLTDL)
 
 libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
-	$(THREADOBJS) $(libffi_files)
+	$(THREADOBJS) $(libffi_files) $(LIBLTDL)
 
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
@@ -730,7 +732,7 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-DIST_SUBDIRS =  testsuite gcj include gcj include
+DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/$(srcdir)/$(CONVERT_DIR)/make-trie.P .deps/boehm.P \
 .deps/defineclass.P .deps/exception.P .deps/gij.P \

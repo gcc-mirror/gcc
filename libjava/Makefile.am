@@ -3,9 +3,9 @@
 AUTOMAKE_OPTIONS = foreign no-installinfo
 
 if TESTSUBDIR
-SUBDIRS = testsuite gcj include
+SUBDIRS = $(DIRLTDL) testsuite gcj include
 else
-SUBDIRS = gcj include
+SUBDIRS = $(DIRLTDL) gcj include
 endif
 
 ## ################################################################
@@ -90,7 +90,7 @@ JC1FLAGS = -g -L$(here) @LIBGCJ_JAVAFLAGS@
 LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I../libffi/include
 
 INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
-	$(GCINCS) $(THREADINCS) \
+	$(GCINCS) $(THREADINCS) $(INCLTDL) \
 	$(EH_COMMON_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
 
@@ -116,9 +116,9 @@ libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
 libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
-	$(c_files) $(GCOBJS) $(THREADOBJS)
+	$(c_files) $(GCOBJS) $(THREADOBJS) $(LIBLTDL)
 libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
-	$(THREADOBJS) $(libffi_files)
+	$(THREADOBJS) $(libffi_files) $(LIBLTDL)
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`

@@ -34,6 +34,7 @@ details.  */
 #include <java/lang/ClassCircularityError.h>
 #include <java/lang/IncompatibleClassChangeError.h>
 #include <java/lang/reflect/Modifier.h>
+#include <java/lang/Runtime.h>
 
 #define CloneableClass _CL_Q34java4lang9Cloneable
 extern java::lang::Class CloneableClass;
@@ -193,7 +194,35 @@ java::lang::ClassLoader::markClassErrorState0 (java::lang::Class *klass)
 jclass
 gnu::gcj::runtime::VMClassLoader::findSystemClass (jstring name)
 {
-  return _Jv_FindClassInCache (_Jv_makeUtf8Const (name), 0);
+  _Jv_Utf8Const *name_u = _Jv_makeUtf8Const (name);
+  jclass klass = _Jv_FindClassInCache (name_u, 0);
+
+  if (! klass)
+    {
+      // Turn `gnu.pkg.quux' into `gnu-pkg-quux'.  Then search for a
+      // module named (eg, on Linux) `gnu-pkg-quux.so', followed by
+      // `gnu-pkg.so' and `gnu.so'.  If loading one of these causes
+      // the class to appear in the cache, then use it.
+      jstring so_base_name = name->replace ('.', '-');
+
+      while (! klass && so_base_name && so_base_name->length() > 0)
+	{
+	  using namespace ::java::lang;
+	  Runtime *rt = Runtime::getRuntime();
+	  jboolean loaded = rt->loadLibraryInternal (so_base_name);
+
+	  jint nd = so_base_name->lastIndexOf ('-');
+	  if (nd == -1)
+	    so_base_name = NULL;
+	  else
+	    so_base_name = so_base_name->substring (0, nd);
+
+	  if (loaded)
+	    klass = _Jv_FindClassInCache (name_u, 0);
+	}
+    }
+
+  return klass;
 }
 
 jclass
@@ -403,31 +432,11 @@ _Jv_RegisterClass (jclass klass)
   _Jv_RegisterClasses (classes);
 }
 
-#if 0
-// NOTE: this one is out of date with the new loader stuff...
 jclass
-_Jv_FindClassInCache (jstring name, java::lang::ClassLoader *loader)
-{
-  JvSynchronize sync (&ClassClass);
-  jint hash = name->hashCode();
-  jclass klass = loaded_classes[(_Jv_ushort) hash % HASH_LEN];
-  for ( ; klass; klass = klass->next)
-    {
-      if (loader == klass->loader
-	  && _Jv_equal (klass->name, name, hash))
-	break;
-    }
-  _Jv_MonitorExit (&ClassClass);
-  return klass;
-}
-#endif
-
-jclass _Jv_FindClass (_Jv_Utf8Const *name,
-		      java::lang::ClassLoader *loader)
+_Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 {
   jclass klass = _Jv_FindClassInCache (name, loader);
 
-#ifdef INTERPRETER
   if (! klass)
     {
       jstring sname = _Jv_NewStringUTF (name->data);
@@ -466,43 +475,9 @@ jclass _Jv_FindClass (_Jv_Utf8Const *name,
       // we're loading, so that they can refer to themselves. 
       _Jv_WaitForState (klass, JV_STATE_LOADED);
     }
-#endif
 
   return klass;
 }
-
-#if 0
-// NOTE: this one is out of date with the new class loader stuff...
-jclass
-_Jv_FindClass (jstring name, java::lang::ClassLoader *loader)
-{
-  jclass klass = _Jv_FindClassInCache (name, loader);
-  if (! klass)
-    {
-      if (loader)
-	{
-	  klass = loader->loadClass(name);
-	}
-      else
-	{
-	  // jmspec 5.3.1.2
-	  
-	  // delegate to the system loader
-	  klass = java::lang::ClassLoader::system.loadClass (sname);
-	  
-	  // register that we're an initiating loader
-	  if (klass)
-	    _Jv_RegisterInitiatingLoader (klass, 0);
-	}
-    }
-  else
-    {
-      _Jv_WaitForState (klass, JV_STATE_LOADED);
-    }
-  
-  return klass;
-}
-#endif
 
 jclass
 _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
