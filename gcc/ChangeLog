@@ -1,5 +1,27 @@
 2005-03-23  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* c-common.c (c_common_truthvalue_conversion): Adjust comment.
+	Call c_common_truthvalue_conversion rather than
+	lang_hooks.truthvalue_conversion.
+	* c-convert.c (convert): Call c_objc_common_truthvalue_conversion.
+	* c-objc-common.c (c_objc_common_truthvalue_conversion): Move to
+	c-typeck.c.
+	* c-objc-common.h (LANG_HOOKS_TRUTHVALUE_CONVERSION): Change to
+	c_common_truthvalue_conversion.
+	* c-parser.c (c_parser_paren_condition, c_parser_for_statement,
+	c_parser_conditional_expression, c_parser_binary_expression): Call
+	c_objc_common_truthvalue_conversion.
+	* c-typeck.c (build_unary_op): Call
+	c_objc_common_truthvalue_conversion.
+	(build_conditional_expr): Do not call
+	lang_hooks.truthvalue_conversion.
+	(build_binary_op): Call c_common_truthvalue_conversion.
+	(c_objc_common_truthvalue_conversion): Moved from
+	c-objc-common.c.  Call default_function_array_conversion instead
+	of default_conversion.
+
+2005-03-23  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* c-common.h (default_conversion): Remove.
 	(perform_integral_promotions): Add.
 	* c-tree.h (default_conversion): Add.

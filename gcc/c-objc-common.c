@@ -230,34 +230,6 @@ c_tree_printer (pretty_printer *pp, text_info *text)
   return true;
 }
 
-tree
-c_objc_common_truthvalue_conversion (tree expr)
-{
- retry:
-  switch (TREE_CODE (TREE_TYPE (expr)))
-    {
-    case ARRAY_TYPE:
-      expr = default_conversion (expr);
-      if (TREE_CODE (TREE_TYPE (expr)) != ARRAY_TYPE)
-	goto retry;
-
-      error ("used array that cannot be converted to pointer where scalar is required");
-      return error_mark_node;
-
-    case RECORD_TYPE:
-      error ("used struct type value where scalar is required");
-      return error_mark_node;
-
-    case UNION_TYPE:
-      error ("used union type value where scalar is required");
-      return error_mark_node;
-    default:
-      break;
-    }
-
-  return c_common_truthvalue_conversion (expr);
-}
-
 /* In C and ObjC, all decls have "C" linkage.  */
 bool
 has_c_linkage (tree decl ATTRIBUTE_UNUSED)
