@@ -1,3 +1,7 @@
+Mon Aug  9 19:54:05 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* real.c (GET_REAL, PUT_REAL): Use memcpy instead of bcopy.
+
 Mon Aug  9 19:36:00 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tree.h (lang_identify): Constify a char*.

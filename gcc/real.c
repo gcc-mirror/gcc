@@ -281,10 +281,10 @@ do {									\
      else								\
        {								\
 	 unsigned EMUSHORT w[4];					\
-         bcopy (((EMUSHORT *) r), &w[3], sizeof (EMUSHORT));		\
-         bcopy (((EMUSHORT *) r) + 1, &w[2], sizeof (EMUSHORT));	\
-	 bcopy (((EMUSHORT *) r) + 2, &w[1], sizeof (EMUSHORT));	\
-	 bcopy (((EMUSHORT *) r) + 3, &w[0], sizeof (EMUSHORT));	\
+         memcpy (&w[3], ((EMUSHORT *) r), sizeof (EMUSHORT));		\
+         memcpy (&w[2], ((EMUSHORT *) r) + 1, sizeof (EMUSHORT));	\
+         memcpy (&w[1], ((EMUSHORT *) r) + 2, sizeof (EMUSHORT));	\
+         memcpy (&w[0], ((EMUSHORT *) r) + 3, sizeof (EMUSHORT));	\
 	 e53toe (w, (e));						\
        }								\
    } while (0)
@@ -297,10 +297,10 @@ do {									\
        {								\
 	 unsigned EMUSHORT w[4];					\
 	 etoe53 ((e), w);						\
-         bcopy (&w[3], ((EMUSHORT *) r), sizeof (EMUSHORT));		\
-         bcopy (&w[2], ((EMUSHORT *) r) + 1, sizeof (EMUSHORT));	\
-         bcopy (&w[1], ((EMUSHORT *) r) + 2, sizeof (EMUSHORT));	\
-         bcopy (&w[0], ((EMUSHORT *) r) + 3, sizeof (EMUSHORT));	\
+         memcpy (((EMUSHORT *) r), &w[3], sizeof (EMUSHORT));		\
+         memcpy (((EMUSHORT *) r) + 1, &w[2], sizeof (EMUSHORT));	\
+         memcpy (((EMUSHORT *) r) + 2, &w[1], sizeof (EMUSHORT));	\
+         memcpy (((EMUSHORT *) r) + 3, &w[0], sizeof (EMUSHORT));	\
        }								\
    } while (0)
 
