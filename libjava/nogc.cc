@@ -146,4 +146,12 @@ _Jv_AllocTraceOne (jsize size /* includes vtable slot */)
   if (!obj) _Jv_ThrowNoMemory();
   return result;
 }
+
+void *
+_Jv_AllocTraceTwo (jsize size /* includes vtable slot */) 
+{
+  ptr_t obj = calloc(size, 1);
+  if (!obj) _Jv_ThrowNoMemory();
+  return result;
+}
 #endif /* JV_HASH_SYNCHRONIZATION */

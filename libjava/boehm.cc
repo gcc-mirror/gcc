@@ -531,7 +531,7 @@ static _Jv_VTable trace_one_vtable = {
     (void *)(2 * sizeof(void *)),
 			// descriptor; scan 2 words incl. vtable ptr.
 			// Least significant bits must be zero to
-			// identify this as a lenght descriptor
+			// identify this as a length descriptor
     {0}			// First method
 };
 
@@ -539,6 +539,24 @@ void *
 _Jv_AllocTraceOne (jsize size /* includes vtable slot */) 
 {
   return GC_GCJ_MALLOC (size, &trace_one_vtable);
+}
+
+// Ditto for two words.
+// the first field (beyond the fake vtable pointer) to be traced.
+// Eventually this should probably be generalized.
+
+static _Jv_VTable trace_two_vtable =
+{
+  0, 			// class pointer
+  (void *)(3 * sizeof(void *)),
+			// descriptor; scan 3 words incl. vtable ptr.
+  {0}			// First method
+};
+
+void *
+_Jv_AllocTraceTwo (jsize size /* includes vtable slot */) 
+{
+  return GC_GCJ_MALLOC (size, &trace_two_vtable);
 }
 
 #endif /* JV_HASH_SYNCHRONIZATION */

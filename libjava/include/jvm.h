@@ -144,6 +144,8 @@ void _Jv_ThrowNoMemory() __attribute__((__noreturn__));
 /* Allocate an object with a single pointer.  The first word is reserved
    for the GC, and the second word is the traced pointer.  */
 void *_Jv_AllocTraceOne (jsize size /* incl. reserved slot */);
+/* Ditto, but for two traced pointers.			   */
+void *_Jv_AllocTraceTwo (jsize size /* incl. reserved slot */);
 /* Initialize the GC.  */
 void _Jv_InitGC (void);
 /* Register a finalizer.  */
