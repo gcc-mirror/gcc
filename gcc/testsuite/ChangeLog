@@ -1,5 +1,10 @@
 2000-12-02  Neil Booth  <neilb@earthling.net>
 
+        * g++.old-deja/g++.other/instan2.C
+        * g++.old-deja/g++.other/instan3.C: New test.
+
+2000-12-02  Neil Booth  <neilb@earthling.net>
+
         * gcc.dg/cpp/c++98.c,c++98-pedantic.c,c89.c,c89-pedantic.c,
         c94.c,c94-pedantic.c,c99.c,c99-pedantic.c,gnuc89.c,gnuc89-pedantic.c,
         gnuc99.c,gnuc99-pedantic.c: New tests.
