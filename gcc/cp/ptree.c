@@ -157,8 +157,6 @@ cxx_print_identifier (FILE *file, tree node, int indent)
   cxx_print_binding (file, IDENTIFIER_BINDING (node), "local bindings");
   print_node (file, "label", IDENTIFIER_LABEL_VALUE (node), indent + 4);
   print_node (file, "template", IDENTIFIER_TEMPLATE (node), indent + 4);
-  print_node (file, "implicit", IDENTIFIER_IMPLICIT_DECL (node), indent + 4);
-  print_node (file, "error locus", IDENTIFIER_ERROR_LOCUS (node), indent + 4);
 }
 
 void

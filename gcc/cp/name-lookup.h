@@ -287,6 +287,7 @@ extern tree lookup_namespace_name (tree, tree);
 extern tree lookup_qualified_name (tree, tree, bool, bool);
 extern tree lookup_name_nonclass (tree);
 extern tree lookup_function_nonclass (tree, tree);
+extern void push_local_binding (tree, tree, int);
 extern int push_class_binding (tree, tree);
 extern bool pushdecl_class_level (tree);
 extern tree pushdecl_namespace_level (tree);

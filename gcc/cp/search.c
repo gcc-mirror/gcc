@@ -1703,7 +1703,10 @@ check_final_overrider (tree overrider, tree basefn)
   tree over_throw = TYPE_RAISES_EXCEPTIONS (over_type);
   tree base_throw = TYPE_RAISES_EXCEPTIONS (base_type);
   int fail = 0;
-  
+
+  if (DECL_INVALID_OVERRIDER_P (overrider))
+    return 0;
+
   if (same_type_p (base_return, over_return))
     /* OK */;
   else if ((CLASS_TYPE_P (over_return) && CLASS_TYPE_P (base_return))
@@ -1753,8 +1756,6 @@ check_final_overrider (tree overrider, tree basefn)
     fail = 2;
   if (!fail)
     /* OK */;
-  else if (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (overrider)))
-    return 0;
   else
     {
       if (fail == 1)
@@ -1768,21 +1769,16 @@ check_final_overrider (tree overrider, tree basefn)
 		       overrider);
 	  cp_error_at ("  overriding `%#D'", basefn);
 	}
-      SET_IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (overrider),
-                                  DECL_CONTEXT (overrider));
+      DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
     }
   
   /* Check throw specifier is at least as strict.  */
   if (!comp_except_specs (base_throw, over_throw, 0))
     {
-      if (!IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (overrider)))
-	{
-	  cp_error_at ("looser throw specifier for `%#F'", overrider);
-	  cp_error_at ("  overriding `%#F'", basefn);
-	  SET_IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (overrider),
-				      DECL_CONTEXT (overrider));
-	}
+      cp_error_at ("looser throw specifier for `%#F'", overrider);
+      cp_error_at ("  overriding `%#F'", basefn);
+      DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
     }
   

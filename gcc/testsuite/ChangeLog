@@ -1,3 +1,19 @@
+2004-03-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14401
+	* g++.dg/init/ctor3.C: New test.
+	* g++.dg/init/union1.C: New test.
+	* g++.dg/ext/anon-struct4.C: New test.
+
+2004-03-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/lookup/koenig1.C: Tweak error messages.
+	* g++.dg/lookup/used-before-declaration.C: Likewise.
+	* g++.dg/other/do1.C: Likewise.
+	* g++.dg/overload/koenig1.C: Likewise.
+	* g++.dg/parse/crash13.C: Likewise.
+	* g++.dg/template/instantiate3.C: Likewise.
+	
 2004-03-08  Eric Christopher  <echristo@redhat.com>
 
 	* * lib/target-supports.exp: Enable libiconv in test

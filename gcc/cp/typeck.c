@@ -2380,7 +2380,7 @@ build_function_call (tree function, tree params)
   tree fntype, fndecl;
   tree coerced_params;
   tree result;
-  tree name = NULL_TREE, assembler_name = NULL_TREE;
+  tree name = NULL_TREE;
   int is_method;
   tree original = function;
 
@@ -2393,7 +2393,6 @@ build_function_call (tree function, tree params)
   if (TREE_CODE (function) == FUNCTION_DECL)
     {
       name = DECL_NAME (function);
-      assembler_name = DECL_ASSEMBLER_NAME (function);
 
       mark_used (function);
       fndecl = function;
