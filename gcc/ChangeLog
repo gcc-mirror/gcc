@@ -1,3 +1,8 @@
+2002-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (legitimate_pic_address_disp_p): Allow
+	UNSPEC_NTPOFF and UNSPEC_DTPOFF to be offsetted by constant.
+
 2002-09-20  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
 
 	* config/arm/arm.md (sign_extract_onebit, not_signextract_onebit):
