@@ -21,6 +21,7 @@
 
 2002-04-30  Jason Merrill  <jason@redhat.com>
 
+	PR debug/6436
 	* decl.c (grokdeclarator): Don't override TYPE_NAME of an
 	anonymous class with a typedef if there are attributes.
 
