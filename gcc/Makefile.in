@@ -352,12 +352,12 @@ SUBDIR_INCLUDES = -I.. -I../$(srcdir) -I../$(srcdir)/config
 COMPILERS = cc1 cc1plus cc1obj
 
 # Language-specific object files for C.
-C_OBJS = c-parse.o c-lang.o c-lex.o \
-   c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-pragma.o
+C_OBJS = c-parse.o c-lang.o c-lex.o c-pragma.o \
+   c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-iterate.o
 
 # Language-specific object files for Objectionable C.
-OBJC_OBJS = objc-parse.o objc-act.o \
-   c-lex.o c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-pragma.o
+OBJC_OBJS = objc-parse.o objc-act.o c-lex.o c-pragma.o \
+   c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-iterate.o
 
 # Language-specific object files for C++.
 CPLUS_OBJS = cp-parse.o cp-decl.o cp-decl2.o \
@@ -745,6 +745,7 @@ c-lex.o : c-lex.c $(CONFIG_H) $(TREE_H) c-lex.h c-tree.h c-parse.h \
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(TREE_H) c-tree.h flags.h
 c-convert.o : c-convert.c $(CONFIG_H) $(TREE_H) flags.h
 c-pragma.o: c-pragma.c $(CONFIG_H) $(TREE_H)
+c-iterate.o: c-iterate.c $(CONFIG_H) $(TREE_H) $(RTL_H) c-tree.h flags.h
 
 # C++ language specific files.
 
@@ -817,7 +818,7 @@ c-common.o : c-common.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h
 
 # Language-independent files.
 
-gcc.o: gcc.c $(CONFIG_H) gvarargs.h obstack.h config.status
+gcc.o: gcc.c $(CONFIG_H) gvarargs.h config.status
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   -DSTANDARD_STARTFILE_PREFIX=\"$(libdir)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
