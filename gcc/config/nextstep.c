@@ -1,5 +1,5 @@
 /* Functions for generic NeXT as target machine for GNU C compiler.
-   Copyright (C) 1989, 90-93, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90-93, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,7 +18,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <tree.h>
+#include "config.h"
+#include <stdio.h>
+#include "flags.h"
+#include "tree.h"
 
 /* Make everything that used to go in the text section really go there.  */
 
