@@ -1,3 +1,19 @@
+2005-02-24  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR other/19897
+	* parse.y: (function_prototype): Accept EXTERNAL_REFERENCE_STORAGE.
+	Move function parameters check from ...
+	(function): ...Here.  Update call to tree_code_create_function_initial.
+	(function_invocation): Use expressions_with_commas_opt instead of
+	expressions_with_commas.
+	(expressions_with_commas_opt): New rule.
+	* treetree.c (tree_code_create_function_prototype): Create PARM_DECLs
+	for function parameters.
+	(tree_code_create_function_initial): Remove PARMS parameter.
+	Don't create PARM_DECLs for function parameters.
+	* treetree.h (tree_code_create_function_initial): Remove PARMS
+	parameter.
+
 2005-02-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* parse.y: Update copyright.
