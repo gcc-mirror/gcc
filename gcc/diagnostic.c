@@ -69,15 +69,18 @@ static void output_to_stream PARAMS ((output_buffer *, FILE *));
 static void output_format PARAMS ((output_buffer *));
 static void output_indent PARAMS ((output_buffer *));
 
-static char *vbuild_message_string PARAMS ((const char *, va_list));
+static char *vbuild_message_string PARAMS ((const char *, va_list))
+     ATTRIBUTE_PRINTF (1, 0);
 static char *build_message_string PARAMS ((const char *, ...))
      ATTRIBUTE_PRINTF_1;
-static void output_do_printf PARAMS ((output_buffer *, const char *));
+static void output_do_printf PARAMS ((output_buffer *, const char *))
+     ATTRIBUTE_PRINTF (2, 0);
 static void format_with_decl PARAMS ((output_buffer *, tree));
 static void file_and_line_for_asm PARAMS ((rtx, const char **, int *));
 static void diagnostic_for_asm PARAMS ((rtx, const char *, va_list *, int));
 static void diagnostic_for_decl PARAMS ((tree, const char *, va_list *, int));
-static void vnotice PARAMS ((FILE *, const char *, va_list));
+static void vnotice PARAMS ((FILE *, const char *, va_list))
+     ATTRIBUTE_PRINTF (2, 0);
 static void set_real_maximum_length PARAMS ((output_buffer *));
                                           
 static void output_unsigned_decimal PARAMS ((output_buffer *, unsigned int));

@@ -1,3 +1,10 @@
+2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* diagnostic.c (vbuild_message_string, output_do_printf, vnotice):
+	Add ATTRIBUTE_PRINTF.
+	* tradcpp.c (v_message, warning, error, fatal, error_with_line):
+	Add ATTRIBUTE_PRINTF*.
+
 2000-11-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* function.c (assign_parms): When calling put_var_into_stack, make
