@@ -1,3 +1,10 @@
+Fri Sep 26 08:54:59 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* c-typeck.c (build_binary_op): Warn about comparing signed vs
+	unsigned if -W is specified and -Wno-sign-compare is not.
+	* c-decl.c (warn_sign_compare): Initialize to -1.
+	(c_decode_option): -Wall no longer implies -Wsign-compare.
+
 Fri Sep 26 09:00:13 1997  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* integrate.c (expand_inline_function): Make sure there is at
