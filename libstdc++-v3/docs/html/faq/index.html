@@ -9,7 +9,7 @@
   ** Locations of "the most recent snapshot is the Nth" text are 
   ** answers 1_1, 1_4, 4_1, 5_6.
 -->
-<!-- $Id: index.html,v 1.10 2000/12/03 23:47:49 jsm28 Exp $ -->
+<!-- $Id: index.html,v 1.1 2000/12/10 04:04:56 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -53,6 +53,7 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</A>.</P>
          <LI><A HREF="#3_1">Can libstdc++-v3 be used with &lt;my
                             favorite compiler&gt;?</A>
          <LI><A HREF="#3_2">Building under Cygwin hangs/explodes!?</A>
+         <LI><A HREF="#3_3">Building under DEC OSF kills the assembler</A>
       </OL>
 
    <LI><A HREF="#4_0">Known Bugs and Non-Bugs</A>
@@ -370,6 +371,22 @@ HREF="http://sources.redhat.com/automake/">automake</A>.
       </P>
 
 <HR>
+   <H2><A NAME="3_3">3.3 Building DEC OSF kills the assembler</A></H2>
+      <P>The <TT>atomicity.h</TT> header for the Alpha processor
+         currently uses pseudo-operators which the DEC assembler
+	 doesn't understand (in particular, .subsection and .previous).
+	 The simple solution is to install GNU <TT>as</TT> and arrange
+	 for the GCC build to use it (or merge the sources and build
+	 it during the bootstrap).
+      </P>
+      <P>Anyone who
+         <A HREF="http://gcc.gnu.org/ml/libstdc++/2000-12/msg00279.html">knows
+	 the DEC assembler well enough</A> to provide the equivalent of
+	 these two pseudos would win praise and accolades from many.
+      </P>
+
+
+<HR>
 <H1><A NAME="4_0">4.0 Known Bugs and Non-Bugs</A></H1>
    <EM>Note that this section can get rapdily outdated -- such is the
    nature of an open-source project.  For the latest information, join
@@ -482,6 +499,15 @@ to the list</A>, Nathan Myers announced that he has started a list of
          necessarily trying to be OO.  There are multiple solutions
          under discussion.
       </P>
+      <P>Another is the <TT>rel_ops</TT> namespace and the template
+         comparison operator functions contained therein.  If they become
+	 visible in the same namespace as other comparison functions
+	 (e.g., '<TT>using</TT>' them and the &lt;iterator&gt; header),
+	 then you will suddenly be faced with huge numbers of ambiguity
+	 errors.  This was discussed on the -v3 list; Nathan Myers
+	 <A HREF="http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html">sums
+	 things up here</A>.
+      </P>
       <H3><A NAME="4_4_interface">The g++-3 headers are
                                       <EM>not ours</EM></A></H3>
       <P>If you have found an extremely broken header file which is
@@ -572,7 +598,7 @@ HREF="http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html">speculation</A>.
          is merged into libstdc++-v3 with changes as necessary.  
          Currently release 3.3 is being used.  Changes in the STL
          usually produce some weird bugs and lots of changes in the
-         rest of the libstd++ source as we scramble to keep up. :-)
+         rest of the libstdc++ source as we scramble to keep up. :-)
       </P>
       <P>In particular, <TT>string</TT> is not from SGI and makes no
          use of their &quot;rope&quot; class (which is included as an
@@ -652,7 +678,7 @@ HREF="http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html">speculation</A>.
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</A>.
-<BR> $Id: index.html,v 1.10 2000/12/03 23:47:49 jsm28 Exp $
+<BR> $Id: index.html,v 1.1 2000/12/10 04:04:56 pme Exp $
 </EM></P>
 
 

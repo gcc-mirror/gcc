@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 20</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.4 2000/12/03 23:47:47 jsm28 Exp $ -->
+<!-- $Id: howto.html,v 1.1 2000/12/10 04:04:54 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -24,7 +24,7 @@
 <H1>Contents</H1>
 <UL>
    <LI><A HREF="#1"><TT>auto_ptr</TT> is not omnipotent</A>
-   <LI><A HREF="#2">Automatically-generated operators</A>
+   <LI><A HREF="#2"><TT>auto_ptr</TT> inside container classes</A>
    <LI><A HREF="#3">Functors</A>
    <LI><A HREF="#4">Pairs</A>
 </UL>
@@ -82,32 +82,61 @@
       to one or many things.  If it points to many things, you are about
       to die.  AP is trivial to write, however, so you could write your
       own <TT>auto_array_ptr</TT> for that situation (in fact, this has
-      been done many times; check the newsgroups, Usenet, Boost, etc).
+      been done many times; check the mailing lists, Usenet, Boost, etc).
    </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
    </P>
 
 <HR>
-<H2><A NAME="2">Automatically-generated operators</A></H2>
-   <P>Many programs (for that matter, many of the Standard algorithms
-      and containers) require that you write comparison operators for
-      your classes, like <TT>operator&gt;=</TT>.  As any mathmatician
-      will tell you, once you have defined equality and ordering, all
-      of the other comparisons are easily defined in terms of those two.
-   </P>
-   <P>The Committee agrees.  So, once you have written
-      <TT>operator==</TT> and <TT>operator&lt;</TT> for your class
-      (whether they are global or member functions is up to you), you
-      can have the compiler do the grunt-work of generating the rest:
+<H2><A NAME="2"><TT>auto_ptr</TT> inside container classes</A></H2>
+   <P>All of the <A HREF="../23_containers/howto.html">containers</A>
+      described in the standard library require their contained types
+      to have, among other things, a copy contructor like this:
       <PRE>
-    #include &lt;header_with_my_op==_and_op&lt;_defined&gt;
-    #include &lt;utility&gt;
-    using std::rel_ops;     // note the nested namespace!
-
-    ...
-    if ((obj1 != obj2) || (obj3 >= obj4))  foo();
+    struct My_Type
+    {
+	My_Type (My_Type const&amp;);
+    };
       </PRE>
+      Note the const keyword; the object being copied shouldn't change.
+      The template class <TT>auto_ptr</TT> (called AP here) does not
+      meet this requirement.  Creating a new AP by copying an existing
+      one transfers ownership of the pointed-to object, which means that
+      the AP being copied must change, which in turn means that the
+      copy ctors of AP do not take const objects.
+   </P>
+   <P>The resulting rule is simple:  <EM>Never ever use a container of
+      auto_ptr objects.</EM>  The standard says that undefined behavior
+      is the result, but it is guaranteed to be messy.
+   </P>
+   <P>To prevent you from doing this to yourself, the
+      <A HREF="../19_diagnostics/howto.html#3">concept checks</A> built
+      in to this implementation will issue an error if you try to
+      compile code like this:
+      <PRE>
+    #include &lt;vector&gt;
+    #include &lt;memory&gt;
+    
+    void f()
+    {
+	std::vector&lt; std::auto_ptr&lt;int&gt; &gt;   vec_ap_int;
+    }
+      </PRE>
+      Should you try this, you will see an error along the lines of the
+      following (look through the ugly line-wrapping):
+      <PRE>
+/installdir/include/g++-v3/bits/concept_checks.h: In
+ static member function `static _Type
+ <B>_STL_ERROR::__const_parameter_required_for_copy_constructor</B>(_Type, const
+ _Type&amp;) [with _Type = std::auto_ptr&lt;int&gt;]':
+/installdir/include/g++-v3/bits/concept_checks.h:383: passing
+ `const std::auto_ptr&lt;int&gt;' as `this' argument of
+ `std::auto_ptr&lt;_Tp&gt;::operator std::auto_ptr_ref&lt;_Tp1&gt;()
+ [with _Tp1 = int, _Tp = int]' discards qualifiers
+      </PRE>
+      See the highlighted error?  It starts with a message in all caps
+      to get your attention.
    </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
@@ -185,7 +214,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.4 2000/12/03 23:47:47 jsm28 Exp $
+<BR> $Id: howto.html,v 1.1 2000/12/10 04:04:54 pme Exp $
 </EM></P>
 
 
