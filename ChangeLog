@@ -1,3 +1,10 @@
+2003-04-17  Phil Edwards  <pme@gcc.gnu.org>
+
+	* Makefile.tpl (GCC_STRAP_TARGETS):  New variable containing all the
+	previous bootstrap targets, plus bubblestrap, quickstrap, cleanstrap,
+	and restrap.
+	* Makefile.in:  Regenerate.
+
 2003-04-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* configure.in (arm-*-netbsdelf*): Enable building java libraries.
