@@ -1,3 +1,33 @@
+2000-03-31  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h: Merge struct cpp_options into struct cpp_reader.
+	Reorder struct cpp_options and struct cpp_reader for better 
+	packing.  Replace CPP_OPTIONS macro with CPP_OPTION which
+	takes two args.  Change all 'char' flags to 'unsigned char'.
+	Move show_column flag into struct cpp_options.  Don't
+	prototype cpp_options_init.
+	* cpphash.h, cpperror.c, cppexp.c, cppfiles.c, cpphash.c,
+	cppinit.c, cpplex.c, cpplib.c:
+	Replace CPP_OPTIONS (pfile)->whatever with
+	CPP_OPTION (pfile, whatever), and likewise for
+	opts = CPP_OPTIONS (pfile); ... opts->whatever;
+
+	* cppinit.c (merge_include_chains): Take a cpp_reader *.
+	Extract CPP_OPTION (pfile, pending) and work with that
+	directly.
+	(cpp_options_init): Delete.
+	(cpp_reader_init): Turn on on-by-default options here.
+	Allocate the pending structure here.		  
+	(cl_options, enum opt_code): Define these from the same table,
+	kept in a large macro.  Add -fshow-column and -fno-show-column
+	options.
+
+	* cpperror.c (v_message): If show_column is off, don't print
+	the column number.
+
+	* cppmain.c: Update for new interface.
+	* fix-header.c: Likewise.
+
 2000-03-30  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/t-aix43 (AR_FLAGS_FOR_TARGET): Adjust for new
@@ -365,11 +395,11 @@ Tue Mar 28 08:29:46 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-03-28  Neil Booth  <NeilB@earthling.net>
 
-        * cpplex.c (_cpp_read_and_prescan): Mark end of input buffer with
+	* cpplex.c (_cpp_read_and_prescan): Mark end of input buffer with
 	'\\' rather than a null character, so nulls are not special.  Fix
 	"\\\n" handling in end-of-buffer conditions.  Use trigraph map to
 	speed trigraph conversion.
-        (_cpp_init_input_buffer): Initialize trigraph map.
+	(_cpp_init_input_buffer): Initialize trigraph map.
 
 2000-03-27  Alan Modra  <alan@linuxcare.com.au>
 
@@ -4041,7 +4071,7 @@ Tue Feb 15 23:22:26 2000  Andrew Haley  <aph@cygnus.com>
 	* config/sh/sh.h: Correct comment about macros.
 
 Tue Feb 15 22:30:36 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
-	                  Andrew MacLeod  <amacleod@cygnus.com>
+			  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* Makefile.in (lcm.o): Depend on insn-attr.h.
 	* basic-block.h (optimize_mode_switching): Declare.
@@ -4136,7 +4166,7 @@ Tue Feb 15 22:30:36 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	to import the frames themselves.
 
 Mon Feb 14 13:31:01 2000  Stan Cox  <scox@cygnus.com>
-	                  Jason Eckhardt  <jle@cygnus.com>
+			  Jason Eckhardt  <jle@cygnus.com>
 
 	* basic_block.h: Added prototype for reorder_basic_blocks.
 	* toplev.c: Changes to add -freorder-blocks and graph dump after

@@ -617,7 +617,6 @@ read_scan_file (in_fname, argc, argv)
      char **argv;
 {
   cpp_reader scan_in;
-  cpp_options scan_options;
   struct fn_decl *fn;
   int i;
   register struct symbol_list *cur_symbols;
@@ -625,13 +624,11 @@ read_scan_file (in_fname, argc, argv)
   obstack_init (&scan_file_obstack); 
 
   cpp_reader_init (&scan_in);
-  scan_in.opts = &scan_options;
-  cpp_options_init (&scan_options);
   /* We are going to be scanning a header file out of its proper context,
      so ignore warnings and errors.  */
-  scan_options.inhibit_warnings = 1;
-  scan_options.inhibit_errors = 1;
-  scan_options.no_line_commands = 1;
+  CPP_OPTION (&scan_in, inhibit_warnings) = 1;
+  CPP_OPTION (&scan_in, inhibit_errors) = 1;
+  CPP_OPTION (&scan_in, no_line_commands) = 1;
   i = cpp_handle_options (&scan_in, argc, argv);
   if (i < argc && ! CPP_FATAL_ERRORS (&scan_in))
     cpp_fatal (&scan_in, "Invalid option `%s'", argv[i]);

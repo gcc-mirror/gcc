@@ -28,7 +28,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 const char *progname;
 
 cpp_reader parse_in;
-cpp_options options;
 
 
 extern int main				PARAMS ((int, char **));
@@ -38,9 +37,11 @@ main (argc, argv)
      char **argv;
 {
   char *p;
+  cpp_reader *pfile = &parse_in;
   int argi = 1;  /* Next argument to handle.  */
-  struct cpp_options *opts = &options;
   enum cpp_token kind;
+  FILE *out;
+  const char *out_fname;
 
   p = argv[0] + strlen (argv[0]);
   while (p != argv[0] && p[-1] != '/') --p;
@@ -54,47 +55,49 @@ main (argc, argv)
   (void) bindtextdomain (PACKAGE, localedir);
   (void) textdomain (PACKAGE);
 
-  cpp_reader_init (&parse_in);
-  parse_in.opts = opts;
-
-  cpp_options_init (opts);
+  cpp_reader_init (pfile);
   
-  argi += cpp_handle_options (&parse_in, argc - argi , argv + argi);
-  if (argi < argc && ! CPP_FATAL_ERRORS (&parse_in))
-    cpp_fatal (&parse_in, "Invalid option `%s'", argv[argi]);
-  if (CPP_FATAL_ERRORS (&parse_in))
+  argi += cpp_handle_options (pfile, argc - argi , argv + argi);
+  if (argi < argc && ! CPP_FATAL_ERRORS (pfile))
+    cpp_fatal (pfile, "Invalid option %s", argv[argi]);
+  if (CPP_FATAL_ERRORS (pfile))
     return (FATAL_EXIT_CODE);
-      
-  parse_in.show_column = 1;
 
-  if (! cpp_start_read (&parse_in, opts->in_fname))
+  if (! cpp_start_read (pfile, CPP_OPTION (pfile, in_fname)))
     return (FATAL_EXIT_CODE);
 
   /* Now that we know the input file is valid, open the output.  */
-
-  if (!opts->out_fname || !strcmp (opts->out_fname, ""))
-    opts->out_fname = "stdout";
-  else if (! freopen (opts->out_fname, "w", stdout))
+  out_fname = CPP_OPTION (pfile, out_fname);
+  if (*out_fname == '\0')
     {
-      cpp_notice_from_errno (&parse_in, opts->out_fname);
-      return (FATAL_EXIT_CODE);
+      out_fname = "stdout";
+      out = stdout;
+    }
+  else
+    {
+      out = fopen (out_fname, "w");
+      if (!out)
+	{
+	  cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
+	  return (FATAL_EXIT_CODE);
+	}
     }
 
-  if (! opts->no_output)
+  if (! CPP_OPTION (pfile, no_output))
     {
       do
 	{
-	  kind = cpp_get_token (&parse_in);
-	  if (CPP_WRITTEN (&parse_in) >= BUFSIZ || kind == CPP_EOF)
+	  kind = cpp_get_token (pfile);
+	  if (CPP_WRITTEN (pfile) >= BUFSIZ || kind == CPP_EOF)
 	    {
-	      size_t rem, count = CPP_WRITTEN (&parse_in);
+	      size_t rem, count = CPP_WRITTEN (pfile);
 
-	      rem = fwrite (parse_in.token_buffer, 1, count, stdout);
+	      rem = fwrite (parse_in.token_buffer, 1, count, out);
 	      if (rem < count)
 		/* Write error. */
-		cpp_notice_from_errno (&parse_in, opts->out_fname);
+		cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
 
-	      CPP_SET_WRITTEN (&parse_in, 0);
+	      CPP_SET_WRITTEN (pfile, 0);
 	    }
 	}
       while (kind != CPP_EOF);
@@ -103,19 +106,22 @@ main (argc, argv)
     {
       do
 	{
-	  cpp_scan_buffer (&parse_in);
-	  kind = cpp_get_token (&parse_in);
+	  cpp_scan_buffer (pfile);
+	  kind = cpp_get_token (pfile);
 	}
       while (kind != CPP_EOF);
-      CPP_SET_WRITTEN (&parse_in, 0);
+      CPP_SET_WRITTEN (pfile, 0);
     }
 
-  cpp_finish (&parse_in);
-  if (fwrite (parse_in.token_buffer, 1, CPP_WRITTEN (&parse_in), stdout)
-      < CPP_WRITTEN (&parse_in))
-    cpp_notice_from_errno (&parse_in, opts->out_fname);
+  cpp_finish (pfile);
+  if (fwrite (parse_in.token_buffer, 1, CPP_WRITTEN (pfile), out)
+      < CPP_WRITTEN (pfile))
+    cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
 
-  cpp_cleanup (&parse_in);
+  if (ferror (out) || fclose (out))
+    cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
+
+  cpp_cleanup (pfile);
 
   if (parse_in.errors)
     return (FATAL_EXIT_CODE);

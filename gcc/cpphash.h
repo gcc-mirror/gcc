@@ -172,7 +172,7 @@ typedef struct ihash IHASH;
 #define IShspace	0x08	/* ' ' \t \f \v */
 #define ISspace		0x10	/* ' ' \t \f \v \n */
 
-#define _dollar_ok(x)	((x) == '$' && CPP_OPTIONS (pfile)->dollars_in_ident)
+#define _dollar_ok(x)	((x) == '$' && CPP_OPTION (pfile, dollars_in_ident))
 
 #define is_idchar(x)	((_cpp_IStable[x] & ISidnum) || _dollar_ok(x))
 #define is_idstart(x)	((_cpp_IStable[x] & ISidstart) || _dollar_ok(x))
@@ -223,10 +223,10 @@ extern unsigned char _cpp_IStable[256];
 #define CPP_BUMP_LINE(PFILE) CPP_BUMP_BUFFER_LINE(CPP_BUFFER(PFILE))
 #define CPP_PREV_BUFFER(BUFFER) ((BUFFER)->prev)
 
-#define CPP_PRINT_DEPS(PFILE) (CPP_OPTIONS (PFILE)->print_deps)
-#define CPP_TRADITIONAL(PFILE) (CPP_OPTIONS(PFILE)->traditional)
+#define CPP_PRINT_DEPS(PFILE) CPP_OPTION (PFILE, print_deps)
+#define CPP_TRADITIONAL(PFILE) CPP_OPTION (PFILE, traditional)
 #define CPP_PEDANTIC(PFILE) \
-  (CPP_OPTIONS (PFILE)->pedantic && !CPP_BUFFER (pfile)->system_header_p)
+  (CPP_OPTION (PFILE, pedantic) && !CPP_BUFFER (pfile)->system_header_p)
 
 /* CPP_IS_MACRO_BUFFER is true if the buffer contains macro expansion.
    (Note that it is false while we're expanding macro *arguments*.) */

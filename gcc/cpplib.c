@@ -157,11 +157,11 @@ _cpp_handle_directive (pfile)
      input (preprocessed or fed back in by the C++ frontend).  */
   if (c >= '0' && c <= '9')
     {
-      if (CPP_OPTIONS (pfile)->lang_asm)
+      if (CPP_OPTION (pfile, lang_asm))
 	return 0;
 
       if (CPP_PEDANTIC (pfile)
-	  && ! CPP_OPTIONS (pfile)->preprocessed
+	  && ! CPP_OPTION (pfile, preprocessed)
 	  && ! CPP_BUFFER (pfile)->manual_pop)
 	cpp_pedwarn (pfile, "`#' followed by integer");
       do_line (pfile);
@@ -170,7 +170,7 @@ _cpp_handle_directive (pfile)
 
   /* If we are rescanning preprocessed input, don't obey any directives
      other than # nnn.  */
-  if (CPP_OPTIONS (pfile)->preprocessed)
+  if (CPP_OPTION (pfile, preprocessed))
     return 0;
 
   /* Now find the directive name.  */
@@ -320,7 +320,7 @@ do_define (pfile)
 	ok = ! _cpp_compare_defs (pfile, def, hp->value.defn);
       /* Redefining a constant is ok with -D.  */
       else if (hp->type == T_CONST || hp->type == T_STDC)
-        ok = ! CPP_OPTIONS (pfile)->done_initializing;
+        ok = ! pfile->done_initializing;
       /* Otherwise it's not ok.  */
       else
 	ok = 0;
@@ -331,7 +331,7 @@ do_define (pfile)
 	    cpp_error (pfile, "redefining poisoned `%.*s'", len, sym);
 	  else
 	    cpp_pedwarn (pfile, "`%.*s' redefined", len, sym);
-	  if (hp->type == T_MACRO && CPP_OPTIONS (pfile)->done_initializing)
+	  if (hp->type == T_MACRO && pfile->done_initializing)
 	    {
 	      DEFINITION *d = hp->value.defn;
 	      cpp_pedwarn_with_file_and_line (pfile, d->file, d->line, d->col,
@@ -354,10 +354,10 @@ do_define (pfile)
       *slot = hp;
     }
 
-  if (CPP_OPTIONS (pfile)->debug_output
-      || CPP_OPTIONS (pfile)->dump_macros == dump_definitions)
+  if (CPP_OPTION (pfile, debug_output)
+      || CPP_OPTION (pfile, dump_macros) == dump_definitions)
     _cpp_dump_definition (pfile, sym, len, def);
-  else if (CPP_OPTIONS (pfile)->dump_macros == dump_names)
+  else if (CPP_OPTION (pfile, dump_macros) == dump_names)
     pass_thru_directive (sym, len, pfile, T_DEFINE);
 
   return 0;
@@ -376,8 +376,8 @@ _cpp_output_line_command (pfile, file_change)
   long line;
   cpp_buffer *ip;
 
-  if (CPP_OPTIONS (pfile)->no_line_commands
-      || CPP_OPTIONS (pfile)->no_output)
+  if (CPP_OPTION (pfile, no_line_commands)
+      || CPP_OPTION (pfile, no_output))
     return;
 
   ip = cpp_file_buffer (pfile);
@@ -428,7 +428,7 @@ _cpp_output_line_command (pfile, file_change)
     }
 #ifndef NO_IMPLICIT_EXTERN_C
   /* Tell cc1plus if following text should be treated as C.  */
-  if (ip->system_header_p == 2 && CPP_OPTIONS (pfile)->cplusplus)
+  if (ip->system_header_p == 2 && CPP_OPTION (pfile, cplusplus))
     {
       CPP_PUTC_Q (pfile, ' ');
       CPP_PUTC_Q (pfile, '4');
@@ -513,7 +513,7 @@ do_include (pfile)
   token = alloca (len + 1);
   strcpy (token, CPP_PWRITTEN (pfile));
   
-  if (CPP_OPTIONS (pfile)->dump_includes)
+  if (CPP_OPTION (pfile, dump_includes))
     pass_thru_directive (token, len, pfile, T_INCLUDE);
 
   _cpp_execute_include (pfile, token, len, 0, 0);
@@ -530,7 +530,7 @@ do_import (pfile)
   if (CPP_PEDANTIC (pfile))
     cpp_pedwarn (pfile, "ANSI C does not allow `#import'");
 
-  if (CPP_OPTIONS (pfile)->warn_import
+  if (CPP_OPTION (pfile, warn_import)
       && !CPP_BUFFER (pfile)->system_header_p && !pfile->import_warning)
     {
       pfile->import_warning = 1;
@@ -544,7 +544,7 @@ do_import (pfile)
   token = alloca (len + 1);
   strcpy (token, CPP_PWRITTEN (pfile));
   
-  if (CPP_OPTIONS (pfile)->dump_includes)
+  if (CPP_OPTION (pfile, dump_includes))
     pass_thru_directive (token, len, pfile, T_IMPORT);
 
   _cpp_execute_include (pfile, token, len, 1, 0);
@@ -568,7 +568,7 @@ do_include_next (pfile)
   token = alloca (len + 1);
   strcpy (token, CPP_PWRITTEN (pfile));
   
-  if (CPP_OPTIONS (pfile)->dump_includes)
+  if (CPP_OPTION (pfile, dump_includes))
     pass_thru_directive (token, len, pfile, T_INCLUDE_NEXT);
 
   /* For #include_next, skip in the search path past the dir in which the
@@ -782,7 +782,7 @@ do_undef (pfile)
       HASHNODE *hp = *slot;
       /* If we are generating additional info for debugging (with -g) we
 	 need to pass through all effective #undef commands.  */
-      if (CPP_OPTIONS (pfile)->debug_output)
+      if (CPP_OPTION (pfile, debug_output))
 	pass_thru_directive (name, len, pfile, T_UNDEF);
       if (hp->type == T_POISON)
 	cpp_error (pfile, "cannot undefine poisoned `%s'", hp->name);
@@ -1021,9 +1021,9 @@ do_pragma_poison (pfile)
 
   /* As a rule, don't include #pragma poison commands in output,  
      unless the user asks for them.  */
-  writeit = (CPP_OPTIONS (pfile)->debug_output
-	     || CPP_OPTIONS (pfile)->dump_macros == dump_definitions
-	     || CPP_OPTIONS (pfile)->dump_macros == dump_names);
+  writeit = (CPP_OPTION (pfile, debug_output)
+	     || CPP_OPTION (pfile, dump_macros) == dump_definitions
+	     || CPP_OPTION (pfile, dump_macros) == dump_names);
 
   for (;;)
     {
@@ -1399,7 +1399,7 @@ consider_directive_while_skipping (pfile, stack)
     }
 
     /* Don't let erroneous code go by.	*/
-    if (!CPP_OPTIONS (pfile)->lang_asm && CPP_PEDANTIC (pfile))
+    if (!CPP_OPTION (pfile, lang_asm) && CPP_PEDANTIC (pfile))
 	cpp_pedwarn (pfile, "invalid preprocessor directive name");
     return 0;
 }
@@ -1612,7 +1612,7 @@ do_assert (pfile)
   size_t blen, tlen;
   unsigned long bhash, thash;
 
-  if (CPP_PEDANTIC (pfile) && CPP_OPTIONS (pfile)->done_initializing)
+  if (CPP_PEDANTIC (pfile) && pfile->done_initializing)
     cpp_pedwarn (pfile, "ANSI C does not allow `#assert'");
 
   _cpp_skip_hspace (pfile);
@@ -1678,7 +1678,7 @@ do_unassert (pfile)
   long baselen, thislen;
   HASHNODE *base, *this, *next;
   
-  if (CPP_PEDANTIC (pfile) && CPP_OPTIONS (pfile)->done_initializing)
+  if (CPP_PEDANTIC (pfile) && pfile->done_initializing)
     cpp_pedwarn (pfile, "ANSI C does not allow `#unassert'");
 
   _cpp_skip_hspace (pfile);

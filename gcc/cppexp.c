@@ -204,7 +204,7 @@ parse_number (pfile, start, end)
       cpp_error (pfile, "invalid number in #if expression");
       goto error;
     }
-  else if (spec_long > (CPP_OPTIONS (pfile)->c89 ? 1 : 2))
+  else if (spec_long > (CPP_OPTION (pfile, c89) ? 1 : 2))
     {
       cpp_error (pfile, "too many `l' suffixes in integer constant");
       goto error;
@@ -443,7 +443,7 @@ lex (pfile, skip_evaluation)
       op.unsignedp = 0;
       op.value = 0;
 
-      if (CPP_OPTIONS (pfile)->warn_undef && !skip_evaluation)
+      if (CPP_OPTION (pfile, warn_undef) && !skip_evaluation)
 	cpp_warning (pfile, "`%.*s' is not defined",
 		     (int) (tok_end - tok_start), tok_start);
       return op;
@@ -505,7 +505,7 @@ parse_escape (pfile, string_ptr, result_mask)
       return TARGET_BS;
     case 'e':
     case 'E':
-      if (CPP_OPTIONS (pfile)->pedantic)
+      if (CPP_PEDANTIC (pfile))
 	cpp_pedwarn (pfile, "non-ANSI-standard escape sequence, `\\%c'", c);
       return TARGET_ESC;
     case 'f':
