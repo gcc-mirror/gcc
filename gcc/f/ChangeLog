@@ -1,3 +1,8 @@
+Sun Jul 23 15:47:30 2000  Billinghurst, David <David.Billinghurst@riotinto.com>
+
+	* Make-lang.in: Put $(build_exeext) suffix on programs which run
+	on the build machine.
+
 2000-07-22  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* com.c (ffecom_expr_intrinsic_): case FFEINTRIN_impFGETC_subr,
