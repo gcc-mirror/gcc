@@ -613,9 +613,6 @@ floatlib.c
 flow.c
 fold-const.c
 fp-test.c
-frame-dwarf2.c
-frame.c
-#frame.h is part of the GCC library
 function.c
 function.h
 gansidecl.h
