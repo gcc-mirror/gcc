@@ -1,3 +1,10 @@
+2001-01-05  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/mkfixinc.sh(vax-*-bsd): convert exit and atexit calls to
+	their x* equivalent versions for atexit-less systems
+	* fixinc/fixincl.c(main): do not return from main() on atexit-less
+	systems (or any other system any more).
+
 2001-01-05  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (ldmsi_postinc): Avoid use of match_dup between input and

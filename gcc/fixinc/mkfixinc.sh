@@ -23,6 +23,11 @@ case $build in
 		CFLAGS="${CFLAGS} -DSEPARATE_FIX_PROC"
 		;;
 
+	vax-dec-bsd* )
+		CFLAGS="${CFLAGS} -Dexit=xexit -Datexit=xatexit"
+		MAKE="${MAKE} TARGETS=oneprocess"
+		;;
+
 	* )
 		MAKE="${MAKE} TARGETS=oneprocess"
 		;;
