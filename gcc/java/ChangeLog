@@ -1,3 +1,13 @@
+Fri Feb 26 14:06:21 1999  Per Bothner  <bothner@cygnus.com>
+
+	* typeck.c (convert_ieee_real_to_integer):  Use save_expr instead of
+	explicit build_decl.  (Avoids crash in reload when optimizing.)
+
+Thu Feb 25 21:05:04 1999  Per Bothner  <bothner@cygnus.com>
+
+	* decl.c (complete_start_java_method):  Handle synchronized method
+	even when compiling from bytecode.
+
 1999-02-26  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (add_class_decl): Only generate `#include' if outer
