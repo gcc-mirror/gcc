@@ -1,3 +1,10 @@
+2004-01-26  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* doc/tm.texi: Insert some weasel words when LOAD_EXTEND_OP
+	may or may not return non-NIL.
+	* postreload.c (reload_cse_simplify_operands): In LOAD_EXTEND_OP code,
+	check CANNOT_CHANGE_MODE_CLASS
+
 2004-01-26  Jeff Law  <law@redhat.com>
  
 	* doc/contrib.texi: Minor cleanup for Paolo Carlini's entry.  Add
