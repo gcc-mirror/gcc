@@ -65,6 +65,8 @@ INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_DATA = @INSTALL_DATA@
+LN = @LN@
+LN_S = @LN_S@
 
 # -------------------------------------------------
 # Miscellaneous non-standard autoconf-set variables
@@ -551,6 +553,8 @@ BASE_FLAGS_TO_PASS = \
 RECURSE_FLAGS = \
 	CXX_FOR_TARGET='$(CXX_FOR_TARGET_FOR_RECURSIVE_MAKE)' \
 	RAW_CXX_FOR_TARGET='$(RAW_CXX_FOR_TARGET_FOR_RECURSIVE_MAKE)' \
+
+RECURSE_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS)
 
 # Flags to pass down to most sub-makes, in which we're building with
 # the host environment.
@@ -27733,7 +27737,7 @@ $(GCC_STRAP_TARGETS): all-bootstrap configure-gcc
 	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
 
 profiledbootstrap: all-bootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
@@ -27746,7 +27750,7 @@ profiledbootstrap: all-bootstrap configure-gcc
 	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries and training compiler"; \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
@@ -27766,8 +27770,7 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) \
-		LANGUAGES="c c++" all
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) LANGUAGES="c c++" all
 @endif gcc-no-bootstrap
 
 .PHONY: check-gcc maybe-check-gcc
@@ -28110,12 +28113,14 @@ objext = .o
 # Real targets act phony if they depend on phony targets; this hack
 # prevents gratuitous rebuilding of stage 1.
 prebootstrap:
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all-bootstrap
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-bootstrap
 	$(STAMP) prebootstrap
 
 # Flags to pass to stage2 and later makes.
 BOOT_CFLAGS= -g -O2
 POSTSTAGE1_FLAGS_TO_PASS = \
+	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
+	STAGE_PREFIX=$$r/stage-gcc/ \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	ADAC="\$$(CC)"
 
@@ -28131,13 +28136,13 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 
 .PHONY: stage1-start stage1-end
 
-stage1-start:
+stage1-start::
 	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
 	echo stage1 > stage_last ; \
 	[ -d stage1-gcc ] || mkdir stage1-gcc; \
 	set stage1-gcc gcc ; @CREATE_LINK_TO_DIR@ 
 
-stage1-end:
+stage1-end::
 	rm -f stage_last ; \
 	set gcc stage1-gcc ; @UNDO_LINK_TO_DIR@ 
 
@@ -28145,18 +28150,14 @@ stage1-end:
 # are remade, but not reconfigured.  The next stage (if any) will not
 # be reconfigured as well.
 .PHONY: stage1-bubble
-stage1-bubble: 
+stage1-bubble:: 
 	@if [ -f all-stage1-gcc ] ; then \
 	  echo Remaking stage 1 ; \
 	  rm -f all-stage1-gcc ; \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) \
-	    all-stage1-gcc  && \
-	  if [ -f configure-stage2-gcc ] ; then \
-	    $(STAMP) configure-stage2-gcc ; \
-	  fi ; \
-	else \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all-stage1-gcc ; \
-	fi
+	fi ; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage1-gcc
+
+
 
 configure-stage1-gcc:  prebootstrap 
 	$(MAKE) stage1-start
@@ -28200,29 +28201,44 @@ all-stage1-gcc: configure-stage1-gcc
 
 
 
-.PHONY: restage1 distclean-stage1
+.PHONY: restage1 touch-stage1 distclean-stage1
 
-distclean-stage1:  distclean-stage2 
+# Rules to wipe a stage and all the following ones, used for cleanstrap
+
+distclean-stage1::
 	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
 	rm -rf configure-stage1-gcc all-stage1-gcc stage1-gcc 
 
-restage1:  distclean-stage2 
+# Rules to renew the timestamp on a stage and all the following ones
+
+touch-stage1::
+	@[ -f configure-stage1-gcc ] && \
+	  echo '$(STAMP) configure-stage1-gcc' && \
+	  $(STAMP) configure-stage1-gcc; \
+	[ -f all-stage1-gcc ] && \
+	  echo '$(STAMP) all-stage1-gcc' && \
+	  $(STAMP) all-stage1-gcc; \
+	:
+
+# After building a stage, touch the following ones
+
+restage1::
 	rm -rf all-stage1-gcc 
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS)  all-stage1-gcc 
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS)  all-stage1-gcc 
 
 
 
 
 .PHONY: stage2-start stage2-end
 
-stage2-start:
+stage2-start::
 	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
 	echo stage2 > stage_last ; \
 	[ -d stage2-gcc ] || mkdir stage2-gcc; \
 	set stage2-gcc gcc ; @CREATE_LINK_TO_DIR@  ; \
 	set stage1-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ 
 
-stage2-end:
+stage2-end::
 	rm -f stage_last ; \
 	set gcc stage2-gcc ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-gcc stage1-gcc ; @UNDO_LINK_TO_DIR@ 
@@ -28231,18 +28247,19 @@ stage2-end:
 # are remade, but not reconfigured.  The next stage (if any) will not
 # be reconfigured as well.
 .PHONY: stage2-bubble
-stage2-bubble: stage1-bubble
+stage2-bubble:: stage1-bubble
 	@if [ -f all-stage2-gcc ] ; then \
 	  echo Remaking stage 2 ; \
 	  rm -f all-stage2-gcc ; \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) \
-	    all-stage2-gcc  && \
-	  if [ -f configure-stage3-gcc ] ; then \
-	    $(STAMP) configure-stage3-gcc ; \
-	  fi ; \
-	else \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all-stage2-gcc ; \
+	fi ; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage2-gcc
+
+
+stage1-bubble::
+	@if [ -f configure-stage2-gcc ] ; then \
+	  $(STAMP) configure-stage2-gcc ; \
 	fi
+
 
 configure-stage2-gcc:  all-stage1-gcc 
 	$(MAKE) stage2-start
@@ -28280,42 +28297,56 @@ all-stage2-gcc: configure-stage2-gcc
 	$(STAGE_HOST_EXPORTS)  \
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS)  \
-		CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
-		STAGE_PREFIX=$$r/stage1-gcc/  \
-		$(POSTSTAGE1_FLAGS_TO_PASS) && $(STAMP) ../all-stage2-gcc
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 && $(STAMP) ../all-stage2-gcc
 
 
 
 
 .PHONY: bootstrap2
 bootstrap2:
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) stage2-bubble  \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage2-bubble  \
 	  stage2-start all stage2-end 
 
 
-.PHONY: restage2 distclean-stage2
+.PHONY: restage2 touch-stage2 distclean-stage2
 
-distclean-stage2:  distclean-stage3 
+# Rules to wipe a stage and all the following ones, used for cleanstrap
+distclean-stage1:: distclean-stage2 
+distclean-stage2::
 	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
 	rm -rf configure-stage2-gcc all-stage2-gcc stage2-gcc 
 
-restage2:  distclean-stage3 
+# Rules to renew the timestamp on a stage and all the following ones
+touch-stage1:: touch-stage2 
+touch-stage2::
+	@[ -f configure-stage2-gcc ] && \
+	  echo '$(STAMP) configure-stage2-gcc' && \
+	  $(STAMP) configure-stage2-gcc; \
+	[ -f all-stage2-gcc ] && \
+	  echo '$(STAMP) all-stage2-gcc' && \
+	  $(STAMP) all-stage2-gcc; \
+	:
+
+# After building a stage, touch the following ones
+restage1:: touch-stage2 
+restage2::
 	rm -rf all-stage2-gcc 
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS)  all-stage2-gcc 
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS)  all-stage2-gcc 
 
 
 
 
 .PHONY: stage3-start stage3-end
 
-stage3-start:
+stage3-start::
 	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
 	echo stage3 > stage_last ; \
 	[ -d stage3-gcc ] || mkdir stage3-gcc; \
 	set stage3-gcc gcc ; @CREATE_LINK_TO_DIR@  ; \
 	set stage2-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ 
 
-stage3-end:
+stage3-end::
 	rm -f stage_last ; \
 	set gcc stage3-gcc ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-gcc stage2-gcc ; @UNDO_LINK_TO_DIR@ 
@@ -28324,18 +28355,19 @@ stage3-end:
 # are remade, but not reconfigured.  The next stage (if any) will not
 # be reconfigured as well.
 .PHONY: stage3-bubble
-stage3-bubble: stage2-bubble
+stage3-bubble:: stage2-bubble
 	@if [ -f all-stage3-gcc ] ; then \
 	  echo Remaking stage 3 ; \
 	  rm -f all-stage3-gcc ; \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) \
-	    all-stage3-gcc  && \
-	  if [ -f configure-stage4-gcc ] ; then \
-	    $(STAMP) configure-stage4-gcc ; \
-	  fi ; \
-	else \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all-stage3-gcc ; \
+	fi ; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage3-gcc
+
+
+stage2-bubble::
+	@if [ -f configure-stage3-gcc ] ; then \
+	  $(STAMP) configure-stage3-gcc ; \
 	fi
+
 
 configure-stage3-gcc:  all-stage2-gcc 
 	$(MAKE) stage3-start
@@ -28373,9 +28405,8 @@ all-stage3-gcc: configure-stage3-gcc
 	$(STAGE_HOST_EXPORTS)  \
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS)  \
-		CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
-		STAGE_PREFIX=$$r/stage2-gcc/  \
-		$(POSTSTAGE1_FLAGS_TO_PASS) && $(STAMP) ../all-stage3-gcc
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 && $(STAMP) ../all-stage3-gcc
 
 
 compare: all-stage3-gcc
@@ -28404,19 +28435,34 @@ compare: all-stage3-gcc
 
 .PHONY: bootstrap
 bootstrap:
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) stage3-bubble  compare  \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage3-bubble  compare  \
 	  stage3-start all stage3-end 
 
 
-.PHONY: restage3 distclean-stage3
+.PHONY: restage3 touch-stage3 distclean-stage3
 
-distclean-stage3:  distclean-stage4 
+# Rules to wipe a stage and all the following ones, used for cleanstrap
+distclean-stage2:: distclean-stage3 
+distclean-stage3::
 	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
 	rm -rf configure-stage3-gcc all-stage3-gcc stage3-gcc compare 
 
-restage3:  distclean-stage4 
+# Rules to renew the timestamp on a stage and all the following ones
+touch-stage2:: touch-stage3 
+touch-stage3::
+	@[ -f configure-stage3-gcc ] && \
+	  echo '$(STAMP) configure-stage3-gcc' && \
+	  $(STAMP) configure-stage3-gcc; \
+	[ -f all-stage3-gcc ] && \
+	  echo '$(STAMP) all-stage3-gcc' && \
+	  $(STAMP) all-stage3-gcc; \
+	:
+
+# After building a stage, touch the following ones
+restage2:: touch-stage3 
+restage3::
 	rm -rf all-stage3-gcc compare 
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) compare 
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) compare 
 
 
 .PHONY: cleanstrap
@@ -28426,14 +28472,14 @@ cleanstrap: distclean-stage1 bootstrap
 
 .PHONY: stage4-start stage4-end
 
-stage4-start:
+stage4-start::
 	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
 	echo stage4 > stage_last ; \
 	[ -d stage4-gcc ] || mkdir stage4-gcc; \
 	set stage4-gcc gcc ; @CREATE_LINK_TO_DIR@  ; \
 	set stage3-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ 
 
-stage4-end:
+stage4-end::
 	rm -f stage_last ; \
 	set gcc stage4-gcc ; @UNDO_LINK_TO_DIR@  ; \
 	set prev-gcc stage3-gcc ; @UNDO_LINK_TO_DIR@ 
@@ -28442,15 +28488,19 @@ stage4-end:
 # are remade, but not reconfigured.  The next stage (if any) will not
 # be reconfigured as well.
 .PHONY: stage4-bubble
-stage4-bubble: stage3-bubble
+stage4-bubble:: stage3-bubble
 	@if [ -f all-stage4-gcc ] ; then \
 	  echo Remaking stage 4 ; \
 	  rm -f all-stage4-gcc ; \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) \
-	    all-stage4-gcc ; \
-	else \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all-stage4-gcc ; \
+	fi ; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stage4-gcc
+
+
+stage3-bubble::
+	@if [ -f configure-stage4-gcc ] ; then \
+	  $(STAMP) configure-stage4-gcc ; \
 	fi
+
 
 configure-stage4-gcc:  all-stage3-gcc 
 	$(MAKE) stage4-start
@@ -28488,9 +28538,8 @@ all-stage4-gcc: configure-stage4-gcc
 	$(STAGE_HOST_EXPORTS)  \
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS)  \
-		CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
-		STAGE_PREFIX=$$r/stage3-gcc/  \
-		$(POSTSTAGE1_FLAGS_TO_PASS) && $(STAMP) ../all-stage4-gcc
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 && $(STAMP) ../all-stage4-gcc
 
 
 compare3: all-stage4-gcc
@@ -28519,22 +28568,270 @@ compare3: all-stage4-gcc
 
 .PHONY: bootstrap4
 bootstrap4:
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) stage4-bubble  compare3  \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage4-bubble  compare3  \
 	  stage4-start all stage4-end 
 
 
-.PHONY: restage4 distclean-stage4
+.PHONY: restage4 touch-stage4 distclean-stage4
 
-distclean-stage4: 
+# Rules to wipe a stage and all the following ones, used for cleanstrap
+distclean-stage3:: distclean-stage4 
+distclean-stage4::
 	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
 	rm -rf configure-stage4-gcc all-stage4-gcc stage4-gcc compare3 
 
-restage4: 
+# Rules to renew the timestamp on a stage and all the following ones
+touch-stage3:: touch-stage4 
+touch-stage4::
+	@[ -f configure-stage4-gcc ] && \
+	  echo '$(STAMP) configure-stage4-gcc' && \
+	  $(STAMP) configure-stage4-gcc; \
+	[ -f all-stage4-gcc ] && \
+	  echo '$(STAMP) all-stage4-gcc' && \
+	  $(STAMP) all-stage4-gcc; \
+	:
+
+# After building a stage, touch the following ones
+restage3:: touch-stage4 
+restage4::
 	rm -rf all-stage4-gcc compare3 
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) compare3 
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) compare3 
 
 
 
+
+.PHONY: stageprofile-start stageprofile-end
+
+stageprofile-start::
+	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
+	echo stageprofile > stage_last ; \
+	[ -d stageprofile-gcc ] || mkdir stageprofile-gcc; \
+	set stageprofile-gcc gcc ; @CREATE_LINK_TO_DIR@  ; \
+	set stage1-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ 
+
+stageprofile-end::
+	rm -f stage_last ; \
+	set gcc stageprofile-gcc ; @UNDO_LINK_TO_DIR@  ; \
+	set prev-gcc stage1-gcc ; @UNDO_LINK_TO_DIR@ 
+
+# Bubble a bugfix through all the stages up to stage profile.  They
+# are remade, but not reconfigured.  The next stage (if any) will not
+# be reconfigured as well.
+.PHONY: stageprofile-bubble
+stageprofile-bubble:: stage1-bubble
+	@if [ -f all-stageprofile-gcc ] ; then \
+	  echo Remaking stage profile ; \
+	  rm -f all-stageprofile-gcc ; \
+	fi ; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stageprofile-gcc
+
+
+stage1-bubble::
+	@if [ -f configure-stageprofile-gcc ] ; then \
+	  $(STAMP) configure-stageprofile-gcc ; \
+	fi
+
+
+configure-stageprofile-gcc:  all-stage1-gcc 
+	$(MAKE) stageprofile-start
+	@if [ -f stageprofile-gcc/Makefile ] ; then \
+	  $(STAMP) configure-stageprofile-gcc ; \
+	  exit 0; \
+	else \
+	  true ; \
+	fi ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
+	$(STAGE_HOST_EXPORTS)  \
+	echo Configuring stage profile in gcc ; \
+	cd gcc || exit 1; \
+	case $(srcdir) in \
+	  \.) \
+	    srcdiroption="--srcdir=."; \
+	    libsrcdir=".";; \
+	  /* | [A-Za-z]:[\\/]*) \
+	    srcdiroption="--srcdir=$(srcdir)/gcc"; \
+	    libsrcdir="$$s/gcc";; \
+	  *) \
+	    srcdiroption="--srcdir=../$(srcdir)/gcc"; \
+	    libsrcdir="$$s/gcc";; \
+	esac; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  @stage2_werror_flag@ && \
+	  $(STAMP) ../configure-stageprofile-gcc
+
+all-stageprofile-gcc: configure-stageprofile-gcc
+	$(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
+	$(STAGE_HOST_EXPORTS)  \
+	cd gcc && \
+	$(MAKE) $(GCC_FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" && $(STAMP) ../all-stageprofile-gcc
+
+
+
+
+
+.PHONY: restageprofile touch-stageprofile distclean-stageprofile
+
+# Rules to wipe a stage and all the following ones, used for cleanstrap
+distclean-stage1:: distclean-stageprofile 
+distclean-stageprofile::
+	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
+	rm -rf configure-stageprofile-gcc all-stageprofile-gcc stageprofile-gcc 
+
+# Rules to renew the timestamp on a stage and all the following ones
+touch-stage1:: touch-stageprofile 
+touch-stageprofile::
+	@[ -f configure-stageprofile-gcc ] && \
+	  echo '$(STAMP) configure-stageprofile-gcc' && \
+	  $(STAMP) configure-stageprofile-gcc; \
+	[ -f all-stageprofile-gcc ] && \
+	  echo '$(STAMP) all-stageprofile-gcc' && \
+	  $(STAMP) all-stageprofile-gcc; \
+	:
+
+# After building a stage, touch the following ones
+restage1:: touch-stageprofile 
+restageprofile::
+	rm -rf all-stageprofile-gcc 
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS)  all-stageprofile-gcc 
+
+
+
+
+.PHONY: stagefeedback-start stagefeedback-end
+
+stagefeedback-start::
+	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
+	echo stagefeedback > stage_last ; \
+	[ -d stagefeedback-gcc ] || mkdir stagefeedback-gcc; \
+	set stagefeedback-gcc gcc ; @CREATE_LINK_TO_DIR@  ; \
+	set stage1-gcc prev-gcc ; @CREATE_LINK_TO_DIR@ 
+
+stagefeedback-end::
+	rm -f stage_last ; \
+	set gcc stagefeedback-gcc ; @UNDO_LINK_TO_DIR@  ; \
+	set prev-gcc stage1-gcc ; @UNDO_LINK_TO_DIR@ 
+
+# Bubble a bugfix through all the stages up to stage feedback.  They
+# are remade, but not reconfigured.  The next stage (if any) will not
+# be reconfigured as well.
+.PHONY: stagefeedback-bubble
+stagefeedback-bubble:: stage1-bubble
+	@if [ -f all-stagefeedback-gcc ] ; then \
+	  echo Remaking stage feedback ; \
+	  rm -f all-stagefeedback-gcc ; \
+	fi ; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stagefeedback-gcc
+
+
+stage1-bubble::
+	@if [ -f configure-stagefeedback-gcc ] ; then \
+	  $(STAMP) configure-stagefeedback-gcc ; \
+	fi
+
+
+configure-stagefeedback-gcc:  all-stage1-gcc 
+	$(MAKE) stagefeedback-start
+	@if [ -f stagefeedback-gcc/Makefile ] ; then \
+	  $(STAMP) configure-stagefeedback-gcc ; \
+	  exit 0; \
+	else \
+	  true ; \
+	fi ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
+	$(STAGE_HOST_EXPORTS)  \
+	echo Configuring stage feedback in gcc ; \
+	cd gcc || exit 1; \
+	case $(srcdir) in \
+	  \.) \
+	    srcdiroption="--srcdir=."; \
+	    libsrcdir=".";; \
+	  /* | [A-Za-z]:[\\/]*) \
+	    srcdiroption="--srcdir=$(srcdir)/gcc"; \
+	    libsrcdir="$$s/gcc";; \
+	  *) \
+	    srcdiroption="--srcdir=../$(srcdir)/gcc"; \
+	    libsrcdir="$$s/gcc";; \
+	esac; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  @stage2_werror_flag@ && \
+	  $(STAMP) ../configure-stagefeedback-gcc
+
+all-stagefeedback-gcc: configure-stagefeedback-gcc
+	$(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s;  \
+	$(STAGE_HOST_EXPORTS)  \
+	cd gcc && \
+	$(MAKE) $(GCC_FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" && $(STAMP) ../all-stagefeedback-gcc
+
+
+
+
+
+.PHONY: restagefeedback touch-stagefeedback distclean-stagefeedback
+
+# Rules to wipe a stage and all the following ones, used for cleanstrap
+distclean-stage1:: distclean-stagefeedback 
+distclean-stagefeedback::
+	[ -f stage_last ] && $(MAKE) `cat stage_last`-end || :
+	rm -rf configure-stagefeedback-gcc all-stagefeedback-gcc stagefeedback-gcc 
+
+# Rules to renew the timestamp on a stage and all the following ones
+touch-stage1:: touch-stagefeedback 
+touch-stagefeedback::
+	@[ -f configure-stagefeedback-gcc ] && \
+	  echo '$(STAMP) configure-stagefeedback-gcc' && \
+	  $(STAMP) configure-stagefeedback-gcc; \
+	[ -f all-stagefeedback-gcc ] && \
+	  echo '$(STAMP) all-stagefeedback-gcc' && \
+	  $(STAMP) all-stagefeedback-gcc; \
+	:
+
+# After building a stage, touch the following ones
+restage1:: touch-stagefeedback 
+restagefeedback::
+	rm -rf all-stagefeedback-gcc 
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS)  all-stagefeedback-gcc 
+
+
+
+
+
+stagefeedback-start::
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	cd stageprofile-gcc && \
+	  { find . -type d | sort | sed 's,.*,$(SHELL) '"$$s"'/mkinstalldirs "../gcc/&",' | $(SHELL); } && \
+	  { find . -name '*.*da' | sed 's,.*,$(LN) -f "&" "../gcc/&",' | $(SHELL); }
+
+profiledbootstrap: all-bootstrap configure-gcc
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(GCC_HOST_EXPORTS) \
+	echo "Bootstrapping the compiler"; \
+	$(MAKE) stageprofile-bubble distclean-stagefeedback stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
+	$(SET_LIB_PATH) \
+	echo "Building runtime libraries and training compiler"; \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(SET_LIB_PATH) \
+	$(GCC_HOST_EXPORTS) \
+	echo "Building feedback based compiler"; \
+	$(MAKE) stagefeedback-bubble stagefeedback-end
 
 @endif gcc-bootstrap
 

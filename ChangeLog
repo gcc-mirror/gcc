@@ -1,3 +1,26 @@
+2004-06-09  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl (touch-stage[+id+]): New.
+	(restage[+prev+]): Depend on touch-stage[+id+].
+
+	* Makefile.tpl (RECURSE_FLAGS_TO_PASS): New.
+	Use it throughout.
+
+	* Makefile.def: Add profile and feedback bootstrap stages.
+	Remove next field from bootstrap stages.
+	* Makefile.tpl (LN, LN_S): Substitute.
+	(stageN-start, stageN-end): Use double-colon rules, to
+	provide a hook for additional setup commands.
+	(distclean-stageN-gcc, restageN): Create dependencies from
+	[+prev+], not from [+next+].
+	(stageN-bubble): Add commands for successive stages from
+	[+prev+], using double-colon rules.
+	(all-stageN-gcc): Fix typo.
+	(stagefeedback-start, profiledbootstrap): New.
+	* Makefile.in: Regenerate.
+	* configure.in: Call ACX_PROG_LN.
+	* configure: Regenerate.
+
 2004-06-08  Canqun Yang  <canqun@nudt.edu.cn>
 
 	* MAINTAINERS (Write After Approval): Add myself.

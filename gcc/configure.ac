@@ -726,8 +726,8 @@ case ${AWK} in
   "") AC_MSG_ERROR([can't build without awk, bailing out]) ;;
 esac
 
-gcc_AC_PROG_LN
 gcc_AC_PROG_LN_S
+ACX_PROG_LN($LN_S)
 AC_PROG_RANLIB
 gcc_AC_PROG_INSTALL
 

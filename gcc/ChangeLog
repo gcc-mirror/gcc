@@ -1,3 +1,13 @@
+2004-06-09  Paolo Bonzini  <bonzini@gnu.org>
+
+	* aclocal.m4 (gcc_AC_PROG_LN): Remove.
+	(gcc_AC_CHECK_DECLS): Use AH_TEMPLATE to generate
+	config.in entries.
+	* configure.ac: Call ACX_PROG_LN, falling back to $LN_S
+	if hard links are not available.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2004-06-08  Per Bothner  <per@bothner.com>
 
 	* configure.ac:  New --enable-mapped-location sets USE_MAPPED_LOCATION.

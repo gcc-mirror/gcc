@@ -258,3 +258,27 @@ if test $gcc_cv_c__bool = yes; then
 fi
 ])
 
+dnl See if hard links work and if not, try to substitute $1 or simple copy.
+AC_DEFUN([ACX_PROG_LN],
+[AC_MSG_CHECKING(whether ln works)
+AC_CACHE_VAL(acx_cv_prog_LN,
+[rm -f conftestdata_t
+echo >conftestdata_f
+if ln conftestdata_f conftestdata_t 2>/dev/null
+then
+  acx_cv_prog_LN=ln
+else
+  acx_cv_prog_LN=no
+fi
+rm -f conftestdata_f conftestdata_t
+])dnl
+if test $acx_cv_prog_LN = no; then
+  LN="ifelse([$1],,cp,[$1])"
+  AC_MSG_RESULT([no, using $LN])
+else
+  LN="$acx_cv_prog_LN"
+  AC_MSG_RESULT(yes)
+fi
+AC_SUBST(LN)dnl
+])
+
