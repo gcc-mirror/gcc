@@ -38,6 +38,7 @@
    (UNSPEC_LDGP2	10)
    (UNSPEC_LITERAL	11)
    (UNSPEC_LITUSE	12)
+   (UNSPEC_SIBCALL	13)
   ])
 
 ;; UNSPEC_VOLATILE:
@@ -4582,7 +4583,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 (define_expand "sibcall"
   [(parallel [(call (mem:DI (match_operand 0 "" ""))
 			    (match_operand 1 "" ""))
-	      (use (reg:DI 29))])]
+	      (unspec [(reg:DI 29)] UNSPEC_SIBCALL)])]
   "TARGET_ABI_OSF"
 {
   if (GET_CODE (operands[0]) != MEM)
@@ -4710,7 +4711,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(parallel [(set (match_operand 0 "" "")
 		   (call (mem:DI (match_operand 1 "" ""))
 		         (match_operand 2 "" "")))
-	      (use (reg:DI 29))])]
+	      (unspec [(reg:DI 29)] UNSPEC_SIBCALL)])]
   "TARGET_ABI_OSF"
 {
   if (GET_CODE (operands[1]) != MEM)
@@ -4920,7 +4921,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 (define_insn "*sibcall_osf_1_er"
   [(call (mem:DI (match_operand:DI 0 "symbolic_operand" "R,s"))
 	 (match_operand 1 "" ""))
-   (use (reg:DI 29))]
+   (unspec [(reg:DI 29)] UNSPEC_SIBCALL)]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "@
    br $31,$%0..ng
@@ -4931,7 +4932,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 (define_insn "*sibcall_osf_1"
   [(call (mem:DI (match_operand:DI 0 "symbolic_operand" "R,s"))
 	 (match_operand 1 "" ""))
-   (use (reg:DI 29))]
+   (unspec [(reg:DI 29)] UNSPEC_SIBCALL)]
   "! TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "@
    br $31,$%0..ng
@@ -6932,7 +6933,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "symbolic_operand" "R,s"))
 	      (match_operand 2 "" "")))
-   (use (reg:DI 29))]
+   (unspec [(reg:DI 29)] UNSPEC_SIBCALL)]
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "@
    br $31,$%1..ng
@@ -6944,7 +6945,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "symbolic_operand" "R,s"))
 	      (match_operand 2 "" "")))
-   (use (reg:DI 29))]
+   (unspec [(reg:DI 29)] UNSPEC_SIBCALL)]
   "! TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
   "@
    br $31,$%1..ng
