@@ -1,3 +1,7 @@
+2003-09-18  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* btest-gcc.sh: Add make check-target-libffi.
+
 2003-07-31  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* btest-gcc.sh: Add make check-target-libjava.
@@ -31,5 +35,3 @@
 	* site.exp: New file.
 	* ChangeLog: New file.
 	* README: New file.
-
-
