@@ -1,3 +1,7 @@
+2005-03-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin8.h (LIB_SPEC): Switch -lmx and -lSystem.
+
 2005-03-02  Devang Patel  <dpatel@apple.com>
 	
 	Undo PR tree-optimization/18815 fix.
