@@ -3566,9 +3566,8 @@ rest_of_compilation (decl)
     rtx x;
     const char *fnname;
 
-    /* Get the function's name, as described by its RTL.
-		This may be different from the DECL_NAME name used
-		in the source file.  */
+    /* Get the function's name, as described by its RTL.  This may be
+       different from the DECL_NAME name used in the source file.  */
 
     x = DECL_RTL (decl);
     if (GET_CODE (x) != MEM)
