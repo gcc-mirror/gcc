@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1999-02-26
+@c 1999-03-03
 
 @ifclear BUGSONLY
 @node Actual Bugs
@@ -13,12 +13,15 @@
 @end ifclear
 
 This section identifies bugs that @code{g77} @emph{users}
-might run into.
+might run into in this version of @code{g77}.
 This includes bugs that are actually in the @code{gcc}
 back end (GBE) or in @code{libf2c}, because those
 sets of code are at least somewhat under the control
-of (and necessarily intertwined with) @code{g77}, so it
-isn't worth separating them out.
+of (and necessarily intertwined with) @code{g77},
+so it isn't worth separating them out.
+
+For information on bugs in @emph{other} versions of @code{g77},
+@ref{News,,News About GNU Fortran}.
 
 For information on bugs that might afflict people who
 configure, port, build, and install @code{g77},
@@ -26,11 +29,31 @@ configure, port, build, and install @code{g77},
 
 @itemize @bullet
 @item
+The @code{IDate} Intrinsic (VXT)
+fails to return the year in the documented, non-Y2K-compliant range
+of 0--99,
+instead returning 100 for the year 2000.
+
+Fixed in @code{egcs} 1.2.
+
+@item
+Year 2000 (Y2K) compliance information
+is missing from the documentation.
+
+Fixed in @code{egcs} 1.2.
+
+@item
 @code{g77} crashes when compiling
 I/O statements using keywords that define @code{INTEGER} values,
 such as @samp{IOSTAT=@var{j}},
 where @var{j} is other than default @code{INTEGER}
 (such as @code{INTEGER*2}).
+
+Fixed in @code{egcs} 1.2.
+
+@item
+The @samp{-ax} option is not obeyed when compiling Fortran programs.
+(It is not passed to the @file{f771} driver.)
 
 Fixed in @code{egcs} 1.2.
 
@@ -42,18 +65,8 @@ disagrees with the reference concerning the type of the function.
 Fixed in @code{egcs} 1.2.
 
 @item
-@code{g77} sometimes crashes when compiling code
-containing the construct @samp{CMPLX(0.)} or similar.
-This is a @code{gcc} back-end bug.
-It can be worked around using @samp{-fno-emulate-complex},
-though that might trigger other, older bugs.
-Compiling without optimization is another work-around.
-
-Fixed in @code{egcs} 1.1.
-
-@item
 @c Tim Prince discovered this.
-Automatic arrays aren't working on HP-UX systems,
+Automatic arrays possibly aren't working on HP-UX systems,
 at least in HP-UX version 10.20.
 Writing into them apparently causes over-writing
 of statically declared data in the main program.
@@ -62,46 +75,11 @@ or pointers to them being improperly handled,
 e.g. not passed to other procedures as they should be.
 
 @item
-@c Toon Moene discovered these.
-Some Fortran code has been found to be miscompiled
-by @code{g77} built on @code{gcc} version 2.8.1
-on m68k-next-nextstep3 configurations
-when using the @samp{-O2} option.
-Even a C function is known to miscompile
-on that configuration
-when using the @samp{-O2 -funroll-loops} options.
-
-Fixed in @code{egcs}.
-
-@cindex DNRM2
-@cindex stack, 387 coprocessor
-@cindex ix86
-@cindex -O2
-@item
-A code-generation bug afflicts
-Intel x86 targets when @samp{-O2} is specified
-compiling, for example, an old version of
-the @samp{DNRM2} routine.
-The x87 coprocessor stack is being
-mismanaged in cases where assigned @code{GOTO}
-and @code{ASSIGN} are involved.
-
-Fixed in @code{egcs} version 1.1.
-
-@item
 @code{g77} fails to warn about
 use of a ``live'' iterative-DO variable
 as an implied-DO variable
 in a @samp{WRITE} or @samp{PRINT} statement
 (although it does warn about this in a @samp{READ} statement).
-
-@item
-A compiler crash, or apparently infinite run time,
-can result when compiling complicated expressions
-involving @code{COMPLEX} arithmetic
-(especially multiplication).
-
-Fixed in @code{egcs} version 1.1.
 
 @item
 Something about @code{g77}'s straightforward handling of
@@ -248,19 +226,6 @@ problem by not using the back end's support for @code{COMPLEX}.
 The new option @samp{-fno-emulate-complex} avoids the work-around,
 reverting to using the same ``broken'' mechanism as that used
 by versions of @code{g77} prior to 0.5.20.
-
-@cindex ELF support
-@cindex support, ELF
-@cindex -fPIC option
-@cindex options, -fPIC
-@item
-@code{g77} sometimes produces invalid assembler code
-when using the @samp{-fPIC} option (such as compiling for ELF targets)
-on the Intel x86 architecture target.
-The symptom is that the assembler complains about invalid opcodes.
-This bug is in the gcc back end.
-
-Fixed in @code{egcs} version 1.0.2.
 
 @cindex padding
 @cindex structures
