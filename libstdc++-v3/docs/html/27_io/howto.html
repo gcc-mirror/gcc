@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 27</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.4 2001/04/03 00:26:56 pme Exp $ -->
+<!-- $Id: howto.html,v 1.5 2001/05/30 21:55:03 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -29,6 +29,7 @@
    <LI><A HREF="#5">What is this &lt;sstream&gt;/stringstreams thing?</A>
    <LI><A HREF="#6">Deriving a stream buffer</A>
    <LI><A HREF="#7">More on binary I/O</A>
+   <LI><A HREF="#8">Pathetic performance?  Ditch C.</A>
 </UL>
 
 <HR>
@@ -400,14 +401,65 @@
       a portable binary format.
    </P>
 
+<HR>
+<H2><A NAME="8">Pathetic performance?  Ditch C.</A></H2>
+   <P>It sounds like a flame on C, but it isn't.  Really.  Calm down.
+      I'm just saying it to get your attention.
+   </P>
+   <P>Because the C++ library includes the C library, both C-style and
+      C++-style I/O have to work at the same time.  For example:
+      <PRE>
+     #include &lt;iostream&gt;
+     #include &lt;cstdio&gt;
+
+     std::cout &lt;&lt; &quot;Hel&quot;;
+     std::printf (&quot;lo, worl&quot;);
+     std::cout &lt;&lt; &quot;d!\n&quot;;
+      </PRE>
+      This must do what you think it does.
+   </P>
+   <P>Alert members of the audience will immediately notice that buffering
+      is going to make a hash of the output unless special steps are taken.
+   </P>
+   <P>The special steps taken by libstdc++, at least for version 3.0,
+      involve doing very little buffering for the standard streams, leaving
+      most of the buffering to the underlying C library.  (This kind of
+      thing is <A HREF="../explanations.html#cstdio">tricky to get right</A>.)
+      The upside is that correctness is insured.  The downside is that
+      writing through <TT>cout</TT> can quite easily lead to awful
+      performance when the C++ I/O library is layered on top of the C I/O
+      library (as it is for 3.0 by default).  Some patches are in the
+      works which should improve the situation for 3.1.
+   </P>
+   <P>However, the C and C++ standard streams only need to be kept in sync
+      when both libraries' facilities are in use.  If your program only uses
+      C++ I/O, then there's no need to sync with the C streams.  The right
+      thing to do in this case is to call
+      <PRE>
+     #include <EM>any of the I/O headers such as ios, iostream, etc</EM>
+
+     std::sync_with_stdio(false);
+      </PRE>
+   </P>
+   <P>You must do this before performing any I/O via the C++ stream objects.
+      Once you call this, the C++ streams will operate independantly of the
+      (unused) C streams.  For GCC 3.0, this means that <TT>cout</TT> and
+      company will become fully buffered on their own.
+   </P>
+   <P>Note, by the way, that the synchronization requirement only applies to
+      the standard streams (cin, cout, cerr, clog, and thier wide-character
+      counterparts).  File stream objects that you create yourself have no
+      such requirement and are fully buffered.
+   </P>
+
 
 <!-- ####################################################### -->
 
-<HR>
+<HR><BR><BR><BR><BR><BR><BR><BR><BR>
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.4 2001/04/03 00:26:56 pme Exp $
+<BR> $Id: howto.html,v 1.5 2001/05/30 21:55:03 pme Exp $
 </EM></P>
 
 

@@ -7,7 +7,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.9 2001/04/06 01:47:11 bkoz Exp $ -->
+<!-- $Id: configopts.html,v 1.10 2001/04/20 08:59:25 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -66,56 +66,55 @@ options</A></H1>
         I/O package (from
         <A HREF="http://sources.redhat.com/glibc/">glibc</A>, the
         GNU C library), or 'stdio' to use a generic &quot;C&quot;
-        abstraction.  The default is 'stdio'.
+        abstraction.  The default is 'stdio'.  A longer explanation
+        is <A HREF="explanations.html#cstdio">here</A>.
      </P>
 
- <DT><TT>--enable-sjlj-exceptions </TT> 
- <DD><P> Forces old, short-jump/long-jump exception handling model. If
- at all possible, the new, frame unwinding exception handling routines
- should be used instead, as they significantly reduce both runtime
- memory usage and executable size.
+ <DT><TT>--enable-sjlj-exceptions  </TT>
+ <DD><P>Forces old, short-jump/long-jump exception handling model.  If
+        at all possible, the new, frame unwinding exception handling routines
+        should be used instead, as they significantly reduce both runtime
+        memory usage and executable size.
      </P>
-
 
  <DT><TT>--enable-clocale  </TT>
  <DD><P>This is an abbreviated form of <TT>'--enable-clocale=generic'</TT>
         (described next).
      </P>
 
- <DT><TT>--enable-clocale=MODEL </TT> <DD><P>Select a target-specific
- underlying locale package. The choices are 'gnu' to specify an X/Open
- (IEEE Std. 1003.1-200x) model based on langinfo/iconv (from <A
- HREF="http://sources.redhat.com/glibc/">glibc</A>, the GNU C
- library), or 'generic' to use a generic &quot;C&quot; abstraction
- which consists of &quot;C&quot; locale info.  The default is
- 'generic'.
+ <DT><TT>--enable-clocale=MODEL  </TT>
+ <DD><P>Select a target-specific underlying locale package.  The choices
+        are 'gnu' to specify an X/Open (IEEE Std. 1003.1-200x) model based
+        on langinfo/iconv (from
+        <A HREF="http://sources.redhat.com/glibc/">glibc</A>, the GNU C
+        library), or 'generic' to use a generic &quot;C&quot; abstraction
+        which consists of &quot;C&quot; locale info.  The default is 'generic'.
      </P>
 
  <DT><TT>--enable-c99  </TT>
  <DD><P>The &quot;long long&quot; type was introduced in C99, along
- 	with bunches of other functions for wide characters, and math
- 	classification macros, etc. If enabled, all C99 functions not
- 	specified by the C++ standard will be put into namespace c99,
- 	and then all names in the c99 namespace will be injected into
- 	namespace std, so that C99 functions can be used "as if" they
- 	were in the C++ standard (as they will eventually be in some
- 	future revision of the standard, without a doubt.) By default,
- 	C99 support is on, assuming the configure probes find all the
- 	necessary functions and bits necessary.
+        with bunches of other functions for wide characters, and math
+        classification macros, etc.  If enabled, all C99 functions not
+        specified by the C++ standard will be put into <TT>namespace
+        c99</TT>, and then all names in the c99 namespace will be injected
+        into namespace std, so that C99 functions can be used &quot;as
+        if&quot; they were in the C++ standard (as they will eventually
+        be in some future revision of the standard, without a doubt).
+        By default, C99 support is on, assuming the configure probes find
+        all the necessary functions and bits necessary.
     </P>
 
  <DT><TT>--enable-long-long  </TT>
  <DD><P>The &quot;long long&quot; type was introduced in C99.  It is
         provided as a GNU extension to C++98 in g++.  This flag builds
-        support for &quot;long long&quot; into the library
-        (specialized templates and the like for iostreams). This
-        option is on by default: if enabled, users will have to either
-        use the new-style &quot;C&quot; headers by default (ie cmath
-        not math.h) or add appropriate compile-time flags to all
-        compile lines to allow &quot;C&quot; visibility of this
-        feature (on GNU/Linux, the flag is -D_ISOC99_SOURCE, which is
-        added automatically via CPLUSPLUS_CPP_SPEC's addition of
-        _GNU_SOURCE).
+        support for &quot;long long&quot; into the library (specialized
+        templates and the like for iostreams).  This option is on by default:
+        if enabled, users will have to either use the new-style &quot;C&quot;
+        headers by default (i.e., &lt;cmath&gt; not &lt;math.h&gt;)
+        or add appropriate compile-time flags to all compile lines to
+        allow &quot;C&quot; visibility of this feature (on GNU/Linux,
+        the flag is -D_ISOC99_SOURCE, which is added automatically via
+        CPLUSPLUS_CPP_SPEC's addition of _GNU_SOURCE).
      </P>
 
  <DT><TT>--enable-cheaders=OPTION  </TT>
@@ -148,14 +147,14 @@ options</A></H1>
 
  <DT><TT>--enable-version-specific-runtime-libs  </TT>
  <DD><P>Specify that run-time libraries should be installed in the
-       compiler-specific subdirectory (i.e.,
-       <TT>$(libdir)/gcc-lib/$(target_alias)/$(gcc_version)</TT>)
-       instead of <TT>$(libdir)</TT>.  This option is useful if you
-       intend to use several versions of gcc in parallel.  In addition,
-       libstdc++'s include files will be installed in
-       <TT>$(libdir)/gcc-lib/$(target_alias)/$(gcc_version)/include/g++</TT>,
-       unless you also specify
-       <TT>--with-gxx-include-dir=_dirname_</TT> during configuration.
+        compiler-specific subdirectory (i.e.,
+        <TT>${libdir}/gcc-lib/${target_alias}/${gcc_version}</TT>)
+        instead of <TT>${libdir}</TT>.  This option is useful if you
+        intend to use several versions of gcc in parallel.  In addition,
+        libstdc++'s include files will be installed in
+        <TT>${libdir}/gcc-lib/${target_alias}/${gcc_version}/include/g++</TT>,
+        unless you also specify
+       <TT>--with-gxx-include-dir=<EM>dirname</EM></TT> during configuration.
      </P>
 
  <DT><TT>--with-gxx-include-dir=&lt;include-files dir&gt;</TT>
@@ -212,7 +211,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.9 2001/04/06 01:47:11 bkoz Exp $
+$Id: configopts.html,v 1.10 2001/04/20 08:59:25 bkoz Exp $
 </EM></P>
 
 
