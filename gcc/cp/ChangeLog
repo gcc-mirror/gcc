@@ -1,3 +1,8 @@
+1999-10-15  Greg McGary  <gkm@gnu.org>
+
+	* lex.c (lang_init_options): Set flag_bounds_check as "unspecified".
+	(lang_init): Set default for flag_bounds_check if still "unspecified".
+
 1999-10-13  Andrew Haley  <aph@cygnus.com>
 
 	* class.c (finish_struct_1): Force alignment of non-bitfields to
