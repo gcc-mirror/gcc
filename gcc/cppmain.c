@@ -75,13 +75,6 @@ main (argc, argv)
 
   for (;;)
     {
-#if 0
-      int ch = PARSE_GETC (&parse_in);
-      if (ch < 0)
-	break;
-      if (! opts->no_output)
-	putchar (ch);
-#else
       enum cpp_token kind;
       if (! opts->no_output)
 	{
@@ -91,7 +84,6 @@ main (argc, argv)
       kind = cpp_get_token (&parse_in);
       if (kind == CPP_EOF)
 	break;
-#endif
     }
 
   cpp_finish (&parse_in);
