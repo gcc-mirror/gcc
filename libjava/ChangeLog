@@ -1,3 +1,13 @@
+2004-05-27  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JPopupMenu.java
+	(isVisible): Do not use visible directly.
+	(setVisible): Likewise.
+	* javax/swing/JWindow.java
+	(JWindow): call accessible constructor.
+	* javax/swing/RepaintManager.java
+	(paintDirtyRegions): Use public methods to obtain iterator.
+
 2004-05-25  David Jee  <djee@redhat.com>
 
 	* java/awt/Container.java
