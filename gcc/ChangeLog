@@ -1,3 +1,24 @@
+2003-03-11  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in: Update.
+	* c-common.c: Don't include real.h or except.h.
+	(REGISTER_PREFIX): Remove.
+	(builtin_define_std, builtin_define_with_value,
+	builtin_define_with_int_value, builtin_define_with_hex_fp_value,
+	builtin_define_type_max, builtin_define_type_precision,
+	builtin_define_float_constants): Move to c-cppbuiltin.c.
+	(c_stddef_cpp_builtins): New.
+	* c-common.h (builtin_define_with_value, c_stddef_cpp_builtins): New.
+	* c-cppbuiltin.c: New, extracted from c-common.c.
+	(define__GNUC__): New.
+	* cppspec.c (lang_specific_driver): Remove support of -no-gcc.
+	* gcc.c: Remove support of %v1, %v2 and %v3 specs.
+	(cpp_unique_options): Don't support no-gcc.
+	(do_spec_1): Remove support of version specs.
+	* doc/invoke.texi: Remove documentation of %v1, %v2 and %v3.
+	* doc/passes.texi: Update.
+	* doc/tm.texi: Update.
+
 2003-03-10  Aldy Hernandez  <aldyh@redhat.com>
 
         * dwarf2out.c (multiple_reg_loc_descriptor): Fix thinko.

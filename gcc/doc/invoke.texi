@@ -5306,18 +5306,6 @@ Output the accumulated assembler options specified by @option{-Wa}.
 @item %Z
 Output the accumulated preprocessor options specified by @option{-Wp}.
 
-@item %v1
-Substitute the major version number of GCC@.
-(For version 2.9.5, this is 2.)
-
-@item %v2
-Substitute the minor version number of GCC@.
-(For version 2.9.5, this is 9.)
-
-@item %v3
-Substitute the patch level number of GCC@.
-(For version 2.9.5, this is 5.)
-
 @item %a
 Process the @code{asm} spec.  This is used to compute the
 switches to be passed to the assembler.

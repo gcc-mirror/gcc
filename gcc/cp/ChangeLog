@@ -1,3 +1,8 @@
+2003-03-11  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in (CXX_C_OBJS): Update.
+	* lang-specs.h: Don't define __GNUG__ here.
+
 2003-03-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (perform_overload_resolution): New function.

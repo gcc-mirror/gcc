@@ -760,7 +760,7 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = attribs.o c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
   c-convert.o c-aux-info.o c-common.o c-opts.o c-format.o c-semantics.o \
-  c-incpath.o cppdefault.o c-ppoutput.o \
+  c-incpath.o cppdefault.o c-ppoutput.o c-cppbuiltin.o \
   c-objc-common.o c-dump.o c-pch.o libcpp.a $(C_TARGET_OBJS)
 
 # Language-specific object files for C.
@@ -1273,15 +1273,19 @@ tlink.o: tlink.c $(DEMANGLE_H) $(HASHTAB_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h 
 # A file used by all variants of C.
 
 c-common.o : c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-	$(OBSTACK_H) $(C_COMMON_H) flags.h toplev.h output.h c-pragma.h $(RTL_H) \
-	$(GGC_H) $(EXPR_H) $(TM_P_H) builtin-types.def builtin-attrs.def $(TARGET_H) \
-	diagnostic.h except.h gt-c-common.h real.h langhooks.h varray.h
+	$(OBSTACK_H) $(C_COMMON_H) flags.h toplev.h output.h c-pragma.h \
+	$(GGC_H) $(EXPR_H) $(TM_P_H) builtin-types.def builtin-attrs.def \
+	diagnostic.h gt-c-common.h langhooks.h varray.h $(RTL_H) $(TARGET_H)
 c-pretty-print.o : c-pretty-print.c c-pretty-print.h pretty-print.h \
 	$(C_COMMON_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) real.h
 
 c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H) \
         c-pragma.h flags.h toplev.h langhooks.h tree-inline.h diagnostic.h \
 	intl.h
+
+c-cppbuiltin.o : c-cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+	$(TREE_H) $(C_COMMON_H) c-pragma.h flags.h toplev.h langhooks.h \
+	output.h except.h real.h
 
 # A file used by all variants of C and some other languages.
 
