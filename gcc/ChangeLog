@@ -1,3 +1,8 @@
+2002-03-21  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_select_rtx_section): Put symbolic
+	constants in .data when -fpic.
+
 2002-03-21  Tom Tromey  <tromey@redhat.com>
 
 	* config/i386/sol2.h (ASM_QUAD): Undef.  Fixes PR bootstrap/5948.
