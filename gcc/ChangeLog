@@ -1,3 +1,7 @@
+2004-04-06  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-common.h (pending_lang_change): Mark for PCH.
+
 2004-04-07  Caroline Tice  <ctice@apple.com>
 
 	* gcc.c (main): Move 'break' in main loops (on an error)

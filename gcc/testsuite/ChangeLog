@@ -1,3 +1,8 @@
+2004-04-06  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.dg/pch/externc-1.Hs: New.
+	* g++.dg/pch/externc-1.C: New.
+
 2004-04-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/compat/struct-by-value-5a_main.c,
