@@ -401,7 +401,7 @@ do {								\
 #endif
 
 /* GAS and SYSV4 assemblers accept these.  */
-#ifdef OBJECT_FORMAT_ELF
+#if defined (OBJECT_FORMAT_ELF) || defined (OBJECT_FORMAT_ROSE)
 #ifndef UNALIGNED_SHORT_ASM_OP
 #define UNALIGNED_SHORT_ASM_OP		"\t.2byte\t"
 #endif
@@ -411,7 +411,7 @@ do {								\
 #ifndef UNALIGNED_DOUBLE_INT_ASM_OP
 #define UNALIGNED_DOUBLE_INT_ASM_OP	"\t.8byte\t"
 #endif
-#endif /* OBJECT_FORMAT_ELF */
+#endif /* OBJECT_FORMAT_ELF || OBJECT_FORMAT_ROSE */
 
 #ifndef ASM_BYTE_OP
 #define ASM_BYTE_OP			"\t.byte\t"
