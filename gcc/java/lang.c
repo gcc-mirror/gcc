@@ -83,11 +83,6 @@ int compiling_from_source;
 
 const char * const language_string = "GNU Java";
 
-/* Nonzero if we want to automatically do array bounds checking;
-   on by default.  Use -fno-bounds-check to disable.  */
-
-int flag_bounds_check = 1;
-
 /* Nonzero if we should make is_compiled_class always return 1 for
    appropriate classes that we're referencing.  */
 
@@ -129,7 +124,6 @@ extern int flag_exceptions;
 static struct { const char *string; int *variable; int on_value;}
 lang_f_options[] =
 {
-  {"bounds-check", &flag_bounds_check, 1},
   {"assume-compiled", &flag_assume_compiled, 1},
   {"emit-class-file", &flag_emit_class_files, 1},
   {"emit-class-files", &flag_emit_class_files, 1},
@@ -554,6 +548,7 @@ void
 lang_init_options ()
 {
   flag_new_exceptions = 1;
+  flag_bounds_check = 1;
 }
 
 void
