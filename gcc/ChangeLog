@@ -1,3 +1,8 @@
+2003-07-09  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* doc/install.texi (Configuration): Document the valgrind option
+	to --enable-checking.
+
 2003-07-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR Target/11453
