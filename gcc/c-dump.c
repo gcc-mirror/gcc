@@ -795,14 +795,32 @@ struct dump_file_info
   int state;			/* state of play */
 };
 
-/* Table of tree dump switches.  */
+/* Table of tree dump switches. This must be consistent with the
+   TREE_DUMP_INDEX enumeration in c-common.h */
 static struct dump_file_info dump_files[TDI_end] =
 {
   {".tu", "dump-translation-unit", 0, 0},
   {".class", "dump-class-hierarchy", 0, 0},
-  {".original", "dump-ast-original", 0, 0},
-  {".optimized", "dump-ast-optimized", 0, 0},
-  {".inlined", "dump-ast-inlined", 0, 0},
+  {".original", "dump-tree-original", 0, 0},
+  {".optimized", "dump-tree-optimized", 0, 0},
+  {".inlined", "dump-tree-inlined", 0, 0},
+};
+
+/* Define a name->number mapping for a dump flag value. */
+struct dump_option_value_info
+{
+  const char *name;		/* the name of the value */
+  int value;			/* the value of the name */
+};
+
+/* Table of dump options. This must be consistent with the TDF_* flags
+   in c-common.h */
+static const struct dump_option_value_info dump_options[] =
+{
+  {"address", TDF_ADDRESS},
+  {"slim", TDF_SLIM},
+  {"all", ~0},
+  {NULL, 0}
 };
 
 /* Begin a tree dump for PHASE. Stores any user supplied flag in
@@ -876,13 +894,38 @@ dump_switch_p (arg)
   for (ix = 0; ix != TDI_end; ix++)
     if ((option_value = skip_leading_substring (arg, dump_files[ix].swtch)))
       {
+	const char *ptr = option_value;
+	int flags = 0;
+	
+	while (*ptr)
+	  {
+	    const struct dump_option_value_info *option_ptr;
+	    const char *end_ptr;
+	    unsigned length;
+	    
+	    while (*ptr == '-')
+	      ptr++;
+	    end_ptr = strchr (ptr, '-');
+	    if (!end_ptr)
+	      end_ptr = ptr + strlen (ptr);
+	    length = end_ptr - ptr;
+	    
+	    for (option_ptr = dump_options; option_ptr->name;
+		 option_ptr++)
+	      if (strlen (option_ptr->name) == length
+		  && !memcmp (option_ptr->name, ptr, length))
+		{
+		  flags |= option_ptr->value;
+		  goto found;
+		}
+	    warning ("ignoring unknown option `%.*s' in `-f%s'",
+		     length, ptr, dump_files[ix].swtch);
+	  found:;
+	    ptr = end_ptr;
+	  }
+	
 	dump_files[ix].state = -1;
-	if (*option_value == '-')
-	  dump_files[ix].flags
-	    = read_integral_parameter (option_value + 1, arg, 0);
-	else if (*option_value)
-	  warning ("ignoring `%s' at end of `-f%s'",
-		   option_value, dump_files[ix].swtch);
+	dump_files[ix].flags = flags;
 	
 	return 1;
       }
