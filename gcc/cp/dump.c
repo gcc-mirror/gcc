@@ -27,19 +27,15 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "tree-dump.h"
 
-static void dump_access
-  PARAMS ((dump_info_p, tree));
+static void dump_access (dump_info_p, tree);
 
-static void dump_op
-  PARAMS ((dump_info_p, tree));
+static void dump_op (dump_info_p, tree);
 
 /* Dump a representation of the accessibility information associated
    with T.  */
 
 static void
-dump_access (di, t)
-     dump_info_p di;
-     tree t;
+dump_access (dump_info_p di, tree t)
 {
   if (TREE_PROTECTED(t))
     dump_string (di, "protected");
@@ -53,9 +49,7 @@ dump_access (di, t)
    operator associated with node t.  */
 
 static void
-dump_op (di, t)
-     dump_info_p di;
-     tree t;
+dump_op (dump_info_p di, tree t)
 {
   switch (DECL_OVERLOADED_OPERATOR_P (t)) {
     case NEW_EXPR:
@@ -209,9 +203,7 @@ dump_op (di, t)
 }
 
 int
-cp_dump_tree (dump_info, t)
-     void *dump_info;
-     tree t;
+cp_dump_tree (void* dump_info, tree t)
 {
   enum tree_code code;
   dump_info_p di = (dump_info_p) dump_info;
