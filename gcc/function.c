@@ -5960,7 +5960,7 @@ init_dummy_function_start ()
 void
 init_function_start (subr, filename, line)
      tree subr;
-     char *filename;
+     const char *filename;
      int line;
 {
   prepare_function_start ();

@@ -341,6 +341,8 @@ static void handle_class_ref			PARAMS ((tree));
 static void generate_struct_by_value_array	PARAMS ((void))
      ATTRIBUTE_NORETURN;
 static void objc_act_parse_init			PARAMS ((void));
+static void ggc_mark_imp_list			PARAMS ((void *));
+static void ggc_mark_hash_table			PARAMS ((void *));
 
 /*** Private Interface (data) ***/
 

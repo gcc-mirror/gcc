@@ -1,3 +1,7 @@
+2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ch-tree.h (init_function_start): Constify.
+
 2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* ch/lex.c: Remove references to cccp.c.

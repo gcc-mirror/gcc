@@ -53,6 +53,7 @@ unsigned int set_alignment = 0;
 static void finalize_record_size	PARAMS ((record_layout_info));
 static void finalize_type_size		PARAMS ((tree));
 static void place_union_field		PARAMS ((record_layout_info, tree));
+extern void debug_rli			PARAMS ((record_layout_info));
 
 /* SAVE_EXPRs for sizes of types and decls, waiting to be expanded.  */
 

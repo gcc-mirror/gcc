@@ -1,3 +1,37 @@
+2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bb-reorder.c (get_next_bb_note, get_prev_bb_note): Prototype.
+	
+	* diagnostic (vbuild_message_string, build_message_string,
+	build_location_prefix, output_get_prefix, init_output_buffer,
+	output_notice, vline_wrapper_message_with_location,
+	v_message_with_decl, default_print_error_function): De-constify.
+	(set_real_maximum_length): Prototype.
+
+	* diagnostic.h (struct output_buffer, init_output_buffer,
+	output_get_prefix, output_set_prefix): De-constify.
+
+	* function.c (init_function_start): Constify.
+
+	* gensupport.c (remove_constraints, process_rtx): Prototype.
+
+	* gthr-posix.h: Indent uses of #pragma.
+
+	* objc/objc-act.c (ggc_mark_imp_list, ggc_mark_hash_table):
+	Prototype.
+
+	* predict.c (find_expected_value): Delete prototype.
+	(expected_value_to_br_prob): Initialize variable `ev_reg'.
+
+	* sbitmap.h (debug_sbitmap): Prototype.
+
+	* ssa.c (compute_coalesced_reg_partition): Prototype.
+
+	* stor-layout.c (debug_rli): Prototype.
+
+	* tree.h (round_down): Prototype.
+	(init_function_start): Constify.
+
 2000-05-04  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.h: #define __extension__ away if GCC_VERSION < 2095
