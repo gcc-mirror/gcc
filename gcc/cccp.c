@@ -3840,7 +3840,8 @@ handle_directive (ip, op)
       /* If a directive should be copied through, and -C was given,
 	 pass it through before removing comments.  */
       if (!no_output && put_out_comments
-	  && (kt->type == T_DEFINE ? dump_macros == dump_definitions
+	  && ((kt->type == T_DEFINE || kt->type == T_UNDEF)
+	      ? dump_macros == dump_definitions
 	      : IS_INCLUDE_DIRECTIVE_TYPE (kt->type) ? dump_includes
 	      : kt->type == T_PRAGMA)) {
         int len;
