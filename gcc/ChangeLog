@@ -1,3 +1,8 @@
+2002-07-12  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (test_hard_reg_class): Fix TEST_HARD_REG_BIT
+	usage on 64-bit hosts, return value was truncated to 32 bits.
+
 Fri Jul 12 00:49:36 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* simplify-rtx.c (simplify_subreg): Handle floating point
