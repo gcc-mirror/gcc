@@ -118,6 +118,14 @@ pkgconfig_DATA = libgcj.pc
 jardir = $(datadir)/java
 jar_DATA = libgcj-@gcc_version@.jar
 
+if JAVA_HOME_SET
+JAVA_HOME_DIR = $(JAVA_HOME)
+BOOT_CLASS_PATH_DIR = $(JAVA_HOME)/lib/rt.jar
+else
+JAVA_HOME_DIR = $(prefix)
+BOOT_CLASS_PATH_DIR = $(jardir)/$(jar_DATA)
+endif
+
 ## FIXME: Using libdir violates GNU coding standards.
 secdir = $(libdir)/security
 ## Where to install default logging property file.
@@ -181,7 +189,8 @@ AM_CXXFLAGS = \
 	-D_GNU_SOURCE \
 	-DPREFIX="\"$(prefix)\"" \
 	-DLIBDIR="\"$(libdir)\"" \
-	-DBOOT_CLASS_PATH="\"$(jardir)/$(jar_DATA)\"" \
+        -DJAVA_HOME="\"$(JAVA_HOME_DIR)\"" \
+        -DBOOT_CLASS_PATH="\"$(BOOT_CLASS_PATH_DIR)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\"" \
 	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\""

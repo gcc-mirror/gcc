@@ -4902,6 +4902,9 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 INTERPRETER = @INTERPRETER@
+JAVA_HOME = @JAVA_HOME@
+JAVA_HOME_SET_FALSE = @JAVA_HOME_SET_FALSE@
+JAVA_HOME_SET_TRUE = @JAVA_HOME_SET_TRUE@
 JC1GCSPEC = @JC1GCSPEC@
 LDFLAGS = @LDFLAGS@
 LIBART_CFLAGS = @LIBART_CFLAGS@
@@ -5108,6 +5111,10 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgcj.pc
 jardir = $(datadir)/java
 jar_DATA = libgcj-@gcc_version@.jar
+@JAVA_HOME_SET_FALSE@JAVA_HOME_DIR = $(prefix)
+@JAVA_HOME_SET_TRUE@JAVA_HOME_DIR = $(JAVA_HOME)
+@JAVA_HOME_SET_FALSE@BOOT_CLASS_PATH_DIR = $(jardir)/$(jar_DATA)
+@JAVA_HOME_SET_TRUE@BOOT_CLASS_PATH_DIR = $(JAVA_HOME)/lib/rt.jar
 secdir = $(libdir)/security
 propdir = $(libdir)
 dbexecdir = $(libdir)/gcj-@gcc_version@
@@ -5133,7 +5140,8 @@ AM_CXXFLAGS = \
 	-D_GNU_SOURCE \
 	-DPREFIX="\"$(prefix)\"" \
 	-DLIBDIR="\"$(libdir)\"" \
-	-DBOOT_CLASS_PATH="\"$(jardir)/$(jar_DATA)\"" \
+        -DJAVA_HOME="\"$(JAVA_HOME_DIR)\"" \
+        -DBOOT_CLASS_PATH="\"$(BOOT_CLASS_PATH_DIR)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\"" \
 	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\""
@@ -5354,7 +5362,7 @@ gnu/regexp/MessagesBundle.properties \
 gnu/regexp/MessagesBundle_fr.properties \
 org/ietf/jgss/MessagesBundle.properties
 
-propertyo_files = $(property_files:.properties=.properties.lo) 
+propertyo_files = $(property_files:.properties=.properties.lo)
 CLEANFILES = libgcj-@gcc_version@.jar classes.stamp
 SUFFIXES = .class .java .h .properties
 ordinary_nat_headers = \

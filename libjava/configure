@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libgcj_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC INCLTDL LIBLTDL DIRLTDL LIBTOOL CXXCPP CPPFLAGS GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs COMPPATH TESTSUBDIR_TRUE TESTSUBDIR_FALSE ONESTEP_TRUE ONESTEP_FALSE LIBGCJDEBUG INTERPRETER LIBFFI LIBFFIINCS PLATFORM_INNER_NAT_HDRS CPP EGREP USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_ECOS_PLATFORM_TRUE USING_ECOS_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC LIBGCJTESTSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE GTK_AWT_TRUE GTK_AWT_FALSE GTK_CAIRO_TRUE GTK_CAIRO_FALSE PKG_CONFIG CAIRO_CFLAGS CAIRO_LIBS PANGOFT2_CFLAGS PANGOFT2_LIBS GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE gcc_version_trigger gcc_version_full gcc_version tool_include_dir LIBICONV LTLIBICONV GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS SUPPLY_BACKTRACE_TRUE SUPPLY_BACKTRACE_FALSE GCJH ZIP CLASSPATH_SEPARATOR ac_ct_GCJ ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir GCJVERSION gxx_include_dir libstdcxx_incdir ALLOCA PERL BACKTRACESPEC SYSDEP_SOURCES here LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libgcj_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC INCLTDL LIBLTDL DIRLTDL LIBTOOL CXXCPP CPPFLAGS GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs COMPPATH TESTSUBDIR_TRUE TESTSUBDIR_FALSE ONESTEP_TRUE ONESTEP_FALSE JAVA_HOME_SET_TRUE JAVA_HOME_SET_FALSE JAVA_HOME LIBGCJDEBUG INTERPRETER LIBFFI LIBFFIINCS PLATFORM_INNER_NAT_HDRS CPP EGREP USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_ECOS_PLATFORM_TRUE USING_ECOS_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC LIBGCJTESTSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE GTK_AWT_TRUE GTK_AWT_FALSE GTK_CAIRO_TRUE GTK_CAIRO_FALSE PKG_CONFIG CAIRO_CFLAGS CAIRO_LIBS PANGOFT2_CFLAGS PANGOFT2_LIBS GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE gcc_version_trigger gcc_version_full gcc_version tool_include_dir LIBICONV LTLIBICONV GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS SUPPLY_BACKTRACE_TRUE SUPPLY_BACKTRACE_FALSE GCJH ZIP CLASSPATH_SEPARATOR ac_ct_GCJ ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir GCJVERSION gxx_include_dir libstdcxx_incdir ALLOCA PERL BACKTRACESPEC SYSDEP_SOURCES here LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -889,6 +889,8 @@ Optional Packages:
   --with-newlib           configure with newlib
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-pic              try to use only PIC/non-PIC objects default=use both
+  --with-java-home=DIRECTORY
+                          value of java.home system property
   --with-win32-nlsapi=ansi or unicows or unicode
                           native MinGW libgcj Win32 OS API (default is ansi)
   --without-libffi        don't use libffi
@@ -4743,7 +4745,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4746 "configure"' > conftest.$ac_ext
+  echo '#line 4748 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5671,6 +5673,26 @@ else
 fi
 
 
+
+# Check whether --with-java-home or --without-java-home was given.
+if test "${with_java_home+set}" = set; then
+  withval="$with_java_home"
+  JAVA_HOME="${withval}"
+else
+  JAVA_HOME=""
+fi;
+
+
+if test ! -z "$JAVA_HOME"; then
+  JAVA_HOME_SET_TRUE=
+  JAVA_HOME_SET_FALSE='#'
+else
+  JAVA_HOME_SET_TRUE='#'
+  JAVA_HOME_SET_FALSE=
+fi
+
+
+
 # What is the native OS API for MinGW?
 
 # Check whether --with-win32-nlsapi or --without-win32-nlsapi was given.
@@ -5774,7 +5796,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 5777 "configure"
+#line 5799 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15882,6 +15904,13 @@ echo "$as_me: error: conditional \"ONESTEP\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
+if test -z "${JAVA_HOME_SET_TRUE}" && test -z "${JAVA_HOME_SET_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"JAVA_HOME_SET\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"JAVA_HOME_SET\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
 if test -z "${USING_WIN32_PLATFORM_TRUE}" && test -z "${USING_WIN32_PLATFORM_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"USING_WIN32_PLATFORM\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
@@ -16658,6 +16687,9 @@ s,@TESTSUBDIR_TRUE@,$TESTSUBDIR_TRUE,;t t
 s,@TESTSUBDIR_FALSE@,$TESTSUBDIR_FALSE,;t t
 s,@ONESTEP_TRUE@,$ONESTEP_TRUE,;t t
 s,@ONESTEP_FALSE@,$ONESTEP_FALSE,;t t
+s,@JAVA_HOME_SET_TRUE@,$JAVA_HOME_SET_TRUE,;t t
+s,@JAVA_HOME_SET_FALSE@,$JAVA_HOME_SET_FALSE,;t t
+s,@JAVA_HOME@,$JAVA_HOME,;t t
 s,@LIBGCJDEBUG@,$LIBGCJDEBUG,;t t
 s,@INTERPRETER@,$INTERPRETER,;t t
 s,@LIBFFI@,$LIBFFI,;t t
