@@ -2496,12 +2496,8 @@ resolve_allocate_expr (gfc_expr * e)
    op1 > op2.  Assumes we're not dealing with the default case.  */
 
 static int
-compare_cases (const void * _op1, const void * _op2)
+compare_cases (const gfc_case * op1, const gfc_case * op2)
 {
-  const gfc_case *op1, *op2;
-
-  op1 = (const gfc_case *) _op1;
-  op2 = (const gfc_case *) _op2;
 
   if (op1->low == NULL) /* op1 = (:N) */
     {
