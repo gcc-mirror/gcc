@@ -45,7 +45,7 @@ __extension__ \
      AP.__va_next_fp = (__va_freg *) AP.__va_next_o_limit; \
      AP.__va_next_fp_limit = (AP.__va_next_fp + \
 			      (__builtin_args_info (1) < 16 ? (16 - __builtin_args_info (1) + 1) / 2 : 0)); \
-     AP.__va_next_stack = (__va_greg *) __builtin_next_arg(); \
+     AP.__va_next_stack = (__va_greg *) __builtin_next_arg (LASTARG); \
   })
 #else
 /* Call __builtin_next_arg even though we aren't using its value, so that
@@ -74,7 +74,7 @@ __extension__ \
      AP.__va_next_fp = (__va_freg *) AP.__va_next_o_limit; \
      AP.__va_next_fp_limit = (AP.__va_next_fp + \
 			      (__builtin_args_info (1) < 16 ? (16 - __builtin_args_info (1) + 1) / 2 : 0)); \
-     AP.__va_next_stack = (__va_greg *) __builtin_next_arg(); \
+     AP.__va_next_stack = (__va_greg *) __builtin_next_arg (__builtin_va_alist); \
   })
 #else
 #ifdef __GCC_NEW_VARARGS__
@@ -137,17 +137,17 @@ __extension__							\
   if (__type == __real_type_class)		/* float? */	\
     {								\
       __va_freg *__r;						\
-      /* see PASS_IN_REG_P in sparc.h */			\
+      /* see PASS_IN_REG_P in gcc's sparc.h */			\
       if (pvar.__va_next_fp < pvar.__va_next_fp_limit		\
 	  && ((__r = (__va_freg *) (((__va_greg) pvar.__va_next_fp + sizeof (TYPE) - 1) & ~(__va_greg) (sizeof (TYPE) - 1))) \
 	      < pvar.__va_next_fp_limit))			\
 	{							\
-	  pvar.__va_next_fp = __r + sizeof (TYPE) / 8;		\
+	  pvar.__va_next_fp = __r + (sizeof (TYPE) + 7) / 8;	\
 	}							\
       else							\
 	{							\
 	  __r = (__va_freg *) pvar.__va_next_stack;		\
-	  pvar.__va_next_stack += sizeof (TYPE) / 8;		\
+	  pvar.__va_next_stack += (sizeof (TYPE) + 7) / 8;	\
 	}							\
       __result = __r;						\
     }								\
