@@ -1098,8 +1098,8 @@ i960_function_prologue (file, size)
     }
 
   /* Take hardware register save area created by the call instruction
-     into account.  */
-  offset = compute_frame_size (size) + 64;
+     into account, but store them before the argument block area.  */
+  offset = 64 + actual_fsize - compute_frame_size (0) - rsize;
   /* Save registers on stack if needed.  */
   for (i = 0, j = n_iregs; j > 0 && i < 16; i++)
     {
