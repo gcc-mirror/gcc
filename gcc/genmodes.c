@@ -316,7 +316,7 @@ complete_mode (struct mode_data *m)
       validate_mode (m, UNSET, UNSET, UNSET, UNSET, UNSET);
 
       m->bytesize = 4;
-      m->ncomponents = 0;
+      m->ncomponents = 1;
       m->component = 0;
       break;
 
@@ -328,7 +328,7 @@ complete_mode (struct mode_data *m)
       validate_mode (m, OPTIONAL, SET, UNSET, UNSET,
 		     m->class == MODE_FLOAT ? SET : UNSET);
 
-      m->ncomponents = 0;
+      m->ncomponents = 1;
       m->component = 0;
       break;
 
@@ -340,7 +340,7 @@ complete_mode (struct mode_data *m)
 
       m->bytesize = m->component->bytesize;
 
-      m->ncomponents = 0;
+      m->ncomponents = 1;
       m->component = 0;  /* ??? preserve this */
       break;
 

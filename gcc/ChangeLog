@@ -1,3 +1,9 @@
+2003-10-29  Zack Weinberg  <zack@codesourcery.com>
+
+	* genmodes.c (complete_mode): Record MODE_CC, MODE_INT,
+	MODE_FLOAT, and MODE_PARTIAL_INT modes as having one
+	component, not zero.
+
 2003-10-29  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/t-ia64 (LIB2ADDEH): Add $(srcdir)/gthr-gnat.c.
