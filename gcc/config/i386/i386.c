@@ -1909,19 +1909,20 @@ ix86_prologue (do_rtl)
   xops[0] = stack_pointer_rtx;
   xops[1] = frame_pointer_rtx;
   xops[2] = GEN_INT (tsize);
+
   if (frame_pointer_needed)
     {
       if (do_rtl)
 	{
-      insn = emit_insn
-	(gen_rtx (SET, 0,
-		  gen_rtx (MEM, SImode,
-			   gen_rtx (PRE_DEC, SImode, stack_pointer_rtx)),
-		  frame_pointer_rtx));
-      RTX_FRAME_RELATED_P (insn) = 1;
-      insn = emit_move_insn (xops[1], xops[0]);
-      RTX_FRAME_RELATED_P (insn) = 1;
-    }
+	  insn = emit_insn
+	    (gen_rtx (SET, 0,
+		      gen_rtx (MEM, SImode,
+			       gen_rtx (PRE_DEC, SImode, stack_pointer_rtx)),
+		      frame_pointer_rtx));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  insn = emit_move_insn (xops[1], xops[0]);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
       else
 	{
 	  output_asm_insn ("push%L1 %1", xops); 
@@ -1935,11 +1936,11 @@ ix86_prologue (do_rtl)
     {
       if (do_rtl)
 	{
-      insn = emit_insn (gen_prologue_set_stack_ptr (xops[2]));
-      RTX_FRAME_RELATED_P (insn) = 1;
-    }
-  else 
-    {
+	  insn = emit_insn (gen_prologue_set_stack_ptr (xops[2]));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+      else 
+	{
 	  output_asm_insn (AS2 (sub%L0,%2,%0), xops);
 	}
     }
@@ -1977,13 +1978,13 @@ ix86_prologue (do_rtl)
 	xops[0] = gen_rtx (REG, SImode, regno);
 	if (do_rtl)
 	  {
-	insn = emit_insn
-	  (gen_rtx (SET, 0,
-		    gen_rtx (MEM, SImode,
-			     gen_rtx (PRE_DEC, SImode, stack_pointer_rtx)),
-		    xops[0]));
-	RTX_FRAME_RELATED_P (insn) = 1;
-      }
+	    insn = emit_insn
+	      (gen_rtx (SET, 0,
+			gen_rtx (MEM, SImode,
+				 gen_rtx (PRE_DEC, SImode, stack_pointer_rtx)),
+			xops[0]));
+	    RTX_FRAME_RELATED_P (insn) = 1;
+	  }
 	else
 	  output_asm_insn ("push%L0 %0", xops);
       }
@@ -1993,7 +1994,7 @@ ix86_prologue (do_rtl)
       xops[0] = pic_offset_table_rtx;
       if (pic_label_rtx == 0)
 	{
-	pic_label_rtx = (rtx) gen_label_rtx ();
+	  pic_label_rtx = (rtx) gen_label_rtx ();
 	  sprintf (pic_label_name, "LPR%d", pic_label_no++);
 	  LABEL_NAME (pic_label_rtx) = pic_label_name;
 	}
@@ -2001,11 +2002,11 @@ ix86_prologue (do_rtl)
 
       if (do_rtl)
 	{
-      emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
-      emit_insn (gen_prologue_set_got (xops[0], 
-		 gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
-		 gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
-    }
+	  emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
+	  emit_insn (gen_prologue_set_got (xops[0], 
+					   gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
+					   gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
+	}
       else
 	{
 	  output_asm_insn (AS1 (call,%P1), xops);
@@ -2015,17 +2016,17 @@ ix86_prologue (do_rtl)
     }
   else if (pic_reg_used)
     {
-    xops[0] = pic_offset_table_rtx;
-    xops[1] = (rtx) gen_label_rtx ();
+      xops[0] = pic_offset_table_rtx;
+      xops[1] = (rtx) gen_label_rtx ();
  
       if (do_rtl)
 	{
-      emit_insn (gen_prologue_get_pc (xops[0], gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
-      emit_insn (gen_pop (xops[0]));
-      emit_insn (gen_prologue_set_got (xops[0], 
-		 gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
-		 gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER (xops[1]))));
-  } 
+	  emit_insn (gen_prologue_get_pc (xops[0], gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
+	  emit_insn (gen_pop (xops[0]));
+	  emit_insn (gen_prologue_set_got (xops[0], 
+					   gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
+					   gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER (xops[1]))));
+	}
       else
 	{
 	  output_asm_insn (AS1 (call,%P1), xops);
@@ -2178,7 +2179,7 @@ ix86_epilogue (do_rtl)
 	  xops[0] = gen_rtx (REG, SImode, regno);
 	  xops[1] = adj_offsettable_operand (AT_BP (Pmode), offset);
 	  if (do_rtl)
-	  emit_move_insn (xops[0], xops[1]);
+	    emit_move_insn (xops[0], xops[1]);
 	  else
 	    output_asm_insn (AS2 (mov%L0,%1,%0), xops);
 	  offset += 4;
@@ -2191,7 +2192,7 @@ ix86_epilogue (do_rtl)
       if (TARGET_USE_LEAVE)
 	{
 	  if (do_rtl)
-	emit_insn (gen_leave());
+	    emit_insn (gen_leave());
 	  else
 	    output_asm_insn ("leave", xops);
 	}
@@ -2201,8 +2202,8 @@ ix86_epilogue (do_rtl)
 	  xops[1] = stack_pointer_rtx;
 	  if (do_rtl)
 	    {
-	  emit_insn (gen_epilogue_set_stack_ptr());
-	  emit_insn (gen_pop (xops[0]));
+	      emit_insn (gen_epilogue_set_stack_ptr());
+	      emit_insn (gen_pop (xops[0]));
 	    }
 	  else
 	    {
@@ -2217,11 +2218,11 @@ ix86_epilogue (do_rtl)
 
       xops[0] = GEN_INT (tsize);
       if (do_rtl)
-      emit_insn (gen_rtx (SET, SImode,
-			  xops[2],
-			  gen_rtx (PLUS, SImode,
-				   xops[2],
-				   xops[0])));
+	emit_insn (gen_rtx (SET, SImode,
+			    xops[2],
+			    gen_rtx (PLUS, SImode,
+				     xops[2],
+				     xops[0])));
       else
 	output_asm_insn (AS2 (add%L2,%0,%2), xops);
     }
@@ -2247,15 +2248,15 @@ ix86_epilogue (do_rtl)
 	  xops[0] = gen_rtx (REG, SImode, 2);
 	  if (do_rtl)
 	    {
-	  emit_insn (gen_pop (xops[0]));
-	  emit_insn (gen_rtx (SET, SImode,
-			      xops[2],
-			      gen_rtx (PLUS, SImode,
-				       xops[1],
-				       xops[2])));
-	  emit_jump_insn (xops[0]);
-	}
-      else
+	      emit_insn (gen_pop (xops[0]));
+	      emit_insn (gen_rtx (SET, SImode,
+				  xops[2],
+				  gen_rtx (PLUS, SImode,
+					   xops[1],
+					   xops[2])));
+	      emit_jump_insn (xops[0]);
+	    }
+	  else
 	    {
 	      output_asm_insn ("pop%L0 %0", xops);
 	      output_asm_insn (AS2 (add%L2,%1,%2), xops);
@@ -2265,7 +2266,7 @@ ix86_epilogue (do_rtl)
       else 
 	{
 	  if (do_rtl)
-	emit_jump_insn (gen_return_pop_internal (xops[1]));
+	    emit_jump_insn (gen_return_pop_internal (xops[1]));
 	  else
 	    output_asm_insn ("ret %1", xops);
 	}
@@ -2273,7 +2274,7 @@ ix86_epilogue (do_rtl)
   else
     {
       if (do_rtl)
- emit_jump_insn (gen_return_internal ());
+	emit_jump_insn (gen_return_internal ());
       else
 	output_asm_insn ("ret", xops);
     }
@@ -2607,7 +2608,7 @@ legitimize_pic_address (orig, reg)
 	  base = gen_rtx (PLUS, Pmode, base, XEXP (addr, 0));
 	  addr = XEXP (addr, 1);
 	}
-	return gen_rtx (PLUS, Pmode, base, addr);
+      return gen_rtx (PLUS, Pmode, base, addr);
     }
   return new;
 }
@@ -2933,41 +2934,41 @@ put_condition_code (code, reverse_cc, mode, file)
     code = reverse_condition (code);
 
   if (mode == MODE_INT)
-  switch (code)
-    {
+    switch (code)
+      {
       case NE: 
-	  if (cc_prev_status.flags & CC_Z_IN_NOT_C)
-	    fputs ("b", file);
-	  else
-	    fputs ("ne", file);
-	  return;
-      case EQ: 
-	  if (cc_prev_status.flags & CC_Z_IN_NOT_C)
-	    fputs ("ae", file);
-	  else
-	    fputs ("e", file);
-	  return;
-      case GE: 
-	  fputs ("ge", file); return;
-      case GT: 
-	  fputs ("g", file); return;
-      case LE: 
-	  fputs ("le", file); return;
-      case LT: 
-	  fputs ("l", file); return;
-      case GEU: 
-	  fputs ("ae", file); return;
-      case GTU: 
-	  fputs ("a", file); return;
-      case LEU: 
-	  fputs ("be", file); return;
-      case LTU: 
-	  fputs ("b", file); return;
+	if (cc_prev_status.flags & CC_Z_IN_NOT_C)
+	  fputs ("b", file);
+	else
+	  fputs ("ne", file);
+	return;
+      case EQ:
+	if (cc_prev_status.flags & CC_Z_IN_NOT_C)
+	  fputs ("ae", file);
+	else
+	  fputs ("e", file);
+	return;
+      case GE:
+	fputs ("ge", file); return;
+      case GT:
+	fputs ("g", file); return;
+      case LE:
+	fputs ("le", file); return;
+      case LT:
+	fputs ("l", file); return;
+      case GEU:
+	fputs ("ae", file); return;
+      case GTU:
+	fputs ("a", file); return;
+      case LEU:
+	fputs ("be", file); return;
+      case LTU:
+	fputs ("b", file); return;
       default: output_operand_lossage ("Invalid %%C operand");
-    }
+      }
   else if (mode == MODE_FLOAT)
-  switch (code)
-    {
+    switch (code)
+      {
       case NE: 
           fputs (ieee ? (reverse_cc ? "ne" : "e") : "ne", file); return;
       case EQ: 
@@ -3831,14 +3832,14 @@ output_float_compare (insn, operands)
 	  output_asm_insn ("fucompp", operands);
       else
 	{
-	if (cc_status.flags & CC_FCOMI)
-	  {
-	    output_asm_insn (AS2 (fcomip, %y1,%0), operands);
-	    output_asm_insn (AS1 (fstp, %y0), operands);
-	    RET;
-	  }
-	else
-	  output_asm_insn ("fcompp", operands);
+	  if (cc_status.flags & CC_FCOMI)
+	    {
+	      output_asm_insn (AS2 (fcomip, %y1,%0), operands);
+	      output_asm_insn (AS1 (fstp, %y0), operands);
+	      RET;
+	    }
+	  else
+	    output_asm_insn ("fcompp", operands);
 	}
     }
   else
@@ -4787,8 +4788,6 @@ reg_mentioned_in_mem (reg, rtl)
     case CC0:
     case SUBREG:
       return (0);
-
-
     }
 
   if (code == MEM && reg_mentioned_p (reg, rtl))
