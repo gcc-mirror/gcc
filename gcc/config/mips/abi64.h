@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  64 bit ABI support.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -66,8 +66,9 @@ Boston, MA 02111-1307, USA.  */
 %{mips1: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 %{mips2: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 %{!mips1:%{!mips2: -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}} \
-%{mips3:-U__mips -D__mips=3} \
-%{!mips1:%{!mips2:-U__mips -D__mips=4}}"
+%{mips3:-U__mips -D__mips=3 -D__mips64} \
+%{!mips1:%{!mips2:-U__mips -D__mips=4 -D__mips64}} \
+%{mgp32:-U__mips64} %{mgp64:-D__mips64}"
 
 #undef EMPTY_FIELD_BOUNDARY
 #define EMPTY_FIELD_BOUNDARY	32
