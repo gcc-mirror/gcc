@@ -52,8 +52,7 @@ typedef void (*pragma_cb) PARAMS ((cpp_reader *));
 struct pragma_entry
 {
   struct pragma_entry *next;
-  const char *name;
-  size_t len;
+  const cpp_hashnode *pragma;	/* Name and length.  */
   int is_nspace;
   union {
     pragma_cb handler;
@@ -111,9 +110,10 @@ static void do_diagnostic	PARAMS ((cpp_reader *, enum error_type, int));
 static cpp_hashnode *lex_macro_node	PARAMS ((cpp_reader *));
 static void do_include_common	PARAMS ((cpp_reader *, enum include_type));
 static struct pragma_entry *lookup_pragma_entry
-  PARAMS ((struct pragma_entry *, const char *pragma));
+  PARAMS ((struct pragma_entry *, const cpp_hashnode *pragma));
 static struct pragma_entry *insert_pragma_entry
-  PARAMS ((cpp_reader *, struct pragma_entry **, const char *, pragma_cb));
+  PARAMS ((cpp_reader *, struct pragma_entry **, const cpp_hashnode *,
+	   pragma_cb));
 static void do_pragma_once	PARAMS ((cpp_reader *));
 static void do_pragma_poison	PARAMS ((cpp_reader *));
 static void do_pragma_system_header	PARAMS ((cpp_reader *));
@@ -866,16 +866,10 @@ do_ident (pfile)
 static struct pragma_entry *
 lookup_pragma_entry (chain, pragma)
      struct pragma_entry *chain;
-     const char *pragma;
+     const cpp_hashnode *pragma;
 {
-  size_t len = strlen (pragma);
-
-  while (chain)
-    {
-      if (chain->len == len && !memcmp (chain->name, pragma, len))
-	break;
-      chain = chain->next;
-    }
+  while (chain && chain->pragma != pragma)
+    chain = chain->next;
 
   return chain;
 }
@@ -884,18 +878,17 @@ lookup_pragma_entry (chain, pragma)
    singly-linked CHAIN.  If handler is NULL, it is a namespace,
    otherwise it is a pragma and its handler.  */
 static struct pragma_entry *
-insert_pragma_entry (pfile, chain, name, handler)
+insert_pragma_entry (pfile, chain, pragma, handler)
      cpp_reader *pfile;
      struct pragma_entry **chain;
-     const char *name;
+     const cpp_hashnode *pragma;
      pragma_cb handler;
 {
   struct pragma_entry *new;
 
   new = (struct pragma_entry *)
     _cpp_aligned_alloc (pfile, sizeof (struct pragma_entry));
-  new->name = name;
-  new->len = strlen (name);
+  new->pragma = pragma;
   if (handler)
     {
       new->is_nspace = 0;
@@ -924,36 +917,39 @@ cpp_register_pragma (pfile, space, name, handler)
 {
   struct pragma_entry **chain = &pfile->pragmas;
   struct pragma_entry *entry;
+  const cpp_hashnode *node;
 
   if (!handler)
     abort ();
 
   if (space)
     {
-      entry = lookup_pragma_entry (*chain, space);
+      node = cpp_lookup (pfile, U space, strlen (space));
+      entry = lookup_pragma_entry (*chain, node);
       if (!entry)
-	entry = insert_pragma_entry (pfile, chain, space, NULL);
+	entry = insert_pragma_entry (pfile, chain, node, NULL);
       else if (!entry->is_nspace)
 	goto clash;
       chain = &entry->u.space;
     }
 
   /* Check for duplicates.  */
-  entry = lookup_pragma_entry (*chain, name);
+  node = cpp_lookup (pfile, U name, strlen (name));
+  entry = lookup_pragma_entry (*chain, node);
   if (entry)
     {
       if (entry->is_nspace)
 	clash:
 	cpp_ice (pfile,
 		 "registering \"%s\" as both a pragma and a pragma namespace",
-		 entry->name);
+		 NODE_NAME (node));
       else if (space)
 	cpp_ice (pfile, "#pragma %s %s is already registered", space, name);
       else
 	cpp_ice (pfile, "#pragma %s is already registered", name);
     }
   else
-    insert_pragma_entry (pfile, chain, name, handler);
+    insert_pragma_entry (pfile, chain, node, handler);
 }
 
 /* Register the pragmas the preprocessor itself handles.  */
@@ -989,15 +985,13 @@ do_pragma (pfile)
   token = cpp_get_token (pfile);
   if (token->type == CPP_NAME)
     {
-      p = lookup_pragma_entry (pfile->pragmas,
-			       (char *) NODE_NAME (token->val.node));
+      p = lookup_pragma_entry (pfile->pragmas, token->val.node);
       if (p && p->is_nspace)
 	{
 	  count = 2;
 	  token = cpp_get_token (pfile);
 	  if (token->type == CPP_NAME)
-	    p = lookup_pragma_entry (p->u.space,
-				     (char *) NODE_NAME (token->val.node));
+	    p = lookup_pragma_entry (p->u.space, token->val.node);
 	  else
 	    p = NULL;
 	}
