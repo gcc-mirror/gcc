@@ -46,11 +46,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* Don't write a `.optim' pseudo; this assembler doesn't handle them.  */
-
-#undef ASM_FILE_START_1
-#define ASM_FILE_START_1(FILE)
-
 /* We want to be able to get DBX debugging information via -gstabs.  */
 
 #define DBX_DEBUGGING_INFO 1

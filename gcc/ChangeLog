@@ -1,8 +1,16 @@
+2003-06-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/svr3.h (ASM_FILE_START): Don't use ASM_FILE_START_1.
+	(ASM_FILE_START_1): Delete.
+	* config/i386/att.h, config/i386/sco5.h,
+	config/i386/sysv3.h
+	(ASM_FILE_START_1): Delete.
+
 2003-06-13  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* config/i386/bsd.h: Remove ASM_FILE_START.
 	* config/i386/djgpp.h: Likewise.
-	* config/i386/gas.h (ASM_FILE_START): Output .file before .intel_syntax. 
+	* config/i386/gas.h (ASM_FILE_START): Output .file before .intel_syntax.
 
 	* config/i386/djgpp.h: Move included unix.h, bsd.h, gas.h to ...
 	* config.gcc (i[34567]86-pc-msdosdjgpp): ... here.
@@ -11,8 +19,8 @@
 
 	PR bootstrap/10835
 	* haifa-sched.c (max_lookahead_tries,
-        cached_first_cycle_multipass_dfa_lookahead,
-        cached_issue_rate): New variables.
+	cached_first_cycle_multipass_dfa_lookahead,
+	cached_issue_rate): New variables.
 	(max_issue): Check the number of tries.
 	(choose_ready): Calculate max_lookahead_tries.
 	(sched_init): Check cached_issue_rate.
@@ -23,7 +31,7 @@
 	* cfgrtl.c (purge_dead_edges): Expect it too.
 
 2003-06-13  Jim Wilson  <wilson@tuliptree.org>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR bootstrap/10983
 	* combine.c (make_extraction): Use gen_lowpart_for_combine
@@ -36,11 +44,11 @@
 
 2003-06-13  Aldy Hernandez  <aldyh@redhat.com>
 
-        * c-common.c (handle_mode_attribute): Use VECTOR_MODE_P macro.
+	* c-common.c (handle_mode_attribute): Use VECTOR_MODE_P macro.
 
-        * simplify-rtx.c (simplify_subreg): Same.
+	* simplify-rtx.c (simplify_subreg): Same.
 
-        * emit-rtl.c (gen_lowpart_common): Same.
+	* emit-rtl.c (gen_lowpart_common): Same.
 
 2003-06-13  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -78,7 +86,7 @@
 
 2003-06-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390.c (s390_va_arg): Fix alignment when retrieving 
+	* config/s390/s390.c (s390_va_arg): Fix alignment when retrieving
 	non-integral types from integer register save area slots.
 
 2003-06-13  Nathanael Nerode  <neroden@gcc.gnu.org>
@@ -117,7 +125,7 @@
 	* config/m32r/m32r.md: Fix a comment typo.
 
 2003-06-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Christian Ehrhardt <ehrhardt@mathematik.uni-ulm.de>
+	    Christian Ehrhardt <ehrhardt@mathematik.uni-ulm.de>
 
 	PR target/10142
 	* config/sparc/sparc.c (function_arg_record_value_parms): Add
@@ -137,7 +145,7 @@
 
 2003-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (function_arg): Remove typo.
+	* config/rs6000/rs6000.c (function_arg): Remove typo.
 
 2003-06-12  Richard Henderson  <rth@redhat.com>
 
@@ -146,15 +154,15 @@
 
 2003-06-12  Richard Henderson  <rth@redhat.com>
 
-        PR middle-end/10475
-        * expmed.c (emit_store_flag): Use simplify_gen_subreg directly
-        for extracting sub-words.
+	PR middle-end/10475
+	* expmed.c (emit_store_flag): Use simplify_gen_subreg directly
+	for extracting sub-words.
 
 2003-06-12  Richard Henderson  <rth@redhat.com>
 
-        PR target/7594
-        * config/m68k/m68k.md (zero_extendhisi2): Use gen_lowpart_SUBREG.
-        (zero_extendqihi2, zero_extendqisi2): Likewise.
+	PR target/7594
+	* config/m68k/m68k.md (zero_extendhisi2): Use gen_lowpart_SUBREG.
+	(zero_extendqihi2, zero_extendqisi2): Likewise.
 
 2003-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -169,7 +177,7 @@
 
 2003-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.h (MODES_TIEABLE_P): Add SPE vectors.
+	* config/rs6000/rs6000.h (MODES_TIEABLE_P): Add SPE vectors.
 
 2003-06-12  Roger Sayle  <roger@eyesopen.com>
 
@@ -219,14 +227,14 @@ Thu Jun 12 20:00:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-10  Richard Henderson  <rth@redhat.com>
 
-        PR inline-asm/4823
-        * reg-stack.c (any_malformed_asm): New.
-        (check_asm_stack_operands): Set it.
-        (convert_regs_1): Check it before aborting.
+	PR inline-asm/4823
+	* reg-stack.c (any_malformed_asm): New.
+	(check_asm_stack_operands): Set it.
+	(convert_regs_1): Check it before aborting.
 
 2003-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.md: Change all clobbers of the accumulator to sets.
+	* config/rs6000/spe.md: Change all clobbers of the accumulator to sets.
 
 2003-06-12  Jakub Jelinek  <jakub@redhat.com>
 
@@ -459,10 +467,10 @@ Thu Jun 12 20:00:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* config.gcc: Add arm-wince-pe target.
 	* config/arm/pe.h (MULTILIB_DEFAULTS): Define.
-        Add comment about default apcs26 support.
+	Add comment about default apcs26 support.
 	* config/arm/t-pe (MULTILIB_OPTIONS): Add an -mapcs-32
 	multilib.
-        (MULTILIB_DIRNAMES): Add 'apcs32'.
+	(MULTILIB_DIRNAMES): Add 'apcs32'.
 	* config/arm/t-wince-pe: New makefile fragment.
 	* config/arm/wince-pe.h: New file.  Overrides a few definitions
 	in arm/pe.h
@@ -524,7 +532,7 @@ Thu Jun 12 20:00:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-09  Richard Henderson  <rth@redhat.com>
 
-        * stmt.c (expand_asm_operands): Re-word warning.
+	* stmt.c (expand_asm_operands): Re-word warning.
 
 2003-06-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
