@@ -1,3 +1,8 @@
+Fri Dec  6 19:36:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (dump_table): DImode pool constants need only 32 bit alignment.
+	DFmode alignment depends on TARGET_FMOVD && TARGET_ALIGN_DOUBLE.
+
 Fri Dec  6 19:17:49 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (movdi_i): Name.  Remove inappropriate comment.
