@@ -1,3 +1,7 @@
+2002-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/other/gc1.C: New test.
+
 2002-01-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/c99-intconst-1.c: Mark XFAIL.
