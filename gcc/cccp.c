@@ -323,7 +323,7 @@ char *strerror ();
 char *strerror (int,...);
 #endif
 HOST_WIDE_INT parse_escape PROTO((char **, HOST_WIDE_INT));
-HOST_WIDE_INT parse_c_expression PROTO((char *));
+HOST_WIDE_INT parse_c_expression PROTO((char *, int));
 
 #ifndef errno
 extern int errno;
@@ -464,7 +464,7 @@ static int warn_trigraphs;
 
 /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
 
-int warn_undef;
+static int warn_undef;
 
 /* Nonzero means warn if #import is used.  */
 
@@ -7043,7 +7043,8 @@ eval_if_expression (buf, length)
   delete_macro (save_defined);	/* clean up special symbol */
 
   temp_obuf.buf[temp_obuf.length] = '\n';
-  value = parse_c_expression ((char *) temp_obuf.buf);
+  value = parse_c_expression ((char *) temp_obuf.buf,
+			      warn_undef && !instack[indepth].system_header_p);
 
   free (temp_obuf.buf);
 
