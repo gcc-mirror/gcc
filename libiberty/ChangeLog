@@ -1,5 +1,24 @@
 2003-04-14  Roger Sayle  <roger@eyesopen.com>
 
+	* argv.c: Use ANSI_PROTOTYPES instead of __STDC__.
+	* memchr.c: Likewise.
+	* strcasecmp.c: Likewise.
+	* strncasecmp.c: Likewise.
+	* strncmp.c: Likewise.
+	* xatexit.c: Likewise.
+	* xmalloc.c: Likewise.
+
+	* copysign.c: Use traditional function declaration instead of DEFUN.
+	* sigsetmask.c: Likewise.
+
+	* memcmp.c: Both of the above, ANSI_PROTOTYPES and DEFUN.
+	* memset.c: Likewise.
+
+	* memcpy.c: ANSI_PROTOTYPES, DEFUN and prototype bcopy.
+	* memmove.c: Likewise.
+
+2003-04-14  Roger Sayle  <roger@eyesopen.com>
+
 	* strdup.c (strdup): Tweak implementation to use memcpy.
 
 2003-04-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>

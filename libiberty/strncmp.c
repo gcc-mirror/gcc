@@ -13,7 +13,7 @@ Compares the first @var{n} bytes of two strings, returning a value as
 */
 
 #include <ansidecl.h>
-#ifdef __STDC__
+#ifdef ANSI_PROTOTYPES
 #include <stddef.h>
 #else
 #define size_t unsigned long
