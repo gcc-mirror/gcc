@@ -449,7 +449,7 @@ struct  _BinClos<_Oper,_ValArray,_Expr,typename _Dom::value_type,_Dom>
     typedef _BinBase<_Oper,valarray<_Tp>,_Dom> _Base;
     typedef typename _Base::value_type value_type;
     
-    _BinClos (const valarray<_Tp> __e1, const _Dom& __e2)
+    _BinClos (const valarray<_Tp>& __e1, const _Dom& __e2)
             : _Base (__e1, __e2) {}
 };
 
