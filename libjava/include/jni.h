@@ -16,7 +16,7 @@ details.  */
 
 #include <gcj/libgcj-config.h>
 
-// We include <stdio.h> for compatibility with Sun's <jni.h>.
+/* We include <stdio.h> for compatibility with Sun's <jni.h>.  */
 #include <stdio.h>
 
 #include <stdarg.h>
