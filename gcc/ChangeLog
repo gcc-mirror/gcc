@@ -1,3 +1,11 @@
+2001-03-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* config/a29k/a29k.c (print_operand): Free a29k_last_prologue_insn
+	after its emitted.
+	(output_prologue): Use xmalloc not oballoc.
+	(output_epilog): Free a29k_first_epilogue_insn when finished.
+	* confif/a29k/a29k.h (PREDICATE_CODES): Remove shift_constant_operand.
+
 2001-03-07  Brad Lucier  <lucier@math.purdue.edu>
 
 	* builtins.c (expand_builtin_mathfn): Check

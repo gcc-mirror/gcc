@@ -1635,7 +1635,6 @@ extern int a29k_debug_reg_map[];
   {"cint_16_operand", {CONST_INT}},				\
   {"long_const_operand", {CONST_INT, CONST, CONST_DOUBLE,	\
 			  LABEL_REF, SYMBOL_REF}},		\
-  {"shift_constant_operand", {CONST_INT, ASHIFT}},		\
   {"const_0_operand", {CONST_INT, ASHIFT}},			\
   {"const_8_operand", {CONST_INT, ASHIFT}},			\
   {"const_16_operand", {CONST_INT, ASHIFT}},			\
