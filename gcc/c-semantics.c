@@ -267,18 +267,6 @@ genrtl_do_pushlevel ()
   clear_last_expr ();
 }
 
-/* Helper for generating the RTL. */
-
-void
-genrtl_clear_out_block ()
-{
-  /* If COND wasn't a declaration, clear out the
-     block we made for it and start a new one here so the
-     optimization in expand_end_loop will work.  */
-  if (getdecls () == NULL_TREE)
-    genrtl_do_pushlevel ();
-}
-
 /* Generate the RTL for DESTINATION, which is a GOTO_STMT. */
 
 void
@@ -398,7 +386,7 @@ genrtl_while_stmt (t)
   cond = expand_cond (WHILE_COND (t));
   emit_line_note (input_filename, lineno);
   expand_exit_loop_if_false (0, cond);
-  genrtl_clear_out_block ();
+  genrtl_do_pushlevel ();
   
   expand_stmt (WHILE_BODY (t));
 
@@ -475,7 +463,7 @@ genrtl_for_stmt (t)
   emit_line_note (input_filename, lineno);
   if (cond)
     expand_exit_loop_if_false (0, cond);
-  genrtl_clear_out_block ();
+  genrtl_do_pushlevel ();
   tmp = FOR_EXPR (t);
 
   expand_stmt (FOR_BODY (t));
