@@ -1,6 +1,5 @@
 2003-10-16  Petur Runolfsson  <peturr02@ru.is>
 
-	PR libstdc++/8610
 	PR libstdc++/11450
 	PR libstdc++/11543
 	PR libstdc++/12065
