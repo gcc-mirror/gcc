@@ -1,3 +1,20 @@
+Mon Jun 30 09:52:39 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (standard_80387_constant_p): Accept TFmode constants too.
+	(init_ext_80387_constants): Likewise.
+	(standard_80387_constant_rtx): Likewise.
+	* i386.md (atanxf): Disable for TARGET_128BIT_LONG_LONG
+	(atantf): Disable for !TARGET_128BIT_LONG_LONG
+	(fyl2x_sfxf3, fyl2x_dfxf3): Accept TFmode operands.
+	(fyl2x_xfxf3, fyl2x_tfxf3): Enable/disable as needed.
+	(fscale_sfxf3, fscale_dfxf3): Accept TFmode operands.
+	(fscale_xfxf3, fscale_tfxf3): Enable/disable as needed.
+	(frndinttf2): New.
+	(f2xm1tf2): New.
+	(exp?f2): Use expsf2_tf when needed.
+	(exp?f2_tf): New.
+	(exptf): New.
+
 2003-06-29 Uwe Stieber <uwe@kaos-group.de>
 
 	* config.gcc (sh*-*-kaos*): Put tm_file setting in separate case
