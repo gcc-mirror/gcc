@@ -184,7 +184,7 @@ DEFPARAM(TRACER_MIN_BRANCH_PROBABILITY_FEEDBACK,
 	 "tracer-min-branch-probability-feedback",
 	 "Stop forward growth if the probability of best edge is less than \
 this threshold (in percents). Used when profile feedback is available",
-	 30)
+	 80)
 DEFPARAM(TRACER_MIN_BRANCH_PROBABILITY,
 	 "tracer-min-branch-probability",
 	 "Stop forward growth if the probability of best edge is less than \

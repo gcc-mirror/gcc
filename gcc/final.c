@@ -677,7 +677,8 @@ compute_alignments ()
       int fallthru_frequency = 0, branch_frequency = 0, has_fallthru = 0;
       edge e;
 
-      if (GET_CODE (label) != CODE_LABEL)
+      if (GET_CODE (label) != CODE_LABEL
+	  || probably_never_executed_bb_p (bb))
 	continue;
       max_log = LABEL_ALIGN (label);
       max_skip = LABEL_ALIGN_MAX_SKIP;
@@ -716,6 +717,7 @@ compute_alignments ()
       /* In case block is frequent and reached mostly by non-fallthru edge,
 	 align it.  It is most likely a first block of loop.  */
       if (has_fallthru
+	  && maybe_hot_bb_p (bb)
 	  && branch_frequency + fallthru_frequency > BB_FREQ_MAX / 10
 	  && branch_frequency > fallthru_frequency * 2)
 	{
