@@ -4240,8 +4240,8 @@ rest_of_compilation (decl)
     }
 
 #ifdef LEAF_REGISTERS
-  if (optimize > 0 && only_leaf_regs_used () && leaf_function_p ())
-    current_function_uses_only_leaf_regs = 1;
+  current_function_uses_only_leaf_regs
+    = optimize > 0 && only_leaf_regs_used () && leaf_function_p ();
 #endif
 
   /* One more attempt to remove jumps to .+1

@@ -1,3 +1,8 @@
+Thu Apr 22 22:22:15 EDT 1999  John Wehle  (john@feith.com)
+
+	* toplev.c (rest_of_compilation): Always set
+	current_function_uses_only_leaf_regs appropriately.
+
 Thu Apr 22 14:39:43 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* i386/xm-cygwin.h (HAVE_BCOPY): Delete unneeded macro.
