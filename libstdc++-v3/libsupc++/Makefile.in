@@ -343,21 +343,6 @@ libsupc++.la: $(libsupc___la_OBJECTS) $(libsupc___la_DEPENDENCIES)
 .cc.lo:
 	$(LTCXXCOMPILE) -c $<
 
-install-glibcppinstallHEADERS: $(glibcppinstall_HEADERS)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(glibcppinstalldir)
-	@list='$(glibcppinstall_HEADERS)'; for p in $$list; do \
-	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcppinstalldir)/$$p"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcppinstalldir)/$$p; \
-	done
-
-uninstall-glibcppinstallHEADERS:
-	@$(NORMAL_UNINSTALL)
-	list='$(glibcppinstall_HEADERS)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(glibcppinstalldir)/$$p; \
-	done
-
 tags: TAGS
 
 ID: $(HEADERS) $(SOURCES) $(LISP)
@@ -489,6 +474,25 @@ install uninstall-am uninstall all-redirect all-am all installdirs \
 mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+
+# We have to have rules modified from the default to counteract SUN make
+# prepending each of $(glibcppinstall_HEADERS) with VPATH below.
+install-glibcppinstallHEADERS: $(glibcppinstall_HEADERS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(glibcppinstalldir)
+	@list='$(glibcppinstall_HEADERS)'; for p in $$list; do \
+	  q=`echo $$p | sed -e 's,.*/,,'`; \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcppinstalldir)/$$q"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcppinstalldir)/$$q; \
+	done
+
+uninstall-glibcppinstallHEADERS:
+	@$(NORMAL_UNINSTALL)
+	list='$(glibcppinstall_HEADERS)'; for p in $$list; do \
+	  q=`echo $$p | sed -e 's,.*/,,'`; \
+	  rm -f $(DESTDIR)$(glibcppinstalldir)/$$q; \
+	done
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
