@@ -934,6 +934,6 @@ ATTRIBUTE_NORETURN
 extern void java_expand_classes PARAMS ((void));
 
 extern struct parser_ctxt *ctxp;
-struct parser_ctxt *ctxp_for_generation;
+extern struct parser_ctxt *ctxp_for_generation;
 
 #endif /* ! GCC_JAVA_PARSE_H */

@@ -1,3 +1,7 @@
+2001-09-11  Richard Henderson  <rth@redhat.com>
+
+	* parse.h (ctxp_for_generation): Mark extern.
+
 2001-09-10  Richard Henderson  <rth@redhat.com>
 
 	* class.c (build_class_ref): Set DECL_EXTERNAL before make_decl_rtl.
