@@ -1,3 +1,8 @@
+Thu Apr  8 06:16:14 EDT 1999  John Wehle  (john@feith.com)
+
+	* i386.md (truncdfsf2, truncxfsf2,
+	truncxfdf2): Rewrite using a splitter.
+
 Thu Apr  8 01:26:05 1999  Arg Haas (ahaas@neosoft.com)
 			  Jeffrey A Law  (law@cygnus.com)
 
