@@ -120,14 +120,16 @@ vax_output_function_prologue (file, size)
 	}
 
       if (is_main)
-	fprintf (file, "\t%s\n\t%s\n", "clrl -(sp)", "jsb _C$MAIN_ARGS");
+	fprintf (file, "\tclrl -(%ssp)\n\tjsb _C$MAIN_ARGS\n",
+	         REGISTER_PREFIX);
     }
 
-    size -= STARTING_FRAME_OFFSET;
-    if (size >= 64)
-      fprintf (file, "\tmovab %d(sp),sp\n", -size);
-    else if (size)
-      fprintf (file, "\tsubl2 $%d,sp\n", size);
+  size -= STARTING_FRAME_OFFSET;
+  if (size >= 64)
+    fprintf (file, "\tmovab %d(%ssp),%ssp\n", -size, REGISTER_PREFIX,
+	     REGISTER_PREFIX);
+  else if (size)
+    fprintf (file, "\tsubl2 $%d,%ssp\n", size, REGISTER_PREFIX);
 }
 
 /* This is like nonimmediate_operand with a restriction on the type of MEM.  */
