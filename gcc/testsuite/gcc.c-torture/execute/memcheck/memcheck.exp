@@ -41,6 +41,14 @@ if $idx>=0 {
     error "list can't find driver.c in $srcdir/$subdir"
 }
 
+# These don't work on AIX.  The constructors get run by a program built
+# with -fcheck-memory-usage, which confuses the driver so much that
+# they don't even link.
+if { [istarget "powerpc-*-aix*"] 
+     || [istarget "rs6000-*-aix*"] } { 
+    set tests "" 
+}
+
 # Compiling driver.c on a remote host requires our ability to also
 # find its driver.h header.
 if [is_remote host] {
