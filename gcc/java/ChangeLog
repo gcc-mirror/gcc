@@ -1,3 +1,8 @@
+Wed Nov 26 22:03:58 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* jcf-path.c (add_entry): recognize ".jar" too
+	* lang-specs.h: ditto
+
 Thu Nov 26 12:44:07 1998  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_insns):  In Call_EXPR, handle
