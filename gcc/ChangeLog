@@ -1,5 +1,9 @@
 2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
-	
+
+	* config/c4x/c4x.c (c4x_rptb_insert): Make more robust.
+
+2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
 	* config/c4x/c4x.h (ASM_FORMAT_PRIVATE_NAME): Output $ in label.
 
 2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>

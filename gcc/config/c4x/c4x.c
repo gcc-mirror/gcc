@@ -2214,6 +2214,7 @@ c4x_rptb_insert (insn)
 {
   rtx end_label;
   rtx start_label;
+  rtx new_start_label;
   rtx count_reg;
 
   /* If the count register has not been allocated to RC, say if
@@ -2227,21 +2228,32 @@ c4x_rptb_insert (insn)
   /* Extract the start label from the jump pattern (rptb_end).  */
   start_label = XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (insn), 0, 0)), 1), 0);
   
-  /* We'll have to update the basic blocks.  */
   end_label = gen_label_rtx ();
+  LABEL_NUSES (end_label)++;
   emit_label_after (end_label, insn);
 
+  new_start_label = gen_label_rtx ();
+  LABEL_NUSES (new_start_label)++;
+
   for (; insn; insn = PREV_INSN (insn))
-    if (insn == start_label)
-      break;
+    {
+      if (insn == start_label)
+	 break;
+      if (GET_CODE (insn) == JUMP_INSN &&
+	  JUMP_LABEL (insn) == start_label)
+	redirect_jump (insn, new_start_label, 0);
+    }
   if (! insn)
     fatal_insn ("c4x_rptb_insert: Cannot find start label", start_label);
 
-  /* We'll have to update the basic blocks.  */
+  emit_label_after (new_start_label, insn);
+
   if (TARGET_RPTS && c4x_rptb_rpts_p (PREV_INSN (insn), 0))
-    emit_insn_before (gen_rpts_top (start_label, end_label), insn);
+    emit_insn_after (gen_rpts_top (new_start_label, end_label), insn);
   else
-    emit_insn_before (gen_rptb_top (start_label, end_label), insn);
+    emit_insn_after (gen_rptb_top (new_start_label, end_label), insn);
+  if (LABEL_NUSES (start_label) == 0)
+    delete_insn (start_label);
 }
 
 
