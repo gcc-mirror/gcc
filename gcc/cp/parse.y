@@ -2090,7 +2090,9 @@ structsp:
 		  $$.new_type_flag = 0; }
 	| TYPENAME_KEYWORD typename_sub
 		{ $$.t = $2;
-		  $$.new_type_flag = 0; }
+		  $$.new_type_flag = 0; 
+		  if (!processing_template_decl)
+		    cp_pedwarn ("using `typename' outside of template"); }
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
 	| class_head left_curly 
           opt.component_decl_list '}' maybe_attribute
@@ -2251,71 +2253,13 @@ base_class_list:
 
 base_class:
 	  base_class.1
-		{
-		  tree type;
-		  if ($1 == NULL_TREE)
-		    {
-		      error ("invalid base class");
-		      type = error_mark_node;
-		    }
-		  else
-		    type = TREE_TYPE ($1);
-		  if (! is_aggr_type (type, 1))
-		    $$ = NULL_TREE;
-		  else if (current_aggr == signature_type_node
-			   && (! type) && (! IS_SIGNATURE (type)))
-		    {
-		      error ("class name not allowed as base signature");
-		      $$ = NULL_TREE;
-		    }
-		  else if (current_aggr == signature_type_node)
-		    {
-		      sorry ("signature inheritance, base type `%s' ignored",
-			     IDENTIFIER_POINTER ($$));
-		      $$ = build_tree_list (access_public_node, type);
-		    }
-		  else if (type && IS_SIGNATURE (type))
-		    {
-		      error ("signature name not allowed as base class");
-		      $$ = NULL_TREE;
-		    }
-		  else
-		    $$ = build_tree_list (access_default_node, type);
-		}
+		{ $$ = finish_base_specifier (access_default_node, $1,
+					      current_aggr 
+					      == signature_type_node); }
 	| base_class_access_list see_typename base_class.1
-		{
-		  tree type;
-		  if ($3 == NULL_TREE)
-		    {
-		      error ("invalid base class");
-		      type = error_mark_node;
-		    }
-		  else
-		    type = TREE_TYPE ($3);
-		  if (current_aggr == signature_type_node)
-		    error ("access and source specifiers not allowed in signature");
-		  if (! is_aggr_type (type, 1))
-		    $$ = NULL_TREE;
-		  else if (current_aggr == signature_type_node
-			   && (! type) && (! IS_SIGNATURE (type)))
-		    {
-		      error ("class name not allowed as base signature");
-		      $$ = NULL_TREE;
-		    }
-		  else if (current_aggr == signature_type_node)
-		    {
-		      sorry ("signature inheritance, base type `%s' ignored",
-			     IDENTIFIER_POINTER ($$));
-		      $$ = build_tree_list (access_public_node, type);
-		    }
-		  else if (type && IS_SIGNATURE (type))
-		    {
-		      error ("signature name not allowed as base class");
-		      $$ = NULL_TREE;
-		    }
-		  else
-		    $$ = build_tree_list ($$, type);
-		}
+                { $$ = finish_base_specifier ($1, $3, 
+					      current_aggr 
+					      == signature_type_node); } 
 	;
 
 base_class.1:
@@ -2868,7 +2812,6 @@ functional_cast:
 	| typespec fcast_or_absdcl  %prec EMPTY
 		{ $$ = reparse_absdcl_as_expr ($1.t, $2); }
 	;
-
 type_name:
 	  TYPENAME
 	| SELFNAME

@@ -1,3 +1,12 @@
+1998-08-28  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (finish_base_specifier): New function.
+	* parse.y (base_class): Use it.
+	* semantics.c (finish_base_specifier): Define it.
+
+	* parse.y (structsp): Warn on use of typename outside of template
+	declarations. 
+	
 1998-08-27  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* lex.c (handle_cp_pragma): Remove #pragma vtable.

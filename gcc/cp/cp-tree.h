@@ -2943,6 +2943,7 @@ extern tree finish_member_class_template        PROTO((tree, tree));
 extern void finish_template_decl                PROTO((tree));
 extern tree finish_template_type                PROTO((tree, tree, int));
 extern void enter_scope_of                      PROTO((tree));
+extern tree finish_base_specifier               PROTO((tree, tree, int));
 
 /* in sig.c */
 extern tree build_signature_pointer_type	PROTO((tree, int, int));

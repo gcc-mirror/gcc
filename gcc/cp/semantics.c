@@ -1436,3 +1436,53 @@ enter_scope_of (sr)
       TREE_COMPLEXITY (sr) = current_class_depth;
     }
 }
+
+/* Finish processing a BASE_CLASS with the indicated ACCESS_SPECIFIER.
+   Return a TREE_LIST containing the ACCESS_SPECIFIER and the
+   BASE_CLASS, or NULL_TREE if an error occurred.  The
+   ACCESSS_SPECIFIER is one of
+   access_{default,public,protected_private}[_virtual]_node.*/
+
+tree 
+finish_base_specifier (access_specifier, base_class,
+		       current_aggr_is_signature)
+     tree access_specifier;
+     tree base_class;
+     int current_aggr_is_signature;
+{
+  tree type;
+  tree result;
+
+  if (base_class == NULL_TREE)
+    {
+      error ("invalid base class");
+      type = error_mark_node;
+    }
+  else
+    type = TREE_TYPE (base_class);
+  if (current_aggr_is_signature && access_specifier)
+    error ("access and source specifiers not allowed in signature");
+  if (! is_aggr_type (type, 1))
+    result = NULL_TREE;
+  else if (current_aggr_is_signature
+	   && (! type) && (! IS_SIGNATURE (type)))
+    {
+      error ("class name not allowed as base signature");
+      result = NULL_TREE;
+    }
+  else if (current_aggr_is_signature)
+    {
+      sorry ("signature inheritance, base type `%s' ignored",
+	     IDENTIFIER_POINTER (access_specifier));
+      result = build_tree_list (access_public_node, type);
+    }
+  else if (type && IS_SIGNATURE (type))
+    {
+      error ("signature name not allowed as base class");
+      result = NULL_TREE;
+    }
+  else
+    result = build_tree_list (access_specifier, type);
+
+  return result;
+}
