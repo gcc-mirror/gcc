@@ -83,7 +83,9 @@ public abstract class ResourceBundle
 	{
 	  try 
 	    {
-	      rbc = Class.forName(bundleName);
+	      // This call is wrong by the spec, but it will have to
+	      // do until our Class.forName is fixed.
+	      rbc = Class.forName(bundleName, loader);
 	      r = null;
 	      try 
 		{
