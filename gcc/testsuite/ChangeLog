@@ -1,3 +1,8 @@
+1998-10-10  Dariush Eslimi  <eslimi@loran.com>
+
+	* g++.old-deja/g++.ext/typeof1.C: New test; typeof based on
+	template-dependent type
+
 1998-10-10  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.brendan/parse3.C: XFAILs, not ERRORs
