@@ -1908,9 +1908,14 @@ alpha_emit_conditional_move (cmp, mode)
 
 	case GE: case GT: case GEU: case GTU:
 	  /* These must be swapped.  */
-	  cmp_code = swap_condition (code);
-	  code = NE;
-	  tem = op0, op0 = op1, op1 = tem;
+	  if (op1 == CONST0_RTX (cmp_mode))
+	    cmp_code = code, code = NE;
+	  else
+	    {
+	      cmp_code = swap_condition (code);
+	      code = NE;
+	      tem = op0, op0 = op1, op1 = tem;
+	    }
 	  break;
 
 	default:
@@ -1958,8 +1963,11 @@ alpha_emit_conditional_move (cmp, mode)
 
     case GE:  case GT:  case GEU:  case GTU:
       /* These must be swapped.  */
-      code = swap_condition (code);
-      tem = op0, op0 = op1, op1 = tem;
+      if (op1 != CONST0_RTX (cmp_mode))
+	{
+	  code = swap_condition (code);
+	  tem = op0, op0 = op1, op1 = tem;
+	}
       break;
 
     default:
