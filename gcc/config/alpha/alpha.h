@@ -2106,6 +2106,9 @@ extern void alpha_output_filename ();
 /* By default, turn on GDB extensions.  */
 #define DEFAULT_GDB_EXTENSIONS 1
 
+/* Stabs-in-ECOFF can't handle dbxout_function_end().  */
+#define NO_DBX_FUNCTION_END 1
+
 /* If we are smuggling stabs through the ALPHA ECOFF object
    format, put a comment in front of the .stab<x> operation so
    that the ALPHA assembler does not choke.  The mips-tfile program
