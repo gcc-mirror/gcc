@@ -49,8 +49,7 @@ int main (void)
   return 0;
 }
 
-/* Fails due to invariant phi introduced by PRE.
-   Fails for targets that don't vectorize PLUS (e.g alpha).  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
+/* Fails for targets that don't vectorize PLUS (e.g alpha).  */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail alpha*-*-* } } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail alpha*-*-* } } } */

@@ -1,3 +1,10 @@
+2005-02-03  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/vect-85.c: Remove xfail.
+	* gcc.dg/vect/vect-86.c: Remove xfail. 
+	* gcc.dg/vect/vect-87.c: Remove xfail.
+	* gcc.dg/vect/vect-88.c: Remove xfail.
+
 2005-02-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/altivec-19.c: New.
