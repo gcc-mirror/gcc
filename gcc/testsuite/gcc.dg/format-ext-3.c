@@ -211,4 +211,10 @@ foo (char *s, size_t m, const struct tm *tp)
   */
   strftime (s, m, "%OC%Og%OG%Oj%OY%Oz%Ok%Ol%Os", tp); /* { dg-warning "only last 2" "2-digit year" } */
   strftime (s, m, "%OP", tp); /* { dg-warning "flag|modifier" "bad %OP" } */
+  /* The "-", "_" and "0" flags are mutually exclusive.  */
+  strftime (s, m, "%-_5C", tp); /* { dg-warning "flag" "bad %-_" } */
+  strftime (s, m, "%-05C", tp); /* { dg-warning "flag" "bad %-0" } */
+  strftime (s, m, "%_05C", tp); /* { dg-warning "flag" "bad %_0" } */
+  /* The "#" and "^" flags are mutually exclusive.  */
+  strftime (s, m, "%^#a", tp); /* { dg-warning "flag" "bad %^#" } */
 }

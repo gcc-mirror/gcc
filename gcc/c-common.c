@@ -1507,10 +1507,12 @@ static const format_flag_pair printf_flag_pairs[] =
 
 static const format_flag_spec scanf_flag_specs[] =
 {
-  { '*', 0, N_("assignment suppression"), N_("assignment suppression"),          STD_C89 },
-  { 'a', 0, N_("`a' flag"),               N_("the `a' scanf flag"),              STD_EXT },
-  { 'w', 0, N_("field width"),            N_("field width in scanf format"),     STD_C89 },
-  { 'L', 0, N_("length modifier"),        N_("length modifier in scanf format"), STD_C89 },
+  { '*',  0, N_("assignment suppression"), N_("assignment suppression"),          STD_C89 },
+  { 'a',  0, N_("`a' flag"),               N_("the `a' scanf flag"),              STD_EXT },
+  { 'w',  0, N_("field width"),            N_("field width in scanf format"),     STD_C89 },
+  { 'L',  0, N_("length modifier"),        N_("length modifier in scanf format"), STD_C89 },
+  { '\'', 0, N_("`'' flag"),               N_("the `'' scanf flag"),              STD_EXT },
+  { 'I',  0, N_("`I' flag"),               N_("the `I' scanf flag"),              STD_EXT },
   { 0, 0, NULL, NULL, 0 }
 };
 
@@ -1540,6 +1542,10 @@ static const format_flag_spec strftime_flag_specs[] =
 static const format_flag_pair strftime_flag_pairs[] =
 {
   { 'E', 'O', 0, 0 },
+  { '_', '-', 0, 0 },
+  { '_', '0', 0, 0 },
+  { '-', '0', 0, 0 },
+  { '^', '#', 0, 0 },
   { 0, 0, 0, 0 }
 };
 
@@ -1626,19 +1632,20 @@ static const format_char_info print_char_table[] =
 static const format_char_info scan_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",    1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "*w",  "W"   },
-  { "ouxX",  1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "*w",  "W"   },
-  { "efgEG", 1, STD_C89, { T89_F,   BADLEN,  BADLEN,  T89_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "*w",  "W"   },
-  { "c",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*w",  "cW"  },
-  { "s",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*aw", "cW"  },
-  { "[",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*aw", "cW[" },
-  { "p",     2, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*w",  "W"   },
-  { "n",     1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, "",    "W"   },
+  { "di",    1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "*w'I", "W"   },
+  { "u",     1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "*w'I", "W"   },
+  { "oxX",   1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "*w",   "W"   },
+  { "efgEG", 1, STD_C89, { T89_F,   BADLEN,  BADLEN,  T89_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "*w'",  "W"   },
+  { "c",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*w",   "cW"  },
+  { "s",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*aw",  "cW"  },
+  { "[",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*aw",  "cW[" },
+  { "p",     2, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*w",   "W"   },
+  { "n",     1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, "",     "W"   },
   /* C99 conversion specifiers.  */
-  { "FaA",   1, STD_C99, { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "*w",  "W"   },
+  { "FaA",   1, STD_C99, { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "*w'",  "W"   },
   /* X/Open conversion specifiers.  */
-  { "C",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*w",  "W"   },
-  { "S",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*aw", "W"   },
+  { "C",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*w",   "W"   },
+  { "S",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*aw",  "W"   },
   { NULL, 0, 0, NOLENGTHS, NULL, NULL }
 };
 
@@ -1678,7 +1685,7 @@ static const format_kind_info format_types[] =
     FMT_FLAG_ARG_CONVERT, 'w', 'p', 0, 'L',
     &integer_type_node, &integer_type_node
   },
-  { "scanf",    scanf_length_specs,  scan_char_table,  "*", NULL, 
+  { "scanf",    scanf_length_specs,  scan_char_table,  "*'I", NULL, 
     scanf_flag_specs, scanf_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_SCANF_A_KLUDGE, 'w', 0, '*', 'L',
     NULL, NULL
