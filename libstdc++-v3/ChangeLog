@@ -1,11 +1,25 @@
+2001-01-09  Benjamin Kosnik  <bkoz@redhat.com>
+	                     <kainz@ilm.com>
+
+	Fixes for libstdc++/1576
+	* src/stdstreams.cc: Initialize with NULL filebuf. Delete
+	file, move contents into....
+	* src/ios.cc: ...Here. Put defines for iostreams objects and
+	initialization routines into one file to simplify DSO interaction.
+	* include/bits/std_iostream.h: Touch.
+	* include/bits/ios_base.h (_S_synched_with_stdio): Make static.
+	* src/Makefile.am (sources): Remove stdstreams.cc.
+	* src/Makefile.in: Regenerate.
+
 2001-01-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* tests_flags.in (check_directory): Fix typo.
 
 2001-01-09  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
          * include/bits/std_complex.h: Fix a typo.
 
-2001-01-10  Loren J. Rittle  <ljrittle@acm.org>
+2001-01-09  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config/os/bsd/freebsd/bits/ctype_inline.h (is): (Make right
 	code path:) Remove magic constants and restructure to handle

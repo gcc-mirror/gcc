@@ -1,6 +1,6 @@
 ## Makefile for the src subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+## Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.61 2000/12/23 07:13:57 bkoz Exp $
+## $Id: Makefile.am,v 1.62 2001/01/04 04:21:42 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -176,7 +176,7 @@ sources = \
 	limitsMEMBERS.cc \
 	complex_io.cc \
 	stdexcept.cc bitset.cc \
-	c++io.cc ios.cc stdstreams.cc strstream.cc \
+	c++io.cc ios.cc strstream.cc \
 	locale.cc localename.cc codecvt.cc \
 	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc string-inst.cc
 
