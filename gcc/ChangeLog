@@ -1,3 +1,10 @@
+2003-09-16  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Add target predefines.
+	* config/m68k/m68k-none.h (CPP_CPU_DEFAULT_SPEC): Kill all definitions.
+	* config/m68k/m68k-none.h (CPP_FPU_SPEC): Remove.
+	* config/m68k/m68k-none.h (CPP_SPEC): Likewise.
+
 2003-09-16  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cfgcleanup.c (label_is_jump_target_p): Correct use of table

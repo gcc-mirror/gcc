@@ -28,10 +28,46 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\
     {						\
-	builtin_define ("__mc68000__");		\
-	if (TARGET_68020)			\
-	  builtin_define ("__mc68020__");	\
 	builtin_define ("__m68k__");		\
+	builtin_define_std ("mc68000");		\
+	if (TARGET_68060)			\
+	  builtin_define_std ("mc68060");	\
+	else if (TARGET_68040)			\
+	  builtin_define_std ("mc68040");	\
+	else if (TARGET_68020)			\
+	    builtin_define_std ("mc68020");	\
+	if (TARGET_68881)			\
+	  builtin_define ("__HAVE_68881__");	\
+	if (TARGET_CPU32)			\
+	  {					\
+	    builtin_define_std ("mc68332");	\
+	    builtin_define_std ("mcpu32");	\
+	  }					\
+	if (TARGET_COLDFIRE)			\
+	  builtin_define ("__mcoldfire__");	\
+	if (TARGET_5200)			\
+	  builtin_define ("__mcf5200__");	\
+	if (TARGET_528x)			\
+	  {					\
+	    builtin_define ("__mcf528x__");	\
+	    builtin_define ("__mcf5200__");	\
+	  }					\
+	if (TARGET_CFV3)			\
+	  {					\
+	    builtin_define ("__mcf5300__");	\
+	    builtin_define ("__mcf5307__");	\
+	  }					\
+	if (TARGET_CFV4)			\
+	  {					\
+	    builtin_define ("__mcf5400__");	\
+	    builtin_define ("__mcf5407__");	\
+	  }					\
+	if (TARGET_CF_HWDIV)			\
+	  builtin_define ("__mcfhwdiv__");	\
+	if (flag_pic)				\
+	  builtin_define ("__pic__");		\
+	if (flag_pic > 1)			\
+	  builtin_define ("__PIC__");		\
 	builtin_assert ("cpu=m68k");		\
 	builtin_assert ("machine=m68k");	\
     }						\
@@ -155,7 +191,7 @@ extern int target_flags;
 #define MASK_CF_HWDIV	0x40000
 #define TARGET_CF_HWDIV	(target_flags & MASK_CF_HWDIV)
 
-/* Compile for mcf582 */
+/* Compile for mcf528x */
 #define MASK_528x	0x80000
 #define TARGET_528x (target_flags & MASK_528x)
 
