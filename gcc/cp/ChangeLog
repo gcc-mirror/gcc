@@ -1,3 +1,8 @@
+2001-03-21  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (instantiate_decl): Abort if we see a member constant
+	instantiation that doesn't already have its initializer.
+
 2001-03-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (build_clone): Clear DECL_ASSEMBLER_NAME.

@@ -9870,10 +9870,10 @@ instantiate_decl (d, defer_ok)
 	import_export_decl (d);
     }
 
-  /* We need to set up DECL_INITIAL regardless, if
-     the variable is initialized in the class body.  */
-  if (TREE_CODE (d) == VAR_DECL && DECL_INITIALIZED_IN_CLASS_P (d))
-    ;
+  if (TREE_CODE (d) == VAR_DECL && DECL_INITIALIZED_IN_CLASS_P (d)
+      && DECL_INITIAL (d) == NULL_TREE)
+    /* We should have set up DECL_INITIAL in instantiate_class_template.  */
+    abort ();
   /* Reject all external templates except inline functions.  */
   else if (DECL_INTERFACE_KNOWN (d)
 	   && ! DECL_NOT_REALLY_EXTERN (d)
