@@ -544,7 +544,7 @@ proc dg-test { args } {
 	    warning "$name compilation failed to produce executable"
 	} else {
 	    set status -1
-	    set result [${tool}_load $output_file]
+	    set result [${tool}_load ./$output_file]
 	    set status [lindex $result 0];
 	    set output [lindex $result 1];
 	    #send_user "After exec, status: $status\n"

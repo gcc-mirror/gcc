@@ -1,3 +1,8 @@
+2001-04-10  Richard Henderson  <rth@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (dg-test): Explicitly run
+	the program in the current directory.
+
 2001-04-08  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* include/bits/std_valarray.h(valarray<>::operator[]): Make
