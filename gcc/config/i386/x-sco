@@ -1,0 +1,5 @@
+INSTALL=cp
+RANLIB = :
+RANLIB_TEST = false
+CC = rcc -Di386
+OLDCC = rcc -Di386
