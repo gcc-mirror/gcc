@@ -32,7 +32,6 @@ dnl Initialize the rest of the library configury.  At this point we have
 dnl variables like $host.
 dnl
 dnl Sets:
-dnl  gcc_version          (x.y.z format)
 dnl  SUBDIRS
 dnl Substs:
 dnl  glibcxx_builddir     (absolute path)
@@ -108,11 +107,6 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
   m4_rename([glibcxx_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
   AC_SUBST(CFLAGS)
   AC_SUBST(CXXFLAGS)
-
-  # For directory versioning (e.g., headers) and other variables.
-  AC_MSG_CHECKING([for GCC version number])
-  gcc_version=`$CXX -dumpversion`
-  AC_MSG_RESULT($gcc_version)
 
   # Will set LN_S to either 'ln -s', 'ln', or 'cp -p' (if linking isn't
   # available).  Uncomment the next line to force a particular method.
@@ -752,7 +746,7 @@ AC_DEFUN([GLIBCXX_EXPORT_INSTALL_INFO], [
 
   # Default case for install directory for include files.
   if test $version_specific_libs = no && test $gxx_include_dir = no; then
-    gxx_include_dir='${prefix}'/include/c++/${gcc_version}
+    gxx_include_dir='${prefix}/include/c++/${gcc_version}'
   fi
 
   # Version-specific runtime libs processing.
@@ -762,10 +756,10 @@ AC_DEFUN([GLIBCXX_EXPORT_INSTALL_INFO], [
     # is selected.  FIXME: these variables are misnamed, there are
     # no executables installed in _toolexecdir or _toolexeclibdir.
     if test x"$gxx_include_dir" = x"no"; then
-      gxx_include_dir='${libdir}/gcc/${host_alias}/'$gcc_version/include/c++
+      gxx_include_dir='${libdir}/gcc/${host_alias}/${gcc_version}/include/c++'
     fi
     glibcxx_toolexecdir='${libdir}/gcc/${host_alias}'
-    glibcxx_toolexeclibdir='${toolexecdir}/'$gcc_version'$(MULTISUBDIR)'
+    glibcxx_toolexeclibdir='${toolexecdir}/${gcc_version}$(MULTISUBDIR)'
   fi
 
   # Calculate glibcxx_toolexecdir, glibcxx_toolexeclibdir

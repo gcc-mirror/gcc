@@ -1,3 +1,14 @@
+2005-03-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* acinclude.m4 (GLIBCXX_CONFIGURE): Delete gcc_version logic.
+	(GLIBCXX_EXPORT_INSTALL_INFO): Adjust quotation so ${gcc_version}
+	is expanded by the Makefiles, not by configure.
+	* fragment.am: Set gcc_version.
+	* libmath/Makefile.am: Likewise.
+	* configure, Makefile.in, include/Makefile.in, libmath/Makefile.in
+	* libsupc++/Makefile.in, po/Makefile.in, src/Makefile.in
+	* testsuite/Makefile.in: Regenerate.
+
 2005-03-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/20_util/functional/binders.cc: Remove explicit
@@ -64,7 +75,7 @@
 	* testsuite/23_containers/vector/cons/1.cc: Likewise.
 	* testsuite/23_containers/vector/cons/2.cc: Likewise.
 	* testsuite/23_containers/vector/cons/3.cc: Likewise.
-	* testsuite/23_containers/vector/cons/6513.cc: Likewise.	
+	* testsuite/23_containers/vector/cons/6513.cc: Likewise.
 	* testsuite/23_containers/vector/element_access/1.cc: Likewise.
 	* testsuite/23_containers/vector/invalidation/1.cc: Likewise.
 	* testsuite/23_containers/vector/invalidation/2.cc: Likewise.
@@ -72,7 +83,7 @@
 	* testsuite/23_containers/vector/invalidation/4.cc: Likewise.
 	* testsuite/23_containers/vector/modifiers/1.cc: Likewise.
 	* testsuite/23_containers/vector/modifiers/2.cc: Likewise.
-	* testsuite/23_containers/vector/modifiers/swap.cc: Likewise.	
+	* testsuite/23_containers/vector/modifiers/swap.cc: Likewise.
 	* testsuite/23_containers/vector/resize/1.cc: Likewise.
 	* testsuite/24_iterators/back_insert_iterator.cc: Likewise.
 	* testsuite/24_iterators/front_insert_iterator.cc: Likewise.
@@ -81,7 +92,7 @@
 	* testsuite/25_algorithms/copy/1.cc: Likewise.
 	* testsuite/25_algorithms/copy/2.cc: Likewise.
 	* testsuite/25_algorithms/copy/3.cc: Likewise.
-	* testsuite/25_algorithms/copy/4.cc: Likewise.	
+	* testsuite/25_algorithms/copy/4.cc: Likewise.
 	* testsuite/25_algorithms/equal.cc: Likewise.
 	* testsuite/25_algorithms/fill/1.cc: Likewise.
 	* testsuite/25_algorithms/fill/2.cc: Likewise.
