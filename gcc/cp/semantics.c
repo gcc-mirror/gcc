@@ -1774,42 +1774,6 @@ finish_this_expr (void)
   return result;
 }
 
-/* Finish a member function call using OBJECT and ARGS as arguments to
-   FN.  Returns an expression for the call.  */
-
-tree 
-finish_object_call_expr (tree fn, tree object, tree args)
-{
-  if (DECL_DECLARES_TYPE_P (fn))
-    {
-      if (processing_template_decl)
-	/* This can happen on code like:
-
-	   class X;
-	   template <class T> void f(T t) {
-	     t.X();
-	   }  
-
-	   We just grab the underlying IDENTIFIER.  */
-	fn = DECL_NAME (fn);
-      else
-	{
-	  error ("calling type `%T' like a method", fn);
-	  return error_mark_node;
-	}
-    }
-  
-  if (processing_template_decl)
-    return build_nt (CALL_EXPR,
-		     build_nt (COMPONENT_REF, object, fn),
-		     args);
-
-  if (name_p (fn))
-    return build_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);
-  else
-    return build_new_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);
-}
-
 /* Finish a pseudo-destructor expression.  If SCOPE is NULL, the
    expression was of the form `OBJECT.~DESTRUCTOR' where DESTRUCTOR is
    the TYPE for the type given.  If SCOPE is non-NULL, the expression
