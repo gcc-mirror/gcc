@@ -1,3 +1,20 @@
+2001-03-20  David Billinghurst  <David.Billinghurst@riotinto.com>
+
+	* config/i386/cygwin.h: Declare ctor_section, dtor_section
+	drectve_section, switch_to_section.
+
+	* winnt.c: Declare functions associated_type, gen_stdcall_suffix,
+	i386_pe_dllexport_p, i386_pe_dllimport_p, i386_pe_mark_dllexport,
+	i386_pe_mark_dllimport.
+
+2001-03-20  David Billinghurst <David.Billinghurst@riotinto.com>
+  
+	* config/i386/cygwin.h: Include <stdio.h> Declare and constify
+	functions i386_pe_*.
+
+	* config/i386/winnt.c: Include "tm_p.h" and "toplev.h" Constify
+	i386_pe_* functions with char * arguments.
+
 2001-03-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.md (movsf_ie): Fix output patterns for fpul load
