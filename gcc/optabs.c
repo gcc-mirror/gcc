@@ -783,24 +783,20 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	 seem that we don't need to convert CONST_INTs, but we do, so
 	 that they're properly zero-extended or sign-extended for their
 	 modes; shift operations are an exception, because the second
-	 operand needs not be extended to the mode of the result.  */
+	 operand need not be extended to the mode of the result.  */
 
-      if (GET_MODE (op0) != mode0
-	  && mode0 != VOIDmode)
+      if (GET_MODE (op0) != mode0 && mode0 != VOIDmode)
 	xop0 = convert_modes (mode0,
 			      GET_MODE (op0) != VOIDmode
 			      ? GET_MODE (op0)
 			      : mode,
 			      xop0, unsignedp);
 
-      if (GET_MODE (xop1) != mode1
-	  && mode1 != VOIDmode)
+      if (GET_MODE (op1) != mode1 && mode1 != VOIDmode)
 	xop1 = convert_modes (mode1,
 			      GET_MODE (op1) != VOIDmode
 			      ? GET_MODE (op1)
-			      : ! shift_op
-			      ? mode
-			      : mode1,
+			      : (shift_op ? mode1 : mode),
 			      xop1, unsignedp);
 
       /* Now, if insn's predicates don't allow our operands, put them into
@@ -2235,13 +2231,25 @@ expand_twoval_binop (binoptab, op0, op1, targ0, targ1, unsignedp)
       rtx pat;
       rtx xop0 = op0, xop1 = op1;
 
-      /* In case this insn wants input operands in modes different from the
-	 result, convert the operands.  */
-      if (GET_MODE (op0) != VOIDmode && GET_MODE (op0) != mode0)
-	xop0 = convert_to_mode (mode0, xop0, unsignedp);
+      /* In case the insn wants input operands in modes different from
+	 those of the actual operands, convert the operands.  It would
+	 seem that we don't need to convert CONST_INTs, but we do, so
+	 that they're properly zero-extended or sign-extended for their
+	 modes.  */
 
-      if (GET_MODE (op1) != VOIDmode && GET_MODE (op1) != mode1)
-	xop1 = convert_to_mode (mode1, xop1, unsignedp);
+      if (GET_MODE (op0) != mode0 && mode0 != VOIDmode)
+	xop0 = convert_modes (mode0,
+			      GET_MODE (op0) != VOIDmode
+			      ? GET_MODE (op0)
+			      : mode,
+			      xop0, unsignedp);
+
+      if (GET_MODE (op1) != mode1 && mode1 != VOIDmode)
+	xop1 = convert_modes (mode1,
+			      GET_MODE (op1) != VOIDmode
+			      ? GET_MODE (op1)
+			      : mode,
+			      xop1, unsignedp);
 
       /* Now, if insn doesn't accept these operands, put them into pseudos.  */
       if (! (*insn_data[icode].operand[1].predicate) (xop0, mode0))

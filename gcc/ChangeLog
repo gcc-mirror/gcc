@@ -1,3 +1,8 @@
+2002-09-09  Eric Botcazou  ebotcazou@libertysurf.fr
+  
+	* optabs.c (expand_binop): Minor cleanup.
+	(expand_twoval_binop): Convert CONST_INTs like in expand_binop.
+
 2002-09-11  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* print-tree.c (print_node): Print the restrict qualifier.
