@@ -1,8 +1,8 @@
 # we need to supply our own assembly versions of libgcc1.c files,
 # since the user may not have native 'cc' available
 
-LIBGCC1 = libgcc1.null
-CROSS_LIBGCC1 = libgcc1.null
+LIBGCC1 =
+CROSS_LIBGCC1 =
 
 # gmon build rule:
 gmon.o:	$(srcdir)/config/sparc/gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
