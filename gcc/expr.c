@@ -6222,7 +6222,11 @@ expand_expr (exp, target, tmode, modifier)
 	  if (mode == VOIDmode)
 	    temp = const0_rtx;
 	  else
-	    temp = assign_temp (type, 3, 0, 0);
+	    {
+	      temp = assign_temp (type, 3, 0, 0);
+	      if (GET_CODE (temp) == MEM)
+		RTX_UNCHANGING_P (temp) = 1;
+	    }
 
 	  SAVE_EXPR_RTL (exp) = temp;
 	  if (!optimize && GET_CODE (temp) == REG)
@@ -8683,6 +8687,7 @@ expand_expr_unaligned (exp, palign)
 	   that was declared const.  */
 
 	if (TREE_CODE (array) == CONSTRUCTOR && ! TREE_SIDE_EFFECTS (array)
+	    && host_integerp (index, 0)
 	    && 0 > compare_tree_int (index,
 				     list_length (CONSTRUCTOR_ELTS
 						  (TREE_OPERAND (exp, 0)))))
@@ -8690,7 +8695,7 @@ expand_expr_unaligned (exp, palign)
 	    tree elem;
 
 	    for (elem = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0)),
-		 i = TREE_INT_CST_LOW (index);
+		 i = tree_low_cst (index, 0);
 		 elem != 0 && i != 0; i--, elem = TREE_CHAIN (elem))
 	      ;
 
