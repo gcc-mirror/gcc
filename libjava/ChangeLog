@@ -1,5 +1,8 @@
 2003-12-01  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(awt_event_handler): Hard-code inset values.
+
 	* gnu/java/awt/peer/gtk/GdkFontMetrics.java (GdkFontMetrics):
 	Pass font name, not XLFD, to initState.
 	(stringWidth(String, int, String)): New method.

@@ -1022,8 +1022,6 @@ awt_event_handler (GdkEvent *event)
 	    if (widget && GTK_WIDGET_TOPLEVEL (widget))
 	      {
 		gint top, left, right, bottom;
-		gint x, y, w, h, d;
-		GdkRectangle r;
 
 		/* Configure events are not posted to the AWT event
 		   queue, and as such, the gdk/gtk peer functions will
@@ -1031,20 +1029,11 @@ awt_event_handler (GdkEvent *event)
 		   returns. */
 		gdk_threads_leave ();
 
-		/* Calculate our insets. */
-
-		/* When called from within the gdk_threads critical
-		   section these functions seem to return strange
-		   results, so we call them after
-		   gdk_threads_leave. */
-		gdk_window_get_geometry (event->any.window,
-					 &x, &y, &w, &h, &d);
-		gdk_window_get_frame_extents (event->any.window, &r);
-
-		top = y;
-		left = x;
-		bottom = r.height - h - y;
-		right = r.width - w - x;
+		/* FIXME: hard-code these values for now. */
+		top = 20;
+		left = 6;
+		bottom = 6;
+		right = 6;
 
 		(*gdk_env)->CallVoidMethod (gdk_env, *event_obj_ptr,
 					    postConfigureEventID,
