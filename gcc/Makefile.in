@@ -211,7 +211,7 @@ libdir = @libdir@
 # Directory in which the compiler finds executables, libraries, etc.
 libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(version)
 # Directory in which the compiler finds g++ includes.
-gxx_include_dir= $(prefix)/include/g++
+gxx_include_dir= @gxx_include_dir@
 # Directory in which the old g++ header files may be found.
 old_gxx_include_dir= $(libdir)/g++-include
 # Directory to search for site-specific includes.
