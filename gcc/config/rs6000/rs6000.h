@@ -1583,11 +1583,7 @@ typedef struct rs6000_stack {
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE)						\
-  gen_rtx_REG (MODE, ALTIVEC_VECTOR_MODE (MODE) ? ALTIVEC_ARG_RETURN	\
-		     : GET_MODE_CLASS (MODE) == MODE_FLOAT		\
-		     && TARGET_HARD_FLOAT && TARGET_FPRS		\
-		     ? FP_ARG_RETURN : GP_ARG_RETURN)
+#define LIBCALL_VALUE(MODE) rs6000_libcall_value ((MODE))
 
 /* The AIX ABI for the RS/6000 specifies that all structures are
    returned in memory.  The Darwin ABI does the same.  The SVR4 ABI
@@ -1814,6 +1810,13 @@ typedef struct rs6000_args
 
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
   function_arg_boundary (MODE, TYPE)
+
+/* Define to nonzero if complex arguments should be split into their
+   corresponding components.
+
+   This should be set for Linux and Darwin as well, but we can't break
+   the ABIs at the moment.  For now, only AIX gets fixed.  */
+#define SPLIT_COMPLEX_ARGS (DEFAULT_ABI == ABI_AIX)
 
 /* Perform any needed actions needed for a function that is receiving a
    variable number of arguments.

@@ -158,6 +158,14 @@ do {							\
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE)	PARM_BOUNDARY
 #endif
 
+/* Define to nonzero if complex arguments should be split into their
+   corresponding components.  */
+#ifndef SPLIT_COMPLEX_ARGS
+#define SPLIT_COMPLEX_ARGS 0
+#endif
+tree split_complex_types (tree);
+tree split_complex_values (tree);
+
 /* Provide a default value for STRICT_ARGUMENT_NAMING.  */
 #ifndef STRICT_ARGUMENT_NAMING
 #define STRICT_ARGUMENT_NAMING 0

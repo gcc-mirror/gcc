@@ -1,3 +1,27 @@
+2003-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+        * function.c (assign_parms): Split complex arguments.
+
+        * doc/tm.texi (SPLIT_COMPLEX_ARGS): Document.
+
+        * expr.h (SPLIT_COMPLEX_ARGS): Define.
+        (split_complex_types): Protoize.
+        (split_complex_values): Protoize.
+
+        * calls.c (expand_call): Split complex arguments on architectures
+        that require it.
+        (split_complex_values): New.
+        (split_complex_types): New.
+
+        * config/rs6000/rs6000.c (rs6000_libcall_value): New.
+        (rs6000_function_value): Handle complex values on AIX.
+        (rs6000_complex_function_value): New.
+
+        * config/rs6000/rs6000-protos.h (rs6000_libcall_value): Protoize.
+
+        * config/rs6000/rs6000.h (LIBCALL_VALUE): Call function.
+        (SPLIT_COMPLEX_ARGS): New.
+
 2003-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in (HAVE_LD_PIE): Check for ld -pie.
