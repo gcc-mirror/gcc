@@ -309,6 +309,47 @@ splay_tree_insert (sp, key, value)
   return sp->root;
 }
 
+/* Remove KEY from SP.  It is not an error if it did not exist.  */
+
+void
+splay_tree_remove (sp, key)
+     splay_tree sp;
+     splay_tree_key key;
+{
+  splay_tree_splay (sp, key);
+
+  if (sp->root && (*sp->comp) (sp->root->key, key) == 0)
+    {
+      splay_tree_node left, right;
+
+      left = sp->root->left;
+      right = sp->root->right;
+
+      /* Delete the root node itself.  */
+      if (sp->delete_value)
+	(*sp->delete_value) (sp->root->value);
+      free (sp->root);
+
+      /* One of the children is now the root.  Doesn't matter much
+	 which, so long as we preserve the properties of the tree.  */
+      if (left)
+	{
+	  sp->root = left;
+
+	  /* If there was a right child as well, hang it off the 
+	     right-most leaf of the left child.  */
+	  if (right)
+	    {
+	      while (left->right)
+		left = left->right;
+	      left->right = right;
+	    }
+	}
+      else
+	sp->root = right;
+    }
+}
+
 /* Lookup KEY in SP, returning VALUE if present, and NULL 
    otherwise.  */
 
