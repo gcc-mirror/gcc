@@ -1,3 +1,9 @@
+Wed Aug 20 12:32:33 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR target/8869
+	* expr.c (convert_modes): Deal properly with integer to vector
+	constant conversion.
+
 2003-09-05  Andrew Pinski <pinskia@physics.uc.edu>
 
 	PR c/10962
