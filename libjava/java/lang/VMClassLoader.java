@@ -142,20 +142,14 @@ final class VMClassLoader
   /**
    * Helper to load a class from the bootstrap class loader.
    *
-   * In libgcj, this does nothing, as the default system loader knows
-   * how to find classes that have been linked in.
-   *
    * @param name the class name to load
    * @param resolve whether to resolve it
    * @return the class, loaded by the bootstrap classloader or null
    * if the class wasn't found. Returning null is equivalent to throwing
    * a ClassNotFoundException (but a possible performance optimization).
    */
-  static final Class loadClass(String name, boolean resolve)
-    throws ClassNotFoundException
-  {
-    return null;
-  }
+  static final native Class loadClass(String name, boolean resolve)
+    throws ClassNotFoundException;
 
   /**
    * Helper to load a resource from the bootstrap class loader.
