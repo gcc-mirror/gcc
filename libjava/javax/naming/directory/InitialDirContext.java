@@ -38,8 +38,14 @@ exception statement from your version. */
 
 package javax.naming.directory;
 
-import javax.naming.*;
 import java.util.Hashtable;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.Name;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.NoInitialContextException;
+import javax.naming.NotContextException;
 
 /**
  * @author Tom Tromey <tromey@redhat.com>

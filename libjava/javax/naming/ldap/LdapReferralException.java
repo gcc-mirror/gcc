@@ -37,8 +37,11 @@ exception statement from your version. */
 
 
 package javax.naming.ldap;
-import javax.naming.*;
+
 import java.util.Hashtable;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.ReferralException;
  
 /**
  * @author Warren Levy <warrenl@redhat.com>

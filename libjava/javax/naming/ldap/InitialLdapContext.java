@@ -38,9 +38,12 @@ exception statement from your version. */
 
 package javax.naming.ldap;
 
-import javax.naming.*;
-import javax.naming.directory.InitialDirContext;
 import java.util.Hashtable;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.NoInitialContextException;
+import javax.naming.NotContextException;
+import javax.naming.directory.InitialDirContext;
 
 /**
  * @author Tom Tromey <tromey@redhat.com>

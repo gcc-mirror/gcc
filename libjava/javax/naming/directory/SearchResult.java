@@ -37,8 +37,9 @@ exception statement from your version. */
 
 
 package javax.naming.directory;
-import javax.naming.*;
+
 import java.io.Serializable;
+import javax.naming.Binding;
  
 /**
  * @author Warren Levy <warrenl@redhat.com>

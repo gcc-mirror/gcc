@@ -38,9 +38,10 @@ exception statement from your version. */
 
 package javax.naming.ldap;
 
-import javax.naming.*;
-import java.util.StringTokenizer;
 import java.util.Hashtable;
+import java.util.StringTokenizer;
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 /**
  * @author Tom Tromey <tromey@redhat.com>

@@ -1,3 +1,31 @@
+2003-12-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/naming/directory/Attribute.java,
+	javax/naming/directory/Attributes.java,
+	javax/naming/directory/DirContext.java,
+	javax/naming/directory/InitialDirContext.java,
+	javax/naming/directory/SearchResult.java,
+	javax/naming/event/EventContext.java,
+	javax/naming/event/NamingEvent.java,
+	javax/naming/event/NamingExceptionEvent.java,
+	javax/naming/ldap/ControlFactory.java,
+	javax/naming/ldap/ExtendedRequest.java,
+	javax/naming/ldap/HasControls.java,
+	javax/naming/ldap/InitialLdapContext.java,
+	javax/naming/ldap/LdapContext.java,
+	javax/naming/ldap/LdapReferralException.java,
+	javax/naming/ldap/UnsolicitedNotification.java,
+	javax/naming/ldap/UnsolicitedNotificationListener.java,
+	javax/naming/spi/DirObjectFactory.java,
+	javax/naming/spi/DirStateFactory.java,
+	javax/naming/spi/DirectoryManager.java,
+	javax/naming/spi/NamingManager.java,
+	javax/naming/spi/ObjectFactoryBuilder.java,
+	javax/naming/spi/ResolveResult.java,
+	javax/naming/spi/Resolver.java,
+	javax/naming/spi/StateFactory.java:
+	Import used classes explicitely.
+
 2003-12-05  Scott Gilbertson  <scottg@mantatest.com>
 
 	* gnu/gcj/xlib/GC.java (updateClip): Added rectangles argument.

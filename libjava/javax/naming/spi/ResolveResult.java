@@ -37,9 +37,12 @@ exception statement from your version. */
 
 
 package javax.naming.spi;
-import javax.naming.*;
-import java.util.EventObject;
+
 import java.io.Serializable;
+import java.util.EventObject;
+import javax.naming.Name;
+import javax.naming.CompositeName;
+import javax.naming.InvalidNameException;
  
 /**
  * @author Warren Levy <warrenl@redhat.com>
