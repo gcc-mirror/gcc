@@ -4,6 +4,8 @@
 ## files that should be in the distribution are not mentioned in this
 ## Makefile.am.
 
+target_noncanonical=@target_noncanonical@
+
 AUTOMAKE_OPTIONS = cygnus
 
 SUBDIRS = include

@@ -1,4 +1,5 @@
 # Copyright (c) 1999, 2000, 2001, 2002, 2003 by Red Hat, Inc. All rights reserved.
+# Copyright 2004 Nathanael Nerode
 # 
 # THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
 # OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -10,6 +11,7 @@
 # modified is included with the above copyright notice.
 #
 # Original author: Tom Tromey
+# Modified by Nathanael Nerode
 
 dnl Process this file with autoconf to produce configure.
 
@@ -56,6 +58,12 @@ if :; then :; else
 fi
 
 AC_CANONICAL_SYSTEM
+
+# Get the 'noncanonical' system names.
+sinclude(../config/acx.m4)
+_GCC_TOPLEV_NONCANONICAL_BUILD
+_GCC_TOPLEV_NONCANONICAL_HOST
+_GCC_TOPLEV_NONCANONICAL_TARGET
 
 # This works around an automake problem.
 mkinstalldirs="`cd $ac_aux_dir && ${PWDCMD-pwd}`/mkinstalldirs"
@@ -226,7 +234,7 @@ AC_SUBST(EXTRA_TEST_LIBS)
 
 target_all=libgcjgc.la
 AC_SUBST(target_all)
-AC_SUBST(target_alias)
+AC_SUBST(target_noncanonical)
 
 dnl If the target is an eCos system, use the appropriate eCos
 dnl I/O routines.
@@ -457,10 +465,10 @@ AC_ARG_ENABLE(full-debug,
 
 if test -n "$with_cross_host" &&
    test x"$with_cross_host" != x"no"; then
-  toolexecdir='$(exec_prefix)/$(target_alias)'
+  toolexecdir='$(exec_prefix)/$(target_noncanonical)'
   toolexeclibdir='$(toolexecdir)/lib'
 else
-  toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+  toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
   toolexeclibdir='$(libdir)'
 fi
 multi_os_directory=`$CC -print-multi-os-directory`
