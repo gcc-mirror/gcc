@@ -2108,7 +2108,6 @@ prev_cc0_setter (insn)
      rtx insn;
 {
   rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
-  rtx link;
 
   if (note)
     return XEXP (note, 0);

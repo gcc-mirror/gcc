@@ -136,7 +136,12 @@ GNU_xref_end ()
 void
 finish_file ()
 {
-  extern tree static_ctors, static_dtors;
+#ifndef ASM_OUTPUT_CONSTRUCTOR
+  extern tree static_ctors;
+#endif
+#ifndef ASM_OUTPUT_DESTRUCTOR
+  extern tree static_dtors;
+#endif
   extern tree build_function_call                 PROTO((tree, tree));
   tree void_list_node = build_tree_list (NULL_TREE, void_type_node);
 #ifndef ASM_OUTPUT_CONSTRUCTOR

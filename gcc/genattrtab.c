@@ -1446,7 +1446,6 @@ make_canonical (attr, exp)
       /* Fall through to COND case since this is now a COND.  */
 
     case COND:
-    cond:
       {
 	int allsame = 1;
 	rtx defval;
@@ -5770,7 +5769,6 @@ write_const_num_delay_slots ()
   struct attr_desc *attr = find_attr ("*num_delay_slots", 0);
   struct attr_value *av;
   struct insn_ent *ie;
-  int i;
 
   if (attr)
     {

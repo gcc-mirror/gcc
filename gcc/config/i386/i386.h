@@ -1716,7 +1716,7 @@ do									\
 	if (TARGET_DEBUG_ADDR						\
 	    && TREE_CODE_CLASS (TREE_CODE (DECL)) == 'd')		\
 	  {								\
-	    fprintf (stderr, "Encode %s, public = %s\n",		\
+	    fprintf (stderr, "Encode %s, public = %d\n",		\
 		     IDENTIFIER_POINTER (DECL_NAME (DECL)),		\
 		     TREE_PUBLIC (DECL));				\
 	  }								\

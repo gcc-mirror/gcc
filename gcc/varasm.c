@@ -1890,7 +1890,6 @@ immed_double_const (i0, i1, mode)
      enum machine_mode mode;
 {
   register rtx r;
-  int in_current_obstack;
 
   if (GET_MODE_CLASS (mode) == MODE_INT
       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
@@ -1999,7 +1998,6 @@ immed_real_const_1 (d, mode)
 {
   union real_extract u;
   register rtx r;
-  int in_current_obstack;
 
   /* Get the desired `double' value as a sequence of ints
      since that is how they are stored in a CONST_DOUBLE.  */
@@ -3537,7 +3535,6 @@ output_constant_pool (fnname, fndecl)
 	  abort ();
 	}
 
-    done: ;
     }
 
 #ifdef ASM_OUTPUT_POOL_EPILOGUE
@@ -3723,7 +3720,6 @@ output_constant (exp, size)
      register int size;
 {
   register enum tree_code code = TREE_CODE (TREE_TYPE (exp));
-  rtx x;
 
   if (size == 0)
     return;

@@ -38,6 +38,10 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h>
 #endif
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #ifdef HAVE_STRING_H
 #include <string.h>
 #else
@@ -921,7 +925,9 @@ main (argc, argv)
   char *ld_suffix	= "ld";
   char *full_ld_suffix	= ld_suffix;
   char *real_ld_suffix	= "real-ld";
+#ifdef CROSS_COMPILE
   char *full_real_ld_suffix = real_ld_suffix;
+#endif
   char *collect_ld_suffix = "collect-ld";
   char *nm_suffix	= "nm";
   char *full_nm_suffix	= nm_suffix;
@@ -936,7 +942,10 @@ main (argc, argv)
   char *gstrip_suffix	= "gstrip";
   char *full_gstrip_suffix = gstrip_suffix;
   char *arg;
-  FILE *outf, *exportf;
+  FILE *outf;
+#ifdef COLLECT_EXPORT_LIST
+  FILE *exportf;
+#endif /* COLLECT_EXPORT_LIST */
   char *ld_file_name;
   char *collect_name;
   char *collect_names;

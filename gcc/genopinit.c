@@ -142,7 +142,6 @@ gen_insn (insn)
   int pindex;
   int i;
   char *np, *pp, *p, *q;
-  struct obstack *obstack_ptr;
 
   /* Don't mention instructions whose names are the null string.
      They are in the machine description just to be recognized.  */
@@ -336,8 +335,6 @@ main (argc, argv)
      char **argv;
 {
   rtx desc;
-  rtx dummy;
-  rtx *insn_ptr;
   FILE *infile;
   register int c;
 

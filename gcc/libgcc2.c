@@ -1497,10 +1497,6 @@ __bb_exit_func (void)
 	  if ((da_file = fopen (ptr->filename, "r")) != 0)
 	    {
 	      long n_counts = 0;
-	      unsigned char tmp;
-	      int i;
-	      int ret = 0;
-
 	      
 	      if (__read_long (&n_counts, da_file, 8) != 0)
 		{
@@ -1516,9 +1512,6 @@ __bb_exit_func (void)
 		  for (i = 0; i < n_counts; i++)
 		    {
 		      long v = 0;
-		      unsigned char tmp;
-		      int j;
-		      int ret = 0;
 
 		      if (__read_long (&v, da_file, 8) != 0)
 			{
@@ -1883,7 +1876,6 @@ __bb_exit_trace_func ()
 {
   FILE *file = fopen ("bb.out", "a");
   struct bb_func *f;
-  struct bb_edge *e;
   struct bb *b;
         
   if (!file)

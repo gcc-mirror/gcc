@@ -151,7 +151,6 @@ plus_constant_for_output_wide (x, c)
      register rtx x;
      register HOST_WIDE_INT c;
 {
-  register RTX_CODE code = GET_CODE (x);
   register enum machine_mode mode = GET_MODE (x);
 
   if (GET_CODE (x) == LO_SUM)

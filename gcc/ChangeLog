@@ -1,3 +1,73 @@
+Wed Feb 11 21:44:40 1998  Robert Lipe	<robertl@dgii.com>
+
+	* c-lang.c (finish_file): Bracket declaration of static_ctors, 
+	static_dtors.
+
+	* calls.c (expand_call): Bracket declaration of 'rtx_before_call',
+	'old_stack_arg_under_construction'
+	(emit_library_call): Bracket declaration of 'upper_bound', 
+	'lower_bound', 'i', 'reg_parm_stack_space'
+	(emit_library_call_value): Likewise.
+	(store_one_arg): 
+
+	* collect2.c: include <unistd.h> when appropriate.
+	Bracket declaration of 'exportf' and 'full_real_ld_suffix'.
+
+	* emit-rtl.c (prev_cc0_setter): Remove unused variable 'link'.
+	
+	* explow.c (plus_constant_for_output_wide): Remove unused variable
+	'code'.
+	(memory_address): Remove unused variable 'orig_x'. 
+
+	* genattrtab.c (make_canonical): Remove unreferenced label 'cond:'.
+	(write_const_num_delay_slots): Remove unused variable 'i'.
+
+	* genopinit.c (main): Remove unused variables 'dummy', 'insn_ptr'.
+	(gen_insn): Remove unused variable 'obstack_ptr'.
+
+        * libgcc2.c (__bb_exit_func): Remove unused variables 'ret',
+        'j', 'tmp', 'i'.
+	(__bb_exit_trace_func): Remove unused variable 'e'.
+
+	* optabs.c (expand_binop): remove unused variables 'lhs', 'rhs',
+	'funexp'.
+	(expand_unop): Remove unused variable 'funexp'.
+	(expand_complex_abs): Remove unused variable 'funexp'. 
+	(init_optabs): Bracket declaration of 'j'.
+	(init_complex_libfuncs): Deleted.  Dead static function.
+	
+	* profile.c (branch_prob): Remove unused variables 'insn', 'dest'.
+
+	* reg-stack.c: Fix typo in proto for 'get_asm_operand_lengths'
+	(reg_to_stack): 'initialized', 'before_function_beg'
+	explictly type as ints instead of defaulting.
+	(emit_swap_insn): Remove unused variable 'i2'.
+	(compare_for_stack_reg): Remove unused variable 'src_note'.
+
+	* rtlanal.c (computed_jump_p): Remove unused variable 'computed_jump'.
+
+	* sched.c (actual_hazard): Bracket declaration of 'this_cost'.
+
+	* stmt.c (add_case_node): Add parens for assignment used as truth.
+	(all_cases_count):  Remove unused variable 'count_high'.
+	(mark_seen_cases): Remove unused variable 'i'.
+	(check_for_full_enumeration_handling): Remove unused variable 't'.
+	Bracket declaration of  'all_values', 'l'.
+	
+	* tlink.c: Include <stdlib.h>, <unistd.h>, <string.h>/<strings.h>.
+
+	* varasm.c (assemble_string): Remove unused variable 'i'. 
+	(immed_double_const): Remove unused variable 'in_current_obstack'. 
+	(immed_real_const_1): Likewise.
+	(output_constant_pool): Remove unreferenced label 'done'.
+	(output_constant): Remove unused variable 'x'.
+	
+        * i386/i386.h (ENCODE_SECTION_INFO): TREE_PUBLIC is an int, not
+        a string.
+
+        * i386/sco5.h (ASM_OUTPUT_ASCII): Add parens for assignment used
+        as truth.
+
 Fri Feb 13 10:21:41 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
         * combine.c (can_combine_p): Handle USEs in PARALLELs.
