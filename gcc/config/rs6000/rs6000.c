@@ -5170,11 +5170,14 @@ rs6000_spe_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
      are passed and returned in a pair of GPRs for ABI compatibility.  */
   if (TARGET_E500_DOUBLE && (mode == DFmode || mode == DCmode))
     {
-      /* Doubles go in an odd/even register pair (r5/r6, etc).  */
-      gregno += (1 - gregno) & 1;
+      int n_words = rs6000_arg_size (mode, type);
 
-      /* We do not split between registers and stack.  */
-      if (gregno + 1 > GP_ARG_MAX_REG)
+      /* Doubles go in an odd/even register pair (r5/r6, etc).  */
+      if (mode == DFmode)
+	gregno += (1 - gregno) & 1;
+
+      /* Multi-reg args are not split between registers and stack.  */
+      if (gregno + n_words - 1 > GP_ARG_MAX_REG)
 	return NULL_RTX;
 
       return spe_build_register_parallel (mode, gregno);
