@@ -24,7 +24,7 @@
 @node Installation
 @chapter Installing GNU Fortran
 @end ifclear
-@cindex installing GNU Fortran
+@cindex installing, GNU Fortran
 
 The following information describes how to install @code{g77}.
 
@@ -403,7 +403,7 @@ and @code{egcs} version 1.0.
 
 @node Building GNU CC Necessary
 @subsubsection Building GNU CC Necessary
-@cindex gcc, building
+@cindex @code{gcc}, building
 @cindex building gcc
 
 It should be possible to build the runtime without building @code{cc1}
@@ -420,9 +420,9 @@ is not yet established.
 @cindex undefined reference (_strtoul)
 @cindex f771, linking error for
 @cindex linking error for f771
-@cindex ld error for f771
-@cindex ld can't find _bsearch
-@cindex ld can't find _strtoul
+@cindex @code{ld}, error linking f771
+@cindex @code{ld}, can't find _bsearch
+@cindex @code{ld}, can't find _strtoul
 @cindex SunOS4
 
 @emph{Version info:}
@@ -721,7 +721,7 @@ Then build or rebuild @code{g77} as appropriate.
 @vindex FFECOM_sizeMAXSTACKITEM
 @cindex code, stack variables
 @cindex maximum stackable size
-@cindex stack allocation
+@cindex stack, allocation
 @cindex segmentation violation
 @code{g77}, on most machines, puts many variables and arrays on the stack
 where possible, and can be configured (by changing
@@ -758,7 +758,7 @@ something like @samp{EQUIVALENCE (I,R)} and @samp{DATA R/9.43578/}.)
 @node Large Initialization
 @subsection Initialization of Large Aggregate Areas
 
-@cindex speed, compiler
+@cindex speed, of compiler
 @cindex slow compiler
 @cindex memory utilization
 @cindex large initialization
@@ -1209,7 +1209,7 @@ tree for the first time.
 @cindex modifying @code{g77}
 @cindex code, modifying
 @cindex Pentium optimizations
-@cindex optimizations, Pentium
+@cindex optimization, for Pentium
 @emph{Note:} Please use @strong{only} @code{gcc} and @code{g77}
 source trees as distributed by the FSF.
 Use of modified versions is likely to result in problems that appear to be
@@ -1223,16 +1223,16 @@ and @code{gcc} can coexist as they do in the stock FSF distributions.
 @node Merging Distributions
 @subsection Merging Distributions
 @cindex merging distributions
-@cindex @code{gcc} versions supported by @code{g77}
-@cindex versions of @code{gcc}
-@cindex support for @code{gcc} versions
+@cindex @code{gcc}, versions supported by @code{g77}
+@cindex versions, of @code{gcc}
+@cindex support, @code{gcc} versions
 
 After merging the @code{g77} source tree into the @code{gcc} source tree,
 you have put together a complete @code{g77} source tree.
 
-@cindex gcc version numbering
-@cindex version numbering
-@cindex g77 version number
+@cindex @code{gcc}, version number
+@cindex version number
+@cindex @code{g77}, version number
 @cindex GNU version numbering
 As of version 0.5.23, @code{g77} no longer modifies
 the version number of @code{gcc},
@@ -1325,7 +1325,7 @@ the @code{g77} front end (FFE).
 @node Where to Install
 @subsection Where in the World Does Fortran (and GNU CC) Go?
 @cindex language f77 not recognized
-@cindex gcc will not compile Fortran programs
+@cindex @code{gcc}, will not compile Fortran programs
 
 Before configuring, you should make sure you know
 where you want the @code{g77} and @code{gcc}
@@ -1470,7 +1470,7 @@ issuing an explanatory diagnostic.
 @cindex building @code{gcc}
 @cindex building @code{g77}
 
-@vindex LANGUAGES
+@cindex @samp{LANGUAGES} macro
 Building @code{g77} requires building enough of @code{gcc} that
 these instructions assume you're going to build all of
 @code{gcc}, including @code{g++}, @code{protoize}, and so on.
