@@ -2407,6 +2407,7 @@ first_rtl_op (code)
     {
     case SAVE_EXPR:
       return 2;
+    case GOTO_SUBROUTINE_EXPR:
     case RTL_EXPR:
       return 0;
     case CALL_EXPR:
@@ -2600,6 +2601,7 @@ has_cleanups (exp)
   switch (TREE_CODE (exp))
     {
     case TARGET_EXPR:
+    case GOTO_SUBROUTINE_EXPR:
     case WITH_CLEANUP_EXPR:
       return 1;
 
