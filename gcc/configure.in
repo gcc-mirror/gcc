@@ -2482,11 +2482,15 @@ gcc_cv_as_dwarf2_debug_line=no
 # version to the per-target configury.
 case "$target" in
   i?86*-*-* | mips*-*-* | alpha*-*-* | powerpc*-*-* | sparc*-*-* | m68*-*-* \
-  | x86_64*-*-* | hppa*-*-* | arm*-*-* | strongarm*-*-* | xscale*-*-* | xstormy16*-*-*)
+  | x86_64*-*-* | hppa*-*-* | arm*-*-* | strongarm*-*-* | xscale*-*-* \
+  | xstormy16*-*-* | cris-*-*)
     insn="nop"
     ;;
   ia64*-*-*)
     insn="nop 0"
+    ;;
+  mmix-*-*)
+    insn="swym 0"
     ;;
   esac
 if test $in_tree_gas = yes ; then
