@@ -375,7 +375,12 @@ static void instrument_loop_bct PROTO((rtx, rtx, rtx));
 int indirect_jump_in_function = 0;
 static int indirect_jump_in_function_p PROTO((rtx));
 
-static int compute_luids PROTO ((rtx, rtx, int));
+static int compute_luids PROTO((rtx, rtx, int));
+
+static int loop_insn_first_p PROTO((rtx, rtx));
+
+static int biv_elimination_giv_has_0_offset PROTO((struct induction *,
+						   struct induction *, rtx));
 
 /* Relative gain of eliminating various kinds of operations.  */
 static int add_cost;
@@ -8078,6 +8083,59 @@ maybe_eliminate_biv (bl, loop_start, end, eliminate_p, threshold, insn_count)
   return 0;
 }
 
+/* INSN and REFERENCE are instructions in the same insn chain.
+   Return non-zero if INSN is first.
+   This is like insn_first_p, except that we use the luid information if
+   available.  */
+
+static int
+loop_insn_first_p (insn, reference)
+     rtx insn, reference;
+{
+  return ((INSN_UID (insn) < max_uid_for_loop
+	   && INSN_UID (reference) < max_uid_for_loop)
+	  ? INSN_LUID (insn) < INSN_LUID (reference)
+	  : insn_first_p (insn, reference));
+}
+
+/* We are trying to eliminate BIV in INSN using GIV.  Return non-zero if
+   the offset that we have to take into account due to auto-increment /
+   div derivation is zero.  */
+static int
+biv_elimination_giv_has_0_offset (biv, giv, insn)
+     struct induction *biv, *giv;
+     rtx insn;
+{
+  /* If the giv V had the auto-inc address optimization applied
+     to it, and INSN occurs between the giv insn and the biv
+     insn, then we'd have to adjust the value used here.
+     This is rare, so we don't bother to make this possible.  */
+  if (giv->auto_inc_opt
+      && ((loop_insn_first_p (giv->insn, insn)
+	   && loop_insn_first_p (insn, biv->insn))
+	  || (loop_insn_first_p (biv->insn, insn)
+	      && loop_insn_first_p (insn, giv->insn))))
+    return 0;
+
+  /* If the giv V was derived from another giv, and INSN does
+     not occur between the giv insn and the biv insn, then we'd
+     have to adjust the value used here.  This is rare, so we don't
+     bother to make this possible.  */
+  if (giv->derived_from
+      && ! (giv->always_executed
+	    && loop_insn_first_p (giv->insn, insn)
+	    && loop_insn_first_p (insn, biv->insn)))
+    return 0;
+  if (giv->same
+      && giv->same->derived_from
+      && ! (giv->same->always_executed
+	    && loop_insn_first_p (giv->same->insn, insn)
+	    && loop_insn_first_p (insn, biv->insn)))
+    return 0;
+
+  return 1;
+}
+
 /* If BL appears in X (part of the pattern of INSN), see if we can
    eliminate its use.  If so, return 1.  If not, return 0.
 
@@ -8143,15 +8201,7 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		&& v->mode == mode
 		&& 0)
 	      {
-		/* If the giv V had the auto-inc address optimization applied
-		   to it, and INSN occurs between the giv insn and the biv
-		   insn, then we must adjust the value used here.
-		   This is rare, so we don't bother to do so.  */
-		if (v->auto_inc_opt
-		    && ((INSN_LUID (v->insn) < INSN_LUID (insn)
-			 && INSN_LUID (insn) < INSN_LUID (bl->biv->insn))
-			|| (INSN_LUID (v->insn) > INSN_LUID (insn)
-			    && INSN_LUID (insn) > INSN_LUID (bl->biv->insn))))
+		if (! biv_elimination_giv_has_0_offset (bl->biv, v, insn))
 		  continue;
 
 		if (! eliminate_p)
@@ -8186,15 +8236,7 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		    || (GET_CODE (v->add_val) == REG
 			&& REGNO_POINTER_FLAG (REGNO (v->add_val)))))
 	      {
-		/* If the giv V had the auto-inc address optimization applied
-		   to it, and INSN occurs between the giv insn and the biv
-		   insn, then we must adjust the value used here.
-		   This is rare, so we don't bother to do so.  */
-		if (v->auto_inc_opt
-		    && ((INSN_LUID (v->insn) < INSN_LUID (insn)
-			 && INSN_LUID (insn) < INSN_LUID (bl->biv->insn))
-			|| (INSN_LUID (v->insn) > INSN_LUID (insn)
-			    && INSN_LUID (insn) > INSN_LUID (bl->biv->insn))))
+		if (! biv_elimination_giv_has_0_offset (bl->biv, v, insn))
 		  continue;
 
 		if (! eliminate_p)
@@ -8259,15 +8301,7 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		&& ! v->ignore && ! v->maybe_dead && v->always_computable
 		&& v->mode == mode)
 	      {
-		/* If the giv V had the auto-inc address optimization applied
-		   to it, and INSN occurs between the giv insn and the biv
-		   insn, then we must adjust the value used here.
-		   This is rare, so we don't bother to do so.  */
-		if (v->auto_inc_opt
-		    && ((INSN_LUID (v->insn) < INSN_LUID (insn)
-			 && INSN_LUID (insn) < INSN_LUID (bl->biv->insn))
-			|| (INSN_LUID (v->insn) > INSN_LUID (insn)
-			    && INSN_LUID (insn) > INSN_LUID (bl->biv->insn))))
+		if (! biv_elimination_giv_has_0_offset (bl->biv, v, insn))
 		  continue;
 
 		if (! eliminate_p)
@@ -8310,15 +8344,7 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 	      {
 		rtx tem;
 
-		/* If the giv V had the auto-inc address optimization applied
-		   to it, and INSN occurs between the giv insn and the biv
-		   insn, then we must adjust the value used here.
-		   This is rare, so we don't bother to do so.  */
-		if (v->auto_inc_opt
-		    && ((INSN_LUID (v->insn) < INSN_LUID (insn)
-			 && INSN_LUID (insn) < INSN_LUID (bl->biv->insn))
-			|| (INSN_LUID (v->insn) > INSN_LUID (insn)
-			    && INSN_LUID (insn) > INSN_LUID (bl->biv->insn))))
+		if (! biv_elimination_giv_has_0_offset (bl->biv, v, insn))
 		  continue;
 
 		if (! eliminate_p)
@@ -8354,15 +8380,7 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		  {
 		    rtx tem;
 
-		    /* If the giv V had the auto-inc address optimization applied
-		       to it, and INSN occurs between the giv insn and the biv
-		       insn, then we must adjust the value used here.
-		       This is rare, so we don't bother to do so.  */
-		    if (v->auto_inc_opt
-			&& ((INSN_LUID (v->insn) < INSN_LUID (insn)
-			     && INSN_LUID (insn) < INSN_LUID (bl->biv->insn))
-			    || (INSN_LUID (v->insn) > INSN_LUID (insn)
-				&& INSN_LUID (insn) > INSN_LUID (bl->biv->insn))))
+		    if (! biv_elimination_giv_has_0_offset (bl->biv, v, insn))
 		      continue;
 
 		    if (! eliminate_p)
@@ -8416,15 +8434,7 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		    && rtx_equal_p (tv->add_val, v->add_val)
 		    && tv->mode == mode)
 		  {
-		    /* If the giv V had the auto-inc address optimization applied
-		       to it, and INSN occurs between the giv insn and the biv
-		       insn, then we must adjust the value used here.
-		       This is rare, so we don't bother to do so.  */
-		    if (v->auto_inc_opt
-			&& ((INSN_LUID (v->insn) < INSN_LUID (insn)
-			     && INSN_LUID (insn) < INSN_LUID (bl->biv->insn))
-			    || (INSN_LUID (v->insn) > INSN_LUID (insn)
-				&& INSN_LUID (insn) > INSN_LUID (bl->biv->insn))))
+		    if (! biv_elimination_giv_has_0_offset (bl->biv, v, insn))
 		      continue;
 
 		    if (! eliminate_p)
