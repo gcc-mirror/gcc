@@ -1,3 +1,8 @@
+2004-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/17825
+	* gcc.c-torture/compile/20041119-1.c: New test.
+
 2004-11-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* lib/target-libpath.exp (restore_ld_library_path_env_vars):
