@@ -1,4 +1,4 @@
-/* Copyright (C) 2003  Free Software Foundation.
+/* Copyright (C) 2004  Free Software Foundation.
 
    Verify that integral FP expressions are optimized.
 
