@@ -153,8 +153,6 @@ static int consec_sets_invariant_p PARAMS ((const struct loop *,
 					    rtx, int, rtx));
 static int labels_in_range_p PARAMS ((rtx, int));
 static void count_one_set PARAMS ((struct loop_regs *, rtx, rtx, rtx *));
-
-static void count_loop_regs_set PARAMS ((const struct loop *, int *));
 static void note_addr_stored PARAMS ((rtx, rtx, void *));
 static void note_set_pseudo_multiple_uses PARAMS ((rtx, rtx, void *));
 static int loop_reg_used_before_p PARAMS ((const struct loop *, rtx, rtx));
@@ -232,8 +230,7 @@ static int last_use_this_basic_block PARAMS ((rtx, rtx));
 static void record_initial PARAMS ((rtx, rtx, void *));
 static void update_reg_last_use PARAMS ((rtx, rtx));
 static rtx next_insn_in_loop PARAMS ((const struct loop *, rtx));
-static void load_mems_and_recount_loop_regs_set PARAMS ((const struct loop*,
-							 int *));
+static void loop_regs_scan PARAMS ((const struct loop*, int, int *));
 static void load_mems PARAMS ((const struct loop *));
 static int insert_loop_mem PARAMS ((rtx *, void *));
 static int replace_loop_mem PARAMS ((rtx *, void *));
@@ -614,39 +611,10 @@ scan_loop (loop, flags)
       return;
     }
 
-  /* Count number of times each reg is set during this loop.  Set
-     regs->array[I].may_not_optimize if it is not safe to move out the
-     setting of register I.  Set regs->array[I].single_usage.  */
-
-  regs->num = max_reg_num ();
-
-  /* Allocate extra space for REGs that might be created by
-     load_mems.  We allocate a little extra slop as well, in the hopes
-     that even after the moving of movables creates some new registers
-     we won't have to reallocate these arrays.  However, we do grow
-     the arrays, if necessary, in load_mems_recount_loop_regs_set.  */
-  regs->size = regs->num + loop_info->mems_idx + 16;
-  regs->array = (struct loop_reg *) 
-    xcalloc (regs->size, sizeof (*regs->array));
-
-  count_loop_regs_set (loop, &insn_count);
-
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    {
-      regs->array[i].may_not_optimize = 1;
-      regs->array[i].set_in_loop = 1;
-    }
-
-#ifdef AVOID_CCMODE_COPIES
-  /* Don't try to move insns which set CC registers if we should not
-     create CCmode register copies.  */
-  for (i = regs->num - 1; i >= FIRST_PSEUDO_REGISTER; i--)
-    if (GET_MODE_CLASS (GET_MODE (regno_reg_rtx[i])) == MODE_CC)
-      regs->array[i].may_not_optimize = 1;
-#endif
-
-  for (i = 0; i < regs->num; i++)
-    regs->array[i].n_times_set = regs->array[i].set_in_loop;
+  /* Allocate extra space for REGs that might be created by load_mems.
+     We allocate a little extra slop as well, in the hopes that we
+     won't have to reallocate the regs array.  */
+  loop_regs_scan (loop, loop_info->mems_idx + 16, &insn_count);
 
   if (loop_dump_stream)
     {
@@ -1011,7 +979,11 @@ scan_loop (loop, flags)
 
   /* Now that we've moved some things out of the loop, we might be able to
      hoist even more memory references.  */
-  load_mems_and_recount_loop_regs_set (loop, &insn_count);
+  load_mems (loop);
+
+  /* Recalculate regs->array if load_mems has created new registers.  */
+  if (max_reg_num () > regs->num)
+    loop_regs_scan (loop, 0, &insn_count);
 
   for (update_start = loop_start;
        PREV_INSN (update_start)
@@ -3343,67 +3315,6 @@ count_one_set (regs, insn, x, last_set)
 	  last_set[regno] = insn;
 	}
     }
-}
-
-/* Increment REGS->array[I].SET_IN_LOOP at the index I of each
-   register that is modified by an insn between FROM and TO.  If the
-   value of an element of REGS->array[I].SET_IN_LOOP becomes 127 or
-   more, stop incrementing it, to avoid overflow.
-
-   Store in REGS->array[I].SINGLE_USAGE[I] the single insn in which
-   register I is used, if it is only used once.  Otherwise, it is set
-   to 0 (for no uses) or const0_rtx for more than one use.  This
-   parameter may be zero, in which case this processing is not done.
-
-   Store in *COUNT_PTR the number of actual instruction
-   in the loop.  We use this to decide what is worth moving out.  */
-
-/* last_set[n] is nonzero iff reg n has been set in the current basic block.
-   In that case, it is the insn that last set reg n.  */
-
-static void
-count_loop_regs_set (loop, count_ptr)
-     const struct loop *loop;
-     int *count_ptr;
-{
-  struct loop_regs *regs = LOOP_REGS (loop);
-  register rtx *last_set = (rtx *) xcalloc (regs->num, sizeof (rtx));
-  register rtx insn;
-  register int count = 0;
-
-  for (insn = loop->top ? loop->top : loop->start; insn != loop->end;
-       insn = NEXT_INSN (insn))
-    {
-      if (INSN_P (insn))
-	{
-	  ++count;
-
-	  /* Record registers that have exactly one use.  */
-	  find_single_use_in_loop (regs, insn, PATTERN (insn));
-
-	  /* Include uses in REG_EQUAL notes.  */
-	  if (REG_NOTES (insn))
-	    find_single_use_in_loop (regs, insn, REG_NOTES (insn));
-
-	  if (GET_CODE (PATTERN (insn)) == SET
-	      || GET_CODE (PATTERN (insn)) == CLOBBER)
-	    count_one_set (regs, insn, PATTERN (insn), last_set);
-	  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
-	    {
-	      register int i;
-	      for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
-		count_one_set (regs, insn, XVECEXP (PATTERN (insn), 0, i),
-			       last_set);
-	    }
-	}
-
-      if (GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == JUMP_INSN)
-	memset ((char *) last_set, 0, regs->num * sizeof (rtx));
-    }
-  *count_ptr = count;
-
-  /* Clean up.  */
-  free (last_set);
 }
 
 /* Given a loop that is bounded by LOOP->START and LOOP->END and that
@@ -8687,69 +8598,119 @@ insert_loop_mem (mem, data)
   return 0;
 }
 
-/* Like load_mems, but also ensures that REGS->array[I].SET_IN_LOOP,
-   REGS->array[I].MAY_NOT_OPTIMIZE, REGS->array[I].SINGLE_USAGE, and
-   INSN_COUNT have the correct values after load_mems.  */
+
+/* Allocate REGS->ARRAY or reallocate it if it is too small.
+
+   Increment REGS->ARRAY[I].SET_IN_LOOP at the index I of each
+   register that is modified by an insn between FROM and TO.  If the
+   value of an element of REGS->array[I].SET_IN_LOOP becomes 127 or
+   more, stop incrementing it, to avoid overflow.
+
+   Store in REGS->ARRAY[I].SINGLE_USAGE the single insn in which
+   register I is used, if it is only used once.  Otherwise, it is set
+   to 0 (for no uses) or const0_rtx for more than one use.  This
+   parameter may be zero, in which case this processing is not done.
+
+   Set REGS->ARRAY[I].MAY_NOT_OPTIMIZE nonzero if we should not
+   optimize register I.
+
+   Store in *COUNT_PTR the number of actual instructions
+   in the loop.  We use this to decide what is worth moving out.  */
 
 static void
-load_mems_and_recount_loop_regs_set (loop, insn_count)
+loop_regs_scan (loop, extra_size, count_ptr)
      const struct loop *loop;
-     int *insn_count;
+     int extra_size;
+     int *count_ptr;
 {
   struct loop_regs *regs = LOOP_REGS (loop);
+  int old_nregs;
+  /* last_set[n] is nonzero iff reg n has been set in the current
+   basic block.  In that case, it is the insn that last set reg n.  */
+  rtx *last_set;
+  rtx insn;
+  int count = 0;
+  int i;
 
-  load_mems (loop);
+  old_nregs = regs->num;
+  regs->num = max_reg_num ();
 
-  /* Recalculate regs->array since load_mems may have created new
-     registers.  */
-  if (max_reg_num () > regs->num)
+  /* Grow the regs array if not allocated or too small.  */
+  if (regs->num >= regs->size)
     {
-      int i;
-      int old_nregs;
+      regs->size = regs->num + extra_size;
+      
+      regs->array = (struct loop_reg *)
+	xrealloc (regs->array, regs->size * sizeof (*regs->array));
 
-      old_nregs = regs->num;
-      regs->num = max_reg_num ();
+      /* Zero the new elements.  */
+      memset (regs->array + old_nregs, 0,
+	      (regs->size - old_nregs) * sizeof (*regs->array));
+    }
 
-      if (regs->num >= regs->size)
+  /* Clear previously scanned fields but do not clear n_times_set.  */
+  for (i = 0; i < old_nregs; i++)
+    {
+      regs->array[i].set_in_loop = 0;
+      regs->array[i].may_not_optimize = 0;
+      regs->array[i].single_usage = NULL_RTX;
+    }
+
+  last_set = (rtx *) xcalloc (regs->num, sizeof (rtx));
+
+  /* Scan the loop, recording register usage.  */
+  for (insn = loop->top ? loop->top : loop->start; insn != loop->end;
+       insn = NEXT_INSN (insn))
+    {
+      if (INSN_P (insn))
 	{
-	  regs->size = regs->num;
+	  ++count;
 
-	  /* Grow the array.  */
-	  regs->array = (struct loop_reg *)
-	    xrealloc (regs->array, regs->size * sizeof (*regs->array));
+	  /* Record registers that have exactly one use.  */
+	  find_single_use_in_loop (regs, insn, PATTERN (insn));
 
-	  memset (regs->array + old_nregs, 0,
-		  (regs->size - old_nregs) * sizeof (*regs->array));
+	  /* Include uses in REG_EQUAL notes.  */
+	  if (REG_NOTES (insn))
+	    find_single_use_in_loop (regs, insn, REG_NOTES (insn));
+
+	  if (GET_CODE (PATTERN (insn)) == SET
+	      || GET_CODE (PATTERN (insn)) == CLOBBER)
+	    count_one_set (regs, insn, PATTERN (insn), last_set);
+	  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
+	    {
+	      register int i;
+	      for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
+		count_one_set (regs, insn, XVECEXP (PATTERN (insn), 0, i),
+			       last_set);
+	    }
 	}
 
-      for (i = 0; i < old_nregs; i++)
-	{
-	  regs->array[i].set_in_loop = 0;
-	  regs->array[i].may_not_optimize = 0;
-	  regs->array[i].single_usage = NULL_RTX;
-	}
+      if (GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == JUMP_INSN)
+	memset (last_set, 0, regs->num * sizeof (rtx));
+    }
 
-      count_loop_regs_set (loop, insn_count);
-
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	{
-	  regs->array[i].may_not_optimize = 1;
-	  regs->array[i].set_in_loop = 1;
-	}
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      regs->array[i].may_not_optimize = 1;
+      regs->array[i].set_in_loop = 1;
+    }
 
 #ifdef AVOID_CCMODE_COPIES
-      /* Don't try to move insns which set CC registers if we should not
-	 create CCmode register copies.  */
-      for (i = regs->num - 1; i >= FIRST_PSEUDO_REGISTER; i--)
-	if (GET_MODE_CLASS (GET_MODE (regno_reg_rtx[i])) == MODE_CC)
-	  regs->array[i].may_not_optimize = 1;
+  /* Don't try to move insns which set CC registers if we should not
+     create CCmode register copies.  */
+  for (i = regs->num - 1; i >= FIRST_PSEUDO_REGISTER; i--)
+    if (GET_MODE_CLASS (GET_MODE (regno_reg_rtx[i])) == MODE_CC)
+      regs->array[i].may_not_optimize = 1;
 #endif
+  
+  /* Set regs->array[I].n_times_set for the new registers.  */
+  for (i = old_nregs; i < regs->num; i++)
+    regs->array[i].n_times_set = regs->array[i].set_in_loop;
 
-      /* Set regs->array[I].n_times_set for the new registers.  */
-      for (i = old_nregs; i < regs->num; i++)
-	regs->array[i].n_times_set = regs->array[i].set_in_loop;
-    }
+  free (last_set);
+  *count_ptr = count;
 }
+
 
 /* Move MEMs into registers for the duration of the loop.  */
 
