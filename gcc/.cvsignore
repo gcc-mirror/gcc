@@ -4,4 +4,4 @@ genrtl.c
 c-parse.y
 c-parse.h
 c-parse.c
-tradif.c
+tradcif.c
