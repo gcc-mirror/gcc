@@ -26,7 +26,7 @@ extern void override_options (void);
 extern HOST_WIDE_INT s390_arg_frame_offset (void);
 extern void s390_load_got (int);
 extern void s390_emit_prologue (void);
-extern void s390_emit_epilogue (void);
+extern void s390_emit_epilogue (bool);
 extern void s390_function_profiler (FILE *, int);
 
 #ifdef RTX_CODE
@@ -53,7 +53,6 @@ extern int s390_alc_comparison (rtx op, enum machine_mode mode);
 extern int s390_slb_comparison (rtx op, enum machine_mode mode);
 extern int symbolic_reference_mentioned_p (rtx);
 extern int tls_symbolic_reference_mentioned_p (rtx);
-extern rtx s390_tls_get_offset (void);
 extern int legitimate_la_operand_p (rtx);
 extern int preferred_la_operand_p (rtx);
 extern int legitimate_pic_operand_p (rtx);
@@ -77,6 +76,7 @@ extern void s390_expand_movstr (rtx, rtx, rtx);
 extern void s390_expand_clrstr (rtx, rtx);
 extern void s390_expand_cmpmem (rtx, rtx, rtx, rtx);
 extern rtx s390_return_addr_rtx (int, rtx);
+extern rtx s390_emit_call (rtx, rtx, rtx, rtx);
 
 extern bool s390_output_addr_const_extra (FILE*, rtx);
 extern void print_operand_address (FILE *, rtx);

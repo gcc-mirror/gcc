@@ -1,3 +1,9 @@
+2004-04-29  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.dg/sibcall-3.c: Delete s390 from expected fail list.
+	* gcc.dg/sibcall-4.c: Likewise.
+	* gcc.dg/sibcall-6.c: Enable s390 as test platform.
+
 2004-04-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/execute/20040331-1.c: Don't use too wide a

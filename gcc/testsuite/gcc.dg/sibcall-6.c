@@ -6,7 +6,7 @@
    Copyright (C) 2002 Free Software Foundation Inc.
    Contributed by Andreas Bauer <baueran@in.tum.de>  */
 
-/* { dg-do run { target i?86-*-* x86_64-*-*} } */
+/* { dg-do run { target i?86-*-* s390*-*-* x86_64-*-*} } */
 /* { dg-options "-O2 -foptimize-sibling-calls" } */
 
 int foo (int);

@@ -78,6 +78,8 @@ static int s390_address_cost (rtx);
 static void s390_reorg (void);
 static bool s390_valid_pointer_mode (enum machine_mode);
 static tree s390_build_builtin_va_list (void);
+static bool s390_function_ok_for_sibcall (tree, tree);
+static bool s390_call_saved_register_used (tree);
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
@@ -150,6 +152,9 @@ static tree s390_build_builtin_va_list (void);
 #define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
 #undef TARGET_PROMOTE_FUNCTION_RETURN
 #define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL s390_function_ok_for_sibcall
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2610,16 +2615,29 @@ get_thread_pointer (void)
   return tp;
 }
 
-/* Construct the SYMBOL_REF for the tls_get_offset function.  */
+/* Emit a tls call insn. The call target is the SYMBOL_REF stored
+   in s390_tls_symbol which always refers to __tls_get_offset.
+   The returned offset is written to RESULT_REG and an USE rtx is
+   generated for TLS_CALL.  */
 
 static GTY(()) rtx s390_tls_symbol;
-rtx
-s390_tls_get_offset (void)
+
+static void
+s390_emit_tls_call_insn (rtx result_reg, rtx tls_call)
 {
+  rtx insn;
+  
+  if (!flag_pic)
+    abort ();
+
   if (!s390_tls_symbol)
     s390_tls_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tls_get_offset");
 
-  return s390_tls_symbol;
+  insn = s390_emit_call (s390_tls_symbol, tls_call, result_reg, 
+			 gen_rtx_REG (Pmode, RETURN_REGNUM)); 
+
+  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), result_reg);
+  CONST_OR_PURE_CALL_P (insn) = 1;
 }
 
 /* ADDR contains a thread-local SYMBOL_REF.  Generate code to compute
@@ -2640,7 +2658,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	new = gen_rtx_CONST (Pmode, tls_call);
 	new = force_const_mem (Pmode, new);
 	emit_move_insn (r2, new);
-	emit_call_insn (gen_call_value_tls (r2, tls_call));
+	s390_emit_tls_call_insn (r2, tls_call);
 	insn = get_insns ();
 	end_sequence ();
 
@@ -2663,7 +2681,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	new = gen_rtx_CONST (Pmode, tls_call);
 	new = force_const_mem (Pmode, new);
 	emit_move_insn (r2, new);
-	emit_call_insn (gen_call_value_tls (r2, tls_call));
+	s390_emit_tls_call_insn (r2, tls_call);
 	insn = get_insns ();
 	end_sequence ();
 
@@ -5668,15 +5686,8 @@ s390_emit_prologue (void)
 	 algorithms located at the branch target.
 
 	 This must use register 1.  */
-      rtx addr;
-      rtx unkn;
-      rtx link;
-
-      addr = GEN_INT (0xfe0);
-      unkn = CONST0_RTX (SImode);
-      link = gen_rtx_REG (Pmode, 1);
-
-      emit_call_insn (gen_call_exp (gen_rtx_MEM (QImode, addr), unkn, link));
+      s390_emit_call (GEN_INT (0xfe0), NULL_RTX, NULL_RTX, 
+		      gen_rtx_REG (Pmode, 1));
 
       /* Emit a blockage here so that all code
 	 lies between the profiling mechanisms.  */
@@ -5687,7 +5698,7 @@ s390_emit_prologue (void)
 /* Expand the epilogue into a bunch of separate insns.  */
 
 void
-s390_emit_epilogue (void)
+s390_emit_epilogue (bool sibcall)
 {
   rtx frame_pointer, return_reg;
   int area_bottom, area_top, offset = 0;
@@ -5703,19 +5714,12 @@ s390_emit_epilogue (void)
 
 	 This must use register 1.  */
 
-      rtx addr;
-      rtx unkn;
-      rtx link;
-
-      addr = GEN_INT (0xfe6);
-      unkn = CONST0_RTX (SImode);
-      link = gen_rtx_REG (Pmode, 1);
-
       /* Emit a blockage here so that all code
          lies between the profiling mechanisms.  */
       emit_insn (gen_blockage ());
 
-      emit_call_insn (gen_call_exp (gen_rtx_MEM (QImode, addr), unkn, link));
+      s390_emit_call (GEN_INT (0xfe6), NULL_RTX, NULL_RTX, 
+		      gen_rtx_REG (Pmode, 1));
     }
 
   /* Check whether to use frame or stack pointer for restore.  */
@@ -5847,23 +5851,26 @@ s390_emit_epilogue (void)
 	    }
 	}
 
-      /* Fetch return address from stack before load multiple,
-	 this will do good for scheduling.  */
-
-      if (cfun->machine->save_return_addr_p
-	  || (cfun->machine->first_restore_gpr < BASE_REGISTER
-	      && cfun->machine->last_save_gpr > RETURN_REGNUM))
+      if (! sibcall)
 	{
-	  int return_regnum = find_unused_clobbered_reg();
-	  if (!return_regnum)
-	    return_regnum = 4;
-	  return_reg = gen_rtx_REG (Pmode, return_regnum);
-
-	  addr = plus_constant (frame_pointer,
-				offset + RETURN_REGNUM * UNITS_PER_WORD);
-	  addr = gen_rtx_MEM (Pmode, addr);
-	  set_mem_alias_set (addr, s390_sr_alias_set);
-	  emit_move_insn (return_reg, addr);
+	  /* Fetch return address from stack before load multiple,
+	     this will do good for scheduling.  */
+	  
+	  if (cfun->machine->save_return_addr_p
+	      || (cfun->machine->first_restore_gpr < BASE_REGISTER
+		  && cfun->machine->last_save_gpr > RETURN_REGNUM))
+	    {
+	      int return_regnum = find_unused_clobbered_reg();
+	      if (!return_regnum)
+		return_regnum = 4;
+	      return_reg = gen_rtx_REG (Pmode, return_regnum);
+	      
+	      addr = plus_constant (frame_pointer,
+				    offset + RETURN_REGNUM * UNITS_PER_WORD);
+	      addr = gen_rtx_MEM (Pmode, addr);
+	      set_mem_alias_set (addr, s390_sr_alias_set);
+	      emit_move_insn (return_reg, addr);
+	    }
 	}
 
       /* ??? As references to the base register are not made
@@ -5878,13 +5885,17 @@ s390_emit_epilogue (void)
       emit_insn (insn);
     }
 
-  /* Return to caller.  */
+  if (! sibcall)
+    {
 
-  p = rtvec_alloc (2);
-
-  RTVEC_ELT (p, 0) = gen_rtx_RETURN (VOIDmode);
-  RTVEC_ELT (p, 1) = gen_rtx_USE (VOIDmode, return_reg);
-  emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, p));
+      /* Return to caller.  */
+      
+      p = rtvec_alloc (2);
+      
+      RTVEC_ELT (p, 0) = gen_rtx_RETURN (VOIDmode);
+      RTVEC_ELT (p, 1) = gen_rtx_USE (VOIDmode, return_reg);
+      emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, p));
+    }
 }
 
 
@@ -6997,6 +7008,181 @@ static struct machine_function *
 s390_init_machine_status (void)
 {
   return ggc_alloc_cleared (sizeof (struct machine_function));
+}
+
+/* Checks whether the given ARGUMENT_LIST would use a caller
+   saved register.  This is used to decide whether sibling call
+   optimization could be performed on the respective function
+   call.  */
+
+static bool
+s390_call_saved_register_used (tree argument_list)
+{
+  CUMULATIVE_ARGS cum;
+  tree parameter;
+  enum machine_mode mode;
+  tree type;
+  rtx parm_rtx;
+  int reg;
+
+  INIT_CUMULATIVE_ARGS (cum, NULL, NULL, 0, 0);
+
+  while (argument_list)
+    {
+      parameter = TREE_VALUE (argument_list);
+      argument_list = TREE_CHAIN (argument_list);
+
+      if (!parameter)
+	abort();
+
+      /* For an undeclared variable passed as parameter we will get
+	 an ERROR_MARK node here.  */
+      if (TREE_CODE (parameter) == ERROR_MARK)
+	return true;
+
+      if (! (type = TREE_TYPE (parameter)))
+	abort();
+      
+      if (! (mode = TYPE_MODE (TREE_TYPE (parameter))))
+	abort();
+
+      if (s390_function_arg_pass_by_reference (mode, type))
+ 	{
+ 	  mode = Pmode;
+ 	  type = build_pointer_type (type);
+ 	}
+      
+       parm_rtx = s390_function_arg (&cum, mode, type, 0);
+
+       s390_function_arg_advance (&cum, mode, type, 0);
+ 
+       if (parm_rtx && REG_P (parm_rtx))
+	 {
+	   for (reg = 0;
+		reg < HARD_REGNO_NREGS (REGNO (parm_rtx), GET_MODE (parm_rtx)); 
+		reg++)
+	     if (! call_used_regs[reg + REGNO (parm_rtx)])
+	       return true;
+	 }
+    }
+  return false;
+}
+
+/* Return true if the given call expression can be 
+   turned into a sibling call.  
+   DECL holds the declaration of the function to be called whereas
+   EXP is the call expression itself.  */
+   
+static bool
+s390_function_ok_for_sibcall (tree decl, tree exp)
+{
+  /* The TPF epilogue uses register 1.  */
+  if (TARGET_TPF)
+    return false;
+
+  /* The 31 bit PLT code uses register 12 (GOT pointer - caller saved) 
+     which would have to be restored before the sibcall.  */
+  if (!TARGET_64BIT && flag_pic && decl && TREE_PUBLIC (decl))
+    return false;
+
+  /* Register 6 on s390 is available as an argument register but unfortunately
+     "caller saved". This makes functions needing this register for arguments
+     not suitable for sibcalls.  */ 
+  if (TREE_OPERAND (exp, 1)
+      && s390_call_saved_register_used (TREE_OPERAND (exp, 1)))
+      return false;
+
+  return true;
+}
+
+/* This function is used by the call expanders of the machine description. 
+   It emits the call insn itself together with the necessary operations 
+   to adjust the target address and returns the emitted insn.
+   ADDR_LOCATION is the target address rtx
+   TLS_CALL the location of the thread-local symbol
+   RESULT_REG the register where the result of the call should be stored
+   RETADDR_REG the register where the return address should be stored
+               If this parameter is NULL_RTX the call is considered
+               to be a sibling call.  */
+
+rtx
+s390_emit_call (rtx addr_location, rtx tls_call, rtx result_reg, 
+		rtx retaddr_reg)
+{
+  bool plt_call = false;
+  rtx insn;
+  rtx call;
+  rtx clobber;
+  rtvec vec;
+
+  /* Direct function calls need special treatment.  */
+  if (GET_CODE (addr_location) == SYMBOL_REF)
+    {
+      /* When calling a global routine in PIC mode, we must
+         replace the symbol itself with the PLT stub.  */
+      if (flag_pic && !SYMBOL_REF_LOCAL_P (addr_location))
+        {
+	  addr_location = gen_rtx_UNSPEC (Pmode, 
+					  gen_rtvec (1, addr_location), 
+					  UNSPEC_PLT);
+	  addr_location = gen_rtx_CONST (Pmode, addr_location);
+	  plt_call = true;
+        }
+      
+      /* Unless we can use the bras(l) insn, force the
+         routine address into a register.  */
+      if (!TARGET_SMALL_EXEC && !TARGET_CPU_ZARCH)
+        {
+	  if (flag_pic)
+	    addr_location = legitimize_pic_address (addr_location, 0);
+	  else
+	    addr_location = force_reg (Pmode, addr_location);
+	}
+    } 
+
+  /* If it is already an indirect call or the code above moved the
+     SYMBOL_REF to somewhere else make sure the address can be found in 
+     register 1.  */
+  if (retaddr_reg == NULL_RTX
+      && GET_CODE (addr_location) != SYMBOL_REF
+      && !plt_call)
+    {
+      emit_move_insn (gen_rtx_REG (Pmode, SIBCALL_REGNUM), addr_location);
+      addr_location = gen_rtx_REG (Pmode, SIBCALL_REGNUM);
+    }
+  
+  addr_location = gen_rtx_MEM (QImode, addr_location);
+  call = gen_rtx_CALL (VOIDmode, addr_location, const0_rtx);
+
+  if (result_reg != NULL_RTX)
+    call = gen_rtx_SET (VOIDmode, result_reg, call);
+    
+  if (retaddr_reg != NULL_RTX)
+    {
+      clobber = gen_rtx_CLOBBER (VOIDmode, retaddr_reg);
+
+      if (tls_call != NULL_RTX)
+	vec = gen_rtvec (3, call, clobber, 
+			 gen_rtx_USE (VOIDmode, tls_call));
+      else
+	vec = gen_rtvec (2, call, clobber);
+
+      call = gen_rtx_PARALLEL (VOIDmode, vec);
+    }
+
+  insn = emit_call_insn (call);
+ 
+  /* 31-bit PLT stubs and tls calls use the GOT register implicitly.  */
+  if ((!TARGET_64BIT && plt_call) || tls_call != NULL_RTX)
+    {
+      /* s390_function_ok_for_sibcall should 
+	 have denied sibcalls in this case.  */
+      if (retaddr_reg == NULL_RTX)
+	abort ();
+      
+      use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
+    }
+  return insn;
 }
 
 #include "gt-s390.h"
