@@ -1,3 +1,11 @@
+2003-11-22  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c (d_encoding): Add top_level parameter.  Change all
+	callers.
+	(print_usage): Display new -p option.
+	(long_options): Add --no-params.
+	(main): Accept and handle -p.
+
 2003-11-21  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cp-demangle.c (has_return_type): Skip qualifiers when checking
