@@ -1,3 +1,12 @@
+2002-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/linux.h: (LIBPATH_SPEC, LIBPATH_ARCH31_SPEC,
+	LIBPATH_ARCH64_SPEC): Define.
+	(EXTRA_SPECS): Add libpath, libpath_arch31, libpath_arch64.
+	(STARTFILE_SPEC, ENDFILE_SPEC): Define; use libpath.
+	(LINK_ARCH31_SPEC): Add libpath_arch31 to search path.
+	(LINK_ARCH64_SPEC): Add libpath_arch64 to search path.
+
 2002-04-22	Joel Sherrill <joel@OARcorp.com>
 
 	* gthr-rtems.h: Correct prototypes to remove warnings.
