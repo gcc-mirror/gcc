@@ -3485,6 +3485,30 @@ fold (expr)
 	return build1 (ABS_EXPR, type, TREE_OPERAND (arg0, 0));
       return t;
 
+    case CONJ_EXPR:
+      if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
+	return arg0;
+      else if (TREE_CODE (arg0) == COMPLEX_EXPR)
+	return build (COMPLEX_EXPR, TREE_TYPE (arg0),
+		      TREE_OPERAND (arg0, 0),
+		      fold (build1 (NEGATE_EXPR,
+				    TREE_TYPE (TREE_TYPE (arg0)),
+				    TREE_OPERAND (arg0, 1))));
+      else if (TREE_CODE (arg0) == COMPLEX_CST)
+	return build_complex (TREE_OPERAND (arg0, 0),
+			      fold (build1 (NEGATE_EXPR,
+					    TREE_TYPE (TREE_TYPE (arg0)),
+					    TREE_OPERAND (arg0, 1))));
+      else if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
+	return fold (build (TREE_CODE (arg0), type,
+			    fold (build1 (CONJ_EXPR, type,
+					  TREE_OPERAND (arg0, 0))),
+			    fold (build1 (CONJ_EXPR,
+					  type, TREE_OPERAND (arg0, 1)))));
+      else if (TREE_CODE (arg0) == CONJ_EXPR)
+	return TREE_OPERAND (arg0, 0);
+      return t;
+
     case BIT_NOT_EXPR:
       if (wins)
 	{
