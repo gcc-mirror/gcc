@@ -859,6 +859,34 @@
   "umull%?\\t%Q0, %R0, %1, %2"
 [(set_attr "type" "mult")])
 
+(define_insn "smulsi3_highpart"
+  [(set (match_operand:SI 0 "s_register_operand" "=&r,&r")
+	(truncate:SI
+	 (lshiftrt:DI
+	  (mult:DI (sign_extend:DI
+		    (match_operand:SI 1 "s_register_operand" "%r,0"))
+		   (sign_extend:DI
+		    (match_operand:SI 2 "s_register_operand" "r,r")))
+	  (const_int 32))))
+   (clobber (match_scratch:SI 3 "=&r,&r"))]
+  "arm_fast_multiply"
+  "smull%?\\t%3, %0, %2, %1"
+[(set_attr "type" "mult")])
+
+(define_insn "umulsi3_highpart"
+  [(set (match_operand:SI 0 "s_register_operand" "=&r,&r")
+	(truncate:SI
+	 (lshiftrt:DI
+	  (mult:DI (zero_extend:DI
+		    (match_operand:SI 1 "s_register_operand" "%r,0"))
+		   (zero_extend:DI
+		    (match_operand:SI 2 "s_register_operand" "r,r")))
+	  (const_int 32))))
+   (clobber (match_scratch:SI 3 "=&r,&r"))]
+  "arm_fast_multiply"
+  "umull%?\\t%3, %0, %2, %1"
+[(set_attr "type" "mult")])
+
 (define_insn "mulsf3"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "s_register_operand" "f")
