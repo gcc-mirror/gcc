@@ -11,7 +11,7 @@
  * modified is included with the above copyright notice.
  */
 
-#if defined(LINUX_THREADS) || defined(GC_LINUX_THREADS)
+#if defined(GC_LINUX_THREADS)
 
 #include "private/gc_priv.h" /* For GC_compare_and_exchange, GC_memory_barrier */
 #include "private/specific.h"
@@ -105,4 +105,4 @@ void *  PREFIXED(slow_getspecific) (tsd * key, unsigned long qtid,
     return entry -> value;
 }
 
-#endif /* LINUX_THREADS */
+#endif /* GC_LINUX_THREADS */

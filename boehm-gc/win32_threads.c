@@ -1,4 +1,4 @@
-#if defined(GC_WIN32_THREADS) || defined(WIN32_THREADS)
+#if defined(GC_WIN32_THREADS)
 
 #include "private/gc_priv.h"
 
@@ -614,4 +614,4 @@ BOOL WINAPI DllMain(HINSTANCE inst, ULONG reason, LPVOID reserved)
 
 # endif /* !MSWINCE */
 
-#endif /* WIN32_THREADS */
+#endif /* GC_WIN32_THREADS */

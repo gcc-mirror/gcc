@@ -443,18 +443,21 @@ struct hblk;	/* See below.	*/
 /* clear on that point).  Standard malloc implementations are usually	*/
 /* neither interruptable nor thread-safe, and thus correspond to	*/
 /* empty definitions.							*/
+/* It probably doesn't make any sense to declare these to be nonempty	*/
+/* if the code is being optimized, since signal safety relies on some	*/
+/* ordering constraints that are typically not obeyed by optimizing	*/
+/* compilers.								*/
 # ifdef PCR
 #   define DISABLE_SIGNALS() \
 		 PCR_Th_SetSigMask(PCR_allSigsBlocked,&GC_old_sig_mask)
 #   define ENABLE_SIGNALS() \
 		PCR_Th_SetSigMask(&GC_old_sig_mask, NIL)
 # else
-#   if defined(SRC_M3) || defined(AMIGA) || defined(SOLARIS_THREADS) \
+#   if defined(THREADS) || defined(AMIGA)  \
 	|| defined(MSWIN32) || defined(MSWINCE) || defined(MACOS) \
-	|| defined(DJGPP) || defined(NO_SIGNALS) || defined(IRIX_THREADS) \
-	|| defined(LINUX_THREADS) 
+	|| defined(DJGPP) || defined(NO_SIGNALS) 
 			/* Also useful for debugging.		*/
-	/* Should probably use thr_sigsetmask for SOLARIS_THREADS. */
+	/* Should probably use thr_sigsetmask for GC_SOLARIS_THREADS. */
 #     define DISABLE_SIGNALS()
 #     define ENABLE_SIGNALS()
 #   else
@@ -479,9 +482,8 @@ struct hblk;	/* See below.	*/
  				   PCR_allSigsBlocked, \
  				   PCR_waitForever);
 # else
-#   if defined(SOLARIS_THREADS) || defined(WIN32_THREADS) \
-	|| defined(IRIX_THREADS) || defined(LINUX_THREADS) \
-	|| defined(HPUX_THREADS)
+#   if defined(GC_SOLARIS_THREADS) || defined(GC_WIN32_THREADS) \
+	|| defined(GC_PTHREADS)
       void GC_stop_world();
       void GC_start_world();
 #     define STOP_WORLD() GC_stop_world()
@@ -566,7 +568,8 @@ extern GC_warn_proc GC_current_warn_proc;
 # ifdef SMALL_CONFIG
 #   define CPP_LOG_HBLKSIZE 10
 # else
-#   if CPP_WORDSZ == 32
+#   if (CPP_WORDSZ == 32) || (defined(HPUX) && defined(HP_PA))
+      /* HPUX/PA seems to use 4K pages with the 64 bit ABI */
 #     define CPP_LOG_HBLKSIZE 12
 #   else
 #     define CPP_LOG_HBLKSIZE 13
@@ -1903,8 +1906,7 @@ void GC_err_puts GC_PROTO((GC_CONST char *s));
 		/* some other reason.					*/
 # endif /* PARALLEL_MARK */
 
-# if defined(LINUX_THREADS) || defined(IRIX_THREADS) \
-     || defined(HPUX_THREADS) || defined(OSF1_THREADS)
+# if defined(GC_PTHREADS) && !defined(GC_SOLARIS_THREADS)
   /* We define the thread suspension signal here, so that we can refer	*/
   /* to it in the dirty bit implementation, if necessary.  Ideally we	*/
   /* would allocate a (real-time ?) signal using the standard mechanism.*/
@@ -1912,16 +1914,16 @@ void GC_err_puts GC_PROTO((GC_CONST char *s));
   /* in Linux glibc, but it's not exported.)  Thus we continue to use	*/
   /* the same hard-coded signals we've always used.			*/
 #  if !defined(SIG_SUSPEND)
-#   if defined(LINUX_THREADS)
+#   if defined(GC_LINUX_THREADS)
 #    if defined(SPARC) && !defined(SIGPWR)
        /* SPARC/Linux doesn't properly define SIGPWR in <signal.h>.
         * It is aliased to SIGLOST in asm/signal.h, though.		*/
 #      define SIG_SUSPEND SIGLOST
 #    else
-       /* Linuxthreads uses SIGUSR1 and SIGUSR2.			*/
+       /* Linuxthreads itself uses SIGUSR1 and SIGUSR2.			*/
 #      define SIG_SUSPEND SIGPWR
 #    endif
-#   else  /* !LINUX_THREADS */
+#   else  /* !GC_LINUX_THREADS */
 #    define SIG_SUSPEND _SIGRTMIN + 6
 #   endif
 #  endif /* !SIG_SUSPEND */

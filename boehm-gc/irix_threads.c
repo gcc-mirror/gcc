@@ -21,11 +21,11 @@
  * HP/UX 11.
  *
  * Note that there is a lot of code duplication between linux_threads.c
- * and hpux_irix_threads.c; any changes made here may need to be reflected
+ * and irix_threads.c; any changes made here may need to be reflected
  * there too.
  */
 
-# if defined(GC_IRIX_THREADS) || defined(IRIX_THREADS)
+# if defined(GC_IRIX_THREADS)
 
 # include "private/gc_priv.h"
 # include <pthread.h>
@@ -725,5 +725,5 @@ yield:
   int GC_no_Irix_threads;
 #endif
 
-# endif /* IRIX_THREADS */
+# endif /* GC_IRIX_THREADS */
 

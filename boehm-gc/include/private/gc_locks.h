@@ -76,7 +76,7 @@
 #    define LOCK() RT0u__inCritical++
 #    define UNLOCK() RT0u__inCritical--
 #  endif
-#  ifdef SOLARIS_THREADS
+#  ifdef GC_SOLARIS_THREADS
 #    include <thread.h>
 #    include <signal.h>
      extern mutex_t GC_allocate_ml;
@@ -261,8 +261,8 @@
 #    define USE_PTHREAD_LOCKS
 #  endif
 
-#  if defined(LINUX_THREADS) || defined(OSF1_THREADS) \
-      || defined(HPUX_THREADS)
+#  if defined(GC_PTHREADS) && !defined(GC_SOLARIS_THREADS) \
+      && !defined(GC_IRIX_THREADS)
 #    define NO_THREAD (pthread_t)(-1)
 #    include <pthread.h>
 #    if defined(PARALLEL_MARK) 
@@ -412,8 +412,8 @@
 #   ifdef GC_ASSERTIONS
       extern pthread_t GC_mark_lock_holder;
 #   endif
-#  endif /* LINUX_THREADS || OSF1_THREADS  || HPUX_THREADS */
-#  if defined(IRIX_THREADS)
+#  endif /* GC_PTHREADS with linux_threads.c implementation */
+#  if defined(GC_IRIX_THREADS)
 #    include <pthread.h>
      /* This probably should never be included, but I can't test	*/
      /* on Irix anymore.						*/
@@ -439,8 +439,8 @@
 		    GC_collecting = 1; \
 		}
 #    define EXIT_GC() GC_collecting = 0;
-#  endif /* IRIX_THREADS */
-#  ifdef WIN32_THREADS
+#  endif /* GC_IRIX_THREADS */
+#  ifdef GC_WIN32_THREADS
 #    include <windows.h>
      GC_API CRITICAL_SECTION GC_allocate_ml;
 #    define LOCK() EnterCriticalSection(&GC_allocate_ml);

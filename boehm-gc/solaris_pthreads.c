@@ -17,7 +17,7 @@
  */
 /* Boehm, September 14, 1994 4:44 pm PDT */
 
-# if defined(GC_SOLARIS_PTHREADS) || defined(_SOLARIS_PTHREADS)
+# if defined(GC_SOLARIS_PTHREADS)
 # include "private/gc_priv.h"
 # include <pthread.h>
 # include <thread.h>
@@ -175,5 +175,5 @@ GC_pthread_create(pthread_t *new_thread,
   int GC_no_sunOS_pthreads;
 #endif
 
-# endif /* SOLARIS_THREADS */
+# endif /* GC_SOLARIS_PTHREADS */
 

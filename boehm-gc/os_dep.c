@@ -71,10 +71,6 @@
 #   define NEED_FIND_LIMIT
 # endif
 
-# if defined(IRIX_THREADS) || defined(HPUX_THREADS)
-#   define NEED_FIND_LIMIT
-# endif
-
 # if (defined(SUNOS4) && defined(DYNAMIC_LOADING)) && !defined(PCR)
 #   define NEED_FIND_LIMIT
 # endif
@@ -219,7 +215,7 @@ static void *tiny_sbrk(ptrdiff_t increment)
 #define sbrk tiny_sbrk
 # endif /* ECOS */
 
-#if defined(NETBSD) && defined(__ELF__)
+#if (defined(NETBSD) || defined(OPENBSD)) && defined(__ELF__)
   ptr_t GC_data_start;
 
   void GC_init_netbsd_elf()
@@ -562,7 +558,7 @@ ptr_t GC_get_stack_base()
           /* signal mask.                                               */
 
 	  (void) sigemptyset(&act.sa_mask);
-#	  ifdef IRIX_THREADS
+#	  ifdef GC_IRIX_THREADS
 		/* Older versions have a bug related to retrieving and	*/
 		/* and setting a handler at the same time.		*/
 	        (void) sigaction(SIGSEGV, 0, &old_segv_act);
@@ -576,7 +572,7 @@ ptr_t GC_get_stack_base()
 		    /* don't have to worry in the threads case.		*/
 		    (void) sigaction(SIGBUS, &act, &old_bus_act);
 #		endif
-#	  endif	/* IRIX_THREADS */
+#	  endif	/* GC_IRIX_THREADS */
 #	else
     	  old_segv_handler = signal(SIGSEGV, h);
 #	  ifdef SIGBUS
@@ -680,7 +676,12 @@ ptr_t GC_get_stack_base()
 
     ptr_t GC_get_register_stack_base(void)
     {
-      if (0 != &__libc_ia64_register_backing_store_base) {
+      if (0 != &__libc_ia64_register_backing_store_base
+	  && 0 != __libc_ia64_register_backing_store_base) {
+	/* Glibc 2.2.4 has a bug such that for dynamically linked	*/
+	/* executables __libc_ia64_register_backing_store_base is 	*/
+	/* defined but ininitialized during constructor calls.  	*/
+	/* Hence we check for both nonzero address and value.		*/
 	return __libc_ia64_register_backing_store_base;
       } else {
 	word result = (word)GC_stackbottom - BACKING_STORE_DISPLACEMENT;
@@ -1090,7 +1091,7 @@ void GC_register_data_segments()
 {
 #   if !defined(PCR) && !defined(SRC_M3) && !defined(NEXT) && !defined(MACOS) \
        && !defined(MACOSX)
-#     if defined(REDIRECT_MALLOC) && defined(SOLARIS_THREADS)
+#     if defined(REDIRECT_MALLOC) && defined(GC_SOLARIS_THREADS)
 	/* As of Solaris 2.3, the Solaris threads implementation	*/
 	/* allocates the data structure for the initial thread with	*/
 	/* sbrk at process startup.  It needs to be scanned, so that	*/
@@ -1651,9 +1652,8 @@ void GC_default_push_other_roots GC_PROTO((void))
 
 # endif /* SRC_M3 */
 
-# if defined(SOLARIS_THREADS) || defined(WIN32_THREADS) \
-     || defined(IRIX_THREADS) || defined(LINUX_THREADS) \
-     || defined(HPUX_THREADS)
+# if defined(GC_SOLARIS_THREADS) || defined(GC_PTHREADS) || \
+     defined(GC_WIN32_THREADS)
 
 extern void GC_push_all_stacks();
 
@@ -1662,11 +1662,11 @@ void GC_default_push_other_roots GC_PROTO((void))
     GC_push_all_stacks();
 }
 
-# endif /* SOLARIS_THREADS || ... */
+# endif /* GC_SOLARIS_THREADS || GC_PTHREADS */
 
 void (*GC_push_other_roots) GC_PROTO((void)) = GC_default_push_other_roots;
 
-#endif
+#endif /* THREADS */
 
 /*
  * Routines for accessing dirty  bits on virtual pages.
@@ -2410,7 +2410,7 @@ void GC_dirty_init()
 #   if defined(SUNOS5SIGS) || defined(IRIX5) || defined(LINUX) \
        || defined(OSF1) || defined(HURD)
       /* SUNOS5SIGS includes HPUX */
-#     if defined(IRIX_THREADS)
+#     if defined(GC_IRIX_THREADS)
       	sigaction(SIGSEGV, 0, &oldact);
       	sigaction(SIGSEGV, &act, 0);
 #     else
@@ -2548,7 +2548,7 @@ word len;
     	      ((ptr_t)end_block - (ptr_t)start_block) + HBLKSIZE);
 }
 
-#if !defined(MSWIN32) && !defined(MSWINCE) && !defined(LINUX_THREADS) \
+#if !defined(MSWIN32) && !defined(MSWINCE) && !defined(GC_LINUX_THREADS) \
     && !defined(GC_USE_LD_WRAP)
 /* Replacement for UNIX system call.	 */
 /* Other calls that write to the heap	 */
@@ -2572,7 +2572,7 @@ word len;
     
     GC_begin_syscall();
     GC_unprotect_range(buf, (word)nbyte);
-#   if defined(IRIX5) || defined(LINUX_THREADS)
+#   if defined(IRIX5) || defined(GC_LINUX_THREADS)
 	/* Indirect system call may not always be easily available.	*/
 	/* We could call _read, but that would interfere with the	*/
 	/* libpthread interception of read.				*/
@@ -2598,7 +2598,7 @@ word len;
     GC_end_syscall();
     return(result);
 }
-#endif /* !MSWIN32 && !MSWINCE && !LINUX_THREADS */
+#endif /* !MSWIN32 && !MSWINCE && !GC_LINUX_THREADS */
 
 #ifdef GC_USE_LD_WRAP
     /* We use the GNU ld call wrapping facility.			*/
@@ -2671,7 +2671,7 @@ word n;
 word GC_proc_buf_size = INITIAL_BUF_SZ;
 char *GC_proc_buf;
 
-#ifdef SOLARIS_THREADS
+#ifdef GC_SOLARIS_THREADS
 /* We don't have exact sp values for threads.  So we count on	*/
 /* occasionally declaring stack pages to be fresh.  Thus we 	*/
 /* need a real implementation of GC_is_fresh.  We can't clear	*/
@@ -2726,7 +2726,7 @@ void GC_dirty_init()
     	ABORT("/proc ioctl failed");
     }
     GC_proc_buf = GC_scratch_alloc(GC_proc_buf_size);
-#   ifdef SOLARIS_THREADS
+#   ifdef GC_SOLARIS_THREADS
 	GC_fresh_pages = (struct hblk **)
 	  GC_scratch_alloc(MAX_FRESH_PAGES * sizeof (struct hblk *));
 	if (GC_fresh_pages == 0) {
@@ -2744,7 +2744,7 @@ struct hblk *h;
 {
 }
 
-#ifdef SOLARIS_THREADS
+#ifdef GC_SOLARIS_THREADS
 #   define READ(fd,buf,nbytes) syscall(SYS_read, fd, buf, nbytes)
 #else
 #   define READ(fd,buf,nbytes) read(fd, buf, nbytes)
@@ -2783,7 +2783,7 @@ int dummy;
                 /* Punt:	*/
         	memset(GC_grungy_pages, 0xff, sizeof (page_hash_table));
 		memset(GC_written_pages, 0xff, sizeof(page_hash_table));
-#		ifdef SOLARIS_THREADS
+#		ifdef GC_SOLARIS_THREADS
 		    BZERO(GC_fresh_pages,
 		    	  MAX_FRESH_PAGES * sizeof (struct hblk *)); 
 #		endif
@@ -2813,7 +2813,7 @@ int dummy;
 	                register word index = PHT_HASH(h);
 	                
 	                set_pht_entry_from_index(GC_grungy_pages, index);
-#			ifdef SOLARIS_THREADS
+#			ifdef GC_SOLARIS_THREADS
 			  {
 			    register int slot = FRESH_PAGE_SLOT(h);
 			    
@@ -2831,7 +2831,7 @@ int dummy;
 	}
     /* Update GC_written_pages. */
         GC_or_pages(GC_written_pages, GC_grungy_pages);
-#   ifdef SOLARIS_THREADS
+#   ifdef GC_SOLARIS_THREADS
       /* Make sure that old stacks are considered completely clean	*/
       /* unless written again.						*/
 	GC_old_stacks_are_fresh();
@@ -2847,7 +2847,7 @@ struct hblk *h;
     register GC_bool result;
     
     result = get_pht_entry_from_index(GC_grungy_pages, index);
-#   ifdef SOLARIS_THREADS
+#   ifdef GC_SOLARIS_THREADS
 	if (result && PAGE_IS_FRESH(h)) result = FALSE;
 	/* This happens only if page was declared fresh since	*/
 	/* the read_dirty call, e.g. because it's in an unused  */
@@ -2865,7 +2865,7 @@ struct hblk *h;
     register GC_bool result;
     
     result = get_pht_entry_from_index(GC_written_pages, index);
-#   ifdef SOLARIS_THREADS
+#   ifdef GC_SOLARIS_THREADS
 	if (result && PAGE_IS_FRESH(h)) result = FALSE;
 #   endif
     return(result);
@@ -2879,7 +2879,7 @@ word n;
 
     register word index;
     
-#   ifdef SOLARIS_THREADS
+#   ifdef GC_SOLARIS_THREADS
       register word i;
       
       if (GC_fresh_pages != 0) {

@@ -50,13 +50,14 @@
 
 /* ANSI C requires that a compilation unit contains something */
 
-# if defined(GC_LINUX_THREADS) || defined(LINUX_THREADS) \
-     || defined(GC_HPUX_THREADS) || defined(HPUX_THREADS) \
-     || defined(GC_OSF1_THREADS) || defined(OSF1_THREADS) \
+# include "gc.h"
+
+# if defined(GC_PTHREADS) && !defined(GC_SOLARIS_THREADS) \
+     && !defined(GC_IRIX_THREADS)
 
 # include "private/gc_priv.h"
 
-# if defined(HPUX_THREADS) && !defined(USE_PTHREAD_SPECIFIC) \
+# if defined(GC_HPUX_THREADS) && !defined(USE_PTHREAD_SPECIFIC) \
      && !defined(USE_HPUX_TLS)
 #   define USE_HPUX_TLS
 # endif
@@ -449,7 +450,7 @@ GC_PTR GC_local_gcj_malloc(size_t bytes,
  */
 
 #ifndef SIG_THR_RESTART
-#  if defined(HPUX_THREADS) || defined(GC_OSF1_THREADS)
+#  if defined(GC_HPUX_THREADS) || defined(GC_OSF1_THREADS)
 #   define SIG_THR_RESTART _SIGRTMIN + 5
 #  else
 #   define SIG_THR_RESTART SIGXCPU
@@ -458,16 +459,19 @@ GC_PTR GC_local_gcj_malloc(size_t bytes,
 
 sem_t GC_suspend_ack_sem;
 
-#if !defined(HPUX_THREADS) && !defined(GC_OSF1_THREADS)
+#if 0
 /*
 To make sure that we're using LinuxThreads and not some other thread
 package, we generate a dummy reference to `pthread_kill_other_threads_np'
 (was `__pthread_initial_thread_bos' but that disappeared),
 which is a symbol defined in LinuxThreads, but (hopefully) not in other
 thread packages.
+
+We no longer do this, since this code is now portable enough that it might
+actually work for something else.
 */
 void (*dummy_var_to_force_linux_threads)() = pthread_kill_other_threads_np;
-#endif /* !HPUX_THREADS */
+#endif /* 0 */
 
 #if defined(SPARC) || defined(IA64)
   extern word GC_save_regs_in_stack();
@@ -530,6 +534,24 @@ static void start_mark_threads()
 	
     if (0 != pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED))
 	ABORT("pthread_attr_setdetachstate failed");
+
+#   ifdef HPUX
+      /* Default stack size is usually too small: fix it. */
+      /* Otherwise marker threads or GC may run out of	  */
+      /* space.						  */
+#     define MIN_STACK_SIZE (8*HBLKSIZE*sizeof(word))
+      {
+	size_t old_size;
+	int code;
+
+        if (pthread_attr_getstacksize(&attr, &old_size) != 0)
+	  ABORT("pthread_attr_getstacksize failed\n");
+	if (old_size < MIN_STACK_SIZE) {
+	  if (pthread_attr_setstacksize(&attr, MIN_STACK_SIZE) != 0)
+	    ABORT("pthread_attr_getstacksize failed\n");
+	}
+      }
+#   endif /* HPUX */
 #   ifdef CONDPRINT
       if (GC_print_stats) {
 	GC_printf1("Starting %ld marker threads\n", GC_markers - 1);
@@ -970,7 +992,7 @@ int GC_segment_is_thread_stack(ptr_t lo, ptr_t hi)
 }
 #endif /* USE_PROC_FOR_LIBRARIES */
 
-#ifdef LINUX_THREADS
+#ifdef GC_LINUX_THREADS
 /* Return the number of processors, or i<= 0 if it can't be determined.	*/
 int GC_get_nprocs()
 {
@@ -1006,7 +1028,7 @@ int GC_get_nprocs()
     }
     return result;
 }
-#endif /* LINUX_THREADS */
+#endif /* GC_LINUX_THREADS */
 
 /* We hold the allocation lock.	*/
 void GC_thr_init()
@@ -1064,13 +1086,13 @@ void GC_thr_init()
 	if (nprocs_string != NULL) GC_nprocs = atoi(nprocs_string);
       }
       if (GC_nprocs <= 0) {
-#       if defined(HPUX_THREADS)
+#       if defined(GC_HPUX_THREADS)
 	  GC_nprocs = pthread_num_processors_np();
 #       endif
-#       if defined(OSF1_THREADS)
+#       if defined(GC_OSF1_THREADS) || defined(GC_FREEBSD_THREADS)
           GC_nprocs = 1;
 #       endif
-#	ifdef LINUX_THREADS
+#	if defined(GC_LINUX_THREADS)
           GC_nprocs = GC_get_nprocs();
 #	endif
       }
@@ -1585,7 +1607,7 @@ void GC_lock()
   pthread_t GC_mark_lock_holder = NO_THREAD;
 #endif
 
-#ifdef IA64
+#if 0
   /* Ugly workaround for a linux threads bug in the final versions      */
   /* of glibc2.1.  Pthread_mutex_trylock sets the mutex owner           */
   /* field even when it fails to acquire the mutex.  This causes        */
@@ -1692,5 +1714,5 @@ void GC_notify_all_marker()
 
 #endif /* PARALLEL_MARK */
 
-# endif /* LINUX_THREADS */
+# endif /* GC_LINUX_THREADS and friends */
 

@@ -55,7 +55,7 @@ AC_CANONICAL_SYSTEM
 mkinstalldirs="`cd $ac_aux_dir && pwd`/mkinstalldirs"
 AC_SUBST(mkinstalldirs)
 
-AM_INIT_AUTOMAKE(gc, 6.0, no-define)
+AM_INIT_AUTOMAKE(gc, 6.1a1, no-define)
 
 # FIXME: We temporarily define our own version of AC_PROG_CC.  This is
 # copied from autoconf 2.12, but does not call AC_PROG_CC_WORKS.  We

@@ -24,8 +24,7 @@
 
 #include "private/gc_priv.h"
 
-# if defined(LINUX_THREADS) || defined(SOLARIS_THREADS) \
-     || defined(HPUX_THREADS) || defined(IRIX_THREADS)
+# if defined(GC_PTHREADS) || defined(GC_SOLARIS_THREADS)
 
 # if defined(dlopen) && !defined(GC_USE_LD_WRAP)
     /* To support various threads pkgs, gc.h interposes on dlopen by     */
@@ -90,7 +89,7 @@
 #   endif
     return(result);
 }
-# endif  /* LINUX_THREADS || SOLARIS_THREADS || ... */
+# endif  /* GC_PTHREADS || GC_SOLARIS_THREADS ... */
 
 
 

@@ -1,3 +1,8 @@
+2001-10-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* Makefile.am, acinclude.m4, configure.in: Imported GC 6.1 Alpha 1 and
+	merged local changes.
+
 2001-09-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* solaris_threads.c (MAX_ORIG_STACK_SIZE) [I386]: Provide special

@@ -26,15 +26,18 @@
  * None of this is safe with dlclose and incremental collection.
  * But then not much of anything is safe in the presence of dlclose.
  */
+#if defined(__linux__) && !defined(_GNU_SOURCE)
+    /* Can't test LINUX, since this must be define before other includes */
+#   define _GNU_SOURCE
+#endif
 #if !defined(MACOS) && !defined(_WIN32_WCE)
 #  include <sys/types.h>
 #endif
 #include "private/gc_priv.h"
 
-/* BTL: avoid circular redefinition of dlopen if SOLARIS_THREADS defined */
-# if (defined(LINUX_THREADS) || defined(SOLARIS_THREADS) \
-      || defined(HPUX_THREADS) || defined(IRIX_THREADS)) && defined(dlopen) \
-     && !defined(GC_USE_LD_WRAP)
+/* BTL: avoid circular redefinition of dlopen if GC_SOLARIS_THREADS defined */
+# if (defined(GC_PTHREADS) || defined(GC_SOLARIS_THREADS)) \
+      && defined(dlopen) && !defined(GC_USE_LD_WRAP)
     /* To support threads in Solaris, gc.h interposes on dlopen by       */
     /* defining "dlopen" to be "GC_dlopen", which is implemented below.  */
     /* However, both GC_FirstDLOpenedLinkMap() and GC_dlopen() use the   */
@@ -53,6 +56,7 @@
     !(defined(ALPHA) && defined(OSF1)) && \
     !defined(HPUX) && !(defined(LINUX) && defined(__ELF__)) && \
     !defined(RS6000) && !defined(SCO_ELF) && \
+    !(defined(FREEBSD) && defined(__ELF__)) && \
     !(defined(NETBSD) && defined(__ELF__)) && !defined(HURD)
  --> We only know how to find data segments of dynamic libraries for the
  --> above.  Additional SVR4 variants might not be too
@@ -124,7 +128,7 @@ GC_FirstDLOpenedLinkMap()
 
 #endif /* SUNOS5DL ... */
 
-/* BTL: added to fix circular dlopen definition if SOLARIS_THREADS defined */
+/* BTL: added to fix circular dlopen definition if GC_SOLARIS_THREADS defined */
 # if defined(GC_must_restore_redefined_dlopen)
 #   define dlopen GC_dlopen
 # endif
@@ -171,7 +175,7 @@ static ptr_t GC_first_common()
 
 # if defined(SUNOS4) || defined(SUNOS5DL)
 /* Add dynamic library data sections to the root set.		*/
-# if !defined(PCR) && !defined(SOLARIS_THREADS) && defined(THREADS)
+# if !defined(PCR) && !defined(GC_SOLARIS_THREADS) && defined(THREADS)
 #   ifndef SRC_M3
 	--> fix mutual exclusion with dlopen
 #   endif  /* We assume M3 programs don't call dlopen for now */
@@ -243,6 +247,7 @@ void GC_register_dynamic_libraries()
 # endif /* SUNOS */
 
 #if defined(LINUX) && defined(__ELF__) || defined(SCO_ELF) || \
+    (defined(FREEBSD) && defined(__ELF__)) || \
     (defined(NETBSD) && defined(__ELF__)) || defined(HURD)
 
 
@@ -417,12 +422,90 @@ static char *parse_map_entry(char *buf_ptr, word *start, word *end,
     return buf_ptr;
 }
 
-#else /* !USE_PROC_FOR_LIBRARIES */
+#endif /* USE_PROC_FOR_LIBRARIES */
+
+#if !defined(USE_PROC_FOR_LIBRARIES)
+/* The following is the preferred way to walk dynamic libraries	*/
+/* For glibc 2.2.4+.  Unfortunately, it doesn't work for older	*/
+/* versions.  Thanks to Jakub Jelinek for most of the code.	*/
+
+#include <stddef.h>
+#include <elf.h>
+#include <link.h>
+
+# if defined(LINUX) /* Are others OK here, too? */ \
+     && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2) \
+         || (__GLIBC__ == 2 && __GLIBC_MINOR__ == 2 && defined(DT_CONFIG))) 
+
+/* We have the header files for a glibc that includes dl_iterate_phdr.	*/
+/* It may still not be available in the library on the target system.   */
+/* Thus we also treat it as a weak symbol.				*/
+#define HAVE_DL_ITERATE_PHDR
+
+static int GC_register_dynlib_callback(info, size, ptr)
+     struct dl_phdr_info * info;
+     size_t size;
+     void * ptr;
+{
+  const ElfW(Phdr) * p;
+  char * start;
+  register int i;
+
+  /* Make sure struct dl_phdr_info is at least as big as we need.  */
+  if (size < offsetof (struct dl_phdr_info, dlpi_phnum)
+      + sizeof (info->dlpi_phnum))
+    return -1;
+
+  /* Skip the first object - it is the main program.  */
+  if (*(int *)ptr == 0)
+    {
+      *(int *)ptr = 1;
+      return 0;
+    }
+
+  p = info->dlpi_phdr;
+  for( i = 0; i < (int)(info->dlpi_phnum); ((i++),(p++)) ) {
+    switch( p->p_type ) {
+      case PT_LOAD:
+	{
+	  if( !(p->p_flags & PF_W) ) break;
+	  start = ((char *)(p->p_vaddr)) + info->dlpi_addr;
+	  GC_add_roots_inner(start, start + p->p_memsz, TRUE);
+	}
+      break;
+      default:
+	break;
+    }
+  }
+
+  return 0;
+}     
+
+/* Return TRUE if we succeed, FALSE if dl_iterate_phdr wasn't there. */
+
+#pragma weak dl_iterate_phdr
+
+GC_bool GC_register_dynamic_libraries_dl_iterate_phdr()
+{
+  int tmp = 0;
+
+  if (dl_iterate_phdr) {
+    dl_iterate_phdr(GC_register_dynlib_callback, &tmp);
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
+# else /* !LINUX || version(glibc) < 2.2.4 */
 
 /* Dynamic loading code for Linux running ELF. Somewhat tested on
  * Linux/x86, untested but hopefully should work on Linux/Alpha. 
  * This code was derived from the Solaris/ELF support. Thanks to
  * whatever kind soul wrote that.  - Patrick Bridges */
+
+/* This doesn't necessarily work in all cases, e.g. with preloaded
+ * dynamic libraries.						*/
 
 #if defined(NETBSD)
 #  include <sys/exec_elf.h>
@@ -430,6 +513,8 @@ static char *parse_map_entry(char *buf_ptr, word *start, word *end,
 #  include <elf.h>
 #endif
 #include <link.h>
+
+# endif
 
 /* Newer versions of Linux/Alpha and Linux/x86 define this macro.  We
  * define it for those older versions that don't.  */
@@ -472,9 +557,15 @@ GC_FirstDLOpenedLinkMap()
 
 void GC_register_dynamic_libraries()
 {
-  struct link_map *lm = GC_FirstDLOpenedLinkMap();
+  struct link_map *lm;
   
 
+# ifdef HAVE_DL_ITERATE_PHDR
+    if (GC_register_dynamic_libraries_dl_iterate_phdr()) {
+	return;
+    }
+# endif
+  lm = GC_FirstDLOpenedLinkMap();
   for (lm = GC_FirstDLOpenedLinkMap();
        lm != (struct link_map *) 0;  lm = lm->l_next)
     {
@@ -648,7 +739,7 @@ void GC_register_dynamic_libraries()
   
   extern GC_bool GC_is_heap_base (ptr_t p);
 
-# ifdef WIN32_THREADS
+# ifdef GC_WIN32_THREADS
     extern void GC_get_next_stack(char *start, char **lo, char **hi);
     void GC_cond_add_roots(char *base, char * limit)
     {
@@ -863,7 +954,7 @@ void GC_register_dynamic_libraries()
 
       /* Check if this is the end of the list or if some error occured */
         if (status != 0) {
-#	 ifdef HPUX_THREADS
+#	 ifdef GC_HPUX_THREADS
 	   /* I've seen errno values of 0.  The man page is not clear	*/
 	   /* as to whether errno should get set on a -1 return.	*/
 	   break;
