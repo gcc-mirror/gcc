@@ -1,3 +1,11 @@
+2005-01-09  Manfred Hollstein  <mh@suse.com>
+
+	* gcc.dg/pr18241-1.c: Fix dg-do parameter.
+	* gcc.dg/pr18241-2.c: Likewise.
+	* gcc.dg/pr18241-3.c: Likewise.
+	* gcc.dg/pr18241-4.c: Likewise.
+	* gcc.dg/pr18241-5.c: Likewise.
+
 2005-01-08  Richard Henderson  <rth@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_no_bitwise):
