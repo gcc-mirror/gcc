@@ -49,6 +49,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #else
 #include <varargs.h>
 #endif
+#include <stdio.h>
+#include <ctype.h>
+
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -62,10 +65,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "real.h"
 #include "hard-reg-set.h"
 #include "defaults.h"
-
-#include <stdio.h>
-#include <ctype.h>
-
 #include "output.h"
 
 /* Get N_SLINE and N_SOL from stab.h if we can expect the file to exist.  */
@@ -111,36 +110,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C) ((C) == ';')
 #endif
 
-rtx peephole ();
-void output_asm_insn ();
-rtx alter_subreg ();
-static rtx walk_alter_subreg ();
-static int alter_cond ();
-void output_asm_label ();
-static void output_operand ();
-void output_address ();
-void output_addr_const ();
-static void output_source_line ();
-rtx final_scan_insn ();
-void profile_function ();
-static void profile_after_prologue ();
-
-#ifdef HAVE_ATTR_length
-static int asm_insn_count ();
-#endif
-
 /* Nonzero means this function is a leaf function, with no function calls. 
    This variable exists to be examined in FUNCTION_PROLOGUE
    and FUNCTION_EPILOGUE.  Always zero, unless set by some action.  */
 int leaf_function;
-
-int leaf_function_p ();
-
-#ifdef LEAF_REGISTERS
-int only_leaf_regs_used ();
-static void leaf_renumber_regs ();
-void leaf_renumber_regs_insn ();
-#endif
 
 /* Last insn processed by final_scan_insn.  */
 static rtx debug_insn = 0;
@@ -283,13 +256,22 @@ struct bb_str {
   int length;			/* string length */
 };
 
+extern rtx peephole		PROTO((rtx));
+
 static struct bb_str *sbb_head	= 0;		/* Head of string list.  */
 static struct bb_str **sbb_tail	= &sbb_head;	/* Ptr to store next bb str */
 static int sbb_label_num	= 0;		/* Last label used */
 
-static int add_bb_string PROTO((char *, int));
-static void add_bb PROTO((FILE *));
-
+static int asm_insn_count	PROTO((rtx));
+static void profile_function	PROTO((FILE *));
+static void profile_after_prologue PROTO((FILE *));
+static void add_bb		PROTO((FILE *));
+static int add_bb_string	PROTO((char *, int));
+static void output_source_line	PROTO((FILE *, rtx));
+static rtx walk_alter_subreg	PROTO((rtx));
+static int alter_cond		PROTO((rtx));
+static void output_operand	PROTO((rtx, int));
+static void leaf_renumber_regs	PROTO((rtx));
 
 /* Initialize data in final at the beginning of a compilation.  */
 
@@ -517,7 +499,7 @@ app_enable ()
     }
 }
 
-/* Enable APP processing of subsequent output.
+/* Disable APP processing of subsequent output.
    Called from varasm.c before most kinds of output.  */
 
 void
@@ -557,7 +539,7 @@ int *insn_addresses;
 /* Address of insn being processed.  Used by `insn_current_length'.  */
 int insn_current_address;
 
-/* Indicate the branch shortening hasn't yet been done.  */
+/* Indicate that branch shortening hasn't yet been done.  */
 
 void
 init_insn_lengths ()
@@ -961,7 +943,7 @@ profile_after_prologue (file)
 #endif /* not PROFILE_BEFORE_PROLOGUE */
 }
 
-void
+static void
 profile_function (file)
      FILE *file;
 {
