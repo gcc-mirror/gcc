@@ -549,13 +549,12 @@ int warn_missing_braces;
 
 int warn_sign_compare;
 
-/* Nonzero means `$' can be in an identifier.
-   See cccp.c for reasons why this breaks some obscure ANSI C programs.  */
+/* Nonzero means `$' can be in an identifier.  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 #define DOLLARS_IN_IDENTIFIERS 1
 #endif
-int dollars_in_ident = DOLLARS_IN_IDENTIFIERS > 1;
+int dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
 
 /* Decode the string P as a language-specific option for C.
    Return 1 if it is recognized (and handle it);
@@ -569,9 +568,6 @@ c_decode_option (p)
     {
       flag_traditional = 1;
       flag_writable_strings = 1;
-#if DOLLARS_IN_IDENTIFIERS > 0
-      dollars_in_ident = 1;
-#endif
     }
   else if (!strcmp (p, "-fallow-single-precision"))
     flag_allow_single_precision = 1;
@@ -579,14 +575,9 @@ c_decode_option (p)
     {
       flag_traditional = 0;
       flag_writable_strings = 0;
-      dollars_in_ident = DOLLARS_IN_IDENTIFIERS > 1;
     }
   else if (!strcmp (p, "-fdollars-in-identifiers"))
-    {
-#if DOLLARS_IN_IDENTIFIERS > 0
-      dollars_in_ident = 1;
-#endif
-    }
+    dollars_in_ident = 1;
   else if (!strcmp (p, "-fno-dollars-in-identifiers"))
     dollars_in_ident = 0;
   else if (!strcmp (p, "-fsigned-char"))
@@ -634,7 +625,7 @@ c_decode_option (p)
   else if (!strcmp (p, "-fident"))
     flag_no_ident = 0;
   else if (!strcmp (p, "-ansi"))
-    flag_no_asm = 1, flag_no_nonansi_builtin = 1, dollars_in_ident = 0;
+    flag_no_asm = 1, flag_no_nonansi_builtin = 1;
   else if (!strcmp (p, "-Wimplicit"))
     warn_implicit = 1;
   else if (!strcmp (p, "-Wno-implicit"))
