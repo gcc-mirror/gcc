@@ -3092,7 +3092,7 @@ subst (x, from, to, in_dest, unique_copy)
       if (CONSTANT_P (SUBREG_REG (x)) && subreg_lowpart_p (x)
 	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (op0_mode)
 #if WORDS_BIG_ENDIAN
-	  && GET_MODE_BITSIZE (op0_mode) < BITS_PER_WORD
+	  && GET_MODE_BITSIZE (op0_mode) <= BITS_PER_WORD
 #endif
 	  )
 	return gen_lowpart_for_combine (mode, SUBREG_REG (x));
