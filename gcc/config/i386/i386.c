@@ -9231,7 +9231,7 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
       if (count == 0 && align < desired_alignment)
 	{
 	  label = gen_label_rtx ();
-	  emit_cmp_and_jump_insns (countreg, GEN_INT (UNITS_PER_WORD - 1),
+	  emit_cmp_and_jump_insns (countreg, GEN_INT (desired_alignment - 1),
 				   LEU, 0, counter_mode, 1, label);
 	}
       if (align <= 1)

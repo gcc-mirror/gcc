@@ -1,3 +1,7 @@
+Thu Jun 13 18:27:05 CEST 2002  Jan Hubicka  <jh@suse.cz>
+	
+	* i386.c (ix86_expand_movstr):  Fix pasto.
+
 Thu Jun 13 18:02:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* reload.c (find_valid_class):  Fix thinko in my previous patch.
