@@ -1,3 +1,8 @@
+2002-04-12  Richard Sandiford  <rsandifo@redhat.com>
+
+	* g++.dg/ext/attrib5.C,
+	* g++.dg/lookup/struct1.C: New tests.
+
 2002-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20020411-1.c: New test.
