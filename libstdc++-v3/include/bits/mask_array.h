@@ -114,18 +114,18 @@ namespace std {
   template<typename _Tp>
     inline void
     mask_array<_Tp>::operator=(const _Tp& __t) const
-    { __valarray_fill(_M_array, _M_sz, _M_mask, __t); }
+    { std::__valarray_fill(_M_array, _M_sz, _M_mask, __t); }
     
   template<typename _Tp>
     inline void
     mask_array<_Tp>::operator=(const valarray<_Tp>& __v) const
-    { __valarray_copy(_Array<_Tp>(__v), __v.size(), _M_array, _M_mask); }
+    { std::__valarray_copy(_Array<_Tp>(__v), __v.size(), _M_array, _M_mask); }
 
   template<typename _Tp>
     template<class _Ex>
       inline void
       mask_array<_Tp>::operator=(const _Expr<_Ex, _Tp>& __e) const
-      { __valarray_copy(__e, __e.size(), _M_array, _M_mask); }
+      { std::__valarray_copy(__e, __e.size(), _M_array, _M_mask); }
 
 #undef _DEFINE_VALARRAY_OPERATOR
 #define _DEFINE_VALARRAY_OPERATOR(_Op, _Name)				\

@@ -74,7 +74,7 @@ namespace std
       {
         _Node* __tmp = __cur;
         __cur = static_cast<_Node*>(__cur->_M_next);
-        _Destroy(&__tmp->_M_data);
+        std::_Destroy(&__tmp->_M_data);
         _M_put_node(__tmp);
       }
       this->_M_node->_M_next = this->_M_node;
@@ -104,7 +104,7 @@ namespace std
       _Node* __n = static_cast<_Node*>(__position._M_node);
       __prev_node->_M_next = __next_node;
       __next_node->_M_prev = __prev_node;
-      _Destroy(&__n->_M_data);
+      std::_Destroy(&__n->_M_data);
       _M_put_node(__n);
       return iterator(static_cast<_Node*>(__next_node));
     }
