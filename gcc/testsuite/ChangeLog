@@ -1,3 +1,12 @@
+1998-05-14  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/execute/short.f, g77.f-torture/execute/le.f,
+	g77.f-torture/execute/exp.f, g77.f-torture/execute/erfc.f,
+	g77.f-torture/execute/dnrm2.f, g77.f-torture/execute/dcomplex.f,
+	g77.f-torture/execute/cpp.F, g77.f-torture/execute/complex_1.f,
+	g77.f-torture/execute/claus.f, g77.f-torture/execute/cabs.f: Call
+	abort where appropriate.
+
 Tue May  5 19:20:13 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* lib/c-torture.exp (TORTURE_OPTIONS): Add -Os to options.
