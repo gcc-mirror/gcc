@@ -1,5 +1,7 @@
 Sun Oct 25 06:12:33 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* cccp.c (handle_directive): Complete support for #undef when -dM.
+
 	* configure.in (alpha*-*-vxworks*): Set MASK_SUPPORT_ARCH from host.
 
 	* m68k.md (adddi3, subdi3, anddi3, iordi3, xordi3): Use split_double.
