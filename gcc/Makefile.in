@@ -308,7 +308,7 @@ CLIB=
 OBSTACK=obstack.o
 
 # The GC method to be used on this system.
-GGC=ggc-simple.o
+GGC=@GGC@.o
 
 # If a supplementary library is being used for the GC.
 GGC_LIB=

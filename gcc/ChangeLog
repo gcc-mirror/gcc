@@ -1,3 +1,9 @@
+Thu Oct  7 01:13:15 1999  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in: Detect mmap.  Add --with-gc=foo to select
+	garbage collector; default to page if mmap available.
+	* Makefile.in (GGC): Substitute.
+
 Wed Oct  6 23:56:30 1999  Richard Henderson  <rth@cygnus.com>
 
 	* c-decl.c (ggc_p): Enable.
