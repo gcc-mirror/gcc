@@ -2129,10 +2129,10 @@ AC_SUBST(stage1_cflags)
 AC_ARG_ENABLE(werror,
 [  --enable-werror         enable -Werror in bootstrap stage2 and later], [],
 [enable_werror=yes])
-case ${enable_error} in
-  yes) WERROR=-Werror ;;
-  *) WERROR= ;;
+case ${enable_werror} in
+  yes) stage2_werror_flag="--enable-werror-always" ;;
+  *) stage2_werror_flag="" ;;
 esac
-AC_SUBST(WERROR)
+AC_SUBST(stage2_werror_flag)
 
 AC_OUTPUT(Makefile)

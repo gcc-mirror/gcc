@@ -4484,9 +4484,9 @@ else
   enable_werror=yes
 fi
 
-case ${enable_error} in
-  yes) WERROR=-Werror ;;
-  *) WERROR= ;;
+case ${enable_werror} in
+  yes) stage2_werror_flag="--enable-werror-always" ;;
+  *) stage2_werror_flag="" ;;
 esac
 
 
@@ -4745,7 +4745,7 @@ s%@MAINTAINER_MODE_TRUE@%$MAINTAINER_MODE_TRUE%g
 s%@MAINTAINER_MODE_FALSE@%$MAINTAINER_MODE_FALSE%g
 s%@MAINT@%$MAINT%g
 s%@stage1_cflags@%$stage1_cflags%g
-s%@WERROR@%$WERROR%g
+s%@stage2_werror_flag@%$stage2_werror_flag%g
 
 CEOF
 EOF

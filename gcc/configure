@@ -854,6 +854,7 @@ Optional Features:
                           put copies of generated files in source dir
                           intended for creating source tarballs for users
                           without texinfo bison or flex.
+  --enable-werror-always         enable -Werror always
   --enable-werror         enable -Werror in bootstrap stage2 and later
   --enable-checking=LIST
 			  enable expensive run-time checks.  With LIST,
@@ -3894,6 +3895,19 @@ if test $ac_cv_prog_cc_w_old_style_definition = yes ; then
   strict1_warn="${strict1_warn} -Wold-style-definition"
 fi
 
+# Enable -Werror, period.
+# Check whether --enable-werror_always or --disable-werror_always was given.
+if test "${enable_werror_always+set}" = set; then
+  enableval="$enable_werror_always"
+
+else
+  enable_werror_always=no
+fi;
+if test x${enable_werror_always} = xyes ; then
+  strict1_warn="${strict1_warn} -Werror"
+  WERROR=-Werror
+fi
+
 # If the native compiler is GCC, we can enable warnings even in stage1.
 # That's useful for people building cross-compilers, or just running a
 # quick `make'.
@@ -5247,7 +5261,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:5250: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:5264: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
