@@ -1860,7 +1860,8 @@ rs6000_legitimize_reload_address (x, mode, opnum, type, ind_levels, win)
       && GET_CODE (XEXP (x, 0)) == REG
       && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
       && REG_MODE_OK_FOR_BASE_P (XEXP (x, 0), mode)
-      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && !ALTIVEC_VECTOR_MODE (mode))
     {
       HOST_WIDE_INT val = INTVAL (XEXP (x, 1));
       HOST_WIDE_INT low = ((val & 0xffff) ^ 0x8000) - 0x8000;
