@@ -1,3 +1,9 @@
+Fri Jan 16 10:16:10 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* calls.c (expand_call): Move #ifdef code out of macro argument
+	lists.
+	(emit_library_call, emit_library_call_value): Likewise.
+
 Fri Jan 16 00:46:40 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* rtl.def (INLINE_HEADER): Fix bug exposed by gen_rtx_FOO changes.
