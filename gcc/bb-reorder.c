@@ -765,7 +765,17 @@ reorder_basic_blocks ()
       rtx xafter = skip_insns_between_block (BASIC_BLOCK (n_basic_blocks - 1),
 					     REORDER_SKIP_AFTER);
       if (xafter)
-	NEXT_INSN (xafter) = last_insn;
+	{
+	  NEXT_INSN (xafter) = last_insn;
+	  if (last_insn)
+	    {
+	      rtx x = last_insn;
+	      PREV_INSN (last_insn) = xafter;
+	      while (NEXT_INSN (x))
+		x = NEXT_INSN (x);
+	      set_last_insn (x);
+	    }
+	}
       else
 	abort();
     }
