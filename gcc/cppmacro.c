@@ -1547,7 +1547,7 @@ _cpp_create_definition (pfile, node)
   if (!ok)
     return ok;
 
-  if (node->type != NT_VOID)
+  if (node->type == NT_MACRO)
     {
       if (CPP_OPTION (pfile, warn_unused_macros))
 	_cpp_warn_if_unused_macro (pfile, node, NULL);
@@ -1562,8 +1562,10 @@ _cpp_create_definition (pfile, node)
 				 node->value.macro->line, 0,
 			 "this is the location of the previous definition");
 	}
-      _cpp_free_definition (node);
     }
+
+  if (node->type != NT_VOID)
+    _cpp_free_definition (node);
 
   /* Enter definition in hash table.  */
   node->type = NT_MACRO;
