@@ -43,6 +43,13 @@ struct hash_table;
 
 extern void init_ggc PROTO ((void));
 
+/* Start a new GGC context.  Memory allocated in previous contexts
+   will not be collected while the new context is active.  */
+extern void ggc_pop_context PROTO ((void));
+/* Finish a GC context.  Any uncollected memory in the new context
+   will be merged with the old context.  */
+extern void ggc_push_context PROTO ((void));
+
 /* Allocation.  */
 
 struct rtx_def *ggc_alloc_rtx PROTO ((int nslots));

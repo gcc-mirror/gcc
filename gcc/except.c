@@ -472,6 +472,7 @@ static void mark_eh_node        PROTO((struct eh_node *));
 static void mark_eh_stack       PROTO((struct eh_stack *));
 static void mark_eh_queue       PROTO((struct eh_queue *));
 static void mark_tree_label_node PROTO ((struct label_node *));
+static void mark_func_eh_entry PROTO ((void *));
 
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
 
@@ -2347,6 +2348,8 @@ mark_eh_node (node)
 	  ggc_mark_rtx (node->entry->outer_context);
 	  ggc_mark_rtx (node->entry->exception_handler_label);
 	  ggc_mark_tree (node->entry->finalization);
+	  ggc_mark_rtx (node->entry->false_label);
+	  ggc_mark_rtx (node->entry->rethrow_label);
 	}
       node = node ->chain;
     }
@@ -2405,6 +2408,33 @@ mark_eh_state (eh)
   ggc_mark_rtx (eh->x_eh_return_stub_label);
 }
 
+/* Mark ARG (which is really a struct func_eh_entry**) for GC.  */
+
+static void 
+mark_func_eh_entry (arg)
+     void *arg;
+{
+  struct func_eh_entry *fee;
+  struct handler_info *h;
+  int i;
+
+  fee = *((struct func_eh_entry **) arg);
+
+  for (i = 0; i < current_func_eh_entry; ++i)
+    {
+      ggc_mark_rtx (fee->rethrow_label);
+      for (h = fee->handlers; h; h = h->next)
+	{
+	  ggc_mark_rtx (h->handler_label);
+	  if (h->type_info != CATCH_ALL_TYPE)
+	    ggc_mark_tree ((tree) h->type_info);
+	}
+
+      /* Skip to the next entry in the array.  */
+      ++fee;
+    }
+}
+
 /* This group of functions initializes the exception handling data
    structures at the start of the compilation, initializes the data
    structures at the start of a function, and saves and restores the
@@ -2419,8 +2449,18 @@ init_eh ()
   first_rethrow_symbol = create_rethrow_ref (0);
   final_rethrow = gen_exception_label ();
   last_rethrow_symbol = create_rethrow_ref (CODE_LABEL_NUMBER (final_rethrow));
-}
 
+  ggc_add_rtx_root (&exception_handler_labels, 1);
+  ggc_add_rtx_root (&eh_return_context, 1);
+  ggc_add_rtx_root (&eh_return_stack_adjust, 1);
+  ggc_add_rtx_root (&eh_return_handler, 1);
+  ggc_add_rtx_root (&first_rethrow_symbol, 1);
+  ggc_add_rtx_root (&final_rethrow, 1);
+  ggc_add_rtx_root (&last_rethrow_symbol, 1);
+  ggc_add_root (&function_eh_regions, 1, sizeof (function_eh_regions),
+		mark_func_eh_entry);
+}
+  
 /* Initialize the per-function EH information.  */
 
 void

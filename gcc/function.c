@@ -390,17 +390,23 @@ pop_function_context ()
 
 /* Clear out all parts of the state in F that can safely be discarded
    after the function has been compiled, to let garbage collection
-   reclaim the memory.  */
+   reclaim the memory.  D is the declaration for the function just
+   compiled.  Its output may have been deferred.  */
+
 void
-free_after_compilation (f)
+free_after_compilation (f, d)
      struct function *f;
+     tree d;
 {
-  free_emit_status (f);
-  free_varasm_status (f);
+  free_emit_status (f, d);
+  free_varasm_status (f, d);
+  free_stmt_status (f, d);
 
-  free (f->x_parm_reg_stack_loc);
-
-  f->can_garbage_collect = 1;
+  if (!DECL_DEFER_OUTPUT (d))
+    {
+      free (f->x_parm_reg_stack_loc);
+      f->can_garbage_collect = 1;
+    }
 }
 
 /* Allocate fixed slots in the stack frame of the current function.  */
@@ -6682,9 +6688,10 @@ mark_function_state (p)
 
   ggc_mark_rtx (p->arg_offset_rtx);
 
-  for (i = p->x_max_parm_reg, r = p->x_parm_reg_stack_loc;
-       i > 0; --i, ++r)
-    ggc_mark_rtx (*r);
+  if (p->x_parm_reg_stack_loc)
+    for (i = p->x_max_parm_reg, r = p->x_parm_reg_stack_loc;
+	 i > 0; --i, ++r)
+      ggc_mark_rtx (*r);
 
   ggc_mark_rtx (p->return_rtx);
   ggc_mark_rtx (p->x_cleanup_label);

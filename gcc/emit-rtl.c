@@ -1607,13 +1607,19 @@ restore_emit_status (p)
   clear_emit_caches ();
 }
 
-/* Clear out all parts of our state in F that can safely be discarded
+/* Clear out all parts of the state in F that can safely be discarded
    after the function has been compiled, to let garbage collection
-   reclaim the memory.  */
+   reclaim the memory.  D is the declaration for the function just
+   compiled.  Its output may have been deferred.  */
+
 void
-free_emit_status (f)
+free_emit_status (f, d)
      struct function *f;
+     tree d;
 {
+  if (DECL_DEFER_OUTPUT (d))
+    return;
+
   free (f->emit->x_regno_reg_rtx);
   free (f->emit->regno_pointer_flag);
   free (f->emit->regno_pointer_align);
@@ -3693,6 +3699,7 @@ init_emit_once (line_numbers)
 
   ggc_add_rtx_root (&const_tiny_rtx[0][0], sizeof(const_tiny_rtx)/sizeof(rtx));
 
+  ggc_add_rtx_root (&const_true_rtx, 1);
   ggc_add_rtx_root (&pic_offset_table_rtx, 1);
   ggc_add_rtx_root (&struct_value_rtx, 1);
   ggc_add_rtx_root (&struct_value_incoming_rtx, 1);

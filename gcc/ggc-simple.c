@@ -50,23 +50,17 @@ struct ggc_rtx
   struct rtx_def rtx;
 };
 
-static struct ggc_rtx *rtxs;
-
 struct ggc_rtvec
 {
   struct ggc_rtvec *chain;
   struct rtvec_def vec;
 };
 
-static struct ggc_rtvec *vecs;
-
 struct ggc_tree
 {
   struct ggc_tree *chain;
   union tree_node tree;
 };
-
-static struct ggc_tree *trees;
 
 struct ggc_string
 {
@@ -77,7 +71,19 @@ struct ggc_string
 
 #define GGC_STRING_MAGIC	((unsigned int)0xa1b2c3d4)
 
-static struct ggc_string *strings;
+struct ggc_status
+{
+  struct ggc_status *next;
+  struct ggc_rtx *rtxs;
+  struct ggc_rtvec *vecs;
+  struct ggc_tree *trees;
+  struct ggc_string *strings;
+  size_t bytes_alloced_since_gc;
+};
+
+/* A chain of GGC contexts.  The currently active context is at the
+   front of the chain.  */
+static struct ggc_status *ggc_chain;
 
 /* Some statistics.  */
 
@@ -85,7 +91,6 @@ static int n_rtxs_collected;
 static int n_vecs_collected;
 static int n_trees_collected;
 static int n_strings_collected;
-static int bytes_alloced_since_gc;
 extern int gc_time;
 
 #ifdef GGC_DUMP
@@ -103,6 +108,81 @@ static void ggc_mark_tree_hash_table_ptr PROTO ((void *elt));
 static boolean ggc_mark_tree_hash_table_entry PROTO ((struct hash_entry *,
 						      hash_table_key));
 
+/* Called once to initialize the garbage collector.  */
+
+void 
+init_ggc PROTO ((void))
+{
+  /* Initialize the global context.  */
+  ggc_push_context ();
+}
+
+/* Start a new GGC context.  Memory allocated in previous contexts
+   will not be collected while the new context is active.  */
+
+void
+ggc_push_context PROTO ((void))
+{
+  struct ggc_status *gs = (struct ggc_status *) xmalloc (sizeof (*gs));
+  bzero (gs, sizeof (*gs));
+  gs->next = ggc_chain;
+  ggc_chain = gs;
+}
+
+/* Finish a GC context.  Any uncollected memory in the new context
+   will be merged with the old context.  */
+
+void 
+ggc_pop_context PROTO ((void))
+{
+  struct ggc_rtx *r;
+  struct ggc_rtvec *v;
+  struct ggc_tree *t;
+  struct ggc_string *s;
+  struct ggc_status *gs;
+
+  gs = ggc_chain;
+
+  r = gs->rtxs;
+  if (r)
+    {
+      while (r->chain)
+	r = r->chain;
+      r->chain = gs->next->rtxs;
+      gs->next->rtxs = gs->rtxs;
+    }
+      
+  v = gs->vecs;
+  if (v)
+    {
+      while (v->chain)
+	v = v->chain;
+      v->chain = gs->next->vecs;
+      gs->next->vecs = gs->vecs;
+    }
+
+  t = gs->trees;
+  if (t)
+    {
+      while (t->chain)
+	t = t->chain;
+      t->chain = gs->next->trees;
+      gs->next->trees = gs->trees;
+    }
+
+  s = gs->strings;
+  if (s)
+    {
+      while (s->chain)
+	s = s->chain;
+      s->chain = gs->next->strings;
+      gs->next->strings = gs->strings;
+    }
+
+  ggc_chain = gs->next;
+  free (gs);
+}
+
 /* These allocators are dreadfully simple, with no caching whatsoever so
    that Purify-like tools that do allocation versioning can catch errors.
    This collector is never going to go fast anyway.  */
@@ -116,14 +196,14 @@ ggc_alloc_rtx (nslots)
 
   n = (struct ggc_rtx *) xmalloc (size);
   bzero ((char *) n, size);
-  n->chain = rtxs;
-  rtxs = n;
+  n->chain = ggc_chain->rtxs;
+  ggc_chain->rtxs = n;
 
 #ifdef GGC_DUMP
   fprintf (dump, "alloc rtx %p\n", &n->rtx);
 #endif
 
-  bytes_alloced_since_gc += size;
+  ggc_chain->bytes_alloced_since_gc += size;
 
   return &n->rtx;
 }
@@ -137,14 +217,14 @@ ggc_alloc_rtvec (nelt)
 
   v = (struct ggc_rtvec *) xmalloc (size);
   bzero ((char *) v, size);
-  v->chain = vecs;
-  vecs = v;
+  v->chain = ggc_chain->vecs;
+  ggc_chain->vecs = v;
 
 #ifdef GGC_DUMP
   fprintf(dump, "alloc vec %p\n", &v->vec);
 #endif
 
-  bytes_alloced_since_gc += size;
+  ggc_chain->bytes_alloced_since_gc += size;
 
   return &v->vec;
 }
@@ -158,14 +238,14 @@ ggc_alloc_tree (length)
 
   n = (struct ggc_tree *) xmalloc (size);
   bzero ((char *) n, size);
-  n->chain = trees;
-  trees = n;
+  n->chain = ggc_chain->trees;
+  ggc_chain->trees = n;
 
 #ifdef GGC_DUMP
   fprintf(dump, "alloc tree %p\n", &n->tree);
 #endif
 
-  bytes_alloced_since_gc += size;
+  ggc_chain->bytes_alloced_since_gc += size;
 
   return &n->tree;
 }
@@ -187,18 +267,18 @@ ggc_alloc_string (contents, length)
 
   size = (s->string - (char *)s) + length + 1;
   s = (struct ggc_string *) xmalloc(size);
-  s->chain = strings;
+  s->chain = ggc_chain->strings;
   s->magic_mark = GGC_STRING_MAGIC;
   if (contents)
     bcopy (contents, s->string, length);
   s->string[length] = 0;
-  strings = s;
+  ggc_chain->strings = s;
 
 #ifdef GGC_DUMP
   fprintf(dump, "alloc string %p\n", &s->string);
 #endif
 
-  bytes_alloced_since_gc += size;
+  ggc_chain->bytes_alloced_since_gc += size;
 
   return s->string;
 }
@@ -312,6 +392,21 @@ ggc_mark_rtx (r)
       break;
     case CONST_DOUBLE:
       ggc_mark_rtx (CONST_DOUBLE_CHAIN (r));
+      break;
+    case NOTE:
+      switch (NOTE_LINE_NUMBER (r))
+	{
+	case NOTE_INSN_RANGE_START:
+	case NOTE_INSN_RANGE_END:
+	case NOTE_INSN_LIVE:
+	  ggc_mark_rtx (NOTE_RANGE_INFO (r));
+	  break;
+
+	default:
+	  if (NOTE_LINE_NUMBER (r) >= 0)
+	    ggc_mark_string (NOTE_SOURCE_FILE (r));
+	  break;
+	}
       break;
 
     default:
@@ -475,6 +570,10 @@ ggc_mark_tree (t)
 	  ggc_mark_tree (TREE_OPERAND (t, i));
 	break;
       }
+
+    case 'x':
+      lang_mark_tree (t);
+      break;
     }
 }
 
@@ -486,8 +585,9 @@ ggc_mark_tree_varray (v)
 {
   int i;
 
-  for (i = v->num_elements - 1; i >= 0; --i) 
-    ggc_mark_tree (VARRAY_TREE (v, i));
+  if (v)
+    for (i = v->num_elements - 1; i >= 0; --i) 
+      ggc_mark_tree (VARRAY_TREE (v, i));
 }
 
 /* Mark the hash table-entry HE.  It's key field is really a tree.  */
@@ -534,11 +634,12 @@ ggc_collect ()
   struct ggc_tree *t, **tp;
   struct ggc_string *s, **sp;
   struct ggc_root *x;
+  struct ggc_status *gs;
   int time, n_rtxs, n_trees, n_vecs, n_strings;
 
 #ifndef ENABLE_CHECKING
   /* See if it's even worth our while.  */
-  if (bytes_alloced_since_gc < 64*1024)
+  if (ggc_chain->bytes_alloced_since_gc < 64*1024)
     return;
 #endif
 
@@ -548,14 +649,17 @@ ggc_collect ()
   time = get_run_time ();
 
   /* Clean out all of the GC marks.  */
-  for (r = rtxs; r != NULL; r = r->chain)
-    r->rtx.gc_mark = 0;
-  for (v = vecs; v != NULL; v = v->chain)
-    v->vec.gc_mark = 0;
-  for (t = trees; t != NULL; t = t->chain)
-    t->tree.common.gc_mark = 0;
-  for (s = strings; s != NULL; s = s->chain)
-    s->magic_mark = GGC_STRING_MAGIC;
+  for (gs = ggc_chain; gs; gs = gs->next)
+    {
+      for (r = gs->rtxs; r != NULL; r = r->chain)
+	r->rtx.gc_mark = 0;
+      for (v = gs->vecs; v != NULL; v = v->chain)
+	v->vec.gc_mark = 0;
+      for (t = gs->trees; t != NULL; t = t->chain)
+	t->tree.common.gc_mark = 0;
+      for (s = gs->strings; s != NULL; s = s->chain)
+	s->magic_mark = GGC_STRING_MAGIC;
+    }
 
   /* Mark through all the roots.  */
   for (x = roots; x != NULL; x = x->next)
@@ -570,7 +674,9 @@ ggc_collect ()
     }
 
   /* Sweep the resulting dead nodes.  */
-  rp = &rtxs, r = rtxs, n_rtxs = 0;
+  rp = &ggc_chain->rtxs;
+  r = ggc_chain->rtxs;
+  n_rtxs = 0;
   while (r != NULL)
     {
       struct ggc_rtx *chain = r->chain;
@@ -587,7 +693,9 @@ ggc_collect ()
   *rp = NULL;
   n_rtxs_collected += n_rtxs;
 
-  vp = &vecs, v = vecs, n_vecs = 0;
+  vp = &ggc_chain->vecs;
+  v = ggc_chain->vecs;
+  n_vecs = 0;
   while (v != NULL)
     {
       struct ggc_rtvec *chain = v->chain;
@@ -604,7 +712,9 @@ ggc_collect ()
   *vp = NULL;
   n_vecs_collected += n_vecs;
 
-  tp = &trees, t = trees, n_trees = 0;
+  tp = &ggc_chain->trees;
+  t = ggc_chain->trees;
+  n_trees = 0;
   while (t != NULL)
     {
       struct ggc_tree *chain = t->chain;
@@ -621,7 +731,9 @@ ggc_collect ()
   *tp = NULL;
   n_trees_collected += n_trees;
 
-  sp = &strings, s = strings, n_strings = 0;
+  sp = &ggc_chain->strings;
+  s = ggc_chain->strings;
+  n_strings = 0;
   while (s != NULL)
     {
       struct ggc_string *chain = s->chain;
@@ -637,8 +749,10 @@ ggc_collect ()
     }
   *sp = NULL;
   n_strings_collected += n_strings;
+  ggc_chain->bytes_alloced_since_gc = 0;
 
-  gc_time += time = get_run_time () - time;
+  time = get_run_time () - time;
+  gc_time += time;
 
   if (!quiet_flag)
     {

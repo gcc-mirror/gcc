@@ -549,11 +549,16 @@ extern void (*restore_lang_status)	PROTO((struct function *));
 extern void save_tree_status		PROTO((struct function *));
 extern void restore_tree_status		PROTO((struct function *));
 extern void restore_emit_status		PROTO((struct function *));
-extern void free_after_compilation	PROTO((struct function *));
+extern void free_after_compilation	PROTO((struct function *,
+					       tree));
 
 extern void init_varasm_status		PROTO((struct function *));
-extern void free_varasm_status		PROTO((struct function *));
-extern void free_emit_status		PROTO((struct function *));
+extern void free_varasm_status		PROTO((struct function *,
+					       tree));
+extern void free_emit_status		PROTO((struct function *,
+					       tree));
+extern void free_stmt_status            PROTO((struct function *,
+					       tree));
 extern rtx get_first_block_beg		PROTO((void));
 
 extern void init_virtual_regs		PROTO((struct emit_status *));
