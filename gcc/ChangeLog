@@ -1,3 +1,9 @@
+2004-09-08  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/17186
+	* function.c (expand_function_end): Have fall-off-the-end
+	return path jump around return register setup.
+
 2004-09-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (sparc_indent_opcode): New variable.
@@ -33,7 +39,6 @@
 	(LINK_SPEC): Same.
 	* doc/invoke.texi: Document -segaddr, -segs_read_only_addr and
 	-segs_read_write_addr.
-
 
 2004-09-08  Richard Henderson  <rth@redhat.com>
 

@@ -4411,20 +4411,19 @@ expand_function_end (void)
 
   /* Emit the actual code to clobber return register.  */
   {
-    rtx seq, after;
+    rtx seq;
 
     start_sequence ();
     clobber_return_register ();
+    expand_naked_return ();
     seq = get_insns ();
     end_sequence ();
 
-    after = emit_insn_after (seq, clobber_after);
+    emit_insn_after (seq, clobber_after);
   }
 
-  /* Output the label for the naked return from the function, if one is
-     expected.  This is currently used only by __builtin_return.  */
-  if (naked_return_label)
-    emit_label (naked_return_label);
+  /* Output the label for the naked return from the function.  */
+  emit_label (naked_return_label);
 
   /* ??? This should no longer be necessary since stupid is no longer with
      us, but there are some parts of the compiler (eg reload_combine, and
