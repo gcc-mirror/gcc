@@ -5684,13 +5684,6 @@ the last object files that will be passed to the linker.
 Process the @code{cpp} spec.  This is used to construct the arguments
 to be passed to the C preprocessor.
 
-@item %c
-Process the @code{signed_char} spec.  This is intended to be used
-to tell cpp whether a char is signed.  It typically has the definition:
-@smallexample
-%@{funsigned-char:-D__CHAR_UNSIGNED__@}
-@end smallexample
-
 @item %1
 Process the @code{cc1} spec.  This is used to construct the options to be
 passed to the actual C compiler (@samp{cc1}).
