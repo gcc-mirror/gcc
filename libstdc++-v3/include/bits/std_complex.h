@@ -450,6 +450,34 @@ namespace std
       return complex<_Tp>(sinh(__x) * cos(__y), cosh(__x) * sin(__y));
     }
 
+  template<typename _Tp>
+    inline complex<_Tp>
+    pow(const complex<_Tp>& __z, int __n)
+    {
+      return __pow_helper(__z, __n);
+    }
+
+  template<typename _Tp>
+    inline complex<_Tp>
+    pow(const complex<_Tp>& __x, const _Tp& __y)
+    {
+      return exp(__y * log(__x));
+    }
+
+  template<typename _Tp>
+    inline complex<_Tp>
+    pow(const complex<_Tp>& __x, const complex<_Tp>& __y)
+    {
+      return exp(__x * log(__x));
+    }
+
+  template<typename _Tp>
+    inline complex<_Tp>
+    pow(const _Tp& __x, const complex<_Tp>& __y)
+    {
+      return exp(__y * log(__x));
+    }
+
   // 26.2.3  complex specializations
   // complex<float> specialization
   template<> class complex<float>
@@ -496,11 +524,6 @@ namespace std
     friend class complex<double>;
     friend class complex<long double>;
 
-    friend complex<float> pow<>(const complex<float>&, int);
-    friend complex<float> pow<>(const complex<float>&, const float&);
-    friend complex<float> pow<>(const complex<float>&,
-				const complex<float>&);
-    friend complex<float> pow<>(const float&, const complex<float>&);
     friend complex<float> sqrt<>(const complex<float>&);
     friend complex<float> tan<>(const complex<float>&);
     friend complex<float> tanh<>(const complex<float>&);
@@ -651,11 +674,6 @@ namespace std
     friend class complex<float>;
     friend class complex<long double>;
 
-    friend complex<double> pow<>(const complex<double>&, int);
-    friend complex<double> pow<>(const complex<double>&, const double&);
-    friend complex<double> pow<>(const complex<double>&,
-				 const complex<double>&);
-    friend complex<double> pow<>(const double&, const complex<double>&);
     friend complex<double> sqrt<>(const complex<double>&);
     friend complex<double> tan<>(const complex<double>&);
     friend complex<double> tanh<>(const complex<double>&);
@@ -806,13 +824,6 @@ namespace std
     friend class complex<float>;
     friend class complex<double>;
 
-    friend complex<long double> pow<>(const complex<long double>&, int);
-    friend complex<long double> pow<>(const complex<long double>&,
-				      const long double&);
-    friend complex<long double> pow<>(const complex<long double>&,
-				      const complex<long double>&);
-    friend complex<long double> pow<>(const long double&,
-				      const complex<long double>&);
     friend complex<long double> sqrt<>(const complex<long double>&);
     friend complex<long double> tan<>(const complex<long double>&);
     friend complex<long double> tanh<>(const complex<long double>&);
@@ -951,8 +962,3 @@ namespace std
 } // namespace std
 
 #endif	/* _CPP_COMPLEX */
-
-
-
-
-

@@ -50,10 +50,6 @@ __complex__ double clog10 (__complex__ double x);
 __complex__ float clog10f (__complex__ float x);
 __complex__ long double clog10l (__complex__ long double x);
 
-__complex__ double cpow (__complex__ double x, __complex__ double c);
-__complex__ float cpowf (__complex__ float x, __complex__ float c);
-__complex__ long double cpowl (__complex__ long double x, __complex__ long double c);
-
 __complex__ double csin (__complex__ double x);
 __complex__ float csinf (__complex__ float x);
 __complex__ long double csinl (__complex__ long double x);

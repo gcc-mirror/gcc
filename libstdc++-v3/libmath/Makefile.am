@@ -26,16 +26,16 @@ AUTOMAKE_OPTIONS = 1.3 cygnus
 noinst_LTLIBRARIES = libmath.la
 
 EXTRA_LONG_DOUBLE_yes = \
-	ccosl.c cexpl.c c_logl.c clog10l.c cpowl.c csinhl.c \
-	csqrtl.c ctanhl.c ctanl.c cargl.c hypotl.c \
+	ccosl.c cexpl.c clog10l.c csinhl.c \
+	csqrtl.c ctanhl.c ctanl.c hypotl.c \
 	signbitl.c
 
 EXTRA_DIST = \
 	ccos.c ccosf.c ccosh.c ccoshf.c ccoshl.c \
-	cexp.c cexpf.c c_log.c c_logf.c  clog10.c clog10f.c \
-	cpow.c cpowf.c csin.c csinf.c csinh.c csinhf.c \
+	cexp.c cexpf.c clog10.c clog10f.c \
+	csin.c csinf.c csinh.c csinhf.c \
 	csinl.c csqrt.c csqrtf.c  ctan.c ctanf.c ctanh.c \
-	ctanhf.c  carg.c cargf.c hypot.c hypotf.c\
+	ctanhf.c hypot.c hypotf.c\
 	atan2f.c expf.c \
 	$(EXTRA_LONG_DOUBLE_yes) 
 
@@ -62,12 +62,4 @@ CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 INCLUDES = \
 	-I$(GLIBCPP_INCLUDE_DIR) -I$(top_builddir)/include  \
 	$(TOPLEVEL_INCLUDES) 
-
-
-
-
-
-
-
-
 

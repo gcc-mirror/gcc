@@ -46,26 +46,6 @@ namespace std
 {
   template<>
   complex<FLT>
-  pow(const complex<FLT>& __x, int __n)
-  { return complex<FLT>(cexp(__n * c_log(__x._M_value))); }
-
-  template<>
-  complex<FLT>
-  pow(const complex<FLT>& __x, const FLT& __y)
-  { return complex<FLT>(cexp(__y * c_log(__x._M_value))); }
-
-  template<>
-  complex<FLT>
-  pow(const complex<FLT>& __x, const complex<FLT>& __y)
-  { return complex<FLT>(cpow(__x._M_value, __y._M_value)); }
-
-  template<>
-  complex<FLT>
-  pow(const FLT& __x, const complex<FLT>& __y)
-  { return complex<FLT>(cexp(__y._M_value * log(__x))); }
-
-  template<>
-  complex<FLT>
   sqrt(const complex<FLT>& __x)
   { return complex<FLT>(csqrt(__x._M_value)); }
   

@@ -232,9 +232,6 @@ extern "C" {
 #else
 # include "complex-stub.h"
 #endif
-__complex__ double c_log (__complex__ double x);
-__complex__ float c_logf (__complex__ float x);
-__complex__ long double c_logl (__complex__ long double x);
 
 /* signbit is a macro in ISO C99.  */
 #ifndef signbit
