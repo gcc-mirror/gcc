@@ -345,7 +345,7 @@ static void scan_paradoxical_subregs	PROTO((rtx));
 static int hard_reg_use_compare		PROTO((struct hard_reg_n_uses *,
 					       struct hard_reg_n_uses *));
 static void order_regs_for_reload	PROTO((void));
-static void compare_spill_regs		PROTO((short *, short *));
+static int compare_spill_regs		PROTO((short *, short *));
 static void reload_as_needed		PROTO((rtx, int));
 static void forget_old_reloads_1	PROTO((rtx, rtx));
 static int reload_reg_class_lower	PROTO((short *, short *));
