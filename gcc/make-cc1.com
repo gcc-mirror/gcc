@@ -85,12 +85,14 @@ $! you want to build GNU-C ("CC1").
 $!
 $! Now figure out what we have been requested to do.
 $p1 = p1+" "+p2+" "+p3+" "+p4+" "+p5+" "+p6+" "+p7 
-$p1 = f$edit(p1,"COMPRESS")
+$p1 = f$edit(p1,"COMPRESS,TRIM")
 $i=0
 $DO_ALL = 0
 $DO_LINK = 0
 $DO_DEBUG = 0
 $DO_CC1PLUS = 0
+$DO_CC1OBJ = 0
+$DO_OBJCLIB = 0
 $if f$trnlnm("cfile$").nes."" then  close/noLog cfile$
 $open cfile$ compilers.list
 $cinit:read cfile$ compilername/end=cinit_done
@@ -106,6 +108,11 @@ $if string.eqs." " then goto done
 $flag = 1
 $if string.eqs."CC1PLUS" then DO_DEFAULT = 0
 $if string.eqs."CC1OBJ" then DO_DEFAULT = 0
+$if string.eqs."OBJCLIB"
+$then	DO_DEFAULT = 0
+$	DO_INDEPENDENT = DO_CC1OBJ
+$	DO_BC = DO_CC1OBJ
+$endif
 $if f$extract(0,2,string).nes."NO" then goto parse_option
 $  string=f$extract(2,f$length(string)-2,string)
 $  flag = 0
@@ -124,6 +131,7 @@ $if DO_CC1PLUS.eq.1 then echo "   Compile C++ specific object modules."
 $if DO_CC1OBJ.eq.1 then echo "   Compile obj-C specific object modules."
 $if DO_INDEPENDENT.eq.1 then echo "   Compile language independent object modules."
 $if DO_BC.eq.1 then echo "   Compile byte compiler object modules."
+$if DO_OBJCLIB.eq.1 then echo "   Create Objective-C run-time library."
 $link_only:
 $if DO_CC1.eq.1 then	echo "   Link C compiler (gcc-cc1.exe)."
 $if DO_CC1PLUS.eq.1 then echo "   Link C++ compiler (gcc-cc1plus.exe)."
@@ -188,14 +196,14 @@ $!
 $if DO_BC.eq.1 
 $	THEN 
 $	call compile bi_all.opt ""
-$	open ifile$ bc_all.opt
+$	if f$trnlnm("ifile$").nes."" then  close/noLog ifile$
+$	open ifile$ bc_all.list
 $	read ifile$ bc_line
 $	close ifile$
 $	bc_index = 0
 $bc_loop:
 $	tfile = f$element(bc_index, ",", bc_line)
 $	if tfile.eqs."," then goto bc_done
-$	if f$locate(".",tfile).eq.f$length(tfile) then tfile = tfile + ".h"
 $	call bc_generate 'tfile' "bi_all.opt/opt,"
 $	bc_index = bc_index + 1
 $	goto bc_loop
@@ -311,6 +319,37 @@ $!
 $!
 $cdone: close cfile$
 $!
+$ if DO_OBJCLIB
+$ then	set default [.objc]	!push
+$	save_cflags = CFLAGS
+$	CFLAGS = CFLAGS - CINCL1 - CINCL2 + CINCL_SUB
+$	MFLAGS = "/Lang=ObjC" + CFLAGS
+$	library/Obj [-]objclib.olb/Create
+$	if f$trnlnm("IFILE$").nes."" then  close/noLog ifile$
+$	open/Read ifile$ [-]objc-objs.opt
+$ocl1:	read/End=ocl3 ifile$ line
+$	i = 0
+$ocl2:	o = f$element(i,",",line)
+$	if o.eqs."," then goto ocl1
+$	n = o - ".o"
+$	if f$search(n + ".m").nes.""
+$	then	f = n + ".m"
+$		flags = MFLAGS
+$	else	f = n + ".c"
+$		flags = CFLAGS
+$	endif
+$	set verify
+$ 'CC' 'flags' 'f'
+$!'f$verify(0)'
+$	library/Obj [-]objclib.olb 'n'.obj/Insert
+$	delete/noConfirm/noLog 'n'.obj;*
+$	i = i + 1
+$	goto ocl2
+$ocl3:	close ifile$
+$	CFLAGS = save_cflags
+$	set default [-]	!pop
+$ endif !DO_OBJCLIB
+$!
 $!	Done
 $!
 $! 'f$verify(v)
@@ -424,7 +463,7 @@ $!	'f$verify(0)
 $!
 $set verify
 $	assign/user 'p1' sys$output:
-$	mcr sys$disk:[]GEN'root1' md
+$	mcr sys$disk:[]GEN'root1' vax.md
 $!'f$verify(0)
 $endsubroutine
 $!
