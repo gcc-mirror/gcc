@@ -2585,8 +2585,6 @@ sh_function_arg (cum, mode, type, named)
       if (rr < NPARM_REGS)
 	{
 	  return (((type) == 0 || !TREE_ADDRESSABLE ((tree) (type)))
-		  && ((type) == 0 || (mode) != BLKmode
-		      || (TYPE_ALIGN ((type)) % PARM_BOUNDARY == 0))
 		  ? gen_rtx (REG, (mode),
 			     (FIRST_PARM_REG + rr)) 
 		  : 0);
@@ -2612,7 +2610,6 @@ sh_function_arg_partial_nregs (CUM, MODE, TYPE, NAMED)
   if ((CUM) < NPARM_REGS)
     {
       if (((TYPE) == 0 || !TREE_ADDRESSABLE ((tree) (TYPE)))
-	  && ((TYPE) == 0 || (TYPE_ALIGN ((TYPE)) % PARM_BOUNDARY == 0))
 	  && ((CUM) + ((MODE) == BLKmode
 		       ? ROUND_ADVANCE (int_size_in_bytes (TYPE))
 		  : ROUND_ADVANCE (GET_MODE_SIZE (MODE))) - NPARM_REGS > 0))
