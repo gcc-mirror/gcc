@@ -2146,8 +2146,12 @@ loop:
 
 get_io_list:
   /* Optional leading comma (non-standard).  */
-  if (!comma_flag)
-    gfc_match_char (',');
+  if (!comma_flag
+      && gfc_match_char (',') == MATCH_YES
+      && k == M_WRITE
+      && gfc_notify_std (GFC_STD_GNU, "Comma before output item list "
+			 "at %C is an extension") == FAILURE)
+    return MATCH_ERROR;
 
   io_code = NULL;
   if (gfc_match_eos () != MATCH_YES)
