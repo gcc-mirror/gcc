@@ -362,7 +362,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		   maybe eliminate it entirely.  */
 		if (total_pushed >= stack_adjust_amount)
 		  {
-		    delete_insn (stack_adjust_insn);
+		    delete_computation (stack_adjust_insn);
 		    total_pushed = stack_adjust_amount;
 		  }
 		else
@@ -416,7 +416,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		      && MEM_VOLATILE_P (SET_DEST (body)))
 		&& ! (GET_CODE (SET_SRC (body)) == MEM
 		      && MEM_VOLATILE_P (SET_SRC (body))))
-	      delete_insn (insn);
+	      delete_computation (insn);
 
 	    /* Detect and ignore no-op move instructions
 	       resulting from smart or fortuitous register allocation.  */
