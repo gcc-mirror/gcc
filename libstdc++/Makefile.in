@@ -304,7 +304,7 @@ stuff:
 	$(MAKE) -C ../libio c++clean
 	-$(MAKE) $(MAKEFLAGS) check
 	-$(MAKE) -C ../libio check
-	-$(MAKE) -C ../../gcc check-g++
+	-$(MAKE) -C ../gcc check-g++
 
 stuff1:
 	$(MAKE) clean
@@ -313,4 +313,4 @@ stuff1:
 stuff2:
 	-$(MAKE) check
 	-$(MAKE) -C ../libio check
-	-$(MAKE) -C ../../gcc check-g++
+	-$(MAKE) -C ../gcc check-g++
