@@ -1,3 +1,22 @@
+2003-10-03  Alexander Malmberg  <alexander@malmberg.org>
+	    Ziemowit Laski  <zlaski@apple.com>
+
+	* objc/objc-act.c (add_method_to_hash_list, lookup_category):
+	New functions.
+	(lookup_method_in_hash_lists): New parameter indicating whether
+	we are messaging 'Class' or 'id'.
+	(check_duplicates): Likewise; do not assume all methods will
+	be either class or instance methods.
+	(generate_category, finish_class): Use lookup_category().
+	(add_method): Use add_method_to_hash_list(); insert instance
+	methods of root classes into the global class method hash table.
+	(add_category): Use lookup_category(); avoid constructing
+	duplicate categories.
+	(really_start_method): Add method to corresponding @interface,
+	if not already there (and if the @interface exists).
+	(finish_message_expr, finish_objc): Adjust calls to
+	check_duplicates().
+
 2003-10-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/9325, PR java/6391
