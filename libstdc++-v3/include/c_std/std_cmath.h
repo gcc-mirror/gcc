@@ -47,6 +47,7 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
+#include <bits/cpp_type_traits.h>
 
 #include <math.h>
 
@@ -197,6 +198,13 @@ namespace std
   acos(long double __x) { return ::acos(static_cast<double>(__x)); }
 #endif
 
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    acos(_Tp __x)
+    {
+      return ::acos(static_cast<double>(__x));
+    }
+  
   using ::asin;
 
 #if _GLIBCPP_HAVE_ASINF
@@ -214,6 +222,11 @@ namespace std
   inline long double 
   asin(long double __x) { return ::asin(static_cast<double>(__x)); }
 #endif
+
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    asin(_Tp __x)
+    { return ::asin(static_cast<double>(__x)); }
 
   using ::atan;
 
@@ -233,6 +246,11 @@ namespace std
   atan(long double __x) { return ::atan(static_cast<double>(__x)); }
 #endif
 
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    atan(_Tp __x)
+    { return ::atan(static_cast<double>(__x)); }
+  
   using ::atan2;
 
 #if _GLIBCPP_HAVE_ATAN2F
@@ -253,6 +271,12 @@ namespace std
   { return ::atan2(static_cast<double>(__y), static_cast<double>(__x)); }
 #endif
 
+  template<typename _Tp, typename _Up>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type
+                                        && __is_integer<_Up>::_M_type>::_M_type
+    atan2(_Tp __x, _Up __y)
+    { return ::atan2(static_cast<double>(__x), static_cast<double>(__y)); }
+
   using ::ceil;
 
 #if _GLIBCPP_HAVE_CEILF
@@ -271,6 +295,11 @@ namespace std
   ceil(long double __x) { return ::ceil(static_cast<double>(__x)); }
 #endif
 
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    ceil(_Tp __x)
+    { return ::ceil(static_cast<double>(__x)); }
+  
   using ::cos;
 
   inline float
@@ -280,6 +309,11 @@ namespace std
   inline long double
   cos(long double __x)
   { return __builtin_cosl(__x); }
+
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    cos(_Tp __x)
+    { return __builtin_cos(__x); }
 
   using ::cosh;
 
@@ -299,6 +333,11 @@ namespace std
   cosh(long double __x) { return ::cosh(static_cast<double>(__x)); }
 #endif
 
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    cosh(_Tp __x)
+    { return ::cosh(static_cast<double>(__x)); }
+
   using ::exp;
 
 #if _GLIBCPP_HAVE_EXPF
@@ -317,6 +356,11 @@ namespace std
   exp(long double __x) { return ::exp(static_cast<double>(__x)); }
 #endif
 
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    exp(_Tp __x)
+    { return ::exp(static_cast<double>(__x)); }
+  
   using ::fabs;
 
   inline float
@@ -326,6 +370,11 @@ namespace std
   inline long double
   fabs(long double __x)
   { return __builtin_fabsl(__x); }
+
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    fabs(_Tp __x)
+    { return __builtin_fabs(__x); }
 
   using ::floor;
 
@@ -345,6 +394,11 @@ namespace std
   floor(long double __x) { return ::floor(static_cast<double>(__x)); }
 #endif
 
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    floor(_Tp __x)
+    { return ::floor(static_cast<double>(__x)); }
+  
   using ::fmod;
 
 #if _GLIBCPP_HAVE_FMODF
@@ -384,6 +438,11 @@ namespace std
   { return ::frexp(static_cast<double>(__x), __exp); }
 #endif
 
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    frexp(_Tp __x, int* __exp)
+    { return ::frexp(static_cast<double>(__x), __exp); }
+  
   using ::ldexp;
 
 #if _GLIBCPP_HAVE_LDEXPF
@@ -404,6 +463,11 @@ namespace std
   { return ::ldexp(static_cast<double>(__x), __exp); }
 #endif
 
+  template<typename _Tp>
+  inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+  ldexp(_Tp __x, int __exp)
+  { return ::ldexp(static_cast<double>(__x), __exp); }
+
   using ::log;
 
 #if _GLIBCPP_HAVE_LOGF
@@ -422,6 +486,11 @@ namespace std
   log(long double __x) { return ::log(static_cast<double>(__x)); }
 #endif
 
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    log(_Tp __x)
+    { return ::log(static_cast<double>(__x)); }
+  
   using ::log10;
 
 #if _GLIBCPP_HAVE_LOG10F
@@ -440,6 +509,11 @@ namespace std
   log10(long double __x) { return ::log10(static_cast<double>(__x)); }
 #endif
 
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    log10(_Tp __x)
+    { return ::log10(static_cast<double>(__x)); }
+  
   using ::modf;
 
 #if _GLIBCPP_HAVE_MODFF
@@ -521,6 +595,11 @@ namespace std
   sin(long double __x)
   { return __builtin_sinl(__x); }
 
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    sin(_Tp __x)
+    { return __builtin_sin(__x); }
+
   using ::sinh;
 
 #if _GLIBCPP_HAVE_SINHF
@@ -539,6 +618,11 @@ namespace std
   sinh(long double __x) { return ::sinh(static_cast<double>(__x)); }
 #endif
 
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    sinh(_Tp __x)
+    { return ::sinh(static_cast<_Tp>(__x)); }
+  
   using ::sqrt;
 
   inline float
@@ -549,6 +633,11 @@ namespace std
   sqrt(long double __x)
   { return __builtin_sqrtl(__x); }
 
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    sqrt(_Tp __x)
+    { return __builtin_sqrt(__x); }
+  
   using ::tan;
 
 #if _GLIBCPP_HAVE_TANF
@@ -567,6 +656,11 @@ namespace std
   tan(long double __x) { return ::tan(static_cast<double>(__x)); }
 #endif
 
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    tan(_Tp __x)
+    { return ::tan(static_cast<double>(__x)); }
+  
   using ::tanh;
 
 #if _GLIBCPP_HAVE_TANHF
@@ -584,6 +678,11 @@ namespace std
   inline long double 
   tanh(long double __x) { return ::tanh(static_cast<double>(__x)); }
 #endif
+
+  template<typename _Tp>
+    inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
+    tanh(_Tp __x)
+    { return ::tanh(static_cast<double>(__x)); }
 } 
 
 
