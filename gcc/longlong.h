@@ -482,11 +482,13 @@ UDItype __umulsidi3 (USItype, USItype);
 #endif /* not mcf5200 */
 #endif /* not mc68020 */
 
-/* The '020, '030, '040 and '060 have bitfield insns.  */
-#if defined (__mc68020__) || defined(mc68020) \
-	|| defined(__mc68030__) || defined(mc68030) \
-	|| defined(__mc68040__) || defined(mc68040) \
-	|| defined(__mc68060__) || defined(mc68060)
+/* The '020, '030, '040 and '060 have bitfield insns.
+   cpu32 disguises as a 68020, but lacks them.  */
+#if ( defined (__mc68020__) || defined(mc68020) \
+		|| defined(__mc68030__) || defined(mc68030) \
+		|| defined(__mc68040__) || defined(mc68040) \
+		|| defined(__mc68060__) || defined(mc68060) ) \
+	&& !defined(__mcpu32__)
 #define count_leading_zeros(count, x) \
   __asm__ ("bfffo %1{%b2:%b2},%0"					\
 	   : "=d" ((USItype) (count))					\
