@@ -1,3 +1,9 @@
+2002-05-04  Mark Wielaard  <mark@klomp.org>
+
+	For PR java/6519:
+	* libjava.lang/emptystring.java: New.
+	* libjava.lang/emptystring.out: New.
+
 2002-04-21  Mark Wielaard  <mark@klomp.org>
 
 	* libjava.mauve/xfail: Expect failures for PR java/6391 and
