@@ -3612,9 +3612,17 @@ finish_decl (decl, init, asmspec_tree)
       maybe_objc_check_decl (decl);
 
       if (!DECL_CONTEXT (decl))
-	rest_of_decl_compilation (decl, asmspec,
-				  (DECL_CONTEXT (decl) == 0
-				   || TREE_ASM_WRITTEN (decl)), 0);
+	{
+	  if (DECL_INITIAL (decl) == NULL_TREE
+	      || DECL_INITIAL (decl) == error_mark_node)
+	    /* Don't output anything
+	       when a tentative file-scope definition is seen.
+	       But at end of compilation, do output code for them.  */
+	    DECL_DEFER_OUTPUT (decl) = 1;
+	  rest_of_decl_compilation (decl, asmspec,
+				    (DECL_CONTEXT (decl) == 0
+				     || TREE_ASM_WRITTEN (decl)), 0);
+	}
       else
 	{
 	  if (asmspec)

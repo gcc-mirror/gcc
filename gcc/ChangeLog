@@ -1,3 +1,13 @@
+2001-02-26  Jason Merrill  <jason@redhat.com>
+
+	* c-decl.c (finish_decl): Set DECL_DEFER_OUTPUT on tentative file-scope
+	definitions.
+	* toplev.c (rest_of_decl_compilation): Check DECL_DEFER_OUTPUT to
+	recognize a tentative definition.  Lose obsolete code.
+
+	* toplev.c (wrapup_global_declarations): Don't emit DECL_COMDAT
+	variables unless necessary, either.
+
 2001-02-25  Richard Henderson  <rth@redhat.com>
 
 	* ifcvt.c (struct noce_if_info): Add test_bb.
