@@ -601,12 +601,13 @@ self_promoting_args_p (parms)
       if (TREE_CHAIN (t) == 0 && type != void_type_node)
 	return 0;
 
+      if (type == 0)
+	return 0;
+
       if (TYPE_MAIN_VARIANT (type) == float_type_node)
 	return 0;
 
-      if (type
-	  && TREE_CODE (type) == INTEGER_TYPE
-	  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+      if (C_PROMOTING_INTEGER_TYPE_P (type))
 	return 0;
     }
   return 1;
@@ -621,8 +622,7 @@ self_promoting_type_p (type)
   if (TYPE_MAIN_VARIANT (type) == float_type_node)
     return 0;
 
-  if (TREE_CODE (type) == INTEGER_TYPE
-      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+  if (C_PROMOTING_INTEGER_TYPE_P (type))
     return 0;
 
   return 1;
@@ -908,12 +908,12 @@ default_conversion (exp)
       return convert (type, exp);
     }
 
-  if (code == INTEGER_TYPE
-      && (TYPE_PRECISION (type)
-	  < TYPE_PRECISION (integer_type_node)))
+  if (C_PROMOTING_INTEGER_TYPE_P (type))
     {
       /* Traditionally, unsignedness is preserved in default promotions.  */
-      if (flag_traditional && TREE_UNSIGNED (type))
+      if ((flag_traditional && TREE_UNSIGNED (type))
+	  /* Also preserve unsignedness if not really getting any wider.  */
+	  || (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)))
 	return convert (unsigned_type_node, exp);
       return convert (integer_type_node, exp);
     }
