@@ -1,3 +1,20 @@
+2003-08-26  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* Makefile.am: (write_entries_to_file) New parameterized
+	function for writing entries to a file one line at a time.
+	(all_java_class_files): Removed definition.
+	(.java.class) Removed.target.
+	(libgcj-@gcc_version@.jar): Changed dependency to
+	$(all_java_source_files); added compilation step which compiles
+	all changed source files in one pass.
+	(libgcj.la) Refactored to use write_entries_to_file.
+	(lib-gnu-awt-xlib.la) Likewise.
+	(install-data-local) Likewise.
+	(write-entries-to-file-check) New target which tests write_entries_to_file.
+	(all-recursive): Changed dependency from $(all_java_class_files)
+	to libgcj-@gcc_version@.jar
+	* Makefile.in: Rebuilt.
+
 2003-08-26  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/StrictMath.java: Typo fix.
