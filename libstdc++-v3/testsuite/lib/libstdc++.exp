@@ -212,6 +212,15 @@ proc libstdc++_init { testfile } {
     libstdc++_maybe_build_wrapper "${objdir}/testglue.o"
 }
 
+proc libstdc++_exit { } {
+    global gluefile;
+
+    if [info exists gluefile] {
+	file_on_build delete $gluefile;
+	unset gluefile;
+    }
+}
+
 # Callback from system dg-test.
 proc libstdc++-dg-test { prog do_what extra_tool_flags } {
     # Set up the compiler flags, based on what we're going to do.

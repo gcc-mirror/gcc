@@ -1,3 +1,7 @@
+2004-10-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_exit): New proc.
+
 2004-10-07  Roger Sayle  <roger@eyesopen.com>
 
 	PR libstdc++/17850
