@@ -1,3 +1,8 @@
+2003-09-07  Roger Sayle  <roger@eyesopen.com>
+
+	* combine.c (combine_simplify_rtx): Don't convert -(A*B) into
+	(-A)*B if we care about sign-dependent rounding.
+
 2003-09-07  Gabriel Dos Reis  <gcc@integrable-solutions.net>
 
 	* c-pretty-print.h (pp_c_left_brace): Declare.
