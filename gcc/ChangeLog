@@ -1,3 +1,8 @@
+2003-02-11  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (divmodsi4): Use register_operand
+	predicate for mod result.
+
 Tue Feb 11 20:44:45 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (emit_copy_of_insn_after): Copy insn recog cache too.
