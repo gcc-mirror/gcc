@@ -1,3 +1,19 @@
+2004-03-18  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/channels/spi/AbstractSelectableChannel.java
+	(keys): Initialize at declaration.
+	(locate): keys cant be null.
+	(add): Removed.
+	(addSelectionKey): New method.
+	(removeSelectionKey): New method.
+	* java/nio/channels/spi/AbstractSelectionKey.java
+	(cancel): Call AbstractSelector.cancelKey(SelectionKey key).
+	* java/nio/channels/spi/AbstractSelector.java
+	(provider): Javadoc added.
+	(cancelledKeys): Javadoc added.
+	(cancelKey): Javadoc added, add key to cancelledKeys.
+	(deregister): Implemented.
+
 2004-03-18  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gnu/java/nio/channels/natFileChannelPosix.cc (mapImpl): Cast
