@@ -1,3 +1,8 @@
+2003-01-24  Tom Tromey  <tromey@redhat.com>
+
+	* class.c (build_static_field_ref): Only a String or numeric field
+	can fold to a constant.
+
 2003-01-23  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-parse.c (parse_zip_file_entries): Overwrite trailing \0 of
