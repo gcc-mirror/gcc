@@ -1,3 +1,7 @@
+1998-11-02  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (import_export_decl): Call import_export_class.
+
 1998-10-28  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (finish_struct_1): Don't complain about non-copy

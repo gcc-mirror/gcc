@@ -2824,6 +2824,7 @@ import_export_decl (decl)
   else if (DECL_FUNCTION_MEMBER_P (decl))
     {
       tree ctype = DECL_CLASS_CONTEXT (decl);
+      import_export_class (ctype);
       if (CLASSTYPE_INTERFACE_KNOWN (ctype)
 	  && (! DECL_ARTIFICIAL (decl) || DECL_VINDEX (decl)))
 	{
@@ -2838,6 +2839,10 @@ import_export_decl (decl)
   else if (DECL_ARTIFICIAL (decl) && DECL_MUTABLE_P (decl))
     {
       tree ctype = TREE_TYPE (DECL_NAME (decl));
+
+      if (IS_AGGR_TYPE (ctype))
+	import_export_class (ctype);
+
       if (IS_AGGR_TYPE (ctype) && CLASSTYPE_INTERFACE_KNOWN (ctype)
 	  && TYPE_VIRTUAL_P (ctype)
 	  /* If the type is a cv-qualified variant of a type, then we
