@@ -74,6 +74,7 @@ LEXFLAGS =
 AR = ar
 OLDAR_FLAGS = qc
 AR_FLAGS = rc
+DLLTOOL = dlltool
 SHELL = /bin/sh
 # on sysV, define this as cp.
 INSTALL = @INSTALL@
