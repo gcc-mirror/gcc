@@ -1,3 +1,8 @@
+Fri Nov 21 15:20:05 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (program_transform_cross_name): Clean up "-e" confusion.
+	(GCC_INSTALL_NAME, GCC_CROSS_NAME): Likewise.
+
 Fri Nov 21 19:37:40 1997  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* config/mips/elf64.h (MULTILIB_DEFAULTS): Test for
