@@ -2,6 +2,11 @@
 
 	* BUGS, INSTALL, NEWS: Rebuilt.
 
+Sat Jul 25 17:23:55 1998  Craig Burley  <burley@gnu.org>
+
+	Fix 980615-0.f:
+	* stc.c (ffestc_R1229_start): Set info to ANY as well.
+
 Tue Jul 21 04:33:37 1998  Craig Burley  <burley@gnu.org>
 
 	* g77spec.c (lang_specific_driver): Return unmolested
