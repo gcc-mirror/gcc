@@ -1,3 +1,9 @@
+2000-08-22  Richard Henderson  <rth@cygnus.com>
+
+	* alias.c (init_alias_analysis): Do not register
+	struct_value_incoming_rtx or static_chain_rtx as pointing
+	to stack memory.
+
 Tue Aug 22 01:44:43 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* protoize.c (munge_compile_params): Fix typo and formatting buglets.
