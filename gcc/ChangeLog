@@ -1,3 +1,7 @@
+2001-08-01  Robert Lipe  <robertl@caldera.com>
+
+        * dwarfout.c: Remove reference to README.DWARF.
+
 2001-08-01  Andrew MacLeod  <amacleod@redhat.com>
 
 	* regclass.c (call_really_used_regs): New array for registers which
