@@ -1,3 +1,10 @@
+2003-03-08  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/cris/cris_abi_symbol.c: #include tconfig.h and tm.h, not
+	config.h.
+	* config/cris/cris.h (HAVE_GAS_HIDDEN): Don't define here.
+	* config/cris/aout.h (HAVE_GAS_HIDDEN): Undef.
+
 2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* config/sh/rtemself.h (TARGET_OS_CPP_BUILTINS): Use instead of

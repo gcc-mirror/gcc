@@ -1494,11 +1494,6 @@ call_ ## FUNC (void)						\
 
 #define SUPPORTS_WEAK 1
 
-/* FIXME: This macro isn't documented, but this would probably be an
-   appropriate location.  It's only used in crtstuff.c, else we'd have to
-   handle (to #undef or ignore it) in a.out.  */
-#define HAVE_GAS_HIDDEN 1
-
 /* Remove any previous definition (elfos.h).  */
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
