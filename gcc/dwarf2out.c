@@ -1678,7 +1678,7 @@ output_call_frame_info (for_eh)
          frame.  Make the augmentation string three bytes (including the
          trailing null) so the pointer is 4-byte aligned.  The Solaris ld
          can't handle unaligned relocs.  */
-      dw2_asm_output_nstring ("eh", 3, "CIE Augmentation");
+      dw2_asm_output_nstring ("eh", -1, "CIE Augmentation");
       dw2_asm_output_offset (DWARF2_ADDR_SIZE, "__EXCEPTION_TABLE__",
 			     "pointer to exception region info");
     }
