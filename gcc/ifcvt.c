@@ -1735,8 +1735,10 @@ noce_try_sign_mask (struct noce_if_info *if_info)
     return FALSE;
 
   start_sequence ();
-  c = gen_int_mode (GET_MODE_BITSIZE (mode) - 1, mode);
-  m = expand_binop (mode, ashr_optab, m, c, NULL_RTX, 0, OPTAB_DIRECT);
+  /* Use emit_store_flag to generate "m < 0 ? -1 : 0" instead of expanding
+     "(signed) m >> 31" directly.  This benefits targets with specialized
+     insns to obtain the signmask, but still uses ashr_optab otherwise.  */
+  m = emit_store_flag (gen_reg_rtx (mode), LT, m, const0_rtx, mode, 0, -1);
   t = m ? expand_binop (mode, and_optab, m, t, NULL_RTX, 0, OPTAB_DIRECT)
 	: NULL_RTX;
 
