@@ -2418,7 +2418,14 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	op0 = force_reg (compute_mode, op0);
 
       if (! can_clobber_op0)
-	adjusted_op0 = copy_to_suggested_reg (op0, target, compute_mode);
+	{
+	  if (target && GET_MODE (target) == compute_mode)
+	    adjusted_op0 = target;
+	  else
+	    adjusted_op0 = 0;
+	  adjusted_op0 = copy_to_suggested_reg (op0, adjusted_op0,
+						compute_mode);
+	}
     }
 
   /* Adjust ADJUSTED_OP0 as described above.  Unless CAN_CLOBBER_OP0
