@@ -1,3 +1,46 @@
+Tue Jul  7 01:03:03 1998  Mumit Khan <khan@xraylith.wisc.edu>
+
+	Support for dllimport and dllexport attributes for i386-pe.
+
+	* tree.h (DECL_NON_ADDR_CONST_P): New accessor macro.
+	(struct tree_decl): Add non_addr_const_p field.
+	* tree.c (staticp): Use.
+
+	* i386/cygwin32.h (CPP_PREDEFINES): Map __declspec(x) to GCC
+	attributes.
+	(SUBTARGET_SWITCHES): Switches to turn on/off dllimport|export
+	attributes. Also accept -mwindows option.
+	(VALID_MACHINE_DECL_ATTRIBUTE): New macro.
+	(MERGE_MACHINE_DECL_ATTRIBUTE): New macro.
+	(REDO_SECTION_INFO_P): New macro.
+	(DRECTVE_SECTION_FUNCTION): New macro.
+	(drectve_section): Cover function to implement above.
+	(SWITCH_TO_SECTION_FUNCTION): New macro.
+	(switch_to_section): Covert function to implement above.
+	(EXTRA_SECTIONS): Add in_drectve.
+	(EXTRA_SECTION_FUNCTIONS): Add in_drectve and switch_to_section.
+	(ENCODE_SECTION_INFO): Delete old macro and redefine as a function.
+	(STRIP_NAME_ENCODING): Handle new attributes.
+	(ASM_OUTPUT_LABELREF): New macro.
+	(ASM_OUTPUT_FUNCTION_NAME): New macro.
+	(ASM_OUTPUT_COMMON): New macro.
+	(ASM_OUTPUT_DECLARE_OBJECT_NAME): New macro.
+
+	* i386/mingw32.h (CPP_PREDEFINES): Map __declspec(x) to GCC
+	attributes.
+
+	* i386/winnt.c (i386_pe_valid_decl_attribute_p): New function.
+	(i386_pe_merge_decl_attributes): New function.
+	(i386_pe_check_vtable_importexport): New function.
+	(i386_pe_dllexport_p): New function.
+	(i386_pe_dllimport_p): New function.
+	(i386_pe_dllexport_name_p): New function.
+	(i386_pe_dllimport_name_p): New function.
+	(i386_pe_mark_dllexport): New function.
+	(i386_pe_mark_dllimport): New function.
+	(i386_pe_encode_section_info): New function.
+	(i386_pe_unique_section): Strip encoding from name first.
+
 Tue Jul  7 00:50:17 1998  Manfred Hollstein   (manfred@s-direktnet.de)
 
         * libgcc2.c (L_exit): Provide a fake for atexit on systems which

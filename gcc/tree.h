@@ -1201,6 +1201,10 @@ struct tree_type
 #define DECL_LANG_FLAG_6(NODE) (DECL_CHECK (NODE)->decl.lang_flag_6)
 #define DECL_LANG_FLAG_7(NODE) (DECL_CHECK (NODE)->decl.lang_flag_7)
 
+/* Used to indicate that the pointer to this DECL cannot be treated as
+   an address constant.  */
+#define DECL_NON_ADDR_CONST_P(NODE) (DECL_CHECK (NODE)->decl.non_addr_const_p)
+
 struct tree_decl
 {
   char common[sizeof (struct tree_common)];
@@ -1241,6 +1245,8 @@ struct tree_decl
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
   unsigned lang_flag_7 : 1;
+
+  unsigned non_addr_const_p : 1;
 
   /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
      If built-in, this is the code for which built-in function.
