@@ -76,9 +76,9 @@ endif # CANADIAN
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8
 
 GCJCOMPILE = $(LIBTOOL) --tag=GCJ --mode=compile $(GCJ_WITH_FLAGS) -fassume-compiled -fclasspath=$(here) -L$(here) $(JC1FLAGS) -MD -MT $@ -MF $(@:.lo=.d) -c
-GCJLINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) \
+GCJLINK = $(LIBTOOL) --tag=GCJ --mode=link $(GCJ) -L$(here) $(JC1FLAGS) \
 	$(ICONV_LDFLAGS) $(LDFLAGS) -o $@
-LIBLINK = $(LIBTOOL) --mode=link $(CC) -L$(here) $(JC1FLAGS) \
+LIBLINK = $(LIBTOOL) --tag=CC --mode=link $(CC) -L$(here) $(JC1FLAGS) \
 	$(ICONV_LDFLAGS) $(LDFLAGS) -o $@
 
 ## We define this because otherwise libtool can be run with different
