@@ -342,22 +342,22 @@ from the machine description file `md'.  */\n\n");
   printf ("#endif\n");
 
   if (have_cc0_flag)
-    printf ("#define HAVE_cc0\n");
+    printf ("#define HAVE_cc0 1\n");
 
   if (have_cmove_flag)
-    printf ("#define HAVE_conditional_move\n");
+    printf ("#define HAVE_conditional_move 1\n");
 
   if (have_cond_exec_flag)
-    printf ("#define HAVE_conditional_execution\n");
+    printf ("#define HAVE_conditional_execution 1\n");
 
   if (have_lo_sum_flag)
-    printf ("#define HAVE_lo_sum\n");
+    printf ("#define HAVE_lo_sum 1\n");
 
   if (have_peephole_flag)
-    printf ("#define HAVE_peephole\n");
+    printf ("#define HAVE_peephole 1\n");
 
   if (have_peephole2_flag)
-    printf ("#define HAVE_peephole2\n");
+    printf ("#define HAVE_peephole2 1\n");
 
   fflush (stdout);
   return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
