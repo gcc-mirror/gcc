@@ -25,12 +25,3 @@ Boston, MA 02111-1307, USA.  */
 #define HOST_BITS_PER_INT 32
 #define HOST_BITS_PER_LONG 32
 #define HOST_BITS_PER_LONGLONG 64
-
-/* Arguments to use with `exit'.  */
-#define SUCCESS_EXIT_CODE 0
-#define FATAL_EXIT_CODE 33
-
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.   */
-
-#include "tm.h"

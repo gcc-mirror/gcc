@@ -41,18 +41,8 @@ Boston, MA 02111-1307, USA.  */
 #define USE_C_ALLOCA
 #endif
 
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.  */
-#include "tm.h"
-
-/* Arguments to use with `exit'.  */
-#define SUCCESS_EXIT_CODE 0
-#define FATAL_EXIT_CODE 33
-
 /* If we have defined POSIX, but are compiling in the BSD environment, then
    we need to define getcwd in terms of getwd.  */
 #if defined (POSIX) && defined (_BSD_C)
 #define HAVE_GETWD 1
 #endif
-
-/* EOF xm-arm.h */

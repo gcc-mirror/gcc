@@ -1,3 +1,65 @@
+2001-03-02  Zack Weinberg  <zackw@stanford.edu>
+
+	* configure.in: Kill tm.h.  Include the files in the $tm_file
+	list in all three of config.h, hconfig.h, tconfig.h, after the
+	relevant set of xm_files.  Put TARGET_CPU_DEFAULT in all
+	three, include insn-codes.h in all three (#ifndef GENERATOR_FILE).
+	* configure: Regenerate.
+	* Makefile.in (clean): Don't delete tm.h.
+
+	* system.h: If SUCCESS_EXIT_CODE and FATAL_EXIT_CODE are not
+	defined, set them from EXIT_SUCCESS and EXIT_FAILURE.  If
+	those are not defined, set SEC and FEC to 0 and 1.
+	* gcc.texi: Update to match.
+
+	* crtstuff.c: Include tconfig.h, not auto-host.h and tm.h.
+	* config/fp-bit.c, config/m68k/aux-crt2.asm,
+	config/m68k/aux-crtn.asm, config/m68k/aux-mcount.c:
+	Include tconfig.h, not tm.h.
+
+	* config/xm-lynx.h, config/xm-std32.h,
+	config/a29k/xm-a29k.h, config/a29k/xm-unix.h,
+	config/alpha/xm-alpha.h, config/arc/xm-arc.h,
+	config/avr/xm-avr.h, config/c4x/xm-c4x.h,
+	config/clipper/xm-clix.h, config/convex/xm-convex.h,
+	config/d30v/xm-d30v.h, config/dsp16xx/xm-dsp16xx.h,
+	config/elxsi/xm-elxsi.h, config/fr30/xm-fr30.h,
+	config/h8300/xm-h8300.h, config/i370/xm-linux.h,
+	config/i386/xm-i386.h, config/i860/xm-i860.h,
+	config/i960/xm-i960.h, config/ia64/xm-ia64.h,
+	config/m32r/xm-m32r.h, config/m68hc11/xm-m68hc11.h,
+	config/m88k/xm-m88k.h, config/mcore/xm-mcore.h,
+	config/mips/xm-mips.h, config/mn10200/xm-mn10200.h,
+	config/mn10300/xm-mn10300.h, config/ns32k/xm-ns32k.h,
+	config/pa/xm-linux.h, config/pa/xm-pa.h,
+	config/pa/xm-pa64hpux.h, config/pa/xm-pahpux.h,
+	config/pa/xm-papro.h, config/pdp11/xm-pdp11.h,
+	config/pj/xm-pj.h, config/romp/xm-romp.h,
+	config/rs6000/xm-beos.h, config/rs6000/xm-rs6000.h,
+	config/rs6000/xm-sysv4.h, config/sh/xm-sh.h,
+	config/sparc/xm-sparc.h, config/sparc/xm-sysv4.h,
+	config/v850/xm-v850.h, config/vax/xm-vax.h,
+	config/we32k/xm-we32k.h:
+	Don't include tm.h.
+	Don't define SUCCESS_EXIT_CODE or FATAL_EXIT_CODE.
+
+	* config/i370/xm-i370.h, config/i370/xm-mvs.h,
+	config/i370/xm-oe.h: Don't include tm.h.  Don't define
+	SUCCESS_EXIT_CODE.
+	* config/vax/xm-vms.h: Don't include tm.h.
+
+	* config/xm-lynx.h, config/avr/xm-avr.h,
+	config/fr30/xm-fr30.h, config/pdp11/xm-pdp11.h,
+	Delete; made empty by above changes.
+	* config/i386/xm-lynx.h, config/m68k/xm-lynx.h,
+	config/rs6000/xm-lynx.h, config/sparc/xm-lynx.h:
+	Don't include config/xm-lynx.h or tm.h.
+
+	* config/xm-gnu.h: Don't include fcntl.h.
+	* config/sparc/xm-lynx.h: Don't include sys/types.h and
+	sys/wait.h.
+	* config/clipper/xm-clix.h, config/vax/xm-vax.h: Don't define isinf.
+
 2001-03-02  Richard Henderson  <rth@redhat.com>
 
 	* tm.texi (File Framework): Document UNALIGNED_SHORT_ASM_OP,
@@ -80,7 +142,7 @@
 	(GET_NOTE_INSN_NAME): Cast enum to int.
 	* tree.h (TREE_CODE): Cast to enum tree_code.
 	(TREE_SET_CODE): Cast VALUE to ENUM_BITFIELD(tree_code).
-        * timevar.c (timevar_print): Change loop variable id from enum to
+	* timevar.c (timevar_print): Change loop variable id from enum to
 	unsigned int.
 	* fixinc/fixincl.c (VLEVEL): Cast enums in comparison to unsigned int.
 	* config/i386/i386.md: Use PUT_MODE for mode assignment.
@@ -99,24 +161,24 @@ Fri Mar  2 11:59:43 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-03-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppfiles.c (struct include_file): Update.
-        (stack_include_file): Use search_from.
-        (cpp_included, find_include_file): Update.
-        (cpp_execute_include): Update.  ptr->name may not be
-        null terminated.  Use the new search_from member variable
-        of cpp_buffer.
-        (_cpp_compare_file_date): Similarly.
-        (search_from): New function, similiar to actual_directory.
-        (actual_directory): Delete.
-        (remap_filename): Update.  loc->name may not be null terminated.
-        (struct file_name_list): Rename search_path.  Update.
-        * cpphash.h (struct cpp_buffer): Delete actual_dir.  New members
-        search_from and dir.
-        (struct cpp_reader): Remove actual_dirs.
-        * cppinit.c (struct cpp_pending): Update for renamed objects.
-        (append_include_chain, remove_dup_dir, remove_dup_dirs,
-        merge_include_chains, cpp_destroy, cpp_start_read): Similarly.
-        * cpplib.h (struct cpp_options): Similarly.
+	* cppfiles.c (struct include_file): Update.
+	(stack_include_file): Use search_from.
+	(cpp_included, find_include_file): Update.
+	(cpp_execute_include): Update.  ptr->name may not be
+	null terminated.  Use the new search_from member variable
+	of cpp_buffer.
+	(_cpp_compare_file_date): Similarly.
+	(search_from): New function, similiar to actual_directory.
+	(actual_directory): Delete.
+	(remap_filename): Update.  loc->name may not be null terminated.
+	(struct file_name_list): Rename search_path.  Update.
+	* cpphash.h (struct cpp_buffer): Delete actual_dir.  New members
+	search_from and dir.
+	(struct cpp_reader): Remove actual_dirs.
+	* cppinit.c (struct cpp_pending): Update for renamed objects.
+	(append_include_chain, remove_dup_dir, remove_dup_dirs,
+	merge_include_chains, cpp_destroy, cpp_start_read): Similarly.
+	* cpplib.h (struct cpp_options): Similarly.
 
 2001-03-01  Zack Weinberg  <zackw@stanford.edu>
 
@@ -152,7 +214,7 @@ Fri Mar  2 11:59:43 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* configure.in: Detect stdbool.h.
 	* configure, config.in: Regenerate.
-	* system.h: Include stddef.h here if available.  
+	* system.h: Include stddef.h here if available.
 	Set HAVE__BOOL based on GCC_VERSION and __STDC_VERSION__.
 	Then set up a sensible boolean type at the very end.
 

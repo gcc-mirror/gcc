@@ -27,11 +27,3 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifdef __GNUC__
 #define alloca __builtin_alloca
 #endif
-
-/* Target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.  */
-#include "tm.h"
-
-/* Arguments to use with `exit'.  */
-#define SUCCESS_EXIT_CODE 0
-#define FATAL_EXIT_CODE 33

@@ -44,8 +44,8 @@ Boston, MA 02111-1307, USA.  */
 /* The intended way to use this file is to make two copies, add `#define FLOAT'
    to one copy, then compile both copies and add them to libgcc.a.  */
 
+#include "tconfig.h"
 #include "fp-bit.h"
-#include "tm.h"
 
 /* The following macros can be defined to change the behaviour of this file:
    FLOAT: Implement a `float', aka SFmode, fp library.  If this is not

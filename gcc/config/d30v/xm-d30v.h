@@ -19,14 +19,6 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-/* A C expression for the status code to be returned when the compiler exits
-   after serious errors.  */
-#define FATAL_EXIT_CODE 33
-
-/* A C expression for the status code to be returned when the compiler exits
-   without serious errors.  */
-#define SUCCESS_EXIT_CODE 0
-
 /* Defined if the host machine stores words of multi-word values in big-endian
    order.  (GNU CC does not depend on the host byte ordering within a word.)  */
 #define HOST_WORDS_BIG_ENDIAN
@@ -50,7 +42,3 @@
 #else
 #define alloca __builtin_alloca
 #endif
-
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.   */
-#include "tm.h"

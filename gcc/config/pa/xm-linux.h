@@ -29,12 +29,4 @@ Boston, MA 02111-1307, USA.  */
    matters when cross-compiling.  */
 #define HOST_WORDS_BIG_ENDIAN 1
 
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.   */
-#include "tm.h"
-
-/* Arguments to use with `exit'.  */
-#define SUCCESS_EXIT_CODE 0
-#define FATAL_EXIT_CODE 33
-
 #include <xm-linux.h>

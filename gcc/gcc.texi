@@ -4085,12 +4085,17 @@ Define this macro if the host system is VMS.
 @findex FATAL_EXIT_CODE
 @item FATAL_EXIT_CODE
 A C expression for the status code to be returned when the compiler
-exits after serious errors.
+exits after serious errors.  The default is the system-provided macro
+@samp{EXIT_FAILURE}, or @samp{1} if the system doesn't define that
+macro.  Define this macro only if these defaults are incorrect.
 
 @findex SUCCESS_EXIT_CODE
 @item SUCCESS_EXIT_CODE
 A C expression for the status code to be returned when the compiler
-exits without serious errors.
+exits without serious errors.  (Warnings are not serious errors.)  The
+default is the system-provided macro @samp{EXIT_SUCCESS}, or @samp{0} if
+the system doesn't define that macro.  Define this macro only if these
+defaults are incorrect.
 
 @findex HOST_WORDS_BIG_ENDIAN
 @item HOST_WORDS_BIG_ENDIAN

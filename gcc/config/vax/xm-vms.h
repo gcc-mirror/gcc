@@ -40,10 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #undef FILE_TYPE
 #endif
 
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.   */
-#include "tm.h"
-
 /* This describes the machine the compiler is hosted on.  */
 #define HOST_BITS_PER_CHAR 8
 #define HOST_BITS_PER_SHORT 16

@@ -33,17 +33,6 @@ Boston, MA 02111-1307, USA.  */
    matters when cross-compiling.  */
 #define HOST_WORDS_BIG_ENDIAN 1
 
-/* Place any machine-dependent include files here, in case we
-   are bootstrapping.  */
-
-/* target machine dependencies.
-   tm.h is a symbolic link to the actual target specific file.   */
-#include "tm.h"
-
-/* Arguments to use with `exit'.  */
-#define SUCCESS_EXIT_CODE 0
-#define FATAL_EXIT_CODE 33
-
 /* HP's compiler has problems with enum bitfields.  */
 #define ONLY_INT_FIELDS
 
