@@ -1,3 +1,7 @@
+1998-07-25  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/execute/io0.f: New test.
+
 Fri Jul 17 14:19:32 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.dg/980626-1.c: Expect failures for all toolchains until
