@@ -1799,6 +1799,9 @@ parser_build_binary_op (code, arg1, arg2)
   enum tree_code code1 = ERROR_MARK;
   enum tree_code code2 = ERROR_MARK;
 
+  if (TREE_CODE (result) == ERROR_MARK)
+    return error_mark_node;
+
   if (IS_EXPR_CODE_CLASS (class1))
     code1 = C_EXP_ORIGINAL_CODE (arg1);
   if (IS_EXPR_CODE_CLASS (class2))

@@ -1,3 +1,9 @@
+2002-01-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* c-typeck.c (parser_build_binary_op): If result from
+	build_binary_op is ERROR_MARK just return error_mark_node without
+	further processing.
+
 2002-01-21  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/netbsd.h (TARGET_HAS_F_SETLKW): define.
