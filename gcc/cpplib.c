@@ -185,15 +185,14 @@ static void
 skip_rest_of_line (pfile)
      cpp_reader *pfile;
 {
-  cpp_token token;
-
   /* Discard all stacked contexts.  */
   while (pfile->context != &pfile->base_context)
     _cpp_pop_context (pfile);
 
   /* Sweep up all tokens remaining on the line.  */
-  while (! SEEN_EOL ())
-    _cpp_lex_token (pfile, &token);
+  if (! SEEN_EOL ())
+    while (_cpp_lex_token (pfile)->type != CPP_EOF)
+      ;
 }
 
 /* Ensure there are no stray tokens at the end of a directive.  */
@@ -201,15 +200,9 @@ static void
 check_eol (pfile)
      cpp_reader *pfile;
 {
-  if (! SEEN_EOL ())
-    {
-      cpp_token token;
-
-      _cpp_lex_token (pfile, &token);
-      if (token.type != CPP_EOF)
-	cpp_pedwarn (pfile, "extra tokens at end of #%s directive",
-		     pfile->directive->name);
-    }
+  if (! SEEN_EOL () && _cpp_lex_token (pfile)->type != CPP_EOF)
+    cpp_pedwarn (pfile, "extra tokens at end of #%s directive",
+		 pfile->directive->name);
 }
 
 /* Called when entering a directive, _Pragma or command-line directive.  */
@@ -307,20 +300,20 @@ _cpp_handle_directive (pfile, indented)
      int indented;
 {
   const directive *dir = 0;
-  cpp_token dname;
+  const cpp_token *dname;
   int skip = 1;
 
   start_directive (pfile);
-  _cpp_lex_token (pfile, &dname);
+  dname = _cpp_lex_token (pfile);
 
-  if (dname.type == CPP_NAME)
+  if (dname->type == CPP_NAME)
     {
-      if (dname.val.node->directive_index)
-	dir = &dtable[dname.val.node->directive_index - 1];
+      if (dname->val.node->directive_index)
+	dir = &dtable[dname->val.node->directive_index - 1];
     }
   /* We do not recognise the # followed by a number extension in
      assembler code.  */
-  else if (dname.type == CPP_NUMBER && CPP_OPTION (pfile, lang) != CLK_ASM)
+  else if (dname->type == CPP_NUMBER && CPP_OPTION (pfile, lang) != CLK_ASM)
     {
       dir = &dtable[T_LINE];
       pfile->state.line_extension = 1;
@@ -361,7 +354,7 @@ _cpp_handle_directive (pfile, indented)
 	    dir = 0;
 	}
     }
-  else if (dname.type == CPP_EOF)
+  else if (dname->type == CPP_EOF)
     ;	/* CPP_EOF is the "null directive".  */
   else
     {
@@ -373,7 +366,7 @@ _cpp_handle_directive (pfile, indented)
 	skip = 0;
       else if (!pfile->state.skipping)
 	cpp_error (pfile, "invalid preprocessing directive #%s",
-		   cpp_token_as_text (pfile, &dname));
+		   cpp_token_as_text (pfile, dname));
     }
 
   if (dir)
@@ -414,11 +407,8 @@ static cpp_hashnode *
 lex_macro_node (pfile)
      cpp_reader *pfile;
 {
-  cpp_token token;
   cpp_hashnode *node;
-
-  /* Lex the macro name directly.  */
-  _cpp_lex_token (pfile, &token);
+  const cpp_token *token = _cpp_lex_token (pfile);
 
   /* The token immediately after #define must be an identifier.  That
      identifier may not be "defined", per C99 6.10.8p4.
@@ -427,22 +417,22 @@ lex_macro_node (pfile)
      Finally, the identifier may not have been poisoned.  (In that case
      the lexer has issued the error message for us.)  */
 
-  if (token.type != CPP_NAME)
+  if (token->type != CPP_NAME)
     {
-      if (token.type == CPP_EOF)
+      if (token->type == CPP_EOF)
 	cpp_error (pfile, "no macro name given in #%s directive",
 		   pfile->directive->name);
-      else if (token.flags & NAMED_OP)
+      else if (token->flags & NAMED_OP)
 	cpp_error (pfile,
 	   "\"%s\" cannot be used as a macro name as it is an operator in C++",
-		   NODE_NAME (token.val.node));
+		   NODE_NAME (token->val.node));
       else
 	cpp_error (pfile, "macro names must be identifiers");
 
       return 0;
     }
 
-  node = token.val.node;
+  node = token->val.node;
   if (node->flags & NODE_POISONED)
     return 0;
 
@@ -654,12 +644,11 @@ read_flag (pfile, last)
      cpp_reader *pfile;
      unsigned int last;
 {
-  cpp_token token;
+  const cpp_token *token = _cpp_lex_token (pfile);
 
-  _cpp_lex_token (pfile, &token);
-  if (token.type == CPP_NUMBER && token.val.str.len == 1)
+  if (token->type == CPP_NUMBER && token->val.str.len == 1)
     {
-      unsigned int flag = token.val.str.text[0] - '0';
+      unsigned int flag = token->val.str.text[0] - '0';
 
       if (flag > last && flag <= 4
 	  && (flag != 4 || last == 3)
@@ -667,9 +656,9 @@ read_flag (pfile, last)
 	return flag;
     }
 
-  if (token.type != CPP_EOF)
+  if (token->type != CPP_EOF)
     cpp_error (pfile, "invalid flag \"%s\" in line directive",
-	       cpp_token_as_text (pfile, &token));
+	       cpp_token_as_text (pfile, token));
   return 0;
 }
 
@@ -1033,22 +1022,22 @@ do_pragma_poison (pfile)
 {
   /* Poison these symbols so that all subsequent usage produces an
      error message.  */
-  cpp_token tok;
+  const cpp_token *tok;
   cpp_hashnode *hp;
 
   pfile->state.poisoned_ok = 1;
   for (;;)
     {
-      _cpp_lex_token (pfile, &tok);
-      if (tok.type == CPP_EOF)
+      tok = _cpp_lex_token (pfile);
+      if (tok->type == CPP_EOF)
 	break;
-      if (tok.type != CPP_NAME)
+      if (tok->type != CPP_NAME)
 	{
 	  cpp_error (pfile, "invalid #pragma GCC poison directive");
 	  break;
 	}
 
-      hp = tok.val.node;
+      hp = tok->val.node;
       if (hp->flags & NODE_POISONED)
 	continue;
 

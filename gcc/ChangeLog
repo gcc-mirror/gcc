@@ -1,5 +1,14 @@
 2001-09-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* cpphash.h (_cpp_lex_token): Update prototype.
+	* cpplex.c (_cpp_lex_token): New prototype.
+	* cpplib.c (skip_rest_of_line, check_eol, _cpp_handle_directive,
+	lex_macro_node, read_flag, do_pragma_poison): Update.
+	* cppmacro.c (cpp_get_token, parse_params,
+	lex_expansion_token): Update.
+
+2001-09-16  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* cppmain.c (scan_translation_unit): Don't worry about
 	putting a space after hashes.
 	* cpplib.c (directive_diagnostics): New.

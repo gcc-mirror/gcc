@@ -933,10 +933,9 @@ next_tokenrun (run)
 }
 
 /* Lex a token into RESULT (external interface).  */
-void
-_cpp_lex_token (pfile, dest)
+const cpp_token *
+_cpp_lex_token (pfile)
      cpp_reader *pfile;
-     cpp_token *dest;
 {
   cpp_token *result;
 
@@ -979,7 +978,7 @@ _cpp_lex_token (pfile, dest)
 	break;
     }
 
-  *dest = *result;
+  return result;
 }
 
 /* Lex a token into RESULT.  When meeting a newline, returns CPP_EOF

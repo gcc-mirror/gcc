@@ -912,7 +912,7 @@ cpp_get_token (pfile, token)
 
       /* Context->prev == 0 <=> base context.  */
       if (!context->prev)
-	_cpp_lex_token (pfile, token);
+	*token = *_cpp_lex_token (pfile);
       else if (context->list.first != context->list.limit)
 	{
 	  *token = *context->list.first++;
@@ -1124,19 +1124,18 @@ parse_params (pfile, macro)
      cpp_reader *pfile;
      cpp_macro *macro;
 {
-  cpp_token token;
   unsigned int prev_ident = 0;
 
   macro->params = (cpp_hashnode **) POOL_FRONT (&pfile->macro_pool);
   for (;;)
     {
-      _cpp_lex_token (pfile, &token);
+      const cpp_token *token = _cpp_lex_token (pfile);
 
-      switch (token.type)
+      switch (token->type)
 	{
 	default:
 	  cpp_error (pfile, "\"%s\" may not appear in macro parameter list",
-		     cpp_token_as_text (pfile, &token));
+		     cpp_token_as_text (pfile, token));
 	  return 0;
 
 	case CPP_NAME:
@@ -1147,7 +1146,7 @@ parse_params (pfile, macro)
 	    }
 	  prev_ident = 1;
 
-	  if (save_parameter (pfile, macro, token.val.node))
+	  if (save_parameter (pfile, macro, token->val.node))
 	    return 0;
 	  continue;
 
@@ -1179,8 +1178,8 @@ parse_params (pfile, macro)
 	    cpp_pedwarn (pfile, "ISO C does not permit named variadic macros");
 
 	  /* We're at the end, and just expect a closing parenthesis.  */
-	  _cpp_lex_token (pfile, &token);
-	  if (token.type == CPP_CLOSE_PAREN)
+	  token = _cpp_lex_token (pfile);
+	  if (token->type == CPP_CLOSE_PAREN)
 	    break;
 	  /* Fall through.  */
 
@@ -1214,7 +1213,7 @@ lex_expansion_token (pfile, macro)
     }
 
   macro->count++;
-  _cpp_lex_token (pfile, token);
+  *token = *_cpp_lex_token (pfile);
 
   /* Is this an argument?  */
   if (token->type == CPP_NAME && token->val.node->arg_index)
