@@ -1246,7 +1246,7 @@ c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_COMMON_H) \
 
 # A file used by all variants of C and some other languages.
 
-attribs.o : attribs.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(OBSTACK_H) flags.h \
+attribs.o : attribs.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) flags.h \
 	toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) $(EXPR_H) $(TM_P_H) \
 	builtin-types.def $(TARGET_H) langhooks.h
 

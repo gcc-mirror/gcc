@@ -1,3 +1,7 @@
+2002-08-13  Geoffrey Keating  <geoffk@redhat.com>
+
+	* Makefile.in (attribs.o): Remove $(OBSTACK_H) dependency.
+
 2002-08-13  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (c_common_init_options): Extra braces needed.
