@@ -392,9 +392,10 @@ static void free_reg_cond_life_info	PARAMS ((splay_tree_value));
 static int flush_reg_cond_reg_1		PARAMS ((splay_tree_node, void *));
 static void flush_reg_cond_reg		PARAMS ((struct propagate_block_info *,
 						 int));
-static rtx ior_reg_cond			PARAMS ((rtx, rtx));
+static rtx elim_reg_cond		PARAMS ((rtx, unsigned int));
+static rtx ior_reg_cond			PARAMS ((rtx, rtx, int));
 static rtx not_reg_cond			PARAMS ((rtx));
-static rtx nand_reg_cond		PARAMS ((rtx, rtx));
+static rtx and_reg_cond			PARAMS ((rtx, rtx, int));
 #endif
 #ifdef AUTO_INC_DEC
 static void attempt_auto_inc		PARAMS ((struct propagate_block_info *,
@@ -3894,8 +3895,7 @@ init_propagate_block_info (bb, live, local_set, cond_local_set, flags)
   /* If this block ends in a conditional branch, for each register live
      from one side of the branch and not the other, record the register
      as conditionally dead.  */
-  if ((flags & (PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE))
-      && GET_CODE (bb->end) == JUMP_INSN
+  if (GET_CODE (bb->end) == JUMP_INSN
       && any_condjump_p (bb->end))
     {
       regset_head diff_head;
@@ -3969,7 +3969,7 @@ init_propagate_block_info (bb, live, local_set, cond_local_set, flags)
 		 cond = cond_false;
 	       else
 		 cond = cond_true;
-	       rcli->condition = alloc_EXPR_LIST (0, cond, NULL_RTX);
+	       rcli->condition = cond;
 
 	       splay_tree_insert (pbi->reg_cond_dead, i,
 				  (splay_tree_value) rcli);
@@ -4898,7 +4898,7 @@ mark_regno_cond_dead (pbi, regno, cond)
 	     Record the current condition as the condition under
 	     which it is dead.  */
 	  rcli = (struct reg_cond_life_info *) xmalloc (sizeof (*rcli));
-	  rcli->condition = alloc_EXPR_LIST (0, cond, NULL_RTX);
+	  rcli->condition = cond;
 	  splay_tree_insert (pbi->reg_cond_dead, regno,
 			     (splay_tree_value) rcli);
 
@@ -4913,7 +4913,7 @@ mark_regno_cond_dead (pbi, regno, cond)
 	     Add the new condition to the old.  */
 	  rcli = (struct reg_cond_life_info *) node->value;
 	  ncond = rcli->condition;
-	  ncond = ior_reg_cond (ncond, cond);
+	  ncond = ior_reg_cond (ncond, cond, 1);
 
 	  /* If the register is now unconditionally dead,
 	     remove the entry in the splay_tree.  */
@@ -4941,7 +4941,6 @@ free_reg_cond_life_info (value)
      splay_tree_value value;
 {
   struct reg_cond_life_info *rcli = (struct reg_cond_life_info *) value;
-  free_EXPR_LIST_list (&rcli->condition);
   free (rcli);
 }
 
@@ -4955,36 +4954,26 @@ flush_reg_cond_reg_1 (node, data)
   struct reg_cond_life_info *rcli;
   int *xdata = (int *) data;
   unsigned int regno = xdata[0];
-  rtx c, *prev;
 
   /* Don't need to search if last flushed value was farther on in
      the in-order traversal.  */
   if (xdata[1] >= (int) node->key)
     return 0;
-
+  
   /* Splice out portions of the expression that refer to regno.  */
   rcli = (struct reg_cond_life_info *) node->value;
-  c = *(prev = &rcli->condition);
-  while (c)
-    {
-      if (regno == REGNO (XEXP (XEXP (c, 0), 0)))
-	{
-	  rtx next = XEXP (c, 1);
-	  free_EXPR_LIST_node (c);
-	  c = *prev = next;
-	}
-      else
-	c = *(prev = &XEXP (c, 1));
-    }
+  rcli->condition = elim_reg_cond (rcli->condition, regno);
 
-  /* If the entire condition is now NULL, signal the node to be removed.  */
-  if (! rcli->condition)
+  /* If the entire condition is now false, signal the node to be removed.  */
+  if (rcli->condition == const0_rtx)
     {
       xdata[1] = node->key;
       return -1;
     }
-  else
-    return 0;
+  else if (rcli->condition == const1_rtx)
+    abort ();
+
+  return 0;
 }
 
 /* Flush all (sub) expressions referring to REGNO from REG_COND_LIVE.  */
@@ -5005,47 +4994,90 @@ flush_reg_cond_reg (pbi, regno)
   CLEAR_REGNO_REG_SET (pbi->reg_cond_reg, regno);
 }
 
-/* Logical arithmetic on predicate conditions.  IOR, NOT and NAND.
-   We actually use EXPR_LIST to chain the sub-expressions together
-   instead of IOR because it's easier to manipulate and we have
-   the lists.c functions to reuse nodes.
-
-   Return a new rtl expression as appropriate.  */
+/* Logical arithmetic on predicate conditions.  IOR, NOT and AND.
+   For ior/and, the ADD flag determines whether we want to add the new
+   condition X to the old one unconditionally.  If it is zero, we will
+   only return a new expression if X allows us to simplify part of
+   OLD, otherwise we return OLD unchanged to the caller.
+   If ADD is nonzero, we will return a new condition in all cases.  The
+   toplevel caller of one of these functions should always pass 1 for
+   ADD.  */
 
 static rtx
-ior_reg_cond (old, x)
+ior_reg_cond (old, x, add)
      rtx old, x;
+     int add;
 {
-  enum rtx_code x_code;
-  rtx x_reg;
-  rtx c;
+  rtx op0, op1;
 
-  /* We expect these conditions to be of the form (eq reg 0).  */
-  x_code = GET_CODE (x);
-  if (GET_RTX_CLASS (x_code) != '<'
-      || GET_CODE (x_reg = XEXP (x, 0)) != REG
-      || XEXP (x, 1) != const0_rtx)
-    abort ();
-
-  /* Search the expression for an existing sub-expression of X_REG.  */
-  for (c = old; c; c = XEXP (c, 1))
+  switch (GET_CODE (old))
     {
-      rtx y = XEXP (c, 0);
-      if (REGNO (XEXP (y, 0)) == REGNO (x_reg))
+    case IOR:
+      op0 = ior_reg_cond (XEXP (old, 0), x, 0);
+      op1 = ior_reg_cond (XEXP (old, 1), x, 0);
+      if (op0 != XEXP (old, 0) || op1 != XEXP (old, 1))
 	{
-	  /* If we find X already present in OLD, we need do nothing.  */
-	  if (GET_CODE (y) == x_code)
-	    return old;
-
-	  /* If we find X being a compliment of a condition in OLD,
-	     then the entire condition is true.  */
-	  if (GET_CODE (y) == reverse_condition (x_code))
+	  if (op0 == const0_rtx)
+	    return op1;
+	  if (op1 == const0_rtx)
+	    return op0;
+	  if (op0 == const1_rtx || op1 == const1_rtx)
 	    return const1_rtx;
+	  if (op0 == XEXP (old, 0))
+	    op0 = gen_rtx_IOR (0, op0, x);
+	  else
+	    op1 = gen_rtx_IOR (0, op1, x);
+	  return gen_rtx_IOR (0, op0, op1);
 	}
-    }
+      if (! add)
+	return old;
+      return gen_rtx_IOR (0, old, x);
 
-  /* Otherwise just add to the chain.  */
-  return alloc_EXPR_LIST (0, x, old);
+    case AND:
+      op0 = ior_reg_cond (XEXP (old, 0), x, 0);
+      op1 = ior_reg_cond (XEXP (old, 1), x, 0);
+      if (op0 != XEXP (old, 0) || op1 != XEXP (old, 1))
+	{
+	  if (op0 == const1_rtx)
+	    return op1;
+	  if (op1 == const1_rtx)
+	    return op0;
+	  if (op0 == const0_rtx || op1 == const0_rtx)
+	    return const0_rtx;
+	  if (op0 == XEXP (old, 0))
+	    op0 = gen_rtx_IOR (0, op0, x);
+	  else
+	    op1 = gen_rtx_IOR (0, op1, x);
+	  return gen_rtx_AND (0, op0, op1);
+	}
+      if (! add)
+	return old;
+      return gen_rtx_IOR (0, old, x);
+
+    case NOT:
+      op0 = and_reg_cond (XEXP (old, 0), not_reg_cond (x), 0);
+      if (op0 != XEXP (old, 0))
+	return not_reg_cond (op0);
+      if (! add)
+	return old;
+      return gen_rtx_IOR (0, old, x);
+
+    case EQ:
+    case NE:
+      if ((GET_CODE (x) == EQ || GET_CODE (x) == NE)
+	  && GET_CODE (x) != GET_CODE (old)
+	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
+	return const1_rtx;
+      if (GET_CODE (x) == GET_CODE (old)
+	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
+	return old;
+      if (! add)
+	return old;
+      return gen_rtx_IOR (0, old, x);
+
+    default:
+      abort ();
+    }
 }
 
 static rtx
@@ -5053,63 +5085,160 @@ not_reg_cond (x)
      rtx x;
 {
   enum rtx_code x_code;
-  rtx x_reg;
 
-  /* We expect these conditions to be of the form (eq reg 0).  */
+  if (x == const0_rtx)
+    return const1_rtx;
+  else if (x == const1_rtx)
+    return const0_rtx;
   x_code = GET_CODE (x);
-  if (GET_RTX_CLASS (x_code) != '<'
-      || GET_CODE (x_reg = XEXP (x, 0)) != REG
-      || XEXP (x, 1) != const0_rtx)
-    abort ();
+  if (x_code == NOT)
+    return XEXP (x, 0);
+  if (GET_RTX_CLASS (x_code) == '<'
+      && GET_CODE (XEXP (x, 0)) == REG)
+    {
+      if (XEXP (x, 1) != const0_rtx)
+	abort ();
 
-  return alloc_EXPR_LIST (0, gen_rtx_fmt_ee (reverse_condition (x_code),
-					     VOIDmode, x_reg, const0_rtx),
-			  NULL_RTX);
+      return gen_rtx_fmt_ee (reverse_condition (x_code),
+			     VOIDmode, XEXP (x, 0), const0_rtx);
+    }
+  return gen_rtx_NOT (0, x);
 }
 
 static rtx
-nand_reg_cond (old, x)
+and_reg_cond (old, x, add)
      rtx old, x;
+     int add;
 {
-  enum rtx_code x_code;
-  rtx x_reg;
-  rtx c, *prev;
+  rtx op0, op1;
 
-  /* We expect these conditions to be of the form (eq reg 0).  */
-  x_code = GET_CODE (x);
-  if (GET_RTX_CLASS (x_code) != '<'
-      || GET_CODE (x_reg = XEXP (x, 0)) != REG
-      || XEXP (x, 1) != const0_rtx)
-    abort ();
-
-  /* Search the expression for an existing sub-expression of X_REG.  */
-
-  for (c = *(prev = &old); c; c = *(prev = &XEXP (c, 1)))
+  switch (GET_CODE (old))
     {
-      rtx y = XEXP (c, 0);
-      if (REGNO (XEXP (y, 0)) == REGNO (x_reg))
+    case IOR:
+      op0 = and_reg_cond (XEXP (old, 0), x, 0);
+      op1 = and_reg_cond (XEXP (old, 1), x, 0);
+      if (op0 != XEXP (old, 0) || op1 != XEXP (old, 1))
 	{
-	  /* If we find X already present in OLD, then we need to
-	     splice it out.  */
-	  if (GET_CODE (y) == x_code)
-	    {
-	      *prev = XEXP (c, 1);
-	      free_EXPR_LIST_node (c);
-	      return old ? old : const0_rtx;
-	    }
-
-	  /* If we find X being a compliment of a condition in OLD,
-	     then we need do nothing.  */
-	  if (GET_CODE (y) == reverse_condition (x_code))
-	    return old;
+	  if (op0 == const0_rtx)
+	    return op1;
+	  if (op1 == const0_rtx)
+	    return op0;
+	  if (op0 == const1_rtx || op1 == const1_rtx)
+	    return const1_rtx;
+	  if (op0 == XEXP (old, 0))
+	    op0 = gen_rtx_AND (0, op0, x);
+	  else
+	    op1 = gen_rtx_AND (0, op1, x);
+	  return gen_rtx_IOR (0, op0, op1);
 	}
-    }
+      if (! add)
+	return old;
+      return gen_rtx_AND (0, old, x);
 
-  /* Otherwise, by implication, the register in question is now live for
-     the inverse of the condition X.  */
-  return alloc_EXPR_LIST (0, gen_rtx_fmt_ee (reverse_condition (x_code),
-					     VOIDmode, x_reg, const0_rtx),
-			  old);
+    case AND:
+      op0 = and_reg_cond (XEXP (old, 0), x, 0);
+      op1 = and_reg_cond (XEXP (old, 1), x, 0);
+      if (op0 != XEXP (old, 0) || op1 != XEXP (old, 1))
+	{
+	  if (op0 == const1_rtx)
+	    return op1;
+	  if (op1 == const1_rtx)
+	    return op0;
+	  if (op0 == const0_rtx || op1 == const0_rtx)
+	    return const0_rtx;
+	  if (op0 == XEXP (old, 0))
+	    op0 = gen_rtx_AND (0, op0, x);
+	  else
+	    op1 = gen_rtx_AND (0, op1, x);
+	  return gen_rtx_AND (0, op0, op1);
+	}
+      if (! add)
+	return old;
+      return gen_rtx_AND (0, old, x);
+
+    case NOT:
+      op0 = ior_reg_cond (XEXP (old, 0), not_reg_cond (x), 0);
+      if (op0 != XEXP (old, 0))
+	return not_reg_cond (op0);
+      if (! add)
+	return old;
+      return gen_rtx_AND (0, old, x);
+
+    case EQ:
+    case NE:
+      if ((GET_CODE (x) == EQ || GET_CODE (x) == NE)
+	  && GET_CODE (x) != GET_CODE (old)
+	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
+	return const0_rtx;
+      if (GET_CODE (x) == GET_CODE (old)
+	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
+	return old;
+      if (! add)
+	return old;
+      return gen_rtx_AND (0, old, x);
+
+    default:
+      abort ();
+    }
+}
+
+/* Given a condition X, remove references to reg REGNO and return the
+   new condition.  The removal will be done so that all conditions
+   involving REGNO are considered to evaluate to false.  This function
+   is used when the value of REGNO changes.  */
+
+static rtx
+elim_reg_cond (x, regno)
+     rtx x;
+     unsigned int regno;
+{
+  rtx op0, op1;
+  switch (GET_CODE (x))
+    {
+    case AND:
+      op0 = elim_reg_cond (XEXP (x, 0), regno);
+      op1 = elim_reg_cond (XEXP (x, 1), regno);
+      if (op0 == const0_rtx || op1 == const0_rtx)
+	return const0_rtx;
+      if (op0 == const1_rtx)
+	return op1;
+      if (op1 == const1_rtx)
+	return op0;
+      if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1))
+	return x;
+      return gen_rtx_AND (0, op0, op1);
+
+    case IOR:
+      op0 = elim_reg_cond (XEXP (x, 0), regno);
+      op1 = elim_reg_cond (XEXP (x, 1), regno);
+      if (op0 == const1_rtx || op1 == const1_rtx)
+	return const1_rtx;
+      if (op0 == const0_rtx)
+	return op1;
+      if (op1 == const0_rtx)
+	return op0;
+      if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1))
+	return x;
+      return gen_rtx_IOR (0, op0, op1);
+
+    case NOT:
+      op0 = elim_reg_cond (XEXP (x, 0), regno);
+      if (op0 == const0_rtx)
+	return const1_rtx;
+      if (op0 == const1_rtx)
+	return const0_rtx;
+      if (op0 != XEXP (x, 0))
+	return not_reg_cond (op0);
+      return x;
+
+    case EQ:
+    case NE:
+      if (REGNO (XEXP (x, 0)) == regno)
+	return const0_rtx;
+      return x;
+    default:
+      abort ();
+    }
 }
 #endif /* HAVE_conditional_execution */
 
@@ -5513,7 +5642,7 @@ mark_used_reg (pbi, reg, cond, insn)
 		 Subtract the new life cond from the old death cond.  */
 	      rcli = (struct reg_cond_life_info *) node->value;
 	      ncond = rcli->condition;
-	      ncond = nand_reg_cond (ncond, cond);
+	      ncond = and_reg_cond (ncond, not_reg_cond (cond), 1);
 
 	      /* If the register is now unconditionally live, remove the
 		 entry in the splay_tree.  */
