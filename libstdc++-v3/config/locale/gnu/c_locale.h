@@ -68,11 +68,11 @@ namespace std
     int
     __convert_from_v(char* __out, const int __size, const char* __fmt,
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-		     _Tv __v, const __c_locale& __cloc, int __prec = -1)
+		     _Tv __v, const __c_locale& __cloc, int __prec)
     {
       __c_locale __old = __gnu_cxx::__uselocale(__cloc);
 #else
-		     _Tv __v, const __c_locale&, int __prec = -1)
+		     _Tv __v, const __c_locale&, int __prec)
     {
       char* __old = std::setlocale(LC_ALL, NULL);
       char* __sav = new char[std::strlen(__old) + 1];
@@ -80,17 +80,10 @@ namespace std
       std::setlocale(LC_ALL, "C");
 #endif
 
-      int __ret;
 #ifdef _GLIBCXX_USE_C99
-      if (__prec >= 0)
-        __ret = std::snprintf(__out, __size, __fmt, __prec, __v);
-      else
-        __ret = std::snprintf(__out, __size, __fmt, __v);
+      const int __ret = std::snprintf(__out, __size, __fmt, __prec, __v);
 #else
-      if (__prec >= 0)
-        __ret = std::sprintf(__out, __fmt, __prec, __v);
-      else
-        __ret = std::sprintf(__out, __fmt, __v);
+      const int __ret = std::sprintf(__out, __fmt, __prec, __v);
 #endif
 
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
