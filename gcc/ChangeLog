@@ -1,3 +1,8 @@
+Thu Oct 28 02:44:03 1999  Glen Nakamura  <glen.nakamura@usa.net>
+
+	* cccp.c (rescan): Fixed obp pointer handling around call to
+	check_expand subroutine.
+
 Thu Oct 28 02:15:22 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* arm.md (adddi3, adddi_sesidi_di, adddi_sesidi_di): Add
