@@ -322,7 +322,7 @@ public class LinkedList extends AbstractSequentialList
 	prev.next = e;
 	prev = e;
       }
-    // Fix up the links between the last new entry and the following entry.
+    // Link the new chain of entries into the list.
     prev.next = after;
     if (after != null)
       after.previous = e;
@@ -541,7 +541,7 @@ public class LinkedList extends AbstractSequentialList
      * position, in a list of given size.
      */
     LinkedListItr(int index)
-    {      
+    {
       if (index == size)
         {
           next = null;
@@ -621,8 +621,8 @@ public class LinkedList extends AbstractSequentialList
 
       next = lastReturned.next;
       previous = lastReturned.previous;
-      // Because the list is being manipulated directly, there's no need to 
-      // touch either modCount or knownMod here.
+      modCount++;
+      knownMod++;
       removeEntry(lastReturned);
       
       lastReturned = null;
@@ -631,11 +631,27 @@ public class LinkedList extends AbstractSequentialList
     public void add(Object o)
     {
       checkMod();
-      // Because the list is being manipulated directly, there's no need to 
-      // touch either modCount or knownMod here.
+      modCount++;
+      knownMod++;
       Entry e = new Entry(o);
-      addEntry(position, e);
+      e.previous = previous;
+      e.next = next;
+
+      if (previous != null)
+	previous.next = e;
+      else
+	first = e;
+
+      if (next != null)
+        {
+	  next.previous = e;
+	  next = next.next;
+	}
+      else
+	last = e;
+
       previous = e;
+      size++;
       position++;
       lastReturned = null;
     }
