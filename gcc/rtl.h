@@ -549,7 +549,11 @@ enum reg_note
   REG_MAYBE_DEAD,
 
   /* Indicates that a call does not return.  */
-  REG_NORETURN
+  REG_NORETURN,
+
+  /* Indicates that an indirect jump is a non-local goto instead of a 
+     computed goto.  */
+  REG_NON_LOCAL_GOTO
 };
 
 /* The base value for branch probability notes.  */

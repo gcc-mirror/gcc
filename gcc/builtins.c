@@ -649,7 +649,7 @@ void
 expand_builtin_longjmp (buf_addr, value)
      rtx buf_addr, value;
 {
-  rtx fp, lab, stack;
+  rtx fp, lab, stack, insn;
   enum machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
 
   if (setjmp_alias_set == -1)
@@ -706,6 +706,18 @@ expand_builtin_longjmp (buf_addr, value)
 	  emit_indirect_jump (lab);
 	}
     }
+
+  /* Search backwards and mark the jump insn as a non-local goto.
+     Note that this precludes the use of __builtin_longjmp to a
+     __builtin_setjmp target in the same function.  However, we've
+     already cautioned the user that these functions are for
+     internal exception handling use only.  */
+  for (insn = get_last_insn ();
+       GET_CODE (insn) != JUMP_INSN;
+       insn = PREV_INSN (insn))
+    continue;
+  REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO, const0_rtx,
+				      REG_NOTES (insn));
 }
 
 /* Get a MEM rtx for expression EXP which is the address of an operand
