@@ -1,3 +1,10 @@
+2003-04-19  Scott Gilbertson  <scottg@mantatest.com>
+
+	* libjava/gnu/gcj/xlib/natFont.cc (getStringWidth): Support 16-bit
+	characters.
+	* libjava/gnu/gcj/xlib/natGC.cc (drawString): Support 16-bit
+	characters.
+
 2003-04-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* java/lang/ieeefp.h: Handle ARM platforms that have pure-endian
