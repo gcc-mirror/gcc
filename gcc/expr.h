@@ -45,9 +45,27 @@ Boston, MA 02111-1307, USA.  */
    EXPAND_SUM means it is ok to return a PLUS rtx or MULT rtx.
    EXPAND_INITIALIZER is similar but also record any labels on forced_labels.
    EXPAND_CONST_ADDRESS means it is ok to return a MEM whose address
-    is a constant that is not a legitimate address.  */
+    is a constant that is not a legitimate address.
+   EXPAND_MEMORY_USE_* are explained below.  */
 enum expand_modifier {EXPAND_NORMAL, EXPAND_SUM,
-		      EXPAND_CONST_ADDRESS, EXPAND_INITIALIZER};
+		      EXPAND_CONST_ADDRESS, EXPAND_INITIALIZER,
+		      EXPAND_MEMORY_USE_WO, EXPAND_MEMORY_USE_RW,
+		      EXPAND_MEMORY_USE_BAD, EXPAND_MEMORY_USE_DONT};
+
+/* Argument for chkr_* functions.
+   MEMORY_USE_RO: the pointer reads memory.
+   MEMORY_USE_WO: the pointer writes to memory.
+   MEMORY_USE_RW: the pointer modifies memory (ie it reads and writes). An
+                  example is (*ptr)++
+   MEMORY_USE_BAD: use this if you don't know the behavior of the pointer, or
+                   if you know there are no pointers.  Using an INDIRECT_REF
+                   with MEMORY_USE_BAD will abort.
+   MEMORY_USE_TW: just test for writing, without update.  Special.
+   MEMORY_USE_DONT: the memory is neither read nor written.  This is used by
+   		   '->' and '.'.  */
+enum memory_use_mode {MEMORY_USE_BAD = 0, MEMORY_USE_RO = 1,
+		      MEMORY_USE_WO = 2, MEMORY_USE_RW = 3,
+		      MEMORY_USE_TW = 6, MEMORY_USE_DONT = 99};
 
 /* List of labels that must never be deleted.  */
 extern rtx forced_labels;
@@ -150,7 +168,7 @@ struct args_size
 ((SIZE).var == 0 ? GEN_INT ((SIZE).constant)	\
  : expand_expr (size_binop (PLUS_EXPR, (SIZE).var,			\
 			    size_int ((SIZE).constant)),		\
-		NULL_RTX, VOIDmode, 0))
+		NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_BAD))
 
 /* Convert the implicit sum in a `struct args_size' into a tree.  */
 #define ARGS_SIZE_TREE(SIZE)						\
@@ -482,6 +500,12 @@ extern rtx fixunsxfti_libfunc;
 extern rtx fixunstfsi_libfunc;
 extern rtx fixunstfdi_libfunc;
 extern rtx fixunstfti_libfunc;
+
+/* For check-memory-usage.  */
+extern rtx chkr_check_addr_libfunc;
+extern rtx chkr_set_right_libfunc;
+extern rtx chkr_copy_bitmap_libfunc;
+extern rtx chkr_check_exec_libfunc;
 
 typedef rtx (*rtxfun) ();
 
