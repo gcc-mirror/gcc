@@ -1,3 +1,8 @@
+2003-05-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY): Second
+	parameter of ASM_OUTPUT_SKIP must have type unsigned HOST_WIDE_INT.
+
 2003-05-12  DJ Delorie  <dj@redhat.com>
 
 	* expr.c (move_by_pieces): Honor the alignment of TO and FROM.
