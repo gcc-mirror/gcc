@@ -1,3 +1,11 @@
+2004-03-11  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+            Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/14522
+	* configure.in: Cope with shell that do not support nesting
+	quotes inside quoted backquote substitutions.
+	* configure: Regenerate.
+
 2004-03-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR bootstrap/14522
