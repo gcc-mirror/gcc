@@ -2713,37 +2713,46 @@ cp_expand_stmt (tree t)
 
 static tree
 simplify_aggr_init_exprs_r (tree* tp, 
-                            int* walk_subtrees ATTRIBUTE_UNUSED , 
-                            void* data ATTRIBUTE_UNUSED )
+                            int* walk_subtrees,
+                            void* data ATTRIBUTE_UNUSED)
 {
-  tree aggr_init_expr;
-  tree call_expr;
-  tree fn;
-  tree args;
-  tree slot;
-  tree type;
-  enum style_t { ctor, arg, pcc } style;
-
-  aggr_init_expr = *tp;
   /* We don't need to walk into types; there's nothing in a type that
      needs simplification.  (And, furthermore, there are places we
      actively don't want to go.  For example, we don't want to wander
      into the default arguments for a FUNCTION_DECL that appears in a
      CALL_EXPR.)  */
-  if (TYPE_P (aggr_init_expr))
+  if (TYPE_P (*tp))
     {
       *walk_subtrees = 0;
       return NULL_TREE;
     }
   /* Only AGGR_INIT_EXPRs are interesting.  */
-  else if (TREE_CODE (aggr_init_expr) != AGGR_INIT_EXPR)
+  else if (TREE_CODE (*tp) != AGGR_INIT_EXPR)
     return NULL_TREE;
 
+  simplify_aggr_init_expr (tp);
+
+  /* Keep iterating.  */
+  return NULL_TREE;
+}
+
+/* Replace the AGGR_INIT_EXPR at *TP with an equivalent CALL_EXPR.  This
+   function is broken out from the above for the benefit of the tree-ssa
+   project.  */
+
+void
+simplify_aggr_init_expr (tree *tp)
+{
+  tree aggr_init_expr = *tp;
+
   /* Form an appropriate CALL_EXPR.  */
-  fn = TREE_OPERAND (aggr_init_expr, 0);
-  args = TREE_OPERAND (aggr_init_expr, 1);
-  slot = TREE_OPERAND (aggr_init_expr, 2);
-  type = TREE_TYPE (aggr_init_expr);
+  tree fn = TREE_OPERAND (aggr_init_expr, 0);
+  tree args = TREE_OPERAND (aggr_init_expr, 1);
+  tree slot = TREE_OPERAND (aggr_init_expr, 2);
+  tree type = TREE_TYPE (aggr_init_expr);
+
+  tree call_expr;
+  enum style_t { ctor, arg, pcc } style;
 
   if (AGGR_INIT_VIA_CTOR_P (aggr_init_expr))
     style = ctor;
@@ -2762,15 +2771,26 @@ simplify_aggr_init_exprs_r (tree* tp,
     {
       /* Pass the address of the slot.  If this is a constructor, we
 	 replace the first argument; otherwise, we tack on a new one.  */
+      tree addr;
+
       if (style == ctor)
 	args = TREE_CHAIN (args);
 
       cxx_mark_addressable (slot);
-      args = tree_cons (NULL_TREE, 
-			build1 (ADDR_EXPR, 
-				build_pointer_type (TREE_TYPE (slot)),
-				slot),
-			args);
+      addr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (slot)), slot);
+      if (style == arg)
+	{
+	  /* The return type might have different cv-quals from the slot.  */
+	  tree fntype = TREE_TYPE (TREE_TYPE (fn));
+#ifdef ENABLE_CHECKING
+	  if (TREE_CODE (fntype) != FUNCTION_TYPE
+	      && TREE_CODE (fntype) != METHOD_TYPE)
+	    abort ();
+#endif
+	  addr = convert (build_pointer_type (TREE_TYPE (fntype)), addr);
+	}
+
+      args = tree_cons (NULL_TREE, addr, args);
     }
 
   call_expr = build (CALL_EXPR, 
@@ -2801,9 +2821,6 @@ simplify_aggr_init_exprs_r (tree* tp,
   /* Replace the AGGR_INIT_EXPR with the CALL_EXPR.  */
   TREE_CHAIN (call_expr) = TREE_CHAIN (aggr_init_expr);
   *tp = call_expr;
-
-  /* Keep iterating.  */
-  return NULL_TREE;
 }
 
 /* Emit all thunks to FN that should be emitted when FN is emitted.  */

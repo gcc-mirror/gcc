@@ -1,3 +1,12 @@
+2003-08-20  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (simplify_aggr_init_expr): Split out from
+	simplify_aggr_init_exprs_r.  Convert slot address to match
+	the return type.
+	* cp-tree.h: Declare it.
+	* tree.c (cp_copy_res_decl_for_inlining): Don't clobber the
+	DECL_NAME of a user variable.
+
 2003-08-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11945
