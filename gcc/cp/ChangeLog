@@ -1,5 +1,9 @@
 1998-07-17  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (lookup_name_real): Pull out single function here.
+	(select_decl): Not here.
+	(unqualified_namespace_lookup): Use CP_DECL_CONTEXT.
+
 	* decl.c (qualify_lookup): Tweak again.
 
 	* pt.c (lookup_template_class): Don't mess with the context of the
