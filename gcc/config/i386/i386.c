@@ -1705,6 +1705,22 @@ ix86_function_regparm (tree type, tree decl)
   return regparm;
 }
 
+/* Return true if EAX is live at the start of the function.  Used by 
+   ix86_expand_prologue to determine if we need special help before
+   calling allocate_stack_worker.  */
+
+static bool
+ix86_eax_live_at_start_p (void)
+{
+  /* Cheat.  Don't bother working forward from ix86_function_regparm
+     to the function type to whether an actual argument is located in
+     eax.  Instead just look at cfg info, which is still close enough
+     to correct at this point.  This gives false positives for broken
+     functions that might use uninitialized data that happens to be
+     allocated in eax, but who cares?  */
+  return REGNO_REG_SET_P (ENTRY_BLOCK_PTR->global_live_at_end, 0);
+}
+
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
    FUNDECL is the declaration node of the function (as a tree),
@@ -5098,20 +5114,32 @@ ix86_expand_prologue (void)
     }
   else
     {
-      /* Only valid for Win32 */
-
-      const rtx eax = gen_rtx_REG (SImode, 0);
-      rtx rtx_allocate = GEN_INT(allocate);
+      /* Only valid for Win32.  */
+      rtx eax = gen_rtx_REG (SImode, 0);
+      bool eax_live = ix86_eax_live_at_start_p ();
 
       if (TARGET_64BIT)
         abort ();
 
-      insn = emit_move_insn (eax, rtx_allocate);
+      if (eax_live)
+	{
+	  emit_insn (gen_push (eax));
+	  allocate -= 4;
+	}
+
+      insn = emit_move_insn (eax, GEN_INT (allocate));
       RTX_FRAME_RELATED_P (insn) = 1;
 
       insn = emit_insn (gen_allocate_stack_worker (eax));
       RTX_FRAME_RELATED_P (insn) = 1;
+
+      if (eax_live)
+	{
+	  rtx t = plus_constant (stack_pointer_rtx, allocate);
+	  emit_move_insn (eax, gen_rtx_MEM (SImode, t));
+	}
     }
+
   if (frame.save_regs_using_mov && !TARGET_RED_ZONE)
     {
       if (!frame_pointer_needed || !frame.to_allocate)
