@@ -43,7 +43,9 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 * Hex Floats::          Hexadecimal floating-point constants.
 * Zero Length::         Zero-length arrays.
 * Variable Length::     Arrays whose length is computed at run time.
-* Macro Varargs::	Macros with variable number of arguments.
+* Variadic Macros::	Macros with a variable number of arguments.
+* Escaped Newlines::    Slightly looser rules for escaped newlines.
+* Multi-line Strings::  String literals with embedded newlines.
 * Subscripting::        Any array can be subscripted, even if not an lvalue.
 * Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
 * Initializers::        Non-constant initializers.
@@ -90,7 +92,9 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 * Hex Floats::          Hexadecimal floating-point constants.
 * Zero Length::         Zero-length arrays.
 * Variable Length::     Arrays whose length is computed at run time.
-* Macro Varargs::	Macros with variable number of arguments.
+* Variadic Macros::	Macros with a variable number of arguments.
+* Escaped Newlines::    Slightly looser rules for escaped newlines.
+* Multi-line Strings::  String literals with embedded newlines.
 * Subscripting::        Any array can be subscripted, even if not an lvalue.
 * Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
 * Initializers::        Non-constant initializers.
@@ -1036,66 +1040,98 @@ last one must end with a semicolon, which is followed by the ``real''
 parameter declarations.  Each forward declaration must match a ``real''
 declaration in parameter name and data type.
 
-@node Macro Varargs
-@section Macros with Variable Numbers of Arguments
+@node Variadic Macros
+@section Macros with a Variable Number of Arguments.
 @cindex variable number of arguments
 @cindex macro with variable arguments
 @cindex rest argument (in macro)
+@cindex variadic macros
 
-In GNU C, a macro can accept a variable number of arguments, much as a
-function can.  The syntax for defining the macro looks much like that
-used for a function.  Here is an example:
-
-@example
-#define eprintf(format, args...)  \
- fprintf (stderr, format , ## args)
-@end example
-
-Here @code{args} is a @dfn{rest argument}: it takes in zero or more
-arguments, as many as the call contains.  All of them plus the commas
-between them form the value of @code{args}, which is substituted into
-the macro body where @code{args} is used.  Thus, we have this expansion:
+In the ISO C standard of 1999, a macro can be declared to accept a
+variable number of arguments much as a function can.  The syntax for
+defining the macro is similar to that of a function.  Here is an
+example:
 
 @example
-eprintf ("%s:%d: ", input_file_name, line_number)
-@expansion{}
-fprintf (stderr, "%s:%d: " , input_file_name, line_number)
+#define debug(format, ...) fprintf (stderr, format, __VA_ARGS__)
 @end example
 
-@noindent
-Note that the comma after the string constant comes from the definition
-of @code{eprintf}, whereas the last comma comes from the value of
-@code{args}.
+Here @samp{@dots{}} is a @dfn{variable argument}.  In the invocation of
+such a macro, it represents the zero or more tokens until the closing
+parenthesis that ends the invocation, including any commas.  This set of
+tokens replaces the identifier @code{__VA_ARGS__} in the macro body
+wherever it appears.  See the CPP manual for more information.
 
-The reason for using @samp{##} is to handle the case when @code{args}
-matches no arguments at all.  In this case, @code{args} has an empty
-value.  In this case, the second comma in the definition becomes an
-embarrassment: if it got through to the expansion of the macro, we would
-get something like this:
+GCC has long supported variadic macros, and used a different syntax that
+allowed you to give a name to the variable arguments just like any other
+argument.  Here is an example:
 
 @example
-fprintf (stderr, "success!\n" , )
+#define debug(format, args...) fprintf (stderr, format, args)
 @end example
 
-@noindent
-which is invalid C syntax.  @samp{##} gets rid of the comma, so we get
-the following instead:
+This is in all ways equivalent to the ISO C example above, but arguably
+more readable and descriptive.
+
+GNU CPP has two further variadic macro extensions, and permits them to
+be used with either of the above forms of macro definition.
+
+In standard C, you are not allowed to leave the variable argument out
+entirely; but you are allowed to pass an empty argument.  For example,
+this invocation is invalid in ISO C, because there is no comma after
+the string:
 
 @example
-fprintf (stderr, "success!\n")
+debug ("A message")
 @end example
 
-This is a special feature of the GNU C preprocessor: @samp{##} before a
-rest argument that is empty discards the preceding sequence of
-non-whitespace characters from the macro definition.  (If another macro
-argument precedes, none of it is discarded.)
+GNU CPP permits you to completely omit the variable arguments in this
+way.  In the above examples, the compiler would complain, though since
+the expansion of the macro still has the extra comma after the format
+string.
 
-It might be better to discard the last preprocessor token instead of the
-last preceding sequence of non-whitespace characters; in fact, we may
-someday change this feature to do so.  We advise you to write the macro
-definition so that the preceding sequence of non-whitespace characters
-is just a single token, so that the meaning will not change if we change
-the definition of this feature.
+To help solve this problem, CPP behaves specially for variable arguments
+used with the token paste operator, @samp{##}.  If instead you write
+
+@example
+#define debug(format, ...) fprintf (stderr, format, ## __VA_ARGS__)
+@end example
+
+and if the variable arguments are omitted or empty, the @samp{##}
+operator causes the preprocessor to remove the comma before it.  If you
+do provide some variable arguments in your macro invocation, GNU CPP
+does not complain about the paste operation and instead places the
+variable arguments after the comma.  Just like any other pasted macro
+argument, these arguments are not macro expanded.
+
+@node Escaped Newlines
+@section Slightly Looser Rules for Escaped Newlines
+@cindex escaped newlines
+@cindex newlines (escaped)
+
+Recently, the non-traditional preprocessor has relaxed its treatment of
+escaped newlines.  Previously, the newline had to immediately follow a
+backslash.  The current implementation allows whitespace in the form of
+spaces, horizontal and vertical tabs, and form feeds between the
+backslash and the subsequent newline.  The preprocessor issues a
+warning, but treats it as a valid escaped newline and combines the two
+lines to form a single logical line.  This works within comments and
+tokens, including multi-line strings, as well as between tokens.
+Comments are @emph{not} treated as whitespace for the purposes of this
+relaxation, since they have not yet been replaced with spaces.
+
+@node Multi-line Strings
+@section String Literals with Embedded Newlines
+@cindex multi-line string literals
+
+As an extension, GNU CPP permits string literals to cross multiple lines
+without escaping the embedded newlines.  Each embedded newline is
+replaced with a single @samp{\n} character in the resulting string
+literal, regardless of what form the newline took originally.
+
+CPP currently allows such strings in directives as well (other than the
+@samp{#include} family).  This is deprecated and will eventually be
+removed.
 
 @node Subscripting
 @section Non-Lvalue Arrays May Have Subscripts
