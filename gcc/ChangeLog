@@ -23,6 +23,13 @@
 
 2002-05-13  Jeffrey A Law  (law@redhat.com)
 
+	* flow.c (invalidate_mems_from_autoinc): Rewrite to use for_each_rtx.
+	Update prototype and callers.
+	(propagate_one_insn): Stack pointer adjustments kill MEMs on
+	the mem_set_list which reference the stack pointer, as do
+	calls to constant functions as they may clobber outgoing
+	argument space.
+
 	* i386.c (ia32_multipass_dfa_lookahead): Prototype.
 
 	* i386.c (TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD): Define.
