@@ -6112,7 +6112,7 @@ move\\t%0,%z4\\n\\
   else if (GET_CODE (target) == CONST_INT)
     {
       operands[0] = target;
-      return \"%*%[li\\t%@,%0\\n\\tjal\\t%2,%@%]\";
+      return \"%[li\\t%@,%0\\n\\t%*jal\\t%2,%@%]\";
     }
 
   else
@@ -6269,7 +6269,7 @@ move\\t%0,%z4\\n\\
   else if (GET_CODE (target) == CONST_INT)
     {
       operands[1] = target;
-      return \"%*%[li\\t%@,%1\\n\\tjal\\t%3,%@%]\";
+      return \"%[li\\t%@,%1\\n\\t%*jal\\t%3,%@%]\";
     }
 
   else
