@@ -1009,8 +1009,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "=r,Q,r,r,?f,?f,?Q")
-	(match_operand:DI 1 "general_operand" "r,r,Q,i,f,Q,f"))]
+  [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "=r,T,U,Q,r,r,?f,?f,?Q")
+	(match_operand:DI 1 "general_operand" "r,U,T,r,Q,i,f,Q,f"))]
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)
    || operands[1] == const0_rtx"
@@ -1020,8 +1020,8 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "move,store,load,multi,fp,fpload,fpstore")
-   (set_attr "length" "2,3,3,3,2,3,3")])
+  [(set_attr "type" "move,store,load,store,load,multi,fp,fpload,fpstore")
+   (set_attr "length" "2,1,1,3,3,3,2,3,3")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
