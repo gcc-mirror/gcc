@@ -1,3 +1,9 @@
+2004-02-19  James E Wilson  <wilson@specifixinc.com>
+
+	* config/i386/i386.md (doloop_end_internal): Use nonimmediate_operand
+	for operand2.  Add condition that requires register_operand operand2
+	before reload.
+
 2004-02-19  Richard Sandiford  <rsandifo@redhat.com>
 	    Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
 
