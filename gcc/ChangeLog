@@ -1,3 +1,7 @@
+2005-01-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix52.h (CPLUSPLUS_CPP_SPEC): Revert last change.
+
 2005-01-13  David O'Brien  <obrien@FreeBSD.org>
 
 	Backport from mainline:
