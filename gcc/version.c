@@ -1,1 +1,1 @@
-char *version_string = "gcc-2.95 19990630 (prerelease)";
+char *version_string = "gcc-2.95 19990701 (prerelease)";
