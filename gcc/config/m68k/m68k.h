@@ -153,9 +153,9 @@ extern int target_flags;
     { "68881", - (MASK_FPA|MASK_SKY)},					\
     { "68881", MASK_68881},						\
     { "soft-float", - (MASK_FPA|MASK_SKY|MASK_68040_ONLY|MASK_68881)},	\
-    { "68020-40", -(MASK_5200|MASK_68060)},				\
+    { "68020-40", -(MASK_5200|MASK_68060|MASK_68040_ONLY)},		\
     { "68020-40", (MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040)},	\
-    { "68020-60", -(MASK_5200|MASK_68040)},				\
+    { "68020-60", -(MASK_5200|MASK_68040|MASK_68040_ONLY)},		\
     { "68020-60", (MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68060)},	\
     { "68030", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY)},	\
     { "68030", (MASK_68020|MASK_BITFIELD)},				\
@@ -165,8 +165,8 @@ extern int target_flags;
     { "68060", - (MASK_5200|MASK_68040)},				\
     { "68060", (MASK_68020|MASK_68881|MASK_BITFIELD			\
 		|MASK_68040_ONLY|MASK_68060)},				\
-    { "5200", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD		\
-		|MASK_68881)},						\
+    { "5200", - (MASK_68060|MASK_68040|MASK_68040_ONLY|MASK_68020	\
+		|MASK_BITFIELD|MASK_68881)},				\
     { "5200", (MASK_5200)},						\
     { "68851", 0},							\
     { "no-68851", 0},							\
