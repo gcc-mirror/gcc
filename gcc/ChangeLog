@@ -1,3 +1,7 @@
+2002-03-09  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.c (validate_all_switches): Also handle `%W{...}'.
+
 2002-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/5877
