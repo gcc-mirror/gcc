@@ -1,3 +1,9 @@
+2004-11-29  Richard Henderson  <rth@redhat.com>
+
+	PR target/17224
+	* config/ia64/ia64.c (sdata_symbolic_operand): Deny offsets
+	outside the referenced object.
+
 2004-11-28  Andreas Fischer <a_fisch@gmx.de>
 	    Alan Modra  <amodra@bigpond.net.au>
 
