@@ -37,7 +37,7 @@
 	function.
 	* config/mmix/mmix-protos.h (mmix_asm_identify_gcc): Don't
 	prototype.
-	* config/mmix/mmix.c (ASM_IDENTIFY_GCC): Remove unused macro.
+	* config/mmix/mmix.h (ASM_IDENTIFY_GCC): Remove unused macro.
 
 2002-01-09  Kazu Hirata  <kazu@hxi.com>
 
