@@ -180,4 +180,5 @@ install : all
 
 dvi :
 info :
+html :
 installcheck :

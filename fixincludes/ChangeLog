@@ -1,3 +1,7 @@
+2004-11-12  Mike Stump  <mrs@apple.com>
+
+	* Makefile.in (html): Add html generation support.
+
 2004-11-12  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* inclhack.def (sco_math): Bypass on __GNUG__.
