@@ -673,7 +673,8 @@ global_conflicts ()
 
       /* Initialize table of registers currently live
 	 to the state at the beginning of this basic block.
-	 This also marks the conflicts among them.
+	 This also marks the conflicts among hard registers
+	 and any allocnos that are live.
 
 	 For pseudo-regs, there is only one bit for each one
 	 no matter how many hard regs it occupies.
@@ -702,9 +703,30 @@ global_conflicts ()
 					 (a, PSEUDO_REGNO_MODE (i));
 				   });
 
-	/* Record that each allocno now live conflicts with each other
-	   allocno now live, and with each hard reg now live.  */
+	/* Record that each allocno now live conflicts with each hard reg
+	   now live.
 
+	   It is not necessary to mark any conflicts between pseudos as
+	   this point, even for pseudos which are live at the start of
+	   the basic block.
+
+	     Given two pseudos X and Y and any point in the CFG P.
+
+	     On any path to point P where X and Y are live one of the
+	     following conditions must be true:
+
+		1. X is live at some instruction on the path that
+		   evaluates Y.
+
+		2. Y is live at some instruction on the path that
+		   evaluates X.
+
+		3. Either X or Y is not evaluted on the path to P
+		   (ie it is used uninitialized) and thus the
+		   conflict can be ignored.
+
+	    In cases #1 and #2 the conflict will be recorded when we
+	    scan the instruction that makes either X or Y become live.  */
 	record_conflicts (block_start_allocnos, ax);
 
 #ifdef STACK_REGS
@@ -1350,7 +1372,8 @@ record_one_conflict (regno)
 }
 
 /* Record all allocnos currently live as conflicting
-   with each other and with all hard regs currently live.
+   with all hard regs currently live.
+
    ALLOCNO_VEC is a vector of LEN allocnos, all allocnos that
    are currently live.  Their bits are also flagged in allocnos_live.  */
 
@@ -1368,8 +1391,6 @@ record_conflicts (allocno_vec, len)
       allocno = allocno_vec[len];
       ialloc_prod = allocno * allocno_row_words;
       IOR_HARD_REG_SET (hard_reg_conflicts[allocno], hard_regs_live);
-      for (j = allocno_row_words - 1; j >= 0; j--)
-	conflicts[ialloc_prod + j] |= allocnos_live[j];
     }
 }
 

@@ -1,3 +1,8 @@
+Thu Nov 11 18:54:24 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* global.c (global_conflicts): Update comments.
+	(record_conflicts): No need to record conflicts between pseudos here.
+
 Thu Nov 11 12:42:11 MST 1999	Diego Novillo <dnovillo@cygnus.com>
 
 	* gcc/cp/init.c (init_init_processing): Header information for
