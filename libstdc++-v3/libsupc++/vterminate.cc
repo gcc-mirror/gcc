@@ -51,6 +51,16 @@ namespace __gnu_cxx
    stderr.  */
   void __verbose_terminate_handler()
   {
+    static bool terminating;
+
+    if (terminating)
+      {
+	writestr ("terminate called recursively\n");
+	abort ();
+      }
+ 
+   terminating = true;
+
     // Make sure there was an exception; terminate is also called for an
     // attempt to rethrow when there is no suitable exception.
     type_info *t = __cxa_current_exception_type();
