@@ -1,3 +1,9 @@
+Wed Jan 10 16:38:31 MET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_fp_compare_code_to_integer, ix86_fp_comparison_codes):
+	new functions.
+	(ix86_expand_fp_compare): Make trivial use of new infrastructure.
+
 2001-01-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_init_builtins): Temporarily disable xscale builtins.
