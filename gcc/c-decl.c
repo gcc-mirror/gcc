@@ -6158,7 +6158,7 @@ start_function (tree declspecs, tree declarator, tree attributes)
    definitions (prototype format). The parms already have decls, so we
    need only record them as in effect and complain if any redundant
    old-style parm decls were written.  */
-static void
+void
 store_parm_decls_newstyle (tree fndecl, tree arg_info)
 {
   tree decl;

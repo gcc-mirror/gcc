@@ -1,3 +1,8 @@
+2004-09-02  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-decl.c (store_parm_decls_newstyle): Make externally visible.
+	* c-tree.h (store_parm_decls_newstyle): New prototype.
+
 2004-09-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.c (expand_block_clear): Use vector
