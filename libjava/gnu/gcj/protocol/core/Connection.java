@@ -1,6 +1,6 @@
 // Connection.java - Implementation of URLConnection for core protocol.
 
-/* Copyright (C) 2001  Free Software Foundation
+/* Copyright (C) 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -55,7 +55,7 @@ class Connection extends URLConnection
 
     if (! doInput)
       throw new ProtocolException("Can't open InputStream if doInput is false");
-    return new BufferedInputStream(new CoreInputStream (core));
+    return new CoreInputStream (core);
   }
 
   // Override default method in URLConnection.

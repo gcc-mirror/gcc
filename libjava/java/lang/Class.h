@@ -369,6 +369,8 @@ private:
   friend class gnu::gcj::runtime::StackTrace;
   friend class java::io::VMObjectStreamClass;
 
+  friend void _Jv_sharedlib_register_hook (jclass klass);
+
   // Chain for class pool.
   jclass next;
   // Name of class.

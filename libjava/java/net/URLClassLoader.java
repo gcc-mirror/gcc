@@ -1,5 +1,5 @@
 /* URLClassLoader.java --  ClassLoader that loads classes from one or more URLs
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,6 +59,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import gnu.gcj.runtime.SharedLibHelper;
 
 /**
  * A secure class loader that can load classes and resources from
@@ -194,6 +195,17 @@ public class URLClassLoader extends SecureClassLoader
     }
 
     /**
+     * Returns a <code>Class</code> loaded by this
+     * <code>URLLoader</code>, or <code>null</code> when this loader
+     * either can't load the class or doesn't know how to load classes
+     * at all.
+     */
+    Class getClass(String className)
+    {
+      return null;
+    }
+
+    /**
      * Returns a <code>Resource</code> loaded by this
      * <code>URLLoader</code>, or <code>null</code> when no
      * <code>Resource</code> with the given name exists.
@@ -282,7 +294,7 @@ public class URLClassLoader extends SecureClassLoader
     {
       super(classloader, baseURL);
 
-      // cache url prefix for all resources in this jar url
+      // Cache url prefix for all resources in this jar url.
       String external = baseURL.toExternalForm();
       StringBuffer sb = new StringBuffer(external.length() + 6);
       sb.append("jar:");
@@ -448,16 +460,73 @@ public class URLClassLoader extends SecureClassLoader
     {
       return stream;
     }
-                        
+
     public int getLength()
     {
       return length;
     }
-                
+
     public URL getURL()
     {
       return url;
     }
+  }
+
+  /**
+   * A <code>SoURLLoader</code> is a type of <code>URLLoader</code>
+   * that loads classes and resources from a shared library.
+   */
+  final static class SoURLLoader extends URLLoader
+  {
+    SharedLibHelper helper;
+
+    SoURLLoader(URLClassLoader classloader, URL url)
+    {
+      super(classloader, url);
+      helper = SharedLibHelper.findHelper(classloader, url.getFile(),
+					  noCertCodeSource);
+    }
+
+    Class getClass(String className)
+    {
+      return helper.findClass(className);
+    }
+
+    Resource getResource(String name)
+    {
+      URL url = helper.findResource(name);
+      if (url == null)
+	return null;
+      return new SoResource(this, name, url);
+    }
+  }
+
+  final static class SoResource extends Resource
+  {
+    SoResource(SoURLLoader loader, String name, URL url)
+    {
+      super(loader, name);
+      this.url = url;
+    }
+
+    InputStream getInputStream() throws IOException
+    {
+      URLConnection conn = url.openConnection();
+      return conn.getInputStream();
+    }
+
+    public int getLength()
+    {
+      // FIXME we could find this by asking the core object.
+      return -1;
+    }
+
+    public URL getURL ()
+    {
+      return url;
+    }
+
+    final URL url;
   }
 
   /**
@@ -644,7 +713,7 @@ public class URLClassLoader extends SecureClassLoader
     //   for cache initial size
     synchronized(factoryCache)
       {
-	if(factory != null && factoryCache.get(factory) == null)
+	if (factory != null && factoryCache.get(factory) == null)
 	  factoryCache.put(factory, new HashMap(5));
       }
   }
@@ -667,21 +736,24 @@ public class URLClassLoader extends SecureClassLoader
 	if (newUrl == null)
 	  return; // Silently ignore...
         
-	// check global cache to see if there're already url loader
-	// for this url
+	// Check global cache to see if there're already url loader
+	// for this url.
 	URLLoader loader = (URLLoader)urlloaders.get(newUrl);
 	if (loader == null)
 	  {
 	    String file = newUrl.getFile();
+	    String protocol = newUrl.getProtocol();
 	    // Check that it is not a directory
-	    if (! (file.endsWith("/") || file.endsWith(File.separator)))
+	    if ("gcjlib".equals(protocol))
+	      loader = new SoURLLoader(this, newUrl);
+	    else if (! (file.endsWith("/") || file.endsWith(File.separator)))
 	      loader = new JarURLLoader(this, newUrl);
-	    else if ("file".equals(newUrl.getProtocol()))
+	    else if ("file".equals(protocol))
 	      loader = new FileURLLoader(this, newUrl);
 	    else
 	      loader = new RemoteURLLoader(this, newUrl);
 
-	    // cache it
+	    // Cache it.
 	    urlloaders.put(newUrl, loader);
 	  }
 
@@ -764,7 +836,20 @@ public class URLClassLoader extends SecureClassLoader
   {
     // Just try to find the resource by the (almost) same name
     String resourceName = className.replace('.', '/') + ".class";
-    Resource resource = findURLResource(resourceName);
+    int max = urls.size();
+    Resource resource = null;
+    for (int i = 0; i < max && resource == null; i++)
+      {
+	URLLoader loader = (URLLoader)urlinfos.elementAt(i);
+	if (loader == null)
+	  continue;
+
+	Class k = loader.getClass(className);
+	if (k != null)
+	  return k;
+
+	resource = loader.getResource(resourceName);
+      }
     if (resource == null)
       throw new ClassNotFoundException(className + " not found in " + urls);
 
@@ -907,12 +992,12 @@ public class URLClassLoader extends SecureClassLoader
     URLStreamHandler handler;
     synchronized (factoryCache)
       {
-	// check if there're handler for the same protocol in cache
+	// Check if there're handler for the same protocol in cache.
 	HashMap cache = (HashMap)factoryCache.get(factory);
 	handler = (URLStreamHandler)cache.get(protocol);
 	if(handler == null)
 	  {
-	    // add it to cache
+	    // Add it to cache.
 	    handler = factory.createURLStreamHandler(protocol);
 	    cache.put(protocol, handler);
 	  }
@@ -971,23 +1056,23 @@ public class URLClassLoader extends SecureClassLoader
     // First get the permissions that would normally be granted
     PermissionCollection permissions = super.getPermissions(source);
         
-    // Now add the any extra permissions depending on the URL location
+    // Now add any extra permissions depending on the URL location.
     URL url = source.getLocation();
     String protocol = url.getProtocol();
     if (protocol.equals("file"))
       {
 	String file = url.getFile();
-	// If the file end in / it must be an directory
+	// If the file end in / it must be an directory.
 	if (file.endsWith("/") || file.endsWith(File.separator))
 	  {
 	    // Grant permission to read everything in that directory and
-	    // all subdirectories
+	    // all subdirectories.
 	    permissions.add(new FilePermission(file + "-", "read"));
 	  }
 	else
 	  {
-	    // It is a 'normal' file
-	    // Grant permission to access that file
+	    // It is a 'normal' file.
+	    // Grant permission to access that file.
 	    permissions.add(new FilePermission(file, "read"));
 	  }
       }
