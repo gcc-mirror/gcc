@@ -185,47 +185,50 @@ extern void		sbss_section PARAMS ((void));
 /* Macros used in the machine description to test the flags.  */
 
 					/* Bits for real switches */
-#define MASK_INT64	0x00000001	/* ints are 64 bits */
-#define MASK_LONG64	0x00000002	/* longs are 64 bits */
-#define MASK_SPLIT_ADDR	0x00000004	/* Address splitting is enabled.  */
-#define MASK_GPOPT	0x00000008	/* Optimize for global pointer */
-#define MASK_GAS	0x00000010	/* Gas used instead of MIPS as */
-#define MASK_NAME_REGS	0x00000020	/* Use MIPS s/w reg name convention */
-#define MASK_STATS	0x00000040	/* print statistics to stderr */
-#define MASK_MEMCPY	0x00000080	/* call memcpy instead of inline code*/
-#define MASK_SOFT_FLOAT	0x00000100	/* software floating point */
-#define MASK_FLOAT64	0x00000200	/* fp registers are 64 bits */
-#define MASK_ABICALLS	0x00000400	/* emit .abicalls/.cprestore/.cpload */
-#define MASK_HALF_PIC	0x00000800	/* Emit OSF-style pic refs to externs*/
-#define MASK_LONG_CALLS	0x00001000	/* Always call through a register */
-#define MASK_64BIT	0x00002000	/* Use 64 bit GP registers and insns */
-#define MASK_EMBEDDED_PIC 0x00004000	/* Generate embedded PIC code */
+#define MASK_INT64	   0x00000001	/* ints are 64 bits */
+#define MASK_LONG64	   0x00000002	/* longs are 64 bits */
+#define MASK_SPLIT_ADDR	   0x00000004	/* Address splitting is enabled.  */
+#define MASK_GPOPT	   0x00000008	/* Optimize for global pointer */
+#define MASK_GAS	   0x00000010	/* Gas used instead of MIPS as */
+#define MASK_NAME_REGS	   0x00000020	/* Use MIPS s/w reg name convention */
+#define MASK_STATS	   0x00000040	/* print statistics to stderr */
+#define MASK_MEMCPY	   0x00000080	/* call memcpy instead of inline code*/
+#define MASK_SOFT_FLOAT	   0x00000100	/* software floating point */
+#define MASK_FLOAT64	   0x00000200	/* fp registers are 64 bits */
+#define MASK_ABICALLS	   0x00000400	/* emit .abicalls/.cprestore/.cpload */
+#define MASK_HALF_PIC	   0x00000800	/* Emit OSF-style pic refs to externs*/
+#define MASK_LONG_CALLS	   0x00001000	/* Always call through a register */
+#define MASK_64BIT	   0x00002000	/* Use 64 bit GP registers and insns */
+#define MASK_EMBEDDED_PIC  0x00004000	/* Generate embedded PIC code */
 #define MASK_EMBEDDED_DATA 0x00008000	/* Reduce RAM usage, not fast code */
-#define MASK_BIG_ENDIAN	0x00010000	/* Generate big endian code */
-#define MASK_SINGLE_FLOAT 0x00020000	/* Only single precision FPU.  */
-#define MASK_MAD	0x00040000	/* Generate mad/madu as on 4650.  */
-#define MASK_4300_MUL_FIX 0x00080000    /* Work-around early Vr4300 CPU bug */
-#define MASK_MIPS3900	0x00100000	/* like -mips1 only 3900 */
-#define MASK_MIPS16	0x01000000	/* Generate mips16 code */
-#define MASK_NO_CHECK_ZERO_DIV 0x04000000	/* divide by zero checking */
-#define MASK_CHECK_RANGE_DIV 0x08000000	/* divide result range checking */
-#define MASK_UNINIT_CONST_IN_RODATA 0x10000000	/* Store uninitialized
-						   consts in rodata */
-
-					/* Dummy switches used only in spec's*/
-#define MASK_MIPS_TFILE	0x00000000	/* flag for mips-tfile usage */
+#define MASK_BIG_ENDIAN	   0x00010000	/* Generate big endian code */
+#define MASK_SINGLE_FLOAT  0x00020000	/* Only single precision FPU.  */
+#define MASK_MAD	   0x00040000	/* Generate mad/madu as on 4650.  */
+#define MASK_4300_MUL_FIX  0x00080000   /* Work-around early Vr4300 CPU bug */
+#define MASK_MIPS3900	   0x00100000	/* like -mips1 only 3900 */
+#define MASK_MIPS16	   0x00200000	/* Generate mips16 code */
+#define MASK_NO_CHECK_ZERO_DIV \
+			   0x00400000	/* divide by zero checking */
+#define MASK_CHECK_RANGE_DIV \
+			   0x00800000	/* divide result range checking */
+#define MASK_UNINIT_CONST_IN_RODATA \
+			   0x01000000	/* Store uninitialized
+					   consts in rodata */
 
 					/* Debug switches, not documented */
-#define MASK_DEBUG	0		/* Eliminate version # in .s file */
-#define MASK_DEBUG_A	0x0		/* don't allow <label>($reg) addrs */
-#define MASK_DEBUG_B	0x0		/* GO_IF_LEGITIMATE_ADDRESS debug */
-#define MASK_DEBUG_C	0x0		/* don't expand seq, etc. */
+#define MASK_DEBUG	0		/* unused */
+#define MASK_DEBUG_A	0		/* don't allow <label>($reg) addrs */
+#define MASK_DEBUG_B	0		/* GO_IF_LEGITIMATE_ADDRESS debug */
+#define MASK_DEBUG_C	0		/* don't expand seq, etc. */
 #define MASK_DEBUG_D	0		/* don't do define_split's */
 #define MASK_DEBUG_E	0		/* function_arg debug */
-#define MASK_DEBUG_F	0
+#define MASK_DEBUG_F	0		/* ??? */
 #define MASK_DEBUG_G	0		/* don't support 64 bit arithmetic */
 #define MASK_DEBUG_H	0               /* allow ints in FP registers */
 #define MASK_DEBUG_I	0		/* unused */
+
+					/* Dummy switches used only in specs */
+#define MASK_MIPS_TFILE	0		/* flag for mips-tfile usage */
 
 					/* r4000 64 bit sizes */
 #define TARGET_INT64		(target_flags & MASK_INT64)
@@ -241,10 +244,9 @@ extern void		sbss_section PARAMS ((void));
 
 					/* Mips vs. GNU assembler */
 #define TARGET_GAS		(target_flags & MASK_GAS)
-#define TARGET_UNIX_ASM		(!TARGET_GAS)
-#define TARGET_MIPS_AS		TARGET_UNIX_ASM
+#define TARGET_MIPS_AS		(!TARGET_GAS)
 
-					/* Debug Mode */
+					/* Debug Modes */
 #define TARGET_DEBUG_MODE	(target_flags & MASK_DEBUG)
 #define TARGET_DEBUG_A_MODE	(target_flags & MASK_DEBUG_A)
 #define TARGET_DEBUG_B_MODE	(target_flags & MASK_DEBUG_B)

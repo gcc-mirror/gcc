@@ -1,3 +1,11 @@
+2000-08-05  Chris Demetriou  <cgd@sibyte.com>
+
+	* mips.h: Clean up comments and spacing near MASKs.
+	(TARGET_UNIX_ASM): Delete.
+	(MASK_MIPS16, MASK_NO_CHECK_ZERO_DIV, MASK_CHECK_RANGE_DIV,
+	MASK_UNINIT_CONST_IN_RODATA): Change values to make mask
+	values contiguous.
+
 2000-08-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (print_char_table): Add entries for the X/Open '
