@@ -12,6 +12,10 @@ Mon Mar  8 16:04:44 1999  Jim Wilson  <wilson@cygnus.com>
 
 Mon Mar  8 15:27:42 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* calls.c (initialize_argument_info): Accept a pointer to 
+	CUMULATIVE_ARGS.
+	(expand_call): Pass the address of CUMULATIVE_ARGS.
+
 	* rs6000/xm-sysv4.h (HOST_BITS_PER_LONGLONG): Remove #if 0.
 
 	* mn10300.h (CASE_DROPS_THROUGH): Delete.
