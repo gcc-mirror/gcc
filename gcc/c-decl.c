@@ -1441,7 +1441,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	{
 	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
 	  DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
-	  DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl);
+	  DECL_STRUCT_FUNCTION (newdecl) = DECL_STRUCT_FUNCTION (olddecl);
 	  DECL_SAVED_TREE (newdecl) = DECL_SAVED_TREE (olddecl);
 	  DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
 
@@ -6066,8 +6066,9 @@ finish_function (void)
       && current_function_returns_null)
     warning ("this function may return with or without a value");
 
-  /* We're leaving the context of this function, so zap cfun.  It's still in
-     DECL_SAVED_INSNS, and we'll restore it in tree_rest_of_compilation.  */
+  /* We're leaving the context of this function, so zap cfun.
+     It's still in DECL_STRUCT_FUNCTION , and we'll restore it in
+     tree_rest_of_compilation.  */
   cfun = NULL;
 
   /* ??? Objc emits functions after finalizing the compilation unit.
@@ -6240,7 +6241,7 @@ c_pop_function_context (struct function *f)
 {
   struct language_function *p = f->language;
 
-  if (DECL_SAVED_INSNS (current_function_decl) == 0
+  if (DECL_STRUCT_FUNCTION (current_function_decl) == 0
       && DECL_SAVED_TREE (current_function_decl) == NULL_TREE)
     {
       /* Stop pointing to the local nodes about to be freed.  */

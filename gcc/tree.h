@@ -1375,8 +1375,9 @@ struct tree_type GTY(())
    where the data was actually passed.  */
 #define DECL_INCOMING_RTL(NODE) (PARM_DECL_CHECK (NODE)->decl.u2.r)
 
-/* For FUNCTION_DECL, if it is inline, holds the saved insn chain.  */
-#define DECL_SAVED_INSNS(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u2.f)
+/* For FUNCTION_DECL, this holds a pointer to a structure ("struct function")
+   that describes the status of this function.  */
+#define DECL_STRUCT_FUNCTION(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u2.f)
 
 /* For FUNCTION_DECL, if it is built-in,
    this identifies which built-in operation it is.  */

@@ -440,11 +440,11 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	    }
 	}
       else if (TREE_CODE (node) == FUNCTION_DECL
-	       && DECL_SAVED_INSNS (node) != 0)
+	       && DECL_STRUCT_FUNCTION (node) != 0)
 	{
 	  indent_to (file, indent + 4);
 	  fprintf (file, "saved-insns " HOST_PTR_PRINTF,
-		   (void *) DECL_SAVED_INSNS (node));
+		   (void *) DECL_STRUCT_FUNCTION (node));
 	}
 
       /* Print the decl chain only if decl is at second level.  */

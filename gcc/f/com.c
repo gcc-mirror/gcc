@@ -13402,7 +13402,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 
       DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
       DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
-      DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl);
+      DECL_STRUCT_FUNCTION (newdecl) = DECL_STRUCT_FUNCTION (olddecl);
       DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
     }
 
@@ -13599,7 +13599,7 @@ finish_function (int nested)
 
   if (TREE_CODE (fndecl) != ERROR_MARK
       && !nested
-      && DECL_SAVED_INSNS (fndecl) == 0)
+      && DECL_STRUCT_FUNCTION (fndecl) == 0)
     {
       /* Stop pointing to the local nodes about to be freed.  */
       /* But DECL_INITIAL must remain nonzero so we know this was an actual
@@ -13755,7 +13755,7 @@ pop_f_function_context (void)
 	= TREE_VALUE (link);
 
   if (current_function_decl != error_mark_node
-      && DECL_SAVED_INSNS (current_function_decl) == 0)
+      && DECL_STRUCT_FUNCTION (current_function_decl) == 0)
     {
       /* Stop pointing to the local nodes about to be freed.  */
       /* But DECL_INITIAL must remain nonzero so we know this was an actual
@@ -14350,7 +14350,7 @@ poplevel (int keep, int reverse, int functionbody)
 	if (DECL_ABSTRACT_ORIGIN (decl) != 0
 	    && DECL_ABSTRACT_ORIGIN (decl) != decl)
 	  TREE_ADDRESSABLE (DECL_ABSTRACT_ORIGIN (decl)) = 1;
-	else if (DECL_SAVED_INSNS (decl) != 0)
+	else if (DECL_STRUCT_FUNCTION (decl) != 0)
 	  {
 	    push_function_context ();
 	    output_inline_function (decl);
