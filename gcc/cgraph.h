@@ -27,6 +27,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct cgraph_local_info GTY(())
 {
+  /* Size of the function before inlining.  */
+  int self_insns;
+
   /* Set when function function is visible in current compilation unit only
      and it's address is never taken.  */
   bool local;
@@ -37,8 +40,9 @@ struct cgraph_local_info GTY(())
   bool inlinable;
   /* True when function should be inlined independently on it's size.  */
   bool disregard_inline_limits;
-  /* Size of the function before inlining.  */
-  int self_insns;
+  /* True when the function has been originally extern inline, but it is
+     redefined now.  */
+  bool redefined_extern_inline;
 };
 
 /* Information about the function that needs to be computed globally
@@ -46,14 +50,14 @@ struct cgraph_local_info GTY(())
 
 struct cgraph_global_info GTY(())
 {
-  /* Set when the function will be inlined exactly once.  */
-  bool inline_once;
-
   /* Estimated size of the function after inlining.  */
   int insns;
 
   /* Number of times given function will be cloned during output.  */
   int cloned_times;
+
+  /* Set when the function will be inlined exactly once.  */
+  bool inline_once;
 
   /* Set to true for all reachable functions before inlining is decided.
      Once we inline all calls to the function and the function is local,
@@ -93,10 +97,13 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   struct cgraph_node *next_nested;
   /* Pointer to the next function in cgraph_nodes_queue.  */
   struct cgraph_node *next_needed;
-  /* Unique id of the node.  */
-  int uid;
   PTR GTY ((skip (""))) aux;
 
+  struct cgraph_local_info local;
+  struct cgraph_global_info global;
+  struct cgraph_rtl_info rtl;
+  /* Unique id of the node.  */
+  int uid;
   /* Set when function must be output - it is externally visible
      or it's address is taken.  */
   bool needed;
@@ -108,9 +115,6 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   bool analyzed;
   /* Set when function is scheduled to be assembled.  */
   bool output;
-  struct cgraph_local_info local;
-  struct cgraph_global_info global;
-  struct cgraph_rtl_info rtl;
 };
 
 struct cgraph_edge GTY(())

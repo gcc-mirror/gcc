@@ -184,6 +184,7 @@ cgraph_finalize_function (tree decl, bool nested)
       memset (&node->global, 0, sizeof (node->global));
       memset (&node->rtl, 0, sizeof (node->rtl));
       node->analyzed = false;
+      node->local.redefined_extern_inline = true;
       while (node->callees)
 	cgraph_remove_edge (node, node->callees->callee);
 
@@ -330,8 +331,15 @@ cgraph_analyze_function (struct cgraph_node *node)
       = (*lang_hooks.tree_inlining.disregard_inline_limits) (decl);
   for (e = node->callers; e; e = e->next_caller)
     if (e->inline_failed)
-      e->inline_failed = (!node->local.inlinable ? N_("function not inlinable")
-			  : N_("function not considered for inlining"));
+      {
+	if (node->local.redefined_extern_inline)
+	  e->inline_failed = N_("redefined extern inline functions are not "
+				"considered for inlining");
+	else if (!node->local.inlinable)
+	  e->inline_failed = N_("function not inlinable");
+	else
+	  e->inline_failed = N_("function not considered for inlining");
+      }
   if (flag_really_no_inline && !node->local.disregard_inline_limits)
     node->local.inlinable = 0;
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
