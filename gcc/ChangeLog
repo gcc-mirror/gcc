@@ -1,3 +1,8 @@
+Fri Apr 21 14:58:29 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* reload.c (find_equiv_reg): Checks all valueno and regno regs
+	as a call-clobbered regs.
+
 Fri Apr 21 13:30:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rtl.c: Use NOTE_INSN_REPEATED_LINE_NUMBER and NOTE_INSN_RANGE_BEG.
