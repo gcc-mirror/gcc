@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2004  Free Software Foundation
+/* Copyright (C) 2003, 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -405,6 +405,11 @@ gnu::java::net::PlainSocketImpl$SocketInputStream::read(jbyteArray buffer, jint 
 static jint
 read_helper (jint native_fd, jint timeout, jbyte *bytes, jint count)
 {
+  // If zero bytes were requested, short circuit so that recv
+  // doesn't signal EOF.
+  if (count == 0)
+    return 0;
+    
   // Do timeouts via select.
   if (timeout > 0 && native_fd >= 0 && native_fd < FD_SETSIZE)
     {
