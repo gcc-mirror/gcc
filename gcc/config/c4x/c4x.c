@@ -1015,7 +1015,6 @@ c4x_null_epilogue_p ()
   return 0;
 }
 
-
 int
 c4x_emit_move_sequence (operands, mode)
      rtx *operands;
@@ -1030,7 +1029,15 @@ c4x_emit_move_sequence (operands, mode)
       && ! (stik_const_operand (op1, mode) && ! push_operand (op0, mode)))
     op1 = force_reg (mode, op1);
 
-  if (symbolic_operand (op1, mode))
+  if (GET_CODE (op1) == LO_SUM
+      && GET_MODE (op1) == Pmode
+      && dp_reg_operand (XEXP (op1, 0), mode))
+    {
+      /* expand_increment will sometimes create a LO_SUM immediate
+	 address.  */
+      op1 = XEXP (op1, 1);
+    }
+  else if (symbolic_operand (op1, mode))
     {
       if (TARGET_LOAD_ADDRESS)
 	{
@@ -1426,12 +1433,23 @@ c4x_legitimize_address (orig, mode)
 {
   if (GET_CODE (orig) == SYMBOL_REF)
     {
-      rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);
-
-      if (! TARGET_SMALL)
-	emit_insn (gen_set_ldp (dp_reg, orig));
-      
-      return gen_rtx_LO_SUM (Pmode, dp_reg, orig);
+      if (mode == HImode || mode == HFmode)
+	{
+	  /* We need to force the address into
+	     a register so that it is offsettable.  */
+	  rtx addr_reg = gen_reg_rtx (Pmode);
+	  emit_move_insn (addr_reg, orig);
+	  return addr_reg;
+	}
+      else
+	{
+	  rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);
+	  
+	  if (! TARGET_SMALL)
+	    emit_insn (gen_set_ldp (dp_reg, orig));
+	  
+	  return gen_rtx_LO_SUM (Pmode, dp_reg, orig);
+	}
     }
 
   return NULL_RTX;

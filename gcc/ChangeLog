@@ -1,3 +1,10 @@
+Tue Feb  9 10:52:27 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_legitimize_address): Don't generate a
+ 	LO_SUM address for HImode or HFmode but instead force address into
+ 	a register so that it is offsettable.
+	(c4x_emit_move_sequence): Handle LO_SUM immediate address.
+
 Tue Feb  9 10:46:42 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_address_cost): Return cost of 1 for
