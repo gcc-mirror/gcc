@@ -1,3 +1,7 @@
+Thu Dec 16 02:56:25 1999  Zack Weinberg  <zack@bitmover.com>
+
+	* tree.h (DECL_FROM_INLINE): Check DECL_ABSTRACT_ORIGIN too.
+
 Thu Dec 16 10:43:35 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* i386.md (movqi): Use "nonimmediate_operand" for output operand.
