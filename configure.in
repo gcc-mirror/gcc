@@ -438,7 +438,7 @@ if [ x${with_stabs} = x ]; then
   case "${target}" in
   mips*-*-irix6*)
     ;;
-  mips*-*-* | alpha*-*-osf* | i[3456]86*-*-sysv4* | i[3456]86*-*-unixware*)
+  mips*-*-* | alpha*-*-osf*)
     with_stabs=yes;
     withoptions="${withoptions} --with-stabs"
     ;;
