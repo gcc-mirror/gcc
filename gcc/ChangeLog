@@ -1,7 +1,8 @@
 2003-10-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR optimization/12180
-	* c-objc-common.c (inline_forbidden_p): 
+	* c-objc-common.c (inline_forbidden_p): Do not permit inlining of
+	functions containing calls to __builtin_next_arg.
 
 2003-10-02  Josef Zlomek  <zlomekj@suse.cz>
 
