@@ -1,3 +1,8 @@
+Mon Sep  8 18:26:35 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* m68k.h (MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): In MOTOROLA
+	cases, add %# and %/, and add : to make them into extended asms.
+
 Sun Sep  7 23:57:50 1997  Weiwen Liu  <liu@hepunix.physics.yale.edu>
 
 	* alias.c (init_alias_analysis): Clean up incompatible pointer

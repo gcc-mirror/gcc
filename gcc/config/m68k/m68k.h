@@ -1081,23 +1081,23 @@ while(0)
 #if defined(__mcf5200__)
 #define MACHINE_STATE_SAVE(id)		\
     {					\
-      asm ("subl 20,sp");		\
-      asm ("movml d0/d1/a0/a1,sp@(4)");	\
-      asm ("movew cc,d0");		\
-      asm ("movml d0,sp@");		\
+      asm ("subl %#20,%/sp" : );	\
+      asm ("movml %/d0/%/d1/%/a0/%/a1,%/sp@(4)" : ); \
+      asm ("movew %/cc,%/d0" : );	\
+      asm ("movml %/d0,%/sp@" : );	\
     }
 #else /* !__mcf5200__ */
 #if defined(MACHINE_STATE_m68010_up)
 #define MACHINE_STATE_SAVE(id)		\
     {					\
-      asm ("movew cc,sp@-");		\
-      asm ("moveml d0/d1/a0/a1,sp@-");	\
+      asm ("movew %/cc,%/sp@-" : );	\
+      asm ("moveml %/d0/%/d1/%/a0/%/a1,%/sp@-" : ); \
     }
 #else /* !MACHINE_STATE_m68010_up */
 #define MACHINE_STATE_SAVE(id)		\
     {					\
-      asm ("movew sr,sp@-");		\
-      asm ("moveml d0/d1/a0/a1,sp@-");	\
+      asm ("movew %/sr,%/sp@-" : );	\
+      asm ("moveml %/d0/%/d1/%/a0/%/a1,%/sp@-" : ); \
     }
 #endif /* MACHINE_STATE_m68010_up */
 #endif /* __mcf5200__ */
@@ -1134,16 +1134,16 @@ while(0)
 #if defined(__mcf5200__)
 #define MACHINE_STATE_RESTORE(id)	\
     {					\
-      asm ("movml sp@,d0");		\
-      asm ("movew d0,cc");		\
-      asm ("movml sp@(4),d0/d1/a0/a1");	\
-      asm ("addl 20,sp");		\
+      asm ("movml %/sp@,%/d0" : );	\
+      asm ("movew %/d0,%/cc" : );	\
+      asm ("movml %/sp@(4),%/d0/%/d1/%/a0/%/a1" : ); \
+      asm ("addl %#20,%/sp" : );	\
     }
 #else /* !__mcf5200__ */
 #define MACHINE_STATE_RESTORE(id)	\
     {					\
-      asm ("moveml sp@+,d0/d1/a0/a1");	\
-      asm ("movew sp@+,cc");		\
+      asm ("moveml %/sp@+,%/d0/%/d1/%/a0/%/a1" : ); \
+      asm ("movew %/sp@+,%/cc" : );	\
     }
 #endif /* __mcf5200__ */
 #endif /* MOTOROLA */
