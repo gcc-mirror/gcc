@@ -17,7 +17,7 @@ integer f_back(alist *a)
 	if(a->aunit >= MXUNIT || a->aunit < 0)
 		err(a->aerr,101,"backspace");
 	if(b->useek==0) err(a->aerr,106,"backspace");
-	if((f = b->ufd) == NULL) {
+	if(b->ufd == NULL) {
 		fk_open(1, 1, a->aunit);
 		return(0);
 		}
@@ -26,10 +26,11 @@ integer f_back(alist *a)
 		return(0);
 	}
 	if(b->uwrt) {
-		(void) t_runc(a);
+		t_runc(a);
 		if (f__nowreading(b))
 			err(a->aerr,errno,"backspace");
 		}
+	f = b->ufd;	/* may have changed in t_runc() */
 	if(b->url>0)
 	{
 		x=ftell(f);

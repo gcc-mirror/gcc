@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-06-16
+@set last-update-news 1999-06-18
 
 @include root.texi
 
@@ -150,6 +150,14 @@ is available at
 @end ifclear
 
 The following information was last updated on @value{last-update-news}:
+
+@heading In development:
+@itemize @bullet
+@ifclear USERVISONLY
+@item
+Upgrade to @code{libf2c} as of 1999-06-18.
+@end ifclear
+@end itemize
 
 @heading In 0.5.25, @code{GCC} 2.95 (@code{EGCS} 1.2) versus @code{EGCS} 1.1.2:
 @itemize @bullet

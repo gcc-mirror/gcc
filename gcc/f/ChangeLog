@@ -1,3 +1,8 @@
+Fri Jun 18 11:26:50 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: New heading for development version.
+	Doc upgrade to netlib libf2c as of today.
+
 Wed Jun 16 11:43:02 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* news.texi: Mention BACKSPACE fix to libg2c.
