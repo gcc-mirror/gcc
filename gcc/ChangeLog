@@ -1,3 +1,8 @@
+Tue Sep  7 16:50:59 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.h (ASM_FILE_START): Specify complete filename, including
+	path, in .file directive.
+
 Tue Sep  7 01:27:21 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Thu Sep  2 00:06:43 1999  Jeffrey A Law  (law@cygnus.com)
