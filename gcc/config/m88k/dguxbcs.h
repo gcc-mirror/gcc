@@ -1,9 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running DG/UX.
-   Copyright (C) 1988, 1989, 1990, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1988, 89, 90, 91, 93, 94, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
-   Enhanced by Michael Meissner (meissner@osf.org)
-   Version 2 port by Tom Wood (twood@pets.sps.mot.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
 
 This file is part of GNU CC.
@@ -61,7 +59,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Linker and library spec's.
    -msvr3 is the default if -msvr4 is not specified. */
 #undef	LIB_SPEC
-#define LIB_SPEC "%{msvr4:%{!shared:-lstaticdgc}} %{!shared:%{!symbolic:-lc}} crtend.o%s"
+#define LIB_SPEC "%{msvr4:%{!shared:-lstaticdgc}} %{!shared:%{!symbolic:-lc}}"
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared:%{!symbolic:%{pg:gcrt0.o%s} \
 			 %{!pg:%{p:/lib/mcrt0.o}%{!p:/lib/crt0.o}} \
