@@ -573,6 +573,7 @@ alpha64-dec-*vms*)
 	tmake_file="alpha/t-alpha alpha/t-vms alpha/t-vms64 alpha/t-ieee"
 	prefix=/gnu
 	local_prefix=/gnu
+	use_fixproto=no
 	;;
 alpha*-dec-*vms*)
 	tm_file="${tm_file} alpha/vms.h"
@@ -580,6 +581,7 @@ alpha*-dec-*vms*)
 	tmake_file="alpha/t-alpha alpha/t-vms alpha/t-ieee"
 	prefix=/gnu
 	local_prefix=/gnu
+	use_fixproto=no
 	;;
 arc-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
@@ -1643,6 +1645,7 @@ powerpc-*-eabisimaltivec*)
 powerpc-*-eabisim*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabisim.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
+	use_fixproto=no
 	;;
 powerpc-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
@@ -1655,6 +1658,7 @@ powerpc-*-eabialtivec*)
 powerpc-*-eabi*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
+	use_fixproto=no
 	;;
 powerpc-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rs6000/rtems.h rtems.h"
@@ -1718,10 +1722,12 @@ powerpcle-*-elf*)
 powerpcle-*-eabisim*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/eabi.h rs6000/eabisim.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
+	use_fixproto=no
 	;;
 powerpcle-*-eabi*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/eabi.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
+	use_fixproto=no
 	;;
 powerpc-*-kaos*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h kaos.h rs6000/kaos-ppc.h"
