@@ -1,5 +1,10 @@
 2003-03-05  Michael Matz  <matz@suse.de>
 
+	* i386/i386.c (ix86_save_reg): Also test
+	current_function_uses_const_pool.
+
+2003-03-05  Michael Matz  <matz@suse.de>
+
 	* unwind.h: Add the GPL exception.
 	* Makefile.in (USER_H): Add unwind.h.
 
