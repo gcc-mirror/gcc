@@ -1,3 +1,7 @@
+Sun Jan  7 14:44:19 MET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* jump.c (comparison_dominates_p): Support unordered compares.
+
 Sun Jan  7 14:39:07 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* simplify-rtx.c (simplify_relational_operation): Always simplify
