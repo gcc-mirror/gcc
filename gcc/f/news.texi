@@ -7,9 +7,9 @@
 
 @c Keep this the same as the dates above, since it's used
 @c in the standalone derivations of this file (e.g. NEWS).
-@set copyrights-news 1995-1999
+@set copyrights-news 1995,1996,1997,1998,1999,2000
 
-@set last-update-news 1999-07-08
+@set last-update-news 2000-11-05
 
 @include root.texi
 

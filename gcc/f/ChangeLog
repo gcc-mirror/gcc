@@ -1,3 +1,9 @@
+2000-12-18  Toon Moene <toon@moene.indiv.nluug.nl>
+
+	* bugs.texi: Correct copyright years.
+	* g77.texi: Likewise.
+	* news.texi: Likewise.
+
 2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g77install.texi: Remove obsolete parts only used for INSTALL,
