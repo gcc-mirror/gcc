@@ -3071,7 +3071,7 @@ assign_parms (fndecl, second_time)
 	      emit_move_insn (tempreg, validize_mem (entry_parm));
 
 	      push_to_sequence (conversion_insns);
-	      convert_move (parmreg, tempreg);
+	      convert_move (parmreg, tempreg, unsignedp);
 	      conversion_insns = get_insns ();
 	      end_sequence ();
 	    }
