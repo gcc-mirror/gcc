@@ -34,7 +34,18 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "parse.h" /* for BLOCK_EXPR_BODY */
 #include "buffer.h"
 
+#include <sys/stat.h>
+
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '/'
+#endif
+
 extern struct obstack temporary_obstack;
+
+/* Base directory in which `.class' files should be written.
+   NULL means to put the file into the same directory as the
+   corresponding .java file.  */
+char *jcf_write_base_directory = NULL;
 
 /* Make sure bytecode.data is big enough for at least N more bytes. */
 
@@ -2498,13 +2509,73 @@ generate_classfile (clas, state)
   return state->first;
 }
 
-char*
+static char *
 make_class_file_name (clas)
      tree clas;
 {
-  /* Should prepend an output directly, but need an option to specify it. */
-  return IDENTIFIER_POINTER (identifier_subst (DECL_NAME (TYPE_NAME (clas)),
-					       "", '.', '/', ".class"));
+  char *cname, *dname, *slash, *r;
+  struct stat sb;
+
+  cname = IDENTIFIER_POINTER (identifier_subst (DECL_NAME (TYPE_NAME (clas)),
+						"", '.', DIR_SEPARATOR,
+						".class"));
+  if (jcf_write_base_directory == NULL)
+    {
+      /* Make sure we put the class file into the .java file's
+	 directory, and not into some subdirectory thereof.  */
+      char *t;
+      dname = DECL_SOURCE_FILE (TYPE_NAME (clas));
+      slash = strrchr (dname, DIR_SEPARATOR);
+      if (! slash)
+	{
+	  dname = ".";
+	  slash = dname + 1;
+	}
+      t = strrchr (cname, DIR_SEPARATOR);
+      if (t)
+	cname = t + 1;
+    }
+  else
+    {
+      dname = jcf_write_base_directory;
+      slash = dname + strlen (dname);
+    }
+
+  r = xmalloc (slash - dname + strlen (cname) + 2);
+  strncpy (r, dname, slash - dname);
+  r[slash - dname] = DIR_SEPARATOR;
+  strcpy (&r[slash - dname + 1], cname);
+
+  /* We try to make new directories when we need them.  We only do
+     this for directories which "might not" exist.  For instance, we
+     assume the `-d' directory exists, but we don't assume that any
+     subdirectory below it exists.  It might be worthwhile to keep
+     track of which directories we've created to avoid gratuitous
+     stat()s.  */
+  dname = r + (slash - dname) + 1;
+  while (1)
+    {
+      cname = strchr (dname, DIR_SEPARATOR);
+      if (cname == NULL)
+	break;
+      *cname = '\0';
+      if (stat (r, &sb) == -1)
+	{
+	  /* Try to make it.  */
+	  if (mkdir (r, 0755) == -1)
+	    {
+	      fatal ("failed to create directory `%s'", r);
+	      free (r);
+	      return NULL;
+	    }
+	}
+      *cname = DIR_SEPARATOR;
+      /* Skip consecutive separators.  */
+      for (dname = cname + 1; *dname && *dname == DIR_SEPARATOR; ++dname)
+	;
+    }
+
+  return r;
 }
 
 /* Write out the contens of a class (RECORD_TYPE) CLAS, as a .class file.
@@ -2518,15 +2589,20 @@ write_classfile (clas)
   struct jcf_partial state[1];
   char *class_file_name = make_class_file_name (clas);
   struct chunk *chunks;
-  FILE* stream = fopen (class_file_name, "wb");
-  if (stream == NULL)
-    fatal ("failed to open `%s' for writing", class_file_name);
-  jcf_dependency_add_target (class_file_name);
-  init_jcf_state (state, work);
-  chunks = generate_classfile (clas, state);
-  write_chunks (stream, chunks);
-  if (fclose (stream))
-    fatal ("failed to close after writing `%s'", class_file_name);
+
+  if (class_file_name != NULL)
+    {
+      FILE* stream = fopen (class_file_name, "wb");
+      if (stream == NULL)
+	fatal ("failed to open `%s' for writing", class_file_name);
+      jcf_dependency_add_target (class_file_name);
+      init_jcf_state (state, work);
+      chunks = generate_classfile (clas, state);
+      write_chunks (stream, chunks);
+      if (fclose (stream))
+	fatal ("failed to close after writing `%s'", class_file_name);
+      free (class_file_name);
+    }
   release_jcf_state (state);
 }
 

@@ -25,11 +25,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* This is the contribution to the `lang_options' array in gcc.c for
    java.  */
 
-/* CYGNUS LOCAL - the format of this file has been changed to
-   allow cc1 to implement --help.  nickc/--help */
-
 DEFINE_LANG_NAME ("Java")
-     
+
   { "-fbounds-check", "" },
   { "-fno-bounds-check", "Disable automatic array bounds checking" },
   { "-fassume-compiled", "Make is_compiled_class return 1"},
@@ -43,3 +40,4 @@ DEFINE_LANG_NAME ("Java")
   { "-fclasspath", "Set class path and suppress system path" },
   { "-fCLASSPATH", "Set class path" },
   { "-I", "Add directory to class path" },
+  { "-foutput-class-dir", "Directory where class files should be written" },

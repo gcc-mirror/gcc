@@ -245,6 +245,8 @@ extern int jcf_unexpected_eof PROTO ((JCF*, int));
    ? (((PTR)[-3]&0x1F) << 12) + (((PTR)[-2]&0x3F) << 6) + ((PTR)[-1]&0x3F) \
    : ((PTR)++, -1))
 
+extern char *jcf_write_base_directory;
+
 /* Debug macros, for the front end */
 
 extern int quiet_flag;
