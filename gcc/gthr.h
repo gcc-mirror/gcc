@@ -83,9 +83,11 @@ Boston, MA 02111-1307, USA.  */
 #include "gthr-solaris.h"
 
 /* Include GTHREAD_FILE if one is defined. */
-#elif SUPPORTS_WEAK && HAVE_GTHR_DEFAULT
+#elif defined(HAVE_GTHR_DEFAULT)
+#if SUPPORTS_WEAK
 #ifndef GTHREAD_USE_WEAK
 #define GTHREAD_USE_WEAK 1
+#endif
 #endif
 #include "gthr-default.h"
 
