@@ -1,3 +1,11 @@
+2002-03-15  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.h (SUBTARGET_CPP_SIZE_SPEC): Provide an
+	MEABI case for each definition of SUBTARGET_CPP_SIZE_SPEC,
+	and define it so that regardless of target CPU size,
+	__SIZE_TYPE__ and __PTRDIFF_TYPE__ are defined in terms
+	of "int" rather than "long."
+
 2002-03-15  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_va_arg): Manipulate the type
