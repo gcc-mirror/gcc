@@ -6173,7 +6173,10 @@ start_function (declspecs, declarator, prefix_attributes, attributes, nested)
   /* If the declarator is not suitable for a function definition,
      cause a syntax error.  */
   if (decl1 == 0)
-    return 0;
+    {
+      immediate_size_expand = old_immediate_size_expand;
+      return 0;
+    }
 
   decl_attributes (decl1, prefix_attributes, attributes);
 
