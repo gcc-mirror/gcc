@@ -2287,12 +2287,41 @@
   ""
   "operands[1] = prepare_scc_operands (GEU);")
 
+;; sne moves the complement of the T reg to DEST like this:
+;;      cmp/eq ...
+;;      mov    #-1,temp
+;;      negc   temp,dest
+;;   This is better than xoring compare result with 1 because it does
+;;   not require r0 and further, the -1 may be CSE-ed or lifted out of a
+;;   loop.
+
 (define_expand "sne"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(match_dup 1))
-   (set (match_dup 0) (xor:SI (match_dup 0) (const_int 1)))]
+  [(set (match_dup 2) (const_int -1))
+   (parallel [(set (match_operand:SI 0 "arith_reg_operand" "")
+		   (neg:SI (plus:SI (match_dup 1)
+				    (match_dup 2))))
+	      (set (reg:SI 18)
+		   (ne:SI (ior:SI (match_dup 1) (match_dup 2))
+			  (const_int 0)))])]  
   ""
-  "operands[1] = prepare_scc_operands (EQ);")
+  "
+{
+   operands[1] = prepare_scc_operands (EQ);
+   operands[2] = gen_reg_rtx (SImode);
+}")
+
+;; Recognize mov #-1/negc/neg sequence, and change it to movt/add #-1.
+;; This prevents a regression that occured when we switched from xor to
+;; mov/neg for sne.
+
+(define_split
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(plus:SI (reg:SI 18)
+		 (const_int -1)))]
+  ""
+  [(set (match_dup 0) (eq:SI (reg:SI 18) (const_int 1)))
+   (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))]
+  "")
 
 ;; -------------------------------------------------------------------------
 ;; Instructions to cope with inline literal tables
