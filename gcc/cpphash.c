@@ -1,5 +1,5 @@
 /* Part of CPP library.  (Macro hash table support.)
-   Copyright (C) 1986, 87, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-95, 1996 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -24,19 +24,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "cpplib.h"
 #include "cpphash.h"
+#include "gansidecl.h"
 
 extern char *xmalloc PARAMS ((unsigned));
-
-/* Define a generic NULL if one hasn't already been defined.  */
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-#ifndef __STDC__
-#define const
-#define volatile
-#endif
 
 /*
  * return hash function on name.  must be compatible with the one
