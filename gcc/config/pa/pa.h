@@ -1315,7 +1315,7 @@ extern struct rtx_def *hppa_va_arg();
 
    `R' is used for scaled indexed addresses.
 
-   `S' is unused.
+   `S' is the constant 31.
 
    `T' is for fp loads and stores.  */
 #define EXTRA_CONSTRAINT(OP, C)				\
@@ -1343,7 +1343,9 @@ extern struct rtx_def *hppa_va_arg();
        && memory_address_p (DFmode, XEXP (OP, 0))	\
        && !(GET_CODE (XEXP (OP, 0)) == PLUS		\
 	    && (GET_CODE (XEXP (XEXP (OP, 0), 0)) == MULT\
-		|| GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT))) : 0)))
+		|| GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT)))
+   : ((C) == 'S' ?					\
+      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 31) : 0))))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -1706,7 +1708,7 @@ while (0)
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode word_mode
+#define Pmode SImode
 
 /* Add any extra modes needed to represent the condition code.
 
