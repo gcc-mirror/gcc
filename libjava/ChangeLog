@@ -1,5 +1,50 @@
 2002-09-25  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/DatagramSocket.java
+	(DatagramSocket): Initialize new instance variables.
+	(close): Reset new instance variables.
+	(getLocalAddress): Remove unneeded SecurityManager usage.
+	(getLocalPort): Check if socket is already bound.
+	(isConnected): New method.
+	(getInetAddress): Implemented.
+	(getPort): Better Implementation, documentation fixed.
+	(getRemoteSocketAddress): New method.
+	* java/net/JarURLConnection.java
+	(element): Typo fixed.
+	(getMainAttributes): New method.
+	(getAttributes): New method (stub only).
+	(getManifest): New method (stub only).
+	* java/net/NetPermission.java: Added serialVersionsUID.
+	* java/net/Socket.java
+	(connect): Check blocking mode of associated channel,
+	documentation added.
+	(getLocalSocketAddress): Better implementation.
+	(getRemoteSocketAddress): Implemented.
+	(isBound): New method.
+	(setSendBufferSize): Documentation added.
+	* java/net/SocketAddress.java: Added serialVersionsUID.
+	* java/net/SocketPermission.java: Added serialVersionsUID.
+	* java/net/URL.java
+	(URL): Wrap for shorter lines, initialize new instance variables,
+	documentation added.
+	(equals): Check new instance variables too.
+	(getContent): Documentation added.
+	(getPath): Documentation added.
+	(getAuthority): New method.
+	(getHost): Documentation added.
+	(getPort): Documentation added.
+	(getDefaultPort): New method.
+	(getProtocol): Documentation added.
+	(getUserInfo): Documentation added.
+	(set): Initialize new instance variables, documentation added.
+	* java/net/URLStreamHandler.java
+	(setURL): New method.
+	* java/net/natPlainDatagramSocketImpl.cc
+	(connect): Fix exception name.
+	(disconnect): Fix exception name.
+
+2002-09-25  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/channels/spi/AbstractSelectableChannel.java: New file.
 	* java/nio/channels/DatagramChannel.java:
 	extends AbstractSelectableChannel

@@ -28,9 +28,12 @@ import java.util.StringTokenizer;
 public final class URL implements Serializable
 {
   private String protocol;
+  private String authority;
+  private String userInfo;
   private String host;
   private int port = -1;	// Initialize for constructor using context.
   private String file;
+  private String query;
   private String ref;
   private int hashCode = 0;
   transient private URLStreamHandler handler;
@@ -39,19 +42,50 @@ public final class URL implements Serializable
 
   private static final long serialVersionUID = -7627629688361524110L;
 
+  /**
+   * Creates an URL object from the given arguments
+   *
+   * @param protocol The protocol of the URL
+   * @param host The host of the URL
+   * @param port The port of the URL
+   * @param file The file of the URL
+   *
+   * @exception MalformedURLException If an error occurs
+   */
   public URL(String protocol, String host, int port, String file)
     throws MalformedURLException
   {
     this(protocol, host, port, file, null);
   }
 
+  /**
+   * Creates an URL object from the given arguments
+   *
+   * @param protocol The protocol of the URL
+   * @param host The host of the URL
+   * @param file The file of the URL
+   *
+   * @exception MalformedURLException If an error occurs
+   */
   public URL(String protocol, String host, String file)
     throws MalformedURLException
   {
     this(protocol, host, -1, file, null);
   }
 
-  // JDK1.2
+  /**
+   * Creates an URL object from the given arguments
+   *
+   * @param protocol The protocol of the URL
+   * @param host The host of the URL
+   * @param port The port of the URL
+   * @param file The file of the URL
+   * @param handler The stream handler for the URL
+   *
+   * @exception MalformedURLException If an error occurs
+   *
+   * @since 1.2
+   */
   public URL(String protocol, String host, int port, String file,
     URLStreamHandler handler) throws MalformedURLException
   {
@@ -76,11 +110,14 @@ public final class URL implements Serializable
       this.handler = setURLStreamHandler(protocol);
 
     if (this.handler == null)
-      throw new MalformedURLException("Protocol handler not found: " + protocol);
+      throw new MalformedURLException (
+		      "Protocol handler not found: " + protocol);
 
     this.host = host;
-
     this.port = port;
+    this.userInfo = null;
+    this.authority = null;
+    this.query = null;
 
     int hashAt = file.indexOf('#');
     if (hashAt < 0)
@@ -96,17 +133,42 @@ public final class URL implements Serializable
     hashCode = hashCode();			// Used for serialization.
   }
 
+  /**
+   * Creates an URL object from the given arguments
+   * 
+   * @param spec The string to parse an URL
+   *
+   * @exception MalformedURLException If an error occurs
+   */
   public URL(String spec) throws MalformedURLException
   {
     this((URL) null, spec, (URLStreamHandler) null);
   }
 
+  /**
+   * Creates an URL object from the given arguments
+   * 
+   * @param context The context on which to parse the specification
+   * @param spec The string to parse an URL
+   *
+   * @exception MalformedURLException If an error occurs
+   */
   public URL(URL context, String spec) throws MalformedURLException
   {
     this(context, spec, (URLStreamHandler) null);
   }
 
-  // JDK1.2
+  /**
+   * Creates an URL from given arguments
+   *
+   * @param context The context in which to parse the specification
+   * @param spec The string to parse as an URL
+   * @param handler The stream handler for the URL
+   *
+   * @exception MalformedURLException If an error occurs
+   * 
+   * @since 1.2
+   */
   public URL(URL context, String spec, URLStreamHandler handler)
     throws MalformedURLException
   {
@@ -142,6 +204,9 @@ public final class URL implements Serializable
 	    host = context.host;
 	    port = context.port;
 	    file = context.file;
+	    userInfo = context.userInfo;
+	    authority = context.authority;
+	    query = context.query;
 	  }
       }
     else if (context != null)
@@ -153,6 +218,9 @@ public final class URL implements Serializable
 	host = context.host;
 	port = context.port;
 	file = context.file;
+        userInfo = context.userInfo;
+        authority = context.authority;
+        query = context.query;
       }
     else	// Protocol NOT specified in spec. and no context available.
       throw new
@@ -202,14 +270,25 @@ public final class URL implements Serializable
     return (port == uObj.port
 	    && ((protocol == null && uObj.protocol == null)
 		|| (protocol != null && protocol.equals(uObj.protocol)))
+	    && ((userInfo == null && uObj.userInfo == null)
+                || (userInfo != null && userInfo.equals(uObj.userInfo)))
+	    && ((authority == null && uObj.authority == null)
+                || (authority != null && authority.equals(uObj.authority)))
 	    && ((host == null && uObj.host == null)
 		|| (host != null && host.equals(uObj.host)))
 	    && ((file == null && uObj.file == null)
 		|| (file != null && file.equals(uObj.file)))
+	    && ((query == null && uObj.query == null)
+                || (query != null && query.equals(uObj.query)))
 	    && ((ref == null && uObj.ref == null)
 		|| (ref != null && ref.equals(uObj.ref))));
   }
 
+  /**
+   * Gets the contents of this URL
+   *
+   * @since 1.3
+   */
   public final Object getContent() throws IOException
   {
     return openConnection().getContent();
@@ -220,22 +299,54 @@ public final class URL implements Serializable
     return file;
   }
 
+  /**
+   * Returns the path of the URL
+   *
+   * @since 1.3
+   */
   public String getPath()
   {
     int quest = file.indexOf('?');
     return quest < 0 ? file : file.substring(0, quest);
   }
 
+  /**
+   * Returns the authority of the URL
+   * 
+   * @since 1.3
+   */
+  public String getAuthority()
+  {
+    return authority;
+  }
+
+  /**
+   * Returns the host of the URL
+   */
   public String getHost()
   {
     return host;
   }
 
+  /**
+   * Returns of port of the URL
+   */
   public int getPort()
   {
     return port;
   }
 
+  /**
+   * Returns the default port of the URL
+   */
+  public int getDefaultPort()
+  {
+    return 0;
+  }
+
+  /**
+   * Returns the protocol of the URL
+   */
   public String getProtocol()
   {
     return protocol;
@@ -246,6 +357,9 @@ public final class URL implements Serializable
     return ref;
   }
 
+  /**
+   * Returns the user information of the URL
+   */
   public String getUserInfo ()
   {
     int at = host.indexOf('@');
@@ -290,6 +404,11 @@ public final class URL implements Serializable
     return handler.sameFile(this, other);
   }
 
+  /**
+   * Sets the specified fields of the URL. This is not a public method so
+   * that only URLStreamHandlers can modify URL fields. URLs are otherwise
+   * constant
+   */
   protected void set(String protocol, String host, int port, String file,
 		     String ref)
   {
@@ -299,14 +418,23 @@ public final class URL implements Serializable
     // be aware of this.
     this.handler = setURLStreamHandler(protocol);
     this.protocol = protocol;
+    this.authority = null;
+    this.userInfo = null;
     this.port = port;
     this.host = host;
     this.file = file;
+    this.query = null;
     this.ref = ref;
     hashCode = hashCode();			// Used for serialization.
   }
 
-  /** @since 1.3 */
+  /**
+   * Sets the specified fields of the URL. This is not a public method so
+   * that only URLStreamHandlers can modify URL fields. URLs are otherwise
+   * constant
+   *
+   * @since 1.3
+   */
   protected void set(String protocol, String host, int port,
 		     String authority, String userInfo,
 		     String path, String query, String ref)

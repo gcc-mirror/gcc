@@ -37,6 +37,9 @@ public class DatagramSocket
 
   DatagramChannel ch;
 
+  private InetAddress remoteAddress;
+  private int remotePort;
+
   /**
    * Creates a DatagramSocket
    *
@@ -59,6 +62,8 @@ public class DatagramSocket
   protected DatagramSocket (DatagramSocketImpl impl)
   {
     this.impl = impl;
+    this.remoteAddress = null;
+    this.remotePort = -1;
   }
 
   /**
@@ -134,6 +139,9 @@ public class DatagramSocket
       impl.setOption(SocketOptions.SO_REUSEADDR, new Boolean(true));
 
     impl.bind(port, laddr == null ? InetAddress.ANY_IF : laddr);
+    
+    remoteAddress = null;
+    remotePort = -1;
   }
 
   /**
@@ -169,6 +177,8 @@ public class DatagramSocket
   public void close()
   {
     impl.close();
+    remoteAddress = null;
+    remotePort = -1;
   }
 
   /**
@@ -198,7 +208,6 @@ public class DatagramSocket
    */
   public InetAddress getLocalAddress()
   {
-    SecurityManager s = System.getSecurityManager();
     // FIXME: JCL p. 510 says this should call checkConnect.  But what
     // string should be used as the hostname?  Maybe this is just a side
     // effect of calling InetAddress.getLocalHost.
@@ -241,6 +250,9 @@ public class DatagramSocket
    */
   public int getLocalPort()
   {
+    if (!isBound ())
+      return -1;
+
     return impl.getLocalPort();
   }
 
@@ -417,6 +429,16 @@ public class DatagramSocket
   }
 
   /**
+   * Returns the connection state of the socket
+   * 
+   * @since 1.4
+   */
+  public boolean isConnected()
+  {
+    return remoteAddress != null;
+  }
+
+  /**
    * Returns the InetAddress the socket is connected to
    * or null if the socket is not connected
    * 
@@ -424,18 +446,37 @@ public class DatagramSocket
    */
   public InetAddress getInetAddress()
   {
-    // FIXME:
-    return null;
+    if (!isConnected ())
+      return null;
+
+    return remoteAddress;
   }
 
   /**
-   * Returns the local port number of the socket
+   * Returns the port number the socket is connected to or -1 if not connected
    * 
    * @since 1.2
    */
   public int getPort()
   {
-    return impl.localPort;
+    if (!isConnected ())
+      return -1;
+    
+    return remotePort;
+  }
+
+  /**
+   * Returns the SocketAddress of the host this socket is conneted to
+   * or null if this socket is not connected
+   * 
+   * @since 1.4
+   */
+  public SocketAddress getRemoteSocketAddress()
+  {
+    if (!isConnected ())
+      return null;
+
+    return new InetSocketAddress (remoteAddress, remotePort);
   }
 
   /**

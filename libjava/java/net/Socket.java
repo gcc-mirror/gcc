@@ -39,6 +39,7 @@ package java.net;
 
 import java.io.*;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.IllegalBlockingModeException;
 
 /* Written using on-line Java Platform 1.2 API Specification.
  * Status:  I believe all methods are implemented.
@@ -80,7 +81,7 @@ public class Socket
   SocketImpl impl;
 
   SocketChannel ch; // this field must have been set if created by SocketChannel
-  
+
   // Constructors
 
   /**
@@ -310,7 +311,8 @@ public class Socket
    *
    * @exception IOException If an error occurs
    * @exception IllegalArgumentException If the addess type is not supported
-   * @exception IllegalBlockingModeException FIXME
+   * @exception IllegalBlockingModeException If this socket has an associated
+   * channel, and the channel is in non-blocking mode
    * 
    * @since 1.4
    */
@@ -320,6 +322,9 @@ public class Socket
     if (! (endpoint instanceof InetSocketAddress))
       throw new IllegalArgumentException ("Address type not supported");
 
+    if (ch != null && !ch.isBlocking ())
+      throw new IllegalBlockingModeException ();
+    
     impl.connect (endpoint, 0);
   }
 
@@ -332,7 +337,8 @@ public class Socket
    *
    * @exception IOException If an error occurs
    * @exception IllegalArgumentException If the address type is not supported
-   * @exception IllegalBlockingModeException FIXME
+   * @exception IllegalBlockingModeException If this socket has an associated
+   * channel, and the channel is in non-blocking mode
    * @exception SocketTimeoutException If the timeout is reached
    * 
    * @since 1.4
@@ -343,6 +349,9 @@ public class Socket
     if (! (endpoint instanceof InetSocketAddress))
       throw new IllegalArgumentException ("Address type not supported");
 
+    if (ch != null && !ch.isBlocking ())
+      throw new IllegalBlockingModeException ();
+    
     impl.connect (endpoint, timeout);
   }
 
@@ -432,16 +441,10 @@ public class Socket
    */
   public SocketAddress getLocalSocketAddress()
   {
-    InetAddress addr;
+    InetAddress addr = getLocalAddress ();
 
-    try
-      {
-        addr = (InetAddress) impl.getOption (SocketOptions.SO_BINDADDR);
-      }
-    catch (SocketException e)
-      {
-	return null;
-      }
+    if (addr == null)
+      return null;
     
     return new InetSocketAddress (addr, impl.getLocalPort());
   }
@@ -454,8 +457,7 @@ public class Socket
    */
   public SocketAddress getRemoteSocketAddress()
   {
-    // FIXME: Implement this
-    return null;
+    return new InetSocketAddress (impl.getInetAddress (), impl.getPort ());
   }
 
   /**
@@ -701,7 +703,7 @@ public class Socket
    * @param size The new send buffer size.
    *
    * @exception SocketException If an error occurs or Socket not connected
-   * @exception IllegalArgumentException FIXME
+   * @exception IllegalArgumentException If size is 0 or negative
    *
    * @since 1.2
    */
@@ -989,5 +991,13 @@ public class Socket
       throw new IllegalArgumentException();
 
     impl.setOption (SocketOptions.IP_TOS, new Integer (tc));
+  }
+
+  /**
+   * Checks if the socket is already bound.
+   */
+  public boolean isBound ()
+  {
+    return getLocalAddress () != null;
   }
 }
