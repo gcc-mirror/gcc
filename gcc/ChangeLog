@@ -1,5 +1,10 @@
 2003-01-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* flow.c (find_auto_inc): Also try to generate a PRE_MODIFY with
+	constant offset.
+
+2003-01-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.h (HAVE_PRE_MODIFY_DISP, HAVE_PRE_MODIFY_REG): Define.
 	(HAVE_POST_MODIFY_DISP, HAVE_POST_MODIFY_REG): Define.
 	(ARM_GO_IF_LEGITIMATE_ADDRESS): Handle pre/post-modify addresses.
