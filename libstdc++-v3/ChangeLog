@@ -1,5 +1,10 @@
 2000-04-24  Loren J. Rittle  <ljrittle@acm.org>
 
+        * mkcheck.in: Report compiler version used for test.  Find
+        the built _G_config.h instead of any old installed version.
+
+2000-04-24  Loren J. Rittle  <ljrittle@acm.org>
+
         * config/generic/ctype.cc (do_toupper): Remove dependence on
         non-portable/non-existent lookup table.
         (do_tolower): Same.
