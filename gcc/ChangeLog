@@ -1,3 +1,7 @@
+Tue Sep 14 15:13:36 1999  Richard Henderson  <rth@cygnus.com>
+
+	* toplev.c (compile_function): Unconditionally emit nop.
+
 Tue Sep 14 14:41:47 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* haifa-sched.c (actual_hazard): Move declaration of variable
