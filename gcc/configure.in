@@ -280,13 +280,6 @@ else
 fi,
 objc_boehm_gc='')
 
-AC_ARG_ENABLE(java-gc,
-changequote(<<,>>)dnl
-<<  --enable-java-gc=TYPE   choose garbage collector [boehm]>>,
-changequote([,])
-  JAVAGC=$enableval,
-  JAVAGC=boehm)
-
 AC_ARG_WITH(dwarf2,
 [  --enable-dwarf2	  enable DWARF2 debugging as default.],
 dwarf2="$with_dwarf2",
@@ -4541,7 +4534,6 @@ AC_SUBST(host_exeext)
 AC_SUBST(host_extra_gcc_objs)
 AC_SUBST(host_xm_file_list)
 AC_SUBST(install)
-AC_SUBST(JAVAGC)
 AC_SUBST(lang_options_files)
 AC_SUBST(lang_specs_files)
 AC_SUBST(lang_tree_files)

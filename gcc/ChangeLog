@@ -1,3 +1,8 @@
+Wed Aug  4 11:53:55 1999  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Removed --enable-java-gc option and JAVAGC subst.
+
 Wed Aug  4 09:06:14 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* recog.c (preproces_constraints): Zero recog_op_alt before 
