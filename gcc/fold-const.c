@@ -2569,7 +2569,7 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
    *PMASK is set to the mask used.  This is either contained in a
    BIT_AND_EXPR or derived from the width of the field.
 
-   *PAND_MASK is set the the mask found in a BIT_AND_EXPR, if any.
+   *PAND_MASK is set to the mask found in a BIT_AND_EXPR, if any.
 
    Return 0 if this is not a component reference or is one that we can't
    do anything with.  */

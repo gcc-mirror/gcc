@@ -609,7 +609,7 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
       total_bits = GET_MODE_BITSIZE (mode);
 
       /* Make sure bitpos is valid for the chosen mode.  Adjust BITPOS to
-	 be be in the range 0 to total_bits-1, and put any excess bytes in
+	 be in the range 0 to total_bits-1, and put any excess bytes in
 	 OFFSET.  */
       if (bitpos >= total_bits)
 	{
@@ -1424,7 +1424,7 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
       total_bits = GET_MODE_BITSIZE (mode);
 
       /* Make sure bitpos is valid for the chosen mode.  Adjust BITPOS to
-	 be be in the range 0 to total_bits-1, and put any excess bytes in
+	 be in the range 0 to total_bits-1, and put any excess bytes in
 	 OFFSET.  */
       if (bitpos >= total_bits)
 	{

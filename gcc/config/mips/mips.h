@@ -2270,7 +2270,7 @@ extern struct mips_frame_info current_frame_info;
 
 
 /* A C expression that should indicate the number of bytes of its
-   own arguments that a function function pops on returning, or 0
+   own arguments that a function pops on returning, or 0
    if the function pops no arguments and the caller must therefore
    pop them all after the function returns.
 
@@ -4217,7 +4217,7 @@ do {									\
 #define ASM_OUTPUT_ALIGN(STREAM,LOG)					\
   fprintf (STREAM, "\t.align\t%d\n", (LOG));
 
-/* This is how to output an assembler line to to advance the location
+/* This is how to output an assembler line to advance the location
    counter by SIZE bytes.  */
 
 #define ASM_OUTPUT_SKIP(STREAM,SIZE)					\

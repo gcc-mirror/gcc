@@ -54,7 +54,7 @@ mpwify_filename(char *unixname, char *macname)
     }
   j = 0;
   /* If you're going to end up with one or more colons in the middle of a
-     a path after an all-Unix relative path is translated, you must add a
+     path after an all-Unix relative path is translated, you must add a
      colon on the front, so that the first component is not thought to be
      a disk name.  */
   if (unixname[0] != '/' && ! strchr (unixname, ':') && strchr (unixname, '/'))

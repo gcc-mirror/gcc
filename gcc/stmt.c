@@ -5149,7 +5149,7 @@ group_case_nodes (head)
    The transformation is performed by splitting the ordered
    list into two equal sections plus a pivot.  The parts are
    then attached to the pivot as left and right branches.  Each
-   branch is is then transformed recursively.  */
+   branch is then transformed recursively.  */
 
 static void
 balance_case_nodes (head, parent)
@@ -5398,7 +5398,7 @@ emit_jump_if_reachable (label)
    check for bounded nodes.  In this case conditional and/or
    unconditional jumps as a result of the boundary check for the
    current node are arranged to target the subordinates associated
-   code for out of bound conditions on the current node node.
+   code for out of bound conditions on the current node.
 
    We can assume that when control reaches the code generated here,
    the index value has already been compared with the parents

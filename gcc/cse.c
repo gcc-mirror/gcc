@@ -2046,7 +2046,7 @@ safe_hash (x, mode)
    in all the places that search a hash table chain for an equivalent
    for a given value.  A possible equivalent that has different structure
    has its hash code computed from different data.  Whether the hash code
-   is the same as that of the the given value is pure luck.  */
+   is the same as that of the given value is pure luck.  */
 
 static int
 exp_equiv_p (x, y, validate, equal_values)

@@ -2760,7 +2760,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    {
 	      offset += SUBREG_WORD (operand);
 	      operand = SUBREG_REG (operand);
-	      /* Force reload if this is a constant or PLUS or if there may may
+	      /* Force reload if this is a constant or PLUS or if there may
 		 be a problem accessing OPERAND in the outer mode.  */
 	      if (CONSTANT_P (operand)
 		  || GET_CODE (operand) == PLUS

@@ -1747,7 +1747,7 @@ bit_operator (x, mode)
    28-30* - ASHIFT | LSHIFTRT: rotate top byte, mask, move byte into place,
                                zero others
             ASHIFTRT: loop
-   31     - ASHIFT | LSHIFTRT: rotate top byte, mask, byte byte into place,
+   31     - ASHIFT | LSHIFTRT: rotate top byte, mask, move byte into place,
                                zero others
             ASHIFTRT: shll top byte, subx, copy to other bytes
 

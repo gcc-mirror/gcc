@@ -1209,7 +1209,7 @@ do { ASM_OUTPUT_ALIGN ((FILE), 2);					\
 
    On the i860, the following target-specific special codes are recognized:
 
-	`r'	The operand can be anything, but if is is an immediate zero
+	`r'	The operand can be anything, but if it is an immediate zero
 		value (either integer or floating point) then it will be
 		represented as `r0' or as `f0' (respectively).
 

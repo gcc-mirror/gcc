@@ -49,7 +49,7 @@ read this file, type
          $ info -f info-stnd
 
 If you are using GNU Emacs, you may want to install the Emacs Lisp files
-permanently.  Move them them to a directory in the load-path for Emacs;
+permanently.  Move them to a directory in the load-path for Emacs;
 otherwise Emacs will not be able to load the autoloaded support files, such
 as `texinfmt.el'.
 

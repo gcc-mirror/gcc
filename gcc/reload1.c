@@ -1433,7 +1433,7 @@ reload (first, global, dumpfile)
 		 and that value is in a register that has been spilled,
 		 and if the insn needs a reload in a class
 		 that might use that register as the reload register,
-		 then add add an extra need in that class.
+		 then add an extra need in that class.
 		 This makes sure we have a register available that does
 		 not overlap the return value.  */
 
@@ -2693,7 +2693,7 @@ set_label_offsets (x, insn, initial_p)
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
       /* Each of the labels in the address vector must be at their initial
-	 offsets.  We want the first first for ADDR_VEC and the second
+	 offsets.  We want the first field for ADDR_VEC and the second
 	 field for ADDR_DIFF_VEC.  */
 
       for (i = 0; i < XVECLEN (x, code == ADDR_DIFF_VEC); i++)
@@ -2774,7 +2774,7 @@ static struct rtvec_def *old_asm_operands_vec, *new_asm_operands_vec;
    If INSN is an insn, it is the insn containing X.  If we replace a REG
    in a SET_DEST with an equivalent MEM and INSN is non-zero, write a
    CLOBBER of the pseudo after INSN so find_equiv_regs will know that
-   that the REG is being modified.
+   the REG is being modified.
 
    Alternatively, INSN may be a note (an EXPR_LIST or INSN_LIST).
    That's used when we eliminate in expressions stored in notes.
@@ -4538,7 +4538,7 @@ reload_reg_free_p (regno, opnum, type)
 
     case RELOAD_FOR_INPADDR_ADDRESS:
       /* Can't use a register if it is used for an input address
-         address for this operand or used as an input in an earlier
+         for this operand or used as an input in an earlier
          one.  */
       if (TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[opnum], regno))
 	return 0;
@@ -4563,7 +4563,7 @@ reload_reg_free_p (regno, opnum, type)
 
     case RELOAD_FOR_OUTADDR_ADDRESS:
       /* Can't use a register if it is used for an output address
-         address for this operand or used as an output in this or a
+         for this operand or used as an output in this or a
          later operand.  */
       if (TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[opnum], regno))
 	return 0;

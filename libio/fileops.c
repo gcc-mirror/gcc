@@ -256,7 +256,7 @@ _IO_do_write (fp, data, to_do)
     return 0;
   if (fp->_flags & _IO_IS_APPENDING)
     /* On a system without a proper O_APPEND implementation,
-       you would need to sys_seek(0, SEEK_END) here, but is
+       you would need to sys_seek(0, SEEK_END) here, but it
        is not needed nor desirable for Unix- or Posix-like systems.
        Instead, just indicate that offset (before and after) is
        unpredictable. */

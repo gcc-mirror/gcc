@@ -3701,7 +3701,7 @@ store_constructor (exp, target, cleared)
       tree elttype = TREE_TYPE (type);
 
       /* If the constructor has fewer elements than the array,
-         clear the whole array first.  Similarly if this this is
+         clear the whole array first.  Similarly if this is
          static constructor of a non-BLKmode object.  */
       if (cleared || (GET_CODE (target) == REG && TREE_STATIC (exp)))
 	need_to_clear = 1;
@@ -7955,7 +7955,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
       /* If we were unable to expand via the builtin, stop the
 	 sequence (without outputting the insns) and break, causing
-	 a call the the library function.  */
+	 a call to the library function.  */
       if (target == 0)
 	{
 	  end_sequence ();

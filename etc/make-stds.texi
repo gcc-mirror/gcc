@@ -79,7 +79,7 @@ foo.1 : foo.man sedscript
 
 @noindent
 will fail when the build directory is not the source directory, because
-@file{foo.man} and @file{sedscript} are in the the source directory.
+@file{foo.man} and @file{sedscript} are in the source directory.
 
 When using GNU @code{make}, relying on @samp{VPATH} to find the source
 file will work in the case where there is a single dependency file,
@@ -724,7 +724,7 @@ The easiest way to do this is to create a subdirectory appropriately
 named, use @code{ln} or @code{cp} to install the proper files in it, and
 then @code{tar} that subdirectory.
 
-Compress the tar file file with @code{gzip}.  For example, the actual
+Compress the tar file with @code{gzip}.  For example, the actual
 distribution file for GCC version 1.40 is called @file{gcc-1.40.tar.gz}.
 
 The @code{dist} target should explicitly depend on all non-source files

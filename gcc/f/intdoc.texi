@@ -1178,7 +1178,7 @@ Causes external subroutine @var{Handler} to be executed after a delay of
 @var{Seconds} seconds by using @code{alarm(1)} to set up a signal and
 @code{signal(2)} to catch it.
 If @var{Status} is supplied, it will be
-returned with the the number of seconds remaining until any previously
+returned with the number of seconds remaining until any previously
 scheduled alarm was due to be delivered, or zero if there was no
 previously scheduled alarm.
 @xref{Signal Intrinsic (subroutine)}.

@@ -342,7 +342,7 @@ private:
 
   // Returns an object of size n, and optionally adds to size n free list.
   static void *refill(size_t n);
-  // Allocates a chunk for nobjs of size size.  nobjs may be reduced
+  // Allocates a chunk for nobjs of size "size".  nobjs may be reduced
   // if it is inconvenient to allocate the requested number.
   static char *chunk_alloc(size_t size, int &nobjs);
 

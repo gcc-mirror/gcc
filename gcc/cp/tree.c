@@ -713,7 +713,7 @@ layout_basetypes (rec, max)
   if (const_size)
     {
       /* Because a virtual base might take a single byte above,
-	 we have to re-adjust the total size to make sure it it
+	 we have to re-adjust the total size to make sure it is
 	 a multiple of the alignment.  */
       /* Give the whole object the alignment it wants.  */
       const_size = CEIL (const_size, record_align) * record_align;
@@ -1167,7 +1167,7 @@ get_decl_list (value)
    BINFO is the base binfo to use, if we are deriving from one.  This
    is necessary, as we want specialized parent binfos from base
    classes, so that the VTABLE_NAMEs of bases are for the most derived
-   type, instead of of the simple type.
+   type, instead of the simple type.
 
    VTABLE is the virtual function table with which to initialize
    sub-objects of type TYPE.

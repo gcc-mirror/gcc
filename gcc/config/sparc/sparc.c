@@ -3006,7 +3006,7 @@ output_block_move (operands)
      and unrolled.
 
      That is, at run time, copy enough bytes one at a time to ensure that the
-     target and source addresses are aligned to the the largest possible
+     target and source addresses are aligned to the largest possible
      alignment.  Then use a preconditioned unrolled loop to copy say 16
      bytes at a time.  Then copy bytes one at a time until finish the rest.  */
 

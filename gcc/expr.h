@@ -532,7 +532,7 @@ extern rtxfun bcc_gen_fctn[NUM_RTX_CODE];
 extern enum insn_code setcc_gen_code[NUM_RTX_CODE];
 
 #ifdef HAVE_conditional_move
-/* Indexed by the the machine mode, gives the insn code to make a conditional
+/* Indexed by the machine mode, gives the insn code to make a conditional
    move insn.  */
 
 extern enum insn_code movcc_gen_code[NUM_MACHINE_MODES];

@@ -10,7 +10,7 @@ later version.
 
 GNU CC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 License for more details.
 
 You should have received a copy of the GNU General Public License
@@ -576,7 +576,7 @@ object_is_meta_class(id object)
 }
 
 struct sarray* 
-objc_get_uninstalled_dtable();
+objc_get_uninstalled_dtable(void);
 
 #endif /* not __objc_api_INCLUDE_GNU */
 

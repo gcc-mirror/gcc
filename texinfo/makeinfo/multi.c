@@ -181,7 +181,7 @@ setup_multitable_parameters ()
              number) and then non-whitespace (the number).  */
           while (*params && (*params == ' ' || *params == '\t'))
             params++;
-          /* Hmm, but what what @columnfractions 3foo.  Well, I suppose
+          /* Hmm, but what about @columnfractions 3foo?  Well, I suppose
              it's invalid input anyway.  */
           while (*params && *params != ' ' && *params != '\t'
                  && *params != '\n' && *params != '@')

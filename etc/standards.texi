@@ -2570,7 +2570,7 @@ also contain this information.  If the manual is changing more
 frequently than or independent of the program, also state a version
 number for the manual in both of these places.
 
-Each program documented in the manual should should have a node named
+Each program documented in the manual should have a node named
 @samp{@var{program} Invocation} or @samp{Invoking @var{program}}.  This
 node (together with its subnodes, if any) should describe the program's
 command line arguments and how to run it (the sort of information people

@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 /* This file performs stupid register allocation, which is used
    when cc1 gets the -noreg switch (which is when cc does not get -O).
 
-   Stupid register allocation goes in place of the the flow_analysis,
+   Stupid register allocation goes in place of the flow_analysis,
    local_alloc and global_alloc passes.  combine_instructions cannot
    be done with stupid allocation because the data flow info that it needs
    is not computed here.

@@ -60,7 +60,7 @@ do { long value;							\
 /* This is how to output assembly code to define a `double' constant.
    We always have to use a pair of .long pseudo-ops to do this because
    the native SVR4 ELF assembler is buggy and it generates incorrect
-   values when we try to use the the .double pseudo-op instead.  */
+   values when we try to use the .double pseudo-op instead.  */
 
 #undef ASM_OUTPUT_DOUBLE
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\

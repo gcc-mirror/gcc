@@ -32,7 +32,7 @@ the executable file might be covered by the GNU General Public License. */
 #include <streambuf.h>
 
 #if !_IO_UNIFIED_JUMPTABLES
-// A builtinbuf a a streambuf where all the virtual operations
+// A builtinbuf is a streambuf where all the virtual operations
 // call the _IO_jump_t table.
 
 extern "C++" {

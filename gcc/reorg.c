@@ -880,7 +880,7 @@ emit_delay_sequence (insn, list, length)
   register rtx li;
   int had_barrier = 0;
 
-  /* Allocate the the rtvec to hold the insns and the SEQUENCE.  */
+  /* Allocate the rtvec to hold the insns and the SEQUENCE.  */
   rtvec seqv = rtvec_alloc (length + 1);
   rtx seq = gen_rtx_SEQUENCE (VOIDmode, seqv);
   rtx seq_insn = make_insn_raw (seq);
@@ -1005,7 +1005,7 @@ add_to_delay_list (insn, delay_list)
   return delay_list;
 }   
 
-/* Delete INSN from the the delay slot of the insn that it is in.  This may
+/* Delete INSN from the delay slot of the insn that it is in.  This may
    produce an insn without anything in its delay slots.  */
 
 static void
@@ -1956,7 +1956,7 @@ try_merge_delay_insns (insn, thread)
 
   /* If all insns in the delay slot have been matched and we were previously
      annulling the branch, we need not any more.  In that case delete all the
-     merged insns.  Also clear the INSN_FROM_TARGET_P bit of each insn the
+     merged insns.  Also clear the INSN_FROM_TARGET_P bit of each insn in
      the delay list so that we know that it isn't only being used at the
      target.  */
   if (slot_number == num_slots && annul_p)
@@ -2139,7 +2139,7 @@ redundant_insn (insn, target, delay_list)
 	  if (GET_CODE (XVECEXP (pat, 0, 0)) == CALL_INSN)
 	    return 0;
 
-	  /* If this this is an INSN or JUMP_INSN with delayed effects, it
+	  /* If this is an INSN or JUMP_INSN with delayed effects, it
 	     is hard to track the resource needs properly, so give up.  */
 
 #ifdef INSN_SETS_ARE_DELAYED

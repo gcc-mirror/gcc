@@ -2749,7 +2749,7 @@ get_directive_line (finput)
       else
         if (c == '\'' || c == '"')
 	  looking_for = c;	/* Don't stop buffering until we see another
-				   another one of these (or an EOF).  */
+				   one of these (or an EOF).  */
 
       /* Handle backslash.  */
       char_escaped = (c == '\\' && ! char_escaped);

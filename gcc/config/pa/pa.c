@@ -2778,7 +2778,7 @@ hppa_expand_prologue()
       }
   }
 
-  /* The hppa calling conventions say that that %r19, the pic offset
+  /* The hppa calling conventions say that %r19, the pic offset
      register, is saved at sp - 32 (in this function's frame)  when
      generating PIC code.  FIXME:  What is the correct thing to do
      for functions which make no calls and allocate no frame?  Do
@@ -3502,7 +3502,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		  /* An ALU flop can't be issued until two cycles before a
 		     preceding divide or sqrt operation has finished if
 		     the target of the ALU flop is also the target of
-		     of the divide or sqrt operation.  */
+		     the divide or sqrt operation.  */
 		  return cost - 2;
 
 		default:

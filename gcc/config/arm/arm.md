@@ -6064,7 +6064,7 @@
 }"
 [(set_attr "type" "store4")])
 
-;; Similarly for the the floating point registers
+;; Similarly for the floating point registers
 (define_insn "*push_fp_multi"
   [(match_parallel 2 "multi_register_push"
     [(set (match_operand:BLK 0 "memory_operand" "=m")

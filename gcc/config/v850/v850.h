@@ -78,7 +78,7 @@ extern int target_flags;
      * Doubles are normally 4 byte aligned, except in argument
      lists where they are 8 byte aligned.  Is the alignment
      in the argument list based on the first parameter,
-     first stack parameter, etc etc.
+     first stack parameter, etc., etc.
 
      * Passing/returning of large structures probably isn't the same
      as GHS.  We don't have enough documentation on their conventions
@@ -1387,7 +1387,7 @@ v850_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 /* Tell compiler we want to support GHS pragmas */
 #define HANDLE_GHS_PRAGMA
 
-/* The assembler op to to start the file.  */
+/* The assembler op to start the file.  */
 
 #define FILE_ASM_OP "\t.file\n"
 

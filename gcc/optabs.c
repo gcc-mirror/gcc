@@ -1688,7 +1688,7 @@ sign_expand_binop (mode, uoptab, soptab, op0, op1, target, unsignedp, methods)
    [(set TARG0 (operate OP0 OP1)) (set TARG1 (operate ...))].
 
    Either TARG0 or TARG1 may be zero, but what that means is that
-   that result is not actually wanted.  We will generate it into
+   the result is not actually wanted.  We will generate it into
    a dummy pseudo-reg and discard it.  They may not both be zero.
 
    Returns 1 if this operation can be performed; 0 if not.  */

@@ -1075,7 +1075,7 @@ write_tree_1 (tree, prevpos, afterward, type)
      In the latter case, we are branching to a node that is not the first
      node in a decision list.  We have already checked that it is possible
      for both the node we originally tested at this level and the node we
-     are branching to to be both match some pattern.  That means that they
+     are branching to to both match some pattern.  That means that they
      usually will be testing the same mode and code.  So it is normally safe
      for such labels to be inside switch statements, since the tests done
      by virtue of arriving at that label will usually already have been

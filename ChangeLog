@@ -3625,7 +3625,7 @@ Mon Oct  4 16:15:09 1993  david d `zoo' zuhn  (zoo@rtl.cygnus.com)
 	* configure.in: default to '--with-gnu-as' and '--with-gnu-ld'
 	if gas and ld are in the source tree and are in ${configdirs}.
 	If ${use_gnu_as} or ${use_gnu_ld} are 'no', then don't set the
-	the --with options (but still pass them down on the command line,
+	--with options (but still pass them down on the command line,
 	if they were explicitly specified).
 
 Fri Sep 24 19:11:13 1993  david d `zoo' zuhn  (zoo@rtl.cygnus.com)

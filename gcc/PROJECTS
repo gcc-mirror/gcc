@@ -14,7 +14,7 @@ Haifa scheduler (haifa-sched.c, loop.[ch], unroll.[ch], genattrtab.c):
   * Someone needs make one (or more) passes over the scheduler as a whole to
   just clean it up.  Try to move the machine dependent bits into the target
   files where they belong, avoid re-creating functions where or near
-  equivalents already exist (ie is_conditional_branch and friends), etc etc.
+  equivalents already exist (ie is_conditional_branch and friends), etc., etc.
 
   * Document the new scheduling options.  Remove those options which are
   not really useful (like reverse scheduling for example).  In general

@@ -3038,7 +3038,7 @@ name_and_src_coords_attributes (decl)
 	/* This is annoying, but we have to pop out of the .debug section
 	   for a moment while we call `lookup_filename' because calling it
 	   may cause a temporary switch into the .debug_sfnames section and
-	   most svr4 assemblers are not smart enough be be able to nest
+	   most svr4 assemblers are not smart enough to be able to nest
 	   section switches to any depth greater than one.  Note that we
 	   also can't skirt this issue by delaying all output to the
 	   .debug_sfnames section unit the end of compilation because that
@@ -4201,7 +4201,7 @@ output_type (type, containing_scope)
     return;
 
   /* We are going to output a DIE to represent the unqualified version of
-     of this type (i.e. without any const or volatile qualifiers) so get
+     this type (i.e. without any const or volatile qualifiers) so get
      the main variant (i.e. the unqualified version) of this type now.  */
 
   type = type_main_variant (type);
@@ -4477,7 +4477,7 @@ output_tagged_type_instantiation (type)
     return;
 
   /* We are going to output a DIE to represent the unqualified version of
-     of this type (i.e. without any const or volatile qualifiers) so make
+     this type (i.e. without any const or volatile qualifiers) so make
      sure that we have the main variant (i.e. the unqualified version) of
      this type now.  */
 
@@ -4693,7 +4693,7 @@ output_decl (decl, containing_scope)
   /* If this ..._DECL node is marked to be ignored, then ignore it.
      But don't ignore a function definition, since that would screw
      up our count of blocks, and that it turn will completely screw up the
-     the labels we will reference in subsequent AT_low_pc and AT_high_pc
+     labels we will reference in subsequent AT_low_pc and AT_high_pc
      attributes (for subsequent blocks).  */
 
   if (DECL_IGNORED_P (decl) && TREE_CODE (decl) != FUNCTION_DECL)
@@ -5040,7 +5040,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
      gotta hope that the node in question doesn't represent a function
      definition.  If it does, then totally ignoring it is bound to screw
      up our count of blocks, and that it turn will completely screw up the
-     the labels we will reference in subsequent AT_low_pc and AT_high_pc
+     labels we will reference in subsequent AT_low_pc and AT_high_pc
      attributes (for subsequent blocks).  (It's too bad that BLOCK nodes
      don't carry their own sequence numbers with them!)  */
 

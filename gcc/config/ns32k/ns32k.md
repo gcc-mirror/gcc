@@ -258,7 +258,7 @@
       convrt.i[1] = CONST_DOUBLE_HIGH (operands[1]);
       convrt.f = convrt.d;
 
-      /* Is there a better machine-independent way to to this?  */
+      /* Is there a better machine-independent way to do this?  */
       operands[1] = GEN_INT (convrt.i[0]);
       return \"movd %1,%0\";
     }

@@ -179,7 +179,7 @@ static _IO_FILE* _IO_sb_setbuf(_IO_FILE *fp, char *buf, _IO_ssize_t n)
    virtual function, so that C functions can access (potentially user-defined)
    streambuf-derived objects.
    Contrast the builtinbuf class, which does the converse:  Allow
-   C++ virtual calls to to be used on _IO_FILE objects that are builtin
+   C++ virtual calls to be used on _IO_FILE objects that are builtin
    (or defined by C code). */
 
 

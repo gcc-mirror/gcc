@@ -264,7 +264,7 @@ static rtx dead_notes;
    The transition (R->S) is implemented in the scheduling loop in
    `schedule_block' when the best insn to schedule is chosen.
    The transition (R->Q) is implemented in `schedule_select' when an
-   insn is found to to have a function unit conflict with the already
+   insn is found to have a function unit conflict with the already
    committed insns.
    The transitions (P->R and P->Q) are implemented in `schedule_insn' as
    insns move from the ready list to the scheduled list.
@@ -1683,7 +1683,7 @@ sched_analyze (head, tail)
 
 	      /* Add a pair of fake REG_NOTEs which we will later
 		 convert back into a NOTE_INSN_SETJMP note.  See
-		 reemit_notes for why we use a pair of of NOTEs.  */
+		 reemit_notes for why we use a pair of NOTEs.  */
 
 	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_DEAD,
 						    GEN_INT (0),

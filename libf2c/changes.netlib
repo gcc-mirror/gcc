@@ -2392,7 +2392,7 @@ Tue Aug  1 09:25:56 EDT 1995
   Permit real (or double precision) parameters in dimension expressions.
 
 Mon Aug  7 08:04:00 EDT 1995
-  Append "_eqv" rather than just "_" to names that that appear in
+  Append "_eqv" rather than just "_" to names that appear in
 EQUIVALENCE statements as well as structs in f2c.h (to avoid a
 conflict when these names also name common blocks).
 

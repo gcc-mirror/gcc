@@ -1937,7 +1937,7 @@ ffesta_zero (ffelexToken t)
      isn't enough, because then typing "GOTO" instead of "BLAH" above
      doesn't work -- the statement is confirmed (we know the user
      attempted a GOTO) but ffestc hasn't seen it.  So, instead, just
-     always tell ffestc to do "any" statement it needs to to reset.  */
+     always tell ffestc to do "any" statement it needs to reset.  */
 
   if (!ffesta_is_inhibited_
       && ffesta_seen_first_exec)

@@ -1,7 +1,7 @@
 /* Default error handlers for CPP Library.
    Copyright (C) 1986, 87, 89, 92 - 95, 1998 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
-   Based on CCCP program by by Paul Rubin, June 1986
+   Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
 
 This program is free software; you can redistribute it and/or modify it

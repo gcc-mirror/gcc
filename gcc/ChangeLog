@@ -8769,7 +8769,7 @@ Mon Aug 11 10:04:49 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Integrate reload bugfix from Wilon which enables the PA port
 	to bootstrap again.
-	* reload1.c (reload): Sum needs for both OPADDR_ADDR and and
+	* reload1.c (reload): Sum needs for both OPADDR_ADDR and
 	OPERAND_ADDRESS when computing how many registers an insn needs.
 	(reload_reg_free_p): OPADDR_ADDR and OPERAND_ADDRESS reloads do
 	conflict.

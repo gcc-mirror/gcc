@@ -1034,7 +1034,7 @@ optimize_save_area_alloca (insns)
 		 these precise characteristics, we did something
 		 entirely wrong in allocate_dynamic_stack_space. 
 
-		 Note, one way this could happen if if SETJMP_VIA_SAVE_AREA
+		 Note, one way this could happen is if SETJMP_VIA_SAVE_AREA
 		 was defined on a machine where stacks grow towards higher
 		 addresses.
 

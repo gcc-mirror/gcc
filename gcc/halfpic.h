@@ -32,7 +32,7 @@ struct rtx_def;
    strict ANSI).  This is because rtl.c now refers to the
    CONSTANT_ADDRESS_P macro, which in turn refers to flag_half_pic,
    and wants to call half_pic_address_p, whose address we also store
-   in in a BSS variable.  This way, the gen* programs won't get
+   in a BSS variable.  This way, the gen* programs won't get
    unknown symbol errors when being linked (flag_half_pic will never
    be true in the gen* programs).  */
 

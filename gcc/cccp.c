@@ -4993,7 +4993,7 @@ open_include_file (filename, searchptr, importing, pinc)
   return fd;
 }
 
-/* Return the remapped name of the the include file FILENAME.
+/* Return the remapped name of the include file FILENAME.
    SEARCHPTR is the directory being tried from the include file path.  */
 
 static char *
@@ -6049,7 +6049,7 @@ collect_expansion (buf, end, nargs, arglist)
       }
     } else {
       /* In -traditional mode, recognize arguments inside strings and
-	 and character constants, and ignore special properties of #.
+	 character constants, and ignore special properties of #.
 	 Arguments inside strings are considered "stringified", but no
 	 extra quote marks are supplied.  */
       switch (c) {
@@ -6561,7 +6561,7 @@ assertion_install (name, len, hash)
   return hp;
 }
 
-/* Find the most recent hash node for name name (ending with first
+/* Find the most recent hash node for name "name" (ending with first
    non-identifier char) installed by install
 
    If LEN is >= 0, it is the length of the name.
@@ -9321,7 +9321,7 @@ install (name, len, type, value, hash)
 }
 
 /*
- * find the most recent hash node for name name (ending with first
+ * find the most recent hash node for name "name" (ending with first
  * non-identifier char) installed by install
  *
  * If LEN is >= 0, it is the length of the name.

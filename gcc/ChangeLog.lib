@@ -3746,7 +3746,7 @@ Tue Dec 20 14:57:38 1988  Pace Willisson  (pace at prep.at.mit.edu)
 	is the same as on modern sun systems; a_flags can have
 	machine specific flags.  (There may be some endian problems
 	here:  You would like to have the magic number be the
-	first two bytes in the file, and then then next two could
+	first two bytes in the file, and then the next two could
 	be these options.  It looks like the 68000 definitions
 	have to declare the options first to force this to happen.)
 	Defined M_386 for a_machtype.

@@ -381,7 +381,7 @@ static rtx dead_notes;
    The transition (R->S) is implemented in the scheduling loop in
    `schedule_block' when the best insn to schedule is chosen.
    The transition (R->Q) is implemented in `queue_insn' when an
-   insn is found to to have a function unit conflict with the already
+   insn is found to have a function unit conflict with the already
    committed insns.
    The transitions (P->R and P->Q) are implemented in `schedule_insn' as
    insns move from the ready list to the scheduled list.

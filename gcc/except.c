@@ -107,7 +107,7 @@ Boston, MA 02111-1307, USA.  */
    throw. On machines that have unwind info support, __throw is generated
    by code in libgcc2.c, otherwise __throw is generated on a
    per-object-file basis for each source file compiled with
-   -fexceptions by the the C++ frontend.  Before __throw is invoked,
+   -fexceptions by the C++ frontend.  Before __throw is invoked,
    the current context of the throw needs to be placed in the global
    variable __eh_pc.
 
@@ -632,7 +632,7 @@ dequeue_eh_entry (queue)
   return tempentry;
 }
 
-/* Routine to see if exception exception handling is turned on.
+/* Routine to see if exception handling is turned on.
    DO_WARN is non-zero if we want to inform the user that exception
    handling is turned off. 
 
@@ -965,7 +965,7 @@ start_dynamic_handler ()
    This routine notices one particular common case in C++ code
    generation, and optimizes it so as to not need the exception
    region.  It works by creating a dynamic cleanup action, instead of
-   of a using an exception region.  */
+   a using an exception region.  */
 
 int
 expand_eh_region_start_tree (decl, cleanup)
@@ -1549,7 +1549,7 @@ exception_table_p ()
   return 0;
 }
 
-/* Output the entry of the exception table corresponding to to the
+/* Output the entry of the exception table corresponding to the
    exception region numbered N to file FILE. 
 
    N is the code label number corresponding to the handler of the

@@ -64,7 +64,7 @@
 ;; On EV4 there are two classes of resources to consider: resources needed
 ;; to issue, and resources needed to execute.  IBUS[01] are in the first
 ;; category.  ABOX, BBOX, EBOX, FBOX, IMUL & FDIV make up the second.
-;; (There are are a few other register-like resources, but ...)
+;; (There are a few other register-like resources, but ...)
 
 ; First, describe all of the issue constraints with single cycle delays.
 ; All insns need a bus, but all except loads require one or the other.
