@@ -222,7 +222,9 @@ BOOTCLASSPATH = $(here)'$(CLASSPATH_SEPARATOR)'$(srcdir)'$(CLASSPATH_SEPARATOR)'
 libgij_la_SOURCES = gij.cc
 libgij_la_DEPENDENCIES = libgcj.la libgcj.spec
 ## See jv_convert_LDADD.
-libgij_la_LIBADD = -L$(here)/.libs libgcj.la
+libgij_la_LIBADD = -L$(here)/.libs libgcj.la \
+	external/sax/libsax-gcj.la \
+	external/w3c_dom/libw3c-gcj.la
 ## The mysterious backslash in the grep pattern is consumed by make.
 libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)

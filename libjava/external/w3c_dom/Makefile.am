@@ -35,10 +35,10 @@ mostlyclean-local:
 	-find . -name '*.class' | xargs rm
 	-rm classes.stamp w3c.jar
 
-toolexeclib_LTLIBRARIES = libw3c-gcj.la
+noinst_LTLIBRARIES = libw3c-gcj.la
 
 libw3c_gcj_la_SOURCES =	w3c.jar
-libw3c_gcj_la_GCJFLAGS = -findirect-dispatch
+libw3c_gcj_la_GCJFLAGS = -findirect-dispatch $(AM_GCJFLAGS)
 
 source_files = \
 org/w3c/dom/xpath/XPathNamespace.java \

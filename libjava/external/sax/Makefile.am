@@ -35,10 +35,10 @@ mostlyclean-local:
 	-find . -name '*.class' | xargs rm
 	-rm classes.stamp sax.jar
 
-toolexeclib_LTLIBRARIES = libsax-gcj.la
+noinst_LTLIBRARIES = libsax-gcj.la
 
 libsax_gcj_la_SOURCES =	sax.jar
-libsax_gcj_la_GCJFLAGS = -findirect-dispatch
+libsax_gcj_la_GCJFLAGS = -findirect-dispatch $(AM_GCJFLAGS)
 
 source_files = \
 org/xml/sax/SAXNotSupportedException.java \
