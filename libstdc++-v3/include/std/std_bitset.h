@@ -578,7 +578,7 @@ namespace std
    *  (Note that %bitset does @e not meet the formal requirements of a
    *  <a href="tables.html#65">container</a>.  Mainly, it lacks iterators.)
    *
-   *  The template argument, @a _Nb, may be any nonzero number of type
+   *  The template argument, @a _Nb, may be any non-negative number of type
    *  size_t.
    *
    *  A %bitset of size N has N % (sizeof(unsigned long) * CHAR_BIT) unused

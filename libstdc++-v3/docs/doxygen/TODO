@@ -24,7 +24,8 @@ c19             Note A
 c20             Note A
 c21             Untouched, Note B
 c22             Untouched
-c23             See doxygroups.cc and Note B.
+c23             See doxygroups.cc and Note B.  Notes on what invalidates
+                iterators need to be added.
 c24             stl_iterator.h (__normal_iterator, other small TODO bits)
                 stream iterators
 c25             stl_algo.h (lots of stuff)
