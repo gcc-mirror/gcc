@@ -1,3 +1,8 @@
+2003-05-22   Geert Bosch <bosch@gnat.com>
+
+        PR ada/6399
+	* gnat_rm.texi : Remove reference to Ada Core Technologies.
+
 2003-05-13  Release Manager
 
 	* GCC 3.3 Released.
