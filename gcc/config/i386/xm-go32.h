@@ -27,12 +27,4 @@ Boston, MA 02111-1307, USA.  */
 /* Use semicolons to separate elements of a path.  */
 #define PATH_SEPARATOR ';'
 
-/* When building libgcc.a the following defines are needed to ignore
-   the definitions in gansidecl.h, because they are defined already
-   in the libc headers for DJGPP.  */
-#define HAVE_BCOPY 1
-#define HAVE_BZERO 1
-#define HAVE_BCMP 1
-#define HAVE_RINDEX 1
-#define HAVE_INDEX 1
 #define EXECUTABLE_SUFFIX ".exe"
