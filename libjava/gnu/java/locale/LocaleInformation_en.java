@@ -159,7 +159,7 @@ public class LocaleInformation_en extends ListResourceBundle
     { "shortWeekdays", shortWeekdays },
     { "ampms", ampms },
     { "eras", eras },
-    { "localPatternChars", "GyMdkHmsSEDFwWahKz" },
+    { "localPatternChars", "GyMdkHmsSEDFwWahKzYeugAZ" },
     { "zoneStrings", zoneStrings },
 
     { "shortDateFormat", "M/d/yy" },         // Java's Y2K bug.
