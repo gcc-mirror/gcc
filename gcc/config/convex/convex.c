@@ -622,396 +622,44 @@ outfloat (file, value, fmt, pfx, sfx)
 
 replace_arg_pushes ()
 {
-  end_sequence ();
-  replace_arg_pushes_1 ();
-  start_sequence ();
-}
-
-replace_arg_pushes_1 ()
-{
-  rtx insn, argblock;
-  int size;
-  int n;
-
-  /* Look back to see if we are at the return at the end of the function. */
-  n = 0;
-  for (insn = get_last_insn (); ; insn = PREV_INSN (insn))
-    if (! insn || ++n > 5)
-      return;
-    else if (GET_CODE (insn) == NOTE
-	     && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_END)
-      break;
-
-  /* Yes, we are.  Find the max stack depth used by fixable arg pushes. */
-  size = replace_pushes (0);
-
-  /* Allocate block in frame to hold all arg lists. */
-  argblock = assign_stack_local (BLKmode, size, STACK_BOUNDARY);
-  
-  /* Replace pushes with stores into the block. */
-  replace_pushes (plus_constant (XEXP (argblock, 0), size));
-}
-
-int
-replace_pushes (arg_addr)
-     rtx arg_addr;
-{
-  struct slot_info { rtx insn; int offs; int size; };
-#define MAXSLOTS 1024
-  struct slot_info slots[MAXSLOTS];
-  rtx insn, pattern, dest;
-  enum machine_mode mode;
-  int offs, minoffs;
-  int nslot, islot;
-  int args_size, slots_size;
-  
-  nslot = 0;
-  offs = 0;
-  minoffs = 0;
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    switch (GET_CODE (insn))
-      {
-      case INSN:
-	pattern = PATTERN (insn);
-	if (GET_CODE (pattern) == SET)
-	  {
-	    dest = SET_DEST (pattern);
-	    mode = GET_MODE (dest);
-	    if (push_operand (dest, mode))
-	      {
-		offs -= 
-		  slots[nslot].size = PUSH_ROUNDING (GET_MODE_SIZE (mode));
-		slots[nslot].offs = offs;
-		slots[nslot].insn = insn;
-		nslot++;
-	      }
-	    else if (dest == stack_pointer_rtx)
-	      {
-		rtx src = SET_SRC (pattern);
-		if (GET_CODE (src) == PLUS
-		    && XEXP (src, 0) == stack_pointer_rtx
-		    && GET_CODE (XEXP (src, 1)) == CONST_INT)
-		  {
-		    offs -=
-		      slots[nslot].size = - INTVAL (XEXP (src, 1));
-		    slots[nslot].offs = 0;
-		    slots[nslot].insn = insn;
-		    nslot++;
-		  }
-		else
-		  {
-		    slots[nslot].size = 0;
-		    slots[nslot].offs = 0;
-		    slots[nslot].insn = 0;
-		    nslot++;
-		  }
-	      }
-	    else if (reg_mentioned_p (stack_pointer_rtx, pattern))
-	      {
-		slots[nslot].size = 0;
-		slots[nslot].offs = 0;
-		slots[nslot].insn = 0;
-		nslot++;
-	      }
-	    else if (reg_mentioned_p (virtual_stack_dynamic_rtx, pattern)
-		     || reg_mentioned_p (virtual_outgoing_args_rtx, pattern))
-	      {
-		slots[nslot].size = 0;
-		slots[nslot].offs = 0;
-		slots[nslot].insn = 0;
-		nslot++;
-	      }
-	  }
-	else
-	  if (reg_mentioned_p (stack_pointer_rtx, pattern)
-	      || reg_mentioned_p (virtual_stack_dynamic_rtx, pattern)
-	      || reg_mentioned_p (virtual_outgoing_args_rtx, pattern)
-	      || reg_mentioned_p (frame_pointer_rtx, pattern))
-	    abort ();
-
-	break;
-
-      case CALL_INSN:
-	{
-	  pattern = PATTERN (insn);
-	  if (GET_CODE (pattern) != PARALLEL)
-	    abort ();
-	  pattern = XVECEXP (pattern, 0, 0);
-	  if (GET_CODE (pattern) == SET)
-	    pattern = SET_SRC (pattern);
-	  if (GET_CODE (pattern) != CALL)
-	    abort ();
-	  args_size = INTVAL (XEXP (pattern, 1));
-
-	  slots_size = 0;
-	  for (islot = nslot; islot > 0; islot--)
-	    {
-	      if (slots[islot - 1].insn == 0)
-		break;
-	      if (slots_size >= args_size)
-		break;
-	      slots_size += slots[islot - 1].size;
-	    }
-
-	  if (slots_size != args_size)
-	    {
-	      offs += args_size;
-	      if (offs > 0)
-		offs = 0;
-	      slots[nslot].size = 0;
-	      slots[nslot].offs = 0;
-	      slots[nslot].insn = 0;
-	      nslot++;
-
-	      if (arg_addr)
-		{
-		  /* add insn to pop arg list if left on stack */
-		  rtx pop_size = XVECEXP (PATTERN (insn), 0, 2);
-		  if (pop_size != const0_rtx)
-		    emit_insn_after (gen_addsi3 (stack_pointer_rtx,
-						 stack_pointer_rtx,
-						 pop_size),
-				     insn);
-		  insn = NEXT_INSN (insn);
-		}
-	      break;
-	    }
-
-	  /* Record size of arg block */
-	  if (offs < minoffs)
-	    minoffs = offs;
-
-	  /*printf ("call %d, args", INSN_UID (insn));*/
-	  if (arg_addr)
-	    {
-	      /* store arg block + offset as arg list address for call */
-	      XVECEXP (PATTERN (insn), 0, 3) = plus_constant (arg_addr, offs);
-
-	      /* rewrite arg instructions to use block */
-	      while (nslot > islot)
-		{
-		  nslot--;
-		  /*printf (" insn %d size %d offs %d",
-			  INSN_UID(slots[nslot].insn),
-			  slots[nslot].size,
-			  slots[nslot].offs);*/
-
-		  if (slots[nslot].offs == 0)
-		    delete_insn (slots[nslot].insn);
-		  else
-		    {
-		      rtx pattern = PATTERN (slots[nslot].insn);
-		      enum machine_mode mode = GET_MODE (SET_DEST (pattern));
-		      if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (SImode))
-			{
-			  SET_SRC (pattern) =
-			    gen_lowpart (SImode, SET_SRC (pattern));
-			  SET_DEST (pattern) =
-			    gen_rtx (MEM, SImode,
-				     plus_constant (arg_addr,
-						    slots[nslot].offs));
-			}
-		      else
-			SET_DEST (pattern) = 
-			  gen_rtx (MEM, mode,
-				   plus_constant (arg_addr,
-						  slots[nslot].offs));
-		    }
-		}
-	      /*printf ("\n");*/
-	    }
-
-	  nslot = islot;
-
-	  offs += args_size;
-	  if (offs > 0)
-	    abort ();
-	}
-	break;
-
-      case CODE_LABEL:
-      case JUMP_INSN:
-      case BARRIER:
-	nslot = offs = 0;
-      }
-
-  /*printf ("min offset %d\n", minoffs);*/
-  return -minoffs;
+  /* Doesn't work yet. */
 }
 
 /* Output the insns needed to do a call.  operands[] are
      0 - MEM, the place to call
      1 - CONST_INT, the number of bytes in the arg list
      2 - CONST_INT, the number of arguments
-     3 - address of the arg list.  
+     3 - CONST_INT, the number of bytes to pop
+     4 - address of the arg list.  
  */
 
 char *
 output_call (insn, operands)
      rtx insn, *operands;
 {
-  /*if (operands[3] == stack_pointer_rtx)
-    output_asm_insn ("mov sp,ap");
+  if (operands[4] == stack_pointer_rtx)
+    output_asm_insn ("mov sp,ap", operands);
   else
-    output_asm_insn ("ldea %a4,ap", operands);*/
+    abort ();
 
   if (TARGET_ARGCOUNT)
     output_asm_insn ("pshea %a2", operands);
 
   output_asm_insn ("calls %0", operands);
 
-  /*output_asm_insn ("ld.w 12(fp),ap");*/
+  output_asm_insn ("ld.w 12(fp),ap", operands);
 
-  /*if (operands[3] == stack_pointer_rtx && operands[1] != const0_rtx)
-    output_asm_insn ("add.w %1,sp", operands);*/
+  if (operands[4] == stack_pointer_rtx && operands[3] != const0_rtx)
+    output_asm_insn ("add.w %3,sp", operands);
 
   return "";
 }
 
 
-/* Here after reloading, before the second scheduling pass.
-   Insert explicit AP moves. */
+/* Here after reloading, before the second scheduling pass. */
 
 emit_ap_optimizations ()
 {
-  end_sequence ();
-  insert_ap_loads ();
-  start_sequence ();
+  /* Removed for now. */
 }
 
-#define LABEL_DEAD_AP(INSN) ((INSN)->volatil)
-
-insert_ap_loads ()
-{
-  rtx insn, pattern, src;
-  int ap_is_live, doagain;
-
-  /* Check that code_label->volatil is not being used for something else */
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == CODE_LABEL)
-      if (LABEL_DEAD_AP (insn))
-	abort ();
-
-  ap_is_live = 0;
-
-  do
-    {
-      doagain = 0;
-      for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
-	switch (GET_CODE (insn))
-	  {
-	  case INSN:
-	    pattern = PATTERN (insn);
-	    if (! ap_is_live)
-	      {
-		if (reg_mentioned_p (arg_pointer_rtx, pattern))
-		  ap_is_live = 1;
-	      }
-	    break;
-
-	  case CALL_INSN:
-	    pattern = PATTERN (insn);
-	    if (XVECEXP (pattern, 0, 2) != const0_rtx)
-	      ap_is_live = reg_mentioned_p (arg_pointer_rtx, pattern);
-	    break;
-
-	  case CODE_LABEL:
-	    if (! ap_is_live)
-	      {
-		if (! LABEL_DEAD_AP (insn))
-		  doagain = 1;
-		LABEL_DEAD_AP (insn) = 1;
-	      }
-	    break;
-
-	  case JUMP_INSN:
-	    pattern = PATTERN (insn);
-	    if (GET_CODE (pattern) == RETURN)
-	      ap_is_live = 0;
-	    else if (JUMP_LABEL (insn))
-	      {
-		if (simplejump_p (insn))
-		  ap_is_live = ! LABEL_DEAD_AP (JUMP_LABEL (insn));
-		else if (! ap_is_live && condjump_p (insn))
-		  ap_is_live = ! LABEL_DEAD_AP (JUMP_LABEL (insn));
-		else
-		  ap_is_live = 1;
-	      }
-	    else
-	      ap_is_live = 1;
-	    break;
-
-	  case BARRIER:
-	    ap_is_live = 0;
-	    break;
-	  }
-    } while (doagain);
-
-  ap_is_live = 0;
-
-  for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
-    switch (GET_CODE (insn))
-      {
-      case INSN:
-	pattern = PATTERN (insn);
-	if (! ap_is_live)
-	  {
-	    if (reg_mentioned_p (arg_pointer_rtx, pattern))
-	      ap_is_live = 1;
-	  }
-	break;
-
-      case CALL_INSN:
-	pattern = PATTERN (insn);
-	if (XVECEXP (pattern, 0, 2) != const0_rtx)
-	  {
-	    rtx arg_addr = XVECEXP (pattern, 0, 3);
-	    emit_insn_before (gen_movsi (arg_pointer_rtx, arg_addr), insn);
-	    if (ap_is_live)
-	      emit_insn_after (gen_movsi (arg_pointer_rtx,
-					  gen_rtx (MEM, SImode,
-						   gen_rtx (PLUS, Pmode,
-							    frame_pointer_rtx,
-							    GEN_INT (12)))),
-			       insn);
-	    XVECEXP (pattern, 0, 3) = const0_rtx;
-	    insn = PREV_INSN (insn);
-	    ap_is_live = 0;
-	  }
-	break;
-
-      case CODE_LABEL:
-	if (ap_is_live != ! LABEL_DEAD_AP (insn))
-	  abort ();
-	break;
-
-      case JUMP_INSN:
-	pattern = PATTERN (insn);
-	if (GET_CODE (pattern) == RETURN)
-	  ap_is_live = 0;
-	else if (JUMP_LABEL (insn))
-	  {
-	    if (simplejump_p (insn))
-	      ap_is_live = ! LABEL_DEAD_AP (JUMP_LABEL (insn));
-	    else if (! ap_is_live && condjump_p (insn))
-	      ap_is_live = ! LABEL_DEAD_AP (JUMP_LABEL (insn));
-	    else
-	      ap_is_live = 1;
-	  }
-	else
-	  ap_is_live = 1;
-	break;
-
-      case BARRIER:
-	ap_is_live = 0;
-	break;
-      }
-
-  /* Clear code-label flag recording dead ap's. */
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == CODE_LABEL)
-      LABEL_DEAD_AP (insn) = 0;
-}
