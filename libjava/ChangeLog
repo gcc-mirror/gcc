@@ -1,3 +1,8 @@
+2002-12-30  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/Properties (formatForOutput): Don't fall through to
+	default case after escaping character.
+
 2002-11-30  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/StringBuffer.java (getChars): Remove wrong dstOffset check
