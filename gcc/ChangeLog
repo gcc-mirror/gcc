@@ -1,5 +1,12 @@
 2001-12-11  Richard Henderson  <rth@redhat.com>
 
+	* except.c (sjlj_find_directly_reachable_regions): Don't
+	consider RNL_BLOCKED a directly reachable region.
+	(sjlj_assign_call_site_values): Trust directly_reachable.
+	(sjlj_emit_dispatch_table): Likewise.
+
+2001-12-11  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.md (divmodsi_internal_er): Split, so that
 	we represent the address load's dependency on the gp.
 	(divmoddi_internal_er): Likewise.
@@ -22,9 +29,9 @@
 
 2001-12-11  Aldy Hernandez  <aldyh@redhat.com>
 
-        * output.h (regno_uninitialized): Make argument unsigned.
+	* output.h (regno_uninitialized): Make argument unsigned.
 
-        * flow.c (regno_uninitialized): Make regno unsigned.
+	* flow.c (regno_uninitialized): Make regno unsigned.
 
 2001-12-11  David O'Brien  <obrien@FreeBSD.org>
 
@@ -69,8 +76,8 @@
 
 2001-12-11  Aldy Hernandez  <aldyh@redhat.com>
 
-        * flow.c (find_regno_partial): Indent properly.  Add a default to
-        switch.
+	* flow.c (find_regno_partial): Indent properly.  Add a default to
+	switch.
 
 2001-12-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
@@ -300,7 +307,7 @@ Sun Dec  9 18:40:07 2001  Douglas B. Rupp  <rupp@gnat.com>
 	* ia64.md: Add missing braces.
 	* rs6000-protos.h (s8bit_cint_operand): Prototype.
 	* s390.h (INITIAL_ELIMINATION_OFFSET): Add abort clause in
-        if-else statement.
+	if-else statement.
 	* stormy16.h (REG_CLASS_CONTENTS): Add missing braces.
 	* v850.h (OUTPUT_ADDR_CONST_EXTRA): Don't issue a `return'.
 	* dbxout.c (dbxout_source_file): Move a variable into the scope
@@ -336,17 +343,17 @@ Sun Dec  9 18:40:07 2001  Douglas B. Rupp  <rupp@gnat.com>
 2001-10-08  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-common.h (rid): Add RID_CHOOSE_EXPR and
-        RID_TYPES_COMPATIBLE_P.
+	RID_TYPES_COMPATIBLE_P.
 
-        * c-parse.in (reswords): Add __builtin_choose_expr.
-        Add __builtin_types_compatible_p.
-        Add CHOOSE_EXPR token.
+	* c-parse.in (reswords): Add __builtin_choose_expr.
+	Add __builtin_types_compatible_p.
+	Add CHOOSE_EXPR token.
 	Add TYPES_COMPATIBLE_P token.
-        Add production for CHOOSE_EXPR.
-        Add production for TYPES_COMPATIBLE_P.
+	Add production for CHOOSE_EXPR.
+	Add production for TYPES_COMPATIBLE_P.
 
-        * doc/extend.texi (__builtin_choose_expr): Add documentation.
-        (__builtin_types_compatible_p): Likewise.
+	* doc/extend.texi (__builtin_choose_expr): Add documentation.
+	(__builtin_types_compatible_p): Likewise.
 
 2001-12-08  David Edelsohn  <edelsohn@gnu.org>
 
@@ -404,19 +411,19 @@ Sun Dec  9 18:40:07 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 2001-12-07  Dale Johannesen  <dalej@apple.com>
 
-        * config/rs6000/darwin.h: Set MAX_LONG_TYPE_SIZE to 32.
-        * config/rs6000/rs6000.c (rs6000_emit_move): In Darwin-
-        specific codegen, eliminate a register copy.
-        (print_operand_address): Add support for Darwin's lo16(constant)
+	* config/rs6000/darwin.h: Set MAX_LONG_TYPE_SIZE to 32.
+	* config/rs6000/rs6000.c (rs6000_emit_move): In Darwin-
+	specific codegen, eliminate a register copy.
+	(print_operand_address): Add support for Darwin's lo16(constant)
 	syntax.
-        (rs6000_machopic_legitimize_pic_address): Fix darwin-specific
-        generation of addresses within very large data objects.
-        (s8bit_cint_operand):  New.
-        * config/rs6000/rs6000.md: Remove "iu" reference for 750/7400.
-        Move "mtjmpr" to correct functional unit for 750/7400/7450.
-        Add imul2 and imul3 insn types for multiplication by 16- and
+	(rs6000_machopic_legitimize_pic_address): Fix darwin-specific
+	generation of addresses within very large data objects.
+	(s8bit_cint_operand):  New.
+	* config/rs6000/rs6000.md: Remove "iu" reference for 750/7400.
+	Move "mtjmpr" to correct functional unit for 750/7400/7450.
+	Add imul2 and imul3 insn types for multiplication by 16- and
 	8-bit constants.
-        Change tablejump patterns to strongly discourage using LR
+	Change tablejump patterns to strongly discourage using LR
 	rather than CTR.
 	Add %lo16 patterns for Darwin loads and stores.
 
@@ -440,9 +447,9 @@ Sun Dec  9 18:40:07 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* doc/extend.texi (Variable Attributes): Document vector_size.
 
-        * attribs.c (c_common_attribute_table): Add vector_size.
+	* attribs.c (c_common_attribute_table): Add vector_size.
 	(handle_vector_size_attribute): New.
-        (vector_size_helper): New.
+	(vector_size_helper): New.
 	(decl_attributes): Relayout the decl after calculating attribs.
 
 2001-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
@@ -482,7 +489,7 @@ Fri Dec  7 07:06:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-12-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* rs6000.h (PRE_GCC3_DWARF_FRAME_REGISTERS): New.
-        (DWARF_FRAME_REGISTERS): Delete.
+	(DWARF_FRAME_REGISTERS): Delete.
 
 2001-12-06  Janis Johnson  <janis187@us.ibm.com>
 
@@ -501,14 +508,14 @@ Fri Dec  7 07:06:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Fixes PR libf2c/4826.
 
 2001-12-06  Aldy Hernandez  <aldyh@redhat.com>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	* doc/tm.texi (DWARF_FRAME_REGISTERS): Add documentation.
-        (PRE_GCC3_DWARF_FRAME_REGISTERS): Same.
+	(PRE_GCC3_DWARF_FRAME_REGISTERS): Same.
 
-        * unwind-dw2.c (__frame_state_for): Change DWARF_FRAME_REGISTERS
-        to PRE_GCC3_DWARF_FRAME_REGISTERS.
-        (frame_state): Same.
+	* unwind-dw2.c (__frame_state_for): Change DWARF_FRAME_REGISTERS
+	to PRE_GCC3_DWARF_FRAME_REGISTERS.
+	(frame_state): Same.
 	(PRE_GCC3_DWARF_FRAME_REGISTERS): Define if not already defined.
 
 2001-12-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -563,9 +570,9 @@ Thu Dec  6 09:24:12 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-12-06  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.c (load_multiple_sequence): Pass pointer to
-        RTX when calling alter_subreg().
+	RTX when calling alter_subreg().
 	(store_multiple_sequence): Pass pointer to RTX when calling
-        alter_subreg().
+	alter_subreg().
 
 Thu Dec  6 06:55:13 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
