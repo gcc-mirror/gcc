@@ -1,3 +1,9 @@
+2002-12-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*iorhi_shift_8): Change the name to
+	*iorhi_ashift_8.
+	(*iorhi_lshiftrt_8): New.
+
 2002-12-27  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/include/texinfo.tex: Update to version 2002-12-26.16.
