@@ -1,5 +1,6 @@
 #ifndef _STDDEF_H
 #ifndef _STDDEF_H_
+#ifndef _ANSI_STDDEF_H
 
 /* Any one of these symbols __need_* means that GNU libc
    wants us just to define one data type.  So don't define
@@ -163,5 +164,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 
 #endif /* _STDDEF_H was defined this time */
+
+#endif /* _ANSI_STDDEF_H was not defined before */
 #endif /* _STDDEF_H_ was not defined before */
 #endif /* _STDDEF_H was not defined before */
