@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 %{!mc68000:%{!m68000:-Acpu=mc68020 -D__mc68020__ %{!ansi:-Dmc68020 }}}\
 %{m68030:-Acpu=mc68030 -D__mc68030__ %{!ansi:-Dmc68030 }}\
 %{m68040:-Acpu=mc68040 -D__mc68040__ %{!ansi:-Dmc68040 }}\
-%{!ansi:%{!traditional:-D__STDC__=2 }}\
+%{!ansi:-D__STDC__=2 }\
 %{sbsd:-D_BSD_SOURCE -DBSD }%{ZB:-D_BSD_SOURCE -DBSD }\
 %{ssysv:-D_SYSV_SOURCE -DSYSV -DUSG }%{ZS:-D_SYSV_SOURCE -DSYSV -DUSG }\
 %{sposix:-D_POSIX_SOURCE -DPOSIX }%{ZP:-D_POSIX_SOURCE -DPOSIX }\

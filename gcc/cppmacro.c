@@ -1478,7 +1478,7 @@ check_trad_stringification (pfile, macro, string)
 	      && !memcmp (p, NODE_NAME (node), len))
 	    {
 	      cpp_warning (pfile,
-	   "macro argument \"%s\" would be stringified with -traditional",
+	   "macro argument \"%s\" would be stringified in traditional C",
 			   NODE_NAME (node));
 	      break;
 	    }

@@ -19,16 +19,14 @@
 #ifdef HPUX_ASM
 
 #define CPP_SPEC "-D__HPUX_ASM__ %{m68881: -D__HAVE_68881__}\
-%{m68020: -Dmc68020}%{mc68020: -Dmc68020}\
-%{!traditional:-D_INCLUDE__STDC__}"
+%{m68020: -Dmc68020}%{mc68020: -Dmc68020} -D_INCLUDE__STDC__"
 
 #define ASM_SPEC "%{!m68020:%{!mc68020:+X}}"
 
 #else	/* not HPUX_ASM */
 
 #define CPP_SPEC "%{m68881: -D__HAVE_68881__}\
-%{m68020: -Dmc68020}%{mc68020: -Dmc68020}\
-%{!traditional:-D_INCLUDE__STDC__}"
+%{m68020: -Dmc68020}%{mc68020: -Dmc68020} -D_INCLUDE__STDC__"
 
 #define ASM_SPEC \
  "%{m68000:-mc68000}%{mc68000:-mc68000}%{!mc68000:%{!m68000:-mc68020}}"

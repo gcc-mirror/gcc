@@ -41,9 +41,7 @@ Boston, MA 02111-1307, USA.  */
 		  %(asm_cpu)"
 
 /* If -m88100 is in effect, add -Dm88100; similarly for -m88110.
-   Here, the CPU_DEFAULT is assumed to be -m88000.  If not -ansi,
-   -traditional, or restricting include files to one specific source
-   target, specify full DG/UX features.  */
+   Here, the CPU_DEFAULT is assumed to be -m88000.  */
 #undef	CPP_SPEC
 #define	CPP_SPEC "%(cpp_cpu) \
 		  %{!msvr4:-D_M88KBCS_TARGET} %{msvr4:-D_DGUX_TARGET}"

@@ -113,9 +113,7 @@ Boston, MA 02111-1307, USA.  */
 			  %{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}}}\
 			%{pg:gmon.o%s} crti.o%s \
 			%{ansi:values-Xc.o%s} \
-			%{!ansi: \
-			 %{traditional:values-Xt.o%s} \
-			 %{!traditional:values-Xa.o%s}} \
+			%{!ansi:values-Xa.o%s} \
  			crtbegin.o%s"
   
 /* This should be the same as in svr4.h, except with -R added.  */

@@ -1453,8 +1453,8 @@ argument, these arguments are not macro expanded.
 @cindex escaped newlines
 @cindex newlines (escaped)
 
-Recently, the non-traditional preprocessor has relaxed its treatment of
-escaped newlines.  Previously, the newline had to immediately follow a
+Recently, the preprocessor has relaxed its treatment of escaped
+newlines.  Previously, the newline had to immediately follow a
 backslash.  The current implementation allows whitespace in the form of
 spaces, horizontal and vertical tabs, and form feeds between the
 backslash and the subsequent newline.  The preprocessor issues a
@@ -2732,11 +2732,10 @@ extension is irrelevant.
 
 In GNU C, you may use C++ style comments, which start with @samp{//} and
 continue until the end of the line.  Many other C implementations allow
-such comments, and they are likely to be in a future C standard.
-However, C++ style comments are not recognized if you specify
-@w{@option{-ansi}}, a @option{-std} option specifying a version of ISO C
-before C99, or @w{@option{-traditional}}, since they are incompatible
-with traditional constructs like @code{dividend//*comment*/divisor}.
+such comments, and they are included in the 1999 C standard.  However,
+C++ style comments are not recognized if you specify an @option{-std}
+option specifying a version of ISO C before C99, or @option{-ansi}
+(equivalent to @option{-std=c89}).
 
 @node Dollar Signs
 @section Dollar Signs in Identifier Names
@@ -4055,25 +4054,20 @@ be deleted or moved or simplified.
 @cindex alternate keywords
 @cindex keywords, alternate
 
-The option @option{-traditional} disables certain keywords;
 @option{-ansi} and the various @option{-std} options disable certain
-others.  This causes trouble when you want to use GNU C extensions, or
-ISO C features, in a general-purpose header file that should be usable
-by all programs, including ISO C programs and traditional ones.  The
-keywords @code{asm}, @code{typeof} and @code{inline} cannot be used
-since they won't work in a program compiled with @option{-ansi}
-(although @code{inline} can be used in a program compiled with
-@option{-std=c99}), while the keywords @code{const}, @code{volatile},
-@code{signed}, @code{typeof} and @code{inline} won't work in a program
-compiled with @option{-traditional}.  The ISO C99 keyword
+keywords.  This causes trouble when you want to use GNU C extensions, or
+a general-purpose header file that should be usable by all programs,
+including ISO C programs.  The keywords @code{asm}, @code{typeof} and
+@code{inline} are not available in programs compiled with
+@option{-ansi} or @option{-std} (although @code{inline} can be used in a
+program compiled with @option{-std=c99}).  The ISO C99 keyword
 @code{restrict} is only available when @option{-std=gnu99} (which will
 eventually be the default) or @option{-std=c99} (or the equivalent
 @option{-std=iso9899:1999}) is used.
 
 The way to solve these problems is to put @samp{__} at the beginning and
 end of each problematical keyword.  For example, use @code{__asm__}
-instead of @code{asm}, @code{__const__} instead of @code{const}, and
-@code{__inline__} instead of @code{inline}.
+instead of @code{asm}, and @code{__inline__} instead of @code{inline}.
 
 Other C compilers won't accept these alternative keywords; if you want to
 compile with another compiler, you can define the alternate keywords as

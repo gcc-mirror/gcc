@@ -43,7 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 
-extern int flag_traditional;
 extern FILE *asm_out_file;
 
 const char *m88k_pound_sign = ""; /* Either # for SVR4 or empty for SVR3 */
@@ -1567,8 +1566,6 @@ output_options (file, f_options, f_len, W_options, W_len,
     pos = output_option (file, sep, "-O", "", indent, pos, max);
   if (write_symbols != NO_DEBUG)
     pos = output_option (file, sep, "-g", "", indent, pos, max);
-  if (flag_traditional)
-    pos = output_option (file, sep, "-traditional", "", indent, pos, max);
   if (profile_flag)
     pos = output_option (file, sep, "-p", "", indent, pos, max);
   for (j = 0; j < f_len; j++)

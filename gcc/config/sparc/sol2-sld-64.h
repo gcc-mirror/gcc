@@ -101,15 +101,11 @@
 
 #define STARTFILE_SPEC32 "\
 %{ansi:values-Xc.o%s} \
-%{!ansi: \
- %{traditional:values-Xt.o%s} \
- %{!traditional:values-Xa.o%s}}"
+%{!ansi:values-Xa.o%s}"
 
 #define STARTFILE_SPEC64 "\
 %{ansi:/usr/lib/sparcv9/values-Xc.o%s} \
-%{!ansi: \
- %{traditional:/usr/lib/sparcv9/values-Xt.o%s} \
- %{!traditional:/usr/lib/sparcv9/values-Xa.o%s}}"
+%{!ansi:/usr/lib/sparcv9/values-Xa.o%s}"
  
 #ifdef SPARC_BI_ARCH
 

@@ -131,11 +131,6 @@ int flag_no_asm;
 
 int flag_no_gnu_keywords;
 
-/* Nonzero means do some things the same way PCC does.  Only provided so
-   the compiler will link.  */
-
-int flag_traditional;
-
 /* Nonzero means to treat bitfields as unsigned unless they say `signed'.  */
 
 int flag_signed_bitfields = 1;
@@ -495,9 +490,7 @@ cxx_decode_option (argc, argv)
 
   strings_processed = cpp_handle_option (parse_in, argc, argv, 0);
 
-  if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
-    /* ignore */;
-  else if (p[0] == '-' && p[1] == 'f')
+  if (p[0] == '-' && p[1] == 'f')
     {
       /* Some kind of -f option.
 	 P's value is the option sans `-f'.

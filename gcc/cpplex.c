@@ -1635,7 +1635,7 @@ maybe_read_ucs (pfile, pstr, limit, pc)
     return 1;
 
   if (CPP_WTRADITIONAL (pfile))
-    cpp_warning (pfile, "the meaning of '\\%c' varies with -traditional", c);
+    cpp_warning (pfile, "the meaning of '\\%c' is different in traditional C", c);
 
   length = (c == 'u' ? 4: 8);
 
@@ -1688,17 +1688,15 @@ maybe_read_ucs (pfile, pstr, limit, pc)
 /* Interpret an escape sequence, and return its value.  PSTR points to
    the input pointer, which is just after the backslash.  LIMIT is how
    much text we have.  MASK is a bitmask for the precision for the
-   destination type (char or wchar_t).  TRADITIONAL, if true, does not
-   interpret escapes that did not exist in traditional C.
+   destination type (char or wchar_t).
 
    Handles all relevant diagnostics.  */
 unsigned int
-cpp_parse_escape (pfile, pstr, limit, mask, traditional)
+cpp_parse_escape (pfile, pstr, limit, mask)
      cpp_reader *pfile;
      const unsigned char **pstr;
      const unsigned char *limit;
      unsigned HOST_WIDE_INT mask;
-     int traditional;
 {
   int unknown = 0;
   const unsigned char *str = *pstr;
@@ -1722,9 +1720,7 @@ cpp_parse_escape (pfile, pstr, limit, mask, traditional)
 
     case 'a':
       if (CPP_WTRADITIONAL (pfile))
-	cpp_warning (pfile, "the meaning of '\\a' varies with -traditional");
-      if (!traditional)
-	c = TARGET_BELL;
+	cpp_warning (pfile, "the meaning of '\\a' is different in traditional C");
       break;
 
     case 'e': case 'E':
@@ -1739,9 +1735,8 @@ cpp_parse_escape (pfile, pstr, limit, mask, traditional)
 
     case 'x':
       if (CPP_WTRADITIONAL (pfile))
-	cpp_warning (pfile, "the meaning of '\\x' varies with -traditional");
+	cpp_warning (pfile, "the meaning of '\\x' is different in traditional C");
 
-      if (!traditional)
 	{
 	  unsigned int i = 0, overflow = 0;
 	  int digits_found = 0;
@@ -1822,16 +1817,13 @@ cpp_parse_escape (pfile, pstr, limit, mask, traditional)
 #endif
 
 /* Interpret a (possibly wide) character constant in TOKEN.
-   WARN_MULTI warns about multi-character charconsts, if not
-   TRADITIONAL.  TRADITIONAL also indicates not to interpret escapes
-   that did not exist in traditional C.  PCHARS_SEEN points to a
-   variable that is filled in with the number of characters seen.  */
+   WARN_MULTI warns about multi-character charconsts.  PCHARS_SEEN points
+   to a variable that is filled in with the number of characters seen.  */
 HOST_WIDE_INT
-cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
+cpp_interpret_charconst (pfile, token, warn_multi, pchars_seen)
      cpp_reader *pfile;
      const cpp_token *token;
      int warn_multi;
-     int traditional;
      unsigned int *pchars_seen;
 {
   const unsigned char *str = token->val.str.text;
@@ -1886,7 +1878,7 @@ cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
 #endif
 
       if (c == '\\')
-	c = cpp_parse_escape (pfile, &str, limit, mask, traditional);
+	c = cpp_parse_escape (pfile, &str, limit, mask);
 
 #ifdef MAP_CHARACTER
       if (ISPRINT (c))
@@ -1910,7 +1902,7 @@ cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
       chars_seen = max_chars;
       cpp_warning (pfile, "character constant too long");
     }
-  else if (chars_seen > 1 && !traditional && warn_multi)
+  else if (chars_seen > 1 && warn_multi)
     cpp_warning (pfile, "multi-character character constant");
 
   /* If relevant type is signed, sign-extend the constant.  */

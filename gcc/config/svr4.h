@@ -173,16 +173,15 @@ Boston, MA 02111-1307, USA.
 		   %{Qy:} %{!Qn:-Qy}"
 #endif
 
-/* Gcc automatically adds in one of the files /usr/ccs/lib/values-Xc.o,
-   /usr/ccs/lib/values-Xa.o, or /usr/ccs/lib/values-Xt.o for each final
-   link step (depending upon the other gcc options selected, such as
-   -traditional and -ansi).  These files each contain one (initialized)
-   copy of a special variable called `_lib_version'.  Each one of these
-   files has `_lib_version' initialized to a different (enum) value.
-   The SVR4 library routines query the value of `_lib_version' at run
-   to decide how they should behave.  Specifically, they decide (based
-   upon the value of `_lib_version') if they will act in a strictly ANSI
-   conforming manner or not.  */
+/* Gcc automatically adds in one of the files /usr/ccs/lib/values-Xc.o
+   or /usr/ccs/lib/values-Xa.o for each final link step (depending
+   upon the other gcc options selected, such as -ansi).  These files
+   each contain one (initialized) copy of a special variable called
+   `_lib_version'.  Each one of these files has `_lib_version' initialized
+   to a different (enum) value.  The SVR4 library routines query the
+   value of `_lib_version' at run to decide how they should behave.
+   Specifically, they decide (based upon the value of `_lib_version')
+   if they will act in a strictly ANSI conforming manner or not.  */
 
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared: \
@@ -190,9 +189,7 @@ Boston, MA 02111-1307, USA.
 			  %{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}}}\
 			%{pg:gcrti.o%s}%{!pg:crti.o%s} \
 			%{ansi:values-Xc.o%s} \
-			%{!ansi: \
-			 %{traditional:values-Xt.o%s} \
-			 %{!traditional:values-Xa.o%s}} \
+			%{!ansi:values-Xa.o%s} \
  			crtbegin.o%s"
 
 /* Allow #sccs in preprocessor.  */

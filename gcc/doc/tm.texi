@@ -3560,11 +3560,6 @@ This section discusses the macros that control returning scalars as
 values---values that can fit in registers.
 
 @table @code
-@findex TRADITIONAL_RETURN_FLOAT
-@item TRADITIONAL_RETURN_FLOAT
-Define this macro if @option{-traditional} should not cause functions
-declared to return @code{float} to convert the value to @code{double}.
-
 @findex FUNCTION_VALUE
 @item FUNCTION_VALUE (@var{valtype}, @var{func})
 A C expression to create an RTX representing the place where a

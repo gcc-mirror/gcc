@@ -676,13 +676,11 @@ init_section ()								\
     %{pg:gcrt.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}}} \
   %{ansi:values-Xc.o%s} \
   %{!ansi: \
-   %{traditional:values-Xt.o%s} \
-    %{!traditional: \
-     %{Xa:values-Xa.o%s} \
-      %{!Xa:%{Xc:values-Xc.o%s} \
-       %{!Xc:%{Xk:values-Xk.o%s} \
-        %{!Xk:%{Xt:values-Xt.o%s} \
-         %{!Xt:values-Xa.o%s}}}}}} \
+   %{Xa:values-Xa.o%s} \
+    %{!Xa:%{Xc:values-Xc.o%s} \
+     %{!Xc:%{Xk:values-Xk.o%s} \
+      %{!Xk:%{Xt:values-Xt.o%s} \
+       %{!Xt:values-Xa.o%s}}}}} \
   %{mcoff:crtbeginS.o%s} %{!mcoff:crtbegin.o%s}"
 
 #undef ENDFILE_SPEC
@@ -719,7 +717,6 @@ init_section ()								\
                       -DM_BITFIELDS -DM_SYS5 -DM_SYSV -DM_INTERNAT -DM_SYSIII \
                       -DM_WORDSWAP}}}} \
   %{scointl:-DM_INTERNAT -D_M_INTERNAT} \
-  %{traditional:-D_KR -D_SVID -D_NO_PROTOTYPE} \
   %{!mcoff:-D_SCO_ELF} \
   %{mcoff:-D_M_COFF -D_SCO_COFF} \
   %{!mcoff:%{fpic:-D__PIC__ -D__pic__} \
@@ -728,8 +725,7 @@ init_section ()								\
   %{!Xa:%{Xc:-D_SCO_C_DIALECT=3} \
    %{!Xc:%{Xk:-D_SCO_C_DIALECT=4} \
     %{!Xk:%{Xt:-D_SCO_C_DIALECT=2} \
-     %{!Xt:-D_SCO_C_DIALECT=1}}}} \
-  %{traditional:-traditional -D_KR -D_NO_PROTOTYPE}"
+     %{!Xt:-D_SCO_C_DIALECT=1}}}}"
 
 #undef LINK_SPEC
 #define LINK_SPEC \

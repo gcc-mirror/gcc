@@ -1516,10 +1516,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    mismatch, it also makes for better code on certain machines.  */
 #define PROMOTE_PROTOTYPES 1
 
-/* Define this macro if a float function always returns float
-   (even in traditional mode).  Redefined in luna.h.  */
-#define TRADITIONAL_RETURN_FLOAT
-
 /* We assume that the store-condition-codes instructions store 0 for false
    and some other value for true.  This is the value stored for true.  */
 #define STORE_FLAG_VALUE (-1)

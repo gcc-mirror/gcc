@@ -1,3 +1,9 @@
+2002-02-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* misc.c: Delete traditional-mode-related code copied from the
+	C front end but not used, or used only to permit the compiler
+	to link.
+
 2002-02-07  Richard Henderson  <rth@redhat.com>
 
 	* adaint.c (__gnat_to_gm_time): First arg is int, not time_t.

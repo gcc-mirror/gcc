@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 */
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.15 $"
+#define VERSION_INFO2   "$Revision: 1.16 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -157,18 +157,17 @@ Boston, MA 02111-1307, USA.  */
    -Asystem=unix -Asystem=svr4"
 
    /*
-     If not -ansi, -traditional, or restricting include files to one
+     If not -ansi, or restricting include files to one
      specific source target, specify full DG/UX features.
    */
 #undef	CPP_SPEC
-#define	CPP_SPEC "%(cpp_cpu) %{!ansi:%{!traditional:-D__OPEN_NAMESPACE__}}"
+#define	CPP_SPEC "%(cpp_cpu) %{!ansi:-D__OPEN_NAMESPACE__}"
 
 /* Assembler support (legends for mxdb).  */
 #undef	ASM_SPEC
 #define ASM_SPEC "\
 %{mno-legend:%{mstandard:-Wc,off}}\
-%{g:%{!mno-legend:-Wc,-fix-bb,-s\"%i\"\
-%{traditional:,-lc}%{!traditional:,-lansi-c}\
+%{g:%{!mno-legend:-Wc,-fix-bb,-s\"%i\",-lansi-c\
 %{mstandard:,-keep-std}\
 %{mexternal-legend:,-external}}}"
 
@@ -205,8 +204,7 @@ Boston, MA 02111-1307, USA.  */
 			 %{pg:gcrti.o%s}%{!pg:crti.o%s} 		\
 			 crtbegin.o%s 					\
 			 %{ansi:values-Xc.o%s} 				\
-			 %{!ansi:%{traditional:values-Xt.o%s} 		\
-			         %{!traditional:values-Xa.o%s}}"
+			 %{!ansi:values-Xa.o%s}"
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s %{pg:gcrtn.o}%{!pg:crtn.o%s}"
@@ -220,8 +218,7 @@ Boston, MA 02111-1307, USA.  */
 		       %{pg:gcrti.o%s}%{!pg:/lib/crti.o%s}	     \
 			crtbegin.o%s 					\
 			%{ansi:/lib/values-Xc.o%s} 			\
-			%{!ansi:%{traditional:/lib/values-Xt.o%s} 	\
-			        %{!traditional:/lib/values-Xa.o%s}}"
+			%{!ansi:/lib/values-Xa.o%s}"
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s %{pg:gcrtn.o}%{!pg:/lib/crtn.o}"

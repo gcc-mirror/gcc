@@ -16197,7 +16197,7 @@ typedef doublereal E_f; // real function with -R not specified //
 
 // (No such symbols should be defined in a strict ANSI C compiler.
    We can avoid trouble with f2c-translated code by using
-   gcc -ansi [-traditional].) //
+   gcc -ansi.) //
 
 
 

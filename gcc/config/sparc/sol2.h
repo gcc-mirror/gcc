@@ -131,9 +131,7 @@ Boston, MA 02111-1307, USA.  */
                             %{!pg:crt1.o%s}}}} \
 			crti.o%s \
 			%{ansi:values-Xc.o%s} \
-			%{!ansi: \
-			 %{traditional:values-Xt.o%s} \
-			 %{!traditional:values-Xa.o%s}} \
+			%{!ansi:values-Xa.o%s} \
 			crtbegin.o%s"
 
 /* ??? Note: in order for -compat-bsd to work fully,

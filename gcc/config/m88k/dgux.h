@@ -80,7 +80,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* If -m88100 is in effect, add -Dm88100; similarly for -m88110.
    Here, the CPU_DEFAULT is assumed to be -m88000.  If not -ansi,
-   -traditional, or restricting include files to one specific source
+   or restricting include files to one specific source
    target, specify full DG/UX features.  */
 #undef	CPP_SPEC
 #define	CPP_SPEC "%(cpp_cpu) %{msvr3:-D_M88KBCS_TARGET} %{!msvr3:-D_DGUX_TARGET}"
@@ -140,9 +140,7 @@ Boston, MA 02111-1307, USA.  */
 		  %{v:-V}\
 		  %{g:\
 %{mno-legend:-Wc,off}\
-%{!mno-legend:-Wc,-fix-bb,-s\"%i\"\
-%{traditional:,-lc}\
-%{!traditional:,-lansi-c}\
+%{!mno-legend:-Wc,-fix-bb,-s\"%i\",-lansi-c\
 %{mstandard:,-keep-std}\
 %{mexternal-legend:,-external}\
 %{mocs-frame-position:,-ocs}}}"
@@ -150,15 +148,14 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_CPU_SPEC "\
                   %{!m88000:%{!m88100:%{m88110:-D__m88110__}}} \
 		  %{!m88000:%{!m88110:%{m88100:-D__m88100__}}} \
-		  %{!ansi:%{!traditional:-D__OPEN_NAMESPACE__}}"
+		  %{!ansi:-D__OPEN_NAMESPACE__}"
 
 #define STARTFILE_DEFAULT_SPEC "\
                         %{!shared:%{!symbolic:%{pg:gcrt0.o%s} \
 			 %{!pg:%{p:/lib/mcrt0.o}%{!p:/lib/crt0.o}} \
 			  %(startfile_crtbegin) \
 			 %{svr4:%{ansi:/lib/values-Xc.o} \
-			  %{!ansi:%{traditional:/lib/values-Xt.o} \
-			   %{!traditional:/usr/lib/values-Xa.o}}}}}"
+			  %{!ansi:/usr/lib/values-Xa.o}}}}"
 
 #define STARTFILE_CRTBEGIN_SPEC "\
 			 %{msvr3:m88kdgux.ld%s bcscrtbegin.o%s} \
@@ -189,7 +186,7 @@ Boston, MA 02111-1307, USA.  */
       {									\
 	fprintf (FILE, ";legend_info -fix-bb -h\"gcc-%s\" -s\"%s\"",	\
 		 version_string, main_input_filename);			\
-	fputs (flag_traditional ? " -lc" : " -lansi-c", FILE);		\
+	fputs (" -lansi-c", FILE);					\
 	if (TARGET_STANDARD)						\
 	  fputs (" -keep-std", FILE);					\
 	if (TARGET_EXTERNAL_LEGEND)					\

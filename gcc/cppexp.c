@@ -298,7 +298,7 @@ lex (pfile, skip_evaluation)
 	else
 	  op.unsignedp = WCHAR_UNSIGNED;
 	op.op = CPP_NUMBER;
-	op.value = cpp_interpret_charconst (pfile, token, 1, 0, &chars_seen);
+	op.value = cpp_interpret_charconst (pfile, token, 1, &chars_seen);
 	return op;
       }
 

@@ -287,7 +287,7 @@ directive_diagnostics (pfile, dir, indented)
 	 compilers, directives added by C89 must have their #
 	 indented, and directives present in traditional C must not.
 	 This is true even of directives in skipped conditional
-	 blocks.  */
+	 blocks.  #elif cannot be used at all.  */
       if (CPP_WTRADITIONAL (pfile))
 	{
 	  if (dir == &dtable[T_ELIF])

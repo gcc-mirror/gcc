@@ -1,3 +1,9 @@
+2002-02-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* decl2.c: Delete traditional-mode-related code copied from
+	the C front end but not used, or used only to permit the
+	compiler to link.
+
 2002-02-24 Craig Rodrigues  <rodrigc@gcc.gnu.org> 
 
 	PR c++/4093

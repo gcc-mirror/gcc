@@ -281,11 +281,8 @@ initialize_builtins ()
 
   /* Work around C-specific junk in builtin-types.def.  */
 #define intmax_type_node NULL_TREE
-#define traditional_ptr_type_node NULL_TREE
-#define traditional_cptr_type_node NULL_TREE
 #define c_size_type_node NULL_TREE
 #define const_string_type_node NULL_TREE
-#define traditional_len_type_node NULL_TREE
 #define va_list_ref_type_node NULL_TREE
 #define va_list_arg_type_node NULL_TREE
 #define flag_isoc99 0

@@ -3343,8 +3343,8 @@ preprocessor.  We do not guarantee that GCC's behavior under
 
 Traditional mode exists only for backward compatibility.  We have no
 plans to augment it in any way nor will we change it except to fix
-catastrophic bugs.  You should be aware that modern C libraries often
-have header files which are incompatible with traditional mode.
+catastrophic bugs.  As of GCC 3.2, traditional mode is not supported for
+compilation, only preprocessing.
 
 This is a list of the differences.  It may not be complete, and may not
 correspond exactly to the behavior of either GCC or a true traditional
@@ -4351,8 +4351,8 @@ Define the macros @sc{__gnuc__}, @sc{__gnuc_minor__} and
 @option{-no-gcc}.
 
 @item -traditional
-Try to imitate the behavior of old-fashioned C, as opposed to ISO
-C@.  @xref{Traditional Mode}.
+Try to imitate the behavior of the old-fashioned C preprocessor, as
+opposed to the behavior specified by ISO C@.  @xref{Traditional Mode}.
 
 @item -trigraphs
 Process trigraph sequences.  @xref{Initial processing}.

@@ -64,13 +64,9 @@ prevent the assembler from being run.
 If the compiler produces valid assembly code that does not correctly
 execute the input source code, that is a compiler bug.
 
-However, you must double-check to make sure, because you may have run
-into an incompatibility between GNU C and traditional C
-(@pxref{Incompatibilities}).  These incompatibilities might be considered
-bugs, but they are inescapable consequences of valuable features.
-
-Or you may have a program whose behavior is undefined, which happened
-by chance to give the desired results with another C or C++ compiler.
+However, you must double-check to make sure, because you may have a
+program whose behavior is undefined, which happened by chance to give
+the desired results with another C or C++ compiler.
 
 For example, in many nonoptimizing compilers, you can write @samp{x;}
 at the end of a function instead of @samp{return x;}, with the same
