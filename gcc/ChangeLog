@@ -1,5 +1,12 @@
 2000-03-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
+	* config/c4x/c4x.h (ASM_SPEC, CPP_SPEC, LINK_SPEC): Support C33.
+	(C33_FLAG, TARGET_C3X): Add macros.
+	(TARGET_SWITCHES): Add -m33 option.
+	* config/c4x/c4x.c (c4x_override_options): Test for TARGET_C33.
+	
+2000-03-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+	
 	* config/c4x/c4x.h (PARALLEL_INSN_FLAG): Add.
 	(PARALLEL_PACK_FLAG): Delete.
 	(TARGET_SWITCHES): Update.

@@ -151,7 +151,7 @@ struct rtx_def *c4x_compare_op1 = NULL_RTX;
 const char *c4x_rpts_cycles_string;
 int c4x_rpts_cycles = 0;	/* Max. cycles for RPTS.  */
 const char *c4x_cpu_version_string;
-int c4x_cpu_version = 40;	/* CPU version C30/31/32/40/44.  */
+int c4x_cpu_version = 40;	/* CPU version C30/31/32/33/40/44.  */
 
 /* Pragma definitions.  */
 
@@ -207,6 +207,8 @@ c4x_override_options ()
     c4x_cpu_version = 31;
   else if (TARGET_C32)
     c4x_cpu_version = 32;
+  else if (TARGET_C33)
+    c4x_cpu_version = 33;
   else if (TARGET_C40)
     c4x_cpu_version = 40;
   else if (TARGET_C44)
@@ -225,13 +227,15 @@ c4x_override_options ()
       c4x_cpu_version = atoi (p);
     }
 
-  target_flags &= ~(C30_FLAG | C31_FLAG | C32_FLAG | C40_FLAG | C44_FLAG);
+  target_flags &= ~(C30_FLAG | C31_FLAG | C32_FLAG | C33_FLAG |
+		    C40_FLAG | C44_FLAG);
 
   switch (c4x_cpu_version)
     {
     case 30: target_flags |= C30_FLAG; break;
     case 31: target_flags |= C31_FLAG; break;
     case 32: target_flags |= C32_FLAG; break;
+    case 33: target_flags |= C33_FLAG; break;
     case 40: target_flags |= C40_FLAG; break;
     case 44: target_flags |= C44_FLAG; break;
     default:
@@ -240,7 +244,7 @@ c4x_override_options ()
       target_flags |= C40_FLAG;
     }
 
-  if (TARGET_C30 || TARGET_C31 || TARGET_C32)
+  if (TARGET_C30 || TARGET_C31 || TARGET_C32 || TARGET_C33)
     target_flags |= C3X_FLAG;
   else
     target_flags &= ~C3X_FLAG;
