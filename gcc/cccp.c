@@ -1715,7 +1715,7 @@ main (argc, argv)
 	  struct file_name_list *dirtmp;
 	  char *dir = argv[i][2] ? argv[i] + 2 : argv[++i];
 
-	  if (! ignore_srcdir && !strcmp (dir, "-")) {
+	  if (! ignore_srcdir && dir && !strcmp (dir, "-")) {
 	    ignore_srcdir = 1;
 	    /* Don't use any preceding -I directories for #include <...>.  */
 	    first_bracket_include = 0;
