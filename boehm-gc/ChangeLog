@@ -1,3 +1,7 @@
+1999-08-02  Tom Tromey  <tromey@cygnus.com>
+
+	* aclocal.m4, configure: Rebuilt for new libtool.
+
 1999-07-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* mips_sgi_mach_dep.s: Enable PIC option.
