@@ -592,7 +592,6 @@ java_init_decl_processing (void)
   add_predefined_file (get_identifier ("java/lang/Exception.java"));
   add_predefined_file (get_identifier ("java/lang/ClassNotFoundException.java"));
   add_predefined_file (get_identifier ("java/lang/NoClassDefFoundError.java"));
-  add_predefined_file (get_identifier ("gnu/gcj/RawData.java"));
 
   methodtable_type = make_node (RECORD_TYPE);
   layout_type (methodtable_type);
