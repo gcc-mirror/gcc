@@ -563,14 +563,28 @@
   return pattern[which];
 }")
 
-;; Don't do this if we are adjusting SP since we don't want to do
-;; it in two steps. 
+;; ??? Allow large constants when basing off the frame pointer or some
+;; virtual register that may eliminate to the frame pointer.  This is
+;; done because register elimination offsets will change the hi/lo split,
+;; and if we split before reload, we will require additional instructions.
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (plus:DI (match_operand:DI 1 "reg_no_subreg_operand" "r")
+		 (match_operand:DI 2 "const_int_operand" "n")))]
+  "REG_OK_FP_BASE_P (operands[1])"
+  "#")
+
+;; Don't do this if we are adjusting SP since we don't want to do it
+;; in two steps.  Don't split FP sources for the reason listed above.
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
 	(plus:DI (match_operand:DI 1 "register_operand" "")
 		 (match_operand:DI 2 "const_int_operand" "")))]
   "! add_operand (operands[2], DImode)
-   && operands[0] != stack_pointer_rtx"
+   && operands[0] != stack_pointer_rtx
+   && operands[1] != frame_pointer_rtx
+   && operands[1] != arg_pointer_rtx"
   [(set (match_dup 0) (plus:DI (match_dup 1) (match_dup 3)))
    (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 4)))]
   "
