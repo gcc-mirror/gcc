@@ -1,3 +1,8 @@
+Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* builtins.c (expand_builtin_setjmp_setup): Set
+	current_function_has_nonlocal_label.
+
 2000-12-05  Neil Booth  <neilb@earthling.net>
 
         * cppfiles.c (stack_include_file): Push zero-length buffers
