@@ -4052,7 +4052,8 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 		warn_for_assignment ("pointer targets in %s differ in signedness",
 				     get_spelling (errtype), funname, parmnum);
 	    }
-	  else
+	  else if (TREE_CODE (ttl) == FUNCTION_TYPE
+		   && TREE_CODE (ttr) == FUNCTION_TYPE)
 	    {
 	      /* Because const and volatile on functions are restrictions
 		 that say the function will not do certain things,
