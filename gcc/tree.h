@@ -915,6 +915,10 @@ struct tree_type
    It is also used in FIELD_DECLs for vtable pointers.  */
 #define DECL_VIRTUAL_P(NODE) ((NODE)->decl.virtual_flag)
 
+/* Used to indicate that the linkage status of this DECL is not yet known,
+   so it should not be output now.  */
+#define DECL_DEFER_OUTPUT(NODE) ((NODE)->decl.defer_output)
+
 /* Additional flags for language-specific uses.  */
 #define DECL_LANG_FLAG_0(NODE) ((NODE)->decl.lang_flag_0)
 #define DECL_LANG_FLAG_1(NODE) ((NODE)->decl.lang_flag_1)
@@ -949,7 +953,8 @@ struct tree_decl
 
   unsigned in_system_header_flag : 1;
   unsigned common_flag : 1;
-  /* room for six more */
+  unsigned defer_output : 1;
+  /* room for five more */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
