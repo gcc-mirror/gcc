@@ -1,3 +1,8 @@
+Mon Jul 13 15:10:09 1998  Philippe De Muyter  <phdm@macqel.be>
+
+	* invoke.texi(-fno-builtin): Explain that the names of built-in
+	functions begin with `__builtin_', not `__'.
+
 Mon Jul 13 19:01:52 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_before_p): Abort for RELOAD_FOR_OUTPUT.
@@ -12,6 +17,22 @@ Mon Jul 13 10:50:17 1998  Mark Mitchell  <mark@markmitchell.com>
 	(main): Remove 'j' option.
 
 Mon Jul 13 10:19:00 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.h (REG_CLASS_FROM_LETTER): Map 'y' to SP_REGS.
+	Handle 'x' as NO_REGS for this cpu.
+	(REGNO_OK_FOR_BIT_BASE_P): Define.
+	(REG_OK_FOR_BIT_BASE_P): Define.
+	(GO_IF_LEGITIMATE_ADDRESS): Use them.
+	(REG_OK_FOR_INDEX_P): Tweak.
+	* mn13000.c (REG_SAVE_BYTES): Define.
+	(expand_epilogue, initial_offset): Use it.
+	(secondary_reload_class): Slightly reformat.
+	(output_tst): Tweak comments.
+	* mn10300.md: Change 'x' to 'y' for SP_REGS.  Then add 'x' to many
+	patterns.
+	(addsi3): Turn into a define_expand/define_insn pair.  Rework code for
+	three operand addition case to be more efficient.
+	(subsi3): Turn into a define_expand/define_insn pair.
 
 	* expr.c (expand_expr): Only set MEM_IN_STRUCT_P if the memory address
 	is not varying for REFERENCE_TYPE or when we think we might have found
