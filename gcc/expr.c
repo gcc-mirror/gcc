@@ -4110,7 +4110,7 @@ save_noncopied_parts (lhs, list)
 	tree part = TREE_VALUE (tail);
 	tree part_type = TREE_TYPE (part);
 	tree to_be_saved = build (COMPONENT_REF, part_type, lhs, part);
-	rtx target = assign_temp (part_type, 0, 1);
+	rtx target = assign_temp (part_type, 0, 1, 1);
 	if (! memory_address_p (TYPE_MODE (part_type), XEXP (target, 0)))
 	  target = change_address (target, TYPE_MODE (part_type), NULL_RTX);
 	parts = tree_cons (to_be_saved,
@@ -4673,7 +4673,10 @@ expand_expr (exp, target, tmode, modifier)
 	}
       if (SAVE_EXPR_RTL (exp) == 0)
 	{
-	  temp = assign_temp (type, 0, 0);
+	  if (mode == VOIDmode)
+	    temp = const0_rtx;
+	  else
+	    temp = assign_temp (type, 0, 0, 0);
 
 	  SAVE_EXPR_RTL (exp) = temp;
 	  if (!optimize && GET_CODE (temp) == REG)
@@ -4865,7 +4868,12 @@ expand_expr (exp, target, tmode, modifier)
       else
 	{
 	  if (target == 0 || ! safe_from_p (target, exp))
-	    target = assign_temp (type, 0, TREE_ADDRESSABLE (exp));
+	    {
+	      if (mode != BLKmode && ! TREE_ADDRESSABLE (exp))
+		target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
+	      else
+		target = assign_temp (type, 0, 1, 1);
+	    }
 
 	  if (TREE_READONLY (exp))
 	    {
@@ -5436,7 +5444,12 @@ expand_expr (exp, target, tmode, modifier)
 	{
 	  tree valtype = TREE_TYPE (TREE_OPERAND (exp, 0));
 	  if (target == 0)
-	    target = assign_temp (type, 0, 0);
+	    {
+	      if (mode != BLKmode)
+		target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
+	      else
+		target = assign_temp (type, 0, 1, 1);
+	    }
 
 	  if (GET_CODE (target) == MEM)
 	    /* Store data into beginning of memory target.  */
@@ -6140,7 +6153,7 @@ expand_expr (exp, target, tmode, modifier)
 		       && MEM_VOLATILE_P (original_target)))
 	  temp = original_target;
 	else
-	  temp = assign_temp (type, 0, 0);
+	  temp = assign_temp (type, 0, 0, 1);
 
 	/* Check for X ? A + B : A.  If we have this, we can copy
 	   A to the output and conditionally add B.  Similarly for unary
@@ -6454,7 +6467,7 @@ expand_expr (exp, target, tmode, modifier)
 	      }
 	    else
 	      {
-		target = assign_temp (type, 2, 1);
+		target = assign_temp (type, 2, 1, 1);
 		/* All temp slots at this level must not conflict.  */
 		preserve_temp_slots (target);
 		DECL_RTL (slot) = target;
@@ -6661,7 +6674,7 @@ expand_expr (exp, target, tmode, modifier)
 	      /* If this object is in a register, it must be not
 		 be BLKmode. */
 	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-	      rtx memloc = assign_temp (inner_type, 1, 1);
+	      rtx memloc = assign_temp (inner_type, 1, 1, 1);
 
 	      mark_temp_addr_taken (memloc);
 	      emit_move_insn (memloc, op0);
