@@ -1,3 +1,26 @@
+Sun Aug  1 22:24:03 1999  Philip Blundell  <philb@gnu.org>
+
+	* configure.in: Rework handling of ARM GNU/Linux slightly.
+	(arm*-*-linux-gnuoldld): New target.
+	* configure: Regenerate.
+	* install.texi (Configurations): Add arm-*-linux-gnu{oldld} and
+	arm-*-elf.  Mention that arm-*-linux-gnuaout is obsolete.
+	* config/arm/linux-oldld.h: New file.
+	* config/arm/linux-elf26.h: Don't include linux-elf.h.
+	(TARGET_DEFAULT, SUBTARGET_LINK_SPEC, SUBTARGET_EXTRA_ASM_SPEC):
+	Don't define.
+	* config/arm/linux-elf.h (ASM_SPEC): Define.
+	(TARGET_DEFAULT, SUBTARGET_EXTRA_LINK_SPEC,
+ 	SUBTARGET_EXTRA_ASM_SPEC, CPP_APCS_PC_DEFAULT): Add definitions
+ 	for 26-bit APCS and old linker.
+	(CPP_PREDEFINES): Define `__arm__'; don't define `arm' or
+	`arm_elf'.
+	(FP_DEFAULT): Define to FP_SOFT3 for all machines.
+	* config/arm/linux-aout.h (CPP_PREDEFINES): Define `__arm__'; 
+	don't define `arm' or `arm_elf'.
+	* config/arm/t-linux (EXTRA_MULTILIB_PARTS, MULTILIB_OPTIONS,
+	MULTILIB_DIRNAMES): Define.  Fix typo in comment.
+
 Thu Aug 12 10:14:47 1999  Andreas Schwab  <schwab@suse.de>
 
 	* rtl.texi: Fix typo.
