@@ -3152,7 +3152,6 @@ extern enum machine_mode mode_for_size_tree (tree, enum mode_class, int);
 /* Return an expr equal to X but certainly not valid as an lvalue.  */
 
 extern tree non_lvalue (tree);
-extern tree pedantic_non_lvalue (tree);
 
 extern tree convert (tree, tree);
 extern unsigned int expr_align (tree);
