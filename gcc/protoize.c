@@ -28,20 +28,33 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define __STDC__ 1
 #endif /* defined(__cplusplus) && !defined(__STDC__) */
 
-#if defined (__cplusplus)
-extern "C" {			/* Start of extern "C" section.  */
-#endif /* defined(__cplusplus) */
+#if defined(__GNUC__) || defined (__GNUG__)
+#define VOLATILE volatile
+#else
+#define VOLATILE
+#endif
 
 /* It is incorrect to include config.h here, because this file is being
    compiled for the target, and hence definitions concerning only the host
-   do not apply.  */
+   do not apply.  Instead we include tconfig.h, which is the xm file
+   *for the target*, which also includes the tm.h file *for the target*.
+   This way, we get definitions of POSIX, USG and VMS for the target.  */
 
-#include "tm.h"
+#include "tconfig.h"
+
+/* The documentation says to use TARGET_POSIX, so check for it as well
+   as POSIX.  */
+#if defined(TARGET_POSIX) && !defined(POSIX)
+#define POSIX
+#endif
+
+/* If the user asked for POSIX via _POSIX_SOURCE, turn on POSIX code.  */
+#if defined(_POSIX_SOURCE) && !defined(POSIX)
+#define POSIX
+#endif
 
 /* On a POSIX system, request definition of all the POSIX facilities.  */
-/* We use TARGET_POSIX because protoize is compiled for the target system,
-   and TARGET_POSIX is the symbol that describes it in tm.h.  */
-#ifdef TARGET_POSIX
+#if defined(POSIX) && !defined(_POSIX_SOURCE)
 #define _POSIX_SOURCE
 #endif
 
@@ -56,7 +69,6 @@ extern "C" {			/* Start of extern "C" section.  */
 #include "gvarargs.h"
 #include "getopt.h"
 
-#include <limits.h>
 #ifndef PATH_MAX	/* <limits.h> defines this on most POSIX systems.  */
 #include <sys/param.h>
 #define PATH_MAX MAXPATHLEN
@@ -80,9 +92,10 @@ extern "C" {			/* Start of extern "C" section.  */
 #endif
 
 extern int errno;
-extern char * sys_errlist[];
+extern char *sys_errlist[];
+extern char *version_string;
 
-#if defined(TARGET_POSIX)
+#if defined(POSIX)
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -109,7 +122,7 @@ extern char * sys_errlist[];
 
 #endif /* (_POSIX_VERSION < 199009) */
 
-#else /* !defined(TARGET_POSIX) */
+#else /* !defined(POSIX) */
 
 #define R_OK    4       /* Test for Read permission */
 #define W_OK    2       /* Test for Write permission */
@@ -130,14 +143,19 @@ extern char *getwd (char *);
 extern char *getcwd (char *, size_t);
 #endif /* (defined (USG) || defined (VMS)) */
 
-/* Declaring stat, kill or __flsbuf with a prototype
-   causes conflicts with system headers on some systems.
-   Declaring abort causes trouble if it is a macro.  */
+/* Declaring stat or __flsbuf with a prototype
+   causes conflicts with system headers on some systems.  */
 
+#ifndef abort
+extern VOLATILE void abort (void);
+#endif
+extern int kill(int, int);
 extern int creat (const char *, int);
 extern int open (const char *, int, ...);
+#if 0 /* These conflict with stdio.h on some systems.  */
 extern int fprintf (FILE *, const char *, ...);
 extern int printf (const char *, ...);
+#endif /* 0 */
 extern void exit (int);
 extern void *malloc (size_t);
 extern void *realloc (void *, size_t);
@@ -160,7 +178,11 @@ extern void longjmp (jmp_buf, int);
 extern char *   strcat(char *, const char *);
 extern int      strcmp(const char *, const char *);
 extern char *   strcpy(char *, const char *);
+#if 0 /* size_t from sys/types.h may fail to match GCC.
+	 If so, we would get a warning from this.
+	 So do without the prototype.  */
 extern size_t   strlen(const char *);
+#endif
 extern int      strncmp(const char *, const char *, size_t);
 extern char *   strncpy(char *, const char *, size_t);
 extern char *   strrchr(const char *, int);
@@ -168,13 +190,11 @@ extern char *   strrchr(const char *, int);
 #if !(defined (USG) || defined (VMS))
 extern int vfork (void);
 #define fork vfork
+#else
+extern int fork (void);
 #endif /* !(defined (USG) || defined (VMS)) */
 
-#endif /* !defined(TARGET_POSIX) */
-
-#if defined (__cplusplus)
-}				/* End of extern "C" section.  */
-#endif /* defined(__cplusplus) */
+#endif /* !defined(POSIX) */
 
 /* Look for these where the `const' qualifier is intentionally cast aside.  */
 
@@ -205,15 +225,11 @@ typedef const void * const_pointer_type;
 #define STD_PROTO_DIR "/usr/local/lib"
 #endif /* !defined(STD_PROTO_DIR) */
 
-/* String to identify this version.  */
-
-static const char * const version_string = "Version 1.07";
-
 /* Suffix of aux_info files.  */
 
 static const char * const aux_info_suffix = ".X";
 
-/* String to attach to pathnames for saved versions of original files.  */
+/* String to attach to filenames for saved versions of original files.  */
 
 static const char * const save_suffix = ".save";
 
@@ -229,10 +245,10 @@ static const char * const syscalls_filename = "SYSCALLS.c";
 
 static const char * const default_syscalls_dir = STD_PROTO_DIR;
 
-/* Variable to hold the complete absolutized pathname of the SYSCALLS.c.X
+/* Variable to hold the complete absolutized filename of the SYSCALLS.c.X
    file.  */
 
-static char * syscalls_pathname;
+static char * syscalls_absolute_filename;
 
 #endif /* !defined(UNPROTOIZE) */
 
@@ -333,13 +349,15 @@ struct string_list *exclude_list;
 static const char * const other_var_style = "stdarg";
 #else /* !defined(UNPROTOIZE) */
 static const char * const other_var_style = "varargs";
-static const char * const varargs_style_indicator = STRINGIFY(va_alist);
+/* Note that this is a string containing the expansion of va_alist.
+   But in `main' we discard all but the first token.  */
+static const char *varargs_style_indicator = STRINGIFY(va_alist);
 #endif /* !defined(UNPROTOIZE) */
 
 /* The following two types are used to create hash tables.  In this program,
    there are two hash tables which are used to store and quickly lookup two
    different classes of strings.  The first type of strings stored in the
-   first hash table are absolute pathnames of files which protoize needs to
+   first hash table are absolute filenames of files which protoize needs to
    know about.  The second type of strings (stored in the second hash table)
    are function names.  It is this second class of strings which really
    inspired the use of the hash tables, because there may be a lot of them.  */
@@ -353,10 +371,10 @@ typedef struct file_info_struct file_info;
 typedef struct f_list_chain_item_struct f_list_chain_item;
 
 /* In the struct below, note that the "_info" field has two different uses
-   depending on the type of hash table we are in (i.e. either the pathnames
-   hash table or the function names hash table).  In the pathnames hash table
+   depending on the type of hash table we are in (i.e. either the filenames
+   hash table or the function names hash table).  In the filenames hash table
    the info fields of the entries point to the file_info struct which is
-   associated with each pathname (1 per pathname).  In the function names
+   associated with each filename (1 per filename).  In the function names
    hash table, the info field points to the head of a singly linked list of
    def_dec_info entries which are all defs or decs of the function whose
    name is pointed to by the "symbol" field.  Keeping all of the defs/decs
@@ -380,7 +398,7 @@ struct hash_table_entry_struct {
 typedef hash_table_entry hash_table[HASH_TABLE_SIZE];
 
 /* The following struct holds all of the important information about any
-   single pathname (e.g. file) which we need to know about.  */
+   single filename (e.g. file) which we need to know about.  */
 
 struct file_info_struct {
   const hash_table_entry *	hash_entry; /* -> to associated hash entry */
@@ -439,7 +457,7 @@ struct def_dec_info_struct {
 #endif /* !defined(UNPROTOIZE) */
 };
 
-/* Pointer to the tail component of the pathname by which this program was
+/* Pointer to the tail component of the filename by which this program was
    invoked.  Used everywhere in error and warning messages.  */
 
 static const char *pname;
@@ -479,12 +497,12 @@ static int filename_index = 0;
 
 /* Count of command line arguments which were "filename" arguments.  */
 
-static int base_source_files = 0;
+static int n_base_source_files = 0;
 
 /* Points to a malloc'ed list of pointers to all of the filenames of base
    source files which were specified on the command line.  */
 
-static const char **base_source_paths;
+static const char **base_source_filenames;
 
 /* Line number of the line within the current aux_info file that we
    are currently processing.  Used for error messages in case the prototypes
@@ -494,13 +512,13 @@ static int current_aux_info_lineno;
 
 /* Pointer to the name of the source file currently being converted.  */
 
-static const char *convert_path;
+static const char *convert_filename;
 
 /* Pointer to relative root string (taken from aux_info file) which indicates
    where directory the user was in when he did the compilation step that
    produced the containing aux_info file. */
 
-static const char *invocation_path;
+static const char *invocation_filename;
 
 /* Pointer to the base of the input buffer that holds the original text for the
    source file currently being converted.  */
@@ -555,9 +573,9 @@ static const char *last_known_line_start;
 
 static int last_known_line_number;
 
-/* The pathnames hash table.  */
+/* The filenames hash table.  */
 
-static hash_table pathname_primary;
+static hash_table filename_primary;
 
 /* The function names hash table.  */
 
@@ -568,7 +586,7 @@ static hash_table function_name_primary;
 
 static jmp_buf source_confusion_recovery;
 
-/* A pointer to the current directory pathname (used by abspath).  */
+/* A pointer to the current directory filename (used by abspath).  */
 
 static char *cwd_buffer;
 
@@ -584,7 +602,7 @@ static char * saved_repl_write_ptr;
 
 /* Forward declaration.  */
 
-static const char *shortpath (const char *cwd, const char *pathname);
+static const char *shortpath (const char *cwd, const char *filename);
 
 /* Allocate some space, but check that the allocation was successful.  */
 
@@ -596,7 +614,7 @@ xmalloc (size_t byte_count)
   if ((rv = malloc (byte_count)) == NULL)
     {
       fprintf (stderr, "\n%s: fatal error: can't allocate %u more bytes of memory\n",
-        pname, byte_count);
+	       pname, byte_count);
       exit (1);
       return 0;		/* avoid warnings */
     }
@@ -614,7 +632,7 @@ xrealloc (pointer_type old_space, size_t byte_count)
   if ((rv = realloc (old_space, byte_count)) == NULL)
     {
       fprintf (stderr, "\n%s: fatal error: can't allocate %u more bytes of memory\n",
-        pname, byte_count);
+	       pname, byte_count);
       exit (1);
       return 0;		/* avoid warnings */
     }
@@ -636,7 +654,7 @@ xfree (const_pointer_type p)
 /* Make a copy of a string INPUT with size SIZE.  */
 
 static char *
-savestring (char *input, int size)
+savestring (const char *input, int size)
 {
   char *output = (char *) xmalloc (size + 1);
   strcpy (output, input);
@@ -683,7 +701,7 @@ substr (const char *s1, const char *const s2)
     {
       const char *p1;
       const char *p2;
-      char c;
+      int c;
 
       for (p1 = s1, p2 = s2; c = *p2; p1++, p2++)
         if (*p1 != c)
@@ -729,15 +747,16 @@ static void
 usage (void)
 {
 #ifdef UNPROTOIZE
-  fprintf (stderr, "%s: usage '%s [ -VqfnkN ] [ -i <istring> ] [ pathname ... ]'\n",
+  fprintf (stderr, "%s: usage '%s [ -VqfnkN ] [ -i <istring> ] [ filename ... ]'\n",
+	   pname, pname);
 #else /* !defined(UNPROTOIZE) */
-  fprintf (stderr, "%s: usage '%s [ -VqfnkNlgC ] [ -B <diname> ] [ pathname ... ]'\n",
+  fprintf (stderr, "%s: usage '%s [ -VqfnkNlgC ] [ -B <diname> ] [ filename ... ]'\n",
+	   pname, pname);
 #endif /* !defined(UNPROTOIZE) */
-    pname, pname);
   exit (1);
 }
 
-/* Return true if the given pathname (assumed to be an absolute pathname)
+/* Return true if the given filename (assumed to be an absolute filename)
    designates a file residing anywhere beneath any one of the "system"
    include directories.  */
 
@@ -747,7 +766,7 @@ in_system_include_dir (const char *path)
   struct default_include *p;
 
   if (path[0] != '/')
-    abort ();		/* Must be an absolutized pathname.  */
+    abort ();		/* Must be an absolutized filename.  */
 
   for (p = include_defaults; p->fname; p++)
     if (!strncmp (path, p->fname, strlen (p->fname))
@@ -757,7 +776,7 @@ in_system_include_dir (const char *path)
 }
 
 #if 0
-/* Return true if the given pathname designates a file that the user has
+/* Return true if the given filename designates a file that the user has
    read access to and for which the user has write access to the containing
    directory.  */
 
@@ -777,7 +796,7 @@ file_could_be_converted (const char *path)
     if (dir_last_slash)
       *dir_last_slash = '\0';
     else
-      abort ();  /* Should have been an absolutized pathname.  */
+      abort ();  /* Should have been an absolutized filename.  */
   }
 
   if (access (path, W_OK))
@@ -786,7 +805,7 @@ file_could_be_converted (const char *path)
   return 1;
 }
 
-/* Return true if the given pathname designates a file that we are allowed
+/* Return true if the given filename designates a file that we are allowed
    to modify.  Files which we should not attempt to modify are (a) "system"
    include files, and (b) files which the user doesn't have write access to,
    and (c) files which reside in directories which the user doesn't have
@@ -811,14 +830,14 @@ file_normally_convertable (const char *path)
     if (dir_last_slash)
       *dir_last_slash = '\0';
     else
-      abort ();  /* Should have been an absolutized pathname.  */
+      abort ();  /* Should have been an absolutized filename.  */
   }
 
   if (access (path, R_OK))
     {
       if (!quiet_flag)
         fprintf (stderr, "%s: warning: no read access for file `%s'\n",
-          pname, shortpath (NULL, path));
+		 pname, shortpath (NULL, path));
       return 0;
     }
 
@@ -826,7 +845,7 @@ file_normally_convertable (const char *path)
     {
       if (!quiet_flag)
         fprintf (stderr, "%s: warning: no write access for file `%s'\n",
-          pname, shortpath (NULL, path));
+		 pname, shortpath (NULL, path));
       return 0;
     }
 
@@ -834,7 +853,7 @@ file_normally_convertable (const char *path)
     {
       if (!quiet_flag)
         fprintf (stderr, "%s: warning: no write access for dir containing `%s'\n",
-          pname, shortpath (NULL, path));
+		 pname, shortpath (NULL, path));
       return 0;
     }
 
@@ -983,7 +1002,7 @@ add_symbol (hash_table_entry *p, const char *s)
   return p;
 }
 
-/* Look for a particular function name or pathname in the particular
+/* Look for a particular function name or filename in the particular
    hash table indicated by "hash_tab_p".  If the name is not in the
    given hash table, add it.  Either way, return a pointer to the
    hash table entry for the given name.  */
@@ -1117,40 +1136,40 @@ continue_outer: ;
   return (got_unexpanded ? dupstr (line_buf) : 0);
 }
 
-/* Return the absolutized pathname for the given relative
-   pathname.  Note that if that pathname is already absolute, it may
+/* Return the absolutized filename for the given relative
+   filename.  Note that if that filename is already absolute, it may
    still be returned in a modified form because this routine also
    eliminates redundant slashes and single dots and eliminates double
-   dots to get a shortest possible pathname from the given input
-   pathname.  The absolutization of relative pathnames is made by
-   assuming that the given pathname is to be taken as relative to
+   dots to get a shortest possible filename from the given input
+   filename.  The absolutization of relative filenames is made by
+   assuming that the given filename is to be taken as relative to
    the first argument (cwd) or to the current directory if cwd is
    NULL.  */
 
 static char *
-abspath (const char *cwd, const char *rel_pathname)
+abspath (const char *cwd, const char *rel_filename)
 {
   /* Setup the current working directory as needed.  */
   const char *cwd2 = (cwd) ? cwd : cwd_buffer;
   char *const abs_buffer
-    = (char *) alloca (strlen (cwd2) + strlen (rel_pathname) + 1);
+    = (char *) alloca (strlen (cwd2) + strlen (rel_filename) + 1);
   char *endp = abs_buffer;
   char *outp, *inp;
 
-  /* Copy the  pathname (possibly preceeded by the current working
+  /* Copy the  filename (possibly preceeded by the current working
      directory name) into the absolutization buffer.  */
 
   {
     const char *src_p;
 
-    if (rel_pathname[0] != '/')
+    if (rel_filename[0] != '/')
       {
         src_p = cwd2;
         while (*endp++ = *src_p++)
           continue;
         *(endp-1) = '/';        		/* overwrite null */
       }
-    src_p = rel_pathname;
+    src_p = rel_filename;
     while (*endp++ = *src_p++)
       continue;
     if (endp[-1] == '/')
@@ -1158,7 +1177,7 @@ abspath (const char *cwd, const char *rel_pathname)
   }
 
   /* Now make a copy of abs_buffer into abs_buffer, shortening the
-     pathname (by taking out slashes and dots) as we go.  */
+     filename (by taking out slashes and dots) as we go.  */
 
   outp = inp = abs_buffer;
   *outp++ = *inp++;        	/* copy first slash */
@@ -1192,8 +1211,8 @@ abspath (const char *cwd, const char *rel_pathname)
                      point above the absolute root of the logical file
                      system.  */
 
-              	  fprintf (stderr, "%s: fatal error: invalid pathname: %s\n",
-                    pname, rel_pathname);
+              	  fprintf (stderr, "%s: invalid file name: %s\n",
+			   pname, rel_filename);
               	  exit (1);
               	}
                     *++outp = '\0';
@@ -1216,22 +1235,22 @@ abspath (const char *cwd, const char *rel_pathname)
   return dupstr (abs_buffer);
 }
 
-/* Given a pathname (and possibly a directory name from which the pathname
+/* Given a filename (and possibly a directory name from which the filename
    is relative) return a string which is the shortest possible
-   equivalent for the corresponding full (absolutized) pathname.  The
+   equivalent for the corresponding full (absolutized) filename.  The
    shortest possible equivalent may be constructed by converting the
-   absolutized pathname to be a relative pathname (i.e. relative to
-   the actual current working directory).  However if a relative pathname
-   is longer, then the full absolute pathname is returned.
+   absolutized filename to be a relative filename (i.e. relative to
+   the actual current working directory).  However if a relative filename
+   is longer, then the full absolute filename is returned.
 
    KNOWN BUG:
 
-   Note that "simple-minded" conversion of any given type of pathname (either
-   relative or absolute) may not result in a valid equivalent pathname if any
-   subpart of the original pathname is actually a symbolic link.  */
+   Note that "simple-minded" conversion of any given type of filename (either
+   relative or absolute) may not result in a valid equivalent filename if any
+   subpart of the original filename is actually a symbolic link.  */
 
 static const char *
-shortpath (const char *cwd, const char *pathname)
+shortpath (const char *cwd, const char *filename)
 {
   char *rel_buffer;
   char *rel_buf_p;
@@ -1239,7 +1258,7 @@ shortpath (const char *cwd, const char *pathname)
   char *path_p;
   int unmatched_slash_count = 0;
 
-  path_p = abspath (cwd, pathname);
+  path_p = abspath (cwd, filename);
   rel_buf_p = rel_buffer = (char *) xmalloc (strlen (path_p) + 1);
 
   while (*cwd_p && (*cwd_p == *path_p))
@@ -1283,25 +1302,27 @@ shortpath (const char *cwd, const char *pathname)
       --rel_buf_p;
       if (*(rel_buf_p-1) == '/')
         *--rel_buf_p = '\0';
-      if (strlen (rel_buffer) > strlen (pathname))
-	strcpy (rel_buffer, pathname);
+      if (strlen (rel_buffer) > strlen (filename))
+	strcpy (rel_buffer, filename);
       return rel_buffer;
     }
   /* NOTREACHED */
   return 0;	/* Prevent warnings for old versions of GCC.  */
 }
 
-/* Lookup the given pathname in the hash table for pathnames.  If it is a
+/* Lookup the given filename in the hash table for filenames.  If it is a
    new one, then the hash table info pointer will be null.  In this case,
-   we create a new file_info record to go with the pathname, and we initialize
+   we create a new file_info record to go with the filename, and we initialize
    that record with some reasonable values.  */
 
 static file_info *
-find_file (const char *pathname, int do_not_stat)
+find_file (char *filename, int do_not_stat)
+/* FILENAME was const, but that causes a warning on AIX when calling stat.
+   That is probably a bug in AIX, but might as well avoid the warning.  */
 {
   hash_table_entry *hash_entry_p;
 
-  hash_entry_p = lookup (pathname_primary, pathname);
+  hash_entry_p = lookup (filename_primary, filename);
   if (hash_entry_p->fip)
     return hash_entry_p->fip;
   else
@@ -1316,10 +1337,10 @@ find_file (const char *pathname, int do_not_stat)
         stat_buf.st_mtime = (time_t) 0;
       else
         {
-          if (stat (pathname, &stat_buf) == -1)
+          if (stat (filename, &stat_buf) == -1)
             {
               fprintf (stderr, "%s: error: can't get status of `%s': %s\n",
-                pname, shortpath (NULL, pathname), sys_errlist[errno]);
+		       pname, shortpath (NULL, filename), sys_errlist[errno]);
               stat_buf.st_mtime = (time_t) -1;
             }
         }
@@ -1339,7 +1360,7 @@ static void
 aux_info_corrupted (void)
 {
   fprintf (stderr, "\n%s: fatal error: aux info file corrupted at line %d\n",
-    pname, current_aux_info_lineno);
+	   pname, current_aux_info_lineno);
   exit (1);
 }
 
@@ -1409,7 +1430,7 @@ referenced_file_is_newer (const char *l, time_t aux_info_mtime)
      may cause a new file_info record to be created if this is the first time
      that we have ever known about this particular file.  */
 
-  fi_p = find_file (abspath (invocation_path, filename), 0);
+  fi_p = find_file (abspath (invocation_filename, filename), 0);
 
   return (fi_p->mtime > aux_info_mtime);
 }
@@ -1464,16 +1485,16 @@ save_def_or_dec (const char *l, int is_syscalls)
        may cause a new file_info record to be created if this is the first time
        that we have ever known about this particular file.
   
-       Note that we started out by forcing all of the base source file pathnames
+       Note that we started out by forcing all of the base source file names
        (i.e. the names of the aux_info files with the .X stripped off) into the
-       pathnames hash table, and we simultaneously setup file_info records for
-       all of these base file pathnames (even if they may be useless later).
-       The file_info records for all of these "base" file pathnames (properly)
+       filenames hash table, and we simultaneously setup file_info records for
+       all of these base file names (even if they may be useless later).
+       The file_info records for all of these "base" file names (properly)
        act as file_info records for the "original" (i.e. un-included) files
        which were submitted to gcc for compilation (when the -fgen-aux-info
        option was used).  */
   
-    def_dec_p->file = find_file (abspath (invocation_path, filename), is_syscalls);
+    def_dec_p->file = find_file (abspath (invocation_filename, filename), is_syscalls);
   }
 
   {
@@ -1868,25 +1889,25 @@ munge_compile_params (const char *params_list)
    file to go with a specific base source file.  */
 
 static int
-gen_aux_info_file (const char *base_pathname)
+gen_aux_info_file (const char *base_filename)
 {
   int child_pid;
 
   if (!filename_index)
     munge_compile_params ("");
 
-  compile_params[filename_index] = shortpath (NULL, base_pathname);
+  compile_params[filename_index] = shortpath (NULL, base_filename);
 
   if (!quiet_flag)
     fprintf (stderr, "%s: compiling `%s'\n",
-      pname, compile_params[filename_index]);
+	     pname, compile_params[filename_index]);
 
   if (child_pid = fork ())
     {
       if (child_pid == -1)
         {
           fprintf (stderr, "%s: error: could not fork process: %s\n",
-            pname, sys_errlist[errno]);
+		   pname, sys_errlist[errno]);
           return 0;
         }
 
@@ -1914,7 +1935,7 @@ gen_aux_info_file (const char *base_pathname)
         if (wait (&wait_status) == -1)
           {
             fprintf (stderr, "%s: error: wait for process failed: %s\n",
-              pname, sys_errlist[errno]);
+		     pname, sys_errlist[errno]);
             return 0;
           }
         if (!WIFEXITED (wait_status))
@@ -1930,7 +1951,7 @@ gen_aux_info_file (const char *base_pathname)
       if (execvp (compile_params[0], (char *const *) compile_params))
         {
           fprintf (stderr, "%s: error: execvp returned: %s\n",
-            pname, sys_errlist[errno]);
+		   pname, sys_errlist[errno]);
           exit (errno);
         }
       return 1;		/* Never executed.  */
@@ -1941,10 +1962,10 @@ gen_aux_info_file (const char *base_pathname)
    Save all of the important stuff for later.  */
 
 static void
-process_aux_info_file (const char *base_source_pathname, int keep_it, int is_syscalls)
+process_aux_info_file (const char *base_source_filename, int keep_it, int is_syscalls)
 {
-  char *const aux_info_pathname
-    = (char *) alloca (strlen (base_source_pathname)
+  char *const aux_info_filename
+    = (char *) alloca (strlen (base_source_filename)
 		       + strlen (aux_info_suffix) + 1);
   char *aux_info_base;
   char *aux_info_limit;
@@ -1952,10 +1973,10 @@ process_aux_info_file (const char *base_source_pathname, int keep_it, int is_sys
   time_t aux_info_mtime;
   size_t aux_info_size;
 
-  /* Construct the aux_info pathname from the base source pathname.  */
+  /* Construct the aux_info filename from the base source filename.  */
 
-  strcpy (aux_info_pathname, base_source_pathname);
-  strcat (aux_info_pathname, aux_info_suffix);
+  strcpy (aux_info_filename, base_source_filename);
+  strcat (aux_info_filename, aux_info_suffix);
 
   /* Check that the aux_info file exists and is readable.  If it does not
      exist, try to create it (once only).  */
@@ -1966,17 +1987,17 @@ start_over: ;
     int retries = 0;
 
 retry:
-    if (access (aux_info_pathname, R_OK) == -1)
+    if (access (aux_info_filename, R_OK) == -1)
       {
         if (errno == ENOENT && retries == 0)
           {
             if (is_syscalls)
               {
                 fprintf (stderr, "%s: warning: missing SYSCALLS file `%s'\n",
-                  pname, aux_info_pathname);
+			 pname, aux_info_filename);
                 return;
               }
-            if (!gen_aux_info_file (base_source_pathname))
+            if (!gen_aux_info_file (base_source_filename))
               return;
             retries++;
             goto retry;
@@ -1984,7 +2005,8 @@ retry:
         else
           {
             fprintf (stderr, "%s: error: can't read aux info file `%s': %s\n",
-              pname, shortpath (NULL, aux_info_pathname), sys_errlist[errno]);
+		     pname, shortpath (NULL, aux_info_filename),
+		     sys_errlist[errno]);
             errors++;
             return;
           }
@@ -1996,10 +2018,11 @@ retry:
 
     /* Get some status information about this aux_info file.  */
   
-    if (stat (aux_info_pathname, &stat_buf) == -1)
+    if (stat (aux_info_filename, &stat_buf) == -1)
       {
         fprintf (stderr, "%s: error: can't get status of aux info file `%s': %s\n",
-          pname, shortpath (NULL, aux_info_pathname), sys_errlist[errno]);
+		 pname, shortpath (NULL, aux_info_filename),
+		 sys_errlist[errno]);
         errors++;
         return;
       }
@@ -2022,10 +2045,11 @@ retry:
 
     /* Open the aux_info file.  */
   
-    if ((aux_info_file = open (aux_info_pathname, O_RDONLY, 0444 )) == -1)
+    if ((aux_info_file = open (aux_info_filename, O_RDONLY, 0444 )) == -1)
       {
         fprintf (stderr, "%s: error: can't open aux info file `%s' for reading: %s\n",
-          pname, shortpath (NULL, aux_info_pathname), sys_errlist[errno]);
+		 pname, shortpath (NULL, aux_info_filename),
+		 sys_errlist[errno]);
         return;
       }
   
@@ -2040,7 +2064,8 @@ retry:
     if (read (aux_info_file, aux_info_base, aux_info_size) != aux_info_size)
       {
         fprintf (stderr, "%s: error: while reading aux info file `%s': %s\n",
-          pname, shortpath (NULL, aux_info_pathname), sys_errlist[errno]);
+		 pname, shortpath (NULL, aux_info_filename),
+		 sys_errlist[errno]);
         free (aux_info_base);
         close (aux_info_file);
         return;
@@ -2051,7 +2076,8 @@ retry:
     if (close (aux_info_file))
       {
         fprintf (stderr, "%s: error: while closing aux info file `%s': %s\n",
-          pname, shortpath (NULL, aux_info_pathname), sys_errlist[errno]);
+		 pname, shortpath (NULL, aux_info_filename),
+		 sys_errlist[errno]);
         free (aux_info_base);
         close (aux_info_file);
         return;
@@ -2062,15 +2088,16 @@ retry:
      fails for some reason, don't even worry about it.  */
 
   if (!keep_it)
-    if (unlink (aux_info_pathname) == -1)
+    if (unlink (aux_info_filename) == -1)
       fprintf (stderr, "%s: error: can't delete aux info file `%s': %s\n",
-        pname, shortpath (NULL, aux_info_pathname), sys_errlist[errno]);
+	       pname, shortpath (NULL, aux_info_filename),
+	       sys_errlist[errno]);
 
   /* Save a pointer into the first line of the aux_info file which
-     contains the pathname of the directory from which the compiler
+     contains the filename of the directory from which the compiler
      was invoked when the associated source file was compiled.
      This information is used later to help create complete
-     pathnames out of the (potentially) relative pathnames in
+     filenames out of the (potentially) relative filenames in
      the aux_info file.  */
 
   {
@@ -2081,7 +2108,7 @@ retry:
     p++;
     while (*p == ' ')
       p++;
-    invocation_path = p;	/* Save a pointer to first byte of path.  */
+    invocation_filename = p;	/* Save a pointer to first byte of path.  */
     while (*p != ' ')
       p++;
     *p++ = '/';
@@ -2109,12 +2136,11 @@ retry:
             if (referenced_file_is_newer (aux_info_p, aux_info_mtime))
               {
                 free (aux_info_base);
-                if (unlink (aux_info_pathname) == -1)
+                if (unlink (aux_info_filename) == -1)
                   {
                     fprintf (stderr, "%s: error: can't delete file `%s': %s\n",
-                      pname,
-                      shortpath (NULL, aux_info_pathname),
-                      sys_errlist[errno]);
+			     pname, shortpath (NULL, aux_info_filename),
+			     sys_errlist[errno]);
                     return;
                   }
                 goto start_over;
@@ -2167,9 +2193,9 @@ retry:
 static void
 rename_c_file (const hash_table_entry *hp)
 {
-  const char *pathname = hp->symbol;
-  int last_char_index = strlen (pathname) - 1;
-  char *const new_pathname = (char *) alloca (strlen (pathname) + 1);
+  const char *filename = hp->symbol;
+  int last_char_index = strlen (filename) - 1;
+  char *const new_filename = (char *) alloca (strlen (filename) + 1);
 
   /* Note that we don't care here if the given file was converted or not.  It
      is possible that the given file was *not* converted, simply because there
@@ -2177,25 +2203,25 @@ rename_c_file (const hash_table_entry *hp)
      we want to do the renaming.  Note that we only rename files with the .c
      suffix.  */
 
-  if (pathname[last_char_index] != 'c' || pathname[last_char_index-1] != '.')
+  if (filename[last_char_index] != 'c' || filename[last_char_index-1] != '.')
     return;
 
-  strcpy (new_pathname, pathname);
-  new_pathname[last_char_index] = 'C';
+  strcpy (new_filename, filename);
+  new_filename[last_char_index] = 'C';
 
-  if (link (pathname, new_pathname) == -1)
+  if (link (filename, new_filename) == -1)
     {
       fprintf (stderr, "%s: warning: can't link file `%s' to `%s': %s\n",
-        pname, shortpath (NULL, pathname),
-          shortpath (NULL, new_pathname), sys_errlist[errno]);
+	       pname, shortpath (NULL, filename),
+	       shortpath (NULL, new_filename), sys_errlist[errno]);
       errors++;
       return;
     }
 
-  if (unlink (pathname) == -1)
+  if (unlink (filename) == -1)
     {
       fprintf (stderr, "%s: warning: can't delete file `%s': %s\n",
-        pname, shortpath (NULL, pathname), sys_errlist[errno]);
+	       pname, shortpath (NULL, filename), sys_errlist[errno]);
       errors++;
       return;
     }
@@ -2316,26 +2342,24 @@ find_extern_def (const def_dec_info *head, const def_dec_info *user)
               {
                 conflict_noted = 1;
                 fprintf (stderr, "%s: error: conflicting extern definitions of '%s'\n",
-                  pname, head->hash_entry->symbol);
+			 pname, head->hash_entry->symbol);
                 if (!quiet_flag)
                   {
                     fprintf (stderr, "%s: declarations of '%s' will not be converted\n",
-                      pname, head->hash_entry->symbol);
+			     pname, head->hash_entry->symbol);
                     fprintf (stderr, "%s: conflict list for '%s' follows:\n",
-                      pname, head->hash_entry->symbol);
+			     pname, head->hash_entry->symbol);
                     fprintf (stderr, "%s:     %s(%d): %s\n",
-                      pname,
-                      shortpath (NULL, extern_def_p->file->hash_entry->symbol),
-                      extern_def_p->line,
-                      extern_def_p->ansi_decl);
+			     pname,
+			     shortpath (NULL, extern_def_p->file->hash_entry->symbol),
+			     extern_def_p->line, extern_def_p->ansi_decl);
                   }
               }
             if (!quiet_flag)
               fprintf (stderr, "%s:     %s(%d): %s\n",
-                pname,
-                shortpath (NULL, dd_p->file->hash_entry->symbol),
-                dd_p->line,
-                dd_p->ansi_decl);
+		       pname,
+		       shortpath (NULL, dd_p->file->hash_entry->symbol),
+		       dd_p->line, dd_p->ansi_decl);
           }
       }
 
@@ -2357,9 +2381,9 @@ find_extern_def (const def_dec_info *head, const def_dec_info *user)
             extern_def_p = dd_p;	/* save a pointer to the definition */
             if (!quiet_flag)
               fprintf (stderr, "%s: warning: using formals list from %s(%d) for function `%s'\n",
-                pname,
-                shortpath (NULL, dd_p->file->hash_entry->symbol),
-                dd_p->line, dd_p->hash_entry->symbol);
+		       pname,
+		       shortpath (NULL, dd_p->file->hash_entry->symbol),
+		       dd_p->line, dd_p->hash_entry->symbol);
             break;
           }
 
@@ -2392,18 +2416,14 @@ find_extern_def (const def_dec_info *head, const def_dec_info *user)
                     + strlen (user->hash_entry->symbol) + 2;
                 strcpy (p, "???);");
 
-                fprintf (stderr, "%s: please add `%s' to SYSCALLS (see %s(%d))\n",
-                  pname,
-                  needed+7,	/* Don't print "extern " */
-                  shortpath (NULL, file),
-                  user->line);
+                fprintf (stderr, "%s: %d: `%s' used but missing from SYSCALLS\n",
+			 shortpath (NULL, file), user->line,
+			 needed+7);	/* Don't print "extern " */
               }
             else
-              fprintf (stderr, "%s: warning: no extern definition for `%s' (see %s(%d))\n",
-                pname,
-                user->hash_entry->symbol,
-                shortpath (NULL, file),
-                user->line);
+              fprintf (stderr, "%s: %d: warning: no extern definition for `%s'\n",
+		       shortpath (NULL, file), user->line,
+		       user->hash_entry->symbol);
         }
     }
   return extern_def_p;
@@ -2431,16 +2451,14 @@ find_static_definition (const def_dec_info *user)
     {
       if (!quiet_flag)
         fprintf (stderr, "%s: warning: no static definition for `%s' in file `%s'\n",
-          pname,
-          head->hash_entry->symbol,
-          shortpath (NULL, user->file->hash_entry->symbol));
+		 pname, head->hash_entry->symbol,
+		 shortpath (NULL, user->file->hash_entry->symbol));
     }
   else if (num_static_defs > 1)
     {
       fprintf (stderr, "%s: error: multiple static defs of `%s' in file `%s'\n",
-        pname,
-        head->hash_entry->symbol,
-        shortpath (NULL, user->file->hash_entry->symbol));
+	       pname, head->hash_entry->symbol,
+	       shortpath (NULL, user->file->hash_entry->symbol));
       return NULL;
     }
   return static_def_p;
@@ -2608,11 +2626,12 @@ declare_source_confusing (const char *clean_p)
   if (!quiet_flag)
     {
       if (clean_p == 0)
-        fprintf (stderr, "%s: warning: source too confusing near %s(%d)\n",
-        pname, shortpath (NULL, convert_path), last_known_line_number);
+        fprintf (stderr, "%s: %d: warning: source too confusing\n",
+		 shortpath (NULL, convert_filename), last_known_line_number);
       else
-        fprintf (stderr, "%s: warning: source too confusing at %s(%d)\n",
-        pname, shortpath (NULL, convert_path), identify_lineno (clean_p));
+        fprintf (stderr, "%s: %d: warning: source too confusing\n",
+		 shortpath (NULL, convert_filename),
+		 identify_lineno (clean_p));
     }
   longjmp (source_confusion_recovery, 1);
 }
@@ -2805,10 +2824,9 @@ edit_fn_declaration (const def_dec_info *def_dec_p,
   if (other_variable_style_function (definition->ansi_decl))
     {
       if (!quiet_flag)
-        fprintf (stderr, "%s: warning: varargs function declaration at %s(%d) not converted\n",
-          pname,
-          shortpath (NULL, def_dec_p->file->hash_entry->symbol),
-          def_dec_p->line);
+        fprintf (stderr, "%s: %d: warning: varargs function declaration not converted\n",
+		 shortpath (NULL, def_dec_p->file->hash_entry->symbol),
+		 def_dec_p->line);
       return;
     }
 
@@ -2822,7 +2840,7 @@ edit_fn_declaration (const def_dec_info *def_dec_p,
     {
       restore_pointers ();
       fprintf (stderr, "%s: declaration of function `%s' not converted\n",
-        pname, function_to_edit);
+	       pname, function_to_edit);
       return;
     }
 
@@ -2945,7 +2963,7 @@ edit_fn_declaration (const def_dec_info *def_dec_p,
         {
           if (!quiet_flag)
             fprintf (stderr, "%s: warning: too many parameter lists in declaration of `%s'\n",
-              pname, def_dec_p->hash_entry->symbol);
+		     pname, def_dec_p->hash_entry->symbol);
           check_source (0, end_formals);  /* leave the declaration intact */
         }
 #endif /* !defined(UNPROTOIZE) */
@@ -2966,7 +2984,7 @@ edit_fn_declaration (const def_dec_info *def_dec_p,
               {
                 if (!quiet_flag)
                   fprintf (stderr, "\n%s: warning: too few parameter lists in declaration of `%s'\n",
-                    pname, def_dec_p->hash_entry->symbol);
+			   pname, def_dec_p->hash_entry->symbol);
                 check_source (0, start_formals); /* leave the decl intact */
               }
 #endif /* !defined(UNPROTOIZE) */
@@ -3057,14 +3075,13 @@ edit_formals_lists (const char *end_formals, unsigned f_list_count, const def_de
       if (func_name_len == 0)
         check_source (0, func_name_start);
       if (func_name_len != strlen (expected)
-        || strncmp (func_name_start, expected, func_name_len))
+	  || strncmp (func_name_start, expected, func_name_len))
         {
-          fprintf (stderr, "%s: warning: found `%s' at %s(%d) but expected `%s'\n",
-            pname,
-            dupnstr (func_name_start, func_name_len),
-            shortpath (NULL, def_dec_p->file->hash_entry->symbol),
-            identify_lineno (func_name_start),
-            expected);
+          fprintf (stderr, "%s: %d: warning: found `%s' but expected `%s'\n",
+		   shortpath (NULL, def_dec_p->file->hash_entry->symbol),
+		   identify_lineno (func_name_start),
+		   dupnstr (func_name_start, func_name_len),
+		   expected);
           return 1;
         }
     }
@@ -3218,7 +3235,7 @@ add_local_decl (const def_dec_info *def_dec_p, const char *clean_text_p)
     {
       restore_pointers ();
       fprintf (stderr, "%s: local declaration for function `%s' not inserted\n",
-        pname, function_to_edit);
+	       pname, function_to_edit);
       return;
     }
 
@@ -3245,11 +3262,9 @@ add_local_decl (const def_dec_info *def_dec_p, const char *clean_text_p)
     {
       if (!quiet_flag)
         fprintf (stderr,
-          "\n%s: warning: can't add declaration of `%s' into macro call at %s(%d)\n",
-          pname,
-          def_dec_p->hash_entry->symbol,
-          def_dec_p->file->hash_entry->symbol,
-          def_dec_p->line);
+          "\n%s: %d: warning: can't add declaration of `%s' into macro call\n",
+          def_dec_p->file->hash_entry->symbol, def_dec_p->line, 
+          def_dec_p->hash_entry->symbol);
       return;
     }
 
@@ -3320,7 +3335,7 @@ add_global_decls (const file_info *file_p, const char *clean_text_p)
     {
       restore_pointers ();
       fprintf (stderr, "%s: global declarations for file `%s' not inserted\n",
-        pname, shortpath (NULL, file_p->hash_entry->symbol));
+	       pname, shortpath (NULL, file_p->hash_entry->symbol));
       return;
     }
 
@@ -3409,7 +3424,7 @@ edit_fn_definition (const def_dec_info *def_dec_p, const char *clean_text_p)
     {
       restore_pointers ();
       fprintf (stderr, "%s: definition of function `%s' not converted\n",
-        pname, function_to_edit);
+	       pname, function_to_edit);
       return;
     }
 
@@ -3427,11 +3442,10 @@ edit_fn_definition (const def_dec_info *def_dec_p, const char *clean_text_p)
   if (other_variable_style_function (def_dec_p->ansi_decl))
     {
       if (!quiet_flag)
-        fprintf (stderr, "%s: warning: %s function definition at %s(%d) not converted\n",
-          pname,
-          other_var_style,
-          shortpath (NULL, def_dec_p->file->hash_entry->symbol),
-          identify_lineno (end_formals));
+        fprintf (stderr, "%s: %d: warning: definition of %s not converted\n",
+		 shortpath (NULL, def_dec_p->file->hash_entry->symbol),
+		 identify_lineno (end_formals), 
+		 other_var_style);
       output_up_to (end_formals);
       return;
     }
@@ -3440,7 +3454,7 @@ edit_fn_definition (const def_dec_info *def_dec_p, const char *clean_text_p)
     {
       restore_pointers ();
       fprintf (stderr, "%s: definition of function `%s' not converted\n",
-        pname, function_to_edit);
+	       pname, function_to_edit);
       return;
     }
 
@@ -3765,11 +3779,9 @@ scan_for_missed_items (const file_info *file_p)
 		    /* If we make it here, then we did not know about this
 		       function definition.  */
 
-		    fprintf (stderr, "%s: warning: `%s' at %s(%d) was #if 0\n",
-			     pname,
-			     func_name,
+		    fprintf (stderr, "%s: %d: warning: `%s' was #if 0\n",
 			     shortpath (NULL, file_p->hash_entry->symbol),
-			     identify_lineno (id_start));
+			     identify_lineno (id_start), func_name);
 		    fprintf (stderr, "%s: function definition not converted\n",
 			     pname);
 		  }
@@ -3811,13 +3823,13 @@ edit_file (const hash_table_entry *hp)
   if (!needs_to_be_converted (file_p))
     return;
 
-  convert_path = file_p->hash_entry->symbol;
+  convert_filename = file_p->hash_entry->symbol;
 
   /* Convert a file if it is in a directory where we want conversion
      and the file is not excluded.  */
 
-  if (!directory_specified_p (convert_path)
-      || file_excluded_p (convert_path))
+  if (!directory_specified_p (convert_filename)
+      || file_excluded_p (convert_filename))
     {
       if (!quiet_flag
 #ifdef UNPROTOIZE
@@ -3825,31 +3837,32 @@ edit_file (const hash_table_entry *hp)
              protoizing.  If we are protoizing, we mention these as a
              gentile way of prodding the user to convert his "system"
              include files to prototype format.  */
-          && !in_system_include_dir (convert_path)
+          && !in_system_include_dir (convert_filename)
 #endif /* defined(UNPROTOIZE) */
           )
         fprintf (stderr, "%s: file `%s' not converted\n",
-          pname, shortpath (NULL, convert_path));
+		 pname, shortpath (NULL, convert_filename));
       return;
     }
 
   /* Let the user know what we are up to.  */
 
   if (nochange_flag)
-      puts (shortpath (NULL, convert_path));
+      puts (shortpath (NULL, convert_filename));
   else
     {
       fprintf (stderr, "%s: converting file `%s'\n",
-        pname, shortpath (NULL, convert_path));
+	       pname, shortpath (NULL, convert_filename));
       fflush (stderr);
     }
 
   /* Find out the size (in bytes) of the original file.  */
 
-  if (stat (convert_path, &stat_buf) == -1)
+  /* The cast avoids an erroneous warning on AIX.  */
+  if (stat ((char *)convert_filename, &stat_buf) == -1)
     {
       fprintf (stderr, "%s: error: can't get status for file `%s': %s\n",
-        pname, shortpath (NULL, convert_path), sys_errlist[errno]);
+	       pname, shortpath (NULL, convert_filename), sys_errlist[errno]);
       return;
     }
   orig_size = stat_buf.st_size;
@@ -3880,10 +3893,11 @@ edit_file (const hash_table_entry *hp)
 
     /* Open the file to be converted in READ ONLY mode.  */
 
-    if ((input_file = open (convert_path, O_RDONLY, 0444)) == -1)
+    if ((input_file = open (convert_filename, O_RDONLY, 0444)) == -1)
       {
         fprintf (stderr, "%s: error: can't open file `%s' for reading: %s\n",
-          pname, shortpath (NULL, convert_path), sys_errlist[errno]);
+		 pname, shortpath (NULL, convert_filename),
+		 sys_errlist[errno]);
         return;
       }
 
@@ -3895,7 +3909,8 @@ edit_file (const hash_table_entry *hp)
       {
         close (input_file);
         fprintf (stderr, "\n%s: error: while reading input file `%s': %s\n",
-          pname, shortpath (NULL, convert_path), sys_errlist[errno]);
+		 pname, shortpath (NULL, convert_filename),
+		 sys_errlist[errno]);
         return;
       }
 
@@ -3918,18 +3933,17 @@ edit_file (const hash_table_entry *hp)
   {
     int clean_file;
     size_t clean_size = orig_text_limit - orig_text_base;
-    char *const clean_path = (char *) alloca (strlen (convert_path) + 6 + 1);
+    char *const clean_filename = (char *) alloca (strlen (convert_filename) + 6 + 1);
 
     /* Open (and create) the clean file.  */
   
-    strcpy (clean_path, convert_path);
-    strcat (clean_path, ".clean");
-    if ((clean_file = creat (clean_path, 0666)) == -1)
+    strcpy (clean_filename, convert_filename);
+    strcat (clean_filename, ".clean");
+    if ((clean_file = creat (clean_filename, 0666)) == -1)
       {
         fprintf (stderr, "%s: error: can't create/open clean file `%s': %s\n",
-          pname,
-          shortpath (NULL, clean_path),
-          sys_errlist[errno]);
+		 pname, shortpath (NULL, clean_filename),
+		 sys_errlist[errno]);
         return;
       }
   
@@ -3937,7 +3951,7 @@ edit_file (const hash_table_entry *hp)
   
     if (write (clean_file, new_clean_text_base, clean_size) != clean_size)
       fprintf (stderr, "%s: error: while writing file `%s': %s\n",
-        pname, shortpath (NULL, clean_path), sys_errlist[errno]);
+	       pname, shortpath (NULL, clean_filename), sys_errlist[errno]);
   
     close (clean_file);
   }
@@ -4019,39 +4033,37 @@ edit_file (const hash_table_entry *hp)
 
   if (!nosave_flag)
     {
-      char *new_path =
-          (char *) xmalloc (strlen (convert_path) + strlen (save_suffix) + 2);
+      char *new_filename =
+          (char *) xmalloc (strlen (convert_filename) + strlen (save_suffix) + 2);
   
-      strcpy (new_path, convert_path);
-      strcat (new_path, save_suffix);
-      if (link (convert_path, new_path) == -1)
+      strcpy (new_filename, convert_filename);
+      strcat (new_filename, save_suffix);
+      if (link (convert_filename, new_filename) == -1)
         {
           if (errno == EEXIST)
             {
               if (!quiet_flag)
                 fprintf (stderr, "%s: warning: file `%s' already saved in `%s'\n",
-                  pname,
-                  shortpath (NULL, convert_path),
-                  shortpath (NULL, new_path));
+			 pname,
+			 shortpath (NULL, convert_filename),
+			 shortpath (NULL, new_filename));
             }
           else
             {
               fprintf (stderr, "%s: error: can't link file `%s' to `%s': %s\n",
-                pname,
-                shortpath (NULL, convert_path),
-                shortpath (NULL, new_path),
-                sys_errlist[errno]);
+		       pname,
+		       shortpath (NULL, convert_filename),
+		       shortpath (NULL, new_filename),
+		       sys_errlist[errno]);
               return;
             }
         }
     }
 
-  if (unlink (convert_path) == -1)
+  if (unlink (convert_filename) == -1)
     {
       fprintf (stderr, "%s: error: can't delete file `%s': %s\n",
-        pname,
-        shortpath (NULL, convert_path),
-        sys_errlist[errno]);
+	       pname, shortpath (NULL, convert_filename), sys_errlist[errno]);
       return;
     }
 
@@ -4060,12 +4072,11 @@ edit_file (const hash_table_entry *hp)
 
     /* Open (and create) the output file.  */
   
-    if ((output_file = creat (convert_path, 0666)) == -1)
+    if ((output_file = creat (convert_filename, 0666)) == -1)
       {
         fprintf (stderr, "%s: error: can't create/open output file `%s': %s\n",
-          pname,
-          shortpath (NULL, convert_path),
-          sys_errlist[errno]);
+		 pname, shortpath (NULL, convert_filename),
+		 sys_errlist[errno]);
         return;
       }
   
@@ -4076,7 +4087,8 @@ edit_file (const hash_table_entry *hp)
   
       if (write (output_file, repl_text_base, out_size) != out_size)
         fprintf (stderr, "%s: error: while writing file `%s': %s\n",
-          pname, shortpath (NULL, convert_path), sys_errlist[errno]);
+		 pname, shortpath (NULL, convert_filename),
+		 sys_errlist[errno]);
     }
   
     close (output_file);
@@ -4090,9 +4102,10 @@ edit_file (const hash_table_entry *hp)
 
   /* Change the mode of the output file to match the original file.  */
 
-  if (chmod (convert_path, stat_buf.st_mode) == -1)
+  /* The cast avoids an erroneous warning on AIX.  */
+  if (chmod ((char *)convert_filename, stat_buf.st_mode) == -1)
     fprintf (stderr, "%s: error: can't change mode of file `%s': %s\n",
-      pname, shortpath (NULL, convert_path), sys_errlist[errno]);
+	     pname, shortpath (NULL, convert_filename), sys_errlist[errno]);
 
   /* Note:  We would try to change the owner and group of the output file
      to match those of the input file here, except that may not be a good
@@ -4108,7 +4121,8 @@ static void
 do_processing (void)
 {
   const char * const *base_pp;
-  const char * const * const end_pps = &base_source_paths[base_source_files];
+  const char * const * const end_pps
+    = &base_source_filenames[n_base_source_files];
 
 #ifndef UNPROTOIZE
   int syscalls_len;
@@ -4119,7 +4133,7 @@ do_processing (void)
      aux_info_file just read will be automatically deleted unless the
      keep_flag is set.  */
 
-  for (base_pp = base_source_paths; base_pp < end_pps; base_pp++)
+  for (base_pp = base_source_filenames; base_pp < end_pps; base_pp++)
     process_aux_info_file (*base_pp, keep_flag, 0);
 
 #ifndef UNPROTOIZE
@@ -4129,31 +4143,31 @@ do_processing (void)
 
   if (nondefault_syscalls_dir)
     {
-      syscalls_pathname
+      syscalls_absolute_filename
         = (char *) xmalloc (strlen (nondefault_syscalls_dir)
                             + strlen (syscalls_filename) + 1);
-      strcpy (syscalls_pathname, nondefault_syscalls_dir);
+      strcpy (syscalls_absolute_filename, nondefault_syscalls_dir);
     }
   else
     {
-      syscalls_pathname
+      syscalls_absolute_filename
         = (char *) xmalloc (strlen (default_syscalls_dir)
                             + strlen (syscalls_filename) + 1);
-      strcpy (syscalls_pathname, default_syscalls_dir);
+      strcpy (syscalls_absolute_filename, default_syscalls_dir);
     }
 
-  syscalls_len = strlen (syscalls_pathname);
-  if (*(syscalls_pathname + syscalls_len - 1) != '/')
+  syscalls_len = strlen (syscalls_filename);
+  if (*(syscalls_absolute_filename + syscalls_len - 1) != '/')
     {
-      *(syscalls_pathname + syscalls_len++) = '/';
-      *(syscalls_pathname + syscalls_len) = '\0';
+      *(syscalls_absolute_filename + syscalls_len++) = '/';
+      *(syscalls_absolute_filename + syscalls_len) = '\0';
     }
-  strcat (syscalls_pathname, syscalls_filename);
+  strcat (syscalls_absolute_filename, syscalls_filename);
   
   /* Call process_aux_info_file in such a way that it does not try to
      delete the SYSCALLS aux_info file.  */
 
-  process_aux_info_file (syscalls_pathname, 1, 1);
+  process_aux_info_file (syscalls_absolute_filename, 1, 1);
 
 #endif /* !defined(UNPROTOIZE) */
 
@@ -4164,7 +4178,7 @@ do_processing (void)
      file_info record that they hang from.  The following line causes all of
      these lists to be rearranged into ascending line number order.  */
 
-  visit_each_hash_node (pathname_primary, reverse_def_dec_list);
+  visit_each_hash_node (filename_primary, reverse_def_dec_list);
 
 #ifndef UNPROTOIZE
 
@@ -4181,7 +4195,7 @@ do_processing (void)
 
   /* Now convert each file that can be converted (and needs to be).  */
 
-  visit_each_hash_node (pathname_primary, edit_file);
+  visit_each_hash_node (filename_primary, edit_file);
 
 #ifndef UNPROTOIZE
 
@@ -4189,7 +4203,7 @@ do_processing (void)
      files.  Don't panic if some of the renames don't work.  */
 
   if (cplusplus_flag && !nochange_flag)
-    visit_each_hash_node (pathname_primary, rename_c_file);
+    visit_each_hash_node (filename_primary, rename_c_file);
 
 #endif /* !defined(UNPROTOIZE) */
 }
@@ -4231,11 +4245,11 @@ main (int argc, char **const argv)
   size = 100;
   while (1)
     {
-      int value;
+      char *value;
 
       cwd_buffer = (char *) xmalloc (size);
       value = getcwd (cwd_buffer, size);
-      if (value > 0 && value < size)
+      if (value != 0 || errno != ERANGE)
 	break;
       free (cwd_buffer);
       size *= 2;
@@ -4311,23 +4325,23 @@ main (int argc, char **const argv)
 	}
     }
  
-  base_source_files = argc - optind;
+  n_base_source_files = argc - optind;
 
-  /* Now actually make a list of the base source pathnames.  */
+  /* Now actually make a list of the base source filenames.  */
 
-  base_source_paths =
-    (const char **) xmalloc ((base_source_files + 1) * sizeof (char *));
-  base_source_files = 0;
+  base_source_filenames =
+    (const char **) xmalloc ((n_base_source_files + 1) * sizeof (char *));
+  n_base_source_files = 0;
   for (; optind < argc; optind++)
     {
       const char *path = abspath (NULL, argv[optind]);
       int len = strlen (path);
 
       if (path[len-1] == 'c' && path[len-2] == '.')
-	base_source_paths[base_source_files++] = path;
+	base_source_filenames[n_base_source_files++] = path;
       else
 	{
-	  fprintf (stderr, "%s: input pathnames must have .c suffixes: %s\n",
+	  fprintf (stderr, "%s: input file names must have .c suffixes: %s\n",
 		   pname, shortpath (NULL, path));
 	  errors++;
 	}
