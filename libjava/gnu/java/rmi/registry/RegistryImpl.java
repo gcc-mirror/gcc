@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -103,9 +103,35 @@ public String[] list() throws RemoteException, AccessException {
 	return (strings);
 }
 
+public static void version() {
+	System.out.println("rmiregistry ("
+			   + System.getProperty("java.vm.name")
+			   + ") "
+			   + System.getProperty("java.vm.version"));
+	System.out.println("Copyright 2002 Free Software Foundation, Inc.");
+	System.out.println("This is free software; see the source for copying conditions.  There is NO");
+	System.out.println("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
+	System.exit(0);
+}
+
+public static void help() {
+	System.out.println(
+"Usage: rmiregistry [OPTION | PORT]\n" +
+"\n" +
+"    --help                Print this help, then exit\n" +
+"    --version             Print version number, then exit\n");
+	System.exit(0);
+}
+
 public static void main(String[] args) {
 	int port = Registry.REGISTRY_PORT;
 	if (args.length > 0) {
+		if (args[0].equals("--version")) {
+			version();
+		}
+		else if (args[0].equals("--help")) {
+			help();
+		}
 		try {
 			port = Integer.parseInt(args[0]);
 		}

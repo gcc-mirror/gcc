@@ -939,7 +939,7 @@ private void parseOptions() {
 			usage();
 		}
 		else if (arg.equals("-version")) {
-			System.out.println("rmic (GNU "
+			System.out.println("rmic ("
 					   + System.getProperty("java.vm.name")
 					   + ") "
 					   + System.getProperty("java.vm.version"));
