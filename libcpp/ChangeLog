@@ -1,3 +1,9 @@
+2004-09-06  Serge Belyshev  <belyshev@lubercy.com>
+
+	PR preprocessor/14699
+	* symtab.c (ht_dump_statistics): Change type of sum_of_squares
+	from size_t to double.
+
 2004-08-28  Andreas Schwab  <schwab@suse.de>
 	    Andreas Jaeger <aj@suse.de>
 

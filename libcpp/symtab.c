@@ -252,8 +252,8 @@ void
 ht_dump_statistics (hash_table *table)
 {
   size_t nelts, nids, overhead, headers;
-  size_t total_bytes, longest, sum_of_squares;
-  double exp_len, exp_len2, exp2_len;
+  size_t total_bytes, longest;
+  double sum_of_squares, exp_len, exp_len2, exp2_len;
   hashnode *p, *limit;
 
 #define SCALE(x) ((unsigned long) ((x) < 1024*10 \
@@ -272,7 +272,7 @@ ht_dump_statistics (hash_table *table)
 	size_t n = HT_LEN (*p);
 
 	total_bytes += n;
-	sum_of_squares += n * n;
+	sum_of_squares += (double) n * n;
 	if (n > longest)
 	  longest = n;
 	nids++;
