@@ -1,3 +1,9 @@
+2001-05-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/syshdr.h: New file.
+	* gcc.dg/cpp/sysmac1.c: Update.
+	* gcc.dg/cpp/sysmac2.c: Update.
+
 2001-05-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/sysmac1.c,sysmac2.c: Return to original file.

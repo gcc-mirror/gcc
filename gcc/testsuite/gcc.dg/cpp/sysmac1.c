@@ -8,17 +8,11 @@
 
 /* Source: Neil Booth, 15 Jan 2001.  */
 
+#include "syshdr.h"
+
 #define uint 1U
 #define str(x) x
 #define foo(x, y...) bar(x, ##y) /* { dg-warning "named variadic macros" } */
-
-# 16 "system.h" 1 3		/* { dg-warning "followed by integer" }  */
-
-#define sys_uint 1U
-#define sys_str(x) x
-#define sys_foo(x, y...) bar (x, ##y)
-
-# 22 "sysmac1.c" 2
 
 #if uint			/* { dg-warning "traditional C rejects" } */
 #endif
