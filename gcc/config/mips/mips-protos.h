@@ -93,6 +93,8 @@ extern int mips_address_insns (rtx, enum machine_mode);
 extern int mips_const_insns (rtx);
 extern int mips_fetch_insns (rtx);
 extern int mips_idiv_insns (void);
+extern int fp_register_operand (rtx, enum machine_mode);
+extern int lo_operand (rtx, enum machine_mode);
 extern bool mips_legitimate_address_p (enum machine_mode, rtx, int);
 extern rtx mips_unspec_address (rtx, enum mips_symbol_type);
 extern bool mips_legitimize_address (rtx *, enum machine_mode);

@@ -232,6 +232,7 @@ static bool mips_return_in_memory (tree, tree);
 static bool mips_strict_argument_naming (CUMULATIVE_ARGS *);
 static int mips_issue_rate (void);
 static int mips_use_dfa_pipeline_interface (void);
+static int mips_multipass_dfa_lookahead (void);
 static void mips_init_libfuncs (void);
 static void mips_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
@@ -680,6 +681,9 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #define TARGET_SCHED_ISSUE_RATE mips_issue_rate
 #undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
 #define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE mips_use_dfa_pipeline_interface
+#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
+#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
+  mips_multipass_dfa_lookahead
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL mips_function_ok_for_sibcall
@@ -1661,6 +1665,23 @@ stack_operand (rtx op, enum machine_mode mode)
 	  && addr.reg == stack_pointer_rtx);
 }
 
+/* Helper function for DFA schedulers.  Return true if OP is a floating
+   point register.  */
+
+int
+fp_register_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return REG_P (op) && FP_REG_P (REGNO (op));
+}
+
+/* Helper function for DFA schedulers.  Return true if OP is a LO reg.  */
+
+int
+lo_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return REG_P (op) && REGNO (op) == LO_REGNUM;
+}
+
 
 /* This function is used to implement GO_IF_LEGITIMATE_ADDRESS.  It
    returns a nonzero value if X is a legitimate address for a memory
@@ -2265,6 +2286,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
             *total = COSTS_N_INSNS (2);
           else if (TUNE_MIPS6000)
             *total = COSTS_N_INSNS (3);
+	  else if (TUNE_SB1)
+	    *total = COSTS_N_INSNS (4);
           else
             *total = COSTS_N_INSNS (6);
           return true;
@@ -2289,7 +2312,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
         {
           if (TUNE_MIPS3000
               || TUNE_MIPS3900
-              || TUNE_MIPS5000)
+              || TUNE_MIPS5000
+	      || TUNE_SB1)
             *total = COSTS_N_INSNS (4);
           else if (TUNE_MIPS6000
                    || TUNE_MIPS5400
@@ -2302,7 +2326,9 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 
       if (mode == DFmode)
         {
-          if (TUNE_MIPS3000
+          if (TUNE_SB1)
+	    *total = COSTS_N_INSNS (4);
+          else if (TUNE_MIPS3000
               || TUNE_MIPS3900
               || TUNE_MIPS5000)
             *total = COSTS_N_INSNS (5);
@@ -2319,7 +2345,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
         *total = COSTS_N_INSNS (12);
       else if (TUNE_MIPS3900)
         *total = COSTS_N_INSNS (2);
-      else if (TUNE_MIPS5400 || TUNE_MIPS5500)
+      else if (TUNE_MIPS5400 || TUNE_MIPS5500 || TUNE_SB1)
         *total = COSTS_N_INSNS ((mode == DImode) ? 4 : 3);
       else if (TUNE_MIPS7000)
         *total = COSTS_N_INSNS (mode == DImode ? 9 : 5);
@@ -2342,6 +2368,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
             *total = COSTS_N_INSNS (12);
           else if (TUNE_MIPS6000)
             *total = COSTS_N_INSNS (15);
+	  else if (TUNE_SB1)
+	    *total = COSTS_N_INSNS (24);
           else if (TUNE_MIPS5400 || TUNE_MIPS5500)
             *total = COSTS_N_INSNS (30);
           else
@@ -2358,6 +2386,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
             *total = COSTS_N_INSNS (59);
           else if (TUNE_MIPS6000)
             *total = COSTS_N_INSNS (16);
+	  else if (TUNE_SB1)
+	    *total = COSTS_N_INSNS (32);
           else
             *total = COSTS_N_INSNS (36);
           return true;
@@ -2373,6 +2403,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
         *total = COSTS_N_INSNS (38);
       else if (TUNE_MIPS5000)
         *total = COSTS_N_INSNS (36);
+      else if (TUNE_SB1)
+	*total = COSTS_N_INSNS ((mode == SImode) ? 36 : 68);
       else if (TUNE_MIPS5400 || TUNE_MIPS5500)
         *total = COSTS_N_INSNS ((mode == SImode) ? 42 : 74);
       else
@@ -9292,6 +9324,8 @@ mips_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
 {
   return !TARGET_OLDABI;
 }
+
+/* Return the number of instructions that can be issued per cycle.  */
 
 static int
 mips_issue_rate (void)
@@ -9303,6 +9337,13 @@ mips_issue_rate (void)
     case PROCESSOR_R7000:
     case PROCESSOR_R9000:
       return 2;
+
+    case PROCESSOR_SB1:
+      /* This is actually 4, but we get better performance if we claim 3.
+	 This is partly because of unwanted speculative code motion with the
+	 larger number, and partly because in most common cases we can't
+	 reach the theoretical max of 4.  */
+      return 3;
 
     default:
       return 1;
@@ -9324,6 +9365,7 @@ mips_use_dfa_pipeline_interface (void)
     case PROCESSOR_R5500:
     case PROCESSOR_R7000:
     case PROCESSOR_R9000:
+    case PROCESSOR_SB1:
     case PROCESSOR_SR71000:
       return true;
 
@@ -9332,6 +9374,19 @@ mips_use_dfa_pipeline_interface (void)
     }
 }
 
+/* Implements TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD.  This should
+   be as wide as the scheduling freedom in the DFA.  */
+
+static int
+mips_multipass_dfa_lookahead (void)
+{
+  /* Can schedule up to 4 of the 6 function units in any one cycle.  */
+  if (mips_tune == PROCESSOR_SB1)
+    return 4;
+
+  return 0;
+}
+
 
 const char *
 mips_emit_prefetch (rtx *operands)

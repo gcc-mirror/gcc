@@ -628,6 +628,7 @@
 (include "5500.md")
 (include "7000.md")
 (include "9000.md")
+(include "sb1.md")
 (include "sr71k.md")
 
 ;;
