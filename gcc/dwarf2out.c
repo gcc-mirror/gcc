@@ -9675,7 +9675,11 @@ gen_decl_die (decl, context_die)
       /* If we're emitting an out-of-line copy of an inline function,
 	 emit info for the abstract instance and set up to refer to it.  */
       if (DECL_INLINE (decl) && ! DECL_ABSTRACT (decl)
-	  && ! class_scope_p (context_die))
+	  && ! class_scope_p (context_die)
+	  /* gen_abstract_function won't emit a die if this is just a
+	     declaration.  We must avoid setting DECL_ABSTRACT_ORIGIN in
+	     that case, because that works only if we have a die.  */
+	  && DECL_INITIAL (decl) != NULL_TREE)
 	{
 	  gen_abstract_function (decl);
 	  set_decl_origin_self (decl);
