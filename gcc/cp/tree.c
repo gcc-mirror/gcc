@@ -412,15 +412,20 @@ build_cplus_method_type (basetype, rettype, argtypes)
   ptype = build_pointer_type (basetype);
 
   /* The actual arglist for this function includes a "hidden" argument
-     which is "this".  Put it into the list of argument types.  */
-
+     which is "this".  Put it into the list of argument types.  Make
+     sure that the new argument list is allocated on the same obstack
+     as the type.  */
+  push_obstacks (TYPE_OBSTACK (t), TYPE_OBSTACK (t));
   argtypes = tree_cons (NULL_TREE, ptype, argtypes);
   TYPE_ARG_TYPES (t) = argtypes;
   TREE_SIDE_EFFECTS (argtypes) = 1;  /* Mark first argtype as "artificial".  */
+  pop_obstacks ();
 
   /* If we already have such a type, use the old one and free this one.
      Note that it also frees up the above cons cell if found.  */
-  hashcode = TYPE_HASH (basetype) + TYPE_HASH (rettype) + type_hash_list (argtypes);
+  hashcode = TYPE_HASH (basetype) + TYPE_HASH (rettype) +
+    type_hash_list (argtypes);
+
   t = type_hash_canon (hashcode, t);
 
   if (TYPE_SIZE (t) == 0)
@@ -1646,6 +1651,8 @@ search_tree (t, func)
     case TRY_CATCH_EXPR:
     case WITH_CLEANUP_EXPR:
     case CALL_EXPR:
+    case COMPOUND_EXPR:
+    case MODIFY_EXPR:
       TRY (TREE_OPERAND (t, 0));
       TRY (TREE_OPERAND (t, 1));
       break;
@@ -1657,6 +1664,7 @@ search_tree (t, func)
     case COMPONENT_REF:
     case CLEANUP_POINT_EXPR:
     case LOOKUP_EXPR:
+    case THROW_EXPR:
       TRY (TREE_OPERAND (t, 0));
       break;
 
@@ -1681,6 +1689,7 @@ search_tree (t, func)
       break;
 
     case BIND_EXPR:
+    case STMT_EXPR:
       break;
 
     case REAL_TYPE:
@@ -1774,6 +1783,7 @@ mapcar (t, func)
      tree (*func) PROTO((tree));
 {
   tree tmp;
+  enum tree_code code; 
 
   if (t == NULL_TREE)
     return t;
@@ -1783,6 +1793,24 @@ mapcar (t, func)
       tmp = func (t);
       if (tmp)
 	return tmp;
+    }
+
+  /* Handle some common cases up front.  */
+  code = TREE_CODE (t);
+  if (TREE_CODE_CLASS (code) == '1')
+    {
+      t = copy_node (t);
+      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
+      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
+      return t;
+    }
+  else if (TREE_CODE_CLASS (code) == '2' || TREE_CODE_CLASS (code) == '<')
+    {
+      t = copy_node (t);
+      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
+      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
+      TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
+      return t;
     }
 
   switch (TREE_CODE (t))
@@ -1871,40 +1899,8 @@ mapcar (t, func)
       TREE_OPERAND (t, 2) = mapcar (TREE_OPERAND (t, 2), func);
       return t;
 
-    case SAVE_EXPR:
-      t = copy_node (t);
-      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
-      return t;
-
-    case MODIFY_EXPR:
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-    case MULT_EXPR:
-    case TRUNC_DIV_EXPR:
-    case TRUNC_MOD_EXPR:
-    case MIN_EXPR:
-    case MAX_EXPR:
-    case LSHIFT_EXPR:
-    case RSHIFT_EXPR:
-    case BIT_IOR_EXPR:
-    case BIT_XOR_EXPR:
-    case BIT_AND_EXPR:
-    case BIT_ANDTC_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
-    case LT_EXPR:
-    case LE_EXPR:
-    case GT_EXPR:
-    case GE_EXPR:
-    case EQ_EXPR:
-    case NE_EXPR:
-    case CEIL_DIV_EXPR:
-    case FLOOR_DIV_EXPR:
-    case ROUND_DIV_EXPR:
-    case CEIL_MOD_EXPR:
-    case FLOOR_MOD_EXPR:
-    case ROUND_MOD_EXPR:
-    case COMPOUND_EXPR:
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
@@ -1913,6 +1909,8 @@ mapcar (t, func)
     case SCOPE_REF:
     case TRY_CATCH_EXPR:
     case WITH_CLEANUP_EXPR:
+    case COMPOUND_EXPR:
+    case MODIFY_EXPR:
       t = copy_node (t);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       TREE_OPERAND (t, 1) = mapcar (TREE_OPERAND (t, 1), func);
@@ -1933,16 +1931,14 @@ mapcar (t, func)
 	TREE_OPERAND (t, 2) = NULL_TREE;
       return t;
 
-    case CONVERT_EXPR:
+    case SAVE_EXPR:
     case ADDR_EXPR:
     case INDIRECT_REF:
-    case NEGATE_EXPR:
-    case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
-    case NOP_EXPR:
     case COMPONENT_REF:
     case CLEANUP_POINT_EXPR:
-    case NON_LVALUE_EXPR:
+    case THROW_EXPR:
+    case STMT_EXPR:
       t = copy_node (t);
       TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
@@ -2009,19 +2005,19 @@ mapcar (t, func)
       TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
       return t;
 
+    case RTL_EXPR:
+      t = copy_node (t);
+      TREE_TYPE (t) = mapcar (TREE_TYPE (t), func);
+      return t;
+
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
 	return build_ptrmemfunc_type
 	  (mapcar (TYPE_PTRMEMFUNC_FN_TYPE (t), func));
       /* else fall through */
-      
-      /*  This list is incomplete, but should suffice for now.
-	  It is very important that `sorry' not call
-	  `report_error_function'.  That could cause an infinite loop.  */
-    default:
-      sorry ("initializer contains unrecognized tree code");
-      return error_mark_node;
 
+    default:
+      my_friendly_abort (19990815);
     }
   my_friendly_abort (107);
   /* NOTREACHED */

@@ -6839,35 +6839,6 @@ tsubst (t, args, complain, in_decl)
     }
 }
 
-void
-do_pushlevel ()
-{
-  emit_line_note (input_filename, lineno);
-  pushlevel (0);
-  clear_last_expr ();
-  push_momentary ();
-  expand_start_bindings (0);
-}  
-
-tree
-do_poplevel ()
-{
-  tree t;
-  int saved_warn_unused = 0;
-
-  if (processing_template_decl)
-    {
-      saved_warn_unused = warn_unused;
-      warn_unused = 0;
-    }
-  expand_end_bindings (getdecls (), kept_level_p (), 0);
-  if (processing_template_decl)
-    warn_unused = saved_warn_unused;
-  t = poplevel (kept_level_p (), 1, 0);
-  pop_momentary ();
-  return t;
-}
-
 /* Like tsubst, but deals with expressions.  This function just replaces
    template parms; to finish processing the resultant expression, use
    tsubst_expr.  */
@@ -7083,7 +7054,21 @@ tsubst_copy (t, args, complain, in_decl)
 	   NULL_TREE);
       }
 
-    case BIND_EXPR:
+    case STMT_EXPR:
+      /* This processing should really occur in tsubst_expr, However,
+	 tsubst_expr does not recurse into expressions, since it
+	 assumes that there aren't any statements inside them.
+	 Instead, it simply calls build_expr_from_tree.  So, we need
+	 to expand the STMT_EXPR here.  */
+      if (!processing_template_decl)
+	{
+	  tree rtl_expr = begin_stmt_expr ();
+	  tree block = tsubst_expr (STMT_EXPR_STMT (t), args,
+				    complain, in_decl);
+	  r = finish_stmt_expr (rtl_expr, block);
+	}
+      return r;
+
     case COND_EXPR:
     case MODOP_EXPR:
       {
@@ -7091,21 +7076,6 @@ tsubst_copy (t, args, complain, in_decl)
 	  (code, tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl),
 	   tsubst_copy (TREE_OPERAND (t, 1), args, complain, in_decl),
 	   tsubst_copy (TREE_OPERAND (t, 2), args, complain, in_decl));
-
-	if (code == BIND_EXPR && !processing_template_decl)
-	  {
-	    /* This processing should really occur in tsubst_expr,
-	       However, tsubst_expr does not recurse into expressions,
-	       since it assumes that there aren't any statements
-	       inside them.  Instead, it simply calls
-	       build_expr_from_tree.  So, we need to expand the
-	       BIND_EXPR here.  */ 
-	    tree rtl_expr = begin_stmt_expr ();
-	    tree block = tsubst_expr (TREE_OPERAND (r, 1), args,
-				      complain, in_decl);
-	    r = finish_stmt_expr (rtl_expr, block);
-	  }
-
 	return r;
       }
 
@@ -7218,7 +7188,7 @@ tsubst_copy (t, args, complain, in_decl)
     }
 }
 
-/* Like tsubst_copy, but also does semantic processing and RTL expansion.  */
+/* Like tsubst_copy, but also does semantic processing.  */
 
 tree
 tsubst_expr (t, args, complain, in_decl)
@@ -7226,6 +7196,8 @@ tsubst_expr (t, args, complain, in_decl)
      int complain;
      tree in_decl;
 {
+  tree stmt;
+
   if (t == NULL_TREE || t == error_mark_node)
     return t;
 
@@ -7234,6 +7206,22 @@ tsubst_expr (t, args, complain, in_decl)
 
   switch (TREE_CODE (t))
     {
+    case RETURN_INIT:
+      finish_named_return_value
+	(TREE_OPERAND (t, 0),
+	 tsubst_expr (TREE_OPERAND (t, 1), args, /*complain=*/1, in_decl));
+      tsubst_expr (TREE_CHAIN (t), args, complain, in_decl);
+      break;
+
+    case CTOR_INITIALIZER:
+      current_member_init_list
+	= tsubst_expr_values (TREE_OPERAND (t, 0), args);
+      current_base_init_list
+	= tsubst_expr_values (TREE_OPERAND (t, 1), args);
+      setup_vtbl_ptr ();
+      tsubst_expr (TREE_CHAIN (t), args, complain, in_decl);
+      break;
+
     case RETURN_STMT:
       lineno = STMT_LINENO (t);
       finish_return_stmt (tsubst_expr (RETURN_EXPR (t),
@@ -7253,18 +7241,19 @@ tsubst_expr (t, args, complain, in_decl)
 	tree init;
 
 	lineno = STMT_LINENO (t);
-	emit_line_note (input_filename, lineno);
 	decl = DECL_STMT_DECL (t);
 	init = DECL_INITIAL (decl);
 	decl = tsubst (decl, args, complain, in_decl);
 	init = tsubst_expr (init, args, complain, in_decl);
 	DECL_INITIAL (decl) = init;
-	maybe_push_decl (decl);
+	/* By marking the declaration as instantiated, we avoid trying
+	   to instantiate it.  Since instantiate_decl can't handle
+	   local variables, and since we've already done all that
+	   needs to be done, that's the right thing to do.  */
 	if (TREE_CODE (decl) == VAR_DECL)
 	  DECL_TEMPLATE_INSTANTIATED (decl) = 1;
-	start_decl_1 (decl);
-	cp_finish_decl
-	  (decl, init, NULL_TREE, 0, /*init ? LOOKUP_ONLYCONVERTING :*/ 0);
+	maybe_push_decl (decl);
+	add_decl_stmt (decl);
 	resume_momentary (i);
 	return decl;
       }
@@ -7274,41 +7263,41 @@ tsubst_expr (t, args, complain, in_decl)
 	tree tmp;
 	lineno = STMT_LINENO (t);
 
-	begin_for_stmt ();
+	stmt = begin_for_stmt ();
 	for (tmp = FOR_INIT_STMT (t); tmp; tmp = TREE_CHAIN (tmp))
 	  tsubst_expr (tmp, args, complain, in_decl);
-	finish_for_init_stmt (NULL_TREE);
+	finish_for_init_stmt (stmt);
 	finish_for_cond (tsubst_expr (FOR_COND (t), args,
 				      complain, in_decl),
-			 NULL_TREE);
+			 stmt);
 	tmp = tsubst_expr (FOR_EXPR (t), args, complain, in_decl);
-	finish_for_expr (tmp, NULL_TREE);
+	finish_for_expr (tmp, stmt);
 	tsubst_expr (FOR_BODY (t), args, complain, in_decl);
-	finish_for_stmt (tmp, NULL_TREE);
+	finish_for_stmt (tmp, stmt);
       }
       break;
 
     case WHILE_STMT:
       {
 	lineno = STMT_LINENO (t);
-	begin_while_stmt ();
+	stmt = begin_while_stmt ();
 	finish_while_stmt_cond (tsubst_expr (WHILE_COND (t),
 					     args, complain, in_decl),
-				NULL_TREE);
+				stmt);
 	tsubst_expr (WHILE_BODY (t), args, complain, in_decl);
-	finish_while_stmt (NULL_TREE);
+	finish_while_stmt (stmt);
       }
       break;
 
     case DO_STMT:
       {
 	lineno = STMT_LINENO (t);
-	begin_do_stmt ();
+	stmt = begin_do_stmt ();
 	tsubst_expr (DO_BODY (t), args, complain, in_decl);
-	finish_do_body (NULL_TREE);
+	finish_do_body (stmt);
 	finish_do_stmt (tsubst_expr (DO_COND (t), args,
 				     complain, in_decl),
-			NULL_TREE);
+			stmt);
       }
       break;
 
@@ -7317,22 +7306,22 @@ tsubst_expr (t, args, complain, in_decl)
 	tree tmp;
 
 	lineno = STMT_LINENO (t);
-	begin_if_stmt ();
+	stmt = begin_if_stmt ();
 	finish_if_stmt_cond (tsubst_expr (IF_COND (t),
 					  args, complain, in_decl),
-			     NULL_TREE);
+			     stmt);
 
 	if (tmp = THEN_CLAUSE (t), tmp)
 	  {
 	    tsubst_expr (tmp, args, complain, in_decl);
-	    finish_then_clause (NULL_TREE);
+	    finish_then_clause (stmt);
 	  }
 
 	if (tmp = ELSE_CLAUSE (t), tmp)
 	  {
 	    begin_else_clause ();
 	    tsubst_expr (tmp, args, complain, in_decl);
-	    finish_else_clause (NULL_TREE);
+	    finish_else_clause (stmt);
 	  }
 
 	finish_if_stmt ();
@@ -7344,13 +7333,12 @@ tsubst_expr (t, args, complain, in_decl)
 	tree substmt;
 
 	lineno = STMT_LINENO (t);
-	begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
+	stmt = begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
 	for (substmt = COMPOUND_BODY (t); 
 	     substmt != NULL_TREE;
 	     substmt = TREE_CHAIN (substmt))
 	  tsubst_expr (substmt, args, complain, in_decl);
-	return finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t), 
-				     NULL_TREE);
+	return finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t), stmt);
       }
       break;
 
@@ -7366,17 +7354,14 @@ tsubst_expr (t, args, complain, in_decl)
 
     case SWITCH_STMT:
       {
-	tree val, tmp;
+	tree val;
 
 	lineno = STMT_LINENO (t);
 	begin_switch_stmt ();
 	val = tsubst_expr (SWITCH_COND (t), args, complain, in_decl);
-	finish_switch_cond (val);
-	
-	if (tmp = TREE_OPERAND (t, 1), tmp)
-	  tsubst_expr (tmp, args, complain, in_decl);
-
-	finish_switch_stmt (val, NULL_TREE);
+	stmt = finish_switch_cond (val);
+	tsubst_expr (SWITCH_BODY (t), args, complain, in_decl);
+	finish_switch_stmt (val, stmt);
       }
       break;
 
@@ -7414,20 +7399,20 @@ tsubst_expr (t, args, complain, in_decl)
 
     case TRY_BLOCK:
       lineno = STMT_LINENO (t);
-      begin_try_block ();
+      stmt = begin_try_block ();
       tsubst_expr (TRY_STMTS (t), args, complain, in_decl);
-      finish_try_block (NULL_TREE);
+      finish_try_block (stmt);
       {
 	tree handler = TRY_HANDLERS (t);
 	for (; handler; handler = TREE_CHAIN (handler))
 	  tsubst_expr (handler, args, complain, in_decl);
       }
-      finish_handler_sequence (NULL_TREE);
+      finish_handler_sequence (stmt);
       break;
 
     case HANDLER:
       lineno = STMT_LINENO (t);
-      begin_handler ();
+      stmt = begin_handler ();
       if (HANDLER_PARMS (t))
 	{
 	  tree d = HANDLER_PARMS (t);
@@ -7437,9 +7422,9 @@ tsubst_expr (t, args, complain, in_decl)
 	}
       else
 	expand_start_catch_block (NULL_TREE, NULL_TREE);
-      finish_handler_parms (NULL_TREE);
+      finish_handler_parms (stmt);
       tsubst_expr (HANDLER_BODY (t), args, complain, in_decl);
-      finish_handler (NULL_TREE);
+      finish_handler (stmt);
       break;
 
     case TAG_DEFN:
@@ -9654,57 +9639,39 @@ instantiate_decl (d)
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {
-      tree t = DECL_SAVED_TREE (code_pattern);
-      tree try_block = NULL_TREE;
+      extern struct obstack *saveable_obstack;
+      extern struct obstack *rtl_obstack;
+      int saved_expanding_p = expanding_p;
 
+      /* We're not expanding all the way to RTL here.  */
+      expanding_p = 0;
+
+      /* Set up context.  */
       start_function (NULL_TREE, d, NULL_TREE, 1);
       store_parm_decls ();
 
-      if (t && TREE_CODE (t) == TRY_BLOCK)
-	{
-	  try_block = t;
-	  begin_function_try_block ();
-	  t = TRY_STMTS (try_block);
-	}
+      /* Anything we might
+	 want to save is going to have to be saved forever.  Note that
+	 we don't want to save all kinds of temporary clutter that
+	 might end up on the temporary obstack so we don't want to
+	 call push_permanent_obstack.  */
+      push_obstacks_nochange ();
+      saveable_obstack = &permanent_obstack;
+      /* We only need this because of the cases where we generate
+	 RTL_EXPRs.  We should really be generating RTL_EXPRs until
+	 final expansion time; when that is fixed, this can go.  */
+      rtl_obstack = &permanent_obstack;
+      /* Substitute into the body of the function.  */
+      tsubst_expr (DECL_SAVED_TREE (code_pattern), args,
+		   /*complain=*/1, tmpl);
 
-      if (t && TREE_CODE (t) == RETURN_INIT)
-	{
-	  store_return_init
-	    (TREE_OPERAND (t, 0),
-	     tsubst_expr (TREE_OPERAND (t, 1), args, /*complain=*/1, tmpl));
-	  t = TREE_CHAIN (t);
-	}
-
-      if (t && TREE_CODE (t) == CTOR_INITIALIZER)
-	{
-	  current_member_init_list
-	    = tsubst_expr_values (TREE_OPERAND (t, 0), args);
-	  current_base_init_list
-	    = tsubst_expr_values (TREE_OPERAND (t, 1), args);
-	  t = TREE_CHAIN (t);
-	}
-
-      setup_vtbl_ptr ();
-      /* Always keep the BLOCK node associated with the outermost
-	 pair of curly braces of a function.  These are needed
-	 for correct operation of dwarfout.c.  */
-      keep_next_level ();
-
-      my_friendly_assert (TREE_CODE (t) == COMPOUND_STMT, 42);
-      tsubst_expr (t, args, /*complain=*/1, tmpl);
-
-      if (try_block)
-	{
-	  finish_function_try_block (NULL_TREE);
-	  {
-	    tree handler = TRY_HANDLERS (try_block);
-	    for (; handler; handler = TREE_CHAIN (handler))
-	      tsubst_expr (handler, args, /*complain=*/1, tmpl);
-	  }
-	  finish_function_handler_sequence (NULL_TREE);
-	}
-
+      /* Clean up.  */
+      pop_obstacks ();
       finish_function (lineno, 0, nested);
+      expanding_p = saved_expanding_p;
+
+      /* Now, generate RTL for the function.  */
+      expand_body (d);
     }
 
 out:

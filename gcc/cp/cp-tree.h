@@ -2138,6 +2138,7 @@ extern int flag_new_for_scope;
 #define ASM_INPUTS(NODE)        TREE_OPERAND (NODE, 3)
 #define ASM_CLOBBERS(NODE)      TREE_OPERAND (NODE, 4)
 #define DECL_STMT_DECL(NODE)    TREE_OPERAND (NODE, 0)
+#define STMT_EXPR_STMT(NODE)    TREE_OPERAND (NODE, 0)
 
 /* Nonzero for an ASM_STMT if the assembly statement is volatile.  */
 #define ASM_VOLATILE_P(NODE)			\
@@ -2919,7 +2920,7 @@ extern tree build_enumerator			PROTO((tree, tree, tree));
 extern int start_function			PROTO((tree, tree, tree, int));
 extern void expand_start_early_try_stmts	PROTO((void));
 extern void store_parm_decls			PROTO((void));
-extern void store_return_init			PROTO((tree, tree));
+extern void store_return_init			PROTO((tree));
 extern void finish_function			PROTO((int, int, int));
 extern tree start_method			PROTO((tree, tree, tree));
 extern tree finish_method			PROTO((tree));
@@ -3365,6 +3366,17 @@ extern void finish_member_declaration           PROTO((tree));
 extern void check_multiple_declarators          PROTO((void));
 extern tree finish_typeof			PROTO((tree));
 extern void add_decl_stmt                       PROTO((tree));
+extern void finish_named_return_value           PROTO((tree, tree));
+extern tree expand_stmt                         PROTO((tree));
+extern void expand_body                         PROTO((tree));
+extern void begin_stmt_tree                     PROTO((tree));
+extern void finish_stmt_tree                    PROTO((tree));
+extern int expanding_p;
+extern tree last_expr_type;
+/* Non-zero if we are presently building a statement tree, rather
+   than expanding each statement as we encounter it.  */
+#define building_stmt_tree() \
+  (processing_template_decl || !expanding_p)
 
 /* in spew.c */
 extern void init_spew				PROTO((void));

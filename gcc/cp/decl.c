@@ -4341,7 +4341,7 @@ maybe_push_decl (decl)
        && TREE_CODE (DECL_CONTEXT (decl)) != NAMESPACE_DECL)
       || (TREE_CODE (decl) == TEMPLATE_DECL && !namespace_bindings_p ())
       || TREE_CODE (type) == UNKNOWN_TYPE
-      /* The declaration of template specializations does not affect
+      /* The declaration of a template specialization does not affect
 	 the functions available for overload resolution, so we do not
 	 call pushdecl.  */
       || (TREE_CODE (decl) == FUNCTION_DECL
@@ -12882,7 +12882,8 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
       && IDENTIFIER_IMPLICIT_DECL (DECL_NAME (decl1)) != NULL_TREE)
     cp_warning_at ("`%D' implicitly declared before its definition", IDENTIFIER_IMPLICIT_DECL (DECL_NAME (decl1)));
 
-  announce_function (decl1);
+  if (!building_stmt_tree ())
+    announce_function (decl1);
 
   /* Set up current_class_type, and enter the scope of the class, if
      appropriate.  */
@@ -13110,12 +13111,14 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   pushlevel (0);
   current_binding_level->parm_flag = 1;
 
-  GNU_xref_function (decl1, current_function_parms);
-
   if (attrs)
     cplus_decl_attributes (decl1, NULL_TREE, attrs);
   
-  make_function_rtl (decl1);
+  if (!building_stmt_tree ())
+    {
+      GNU_xref_function (decl1, current_function_parms);
+      make_function_rtl (decl1);
+    }
 
   /* Promote the value to int before returning it.  */
   if (C_PROMOTING_INTEGER_TYPE_P (restype))
@@ -13141,9 +13144,8 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   if (! hack_decl_function_context (decl1))
     temporary_allocation ();
 
-  if (processing_template_decl)
-    last_tree = DECL_SAVED_TREE (decl1)
-      = build_nt (EXPR_STMT, void_zero_node);
+  if (building_stmt_tree ())
+    begin_stmt_tree (decl1);
 
   ++function_depth;
 
@@ -13254,7 +13256,7 @@ store_parm_decls ()
 
 		  pushdecl (parm);
 		}
-	      if (! processing_template_decl
+	      if (! building_stmt_tree ()
 		  && (cleanup = maybe_build_cleanup (parm), cleanup))
 		{
 		  expand_decl (parm);
@@ -13295,21 +13297,20 @@ store_parm_decls ()
 
   /* Initialize the RTL code for the function.  */
   DECL_SAVED_INSNS (fndecl) = 0;
-  if (! processing_template_decl)
+  if (! building_stmt_tree ())
     expand_function_start (fndecl, parms_have_cleanups);
 
   current_function_parms_stored = 1;
 
   /* If this function is `main', emit a call to `__main'
      to run global initializers, etc.  */
-  if (DECL_MAIN_P (fndecl))
+  if (DECL_MAIN_P (fndecl) && !building_stmt_tree ())
     expand_main_function ();
 
   /* Now that we have initialized the parms, we can start their
      cleanups.  We cannot do this before, since expand_decl_cleanup
      should not be called before the parm can be used.  */
-  if (cleanups
-      && ! processing_template_decl)      
+  if (cleanups && !building_stmt_tree ())
     {
       for (cleanups = nreverse (cleanups); cleanups; cleanups = TREE_CHAIN (cleanups))
 	{
@@ -13325,10 +13326,11 @@ store_parm_decls ()
   if (parms_have_cleanups)
     {
       pushlevel (0);
-      expand_start_bindings (0);
+      if (!building_stmt_tree ())
+	expand_start_bindings (0);
     }
 
-  if (! processing_template_decl && flag_exceptions)
+  if (! building_stmt_tree () && flag_exceptions)
     {
       /* Do the starting of the exception specifications, if we have any.  */
       if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
@@ -13343,55 +13345,15 @@ store_parm_decls ()
    the current function.  */
 
 void
-store_return_init (return_id, init)
-     tree return_id, init;
+store_return_init (decl)
+     tree decl;
 {
-  tree decl = DECL_RESULT (current_function_decl);
-
-  if (pedantic)
-    /* Give this error as many times as there are occurrences,
-       so that users can use Emacs compilation buffers to find
-       and fix all such places.  */
-    pedwarn ("ANSI C++ does not permit named return values");
-
-  if (return_id != NULL_TREE)
+  /* If this named return value comes in a register, put it in a
+     pseudo-register.  */
+  if (DECL_REGISTER (decl))
     {
-      if (DECL_NAME (decl) == NULL_TREE)
-	{
-	  DECL_NAME (decl) = return_id;
-	  DECL_ASSEMBLER_NAME (decl) = return_id;
-	}
-      else
-	cp_error ("return identifier `%D' already in place", decl);
-    }
-
-  /* Can't let this happen for constructors.  */
-  if (DECL_CONSTRUCTOR_P (current_function_decl))
-    {
-      error ("can't redefine default return value for constructors");
-      return;
-    }
-
-  /* If we have a named return value, put that in our scope as well.  */
-  if (DECL_NAME (decl) != NULL_TREE)
-    {
-      /* If this named return value comes in a register,
-	 put it in a pseudo-register.  */
-      if (DECL_REGISTER (decl))
-	{
-	  original_result_rtx = DECL_RTL (decl);
-	  DECL_RTL (decl) = gen_reg_rtx (DECL_MODE (decl));
-	}
-
-      /* Let `cp_finish_decl' know that this initializer is ok.  */
-      DECL_INITIAL (decl) = init;
-      pushdecl (decl);
-
-      if (processing_template_decl && current_function_decl)
-	add_tree (build_min_nt (RETURN_INIT, return_id,
-				copy_to_permanent (init)));
-      else
-	cp_finish_decl (decl, init, NULL_TREE, 0, 0);
+      original_result_rtx = DECL_RTL (decl);
+      DECL_RTL (decl) = gen_reg_rtx (DECL_MODE (decl));
     }
 }
 
@@ -13430,7 +13392,7 @@ finish_function (lineno, flags, nested)
   tree decls = NULL_TREE;
   int call_poplevel = (flags & 1) != 0;
   int inclass_inline = (flags & 2) != 0;
-  int in_template;
+  int expand_p;
 
   /* When we get some parse errors, we can end up without a
      current_function_decl, so cope.  */
@@ -13453,7 +13415,7 @@ finish_function (lineno, flags, nested)
       store_parm_decls ();
     }
 
-  if (processing_template_decl)
+  if (building_stmt_tree ())
     {
       if (DECL_CONSTRUCTOR_P (fndecl) && call_poplevel)
 	{
@@ -13834,19 +13796,15 @@ finish_function (lineno, flags, nested)
       /* Generate rtl for function exit.  */
       expand_function_end (input_filename, lineno, 1);
     }
+
+  /* We have to save this value here in case
+     maybe_end_member_template_processing decides to pop all the
+     template parameters.  */
+  expand_p = !building_stmt_tree ();
   
-  /* If we're processing a template, squirrel away the definition
-     until we do an instantiation.  */
-  if (processing_template_decl)
-    {
-      DECL_SAVED_TREE (fndecl) = TREE_CHAIN (DECL_SAVED_TREE (fndecl));
-      /* We have to save this value here in case
-	 maybe_end_member_template_processing decides to pop all the
-	 template parameters.  */
-      in_template = 1;
-    }
-  else
-    in_template = 0;
+  /* If we're saving up tree structure, tie off the function now.  */
+  if (!expand_p)
+    finish_stmt_tree (fndecl);
 
   /* This must come after expand_function_end because cleanups might
      have declarations (from inline functions) that need to go into
@@ -13880,7 +13838,7 @@ finish_function (lineno, flags, nested)
      to the FUNCTION_DECL node itself.  */
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
-  if (!in_template)
+  if (expand_p)
     {
       int saved_flag_keep_inline_functions =
 	flag_keep_inline_functions;
@@ -14285,12 +14243,6 @@ void
 cplus_expand_expr_stmt (exp)
      tree exp;
 {
-  if (processing_template_decl)
-    {
-      add_tree (build_min_nt (EXPR_STMT, exp));
-      return;
-    }
-
   /* Arrange for all temps to disappear.  */
   expand_start_target_temps ();
 
@@ -14324,28 +14276,30 @@ cplus_expand_expr_stmt (exp)
   expand_end_target_temps ();
 }
 
-/* When a stmt has been parsed, this function is called.
-
-   Currently, this function only does something within a
-   constructor's scope: if a stmt has just assigned to this,
-   and we are in a derived class, we call `emit_base_init'.  */
+/* When a stmt has been parsed, this function is called.  */
 
 void
 finish_stmt ()
 {
-  if (current_function_assigns_this
-      || ! current_function_just_assigned_this)
-    return;
-  if (DECL_CONSTRUCTOR_P (current_function_decl))
+  if (!current_function_assigns_this
+      && current_function_just_assigned_this)
     {
-      /* Constructors must wait until we are out of control
-	 zones before calling base constructors.  */
-      if (in_control_zone_p ())
-	return;
-      expand_expr_stmt (base_init_expr);
-      check_base_init (current_class_type);
+      if (DECL_CONSTRUCTOR_P (current_function_decl))
+	{
+	  /* Constructors must wait until we are out of control
+	     zones before calling base constructors.  */
+	  if (in_control_zone_p ())
+	    return;
+	  expand_expr_stmt (base_init_expr);
+	  check_base_init (current_class_type);
+	}
+      current_function_assigns_this = 1;
     }
-  current_function_assigns_this = 1;
+
+  /* Always assume this statement was not an expression statement.  If
+     it actually was an expression statement, its our callers
+     responsibility to fix this up.  */
+  last_expr_type = NULL_TREE;
 }
 
 /* Change a static member function definition into a FUNCTION_TYPE, instead
@@ -14408,6 +14362,9 @@ struct cp_function
   struct binding_level *binding_level;
   int static_labelno;
   int in_function_try_handler;
+  int expanding_p;
+  tree last_tree;
+  tree last_expr_type;
 };
 
 static struct cp_function *cp_function_chain;
@@ -14451,6 +14408,13 @@ push_cp_function_context (context)
   p->current_class_ref = current_class_ref;
   p->static_labelno = static_labelno;
   p->in_function_try_handler = in_function_try_handler;
+  p->last_tree = last_tree;
+  p->last_expr_type = last_expr_type;
+  p->expanding_p = expanding_p;
+  
+  /* For now, we always assume we're expanding all the way to RTL
+     unless we're explicitly doing otherwise.  */
+  expanding_p = 1;
 }
 
 /* Restore the variables used during compilation of a C++ function.  */
@@ -14494,6 +14458,9 @@ pop_cp_function_context (context)
   current_class_ref = p->current_class_ref;
   static_labelno = p->static_labelno;
   in_function_try_handler = p->in_function_try_handler;
+  last_tree = p->last_tree;
+  last_expr_type = p->last_expr_type;
+  expanding_p = p->expanding_p;
 
   free (p);
 }

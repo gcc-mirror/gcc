@@ -2001,27 +2001,6 @@ constructor_name (thing)
   return t;
 }
 
-/* Cache the value of this class's main virtual function table pointer
-   in a register variable.  This will save one indirection if a
-   more than one virtual function call is made this function.  */
-
-void
-setup_vtbl_ptr ()
-{
-  extern tree base_init_expr;
-
-  if (base_init_expr == 0
-      && DECL_CONSTRUCTOR_P (current_function_decl))
-    {
-      if (processing_template_decl)
-	add_tree (build_min_nt
-		  (CTOR_INITIALIZER,
-		   current_member_init_list, current_base_init_list));
-      else
-	emit_base_init (current_class_type, 0);
-    }
-}
-
 /* Record the existence of an addressable inline function.  */
 
 void

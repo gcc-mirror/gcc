@@ -767,11 +767,11 @@ return_id:
 
 return_init:
 	  return_id maybe_init
-		{ store_return_init ($<ttype>$, $2); }
+		{ finish_named_return_value ($<ttype>$, $2); }
 	| return_id '(' nonnull_exprlist ')'
-		{ store_return_init ($<ttype>$, $3); }
+		{ finish_named_return_value ($<ttype>$, $3); }
 	| return_id LEFT_RIGHT
-		{ store_return_init ($<ttype>$, NULL_TREE); }
+		{ finish_named_return_value ($<ttype>$, NULL_TREE); }
 	;
 
 base_init:
@@ -3408,7 +3408,7 @@ label_colon:
 
 for.init.statement:
 	  xexpr ';'
-		{ if ($1) cplus_expand_expr_stmt ($1); }
+                { finish_expr_stmt ($1); }
 	| decl
 	| '{' compstmtend
 		{ if (pedantic)

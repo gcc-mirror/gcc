@@ -4912,15 +4912,15 @@ case 122:
     break;}
 case 123:
 #line 770 "parse.y"
-{ store_return_init (yyval.ttype, yyvsp[0].ttype); ;
+{ finish_named_return_value (yyval.ttype, yyvsp[0].ttype); ;
     break;}
 case 124:
 #line 772 "parse.y"
-{ store_return_init (yyval.ttype, yyvsp[-1].ttype); ;
+{ finish_named_return_value (yyval.ttype, yyvsp[-1].ttype); ;
     break;}
 case 125:
 #line 774 "parse.y"
-{ store_return_init (yyval.ttype, NULL_TREE); ;
+{ finish_named_return_value (yyval.ttype, NULL_TREE); ;
     break;}
 case 126:
 #line 779 "parse.y"
@@ -7732,7 +7732,7 @@ case 783:
     break;}
 case 784:
 #line 3411 "parse.y"
-{ if (yyvsp[-1].ttype) cplus_expand_expr_stmt (yyvsp[-1].ttype); ;
+{ finish_expr_stmt (yyvsp[-1].ttype); ;
     break;}
 case 786:
 #line 3414 "parse.y"

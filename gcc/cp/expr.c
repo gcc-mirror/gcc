@@ -246,6 +246,15 @@ cplus_expand_expr (exp, target, tmode, modifier)
     case NEW_EXPR:
       return expand_expr (build_new_1 (exp), target, tmode, modifier);
 
+    case STMT_EXPR:
+      {
+	tree rtl_expr = begin_stmt_expr ();
+	tree block = expand_stmt (STMT_EXPR_STMT (exp));
+	finish_stmt_expr (rtl_expr, block);
+	return expand_expr (rtl_expr, target, tmode, modifier);
+      }
+      break;
+
     default:
       break;
     }
@@ -387,12 +396,6 @@ do_case (start, end)
 
   if (end && pedantic)
     pedwarn ("ANSI C++ forbids range expressions in switch statement");
-
-  if (processing_template_decl)
-    {
-      add_tree (build_min_nt (CASE_LABEL, start, end));
-      return;
-    }
 
   if (start)
     value1 = check_cp_case_value (start);

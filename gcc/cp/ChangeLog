@@ -1,3 +1,101 @@
+1999-08-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (STMT_EXPR): New tree node.
+	* cp-tree.h (STMT_EXPR_STMT): New macro.
+	(store_return_init): Change prototype.
+	(finish_named_return_value): New function.
+	(expand_stmt): Likewise.
+	(expand_body): Likewise.
+	(begin_stmt_tree): Likewise.
+	(finish_stmt_tree): Likewise.
+	(expanding_p): New variable.
+	(last_expr_type): Likewise.
+	(building_stmt_tree): New macro.
+	* decl.c (start_function): Use building_stmt_tree, not
+	processing_template_decl, where appropriate.
+	(store_parm_decls): Likewise.
+	(store_return_init): Move most of the body to semantics.c.
+	(finish_function): Use building_stmt_tree.
+	(finish_stmt): Clear last_expr_type here.
+	(cp_function): Add expanding_p, last_tree, last_expr_type.
+	(push_cp_function_context): Save them.
+	(pop_cp_function_context): Restore them.
+	* decl2.c (setup_vtbl_ptr): Move to semantics.c.
+	* error.c (dump_expr): Handle STMT_EXPR.
+	* except.c (expand_start_catch_block): Use building_stmt_tree.
+	Use add_decl_stmt.
+	* expr.c (cplus_expand_expr): Handle STMT_EXPR.
+	(do_case): Move add_tree call to semantics.c.
+	* parse.y (return_init): Use finish_named_return_value.
+	(for.init.statement): Use finish_expr_stmt.
+	* parse.c: Regenerated.
+	* pt.c (do_pushlevel): Move to semantics.c.
+	(do_poplevel): Likewise.
+	(tsubst_copy): Handle STMT_EXPR instead of BIND_EXPR.
+	(tsubst_expr): Don't expand all the way to RTL here.  Handle
+	RETURN_INIT and CTOR_INITIALIZER.
+	(instantiate_decl): Call expand_body after tsubst'ing into
+	DECL_SAVED_TREE.
+	* semantics.c (expand_stmts): New function.
+	(expanding_p): New variable.
+	(last_expr_type): Likewise.
+	(finish_expr_stmt): Use building_stmt_tree.
+	(begin_if_stmt): Likewise.
+	(finish_if_stmt_cond): Likewise.
+	(finish_then_clause): Likewise.
+	(begin_else_clause): Likewise.
+	(finish_else_clause): Likewise.
+	(begin_while_stmt): Likewise.
+	(finish_while_stmt_cond): Likewise.
+	(finish_while_stmt): Likewise.
+	(finish_do_body): Likewise.
+	(finish_do_stmt): Likewise.
+	(finish_return_stmt): Likewise.
+	(begin_for_stmt): Likewise.
+	(fnish_for_init_stmt): Likewise.
+	(finish_for_cond): Likewise.
+	(finish_for_expr): Likewise.
+	(finish_for_stmt): Likewise.
+	(finish_break_stmt): Likewise.
+	(finish_continue_stmt): Likewise.
+	(finish_switch_cond): Likewise.
+	(finish_switch_stmt): Likewise.
+	(finish_case_label): Call add_tree here if necessary.
+	(finish_goto_statement): Use building_stmt_tree.
+	(begin_try_block): Likewise.
+	(begin_function_try_block): Likewise.
+	(finish_try_block): Likewise.
+	(finish_function_try_block): Likewise.
+	(finish_handler_sequence): Likewise.
+	(finish_function_handler_sequence): Likewise.
+	(begin_handler): Likewise.
+	(finish_handler_parms): Likewise.
+	(finish_handler): Likewise.
+	(begin_compound_stmt): Likewise.
+	(finish_compound_stmt): Likewise.
+	(finish_asm_stmt): Likewise.
+	(finish_label_stmt): Likewise.
+	(finish_named_return_value): New function.
+	(setup_vtbl_ptr): Moved here from decl2.c.
+	(do_pushlevel): Moved here from pt.c.
+	(do_poplevel): Likewise.
+	(begin_stmt_expr): Use building_stmt_tree.
+	(finish_stmt_expr): Likewise.  Build a STMT_EXPR, not a BIND_EXPR,
+	when building_stmt_tree.
+	(begin_stmt_tree): New function.
+	(finish_stmt_tree): Likewise.
+	(expand_stmt): Likewise.
+	(expand_body): Likewise.
+	* tree.c (build_cplus_method_type): Make sure the argument types
+	end up on the same obstack as the METHOD_TYPE.
+	(search_tree): Handle COMPOUND_EXPR, MODIFY_EXPR,
+	THROW_EXPR, STMT_EXPR.
+	(mapcar): Break out common cases.  Handle COMPOUND_EXPR,
+	MODIFY_EXPR, THROW_EXPR, STMT_EXPR, RTL_EXPR.  Abort, rather than
+	sorry, if an unsupported node is encountered.
+	* typeck.c (require_complete_type_in_void): Handle BIND_EXPR.
+	(c_expand_return): Don't call add_tree here.
+	
 1999-08-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (check_default_tmpl_args): Don't check in local scopes.

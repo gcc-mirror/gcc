@@ -235,6 +235,10 @@ DEFTREECODE (RETURN_INIT, "return_init", 'e', 2)
 DEFTREECODE (TRY_BLOCK, "try_stmt", 'e', 2)
 DEFTREECODE (HANDLER, "catch_stmt", 'e', 2)
 
+/* A STMT_EXPR represents a statement-expression.  The
+   STMT_EXPR_STMT is the statement given by the expression.  */
+DEFTREECODE (STMT_EXPR, "cp_stmt_expr", 'e', 1)
+
 DEFTREECODE (TAG_DEFN, "tag_defn", 'e', 0)
 
 /* And some codes for expressing conversions for overload resolution.  */

@@ -197,6 +197,7 @@ require_complete_type_in_void (expr)
     case EXIT_EXPR:   /* have no return */
     case LOOP_EXPR:   /* have no return */
     case BIND_EXPR:   /* have no return */
+    case STMT_EXPR: /* have no return */
     case THROW_EXPR:  /* have no return */
     case MODIFY_EXPR: /* sometimes this has a void type, but that's ok */
     case CONVERT_EXPR:  /* sometimes has a void type */
@@ -6798,12 +6799,6 @@ c_expand_return (retval)
   if (retval == error_mark_node)
     {
       current_function_returns_null = 1;
-      return;
-    }
-
-  if (processing_template_decl)
-    {
-      add_tree (build_min_nt (RETURN_STMT, retval));
       return;
     }
 
