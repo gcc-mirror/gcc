@@ -155,8 +155,8 @@ bindir = $(exec_prefix)/bin
 libdir = $(exec_prefix)/lib
 # Directory in which the compiler finds executables, libraries, etc.
 libsubdir = $(libdir)/gcc-lib/$(target)/$(version)
-# The prefix for g++ includes.
-gxx_prefix= $(libdir)
+# Directory in which the compiler finds g++ includes.
+gxx_include_dir= $(libdir)/g++-include
 # Directory to search for site-specific includes.
 includedir = $(local_prefix)/include
 # assertdir is overridden in cross-make.
@@ -1402,7 +1402,7 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
 # is for compatibility with the current version of libg++.
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_prefix)/g++-include\" \
+	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
@@ -1427,7 +1427,7 @@ unprotoize.o:	stamp-proto ; @true
 stamp-proto:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-          -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_prefix)/g++-include\" \
+	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
           -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
@@ -1436,7 +1436,7 @@ stamp-proto:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
 	mv protoize.o unprotoize.o
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-          -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_prefix)/g++-include\" \
+	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
           -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
