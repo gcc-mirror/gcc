@@ -41,7 +41,7 @@ package java.nio;
 /**
  * This is a Heap memory implementation
  */
-public final class ShortBufferImpl extends ShortBuffer
+final class ShortBufferImpl extends ShortBuffer
 {
   private boolean readOnly;
 

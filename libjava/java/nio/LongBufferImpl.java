@@ -41,7 +41,7 @@ package java.nio;
 /**
  * This is a Heap memory implementation
  */
-public final class LongBufferImpl extends LongBuffer
+final class LongBufferImpl extends LongBuffer
 {
   private boolean readOnly;
 

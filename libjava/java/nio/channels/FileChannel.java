@@ -112,7 +112,7 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    *
    * @exception IOException If an I/O error occurs.
    */
-  public long write (ByteBuffer[] srcs) throws IOException
+  public final long write (ByteBuffer[] srcs) throws IOException
   {
     long result = 0;
     

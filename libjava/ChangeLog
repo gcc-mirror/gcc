@@ -1,5 +1,28 @@
 2003-06-27  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/ByteBufferImpl.java
+	(ByteBufferImpl): Made it a package-private class
+	* java/nio/CharBufferImpl.java
+	(CharBufferImpl): Made it a package-private class
+	* java/nio/DirectByteBufferImpl.java
+	(DirectByteBufferImpl): Made it a package-private class
+	* java/nio/DoubleBufferImpl.java
+	(DoubleBufferImpl): Made it a package-private class
+	* java/nio/FloatBufferImpl.java
+	(FloatBufferImpl): Made it a package-private class
+	* java/nio/IntBufferImpl.java
+	(IntBufferImpl): Made it a package-private class
+	* java/nio/LongBufferImpl.java
+	(LongBufferImpl): Made it a package-private class
+	* java/nio/ShortBufferImpl.java
+	(ShortBufferImpl): Made it a package-private class
+	* java/nio/channels/FileChannel.java
+	(write): Made final.
+	* java/nio/channels/ServerSocketChannel.java
+	(ServerSocketChanne): Made protected.
+
+2003-06-27  Michael Koch  <konqueror@gmx.de>
+
 	* javax/naming/CompositeName.java
 	(serialVersionUID): New member variable.
 	* javax/naming/CompoundName.java

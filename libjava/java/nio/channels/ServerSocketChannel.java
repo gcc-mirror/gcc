@@ -53,7 +53,7 @@ public abstract class ServerSocketChannel
   /**
    * Initializes this channel.
    */
-  public ServerSocketChannel (SelectorProvider provider)
+  protected ServerSocketChannel (SelectorProvider provider)
   {
     super (provider);
   }
