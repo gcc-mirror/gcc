@@ -7131,6 +7131,57 @@ c_strlen (src)
      calculation is needed.  */
   return size_int (strlen (ptr + offset));
 }
+
+rtx
+expand_builtin_return_addr (fndecl_code, count, tem)
+     enum built_in_function fndecl_code;
+     rtx tem;
+     int count;
+{
+  int i;
+
+  /* Some machines need special handling before we can access
+     arbitrary frames.  For example, on the sparc, we must first flush
+     all register windows to the stack.  */
+#ifdef SETUP_FRAME_ADDRESSES
+  SETUP_FRAME_ADDRESSES ();
+#endif
+
+  /* On the sparc, the return address is not in the frame, it is in a
+     register.  There is no way to access it off of the current frame
+     pointer, but it can be accessed off the previous frame pointer by
+     reading the value from the register window save area.  */
+#ifdef RETURN_ADDR_IN_PREVIOUS_FRAME
+  if (fndecl_code == BUILT_IN_RETURN_ADDRESS)
+    count--;
+#endif
+
+  /* Scan back COUNT frames to the specified frame.  */
+  for (i = 0; i < count; i++)
+    {
+      /* Assume the dynamic chain pointer is in the word that the
+	 frame address points to, unless otherwise specified.  */
+#ifdef DYNAMIC_CHAIN_ADDRESS
+      tem = DYNAMIC_CHAIN_ADDRESS (tem);
+#endif
+      tem = memory_address (Pmode, tem);
+      tem = copy_to_reg (gen_rtx (MEM, Pmode, tem));
+    }
+
+  /* For __builtin_frame_address, return what we've got.  */
+  if (fndecl_code == BUILT_IN_FRAME_ADDRESS)
+    return tem;
+
+  /* For __builtin_return_address, Get the return address from that
+     frame.  */
+#ifdef RETURN_ADDR_RTX
+  tem = RETURN_ADDR_RTX (count, tem);
+#else
+  tem = memory_address (Pmode,
+			plus_constant (tem, GET_MODE_SIZE (Pmode)));
+  tem = gen_rtx (MEM, Pmode, tem);
+#endif
+}
 
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
@@ -7572,52 +7623,17 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	}
       else
 	{
-	  int count = TREE_INT_CST_LOW (TREE_VALUE (arglist)); 
-	  rtx tem = frame_pointer_rtx;
-	  int i;
-
-	  /* Some machines need special handling before we can access arbitrary
-	     frames.  For example, on the sparc, we must first flush all
-	     register windows to the stack.  */
-#ifdef SETUP_FRAME_ADDRESSES
-	  SETUP_FRAME_ADDRESSES ();
-#endif
-
-	  /* On the sparc, the return address is not in the frame, it is
-	     in a register.  There is no way to access it off of the current
-	     frame pointer, but it can be accessed off the previous frame
-	     pointer by reading the value from the register window save
-	     area.  */
-#ifdef RETURN_ADDR_IN_PREVIOUS_FRAME
-	  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_RETURN_ADDRESS)
-	    count--;
-#endif
-
-	  /* Scan back COUNT frames to the specified frame.  */
-	  for (i = 0; i < count; i++)
-	    {
-	      /* Assume the dynamic chain pointer is in the word that
-		 the frame address points to, unless otherwise specified.  */
-#ifdef DYNAMIC_CHAIN_ADDRESS
-	      tem = DYNAMIC_CHAIN_ADDRESS (tem);
-#endif
-	      tem = memory_address (Pmode, tem);
-	      tem = copy_to_reg (gen_rtx (MEM, Pmode, tem));
-	    }
+	  rtx tem = expand_builtin_return_addr (DECL_FUNCTION_CODE (fndecl),
+						TREE_INT_CST_LOW (TREE_VALUE (arglist)),
+						hard_frame_pointer_rtx);
 
 	  /* For __builtin_frame_address, return what we've got.  */
 	  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
 	    return tem;
 
-	  /* For __builtin_return_address,
-	     Get the return address from that frame.  */
-#ifdef RETURN_ADDR_RTX
-	  return RETURN_ADDR_RTX (count, tem);
-#else
-	  tem = memory_address (Pmode,
-				plus_constant (tem, GET_MODE_SIZE (Pmode)));
-	  return copy_to_reg (gen_rtx (MEM, Pmode, tem));
-#endif
+	  if (GET_CODE (tem) != REG)
+	    tem = copy_to_reg (tem);
+	  return tem;
 	}
 
     case BUILT_IN_ALLOCA:
