@@ -1,3 +1,14 @@
+2004-09-21 Jeff Law  <law@redhat.com>
+
+	* tree-ssa-ccp.c (get_default_value): If we have a constant
+	value recorded for an SSA_NAME, then use that constant as
+	the initial lattice value.
+	(substitute_and_fold): Transfer equivalences discovered into
+	SSA_NAME_EQUIV.
+ 
+	* tree.h (SSA_NAME_EQUIV): Add comments.
+	(SET_SSA_NAME_EQUIV): Similarly.
+
 2004-09-21  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/linux64.h (PROCESSOR_DEFAULT64): Default to POWER4.

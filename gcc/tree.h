@@ -1304,19 +1304,22 @@ struct tree_exp GTY(())
 #define SSA_NAME_OCCURS_IN_ABNORMAL_PHI(NODE) \
     SSA_NAME_CHECK (NODE)->common.asm_written_flag
 
-
 /* Nonzero if this SSA_NAME expression is currently on the free list of
    SSA_NAMES.  Using NOTHROW_FLAG seems reasonably safe since throwing
    has no meaning for an SSA_NAME.  */
 #define SSA_NAME_IN_FREE_LIST(NODE) \
     SSA_NAME_CHECK (NODE)->common.nothrow_flag
 
+/* If NAME is equivalent to some other SSA_NAME or an invariant, then
+   return the equivalent SSA_NAME or invariant, else return NULL.  */
 #define SSA_NAME_EQUIV(NAME) __extension__ \
   ({  tree equiv = SSA_NAME_CHECK (NAME)->ssa_name.equiv; \
       if (equiv && TREE_CODE (equiv) == SSA_NAME) \
 	equiv = ssa_name (SSA_NAME_VERSION (equiv)); \
       equiv; \
    })
+
+/* Record that NAME (an SSA_NAME) is equivalent to EQUIV.  */
 
 #define SET_SSA_NAME_EQUIV(NAME, EQUIV)\
    SSA_NAME_CHECK (NAME)->ssa_name.equiv = (EQUIV);

@@ -135,7 +135,14 @@ get_default_value (tree var)
   val.lattice_val = UNDEFINED;
   val.const_val = NULL_TREE;
 
-  if (TREE_CODE (sym) == PARM_DECL || TREE_THIS_VOLATILE (sym))
+  if (TREE_CODE (var) == SSA_NAME
+      && SSA_NAME_EQUIV (var)
+      && is_gimple_min_invariant (SSA_NAME_EQUIV (var)))
+    {
+      val.lattice_val = CONSTANT;
+      val.const_val = SSA_NAME_EQUIV (var);
+    }
+  else if (TREE_CODE (sym) == PARM_DECL || TREE_THIS_VOLATILE (sym))
     {
       /* Function arguments and volatile variables are considered VARYING.  */
       val.lattice_val = VARYING;
@@ -512,6 +519,7 @@ static void
 substitute_and_fold (void)
 {
   basic_block bb;
+  unsigned int i;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file,
@@ -585,6 +593,25 @@ substitute_and_fold (void)
 	      fprintf (dump_file, "\n");
 	    }
 	}
+    }
+
+  /* And transfer what we learned from VALUE_VECTOR into the
+     SSA_NAMEs themselves.  This probably isn't terribly important
+     since we probably constant propagated the values to their
+     use sites above.  */
+  for (i = 0; i < num_ssa_names; i++)
+    {
+      tree name = ssa_name (i);
+      value *value;
+
+      if (!name)
+	continue;
+
+      value = get_value (name);
+      if (value->lattice_val == CONSTANT
+          && is_gimple_reg (name)
+	  && is_gimple_min_invariant (value->const_val))
+	SET_SSA_NAME_EQUIV (name, value->const_val)
     }
 }
 
