@@ -1,5 +1,5 @@
 /* Declarations to interface gcj with bytecode verifier.
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -126,6 +126,8 @@ void vfy_note_stack_type (vfy_method *method, int pc, int slot,
 void vfy_note_local_type (vfy_method *method, int pc, int slot,
 			  vfy_jclass type);
 void vfy_note_instruction_seen (int pc);
+bool vfy_class_has_field (vfy_jclass klass, vfy_string name,
+			  vfy_string signature);
 
 #define GLOM(name, stuff) name ## stuff
 #define VFY_PRIMITIVE_CLASS(name) \

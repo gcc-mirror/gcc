@@ -1,5 +1,5 @@
 /* Glue to interface gcj with bytecode verifier.
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -383,6 +383,21 @@ vfy_jclass
 vfy_null_type (void)
 {
   return TYPE_NULL;
+}
+
+bool
+vfy_class_has_field (vfy_jclass klass, vfy_string name,
+		     vfy_string signature)
+{
+  tree field = TYPE_FIELDS (klass);
+  while (field != NULL_TREE)
+    {
+      if (DECL_NAME (field) == name
+	  && build_java_signature (TREE_TYPE (field)) == signature)
+	return true;
+      field = TREE_CHAIN (field);
+    }
+  return false;
 }
 
 int

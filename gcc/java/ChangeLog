@@ -1,3 +1,13 @@
+2005-02-18  Tom Tromey  <tromey@redhat.com>
+
+	PR java/20056:
+	* verify-glue.c (vfy_class_has_field): New function.
+	* verify.h (vfy_class_has_field): Declare.
+	* verify-impl.c (check_field_constant): Added 'putfield'
+	argument.
+	(verify_instructions_0): Updated.
+	(types_equal): New function.
+
 2005-02-14  Tom Tromey  <tromey@redhat.com>
 
 	PR java/19921:
