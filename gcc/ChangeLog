@@ -1,3 +1,7 @@
+Sun Feb 21 13:16:44 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* regmove.c (discover_flags_reg): Use word_mode instead of SImode.
+
 Sun Feb 21 13:15:40 1999  Richard Henderson  <rth@cygnus.com>
 
 	* regmove.c (discover_flags_reg): Remove cc0 code.

@@ -166,7 +166,7 @@ static rtx
 discover_flags_reg ()
 {
   rtx tmp;
-  tmp = gen_rtx_REG (SImode, 10000);
+  tmp = gen_rtx_REG (word_mode, 10000);
   tmp = gen_add3_insn (tmp, tmp, GEN_INT (2));
 
   /* If we get something that isn't a simple set, or a 
