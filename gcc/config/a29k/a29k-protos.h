@@ -61,3 +61,5 @@ extern int null_epilogue PARAMS ((void));
 extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void a29k_compute_reg_names PARAMS ((void));
 #endif /* RTX_CODE */
+
+extern void literal_section PARAMS ((void));

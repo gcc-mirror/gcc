@@ -5528,7 +5528,7 @@ write_eligible_delay (kind)
   printf ("int\n");
   printf ("eligible_for_%s (delay_insn, slot, candidate_insn, flags)\n",
 	  kind);
-  printf ("     rtx delay_insn;\n");
+  printf ("     rtx delay_insn ATTRIBUTE_UNUSED;\n");
   printf ("     int slot;\n");
   printf ("     rtx candidate_insn;\n");
   printf ("     int flags ATTRIBUTE_UNUSED;\n");

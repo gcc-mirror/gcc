@@ -1316,7 +1316,7 @@ extern const char *a29k_function_name;
 /* Output at beginning of assembler file.  */
 
 #define ASM_FILE_START(FILE)					\
-{ char *p, *after_dir = main_input_filename;			\
+{ const char *p, *after_dir = main_input_filename;		\
   if (TARGET_29050)						\
     fprintf (FILE, "\t.cputype 29050\n");			\
   for (p = main_input_filename; *p; p++)			\

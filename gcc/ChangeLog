@@ -1,5 +1,13 @@
 2001-10-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* a29k-protos.h (literal_section): Prototype.
+	* a29k.h (ASM_FILE_START): Don't discard pointer qualifier.
+	* a29k.md: Ensure function pointers are prototyped.
+	* genattrtab.c (write_eligible_delay): Mark parameter with
+	ATTRIBUTE_UNUSED.
+
+2001-10-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* calls.c (emit_call_1): Mark parameter with ATTRIBUTE_UNUSED.
 	* 1750a.c (print_operand): Fix format specifier warning.
 	* 1750a.h (ASM_FILE_START): Don't discard pointer qualifier.
