@@ -69,9 +69,14 @@
    BIGGEST_ALIGNMENT is 64, so align the sections that much.  */
 
 #define EXTRA_SECTION_FUNCTIONS				\
-							\
+  READ_ONLY_DATA_SECTION_FUNCTION			\
+  PRIVATE_DATA_SECTION_FUNCTION				\
+  READ_ONLY_PRIVATE_DATA_SECTION_FUNCTION		\
+  TOC_SECTION_FUNCTION
+
+#define READ_ONLY_DATA_SECTION_FUNCTION			\
 void							\
-read_only_data_section ()				\
+read_only_data_section (void)				\
 {							\
   if (in_section != read_only_data)			\
     {							\
@@ -79,10 +84,11 @@ read_only_data_section ()				\
 	       xcoff_read_only_section_name);		\
       in_section = read_only_data;			\
     }							\
-}							\
-							\
+}
+
+#define PRIVATE_DATA_SECTION_FUNCTION			\
 void							\
-private_data_section ()					\
+private_data_section (void)				\
 {							\
   if (in_section != private_data)			\
     {							\
@@ -90,10 +96,11 @@ private_data_section ()					\
 	       xcoff_private_data_section_name);	\
       in_section = private_data;			\
     }							\
-}							\
-							\
+}
+
+#define READ_ONLY_PRIVATE_DATA_SECTION_FUNCTION		\
 void							\
-read_only_private_data_section ()			\
+read_only_private_data_section (void)			\
 {							\
   if (in_section != read_only_private_data)		\
     {							\
@@ -101,10 +108,11 @@ read_only_private_data_section ()			\
 	       xcoff_private_data_section_name);	\
       in_section = read_only_private_data;		\
     }							\
-}							\
-							\
+}
+
+#define TOC_SECTION_FUNCTION				\
 void							\
-toc_section ()						\
+toc_section (void)					\
 {							\
   if (TARGET_MINIMAL_TOC)				\
     {							\

@@ -1,3 +1,12 @@
+2004-01-06  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/xcoff.h (EXTRA_SECTION_FUNCTIONS): Split each
+	function into a separate macro.
+	(read_only_data_section): Add void argument.
+	(private_data_section): Same.
+	(read_only_private_data_section): Same.
+	(toc_section): Same.
+
 2004-01-06  Jan Hubicka  <jh@suse.cz>
 
 	* invoke.texi:  Remove typo in last change.
