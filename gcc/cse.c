@@ -6044,10 +6044,14 @@ cse_insn (insn, in_libcall_block)
       fold_rtx (x, insn);
     }
 
-  /* Store the equivalent value in SRC_EQV, if different.  */
+  /* Store the equivalent value in SRC_EQV, if different, or if the DEST
+     is a STRICT_LOW_PART.  The latter condition is necessary because SRC_EQV
+     is handled specially for this case, and if it isn't set, then there will
+     be no equivalence for the destinatation.  */
   if (n_sets == 1 && REG_NOTES (insn) != 0
       && (tem = find_reg_note (insn, REG_EQUAL, NULL_RTX)) != 0
-      && ! rtx_equal_p (XEXP (tem, 0), SET_SRC (sets[0].rtl)))
+      && (! rtx_equal_p (XEXP (tem, 0), SET_SRC (sets[0].rtl))
+	  || GET_CODE (SET_DEST (sets[0].rtl)) == STRICT_LOW_PART))
     src_eqv = canon_reg (XEXP (tem, 0), NULL_RTX);
 
   /* Canonicalize sources and addresses of destinations.
