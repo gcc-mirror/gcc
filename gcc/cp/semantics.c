@@ -836,11 +836,16 @@ finish_stmt_expr (rtl_expr, expr)
    call.  */
 
 tree 
-finish_call_expr (fn, args)
+finish_call_expr (fn, args, koenig)
      tree fn;
      tree args;
+     int koenig;
 {
-  tree result = build_x_function_call (fn, args, current_class_ref);
+  tree result;
+
+  if (koenig)
+    fn = do_identifier (fn, 0, args);
+  result = build_x_function_call (fn, args, current_class_ref);
 
   if (TREE_CODE (result) == CALL_EXPR
       && TREE_TYPE (result) != void_type_node)
@@ -1028,7 +1033,7 @@ finish_id_expr (expr)
      tree expr;
 {
   if (TREE_CODE (expr) == IDENTIFIER_NODE)
-    expr = do_identifier (expr, 1);
+    expr = do_identifier (expr, 1, NULL_TREE);
 
   return expr;
 }

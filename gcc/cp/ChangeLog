@@ -1,5 +1,17 @@
 1998-07-12  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
+	* decl2.c (build_expr_from_tree): Change calls of do_identifier.
+	Do Koenig lookup in CALL_EXPR.
+	(arg_assoc): Handle error_mark.
+	* lex.c (is_global): New function.
+	(do_identifier): Expect arguments for Koenig lookup.
+	* parse.y (primary): Add rules for calls of unqualified function calls.
+	(do_id): Change call of do_identifier.
+	* pt.c (finish_stmt_expr): Likewise.
+	* semantics.c (finish_id_expr): Likewise.
+	(finish_call_expr): Add integer parameter to indicate
+	argument-dependent lookup.
+
 	* decl.c (struct binding_level): New field using_directives.
 	(push_using_decl): Not sorry anymore.
 	(push_using_directive): New function.

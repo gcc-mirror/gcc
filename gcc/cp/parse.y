@@ -1264,7 +1264,7 @@ notype_unqualified_id:
 	;
 
 do_id:
-		{ $$ = do_identifier ($<ttype>-1, 1); }
+		{ $$ = do_identifier ($<ttype>-1, 1, NULL_TREE); }
 
 template_id:
           PFUNCNAME '<' do_id template_arg_list_opt template_close_bracket 
@@ -1351,10 +1351,17 @@ primary:
 		}
 	  compstmt ')'
                { $$ = finish_stmt_expr ($<ttype>2, $3); }
+        /* Koenig lookup support
+           We could store lastiddecl in $1 to avoid another lookup,
+           but that would result in many additional reduce/reduce conflicts. */
+        | IDENTIFIER '(' nonnull_exprlist ')'
+               { $$ = finish_call_expr ($1, $3, 1); }
+        | IDENTIFIER LEFT_RIGHT
+               { $$ = finish_call_expr ($1, NULL_TREE, 1); }
 	| primary '(' nonnull_exprlist ')'
-               { $$ = finish_call_expr ($1, $3); }
+               { $$ = finish_call_expr ($1, $3, 0); }
 	| primary LEFT_RIGHT
-               { $$ = finish_call_expr ($1, NULL_TREE); }
+               { $$ = finish_call_expr ($1, NULL_TREE, 0); }
 	| primary '[' expr ']'
 		{ $$ = grok_array_decl ($$, $3); }
 	| primary PLUSPLUS
