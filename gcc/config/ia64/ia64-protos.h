@@ -76,6 +76,7 @@ extern int basereg_operand PARAMS((rtx, enum machine_mode));
 
 extern rtx ia64_expand_move PARAMS ((rtx, rtx));
 extern int ia64_move_ok PARAMS((rtx, rtx));
+extern int addp4_optimize_ok PARAMS((rtx, rtx));
 extern void ia64_emit_cond_move PARAMS((rtx, rtx, rtx));
 extern int ia64_depz_field_mask PARAMS((rtx, rtx));
 extern rtx ia64_split_timode PARAMS((rtx[], rtx, rtx));
