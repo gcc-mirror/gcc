@@ -1622,7 +1622,7 @@ singlemove_string (operands)
    useful for copying IMM to a register using the zdepi
    instructions.  Store the immediate value to insert in OP[0].  */
 void
-compute_zdepi_operands (imm, op)
+compute_zdepwi_operands (imm, op)
      unsigned HOST_WIDE_INT imm;
      unsigned *op;
 {
@@ -3799,7 +3799,7 @@ print_operand (file, x, code)
     case 'Z':
       {
 	unsigned op[3];
-	compute_zdepi_operands (INTVAL (x), op);
+	compute_zdepwi_operands (INTVAL (x), op);
 	fprintf (file, "%d,%d,%d", op[0], op[1], op[2]);
 	return;
       }
