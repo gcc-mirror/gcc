@@ -7697,7 +7697,7 @@ cse_cc_succs (basic_block bb, rtx cc_reg, rtx cc_src, bool can_change_mode)
 				       XEXP (SET_SRC (set), 1)))
 			   
 		{
-		  comp_mode = (*targetm.cc_modes_compatible) (mode, set_mode);
+		  comp_mode = targetm.cc_modes_compatible (mode, set_mode);
 		  if (comp_mode != VOIDmode
 		      && (can_change_mode || comp_mode == mode))
 		    found = true;
@@ -7815,7 +7815,7 @@ cse_condition_code_reg (void)
   rtx cc_reg_2;
   basic_block bb;
 
-  if (! (*targetm.fixed_condition_code_regs) (&cc_regno_1, &cc_regno_2))
+  if (! targetm.fixed_condition_code_regs (&cc_regno_1, &cc_regno_2))
     return;
 
   cc_reg_1 = gen_rtx_REG (CCmode, cc_regno_1);

@@ -149,7 +149,7 @@ collect2_eh_frame_section (void)
 
   data_section ();
   ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
-  (*targetm.asm_out.globalize_label) (asm_out_file, IDENTIFIER_POINTER (label));
+  targetm.asm_out.globalize_label (asm_out_file, IDENTIFIER_POINTER (label));
   ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
 }
 
@@ -1958,7 +1958,7 @@ output_call_frame_info (int for_eh)
       if ((fde_table[i].nothrow || fde_table[i].all_throwers_are_sibcalls)
           && !fde_table[i].uses_eh_lsda
 	  && ! DECL_ONE_ONLY (fde_table[i].decl))
-	(*targetm.asm_out.unwind_label) (asm_out_file, fde_table[i].decl,
+	targetm.asm_out.unwind_label (asm_out_file, fde_table[i].decl,
 					 /* empty */ 1);
 
   /* If we don't have any functions we'll want to unwind out of, don't
@@ -1988,7 +1988,7 @@ output_call_frame_info (int for_eh)
     app_enable ();
 
   if (for_eh)
-    (*targetm.asm_out.eh_frame_section) ();
+    targetm.asm_out.eh_frame_section ();
   else
     named_section_flags (DEBUG_FRAME_SECTION, SECTION_DEBUG);
 
@@ -2123,8 +2123,8 @@ output_call_frame_info (int for_eh)
 	  && !fde->uses_eh_lsda)
 	continue;
 
-      (*targetm.asm_out.unwind_label) (asm_out_file, fde->decl, /* empty */ 0);
-      (*targetm.asm_out.internal_label) (asm_out_file, FDE_LABEL, for_eh + i * 2);
+      targetm.asm_out.unwind_label (asm_out_file, fde->decl, /* empty */ 0);
+      targetm.asm_out.internal_label (asm_out_file, FDE_LABEL, for_eh + i * 2);
       ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + i * 2);
       ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + i * 2);
       dw2_asm_output_delta (for_eh ? 4 : DWARF_OFFSET_SIZE, l2, l1,
@@ -6632,7 +6632,7 @@ output_die_symbol (dw_die_ref die)
     /* We make these global, not weak; if the target doesn't support
        .linkonce, it doesn't support combining the sections, so debugging
        will break.  */
-    (*targetm.asm_out.globalize_label) (asm_out_file, sym);
+    targetm.asm_out.globalize_label (asm_out_file, sym);
 
   ASM_OUTPUT_LABEL (asm_out_file, sym);
 }
@@ -8230,7 +8230,7 @@ reg_loc_descriptor (rtx rtl)
     return 0;
 
   reg = reg_number (rtl);
-  regs = (*targetm.dwarf_register_span) (rtl);
+  regs = targetm.dwarf_register_span (rtl);
 
   if (hard_regno_nregs[reg][GET_MODE (rtl)] > 1
       || regs)
@@ -8405,7 +8405,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode, bool can_use_fbreg)
      actually within the array.  That's *not* necessarily the same as the
      zeroth element of the array.  */
 
-  rtl = (*targetm.delegitimize_address) (rtl);
+  rtl = targetm.delegitimize_address (rtl);
 
   switch (GET_CODE (rtl))
     {
@@ -8879,7 +8879,7 @@ loc_descriptor_from_tree (tree loc, int addressp)
 	mode = GET_MODE (rtl);
 	rtl = XEXP (rtl, 0);
 
-	rtl = (*targetm.delegitimize_address) (rtl);
+	rtl = targetm.delegitimize_address (rtl);
 
 	indirect_p = 1;
 	ret = mem_loc_descriptor (rtl, mode, true);
@@ -9664,7 +9664,7 @@ rtl_for_decl_location (tree decl)
 	          && TREE_CODE (decl) == VAR_DECL
 		  && TREE_STATIC (decl))))
 	{
-	  rtl = (*targetm.delegitimize_address) (rtl);
+	  rtl = targetm.delegitimize_address (rtl);
 	  return rtl;
 	}
       rtl = NULL_RTX;
@@ -9771,7 +9771,7 @@ rtl_for_decl_location (tree decl)
     }
 
   if (rtl)
-    rtl = (*targetm.delegitimize_address) (rtl);
+    rtl = targetm.delegitimize_address (rtl);
 
   /* If we don't look past the constant pool, we risk emitting a
      reference to a constant pool entry that isn't referenced from
@@ -13052,7 +13052,7 @@ dwarf2out_source_line (unsigned int line, const char *filename)
       else if (DECL_SECTION_NAME (current_function_decl))
 	{
 	  dw_separate_line_info_ref line_info;
-	  (*targetm.asm_out.internal_label) (asm_out_file, SEPARATE_LINE_CODE_LABEL,
+	  targetm.asm_out.internal_label (asm_out_file, SEPARATE_LINE_CODE_LABEL,
 				     separate_line_info_table_in_use);
 
 	  /* Expand the line info table if necessary.  */
@@ -13082,7 +13082,7 @@ dwarf2out_source_line (unsigned int line, const char *filename)
 	{
 	  dw_line_info_ref line_info;
 
-	  (*targetm.asm_out.internal_label) (asm_out_file, LINE_CODE_LABEL,
+	  targetm.asm_out.internal_label (asm_out_file, LINE_CODE_LABEL,
 				     line_info_table_in_use);
 
 	  /* Expand the line info table if necessary.  */
@@ -13590,7 +13590,7 @@ dwarf2out_finish (const char *filename)
 
   /* Output a terminator label for the .text section.  */
   text_section ();
-  (*targetm.asm_out.internal_label) (asm_out_file, TEXT_END_LABEL, 0);
+  targetm.asm_out.internal_label (asm_out_file, TEXT_END_LABEL, 0);
 
   /* Output the source line correspondence table.  We must do this
      even if there is no line information.  Otherwise, on an empty

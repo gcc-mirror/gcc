@@ -2635,7 +2635,7 @@ mark_constant_function (void)
       || DECL_IS_PURE (current_function_decl)
       || TREE_THIS_VOLATILE (current_function_decl)
       || current_function_has_nonlocal_goto
-      || !(*targetm.binds_local_p) (current_function_decl))
+      || !targetm.binds_local_p (current_function_decl))
     return;
 
   /* A loop might not return which counts as a side effect.  */

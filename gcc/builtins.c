@@ -4961,7 +4961,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
   emit_queue ();
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-    return (*targetm.expand_builtin) (exp, target, subtarget, mode, ignore);
+    return targetm.expand_builtin (exp, target, subtarget, mode, ignore);
 
   /* When not optimizing, generate calls to library functions for a certain
      set of builtins.  */

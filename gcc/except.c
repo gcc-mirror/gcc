@@ -3738,7 +3738,7 @@ output_function_exception_table (void)
   /* Note that varasm still thinks we're in the function's code section.
      The ".endp" directive that will immediately follow will take us back.  */
 #else
-  (*targetm.asm_out.exception_section) ();
+  targetm.asm_out.exception_section ();
 #endif
 
   have_tt_data = (VARRAY_ACTIVE_SIZE (cfun->eh->ttype_data) > 0
@@ -3759,7 +3759,7 @@ output_function_exception_table (void)
       assemble_align (tt_format_size * BITS_PER_UNIT);
     }
 
-  (*targetm.asm_out.internal_label) (asm_out_file, "LLSDA",
+  targetm.asm_out.internal_label (asm_out_file, "LLSDA",
 			     current_function_funcdef_no);
 
   /* The LSDA header.  */

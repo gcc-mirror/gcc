@@ -875,7 +875,7 @@ insn_cost (rtx insn, rtx link, rtx used)
       else
 	{
 	  if (targetm.sched.use_dfa_pipeline_interface
-	      && (*targetm.sched.use_dfa_pipeline_interface) ())
+	      && targetm.sched.use_dfa_pipeline_interface ())
 	    cost = insn_default_latency (insn);
 	  else
 	    cost = result_ready_cost (insn);
@@ -899,7 +899,7 @@ insn_cost (rtx insn, rtx link, rtx used)
   else
     {
       if (targetm.sched.use_dfa_pipeline_interface
-	  && (*targetm.sched.use_dfa_pipeline_interface) ())
+	  && targetm.sched.use_dfa_pipeline_interface ())
 	{
 	  if (INSN_CODE (insn) >= 0)
 	    {
@@ -918,7 +918,7 @@ insn_cost (rtx insn, rtx link, rtx used)
 	}
 
       if (targetm.sched.adjust_cost)
-	cost = (*targetm.sched.adjust_cost) (used, link, insn, cost);
+	cost = targetm.sched.adjust_cost (used, link, insn, cost);
 
       if (cost < 0)
 	cost = 0;
@@ -1210,7 +1210,7 @@ adjust_priority (rtx prev)
 
   if (targetm.sched.adjust_priority)
     INSN_PRIORITY (prev) =
-      (*targetm.sched.adjust_priority) (prev, INSN_PRIORITY (prev));
+      targetm.sched.adjust_priority (prev, INSN_PRIORITY (prev));
 }
 
 /* Advance time on one cycle.  */
@@ -1218,17 +1218,17 @@ HAIFA_INLINE static void
 advance_one_cycle (void)
 {
   if (targetm.sched.use_dfa_pipeline_interface
-      && (*targetm.sched.use_dfa_pipeline_interface) ())
+      && targetm.sched.use_dfa_pipeline_interface ())
     {
       if (targetm.sched.dfa_pre_cycle_insn)
 	state_transition (curr_state,
-			  (*targetm.sched.dfa_pre_cycle_insn) ());
+			  targetm.sched.dfa_pre_cycle_insn ());
 
       state_transition (curr_state, NULL);
 
       if (targetm.sched.dfa_post_cycle_insn)
 	state_transition (curr_state,
-			  (*targetm.sched.dfa_post_cycle_insn) ());
+			  targetm.sched.dfa_post_cycle_insn ());
     }
 }
 
@@ -1250,11 +1250,11 @@ schedule_insn (rtx insn, struct ready_list *ready, int clock)
   int premature_issue = 0;
 
   if (!targetm.sched.use_dfa_pipeline_interface
-      || !(*targetm.sched.use_dfa_pipeline_interface) ())
+      || !targetm.sched.use_dfa_pipeline_interface ())
     unit = insn_unit (insn);
 
   if (targetm.sched.use_dfa_pipeline_interface
-      && (*targetm.sched.use_dfa_pipeline_interface) ()
+      && targetm.sched.use_dfa_pipeline_interface ()
       && sched_verbose >= 1)
     {
       char buf[2048];
@@ -1278,7 +1278,7 @@ schedule_insn (rtx insn, struct ready_list *ready, int clock)
     }
 
   if (!targetm.sched.use_dfa_pipeline_interface
-      || !(*targetm.sched.use_dfa_pipeline_interface) ())
+      || !targetm.sched.use_dfa_pipeline_interface ())
     {
       if (sched_verbose && unit == -1)
 	visualize_no_unit (insn);
@@ -1808,7 +1808,7 @@ queue_to_ready (struct ready_list *ready)
 	}
 
       if ((!targetm.sched.use_dfa_pipeline_interface
-	   || !(*targetm.sched.use_dfa_pipeline_interface) ())
+	   || !targetm.sched.use_dfa_pipeline_interface ())
 	  && sched_verbose && stalls)
 	visualize_stall_cycles (stalls);
 
@@ -2194,7 +2194,7 @@ choose_ready (struct ready_list *ready)
   int lookahead = 0;
 
   if (targetm.sched.first_cycle_multipass_dfa_lookahead)
-    lookahead = (*targetm.sched.first_cycle_multipass_dfa_lookahead) ();
+    lookahead = targetm.sched.first_cycle_multipass_dfa_lookahead ();
   if (lookahead <= 0 || SCHED_GROUP_P (ready_element (ready, 0)))
     return ready_remove_first (ready);
   else
@@ -2219,7 +2219,7 @@ choose_ready (struct ready_list *ready)
 	  ready_try [i]
 	    = (INSN_CODE (insn) < 0
 	       || (targetm.sched.first_cycle_multipass_dfa_lookahead_guard
-		   && !(*targetm.sched.first_cycle_multipass_dfa_lookahead_guard) (insn)));
+		   && !targetm.sched.first_cycle_multipass_dfa_lookahead_guard (insn)));
 	}
       if (max_issue (ready, &index) == 0)
 	return ready_remove_first (ready);
@@ -2272,7 +2272,7 @@ schedule_block (int b, int rgn_n_insns)
     }
 
   if (targetm.sched.use_dfa_pipeline_interface
-      && (*targetm.sched.use_dfa_pipeline_interface) ())
+      && targetm.sched.use_dfa_pipeline_interface ())
     state_reset (curr_state);
   else
     clear_units ();
@@ -2284,7 +2284,7 @@ schedule_block (int b, int rgn_n_insns)
   ready.n_ready = 0;
 
   if (targetm.sched.use_dfa_pipeline_interface
-      && (*targetm.sched.use_dfa_pipeline_interface) ())
+      && targetm.sched.use_dfa_pipeline_interface ())
     {
       /* It is used for first cycle multipass scheduling.  */
       temp_state = alloca (dfa_state_size);
@@ -2298,7 +2298,7 @@ schedule_block (int b, int rgn_n_insns)
   (*current_sched_info->init_ready_list) (&ready);
 
   if (targetm.sched.md_init)
-    (*targetm.sched.md_init) (sched_dump, sched_verbose, ready.veclen);
+    targetm.sched.md_init (sched_dump, sched_verbose, ready.veclen);
 
   /* We start inserting insns after PREV_HEAD.  */
   last_scheduled_insn = prev_head;
@@ -2309,7 +2309,7 @@ schedule_block (int b, int rgn_n_insns)
   q_size = 0;
 
   if (!targetm.sched.use_dfa_pipeline_interface
-      || !(*targetm.sched.use_dfa_pipeline_interface) ())
+      || !targetm.sched.use_dfa_pipeline_interface ())
     max_insn_queue_index_macro_value = INSN_QUEUE_SIZE - 1;
   else
     max_insn_queue_index_macro_value = max_insn_queue_index;
@@ -2370,9 +2370,9 @@ schedule_block (int b, int rgn_n_insns)
 	  && (ready.n_ready == 0
 	      || !SCHED_GROUP_P (ready_element (&ready, 0))))
 	can_issue_more =
-	  (*targetm.sched.reorder) (sched_dump, sched_verbose,
-				    ready_lastpos (&ready),
-				    &ready.n_ready, clock_var);
+	  targetm.sched.reorder (sched_dump, sched_verbose,
+				 ready_lastpos (&ready),
+				 &ready.n_ready, clock_var);
       else
 	can_issue_more = issue_rate;
 
@@ -2391,7 +2391,7 @@ schedule_block (int b, int rgn_n_insns)
 	    }
 
 	  if (!targetm.sched.use_dfa_pipeline_interface
-	      || !(*targetm.sched.use_dfa_pipeline_interface) ())
+	      || !targetm.sched.use_dfa_pipeline_interface ())
 	    {
 	      if (ready.n_ready == 0 || !can_issue_more
 		  || !(*current_sched_info->schedule_more_p) ())
@@ -2427,9 +2427,9 @@ schedule_block (int b, int rgn_n_insns)
 		insn = ready_remove_first (&ready);
 
 	      if (targetm.sched.dfa_new_cycle
-		  && (*targetm.sched.dfa_new_cycle) (sched_dump, sched_verbose,
-						     insn, last_clock_var,
-						     clock_var, &sort_p))
+		  && targetm.sched.dfa_new_cycle (sched_dump, sched_verbose,
+						  insn, last_clock_var,
+						  clock_var, &sort_p))
 		{
 		  ready_add (&ready, insn);
 		  break;
@@ -2465,7 +2465,7 @@ schedule_block (int b, int rgn_n_insns)
 			  rtx bubble;
 
 			  for (j = 0;
-			       (bubble = (*targetm.sched.dfa_bubble) (j))
+			       (bubble = targetm.sched.dfa_bubble (j))
 				 != NULL_RTX;
 			       j++)
 			    {
@@ -2538,7 +2538,7 @@ schedule_block (int b, int rgn_n_insns)
 	  last_scheduled_insn = move_insn (insn, last_scheduled_insn);
 
 	  if (targetm.sched.use_dfa_pipeline_interface
-	      && (*targetm.sched.use_dfa_pipeline_interface) ())
+	      && targetm.sched.use_dfa_pipeline_interface ())
 	    {
 	      if (memcmp (curr_state, temp_state, dfa_state_size) != 0)
 		cycle_issued_insns++;
@@ -2547,7 +2547,7 @@ schedule_block (int b, int rgn_n_insns)
 
 	  if (targetm.sched.variable_issue)
 	    can_issue_more =
-	      (*targetm.sched.variable_issue) (sched_dump, sched_verbose,
+	      targetm.sched.variable_issue (sched_dump, sched_verbose,
 					       insn, can_issue_more);
 	  /* A naked CLOBBER or USE generates no instruction, so do
 	     not count them against the issue rate.  */
@@ -2573,22 +2573,22 @@ schedule_block (int b, int rgn_n_insns)
 		  || !SCHED_GROUP_P (ready_element (&ready, 0))))
 	    {
 	      can_issue_more =
-		(*targetm.sched.reorder2) (sched_dump, sched_verbose,
-					   ready.n_ready
-					   ? ready_lastpos (&ready) : NULL,
-					   &ready.n_ready, clock_var);
+		targetm.sched.reorder2 (sched_dump, sched_verbose,
+					ready.n_ready
+					? ready_lastpos (&ready) : NULL,
+					&ready.n_ready, clock_var);
 	    }
 	}
 
       if ((!targetm.sched.use_dfa_pipeline_interface
-	   || !(*targetm.sched.use_dfa_pipeline_interface) ())
+	   || !targetm.sched.use_dfa_pipeline_interface ())
 	  && sched_verbose)
 	/* Debug info.  */
 	visualize_scheduled_insns (clock_var);
     }
 
   if (targetm.sched.md_finish)
-    (*targetm.sched.md_finish) (sched_dump, sched_verbose);
+    targetm.sched.md_finish (sched_dump, sched_verbose);
 
   /* Debug info.  */
   if (sched_verbose)
@@ -2596,7 +2596,7 @@ schedule_block (int b, int rgn_n_insns)
       fprintf (sched_dump, ";;\tReady list (final):  ");
       debug_ready_list (&ready);
       if (!targetm.sched.use_dfa_pipeline_interface
-	  || !(*targetm.sched.use_dfa_pipeline_interface) ())
+	  || !targetm.sched.use_dfa_pipeline_interface ())
 	print_block_visualization ("");
     }
 
@@ -2665,7 +2665,7 @@ schedule_block (int b, int rgn_n_insns)
   free (ready.vec);
 
   if (targetm.sched.use_dfa_pipeline_interface
-      && (*targetm.sched.use_dfa_pipeline_interface) ())
+      && targetm.sched.use_dfa_pipeline_interface ())
     {
       free (ready_try);
       for (i = 0; i <= rgn_n_insns; i++)
@@ -2738,7 +2738,7 @@ sched_init (FILE *dump_file)
 
   /* Initialize issue_rate.  */
   if (targetm.sched.issue_rate)
-    issue_rate = (*targetm.sched.issue_rate) ();
+    issue_rate = targetm.sched.issue_rate ();
   else
     issue_rate = 1;
 
@@ -2759,17 +2759,17 @@ sched_init (FILE *dump_file)
     h_i_d [i].cost = -1;
 
   if (targetm.sched.use_dfa_pipeline_interface
-      && (*targetm.sched.use_dfa_pipeline_interface) ())
+      && targetm.sched.use_dfa_pipeline_interface ())
     {
       if (targetm.sched.init_dfa_pre_cycle_insn)
-	(*targetm.sched.init_dfa_pre_cycle_insn) ();
+	targetm.sched.init_dfa_pre_cycle_insn ();
 
       if (targetm.sched.init_dfa_post_cycle_insn)
-	(*targetm.sched.init_dfa_post_cycle_insn) ();
+	targetm.sched.init_dfa_post_cycle_insn ();
 
       if (targetm.sched.first_cycle_multipass_dfa_lookahead
 	  && targetm.sched.init_dfa_bubbles)
-	(*targetm.sched.init_dfa_bubbles) ();
+	targetm.sched.init_dfa_bubbles ();
 
       dfa_start ();
       dfa_state_size = state_size ();
@@ -2832,7 +2832,7 @@ sched_init (FILE *dump_file)
     }
 
   if ((!targetm.sched.use_dfa_pipeline_interface
-       || !(*targetm.sched.use_dfa_pipeline_interface) ())
+       || !targetm.sched.use_dfa_pipeline_interface ())
       && sched_verbose)
     /* Find units used in this function, for visualization.  */
     init_target_units ();
@@ -2858,7 +2858,7 @@ sched_init (FILE *dump_file)
     find_insn_reg_weight (b->index);
 
   if (targetm.sched.md_init_global)
-      (*targetm.sched.md_init_global) (sched_dump, sched_verbose, old_max_uid);
+      targetm.sched.md_init_global (sched_dump, sched_verbose, old_max_uid);
 }
 
 /* Free global data used during insn scheduling.  */
@@ -2869,7 +2869,7 @@ sched_finish (void)
   free (h_i_d);
 
   if (targetm.sched.use_dfa_pipeline_interface
-      && (*targetm.sched.use_dfa_pipeline_interface) ())
+      && targetm.sched.use_dfa_pipeline_interface ())
     {
       free (curr_state);
       dfa_finish ();
@@ -2880,6 +2880,6 @@ sched_finish (void)
     free (line_note_head);
 
   if (targetm.sched.md_finish_global)
-      (*targetm.sched.md_finish_global) (sched_dump, sched_verbose);
+      targetm.sched.md_finish_global (sched_dump, sched_verbose);
 }
 #endif /* INSN_SCHEDULING */

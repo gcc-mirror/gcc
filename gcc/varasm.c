@@ -348,7 +348,7 @@ named_section_flags (const char *name, unsigned int flags)
       if (! set_named_section_flags (name, flags))
 	abort ();
 
-      (*targetm.asm_out.named_section) (name, flags);
+      targetm.asm_out.named_section (name, flags);
 
       if (flags & SECTION_FORGET)
 	in_section = no_section;
@@ -402,7 +402,7 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
       && targetm.have_named_sections
       && (flag_function_or_data_sections
 	  || DECL_ONE_ONLY (decl)))
-    (*targetm.asm_out.unique_section) (decl, reloc);
+    targetm.asm_out.unique_section (decl, reloc);
 }
 
 #ifdef BSS_SECTION_ASM_OP
@@ -432,7 +432,7 @@ asm_output_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
 		unsigned HOST_WIDE_INT size ATTRIBUTE_UNUSED,
 		unsigned HOST_WIDE_INT rounded)
 {
-  (*targetm.asm_out.globalize_label) (file, name);
+  targetm.asm_out.globalize_label (file, name);
   bss_section ();
 #ifdef ASM_DECLARE_OBJECT_NAME
   last_assemble_variable_decl = decl;
@@ -499,7 +499,7 @@ variable_section (tree decl, int reloc)
   if (IN_NAMED_SECTION (decl))
     named_section (decl, NULL, reloc);
   else
-    (*targetm.asm_out.select_section) (decl, reloc, DECL_ALIGN (decl));
+    targetm.asm_out.select_section (decl, reloc, DECL_ALIGN (decl));
 }
 
 /* Tell assembler to switch to the section for string merging.  */
@@ -1610,7 +1610,7 @@ assemble_external_libcall (rtx fun)
   if (! SYMBOL_REF_USED (fun))
     {
       SYMBOL_REF_USED (fun) = 1;
-      (*targetm.asm_out.external_libcall) (fun);
+      targetm.asm_out.external_libcall (fun);
     }
 }
 
@@ -1741,7 +1741,7 @@ assemble_trampoline_template (void)
       ASM_OUTPUT_ALIGN (asm_out_file, align);
     }
 
-  (*targetm.asm_out.internal_label) (asm_out_file, "LTRAMP", 0);
+  targetm.asm_out.internal_label (asm_out_file, "LTRAMP", 0);
   TRAMPOLINE_TEMPLATE (asm_out_file);
 
   /* Record the rtl to refer to it.  */
@@ -1833,7 +1833,7 @@ assemble_integer (rtx x, unsigned int size, unsigned int align, int force)
   aligned_p = (align >= MIN (size * BITS_PER_UNIT, BIGGEST_ALIGNMENT));
 
   /* See if the target hook can handle this kind of object.  */
-  if ((*targetm.asm_out.integer) (x, size, aligned_p))
+  if (targetm.asm_out.integer (x, size, aligned_p))
     return true;
 
   /* If the object is a multi-byte one, try splitting it up.  Split
@@ -2371,7 +2371,7 @@ build_constant_desc (tree exp)
      information.  This call might invalidate our local variable
      SYMBOL; we can't use it afterward.  */
 
-  (*targetm.encode_section_info) (exp, rtl, true);
+  targetm.encode_section_info (exp, rtl, true);
 
   desc->rtl = rtl;
 
@@ -2474,7 +2474,7 @@ output_constant_def_contents (rtx symbol)
   if (IN_NAMED_SECTION (exp))
     named_section (exp, NULL, reloc);
   else
-    (*targetm.asm_out.select_section) (exp, reloc, align);
+    targetm.asm_out.select_section (exp, reloc, align);
 
   if (align > BITS_PER_UNIT)
     {
@@ -2723,7 +2723,7 @@ force_const_mem (enum machine_mode mode, rtx x)
   void **slot;
 
   /* If we're not allowed to drop X into the constant pool, don't.  */
-  if ((*targetm.cannot_force_const_mem) (x))
+  if (targetm.cannot_force_const_mem (x))
     return NULL_RTX;
 
   /* Lookup the value in the hashtable.  */
@@ -2964,7 +2964,7 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc)
     }
 
   /* First switch to correct section.  */
-  (*targetm.asm_out.select_rtx_section) (desc->mode, x, desc->align);
+  targetm.asm_out.select_rtx_section (desc->mode, x, desc->align);
 
 #ifdef ASM_OUTPUT_SPECIAL_POOL_ENTRY
   ASM_OUTPUT_SPECIAL_POOL_ENTRY (asm_out_file, x, desc->mode,
@@ -2974,7 +2974,7 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc)
   assemble_align (desc->align);
 
   /* Output the label.  */
-  (*targetm.asm_out.internal_label) (asm_out_file, "LC", desc->labelno);
+  targetm.asm_out.internal_label (asm_out_file, "LC", desc->labelno);
 
   /* Output the data.  */
   output_constant_pool_2 (desc->mode, x, desc->align);
@@ -4109,7 +4109,7 @@ globalize_decl (tree decl)
     ASM_MAKE_LABEL_LINKONCE (asm_out_file, name);
 #endif
 
-  (*targetm.asm_out.globalize_label) (asm_out_file, name);
+  targetm.asm_out.globalize_label (asm_out_file, name);
 }
 
 /* Emit an assembler directive to make the symbol for DECL an alias to
@@ -4283,7 +4283,7 @@ decl_tls_model (tree decl)
       return kind;
     }
 
-  is_local = (*targetm.binds_local_p) (decl);
+  is_local = targetm.binds_local_p (decl);
   if (!flag_pic)
     {
       if (is_local)
@@ -4586,7 +4586,7 @@ categorize_decl_for_section (tree decl, int reloc, int shlib)
     }
 
   /* If the target uses small data sections, select it.  */
-  else if ((*targetm.in_small_data_p) (decl))
+  else if (targetm.in_small_data_p (decl))
     {
       if (ret == SECCAT_BSS)
 	ret = SECCAT_SBSS;
@@ -4828,9 +4828,9 @@ default_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
   flags = 0;
   if (TREE_CODE (decl) == FUNCTION_DECL)
     flags |= SYMBOL_FLAG_FUNCTION;
-  if ((*targetm.binds_local_p) (decl))
+  if (targetm.binds_local_p (decl))
     flags |= SYMBOL_FLAG_LOCAL;
-  if ((*targetm.in_small_data_p) (decl))
+  if (targetm.in_small_data_p (decl))
     flags |= SYMBOL_FLAG_SMALL;
   if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
     flags |= decl_tls_model (decl) << SYMBOL_FLAG_TLS_SHIFT;

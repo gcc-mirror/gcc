@@ -3401,7 +3401,7 @@ c_common_nodes_and_builtins (void)
 #include "builtins.def"
 #undef DEF_BUILTIN
 
-  (*targetm.init_builtins) ();
+  targetm.init_builtins ();
 
   main_identifier_node = get_identifier ("main");
 }
@@ -4614,7 +4614,7 @@ handle_mode_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 
       else if ((TREE_CODE (type) == POINTER_TYPE
 		|| TREE_CODE (type) == REFERENCE_TYPE)
-	       && !(*targetm.valid_pointer_mode) (mode))
+	       && !targetm.valid_pointer_mode (mode))
 	error ("invalid pointer mode `%s'", p);
       else
 	{

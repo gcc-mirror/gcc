@@ -226,7 +226,7 @@ common_type (tree t1, tree t2)
     return t1;
 
   /* Merge the attributes.  */
-  attributes = (*targetm.merge_type_attributes) (t1, t2);
+  attributes = targetm.merge_type_attributes (t1, t2);
 
   /* Treat an enum type as the unsigned integer type of the same width.  */
 
@@ -502,7 +502,7 @@ comptypes (tree type1, tree type2, int flags)
     return 1;
 
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
-  if (! (attrval = (*targetm.comp_type_attributes) (t1, t2)))
+  if (! (attrval = targetm.comp_type_attributes (t1, t2)))
      return 0;
 
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
@@ -577,8 +577,8 @@ comptypes (tree type1, tree type2, int flags)
 
     case VECTOR_TYPE:
       /* The target might allow certain vector types to be compatible.  */
-      val = (*targetm.vector_opaque_p) (t1)
-	|| (*targetm.vector_opaque_p) (t2)
+      val = targetm.vector_opaque_p (t1)
+	|| targetm.vector_opaque_p (t2)
 	|| TYPE_MODE (t1) == TYPE_MODE (t2);
       break;
 
@@ -3393,8 +3393,8 @@ convert_for_assignment (tree type, tree rhs, const char *errtype,
       int target_cmp = 0;   /* Cache comp_target_types () result.  */
 
       /* Opaque pointers are treated like void pointers.  */
-      is_opaque_pointer = ((*targetm.vector_opaque_p) (type)
-                           || (*targetm.vector_opaque_p) (rhstype))
+      is_opaque_pointer = (targetm.vector_opaque_p (type)
+                           || targetm.vector_opaque_p (rhstype))
         && TREE_CODE (ttl) == VECTOR_TYPE
         && TREE_CODE (ttr) == VECTOR_TYPE;
 
@@ -4345,7 +4345,7 @@ really_start_incremental_init (tree type)
   if (type == 0)
     type = TREE_TYPE (constructor_decl);
 
-  if ((*targetm.vector_opaque_p) (type))
+  if (targetm.vector_opaque_p (type))
     error ("opaque vector types cannot be initialized");
 
   p->type = constructor_type;
