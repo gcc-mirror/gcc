@@ -73,7 +73,7 @@
 
 ;; Target CPU.
 
-(define_attr "cpu" "sh0,sh1,sh2,sh3"
+(define_attr "cpu" "sh0,sh1,sh2,sh3,sh3e"
   (const (symbol_ref "sh_cpu_attr")))
 
 ;; cbranch	conditional branch instructions
@@ -141,6 +141,8 @@
 (define_function_unit "memory" 1 0 (eq_attr "type" "load,pcload,pload") 2 2)
 (define_function_unit "mpy"    1 0 (eq_attr "type" "smpy") 2 2)
 (define_function_unit "mpy"    1 0 (eq_attr "type" "dmpy") 3 3)
+
+;; ??? Must define SH3E function units.
 
 ; Definitions for filling branch delay slots.
 
@@ -1130,6 +1132,28 @@
   [(set_attr "type" "load,pload,load")
    (set_attr "hit_stack" "yes")])
 
+(define_insn "push_e"
+  [(set (mem:SF (pre_dec:SI (reg:SI 15)))
+	(match_operand:SF 0 "register_operand" "r,f,y"))]
+  ""
+  "@
+	mov.l	%0,@-r15
+	fmov.s	%0,@-r15
+	sts.l	%0,@-r15"
+  [(set_attr "type" "store")
+   (set_attr "hit_stack" "yes")])
+
+(define_insn "pop_e"
+  [(set (match_operand:SF 0 "register_operand" "=r,f,y")
+	(mem:SF (post_inc:SI (reg:SI 15))))]
+  ""
+  "@
+	mov.l	@r15+,%0
+	fmov.s	@r15+,%0
+	lds.l	@r15+,%0"
+  [(set_attr "type" "load")
+   (set_attr "hit_stack" "yes")])
+
 ;; These two patterns can happen as the result of optimization, when
 ;; comparisons get simplified to a move of zero or 1 into the T reg.
 ;; They don't disappear completely, because the T reg is a fixed hard reg.
@@ -1149,8 +1173,10 @@
 (define_insn "movsi_i"
   [(set (match_operand:SI 0 "general_movdst_operand" "=t,r,r,r,r,r,m,<,xl,xl,r")
 	(match_operand:SI 1 "general_movsrc_operand" "z,Q,rI,m,xl,t,r,xl,r,>,i"))]
-  "register_operand (operands[0], SImode)
-   || register_operand (operands[1], SImode)"
+  "
+   ! TARGET_SH3E &&
+   (register_operand (operands[0], SImode)
+    || register_operand (operands[1], SImode))"
   "@
 	tst	%1,%1\;rotcl	%1\;xor	#1,%1\;rotcr	%1
 	mov.l	%1,%0
@@ -1165,6 +1191,33 @@
 	fake	%1,%0"
   [(set_attr "type" "move,pcload,move,load,move,store,store,move,load,move,move")
    (set_attr "length" "8,*,*,*,*,*,*,*,*,*,*")])
+
+;; t/z is first, so that it will be preferred over r/r when reloading a move
+;; of a pseudo-reg into the T reg
+;; ??? This allows moves from macl to fpul to be recognized, but these moves
+;; will require a reload.
+(define_insn "movsi_ie"
+  [(set (match_operand:SI 0 "general_movdst_operand" "=t,r,r,r,r,r,m,<,xl,xl,r,y,r")
+	(match_operand:SI 1 "general_movsrc_operand" "z,Q,rI,m,xl,t,r,xl,r,>,i,r,y"))]
+  "TARGET_SH3E
+   && (register_operand (operands[0], SImode)
+       || register_operand (operands[1], SImode))"
+  "@
+	tst	%1,%1\;rotcl	%1\;xor	#1,%1\;rotcr	%1
+	mov.l	%1,%0
+	mov	%1,%0
+	mov.l	%1,%0
+	sts	%1,%0
+	movt	%0
+	mov.l	%1,%0
+	sts.l	%1,%0
+	lds	%1,%0
+	lds.l	%1,%0
+	fake	%1,%0
+	lds	%1,%0
+	sts	%1,%0"
+  [(set_attr "type" "move,pcload,move,load,move,store,store,move,load,move,move,move,move")
+   (set_attr "length" "8,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 (define_expand "movsi"
   [(set (match_operand:SI 0 "general_movdst_operand" "")
@@ -1345,8 +1398,10 @@
 (define_insn "movsf_i"
   [(set (match_operand:SF 0 "general_movdst_operand" "=r,r,r,m,l,r")
 	(match_operand:SF 1 "general_movsrc_operand"  "r,I,m,r,r,l"))]
-  "arith_reg_operand (operands[0], SFmode)
-   || arith_reg_operand (operands[1], SFmode)"
+  "
+   ! TARGET_SH3E &&
+   (arith_reg_operand (operands[0], SFmode)
+    || arith_reg_operand (operands[1], SFmode))"
   "@
 	mov	%1,%0
 	mov	%1,%0
@@ -1355,6 +1410,26 @@
 	lds	%1,%0
 	sts	%1,%0"
   [(set_attr "type" "move,move,load,store,move,move")])
+
+(define_insn "movsf_ie"
+  [(set (match_operand:SF 0 "general_movdst_operand" "=f,r,f,f,f,m,r,m,!r,!f")
+	(match_operand:SF 1 "general_movsrc_operand"  "f,r,G,H,m,f,m,r,f,r"))]
+  "TARGET_SH3E
+   && (arith_reg_operand (operands[0], SFmode)
+       || arith_reg_operand (operands[1], SFmode))"
+  "@
+	fmov	%1,%0
+	mov	%1,%0
+	fldi0	%0
+	fldi1	%0
+	fmov.s	%1,%0
+	fmov.s	%1,%0
+	mov.l	%1,%0
+	mov.l	%1,%0
+	flds	%1,fpul\;sts	fpul,%0
+	lds	%1,fpul\;fsts	fpul,%0"
+  [(set_attr "type" "move,move,move,move,load,store,load,store,move,move")
+   (set_attr "length" "*,*,*,*,*,*,*,*,4,4")])
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "general_movdst_operand" "")
@@ -1436,7 +1511,18 @@
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   ""
-  "from_compare (operands, LT);")
+  "
+{
+  if (GET_MODE (sh_compare_op0) == SFmode)
+    {
+      rtx tmp = sh_compare_op0;
+      sh_compare_op0 = sh_compare_op1;
+      sh_compare_op1 = tmp;
+      emit_insn (gen_bgt (operands[0]));
+      DONE;
+    }
+  from_compare (operands, LT);
+}")
 
 (define_expand "ble"
   [(set (reg:SI 18) (gt:SI (match_dup 1) (match_dup 2)))
@@ -1454,7 +1540,18 @@
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "from_compare (operands, GE);")
+  "
+{
+  if (GET_MODE (sh_compare_op0) == SFmode)
+    {
+      rtx tmp = sh_compare_op0;
+      sh_compare_op0 = sh_compare_op1;
+      sh_compare_op1 = tmp;
+      emit_insn (gen_ble (operands[0]));
+      DONE;
+    }
+  from_compare (operands, GE);
+}")
 
 (define_expand "bgtu"
   [(set (reg:SI 18) (gtu:SI (match_dup 1) (match_dup 2)))
@@ -1691,7 +1788,16 @@
   [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(match_dup 1))]
   ""
-  "operands[1] = prepare_scc_operands (LE);")
+  "
+{
+  if (GET_MODE (sh_compare_op0) == SFmode)
+    {
+      emit_insn (gen_sgt (operands[0]));
+      emit_insn (gen_xorsi3 (operands[0], operands[0], const1_rtx));
+      DONE;
+    }
+  operands[1] = prepare_scc_operands (LE);
+}")
 
 (define_expand "sgt"
   [(set (match_operand:SI 0 "arith_reg_operand" "")
@@ -1703,7 +1809,16 @@
   [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(match_dup 1))]
   ""
-  "operands[1] = prepare_scc_operands (GE);")
+  "
+{
+  if (GET_MODE (sh_compare_op0) == SFmode)
+    {
+      emit_insn (gen_slt (operands[0]));
+      emit_insn (gen_xorsi3 (operands[0], operands[0], const1_rtx));
+      DONE;
+    }
+  operands[1] = prepare_scc_operands (GE);
+}")
 
 (define_expand "sgtu"
   [(set (match_operand:SI 0 "arith_reg_operand" "")
@@ -1853,7 +1968,144 @@
   "jsr	@%0%#"
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
+
+;; -------------------------------------------------------------------------
+;; Floating point instructions.
+;; -------------------------------------------------------------------------
 
+;; ??? All patterns should have a type attribute.
+
+(define_insn "addsf3"
+  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
+	(plus:SF (match_operand:SF 1 "arith_reg_operand" "%0")
+		 (match_operand:SF 2 "arith_reg_operand" "f")))]
+  "TARGET_SH3E"
+  "fadd	%2,%0")
+
+(define_insn "subsf3"
+  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
+	(minus:SF (match_operand:SF 1 "arith_reg_operand" "0")
+		  (match_operand:SF 2 "arith_reg_operand" "f")))]
+  "TARGET_SH3E"
+  "fsub	%2,%0")
+
+(define_insn "mulsf3"
+  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
+	(mult:SF (match_operand:SF 1 "arith_reg_operand" "%0")
+		 (match_operand:SF 2 "arith_reg_operand" "f")))]
+  "TARGET_SH3E"
+  "fmul	%2,%0")
+
+(define_insn "*macsf3"
+  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
+	(plus:SF (mult:SF (match_operand:SF 1 "arith_reg_operand" "%w")
+			  (match_operand:SF 2 "arith_reg_operand" "f"))
+		 (match_operand:SF 3 "arith_reg_operand" "0")))]
+  "TARGET_SH3E"
+  "fmac	fr0,%2,%0")
+
+(define_insn "divsf3"
+  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
+	(div:SF (match_operand:SF 1 "arith_reg_operand" "0")
+		(match_operand:SF 2 "arith_reg_operand" "f")))]
+  "TARGET_SH3E"
+  "fdiv	%2,%0")
+
+;; ??? This is the right solution, but it fails because the movs[if] patterns
+;; silently clobber FPUL (r22) for int<->fp moves.  Thus we can not explicitly
+;; use FPUL here.
+;;
+;;(define_expand "floatsisf2"
+;;  [(set (reg:SI 22)
+;;	(match_operand:SI 1 "arith_reg_operand" ""))
+;;   (set (match_operand:SF 0 "arith_reg_operand" "")
+;;        (float:SF (reg:SI 22)))]
+;;  "TARGET_SH3E"
+;;  "")
+;;
+;;(define_insn "*floatsisf"
+;;  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
+;;	(float:SF (reg:SI 22)))]
+;;  "TARGET_SH3E"
+;;  "float	fpul,%0")
+
+(define_insn "floatsisf2"
+  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
+	(float:SF (match_operand:SI 1 "arith_reg_operand" "r")))]
+  "TARGET_SH3E"
+  "lds	%1,fpul\;float	fpul,%0"
+  [(set_attr "length" "4")])
+
+;; ??? This is the right solution, but it fails because the movs[if] patterns
+;; silently clobber FPUL (r22) for int<->fp moves.  Thus we can not explicitly
+;; use FPUL here.
+;;
+;;(define_expand "fix_truncsfsi2"
+;;  [(set (reg:SI 22)
+;;	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
+;;   (set (match_operand:SI 0 "arith_reg_operand" "=r")
+;;	(reg:SI 22))]
+;;  "TARGET_SH3E"
+;;  "")
+;;
+;;(define_insn "*fixsfsi"
+;;  [(set (reg:SI 22)
+;;	(fix:SI (match_operand:SF 0 "arith_reg_operand" "f")))]
+;;  "TARGET_SH3E"
+;;  "ftrc	%0,fpul")
+
+(define_insn "fix_truncsfsi2"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))]
+  "TARGET_SH3E"
+  "ftrc	%1,fpul\;sts	fpul,%0"
+  [(set_attr "length" "4")])
+
+;; ??? This should be SFmode not SImode in the compare, but that would
+;; require fixing the branch patterns too.
+(define_insn "*cmpgtsf_t"
+  [(set (reg:SI 18) (gt:SI (match_operand:SF 0 "arith_reg_operand" "f")
+			   (match_operand:SF 1 "arith_reg_operand" "f")))]
+  "TARGET_SH3E"
+  "fcmp/gt	%1,%0")
+
+;; ??? This should be SFmode not SImode in the compare, but that would
+;; require fixing the branch patterns too.
+(define_insn "*cmpeqsf_t"
+  [(set (reg:SI 18) (eq:SI (match_operand:SF 0 "arith_reg_operand" "f")
+			   (match_operand:SF 1 "arith_reg_operand" "f")))]
+  "TARGET_SH3E"
+  "fcmp/eq	%1,%0")
+
+(define_expand "cmpsf"
+  [(set (reg:SI 18) (compare (match_operand:SF 0 "arith_operand" "")
+			     (match_operand:SF 1 "arith_operand" "")))]
+  "TARGET_SH3E"
+  "
+{
+  sh_compare_op0 = operands[0];
+  sh_compare_op1 = operands[1];
+  DONE;
+}")
+
+(define_insn "negsf2"
+  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
+	(neg:SF (match_operand:SF 1 "arith_reg_operand" "0")))]
+  "TARGET_SH3E"
+  "fneg	%0")
+
+(define_insn "sqrtsf2"
+  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
+	(sqrt:DF (match_operand:SF 1 "arith_reg_operand" "0")))]
+  "TARGET_SH3E"
+  "fsqrt	%0")
+
+(define_insn "abssf2"
+  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
+	(abs:SF (match_operand:SF 1 "arith_reg_operand" "0")))]
+  "TARGET_SH3E"
+  "fabs	%0")
+
 ;; -------------------------------------------------------------------------
 ;; Peepholes
 ;; -------------------------------------------------------------------------
@@ -1949,7 +2201,11 @@
 	(plus:SI (match_dup 0) (match_operand:SI 1 "register_operand" "r")))
    (set (mem:SF (match_dup 0))
 	(match_operand:SF 2 "general_movsrc_operand" ""))]
-  "REGNO (operands[0]) == 0 && reg_unused_after (operands[0], insn)"
+  "REGNO (operands[0]) == 0
+   && ((GET_CODE (operands[2]) == REG && REGNO (operands[2]) < 16)
+       || (GET_CODE (operands[2]) == SUBREG
+	   && REGNO (SUBREG_REG (operands[2])) < 16))
+   && reg_unused_after (operands[0], insn)"
   "mov.l	%2,@(%0,%1)")
 
 (define_peephole
@@ -1958,5 +2214,34 @@
    (set (match_operand:SF 2 "general_movdst_operand" "")
 
 	(mem:SF (match_dup 0)))]
-  "REGNO (operands[0]) == 0 && reg_unused_after (operands[0], insn)"
+  "REGNO (operands[0]) == 0
+   && ((GET_CODE (operands[2]) == REG && REGNO (operands[2]) < 16)
+       || (GET_CODE (operands[2]) == SUBREG
+	   && REGNO (SUBREG_REG (operands[2])) < 16))
+   && reg_unused_after (operands[0], insn)"
   "mov.l	@(%0,%1),%2")
+
+(define_peephole
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 0) (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:SF (match_dup 0))
+	(match_operand:SF 2 "general_movsrc_operand" ""))]
+  "REGNO (operands[0]) == 0
+   && ((GET_CODE (operands[2]) == REG && REGNO (operands[2]) >= FIRST_FP_REG)
+       || (GET_CODE (operands[2]) == SUBREG
+	   && REGNO (SUBREG_REG (operands[2])) >= FIRST_FP_REG))
+   && reg_unused_after (operands[0], insn)"
+  "fmov.s	%2,@(%0,%1)")
+
+(define_peephole
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_dup 0) (match_operand:SI 1 "register_operand" "r")))
+   (set (match_operand:SF 2 "general_movdst_operand" "")
+
+	(mem:SF (match_dup 0)))]
+  "REGNO (operands[0]) == 0
+   && ((GET_CODE (operands[2]) == REG && REGNO (operands[2]) >= FIRST_FP_REG)
+       || (GET_CODE (operands[2]) == SUBREG
+	   && REGNO (SUBREG_REG (operands[2])) >= FIRST_FP_REG))
+   && reg_unused_after (operands[0], insn)"
+  "fmov.s	@(%0,%1),%2")
