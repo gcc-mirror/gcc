@@ -1,0 +1,5 @@
+1999-03-13  RELEASE-PREP
+
+Things to do to prepare a g77 release (FSF, egcs, whatever).
+
+-  Update root.texi: clear DEVELOPMENT flag, set version info.

@@ -1,3 +1,17 @@
+Sat Mar 13 14:26:55 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* RELEASE-PREP: New file, lists things to do for a release.
+
+	* Make-lang.in, bugs.texi, bugs0.texi, g77.texi, g77install.texi,
+	install0.texi, news.texi, news0.texi: Accommodate new doc
+	architecture.
+	Consolidate news items.  Don't describe old news items in
+	various generated docs.
+	Don't describe FSF-g77 installation stuff in various EGCS-g77
+	generated docs.
+	Move description of AUTOMATIC to more suitable location.
+	* root.texi: New file for new doc architecture.
+
 Thu Mar 11 17:32:55 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.texi: Add AUTOMATIC to list of unsupported extensions.

@@ -1,26 +1,15 @@
 \input texinfo  @c -*-texinfo-*-
-@c fix @set inside @example:
-@tex
-\gdef\set{\begingroup\catcode` =10 \parsearg\setxxx}
-\gdef\setyyy#1 #2\endsetyyy{%
-  \def\temp{#2}%
-  \ifx\temp\empty \global\expandafter\let\csname SET#1\endcsname = \empty
-  \else \setzzz{#1}#2\endsetzzz % Remove the trailing space \setxxx inserted.
-  \fi
-  \endgroup
-}
-@end tex
-
 @c %**start of header
 @setfilename g77.info
 
-@set last-up-date 1999-03-11
-@set version-g77 0.5.24
-@set email-general egcs@@egcs.cygnus.com
-@set email-bugs egcs-bugs@@egcs.cygnus.com
-@set email-burley craig@@jcb-sc.com
-@set path-g77 egcs/gcc/f
-@set path-libf2c egcs/libf2c
+@set last-update 1999-03-13
+@set copyrights-g77 1995-1999
+
+@include root.texi
+
+@c This tells @include'd files that they're part of the overall G77 doc
+@c set.  (They might be part of a higher-level doc set too.)
+@set DOC-G77
 
 @c @setfilename useg77.info
 @c @setfilename portg77.info
@@ -35,9 +24,13 @@
 @c and make sure the following does NOT begin with '@c':
 @c @clear USING
 
-@c (For FSF printing, turn on smallbook; that is all that is needed.)
+@c 6/27/96 FSF DO wants smallbook fmt for 1st bound edition. (from gcc.texi)
+@c @smallbook
 
-@c smallbook
+@c i also commented out the finalout command, so if there *are* any
+@c overfulls, you'll (hopefully) see the rectangle in the right hand
+@c margin. -- burley 1999-03-13 (from mew's comment in gcc.texi).
+@c @finalout
 
 @ifset INTERNALS
 @ifset USING
@@ -61,16 +54,48 @@
 @syncodeindex fn cp
 @syncodeindex vr cp
 @c %**end of header
-@setchapternewpage odd
+
+@c Cause even numbered pages to be printed on the left hand side of
+@c the page and odd numbered pages to be printed on the right hand
+@c side of the page.  Using this, you can print on both sides of a
+@c sheet of paper and have the text on the same part of the sheet.
+
+@c The text on right hand pages is pushed towards the right hand
+@c margin and the text on left hand pages is pushed toward the left
+@c hand margin.
+@c (To provide the reverse effect, set bindingoffset to -0.75in.)
+
+@c @tex
+@c \global\bindingoffset=0.75in
+@c \global\normaloffset =0.75in
+@c @end tex
 
 @ifinfo
-This file explains how to use the GNU Fortran system.
+@dircategory Programming
+@direntry
+* g77: (g77).                  The GNU Fortran compiler.
+@end direntry
+@ifset INTERNALS
+@ifset USING
+This file documents the use and the internals of the GNU Fortran (@code{g77})
+compiler.
+It corresponds to the @value{which-g77} version of @code{g77}.
+@end ifset
+@end ifset
+@ifclear USING
+This file documents the internals of the GNU Fortran (@code{g77}) compiler.
+It corresponds to the @value{which-g77} version of @code{g77}.
+@end ifclear
+@ifclear INTERNALS
+This file documents the use of the GNU Fortran (@code{g77}) compiler.
+It corresponds to the @value{which-g77} version of @code{g77}.
+@end ifclear
 
 Published by the Free Software Foundation
 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-Copyright (C) 1995-1997 Free Software Foundation, Inc.
+Copyright (C) @value{copyrights-g77} Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -104,23 +129,32 @@ Contributed by James Craig Burley (@email{@value{email-burley}}).
 Inspired by a first pass at translating @file{g77-0.5.16/f/DOC} that
 was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 
-@finalout
+@setchapternewpage odd
+@c @finalout
 @titlepage
-@comment The title is printed in a large font.
-@center @titlefont{Using GNU Fortran}
+@ifset INTERNALS
+@ifset USING
+@center @titlefont{Using and Porting GNU Fortran}
+
+@end ifset
+@end ifset
+@ifclear INTERNALS
+@title Using GNU Fortran
+@end ifclear
+@ifclear USING
+@title Porting GNU Fortran
+@end ifclear
 @sp 2
 @center James Craig Burley
 @sp 3
-@center Last updated @value{last-up-date}
+@center Last updated @value{last-update}
 @sp 1
-@c The version number appears some more times in this file.
-
 @center for version @value{version-g77}
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1995-1999 Free Software Foundation, Inc.
+Copyright @copyright{} @value{copyrights-g77} Free Software Foundation, Inc.
 @sp 2
-For GNU Fortran Version @value{version-g77}*
+For the @value{which-g77} Version*
 @sp 1
 Published by the Free Software Foundation @*
 59 Temple Place - Suite 330@*
@@ -153,34 +187,50 @@ original English.
 
 @ifinfo
 
-@dircategory Programming
-@direntry
-* g77: (g77).                  The GNU Fortran compiler.
-@end direntry
 @node Top, Copying,, (DIR)
 @top Introduction
 @cindex Introduction
 
 @ifset INTERNALS
 @ifset USING
-This manual documents how to run, install and port the GNU Fortran
-compiler, as well as its new features and incompatibilities, and how to
-report bugs.  It corresponds to GNU Fortran version @value{version-g77}.
+This manual documents how to run, install and port @code{g77},
+as well as its new features and incompatibilities,
+and how to report bugs.
+It corresponds to the @value{which-g77} version of @code{g77}.
 @end ifset
 @end ifset
 
 @ifclear INTERNALS
-This manual documents how to run and install the GNU Fortran compiler,
+This manual documents how to run and install @code{g77},
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to GNU Fortran version @value{version-g77}.
+bugs.
+It corresponds to the @value{which-g77} version of @code{g77}.
 @end ifclear
 @ifclear USING
-This manual documents how to port the GNU Fortran compiler,
-as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to GNU Fortran version @value{version-g77}.
+This manual documents how to port @code{g77},
+as well as its new features and incompatibilities,
+and how to report bugs.
+It corresponds to the @value{which-g77} version of @code{g77}.
 @end ifclear
 
 @end ifinfo
+
+@ifset DEVELOPMENT
+@emph{Warning:} This document is still under development,
+and might not accurately reflect the @code{g77} code base
+of which it is a part.
+Efforts are made to keep it somewhat up-to-date,
+but they are particularly concentrated
+on any version of this information
+that is distributed as part of a @emph{released} @code{g77}.
+
+In particular, while this document is intended to apply to
+the @value{which-g77} version of @code{g77},
+only an official @emph{release} of that version
+is expected to contain documentation that is
+most consistent with the @code{g77} product in that version.
+@end ifset
+
 @menu
 * Copying::         GNU General Public License says
                     how you can copy and share GNU Fortran.
@@ -3374,806 +3424,9 @@ variables.
 
 @include news.texi
 
-@node Changes
-@chapter User-visible Changes
-@cindex versions, recent
-@cindex recent versions
-@cindex changes, user-visible
-@cindex user-visible changes
-
-This section describes changes to @code{g77} that are visible
-to the programmers who actually write and maintain Fortran
-code they compile with @code{g77}.
-Information on changes to installation procedures,
-changes to the documentation, and bug fixes is
-not provided here, unless it is likely to affect how
-users use @code{g77}.
-@xref{News,,News About GNU Fortran}, for information on
-such changes to @code{g77}.
-
-To find out about existing bugs and ongoing plans for GNU
-Fortran, retrieve @uref{ftp://alpha.gnu.org/g77.plan}
-or, if you cannot do that, email
-@email{fortran@@gnu.org} asking for a recent copy of the
-GNU Fortran @file{.plan} file.
-
-@heading In @code{egcs 1.2}:
-@itemize @bullet
-@item
-Source file names with the suffixes @samp{.FOR} and @samp{.FPP}
-now are recognized by @code{g77}
-as if they ended in @samp{.for} and @samp{.fpp}, respectively.
-@end itemize
-
-@heading In @code{egcs} 1.1 (versus 0.5.24):
-@itemize @bullet
-@cindex alignment
-@cindex double-precision performance
-@cindex -malign-double
-@item
-Align static double-precision variables and arrays
-on Intel x86 targets
-regardless of whether @samp{-malign-double} is specified.
-
-Generally, this affects only local variables and arrays
-having the @code{SAVE} attribute
-or given initial values via @code{DATA}.
-@end itemize
-
-@heading In @code{egcs} 1.1 (versus @code{egcs} 1.0.3):
-@itemize @bullet
-@item
-Support @samp{FORMAT(I<@var{expr}>)} when @var{expr} is a
-compile-time constant @code{INTEGER} expression.
-
-@item
-Fix @code{g77} @samp{-g} option so procedures that
-use @samp{ENTRY} can be stepped through, line by line,
-in @code{gdb}.
-
-@item
-Allow any @code{REAL} argument to intrinsics
-@code{Second} and @code{CPU_Time}.
-
-@item
-Use @code{tempnam}, if available, to open scratch files
-(as in @samp{OPEN(STATUS='SCRATCH')})
-so that the @code{TMPDIR} environment variable,
-if present, is used.
-
-@item
-@code{g77}'s version of @code{libf2c} separates out
-the setting of global state
-(such as command-line arguments and signal handling)
-from @file{main.o} into distinct, new library
-archive members.
-
-This should make it easier to write portable applications
-that have their own (non-Fortran) @code{main()} routine
-properly set up the @code{libf2c} environment, even
-when @code{libf2c} (now @code{libg2c}) is a shared library.
-
-@item
-The @code{g77} command now expects the run-time library
-to be named @code{libg2c.a} instead of @code{libf2c.a},
-to ensure that a version other than the one built and
-installed as part of the same @code{g77} version is picked up.
-
-@item
-Some diagnostics have been changed from warnings to errors,
-to prevent inadvertent use of the resulting, probably buggy,
-programs.
-These mostly include diagnostics about use of unsupported features
-in the @code{OPEN}, @code{INQUIRE}, @code{READ}, and
-@code{WRITE} statements,
-and about truncations of various sorts of constants.
-@end itemize
-
-@heading In 0.5.24 and @code{egcs} 1.1 (versus 0.5.23):
-@itemize @bullet
-@item
-@code{g77} now treats @samp{%LOC(@var{expr})} and
-@samp{LOC(@var{expr})} as ``ordinary'' expressions
-when they are used as arguments in procedure calls.
-This change applies only to global (filewide) analysis,
-making it consistent with
-how @code{g77} actually generates code
-for these cases.
-
-Previously, @code{g77} treated these expressions
-as denoting special ``pointer'' arguments
-for the purposes of filewide analysis.
-
-@item
-The @code{g77} driver now ensures that @samp{-lg2c}
-is specified in the link phase prior to any
-occurrence of @samp{-lm}.
-This prevents accidentally linking to a routine
-in the SunOS4 @samp{-lm} library
-when the generated code wants to link to the one
-in @code{libf2c} (@code{libg2c}).
-
-@item
-@code{g77} emits more debugging information when
-@samp{-g} is used.
-
-This new information allows, for example,
-@kbd{which __g77_length_a} to be used in @code{gdb}
-to determine the type of the phantom length argument
-supplied with @samp{CHARACTER} variables.
-
-This information pertains to internally-generated
-type, variable, and other information,
-not to the longstanding deficiencies vis-a-vis
-@samp{COMMON} and @samp{EQUIVALENCE}.
-
-@item
-The F90 @samp{Date_and_Time} intrinsic now is
-supported.
-
-@item
-The F90 @samp{System_Clock} intrinsic allows
-the optional arguments (except for the @samp{Count}
-argument) to be omitted.
-@end itemize
-
-@heading In 0.5.23:
-@itemize @bullet
-@item
-This release contains several regressions against
-version 0.5.22 of @code{g77}, due to using the
-``vanilla'' @code{gcc} back end instead of patching
-it to fix a few bugs and improve performance in a
-few cases.
-
-@xref{Actual Bugs,,Actual Bugs We Haven't Fixed Yet},
-available in plain-text format in @code{gcc/f/BUGS},
-for information on the known bugs in this version,
-including the regressions.
-
-Features that have been dropped from this version
-of @code{g77} due to their being implemented
-via @code{g77}-specific patches to the @code{gcc}
-back end in previous releases include:
-
-@itemize --
-@item
-Support for @code{__restrict__} keyword,
-the options @samp{-fargument-alias}, @samp{-fargument-noalias},
-and @samp{-fargument-noalias-global},
-and the corresponding alias-analysis code.
-
-(@code{egcs} has the alias-analysis
-code, but not the @code{__restrict__} keyword.
-@code{egcs} @code{g77} users benefit from the alias-analysis
-code despite the lack of the @code{__restrict__} keyword,
-which is a C-language construct.)
-
-@item
-Support for the GNU compiler options
-@samp{-fmove-all-movables},
-@samp{-freduce-all-givs},
-and @samp{-frerun-loop-opt}.
-
-(@code{egcs} supports these options.
-@code{g77} users of @code{egcs} benefit from them even if
-they are not explicitly specified,
-because the defaults are optimized for @code{g77} users.)
-
-@item
-Support for the @samp{-W} option warning about
-integer division by zero.
-
-@item
-The Intel x86-specific option @samp{-malign-double}
-applying to stack-allocated data
-as well as statically-allocate data.
-@end itemize
-
-@item
-Support @code{gcc} version 2.8,
-and remove support for prior versions of @code{gcc}.
-
-@cindex -@w{}-driver option
-@cindex @code{g77} options, -@w{}-driver
-@cindex options, -@w{}-driver
-@item
-Remove support for the @samp{--driver} option,
-as @code{g77} now does all the driving,
-just like @code{gcc}.
-
-@item
-The @code{g77} command now expects the run-time library
-to be named @code{libg2c.a} instead of @code{libf2c.a},
-to ensure that a version other than the one built and
-installed as part of the same @code{g77} version is picked up.
-
-@item
-@code{g77}'s version of @code{libf2c} separates out
-the setting of global state
-(such as command-line arguments and signal handling)
-from @file{main.o} into distinct, new library
-archive members.
-
-This should make it easier to write portable applications
-that have their own (non-Fortran) @code{main()} routine
-properly set up the @code{libf2c} environment, even
-when @code{libf2c} (now @code{libg2c}) is a shared library.
-
-@item
-Some diagnostics have been changed from warnings to errors,
-to prevent inadvertent use of the resulting, probably buggy,
-programs.
-These mostly include diagnostics about use of unsupported features
-in the @code{OPEN}, @code{INQUIRE}, @code{READ}, and
-@code{WRITE} statements,
-and about truncations of various sorts of constants.
-@end itemize
-
-@heading In 0.5.22:
-@itemize @bullet
-@item
-Fix @code{Signal} intrinsic so it offers portable
-support for 64-bit systems (such as Digital Alphas
-running GNU/Linux).
-
-@item
-Support @samp{FORMAT(I<@var{expr}>)} when @var{expr} is a
-compile-time constant @code{INTEGER} expression.
-
-@item
-Fix @code{g77} @samp{-g} option so procedures that
-use @samp{ENTRY} can be stepped through, line by line,
-in @code{gdb}.
-
-@item
-Allow any @code{REAL} argument to intrinsics
-@code{Second} and @code{CPU_Time}.
-
-@item
-Allow any numeric argument to intrinsics
-@code{Int2} and @code{Int8}.
-
-@item
-Use @code{tempnam}, if available, to open scratch files
-(as in @samp{OPEN(STATUS='SCRATCH')})
-so that the @code{TMPDIR} environment variable,
-if present, is used.
-
-@item
-Rename the @code{gcc} keyword @code{restrict} to
-@code{__restrict__}, to avoid rejecting valid, existing,
-C programs.
-Support for @code{restrict} is now more like support
-for @code{complex}.
-
-@item
-Fix @samp{-fugly-comma} to affect invocations of
-only external procedures.
-Restore rejection of gratuitous trailing omitted
-arguments to intrinsics, as in @samp{I=MAX(3,4,,)}.
-
-@item
-Fix compiler so it accepts @samp{-fgnu-intrinsics-*} and
-@samp{-fbadu77-intrinsics-*} options.
-@end itemize
-
-@heading In @code{egcs} 1.0.2 (versus @code{egcs} 1.0.1):
-@itemize @bullet
-@item
-Fix compiler so it accepts @samp{-fgnu-intrinsics-*} and
-@samp{-fbadu77-intrinsics-*} options.
-@end itemize
-
-@heading In @code{egcs} 1.0 (versus 0.5.21):
-@itemize @bullet
-@item
-Version 1.0 of @code{egcs}
-contains several regressions against
-version 0.5.21 of @code{g77},
-due to using the
-``vanilla'' @code{gcc} back end instead of patching
-it to fix a few bugs and improve performance in a
-few cases.
-
-@xref{Actual Bugs,,Actual Bugs We Haven't Fixed Yet},
-available in plain-text format in @code{gcc/f/BUGS},
-for information on the known bugs in this version,
-including the regressions.
-
-Features that have been dropped from this version
-of @code{g77} due to their being implemented
-via @code{g77}-specific patches to the @code{gcc}
-back end in previous releases include:
-
-@itemize --
-@item
-Support for the C-language @code{restrict} keyword.
-
-@item
-Support for the @samp{-W} option warning about
-integer division by zero.
-
-@item
-The Intel x86-specific option @samp{-malign-double}
-applying to stack-allocated data
-as well as statically-allocate data.
-@end itemize
-
-@cindex -@w{}-driver option
-@cindex @code{g77} options, -@w{}-driver
-@cindex options, -@w{}-driver
-@item
-Remove support for the @samp{--driver} option,
-as @code{g77} now does all the driving,
-just like @code{gcc}.
-
-@item
-Allow any numeric argument to intrinsics
-@code{Int2} and @code{Int8}.
-@end itemize
-
-@heading In 0.5.21:
-@itemize @bullet
-@item
-When the @samp{-W} option is specified, @code{gcc}, @code{g77},
-and other GNU compilers that incorporate the @code{gcc}
-back end as modified by @code{g77}, issue
-a warning about integer division by constant zero.
-
-@item
-New option @samp{-Wno-globals} disables warnings
-about ``suspicious'' use of a name both as a global
-name and as the implicit name of an intrinsic, and
-warnings about disagreements over the number or natures of
-arguments passed to global procedures, or the
-natures of the procedures themselves.
-
-The default is to issue such warnings, which are
-new as of this version of @code{g77}.
-
-@item
-New option @samp{-fno-globals} disables diagnostics
-about potentially fatal disagreements
-analysis problems, such as disagreements over the
-number or natures of arguments passed to global
-procedures, or the natures of those procedures themselves.
-
-The default is to issue such diagnostics and flag
-the compilation as unsuccessful.
-With this option, the diagnostics are issued as
-warnings, or, if @samp{-Wno-globals} is specified,
-are not issued at all.
-
-This option also disables inlining of global procedures,
-to avoid compiler crashes resulting from coding errors
-that these diagnostics normally would identify.
-
-@item
-Fix @code{libU77} routines that accept file and other names
-to strip trailing blanks from them, for consistency
-with other implementations.
-Blanks may be forcibly appended to such names by
-appending a single null character (@samp{CHAR(0)})
-to the significant trailing blanks.
-
-@item
-Fix @code{CHMOD} intrinsic to work with file names
-that have embedded blanks, commas, and so on.
-
-@item
-Fix @code{SIGNAL} intrinsic so it accepts an
-optional third @samp{Status} argument.
-
-@item
-Make many changes to @code{libU77} intrinsics to
-support existing code more directly.
-
-Such changes include allowing both subroutine and
-function forms of many routines, changing @code{MCLOCK()}
-and @code{TIME()} to return @code{INTEGER(KIND=1)} values,
-introducing @code{MCLOCK8()} and @code{TIME8()} to
-return @code{INTEGER(KIND=2)} values,
-and placing functions that are intended to perform
-side effects in a new intrinsic group, @code{badu77}.
-
-@item
-Add options @samp{-fbadu77-intrinsics-delete},
-@samp{-fbadu77-intrinsics-hide}, and so on.
-
-@item
-Add @code{INT2} and @code{INT8} intrinsics.
-
-@item
-Add @code{CPU_TIME} intrinsic.
-
-@item
-Add @code{ALARM} intrinsic.
-
-@item
-@code{CTIME} intrinsic now accepts any @code{INTEGER}
-argument, not just @code{INTEGER(KIND=2)}.
-
-@item
-@code{g77} driver now prints version information (such as produced
-by @kbd{g77 -v}) to @code{stderr} instead of @code{stdout}.
-
-@item
-The @samp{.r} suffix now designates a Ratfor source file,
-to be preprocessed via the @code{ratfor} command, available
-separately.
-@end itemize
-
-@heading In 0.5.20:
-@itemize @bullet
-@item
-The @samp{-fno-typeless-boz} option is now the default.
-
-This option specifies that non-decimal-radix
-constants using the prefixed-radix form (such as @samp{Z'1234'})
-are to be interpreted as @code{INTEGER(KIND=1)} constants.
-Specify @samp{-ftypeless-boz} to cause such
-constants to be interpreted as typeless.
-
-(Version 0.5.19 introduced @samp{-fno-typeless-boz} and
-its inverse.)
-
-@xref{Fortran Dialect Options,,Options Controlling Fortran Dialect},
-for information on the @samp{-ftypeless-boz} option.
-
-@item
-Options @samp{-ff90-intrinsics-enable} and
-@samp{-fvxt-intrinsics-enable} now are the
-defaults.
-
-Some programs might use names that clash with
-intrinsic names defined (and now enabled) by these
-options or by the new @code{libU77} intrinsics.
-Users of such programs might need to compile them
-differently (using, for example, @samp{-ff90-intrinsics-disable})
-or, better yet, insert appropriate @code{EXTERNAL}
-statements specifying that these names are not intended
-to be names of intrinsics.
-
-@item
-The @samp{ALWAYS_FLUSH} macro is no longer defined when
-building @code{libf2c}, which should result in improved
-I/O performance, especially over NFS.
-
-@emph{Note:} If you have code that depends on the behavior
-of @code{libf2c} when built with @samp{ALWAYS_FLUSH} defined,
-you will have to modify @code{libf2c} accordingly before
-building it from this and future versions of @code{g77}.
-
-@xref{Output Assumed To Flush}, for more information.
-
-@item
-Dave Love's implementation of @code{libU77} has been
-added to the version of @code{libf2c} distributed with
-and built as part of @code{g77}.
-@code{g77} now knows about the routines in this library
-as intrinsics.
-
-@item
-New option @samp{-fvxt} specifies that the
-source file is written in VXT Fortran, instead of GNU Fortran.
-
-@xref{VXT Fortran}, for more information on the constructs
-recognized when the @samp{-fvxt} option is specified.
-
-@item
-The @samp{-fvxt-not-f90} option has been deleted,
-along with its inverse, @samp{-ff90-not-vxt}.
-
-If you used one of these deleted options, you should
-re-read the pertinent documentation to determine which
-options, if any, are appropriate for compiling your
-code with this version of @code{g77}.
-
-@xref{Other Dialects}, for more information.
-
-@item
-The @samp{-fugly} option now issues a warning, as it
-likely will be removed in a future version.
-
-(Enabling all the @samp{-fugly-*} options is unlikely
-to be feasible, or sensible, in the future,
-so users should learn to specify only those
-@samp{-fugly-*} options they really need for a
-particular source file.)
-
-@item
-The @samp{-fugly-assumed} option, introduced in
-version 0.5.19, has been changed to
-better accommodate old and new code.
-@xref{Ugly Assumed-Size Arrays}, for more information.
-
-@item
-Related to supporting Alpha (AXP) machines, the @code{LOC()}
-intrinsic and @code{%LOC()} construct now return
-values of @code{INTEGER(KIND=0)} type,
-as defined by the GNU Fortran language.
-
-This type is wide enough
-(holds the same number of bits)
-as the character-pointer type on the machine.
-
-On most machines, this won't make a difference,
-whereas, on Alphas and other systems with 64-bit pointers,
-the @code{INTEGER(KIND=0)} type is equivalent to @code{INTEGER(KIND=2)}
-(often referred to as @code{INTEGER*8})
-instead of the more common @code{INTEGER(KIND=1)}
-(often referred to as @code{INTEGER*4}).
-
-@item
-Emulate @code{COMPLEX} arithmetic in the @code{g77} front
-end, to avoid bugs in @code{complex} support in the
-@code{gcc} back end.
-New option @samp{-fno-emulate-complex}
-causes @code{g77} to revert the 0.5.19 behavior.
-
-@item
-Dummy arguments are no longer assumed to potentially alias
-(overlap)
-other dummy arguments or @code{COMMON} areas when any of
-these are defined (assigned to) by Fortran code.
-
-This can result in faster and/or smaller programs when
-compiling with optimization enabled, though on some
-systems this effect is observed only when @samp{-fforce-addr}
-also is specified.
-
-New options @samp{-falias-check}, @samp{-fargument-alias},
-@samp{-fargument-noalias},
-and @samp{-fno-argument-noalias-global} control the
-way @code{g77} handles potential aliasing.
-
-@xref{Aliasing Assumed To Work}, for detailed information on why the
-new defaults might result in some programs no longer working the way they
-did when compiled by previous versions of @code{g77}.
-
-@item
-New option @samp{-fugly-assign} specifies that the
-same memory locations are to be used to hold the
-values assigned by both statements @samp{I = 3} and
-@samp{ASSIGN 10 TO I}, for example.
-(Normally, @code{g77} uses a separate memory location
-to hold assigned statement labels.)
-
-@xref{Ugly Assigned Labels}, for more information.
-
-@item
-@code{FORMAT} and @code{ENTRY} statements now are allowed to
-precede @code{IMPLICIT NONE} statements.
-
-@item
-Enable full support of @code{INTEGER(KIND=2)}
-(often referred to as @code{INTEGER*8})
-available in
-@code{libf2c} and @file{f2c.h} so that @code{f2c} users
-may make full use of its features via the @code{g77}
-version of @file{f2c.h} and the @code{INTEGER(KIND=2)}
-support routines in the @code{g77} version of @code{libf2c}.
-
-@item
-Improve @code{g77} driver and @code{libf2c} so that @samp{g77 -v}
-yields version information on the library.
-
-@item
-The @code{SNGL} and @code{FLOAT} intrinsics now are
-specific intrinsics, instead of synonyms for the
-generic intrinsic @code{REAL}.
-
-@item
-New intrinsics have been added.
-These are @code{REALPART}, @code{IMAGPART},
-@code{COMPLEX},
-@code{LONG}, and @code{SHORT}.
-
-@item
-A new group of intrinsics, @samp{gnu}, has been added
-to contain the new @code{REALPART}, @code{IMAGPART},
-and @code{COMPLEX} intrinsics.
-An old group, @samp{dcp}, has been removed.
-
-@item
-Complain about industry-wide ambiguous references
-@samp{REAL(@var{expr})} and @samp{AIMAG(@var{expr})},
-where @var{expr} is @code{DOUBLE COMPLEX} (or any
-complex type other than @code{COMPLEX}), unless
-@samp{-ff90} option specifies Fortran 90 interpretation
-or new @samp{-fugly-complex} option, in conjunction with
-@samp{-fnot-f90}, specifies @code{f2c} interpretation.
-@end itemize
-
-@heading In 0.5.19:
-
-@itemize @bullet
-@item
-A temporary kludge option provides bare-bones information on
-@code{COMMON} and @code{EQUIVALENCE} members at debug time.
-@xref{Code Gen Options,,Options for Code Generation Conventions},
-for information on the @samp{-fdebug-kludge} option.
-
-@item
-New @samp{-fonetrip} option specifies FORTRAN-66-style
-one-trip @code{DO} loops.
-
-@item
-New @samp{-fno-silent} option causes names of program units
-to be printed as they are compiled, in a fashion similar to
-UNIX @code{f77} and @code{f2c}.
-
-@item
-New @samp{-fugly-assumed} option specifies that arrays
-dimensioned via @samp{DIMENSION X(1)}, for example, are to be
-treated as assumed-size.
-
-@item
-New @samp{-fno-typeless-boz} option specifies that non-decimal-radix
-constants using the prefixed-radix form (such as @samp{Z'1234'})
-are to be interpreted as @code{INTEGER(KIND=1)} constants.
-
-@item
-New @samp{-ff66} option is a ``shorthand'' option that specifies
-behaviors considered appropriate for FORTRAN 66 programs.
-
-@item
-New @samp{-ff77} option is a ``shorthand'' option that specifies
-behaviors considered appropriate for UNIX @code{f77} programs.
-
-@item
-New @samp{-fugly-comma} and @samp{-fugly-logint} options provided
-to perform some of what @samp{-fugly} used to do.
-@samp{-fugly} and @samp{-fno-ugly} are now ``shorthand'' options,
-in that they do nothing more than enable (or disable) other
-@samp{-fugly-*} options.
-
-@item
-Change code generation for list-directed I/O so it allows
-for new versions of @code{libf2c} that might return non-zero
-status codes for some operations previously assumed to always
-return zero.
-
-This change not only affects how @code{IOSTAT=} variables
-are set by list-directed I/O, it also affects whether
-@code{END=} and @code{ERR=} labels are reached by these
-operations.
-
-@item
-Add intrinsic support for new @code{FTELL} and @code{FSEEK}
-procedures in @code{libf2c}.
-
-@item
-Add options @samp{--help} and @samp{--version} to the
-@code{g77} command, to conform to GNU coding guidelines.
-Also add printing of @code{g77} version number when
-the @samp{--verbose} (@samp{-v}) option is used.
-@end itemize
-
-@heading In 0.5.18:
-
-@itemize @bullet
-@item
-The @code{BYTE} and @code{WORD} statements now are supported,
-to a limited extent.
-
-@item
-@code{INTEGER*1}, @code{INTEGER*2}, @code{INTEGER*8},
-and their @code{LOGICAL}
-equivalents, now are supported to a limited extent.
-Among the missing elements are complete intrinsic and constant
-support.
-
-@item
-Support automatic arrays in procedures.
-For example, @samp{REAL A(N)}, where @samp{A} is
-not a dummy argument, specifies that @samp{A} is
-an automatic array.
-The size of @samp{A} is calculated from the value
-of @samp{N} each time the procedure is called,
-that amount of space is allocated, and that space
-is freed when the procedure returns to its caller.
-
-@item
-Add @samp{-fno-zeros} option, enabled by default,
-to reduce compile-time CPU and memory usage for
-code that provides initial zero values for variables
-and arrays.
-
-@item
-Introduce three new options that apply to all compilations
-by @code{g77}-aware GNU compilers---@samp{-fmove-all-movables},
-@samp{-freduce-all-givs}, and @samp{-frerun-loop-opt}---which
-can improve the run-time performance of some programs.
-
-@item
-Replace much of the existing documentation with a single
-Info document.
-
-@item
-New option @samp{-fno-second-underscore}.
-@end itemize
-
-@heading In 0.5.17:
-
-@itemize @bullet
-@item
-The @code{ERF()} and @code{ERFC()} intrinsics now are generic
-intrinsics, mapping to @code{ERF}/@code{DERF} and
-@code{ERFC}/@code{DERFC}, respectively.
-@emph{Note:} Use @samp{INTRINSIC ERF,ERFC} in any code that
-might reference these as generic intrinsics, to
-improve the likelihood of diagnostics (instead of subtle run-time
-bugs) when using compilers that don't support these as intrinsics.
-
-@item
-New option @samp{-Wsurprising}.
-
-@item
-DO loops with non-@code{INTEGER} variables now diagnosed only when
-@samp{-Wsurprising} specified.
-Previously, this was diagnosed @emph{unless} @samp{-fpedantic} or
-@samp{-fugly} was specified.
-@end itemize
-
-@heading In 0.5.16:
-
-@itemize @bullet
-@item
-@code{libf2c} changed to output a leading zero (0) digit for floating-point
-values output via list-directed and formatted output (to bring @code{g77}
-more into line with many existing Fortran implementations---the
-ANSI FORTRAN 77 standard leaves this choice to the implementation).
-
-@item
-@code{libf2c} no longer built with debugging information
-intact, making it much smaller.
-
-@item
-Automatic installation of the @code{g77} command now works.
-
-@item
-Diagnostic messages now more informative, a la @code{gcc},
-including messages like @samp{In function `foo':} and @samp{In file
-included from...:}.
-
-@item
-New group of intrinsics called @samp{unix}, including @code{ABORT},
-@code{DERF}, @code{DERFC}, @code{ERF}, @code{ERFC}, @code{EXIT},
-@code{FLUSH}, @code{GETARG}, @code{GETENV}, @code{SIGNAL}, and
-@code{SYSTEM}.
-
-@item
-@samp{-funix-intrinsics-@{delete,hide,disable,enable@}}
-options added.
-
-@item
-@samp{-fno-underscoring} option added.
-
-@item
-@samp{--driver} option added to the @code{g77} command.
-
-@item
-Support for the @code{gcc} options @samp{-fident} and @samp{-fno-ident}
-added.
-
-@item
-@samp{g77 -v} returns much more version info, making the submission
-of better bug reports easily.
-
-@item
-Many improvements to the @code{g77} command to better fulfill its role as
-a front-end to the @code{gcc} driver.
-For example, @code{g77} now
-recognizes @samp{--verbose} as a verbose way of specifying @samp{-v}.
-
-@item
-Compiling preprocessed (@file{*.F} and @file{*.fpp}) files now
-results in better diagnostics and debugging information, as the
-source-location info now is passed all the
-way through the compilation process instead of being lost.
-@end itemize
+@set USERVISONLY
+@include news.texi
+@clear USERVISONLY
 
 @node Language
 @chapter The GNU Fortran Language
@@ -11426,7 +10679,7 @@ or installing @code{g77} is not provided here.
 @xref{Problems Installing}.
 
 To find out about major bugs discovered in the current release and
-possible workarounds for them, retrieve
+possible workarounds for them, see
 @uref{ftp://alpha.gnu.org/g77.plan}.
 
 (Note that some of this portion of the manual is lifted
@@ -11439,7 +10692,7 @@ gcc,Using and Porting GNU CC}.)
 
 @menu
 * But-bugs::         Bugs really in other programs or elsewhere.
-* Actual Bugs::      Bugs and misfeatures we will fix later.
+* Known Bugs::       Bugs known to be in this version of @code{g77}.
 * Missing Features:: Features we already know we want to add later.
 * Disappointments::  Regrettable things we can't change.
 * Non-bugs::         Things we think are right, but some others disagree.
@@ -11999,7 +11252,6 @@ GNU Fortran language:
 * Intrinsics in PARAMETER Statements::
 * SELECT CASE on CHARACTER Type::
 * RECURSIVE Keyword::
-* AUTOMATIC Statement::
 * Popular Non-standard Types::
 * Full Support for Compiler Types::
 * Array Bounds Expressions::
@@ -12016,6 +11268,7 @@ GNU Fortran dialects:
 * STRUCTURE UNION RECORD MAP::
 * OPEN CLOSE and INQUIRE Keywords::
 * ENCODE and DECODE::
+* AUTOMATIC Statement::
 * Suppressing Space Padding::
 * Fortran Preprocessor::
 * Bit Operations on Floating-point Data::
@@ -12157,30 +11410,6 @@ designed to do recursion.
 
 All recursive code can be rewritten to not use recursion,
 but the result is not pretty.
-
-@node AUTOMATIC Statement
-@subsection @code{AUTOMATIC} Statement
-@cindex @code{AUTOMATIC} statement
-@cindex statements, @code{AUTOMATIC}
-@cindex automatic variables
-@cindex variables, automatic
-
-@code{g77} doesn't support the @code{AUTOMATIC} keyword that
-@code{f2c} does.
-
-It is not yet clear exactly what this statement would achieve.
-The semantic equivalent would be provided by @code{RECURSIVE}
-combined with lack of @code{SAVE}.
-In that sense, perhaps all it would provide is an
-overriding of an unadorned (blanket) @code{SAVE} statement
-for specific variables.
-
-It might also serve as a hint to the compiler that placing
-even a very large array on the stack is acceptable.
-
-Perhaps it should disallow @code{DATA}
-or other specification of any initial values
-for affected variables as well.
 
 @node Increasing Precision/Range
 @subsection Increasing Precision/Range
@@ -12572,6 +11801,30 @@ with:
 
 It is entirely possible that @code{ENCODE} and @code{DECODE} will
 be supported by a future version of @code{g77}.
+
+@node AUTOMATIC Statement
+@subsection @code{AUTOMATIC} Statement
+@cindex @code{AUTOMATIC} statement
+@cindex statements, @code{AUTOMATIC}
+@cindex automatic variables
+@cindex variables, automatic
+
+@code{g77} doesn't support the @code{AUTOMATIC} keyword that
+@code{f2c} does.
+
+It is not yet clear exactly what this statement would achieve.
+The semantic equivalent would be provided by @code{RECURSIVE}
+combined with lack of @code{SAVE}.
+In that sense, perhaps all it would provide is an
+overriding of an unadorned (blanket) @code{SAVE} statement
+for specific variables.
+
+It might also serve as a hint to the compiler that placing
+even a very large array on the stack is acceptable.
+
+Perhaps it should disallow @code{DATA}
+or other specification of any initial values
+for affected variables as well.
 
 @node Suppressing Space Padding
 @subsection Suppressing Space Padding of Source Lines
