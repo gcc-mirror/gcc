@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_ARM_PROTOS_H
 #define GCC_ARM_PROTOS_H
 
+extern void   rdata_section		PARAMS ((void));
 extern void   arm_override_options	PARAMS ((void));
 extern int    use_return_insn		PARAMS ((int));
 extern int    arm_regno_class 		PARAMS ((int));
@@ -144,6 +145,8 @@ extern char * aof_data_section		PARAMS ((void));
 extern void   aof_add_import		PARAMS ((char *));
 extern void   aof_delete_import		PARAMS ((char *));
 extern void   aof_dump_imports		PARAMS ((FILE *));
+extern void   zero_init_section		PARAMS ((void));
+extern void   common_section		PARAMS ((void));
 #endif /* AOF_ASSEMBLER */
 
 #endif /* RTX_CODE */

@@ -1,5 +1,23 @@
 2001-10-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (rtlanal.o): Depend on $(TM_P_H).
+	* arm-protos.h (rdata_section, zero_init_section, common_section):
+	Prototype.
+	* arm.h (ASM_OUTPUT_DEF_FROM_DECLS): Const-ify.
+	* avr.h (ASM_OUTPUT_SKIP): Rename macro parameter to avoid
+	traditional mode stringification.
+	* function.c (thread_prologue_and_epilogue_insns): Wrap variable
+	in macros controling its use.
+	* rtlanal.c: Include tm_p.h.
+	* varasm.c (asm_output_aligned_bss): Mark parameter with
+	ATTRIBUTE_UNUSED.
+	(assemble_constant_align, assemble_start_function, assemble_align,
+	assemble_variable, assemble_trampoline_template,
+	output_constant_def_contents): Wrap potentially empty if-stmt body
+	in brackets.
+
+2001-10-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* a29k-protos.h (literal_section): Prototype.
 	* a29k.h (ASM_FILE_START): Don't discard pointer qualifier.
 	* a29k.md: Ensure function pointers are prototyped.

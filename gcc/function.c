@@ -7189,7 +7189,9 @@ thread_prologue_and_epilogue_insns (f)
 {
   int inserted = 0;
   edge e;
+#if defined (HAVE_sibcall_epilogue) || defined (HAVE_epilogue) || defined (HAVE_return) || defined (HAVE_prologue)
   rtx seq;
+#endif
 #ifdef HAVE_prologue
   rtx prologue_end = NULL_RTX;
 #endif
