@@ -397,10 +397,6 @@ extern GTY(()) varray_type basic_block_info;
 #define FOR_ALL_BB(BB) \
   for (BB = ENTRY_BLOCK_PTR; BB; BB = BB->next_bb)
 
-/* What registers are live at the setjmp call.  */
-
-extern regset regs_live_at_setjmp;
-
 /* Special labels found during CFG build.  */
 
 extern GTY(()) rtx label_value_list;
