@@ -80,14 +80,14 @@ extern int target_flags;
    This is for debugging the compiler only.  */
 #define TARGET_RTL_DUMP	(target_flags & 2048)
 
-/* Select between the h8/300 and h8/300h cpus.  */
+/* Select between the H8/300 and H8/300H CPUs.  */
 #define TARGET_H8300	(! TARGET_H8300H && ! TARGET_H8300S)
 #define TARGET_H8300H	(target_flags & 4096)
 #define TARGET_H8300S	(target_flags & 1)
 
-/* Align all values on the h8/300h the same way as the h8/300.  Specifically,
+/* Align all values on the H8/300H the same way as the H8/300.  Specifically,
    32 bit and larger values are aligned on 16 bit boundaries.
-   This is all the hardware requires, but the default is 32 bits for the 300h.
+   This is all the hardware requires, but the default is 32 bits for the 300H.
    ??? Now watch someone add hardware floating point requiring 32 bit
    alignment.  */
 #define TARGET_ALIGN_300 (target_flags & 8192)
