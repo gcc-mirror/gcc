@@ -306,7 +306,7 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
   buf_addr = convert_memory_address (Pmode, buf_addr);
 #endif
 
-  buf_addr = force_reg (Pmode, buf_addr);
+  buf_addr = force_reg (Pmode, force_operand (buf_addr, NULL_RTX));
 
   if (target == 0 || GET_CODE (target) != REG
       || REGNO (target) < FIRST_PSEUDO_REGISTER)
