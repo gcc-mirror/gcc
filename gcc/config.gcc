@@ -1855,7 +1855,7 @@ mips-sgi-*)	# would otherwise be caught by mips-*-elf*
 	exit 1
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
-	tm_file="elfos.h mips/netbsd.h"
+	tm_file="elfos.h ${tm_file} mips/netbsd.h"
 	tmake_file="${tmake_file} mips/t-netbsd"
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.

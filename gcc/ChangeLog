@@ -1,5 +1,9 @@
 2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* config.gcc (mips*-*-netbsd*): Include ${tm_file}.
+
+2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* i370.h (TARGET_CPU_CPP_BUILTINS): Remove spurious trailing
 	backslash in comment preceeding macro definition.
 	* i370/linux.h (TARGET_OS_CPP_BUILTINS): Likewise.
