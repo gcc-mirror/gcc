@@ -1,3 +1,9 @@
+2005-01-15  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/18983
+	* io/transfer.c (st_write_done): only truncate when it
+	is required.
+
 2005-01-12  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR libfortran/19280

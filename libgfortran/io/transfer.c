@@ -1557,9 +1557,13 @@ st_write_done (void)
 	current_unit->endfile = AT_ENDFILE;	/* Just at it now.  */
 	break;
 
-      case NO_ENDFILE:	/* Get rid of whatever is after this record.  */
-	if (struncate (current_unit->s) == FAILURE)
-	  generate_error (ERROR_OS, NULL);
+      case NO_ENDFILE:
+	if (current_unit->current_record > current_unit->last_record)
+          {
+            /* Get rid of whatever is after this record.  */
+            if (struncate (current_unit->s) == FAILURE)
+              generate_error (ERROR_OS, NULL);
+          }
 
 	current_unit->endfile = AT_ENDFILE;
 	break;
