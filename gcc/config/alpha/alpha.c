@@ -1903,7 +1903,7 @@ rtx
 split_small_symbolic_mem_operand (x)
      rtx x;
 {
-  x = copy_rtx (x);
+  x = copy_insn (x);
   for_each_rtx (&x, split_small_symbolic_mem_operand_1, NULL);
   return x;
 }
