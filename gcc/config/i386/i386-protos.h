@@ -60,6 +60,7 @@ extern int binary_fp_operator PROTO((rtx, enum machine_mode));
 extern int mult_operator PROTO((rtx, enum machine_mode));
 extern int div_operator PROTO((rtx, enum machine_mode));
 extern int arith_or_logical_operator PROTO((rtx, enum machine_mode));
+extern int promotable_binary_operator PROTO((rtx, enum machine_mode));
 extern int memory_displacement_operand PROTO((rtx, enum machine_mode));
 extern int cmpsi_operand PROTO((rtx, enum machine_mode));
 extern int long_memory_operand PROTO((rtx, enum machine_mode));

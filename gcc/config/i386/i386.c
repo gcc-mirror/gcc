@@ -205,6 +205,7 @@ const int x86_use_cltd = ~(m_PENT | m_K6);
 const int x86_read_modify_write = ~m_PENT;
 const int x86_read_modify = ~(m_PENT | m_PPRO);
 const int x86_split_long_moves = m_PPRO;
+const int x86_promote_QImode = m_K6 | m_PENT | m_386 | m_486;
 
 #define AT_BP(mode) (gen_rtx_MEM ((mode), frame_pointer_rtx))
 
@@ -1175,6 +1176,30 @@ fcmov_comparison_operator (op, mode)
   return ((mode == VOIDmode || GET_MODE (op) == mode)
 	  && GET_RTX_CLASS (GET_CODE (op)) == '<'
 	  && GET_CODE (op) == unsigned_condition (GET_CODE (op)));
+}
+
+/* Return 1 if OP is a binary operator that can be promoted to wider mode.  */
+
+int
+promotable_binary_operator (op, mode)
+     register rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  switch (GET_CODE (op))
+    {
+    case MULT:
+      /* Modern CPUs have same latency for HImode and SImode multiply,
+         but 386 and 486 do HImode multiply faster.  */
+      return ix86_cpu > PROCESSOR_I486;
+    case PLUS:
+    case AND:
+    case IOR:
+    case XOR:
+    case ASHIFT:
+      return 1;
+    default:
+      return 0;
+    }
 }
 
 /* Nearly general operand, but accept any const_double, since we wish
