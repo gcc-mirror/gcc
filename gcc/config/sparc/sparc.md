@@ -2431,7 +2431,7 @@
 
 (define_insn "*sethi_di_medlow"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (high:DI (match_operand:DI 1 "symbolic_operand" "")))]
+        (high:DI (match_operand:DI 1 "symbolic_operand" "")))
   ;; The clobber is here because emit_move_sequence assumes the worst case.
    (clobber (reg:DI 1))]
   "TARGET_CM_MEDLOW && check_pic (1)"
