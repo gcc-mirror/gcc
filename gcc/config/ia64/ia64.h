@@ -506,22 +506,6 @@ while (0)
    at run-time.  This is used in `cpp'.  */
 /* #define MAX_WCHAR_TYPE_SIZE */
 
-/* A C constant expression for the integer value for escape sequence
-   `\a'.  */
-#define TARGET_BELL 0x7
-
-/* C constant expressions for the integer values for escape sequences
-   `\b', `\t' and `\n'.  */
-#define TARGET_BS	0x8
-#define TARGET_TAB	0x9
-#define TARGET_NEWLINE	0xa
-
-/* C constant expressions for the integer values for escape sequences
-   `\v', `\f' and `\r'.  */
-#define TARGET_VT	0xb
-#define TARGET_FF	0xc
-#define TARGET_CR	0xd
-
 
 /* Register Basics */
 

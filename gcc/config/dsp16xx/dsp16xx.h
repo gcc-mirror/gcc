@@ -383,15 +383,6 @@ while (0)
    result of subtracting two pointers */
 
 #define PTRDIFF_TYPE "long int"
-
-#define TARGET_BELL     '\a'
-#define TARGET_BS       '\b'
-#define TARGET_TAB      '\t'
-#define TARGET_NEWLINE  '\n'
-#define TARGET_VT       '\v'
-#define TARGET_FF       '\f'
-#define TARGET_CR       '\r'
-
 
 /* REGISTER USAGE.  */
 

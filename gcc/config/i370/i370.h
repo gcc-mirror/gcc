@@ -1042,7 +1042,8 @@ enum reg_class
 #define ASM_OPEN_PAREN "("
 #define ASM_CLOSE_PAREN ")"
 
-/* Define results of standard character escape sequences.  */
+/* Define standard character escape sequences for non-ASCII targets
+   only.  */
 
 #ifdef TARGET_EBCDIC
 #define TARGET_ESC	39
@@ -1053,14 +1054,6 @@ enum reg_class
 #define TARGET_VT	11
 #define TARGET_FF	12
 #define TARGET_CR	13
-#else 
-#define TARGET_BELL	007
-#define TARGET_BS	010
-#define TARGET_TAB	011
-#define TARGET_NEWLINE	012
-#define TARGET_VT	013
-#define TARGET_FF	014
-#define TARGET_CR	015
 #endif
 
 /* ======================================================== */

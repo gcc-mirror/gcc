@@ -1,3 +1,46 @@
+2001-06-26  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* defaults.h: Default escape sequences to ASCII.
+	* config/i370/i370.h: Adjust for ASCII default.
+	* config/1750a/1750a.h: Remove escape sequence definitions.
+	* config/a29k/a29k.h: Similarly.
+	* config/alpha/alpha.h: Similarly.
+	* config/arc/arc.h: Similarly.
+	* config/arm/arm.h: Similarly.
+	* config/avr/avr.h: Similarly.
+	* config/c4x/c4x.h: Similarly.
+	* config/clipper/clipper.h: Similarly.
+	* config/convex/convex.h: Similarly.
+	* config/d30v/d30v.h: Similarly.
+	* config/dsp16xx/dsp16xx.h: Similarly.
+	* config/elxsi/elxsi.h: Similarly.
+	* config/fr30/fr30.h: Similarly.
+	* config/h8300/h8300.h: Similarly.
+	* config/i386/i386.h: Similarly.
+	* config/i860/i860.h: Similarly.
+	* config/i960/i960.h: Similarly.
+	* config/ia64/ia64.h: Similarly.
+	* config/m32r/m32r.h: Similarly.
+	* config/m68hc11/m68hc11.h: Similarly.
+	* config/m68k/m68k.h: Similarly.
+	* config/m88k/m88k.h: Similarly.
+	* config/mcore/mcore.h: Similarly.
+	* config/mips/mips.h: Similarly.
+	* config/mn10200/mn10200.h: Similarly.
+	* config/mn10300/mn10300.h: Similarly.
+	* config/ns32k/ns32k.h: Similarly.
+	* config/pa/pa.h: Similarly.
+	* config/pdp11/pdp11.h: Similarly.
+	* config/pj/pj.h: Similarly.
+	* config/romp/romp.h: Similarly.
+	* config/rs6000/rs6000.h: Similarly.
+	* config/sh/sh.h: Similarly.
+	* config/sparc/sparc.h: Similarly.
+	* config/v850/v850.h: Similarly.
+	* config/vax/vax.h: Similarly.
+	* config/we32k/we32k.h: Similarly.
+	* doc/tm.texi: Update documentation.
+
 2001-06-26  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* diagnostic.c (digit_buffer): Remove as global.  Move to...
