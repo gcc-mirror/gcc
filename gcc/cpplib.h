@@ -156,13 +156,11 @@ typedef struct assertion_hashnode ASSERTION_HASHNODE;
    Applying cpp_get_token repeatedly yields a stream of pre-processor
    tokens.  Usually, there is only one cpp_reader object active. */
 
-struct cpp_reader {
+struct cpp_reader
+{
   parse_underflow_t get_token;
   cpp_buffer *buffer;
-  cpp_buffer buffer_stack[CPP_STACK_MAX];
-
-  int errors;			/* Error counter for exit code */
-  void *data;
+  cpp_options *opts;
 
   /* A buffer used for both for cpp_get_token's output, and also internally. */
   unsigned char *token_buffer;
@@ -170,6 +168,9 @@ struct cpp_reader {
   unsigned int token_buffer_size;
   /* End of the written part of token_buffer. */
   unsigned char *limit;
+
+  /* Error counter for exit code */
+  int errors;
 
   /* Line where a newline was first seen in a string constant.  */
   int multiline_string_line;
@@ -247,6 +248,8 @@ struct cpp_reader {
 #ifdef __cplusplus
   ~cpp_reader () { cpp_cleanup (this); }
 #endif
+
+  cpp_buffer buffer_stack[CPP_STACK_MAX];
 };
 
 #define CPP_FATAL_LIMIT 1000
@@ -288,14 +291,14 @@ struct cpp_reader {
 #define CPP_ADJUST_WRITTEN(PFILE,DELTA) ((PFILE)->limit += (DELTA))
 #define CPP_SET_WRITTEN(PFILE,N) ((PFILE)->limit = (PFILE)->token_buffer + (N))
 
-#define CPP_OPTIONS(PFILE) ((cpp_options *) (PFILE)->data)
+#define CPP_OPTIONS(PFILE) ((PFILE)->opts)
 
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
 #define CPP_PREV_BUFFER(BUFFER) ((BUFFER)+1)
 /* The bottom of the buffer stack. */
 #define CPP_NULL_BUFFER(PFILE) (&(PFILE)->buffer_stack[CPP_STACK_MAX])
 
-/* Pointed to by cpp_reader::data. */
+/* Pointed to by cpp_reader.opts. */
 struct cpp_options {
   char *in_fname;
 
