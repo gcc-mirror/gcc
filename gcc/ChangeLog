@@ -1,3 +1,7 @@
+2000-03-04  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppinit.c: Fix thinko in previous patch.
+
 Sat Mar  4 11:32:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* machmode.h (mode_for_size, smallest_mode_for_size): SIZE now signed.
