@@ -1,3 +1,20 @@
+1999-02-07  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* g++.dg/special/ecos.exp: New driver for new tests with special
+	requirements
+	
+	* g++.dg/special/conpr-1.C: New test
+	* g++.dg/special/conpr-2.C: New test
+	* g++.dg/special/conpr-2a.C: New test
+	* g++.dg/special/conpr-3.C: New test
+	* g++.dg/special/conpr-3a.C: New test
+	* g++.dg/special/conpr-3b.C: New test
+	
+	* lib/g++-dg.exp: New driver file, based on lib/gcc-dg.exp to
+	allow g++ to use the dg driver
+
+	* README: Add comment about g++.dg directory
+
 Sat Feb  6 18:00:38 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* README: Update email addresses.

@@ -7,7 +7,7 @@ need a current DejaGnu snapshot, which is available from
 ftp://egcs.cygnus.com/pub/egcs/infrastructure, for example.
 
 Most of these tests were originally developed and/or collected by
-Cygnus Support, but these days many are being added by the EGCS
+Cygnus Solutions, but these days many are being added by the EGCS
 developers.
 
 These tests are included "as is". If any of them fails, do not report
@@ -22,8 +22,8 @@ the EGCS tree. `make check-g++` runs the C++ testsuite only.
 
 STRUCTURE OF THE TESTSUITE
 
-All C++ tests reside in subdirectories of g++.old-deja, based on the
-following structure:
+Almost all C++ tests reside in subdirectories of g++.old-deja, based on
+the following structure:
 
   g++.benjamin	Tests by Benjamin Koz
   g++.bob
@@ -43,3 +43,8 @@ following structure:
   g++.rfg
   g++.robertl	Tests from egcs-bugs@egcs.cygnus.com, gathered by Robert Lipe
 	
+g++.old-deja uses a fixed driver for all g++ tests based on the old
+DejaGnu drivers. But just because its old, doesn't mean its redundant!
+Tests that want to use the normal dg.exp driver can be put in g++.dg instead.
+This may be required for platform-specific tests, or tests with other
+special requirements.
