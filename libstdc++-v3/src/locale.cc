@@ -28,6 +28,7 @@
 
 #include <clocale>
 #include <cstring>
+#include <cstdlib>     // For getenv, free.
 #include <cctype>
 #include <cwctype>     // For towupper, etc.
 #include <locale>
@@ -183,7 +184,7 @@ namespace std
 	else
 	  {
 	    // Get it from the environment.
-	    char* __env = getenv("LC_ALL");
+	    char* __env = std::getenv("LC_ALL");
 	    // If LC_ALL is set we are done.
 	    if (__env && std::strcmp(__env, "") != 0)
 	      {
@@ -197,7 +198,7 @@ namespace std
 	      {
 		char* __res;
 		// LANG may set a default different from "C".
-		char* __env = getenv("LANG");
+		char* __env = std::getenv("LANG");
 		if (!__env || std::strcmp(__env, "") == 0 
 		    || std::strcmp(__env, "C") == 0 
 		    || std::strcmp(__env, "POSIX") == 0)
@@ -211,7 +212,7 @@ namespace std
 		if (std::strcmp(__res, "C") == 0)
 		  for (; __i < _S_categories_size; ++__i)
 		    {
-		      __env = getenv(_S_categories[__i]);
+		      __env = std::getenv(_S_categories[__i]);
 		      if (__env && std::strcmp(__env, "") != 0 
 			  && std::strcmp(__env, "C") != 0 
 			  && std::strcmp(__env, "POSIX") != 0) 
@@ -220,7 +221,7 @@ namespace std
 		else
 		  for (; __i < _S_categories_size; ++__i)
 		    {
-		      __env = getenv(_S_categories[__i]);
+		      __env = std::getenv(_S_categories[__i]);
 		      if (__env && std::strcmp(__env, "") != 0 
 			  && std::strcmp(__env, __res) != 0) 
 			break;
@@ -245,7 +246,7 @@ namespace std
 		    __i++;
 		    for (; __i < _S_categories_size; ++__i)
 		      {
-			__env = getenv(_S_categories[__i]);
+			__env = std::getenv(_S_categories[__i]);
 			if (!__env || std::strcmp(__env, "") == 0)
 			  {
 			    __str += _S_categories[__i];
@@ -276,7 +277,7 @@ namespace std
 		  (_M_impl = _S_classic)->_M_add_reference();
 		else
 		  _M_impl = new _Impl(__res, 1);
-		free(__res);
+		std::free(__res);
 	      }
 	  }
       }
