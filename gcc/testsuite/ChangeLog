@@ -1,3 +1,7 @@
+2002-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/opt/static1.C: New test.
+
 2002-03-28  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/weak-1.c: Fix typo in scan-assembler pattern.
