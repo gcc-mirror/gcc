@@ -417,7 +417,7 @@ cpp_valid_state (r, name, fd)
 	  || h->flags & NODE_POISONED)
 	{
 	  if (CPP_OPTION (r, warn_invalid_pch))
-	    cpp_error (r, DL_WARNING,
+	    cpp_error (r, DL_WARNING_SYSHDR,
 		       "%s: not used because `%.*s' not defined",
 		       name, m.name_length, namebuf);
 	  goto fail;
@@ -429,7 +429,7 @@ cpp_valid_state (r, name, fd)
 	  || memcmp (namebuf, newdefn, m.definition_length) != 0)
 	{
 	  if (CPP_OPTION (r, warn_invalid_pch))
-	    cpp_error (r, DL_WARNING, 
+	    cpp_error (r, DL_WARNING_SYSHDR,
 	       "%s: not used because `%.*s' defined as `%s' not `%.*s'",
 		       name, m.name_length, namebuf, newdefn + m.name_length,
 		       m.definition_length - m.name_length,
@@ -454,7 +454,8 @@ cpp_valid_state (r, name, fd)
 	  || h->flags & NODE_POISONED)
 	{
 	  if (CPP_OPTION (r, warn_invalid_pch))
-	    cpp_error (r, DL_WARNING, "%s: not used because `%s' is defined",
+	    cpp_error (r, DL_WARNING_SYSHDR, 
+		       "%s: not used because `%s' is defined",
 		       name, undeftab + i);
 	  goto fail;
 	}

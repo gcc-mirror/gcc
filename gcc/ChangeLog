@@ -1,3 +1,7 @@
+2003-03-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* cpppch.c (cpp_valid_state): Use DL_WARNING_SYSHDR, not DL_WARNING.
+
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/fixinc.interix: Remove dead code (most of it).
