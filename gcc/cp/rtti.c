@@ -424,9 +424,6 @@ get_typeid (type)
       return error_mark_node;
     }
   
-  if (! flag_rtti)
-    error ("requesting typeid with -fno-rtti");
-
   if (processing_template_decl)
     return build_min_nt (TYPEID_EXPR, type);
 
