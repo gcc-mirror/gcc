@@ -18,13 +18,18 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* These should come from genemit */
-typedef signed char QItype;
+#ifdef __STDC__
+#define xsigned
+#else
+#define xsigned signed
+#endif
+typedef xsigned char QItype;
 typedef unsigned char QUtype;
-typedef signed short int HItype;
+typedef xsigned short int HItype;
 typedef unsigned short int HUtype;
-typedef signed long int SItype;
+typedef xsigned long int SItype;
 typedef unsigned long int SUtype;
-typedef signed long long int DItype;
+typedef xsigned long long int DItype;
 typedef unsigned long long int DUtype;
 typedef float SFtype;
 typedef double DFtype;
