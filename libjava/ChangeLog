@@ -1,5 +1,12 @@
 2003-05-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/CollationKey.java:
+	Merged copyright and dat from classpath.
+	* java/text/RuleBasedCollator.java:
+	Merged class documentation from classpath.
+
+2003-05-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/CharBuffer.java
 	(toString): Compile fix.
 
