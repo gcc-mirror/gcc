@@ -1,3 +1,9 @@
+2004-09-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/cfg.texi, doc/hostconfig.texi, doc/install.texi,
+	doc/invoke.texi, doc/md.texi, doc/tm.texi, doc/tree-ssa.texi:
+	Insert @: after i.e. or e.g.
+
 2004-09-10  Geoffrey Keating  <geoffk@apple.com>
 
 	* tree-pretty-print.c (dump_decl_name): Print unnamed decls as

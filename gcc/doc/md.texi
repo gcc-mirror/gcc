@@ -5825,7 +5825,7 @@ instructions can be executed simultaneously.  An instruction starts
 execution if its issue conditions are satisfied.  If not, the
 instruction is stalled until its conditions are satisfied.  Such
 @dfn{interlock (pipeline) delay} causes interruption of the fetching
-of successor instructions (or demands nop instructions, e.g. for some
+of successor instructions (or demands nop instructions, e.g.@: for some
 MIPS processors).
 
 There are two major kinds of interlock delays in modern processors.
@@ -5840,7 +5840,7 @@ anti-dependence) delay between two instructions is given by a
 constant.  In most cases this approach is adequate.  The second kind
 of interlock delays is a reservation delay.  The reservation delay
 means that two instructions under execution will be in need of shared
-processors resources, i.e. buses, internal registers, and/or
+processors resources, i.e.@: buses, internal registers, and/or
 functional units, which are reserved for some time.  Taking this kind
 of delay into account is complex especially for modern @acronym{RISC}
 processors.
@@ -5926,7 +5926,7 @@ to @code{define_cpu_unit}.  The reservation of such units can be
 queried for an automaton state.  The instruction scheduler never
 queries reservation of functional units for given automaton state.  So
 as a rule, you don't need this construction.  This construction could
-be used for future code generation goals (e.g. to generate
+be used for future code generation goals (e.g.@: to generate
 @acronym{VLIW} insn templates).
 
 @smallexample
@@ -6071,7 +6071,7 @@ the string are separated by commas.
 defines an additional guard for the bypass.  The function will get the
 two insns as parameters.  If the function returns zero the bypass will
 be ignored for this case.  The additional guard is necessary to
-recognize complicated bypasses, e.g. when the consumer is only an address
+recognize complicated bypasses, e.g.@: when the consumer is only an address
 of insn @samp{store} (not a stored value).
 
 @findex exclusion_set
@@ -6105,7 +6105,7 @@ The first construction (@samp{exclusion_set}) means that each
 functional unit in the first string can not be reserved simultaneously
 with a unit whose name is in the second string and vice versa.  For
 example, the construction is useful for describing processors
-(e.g. some SPARC processors) with a fully pipelined floating point
+(e.g.@: some SPARC processors) with a fully pipelined floating point
 functional unit which can execute simultaneously only single floating
 point insns or only double floating point insns.
 
@@ -6248,7 +6248,7 @@ issued into the first pipeline unless it is reserved, otherwise they
 are issued into the second pipeline.  Integer division and
 multiplication insns can be executed only in the second integer
 pipeline and their results are ready correspondingly in 8 and 4
-cycles.  The integer division is not pipelined, i.e. the subsequent
+cycles.  The integer division is not pipelined, i.e.@: the subsequent
 integer division insn can not be issued until the current division
 insn finished.  Floating point insns are fully pipelined and their
 results are ready in 3 cycles.  Where the result of a floating point

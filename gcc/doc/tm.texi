@@ -4720,7 +4720,7 @@ the following macro.
 @defmac ENABLE_EXECUTE_STACK
 Define this macro if certain operations must be performed before executing
 code located on the stack.  The macro should expand to a series of C
-file-scope constructs (e.g. functions) and provide a unique entry point
+file-scope constructs (e.g.@: functions) and provide a unique entry point
 named @code{__enable_execute_stack}.  The target is responsible for
 emitting calls to the entry point in the code, for example from the
 @code{INITIALIZE_TRAMPOLINE} macro.
@@ -5659,7 +5659,7 @@ pointer, or a stdio stream to write any debug output to.  @var{verbose}
 is the verbose level provided by @option{-fsched-verbose-@var{n}}.
 @var{max_ready} is the maximum number of insns in the current scheduling
 region that can be live at the same time.  This can be used to allocate
-scratch space if it is needed, e.g. by @samp{TARGET_SCHED_REORDER}.
+scratch space if it is needed, e.g.@: by @samp{TARGET_SCHED_REORDER}.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_SCHED_FINISH (FILE *@var{file}, int @var{verbose})
@@ -9026,7 +9026,7 @@ within a structure, in much the same way as the @samp{__aligned__} and
 the behavior to the default.
 
 A subtlety for Microsoft Visual C/C++ style bit-field packing
-(e.g. -mms-bitfields) for targets that support it:
+(e.g.@: -mms-bitfields) for targets that support it:
 When a bit-field is inserted into a packed record, the whole size
 of the underlying type is used by one or more same-size adjacent
 bit-fields (that is, if its long:3, 32 bits is used in the record,
@@ -9387,7 +9387,7 @@ that are different from @option{-I}.
 This target hook returns @code{true} if it is safe to use a local alias
 for a virtual function @var{fndecl} when constructing thunks,
 @code{false} otherwise. By default, the hook returns @code{true} for all
-functions, if a target supports aliases (i.e. defines
+functions, if a target supports aliases (i.e.@: defines
 @code{ASM_OUTPUT_DEF}), @code{false} otherwise,
 @end deftypefn
 

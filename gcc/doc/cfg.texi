@@ -364,7 +364,7 @@ accumulate into quite large errors.
 Each edge also contains a branch probability field: an integer in the
 range from 0 to @code{REG_BR_PROB_BASE}.  It represents probability of
 passing control from the end of the @code{src} basic block to the
-@code{dest} basic block, i.e. the probability that control will flow
+@code{dest} basic block, i.e.@: the probability that control will flow
 along this edge.   The @code{EDGE_FREQUENCY} macro is available to
 compute how frequently a given edge is taken. There is a @code{count}
 field for each edge as well, representing same information as for a
@@ -533,7 +533,7 @@ the complete API required for manipulating and maintaining the CFG.
 It is also possible that a pass has to insert control flow instruction
 into the middle of a basic block, thus creating an entry point in the
 middle of the basic block, which is impossible by definition: The
-block must be split to make sure it only has one entry point, i.e. the
+block must be split to make sure it only has one entry point, i.e.@: the
 head of the basic block.  In the RTL representation, the
 @code{find_sub_basic_blocks} may be used to split existing basic block
 and add necessary edges.  The CFG hook @code{split_block} may be used
@@ -570,7 +570,7 @@ RTL representation along with the function @code{tree} itself.
 @section Liveness information
 @cindex Liveness representation
 Liveness information is useful to determine whether some register is
-``live'' at given point of program, i.e. that it contains a value that
+``live'' at given point of program, i.e.@: that it contains a value that
 may be used at a later point in the program.  This information is
 used, for instance, during register allocation, as the pseudo
 registers only need to be assigned to a unique hard register or to a

@@ -3286,7 +3286,7 @@ test coverage analysis (@option{-ftest-coverage}). Each object file's
 @var{auxname} is generated from the name of the output file, if
 explicitly specified and it is not the final executable, otherwise it is
 the basename of the source file. In both cases any suffix is removed
-(e.g.  @file{foo.gcda} for input file @file{dir/foo.c}, or
+(e.g.@: @file{foo.gcda} for input file @file{dir/foo.c}, or
 @file{dir/foo.gcda} for output file specified as @option{-o dir/foo.o}).
 
 @itemize
@@ -4239,7 +4239,7 @@ Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 Attempt to merge identical constants and identical variables.
 
 This option implies @option{-fmerge-constants}.  In addition to
-@option{-fmerge-constants} this considers e.g. even constant initialized
+@option{-fmerge-constants} this considers e.g.@: even constant initialized
 arrays or initialized constant variables with integral or floating point
 types.  Languages like C or C++ require each non-automatic variable to
 have distinct location, so using this option will result in non-conforming
@@ -5206,7 +5206,7 @@ Enabled with @option{-fprofile-use}.
 Unroll loops whose number of iterations can be determined at compile time or
 upon entry to the loop.  @option{-funroll-loops} implies
 @option{-frerun-cse-after-loop}.  It also turns on complete loop peeling
-(i.e. complete removal of loops with small constant number of iterations).
+(i.e.@: complete removal of loops with small constant number of iterations).
 This option makes code larger, and may or may not make it run faster.
 
 Enabled with @option{-fprofile-use}.
@@ -5222,7 +5222,7 @@ the loop is entered.  This usually makes programs run more slowly.
 @opindex fpeel-loops
 Peels the loops for that there is enough information that they do not
 roll much (from profile feedback).  It also turns on complete loop peeling
-(i.e. complete removal of loops with small constant number of iterations).
+(i.e.@: complete removal of loops with small constant number of iterations).
 
 Enabled with @option{-fprofile-use}.
 
@@ -10779,7 +10779,7 @@ the bottom (@option{-mbackchain}).
 Beside the different backchain location @option{-mkernel-backchain}
 also changes stack frame layout breaking the ABI. This option
 is intended to be used for code which internally needs a backchain but has
-to get by with a limited stack size e.g. the linux kernel. 
+to get by with a limited stack size e.g.@: the linux kernel. 
 Internal unwinding code not using DWARF-2 info has to be able to locate the
 return address of a function. That will be eased be the fact that
 the return address of a function is placed two words below the backchain 
@@ -10872,7 +10872,7 @@ Emit a warning if the current function exceeds the given frame size.  Because
 this is a compile time check it doesn't need to be a real problem when the program
 runs.  It is intended to identify functions which most probably cause 
 a stack overflow.  It is useful to be used in an environment with limited stack 
-size e.g. the linux kernel.
+size e.g.@: the linux kernel.
 
 @item -mwarn-dynamicstack
 @opindex mwarn-dynamicstack

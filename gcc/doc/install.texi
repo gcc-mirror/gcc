@@ -1355,7 +1355,7 @@ Specifies the AWT peer library or libraries to build alongside
 @samp{libgcj}. If this option is unspecified or disabled, AWT
 will be non-functional. Current valid values are @option{gtk} and
 @option{xlib}. Multiple libraries should be separated by a
-comma (i.e. @option{--enable-java-awt=gtk,xlib}).
+comma (i.e.@: @option{--enable-java-awt=gtk,xlib}).
 
 @item --enable-gtk-cairo
 Build the cairo Graphics2D implementation on GTK.
@@ -3534,7 +3534,7 @@ GCC 3.3 and GCC 3.4 trigger code generation bugs in earlier versions of
 the GNU compiler (especially GCC 3.0.x versions), which lead to the
 miscompilation of the stage1 compiler and the subsequent failure of the
 bootstrap process.  A workaround is to use GCC 3.2.3 as an intermediary
-stage, i.e. to bootstrap that compiler with the base compiler and then
+stage, i.e.@: to bootstrap that compiler with the base compiler and then
 use it to bootstrap the final compiler.
 
 GCC 3.4 triggers a code generation bug in versions 5.4 (Sun ONE Studio 7)
