@@ -1,3 +1,13 @@
+2003-07-17  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c.opt: Document Uncodumented; use it.  Document ObjC options.
+	* opts.c (print_filtered_help): Skip undocumented switches.
+	* opts.h (CL_UNDOCUMENTED): New.
+	* opts.sh: Handle Undocumented.
+	* toplev.c (documented_lang_options): Prevent its becoming empty.
+objc:
+	* lang-options.h: Remove.
+
 2003-07-16  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* loop.c (check_ext_dependent_givs): Pass const struct loop *

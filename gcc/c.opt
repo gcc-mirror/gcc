@@ -44,7 +44,11 @@
 ; output.  However, if the help text contains a tab character, the
 ; text to the left of the tab is output instead of the switch, and the
 ; text to its right forms the help.  This is useful for elaborating on
-; what type of argument a switch takes, for example.
+; what type of argument a switch takes, for example.  If the second
+; field contains "Undocumented" then nothing is output with --help.
+; Only do this with good reason like the switch being internal between
+; the driver and the front end - it is not an excuse to leave a switch
+; undocumented.
 
 ; Comments can appear on their own line anwhere in the file, preceded
 ; by a semicolon.  Whitespace is permitted before the semicolon.
@@ -87,7 +91,7 @@ C ObjC C++ ObjC++ Joined Separate
 -D<macro>[=<val>]	Define a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1
 
 E
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ Undocumented
 
 H
 C ObjC C++ ObjC++
@@ -318,6 +322,7 @@ Warn about function pointer arithmetic
 
 Wprotocol
 ObjC ObjC++
+Warn if inherited methods are unimplemented
 
 Wredundant-decls
 C ObjC C++ ObjC++
@@ -333,6 +338,7 @@ Warn whenever a function's return type defaults to \"int\" (C), or about inconsi
 
 Wselector
 ObjC ObjC++
+Warn if a selector has multiple methods
 
 Wsequence-point
 C ObjC
@@ -436,6 +442,7 @@ Make string literals \"const char[]\" not \"char[]\"
 
 fconstant-string-class=
 ObjC ObjC++ Joined
+-fconst-string-class=<name>	Use class <name> for constant strings
 
 fdefault-inline
 C++ ObjC++
@@ -486,6 +493,7 @@ Recognize GNU-defined keywords
 
 fgnu-runtime
 ObjC ObjC++
+Generate code for GNU runtime environment
 
 fguiding-decls
 C++ ObjC++
@@ -531,6 +539,7 @@ C++ ObjC++
 
 fnext-runtime
 ObjC ObjC++
+Generate code for NeXT runtime environment
 
 fnonansi-builtins
 C++ ObjC++
@@ -643,6 +652,7 @@ Emit cross referencing information
 
 gen-decls
 ObjC ObjC++
+Dump declarations to a .decl file
 
 idirafter
 C ObjC C++ ObjC++ Joined Separate
@@ -677,12 +687,10 @@ C ObjC C++ ObjC++ Joined Separate
 -iwithprefixbefore <dir>	Add <dir> to the end of the main include path
 
 lang-asm
-C
-For internal use only
+C Undocumented
 
 lang-objc
-C ObjC C++ ObjC++
-For internal use only
+C ObjC C++ ObjC++ Undocumented
 
 nostdinc
 C ObjC C++ ObjC++
@@ -706,6 +714,7 @@ C ObjC C++ ObjC++
 
 print-objc-runtime-info
 ObjC ObjC++
+Generate C header of platform-specific features
 
 remap
 C ObjC C++ ObjC++

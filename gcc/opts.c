@@ -1523,6 +1523,10 @@ print_filtered_help (unsigned int flag)
       if ((cl_options[i].flags & filter) != flag)
 	continue;
 
+      /* Skip help for internal switches.  */
+      if (cl_options[i].flags & CL_UNDOCUMENTED)
+	continue;
+
       /* During transition, ignore switches with no help.  */
       help = cl_options[i].help;
       if (!help)

@@ -1,3 +1,8 @@
+Thu Jul 17 06:34:41 2003  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang-options.h: Remove.
+	* lang.opt: Document most options.
+
 2003-07-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* lang-specs.h (f77-cpp-input): Use -o to specify the CPP output file.

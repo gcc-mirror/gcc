@@ -1192,6 +1192,7 @@ documented_lang_options[] =
 
 #include "options_.h"
 
+  { NULL, "Dummy" }
 };
 
 /* Here is a table, controlled by the tm.h file, listing each -m switch
