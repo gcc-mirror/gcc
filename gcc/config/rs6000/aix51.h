@@ -90,7 +90,9 @@ do {									\
 %{mcpu=604: -m604} \
 %{mcpu=604e: -m604} \
 %{mcpu=620: -m620} \
-%{mcpu=630: -m620}"
+%{mcpu=630: -m620} \
+%{mcpu=970: -m620} \
+%{mcpu=G5: -m620}"
 
 #undef	ASM_DEFAULT_SPEC
 #define ASM_DEFAULT_SPEC "-mcom"

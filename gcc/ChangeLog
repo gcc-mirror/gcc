@@ -1,3 +1,9 @@
+2004-11-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix51.h (ASM_CPU_SPEC): Add 970 and G5.
+	* config/rs6000/aix52.h (ASM_CPU_SPEC): Same.
+	* config/rs6000/t-aix52 (BOOT_LDFLAGS): Define.
+
 2004-11-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/i386.c (override_options): Move loop to set default
