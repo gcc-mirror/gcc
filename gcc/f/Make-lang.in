@@ -94,7 +94,6 @@ g77-cross$(exeext): g77$(exeext)
 	else true; fi
 
 F77_SRCS = \
- $(srcdir)/f/assert.j \
  $(srcdir)/f/bad.c \
  $(srcdir)/f/bad.def \
  $(srcdir)/f/bad.h \
@@ -106,8 +105,6 @@ F77_SRCS = \
  $(srcdir)/f/com-rt.def \
  $(srcdir)/f/com.c \
  $(srcdir)/f/com.h \
- $(srcdir)/f/config.j \
- $(srcdir)/f/convert.j \
  $(srcdir)/f/data.c \
  $(srcdir)/f/data.h \
  $(srcdir)/f/equiv.c \
@@ -115,14 +112,10 @@ F77_SRCS = \
  $(srcdir)/f/expr.c \
  $(srcdir)/f/expr.h \
  $(srcdir)/f/fini.c \
- $(srcdir)/f/flags.j \
- $(srcdir)/f/glimits.j \
  $(srcdir)/f/global.c \
  $(srcdir)/f/global.h \
- $(srcdir)/f/hconfig.j \
  $(srcdir)/f/implic.c \
  $(srcdir)/f/implic.h \
- $(srcdir)/f/input.j \
  $(srcdir)/f/info-b.def \
  $(srcdir)/f/info-k.def \
  $(srcdir)/f/info-w.def \
@@ -139,11 +132,9 @@ F77_SRCS = \
  $(srcdir)/f/malloc.h \
  $(srcdir)/f/name.c \
  $(srcdir)/f/name.h \
- $(srcdir)/f/output.j \
  $(srcdir)/f/parse.c \
  $(srcdir)/f/proj.c \
  $(srcdir)/f/proj.h \
- $(srcdir)/f/rtl.j \
  $(srcdir)/f/src.c \
  $(srcdir)/f/src.h \
  $(srcdir)/f/st.c \
@@ -184,15 +175,10 @@ F77_SRCS = \
  $(srcdir)/f/symbol.c \
  $(srcdir)/f/symbol.def \
  $(srcdir)/f/symbol.h \
- $(srcdir)/f/system.j \
  $(srcdir)/f/target.c \
  $(srcdir)/f/target.h \
- $(srcdir)/f/tconfig.j \
- $(srcdir)/f/tm.j \
  $(srcdir)/f/top.c \
  $(srcdir)/f/top.h \
- $(srcdir)/f/toplev.j \
- $(srcdir)/f/tree.j \
  $(srcdir)/f/type.c \
  $(srcdir)/f/type.h \
  $(srcdir)/f/version.c \

@@ -188,7 +188,7 @@ typedef enum
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 #ifndef TREE_CODE
-#include "tree.j"
+#include "tree.h"
 #endif
 
 #ifndef BUILT_FOR_270

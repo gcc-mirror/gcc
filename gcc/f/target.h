@@ -34,7 +34,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define HOST_WIDE_INT long
 #else
 #ifndef TREE_CODE
-#include "tree.j"
+#include "tree.h"
 #endif
 #endif
 

@@ -25,7 +25,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "where.h"
 #include "version.h"
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-#include "flags.j"
+#include "flags.h"
 #endif
 
 #define NAME_OF_STDIN "<stdin>"
