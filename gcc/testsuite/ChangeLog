@@ -1,3 +1,7 @@
+2000-03-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/noreturn-1.c: Check for another bogus noreturn case.
+
 2000-03-19  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/compile/20000314-2.c: Use __SIZE_TYPE__, not size_t.
