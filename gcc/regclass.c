@@ -288,6 +288,8 @@ init_reg_sets_1 ()
 {
   register unsigned int i, j;
   register unsigned int /* enum machine_mode */ m;
+  char contains_reg_of_mode [LIM_REG_CLASSES] [MAX_MACHINE_MODE];
+  char allocatable_regs_of_mode [MAX_MACHINE_MODE];
 
   /* This macro allows the fixed or call-used registers
      and the register classes to depend on target flags.  */
@@ -423,44 +425,71 @@ init_reg_sets_1 ()
       if (CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (i)))
 	SET_HARD_REG_BIT (losing_caller_save_reg_set, i);
     }
+  memset (contains_reg_of_mode, 0, sizeof (contains_reg_of_mode));
+  memset (allocatable_regs_of_mode, 0, sizeof (allocatable_regs_of_mode));
+  for (m = 0; m < MAX_MACHINE_MODE; m++)
+    for (i = 0; i < N_REG_CLASSES; i++)
+      for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
+	if (!fixed_regs [j] && TEST_HARD_REG_BIT (reg_class_contents[i], j)
+	    && HARD_REGNO_MODE_OK (j, m))
+	   {
+	     contains_reg_of_mode [i][m] = 1;
+	     allocatable_regs_of_mode [m] = 1;
+	     break;
+	   }
 
   /* Initialize the move cost table.  Find every subset of each class
      and take the maximum cost of moving any subset to any other.  */
 
   for (m = 0; m < MAX_MACHINE_MODE; m++)
-    for (i = 0; i < N_REG_CLASSES; i++)
-      for (j = 0; j < N_REG_CLASSES; j++)
-	{
-	  int cost = i == j ? 2 : REGISTER_MOVE_COST (m, i, j);
-	  enum reg_class *p1, *p2;
-
-	  for (p2 = &reg_class_subclasses[j][0]; *p2 != LIM_REG_CLASSES; p2++)
-	    if (*p2 != i)
-	      cost = MAX (cost, REGISTER_MOVE_COST (m, i, *p2));
-
-	  for (p1 = &reg_class_subclasses[i][0]; *p1 != LIM_REG_CLASSES; p1++)
+    if (allocatable_regs_of_mode [m])
+      for (i = 0; i < N_REG_CLASSES; i++)
+	if (contains_reg_of_mode [i][m])
+	  for (j = 0; j < N_REG_CLASSES; j++)
 	    {
-	      if (*p1 != j)
-		cost = MAX (cost, REGISTER_MOVE_COST (m, *p1, j));
+	      int cost;
+	      enum reg_class *p1, *p2;
 
-	      for (p2 = &reg_class_subclasses[j][0];
-		   *p2 != LIM_REG_CLASSES; p2++)
-		if (*p1 != *p2)
-		  cost = MAX (cost, REGISTER_MOVE_COST (m, *p1, *p2));
+	      if (!contains_reg_of_mode [j][m])
+		{
+		  move_cost[m][i][j] = 65536;
+		  may_move_in_cost[m][i][j] = 65536;
+		  may_move_out_cost[m][i][j] = 65536;
+		}
+	      else
+		{
+		  cost = i == j ? 2 : REGISTER_MOVE_COST (m, i, j);
+
+		  for (p2 = &reg_class_subclasses[j][0]; *p2 != LIM_REG_CLASSES;
+		       p2++)
+		    if (*p2 != i && contains_reg_of_mode [*p1][m])
+		      cost = MAX (cost, move_cost [m][i][*p2]);
+
+		  for (p1 = &reg_class_subclasses[i][0]; *p1 != LIM_REG_CLASSES;
+		       p1++)
+		    if (*p1 != j && contains_reg_of_mode [*p1][m])
+		      cost = MAX (cost, move_cost [m][*p1][j]);
+
+		  move_cost[m][i][j] = cost;
+
+		  if (reg_class_subset_p (i, j))
+		    may_move_in_cost[m][i][j] = 0;
+		  else
+		    may_move_in_cost[m][i][j] = cost;
+
+		  if (reg_class_subset_p (j, i))
+		    may_move_out_cost[m][i][j] = 0;
+		  else
+		    may_move_out_cost[m][i][j] = cost;
+		}
 	    }
-
-	  move_cost[m][i][j] = cost;
-
-	  if (reg_class_subset_p (i, j))
-	    may_move_in_cost[m][i][j] = 0;
-	  else
-	    may_move_in_cost[m][i][j] = cost;
-
-	  if (reg_class_subset_p (j, i))
-	    may_move_out_cost[m][i][j] = 0;
-	  else
-	    may_move_out_cost[m][i][j] = cost;
-	}
+	else
+	  for (j = 0; j < N_REG_CLASSES; j++)
+	    {
+	      move_cost[m][i][j] = 65536;
+	      may_move_in_cost[m][i][j] = 65536;
+	      may_move_out_cost[m][i][j] = 65536;
+	    }
 
 #ifdef CLASS_CANNOT_CHANGE_MODE
   {

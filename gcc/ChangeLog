@@ -1,3 +1,8 @@
+Mon Feb 12 17:28:48 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* regclass.c (init_reg_sets_1): Optimize calculation of move_cost
+	arrays.
+
 2001-02-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* extend.texi (Deprecated): Deprecate new initializer lists.
