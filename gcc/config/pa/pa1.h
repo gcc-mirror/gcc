@@ -23,4 +23,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This is the same as pa.h, except that we generate snake code by
    default. */
 
-#include "pa.h"
+#include "pa/pa.h"
