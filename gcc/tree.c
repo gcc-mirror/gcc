@@ -2412,10 +2412,10 @@ stabilize_reference (ref)
       break;
 
     case COMPOUND_EXPR:
-      result = build_nt (COMPOUND_EXPR,
-			 stabilize_reference_1 (TREE_OPERAND (ref, 0)),
-			 stabilize_reference (TREE_OPERAND (ref, 1)));
-      break;
+      /* We cannot wrap the first expression in a SAVE_EXPR, as then
+	 it wouldn't be ignored.  This matters when dealing with
+	 volatiles.  */
+      return stabilize_reference_1 (ref);
 
     case RTL_EXPR:
       result = build1 (INDIRECT_REF, TREE_TYPE (ref),
