@@ -1,3 +1,37 @@
+2002-08-26  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_function_prologue, 
+	s390_function_epilogue): Remove.
+	config/s390/s390.c (s390_function_prologue, s390_function_epilogue,
+	TARGET_ASM_FUNCTION_PROLOGUE, TARGET_ASM_FUNCTION_EPILOGUE): Remove.
+
+	config/s390/s390.c (s390_machine_dependent_recorg): New function.
+	config/s390/s390-protos.h (s390_machine_dependent_reorg): Declare it.
+	config/s390/s390.h (MACHINE_DEPENDENT_REORG): Call it.
+	config/s390/s390.c (s390_split_branches, s390_chunkify_pool): Adapt
+	to being called from MACHINE_DEPENDENT_REORG.  Update regs_ever_live.
+
+	config/s390/s390.c (s390_frame_info): Inline save_fprs_p.  Always 
+	assume BASE_REGISTER and RETURN_REGNUM need to be saved.
+	(s390_emit_prologue): Assume RETURN_REGNUM to be saved iff
+	function is not a leaf function.  Use save_gprs and restore_gprs.
+	(s390_emit_epilogue): Likewise.
+	(save_gprs, restore_gprs): New functions.
+	(struct s390_frame): Remove return_reg_saved_p member.
+	(save_fprs_p): Remove.
+	(s390_optimize_prolog): New function.
+	(s390_legitimate_reload_constant): Remove now unnecessary check.
+
+	(s390_function_count): Remove.
+	(s390_output_symbolic_const): Replace s390_function_count by
+	current_function_funcdef_no.
+	(s390_output_constant_pool): Likewise.
+
+	(legitimize_pic_address): Use regs_ever_live to track PIC register
+	instead of current_function_uses_pic_offset_table.
+	(s390_emit_prologue): Likewise.
+	config/s390/s390.md ("call", "call_value"): Likewise.
+
 2002-08-26  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (find_opt): Don't complain about wrong languages
