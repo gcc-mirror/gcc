@@ -1,3 +1,7 @@
+Sun May 30 16:10:06 1999  Richard Henderson  <rth@cygnus.com>
+
+	* config.guess, config.sub: Use toplevel file.
+
 Wed May 26 19:30:00 1999  Mark Klein <mklein@dis.com>
         
 	* makeinfo/makeinfo.c: Add HAVE_LC_MESSAGES around setlocale call.
