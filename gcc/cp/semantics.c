@@ -45,9 +45,9 @@
    parsing into this file; that will make implementing the new parser
    much easier since it will be able to make use of these routines.  */
 
-static tree expand_cond PROTO((tree));
-static tree maybe_convert_cond PROTO((tree));
-static tree simplify_aggr_init_exprs_r PROTO((tree *, int *, void *));
+static tree expand_cond PARAMS ((tree));
+static tree maybe_convert_cond PARAMS ((tree));
+static tree simplify_aggr_init_exprs_r PARAMS ((tree *, int *, void *));
 
 /* Record the fact that STMT was the last statement added to the
    statement tree.  */

@@ -1,5 +1,6 @@
 /* Handle exceptional things in C++.
-   Copyright (C) 1989, 92-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92, 93, 94, 95, 96, 97, 98, 99, 2000
+   Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
    initial re-implementation courtesy Tad Hunt.
@@ -36,24 +37,24 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "eh-common.h"
 
-static void push_eh_cleanup PROTO((void));
-static tree build_eh_type_type PROTO((tree));
-static tree call_eh_info PROTO((void));
-static void push_eh_info PROTO((void));
-static tree get_eh_info PROTO((void));
-static tree get_eh_value PROTO((void));
+static void push_eh_cleanup PARAMS ((void));
+static tree build_eh_type_type PARAMS ((tree));
+static tree call_eh_info PARAMS ((void));
+static void push_eh_info PARAMS ((void));
+static tree get_eh_info PARAMS ((void));
+static tree get_eh_value PARAMS ((void));
 #if 0
-static tree get_eh_type PROTO((void));
-static tree get_eh_caught PROTO((void));
-static tree get_eh_handlers PROTO((void));
+static tree get_eh_type PARAMS ((void));
+static tree get_eh_caught PARAMS ((void));
+static tree get_eh_handlers PARAMS ((void));
 #endif
-static tree do_pop_exception PROTO((void));
-static tree build_eh_type_type_ref PROTO((tree));
-static tree build_terminate_handler PROTO((void));
-static tree alloc_eh_object PROTO((tree));
-static int complete_ptr_ref_or_void_ptr_p PROTO((tree, tree));
-static void initialize_handler_parm PROTO((tree));
-static tree expand_throw PROTO((tree));
+static tree do_pop_exception PARAMS ((void));
+static tree build_eh_type_type_ref PARAMS ((tree));
+static tree build_terminate_handler PARAMS ((void));
+static tree alloc_eh_object PARAMS ((tree));
+static int complete_ptr_ref_or_void_ptr_p PARAMS ((tree, tree));
+static void initialize_handler_parm PARAMS ((tree));
+static tree expand_throw PARAMS ((tree));
 
 #if 0
 /* This is the startup, and finish stuff per exception table.  */

@@ -1,6 +1,7 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993, 94-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94, 95, 96, 97, 98, 99, 2000
+   Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -57,44 +58,44 @@ static char *scratch_firstobj;
 
 enum pad { none, before, after };
 
-static const char *args_to_string		PROTO((tree, int));
-static const char *assop_to_string		PROTO((enum tree_code, int));
-static const char *code_to_string		PROTO((enum tree_code, int));
-static const char *cv_to_string			PROTO((tree, int));
-static const char *decl_to_string		PROTO((tree, int));
-static const char *expr_to_string		PROTO((tree, int));
-static const char *fndecl_to_string		PROTO((tree, int));
-static const char *language_to_string		PROTO((enum languages, int));
-static const char *op_to_string			PROTO((enum tree_code, int));
-static const char *parm_to_string		PROTO((int, int));
-static const char *type_to_string		PROTO((tree, int));
+static const char *args_to_string		PARAMS ((tree, int));
+static const char *assop_to_string		PARAMS ((enum tree_code, int));
+static const char *code_to_string		PARAMS ((enum tree_code, int));
+static const char *cv_to_string			PARAMS ((tree, int));
+static const char *decl_to_string		PARAMS ((tree, int));
+static const char *expr_to_string		PARAMS ((tree, int));
+static const char *fndecl_to_string		PARAMS ((tree, int));
+static const char *language_to_string		PARAMS ((enum languages, int));
+static const char *op_to_string			PARAMS ((enum tree_code, int));
+static const char *parm_to_string		PARAMS ((int, int));
+static const char *type_to_string		PARAMS ((tree, int));
 
-static void dump_type PROTO((tree, enum tree_string_flags));
-static void dump_simple_decl PROTO((tree, tree, enum tree_string_flags));
-static void dump_decl PROTO((tree, enum tree_string_flags));
-static void dump_template_decl PROTO((tree, enum tree_string_flags));
-static void dump_function_decl PROTO((tree, enum tree_string_flags));
-static void dump_expr PROTO((tree, enum tree_string_flags));
-static void dump_unary_op PROTO((const char *, tree, enum tree_string_flags));
-static void dump_binary_op PROTO((const char *, tree, enum tree_string_flags));
-static void dump_aggr_type PROTO((tree, enum tree_string_flags));
-static enum pad dump_type_prefix PROTO((tree, enum tree_string_flags));
-static void dump_type_suffix PROTO((tree, enum tree_string_flags));
-static void dump_function_name PROTO((tree, enum tree_string_flags));
-static void dump_expr_list PROTO((tree, enum tree_string_flags));
-static void dump_global_iord PROTO((tree));
-static enum pad dump_qualifiers PROTO((tree, enum pad));
-static void dump_char PROTO((int));
-static void dump_parameters PROTO((tree, enum tree_string_flags));
-static void dump_exception_spec PROTO((tree, enum tree_string_flags));
-static const char *aggr_variety PROTO((tree));
-static tree ident_fndecl PROTO((tree));
-static void dump_template_argument PROTO((tree, enum tree_string_flags));
-static void dump_template_argument_list PROTO((tree, enum tree_string_flags));
-static void dump_template_parameter PROTO((tree, enum tree_string_flags));
-static void dump_template_bindings PROTO((tree, tree));
-static void dump_scope PROTO((tree, enum tree_string_flags));
-static void dump_template_parms PROTO((tree, int, enum tree_string_flags));
+static void dump_type PARAMS ((tree, enum tree_string_flags));
+static void dump_simple_decl PARAMS ((tree, tree, enum tree_string_flags));
+static void dump_decl PARAMS ((tree, enum tree_string_flags));
+static void dump_template_decl PARAMS ((tree, enum tree_string_flags));
+static void dump_function_decl PARAMS ((tree, enum tree_string_flags));
+static void dump_expr PARAMS ((tree, enum tree_string_flags));
+static void dump_unary_op PARAMS ((const char *, tree, enum tree_string_flags));
+static void dump_binary_op PARAMS ((const char *, tree, enum tree_string_flags));
+static void dump_aggr_type PARAMS ((tree, enum tree_string_flags));
+static enum pad dump_type_prefix PARAMS ((tree, enum tree_string_flags));
+static void dump_type_suffix PARAMS ((tree, enum tree_string_flags));
+static void dump_function_name PARAMS ((tree, enum tree_string_flags));
+static void dump_expr_list PARAMS ((tree, enum tree_string_flags));
+static void dump_global_iord PARAMS ((tree));
+static enum pad dump_qualifiers PARAMS ((tree, enum pad));
+static void dump_char PARAMS ((int));
+static void dump_parameters PARAMS ((tree, enum tree_string_flags));
+static void dump_exception_spec PARAMS ((tree, enum tree_string_flags));
+static const char *aggr_variety PARAMS ((tree));
+static tree ident_fndecl PARAMS ((tree));
+static void dump_template_argument PARAMS ((tree, enum tree_string_flags));
+static void dump_template_argument_list PARAMS ((tree, enum tree_string_flags));
+static void dump_template_parameter PARAMS ((tree, enum tree_string_flags));
+static void dump_template_bindings PARAMS ((tree, tree));
+static void dump_scope PARAMS ((tree, enum tree_string_flags));
+static void dump_template_parms PARAMS ((tree, int, enum tree_string_flags));
 
 #define A args_to_string
 #define C code_to_string

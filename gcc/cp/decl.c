@@ -56,7 +56,7 @@ extern tree static_ctors, static_dtors;
 
 extern tree global_namespace;
 
-extern int (*valid_lang_attribute) PROTO ((tree, tree, tree, tree));
+extern int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree));
 
 /* Use garbage collection.  */
 
@@ -99,91 +99,91 @@ int ggc_p = 1;
 #define WCHAR_TYPE "int"
 #endif
 
-static tree grokparms				PROTO((tree, int));
-static const char *redeclaration_error_message	PROTO((tree, tree));
+static tree grokparms				PARAMS ((tree, int));
+static const char *redeclaration_error_message	PARAMS ((tree, tree));
 
-static void push_binding_level PROTO((struct binding_level *, int,
+static void push_binding_level PARAMS ((struct binding_level *, int,
 				      int));
-static void pop_binding_level PROTO((void));
-static void suspend_binding_level PROTO((void));
-static void resume_binding_level PROTO((struct binding_level *));
-static struct binding_level *make_binding_level PROTO((void));
-static void declare_namespace_level PROTO((void));
-static void signal_catch PROTO((int)) ATTRIBUTE_NORETURN;
-static void storedecls PROTO((tree));
-static void require_complete_types_for_parms PROTO((tree));
-static void push_overloaded_decl_1 PROTO((tree));
-static int ambi_op_p PROTO((tree));
-static int unary_op_p PROTO((tree));
-static tree store_bindings PROTO((tree, tree));
-static tree lookup_tag_reverse PROTO((tree, tree));
-static tree obscure_complex_init PROTO((tree, tree));
-static tree maybe_build_cleanup_1 PROTO((tree, tree));
-static tree lookup_name_real PROTO((tree, int, int, int));
-static void warn_extern_redeclared_static PROTO((tree, tree));
-static void grok_reference_init PROTO((tree, tree, tree));
-static tree grokfndecl PROTO((tree, tree, tree, tree, int,
+static void pop_binding_level PARAMS ((void));
+static void suspend_binding_level PARAMS ((void));
+static void resume_binding_level PARAMS ((struct binding_level *));
+static struct binding_level *make_binding_level PARAMS ((void));
+static void declare_namespace_level PARAMS ((void));
+static void signal_catch PARAMS ((int)) ATTRIBUTE_NORETURN;
+static void storedecls PARAMS ((tree));
+static void require_complete_types_for_parms PARAMS ((tree));
+static void push_overloaded_decl_1 PARAMS ((tree));
+static int ambi_op_p PARAMS ((tree));
+static int unary_op_p PARAMS ((tree));
+static tree store_bindings PARAMS ((tree, tree));
+static tree lookup_tag_reverse PARAMS ((tree, tree));
+static tree obscure_complex_init PARAMS ((tree, tree));
+static tree maybe_build_cleanup_1 PARAMS ((tree, tree));
+static tree lookup_name_real PARAMS ((tree, int, int, int));
+static void warn_extern_redeclared_static PARAMS ((tree, tree));
+static void grok_reference_init PARAMS ((tree, tree, tree));
+static tree grokfndecl PARAMS ((tree, tree, tree, tree, int,
 			      enum overload_flags, tree,
 			      tree, int, int, int, int, int, int, tree));
-static tree grokvardecl PROTO((tree, tree, RID_BIT_TYPE *, int, int, tree));
-static tree lookup_tag PROTO((enum tree_code, tree,
+static tree grokvardecl PARAMS ((tree, tree, RID_BIT_TYPE *, int, int, tree));
+static tree lookup_tag PARAMS ((enum tree_code, tree,
 			      struct binding_level *, int));
 static void set_identifier_type_value_with_scope
-	PROTO((tree, tree, struct binding_level *));
-static void record_builtin_type PROTO((enum rid, const char *, tree));
-static void record_unknown_type PROTO((tree, const char *));
-static int member_function_or_else PROTO((tree, tree, enum overload_flags));
-static void bad_specifiers PROTO((tree, const char *, int, int, int, int,
+	PARAMS ((tree, tree, struct binding_level *));
+static void record_builtin_type PARAMS ((enum rid, const char *, tree));
+static void record_unknown_type PARAMS ((tree, const char *));
+static int member_function_or_else PARAMS ((tree, tree, enum overload_flags));
+static void bad_specifiers PARAMS ((tree, const char *, int, int, int, int,
 				  int));
-static void lang_print_error_function PROTO((const char *));
-static tree maybe_process_template_type_declaration PROTO((tree, int, struct binding_level*));
-static void check_for_uninitialized_const_var PROTO((tree));
-static unsigned long typename_hash PROTO((hash_table_key));
-static boolean typename_compare PROTO((hash_table_key, hash_table_key));
-static void push_binding PROTO((tree, tree, struct binding_level*));
-static int add_binding PROTO((tree, tree));
-static void pop_binding PROTO((tree, tree));
-static tree local_variable_p_walkfn PROTO((tree *, int *, void *));
-static tree find_binding PROTO((tree, tree));
-static tree select_decl PROTO((tree, int));
-static int lookup_flags PROTO((int, int));
-static tree qualify_lookup PROTO((tree, int));
-static tree record_builtin_java_type PROTO((const char *, int));
-static const char *tag_name PROTO((enum tag_types code));
-static void find_class_binding_level PROTO((void));
-static struct binding_level *innermost_nonclass_level PROTO((void));
-static void warn_about_implicit_typename_lookup PROTO((tree, tree));
-static int walk_namespaces_r PROTO((tree, walk_namespaces_fn, void *));
-static int walk_globals_r PROTO((tree, void *));
-static void add_decl_to_level PROTO((tree, struct binding_level *));
-static tree make_label_decl PROTO((tree, int));
-static void pop_label PROTO((tree));
-static void pop_labels PROTO((tree));
-static void maybe_deduce_size_from_array_init PROTO((tree, tree));
-static void layout_var_decl PROTO((tree));
-static void maybe_commonize_var PROTO((tree));
-static tree check_initializer PROTO((tree, tree));
-static void make_rtl_for_nonlocal_decl PROTO((tree, tree, const char *));
-static void push_cp_function_context PROTO((struct function *));
-static void pop_cp_function_context PROTO((struct function *));
-static void mark_binding_level PROTO((void *));
-static void mark_cp_function_context PROTO((struct function *));
-static void mark_saved_scope PROTO((void *));
-static void mark_lang_function PROTO((struct language_function *));
-static void mark_stmt_tree PROTO((struct stmt_tree *));
-static void save_function_data PROTO((tree));
-static void check_function_type PROTO((tree));
-static void destroy_local_var PROTO((tree));
-static void finish_constructor_body PROTO((void));
-static void finish_destructor_body PROTO((void));
-static tree create_array_type_for_decl PROTO((tree, tree, tree));
-static tree get_atexit_node PROTO((void));
-static tree get_dso_handle_node PROTO((void));
-static tree start_cleanup_fn PROTO((void));
-static void end_cleanup_fn PROTO((void));
+static void lang_print_error_function PARAMS ((const char *));
+static tree maybe_process_template_type_declaration PARAMS ((tree, int, struct binding_level*));
+static void check_for_uninitialized_const_var PARAMS ((tree));
+static unsigned long typename_hash PARAMS ((hash_table_key));
+static boolean typename_compare PARAMS ((hash_table_key, hash_table_key));
+static void push_binding PARAMS ((tree, tree, struct binding_level*));
+static int add_binding PARAMS ((tree, tree));
+static void pop_binding PARAMS ((tree, tree));
+static tree local_variable_p_walkfn PARAMS ((tree *, int *, void *));
+static tree find_binding PARAMS ((tree, tree));
+static tree select_decl PARAMS ((tree, int));
+static int lookup_flags PARAMS ((int, int));
+static tree qualify_lookup PARAMS ((tree, int));
+static tree record_builtin_java_type PARAMS ((const char *, int));
+static const char *tag_name PARAMS ((enum tag_types code));
+static void find_class_binding_level PARAMS ((void));
+static struct binding_level *innermost_nonclass_level PARAMS ((void));
+static void warn_about_implicit_typename_lookup PARAMS ((tree, tree));
+static int walk_namespaces_r PARAMS ((tree, walk_namespaces_fn, void *));
+static int walk_globals_r PARAMS ((tree, void *));
+static void add_decl_to_level PARAMS ((tree, struct binding_level *));
+static tree make_label_decl PARAMS ((tree, int));
+static void pop_label PARAMS ((tree));
+static void pop_labels PARAMS ((tree));
+static void maybe_deduce_size_from_array_init PARAMS ((tree, tree));
+static void layout_var_decl PARAMS ((tree));
+static void maybe_commonize_var PARAMS ((tree));
+static tree check_initializer PARAMS ((tree, tree));
+static void make_rtl_for_nonlocal_decl PARAMS ((tree, tree, const char *));
+static void push_cp_function_context PARAMS ((struct function *));
+static void pop_cp_function_context PARAMS ((struct function *));
+static void mark_binding_level PARAMS ((void *));
+static void mark_cp_function_context PARAMS ((struct function *));
+static void mark_saved_scope PARAMS ((void *));
+static void mark_lang_function PARAMS ((struct language_function *));
+static void mark_stmt_tree PARAMS ((struct stmt_tree *));
+static void save_function_data PARAMS ((tree));
+static void check_function_type PARAMS ((tree));
+static void destroy_local_var PARAMS ((tree));
+static void finish_constructor_body PARAMS ((void));
+static void finish_destructor_body PARAMS ((void));
+static tree create_array_type_for_decl PARAMS ((tree, tree, tree));
+static tree get_atexit_node PARAMS ((void));
+static tree get_dso_handle_node PARAMS ((void));
+static tree start_cleanup_fn PARAMS ((void));
+static void end_cleanup_fn PARAMS ((void));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
-static void indent PROTO((void));
+static void indent PARAMS ((void));
 #endif
 
 /* Erroneous argument lists can use this *IFF* they do not modify it.  */
@@ -536,7 +536,7 @@ indent ()
 }
 #endif /* defined(DEBUG_CP_BINDING_LEVELS) */
 
-static tree pushdecl_with_scope	PROTO((tree, struct binding_level *));
+static tree pushdecl_with_scope	PARAMS ((tree, struct binding_level *));
 
 static void
 push_binding_level (newlevel, tag_transparent, keep)
@@ -6404,7 +6404,7 @@ tree
 define_function (name, type, pfn, library_name)
      const char *name;
      tree type;
-     void (*pfn) PROTO((tree));
+     void (*pfn) PARAMS ((tree));
      const char *library_name;
 {
   tree decl = build_lang_decl (FUNCTION_DECL, get_identifier (name), type);
@@ -6439,7 +6439,7 @@ builtin_function (name, type, code, class, libname)
      enum built_in_class class;
      const char *libname;
 {
-  tree decl = define_function (name, type, (void (*) PROTO((tree)))pushdecl,
+  tree decl = define_function (name, type, (void (*) PARAMS ((tree)))pushdecl,
 			       libname);
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = code;

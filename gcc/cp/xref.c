@@ -1,5 +1,5 @@
 /* Code for handling XREF output from GNU C++.
-   Copyright (C) 1992, 93-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-97, 1998, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -117,15 +117,15 @@ static	tree		last_fndecl = NULL;
 /*	Forward definitions						*/
 /*									*/
 /************************************************************************/
-static	void		gen_assign PROTO((XREF_FILE, tree));
-static	XREF_FILE	find_file PROTO((const char *));
-static	const char *	filename PROTO((XREF_FILE));
-static	const char *	fctname PROTO((tree));
-static	const char *	declname PROTO((tree));
-static	void		simplify_type PROTO((char *));
-static	const char *	fixname PROTO((const char *, char *));
-static	void		open_xref_file PROTO((const char *));
-static  const char *	classname PROTO((tree));
+static	void		gen_assign PARAMS ((XREF_FILE, tree));
+static	XREF_FILE	find_file PARAMS ((const char *));
+static	const char *	filename PARAMS ((XREF_FILE));
+static	const char *	fctname PARAMS ((tree));
+static	const char *	declname PARAMS ((tree));
+static	void		simplify_type PARAMS ((char *));
+static	const char *	fixname PARAMS ((const char *, char *));
+static	void		open_xref_file PARAMS ((const char *));
+static  const char *	classname PARAMS ((tree));
 
 /* Start cross referencing.  FILE is the name of the file we xref.  */
 

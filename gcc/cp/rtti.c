@@ -35,23 +35,23 @@ Boston, MA 02111-1307, USA.  */
 
 extern struct obstack permanent_obstack;
 
-static tree build_runtime_decl PROTO((const char *, tree));
-static tree build_headof_sub PROTO((tree));
-static tree build_headof PROTO((tree));
-static tree get_tinfo_var PROTO((tree));
-static tree ifnonnull PROTO((tree, tree));
-static tree tinfo_name PROTO((tree));
-static tree get_base_offset PROTO((tree, tree));
-static tree build_dynamic_cast_1 PROTO((tree, tree));
-static void expand_si_desc PROTO((tree, tree));
-static void expand_class_desc PROTO((tree, tree));
-static void expand_attr_desc PROTO((tree, tree));
-static void expand_ptr_desc PROTO((tree, tree));
-static void expand_generic_desc PROTO((tree, tree, const char *));
-static tree throw_bad_cast PROTO((void));
-static tree throw_bad_typeid PROTO((void));
-static tree get_tinfo_decl_dynamic PROTO((tree));
-static tree tinfo_from_decl PROTO((tree));
+static tree build_runtime_decl PARAMS ((const char *, tree));
+static tree build_headof_sub PARAMS ((tree));
+static tree build_headof PARAMS ((tree));
+static tree get_tinfo_var PARAMS ((tree));
+static tree ifnonnull PARAMS ((tree, tree));
+static tree tinfo_name PARAMS ((tree));
+static tree get_base_offset PARAMS ((tree, tree));
+static tree build_dynamic_cast_1 PARAMS ((tree, tree));
+static void expand_si_desc PARAMS ((tree, tree));
+static void expand_class_desc PARAMS ((tree, tree));
+static void expand_attr_desc PARAMS ((tree, tree));
+static void expand_ptr_desc PARAMS ((tree, tree));
+static void expand_generic_desc PARAMS ((tree, tree, const char *));
+static tree throw_bad_cast PARAMS ((void));
+static tree throw_bad_typeid PARAMS ((void));
+static tree get_tinfo_decl_dynamic PARAMS ((tree));
+static tree tinfo_from_decl PARAMS ((tree));
 
 void
 init_rtti_processing ()

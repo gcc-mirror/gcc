@@ -71,19 +71,19 @@ typedef struct dump_info
   splay_tree nodes;
 } *dump_info_p;
 
-static unsigned int queue PROTO ((dump_info_p, tree, int));
-static void dump_index PROTO ((dump_info_p, unsigned int));
-static void queue_and_dump_index PROTO ((dump_info_p, const char *, tree, int));
-static void queue_and_dump_type PROTO ((dump_info_p, tree));
-static void dequeue_and_dump PROTO ((dump_info_p));
-static void dump_new_line PROTO ((dump_info_p));
-static void dump_maybe_newline PROTO ((dump_info_p));
-static void dump_int PROTO ((dump_info_p, const char *, int));
-static void dump_string PROTO ((dump_info_p, const char *));
-static void dump_string_field PROTO ((dump_info_p, const char *, const char *));
-static void dump_node PROTO ((tree, FILE *));
-static void dump_stmt PROTO ((dump_info_p, tree));
-static void dump_next_stmt PROTO ((dump_info_p, tree));
+static unsigned int queue PARAMS ((dump_info_p, tree, int));
+static void dump_index PARAMS ((dump_info_p, unsigned int));
+static void queue_and_dump_index PARAMS ((dump_info_p, const char *, tree, int));
+static void queue_and_dump_type PARAMS ((dump_info_p, tree));
+static void dequeue_and_dump PARAMS ((dump_info_p));
+static void dump_new_line PARAMS ((dump_info_p));
+static void dump_maybe_newline PARAMS ((dump_info_p));
+static void dump_int PARAMS ((dump_info_p, const char *, int));
+static void dump_string PARAMS ((dump_info_p, const char *));
+static void dump_string_field PARAMS ((dump_info_p, const char *, const char *));
+static void dump_node PARAMS ((tree, FILE *));
+static void dump_stmt PARAMS ((dump_info_p, tree));
+static void dump_next_stmt PARAMS ((dump_info_p, tree));
 
 /* Add T to the end of the queue of nodes to dump.  Returns the index
    assigned to T.  */

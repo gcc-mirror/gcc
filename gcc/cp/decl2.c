@@ -60,36 +60,36 @@ typedef struct priority_info_s {
   int destructions_p;
 } *priority_info;
 
-static tree get_sentry PROTO((tree));
-static void mark_vtable_entries PROTO((tree));
-static void grok_function_init PROTO((tree, tree));
-static int finish_vtable_vardecl PROTO((tree *, void *));
-static int prune_vtable_vardecl PROTO((tree *, void *));
-static int is_namespace_ancestor PROTO((tree, tree));
-static void add_using_namespace PROTO((tree, tree, int));
-static tree ambiguous_decl PROTO((tree, tree, tree,int));
-static tree build_anon_union_vars PROTO((tree, tree*, int, int));
-static int acceptable_java_type PROTO((tree));
-static void output_vtable_inherit PROTO((tree));
-static tree start_objects PROTO((int, int));
-static void finish_objects PROTO((int, int, tree));
-static tree merge_functions PROTO((tree, tree));
-static tree decl_namespace PROTO((tree));
-static tree validate_nonmember_using_decl PROTO((tree, tree *, tree *));
-static void do_nonmember_using_decl PROTO((tree, tree, tree, tree,
+static tree get_sentry PARAMS ((tree));
+static void mark_vtable_entries PARAMS ((tree));
+static void grok_function_init PARAMS ((tree, tree));
+static int finish_vtable_vardecl PARAMS ((tree *, void *));
+static int prune_vtable_vardecl PARAMS ((tree *, void *));
+static int is_namespace_ancestor PARAMS ((tree, tree));
+static void add_using_namespace PARAMS ((tree, tree, int));
+static tree ambiguous_decl PARAMS ((tree, tree, tree,int));
+static tree build_anon_union_vars PARAMS ((tree, tree*, int, int));
+static int acceptable_java_type PARAMS ((tree));
+static void output_vtable_inherit PARAMS ((tree));
+static tree start_objects PARAMS ((int, int));
+static void finish_objects PARAMS ((int, int, tree));
+static tree merge_functions PARAMS ((tree, tree));
+static tree decl_namespace PARAMS ((tree));
+static tree validate_nonmember_using_decl PARAMS ((tree, tree *, tree *));
+static void do_nonmember_using_decl PARAMS ((tree, tree, tree, tree,
 					   tree *, tree *));
-static tree start_static_storage_duration_function PROTO((void));
-static void finish_static_storage_duration_function PROTO((tree));
-static priority_info get_priority_info PROTO((int));
-static void do_static_initialization PROTO((tree, tree));
-static void do_static_destruction PROTO((tree));
-static tree start_static_initialization_or_destruction PROTO((tree, int));
-static void finish_static_initialization_or_destruction PROTO((tree));
-static void generate_ctor_or_dtor_function PROTO((int, int));
+static tree start_static_storage_duration_function PARAMS ((void));
+static void finish_static_storage_duration_function PARAMS ((tree));
+static priority_info get_priority_info PARAMS ((int));
+static void do_static_initialization PARAMS ((tree, tree));
+static void do_static_destruction PARAMS ((tree));
+static tree start_static_initialization_or_destruction PARAMS ((tree, int));
+static void finish_static_initialization_or_destruction PARAMS ((tree));
+static void generate_ctor_or_dtor_function PARAMS ((int, int));
 static int generate_ctor_and_dtor_functions_for_priority
-                                  PROTO((splay_tree_node, void *));
-static tree prune_vars_needing_no_initialization PROTO((tree));
-static void write_out_vars PROTO((tree));
+                                  PARAMS ((splay_tree_node, void *));
+static tree prune_vars_needing_no_initialization PARAMS ((tree));
+static void write_out_vars PARAMS ((tree));
 
 extern int current_class_depth;
 
@@ -489,7 +489,7 @@ int flag_permissive;
 /* If this variable is defined to a non-NULL value, it will be called
    after the file has been completely parsed.  */
 
-void (*back_end_hook) PROTO((tree));
+void (*back_end_hook) PARAMS ((tree));
 
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
@@ -4527,13 +4527,13 @@ struct arg_lookup
   tree functions;
 };
 
-static int arg_assoc         PROTO((struct arg_lookup*, tree));
-static int arg_assoc_args    PROTO((struct arg_lookup*, tree));
-static int arg_assoc_type    PROTO((struct arg_lookup*, tree));
-static int add_function      PROTO((struct arg_lookup *, tree));
-static int arg_assoc_namespace PROTO((struct arg_lookup *, tree));
-static int arg_assoc_class   PROTO((struct arg_lookup *, tree));
-static int arg_assoc_template_arg PROTO((struct arg_lookup*, tree));
+static int arg_assoc         PARAMS ((struct arg_lookup*, tree));
+static int arg_assoc_args    PARAMS ((struct arg_lookup*, tree));
+static int arg_assoc_type    PARAMS ((struct arg_lookup*, tree));
+static int add_function      PARAMS ((struct arg_lookup *, tree));
+static int arg_assoc_namespace PARAMS ((struct arg_lookup *, tree));
+static int arg_assoc_class   PARAMS ((struct arg_lookup *, tree));
+static int arg_assoc_template_arg PARAMS ((struct arg_lookup*, tree));
 
 /* Add a function to the lookup structure.
    Returns 1 on error.  */

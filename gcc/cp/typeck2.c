@@ -1,6 +1,6 @@
 /* Report error messages, build initializers, and perform
    some front-end optimizations for C++ compiler.
-   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-98, 99, 2000 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -38,8 +38,8 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "output.h"
 
-static tree process_init_constructor PROTO((tree, tree, tree *));
-static void ack PVPROTO ((const char *, ...)) ATTRIBUTE_PRINTF_1;
+static tree process_init_constructor PARAMS ((tree, tree, tree *));
+static void ack PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
 
 /* Print an error message stemming from an attempt to use
    BASETYPE as a base class for TYPE.  */
@@ -83,7 +83,7 @@ readonly_error (arg, string, soft)
      int soft;
 {
   const char *fmt;
-  void (*fn) PVPROTO ((const char *, ...));
+  void (*fn) PARAMS ((const char *, ...));
 
   if (soft)
     fn = cp_pedwarn;
@@ -248,7 +248,7 @@ retry:
 /* Like error(), but don't call report_error_function().  */
 
 static void
-ack VPROTO ((const char *msg, ...))
+ack VPARAMS ((const char *msg, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *msg;
