@@ -1,3 +1,13 @@
+2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/16199
+	* config/sparc/sparc.c (sparc_emit_set_symbolic_const64): When
+	'temp' is zero, generate new pseudos as needed and emit the
+	sequence of insns in single-assignment form.  Resync comments
+	with code.
+	(sparc_emit_set_const64): Pass zero as 'temp' argument to above
+	function before reload.
+
 2004-07-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* vec.c (vec_assert_fail): Remove duplicate 'function'.
