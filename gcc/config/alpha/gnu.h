@@ -5,7 +5,7 @@
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-"-D__GNU__ -Dgnu_hurd -Dunix -Asystem=gnu -D_LONGLONG -D__alpha__ -D__ELF__"
+"-D__GNU__ -D__gnu_hurd__ -Dunix -Asystem=gnu -D_LONGLONG -D__alpha__ -D__ELF__"
 
 #undef ELF_DYNAMIC_LINKER
 #define ELF_DYNAMIC_LINKER	"/lib/ld.so"
