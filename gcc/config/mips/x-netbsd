@@ -1,0 +1,16 @@
+# Don't run fixproto
+STMP_FIXPROTO =
+
+# We don't need GCC's own include files.
+USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/varargs.h \
+	 $(srcdir)/ginclude/va-mips.h
+XLIMITS_H =
+
+# We don't need even the files GCC insists we need.
+GENINCLUDES = Makefile.in
+
+# A lot of stuff needs to go elsewhere.
+includedir=$(exec_prefix)/include
+infodir=$(exec_prefix)/share/info
+tooldir=$(libdir)/cross/$(target)
+mandir=$(exec_prefix)/share/man/man1
