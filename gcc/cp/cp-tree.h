@@ -2321,6 +2321,10 @@ extern int flag_new_for_scope;
 #define SET_ANON_AGGR_TYPE_P(NODE)			\
   (TYPE_LANG_SPECIFIC (NODE)->anon_aggr = 1)
 
+/* Nonzero if TYPE is an anonymous union type.  */
+#define ANON_UNION_TYPE_P(NODE) \
+  (TREE_CODE (NODE) == UNION_TYPE && ANON_AGGR_TYPE_P (NODE))
+
 /* For a VAR_DECL that is an anonymous union, these are the various
    sub-variables that make up the anonymous union.  */
 #define DECL_ANON_UNION_ELEMS(NODE) DECL_ARGUMENTS ((NODE))

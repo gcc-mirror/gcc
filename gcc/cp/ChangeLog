@@ -1,3 +1,12 @@
+1999-11-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (check_bitfield_decl): New function, split out from
+	finish_stuct_1.
+	(check_field_decl): Likewise.  Recursively examine members of
+	anonymous structs.
+	(finish_struct_1): Use them.
+	* cp-tree.h (ANON_UNION_TYPE_P): New macro.
+	
 1999-11-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (grokfndecl): Remove dead code.
