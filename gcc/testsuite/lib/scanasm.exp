@@ -32,8 +32,8 @@ proc scan-assembler { args } {
 	switch [dg-process-target [lindex $args 1]] {
 	    "S" { }
 	    "N" { return }
-	    "F" { error "scan-assembler: `xfail' not allowed here" }
-	    "P" { error "scan-assembler: `xfail' not allowed here" }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
 	}
     }
 
@@ -70,8 +70,8 @@ proc scan-assembler-not { args } {
 	switch [dg-process-target [lindex $args 1]] {
 	    "S" { }
 	    "N" { return }
-	    "F" { error "scan-assembler-not: `xfail' not allowed here" }
-	    "P" { error "scan-assembler-not: `xfail' not allowed here" }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
 	}
     }
 
@@ -107,8 +107,8 @@ proc scan-assembler-dem { args } {
 	switch [dg-process-target [lindex $args 1]] {
 	    "S" { }
 	    "N" { return }
-	    "F" { error "[lindex $args 0]: `xfail' not allowed here" }
-	    "P" { error "[lindex $args 0]: `xfail' not allowed here" }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
 	}
     }
 
@@ -153,8 +153,8 @@ proc scan-assembler-dem-not { args } {
 	switch [dg-process-target [lindex $args 1]] {
 	    "S" { }
 	    "N" { return }
-	    "F" { error "scan-assembler-dem-not: `xfail' not allowed here" }
-	    "P" { error "scan-assembler-dem-not: `xfail' not allowed here" }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
 	}
     }
 
