@@ -173,7 +173,7 @@ do { register HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); \
 #define GO_IF_HARD_REG_EQUAL(X,Y,TO)  \
 do { register HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); \
      if ((scan_xp_[0] == scan_yp_[0])				\
-	 && (scan_xp_[1] == scan_yp_[1]))
+	 && (scan_xp_[1] == scan_yp_[1]))			\
 	goto TO; } while (0)
 
 #else
