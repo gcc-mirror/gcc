@@ -2641,7 +2641,7 @@ fixup_addr_diff_vecs (first)
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
-      rtx vec_lab, pat, prev, prevpat, x;
+      rtx vec_lab, pat, prev, prevpat, x, braf_label;
 
       if (GET_CODE (insn) != JUMP_INSN
 	  || GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC)
@@ -2664,10 +2664,15 @@ fixup_addr_diff_vecs (first)
 	  if (GET_CODE (x) == LABEL_REF && XEXP (x, 0) == vec_lab)
 	    break;
 	}
+
+      /* Emit the reference label of the braf where it belongs, right after
+	 the casesi_jump_2 (i.e. braf).  */
+      braf_label = XEXP (XEXP (SET_SRC (XVECEXP (prevpat, 0, 0)), 1), 0);
+      emit_label_after (braf_label, prev);
+
       /* Fix up the ADDR_DIF_VEC to be relative
 	 to the reference address of the braf.  */
-      XEXP (XEXP (pat, 0), 0)
-	= XEXP (XEXP (SET_SRC (XVECEXP (prevpat, 0, 0)), 1), 0);
+      XEXP (XEXP (pat, 0), 0) = braf_label;
     }
 }
 
@@ -4301,29 +4306,6 @@ fp_one_operand (op)
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, op);
   return REAL_VALUES_EQUAL (r, dconst1);
-}
-
-int
-braf_label_ref_operand(op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  rtx prev;
-
-  if (GET_CODE (op) != LABEL_REF)
-    return 0;
-  prev = prev_real_insn (XEXP (op, 0));
-  if (GET_CODE (prev) != JUMP_INSN)
-    return 0;
-  prev = PATTERN (prev);
-  if (GET_CODE (prev) != PARALLEL || XVECLEN (prev, 0) != 2)
-    return 0;
-  prev = XVECEXP (prev, 0, 0);
-  if (GET_CODE (prev) != SET)
-    return 0;
-  prev = SET_SRC (prev);
-  if (GET_CODE (prev) != PLUS || XEXP (prev, 1) != op)
-    return 0;
 }
 
 int
