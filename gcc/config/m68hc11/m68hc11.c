@@ -1052,8 +1052,11 @@ hard_addr_reg_operand (operand, mode)
 int
 hard_reg_operand (operand, mode)
      rtx operand;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
 {
+  if (GET_MODE (operand) != mode && mode != VOIDmode)
+    return 0;
+
   if (GET_CODE (operand) == SUBREG)
     operand = XEXP (operand, 0);
 
