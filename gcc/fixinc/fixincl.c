@@ -30,8 +30,9 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #include <signal.h>
-
+#ifndef __MSDOS__
 #include "server.h"
+#endif
 
 /*  The contents of this string are not very important.  It is mostly
     just used as part of the "I am alive and working" test.  */
@@ -74,6 +75,8 @@ pid_t process_chain_head = (pid_t) -1;
 
 char*  pz_curr_file;  /*  name of the current file under test/fix  */
 char*  pz_curr_data;  /*  original contents of that file  */
+char*  pz_temp_file;  /*  for DOS, a place to stash the temporary
+                          fixed data between system(3) calls  */
 t_bool curr_data_mapped;
 int    data_map_fd;
 size_t data_map_size;
@@ -178,6 +181,10 @@ Altering  %5d of them\n";
              fixed_ct, altered_ct);
   }
 #endif /* DO_STATS */
+
+# ifdef __MSDOS__
+  unlink( pz_temp_file );
+# endif
   return EXIT_SUCCESS;
 }
 
@@ -195,8 +202,12 @@ do_version ()
   */
   run_compiles ();
   sprintf (zBuf, zFmt, program_id);
+#ifndef __MSDOS__
   puts (zBuf + 5);
   exit (strcmp (run_shell (zBuf), program_id));
+#else
+  exit (system (zBuf));
+#endif
 }
 
 /* * * * * * * * * * * * */
@@ -287,11 +298,19 @@ ENV_TABLE
       */
   run_compiles ();
 
+# ifdef __MSDOS__
+  /* NULL as the first argument to `tempnam' causes it to DTRT
+     wrt the temporary directory where the file will be created.  */
+  pz_temp_file = tempnam( NULL, "fxinc" );
+# endif
+
   signal (SIGQUIT, SIG_IGN);
 #ifdef SIGIOT
   signal (SIGIOT,  SIG_IGN);
 #endif
+#ifdef SIGPIPE
   signal (SIGPIPE, SIG_IGN);
+#endif
   signal (SIGALRM, SIG_IGN);
   signal (SIGTERM, SIG_IGN);
 }
@@ -348,54 +367,11 @@ load_file ( fname )
   return res;
 }
 
-
-/* * * * * * * * * * * * *
-
-   run_compiles   run all the regexp compiles for all the fixes once.
- */
-void
-run_compiles ()
-{
-  tFixDesc *p_fixd = fixDescList;
-  int fix_ct = FIX_COUNT;
-  tTestDesc *p_test;
-  int test_ct;
-  const char *pz_err;
-  regex_t *p_re = (regex_t *) malloc (REGEX_COUNT * sizeof (regex_t));
-
-  if (p_re == (regex_t *) NULL)
-    {
-      fprintf (stderr, "fixincl ERROR:  cannot allocate %d bytes for regex\n",
-               REGEX_COUNT * sizeof (regex_t));
-      exit (EXIT_FAILURE);
-    }
-
-  /*  Make sure compile_re does not stumble across invalid data */
-
-  memset ( (void*)p_re, '\0', REGEX_COUNT * sizeof (regex_t) );
-  memset ( (void*)&incl_quote_re, '\0', sizeof (regex_t) );
-
-  compile_re (incl_quote_pat, &incl_quote_re, 1,
-              "quoted include", "run_compiles");
-
-  /*  Allow machine name tests to be ignored (testing, mainly) */
-
-  if (pz_machine && ((*pz_machine == '\0') || (*pz_machine == '*')))
-    pz_machine = (char*)NULL;
-
-  /* FOR every fixup, ...  */
-  do
-    {
-      p_test = p_fixd->p_test_desc;
-      test_ct = p_fixd->test_ct;
-
-      /*  IF the machine type pointer is not NULL (we are not in test mode)
-             AND this test is for or not done on particular machines
-          THEN ...   */
-
-      if (  (pz_machine != NULL)
-         && (p_fixd->papz_machs != (const char**) NULL) )
+int
+machine_matches( p_fixd )
+  tFixDesc *p_fixd;
         {
+# ifndef __MSDOS__
           tSCC case_fmt[] = "case %s in\n";     /*  9 bytes, plus string */
           tSCC esac_fmt[] =
                " )\n    echo %s ;;\n* ) echo %s ;;\nesac";/*  4 bytes */
@@ -457,10 +433,74 @@ run_compiles ()
             if (skip)
               {
                 p_fixd->fd_flags |= FD_SKIP_TEST;
-                continue;
-              }
-           }
-        }
+		return BOOL_FALSE;
+	      }
+	  }
+
+  return BOOL_TRUE;
+# else /* is __MSDOS__ */
+  const char **papz_machs = p_fixd->papz_machs;
+  int invert = (p_fixd->fd_flags & FD_MACH_IFNOT) != 0;
+  for (;;)
+    {
+      const char* pz_mach = *(papz_machs++);
+
+      if (pz_mach == (const char*) NULL)
+        break;
+      if (strstr (pz_mach, "dos") != NULL && !invert)
+	return BOOL_TRUE;
+    }
+
+  p_fixd->fd_flags |= FD_SKIP_TEST;
+  return BOOL_FALSE;
+# endif
+}
+
+/* * * * * * * * * * * * *
+
+   run_compiles   run all the regexp compiles for all the fixes once.
+   */
+void
+run_compiles ()
+{
+  tFixDesc *p_fixd = fixDescList;
+  int fix_ct = FIX_COUNT;
+  regex_t *p_re = (regex_t *) malloc (REGEX_COUNT * sizeof (regex_t));
+
+  if (p_re == (regex_t *) NULL)
+    {
+      fprintf (stderr, "fixincl ERROR:  cannot allocate %d bytes for regex\n",
+               REGEX_COUNT * sizeof (regex_t));
+      exit (EXIT_FAILURE);
+    }
+
+  /*  Make sure compile_re does not stumble across invalid data */
+
+  memset ( (void*)p_re, '\0', REGEX_COUNT * sizeof (regex_t) );
+  memset ( (void*)&incl_quote_re, '\0', sizeof (regex_t) );
+
+  compile_re (incl_quote_pat, &incl_quote_re, 1,
+              "quoted include", "run_compiles");
+
+  /*  Allow machine name tests to be ignored (testing, mainly) */
+
+  if (pz_machine && ((*pz_machine == '\0') || (*pz_machine == '*')))
+    pz_machine = (char*)NULL;
+
+  /* FOR every fixup, ...  */
+  do
+    {
+      tTestDesc *p_test = p_fixd->p_test_desc;
+      int test_ct = p_fixd->test_ct;
+
+      /*  IF the machine type pointer is not NULL (we are not in test mode)
+             AND this test is for or not done on particular machines
+          THEN ...   */
+
+      if (  (pz_machine != NULL)
+         && (p_fixd->papz_machs != (const char**) NULL)
+         && ! machine_matches (p_fixd) )
+        continue;
 
       /* FOR every test for the fixup, ...  */
 
@@ -470,17 +510,6 @@ run_compiles ()
             {
             case TT_EGREP:
             case TT_NEGREP:
-#ifdef DEBUG
-              {
-                static int re_ct = REGEX_COUNT;
-
-                if (--re_ct < 0)
-                  {
-                    fputs ("out of RE's\n", stderr);
-                    exit (EXIT_FAILURE);
-                  }
-              }
-#endif
               p_test->p_test_regex = p_re++;
               compile_re (p_test->pz_test_text, p_test->p_test_regex, 0,
                           "select test", p_fixd->fix_name);
@@ -578,7 +607,7 @@ create_file ()
           the name of the file that we might want to fix
   Result: APPLY_FIX or SKIP_FIX, depending on the result of the
           shell script we run.  */
-
+#ifndef __MSDOS__
 int
 test_test (p_test, pz_test_file)
      tTestDesc *p_test;
@@ -616,7 +645,13 @@ fi";
   free ((void *) pz_res);
   return res;
 }
-
+#else
+/*
+ *  IF we are in MS-DOS land, then whatever shell-type test is required
+ *  will, by definition, fail
+ */
+#define test_test(t,tf)  SKIP_FIX
+#endif
 
 /* * * * * * * * * * * * *
 
@@ -728,7 +763,7 @@ extract_quoted_files (pz_data, pz_fixed_file, p_re_match)
       /*  Skip forward to the included file name */
       while (ISSPACE (*pz_incl_quot))
         pz_incl_quot++;
-      /* ISSPACE() may evaluate is argument more than once!  */
+      /* ISSPACE() may evaluate its argument more than once!  */
       while (++pz_incl_quot, ISSPACE (*pz_incl_quot))
         ;
       pz_incl_quot += sizeof ("include") - 1;
@@ -767,7 +802,7 @@ extract_quoted_files (pz_data, pz_fixed_file, p_re_match)
 
     Somebody wrote a *_fix subroutine that we must call.
     */
-
+#ifndef __MSDOS__
 int
 internal_fix (read_fd, p_fixd)
   int read_fd;
@@ -833,7 +868,135 @@ internal_fix (read_fd, p_fixd)
   apply_fix (p_fixd, pz_curr_file);
   exit (0);
 }
+#endif /* !__MSDOS__ */
 
+
+#ifdef __MSDOS__
+static void
+fix_with_system (p_fixd, pz_fix_file, pz_file_source, pz_temp_file)
+  tFixDesc* p_fixd;
+  tCC* pz_fix_file;
+  tCC* pz_file_source;
+  tCC* pz_temp_file;
+{
+  char*  pz_cmd;
+  char*  pz_scan;
+  size_t argsize;
+
+  if (p_fixd->fd_flags & FD_SUBROUTINE)
+    {
+      tSCC z_applyfix_prog[] = "/fixinc/applyfix";
+
+      argsize = 32
+              + strlen( pz_orig_dir )
+              + sizeof( z_applyfix_prog )
+              + strlen( pz_fix_file )
+              + strlen( pz_file_source )
+              + strlen( pz_temp_file );
+
+      pz_cmd = (char*)xmalloc( argsize );
+
+      strcpy( pz_cmd, pz_orig_dir );
+      pz_scan = pz_cmd + strlen( pz_orig_dir );
+      strcpy( pz_scan, z_applyfix_prog );
+      pz_scan += sizeof( z_applyfix_prog ) - 1;
+      *(pz_scan++) = ' ';
+
+      /*
+       *  Now add the fix number and file names that may be needed
+       */
+      sprintf (pz_scan, "%ld %s %s %s", p_fixd - fixDescList,
+	       pz_fix_file, pz_file_source, pz_temp_file);
+    }
+  else /* NOT an "internal" fix: */
+    {
+      size_t parg_size;
+      /* Don't use the "src > dstX; rm -f dst; mv -f dstX dst" trick:
+	 dst is a temporary file anyway, so we know there's no other
+	 file by that name; and DOS's system(3) doesn't mind to
+	 clobber existing file in redirection.  Besides, with DOS 8+3
+	 limited file namespace, we can easily lose if dst already has
+	 an extension that is 3 or more characters long.  */
+      tSCC   z_cmd_fmt[] = " %s > %s";
+      tCC**  ppArgs = p_fixd->patch_args;
+
+      argsize = sizeof( z_cmd_fmt ) + strlen( pz_temp_file )
+              + strlen( pz_file_source );
+      parg_size = argsize;
+      
+
+      /*
+       *  Compute the size of the command line.  Add lotsa extra space
+       *  because some of the args to sed use lotsa single quotes.
+       *  (This requires three extra bytes per quote.  Here we allow
+       *  for up to 8 single quotes for each argument, including the
+       *  command name "sed" itself.  Nobody will *ever* need more. :)
+       */
+      for (;;)
+        {
+          tCC* p_arg = *(ppArgs++);
+          if (p_arg == NULL)
+            break;
+          argsize += 24 + strlen( p_arg );
+        }
+
+      /* Estimated buffer size we will need.  */
+      pz_scan = pz_cmd = (char*)xmalloc( argsize );
+      /* How much of it do we allot to the program name and its
+         arguments.  */
+      parg_size = argsize - parg_size;
+
+      ppArgs = p_fixd->patch_args;
+
+      /*
+       *  Copy the program name, unquoted
+       */
+      {
+        tCC*   pArg = *(ppArgs++);
+        for (;;)
+          {
+            char ch = *(pArg++);
+            if (ch == NUL)
+              break;
+            *(pz_scan++) = ch;
+          }
+      }
+
+      /*
+       *  Copy the program arguments, quoted
+       */
+      for (;;)
+        {
+          tCC*   pArg = *(ppArgs++);
+	  char*  pz_scan_save;
+          if (pArg == NULL)
+            break;
+          *(pz_scan++) = ' ';
+          pz_scan = make_raw_shell_str( pz_scan_save = pz_scan, pArg,
+					parg_size - (pz_scan - pz_cmd) );
+	  /*
+	   *  Make sure we don't overflow the buffer due to sloppy
+	   *  size estimation.
+	   */
+	  while (pz_scan == (char*)NULL)
+	    {
+	      size_t already_filled = pz_scan_save - pz_cmd;
+	      pz_cmd = (char*)xrealloc( pz_cmd, argsize += 100 );
+	      pz_scan_save = pz_scan = pz_cmd + already_filled;
+	      parg_size += 100;
+	      pz_scan = make_raw_shell_str( pz_scan, pArg,
+					    parg_size - (pz_scan - pz_cmd) );
+	    }
+        }
+
+      /*
+       *  add the file machinations.
+       */
+      sprintf( pz_scan, z_cmd_fmt, pz_file_source, pz_temp_file );
+    }
+  system( pz_cmd );
+  free( (void*)pz_cmd );
+}
 
 /* * * * * * * * * * * * *
 
@@ -842,6 +1005,7 @@ internal_fix (read_fd, p_fixd)
     its stdin and returns the new fd this process will use
     for stdout.  */
 
+#else /* is *NOT* __MSDOS__ */
 int
 start_fixer (read_fd, p_fixd, pz_fix_file)
   int read_fd;
@@ -912,6 +1076,7 @@ start_fixer (read_fd, p_fixd, pz_fix_file)
 
   return read_fd;
 }
+#endif
 
 
 /* * * * * * * * * * * * *
@@ -924,17 +1089,23 @@ t_bool
 fix_applies (p_fixd)
   tFixDesc *p_fixd;
 {
-#ifdef DEBUG
-  static const char z_failed[] = "not applying %s %s to %s - \
-test %d failed\n";
-#endif
   const char *pz_fname = pz_curr_file;
   const char *pz_scan = p_fixd->file_list;
   int test_ct;
   tTestDesc *p_test;
 
+# ifdef __MSDOS__
+  /*
+   *  There is only one fix that uses a shell script as of this writing.
+   *  I hope to nuke it anyway, it does not apply to DOS and it would
+   *  be painful to implement.  Therefore, no "shell" fixes for DOS.
+   */
+  if (p_fixd->fd_flags & (FD_SHELL_SCRIPT | FD_SKIP_TEST))
+    return BOOL_FALSE;
+# else
   if (p_fixd->fd_flags & FD_SKIP_TEST)
     return BOOL_FALSE;
+# endif
 
   /*  IF there is a file name restriction,
       THEN ensure the current file name matches one in the pattern  */
@@ -952,14 +1123,8 @@ test %d failed\n";
           pz_scan = strstr (pz_scan + 1, pz_fname);
           /*  IF we can't match the string at all,
               THEN bail  */
-          if (pz_scan == (char *) NULL) {
-#ifdef DEBUG
-            if (VLEVEL( VERB_EVERYTHING ))
-              fprintf (stderr, "file %s not in list for %s\n",
-                       pz_fname, p_fixd->fix_name );
-#endif
+          if (pz_scan == (char *) NULL)
             return BOOL_FALSE;
-          }
 
           /*  IF the match is surrounded by the '|' markers,
               THEN we found a full match -- time to run the tests  */
@@ -1133,11 +1298,14 @@ test_for_changes (read_fd)
 void
 process ()
 {
-  static char env_current_file[1024];
   tFixDesc *p_fixd = fixDescList;
   int todo_ct = FIX_COUNT;
   int read_fd = -1;
+# ifndef __MSDOS__
   int num_children = 0;
+# else /* is __MSDOS__ */
+  char* pz_file_source = pz_curr_file;
+# endif
 
   if (access (pz_curr_file, R_OK) != 0)
     {
@@ -1158,6 +1326,7 @@ process ()
   if (VLEVEL( VERB_PROGRESS ) && have_tty)
     fprintf (stderr, "%6d %-50s   \r", data_map_size, pz_curr_file );
 
+# ifndef __MSDOS__
   process_chain_head = NOPROCESS;
 
   /* For every fix in our fix list, ...  */
@@ -1218,5 +1387,34 @@ process ()
       } while (--num_children > 0);
     }
 
+# else /* is __MSDOS__ */
+
+  for (; todo_ct > 0; p_fixd++, todo_ct--)
+    {
+      if (! fix_applies (p_fixd))
+        continue;
+
+      if (VLEVEL( VERB_APPLIES ))
+        fprintf (stderr, "Applying %-24s to %s\n",
+                 p_fixd->fix_name, pz_curr_file);
+
+      if (p_fixd->fd_flags & FD_REPLACEMENT)
+        {
+          write_replacement (p_fixd);
+          UNLOAD_DATA();
+          return;
+        }
+      fix_with_system (p_fixd, pz_curr_file, pz_file_source, pz_temp_file);
+      pz_file_source = pz_temp_file;
+    }
+
+  read_fd = open( pz_temp_file, O_RDONLY );
+  test_for_changes( read_fd );
+  /* Unlinking a file while it is still open is a Bad Idea on
+     DOS/Windows.  */
+  close( read_fd );
+  unlink( pz_temp_file );
+
+# endif
   UNLOAD_DATA();
 }

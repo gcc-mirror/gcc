@@ -95,6 +95,7 @@ esac
 
 # Original directory.
 ORIGDIR=`${PWDCMD}`
+export ORIGDIR
 FIXINCL=${ORIGDIR}/fixinc/fixincl
 export FIXINCL
 
@@ -111,7 +112,9 @@ if test $VERBOSE -gt 0
 then echo Fixing headers into ${LIB} for ${target_canonical} target ; fi
 
 # Determine whether this system has symbolic links.
-if ln -s X $LIB/ShouldNotExist 2>/dev/null; then
+if test -n "$DJDIR"; then
+  LINKS=false
+elif ln -s X $LIB/ShouldNotExist 2>/dev/null; then
   rm -f $LIB/ShouldNotExist
   LINKS=true
 elif ln -s X /tmp/ShouldNotExist 2>/dev/null; then
@@ -422,7 +425,9 @@ done
 if test $VERBOSE -gt 2
 then echo 'Cleaning up DONE files.' ; fi
 cd $LIB
-find . -name DONE -exec rm -f '{}' ';'
+# Look for files case-insensitively, for the benefit of
+# DOS/Windows filesystems.
+find . -name '[Dd][Oo][Nn][Ee]' -exec rm -f '{}' ';'
 
 if test $VERBOSE -gt 1
 then echo 'Cleaning up unneeded directories:' ; fi
@@ -435,20 +440,25 @@ for file in $all_dirs; do
   fi
 done 2> /dev/null
 
-test $VERBOSE -gt 2 && echo "Removing unused symlinks"
+# On systems which don't support symlinks, `find' may barf
+# if called with "-type l" predicate.  So only use that if
+# we know we should look for symlinks.
+if $LINKS; then
+  test $VERBOSE -gt 2 && echo "Removing unused symlinks"
 
-all_dirs=`find . -type l -print`
-for file in $all_dirs
-do
-  if ls -lLd $file > /dev/null
-  then :
-  else rm -f $file
-       test $VERBOSE -gt 3 && echo "  removed $file"
-       rmdir `dirname $file` > /dev/null && \
-         test $VERBOSE -gt 3 && \
-         echo "  removed `dirname $file`"
-  fi
-done 2> /dev/null
+  all_dirs=`find . -type l -print`
+  for file in $all_dirs
+  do
+    if ls -lLd $file > /dev/null
+    then :
+    else rm -f $file
+         test $VERBOSE -gt 3 && echo "  removed $file"
+         rmdir `dirname $file` > /dev/null && \
+           test $VERBOSE -gt 3 && \
+           echo "  removed `dirname $file`"
+    fi
+  done 2> /dev/null
+fi
 
 if test $VERBOSE -gt 0
 then echo fixincludes is done ; fi

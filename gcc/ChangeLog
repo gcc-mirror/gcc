@@ -1,3 +1,55 @@
+2000-08-04  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/:  Verified that the MSDOS patch does not break
+	the UNIX functionality and applied the next three patches
+	from July:
+
+2000-07-28  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* fixinc/fixfixes.c (main) [__MSDOS__]: Avoid overwriting the
+	output file with the temporary one by appending ".X" to generate
+	the temporary fuile's name.  If the output file already has an
+	extension, replace it with ".X".
+
+	* fixinc/fixincl.c (fix_with_system) [__MSDOS__]: Use $ORIGDIR,
+	not $DESTDIR, to find applyfix.  Use sprintf instead of snprintf;
+	reallocate the command buffer while copying the command-line
+	argument.  Redirect the output directly to the temporary file,
+	instead of going through another temporary file.
+	(process): Close the temporary file before unlinking it.
+	(machine_matches) [__MSDOS__]: If the machine doesn't match, set
+	the FD_SKIP_TEST flag.  Pay attention to the FD_MACH_IFNOT flag.
+	(run_compiles): Pass p_fixd argument to machine_matches, as it
+	expects.
+
+	* fixinc/fixincl.sh: Export ORIGDIR.  If $DJDIR is set in the
+	environment, assume there are no symlinks in the include
+	directory.  When cleaning up the DONE files, look for them
+	case-insensitively.  Don't try to remove symlinks if they aren't
+	there.
+
+	* fixinc/fixlib.c (make_raw_shell_str): Accept new argument smax;
+	all callers changed.  Declare pz "const char *", to avoid compiler
+	warnings.
+
+	* fixinc/fixlib.h (ENV_TABLE): Get ORIGDIR from the environment.
+	Change prototype of make_raw_shell_str.
+
+2000-07-27  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* fixinc/fixincl.c [__MSDOS__]: Don't include "server.h".
+	(initialize) [__MSDOS__]: Use tempnam.
+	(initialize): Don't use SIGPIPE if it is not defined.
+
+	* fixinc/fixfixes.c (main) [__MSDOS__]: freopen for stdout should
+	return stdout.
+
+2000-07-25  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fix*.[ch]: substantially reworked to make it possible
+	to run this program without using fork(2) or pipe(2) (i.e. in
+	a DOS environment).
+
 2000-08-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* cppdefault.h (WINT_TYPE): Define.

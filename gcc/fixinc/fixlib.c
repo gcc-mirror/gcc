@@ -245,3 +245,57 @@ mn_get_regexps( label_re, name_re, who )
   *name_re = &mn_name_re;
 }
 #endif
+
+
+#ifdef __MSDOS__
+
+char*
+make_raw_shell_str( pz_d, pz_s, smax )
+  char*       pz_d;
+  tCC*        pz_s;
+  size_t      smax;
+{
+  tSCC zQ[] = "'\\''";
+  size_t     dtaSize;
+  char*      pz_d_start = pz_d;
+
+  smax--; /* adjust for trailing NUL */
+
+  dtaSize = strlen( pz_s ) + 3;
+
+  {
+    const char* pz = pz_s - 1;
+
+    for (;;) {
+      pz = strchr( pz+1, '\'' );
+      if (pz == (char*)NULL)
+        break;
+      dtaSize += sizeof( zQ )-1;
+    }
+  }
+  if (dtaSize > smax)
+    return (char*)NULL;
+
+  *(pz_d++) = '\'';
+
+  for (;;) {
+    if (pz_d - pz_d_start >= smax)
+      return (char*)NULL;
+    switch (*(pz_d++) = *(pz_s++)) {
+    case NUL:
+      goto loopDone;
+
+    case '\'':
+      if (pz_d - pz_d_start >= smax - sizeof( zQ )-1)
+	return (char*)NULL;
+      strcpy( pz_d-1, zQ );
+      pz_d += sizeof( zQ )-2;
+    }
+  } loopDone:;
+  pz_d[-1] = '\'';
+  *pz_d    = NUL;
+
+  return pz_d;
+}
+
+#endif
