@@ -50,6 +50,8 @@ case "${host}" in
 	libgcj_flags="${libgcj_flags} -G 0"
 	LDFLAGS="$LDFLAGS -Tjmr3904dram.ld"
 	AM_RUNTESTFLAGS="--target_board=jmr3904-sim"	
+	# Use "Ecos" processes since they are a no-op.
+	PROCESS=Ecos
 	;;
   i686-*|i586-*)
 	libgcj_flags="${libgcj_flags} -ffloat-store"

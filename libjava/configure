@@ -2418,7 +2418,7 @@ fi
 case "$TARGET_ECOS" in
    no)
       FILE_DESCRIPTOR=natFileDescriptorPosix.cc
-      PROCESS=Posix
+      PROCESS=${PROCESS-Posix}
       ;;
    *)
       FILE_DESCRIPTOR=natFileDescriptorEcos.cc

@@ -1,5 +1,10 @@
 1999-09-28  Tom Tromey  <tromey@cygnus.com>
 
+	* configure: Rebuilt.
+	* configure.in (PROCESS): In POSIX case, only set if not already
+	set.
+	* configure.host (PROCESS): Set in mips-tx39 case.
+
 	* aclocal.m4, configure: Rebuilt.
 	* acinclude.m4 (LIB_AC_PROG_CC, LIB_AC_PROG_CXX): Provide
 	appropriate AC_PROG_ symbol.
