@@ -37,13 +37,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    to #define TARGET_V9 as 0 (and potentially other v9-only options), and
    #undef SPARCV9.  */
 
-/* What cpu we're compiling for.  This must coincide with the `cpu_type'
-   attribute in the .md file.  The names were chosen to avoid potential
-   misunderstandings with the various 32 bit flavors (v7, v8, etc.): if we
-   used CPU_V9 then we'd want to use something like CPU_V8 but that could be
-   misleading and CPU_NOTV9 sounds klunky.  */
-enum cpu_type { CPU_32BIT, CPU_64BIT };
-extern enum cpu_type sparc_cpu_type;
+/* What architecture we're compiling for.  This must coincide with the
+   `arch_type' attribute in the .md file.  The names were chosen to avoid
+   potential misunderstandings with the various 32 bit flavors (v7, v8, etc.):
+   if we used ARCH_V9 then we'd want to use something like ARCH_V8 but that
+   could be misleading and ARCH_NOTV9 sounds klunky.  */
+enum arch_type { ARCH_32BIT, ARCH_64BIT };
+extern enum arch_type sparc_arch_type;
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
@@ -76,6 +76,7 @@ extern enum cpu_type sparc_cpu_type;
 %{msparclite:-D__sparclite__} \
 %{mf930:-D__sparclite__} %{mf934:-D__sparclite__} \
 %{mv8:-D__sparc_v8__} \
+%{msupersparc:-D__supersparc__ -D__sparc_v8__}	\
 %{!mv9:-Acpu(sparc) -Amachine(sparc)} \
 %{mv9:-D__sparc_v9__ -Acpu(sparc64) -Amachine(sparc64)} \
 %{mint64:-D__INT_MAX__=9223372036854775807LL -D__LONG_MAX__=9223372036854775807LL} \
@@ -167,7 +168,11 @@ extern int target_flags;
 #define MASK_UNALIGNED_DOUBLES 4
 #define TARGET_UNALIGNED_DOUBLES (target_flags & MASK_UNALIGNED_DOUBLES)
 
-/* ??? Bits 0x38 are currently unused.  */
+/* ??? Bits 0x18 are currently unused.  */
+
+/* Nonzero means we should schedule code for the TMS390Z55 SuperSparc chip.  */
+#define MASK_SUPERSPARC 0x20
+#define TARGET_SUPERSPARC (target_flags & MASK_SUPERSPARC)
 
 /* Nonzero means that we should generate code for a v8 sparc.  */
 #define MASK_V8 0x40
@@ -281,6 +286,8 @@ extern int target_flags;
     {"no-epilogue", -MASK_EPILOGUE},	\
     {"unaligned-doubles", MASK_UNALIGNED_DOUBLES}, \
     {"no-unaligned-doubles", -MASK_UNALIGNED_DOUBLES}, \
+    {"supersparc", MASK_SUPERSPARC+MASK_V8},	\
+    {"cypress", -MASK_SUPERSPARC-MASK_V8},	\
     {"v8", MASK_V8},			\
     {"no-v8", -MASK_V8},		\
     {"sparclite", MASK_SPARCLITE},	\
@@ -2129,6 +2136,11 @@ extern struct rtx_def *legitimize_pic_address ();
   case FLOAT:						\
   case FIX:						\
     return 19;
+
+/* Adjust the cost of dependencies.  */
+#define ADJUST_COST(INSN,LINK,DEP,COST) \
+  if (TARGET_SUPERSPARC) \
+  (COST) = supersparc_adjust_cost (INSN, LINK, DEP, COST)
 
 /* Conditional branches with empty delay slots have a length of two.  */
 #define ADJUST_INSN_LENGTH(INSN, LENGTH)	\
