@@ -45,7 +45,6 @@ tree builtin_return_address_fndecl;
 /* A couple of backend routines from m88k.c */
 
 static void push_eh_cleanup PROTO((void));
-static rtx do_function_call PROTO((tree, tree, tree));
 static tree build_eh_type_type PROTO((tree));
 static tree build_eh_type PROTO((tree));
 static void expand_end_eh_spec PROTO((tree));
@@ -182,22 +181,6 @@ extern tree const_ptr_type_node;
 
 /* ========================================================================= */
 
-/* Cheesyness to save some typing.  Returns the return value rtx.  */
-
-static rtx
-do_function_call (func, params, return_type)
-     tree func, params, return_type;
-{
-  tree func_call;
-  func_call = build_function_call (func, params);
-  expand_call (func_call, NULL_RTX, 0);
-  if (return_type != NULL_TREE)
-    return hard_function_value (return_type, func_call);
-  return NULL_RTX;
-}
-
-/* ========================================================================= */
-
 /* sets up all the global eh stuff that needs to be initialized at the
    start of compilation.
 
@@ -267,7 +250,10 @@ call_eh_info ()
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
     {
-      tree t1,t, fields[7];
+#ifdef NEW_EH_MODEL
+      tree t1;
+#endif
+      tree t, fields[7];
       int fo = 0;
 
       /* Declare cp_eh_info * __cp_exception_info (void),

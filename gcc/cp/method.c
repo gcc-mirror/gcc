@@ -83,6 +83,7 @@ static int issue_ktype PROTO((tree));
 static void build_overload_scope_ref PROTO((tree));
 static void build_mangled_template_parm_index PROTO((char *, tree));
 static int check_btype PROTO((tree));
+static int is_java_type PROTO((tree));
 
 # define OB_INIT() (scratch_firstobj ? (obstack_free (&scratch_obstack, scratch_firstobj), 0) : 0)
 # define OB_PUTC(C) (obstack_1grow (&scratch_obstack, (C)))
@@ -1117,7 +1118,7 @@ process_modifiers (parmtype)
 
 /* True iff TYPE was declared as a "Java" type (inside extern "Java"). */
 
-int
+static int
 is_java_type (type)
      tree type;
 {

@@ -107,6 +107,7 @@
 #include "cp-tree.h"
 #include "output.h"
 #include "except.h"
+#include "toplev.h"
 
 /* Since parsers are distinct for each language, put the language string
    definition here.  (fnf) */

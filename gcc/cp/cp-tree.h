@@ -2141,6 +2141,7 @@ extern tree build_vbase_path			PROTO((enum tree_code, tree, tree, tree, int));
 extern tree build_vtbl_ref			PROTO((tree, tree));
 extern tree build_vfn_ref			PROTO((tree *, tree, tree));
 extern void add_method				PROTO((tree, tree *, tree));
+extern int currently_open_class			PROTO((tree));
 extern tree get_vfield_offset			PROTO((tree));
 extern void duplicate_tag_error			PROTO((tree));
 extern tree finish_struct			PROTO((tree, tree, tree, int));
@@ -2148,6 +2149,7 @@ extern tree finish_struct_1			PROTO((tree, int));
 extern tree finish_struct_methods		PROTO((tree, tree, int));
 extern int resolves_to_fixed_type_p		PROTO((tree, int *));
 extern void init_class_processing		PROTO((void));
+extern int is_empty_class			PROTO((tree));
 extern void pushclass				PROTO((tree, int));
 extern void popclass				PROTO((int));
 extern void push_nested_class			PROTO((tree, int));
@@ -2684,6 +2686,7 @@ extern int yylex				PROTO((void));
 extern tree arbitrate_lookup			PROTO((tree, tree, tree));
 
 /* in tree.c */
+extern int member_p				PROTO((tree));
 extern int real_lvalue_p			PROTO((tree));
 extern tree build_min				PVPROTO((enum tree_code, tree, ...));
 extern tree build_min_nt			PVPROTO((enum tree_code, ...));

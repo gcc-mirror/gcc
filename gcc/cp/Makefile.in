@@ -208,7 +208,8 @@ PARSE_H = $(srcdir)/parse.h
 PARSE_C = $(srcdir)/parse.c
 
 parse.o : $(PARSE_C) $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h \
-	$(srcdir)/../except.h $(srcdir)/../output.h $(srcdir)/../system.h
+	$(srcdir)/../except.h $(srcdir)/../output.h $(srcdir)/../system.h \
+	$(srcdir)/../toplev.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
   `echo $(PARSE_C) | sed 's,^\./,,'`
 
