@@ -1,5 +1,9 @@
 1999-08-02  Jakub Jelinek  <jj@ultra.linux.cz>
 
+	* real.c (PUT_REAL): Clear unused bytes if long double is IEEE quad.
+
+1999-08-02  Jakub Jelinek  <jj@ultra.linux.cz>
+
 	* c-decl.c (get_parm_info, store_parm_decls): Change all uses of
 	PROMOTE_PROTOTYPES, so that it tests it as a C expression.
 	Ensure expr.h is included.
