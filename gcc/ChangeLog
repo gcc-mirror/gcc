@@ -1,5 +1,14 @@
 2002-06-13  Jeffrey Law  <law@redhat.com>
 
+	* gcse.c (delete_null_pointer_checks_1): Inform caller if any
+	null pointer checks were eliminated.  Update prototype.
+	(delete_null_pointer_checks): Similarly.
+	* rtl.h (delete_null_pointer_checks): Update prototype.
+	* toplev.c (rest_of_compilation): Only run cleanup_cfg if
+	delete_null_pointer_checks deletes one or more null
+	pointer checks.  Do not run cleanup_cfg before gcse, the
+	CFG is accurate and optimized at that point..
+
 	* rs6000.c (rs6000_frame_related): Avoid unwanted sharing
 	of hard registers.
 

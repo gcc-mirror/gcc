@@ -2035,7 +2035,7 @@ extern void reg_scan			PARAMS ((rtx, unsigned int, int));
 extern void reg_scan_update		PARAMS ((rtx, rtx, unsigned int));
 extern void fix_register		PARAMS ((const char *, int, int));
 
-extern void delete_null_pointer_checks	PARAMS ((rtx));
+extern int delete_null_pointer_checks	PARAMS ((rtx));
 
 /* In regmove.c */
 #ifdef BUFSIZ

@@ -2729,9 +2729,9 @@ rest_of_compilation (decl)
       if (rtl_dump_file)
 	dump_flow_info (rtl_dump_file);
 
-      delete_null_pointer_checks (insns);
+      if (delete_null_pointer_checks (insns))
+        cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       close_dump_file (DFI_null, print_rtl_with_bb, insns);
     }
 
@@ -2775,13 +2775,13 @@ rest_of_compilation (decl)
       if (tem || optimize > 1)
 	cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       /* Try to identify useless null pointer tests and delete them.  */
-      if (flag_delete_null_pointer_checks || flag_thread_jumps)
+      if (flag_delete_null_pointer_checks)
 	{
 	  timevar_push (TV_JUMP);
 
 	  if (flag_delete_null_pointer_checks)
-	    delete_null_pointer_checks (insns);
-	  /* CFG is no longer maintained up-to-date.  */
+	    if (delete_null_pointer_checks (insns))
+	      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 	  timevar_pop (TV_JUMP);
 	}
 
@@ -2814,7 +2814,6 @@ rest_of_compilation (decl)
       timevar_push (TV_GCSE);
       open_dump_file (DFI_gcse, decl);
 
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       tem = gcse_main (insns, rtl_dump_file);
       rebuild_jump_labels (insns);
       delete_trivially_dead_insns (insns, max_reg_num ());
