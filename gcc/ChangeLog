@@ -1,3 +1,7 @@
+2001-08-27  Roman Zippel  <zippel@linux-m68k.org>
+        
+	* cse.c (cse_basic_block): Skip note instructions.
+
 2001-08-27  Richard Henderson  <rth@redhat.com>
 
 	* combine.c (combine_simplify_rtx): Don't reverse condition

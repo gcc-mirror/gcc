@@ -7354,14 +7354,15 @@ cse_basic_block (from, to, next_branch, around_loop)
      we can cse into the loop.  Don't do this if we changed the jump
      structure of a loop unless we aren't going to be following jumps.  */
 
+  insn = prev_nonnote_insn(to);
   if ((cse_jumps_altered == 0
        || (flag_cse_follow_jumps == 0 && flag_cse_skip_blocks == 0))
       && around_loop && to != 0
       && GET_CODE (to) == NOTE && NOTE_LINE_NUMBER (to) == NOTE_INSN_LOOP_END
-      && GET_CODE (PREV_INSN (to)) == JUMP_INSN
-      && JUMP_LABEL (PREV_INSN (to)) != 0
-      && LABEL_NUSES (JUMP_LABEL (PREV_INSN (to))) == 1)
-    cse_around_loop (JUMP_LABEL (PREV_INSN (to)));
+      && GET_CODE (insn) == JUMP_INSN
+      && JUMP_LABEL (insn) != 0
+      && LABEL_NUSES (JUMP_LABEL (insn)) == 1)
+    cse_around_loop (JUMP_LABEL (insn));
 
   free (qty_table + max_reg);
 
