@@ -1,5 +1,5 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -768,12 +768,11 @@ record_asm_reg_life (insn, regstack, operands, constraints,
   rtx *clobber_reg;
 
   /* Find out what the constraints require.  If no constraint
-     alternative matches, that is a compiler bug: we should have caught
-     such an insn during reload.  */
+     alternative matches, this asm is malformed.  */
   i = constrain_asm_operands (n_operands, operands, constraints,
 			      operand_matches, operand_class);
   if (i < 0)
-    abort ();
+    malformed_asm = 1;
 
   /* Strip SUBREGs here to make the following code simpler. */
   for (i = 0; i < n_operands; i++)
