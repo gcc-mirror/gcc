@@ -151,7 +151,7 @@ prune_unused_decls (tp, walk_subtrees, data)
   tree t = *tp;
 
   if (t == NULL_TREE)
-    return (tree) 1;
+    return error_mark_node;
 
   if (TREE_CODE (t) == DECL_STMT)
     {
