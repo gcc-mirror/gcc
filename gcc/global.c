@@ -976,7 +976,10 @@ find_reg (allocno, losers, alt_regs_p, accept_call_clobbered, retrying)
 	  int regno = i;
 #endif
 	  if (! TEST_HARD_REG_BIT (used, regno)
-	      && HARD_REGNO_MODE_OK (regno, mode))
+	      && HARD_REGNO_MODE_OK (regno, mode)
+	      && (allocno_calls_crossed[allocno] == 0
+		  || accept_call_clobbered
+		  || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
 	    {
 	      register int j;
 	      register int lim = regno + HARD_REGNO_NREGS (regno, mode);

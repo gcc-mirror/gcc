@@ -217,6 +217,12 @@ extern int caller_save_needed;
   choose_hard_reg_mode (REGNO, NREGS)
 #endif
 
+/* Registers that get partially clobbered by a call in a given mode. 
+   These must not be call used registers.  */
+#ifndef HARD_REGNO_CALL_PART_CLOBBERED
+#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE) 0
+#endif
+
 /* Allocated in local_alloc.  */
 
 /* A list of SCRATCH rtl allocated by local-alloc.  */

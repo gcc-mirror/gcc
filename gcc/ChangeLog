@@ -24,6 +24,11 @@ Wed Sep 30 18:29:26 1998  Jeffrey A Law  (law@cygnus.com)
 
 Wed Sep 30 18:19:27 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
+	* regs.h (HARD_REGNO_CALL_PART_CLOBBERED):  New macro.
+	* local-alloc.c (find_free_reg): Use it.
+	* global.c (find_reg): Likewise.
+	* tm.texi: Document HARD_REGNO_CALL_PART_CLOBBERED.
+
 	* regs.h (HARD_REGNO_CALLER_SAVE_MODE): New macro.
 	* caller-save.c (init_caller_save): Use it.
 	* tm.texi: Document HARD_REGNO_CALLER_SAVE_MODE.

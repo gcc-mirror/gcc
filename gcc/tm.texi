@@ -1333,6 +1333,17 @@ If a register has 0 in @code{CALL_USED_REGISTERS}, the compiler
 automatically saves it on function entry and restores it on function
 exit, if the register is used within the function.
 
+@findex HARD_REGNO_CALL_PART_CLOBBERED
+@item HARD_REGNO_CALL_PART_CLOBBERED (@var{regno}, @var{mode})
+@cindex call-used register
+@cindex call-clobbered register
+@cindex call-saved register
+A C expression that is non-zero if it is not permissible to store a
+value of mode @var{mode} in hard register number @var{regno} across a
+call without some part of it being clobbered.  For most machines this
+macro need not be defined.  It is only required for machines that do not
+preserve the entire contents of a register across a call.
+
 @findex CONDITIONAL_REGISTER_USAGE
 @findex fixed_regs
 @findex call_used_regs
