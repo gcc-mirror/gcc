@@ -1,3 +1,9 @@
+2003-06-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.c (emit_single_push_insn): If padding is needed
+	downward, adjust the stack pointer first, and then store the
+	data into the stack location using an offset.
+
 2003-06-29  Andreas Jaeger  <aj@suse.de>
 
 	* collect2.h: Convert prototypes to ISO C90.
