@@ -1,3 +1,28 @@
+2001-02-08  Jason Merrill  <jason@redhat.com>
+
+	* search.c (shared_member_p): New function.
+	(lookup_field_r): Use it.
+	* cp-tree.h (SHARED_MEMBER_P): Remove.
+
+	* method.c (process_overload_item): Handle template-dependent array
+	bounds.
+	* pt.c (type_unification_real): If we end up with undeduced nontype
+	parms, try again.
+
+	* decl.c (lookup_name_real): Tweak warning to refer to decls, not
+	types.
+
+	* typeck2.c (friendly_abort): Don't say anything if we have
+	earlier errors or sorries.
+
+	* decl.c (check_tag_decl): Notice attempts to redefine bool and 
+	wchar_t.  Ignore if in_system_header.
+
+	* decl.c (maybe_push_cleanup_level): New fn...
+	(start_decl_1): ...split out from here.
+	* cvt.c (build_up_reference): Use it.
+	* cp-tree.h: Declare it.
+
 2001-02-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* lang-specs.h: Use CPLUSPLUS_CPP_SPEC for the preprocessor 
