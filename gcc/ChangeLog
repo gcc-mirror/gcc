@@ -1,5 +1,10 @@
 2000-01-30  Richard Henderson  <rth@cygnus.com>
 
+	* i386.c (ix86_compute_frame_size): Omit padding1 if the
+	local frame size is zero.
+
+2000-01-30  Richard Henderson  <rth@cygnus.com>
+
 	* alpha.c (alpha_expand_epilogue): Don't emit the return insn.
 	* alpha.h (EPILOGUE_USES): New.  Mark $26 live.
 	* alpha.md (return): Turn into an expander.

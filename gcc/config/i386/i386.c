@@ -1734,7 +1734,6 @@ ix86_compute_frame_size (size, nregs_on_stack, rpadding1, rpadding2)
   int stack_alignment_needed = cfun->stack_alignment_needed / BITS_PER_UNIT;
 
   nregs = ix86_nsaved_regs ();
-
   total_size = size;
 
 #ifdef PREFERRED_STACK_BOUNDARY
@@ -1762,9 +1761,12 @@ ix86_compute_frame_size (size, nregs_on_stack, rpadding1, rpadding2)
     total_size += offset;
 
     /* Align start of frame for local function.  */
-    padding1 = ((offset + stack_alignment_needed - 1)
-		& -stack_alignment_needed) - offset;
-    total_size += padding1;
+    if (size > 0)
+      {
+        padding1 = ((offset + stack_alignment_needed - 1)
+		    & -stack_alignment_needed) - offset;
+        total_size += padding1;
+      }
 
     /* Align stack boundary. */
     if (!current_function_is_leaf)
@@ -1775,10 +1777,8 @@ ix86_compute_frame_size (size, nregs_on_stack, rpadding1, rpadding2)
 
   if (nregs_on_stack)
     *nregs_on_stack = nregs;
-
   if (rpadding1)
     *rpadding1 = padding1;
-
   if (rpadding2)
     *rpadding2 = padding2;
 
