@@ -93,7 +93,9 @@
 (define_insn "*movv4si_internal"
   [(set (match_operand:V4SI 0 "nonimmediate_operand" "=m,v,v,o,r,r,v")
 	(match_operand:V4SI 1 "input_operand" "v,m,v,r,o,r,W"))]
-  "TARGET_ALTIVEC"
+  "TARGET_ALTIVEC 
+   && (register_operand (operands[0], V4SImode) 
+       || register_operand (operands[1], V4SImode))"
   "*
 {
   switch (which_alternative)
@@ -139,7 +141,9 @@
 (define_insn "*movv8hi_internal1"
   [(set (match_operand:V8HI 0 "nonimmediate_operand" "=m,v,v,o,r,r,v")
 	(match_operand:V8HI 1 "input_operand" "v,m,v,r,o,r,W"))]
-  "TARGET_ALTIVEC"
+  "TARGET_ALTIVEC 
+   && (register_operand (operands[0], V8HImode) 
+       || register_operand (operands[1], V8HImode))"
   "*
 {
    switch (which_alternative)
@@ -185,7 +189,9 @@
 (define_insn "*movv16qi_internal1"
   [(set (match_operand:V16QI 0 "nonimmediate_operand" "=m,v,v,o,r,r,v")
 	(match_operand:V16QI 1 "input_operand" "v,m,v,r,o,r,W"))]
-  "TARGET_ALTIVEC"
+  "TARGET_ALTIVEC
+   && (register_operand (operands[0], V16QImode)
+       || register_operand (operands[1], V16QImode))"
   "*
 {
   switch (which_alternative)
@@ -231,7 +237,9 @@
 (define_insn "*movv4sf_internal1"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "=m,v,v,o,r,r,v")
 	(match_operand:V4SF 1 "input_operand" "v,m,v,r,o,r,W"))]
-  "TARGET_ALTIVEC"
+  "TARGET_ALTIVEC
+   && (register_operand (operands[0], V4SFmode)
+       || register_operand (operands[1], V4SFmode))"
   "*
 {
   switch (which_alternative)

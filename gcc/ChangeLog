@@ -1,3 +1,11 @@
+2004-02-12  Hartmut Penner  <hpenner@de.ibm.com>
+	
+	* config/rs6000/altivec.md (*movv4si_internal): At least one
+	operand must be register_operand.
+	(*movv8hi_internal1): Likewise.
+	(*movv16qi_internal1): Likewise.
+	(*movv4sf_internal1): Likewise.
+
 2004-02-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/14113
