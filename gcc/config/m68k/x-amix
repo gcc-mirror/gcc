@@ -31,9 +31,3 @@ manext =
 # before I create a t-amix file. -- rms.
 ## Set up flags to use when compiling and linking enquire.
 #ENQUIRE_CFLAGS = -DNO_SC -DNO_MEM -DNO_STDDEF -ansi
-
-# For svr4 we link stuff *without* dynamic libraries for now... at least
-# until there is a version of GDB which understands *both* Dwarf *and*
-# svr4 shared libraries.
-
-X_CFLAGS=-static
