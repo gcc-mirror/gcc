@@ -955,14 +955,6 @@ extern rtx gen_mem_addressof		PROTO((rtx, union tree_node *));
 extern rtx eliminate_constant_term	PROTO((rtx, rtx *));
 extern rtx expand_complex_abs		PROTO((enum machine_mode, rtx, rtx, int));
 extern enum machine_mode choose_hard_reg_mode PROTO((int, int));
-extern int rtx_varies_p		PROTO((rtx));
-extern int may_trap_p		PROTO((rtx));
-extern int side_effects_p	PROTO((rtx));
-extern int volatile_refs_p	PROTO((rtx));
-extern int volatile_insn_p	PROTO((rtx));
-extern void remove_note		PROTO((rtx, rtx));
-extern int refers_to_regno_p	PROTO((int, int, rtx, rtx *));
-extern int reg_overlap_mentioned_p PROTO((rtx, rtx));
 
 /* Functions in rtlanal.c */
 
@@ -984,7 +976,6 @@ extern rtx single_set			PROTO((rtx));
 extern rtx find_last_value		PROTO((rtx, rtx *, rtx));
 extern int refers_to_regno_p		PROTO((int, int, rtx, rtx *));
 extern int reg_overlap_mentioned_p	PROTO((rtx, rtx));
-extern rtx find_use_as_address		PROTO((rtx, rtx, HOST_WIDE_INT));
 extern void note_stores			PROTO((rtx, void (*)()));
 extern rtx reg_set_last			PROTO((rtx, rtx));
 extern int rtx_equal_p			PROTO((rtx, rtx));
@@ -999,12 +990,18 @@ extern int side_effects_p		PROTO((rtx));
 extern int volatile_refs_p		PROTO((rtx));
 extern int volatile_insn_p		PROTO((rtx));
 extern int may_trap_p			PROTO((rtx));
-extern int inequality_comparison_p	PROTO((rtx));
+extern int inequality_comparisons_p	PROTO ((rtx));
 extern rtx replace_rtx			PROTO((rtx, rtx, rtx));
 extern rtx replace_regs			PROTO((rtx, rtx *, int, int));
 extern int computed_jump_p		PROTO((rtx));
 typedef int (*rtx_function)             PROTO((rtx *, void *));
 extern int for_each_rtx                 PROTO((rtx *, rtx_function, void *));
+
+/* flow.c */
+
+extern rtx find_use_as_address		PROTO((rtx, rtx, HOST_WIDE_INT));
+
+/* regclass.c */
 
 /* Maximum number of parallel sets and clobbers in any insn in this fn.
    Always at least 3, since the combiner could put that many togetherm
@@ -1012,6 +1009,7 @@ extern int for_each_rtx                 PROTO((rtx *, rtx_function, void *));
 
 extern int max_parallel;
 
+/* recog.c */
 extern int asm_noperands		PROTO((rtx));
 extern char *decode_asm_operands	PROTO((rtx, rtx *, rtx **, char **, enum machine_mode *));
 
@@ -1217,24 +1215,6 @@ extern char *regno_pointer_align;
    know what `enum tree_code' means.  */
 
 extern int rtx_to_tree_code	PROTO((enum rtx_code));
-
-/* In rtlanal.c */
-extern int reg_set_p			PROTO ((rtx, rtx));
-extern int reg_mentioned_p		PROTO ((rtx, rtx));
-extern int reg_referenced_p		PROTO ((rtx, rtx));
-extern int reg_used_between_p		PROTO ((rtx, rtx, rtx));
-extern int reg_set_p			PROTO ((rtx, rtx));
-extern int reg_referenced_between_p	PROTO ((rtx, rtx, rtx));
-extern int reg_set_between_p		PROTO ((rtx, rtx, rtx));
-extern int rtx_unstable_p		PROTO ((rtx));
-extern int rtx_addr_varies_p		PROTO ((rtx));
-extern int rtx_equal_p			PROTO ((rtx, rtx));
-extern int inequality_comparisons_p	PROTO ((rtx));
-extern int dead_or_set_p		PROTO ((rtx, rtx));
-extern int dead_or_set_regno_p		PROTO ((rtx, int));
-extern int no_labels_between_p		PROTO ((rtx, rtx));
-extern int modified_between_p		PROTO ((rtx, rtx, rtx));
-extern int modified_in_p		PROTO ((rtx, rtx));
 
 /* In tree.c */
 extern void obfree			PROTO ((char *));

@@ -2058,7 +2058,8 @@ computed_jump_p (insn)
    This routine is very general, and could (should?) be used to
    implement many of the other routines in this file.  */
 
-int for_each_rtx (x, f, data)
+int
+for_each_rtx (x, f, data)
      rtx* x;
      rtx_function f;
      void* data;
