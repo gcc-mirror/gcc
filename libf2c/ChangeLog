@@ -1,3 +1,7 @@
+2001-11-25  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libF77/Makefile.in: Fix non-portable use of `$<' in z_log.c's rule.
+
 2001-11-23  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR libf2c/4930
