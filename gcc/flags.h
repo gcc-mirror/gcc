@@ -192,6 +192,11 @@ extern int flag_unroll_all_loops;
 
 extern int flag_cse_follow_jumps;
 
+/* Nonzero for -fcse-skip-blocks:
+   have cse follow a branch around a block.  */
+
+extern int flag_cse_skip_blocks;
+
 /* Nonzero for -fexpensive-optimizations:
    perform miscellaneous relatively-expensive optimizations.  */
 extern int flag_expensive_optimizations;
@@ -219,6 +224,13 @@ extern int flag_no_peephole;
 /* Nonzero means all references through pointers are volatile.  */
 
 extern int flag_volatile;
+
+/* Nonzero allows GCC to violate some IEEE or ANSI rules regarding math
+   operations in the interest of optimization.  For example it allows
+   GCC to assume arguments to sqrt are nonnegative numbers, allowing
+   faster code for sqrt to be generated. */
+
+extern int flag_fast_math;
 
 /* Nonzero means make functions that look like good inline candidates
    go inline.  */
