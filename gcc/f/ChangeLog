@@ -1,3 +1,9 @@
+2002-02-04  Philipp Thomas  <pthomas@suse.de>
+
+	* bad.def com.c expr.c implic.c lex.c stb.c ste.c stu.c:
+	Insert comments to mark messages as not being printf style
+	where appropriate.
+
 2002-02-03  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* expr.c (ffeexpr_sym_impdoitem_): Allow other than

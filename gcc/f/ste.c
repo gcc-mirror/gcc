@@ -2632,6 +2632,7 @@ ffeste_R809 (ffestw block, ffebld expr)
     {
       /* ~~~Someday handle CHARACTER*1, CHARACTER*N */
 
+      /* xgettext:no-c-format */
       ffebad_start_msg ("SELECT CASE on CHARACTER type (at %0) not supported -- sorry",
 			FFEBAD_severityFATAL);
       ffebad_here (0, ffestw_line (block), ffestw_col (block));

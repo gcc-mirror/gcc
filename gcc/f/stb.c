@@ -12074,6 +12074,7 @@ ffestb_S3P41_ (ffelexToken ft, ffebld expr, ffelexToken t)
 	      && ((ffelex_token_type (t) == FFELEX_typeSEMICOLON)
 		  || ffesta_line_has_semicolons))
 	    {
+	      /* xgettext:no-c-format */
 	      ffebad_start_msg ("INCLUDE at %0 not the only statement on the source line", FFEBAD_severityWARNING);
 	      ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
 			   ffelex_token_where_column (ffesta_tokens[0]));
