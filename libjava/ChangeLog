@@ -1,3 +1,10 @@
+2005-02-21  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* Makefile.am (all_property_files): Remove left over.
+	(classes.stamp): Add stamp for the ONESTEP build, also known as
+	--enable-libgcj-multifile.
+	* Makefile.in: Regenerated.
+
 2005-02-21  Michael Koch  <konqueror@gmx.de>
 
 	* java/awt/Button.java,

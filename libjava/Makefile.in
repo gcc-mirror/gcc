@@ -5344,7 +5344,7 @@ all_java_source_files = \
     $(gnu_xml_source_files)
 
 all_java_class_files = $(all_java_source_files:.java=.class)
-all_property_files = $(property_files) $(jgss_property_files) \
+all_property_files = $(property_files) \
     java/util/logging/logging.properties
 
 property_files = \
@@ -26610,7 +26610,7 @@ $(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDEN
 @ONESTEP_TRUE@	@echo Compiling Java sourcefiles...
 @ONESTEP_TRUE@	@: $(call write_entries_to_file,$?,libgcj.sourcelist)
 @ONESTEP_TRUE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(BOOTCLASSPATH) -d $(here) @libgcj.sourcelist
-
+@ONESTEP_TRUE@	echo > classes.stamp
 # This next rule seems backward, but reflects the fact that 1) all
 # classfiles are compiled in one go when classes.stamp is built and 2)
 # anything which depends on a particular .class file must wait until

@@ -500,7 +500,7 @@ all_java_source_files = \
 
 all_java_class_files = $(all_java_source_files:.java=.class)
 
-all_property_files = $(property_files) $(jgss_property_files) \
+all_property_files = $(property_files) \
     java/util/logging/logging.properties
 
 ## Build property files into the library.
@@ -522,7 +522,7 @@ classes.stamp: $(all_java_source_files)
 	@echo Compiling Java sourcefiles...
 	@: $(call write_entries_to_file,$?,libgcj.sourcelist)
 	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(BOOTCLASSPATH) -d $(here) @libgcj.sourcelist
-
+	echo > classes.stamp
 # This next rule seems backward, but reflects the fact that 1) all
 # classfiles are compiled in one go when classes.stamp is built and 2)
 # anything which depends on a particular .class file must wait until
