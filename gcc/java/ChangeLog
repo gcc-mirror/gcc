@@ -1,3 +1,10 @@
+2001-03-19  Per Bothner  <per@bothner.com>
+
+	* jvspec.c (lang_specific_driver):  Check for .zip and .jar files.
+	Add constructed filelist-file at end, following -xjava.  Thus any .o
+	and library files are not affected by the -xjava.  Also wrap
+	explicut @FILE with -xjava and -xnone.
+
 2001-03-19  Andrew Haley  <aph@cambridge.redhat.com>
 
         * class.c (build_static_field_ref): Call make_decl_rtl() after
@@ -29,10 +36,10 @@
 	* parse.h (BLOCK_EXPR_ORIGIN):  Removed macro.
 	* parse.y (declare_local_variables, maybe_absorb_scoping_blocks):
 	Use BLOCK_IS_IMPLICIT rather than BLOCK_EXPR_ORIGIN.
-	
+
 	* jcf-parse.c (yyparse):  Set/reset input_filename for source file.
 	* parse.y (java_expand_classes):  Likewise.
-	
+
 	* parse.y (expand_start_java_method):  Was only called once and had a
 	misleading name, so inline in caller java_complete_expand_method.
 	(enter_a_block):  Likewise inline in enter_block and remove.
@@ -68,7 +75,7 @@
 	(get_dispatch_table): Likewise.
 
 	* decl.c (push_jvm_slot): Use COPY_DECL_RTL, DECL_RTL_SET_P, etc.
-	
+
 2001-03-07  Tom Tromey  <tromey@redhat.com>
 
 	* config-lang.in (lang_requires): Define.
