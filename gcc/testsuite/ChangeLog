@@ -1,5 +1,12 @@
 2003-01-16  Richard Henderson  <rth@redhat.com>
 
+	* g++.dg/pch/pch.exp: Copy test header to the working directory
+	before using it either for precompilation or direct use.
+	* g++.dg/pch/*.Hs: Rename from gcc.dg/pch/*.H.
+	* g++.dg/pch/*.C: Include foo.H, not foo.Hp.
+
+2003-01-16  Richard Henderson  <rth@redhat.com>
+
 	* gcc.dg/pch/pch.exp: Copy test header to the working directory
 	before using it either for precompilation or direct use.
 	* gcc.dg/pch/*.hs: Rename from gcc.dg/pch/*.h.
