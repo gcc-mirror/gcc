@@ -90,16 +90,30 @@ name_needs_quotes (const char *name)
   return 0;
 }
 
-/*
- * flag_pic = 1 ... generate only indirections
- * flag_pic = 2 ... generate indirections and pure code
- */
-
+/* Return true if SYM_REF can be used without an indirection.  */
 static int
 machopic_symbol_defined_p (rtx sym_ref)
 {
-  return (SYMBOL_REF_FLAGS (sym_ref) & MACHO_SYMBOL_FLAG_DEFINED)
-    || (SYMBOL_REF_LOCAL_P (sym_ref) && ! SYMBOL_REF_EXTERNAL_P (sym_ref));
+  if (SYMBOL_REF_FLAGS (sym_ref) & MACHO_SYMBOL_FLAG_DEFINED)
+    return true;
+
+  /* If a symbol references local and is not an extern to this
+     file, then the symbol might be able to declared as defined.  */
+  if (SYMBOL_REF_LOCAL_P (sym_ref) && ! SYMBOL_REF_EXTERNAL_P (sym_ref))
+    {
+      /* If the symbol references a variable and the variable is a
+	 common symbol, then this symbol is not defined.  */
+      if (SYMBOL_REF_FLAGS (sym_ref) & MACHO_SYMBOL_FLAG_VARIABLE)
+	{
+	  tree decl = SYMBOL_REF_DECL (sym_ref);
+	  if (!decl)
+	    return true;
+	  if (DECL_COMMON (decl))
+	    return false;
+	}
+      return true;
+    }
+  return false;
 }
 
 /* This module assumes that (const (symbol_ref "foo")) is a legal pic

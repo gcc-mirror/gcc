@@ -1,3 +1,8 @@
+2004-12-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/19041
+	* gcc.dg/visibility-c.c: New test.
+
 2004-12-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/18493

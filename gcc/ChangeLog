@@ -1,3 +1,9 @@
+2004-12-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/19041
+	* config/darwin.c (machopic_symbol_defined_p): Return false
+	if the binds local and is a common symbol.
+
 2004-12-16  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (extv, extzv, insv): Revalidate the
