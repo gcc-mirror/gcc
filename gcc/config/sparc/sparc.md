@@ -2855,7 +2855,7 @@
   "*
 {
   operands[2] = adj_offsettable_operand (operands[1], 8);
-  return \"call %a0,0\;nop\;nop\;std %%o0,%1\;st %%f0,%2\";
+  return \"call %a0,0\;nop\;nop\;std %%o0,%1\;std %%f0,%2\";
 }"
   [(set_attr "type" "multi")])
 
@@ -2872,7 +2872,7 @@
   "*
 {
   operands[2] = adj_offsettable_operand (operands[1], 8);
-  return \"call %a0,0\;nop\;nop\;std %%o0,%1\;st %%f0,%2\";
+  return \"call %a0,0\;nop\;nop\;std %%o0,%1\;std %%f0,%2\";
 }"
   [(set_attr "type" "multi")])
 
