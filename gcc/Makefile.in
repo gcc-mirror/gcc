@@ -268,6 +268,7 @@ all: all.indirect
 ####target overrides
 ####host overrides
 ####cross overrides
+####build overrides
 
 # Now figure out from those variables how to compile and link.
 
@@ -422,6 +423,8 @@ Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
 all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
 all.cross: native gcc-cross libgcc.a cross-test $(EXTRA_PARTS)
+# This is what to compile if making gcc with a cross-compiler.
+all.build: native $(EXTRA_PARTS)
 # This is what must be made before installing GCC and converting libraries.
 start.encap: native xgcc specs $(LIBGCC1) xlimits.h
 # Use this to make a GCC that will be used only to recompile GCC.
@@ -765,6 +768,8 @@ ld: collect2
 	ln collect2 ld
 
 collect2 : collect2.o version.o $(LIBDEPS)
+# Don't try modifying collect2 (aka ld) in place--it might be linking this.
+	-rm -f collect2
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o collect2 collect2.o version.o $(LIBS)
 
 collect2.o : collect2.c $(CONFIG_H) gstab.h
@@ -1035,70 +1040,70 @@ genconfig : genconfig.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genconfig \
 	  genconfig.o $(HOST_RTL) $(HOST_LIBS)
 
-genconfig.o : genconfig.c $(RTL_H) config.h
+genconfig.o : genconfig.c $(RTL_H) hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genconfig.c
 
 genflags : genflags.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genflags \
 	 genflags.o $(HOST_RTL) $(HOST_LIBS)
 
-genflags.o : genflags.c $(RTL_H) config.h
+genflags.o : genflags.c $(RTL_H) hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genflags.c
 
 gencodes : gencodes.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o gencodes \
 	 gencodes.o $(HOST_RTL) $(HOST_LIBS)
 
-gencodes.o : gencodes.c $(RTL_H) config.h
+gencodes.o : gencodes.c $(RTL_H) hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gencodes.c
 
 genemit : genemit.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genemit \
 	 genemit.o $(HOST_RTL) $(HOST_LIBS)
 
-genemit.o : genemit.c $(RTL_H) config.h
+genemit.o : genemit.c $(RTL_H) hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genemit.c
 
 genrecog : genrecog.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genrecog \
 	 genrecog.o $(HOST_RTL) $(HOST_LIBS)
 
-genrecog.o : genrecog.c $(RTL_H) config.h
+genrecog.o : genrecog.c $(RTL_H) hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genrecog.c
 
 genextract : genextract.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genextract \
 	 genextract.o $(HOST_RTL) $(HOST_LIBS)
 
-genextract.o : genextract.c $(RTL_H) config.h insn-config.h
+genextract.o : genextract.c $(RTL_H) hconfig.h insn-config.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genextract.c
 
 genpeep : genpeep.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genpeep \
 	 genpeep.o $(HOST_RTL) $(HOST_LIBS)
 
-genpeep.o : genpeep.c $(RTL_H) config.h
+genpeep.o : genpeep.c $(RTL_H) hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genpeep.c
 
 genattr : genattr.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genattr \
 	 genattr.o $(HOST_RTL) $(HOST_LIBS)
 
-genattr.o : genattr.c $(RTL_H) config.h
+genattr.o : genattr.c $(RTL_H) hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattr.c
 
 genattrtab : genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_RTLANAL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genattrtab \
 	 genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_RTLANAL) $(HOST_LIBS)
 
-genattrtab.o : genattrtab.c $(RTL_H) config.h insn-config.h
+genattrtab.o : genattrtab.c $(RTL_H) hconfig.h insn-config.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattrtab.c
 
 genoutput : genoutput.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genoutput \
 	 genoutput.o $(HOST_RTL) $(HOST_LIBS)
 
-genoutput.o : genoutput.c $(RTL_H) config.h
+genoutput.o : genoutput.c $(RTL_H) hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genoutput.c
 
 # Compile the libraries to be used by gen*.
@@ -1107,17 +1112,17 @@ genoutput.o : genoutput.c $(RTL_H) config.h
 # with the rules for rtl.o, alloca.o, etc.
 $(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(CONFIG_H) $(RTL_H)
 	rm -f $(HOST_PREFIX)rtl.c
-	sed -e 's/config[.]/hconfig.h/' $(srcdir)/rtl.c > $(HOST_PREFIX)rtl.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtl.c > $(HOST_PREFIX)rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtl.c
 
 $(HOST_PREFIX_1)print-rtl.o: $(srcdir)/print-rtl.c $(CONFIG_H) $(RTL_H)
 	rm -f $(HOST_PREFIX)print-rtl.c
-	sed -e 's/config[.]/hconfig.h/' $(srcdir)/print-rtl.c > $(HOST_PREFIX)print-rtl.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/print-rtl.c > $(HOST_PREFIX)print-rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)print-rtl.c
 
 $(HOST_PREFIX_1)rtlanal.o: $(srcdir)/rtlanal.c $(CONFIG_H) $(RTL_H)
 	rm -f $(HOST_PREFIX)rtlanal.c
-	sed -e 's/config[.]/hconfig.h/' $(srcdir)/rtlanal.c > $(HOST_PREFIX)rtlanal.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtlanal.c > $(HOST_PREFIX)rtlanal.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtlanal.c
 
 $(HOST_PREFIX_1)alloca.o: alloca.c
@@ -1127,12 +1132,12 @@ $(HOST_PREFIX_1)alloca.o: alloca.c
 
 $(HOST_PREFIX_1)obstack.o: obstack.c
 	rm -f $(HOST_PREFIX)obstack.c
-	sed -e 's/config[.]/hconfig.h/' $(srcdir)/obstack.c > $(HOST_PREFIX)obstack.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/obstack.c > $(HOST_PREFIX)obstack.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)obstack.c
 
 $(HOST_PREFIX_1)malloc.o: malloc.c
 	rm -f $(HOST_PREFIX)malloc.c
-	sed -e 's/config[.]/hconfig.h/' $(srcdir)/malloc.c > $(HOST_PREFIX)malloc.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/malloc.c > $(HOST_PREFIX)malloc.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)malloc.c
 
 # This satisfies the dependency that we get if you cross-compile a compiler
@@ -1261,7 +1266,7 @@ mostlyclean:
 	-rm -f $(STAGESTUFF)
 # Clean the objc subdir.
 	srcdir1=`cd $(srcdir); pwd`; \
-	cd objc; $(MAKE) $(MAKEFLAGS) -f $$srcdir1/objc/Makefile mostlyclean
+	cd objc; $(MAKE) -f $$srcdir1/objc/Makefile mostlyclean
 # Delete the temporary source copies for cross compilation.
 	-rm -f $(HOST_PREFIX_1)rtl.c $(HOST_PREFIX_1)rtlanal.c
 	-rm -f $(HOST_PREFIX_1)alloca.c $(HOST_PREFIX_1)malloc.c
@@ -1339,6 +1344,12 @@ install-native: install-common install-libgcc $(INSTALL_HEADERS) \
 # Copy the files of cross compiler into directories where they will be run.
 install-cross: install-common install-common-headers \
    install-man install-cross-tools install-libgcc
+
+# Do nothing while making gcc with a cross-compiler. The person who
+# makes gcc for the target machine has to know how to put a complete
+# gcc together by hand.
+install-build: force
+	@echo You have to install gcc on your target machine by hand.
 
 # Install the tools, libraries and header files for the target machine
 # where cross-compilation will look for them.
@@ -1655,7 +1666,7 @@ gcc.xtar: doc c-parse.y objc-parse.y
 	done
 	cd objc; \
 	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file ../tmp/config >/dev/null 2>&1 || cp $$file ../tmp/config; \
+	  ln $$file ../tmp/objc >/dev/null 2>&1 || cp $$file ../tmp/objc; \
 	done
 	ln .gdbinit tmp
 	mv tmp gcc-$(version)
