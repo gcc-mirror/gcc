@@ -1267,8 +1267,7 @@ done
 # These files in ARM/RISCiX use /**/ to concatenate tokens.
 for file in arm/as_support.h arm/mc_type.h arm/xcb.h dev/chardefmac.h \
 	dev/ps_irq.h dev/screen.h dev/scsi.h sys/tty.h \
-	X11/extensions/multibufst.h X11/Xmd.h X11/Xlibinit.h \
-	Xm.acorn/XmP.h
+	X11/extensions/multibufst.h X11/Xlibinit.h Xm.acorn/XmP.h
 do
   if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
     cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
