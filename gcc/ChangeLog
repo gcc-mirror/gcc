@@ -1,3 +1,8 @@
+2005-04-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/fr30/fr30.h (PREDICATE_CODES): Remove
+	fp_displacement_operand, sp_displacement_operand.
+
 2005-04-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/19345
