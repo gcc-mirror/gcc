@@ -587,11 +587,11 @@ dtors_section ()							\
     putc (',', FILE);							\
     fprintf (FILE, TYPE_OPERAND_FMT, "object");				\
     putc ('\n', FILE);							\
-    if (!flag_inhibit_size_directive)					\
+    if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		\
       {									\
 	fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);				\
 	assemble_name (FILE, NAME);					\
-	fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (decl)));	\
+	fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL)));	\
       }									\
     ASM_OUTPUT_LABEL(FILE, NAME);					\
   } while (0)

@@ -368,11 +368,11 @@ do									\
        putc (',', STREAM);						\
        fprintf (STREAM, TYPE_OPERAND_FMT, "object");			\
        putc ('\n', STREAM);						\
-       if (!flag_inhibit_size_directive)				\
+       if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		\
 	 {								\
 	   fprintf (STREAM, "\t%s\t ", SIZE_ASM_OP);			\
 	   assemble_name (STREAM, NAME);				\
-	   fprintf (STREAM, ",%d\n",  int_size_in_bytes (TREE_TYPE (decl))); \
+	   fprintf (STREAM, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
 	 }								\
      }									\
  }									\
