@@ -1,5 +1,10 @@
 2003-05-27  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/URLConnection.java
+	(getHeaderFieldInt): Merged with classpath.
+
+2003-05-27  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/PrintStream.java
 	(PrintStream): Reformatted.
 	(PrintStream): New method, merged from classpath.
