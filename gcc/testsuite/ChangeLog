@@ -1,3 +1,9 @@
+2000-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/string-opt-5.c: Add some strcmp and strncpy
+	tests.
+	* gcc.c-torture/execute/string-opt-6.c: New test.
+
 2000-11-28  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gcc.dg/noncompile/940510-1.c: Update to test c89 functionality.
