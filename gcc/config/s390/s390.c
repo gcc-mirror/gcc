@@ -1051,6 +1051,7 @@ larl_operand (op, mode)
   if (GET_CODE (op) == LABEL_REF)
     return 1;
   if (GET_CODE (op) == SYMBOL_REF
+      && XSTR (op, 0)[0] != '@'
       && !tls_symbolic_operand (op)
       && (!flag_pic || SYMBOL_REF_FLAG (op) 
           || CONSTANT_POOL_ADDRESS_P (op)))
@@ -1074,6 +1075,7 @@ larl_operand (op, mode)
   if (GET_CODE (op) == LABEL_REF)
     return 1;
   if (GET_CODE (op) == SYMBOL_REF
+      && XSTR (op, 0)[0] != '@'
       && !tls_symbolic_operand (op)
       && (!flag_pic || SYMBOL_REF_FLAG (op)
           || CONSTANT_POOL_ADDRESS_P (op)))
@@ -2179,7 +2181,7 @@ legitimize_pic_address (orig, reg)
               || CONSTANT_POOL_ADDRESS_P (addr))))
     {
       /* This is a local symbol.  */
-      if (TARGET_64BIT)
+      if (TARGET_64BIT && larl_operand (addr, VOIDmode))
         {
           /* Access local symbols PC-relative via LARL.  
              This is the same as in the non-PIC case, so it is 
@@ -2191,9 +2193,9 @@ legitimize_pic_address (orig, reg)
 
           rtx temp = reg? reg : gen_reg_rtx (Pmode);
 
-          addr = gen_rtx_UNSPEC (SImode, gen_rtvec (1, addr), 100);
-          addr = gen_rtx_CONST (SImode, addr);
-          addr = force_const_mem (SImode, addr);
+          addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), 100);
+          addr = gen_rtx_CONST (Pmode, addr);
+          addr = force_const_mem (Pmode, addr);
 	  emit_move_insn (temp, addr);
 
           base = gen_rtx_REG (Pmode, BASE_REGISTER);
@@ -2254,9 +2256,9 @@ legitimize_pic_address (orig, reg)
 	  if (reload_in_progress || reload_completed)
 	    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
 
-          addr = gen_rtx_UNSPEC (SImode, gen_rtvec (1, addr), 112);
-          addr = gen_rtx_CONST (SImode, addr);
-          addr = force_const_mem (SImode, addr);
+          addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), 112);
+          addr = gen_rtx_CONST (Pmode, addr);
+          addr = force_const_mem (Pmode, addr);
           emit_move_insn (temp, addr);
 
           new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, temp);
@@ -2282,7 +2284,7 @@ legitimize_pic_address (orig, reg)
                   case 100:
                   case 112:
                   case 114:
-                    new = force_const_mem (SImode, orig);
+                    new = force_const_mem (Pmode, orig);
                     break;
 
                   /* @GOTENT is OK as is.  */
@@ -2297,9 +2299,9 @@ legitimize_pic_address (orig, reg)
                         rtx temp = reg? reg : gen_reg_rtx (Pmode);
 
                         addr = XVECEXP (addr, 0, 0);
-                        addr = gen_rtx_UNSPEC (SImode, gen_rtvec (1, addr), 114);
-                        addr = gen_rtx_CONST (SImode, addr);
-                        addr = force_const_mem (SImode, addr);
+                        addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), 114);
+                        addr = gen_rtx_CONST (Pmode, addr);
+                        addr = force_const_mem (Pmode, addr);
 	                emit_move_insn (temp, addr);
 
                         base = gen_rtx_REG (Pmode, BASE_REGISTER);
@@ -2333,7 +2335,7 @@ legitimize_pic_address (orig, reg)
                         || CONSTANT_POOL_ADDRESS_P (op0))))
 	      && GET_CODE (op1) == CONST_INT)
 	    {
-              if (TARGET_64BIT)
+              if (TARGET_64BIT && larl_operand (op0, VOIDmode))
                 {
                   if (INTVAL (op1) & 1)
                     {
@@ -2370,10 +2372,10 @@ legitimize_pic_address (orig, reg)
 
                   rtx temp = reg? reg : gen_reg_rtx (Pmode);
 
-                  addr = gen_rtx_UNSPEC (SImode, gen_rtvec (1, op0), 100);
-                  addr = gen_rtx_PLUS (SImode, addr, op1);
-                  addr = gen_rtx_CONST (SImode, addr);
-                  addr = force_const_mem (SImode, addr);
+                  addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op0), 100);
+                  addr = gen_rtx_PLUS (Pmode, addr, op1);
+                  addr = gen_rtx_CONST (Pmode, addr);
+                  addr = force_const_mem (Pmode, addr);
         	  emit_move_insn (temp, addr);
 
                   base = gen_rtx_REG (Pmode, BASE_REGISTER);
@@ -2399,7 +2401,7 @@ legitimize_pic_address (orig, reg)
               if (XINT (op0, 1) != 100)
                 abort ();
 
-              new = force_const_mem (SImode, orig);
+              new = force_const_mem (Pmode, orig);
             }
 
           /* Otherwise, compute the sum.  */
@@ -6480,6 +6482,23 @@ s390_encode_section_info (decl, first)
 
       XSTR (symbol, 0) = ggc_alloc_string (newstr, len + 2 - 1);
     }
+
+  /* If a variable has a forced alignment to < 2 bytes, mark it
+     with '@' to prevent it from being used as LARL operand.  */
+
+  else if (TREE_CODE (decl) == VAR_DECL 
+	   && DECL_USER_ALIGN (decl) && DECL_ALIGN (decl) < 16
+	   && XSTR (symbol, 0)[0] != '@')
+    {
+      const char *symbol_str = XSTR (symbol, 0);
+      size_t len = strlen (symbol_str) + 1;
+      char *newstr = alloca (len + 1);
+
+      newstr[0] = '@';
+      memcpy (newstr + 1, symbol_str, len);
+
+      XSTR (symbol, 0) = ggc_alloc_string (newstr, len + 1 - 1);
+    }
 }
 
 /* Undo the above when printing symbol names.  */
@@ -6490,6 +6509,8 @@ s390_strip_name_encoding (str)
 {
   if (str[0] == '%')
     str += 2;
+  if (str[0] == '@')
+    str += 1;
   if (str[0] == '*')
     str += 1;
   return str;
