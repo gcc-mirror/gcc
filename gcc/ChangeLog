@@ -1,3 +1,8 @@
+2005-02-16  James A. Morrison  <phython@gcc.gnu.org>
+
+	* fold-const.c (invert_truthvalue): <INTEGER_CST>: Call
+	constant_boolean_node.
+
 2005-02-16  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/19019
