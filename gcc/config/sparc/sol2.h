@@ -57,11 +57,6 @@ Boston, MA 02111-1307, USA.  */
 /* However it appears that Solaris 2.0 uses the same reg numbering as
    the old BSD-style system did.  */
 
-/* Same as sparc.h */
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(REGNO) \
-  (TARGET_FLAT && (REGNO) == HARD_FRAME_POINTER_REGNUM ? 31 : REGNO)
-
 /* The Solaris 2 assembler uses .skip, not .zero, so put this back.  */
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \

@@ -5,7 +5,6 @@
    returned -1 for some registers (like %o0).  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -g" } */
-/* { dg-options "-O2 -g -mflat" { target sparc*-*-* } } */
 
 void foo (char *a, char *b, char *c, char *d)
 {

@@ -359,15 +359,12 @@ in the following sections.
 -mcmodel=@var{code-model} @gol
 -m32  -m64  -mapp-regs  -mno-app-regs @gol
 -mfaster-structs  -mno-faster-structs @gol
--mflat  -mno-flat  -mfpu  -mno-fpu @gol
--mhard-float  -msoft-float @gol
+-mfpu  -mno-fpu  -mhard-float  -msoft-float @gol
 -mhard-quad-float  -msoft-quad-float @gol
 -mimpure-text  -mno-impure-text  -mlittle-endian @gol
 -mstack-bias  -mno-stack-bias @gol
 -munaligned-doubles  -mno-unaligned-doubles @gol
--mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
--mcypress  -mf930  -mf934 @gol
--msparclite  -msupersparc  -mv8}
+-mv8plus  -mno-v8plus  -mvis  -mno-vis}
 
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
@@ -6212,22 +6209,6 @@ emulates the effect of the instruction.  Because of the trap handler overhead,
 this is much slower than calling the ABI library routines.  Thus the
 @option{-msoft-quad-float} option is the default.
 
-@item -mno-flat
-@itemx -mflat
-@opindex mno-flat
-@opindex mflat
-With @option{-mflat}, the compiler does not generate save/restore instructions
-and will use a ``flat'' or single register window calling convention.
-This model uses %i7 as the frame pointer and is compatible with the normal
-register window model.  Code from either may be intermixed.
-The local registers and the input registers (0--5) are still treated as
-``call saved'' registers and will be saved on the stack as necessary.
-
-With @option{-mno-flat} (the default), the compiler emits save/restore
-instructions (except for leaf functions) and is the normal mode of operation.
-
-These options are deprecated and will be deleted in a future GCC release.
-
 @item -mno-unaligned-doubles
 @itemx -munaligned-doubles
 @opindex mno-unaligned-doubles
@@ -6269,26 +6250,6 @@ using @option{-mimpure-text}, you should compile all source code with
 @option{-fpic} or @option{-fPIC}.
 
 This option is only available on SunOS and Solaris.
-
-@item -mv8
-@itemx -msparclite
-@opindex mv8
-@opindex msparclite
-These two options select variations on the SPARC architecture.
-These options are deprecated and will be deleted in a future GCC release.
-They have been replaced with @option{-mcpu=xxx}.
-
-@item -mcypress
-@itemx -msupersparc
-@itemx -mf930
-@itemx -mf934
-@opindex mcypress
-@opindex msupersparc
-@opindex -mf930
-@opindex -mf934
-These four options select the processor for which the code is optimized.
-These options are deprecated and will be deleted in a future GCC release.
-They have been replaced with @option{-mcpu=xxx}.
 
 @item -mcpu=@var{cpu_type}
 @opindex mcpu
