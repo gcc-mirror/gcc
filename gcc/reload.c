@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4948,7 +4948,7 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
      enum machine_mode mode;
 {
   register rtx p = insn;
-  rtx valtry, value, where;
+  rtx goaltry, valtry, value, where;
   register rtx pat;
   register int regno = -1;
   int valueno;
@@ -5054,7 +5054,9 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 		      && GET_CODE (XEXP (tem, 0)) == CONST_DOUBLE
 		      && GET_MODE_CLASS (GET_MODE (XEXP (tem, 0))) == MODE_FLOAT
 		      && GET_CODE (goal) == CONST_INT
-		      && INTVAL (goal) == CONST_DOUBLE_LOW (XEXP (tem, 0))
+		      && 0 != (goaltry = operand_subword (XEXP (tem, 0), 0, 0,
+							  VOIDmode))
+		      && rtx_equal_p (goal, goaltry)
 		      && (valtry = operand_subword (SET_DEST (pat), 0, 0,
 						    VOIDmode))
 		      && (valueno = true_regnum (valtry)) >= 0)
@@ -5064,7 +5066,9 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 		      && GET_CODE (XEXP (tem, 0)) == CONST_DOUBLE
 		      && GET_MODE_CLASS (GET_MODE (XEXP (tem, 0))) == MODE_FLOAT
 		      && GET_CODE (goal) == CONST_INT
-		      && INTVAL (goal) == CONST_DOUBLE_HIGH (XEXP (tem, 0))
+		      && 0 != (goaltry = operand_subword (XEXP (tem, 0), 1, 0,
+							  VOIDmode))
+		      && rtx_equal_p (goal, goaltry)
 		      && (valtry
 			  = operand_subword (SET_DEST (pat), 1, 0, VOIDmode))
 		      && (valueno = true_regnum (valtry)) >= 0)))
