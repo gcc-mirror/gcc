@@ -1,3 +1,9 @@
+Thu Nov 27 08:26:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (expand_start_catch_block): We only need the rethrow
+ 	region for non-sjlj exceptions.
+	(expand_end_catch_block): Likewise.  Use outer_context_label_stack.
+
 Wed Nov 26 15:13:48 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* lex.c (lang_init): Enable flag_exceptions by default if no
