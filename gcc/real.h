@@ -42,13 +42,22 @@ enum real_value_class {
 
 struct real_value GTY(())
 {
-  ENUM_BITFIELD (real_value_class) class : 2;
+  /* Use the same underlying type for all bit-fields, so as to make
+     sure they're packed together, otherwise REAL_VALUE_TYPE_SIZE will
+     be miscomputed.  */
+  unsigned int /* ENUM_BITFIELD (real_value_class) */ class : 2;
   unsigned int sign : 1;
   unsigned int signalling : 1;
   unsigned int canonical : 1;
-  signed int exp : EXP_BITS;
+  unsigned int uexp : EXP_BITS;
   unsigned long sig[SIGSZ];
 };
+
+#define REAL_EXP(REAL) \
+  ((int)((REAL)->uexp ^ (unsigned int)(1 << (EXP_BITS - 1))) \
+   - (1 << (EXP_BITS - 1)))
+#define SET_REAL_EXP(REAL, EXP) \
+  ((REAL)->uexp = ((unsigned int)(EXP) & (unsigned int)((1 << EXP_BITS) - 1)))
 
 /* Various headers condition prototypes on #ifdef REAL_VALUE_TYPE, so it
    needs to be a macro.  We do need to continue to have a structure tag

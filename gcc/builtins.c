@@ -6812,7 +6812,7 @@ fold_builtin (tree exp)
 	      REAL_VALUE_TYPE cst;
 
 	      real_convert (&cst, TYPE_MODE (type), &dconstpi);
-	      cst.exp -= 2;
+	      SET_REAL_EXP (&cst, REAL_EXP (&cst) - 2);
 	      return build_real (type, cst);
 	    }
 	}

@@ -5313,7 +5313,7 @@ init_emit_once (int line_numbers)
   REAL_VALUE_FROM_INT (dconstm2, -2, -1, double_mode);
 
   dconsthalf = dconst1;
-  dconsthalf.exp--;
+  SET_REAL_EXP (&dconsthalf, REAL_EXP (&dconsthalf) - 1);
 
   real_arithmetic (&dconstthird, RDIV_EXPR, &dconst1, &dconst3);
 
