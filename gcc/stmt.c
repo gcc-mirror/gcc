@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2564,32 +2564,9 @@ expand_return (retval)
       return;
     }
 
-  /* For tail-recursive call to current function,
-     just jump back to the beginning.
-     It's unsafe if any auto variable in this function
-     has its address taken; for simplicity,
-     require stack frame to be empty.  */
-  if (optimize && retval_rhs != 0
-      && frame_offset == 0
-      && TREE_CODE (retval_rhs) == CALL_EXPR
-      && TREE_CODE (TREE_OPERAND (retval_rhs, 0)) == ADDR_EXPR
-      && TREE_OPERAND (TREE_OPERAND (retval_rhs, 0), 0) == current_function_decl
-      /* Finish checking validity, and if valid emit code
-	 to set the argument variables for the new call.  */
-      && tail_recursion_args (TREE_OPERAND (retval_rhs, 1),
-			      DECL_ARGUMENTS (current_function_decl)))
-    {
-      if (tail_recursion_label == 0)
-	{
-	  tail_recursion_label = gen_label_rtx ();
-	  emit_label_after (tail_recursion_label,
-			    tail_recursion_reentry);
-	}
-      emit_queue ();
-      expand_goto_internal (NULL_TREE, tail_recursion_label, last_insn);
-      emit_barrier ();
-      return;
-    }
+  /* Attempt to optimize the call if it is tail recursive.  */
+  optimize_tail_recursion (retval_rhs, last_insn);
+
 #ifdef HAVE_return
   /* This optimization is safe if there are local cleanups
      because expand_null_return takes care of them.
@@ -2794,6 +2771,45 @@ drop_through_at_end_p ()
   return insn && GET_CODE (insn) != BARRIER;
 }
 
+/* Test CALL_EXPR to determine if it is a potential tail recursion call
+   and emit code to optimize the tail recursion.  LAST_INSN indicates where
+   to place the jump to the tail recursion label.
+
+   This is only used by expand_return, but expand_call is expected to
+   use it soon.  */
+
+void
+optimize_tail_recursion (call_expr, last_insn)
+     tree call_expr;
+     rtx last_insn;
+{
+  /* For tail-recursive call to current function,
+     just jump back to the beginning.
+     It's unsafe if any auto variable in this function
+     has its address taken; for simplicity,
+     require stack frame to be empty.  */
+  if (optimize && call_expr != 0
+      && frame_offset == 0
+      && TREE_CODE (call_expr) == CALL_EXPR
+      && TREE_CODE (TREE_OPERAND (call_expr, 0)) == ADDR_EXPR
+      && TREE_OPERAND (TREE_OPERAND (call_expr, 0), 0) == current_function_decl
+      /* Finish checking validity, and if valid emit code
+	 to set the argument variables for the new call.  */
+      && tail_recursion_args (TREE_OPERAND (call_expr, 1),
+			      DECL_ARGUMENTS (current_function_decl)))
+    {
+      if (tail_recursion_label == 0)
+	{
+	  tail_recursion_label = gen_label_rtx ();
+	  emit_label_after (tail_recursion_label,
+			    tail_recursion_reentry);
+	}
+      emit_queue ();
+      expand_goto_internal (NULL_TREE, tail_recursion_label, last_insn);
+      emit_barrier ();
+    }
+}
+
 /* Emit code to alter this function's formal parms for a tail-recursive call.
    ACTUALS is a list of actual parameter expressions (chain of TREE_LISTs).
    FORMALS is the chain of decls of formals.
