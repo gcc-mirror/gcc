@@ -1239,8 +1239,9 @@ dnl
 AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   AC_MSG_CHECKING([for cstdio to use])
   AC_ARG_ENABLE(cstdio,
-  [  --enable-cstdio        enable stdio for target io package. (default)
-     --enable-cstdio=LIB    use LIB target-speific io package.], 
+  [  --enable-cstdio        enable stdio for target io package. 
+     --enable-cstdio=LIB    use LIB target-speific io package. [default=stdio]
+  ], 
   if test x$enable_cstdio = xno; then
      enable_cstdio=stdio
   fi,
@@ -1357,8 +1358,9 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   dnl Efforts should be made to keep this in sync.
   AC_MSG_CHECKING([for threads package to use])
   AC_ARG_ENABLE(threads,
-  [  --enable-threads        enable thread usage for target GCC.
-     --enable-threads=LIB    use LIB thread package for target GCC.],
+  [  --enable-threads       enable thread usage for target GCC.
+     --enable-threads=LIB   use LIB thread package for target GCC. [default=no]
+  ],
   if test x$enable_threads = xno; then
     enable_threads=''
   fi,

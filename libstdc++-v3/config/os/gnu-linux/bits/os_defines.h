@@ -42,7 +42,7 @@
 
 #include <features.h>
 
-#if !defined (__GLIBC__) || (__GLIBC__ == 2 && __GLIBC_MINOR__+0 == 0)
+#if !defined (__GLIBC__) || (__GLIBC__ == 2 && __GLIBC_MINOR__+ 0 == 0)
 
 // The types __off_t and __off64_t are not defined through <sys/types.h>
 // as _G_config assumes.  For libc5 and glibc 2.0 instead use
