@@ -1,3 +1,7 @@
+2003-02-01  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload.c: Revert 2003-01-31 change.
+
 2003-02-01  Jan Hubicka  <jh@suse.cz>
 
 	PR c/9506
