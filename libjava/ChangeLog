@@ -1,3 +1,8 @@
+1999-08-06  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Look for sched_yield in -lrt.
+
 1999-08-06  Mojo Jojo <mojojojo@pacbell.net>
 
 	* java/util/Locale.java, CHINESE, ENGLISH, FRENCH, GERMAN,
