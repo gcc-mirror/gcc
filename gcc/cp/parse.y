@@ -733,6 +733,7 @@ datadef:
 	| error ';'
 	| error '}'
 	| ';'
+	| bad_decl
 	;
 
 ctor_initializer_opt:
@@ -2590,6 +2591,8 @@ component_decl:
 		  $$ = finish_member_class_template ($2.t); 
 		  finish_template_decl ($1);
 		}
+	| bad_decl
+		{ $$ = NULL_TREE; }
 	;
 
 component_decl_1:
@@ -3759,6 +3762,26 @@ bad_parm:
 		    cp_error ("  perhaps you want `typename %E' to make it a type", $$);
 		  $$ = build_tree_list (integer_type_node, $$);
 		}
+	;
+
+bad_decl:
+          IDENTIFIER template_arg_list_ignore IDENTIFIER arg_list_ignore ';'
+		{
+                  cp_error("'%D' is used as a type, but is not defined as a type.", $1);
+                  $3 = error_mark_node;
+		}
+        ;
+
+template_arg_list_ignore:
+          '<' template_arg_list_opt template_close_bracket
+		{ }
+	| /* empty */
+	;
+
+arg_list_ignore:
+          '(' nonnull_exprlist ')'
+		{ }
+	| /* empty */
 	;
 
 exception_specification_opt:
