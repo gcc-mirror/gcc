@@ -1,3 +1,10 @@
+2000-01-03  Ulrich Drepper  <drepper@cygnus.com>
+
+	* c-common.c (format_char_info): Update comment.
+	(check_format_info): Recognize 'z' modifier in the same way 'Z'
+	was recognized.  Emit warning for formats new in ISO C99 only
+	if flag_isoc9x is not set.
+
 Mon Jan  3 12:59:54 2000  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* config/mips/iris6gld.h: Fix typo in -mabi=n32 specs.
