@@ -903,7 +903,7 @@ gcse_main (f, file)
   end_alias_analysis ();
   allocate_reg_info (max_reg_num (), FALSE, FALSE);
 
-  if (!optimize_size && flag_gcse_sm)
+  if (!optimize_size && flag_gcse_sm && 0)
     store_motion ();
   /* Record where pseudo-registers are set.  */
   return run_jump_opt_after_gcse;
