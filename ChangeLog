@@ -1,3 +1,7 @@
+Thu Feb 18 19:55:09 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* config.guess: Recognize openbsd-*-hppa.
+
 Wed Feb 17 01:38:59 1999  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.in (REALLY_SET_LIB_PATH): Append $$$(RPATH_ENVVAR)
