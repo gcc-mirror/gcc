@@ -1,6 +1,6 @@
 // AccessibleObject.java - Base for reflection objects.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -21,33 +21,33 @@ package java.lang.reflect;
 public class AccessibleObject
 {
   protected AccessibleObject ()
-    {
-      flag = false;
-    }
+  {
+    flag = false;
+  }
 
-  boolean isAccessible ()
-    {
-      return flag;
-    }
+  public boolean isAccessible ()
+  {
+    return flag;
+  }
 
-  static void setAccessible (AccessibleObject[] array, boolean flag)
-    {
-      checkPermission ();
-      for (int i = 0; i < array.length; ++i)
-	array[i].flag = flag;
-    }
+  public static void setAccessible (AccessibleObject[] array, boolean flag)
+  {
+    checkPermission ();
+    for (int i = 0; i < array.length; ++i)
+      array[i].flag = flag;
+  }
 
-  void setAccessible (boolean flag)
-    {
-      checkPermission ();
-      this.flag = flag;
-    }
+  public void setAccessible (boolean flag)
+  {
+    checkPermission ();
+    this.flag = flag;
+  }
 
   private static final void checkPermission ()
-    {
-      SecurityManager sm = System.getSecurityManager();
-      // FIXME: sm.checkPermission(ReflectPermission ("suppressAccessChecks"))
-    }
+  {
+    SecurityManager sm = System.getSecurityManager();
+    // FIXME: sm.checkPermission(ReflectPermission ("suppressAccessChecks"))
+  }
 
   private boolean flag;
 }
