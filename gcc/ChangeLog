@@ -1,5 +1,12 @@
 2003-08-26  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* builtins.c (build_function_call_expr): Don't set
+	TREE_SIDE_EFFECTS here.
+	* expr.c (emit_block_move_via_libcall): Likewise.
+	(clear_storage_via_libcall): Likewise.
+	* tree.c (build): Set TREE_SIDE_EFFECTS for non-const, non-pure
+	CALL_EXPRs.
+	
 	* gcse.c (is_too_expensive): New function.
 	(gcse_main, delete_null_pointer_checks, bypass_jumps): Use it.
 

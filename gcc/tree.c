@@ -2378,6 +2378,17 @@ build (enum tree_code code, tree tt, ...)
   va_end (p);
 
   TREE_CONSTANT (t) = constant;
+  
+  if (code == CALL_EXPR && !TREE_SIDE_EFFECTS (t))
+    {
+      /* Calls have side-effects, except those to const or
+	 pure functions.  */
+      tree fn = get_callee_fndecl (t);
+
+      if (!fn || (!DECL_IS_PURE (fn) && !TREE_READONLY (fn)))
+	TREE_SIDE_EFFECTS (t) = 1;
+    }
+
   return t;
 }
 

@@ -2796,7 +2796,6 @@ simplify_aggr_init_expr (tree *tp)
   call_expr = build (CALL_EXPR, 
 		     TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))),
 		     fn, args, NULL_TREE);
-  TREE_SIDE_EFFECTS (call_expr) = 1;
 
   if (style == arg)
     /* Tell the backend that we've added our return slot to the argument
