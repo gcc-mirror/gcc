@@ -11648,7 +11648,11 @@ ix86_expand_sse_comi (d, arglist, target)
   if (! pat)
     return 0;
   emit_insn (pat);
-  emit_insn (gen_setcc_2 (target, op2));
+  emit_insn (gen_rtx_SET (VOIDmode,
+			  gen_rtx_STRICT_LOW_PART (VOIDmode, target),
+			  gen_rtx_fmt_ee (comparison, QImode,
+					  gen_rtx_REG (CCmode, FLAGS_REG),
+					  const0_rtx)));
 
   return target;
 }
@@ -11936,12 +11940,12 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
       op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
       op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
       tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[2].mode;
-      mode1 = insn_data[icode].operand[3].mode;
+      mode1 = insn_data[icode].operand[1].mode;
+      mode2 = insn_data[icode].operand[2].mode;
 
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = copy_to_mode_reg (mode0, op0);
-      if (! (*insn_data[icode].operand[3].predicate) (op1, mode1))
+      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
+	op0 = copy_to_mode_reg (mode1, op0);
+      if (! (*insn_data[icode].operand[2].predicate) (op1, mode2))
 	{
 	  /* @@@ better error message */
 	  error ("mask must be an immediate");
@@ -11951,7 +11955,7 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
 	  || GET_MODE (target) != tmode
 	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
 	target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, target, op0, op1);
+      pat = GEN_FCN (icode) (target, op0, op1);
       if (! pat)
 	return 0;
       emit_insn (pat);
