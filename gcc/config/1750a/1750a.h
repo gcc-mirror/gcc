@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1994, 95-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999,
+   2000 Free Software Foundation, Inc.
    Contributed by O.M.Kellogg, DASA (oliver.kellogg@space.otn.dasa.de)
 
 This file is part of GNU CC.
