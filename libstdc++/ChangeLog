@@ -1,3 +1,9 @@
+2000-09-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure.in: Add AIX multithread support fragment.
+	* config/aix.mt: Define _PTHREADS in MT_CFLAGS if -pthread
+	commandline option present.
+
 2000-08-14  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* configure.in: Accept *-*-linux* not just *-*-linux-gnu*.
@@ -67,7 +73,7 @@
 
 	* Makefile.in: Change "pic" to depend on $(PICFLAG), not
 	on $(enable_shared).
-	* aix.ml: Build AIX-style shared library.
+	* config/aix.ml: Build AIX-style shared library.
 
 2000-05-10  Jakub Jelinek  <jakub@redhat.com>
 
