@@ -197,7 +197,9 @@ AR_FOR_TARGET = ` \
        t='$(program_transform_cross_name)'; echo ar | sed -e $$t ; \
     fi; \
   fi`
-AR_FLAGS_FOR_TARGET = rc
+AR_FLAGS_FOR_TARGET = 
+AR_CREATE_FOR_TARGET = $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) rc
+AR_EXTRACT_FOR_TARGET = $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) x
 RANLIB_FOR_TARGET = ` \
   if [ -f $(objdir)/../binutils/ranlib ] ; then \
     echo $(objdir)/../binutils/ranlib ; \
@@ -613,6 +615,8 @@ LANG_EXTRA_HEADERS = @all_headers@
 # ??? The choices here will need some experimenting with.
 ORDINARY_FLAGS_TO_PASS = \
 	"AR_FLAGS_FOR_TARGET=$(AR_FLAGS_FOR_TARGET)" \
+	"AR_CREATE_FOR_TARGET=$(AR_CREATE_FOR_TARGET)" \
+	"AR_EXTRACT_FOR_TARGET=$(AR_EXTRACT_FOR_TARGET)" \
 	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
 	"BISON=$(BISON)" \
 	"BISONFLAGS=$(BISONFLAGS)" \
@@ -936,7 +940,7 @@ libgcc1.conv: libgcc1.a
 libgcc1.null: $(GCC_PASSES)
 	echo "void __foo () {}" > dummy.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) -c dummy.c
-	$(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) libgcc1.null dummy$(objext)
+	$(AR_CREATE_FOR_TARGET) libgcc1.null dummy$(objext)
 	rm -f dummy$(objext) dummy.c
 
 # This is $(LIBGCC1) for a cross-compiler.
@@ -1021,7 +1025,7 @@ libgcc1-asm.a: libgcc2.ready config.status $(srcdir)/config/$(LIB1ASMSRC)
 	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} libgcc1.S; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	  mv libgcc1$(objext) $${name}$(objext); \
-	  $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc1.a $${name}$(objext); \
+	  $(AR_CREATE_FOR_TARGET) tmplibgcc1.a $${name}$(objext); \
 	  rm -f $${name}$(objext); \
 	done
 	-rm -f libgcc1.S
@@ -1073,7 +1077,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
 	      $(MAYBE_USE_COLLECT2) $(srcdir)/libgcc2.c -o $${name}$(objext); \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	  $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
+	  $(AR_CREATE_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
 	  rm -f $${name}$(objext); \
 	done
 	for name in $(LIB2FUNCS_EH); \
@@ -1082,7 +1086,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -fexceptions $(INCLUDES) -c \
 	      -DL$${name} $(srcdir)/libgcc2.c -o $${name}$(objext); \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	  $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
+	  $(AR_CREATE_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
 	  rm -f $${name}$(objext); \
 	done
 	if [ x$(FPBIT) != x ]; then \
@@ -1092,7 +1096,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
 	        -DFINE_GRAINED_LIBRARIES $(FPBIT) -o $${name}$(objext); \
 	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
+	    $(AR_CREATE_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
 	    rm -f $${name}$(objext); \
 	  done; \
 	else true; fi;
@@ -1103,7 +1107,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
 	        -DFINE_GRAINED_LIBRARIES $(DPBIT) -o _dp$${name}$(objext); \
 	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a _dp$${name}$(objext); \
+	    $(AR_CREATE_FOR_TARGET) tmplibgcc2.a _dp$${name}$(objext); \
 	    rm -f _dp$${name}$(objext); \
 	  done; \
 	else true; fi;
@@ -1120,13 +1124,15 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	    for f in .. `cat $${file}`; do if [ x$${f} != x.. ]; then \
 	      $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 		AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+		AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
+		AR_EXTRACT_FOR_TARGET="$(AR_EXTRACT_FOR_TARGET)" \
 		AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" CC="$(CC)" \
 		CFLAGS="$(CFLAGS)" HOST_PREFIX="$(HOST_PREFIX)" \
 		HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 		LANGUAGES="$(LANGUAGES)" \
 		LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $${f}; \
 	      if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	      $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a $${f}; \
+	      $(AR_CREATE_FOR_TARGET) tmplibgcc2.a $${f}; \
 	      rm -f $${f}; \
 	    else true; \
 	    fi; done; \
@@ -1137,7 +1143,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	    else true; fi; \
 	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c $${file}; \
 	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a $${oname}$(objext); \
+	    $(AR_CREATE_FOR_TARGET) tmplibgcc2.a $${oname}$(objext); \
 	    rm -f $${name}.s $${oname}$(objext); \
 	  fi; \
 	done
@@ -1156,17 +1162,17 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 libgcc.a: $(LIBGCC1) $(LIBGCC2)
 	-rm -rf tmplibgcc.a libgcc.a tmpcopy
 	mkdir tmpcopy
-	(cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC2))
+	(cd tmpcopy; $(AR_EXTRACT_FOR_TARGET) ../$(LIBGCC2))
 # Some versions of ar (specifically the one in RISC/os 5.x), create an
 # unwritable table of contents file, and then print an error message when
 # the second ar command tries to overwrite this file.  To avoid the error
 # message from ar, we make sure all files are writable.
 	-(cd tmpcopy; chmod +w * > /dev/null 2>&1)
 	-if [ x$(LIBGCC1) != x ];			\
-	then (cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC1));	\
+	then (cd tmpcopy; $(AR_EXTRACT_FOR_TARGET) ../$(LIBGCC1));	\
 	else true;					\
 	fi
-	(cd tmpcopy; $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) ../tmplibgcc.a *$(objext))
+	(cd tmpcopy; $(AR_CREATE_FOR_TARGET) ../tmplibgcc.a *$(objext))
 	rm -rf tmpcopy
 	-if $(RANLIB_TEST_FOR_TARGET) ; then \
 	  $(RANLIB_FOR_TARGET) tmplibgcc.a; \
@@ -1199,6 +1205,8 @@ stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
 	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
 	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	    AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+	    AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
+	    AR_EXTRACT_FOR_TARGET="$(AR_EXTRACT_FOR_TARGET)" \
 	    AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
 	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	    RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
@@ -1223,6 +1231,8 @@ stmp-multilib-sub:
 	fi
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
+	  AR_EXTRACT_FOR_TARGET="$(AR_EXTRACT_FOR_TARGET)" \
 	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
 	  CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
@@ -1237,6 +1247,8 @@ stmp-multilib-sub:
 	else \
 	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	    AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+	    AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
+	    AR_EXTRACT_FOR_TARGET="$(AR_EXTRACT_FOR_TARGET)" \
 	    AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
 	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
@@ -1245,17 +1257,17 @@ stmp-multilib-sub:
 	fi
 	rm -rf tmplibgcc.a tmpcopy
 	mkdir tmpcopy
-	(cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC2))
+	(cd tmpcopy; $(AR_EXTRACT_FOR_TARGET) ../$(LIBGCC2))
 # Some versions of ar (specifically the one in RISC/os 5.x), create an
 # unwritable table of contents file, and then print an error message when
 # the second ar command tries to overwrite this file.  To avoid the error
 # message from ar, we make sure all files are writable.
 	-(cd tmpcopy; chmod +w * > /dev/null 2>&1)
 	if [ x$(LIBGCC1) != x ]; \
-	then (cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC1)); \
+	then (cd tmpcopy; $(AR_EXTRACT_FOR_TARGET) ../$(LIBGCC1)); \
 	else true; \
 	fi
-	(cd tmpcopy; $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) ../tmplibgcc.a *$(objext))
+	(cd tmpcopy; $(AR_CREATE_FOR_TARGET) ../tmplibgcc.a *$(objext))
 	rm -rf libgcc2.a tmpcopy
 	if $(RANLIB_TEST_FOR_TARGET) ; then \
 	  $(RANLIB_FOR_TARGET) tmplibgcc.a; \
@@ -1265,6 +1277,8 @@ stmp-multilib-sub:
 	for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
 	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	    AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+	    AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
+	    AR_EXTRACT_FOR_TARGET="$(AR_EXTRACT_FOR_TARGET)" \
 	    AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
 	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
