@@ -2794,9 +2794,8 @@ register RTX indicates how large this part of the argument is.  The
 second operand of the @code{expr_list} is a @code{const_int} which gives
 the offset in bytes into the entire argument of where this part starts.
 As a special exception the first @code{expr_list} in the @code{parallel} 
-RTX may have a first operand of zero.  This indicates that the bytes
-starting from the second operand of that @code{expr_list} are stored on
-the stack and not held in a register.
+RTX may have a first operand of zero.  This indicates that the entire
+argument is also stored on the stack.
 
 @cindex @file{stdarg.h} and register arguments
 The usual way to make the ANSI library @file{stdarg.h} work on a machine
