@@ -1366,7 +1366,7 @@ array_type_nelts (tree type)
 /* Return true if arg is static -- a reference to an object in
    static storage.  This is not the same as the C meaning of `static'.  */
 
-bool
+tree
 staticp (tree arg)
 {
   switch (TREE_CODE (arg))
@@ -1375,19 +1375,21 @@ staticp (tree arg)
       /* Nested functions aren't static, since taking their address
 	 involves a trampoline.  */
       return ((decl_function_context (arg) == 0 || DECL_NO_STATIC_CHAIN (arg))
-	      && ! DECL_NON_ADDR_CONST_P (arg));
+	      && ! DECL_NON_ADDR_CONST_P (arg)
+	      ? arg : NULL);
 
     case VAR_DECL:
       return ((TREE_STATIC (arg) || DECL_EXTERNAL (arg))
 	      && ! DECL_THREAD_LOCAL (arg)
-	      && ! DECL_NON_ADDR_CONST_P (arg));
+	      && ! DECL_NON_ADDR_CONST_P (arg)
+	      ? arg : NULL);
 
     case CONSTRUCTOR:
-      return TREE_STATIC (arg);
+      return TREE_STATIC (arg) ? arg : NULL;
 
     case LABEL_DECL:
     case STRING_CST:
-      return true;
+      return arg;
 
     case COMPONENT_REF:
       /* If the thing being referenced is not a field, then it is
@@ -1398,20 +1400,15 @@ staticp (tree arg)
       /* If we are referencing a bitfield, we can't evaluate an
 	 ADDR_EXPR at compile time and so it isn't a constant.  */
       if (DECL_BIT_FIELD (TREE_OPERAND (arg, 1)))
-	return false;
+	return NULL;
 
       return staticp (TREE_OPERAND (arg, 0));
 
     case BIT_FIELD_REF:
-      return false;
+      return NULL;
 
-#if 0
-       /* This case is technically correct, but results in setting
-	  TREE_CONSTANT on ADDR_EXPRs that cannot be evaluated at
-	  compile time.  */
     case INDIRECT_REF:
-      return TREE_CONSTANT (TREE_OPERAND (arg, 0));
-#endif
+      return TREE_CONSTANT (TREE_OPERAND (arg, 0)) ? arg : NULL;
 
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
@@ -1426,7 +1423,7 @@ staticp (tree arg)
 	  >= (unsigned int) LAST_AND_UNUSED_TREE_CODE)
 	return lang_hooks.staticp (arg);
       else
-	return false;
+	return NULL;
     }
 }
 

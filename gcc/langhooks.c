@@ -125,10 +125,10 @@ lhd_safe_from_p (rtx ARG_UNUSED (x), tree ARG_UNUSED (exp))
 
 /* Called from staticp.  */
 
-bool
+tree
 lhd_staticp (tree ARG_UNUSED (exp))
 {
-  return false;
+  return NULL;
 }
 
 /* Called from check_global_declarations.  */

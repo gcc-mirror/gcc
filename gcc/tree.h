@@ -3184,10 +3184,10 @@ extern int integer_pow2p (tree);
 
 extern int integer_nonzerop (tree);
 
-/* staticp (tree x) is true if X is a reference to data allocated
-   at a fixed address in memory.  */
+/* staticp (tree x) is nonzero if X is a reference to data allocated
+   at a fixed address in memory.  Returns the outermost data.  */
 
-extern bool staticp (tree);
+extern tree staticp (tree);
 
 /* save_expr (EXP) returns an expression equivalent to EXP
    but it can be used multiple times within context CTX

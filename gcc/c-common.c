@@ -3828,13 +3828,12 @@ c_expand_expr (tree exp, rtx target, enum machine_mode tmode,
 
 /* Hook used by staticp to handle language-specific tree codes.  */
 
-bool
+tree
 c_staticp (tree exp)
 {
-  if (TREE_CODE (exp) == COMPOUND_LITERAL_EXPR
-      && TREE_STATIC (COMPOUND_LITERAL_EXPR_DECL (exp)))
-    return true;
-  return false;
+  return (TREE_CODE (exp) == COMPOUND_LITERAL_EXPR
+	  && TREE_STATIC (COMPOUND_LITERAL_EXPR_DECL (exp))
+	  ? exp : NULL);
 }
 
 

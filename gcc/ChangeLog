@@ -1,5 +1,15 @@
 2004-08-26  Richard Henderson  <rth@redhat.com>
 
+	* tree.c (staticp): Return the static object.
+	* tree.h (staticp): Update decl.
+	* langhooks.h (struct lang_hooks): Change staticp return type to tree.
+	* langhooks.c (lhd_staticp): Return NULL_TREE.
+	* langhooks-def.h (lhd_staticp): Update decl.
+	* c-common.c (c_staticp): Return the static object.
+	* c-common.h (c_staticp): Update decl.
+
+2004-08-26  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.h (HARD_REGNO_MODE_OK): Allow complex float
 	modes.
 
