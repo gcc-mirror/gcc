@@ -246,7 +246,7 @@ esac
 case $machine in
    alpha*-*-linux*libc1*		\
  | i[34567]86-sequent-sysv		\
- | i[34567]86-sequent-sysv[!4]*		\
+ | i[34567]86-sequent-sysv[123]*	\
  | i[34567]86-go32-*			\
  | i[34567]86-*-go32*			\
  | m68k-*-linux*aout*			\
