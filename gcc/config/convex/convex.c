@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Convex.
-   Copyright (C) 1988,1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -948,6 +948,8 @@ insert_ap_loads ()
 	    break;
 	  }
     } while (doagain);
+
+  ap_is_live = 0;
 
   for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
     switch (GET_CODE (insn))
