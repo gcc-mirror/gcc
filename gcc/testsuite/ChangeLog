@@ -1,3 +1,8 @@
+2004-08-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16246
+	* g++.dg/template/array7.C: New test.
+
 2004-08-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/funcdef-attr-1.c: New test.
