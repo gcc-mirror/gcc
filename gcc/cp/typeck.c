@@ -5273,51 +5273,53 @@ get_delta_difference (tree from, tree to, int force)
   tree binfo;
   tree virt_binfo;
   base_kind kind;
-  
+  tree result;
+
+  /* Assume no conversion is required.  */
+  result = integer_zero_node;
   binfo = lookup_base (to, from, ba_check, &kind);
   if (kind == bk_inaccessible || kind == bk_ambig)
-    {
-      error ("   in pointer to member function conversion");
-      goto error;
-    }
-  if (!binfo)
+    error ("   in pointer to member function conversion");
+  else if (!binfo)
     {
       if (!force)
 	{
 	  error_not_base_type (from, to);
 	  error ("   in pointer to member conversion");
-	  goto error;
 	}
-      binfo = lookup_base (from, to, ba_check, &kind);
-      if (!binfo)
-	goto error;
+      else
+	{
+	  binfo = lookup_base (from, to, ba_check, &kind);
+	  if (binfo)
+	    {
+	      virt_binfo = binfo_from_vbase (binfo);
+	      if (virt_binfo)
+		/* This is a reinterpret cast, we choose to do nothing.  */
+		warning ("pointer to member cast via virtual base `%T'",
+			 BINFO_TYPE (virt_binfo));
+	      else
+		result = size_diffop (size_zero_node, BINFO_OFFSET (binfo));
+	    }
+	}
+    }
+  else
+    {
       virt_binfo = binfo_from_vbase (binfo);
-      if (virt_binfo)
-        {
-          /* This is a reinterpret cast, we choose to do nothing.  */
-          warning ("pointer to member cast via virtual base `%T'",
+      if (!virt_binfo)
+	result = BINFO_OFFSET (binfo);
+      else
+	{
+	  /* This is a reinterpret cast, we choose to do nothing.  */
+	  if (force)
+	    warning ("pointer to member cast via virtual base `%T'",
+		     BINFO_TYPE (virt_binfo));
+	  else
+	    error ("pointer to member conversion via virtual base `%T'",
 		   BINFO_TYPE (virt_binfo));
-	  goto error;
-        }
-      return convert_to_integer (ptrdiff_type_node, 
-				 size_diffop (size_zero_node,
-					      BINFO_OFFSET (binfo)));
+	}
     }
 
-  virt_binfo = binfo_from_vbase (binfo);
-  if (!virt_binfo)
-    return convert_to_integer (ptrdiff_type_node, BINFO_OFFSET (binfo));
-
-  /* This is a reinterpret cast, we choose to do nothing.  */
-  if (force)
-    warning ("pointer to member cast via virtual base `%T'",
-	     BINFO_TYPE (virt_binfo));
-  else
-    error ("pointer to member conversion via virtual base `%T'",
-	   BINFO_TYPE (virt_binfo));
-
- error:
-  return convert_to_integer(ptrdiff_type_node, integer_zero_node);
+  return fold (convert_to_integer (ptrdiff_type_node, result));
 }
 
 /* Return a constructor for the pointer-to-member-function TYPE using
