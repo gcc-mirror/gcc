@@ -1,3 +1,7 @@
+2004-09-14  Jan Hubicka  <jh@suse.cz>
+
+	* cfg.c (expunge_block): Revert previous change adding ggc_free call.
+
 2004-09-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* config.gcc: Do not build a shared libgcc for arm-none-eabi.

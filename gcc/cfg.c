@@ -266,7 +266,11 @@ expunge_block (basic_block b)
   unlink_block (b);
   BASIC_BLOCK (b->index) = NULL;
   n_basic_blocks--;
-  ggc_free (b);
+  /* We should be able to ggc_free here, but we are not.
+     The dead SSA_NAMES are left pointing to dead statements that are pointing
+     to dead basic blocks making garbage collector to die.
+     We should be able to release all dead SSA_NAMES and at the same time we should
+     clear out BB pointer of dead statements consistently.  */
 }
 
 /* Create an edge connecting SRC and DEST with flags FLAGS.  Return newly
