@@ -1,3 +1,8 @@
+Thu Dec 17 18:21:49 1998  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixincludes (c_asm.h): Wrap Digital UNIX V4.0B DEC C specific
+	asm() etc. function declarations in __DECC.
+
 Thu Dec 17 13:57:23 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* expr.c (emit_move_insn_1): Only emit a clobber if the target
