@@ -2874,4 +2874,11 @@ extern int making_const_table;
   {"logical_binary_operator", {AND, IOR, XOR}},				\
   {"dominant_cc_register", {REG}},
 
+/* Define this if you have special predicates that know special things
+   about modes.  Genrecog will warn about certain forms of
+   match_operand without a mode; if the operand predicate is listed in
+   SPECIAL_MODE_PREDICATES, the warning will be suppressed. */
+#define SPECIAL_MODE_PREDICATES			\
+ "cc_register", "dominant_cc_register",
+
 #endif /* __ARM_H__ */
