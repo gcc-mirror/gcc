@@ -2253,6 +2253,14 @@ fix = {
 };
 
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  UNDO BROKEN FIXES
+ *
+ *  We sure do hope that broken fixes and needed fixes are never
+ *  applied to the same file!!  :-}
+ */
+
 /*
  *  Purge some HP-UX 11 files that are only borken after they are "fixed".
  */
@@ -2262,7 +2270,7 @@ fix = {
     select   = 'These definitions are for HP Internal developers';
     shell    =
          "echo \"Removing incorrect fix to <$file>\" >&2\n"
-         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
          "cat > /dev/null";
 };
 
@@ -2276,7 +2284,7 @@ fix = {
     select   = '11.00 HP-UX LP64';
     shell    =
          "echo \"Removing incorrect fix to <$file>\" >&2\n"
-         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
          "cat > /dev/null";
 };
 
@@ -2290,7 +2298,7 @@ fix = {
     select   = 'kthread_create_caller_t';
     shell    =
          "echo \"Removing incorrect fix to <$file>\" >&2\n"
-         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
          "cat > /dev/null";
 };
 
@@ -2304,7 +2312,7 @@ fix = {
     select   = 'Kernel Instrumentation Definitions';
     shell    =
          "echo \"Removing incorrect fix to <$file>\" >&2\n"
-         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
          "cat > /dev/null";
 };
 
@@ -2321,7 +2329,7 @@ fix = {
     /* shouldn't there be a select expression here??? */
     shell    =
          "echo \"Removing incorrect fix to <$file>\" >&2\n"
-         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
          "cat > /dev/null";
 };
 
@@ -2335,7 +2343,7 @@ fix = {
     select   = '11.0 and later representation of ki time';
     shell    =
          "echo \"Removing incorrect fix to <$file>\" >&2\n"
-         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/fixinc.tmp\n"
          "cat > /dev/null";
 };
 
