@@ -892,12 +892,12 @@
   } while (0)
 
 /* If the processor has no udiv_qrnnd but sdiv_qrnnd, go through
-   __udiv_using_sdiv (defined in libgcc or elsewhere).  */
+   __udiv_w_sdiv (defined in libgcc or elsewhere).  */
 #if !defined (udiv_qrnnd) && defined (sdiv_qrnnd)
 #define udiv_qrnnd(q, r, nh, nl, d) \
   do {									\
     USItype __r;							\
-    (q) = __udiv_using_sdiv (&__r, nh, nl, d);				\
+    (q) = __udiv_w_sdiv (&__r, nh, nl, d);				\
     (r) = __r;								\
   } while (0)
 #endif
