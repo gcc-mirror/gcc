@@ -308,7 +308,7 @@ check_class_key (key, aggr)
 
 /* __func__, __FUNCTION__ or __PRETTY_FUNCTION__.
    yylval contains an IDENTIFIER_NODE which indicates which one.  */
-%token VAR_FUNC_NAME
+%token <ttype> VAR_FUNC_NAME
 
 /* String constants in raw form.
    yylval is a STRING_CST node.  */
@@ -1624,11 +1624,7 @@ primary:
 		       TYPE_DOMAIN (TREE_TYPE ($$)));
 		}
 	| VAR_FUNC_NAME
-		{
-		  $$ = fname_decl (C_RID_CODE ($$), $$);
-		  if (processing_template_decl)
-		    $$ = build_min_nt (LOOKUP_EXPR, DECL_NAME ($$));
-		}
+               { $$ = finish_fname ($1); }
 	| '(' expr ')'
 		{ $$ = finish_parenthesized_expr ($2); }
 	| '(' expr_or_declarator_intern ')'
@@ -1637,8 +1633,7 @@ primary:
 	| '(' error ')'
 		{ $$ = error_mark_node; }
 	| '('
-		{ tree scope = current_scope ();
-		  if (!scope || TREE_CODE (scope) != FUNCTION_DECL)
+		{ if (!at_function_scope_p ())
 		    {
 		      error ("braced-group within expression allowed only inside a function");
 		      YYERROR;

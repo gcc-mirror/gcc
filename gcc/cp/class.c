@@ -5310,12 +5310,8 @@ finish_struct (t, attributes)
   else
     error ("trying to finish struct, but kicked out due to previous parse errors");
 
-  if (processing_template_decl)
-    {
-      tree scope = current_scope ();
-      if (scope && TREE_CODE (scope) == FUNCTION_DECL)
-	add_stmt (build_min (TAG_DEFN, t));
-    }
+  if (processing_template_decl && at_function_scope_p ())
+    add_stmt (build_min (TAG_DEFN, t));
 
   return t;
 }
