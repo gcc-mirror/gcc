@@ -4724,7 +4724,6 @@ layout_class_type (tree t, tree *virtuals_p)
     {
       tree type;
       tree padding;
-      bool was_unnamed_p = false;
 
       /* We still pass things that aren't non-static data members to
 	 the back-end, in case it wants to do something with them.  */
@@ -4758,6 +4757,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	{
 	  integer_type_kind itk;
 	  tree integer_type;
+	  bool was_unnamed_p = false;
 	  /* We must allocate the bits as if suitably aligned for the
 	     longest integer type that fits in this many bits.  type
 	     of the field.  Then, we are supposed to use the left over
@@ -4809,14 +4809,18 @@ layout_class_type (tree t, tree *virtuals_p)
 	  DECL_SIZE (field) = TYPE_SIZE (integer_type);
 	  DECL_ALIGN (field) = TYPE_ALIGN (integer_type);
 	  DECL_USER_ALIGN (field) = TYPE_USER_ALIGN (integer_type);
+	  layout_nonempty_base_or_field (rli, field, NULL_TREE,
+					 empty_base_offsets);
+	  if (was_unnamed_p)
+	    DECL_NAME (field) = NULL_TREE;
+	  /* Now that layout has been performed, set the size of the
+	     field to the size of its declared type; the rest of the
+	     field is effectively invisible.  */
+	  DECL_SIZE (field) = TYPE_SIZE (type);
 	}
-
-      layout_nonempty_base_or_field (rli, field, NULL_TREE,
-				     empty_base_offsets);
-      /* If the bit-field had no name originally, remove the name
-	 now.  */
-      if (was_unnamed_p)
-	DECL_NAME (field) = NULL_TREE;
+      else
+	layout_nonempty_base_or_field (rli, field, NULL_TREE,
+				       empty_base_offsets);
 
       /* Remember the location of any empty classes in FIELD.  */
       if (abi_version_at_least (2))
