@@ -5650,6 +5650,20 @@ schedule_stop (dump)
     dump_current_packet (dump);
 }
 
+/* If necessary, perform one or two rotations on the scheduling state.  
+   This should only be called if we are starting a new cycle.  */
+
+static void
+maybe_rotate (dump)
+     FILE *dump;
+{
+  if (sched_data.cur == 6)
+    rotate_two_bundles (dump);
+  else if (sched_data.cur >= 3)
+    rotate_one_bundle (dump);
+  sched_data.first_slot = sched_data.cur;
+}
+
 /* We are about to being issuing insns for this clock cycle.
    Override the default sort algorithm to better slot instructions.  */
 
@@ -5673,13 +5687,7 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, reorder_type)
     }
 
   if (reorder_type == 0)
-    {
-      if (sched_data.cur == 6)
-	rotate_two_bundles (sched_verbose ? dump : NULL);
-      else if (sched_data.cur >= 3)
-	rotate_one_bundle (sched_verbose ? dump : NULL);
-      sched_data.first_slot = sched_data.cur;
-    }
+    maybe_rotate (sched_verbose ? dump : NULL);
 
   /* First, move all USEs, CLOBBERs and other crud out of the way.  */
   highest = ready[n_ready - 1];
@@ -5697,12 +5705,17 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, reorder_type)
 	      {
 		schedule_stop (sched_verbose ? dump : NULL);
 		sched_data.last_was_stop = 1;
+		maybe_rotate (sched_verbose ? dump : NULL);
+		if (dump)
+		  fprintf (dump, "// UNKNOWN insn; group barrier needed.\n");
 	      }
 	    else if (GET_CODE (PATTERN (insn)) == ASM_INPUT
 		     || asm_noperands (PATTERN (insn)) >= 0)
 	      {
 		/* It must be an asm of some kind.  */
 		cycle_end_fill_slots (sched_verbose ? dump : NULL);
+		if (dump)
+		  fprintf (dump, "// UNKNOWN (asm).\n");
 	      }
 	    return 1;
 	  }
@@ -5728,6 +5741,7 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, reorder_type)
 	{
 	  schedule_stop (sched_verbose ? dump : NULL);
 	  sched_data.last_was_stop = 1;
+	  maybe_rotate (sched_verbose ? dump : NULL);
 	  if (reorder_type == 1)
 	    return 0;
 	}
@@ -6082,6 +6096,17 @@ ia64_emit_nops ()
       if (b && INSN_P (insn))
 	{
 	  t = ia64_safe_type (insn);
+	  if (asm_noperands (PATTERN (insn)) >= 0
+	      || GET_CODE (PATTERN (insn)) == ASM_INPUT)
+	    {
+	      while (bundle_pos < 3)
+		{
+		  emit_insn_before (gen_nop_type (b->t[bundle_pos]), insn);
+		  bundle_pos++;
+		}
+	      continue;
+	    }
+
 	  if (t == TYPE_UNKNOWN)
 	    continue;
 	  while (bundle_pos < 3)
