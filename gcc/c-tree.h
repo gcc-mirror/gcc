@@ -167,30 +167,15 @@ extern void c_init_decl_processing		PARAMS ((void));
 extern void c_print_identifier			PARAMS ((FILE *, tree, int));
 extern tree build_array_declarator              PARAMS ((tree, tree, int, int));
 extern tree build_enumerator                    PARAMS ((tree, tree));
-
-/* in c-objc-common.c */
-extern int c_disregard_inline_limits		PARAMS ((tree));
-extern int c_cannot_inline_tree_fn		PARAMS ((tree *));
-extern const char *c_objc_common_init		PARAMS ((const char *));
-extern int c_missing_noreturn_ok_p		PARAMS ((tree));
-extern void c_objc_common_finish_file		PARAMS ((void));
-extern int defer_fn				PARAMS ((tree));
-
-#define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \
-  c_build_qualified_type ((TYPE),				  \
-			  ((CONST_P) ? TYPE_QUAL_CONST : 0) |	  \
-			  ((VOLATILE_P) ? TYPE_QUAL_VOLATILE : 0))
 extern int  c_decode_option                     PARAMS ((int, char **));
 extern void c_mark_varargs                      PARAMS ((void));
 extern void check_for_loop_decls                PARAMS ((void));
-extern tree check_identifier                    PARAMS ((tree, tree));
 extern void clear_parm_order                    PARAMS ((void));
 extern int  complete_array_type                 PARAMS ((tree, tree, int));
 extern void declare_parm_level                  PARAMS ((int));
 extern tree define_label                        PARAMS ((const char *, int,
 							 tree));
 extern void finish_decl                         PARAMS ((tree, tree, tree));
-extern void finish_decl_top_level               PARAMS ((tree, tree, tree));
 extern tree finish_enum                         PARAMS ((tree, tree, tree));
 extern void finish_function                     PARAMS ((int));
 extern tree finish_struct                       PARAMS ((tree, tree, tree));
@@ -205,7 +190,6 @@ extern void keep_next_level                     PARAMS ((void));
 extern int  kept_level_p                        PARAMS ((void));
 extern tree lookup_name                         PARAMS ((tree));
 extern tree lookup_name_current_level		PARAMS ((tree));
-extern tree lookup_name_current_level_global	PARAMS ((tree));
 extern void parmlist_tags_warning               PARAMS ((void));
 extern void pending_xref_error                  PARAMS ((void));
 extern void mark_c_function_context             PARAMS ((struct function *));
@@ -218,7 +202,6 @@ extern tree pushdecl_top_level                  PARAMS ((tree));
 extern void pushtag                             PARAMS ((tree, tree));
 extern tree set_array_declarator_type           PARAMS ((tree, tree, int));
 extern tree shadow_label                        PARAMS ((tree));
-extern void shadow_record_fields                PARAMS ((tree));
 extern void shadow_tag                          PARAMS ((tree));
 extern void shadow_tag_warned                   PARAMS ((tree, int));
 extern tree start_enum                          PARAMS ((tree));
@@ -231,6 +214,20 @@ extern tree xref_tag                            PARAMS ((enum tree_code, tree));
 extern tree c_begin_compound_stmt               PARAMS ((void));
 extern void c_expand_deferred_function          PARAMS ((tree));
 extern void c_expand_decl_stmt                  PARAMS ((tree));
+
+
+/* in c-objc-common.c */
+extern int c_disregard_inline_limits		PARAMS ((tree));
+extern int c_cannot_inline_tree_fn		PARAMS ((tree *));
+extern const char *c_objc_common_init		PARAMS ((const char *));
+extern int c_missing_noreturn_ok_p		PARAMS ((tree));
+extern void c_objc_common_finish_file		PARAMS ((void));
+extern int defer_fn				PARAMS ((tree));
+
+#define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \
+  c_build_qualified_type ((TYPE),				  \
+			  ((CONST_P) ? TYPE_QUAL_CONST : 0) |	  \
+			  ((VOLATILE_P) ? TYPE_QUAL_VOLATILE : 0))
 
 /* in c-typeck.c */
 extern tree require_complete_type		PARAMS ((tree));
