@@ -1513,10 +1513,12 @@ install-common: native install-dir xgcc $(EXTRA_PARTS)
 	    $(INSTALL_DATA) SYSCALLS.c.X $(libsubdir)/SYSCALLS.c.X; \
 	    chmod a-x $(libsubdir)/SYSCALLS.c.X; \
 	fi
-	-rm -f $(bindir)/c++
-	$(INSTALL_PROGRAM) $(srcdir)/c++ $(bindir)/c++
-	-rm -f $(bindir)/g++
-	$(INSTALL_PROGRAM) $(srcdir)/g++ $(bindir)/g++
+	-if [ -f cc1plus ] ; then \
+	  rm -f $(bindir)/c++ ; \
+	  $(INSTALL_PROGRAM) $(srcdir)/c++ $(bindir)/c++ ; \
+	  rm -f $(bindir)/g++ ; \
+	  $(INSTALL_PROGRAM) $(srcdir)/g++ $(bindir)/g++ ; \
+	fi
 	-rm -f $(libsubdir)/cpp
 	$(INSTALL_PROGRAM) cpp $(libsubdir)/cpp
 
