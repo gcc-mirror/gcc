@@ -1,9 +1,10 @@
 /* Test "ignore redundant include" facility.
-   We must test with C and C++ comments outside the guard conditional;
-   also, we test guarding with #ifndef and #if !defined.
-   -H is used because cpp mi1ght confuse the issue by optimizing out
-   #line markers.  This test only passes if each of the headers is
-   read exactly once.
+
+   We must test with C and C++ comments, and null directives, outside
+   the guard conditional; also, we test guarding with #ifndef and #if
+   !defined.  -H is used because cpp might confuse the issue by
+   optimizing out #line markers.  This test only passes if each of the
+   headers is read exactly once.
 
    The disgusting regexp in the dg-error line, when stuck into
    dg.exp's compiler-output regexp, matches the correct -H output and

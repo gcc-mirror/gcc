@@ -1,3 +1,10 @@
+2000-10-29  Neil Booth  <neilb@earthling.net>
+
+        * gcc.dg/cpp/macro4.c, macro5.c: New tests.
+	* mi1.c, mi1c.h: Add null directives to multiple-include test.
+	* mi5.c: Test multiple includes work with -C.
+	* trigraphs.c: Test ^= version.
+
 2000-10-28  Neil Booth  <neilb@earthling.net>
 
 	New tests and test updates for new macro expander.
