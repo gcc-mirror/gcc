@@ -221,6 +221,13 @@ extern int		nonmemory_operand ();
 extern int		register_operand ();
 extern int		scratch_operand ();
 extern int		move_operand ();
+extern int		movdi_operand ();
+extern int		se_register_operand ();
+extern int		se_reg_or_0_operand ();
+extern int		se_uns_arith_operand ();
+extern int		se_arith_operand ();
+extern int		se_nonmemory_operand ();
+extern int		se_nonimmediate_operand ();
 
 /* Functions to change what output section we are using.  */
 extern void		data_section ();
@@ -3157,6 +3164,20 @@ while (0)
   {"move_operand", 		{ CONST_INT, CONST_DOUBLE, CONST,	\
 				  SYMBOL_REF, LABEL_REF, SUBREG,	\
 				  REG, MEM}},				\
+  {"movdi_operand",		{ CONST_INT, CONST_DOUBLE, CONST,	\
+				  SYMBOL_REF, LABEL_REF, SUBREG, REG,	\
+				  MEM, SIGN_EXTEND }},			\
+  {"se_register_operand",	{ SUBREG, REG, SIGN_EXTEND }},		\
+  {"se_reg_or_0_operand",	{ REG, CONST_INT, SUBREG,		\
+				  SIGN_EXTEND }},			\
+  {"se_uns_arith_operand",	{ REG, CONST_INT, SUBREG,		\
+				  SIGN_EXTEND }},			\
+  {"se_arith_operand",		{ REG, CONST_INT, SUBREG,		\
+				  SIGN_EXTEND }},			\
+  {"se_nonmemory_operand",	{ CONST_INT, CONST_DOUBLE, CONST,	\
+				  SYMBOL_REF, LABEL_REF, SUBREG,	\
+				  REG, SIGN_EXTEND }},			\
+  {"se_nonimmediate_operand",   { SUBREG, REG, MEM, SIGN_EXTEND }},
 
 
 /* If defined, a C statement to be executed just prior to the
