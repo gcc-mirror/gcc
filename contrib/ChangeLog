@@ -1,3 +1,8 @@
+2002-12-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_update (files_and_dependencies): Add gcc/intl/plural.c as
+	depending on gcc/intl/plural.y.
+
 2002-12-28  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* texi2pod.pl: Skip contents of @copying.
