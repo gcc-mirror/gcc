@@ -1,13 +1,29 @@
-This file documents the installation of the GNU compiler.  Copyright
+This is Info file INSTALL, produced by Makeinfo version 1.68 from the
+input file install1.texi.
+
+   This file documents the installation of the GNU compiler.  Copyright
 (C) 1988, 1989, 1992, 1994, 1995 Free Software Foundation, Inc.  You
 may copy, distribute, and modify it freely as long as you preserve this
 copyright notice and permission notice.
+
+
+File: INSTALL,  Node: Installation,  Up: (dir)
 
 Installing GNU CC
 *****************
 
    Note most of this information is out of date and superceded by the
 EGCS install procedures.  It is provided for historical reference only.
+
+* Menu:
+
+* Configurations::    Configurations Supported by GNU CC.
+* Other Dir::     Compiling in a separate directory (not where the source is).
+* Cross-Compiler::   Building and installing a cross-compiler.
+* Sun Install::   See below for installation on the Sun.
+* VMS Install::   See below for installation on VMS.
+* Collect2::	  How `collect2' works; how it finds `ld'.
+* Header Dirs::   Understanding the standard header file directories.
 
    Here is the procedure for installing GNU CC on a Unix system.  See
 *Note VMS Install::, for VMS systems.  In this section we assume you
@@ -48,13 +64,13 @@ and includes all the necessary compilation tools and libraries.
      what your configuration is or guesses wrong.
 
      In those cases, specify the build machine's "configuration name"
-     with the `--build' option; the host and target will default to be
-     the same as the build machine.  (If you are building a
+     with the `--host' option; the host and target will default to be
+     the same as the host machine.  (If you are building a
      cross-compiler, see *Note Cross-Compiler::.)
 
      Here is an example:
 
-          ./configure --build=sparc-sun-sunos4.1
+          ./configure --host=sparc-sun-sunos4.1
 
      A configuration name may be canonical or it may be more or less
      abbreviated.
@@ -163,7 +179,6 @@ and includes all the necessary compilation tools and libraries.
           other systems where it could usefully make a difference.
 
     `--enable-haifa'
-
     `--disable-haifa'
           Use `--enable-haifa' to enable use of an experimental
           instruction scheduler (from IBM Haifa).  This may or may not
@@ -181,6 +196,14 @@ and includes all the necessary compilation tools and libraries.
           option by supplying a suitable TYPE, probably `posix'.  The
           possibilities for TYPE are `single', `posix', `win32',
           `solaris', `irix' and `mach'.
+
+    `--enable-checking'
+          When you specify this option, the compiler is built to
+          perform checking of tree node types when referencing fields
+          of that node.  This does not change the generated code, but
+          adds error checking within the compiler.  This will slow down
+          the compiler and may only work properly if you are building
+          the compiler with GNU C.
 
      The `configure' script searches subdirectories of the source
      directory for other compilers that are to be integrated into GNU
@@ -227,20 +250,22 @@ and includes all the necessary compilation tools and libraries.
      name to use instead of `/usr/local' for all purposes with one
      exception: the directory `/usr/local/include' is searched for
      header files no matter where you install the compiler.  To override
-     this name, use the `--local-prefix' option below.
+     this name, use the `--with-local-prefix' option below.  The
+     directory you specify need not exist, but its parent directory
+     must exist.
 
-  5. Specify `--local-prefix=DIR' if you want the compiler to search
-     directory `DIR/include' for locally installed header files
+  5. Specify `--with-local-prefix=DIR' if you want the compiler to
+     search directory `DIR/include' for locally installed header files
      *instead* of `/usr/local/include'.
 
-     You should specify `--local-prefix' *only* if your site has a
+     You should specify `--with-local-prefix' *only* if your site has a
      different convention (not `/usr/local') for where to put
      site-specific files.
 
-     The default value for `--local-prefix' is `/usr/local' regardless
-     of the value of `--prefix'.  Specifying `--prefix' has no effect
-     on which directory GNU CC searches for local header files.  This
-     may seem counterintuitive, but actually it is logical.
+     The default value for `--with-local-prefix' is `/usr/local'
+     regardless of the value of `--prefix'.  Specifying `--prefix' has
+     no effect on which directory GNU CC searches for local header
+     files.  This may seem counterintuitive, but actually it is logical.
 
      The purpose of `--prefix' is to specify where to *install GNU CC*.
      The local header files in `/usr/local/include'--if you put any in
@@ -248,12 +273,12 @@ and includes all the necessary compilation tools and libraries.
      programs--perhaps many others.  (GNU CC installs its own header
      files in another directory which is based on the `--prefix' value.)
 
-     *Do not* specify `/usr' as the `--local-prefix'!  The directory
-     you use for `--local-prefix' *must not* contain any of the
-     system's standard header files.  If it did contain them, certain
-     programs would be miscompiled (including GNU Emacs, on certain
-     targets), because this would override and nullify the header file
-     corrections made by the `fixincludes' script.
+     *Do not* specify `/usr' as the `--with-local-prefix'!  The
+     directory you use for `--with-local-prefix' *must not* contain any
+     of the system's standard header files.  If it did contain them,
+     certain programs would be miscompiled (including GNU Emacs, on
+     certain targets), because this would override and nullify the
+     header file corrections made by the `fixincludes' script.
 
      Indications are that people who use this option use it based on
      mistaken ideas of what it is for.  People use it as if it specified
@@ -300,8 +325,9 @@ and includes all the necessary compilation tools and libraries.
      escape sequence" are normal in `genopinit.c' and perhaps some
      other files.  Likewise, you should ignore warnings about "constant
      is so large that it is unsigned" in `insn-emit.c' and
-     `insn-recog.c' and a warning about a comparison always being zero
-     in `enquire.o'.  Any other compilation errors may represent bugs in
+     `insn-recog.c', a warning about a comparison always being zero in
+     `enquire.o', and warnings about shift counts exceeding type widths
+     in `cexp.y'.  Any other compilation errors may represent bugs in
      the port to your machine or operating system, and should be
      investigated and reported.
 
@@ -433,12 +459,12 @@ and includes all the necessary compilation tools and libraries.
      This copies the files `cc1', `cpp' and `libgcc.a' to files `cc1',
      `cpp' and `libgcc.a' in the directory
      `/usr/local/lib/gcc-lib/TARGET/VERSION', which is where the
-     compiler driver program looks for them.  Here TARGET is the target
-     machine type specified when you ran `configure', and VERSION is
-     the version number of GNU CC.  This naming scheme permits various
-     versions and/or cross-compilers to coexist.  It also copies the
-     executables for compilers for other languages (e.g., `cc1plus' for
-     C++) to the same directory.
+     compiler driver program looks for them.  Here TARGET is the
+     canonicalized form of target machine type specified when you ran
+     `configure', and VERSION is the version number of GNU CC.  This
+     naming scheme permits various versions and/or cross-compilers to
+     coexist.  It also copies the executables for compilers for other
+     languages (e.g., `cc1plus' for C++) to the same directory.
 
      This also copies the driver program `xgcc' into
      `/usr/local/bin/gcc', so that it appears in typical execution
@@ -465,8 +491,13 @@ and includes all the necessary compilation tools and libraries.
      library.  All I/O functionality, special class libraries, etc., are
      provided by the C++ runtime library.
 
-     Here's one way to build and install a C++ runtime library for GNU
-     CC:
+     The standard C++ runtime library for GNU CC is called `libstdc++'.
+     An obsolescent library `libg++' may also be available, but it's
+     necessary only for older software that hasn't been converted yet;
+     if you don't know whether you need `libg++' then you probably don't
+     need it.
+
+     Here's one way to build and install `libstdc++' for GNU CC:
 
         * Build and install GNU CC, so that invoking `gcc' obtains the
           GNU CC that was just built.
@@ -534,6 +565,9 @@ and includes all the necessary compilation tools and libraries.
         * thr-solaris SUN Solaris thread support.
 
         * thr-win32 Microsoft Win32 API thread support.
+
+
+File: INSTALL,  Node: Configurations,  Next: Other Dir,  Up: Installation
 
 Configurations Supported by GNU CC
 ==================================
@@ -742,9 +776,10 @@ special things you must know:
      AMD Am29050 used in a system running a variant of BSD Unix.
 
 `decstation-*'
-     DECstations can support three different personalities: Ultrix, DEC
-     OSF/1, and OSF/rose.  To configure GCC for these platforms use the
-     following configurations:
+     MIPS-based DECstations can support three different personalities:
+     Ultrix, DEC OSF/1, and OSF/rose.  (Alpha-based DECstation products
+     have a configuration name beginning with `alpha-dec'.)  To
+     configure GCC for these platforms use the following configurations:
 
     `decstation-ultrix'
           Ultrix configuration.
@@ -799,7 +834,9 @@ special things you must know:
      later).  These can be retrieved from all the traditional GNU ftp
      archive sites.
 
-     GAS will need to be installed into a directory before `/bin',
+     On some versions of HP-UX, you will need to install GNU `sed'.
+
+     You will need to be install GAS into a directory before `/bin',
      `/usr/bin', and `/usr/ccs/bin' in your search path.  You should
      install GAS before you build GNU CC.
 
@@ -834,24 +871,32 @@ special things you must know:
 
 `i386-*-sco3.2v5*'
      Use this for the SCO OpenServer Release family including 5.0.0,
-     5.0.2, 5.0.4, Internet FastStart 1.0, and Internet FastStart 1.1.
+     5.0.2, 5.0.4, 5.0.5, Internet FastStart 1.0, and Internet
+     FastStart 1.1.
 
-     GNU CC can generate ELF binaries (if you specify `-melf') or COFF
-     binaries (the default).  If you are going to build your compiler
-     in ELF mode (once you have bootstrapped the first stage compiler)
-     you *must* specify `-melf' as part of `CC', *not* `CFLAGS', for
-     example as `CC="stage1/xgcc -melf -Bstage1/" '.  If you do not do
-     this, the bootstrap will generate incorrect versions of `libgcc.a'.
+     GNU CC can generate COFF binaries if you specify `-mcoff' or ELF
+     binaries, the default.    A full `make bootstrap' is recommended
+     so that an ELF compiler that builds ELF is generated.
 
-     You must have TLS597 (from ftp.sco.com/TLS) installed for ELF
-     binaries to work correctly. Note that Open Server 5.0.2 *does*
-     need TLS597 installed.
+     You must have TLS597 from `ftp://ftp.sco.com/TLS' installed for ELF
+     C++ binaries to work correctly on releases before 5.0.4.
 
-     *NOTE:* You must follow the instructions about invoking `make
-     bootstrap' because the native OpenServer compiler builds a
-     `cc1plus' that will not correctly parse many valid C++ programs.
-     You must do a `make bootstrap' if you are building with the native
-     compiler.
+     The native SCO assembler that is provided with the OS at no charge
+     is normally required.  If, however, you must be able to use the GNU
+     assembler (perhaps you have complex asms) you must configure this
+     package `--with-gnu-as'.  To do this, install (cp or symlink)
+     gcc/as to your copy of the GNU assembler.  You must use a recent
+     version of GNU binutils; version 2.9.1 seems to work well.  If you
+     select this option, you will be unable to build COFF images.
+     Trying to do so will result in non-obvious failures.  In general,
+     the "-with-gnu-as" option isn't as well tested as the native
+     assembler.
+
+     *NOTE:* If you are building C++, you must follow the instructions
+     about invoking `make bootstrap' because the native OpenServer
+     compiler may build a `cc1plus' that will not correctly parse many
+     valid C++ programs.  You must do a `make bootstrap' if you are
+     building with the native compiler.
 
 `i386-*-isc'
      It may be a good idea to link with GNU malloc instead of the
@@ -872,10 +917,8 @@ special things you must know:
      Go to the Berkeley universe before compiling.
 
 `i386-sequent-ptx1*'
-     Sequent DYNIX/ptx 1.x.
-
 `i386-sequent-ptx2*'
-     Sequent DYNIX/ptx 2.x.
+     You must install GNU `sed' before running `configure'.
 
 `i386-sun-sunos4'
      You may find that you need another version of GNU CC to begin
@@ -970,7 +1013,7 @@ special things you must know:
      options to `configure'.
 
      Note the C compiler that comes with this system cannot compile GNU
-     CC.  You can fine binaries of GNU CC for bootstrapping on
+     CC.  You can find binaries of GNU CC for bootstrapping on
      `jagubox.gsfc.nasa.gov'.  You will also a patched version of
      `/bin/ld' there that raises some of the arbitrary limits found in
      the original.
@@ -1059,9 +1102,9 @@ special things you must know:
      In addition, if you wish to use gas `--with-gnu-as' you must use
      gas version 2.1 or later, and you must use the GNU linker version
      2.1 or later.  Earlier versions of gas relied upon a program which
-     converted the gas output into the native HP/UX format, but that
+     converted the gas output into the native HP-UX format, but that
      program has not been kept up to date.  gdb does not understand
-     that native HP/UX format, so you must use gas if you wish to use
+     that native HP-UX format, so you must use gas if you wish to use
      gdb.
 
 `m68k-sun'
@@ -1248,13 +1291,15 @@ special things you must know:
      xlc-1.2.1.8, xlc-1.3.0.0 (distributed with AIX 3.2.5), and
      xlc-1.3.0.19.  Both xlc-1.2.1.28 and xlc-1.3.0.24 (PTF 432238) are
      known to produce working versions of GNU CC, but most other recent
-     releases correctly bootstrap GNU CC.  Also, releases of AIX prior
-     to AIX 3.2.4 include a version of the IBM assembler which does not
-     accept debugging directives: assembler updates are available as
-     PTFs.  Also, if you are using AIX 3.2.5 or greater and the GNU
-     assembler, you must have a version modified after October 16th,
-     1995 in order for the GNU C compiler to build.  See the file
-     `README.RS6000' for more details on of these problems.
+     releases correctly bootstrap GNU CC.
+
+     Release 4.3.0 of AIX and ones prior to AIX 3.2.4 include a version
+     of the IBM assembler which does not accept debugging directives:
+     assembler updates are available as PTFs.  Also, if you are using
+     AIX 3.2.5 or greater and the GNU assembler, you must have a
+     version modified after October 16th, 1995 in order for the GNU C
+     compiler to build.  See the file `README.RS6000' for more details
+     on any of these problems.
 
      GNU CC does not yet support the 64-bit PowerPC instructions.
 
@@ -1401,6 +1446,9 @@ special things you must know:
      You may need to raise the ULIMIT setting to build a C++ compiler,
      as the file `cc1plus' is larger than one megabyte.
 
+
+File: INSTALL,  Node: Other Dir,  Next: Cross-Compiler,  Prev: Configurations,  Up: Installation
+
 Compilation in a Separate Directory
 ===================================
 
@@ -1445,6 +1493,9 @@ configuration steps shown above, when ordinary source files change.  You
 must, however, run `configure' again when the configuration files
 change, if your system does not support symbolic links.
 
+
+File: INSTALL,  Node: Cross-Compiler,  Next: Sun Install,  Prev: Other Dir,  Up: Installation
+
 Building and Installing a Cross-Compiler
 ========================================
 
@@ -1471,6 +1522,20 @@ If you want to link on other than the target machine, you need a
 cross-linker as well.  You also need header files and libraries suitable
 for the target machine that you can install on the host machine.
 
+* Menu:
+
+* Steps of Cross::      Using a cross-compiler involves several steps
+                          that may be carried out on different machines.
+* Configure Cross::     Configuring a cross-compiler.
+* Tools and Libraries:: Where to put the linker and assembler, and the C library.
+* Cross Headers::       Finding and installing header files
+                          for a cross-compiler.
+* Cross Runtime::       Supplying arithmetic runtime routines (`libgcc1.a').
+* Build Cross::         Actually compiling the cross-compiler.
+
+
+File: INSTALL,  Node: Steps of Cross,  Next: Configure Cross,  Up: Cross-Compiler
+
 Steps of Cross-Compilation
 --------------------------
 
@@ -1496,6 +1561,9 @@ machine, since then you can do it all with a single invocation of GNU
 CC.  This requires a suitable cross-assembler and cross-linker.  For
 some targets, the GNU assembler and linker are available.
 
+
+File: INSTALL,  Node: Configure Cross,  Next: Tools and Libraries,  Prev: Steps of Cross,  Up: Cross-Compiler
+
 Configuring a Cross-Compiler
 ----------------------------
 
@@ -1507,6 +1575,9 @@ to configure for a cross-compiler that produces code for an HP 68030
 system running BSD on a system that `configure' can correctly identify:
 
      ./configure --target=m68k-hp-bsd4.3
+
+
+File: INSTALL,  Node: Tools and Libraries,  Next: Cross Headers,  Prev: Configure Cross,  Up: Cross-Compiler
 
 Tools and Libraries for a Cross-Compiler
 ----------------------------------------
@@ -1575,6 +1646,9 @@ machine:
      cd /usr/lib
      mget *crt*.o
      quit
+
+
+File: INSTALL,  Node: Cross Runtime,  Next: Build Cross,  Prev: Cross Headers,  Up: Cross-Compiler
 
 `libgcc.a' and Cross-Compilers
 ------------------------------
@@ -1661,6 +1735,9 @@ Otherwise, you should place your replacement library under the name
 `libgcc1.a' in the directory in which you will build the
 cross-compiler, before you run `make'.
 
+
+File: INSTALL,  Node: Cross Headers,  Next: Cross Runtime,  Prev: Tools and Libraries,  Up: Cross-Compiler
+
 Cross-Compilers and Header Files
 --------------------------------
 
@@ -1709,6 +1786,9 @@ machine.  On the target machine, do this:
      quit
      tar xf tarfile
 
+
+File: INSTALL,  Node: Build Cross,  Prev: Cross Runtime,  Up: Cross-Compiler
+
 Actually Building the Cross-Compiler
 ------------------------------------
 
@@ -1742,11 +1822,19 @@ must specify a 68030 as the host when you configure it.
 
    To install the cross-compiler, use `make install', as usual.
 
+
+File: INSTALL,  Node: Sun Install,  Next: VMS Install,  Prev: Cross-Compiler,  Up: Installation
+
 Installing GNU CC on the Sun
 ============================
 
-   On Solaris (version 2.1), do not use the linker or other tools in
-`/usr/ucb' to build GNU CC.  Use `/usr/ccs/bin'.
+   On Solaris, do not use the linker or other tools in `/usr/ucb' to
+build GNU CC.  Use `/usr/ccs/bin'.
+
+   If the assembler reports `Error: misaligned data' when bootstrapping,
+you are probably using an obsolete version of the GNU assembler.
+Upgrade to the latest version of GNU `binutils', or use the Solaris
+assembler.
 
    Make sure the environment variable `FLOAT_OPTION' is not set when
 you compile `libgcc.a'.  If this option were set to `f68881' when
@@ -1771,6 +1859,9 @@ dumps when compiling GNU CC.  A common symptom is an internal compiler
 error which does not recur if you run it again.  To fix the problem,
 install Sun recommended patch 100726 (for SunOS 4.1.3) or 101508 (for
 SunOS 4.1.3_U1), or upgrade to a later SunOS release.
+
+
+File: INSTALL,  Node: VMS Install,  Next: Collect2,  Prev: Sun Install,  Up: Installation
 
 Installing GNU CC on VMS
 ========================
@@ -1977,6 +2068,9 @@ edit the file `tm.h' (created by `vmsconfig.com') to define the macro
    `QSORT_WORKAROUND' is always defined when GNU CC is compiled with
 VAX C, to avoid a problem in case `gcclib.olb' is not yet available.
 
+
+File: INSTALL,  Node: Collect2,  Next: Header Dirs,  Prev: VMS Install,  Up: Installation
+
 `collect2'
 ==========
 
@@ -2042,6 +2136,9 @@ search path.
    `collect2' searches for the utilities `nm' and `strip' using the
 same algorithm as above for `ld'.
 
+
+File: INSTALL,  Node: Header Dirs,  Prev: Collect2,  Up: Installation
+
 Standard Header File Directories
 ================================
 
@@ -2070,3 +2167,22 @@ use.  For a cross-compiler, this is the equivalent of `/usr/include'.
 When you build a cross-compiler, `fixincludes' processes any header
 files in this directory.
 
+
+
+Tag Table:
+Node: Installation351
+Node: Configurations26618
+Node: Other Dir65739
+Node: Cross-Compiler67454
+Node: Steps of Cross69284
+Node: Configure Cross70401
+Node: Tools and Libraries71037
+Node: Cross Runtime73475
+Node: Cross Headers77555
+Node: Build Cross79553
+Node: Sun Install81428
+Node: VMS Install83099
+Node: Collect293028
+Node: Header Dirs95592
+
+End Tag Table
