@@ -4893,16 +4893,6 @@ process_options ()
     warning ("this target machine does not have delayed branches");
 #endif
 
-  /* Some operating systems do not allow profiling without a frame
-     pointer.  */
-  if (!TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER
-      && profile_flag
-      && flag_omit_frame_pointer)
-    {
-      error ("profiling does not work without a frame pointer");
-      flag_omit_frame_pointer = 0;
-    }
-
   user_label_prefix = USER_LABEL_PREFIX;
   if (flag_leading_underscore != -1)
     {

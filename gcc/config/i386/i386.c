@@ -3885,7 +3885,8 @@ ix86_frame_pointer_required ()
   /* In override_options, TARGET_OMIT_LEAF_FRAME_POINTER turns off
      the frame pointer by default.  Turn it back on now if we've not
      got a leaf function.  */
-  if (TARGET_OMIT_LEAF_FRAME_POINTER && ! leaf_function_p ())
+  if (TARGET_OMIT_LEAF_FRAME_POINTER
+      && (!current_function_is_leaf || current_function_profile))
     return 1;
 
   return 0;
