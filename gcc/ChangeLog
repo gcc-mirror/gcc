@@ -1,3 +1,8 @@
+2002-09-04  Richard Henderson  <rth@redhat.com>
+
+	* doc/install-old.texi: Don't mention enquire.
+	* doc/sourcebuild.texi: Update float.h description.
+
 Wed Sep  4 11:22:14 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (mperm_w_little, mperm_w_big): Supply mode for zero_extract.
