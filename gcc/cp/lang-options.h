@@ -98,6 +98,8 @@ DEFINE_LANG_NAME ("C++")
   { "-ftemplate-depth-", "Specify maximum template instantiation depth"},
   { "-fthis-is-variable", "Make 'this' not be type '* const'"  },
   { "-fno-this-is-variable", "" },
+  { "-fuse-cxa-atexit", "Use __cxa_atexit to register destructors." },
+  { "-fno-use-cxa-atexit", "" },
   { "-fvtable-gc", "Discard unused virtual functions" },
   { "-fno-vtable-gc", "" },
   { "-fvtable-thunks", "Implement vtables using thunks" },

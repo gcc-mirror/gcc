@@ -681,49 +681,6 @@ expand_exception_blocks ()
     }
 }
 
-tree
-start_anon_func ()
-{
-  static int counter = 0;
-  int old_interface_unknown = interface_unknown;
-  char name[32];
-  tree params;
-  tree t;
-
-  push_to_top_level ();
-
-  /* No need to mangle this.  */
-  push_lang_context (lang_name_c);
-
-  interface_unknown = 1;
-
-  params = void_list_node;
-  /* tcf stands for throw clean function.  */
-  sprintf (name, "__tcf_%d", counter++);
-  t = make_call_declarator (get_identifier (name), params, NULL_TREE,
-			    NULL_TREE);
-  start_function (decl_tree_cons (NULL_TREE, get_identifier ("static"),
-				  void_list_node),
-		  t, NULL_TREE, SF_DEFAULT);
-  do_pushlevel ();
-
-  interface_unknown = old_interface_unknown;
-
-  pop_lang_context ();
-
-  return current_function_decl;
-}
-
-void
-end_anon_func ()
-{
-  do_poplevel ();
-
-  expand_body (finish_function (lineno, 0));
-
-  pop_from_top_level ();
-}
-
 /* Return a pointer to a buffer for an exception object of type TYPE.  */
 
 static tree

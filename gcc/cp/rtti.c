@@ -308,7 +308,7 @@ get_tinfo_var (type)
      tree type;
 {
   tree tname = build_overload_with_type (get_identifier ("__ti"), type);
-  tree tdecl, arrtype;
+  tree arrtype;
   int size;
 
   if (IDENTIFIER_GLOBAL_VALUE (tname))
@@ -342,16 +342,7 @@ get_tinfo_var (type)
     (unsigned_char_type_node,
      build_index_type (size_int (size / BITS_PER_UNIT - 1)));
 
-  tdecl = build_decl (VAR_DECL, tname, arrtype);
-  TREE_PUBLIC (tdecl) = 1;
-  DECL_EXTERNAL (tdecl) = 1;
-  DECL_ARTIFICIAL (tdecl) = 1;
-  push_to_top_level ();
-  pushdecl (tdecl);
-  cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0);
-  pop_from_top_level ();
-
-  return tdecl;
+  return declare_global_var (tname, arrtype);
 }
 
 /* Returns the decl for a function which will return a type_info node for
