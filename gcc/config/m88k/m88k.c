@@ -46,11 +46,13 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.2.7.3 09/02/92 09:45:23";
+static char out_sccs_id[] = "@(#)m88k.c	2.2.12.1 09/12/92 07:06:48";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
 char *m88k_short_data;
+char *m88k_version;
+char m88k_volatile_code;
 
 int m88k_gp_threshold;
 int m88k_prologue_done	= 0;	/* Ln directives can now be emitted */
@@ -58,6 +60,7 @@ int m88k_function_number = 0;	/* Counter unique to each function */
 int m88k_fp_offset	= 0;	/* offset of frame pointer if used */
 int m88k_stack_size	= 0;	/* size of allocated stack (including frame) */
 int m88k_case_index;
+int m88k_version_0300;		/* Version is at least 03.00 */
 
 rtx m88k_compare_reg;		/* cmp output pseudo register */
 rtx m88k_compare_op0;		/* cmpsi operand 0 */
@@ -501,7 +504,7 @@ block_move_loop (dest, dest_mem, src, src_mem, size, align)
   MEM_VOLATILE_P (value_rtx) = MEM_VOLATILE_P (src_mem);
   MEM_IN_STRUCT_P (value_rtx) = MEM_IN_STRUCT_P (src_mem);
 
-  emit_insn (gen_call_block_move_loop
+  emit_insn (gen_call_movstrsi_loop
 	     (gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (entry_name)),
 	      dest, src, offset_rtx, value_rtx,
 	      gen_rtx (REG, GET_MODE (value_rtx), ((units & 1) ? 4 : 5)),
@@ -2516,6 +2519,40 @@ print_operand (file, x, code)
 
     case '#': /* SVR4 pound-sign syntax character (empty if SVR3) */
       fputs (m88k_pound_sign, file); return;
+
+    case 'V': /* Output a serializing instruction as needed if the operand
+		 (assumed to be a MEM) is a volatile load.  */
+    case 'v': /* ditto for a volatile store.  */
+      if (MEM_VOLATILE_P (x) && TARGET_SERIALIZE_VOLATILE)
+	{
+	  /* The m88110 implements two FIFO queues, one for loads and
+	     one for stores.  These queues mean that loads complete in
+	     their issue order as do stores.  An interaction between the
+	     history buffer and the store reservation station ensures
+	     that a store will not bypass load.  Finally, a load will not
+	     bypass store, but only when they reference the same address.
+
+	     To avoid this reordering (a load bypassing a store) for
+	     volatile references, a serializing instruction is output.
+	     We choose the fldcr instruction as it does not serialize on
+	     the m88100 so that -m88000 code will not be degraded.
+
+	     The mechanism below is completed by having CC_STATUS_INIT set
+	     the code to the unknown value.  */
+
+	  static rtx last_addr = 0;
+	  if (code == 'V' /* Only need to serialize before a load.  */
+	      && m88k_volatile_code != 'V' /* Loads complete in FIFO order.  */
+	      && !(m88k_volatile_code == 'v'
+		   && GET_CODE (XEXP (x, 0)) == LO_SUM
+		   && rtx_equal_p (XEXP (XEXP (x, 0), 1), last_addr)))
+	    fprintf (file, "fldcr\t %s,%sfcr63\n\t",
+		     reg_names[0], m88k_pound_sign);
+	  m88k_volatile_code = code;
+	  last_addr = (GET_CODE (XEXP (x, 0)) == LO_SUM
+		       ? XEXP (XEXP (x, 0), 1) : 0);
+	}
+      return;
 
     case 'X': /* print the upper 16 bits... */
       value >>= 16;
