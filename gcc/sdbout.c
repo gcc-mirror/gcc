@@ -100,9 +100,7 @@ extern FILE *asm_out_file;
 
 extern tree current_function_decl;
 
-void sdbout_init ();
-void sdbout_symbol ();
-void sdbout_types();
+#include "sdbout.h"
 
 static char *gen_fake_label		PROTO((void));
 static int plain_type			PROTO((tree));

@@ -1,3 +1,14 @@
+Mon May 18 09:02:09 1998  Robert Lipe  <robertl@dgii.com>
+
+	* dwarfout.h, dwarf2out.h, dbxout.h, sdbout.h:  New files.
+	Prototypes for externally used functions in respective C files.
+	* dwarfout.c, dbxout.c, dwarf2out.c, sdbout.c, toplev,c,
+	final.c: Include above files.
+	* Makefile.in (toplev.o): Add dependency for above four headers.
+	(final.o): Likewise.
+	(dwarfout.o, dbxout.o, dwarf2out.o, sdbout.o): Depend on four
+	respective header files.
+
 Mon May 18 01:23:33 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (TARGET_TOOLPREFIX): No longer define.

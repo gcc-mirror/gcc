@@ -40,6 +40,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "expr.h"
 #include "except.h"
 #include "dwarf2.h"
+#include "dwarf2out.h"
 #include "toplev.h"
 
 /* We cannot use <assert.h> in GCC source, since that would include
