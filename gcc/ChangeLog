@@ -1,3 +1,9 @@
+2005-01-27  J"orn Rennecke <joern.rennecke@st.com>
+
+	* real.c (do_add): Initialize signalling and canonical members.
+
+	* real.c (real_from_integer): Zero out destination.
+
 2005-01-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	Backport from mainline:

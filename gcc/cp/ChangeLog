@@ -1,3 +1,8 @@
+2005-01-27  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR c++/18370
+	* parser.c (cp_parser_initializer_clause): Initialize *non_constant_p.
+
 2005-01-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/19375
