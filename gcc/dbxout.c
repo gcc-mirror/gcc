@@ -1796,7 +1796,7 @@ dbxout_symbol_location (decl, type, suffix, home)
 
 	  if (!DECL_INITIAL (decl))
 	    current_sym_code = N_LCSYM;
-	  else if (in_text_section ())
+	  else if (DECL_IN_TEXT_SECTION (decl))
 	    /* This is not quite right, but it's the closest
 	       of all the codes that Unix defines.  */
 	    current_sym_code = DBX_STATIC_CONST_VAR_CODE;
