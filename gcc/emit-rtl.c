@@ -2826,6 +2826,7 @@ push_topmost_sequence ()
 
   first_insn = top->first;
   last_insn = top->last;
+  sequence_rtl_expr = top->sequence_rtl_expr;
 }
 
 /* After emitting to the outer-level insn chain, update the outer-level
@@ -2857,6 +2858,7 @@ end_sequence ()
 
   first_insn = tem->first;
   last_insn = tem->last;
+  sequence_rtl_expr = tem->sequence_rtl_expr;
   sequence_stack = tem->next;
 
   tem->next = sequence_element_free_list;
