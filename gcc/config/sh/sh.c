@@ -147,6 +147,7 @@ static void push_regs PARAMS ((int, int));
 static int calc_live_regs PARAMS ((int *, int *));
 static void mark_use PARAMS ((rtx, rtx *));
 static HOST_WIDE_INT rounded_frame_size PARAMS ((int));
+static rtx mark_constant_pool_use PARAMS ((rtx));
 
 /* Print the operand address in x to the stream.  */
 
@@ -201,6 +202,7 @@ print_operand_address (stream, x)
       break;
 
     default:
+      x = mark_constant_pool_use (x);
       output_addr_const (stream, x);
       break;
     }
@@ -261,6 +263,7 @@ print_operand (stream, x, code)
 	fprintf (stream, "\n\tnop");
       break;
     case 'O':
+      x = mark_constant_pool_use (x);
       output_addr_const (stream, x);
       break;
     case 'R':
@@ -1932,6 +1935,7 @@ typedef struct
 {
   rtx value;			/* Value in table.  */
   rtx label;			/* Label of value.  */
+  rtx wend;			/* End of window.  */
   enum machine_mode mode;	/* Mode of value.  */
 } pool_node;
 
@@ -1942,6 +1946,8 @@ typedef struct
 #define MAX_POOL_SIZE (1020/4)
 static pool_node pool_vector[MAX_POOL_SIZE];
 static int pool_size;
+static rtx pool_window_label;
+static int pool_window_last;
 
 /* ??? If we need a constant in HImode which is the truncated value of a
    constant we need in SImode, we could combine the two entries thus saving
@@ -1962,7 +1968,7 @@ add_constant (x, mode, last_value)
      rtx last_value;
 {
   int i;
-  rtx lab;
+  rtx lab, new, ref, newref;
 
   /* First see if we've already got it.  */
   for (i = 0; i < pool_size; i++)
@@ -1977,15 +1983,25 @@ add_constant (x, mode, last_value)
 	    }
 	  if (rtx_equal_p (x, pool_vector[i].value))
 	    {
-	      lab = 0;
+	      lab = new = 0;
 	      if (! last_value
 		  || ! i
 		  || ! rtx_equal_p (last_value, pool_vector[i-1].value))
 		{
-		  lab = pool_vector[i].label;
-		  if (! lab)
-		    pool_vector[i].label = lab = gen_label_rtx ();
+		  new = gen_label_rtx ();
+		  LABEL_REFS (new) = pool_vector[i].label;
+		  pool_vector[i].label = lab = new;
 		}
+	      if (lab && pool_window_label)
+		{
+		  newref = gen_rtx_LABEL_REF (VOIDmode, pool_window_label);
+		  ref = pool_vector[pool_window_last].wend;
+		  LABEL_NEXTREF (newref) = ref;
+		  pool_vector[pool_window_last].wend = newref;
+		}
+	      if (new)
+		pool_window_label = new;
+	      pool_window_last = i;
 	      return lab;
 	    }
 	}
@@ -1999,6 +2015,17 @@ add_constant (x, mode, last_value)
     lab = gen_label_rtx ();
   pool_vector[pool_size].mode = mode;
   pool_vector[pool_size].label = lab;
+  pool_vector[pool_size].wend = NULL_RTX;
+  if (lab && pool_window_label)
+    {
+      newref = gen_rtx_LABEL_REF (VOIDmode, pool_window_label);
+      ref = pool_vector[pool_window_last].wend;
+      LABEL_NEXTREF (newref) = ref;
+      pool_vector[pool_window_last].wend = newref;
+    }
+  if (lab)
+    pool_window_label = lab;
+  pool_window_last = pool_size;
   pool_size++;
   return lab;
 }
@@ -2011,6 +2038,7 @@ dump_table (scan)
 {
   int i;
   int need_align = 1;
+  rtx lab, ref;
 
   /* Do two passes, first time dump out the HI sized constants.  */
 
@@ -2025,8 +2053,15 @@ dump_table (scan)
 	      scan = emit_insn_after (gen_align_2 (), scan);
 	      need_align = 0;
 	    }
-	  scan = emit_label_after (p->label, scan);
-	  scan = emit_insn_after (gen_consttable_2 (p->value), scan);
+	  for (lab = p->label; lab; lab = LABEL_REFS (lab))
+	    scan = emit_label_after (lab, scan);
+	  scan = emit_insn_after (gen_consttable_2 (p->value, const0_rtx),
+				  scan);
+	  for (ref = p->wend; ref; ref = LABEL_NEXTREF (ref))
+	    {
+	      lab = XEXP (ref, 0);
+	      scan = emit_insn_after (gen_consttable_window_end (lab), scan);
+	    }
 	}
     }
 
@@ -2048,9 +2083,10 @@ dump_table (scan)
 	      scan = emit_label_after (gen_label_rtx (), scan);
 	      scan = emit_insn_after (gen_align_4 (), scan);
 	    }
-	  if (p->label)
-	    scan = emit_label_after (p->label, scan);
-	  scan = emit_insn_after (gen_consttable_4 (p->value), scan);
+	  for (lab = p->label; lab; lab = LABEL_REFS (lab))
+	    scan = emit_label_after (lab, scan);
+	  scan = emit_insn_after (gen_consttable_4 (p->value, const0_rtx),
+				  scan);
 	  break;
 	case DFmode:
 	case DImode:
@@ -2060,19 +2096,31 @@ dump_table (scan)
 	      scan = emit_label_after (gen_label_rtx (), scan);
 	      scan = emit_insn_after (gen_align_4 (), scan);
 	    }
-	  if (p->label)
-	    scan = emit_label_after (p->label, scan);
-	  scan = emit_insn_after (gen_consttable_8 (p->value), scan);
+	  for (lab = p->label; lab; lab = LABEL_REFS (lab))
+	    scan = emit_label_after (lab, scan);
+	  scan = emit_insn_after (gen_consttable_8 (p->value, const0_rtx),
+				  scan);
 	  break;
 	default:
 	  abort ();
 	  break;
+	}
+
+      if (p->mode != HImode)
+	{
+	  for (ref = p->wend; ref; ref = LABEL_NEXTREF (ref))
+	    {
+	      lab = XEXP (ref, 0);
+	      scan = emit_insn_after (gen_consttable_window_end (lab), scan);
+	    }
 	}
     }
 
   scan = emit_insn_after (gen_consttable_end (), scan);
   scan = emit_barrier_after (scan);
   pool_size = 0;
+  pool_window_label = NULL_RTX;
+  pool_window_last = 0;
 }
 
 /* Return non-zero if constant would be an ok source for a
@@ -5378,4 +5426,69 @@ legitimize_pic_address (orig, mode, reg)
       return reg;
     }
   return orig;
+}
+
+/* Mark the use of a constant in the literal table. If the constant
+   has multiple labels, make it unique.  */
+static rtx mark_constant_pool_use (x)
+     rtx x;
+{
+  rtx insn, lab, pattern;
+
+  if (x == NULL)
+    return x;
+
+  switch (GET_CODE (x))
+    {
+    case LABEL_REF:
+      x = XEXP (x, 0);
+    case CODE_LABEL:
+      break;
+    default:
+      return x;
+    }
+
+  /* Get the first label in the list of labels for the same constant
+     and delete another labels in the list.  */
+  lab = x;
+  for (insn = PREV_INSN (x); insn; insn = PREV_INSN (insn))
+    {
+      if (GET_CODE (insn) != CODE_LABEL
+	  || LABEL_REFS (insn) != NEXT_INSN (insn))
+	break;
+      lab = insn;
+    }
+
+  for (insn = LABEL_REFS (lab); insn; insn = LABEL_REFS (insn))
+    INSN_DELETED_P (insn) = 1;
+
+  /* Mark constants in a window.  */
+  for (insn = NEXT_INSN (x); insn; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) != INSN)
+	continue;
+
+      pattern = PATTERN (insn);
+      if (GET_CODE (pattern) != UNSPEC_VOLATILE)
+	continue;
+
+      switch (XINT (pattern, 1))
+	{
+	case UNSPECV_CONST2:
+	case UNSPECV_CONST4:
+	case UNSPECV_CONST8:
+	  XVECEXP (pattern, 0, 1) = const1_rtx;
+	  break;
+	case UNSPECV_WINDOW_END:
+	  if (XVECEXP (pattern, 0, 0) == x)
+	    return lab;
+	  break;
+	case UNSPECV_CONST_END:
+	  return lab;
+	default:
+	  break;
+	}
+    }
+
+  return lab;
 }

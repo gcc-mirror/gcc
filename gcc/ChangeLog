@@ -1,3 +1,21 @@
+2001-06-03  kaz Kojima  <kkojima@rr.iij4u.or.jp>
+
+	* gcc/config/sh/sh.c (print_operand_address, print_operand): Call
+	mark_constant_pool_use before output_addr_const.
+	(struct pool_node): New field wend.
+	(add_constant): Note a sequence of constants that are referenced
+	by a given label.
+	(pool_window_label, pool_window_last): New variables.
+	(dump_table): Emit a unspec_volatile representing the end of a
+	sequence of constants.
+	(mark_constant_pool_use): New function.
+	* gcc/config/sh/sh.md (UNSPECV_WINDOW_END): New constant.
+	(consttable_2): Add the second operand which flags whether
+	this consttable entry was used or not.
+	(consttable_4, consttable_8, consttable_sf, consttable_df):
+	Likewise.
+	(consttable_window_end): New insn.
+
 2001-06-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	Warning removal.
