@@ -7188,7 +7188,10 @@ tsubst (t, args, complain, in_decl)
 	if (e1 == error_mark_node)
 	  return error_mark_node;
 
-	return TREE_TYPE (e1); 
+	return cp_build_qualified_type_real (TREE_TYPE (e1),
+					     cp_type_quals (t)
+					     | cp_type_quals (TREE_TYPE (e1)),
+					     complain);
       }
 
     default:
