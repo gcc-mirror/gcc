@@ -477,9 +477,22 @@ po/Makefile testsuite/Makefile mkcheck testsuite_flags,
  if test -n "$CONFIG_FILES"; then
    if test -n "${with_build_subdir}" || test -n "${with_target_subdir}"; then
      LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-     ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
-     grep '^MULTISUBDIR =' Makefile >> src/Makefile
-     grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
+     # Ony modify Makefiles that are just being created.
+     case " $CONFIG_FILES" in
+       *" Makefile"*)
+	 ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
+	 ;;
+     esac
+     case $CONFIG_FILES in
+       *src/Makefile*)
+	 grep '^MULTISUBDIR =' Makefile >> src/Makefile
+	 ;;
+     esac
+     case $CONFIG_FILES in
+       *libsupc++/Makefile*)
+	 grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
+	 ;;
+     esac
    fi
  fi
  chmod +x mkcheck
@@ -504,9 +517,22 @@ dnl      libmath/Makefile libio/Makefile libsupc++/Makefile \
 dnl      po/Makefile testsuite/Makefile mkcheck testsuite_flags)
 dnl  AC_CONFIG_COMMANDS([default],
 dnl  [if test -n "$CONFIG_FILES"; then
-dnl    ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
-dnl    grep '^MULTISUBDIR =' Makefile >> src/Makefile
-dnl    grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
+dnl    # Ony modify Makefiles that are just being created.
+dnl    case " $CONFIG_FILES" in
+dnl      *" Makefile"*)
+dnl        ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
+dnl        ;;
+dnl    esac
+dnl    case $CONFIG_FILES in
+dnl      *src/Makefile*)
+dnl        grep '^MULTISUBDIR =' Makefile >> src/Makefile
+dnl        ;;
+dnl    esac
+dnl    case $CONFIG_FILES in
+dnl      *libsupc++/Makefile*)
+dnl        grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
+dnl        ;;
+dnl    esac
 dnl  fi
 dnl  chmod +x mkcheck
 dnl  chmod +x testsuite_flags

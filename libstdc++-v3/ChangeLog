@@ -1,3 +1,9 @@
+2003-03-14  Andreas Schwab  <schwab@suse.de>
+
+	* configure.in: Only append to makefiles that are newly created to
+	avoid multiple multi-do/multi-clean rules.
+	* configure: Rebuilt.
+
 2003-03-13  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/configopts.html, docs/html/documentation.html,
