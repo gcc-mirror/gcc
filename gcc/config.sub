@@ -803,6 +803,9 @@ case $basic_machine in
 			-ptx*)
 				vendor=sequent
 				;;
+			-vxworks*)
+				vendor=wrs
+				;;
 		esac
 		basic_machine=`echo $basic_machine | sed "s/unknown/$vendor/"`
 		;;
