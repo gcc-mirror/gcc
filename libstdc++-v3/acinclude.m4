@@ -1263,7 +1263,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CLOCALE_INTERNAL_H=config/locale/gnu/c++locale_internal.h
       ;;
     xieee_1003.1-2001)
-      AC_MSG_RESULT(generic)
+      AC_MSG_RESULT(IEEE 1003.1)
 
       CLOCALE_H=config/locale/ieee_1003.1-2001/c_locale.h
       CLOCALE_CC=config/locale/ieee_1003.1-2001/c_locale.cc
@@ -1289,6 +1289,11 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   # -DLOCALEDIR define during testsuite compilation.
   glibcpp_localedir=${glibcpp_builddir}/po/share/locale
   AC_SUBST(glibcpp_localedir)
+
+  # A standalone libintl (e.g., GNU libintl) may be in use.
+  if test $USE_NLS = yes; then
+    AC_SEARCH_LIBS(gettext, intl)
+  fi
 
   AC_SUBST(USE_NLS)
   AC_SUBST(CLOCALE_H)
