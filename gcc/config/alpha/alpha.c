@@ -1280,7 +1280,8 @@ alpha_emit_conditional_branch (code)
 	    {
 	      /* Undo the swap we probably did just above.  */
 	      tem = op0, op0 = op1, op1 = tem;
-	      cmp_code = NIL, branch_code = swap_condition (cmp_code);
+	      branch_code = swap_condition (cmp_code);
+	      cmp_code = NIL;
 	    }
 	}
       else
