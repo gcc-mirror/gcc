@@ -1,5 +1,5 @@
 /* DatagramSocket.java -- A class to model UDP sockets
-   Copyright (C) 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -94,9 +94,11 @@ public class DatagramSocket
   private boolean closed = false;
 
   /**
-   * Creates a DatagramSocket from a specified DatagramSocketImpl instance
+   * Creates a <code>DatagramSocket</code> from a specified 
+   * <code>DatagramSocketImpl</code> instance
    *
-   * @param impl The DatagramSocketImpl the socket will be created from
+   * @param impl The <code>DatagramSocketImpl</code> the socket will be 
+   * created from
    * 
    * @since 1.4
    */
@@ -113,7 +115,7 @@ public class DatagramSocket
    *
    * @exception SocketException If an error occurs.
    * @exception SecurityException If a security manager exists and
-   * its checkListen method doesn't allow the operation.
+   * its <code>checkListen</code> method doesn't allow the operation.
    */
   public DatagramSocket() throws SocketException
   {
@@ -127,7 +129,7 @@ public class DatagramSocket
    * @param port The local port number to bind to.
    *
    * @exception SecurityException If a security manager exists and its
-   * checkListen method doesn't allow the operation.
+   * <code>checkListen</code> method doesn't allow the operation.
    * @exception SocketException If an error occurs.
    */
   public DatagramSocket(int port) throws SocketException
@@ -190,7 +192,7 @@ public class DatagramSocket
    * @param laddr The local address to bind to.
    *
    * @exception SecurityException If a security manager exists and its
-   * checkListen method doesn't allow the operation.
+   * <code>checkListen</code> method doesn't allow the operation.
    * @exception SocketException If an error occurs.
    *
    * @since 1.4

@@ -1,5 +1,5 @@
 /* DatagramSocketImplFactory.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,8 @@ package java.net;
   */
 
 /**
-  * This interface defines one method which returns a DatagramSocketImpl object.
+  * This interface defines one method which returns a 
+  * <code>DatagramSocketImpl</code> object.
   * This should not be needed by ordinary applications.
   *
   * @author Michael Koch <konqueror@gmx.de>
@@ -55,5 +56,5 @@ public interface DatagramSocketImplFactory
    *
    * @return A DatagramSocketImpl object
    */
-  DatagramSocketImpl createDatagramSocketImpl();
+  public DatagramSocketImpl createDatagramSocketImpl();
 } // interface DatagramSocketImplFactory

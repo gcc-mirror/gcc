@@ -74,8 +74,8 @@ public class PushbackInputStream extends FilterInputStream
 
   /**
    * This method initializes a <code>PushbackInputStream</code> to
-   * read from the * specified subordinate <code>InputStream</code>
-   * with a default pushback buffer * size of 1.
+   * read from the specified subordinate <code>InputStream</code>
+   * with a default pushback buffer size of 1.
    *
    * @param in The subordinate stream to read from
    */
@@ -302,7 +302,7 @@ public class PushbackInputStream extends FilterInputStream
    * <code>skip</code> method on the underlying <code>InputStream</code> to 
    * skip additional bytes if necessary.
    *
-   * @param num_bytes The requested number of bytes to skip
+   * @param numBytes The requested number of bytes to skip
    *
    * @return The actual number of bytes skipped.
    *
