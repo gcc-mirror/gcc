@@ -2183,7 +2183,9 @@ set_label_offsets (x, insn, initial_p)
 	    {
 	      reg_eliminate[i].offset = reg_eliminate[i].previous_offset
 		= offsets_at[CODE_LABEL_NUMBER (x)][i];
-	      if (reg_eliminate[i].offset != reg_eliminate[i].initial_offset)
+	      if (reg_eliminate[i].can_eliminate
+		  && (reg_eliminate[i].offset
+		      != reg_eliminate[i].initial_offset))
 		num_not_at_initial_offset++;
 	    }
 	}
@@ -3242,7 +3244,9 @@ reload_as_needed (first, live_known)
 	    {
 	      reg_eliminate[i].offset = reg_eliminate[i].previous_offset
 		= offsets_at[CODE_LABEL_NUMBER (insn)][i];
-	      if (reg_eliminate[i].offset != reg_eliminate[i].initial_offset)
+	      if (reg_eliminate[i].can_eliminate
+		  && (reg_eliminate[i].offset
+		      != reg_eliminate[i].initial_offset))
 		num_not_at_initial_offset++;
 	    }
 	}
