@@ -308,7 +308,6 @@ build_tarfiles() {
   # Now, build one for each of the languages.
   maybe_build_tarfile gcc-ada-${RELEASE} ${ADA_DIRS}
   maybe_build_tarfile gcc-g++-${RELEASE} ${CPLUSPLUS_DIRS}
-  maybe_build_tarfile gcc-g77-${RELEASE} ${FORTRAN_DIRS}
   maybe_build_tarfile gcc-fortran-${RELEASE} ${FORTRAN95_DIRS}
   maybe_build_tarfile gcc-java-${RELEASE} ${JAVA_DIRS}
   maybe_build_tarfile gcc-objc-${RELEASE} ${OBJECTIVEC_DIRS}
@@ -316,7 +315,7 @@ build_tarfiles() {
    
   # The core is everything else.
   EXCLUDES=""
-  for x in ${ADA_DIRS} ${CPLUSPLUS_DIRS} ${FORTRAN_DIRS} ${FORTRAN95_DIRS}\
+  for x in ${ADA_DIRS} ${CPLUSPLUS_DIRS} ${FORTRAN95_DIRS}\
 	   ${JAVA_DIRS} ${OBJECTIVEC_DIRS} ${TESTSUITE_DIRS}; do
     EXCLUDES="${EXCLUDES} --exclude $x"
   done
@@ -503,7 +502,6 @@ SOURCE_DIRECTORY=""
 # tar files.  These are all relative to the top of the source tree.
 ADA_DIRS="gcc/ada libada"
 CPLUSPLUS_DIRS="gcc/cp libstdc++-v3"
-FORTRAN_DIRS="gcc/f libf2c"
 FORTRAN95_DIRS="gcc/fortran libgfortran"
 JAVA_DIRS="gcc/java libjava libffi fastjar zlib boehm-gc"
 OBJECTIVEC_DIRS="gcc/objc libobjc"
@@ -653,7 +651,6 @@ SOURCE_DIRECTORY="${WORKING_DIRECTORY}/gcc-${RELEASE}"
 # relative to the WORKING_DIRECTORY.
 ADA_DIRS=`adjust_dirs ${ADA_DIRS}`
 CPLUSPLUS_DIRS=`adjust_dirs ${CPLUSPLUS_DIRS}`
-FORTRAN_DIRS=`adjust_dirs ${FORTRAN_DIRS}`
 FORTRAN95_DIRS=`adjust_dirs ${FORTRAN95_DIRS}`
 JAVA_DIRS=`adjust_dirs ${JAVA_DIRS}`
 OBJECTIVEC_DIRS=`adjust_dirs ${OBJECTIVEC_DIRS}`
