@@ -1,5 +1,11 @@
 2001-08-27  Roman Zippel  <zippel@linux-m68k.org>
 
+	* config/m68k/m68k.md (subreghi1ashrdi_const32, bsetmemqi,
+	bsetmemqi+1, strict_low_part peephole): Fix SUBREG_BYTE offset.
+	(pushqi1): New.
+	(adddi_dilshr32, adddi_dishl32): Only data register can be
+	source for mem destination.
+
 	* expmed.c (store_bit_field): Ignore adjustment to bitpos
 	and use bitnum to decide about register move.
 
