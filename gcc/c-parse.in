@@ -52,7 +52,8 @@ State 335 contains 2 shift/reduce conflicts.  (Four ways to parse this.)
 State 347 contains 1 shift/reduce conflict.  (Two ways to parse ATTRIBUTES.)
 State 352 contains 1 shift/reduce conflict.  (Two ways to parse ATTRIBUTES.)
 State 383 contains 2 shift/reduce conflicts.  (Four ways to parse this.)
-State 434 contains 2 shift/reduce conflicts.  (Four ways to parse this.)
+State 434 contains 2 shift/reduce conflicts.  (Four ways to parse this.)  */
+
 end ifc
 
 %{
