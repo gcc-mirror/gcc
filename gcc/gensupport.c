@@ -183,7 +183,7 @@ remove_constraints (part)
 }
 
 /* Process an include file assuming that it lives in gcc/config/{target}/ 
-   if the include looks line (include "file").  */
+   if the include looks like (include "file").  */
 
 static void
 process_include (desc, lineno)
