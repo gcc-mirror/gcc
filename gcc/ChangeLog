@@ -1,3 +1,10 @@
+2002-05-03  Richard Henderson  <rth@redhat.com>
+
+	* real.c (etoasc): Strip most trailing zeros for clarity.
+	* sched-vis.c: Include real.h.
+	(print_value): Use REAL_VALUE_TO_DECIMAL as needed.
+	* Makefile.in (sched-vis.o): Add real.h.
+
 2002-05-03  David S. Miller  <davem@redhat.com>
 
 	* haifa-sched.c (rank_for_schedule): Revert 2002-05-02 change,
