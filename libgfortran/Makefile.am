@@ -4,13 +4,13 @@
 ## __STDC_VERSION__ is set such that libc includes make them available.
 AM_CFLAGS = -std=gnu99
 
-lib_LTLIBRARIES = libgfortran.la libgfortranbegin.la
+toolexeclib_LTLIBRARIES = libgfortran.la libgfortranbegin.la
 
 ## This should really go in the compiler lib dir, not the system lib dir.
 libgfortranbegin_la_SOURCES = fmain.c
 libgfortranbegin_la_LDFLAGS = -static
 
-INCLUDES = -I$(srcdir)/io
+AM_CPPFLAGS = -I$(srcdir)/io
 
 libgfortranincludedir = $(includedir)/gforio
 
