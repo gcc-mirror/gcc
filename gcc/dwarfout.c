@@ -671,10 +671,6 @@ static unsigned ft_entries;
 
 static const char *primary_filename;
 
-/* Pointer to the most recent filename for which we produced some line info.  */
-
-static const char *last_filename;
-
 /* Counter to generate unique names for DIEs.  */
 
 static unsigned next_unused_dienum = 1;
@@ -4164,7 +4160,6 @@ output_compile_unit_die (arg)
   high_pc_attribute (TEXT_END_LABEL);
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
     stmt_list_attribute (LINE_BEGIN_LABEL);
-  last_filename = xstrdup (main_input_filename);
 
   {
     const char *wd = getpwd ();
