@@ -1773,6 +1773,7 @@ optimize_inline_calls (tree fn)
 {
   inline_data id;
   tree prev_fn;
+  tree ifn;
 
   /* There is no point in performing inlining if errors have already
      occurred -- and we might crash if we try to inline invalid
@@ -1811,15 +1812,11 @@ optimize_inline_calls (tree fn)
 
   /* Clean up.  */
   htab_delete (id.tree_pruner);
-  if (DECL_LANG_SPECIFIC (fn))
-    {
-      tree ifn = make_tree_vec (VARRAY_ACTIVE_SIZE (id.inlined_fns));
-
-      if (VARRAY_ACTIVE_SIZE (id.inlined_fns))
-	memcpy (&TREE_VEC_ELT (ifn, 0), &VARRAY_TREE (id.inlined_fns, 0),
-		VARRAY_ACTIVE_SIZE (id.inlined_fns) * sizeof (tree));
-      DECL_INLINED_FNS (fn) = ifn;
-    }
+  ifn = make_tree_vec (VARRAY_ACTIVE_SIZE (id.inlined_fns));
+  if (VARRAY_ACTIVE_SIZE (id.inlined_fns))
+    memcpy (&TREE_VEC_ELT (ifn, 0), &VARRAY_TREE (id.inlined_fns, 0),
+	    VARRAY_ACTIVE_SIZE (id.inlined_fns) * sizeof (tree));
+  DECL_INLINED_FNS (fn) = ifn;
 
 #ifdef ENABLE_CHECKING
     {
