@@ -560,9 +560,6 @@ extern enum reg_class reg_class_from_letter[];
 /* Similar, but for floating constants, and defining letters G and H.
    Here VALUE is the CONST_DOUBLE rtx itself.  */
 
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) 0
-
-#undef CONST_DOUBLE_OK_FOR_LETTER_P
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)	\
 ((C) == 'G' ? fp_zero_operand (VALUE)		\
  : (C) == 'H' ? fp_one_operand (VALUE)		\
