@@ -3797,6 +3797,40 @@ ix86_comparison_operator (op, mode)
     }
 }
 
+/* Return 1 if OP is a valid comparison operator testing carry flag
+   to be set.  */
+int
+ix86_carry_flag_operator (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  enum machine_mode inmode;
+  enum rtx_code code = GET_CODE (op);
+
+  if (mode != VOIDmode && GET_MODE (op) != mode)
+    return 0;
+  if (GET_RTX_CLASS (code) != '<')
+    return 0;
+  inmode = GET_MODE (XEXP (op, 0));
+  if (GET_CODE (XEXP (op, 0)) != REG
+      || REGNO (XEXP (op, 0)) != 17
+      || XEXP (op, 1) != const0_rtx)
+    return 0;
+
+  if (inmode == CCFPmode || inmode == CCFPUmode)
+    {
+      enum rtx_code second_code, bypass_code;
+
+      ix86_fp_comparison_codes (code, &bypass_code, &code, &second_code);
+      if (bypass_code != NIL || second_code != NIL)
+	return 0;
+      code = ix86_fp_compare_code_to_integer (code);
+    }
+  else if (inmode != CCmode)
+    return 0;
+  return code == LTU;
+}
+
 /* Return 1 if OP is a comparison operator that can be issued by fcmov.  */
 
 int
@@ -3806,6 +3840,7 @@ fcmov_comparison_operator (op, mode)
 {
   enum machine_mode inmode;
   enum rtx_code code = GET_CODE (op);
+
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
   if (GET_RTX_CLASS (code) != '<')
@@ -3814,6 +3849,7 @@ fcmov_comparison_operator (op, mode)
   if (inmode == CCFPmode || inmode == CCFPUmode)
     {
       enum rtx_code second_code, bypass_code;
+
       ix86_fp_comparison_codes (code, &bypass_code, &code, &second_code);
       if (bypass_code != NIL || second_code != NIL)
 	return 0;
@@ -9316,7 +9352,51 @@ ix86_expand_carry_flag_compare (code, op0, op1, pop)
 
   /* Do not handle DImode compares that go trought special path.  Also we can't
      deal with FP compares yet.  This is possible to add.   */
-  if ((mode == DImode && !TARGET_64BIT) || !INTEGRAL_MODE_P (mode))
+  if ((mode == DImode && !TARGET_64BIT))
+    return false;
+  if (FLOAT_MODE_P (mode))
+    {
+      rtx second_test = NULL, bypass_test = NULL;
+      rtx compare_op, compare_seq;
+
+      /* Shortcut:  following common codes never translate into carry flag compares.  */
+      if (code == EQ || code == NE || code == UNEQ || code == LTGT
+	  || code == ORDERED || code == UNORDERED)
+	return false;
+
+      /* These comparisons require zero flag; swap operands so they won't.  */
+      if ((code == GT || code == UNLE || code == LE || code == UNGT)
+	  && !TARGET_IEEE_FP)
+	{
+	  rtx tmp = op0;
+	  op0 = op1;
+	  op1 = tmp;
+	  code = swap_condition (code);
+	}
+
+      /* Try to expand the comparsion and verify that we end up with carry flag
+	 based comparsion.  This is fails to be true only when we decide to expand
+	 comparsion using arithmetic that is not too common scenario.  */
+      start_sequence ();
+      compare_op = ix86_expand_fp_compare (code, op0, op1, NULL_RTX,
+					   &second_test, &bypass_test);
+      compare_seq = get_insns ();
+      end_sequence ();
+
+      if (second_test || bypass_test)
+	return false;
+      if (GET_MODE (XEXP (compare_op, 0)) == CCFPmode
+	  || GET_MODE (XEXP (compare_op, 0)) == CCFPUmode)
+        code = ix86_fp_compare_code_to_integer (GET_CODE (compare_op));
+      else
+	code = GET_CODE (compare_op);
+      if (code != LTU && code != GEU)
+	return false;
+      emit_insn (compare_seq);
+      *pop = compare_op;
+      return true;
+    }
+  if (!INTEGRAL_MODE_P (mode))
     return false;
   switch (code)
     {
@@ -9428,7 +9508,16 @@ ix86_expand_int_movcc (operands)
 
           if (!sign_bit_compare_p)
 	    {
+	      bool fpcmp = false;
+
 	      compare_code = GET_CODE (compare_op);
+
+	      if (GET_MODE (XEXP (compare_op, 0)) == CCFPmode
+		  || GET_MODE (XEXP (compare_op, 0)) == CCFPUmode)
+		{
+		  fpcmp = true;
+		  compare_code = ix86_fp_compare_code_to_integer (compare_code);
+		}
 
 	      /* To simplify rest of code, restrict to the GEU case.  */
 	      if (compare_code == LTU)
@@ -9439,6 +9528,15 @@ ix86_expand_int_movcc (operands)
 		  compare_code = reverse_condition (compare_code);
 		  code = reverse_condition (code);
 		}
+	      else
+		{
+		  if (fpcmp)
+		    PUT_CODE (compare_op,
+			      reverse_condition_maybe_unordered
+			        (GET_CODE (compare_op)));
+		  else
+		    PUT_CODE (compare_op, reverse_condition (GET_CODE (compare_op)));
+		}
 	      diff = ct - cf;
 
 	      if (reg_overlap_mentioned_p (out, ix86_compare_op0)
@@ -9446,9 +9544,9 @@ ix86_expand_int_movcc (operands)
 		tmp = gen_reg_rtx (mode);
 
 	      if (mode == DImode)
-		emit_insn (gen_x86_movdicc_0_m1_rex64 (tmp));
+		emit_insn (gen_x86_movdicc_0_m1_rex64 (tmp, compare_op));
 	      else
-		emit_insn (gen_x86_movsicc_0_m1 (gen_lowpart (SImode, tmp)));
+		emit_insn (gen_x86_movsicc_0_m1 (gen_lowpart (SImode, tmp), compare_op));
 	    }
 	  else
 	    {
@@ -10051,6 +10149,9 @@ ix86_expand_int_addcc (operands)
   enum rtx_code code = GET_CODE (operands[1]);
   rtx compare_op;
   rtx val = const0_rtx;
+  bool fpcmp = false;
+  rtx pat, clob;
+  enum machine_mode mode = GET_MODE (operands[0]);
 
   if (operands[3] != const1_rtx
       && operands[3] != constm1_rtx)
@@ -10058,23 +10159,43 @@ ix86_expand_int_addcc (operands)
   if (!ix86_expand_carry_flag_compare (code, ix86_compare_op0,
 				       ix86_compare_op1, &compare_op))
      return 0;
-  if (GET_CODE (compare_op) != LTU)
-    val = constm1_rtx;
-  if ((GET_CODE (compare_op) == LTU) == (operands[3] == constm1_rtx))
+  code = GET_CODE (compare_op);
+
+  if (GET_MODE (XEXP (compare_op, 0)) == CCFPmode
+      || GET_MODE (XEXP (compare_op, 0)) == CCFPUmode)
+    {
+      fpcmp = true;
+      code = ix86_fp_compare_code_to_integer (code);
+    }
+
+  if (code != LTU)
+    {
+      val = constm1_rtx;
+      if (fpcmp)
+	PUT_CODE (compare_op,
+		  reverse_condition_maybe_unordered
+		    (GET_CODE (compare_op)));
+      else
+	PUT_CODE (compare_op, reverse_condition (GET_CODE (compare_op)));
+    }
+  PUT_MODE (compare_op, mode);
+
+  /* Construct either adc or sbb insn.  */
+  if ((code == LTU) == (operands[3] == constm1_rtx))
     {
       switch (GET_MODE (operands[0]))
 	{
 	  case QImode:
-            emit_insn (gen_subqi3_carry (operands[0], operands[2], val));
+            emit_insn (gen_subqi3_carry (operands[0], operands[2], val, compare_op));
 	    break;
 	  case HImode:
-            emit_insn (gen_subhi3_carry (operands[0], operands[2], val));
+            emit_insn (gen_subhi3_carry (operands[0], operands[2], val, compare_op));
 	    break;
 	  case SImode:
-            emit_insn (gen_subsi3_carry (operands[0], operands[2], val));
+            emit_insn (gen_subsi3_carry (operands[0], operands[2], val, compare_op));
 	    break;
 	  case DImode:
-            emit_insn (gen_subdi3_carry_rex64 (operands[0], operands[2], val));
+            emit_insn (gen_subdi3_carry_rex64 (operands[0], operands[2], val, compare_op));
 	    break;
 	  default:
 	    abort ();
@@ -10085,16 +10206,16 @@ ix86_expand_int_addcc (operands)
       switch (GET_MODE (operands[0]))
 	{
 	  case QImode:
-            emit_insn (gen_addqi3_carry (operands[0], operands[2], val));
+            emit_insn (gen_addqi3_carry (operands[0], operands[2], val, compare_op));
 	    break;
 	  case HImode:
-            emit_insn (gen_addhi3_carry (operands[0], operands[2], val));
+            emit_insn (gen_addhi3_carry (operands[0], operands[2], val, compare_op));
 	    break;
 	  case SImode:
-            emit_insn (gen_addsi3_carry (operands[0], operands[2], val));
+            emit_insn (gen_addsi3_carry (operands[0], operands[2], val, compare_op));
 	    break;
 	  case DImode:
-            emit_insn (gen_adddi3_carry_rex64 (operands[0], operands[2], val));
+            emit_insn (gen_adddi3_carry_rex64 (operands[0], operands[2], val, compare_op));
 	    break;
 	  default:
 	    abort ();
@@ -11181,6 +11302,7 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx)
   rtx mem;
   rtx tmpreg = gen_reg_rtx (SImode);
   rtx scratch = gen_reg_rtx (SImode);
+  rtx cmp;
 
   align = 0;
   if (GET_CODE (align_rtx) == CONST_INT)
@@ -11339,10 +11461,11 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx)
   /* Avoid branch in fixing the byte.  */
   tmpreg = gen_lowpart (QImode, tmpreg);
   emit_insn (gen_addqi3_cc (tmpreg, tmpreg, tmpreg));
+  cmp = gen_rtx_LTU (Pmode, gen_rtx_REG (CCmode, 17), const0_rtx);
   if (TARGET_64BIT)
-    emit_insn (gen_subdi3_carry_rex64 (out, out, GEN_INT (3)));
+    emit_insn (gen_subdi3_carry_rex64 (out, out, GEN_INT (3), cmp));
   else
-    emit_insn (gen_subsi3_carry (out, out, GEN_INT (3)));
+    emit_insn (gen_subsi3_carry (out, out, GEN_INT (3), cmp));
 
   emit_label (end_0_label);
 }

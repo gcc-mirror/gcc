@@ -1,3 +1,16 @@
+Tue Jan 28 12:15:13 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+ 	* i386.c (ix86_carry_flag_operator):  New predicate.
+ 	(fcmov_operator): Fix whitespace.
+ 	(ix86_expand_carry_flag_compare):  Deal with floating point.
+ 	(ix86_expand_int_movcc): Deal with fp; update insn expansion
+ 	(ix86_expand_int_addcc): Likewise.
+ 	(ix86_expand_strlensi_unroll_1): likewsie.
+ 	* i386.h (PREDICATE_CODES): Add ix86_carry_flag_operator.
+ 	* i386.md (add?i_carry_rex64): Use new predicate.
+ 	(sub?i3_carry_rex64): Likewise.
+ 	(x86_mov?icc_0_m1*): Likewise.
+
 2003-01-28  Andreas Schwab  <schwab@suse.de>
 
 	* cfgloopmanip.c (create_preheader): Initialize src to avoid

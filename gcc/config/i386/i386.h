@@ -3048,6 +3048,8 @@ do {						\
   {"ix86_comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU,	\
 			       GTU, UNORDERED, ORDERED, UNLE, UNLT,	\
 			       UNGE, UNGT, LTGT, UNEQ }},		\
+  {"ix86_carry_flag_operator", {LTU, LT, UNLT, GT, UNGT, LE, UNLE,	\
+				 GE, UNGE, LTGT, UNEQ}},		\
   {"cmp_fp_expander_operand", {CONST_DOUBLE, SUBREG, REG, MEM}},	\
   {"ext_register_operand", {SUBREG, REG}},				\
   {"binary_fp_operator", {PLUS, MINUS, MULT, DIV}},			\
