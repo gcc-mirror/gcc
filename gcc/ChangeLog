@@ -1,5 +1,9 @@
 2001-11-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* cppexp.c (parse_number): Use ISXDIGIT/hex_value.
+	* cpplex.c (hex_digit_value): Use hex_p/hex_value.
+	* cppmain.c (general_init): Call hex_init.
+
 	* config.gcc (i[34567]86-dg-dgux*): Don't set `out_file'.
 
 	* i386/dgux.h (ASM_FILE_START): Set to the meaningful portions

@@ -100,6 +100,7 @@ general_init (argv0)
 
   xmalloc_set_program_name (progname);
 
+  hex_init ();
   gcc_init_libintl ();
 }
 
