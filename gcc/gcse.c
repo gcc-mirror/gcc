@@ -4157,10 +4157,23 @@ free_pre_mem ()
 static void
 compute_pre_data ()
 {
+  sbitmap trapping_expr;
   int i;
+  unsigned int ui;
 
   compute_local_properties (transp, comp, antloc, 0);
   sbitmap_vector_zero (ae_kill, n_basic_blocks);
+
+  /* Collect expressions which might trap.  */
+  trapping_expr = sbitmap_alloc (n_exprs);
+  sbitmap_zero (trapping_expr);
+  for (ui = 0; ui < expr_hash_table_size; ui++)
+    {
+      struct expr *e;
+      for (e = expr_hash_table[ui]; e != NULL; e = e->next_same_hash)
+	if (may_trap_p (e->expr))
+	  SET_BIT (trapping_expr, e->bitmap_index);
+    }
 
   /* Compute ae_kill for each basic block using:
 
@@ -4170,6 +4183,20 @@ compute_pre_data ()
 
   for (i = 0; i < n_basic_blocks; i++)
     {
+      edge e;
+
+      /* If the current block is the destination of an abnormal edge, we
+	 kill all trapping expressions because we won't be able to properly
+	 place the instruction on the edge.  So make them neither
+	 anticipatable nor transparent.  This is fairly conservative.  */
+      for (e = BASIC_BLOCK (i)->pred; e ; e = e->pred_next)
+	if (e->flags & EDGE_ABNORMAL)
+	  {
+	    sbitmap_difference (antloc[i], antloc[i], trapping_expr);
+	    sbitmap_difference (transp[i], transp[i], trapping_expr);
+	    break;
+	  }
+
       sbitmap_a_or_b (ae_kill[i], transp[i], comp[i]);
       sbitmap_not (ae_kill[i], ae_kill[i]);
     }
@@ -4180,6 +4207,7 @@ compute_pre_data ()
   antloc = NULL;
   free (ae_kill);
   ae_kill = NULL; 
+  free (trapping_expr);
 }
 
 /* PRE utilities */
