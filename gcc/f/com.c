@@ -13032,9 +13032,11 @@ ffecom_ptr_to_expr (ffebld expr)
 			  item,
 			  size_binop (MULT_EXPR,
 				      size_in_bytes (TREE_TYPE (array)),
-				      size_binop (MINUS_EXPR,
-						  ffecom_expr (dims[i]),
-						  TYPE_MIN_VALUE (TYPE_DOMAIN (array)))));
+				      convert (sizetype,
+					       fold (build (MINUS_EXPR,
+						     TREE_TYPE (TYPE_MIN_VALUE (TYPE_DOMAIN (array))),
+						     ffecom_expr (dims[i]),
+						     TYPE_MIN_VALUE (TYPE_DOMAIN (array)))))));
 	  }
       }
       return item;
