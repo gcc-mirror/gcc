@@ -1,3 +1,8 @@
+2001-02-27  Richard Henderson  <rth@redhat.com>
+
+	* print-rtl.c (print_rtx) [i]: Don't print field five on
+	NOTEs other than NOTE_INSN_DELETED_LABEL.
+
 2001-02-27  Zack Weinberg  <zackw@stanford.edu>
 
 	* mips/xm-iris4.h: Delete #if 0 block (there since before 1997).

@@ -322,43 +322,52 @@ print_rtx (in_rtx)
 	break;
 
       case 'i':
-	{
-	  register int value = XINT (in_rtx, i);
-	  const char *name;
+	if (i == 5 && GET_CODE (in_rtx) == NOTE)
+	  {
+	    /* This field is only used for NOTE_INSN_DELETED_LABEL, and
+	       other times often contains garbage from INSN->NOTE death.  */
+	    if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_DELETED_LABEL)
+	      fprintf (outfile, " %d",  XINT (in_rtx, i));
+	  }
+	else
+	  {
+	    register int value = XINT (in_rtx, i);
+	    const char *name;
 
-	  if (GET_CODE (in_rtx) == REG && value < FIRST_PSEUDO_REGISTER)
-	    {
-	      fputc (' ', outfile);
-	      DEBUG_PRINT_REG (in_rtx, 0, outfile);
-	    }
-	  else if (GET_CODE (in_rtx) == REG && value <= LAST_VIRTUAL_REGISTER)
-	    {
-	      if (value == VIRTUAL_INCOMING_ARGS_REGNUM)
-		fprintf (outfile, " %d virtual-incoming-args", value);
-	      else if (value == VIRTUAL_STACK_VARS_REGNUM)
-		fprintf (outfile, " %d virtual-stack-vars", value);
-	      else if (value == VIRTUAL_STACK_DYNAMIC_REGNUM)
-		fprintf (outfile, " %d virtual-stack-dynamic", value);
-	      else if (value == VIRTUAL_OUTGOING_ARGS_REGNUM)
-		fprintf (outfile, " %d virtual-outgoing-args", value);
-	      else if (value == VIRTUAL_CFA_REGNUM)
-		fprintf (outfile, " %d virtual-cfa", value);
-	      else
-		fprintf (outfile, " %d virtual-reg-%d", value,
-			 value-FIRST_VIRTUAL_REGISTER);
-	    }
-	  else if (flag_dump_unnumbered
-		   && (is_insn || GET_CODE (in_rtx) == NOTE))
-	    fputc ('#', outfile);
-	  else
-	    fprintf (outfile, " %d", value);
+	    if (GET_CODE (in_rtx) == REG && value < FIRST_PSEUDO_REGISTER)
+	      {
+		fputc (' ', outfile);
+		DEBUG_PRINT_REG (in_rtx, 0, outfile);
+	      }
+	    else if (GET_CODE (in_rtx) == REG
+		     && value <= LAST_VIRTUAL_REGISTER)
+	      {
+		if (value == VIRTUAL_INCOMING_ARGS_REGNUM)
+		  fprintf (outfile, " %d virtual-incoming-args", value);
+		else if (value == VIRTUAL_STACK_VARS_REGNUM)
+		  fprintf (outfile, " %d virtual-stack-vars", value);
+		else if (value == VIRTUAL_STACK_DYNAMIC_REGNUM)
+		  fprintf (outfile, " %d virtual-stack-dynamic", value);
+		else if (value == VIRTUAL_OUTGOING_ARGS_REGNUM)
+		  fprintf (outfile, " %d virtual-outgoing-args", value);
+		else if (value == VIRTUAL_CFA_REGNUM)
+		  fprintf (outfile, " %d virtual-cfa", value);
+		else
+		  fprintf (outfile, " %d virtual-reg-%d", value,
+			   value-FIRST_VIRTUAL_REGISTER);
+	      }
+	    else if (flag_dump_unnumbered
+		     && (is_insn || GET_CODE (in_rtx) == NOTE))
+	      fputc ('#', outfile);
+	    else
+	      fprintf (outfile, " %d", value);
 
-	  if (is_insn && &INSN_CODE (in_rtx) == &XINT (in_rtx, i)
-	      && XINT (in_rtx, i) >= 0
-	      && (name = get_insn_name (XINT (in_rtx, i))) != NULL)
-	    fprintf (outfile, " {%s}", name);
-	  sawclose = 0;
-	}
+	    if (is_insn && &INSN_CODE (in_rtx) == &XINT (in_rtx, i)
+		&& XINT (in_rtx, i) >= 0
+		&& (name = get_insn_name (XINT (in_rtx, i))) != NULL)
+	      fprintf (outfile, " {%s}", name);
+	    sawclose = 0;
+	  }
 	break;
 
       /* Print NOTE_INSN names rather than integer codes.  */
