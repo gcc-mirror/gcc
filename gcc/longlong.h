@@ -728,7 +728,7 @@
 	   : "r" ((unsigned int)(n1)),					\
 	     "r" ((unsigned int)(n0)),					\
 	     "rI" ((unsigned int)(d))					\
-	   : "%g1", __AND_CLOBBER_CC)
+	   : "%g1" __AND_CLOBBER_CC)
 #define UDIV_TIME 37
 #define count_leading_zeros(count, x) \
   __asm__ ("scan %1,0,%0"						\
