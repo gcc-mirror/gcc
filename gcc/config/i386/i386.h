@@ -2073,7 +2073,7 @@ while (0)
    between two registers, you should define this macro to express the
    relative cost.  */
 
-/* #define MEMORY_MOVE_COST(M) 2  */
+/* #define MEMORY_MOVE_COST(M,C,I) 2  */
 
 /* A C expression for the cost of a branch instruction.  A value of 1
    is the default; other values are interpreted relative to that.  */
