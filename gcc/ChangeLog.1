@@ -13,12 +13,12 @@ Tue May 18 03:53:37 1999  Craig Burley  <craig@jcb-sc.com>
 
 Tue May 18 00:51:46 1999  Krister Walfridsson <cato@df.lth.se>
 
-        * configure.in (arm*-*-netbsd*): Use collect2.
-        (i[34567]86-*-netbsd*): Likewise.
-        (m68k*-*-netbsd*): Likewise.
-        (ns32k-*-netbsd*): Likewise.
-        (sparc-*-netbsd*): Likewise.
-        (vax-*-netbsd*): Likewise.
+	* configure.in (arm*-*-netbsd*): Use collect2.
+	(i[34567]86-*-netbsd*): Likewise.
+	(m68k*-*-netbsd*): Likewise.
+	(ns32k-*-netbsd*): Likewise.
+	(sparc-*-netbsd*): Likewise.
+	(vax-*-netbsd*): Likewise.
 	* configure: Rebuilt.
 
 Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
@@ -57,9 +57,9 @@ Mon May 17 19:45:41 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 Mon May 17 07:23:34 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.def (TYPE_NONCOPIED_PARTS): Revise documentation to match
-        reality.
-        * expr.c (init_noncopied_parts): Don't generate initializers for
-        parts that don't need them.
+	reality.
+	* expr.c (init_noncopied_parts): Don't generate initializers for
+	parts that don't need them.
 
 Mon May 17 02:56:35 PDT 1999 Jeff Law  (law@cygnus.com)
 
@@ -118,7 +118,7 @@ Sat May 15 14:09:08 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 Fri May 14 21:31:36 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (*umulqi3_highpart_clobber): Fix operand 2
- 	constraints order.
+	constraints order.
 
 1999-05-14  Ulrich Drepper  <drepper@cygnus.com>
 
@@ -159,10 +159,10 @@ Thu May 13 01:31:19 1999  Nick Burrett  <nick.burrett@btinternet.com>
 Wed May 12 18:08:48 1999  David Edelsohn     <edelsohn@gnu.org>
 			  Richard Henderson  <rth@cygnus.com>
 
-        * rs6000.c (print_operand) [w]: Calculate signed constant more clearly.
-        (rs6000_allocate_stack_space): Print as hexadecimal value.
-        * rs6000.h (CONST_OK_FOR_LETTER_P): 'L' checks for a signed,
-        16-bit shifted constant.  Fix typo for 'P'.
+	* rs6000.c (print_operand) [w]: Calculate signed constant more clearly.
+	(rs6000_allocate_stack_space): Print as hexadecimal value.
+	* rs6000.h (CONST_OK_FOR_LETTER_P): 'L' checks for a signed,
+	16-bit shifted constant.  Fix typo for 'P'.
 	(EXTRA_CONSTARINT): 'T' checks for a 32-bit mask operand.
 	* rs6000.md (movsi, addsi3_internal1, movdi, adddi3_internal1):
 	Use 'L' for shifted constant.
@@ -338,8 +338,8 @@ Sat May  8 01:25:09 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 Fri May  7 19:10:15 1999  Vladimir Makarov  <vmakarov@tofu.to.cygnus.com>
 
 	* sparc.h (GO_IF_LEGITIMATE_ADDRESS): Prohibit REG+REG addressing
- 	for TFmode when there are no instructions which accept REG+REG
- 	instructions.
+	for TFmode when there are no instructions which accept REG+REG
+	instructions.
 
 Fri May  7 12:38:54 1999  Jim Wilson  <wilson@cygnus.com>
 
@@ -400,10 +400,10 @@ Wed May  5 23:44:15 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 Wed May  5 16:26:13 1999  Vladimir Makarov  <vmakarov@tofu.to.cygnus.com>
 
 	* function.c (purge_addressof_replacements): Rename into
- 	purge_bitfield_addressof_replacements.
+	purge_bitfield_addressof_replacements.
 	(purge_addressof_replacements): New variable.
 	(purge_addressof_1): Add code for changing addressof in notes for
- 	field values which are extracted by usage MEM with narrower mode.
+	field values which are extracted by usage MEM with narrower mode.
 	(purge_addressof): Initialize purge_bitfield_addressof_replacements.
 
 Wed May  5 07:40:02 1999  Nick Clifton  <nickc@cygnus.com>
@@ -620,12 +620,12 @@ Mon Apr 26 23:28:54 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	(store_one_arg): Change ptr_mode to Pmode in
 	setup for chkr_set_right_libfunc.
 
-        * c-parse.in (absdcl1): Allow attributes in explicit typespecs.
-        (%expect): Update.
-        * c-parse.y: Regenerate.
-        * c-parse.c: Likewise.
-        * objc/objc-parse.c: Likewise.
-        * objc/objc-parse.y: Likewise.
+	* c-parse.in (absdcl1): Allow attributes in explicit typespecs.
+	(%expect): Update.
+	* c-parse.y: Regenerate.
+	* c-parse.c: Likewise.
+	* objc/objc-parse.c: Likewise.
+	* objc/objc-parse.y: Likewise.
 
 Mon Apr 26 21:17:41 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
@@ -745,12 +745,12 @@ Mon Apr 26 00:58:54 1999  Jerry Quinn <jquinn@nortelnetworks.com>
 
 Mon Apr 26 00:28:25 1999  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
- 	* flags.h (inline_max_insns): Declare.
- 	* integrate.c (inline_max_insns): New variable.
- 	(function_cannot_inline_p): Use it.
- 	* toplev.c (main): Add the flag -finline-limit-n.
- 	(display_help): Document -finline-limit-n.
- 	* invoke.texi: Document -finline-limit-n
+	* flags.h (inline_max_insns): Declare.
+	* integrate.c (inline_max_insns): New variable.
+	(function_cannot_inline_p): Use it.
+	* toplev.c (main): Add the flag -finline-limit-n.
+	(display_help): Document -finline-limit-n.
+	* invoke.texi: Document -finline-limit-n
 
 Sun Apr 25 23:03:32 1999  Richard Henderson  <rth@cygnus.com>
 
@@ -901,7 +901,7 @@ Tue Apr 20 16:38:11 1999  Richard Henderson  <rth@cygnus.com>
 
 Tue Apr 20 17:57:14 1999  Catherine Moore  <clm@cygnus.com>
 
-        * config/arm/arm.md (movhi):  Add check for odd offset.
+	* config/arm/arm.md (movhi):  Add check for odd offset.
 
 Tue Apr 20 13:14:58 EDT 1999  John Wehle  (john@feith.com)
 
@@ -986,13 +986,13 @@ Sat Apr 17 21:30:11 1999  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 Sat Apr 17 21:10:10 1999  Jan Hubicka <hubicka@freesoft.cz>
 
-        * i386.c (i386_preferred_stack_boundary_string): New global variable.
-        (i386_preferred_stack_boundary): New global variable.
-        (override_functions): Set it.  Tidy option setting code.
-        * i386.h (TARGET_OPTIONS): New command line option.
-        (i386_preferred_stack_boundary_string): Declare it.
-        (i386_preferred_stack_boundary): Likewise.
-        (PREFERRED_STACK_BOUNDARY): Use i386_preferred_stack_boundary.
+	* i386.c (i386_preferred_stack_boundary_string): New global variable.
+	(i386_preferred_stack_boundary): New global variable.
+	(override_functions): Set it.  Tidy option setting code.
+	* i386.h (TARGET_OPTIONS): New command line option.
+	(i386_preferred_stack_boundary_string): Declare it.
+	(i386_preferred_stack_boundary): Likewise.
+	(PREFERRED_STACK_BOUNDARY): Use i386_preferred_stack_boundary.
 
 Sat Apr 17 19:22:38 1999  Jan Hubicka <hubicka@freesoft.cz>
 
@@ -1000,11 +1000,11 @@ Sat Apr 17 19:22:38 1999  Jan Hubicka <hubicka@freesoft.cz>
 
 Sat Apr 17 19:13:22 1999  Donn Terry  <donn@interix.com>
 
-        * i386.h (PRINT_OPERAND_PUNCT_VALID_P): Allow _.
-        * i386.c (print_operand): New %_ operator.
+	* i386.h (PRINT_OPERAND_PUNCT_VALID_P): Allow _.
+	* i386.c (print_operand): New %_ operator.
 	(load_pic_register): Proper number of leading _ in GOT literal.
-        * i386.md (prologue_get_pc_and_set_got): Likewise.
-        * i386/unix.h (ASM_OUTPUT_MI_THUNK): Likewise.
+	* i386.md (prologue_get_pc_and_set_got): Likewise.
+	* i386/unix.h (ASM_OUTPUT_MI_THUNK): Likewise.
 
 Sat Apr 17 19:13:07 1999  Richard Henderson  <rth@cygnus.com>
 
@@ -1097,12 +1097,12 @@ Thu Apr 15 23:13:35 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 Thu Apr 15 02:45:19 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
-        * aclocal.m4 (GCC_FUNC_MKDIR_TAKES_ONE_ARG): Define.
-        * configure.in: Use.
-        * configure: Rebuilt.
-        * acconfig.h (MKDIR_TAKES_ONE_ARG): Add.
-        * config.in: Rebuilt.
-        * system.h: Use.
+	* aclocal.m4 (GCC_FUNC_MKDIR_TAKES_ONE_ARG): Define.
+	* configure.in: Use.
+	* configure: Rebuilt.
+	* acconfig.h (MKDIR_TAKES_ONE_ARG): Add.
+	* config.in: Rebuilt.
+	* system.h: Use.
 
 Thu Apr 15 01:03:21 1999  Jan Hubicka <hubicka@freesoft.cz>
 			  Jeff Law <law@cygnus.com>

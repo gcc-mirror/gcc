@@ -1403,7 +1403,7 @@ Tue Jun  6 19:25:32 2000  Philippe De Muyter  <phdm@macqel.be>
 
 2000-06-06  Nathan Sidwell  <nathan@codesourcery.com>
 
- 	* eh-common.h (EH_ALLOC_SIZE, EH_ALLOC_ALIGN): New #defines.
+	* eh-common.h (EH_ALLOC_SIZE, EH_ALLOC_ALIGN): New #defines.
 	(eh_context): Add alloc_mask and alloc_buffer emergency fallback
 	space.
 	* libgcc2.c (__eh_alloc): Moved from cp/exception.cc. Fallback on
@@ -3302,33 +3302,33 @@ Wed May 17 18:06:12 2000  John David Anglin <dave@hiauly1.hia.nrc.ca>
 Wed May 17 17:27:44 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* flags.h (warn_unused_function, warn_unused_label,
- 	warn_unused_parameter, warn_unused_variable, warn_unused_value):
- 	Replace ``warn_unused''.
+	warn_unused_parameter, warn_unused_variable, warn_unused_value):
+	Replace ``warn_unused''.
 	(set_Wunused): Add declaration.
 	* toplev.c (set_Wunused): New function.
 	(warn_unused_function, warn_unused_label, warn_unused_parameter,
- 	warn_unused_variable, warn_unused_value): New variables.
+	warn_unused_variable, warn_unused_value): New variables.
 	(W_options): Add -Wunused-function, -Wunused-function,
- 	-Wunused-label, -Wunused-parameter, -Wunused-variable and
- 	-Wunused-value.  Delete -Wunused.  Handled in decode_W_option.
+	-Wunused-label, -Wunused-parameter, -Wunused-variable and
+	-Wunused-value.  Delete -Wunused.  Handled in decode_W_option.
 
 	* toplev.c (decode_W_option): Update -Wunused flags by calling
- 	set_Wunused.
-  	* c-decl.c (c_decode_option): Ditto for -Wall.
+	set_Wunused.
+	* c-decl.c (c_decode_option): Ditto for -Wall.
 
 	* stmt.c (expand_expr_stmt, expand_expr_stmt,
- 	warn_about_unused_variables): Replace warn_unused with more
- 	explicit warn_unused_value et.al.
+	warn_about_unused_variables): Replace warn_unused with more
+	explicit warn_unused_value et.al.
 	* function.c (expand_function_end): Ditto.
 	* c-typeck.c (internal_build_compound_expr,
- 	internal_build_compound_expr): Ditto.
+	internal_build_compound_expr): Ditto.
 	* c-decl.c (poplevel, pop_label_level): Ditto.
 	* toplev.c (check_global_declarations): Replace warn_unused with
 	check for either warn_unused_function or warn_unused_variable.
 
 	* gcc.1, invoke.texi (Warning Options): Document
- 	-Wunused-function, -Wunused-function, -Wunused-label,
- 	-Wunused-parameter, -Wunused-variable and -Wunused-value options.
+	-Wunused-function, -Wunused-function, -Wunused-label,
+	-Wunused-parameter, -Wunused-variable and -Wunused-value options.
 
 Wed May 17 10:28:12 2000  Philippe De Muyter  <phdm@macqel.be>
 
@@ -3941,7 +3941,7 @@ Tue May  9 22:28:03 2000  Denis Chertykov  <denisc@overta.ru>
 
 Tue May  9 20:52:43 2000  Denis Chertykov  <denisc@overta.ru>
 
- 	* config/avr/avr-protos.h (extra_constraint): change a type of
+	* config/avr/avr-protos.h (extra_constraint): change a type of
 	second argument from char to int to avoid warnings.
 	(asm_output_byte): Likewise.
 
@@ -4255,15 +4255,15 @@ Sun May  7 00:54:57 EDT 2000  John Wehle  (john@feith.com)
 
 2000-05-06  Zack Weinberg  <zack@wolery.cumb.org>
 
- 	* cpphash.h: Remove conditional #define of __extension__.
- 	* rtl.h: Add __extension__ to RTL_CHECK1, RTL_CHECK2,
- 	RTL_CHECKC1, RTL_CHECKC2, and RTVEC_ELT macros
- 	(ENABLE_RTL_CHECKING only).
- 	* tree.h: Add __extension__ to TREE_CHECK, TREE_CLASS_CHECK,
- 	CST_OR_CONSTRUCTOR_CHECK, and EXPR_CHECK macros
- 	(ENABLE_TREE_CHECKING only).
- 	* varray.h: Add __extension__ to VARRAY_CHECK macro
- 	(ENABLE_CHECKING only).
+	* cpphash.h: Remove conditional #define of __extension__.
+	* rtl.h: Add __extension__ to RTL_CHECK1, RTL_CHECK2,
+	RTL_CHECKC1, RTL_CHECKC2, and RTVEC_ELT macros
+	(ENABLE_RTL_CHECKING only).
+	* tree.h: Add __extension__ to TREE_CHECK, TREE_CLASS_CHECK,
+	CST_OR_CONSTRUCTOR_CHECK, and EXPR_CHECK macros
+	(ENABLE_TREE_CHECKING only).
+	* varray.h: Add __extension__ to VARRAY_CHECK macro
+	(ENABLE_CHECKING only).
 
 2000-05-06  Richard Earnshaw (reanrsha@arm.com)
 
@@ -5280,7 +5280,7 @@ Fri Apr 28 16:30:33 2000  Marc Espie <espie@cvs.openbsd.org>
 2000-04-27  Ulrich Drepper  <drepper@cygnus.com>
 
 	* i386.h (FUNCTION_BLOCK_PROFILER_EXIT): Generate mem reference
- 	for call instruction with mode QImode.
+	for call instruction with mode QImode.
 
 2000-04-27  Alex Samuel  <samuel@codesourcery.com>
 
@@ -5637,7 +5637,7 @@ Tue Apr 25 16:16:04 2000  Andrew MacLeod  <amacleod@cygnus.com>
 	* config/ia64/ia64.c (ia64_compute_frame_size): Don't include pr_size
 	in fr_pad_size calculation.
 	(save_restore_insns): Move PR save area.  Correct uses of
- 	RTX_FRAME_RELATED_P.
+	RTX_FRAME_RELATED_P.
 	(ia64_expand_prologue): Mark alloc with RTX_FRAME_RELATED_P.
 	(ia64_expand_epilogue): Add eh_epilogue support.
 	(ia64_function_prologue): Emit .prologue directive.

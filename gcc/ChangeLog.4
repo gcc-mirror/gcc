@@ -210,8 +210,8 @@
 2000-12-27  Chandrakala Chavva  <cchavva@redhat.com>
 
 	* calls.c (store_one_arg):  If parm is passed both in stack and in
-        register and offset is greater than reg_parm_stack_space, split
-        the offset and call emit_push_insn().
+	register and offset is greater than reg_parm_stack_space, split
+	the offset and call emit_push_insn().
 
 2000-12-27  Nick Clifton  <nickc@redhat.com>
 
@@ -354,8 +354,8 @@
 2000-12-22  Graham Stott  <grahams@redhat.com>
 
 	* reload.c (update_auto_inc_notes): New, broken out from ...
-        (find_reloads_address_1): ... use here, also correct possible
-        use of uninitialised reloadnum.
+	(find_reloads_address_1): ... use here, also correct possible
+	use of uninitialised reloadnum.
 
 2000-12-21  David O'Brien  <obrien@FreeBSD.org>
 
@@ -636,24 +636,24 @@ Tue Dec 19 00:37:08 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-12-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppmain.c: Update print.lineno with -P.
+	* cppmain.c: Update print.lineno with -P.
 
 2000-12-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * c-lex.c: s/change_file/file_change.
-        * cpplib.h: Similarly.
-        * cppmain.c: Similarly.
-        * fix-header.c: Similarly.
-        * cppfiles.c (stack_include_file): Pass the buffer location and
-        size to cpp_push_buffer.  Generate the file_change callback,
-        so that sysp is already set.
-        * cpphash.h: Add _cpp_do_file_change.
-        * cpplib.c (do_line): Set buffer->sysp directly. Generate the
-        file_change callback after setting sysp.
-        (_cpp_do_file_change): Handle FC_ENTER and the FC_RENAME exception
-        here.
-        (cpp_push_buffer): Don't generate a callback.  Clear sysp.
-        (cpp_pop_buffer): Clean up logic.
+	* c-lex.c: s/change_file/file_change.
+	* cpplib.h: Similarly.
+	* cppmain.c: Similarly.
+	* fix-header.c: Similarly.
+	* cppfiles.c (stack_include_file): Pass the buffer location and
+	size to cpp_push_buffer.  Generate the file_change callback,
+	so that sysp is already set.
+	* cpphash.h: Add _cpp_do_file_change.
+	* cpplib.c (do_line): Set buffer->sysp directly. Generate the
+	file_change callback after setting sysp.
+	(_cpp_do_file_change): Handle FC_ENTER and the FC_RENAME exception
+	here.
+	(cpp_push_buffer): Don't generate a callback.  Clear sysp.
+	(cpp_pop_buffer): Clean up logic.
 
 2000-12-18  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -667,11 +667,11 @@ Tue Dec 19 00:37:08 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-12-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * c-lex.c (lex_lineno): Remove.
-        (init_c_lex, c_lex): Remove lex_lineno.
-        (cb_change_file): Update lineno correctly, both before calling
-        push_srcloc and before leaving the function.
-        (cb_def_pragma): Set lineno before outputting diagnostics.
+	* c-lex.c (lex_lineno): Remove.
+	(init_c_lex, c_lex): Remove lex_lineno.
+	(cb_change_file): Update lineno correctly, both before calling
+	push_srcloc and before leaving the function.
+	(cb_def_pragma): Set lineno before outputting diagnostics.
 
 Sun Dec 17 18:45:41 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -681,15 +681,15 @@ Sun Dec 17 18:45:41 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpplib.h (struct cpp_reader): Remove references to string_pool
-        and temp_string_pool.
-        * cppinit.c (cpp_create_reader, cpp_cleanup): Similarly; using
-        ident_pool in place.
-        * cpplex.c (parse_number, unescaped_terminator_p, parse_string,
-        save_comment, cpp_token_as_text): Similarly.
-        * cpplib.c (do_define, glue_header_name, parse_assertion): Similarly.
-        * cppmacro.c (make_number_token, builtin_macro, lock_pools,
-        unlock_pools, stringify_arg, paste_tokens): Similarly.
+	* cpplib.h (struct cpp_reader): Remove references to string_pool
+	and temp_string_pool.
+	* cppinit.c (cpp_create_reader, cpp_cleanup): Similarly; using
+	ident_pool in place.
+	* cpplex.c (parse_number, unescaped_terminator_p, parse_string,
+	save_comment, cpp_token_as_text): Similarly.
+	* cpplib.c (do_define, glue_header_name, parse_assertion): Similarly.
+	* cppmacro.c (make_number_token, builtin_macro, lock_pools,
+	unlock_pools, stringify_arg, paste_tokens): Similarly.
 
 Sun Dec 17 12:41:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -704,10 +704,10 @@ Sun Dec 17 12:41:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppmain.c (check_multiline_token): New function.
-        (scan_buffer): Use it.
-        (cb_change_file): Restructure to avoid warning.
-        * cpperror.c (print_location): Initialize col.
+	* cppmain.c (check_multiline_token): New function.
+	(scan_buffer): Use it.
+	(cb_change_file): Restructure to avoid warning.
+	* cpperror.c (print_location): Initialize col.
 
 2000-12-14  Philipp Thomas  <pthomas@suse.de>
 
@@ -739,21 +739,21 @@ Sun Dec 17 12:41:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * c-lex.c: Move main_input_filename handling to FC_ENTER. Clean up.
-        * cpperror.c (print_containing_files): Get right line number.
-        (print_location): Output column of 1 if 0.
-        * cppfiles.c (stack_include_file): cpp_push_buffer handles
-        the callback.
-        * cpphash.h (_cpp_do_file_change): No longer external.
-        * cpplib.c (do_file_change): Now local to cpplib.c.
-        (do_line): Fake a buffer stack for preprocessed files.
-        (cpp_push_buffer): Create a file_change callback.  Handle faked
-        buffers.
-        (cpp_pop_buffer): Similarly.
-        * cpplib.h: BUF_FAKE: New buffer type.
-        * cppmain.c: Update to handle correct file renaming where a
-        #line is the first line of the main file, and produce only
-        the renamed file, not the original file, as output.
+	* c-lex.c: Move main_input_filename handling to FC_ENTER. Clean up.
+	* cpperror.c (print_containing_files): Get right line number.
+	(print_location): Output column of 1 if 0.
+	* cppfiles.c (stack_include_file): cpp_push_buffer handles
+	the callback.
+	* cpphash.h (_cpp_do_file_change): No longer external.
+	* cpplib.c (do_file_change): Now local to cpplib.c.
+	(do_line): Fake a buffer stack for preprocessed files.
+	(cpp_push_buffer): Create a file_change callback.  Handle faked
+	buffers.
+	(cpp_pop_buffer): Similarly.
+	* cpplib.h: BUF_FAKE: New buffer type.
+	* cppmain.c: Update to handle correct file renaming where a
+	#line is the first line of the main file, and produce only
+	the renamed file, not the original file, as output.
 
 2000-12-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
@@ -774,7 +774,7 @@ Sun Dec 17 12:41:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
             Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* config/c4x/c4x.h (MD_INIT_BUILTINS): Add void_list_node argument
-	  to c4x_init_builtins.
+	to c4x_init_builtins.
 
 	* config/c4x/c4x-protos.h (c4x_init_builtins): Add tree argument.
 
@@ -837,12 +837,12 @@ Sat Dec 16 10:41:11 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-12-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * tradcpp.c: T_WARNING: New.
-        (do_warning): New function.
-        (finclude): Skip past the newline and increase the line number
-        before calling output_line_command.
-        (do_line): Skip the new line after output_line_command.  Don't
-        pre-decrement the line number.
+	* tradcpp.c: T_WARNING: New.
+	(do_warning): New function.
+	(finclude): Skip past the newline and increase the line number
+	before calling output_line_command.
+	(do_line): Skip the new line after output_line_command.  Don't
+	pre-decrement the line number.
 
 2000-12-15  Diego Novillo  <dnovillo@redhat.com>
 
@@ -926,16 +926,16 @@ Fri Dec 15 03:37:51 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-12-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-       * gcc.c (cpp_options): Update to use '&'.
-       (struct switchstr): Change type of validated to save space.
-       New member 'ordering'.
-       (handle_braces, validate_switches): Update to handle '&'.
+	* gcc.c (cpp_options): Update to use '&'.
+	(struct switchstr): Change type of validated to save space.
+	New member 'ordering'.
+	(handle_braces, validate_switches): Update to handle '&'.
 
 2000-12-13  Laurynas Biveinis  <lauras@softhome.net>
 
-        * fixinc/inclhack.def: skip stdio_va_list fix if __DJ_va_list
-        found in a header.
-        * fixinc/fixincl.x: regenerated.
+	* fixinc/inclhack.def: skip stdio_va_list fix if __DJ_va_list
+	found in a header.
+	* fixinc/fixincl.x: regenerated.
 
 2000-12-13  DJ Delorie  <dj@redhat.com>
 
@@ -970,25 +970,25 @@ Fri Dec 15 03:37:51 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-12-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * tradcpp.c (special_symbol): Improve test for definedness,
-        though it is still not perfect.
-        (do_define): Don't define illegal macro names.
+	* tradcpp.c (special_symbol): Improve test for definedness,
+	though it is still not perfect.
+	(do_define): Don't define illegal macro names.
 
 2000-12-07  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/mips/elf.h (ASM_OUTPUT_SECTION_NAME): emit @nobits
-        if changing into .bss section.
-        * config/mips/elf64.h: same.
-        * config/mips/iris6.h: same.
-        * config/mips/netbsd.h: same.
-        * config/mips/openbsd.h: same.
+	* config/mips/elf.h (ASM_OUTPUT_SECTION_NAME): emit @nobits
+	if changing into .bss section.
+	* config/mips/elf64.h: same.
+	* config/mips/iris6.h: same.
+	* config/mips/netbsd.h: same.
+	* config/mips/openbsd.h: same.
 
 2000-12-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppfiles.c (read_name_map): Return null if open () fails.
-        (remap_filename): Simplify logic.  Add ICE if it doesn't work
-        as expected. Perform secondary lookup attempt on base filename
-        only.
+	* cppfiles.c (read_name_map): Return null if open () fails.
+	(remap_filename): Simplify logic.  Add ICE if it doesn't work
+	as expected. Perform secondary lookup attempt on base filename
+	only.
 
 Wed Dec 13 19:48:04 MET 2000  Jan hubicka  <jh@suse.cz>
 
@@ -1010,8 +1010,8 @@ Wed Dec 13 17:25:32 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-12-12  Brad Lucier <lucier@math.purdue.edu>
 
-        * tradcpp.c (do_error): Cast difference of pointers to int
-        for error message.
+	* tradcpp.c (do_error): Cast difference of pointers to int
+	for error message.
 
 2000-12-12  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
@@ -1035,9 +1035,9 @@ Wed Dec 13 17:25:32 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-12-12  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * tradcpp.c (enum node_type): Add T_ERROR.
-        (do_error): New function.
-        (directive_table): Add #error handler.
+	* tradcpp.c (enum node_type): Add T_ERROR.
+	(do_error): New function.
+	(directive_table): Add #error handler.
 
 2000-12-12  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
@@ -4493,7 +4493,7 @@ Wed Nov  8 21:53:41 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-11-07  Neil Booth  <neilb@earthling.net>
 
-       * cp/lang-specs.h: Fix -save-temps specs under USE_CPPLIB.
+	* cp/lang-specs.h: Fix -save-temps specs under USE_CPPLIB.
 
 2000-11-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
