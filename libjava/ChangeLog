@@ -1,3 +1,8 @@
+2000-04-21  Tom Tromey  <tromey@cygnus.com>
+
+	* gnu/gcj/protocol/file/Handler.java (openConnection): Use
+	`setURL', not `url.set'.
+
 2000-04-20  Tom Tromey  <tromey@cygnus.com>
 
 	Fix for PR java.io/204:
