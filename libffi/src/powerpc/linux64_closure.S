@@ -5,15 +5,15 @@
 	.file	"linux64_closure.S"
 
 #ifdef __powerpc64__
-        .hidden ffi_closure_LINUX64, .ffi_closure_LINUX64
-        .globl  ffi_closure_LINUX64, .ffi_closure_LINUX64
-        .section        ".opd","aw"
-        .align  3
+	.hidden ffi_closure_LINUX64, .ffi_closure_LINUX64
+	.globl  ffi_closure_LINUX64, .ffi_closure_LINUX64
+	.section        ".opd","aw"
+	.align  3
 ffi_closure_LINUX64:
-        .quad   .ffi_closure_LINUX64,.TOC.@tocbase,0
-        .size   ffi_closure_LINUX64,24
-        .type   .ffi_closure_LINUX64,@function
-        .text
+	.quad   .ffi_closure_LINUX64,.TOC.@tocbase,0
+	.size   ffi_closure_LINUX64,24
+	.type   .ffi_closure_LINUX64,@function
+	.text
 .ffi_closure_LINUX64:
 .LFB1:
 	# save general regs into parm save area
@@ -71,7 +71,7 @@ ffi_closure_LINUX64:
 	# so use it to look up in a table
 	# so we know how to deal with each type
 
-	# look up the proper starting point in table 
+	# look up the proper starting point in table
 	# by using return type as offset
 	mflr %r4		# move address of .Lret to r4
 	sldi %r3, %r3, 4	# now multiply return type by 16

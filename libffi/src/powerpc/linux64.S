@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------
    sysv.h - Copyright (c) 2003 Jakub Jelinek <jakub@redhat.com>
-   
+
    PowerPC64 Assembly glue.
 
    Permission is hereby granted, free of charge, to any person obtaining
@@ -23,7 +23,7 @@
    OTHER DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
 
-#define LIBFFI_ASM	
+#define LIBFFI_ASM
 #include <fficonfig.h>
 #include <ffi.h>
 

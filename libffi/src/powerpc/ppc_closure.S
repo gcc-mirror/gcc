@@ -3,7 +3,7 @@
 #include <ffi.h>
 #include <powerpc/asm.h>
 
-        .file   "ppc_closure.S"
+	.file   "ppc_closure.S"
 
 #ifndef __powerpc64__
 
@@ -17,14 +17,14 @@ ENTRY(ffi_closure_SYSV)
 
 # we want to build up an areas for the parameters passed
 # in registers (both floating point and integer)
-	
+
 	# so first save gpr 3 to gpr 10 (aligned to 4)
 	stw   %r3, 16(%r1)
 	stw   %r4, 20(%r1)
-	stw   %r5, 24(%r1) 
+	stw   %r5, 24(%r1)
 	stw   %r6, 28(%r1)
 	stw   %r7, 32(%r1)
-	stw   %r8, 36(%r1) 
+	stw   %r8, 36(%r1)
 	stw   %r9, 40(%r1)
 	stw   %r10,44(%r1)
 
@@ -41,29 +41,29 @@ ENTRY(ffi_closure_SYSV)
 	# set up registers for the routine that actually does the work
 	# get the context pointer from the trampoline
 	mr %r3,%r11
-	
-        # now load up the pointer to the result storage
+
+	# now load up the pointer to the result storage
 	addi %r4,%r1,112
-	
+
 	# now load up the pointer to the saved gpr registers
-        addi %r5,%r1,16
+	addi %r5,%r1,16
 
-        # now load up the pointer to the saved fpr registers */
-        addi %r6,%r1,48
+	# now load up the pointer to the saved fpr registers */
+	addi %r6,%r1,48
 
-	# now load up the pointer to the outgoing parameter 
+	# now load up the pointer to the outgoing parameter
 	# stack in the previous frame
 	# i.e. the previous frame pointer + 8
 	addi %r7,%r1,152
-	
-        # make the call
+
+	# make the call
 	bl JUMPTARGET(ffi_closure_helper_SYSV)
 
 	# now r3 contains the return type
 	# so use it to look up in a table
 	# so we know how to deal with each type
 
-        # look up the proper starting point in table 
+	# look up the proper starting point in table
 	# by using return type as offset
 	addi %r5,%r1,112   # get pointer to results area
 	bl .Lget_ret_type0_addr # get pointer to .Lret_type0 into LR
@@ -108,21 +108,21 @@ ENTRY(ffi_closure_SYSV)
 
 # case FFI_TYPE_DOUBLE
 .Lret_type3:
-        lfd %f1,0(%r5)
+	lfd %f1,0(%r5)
 	b .Lfinish
 	nop
 	nop
 
 # case FFI_TYPE_LONGDOUBLE
 .Lret_type4:
-        lfd %f1,0(%r5)
+	lfd %f1,0(%r5)
 	b .Lfinish
 	nop
 	nop
 
 # case FFI_TYPE_UINT8
 .Lret_type5:
-        lbz %r3,3(%r5)
+	lbz %r3,3(%r5)
 	b .Lfinish
 	nop
 	nop
@@ -190,9 +190,9 @@ ENTRY(ffi_closure_SYSV)
 	nop
 	nop
 
-# case done	
+# case done
 .Lfinish:
-	
+
 	lwz %r0,148(%r1)
 	mtlr %r0
 	addi %r1,%r1,144
