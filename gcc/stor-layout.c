@@ -23,10 +23,10 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 
 #include "tree.h"
+#include "rtl.h"
 #include "flags.h"
 #include "except.h"
 #include "function.h"
-#include "rtl.h"
 #include "expr.h"
 #include "toplev.h"
 

@@ -1,3 +1,17 @@
+Thu May 28 09:36:39 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* except.h (rtx): Define rtx type correctly if needed.
+	* function.h (rtx): Ditto.
+	(tree): Define tree type correctly if needed.
+
+	* c-pragma.c (toplevel): Include rtl.h.
+
+	* stor-layout.c (toplevel): Move include of rtl.h before
+	except.h.
+
+	* Makefile.in (c-pragma.o): Add except.h, rtl.h dependencies.
+	(tree.o): Add except.h dependency.
+	
 Wed May 27 22:02:40 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reload1.c: Revert accidental checkin.
