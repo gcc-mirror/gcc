@@ -1,3 +1,7 @@
+2002-08-31  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (pa_globalize_label): Add ATTRIBUTE_UNUSED to prototype.
+
 2002-08-30  Richard Henderson  <rth@redhat.com>
 
 	PR opt/7515

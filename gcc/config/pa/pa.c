@@ -116,7 +116,8 @@ static void pa_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT))
      ATTRIBUTE_UNUSED;
 static void pa_encode_section_info PARAMS ((tree, int));
 static const char *pa_strip_name_encoding PARAMS ((const char *));
-static void pa_globalize_label PARAMS ((FILE *, const char *));
+static void pa_globalize_label PARAMS ((FILE *, const char *))
+     ATTRIBUTE_UNUSED;
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
