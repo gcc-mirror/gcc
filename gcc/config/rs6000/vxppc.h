@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks PowerPC version.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,7 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This file just exists to give specs for the PowerPC running on VxWorks.  */
+/* This file primarily exists to give specs for the PowerPC running on
+   VxWorks.  */
 
 #include "rs6000/sysv4.h"
 
@@ -71,3 +72,8 @@ Boston, MA 02111-1307, USA.  */
 /* We use stabs-in-elf for debugging */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+/* VxWorks normally doesn't have an unaligned handler, so make -mstrict-align
+   the default.  */
+#undef SUBTARGET_DEFAULT
+#define SUBTARGET_DEFAULT MASK_STRICT_ALIGN

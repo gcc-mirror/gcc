@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992, 93-8, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -391,9 +391,10 @@ extern int target_flags;
   {"fused-madd",	- MASK_NO_FUSED_MADD},				\
   {"no-fused-madd",	MASK_NO_FUSED_MADD},				\
   SUBTARGET_SWITCHES							\
-  {"",			TARGET_DEFAULT}}
+  {"",			TARGET_DEFAULT | SUBTARGET_DEFAULT}}
 
 #define TARGET_DEFAULT (MASK_POWER | MASK_MULTIPLE | MASK_STRING)
+#define SUBTARGET_DEFAULT 0
 
 /* Processor type.  Order must match cpu attribute in MD file.  */
 enum processor_type
