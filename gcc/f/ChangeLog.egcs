@@ -1,3 +1,7 @@
+Thu Sep 18 16:08:40 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Make-lang.in: Fix merge problems.
+
 Sun Sep 14 21:01:23 1997  Jeffrey A Law  (law@cygnus.com)
 
         * Make-lang.in: Various changes to build info files

@@ -524,11 +524,9 @@ f77.mostlyclean:
 	-rm -f f/fini f/f771 f/stamp-str f/str-*.h f/str-*.j f/intdoc f/ansify f/intdoc.h0
 	-cd $(srcdir)/f/runtime; $(MAKE) -f Makefile.in mostlyclean
 f77.clean:
-	-cd $(srcdir)/f/runtime; $(MAKE) -f Makefile.in clean;; \
-	esac
+	-cd $(srcdir)/f/runtime; $(MAKE) -f Makefile.in clean
 f77.distclean:
-	-cd $(srcdir)/f/runtime; $(MAKE) -f Makefile.in distclean;; \
-	esac
+	-cd $(srcdir)/f/runtime; $(MAKE) -f Makefile.in distclean
 	-rm -f f/Makefile
 # like gcc's extraclean, which does clean f/ for us, but not f/gbe,
 # f/runtime, f/runtime/libF77, f/runtime/libI77, and f/runtime/libU77,
@@ -547,7 +545,6 @@ f77.extraclean: f77.distclean
 # realclean is the pre-2.7.0 name for maintainer-clean
 f77.maintainer-clean f77.realclean: f77.distclean
 	-cd $(srcdir)/f/runtime; $(MAKE) -f Makefile.in maintainer-clean;; \
-	esac
 	-rm -f f/g77.info* f/g77.*aux f/TAGS f/BUGS f/INSTALL f/NEWS f/intdoc.texi
 #
 # Stage hooks:
