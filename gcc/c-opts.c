@@ -212,6 +212,8 @@ static void sanitize_cpp_opts PARAMS ((void));
   OPT("fenforce-eh-specs",	CL_CXX,   OPT_fenforce_eh_specs)	     \
   OPT("fenum-int-equiv",	CL_CXX,   OPT_fenum_int_equiv)		     \
   OPT("fexternal-templates",	CL_CXX,   OPT_fexternal_templates)	     \
+  OPT("ffixed-form",		CL_C,	  OPT_ffixed_form)		     \
+  OPT("ffixed-line-length-",	CL_C | CL_JOINED, OPT_ffixed_line_length)    \
   OPT("ffor-scope",		CL_CXX,   OPT_ffor_scope)		     \
   OPT("ffreestanding",		CL_C,     OPT_ffreestanding)		     \
   OPT("fgnu-keywords",		CL_CXX,   OPT_fgnu_keywords)		     \
@@ -1141,6 +1143,13 @@ c_common_decode_option (argc, argv)
     case OPT_fexternal_templates:
       flag_external_templates = on;
       goto cp_deprecated;
+
+    case OPT_ffixed_form:
+    case OPT_ffixed_line_length:
+      /* Fortran front end options ignored when preprocessing only.  */
+      if (flag_preprocess_only)
+        result = -1;
+      break;
 
     case OPT_ffor_scope:
       flag_new_for_scope = on;
