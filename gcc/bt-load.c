@@ -36,6 +36,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "insn-attr.h"
 #include "function.h"
+#include "tm_p.h"
 
 /* Target register optimizations - these are performed after reload.  */
 
