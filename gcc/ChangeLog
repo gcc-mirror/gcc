@@ -1,4 +1,11 @@
 2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+        
+        Endorse:
+	2004-01-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+	PR optimization/13472
+	* reload.c (reload): Don't record unchanging memory locations.
+
+2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport
 	2004-02-27  Mark Mitchell  <mark@codesourcery.com>
