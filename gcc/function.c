@@ -124,9 +124,11 @@ void (*restore_machine_status) PROTO((struct function *));
 void (*mark_machine_status) PROTO((struct function *));
 
 /* Likewise, but for language-specific data.  */
+void (*init_lang_status) PROTO((struct function *));
 void (*save_lang_status) PROTO((struct function *));
 void (*restore_lang_status) PROTO((struct function *));
 void (*mark_lang_status) PROTO((struct function *));
+void (*free_lang_status) PROTO((struct function *));
 
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
 tree inline_function_decl;
@@ -323,7 +325,6 @@ push_function_context_to (context)
 
   p->next = outer_function_chain;
   outer_function_chain = p;
-  p->decl = current_function_decl;
   p->fixup_var_refs_queue = 0;
 
   save_tree_status (p);
@@ -390,19 +391,19 @@ pop_function_context ()
 
 /* Clear out all parts of the state in F that can safely be discarded
    after the function has been compiled, to let garbage collection
-   reclaim the memory.  D is the declaration for the function just
-   compiled.  Its output may have been deferred.  */
+   reclaim the memory.  */
 
 void
-free_after_compilation (f, d)
+free_after_compilation (f)
      struct function *f;
-     tree d;
 {
-  free_emit_status (f, d);
-  free_varasm_status (f, d);
-  free_stmt_status (f, d);
+  free_emit_status (f);
+  free_varasm_status (f);
+  free_stmt_status (f);
+  if (free_lang_status)
+    (*free_lang_status) (f);
 
-  if (!DECL_DEFER_OUTPUT (d))
+  if (!DECL_DEFER_OUTPUT (f->decl))
     {
       free (f->x_parm_reg_stack_loc);
       f->can_garbage_collect = 1;
@@ -5621,6 +5622,8 @@ prepare_function_start ()
 
   current_function_outgoing_args_size = 0;
 
+  if (init_lang_status)
+    (*init_lang_status) (current_function);
   if (init_machine_status)
     (*init_machine_status) (current_function);
 }
@@ -5651,6 +5654,7 @@ init_function_start (subr, filename, line)
   all_functions = current_function;
   
   current_function_name = (*decl_printable_name) (subr, 2);
+  current_function->decl = subr;
 
   /* Nonzero if this is a nested function that uses a static chain.  */
 
