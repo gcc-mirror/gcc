@@ -1,3 +1,13 @@
+2002-01-18  Tom Tromey  <tromey@redhat.com>
+
+	* java/net/natPlainSocketImpl.cc: Include
+	IllegalArgumentException.h.
+	(_Jv_recv): New template function.
+	(BooleanClass): Removed.
+	(read): Use _Jv_recv.
+	(setOption): Use Boolean::class$.  Throw exception if object is
+	not Boolean or Integer.
+
 2002-01-17  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/MenuComponent.java: Merged with Classpath.
