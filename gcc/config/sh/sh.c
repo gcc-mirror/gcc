@@ -684,6 +684,23 @@ static short shift_amounts[32][5] = {
   {16, 8}, {16, 1, 8}, {16, 8, 2}, {16, 8, 1, 2},
   {16, 8, 2, 2}, {16, -1, -2, 16}, {16, -2, 16}, {16, -1, 16}};
 
+/* Likewise, but for shift amounts < 16, up to three highmost bits
+   might be clobbered.  This is typically used when combined with some
+   kind of sign or zero extension.  */
+   
+static char ext_shift_insns[]    =
+  { 0,1,1,2,2,3,2,2,1,2,2,3,3,3,2,2,1,2,2,3,3,4,3,3,2,3,3,4,4,4,3,3};
+
+static short ext_shift_amounts[32][4] = {
+  {0}, {1}, {2}, {2, 1},
+  {2, 2}, {2, 1, 2}, {8, -2}, {8, -1},
+  {8}, {8, 1}, {8, 2}, {8, 1, 2},
+  {8, 2, 2}, {16, -2, -1}, {16, -2}, {16, -1},
+  {16}, {16, 1}, {16, 2}, {16, 1, 2},
+  {16, 2, 2}, {16, 2, 1, 2}, {16, -2, 8}, {16, -1, 8},
+  {16, 8}, {16, 1, 8}, {16, 8, 2}, {16, 8, 1, 2},
+  {16, 8, 2, 2}, {16, -1, -2, 16}, {16, -2, 16}, {16, -1, 16}};
+
 /* This is used in length attributes in sh.md to help compute the length
    of arbitrary constant shift instructions.  */
 
@@ -825,6 +842,41 @@ gen_ashift (type, n, reg)
     }
 }
 
+/* Same for HImode */
+
+void
+gen_ashift_hi (type, n, reg)
+     int type;
+     int n;
+     rtx reg;
+{
+  /* Negative values here come from the shift_amounts array.  */
+  if (n < 0)
+    {
+      if (type == ASHIFT)
+	type = LSHIFTRT;
+      else
+	type = ASHIFT;
+      n = -n;
+    }
+
+  switch (type)
+    {
+    case ASHIFTRT:
+      emit_insn (gen_ashrhi3_k (reg, reg, GEN_INT (n)));
+      break;
+    case LSHIFTRT:
+      if (n == 1)
+	emit_insn (gen_lshrhi3_m (reg, reg, GEN_INT (n)));
+      else
+	emit_insn (gen_lshrhi3_k (reg, reg, GEN_INT (n)));
+      break;
+    case ASHIFT:
+      emit_insn (gen_ashlhi3_k (reg, reg, GEN_INT (n)));
+      break;
+    }
+}
+
 /* Output RTL to split a constant shift into its component SH constant
    shift instructions.  */
    
@@ -871,6 +923,41 @@ gen_shifty_op (code, operands)
   max = shift_insns[value];
   for (i = 0; i < max; i++)
     gen_ashift (code, shift_amounts[value][i], operands[0]);
+}
+   
+/* Same as above, but optimized for values where the topmost bits don't
+   matter.  */
+
+int
+gen_shifty_hi_op (code, operands)
+     int code;
+     rtx *operands;
+{
+  int value = INTVAL (operands[2]);
+  int max, i;
+  void (*gen_fun)();
+
+  /* This operation is used by and_shl for SImode values with a few
+     high bits known to be cleared.  */
+  value &= 31;
+  if (value == 0)
+    {
+      emit_insn (gen_nop ());
+      return;
+    }
+
+  gen_fun = GET_MODE (operands[0]) == HImode ? gen_ashift_hi : gen_ashift;
+  if (code == ASHIFT)
+    {
+      max = ext_shift_insns[value];
+      for (i = 0; i < max; i++)
+	gen_fun (code, ext_shift_amounts[value][i], operands[0]);
+    }
+  else
+    /* When shifting right, emit the shifts in reverse order, so that
+       solitary negative values come first.  */
+    for (i = ext_shift_insns[value] - 1; i >= 0; i--)
+      gen_fun (code, ext_shift_amounts[value][i], operands[0]);
 }
 
 /* Output RTL for an arithmetic right shift.  */
@@ -944,6 +1031,504 @@ expand_ashiftrt (operands)
   emit_insn (gen_ashrsi3_n (GEN_INT (value), wrk));
   emit_move_insn (operands[0], gen_rtx (REG, SImode, 4));
   return 1;
+}
+
+/* Try to find a good way to implement the combiner pattern
+  [(set (match_operand:SI 0 "register_operand" "r")
+        (and:SI (ashift:SI (match_operand:SI 1 "register_operand" "r")
+                           (match_operand:SI 2 "const_int_operand" "n"))
+                (match_operand:SI 3 "const_int_operand" "n"))) .
+  LEFT_RTX is operand 2 in the above pattern, and MASK_RTX is operand 3.
+  return 0 for simple right / left or left/right shift combination.
+  return 1 for a combination of shifts with zero_extend.
+  return 2 for a combination of shifts with an AND that needs r0.
+  return 3 for a combination of shifts with an AND that needs an extra
+    scratch register, when the three highmost bits of the AND mask are clear.
+  return 4 for a combination of shifts with an AND that needs an extra
+    scratch register, when any of the three highmost bits of the AND mask
+    is set.
+  If ATTRP is set, store an initial right shift width in ATTRP[0],
+  and the instruction length in ATTRP[1] .  These values are not valid
+  when returning 0.
+  When ATTRP is set and returning 1, ATTRP[2] gets set to the index into
+  shift_amounts for the last shift value that is to be used before the
+  sign extend.  */
+int
+shl_and_kind (left_rtx, mask_rtx, attrp)
+     rtx left_rtx, mask_rtx;
+     int *attrp;
+{
+  unsigned HOST_WIDE_INT mask, lsb, mask2, lsb2;
+  int left = INTVAL (left_rtx), right;
+  int best = 0;
+  int cost, best_cost = 10000;
+  int best_right = 0, best_len = 0;
+  int i;
+  int can_ext;
+
+  if (left < 0 || left > 31)
+    return 0;
+  if (GET_CODE (mask_rtx) == CONST_INT)
+    mask = (unsigned HOST_WIDE_INT) INTVAL (mask_rtx) >> left;
+  else
+    mask = (unsigned HOST_WIDE_INT) GET_MODE_MASK (SImode) >> left;
+  /* Can this be expressed as a right shift / left shift pair ? */
+  lsb = ((mask ^ (mask - 1)) >> 1) + 1;
+  right = exact_log2 (lsb);
+  mask2 = ~(mask + lsb - 1);
+  lsb2 = ((mask2 ^ (mask2 - 1)) >> 1) + 1;
+  /* mask has no zeroes but trailing zeroes <==> ! mask2 */
+  if (! mask2)
+    best_cost = shift_insns[right] + shift_insns[right + left];
+  /* mask has no trailing zeroes <==> ! right */
+  else if (! right && mask2 == ~(lsb2 - 1))
+    {
+      int late_right = exact_log2 (lsb2);
+      best_cost = shift_insns[left + late_right] + shift_insns[late_right];
+    }
+  /* Try to use zero extend */
+  if (mask2 == ~(lsb2 - 1))
+    {
+      int width, first;
+
+      for (width = 8; width <= 16; width += 8)
+	{
+	  /* Can we zero-extend right away? */
+	  if (lsb2 == (HOST_WIDE_INT)1 << width)
+	    {
+	      cost
+		= 1 + ext_shift_insns[right] + ext_shift_insns[left + right];
+	      if (cost < best_cost)
+		{
+		  best = 1;
+		  best_cost = cost;
+		  best_right = right;
+		  best_len = cost;
+		  if (attrp)
+		    attrp[2] = -1;
+		}
+	      continue;
+	    }
+	  /* ??? Could try to put zero extend into initial right shift,
+	     or even shift a bit left before the right shift. */
+	  /* Determine value of first part of left shift, to get to the
+	     zero extend cut-off point.  */
+	  first = width - exact_log2 (lsb2) + right;
+	  if (first >= 0 && right + left - first >= 0)
+	    {
+	      cost = ext_shift_insns[right] + ext_shift_insns[first] + 1
+		+ ext_shift_insns[right + left - first];
+	      if (cost < best_cost)
+		{
+		  best = 1;
+		  best_cost = cost;
+		  best_right = right;
+		  best_len = cost;
+		  if (attrp)
+		    attrp[2] = first;
+		  }
+	    }
+	}
+    }
+  /* Try to use r0 AND pattern */
+  for (i = 0; i <= 2; i++)
+    {
+      if (i > right)
+	break;
+      if (! CONST_OK_FOR_L (mask >> i))
+	continue;
+      cost = (i != 0) + 2 + ext_shift_insns[left + i];
+      if (cost < best_cost)
+	{
+	  best = 2;
+	  best_cost = cost;
+	  best_right = i;
+	  best_len = cost - 1;
+	}
+    }
+  /* Try to use a scratch register to hold the AND operand.  */
+  can_ext = ((mask << left) & 0xe0000000) == 0;
+  for (i = 0; i <= 2; i++)
+    {
+      if (i > right)
+	break;
+      cost = (i != 0) + (CONST_OK_FOR_I (mask >> i) ? 2 : 3)
+	+ (can_ext ? ext_shift_insns : shift_insns)[left];
+      if (cost < best_cost)
+	{
+	  best = 4 - can_ext;
+	  best_cost = cost;
+	  best_right = i;
+	  best_len = cost - 1 - ! CONST_OK_FOR_I (mask >> i);
+	}
+    }
+
+  if (attrp)
+    {
+      attrp[0] = best_right;
+      attrp[1] = best_len;
+    }
+  return best;
+}
+
+/* This is used in length attributes of the unnamed instructions
+   corresponding to shl_and_kind return values of 1 and 2.  */
+int
+shl_and_length (insn)
+     rtx insn;
+{
+  rtx set_src, left_rtx, mask_rtx;
+  int attributes[3];
+
+  set_src = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
+  left_rtx = XEXP (XEXP (set_src, 0), 1);
+  mask_rtx = XEXP (set_src, 1);
+  shl_and_kind (left_rtx, mask_rtx, attributes);
+  return attributes[1];
+}
+
+/* This is used in length attribute of the and_shl_scratch instruction.  */
+
+int
+shl_and_scr_length (insn)
+     rtx insn;
+{
+  rtx set_src = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
+  int len = shift_insns[INTVAL (XEXP (set_src, 1))];
+  rtx op = XEXP (set_src, 0);
+  len += shift_insns[INTVAL (XEXP (op, 1))] + 1;
+  op = XEXP (XEXP (op, 0), 0);
+  return len + shift_insns[INTVAL (XEXP (op, 1))];
+}
+
+/* Generating rtl? */
+extern int rtx_equal_function_value_matters;
+
+/* Generate rtl for instructions for which shl_and_kind advised a particular
+   method of generating them, i.e. returned zero.  */
+
+int
+gen_shl_and (dest, left_rtx, mask_rtx, source)
+     rtx dest, left_rtx, mask_rtx, source;
+{
+  int attributes[3];
+  unsigned HOST_WIDE_INT mask;
+  int kind = shl_and_kind (left_rtx, mask_rtx, attributes);
+  int right, total_shift;
+  int (*shift_gen_fun) PROTO((int, rtx*)) = gen_shifty_hi_op;
+
+  right = attributes[0];
+  total_shift = INTVAL (left_rtx) + right;
+  mask = (unsigned HOST_WIDE_INT) INTVAL (mask_rtx) >> total_shift;
+  switch (kind)
+    {
+    default:
+      return -1;
+    case 1:
+      {
+	int first = attributes[2];
+	rtx operands[3];
+
+	if (first < 0)
+	  {
+	    emit_insn ((mask << right) == 0xff
+		       ? gen_zero_extendqisi2(dest, gen_rtx (SUBREG, QImode,
+							     source, 0))
+		       : gen_zero_extendhisi2(dest, gen_rtx (SUBREG, HImode,
+							     source, 0)));
+	    source = dest;
+	  }
+	if (source != dest)
+	  emit_insn (gen_movsi (dest, source));
+	operands[0] = dest;
+	if (right)
+	  {
+	    operands[2] = GEN_INT (right);
+	    gen_shifty_hi_op (LSHIFTRT, operands);
+	  }
+	if (first > 0)
+	  {
+	    operands[2] = GEN_INT (first);
+	    gen_shifty_hi_op (ASHIFT, operands);
+	    total_shift -= first;
+	    mask <<= first;
+	  }
+	if (first >= 0)
+	  emit_insn (mask == 0xff
+		     ? gen_zero_extendqisi2(dest, gen_rtx (SUBREG, QImode,
+							   dest, 0))
+		     : gen_zero_extendhisi2(dest, gen_rtx (SUBREG, HImode,
+							   dest, 0)));
+	if (total_shift > 0)
+	  {
+	    operands[2] = GEN_INT (total_shift);
+	    gen_shifty_hi_op (ASHIFT, operands);
+	  }
+	break;
+      }
+    case 4:
+      shift_gen_fun = gen_shifty_op;
+    case 2:
+    case 3:
+      /* Don't expand fine-grained when combining, because that will
+         make the pattern fail.  */
+      if (rtx_equal_function_value_matters
+	  || reload_in_progress || reload_completed)
+	{
+	  rtx operands[3];
+  
+	  if (right)
+	    {
+	      emit_insn (gen_lshrsi3 (dest, source, GEN_INT (right)));
+	      source = dest;
+	    }
+	  emit_insn (gen_andsi3 (dest, source, GEN_INT (mask)));
+	  operands[0] = dest;
+	  operands[1] = dest;
+	  operands[2] = GEN_INT (total_shift);
+	  shift_gen_fun (ASHIFT, operands);
+	  break;
+	}
+      else
+	{
+	  int neg = 0;
+	  if (kind != 4 && total_shift < 16)
+	    {
+	      neg = -ext_shift_amounts[total_shift][1];
+	      if (neg > 0)
+		neg -= ext_shift_amounts[total_shift][2];
+	      else
+		neg = 0;
+	    }
+	  emit_insn (gen_and_shl_scratch (dest, source,
+					  GEN_INT (right),
+					  GEN_INT (mask),
+					  GEN_INT (total_shift + neg),
+					  GEN_INT (neg)));
+	  emit_insn (gen_movsi (dest, dest));
+	  break;
+	}
+    }
+  return 0;
+}
+
+/* Try to find a good way to implement the combiner pattern
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (sign_extract:SI (ashift:SI (match_operand:SI 1 "register_operand" "r")
+                                    (match_operand:SI 2 "const_int_operand" "n")
+                         (match_operand:SI 3 "const_int_operand" "n")
+                         (const_int 0)))
+   (clobber (reg:SI 18))]
+  LEFT_RTX is operand 2 in the above pattern, and SIZE_RTX is operand 3.
+  return 0 for simple left / right shift combination.
+  return 1 for left shift / 8 bit sign extend / left shift.
+  return 2 for left shift / 16 bit sign extend / left shift.
+  return 3 for left shift / 8 bit sign extend / shift / sign extend.
+  return 4 for left shift / 16 bit sign extend / shift / sign extend.
+  return 5 for left shift / 16 bit sign extend / right shift
+  return 6 for < 8 bit sign extend / left shift.
+  return 7 for < 8 bit sign extend / left shift / single right shift.
+  If COSTP is nonzero, assign the calculated cost to *COSTP.  */
+
+int
+shl_sext_kind (left_rtx, size_rtx, costp)
+     rtx left_rtx, size_rtx;
+     int *costp;
+{
+  int left, size, insize, ext;
+  int cost, best_cost;
+  int kind;
+
+  left = INTVAL (left_rtx);
+  size = INTVAL (size_rtx);
+  insize = size - left;
+  if (insize <= 0)
+    abort ();
+  /* Default to left / right shift.  */
+  kind = 0;
+  best_cost = shift_insns[32 - insize] + ashiftrt_insns[32 - size];
+  if (size <= 16)
+    {
+      /* 16 bit shift / sign extend / 16 bit shift */
+      cost = shift_insns[16 - insize] + 1 + ashiftrt_insns[16 - size];
+      if (cost < best_cost)
+	{
+	  kind = 5;
+	  best_cost = cost;
+	}
+    }
+  /* Try a plain sign extend between two shifts.  */
+  for (ext = 16; ext >= insize; ext -= 8)
+    {
+      if (ext <= size)
+	{
+	  cost = ext_shift_insns[ext - insize] + 1 + shift_insns[size - ext];
+	  if (cost < best_cost)
+	    {
+	      kind = ext / 8U;
+	      best_cost = cost;
+	    }
+	}
+      if (size <= 16)
+	{
+	  /* Maybe it's cheaper to do the second shift sloppy, and do a
+	     final sign extend?  */
+	  cost = ext_shift_insns[ext - insize] + 1
+	    + ext_shift_insns[size > ext ? size - ext : ext - size] + 1;
+	  if (cost < best_cost)
+	    {
+	      kind = ext / 8U + 2;
+	      best_cost = cost;
+	    }
+	}
+    }
+  /* Check if we can sign extend in r0 */
+  if (insize < 8)
+    {
+      cost = 3 + shift_insns[left];
+      if (cost < best_cost)
+	{
+	  kind = 6;
+	  best_cost = cost;
+	}
+      /* Try the same with a final signed shift.  */
+      if (left < 31)
+	{
+	  cost = 3 + ext_shift_insns[left + 1] + 1;
+	  if (cost < best_cost)
+	    {
+	      kind = 7;
+	      best_cost = cost;
+	    }
+	}
+    }
+  if (TARGET_SH3)
+    {
+      /* Try to use a dynamic shift.  */
+      cost = shift_insns[32 - insize] + 3;
+      if (cost < best_cost)
+	{
+	  kind = 0;
+	  best_cost = cost;
+	}
+    }
+  if (costp)
+    *costp = cost;
+  return kind;
+}
+
+/* Function to be used in the length attribute of the instructions
+   implementing this pattern.  */
+
+int
+shl_sext_length (insn)
+     rtx insn;
+{
+  rtx set_src, left_rtx, size_rtx;
+  int cost;
+
+  set_src = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
+  left_rtx = XEXP (XEXP (set_src, 0), 1);
+  size_rtx = XEXP (set_src, 1);
+  shl_sext_kind (left_rtx, size_rtx, &cost);
+  return cost;
+}
+
+/* Generate rtl for this pattern */
+
+int
+gen_shl_sext (dest, left_rtx, size_rtx, source)
+     rtx dest, left_rtx, size_rtx, source;
+{
+  int kind;
+  int left, size, insize;
+  rtx operands[3];
+
+  kind = shl_sext_kind (left_rtx, size_rtx);
+  left = INTVAL (left_rtx);
+  size = INTVAL (size_rtx);
+  insize = size - left;
+  switch (kind)
+    {
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+      {
+	int ext = kind & 1 ? 8 : 16;
+	int shift2 = size - ext;
+
+	/* Don't expand fine-grained when combining, because that will
+	   make the pattern fail.  */
+	if (! rtx_equal_function_value_matters
+	    && ! reload_in_progress && ! reload_completed)
+	  {
+	    emit_insn (gen_shl_sext_ext (dest, source, left_rtx, size_rtx));
+	    emit_insn (gen_movsi (dest, source));
+	    break;
+	  }
+	if (dest != source)
+	  emit_insn (gen_movsi (dest, source));
+	operands[0] = dest;
+	operands[2] = GEN_INT (ext - insize);
+	gen_shifty_hi_op (ASHIFT, operands);
+	emit_insn (kind & 1
+		   ? gen_extendqisi2(dest, gen_rtx (SUBREG, QImode, dest, 0))
+		   : gen_extendhisi2(dest, gen_rtx (SUBREG, HImode, dest, 0)));
+	if (kind <= 2)
+	  {
+	    operands[2] = GEN_INT (shift2);
+	    gen_shifty_op (ASHIFT, operands);
+	  }
+	else
+	  {
+	    if (shift2 >= 0)
+	      {
+		operands[2] = GEN_INT (shift2);
+		gen_shifty_hi_op (ASHIFT, operands);
+	      }
+	    else
+	      {
+		operands[2] = GEN_INT (-shift2);
+		gen_shifty_hi_op (LSHIFTRT, operands);
+	      }
+	    emit_insn (size <= 8
+		       ? gen_extendqisi2 (dest,
+					  gen_rtx (SUBREG, QImode, dest, 0))
+		       : gen_extendhisi2 (dest,
+					  gen_rtx (SUBREG, HImode, dest, 0)));
+	  }
+	break;
+      }
+    case 5:
+      emit_insn (gen_shl_sext_ext (dest, source, GEN_INT (16 - insize),
+				   GEN_INT (16)));
+      emit_insn (gen_ashrsi3 (dest, dest, GEN_INT (16 - size)));
+      break;
+    case 6:
+    case 7:
+      /* Don't expand fine-grained when combining, because that will
+	 make the pattern fail.  */
+      if (! rtx_equal_function_value_matters
+	  && ! reload_in_progress && ! reload_completed)
+	{
+	  emit_insn (gen_shl_sext_ext (dest, source, left_rtx, size_rtx));
+	  emit_insn (gen_movsi (dest, source));
+	  break;
+	}
+      emit_insn (gen_andsi3 (dest, source, GEN_INT ((1 << insize) - 1)));
+      emit_insn (gen_xorsi3 (dest, dest, GEN_INT (1 << (insize - 1))));
+      emit_insn (gen_addsi3 (dest, dest, GEN_INT (-1 << (insize - 1))));
+      operands[0] = dest;
+      operands[2] = kind == 7 ? GEN_INT (left + 1) : left_rtx;
+      gen_shifty_op (ASHIFT, operands);
+      if (kind == 7)
+	emit_insn (gen_ashrsi3_k (dest, dest, GEN_INT (1)));
+      break;
+    default:
+      return -1;
+    }
+  return 0;
 }
 
 /* The SH cannot load a large constant into a register, constants have to
