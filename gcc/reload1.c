@@ -8180,16 +8180,16 @@ reload_cse_simplify_set (set, insn)
 
   dreg = true_regnum (SET_DEST (set));
   if (dreg < 0)
-    return;
+    return 0;
 
   src = SET_SRC (set);
   if (side_effects_p (src) || true_regnum (src) >= 0)
-    return;
+    return 0;
 
   /* If memory loads are cheaper than register copies, don't change
      them.  */
   if (GET_CODE (src) == MEM && MEMORY_MOVE_COST (GET_MODE (src)) < 2)
-    return;
+    return 0;
 
   dest_mode = GET_MODE (SET_DEST (set));
   dclass = REGNO_REG_CLASS (dreg);
