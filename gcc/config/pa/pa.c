@@ -219,29 +219,6 @@ pic_operand (op, mode)
 }
 
 int
-short_memory_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) == MEM)
-    {
-      if (GET_CODE (XEXP (op, 0)) == REG)
-	return 1;
-      else if (GET_CODE (XEXP (op, 0)) == PLUS)
-	{
-	  rtx op1 = XEXP (XEXP (op, 0), 0);
-	  rtx op2 = XEXP (XEXP (op, 0), 1);
-
-	  if (GET_CODE (op1) == REG)
-	    return (GET_CODE (op2) == CONST_INT && INT_5_BITS (op2));
-	  else if (GET_CODE (op2) == REG)
-	    return (GET_CODE (op1) == CONST_INT && INT_5_BITS (op1));
-	}
-    }
-  return 0;
-}
-
-int
 fp_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
@@ -729,7 +706,9 @@ emit_move_sequence (operands, mode, scratch_reg)
      REG+D addresses where D does not fit in 5 bits.  */
   if (fp_reg_operand (operand0, mode)
       && GET_CODE (operand1) == MEM
-      && !short_memory_operand  (operand1, mode)
+      /* Using DFmode forces only short displacements be be
+	 recognized as valid in reg+d addressing modes.  */
+      && ! memory_address_p (DFmode, XEXP (operand1, 0))
       && scratch_reg)
     {
       emit_move_insn (scratch_reg, XEXP (operand1 , 0));
@@ -739,7 +718,9 @@ emit_move_sequence (operands, mode, scratch_reg)
     }
   else if (fp_reg_operand (operand1, mode)
 	   && GET_CODE (operand0) == MEM
-	   && !short_memory_operand  (operand0, mode)
+	   /* Using DFmode forces only short displacements be be
+	      recognized as valid in reg+d addressing modes.  */
+	   && ! memory_address_p (DFmode, XEXP (operand0, 0))
 	   && scratch_reg)
     {
       emit_move_insn (scratch_reg, XEXP (operand0 , 0));
