@@ -1,3 +1,9 @@
+Wed Sep 16 17:51:00 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* cpplib.c: removed OLD_GPLUSPLUS_INCLUDE_DIR
+	* cccp.c: ditto
+	* Makefile.in (old_gxx_include_dir): removed
+
 Wed Sep 16 12:29:22 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/sh/sh.h: Update definition of HANDLE_PRAGMA to match
