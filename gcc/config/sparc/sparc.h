@@ -215,11 +215,13 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(asm_cpu_default)}}}}}}} \
 "
 
-/* Word size selection, among other things.  */
+/* Word size selection, among other things.
+   This is what GAS uses.  Add %(asm_arch) to ASM_SPEC to enable.  */
+
 #define ASM_ARCH32_SPEC "-32"
 #define ASM_ARCH64_SPEC "-64"
 #define ASM_ARCH_DEFAULT_SPEC \
-(DEFAULT_ARCH32_P ?  ASM_ARCH32_SPEC : ASM_ARCH64_SPEC)
+(DEFAULT_ARCH32_P ? ASM_ARCH32_SPEC : ASM_ARCH64_SPEC)
 
 #define ASM_ARCH_SPEC "\
 %{m32:%(asm_arch32)} \
@@ -231,7 +233,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 #define ASM_SPEC "\
 %| %{R} %{!pg:%{!p:%{fpic:-k} %{fPIC:-k}}} %{keep-local-as-symbols:-L} \
-%(asm_cpu) %(asm_arch) \
+%(asm_cpu) \
 "
 
 #define LIB_SPEC "%{!shared:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}}"
