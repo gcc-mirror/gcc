@@ -375,29 +375,51 @@ composite_type (tree t1, tree t2)
 		&& TREE_VALUE (p1) != TREE_VALUE (p2))
 	      {
 		tree memb;
+		tree mv2 = TREE_VALUE (p2);
+		if (mv2 && mv2 != error_mark_node
+		    && TREE_CODE (mv2) != ARRAY_TYPE)
+		  mv2 = TYPE_MAIN_VARIANT (mv2);
 		for (memb = TYPE_FIELDS (TREE_VALUE (p1));
 		     memb; memb = TREE_CHAIN (memb))
-		  if (comptypes (TREE_TYPE (memb), TREE_VALUE (p2)))
-		    {
-		      TREE_VALUE (n) = TREE_VALUE (p2);
-		      if (pedantic)
-			pedwarn ("function types not truly compatible in ISO C");
-		      goto parm_done;
-		    }
+		  {
+		    tree mv3 = TREE_TYPE (memb);
+		    if (mv3 && mv3 != error_mark_node
+			&& TREE_CODE (mv3) != ARRAY_TYPE)
+		      mv3 = TYPE_MAIN_VARIANT (mv3);
+		    if (comptypes (mv3, mv2))
+		      {
+			TREE_VALUE (n) = composite_type (TREE_TYPE (memb),
+							 TREE_VALUE (p2));
+			if (pedantic)
+			  pedwarn ("function types not truly compatible in ISO C");
+			goto parm_done;
+		      }
+		  }
 	      }
 	    if (TREE_CODE (TREE_VALUE (p2)) == UNION_TYPE
 		&& TREE_VALUE (p2) != TREE_VALUE (p1))
 	      {
 		tree memb;
+		tree mv1 = TREE_VALUE (p1);
+		if (mv1 && mv1 != error_mark_node
+		    && TREE_CODE (mv1) != ARRAY_TYPE)
+		  mv1 = TYPE_MAIN_VARIANT (mv1);
 		for (memb = TYPE_FIELDS (TREE_VALUE (p2));
 		     memb; memb = TREE_CHAIN (memb))
-		  if (comptypes (TREE_TYPE (memb), TREE_VALUE (p1)))
-		    {
-		      TREE_VALUE (n) = TREE_VALUE (p1);
-		      if (pedantic)
-			pedwarn ("function types not truly compatible in ISO C");
-		      goto parm_done;
-		    }
+		  {
+		    tree mv3 = TREE_TYPE (memb);
+		    if (mv3 && mv3 != error_mark_node
+			&& TREE_CODE (mv3) != ARRAY_TYPE)
+		      mv3 = TYPE_MAIN_VARIANT (mv3);
+		    if (comptypes (mv3, mv1))
+		      {
+			TREE_VALUE (n) = composite_type (TREE_TYPE (memb),
+							 TREE_VALUE (p1));
+			if (pedantic)
+			  pedwarn ("function types not truly compatible in ISO C");
+			goto parm_done;
+		      }
+		  }
 	      }
 	    TREE_VALUE (n) = composite_type (TREE_VALUE (p1), TREE_VALUE (p2));
 	  parm_done: ;
@@ -1122,8 +1144,14 @@ type_lists_compatible_p (tree args1, tree args2)
 	      tree memb;
 	      for (memb = TYPE_FIELDS (a1);
 		   memb; memb = TREE_CHAIN (memb))
-		if (comptypes (TREE_TYPE (memb), a2))
-		  break;
+		{
+		  tree mv3 = TREE_TYPE (memb);
+		  if (mv3 && mv3 != error_mark_node
+		      && TREE_CODE (mv3) != ARRAY_TYPE)
+		    mv3 = TYPE_MAIN_VARIANT (mv3);
+		  if (comptypes (mv3, mv2))
+		    break;
+		}
 	      if (memb == 0)
 		return 0;
 	    }
@@ -1137,8 +1165,14 @@ type_lists_compatible_p (tree args1, tree args2)
 	      tree memb;
 	      for (memb = TYPE_FIELDS (a2);
 		   memb; memb = TREE_CHAIN (memb))
-		if (comptypes (TREE_TYPE (memb), a1))
-		  break;
+		{
+		  tree mv3 = TREE_TYPE (memb);
+		  if (mv3 && mv3 != error_mark_node
+		      && TREE_CODE (mv3) != ARRAY_TYPE)
+		    mv3 = TYPE_MAIN_VARIANT (mv3);
+		  if (comptypes (mv3, mv1))
+		    break;
+		}
 	      if (memb == 0)
 		return 0;
 	    }
