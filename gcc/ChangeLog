@@ -1,5 +1,9 @@
 2003-11-14  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.md: Add 'DEFAULT_ABI == ABI_DARWIN'
+	to each place where TARGET_LONG_DOUBLE_128 is used with
+	DEFAULT_ABI == ABI_AIX.
+
 	* cppfiles.c (_cpp_find_file): Make 'one or more PCH files were found'
 	message comply with GNU standards.
 
