@@ -1,3 +1,15 @@
+2002-05-16  Richard Henderson  <rth@redhat.com>
+
+	* basic-block.h, bb-reorder.c, cfg.c, cfganal.c, cfgbuild.c,
+	cfgcleanup.c, cfglayout.c, cfgloop.c, cfgrtl.c, combine.c,
+	conflict.c, df.c, df.h, dominance.c, final.c, flow.c, function.c,
+	gcse.c, global.c, graph.c, haifa-sched.c, ifcvt.c, lcm.c,
+	local-alloc.c, loop.c, predict.c, print-rtl.c, profile.c,
+	recog.c, reg-stack.c, regclass.c, regmove.c, regrename.c,
+	reload1.c, reorg.c, resource.c, sbitmap.c, sched-deps.c,
+	sched-ebb.c, sched-rgn.c, sibcall.c, ssa-ccp.c, ssa-dce.c, ssa.c:
+	Revert "Basic block renumbering removal", and two followup patches.
+
 2002-05-16  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* lcm.c (optimize_mode_switching): Revert previous change.

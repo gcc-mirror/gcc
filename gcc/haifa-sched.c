@@ -2303,8 +2303,7 @@ void
 sched_init (dump_file)
      FILE *dump_file;
 {
-  int luid;
-  basic_block b;
+  int luid, b;
   rtx insn;
   int i;
 
@@ -2357,8 +2356,8 @@ sched_init (dump_file)
 
   h_i_d[0].luid = 0;
   luid = 1;
-  FOR_ALL_BB (b)
-    for (insn = b->head;; insn = NEXT_INSN (insn))
+  for (b = 0; b < n_basic_blocks; b++)
+    for (insn = BLOCK_HEAD (b);; insn = NEXT_INSN (insn))
       {
 	INSN_LUID (insn) = luid;
 
@@ -2370,7 +2369,7 @@ sched_init (dump_file)
 	if (GET_CODE (insn) != NOTE)
 	  ++luid;
 
-	if (insn == b->end)
+	if (insn == BLOCK_END (b))
 	  break;
       }
 
@@ -2384,7 +2383,7 @@ sched_init (dump_file)
     {
       rtx line;
 
-      line_note_head = (rtx *) xcalloc (last_basic_block, sizeof (rtx));
+      line_note_head = (rtx *) xcalloc (n_basic_blocks, sizeof (rtx));
 
       /* Save-line-note-head:
          Determine the line-number at the start of each basic block.
@@ -2392,22 +2391,22 @@ sched_init (dump_file)
          predecessor has been scheduled, it is impossible to accurately
          determine the correct line number for the first insn of the block.  */
 
-      FOR_ALL_BB (b)
+      for (b = 0; b < n_basic_blocks; b++)
 	{
-	  for (line = b->head; line; line = PREV_INSN (line))
+	  for (line = BLOCK_HEAD (b); line; line = PREV_INSN (line))
 	    if (GET_CODE (line) == NOTE && NOTE_LINE_NUMBER (line) > 0)
 	      {
-		line_note_head[b->sindex] = line;
+		line_note_head[b] = line;
 		break;
 	      }
 	  /* Do a forward search as well, since we won't get to see the first
 	     notes in a basic block.  */
-	  for (line = b->head; line; line = NEXT_INSN (line))
+	  for (line = BLOCK_HEAD (b); line; line = NEXT_INSN (line))
 	    {
 	      if (INSN_P (line))
 		break;
 	      if (GET_CODE (line) == NOTE && NOTE_LINE_NUMBER (line) > 0)
-		line_note_head[b->sindex] = line;
+		line_note_head[b] = line;
 	    }
 	}
     }
@@ -2421,22 +2420,22 @@ sched_init (dump_file)
   /* ??? Add a NOTE after the last insn of the last basic block.  It is not
      known why this is done.  */
 
-  insn = EXIT_BLOCK_PTR->prev_bb->end;
+  insn = BLOCK_END (n_basic_blocks - 1);
   if (NEXT_INSN (insn) == 0
       || (GET_CODE (insn) != NOTE
 	  && GET_CODE (insn) != CODE_LABEL
 	  /* Don't emit a NOTE if it would end up before a BARRIER.  */
 	  && GET_CODE (NEXT_INSN (insn)) != BARRIER))
     {
-      emit_note_after (NOTE_INSN_DELETED, EXIT_BLOCK_PTR->prev_bb->end);
+      emit_note_after (NOTE_INSN_DELETED, BLOCK_END (n_basic_blocks - 1));
       /* Make insn to appear outside BB.  */
-      EXIT_BLOCK_PTR->prev_bb->end = PREV_INSN (EXIT_BLOCK_PTR->prev_bb->end);
+      BLOCK_END (n_basic_blocks - 1) = PREV_INSN (BLOCK_END (n_basic_blocks - 1));
     }
 
   /* Compute INSN_REG_WEIGHT for all blocks.  We must do this before
      removing death notes.  */
-  FOR_ALL_BB_REVERSE (b)
-    find_insn_reg_weight (b->sindex);
+  for (b = n_basic_blocks - 1; b >= 0; b--)
+    find_insn_reg_weight (b);
 }
 
 /* Free global data used during insn scheduling.  */

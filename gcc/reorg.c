@@ -3601,7 +3601,7 @@ dbr_schedule (first, file)
 
   /* If the current function has no insns other than the prologue and
      epilogue, then do not try to fill any delay slots.  */
-  if (num_basic_blocks == 0)
+  if (n_basic_blocks == 0)
     return;
 
   /* Find the highest INSN_UID and allocate and initialize our map from

@@ -319,7 +319,7 @@ static void free_pending_lists PARAMS ((void));
 static int
 is_cfg_nonregular ()
 {
-  basic_block b;
+  int b;
   rtx insn;
   RTX_CODE code;
 
@@ -346,8 +346,8 @@ is_cfg_nonregular ()
   /* If we have non-jumping insns which refer to labels, then we consider
      the cfg not well structured.  */
   /* Check for labels referred to other thn by jumps.  */
-  FOR_ALL_BB (b)
-    for (insn = b->head;; insn = NEXT_INSN (insn))
+  for (b = 0; b < n_basic_blocks; b++)
+    for (insn = BLOCK_HEAD (b);; insn = NEXT_INSN (insn))
       {
 	code = GET_CODE (insn);
 	if (GET_RTX_CLASS (code) == 'i' && code != JUMP_INSN)
@@ -361,7 +361,7 @@ is_cfg_nonregular ()
 	      return 1;
 	  }
 
-	if (insn == b->end)
+	if (insn == BLOCK_END (b))
 	  break;
       }
 
@@ -382,7 +382,6 @@ build_control_flow (edge_list)
      struct edge_list *edge_list;
 {
   int i, unreachable, num_edges;
-  basic_block b;
 
   /* This already accounts for entry/exit edges.  */
   num_edges = NUM_EDGES (edge_list);
@@ -394,8 +393,10 @@ build_control_flow (edge_list)
      test is redundant with the one in find_rgns, but it's much
     cheaper to go ahead and catch the trivial case here.  */
   unreachable = 0;
-  FOR_ALL_BB (b)
+  for (i = 0; i < n_basic_blocks; i++)
     {
+      basic_block b = BASIC_BLOCK (i);
+
       if (b->pred == NULL
 	  || (b->pred->src == b
 	      && b->pred->pred_next == NULL))
@@ -403,8 +404,8 @@ build_control_flow (edge_list)
     }
 
   /* ??? We can kill these soon.  */
-  in_edges = (int *) xcalloc (last_basic_block, sizeof (int));
-  out_edges = (int *) xcalloc (last_basic_block, sizeof (int));
+  in_edges = (int *) xcalloc (n_basic_blocks, sizeof (int));
+  out_edges = (int *) xcalloc (n_basic_blocks, sizeof (int));
   edge_table = (haifa_edge *) xcalloc (num_edges, sizeof (haifa_edge));
 
   nr_edges = 0;
@@ -414,7 +415,7 @@ build_control_flow (edge_list)
 
       if (e->dest != EXIT_BLOCK_PTR
 	  && e->src != ENTRY_BLOCK_PTR)
-	new_edge (e->src->sindex, e->dest->sindex);
+	new_edge (e->src->index, e->dest->index);
     }
 
   /* Increment by 1, since edge 0 is unused.  */
@@ -543,19 +544,17 @@ debug_regions ()
 static void
 find_single_block_region ()
 {
-  basic_block bb;
+  int i;
 
-  nr_regions = 0;
-
-  FOR_ALL_BB (bb)
+  for (i = 0; i < n_basic_blocks; i++)
     {
-      rgn_bb_table[nr_regions] = bb->sindex;
-      RGN_NR_BLOCKS (nr_regions) = 1;
-      RGN_BLOCKS (nr_regions) = nr_regions;
-      CONTAINING_RGN (bb->sindex) = nr_regions;
-      BLOCK_TO_BB (bb->sindex) = 0;
-      nr_regions++;
+      rgn_bb_table[i] = i;
+      RGN_NR_BLOCKS (i) = 1;
+      RGN_BLOCKS (i) = i;
+      CONTAINING_RGN (i) = i;
+      BLOCK_TO_BB (i) = 0;
     }
+  nr_regions = n_basic_blocks;
 }
 
 /* Update number of blocks and the estimate for number of insns
@@ -632,7 +631,6 @@ find_rgns (edge_list, dom)
   int count = 0, sp, idx = 0, current_edge = out_edges[0];
   int num_bbs, num_insns, unreachable;
   int too_large_failure;
-  basic_block bb;
 
   /* Note if an edge has been passed.  */
   sbitmap passed;
@@ -661,26 +659,26 @@ find_rgns (edge_list, dom)
      STACK, SP and DFS_NR are only used during the first traversal.  */
 
   /* Allocate and initialize variables for the first traversal.  */
-  max_hdr = (int *) xmalloc (last_basic_block * sizeof (int));
-  dfs_nr = (int *) xcalloc (last_basic_block, sizeof (int));
+  max_hdr = (int *) xmalloc (n_basic_blocks * sizeof (int));
+  dfs_nr = (int *) xcalloc (n_basic_blocks, sizeof (int));
   stack = (int *) xmalloc (nr_edges * sizeof (int));
 
-  inner = sbitmap_alloc (last_basic_block);
+  inner = sbitmap_alloc (n_basic_blocks);
   sbitmap_ones (inner);
 
-  header = sbitmap_alloc (last_basic_block);
+  header = sbitmap_alloc (n_basic_blocks);
   sbitmap_zero (header);
 
   passed = sbitmap_alloc (nr_edges);
   sbitmap_zero (passed);
 
-  in_queue = sbitmap_alloc (last_basic_block);
+  in_queue = sbitmap_alloc (n_basic_blocks);
   sbitmap_zero (in_queue);
 
-  in_stack = sbitmap_alloc (last_basic_block);
+  in_stack = sbitmap_alloc (n_basic_blocks);
   sbitmap_zero (in_stack);
 
-  for (i = 0; i < last_basic_block; i++)
+  for (i = 0; i < n_basic_blocks; i++)
     max_hdr[i] = -1;
 
   /* DFS traversal to find inner loops in the cfg.  */
@@ -774,8 +772,8 @@ find_rgns (edge_list, dom)
      the entry node by placing a nonzero value in dfs_nr.  Thus if
      dfs_nr is zero for any block, then it must be unreachable.  */
   unreachable = 0;
-  FOR_ALL_BB (bb)
-    if (dfs_nr[bb->sindex] == 0)
+  for (i = 0; i < n_basic_blocks; i++)
+    if (dfs_nr[i] == 0)
       {
 	unreachable = 1;
 	break;
@@ -785,14 +783,14 @@ find_rgns (edge_list, dom)
      to hold degree counts.  */
   degree = dfs_nr;
 
-  FOR_ALL_BB (bb)
-    degree[bb->sindex] = 0;
+  for (i = 0; i < n_basic_blocks; i++)
+    degree[i] = 0;
   for (i = 0; i < num_edges; i++)
     {
       edge e = INDEX_EDGE (edge_list, i);
 
       if (e->dest != EXIT_BLOCK_PTR)
-	degree[e->dest->sindex]++;
+	degree[e->dest->index]++;
     }
 
   /* Do not perform region scheduling if there are any unreachable
@@ -807,16 +805,16 @@ find_rgns (edge_list, dom)
       /* Second travsersal:find reducible inner loops and topologically sort
 	 block of each region.  */
 
-      queue = (int *) xmalloc (num_basic_blocks * sizeof (int));
+      queue = (int *) xmalloc (n_basic_blocks * sizeof (int));
 
       /* Find blocks which are inner loop headers.  We still have non-reducible
 	 loops to consider at this point.  */
-      FOR_ALL_BB (bb)
+      for (i = 0; i < n_basic_blocks; i++)
 	{
-	  if (TEST_BIT (header, bb->sindex) && TEST_BIT (inner, bb->sindex))
+	  if (TEST_BIT (header, i) && TEST_BIT (inner, i))
 	    {
 	      edge e;
-	      basic_block jbb;
+	      int j;
 
 	      /* Now check that the loop is reducible.  We do this separate
 		 from finding inner loops so that we do not find a reducible
@@ -829,15 +827,15 @@ find_rgns (edge_list, dom)
 		 If there exists a block that is not dominated by the loop
 		 header, then the block is reachable from outside the loop
 		 and thus the loop is not a natural loop.  */
-	      FOR_ALL_BB (jbb)
+	      for (j = 0; j < n_basic_blocks; j++)
 		{
 		  /* First identify blocks in the loop, except for the loop
 		     entry block.  */
-		  if (bb->sindex == max_hdr[jbb->sindex] && bb != jbb)
+		  if (i == max_hdr[j] && i != j)
 		    {
 		      /* Now verify that the block is dominated by the loop
 			 header.  */
-		      if (!TEST_BIT (dom[jbb->sindex], bb->sindex))
+		      if (!TEST_BIT (dom[j], i))
 			break;
 		    }
 		}
@@ -845,25 +843,25 @@ find_rgns (edge_list, dom)
 	      /* If we exited the loop early, then I is the header of
 		 a non-reducible loop and we should quit processing it
 		 now.  */
-	      if (jbb != EXIT_BLOCK_PTR)
+	      if (j != n_basic_blocks)
 		continue;
 
 	      /* I is a header of an inner loop, or block 0 in a subroutine
 		 with no loops at all.  */
 	      head = tail = -1;
 	      too_large_failure = 0;
-	      loop_head = max_hdr[bb->sindex];
+	      loop_head = max_hdr[i];
 
 	      /* Decrease degree of all I's successors for topological
 		 ordering.  */
-	      for (e = bb->succ; e; e = e->succ_next)
+	      for (e = BASIC_BLOCK (i)->succ; e; e = e->succ_next)
 		if (e->dest != EXIT_BLOCK_PTR)
-		  --degree[e->dest->sindex];
+		  --degree[e->dest->index];
 
 	      /* Estimate # insns, and count # blocks in the region.  */
 	      num_bbs = 1;
-	      num_insns = (INSN_LUID (bb->end)
-			   - INSN_LUID (bb->head));
+	      num_insns = (INSN_LUID (BLOCK_END (i))
+			   - INSN_LUID (BLOCK_HEAD (i)));
 
 	      /* Find all loop latches (blocks with back edges to the loop
 		 header) or all the leaf blocks in the cfg has no loops.
@@ -871,17 +869,17 @@ find_rgns (edge_list, dom)
 		 Place those blocks into the queue.  */
 	      if (no_loops)
 		{
-		  FOR_ALL_BB (jbb)
+		  for (j = 0; j < n_basic_blocks; j++)
 		    /* Leaf nodes have only a single successor which must
 		       be EXIT_BLOCK.  */
-		    if (jbb->succ
-			&& jbb->succ->dest == EXIT_BLOCK_PTR
-			&& jbb->succ->succ_next == NULL)
+		    if (BASIC_BLOCK (j)->succ
+			&& BASIC_BLOCK (j)->succ->dest == EXIT_BLOCK_PTR
+			&& BASIC_BLOCK (j)->succ->succ_next == NULL)
 		      {
-			queue[++tail] = jbb->sindex;
-			SET_BIT (in_queue, jbb->sindex);
+			queue[++tail] = j;
+			SET_BIT (in_queue, j);
 
-			if (too_large (jbb->sindex, &num_bbs, &num_insns))
+			if (too_large (j, &num_bbs, &num_insns))
 			  {
 			    too_large_failure = 1;
 			    break;
@@ -892,14 +890,14 @@ find_rgns (edge_list, dom)
 		{
 		  edge e;
 
-		  for (e = bb->pred; e; e = e->pred_next)
+		  for (e = BASIC_BLOCK (i)->pred; e; e = e->pred_next)
 		    {
 		      if (e->src == ENTRY_BLOCK_PTR)
 			continue;
 
-		      node = e->src->sindex;
+		      node = e->src->index;
 
-		      if (max_hdr[node] == loop_head && node != bb->sindex)
+		      if (max_hdr[node] == loop_head && node != i)
 			{
 			  /* This is a loop latch.  */
 			  queue[++tail] = node;
@@ -951,7 +949,7 @@ find_rgns (edge_list, dom)
 
 		  for (e = BASIC_BLOCK (child)->pred; e; e = e->pred_next)
 		    {
-		      node = e->src->sindex;
+		      node = e->src->index;
 
 		      /* See discussion above about nodes not marked as in
 			 this loop during the initial DFS traversal.  */
@@ -961,7 +959,7 @@ find_rgns (edge_list, dom)
 			  tail = -1;
 			  break;
 			}
-		      else if (!TEST_BIT (in_queue, node) && node != bb->sindex)
+		      else if (!TEST_BIT (in_queue, node) && node != i)
 			{
 			  queue[++tail] = node;
 			  SET_BIT (in_queue, node);
@@ -978,12 +976,12 @@ find_rgns (edge_list, dom)
 	      if (tail >= 0 && !too_large_failure)
 		{
 		  /* Place the loop header into list of region blocks.  */
-		  degree[bb->sindex] = -1;
-		  rgn_bb_table[idx] = bb->sindex;
+		  degree[i] = -1;
+		  rgn_bb_table[idx] = i;
 		  RGN_NR_BLOCKS (nr_regions) = num_bbs;
 		  RGN_BLOCKS (nr_regions) = idx++;
-		  CONTAINING_RGN (bb->sindex) = nr_regions;
-		  BLOCK_TO_BB (bb->sindex) = count = 0;
+		  CONTAINING_RGN (i) = nr_regions;
+		  BLOCK_TO_BB (i) = count = 0;
 
 		  /* Remove blocks from queue[] when their in degree
 		     becomes zero.  Repeat until no blocks are left on the
@@ -1008,7 +1006,7 @@ find_rgns (edge_list, dom)
 			       e;
 			       e = e->succ_next)
 			    if (e->dest != EXIT_BLOCK_PTR)
-			      --degree[e->dest->sindex];
+			      --degree[e->dest->index];
 			}
 		      else
 			--head;
@@ -1022,14 +1020,14 @@ find_rgns (edge_list, dom)
 
   /* Any block that did not end up in a region is placed into a region
      by itself.  */
-  FOR_ALL_BB (bb)
-    if (degree[bb->sindex] >= 0)
+  for (i = 0; i < n_basic_blocks; i++)
+    if (degree[i] >= 0)
       {
-	rgn_bb_table[idx] = bb->sindex;
+	rgn_bb_table[idx] = i;
 	RGN_NR_BLOCKS (nr_regions) = 1;
 	RGN_BLOCKS (nr_regions) = idx++;
-	CONTAINING_RGN (bb->sindex) = nr_regions++;
-	BLOCK_TO_BB (bb->sindex) = 0;
+	CONTAINING_RGN (i) = nr_regions++;
+	BLOCK_TO_BB (i) = 0;
       }
 
   free (max_hdr);
@@ -1197,8 +1195,8 @@ compute_trg_info (trg)
 	     add the TO block to the update block list.  This list can end
 	     up with a lot of duplicates.  We need to weed them out to avoid
 	     overrunning the end of the bblst_table.  */
-	  update_blocks = (char *) alloca (last_basic_block);
-	  memset (update_blocks, 0, last_basic_block);
+	  update_blocks = (char *) alloca (n_basic_blocks);
+	  memset (update_blocks, 0, n_basic_blocks);
 
 	  update_idx = 0;
 	  for (j = 0; j < el.nr_members; j++)
@@ -2888,14 +2886,14 @@ init_regions ()
   int rgn;
 
   nr_regions = 0;
-  rgn_table = (region *) xmalloc ((num_basic_blocks) * sizeof (region));
-  rgn_bb_table = (int *) xmalloc ((num_basic_blocks) * sizeof (int));
-  block_to_bb = (int *) xmalloc ((last_basic_block) * sizeof (int));
-  containing_rgn = (int *) xmalloc ((last_basic_block) * sizeof (int));
+  rgn_table = (region *) xmalloc ((n_basic_blocks) * sizeof (region));
+  rgn_bb_table = (int *) xmalloc ((n_basic_blocks) * sizeof (int));
+  block_to_bb = (int *) xmalloc ((n_basic_blocks) * sizeof (int));
+  containing_rgn = (int *) xmalloc ((n_basic_blocks) * sizeof (int));
 
   /* Compute regions for scheduling.  */
   if (reload_completed
-      || num_basic_blocks == 1
+      || n_basic_blocks == 1
       || !flag_schedule_interblock)
     {
       find_single_block_region ();
@@ -2912,7 +2910,7 @@ init_regions ()
 	  sbitmap *dom;
 	  struct edge_list *edge_list;
 
-	  dom = sbitmap_vector_alloc (last_basic_block, last_basic_block);
+	  dom = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
 
 	  /* The scheduler runs after flow; therefore, we can't blindly call
 	     back into find_basic_blocks since doing so could invalidate the
@@ -2953,7 +2951,7 @@ init_regions ()
 
   if (CHECK_DEAD_NOTES)
     {
-      blocks = sbitmap_alloc (last_basic_block);
+      blocks = sbitmap_alloc (n_basic_blocks);
       deaths_in_region = (int *) xmalloc (sizeof (int) * nr_regions);
       /* Remove all death notes from the subroutine.  */
       for (rgn = 0; rgn < nr_regions; rgn++)
@@ -2982,11 +2980,10 @@ schedule_insns (dump_file)
   sbitmap large_region_blocks, blocks;
   int rgn;
   int any_large_regions;
-  basic_block bb;
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
-  if (num_basic_blocks == 0)
+  if (n_basic_blocks == 0)
     return;
 
   scope_to_insns_initialize ();
@@ -3021,12 +3018,10 @@ schedule_insns (dump_file)
   compute_bb_for_insn (get_max_uid ());
 
   any_large_regions = 0;
-  large_region_blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (large_region_blocks);
-  FOR_ALL_BB (bb)
-    SET_BIT (large_region_blocks, bb->sindex);
+  large_region_blocks = sbitmap_alloc (n_basic_blocks);
+  sbitmap_ones (large_region_blocks);
 
-  blocks = sbitmap_alloc (last_basic_block);
+  blocks = sbitmap_alloc (n_basic_blocks);
   sbitmap_zero (blocks);
 
   /* Update life information.  For regions consisting of multiple blocks
