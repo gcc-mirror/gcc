@@ -31,9 +31,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	LINK_TARGET_SPEC
 #define	LINK_TARGET_SPEC "\
-%{mbig: -oformat elf32-powerpc } %{mbig-endian: -oformat elf32-powerpc } \
+%{mbig: --oformat elf32-powerpc } %{mbig-endian: --oformat elf32-powerpc } \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
-    %{mcall-linux: -oformat elf32-powerpc} \
+    %{mcall-linux: --oformat elf32-powerpc} \
   }}}}"
 
 /* Define this macro as a C expression for the initializer of an

@@ -1161,9 +1161,9 @@ do {									\
 
 /* Override the default target of the linker.  */
 #define	LINK_TARGET_SPEC "\
-%{mlittle: -oformat elf32-powerpcle } %{mlittle-endian: -oformat elf32-powerpcle } \
+%{mlittle: --oformat elf32-powerpcle } %{mlittle-endian: --oformat elf32-powerpcle } \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
-    %{mcall-solaris: -oformat elf32-powerpcle} \
+    %{mcall-solaris: --oformat elf32-powerpcle} \
   }}}}"
 
 /* Any specific OS flags.  */
