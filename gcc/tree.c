@@ -2421,15 +2421,6 @@ substitute_in_expr (exp, f, r)
 
 	  new = fold (build1 (code, TREE_TYPE (exp), op0));
 	  break;
-
-	case OFFSET_REF:
-	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
-	  op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
-	  if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
-	    return exp;
-
-	  new = fold (build (code, TREE_TYPE (exp), op0, op1));
-	  break;
 	}
     }
 

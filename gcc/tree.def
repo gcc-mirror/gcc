@@ -349,12 +349,6 @@ DEFTREECODE (BIT_FIELD_REF, "bit_field_ref", "r", 3)
 /* C unary `*' or Pascal `^'.  One operand, an expression for a pointer.  */
 DEFTREECODE (INDIRECT_REF, "indirect_ref", "r", 1)
 
-/* Reference to the contents of an offset
-   (a value whose type is an OFFSET_TYPE).
-   Operand 0 is the object within which the offset is taken.
-   Operand 1 is the offset.  */
-DEFTREECODE (OFFSET_REF, "offset_ref", "r", 2)
-
 /* Pascal `^` on a file.  One operand, an expression for the file.  */
 DEFTREECODE (BUFFER_REF, "buffer_ref", "r", 1)
 
