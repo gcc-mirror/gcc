@@ -322,7 +322,7 @@ PROCEDURE generate_option_file( tag_name, punct, outfile_name )
     recursive_fetch_tag ("stamp-objlist", ":");
   ENDIF;
   ! Now fix up a few things in the output buffer.
-  pat_replace (("bytecode"|"Makefile") & (SPAN(" ")|LINE_END), " ");
+  pat_replace ("Makefile" & (SPAN(" ")|LINE_END), " ");
 !#  FILL (CURRENT_BUFFER, " ", 1, 80, 0);	! Condense things a bit.
   pat_replace ("." & ("o"|"c"|"y") & ((SPAN(" ")&LINE_END)|LINE_END), LINE_END);
   pat_replace ("." & ("o"|"c"|"y") & SPAN(" "), ",");

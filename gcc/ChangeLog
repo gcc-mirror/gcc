@@ -1,3 +1,7 @@
+Mon Feb  2 13:06:47 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* vmsconfig.com: Remove bytecode references.
+
 1998-01-30  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* dwarf2out.c (dwarf2out_frame_init): Undo last change, so that
@@ -156,7 +160,6 @@ Fri Jan 30 22:30:39 1998  John Carr  <jfc@mit.edu>
 	(ldd peepholes): Suppress for v9.
 	(return_adddi): Kill redundant test.  Arg1 may be arith_operand.
 	(return_subsi): Revmove.
-
 
 Fri Jan 30 18:30:03 1998  John F Carr  <jfc@mit.edu>
 
