@@ -52,10 +52,6 @@ static int sawclose = 0;
 
 static int indent;
 
-/* Names for patterns.  */
-
-extern const char *get_insn_name PROTO ((int));
-
 static void print_rtx		PROTO ((rtx));
 
 /* Nonzero means suppress output of instruction numbers and line number

@@ -149,38 +149,7 @@ extern char *version_string;
 extern int size_directive_output;
 extern tree last_assemble_variable_decl;
 
-extern void init_decl_processing ();
-extern void init_obstacks ();
-extern void init_tree_codes ();
-extern void init_regs ();
-extern void init_optabs ();
-extern void init_stmt ();
-extern void init_reg_sets ();
-extern void dump_flow_info ();
-extern void dump_sched_info ();
-extern void dump_local_alloc ();
-extern void regset_release_memory ();
-
-extern void print_rtl ();
-extern void print_rtl_with_bb ();
-
-void rest_of_decl_compilation ();
-void error_with_file_and_line PVPROTO((const char *file,
-				       int line, const char *s, ...));
-void error_with_decl PVPROTO((tree decl, const char *s, ...));
-void error_for_asm PVPROTO((rtx insn, const char *s, ...));
-void notice PVPROTO((const char *s, ...));
-void error PVPROTO((const char *s, ...));
-void fatal PVPROTO((const char *s, ...));
-void warning_with_file_and_line PVPROTO((const char *file,
-					 int line, const char *s, ...));
-void warning_with_decl PVPROTO((tree decl, const char *s, ...));
-void warning PVPROTO((const char *s, ...));
-void pedwarn PVPROTO((const char *s, ...));
-void pedwarn_with_decl PVPROTO((tree decl, const char *s, ...));
-void pedwarn_with_file_and_line PVPROTO((const char *file,
-					 int line, const char *s, ...));
-void sorry PVPROTO((const char *s, ...));
+static void notice PVPROTO((const char *s, ...)) ATTRIBUTE_PRINTF_1;
 static void set_target_switch PROTO((const char *));
 static const char *decl_name PROTO((tree, int));
 static void vmessage PROTO((const char *, const char *, va_list));
@@ -204,6 +173,7 @@ static void v_pedwarn_with_decl PROTO((tree, const char *, va_list));
 static void v_pedwarn_with_file_and_line PROTO((const char *, int,
 						const char *, va_list));
 static void vsorry PROTO((const char *, va_list));
+extern void set_fatal_function PROTO((void (*)(const char *, va_list)));
 static void float_signal PROTO((int)) ATTRIBUTE_NORETURN;
 static void pipe_closed PROTO((int)) ATTRIBUTE_NORETURN;
 #ifdef ASM_IDENTIFY_LANGUAGE
@@ -216,6 +186,10 @@ static void dump_rtl PROTO((const char *, tree, void (*) (FILE *, rtx), rtx));
 static void clean_dump_file PROTO((const char *));
 static void compile_file PROTO((char *));
 static void display_help PROTO ((void));
+static int check_lang_option PROTO ((const char *, const char *));
+static void report_file_and_line PROTO ((const char *, int, int));
+static void vnotice PROTO ((FILE *, const char *, va_list));
+static void mark_file_stack PROTO ((void *));
 
 static void print_version PROTO((FILE *, const char *));
 static int print_single_switch PROTO((FILE *, int, int, const char *,
@@ -232,7 +206,7 @@ void finish_graph_dump_file PROTO ((const char *, const char *));
 
 /* Name of program invoked, sans directories.  */
 
-char *progname;
+const char *progname;
 
 /* Copy of arguments to main.  */
 int save_argc;
@@ -1607,13 +1581,13 @@ report_error_function (file)
 static void
 vnotice (file, msgid, ap)
      FILE *file;
-     char *msgid;
+     const char *msgid;
      va_list ap;
 {
   vfprintf (file, _(msgid), ap);
 }
 
-void
+static void
 notice VPROTO((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
@@ -1655,7 +1629,7 @@ fnotice VPROTO((FILE *file, const char *msgid, ...))
 
 static void
 report_file_and_line (file, line, warn)
-     char *file;
+     const char *file;
      int line;
      int warn;
 {
@@ -1943,7 +1917,7 @@ static void (*fatal_function) PROTO((const char *, va_list));
 
 void
 set_fatal_function (f)
-     void (*f) PROTO((char *, va_list));
+     void (*f) PROTO((const char *, va_list));
 {
   fatal_function = f;
 }
@@ -4665,13 +4639,13 @@ display_help ()
 
 static int
 check_lang_option (option, lang_option)
-     char * option;
-     char * lang_option;
+     const char * option;
+     const char * lang_option;
 {
   lang_independent_options * indep_options;
   int    len;
   long    k;
-  char * space;
+  const char * space;
   
   /* Ignore NULL entries.  */
   if (option == NULL || lang_option == NULL)
@@ -4732,6 +4706,8 @@ check_lang_option (option, lang_option)
 /* Entry point of cc1/c++.  Decode command args, then call compile_file.
    Exit code is 35 if can't open files, 34 if fatal error,
    33 if had nonfatal errors, else success.  */
+
+extern int main PROTO ((int, char **));
 
 int
 main (argc, argv)
@@ -4911,7 +4887,7 @@ main (argc, argv)
 	  if (!strcmp (argv[i], "--help"))
 	    {
 	      display_help ();
-	      exit (0);
+	      return (0);
 	    }
 	  
 	  if (strings_processed != 0)
@@ -5357,7 +5333,7 @@ main (argc, argv)
 	  else if (!strcmp (str, "-help"))
 	    {
 	      display_help ();
-	      exit (0);
+	      return (0);
 	    }
 	  else
 	    error ("Invalid option `%s'", argv[i]);
@@ -5486,11 +5462,10 @@ main (argc, argv)
 #endif /* ! OS2 && ! VMS && (! _WIN32 || CYGWIN) && ! __INTERIX */
 
   if (errorcount)
-    exit (FATAL_EXIT_CODE);
+    return (FATAL_EXIT_CODE);
   if (sorrycount)
-    exit (FATAL_EXIT_CODE);
-  exit (SUCCESS_EXIT_CODE);
-  return 0;
+    return (FATAL_EXIT_CODE);
+  return (SUCCESS_EXIT_CODE);
 }
 
 /* Decode -m switches.  */

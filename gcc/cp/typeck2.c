@@ -253,7 +253,6 @@ ack VPROTO ((const char *msg, ...))
   const char *msg;
 #endif
   va_list ap;
-  extern char * progname;
   
   VA_START (ap, msg);
 

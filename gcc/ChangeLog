@@ -1,3 +1,27 @@
+Wed Sep 15 09:59:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rtl.h (get_insn_name, print_rtl_with_bb): Add prototypes.
+
+	* print-rtl.c (get_insn_name): Remove prototype.
+
+	* toplev.h (progname): Declare const.
+
+	* toplev.c (init_decl_processing, init_obstacks, init_tree_codes,
+	init_regs, init_optabs, init_stmt, init_reg_sets, dump_flow_info,
+	dump_sched_info, dump_local_alloc, regset_release_memory,
+	print_rtl, print_rtl_with_bb, rest_of_decl_compilation,
+	error_with_file_and_line, error_with_decl, error_for_asm, error,
+	fatal, warning_with_file_and_line, warning_with_decl, warning,
+	pedwarn, pedwarn_with_decl, pedwarn_with_file_and_line, sorry):
+	Remove redundant prototypes.
+
+	(notice, check_lang_option, report_file_and_line, vnotice,
+	mark_file_stack): Add static prototype.
+	(set_fatal_function): Add prototype.
+	(vnotice, report_file_and_line, set_fatal_function,
+	check_lang_option): Constify a char*.
+	(main): Prototype.  Call return, not exit.
+
 Wed Sep 15 09:50:18 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* aclocal.m4 (AC_GCC_C_LONG_DOUBLE): New macro.

@@ -997,6 +997,7 @@ extern rtx make_safe_from		PROTO((rtx, rtx));
 extern rtx convert_memory_address	PROTO((enum machine_mode, rtx));
 extern rtx memory_address		PROTO((enum machine_mode, rtx));
 extern rtx get_insns			PROTO((void));
+extern const char *get_insn_name	PROTO((int));
 extern rtx get_last_insn		PROTO((void));
 extern rtx get_last_insn_anywhere	PROTO((void));
 extern void start_sequence		PROTO((void));
@@ -1530,6 +1531,7 @@ extern void allocate_bb_life_data	PROTO ((void));
 extern void allocate_reg_life_data	PROTO ((void));
 extern void recompute_reg_usage		PROTO ((rtx, int));
 #ifdef BUFSIZ
+extern void print_rtl_with_bb		PROTO ((FILE *, rtx));
 extern void dump_flow_info		PROTO ((FILE *));
 #endif
 extern void free_bb_mem			PROTO ((void));
