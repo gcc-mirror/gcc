@@ -146,8 +146,8 @@ struct sarray* sarray_new(int, void* default_element);
 void sarray_free(struct sarray*);
 struct sarray* sarray_lazy_copy(struct sarray*);
 void sarray_realloc(struct sarray*, int new_size);
-void sarray_at_put(struct sarray*, sidx index, void* elem);
-void sarray_at_put_safe(struct sarray*, sidx index, void* elem);
+void sarray_at_put(struct sarray*, sidx indx, void* elem);
+void sarray_at_put_safe(struct sarray*, sidx indx, void* elem);
 
 struct sarray* sarray_hard_copy(struct sarray*); /* ... like the name? */
 void sarray_remove_garbage(void);
@@ -156,10 +156,10 @@ void sarray_remove_garbage(void);
 #ifdef PRECOMPUTE_SELECTORS
 /* Transform soffset values to ints and vica verca */
 static inline unsigned int
-soffset_decode(sidx index)
+soffset_decode(sidx indx)
 {
   union sofftype x;
-  x.idx = index;
+  x.idx = indx;
 #ifdef OBJC_SPARSE3
   return x.off.eoffset
     + (x.off.boffset*BUCKET_SIZE)
@@ -186,9 +186,9 @@ soffset_encode(size_t offset)
 #else /* not PRECOMPUTE_SELECTORS */
 
 static inline size_t
-soffset_decode(sidx index)
+soffset_decode(sidx indx)
 {
-  return index;
+  return indx;
 }
 
 static inline sidx
@@ -198,13 +198,13 @@ soffset_encode(size_t offset)
 }
 #endif /* not PRECOMPUTE_SELECTORS */
 
-/* Get element from the Sparse array `array' at offset `index' */
+/* Get element from the Sparse array `array' at offset `indx' */
 
-static inline void* sarray_get(struct sarray* array, sidx index)
+static inline void* sarray_get(struct sarray* array, sidx indx)
 {
 #ifdef PRECOMPUTE_SELECTORS
   union sofftype x;
-  x.idx = index;
+  x.idx = indx;
 #ifdef OBJC_SPARSE3
   return 
     array->
@@ -217,19 +217,19 @@ static inline void* sarray_get(struct sarray* array, sidx index)
 #else /* not PRECOMPUTE_SELECTORS */
 #ifdef OBJC_SPARSE3
   return array->
-    indices[index/INDEX_CAPACITY]->
-      buckets[(index/BUCKET_SIZE)%INDEX_SIZE]->
-	elems[index%BUCKET_SIZE];
+    indices[indx/INDEX_CAPACITY]->
+      buckets[(indx/BUCKET_SIZE)%INDEX_SIZE]->
+	elems[indx%BUCKET_SIZE];
 #else /* OBJC_SPARSE2 */
-  return array->buckets[index/BUCKET_SIZE]->elems[index%BUCKET_SIZE];
+  return array->buckets[indx/BUCKET_SIZE]->elems[indx%BUCKET_SIZE];
 #endif /* not OBJC_SPARSE3 */
 #endif /* not PRECOMPUTE_SELECTORS */
 }
 
-static inline void* sarray_get_safe(struct sarray* array, sidx index)
+static inline void* sarray_get_safe(struct sarray* array, sidx indx)
 {
-  if(soffset_decode(index) < array->capacity)
-    return sarray_get(array, index);
+  if(soffset_decode(indx) < array->capacity)
+    return sarray_get(array, indx);
   else
     return (array->empty_bucket->elems[0]);
 }

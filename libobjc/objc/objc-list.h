@@ -64,9 +64,9 @@ list_length(struct objc_list* list)
    larger than the list length, NULL is returned  */
 
 static inline void*
-list_nth(int index, struct objc_list* list)
+list_nth(int indx, struct objc_list* list)
 {
-  while(index-- != 0)
+  while(indx-- != 0)
     {
       if(list->tail)
 	list = list->tail;
