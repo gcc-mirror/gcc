@@ -1,5 +1,10 @@
 2001-12-11  Richard Henderson  <rth@redhat.com>
 
+	* expmed.c (expand_divmod): Ignore sdiv_pow2_cheap for modes in
+	which there is no divide expander.
+
+2001-12-11  Richard Henderson  <rth@redhat.com>
+
 	* except.c (sjlj_find_directly_reachable_regions): Don't
 	consider RNL_BLOCKED a directly reachable region.
 	(sjlj_assign_call_site_values): Trust directly_reachable.
