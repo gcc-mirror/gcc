@@ -1,3 +1,9 @@
+Sun Dec  6 00:20:44 1998  H.J. Lu  (hjl@gnu.org)
+
+	* print-rtl.c (print_rtx): Add prototype.
+
+	* unroll.c (iteration_info): Make it static.
+
 Sun Dec  6 01:19:46 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alias.c (memrefs_conflict_p): A second ANDed address
