@@ -172,6 +172,30 @@ convert_to_integer (type, expr)
 
       switch (ex_form)
 	{
+        case INTEGER_CST:
+	  if (TREE_UNSIGNED (type))
+	    {
+	      if (TREE_INT_CST_LOW (expr) >> outprec)
+		warning ("integer constant truncated");
+	    }
+	  else
+	    {
+	      /* if the sign bit of the low-order part isn't replicated
+		 through the entire high part, we have overflow */
+	      int sign  = TREE_INT_CST_LOW (expr) & (1 << (outprec - 1));
+	      if (!sign)                       /* lower part positive */
+		{
+		  if (TREE_INT_CST_LOW (expr) >> outprec)
+		    warning ("integer constant truncated");
+		}
+	      else 
+		{
+		  if ((TREE_INT_CST_LOW (expr) >> outprec) + 1)
+		    warning ("integer constant truncated");
+		}
+	    }
+	  break;
+
 	case RSHIFT_EXPR:
 	  /* We can pass truncation down through right shifting
 	     when the shift count is a nonpositive constant.  */
