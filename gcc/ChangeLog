@@ -1,3 +1,7 @@
+2003-12-03  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc: Mark obsolete targets for GCC 3.4.
+
 2003-12-03  Zack Weinberg  <zack@codesourcery.com>
 
 	* aclocal.m4 (AM_ICONV): Add explicit check for iconv.h.

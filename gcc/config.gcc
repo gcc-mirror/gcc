@@ -182,7 +182,23 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- dummy)
+ d30v-* | \
+ dsp16xx-* | \
+ i370-* | \
+ i960-* | \
+ i?86-moss-msdos | i?86-*-moss* | \
+ i?86-ncr-sysv4* | \
+ i?86-*-netware | \
+ i?86-*-freebsd2* | i?86-*-freebsd*aout* | \
+ i?86-*-linux*aout* | \
+ i?86-*-linux*libc1* | \
+ i?86-*-interix | \
+ i?86-*-mach* | \
+ i?86-*-udk* | \
+ i?86-*-sysv[123]* | \
+ i386-*-vsta | \
+ m68k-hp-hpux* | m68000-hp-hpux* | \
+ m68k-*-sysv4*)
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
       echo "*** Specify --enable-obsolete to build it anyway." >&2
@@ -1342,6 +1358,13 @@ m68010-*-netbsdelf* | m68k*-*-netbsdelf*)
 	esac
 	;;
 m68k*-*-netbsd*)
+    if test "x$enable_obsolete" != xyes; then
+      echo "*** Configuration ${target} is obsolete." >&2
+      echo "*** Specify --enable-obsolete to build it anyway." >&2
+      echo "*** Support will be REMOVED in the next major release of GCC," >&2
+      echo "*** unless a maintainer comes forward." >&2
+      exit 1
+    fi
 	tm_file="m68k/m68k.h netbsd.h netbsd-aout.h m68k/netbsd.h"
 	tmake_file=t-netbsd
 	extra_parts=""
@@ -2196,6 +2219,13 @@ vax-*-ultrix*)			# VAXen running ultrix
 	use_fixproto=yes
 	;;
 vax-*-*)			# VAX default entry
+    if test "x$enable_obsolete" != xyes; then
+      echo "*** Configuration ${target} is obsolete." >&2
+      echo "*** Specify --enable-obsolete to build it anyway." >&2
+      echo "*** Support will be REMOVED in the next major release of GCC," >&2
+      echo "*** unless a maintainer comes forward." >&2
+      exit 1
+    fi
 	use_fixproto=yes
 	;;
 xscale-*-elf)
