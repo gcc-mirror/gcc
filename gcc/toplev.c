@@ -2605,9 +2605,12 @@ rest_of_compilation (decl)
   delete_unreachable_blocks ();
 
   /* Turn NOTE_INSN_PREDICTIONs into branch predictions.  */
-  timevar_push (TV_BRANCH_PROB);
-  note_prediction_to_br_prob ();
-  timevar_pop (TV_BRANCH_PROB);
+  if (flag_guess_branch_prob)
+    {
+      timevar_push (TV_BRANCH_PROB);
+      note_prediction_to_br_prob ();
+      timevar_pop (TV_BRANCH_PROB);
+    }
 
   /* We may have potential sibling or tail recursion sites.  Select one
      (of possibly multiple) methods of performing the call.  */
@@ -2688,7 +2691,8 @@ rest_of_compilation (decl)
   timevar_push (TV_JUMP);
   /* Turn NOTE_INSN_EXPECTED_VALUE into REG_BR_PROB.  Do this
      before jump optimization switches branch directions.  */
-  expected_value_to_br_prob ();
+  if (flag_guess_branch_prob)
+    expected_value_to_br_prob ();
 
   reg_scan (insns, max_reg_num (), 0);
   rebuild_jump_labels (insns);
