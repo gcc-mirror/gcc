@@ -1,5 +1,9 @@
 2000-09-06  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.pt/deduct2.C: New test.
+
+2000-09-06  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.pt/parms2.C: New test.
 
 2000-09-06  Nathan Sidwell  <nathan@codesourcery.com>
