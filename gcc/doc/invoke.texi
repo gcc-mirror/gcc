@@ -4457,7 +4457,7 @@ by separate flags.
 Perform cross-jumping transformation. This transformation unifies equivalent code and save code size. The
 resulting code may or may not perform better than without cross-jumping.
 
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fif-conversion
 @opindex if-conversion
