@@ -159,6 +159,9 @@ GCC_NEED_DECLARATION(rindex)
 AC_DECL_SYS_SIGLIST
 
 AC_CHECK_FUNCS(strerror)
+AC_CHECK_FUNCS(putenv)
+AC_CHECK_FUNCS(popen)
+AC_CHECK_FUNCS(vprintf)
 
 # File extensions
 manext='.1'
@@ -764,7 +767,6 @@ for machine in $build $host $target; do
 		;;
 	i[[3456]]86-*-netbsd*)
 		tm_file=i386/netbsd.h
-		xm_file=i386/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -1046,7 +1048,7 @@ for machine in $build $host $target; do
               ;;
 	i860-alliant-*)		# Alliant FX/2800
 		tm_file="${tm_file} svr4.h i860/sysv4.h i860/fx2800.h"
-		xm_file="${xm_file} i860/xm-fx2800.h"
+		xm_file="${xm_file}"
 		xmake_file=i860/x-fx2800
 		tmake_file=i860/t-fx2800
 		extra_parts="crtbegin.o crtend.o"
@@ -1253,7 +1255,7 @@ for machine in $build $host $target; do
 		;;
 	m68k-ncr-sysv*)			# NCR Tower 32 SVR3
 		tm_file=m68k/tower-as.h
-		xm_file=m68k/xm-tower.h
+		xm_file="${xm_file} xm-svr3.h"
 		xmake_file=m68k/x-tower
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
@@ -1405,7 +1407,6 @@ for machine in $build $host $target; do
 		else
 			tm_file=m68k/sun3.h
 		fi
-		xm_file=m68k/xm-sun3.h
 		use_collect2=yes
 		extra_headers=math-68881.h
 		;;
@@ -1438,7 +1439,6 @@ for machine in $build $host $target; do
 		;;
 	m68k-*-netbsd*)
 		tm_file=m68k/netbsd.h
-		xm_file=m68k/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -1745,7 +1745,6 @@ for machine in $build $host $target; do
 	      ;;
 	mips-dec-netbsd*)                  # Decstation running NetBSD
 		tm_file=mips/netbsd.h
-		xm_file=mips/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -2089,7 +2088,6 @@ for machine in $build $host $target; do
 		;;
 	ns32k-pc532-netbsd*)
 		tm_file=ns32k/netbsd.h
-		xm_file=ns32k/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -2319,7 +2317,6 @@ for machine in $build $host $target; do
 		;;
 	sparc-*-netbsd*)
 		tm_file=sparc/netbsd.h
-		xm_file=sparc/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -2484,7 +2481,6 @@ for machine in $build $host $target; do
 		;;
 	vax-*-netbsd*)
 		tm_file="${tm_file} netbsd.h vax/netbsd.h"
-		xm_file="${xm_file} xm-netbsd.h"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
