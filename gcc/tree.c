@@ -1103,6 +1103,21 @@ make_node (code)
 
   return t;
 }
+
+/* A front-end can reset this to an appropriate function if types need
+   special handling.  */
+
+tree (*make_lang_type_fn) PROTO((enum tree_code)) = make_node;
+
+/* Return a new type (with the indicated CODE), doing whatever
+   language-specific processing is required.  */
+
+tree 
+make_lang_type (code)
+     enum tree_code code;
+{
+  return (*make_lang_type_fn) (code);
+}
 
 /* Return a new node with the same contents as NODE except that its
    TREE_CHAIN is zero and it has a fresh uid.  Unlike make_node, this

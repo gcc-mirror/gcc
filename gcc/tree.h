@@ -1560,6 +1560,8 @@ extern char *expralloc			PROTO((int));
    to zero except for a few of the common fields.  */
 
 extern tree make_node			PROTO((enum tree_code));
+extern tree make_lang_type		PROTO((enum tree_code));
+extern tree (*make_lang_type_fn)		PROTO((enum tree_code));
 
 /* Make a copy of a node, with all the same contents except
    for TREE_PERMANENT.  (The copy is permanent

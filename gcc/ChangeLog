@@ -1,3 +1,12 @@
+Thu Oct  7 22:53:00 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+	                  Mark Mitchell  <mark@codesourcery.com>
+
+        * tree.c (make_lang_type_fn): New funtion pointer.
+        (make_lang_type): Call it.
+        * tree.h (make_lang_type): Declare.
+        (make_lang_type_fn): Likewise.
+        * rs6000.c (rs6000_build_va_list): Use make_lang_type.
+
 Thu Oct  7 00:36:17 MDT 1999	Diego Novillo <dnovillo@cygnus.com>
 
 	* config/rs6000/rs6000.c (secondary_reload_class): For TARGET_ELF
