@@ -6523,6 +6523,7 @@ c_expand_body_1 (fndecl, nested_p)
   current_function_decl = fndecl;
   input_filename = DECL_SOURCE_FILE (fndecl);
   init_function_start (fndecl, input_filename, DECL_SOURCE_LINE (fndecl));
+  lineno = DECL_SOURCE_LINE (fndecl);
 
   /* This function is being processed in whole-function mode.  */
   cfun->x_whole_function_mode_p = 1;
