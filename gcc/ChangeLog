@@ -1,3 +1,9 @@
+2005-01-18  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	PR target/19379
+	* config/i386/i386.c (override_options): If the 80387 is disabled,
+	then do not return FP values using FP registers.
+
 2005-01-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h, c-common.c, c-cppbuiltin.c, c-lang.c,
