@@ -1,3 +1,18 @@
+2005-03-19  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/avr/avr.c (avr_init_stack, avr_mcu_name): Make static.
+	(TARGET_HANDLE_OPTION): Override default.
+	(avr_handle_option): New function.
+	* config/avr/avr.h (MASK_ALL_DEBUG, MASK_ORDER_1, MASK_INSN_SIZE_DUMP)
+	(MASK_ORDER_2, MASK_NO_TABLEJUMP, MASK_INT8, MASK_NO_INTERRUPTS)
+	(MASK_CALL_PROLOGUES, MASK_TINY_STACK, MASK_SHORT_CALLS)
+	(TARGET_ORDER_1, TARGET_ORDER_2, TARGET_INT8, TARGET_NO_INTERRUPTS)
+	(TARGET_INSN_SIZE_DUMP, TARGET_CALL_PROLOGUES, TARGET_TINY_STACK)
+	(TARGET_NO_TABLEJUMP, TARGET_SHORT_CALLS, TARGET_ALL_DEBUG)
+	(TARGET_SWITCHES, avr_init_stack, avr_mcu_name)
+	(TARGET_OPTIONS): Delete.
+	* config/avr/avr.opt: New file.
+
 2005-03-18  James E Wilson  <wilson@specifixinc.com>
 
 	PR c++/19769
