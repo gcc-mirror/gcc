@@ -2742,6 +2742,7 @@ typedef struct mips_args {
 				  CONST_DOUBLE, CONST }},		\
   {"fcc_register_operand",	{ REG, SUBREG }},			\
   {"hilo_operand",		{ REG }},				\
+  {"macc_msac_operand",		{ PLUS, MINUS }},			\
   {"extend_operator",		{ ZERO_EXTEND, SIGN_EXTEND }},
 
 /* A list of predicates that do special things with modes, and so

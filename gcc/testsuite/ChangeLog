@@ -1,3 +1,7 @@
+2004-04-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/vr-mult-[12].c: New tests.
+
 2004-04-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/funcorder.c: xfail hppa*64*-*-*.
