@@ -1989,11 +1989,14 @@ find_auto_inc (needed, x, insn)
 
 	  if (dead_or_set_p (incr, addr))
 	    win = 1;
-	  else if (GET_CODE (q) == REG && ! reg_used_between_p (q, insn, incr))
+	  else if (GET_CODE (q) == REG
+		   /* PREV_INSN used here to check the semi-open interval
+		      [insn,incr).  */
+		   && ! reg_used_between_p (q,  PREV_INSN (insn), incr))
 	    {
-	      /* We have *p followed by q = p+size.
+	      /* We have *p followed sometime later by q = p+size.
 		 Both p and q must be live afterward,
-		 and q must be dead before.
+		 and q is not used between INSN and it's assignment.
 		 Change it to q = p, ...*q..., q = q+size.
 		 Then fall into the usual case.  */
 	      rtx insns, temp;
