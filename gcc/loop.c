@@ -8320,6 +8320,7 @@ check_dbra_loop (struct loop *loop, int insn_count)
 	      enum rtx_code cmp_code;
 	      int comparison_const_width;
 	      unsigned HOST_WIDE_INT comparison_sign_mask;
+	      bool keep_first_compare;
 
 	      add_val = INTVAL (bl->biv->add_val);
 	      comparison_value = XEXP (comparison, 1);
@@ -8512,12 +8513,25 @@ check_dbra_loop (struct loop *loop, int insn_count)
 		 not delete the label.  */
 	      LABEL_NUSES (XEXP (jump_label, 0))++;
 
+	      /* If we have a separate comparison insn that does more
+		 than just set cc0, the result of the comparison might
+		 be used outside the loop.  */
+	      keep_first_compare = (compare_and_branch == 2
+#ifdef HAVE_CC0
+				    && sets_cc0_p (first_compare) <= 0
+#endif
+				    );
+
 	      /* Emit an insn after the end of the loop to set the biv's
 		 proper exit value if it is used anywhere outside the loop.  */
-	      if ((REGNO_LAST_UID (bl->regno) != INSN_UID (first_compare))
+	      if (keep_first_compare
+		  || (REGNO_LAST_UID (bl->regno) != INSN_UID (first_compare))
 		  || ! bl->init_insn
 		  || REGNO_FIRST_UID (bl->regno) != INSN_UID (bl->init_insn))
 		loop_insn_sink (loop, gen_load_of_final_value (reg, final_value));
+
+	      if (keep_first_compare)
+		loop_insn_sink (loop, PATTERN (first_compare));
 
 	      /* Delete compare/branch at end of loop.  */
 	      delete_related_insns (PREV_INSN (loop_end));

@@ -1,3 +1,9 @@
+2004-07-13  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR rtl-optimization/16380
+	* loop.c (check_dbra_loop): Sink comparison instructions if they
+	do something other than set cc0.
+
 2004-07-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/16494
