@@ -1,5 +1,8 @@
 1998-12-04  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* lex.c (handle_cp_pragma): Disable #pragma interface/implementation
+	if MULTIPLE_SYMBOL_SPACES.
+
 	* pt.c (check_template_shadow): New fn.
 	* decl2.c (grokfield): Use it.
 	* decl.c (pushdecl): Likewise.
