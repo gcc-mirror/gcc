@@ -36,6 +36,8 @@
 #ifndef _CPP_BITS_LOCFACETS_H
 #define _CPP_BITS_LOCFACETS_H	1
 
+#pragma GCC system_header
+
 #include <bits/std_ctime.h>	// For struct tm
 #include <bits/std_ios.h>	// For ios_base
 #ifdef _GLIBCPP_USE_WCHAR_T

@@ -34,6 +34,8 @@
 #ifndef _CPP_BASIC_FILE
 #define _CPP_BASIC_FILE		1
 
+#pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <bits/std_ios.h>
 

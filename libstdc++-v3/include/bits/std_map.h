@@ -27,6 +27,8 @@
 #ifndef _CPP_MAP
 #define _CPP_MAP 1
 
+#pragma GCC system_header
+
 #ifndef _CPP_BITS_STL_TREE_H  
 #include <bits/stl_tree.h>
 #endif

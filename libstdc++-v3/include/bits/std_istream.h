@@ -34,6 +34,8 @@
 #ifndef _CPP_ISTREAM
 #define _CPP_ISTREAM	1
 
+#pragma GCC system_header
+
 #include <bits/std_ios.h>
 #include <bits/std_limits.h> // For numeric_limits
 

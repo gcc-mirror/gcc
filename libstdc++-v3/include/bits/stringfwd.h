@@ -34,6 +34,8 @@
 #ifndef _CPP_BITS_STRINGFWD_H
 #define _CPP_BITS_STRINGFWD_H	1
 
+#pragma GCC system_header
+
 #include <bits/c++config.h>
 
 namespace std

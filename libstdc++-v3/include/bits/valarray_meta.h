@@ -32,6 +32,8 @@
 #ifndef _CPP_VALARRAY_META_H
 #define _CPP_VALARRAY_META_H 1
 
+#pragma GCC system_header
+
 namespace std {
 
     //

@@ -34,6 +34,8 @@
 #ifndef _CPP_OSTREAM
 #define _CPP_OSTREAM	1
 
+#pragma GCC system_header
+
 #include <bits/std_ios.h>
 
 namespace std {

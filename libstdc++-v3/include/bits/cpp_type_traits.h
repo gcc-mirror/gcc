@@ -1,6 +1,6 @@
 // The  -*- C++ -*- type traits classes for internal use in libstdc++
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000-2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,6 +31,8 @@
 
 #ifndef _CPP_BITS_CPP_TYPE_TRAITS_H
 #define _CPP_BITS_CPP_TYPE_TRAITS_H 1
+
+#pragma GCC system_header
 
 //
 // This file provides some compile-time information about various types.

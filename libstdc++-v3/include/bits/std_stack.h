@@ -27,6 +27,8 @@
 #ifndef _CPP_STACK
 #define _CPP_STACK 1
 
+#pragma GCC system_header
+
 #include <bits/stl_algobase.h>
 #include <bits/stl_alloc.h>
 #include <bits/stl_construct.h>

@@ -11,8 +11,10 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef STL_SEQUENCE_CONCEPTS_H
-#define STL_SEQUENCE_CONCEPTS_H
+#ifndef _STL_SEQUENCE_CONCEPTS_H
+#define _STL_SEQUENCE_CONCEPTS_H 1
+
+#pragma GCC system_header
 
 #include <bits/container_concepts.h>
 
@@ -201,4 +203,4 @@ _BackInsertionSequence_requirement_violation(_BackInsertionSequence __s) {
 #endif /* if __STL_USE_CONCEPT_CHECKS */
 
 
-#endif /* STL_SEQUENCE_CONCEPTS_H */
+#endif /* _STL_SEQUENCE_CONCEPTS_H */

@@ -34,6 +34,8 @@
 #ifndef _CPP_IOS
 #define _CPP_IOS	1
 
+#pragma GCC system_header
+
 #include <bits/std_iosfwd.h>
 #include <exception> 		// For ios_base::failure
 #include <bits/char_traits.h> 	// For char_traits, streamoff, streamsize, fpos

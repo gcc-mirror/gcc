@@ -34,6 +34,8 @@
 #ifndef _CPP_BITS_LOCCORE_H
 #define _CPP_BITS_LOCCORE_H	1
 
+#pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <bits/c++locale.h>     // Defines __c_locale.
 #include <bits/std_climits.h>	// For CHAR_BIT
