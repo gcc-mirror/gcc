@@ -3273,52 +3273,6 @@ redeclare_class_template (tree type, tree parms)
     }
 }
 
-/* Return true if non-dependent expressions EXPR contains within it a
-   cast expression with a dependent argument.  */
-
-static bool
-contains_dependent_cast_p (tree expr)
-{
-  switch (TREE_CODE (expr))
-    {
-    case CAST_EXPR:
-    case REINTERPRET_CAST_EXPR:
-    case STATIC_CAST_EXPR:
-    case DYNAMIC_CAST_EXPR:
-    case CONST_CAST_EXPR:
-      {
-	tree op = TREE_OPERAND (expr, 0);
-
-	if (op && (type_dependent_expression_p (op)
-		   || value_dependent_expression_p (op)))
-	  return true;
-      }
-      break;
-
-    case TREE_LIST:
-      /* The operands of a CALL_EXPR are held as a list.  */
-      for (; expr; expr = TREE_CHAIN (expr))
-	if (contains_dependent_cast_p (TREE_VALUE (expr)))
-	  return true;
-      return false;
-
-    default:
-      break;
-    }
-
-  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (expr))))
-    {
-      int ix;
-  
-      for (ix = TREE_CODE_LENGTH (TREE_CODE (expr)); ix--;)
-	if (TREE_OPERAND (expr, ix)
-	    && contains_dependent_cast_p (TREE_OPERAND (expr, ix)))
-	  return true;
-    }
-  
-  return false;
-}
-
 /* Simplify EXPR if it is a non-dependent expression.  Returns the
    (possibly simplified) expression.  */
 
@@ -3334,8 +3288,7 @@ fold_non_dependent_expr (tree expr)
      as two declarations of the same function, for example.  */
   if (processing_template_decl
       && !type_dependent_expression_p (expr)
-      && !value_dependent_expression_p (expr)
-      && !contains_dependent_cast_p (expr))
+      && !value_dependent_expression_p (expr))
     {
       HOST_WIDE_INT saved_processing_template_decl;
 
@@ -12018,119 +11971,132 @@ value_dependent_expression_p (tree expression)
     return false;
 
   /* A name declared with a dependent type.  */
-  if (TREE_CODE (expression) == IDENTIFIER_NODE
-      || (DECL_P (expression) 
-	  && type_dependent_expression_p (expression)))
+  if (DECL_P (expression) && type_dependent_expression_p (expression))
     return true;
-  /* A non-type template parameter.  */
-  if ((TREE_CODE (expression) == CONST_DECL
-       && DECL_TEMPLATE_PARM_P (expression))
-      || TREE_CODE (expression) == TEMPLATE_PARM_INDEX)
-    return true;
-  /* A constant with integral or enumeration type and is initialized 
-     with an expression that is value-dependent.  */
-  if (TREE_CODE (expression) == VAR_DECL
-      && DECL_INITIAL (expression)
-      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (expression))
-      && value_dependent_expression_p (DECL_INITIAL (expression)))
-    return true;
-  /* These expressions are value-dependent if the type to which the
-     cast occurs is dependent or the expression being casted is
-     value-dependent.  */
-  if (TREE_CODE (expression) == DYNAMIC_CAST_EXPR
-      || TREE_CODE (expression) == STATIC_CAST_EXPR
-      || TREE_CODE (expression) == CONST_CAST_EXPR
-      || TREE_CODE (expression) == REINTERPRET_CAST_EXPR
-      || TREE_CODE (expression) == CAST_EXPR)
+  
+  switch (TREE_CODE (expression))
     {
-      tree type = TREE_TYPE (expression);
-      if (dependent_type_p (type))
-	return true;
-      /* A functional cast has a list of operands.  */
-      expression = TREE_OPERAND (expression, 0);
-      if (!expression)
-	{
-	  /* If there are no operands, it must be an expression such
-	     as "int()". This should not happen for aggregate types
-	     because it would form non-constant expressions.  */
-	  gcc_assert (INTEGRAL_OR_ENUMERATION_TYPE_P (type));
+    case IDENTIFIER_NODE:
+      /* A name that has not been looked up -- must be dependent.  */
+      return true;
 
-	  return false;
-	}
-      if (TREE_CODE (expression) == TREE_LIST)
-	{
-	  do
-	    {
+    case TEMPLATE_PARM_INDEX:
+      /* A non-type template parm.  */
+      return true;
+
+    case CONST_DECL:
+      /* A non-type template parm.  */
+      if (DECL_TEMPLATE_PARM_P (expression))
+	return true;
+      return false;
+
+    case VAR_DECL:
+       /* A constant with integral or enumeration type and is initialized 
+     	  with an expression that is value-dependent.  */
+      if (DECL_INITIAL (expression)
+	  && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (expression))
+	  && value_dependent_expression_p (DECL_INITIAL (expression)))
+	return true;
+      return false;
+
+    case DYNAMIC_CAST_EXPR:
+    case STATIC_CAST_EXPR:
+    case CONST_CAST_EXPR:
+    case REINTERPRET_CAST_EXPR:
+    case CAST_EXPR:
+      /* These expressions are value-dependent if the type to which
+     	 the cast occurs is dependent or the expression being casted
+     	 is value-dependent.  */
+      {
+	tree type = TREE_TYPE (expression);
+	
+	if (dependent_type_p (type))
+	  return true;
+	
+	/* A functional cast has a list of operands.  */
+	expression = TREE_OPERAND (expression, 0);
+	if (!expression)
+	  {
+	    /* If there are no operands, it must be an expression such
+	       as "int()". This should not happen for aggregate types
+	       because it would form non-constant expressions.  */
+	    gcc_assert (INTEGRAL_OR_ENUMERATION_TYPE_P (type));
+	    
+	    return false;
+	  }
+	
+	if (TREE_CODE (expression) == TREE_LIST)
+	  {
+	    for (; expression; expression = TREE_CHAIN (expression))
 	      if (value_dependent_expression_p (TREE_VALUE (expression)))
 		return true;
-	      expression = TREE_CHAIN (expression);
-	    }
-	  while (expression);
-	  return false;
-	}
-      else
+	    return false;
+	  }
+	
 	return value_dependent_expression_p (expression);
-    }
-  /* A `sizeof' expression is value-dependent if the operand is
-     type-dependent.  */
-  if (TREE_CODE (expression) == SIZEOF_EXPR
-      || TREE_CODE (expression) == ALIGNOF_EXPR)
-    {
+      }
+      
+    case SIZEOF_EXPR:
+    case ALIGNOF_EXPR:
+      /* A `sizeof' expression is value-dependent if the operand is
+     	 type-dependent.  */
       expression = TREE_OPERAND (expression, 0);
       if (TYPE_P (expression))
 	return dependent_type_p (expression);
       return type_dependent_expression_p (expression);
-    }
-  if (TREE_CODE (expression) == SCOPE_REF)
-    return dependent_scope_ref_p (expression, value_dependent_expression_p);
-  if (TREE_CODE (expression) == COMPONENT_REF)
-    return (value_dependent_expression_p (TREE_OPERAND (expression, 0))
-	    || value_dependent_expression_p (TREE_OPERAND (expression, 1)));
 
-  /* A CALL_EXPR is value-dependent if any argument is
-     value-dependent.  Why do we have to handle CALL_EXPRs in this
-     function at all?  First, some function calls, those for which
-     value_dependent_expression_p is true, man appear in constant
-     expressions.  Second, there appear to be bugs which result in
-     other CALL_EXPRs reaching this point. */
-  if (TREE_CODE (expression) == CALL_EXPR)
-    {
-      tree function = TREE_OPERAND (expression, 0);
-      tree args = TREE_OPERAND (expression, 1);
+    case SCOPE_REF:
+      return dependent_scope_ref_p (expression, value_dependent_expression_p);
 
-      if (value_dependent_expression_p (function))
-	return true;
-      else if (! args)
-	return false;
-      else if (TREE_CODE (args) == TREE_LIST)
-	{
-	  do
-	    {
+    case COMPONENT_REF:
+      return (value_dependent_expression_p (TREE_OPERAND (expression, 0))
+	      || value_dependent_expression_p (TREE_OPERAND (expression, 1)));
+
+    case CALL_EXPR:
+      /* A CALL_EXPR is value-dependent if any argument is
+     	 value-dependent.  Why do we have to handle CALL_EXPRs in this
+     	 function at all?  First, some function calls, those for which
+     	 value_dependent_expression_p is true, man appear in constant
+     	 expressions.  Second, there appear to be bugs which result in
+     	 other CALL_EXPRs reaching this point. */
+      {
+	tree function = TREE_OPERAND (expression, 0);
+	tree args = TREE_OPERAND (expression, 1);
+	
+	if (value_dependent_expression_p (function))
+	  return true;
+	
+	if (! args)
+	  return false;
+	
+	if (TREE_CODE (args) == TREE_LIST)
+	  {
+	    for (; args; args = TREE_CHAIN (args))
 	      if (value_dependent_expression_p (TREE_VALUE (args)))
 		return true;
-	      args = TREE_CHAIN (args);
-	    }
-	  while (args);
-	  return false;
-	}
-      else
+	    return false;
+	  }
+	
 	return value_dependent_expression_p (args);
-    }
-  /* A constant expression is value-dependent if any subexpression is
-     value-dependent.  */
-  if (EXPR_P (expression))
-    {
+      }
+
+    default:
+      /* A constant expression is value-dependent if any subexpression is
+     	 value-dependent.  */
       switch (TREE_CODE_CLASS (TREE_CODE (expression)))
 	{
+	case tcc_reference:
 	case tcc_unary:
 	  return (value_dependent_expression_p 
 		  (TREE_OPERAND (expression, 0)));
+	  
 	case tcc_comparison:
 	case tcc_binary:
 	  return ((value_dependent_expression_p 
 		   (TREE_OPERAND (expression, 0)))
 		  || (value_dependent_expression_p 
 		      (TREE_OPERAND (expression, 1))));
+	  
 	case tcc_expression:
 	  {
 	    int i;
@@ -12145,16 +12111,12 @@ value_dependent_expression_p (tree expression)
 		return true;
 	    return false;
 	  }
-	case tcc_reference:
-	case tcc_statement:
-	  /* These cannot be value dependent.  */
-	  return false;
-
+	      
 	default:
-	  gcc_unreachable ();
+	  break;
 	}
     }
-
+  
   /* The expression is not value-dependent.  */
   return false;
 }

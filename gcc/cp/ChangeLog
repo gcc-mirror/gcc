@@ -1,3 +1,11 @@
+2005-03-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20186
+	* pt.c (contains_dependent_cast_p): Remove.
+	(fold_non_dependent_expr): Don't use it.
+	(value_dependent_expression_p): Use a switch statement.
+	reference_exprs can be dependent.
+
 2005-03-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/4403
