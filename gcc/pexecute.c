@@ -23,8 +23,6 @@ Boston, MA 02111-1307, USA.  */
 /* This file lives in at least two places: libiberty and gcc.
    Don't change one without the other.  */
 
-/* ??? The usage of execv/spawnv vs execvp/spawnvp seems backwards.  */
-
 #include <stdio.h>
 #include <errno.h>
 
