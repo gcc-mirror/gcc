@@ -695,9 +695,6 @@ fixed_base_plus_p (rtx x)
 	return false;
       return fixed_base_plus_p (XEXP (x, 0));
 
-    case ADDRESSOF:
-      return true;
-
     default:
       return false;
     }
@@ -2769,7 +2766,6 @@ find_best_addr (rtx insn, rtx *loc, enum machine_mode mode)
 	  && (regno = REGNO (addr), regno == FRAME_POINTER_REGNUM
 	      || regno == HARD_FRAME_POINTER_REGNUM
 	      || regno == ARG_POINTER_REGNUM))
-      || GET_CODE (addr) == ADDRESSOF
       || CONSTANT_ADDRESS_P (addr))
     return;
 
@@ -3188,10 +3184,6 @@ fold_rtx (rtx x, rtx insn)
 	 since they are used only for lists of args
 	 in a function call's REG_EQUAL note.  */
     case EXPR_LIST:
-      /* Changing anything inside an ADDRESSOF is incorrect; we don't
-	 want to (e.g.,) make (addressof (const_int 0)) just because
-	 the location is known to be zero.  */
-    case ADDRESSOF:
       return x;
 
 #ifdef HAVE_cc0
@@ -3444,8 +3436,6 @@ fold_rtx (rtx x, rtx insn)
 	else if (GET_CODE (addr) == LO_SUM
 		 && GET_CODE (XEXP (addr, 1)) == SYMBOL_REF)
 	  base = XEXP (addr, 1);
-	else if (GET_CODE (addr) == ADDRESSOF)
-	  return change_address (x, VOIDmode, addr);
 
 	/* If this is a constant pool reference, we can fold it into its
 	   constant to allow better value tracking.  */
@@ -5924,7 +5914,6 @@ cse_insn (rtx insn, rtx libcall_insn)
     if (sets[i].rtl)
       {
 	rtx dest = SET_DEST (sets[i].rtl);
-	rtx inner_dest = sets[i].inner_dest;
 	struct table_elt *elt;
 
 	/* Don't record value if we are not supposed to risk allocating
@@ -5973,17 +5962,8 @@ cse_insn (rtx insn, rtx libcall_insn)
 	      sets[i].dest_hash = HASH (dest, GET_MODE (dest));
 	    }
 
-	if (MEM_P (inner_dest)
-	    && GET_CODE (XEXP (inner_dest, 0)) == ADDRESSOF)
-	  /* Given (SET (MEM (ADDRESSOF (X))) Y) we don't want to say
-	     that (MEM (ADDRESSOF (X))) is equivalent to Y.
-	     Consider the case in which the address of the MEM is
-	     passed to a function, which alters the MEM.  Then, if we
-	     later use Y instead of the MEM we'll miss the update.  */
-	  elt = insert (dest, 0, sets[i].dest_hash, GET_MODE (dest));
-	else
-	  elt = insert (dest, sets[i].src_elt,
-			sets[i].dest_hash, GET_MODE (dest));
+	elt = insert (dest, sets[i].src_elt,
+		      sets[i].dest_hash, GET_MODE (dest));
 
 	elt->in_memory = (MEM_P (sets[i].inner_dest)
 			  && (! RTX_UNCHANGING_P (sets[i].inner_dest)
@@ -7402,12 +7382,7 @@ set_live_p (rtx set, rtx insn ATTRIBUTE_UNUSED, /* Only used with HAVE_cc0.  */
   else if (!REG_P (SET_DEST (set))
 	   || REGNO (SET_DEST (set)) < FIRST_PSEUDO_REGISTER
 	   || counts[REGNO (SET_DEST (set))] != 0
-	   || side_effects_p (SET_SRC (set))
-	   /* An ADDRESSOF expression can turn into a use of the
-	      internal arg pointer, so always consider the
-	      internal arg pointer live.  If it is truly dead,
-	      flow will delete the initializing insn.  */
-	   || (SET_DEST (set) == current_function_internal_arg_pointer))
+	   || side_effects_p (SET_SRC (set)))
     return true;
   return false;
 }

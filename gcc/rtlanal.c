@@ -86,7 +86,6 @@ rtx_unstable_p (rtx x)
     case QUEUED:
       return 1;
 
-    case ADDRESSOF:
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
@@ -173,10 +172,6 @@ rtx_varies_p (rtx x, int for_alias)
     case LABEL_REF:
       return 0;
 
-    case ADDRESSOF:
-      /* This will resolve to some offset from the frame pointer.  */
-      return 0;
-
     case REG:
       /* Note that we have to test for the actual rtx used for the frame
 	 and arg pointers and not just the register number in case we have
@@ -248,10 +243,6 @@ rtx_addr_can_trap_p (rtx x)
     case LABEL_REF:
       return 0;
 
-    case ADDRESSOF:
-      /* This will resolve to some offset from the frame pointer.  */
-      return 0;
-
     case REG:
       /* As in rtx_varies_p, we have to use the actual rtx, not reg number.  */
       if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
@@ -309,10 +300,6 @@ nonzero_address_p (rtx x)
       return !SYMBOL_REF_WEAK (x);
 
     case LABEL_REF:
-      return true;
-
-    case ADDRESSOF:
-      /* This will resolve to some offset from the frame pointer.  */
       return true;
 
     case REG:
@@ -3838,14 +3825,6 @@ rtx_cost (rtx x, enum rtx_code outer_code ATTRIBUTE_UNUSED)
 int
 address_cost (rtx x, enum machine_mode mode)
 {
-  /* The address_cost target hook does not deal with ADDRESSOF nodes.  But,
-     during CSE, such nodes are present.  Using an ADDRESSOF node which
-     refers to the address of a REG is a good thing because we can then
-     turn (MEM (ADDRESSOF (REG))) into just plain REG.  */
-
-  if (GET_CODE (x) == ADDRESSOF && REG_P (XEXP ((x), 0)))
-    return -1;
-
   /* We may be asked for cost of various unusual addresses, such as operands
      of push instruction.  It is not worthwhile to complicate writing
      of the target hook by such cases.  */

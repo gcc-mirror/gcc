@@ -1,9 +1,13 @@
+2004-07-04  Richard Henderson  <rth@redhat.com>
+
+	* typeck.c (cxx_mark_addressable): Don't put_var_into_stack.
+
 2004-07-03  Scott Brumbaugh  <scottb.lists@verizon.net>
 
 	PR c++/3761
 	* name-lookup.c (push_class_level_binding): Don't pass a
 	TREE_LIST of ambiguous names to check_template_shadow as it
-	only handles declarations. Instead, pull the declaration 
+	only handles declarations. Instead, pull the declaration
 	out and pass that.
 
 2004-07-03  Giovanni Bajo  <giovannibajo@gcc.gnu.org>

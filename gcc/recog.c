@@ -978,18 +978,10 @@ general_operand (rtx op, enum machine_mode mode)
       if (! volatile_ok && MEM_VOLATILE_P (op))
 	return 0;
 
-      if (GET_CODE (y) == ADDRESSOF)
-	return 1;
-
       /* Use the mem's mode, since it will be reloaded thus.  */
       mode = GET_MODE (op);
       GO_IF_LEGITIMATE_ADDRESS (mode, y, win);
     }
-
-  /* Pretend this is an operand for now; we'll run force_operand
-     on its replacement in fixup_var_refs_1.  */
-  if (code == ADDRESSOF)
-    return 1;
 
   return 0;
 
@@ -1059,11 +1051,6 @@ register_operand (rtx op, enum machine_mode mode)
 
       op = sub;
     }
-
-  /* If we have an ADDRESSOF, consider it valid since it will be
-     converted into something that will not be a MEM.  */
-  if (GET_CODE (op) == ADDRESSOF)
-    return 1;
 
   /* We don't consider registers whose class is NO_REGS
      to be a register operand.  */
@@ -1288,9 +1275,6 @@ pop_operand (rtx op, enum machine_mode mode)
 int
 memory_address_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx addr)
 {
-  if (GET_CODE (addr) == ADDRESSOF)
-    return 1;
-
   GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);
   return 0;
 

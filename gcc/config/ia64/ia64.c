@@ -958,8 +958,6 @@ general_xfmode_operand (rtx op, enum machine_mode mode)
 {
   if (! general_operand (op, mode))
     return 0;
-  if (GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) == ADDRESSOF)
-    return 0;
   return 1;
 }
 
@@ -969,8 +967,6 @@ int
 destination_xfmode_operand (rtx op, enum machine_mode mode)
 {
   if (! destination_operand (op, mode))
-    return 0;
-  if (GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) == ADDRESSOF)
     return 0;
   return 1;
 }

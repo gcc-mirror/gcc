@@ -3550,7 +3550,6 @@ thumb_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
       /* XXX guess.  */
       return 8;
 
-    case ADDRESSOF:
     case MEM:
       /* XXX another guess.  */
       /* Memory costs quite a lot for the first word, but subsequent words

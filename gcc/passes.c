@@ -139,7 +139,6 @@ enum dump_file_index
   DFI_jump,
   DFI_null,
   DFI_cse,
-  DFI_addressof,
   DFI_gcse,
   DFI_loop,
   DFI_bypass,
@@ -181,7 +180,7 @@ enum dump_file_index
    Remaining -d letters:
 
 	"   e            q         "
-	"          K   O Q     WXY "
+	"    F     K   O Q     WXY "
 */
 
 static struct dump_file_info dump_file_tbl[DFI_MAX] =
@@ -193,7 +192,6 @@ static struct dump_file_info dump_file_tbl[DFI_MAX] =
   { "jump",	'j', 0, 0, 0 },
   { "null",	'u', 0, 0, 0 },
   { "cse",	's', 0, 0, 0 },
-  { "addressof", 'F', 0, 0, 0 },
   { "gcse",	'G', 1, 0, 0 },
   { "loop",	'L', 1, 0, 0 },
   { "bypass",   'G', 1, 0, 0 }, /* Yes, duplicate enable switch.  */
@@ -989,20 +987,6 @@ rest_of_handle_cfg (void)
   close_dump_file (DFI_cfg, print_rtl_with_bb, get_insns ());
 }
 
-/* Purge addressofs.  */
-static void
-rest_of_handle_addressof (void)
-{
-  open_dump_file (DFI_addressof, current_function_decl);
-
-  purge_addressof (get_insns ());
-  if (optimize && purge_all_dead_edges (0))
-    delete_unreachable_blocks ();
-  reg_scan (get_insns (), max_reg_num (), 1);
-
-  close_dump_file (DFI_addressof, print_rtl, get_insns ());
-}
-
 /* Perform jump bypassing and control flow optimizations.  */
 static void
 rest_of_handle_jump_bypass (void)
@@ -1542,8 +1526,6 @@ rest_of_compilation (void)
 
   if (optimize > 0)
     rest_of_handle_cse ();
-
-  rest_of_handle_addressof ();
 
   ggc_collect ();
 

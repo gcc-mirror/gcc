@@ -8740,8 +8740,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      {
 		target = assign_temp (type, 2, 0, 1);
 		SET_DECL_RTL (slot, target);
-		if (TREE_ADDRESSABLE (slot))
-		  put_var_into_stack (slot, /*rescan=*/false);
 
 		/* Since SLOT is not known to the called function
 		   to belong to its stack frame, we must build an explicit
@@ -8775,13 +8773,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		  return target;
 	      }
 	    else
-	      {
-		SET_DECL_RTL (slot, target);
-		/* If we must have an addressable slot, then make sure that
-		   the RTL that we just stored in slot is OK.  */
-		if (TREE_ADDRESSABLE (slot))
-		  put_var_into_stack (slot, /*rescan=*/true);
-	      }
+	      SET_DECL_RTL (slot, target);
 	  }
 
 	exp1 = TREE_OPERAND (exp, 3) = TREE_OPERAND (exp, 1);
@@ -8919,8 +8911,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    op0 = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))),
 				   op0);
 	  else if (REG_P (op0) || GET_CODE (op0) == SUBREG
-		   || GET_CODE (op0) == CONCAT || GET_CODE (op0) == ADDRESSOF
-		   || GET_CODE (op0) == PARALLEL || GET_CODE (op0) == LO_SUM)
+		   || GET_CODE (op0) == CONCAT || GET_CODE (op0) == PARALLEL
+		   || GET_CODE (op0) == LO_SUM)
 	    {
 	      /* If this object is in a register, it can't be BLKmode.  */
 	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));

@@ -4295,7 +4295,6 @@ cxx_mark_addressable (tree exp)
 	  warning ("address requested for `%D', which is declared `register'",
 		      x);
 	TREE_ADDRESSABLE (x) = 1;
-	put_var_into_stack (x, /*rescan=*/true);
 	return true;
 
       case FUNCTION_DECL:

@@ -97,10 +97,7 @@ struct emit_status GTY(())
     regno_pointer_align;
 
   /* Indexed by pseudo register number, gives the rtx for that pseudo.
-     Allocated in parallel with regno_pointer_align.
-
-     Note MEM expressions can appear in this array due to the actions
-     of put_var_into_stack.  */
+     Allocated in parallel with regno_pointer_align.  */
   rtx * GTY ((length ("%h.x_reg_rtx_no"))) x_regno_reg_rtx;
 };
 
@@ -272,16 +269,6 @@ struct function GTY(())
 
   /* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
   rtx x_parm_birth_insn;
-
-  /* 1 + last pseudo register number possibly used for loading a copy
-     of a parameter of this function.  */
-  unsigned int x_max_parm_reg;
-
-  /* Vector indexed by REGNO, containing location on stack in which
-     to put the parm which is nominally in pseudo register REGNO,
-     if we discover that that parm must go in the stack.  The highest
-     element in this vector is one less than MAX_PARM_REG, above.  */
-  rtx * GTY ((length ("%h.x_max_parm_reg"))) x_parm_reg_stack_loc;
 
   /* List of all used temporaries allocated, by level.  */
   struct varray_head_tag * GTY((param_is (struct temp_slot))) x_used_temp_slots;
@@ -498,8 +485,6 @@ extern int trampolines_created;
 #define current_function_has_nonlocal_label (cfun->has_nonlocal_label)
 #define current_function_has_nonlocal_goto (cfun->has_nonlocal_goto)
 
-#define max_parm_reg (cfun->x_max_parm_reg)
-#define parm_reg_stack_loc (cfun->x_parm_reg_stack_loc)
 #define return_label (cfun->x_return_label)
 #define naked_return_label (cfun->x_naked_return_label)
 #define stack_slot_list (cfun->x_stack_slot_list)

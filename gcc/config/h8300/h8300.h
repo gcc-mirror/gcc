@@ -1150,9 +1150,9 @@ struct cum_arg
 
 #define PREDICATE_CODES							\
   {"general_operand_src", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
-			   LABEL_REF, SUBREG, REG, MEM, ADDRESSOF}},	\
+			   LABEL_REF, SUBREG, REG, MEM}},		\
   {"general_operand_dst", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
-			   LABEL_REF, SUBREG, REG, MEM, ADDRESSOF}},	\
+			   LABEL_REF, SUBREG, REG, MEM}},		\
   {"single_one_operand", {CONST_INT}},					\
   {"single_zero_operand", {CONST_INT}},					\
   {"call_insn_operand", {MEM}},						\

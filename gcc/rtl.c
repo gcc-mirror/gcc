@@ -224,7 +224,6 @@ copy_rtx (rtx orig)
     case CC0:
     case SCRATCH:
       /* SCRATCH must be shared because they represent distinct values.  */
-    case ADDRESSOF:
       return orig;
     case CLOBBER:
       if (REG_P (XEXP (orig, 0)) && REGNO (XEXP (orig, 0)) < FIRST_PSEUDO_REGISTER)

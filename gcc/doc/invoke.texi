@@ -3315,9 +3315,6 @@ Dump after the third if conversion, to @file{@var{file}.31.ce3}.
 @opindex df
 Dump after control and data flow analysis, to @file{@var{file}.11.cfg}.
 Also dump after life analysis, to @file{@var{file}.19.life}.
-@item F
-@opindex dF
-Dump after purging @code{ADDRESSOF} codes, to @file{@var{file}.07.addressof}.
 @item g
 @opindex dg
 Dump after global register allocation, to @file{@var{file}.26.greg}.

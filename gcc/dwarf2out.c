@@ -8736,15 +8736,6 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode, bool can_use_fbreg)
       mem_loc_result = int_loc_descriptor (INTVAL (rtl));
       break;
 
-    case ADDRESSOF:
-      /* If this is a MEM, return its address.  Otherwise, we can't
-	 represent this.  */
-      if (MEM_P (XEXP (rtl, 0)))
-	return mem_loc_descriptor (XEXP (XEXP (rtl, 0), 0), mode,
-				   can_use_fbreg);
-      else
-	return 0;
-
     default:
       abort ();
     }
@@ -10093,11 +10084,6 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 
   switch (GET_CODE (rtl))
     {
-    case ADDRESSOF:
-      /* The address of a variable that was optimized away;
-	 don't emit anything.  */
-      break;
-
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:

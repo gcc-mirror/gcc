@@ -1181,8 +1181,6 @@ general_s_operand (register rtx op, enum machine_mode mode,
       /* Memory operands are OK unless they already use an
 	 index register.  */
       case MEM:
-	if (GET_CODE (XEXP (op, 0)) == ADDRESSOF)
-	  return 1;
 	if (!s390_decompose_address (XEXP (op, 0), &addr))
 	  return 0;
 	if (addr.indx)

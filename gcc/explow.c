@@ -436,9 +436,6 @@ memory_address (enum machine_mode mode, rtx x)
 {
   rtx oldx = x;
 
-  if (GET_CODE (x) == ADDRESSOF)
-    return x;
-
   x = convert_memory_address (Pmode, x);
 
   /* By passing constant addresses through registers

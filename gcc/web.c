@@ -70,9 +70,8 @@ static struct web_entry *unionfind_root (struct web_entry *);
 static void unionfind_union (struct web_entry *, struct web_entry *);
 static void union_defs (struct df *, struct ref *, struct web_entry *, 
                         struct web_entry *);
-static rtx entry_register (struct web_entry *, struct ref *, char *, char *);
+static rtx entry_register (struct web_entry *, struct ref *, char *);
 static void replace_ref (struct ref *, rtx);
-static int mark_addressof (rtx *, void *);
 
 /* Find the root of unionfind tree (the representative of set).  */
 
@@ -173,8 +172,7 @@ union_defs (struct df *df, struct ref *use, struct web_entry *def_entry,
 /* Find the corresponding register for the given entry.  */
 
 static rtx
-entry_register (struct web_entry *entry, struct ref *ref, char *used, 
-                char *use_addressof)
+entry_register (struct web_entry *entry, struct ref *ref, char *used)
 {
   struct web_entry *root;
   rtx reg, newreg;
@@ -196,14 +194,6 @@ entry_register (struct web_entry *entry, struct ref *ref, char *used,
       if (dump_file)
 	fprintf (dump_file,
 		 "New web forced to keep reg=%i (user variable)\n",
-		 REGNO (reg));
-    }
-  else if (use_addressof [REGNO (reg)])
-    {
-      newreg = reg;
-      if (dump_file)
-	fprintf (dump_file,
-		 "New web forced to keep reg=%i (address taken)\n",
 		 REGNO (reg));
     }
   else
@@ -239,19 +229,6 @@ replace_ref (struct ref *ref, rtx reg)
   *loc = reg;
 }
 
-/* Mark each pseudo whose address is taken.  */
-
-static int
-mark_addressof (rtx *rtl, void *data)
-{
-  if (!*rtl)
-    return 0;
-  if (GET_CODE (*rtl) == ADDRESSOF
-      && REG_P (XEXP (*rtl, 0)))
-    ((char *)data)[REGNO (XEXP (*rtl, 0))] = 1;
-  return 0;
-}
-
 /* Main entry point.  */
 
 void
@@ -263,9 +240,6 @@ web_main (void)
   unsigned int i;
   int max = max_reg_num ();
   char *used;
-  char *use_addressof;
-  basic_block bb;
-  rtx insn;
 
   df = df_init ();
   df_analyze (df, 0, DF_UD_CHAIN | DF_EQUIV_NOTES);
@@ -273,7 +247,6 @@ web_main (void)
   def_entry = xcalloc (df->n_defs, sizeof (struct web_entry));
   use_entry = xcalloc (df->n_uses, sizeof (struct web_entry));
   used = xcalloc (max, sizeof (char));
-  use_addressof = xcalloc (max, sizeof (char));
 
   if (dump_file)
     df_dump (df, DF_UD_CHAIN | DF_DU_CHAIN, dump_file);
@@ -282,22 +255,14 @@ web_main (void)
   for (i = 0; i < df->n_uses; i++)
     union_defs (df, df->uses[i], def_entry, use_entry);
 
-  /* We can not safely rename registers whose address is taken.  */
-  FOR_EACH_BB (bb)
-    FOR_BB_INSNS (bb, insn)
-      {
-	if (INSN_P (insn))
-	  for_each_rtx (&PATTERN (insn), mark_addressof, use_addressof);
-      }
-
   /* Update the instruction stream, allocating new registers for split pseudos
      in progress.  */
   for (i = 0; i < df->n_uses; i++)
     replace_ref (df->uses[i], entry_register (use_entry + i, df->uses[i],
-					      used, use_addressof));
+					      used));
   for (i = 0; i < df->n_defs; i++)
     replace_ref (df->defs[i], entry_register (def_entry + i, df->defs[i],
-					      used, use_addressof));
+					      used));
 
   /* Dataflow information is corrupt here, but it can be easily updated
      by creating new entries for new registers and updates or calling
@@ -305,6 +270,5 @@ web_main (void)
   free (def_entry);
   free (use_entry);
   free (used);
-  free (use_addressof);
   df_finish (df);
 }

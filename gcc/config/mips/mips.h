@@ -2743,7 +2743,7 @@ typedef struct mips_args {
    macro are thoses used in the most insn patterns.  */
 
 #define PREDICATE_CODES							\
-  {"uns_arith_operand",		{ REG, CONST_INT, SUBREG, ADDRESSOF }},	\
+  {"uns_arith_operand",		{ REG, CONST_INT, SUBREG }},		\
   {"symbolic_operand",		{ CONST, SYMBOL_REF, LABEL_REF }},	\
   {"general_symbolic_operand",	{ CONST, SYMBOL_REF, LABEL_REF }},	\
   {"global_got_operand",	{ CONST, SYMBOL_REF, LABEL_REF }},	\
@@ -2751,8 +2751,8 @@ typedef struct mips_args {
   {"const_arith_operand",	{ CONST_INT }},				\
   {"small_data_pattern",	{ SET, PARALLEL, UNSPEC,		\
 				  UNSPEC_VOLATILE }},			\
-  {"arith_operand",		{ REG, CONST_INT, CONST, SUBREG, ADDRESSOF }},	\
-  {"reg_or_0_operand",		{ REG, CONST_INT, CONST_DOUBLE, SUBREG, ADDRESSOF }}, \
+  {"arith_operand",		{ REG, CONST_INT, CONST, SUBREG }},	\
+  {"reg_or_0_operand",		{ REG, CONST_INT, CONST_DOUBLE, SUBREG }}, \
   {"small_int",			{ CONST_INT }},				\
   {"const_float_1_operand",	{ CONST_DOUBLE }},			\
   {"reg_or_const_float_1_operand", { CONST_DOUBLE, REG}},               \

@@ -2282,15 +2282,6 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
     case RETURN:
       return x;
 
-    case ADDRESSOF:
-      /* This is only for the benefit of the debugging backends, which call
-	 eliminate_regs on DECL_RTL; any ADDRESSOFs in the actual insns are
-	 removed after CSE.  */
-      new = eliminate_regs (XEXP (x, 0), 0, insn);
-      if (MEM_P (new))
-	return XEXP (new, 0);
-      return x;
-
     case REG:
       regno = REGNO (x);
 
@@ -2553,12 +2544,6 @@ eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
       return x;
 
     case MEM:
-      /* This is only for the benefit of the debugging backends, which call
-	 eliminate_regs on DECL_RTL; any ADDRESSOFs in the actual insns are
-	 removed after CSE.  */
-      if (GET_CODE (XEXP (x, 0)) == ADDRESSOF)
-	return eliminate_regs (XEXP (XEXP (x, 0), 0), 0, insn);
-
       /* Our only special processing is to pass the mode of the MEM to our
 	 recursive call and copy the flags.  While we are here, handle this
 	 case more efficiently.  */
@@ -2656,9 +2641,6 @@ elimination_effects (rtx x, enum machine_mode mem_mode)
     case ADDR_DIFF_VEC:
     case RETURN:
       return;
-
-    case ADDRESSOF:
-      abort ();
 
     case REG:
       regno = REGNO (x);
@@ -2802,9 +2784,6 @@ elimination_effects (rtx x, enum machine_mode mem_mode)
       return;
 
     case MEM:
-      if (GET_CODE (XEXP (x, 0)) == ADDRESSOF)
-	abort ();
-
       /* Our only special processing is to pass the mode of the MEM to our
 	 recursive call.  */
       elimination_effects (XEXP (x, 0), GET_MODE (x));

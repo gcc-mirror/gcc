@@ -76,8 +76,6 @@ gen_lowpart_general (enum machine_mode mode, rtx x)
 
       return adjust_address (x, mode, offset);
     }
-  else if (GET_CODE (x) == ADDRESSOF)
-    return gen_lowpart_general (mode, force_reg (GET_MODE (x), x));
   else
     abort ();
 }

@@ -1,3 +1,81 @@
+2004-07-04  Richard Henderson  <rth@redhat.com>
+
+	* rtl.def (ADDRESSOF): Remove.
+	* alias.c (rtx_equal_for_memref_p): Don't handle addressof.
+	(find_base_term, memrefs_conflict_p): Likewise.
+	* cse.c (fixed_base_plus_p, find_best_addr: Likewise.
+	(fold_rtx, cse_insn, set_live_p): Likewise.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.
+	(add_location_or_const_value_attribute): Likewise.
+	* emit-rtl.c (copy_insn_1): Likewise.
+	* explow.c (memory_address): Likewise.
+	* expmed.c (store_split_bit_field): Likewise.
+	* expr.c (expand_expr_real_1): Likewise.
+	* function.c (instantiate_decl
+	(instantiate_virtual_regs_1, fix_lexical_addr): Likewise.
+	* genrecog.c (preds, validate_pattern): Likewise.
+	* integrate.c (copy_rtx_and_substitute): Likewise.
+	* recog.c (general_operand, register_operand): Likewise.
+	(memory_address_p): Likwise.
+	* reload1.c (eliminate_regs, elimination_effects): Likewise.
+	* rtl.c (copy_rtx): Likewise.
+	* rtlanal.c (rtx_unstable_p, rtx_varies_p): Likewise.
+	(rtx_addr_can_trap_p, nonzero_address_p, address_cost): Likewise.
+	* rtlhooks.c (gen_lowpart_general): Likewise.
+	* stmt.c (expand_asm_operands): Likewise.
+	* web.c (entry_register, replace_ref, web_main): Likewise.
+	* config/alpha/alpha.c (input_operand, alpha_legitimate_address_p,
+	alpha_expand_block_move, alpha_expand_block_clear): Likewise.
+	* config/arm/arm.c (thumb_rtx_costs): Likewise.
+	* config/c4x/c4x.c (c4x_valid_operands): Likewise.
+	* config/frv/frv.c (move_destination_operand, move_source_operand,
+	condexec_dest_operand, condexec_source_operand,
+	condexec_memory_operand): Likewise.
+	* config/h8300/h8300.h (PREDICATE_CODES): Likewise.
+	* config/ia64/ia64.c (general_xfmode_operand): Likewise.
+	(destination_xfmode_operand): Likewise.
+	* config/mips/mips.h (PREDICATE_CODES): Likewise.
+	* config/mn10300/mn10300.c (mn10300_address_cost_1): Likewise.
+	* config/s390/s390.c (general_s_operand): Likewise.
+	* config/s390/s390.md (mov*): Likewise.
+	* config/sparc/sparc.h (PREDICATE_CODES): Likewise.
+
+	* c-typeck.c (c_mark_addressable): Don't put_var_into_stack.
+	* expr.c (expand_expr_real_1): Likewise.
+	* stmt.c (expand_decl): Likewise.
+	* config/c4x/c4x.c (c4x_expand_builtin): Likewise.
+
+	* function.c (struct fixup_replacement, struct insns_for_mem_entry,
+	postponed_insns, put_var_into_stack, put_reg_into_stack,
+	schedule_fixup_var_refs, fixup_var_refs, find_fixup_replacement,
+	fixup_var_refs_insns, fixup_var_refs_insns_with_hash,
+	fixup_var_refs_insn, fixup_var_refs_1, fixup_memory_subreg,
+	walk_fixup_memory_subreg, fixup_stack_1, optimize_bit_field,
+	gen_mem_addressof, flush_addressof, put_addressof_into_stack,
+	purge_bitfield_addressof_replacements, purge_addressof_replacements,
+	purge_addressof_1, insns_for_mem_hash, insns_for_mem_comp,
+	struct insns_for_mem_walk_info, insns_for_mem_walk, 
+	compute_insns_for_mem, is_addressof, purge_addressof, setjmp_protect,
+	setjmp_protect_args): Remove.
+	(push_function_context_to): Don't handle var_refs_queue.
+	(pop_function_context_from, free_after_compilation): Likewise.
+	(instantiate_virtual_regs): Don't handle parm_reg_stack_loc.
+	(assign_parms, allocate_struct_function): Likewise.
+	(use_register_for_decl): New.
+	(expand_function_end): Don't setjmp_protect.
+	* function.h (struct emit_status): Update commentary.
+	(struct function): Remove x_max_parm_reg, x_parm_reg_stack_loc.
+	(max_parm_reg, parm_reg_stack_loc): Remove.
+	* passes.c (DFI_addressof): Remove.
+	(dump_file_info): Remove addressof.
+	(rest_of_handle_addressof): Remove.
+	(rest_of_compilation): Don't call it.
+	* rtl.h (ADDRESSOF_REGNO, ADDRESSOF_DECL): Remove.
+	* stmt.c (expand_decl): Use use_register_for_decl.
+	* tree.h: Update decls.
+	* web.c (mark_addressof): Remove.
+	* doc/invoke.texi (-dF): Remove.
+
 2004-07-03  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (spill_xfmode_operand): Use assign_stack_temp
