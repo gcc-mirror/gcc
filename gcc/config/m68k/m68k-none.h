@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  "naked" 68020.
-   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -92,22 +92,15 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dmc68000"
 
-/* Define one of __HAVE_68881__, __HAVE_FPA__, __HAVE_SKY__, or nothing 
-   (soft float), appropriately.  */
+/* Define __HAVE_68881__ or nothing (soft float), appropriately.  */
 #undef CPP_FPU_SPEC
 #if TARGET_DEFAULT & MASK_68881
 #define CPP_FPU_SPEC "\
-%{!mc68000:%{!m68000:%{!m68302:%{!mcpu32:%{!m68332:%{!m5200:%{!msoft-float:%{!mno-68881:%{!mfpa:%{!msky:-D__HAVE_68881__ }}}}}}}}}} \
-%{m68881:-D__HAVE_68881__ }%{mfpa:-D__HAVE_FPA__ }%{msky:-D__HAVE_SKY__ }"
-#else
-/* This can't currently happen, but we code it anyway to show how it's done.  */
-#if TARGET_DEFAULT & MASK_FPA
-#define CPP_FPU_SPEC \
-"%{!msoft-float:%{m68881:-D__HAVE_68881__ }%{!m68881:-D__HAVE_FPA__ }}"
+%{!mc68000:%{!m68000:%{!m68302:%{!mcpu32:%{!m68332:%{!m5200:%{!msoft-float:%{!mno-68881:-D__HAVE_68881__ }}}}}}}} \
+%{m68881:-D__HAVE_68881__ }"
 #else
 #define CPP_FPU_SPEC "\
-%{m68881:-D__HAVE_68881__ }%{mfpa:-D__HAVE_FPA__ }%{msky:-D__HAVE_SKY__ }"
-#endif
+%{m68881:-D__HAVE_68881__ }"
 #endif
 
 /* Names to predefine in the preprocessor for this target machine.
@@ -175,8 +168,6 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define SUBTARGET_EXTRA_SPECS
 
 /* Avoid building multilib libraries for the defaults.
-   t-m68kbare doesn't support -mfpa in the multilib'd libraries, so we don't
-   either.
    For targets not handled here, just build the full set of multilibs.
    The default is m68k 99.9% of the time anyway.  */
 

@@ -1,3 +1,18 @@
+2003-05-17  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/coff.h: Remove support for Sun FPA and Sun SKY board.
+	* config/m68k/linux.h: Likewise.
+	* config/m68k/m68k-none.h: Likewise.
+	* config/m68k/netbsd-elf.h: Likewise.
+	* config/m68k/sgs.h: Likewise.
+	* config/m68k/m68k.h: Likewise.
+	* config/m68k/m68k.md: Likewise.
+	* config/m68k/m68k.c: Likewise.
+	* doc/md.texi (Machine Constraints): Remove Sun FPA specific
+	constraints.
+	* doc/invoke.texi (Option Summary): Remove -mfpa.
+	(M680x0 Options): Likewise.
+
 2003-05-17  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (rs6000_function_value): Simplify REAL_TYPE logic.

@@ -1934,12 +1934,6 @@ Data register
 @item f
 68881 floating-point register, if available
 
-@item x
-Sun FPA (floating-point) register, if available
-
-@item y
-First 16 Sun FPA registers, if available
-
 @item I
 Integer in the range 1 to 8
 
@@ -1957,9 +1951,6 @@ Signed number whose magnitude is greater than 0x100
 
 @item G
 Floating point constant that is not a 68881 constant
-
-@item H
-Floating point constant that can be used by Sun FPA
 @end table
 
 @item Motorola 68HC11 & 68HC12 families---@file{m68hc11.h}

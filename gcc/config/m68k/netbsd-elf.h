@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for m68k (including m68010) NetBSD platforms using the
    ELF object format.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by Wasabi Systems. Inc.
 
    This file is derived from <m68k/m68kv4.h>, <m68k/m68kelf.h>,
@@ -187,25 +187,10 @@ while (0)
 
 #undef REGISTER_NAMES
 
-#ifndef SUPPORT_SUN_FPA
-
 #define REGISTER_NAMES							\
 {"%d0",   "%d1",   "%d2",   "%d3",   "%d4",   "%d5",   "%d6",   "%d7",	\
  "%a0",   "%a1",   "%a2",   "%a3",   "%a4",   "%a5",   "%fp",   "%sp",	\
  "%fp0",  "%fp1",  "%fp2",  "%fp3",  "%fp4",  "%fp5",  "%fp6",  "%fp7" }
-
-#else /* SUPPORT_SUN_FPA */
-
-#define REGISTER_NAMES							\
-{"%d0",   "%d1",   "%d2",   "%d3",   "%d4",   "%d5",   "%d6",   "%d7",	\
- "%a0",   "%a1",   "%a2",   "%a3",   "%a4",   "%a5",   "%fp",   "%sp",	\
- "%fp0",  "%fp1",  "%fp2",  "%fp3",  "%fp4",  "%fp5",  "%fp6",  "%fp7",	\
- "%fpa0", "%fpa1", "%fpa2", "%fpa3", "%fpa4", "%fpa5", "%fpa6","%fpa7",	\
- "%fpa8", "%fpa9", "%fpa10","%fpa11","%fpa12","%fpa13","%fpa14","%fpa15", \
- "%fpa16","%fpa17","%fpa18","%fpa19","%fpa20","%fpa21","%fpa22","%fpa23", \
- "%fpa24","%fpa25","%fpa26","%fpa27","%fpa28","%fpa29","%fpa30","%fpa31" }
-
-#endif /* ! SUPPORT_SUN_FPA */
 
 
 /* Currently, JUMP_TABLES_IN_TEXT_SECTION must be defined in order to

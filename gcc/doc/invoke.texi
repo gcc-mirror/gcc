@@ -329,7 +329,7 @@ in the following sections.
 @emph{M680x0 Options}
 @gccoptlist{-m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040 @gol
 -m68060  -mcpu32  -m5200  -m68881  -mbitfield  -mc68000  -mc68020   @gol
--mfpa  -mnobitfield  -mrtd  -mshort  -msoft-float  -mpcrel @gol
+-mnobitfield  -mrtd  -mshort  -msoft-float  -mpcrel @gol
 -malign-int  -mstrict-align}
 
 @emph{M68hc1x Options}
@@ -5699,10 +5699,6 @@ Generate output for a 68060, without using any of the new instructions.
 This results in code which can run relatively efficiently on either a
 68020/68881 or a 68030 or a 68040.  The generated code does use the
 68881 instructions that are emulated on the 68060.
-
-@item -mfpa
-@opindex mfpa
-Generate output containing Sun FPA instructions for floating point.
 
 @item -msoft-float
 @opindex msoft-float

@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Sun 68000/68020 version.
    Copyright (C) 1987, 1988, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -46,15 +46,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (68k, MIT syntax)");
 #endif
 
-/* Define SUPPORT_SUN_FPA to include support for generating code for
-   the Sun Floating Point Accelerator, an optional product for Sun 3
-   machines.  By default, it is not defined.  Avoid defining it unless
-   you need to output code for the Sun3+FPA architecture, as it has the
-   effect of slowing down the register set operations in hard-reg-set.h
-   (total number of registers will exceed number of bits in a long,
-   if defined, causing the set operations to expand to loops).
-   SUPPORT_SUN_FPA is typically defined in sun3.h.  */
-
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
 extern int target_flags;
@@ -89,14 +80,6 @@ extern int target_flags;
 /* Compile with 16-bit `int'.  */
 #define MASK_SHORT	32
 #define TARGET_SHORT (target_flags & MASK_SHORT)
-
-/* Compile with special insns for Sun FPA.  */
-#define MASK_FPA	64
-#define TARGET_FPA (target_flags & MASK_FPA)
-
-/* Compile (actually, link) for Sun SKY board.  */
-#define MASK_SKY	128
-#define TARGET_SKY (target_flags & MASK_SKY)
 
 /* Optimize for 68040, but still allow execution on 68020
    (-m68020-40 or -m68040).
@@ -182,21 +165,8 @@ extern int target_flags;
       N_("Consider type `int' to be 16 bits wide") },			\
     { "noshort", - MASK_SHORT,						\
       N_("Consider type `int' to be 32 bits wide") },			\
-    { "fpa", -(MASK_SKY|MASK_68040_ONLY|MASK_68881),			\
-      N_("Generate code for a Sun FPA") },				\
-    { "fpa", MASK_FPA, "" },						\
-    { "nofpa", - MASK_FPA,						\
-      N_("Do not generate code for a Sun FPA") },			\
-    { "sky", -(MASK_FPA|MASK_68040_ONLY|MASK_68881),			\
-      N_("Generate code for a Sun Sky board") },			\
-    { "sky", MASK_SKY,							\
-      N_("Generate code for a Sun Sky board") },			\
-    { "nosky", - MASK_SKY,						\
-      N_("Do not use Sky linkage convention") },			\
-    { "68881", - (MASK_FPA|MASK_SKY),					\
-      N_("Generate code for a 68881") },				\
     { "68881", MASK_68881, "" },					\
-    { "soft-float", - (MASK_FPA|MASK_SKY|MASK_68040_ONLY|MASK_68881),	\
+    { "soft-float", - (MASK_68040_ONLY|MASK_68881),			\
       N_("Generate code with library calls for floating point") },	\
     { "68020-40", -(MASK_5200|MASK_68060|MASK_68040_ONLY),		\
       N_("Generate code for a 68040, without any new instructions") },	\
@@ -367,16 +337,10 @@ extern int target_flags;
    For the 68000, we give the data registers numbers 0-7,
    the address registers numbers 010-017,
    and the 68881 floating point registers numbers 020-027.  */
-#ifndef SUPPORT_SUN_FPA
 #define FIRST_PSEUDO_REGISTER 24
-#else
-#define FIRST_PSEUDO_REGISTER 56
-#endif
 
 /* This defines the register which is used to hold the offset table for PIC.  */
 #define PIC_OFFSET_TABLE_REGNUM (flag_pic ? 13 : INVALID_REGNUM)
-
-#ifndef SUPPORT_SUN_FPA
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
@@ -404,81 +368,12 @@ extern int target_flags;
   1, 1, 0, 0, 0, 0, 0, 1,   \
   1, 1, 0, 0, 0, 0, 0, 0 }
 
-#else /* SUPPORT_SUN_FPA */
-
-/* 1 for registers that have pervasive standard uses
-   and are not available for the register allocator.
-   On the 68000, only the stack pointer is such.  */
-
-/* fpa0 is also reserved so that it can be used to move data back and
-   forth between high fpa regs and everything else.  */
-
-#define FIXED_REGISTERS        \
- {/* Data registers.  */       \
-  0, 0, 0, 0, 0, 0, 0, 0,      \
-                               \
-  /* Address registers.  */    \
-  0, 0, 0, 0, 0, 0, 0, 1,      \
-                               \
-  /* Floating point registers  \
-     (if available).  */       \
-  0, 0, 0, 0, 0, 0, 0, 0,      \
-                               \
-  /* Sun3 FPA registers.  */   \
-  1, 0, 0, 0, 0, 0, 0, 0,      \
-  0, 0, 0, 0, 0, 0, 0, 0,      \
-  0, 0, 0, 0, 0, 0, 0, 0,      \
-  0, 0, 0, 0, 0, 0, 0, 0 }
-
-/* 1 for registers not available across function calls.
-   These must include the FIXED_REGISTERS and also any
-   registers that can be used without being saved.
-   The latter must include the registers where values are returned
-   and the register where structure-value addresses are passed.
-   Aside from that, you can include as many other registers as you like.  */
-#define CALL_USED_REGISTERS \
- {1, 1, 0, 0, 0, 0, 0, 0, \
-  1, 1, 0, 0, 0, 0, 0, 1, \
-  1, 1, 0, 0, 0, 0, 0, 0, \
-  /* FPA registers.  */   \
-  1, 1, 1, 1, 0, 0, 0, 0, \
-  0, 0, 0, 0, 0, 0, 0, 0, \
-  0, 0, 0, 0, 0, 0, 0, 0, \
-  0, 0, 0, 0, 0, 0, 0, 0  }
-
-#endif /* defined SUPPORT_SUN_FPA */
-
 
 /* Make sure everything's fine if we *don't* have a given processor.
    This assumes that putting a register in fixed_regs will keep the
    compiler's mitts completely off it.  We don't bother to zero it out
    of register classes.  */
 
-#ifdef SUPPORT_SUN_FPA
-
-#define CONDITIONAL_REGISTER_USAGE				\
-{ 								\
-  int i; 							\
-  HARD_REG_SET x; 						\
-  if (! TARGET_FPA)						\
-    { 								\
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)FPA_REGS]);	\
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ )		\
-       if (TEST_HARD_REG_BIT (x, i)) 				\
-	fixed_regs[i] = call_used_regs[i] = 1; 			\
-    } 								\
-  if (! TARGET_68881)						\
-    { 								\
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]);	\
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ )		\
-       if (TEST_HARD_REG_BIT (x, i)) 				\
-	fixed_regs[i] = call_used_regs[i] = 1; 			\
-    } 								\
-  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)		\
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM]				\
-      = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
-}
-#else
 #define CONDITIONAL_REGISTER_USAGE				\
 { 								\
   int i; 							\
@@ -494,8 +389,6 @@ extern int target_flags;
     fixed_regs[PIC_OFFSET_TABLE_REGNUM]				\
       = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
 }
-
-#endif /* defined SUPPORT_SUN_FPA */
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -509,8 +402,6 @@ extern int target_flags;
   ((REGNO) >= 16 ? GET_MODE_NUNITS (MODE)	\
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-#ifndef SUPPORT_SUN_FPA
-
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On the 68000, the cpu registers can hold any mode but the 68881 registers
    can hold only SFmode or DFmode.  */
@@ -523,38 +414,6 @@ extern int target_flags;
 	   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
        && GET_MODE_UNIT_SIZE (MODE) <= 12))
 
-#else /* defined SUPPORT_SUN_FPA */
-
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On the 68000, the cpu registers can hold any mode but the 68881 registers
-   can hold only SFmode or DFmode.  However, the Sun FPA register can
-   (apparently) hold whatever you feel like putting in them.
-   If using the fpa, don't put a double in d7/a0.  */
-
-/* ??? This is confused.  The check to prohibit d7/a0 overlaps should always
-   be enabled regardless of whether TARGET_FPA is specified.  It isn't clear
-   what the other d/a register checks are for.  Every check using REGNO
-   actually needs to use a range, e.g. 24>=X<56 not <56.  There is probably
-   no one using this code anymore.  
-   This code used to be used to suppress register usage for the 68881 by
-   saying that the 68881 registers couldn't hold values of any mode if there
-   was no 68881.  This was wrong, because reload (etc.) will still try
-   to save and restore call-saved registers during, for instance, non-local
-   goto.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-(((REGNO) < 16								\
-  && !(TARGET_FPA							\
-       && GET_MODE_CLASS ((MODE)) != MODE_INT				\
-       && GET_MODE_UNIT_SIZE ((MODE)) > 4				\
-       && (REGNO) < 8 && (REGNO) + GET_MODE_SIZE ((MODE)) / 4 > 8	\
-       && (REGNO) % (GET_MODE_UNIT_SIZE ((MODE)) / 4) != 0))		\
- || ((REGNO) >= 16 && (REGNO) < 24					\
-     ? ((GET_MODE_CLASS (MODE) == MODE_FLOAT				\
-	 || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
-	&& GET_MODE_UNIT_SIZE (MODE) <= 12)				\
-     : ((REGNO) < 56 ? TARGET_FPA && GET_MODE_UNIT_SIZE (MODE) <= 8 : 0)))
-
-#endif /* defined SUPPORT_SUN_FPA */
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -618,8 +477,6 @@ extern int target_flags;
 /* The 68000 has three kinds of registers, so eight classes would be
    a complete set.  One of them is not needed.  */
 
-#ifndef SUPPORT_SUN_FPA
-
 enum reg_class {
   NO_REGS, DATA_REGS,
   ADDR_REGS, FP_REGS,
@@ -660,68 +517,6 @@ enum reg_class {
 
 #define REGNO_REG_CLASS(REGNO) (((REGNO)>>3)+1)
 
-#else /* defined SUPPORT_SUN_FPA */
-
-/*
- * Notes on final choices:
- *
- *   1) Didn't feel any need to union-ize LOW_FPA_REGS with anything
- * else.
- *   2) Removed all unions that involve address registers with
- * floating point registers (left in unions of address and data with
- * floating point).
- *   3) Defined GENERAL_REGS as ADDR_OR_DATA_REGS.
- *   4) Defined ALL_REGS as FPA_OR_FP_OR_GENERAL_REGS.
- *   4) Left in everything else.
- */
-enum reg_class { NO_REGS, LO_FPA_REGS, FPA_REGS, FP_REGS,
-  FP_OR_FPA_REGS, DATA_REGS, DATA_OR_FPA_REGS, DATA_OR_FP_REGS,
-  DATA_OR_FP_OR_FPA_REGS, ADDR_REGS, GENERAL_REGS,
-  GENERAL_OR_FPA_REGS, GENERAL_OR_FP_REGS, ALL_REGS,
-  LIM_REG_CLASSES };
-
-#define N_REG_CLASSES (int) LIM_REG_CLASSES
-
-/* Give names of register classes as strings for dump file.  */
-
-#define REG_CLASS_NAMES \
- { "NO_REGS", "LO_FPA_REGS", "FPA_REGS", "FP_REGS",  \
-   "FP_OR_FPA_REGS", "DATA_REGS", "DATA_OR_FPA_REGS", "DATA_OR_FP_REGS",  \
-   "DATA_OR_FP_OR_FPA_REGS", "ADDR_REGS", "GENERAL_REGS",  \
-   "GENERAL_OR_FPA_REGS", "GENERAL_OR_FP_REGS", "ALL_REGS" }
-
-/* Define which registers fit in which classes.
-   This is an initializer for a vector of HARD_REG_SET
-   of length N_REG_CLASSES.  */
-
-#define REG_CLASS_CONTENTS \
-{							\
- {0, 0},			/* NO_REGS */		\
- {0xff000000, 0x000000ff},	/* LO_FPA_REGS */	\
- {0xff000000, 0x00ffffff},	/* FPA_REGS */		\
- {0x00ff0000, 0x00000000},	/* FP_REGS */		\
- {0xffff0000, 0x00ffffff},	/* FP_OR_FPA_REGS */	\
- {0x000000ff, 0x00000000},	/* DATA_REGS */		\
- {0xff0000ff, 0x00ffffff},	/* DATA_OR_FPA_REGS */	\
- {0x00ff00ff, 0x00000000},	/* DATA_OR_FP_REGS */	\
- {0xffff00ff, 0x00ffffff},	/* DATA_OR_FP_OR_FPA_REGS */\
- {0x0000ff00, 0x00000000},	/* ADDR_REGS */		\
- {0x0000ffff, 0x00000000},	/* GENERAL_REGS */	\
- {0xff00ffff, 0x00ffffff},	/* GENERAL_OR_FPA_REGS */\
- {0x00ffffff, 0x00000000},	/* GENERAL_OR_FP_REGS */\
- {0xffffffff, 0x00ffffff},	/* ALL_REGS */		\
-}
-
-/* The same information, inverted:
-   Return the class number of the smallest class containing
-   reg number REGNO.  This could be a conditional expression
-   or could index an array.  */
-
-extern const enum reg_class regno_reg_class[];
-#define REGNO_REG_CLASS(REGNO) (regno_reg_class[(REGNO)>>3])
-
-#endif /* SUPPORT_SUN_FPA */
-
 /* The class value for index registers, and the one for base regs.  */
 
 #define INDEX_REG_CLASS GENERAL_REGS
@@ -734,29 +529,12 @@ extern const enum reg_class regno_reg_class[];
    that a specific kind of register will not be used for a given target
    without fiddling with the register classes above.  */
 
-#ifndef SUPPORT_SUN_FPA
-
 #define REG_CLASS_FROM_LETTER(C) \
   ((C) == 'a' ? ADDR_REGS :			\
    ((C) == 'd' ? DATA_REGS :			\
     ((C) == 'f' ? (TARGET_68881 ? FP_REGS :	\
 		   NO_REGS) :			\
      NO_REGS)))
-
-#else /* defined SUPPORT_SUN_FPA */
-
-#define REG_CLASS_FROM_LETTER(C) \
-  ((C) == 'a' ? ADDR_REGS :			\
-   ((C) == 'd' ? DATA_REGS :			\
-    ((C) == 'f' ? (TARGET_68881 ? FP_REGS :	\
-		   NO_REGS) :			\
-     ((C) == 'x' ? (TARGET_FPA ? FPA_REGS :	\
-		    NO_REGS) :			\
-      ((C) == 'y' ? (TARGET_FPA ? LO_FPA_REGS :	\
-		     NO_REGS) :			\
-       NO_REGS)))))
-
-#endif /* defined SUPPORT_SUN_FPA */
 
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.
@@ -788,18 +566,10 @@ extern const enum reg_class regno_reg_class[];
  * A small bit of explanation:
  * "G" defines all of the floating constants that are *NOT* 68881
  * constants.  this is so 68881 constants get reloaded and the
- * fpmovecr is used.  "H" defines *only* the class of constants that
- * the fpa can use, because these can be gotten at in any fpa
- * instruction and there is no need to force reloads.
+ * fpmovecr is used.
  */
-#ifndef SUPPORT_SUN_FPA
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  \
   ((C) == 'G' ? ! (TARGET_68881 && standard_68881_constant_p (VALUE)) : 0 )
-#else /* defined SUPPORT_SUN_FPA */
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'G' ? ! (TARGET_68881 && standard_68881_constant_p (VALUE)) : \
-   (C) == 'H' ? (TARGET_FPA && standard_sun_fpa_constant_p (VALUE)) : 0)
-#endif /* defined SUPPORT_SUN_FPA */
 
 /* A C expression that defines the optional machine-dependent constraint
    letters that can be used to segregate specific types of operands,  
@@ -877,8 +647,6 @@ extern const enum reg_class regno_reg_class[];
    needed to represent mode MODE in a register of class CLASS.  */
 /* On the 68000, this is the size of MODE in words,
    except in the FP regs, where a single reg is always enough.  */
-#ifndef SUPPORT_SUN_FPA
-
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
  ((CLASS) == FP_REGS ? 1 \
   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
@@ -888,23 +656,6 @@ extern const enum reg_class regno_reg_class[];
   (((CLASS1) == FP_REGS && (CLASS2) != FP_REGS)	        \
     || ((CLASS2) == FP_REGS && (CLASS1) != FP_REGS)	\
     ? 4 : 2)
-
-#else /* defined SUPPORT_SUN_FPA */
-
-#define CLASS_MAX_NREGS(CLASS, MODE)	\
- ((CLASS) == FP_REGS || (CLASS) == FPA_REGS || (CLASS) == LO_FPA_REGS ? 1 \
-  : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
-/* Moves between fp regs and other regs are two insns.  */
-/* Likewise for high fpa regs and other regs.  */
-#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2)	\
-  ((((CLASS1) == FP_REGS && (CLASS2) != FP_REGS)	\
-    || ((CLASS2) == FP_REGS && (CLASS1) != FP_REGS)	\
-    || ((CLASS1) == FPA_REGS && (CLASS2) != FPA_REGS)	\
-    || ((CLASS2) == FPA_REGS && (CLASS1) != FPA_REGS))	\
-   ? 4 : 2)
-
-#endif /* define SUPPORT_SUN_FPA */
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1209,10 +960,6 @@ __transfer_from_trampoline ()					\
 ((REGNO) < 8 || (unsigned) reg_renumber[REGNO] < 8)
 #define REGNO_OK_FOR_FP_P(REGNO) \
 (((REGNO) ^ 020) < 8 || (unsigned) (reg_renumber[REGNO] ^ 020) < 8)
-#ifdef SUPPORT_SUN_FPA
-#define REGNO_OK_FOR_FPA_P(REGNO) \
-(((REGNO) >= 24 && (REGNO) < 56) || (reg_renumber[REGNO] >= 24 && reg_renumber[REGNO] < 56))
-#endif
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
@@ -1232,14 +979,6 @@ __transfer_from_trampoline ()					\
 /* 1 if X is an address register  */
 
 #define ADDRESS_REG_P(X) (REG_P (X) && REGNO_OK_FOR_BASE_P (REGNO (X)))
-
-#ifdef SUPPORT_SUN_FPA
-/* 1 if X is a register in the Sun FPA.  */
-#define FPA_REG_P(X) (REG_P (X) && REGNO_OK_FOR_FPA_P (REGNO (X)))
-#else
-/* Answer must be no if we don't have an FPA.  */
-#define FPA_REG_P(X) 0
-#endif
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 
@@ -1604,25 +1343,10 @@ __transfer_from_trampoline ()					\
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
-#ifndef SUPPORT_SUN_FPA
-
 #define REGISTER_NAMES \
 {"d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7",	\
  "a0", "a1", "a2", "a3", "a4", "a5", "a6", "sp",	\
  "fp0", "fp1", "fp2", "fp3", "fp4", "fp5", "fp6", "fp7" }
-
-#else /* SUPPORTED_SUN_FPA */
-
-#define REGISTER_NAMES \
-{"d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7",	\
- "a0", "a1", "a2", "a3", "a4", "a5", "a6", "sp",	\
- "fp0", "fp1", "fp2", "fp3", "fp4", "fp5", "fp6", "fp7", \
- "fpa0", "fpa1", "fpa2", "fpa3", "fpa4", "fpa5", "fpa6", "fpa7", \
- "fpa8", "fpa9", "fpa10", "fpa11", "fpa12", "fpa13", "fpa14", "fpa15", \
- "fpa16", "fpa17", "fpa18", "fpa19", "fpa20", "fpa21", "fpa22", "fpa23", \
- "fpa24", "fpa25", "fpa26", "fpa27", "fpa28", "fpa29", "fpa30", "fpa31" }
-
-#endif /* defined SUPPORT_SUN_FPA */
 
 /* How to renumber registers for dbx and gdb.
    On the Sun-3, the floating point registers have numbers
@@ -1786,13 +1510,8 @@ __transfer_from_trampoline ()					\
    'f' for float insn (print a CONST_DOUBLE as a float rather than in hex)
    'o' for operands to go directly to output_operand_address (bypassing
        print_operand_address--used only for SYMBOL_REFs under TARGET_PCREL)
-   'w' for FPA insn (print a CONST_DOUBLE as a SunFPA constant rather
-       than directly).  Second part of 'y' below.
    'x' for float insn (print a CONST_DOUBLE as a float rather than in hex),
-       or print pair of registers as rx:ry.
-   'y' for a FPA insn (print pair of registers as rx:ry).  This also outputs
-       CONST_DOUBLE's as SunFPA constant RAM registers if
-       possible, so it should not be used except for the SunFPA.  */
+       or print pair of registers as rx:ry.  */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
   ((CODE) == '.' || (CODE) == '#' || (CODE) == '-'			\
