@@ -21,6 +21,6 @@ void foo (long p1, long, long p2, ...)
 
 int main ()
 {
-  foo (0, 1, 2, 3);
+  foo (0, 1, 2, (long)3);
   return 0;
 }
