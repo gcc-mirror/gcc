@@ -1,5 +1,9 @@
 2000-09-14  Alexandre Oliva  <aoliva@redhat.com>
 
+	* Makefile.am: Re-work shell commands that exceeded command-line
+	length limits.
+	* Makefile.in: Rebuilt.
+
 	* java/lang/natRuntime.cc (lt_preloaded_symbols): Define as `extern'.
 
 	* defineclass.cc: Include alloca.h only if HAVE_ALLOCA_H.
