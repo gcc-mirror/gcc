@@ -1,3 +1,19 @@
+2004-07-25  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (constant_boolean_node): Make extern.
+	(make_range): Wrap long lines.
+	(fold_cond_expr_with_comparison): Remove unnecessary call to
+	pedantic_non_lvalue.  Add missing calls to fold_convert.
+	(fold_truthop): Add missing calls to fold_convert.
+	(fold): Likewise.
+	* tree.h (constant_boolean_node): Add prototype here.
+	* builtins.c (expand_builtin_strncmp): Add missing calls to
+	fold_convert.
+	* tree-ssa-dom.c (record_equivalences_from_incoming_edge):
+	Call fold_convert and constant_boolean_node to correct types.
+	* tree-ssa-forwprop.c (substitute_single_use_vars): Add
+	missing call to fold_convert to correct types.
+
 2004-07-26  Niall Douglas  <s_fsfeurope2@nedprod.com>
 	    Brian Ryner  <bryner@brianryner.com>
 

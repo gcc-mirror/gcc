@@ -1541,7 +1541,8 @@ record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data,
 	      && !CASE_HIGH (match_case))
 	    {
 	      eq_expr_value.dst = switch_cond;
-	      eq_expr_value.src = CASE_LOW (match_case);
+	      eq_expr_value.src = fold_convert (TREE_TYPE (switch_cond),
+						CASE_LOW (match_case));
 	    }
 	}
     }
@@ -3489,7 +3490,7 @@ get_eq_expr_value (tree if_stmt,
   if (TREE_CODE (cond) == SSA_NAME)
     {
       retval.dst = cond;
-      retval.src = (true_arm ? integer_one_node : integer_zero_node);
+      retval.src = constant_boolean_node (true_arm, TREE_TYPE (cond));
       return retval;
     }
 
