@@ -1367,7 +1367,9 @@ package body Bindgen is
          --  optimized away by smart linkers, such as the AiX linker.
 
          if Bind_Main_Program then
-            WBI ("   char *ensure_reference = __gnat_ada_main_program_name;");
+            WBI
+              ("   char *ensure_reference __attribute__ ((__unused__)) = " &
+               "__gnat_ada_main_program_name;");
             WBI ("");
          end if;
 
