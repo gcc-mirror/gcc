@@ -622,10 +622,10 @@ enum machopic_addr_class {
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)  \
   (((CODE) == 1 || (GLOBAL) == 0) ? DW_EH_PE_pcrel : DW_EH_PE_absptr)
 
-#define REGISTER_TARGET_PRAGMAS(PFILE)                          \
-  do {                                                          \
-    cpp_register_pragma (PFILE, 0, "mark", darwin_pragma_ignore);  \
-    cpp_register_pragma (PFILE, 0, "options", darwin_pragma_options);  \
-    cpp_register_pragma (PFILE, 0, "segment", darwin_pragma_ignore);  \
-    cpp_register_pragma (PFILE, 0, "unused", darwin_pragma_unused);  \
+#define DARWIN_REGISTER_TARGET_PRAGMAS(PFILE)				\
+  do {									\
+    cpp_register_pragma (PFILE, 0, "mark", darwin_pragma_ignore);	\
+    cpp_register_pragma (PFILE, 0, "options", darwin_pragma_options);	\
+    cpp_register_pragma (PFILE, 0, "segment", darwin_pragma_ignore);	\
+    cpp_register_pragma (PFILE, 0, "unused", darwin_pragma_unused);	\
   } while (0)
