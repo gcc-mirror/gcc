@@ -147,7 +147,7 @@ build machinery (*.in)	Alexandre Oliva		aoliva@redhat.com
 docs co-maintainer	Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
 docs co-maintainer	Joseph Myers		jsm28@cam.ac.uk
 Pico-Java port		Steve Chamberlain	sac@transmeta.com
-RTEMS Ports		Joel Sherrill
+RTEMS Ports		Joel Sherrill		joel@oarcorp.com
 VxWorks	ports		Zack Weinberg		zack@codesourcery.com
 VxWorks	ports		Nathan Sidwell		nathan@codesourcery.com
 predict.def		Jan Hubicka		jh@suse.cz
