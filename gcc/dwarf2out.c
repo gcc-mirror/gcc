@@ -12451,11 +12451,6 @@ lookup_filename (file_name)
   size_t i, n;
   char *save_file_name;
 
-  /* ??? Why isn't DECL_SOURCE_FILE left null instead.  */
-  if (strcmp (file_name, "<internal>") == 0
-      || strcmp (file_name, "<built-in>") == 0)
-    return 0;
-
   /* Check to see if the file name that was searched on the previous
      call matches this file name.  If so, return the index.  */
   if (file_table_last_lookup_index != 0)
@@ -12528,7 +12523,8 @@ dwarf2out_source_line (line, filename)
      unsigned int line;
      const char *filename;
 {
-  if (debug_info_level >= DINFO_LEVEL_NORMAL)
+  if (debug_info_level >= DINFO_LEVEL_NORMAL
+      && line != 0)
     {
       function_section (current_function_decl);
 
