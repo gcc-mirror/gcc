@@ -3952,12 +3952,18 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		    auto_inc_opt = 1;
 
 #ifdef HAVE_cc0
-		  /* We can't put an insn immediately after one setting
-		     cc0, or immediately before one using cc0.  */
-		  if ((auto_inc_opt == 1 && sets_cc0_p (PATTERN (v->insn)))
-		      || (auto_inc_opt == -1
-			  && sets_cc0_p (PATTERN (prev_nonnote_insn (v->insn)))))
-		    auto_inc_opt = 0;
+		  {
+		    rtx prev;
+
+		    /* We can't put an insn immediately after one setting
+		       cc0, or immediately before one using cc0.  */
+		    if ((auto_inc_opt == 1 && sets_cc0_p (PATTERN (v->insn)))
+			|| (auto_inc_opt == -1
+			    && (prev = prev_nonnote_insn (v->insn)) != 0
+			    && GET_RTX_CLASS (GET_CODE (prev)) == 'i'
+			    && sets_cc0_p (PATTERN (prev))))
+		      auto_inc_opt = 0;
+		  }
 #endif
 
 		  if (auto_inc_opt)
