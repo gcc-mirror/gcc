@@ -4972,7 +4972,7 @@ struct function_arg_record_value_parms
   int named;		/* whether the argument is named.  */
   int regbase;		/* regno of the base register.  */
   int stack;		/* 1 if part of the argument is on the stack.  */
-  int intoffset;	/* offset of the pending integer field.  */
+  int intoffset;	/* offset of the first pending integer field.  */
   unsigned int nregs;	/* number of words passed in registers.  */
 };
 
@@ -5124,6 +5124,7 @@ function_arg_record_value_3 (HOST_WIDE_INT bitpos,
 
       this_slotno += 1;
       intoffset = (intoffset | (UNITS_PER_WORD-1)) + 1;
+      mode = word_mode;
       parms->nregs += 1;
       intslots -= 1;
     }
@@ -5251,6 +5252,7 @@ function_arg_record_value (tree type, enum machine_mode mode,
   parms.intoffset = 0;
   function_arg_record_value_1 (type, 0, &parms, false);
 
+  /* Take into account pending integer fields.  */
   if (parms.intoffset != -1)
     {
       unsigned int startbit, endbit;
