@@ -103,7 +103,7 @@ rtx_varies_p (x)
 	 eliminated the frame and/or arg pointer and are using it
 	 for pseudos.  */
       return ! (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
-		|| x == arg_pointer_rtx);
+		|| x == arg_pointer_rtx || x == pic_offset_table_rtx);
 
     case LO_SUM:
       /* The operand 0 of a LO_SUM is considered constant
