@@ -2116,7 +2116,9 @@ gfc_fixup_sibling_symbols (gfc_symbol * sym, gfc_namespace * siblings)
         continue;
 
       old_sym = st->n.sym;
-      if (old_sym->attr.flavor == FL_PROCEDURE && old_sym->ns == ns
+      if ((old_sym->attr.flavor == FL_PROCEDURE
+	   || old_sym->ts.type == BT_UNKNOWN)
+	  && old_sym->ns == ns
           && ! old_sym->attr.contained)
         {
           /* Replace it with the symbol from the parent namespace.  */
@@ -2199,6 +2201,7 @@ parse_contained (int module)
           /* Mark this as a contained function, so it isn't replaced
              by other module functions.  */
           sym->attr.contained = 1;
+	  sym->attr.referenced = 1;
 
           /* Fix up any sibling functions that refer to this one.  */
           gfc_fixup_sibling_symbols (sym, gfc_current_ns);

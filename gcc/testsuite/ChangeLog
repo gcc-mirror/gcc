@@ -1,3 +1,8 @@
+2004-07-11  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/15986
+	* gfortran.dg/contained_1.f90: New test.
+
 2004-07-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/parse/defarg8.C: New test.

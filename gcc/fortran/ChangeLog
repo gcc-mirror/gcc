@@ -1,3 +1,10 @@
+2004-07-11  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/15986
+	* parse.c (gfc_fixup_sibling_symbols): Also look for untyped
+	variables.
+	(parse_contained): Mark contained symbols as referenced.
+
 2004-07-11  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/16455
