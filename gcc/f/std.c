@@ -1503,9 +1503,9 @@ ffestd_labeldef_branch (ffelab label)
 void
 ffestd_labeldef_format (ffelab label)
 {
-  ffestd_label_formatdef_ = label;
-
   ffestdStmt_ stmt;
+
+  ffestd_label_formatdef_ = label;
 
   stmt = ffestd_stmt_new_ (FFESTD_stmtidFORMATLABEL_);
   ffestd_stmt_append_ (stmt);
@@ -2441,9 +2441,9 @@ ffestd_R625 (ffesttExprList exprlist, ffebld stat)
 void
 ffestd_R737A (ffebld dest, ffebld source)
 {
-  ffestd_check_simple_ ();
-
   ffestdStmt_ stmt;
+
+  ffestd_check_simple_ ();
 
   stmt = ffestd_stmt_new_ (FFESTD_stmtidR737A_);
   ffestd_stmt_append_ (stmt);
