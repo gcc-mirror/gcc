@@ -2,6 +2,7 @@
 
 	* gcc.dg/cpp/truefalse.cpp: New test.
 	* gcc.dg/cpp/cpp.exp: Update.
+	* g++.dg/other/stdbool-if.C: Remove.
 
 2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
 
