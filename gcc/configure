@@ -3785,6 +3785,18 @@ for machine in $build $host $target; do
 			thread_file='solaris'
 		fi
 		;;
+       i[3456]86-*-sysv5*)           # Intel x86 on System V Release 5
+               xm_file=i386/xm-sysv4.h
+               tm_file=i386/sysv4.h
+               if [ x$stabs = xyes ]
+               then
+                       tm_file="${tm_file} dbx.h"
+               fi
+               tmake_file=i386/t-crtpic
+               xmake_file=x-svr4
+               extra_parts="crtbegin.o crtend.o"
+               fixincludes=Makefile.in # The headers are just fine, thank you.
+               ;;
 	i[3456]86-*-sysv4*)		# Intel 80386's running system V.4
 		xm_file=i386/xm-sysv4.h
 		tm_file=i386/sysv4.h
