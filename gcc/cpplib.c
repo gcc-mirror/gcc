@@ -1328,7 +1328,7 @@ _cpp_parse_assertion (pfile, answerp)
   /* Prefix '#' to get it out of macro namespace.  */
   sym[0] = '#';
   memcpy (sym + 1, predicate->val.name.text, len);
-  return cpp_lookup (pfile, sym, len);
+  return cpp_lookup (pfile, sym, len + 1);
 
  error:
   FREE_ANSWER (answer);
