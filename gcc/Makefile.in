@@ -469,7 +469,6 @@ HOST_PREFIX_1=loser-
 HOST_CC=$(CC)
 HOST_CFLAGS=$(ALL_CFLAGS)
 HOST_CLIB=$(CLIB)
-HOST_INTLLIBS=$(INTLLIBS)
 HOST_LDFLAGS=$(LDFLAGS)
 HOST_CPPFLAGS=$(ALL_CPPFLAGS)
 HOST_ALLOCA=$(ALLOCA)
@@ -577,7 +576,7 @@ LIBDEPS= $(INTLLIBS) $(OBSTACK) $(ALLOCA) $(MALLOC) $(VFPRINTF) $(DOPRINT)
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
 # We don't use USE_ALLOCA because backquote expansion doesn't work in deps.
-HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_INTLLIBS) $(HOST_PREFIX)$(HOST_OBSTACK) $(HOST_PREFIX)$(HOST_ALLOCA) $(HOST_PREFIX)$(HOST_MALLOC) $(HOST_PREFIX)$(HOST_VFPRINTF) $(HOST_PREFIX)$(HOST_DOPRINT)
+HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_OBSTACK) $(HOST_PREFIX)$(HOST_ALLOCA) $(HOST_PREFIX)$(HOST_MALLOC) $(HOST_PREFIX)$(HOST_VFPRINTF) $(HOST_PREFIX)$(HOST_DOPRINT)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
@@ -586,8 +585,7 @@ LIBS = $(OBSTACK) $(USE_ALLOCA) $(MALLOC) $(INTLLIBS) @LIBS@ $(VFPRINTF) $(DOPRI
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
 HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
-	    $(HOST_INTLLIBS) $(USE_HOST_VFPRINTF) $(USE_HOST_DOPRINT) \
-	    $(HOST_CLIB)
+	    $(USE_HOST_VFPRINTF) $(USE_HOST_DOPRINT) $(HOST_CLIB)
 
 HOST_RTL = $(HOST_PREFIX)rtl.o $(HOST_PREFIX)bitmap.o \
 		$(HOST_PREFIX)ggc-none.o gensupport.o
