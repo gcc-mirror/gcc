@@ -47,6 +47,7 @@ extern int reg_15_operand PARAMS ((rtx, enum machine_mode));
 extern int float_binary PARAMS ((rtx, enum machine_mode));
 extern int float_unary PARAMS ((rtx, enum machine_mode));
 extern int float_conversion PARAMS ((rtx, enum machine_mode));
+extern void romp_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 #endif /* RTX_CODE */
 
 extern int first_reg_to_save PARAMS ((void));
