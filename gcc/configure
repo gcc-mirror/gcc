@@ -9877,7 +9877,7 @@ else
     fi
   else
     case "${target}" in
-      hppa64*-*-hpux*)
+      hppa64*-*-hpux* | ia64*-*-hpux*)
 	gcc_cv_ld_hidden=yes
 	;;
       *)
