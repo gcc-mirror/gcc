@@ -249,6 +249,9 @@ struct sequence_stack *sequence_stack;
 static struct sequence_stack *sequence_element_free_list;
 static rtx sequence_result[SEQUENCE_RESULT_SIZE];
 
+/* During RTL generation, we also keep a list of free INSN rtl codes. */
+static rtx free_insn;
+
 extern int rtx_equal_function_value_matters;
 
 /* Filename and line number of last line-number note,
@@ -1494,6 +1497,8 @@ restore_emit_status (p)
   sequence_element_free_list = 0;
   for (i = 0; i < SEQUENCE_RESULT_SIZE; i++)
     sequence_result[i] = 0;
+
+  free_insn = 0;
 }
 
 /* Go through all the RTL insn bodies and copy any invalid shared structure.
@@ -2141,9 +2146,17 @@ make_insn_raw (pattern)
 {
   register rtx insn;
 
-  insn = rtx_alloc (INSN);
-  INSN_UID (insn) = cur_insn_uid++;
+  /* If in RTL generation phase, see if FREE_INSN can be used.  */
+  if (free_insn != 0 && rtx_equal_function_value_matters)
+    {
+      insn = free_insn;
+      free_insn = NEXT_INSN (free_insn);
+      PUT_CODE (insn, INSN);
+    }
+  else
+    insn = rtx_alloc (INSN);
 
+  INSN_UID (insn) = cur_insn_uid++;
   PATTERN (insn) = pattern;
   INSN_CODE (insn) = -1;
   LOG_LINKS (insn) = NULL;
@@ -3115,7 +3128,11 @@ gen_sequence ()
 	  /* Don't discard the call usage field.  */
 	  || (GET_CODE (first_insn) == CALL_INSN
 	      && CALL_INSN_FUNCTION_USAGE (first_insn) == NULL_RTX)))
-    return PATTERN (first_insn);
+    {
+      NEXT_INSN (first_insn) = free_insn;
+      free_insn = first_insn;
+      return PATTERN (first_insn);
+    }
 
   /* Put them in a vector.  See if we already have a SEQUENCE of the
      appropriate length around.  */
@@ -3160,6 +3177,7 @@ init_emit ()
   sequence_element_free_list = 0;
   for (i = 0; i < SEQUENCE_RESULT_SIZE; i++)
     sequence_result[i] = 0;
+  free_insn = 0;
 
   /* Init the tables that describe all the pseudo regs.  */
 
