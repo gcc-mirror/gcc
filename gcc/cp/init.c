@@ -2145,6 +2145,47 @@ build_new (placement, decl, init, use_global_new)
   return rval;
 }
 
+/* If non-NULL, a POINTER_TYPE equivalent to (java::lang::Class*). */
+
+static tree jclass_node = NULL_TREE;
+
+/* Given a Java class, return a decl for the corresponding java.lang.Class. */
+
+tree
+build_java_class_ref (type)
+     tree type;
+{
+  tree name, class_decl;
+  static tree CL_prefix = NULL_TREE;
+  static tree alloc_decl = NULL_TREE;
+  if (CL_prefix == NULL_TREE)
+    CL_prefix = get_identifier("_CL_");
+  if (jclass_node == NULL_TREE)
+    {
+      jclass_node = IDENTIFIER_GLOBAL_VALUE (get_identifier("jclass"));
+      if (jclass_node == NULL_TREE)
+	fatal("call to Java constructor, while `jclass' undefined");
+      jclass_node = TREE_TYPE (jclass_node);
+    }
+  name = build_overload_with_type (CL_prefix, type);
+  class_decl = IDENTIFIER_GLOBAL_VALUE (name);
+  if (class_decl == NULL_TREE)
+    {
+      push_obstacks_nochange ();
+      end_temporary_allocation ();
+      class_decl = build_decl (VAR_DECL, name, TREE_TYPE (jclass_node));
+      TREE_STATIC (class_decl) = 1;
+      DECL_EXTERNAL (class_decl) = 1;
+      TREE_PUBLIC (class_decl) = 1;
+      DECL_ARTIFICIAL (class_decl) = 1;
+      DECL_IGNORED_P (class_decl) = 1;
+      pushdecl_top_level (class_decl);
+      make_decl_rtl (class_decl, NULL_PTR, 1);
+      pop_obstacks ();
+    }
+  return class_decl;
+}
+
 /* Called from cplus_expand_expr when expanding a NEW_EXPR.  The return
    value is immediately handed to expand_expr.  */
 
@@ -2160,6 +2201,7 @@ build_new_1 (exp)
   enum tree_code code = NEW_EXPR;
   int use_cookie, nothrow, check_new;
   int use_global_new;
+  int use_java_new = 0;
 
   placement = TREE_OPERAND (exp, 0);
   type = TREE_OPERAND (exp, 1);
@@ -2257,6 +2299,23 @@ build_new_1 (exp)
 	  return error_mark_node;
 	}
     }
+  else if (! placement && TYPE_FOR_JAVA (true_type))
+    {
+      tree name, class_addr, alloc_decl;
+      tree class_decl = build_java_class_ref (true_type);
+      tree class_size = size_in_bytes (true_type);
+      static char alloc_name[] = "_Jv_AllocObject";
+      use_java_new = 1;
+      alloc_decl = IDENTIFIER_GLOBAL_VALUE (get_identifier (alloc_name));
+      if (alloc_decl == NULL_TREE)
+	fatal("call to Java constructor, while `%s' undefined", alloc_name);
+      class_addr = build1 (ADDR_EXPR, jclass_node, class_decl);
+      rval = build_function_call (alloc_decl,
+				  tree_cons (NULL_TREE, class_addr,
+					     build_tree_list (NULL_TREE,
+							      class_size)));
+      rval = cp_convert (build_pointer_type (true_type), rval);
+    }
   else
     {
       int susp;
@@ -2297,7 +2356,7 @@ build_new_1 (exp)
       if (t && TREE_VALUE (t) == NULL_TREE)
 	nothrow = 1;
     }
-  check_new = flag_check_new || nothrow;
+  check_new = (flag_check_new || nothrow) && ! use_java_new;
 
   if ((check_new || flag_exceptions) && rval)
     {
@@ -2383,6 +2442,8 @@ build_new_1 (exp)
 	      flags |= LOOKUP_HAS_IN_CHARGE;
 	    }
 
+	  if (use_java_new)
+	    rval = save_expr (rval);
 	  newrval = rval;
 
 	  if (newrval && TREE_CODE (TREE_TYPE (newrval)) == POINTER_TYPE)
@@ -2394,6 +2455,10 @@ build_new_1 (exp)
 	  if (newrval == NULL_TREE || newrval == error_mark_node)
 	    return error_mark_node;
 
+	  /* Java constructors compiled by jc1 do not return this. */
+	  if (use_java_new)
+	    newrval = build (COMPOUND_EXPR, TREE_TYPE (newrval),
+			     newrval, rval);
 	  rval = newrval;
 	  TREE_HAS_CONSTRUCTOR (rval) = 1;
 	}
@@ -2405,7 +2470,7 @@ build_new_1 (exp)
 	 an exception and the new-expression does not contain a
 	 new-placement, then the deallocation function is called to free
 	 the memory in which the object was being constructed.  */
-      if (flag_exceptions && alloc_expr)
+      if (flag_exceptions && alloc_expr && ! use_java_new)
 	{
 	  enum tree_code dcode = has_array ? VEC_DELETE_EXPR : DELETE_EXPR;
 	  tree cleanup, fn = NULL_TREE;
