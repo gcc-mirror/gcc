@@ -1,5 +1,9 @@
 2004-02-09  James E Wilson  <wilson@specifixinc.com>
 
+	PR c++/11295
+	* c-common.c (c_expand_expr, case STMT_EXPR): Change expand_expr call
+	to expand_expr_real call, and pass in alt_rtl as last argument.
+
 	PR libstdc++/5625
 	* builtin-types.def (BT_WORD, BT_FN_WORD_PTR): New.
 	* builtins.c (expand_builtin): Handle BUILT_IN_EXTEND_POINTER.
