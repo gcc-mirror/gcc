@@ -393,10 +393,12 @@ decl_attributes (decl, attributes, prefix_attributes)
 	if (exact_log2 (align) == -1)
 	  error_with_decl (decl,
 			   "requested alignment of `%s' is not a power of 2");
+	else if (TREE_CODE (decl) == TYPE_DECL)
+	  TYPE_ALIGN (TREE_TYPE (decl)) = align;
 	else if (TREE_CODE (decl) != VAR_DECL
 		 && TREE_CODE (decl) != FIELD_DECL)
 	  error_with_decl (decl,
-			   "alignment specified for `%s'");
+			   "alignment may not be specified for `%s'");
 	else
 	  DECL_ALIGN (decl) = align;
       }
