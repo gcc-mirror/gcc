@@ -31,6 +31,9 @@
 #ifdef __i960__
 #include "va-i960.h"
 #else
+#ifdef __alpha__
+#include "va-alpha.h"
+#else
 
 /* Define __gnuc_va_list.  */
 
@@ -64,6 +67,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
   *((TYPE *) ((char *) (AP) - __va_rounded_size (TYPE))))
 #endif /* _STDARG_H */
 
+#endif /* not alpha */
 #endif /* not i960 */
 #endif /* not sparc */
 #endif /* not mips */
