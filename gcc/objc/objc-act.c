@@ -601,7 +601,7 @@ define_decl (declarator, declspecs)
      tree declarator;
      tree declspecs;
 {
-  tree decl = start_decl (declarator, declspecs, 0);
+  tree decl = start_decl (declarator, declspecs, 0, NULLT, NULLT);
   finish_decl (decl, NULLT, NULLT);
   return decl;
 }
@@ -1256,7 +1256,7 @@ objc_add_static_instance (constructor, class_decl)
   decl_spec = tree_cons (NULLT, class_decl,
 			 build_tree_list (NULLT,
 					  ridpointers[(int) RID_STATIC]));
-  decl = start_decl (decl_expr, decl_spec, 1);
+  decl = start_decl (decl_expr, decl_spec, 1, NULLT, NULLT);
   end_temporary_allocation ();
 
   /* Barf!  Make sure this decl will end up at the global binding level.  */
@@ -1344,7 +1344,7 @@ build_objc_symtab_template ()
 				    "defs");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_symtab_template, field_decl_chain);
+  finish_struct (objc_symtab_template, field_decl_chain, NULLT);
 }
 
 /* Create the initial value for the `defs' field of _objc_symtab.
@@ -1466,7 +1466,8 @@ generate_objc_symtab_decl ()
   sc_spec = build_tree_list (NULLT, ridpointers[(int) RID_STATIC]);
 
   UOBJC_SYMBOLS_decl = start_decl (get_identifier ("_OBJC_SYMBOLS"),
-				   tree_cons (NULLT, objc_symtab_template, sc_spec), 1);
+				   tree_cons (NULLT, objc_symtab_template, sc_spec), 1,
+				   NULLT, NULLT);
 
   end_temporary_allocation ();	/* start_decl trying to be smart about inits */
   TREE_USED (UOBJC_SYMBOLS_decl) = 1;
@@ -1580,7 +1581,7 @@ build_module_descriptor ()
   field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_module_template, field_decl_chain);
+  finish_struct (objc_module_template, field_decl_chain, NULLT);
 
   /* create an instance of "objc_module" */
 
@@ -1588,7 +1589,7 @@ build_module_descriptor ()
 			  build_tree_list (NULLT, ridpointers[(int) RID_STATIC]));
 
   UOBJC_MODULES_decl = start_decl (get_identifier ("_OBJC_MODULES"),
-				   decl_specs, 1);
+				   decl_specs, 1, NULLT, NULLT);
 
   end_temporary_allocation ();	/* start_decl trying to be smart about inits */
   DECL_IGNORED_P (UOBJC_MODULES_decl) = 1;
@@ -1736,7 +1737,7 @@ generate_static_references ()
       decl_spec = tree_cons (NULLT, build_pointer_type (void_type_node),
 			     build_tree_list (NULLT,
 					      ridpointers[(int) RID_STATIC]));
-      decl = start_decl (expr_decl, decl_spec, 1);
+      decl = start_decl (expr_decl, decl_spec, 1, NULLT, NULLT);
       end_temporary_allocation ();
 
       /* Output {class_name, ...}.  */
@@ -1772,7 +1773,7 @@ generate_static_references ()
   decl_spec = tree_cons (NULLT, build_pointer_type (void_type_node),
 			 build_tree_list (NULLT,
 					  ridpointers[(int) RID_STATIC]));
-  static_instances_decl = start_decl (expr_decl, decl_spec, 1);
+  static_instances_decl = start_decl (expr_decl, decl_spec, 1, NULLT, NULLT);
   end_temporary_allocation ();
   expr = build_constructor (TREE_TYPE (static_instances_decl),
 			    nreverse (decls));
@@ -1795,7 +1796,7 @@ generate_strings ()
       sc_spec = tree_cons (NULLT, ridpointers[(int) RID_STATIC], NULLT);
       decl_specs = tree_cons (NULLT, ridpointers[(int) RID_CHAR], sc_spec);
       expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULLT);
-      decl = start_decl (expr_decl, decl_specs, 1);
+      decl = start_decl (expr_decl, decl_specs, 1, NULLT, NULLT);
       end_temporary_allocation ();
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				IDENTIFIER_POINTER (string));
@@ -1809,7 +1810,7 @@ generate_strings ()
       sc_spec = tree_cons (NULLT, ridpointers[(int) RID_STATIC], NULLT);
       decl_specs = tree_cons (NULLT, ridpointers[(int) RID_CHAR], sc_spec);
       expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULLT);
-      decl = start_decl (expr_decl, decl_specs, 1);
+      decl = start_decl (expr_decl, decl_specs, 1, NULLT, NULLT);
       end_temporary_allocation ();
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				IDENTIFIER_POINTER (string));
@@ -1823,7 +1824,7 @@ generate_strings ()
       sc_spec = tree_cons (NULLT, ridpointers[(int) RID_STATIC], NULLT);
       decl_specs = tree_cons (NULLT, ridpointers[(int) RID_CHAR], sc_spec);
       expr_decl = build_nt (ARRAY_REF, DECL_NAME (decl), NULLT);
-      decl = start_decl (expr_decl, decl_specs, 1);
+      decl = start_decl (expr_decl, decl_specs, 1, NULLT, NULLT);
       end_temporary_allocation ();
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				IDENTIFIER_POINTER (string));
@@ -1937,7 +1938,7 @@ build_selector_translation_table ()
 
 	  /* the `decl' that is returned from start_decl is the one that we
 	     forward declared in `build_selector_reference'  */
-	  decl = start_decl (var_decl, decl_specs, 1);
+	  decl = start_decl (var_decl, decl_specs, 1, NULLT, NULLT);
 	}
 
       /* add one for the '\0' character */
@@ -2433,7 +2434,7 @@ build_private_template (class)
 
       ivar_context = build_ivar_chain (class, 0);
 
-      finish_struct (uprivate_record, ivar_context);
+      finish_struct (uprivate_record, ivar_context, NULLT);
 
       CLASS_STATIC_TEMPLATE (class) = uprivate_record;
 
@@ -2501,7 +2502,7 @@ build_protocol_template ()
   field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
   chainon (field_decl_chain, field_decl);
 
-  return finish_struct (template, field_decl_chain);
+  return finish_struct (template, field_decl_chain, NULLT);
 }
 
 static tree
@@ -2564,7 +2565,7 @@ build_method_prototype_list_template (list_type, size)
   field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_ivar_list_record, field_decl_chain);
+  finish_struct (objc_ivar_list_record, field_decl_chain, NULLT);
 
   return objc_ivar_list_record;
 }
@@ -2597,7 +2598,7 @@ build_method_prototype_template ()
   field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (proto_record, field_decl_chain);
+  finish_struct (proto_record, field_decl_chain, NULLT);
 
   return proto_record;
 }
@@ -2735,7 +2736,7 @@ generate_descriptor_table (type, name, size, list, proto)
   decl_specs = tree_cons (NULLT, type, sc_spec);
 
   decl = start_decl (synth_id_with_class_suffix (name, proto),
-				decl_specs, 1);
+				decl_specs, 1, NULLT, NULLT);
   end_temporary_allocation ();
 
   initlist = build_tree_list (NULLT, build_int_2 (size, 0));
@@ -2970,7 +2971,7 @@ generate_protocols ()
       decl_specs = tree_cons (NULLT, objc_protocol_template, sc_spec);
 
       decl = start_decl (synth_id_with_class_suffix ("_OBJC_PROTOCOL", p),
-			 decl_specs, 1);
+			 decl_specs, 1, NULLT, NULLT);
       end_temporary_allocation ();
 
       protocol_name_expr = add_objc_string (PROTOCOL_NAME (p), class_names);
@@ -3104,7 +3105,7 @@ build_category_template ()
 ;
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_category_template, field_decl_chain);
+  finish_struct (objc_category_template, field_decl_chain, NULLT);
 }
 
 /* struct objc_selector {
@@ -3135,7 +3136,7 @@ build_selector_template ()
   field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_selector_template, field_decl_chain);
+  finish_struct (objc_selector_template, field_decl_chain, NULLT);
 }
 
 /* struct objc_class {
@@ -3267,7 +3268,7 @@ build_class_template ()
   chainon (field_decl_chain, field_decl);
 
 
-  finish_struct (objc_class_template, field_decl_chain);
+  finish_struct (objc_class_template, field_decl_chain, NULLT);
 }
 
 /* Generate appropriate forward declarations for an implementation.  */
@@ -3403,7 +3404,7 @@ build_super_template ()
 			  field_decl, decl_specs, NULLT);
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (record, field_decl_chain);
+  finish_struct (record, field_decl_chain, NULLT);
 
   /* `struct objc_super *' */
   super_type = groktypename (build_tree_list (build_tree_list (NULLT, record),
@@ -3454,7 +3455,7 @@ build_ivar_template ()
 			  decl_specs, NULLT);
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_ivar_record, field_decl_chain);
+  finish_struct (objc_ivar_record, field_decl_chain, NULLT);
 
   return objc_ivar_record;
 }
@@ -3493,7 +3494,7 @@ build_ivar_list_template (list_type, size)
 			  field_decl, decl_specs, NULLT);
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_ivar_list_record, field_decl_chain);
+  finish_struct (objc_ivar_list_record, field_decl_chain, NULLT);
 
   return objc_ivar_list_record;
 }
@@ -3542,7 +3543,7 @@ build_method_list_template (list_type, size)
 			  field_decl, decl_specs, NULLT);
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_ivar_list_record, field_decl_chain);
+  finish_struct (objc_ivar_list_record, field_decl_chain, NULLT);
 
   return objc_ivar_list_record;
 }
@@ -3614,7 +3615,7 @@ generate_ivars_list (type, name, size, list)
   decl_specs = tree_cons (NULLT, type, sc_spec);
 
   decl = start_decl (synth_id_with_class_suffix (name, implementation_context),
-		     decl_specs, 1);
+		     decl_specs, 1, NULLT, NULLT);
   end_temporary_allocation ();
 
   initlist = build_tree_list (NULLT, build_int_2 (size, 0));
@@ -3763,7 +3764,7 @@ build_method_template ()
   field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (_SLT_record, field_decl_chain);
+  finish_struct (_SLT_record, field_decl_chain, NULLT);
 
   return _SLT_record;
 }
@@ -3782,7 +3783,7 @@ generate_dispatch_table (type, name, size, list)
   decl_specs = tree_cons (NULLT, type, sc_spec);
 
   decl = start_decl (synth_id_with_class_suffix (name, implementation_context),
-		     decl_specs, 1);
+		     decl_specs, 1, NULLT, NULLT);
   end_temporary_allocation ();
 
   initlist = build_tree_list (NULLT, build_int_2 (0, 0));
@@ -3936,7 +3937,7 @@ generate_protocol_list (i_or_p)
 
   expr_decl = build1 (INDIRECT_REF, NULLT, expr_decl);
 
-  refs_decl = start_decl (expr_decl, decl_specs, 1);
+  refs_decl = start_decl (expr_decl, decl_specs, 1, NULLT, NULLT);
   end_temporary_allocation ();
 
   finish_decl (refs_decl, build_constructor (TREE_TYPE (refs_decl),
@@ -4148,7 +4149,7 @@ generate_category (cat)
 
   decl = start_decl (synth_id_with_class_suffix ("_OBJC_CATEGORY",
 						 implementation_context),
-		     decl_specs, 1);
+		     decl_specs, 1, NULLT, NULLT);
   end_temporary_allocation ();
 
   initlist = build_category_initializer (TREE_TYPE (decl),
@@ -4230,7 +4231,8 @@ generate_shared_structures ()
   sc_spec = build_tree_list (NULLT, ridpointers[(int) RID_STATIC]);
   decl_specs = tree_cons (NULLT, objc_class_template, sc_spec);
 
-  decl = start_decl (DECL_NAME (UOBJC_METACLASS_decl), decl_specs, 1);
+  decl = start_decl (DECL_NAME (UOBJC_METACLASS_decl), decl_specs, 1,
+		     NULLT, NULLT);
   end_temporary_allocation ();
 
   initlist
@@ -4249,7 +4251,8 @@ generate_shared_structures ()
 
   /* static struct objc_class _OBJC_CLASS_Foo={ ... }; */
 
-  decl = start_decl (DECL_NAME (UOBJC_CLASS_decl), decl_specs, 1);
+  decl = start_decl (DECL_NAME (UOBJC_CLASS_decl), decl_specs, 1,
+		     NULLT, NULLT);
   end_temporary_allocation ();
 
   initlist
@@ -6004,7 +6007,7 @@ continue_class (class)
 
       if (!TYPE_FIELDS (record))
 	{
-	  finish_struct (record, build_ivar_chain (class, 0));
+	  finish_struct (record, build_ivar_chain (class, 0), NULLT);
 	  CLASS_STATIC_TEMPLATE (class) = record;
 
 	  /* mark this record as a class template - for static typing */
@@ -6827,7 +6830,7 @@ add_objc_decls ()
       UOBJC_SUPER_decl = start_decl (get_identifier (UTAG_SUPER),
 				     build_tree_list (NULLT,
 						      objc_super_template),
-				     0);
+				     0, NULLT, NULLT);
 
       finish_decl (UOBJC_SUPER_decl, NULLT, NULLT);
 
@@ -7815,7 +7818,7 @@ generate_classref_translation_entry (chain)
 
   /* the `decl' that is returned from start_decl is the one that we
      forward declared in `build_class_reference'.  */
-  decl = start_decl (name, decl_specs, 1);
+  decl = start_decl (name, decl_specs, 1, NULLT, NULLT);
   end_temporary_allocation ();
   finish_decl (decl, expr, NULLT);
   return;
