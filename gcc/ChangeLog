@@ -1,3 +1,8 @@
+2004-11-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*iordi3"): Mark commutative.
+	("*iorsi3_zarch", "*iorsi3_esa"): Likewise.
+
 2004-11-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-phinode.c (resize_phi_node): Abort when LEN is strictly
