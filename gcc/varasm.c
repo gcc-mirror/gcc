@@ -1418,7 +1418,11 @@ immed_real_const_1 (d, mode)
   /* Avoid REAL_VALUES_EQUAL here in order to distinguish minus zero.  */
   if (!bcmp (&dconst0, &d, sizeof d))
     return CONST0_RTX (mode);
-  else if (REAL_VALUES_EQUAL (dconst1, d))
+  /* Check for NaN first, because some ports (specifically the i386) do not
+     emit correct ieee-fp code by default, and thus will generate a core
+     dump here if we pass a NaN to REAL_VALUES_EQUAL and if REAL_VALUES_EQUAL
+     does a floating point comparison.  */
+  else if (! REAL_VALUE_ISNAN (d) && REAL_VALUES_EQUAL (dconst1, d))
     return CONST1_RTX (mode);
 
   if (sizeof u == 2 * sizeof (HOST_WIDE_INT))
