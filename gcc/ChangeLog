@@ -1,3 +1,9 @@
+2004-11-22  Daniel Berlin  <dberlin@dberlin.org>
+
+	* df.c (dataflow_set_a_op_b): Remove reslt parameter, since it's
+	always the same as op1.  Use bitmap_ior_into and bitmap_and_into.
+	Add comment to function.
+
 2004-11-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR pch/14940
