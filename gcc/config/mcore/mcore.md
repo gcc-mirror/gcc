@@ -505,15 +505,25 @@
 ;; Shifts and rotates
 ;; -------------------------------------------------------------------------
 
-;;; ??? The reg case may never match.
-(define_insn "rotlsi3"
-  [(set (match_operand:SI 0 "mcore_arith_reg_operand" "=r,r")
-	(rotate:SI (match_operand:SI 1 "mcore_arith_reg_operand" "0,0")
-		     (match_operand:SI 2 "mcore_arith_K_operand_not_0" "r,K")))]
+;; Only allow these if the shift count is a convenient constant.
+(define_expand "rotlsi3"
+  [(set (match_operand:SI            0 "mcore_arith_reg_operand" "")
+	(rotate:SI (match_operand:SI 1 "mcore_arith_reg_operand" "")
+		   (match_operand:SI 2 "nonmemory_operand" "")))]
   ""
-  "@
-	rotl	%0,%2
-	rotli	%0,%2"
+  "if (! mcore_literal_K_operand (operands[2], SImode))
+	 FAIL;
+  ")
+
+;; We can only do constant rotates, which is what this pattern provides.
+;; The combiner will put it together for us when we do:
+;;	(x << N) | (x >> (32 - N))
+(define_insn ""
+  [(set (match_operand:SI              0 "mcore_arith_reg_operand" "=r")
+	(rotate:SI (match_operand:SI   1 "mcore_arith_reg_operand"  "0")
+		     (match_operand:SI 2 "mcore_literal_K_operand"  "K")))]
+  ""
+  "rotli	%0,%2"
   [(set_attr "type" "shift")])
 
 (define_insn "ashlsi3"
