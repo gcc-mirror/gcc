@@ -1,5 +1,84 @@
 2003-03-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/dnd/DnDEventMulticaster.java: New file.
+	* java/awt/dnd/DragSource.java
+	(flavorMap): New member variable.
+	(dragSourceListener): New member variable.
+	(dragSourceMotionListener): New member variable.
+	(getFlavorMap): Implemented.
+	(createDragGestureRecognizer): Implemented.
+	(addDragSourceListener): Implemented.
+	(removeDragSourceListener): Implemented.
+	(getDragSourceListeners): Implemented.
+	(addDragSourceMotionListener): Implemented.
+	(removeDragSourceMotionListener): Implemented.
+	(getDragSourceMotionListeners): Implemented.
+	(getListeners): Implemented.
+	* java/awt/dnd/DragSourceContext.java
+	(peer): New member variable.
+	(cursor): New member variable.
+	(transferable): New member variable.
+	(trigger): New member variable.
+	(dragSourceListener): New member variable.
+	(image): New member variable.
+	(offset): New member variable.
+	(DragSourceContext): Implemented.
+	(getDragSource): Implemented.
+	(getComponent): Implemented.
+	(getTrigger): Implemented.
+	(getSourceActions): Implemented.
+	(setCursor): Implemented.
+	(getCursor): Implemented.
+	(addDragSourceListener): Implemented.
+	(removeDragSourceListener): Implemented.
+	(getTransferable): Implemented.
+	* java/awt/dnd/DropTarget.java
+	(DropTargetAutoScroller.component): New member variable.
+	(DropTargetAutoScroller.point): New member variable.
+	(DropTargetAutoScroller.DropTargetAutoScroller): Implemented.
+	(DropTargetAutoScroller.updateLocation): Implemented.
+	(active): Renamed from isActive, defaults to true now.
+	(component): New member variable.
+	(flavorMap): New member variable.
+	(actions): New member variable.
+	(dropTargetContext): New member variable.
+	(dropTargetListener): New member variable.
+	(DropTarget): Implemented.
+	(getComponent): Implemented.
+	(setComponent): Implemented.
+	(setDefaultActions): Implemented.
+	(getDefaultActions): Implemented.
+	(setActive): Use active instead of isActive.
+	(isActive): Use active instead of isActive.
+	(addDropTargetListener): Implemented.
+	(removeDropTargetListener): Implemented.
+	(getFlavorMap): Implemented.
+	(setFlavorMap): Implemented.
+	(getDropTargetContext): Implemented.
+	(createDropTargetContext): Implemented.
+	(createDropTargetAutoScroller): Implemented.
+	* java/awt/dnd/DropTargetContext.java
+	(TransferableProxy.getTransferDataFlavors): Implemented.
+	(TransferableProxy.isDataFlavorSupported): Implemented.
+	(TransferableProxy.getTransferData): Implemented.
+	(dropTarget):  New member variable.
+	(dtcp): New member variable.
+	(DropTargetContext): New package private constructor.
+	(getDropTarget): Implemented.
+	(getComponent): Implemented.
+	(addNotify): Implemented.
+	(removeNotify): Implemented.
+	(getCurrentDataFlavorsAsList): Implemented.
+	(isDataFlavorSupported): Implemented.
+	* java/awt/dnd/MouseDragGestureRecognizer.java
+	(registerListeners): Implemented.
+	(unregisterListeners): Implemented.
+	* Makefile.am
+	(awt_java_source_files): Added java/awt/dnd/DnDEventMulticaster.java.
+	* Makefile.in: Regenerated.
+
+2003-03-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/Component.java
 	(eventTypeEnabled): New method.
 	(dispatchEventImpl): Moved checks for event to eventTypeEnabled.
