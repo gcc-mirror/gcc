@@ -9160,7 +9160,11 @@
   if (unit_size > 2)
     operands[2] = gen_mshflo_l (operands[0], operands[0], operands[0]);
   else
-    operands[2] = gen_mperm_w0 (operands[0], operands[0]);
+    {
+      if (unit_size < 2)
+	operands[0] = gen_rtx_REG (V4HImode, true_regnum (operands[0]));
+      operands[2] = gen_mperm_w0 (operands[0], operands[0]);
+    }
   operands[0] = gen_rtx_REG (DImode, true_regnum (operands[0]));
   operands[1] = XVECEXP (operands[1], 0, 0);
   if (unit_size < 2)
