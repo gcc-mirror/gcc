@@ -2569,6 +2569,8 @@ powerpc-*-darwin*)
 	# fixed and we can get rid of this silliness.
 	xm_defines="HAVE_DESIGNATED_INITIALIZERS=0"
 	extra_objs="darwin.o"
+	c_target_objs="darwin-c.o"
+	cxx_target_objs="darwin-c.o"
 	# Darwin linker does collect2 functionality
 	use_collect2=no
 	;;

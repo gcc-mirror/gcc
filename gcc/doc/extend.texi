@@ -73,6 +73,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 			 function.
 * Return Address::      Getting the return or frame address of a function.
 * Other Builtins::      Other built-in functions.
+* Pragmas::             Pragmas accepted by GCC.
 @end menu
 @end ifset
 @ifclear INTERNALS
@@ -125,6 +126,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 			 function.
 * Return Address::      Getting the return or frame address of a function.
 * Other Builtins::      Other built-in functions.
+* Pragmas::             Pragmas accepted by GCC.
 @end menu
 @end ifclear
 
@@ -3908,6 +3910,83 @@ if (__builtin_expect (ptr != NULL, 1))
 @noindent
 when testing pointer or floating-point values.
 @end deftypefn
+
+@node Pragmas
+@section Pragmas Accepted by GCC
+@cindex pragmas
+@cindex #pragma
+
+GCC supports several types of pragmas, primarily in order to compile
+code originally written for other compilers.  Note that in general
+we do not recommend the use of pragmas; @xref{Function Attributes},
+for further explanation.
+
+@menu
+* ARM Pragmas::
+* Darwin Pragmas::
+@end menu
+
+@node ARM Pragmas
+@subsection ARM Pragmas
+
+The ARM target defines pragmas for controlling the default addition of
+@code{long_call} and @code{short_call} attributes to functions.
+@xref{Function Attributes}, for information about the effects of these
+attributes.
+
+@table @code
+@item long_calls
+@cindex pragma, long_calls
+Set all subsequent functions to have the @code{long_call} attribute.
+
+@item no_long_calls
+@cindex pragma, no_long_calls
+Set all subsequent functions to have the @code{short_call} attribute.
+
+@item long_calls_off
+@cindex pragma, long_calls_off
+Do not affect the @code{long_call} or @code{short_call} attributes of
+subsequent functions.
+@end table
+
+@c Describe c4x pragmas here.
+@c Describe h8300 pragmas here.
+@c Describe i370 pragmas here.
+@c Describe i960 pragmas here.
+@c Describe sh pragmas here.
+@c Describe v850 pragmas here.
+
+@node Darwin Pragmas
+@subsection Darwin Pragmas
+
+The following pragmas are available for all architectures running the
+Darwin operating system.  These are useful for compatibility with other
+MacOS compilers.
+
+@table @code
+@item mark @var{tokens}@dots{}
+@cindex pragma, mark
+This pragma is accepted, but has no effect.
+
+@item options align=@var{alignment}
+@cindex pragma, options align
+This pragma sets the alignment of fields in structures.  The values of
+@var{alignment} may be @code{mac68k}, to emulate m68k alignment, or
+@code{power}, to emulate PowerPC alignment.  Uses of this pragma nest
+properly; to restore the previous setting, use @code{reset} for the
+@var{alignment}.
+
+@item segment @var{tokens}@dots{}
+@cindex pragma, segment
+This pragma is accepted, but has no effect.
+
+@item unused (@var{var} [, @var{var}]@dots{})
+@cindex pragma, unused
+This pragma declares variables to be possibly unused.  GCC will not
+produce warnings for the listed variables.  The effect is similar to
+that of the @code{unused} attribute, except that this pragma may appear
+anywhere within the variables' scopes.
+@end table
 
 @node C++ Extensions
 @chapter Extensions to the C++ Language

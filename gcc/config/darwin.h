@@ -780,3 +780,10 @@ enum machopic_addr_class {
       }								\
   } while (0)
 
+#define REGISTER_TARGET_PRAGMAS(PFILE)                          \
+  do {                                                          \
+    cpp_register_pragma (PFILE, 0, "mark", darwin_pragma_ignore);  \
+    cpp_register_pragma (PFILE, 0, "options", darwin_pragma_options);  \
+    cpp_register_pragma (PFILE, 0, "segment", darwin_pragma_ignore);  \
+    cpp_register_pragma (PFILE, 0, "unused", darwin_pragma_unused);  \
+  } while (0)

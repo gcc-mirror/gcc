@@ -1,3 +1,13 @@
+2001-06-28  Stan Shebs  <shebs@apple.com>
+
+	* config/darwin.h (REGISTER_TARGET_PRAGMAS): Define.
+	* config/darwin-c.c: New file.
+	* config/darwin-protos.h: Declare new functions.
+	* config/rs6000/t-darwin (darwin-c.o): New rule.
+	* config.gcc (powerpc-*-darwin*): Define c_target_objs and
+	cxx_target_objs.
+	* doc/extend.texi (Pragmas): New section.
+
 Thu Jun 28 20:13:11 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (try_merge_block): Rename to try_optimize_cfg;
