@@ -110,7 +110,6 @@ LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MKINSTALLDIRS = @MKINSTALLDIRS@
-MSGFMT = @MSGFMT@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
@@ -133,6 +132,7 @@ enable_shared = @enable_shared@
 enable_static = @enable_static@
 glibcpp_CXX = @glibcpp_CXX@
 glibcpp_MOFILES = @glibcpp_MOFILES@
+glibcpp_POFILES = @glibcpp_POFILES@
 glibcpp_basedir = @glibcpp_basedir@
 glibcpp_builddir = @glibcpp_builddir@
 glibcpp_localedir = @glibcpp_localedir@
@@ -145,13 +145,11 @@ gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
 l = @l@
 libio_la = @libio_la@
+libtool_VERSION = @libtool_VERSION@
+release_VERSION = @release_VERSION@
 toplevel_srcdir = @toplevel_srcdir@
 
 PACKAGE = @PACKAGE@
-
-# Necessary files.
-DISTFILES =  	Makefile.am Makefile.in POTFILES.in $(PACKAGE).pot 	$(LOCALE_IN) 
-
 
 # Location of installation directories.
 locale_installdir = $(DESTDIR)$(datadir)/locale
@@ -160,8 +158,14 @@ locale_builddir = @glibcpp_localedir@
 # Tell automake that foo.po makes foo.mo
 SUFFIXES = .po .mo
 
-LOCALE_IN = @POFILES@
+LOCALE_IN = @glibcpp_POFILES@
 LOCALE_OUT = @glibcpp_MOFILES@
+
+MSGFMT = msgfmt
+
+# Necessary files.
+DISTFILES =  	Makefile.am Makefile.in string_literals.cc POTFILES.in $(PACKAGE).pot 	$(LOCALE_IN) 
+
 
 # Specify what gets cleaned up on a 'make clean'
 CLEANFILES = $(LOCALE_OUT) 

@@ -23,11 +23,6 @@
 
 PACKAGE = @PACKAGE@
 
-# Necessary files.
-DISTFILES = \
-	Makefile.am Makefile.in POTFILES.in $(PACKAGE).pot \
-	$(LOCALE_IN) 
-
 # Location of installation directories.
 locale_installdir = $(DESTDIR)$(datadir)/locale
 locale_builddir = @glibcpp_localedir@
@@ -35,8 +30,15 @@ locale_builddir = @glibcpp_localedir@
 # Tell automake that foo.po makes foo.mo
 SUFFIXES = .po .mo
 
-LOCALE_IN = @POFILES@
+LOCALE_IN = @glibcpp_POFILES@
 LOCALE_OUT = @glibcpp_MOFILES@
+
+MSGFMT = msgfmt
+
+# Necessary files.
+DISTFILES = \
+	Makefile.am Makefile.in string_literals.cc POTFILES.in $(PACKAGE).pot \
+	$(LOCALE_IN) 
 
 .po.mo:
 	$(MSGFMT) $< -o $@

@@ -22,4 +22,4 @@
 ## USA.
 
 # include/backward/backward_warning.h
-intl/string_literals.cc
+string_literals.cc

@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.4 2001/08/10 20:44:53 ljrittle Exp $
+## $Id: Makefile.am,v 1.5 2001/08/13 22:26:08 mmitchel Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -206,27 +206,6 @@ c_base_headers = \
 	${c_base_srcdir}/std_cwctype.h \
 	${c_base_srcdir}/cmath.tcc 
 
-##c_compatibility_srcdir = ${glibcpp_srcdir}/include/c_compatibility
-##c_compatibility_builddir = ./
-##c_compatibility_headers = \
-##	${c_compatibility_srcdir}/assert.h \
-##	${c_compatibility_srcdir}/ctype.h \
-##	${c_compatibility_srcdir}/errno.h \
-##	${c_compatibility_srcdir}/float.h \
-##	${c_compatibility_srcdir}/limits.h \
-##	${c_compatibility_srcdir}/locale.h \
-##	${c_compatibility_srcdir}/math.h \
-##	${c_compatibility_srcdir}/setjmp.h \
-##	${c_compatibility_srcdir}/signal.h \
-##	${c_compatibility_srcdir}/stdarg.h \
-##	${c_compatibility_srcdir}/stddef.h \
-##	${c_compatibility_srcdir}/stdio.h \
-##	${c_compatibility_srcdir}/stdlib.h \
-##	${c_compatibility_srcdir}/string.h \
-##	${c_compatibility_srcdir}/time.h \
-##	${c_compatibility_srcdir}/wchar.h \
-##	${c_compatibility_srcdir}/wctype.h 
-
 std_srcdir = ${glibcpp_srcdir}/include/std
 std_builddir = ./
 std_headers = \
@@ -296,18 +275,13 @@ thread_headers = \
 
 # List of all timestamp files.  By keeping only one copy of this list, both
 # CLEANFILES and all-local are kept up-to-date.
-# XXX stamp-c_compatibility not implemented yet.
 allstamps = stamp-std stamp-bits stamp-c_base stamp-backward stamp-ext \
 	stamp-target stamp-thread stamp-file_model stamp-io \
 	stamp-locale stamp-messages_model stamp-codecvt_model
 
-# By adding these files here, automake will remove them for 'make clean'
-CLEANFILES = ${allstamps}
 
 # Here are the rules for building the headers
-all-local: \
-	${target_builddir}/c++config.h \
-	${allstamps}
+all-local: ${target_builddir}/c++config.h ${allstamps}
 
 stamp-std: ${std_headers}
 	@if [ ! -d "${std_builddir}" ]; then \
@@ -380,7 +354,7 @@ stamp-codecvt_model: ${glibcpp_srcdir}/@CCODECVT_H@ ${target_builddir}
 	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h) ;\
 	echo `date` > stamp-codecvt_model
 
-# This target is kinda special.  The timestamp on a directory gets modified
+# This target is special.  The timestamp on a directory gets modified
 # whenever a file it contains gets modified, and that'll throw off all the
 # build dependencies that need this target.  On the other hand, someone
 # could delete the directory and not the stamp file, faking out the make.
@@ -425,7 +399,6 @@ ${thread_builddir}/gthr-default.h:
 # One big happy istallation:  just copy everything from the build to the
 # install tree (except for the build stamps).
 gxx_include_dir = @gxx_include_dir@
-
 install-data-local:
 	for file in `find . ! -name stamp-\* ! -name Makefile -print`; do \
 	installFile=${gxx_include_dir}/$${file} ;\
@@ -436,3 +409,5 @@ install-data-local:
 	fi ;\
 	done
 
+# By adding these files here, automake will remove them for 'make clean'
+CLEANFILES = ${allstamps}

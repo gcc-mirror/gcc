@@ -5,12 +5,13 @@ AC_PREREQ(2.13)
 AC_INIT(src/ios.cc)
 
 PACKAGE=libstdc++
-MAJOR_VERSION=3
-MINOR_VERSION=1
-MICRO_VERSION=0
-VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION
 AC_SUBST(PACKAGE)
-AC_SUBST(VERSION)
+# For typical GNU versioning info, format is MAJOR.MINOR.MICRO
+release_VERSION=3.1.0
+AC_SUBST(release_VERSION)
+# For libtool versioning info, format is CURRENT:REVISION:AGE
+libtool_VERSION=4:0:0
+AC_SUBST(libtool_VERSION)
 
 # Gets build, host, target, *_vendor, *_cpu, *_os, etc.
 # AC 2.50 sets target_alias iff the user specified --target, but we use it
@@ -19,7 +20,7 @@ AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$target}
 AC_SUBST(target_alias)
 
-AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AM_INIT_AUTOMAKE($PACKAGE, $release_VERSION)
 AM_CONFIG_HEADER(config.h)
 
 # Runs configure.host and configure.target, as well as finds CC, CXX
@@ -248,7 +249,7 @@ AC_SUBST(LIBSUPCXX_PICFLAGS)
 AC_OUTPUT(Makefile \
     include/Makefile src/Makefile \
     libmath/Makefile libio/Makefile libsupc++/Makefile \
-    po/Makefile intl/Makefile testsuite/Makefile mkcheck testsuite_flags,
+    po/Makefile testsuite/Makefile mkcheck testsuite_flags,
 [if test -n "$CONFIG_FILES"; then
   ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
   grep '^MULTISUBDIR =' Makefile >> src/Makefile

@@ -130,6 +130,7 @@ enable_shared = @enable_shared@
 enable_static = @enable_static@
 glibcpp_CXX = @glibcpp_CXX@
 glibcpp_MOFILES = @glibcpp_MOFILES@
+glibcpp_POFILES = @glibcpp_POFILES@
 glibcpp_basedir = @glibcpp_basedir@
 glibcpp_builddir = @glibcpp_builddir@
 glibcpp_localedir = @glibcpp_localedir@
@@ -142,6 +143,8 @@ gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
 l = @l@
 libio_la = @libio_la@
+libtool_VERSION = @libtool_VERSION@
+release_VERSION = @release_VERSION@
 toplevel_srcdir = @toplevel_srcdir@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
