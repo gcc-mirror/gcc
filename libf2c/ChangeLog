@@ -1,3 +1,7 @@
+2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure: Regenerate.
+
 2003-09-21  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR libf2c/11918
