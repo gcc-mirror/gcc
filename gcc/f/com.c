@@ -5204,6 +5204,7 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
     case FFEINTRIN_impCHDIR_func:
     case FFEINTRIN_impCHMOD_func:
     case FFEINTRIN_impDATE:
+    case FFEINTRIN_impDATE_AND_TIME:
     case FFEINTRIN_impDBESJ0:
     case FFEINTRIN_impDBESJ1:
     case FFEINTRIN_impDBESJN:

@@ -2468,3 +2468,24 @@ scheduled alarm was due to be delivered, or zero if there was no
 previously scheduled alarm.
 @xref{Signal Intrinsic (subroutine)}.
 ")
+
+DEFDOC (DATE_AND_TIME, "Get the current date and time.", "\
+Returns:
+@table @var
+@item @1@
+The date in the form @var{ccyymmdd}: century, year, month and day;
+@item @2@
+The time in the form @samp{@var{hhmmss.ss}}: hours, minutes, seconds
+and milliseconds;
+@item @3@
+The difference between local time and UTC (GMT) in the form @var{Shhmm}:
+sign, hours and minutes, e.g.@ @samp{-0500} (winter in New York);
+@item @4@
+The year, month of the year, day of the month, time difference in
+minutes from UTC, hour of the day, minutes of the hour and milliseconds
+of the second in successive values of the array.
+@end table
+
+On systems where a millisecond timer isn't available, the millisecond
+value is returned as zero.
+")

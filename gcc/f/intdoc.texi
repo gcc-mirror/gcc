@@ -184,7 +184,7 @@
 * Date Intrinsic::      Get current date as dd-Mon-yy.
 @end ifset
 @ifset familyF90
-* Date_and_Time Intrinsic:: (Reserved for future use.)
+* Date_and_Time Intrinsic:: Get the current date and time.
 @end ifset
 @ifset familyF2U
 * DbesJ0 Intrinsic::    Bessel function (archaic).
@@ -2977,10 +2977,46 @@ for the current (or any) date.
 @cindex Date_and_Time intrinsic
 @cindex intrinsics, Date_and_Time
 
-This intrinsic is not yet implemented.
-The name is, however, reserved as an intrinsic.
-Use @samp{EXTERNAL Date_and_Time} to use this name for an
-external procedure.
+@noindent
+@example
+CALL Date_and_Time(@var{Date}, @var{Ftime}, @var{Zone}, @var{Values})
+@end example
+
+@noindent
+@var{Date}: @code{CHARACTER}; scalar; INTENT(OUT).
+
+@noindent
+@var{Ftime}: @code{CHARACTER}; OPTIONAL; scalar; INTENT(OUT).
+
+@noindent
+@var{Zone}: @code{CHARACTER}; OPTIONAL; scalar; INTENT(OUT).
+
+@noindent
+@var{Values}: @code{INTEGER(KIND=1)}; OPTIONAL; DIMENSION(8); INTENT(OUT).
+
+@noindent
+Intrinsic groups: @code{f90}.
+
+@noindent
+Description:
+
+Returns
+@table @var
+@item Date
+The date in the form @var{ccyymmdd}: century, year, month and day;
+@item Ftime
+The time in the form @samp{@var{hhmmss.ss}}: hours, minutes, seconds
+and milliseconds;
+@item Zone
+The difference between local time and UTC (GMT) in the form @var{Shhmm}:
+sign, hours and minutes, e.g.@ @samp{-0500} (winter in New York);
+@item Values
+The year, month of the year, day of the month, time difference in
+minutes from UTC, hour of the day, minutes of the hour and milliseconds
+of the second in successive values of the array.
+@end table
+On systems where a millisecond timer isn't available, the millisecond
+value is returned as zero.
 
 @end ifset
 @ifset familyF2U
@@ -10006,10 +10042,10 @@ CALL System_Clock(@var{Count}, @var{Rate}, @var{Max})
 @var{Count}: @code{INTEGER(KIND=1)}; scalar; INTENT(OUT).
 
 @noindent
-@var{Rate}: @code{INTEGER(KIND=1)}; scalar; INTENT(OUT).
+@var{Rate}: @code{INTEGER(KIND=1)}; OPTIONAL; scalar; INTENT(OUT).
 
 @noindent
-@var{Max}: @code{INTEGER(KIND=1)}; scalar; INTENT(OUT).
+@var{Max}: @code{INTEGER(KIND=1)}; OPTIONAL; scalar; INTENT(OUT).
 
 @noindent
 Intrinsic groups: @code{f90}.
