@@ -1,6 +1,6 @@
 ;;- Machine description for ARM for GNU compiler
 ;;  Copyright 1991, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999, 2000,
-;;  2001, 2002  Free Software Foundation, Inc.
+;;  2001, 2002, 2003  Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -24,9 +24,6 @@
 
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
 
-;; There are patterns in this file to support XFmode arithmetic.
-;; Unfortunately RISC iX doesn't work well with these so they are disabled.
-;; (See arm.h)
 
 ;;---------------------------------------------------------------------------
 ;; Constants
@@ -153,7 +150,6 @@
 ; mult		a multiply instruction
 ; block		blockage insn, this blocks all functional units
 ; float		a floating point arithmetic operation (subject to expansion)
-; fdivx		XFmode floating point division
 ; fdivd		DFmode floating point division
 ; fdivs		SFmode floating point division
 ; fmul		Floating point multiply
@@ -856,18 +852,6 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "addxf3"
-  [(set (match_operand:XF          0 "s_register_operand" "=f,f")
-	(plus:XF (match_operand:XF 1 "s_register_operand"  "f,f")
-		 (match_operand:XF 2 "fpu_add_operand"    "fG,H")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "@
-   adf%?e\\t%0, %1, %2
-   suf%?e\\t%0, %1, #%N2"
-  [(set_attr "type" "farith")
-   (set_attr "predicable" "yes")]
-)
-
 (define_expand "subdi3"
  [(parallel
    [(set (match_operand:DI            0 "s_register_operand" "")
@@ -1116,18 +1100,6 @@
 		   (match_operand:SF 2 "s_register_operand" "f"))))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "suf%?d\\t%0, %1, %2"
-  [(set_attr "type" "farith")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "subxf3"
-  [(set (match_operand:XF           0 "s_register_operand" "=f,f")
-	(minus:XF (match_operand:XF 1 "fpu_rhs_operand"     "f,G")
-		  (match_operand:XF 2 "fpu_rhs_operand"    "fG,f")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "@
-   suf%?e\\t%0, %1, %2
-   rsf%?e\\t%0, %2, %1"
   [(set_attr "type" "farith")
    (set_attr "predicable" "yes")]
 )
@@ -1415,16 +1387,6 @@
   [(set_attr "type" "fmul")
    (set_attr "predicable" "yes")]
 )
-
-(define_insn "mulxf3"
-  [(set (match_operand:XF 0 "s_register_operand" "=f")
-	(mult:XF (match_operand:XF 1 "s_register_operand" "f")
-		 (match_operand:XF 2 "fpu_rhs_operand" "fG")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "muf%?e\\t%0, %1, %2"
-  [(set_attr "type" "fmul")
-   (set_attr "predicable" "yes")]
-)
 
 ;; Division insns
 
@@ -1485,18 +1447,6 @@
   [(set_attr "type" "fdivd")
    (set_attr "predicable" "yes")]
 )
-
-(define_insn "divxf3"
-  [(set (match_operand:XF 0 "s_register_operand" "=f,f")
-	(div:XF (match_operand:XF 1 "fpu_rhs_operand" "f,G")
-		(match_operand:XF 2 "fpu_rhs_operand" "fG,f")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "@
-   dvf%?e\\t%0, %1, %2
-   rdf%?e\\t%0, %2, %1"
-  [(set_attr "type" "fdivx")
-   (set_attr "predicable" "yes")]
-)
 
 ;; Modulo insns
 
@@ -1551,16 +1501,6 @@
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "rmf%?d\\t%0, %1, %2"
   [(set_attr "type" "fdivd")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "modxf3"
-  [(set (match_operand:XF 0 "s_register_operand" "=f")
-	(mod:XF (match_operand:XF 1 "s_register_operand" "f")
-		(match_operand:XF 2 "fpu_rhs_operand" "fG")))]
-  "ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "rmf%?e\\t%0, %1, %2"
-  [(set_attr "type" "fdivx")
    (set_attr "predicable" "yes")]
 )
 
@@ -2793,15 +2733,6 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "negxf2"
-  [(set (match_operand:XF 0 "s_register_operand" "=f")
-	(neg:XF (match_operand:XF 1 "s_register_operand" "f")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "mnf%?e\\t%0, %1"
-  [(set_attr "type" "ffarith")
-   (set_attr "predicable" "yes")]
-)
-
 ;; abssi2 doesn't really clobber the condition codes if a different register
 ;; is being set.  To keep things simple, assume during rtl manipulations that
 ;; it does, but tell the final scan operator the truth.  Similarly for
@@ -2863,15 +2794,6 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "absxf2"
-  [(set (match_operand:XF 0 "s_register_operand" "=f")
-	(abs:XF (match_operand:XF 1 "s_register_operand" "f")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "abs%?e\\t%0, %1"
-  [(set_attr "type" "ffarith")
-   (set_attr "predicable" "yes")]
-)
-
 (define_insn "sqrtsf2"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(sqrt:SF (match_operand:SF 1 "s_register_operand" "f")))]
@@ -2899,83 +2821,6 @@
   [(set_attr "type" "float_em")
    (set_attr "predicable" "yes")]
 )
-
-(define_insn "sqrtxf2"
-  [(set (match_operand:XF 0 "s_register_operand" "=f")
-	(sqrt:XF (match_operand:XF 1 "s_register_operand" "f")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "sqt%?e\\t%0, %1"
-  [(set_attr "type" "float_em")
-   (set_attr "predicable" "yes")]
-)
-
-;; SIN COS TAN and family are always emulated, so it's probably better
-;; to always call a library function.
-;(define_insn "sinsf2"
-;  [(set (match_operand:SF 0 "s_register_operand" "=f")
-;	(unspec:SF [(match_operand:SF 1 "s_register_operand" "f")]
-;		    UNSPEC_SIN))]
-;  "TARGET_ARM && TARGET_HARD_FLOAT"
-;  "sin%?s\\t%0, %1"
-;[(set_attr "type" "float_em")])
-;
-;(define_insn "sindf2"
-;  [(set (match_operand:DF 0 "s_register_operand" "=f")
-;	(unspec:DF [(match_operand:DF 1 "s_register_operand" "f")]
-;		    UNSPEC_SIN))]
-;  "TARGET_ARM && TARGET_HARD_FLOAT"
-;  "sin%?d\\t%0, %1"
-;[(set_attr "type" "float_em")])
-;
-;(define_insn "*sindf_esfdf"
-;  [(set (match_operand:DF 0 "s_register_operand" "=f")
-;	(unspec:DF [(float_extend:DF
-;		     (match_operand:SF 1 "s_register_operand" "f"))]
-;		    UNSPEC_SIN))]
-;  "TARGET_ARM && TARGET_HARD_FLOAT"
-;  "sin%?d\\t%0, %1"
-;[(set_attr "type" "float_em")])
-;
-;(define_insn "sinxf2"
-;  [(set (match_operand:XF 0 "s_register_operand" "=f")
-;	(unspec:XF [(match_operand:XF 1 "s_register_operand" "f")]
-;		   UNSPEC_SIN))]
-;  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-;  "sin%?e\\t%0, %1"
-;[(set_attr "type" "float_em")])
-;
-;(define_insn "cossf2"
-;  [(set (match_operand:SF 0 "s_register_operand" "=f")
-;	(unspec:SF [(match_operand:SF 1 "s_register_operand" "f")]
-;		   UNSPEC_COS))]
-;  "TARGET_ARM && TARGET_HARD_FLOAT"
-;  "cos%?s\\t%0, %1"
-;[(set_attr "type" "float_em")])
-;
-;(define_insn "cosdf2"
-;  [(set (match_operand:DF 0 "s_register_operand" "=f")
-;	(unspec:DF [(match_operand:DF 1 "s_register_operand" "f")]
-;		   UNSPEC_COS))]
-;  "TARGET_ARM && TARGET_HARD_FLOAT"
-;  "cos%?d\\t%0, %1"
-;[(set_attr "type" "float_em")])
-;
-;(define_insn "*cosdf_esfdf"
-;  [(set (match_operand:DF 0 "s_register_operand" "=f")
-;	(unspec:DF [(float_extend:DF
-;		     (match_operand:SF 1 "s_register_operand" "f"))]
-;		   UNSPEC_COS))]
-;  "TARGET_ARM && TARGET_HARD_FLOAT"
-;  "cos%?d\\t%0, %1"
-;[(set_attr "type" "float_em")])
-;
-;(define_insn "cosxf2"
-;  [(set (match_operand:XF 0 "s_register_operand" "=f")
-;	(unspec:XF [(match_operand:XF 1 "s_register_operand" "f")]
-;		   UNSEPC_COS))]
-;  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-;  "cos%?e\\t%0, %1"
-;[(set_attr "type" "float_em")])
 
 (define_insn_and_split "one_cmpldi2"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
@@ -3060,15 +2905,6 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "floatsixf2"
-  [(set (match_operand:XF 0 "s_register_operand" "=f")
-	(float:XF (match_operand:SI 1 "s_register_operand" "r")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "flt%?e\\t%0, %1"
-  [(set_attr "type" "r_2_f")
-   (set_attr "predicable" "yes")]
-)
-
 (define_insn "fix_truncsfsi2"
   [(set (match_operand:SI         0 "s_register_operand" "=r")
 	(fix:SI (match_operand:SF 1 "s_register_operand" "f")))]
@@ -3087,15 +2923,6 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "fix_truncxfsi2"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(fix:SI (match_operand:XF 1 "s_register_operand" "f")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "fix%?z\\t%0, %1"
-  [(set_attr "type" "f_2_r")
-   (set_attr "predicable" "yes")]
-)
-
 ;; Truncation insns
 
 (define_insn "truncdfsf2"
@@ -3104,26 +2931,6 @@
 	 (match_operand:DF 1 "s_register_operand" "f")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "mvf%?s\\t%0, %1"
-  [(set_attr "type" "ffarith")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "truncxfsf2"
-  [(set (match_operand:SF 0 "s_register_operand" "=f")
-	(float_truncate:SF
-	 (match_operand:XF 1 "s_register_operand" "f")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "mvf%?s\\t%0, %1"
-  [(set_attr "type" "ffarith")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "truncxfdf2"
-  [(set (match_operand:DF 0 "s_register_operand" "=f")
-	(float_truncate:DF
-	 (match_operand:XF 1 "s_register_operand" "f")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "mvf%?d\\t%0, %1"
   [(set_attr "type" "ffarith")
    (set_attr "predicable" "yes")]
 )
@@ -3858,25 +3665,6 @@
   [(set_attr "type" "ffarith")
    (set_attr "predicable" "yes")]
 )
-
-(define_insn "extendsfxf2"
-  [(set (match_operand:XF 0 "s_register_operand" "=f")
-	(float_extend:XF (match_operand:SF 1 "s_register_operand" "f")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "mvf%?e\\t%0, %1"
-  [(set_attr "type" "ffarith")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "extenddfxf2"
-  [(set (match_operand:XF 0 "s_register_operand" "=f")
-	(float_extend:XF (match_operand:DF 1 "s_register_operand" "f")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "mvf%?e\\t%0, %1"
-  [(set_attr "type" "ffarith")
-   (set_attr "predicable" "yes")]
-)
-
 
 ;; Move insns (including loads and stores)
 
@@ -5173,19 +4961,15 @@
 )
 
 
-(define_expand "movxf"
-  [(set (match_operand:XF 0 "general_operand" "")
-	(match_operand:XF 1 "general_operand" ""))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "")
-
-;; Even when the XFmode patterns aren't enabled, we enable this after
-;; reloading so that we can push floating point registers in the prologue.
+;; Saving and restoring the floating point registers in the prologue should
+;; be done in XFmode, even though we don't support that for anything else
+;; (Well, strictly it's 'internal representation', but that's effectively
+;; XFmode).
 
 (define_insn "*movxf_hard_insn"
   [(set (match_operand:XF 0 "nonimmediate_operand" "=f,f,f,m,f,r,r")
 	(match_operand:XF 1 "general_operand" "fG,H,m,f,r,f,r"))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && (ENABLE_XF_PATTERNS || reload_completed)"
+  "TARGET_ARM && TARGET_HARD_FLOAT && reload_completed"
   "*
   switch (which_alternative)
     {
@@ -5652,17 +5436,6 @@
   "
 )
 
-(define_expand "cmpxf"
-  [(match_operand:XF 0 "s_register_operand" "")
-   (match_operand:XF 1 "fpu_rhs_operand" "")]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "
-  arm_compare_op0 = operands[0];
-  arm_compare_op1 = operands[1];
-  DONE;
-  "
-)
-
 (define_insn "*arm_cmpsi_insn"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC (match_operand:SI 0 "s_register_operand" "r,r")
@@ -5761,18 +5534,6 @@
    (set_attr "type" "f_2_r")]
 )
 
-(define_insn "*cmpxf_insn"
-  [(set (reg:CCFP CC_REGNUM)
-	(compare:CCFP (match_operand:XF 0 "s_register_operand" "f,f")
-		      (match_operand:XF 1 "fpu_add_operand" "fG,H")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "@
-   cmf%?\\t%0, %1
-   cnf%?\\t%0, #%N1"
-  [(set_attr "conds" "set")
-   (set_attr "type" "f_2_r")]
-)
-
 (define_insn "*cmpsf_trap"
   [(set (reg:CCFPE CC_REGNUM)
 	(compare:CCFPE (match_operand:SF 0 "s_register_operand" "f,f")
@@ -5817,18 +5578,6 @@
 			(match_operand:SF 1 "s_register_operand" "f"))))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "cmf%?e\\t%0, %1"
-  [(set_attr "conds" "set")
-   (set_attr "type" "f_2_r")]
-)
-
-(define_insn "*cmpxf_trap"
-  [(set (reg:CCFPE CC_REGNUM)
-	(compare:CCFPE (match_operand:XF 0 "s_register_operand" "f,f")
-		       (match_operand:XF 1 "fpu_add_operand" "fG,H")))]
-  "TARGET_ARM && ENABLE_XF_PATTERNS && TARGET_HARD_FLOAT"
-  "@
-   cmf%?e\\t%0, %1
-   cnf%?e\\t%0, #%N1"
   [(set_attr "conds" "set")
    (set_attr "type" "f_2_r")]
 )

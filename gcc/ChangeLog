@@ -1,3 +1,12 @@
+2003-01-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (ENABLE_XF_PATTERNS): Delete.
+	* arm.md (addxf3, subxf3, mulxf3, divxf3, modxf3, negxf2, absxf2)
+	(sqrtxf2, floatsixf2, fix_truncxfsi2, truncxfsf2, truncxfdf2)
+	(extendsfxf2, extenddfxf2, movxf, cmpxf, cmpxf_insn)
+	(cmpxf_trap): Delete.
+	(movxf_hard_insn): Remove test of ENABLE_XF_PATTERNS.
+
 Wed Jan  8 12:10:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (adddi3_carry_rex64, subdi3_carry_rex64): Name pattern.
