@@ -3928,11 +3928,11 @@ print_operand (file, x, code)
 	  /* We need to handle PRE_INC and PRE_DEC here, since we need to
 	     know the width from the mode.  */
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC)
-	    fprintf (file, "%d(%d)", GET_MODE_SIZE (GET_MODE (x)),
-		     REGNO (XEXP (XEXP (x, 0), 0)));
+	    fprintf (file, "%d(%s)", GET_MODE_SIZE (GET_MODE (x)),
+		     reg_names[REGNO (XEXP (XEXP (x, 0), 0))]);
 	  else if (GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    fprintf (file, "%d(%d)", - GET_MODE_SIZE (GET_MODE (x)),
-		     REGNO (XEXP (XEXP (x, 0), 0)));
+	    fprintf (file, "%d(%s)", - GET_MODE_SIZE (GET_MODE (x)),
+		     reg_names[REGNO (XEXP (XEXP (x, 0), 0))]);
 	  else
 	    output_address (XEXP (x, 0));
 	}
