@@ -5470,7 +5470,7 @@
   if (GET_CODE (operands[2]) != CONST_INT)
     abort ();
 
-  /* If we can't generate an immediate instruction, promote to register */
+  /* If we can't generate an immediate instruction, promote to register.  */
   if (! IN_RANGE_P (INTVAL (range), -2048, 2047))
     range = force_reg (SImode, range);
 
@@ -5496,11 +5496,11 @@
 
   emit_cmp_and_jump_insns (indx, range, GTU, NULL_RTX, SImode, 1, fail);
 
-  /* Move the table address to a register */
+  /* Move the table address to a register.  */
   treg = gen_reg_rtx (Pmode);
   emit_insn (gen_movsi (treg, gen_rtx_LABEL_REF (VOIDmode, table)));
 
-  /* scale index-low by wordsize */
+  /* Scale index-low by wordsize.  */
   scale = gen_reg_rtx (SImode);
   emit_insn (gen_ashlsi3 (scale, indx, GEN_INT (2)));
 

@@ -1,5 +1,14 @@
 2004-01-16  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/frv/frv-protos.h: Fix comment formatting.
+	* config/frv/frv.c: Likewise.
+	* config/frv/frv.h: Likewise.
+	* config/frv/frv.md: Likewise.
+	* config/frv/frvbegin.c: Likewise.
+	* config/frv/frvend.c: Likewise.
+
+2004-01-16  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* system.h (LINKER_DOES_NOT_WORK_WITH_DWARF2): Poison.
 	* doc/tm.texi (PREFERRED_DEBUGGING_TYPE): Don't mention
 	LINKER_DOES_NOT_WORK_WITH_DWARF2.
