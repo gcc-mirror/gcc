@@ -14,7 +14,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-up-date 1999-02-25
+@set last-up-date 1999-03-02
 @set version-g77 0.5.24
 @set email-general egcs@@egcs.cygnus.com
 @set email-bugs egcs-bugs@@egcs.cygnus.com
@@ -13747,23 +13747,30 @@ the bug in the current version of GNU Fortran.
 @cindex programs, cpp
 @pindex cpp
 A complete input file that will reproduce the bug.
-If the bug is in the compiler proper (@file{f771}) and
-you are using the C preprocessor, run your
-source file through the C preprocessor by doing @samp{g77 -E
-@var{sourcefile} > @var{outfile}}, then include the contents of
-@var{outfile} in the bug report.  (When you do this, use the same
-@samp{-I}, @samp{-D} or @samp{-U} options that you used in actual
+
+If your source file(s) require preprocessing
+(for example, their names have suffixes like
+@samp{.F}, @samp{.fpp}, @samp{.FPP}, and @samp{.r}),
+and the bug is in the compiler proper (@file{f771})
+or in a subsequent phase of processing,
+run your source file through the C preprocessor
+by doing @samp{g77 -E @var{sourcefile} > @var{newfile}}.
+Then, include the contents of @var{newfile} in the bug report.
+(When you do this, use the same preprocessor options---such as
+@samp{-I}, @samp{-D}, and @samp{-U}---that you used in actual
 compilation.)
 
 A single statement is not enough of an example.
 In order to compile it,
-it must be embedded in a complete file of compiler input; and the bug
-might depend on the details of how this is done.
+it must be embedded in a complete file of compiler input.
+The bug might depend on the details of how this is done.
 
-Without a real example one can compile, all anyone can do about your bug
-report is wish you luck.  It would be futile to try to guess how to
-provoke the bug.  For example, bugs in register allocation and reloading
-frequently depend on every little detail of the function they happen in.
+Without a real example one can compile,
+all anyone can do about your bug report is wish you luck.
+It would be futile to try to guess how to provoke the bug.
+For example, bugs in register allocation and reloading
+can depend on every little detail of the source and include files
+that trigger them.
 
 @item
 @cindex included files
