@@ -174,7 +174,7 @@ extern int ix86_secondary_memory_needed (enum reg_class, enum reg_class,
 					 enum machine_mode, int);
 extern enum reg_class ix86_preferred_reload_class (rtx, enum reg_class);
 extern int ix86_memory_move_cost (enum machine_mode, enum reg_class, int);
-extern void emit_i387_cw_initialization (rtx, rtx);
+extern void emit_i387_cw_initialization (rtx, rtx, int);
 extern bool ix86_fp_jump_nontrivial_p (enum rtx_code);
 extern void x86_order_regs_for_local_alloc (void);
 extern void x86_function_profiler (FILE *, int);

@@ -2940,7 +2940,6 @@ extern rtx ix86_compare_op1;	/* operand 1 for comparisons */
    Post-reload pass may be later used to eliminate the redundant fildcw if
    needed.  */
 
-enum fp_cw_mode {FP_CW_STORED, FP_CW_UNINITIALIZED, FP_CW_ANY};
 
 /* Define this macro if the port needs extra instructions inserted
    for mode switching in an optimizing compilation.  */
@@ -2955,7 +2954,7 @@ enum fp_cw_mode {FP_CW_STORED, FP_CW_UNINITIALIZED, FP_CW_ANY};
    starting counting at zero - determines the integer that is used to
    refer to the mode-switched entity in question.  */
 
-#define NUM_MODES_FOR_MODE_SWITCHING { FP_CW_ANY }
+#define NUM_MODES_FOR_MODE_SWITCHING { I387_CW_ANY }
 
 /* ENTITY is an integer specifying a mode-switched entity.  If
    `OPTIMIZE_MODE_SWITCHING' is defined, you must define this macro to
@@ -2967,10 +2966,10 @@ enum fp_cw_mode {FP_CW_STORED, FP_CW_UNINITIALIZED, FP_CW_ANY};
   (GET_CODE (I) == CALL_INSN						\
    || (GET_CODE (I) == INSN && (asm_noperands (PATTERN (I)) >= 0 	\
 				|| GET_CODE (PATTERN (I)) == ASM_INPUT))\
-   ? FP_CW_UNINITIALIZED						\
-   : recog_memoized (I) < 0 || get_attr_type (I) != TYPE_FISTP		\
-   ? FP_CW_ANY								\
-   : FP_CW_STORED)
+   ? I387_CW_ANY 							\
+   : recog_memoized (I) < 0						\
+   ? I387_CW_ANY 							\
+   : get_attr_i387_cw (I))
 
 /* This macro specifies the order in which modes for ENTITY are
    processed.  0 is the highest priority.  */
@@ -2982,9 +2981,10 @@ enum fp_cw_mode {FP_CW_STORED, FP_CW_UNINITIALIZED, FP_CW_ANY};
    are to be inserted.  */
 
 #define EMIT_MODE_SET(ENTITY, MODE, HARD_REGS_LIVE) 			\
-  ((MODE) == FP_CW_STORED						\
+  ((MODE) != I387_CW_ANY						\
    ? emit_i387_cw_initialization (assign_386_stack_local (HImode, 1),	\
-				  assign_386_stack_local (HImode, 2)), 0\
+				  assign_386_stack_local (HImode, 2),   \
+				  MODE), 0				\
    : 0)
 
 /* Avoid renaming of stack registers, as doing so in combination with

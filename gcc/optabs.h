@@ -183,9 +183,10 @@ enum optab_index
   /* Rounding functions */
   OTI_floor,
   OTI_ceil,
-  OTI_trunc,
+  OTI_btrunc,
   OTI_round,
   OTI_nearbyint,
+  OTI_rint,
   /* Tangent */
   OTI_tan,
   /* Inverse tangent */
@@ -299,9 +300,10 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define log1p_optab (optab_table[OTI_log1p])
 #define floor_optab (optab_table[OTI_floor])
 #define ceil_optab (optab_table[OTI_ceil])
-#define btrunc_optab (optab_table[OTI_trunc])
+#define btrunc_optab (optab_table[OTI_btrunc])
 #define round_optab (optab_table[OTI_round])
 #define nearbyint_optab (optab_table[OTI_nearbyint])
+#define rint_optab (optab_table[OTI_rint])
 #define tan_optab (optab_table[OTI_tan])
 #define atan_optab (optab_table[OTI_atan])
 
