@@ -261,9 +261,9 @@ print_line (const struct line_map *map, unsigned int line, const char *special_f
    of the line, and at end of file will be CPP_EOF.  */
 static void
 cb_line_change (cpp_reader *pfile, const cpp_token *token,
-		int parsing_args ATTRIBUTE_UNUSED)
+		int parsing_args)
 {
-  if (token->type == CPP_EOF)
+  if (token->type == CPP_EOF || parsing_args)
     return;
 
   maybe_print_line (print.map, token->line);
