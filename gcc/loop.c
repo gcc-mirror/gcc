@@ -6386,34 +6386,43 @@ get_condition (jump, earliest)
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC)
     return 0;
 
-  /* Canonicalize any ordered comparison with integers involving equality.  */
-  if (GET_CODE (op1) == CONST_INT)
+  /* Canonicalize any ordered comparison with integers involving equality
+     if we can do computations in the relevant mode and we do not
+     overflow.  */
+
+  if (GET_CODE (op1) == CONST_INT
+      && GET_MODE (op0) != VOIDmode
+      && GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT)
     {
       HOST_WIDE_INT const_val = INTVAL (op1);
       unsigned HOST_WIDE_INT uconst_val = const_val;
+      unsigned HOST_WIDE_INT max_val
+	= (unsigned HOST_WIDE_INT) GET_MODE_MASK (GET_MODE (op0));
 
       switch (code)
-      {
-      case LE:
-	code = LT;
-	op1 = GEN_INT (const_val + 1);
-	break;
+	{
+	case LE:
+	  if (const_val != max_val >> 1)
+	    code = LT,	op1 = GEN_INT (const_val + 1);
+	  break;
 
-      case GE:
-	code = GT;
-	op1 = GEN_INT (const_val - 1);
-	break;
+	case GE:
+	  if (const_val
+	      != (((HOST_WIDE_INT) 1
+		   << (GET_MODE_BITSIZE (GET_MODE (op0)) - 1))))
+	    code = GT, op1 = GEN_INT (const_val - 1);
+	  break;
 
-      case LEU:
-	code = LTU;
-	op1 = GEN_INT (uconst_val + 1);
-	break;
+	case LEU:
+	  if (uconst_val != max_val)
+	    code = LTU, op1 = GEN_INT (uconst_val + 1);
+	  break;
 
-      case GEU:
-	code = GTU;
-	op1 = GEN_INT (uconst_val - 1);
-	break;
-      }
+	case GEU:
+	  if (uconst_val != 0)
+	    code = GTU, op1 = GEN_INT (uconst_val - 1);
+	  break;
+	}
     }
 
   /* If this was floating-point and we reversed anything other than an
