@@ -1,4 +1,9 @@
-2004-10-05  Andrew Pinski  <pinskia@physics.uc.edu>
+2004-10-07  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* parser.c (cp_parser_asm_definition): Look passed the
+	CLEANUP_POINT_EXPR to get the asm expression.
+
+2004-10-06  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/17368
 	* semantics.c (finish_asm_stmt): Asm expressions need cleanup
