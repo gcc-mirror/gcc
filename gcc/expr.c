@@ -1977,7 +1977,7 @@ emit_library_call (va_alist)
 
   argvec = (struct arg *) alloca (nargs * sizeof (struct arg));
 
-  INIT_CUMULATIVE_ARGS (args_so_far, (tree)0, fun);
+  INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE, fun);
 
   args_size.constant = 0;
   args_size.var = 0;
