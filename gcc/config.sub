@@ -149,8 +149,8 @@ esac
 case $basic_machine in
 	# Recognize the basic CPU types without company name.
 	# Some are omitted here because they have special meanings below.
-	tahoe | i860 | m68k | m68000 | m88k | ns32k | arm \
-		| arme[lb] | pyramid \
+	tahoe | i860 | m32r | m68k | m68000 | m88k | ns32k | arm \
+		| arme[lb] | pyramid | mn10300 \
 		| tron | a29k | 580 | i960 | h8300 | hppa | hppa1.0 | hppa1.1 \
 		| alpha | we32k | ns16k | clipper | i370 | sh \
 		| powerpc | powerpcle | 1750a | dsp16xx | mips64 | mipsel \
@@ -170,8 +170,8 @@ case $basic_machine in
 		exit 1
 		;;
 	# Recognize the basic CPU types with company name.
-	vax-* | tahoe-* | i[3456]86-* | i860-* | m68k-* | m68000-* | m88k-* \
-	      | sparc-* | ns32k-* | fx80-* | arm-* | c[123]* \
+	vax-* | tahoe-* | i[3456]86-* | i860-* | m32r-* | m68k-* | m68000-* \
+	      | m88k-* | sparc-* | ns32k-* | fx80-* | arm-* | c[123]* \
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* | power-* \
 	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
 	      | hppa-* | hppa1.0-* | hppa1.1-* | alpha-* | we32k-* | cydra-* | ns16k-* \
