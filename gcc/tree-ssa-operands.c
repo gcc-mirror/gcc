@@ -978,6 +978,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
 
     case TRUTH_NOT_EXPR:
     case BIT_FIELD_REF:
+    case VIEW_CONVERT_EXPR:
     do_unary:
       get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags, prev_vops);
       return;
