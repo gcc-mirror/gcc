@@ -262,7 +262,6 @@ static void frv_registers_update		(rtx, unsigned char [],
 static int frv_registers_used_p			(rtx, unsigned char [], int);
 static int frv_registers_set_p			(rtx, unsigned char [], int);
 static int frv_issue_rate			(void);
-static int frv_use_dfa_pipeline_interface	(void);
 static void frv_pack_insns			(void);
 static void frv_function_prologue		(FILE *, HOST_WIDE_INT);
 static void frv_function_epilogue		(FILE *, HOST_WIDE_INT);
@@ -318,7 +317,7 @@ static rtx frv_struct_value_rtx			(tree, int);
 #undef  TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE frv_issue_rate
 #undef  TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE frv_use_dfa_pipeline_interface
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL frv_function_ok_for_sibcall
@@ -8365,15 +8364,6 @@ frv_issue_rate (void)
     case FRV_CPU_TOMCAT:
       return 4;
     }
-}
-
-
-/* Implement TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE.  */
-
-static int
-frv_use_dfa_pipeline_interface (void)
-{
-  return true;
 }
 
 /* Update the register state information, to know about which registers are set

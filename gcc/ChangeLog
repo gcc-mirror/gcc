@@ -1,3 +1,22 @@
+2004-07-06  Steven Bosscher  <stevenb@suse.de>
+
+	* config/alpha/alpha.c (alpha_use_dfa_pipeline_interface): Remove.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define to hook_int_void_1.
+	* config/arm/arm.c (arm_use_dfa_pipeline_interface): Remove.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define to hook_int_void_1.
+	* config/frv/frv.c (frv_use_dfa_pipeline_interface): Remove.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define to hook_int_void_1.
+	* config/i386/i386.c (ia32_use_dfa_pipeline_interface): Remove.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define to hook_int_void_1.
+	* config/ia64/ia64.c (ia64_use_dfa_pipeline_interface): Remove.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define to hook_int_void_1.
+	* config/pa/pa.c (hhpa_use_dfa_pipeline_interface): Remove.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define to hook_int_void_1.
+	* config/sparc/sparc.c (sparc_use_dfa_pipeline_interface): Remove.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define to hook_int_void_1.
+	* config/v850/v850.c (v850_use_dfa_pipeline_interface): Remove.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define to hook_int_void_1.
+
 2004-07-06  Daniel Berlin  <dberlin@dberlin.org>
 
 	* dojump.c (do_jump): REFERENCE_EXPR is dead.

@@ -866,7 +866,6 @@ static rtx ix86_expand_aligntest (rtx, int);
 static void ix86_expand_strlensi_unroll_1 (rtx, rtx, rtx);
 static int ix86_issue_rate (void);
 static int ix86_adjust_cost (rtx, rtx, rtx, int);
-static int ia32_use_dfa_pipeline_interface (void);
 static int ia32_multipass_dfa_lookahead (void);
 static void ix86_init_mmx_sse_builtins (void);
 static rtx x86_this_parameter (tree);
@@ -1018,8 +1017,7 @@ static void init_ext_80387_constants (void);
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE ix86_issue_rate
 #undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE \
-  ia32_use_dfa_pipeline_interface
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
   ia32_multipass_dfa_lookahead
@@ -12385,17 +12383,6 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
     }
 
   return cost;
-}
-
-static int
-ia32_use_dfa_pipeline_interface (void)
-{
-  if (TARGET_PENTIUM
-      || TARGET_PENTIUMPRO
-      || TARGET_K6
-      || TARGET_ATHLON_K8)
-    return 1;
-  return 0;
 }
 
 /* How many alternative schedules to try.  This should be as wide as the
