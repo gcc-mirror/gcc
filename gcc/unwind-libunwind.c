@@ -110,9 +110,11 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
 _Unwind_Word
 _Unwind_GetCFA (struct _Unwind_Context *context)
 {
-  /* ??? Is there any way to get this information?  */
-  return NULL;
-} 
+  unw_word_t ret;
+
+  unw_get_reg (&context->cursor, UNW_IA64_SP, &ret);
+  return ret;
+}
 
 /* Overwrite the saved value for register REG in CONTEXT with VAL.  */
 
@@ -166,6 +168,19 @@ _Unwind_FindEnclosingFunction (void *pc)
 {
   return NULL;
 }
+
+#ifdef UNW_TARGET_IA64
+
+_Unwind_Word
+_Unwind_GetBSP (struct _Unwind_Context *context)
+{
+  unw_word_t ret;
+
+  unw_get_reg (&context->cursor, UNW_IA64_BSP, &ret);
+  return ret;
+}
+
+#endif
 
 #include "unwind.inc"
 

@@ -1570,12 +1570,14 @@ init_spec ()
 #else
 			    "-lgcc_s%M"
 #endif
+			    ,
+			    "-lgcc",
+			    "-lgcc_eh"
 #ifdef USE_LIBUNWIND_EXCEPTIONS
 			    " -lunwind"
 #endif
-			    ,
-			    "-lgcc",
-			    "-lgcc_eh");
+			    );
+
 	    p += 5;
 	    in_sep = 0;
 	  }
@@ -1591,7 +1593,11 @@ init_spec ()
 #endif
 			    ,
 			    "libgcc.a%s",
-			    "libgcc_eh.a%s");
+			    "libgcc_eh.a%s"
+#ifdef USE_LIBUNWIND_EXCEPTIONS
+			    "libunwind.a%s"
+#endif
+			    );
 	    p += 10;
 	    in_sep = 0;
 	  }
