@@ -1,3 +1,7 @@
+2002-06-11  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.lang/PR6520.java: Fixed typo.
+
 2002-06-10  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.lang/PR6520.java: New file.  For PR java/6520.
