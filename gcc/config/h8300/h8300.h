@@ -846,12 +846,6 @@ struct cum_arg
 
 /* Extra constraints.  */
 
-/* 'T' if valid for dec.[wl] on H8/300H and H8/S.  Note that, for
-   inc.[wl], we can use 'K', which has already been defined.  */
-#define OK_FOR_T(OP)				\
-  (GET_CODE (OP) == CONST_INT			\
-   && (INTVAL (OP) == -1 || INTVAL (OP) == -2))
-
 /* Nonzero if X is a constant address suitable as an 8-bit absolute on
    the H8/300H, which is a special case of the 'R' operand.  */
 
@@ -881,8 +875,7 @@ struct cum_arg
        && GET_CODE (XEXP (OP, 0)) == CONST_INT))
 
 #define EXTRA_CONSTRAINT(OP, C)			\
-  ((C) == 'T' ? OK_FOR_T (OP) :			\
-   (C) == 'U' ? OK_FOR_U (OP) :			\
+  ((C) == 'U' ? OK_FOR_U (OP) :			\
    0)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
