@@ -1142,6 +1142,8 @@ copy_node (node)
 	  length = sizeof (struct tree_real_cst);
 	  break;
 	}
+      else
+	abort();
 
     case 'x':  /* something random, like an identifier.  */
       length = sizeof (struct tree_common)
