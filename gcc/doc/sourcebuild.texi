@@ -944,9 +944,9 @@ test cases and magic comments more.
 @node libgcj Tests
 @subsection The Java library test suites.
 
-Runtime tests are executed via @samp{make check} from the @samp{testsuite}
-directory of the libjava hierarchy in the build tree.  Additional runtime
-tests can be checked into this testsuite.
+Runtime tests are executed via @samp{make check} in the
+@file{@var{target}/libjava/testsuite} directory in the build
+tree.  Additional runtime tests can be checked into this testsuite.
 
 Regression testing of the core packages in libgcj is also covered by the
 Mauve test suite.  The @uref{http://sources.redhat.com/mauve/,,Mauve Project}
