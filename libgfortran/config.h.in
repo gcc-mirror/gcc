@@ -3,8 +3,41 @@
 /* Does gettimeofday take a single argument */
 #undef GETTIMEOFDAY_ONE_ARGUMENT
 
+/* libm includes acosf */
+#undef HAVE_ACOSF
+
+/* libm includes asinf */
+#undef HAVE_ASINF
+
+/* libm includes atan2f */
+#undef HAVE_ATAN2F
+
+/* libm includes atanf */
+#undef HAVE_ATANF
+
+/* libm includes ceilf */
+#undef HAVE_CEILF
+
 /* complex.h exists */
 #undef HAVE_COMPLEX_H
+
+/* libm includes copysignf */
+#undef HAVE_COPYSIGNF
+
+/* libm includes cosf */
+#undef HAVE_COSF
+
+/* libm includes coshf */
+#undef HAVE_COSHF
+
+/* libm includes expf */
+#undef HAVE_EXPF
+
+/* libm includes floorf */
+#undef HAVE_FLOORF
+
+/* libm includes frexpf */
+#undef HAVE_FREXPF
 
 /* Define to 1 if you have the `getpagesize' function. */
 #undef HAVE_GETPAGESIZE
@@ -15,8 +48,17 @@
 /* Define to 1 if you have the `gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
 
+/* libm includes hypotf */
+#undef HAVE_HYPOTF
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
+
+/* libm includes log10f */
+#undef HAVE_LOG10F
+
+/* libm includes logf */
+#undef HAVE_LOGF
 
 /* Define to 1 if you have the <math.h> header file. */
 #undef HAVE_MATH_H
@@ -33,11 +75,23 @@
 /* libm includes nextafterf */
 #undef HAVE_NEXTAFTERF
 
-/* "c99 function" */
+/* libm includes round */
 #undef HAVE_ROUND
 
-/* "c99 function" */
+/* libm includes roundf */
 #undef HAVE_ROUNDF
+
+/* libm includes scalbnf */
+#undef HAVE_SCALBNF
+
+/* libm includes sinf */
+#undef HAVE_SINF
+
+/* libm includes sinhf */
+#undef HAVE_SINHF
+
+/* libm includes sqrtf */
+#undef HAVE_SQRTF
 
 /* Define to 1 if you have the <stddef.h> header file. */
 #undef HAVE_STDDEF_H
@@ -75,6 +129,12 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
+/* libm includes tanf */
+#undef HAVE_TANF
+
+/* libm includes tanhf */
+#undef HAVE_TANHF
+
 /* Define to 1 if you have the `times' function. */
 #undef HAVE_TIMES
 
@@ -107,6 +167,12 @@
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
+
+/* Number of bits in a file offset, on hosts where this is settable. */
+#undef _FILE_OFFSET_BITS
+
+/* Define for large files, on AIX-style hosts. */
+#undef _LARGE_FILES
 
 /* Define to `long' if <sys/types.h> does not define. */
 #undef off_t

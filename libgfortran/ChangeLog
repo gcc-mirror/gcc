@@ -1,3 +1,17 @@
+2004-08-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR libgfortran/16137
+	* configure.ac: Add tests for acosf, asinf, atan2f, atanf, ceilf,
+	copysignf, cosf, coshf, expf, floorf, frexpf, hypotf, logf, log10f,
+	scalbnf, sinf, sinhf, sqrtf, tanf and tanhf in libm.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+	* instrinsics/c99_functions.c (acosf, asinf, atan2f, atanf, ceilf,
+	copysignf, cosf, coshf, expf, floorf, frexpf, hypotf, logf, log10f,
+	nextafterf, scalbnf, sinf, sinhf, sqrtf, tanf, tanhf): New stub
+	implementations for targets that don't support C99 float functions.
+
 2004-08-01  Roger Sayle  <roger@eyesopen.com>
 
 	* io/write.c (write_float): Use the slightly more portable isnan
