@@ -204,9 +204,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"27 Apr 1992"
+#define VERSION_INFO2	"19 May 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.1.4.6 27 Apr 1992 16:30:45"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.1.11.5 19 May 1992 09:28:04"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -1926,25 +1926,33 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
   fprintf (FILE, "\t%s\t 0x%x\n", CHAR_ASM_OP, (VALUE))
 
-/* The singl-byte pseudo-op is the default.  Override svr[34].h.  */
+/* The single-byte pseudo-op is the default.  Override svr[34].h.  */
 #undef	ASM_BYTE_OP
-#define ASM_BYTE_OP "\tbyte"
+#define ASM_BYTE_OP "byte"
 #undef	ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii (FILE, ASCII_DATA_ASM_OP, 48, P, SIZE)
+
+/* The case table contains either words or branch instructions.  This says
+   which.  We always claim that the vector is PC-relative.  It is position
+   independent when -fpic is used.  */
+#define CASE_VECTOR_INSNS (TARGET_88100 || flag_pic)
 
 /* Epilogue for case labels.  This jump instruction is called by casesi
    to transfer to the appropriate branch instruction within the table.
    The label `@L<n>e' is coined to mark the end of the table.  */
 #define ASM_OUTPUT_CASE_END(FILE, NUM, TABLE)				\
   do {									\
-    char label[256];							\
-    ASM_GENERATE_INTERNAL_LABEL (label, "L", NUM);			\
-    fprintf (FILE, "%se:\n", &label[1]);				\
-    if (! flag_delayed_branch)						\
-      fprintf (FILE, "\tlda\t %s,%s[%s]\n", reg_names[1], reg_names[1],	\
-	       reg_names[m88k_case_index]);				\
-    fprintf (FILE, "\tjmp\t %s\n", reg_names[1]);			\
+    if (CASE_VECTOR_INSNS)						\
+      {									\
+	char label[256]; 						\
+	ASM_GENERATE_INTERNAL_LABEL (label, "L", NUM);			\
+	fprintf (FILE, "%se:\n", &label[1]);				\
+	if (! flag_delayed_branch)					\
+	  fprintf (FILE, "\tlda\t %s,%s[%s]\n", reg_names[1],		\
+		   reg_names[1], reg_names[m88k_case_index]);		\
+	fprintf (FILE, "\tjmp\t %s\n", reg_names[1]);			\
+      }									\
   } while (0)
 
 /* This is how to output an element of a case-vector that is absolute.  */
@@ -1952,7 +1960,8 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
   do {									\
     char buffer[256];							\
     ASM_GENERATE_INTERNAL_LABEL (buffer, "L", VALUE);			\
-    fprintf (FILE, "\tbr\t %s\n", &buffer[1]);				\
+    fprintf (FILE, CASE_VECTOR_INSNS ? "\tbr\t %s\n" : "\tword\t %s\n",	\
+	     &buffer[1]);						\
   } while (0)
 
 /* This is how to output an element of a case-vector that is relative.  */
