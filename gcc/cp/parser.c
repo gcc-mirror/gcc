@@ -6128,7 +6128,7 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 	{
 	  /* A declaration consisting of a single semicolon is
 	     invalid.  Allow it unless we're being pedantic.  */
-	  if (pedantic)
+	  if (pedantic && !in_system_header)
 	    pedwarn ("extra `;'");
 	  cp_lexer_consume_token (parser->lexer);
 	  continue;
