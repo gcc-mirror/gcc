@@ -4,7 +4,7 @@ rem This batch file assumes a unix-type "sed" program
 
 update config\i386\xm-dos.h config.h
 update config\i386\xm-dos.h hconfig.h
-update config\i386\gas.h tm.h
+update config\i386\go32.h tm.h
 update config\i386\i386.md md
 update config\i386\i386.c aux-output.c
 
@@ -13,18 +13,26 @@ echo all.dos: cccp cc1 cc1plus cc1obj xgcc>> Makefile
 
 if exist config.sed del config.sed
 
+echo "/\.o[ 	]*:/ s/config.status//			">> config.sed
 echo "/^target=/ c\					">> config.sed
 echo "target=go32					">> config.sed
 echo "/^version=/ c\					">> config.sed
-sed -e "s/[^\"]*\"/version=/" -e "s/;//" version.c	 >> config.sed
+sed -e "s/[^\"]*\"/version=/" -e "s/\ .*//" version.c	 >> config.sed
 echo "s/CC = cc/CC = gcc/				">> config.sed
 echo "s/:\$/: \$/g					">> config.sed
-echo "s/^	\.\//	go32 /				">> config.sed
+echo "s/^	\ *\.\//	go32 /			">> config.sed
 echo "s/^	\$(srcdir)\/move-if-change/	update/	">> config.sed
 echo "s/^USE_/# USE_/					">> config.sed
 echo "s/`echo \$(srcdir)\///g				">> config.sed
 echo "s/ | sed 's,\^\\\.\/,,'`//g			">> config.sed
 echo "s/^	cd \$(srcdir)[ 	]*;//			">> config.sed
+
+echo "/^stamp-attrtab/,/update/ {			">> config.sed
+echo "  /\\/d						">> config.sed
+echo "  /fi/d						">> config.sed
+echo "  /update/ i\					">> config.sed
+echo "	  go32 genattrtab md > t-attrtab.c		">> config.sed
+echo "}							">> config.sed
 
 echo "/^cccp.o[ 	]*:/,/-c/ {			">> config.sed
 echo "  s/	\$(CC)/	>cccp_o.rf/			">> config.sed
@@ -66,6 +74,10 @@ echo "/^enquire[ 	]*:/ s/\$(GCC_PARTS)//g		">> config.sed
 echo "/^enquire.o[ 	]*:/ s/\$(GCC_PASSES)//g	">> config.sed
 echo "/^GCC_FOR_TARGET =/ c\				">> config.sed
 echo "GCC_FOR_TARGET = gcc				">> config.sed
+
+echo "s/; *@true//					">> config.sed
+echo "s/stamp-/s-/g					">> config.sed
+echo "s/tmp-/t-/g					">> config.sed
 
 sed -e "s/^\"//" -e "s/\"$//" -e "s/[ 	]*$//" config.sed > config2.sed
 sed -f config2.sed Makefile.in >> Makefile
