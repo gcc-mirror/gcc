@@ -290,7 +290,7 @@ in the following sections.
 
 @item Preprocessor Options
 @xref{Preprocessor Options,,Options Controlling the Preprocessor}.
-@gccoptlist{-$  -A@var{question}=@var{answer} @gol
+@gccoptlist{-A@var{question}=@var{answer} @gol
 -A-@var{question}@r{[}=@var{answer}@r{]} @gol
 -C  -dD  -dI  -dM  -dN @gol
 -D@var{macro}@r{[}=@var{defn}@r{]}  -E  -H @gol
