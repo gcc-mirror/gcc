@@ -3774,7 +3774,7 @@ display_help ()
   printf (_("  -fcall-saved-<register> Mark <register> as being preserved across functions\n"));
   printf (_("  -finline-limit=<number> Limits the size of inlined functions to <number>\n"));
   printf (_("  -fmessage-length=<number> Limits diagnostics messages lengths to <number> characters per line.  0 suppresses line-wrapping\n"));
-  printf (_("  -fdiagnostics-show-location=[once | never] Indicates how often source location information should be emitted, as prefix, at the beginning of diagnostics when line-wrapping\n"));
+  printf (_("  -fdiagnostics-show-location=[once | every-line] Indicates how often source location information should be emitted, as prefix, at the beginning of diagnostics when line-wrapping\n"));
 
   for (i = ARRAY_SIZE (f_options); i--;)
     {

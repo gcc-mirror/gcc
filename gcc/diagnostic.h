@@ -51,6 +51,10 @@ typedef struct
   /* The ideal upper bound of number of characters per line, as suggested
      by front-end. */  
   int ideal_maximum_length;
+
+  /* Indentation count.  */
+  int indent_skip;
+
   /* Nonzero if current PREFIX was emitted at least once.  */
   int emitted_prefix_p;
 
@@ -88,6 +92,7 @@ struct output_buffer
 #define output_buffer_format_args(BUFFER) *((BUFFER)->state.format_args)
 #define output_needs_newline(BUFFER) (BUFFER)->state.need_newline_p
 #define output_buffer_state(BUFFER) (BUFFER)->state
+#define output_indentation(BUFFER) (BUFFER)->state.indent_skip
 
 /* This data structure bundles altogether any information relevent to
    the context of a diagnostic message.  */
