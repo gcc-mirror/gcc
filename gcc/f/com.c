@@ -14438,7 +14438,7 @@ lang_printable_name (tree decl, int v)
 #if BUILT_FOR_270
 void
 lang_print_error_function (file)
-     char *file;
+     const char *file;
 {
   static ffeglobal last_g = NULL;
   static ffesymbol last_s = NULL;
@@ -14928,10 +14928,6 @@ char *
 init_parse (filename)
      char *filename;
 {
-#if BUILT_FOR_270
-  extern void (*print_error_function) (char *);
-#endif
-
   /* Open input file.  */
   if (filename == 0 || !strcmp (filename, "-"))
     {
@@ -15023,7 +15019,7 @@ lang_finish ()
     malloc_pool_display (malloc_pool_image ());
 }
 
-char *
+const char *
 lang_identify ()
 {
   return "f77";

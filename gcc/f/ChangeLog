@@ -1,3 +1,9 @@
+Mon Aug  9 19:44:08 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * com.c (lang_print_error_function): Constify a char*.
+        (init_parse): Remove redundant prototype for `print_error_function'.
+        (lang_identify): Constify a char*.
+
 Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* g77spec.c: Update URLS and mail addresses.
