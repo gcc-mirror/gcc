@@ -1,3 +1,12 @@
+2002-02-22  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natSystem.cc (init_properties): Include the `Inc.' in
+	java.vendor and java.vm.vendor.
+	* gnu/java/rmi/rmic/RMIC.java (parseOptions): Only print most
+	recent copyright date.
+	* gnu/gcj/convert/Convert.java (version): Print `Inc'.
+	* gij.cc (version): Print `Inc'.
+
 2002-02-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* acinclude.m4 (CXX): AC_SUBST it, instead of glibcpp_CXX.

@@ -944,7 +944,7 @@ private void parseOptions() {
 					   + ") "
 					   + System.getProperty("java.vm.version"));
 			System.out.println();
-			System.out.println("Copyright 1996, 1997, 1998, 1999, 2001, 2002 Free Software Foundation");
+			System.out.println("Copyright 2002 Free Software Foundation, Inc.");
 			System.out.println("This is free software; see the source for copying conditions.  There is NO");
 			System.out.println("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
 			System.exit(0);
