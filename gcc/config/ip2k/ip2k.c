@@ -5315,7 +5315,7 @@ ip2k_reorg (void)
      things in such a way that another go will win.  Do so now!  */
   reload_cse_regs (first_insn);
   find_basic_blocks (first_insn, max_reg_num (), 0);
-  life_analysis (first_insn, 0, PROP_REG_INFO | PROP_DEATH_NOTES);
+  life_analysis (0, PROP_REG_INFO | PROP_DEATH_NOTES);
   
   /* Look for where absurd things are happening with DP.  */
   mdr_try_dp_reload_elim (first_insn);
@@ -5327,7 +5327,7 @@ ip2k_reorg (void)
 
   reload_cse_regs (first_insn);
   find_basic_blocks (first_insn, max_reg_num (), 0);
-  life_analysis (first_insn, 0, PROP_REG_INFO | PROP_DEATH_NOTES);
+  life_analysis (0, PROP_REG_INFO | PROP_DEATH_NOTES);
   if (flag_peephole2)
     peephole2_optimize (NULL);
 
@@ -5354,7 +5354,7 @@ ip2k_reorg (void)
   mdr_try_move_pushes (first_insn);
 
   find_basic_blocks (first_insn, max_reg_num (), 0);
-  life_analysis (first_insn, 0, PROP_FINAL);
+  life_analysis (0, PROP_FINAL);
 
   mdr_try_propagate_move (first_insn);
   mdr_resequence_xy_yx (first_insn);
@@ -5368,14 +5368,14 @@ ip2k_reorg (void)
 
   reload_cse_regs (first_insn);
   find_basic_blocks (first_insn, max_reg_num (), 0);
-  life_analysis (first_insn, 0, PROP_FINAL);
+  life_analysis (0, PROP_FINAL);
   if (flag_peephole2)
     peephole2_optimize (NULL);
 
   mdr_try_propagate_move (first_insn);
 
   find_basic_blocks (first_insn, max_reg_num (), 0);
-  life_analysis (first_insn, 0, PROP_FINAL);
+  life_analysis (0, PROP_FINAL);
 
   ip2k_reorg_split_simode = 1;
   split_all_insns (0);
@@ -5386,14 +5386,14 @@ ip2k_reorg (void)
 
   reload_cse_regs (first_insn);
   find_basic_blocks (first_insn, max_reg_num (), 0);
-  life_analysis (first_insn, 0, PROP_FINAL);
+  life_analysis (0, PROP_FINAL);
   if (flag_peephole2)
     peephole2_optimize (NULL);
 
   mdr_try_propagate_move (first_insn);
 
   find_basic_blocks (first_insn, max_reg_num (), 0);
-  life_analysis (first_insn, 0, PROP_FINAL);
+  life_analysis (0, PROP_FINAL);
 
   ip2k_reorg_split_himode = 1;
   ip2k_reorg_merge_qimode = 1;
@@ -5411,21 +5411,21 @@ ip2k_reorg (void)
   /* Call to  jump_optimize (...) was here, but now I removed it.  */
   
   find_basic_blocks (first_insn, max_reg_num (), 0);
-  life_analysis (first_insn, 0, PROP_FINAL);
+  life_analysis (0, PROP_FINAL);
   if (flag_peephole2)
     peephole2_optimize (NULL);
 
   mdr_try_propagate_move (first_insn);
 
   find_basic_blocks (first_insn, max_reg_num (), 0);
-  life_analysis (first_insn, 0, PROP_FINAL);
+  life_analysis (0, PROP_FINAL);
   mdr_try_remove_redundant_insns (first_insn);
 
   mdr_try_propagate_clr (first_insn);
   mdr_try_propagate_move (first_insn);
 
   find_basic_blocks (first_insn, max_reg_num (), 0);
-  life_analysis (first_insn, 0, PROP_FINAL);
+  life_analysis (0, PROP_FINAL);
 
   ip2k_reorg_split_qimode = 1;
   split_all_insns (0);
@@ -5434,7 +5434,7 @@ ip2k_reorg (void)
   mdr_try_propagate_move (first_insn);
 
   find_basic_blocks (first_insn, max_reg_num (), 0);
-  life_analysis (first_insn, 0, PROP_FINAL);
+  life_analysis (0, PROP_FINAL);
 #endif
 }
 

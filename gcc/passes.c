@@ -519,7 +519,7 @@ rest_of_handle_stack_regs (tree decl, rtx insns)
   timevar_push (TV_REG_STACK);
   open_dump_file (DFI_stack, decl);
 
-  if (reg_to_stack (insns, dump_file) && optimize)
+  if (reg_to_stack (dump_file) && optimize)
     {
       if (cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
 		       | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0))
@@ -1044,7 +1044,7 @@ rest_of_handle_life (tree decl, rtx insns)
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
 #endif
-  life_analysis (insns, dump_file, PROP_FINAL);
+  life_analysis (dump_file, PROP_FINAL);
   if (optimize)
     cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_UPDATE_LIFE
 		 | CLEANUP_LOG_LINKS
@@ -1696,7 +1696,7 @@ rest_of_compilation (tree decl)
       {
 	open_dump_file (DFI_branch_target_load, decl);
 
-	branch_target_load_optimize (insns, false);
+	branch_target_load_optimize (/*after_prologue_epilogue_gen=*/false);
 
 	close_dump_file (DFI_branch_target_load, print_rtl_with_bb, insns);
 
@@ -1715,7 +1715,7 @@ rest_of_compilation (tree decl)
 
   if (optimize)
     {
-      life_analysis (insns, dump_file, PROP_POSTRELOAD);
+      life_analysis (dump_file, PROP_POSTRELOAD);
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE
 		   | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
 
@@ -1785,7 +1785,7 @@ rest_of_compilation (tree decl)
 
       open_dump_file (DFI_branch_target_load, decl);
 
-      branch_target_load_optimize (insns, true);
+      branch_target_load_optimize (/*after_prologue_epilogue_gen=*/true);
 
       close_dump_file (DFI_branch_target_load, print_rtl_with_bb, insns);
 

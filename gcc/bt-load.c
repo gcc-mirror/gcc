@@ -1411,7 +1411,7 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 }
 
 void
-branch_target_load_optimize (rtx insns, bool after_prologue_epilogue_gen)
+branch_target_load_optimize (bool after_prologue_epilogue_gen)
 {
   enum reg_class class = targetm.branch_target_register_class ();
   if (class != NO_REGS)
@@ -1429,7 +1429,7 @@ branch_target_load_optimize (rtx insns, bool after_prologue_epilogue_gen)
       cleanup_cfg (optimize ? CLEANUP_EXPENSIVE : 0);
 #endif
 
-      life_analysis (insns, NULL, 0);
+      life_analysis (NULL, 0);
 
       /* Dominator info is also needed for migrate_btr_def.  */
       calculate_dominance_info (CDI_DOMINATORS);

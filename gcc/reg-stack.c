@@ -399,8 +399,7 @@ pop_stack (stack regstack, int regno)
 }
 
 /* Convert register usage from "flat" register file usage to a "stack
-   register file.  FIRST is the first insn in the function, FILE is the
-   dump file, if used.
+   register file.  FILE is the dump file, if used.
 
    Construct a CFG and run life analysis.  Then convert each insn one
    by one.  Run a last cleanup_cfg pass, if optimizing, to eliminate
@@ -408,7 +407,7 @@ pop_stack (stack regstack, int regno)
    the edges.  */
 
 bool
-reg_to_stack (rtx first, FILE *file)
+reg_to_stack (FILE *file)
 {
   basic_block bb;
   int i;
@@ -434,7 +433,7 @@ reg_to_stack (rtx first, FILE *file)
 	  && flag_schedule_insns_after_reload))
     {
       count_or_remove_death_notes (NULL, 1);
-      life_analysis (first, file, PROP_DEATH_NOTES);
+      life_analysis (file, PROP_DEATH_NOTES);
     }
   mark_dfs_back_edges ();
 

@@ -2238,7 +2238,7 @@ extern void init_loop (void);
 #ifdef BUFSIZ
 extern void loop_optimize (rtx, FILE *, int);
 #endif
-extern void branch_target_load_optimize (rtx, bool);
+extern void branch_target_load_optimize (bool);
 
 /* In function.c */
 extern void reposition_prologue_and_epilogue_notes (rtx);
@@ -2339,7 +2339,7 @@ extern int local_alloc (void);
 
 /* In reg-stack.c */
 #ifdef BUFSIZ
-extern bool reg_to_stack (rtx, FILE *);
+extern bool reg_to_stack (FILE *);
 #endif
 
 /* In calls.c */

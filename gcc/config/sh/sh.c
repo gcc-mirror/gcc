@@ -9526,7 +9526,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   if (optimize > 0 && flag_schedule_insns_after_reload)
     {
       find_basic_blocks (insns, max_reg_num (), dump_file);
-      life_analysis (insns, dump_file, PROP_FINAL);
+      life_analysis (dump_file, PROP_FINAL);
 
       split_all_insns (1);
 

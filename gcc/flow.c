@@ -291,7 +291,7 @@ static int verify_wide_reg_1 (rtx *, void *);
 static void verify_wide_reg (int, basic_block);
 static void verify_local_live_at_start (regset, basic_block);
 static void notice_stack_pointer_modification_1 (rtx, rtx, void *);
-static void notice_stack_pointer_modification (rtx);
+static void notice_stack_pointer_modification (void);
 static void mark_reg (rtx, void *);
 static void mark_regs_live_at_end (regset);
 static void calculate_global_regs_live (sbitmap, sbitmap, int);
@@ -351,12 +351,11 @@ first_insn_after_basic_block_note (basic_block block)
   return NEXT_INSN (insn);
 }
 
-/* Perform data flow analysis.
-   F is the first insn of the function; FLAGS is a set of PROP_* flags
-   to be used in accumulating flow info.  */
+/* Perform data flow analysis for the whole control flow graph.
+   FLAGS is a set of PROP_* flags to be used in accumulating flow info.  */
 
 void
-life_analysis (rtx f, FILE *file, int flags)
+life_analysis (FILE *file, int flags)
 {
 #ifdef ELIMINABLE_REGS
   int i;
@@ -403,13 +402,13 @@ life_analysis (rtx f, FILE *file, int flags)
 
   /* Always remove no-op moves.  Do this before other processing so
      that we don't have to keep re-scanning them.  */
-  delete_noop_moves (f);
+  delete_noop_moves ();
 
   /* Some targets can emit simpler epilogues if they know that sp was
      not ever modified during the function.  After reload, of course,
      we've already emitted the epilogue so there's no sense searching.  */
   if (! reload_completed)
-    notice_stack_pointer_modification (f);
+    notice_stack_pointer_modification ();
 
   /* Allocate and zero out data structures that will record the
      data from lifetime analysis.  */
@@ -782,7 +781,7 @@ free_basic_block_vars (void)
 /* Delete any insns that copy a register to itself.  */
 
 int
-delete_noop_moves (rtx f ATTRIBUTE_UNUSED)
+delete_noop_moves (void)
 {
   rtx insn, next;
   basic_block bb;
@@ -866,8 +865,9 @@ notice_stack_pointer_modification_1 (rtx x, rtx pat ATTRIBUTE_UNUSED,
 }
 
 static void
-notice_stack_pointer_modification (rtx f)
+notice_stack_pointer_modification (void)
 {
+  basic_block bb;
   rtx insn;
 
   /* Assume that the stack pointer is unchanging if alloca hasn't
@@ -876,17 +876,19 @@ notice_stack_pointer_modification (rtx f)
   if (! current_function_sp_is_unchanging)
     return;
 
-  for (insn = f; insn; insn = NEXT_INSN (insn))
-    {
-      if (INSN_P (insn))
-	{
-	  /* Check if insn modifies the stack pointer.  */
-	  note_stores (PATTERN (insn), notice_stack_pointer_modification_1,
-		       NULL);
-	  if (! current_function_sp_is_unchanging)
-	    return;
-	}
-    }
+  FOR_EACH_BB (bb)
+    FOR_BB_INSNS (bb, insn)
+      {
+	if (INSN_P (insn))
+	  {
+	    /* Check if insn modifies the stack pointer.  */
+	    note_stores (PATTERN (insn),
+			 notice_stack_pointer_modification_1,
+			 NULL);
+	    if (! current_function_sp_is_unchanging)
+	      return;
+	  }
+      }
 }
 
 /* Mark a register in SET.  Hard registers in large modes get all

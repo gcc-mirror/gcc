@@ -262,6 +262,7 @@ web_main (void)
   int max = max_reg_num ();
   char *used;
   char *use_addressof;
+  basic_block bb;
   rtx insn;
 
   df = df_init ();
@@ -280,9 +281,12 @@ web_main (void)
     union_defs (df, df->uses[i], def_entry, use_entry);
 
   /* We can not safely rename registers whose address is taken.  */
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
-      for_each_rtx (&PATTERN (insn), mark_addressof, use_addressof);
+  FOR_EACH_BB (bb)
+    FOR_BB_INSNS (bb, insn)
+      {
+	if (INSN_P (insn))
+	  for_each_rtx (&PATTERN (insn), mark_addressof, use_addressof);
+      }
 
   /* Update the instruction stream, allocating new registers for split pseudos
      in progress.  */

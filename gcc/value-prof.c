@@ -182,7 +182,7 @@ rtl_find_values_to_profile (unsigned *n_values, struct histogram_value **values)
   rtx insn;
   unsigned i;
 
-  life_analysis (get_insns (), NULL, PROP_DEATH_NOTES);
+  life_analysis (NULL, PROP_DEATH_NOTES);
 
   *n_values = 0;
   *values = NULL;

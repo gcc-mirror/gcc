@@ -750,7 +750,7 @@ combine_instructions (rtx f, unsigned int nregs)
   EXECUTE_IF_SET_IN_SBITMAP (refresh_blocks, 0, i,
 			     BASIC_BLOCK (i)->flags |= BB_DIRTY);
   new_direct_jump_p |= purge_all_dead_edges (0);
-  delete_noop_moves (f);
+  delete_noop_moves ();
 
   update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
 				    PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE
