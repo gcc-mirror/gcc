@@ -52,6 +52,8 @@ jar_DATA = libgcj-@gcc_version@.jar
 
 ## FIXME: Using libdir violates GNU coding standards.
 secdir = $(libdir)/security
+## Where to install default logging property file.
+propdir = $(libdir)
 
 ## For now, only on native systems.  FIXME.
 if NATIVE
@@ -594,6 +596,7 @@ install-data-local:
 	  echo " $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f"; \
 	  $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f; \
 	done
+	$(INSTALL_DATA) $(srcdir)/java/util/logging/logging.properties $(DESTDIR)$(propdir)/logging.properties
 
 ## ################################################################
 
@@ -1991,6 +1994,22 @@ java/util/TreeSet.java \
 java/util/TooManyListenersException.java \
 java/util/Vector.java \
 java/util/WeakHashMap.java \
+java/util/logging/ConsoleHandler.java \
+java/util/logging/ErrorManager.java \
+java/util/logging/FileHandler.java \
+java/util/logging/Filter.java \
+java/util/logging/Formatter.java \
+java/util/logging/Handler.java \
+java/util/logging/Level.java \
+java/util/logging/Logger.java \
+java/util/logging/LoggingPermission.java \
+java/util/logging/LogManager.java \
+java/util/logging/LogRecord.java \
+java/util/logging/MemoryHandler.java \
+java/util/logging/SimpleFormatter.java \
+java/util/logging/SocketHandler.java \
+java/util/logging/StreamHandler.java \
+java/util/logging/XMLFormatter.java \
 java/util/prefs/NodeChangeListener.java \
 java/util/prefs/Preferences.java \
 java/util/prefs/PreferenceChangeListener.java \

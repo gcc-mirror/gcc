@@ -1,3 +1,11 @@
+2003-11-24  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (propdir): New macro.
+	(install-data-local): Install logging.properties.
+	(core_java_source_files): Added java.util.logging.*.
+	* java/util/logging/logging.properties: New file.
+
 2003-11-25  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramSocket.java

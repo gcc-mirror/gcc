@@ -180,6 +180,7 @@ jardir = $(datadir)/java
 jar_DATA = libgcj-@gcc_version@.jar
 
 secdir = $(libdir)/security
+propdir = $(libdir)
 
 @NATIVE_TRUE@bin_PROGRAMS = @NATIVE_TRUE@jv-convert gij rmic rmiregistry
 
@@ -1713,6 +1714,22 @@ java/util/TreeSet.java \
 java/util/TooManyListenersException.java \
 java/util/Vector.java \
 java/util/WeakHashMap.java \
+java/util/logging/ConsoleHandler.java \
+java/util/logging/ErrorManager.java \
+java/util/logging/FileHandler.java \
+java/util/logging/Filter.java \
+java/util/logging/Formatter.java \
+java/util/logging/Handler.java \
+java/util/logging/Level.java \
+java/util/logging/Logger.java \
+java/util/logging/LoggingPermission.java \
+java/util/logging/LogManager.java \
+java/util/logging/LogRecord.java \
+java/util/logging/MemoryHandler.java \
+java/util/logging/SimpleFormatter.java \
+java/util/logging/SocketHandler.java \
+java/util/logging/StreamHandler.java \
+java/util/logging/XMLFormatter.java \
 java/util/prefs/NodeChangeListener.java \
 java/util/prefs/Preferences.java \
 java/util/prefs/PreferenceChangeListener.java \
@@ -3879,6 +3896,18 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/jar/JarException.P .deps/java/util/jar/JarFile.P \
 .deps/java/util/jar/JarInputStream.P \
 .deps/java/util/jar/JarOutputStream.P .deps/java/util/jar/Manifest.P \
+.deps/java/util/logging/ConsoleHandler.P \
+.deps/java/util/logging/ErrorManager.P \
+.deps/java/util/logging/FileHandler.P .deps/java/util/logging/Filter.P \
+.deps/java/util/logging/Formatter.P .deps/java/util/logging/Handler.P \
+.deps/java/util/logging/Level.P .deps/java/util/logging/LogManager.P \
+.deps/java/util/logging/LogRecord.P .deps/java/util/logging/Logger.P \
+.deps/java/util/logging/LoggingPermission.P \
+.deps/java/util/logging/MemoryHandler.P \
+.deps/java/util/logging/SimpleFormatter.P \
+.deps/java/util/logging/SocketHandler.P \
+.deps/java/util/logging/StreamHandler.P \
+.deps/java/util/logging/XMLFormatter.P \
 .deps/java/util/natResourceBundle.P .deps/java/util/natTimeZone.P \
 .deps/java/util/prefs/AbstractPreferences.P \
 .deps/java/util/prefs/BackingStoreException.P \
@@ -5108,6 +5137,7 @@ install-data-local:
 	  echo " $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f"; \
 	  $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f; \
 	done
+	$(INSTALL_DATA) $(srcdir)/java/util/logging/logging.properties $(DESTDIR)$(propdir)/logging.properties
 
 maintainer-check: libgcj.la
 	$(NM) .libs/libgcj.a | grep ' T ' \
