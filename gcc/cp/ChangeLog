@@ -1,3 +1,11 @@
+2003-06-03  Jason Merrill  <jason@redhat.com>
+
+        * cp/cp-tree.h (CP_AGGREGATE_TYPE_P): Accept vectors.
+
+        * cp/decl.c (reshape_init): Handle vectors.
+
+        * testsuite/g++.dg/init/array10.C: New.
+
 2003-06-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10940
