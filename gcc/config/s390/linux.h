@@ -1,7 +1,7 @@
 /* Definitions for Linux for S/390.
    Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
-                  Ulrich Weigand (weigand@de.ibm.com).
+                  Ulrich Weigand (uweigand@de.ibm.com).
 
 This file is part of GNU CC.
 
@@ -138,10 +138,14 @@ Boston, MA 02111-1307, USA.  */
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
 
-#define ASM_OUTPUT_DOUBLE_INT(FILE, VALUE)      \
-do { fprintf (FILE, "%s\t", ASM_QUAD);          \
-  output_addr_const (FILE,(VALUE));             \
-  putc ('\n',FILE);                             \
+#define ASM_OUTPUT_DOUBLE_INT(FILE, VALUE)      			\
+do { fprintf ((FILE), "%s\t", ASM_QUAD);          			\
+  /* Work around bug in some GNU as versions */				\
+  if (GET_CODE (VALUE) == CONST_INT && INTVAL (VALUE) < INT_MIN)	\
+    fprintf ((FILE), HOST_WIDE_INT_PRINT_HEX, INTVAL (x));		\
+  else									\
+    output_addr_const ((FILE), (VALUE));            			\
+  putc ('\n', (FILE));                             			\
  } while (0)
 
 
@@ -180,22 +184,14 @@ do { fprintf (FILE, "%s\t", ASM_LONG);          \
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  			\
-  fprintf (FILE, "%s %s%d\n", TARGET_64BIT?ASM_QUAD:ASM_LONG, 	\
+  fprintf (FILE, "%s\t%s%d\n", TARGET_64BIT?ASM_QUAD:ASM_LONG, 	\
 	   LPREFIX, VALUE)
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) 		\
-  fprintf (FILE, "%s %s%d-.LT%X_%X\n" ,TARGET_64BIT?ASM_QUAD:ASM_LONG, 	\
-	   LPREFIX, VALUE, s390_function_count,s390_pool_count)
-
-/* Define the parentheses used to group arithmetic operations
-   in assembler code.  */
-
-#undef ASM_OPEN_PAREN
-#undef ASM_CLOSE_PAREN
-#define ASM_OPEN_PAREN ""
-#define ASM_CLOSE_PAREN ""
+  fprintf (FILE, "%s\t%s%d-%s%d\n", TARGET_64BIT?ASM_QUAD:ASM_LONG, 	\
+	   LPREFIX, VALUE, LPREFIX, REL)
 
 
 
@@ -292,24 +288,6 @@ do {                                                                    \
   (fputs (".globl ", FILE), assemble_name (FILE, NAME), fputs ("\n", FILE))
 
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
-
-/*
- * This macro generates the assembly code for function entry.
- */
-
-#define FUNCTION_PROLOGUE(FILE, LSIZE) s390_function_prologue (FILE, LSIZE)
-
-/* This macro generates the assembly code for function exit, on machines
-   that need it.  If FUNCTION_EPILOGUE is not defined then individual
-   return instructions are generated for each return statement.  Args are
-   same as for FUNCTION_PROLOGUE.
-  
-   The function epilogue should not depend on the current stack pointer!
-   It should use the frame pointer only.  This is mandatory because
-   of alloca; we also take advantage of it to omit stack adjustments
-   before returning.  */
-
-#define FUNCTION_EPILOGUE(FILE, LSIZE) s390_function_epilogue(FILE, LSIZE)
 
 /* Select section for constant in constant pool. 
    We are in the right section. 

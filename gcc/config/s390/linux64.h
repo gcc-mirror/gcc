@@ -1,7 +1,7 @@
 /* Definitions for Linux for s/390 zSeries
    Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
-                  Ulrich Weigand (weigand@de.ibm.com).
+                  Ulrich Weigand (uweigand@de.ibm.com).
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify
@@ -77,6 +77,6 @@ Boston, MA 02111-1307, USA.  */
   1, 1, 1, 1, 					\
   0, 0, 0, 0, 					\
   0, 0, 0, 0, 					\
-  1 }
+  1, 1 }
 
 #endif

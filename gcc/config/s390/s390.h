@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390
    Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
-                  Ulrich Weigand (weigand@de.ibm.com).
+                  Ulrich Weigand (uweigand@de.ibm.com).
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify
@@ -54,8 +54,8 @@ extern int target_flags;
   { "no-backchain", -2,N_("Don't set backchain (faster, but debug harder")}, \
   { "small-exec",    4,N_("Use bras for execucable < 64k")},           \
   { "no-small-exec",-4,N_("Don't use bras")},            	       \
-  { "debug_arg",     8,N_("Additional debug prints")},        	       \
-  { "no-debug_arg", -8,N_("Don't print additional debug prints")},     \
+  { "debug",         8,N_("Additional debug prints")},        	       \
+  { "no-debug",     -8,N_("Don't print additional debug prints")},     \
   { "64",           16,N_("64 bit mode")},         	               \
   { "31",          -16,N_("31 bit mode")},                             \
   { "mvcle",        32,N_("mvcle use")},         	               \
@@ -95,7 +95,7 @@ extern int current_function_outgoing_args_size;
 /* Width in bits of a "word", which is the contents of a machine register.  */
 
 #define BITS_PER_WORD (TARGET_64BIT ? 64 : 32)
-#define MAX_BITS_PER_WORD 32
+#define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */
 
@@ -121,7 +121,7 @@ extern int current_function_outgoing_args_size;
    target machine.  If you don't define this, the default is one
    word.  */
 #define LONG_TYPE_SIZE (TARGET_64BIT ? 64 : 32)
-#define MAX_LONG_TYPE_SIZE 32
+#define MAX_LONG_TYPE_SIZE 64
 
 /* A C expression for the size in bits of the type `long long' on the
    target machine.  If you don't define this, the default is two
@@ -330,8 +330,7 @@ do								\
    (GET_MODE_CLASS(MODE) == MODE_FLOAT ||                           \
     GET_MODE_CLASS(MODE) == MODE_COMPLEX_FLOAT) :                   \
    INT_REGNO_P(REGNO)?                                              \
-    (!((TARGET_64BIT && (MODE) == TImode) ||                        \
-     (!TARGET_64BIT && (MODE) == DImode)) || ((REGNO) & 1) == 0 ) : \
+    (HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1)) :        \
    CC_REGNO_P(REGNO)?                                               \
      GET_MODE_CLASS (MODE) == MODE_CC :                             \
    0)
@@ -427,7 +426,7 @@ while (0)
 enum reg_class
 {
   NO_REGS, ADDR_REGS, GENERAL_REGS,
-  FP_REGS, CC_REGS, ALL_REGS, LIM_REG_CLASSES
+  FP_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -435,7 +434,7 @@ enum reg_class
 /* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES                                                 \
-{ "NO_REGS","ADDR_REGS", "GENERAL_REGS", "FP_REGS", "CC_REGS", "ALL_REGS" }
+{ "NO_REGS","ADDR_REGS", "GENERAL_REGS", "FP_REGS", "ALL_REGS" }
 
 /* Define which registers fit in which classes.  This is an initializer for
    a vector of HARD_REG_SET of length N_REG_CLASSES.
@@ -447,7 +446,6 @@ enum reg_class
   { 0x0000fffe, 0x00000001 },	/* ADDR_REGS */		\
   { 0x0000ffff, 0x00000001 },	/* GENERAL_REGS */	\
   { 0xffff0000, 0x00000000 },	/* FP_REGS */		\
-  { 0x00000000, 0x00000002 },	/* CC_REGS */		\
   { 0xffffffff, 0x00000003 },	/* ALL_REGS */		\
 }
 
@@ -591,7 +589,8 @@ extern enum reg_class regclass_map[];	/* smalled class containing REGNO   */
 #define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + 6 : INVALID_REGNUM)
 #define EH_RETURN_STACKADJ_RTX  gen_rtx_REG (Pmode, 10)
 #define EH_RETURN_HANDLER_RTX \
-  gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, -40))
+  gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, \
+                                     TARGET_64BIT? -48 : -40))
 
 /* Define this if pushing a word on the stack makes the stack pointer a
    smaller address.  */
@@ -767,10 +766,10 @@ CUMULATIVE_ARGS;
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.  */
 
-#define RETURN_IN_MEMORY(type)       		\
-  (TYPE_MODE (type) == BLKmode || 		\
-   TYPE_MODE (type) == DCmode  || 		\
-   TYPE_MODE (type) == SCmode)
+#define RETURN_IN_MEMORY(type)       				\
+  (TYPE_MODE (type) == BLKmode || 				\
+   GET_MODE_CLASS (TYPE_MODE (type)) == MODE_COMPLEX_INT  ||	\
+   GET_MODE_CLASS (TYPE_MODE (type)) == MODE_COMPLEX_FLOAT)
 
 /* Mode of stack savearea.
    FUNCTION is VOIDmode because calling convention maintains SP.
@@ -1569,11 +1568,11 @@ do {                                                                       \
        if ((OUTER_CODE == PLUS) &&                              \
 	   ((INTVAL (RTX) > 32767) ||                           \
 	   (INTVAL (RTX) < -32768))) 	                        \
-         return 3;                                              \
+         return COSTS_N_INSNS (3);                              \
   case LABEL_REF:                                               \
   case SYMBOL_REF:                                              \
   case CONST_DOUBLE:                                            \
-    return 1;                                                   \
+    return 0;                                                   \
 
 
 /* Like `CONST_COSTS' but applies to nonconstant RTL expressions.
