@@ -865,7 +865,10 @@ allocate_dynamic_stack_space (size, target, known_align)
 
 #ifdef MUST_ALIGN
 
-#if !defined (STACK_DYNAMIC_OFFSET) && !defined (STACK_POINTER_OFFSET)
+#if 0 /* It turns out we must always make extra space, if MUST_ALIGN
+	 because we must always round the address up at the end,
+	 because we don't know whether the dynamic offset
+	 will mess up the desired alignment.  */
   /* If we have to round the address up regardless of known_align,
      make extra space regardless, also.  */
   if (known_align % BIGGEST_ALIGNMENT != 0)
@@ -912,8 +915,9 @@ allocate_dynamic_stack_space (size, target, known_align)
      momentarily mis-aligning the stack.  */
 
 #ifdef STACK_BOUNDARY
-#ifndef SETJMP_VIA_SAVE_AREA /* If we added a variable amount to SIZE,
-				we can no longer assume it is aligned.  */
+  /* If we added a variable amount to SIZE,
+     we can no longer assume it is aligned.  */
+#if !defined (SETJMP_VIA_SAVE_AREA) && !defined (MUST_ALIGN)
   if (known_align % STACK_BOUNDARY != 0)
 #endif
     size = round_push (size);
@@ -957,9 +961,9 @@ allocate_dynamic_stack_space (size, target, known_align)
 #endif
 
 #ifdef MUST_ALIGN
-  /* If virtual_stack_dynamic_rtx might not share the alignment of
-     the stack pointer register, we must always realign the stack address.  */
-#if !defined (STACK_DYNAMIC_OFFSET) && !defined (STACK_POINTER_OFFSET)
+#if 0  /* Even if we know the stack pointer has enough alignment,
+	  there's no way to tell whether virtual_stack_dynamic_rtx shares that
+	  alignment, so we still need to round the address up.  */
   if (known_align % BIGGEST_ALIGNMENT != 0)
 #endif
     {
