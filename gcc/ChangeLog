@@ -1,3 +1,7 @@
+2004-07-11  Phil Edwards  <phil@codesourcery.com>
+
+	* doc/install.texi (Testing):  Fix syntax in "make check" example.
+
 2004-07-10  James E Wilson  <wilson@specifixinc.com>
 
 	* config/gofast.h (gofast_maybe_init_libfuncs): Use SImode for litodp.

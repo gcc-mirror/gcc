@@ -1737,7 +1737,7 @@ You can run the testsuites multiple times using combinations of options
 with a syntax similar to the brace expansion of popular shells:
 
 @smallexample
-    @dots{}"--target_board=arm-sim@{-mhard-float,-msoft-float@}@{-O1,-O2,-O3,@}"
+    @dots{}"--target_board=arm-sim/@{-mhard-float,-msoft-float@}@{-O1,-O2,-O3,@}"
 @end smallexample
 
 (Note the empty option caused by the trailing comma in the final group.)
