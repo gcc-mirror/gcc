@@ -16,7 +16,7 @@ int foo (int s)
         continue;
       else if (({ register char r;
 		  __asm__ __volatile__ ("" : "=q" (r)
-					: "r" (0), "m" (a)
+					: "r" (0), "m" (a[0])
 					: "cc"); r; }))
         continue;
     }

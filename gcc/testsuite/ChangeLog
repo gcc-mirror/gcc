@@ -1,3 +1,8 @@
+2003-06-08  Richard Henderson  <rth@redhat.com>
+
+        * gcc.dg/20011029-2.c: Fix the array reference.
+        * gcc.dg/asm-7.c: New.
+
 2003-06-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11039
