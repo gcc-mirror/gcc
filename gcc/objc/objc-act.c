@@ -445,6 +445,12 @@ FILE *gen_declaration_file;
 
 int warn_selector = 0;
 
+/* Warn if methods required by a protocol are not implemented in the 
+   class adopting it.  When turned off, methods inherited to that
+   class are also considered implemented */
+
+int flag_warn_protocol = 1;
+
 /* tells "encode_pointer/encode_aggregate" whether we are generating
    type descriptors for instance variables (as opposed to methods).
    Type descriptors for instance variables contain more information
@@ -533,6 +539,10 @@ lang_decode_option (p)
     warn_selector = 1;
   else if (!strcmp (p, "-Wno-selector"))
     warn_selector = 0;
+  else if (!strcmp (p, "-Wprotocol"))
+    flag_warn_protocol = 1;
+  else if (!strcmp (p, "-Wno-protocol"))
+    flag_warn_protocol = 0;
   else if (!strcmp (p, "-fgnu-runtime"))
     flag_next_runtime = 0;
   else if (!strcmp (p, "-fno-next-runtime"))
@@ -5280,6 +5290,69 @@ tree protocol;
    return 1;
 }
 
+/* Make sure all methods in CHAIN are accessible as MTYPE methods in 
+   CONTEXT.  This is one of two mechanisms to check protocol integrity
+*/
+
+static int
+check_methods_accessible (chain, context, mtype)
+     tree chain;
+     tree context; /* implementation_context */
+     int mtype;
+{
+  int first = 1;
+  tree list;
+
+  while (chain)
+    {
+      while (context)
+	{
+	  if (mtype == '+')
+	    list = CLASS_CLS_METHODS (context);
+	  else
+	    list = CLASS_NST_METHODS (context);
+
+	  if (lookup_method (list, chain))
+	      break; 
+
+	  else if (TREE_CODE (context) == CLASS_IMPLEMENTATION_TYPE) 
+	    context = (CLASS_SUPER_NAME (context) 
+		       ? lookup_interface (CLASS_SUPER_NAME (context))
+		       : NULL_TREE);
+
+	  else if (TREE_CODE (context) == CATEGORY_IMPLEMENTATION_TYPE)
+	    context = (CLASS_NAME (context) 
+		       ? lookup_interface (CLASS_NAME (context))
+		       : NULL_TREE);
+	  else
+	    abort ();
+	}
+
+      if (context == NULL_TREE)
+	{
+	  if (first)
+	    {
+	      if (TREE_CODE (implementation_context)
+		  == CLASS_IMPLEMENTATION_TYPE)
+		warning ("incomplete implementation of class `%s'",
+			 IDENTIFIER_POINTER
+			   (CLASS_NAME (implementation_context)));
+	      else if (TREE_CODE (implementation_context)
+		       == CATEGORY_IMPLEMENTATION_TYPE)
+		warning ("incomplete implementation of category `%s'",
+			 IDENTIFIER_POINTER
+			   (CLASS_SUPER_NAME (implementation_context)));
+	      first = 0;
+	    }
+	  warning ("method definition for `%c%s' not found",
+		   mtype, IDENTIFIER_POINTER (METHOD_SEL_NAME (chain)));
+	}
+
+      chain = TREE_CHAIN (chain); /* next method... */
+    }
+    return first;
+}
+
 static void
 check_protocols (proto_list, type, name)
      tree proto_list;
@@ -5293,14 +5366,23 @@ check_protocols (proto_list, type, name)
       if (TREE_CODE (p) == PROTOCOL_INTERFACE_TYPE)
 	{
 	  int f1, f2;
-
+	  
 	  /* Ensure that all protocols have bodies! */
-	  f1 = check_methods (PROTOCOL_CLS_METHODS (p),
-		    CLASS_CLS_METHODS (implementation_context),
-		    '+');
-	  f2 = check_methods (PROTOCOL_NST_METHODS (p),
-		    CLASS_NST_METHODS (implementation_context),
-		    '-');
+	  if (flag_warn_protocol) {
+	    f1 = check_methods (PROTOCOL_CLS_METHODS (p),
+				CLASS_CLS_METHODS (implementation_context),
+				'+');
+	    f2 = check_methods (PROTOCOL_NST_METHODS (p),
+				CLASS_NST_METHODS (implementation_context),
+				'-');
+	  } else {
+	    f1 = check_methods_accessible (PROTOCOL_CLS_METHODS (p),
+					   implementation_context,
+					   '+');
+	    f2 = check_methods_accessible (PROTOCOL_NST_METHODS (p),
+					   implementation_context,
+					   '-');
+	  }
 
 	  if (!f1 || !f2)
 	    warning ("%s `%s' does not fully implement the `%s' protocol",
@@ -5411,6 +5493,11 @@ start_class (code, class_name, super_name, protocol_list)
 		 IDENTIFIER_POINTER (super_name));
 	  error ("previous declaration of `%s'", name);
         }
+      else if (! super_name)
+	{
+	  CLASS_SUPER_NAME (implementation_context) 
+	    = CLASS_SUPER_NAME (implementation_template);
+	}
     }
   else if (code == CLASS_INTERFACE_TYPE)
     {
