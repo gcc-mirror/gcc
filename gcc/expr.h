@@ -188,9 +188,6 @@ do {							\
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 0
 #endif
 
-tree split_complex_types (tree);
-tree split_complex_values (tree);
-
 /* Supply a default definition of STACK_SAVEAREA_MODE for emit_stack_save.
    Normally move_insn, so Pmode stack pointer.  */
 

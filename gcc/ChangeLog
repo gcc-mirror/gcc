@@ -1,3 +1,9 @@
+2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* calls.c (split_complex_values, split_complex_types): Make
+	them static.
+	* expr.h: Remove the corresponding prototypes.
+
 2004-11-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_handle_notshared_attribute): Wrap declaration and use

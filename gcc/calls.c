@@ -145,6 +145,8 @@ static int check_sibcall_argument_overlap (rtx, struct arg_data *, int);
 static int combine_pending_stack_adjustment_and_call (int, struct args_size *,
 						      unsigned int);
 static bool shift_returned_value (tree, rtx *);
+static tree split_complex_values (tree);
+static tree split_complex_types (tree);
 
 #ifdef REG_PARM_STACK_SPACE
 static rtx save_fixed_argument_area (int, rtx, int *, int *);
@@ -3023,7 +3025,7 @@ fixup_tail_calls (void)
 
 /* Traverse an argument list in VALUES and expand all complex
    arguments into their components.  */
-tree
+static tree
 split_complex_values (tree values)
 {
   tree p;
@@ -3077,7 +3079,7 @@ split_complex_values (tree values)
 
 /* Traverse a list of TYPES and expand all complex types into their
    components.  */
-tree
+static tree
 split_complex_types (tree types)
 {
   tree p;
