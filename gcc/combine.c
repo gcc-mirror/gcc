@@ -274,16 +274,9 @@ static int significant_valid;
 
 struct undo
 {
-  rtx *where;
-  rtx old_contents;
   int is_int;
-};
-
-struct undo_int
-{
-  int *where;
-  int old_contents;
-  int is_int;
+  union {rtx rtx; int i;} old_contents;
+  union {rtx *rtx; int *i;} where;
 };
 
 /* Record a bunch of changes to be undone, up to MAX_UNDO of them.
@@ -317,11 +310,11 @@ static struct undobuf undobuf;
  do { rtx _new = (NEWVAL);						\
       if (undobuf.num_undo < MAX_UNDO)					\
 	{								\
-	  undobuf.undo[undobuf.num_undo].where = &INTO;			\
-	  undobuf.undo[undobuf.num_undo].old_contents = INTO;		\
 	  undobuf.undo[undobuf.num_undo].is_int = 0;			\
+	  undobuf.undo[undobuf.num_undo].where.rtx = &INTO;		\
+	  undobuf.undo[undobuf.num_undo].old_contents.rtx = INTO;	\
 	  INTO = _new;							\
-	  if (undobuf.undo[undobuf.num_undo].old_contents != INTO)	\
+	  if (undobuf.undo[undobuf.num_undo].old_contents.rtx != INTO)	\
 	    undobuf.num_undo++; 					\
 	}								\
     } while (0)
@@ -333,13 +326,11 @@ static struct undobuf undobuf;
 #define SUBST_INT(INTO, NEWVAL)  \
  do { if (undobuf.num_undo < MAX_UNDO)					\
 {									\
-	  struct undo_int *u						\
-	    = (struct undo_int *)&undobuf.undo[undobuf.num_undo];	\
-	  u->where = (int *) &INTO;					\
-	  u->old_contents = INTO;					\
-	  u->is_int = 1;						\
+	  undobuf.undo[undobuf.num_undo].is_int = 1;			\
+	  undobuf.undo[undobuf.num_undo].where.i = (int *) &INTO;	\
+	  undobuf.undo[undobuf.num_undo].old_contents.i = INTO;		\
 	  INTO = NEWVAL;						\
-	  if (u->old_contents != INTO)					\
+	  if (undobuf.undo[undobuf.num_undo].old_contents.i != INTO)	\
 	    undobuf.num_undo++;						\
 	}								\
      } while (0)
@@ -2056,7 +2047,13 @@ undo_all ()
   if (undobuf.num_undo > MAX_UNDO)
     undobuf.num_undo = MAX_UNDO;
   for (i = undobuf.num_undo - 1; i >= 0; i--)
-    *undobuf.undo[i].where = undobuf.undo[i].old_contents;
+    {
+      if (undobuf.undo[i].is_int)
+	*undobuf.undo[i].where.i = undobuf.undo[i].old_contents.i;
+      else
+	*undobuf.undo[i].where.rtx = undobuf.undo[i].old_contents.rtx;
+      
+    }
 
   obfree (undobuf.storage);
   undobuf.num_undo = 0;
@@ -6989,15 +6986,15 @@ gen_rtx_combine (va_alist)
 
   for (i = previous_num_undos; i < undobuf.num_undo; i++)
     if (!undobuf.undo[i].is_int
-	&& GET_CODE (undobuf.undo[i].old_contents) == code
-	&& GET_MODE (undobuf.undo[i].old_contents) == mode)
+	&& GET_CODE (undobuf.undo[i].old_contents.rtx) == code
+	&& GET_MODE (undobuf.undo[i].old_contents.rtx) == mode)
       {
 	for (j = 0; j < n_args; j++)
-	  if (XEXP (undobuf.undo[i].old_contents, j) != args[j])
+	  if (XEXP (undobuf.undo[i].old_contents.rtx, j) != args[j])
 	    break;
 
 	if (j == n_args)
-	  return undobuf.undo[i].old_contents;
+	  return undobuf.undo[i].old_contents.rtx;
       }
 
   /* Otherwise make a new rtx.  We know we have 1, 2, or 3 args.
