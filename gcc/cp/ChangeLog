@@ -1,3 +1,10 @@
+2003-12-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-lang.c (cp_expr_size): Return zero for empty classes.
+
+	* cp-tree.h (warn_if_uknown_interface): Remove unused function.
+	* decl2.c (warn_if_unknown_interface): Likewise.
+
 2003-12-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/13387

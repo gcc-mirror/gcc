@@ -1,4 +1,4 @@
-// { dg-options "-Wabi" }
+// { dg-options "-Wabi -fabi-version=1" }
 
 struct E1 {};
 struct E2 : public E1 {}; // { dg-warning "layout" }

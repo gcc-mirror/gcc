@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-Wabi" }
+// { dg-options "-Wabi -fabi-version=1" }
 
 struct A {
   virtual void a ();

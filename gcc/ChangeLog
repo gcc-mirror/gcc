@@ -1,3 +1,10 @@
+2003-12-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.c (flag_abi_version): Default to 2.
+	* c-cppbuiltin.c (c_cpp_builtins): Define __GXX_ABI_VERSION
+	uniformly for versions above 2.
+	* doc/invoke.texi: Update documentation for -fabi-version.
+
 2003-12-22  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.md: Change many instances of '!

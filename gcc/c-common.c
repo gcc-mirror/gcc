@@ -609,10 +609,12 @@ int flag_enforce_eh_specs = 1;
 
     1: The version of the ABI first used in G++ 3.2.
 
+    2: The version of the ABI first used in G++ 3.4.
+
     Additional positive integers will be assigned as new versions of
     the ABI become the default version of the ABI.  */
 
-int flag_abi_version = 1;
+int flag_abi_version = 2;
 
 /* Nonzero means warn about things that will change when compiling
    with an ABI-compliant compiler.  */
