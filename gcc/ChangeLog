@@ -1,5 +1,10 @@
 2001-05-24  Philip Blundell  <philb@gnu.org>
 
+	* config/arm/arm.c (output_return_instruction): Correctly handle
+	interworking and interrupt functions.
+
+2001-05-24  Philip Blundell  <philb@gnu.org>
+
 	* config/arm/arm.h (TARGET_SWITCHES): Correct misleading help for
 	-m{no-}sched-prolog.  Fix typos and improve formatting.
 
