@@ -108,13 +108,6 @@ typedef void *__gnuc_va_list;
 #undef _VA_LIST
 #endif
 
-/*  In 4.3bsd-net2, _VA_LIST_ is defined by machine/ansi.h, but no
-    typedef for va_list is in that file.  Undef _VA_LIST_ here
-    so we do define va_list.  */
-#ifdef _ANSI_H_
-#undef _VA_LIST_
-#endif
-
 #ifdef __SVR4_2__
 
 /* SVR4.2 uses _VA_LIST for an internal alias for va_list,
@@ -127,22 +120,21 @@ typedef __gnuc_va_list va_list;
 #else /* not __SVR4_2__ */
 
 /* The macro _VA_LIST_ is the same thing used by this file in Ultrix.  */
-#ifndef _VA_LIST_
+/* However, 4.3bsd-net2 uses it in a completely different way.
+   So if we are in 4.3bsd-net2, pay no attention to _VA_LIST_.  */
+#if ! defined (_VA_LIST_) || defined (_ANSI_H_) || defined (__BSD_NET2__) || defined (____386BSD____)
 /* The macro _VA_LIST is used in SCO Unix 3.2.  */
 #ifndef _VA_LIST
+#if !(defined (_ANSI_H_) || defined (__BSD_NET2__) || defined (____386BSD____))
+   /* Don't mess with _VA_LIST_ at all, on 4.3bsd-net2.  */
 #define _VA_LIST_
+#endif /* not net2 */
 #define _VA_LIST
 typedef __gnuc_va_list va_list;
-#endif /* _VA_LIST */
-#endif /* _VA_LIST_ */
+#endif /* not _VA_LIST */
+#endif /* not _VA_LIST_ (or _ANSI_H_) */
 
 #endif /* not __SVR4_2__ */
-
-/*  I think that in 4.3bsd-net2 there is some need
-    to leave _VA_LIST_ undefined after.  I don't know why. -- rms.  */
-#ifdef _ANSI_H_
-#undef _VA_LIST_
-#endif
 
 /* The next BSD release (if there is one) wants this symbol to be
    undefined instead of _VA_LIST_.  */
