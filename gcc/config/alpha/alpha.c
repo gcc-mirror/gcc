@@ -1993,11 +1993,12 @@ vmskrunch (name)
 	      j = i;
 	    }
 
-	  /* Try to avoid chopping uppercase suffix letters */
-	  if (isupper (foo [chopchar]))
+	  /* Try to avoid chopping uppercase suffix letters or digits */
+	  if (isupper (foo [chopchar]) || isdigit (foo [chopchar]))
 	    {
 	      for (i = chopchar;
-		   isupper (foo[i]) && foo[i] != ' ' && i >= 0;
+		   (isupper (foo[i]) || isdigit (foo[i]))
+                   && foo[i] != ' ' && i >= 0;
 		   i--)
 		;
 	      if (islower (foo[i]))
@@ -2328,6 +2329,17 @@ output_epilog (file, size)
   SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
 
   alpha_return_addr_rtx = 0;
+}
+
+int
+vms_valid_decl_attribute_p (decl, attributes, identifier, args)
+     tree decl;
+     tree attributes;
+     tree identifier;
+     tree args;
+{
+  if (is_attribute_p ("overlaid", identifier))
+    return (args == NULL_TREE);
 }
 
 #else /* !OPEN_VMS */
