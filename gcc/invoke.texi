@@ -1091,7 +1091,7 @@ Enable automatic template instantiation.  This option also implies
 information.
 
 @item -fsquangle
-@item -fno-squangle
+@itemx -fno-squangle
 @samp{-fsquangle} will enable a compressed form of name mangling for
 identifiers. In particular, it helps to shorten very long names by recognizing
 types and class names which occur more than once, replacing them with special
@@ -5237,7 +5237,7 @@ far away, the compiler will always load the functions address up into a
 register, and call indirect through the pointer.
 
 @item -mno-ep
-@item -mep
+@itemx -mep
 Do not optimize (do optimize) basic blocks that use the same index
 pointer 4 or more times to copy pointer into the @code{ep} register, and
 use the shorter @code{sld} and @code{sst} instructions.  The @samp{-mep}
