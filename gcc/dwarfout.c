@@ -309,7 +309,7 @@ static inline void equate_type_number_to_die_number PROTO((tree));
 static void output_reg_number		PROTO((rtx));
 static void output_mem_loc_descriptor	PROTO((rtx));
 static void output_loc_descriptor	PROTO((rtx));
-static void output_bound_representation	PROTO((tree, unsigned, char));
+static void output_bound_representation	PROTO((tree, unsigned, int));
 static void output_enumeral_list	PROTO((tree));
 static inline unsigned ceiling		PROTO((unsigned, unsigned));
 static inline tree field_type		PROTO((tree));
