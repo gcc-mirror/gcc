@@ -1,3 +1,8 @@
+2002-07-12  Jesse Rosenstock  <jmr@fulcrummicro.com>
+
+	For PR libgcj/7292:
+	* java/lang/Character.java (toString(char)): Now static.
+
 2002-06-23  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
