@@ -1,3 +1,7 @@
+Thu Nov  5 10:53:01 1998  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* configure.in: Bring over gcc2 change of Nov 19 1997.
+
 Wed Nov  4 23:43:08 1998  Graham  <grahams@rcp.co.uk>
 
         * toplev.c (output_lang_identify): Make definition dependent on
