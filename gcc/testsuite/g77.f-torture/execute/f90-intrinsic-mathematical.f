@@ -1,13 +1,13 @@
 c  f90-intrinsic-mathematical.f
 c
 c Test Fortran 90 intrinsic mathematical functions - Section 13.10.3 and
-13.13 
+c 13.13 
 c     David Billinghurst <David.Billinghurst@riotinto.com>
 c
 c Notes:
 c  * g77 does not fully comply with F90.  Noncompliances noted in comments.
 c  * Section 13.12: Specific names for intrinsic functions tested in
-intrinsic77.f
+c intrinsic77.f
 
       logical fail
       common /flags/ fail
