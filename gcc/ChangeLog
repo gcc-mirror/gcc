@@ -1,3 +1,15 @@
+2004-01-23  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (PROP_POSTRELOAD): New macro.
+	(CLEANUP_LOG_LINKS): New.
+	* cfgcleanup.c (cleanup_cfg): Only PROP_LOG_LINKS when asked to.
+	* toplev.c (rest_of_handle_life):  Preserve LOG_LINKS trought cleanup_cfg.
+
+	* cselib.c (value_pool): New.
+	(new_cselib_val): Use pool.
+	(cselib_init): Initialize value_pool
+	(cselib_finish): Free pool.
+
 2004-01-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (scan_record_type): New function.
