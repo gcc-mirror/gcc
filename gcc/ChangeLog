@@ -1,3 +1,10 @@
+2004-10-01  Eric Christopher  <echristo@redhat.com>
+
+	* dwarf2.h (dwarf_calling_convention): Add GNU prefix to
+	locally defined enum.
+	* dwarf2out.c (add_calling_convention_attribute): Don't
+	emit DW_CC_normal.
+
 2004-10-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/17178, PR c/17820

@@ -10631,8 +10631,9 @@ add_calling_convention_attribute (dw_die_ref subr_die, tree type)
 
   value = targetm.dwarf_calling_convention (type);
 
-  /* Only add the attribute if the backend requests it.  */
-  if (value)
+  /* Only add the attribute if the backend requests it, and
+     is not DW_CC_normal.  */
+  if (value && (value != DW_CC_normal))
     add_AT_unsigned (subr_die, DW_AT_calling_convention, value);
 }
 
