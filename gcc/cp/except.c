@@ -42,9 +42,6 @@ tree builtin_return_address_fndecl;
 
 /* A couple of backend routines from m88k.c */
 
-/* Used to cache a call to __builtin_return_address.  */
-static tree BuiltinReturnAddress;
-     
 static void easy_expand_asm PROTO((char *));
 static void push_eh_cleanup PROTO((void));
 static void do_unwind PROTO((rtx));
@@ -167,18 +164,14 @@ asm (TEXT_SECTION_ASM_OP);
 /* local globals for function calls
    ====================================================================== */
 
-/* Used to cache "terminate", "unexpected", "set_terminate", and
-   "set_unexpected" after default_conversion. (lib-except.c)  */
-static tree Terminate, Unexpected, SetTerminate, SetUnexpected, CatchMatch;
+/* Used to cache "terminate" and "__throw_type_match*".  */
+static tree Terminate, CatchMatch;
 
 /* Used to cache __find_first_exception_table_match for throw.  */
 static tree FirstExceptionMatch;
 
 /* Used to cache a call to __unwind_function.  */
 static tree Unwind;
-
-/* Holds a ready to emit call to "terminate".  */
-static tree TerminateFunctionCall;
 
 /* ====================================================================== */
 
@@ -226,40 +219,18 @@ do_function_call (func, params, return_type)
 void
 init_exception_processing ()
 {
-  tree unexpected_fndecl, terminate_fndecl;
-  tree set_unexpected_fndecl, set_terminate_fndecl;
-  tree catch_match_fndecl;
-  tree find_first_exception_match_fndecl;
-  tree unwind_fndecl;
-  tree declspecs;
   tree d;
 
   /* void vtype () */
   tree vtype = build_function_type (void_type_node, void_list_node);
   
-  /* void (*)() */
-  tree PFV = build_pointer_type (vtype);
-
-  /* Arg list for the build_function_type call for set_terminate and
-     set_unexpected.  */
-  tree pfvlist = tree_cons (NULL_TREE, PFV, void_list_node);
-
-  /* void (*pfvtype (void (*) ()))() */
-  tree pfvtype = build_function_type (PFV, pfvlist);
-
-  set_terminate_fndecl = auto_function (get_identifier ("set_terminate"),
-					pfvtype, NOT_BUILT_IN);
-  set_unexpected_fndecl = auto_function (get_identifier ("set_unexpected"),
-					 pfvtype, NOT_BUILT_IN);
-  unexpected_fndecl = auto_function (get_identifier ("unexpected"),
-				     vtype, NOT_BUILT_IN);
-  terminate_fndecl = auto_function (get_identifier ("terminate"),
-				    vtype, NOT_BUILT_IN);
-  TREE_THIS_VOLATILE (terminate_fndecl) = 1;
+  Terminate = auto_function (get_identifier ("terminate"),
+			     vtype, NOT_BUILT_IN);
+  TREE_THIS_VOLATILE (Terminate) = 1;
 
   push_lang_context (lang_name_c);
 
-  catch_match_fndecl
+  CatchMatch
     = builtin_function (flag_rtti
 			? "__throw_type_match_rtti"
 			: "__throw_type_match",
@@ -269,29 +240,18 @@ init_exception_processing ()
 								   tree_cons (NULL_TREE, ptr_type_node,
 									      void_list_node)))),
 			NOT_BUILT_IN, NULL_PTR);
-  find_first_exception_match_fndecl
+  FirstExceptionMatch
     = builtin_function ("__find_first_exception_table_match",
 			build_function_type (ptr_type_node,
 					     tree_cons (NULL_TREE, ptr_type_node,
 							void_list_node)),
 			NOT_BUILT_IN, NULL_PTR);
-  unwind_fndecl
+  Unwind
     = builtin_function ("__unwind_function",
 			build_function_type (void_type_node,
 					     tree_cons (NULL_TREE, ptr_type_node,
 							void_list_node)),
 			NOT_BUILT_IN, NULL_PTR);
-
-  Unexpected = default_conversion (unexpected_fndecl);
-  Terminate = default_conversion (terminate_fndecl);
-  SetTerminate = default_conversion (set_terminate_fndecl);
-  SetUnexpected = default_conversion (set_unexpected_fndecl);
-  CatchMatch = default_conversion (catch_match_fndecl);
-  FirstExceptionMatch = default_conversion (find_first_exception_match_fndecl);
-  Unwind = default_conversion (unwind_fndecl);
-  BuiltinReturnAddress = default_conversion (builtin_return_address_fndecl);
-
-  TerminateFunctionCall = build_function_call (Terminate, NULL_TREE);
 
   pop_lang_context ();
 
@@ -628,7 +588,6 @@ expand_start_catch_block (declspecs, declarator)
 				  expr_tree_cons (NULL_TREE, exp, NULL_TREE)));
       exp = build_function_call (CatchMatch, exp);
       call_rtx = expand_call (exp, NULL_RTX, 0);
-      assemble_external (TREE_OPERAND (CatchMatch, 0));
 
       return_value_rtx = hard_function_value (ptr_type_node, exp);
 
@@ -656,7 +615,7 @@ expand_start_catch_block (declspecs, declarator)
 	  init = ocp_convert (TREE_TYPE (decl), init,
 			      CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
 	  init = build (TRY_CATCH_EXPR, TREE_TYPE (init), init,
-			TerminateFunctionCall);
+			build_function_call (Terminate, NULL_TREE));
 	}
 
       /* Let `cp_finish_decl' know that this initializer is ok.  */
@@ -756,7 +715,7 @@ do_unwind (inner_throw_label)
 
   /* Call to  __builtin_return_address. */
   params = expr_tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
-  fcall = build_function_call (BuiltinReturnAddress, params);
+  fcall = build_function_call (builtin_return_address_fndecl, params);
   next_pc = expand_expr (fcall, NULL_RTX, Pmode, 0);
   /* In the return, the new pc is pc+8, as the value coming in is
      really the address of the call insn, not the next insn.  */
@@ -809,7 +768,7 @@ do_unwind (inner_throw_label)
   /* I would like to do this here, but the move below doesn't seem to work.  */
   /* Call to  __builtin_return_address.  */
   params = expr_tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
-  fcall = build_function_call (BuiltinReturnAddress, params);
+  fcall = build_function_call (builtin_return_address_fndecl, params);
   next_pc = expand_expr (fcall, NULL_RTX, Pmode, 0);
 
   emit_move_insn (next_pc, inner_throw_label);
@@ -819,7 +778,6 @@ do_unwind (inner_throw_label)
 					    inner_throw_label), NULL_TREE);
   
   do_function_call (Unwind, params, NULL_TREE);
-  assemble_external (TREE_OPERAND (Unwind, 0));
   emit_barrier ();
 #endif
 }
@@ -894,7 +852,6 @@ expand_builtin_throw ()
 			      expr_tree_cons (NULL_TREE, saved_pc,
 					 NULL_TREE),
 			      ptr_type_node);
-  assemble_external (TREE_OPERAND (FirstExceptionMatch, 0));
 
   /* did we find one? */
   emit_cmp_insn (handler, const0_rtx, EQ, NULL_RTX,
@@ -940,7 +897,7 @@ expand_builtin_throw ()
 		  gen_rtx (MEM, Pmode, plus_constant (hard_frame_pointer_rtx, -4)));
 #else
   params = expr_tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
-  fcall = build_function_call (BuiltinReturnAddress, params);
+  fcall = build_function_call (builtin_return_address_fndecl, params);
   next_pc = expand_expr (fcall, NULL_RTX, Pmode, 0);
 #endif
 
@@ -996,7 +953,6 @@ expand_builtin_throw ()
   /* no it didn't --> therefore we need to call terminate */
   emit_label (gotta_call_terminate);
   do_function_call (Terminate, NULL_TREE, NULL_TREE);
-  assemble_external (TREE_OPERAND (Terminate, 0));
 
   {
     rtx ret_val, x;
@@ -1161,18 +1117,13 @@ expand_exception_blocks ()
 	 EH region through the top of the region, as we have to with
 	 the setjmp/longjmp approach.  */
       if (exceptions_via_longjmp == 0)
-	{
-	  /* Is this necessary?  */
-	  assemble_external (TREE_OPERAND (Terminate, 0));
-
-	  expand_eh_region_start ();
-	}
+	expand_eh_region_start ();
 
       emit_insns (catch_clauses);
       catch_clauses = NULL_RTX;
 
       if (exceptions_via_longjmp == 0)
-	expand_eh_region_end (TerminateFunctionCall);
+	expand_eh_region_end (build_function_call (Terminate, NULL_TREE));
 
       expand_leftover_cleanups ();
 

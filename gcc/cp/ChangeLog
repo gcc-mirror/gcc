@@ -1,5 +1,12 @@
 Thu Nov 27 00:59:46 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* except.c: Lose Unexpected, SetTerminate, SetUnexpected,
+ 	TerminateFunctionCall.
+	(init_exception_processing): Likewise.  Terminate et al are now
+ 	the fns, not ADDR_EXPRs.
+	(various): Lose redundant assemble_external calls.
+	(do_unwind): s/BuiltinReturnAddress/builtin_return_address_fndecl/.
+
 	* cp-tree.h (struct lang_decl_flags): Add comdat.
 	(DECL_COMDAT): New macro.
 	* decl.c (duplicate_decls): Propagate it.
