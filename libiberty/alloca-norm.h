@@ -1,7 +1,9 @@
 /* "Normal" configuration for alloca.  */
 
 #ifdef __GNUC__
+#ifndef alloca
 #define alloca __builtin_alloca
+#endif
 #else /* ! defined (__GNUC__) */
 #if defined (sparc) && defined (sun)
 #include <alloca.h>
