@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
    This is used in v8 code when calling a function that returns a structure.
    v9 doesn't have this.  */
 
-#define SKIP_CALLERS_UNIMP_P (!TARGET_V9 && current_function_returns_struct)
+#define SKIP_CALLERS_UNIMP_P (!TARGET_ARCH64 && current_function_returns_struct)
 
 /* Global variables for machine-dependent things.  */
 
@@ -123,7 +123,7 @@ sparc_override_options ()
   /* Check for any conflicts in the choice of options.  */
   /* ??? This stuff isn't really usable yet.  */
 
-  if (! TARGET_V9)
+  if (! TARGET_ARCH64)
     {
       if (target_flags & MASK_CODE_MODEL)
 	error ("code model support is only available with -mv9");
@@ -133,8 +133,6 @@ sparc_override_options ()
 	error ("-mlong64 is only available with -mv9");
       if (TARGET_PTR64)
 	error ("-mptr64 is only available with -mv9");
-      if (TARGET_ENV32)
-	error ("-menv32 is only available with -mv9");
       if (TARGET_STACK_BIAS)
 	error ("-mstack-bias is only available with -mv9");
     }
@@ -242,7 +240,7 @@ intreg_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, SImode)
-	  || (TARGET_V9 && register_operand (op, DImode)));
+	  || (TARGET_ARCH64 && register_operand (op, DImode)));
 }
 
 /* Nonzero if OP is a floating point condition code register.  */
@@ -653,11 +651,11 @@ arith_double_operand (op, mode)
 {
   return (register_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT && SMALL_INT (op))
-	  || (! TARGET_V9
+	  || (! TARGET_ARCH64
 	      && GET_CODE (op) == CONST_DOUBLE
 	      && (unsigned) (CONST_DOUBLE_LOW (op) + 0x1000) < 0x2000
 	      && (unsigned) (CONST_DOUBLE_HIGH (op) + 0x1000) < 0x2000)
-	  || (TARGET_V9
+	  || (TARGET_ARCH64
 	      && GET_CODE (op) == CONST_DOUBLE
 	      && (unsigned) (CONST_DOUBLE_LOW (op) + 0x1000) < 0x2000
 	      && ((CONST_DOUBLE_HIGH (op) == -1
@@ -854,8 +852,7 @@ gen_compare_reg (code, x, y)
    use the "movrCC" insns. This reduces the generated code from three to two
    insns.  This way seems too brute force though.  Is there a more elegant way
    to achieve the same effect?
-
-   Currently, this function always returns 1.  ??? Can it ever fail?  */
+*/
 
 int
 gen_v9_scc (compare_code, operands)
@@ -864,11 +861,18 @@ gen_v9_scc (compare_code, operands)
 {
   rtx temp;
 
-  if (GET_MODE_CLASS (GET_MODE (sparc_compare_op0)) == MODE_INT
+  /* It might be that we'll never be called if this is true,
+     but keep this here for documentation at least.  */
+  if (! TARGET_ARCH64
+      && (GET_MODE (sparc_compare_op0) == DImode
+	  || GET_MODE (operands[0]) == DImode))
+    return 0;
+
+  /* Try to use the movrCC insns.  */
+  if (TARGET_ARCH64
+      && GET_MODE_CLASS (GET_MODE (sparc_compare_op0)) == MODE_INT
       && sparc_compare_op1 == const0_rtx
-      && (compare_code == EQ || compare_code == NE
-	  || compare_code == LT || compare_code == LE
-	  || compare_code == GT || compare_code == GE))
+      && v9_regcmp_p (compare_code))
     {
       /* Special case for op0 != 0.  This can be done with one instruction if
 	 op0 can be clobbered.  We store to a temp, and then clobber the temp,
@@ -1385,7 +1389,7 @@ emit_move_sequence (operands, mode)
 	  rtx temp = ((reload_in_progress || mode == DImode)
 		      ? operand0 : gen_reg_rtx (mode));
 
-	  if (TARGET_V9 && mode == DImode)
+	  if (TARGET_ARCH64 && mode == DImode)
 	    {
 	      int high_operand = 0;
 
@@ -1629,7 +1633,7 @@ output_move_double (operands)
     latehalf[1] = adj_offsettable_operand (op1, 4);
   else if (optype1 == CNSTOP)
     {
-      if (TARGET_V9)
+      if (TARGET_ARCH64)
 	{
 	  if (arith_double_operand (op1, DImode))
 	    {
@@ -1657,9 +1661,9 @@ output_move_double (operands)
   /* Easy case: try moving both words at once.  Check for moving between
      an even/odd register pair and a memory location.  */
   if ((optype0 == REGOP && optype1 != REGOP && optype1 != CNSTOP
-       && (TARGET_V9 || (REGNO (op0) & 1) == 0))
+       && (TARGET_ARCH64 || (REGNO (op0) & 1) == 0))
       || (optype0 != REGOP && optype0 != CNSTOP && optype1 == REGOP
-	  && (TARGET_V9 || (REGNO (op1) & 1) == 0)))
+	  && (TARGET_ARCH64 || (REGNO (op1) & 1) == 0)))
     {
       register rtx mem,reg;
 
@@ -1678,14 +1682,14 @@ output_move_double (operands)
 	     the register number.  */
 	  || (TARGET_V9 && REGNO (reg) >= 64))
 	{
-	  if (FP_REG_P (reg) || ! TARGET_V9)
+	  if (FP_REG_P (reg) || ! TARGET_ARCH64)
 	    return (mem == op1 ? "ldd %1,%0" : "std %1,%0");
 	  else
 	    return (mem == op1 ? "ldx %1,%0" : "stx %1,%0");
 	}
     }
 
-  if (TARGET_V9)
+  if (TARGET_ARCH64)
     {
       if (optype0 == REGOP && optype1 == REGOP)
 	{
@@ -1917,9 +1921,9 @@ output_move_quad (operands)
 	    }
 	  operands[2] = adj_offsettable_operand (mem, 8);
 	  if (mem == op1)
-	    return TARGET_V9 ? "ldx %1,%0;ldx %2,%R0" : "ldd %1,%0;ldd %2,%S0";
+	    return TARGET_ARCH64 ? "ldx %1,%0;ldx %2,%R0" : "ldd %1,%0;ldd %2,%S0";
 	  else
-	    return TARGET_V9 ? "stx %1,%0;stx %R1,%2" : "std %1,%0;std %S1,%2";
+	    return TARGET_ARCH64 ? "stx %1,%0;stx %R1,%2" : "std %1,%0;std %S1,%2";
 	}
     }
 
@@ -2300,7 +2304,7 @@ output_block_move (operands)
       if (align > UNITS_PER_WORD)
 	abort ();
 
-      if (TARGET_V9 && align >= 8)
+      if (TARGET_ARCH64 && align >= 8)
 	{
 	  for (i = (size >> 3) - 1; i >= 0; i--)
 	    {
@@ -2421,9 +2425,9 @@ output_block_move (operands)
   {
     char pattern[200];
     register char *ld_suffix = ((align == 1) ? "ub" : (align == 2) ? "uh"
-				: (align == 8 && TARGET_V9) ? "x" : "");
+				: (align == 8 && TARGET_ARCH64) ? "x" : "");
     register char *st_suffix = ((align == 1) ? "b" : (align == 2) ? "h"
-				: (align == 8 && TARGET_V9) ? "x" : "");
+				: (align == 8 && TARGET_ARCH64) ? "x" : "");
 
     sprintf (pattern, "ld%s [%%1+%%2],%%%%g1\n\tsubcc %%2,%%4,%%2\n\tbge %s\n\tst%s %%%%g1,[%%0+%%2]\n%s:", ld_suffix, &label3[1], st_suffix, &label5[1]);
     output_asm_insn (pattern, xoperands);
@@ -2596,6 +2600,16 @@ static int hard_32bit_mode_classes[] = {
   TF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES,
   TF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES,
   TF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES,
+
+  /* FP regs f32 to f63.  Only the even numbered registers actually exist,
+     and none can hold SFmode/SImode values.  */
+  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
+  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
+  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
+  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
+
+  /* %fcc[0123] */
+  CCFP_MODE, CCFP_MODE, CCFP_MODE, CCFP_MODE
 };
 
 static int hard_64bit_mode_classes[] = {
@@ -2609,8 +2623,7 @@ static int hard_64bit_mode_classes[] = {
   TF_MODES64, SF_MODES, DF_MODES64, SF_MODES, TF_MODES64, SF_MODES, DF_MODES64, SF_MODES,
   TF_MODES64, SF_MODES, DF_MODES64, SF_MODES, TF_MODES64, SF_MODES, DF_MODES64, SF_MODES,
 
-  /* The remaining registers do not exist on a non-v9 sparc machine.
-     FP regs f32 to f63.  Only the even numbered registers actually exist,
+  /* FP regs f32 to f63.  Only the even numbered registers actually exist,
      and none can hold SFmode/SImode values.  */
   DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
   DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
@@ -2628,7 +2641,7 @@ sparc_init_modes ()
 {
   int i;
 
-  sparc_arch_type = TARGET_V9 ? ARCH_64BIT : ARCH_32BIT;
+  sparc_arch_type = TARGET_ARCH64 ? ARCH_64BIT : ARCH_32BIT;
 
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
@@ -2668,11 +2681,7 @@ sparc_init_modes ()
 	  if (i == (int) CCFPmode || i == (int) CCFPEmode)
 	    sparc_mode_class[i] = 1 << (int) CCFP_MODE;
 	  else if (i == (int) CCmode || i == (int) CC_NOOVmode
-#ifdef SPARCV9
-		   || i == (int) CCXmode
-		   || i == (int) CCX_NOOVmode
-#endif
-		   )
+		   || i == (int) CCXmode || i == (int) CCX_NOOVmode)
 	    sparc_mode_class[i] = 1 << (int) C_MODE;
 	  else
 	    sparc_mode_class[i] = 0;
@@ -2680,7 +2689,7 @@ sparc_init_modes ()
 	}
     }
 
-  if (TARGET_V9)
+  if (TARGET_ARCH64)
     hard_regno_mode_classes = hard_64bit_mode_classes;
   else
     hard_regno_mode_classes = hard_32bit_mode_classes;
@@ -2703,7 +2712,7 @@ save_regs (file, low, high, base, offset, n_regs)
 {
   int i;
 
-  if (TARGET_V9 && high <= 32)
+  if (TARGET_ARCH64 && high <= 32)
     {
       for (i = low; i < high; i++)
 	{
@@ -2753,7 +2762,7 @@ restore_regs (file, low, high, base, offset, n_regs)
 {
   int i;
 
-  if (TARGET_V9 && high <= 32)
+  if (TARGET_ARCH64 && high <= 32)
     {
       for (i = low; i < high; i++)
 	{
@@ -2801,7 +2810,7 @@ compute_frame_size (size, leaf_function)
 {
   int n_regs = 0, i;
   int outgoing_args_size = (current_function_outgoing_args_size
-#ifndef SPARCV9
+#if ! SPARC_ARCH64
 			    + REG_PARM_STACK_SPACE (current_function_decl)
 #endif
 			    );
@@ -2811,7 +2820,7 @@ compute_frame_size (size, leaf_function)
       /* N_REGS is the number of 4-byte regs saved thus far.  This applies
 	 even to v9 int regs to be consistent with save_regs/restore_regs.  */
 
-      if (TARGET_V9)
+      if (TARGET_ARCH64)
 	{
 	  for (i = 0; i < 8; i++)
 	    if (regs_ever_live[i] && ! call_used_regs[i])
@@ -2868,13 +2877,13 @@ build_big_number (file, num, reg)
      int num;
      char *reg;
 {
-  if (num >= 0 || ! TARGET_V9)
+  if (num >= 0 || ! TARGET_ARCH64)
     {
       fprintf (file, "\tsethi %%hi(%d),%s\n", num, reg);
       if ((num & 0x3ff) != 0)
 	fprintf (file, "\tor %s,%%lo(%d),%s\n", reg, num, reg);
     }
-  else /* num < 0 && TARGET_V9 */
+  else /* num < 0 && TARGET_ARCH64 */
     {
       /* Sethi does not sign extend, so we must use a little trickery
 	 to use it for negative numbers.  Invert the constant before
@@ -3112,10 +3121,10 @@ output_function_epilogue (file, size, leaf_function)
    is used and return the address of the first unnamed parameter.
    v9: We save the argument integer and floating point regs in a buffer, and
    return the address of this buffer.  The rest is handled in va-sparc.h.  */
-/* ??? This is currently conditioned on #ifdef SPARCV9 because
+/* ??? This is currently conditioned on SPARC_ARCH64 because
    current_function_args_info is different in each compiler.  */
 
-#ifdef SPARCV9
+#if SPARC_ARCH64
 
 rtx
 sparc_builtin_saveregs (arglist)
@@ -3186,7 +3195,7 @@ sparc_builtin_saveregs (arglist)
   return XEXP (regbuf, 0);
 }
 
-#else /* ! SPARCV9 */
+#else /* ! SPARC_ARCH64 */
 
 rtx
 sparc_builtin_saveregs (arglist)
@@ -3223,7 +3232,7 @@ sparc_builtin_saveregs (arglist)
   return address;
 }
 
-#endif /* ! SPARCV9 */
+#endif /* ! SPARC_ARCH64 */
 
 /* Return the string to output a conditional branch to LABEL, which is
    the operand number of the label.  OP is the conditional expression.  The
@@ -3903,12 +3912,12 @@ output_double_int (file, value)
   else if (GET_CODE (value) == SYMBOL_REF
 	   || GET_CODE (value) == CONST
 	   || GET_CODE (value) == PLUS
-	   || (TARGET_V9 &&
+	   || (TARGET_ARCH64 &&
 	       (GET_CODE (value) == LABEL_REF
 		|| GET_CODE (value) == CODE_LABEL
 		|| GET_CODE (value) == MINUS)))
     {
-      if (!TARGET_V9 || TARGET_ENV32)
+      if (!TARGET_V9 || TARGET_MEDLOW)
 	{
 	  ASM_OUTPUT_INT (file, const0_rtx);
 	  ASM_OUTPUT_INT (file, value);
