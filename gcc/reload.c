@@ -3854,7 +3854,21 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
        reload_{in,out}_reg when we do these replacements.  */
 
       if (replace)
-	*recog_operand_loc[i] = substed_operand[i];
+	{
+	  rtx substitution = substed_operand[i];
+
+	  *recog_operand_loc[i] = substitution;
+
+	  /* If we're replacing an operand with a LABEL_REF, we need
+	     to make sure that there's a REG_LABEL note attached to
+	     this instruction.  */
+	  if (GET_CODE (insn) != JUMP_INSN
+	      && GET_CODE (substitution) == LABEL_REF
+	      && !find_reg_note (insn, REG_LABEL, XEXP (substitution, 0)))
+	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL,
+						  XEXP (substitution, 0),
+						  REG_NOTES (insn));
+	}
       else
 	retval |= (substed_operand[i] != *recog_operand_loc[i]);
     }
