@@ -24,26 +24,47 @@
 
 #include "machmode.h"
 
-/* REAL_VALUE_TYPE is an array of the minimum number of HOST_WIDE_INTs
-   required to hold a 128-bit floating point type.  This is true even
-   if the maximum precision floating point type on the target is smaller.
+/* An expanded form of the represented number.  */
 
-   The extra 32 bits are for storing the mode of the float.  Ideally
-   we'd keep this elsewhere, but that's too drastic a change all at once.  */
+/* Enumerate the special cases of numbers that we encounter.  */
+enum real_value_class {
+  rvc_zero,
+  rvc_normal,
+  rvc_inf,
+  rvc_nan
+};
 
-#define REAL_VALUE_TYPE_SIZE (128 + 32)
+#define SIGNIFICAND_BITS	128
+#define EXP_BITS		(32 - 3)
+#define MAX_EXP			((1 << (EXP_BITS - 1)) - 1)
+#define SIGSZ			(SIGNIFICAND_BITS / HOST_BITS_PER_LONG)
+#define SIG_MSB			((unsigned long)1 << (HOST_BITS_PER_LONG - 1))
+
+struct real_value GTY(())
+{
+  enum real_value_class class : 2;
+  unsigned int sign : 1;
+  int exp : EXP_BITS;
+  unsigned long sig[SIGSZ];
+};
+
+/* Various headers condition prototypes on #ifdef REAL_VALUE_TYPE, so it
+   needs to be a macro.  We do need to continue to have a structure tag
+   so that other headers can forward declare it.  */
+#define REAL_VALUE_TYPE struct real_value
+
+/* We store a REAL_VALUE_TYPE into an rtx, and we do this by putting it in
+   consecutive "w" slots.  Moreover, we've got to compute the number of "w"
+   slots at preprocessor time, which means we can't use sizeof.  Guess.  */
+
+#define REAL_VALUE_TYPE_SIZE (SIGNIFICAND_BITS + 32)
 #define REAL_WIDTH \
   (REAL_VALUE_TYPE_SIZE/HOST_BITS_PER_WIDE_INT \
    + (REAL_VALUE_TYPE_SIZE%HOST_BITS_PER_WIDE_INT ? 1 : 0)) /* round up */
 
-struct realvaluetype GTY(()) {
-  HOST_WIDE_INT r[REAL_WIDTH];
-};
-
-/* Various headers condition prototypes on #ifdef REAL_VALUE_TYPE, so it needs
-   to be a macro.  realvaluetype cannot be a typedef as this interferes with
-   other headers declaring opaque pointers to it.  */
-#define REAL_VALUE_TYPE struct realvaluetype
+/* Verify the guess.  */
+extern char test_real_width
+  [sizeof(REAL_VALUE_TYPE) <= REAL_WIDTH*sizeof(HOST_WIDE_INT) ? 1 : -1];
 
 /* Calculate the format for CONST_DOUBLE.  We need as many slots as
    are necessary to overlay a REAL_VALUE_TYPE on them.  This could be
