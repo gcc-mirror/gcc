@@ -1,4 +1,4 @@
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -108,9 +108,9 @@ namespace std
     { 		
       if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
 	{
-	  _S_destroy_c_locale(_M_c_locale_ctype);
-	  _S_create_c_locale(_M_c_locale_ctype, __s);
-	  _M_initialize_ctype();
+	  this->_S_destroy_c_locale(this->_M_c_locale_ctype);
+	  this->_S_create_c_locale(this->_M_c_locale_ctype, __s);
+	  this->_M_initialize_ctype();
 	}
     }
 #endif

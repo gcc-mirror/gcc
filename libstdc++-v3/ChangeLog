@@ -1,3 +1,37 @@
+2004-04-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Fixups for EDG front end.
+	* include/ext/rope: Instead of non-existent function
+	_Data_allocate, use allocator's allocate. Use this.
+	(namespace _Rope_constants): Move _S_max_rope_depth, and _Tag
+	enumerations from _Rope_RopeRep here.
+	* include/ext/ropeimpl.h: Same.
+	* src/ext-inst.cc (_S_min_len): Fix up definition.
+	
+	* config/locale/gnu/ctype_members.cc: Qualify base class members
+	with this.
+	* config/locale/generic/ctype_members.cc: Same.
+	* config/locale/gnu/messages_members.h: Same.
+	* config/locale/generic/messages_members.h: Same.
+	* src/ctype.cc: Same.
+	* include/bits/codecvt.h: Same.
+	
+	* include/bits/boost_concept_check.h: Declare.
+	(__error_type_must_be_an_unsigned_integer_type): Remove this.
+	(__error_type_must_be_an_integer_type): Remove this.
+	(__error_type_must_be_a_signed_integer_type): Remove this.	
+
+	* config/io/basic_file_stdio.cc (__basic_file::sys_open): Remove cast.
+
+	* libsupc++/eh_alloc.cc (__cxa_free_exception): Add exception
+	specification to definition.
+	(__cxa_allocate_exception): Same.
+	* libsupc++/eh_catch.cc (__cxa_begin_catch): Same.
+	* libsupc++/eh_globals.cc (__cxa_get_globals_fast): Same.
+	(__cxa_get_globals): Same.	
+	
+	* libsupc++/del_op.cc: Add comment about freestanding.
+
 2004-04-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/mt_allocator.h (__mt_alloc<>::deallocate):
