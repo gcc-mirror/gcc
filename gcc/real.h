@@ -1,5 +1,5 @@
 /* Definitions of floating-point access for GNU compiler.
-   Copyright (C) 1989, 1991, 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 91, 94, 96, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -175,7 +175,11 @@ extern REAL_VALUE_TYPE real_value_truncate ();
    toward zero. */
 #define REAL_VALUE_UNSIGNED_FIX(x) (efixui (x))
 
-#define REAL_VALUE_ATOF ereal_atof
+/* Convert ASCII string S to floating point in mode M.
+   Decimal input uses ATOF.  Hexadecimal uses HTOF.  */
+#define REAL_VALUE_ATOF(s,m) ereal_atof(s,m)
+#define REAL_VALUE_HTOF(s,m) ereal_atof(s,m)
+
 #define REAL_VALUE_NEGATE ereal_negate
 
 #define REAL_VALUE_MINUS_ZERO(x) \
@@ -336,6 +340,9 @@ extern double ldexp ();
 /* Use real.c to convert decimal numbers to binary, ... */
 REAL_VALUE_TYPE ereal_atof ();
 #define REAL_VALUE_ATOF(x, s) ereal_atof (x, s)
+/* Could use ereal_atof here for hexadecimal floats too, but real_hex_to_f
+   is OK and it uses faster native fp arithmetic.  */
+/* #define REAL_VALUE_HTOF(x, s) ereal_atof (x, s) */
 #else
 /* ... or, if you like the host computer's atof, go ahead and use it: */
 #define REAL_VALUE_ATOF(x, s) atof (x)
@@ -348,6 +355,13 @@ extern double atof ();
 extern double (atof) ();
 #endif
 #endif
+#endif
+
+/* Hexadecimal floating constant input for use with host computer's
+   fp arithmetic.  */
+#ifndef REAL_VALUE_HTOF
+extern REAL_VALUE_TYPE real_hex_to_f PROTO((char *, enum machine_mode));
+#define REAL_VALUE_HTOF(s,m) real_hex_to_f(s,m)
 #endif
 
 /* Negate the floating-point value X.  */
