@@ -209,11 +209,11 @@ namespace std
 	  }
 	else
 	  {
-	    const char* __beg = __s;
+	    const char* __end = __s;
 	    for (size_t __i = 0; __i < _S_categories_size; ++__i)
 	      {
-		__beg = std::strchr(__beg, '=') + 1;
-		const char* __end = std::strchr(__beg, ';');
+		const char* __beg = std::strchr(__end + 1, '=') + 1;
+		__end = std::strchr(__beg, ';');
 		if (!__end)
 		  __end = __s + __len;
 		_M_names[__i] = new char[__end - __beg + 1];
