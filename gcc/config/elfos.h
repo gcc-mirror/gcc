@@ -48,7 +48,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Writing `int' for a bit-field forces int alignment for the structure.  */
 
+#ifndef PCC_BITFIELD_TYPE_MATTERS
 #define PCC_BITFIELD_TYPE_MATTERS 1
+#endif
 
 /* Implicit library calls should use memcpy, not bcopy, etc.  */
 

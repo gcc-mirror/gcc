@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "expr.h"
 #include "flags.h"
+#include "debug.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -101,40 +102,31 @@ vax_output_function_prologue (file, size)
 
   fprintf (file, "\t.word 0x%x\n", mask);
 
+  if (dwarf2out_do_frame ())
+    {
+      const char *label = dwarf2out_cfi_label ();
+      int offset = 0;
+
+      for (regno = FIRST_PSEUDO_REGISTER-1; regno >= 0; --regno)
+	if (regs_ever_live[regno] && !call_used_regs[regno])
+	  dwarf2out_reg_save (label, regno, offset -= 4);
+
+      dwarf2out_reg_save (label, PC_REGNUM, offset -= 4);
+      dwarf2out_reg_save (label, FRAME_POINTER_REGNUM, offset -= 4);
+      dwarf2out_reg_save (label, ARG_POINTER_REGNUM, offset -= 4);
+      dwarf2out_def_cfa (label, FRAME_POINTER_REGNUM, -(offset - 4));
+    }
+
   if (VMS_TARGET)
     {
-      /*
-       * This works for both gcc and g++.  It first checks to see if
-       * the current routine is "main", which will only happen for
-       * GCC, and add the jsb if it is.  If is not the case then try
-       * and see if __MAIN_NAME is part of current_function_name,
-       * which will only happen if we are running g++, and add the jsb
-       * if it is.  In gcc there should never be a paren in the
-       * function name, and in g++ there is always a "(" in the
-       * function name, thus there should never be any confusion.
-       *
-       * Adjusting the stack pointer by 4 before calling C$MAIN_ARGS
-       * is required when linking with the VMS POSIX version of the C
-       * run-time library; using `subl2 $4,r0' is adequate but we use
-       * `clrl -(sp)' instead.  The extra 4 bytes could be removed
-       * after the call because STARTING_FRAME_OFFSET's setting of -4
-       * will end up adding them right back again, but don't bother.
-       */
+      /* Adjusting the stack pointer by 4 before calling C$MAIN_ARGS
+	 is required when linking with the VMS POSIX version of the C
+	 run-time library; using `subl2 $4,r0' is adequate but we use
+	 `clrl -(sp)' instead.  The extra 4 bytes could be removed
+	 after the call because STARTING_FRAME_OFFSET's setting of -4
+	 will end up adding them right back again, but don't bother.  */
 
-      const char *p = current_function_name;
-      int is_main = strcmp ("main", p) == 0;
-#     define __MAIN_NAME " main("
-
-      while (!is_main && *p != '\0')
-	{
-	  if (*p == *__MAIN_NAME
-	      && strncmp (p, __MAIN_NAME, sizeof __MAIN_NAME - sizeof "") == 0)
-	    is_main = 1;
-	  else
-	    p++;
-	}
-
-      if (is_main)
+      if (MAIN_NAME_P (DECL_NAME (current_function_decl)))
 	fprintf (file, "\tclrl -(%ssp)\n\tjsb _C$MAIN_ARGS\n",
 	         REGISTER_PREFIX);
     }
