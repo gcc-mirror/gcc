@@ -432,6 +432,9 @@ extern enum processor_type rs6000_cpu;
     N_("Specify size of long double (64 or 128 bits)") },		\
    {"vrsave=", &rs6000_altivec_vrsave_string,                         \
     N_("Specify yes/no if VRSAVE instructions should be generated for AltiVec") }, \
+   {"longcall", &rs6000_longcall_switch,				\
+    N_("Avoid all range limits on call instructions") },		\
+   {"no-longcall", &rs6000_longcall_switch, "" },			\
    SUBTARGET_OPTIONS							\
 }
 
@@ -462,6 +465,8 @@ extern int rs6000_long_double_type_size;
 extern int rs6000_altivec_abi;
 extern const char *rs6000_altivec_vrsave_string;
 extern int rs6000_altivec_vrsave;
+extern const char *rs6000_longcall_switch;
+extern int rs6000_default_long_calls;
 
 #define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size == 128)
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
@@ -482,6 +487,11 @@ extern int rs6000_altivec_vrsave;
 
 /* Define this to change the optimizations performed by default.  */
 #define OPTIMIZATION_OPTIONS(LEVEL,SIZE) optimization_options(LEVEL,SIZE)
+
+/* Target pragma.  */
+#define REGISTER_TARGET_PRAGMAS(PFILE) do { \
+  cpp_register_pragma (PFILE, 0, "longcall", rs6000_pragma_longcall); \
+} while (0)
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP

@@ -124,6 +124,13 @@ char toc_label_name[10];
 /* Alias set for saves and restores from the rs6000 stack.  */
 static int rs6000_sr_alias_set;
 
+/* Call distance, overridden by -mlongcall and #pragma longcall(1).
+   The only place that looks at this is rs6000_set_default_type_attributes;
+   everywhere else should rely on the presence or absence of a longcall
+   attribute on the function declaration.  */
+int rs6000_default_long_calls;
+const char *rs6000_longcall_switch;
+
 static void rs6000_add_gc_roots PARAMS ((void));
 static int num_insns_constant_wide PARAMS ((HOST_WIDE_INT));
 static rtx expand_block_move_mem PARAMS ((enum machine_mode, rtx, rtx));
@@ -146,6 +153,7 @@ static bool rs6000_assemble_integer PARAMS ((rtx, unsigned int, int));
 static int rs6000_ra_ever_killed PARAMS ((void));
 static tree rs6000_handle_longcall_attribute PARAMS ((tree *, tree, tree, int, bool *));
 const struct attribute_spec rs6000_attribute_table[];
+static void rs6000_set_default_type_attributes PARAMS ((tree));
 static void rs6000_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void rs6000_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static rtx rs6000_emit_set_long_const PARAMS ((rtx,
@@ -235,6 +243,8 @@ static const char alt_reg_names[][8] =
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE rs6000_attribute_table
+#undef TARGET_SET_DEFAULT_TYPE_ATTRIBUTES
+#define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES rs6000_set_default_type_attributes
 
 #undef TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP DOUBLE_INT_ASM_OP
@@ -545,6 +555,22 @@ rs6000_override_options (default_cpu)
 
   /* Handle -mvrsave= option.  */
   rs6000_parse_vrsave_option ();
+
+  /* Handle -m(no-)longcall option.  This is a bit of a cheap hack,
+     using TARGET_OPTIONS to handle a toggle switch, but we're out of
+     bits in target_flags so TARGET_SWITCHES cannot be used.
+     Assumption here is that rs6000_longcall_switch points into the
+     text of the complete option, rather than being a copy, so we can
+     scan back for the presence or absence of the no- modifier.  */
+  if (rs6000_longcall_switch)
+    {
+      const char *base = rs6000_longcall_switch;
+      while (base[-1] != 'm') base--;
+
+      if (*rs6000_longcall_switch != '\0')
+	error ("invalid option `%s'", base);
+      rs6000_default_long_calls = (base[0] != 'n');
+    }
 
 #ifdef TARGET_REGNAMES
   /* If the user desires alternate register names, copy in the
@@ -2541,8 +2567,10 @@ init_cumulative_args (cum, fntype, libname, incoming)
 
   cum->orig_nargs = cum->nargs_prototype;
 
-  /* Check for longcall's */
-  if (fntype && lookup_attribute ("longcall", TYPE_ATTRIBUTES (fntype)))
+  /* Check for a longcall attribute.  */
+  if (fntype
+      && lookup_attribute ("longcall", TYPE_ATTRIBUTES (fntype))
+      && !lookup_attribute ("shortcall", TYPE_ATTRIBUTES (fntype)))
     cum->call_cookie = CALL_LONG;
 
   if (TARGET_DEBUG_ARG)
@@ -3565,6 +3593,8 @@ altivec_expand_unop_builtin (icode, arglist, target)
 	  return NULL_RTX;
 	}
       break;
+    default:
+      break;
     }
 
   if (target == 0
@@ -3653,6 +3683,8 @@ altivec_expand_binop_builtin (icode, arglist, target)
 	  error ("argument 2 must be a 5-bit unsigned literal");
 	  return NULL_RTX;
 	}
+      break;
+    default:
       break;
     }
 
@@ -3827,6 +3859,8 @@ altivec_expand_ternop_builtin (icode, arglist, target)
 	  error ("argument 3 must be a 4-bit unsigned literal");
 	  return NULL_RTX;
 	}
+      break;
+    default:
       break;
     }
 
@@ -9871,8 +9905,11 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
   fname = XSTR (XEXP (DECL_RTL (function), 0), 0);
 
   if (current_file_function_operand (XEXP (DECL_RTL (function), 0), VOIDmode)
-      && ! lookup_attribute ("longcall",
-			     TYPE_ATTRIBUTES (TREE_TYPE (function))))
+      && (! lookup_attribute ("longcall",
+			      TYPE_ATTRIBUTES (TREE_TYPE (function)))
+	  || lookup_attribute ("shortcall",
+			       TYPE_ATTRIBUTES (TREE_TYPE (function)))))
+
     {
       fprintf (file, "\tb %s", prefix);
       assemble_name (file, fname);
@@ -10852,12 +10889,13 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 const struct attribute_spec rs6000_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "longcall", 0, 0, false, true,  true,  rs6000_handle_longcall_attribute },
-  { NULL,       0, 0, false, false, false, NULL }
+  { "longcall",  0, 0, false, true,  true,  rs6000_handle_longcall_attribute },
+  { "shortcall", 0, 0, false, true,  true,  rs6000_handle_longcall_attribute },
+  { NULL,        0, 0, false, false, false, NULL }
 };
 
-/* Handle a "longcall" attribute; arguments as in struct
-   attribute_spec.handler.  */
+/* Handle a "longcall" or "shortcall" attribute; arguments as in
+   struct attribute_spec.handler.  */
 
 static tree
 rs6000_handle_longcall_attribute (node, name, args, flags, no_add_attrs)
@@ -10877,6 +10915,20 @@ rs6000_handle_longcall_attribute (node, name, args, flags, no_add_attrs)
     }
 
   return NULL_TREE;
+}
+
+/* Set longcall attributes on all functions declared when
+   rs6000_default_long_calls is true.  */
+static void
+rs6000_set_default_type_attributes (type)
+     tree type;
+{
+  if (rs6000_default_long_calls
+      && (TREE_CODE (type) == FUNCTION_TYPE
+	  || TREE_CODE (type) == METHOD_TYPE))
+    TYPE_ATTRIBUTES (type) = tree_cons (get_identifier ("longcall"),
+					NULL_TREE,
+					TYPE_ATTRIBUTES (type));
 }
 
 /* Return a reference suitable for calling a function with the

@@ -2273,12 +2273,17 @@ useful to override the effects of the @option{-mrtd} switch.
 The PowerPC compiler for Windows NT currently ignores the @code{cdecl}
 attribute.
 
-@item longcall
+@item longcall/shortcall
 @cindex functions called via pointer on the RS/6000 and PowerPC
 On the RS/6000 and PowerPC, the @code{longcall} attribute causes the
-compiler to always call the function via a pointer, so that functions
-which reside further than 64 megabytes (67,108,864 bytes) from the
-current location can be called.
+compiler to always call this function via a pointer, just as it would if
+the @option{-mlongcall} option had been specified.  The @code{shortcall}
+attribute causes the compiler not to do this.  These attributes override
+both the @option{-mlongcall} switch and the @code{#pragma longcall}
+setting.
+
+@xref{RS/6000 and PowerPC Options}, for more information on when long
+calls are and are not necessary.
 
 @item long_call/short_call
 @cindex indirect calls on ARM
@@ -5992,6 +5997,7 @@ for further explanation.
 
 @menu
 * ARM Pragmas::
+* RS/6000 and PowerPC Pragmas::
 * Darwin Pragmas::
 * Solaris Pragmas::
 * Tru64 Pragmas::
@@ -6018,6 +6024,27 @@ Set all subsequent functions to have the @code{short_call} attribute.
 @cindex pragma, long_calls_off
 Do not affect the @code{long_call} or @code{short_call} attributes of
 subsequent functions.
+@end table
+
+@node RS/6000 and PowerPC Pragmas
+@subsection RS/6000 and PowerPC Pragmas
+
+The RS/6000 and PowerPC targets define one pragma for controlling
+whether or not the @code{longcall} attribute is added to function
+declarations by default.  This pragma overrides the @option{-mlongcall}
+option, but not the @code{longcall} and @code{shortcall} attributes.  
+@xref{RS/6000 and PowerPC Options}, for more information about when long
+calls are and are not necessary.
+
+@table @code
+@item longcall (1)
+@cindex pragma, longcall
+Apply the @code{longcall} attribute to all subsequent function
+declarations.
+
+@item longcall (0)
+Do not apply the @code{longcall} attribute to subsequent function
+declarations.
 @end table
 
 @c Describe c4x pragmas here.
