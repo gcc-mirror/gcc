@@ -690,7 +690,7 @@ ereal_to_int (low, high, rr)
 
   GET_REAL (&rr, d);
 #ifdef NANS
-  if (eisnan (&rr))
+  if (eisnan (d))
     {
       warning ("conversion from NaN to int");
       *low = -1;
