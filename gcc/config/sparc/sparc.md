@@ -93,9 +93,16 @@
 ;; branches.  This would allow us to remove the nop always inserted before
 ;; a floating point branch.
 
+;; ??? It is OK for fill_simple_delay_slots to put load/store instructions
+;; in a delay slot, but it is not OK for fill_eager_delay_slots to do so.
+;; This is because doing so will add several pipeline stalls to the path
+;; that the load/store did not come from.  Unfortunately, there is no way
+;; to prevent fill_eager_delay_slots from using load/store without completely
+;; disabling them.  For the SPEC benchmark set, this is a serious lose,
+;; because it prevents us from moving back the final store of inner loops.
 
 (define_attr "in_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,call,call_no_delay_slot,multi,fpload,fpstore")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,call,call_no_delay_slot,multi")
 		     (eq_attr "length" "1"))
 		(const_string "true")
 		(const_string "false")))
