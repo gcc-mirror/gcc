@@ -1,3 +1,22 @@
+2004-09-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (struct count_depth_data): Remove.
+	(dfs_depth_post, dfs_depth_q): Remove.
+	(find_final_overrider): Use number of vbase classes as depth
+	bound.
+	
+	* cp-tree.h (types_overlap_p): Remove.
+	* search.c (struct overlap_info): Remove.
+	(dfs_check_overlap, dfs_no_overlap_yet, types_overlap_p): Remove.
+	
+	* pt.c (GTB_VIA_VIRTUAL, GTB_IGNORE_TYPE): Remove.
+	(get_template_base_recursive): Remove. Replace with ...
+	(get_template_base_r): ... this.
+	(struct get_template_base_data_s): New.
+	(get_template_base): Use get_template_base_r via dfs_walk.  Always
+	return NULL on failure.
+	(unify): Remove error_mark_node check from get_template_base result.
+
 2004-09-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	* parser.c (cp_parser_expression_stack): Clarify why it is

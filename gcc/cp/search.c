@@ -46,8 +46,6 @@ struct vbase_info
 };
 
 static int is_subobject_of_p (tree, tree);
-static tree dfs_check_overlap (tree, void *);
-static tree dfs_no_overlap_yet (tree, int, void *);
 static base_kind lookup_base_r (tree, tree, base_access, bool, tree *);
 static int dynamic_cast_base_recurse (tree, tree, bool, tree *);
 static tree dfs_debug_unmarkedp (tree, int, void *);
@@ -2270,65 +2268,6 @@ lookup_conversions (tree type)
     }
   
   return list;
-}
-
-struct overlap_info 
-{
-  tree compare_type;
-  int found_overlap;
-};
-
-/* Check whether the empty class indicated by EMPTY_BINFO is also present
-   at offset 0 in COMPARE_TYPE, and set found_overlap if so.  */
-
-static tree
-dfs_check_overlap (tree empty_binfo, void *data)
-{
-  struct overlap_info *oi = (struct overlap_info *) data;
-  tree binfo;
-  
-  for (binfo = TYPE_BINFO (oi->compare_type); 
-       ; 
-       binfo = BINFO_BASE_BINFO (binfo, 0))
-    {
-      if (BINFO_TYPE (binfo) == BINFO_TYPE (empty_binfo))
-	{
-	  oi->found_overlap = 1;
-	  break;
-	}
-      else if (!BINFO_N_BASE_BINFOS (binfo))
-	break;
-    }
-
-  return NULL_TREE;
-}
-
-/* Trivial function to stop base traversal when we find something.  */
-
-static tree
-dfs_no_overlap_yet (tree derived, int ix, void *data)
-{
-  tree binfo = BINFO_BASE_BINFO (derived, ix);
-  struct overlap_info *oi = (struct overlap_info *) data;
-  
-  return !oi->found_overlap ? binfo : NULL_TREE;
-}
-
-/* Returns nonzero if EMPTY_TYPE or any of its bases can also be found at
-   offset 0 in NEXT_TYPE.  Used in laying out empty base class subobjects.  */
-
-int
-types_overlap_p (tree empty_type, tree next_type)
-{
-  struct overlap_info oi;
-
-  if (! IS_AGGR_TYPE (next_type))
-    return 0;
-  oi.compare_type = next_type;
-  oi.found_overlap = 0;
-  dfs_walk (TYPE_BINFO (empty_type), dfs_check_overlap,
-	    dfs_no_overlap_yet, &oi);
-  return oi.found_overlap;
 }
 
 /* Returns the binfo of the first direct or indirect virtual base derived

@@ -3981,7 +3981,6 @@ extern bool emit_tinfo_decl (tree);
 /* in search.c */
 extern bool accessible_base_p (tree, tree);
 extern tree lookup_base (tree, tree, base_access, base_kind *);
-extern int types_overlap_p			(tree, tree);
 extern tree get_dynamic_cast_base_type          (tree, tree);
 extern int accessible_p                         (tree, tree);
 extern tree lookup_field_1                      (tree, tree, bool);
