@@ -1,3 +1,7 @@
+Fri Apr 27 10:23:04 2001  Mark P Mitchell  <mark@codesourcery.com>
+
+	* ltcf-cxx.sh: Add -nostdlib to IRIX 6 archive_cmds.
+
 Thu Apr 26 02:13:41 2001  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (noconfigdirs): Don't reset it from scratch in the
