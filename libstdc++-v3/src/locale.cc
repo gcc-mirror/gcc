@@ -74,12 +74,6 @@ namespace std
   // Definitions for static const data members of locale::id
   size_t locale::id::_S_highwater;  // init'd to 0 by linker
 
-  const char __num_base::_S_atoms[] = "0123456789eEabcdfABCDF";
-
-  const double __num_base::_S_scale_hex = log(10.0)/log(16.0);
-
-  const double __num_base::_S_scale_oct = log(10.0)/log(8.0);
-
   // Definitions for static const data members of locale::_Impl
   const locale::id* const
   locale::_Impl::_S_id_ctype[] =
@@ -440,119 +434,6 @@ namespace std
   : ctype<char>(new mask[table_size], true, __refs)
   { }
 
-  // Definitions for static const data members of time_base
-  template<> 
-    const char*
-    __timepunct<char>::_S_timezones[14] =
-    { 
-      "GMT", "HST", "AKST", "PST", "MST", "CST", "EST", "AST", "NST", "CET", 
-      "IST", "EET", "CST", "JST"  
-    };
- 
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<> 
-    const wchar_t*
-    __timepunct<wchar_t>::_S_timezones[14] =
-    { 
-      L"GMT", L"HST", L"AKST", L"PST", L"MST", L"CST", L"EST", L"AST", 
-      L"NST", L"CET", L"IST", L"EET", L"CST", L"JST"  
-    };
-#endif
-
-  // Definitions for static const data members of money_base
-  const money_base::pattern 
-  money_base::_S_default_pattern =  {{symbol, sign, none, value}};
-
-  template<>
-    const ctype<char>&
-    use_facet<ctype<char> >(const locale& __loc)
-    {
-      size_t __i = ctype<char>::id._M_index;
-      const locale::_Impl* __tmp = __loc._M_impl;
-      return static_cast<const ctype<char>&>(* (*(__tmp->_M_facets))[__i]);
-    }
-
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<>
-    const ctype<wchar_t>&
-    use_facet<ctype<wchar_t> >(const locale& __loc)
-    {
-      size_t __i = ctype<wchar_t>::id._M_index;
-      const locale::_Impl* __tmp = __loc._M_impl;
-      return static_cast<const ctype<wchar_t>&>(* (*(__tmp->_M_facets))[__i]);
-    }
-#endif
-
-  bool
-  __num_base::_S_format_float(const ios_base& __io, char* __fptr, char __mod,
-			      streamsize __prec)
-  {
-    bool __incl_prec = false;
-    ios_base::fmtflags __flags = __io.flags();
-    *__fptr++ = '%';
-    // [22.2.2.2.2] Table 60
-    if (__flags & ios_base::showpos)
-      *__fptr++ = '+';
-    if (__flags & ios_base::showpoint)
-      *__fptr++ = '#';
-    // As per [22.2.2.2.2.11]
-    if (__flags & ios_base::fixed || __prec > 0)
-      {
-	*__fptr++ = '.';
-	*__fptr++ = '*';
-	__incl_prec = true;
-      }
-    if (__mod)
-      *__fptr++ = __mod;
-    ios_base::fmtflags __fltfield = __flags & ios_base::floatfield;
-    // [22.2.2.2.2] Table 58
-    if (__fltfield == ios_base::fixed)
-      *__fptr++ = 'f';
-    else if (__fltfield == ios_base::scientific)
-      *__fptr++ = (__flags & ios_base::uppercase) ? 'E' : 'e';
-    else
-      *__fptr++ = (__flags & ios_base::uppercase) ? 'G' : 'g';
-    *__fptr = '\0';
-    return __incl_prec;
-  }
-  
-  void
-  __num_base::_S_format_int(const ios_base& __io, char* __fptr, char __mod, 
-			    char __modl)
-  {
-    ios_base::fmtflags __flags = __io.flags();
-    *__fptr++ = '%';
-    // [22.2.2.2.2] Table 60
-    if (__flags & ios_base::showpos)
-      *__fptr++ = '+';
-    if (__flags & ios_base::showbase)
-      *__fptr++ = '#';
-    *__fptr++ = 'l';
-
-    // For long long types.
-    if (__modl)
-      *__fptr++ = __modl;
-
-    ios_base::fmtflags __bsefield = __flags & ios_base::basefield;
-    if (__bsefield == ios_base::hex)
-      *__fptr++ = (__flags & ios_base::uppercase) ? 'X' : 'x';
-    else if (__bsefield == ios_base::oct)
-      *__fptr++ = 'o';
-    else
-      *__fptr++ = __mod;
-    *__fptr = '\0';
-  }
-  
-  template<>
-    moneypunct_byname<char, false>::moneypunct_byname(const char* /*__s*/, 
-						      size_t __refs)
-    : moneypunct<char, false>(__refs) { }
-  
-  template<>
-    moneypunct_byname<char, true>::moneypunct_byname(const char* /*__s*/, 
-						     size_t __refs)
-    : moneypunct<char, true>(__refs) { }
-  
 #ifdef _GLIBCPP_USE_WCHAR_T  
   ctype<wchar_t>::__wmask_type
   ctype<wchar_t>::_M_convert_to_wmask(const mask __m) const
@@ -710,4 +591,124 @@ namespace std
   ctype_byname(const char* /*__s*/, size_t __refs)
   : ctype<wchar_t>(__refs) { }
 #endif //  _GLIBCPP_USE_WCHAR_T
+
+  // Definitions for static const data members of time_base
+  template<> 
+    const char*
+    __timepunct<char>::_S_timezones[14] =
+    { 
+      "GMT", "HST", "AKST", "PST", "MST", "CST", "EST", "AST", "NST", "CET", 
+      "IST", "EET", "CST", "JST"  
+    };
+ 
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<> 
+    const wchar_t*
+    __timepunct<wchar_t>::_S_timezones[14] =
+    { 
+      L"GMT", L"HST", L"AKST", L"PST", L"MST", L"CST", L"EST", L"AST", 
+      L"NST", L"CET", L"IST", L"EET", L"CST", L"JST"  
+    };
+#endif
+
+  // Definitions for static const data members of money_base
+  const money_base::pattern 
+  money_base::_S_default_pattern =  {{symbol, sign, none, value}};
+
+  template<>
+    const ctype<char>&
+    use_facet<ctype<char> >(const locale& __loc)
+    {
+      size_t __i = ctype<char>::id._M_index;
+      const locale::_Impl* __tmp = __loc._M_impl;
+      return static_cast<const ctype<char>&>(* (*(__tmp->_M_facets))[__i]);
+    }
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<>
+    const ctype<wchar_t>&
+    use_facet<ctype<wchar_t> >(const locale& __loc)
+    {
+      size_t __i = ctype<wchar_t>::id._M_index;
+      const locale::_Impl* __tmp = __loc._M_impl;
+      return static_cast<const ctype<wchar_t>&>(* (*(__tmp->_M_facets))[__i]);
+    }
+#endif
+
+
+  const char __num_base::_S_atoms[] = "0123456789eEabcdfABCDF";
+
+  const double __num_base::_S_scale_hex = log(10.0)/log(16.0);
+
+  const double __num_base::_S_scale_oct = log(10.0)/log(8.0);
+
+  bool
+  __num_base::_S_format_float(const ios_base& __io, char* __fptr, char __mod,
+			      streamsize __prec)
+  {
+    bool __incl_prec = false;
+    ios_base::fmtflags __flags = __io.flags();
+    *__fptr++ = '%';
+    // [22.2.2.2.2] Table 60
+    if (__flags & ios_base::showpos)
+      *__fptr++ = '+';
+    if (__flags & ios_base::showpoint)
+      *__fptr++ = '#';
+    // As per [22.2.2.2.2.11]
+    if (__flags & ios_base::fixed || __prec > 0)
+      {
+	*__fptr++ = '.';
+	*__fptr++ = '*';
+	__incl_prec = true;
+      }
+    if (__mod)
+      *__fptr++ = __mod;
+    ios_base::fmtflags __fltfield = __flags & ios_base::floatfield;
+    // [22.2.2.2.2] Table 58
+    if (__fltfield == ios_base::fixed)
+      *__fptr++ = 'f';
+    else if (__fltfield == ios_base::scientific)
+      *__fptr++ = (__flags & ios_base::uppercase) ? 'E' : 'e';
+    else
+      *__fptr++ = (__flags & ios_base::uppercase) ? 'G' : 'g';
+    *__fptr = '\0';
+    return __incl_prec;
+  }
+  
+  void
+  __num_base::_S_format_int(const ios_base& __io, char* __fptr, char __mod, 
+			    char __modl)
+  {
+    ios_base::fmtflags __flags = __io.flags();
+    *__fptr++ = '%';
+    // [22.2.2.2.2] Table 60
+    if (__flags & ios_base::showpos)
+      *__fptr++ = '+';
+    if (__flags & ios_base::showbase)
+      *__fptr++ = '#';
+    *__fptr++ = 'l';
+
+    // For long long types.
+    if (__modl)
+      *__fptr++ = __modl;
+
+    ios_base::fmtflags __bsefield = __flags & ios_base::basefield;
+    if (__bsefield == ios_base::hex)
+      *__fptr++ = (__flags & ios_base::uppercase) ? 'X' : 'x';
+    else if (__bsefield == ios_base::oct)
+      *__fptr++ = 'o';
+    else
+      *__fptr++ = __mod;
+    *__fptr = '\0';
+  }
+  
+  template<>
+    moneypunct_byname<char, false>::moneypunct_byname(const char* /*__s*/, 
+						      size_t __refs)
+    : moneypunct<char, false>(__refs) { }
+  
+  template<>
+    moneypunct_byname<char, true>::moneypunct_byname(const char* /*__s*/, 
+						     size_t __refs)
+    : moneypunct<char, true>(__refs) { }
 } // namespace std

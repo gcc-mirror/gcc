@@ -154,15 +154,15 @@ private:
   typedef _Vector_base<_Tp, _Alloc> _Base;
   typedef vector<_Tp, _Alloc> vector_type;
 public:
-  typedef _Tp value_type;
-  typedef value_type* pointer;
-  typedef const value_type* const_pointer;
-  typedef __normal_iterator<pointer, vector_type> iterator;
+  typedef _Tp 						value_type;
+  typedef value_type* 					pointer;
+  typedef const value_type* 				const_pointer;
+  typedef __normal_iterator<pointer, vector_type> 	iterator;
   typedef __normal_iterator<const_pointer, vector_type> const_iterator;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
-  typedef size_t size_type;
-  typedef ptrdiff_t difference_type;
+  typedef value_type& 					reference;
+  typedef const value_type& 				const_reference;
+  typedef size_t 					size_type;
+  typedef ptrdiff_t 					difference_type;
 
   typedef typename _Base::allocator_type allocator_type;
   allocator_type get_allocator() const { return _Base::get_allocator(); }
