@@ -104,6 +104,16 @@ remap_decl (decl, id)
       /* Make a copy of the variable or label.  */
       t = copy_decl_for_inlining (decl, fn, 
 				  VARRAY_TREE (id->fns, 0));
+
+      /* The decl T could be a dynamic array or other variable size type,
+	 in which case some fields need to be remapped because they may
+	 contain SAVE_EXPRs.  */
+      walk_tree (&DECL_SIZE (t), copy_body_r, id);
+      if (TREE_TYPE (t) && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE
+	  && TYPE_DOMAIN (TREE_TYPE (t)))
+	walk_tree (&TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (t))),
+		   copy_body_r, id);
+
       /* Remember it, so that if we encounter this local entity
 	 again we can reuse this copy.  */
       n = splay_tree_insert (id->decl_map, 
