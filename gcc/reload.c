@@ -1586,8 +1586,10 @@ loc_mentioned_in_p (loc, in)
       if (loc == &XEXP (in, i))
 	return 1;
       if (fmt[i] == 'e')
-	if (loc_mentioned_in_p (loc, XEXP (in, i)))
-	  return 1;
+        {
+	  if (loc_mentioned_in_p (loc, XEXP (in, i)))
+	    return 1;
+        }
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (in, i) - 1; i >= 0; i--)
 	  if (loc_mentioned_in_p (loc, XVECEXP (in, i, j)))
