@@ -1,3 +1,10 @@
+2003-02-28  Bob Wilson  <bob.wilson@acm.org>
+
+	Backport following patch:
+
+	2003-02-28  Bob Wilson  <bob.wilson@acm.org>
+	* config.gcc (xtensa-*-linux*): Add t-slibgcc-elf-ver to tmake_file.
+
 2003-02-28  Joel Sherrill <joel@OARcorp.com>
 
 	PR 9638/other
