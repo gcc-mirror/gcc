@@ -8307,11 +8307,6 @@ Turns on @option{-msingle-float}, @option{-mmad}, and, at least for now,
 @opindex mno-mips16
 Enable 16-bit instructions.
 
-@item -mentry
-@opindex mentry
-Use the entry and exit pseudo ops.  This option can only be used with
-@option{-mips16}.
-
 @item -EL
 @opindex EL
 Compile code for the processor in little endian mode.

@@ -488,15 +488,7 @@ const char *mips_abi_string;	/* for -mabi={32,n32,64,eabi} */
    should arrange to call mips32 hard floating point code.  */
 int mips16_hard_float;
 
-/* This variable is set by -mentry.  We only care whether -mentry
-   appears or not, and using a string in this fashion is just a way to
-   avoid using up another bit in target_flags.  */
-const char *mips_entry_string;
-
 const char *mips_cache_flush_func = CACHE_FLUSH_FUNC;
-
-/* Whether we should entry and exit pseudo-ops in mips16 mode.  */
-int mips_entry;
 
 /* If TRUE, we split addresses into their high and low parts in the RTL.  */
 int mips_split_addresses;
@@ -4837,19 +4829,6 @@ override_options (void)
       target_flags &= ~MASK_EXPLICIT_RELOCS;
     }
 
-  /* We put -mentry in TARGET_OPTIONS rather than TARGET_SWITCHES only
-     to avoid using up another bit in target_flags.  */
-  if (mips_entry_string != NULL)
-    {
-      if (*mips_entry_string != '\0')
-	error ("invalid option `entry%s'", mips_entry_string);
-
-      if (! TARGET_MIPS16)
-	warning ("-mentry is only meaningful with -mips-16");
-      else
-	mips_entry = 1;
-    }
-
   /* When using explicit relocs, we call dbr_schedule from within
      mips_reorg.  */
   if (TARGET_EXPLICIT_RELOCS)
@@ -6030,22 +6009,14 @@ mips_save_reg_p (unsigned int regno)
       if (regno == GP_REG_FIRST + 18 && regs_ever_live[regno])
 	return true;
 
-      /* $31 is also a special case.  When not using -mentry, it will be
-	 used to copy a return value into the floating point registers if
-	 the return value is floating point.  */
+      /* $31 is also a special case.  It will be used to copy a return
+	 value into the floating point registers if the return value is
+	 floating point.  */
       if (regno == GP_REG_FIRST + 31
 	  && mips16_hard_float
-	  && !mips_entry
 	  && !aggregate_value_p (return_type, current_function_decl)
 	  && GET_MODE_CLASS (DECL_MODE (return_type)) == MODE_FLOAT
 	  && GET_MODE_SIZE (DECL_MODE (return_type)) <= UNITS_PER_FPVALUE)
-	return true;
-
-      /* The entry and exit pseudo instructions can not save $17
-	 without also saving $16.  */
-      if (mips_entry
-	  && regno == GP_REG_FIRST + 16
-	  && mips_save_reg_p (GP_REG_FIRST + 17))
 	return true;
     }
 
@@ -6187,10 +6158,6 @@ compute_frame_size (HOST_WIDE_INT size)
   if (mips_abi != ABI_32 && mips_abi != ABI_O64)
     total_size += MIPS_STACK_ALIGN (current_function_pretend_args_size);
 
-  /* The entry pseudo instruction will allocate 32 bytes on the stack.  */
-  if (mips_entry && total_size > 0 && total_size < 32)
-    total_size = 32;
-
   /* Save other computed information.  */
   cfun->machine->frame.total_size = total_size;
   cfun->machine->frame.var_size = var_size;
@@ -6207,13 +6174,7 @@ compute_frame_size (HOST_WIDE_INT size)
     {
       unsigned long offset;
 
-      /* When using mips_entry, the registers are always saved at the
-         top of the stack.  */
-      if (! mips_entry)
-	offset = args_size + var_size + gp_reg_size - GET_MODE_SIZE (gpr_mode);
-      else
-	offset = total_size - GET_MODE_SIZE (gpr_mode);
-
+      offset = args_size + var_size + gp_reg_size - GET_MODE_SIZE (gpr_mode);
       cfun->machine->frame.gp_sp_offset = offset;
       cfun->machine->frame.gp_save_offset = offset - total_size;
     }
@@ -6650,121 +6611,6 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	 HIGHEST_GP_SAVED == *FRAMEREG + FRAMESIZE + GPOFFSET => can find saved regs.  */
     }
 
-  if (mips_entry && ! mips_can_use_return_insn ())
-    {
-      int save16 = BITSET_P (cfun->machine->frame.mask, 16);
-      int save17 = BITSET_P (cfun->machine->frame.mask, 17);
-      int save31 = BITSET_P (cfun->machine->frame.mask, 31);
-      int savearg = 0;
-      rtx insn;
-
-      /* Look through the initial insns to see if any of them store
-	 the function parameters into the incoming parameter storage
-	 area.  If they do, we delete the insn, and save the register
-	 using the entry pseudo-instruction instead.  We don't try to
-	 look past a label, jump, or call.  */
-      for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
-	{
-	  rtx note, set, src, dest, base, offset;
-	  int hireg;
-
-	  if (GET_CODE (insn) == CODE_LABEL
-	      || GET_CODE (insn) == JUMP_INSN
-	      || GET_CODE (insn) == CALL_INSN)
-	    break;
-	  if (GET_CODE (insn) != INSN)
-	    continue;
-	  set = PATTERN (insn);
-	  if (GET_CODE (set) != SET)
-	    continue;
-
-	  /* An insn storing a function parameter will still have a
-             REG_EQUIV note on it mentioning the argument pointer.  */
-	  note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
-	  if (note == NULL_RTX)
-	    continue;
-	  if (! reg_mentioned_p (arg_pointer_rtx, XEXP (note, 0)))
-	    continue;
-
-	  src = SET_SRC (set);
-	  if (GET_CODE (src) != REG
-	      || REGNO (src) < GP_REG_FIRST + 4
-	      || REGNO (src) > GP_REG_FIRST + 7)
-	    continue;
-
-	  dest = SET_DEST (set);
-	  if (GET_CODE (dest) != MEM)
-	    continue;
-	  if (GET_MODE_SIZE (GET_MODE (dest)) == (unsigned) UNITS_PER_WORD)
-	    ;
-	  else if (GET_MODE_SIZE (GET_MODE (dest)) == (unsigned)2 * UNITS_PER_WORD
-		   && REGNO (src) < GP_REG_FIRST + 7)
-	    ;
-	  else
-	    continue;
-	  offset = const0_rtx;
-	  base = eliminate_constant_term (XEXP (dest, 0), &offset);
-	  if (GET_CODE (base) != REG
-	      || GET_CODE (offset) != CONST_INT)
-	    continue;
-	  if (REGNO (base) == (unsigned) STACK_POINTER_REGNUM
-	      && INTVAL (offset) == tsize + (REGNO (src) - 4) * UNITS_PER_WORD)
-	    ;
-	  else if (REGNO (base) == (unsigned) HARD_FRAME_POINTER_REGNUM
-		   && (INTVAL (offset)
-		       == (tsize
-			   + (REGNO (src) - 4) * UNITS_PER_WORD
-			   - current_function_outgoing_args_size)))
-	    ;
-	  else
-	    continue;
-
-	  /* This insn stores a parameter onto the stack, in the same
-             location where the entry pseudo-instruction will put it.
-             Delete the insn, and arrange to tell the entry
-             instruction to save the register.  */
-	  PUT_CODE (insn, NOTE);
-	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	  NOTE_SOURCE_FILE (insn) = 0;
-
-	  hireg = (REGNO (src)
-		   + HARD_REGNO_NREGS (REGNO (src), GET_MODE (dest))
-		   - 1);
-	  if (hireg > savearg)
-	    savearg = hireg;
-	}
-
-      /* If this is a varargs function, we need to save all the
-         registers onto the stack anyhow.  */
-      if (current_function_stdarg)
-	savearg = GP_REG_FIRST + 7;
-
-      fprintf (file, "\tentry\t");
-      if (savearg > 0)
-	{
-	  if (savearg == GP_REG_FIRST + 4)
-	    fprintf (file, "%s", reg_names[savearg]);
-	  else
-	    fprintf (file, "%s-%s", reg_names[GP_REG_FIRST + 4],
-		     reg_names[savearg]);
-	}
-      if (save16 || save17)
-	{
-	  if (savearg > 0)
-	    fprintf (file, ",");
-	  fprintf (file, "%s", reg_names[GP_REG_FIRST + 16]);
-	  if (save17)
-	    fprintf (file, "-%s", reg_names[GP_REG_FIRST + 17]);
-	}
-      if (save31)
-	{
-	  if (savearg > 0 || save16 || save17)
-	    fprintf (file, ",");
-	  fprintf (file, "%s", reg_names[GP_REG_FIRST + 31]);
-	}
-      fprintf (file, "\n");
-    }
-
   if (TARGET_ABICALLS && !TARGET_NEWABI && cfun->machine->global_pointer > 0)
     {
       /* Handle the initialization of $gp for SVR4 PIC.  */
@@ -6809,7 +6655,6 @@ mips_expand_prologue (void)
   tree fnargs = DECL_ARGUMENTS (fndecl);
   tree cur_arg;
   CUMULATIVE_ARGS args_so_far;
-  rtx reg_18_save = NULL_RTX;
 
   if (cfun->machine->global_pointer > 0)
     REGNO (pic_offset_table_rtx) = cfun->machine->global_pointer;
@@ -6848,83 +6693,6 @@ mips_expand_prologue (void)
 
   tsize = compute_frame_size (get_frame_size ());
 
-  /* If we are using the entry pseudo instruction, it will
-     automatically subtract 32 from the stack pointer, so we don't
-     need to.  The entry pseudo instruction is emitted by
-     function_prologue.  */
-  if (mips_entry && ! mips_can_use_return_insn ())
-    {
-      if (tsize > 0 && tsize <= 32 && frame_pointer_needed)
-	{
-          rtx insn;
-
-	  /* If we are using a frame pointer with a small stack frame,
-             we need to initialize it here since it won't be done
-             below.  */
-	  if (TARGET_MIPS16 && current_function_outgoing_args_size != 0)
-	    {
-	      rtx incr = GEN_INT (current_function_outgoing_args_size);
-	      if (Pmode == DImode)
-		insn = emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
-                                              stack_pointer_rtx,
-                                              incr));
-	      else
-		insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
-                                              stack_pointer_rtx,
-                                              incr));
-	    }
-	  else if (Pmode == DImode)
-	    insn = emit_insn (gen_movdi (hard_frame_pointer_rtx,
-					 stack_pointer_rtx));
-	  else
-	    insn = emit_insn (gen_movsi (hard_frame_pointer_rtx,
-					 stack_pointer_rtx));
-
-          RTX_FRAME_RELATED_P (insn) = 1;
-	}
-
-      /* We may need to save $18, if it is used to call a function
-	 which may return a floating point value.  Set up a sequence
-	 of instructions to do so.  Later on we emit them at the right
-	 moment.  */
-      if (TARGET_MIPS16 && BITSET_P (cfun->machine->frame.mask, 18))
-	{
-	  rtx reg_rtx = gen_rtx (REG, gpr_mode, GP_REG_FIRST + 3);
-	  long gp_offset, base_offset;
-
-	  gp_offset = cfun->machine->frame.gp_sp_offset;
-	  if (BITSET_P (cfun->machine->frame.mask, 16))
-	    gp_offset -= UNITS_PER_WORD;
-	  if (BITSET_P (cfun->machine->frame.mask, 17))
-	    gp_offset -= UNITS_PER_WORD;
-	  if (BITSET_P (cfun->machine->frame.mask, 31))
-	    gp_offset -= UNITS_PER_WORD;
-	  if (tsize > 32767)
-	    base_offset = tsize;
-	  else
-	    base_offset = 0;
-	  start_sequence ();
-	  emit_move_insn (reg_rtx,
-			  gen_rtx (REG, gpr_mode, GP_REG_FIRST + 18));
-	  emit_move_insn (gen_rtx (MEM, gpr_mode,
-				   gen_rtx (PLUS, Pmode, stack_pointer_rtx,
-					    GEN_INT (gp_offset
-						     - base_offset))),
-			  reg_rtx);
-	  reg_18_save = get_insns ();
-	  end_sequence ();
-	}
-
-      if (tsize > 32)
-	tsize -= 32;
-      else
-	{
-	  tsize = 0;
-	  if (reg_18_save != NULL_RTX)
-	    emit_insn (reg_18_save);
-	}
-    }
-
   if (tsize > 0)
     {
       rtx tsize_rtx = GEN_INT (tsize);
@@ -6953,10 +6721,7 @@ mips_expand_prologue (void)
 			  plus_constant (stack_pointer_rtx, -tsize)));
 	}
 
-      if (! mips_entry)
-	save_restore_insns (1, tmp_rtx, tsize);
-      else if (reg_18_save != NULL_RTX)
-	emit_insn (reg_18_save);
+      save_restore_insns (1, tmp_rtx, tsize);
 
       if (TARGET_ABICALLS && !TARGET_NEWABI && !current_function_is_leaf)
 	emit_insn (gen_cprestore
@@ -7128,9 +6893,6 @@ mips_expand_epilogue (int sibcall_p)
       emit_jump_insn (gen_return ());
       return;
     }
-
-  if (mips_entry && ! mips_can_use_return_insn ())
-    tsize -= 32;
 
   if (tsize > 32767 && ! TARGET_MIPS16)
     {

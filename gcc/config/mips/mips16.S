@@ -387,9 +387,9 @@ STARTFN (__mips16_fixdfsi)
 #endif /* !__mips_single_float */
 
 /* These functions are used to return floating point values from
-   mips16 functions which do not use -mentry.  In this case we can
-   put mtc1 in a jump delay slot, because we know that the next
-   instruction will not refer to a floating point register.  */
+   mips16 functions.  In this case we can put mtc1 in a jump delay slot,
+   because we know that the next instruction will not refer to a floating
+   point register.  */
 
 #ifdef L_m16retsf
 STARTFN (__mips16_ret_sf)
