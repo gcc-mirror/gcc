@@ -1,3 +1,16 @@
+Wed Apr  7 09:47:09 1999  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
+
+	* ansify.c (die): Specify void argument.
+
+	* intdoc.c (family_name, dumpgen, dumpspec, dumpimp,
+	argument_info_ptr, argument_info_string, argument_name_ptr,
+	argument_name_string, elaborate_if_complex,
+	elaborate_if_maybe_complex, elaborate_if_real, print_type_string):
+	Const-ify a char*.
+	(main): Mark parameter `argv' with ATTRIBUTE_UNUSED.
+	(_ffeintrin_name_, _ffeintrin_gen_, _ffeintrin_spec_,
+	_ffeintrin_imp_, cc_pair, descriptions, summaries): Const-ify a char*.
+
 Mon Apr  5 11:57:54 1999  Donn Terry (donn@interix.com)
 
 	* Make-lang.in (HOST_CFLAGS): compute dynamically.
