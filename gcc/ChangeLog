@@ -1,3 +1,8 @@
+Tue Feb 29 14:07:04 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* gcse.c: Cleanups throughout: mostly white-space, but also
+	some minor rearrangement of code.
+
 Tue Feb 29 10:45:59 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (hpux10, hpux11, PA32 mode): Use i128 float format.
