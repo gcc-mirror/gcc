@@ -1458,6 +1458,34 @@ rtx_equal_for_loop_p (x, y, movables)
   return 1;
 }
 
+/* If X contains any LABEL_REF's, add REG_LABEL notes for them to all
+  insns in INSNS which use thet reference.  */
+
+static void
+add_label_notes (x, insns)
+     rtx x;
+     rtx insns;
+{
+  enum rtx_code code = GET_CODE (x);
+  int i;
+  char *fmt;
+  rtx insn;
+
+  if (code == LABEL_REF)
+    {
+      for (insn = insns; insn; insn = NEXT_INSN (insn))
+	if (reg_mentioned_p (XEXP (x, 0), insn))
+	  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL, XEXP (x, 0),
+				      REG_NOTES (insn));
+      return;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    if (fmt[i] == 'e')
+      add_label_notes (XEXP (x, i), insns);
+}
+
 /* Scan MOVABLES, and move the insns that deserve to be moved.
    If two matching movables are combined, replace one reg with the
    other throughout.  */
@@ -1635,10 +1663,12 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 
 		  start_sequence ();
 		  emit_move_insn (m->set_dest, m->set_src);
-		  temp = gen_sequence ();
+		  temp = get_insns ();
 		  end_sequence ();
 
-		  i1 = emit_insn_before (temp, loop_start);
+		  add_label_notes (m->set_src, temp);
+
+		  i1 = emit_insns_before (temp, loop_start);
 		  if (! find_reg_note (i1, REG_EQUAL, 0))
 		    REG_NOTES (i1)
 		      = gen_rtx (EXPR_LIST,
@@ -4504,11 +4534,19 @@ update_giv_derive (p)
 		 be able to compute a compensation.  */
 	      else if (biv->insn == p)
 		{
-		  if (biv->mult_val == const1_rtx
-		      && (tem = simplify_giv_expr (gen_rtx (MULT, giv->mode,
-							    biv->add_val,
-							    giv->mult_val),
-						   &dummy)))
+		  tem = 0;
+
+		  if (biv->mult_val == const1_rtx)
+		    tem = simplify_giv_expr (gen_rtx (MULT, giv->mode,
+						      biv->add_val,
+						      giv->mult_val),
+					     &dummy);
+
+		  if (tem && giv->derive_adjustment)
+		    tem = simplify_giv_expr (gen_rtx (PLUS, giv->mode, tem,
+						      giv->derive_adjustment),
+					     &dummy);
+		  if (tem)
 		    giv->derive_adjustment = tem;
 		  else
 		    giv->cant_derive = 1;
