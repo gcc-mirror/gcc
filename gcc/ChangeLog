@@ -1,3 +1,10 @@
+Fri Jun 26 16:03:15 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* haifa-sched.c (schedule_block): Add hooks for the machine
+	description to reorder the ready list, and update how many more
+	instructions can be issued this cycle.
+	* tm.texi (MD_SCHED_{INIT,REORDER,VARIABLE_ISSUE}): Document.
+	
 Fri Jun 26 11:54:11 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.h (REGNO_OK_FOR_{INDEX,BASE,FP,CCFP}_P):

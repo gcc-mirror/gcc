@@ -6725,11 +6725,18 @@ schedule_block (bb, rgn_n_insns)
 	  }
       }
 
+#ifdef MD_SCHED_INIT
+  MD_SCHED_INIT (dump, sched_verbose);
+#endif
+
   /* no insns scheduled in this block yet */
   last_scheduled_insn = 0;
 
   /* Sort the ready list */
   SCHED_SORT (ready, n_ready);
+#ifdef MD_SCHED_REORDER
+  MD_SCHED_REORDER (dump, sched_verbose, ready, n_ready);
+#endif
 
   if (sched_verbose >= 2)
     {
@@ -6776,6 +6783,9 @@ schedule_block (bb, rgn_n_insns)
 
       /* Sort the ready list.  */
       SCHED_SORT (ready, n_ready);
+#ifdef MD_SCHED_REORDER
+      MD_SCHED_REORDER (dump, sched_verbose, ready, n_ready);
+#endif
 
       if (sched_verbose)
 	{
@@ -6865,7 +6875,11 @@ schedule_block (bb, rgn_n_insns)
 	      last = move_insn (insn, last);
 	      sched_n_insns++;
 
+#ifdef MD_SCHED_VARIABLE_ISSUE
+	      MD_SCHED_VARIABLE_ISSUE (dump, sched_verbose, insn, can_issue_more);
+#else
 	      can_issue_more--;
+#endif
 
 	      n_ready = schedule_insn (insn, ready, n_ready, clock_var);
 
