@@ -2,6 +2,8 @@
 
 /* Test #line with and without macros for the line number.  */
 
+extern void abort (void);
+
 #define L 90
 
 #line 44

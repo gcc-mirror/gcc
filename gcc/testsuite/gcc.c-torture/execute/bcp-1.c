@@ -1,4 +1,5 @@
 int global;
+int func(void);
 
 /* These must fail.  */
 int bad0(void) { return __builtin_constant_p(global); }
@@ -8,7 +9,7 @@ inline int bad3(int x) { return __builtin_constant_p(x); }
 inline int bad4(const char *x) { return __builtin_constant_p(x); }
 int bad5(void) { return bad2(1); }
 inline int bad6(int x) { return __builtin_constant_p(x+1); }
-int bad7(void) { return __builtin_constant_p(abort()); }
+int bad7(void) { return __builtin_constant_p(func()); }
 int bad8(void) { char buf[10]; return __builtin_constant_p(buf); }
 int bad9(const char *x) { return __builtin_constant_p(x[123456]); }
 int bad10(void) { return __builtin_constant_p(&global); }

@@ -1,3 +1,7 @@
+2000-05-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* tfformat.c: Include stdlib.h.
+
 1997-10-31  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* tFile.cc (t4): Cast TMPFILE to char* in the call to unlink, to

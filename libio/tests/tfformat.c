@@ -8,6 +8,8 @@
 #endif
 #endif /* !TEST_LIBIO */
 
+#include <stdlib.h>	/* for exit */
+
 /* Tests taken from Cygnus C library. */
 
 typedef struct

@@ -1,3 +1,19 @@
+2000-05-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* c-torture/execute/bcp-1.c: Replace abort in arg of
+	__builtin_constant_p with a generic external function.
+
+	* gcc.dg/20000108-1.c, gcc.dg/980211-1.c, gcc.dg/980414-1.c,
+	gcc.dg/990119-1.c, gcc.dg/990409.c, gcc.dg/990424-1.c,
+	gcc.dg/991230-1.c, gcc.dg/clobbers.c, gcc.dg/lineno.c,
+	gcc.dg/noreturn-1.c, gcc.dg/trigraphs.c, gcc.dg/uninit-4.c:
+	Prototype abort and/or exit.
+
+	* gcc.dg/990407-1.c, gcc.dg/strpaste.c,
+	gcc.dg/special/alias-1.c, gcc.dg/special/gcsec-1.c,
+	gcc.dg/special/weak-1.c, gcc.dg/special/weak-2.c,
+	gcc.dg/special/wkali-1.c, gcc.dg/special/wkali-2.c: Include stdlib.h.
+
 2000-05-22  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* gcc.dg/dwarf2-1.c: New test.

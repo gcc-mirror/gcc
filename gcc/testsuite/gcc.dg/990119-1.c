@@ -6,6 +6,8 @@
 int i = __LINE__\
 ;
 
+extern void abort (void);
+
 int main (void)  /* { dg-bogus "parse error" "semicolon eaten" } */
 {
   if (i != 6)

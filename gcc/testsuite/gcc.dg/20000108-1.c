@@ -5,6 +5,8 @@
 /* { dg-do run } */
 /* { dg-options "-O3" } */
 
+extern void abort (void);
+
 void foo () {} /* unused, but essential to trigger the bug */
 
 int main () {

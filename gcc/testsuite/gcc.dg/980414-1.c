@@ -3,6 +3,8 @@
 /* { dg-do run { target i?86-*-* } } */
 /* { dg-options -O2 } */
 
+extern void abort (void);
+
 static __inline  double
 mypow (double __x, double __y)
 {

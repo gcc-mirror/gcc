@@ -1,5 +1,7 @@
 /* { dg-do run } */
 
+#include <stdlib.h>
+
 extern int foo(void);
 
 int main(void) {

@@ -1,5 +1,7 @@
 /* { dg-do run } */
 
+#include <stdlib.h>
+
 static int unusedint=5;
 
 static int usedint=1;

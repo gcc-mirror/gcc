@@ -2,6 +2,8 @@
 
 /* { dg-do run { target i?86-*-* } } */
 
+extern void abort (void);
+
 int main ()
 {
         int i;
