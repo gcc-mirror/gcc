@@ -884,15 +884,19 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    64-bit AIX reserves GPR13 for thread-private data.
    Conditionally disable FPRs.  */
 
-#define CONDITIONAL_REGISTER_USAGE	\
-{					\
-  if (! TARGET_POWER)			\
-    fixed_regs[64] = 1;			\
-  if (TARGET_64BIT)			\
-    fixed_regs[13] = call_used_regs[13] = 1; \
-  if (TARGET_SOFT_FLOAT)		\
-    for (i = 32; i < 64; i++)		\
-      fixed_regs[i] = call_used_regs[i] = 1; \
+#define CONDITIONAL_REGISTER_USAGE					\
+{									\
+  if (! TARGET_POWER)							\
+    fixed_regs[64] = 1;							\
+  if (TARGET_64BIT)							\
+    fixed_regs[13] = call_used_regs[13] = 1; 				\
+  if (TARGET_SOFT_FLOAT)						\
+    for (i = 32; i < 64; i++)						\
+      fixed_regs[i] = call_used_regs[i] = 1; 				\
+  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)		\
+      && flag_pic == 1)							\
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM]					\
+      = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;			\
 }
 
 /* Specify the registers used for certain standard purposes.
@@ -924,12 +928,6 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 
 /* Special register that represents memory, used for float/int conversions.  */
 #define FPMEM_REGNUM 76
-
-/* Register to use as a placeholder for the GOT/allocated TOC register.
-   FINALIZE_PIC will change all uses of this register to a an appropriate
-   pseudo register when it adds the code to setup the GOT.  We use r2
-   because it is a reserved register in all of the ABI's.  */
-#define GOT_TOC_REGNUM 2
 
 /* Place that structure value return address is placed.
 
@@ -2105,7 +2103,7 @@ do {                                                                    \
    this macro is not defined, it is up to the machine-dependent files
    to allocate such a register (if necessary).  */
 
-/* #define PIC_OFFSET_TABLE_REGNUM */
+#define PIC_OFFSET_TABLE_REGNUM 30
 
 /* Define this macro if the register defined by
    `PIC_OFFSET_TABLE_REGNUM' is clobbered by calls.  Do not define
@@ -2128,7 +2126,7 @@ do {                                                                    \
    prologues being included in functions which used inline functions
    and were compiled to assembly language.)  */
 
-#define FINALIZE_PIC rs6000_finalize_pic ()
+/* #define FINALIZE_PIC */
 
 /* A C expression that is nonzero if X is a legitimate immediate
    operand on the target machine when generating position independent

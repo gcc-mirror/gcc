@@ -1,3 +1,15 @@
+Wed Jun  9 15:57:57 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000.md (movsi_got_internal_mem): Delete.
+	* rs6000.h (CONDITIONAL_REGISTER_USAGE): Mark PIC_OFFSET_TABLE_REGNUM.
+	(GOT_TOC_REGNUM): Delete.
+	(PIC_OFFSET_TABLE_REGNUM): Define.
+	(FINALIZE_PIC): Disable.
+	* rs6000.c (rs6000_got_register): New code for fixed pic register.
+	(rs6000_replace_regno): Delete.
+	(rs6000_finalize_pic): Likewise.
+	(output_prolog): Handle PIC_OFFSET_TABLE_REGNUM.
+
 Wed Jun  9 13:12:24 1999  Jeffrey A Law  (law@cygnus.com)
 
         * varasm.c (remove_from_pending_weak_list): Verify t->name
