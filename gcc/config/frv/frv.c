@@ -502,11 +502,6 @@ frv_override_options (void)
 	}
     }
 
-  /* Both -fpic and -gdwarf want to use .previous and the assembler only keeps
-     one level.  */
-  if (write_symbols == DWARF_DEBUG && flag_pic)
-    error ("-fpic and -gdwarf are incompatible (-fpic and -g/-gdwarf-2 are fine)");
-
   /* Change the branch cost value.  */
   if (frv_branch_cost_string)
     frv_branch_cost_int = atoi (frv_branch_cost_string);

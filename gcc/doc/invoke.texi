@@ -3115,7 +3115,7 @@ either your program or GCC:
 @item -g
 @opindex g
 Produce debugging information in the operating system's native format
-(stabs, COFF, XCOFF, or DWARF)@.  GDB can work with this debugging
+(stabs, COFF, XCOFF, or DWARF 2)@.  GDB can work with this debugging
 information.
 
 On most systems that use stabs format, @option{-g} enables use of extra
@@ -3126,7 +3126,7 @@ refuse to read the program.  If you want to control for certain whether
 to generate the extra information, use @option{-gstabs+}, @option{-gstabs},
 @option{-gxcoff+}, @option{-gxcoff}, or @option{-gvms} (see below).
 
-Unlike most other C compilers, GCC allows you to use @option{-g} with
+GCC allows you to use @option{-g} with
 @option{-O}.  The shortcuts taken by optimized code may occasionally
 produce surprising results: some variables you declared may not exist
 at all; flow of control may briefly move where you did not expect it;
@@ -3189,7 +3189,10 @@ assembler (GAS) to fail with an error.
 @item -gdwarf-2
 @opindex gdwarf-2
 Produce debugging information in DWARF version 2 format (if that is
-supported).  This is the format used by DBX on IRIX 6.
+supported).  This is the format used by DBX on IRIX 6.  With this
+option, GCC uses features of DWARF version 3 when they are useful;
+version 3 is upward compatible with version 2, but may still cause
+problems for older debuggers.
 
 @item -gvms
 @opindex gvms
@@ -3214,10 +3217,13 @@ Level 3 includes extra information, such as all the macro definitions
 present in the program.  Some debuggers support macro expansion when
 you use @option{-g3}.
 
-Note that in order to avoid confusion between DWARF1 debug level 2,
-and DWARF2 @option{-gdwarf-2} does not accept a concatenated debug
-level.  Instead use an additional @option{-g@var{level}} option to
-change the debug level for DWARF2.
+@option{-gdwarf-2} does not accept a concatenated debug level, because
+GCC used to support an option @option{-gdwarf} that meant to generate
+debug information in version 1 of the DWARF format (which is very
+different from version 2), and it would have been too confusing.  That
+debug format is long obsolete, but the option cannot be changed now.
+Instead use an additional @option{-g@var{level}} option to change the
+debug level for DWARF2.
 
 @item -feliminate-dwarf2-dups
 @opindex feliminate-dwarf2-dups

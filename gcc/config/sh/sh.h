@@ -778,8 +778,7 @@ do {									\
         but gdb doesn't implement this yet */				\
      if (0)								\
       flag_omit_frame_pointer						\
-        = (PREFERRED_DEBUGGING_TYPE == DWARF_DEBUG			\
-	   || PREFERRED_DEBUGGING_TYPE == DWARF2_DEBUG);		\
+        = (PREFERRED_DEBUGGING_TYPE == DWARF2_DEBUG);			\
      else								\
       flag_omit_frame_pointer = 0;					\
    }									\
