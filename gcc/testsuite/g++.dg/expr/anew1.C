@@ -1,12 +1,20 @@
-// { dg-do run }
+// { dg-do run { xfail *-*-* } }
+// XFAILed until PR2123 is fixed
 // PR 11228: array operator new, with zero-initialization and a variable sized array.
 // Regression test for PR 
 // Author: Matt Austern <austern@apple.com>
 
 
+#include <new>
+#include <stdlib.h>
+#include <string.h>
+
 int* allocate(int n)
 {
-  return new int[n]();
+  void *p;
+  p = malloc(n * sizeof (int));
+  memset (p, 0xff, n * sizeof(int));
+  return new (p) int[n]();
 }
 
 int main()
@@ -15,6 +23,6 @@ int main()
   int* p = allocate(n);
   for (int i = 0; i < n; ++i)
     if (p[i] != 0)
-      return 1;
-  return 0;
+      abort ();
+  exit (0);
 }
