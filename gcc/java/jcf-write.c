@@ -38,6 +38,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "buffer.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "tm_p.h"
 
 #ifndef DIR_SEPARATOR
 #define DIR_SEPARATOR '/'
