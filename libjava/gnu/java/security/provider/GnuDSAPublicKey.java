@@ -1,5 +1,5 @@
 /* GnuDSAPublicKey.java --- Gnu DSA Public Key
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999,2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -81,5 +81,11 @@ public class GnuDSAPublicKey implements DSAPublicKey
   public BigInteger getY()
   {
     return y;
+  }
+
+  public String toString()
+  {
+    return "GnuDSAPublicKey: y=" + y.toString(16) + " p=" + p.toString(16)
+      + " q=" + q.toString(16) + " g=" + g.toString(16);
   }
 }

@@ -1,5 +1,5 @@
 /* DSAParameters.java --- DSA Parameters Implementation
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999,2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,15 +38,28 @@ exception statement from your version. */
 
 package gnu.java.security.provider;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
 import java.math.BigInteger;
+
 import java.security.AlgorithmParametersSpi;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.DSAParameterSpec;
 import java.security.spec.InvalidParameterSpecException;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+
+import gnu.java.io.ASN1ParsingException;
+import gnu.java.security.der.DER;
 import gnu.java.security.der.DEREncodingException;
+import gnu.java.security.der.DERReader;
+import gnu.java.security.der.DERValue;
+import gnu.java.security.der.DERWriter;
 
 import gnu.java.security.util.Prime;
 
@@ -76,7 +89,7 @@ public void engineInit(AlgorithmParameterSpec paramSpec)
 		DSAParameterSpec dsaParamSpec = (DSAParameterSpec)paramSpec;
 		p = dsaParamSpec.getP();
 		q = dsaParamSpec.getQ();
-		q = dsaParamSpec.getG();
+		g = dsaParamSpec.getG();
 	}
 	else
 		throw new InvalidParameterSpecException("Only accepts DSAParameterSpec");
@@ -85,16 +98,20 @@ public void engineInit(AlgorithmParameterSpec paramSpec)
 public void engineInit(byte[] params)
                             throws IOException
 {
-	DERReader reader = new DERReader( params );
-	try {
-
-		p = reader.getBigInteger();
-		q = reader.getBigInteger();
-		g = reader.getBigInteger();
-
-	} catch ( DEREncodingException DERee) {
-		throw new IOException("Invalid Format: Only accepts ASN.1");
-	}
+	DERReader in = new DERReader(params);
+	DERValue val = in.read();
+	if (val.getValue() != DER.CONSTRUCTED_VALUE)
+		throw new ASN1ParsingException("badly formed parameters");
+	try
+		{
+			p = (BigInteger) in.read().getValue();
+			q = (BigInteger) in.read().getValue();
+			g = (BigInteger) in.read().getValue();
+		}
+	catch (Exception x)
+		{
+			throw new ASN1ParsingException("badly formed parameters");
+		}
 }
 
 public void engineInit(byte[] params, String format)
@@ -117,10 +134,13 @@ public AlgorithmParameterSpec engineGetParameterSpec(Class paramSpec)
 public byte[] engineGetEncoded()
                                     throws IOException
 {
-	DERWriter writer = new DERWriter();
-	return writer.joinarrays( writer.writeBigInteger(p), 
-				writer.writeBigInteger(q), 
-				writer.writeBigInteger(g) );
+	ByteArrayOutputStream bout = new ByteArrayOutputStream();
+	ArrayList seq = new ArrayList(3);
+	seq.add(new DERValue(DER.INTEGER, p));
+	seq.add(new DERValue(DER.INTEGER, q));
+	seq.add(new DERValue(DER.INTEGER, g));
+	DERWriter.write(bout, new DERValue(DER.CONSTRUCTED | DER.SEQUENCE, seq));
+	return bout.toByteArray();
 }
 
 
@@ -135,7 +155,7 @@ public byte[] engineGetEncoded(String format)
 public String engineToString()
 {
 	String lineSeparator = System.getProperty("line.seperator");
-	return ("q: " + q + lineSeparator + "p: " + p + lineSeparator + "g:" + g);
+	return ("q: " + q + " p: " + p + " g: " + g);
 }
 
 }

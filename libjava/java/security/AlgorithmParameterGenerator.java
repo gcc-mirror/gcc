@@ -39,6 +39,8 @@ package java.security;
 
 import java.security.spec.AlgorithmParameterSpec;
 
+import gnu.java.security.Engine;
+
 /**
  * <p>The <code>AlgorithmParameterGenerator</code> class is used to generate a
  * set of parameters to be used with a certain algorithm. Parameter generators
@@ -201,7 +203,11 @@ public class AlgorithmParameterGenerator
 	  (AlgorithmParameterGeneratorSpi) Engine.getInstance(
 	    ALGORITHM_PARAMETER_GENERATOR, algorithm, provider),
 	  provider, algorithm);
-        }
+      }
+    catch (java.lang.reflect.InvocationTargetException ite)
+      {
+	throw new NoSuchAlgorithmException(algorithm);
+      }
     catch (ClassCastException cce)
       {
 	throw new NoSuchAlgorithmException(algorithm);

@@ -41,6 +41,8 @@ import java.security.spec.KeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.NoSuchAlgorithmException;
 
+import gnu.java.security.Engine;
+
 /**
  * <p>Key factories are used to convert keys (opaque cryptographic keys of type
  * {@link Key}) into key specifications (transparent representations of the
@@ -191,6 +193,10 @@ public class KeyFactory
 	return new KeyFactory((KeyFactorySpi)
 	  Engine.getInstance(KEY_FACTORY, algorithm, provider),
           provider, algorithm);
+      }
+    catch (java.lang.reflect.InvocationTargetException ite)
+      {
+	throw new NoSuchAlgorithmException(algorithm);
       }
     catch (ClassCastException cce)
       {

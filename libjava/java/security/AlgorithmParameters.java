@@ -41,6 +41,8 @@ import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.io.IOException;
 
+import gnu.java.security.Engine;
+
 /**
  * <p>This class is used as an opaque representation of cryptographic
  * parameters.</p>
@@ -203,6 +205,10 @@ public class AlgorithmParameters
 	return new AlgorithmParameters((AlgorithmParametersSpi)
 	  Engine.getInstance(ALGORITHM_PARAMETERS, algorithm, provider),
 	  provider, algorithm);
+      }
+    catch (java.lang.reflect.InvocationTargetException ite)
+      {
+	throw new NoSuchAlgorithmException(algorithm);
       }
     catch (ClassCastException cce)
       {

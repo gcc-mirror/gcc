@@ -1,4 +1,4 @@
-/* Security.java --- Java base security class implmentation
+/* Security.java --- Java base security class implementation
    Copyright (C) 1999, 2001, 2002, 2003, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.

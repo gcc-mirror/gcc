@@ -62,7 +62,7 @@ public class DSAPublicKeySpec extends Object implements KeySpec
      @param q the sub-prime
      @param g the base
   */
-  public DSAPublicKeySpec(BigInteger x, BigInteger p, BigInteger q, BigInteger g) 
+  public DSAPublicKeySpec(BigInteger y, BigInteger p, BigInteger q, BigInteger g) 
   {
     this.y = y;
     this.p = p;

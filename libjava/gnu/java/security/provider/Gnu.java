@@ -1,5 +1,5 @@
 /* Gnu.java --- Gnu provider main class
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,7 @@ public final class Gnu extends Provider
 {
   public Gnu()
   {
-    super( "GNU", 1.0, "GNU provider v1.0 implementing SHA-1, MD5, DSA");
+    super("GNU", 1.0, "GNU provider v1.0 implementing SHA-1, MD5, DSA, X.509 Certificates");
 
     // Note that all implementation class names are referenced by using
     // Class.getName(). That way when we staticly link the Gnu provider
@@ -51,7 +51,7 @@ public final class Gnu extends Provider
 
     // Signature
     put("Signature.SHA1withDSA",
-	gnu.java.security.provider.DSASignature.class.getName());
+        gnu.java.security.provider.DSASignature.class.getName());
 
     put("Alg.Alias.Signature.DSS", "SHA1withDSA");
     put("Alg.Alias.Signature.DSA", "SHA1withDSA");
@@ -68,11 +68,19 @@ public final class Gnu extends Provider
 
     // Key Pair Generator
     put("KeyPairGenerator.DSA",
-	gnu.java.security.provider.DSAKeyPairGenerator.class.getName());
+        gnu.java.security.provider.DSAKeyPairGenerator.class.getName());
 
     put("Alg.Alias.KeyPairGenerator.OID.1.2.840.10040.4.1", "DSA");
     put("Alg.Alias.KeyPairGenerator.1.2.840.10040.4.1", "DSA");
     put("Alg.Alias.KeyPairGenerator.1.3.14.3.2.12", "DSA");
+
+    // Key Factory
+    put("KeyFactory.DSA",
+        gnu.java.security.provider.DSAKeyFactory.class.getName());
+
+    put("Alg.Alias.KeyFactory.OID.1.2.840.10040.4.1", "DSA");
+    put("Alg.Alias.KeyFactory.1.2.840.10040.4.1", "DSA");
+    put("Alg.Alias.KeyFactory.1.3.14.3.2.12", "DSA");
 
     // Message Digests
     put("MessageDigest.SHA", gnu.java.security.provider.SHA.class.getName());
@@ -84,15 +92,20 @@ public final class Gnu extends Provider
 
     // Algorithm Parameters
     put("AlgorithmParameters.DSA",
-	gnu.java.security.provider.DSAParameters.class.getName());
+        gnu.java.security.provider.DSAParameters.class.getName());
 
     // Algorithm Parameter Generator
     put("AlgorithmParameterGenerator.DSA",
-     gnu.java.security.provider.DSAParameterGenerator.class.getName());
+        gnu.java.security.provider.DSAParameterGenerator.class.getName());
 
     // SecureRandom
     put("SecureRandom.SHA1PRNG",
-	gnu.java.security.provider.SHA1PRNG.class.getName());
+        gnu.java.security.provider.SHA1PRNG.class.getName());
 
+    // CertificateFactory
+    put("CertificateFactory.X.509",
+        gnu.java.security.provider.X509CertificateFactory.class.getName());
+
+    put("Alg.Alias.CertificateFactory.X509", "X.509");
   }
 }

@@ -41,6 +41,8 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
 
+import gnu.java.security.Engine;
+
 /**
  * <p>This <code>Signature</code> class is used to provide applications the
  * functionality of a digital signature algorithm. Digital signatures are used
@@ -237,7 +239,15 @@ public abstract class Signature extends SignatureSpi
       throw new IllegalArgumentException("Illegal provider");
 
     Signature result = null;
-    Object o = Engine.getInstance(SIGNATURE, algorithm, provider);
+    Object o = null;
+    try
+      {
+        o = Engine.getInstance(SIGNATURE, algorithm, provider);
+      }
+    catch (java.lang.reflect.InvocationTargetException ite)
+      {
+        throw new NoSuchAlgorithmException(algorithm);
+      }
 
     if (o instanceof SignatureSpi)
       {

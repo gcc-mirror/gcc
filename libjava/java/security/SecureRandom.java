@@ -1,4 +1,4 @@
-/* SecureRandom.java --- Secure Random class implmentation
+/* SecureRandom.java --- Secure Random class implementation
    Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,6 +40,8 @@ package java.security;
 import java.io.Serializable;
 import java.util.Random;
 import java.util.Enumeration;
+
+import gnu.java.security.Engine;
 
 /**
  * An interface to a cryptographically secure pseudo-random number
@@ -162,7 +164,7 @@ public class SecureRandom extends Random
    * the first provider that implements it.
    *
    * @param algorithm The algorithm name.
-   * @return A new SecureRandom implmenting the given algorithm.
+   * @return A new SecureRandom implementing the given algorithm.
    * @throws NoSuchAlgorithmException If no installed provider implements
    *         the given algorithm.
    */
@@ -191,7 +193,7 @@ public class SecureRandom extends Random
    *
    * @param algorithm The algorithm name.
    * @param provider  The provider name.
-   * @return A new SecureRandom implmenting the chosen algorithm.
+   * @return A new SecureRandom implementing the chosen algorithm.
    * @throws NoSuchAlgorithmException If the named provider does not implement
    *         the algorithm, or if the implementation cannot be
    *         instantiated.
@@ -233,6 +235,10 @@ public class SecureRandom extends Random
         return new SecureRandom((SecureRandomSpi)
           Engine.getInstance(SECURE_RANDOM, algorithm, provider),
           provider);
+      }
+    catch (java.lang.reflect.InvocationTargetException ite)
+      {
+	throw new NoSuchAlgorithmException(algorithm);
       }
     catch (ClassCastException cce)
       {
