@@ -1,3 +1,9 @@
+Sun Aug 30 16:47:20 1998  Martin von Lvwis  <loewis@informatik.hu-berlin.de>
+
+	* Makefile.in: Add lang_tree_files and gencheck.h.
+	* configure.in: Generate them.
+	* gencheck.c: Include gencheck.h.
+
 Sat Aug 29 21:38:24 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.md (pic_lo_sum_di, pic_sethi_di): Rename to

@@ -243,6 +243,7 @@ build_xm_file=@build_xm_file_list@
 host_xm_file=@host_xm_file_list@
 lang_specs_files=@lang_specs_files@
 lang_options_files=@lang_options_files@
+lang_tree_files=@lang_tree_files@
 GCC_THREAD_FILE=@thread_file@
 GTHREAD_FLAGS=@gthread_flags@
 # Be prepared for gcc2 merges.
@@ -1346,7 +1347,7 @@ s-check : gencheck $(srcdir)/move-if-change
 	$(srcdir)/move-if-change tmp-check.h tree-check.h
 	touch s-check
 
-gencheck : gencheck.o tree.def $(HOST_LIBDEPS)
+gencheck : gencheck.o tree.def $(lang_tree_files) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 gencheck.o $(HOST_LIBS)
 
@@ -2214,7 +2215,7 @@ distclean: clean lang.distclean
 	-rm -f md cstamp-h
 	-rm -f config.status config.run config.cache config.bak
 	-rm -f Make-lang Make-hooks Make-host Make-target
-	-rm -f Makefile specs.h options.h *.oaux
+	-rm -f Makefile specs.h options.h gencheck.h *.oaux
 	-rm -f gthr-default.h
 	-rm -f */stage1 */stage2 */stage3 */stage4 */include
 	-rm -f c-parse.output
