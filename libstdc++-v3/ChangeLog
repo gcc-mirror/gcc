@@ -1,3 +1,8 @@
+2002-03-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/17_intro/RELEASE-NOTES: Update.
+	* README: Format subdirectories.
+
 2002-03-05  Paolo Carlini  <pcarlini@unitus.it>
 
 	libstdc++/5816
@@ -54,12 +59,15 @@
 
 2002-02-26  Benjamin Kosnik  <bkoz@redhat.com>
 
+	libstdc++/3983
 	* include/bits/basic_ios.tcc (basic_ios::init): Set _M_fill to zero.
 	Adjust comment.
 	* include/bits/basic_ios.h (basic_ios::_M_fill): Make mutable.
 	(basic_ios::_M_fill_init): New.
 	(basic_ios::fill()): Delay dealing with _M_fill.
 	Adjust comment. 
+	* ios.cc (ios_base::ios_base()): Initialize _M_callbacks, _M_words.
+	(ios_base::_M_call_callbacks): Adjust.
 	* testsuite/27_io/ios_init.cc (test02): Adjust testcase.
 
 2002-02-26  Loren Rittle  <ljrittle@acm.org>
@@ -86,7 +94,7 @@
 	(ios_base::ios_base): Set _M_callbacks.
 	* include/bits/basic_ios.tcc (basic_ios::init): Adjust comment.
 	* testsuite/27_io/ios_init.cc (test02): Fix.
-	
+
 	* mkcheck.in (static_fail): Failed links go to output file.
 
 2002-02-25  Phil Edwards  <pme@gcc.gnu.org>

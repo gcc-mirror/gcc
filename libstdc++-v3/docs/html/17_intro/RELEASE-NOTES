@@ -1,4 +1,4 @@
-2002-02-01
+2002-03-05
 
 Release Notes   
 -------------
@@ -6,7 +6,7 @@ The Standard C++ Library, or libstdc++-v3, is an ongoing project
 to fully implement the ISO 14882 Standard C++ library as described in
 chapters 17 through 27 and annex D.
 
-This is the thirteenth snapshot of the libstdc++ rewrite.  It is still
+This is the fourteenth snapshot of the libstdc++ rewrite.  It is still
 has some incomplet and incorrekt parts, but it's a lot less incomplete
 and incorrect than some of the earlier snapshots, and quite usable.
 
@@ -23,20 +23,16 @@ URL:
 New: 
 --- 
 - more doxygen documentation.
-- extensions moved out of namespace std
-- HPUX long long support
-- more string optimizations
-- support for NetBSD cross compiles
-- concept_check merge from boost
-- header simplification
-- named locale bug shakeout
-- thread testsuite
+- more named locale bug fixes
+- support for symbol versioning when using GNU ld >= 2.12
+- wide-io
+- tuning for executable size
 
 
 Bugs fixed:
 -----------
-5148, 3829, 2054, 5174, 2913, 4879, 3150, 5331, 5280, 5198, 5432
-- fix Darwin build issue with '~' in prefix
+5816, 3955, 3983, 5708, 5697, 5286, 3860, 5579
+AIX linkage and threading fixes.
 + others.
 
 
@@ -73,10 +69,13 @@ Dos Reis, Phil Edwards, and Ulrich Drepper.
 Development tools:
 ------------------
 
-You will need a recent version of gcc to compile the snapshot of
-libstdc++. The use of CVS gcc, or gcc-3_0-branch is strongly
-recommended, which may introduce additional dependencies for
-up-to-date binutils. In addition, you may need up-to-date tools for
-modifying Makefiles and regenerating configure scripts: automake
-(version 1.4), autoconf (version 2.13 and higher), and libtool.
+You will need a current version of gcc to compile this snapshot of
+libstdc++. The use of the latest stable gcc-3.0.x release (3.0.4), CVS
+gcc, or gcc-3_1-branch is strongly recommended, which may also
+introduce additional dependencies for up-to-date binutils. In
+particular, current binutils (2.12) is recommended so that symbol
+versioning for the library is on by default. In addition, you may need
+up-to-date tools for modifying Makefiles and regenerating configure
+scripts: automake (version 1.4), autoconf (version 2.13 and higher),
+and libtool.
 
