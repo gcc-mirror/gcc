@@ -1,7 +1,6 @@
 /* Configuration for GNU C-compiler for Sun Sparc running System V.4.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
-
-   Written by Ron Guilmette (rfg@netcom.com).
+   Copyright (C) 1992, 1993, 1998 Free Software Foundation, Inc.
+   Contributed by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GNU CC.
 
@@ -43,8 +42,6 @@ Boston, MA 02111-1307, USA.  */
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
-
-#include "xm-svr4.h"
 
 #ifndef __GNUC__
 #define ONLY_INT_FIELDS
