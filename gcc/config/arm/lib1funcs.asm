@@ -1,7 +1,7 @@
 @ libgcc1 routines for ARM cpu.
 @ Division routines, written by Richard Earnshaw, (rearnsha@armltd.co.uk)
 
-/* Copyright (C) 1995, 1996, 1998, 1999, 2000 Free Software Foundation, Inc.
+/* Copyright 1995, 1996, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -238,7 +238,7 @@ Lgot_result:
 	mov	r0, result
 	pop	{ work }
 	RET
-	
+
 #else /* ARM version.  */
 	
 	cmp	divisor, #0
@@ -294,7 +294,7 @@ Lgot_result:
 
 #endif /* ARM version */
 
-	FUNC_END udivsi3	
+	FUNC_END udivsi3
 
 #endif /* L_udivsi3 */
 /* ------------------------------------------------------------------------ */
@@ -400,16 +400,24 @@ Over6:
 	@ Any subtractions that we should not have done will be recorded in
 	@ the top three bits of "overdone".  Exactly which were not needed
 	@ are governed by the position of the bit, stored in ip.
-	@ If we terminated early, because dividend became zero,
-	@ then none of the below will match, since the bit in ip will not be
-	@ in the bottom nibble.
-
 	mov	work, #0xe
 	lsl	work, #28	
 	and	overdone, work
 	bne	Over7
 	pop	{ work }
 	RET					@ No fixups needed
+	
+	@ If we terminated early, because dividend became zero, then the 
+	@ bit in ip will not be in the bottom nibble, and we should not
+	@ perform the additions below.  We must test for this though
+	@ (rather relying upon the TSTs to prevent the additions) since
+	@ the bit in ip could be in the top two bits which might then match
+	@ with one of the smaller RORs.
+	mov	curbit, ip
+	mov	work, #0x7
+	tst	curbit, work
+	beq	Over10
+	
 Over7:
 	mov	curbit, ip
 	mov	work, #3
@@ -490,10 +498,14 @@ Loop3:
 	@ Any subtractions that we should not have done will be recorded in
 	@ the top three bits of "overdone".  Exactly which were not needed
 	@ are governed by the position of the bit, stored in ip.
-	@ If we terminated early, because dividend became zero,
-	@ then none of the below will match, since the bit in ip will not be
-	@ in the bottom nibble.
 	ands	overdone, overdone, #0xe0000000
+	@ If we terminated early, because dividend became zero, then the 
+	@ bit in ip will not be in the bottom nibble, and we should not
+	@ perform the additions below.  We must test for this though
+	@ (rather relying upon the TSTs to prevent the additions) since
+	@ the bit in ip could be in the top two bits which might then match
+	@ with one of the smaller RORs.
+	tstNE	ip, #0x7
 	RETc(eq)				@ No fixups needed
 	tst	overdone, ip, ror #3
 	addne	dividend, dividend, divisor, lsr #3
@@ -503,7 +515,7 @@ Loop3:
 	addne	dividend, dividend, divisor, lsr #1
 	RET	
 
-#endif /* arm version */
+#endif /* ARM version.  */
 	
 	FUNC_END umodsi3
 
@@ -797,12 +809,20 @@ Over7:
 	@ Any subtractions that we should not have done will be recorded in
 	@ the top three bits of "overdone".  Exactly which were not needed
 	@ are governed by the position of the bit, stored in ip.
-	@ If we terminated early, because dividend became zero,
-	@ then none of the below will match, since the bit in ip will not be
-	@ in the bottom nibble.
 	mov	work, #0xe
 	lsl	work, #28
 	and	overdone, work
+	beq	Lgot_result
+	
+	@ If we terminated early, because dividend became zero, then the 
+	@ bit in ip will not be in the bottom nibble, and we should not
+	@ perform the additions below.  We must test for this though
+	@ (rather relying upon the TSTs to prevent the additions) since
+	@ the bit in ip could be in the top two bits which might then match
+	@ with one of the smaller RORs.
+	mov	curbit, ip
+	mov	work, #0x7
+	tst	curbit, work
 	beq	Lgot_result
 	
 	mov	curbit, ip
@@ -836,7 +856,7 @@ Lgot_result:
 Over10:
 	pop	{ work }
 	RET	
-	
+
 #else /* ARM version.  */
 	
 	mov	curbit, #1
@@ -896,10 +916,14 @@ Loop3:
 	@ Any subtractions that we should not have done will be recorded in
 	@ the top three bits of "overdone".  Exactly which were not needed
 	@ are governed by the position of the bit, stored in ip.
-	@ If we terminated early, because dividend became zero,
-	@ then none of the below will match, since the bit in ip will not be
-	@ in the bottom nibble.
 	ands	overdone, overdone, #0xe0000000
+	@ If we terminated early, because dividend became zero, then the 
+	@ bit in ip will not be in the bottom nibble, and we should not
+	@ perform the additions below.  We must test for this though
+	@ (rather relying upon the TSTs to prevent the additions) since
+	@ the bit in ip could be in the top two bits which might then match
+	@ with one of the smaller RORs.
+	tstNE	ip, #0x7
 	beq	Lgot_result
 	tst	overdone, ip, ror #3
 	addne	dividend, dividend, divisor, lsr #3
@@ -912,7 +936,7 @@ Lgot_result:
 	cmp	ip, #0
 	rsbmi	dividend, dividend, #0
 	RET	
-	
+
 #endif /* ARM version */
 	
 	FUNC_END modsi3
@@ -921,9 +945,9 @@ Lgot_result:
 /* ------------------------------------------------------------------------ */
 #ifdef L_dvmd_tls
 
-	FUNC_START div0	
+	FUNC_START div0
 
-	RET	
+	RET
 
 	SIZE	(__div0)
 	
@@ -936,7 +960,7 @@ Lgot_result:
 	
 #define SIGFPE	8			@ cant use <asm/signal.h> as it
 					@ contains too much C rubbish
-	FUNC_START div0	
+	FUNC_START div0
 
 	stmfd	sp!, {r1, lr}
 	swi	__NR_getpid
@@ -950,7 +974,7 @@ Lgot_result:
 #else
 	ldmfd	sp!, {r1, pc}RETCOND
 #endif
-	
+
 	SIZE 	(__div0)
 	
 #endif /* L_dvmd_lnx */
@@ -973,7 +997,7 @@ Lgot_result:
 	.text
 	.align 0
         .force_thumb
-	
+
 .macro call_via register
 	THUMB_FUNC_START _call_via_\register
 
@@ -1005,7 +1029,7 @@ Lgot_result:
    is the arm v3 architecture.  (This is one of the multilib
    options).  */
 #if defined L_interwork_call_via_rX && ! defined __ARM_ARCH_3__
-	
+
 /* These labels & instructions are used by the Arm/Thumb interworking code,
    when the target address is in an unknown instruction set.  The address 
    of function to be called is loaded into a register and then one of these
