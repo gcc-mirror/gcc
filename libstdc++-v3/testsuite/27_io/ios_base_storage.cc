@@ -1,6 +1,6 @@
 // 2000-12-19 bkoz
 
-// Copyright (C) 2000, 2002 Free Software Foundation
+// Copyright (C) 2000, 2002, 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -93,6 +93,7 @@ void test02()
 
 int main(void)
 {
+  __gnu_cxx_test::set_memory_limits();
   test01();
   test02();
   return 0;

@@ -1,3 +1,8 @@
+2003-02-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/27_io/ios_base_storage.cc (main): Call
+	set_memory_limits.
+
 2003-02-21  Jerry Quinn  <jlquinn@optonline.net>
 
         * include/bits/locale_facets.tcc (_M_convert_float): Replace
