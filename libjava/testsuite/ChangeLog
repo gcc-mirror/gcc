@@ -1,5 +1,8 @@
 2000-03-07  Tom Tromey  <tromey@cygnus.com>
 
+	* lib/libjava.exp (test_libjava_from_javac): Removed hack for
+	interfaces.  Fail if jv-scan reports a parse error.
+
 	Test for PR gcj/162:
 	* libjava.lang/PR162.out: New file.
 	* libjava.lang/PR162.java: New file.
