@@ -5022,7 +5022,7 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
   *newtype = BINDING_TYPE (decls);
   if (oldtype && *newtype && oldtype != *newtype)
     {
-      cp_error ("using directive `%D' introduced ambiguous type `%T'",
+      cp_error ("using declaration `%D' introduced ambiguous type `%T'",
 		name, oldtype);
       return;
     }
