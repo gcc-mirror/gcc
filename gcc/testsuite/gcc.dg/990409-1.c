@@ -1,18 +1,18 @@
 /* Test that __LINE__ works when embedded in a macro. */
 /* { dg-do run } */
 
-#define foo() bar(__LINE__)
+#define XLINE __LINE__
 
 void
-bar(int x)
+bar(int x, int y)
 {
-    if (x != 16)
+    if (x != y)
 	abort();
 }
 
 int
 main(void)
 {
-    foo();    /* This is line 16 */
+    bar(XLINE, __LINE__);
     return 0;
 }
