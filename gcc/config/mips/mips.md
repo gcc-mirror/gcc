@@ -193,17 +193,33 @@
   "default,4kc,5kc,20kc,m4k,r3000,r3900,r6000,r4000,r4100,r4111,r4120,r4300,r4600,r4650,r5000,r5400,r5500,r8000,sb1,sr71000"
   (const (symbol_ref "mips_cpu_attr")))
 
-;; Does the instruction have a mandatory delay slot?
-;;   The 3900, is (mostly) mips1, but does not have a mandatory load delay
-;;   slot.
-(define_attr "dslot" "no,yes"
-  (if_then_else (ior (eq_attr "type" "branch,jump,call,xfer,hilo,fcmp")
-		     (and (eq_attr "type" "load")
-			  (and (eq (symbol_ref "mips_isa") (const_int 1))
-			       (and (eq (symbol_ref "mips16") (const_int 0))
-                                    (eq_attr "cpu" "!r3900")))))
-		(const_string "yes")
-		(const_string "no")))
+;; The type of hardware hazard associated with this instruction.
+;; DELAY means that the next instruction cannot read the result
+;; of this one.  HILO means that the next two instructions cannot
+;; write to HI or LO.
+(define_attr "hazard" "none,delay,hilo"
+  (cond [(and (eq_attr "type" "load")
+	      (ne (symbol_ref "ISA_HAS_LOAD_DELAY") (const_int 0)))
+	 (const_string "delay")
+
+	 (and (eq_attr "type" "xfer")
+	      (ne (symbol_ref "ISA_HAS_XFER_DELAY") (const_int 0)))
+	 (const_string "delay")
+
+	 (and (eq_attr "type" "fcmp")
+	      (ne (symbol_ref "ISA_HAS_FCMP_DELAY") (const_int 0)))
+	 (const_string "delay")
+
+	 ;; The r4000 multiplication patterns include an mflo instruction.
+	 (and (eq_attr "type" "imul")
+	      (ne (symbol_ref "TARGET_MIPS4000") (const_int 0)))
+	 (const_string "hilo")
+
+	 (and (eq_attr "type" "hilo")
+	      (and (eq (symbol_ref "ISA_HAS_HILO_INTERLOCKS") (const_int 0))
+		   (match_operand 1 "hilo_operand" "")))
+	 (const_string "hilo")]
+	(const_string "none")))
 
 ;; Is it a single instruction?
 (define_attr "single_insn" "no,yes"
@@ -211,8 +227,9 @@
 
 ;; Can the instruction be put into a delay slot?
 (define_attr "can_delay" "no,yes"
-  (if_then_else (and (eq_attr "dslot" "no")
-		     (eq_attr "single_insn" "yes"))
+  (if_then_else (and (eq_attr "type" "!branch,call,jump")
+		     (and (eq_attr "hazard" "none")
+			  (eq_attr "single_insn" "yes")))
 		(const_string "yes")
 		(const_string "no")))
 
@@ -2274,7 +2291,7 @@
 
   "
 {
-  if (GENERATE_MULT3_DI || TARGET_MIPS4000 || TARGET_MIPS16)
+  if (GENERATE_MULT3_DI || TARGET_MIPS4000)
     emit_insn (gen_muldi3_internal2 (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_muldi3_internal (operands[0], operands[1], operands[2]));
@@ -2287,7 +2304,7 @@
 		 (match_operand:DI 2 "register_operand" "d")))
    (clobber (match_scratch:DI 3 "=h"))
    (clobber (match_scratch:DI 4 "=a"))]
-  "TARGET_64BIT && !TARGET_MIPS4000 && !TARGET_MIPS16"
+  "TARGET_64BIT && !TARGET_MIPS4000"
   "dmult\\t%1,%2"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"DI")])
@@ -2299,7 +2316,7 @@
    (clobber (match_scratch:DI 3 "=h"))
    (clobber (match_scratch:DI 4 "=l"))
    (clobber (match_scratch:DI 5 "=a"))]
-  "TARGET_64BIT && (GENERATE_MULT3_DI || TARGET_MIPS4000 || TARGET_MIPS16)"
+  "TARGET_64BIT && (GENERATE_MULT3_DI || TARGET_MIPS4000)"
   {
     if (GENERATE_MULT3_DI)
       return "dmult\t%0,%1,%2";

@@ -945,6 +945,24 @@ extern void		sbss_section PARAMS ((void));
                                  && (ISA_MIPS32R2                      \
                                      ))
 
+/* True if the result of a load is not available to the next instruction.
+   A nop will then be needed between instructions like "lw $4,..."
+   and "addiu $4,$4,1".  */
+#define ISA_HAS_LOAD_DELAY	(mips_isa == 1				\
+				 && !TARGET_MIPS3900			\
+				 && !TARGET_MIPS16)
+
+/* Likewise mtc1 and mfc1.  */
+#define ISA_HAS_XFER_DELAY	(mips_isa <= 3)
+
+/* Likewise floating-point comparisons.  */
+#define ISA_HAS_FCMP_DELAY	(mips_isa <= 3)
+
+/* True if mflo and mfhi can be immediately followed by instructions
+   which write to the HI and LO registers.  Most targets require a
+   two-instruction gap.  */
+#define ISA_HAS_HILO_INTERLOCKS	(TARGET_MIPS5500 || TARGET_SB1)
+
 /* CC1_SPEC causes -mips3 and -mips4 to set -mfp64 and -mgp64; -mips1 or
    -mips2 sets -mfp32 and -mgp32.  This can be overridden by an explicit
    -mfp32, -mfp64, -mgp32 or -mgp64.  -mfp64 sets MASK_FLOAT64 in
@@ -3374,7 +3392,8 @@ typedef struct mips_args {
 				  REG, MEM}},				\
   {"consttable_operand",	{ LABEL_REF, SYMBOL_REF, CONST_INT,	\
 				  CONST_DOUBLE, CONST }},		\
-  {"fcc_register_operand",	{ REG, SUBREG }},
+  {"fcc_register_operand",	{ REG, SUBREG }},			\
+  {"hilo_operand",		{ REG }},
 
 /* A list of predicates that do special things with modes, and so
    should not elicit warnings for VOIDmode match_operand.  */

@@ -1507,6 +1507,18 @@ const_float_1_operand (op, mode)
   return REAL_VALUES_EQUAL (d, dconst1);
 }
 
+/* Return true if OP is either the HI or LO register.  */
+
+int
+hilo_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return ((mode == VOIDmode || mode == GET_MODE (op))
+	  && REG_P (op)
+	  && (REGNO (op) == HI_REGNUM || REGNO (op) == LO_REGNUM));
+}
+
 /* Return nonzero if the code of this rtx pattern is EQ or NE.  */
 
 int
@@ -9896,6 +9908,22 @@ mips_adjust_insn_length (insn, length)
       || (!TARGET_MIPS16  && (GET_CODE (insn) == JUMP_INSN
 			      || GET_CODE (insn) == CALL_INSN)))
     length += 4;
+
+  /* See how many nops might be needed to avoid hardware hazards.  */
+  if (INSN_CODE (insn) >= 0)
+    switch (get_attr_hazard (insn))
+      {
+      case HAZARD_NONE:
+	break;
+
+      case HAZARD_DELAY:
+	length += 4;
+	break;
+
+      case HAZARD_HILO:
+	length += 8;
+	break;
+      }
 
   /* All MIPS16 instructions are a measly two bytes.  */
   if (TARGET_MIPS16)
