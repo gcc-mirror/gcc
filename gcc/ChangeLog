@@ -1,3 +1,7 @@
+2004-10-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ginclude/stddef.h: Fix a comment typo.
+
 2004-10-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/17443

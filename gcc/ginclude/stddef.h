@@ -296,7 +296,7 @@ typedef _BSD_RUNE_T_ rune_t;
 #define _BSD_WCHAR_T_DEFINED_
 #define _BSD_RUNE_T_DEFINED_	/* Darwin */
 #if defined (__FreeBSD__) && (__FreeBSD__ < 5)
-/* Why is this file so hard to maintain properly?  In constrast to
+/* Why is this file so hard to maintain properly?  In contrast to
    the comment above regarding BSD/386 1.1, on FreeBSD for as long
    as the symbol has existed, _BSD_RUNE_T_ must not stay defined or
    redundant typedefs will occur when stdlib.h is included after this file. */
