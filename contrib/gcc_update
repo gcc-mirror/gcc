@@ -65,20 +65,12 @@ texinfo/util/Makefile.in: texinfo/util/Makefile.am texinfo/configure.in texinfo/
 gcc/configure: gcc/configure.in
 gcc/cstamp-h.in: gcc/configure.in gcc/acconfig.h
 gcc/config.in: gcc/cstamp-h.in
-gcc/c-parse.y: gcc/c-parse.in
-gcc/c-parse.c: gcc/c-parse.y
-gcc/c-parse.h: gcc/c-parse.c
 gcc/c-gperf.h: gcc/c-parse.gperf
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
 gcc/tradcif.c: gcc/tradcif.y
 # And then, language-specific files
-gcc/cp/parse.c: gcc/cp/parse.y
-gcc/cp/parse.h: gcc/cp/parse.c
-gcc/objc/objc-parse.y: gcc/c-parse.in
-gcc/objc/objc-parse.c: gcc/objc/objc-parse.y
 gcc/java/parse.h: gcc/java/parse.y
 gcc/java/parse.c: gcc/java/parse.y gcc/java/lex.c gcc/java/parse.h gcc/java/lex.h
-gcc/java/parse-scan.c: gcc/java/parse-scan.y gcc/java/lex.c gcc/java/parse.h gcc/java/lex.h
 # And libraries, at last
 libchill/configure: libchill/configure.in
 libf2c/configure: libf2c/configure.in

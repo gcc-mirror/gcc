@@ -1,3 +1,11 @@
+2000-07-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-parse.c: Remove.
+	* c-parse.h: Likewise.
+	* c-parse.y: Likewise.
+	* objc/objc-parse.c: Likewise.
+	* objc/objc-pasre.y: Likewise.
+	
 2000-07-11  Rodney Brown  <RodneyBrown@pmsc.com>
 
 	* gcc.texi: Fix minor typos

@@ -1,3 +1,7 @@
+2000-07-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_update (files_and_dependencies): Remove generated YACC files.
+
 2000-06-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* newcvsroot: Handle filenames that contain spaces.
