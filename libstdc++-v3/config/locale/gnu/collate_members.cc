@@ -43,7 +43,10 @@ namespace std
     int 
     collate<char>::_M_compare_helper(const char* __one, 
 				     const char* __two) const
-    { return __strcoll_l(__one, __two, _M_c_locale_collate); }
+    { 
+      int __cmp = __strcoll_l(__one, __two, _M_c_locale_collate);
+      return (__cmp >> (8 * sizeof (int) - 2)) | (__cmp != 0);
+    }
   
   template<>
     size_t
@@ -56,7 +59,10 @@ namespace std
     int 
     collate<wchar_t>::_M_compare_helper(const wchar_t* __one, 
 					const wchar_t* __two) const
-    { return __wcscoll_l(__one, __two, _M_c_locale_collate); }
+    {
+      int __cmp = __wcscoll_l(__one, __two, _M_c_locale_collate);
+      return (__cmp >> (8 * sizeof (int) - 2)) | (__cmp != 0);
+    }
   
   template<>
     size_t
