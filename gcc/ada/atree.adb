@@ -882,6 +882,11 @@ package body Atree is
       Dummy := New_Node (N_Error, No_Location);
       Set_Name1 (Error, Error_Name);
       Set_Error_Posted (Error, True);
+
+      --  Set global variables for New_Copy_Tree:
+      NCT_Hash_Tables_Used := False;
+      NCT_Table_Entries    := 0;
+      NCT_Hash_Table_Setup := False;
    end Initialize;
 
    --------------------------

@@ -50,7 +50,7 @@ with Osint;                use Osint;
 with System;
 
 procedure GnatLbr is
-   pragma Ident (Gnat_Version_String);
+   pragma Ident (Gnat_Static_Version_String);
 
    type Lib_Mode is (None, Create, Set, Delete);
    Next_Arg  : Integer;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -264,7 +264,9 @@ package body Scn is
       --  Set default for Comes_From_Source. All nodes built now until we
       --  reenter the analyzer will have Comes_From_Source set to True
 
-      Set_Comes_From_Source_Default (True);
+      if Index /= Internal_Source_File then
+         Set_Comes_From_Source_Default (True);
+      end if;
 
       --  Check license if GNAT type header possibly present
 
@@ -278,7 +280,9 @@ package body Scn is
       --  call Scan. Scan initial token (note this initializes Prev_Token,
       --  Prev_Token_Ptr).
 
-      Scan;
+      if Index /= Internal_Source_File then
+         Scan;
+      end if;
 
       --  Clear flags for reserved words used as indentifiers
 

@@ -569,8 +569,13 @@ pragma Preelaborate (Types);
    No_Unit : constant Unit_Number_Type := -1;
    --  Special value used to signal no unit
 
-   type Source_File_Index is new Nat;
+   type Source_File_Index is new Int range -1 .. Int'Last;
    --  Type used to index the source file table (see package Sinput)
+
+   Internal_Source_File : constant Source_File_Index :=
+                            Source_File_Index'First;
+   --  Value used to indicate the buffer for the source-code-like strings
+   --  internally created withing the compiler (see package Sinput)
 
    No_Source_File : constant Source_File_Index := 0;
    --  Value used to indicate no source file present

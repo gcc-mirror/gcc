@@ -38,6 +38,7 @@ with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Ttypef;   use Ttypef;
+with Scn;
 with Sem_Mech; use Sem_Mech;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -259,10 +260,10 @@ package body CStand is
    --  by Initialize_Standard in the semantics module.
 
    procedure Create_Standard is
-      Decl_S : List_Id;
+      Decl_S : List_Id := New_List;
       --  List of declarations in Standard
 
-      Decl_A : List_Id;
+      Decl_A : List_Id := New_List;
       --  List of declarations in ASCII
 
       Decl       : Node_Id;
@@ -297,7 +298,9 @@ package body CStand is
    --  Start of processing for Create_Standard
 
    begin
-      Decl_S := New_List;
+      --  Initialize scanner for internal scans of literals
+
+      Scn.Initialize_Scanner (No_Unit, Internal_Source_File);
 
       --  First step is to create defining identifiers for each entity
 
@@ -414,7 +417,6 @@ package body CStand is
 
       declare
          LIS : Nat;
-
       begin
          if Debug_Flag_M then
             LIS := 64;
@@ -657,7 +659,6 @@ package body CStand is
 
       Set_Defining_Unit_Name (Pspec, Standard_Entity (S_ASCII));
       Set_Ekind (Standard_Entity (S_ASCII), E_Package);
-      Decl_A := New_List; -- for ASCII declarations
       Set_Visible_Declarations (Pspec, Decl_A);
 
       --  Create control character definitions in package ASCII. Note that
@@ -791,6 +792,18 @@ package body CStand is
       Set_Prim_Alignment    (Any_Access);
       Make_Name             (Any_Access, "an access type");
 
+      Any_Character := New_Standard_Entity;
+      Set_Ekind             (Any_Character, E_Enumeration_Type);
+      Set_Scope             (Any_Character, Standard_Standard);
+      Set_Etype             (Any_Character, Any_Character);
+      Set_Is_Unsigned_Type  (Any_Character);
+      Set_Is_Character_Type (Any_Character);
+      Init_Esize            (Any_Character, Standard_Character_Size);
+      Init_RM_Size          (Any_Character, 8);
+      Set_Prim_Alignment    (Any_Character);
+      Set_Scalar_Range      (Any_Character, Scalar_Range (Standard_Character));
+      Make_Name             (Any_Character, "a character type");
+
       Any_Array := New_Standard_Entity;
       Set_Ekind             (Any_Array, E_String_Type);
       Set_Scope             (Any_Array, Standard_Standard);
@@ -809,18 +822,6 @@ package body CStand is
       Set_Is_Unsigned_Type  (Any_Boolean);
       Set_Scalar_Range      (Any_Boolean, Scalar_Range (Standard_Boolean));
       Make_Name             (Any_Boolean, "a boolean type");
-
-      Any_Character := New_Standard_Entity;
-      Set_Ekind             (Any_Character, E_Enumeration_Type);
-      Set_Scope             (Any_Character, Standard_Standard);
-      Set_Etype             (Any_Character, Any_Character);
-      Set_Is_Unsigned_Type  (Any_Character);
-      Set_Is_Character_Type (Any_Character);
-      Init_Esize            (Any_Character, Standard_Character_Size);
-      Init_RM_Size          (Any_Character, 8);
-      Set_Prim_Alignment    (Any_Character);
-      Set_Scalar_Range      (Any_Character, Scalar_Range (Standard_Character));
-      Make_Name             (Any_Character, "a character type");
 
       Any_Composite := New_Standard_Entity;
       Set_Ekind             (Any_Composite, E_Array_Type);

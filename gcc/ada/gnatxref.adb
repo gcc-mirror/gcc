@@ -24,10 +24,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Xr_Tabls;     use Xr_Tabls;
-with Xref_Lib;     use Xref_Lib;
-with Osint;        use Osint;
-with Types;        use Types;
+with Xr_Tabls; use Xr_Tabls;
+with Xref_Lib; use Xref_Lib;
+with Osint;    use Osint;
+with Types;    use Types;
 
 with Gnatvsn;
 with Opt;
@@ -35,10 +35,9 @@ with Opt;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Text_IO;       use Ada.Text_IO;
 with GNAT.Command_Line; use GNAT.Command_Line;
-with GNAT.Strings;       use GNAT.Strings;
+with GNAT.Strings;      use GNAT.Strings;
 
 procedure Gnatxref is
-
    Search_Unused   : Boolean := False;
    Local_Symbols   : Boolean := True;
    Prj_File        : File_Name_String;
@@ -209,8 +208,6 @@ procedure Gnatxref is
    -----------------
 
    procedure Write_Usage is
-      use Ada.Text_IO;
-
    begin
       Put_Line ("GNATXREF " & Gnatvsn.Gnat_Version_String
                 & " Copyright 1998-2003, Ada Core Technologies Inc.");

@@ -1110,17 +1110,31 @@ package body Sinput is
 
    function Source_First (S : SFI) return Source_Ptr is
    begin
-      return Source_File.Table (S).Source_First;
+      if S = Internal_Source_File then
+         return Internal_Source_Ptr'First;
+      else
+         return Source_File.Table (S).Source_First;
+      end if;
    end Source_First;
 
    function Source_Last (S : SFI) return Source_Ptr is
    begin
-      return Source_File.Table (S).Source_Last;
+      if S = Internal_Source_File then
+         return Internal_Source_Ptr'Last;
+      else
+         return Source_File.Table (S).Source_Last;
+      end if;
+
    end Source_Last;
 
    function Source_Text (S : SFI) return Source_Buffer_Ptr is
    begin
-      return Source_File.Table (S).Source_Text;
+      if S = Internal_Source_File then
+         return Internal_Source_Ptr;
+      else
+         return Source_File.Table (S).Source_Text;
+      end if;
+
    end Source_Text;
 
    function Template (S : SFI) return SFI is
