@@ -2916,6 +2916,41 @@ do_identifier (token)
 	  SET_IDENTIFIER_ERROR_LOCUS (token, current_function_decl);
 	}
     }
+
+  if (TREE_CODE (id) == VAR_DECL && DECL_DEAD_FOR_LOCAL (id))
+    {
+      tree shadowed = DECL_SHADOWED_FOR_VAR (id);
+      if (shadowed)
+	{
+	  if (!DECL_ERROR_REPORTED (id))
+	    {
+	      warning ("name lookup of `%s' changed",
+		       IDENTIFIER_POINTER (token));
+	      cp_warning_at ("  matches this `%D' under current ANSI rules",
+			     shadowed);
+	      cp_warning_at ("  matches this `%D' under old rules", id);
+	      DECL_ERROR_REPORTED (id) = 1;
+	    }
+	  id = shadowed;
+	}
+      else if (!DECL_ERROR_REPORTED (id))
+	{
+	  static char msg[]
+	    = "name lookup of `%s' changed for new ANSI `for' scoping";
+	  DECL_ERROR_REPORTED (id) = 1;
+	  if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (id)))
+	    {
+	      error (msg, IDENTIFIER_POINTER (token));
+	      cp_error_at ("  cannot use obsolete binding at `%D' because it has a destructor", id);
+	      id = error_mark_node;
+	    }
+	  else
+	    {
+	      pedwarn (msg, IDENTIFIER_POINTER (token));
+	      cp_pedwarn_at ("  using obsolete binding at `%D'", id);
+	    }
+	}
+    }
   /* TREE_USED is set in `hack_identifier'.  */
   if (TREE_CODE (id) == CONST_DECL)
     {
