@@ -1,3 +1,11 @@
+2004-02-13  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (recog_for_combine): Avoid allocating unnecesary RTX.
+
+	* genrecog.c (find_operand): add extra argument stop.
+	(validate_pattern): Verify that mach_dup is duplicating operand
+	defined lexically earlier.
+
 2004-02-13  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	PR other/10584

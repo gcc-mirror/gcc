@@ -231,7 +231,7 @@ static struct decision *new_decision
 static struct decision_test *new_decision_test
   (enum decision_type, struct decision_test ***);
 static rtx find_operand
-  (rtx, int);
+  (rtx, int, rtx);
 static rtx find_matching_operand
   (rtx, int);
 static void validate_pattern
@@ -345,15 +345,18 @@ new_decision_test (enum decision_type type, struct decision_test ***pplace)
   return test;
 }
 
-/* Search for and return operand N.  */
+/* Search for and return operand N, stop when reaching node STOP.  */
 
 static rtx
-find_operand (rtx pattern, int n)
+find_operand (rtx pattern, int n, rtx stop)
 {
   const char *fmt;
   RTX_CODE code;
   int i, j, len;
   rtx r;
+
+  if (pattern == stop)
+    return stop;
 
   code = GET_CODE (pattern);
   if ((code == MATCH_SCRATCH
@@ -371,7 +374,7 @@ find_operand (rtx pattern, int n)
       switch (fmt[i])
 	{
 	case 'e': case 'u':
-	  if ((r = find_operand (XEXP (pattern, i), n)) != NULL_RTX)
+	  if ((r = find_operand (XEXP (pattern, i), n, stop)) != NULL_RTX)
 	    return r;
 	  break;
 
@@ -382,7 +385,8 @@ find_operand (rtx pattern, int n)
 
 	case 'E':
 	  for (j = 0; j < XVECLEN (pattern, i); j++)
-	    if ((r = find_operand (XVECEXP (pattern, i, j), n)) != NULL_RTX)
+	    if ((r = find_operand (XVECEXP (pattern, i, j), n, stop))
+		!= NULL_RTX)
 	      return r;
 	  break;
 
@@ -466,7 +470,17 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
     {
     case MATCH_SCRATCH:
       return;
-
+    case MATCH_DUP:
+    case MATCH_OP_DUP:
+    case MATCH_PAR_DUP:
+      if (find_operand (insn, XINT (pattern, 0), pattern) == pattern)
+	{
+	  message_with_line (pattern_lineno,
+			     "operand %i duplicated before defined",
+			     XINT (pattern, 0));
+          error_count++;
+	}
+      break;
     case MATCH_INSN:
     case MATCH_OPERAND:
     case MATCH_OPERATOR:
@@ -638,12 +652,12 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	if (GET_CODE (dest) == MATCH_DUP
 	    || GET_CODE (dest) == MATCH_OP_DUP
 	    || GET_CODE (dest) == MATCH_PAR_DUP)
-	  dest = find_operand (insn, XINT (dest, 0));
+	  dest = find_operand (insn, XINT (dest, 0), NULL);
 
 	if (GET_CODE (src) == MATCH_DUP
 	    || GET_CODE (src) == MATCH_OP_DUP
 	    || GET_CODE (src) == MATCH_PAR_DUP)
-	  src = find_operand (insn, XINT (src, 0));
+	  src = find_operand (insn, XINT (src, 0), NULL);
 
 	dmode = GET_MODE (dest);
 	smode = GET_MODE (src);
