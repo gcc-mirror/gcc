@@ -524,10 +524,21 @@ struct write_data
 	   || XEXP (X, 0) == virtual_stack_vars_rtx		\
 	   || XEXP (X, 0) == virtual_incoming_args_rtx)))
 
-/* Similar, but also allows reference to the stack pointer.  */
+/* Similar, but also allows reference to the stack pointer.
+
+   This used to include FIXED_BASE_PLUS_P, however, we can't assume that
+   arg_pointer_rtx by itself is nonzero, because on at least one machine,
+   the i960, the arg pointer is zero when it is unused.  */
 
 #define NONZERO_BASE_PLUS_P(X)					\
-  (FIXED_BASE_PLUS_P (X)					\
+  ((X) == frame_pointer_rtx					\
+   || (X) == virtual_stack_vars_rtx				\
+   || (X) == virtual_incoming_args_rtx				\
+   || (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == CONST_INT \
+       && (XEXP (X, 0) == frame_pointer_rtx			\
+	   || XEXP (X, 0) == arg_pointer_rtx			\
+	   || XEXP (X, 0) == virtual_stack_vars_rtx		\
+	   || XEXP (X, 0) == virtual_incoming_args_rtx))	\
    || (X) == stack_pointer_rtx					\
    || (X) == virtual_stack_dynamic_rtx				\
    || (X) == virtual_outgoing_args_rtx				\
