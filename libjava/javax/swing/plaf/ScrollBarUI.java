@@ -1,5 +1,5 @@
 /* ScrollBarUI.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,22 +38,21 @@ exception statement from your version. */
 package javax.swing.plaf;
 
 /**
- * ScrollBarUI
- * @author	Andrew Selkirk
- * @version	1.0
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JScrollBar</code>.
+ *
+ * @see javax.swing.JScrollBar
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class ScrollBarUI extends ComponentUI {
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor ScrollBarUI
-	 */
-	public ScrollBarUI() {
-		// TODO
-	} // ScrollBarUI()
-
-
-} // ScrollBarUI
+public abstract class ScrollBarUI
+  extends ComponentUI
+{
+  /**
+   * Constructs a new <code>ScrollBarUI</code>.
+   */
+  public ScrollBarUI()
+  {
+  }
+}

@@ -1,5 +1,5 @@
 /* TableUI.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,23 +37,23 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
+
 /**
- * TableUI
- * @author	Andrew Selkirk
- * @version	1.0
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JTable</code>.
+ *
+ * @see javax.swing.JTable
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class TableUI extends ComponentUI {
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor TableUI
-	 */
-	public TableUI() {
-		// TODO
-	} // TableUI()
-
-
-} // TableUI
+public abstract class TableUI
+  extends ComponentUI
+{
+  /**
+   * Constructs a new <code>TableUI</code>.
+   */
+  public TableUI()
+  {
+  }
+}

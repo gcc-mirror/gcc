@@ -1,5 +1,5 @@
-/* SeparatorUI.java --
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* SpinnerUI.java --
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,22 +37,23 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
+
 /**
  * An abstract base class for delegates that implement the pluggable
- * look and feel for a <code>JSeparator</code>.
+ * look and feel for a <code>JSpinner</code>.
  *
- * @see javax.swing.JSeparator
+ * @since 1.4
+ * @see javax.swing.JSpinner
  *
- * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class SeparatorUI
+public abstract class SpinnerUI
   extends ComponentUI
 {
   /**
-   * Constructs a new <code>SeparatorUI</code>.
+   * Constructs a new <code>SpinnerUI</code>.
    */
-  public SeparatorUI()
+  public SpinnerUI()
   {
   }
 }
