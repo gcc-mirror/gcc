@@ -1650,6 +1650,13 @@
 }"
   [(set_attr "length" "2")])
 
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (not:SI (match_operand:SI 1 "register_operand" "r"))
+		 (match_operand:SI 2 "register_operand" "r")))]
+  ""
+  "uaddcm %2,%1,%0")
+
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(plus:SI (match_operand:SI 1 "register_operand" "%r,r")
@@ -1966,6 +1973,18 @@
   "or %1,%2,%0\;or %R1,%R2,%R0"
   [(set_attr "length" "2")])
 
+;; Need a define_expand because we've run out of CONST_OK... characters.
+(define_expand "iorsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(ior:SI (match_operand:SI 1 "register_operand" "")
+		(match_operand:SI 2 "arith32_operand" "")))]
+  ""
+  "
+{
+  if (! (ior_operand (operands[2]) || register_operand (operands[2])))
+    operands[2] = force_reg (SImode, operands[2]);
+}")
+
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ior:SI (match_operand:SI 1 "register_operand" "0")
@@ -1973,12 +1992,12 @@
   ""
   "* return output_ior (operands); ")
 
-(define_insn "iorsi3"
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ior:SI (match_operand:SI 1 "register_operand" "%r")
 		(match_operand:SI 2 "register_operand" "r")))]
   ""
-  "* return output_ior (operands); ")
+  "or %1,%2,%0")
 
 (define_expand "xordi3"
   [(set (match_operand:DI 0 "register_operand" "")
