@@ -1,5 +1,9 @@
 2001-02-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* extend.texi (Deprecated): Deprecate new initializer lists.
+
+2001-02-12  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* mkdeps.c (deps_add_default_target): Robustify. Add
 	basename component only.
 	* cpp.texi (-M): Describe how default target is generated.
