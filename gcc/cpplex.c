@@ -76,8 +76,8 @@ static void parse_number PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *));
 static void parse_string2 PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *,
 				  unsigned int, int));
 static int trigraph_ok PARAMS ((cpp_reader *, const unsigned char *));
-static void save_comment PARAMS ((cpp_toklist *, const unsigned char *,
-				  unsigned int, unsigned int, unsigned int));
+static void save_comment PARAMS ((cpp_toklist *, cpp_token *, unsigned char *,
+				  unsigned int, unsigned int));
 void _cpp_lex_line PARAMS ((cpp_reader *, cpp_toklist *));
 
 static void _cpp_output_list PARAMS ((cpp_reader *, cpp_toklist *));
@@ -599,10 +599,6 @@ _cpp_init_toklist (list, flags)
   /* Allocate name space.  */
   list->namebuf = (unsigned char *) xmalloc (list->name_cap);
 
-  /* Only create a comment space on demand.  */
-  list->comments_cap = 0;
-  list->comments = 0;
-
   _cpp_clear_toklist (list);
 }
 
@@ -613,7 +609,6 @@ _cpp_clear_toklist (list)
 {
   list->tokens_used = 0;
   list->name_used = 0;
-  list->comments_used = 0;
   list->dirno = -1;
   list->flags &= LIST_OFFSET;  /* clear all but that one */
 }
@@ -624,8 +619,6 @@ void
 _cpp_free_toklist (list)
      cpp_toklist *list;
 {
-  if (list->comments)
-    free (list->comments);
   if (list->flags & LIST_OFFSET)
     free (list->tokens - 1);	/* Backup over dummy token.  */
   else
@@ -669,9 +662,6 @@ _cpp_slice_toklist (copy, start, finish)
   copy->tokens_used = n;
   copy->name_used = bytes;
   copy->name_cap = bytes;
-  copy->comments = 0;
-  copy->comments_cap = 0;
-  copy->comments_used = 0;
   
   copy->flags = 0;
   copy->dirno = -1;
@@ -712,13 +702,6 @@ _cpp_squeeze_toklist (list)
       for (i = 0; i < list->tokens_used; i++)
 	if (token_spellings[list->tokens[i].type].type > SPELL_NONE)
 	  list->tokens[i].val.name.text += delta;
-    }
-  
-  if (list->comments_cap)
-    {
-      list->comments = xrealloc (list->comments,
-				 list->comments_used * sizeof (cpp_token));
-      list->comments_cap = list->comments_used;
     }
 }
 
@@ -2360,24 +2343,6 @@ static const unsigned char *digraph_spellings [] = {U"%:", U"%:%:", U"<:",
 						    U":>", U"<%", U"%>"};
 static unsigned char trigraph_map[256];
 
-static void
-expand_comment_space (list)
-     cpp_toklist *list;
-{
-  if (list->comments_cap == 0)
-    {
-      list->comments_cap = 10;
-      list->comments = (cpp_token *)
-	xmalloc (list->comments_cap * sizeof (cpp_token));
-    }
-  else
-    {
-      list->comments_cap *= 2;
-      list->comments = (cpp_token *)
-	xrealloc (list->comments, list->comments_cap);
-    }
-}
-
 void
 init_trigraph_map ()
 {
@@ -2864,29 +2829,23 @@ parse_string2 (pfile, list, name, terminator, multiline_ok)
 
 #define COMMENT_START_LEN 2
 static void
-save_comment (list, from, len, tok_no, type)
+save_comment (list, token, from, len, type)
      cpp_toklist *list;
+     cpp_token *token;
      const unsigned char *from;
      unsigned int len;
-     unsigned int tok_no;
      unsigned int type;
 {
-  cpp_token *comment;
   unsigned char *buffer;
   
   len += COMMENT_START_LEN;
 
-  if (list->comments_used == list->comments_cap)
-    expand_comment_space (list);
-
   if (list->name_used + len > list->name_cap)
     expand_name_space (list, len);
 
-  comment = &list->comments[list->comments_used++];
-  INIT_TOKEN_NAME (list, comment);
-  comment->type = CPP_COMMENT;
-  comment->aux = tok_no;
-  comment->val.name.len = len;
+  INIT_TOKEN_NAME (list, token);
+  token->type = CPP_COMMENT;
+  token->val.name.len = len;
 
   buffer = list->namebuf + list->name_used;
   list->name_used += len;
@@ -3078,15 +3037,18 @@ _cpp_lex_line (pfile, list)
 			cpp_error_with_line (pfile, list->line,
 					     cur_token[-1].col,
 					     "multi-line comment");
-		      if (!CPP_OPTION (pfile, discard_comments))
-			save_comment (list, cur, buffer->cur - cur,
-				      cur_token - 1 - list->tokens, c);
-		      cur = buffer->cur;
 
 		      /* Back-up to first '-' or '/'.  */
-		      cur_token -= 2;
+		      cur_token--;
+		      if (!CPP_OPTION (pfile, discard_comments)
+			  && (!IS_DIRECTIVE() || list->dirno == 0))
+			save_comment (list, cur_token++, cur,
+				      buffer->cur - cur, c);
+		      cur = buffer->cur;
+
 		      if (!CPP_OPTION (pfile, traditional))
 			flags = PREV_WHITESPACE;
+		      break;
 		    }
 		}
 	    }
@@ -3109,12 +3071,15 @@ _cpp_lex_line (pfile, list)
 		  else if (buffer->cur[-2] != '*')
 		    cpp_warning (pfile,
 				 "comment end '*/' split across lines");
-		  if (!CPP_OPTION (pfile, discard_comments))
-		    save_comment (list, cur, buffer->cur - cur,
-				 cur_token - 1 - list->tokens, c);
+
+		  /* Back up to opening '/'.  */
+		  cur_token--;
+		  if (!CPP_OPTION (pfile, discard_comments)
+		      && (!IS_DIRECTIVE() || list->dirno == 0))
+		    save_comment (list, cur_token++, cur,
+				  buffer->cur - cur, c);
 		  cur = buffer->cur;
 
-		  cur_token--;
 		  if (!CPP_OPTION (pfile, traditional))
 		    flags = PREV_WHITESPACE;
 		  break;
@@ -3495,32 +3460,11 @@ _cpp_output_list (pfile, list)
      cpp_reader *pfile;
      cpp_toklist *list;
 {
-  cpp_token *token, *comment, *comment_before = 0;
-
-  if (list->comments_used > 0)
-    {
-      comment = &list->comments[0];
-      comment_before = &list->tokens[comment->aux];
-    }
+  cpp_token *token;
 
   token = &list->tokens[0];
   do
     {
-      /* Output comments if -C.  */
-      while (token == comment_before)
-	{
-	  /* Make space for the comment, and copy it out.  */
-	  CPP_RESERVE (pfile, TOKEN_LEN (comment));
-	  pfile->limit = spell_token (pfile, comment, pfile->limit, 0);
-
-	  /* Stop if no comments left, or no more comments appear
-             before the current token.  */
-	  comment++;
-	  if (comment == list->comments + list->comments_used)
-	    break;
-	  comment_before = &list->tokens[comment->aux];
-	}
-
       CPP_RESERVE (pfile, TOKEN_LEN (token));
       pfile->limit = spell_token (pfile, token, pfile->limit, 1);
     }

@@ -1,5 +1,16 @@
 2000-05-28  Neil Booth  <NeilB@earthling.net>
 
+        * cpplex.c (_cpp_init_toklist): No comment space to initialise.
+	(_cpp_free_toklist): No comment space to free.
+	(expand_comment_space): Remove.
+        (save_comment_space): Place the comment in the current token and
+        not in a separate comment space.
+        (_cpp_lex_line): Save comments during plain code and #define
+        directives only.
+        * cpplib.h (struct _cpp_toklist): Remove comment space.
+
+2000-05-28  Neil Booth  <NeilB@earthling.net>
+
 	* cppexp.c (parse_assertion): Supply extra argument to
 	_cpp_init_toklist.
 	* cpplib.c (do_assert, do_unassert): Similarly.
