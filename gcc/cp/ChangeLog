@@ -1,3 +1,9 @@
+2002-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/6179
+	* method.c (implicitly_declare_fn): Pass unqualified type to 
+	synthesize_exception_spec.
+
 2002-04-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/525
