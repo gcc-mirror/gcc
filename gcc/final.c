@@ -625,12 +625,49 @@ int insn_last_address;
 /* konwn invariant alignment of insn being processed.  */
 int insn_current_align;
 
+/* After shorten_branches, for any insn, uid_align[INSN_UID (insn)]
+   gives the next following alignment insn that increases the known
+   alignment, or NULL_RTX if there is no such insn.
+   For any alignment obtained this way, we can again index uid_align with
+   its uid to obtain the next following align that in turn increases the
+   alignment, till we reach NULL_RTX; the sequence obtained this way
+   for each insn we'll call the alignment chain of this insn in the following
+   comments.  */
+
+rtx *uid_align;
+int *uid_shuid;
+short *label_align;
+
 /* Indicate that branch shortening hasn't yet been done.  */
 
 void
 init_insn_lengths ()
 {
-  insn_lengths = 0;
+  if (label_align)
+    {
+      free (label_align);
+      label_align = 0;
+    }
+  if (uid_shuid)
+    {
+      free (uid_shuid);
+      uid_shuid = 0;
+    }
+  if (insn_lengths)
+    {
+      free (insn_lengths);
+      insn_lengths = 0;
+    }
+  if (insn_addresses)
+    {
+      free (insn_addresses);
+      insn_addresses = 0;
+    }
+  if (uid_align)
+    {
+      free (uid_align);
+      uid_align = 0;
+    }
 }
 
 /* Obtain the current length of an insn.  If branch shortening has been done,
@@ -768,19 +805,6 @@ final_addr_vec_align (addr_vec)
 #ifndef INSN_LENGTH_ALIGNMENT
 #define INSN_LENGTH_ALIGNMENT(INSN) length_unit_log
 #endif
-
-/* For any insn, uid_align[INSN_UID (insn)] gives the next following
-   alignment insn that increases the known alignment, or NULL_RTX if
-   there is no such insn.
-   For any alignment obtained this way, we can again index uid_align with
-   its uid to obtain the next following align that in turn increases the
-   alignment, till we reach NULL_RTX; the sequence obtained this way
-   for each insn we'll call the alignment chain of this insn in the following
-   comments.  */
-
-rtx *uid_align;
-int *uid_shuid;
-short *label_align; /* sh.c needs this to calculate constant tables.  */
 
 #define INSN_SHUID(INSN) (uid_shuid[INSN_UID (INSN)])
 
@@ -955,19 +979,17 @@ shorten_branches (first)
   /* We must do some computations even when not actually shortening, in
      order to get the alignment information for the labels.  */
 
+  init_insn_lengths ();
+
   /* Compute maximum UID and allocate label_align / uid_shuid.  */
   max_uid = get_max_uid ();
 
   max_labelno = max_label_num ();
   min_labelno = get_first_label_num ();
-  if (label_align)
-    free (label_align);
   label_align
     = (short*) xmalloc ((max_labelno - min_labelno + 1) * sizeof (short));
   bzero (label_align, (max_labelno - min_labelno + 1) * sizeof (short));
 
-  if (uid_shuid)
-    free (uid_shuid);
   uid_shuid = (int *) xmalloc (max_uid * sizeof *uid_shuid);
 
   /* Initialize label_align and set up uid_shuid to be strictly
@@ -1050,17 +1072,11 @@ shorten_branches (first)
 #ifdef HAVE_ATTR_length
 
   /* Allocate the rest of the arrays.  */
-  if (insn_lengths)
-    free (insn_lengths);
   insn_lengths = (short *) xmalloc (max_uid * sizeof (short));
-  if (insn_addresses)
-    free (insn_addresses);
   insn_addresses = (int *) xmalloc (max_uid * sizeof (int));
   /* Syntax errors can lead to labels being outside of the main insn stream.
      Initialize insn_addresses, so that we get reproducible results.  */
   bzero ((char *)insn_addresses, max_uid * sizeof *insn_addresses);
-  if (uid_align)
-    free (uid_align);
   uid_align = (rtx *) xmalloc (max_uid * sizeof *uid_align);
 
   varying_length = (char *) xmalloc (max_uid * sizeof (char));
