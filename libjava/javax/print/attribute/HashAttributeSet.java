@@ -1,5 +1,5 @@
 /* HashAttributeSet.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -232,7 +232,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    *
    * @param category the category to test for
    *
-   * @result true if the category exists in this attribute set, false otherwise.
+   * @return true if the category exists in this attribute set, false otherwise.
    */
   public boolean containsKey(Class category)
   {
@@ -244,7 +244,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    *
    * @param attribute the attribute to test for
    *
-   * @result true if the attribute exists in this attribute set,
+   * @return true if the attribute exists in this attribute set,
    * false otherwise.
    */
   public boolean containsValue(Attribute attribute)
@@ -257,7 +257,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    *
    * @param obj the object to test
    *
-   * @returns true if both objects are equal, false otherwise.
+   * @return true if both objects are equal, false otherwise.
    */
   public boolean equals(Object obj)
   {
