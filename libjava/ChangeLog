@@ -1,5 +1,9 @@
 2004-11-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/Socket.java (getPort): Return 0 in error case.
+
+2004-11-17  Michael Koch  <konqueror@gmx.de>
+
 	*  java/nio/DirectByteBufferImpl.java
 	(owner): Updated comment.
 	(allocate): New method.

@@ -538,7 +538,7 @@ public class Socket
 	// This cannot happen as we are connected.
       }
 
-    return -1;
+    return 0;
   }
 
   /**
