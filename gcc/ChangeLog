@@ -1,3 +1,10 @@
+2002-03-28  Richard Henderson  <rth@redhat.com>
+
+	* c-decl.c (finish_function): New arg can_defer_p.  Pass it
+	on to c_expand_body.
+	* c-tree.h (finish_function): Update decl.
+	* c-objc-common.c, c-parse.in, objc/objc-act.c: Update calls.
+
 Thu Mar 28 19:13:36 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* ifcvt.c (if_convert): Clear aux_for_blocks early enought.

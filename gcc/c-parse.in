@@ -394,7 +394,7 @@ fndef:
 	  save_filename save_lineno compstmt_or_error
 		{ DECL_SOURCE_FILE (current_function_decl) = $7;
 		  DECL_SOURCE_LINE (current_function_decl) = $8;
-		  finish_function (0); 
+		  finish_function (0, 1); 
 		  POP_DECLSPEC_STACK; }
 	| declspecs_ts setspecs declarator error
 		{ POP_DECLSPEC_STACK; }
@@ -408,7 +408,7 @@ fndef:
 	  save_filename save_lineno compstmt_or_error
 		{ DECL_SOURCE_FILE (current_function_decl) = $7;
 		  DECL_SOURCE_LINE (current_function_decl) = $8;
-		  finish_function (0); 
+		  finish_function (0, 1); 
 		  POP_DECLSPEC_STACK; }
 	| declspecs_nots setspecs notype_declarator error
 		{ POP_DECLSPEC_STACK; }
@@ -422,7 +422,7 @@ fndef:
 	  save_filename save_lineno compstmt_or_error
 		{ DECL_SOURCE_FILE (current_function_decl) = $6;
 		  DECL_SOURCE_LINE (current_function_decl) = $7;
-		  finish_function (0); 
+		  finish_function (0, 1); 
 		  POP_DECLSPEC_STACK; }
 	| setspecs notype_declarator error
 		{ POP_DECLSPEC_STACK; }
@@ -1586,7 +1586,7 @@ nested_function:
 		{ tree decl = current_function_decl;
 		  DECL_SOURCE_FILE (decl) = $5;
 		  DECL_SOURCE_LINE (decl) = $6;
-		  finish_function (1);
+		  finish_function (1, 1);
 		  pop_function_context (); 
 		  add_decl_stmt (decl); }
 	;
@@ -1616,7 +1616,7 @@ notype_nested_function:
 		{ tree decl = current_function_decl;
 		  DECL_SOURCE_FILE (decl) = $5;
 		  DECL_SOURCE_LINE (decl) = $6;
-		  finish_function (1);
+		  finish_function (1, 1);
 		  pop_function_context (); 
 		  add_decl_stmt (decl); }
 	;
