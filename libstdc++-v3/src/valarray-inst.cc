@@ -35,7 +35,7 @@
 
 namespace std
 {
-  // Some explicit instanciations.
+  // Some explicit instantiations.
   template void
      __valarray_fill(size_t* __restrict__, size_t, const size_t&);
   
@@ -112,7 +112,5 @@ namespace std
                              const valarray<size_t>& __s)
       : _M_count(1), _M_start(__o), _M_size(__l), _M_stride(__s),
         _M_index(__l.size() == 0 ? 0 : __valarray_product(__l))
-  { __gslice_to_index(__o, __l, __s, _M_index); }
-  
+  { __gslice_to_index(__o, __l, __s, _M_index); }  
 } // namespace std
-

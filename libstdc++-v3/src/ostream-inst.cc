@@ -73,4 +73,4 @@ namespace std
   template wostream& operator<<(wostream&, _Setprecision);
   template wostream& operator<<(wostream&, _Setw);
 #endif
-} //std
+} // namespace std
