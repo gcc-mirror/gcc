@@ -1,3 +1,8 @@
+2000-03-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppfiles.c (cpp_read_file): Don't pass zero-length string to
+	_cpp_calc_hash.
+
 2000-03-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (gen_enumeration_type_die): If enum has a negative

@@ -623,7 +623,11 @@ cpp_read_file (pfile, fname)
     fname = "";
 
   dummy.nshort = fname;
-  dummy.hash = _cpp_calc_hash (fname, strlen (fname));
+  /* _cpp_calc_hash doesn't like zero-length strings.  */
+  if (*fname == 0)
+    dummy.hash = 0;
+  else
+    dummy.hash = _cpp_calc_hash (fname, strlen (fname));
   slot = (IHASH **) htab_find_slot_with_hash (pfile->all_include_files,
 					      (const void *) &dummy,
 					      dummy.hash, 1);
