@@ -2378,3 +2378,7 @@ do {							\
 
 /* The system headers under Alpha systems are generally C++-aware.  */
 #define NO_IMPLICIT_EXTERN_C
+
+/* Prototypes for alpha.c functions used in the md file.  */
+extern struct rtx_def *get_unaligned_address ();
+ 

@@ -1321,8 +1321,7 @@
 		     (const_int 56)))]
   ""
   "
-{ extern rtx get_unaligned_address ();
-
+{
   if (TARGET_BWX)
     {
       emit_insn (gen_extendqidi2x (operands[0],
@@ -1387,8 +1386,7 @@
 		     (const_int 48)))]
   ""
   "
-{ extern rtx get_unaligned_address ();
-
+{
   if (TARGET_BWX)
     {
       emit_insn (gen_extendhidi2x (operands[0],
@@ -4487,8 +4485,7 @@
 	(match_operand:QI 1 "general_operand" ""))]
   ""
   "
-{ extern rtx get_unaligned_address ();
-
+{
   if (TARGET_BWX)
     {
       if (GET_CODE (operands[0]) == MEM
@@ -4531,18 +4528,6 @@
 	  rtx scratch = (reload_in_progress
 			 ? gen_rtx_REG (SImode, REGNO (operands[0]))
 			 : gen_reg_rtx (SImode));
-
-	  /* ??? This code creates a new MEM rtx.  If we were called during
-	     reload, then we must be careful to make sure that the new rtx
-	     will not need reloading.  */
-	  if (reload_in_progress
-	      && GET_CODE (operands[1]) == MEM
-	      && ! strict_memory_address_p (SImode, XEXP (operands[1], 0)))
-	    {
-	      rtx tmp = gen_rtx_REG (Pmode, REGNO (operands[0]));
-	      emit_insn (gen_move_insn (tmp, XEXP (operands[1], 0)));
-	      XEXP (operands[1], 0) = tmp;
-	    }
 
 	  get_aligned_mem (operands[1], &aligned_mem, &bitnum);
 
@@ -4611,8 +4596,7 @@
 	(match_operand:HI 1 "general_operand" ""))]
   ""
   "
-{ extern rtx get_unaligned_address ();
-
+{
   if (TARGET_BWX)
     {
       if (GET_CODE (operands[0]) == MEM
@@ -4655,18 +4639,6 @@
 	  rtx scratch = (reload_in_progress
 			 ? gen_rtx_REG (SImode, REGNO (operands[0]))
 			 : gen_reg_rtx (SImode));
-
-	  /* ??? This code creates a new MEM rtx.  If we were called during
-	     reload, then we must be careful to make sure that the new rtx
-	     will not need reloading.  */
-	  if (reload_in_progress
-	      && GET_CODE (operands[1]) == MEM
-	      && ! strict_memory_address_p (SImode, XEXP (operands[1], 0)))
-	    {
-	      rtx tmp = gen_rtx_REG (Pmode, REGNO (operands[0]));
-	      emit_insn (gen_move_insn (tmp, XEXP (operands[1], 0)));
-	      XEXP (operands[1], 0) = tmp;
-	    }
 
 	  get_aligned_mem (operands[1], &aligned_mem, &bitnum);
 
@@ -4741,28 +4713,18 @@
 	      (match_operand:TI 2 "register_operand" "=&r")])]
   "! TARGET_BWX"
   "
-{ extern rtx get_unaligned_address ();
-  rtx addr, scratch, seq, tmp;
+{
+  rtx addr = get_unaligned_address (operands[1], 0);
 
   /* It is possible that one of the registers we got for operands[2]
      might coincide with that of operands[0] (which is why we made
      it TImode).  Pick the other one to use as our scratch.  */
-  scratch = gen_rtx_REG (DImode,
-			 REGNO (operands[0]) == REGNO (operands[2]) 
-			 ? REGNO (operands[2]) + 1 : REGNO (operands[2]));
+  rtx scratch = gen_rtx_REG (DImode,
+			     REGNO (operands[0]) == REGNO (operands[2]) 
+			     ? REGNO (operands[2]) + 1 : REGNO (operands[2]));
 
-  /* We must be careful to make sure that the new rtx won't need reloading.  */
-  if (GET_CODE (operands[1]) == MEM &&
-      ! strict_memory_address_p (DImode, XEXP (operands[1], 0)))
-    {
-      tmp = gen_rtx_REG (Pmode, REGNO (operands[0]));
-      emit_insn (gen_move_insn (tmp, XEXP (operands[1], 0)));
-      XEXP (operands[1], 0) = tmp;
-    }
-  addr = get_unaligned_address (operands[1], 0);
-
-  seq = gen_unaligned_loadqi (operands[0], addr, scratch,
-			      gen_rtx_REG (DImode, REGNO (operands[0])));
+  rtx seq = gen_unaligned_loadqi (operands[0], addr, scratch,
+				  gen_rtx_REG (DImode, REGNO (operands[0])));
 
   alpha_set_memflags (seq, operands[1]);
   emit_insn (seq);
@@ -4775,28 +4737,18 @@
 	      (match_operand:TI 2 "register_operand" "=&r")])]
   "! TARGET_BWX"
   "
-{ extern rtx get_unaligned_address ();
-  rtx scratch, seq, tmp, addr;
+{
+  rtx addr = get_unaligned_address (operands[1], 0);
 
   /* It is possible that one of the registers we got for operands[2]
      might coincide with that of operands[0] (which is why we made
      it TImode).  Pick the other one to use as our scratch.  */
-  scratch = gen_rtx_REG (DImode,
-			 REGNO (operands[0]) == REGNO (operands[2]) 
-			 ? REGNO (operands[2]) + 1 : REGNO (operands[2]));
+  rtx scratch = gen_rtx_REG (DImode,
+			     REGNO (operands[0]) == REGNO (operands[2]) 
+			     ? REGNO (operands[2]) + 1 : REGNO (operands[2]));
 
-  /* We must be careful to make sure that the new rtx won't need reloading.  */
-  if (GET_CODE (operands[1]) == MEM &&
-      ! strict_memory_address_p (DImode, XEXP (operands[1], 0)))
-    {
-      tmp = gen_rtx_REG (Pmode, REGNO (operands[0]));
-      emit_insn (gen_move_insn (tmp, XEXP (operands[1], 0)));
-      XEXP (operands[1], 0) = tmp;
-    }
-  addr = get_unaligned_address (operands[1], 0);
-
-  seq = gen_unaligned_loadhi (operands[0], addr, scratch,
-			      gen_rtx_REG (DImode, REGNO (operands[0])));
+  rtx seq = gen_unaligned_loadhi (operands[0], addr, scratch,
+				  gen_rtx_REG (DImode, REGNO (operands[0])));
 
   alpha_set_memflags (seq, operands[1]);
   emit_insn (seq);
@@ -4809,17 +4761,7 @@
 	      (match_operand:TI 2 "register_operand" "=&r")])]
   "! TARGET_BWX"
   "
-{ extern rtx get_unaligned_address ();
-
-  /* Note that any_memory_operand allows pseudos during reload.  */
-  if (GET_CODE (operands[0]) == MEM &&
-      ! strict_memory_address_p (DImode, XEXP (operands[0], 0)))
-    {
-      rtx scratch1 = gen_rtx_REG (DImode, REGNO (operands[2]));
-      emit_insn (gen_move_insn (scratch1, XEXP (operands[0], 0)));
-      XEXP (operands[0], 0) = scratch1;
-    }
-
+{
   if (aligned_memory_operand (operands[0], QImode))
     {
       rtx aligned_mem, bitnum;
@@ -4857,17 +4799,7 @@
 	      (match_operand:TI 2 "register_operand" "=&r")])]
   "! TARGET_BWX"
   "
-{ extern rtx get_unaligned_address ();
-
-  /* Note that any_memory_operand allows pseudos during reload.  */
-  if (GET_CODE (operands[0]) == MEM &&
-      ! strict_memory_address_p (DImode, XEXP (operands[0], 0)))
-    {
-      rtx scratch1 = gen_rtx_REG (DImode, REGNO (operands[2]));
-      emit_insn (gen_move_insn (scratch1, XEXP (operands[0], 0)));
-      XEXP (operands[0], 0) = scratch1;
-    }
-
+{
   if (aligned_memory_operand (operands[0], HImode))
     {
       rtx aligned_mem, bitnum;

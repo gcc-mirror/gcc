@@ -1,3 +1,9 @@
+Tue Apr 14 23:39:13 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md: Revert Oct 27 change, as it is superceeded by Kenner's
+	Nov 8 find_replacement change.  Move decls of get_unaligned_address
+	* alpha.h: ... here.
+
 Tue Apr 14 22:00:39 1998  John Carr <jfc@mit.edu>
 
 	* function.c (assign_parms): Initialize unsignedp before passing
