@@ -1,3 +1,8 @@
+2003-10-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-common.c (expand_tree_builtin): Ensure creal and cimag
+	functions do not return lvalues.
+
 2003-10-20  Jason Merrill  <jason@redhat.com>
 
 	PR c/12553
