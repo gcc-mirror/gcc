@@ -1,3 +1,7 @@
+2002-05-03  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (grokdeclarator): Revert last change.
+
 2002-05-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* init.c (perform_base_cleanups): Correct order of base class

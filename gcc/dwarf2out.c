@@ -11045,6 +11045,7 @@ gen_type_die (type, context_die)
     return;
 
   if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+      && TREE_TYPE (TYPE_NAME (type)) == type
       && DECL_ORIGINAL_TYPE (TYPE_NAME (type)))
     {
       TREE_ASM_WRITTEN (type) = 1;
