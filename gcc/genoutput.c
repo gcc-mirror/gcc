@@ -160,6 +160,7 @@ struct data
   const char *template;
   int code_number;
   int index_number;
+  const char *filename;
   int lineno;
   int n_operands;		/* Number of operands this insn recognizes */
   int n_dups;			/* Number times match_dup appears in pattern */
@@ -291,6 +292,7 @@ output_insn_data (void)
 
   for (d = idata; d; d = d->next)
     {
+      printf ("  /* %s:%d */\n", d->filename, d->lineno);
       printf ("  {\n");
 
       if (d->name)
@@ -823,6 +825,7 @@ gen_insn (rtx insn, int lineno)
 
   d->code_number = next_code_number;
   d->index_number = next_index_number;
+  d->filename = read_rtx_filename;
   d->lineno = lineno;
   if (XSTR (insn, 0)[0])
     d->name = XSTR (insn, 0);
@@ -864,6 +867,7 @@ gen_peephole (rtx peep, int lineno)
 
   d->code_number = next_code_number;
   d->index_number = next_index_number;
+  d->filename = read_rtx_filename;
   d->lineno = lineno;
   d->name = 0;
 
@@ -902,6 +906,7 @@ gen_expand (rtx insn, int lineno)
 
   d->code_number = next_code_number;
   d->index_number = next_index_number;
+  d->filename = read_rtx_filename;
   d->lineno = lineno;
   if (XSTR (insn, 0)[0])
     d->name = XSTR (insn, 0);
@@ -945,6 +950,7 @@ gen_split (rtx split, int lineno)
 
   d->code_number = next_code_number;
   d->index_number = next_index_number;
+  d->filename = read_rtx_filename;
   d->lineno = lineno;
   d->name = 0;
 
