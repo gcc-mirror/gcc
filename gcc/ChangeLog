@@ -1,3 +1,8 @@
+2003-06-29 Uwe Stieber <uwe@kaos-group.de>
+
+	* config.gcc (sh*-*-kaos*): Put tm_file setting in separate case
+	statement from tmake_file set.
+
 2003-06-29  James E Wilson  <wilson@tuliptree.org>
 
 	* reload.c (find_reloads): Change push_reloads to push_reload in
