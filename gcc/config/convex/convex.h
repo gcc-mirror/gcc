@@ -45,7 +45,7 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #ifndef TARGET_DEFAULT
-#error Use one of convex1.h, convex2.h, etc.
+#define TARGET_DEFAULT 0
 #endif
 
 #define TARGET_SWITCHES \
@@ -62,7 +62,7 @@ extern int target_flags;
     { "volatile-nocache", 0400 }, \
     { "long64", 01000 }, \
     { "long32", -01000 }, \
-    { "", TARGET_DEFAULT }}
+    { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
 
 /* Macros used in the machine description to test the flags.  */
 
@@ -81,8 +81,8 @@ extern int target_flags;
   init_convex ();							\
   /* To compile system header files, allow $ in identifiers even if -ansi */ \
   dollars_in_ident = 1;							\
-  if ((target_flags & 077) != (TARGET_DEFAULT & 077))			\
-    target_flags &= ~TARGET_DEFAULT;					\
+  if ((target_flags & 077) != ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & 077)) \
+    target_flags &= ~ (TARGET_DEFAULT | TARGET_CPU_DEFAULT);		\
   if (target_flags & 001)						\
     target_cpu = 0;							\
   else if (target_flags & 006)						\
@@ -106,7 +106,7 @@ extern int target_flags;
    Make a target-dependent __convex_cxx__ define to relay the target cpu
    to the program being compiled. */
 
-#if TARGET_DEFAULT & 1
+#if (TARGET_DEFAULT | TARGET_CPU_DEFAULT) & 1
 
 /* C1 default */
 
@@ -158,7 +158,7 @@ extern int target_flags;
 
 #endif
 
-#if TARGET_DEFAULT & 2
+#if (TARGET_DEFAULT | TARGET_CPU_DEFAULT) & 2
 
 /* C2 default */
 
@@ -210,7 +210,7 @@ extern int target_flags;
 
 #endif
 
-#if TARGET_DEFAULT & 4
+#if (TARGET_DEFAULT | TARGET_CPU_DEFAULT) & 4
 
 /* C32 default */
 
@@ -262,7 +262,7 @@ extern int target_flags;
 
 #endif
 
-#if TARGET_DEFAULT & 010
+#if (TARGET_DEFAULT | TARGET_CPU_DEFAULT) & 010
 
 /* C34 default */
 
@@ -314,7 +314,7 @@ extern int target_flags;
 
 #endif
 
-#if TARGET_DEFAULT & 020
+#if (TARGET_DEFAULT | TARGET_CPU_DEFAULT) & 020
 
 /* C38 default */
 
