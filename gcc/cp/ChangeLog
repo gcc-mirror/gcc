@@ -1,6 +1,6 @@
 2004-08-01  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/16338
+	PR c++/16489
 	* cp-tree.h (DECL_INTEGRAL_CONSTANT_VAR_P): New macro.
 	* call.c (null_ptr_cst_p): Handle variables with constant
 	initializers.
@@ -8,7 +8,7 @@
 	DECL_INTEGRAL_CONSTANT_VAR_P.
 	* semantics.c (finish_id_expression): Likewise.
 
-	PR c++/16489
+	PR c++/16529
 	* decl.c (duplicate_decls): Reject duplicate namespace
 	declarations.
 
