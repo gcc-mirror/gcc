@@ -4,6 +4,8 @@
 # markup to Perl POD format.  It's intended to be used to extract
 # something suitable for a manpage from a Texinfo document.
 
+use v5.6.0;
+
 $output = 0;
 $skipping = 0;
 %sects = ();

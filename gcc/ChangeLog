@@ -1,3 +1,9 @@
+2001-01-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* configure.in: Require at least perl 5.6.0 to regenerate
+	manpages.
+	* configure: Regenerate.
+
 2001-01-14  Richard Henderson  <rth@redhat.com>
 
 	* genrecog.c (DT_veclen_ge): New.
