@@ -1,3 +1,8 @@
+2003-11-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_put::do_put(..., bool)):
+	Minor tweaks, consistent with the style used in other facets.
+
 2003-11-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/fstream.tcc (underflow): Minor tweaks in
