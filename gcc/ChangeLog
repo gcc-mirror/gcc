@@ -9,6 +9,9 @@ Tue Dec  1 10:22:18 1998  Nick Clifton  <nickc@cygnus.com>
 
 Tue Dec  1 17:58:26 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
+	* reload1.c (emit_reload_insns): Clear spill_reg_store
+	when doing a new non-inherited reload from the same pseudo.
+
 	* local-alloc.c (function_invariant_p): New function.
 	(update_equiv_regs): Use function_invariant_p instead of CONSTANT_P
 	to decide if an equivalence should be recorded.
