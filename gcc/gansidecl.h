@@ -34,6 +34,19 @@ Boston, MA 02111-1307, USA.  */
 #define VPROTO(ARGS) VPARAMS(ARGS)
 #define PVPROTO(ARGS) PARAMS(ARGS)
 
+/* Autoconf will possibly define the `inline' or `const' keywords as
+   macros, however this is only valid for the stage1 compiler.  If we
+   detect a modern version of gcc, unconditionally reset the values.
+   This makes sure the right thing happens in stage2 and later.  We
+   need to do this very early; i.e. before any systems header files or
+   gcc header files in case they use these keywords.  Otherwise
+   conflicts might occur. */
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
+# undef const
+# undef inline
+# define inline __inline__  /* Modern gcc can use `__inline__' freely. */
+#endif /* GCC >= 2.7 */
+
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 # define __attribute__(x)
 #endif

@@ -1,3 +1,10 @@
+Sun Mar  7 08:05:27 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (const, inline): Move the stage2 handling of these
+ 	keywords-as-macros from here...
+
+	* gansidecl.h (const, inline): ...to here.
+
 Sun Mar  7 02:44:15 1999  Richard Henderson  <rth@cygnus.com>
 
 	* recog.c (push_operand, pop_operand): VOIDmode needn't match modes.
