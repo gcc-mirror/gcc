@@ -1,3 +1,8 @@
+2001-11-02  Aldy Hernandez  <aldyh@redhat.com>
+
+        * expmed.c (store_bit_field): Use simplify_gen_subreg to make
+        SUBREG so we avoid SUBREGing memory.
+
 2001-11-02  DJ Delorie  <dj@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_move): Make sure that
