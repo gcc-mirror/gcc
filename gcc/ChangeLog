@@ -1,3 +1,12 @@
+2005-01-01  Steven Bosscher  <stevenb@suse.de>
+
+	PR middle-end/17544
+	* c-decl.c (finish_function): If compiling C99, annotate the
+	compiler generated return with the current file name and line 0.
+	* tree-cfg.c (remove_useless_stmts_warn_notreached): Only warn if
+	the source line is greater than 0.
+	(remove_bb): Likewise.
+
 2004-12-31  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/19042

@@ -1,6 +1,6 @@
 /* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004  Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004,2005  Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -10635,12 +10635,19 @@ finish_function (int flags)
     {
       if (DECL_MAIN_P (current_function_decl))
 	{
-	  /* Make it so that `main' always returns 0 by default.  */
+	  tree stmt;
+
+	  /* Make it so that `main' always returns 0 by default (or
+	     1 for VMS).  */
 #if VMS_TARGET
-	  finish_return_stmt (integer_one_node);
+	  stmt = finish_return_stmt (integer_one_node);
 #else
-	  finish_return_stmt (integer_zero_node);
+	  stmt = finish_return_stmt (integer_zero_node);
 #endif
+	  /* Hack.  We don't want the middle-end to warn that this
+	     return is unreachable, so put the statement on the
+	     special line 0.  */
+	  annotate_with_file_line (stmt, input_filename, 0);
 	}
 
       /* Finish dealing with exception specifiers.  */
