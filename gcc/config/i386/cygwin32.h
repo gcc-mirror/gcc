@@ -202,3 +202,11 @@ while (0)
    stabs entry for the function name first.  */
 
 #define DBX_FUNCTION_FIRST
+
+/* This is how to output an assembler line
+   that says to advance the location counter
+   to a multiple of 2**LOG bytes.  */
+
+#undef ASM_OUTPUT_ALIGN
+#define ASM_OUTPUT_ALIGN(FILE,LOG)	\
+    if ((LOG)!=0) fprintf ((FILE), "\t.align %d\n", 1<<(LOG))
