@@ -976,7 +976,7 @@ package body Prj.Nmsc is
                   Naming.Dot_Repl_Loc);
             end if;
 
-            --  Suffixs cannot
+            --  Suffixes cannot
             --   - be empty
             --   - start with an alphanumeric
             --   - start with an '_' followed by an alphanumeric
@@ -1952,7 +1952,8 @@ package body Prj.Nmsc is
 
             if not MLib.Tgt.Libraries_Are_Supported then
                Error_Msg ("?libraries are not supported on this platform",
-                           Lib_Name.Location);
+                          Lib_Name.Location);
+               Data.Library := False;
 
             else
                if Current_Verbosity = High then
@@ -1983,12 +1984,11 @@ package body Prj.Nmsc is
 
                   declare
                      Kind_Name : constant String :=
-                       To_Lower (Name_Buffer (1 .. Name_Len));
+                                   To_Lower (Name_Buffer (1 .. Name_Len));
 
                      OK : Boolean := True;
 
                   begin
-
                      if Kind_Name = "static" then
                         Data.Library_Kind := Static;
 
