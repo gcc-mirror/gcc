@@ -887,11 +887,11 @@ struct lang_type
 #define TYPE_USES_VIRTUAL_BASECLASSES(NODE) (TREE_LANG_FLAG_3(NODE))
 
 /* Vector member functions defined in this class.  Each element is
-   either a FUNCTION_DECL, a TEMPLATE_DECL, or an OVERLOAD.  The first
+   either a FUNCTION_DECL, a TEMPLATE_DECL, or an OVERLOAD.  All
+   functions with the same name end up in the same slot.  The first
    two elements are for constructors, and destructors, respectively.
-   Any user-defined conversion operators follow these.  These are
-   followed by ordinary member functions.  There may be empty entries
-   at the end of the vector.  */
+   These are followed by ordinary member functions.  There may be
+   empty entries at the end of the vector.  */
 #define CLASSTYPE_METHOD_VEC(NODE) (TYPE_LANG_SPECIFIC(NODE)->methods)
 
 /* The first type conversion operator in the class (the others can be
@@ -3068,7 +3068,7 @@ extern int uses_template_parms			PROTO((tree));
 extern tree instantiate_class_template		PROTO((tree));
 extern tree instantiate_template		PROTO((tree, tree));
 extern void overload_template_name		PROTO((tree));
-extern int fn_type_unification                  PROTO((tree, tree, tree, tree, tree, unification_kind_t, tree));
+extern int fn_type_unification                  PROTO((tree, tree, tree, tree, tree, unification_kind_t));
 struct tinst_level *tinst_for_decl		PROTO((void));
 extern void mark_decl_instantiated		PROTO((tree, int));
 extern int more_specialized			PROTO((tree, tree, tree));
@@ -3126,6 +3126,7 @@ extern int get_base_distance			PROTO((tree, tree, int, tree *));
 extern tree compute_access			PROTO((tree, tree));
 extern tree lookup_field			PROTO((tree, tree, int, int));
 extern tree lookup_nested_field			PROTO((tree, int));
+extern int lookup_fnfields_1                    PROTO((tree, tree));
 extern tree lookup_fnfields			PROTO((tree, tree, int));
 extern tree lookup_member			PROTO((tree, tree, int, int));
 extern tree lookup_nested_tag			PROTO((tree, tree));

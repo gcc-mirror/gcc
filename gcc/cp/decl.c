@@ -8599,8 +8599,11 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	    cp_error ("definition of implicitly-declared `%D'", tmp);
 	  if (tmp)
 	    {
+	      /* Attempt to merge the declarations.  This can fail, in
+		 the case of some illegal specialization declarations.  */
 	      if (!duplicate_decls (decl, tmp))
-		my_friendly_abort (892);
+		cp_error ("no `%#D' member function declared in class `%T'",
+			  decl, ctype);
 	      return tmp;
 	    }
 	}

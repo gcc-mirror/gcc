@@ -8,5 +8,5 @@ int foo(int i) { return 0; }
 
 int main()
 {
-  &foo<int>;
+  (int (*)(int)) &foo<int>;
 }

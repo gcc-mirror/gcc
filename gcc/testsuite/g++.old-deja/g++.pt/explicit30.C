@@ -7,5 +7,5 @@ void foo(T, T*);
 void bar()
 {
   double d;
-  (*((void (*)(int, double*)) &foo<int>))(3, &d);
+  (*((void (*)(int, double*)) (void (*)(int, int*)) &foo<int>))(3, &d);
 }

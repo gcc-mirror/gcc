@@ -81,7 +81,6 @@ static tree get_vbase_1 PROTO((tree, tree, unsigned int *));
 static tree convert_pointer_to_vbase PROTO((tree, tree));
 static tree lookup_field_1 PROTO((tree, tree));
 static tree convert_pointer_to_single_level PROTO((tree, tree));
-static int lookup_fnfields_1 PROTO((tree, tree));
 static int lookup_fnfields_here PROTO((tree, tree));
 static int is_subobject_of_p PROTO((tree, tree));
 static int hides PROTO((tree, tree));
@@ -1284,7 +1283,7 @@ lookup_nested_field (name, complain)
 /* TYPE is a class type. Return the index of the fields within
    the method vector with name NAME, or -1 is no such field exists.  */
 
-static int
+int
 lookup_fnfields_1 (type, name)
      tree type, name;
 {

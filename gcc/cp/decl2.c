@@ -1309,8 +1309,21 @@ check_classfn (ctype, function)
   tree method_vec = CLASSTYPE_METHOD_VEC (complete_type (ctype));
   tree *methods = 0;
   tree *end = 0;
-  tree templates = NULL_TREE;
-
+  
+  if (DECL_USE_TEMPLATE (function)
+      && is_member_template (DECL_TI_TEMPLATE (function)))
+    /* Since this is a specialization of a member template,
+       we're not going to find the declaration in the class.
+       For example, in:
+       
+         struct S { template <typename T> void f(T); };
+         template <> void S::f(int);
+       
+       we're not going to find `S::f(int)', but there's no
+       reason we should, either.  We let our callers know we didn't
+       find the method, but we don't complain.  */
+    return NULL_TREE;
+      
   if (method_vec != 0)
     {
       methods = &TREE_VEC_ELT (method_vec, 0);
@@ -1375,35 +1388,12 @@ check_classfn (ctype, function)
 			      || (DECL_TI_TEMPLATE (function) 
 				  == DECL_TI_TEMPLATE (fndecl))))
 			return fndecl;
-
-		      if (is_member_template (fndecl))
-			/* This function might be an instantiation
-			   or specialization of fndecl.  */
-			templates = 
-			  scratch_tree_cons (NULL_TREE, fndecl, templates);
 		    }
 		}
 	      break;		/* loser */
 	    }
-	  else if (TREE_CODE (OVL_CURRENT (fndecl)) == TEMPLATE_DECL 
-		   && DECL_CONV_FN_P (OVL_CURRENT (fndecl))
-		   && DECL_CONV_FN_P (function))
-	    /* The method in the class is a member template
-	       conversion operator.  We are declaring another
-	       conversion operator.  It is possible that even though
-	       the names don't match, there is some specialization
-	       occurring.  */
-	    templates = 
-	      scratch_tree_cons (NULL_TREE, fndecl, templates);
 	}
     }
-
-  if (templates)
-    /* This function might be an instantiation or a specialization.
-       We should verify that this is possible.  For now, we simply
-       return NULL_TREE, which lets the caller know that this function
-       is new, but we don't print an error message.  */
-    return NULL_TREE;
 
   if (methods != end && *methods)
     {

@@ -8,5 +8,5 @@ void foo(int i) {}
 
 int main()
 {
-  &foo<int>;
+  (void (*)(int)) &foo<int>;
 }

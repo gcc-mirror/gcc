@@ -5,5 +5,5 @@ void foo(T t) {}
 
 void bar()
 {
-  &foo<double>;
+  (void (*)(double)) &foo<double>;
 }
