@@ -5,6 +5,10 @@
 
 	* jump.c (condjump_p): Remove unreachable code.
 
+	* basic-block.h, c-common.h, df.h, expr.h, output.h, rtl.h,
+	tree-chrec.h, tree-flow.h, tree-scalar-evolution.h,
+	tree-ssa-live.h, tree.h: Remove unused prototypes.
+
 2004-11-17  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (edge_to_cases): Renamed from edge_to_case_leader.

@@ -452,7 +452,6 @@ extern void compute_dominance_frontiers (bitmap *);
 extern void dump_edge_info (FILE *, edge, int);
 extern void brief_dump_cfg (FILE *);
 extern void clear_edges (void);
-extern void mark_critical_edges (void);
 extern rtx first_insn_after_basic_block_note (basic_block);
 
 /* Structure to group all of the information to process IF-THEN and
@@ -715,10 +714,6 @@ extern struct edge_list *pre_edge_rev_lcm (FILE *, int, sbitmap *,
 					   sbitmap **);
 extern void compute_available (sbitmap *, sbitmap *, sbitmap *, sbitmap *);
 extern int optimize_mode_switching (FILE *);
-
-/* In emit-rtl.c.  */
-extern rtx emit_block_insn_after (rtx, rtx, basic_block);
-extern rtx emit_block_insn_before (rtx, rtx, basic_block);
 
 /* In predict.c */
 extern void estimate_probability (struct loops *);

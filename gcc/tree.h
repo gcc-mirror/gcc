@@ -3002,10 +3002,6 @@ extern tree merge_decl_attributes (tree, tree);
 extern tree merge_type_attributes (tree, tree);
 extern void default_register_cpp_builtins (struct cpp_reader *);
 
-/* Return 1 if an attribute and its arguments are valid for a decl or type.  */
-
-extern int valid_machine_attribute (tree, tree, tree, tree);
-
 /* Given a tree node and a string, return nonzero if the tree node is
    a valid attribute name for the string.  */
 
@@ -3462,7 +3458,6 @@ extern tree lower_bound_in_type (tree, tree);
 /* In stmt.c */
 
 extern void expand_expr_stmt (tree);
-extern void expand_expr_stmt_value (tree, int, int);
 extern int warn_if_unused_value (tree, location_t);
 extern void expand_label (tree);
 extern void expand_goto (tree);
@@ -3621,7 +3616,6 @@ extern void free_temp_slots (void);
 extern void pop_temp_slots (void);
 extern void push_temp_slots (void);
 extern void preserve_temp_slots (rtx);
-extern void preserve_rtl_expr_temps (tree);
 extern int aggregate_value_p (tree, tree);
 extern void push_function_context (void);
 extern void pop_function_context (void);

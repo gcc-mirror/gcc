@@ -1336,7 +1336,6 @@ extern int ceil_log2 (unsigned HOST_WIDE_INT);
 
 /* In builtins.c */
 extern rtx expand_builtin_expect_jump (tree, rtx, rtx);
-extern void purge_builtin_constant_p (void);
 
 /* In explow.c */
 extern void set_stack_check_libfunc (rtx);
@@ -1353,7 +1352,6 @@ extern rtx emit_copy_of_insn_after (rtx, rtx);
 extern void set_reg_attrs_from_mem (rtx, rtx);
 extern void set_mem_attrs_from_reg (rtx, rtx);
 extern void set_reg_attrs_for_parm (rtx, rtx);
-extern void set_reg_pointer_align (rtx, unsigned int);
 extern int mem_expr_equal_p (tree, tree);
 
 /* In rtl.c */
@@ -1901,7 +1899,6 @@ extern int comparison_dominates_p (enum rtx_code, enum rtx_code);
 extern int condjump_p (rtx);
 extern int any_condjump_p (rtx);
 extern int any_uncondjump_p (rtx);
-extern int safe_to_remove_jump_p (rtx);
 extern rtx pc_set (rtx);
 extern rtx condjump_label (rtx);
 extern int simplejump_p (rtx);

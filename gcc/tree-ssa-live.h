@@ -64,7 +64,6 @@ extern void dump_var_map (FILE *, var_map);
 extern int var_union (var_map, tree, tree);
 extern void change_partition_var (var_map, tree, int);
 extern void compact_var_map (var_map, int);
-extern tree make_ssa_temp (tree);
 #ifdef ENABLE_CHECKING
 extern void register_ssa_partition_check (tree ssa_var);
 #endif

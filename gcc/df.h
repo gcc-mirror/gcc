@@ -267,8 +267,6 @@ extern int df_ref_reg_replace (struct df *, struct ref *, rtx, rtx);
 
 extern int df_ref_remove (struct df *, struct ref *);
 
-extern int df_insn_reg_replace (struct df *, basic_block, rtx, rtx, rtx);
-
 extern int df_insn_mem_replace (struct df *, basic_block, rtx, rtx, rtx);
 
 extern struct ref *df_bb_def_use_swap (struct df *, basic_block, rtx, rtx,
