@@ -199,7 +199,7 @@ f_open (olist * a)
       if (!env)
 	env = "/tmp";
       len = strlen (env);
-      if (len > 256 - sizeof "/tmp.FXXXXXX")
+      if (len > 256 - (int) sizeof ("/tmp.FXXXXXX"))
 	err (a->oerr, 132, "open");
       strcpy (buf, env);
       strcat (buf, "/tmp.FXXXXXX");

@@ -1,3 +1,11 @@
+Sun Jun  2 08:53:15 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libF77/getenv_.c (G77_getenv_0): Avoid signed/unsigned warning.
+	* libF77/system_.c (G77_system_0): Likewise.
+	* libI77/open.c (f_open): Likewise.
+	* libI77/rdfmt.c (rd_Z): Likewise.
+	* libI77/uio.c (do_us, do_ud): Likewise.
+
 Sat Jun  1 08:33:14 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libF77/*: Fix formatting.
