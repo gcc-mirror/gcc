@@ -29,9 +29,11 @@ Boston, MA 02111-1307, USA.  */
 #define	TARGET_XL_CALL		(target_flags & MASK_XL_CALL)
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES		\
-  {"xl-call", 		MASK_XL_CALL},	\
-  {"no-xl-call",	- MASK_XL_CALL}, \
-  {"threads",		0},		\
+  {"xl-call", 		MASK_XL_CALL,					\
+   N_("Always pass floating-point arguments in memory") },		\
+  {"no-xl-call",	- MASK_XL_CALL,					\
+   N_("Don't always pass floating-point arguments in memory") },	\
+  {"threads",		0},						\
   {"pe",		0},
 
 #undef ASM_SPEC

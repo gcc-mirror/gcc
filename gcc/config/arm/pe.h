@@ -57,8 +57,9 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_NOP_FUN_DLLIMPORT (target_flags & TARGET_FLAG_NOP_FUN)
 
 #undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-{ "nop-fun-dllimport",		  TARGET_FLAG_NOP_FUN, "Ignore dllimport attribute for functions" }, \
+#define SUBTARGET_SWITCHES					\
+{ "nop-fun-dllimport",		  TARGET_FLAG_NOP_FUN,		\
+  N_("Ignore dllimport attribute for functions") },		\
 { "no-nop-fun-dllimport",	- TARGET_FLAG_NOP_FUN, "" },
 
 #undef  TARGET_DEFAULT

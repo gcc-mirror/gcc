@@ -1,5 +1,5 @@
 /* Definitions for 64-bit SPARC running Linux-based GNU systems with ELF.
-   Copyright 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
    Contributed by David S. Miller (davem@caip.rutgers.edu)
 
 This file is part of GNU CC.
@@ -144,9 +144,9 @@ Boston, MA 02111-1307, USA.  */
 #define SPARC_DEFAULT_CMODEL CM_MEDLOW
 
 #undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-{"long-double-64", -MASK_LONG_DOUBLE_128, "Use 64 bit long doubles" }, \
-{"long-double-128", MASK_LONG_DOUBLE_128, "Use 128 bit long doubles" },
+#define SUBTARGET_SWITCHES						    \
+{"long-double-64", -MASK_LONG_DOUBLE_128, N_("Use 64 bit long doubles") },  \
+{"long-double-128", MASK_LONG_DOUBLE_128, N_("Use 128 bit long doubles") },
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"

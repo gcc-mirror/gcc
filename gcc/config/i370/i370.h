@@ -60,8 +60,8 @@ extern int mvs_function_name_length;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES							\
-{ { "char-instructions", 1, "Generate char instructions"},            \
-  { "no-char-instructions", -1, "Do not generate char instructions"}, \
+{ { "char-instructions", 1, N_("Generate char instructions")},            \
+  { "no-char-instructions", -1, N_("Do not generate char instructions")}, \
   { "", TARGET_DEFAULT, 0} }
 
 /* To use IBM supplied macro function prologue and epilogue, define the

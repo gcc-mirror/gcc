@@ -251,9 +251,9 @@ toc_section ()						\
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES		\
   {"xl-call", 		MASK_XL_CALL,					\
-   "Always pass floating-point arguments in memory" },			\
+   N_("Always pass floating-point arguments in memory") },		\
   {"no-xl-call",	- MASK_XL_CALL,					\
-   "Don't always pass floating-point arguments in memory" },		\
+   N_("Don't always pass floating-point arguments in memory") },	\
   SUBSUBTARGET_SWITCHES
 #define SUBSUBTARGET_SWITCHES 
 

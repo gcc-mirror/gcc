@@ -1,5 +1,5 @@
 /* Definitions for SPARC running Linux-based GNU systems with ELF.
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 
 This file is part of GNU CC.
@@ -89,8 +89,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
-{"long-double-64", -MASK_LONG_DOUBLE_128, "Use 64 bit long doubles" }, \
-{"long-double-128", MASK_LONG_DOUBLE_128, "Use 128 bit long doubles" },
+{"long-double-64", -MASK_LONG_DOUBLE_128, N_("Use 64 bit long doubles") }, \
+{"long-double-128", MASK_LONG_DOUBLE_128, N_("Use 128 bit long doubles") },
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"

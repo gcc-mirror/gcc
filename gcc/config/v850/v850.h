@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. NEC V850 series
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -115,25 +115,25 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES							\
-  {{ "ghs",			 MASK_GHS, "Support Green Hills ABI" },	\
+  {{ "ghs",			 MASK_GHS, N_("Support Green Hills ABI") }, \
    { "no-ghs",			-MASK_GHS, "" },			\
    { "long-calls",		 MASK_LONG_CALLS, 			\
-       				"Prohibit PC relative function calls" },\
+       				N_("Prohibit PC relative function calls") },\
    { "no-long-calls",		-MASK_LONG_CALLS, "" },			\
    { "ep",			 MASK_EP,				\
-                                "Reuse r30 on a per function basis" },  \
+                                N_("Reuse r30 on a per function basis") }, \
    { "no-ep",			-MASK_EP, "" },				\
    { "prolog-function",		 MASK_PROLOG_FUNCTION, 			\
-       				"Use stubs for function prologues" },	\
+       				N_("Use stubs for function prologues") }, \
    { "no-prolog-function",	-MASK_PROLOG_FUNCTION, "" },		\
    { "space",			 MASK_EP | MASK_PROLOG_FUNCTION, 	\
-       				"Same as: -mep -mprolog-function" },	\
-   { "debug",			 MASK_DEBUG, "Enable backend debugging" }, \
+       				N_("Same as: -mep -mprolog-function") }, \
+   { "debug",			 MASK_DEBUG, N_("Enable backend debugging") }, \
    { "v850",		 	 MASK_V850,				\
-                                "Compile for the v850 processor" },	\
+                                N_("Compile for the v850 processor") },	\
    { "v850",		 	 -(MASK_V850 ^ MASK_CPU), "" },		\
    { "big-switch",		 MASK_BIG_SWITCH, 			\
-       				"Use 4 byte entries in switch tables" },\
+       				N_("Use 4 byte entries in switch tables") },\
    { "",			 MASK_DEFAULT, ""}}
 
 /* Information about the various small memory areas.  */
@@ -177,13 +177,13 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 #define TARGET_OPTIONS							\
 {									\
   { "tda=",	&small_memory[ (int)SMALL_MEMORY_TDA ].value,		\
-      "Set the max size of data eligible for the TDA area"  },		\
+      N_("Set the max size of data eligible for the TDA area")  },	\
   { "tda-",	&small_memory[ (int)SMALL_MEMORY_TDA ].value, "" },	\
   { "sda=",	&small_memory[ (int)SMALL_MEMORY_SDA ].value, 		\
-      "Set the max size of data eligible for the SDA area"  },		\
+      N_("Set the max size of data eligible for the SDA area")  },	\
   { "sda-",	&small_memory[ (int)SMALL_MEMORY_SDA ].value, "" },	\
   { "zda=",	&small_memory[ (int)SMALL_MEMORY_ZDA ].value, 		\
-      "Set the max size of data eligible for the ZDA area"  },		\
+      N_("Set the max size of data eligible for the ZDA area")  },	\
   { "zda-",	&small_memory[ (int)SMALL_MEMORY_ZDA ].value, "" },	\
 }
 

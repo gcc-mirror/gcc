@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running SCO Unix System V 3.2 Version 5.
-   Copyright (C) 1992, 1995, 1996, 1997, 1998, 1999 
+   Copyright (C) 1992, 1995, 1996, 1997, 1998, 1999, 2000
    Free Software Foundation, Inc.
    Contributed by Kean Johnston (hug@netcom.com)
 
@@ -894,9 +894,9 @@ dtors_section ()							\
 #define TARGET_ELF              (!(target_flags & MASK_COFF))
 
 #undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES 		\
-	{ "coff", MASK_COFF, "Generate COFF output" }, 		\
-	{ "elf", -MASK_COFF, "Generate ELF output"  },
+#define SUBTARGET_SWITCHES 					\
+	{ "coff", MASK_COFF, N_("Generate COFF output") }, 	\
+	{ "elf", -MASK_COFF, N_("Generate ELF output")  },
 
 #define NO_DOLLAR_IN_LABEL
 

@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Alliant FX version.
-   Copyright (C) 1989, 93, 94, 95, 96, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1994, 1995, 1996, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Adapted from m68k.h by Paul Petersen (petersen@uicsrd.csrd.uiuc.edu)
    and Joe Weening (weening@gang-of-four.stanford.edu).
 
@@ -109,15 +110,15 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { { "68020", 5, "Generate code for a mc68020"},		\
-    { "c68020", 5, "Generate code for a mc68020"},		\
-    { "bitfield", 4, "Use bitfield instructions"},		\
-    { "68000", -7, "Generate code for a mc68000"},		\
-    { "c68000", -7, "Generate code for a mc68000"},		\
-    { "soft-float", -2, "Generate software FP code"},		\
-    { "nobitfield", -4, "Do not generate bitfield insns"},	\
-    { "short", 040, "Use 16bit integers"},			\
-    { "noshort", -040, "Use 32bit integers"},			\
+  { { "68020", 5, N_("Generate code for a mc68020")},		\
+    { "c68020", 5, N_("Generate code for a mc68020")},		\
+    { "bitfield", 4, N_("Use bitfield instructions")},		\
+    { "68000", -7, N_("Generate code for a mc68000")},		\
+    { "c68000", -7, N_("Generate code for a mc68000")},		\
+    { "soft-float", -2, N_("Generate software FP code")},	\
+    { "nobitfield", -4, N_("Do not generate bitfield insns")},	\
+    { "short", 040, N_("Use 16bit integers")},			\
+    { "noshort", -040, N_("Use 32bit integers")},		\
     { "", TARGET_DEFAULT, NULL}}
 
 /* target machine storage layout */

@@ -330,109 +330,109 @@ extern void		sbss_section PARAMS ((void));
 #define TARGET_SWITCHES							\
 {									\
   {"no-crt0",          0,                                               \
-     "No default crt0.o" },					 	\
+     N_("No default crt0.o") },					 	\
   {"int64",		  MASK_INT64 | MASK_LONG64,			\
-     "Use 64-bit int type"},						\
+     N_("Use 64-bit int type")},					\
   {"long64",		  MASK_LONG64,					\
-     "Use 64-bit long type"},						\
+     N_("Use 64-bit long type")},					\
   {"long32",		 -(MASK_LONG64 | MASK_INT64),			\
-     "Use 32-bit long type"},						\
+     N_("Use 32-bit long type")},					\
   {"split-addresses",	  MASK_SPLIT_ADDR,				\
-     "Optimize lui/addiu address loads"},				\
+     N_("Optimize lui/addiu address loads")},				\
   {"no-split-addresses", -MASK_SPLIT_ADDR,				\
-     "Don't optimize lui/addiu address loads"},				\
+     N_("Don't optimize lui/addiu address loads")},			\
   {"mips-as",		 -MASK_GAS,					\
-     "Use MIPS as"},							\
+     N_("Use MIPS as")},						\
   {"gas",		  MASK_GAS,					\
-     "Use GNU as"},							\
+     N_("Use GNU as")},							\
   {"rnames",		  MASK_NAME_REGS,				\
-     "Use symbolic register names"},					\
+     N_("Use symbolic register names")},				\
   {"no-rnames",		 -MASK_NAME_REGS,				\
-     "Don't use symbolic register names"},				\
+     N_("Don't use symbolic register names")},				\
   {"gpOPT",		  MASK_GPOPT,					\
-     "Use GP relative sdata/sbss sections"},				\
+     N_("Use GP relative sdata/sbss sections")},			\
   {"gpopt",		  MASK_GPOPT,					\
-     "Use GP relative sdata/sbss sections"},				\
+     N_("Use GP relative sdata/sbss sections")},			\
   {"no-gpOPT",		 -MASK_GPOPT,					\
-     "Don't use GP relative sdata/sbss sections"},			\
+     N_("Don't use GP relative sdata/sbss sections")},			\
   {"no-gpopt",		 -MASK_GPOPT,					\
-     "Don't use GP relative sdata/sbss sections"},			\
+     N_("Don't use GP relative sdata/sbss sections")},			\
   {"stats",		  MASK_STATS,					\
-     "Output compiler statistics"},					\
+     N_("Output compiler statistics")},					\
   {"no-stats",		 -MASK_STATS,					\
-     "Don't output compiler statistics"},				\
+     N_("Don't output compiler statistics")},				\
   {"memcpy",		  MASK_MEMCPY,					\
-     "Don't optimize block moves"},					\
+     N_("Don't optimize block moves")},					\
   {"no-memcpy",		 -MASK_MEMCPY,					\
-     "Optimize block moves"},						\
+     N_("Optimize block moves")},					\
   {"mips-tfile",	  MASK_MIPS_TFILE,				\
-     "Use mips-tfile asm postpass"},					\
+     N_("Use mips-tfile asm postpass")},				\
   {"no-mips-tfile",	 -MASK_MIPS_TFILE,				\
-     "Don't use mips-tfile asm postpass"},				\
+     N_("Don't use mips-tfile asm postpass")},				\
   {"soft-float",	  MASK_SOFT_FLOAT,				\
-     "Use software floating point"},					\
+     N_("Use software floating point")},				\
   {"hard-float",	 -MASK_SOFT_FLOAT,				\
-     "Use hardware floating point"},					\
+     N_("Use hardware floating point")},				\
   {"fp64",		  MASK_FLOAT64,					\
-     "Use 64-bit FP registers"},					\
+     N_("Use 64-bit FP registers")},					\
   {"fp32",		 -MASK_FLOAT64,					\
-     "Use 32-bit FP registers"},					\
+     N_("Use 32-bit FP registers")},					\
   {"gp64",		  MASK_64BIT,					\
-     "Use 64-bit general registers"},					\
+     N_("Use 64-bit general registers")},				\
   {"gp32",		 -MASK_64BIT,					\
-     "Use 32-bit general registers"},					\
+     N_("Use 32-bit general registers")},				\
   {"abicalls",		  MASK_ABICALLS,				\
-     "Use Irix PIC"},							\
+     N_("Use Irix PIC")},						\
   {"no-abicalls",	 -MASK_ABICALLS,				\
-     "Don't use Irix PIC"},						\
+     N_("Don't use Irix PIC")},						\
   {"half-pic",		  MASK_HALF_PIC,				\
-     "Use OSF PIC"},							\
+     N_("Use OSF PIC")},						\
   {"no-half-pic",	 -MASK_HALF_PIC,				\
-     "Don't use OSF PIC"},						\
+     N_("Don't use OSF PIC")},						\
   {"long-calls",	  MASK_LONG_CALLS,				\
-     "Use indirect calls"},						\
+     N_("Use indirect calls")},						\
   {"no-long-calls",	 -MASK_LONG_CALLS,				\
-     "Don't use indirect calls"},					\
+     N_("Don't use indirect calls")},					\
   {"embedded-pic",	  MASK_EMBEDDED_PIC,				\
-     "Use embedded PIC"},						\
+     N_("Use embedded PIC")},						\
   {"no-embedded-pic",	 -MASK_EMBEDDED_PIC,				\
-     "Don't use embedded PIC"},						\
+     N_("Don't use embedded PIC")},					\
   {"embedded-data",	  MASK_EMBEDDED_DATA,				\
-     "Use ROM instead of RAM"},						\
+     N_("Use ROM instead of RAM")},					\
   {"no-embedded-data",	 -MASK_EMBEDDED_DATA,				\
-     "Don't use ROM instead of RAM"},					\
+     N_("Don't use ROM instead of RAM")},				\
   {"uninit-const-in-rodata", MASK_UNINIT_CONST_IN_RODATA,		\
-     "Put uninitialized constants in ROM (needs -membedded-data)"},	\
+     N_("Put uninitialized constants in ROM (needs -membedded-data)")},	\
   {"no-uninit-const-in-rodata", -MASK_UNINIT_CONST_IN_RODATA,		\
-     "Don't put uninitialized constants in ROM"},			\
+     N_("Don't put uninitialized constants in ROM")},			\
   {"eb",		  MASK_BIG_ENDIAN,				\
-     "Use big-endian byte order"},					\
+     N_("Use big-endian byte order")},					\
   {"el",		 -MASK_BIG_ENDIAN,				\
-     "Use little-endian byte order"},					\
+     N_("Use little-endian byte order")},				\
   {"single-float",	  MASK_SINGLE_FLOAT,				\
-     "Use single (32-bit) FP only"},					\
+     N_("Use single (32-bit) FP only")},				\
   {"double-float",	 -MASK_SINGLE_FLOAT,				\
-     "Don't use single (32-bit) FP only"},				\
+     N_("Don't use single (32-bit) FP only")},				\
   {"mad",		  MASK_MAD,					\
-     "Use multiply accumulate"},					\
+     N_("Use multiply accumulate")},					\
   {"no-mad",		 -MASK_MAD,					\
-     "Don't use multiply accumulate"},					\
+     N_("Don't use multiply accumulate")},				\
   {"fix4300",             MASK_4300_MUL_FIX,				\
-     "Work around early 4300 hardware bug"},				\
+     N_("Work around early 4300 hardware bug")},			\
   {"no-fix4300",         -MASK_4300_MUL_FIX,				\
-     "Don't work around early 4300 hardware bug"},			\
+     N_("Don't work around early 4300 hardware bug")},			\
   {"4650",		  MASK_MAD | MASK_SINGLE_FLOAT,			\
-     "Optimize for 4650"},						\
+     N_("Optimize for 4650")},						\
   {"3900",		  MASK_MIPS3900,				\
-     "Optimize for 3900"},						\
+     N_("Optimize for 3900")},						\
   {"check-zero-division",-MASK_NO_CHECK_ZERO_DIV,			\
-     "Trap on integer divide by zero"},					\
+     N_("Trap on integer divide by zero")},				\
   {"no-check-zero-division", MASK_NO_CHECK_ZERO_DIV,			\
-     "Don't trap on integer divide by zero"},				\
+     N_("Don't trap on integer divide by zero")},			\
   {"check-range-division",MASK_CHECK_RANGE_DIV,				\
-     "Trap on integer divide overflow"},				\
+     N_("Trap on integer divide overflow")},				\
   {"no-check-range-division",-MASK_CHECK_RANGE_DIV,			\
-     "Don't trap on integer divide overflow"},				\
+     N_("Don't trap on integer divide overflow")},			\
   {"debug",		  MASK_DEBUG,					\
      NULL},								\
   {"debuga",		  MASK_DEBUG_A,					\
@@ -551,13 +551,13 @@ extern void		sbss_section PARAMS ((void));
 {									\
   SUBTARGET_TARGET_OPTIONS						\
   { "cpu=",	&mips_cpu_string,					\
-      "Specify CPU for scheduling purposes"},				\
+      N_("Specify CPU for scheduling purposes")},			\
   { "ips",	&mips_isa_string,					\
-      "Specify MIPS ISA"},						\
+      N_("Specify MIPS ISA")},						\
   { "entry",	&mips_entry_string,					\
-      "Use mips16 entry/exit psuedo ops"},				\
+      N_("Use mips16 entry/exit psuedo ops")},				\
   { "no-mips16", &mips_no_mips16_string,				\
-      "Don't use MIPS16 instructions"},					\
+      N_("Don't use MIPS16 instructions")},				\
   { "explicit-type-size", &mips_explicit_type_size_string,		\
       NULL},								\
 }

@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #undef  SUBSUBTARGET_SWITCHES
 #define SUBSUBTARGET_SWITCHES		\
   {"pe",		0,					\
-   "Support message passing with the Parallel Environment" },
+   N_("Support message passing with the Parallel Environment") },
 
 #undef ASM_SPEC
 #define ASM_SPEC "-u %(asm_cpu)"

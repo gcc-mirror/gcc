@@ -2,7 +2,8 @@
    hosting on Windows NT 3.x, using a Unix style C library and tools,
    as distinct from winnt.h, which is used to build GCC for use with a
    windows style library and tool set and uses the Microsoft tools.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -47,13 +48,18 @@ Boston, MA 02111-1307, USA. */
 #define TARGET_NOP_FUN_DLLIMPORT (target_flags & MASK_NOP_FUN_DLLIMPORT)
 
 #undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-    { "win32",                           MASK_WIN32, "Use Mingw32 interface" }, \
-    { "cygwin",                          MASK_CYGWIN, "Use Cygwin interface"  },  \
-    { "windows",                         MASK_WINDOWS, "Use bare Windows interface" }, \
-    { "dll",                             MASK_DLL, "Generate code for a DLL" },     \
-    { "nop-fun-dllimport",		 MASK_NOP_FUN_DLLIMPORT, "Ignore dllimport for functions" }, \
-    { "no-nop-fun-dllimport",		 MASK_NOP_FUN_DLLIMPORT, "" },
+#define SUBTARGET_SWITCHES						\
+    { "win32",			MASK_WIN32,				\
+      N_("Use Mingw32 interface") },					\
+    { "cygwin",			MASK_CYGWIN,				\
+      N_("Use Cygwin interface")  },					\
+    { "windows",		MASK_WINDOWS,				\
+      N_("Use bare Windows interface") },				\
+    { "dll",			MASK_DLL,				\
+      N_("Generate code for a DLL") },					\
+    { "nop-fun-dllimport",	MASK_NOP_FUN_DLLIMPORT,			\
+      N_("Ignore dllimport for functions") }, 				\
+    { "no-nop-fun-dllimport",	MASK_NOP_FUN_DLLIMPORT, "" },
 
 
 #undef CPP_PREDEFINES

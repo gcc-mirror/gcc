@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Intel 386 (OSF/1 with OSF/rose) version.
-   Copyright (C) 1991, 92, 93, 96, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1993, 1996, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -58,18 +59,27 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						\
-     { "half-pic",		 MASK_HALF_PIC, "Emit half-PIC code" },			\
+     { "half-pic",		 MASK_HALF_PIC,				\
+       N_("Emit half-PIC code") },					\
      { "no-half-pic",		-MASK_HALF_PIC, "" }			\
-     { "debug-half-pic",	 MASK_HALF_PIC_DEBUG, 0 /* intentionally undoc */ },			\
-     { "debugb",		 MASK_HALF_PIC_DEBUG, 0 /* intentionally undoc */ },			\
-     { "elf",			 MASK_ELF, "Emit ELF object code" },				\
-     { "rose",			-MASK_ELF, "Emit ROSE object code" },				\
-     { "underscores",		-MASK_NO_UNDERSCORES, "Symbols have a leading underscore" },			\
-     { "no-underscores",	 MASK_NO_UNDERSCORES, "" },			\
-     { "large-align",		 MASK_LARGE_ALIGN, "Align to >word boundaries" },			\
-     { "no-large-align",	-MASK_LARGE_ALIGN, "" },			\
-     { "mcount",		-MASK_NO_MCOUNT, "Use mcount for profiling" },			\
-     { "mcount-ptr",		 MASK_NO_MCOUNT, "Use mcount_ptr for profiling" },			\
+     { "debug-half-pic",	 MASK_HALF_PIC_DEBUG,			\
+       0 /* intentionally undoc */ },					\
+     { "debugb",		 MASK_HALF_PIC_DEBUG,			\
+       0 /* intentionally undoc */ },					\
+     { "elf",			 MASK_ELF,				\
+       N_("Emit ELF object code") },					\
+     { "rose",			-MASK_ELF,				\
+       N_("Emit ROSE object code") },					\
+     { "underscores",		-MASK_NO_UNDERSCORES,			\
+       N_("Symbols have a leading underscore") },			\
+     { "no-underscores",	 MASK_NO_UNDERSCORES, "" },		\
+     { "large-align",		 MASK_LARGE_ALIGN,			\
+       N_("Align to >word boundaries") },				\
+     { "no-large-align",	-MASK_LARGE_ALIGN, "" },		\
+     { "mcount",		-MASK_NO_MCOUNT,			\
+       N_("Use mcount for profiling") },				\
+     { "mcount-ptr",		 MASK_NO_MCOUNT,			\
+       N_("Use mcount_ptr for profiling") },				\
      { "no-mcount",		 MASK_NO_MCOUNT, "" },
 
 /* OSF/rose uses stabs, not dwarf.  */

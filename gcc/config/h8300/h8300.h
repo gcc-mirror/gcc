@@ -99,18 +99,21 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { {"s",		1,     "Generate H8/S code"},			\
-    {"no-s",		-1,    "Do not generate H8/S code"},		\
-    {"int32",		8,     "Make integers 32 bits wide"},		\
+  { {"s",		1,     N_("Generate H8/S code")},		\
+    {"no-s",		-1,    N_("Do not generate H8/S code")},	\
+    {"int32",		8,     N_("Make integers 32 bits wide")},	\
     {"addresses",	64,    NULL},					\
-    {"quickcall",	128,   "Use registers for argument passing"},  	\
-    {"no-quickcall",	-128,  "Do not use registers for argument passing"},\
-    {"slowbyte",	256,   "Consider access to byte sized memory slow"},\
-    {"relax",		1024,  "Enable linker relaxing"},		\
+    {"quickcall",	128,						\
+     N_("Use registers for argument passing")},  			\
+    {"no-quickcall",	-128,						\
+     N_("Do not use registers for argument passing")},			\
+    {"slowbyte",	256,						\
+     N_("Consider access to byte sized memory slow")},			\
+    {"relax",		1024,  N_("Enable linker relaxing")},		\
     {"rtl-dump",	2048,  NULL},					\
-    {"h",		4096,  "Generate H8/300H code"},		\
-    {"no-h",		-4096, "Do not generate H8/300H code"},		\
-    {"align-300",	8192,  "Use H8/300 alignment rules"},		\
+    {"h",		4096,  N_("Generate H8/300H code")},		\
+    {"no-h",		-4096, N_("Do not generate H8/300H code")},	\
+    {"align-300",	8192,  N_("Use H8/300 alignment rules")},	\
     { "", TARGET_DEFAULT, NULL}}
 
 #ifdef IN_LIBGCC2

@@ -28,11 +28,11 @@ Boston, MA 02111-1307, USA.  */
 #undef  SUBSUBTARGET_SWITCHES
 #define SUBSUBTARGET_SWITCHES					\
   {"aix64", 		MASK_64BIT | MASK_POWERPC64 | MASK_POWERPC,	\
-   "Compile for 64-bit pointers" },					\
+   N_("Compile for 64-bit pointers") },					\
   {"aix32",		- (MASK_64BIT | MASK_POWERPC64),		\
-   "Compile for 32-bit pointers" },					\
+   N_("Compile for 32-bit pointers") },					\
   {"pe",		0,						\
-   "Support message passing with the Parallel Environment" },
+   N_("Support message passing with the Parallel Environment") },
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro

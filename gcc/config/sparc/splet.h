@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARClet.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
 
 This file is part of GNU CC.
@@ -25,9 +25,9 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_DEFAULT (MASK_APP_REGS + MASK_EPILOGUE)
 
 #undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-{"big-endian", -MASK_LITTLE_ENDIAN, "Generate code for big endian" }, \
-{"little-endian", MASK_LITTLE_ENDIAN, "Generate code for little endian" },
+#define SUBTARGET_SWITCHES						      \
+{"big-endian", -MASK_LITTLE_ENDIAN, N_("Generate code for big endian") },     \
+{"little-endian", MASK_LITTLE_ENDIAN, N_("Generate code for little endian") },
 
 #undef ASM_SPEC
 #define ASM_SPEC "%{mlittle-endian:-EL} %(asm_cpu)"

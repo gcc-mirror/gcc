@@ -1,5 +1,6 @@
 /* OSF/1 1.3 now is compitable with SVR4, so include sysv4.h, and
-   put difference here.  */
+   put difference here.
+   Copyright (C) 2000 Free Software Foundation, Inc. */
 
 #include <stdio.h>
 #include "i386/sysv4.h"	/* Base i386 target machine definitions */
@@ -121,7 +122,8 @@
 
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						\
-     { "mcount",		-MASK_NO_MCOUNT, "Profiling uses mcount" },			\
+     { "mcount",		-MASK_NO_MCOUNT,			\
+       N_("Profiling uses mcount") },					\
      { "no-mcount",		 MASK_NO_MCOUNT, "" },
 
 /* This macro generates the assembly code for function entry.

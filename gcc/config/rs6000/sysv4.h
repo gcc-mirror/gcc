@@ -87,8 +87,8 @@ extern const char *rs6000_sdata_name;
 /* Override rs6000.h definition.  */
 #undef	SUBTARGET_OPTIONS
 #define	SUBTARGET_OPTIONS						\
-  { "call-",  &rs6000_abi_name, "Select ABI calling convention." },			\
-  { "sdata=", &rs6000_sdata_name, "Select method for sdata handling." }
+  { "call-",  &rs6000_abi_name, N_("Select ABI calling convention.") },	\
+  { "sdata=", &rs6000_sdata_name, N_("Select method for sdata handling.") }
 
 /* Max # of bytes for variables to automatically be put into the .sdata
    or .sdata2 sections.  */
@@ -102,40 +102,59 @@ extern int g_switch_set;		/* Whether -G xx was passed.  */
 /* Override rs6000.h definition.  */
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						\
-  { "bit-align",	-MASK_NO_BITFIELD_TYPE, "Align to the base type of the bitfield." },\
-  { "no-bit-align",	 MASK_NO_BITFIELD_TYPE, "Don't align to the base type of the bitfield." },\
-  { "strict-align",	 MASK_STRICT_ALIGN, "Don't assume that unaligned accesses are handled by the system" },\
-  { "no-strict-align",	-MASK_STRICT_ALIGN, "Assume that unaligned accesses are handled by the system" },\
-  { "relocatable",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC, "Produce code relocatable at runtime." },\
-  { "no-relocatable",	-MASK_RELOCATABLE, "Don't produce code relocatable at runtime." },\
-  { "relocatable-lib",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC, "Produce code relocatable at runtime." },\
-  { "no-relocatable-lib", -MASK_RELOCATABLE, "Don't produce code relocatable at runtime." },\
-  { "little-endian",	 MASK_LITTLE_ENDIAN, "Produce little endian code." },	\
-  { "little",		 MASK_LITTLE_ENDIAN, "Produce little endian code." },	\
-  { "big-endian",	-MASK_LITTLE_ENDIAN, "Produce big endian code." },	\
-  { "big",		-MASK_LITTLE_ENDIAN, "Produce big endian code." },	\
-  { "no-toc",		 0, "no description yet" },				\
-  { "toc",		 MASK_MINIMAL_TOC, "no description yet" },		\
-  { "full-toc",		 MASK_MINIMAL_TOC, "no description yet" },		\
-  { "prototype",	 MASK_PROTOTYPE, "no description yet" },		\
-  { "no-prototype",	-MASK_PROTOTYPE, "no description yet" },		\
-  { "no-traceback",	 0, "no description yet" },				\
-  { "eabi",		 MASK_EABI, "Use EABI." },				\
-  { "no-eabi",		-MASK_EABI, "Don't use EABI." },			\
-  { "regnames",		  MASK_REGNAMES, "Use alternate register names." },	\
-  { "no-regnames",	 -MASK_REGNAMES, "Don't use alternate register names." },\
-  { "sdata",		 0, "no description yet" },				\
-  { "no-sdata",		 0, "no description yet" },				\
-  { "sim",		 0, "Link with libsim.a, libc.a and sim-crt0.o." },	\
-  { "ads",		 0, "Link with libads.a, libc.a and crt0.o." },		\
-  { "yellowknife",	 0, "Link with libyk.a, libc.a and crt0.o." },		\
-  { "mvme",		 0, "Link with libmvme.a, libc.a and crt0.o." },	\
-  { "emb",		 0, "Set the PPC_EMB bit in the ELF flags header" },	\
-  { "vxworks",		 0, "no description yet" },				\
-  { "solaris-cclib",	 0, "no description yet" },				\
-  { "shlib",		 0, "no description yet" },				\
-  EXTRA_SUBTARGET_SWITCHES							\
-  { "newlib",		 0, "no description yet" },
+  { "bit-align",	-MASK_NO_BITFIELD_TYPE,				\
+    N_("Align to the base type of the bitfield.") },			\
+  { "no-bit-align",	 MASK_NO_BITFIELD_TYPE,				\
+    N_("Don't align to the base type of the bitfield.") },		\
+  { "strict-align",	 MASK_STRICT_ALIGN,				\
+    N_("Don't assume that unaligned accesses are handled by the system") }, \
+  { "no-strict-align",	-MASK_STRICT_ALIGN,				\
+    N_("Assume that unaligned accesses are handled by the system") },	\
+  { "relocatable",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC, \
+    N_("Produce code relocatable at runtime.") },			\
+  { "no-relocatable",	-MASK_RELOCATABLE,				\
+    N_("Don't produce code relocatable at runtime.") },			\
+  { "relocatable-lib",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC, \
+    N_("Produce code relocatable at runtime.") },			\
+  { "no-relocatable-lib", -MASK_RELOCATABLE,				\
+    N_("Don't produce code relocatable at runtime.") },			\
+  { "little-endian",	 MASK_LITTLE_ENDIAN,				\
+    N_("Produce little endian code.") },				\
+  { "little",		 MASK_LITTLE_ENDIAN,				\
+    N_("Produce little endian code.") },				\
+  { "big-endian",	-MASK_LITTLE_ENDIAN,				\
+    N_("Produce big endian code.") },					\
+  { "big",		-MASK_LITTLE_ENDIAN,				\
+    N_("Produce big endian code.") },					\
+  { "no-toc",		 0, N_("no description yet") },			\
+  { "toc",		 MASK_MINIMAL_TOC, N_("no description yet") },	\
+  { "full-toc",		 MASK_MINIMAL_TOC, N_("no description yet") },	\
+  { "prototype",	 MASK_PROTOTYPE, N_("no description yet") },	\
+  { "no-prototype",	-MASK_PROTOTYPE, N_("no description yet") },	\
+  { "no-traceback",	 0, N_("no description yet") },			\
+  { "eabi",		 MASK_EABI, N_("Use EABI.") },			\
+  { "no-eabi",		-MASK_EABI, N_("Don't use EABI.") },		\
+  { "regnames",		  MASK_REGNAMES,				\
+    N_("Use alternate register names.") },				\
+  { "no-regnames",	 -MASK_REGNAMES,				\
+    N_("Don't use alternate register names.") },			\
+  { "sdata",		 0, N_("no description yet") },			\
+  { "no-sdata",		 0, N_("no description yet") },			\
+  { "sim",		 0,						\
+    N_("Link with libsim.a, libc.a and sim-crt0.o.") },			\
+  { "ads",		 0,						\
+    N_("Link with libads.a, libc.a and crt0.o.") },			\
+  { "yellowknife",	 0,						\
+    N_("Link with libyk.a, libc.a and crt0.o.") },			\
+  { "mvme",		 0,						\
+    N_("Link with libmvme.a, libc.a and crt0.o.") },			\
+  { "emb",		 0,						\
+    N_("Set the PPC_EMB bit in the ELF flags header") },		\
+  { "vxworks",		 0, N_("no description yet") },			\
+  { "solaris-cclib",	 0, N_("no description yet") },			\
+  { "shlib",		 0, N_("no description yet") },			\
+  EXTRA_SUBTARGET_SWITCHES						\
+  { "newlib",		 0, N_("no description yet") },
 
 /* This is meant to be redefined in the host dependent files.  */
 #define EXTRA_SUBTARGET_SWITCHES

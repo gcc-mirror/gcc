@@ -253,81 +253,81 @@ extern int target_flags;
 
 #define TARGET_SWITCHES							\
  {{"power",		MASK_POWER  | MASK_MULTIPLE | MASK_STRING,	\
-			"Use POWER instruction set"},			\
+			N_("Use POWER instruction set")},		\
   {"power2",		(MASK_POWER | MASK_MULTIPLE | MASK_STRING	\
 			 | MASK_POWER2),				\
-			"Use POWER2 instruction set"},			\
+			N_("Use POWER2 instruction set")},		\
   {"no-power2",		- MASK_POWER2,					\
-			"Do not use POWER2 instruction set"},		\
+			N_("Do not use POWER2 instruction set")},	\
   {"no-power",		- (MASK_POWER | MASK_POWER2 | MASK_MULTIPLE	\
 			   | MASK_STRING),				\
-			"Do not use POWER instruction set"},		\
+			N_("Do not use POWER instruction set")},	\
   {"powerpc",		MASK_POWERPC,					\
-			"Use PowerPC instruction set"},			\
+			N_("Use PowerPC instruction set")},		\
   {"no-powerpc",	- (MASK_POWERPC | MASK_PPC_GPOPT		\
 			   | MASK_PPC_GFXOPT | MASK_POWERPC64),		\
-			"Do not use PowerPC instruction set"},		\
+			N_("Do not use PowerPC instruction set")},	\
   {"powerpc-gpopt",	MASK_POWERPC | MASK_PPC_GPOPT,			\
-			"Use PowerPC General Purpose group optional instructions"},\
+			N_("Use PowerPC General Purpose group optional instructions")},\
   {"no-powerpc-gpopt",	- MASK_PPC_GPOPT,				\
-			"Don't use PowerPC General Purpose group optional instructions"},\
+			N_("Don't use PowerPC General Purpose group optional instructions")},\
   {"powerpc-gfxopt",	MASK_POWERPC | MASK_PPC_GFXOPT,			\
-			"Use PowerPC Graphics group optional instructions"},\
+			N_("Use PowerPC Graphics group optional instructions")},\
   {"no-powerpc-gfxopt",	- MASK_PPC_GFXOPT,				\
-			"Don't use PowerPC Graphics group optional instructions"},\
+			N_("Don't use PowerPC Graphics group optional instructions")},\
   {"powerpc64",		MASK_POWERPC64,					\
-			"Use PowerPC-64 instruction set"},		\
+			N_("Use PowerPC-64 instruction set")},		\
   {"no-powerpc64",	- MASK_POWERPC64,				\
-			"Don't use PowerPC-64 instruction set"},	\
+			N_("Don't use PowerPC-64 instruction set")},	\
   {"new-mnemonics",	MASK_NEW_MNEMONICS,				\
-			"Use new mnemonics for PowerPC architecture"},	\
+			N_("Use new mnemonics for PowerPC architecture")},\
   {"old-mnemonics",	-MASK_NEW_MNEMONICS,				\
-			"Use old mnemonics for PowerPC architecture"},	\
+			N_("Use old mnemonics for PowerPC architecture")},\
   {"full-toc",		- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC	\
 			   | MASK_MINIMAL_TOC),				\
-			"Put everything in the regular TOC"},		\
+			N_("Put everything in the regular TOC")},	\
   {"fp-in-toc",		- MASK_NO_FP_IN_TOC,				\
-			"Place floating point constants in TOC"},	\
+			N_("Place floating point constants in TOC")},	\
   {"no-fp-in-toc",	MASK_NO_FP_IN_TOC,				\
-			"Don't place floating point constants in TOC"},	\
+			N_("Don't place floating point constants in TOC")},\
   {"sum-in-toc",	- MASK_NO_SUM_IN_TOC,				\
-			"Place symbol+offset constants in TOC"},	\
+			N_("Place symbol+offset constants in TOC")},	\
   {"no-sum-in-toc",	MASK_NO_SUM_IN_TOC,				\
-			"Don't place symbol+offset constants in TOC"},	\
+			N_("Don't place symbol+offset constants in TOC")},\
   {"minimal-toc",	MASK_MINIMAL_TOC,				\
 			"Use only one TOC entry per procedure"},	\
   {"minimal-toc",	- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC),	\
-			""},				\
+			""},						\
   {"no-minimal-toc",	- MASK_MINIMAL_TOC,				\
-			"Place variable addresses in the regular TOC"},	\
+			N_("Place variable addresses in the regular TOC")},\
   {"hard-float",	- MASK_SOFT_FLOAT,				\
-			"Use hardware fp"},				\
+			N_("Use hardware fp")},				\
   {"soft-float",	MASK_SOFT_FLOAT,				\
-			"Do not use hardware fp"},			\
+			N_("Do not use hardware fp")},			\
   {"multiple",		MASK_MULTIPLE | MASK_MULTIPLE_SET,		\
-			"Generate load/store multiple instructions"},	\
+			N_("Generate load/store multiple instructions")},	\
   {"no-multiple",	- MASK_MULTIPLE,				\
-			"Do not generate load/store multiple instructions"},\
+			N_("Do not generate load/store multiple instructions")},\
   {"no-multiple",	MASK_MULTIPLE_SET,				\
-			""},\
+			""},						\
   {"string",		MASK_STRING | MASK_STRING_SET,			\
-			"Generate string instructions for block moves"},\
+			N_("Generate string instructions for block moves")},\
   {"no-string",		- MASK_STRING,					\
-			"Do not generate string instructions for block moves"},\
+			N_("Do not generate string instructions for block moves")},\
   {"no-string",		MASK_STRING_SET,				\
-			""},\
+			""},						\
   {"update",		- MASK_NO_UPDATE,				\
-			"Generate load/store with update instructions"},\
+			N_("Generate load/store with update instructions")},\
   {"no-update",		MASK_NO_UPDATE,					\
-			"Do not generate load/store with update instructions"},\
+			N_("Do not generate load/store with update instructions")},\
   {"fused-madd",	- MASK_NO_FUSED_MADD,				\
-			"Generate fused multiply/add instructions"},	\
+			N_("Generate fused multiply/add instructions")},\
   {"no-fused-madd",	MASK_NO_FUSED_MADD,				\
-			"Don't generate fused multiply/add instructions"},\
+			N_("Don't generate fused multiply/add instructions")},\
   {"sched-prolog",      MASK_SCHED_PROLOG,                              \
 			""},						\
   {"no-sched-prolog",   -MASK_SCHED_PROLOG,                             \
-			"Don't schedule the start and end of the procedure"},\
+			N_("Don't schedule the start and end of the procedure")},\
   {"sched-epilog",      MASK_SCHED_PROLOG,                              \
 			""},						\
   {"no-sched-epilog",   -MASK_SCHED_PROLOG,                             \
@@ -399,9 +399,11 @@ extern enum processor_type rs6000_cpu;
 
 #define TARGET_OPTIONS							\
 {									\
-   {"cpu=",  &rs6000_select[1].string, "Use features of and schedule code for given CPU" },\
-   {"tune=", &rs6000_select[2].string, "Schedule code for given CPU" },	\
-   {"debug=", &rs6000_debug_name, "Enable debug output" },		\
+   {"cpu=",  &rs6000_select[1].string,					\
+    N_("Use features of and schedule code for given CPU") },		\
+   {"tune=", &rs6000_select[2].string,					\
+    N_("Schedule code for given CPU") },				\
+   {"debug=", &rs6000_debug_name, N_("Enable debug output") },		\
    SUBTARGET_OPTIONS							\
 }
 

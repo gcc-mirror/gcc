@@ -47,8 +47,8 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { {"unix", 1, "Generate code the unix assembler can handle"},  \
-    {"embos", -1, "Generate code an embedded assembler can handle"},  \
+  { {"unix", 1, N_("Generate code the unix assembler can handle")},	\
+    {"embos", -1, N_("Generate code an embedded assembler can handle")},\
     { "", TARGET_DEFAULT, NULL}}
 
 /* Default target_flags if no switches specified.  */

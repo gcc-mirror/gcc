@@ -126,50 +126,50 @@ extern int target_flags;
 #define TARGET_M340 		(target_flags & M340_BIT)
 
 
-#define TARGET_SWITCHES						\
-{ {"hardlit", 	            HARDLIT_BIT,			\
-     "Inline constants if it can be done in 2 insns or less" },	\
-  {"no-hardlit",          - HARDLIT_BIT,			\
-     "inline constants if it only takes 1 instruction" },	\
-  {"4align",              - ALIGN8_BIT,				\
-     "Set maximum alignment to 4" },				\
-  {"8align",	            ALIGN8_BIT,				\
-     "Set maximum alignment to 8" },				\
-  {"div",                   DIV_BIT,				\
-     "" },							\
-  {"no-div",	          - DIV_BIT,				\
-     "Do not use the divide instruction" },			\
-  {"relax-immediates",      RELAX_IMM_BIT,			\
-     "" },							\
-  {"no-relax-immediates", - RELAX_IMM_BIT,			\
-     "Do not arbitary sized immediates in bit operations" },	\
-  {"wide-bitfields",        W_FIELD_BIT,			\
-     "Always treat bitfield as int-sized" },			\
-  {"no-wide-bitfields",   - W_FIELD_BIT,			\
-     "" },							\
-  {"4byte-functions",       OVERALIGN_FUNC_BIT,			\
-     "Force functions to be aligned to a 4 byte boundary" },	\
-  {"no-4byte-functions",  - OVERALIGN_FUNC_BIT,			\
-     "Force functions to be aligned to a 2 byte boundary" },	\
-  {"callgraph-data",        CGDATA_BIT,				\
-     "Emit call graph information" },				\
-  {"no-callgraph-data",   - CGDATA_BIT,				\
-     "" },							\
-  {"slow-bytes",            SLOW_BYTES_BIT,			\
-     "Prefer word accesses over byte accesses" },		\
-  {"no-slow-bytes",       - SLOW_BYTES_BIT,			\
-     "" },							\
-  { "no-lsim",              0, "" },			 	\
-  {"little-endian",         LITTLE_END_BIT,			\
-     "Generate little endian code" },				\
-  {"big-endian",          - LITTLE_END_BIT,			\
-     "" },							\
-  {"210",                 - M340_BIT,				\
-     "" },							\
-  {"340",                   M340_BIT,				\
-     "Generate code for the M*Core M340" },			\
-  {"",   	            TARGET_DEFAULT,			\
-     "" }							\
+#define TARGET_SWITCHES							\
+{ {"hardlit", 	            HARDLIT_BIT,				\
+     N_("Inline constants if it can be done in 2 insns or less") },	\
+  {"no-hardlit",          - HARDLIT_BIT,				\
+     N_("inline constants if it only takes 1 instruction") },		\
+  {"4align",              - ALIGN8_BIT,					\
+     N_("Set maximum alignment to 4") },				\
+  {"8align",	            ALIGN8_BIT,					\
+     N_("Set maximum alignment to 8") },				\
+  {"div",                   DIV_BIT,					\
+     "" },								\
+  {"no-div",	          - DIV_BIT,					\
+     N_("Do not use the divide instruction") },				\
+  {"relax-immediates",      RELAX_IMM_BIT,				\
+     "" },								\
+  {"no-relax-immediates", - RELAX_IMM_BIT,				\
+     N_("Do not arbitary sized immediates in bit operations") },	\
+  {"wide-bitfields",        W_FIELD_BIT,				\
+     N_("Always treat bitfield as int-sized") },			\
+  {"no-wide-bitfields",   - W_FIELD_BIT,				\
+     "" },								\
+  {"4byte-functions",       OVERALIGN_FUNC_BIT,				\
+     N_("Force functions to be aligned to a 4 byte boundary") },	\
+  {"no-4byte-functions",  - OVERALIGN_FUNC_BIT,				\
+     N_("Force functions to be aligned to a 2 byte boundary") },	\
+  {"callgraph-data",        CGDATA_BIT,					\
+     N_("Emit call graph information") },				\
+  {"no-callgraph-data",   - CGDATA_BIT,					\
+     "" },								\
+  {"slow-bytes",            SLOW_BYTES_BIT,				\
+     N_("Prefer word accesses over byte accesses") },			\
+  {"no-slow-bytes",       - SLOW_BYTES_BIT,				\
+     "" },								\
+  { "no-lsim",              0, "" },			 		\
+  {"little-endian",         LITTLE_END_BIT,				\
+     N_("Generate little endian code") },				\
+  {"big-endian",          - LITTLE_END_BIT,				\
+     "" },								\
+  {"210",                 - M340_BIT,					\
+     "" },								\
+  {"340",                   M340_BIT,					\
+     N_("Generate code for the M*Core M340") },				\
+  {"",   	            TARGET_DEFAULT,				\
+     "" }								\
 }
 
 extern char * mcore_current_function_name;
@@ -177,10 +177,10 @@ extern char * mcore_current_function_name;
 /* Target specific options (as opposed to the switches above).  */
 extern const char * mcore_stack_increment_string;
 
-#define	TARGET_OPTIONS						\
-{								\
-  {"stack-increment=", & mcore_stack_increment_string,		\
-     "Maximum amount for a single stack increment operation"}	\
+#define	TARGET_OPTIONS							\
+{									\
+  {"stack-increment=", & mcore_stack_increment_string,			\
+     N_("Maximum amount for a single stack increment operation")}	\
 }
 
 /* The MCore ABI says that bitfields are unsigned by default. */
