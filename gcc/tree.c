@@ -1975,14 +1975,14 @@ chainon (op1, op2)
   if (op1)
     {
       register tree t1;
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_TREE_CHECKING
       register tree t2;
 #endif
 
       for (t1 = op1; TREE_CHAIN (t1); t1 = TREE_CHAIN (t1))
 	;
       TREE_CHAIN (t1) = op2;
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_TREE_CHECKING
       for (t2 = op2; t2; t2 = TREE_CHAIN (t2))
         if (t2 == t1)
           abort ();  /* Circularity created.  */
@@ -5221,7 +5221,7 @@ get_set_constructor_bytes (init, buffer, wd_size)
   return non_const_bits;
 }
 
-#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
+#if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 /* Complain that the tree code of NODE does not match the expected CODE.
    FILE, LINE, and FUNCTION are of the caller.  */
 void
@@ -5253,7 +5253,7 @@ tree_class_check_failed (node, cl, file, line, function)
   fancy_abort (file, line, function);
 }
 
-#endif /* ENABLE_CHECKING */
+#endif /* ENABLE_TREE_CHECKING */
 
 /* Return the alias set for T, which may be either a type or an
    expression.  */

@@ -1,3 +1,8 @@
+1999-12-26  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cp-tree.h: Replace ENABLE_CHECKING with ENABLE_TREE_CHECKING
+	throughout.
+
 1999-12-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (store_return_init): Use mode of old RTL generated for

@@ -1128,7 +1128,7 @@ read_rtx (infile)
   return return_rtx;
 }
 
-#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
+#if defined ENABLE_RTL_CHECKING && (GCC_VERSION >= 2007)
 void
 rtl_check_failed_bounds (r, n, file, line, func)
     rtx r;
@@ -1212,7 +1212,7 @@ rtvec_check_failed_bounds (r, n, file, line, func)
 	 n, GET_NUM_ELEM (r)-1);
   fancy_abort (file, line, func);
 }
-#endif /* ENABLE_CHECKING */
+#endif /* ENABLE_RTL_CHECKING */
 
 /* These are utility functions used by fatal-error functions all over the
    code.  rtl.c happens to be linked by all the programs that need them,

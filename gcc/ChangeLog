@@ -1,3 +1,19 @@
+1999-12-26  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* acconfig.h: New ENABLE flags: TREE_CHECKING, RTL_CHECKING,
+	GC_CHECKING, GC_ALWAYS_COLLECT.
+	* configure.in: Allow --enable-checking with an argument
+	listing check modes to enable.
+	* config.in, configure: Rebuilt.
+	* ggc-page.c, ggc-simple.c: Define GGC_POISON (and
+	GGC_ALWAYS_VERIFY for ggc-simple.c) only if
+	ENABLE_GC_CHECKING.  Define GGC_ALWAYS_COLLECT only if
+	ENABLE_GC_ALWAYS_COLLECT.
+	* rtl.h, rtl.c: Change ENABLE_CHECKING to ENABLE_RTL_CHECKING
+	throughout.
+	* tree.h, tree.c: Change ENABLE_CHECKING to
+	ENABLE_TREE_CHECKING throughout.
+
 Sun Dec 26 07:48:20 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (fold_truthop): Properly check for FP RHS.

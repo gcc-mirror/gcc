@@ -176,11 +176,30 @@ fi
 
 # Enable expensive internal checks
 AC_ARG_ENABLE(checking,
-[  --enable-checking       enable expensive run-time checks.],
+[  --enable-checking[=LIST]
+			  enable expensive run-time checks.  With LIST,
+			  enable only specific categories of checks.
+			  Categories are: misc,tree,rtl,gc,gcac; default
+			  is misc,tree,rtl],
 [case "${enableval}" in
-yes)	AC_DEFINE(ENABLE_CHECKING) ;;
+yes)	AC_DEFINE(ENABLE_CHECKING)
+	AC_DEFINE(ENABLE_TREE_CHECKING)
+	AC_DEFINE(ENABLE_RTL_CHECKING)	;;
 no)	;;
-*)	AC_MSG_ERROR(bad value ${enableval} given for checking option) ;;
+*)	ac_save_IFS="$IFS" IFS="$IFS,"
+	set fnord $enableval; shift
+	IFS="$ac_save_IFS"
+	for check; do
+		case $check in
+		misc)	AC_DEFINE(ENABLE_CHECKING)		;;
+		tree)	AC_DEFINE(ENABLE_TREE_CHECKING)		;;
+		rtl)	AC_DEFINE(ENABLE_RTL_CHECKING)		;;
+		gc)	AC_DEFINE(ENABLE_GC_CHECKING)		;;
+		gcac)	AC_DEFINE(ENABLE_GC_ALWAYS_COLLECT)	;;
+		*)	AC_MSG_ERROR(unknown check category $check) ;;
+		esac
+	done
+	;;
 esac])
 
 AC_ARG_ENABLE(cpp,

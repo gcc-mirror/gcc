@@ -226,7 +226,7 @@ typedef struct rtvec_def{
 
 /* General accessor macros for accessing the fields of an rtx.  */
 
-#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
+#if defined ENABLE_RTL_CHECKING && (GCC_VERSION >= 2007)
 /* The bit with a star outside the statement expr and an & inside is
    so that N can be evaluated only once.  */
 #define RTL_CHECK1(RTX, N, C1)						\
@@ -293,7 +293,7 @@ extern void rtvec_check_failed_bounds PROTO((rtvec, int,
 					     const char *, int, const char *))
     ATTRIBUTE_NORETURN;
 
-#else   /* not ENABLE_CHECKING */
+#else   /* not ENABLE_RTL_CHECKING */
 
 #define RTL_CHECK1(RTX, N, C1)      ((RTX)->fld[N])
 #define RTL_CHECK2(RTX, N, C1, C2)  ((RTX)->fld[N])
