@@ -1,3 +1,10 @@
+2004-10-20  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR java/15575
+	* configure.ac: Declare AM_LANGINFO_CODESET.
+	* aclocal.m4: Define AM_LANGINFO_CODESET.
+	* configure, config.in: Rebuilt.
+
 2004-10-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expr.c (store_expr): Remove code that is run when

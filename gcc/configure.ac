@@ -1024,6 +1024,8 @@ AC_SUBST(LIBICONV_DEP)
 
 AM_LC_MESSAGES
 
+AM_LANGINFO_CODESET
+
 # We will need to find libiberty.h and ansidecl.h
 saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include"
