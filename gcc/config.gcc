@@ -2886,7 +2886,7 @@ mips*-*-*)
 	esac
 	case $machine in
 		mips*el-*-*)
-			tm_file="mips/little.h ${tm_file}"
+			tm_defines="TARGET_ENDIAN_DEFAULT=0 $tm_defines"
 			;;
 	esac
 	;;
