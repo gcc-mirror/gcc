@@ -1,3 +1,7 @@
+2000-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* method.c (make_thunk): Clear DECL_VTT_PARM in thunk.
+
 2000-06-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (pushdecl): Look up functions by DECL_NAME, not
