@@ -73,6 +73,7 @@ public abstract class UnicodeToBytes extends IOConverter
   {
     /* First hunt in our cache to see if we have a encoder that is
        already allocated. */
+    encoding = canonicalize(encoding);
     synchronized (UnicodeToBytes.class)
       {
 	int i;
@@ -88,7 +89,7 @@ public abstract class UnicodeToBytes extends IOConverter
 	  }
       }
 
-    String className = "gnu.gcj.convert.Output_" + canonicalize (encoding);
+    String className = "gnu.gcj.convert.Output_" + encoding;
     Class encodingClass;
     try 
       { 
