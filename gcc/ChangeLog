@@ -14,6 +14,9 @@ Wed Aug 26 09:30:59 1998  Nick Clifton  <nickc@cygnus.com>
 
 Wed Aug 26 12:57:09 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* calls.c (expand_call): Use bitfield instructions to extract/deposit
+	word sized hunks when loading unaligned args into registers.
+
 	* haifa-sched.c (sched_analyze_insn): Only create scheduling
 	barriers for LOOP, EH and SETJMP notes on the loop_notes list.
 
