@@ -1,3 +1,8 @@
+2001-05-22  Anthony Green  <green@redhat.com>
+
+	* configure.in: Tweak canadian cross test, and don't redefine GCJ
+	for cross builds.
+
 2001-05-21  Per Bothner  <per@bothner.com>
 
 	Implement invocation interface; don't create new thread for main.

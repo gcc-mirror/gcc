@@ -374,12 +374,10 @@ if test -n "${with_cross_host}"; then
 
    # If Canadian cross, then don't pick up tools from the build
    # directory.
-   if test "$build" != "$with_cross_host"; then
+   if test x"$build" != x"$with_cross_host" && x"$build" != x"$target"; then
       CANADIAN=yes
       GCC_UNWIND_INCLUDE=
       GCJ="${target_alias}-gcj"
-   else
-      GCJ=
    fi
    NATIVE=no
 else
