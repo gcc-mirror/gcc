@@ -1,3 +1,20 @@
+2002-12-23  Jeff Sturm  <jsturm@one-point.com>
+
+	* class.c (build_static_field_ref): Check FIELD_FINAL.
+
+	* constants.c (alloc_class_constant): Use TYPE_CPOOL_DATA_REF
+	instead of current_constant_pool_data_ref.
+	* java-tree.h (current_constant_pool_data_ref): Undefine.
+	(JTI_CURRENT_CONSTANT_POOL_DATA_REF): Remove.
+	* jcf-parse.c (init_outgoing_cpool): Don't initialize
+	current_constant_pool_data_ref.
+
+	* except.c (prepare_eh_table_type ): Use DECL_NAME of class type,
+	not build_internal_class_name.
+
+	* parse.y (patch_incomplete_class_ref): Always emit `class$' method.
+	Use it when class ref isn't certain to be compiled.
+
 2002-12-23  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcj.texi: Include gcc-common.texi.

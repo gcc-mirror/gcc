@@ -709,7 +709,6 @@ load_inner_classes (cur_class)
 void
 init_outgoing_cpool ()
 {
-  current_constant_pool_data_ref = NULL_TREE;
   outgoing_cpool = xmalloc (sizeof (struct CPool));
   memset (outgoing_cpool, 0, sizeof (struct CPool));
 }

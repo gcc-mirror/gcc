@@ -399,7 +399,6 @@ enum java_tree_index
   JTI_NATIVECODE_PTR_ARRAY_TYPE_NODE,
 
   JTI_WFL_OPERATOR,
-  JTI_CURRENT_CONSTANT_POOL_DATA_REF,
 
   JTI_MAIN_CLASS,
   JTI_CURRENT_CLASS,
@@ -685,10 +684,6 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
 
 /* They need to be reset before processing each class */
 extern struct CPool *outgoing_cpool; 
-/* If non-NULL, an ADDR_EXPR referencing a VAR_DECL containing
-   the constant data array for the current class. */
-#define current_constant_pool_data_ref \
-  java_global_trees[JTI_CURRENT_CONSTANT_POOL_DATA_REF]
 
 #define wfl_operator \
   java_global_trees[JTI_WFL_OPERATOR]

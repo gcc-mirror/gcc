@@ -14073,7 +14073,16 @@ patch_incomplete_class_ref (node)
   if (!(ref_type = resolve_type_during_patch (type)))
     return error_mark_node;
 
-  if (!flag_emit_class_files || JPRIMITIVE_TYPE_P (ref_type)
+  /* Generate the synthetic static method `class$'.  (Previously we
+     deferred this, causing different method tables to be emitted
+     for native code and bytecode.)  */
+  if (!TYPE_DOT_CLASS (current_class))
+      build_dot_class_method (current_class);
+
+  /* If we're not emitting class files and we know ref_type is a
+     compiled class, build a direct reference.  */
+  if ((! flag_emit_class_files && is_compiled_class (ref_type))
+      || JPRIMITIVE_TYPE_P (ref_type)
       || TREE_CODE (ref_type) == VOID_TYPE)
     {
       tree dot = build_class_ref (ref_type);
@@ -14084,10 +14093,7 @@ patch_incomplete_class_ref (node)
     }
 
   /* If we're emitting class files and we have to deal with non
-     primitive types, we invoke (and consider generating) the
-     synthetic static method `class$'. */
-  if (!TYPE_DOT_CLASS (current_class))
-      build_dot_class_method (current_class);
+     primitive types, we invoke the synthetic static method `class$'.  */
   ref_type = build_dot_class_method_invocation (ref_type);
   return java_complete_tree (ref_type);
 }
