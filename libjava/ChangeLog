@@ -1,5 +1,9 @@
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/FileLockImpl.java: Compile fixes.
+
+2004-01-23  Michael Koch  <konqueror@gmx.de>
+
 	* java/lang/VMClassLoader.java: Reworked imports.
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 

@@ -82,8 +82,7 @@ public class FileLockImpl extends FileLock
   
   public boolean isValid ()
   {
-    return (released
-            || !channel ().isOpen ());
+    return !channel().isOpen();
   }
 
   private native void releaseImpl () throws IOException;
@@ -91,6 +90,5 @@ public class FileLockImpl extends FileLock
   public synchronized void release () throws IOException
   {
     releaseImpl ();
-    released = true;
   }
 }
