@@ -1,3 +1,16 @@
+2002-06-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplib.c (end_directive): Handle line skipping.  Only remove
+	the rest of the line if the directive was valid.
+	* cppmacro.c (_cpp_push_text_context): Set NODE_DISABLED when
+	expanding a traditional macro.
+	* cpptrad.c (recursive_macro): New.
+	(read_logical_line_trad): Handle skipping.
+	(scan_out_logical_line): Continue after a successful directive.
+	Don't expand macros whilst skipping, or if recursing.
+	(_cpp_create_trad_definition): scan_out_logical_line now sets
+	the output current position.
+
 2002-06-12  Eric Christopher  <echristo@redhat.com>
 
 	From Chris Demetriou  <cgd@broadcom.com>

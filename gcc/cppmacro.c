@@ -947,6 +947,7 @@ _cpp_push_text_context (pfile, macro, start, len)
   context->buff = NULL;
   CUR (context) = start;
   RLIMIT (context) = start + len;
+  macro->flags |= NODE_DISABLED;
 }
 
 /* Expand an argument ARG before replacing parameters in a

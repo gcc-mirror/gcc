@@ -256,7 +256,7 @@ end_directive (pfile, skip_line)
 {
   if (CPP_OPTION (pfile, traditional))
     {
-      if (pfile->directive == &dtable[T_DEFINE])
+      if (!pfile->directive || pfile->directive == &dtable[T_DEFINE])
 	skip_line = false;
       else
 	_cpp_remove_overlay (pfile);
@@ -290,12 +290,15 @@ prepare_directive_trad (pfile)
   else
     {
       bool no_expand = ! (pfile->directive->flags & EXPAND);
+      bool was_skipping = pfile->state.skipping;
 
+      pfile->state.skipping = false;
       if (no_expand)
 	pfile->state.prevent_expansion++;
       _cpp_read_logical_line_trad (pfile);
       if (no_expand)
 	pfile->state.prevent_expansion--;
+      pfile->state.skipping = was_skipping;
       _cpp_overlay_buffer (pfile, pfile->out.base,
 			   pfile->out.cur - pfile->out.base);
     }
