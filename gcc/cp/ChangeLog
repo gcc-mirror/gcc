@@ -1,5 +1,12 @@
 2000-03-07  Jason Merrill  <jason@casey.cygnus.com>
 
+	Add initial support for '\uNNNN' specifier.
+	* lex.c (read_ucs): New fn.
+	(readescape, skip_white_space): Call it.
+	(is_extended_char, is_extended_char_1): New fns.
+	(utf8_extend_token): New fn, #if 0'd out.
+	(real_yylex): Treat extended chars like letters.
+
 	* search.c (note_debug_info_needed): Walk the bases even if we 
 	weren't deferring the type itself.
 
