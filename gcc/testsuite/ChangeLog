@@ -1,3 +1,9 @@
+2002-11-19  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* gcc.dg/duff-1.c: New test.
+	* gcc.dg/duff-2.c: New test.
+	* gcc.dg/duff-3.c: New test.
+
 2002-11-18  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/_Pragma5.c: New test.
