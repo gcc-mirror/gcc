@@ -13822,7 +13822,9 @@ x86_field_alignment (field, computed)
     return computed;
   mode = TYPE_MODE (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
 		    ? get_inner_array_type (field) : TREE_TYPE (field));
-  if (mode == DFmode || mode == DCmode || mode == DImode || mode == CDImode)
+  if (mode == DFmode || mode == DCmode
+      || GET_MODE_CLASS (mode) == MODE_INT
+      || GET_MODE_CLASS (mode) == MODE_COMPLEX_INT)
     return MIN (32, computed);
   return computed;
 }

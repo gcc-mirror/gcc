@@ -1,3 +1,7 @@
+2002-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/abi/bitfield3.C: New test.
+
 2002-08-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* lib/gcov.exp: Tweak expected line formats.
