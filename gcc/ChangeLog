@@ -1,5 +1,12 @@
 Thu Dec 10 07:21:44 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* aclocal.m4 (GCC_HEADER_INTTYPES, GCC_CHECK_STRINGIFY): New macros.
+	* configure.in: Use them instead of inline text.
+	(malloc.h): Check for presence.
+	(free, malloc, calloc, realloc): Include malloc.h to see if need decl.
+	* system.h (malloc.h): Conditionally include.
+	(free, malloc, calloc, realloc): Conditionally declare.
+
 	* gcov.c (fatal): New function.
 
 Wed Dec  9 06:25:12 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
