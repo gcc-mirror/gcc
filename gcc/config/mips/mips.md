@@ -100,6 +100,7 @@
 ;; store	store instruction(s)
 ;; prefetch	memory prefetch
 ;; move		data movement within same register set
+;; condmove	conditional moves
 ;; xfer		transfer to/from coprocessor
 ;; hilo		transfer of hi/lo registers
 ;; arith	integer arithmetic instruction
@@ -122,7 +123,7 @@
 ;; multi	multiword sequence (or user asm statements)
 ;; nop		no operation
 (define_attr "type"
-  "unknown,branch,jump,call,load,store,prefetch,move,xfer,hilo,const,arith,darith,imul,imadd,idiv,icmp,fadd,fmul,fmadd,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,multi,nop"
+  "unknown,branch,jump,call,load,store,prefetch,move,condmove,xfer,hilo,const,arith,darith,imul,imadd,idiv,icmp,fadd,fmul,fmadd,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,multi,nop"
   (cond [(eq_attr "jal" "!unset")
 	 (const_string "call")]
 	(const_string "unknown")))
@@ -8764,7 +8765,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   "@
     mov%B4\\t%0,%z2,%1
     mov%b4\\t%0,%z3,%1"
-  [(set_attr "type" "move")
+  [(set_attr "type" "condmove")
    (set_attr "mode" "SI")])
 
 (define_insn ""
@@ -8779,7 +8780,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   "@
     mov%B4\\t%0,%z2,%1
     mov%b4\\t%0,%z3,%1"
-  [(set_attr "type" "move")
+  [(set_attr "type" "condmove")
    (set_attr "mode" "SI")])
 
 (define_insn ""
@@ -8795,7 +8796,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   "@
     mov%T3\\t%0,%z1,%4
     mov%t3\\t%0,%z2,%4"
-  [(set_attr "type" "move")
+  [(set_attr "type" "condmove")
    (set_attr "mode" "SI")])
 
 (define_insn ""
@@ -8810,7 +8811,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   "@
     mov%B4\\t%0,%z2,%1
     mov%b4\\t%0,%z3,%1"
-  [(set_attr "type" "move")
+  [(set_attr "type" "condmove")
    (set_attr "mode" "DI")])
 
 (define_insn ""
@@ -8825,7 +8826,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   "@
     mov%B4\\t%0,%z2,%1
     mov%b4\\t%0,%z3,%1"
-  [(set_attr "type" "move")
+  [(set_attr "type" "condmove")
    (set_attr "mode" "DI")])
 
 (define_insn ""
@@ -8841,7 +8842,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   "@
     mov%T3\\t%0,%z1,%4
     mov%t3\\t%0,%z2,%4"
-  [(set_attr "type" "move")
+  [(set_attr "type" "condmove")
    (set_attr "mode" "DI")])
 
 (define_insn ""
@@ -8856,7 +8857,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   "@
     mov%B4.s\\t%0,%2,%1
     mov%b4.s\\t%0,%3,%1"
-  [(set_attr "type" "move")
+  [(set_attr "type" "condmove")
    (set_attr "mode" "SF")])
 
 (define_insn ""
@@ -8871,7 +8872,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   "@
     mov%B4.s\\t%0,%2,%1
     mov%b4.s\\t%0,%3,%1"
-  [(set_attr "type" "move")
+  [(set_attr "type" "condmove")
    (set_attr "mode" "SF")])
 
 (define_insn ""
@@ -8887,7 +8888,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   "@
     mov%T3.s\\t%0,%1,%4
     mov%t3.s\\t%0,%2,%4"
-  [(set_attr "type" "move")
+  [(set_attr "type" "condmove")
    (set_attr "mode" "SF")])
 
 (define_insn ""
@@ -8902,7 +8903,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   "@
     mov%B4.d\\t%0,%2,%1
     mov%b4.d\\t%0,%3,%1"
-  [(set_attr "type" "move")
+  [(set_attr "type" "condmove")
    (set_attr "mode" "DF")])
 
 (define_insn ""
@@ -8917,7 +8918,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   "@
     mov%B4.d\\t%0,%2,%1
     mov%b4.d\\t%0,%3,%1"
-  [(set_attr "type" "move")
+  [(set_attr "type" "condmove")
    (set_attr "mode" "DF")])
 
 (define_insn ""
@@ -8933,7 +8934,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   "@
     mov%T3.d\\t%0,%1,%4
     mov%t3.d\\t%0,%2,%4"
-  [(set_attr "type" "move")
+  [(set_attr "type" "condmove")
    (set_attr "mode" "DF")])
 
 ;; These are the main define_expand's used to make conditional moves.
