@@ -2526,14 +2526,7 @@ simplify_rtx (x)
       return simplify_unary_operation (code, mode,
 				       XEXP (x, 0), GET_MODE (XEXP (x, 0)));
     case 'c':
-      /* Put complex operands first and constants second if commutative.  */
-      if (GET_RTX_CLASS (code) == 'c'
-	  && ((CONSTANT_P (XEXP (x, 0)) && GET_CODE (XEXP (x, 1)) != CONST_INT)
-	      || (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == 'o'
-		  && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) != 'o')
-	      || (GET_CODE (XEXP (x, 0)) == SUBREG
-		  && GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (x, 0)))) == 'o'
-		  && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) != 'o')))
+      if (swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
 	{
 	  rtx tem;
 

@@ -98,6 +98,8 @@ Sun Jul  1 11:53:52 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Fri Jun 29 12:27:24 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* simplify-rtx.c (simplify_rtx): Use swap_commutative_operands_p.
+
 	* doc/gcc.texi (Passes): Update due to recent -fdce -> -fssa-dce
 	changes.  Fix documentation for SSA DCE pass.
 
