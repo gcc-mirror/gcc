@@ -1,3 +1,7 @@
+2000-11-24  Magnus Fromreide <magfr@lysator.liu.se>
+
+	* sstream: Backport libstdc++-V3 sstream to V2.
+
 2000-10-23  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* std/std_valarray.h (valarray::valarray): Use __valarray_copy,
