@@ -3240,11 +3240,6 @@ extern bool contains_placeholder_p (tree);
 
 extern bool type_contains_placeholder_p (tree);
 
-/* Return 1 if EXP contains any expressions that produce cleanups for an
-   outer scope to deal with.  Used by fold.  */
-
-extern int has_cleanups (tree);
-
 /* Given a tree EXP, a FIELD_DECL F, and a replacement value R,
    return a tree with all occurrences of references to F in a
    PLACEHOLDER_EXPR replaced by R.   Note that we assume here that EXP

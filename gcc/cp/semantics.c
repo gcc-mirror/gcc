@@ -358,7 +358,7 @@ static tree
 maybe_cleanup_point_expr (tree expr)
 {
   if (!processing_template_decl && stmts_are_full_exprs_p ())
-    expr = fold (build1 (CLEANUP_POINT_EXPR, TREE_TYPE (expr), expr));
+    expr = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (expr), expr);
   return expr;
 }
 

@@ -1,3 +1,9 @@
+2004-09-12  Richard Henderson  <rth@redhat.com>
+
+	PR c++/16254
+	* fold-const.c (fold) <case CLEANUP_POINT_EXPR>: Remove.
+	* tree.c, tree.h (has_cleanups): Remove.
+
 2004-09-12  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* tree-ssa-loop-manip.c (split_loop_exit_edge): Handle non-ssaname

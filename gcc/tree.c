@@ -1805,67 +1805,6 @@ type_contains_placeholder_p (tree type)
       gcc_unreachable ();
     }
 }
-
-/* Return 1 if EXP contains any expressions that produce cleanups for an
-   outer scope to deal with.  Used by fold.  */
-
-int
-has_cleanups (tree exp)
-{
-  int i, nops, cmp;
-
-  if (! TREE_SIDE_EFFECTS (exp))
-    return 0;
-
-  switch (TREE_CODE (exp))
-    {
-    case TARGET_EXPR:
-    case WITH_CLEANUP_EXPR:
-      return 1;
-
-    case CLEANUP_POINT_EXPR:
-      return 0;
-
-    case CALL_EXPR:
-      for (exp = TREE_OPERAND (exp, 1); exp; exp = TREE_CHAIN (exp))
-	{
-	  cmp = has_cleanups (TREE_VALUE (exp));
-	  if (cmp)
-	    return cmp;
-	}
-      return 0;
-
-    case DECL_EXPR:
-      return (DECL_INITIAL (DECL_EXPR_DECL (exp))
-	      && has_cleanups (DECL_INITIAL (DECL_EXPR_DECL (exp))));
-
-    default:
-      break;
-    }
-
-  /* This general rule works for most tree codes.  All exceptions should be
-     handled above.  If this is a language-specific tree code, we can't
-     trust what might be in the operand, so say we don't know
-     the situation.  */
-  if ((int) TREE_CODE (exp) >= (int) LAST_AND_UNUSED_TREE_CODE)
-    return -1;
-
-  nops = first_rtl_op (TREE_CODE (exp));
-  for (i = 0; i < nops; i++)
-    if (TREE_OPERAND (exp, i) != 0)
-      {
-	int type = TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, i)));
-	if (type == 'e' || type == '<' || type == '1' || type == '2'
-	    || type == 'r' || type == 's')
-	  {
-	    cmp = has_cleanups (TREE_OPERAND (exp, i));
-	    if (cmp)
-	      return cmp;
-	  }
-      }
-
-  return 0;
-}
 
 /* Given a tree EXP, a FIELD_DECL F, and a replacement value R,
    return a tree with all occurrences of references to F in a
