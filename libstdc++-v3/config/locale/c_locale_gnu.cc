@@ -50,7 +50,7 @@ namespace std
     if (!__cloc)
       {
 	// This named locale is not supported by the underlying OS.
-	throw runtime_error("attempt to create locale from unknown name");
+	__throw_runtime_error("attempt to create locale from unknown name");
       }
   }
   

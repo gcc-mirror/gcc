@@ -46,10 +46,7 @@
 
 #include <bits/std_cstdio.h>     
 #include <bits/std_iostream.h>
-
-#ifdef __STL_USE_EXCEPTIONS
-# include <bits/std_stdexcept.h>
-#endif
+# include <bits/functexcept.h>
 
 namespace std
 {
@@ -98,7 +95,7 @@ void _Rope_iterator_base<_CharT,_Alloc>::_S_setbuf(
 	    }
 	    break;
 	default:
-	    __stl_assert(0);
+	  break;
     }
 }
 
@@ -115,7 +112,6 @@ void _Rope_iterator_base<_CharT,_Alloc>::_S_setcache
     size_t __pos = __x._M_current_pos;
     unsigned char __dirns = 0; // Bit vector marking right turns in the path
 
-    __stl_assert(__pos <= __x._M_root->_M_size);
     if (__pos >= __x._M_root->_M_size) {
 	__x._M_buf_ptr = 0;
 	return;
@@ -133,7 +129,6 @@ void _Rope_iterator_base<_CharT,_Alloc>::_S_setcache
     }
     for(;;) {
 	++__curr_depth;
-	__stl_assert(__curr_depth <= _RopeRep::_S_max_rope_depth);
 	__path[__curr_depth] = __curr_rope;
 	switch(__curr_rope->_M_tag) {
 	  case _RopeRep::_S_leaf:
@@ -189,13 +184,11 @@ void _Rope_iterator_base<_CharT,_Alloc>::_S_setcache_for_incr
     unsigned char __dirns = __x._M_path_directions;
     _Rope_RopeConcatenation<_CharT,_Alloc>* __c;
 
-    __stl_assert(__x._M_current_pos <= __x._M_root->_M_size);
     if (__x._M_current_pos - __node_start_pos < __len) {
 	/* More stuff in this leaf, we just didn't cache it. */
 	_S_setbuf(__x);
 	return;
     }
-    __stl_assert(__node_start_pos + __len == __x._M_current_pos);
     //  node_start_pos is starting position of last_node.
     while (--__current_index >= 0) {
 	if (!(__dirns & 1) /* Path turned left */) 
@@ -408,12 +401,16 @@ rope<_CharT,_Alloc>::_S_leaf_concat_char_iter
     uninitialized_copy_n(__r->_M_data, __old_len, __new_data);
     uninitialized_copy_n(__iter, __len, __new_data + __old_len);
     _S_cond_store_eos(__new_data[__old_len + __len]);
-    __STL_TRY {
+    try {
 	__result = _S_new_RopeLeaf(__new_data, __old_len + __len,
 				   __r->get_allocator());
     }
-    __STL_UNWIND(_RopeRep::__STL_FREE_STRING(__new_data, __old_len + __len,
-					     __r->get_allocator()));
+    catch(...)
+      {
+	_RopeRep::__STL_FREE_STRING(__new_data, __old_len + __len,
+				    __r->get_allocator());
+	__throw_exception_again;
+      }
     return __result;
 }
 
@@ -424,7 +421,6 @@ rope<_CharT,_Alloc>::_RopeLeaf*
 rope<_CharT,_Alloc>::_S_destr_leaf_concat_char_iter
 		(_RopeLeaf* __r, const _CharT* __iter, size_t __len)
 {
-    __stl_assert(__r->_M_ref_count >= 1);
     if (__r->_M_ref_count > 1)
       return _S_leaf_concat_char_iter(__r, __iter, __len);
     size_t __old_len = __r->_M_size;
@@ -434,18 +430,15 @@ rope<_CharT,_Alloc>::_S_destr_leaf_concat_char_iter
 	uninitialized_copy_n(__iter, __len, __r->_M_data + __old_len);
 	if (_S_is_basic_char_type((_CharT*)0)) {
 	    _S_cond_store_eos(__r->_M_data[__old_len + __len]);
-	    __stl_assert(__r->_M_c_string == __r->_M_data);
 	} else if (__r->_M_c_string != __r->_M_data && 0 != __r->_M_c_string) {
 	    __r->_M_free_c_string();
 	    __r->_M_c_string = 0;
 	}
 	__r->_M_size = __old_len + __len;
-	__stl_assert(__r->_M_ref_count == 1);
 	__r->_M_ref_count = 2;
 	return __r;
     } else {
 	_RopeLeaf* __result = _S_leaf_concat_char_iter(__r, __iter, __len);
-	__stl_assert(__result->_M_ref_count == 1);
 	return __result;
     }
 }
@@ -458,34 +451,33 @@ template <class _CharT, class _Alloc>
 rope<_CharT,_Alloc>::_RopeRep*
 rope<_CharT,_Alloc>::_S_tree_concat (_RopeRep* __left, _RopeRep* __right)
 {
-    _RopeConcatenation* __result =
-      _S_new_RopeConcatenation(__left, __right, __left->get_allocator());
-    size_t __depth = __result->_M_depth;
+  _RopeConcatenation* __result = _S_new_RopeConcatenation(__left, __right, 
+						      __left->get_allocator());
+  size_t __depth = __result->_M_depth;
     
-      __stl_assert(__left->get_allocator() == __right->get_allocator());
-    if (__depth > 20 && (__result->_M_size < 1000 ||
-			 __depth > _RopeRep::_S_max_rope_depth)) {
-        _RopeRep* __balanced;
+  if (__depth > 20 && (__result->_M_size < 1000 ||
+		       __depth > _RopeRep::_S_max_rope_depth)) 
+    {
+      _RopeRep* __balanced;
       
-	__STL_TRY {
-	   __balanced = _S_balance(__result);
-#          ifndef __GC
-	     if (__result != __balanced) {
-		__stl_assert(1 == __result->_M_ref_count
-			     && 1 == __balanced->_M_ref_count);
-	     }
-#          endif
-	   __result->_M_unref_nonnil();
+      try 
+	{
+	  __balanced = _S_balance(__result);
+	  __result->_M_unref_nonnil();
         }
-	__STL_UNWIND((_C_deallocate(__result,1)));
-		// In case of exception, we need to deallocate
-		// otherwise dangling result node.  But caller
-		// still owns its children.  Thus unref is
-		// inappropriate.
-	return __balanced;
-    } else {
-	return __result;
-    }
+      catch(...)
+	{ 
+	  _C_deallocate(__result,1);
+	  __throw_exception_again;
+	}
+      // In case of exception, we need to deallocate
+      // otherwise dangling result node.  But caller
+      // still owns its children.  Thus unref is
+      // inappropriate.
+      return __balanced;
+    } 
+  else 
+    return __result;
 }
 
 template <class _CharT, class _Alloc>
@@ -503,9 +495,6 @@ rope<_CharT,_Alloc>::_RopeRep* rope<_CharT,_Alloc>::_S_concat_char_iter
     if (_RopeRep::_S_leaf == __r->_M_tag && 
           __r->_M_size + __slen <= _S_copy_max) {
 	__result = _S_leaf_concat_char_iter((_RopeLeaf*)__r, __s, __slen);
-#       ifndef __GC
-	  __stl_assert(1 == __result->_M_ref_count);
-#       endif
 	return __result;
     }
     if (_RopeRep::_S_concat == __r->_M_tag
@@ -517,26 +506,30 @@ rope<_CharT,_Alloc>::_RopeRep* rope<_CharT,_Alloc>::_S_concat_char_iter
 	  _RopeRep* __nright = 
 	    _S_leaf_concat_char_iter((_RopeLeaf*)__right, __s, __slen);
 	  __left->_M_ref_nonnil();
-	  __STL_TRY {
+	  try {
 	    __result = _S_tree_concat(__left, __nright);
           }
-	  __STL_UNWIND(_S_unref(__left); _S_unref(__nright));
-#         ifndef __GC
-	    __stl_assert(1 == __result->_M_ref_count);
-#         endif
+	  catch(...)
+	    {
+	      _S_unref(__left); 
+	      _S_unref(__nright);
+	      __throw_exception_again;
+	    }
 	  return __result;
 	}
     }
     _RopeRep* __nright =
       __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen, __r->get_allocator());
-    __STL_TRY {
+    try {
       __r->_M_ref_nonnil();
       __result = _S_tree_concat(__r, __nright);
     }
-    __STL_UNWIND(_S_unref(__r); _S_unref(__nright));
-#   ifndef __GC
-      __stl_assert(1 == __result->_M_ref_count);
-#   endif
+    catch(...)
+      {
+	_S_unref(__r); 
+	_S_unref(__nright);
+	__throw_exception_again;
+      }
     return __result;
 }
 
@@ -552,7 +545,6 @@ rope<_CharT,_Alloc>::_S_destr_concat_char_iter(
 					      __r->get_allocator());
     size_t __count = __r->_M_ref_count;
     size_t __orig_size = __r->_M_size;
-    __stl_assert(__count >= 1);
     if (__count > 1) return _S_concat_char_iter(__r, __s, __slen);
     if (0 == __slen) {
 	__r->_M_ref_count = 2;      // One more than before
@@ -569,14 +561,10 @@ rope<_CharT,_Alloc>::_S_destr_concat_char_iter(
 	    && __right->_M_size + __slen <= _S_copy_max) {
 	  _RopeRep* __new_right = 
 	    _S_destr_leaf_concat_char_iter(__right, __s, __slen);
-	  if (__right == __new_right) {
-	      __stl_assert(__new_right->_M_ref_count == 2);
-	      __new_right->_M_ref_count = 1;
-	  } else {
-	      __stl_assert(__new_right->_M_ref_count >= 1);
-	      __right->_M_unref_nonnil();
-	  }
-	  __stl_assert(__r->_M_ref_count == 1);
+	  if (__right == __new_right) 
+	    __new_right->_M_ref_count = 1;
+	  else 
+	    __right->_M_unref_nonnil();
 	  __r->_M_ref_count = 2;    // One more than before.
 	  ((_RopeConcatenation*)__r)->_M_right = __new_right;
 	  __r->_M_size = __orig_size + __slen;
@@ -590,11 +578,15 @@ rope<_CharT,_Alloc>::_S_destr_concat_char_iter(
     _RopeRep* __right =
       __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen, __r->get_allocator());
     __r->_M_ref_nonnil();
-    __STL_TRY {
+    try {
       __result = _S_tree_concat(__r, __right);
     }
-    __STL_UNWIND(_S_unref(__r); _S_unref(__right))
-    __stl_assert(1 == __result->_M_ref_count);
+    catch(...)
+      {
+	_S_unref(__r); 
+	_S_unref(__right);
+	__throw_exception_again;
+      }
     return __result;
 }
 #endif /* !__GC */
@@ -629,19 +621,29 @@ rope<_CharT,_Alloc>::_S_concat(_RopeRep* __left, _RopeRep* __right)
 					   ((_RopeLeaf*)__right)->_M_data,
 					   __right->_M_size);
 	    __leftleft->_M_ref_nonnil();
-	    __STL_TRY {
+	    try {
 	      return(_S_tree_concat(__leftleft, __rest));
             }
-	    __STL_UNWIND(_S_unref(__leftleft); _S_unref(__rest))
+	    catch(...)
+	      {
+		_S_unref(__leftleft); 
+		_S_unref(__rest);
+		__throw_exception_again;
+	      }
 	  }
 	}
     }
     __left->_M_ref_nonnil();
     __right->_M_ref_nonnil();
-    __STL_TRY {
+    try {
       return(_S_tree_concat(__left, __right));
     }
-    __STL_UNWIND(_S_unref(__left); _S_unref(__right));
+    catch(...)
+      {
+	_S_unref(__left); 
+	_S_unref(__right);
+	__throw_exception_again;
+      }	
 }
 
 template <class _CharT, class _Alloc>
@@ -684,9 +686,6 @@ rope<_CharT,_Alloc>::_S_substring(_RopeRep* __base,
 		_Self_destruct_ptr __right_result(
 		  _S_substring(__right, 0, __endp1 - __left_len));
 		__result = _S_concat(__left_result, __right_result);
-#               ifndef __GC
-		  __stl_assert(1 == __result->_M_ref_count);
-#               endif
 		return __result;
 	    }
 	case _RopeRep::_S_leaf:
@@ -738,18 +737,20 @@ rope<_CharT,_Alloc>::_S_substring(_RopeRep* __base,
 		if (__result_len > __lazy_threshold) goto lazy;
 		__section = (_CharT*)
 			_Data_allocate(_S_rounded_up_size(__result_len));
-		__STL_TRY {
+		try {
 		  (*(__f->_M_fn))(__start, __result_len, __section);
                 }
-		__STL_UNWIND(_RopeRep::__STL_FREE_STRING(
-	               __section, __result_len, __base->get_allocator()));
+		catch(...)
+		  {
+		    _RopeRep::__STL_FREE_STRING(
+	               __section, __result_len, __base->get_allocator());
+		    __throw_exception_again;
+		  }
 		_S_cond_store_eos(__section[__result_len]);
 		return _S_new_RopeLeaf(__section, __result_len,
 				       __base->get_allocator());
 	    }
     }
-    /*NOTREACHED*/
-    __stl_assert(false);
   lazy:
     {
 	// Create substring node.
@@ -862,19 +863,20 @@ bool rope<_CharT, _Alloc>::_S_apply_to_pieces(
 		bool __result;
 		_CharT* __buffer =
 		  (_CharT*)alloc::allocate(__len * sizeof(_CharT));
-		__STL_TRY {
+		try {
 		  (*(__f->_M_fn))(__begin, __len, __buffer);
 		  __result = __c(__buffer, __len);
                   alloc::deallocate(__buffer, __len * sizeof(_CharT));
                 }
-		__STL_UNWIND((alloc::deallocate(__buffer,
-						__len * sizeof(_CharT))))
+		catch(...)
+		  {
+		    alloc::deallocate(__buffer, __len * sizeof(_CharT));
+		    __throw_exception_again;
+		  }
 		return __result;
 	    }
 	default:
-	    __stl_assert(false);
-	    /*NOTREACHED*/
-	    return false;
+	  return false;
     }
 }
 
@@ -909,7 +911,7 @@ basic_ostream<_CharT, _Traits>& operator<< (basic_ostream<_CharT, _Traits>& __o,
 	__pad_len = 0;
     }
     if (!__is_simple) __o.width(__w/__rope_len);
-    __STL_TRY {
+    try {
       if (__is_simple && !__left && __pad_len > 0) {
 	_Rope_fill(__o, __pad_len);
       }
@@ -920,7 +922,12 @@ basic_ostream<_CharT, _Traits>& operator<< (basic_ostream<_CharT, _Traits>& __o,
       if (!__is_simple)
         __o.width(__w);
     }
-    __STL_UNWIND(if (!__is_simple) __o.width(__w))
+    catch(...)
+      {
+	if (!__is_simple) 
+	  __o.width(__w);
+	__throw_exception_again;
+      }
     return __o;
 }
 
@@ -977,8 +984,6 @@ rope<_CharT,_Alloc>::_S_flatten(_RopeRep* __r, _CharT* __buffer)
 		return __buffer + __f->_M_size;
 	    }
 	default:
-	    __stl_assert(false);
-	    /*NOTREACHED*/
 	    return 0;
     }
 }
@@ -1081,7 +1086,7 @@ rope<_CharT,_Alloc>::_S_balance(_RopeRep* __r)
 
     for (__i = 0; __i <= _RopeRep::_S_max_rope_depth; ++__i) 
       __forest[__i] = 0;
-    __STL_TRY {
+    try {
       _S_add_to_forest(__r, __forest);
       for (__i = 0; __i <= _RopeRep::_S_max_rope_depth; ++__i) 
         if (0 != __forest[__i]) {
@@ -1090,20 +1095,20 @@ rope<_CharT,_Alloc>::_S_balance(_RopeRep* __r)
 #	endif
 	  __result = _S_concat(__forest[__i], __result);
 	__forest[__i]->_M_unref_nonnil();
-#	if !defined(__GC) && defined(__STL_USE_EXCEPTIONS)
+#	if !defined(__GC) && defined(__EXCEPTIONS)
 	  __forest[__i] = 0;
 #	endif
       }
     }
-    __STL_UNWIND(for(__i = 0; __i <= _RopeRep::_S_max_rope_depth; __i++)
-		 _S_unref(__forest[__i]))
-    if (__result->_M_depth > _RopeRep::_S_max_rope_depth) {
-#     ifdef __STL_USE_EXCEPTIONS
-	__STL_THROW(length_error("rope too long"));
-#     else
-	abort();
-#     endif
-    }
+    catch(...)
+      {
+	for(__i = 0; __i <= _RopeRep::_S_max_rope_depth; __i++)
+	  _S_unref(__forest[__i]);
+	__throw_exception_again;
+      }
+
+    if (__result->_M_depth > _RopeRep::_S_max_rope_depth)
+      __throw_length_error("rope too long");
     return(__result);
 }
 
@@ -1116,7 +1121,7 @@ rope<_CharT,_Alloc>::_S_add_to_forest(_RopeRep* __r, _RopeRep** __forest)
 	_S_add_leaf_to_forest(__r, __forest);
 	return;
     }
-    __stl_assert(__r->_M_tag == _RopeRep::_S_concat);
+
     {
 	_RopeConcatenation* __c = (_RopeConcatenation*)__r;
 
@@ -1153,8 +1158,6 @@ rope<_CharT,_Alloc>::_S_add_leaf_to_forest(_RopeRep* __r, _RopeRep** __forest)
     }
     // Too_tiny dead, and no longer included in refcount.
     // Insertee is live and included.
-    __stl_assert(_S_is_almost_balanced(__insertee));
-    __stl_assert(__insertee->_M_depth <= __r->_M_depth + 1);
     for (;; ++__i) {
 	if (0 != __forest[__i]) {
 #	    ifndef __GC
@@ -1163,10 +1166,7 @@ rope<_CharT,_Alloc>::_S_add_leaf_to_forest(_RopeRep* __r, _RopeRep** __forest)
 	    __insertee = _S_concat_and_set_balanced(__forest[__i], __insertee);
 	    __forest[__i]->_M_unref_nonnil();
 	    __forest[__i] = 0;
-	    __stl_assert(_S_is_almost_balanced(__insertee));
 	}
-	__stl_assert(_S_min_len[__i] <= __insertee->_M_size);
-	__stl_assert(__forest[__i] == 0);
 	if (__i == _RopeRep::_S_max_rope_depth || 
 	      __insertee->_M_size < _S_min_len[__i+1]) {
 	    __forest[__i] = __insertee;
@@ -1182,7 +1182,6 @@ rope<_CharT,_Alloc>::_S_fetch(_RopeRep* __r, size_type __i)
 {
     __GC_CONST _CharT* __cstr = __r->_M_c_string;
 
-    __stl_assert(__i < __r->_M_size);
     if (0 != __cstr) return __cstr[__i]; 
     for(;;) {
       switch(__r->_M_tag) {
@@ -1336,13 +1335,9 @@ _Rope_char_ref_proxy<_CharT, _Alloc>::operator= (_CharT __c) {
     _Self_destruct_ptr __result_left(
       _My_rope::_S_destr_concat_char_iter(__left, &__c, 1));
 
-#   ifndef __GC
-      __stl_assert(__left == __result_left || 1 == __result_left->_M_ref_count);
-#   endif
     _RopeRep* __result =
 		_My_rope::_S_concat(__result_left, __right);
 #   ifndef __GC
-      __stl_assert(1 <= __result->_M_ref_count);
       _RopeRep::_S_unref(__old);
 #   endif
     _M_root->_M_tree_ptr = __result;
@@ -1388,10 +1383,14 @@ rope<_CharT, _Alloc>::rope(size_t __n, _CharT __c,
 	__rest_buffer = _Data_allocate(_S_rounded_up_size(__rest));
 	uninitialized_fill_n(__rest_buffer, __rest, __c);
 	_S_cond_store_eos(__rest_buffer[__rest]);
-	__STL_TRY {
+	try {
 	    __remainder = _S_new_RopeLeaf(__rest_buffer, __rest, __a);
         }
-	__STL_UNWIND(_RopeRep::__STL_FREE_STRING(__rest_buffer, __rest, __a))
+	catch(...)
+	  {
+	    _RopeRep::__STL_FREE_STRING(__rest_buffer, __rest, __a);
+	    __throw_exception_again;
+	  }
     }
     __remainder_rope._M_tree_ptr = __remainder;
     if (__exponent != 0) {
@@ -1401,19 +1400,19 @@ rope<_CharT, _Alloc>::rope(size_t __n, _CharT __c,
 	rope __base_rope;
 	uninitialized_fill_n(__base_buffer, __exponentiate_threshold, __c);
 	_S_cond_store_eos(__base_buffer[__exponentiate_threshold]);
-	__STL_TRY {
+	try {
           __base_leaf = _S_new_RopeLeaf(__base_buffer,
                                         __exponentiate_threshold, __a);
         }
-	__STL_UNWIND(_RopeRep::__STL_FREE_STRING(__base_buffer, 
-	                                         __exponentiate_threshold, __a))
+	catch(...)
+	  {
+	    _RopeRep::__STL_FREE_STRING(__base_buffer, 
+					__exponentiate_threshold, __a);
+	    __throw_exception_again;
+	  }
 	__base_rope._M_tree_ptr = __base_leaf;
  	if (1 == __exponent) {
 	  __result = __base_rope;
-#         ifndef __GC
-	    __stl_assert(2 == __result._M_tree_ptr->_M_ref_count);
-		// One each for base_rope and __result
-#         endif
 	} else {
 	  __result = power(__base_rope, __exponent,
 			   _Rope_Concat_fn<_CharT,_Alloc>());
@@ -1490,8 +1489,6 @@ _Rope_rotate(_Rope_iterator __first,
   typedef typename _Rope_iterator::value_type _CharT;
   typedef typename _Rope_iterator::_allocator_type _Alloc;
   
-  __stl_assert(__first.container() == __middle.container()
-                           && __middle.container() == __last.container());
   rope<_CharT,_Alloc>& __r(__first.container());
   rope<_CharT,_Alloc> __prefix = __r.substr(0, __first.index());
   rope<_CharT,_Alloc> __suffix = 

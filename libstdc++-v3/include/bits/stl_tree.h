@@ -556,10 +556,14 @@ protected:
   _M_create_node(const value_type& __x)
   {
     _Link_type __tmp = _M_get_node();
-    __STL_TRY {
+    try {
       _Construct(&__tmp->_M_value_field, __x);
     }
-    __STL_UNWIND(_M_put_node(__tmp));
+    catch(...)
+      {
+	_M_put_node(__tmp);
+	__throw_exception_again; 
+      }
     return __tmp;
   }
 
@@ -1032,7 +1036,7 @@ _Rb_tree<_Key,_Val,_KoV,_Compare,_Alloc>
   _Link_type __top = _M_clone_node(__x);
   __top->_M_parent = __p;
  
-  __STL_TRY {
+  try {
     if (__x->_M_right)
       __top->_M_right = _M_copy(_S_right(__x), __top);
     __p = __top;
@@ -1048,8 +1052,11 @@ _Rb_tree<_Key,_Val,_KoV,_Compare,_Alloc>
       __x = _S_left(__x);
     }
   }
-  __STL_UNWIND(_M_erase(__top));
-
+  catch(...)
+    {
+      _M_erase(__top);
+      __throw_exception_again; 
+    }
   return __top;
 }
 

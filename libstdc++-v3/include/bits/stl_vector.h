@@ -437,11 +437,15 @@ protected:
                                                _ForwardIterator __last)
   {
     pointer __result = _M_allocate(__n);
-    __STL_TRY {
+    try {
       uninitialized_copy(__first, __last, __result);
       return __result;
     }
-    __STL_UNWIND(_M_deallocate(__result, __n));
+    catch(...)
+      { 
+	_M_deallocate(__result, __n);
+	__throw_exception_again;
+      }
   }
 
   template <class _InputIterator>
@@ -617,7 +621,7 @@ vector<_Tp, _Alloc>::_M_insert_aux(iterator __position, const _Tp& __x)
     const size_type __len = __old_size != 0 ? 2 * __old_size : 1;
     iterator __new_start(_M_allocate(__len));
     iterator __new_finish(__new_start);
-    __STL_TRY {
+    try {
       __new_finish = uninitialized_copy(iterator(_M_start), __position,
                                         __new_start);
       _Construct(__new_finish.base(), __x);
@@ -625,8 +629,12 @@ vector<_Tp, _Alloc>::_M_insert_aux(iterator __position, const _Tp& __x)
       __new_finish = uninitialized_copy(__position, iterator(_M_finish),
                                         __new_finish);
     }
-    __STL_UNWIND((_Destroy(__new_start,__new_finish), 
-                  _M_deallocate(__new_start.base(),__len)));
+    catch(...)
+      { 
+	_Destroy(__new_start,__new_finish); 
+	_M_deallocate(__new_start.base(),__len);
+	__throw_exception_again;
+      }
     _Destroy(begin(), end());
     _M_deallocate(_M_start, _M_end_of_storage - _M_start);
     _M_start = __new_start.base();
@@ -651,7 +659,7 @@ vector<_Tp, _Alloc>::_M_insert_aux(iterator __position)
     const size_type __len = __old_size != 0 ? 2 * __old_size : 1;
     pointer __new_start = _M_allocate(__len);
     pointer __new_finish = __new_start;
-    __STL_TRY {
+    try {
       __new_finish = uninitialized_copy(iterator(_M_start), __position, 
 					__new_start);
       _Construct(__new_finish);
@@ -659,8 +667,12 @@ vector<_Tp, _Alloc>::_M_insert_aux(iterator __position)
       __new_finish = uninitialized_copy(__position, iterator(_M_finish), 
 					__new_finish);
     }
-    __STL_UNWIND((_Destroy(__new_start,__new_finish), 
-                  _M_deallocate(__new_start,__len)));
+    catch(...)
+      {
+	_Destroy(__new_start,__new_finish); 
+	_M_deallocate(__new_start,__len);
+	__throw_exception_again;
+      }
     _Destroy(begin(), end());
     _M_deallocate(_M_start, _M_end_of_storage - _M_start);
     _M_start = __new_start;
@@ -697,14 +709,18 @@ void vector<_Tp, _Alloc>::_M_fill_insert(iterator __position, size_type __n,
       const size_type __len = __old_size + max(__old_size, __n);
       iterator __new_start(_M_allocate(__len));
       iterator __new_finish(__new_start);
-      __STL_TRY {
+      try {
         __new_finish = uninitialized_copy(begin(), __position, __new_start);
         __new_finish = uninitialized_fill_n(__new_finish, __n, __x);
         __new_finish
           = uninitialized_copy(__position, end(), __new_finish);
       }
-      __STL_UNWIND((_Destroy(__new_start,__new_finish), 
-                    _M_deallocate(__new_start.base(),__len)));
+      catch(...)
+	{
+	  _Destroy(__new_start,__new_finish); 
+	  _M_deallocate(__new_start.base(),__len);
+	  __throw_exception_again;
+	}
       _Destroy(_M_start, _M_finish);
       _M_deallocate(_M_start, _M_end_of_storage - _M_start);
       _M_start = __new_start.base();
@@ -761,15 +777,19 @@ vector<_Tp, _Alloc>::_M_range_insert(iterator __position,
       const size_type __len = __old_size + max(__old_size, __n);
       iterator __new_start(_M_allocate(__len));
       iterator __new_finish(__new_start);
-      __STL_TRY {
+      try {
         __new_finish = uninitialized_copy(iterator(_M_start), 
 					  __position, __new_start);
         __new_finish = uninitialized_copy(__first, __last, __new_finish);
         __new_finish
           = uninitialized_copy(__position, iterator(_M_finish), __new_finish);
       }
-      __STL_UNWIND((_Destroy(__new_start,__new_finish), 
-                    _M_deallocate(__new_start.base(),__len)));
+      catch(...)
+	{
+	  _Destroy(__new_start,__new_finish);
+	  _M_deallocate(__new_start.base(), __len);
+	  __throw_exception_again;
+	}
       _Destroy(_M_start, _M_finish);
       _M_deallocate(_M_start, _M_end_of_storage - _M_start);
       _M_start = __new_start.base();

@@ -422,12 +422,12 @@ public:
     typedef pthread_allocator<_NewType> other;
   };
 
-  pthread_allocator() __STL_NOTHROW {}
-  pthread_allocator(const pthread_allocator& a) __STL_NOTHROW {}
+  pthread_allocator() throw() {}
+  pthread_allocator(const pthread_allocator& a) throw() {}
   template <class _OtherType>
 	pthread_allocator(const pthread_allocator<_OtherType>&)
-		__STL_NOTHROW {}
-  ~pthread_allocator() __STL_NOTHROW {}
+		throw() {}
+  ~pthread_allocator() throw() {}
 
   pointer address(reference __x) const { return &__x; }
   const_pointer address(const_reference __x) const { return &__x; }
@@ -443,7 +443,7 @@ public:
   void deallocate(pointer __p, size_type __n)
     { _S_Alloc::deallocate(__p, __n * sizeof(_Tp)); }
 
-  size_type max_size() const __STL_NOTHROW 
+  size_type max_size() const throw() 
     { return size_t(-1) / sizeof(_Tp); }
 
   void construct(pointer __p, const _Tp& __val) { new(__p) _Tp(__val); }

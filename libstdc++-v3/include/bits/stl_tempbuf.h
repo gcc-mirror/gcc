@@ -138,14 +138,20 @@ public:
     typedef typename __type_traits<_Tp>::has_trivial_default_constructor
             _Trivial;
 
-    __STL_TRY {
+    try {
       _M_len = 0;
       distance(__first, __last, _M_len);
       _M_allocate_buffer();
       if (_M_len > 0)
         _M_initialize_buffer(*__first, _Trivial());
     }
-    __STL_UNWIND(free(_M_buffer); _M_buffer = 0; _M_len = 0);
+    catch(...)
+      { 
+	free(_M_buffer); 
+	_M_buffer = 0; 
+	_M_len = 0;
+	__throw_exception_again; 
+      }
   }
  
   ~_Temporary_buffer() {  

@@ -28,6 +28,7 @@
 // the GNU General Public License.
 
 #include "new"
+#include <cstdlib>
 #include <exception_defines.h>
 
 using std::new_handler;

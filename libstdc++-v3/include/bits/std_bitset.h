@@ -59,9 +59,9 @@
 #include <bits/std_cstddef.h>     // for size_t
 #include <bits/std_cstring.h>     // for memset
 #include <bits/std_string.h>
-#include <bits/std_stdexcept.h>   // for invalid_argument, out_of_range, 
-				  // overflow_error
-
+#include <bits/std_stdexcept.h>
+#include <bits/functexcept.h>   // for invalid_argument, out_of_range, 
+			         // overflow_error
 #include <bits/std_ostream.h>     // for ostream (operator<<)
 #include <bits/std_istream.h>     // for istream (operator>>)
 
@@ -244,7 +244,7 @@ unsigned long _Base_bitset<_Nw>::_M_do_to_ulong() const
 {
   for (size_t __i = 1; __i < _Nw; ++__i) 
     if (_M_w[__i]) 
-      __STL_THROW(overflow_error("bitset"));
+      __throw_overflow_error("bitset");
   
   return _M_w[0];
 }
@@ -490,7 +490,7 @@ public:
     : _Base() 
   {
     if (__pos > __s.size()) 
-      __STL_THROW(out_of_range("bitset"));
+      __throw_out_of_range("bitset");
     _M_copy_from_string(__s, __pos,
                         basic_string<_CharT, _Traits, _Alloc>::npos);
   }
@@ -501,7 +501,7 @@ public:
     : _Base() 
   {
     if (__pos > __s.size()) 
-      __STL_THROW(out_of_range("bitset"));
+      __throw_out_of_range("bitset");
     _M_copy_from_string(__s, __pos, __n);
   }
 
@@ -577,7 +577,7 @@ public:
 
   bitset<_Nb>& set(size_t __pos, bool __val = true) {
     if (__pos >= _Nb)
-      __STL_THROW(out_of_range("bitset"));
+      __throw_out_of_range("bitset");
 
     return _Unchecked_set(__pos, __val);
   }
@@ -589,7 +589,7 @@ public:
 
   bitset<_Nb>& reset(size_t __pos) {
     if (__pos >= _Nb)
-      __STL_THROW(out_of_range("bitset"));
+      __throw_out_of_range("bitset");
 
     return _Unchecked_reset(__pos);
   }
@@ -602,7 +602,7 @@ public:
 
   bitset<_Nb>& flip(size_t __pos) {
     if (__pos >= _Nb)
-      __STL_THROW(out_of_range("bitset"));
+      __throw_out_of_range("bitset");
 
     return _Unchecked_flip(__pos);
   }
@@ -650,7 +650,7 @@ public:
 
   bool test(size_t __pos) const {
     if (__pos >= _Nb)
-      __STL_THROW(out_of_range("bitset"));
+      __throw_out_of_range("bitset");
 
     return _Unchecked_test(__pos);
   }
@@ -700,7 +700,7 @@ void bitset<_Nb>
       set(__i);
       break;
     default:
-      __STL_THROW(invalid_argument("bitset"));
+      __throw_invalid_argument("bitset");
     }
   }
 }

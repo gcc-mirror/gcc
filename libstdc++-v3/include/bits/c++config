@@ -72,25 +72,6 @@
 // internal ABI change).
 #define __STL_GTHREADS
 #define __STL_THREADS
-#define __STL_VOLATILE volatile
-
-// This is also a user hook, but via -f[no-]exceptions, not direct #defines.
-#ifdef __EXCEPTIONS
-# define __STL_USE_EXCEPTIONS
-# define __STL_TRY try
-# define __STL_CATCH_ALL catch(...)
-# define __STL_THROW(x) throw x
-# define __STL_RETHROW throw
-# define __STL_NOTHROW throw()
-# define __STL_UNWIND(action) catch(...) { action; throw; }
-#else
-# define __STL_TRY 
-# define __STL_CATCH_ALL if (false)
-# define __STL_THROW(x) 
-# define __STL_RETHROW 
-# define __STL_NOTHROW 
-# define __STL_UNWIND(action) 
-#endif
 
 // Default to the typically high-speed, pool-based allocator (as
 // libstdc++-v2) instead of the malloc-based allocator (libstdc++-v3
@@ -103,11 +84,6 @@
 
 // The remainder of the prewritten config is mostly automatic; all the
 // user hooks are listed above.
-
-// XXX 
-// Only used in the SGI rope extensions; this is from stl_config.h and
-// should be cleaned up.
-# define __stl_assert(expr)
 
 /** @namespace std
  *  @brief Everything defined by the ISO C++ Standard is within namespace std.
