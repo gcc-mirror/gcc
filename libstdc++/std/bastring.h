@@ -1,5 +1,5 @@
 // Main templates for the -*- C++ -*- string classes.
-// Copyright (C) 1994, 1995 Free Software Foundation
+// Copyright (C) 1994, 1995, 1999 Free Software Foundation
 
 // This file is part of the GNU ANSI C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -180,11 +180,11 @@ public:
     : dat (nilRep.grab ()) { assign (n, c); }
 #ifdef __STL_MEMBER_TEMPLATES
   template<class InputIterator>
-    basic_string(InputIterator begin, InputIterator end)
+    basic_string(InputIterator __begin, InputIterator __end)
 #else
-  basic_string(const_iterator begin, const_iterator end)
+  basic_string(const_iterator __begin, const_iterator __end)
 #endif
-    : dat (nilRep.grab ()) { assign (begin, end); }
+    : dat (nilRep.grab ()) { assign (__begin, __end); }
 
   ~basic_string ()
     { rep ()->release (); }
