@@ -1,9 +1,15 @@
+2003-07-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* fixinc/inclhack.def (solaris_mutex_init_2): Escape braces
+	in regexp that don't form a range expression.
+	* fixinc/fixincl.def: Regenerate.
+
 2003-07-17  Richard Henderson  <rth@redhat.com>
 
-        PR target/10907
-        * config/ia64/ia64.c (ia64_epilogue_uses): GP is live at end
-        even with !TARGET_CONST_GP.
-        (ia64_function_ok_for_sibcall): Reject non-local functions.
+	PR target/10907
+	* config/ia64/ia64.c (ia64_epilogue_uses): GP is live at end
+	even with !TARGET_CONST_GP.
+	(ia64_function_ok_for_sibcall): Reject non-local functions.
 
 2003-07-17  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -25,7 +31,7 @@
 	Move the entry of "-mimpure-text" before that of "-mv8".
 
 2003-07-17  Eric Botcazou <ebotcazou@libertysurf.fr>
-            Phil Edwards <phil@jaj.com>
+	    Phil Edwards <phil@jaj.com>
 
 	* doc/install.texi (*-*-solaris2*): Document the step-by-step
 	procedure to bootstrap and install.
@@ -107,7 +113,7 @@ objc:
 	(simplify_rtx): Likewise.  Simplify (lo_sum (high X) X) as X.
 
 2003-07-16  Andrew Pinski  <pinskia@physics.uc.edu>
-	
+
 	* doc/install.texi (--without-headers): New.
 
 	Partial Fix PR/10129
