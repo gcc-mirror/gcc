@@ -148,6 +148,12 @@ Boston, MA 02111-1307, USA.  */
    %(link_arch) \
    %{Qy:} %{!Qn:-Qy}"
 
+/* The Solaris linker doesn't understand constructor priorities.  (The
+   GNU linker does support constructor priorities, so GNU ld
+   configuration files for Solaris override this setting.)  */
+#undef SUPPORTS_INIT_PRIORITY
+#define SUPPORTS_INIT_PRIORITY 0
+
 /* This defines which switch letters take arguments.
    It is as in svr4.h but with -R added.  */
 #undef SWITCH_TAKES_ARG
