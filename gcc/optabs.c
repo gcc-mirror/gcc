@@ -1,5 +1,5 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
-   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -207,6 +207,7 @@ rtxfun bcc_gen_fctn[NUM_RTX_CODE];
 enum insn_code setcc_gen_code[NUM_RTX_CODE];
 
 static int add_equal_note	PROTO((rtx, rtx, enum rtx_code, rtx, rtx));
+static rtx widen_operand	PROTO((rtx, enum machine_mode, int, int));
 static void emit_float_lib_cmp	PROTO((rtx, rtx, enum rtx_code));
 static enum insn_code can_fix_p	PROTO((enum machine_mode, enum machine_mode,
 				       int, int *));
@@ -271,6 +272,43 @@ add_equal_note (seq, target, code, op0, op1)
 	       REG_NOTES (XVECEXP (seq, 0, XVECLEN (seq, 0) - 1)));
 
   return 1;
+}
+
+/* Widen OP to MODE and return the rtx for the widened operand.  UNSIGNEDP
+   says whether OP is signed or unsigned.  NO_EXTEND is nonzero if we need
+   not actually do a sign-extend or zero-extend, but can leave the 
+   higher-order bits of the result rtx undefined, for example, in the case
+   of logical operations, but not right shifts.  */
+
+static rtx
+widen_operand (op, mode, unsignedp, no_extend)
+     rtx op;
+     enum machine_mode mode;
+     int unsignedp;
+     int no_extend;
+{
+  rtx result;
+
+  /* If we must extend do so.  If OP is either a constant or a SUBREG
+     for a promoted object, also extend since it will be more efficient to
+     do so.  */
+  if (! no_extend
+      || GET_MODE (op) == VOIDmode
+      || (GET_CODE (op) == SUBREG && SUBREG_PROMOTED_VAR_P (op)))
+    return convert_to_mode (mode, op, unsignedp);
+
+  /* If MODE is no wider than a single word, we return a paradoxical
+     SUBREG.  */
+  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
+    return gen_rtx (SUBREG, mode, force_reg (GET_MODE (op), op), 0);
+
+  /* Otherwise, get an object of MODE, clobber it, and set the low-order
+     part to OP.  */
+
+  result = gen_reg_rtx (mode);
+  emit_insn (gen_rtx (CLOBBER, VOIDmode, result));
+  emit_move_insn (gen_lowpart (GET_MODE (op), result), op);
+  return result;
 }
 
 /* Generate code to perform an operation specified by BINOPTAB
@@ -477,40 +515,18 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	    /* For certain integer operations, we need not actually extend
 	       the narrow operands, as long as we will truncate
-	       the results to the same narrowness.  Don't do this when
-	       WIDER_MODE is wider than a word since a paradoxical SUBREG
-	       isn't valid for such modes.  */
+	       the results to the same narrowness.   */
 
 	    if ((binoptab == ior_optab || binoptab == and_optab
 		 || binoptab == xor_optab
 		 || binoptab == add_optab || binoptab == sub_optab
 		 || binoptab == smul_optab
 		 || binoptab == ashl_optab || binoptab == lshl_optab)
-		&& class == MODE_INT
-		&& GET_MODE_SIZE (wider_mode) <= UNITS_PER_WORD)
+		&& class == MODE_INT)
 	      no_extend = 1;
 
-	    /* If an operand is a constant integer, we might as well
-	       convert it since that is more efficient than using a SUBREG,
-	       unlike the case for other operands.  Similarly for
-	       SUBREGs that were made due to promoted objects.  */
-
-	    if (no_extend && GET_MODE (xop0) != VOIDmode
-		&& ! (GET_CODE (xop0) == SUBREG
-		      && SUBREG_PROMOTED_VAR_P (xop0)))
-	      xop0 = gen_rtx (SUBREG, wider_mode,
-			      force_reg (GET_MODE (xop0), xop0), 0);
-	    else
-	      xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
-
-	    if (no_extend && GET_MODE (xop1) != VOIDmode
-		&& ! (GET_CODE (xop1) == SUBREG
-		      && SUBREG_PROMOTED_VAR_P (xop1)))
-	      xop1 = gen_rtx (SUBREG, wider_mode,
-				force_reg (GET_MODE (xop1), xop1), 0);
-	    else
-	      xop1 = convert_to_mode (wider_mode, xop1, unsignedp);
-
+	    xop0 = widen_operand (xop0, wider_mode, unsignedp, no_extend);
+	    xop1 = widen_operand (xop1, wider_mode, unsignedp, no_extend);
 	    temp = expand_binop (wider_mode, binoptab, xop0, xop1, NULL_RTX,
 				 unsignedp, OPTAB_DIRECT);
 	    if (temp)
@@ -1392,39 +1408,18 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	      /* For certain integer operations, we need not actually extend
 		 the narrow operands, as long as we will truncate
-		 the results to the same narrowness.  Don't do this when
-		 WIDER_MODE is wider than a word since a paradoxical SUBREG
-		 isn't valid for such modes.  */
+		 the results to the same narrowness.  */
 
 	      if ((binoptab == ior_optab || binoptab == and_optab
 		   || binoptab == xor_optab
 		   || binoptab == add_optab || binoptab == sub_optab
 		   || binoptab == smul_optab
 		   || binoptab == ashl_optab || binoptab == lshl_optab)
-		  && class == MODE_INT
-		  && GET_MODE_SIZE (wider_mode) <= UNITS_PER_WORD)
+		  && class == MODE_INT)
 		no_extend = 1;
 
-	      /* If an operand is a constant integer, we might as well
-		 convert it since that is more efficient than using a SUBREG,
-		 unlike the case for other operands.  Similarly for
-		 SUBREGs that were made due to promoted objects.*/
-
-	      if (no_extend && GET_MODE (xop0) != VOIDmode
-		&& ! (GET_CODE (xop0) == SUBREG
-		      && SUBREG_PROMOTED_VAR_P (xop0)))
-		xop0 = gen_rtx (SUBREG, wider_mode,
-				force_reg (GET_MODE (xop0), xop0), 0);
-	      else
-		xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
-
-	      if (no_extend && GET_MODE (xop1) != VOIDmode
-		&& ! (GET_CODE (xop1) == SUBREG
-		      && SUBREG_PROMOTED_VAR_P (xop1)))
-		xop1 = gen_rtx (SUBREG, wider_mode,
-				force_reg (GET_MODE (xop1), xop1), 0);
-	      else
-		xop1 = convert_to_mode (wider_mode, xop1, unsignedp);
+	      xop0 = widen_operand (xop0, wider_mode, unsignedp, no_extend);
+	      xop1 = widen_operand (xop1, wider_mode, unsignedp, no_extend);
 
 	      temp = expand_binop (wider_mode, binoptab, xop0, xop1, NULL_RTX,
 				   unsignedp, methods);
@@ -1728,17 +1723,12 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 
 	    /* For certain operations, we need not actually extend
 	       the narrow operand, as long as we will truncate the
-	       results to the same narrowness.  But it is faster to
-	       convert a SUBREG due to mode promotion.  */
+	       results to the same narrowness.  */
 
-	    if ((unoptab == neg_optab || unoptab == one_cmpl_optab)
-		&& GET_MODE_SIZE (wider_mode) <= UNITS_PER_WORD
-		&& class == MODE_INT
-		&& ! (GET_CODE (xop0) == SUBREG
-		      && SUBREG_PROMOTED_VAR_P (xop0)))
-	      xop0 = gen_rtx (SUBREG, wider_mode, force_reg (mode, xop0), 0);
-	    else
-	      xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
+	    xop0 = widen_operand (xop0, wider_mode, unsignedp,
+				  (unoptab == neg_optab
+				   || unoptab == one_cmpl_optab)
+				  && class == MODE_INT);
 	      
 	    temp = expand_unop (wider_mode, unoptab, xop0, NULL_RTX,
 				unsignedp);
@@ -1876,14 +1866,10 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 		 the narrow operand, as long as we will truncate the
 		 results to the same narrowness.  */
 
-	      if ((unoptab == neg_optab || unoptab == one_cmpl_optab)
-		  && GET_MODE_SIZE (wider_mode) <= UNITS_PER_WORD
-		  && class == MODE_INT
-		  && ! (GET_CODE (xop0) == SUBREG
-			&& SUBREG_PROMOTED_VAR_P (xop0)))
-		xop0 = gen_rtx (SUBREG, wider_mode, force_reg (mode, xop0), 0);
-	      else
-		xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
+	      xop0 = widen_operand (xop0, wider_mode, unsignedp,
+				    (unoptab == neg_optab
+				     || unoptab == one_cmpl_optab)
+				    && class == MODE_INT);
 	      
 	      temp = expand_unop (wider_mode, unoptab, xop0, NULL_RTX,
 				  unsignedp);
