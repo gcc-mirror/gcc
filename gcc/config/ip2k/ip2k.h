@@ -1,7 +1,7 @@
 /* Definitions of target machine for GCC,
    For Ubicom IP2022 Communications Controller
 
-   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc and Ubicom, Inc.
 
 This file is part of GCC.
@@ -462,23 +462,12 @@ enum reg_class {
 
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == REG_RESULT)
 
-#define RETURN_IN_MEMORY(TYPE) \
-  ((TYPE_MODE (TYPE) == BLKmode) ? int_size_in_bytes (TYPE) > 8 : 0)
-
 /* Indicate that large structures are passed by reference.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM,MODE,TYPE,NAMED)	0
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-#define STRUCT_VALUE 0
-
-#define STRUCT_VALUE_INCOMING 0
-
 #define EPILOGUE_USES(REGNO) 0
-
-#define SETUP_INCOMING_VARARGS(ARGS_SO_FAR,MODE,TYPE,		\
-			       PRETEND_ARGS_SIZE,SECOND_TIME)	\
-  ((PRETEND_ARGS_SIZE) = (0))
 
 
 /*  Hmmm.  We don't actually like constants as addresses - they always need

@@ -1,5 +1,17 @@
 2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/ip2k/ip2k.c (TARGET_STRUCT_VALUE_RTX): New.
+	(TARGET_RETURN_IN_MEMORY): Likewise.
+	(TARGET_SETUP_INCOMING_VARARGS): Likewise.
+	(ip2k_return_in_memory): Likewise.
+	(ip2k_setup_incoming_varargs): Likewise.
+	* config/ip2k/ip2k.h (RETURN_IN_MEMORY): Remove.
+	(STRUCT_VALUE): Likewise.
+	(STRUCT_VALUE_INCOMING): Likewise.
+	(SETUP_INCOMING_VARARGS): Likewise.
+
+2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/avr/avr.c (TARGET_STRUCT_VALUE_RTX): New.
 	(TARGET_RETURN_IN_MEMORY): Likewise.
 	(TARGET_STRICT_ARGUMENT_NAMING): Likewise.
