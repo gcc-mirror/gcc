@@ -4603,15 +4603,16 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
      from an expression of the same type, optionally with braces.
      For an array, this is allowed only for a string constant.  */
 
-  if (inside_init && (TREE_TYPE (inside_init) == type
-	       || (code == ARRAY_TYPE && TREE_TYPE (inside_init)
-		   && comptypes (TREE_TYPE (inside_init), type))
-	       || (code == POINTER_TYPE
-		   && TREE_TYPE (inside_init) != 0
-		   && (TREE_CODE (TREE_TYPE (inside_init)) == ARRAY_TYPE
-		       || TREE_CODE (TREE_TYPE (inside_init)) == FUNCTION_TYPE)
-		   && comptypes (TREE_TYPE (TREE_TYPE (inside_init)),
-				 TREE_TYPE (type)))))
+  if (inside_init
+      && (TYPE_MAIN_VARIANT (TREE_TYPE (inside_init)) == TYPE_MAIN_VARIANT (type)
+	  || (code == ARRAY_TYPE && TREE_TYPE (inside_init)
+	      && comptypes (TREE_TYPE (inside_init), type))
+	  || (code == POINTER_TYPE
+	      && TREE_TYPE (inside_init) != 0
+	      && (TREE_CODE (TREE_TYPE (inside_init)) == ARRAY_TYPE
+		  || TREE_CODE (TREE_TYPE (inside_init)) == FUNCTION_TYPE)
+	      && comptypes (TREE_TYPE (TREE_TYPE (inside_init)),
+			    TREE_TYPE (type)))))
     {
       if (code == POINTER_TYPE
 	  && (TREE_CODE (TREE_TYPE (inside_init)) == ARRAY_TYPE
@@ -4867,7 +4868,11 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
      no matter how the data was given to us.  */
 
   if (elts)
-    tail = *elts;
+    {
+      if (extra_warnings)
+	warning ("aggregate has a partly bracketed initializer");
+      tail = *elts;
+    }
   else
     tail = CONSTRUCTOR_ELTS (init);
 
