@@ -2866,6 +2866,45 @@ __enable_execute_stack ()
 
 #endif /* __sysV88__ */
 
+#ifdef __sysV68__
+
+#include <sys/signal.h>
+#include <errno.h>
+
+/* Motorola forgot to put memctl.o in the libp version of libc881.a,
+   so define it here, because we need it in __clear_insn_cache below */
+
+asm("\n\
+	global memctl\n\
+memctl:\n\
+	movq &75,%d0\n\
+	trap &0\n\
+	bcc.b noerror\n\
+	jmp cerror%\n\
+noerror:\n\
+	movq &0,%d0\n\
+	rts");
+
+/* Clear instruction cache so we can call trampolines on stack.
+   This is called from FINALIZE_TRAMPOLINE in mot3300.h.  */
+
+void
+__clear_insn_cache ()
+{
+  int save_errno;
+
+  /* Preserve errno, because users would be surprised to have
+  errno changing without explicitly calling any system-call. */
+  save_errno = errno;
+
+  /* Keep it simple : memctl (MCT_TEXT) always fully clears the insn cache. 
+     No need to use an address derived from _start or %sp, as 0 works also. */
+  memctl(0, 4096, MCT_TEXT);
+  errno = save_errno;
+}
+
+#endif /* __sysV68__ */
+
 #ifdef __pyr__
 
 #undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
