@@ -1,4 +1,13 @@
-Thu May 13 09:35:51 1999  Philip Blundell  <pb@nexus.co.uk>
+Sat May 22 21:02:06 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* collect2.c (main): Only generate import or export file and add
+	to link arguments if non-empty.  Use xmalloc not alloca.
+	(write_{export,import}_file): Delete.
+	(write_aix_file): New function.
+	(locatelib): Use xmalloc not malloc.
+	(GCC_OK_SYMBOL): Do not check type if aix64.
+
+Sat May 22 09:35:51 1999  Philip Blundell  <pb@nexus.co.uk>
 
 	Based on patch by Scott Bambrough and Pat Beirne:
 	* config/arm/arm.c (making_const_table): New variable.
@@ -8,7 +17,7 @@ Thu May 13 09:35:51 1999  Philip Blundell  <pb@nexus.co.uk>
 	* config/arm/arm.md (consttable_4, consttable_8, consttable_end):
 	Keep track of when we are building the constant table.	
 
-Tue May 18 17:44:22 1999  Philip Blundell  <pb@nexus.co.uk>
+Sat May 22 09:34:22 1999  Philip Blundell  <pb@nexus.co.uk>
 
 	* config/arm/arm.c (arm_override_options): Fix erroneous warning
 	message.

@@ -297,8 +297,7 @@ static void scan_libraries	PROTO((char *));
 #endif
 #ifdef COLLECT_EXPORT_LIST
 static int is_in_list		PROTO((char *, struct id *));
-static void write_export_file	PROTO((FILE *));
-static void write_import_file	PROTO((FILE *));
+static void write_aix_file	PROTO((FILE *, struct id *));
 static char *resolve_lib_name	PROTO((char *));
 static int use_import_list	PROTO((char *));
 static int ignore_library	PROTO((char *));
@@ -1427,36 +1426,49 @@ main (argc, argv)
      nothing else in the file is referenced, so look at them first.  */
   {
       char **export_object_lst = object_lst;
+
       while (export_object_lst < object)
 	scan_prog_file (*export_object_lst++, PASS_OBJ);
   }
   {
     struct id *list = libs.first;
+
     for (; list; list = list->next)
       scan_prog_file (list->name, PASS_FIRST);
   }
-  {
-    char *buf1 = alloca (strlen (export_file) + 5);
-    char *buf2 = alloca (strlen (import_file) + 5);
-    sprintf (buf1, "-bE:%s", export_file);
-    sprintf (buf2, "-bI:%s", import_file);
-    *ld1++ = buf1;
-    *ld2++ = buf1;
-    *ld1++ = buf2;
-    *ld2++ = buf2;
-    exportf = fopen (export_file, "w");
-    if (exportf == (FILE *) 0)
-      fatal_perror ("fopen %s", export_file);
-    write_export_file (exportf);
-    if (fclose (exportf))
-      fatal_perror ("fclose %s", export_file);
-    importf = fopen (import_file, "w");
-    if (importf == (FILE *) 0)
-      fatal_perror ("%s", import_file);
-    write_import_file (importf);
-    if (fclose (importf))
-      fatal_perror ("fclose %s", import_file);
-  }
+
+  if (exports.first)
+    {
+      char *buf = xmalloc (strlen (export_file) + 5);
+
+      sprintf (buf, "-bE:%s", export_file);
+      *ld1++ = buf;
+      *ld2++ = buf;
+
+      exportf = fopen (export_file, "w");
+      if (exportf == (FILE *) 0)
+	fatal_perror ("fopen %s", export_file);
+      write_aix_file (exportf, exports.first);
+      if (fclose (exportf))
+	fatal_perror ("fclose %s", export_file);
+    }
+
+  if (imports.first)
+    {
+      char *buf = xmalloc (strlen (import_file) + 5);
+
+      sprintf (buf, "-bI:%s", import_file);
+      *ld1++ = buf;
+      *ld2++ = buf;
+
+      importf = fopen (import_file, "w");
+      if (importf == (FILE *) 0)
+	fatal_perror ("%s", import_file);
+      fputs ("#! .\n", importf);
+      write_aix_file (importf, imports.first);
+      if (fclose (importf))
+	fatal_perror ("fclose %s", import_file);
+    }
 #endif
 
   *c_ptr++ = c_file;
@@ -1542,7 +1554,7 @@ main (argc, argv)
      and destructors to call.
      Write the constructor and destructor tables to a .s file and reload.  */
 
-  /* On AIX we already done scanning for global constructors/destructors.  */
+  /* On AIX we already scanned for global constructors/destructors.  */
 #ifndef COLLECT_EXPORT_LIST
   scan_prog_file (output_file, PASS_FIRST);
 #endif
@@ -1568,7 +1580,7 @@ main (argc, argv)
       )
     {
 #ifdef COLLECT_EXPORT_LIST
-      /* Doing tlink without additional code generation */
+      /* Do tlink without additional code generation */
       do_tlink (ld1_argv, object_lst);
 #endif
       /* Strip now if it was requested on the command line.  */
@@ -1611,11 +1623,20 @@ main (argc, argv)
   *ld2++ = LD_FINI_SWITCH;
   *ld2++ = fininame;
 #endif
-  *ld2 = (char*) 0;
 
 #ifdef COLLECT_EXPORT_LIST
   if (shared_obj)
     {
+      /* If we did not add export flag to link arguments before, add it to
+	 second link phase now.  No new exports should have been added.  */
+      if (! exports.first)
+	{
+	  char *buf = xmalloc (strlen (export_file) + 5);
+
+	  sprintf (buf, "-bE:%s", export_file);
+	  *ld2++ = buf;
+	}
+
       add_to_list (&exports, initname);
       add_to_list (&exports, fininame);
       add_to_list (&exports, "_GLOBAL__DI");
@@ -1623,11 +1644,14 @@ main (argc, argv)
       exportf = fopen (export_file, "w");
       if (exportf == (FILE *) 0)
 	fatal_perror ("fopen %s", export_file);
-      write_export_file (exportf);
+      write_aix_file (exportf, exports.first);
       if (fclose (exportf))
 	fatal_perror ("fclose %s", export_file);
     }
 #endif
+
+  /* End of arguments to second link phase.  */
+  *ld2 = (char*) 0;
 
   if (debug)
     {
@@ -1637,7 +1661,7 @@ main (argc, argv)
       fprintf (stderr, "========== end of c_file\n\n");
 #ifdef COLLECT_EXPORT_LIST
       fprintf (stderr, "\n========== export_file = %s\n", export_file);
-      write_export_file (stderr);
+      write_aix_file (stderr, exports.first);
       fprintf (stderr, "========== end of export_file\n\n");
 #endif
     }
@@ -2203,22 +2227,15 @@ write_c_file (stream, name)
 
 #ifdef COLLECT_EXPORT_LIST
 static void
-write_export_file (stream)
+write_aix_file (stream, list)
      FILE *stream;
+     struct id *list;
 {
-  struct id *list = exports.first;
   for (; list; list = list->next)
-    fprintf (stream, "%s\n", list->name);
-}
-
-static void
-write_import_file (stream)
-     FILE *stream;
-{
-  struct id *list = imports.first;
-  fprintf (stream, "%s\n", "#! .");
-  for (; list; list = list->next)
-    fprintf (stream, "%s\n", list->name);
+    {
+      fputs (list->name, stream);
+      putc ('\n', stream);
+    }
 }
 #endif
 
@@ -2528,7 +2545,7 @@ locatelib (name)
 	    if (*ld_rules == ':')
 	      cnt++;
 	  ld_rules = (char *) (ld_2->ld_rules + code);
-	  ldr = (char *) malloc (strlen (ld_rules) + 1);
+	  ldr = (char *) xmalloc (strlen (ld_rules) + 1);
 	  strcpy (ldr, ld_rules);
 	}
       p = getenv ("LD_LIBRARY_PATH");
@@ -2539,10 +2556,10 @@ locatelib (name)
 	  for (q = p ; *q != 0; q++)
 	    if (*q == ':')
 	      cnt++;
-	  q = (char *) malloc (strlen (p) + 1);
+	  q = (char *) xmalloc (strlen (p) + 1);
 	  strcpy (q, p);
 	}
-      l = (char **) malloc ((cnt + 3) * sizeof (char *));
+      l = (char **) xmalloc ((cnt + 3) * sizeof (char *));
       pp = l;
       if (ldr)
 	{
@@ -2826,8 +2843,9 @@ scan_libraries (prog_name)
 #   define GCC_OK_SYMBOL(X) \
      (((X).n_sclass == C_EXT) && \
       ((X).n_scnum > N_UNDEF) && \
-      (((X).n_type & N_TMASK) == (DT_NON << N_BTSHFT) || \
-       ((X).n_type & N_TMASK) == (DT_FCN << N_BTSHFT)))
+      (aix64_flag \
+       || (((X).n_type & N_TMASK) == (DT_NON << N_BTSHFT) \
+           || ((X).n_type & N_TMASK) == (DT_FCN << N_BTSHFT))))
 #   define GCC_UNDEF_SYMBOL(X) \
      (((X).n_sclass == C_EXT) && ((X).n_scnum == N_UNDEF))
 #   define GCC_SYMINC(X)	((X).n_numaux+1)
