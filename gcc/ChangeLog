@@ -1,3 +1,13 @@
+Wed Oct 16 15:01:29 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	Really commit patch announced at Oct 14
+	PR c/7344
+	* predict.c (can_predict_insn_p): New function.
+	(estimate_probability): Avoid unnecesary work.
+	(process_note_prediction): Likewise.
+	* toplev.c (rest_of_compilation): Account early branch prediction pass
+	as TV_BRANCH_PROB.
+
 2002-10-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config.gcc (mips*-*-*): Add OBJECT_FORMAT_ELF to $tm_defines
@@ -146,13 +156,6 @@ Mon Oct 14 20:33:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	 *sse_andndf3, *sse_orv2df3, *sse_xorv2df3): New patterns.
 
 	* xmmintrin.h (__m128i): Define as __v2di.
-
-	PR c/7344
-	* predict.c (can_predict_insn_p): New function.
-	(estimate_probability): Avoid unnecesary work.
-	(process_note_prediction): Likewise.
-	* toplev.c (rest_of_compilation): Account early branch prediction pass
-	as TV_BRANCH_PROB.
 
 	PR c++/6419
 	(expand_expr): Use DECL_RTL_SET_P.

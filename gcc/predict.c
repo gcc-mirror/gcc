@@ -80,6 +80,7 @@ static void process_note_prediction	 PARAMS ((basic_block, int *,
 static bool last_basic_block_p           PARAMS ((basic_block));
 static void compute_function_frequency	 PARAMS ((void));
 static void choose_function_section	 PARAMS ((void));
+static bool can_predict_insn_p		 PARAMS ((rtx));
 
 /* Information we hold about each branch predictor.
    Filled using information from predict.def.  */
@@ -228,6 +229,18 @@ predict_edge (e, predictor, probability)
     probability = REG_BR_PROB_BASE - probability;
 
   predict_insn (last_insn, predictor, probability);
+}
+
+/* Return true when we can store prediction on insn INSN.
+   At the moment we represent predictions only on conditional
+   jumps, not at computed jump or other complicated cases.  */
+static bool
+can_predict_insn_p (insn)
+	rtx insn;
+{
+  return (GET_CODE (insn) == JUMP_INSN
+	  && any_condjump_p (insn)
+	  && BLOCK_FOR_INSN (insn)->succ->succ_next);
 }
 
 /* Predict edge E by given predictor if possible.  */
@@ -440,7 +453,8 @@ estimate_probability (loops_info)
 	     statements construct loops via "non-loop" constructs
 	     in the source language and are better to be handled
 	     separately.  */
-	  if (predicted_by_p (bb, PRED_CONTINUE))
+	  if (!can_predict_insn_p (bb->end)
+	      || predicted_by_p (bb, PRED_CONTINUE))
 	    continue;
 
 	  /* Loop branch heuristics - predict an edge back to a
@@ -474,7 +488,7 @@ estimate_probability (loops_info)
       rtx cond, earliest;
       edge e;
 
-      if (GET_CODE (last_insn) != JUMP_INSN || ! any_condjump_p (last_insn))
+      if (! can_predict_insn_p (last_insn))
 	continue;
 
       for (e = bb->succ; e; e = e->succ_next)
@@ -763,7 +777,7 @@ process_note_prediction (bb, heads, dominators, post_dominators, pred, flags)
 
   /* Now find the edge that leads to our branch and aply the prediction.  */
 
-  if (y == last_basic_block)
+  if (y == last_basic_block || !can_predict_insn_p (BASIC_BLOCK (y)->end))
     return;
   for (e = BASIC_BLOCK (y)->succ; e; e = e->succ_next)
     if (e->dest->index >= 0
@@ -1148,9 +1162,7 @@ estimate_bb_frequencies (loops)
 	{
 	  rtx last_insn = bb->end;
 
-	  if (GET_CODE (last_insn) != JUMP_INSN || !any_condjump_p (last_insn)
-	      /* Avoid handling of conditional jumps jumping to fallthru edge.  */
-	      || bb->succ->succ_next == NULL)
+	  if (!can_predict_insn_p (last_insn))
 	    {
 	      /* We can predict only conditional jumps at the moment.
 	         Expect each edge to be equally probable.
