@@ -1,5 +1,10 @@
 2005-02-01  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/vect/vect-77.c: Replace xfail selector with expression.
+	* gcc.dg/vect/vect-78.c: Ditto.
+	* gcc.dg/vect/vect.exp (check_effective_target_lp64_or_vect_no_align):
+	Remove.
+
 	* g++.dg/conversion/simd1.C: Expect warning.
 	* g++.dg/ext/attribute-test-1.C: Ditto.
 	* g++.dg/ext/attribute-test-2.C: Ditto.
