@@ -296,16 +296,16 @@ the @option{--with-gmp} or @option{--with-gmp-dir} configure option.
 
 @heading Tools/packages necessary for modifying GCC
 @table @asis
-@item autoconf versions 2.13, 2.57 and 2.59
+@item autoconf versions 2.13 and 2.59
 @itemx GNU m4 version 1.4 (or later)
 
 Necessary when modifying @file{configure.ac}, @file{aclocal.m4}, etc.@:
 to regenerate @file{configure} and @file{config.in} files.  Most
 directories require autoconf 2.59 (exactly), but the toplevel and
 @file{libjava} (but not @file{libjava/libltdl}) still require autoconf
-2.13 (exactly) and @file{libmudflap} requires autoconf 2.57 (exactly).
+2.13 (exactly).
 
-@item automake versions 1.4-gcj, 1.7.8, 1.7.9 and 1.8.5
+@item automake versions 1.4-gcj and 1.8.5
 
 Necessary when modifying a @file{Makefile.am} file to regenerate its
 associated @file{Makefile.in}.
@@ -319,14 +319,7 @@ The Java directories @file{boehm-gc} and @file{libjava}
 require a modified version of automake 1.4 downloadable from
 @uref{ftp://gcc.gnu.org/pub/java/automake-gcj-1.4.tar.gz}.
 
-The @file{libmudflap} directory requires automake 1.7.8.
-
-The @file{libffi} and @file{zlib} directories require
-automake 1.7.9.
-
-The @file{fastjar}, @file{libbanshee}, @file{libcpp},
-@file{libjava/libltdl}, @file{libgfortran} and @file{libstdc++-v3}
-directories require automake 1.8.5.
+Every other directory requires automake 1.8.5.
 
 @item gettext version 0.12 (or later)
 
