@@ -1167,7 +1167,12 @@ yylex ()
 		   && DECL_INITIAL (lastiddecl) != 0
 		   && TREE_CODE (DECL_INITIAL (lastiddecl)) == STRING_CST)
 	    {
-	      yylval.ttype = DECL_INITIAL (lastiddecl);
+	      tree stringval = DECL_INITIAL (lastiddecl);
+	      
+	      /* Copy the string value so that we won't clobber anything
+		 if we put something in the TREE_CHAIN of this one.  */
+	      yylval.ttype = build_string (TREE_STRING_LENGTH (stringval),
+					   TREE_STRING_POINTER (stringval));
 	      value = STRING;
 	    }
           else if (doing_objc_thang)
