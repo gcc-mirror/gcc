@@ -1,3 +1,12 @@
+2004-02-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	Backport from mainline:
+
+	2002-04-08  Richard Sandiford  <rsandifo@redhat.com>
+	* real.c (encode_ibm_extended): Normalize the input value before
+	converting it to a double.  Handle the case where a normal value
+	rounds to infinity.
+
 2004-02-13  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.ac: Search for as, ld below libexec/gcc.

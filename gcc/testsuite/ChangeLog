@@ -1,3 +1,10 @@
+2004-02-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	Backport from mainline:
+
+	2004-02-08  Richard Sandiford  <rsandifo@redhat.com>
+	* gcc.c-torture/execute/20040208-[12].c: New tests.
+
 2004-02-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13635
