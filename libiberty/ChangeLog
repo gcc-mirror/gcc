@@ -1,3 +1,9 @@
+Sat Nov  7 16:02:10 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* choose-temp.c: Don't include gansidecl.h.
+	* mkstemp.c: Likewise.
+	* pexecute.c: Likewise.
+
 Mon Nov  2 10:22:01 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* pexecute.c: Check HAVE_CONFIG_H, not IN_GCC, when determining

@@ -39,7 +39,6 @@
 #include "ansidecl.h"
 #else
 #include "system.h"
-#include "gansidecl.h"
 #endif
 
 /* We need to provide a type for gcc_uint64_t.  */
