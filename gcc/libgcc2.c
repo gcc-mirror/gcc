@@ -2829,9 +2829,12 @@ __do_global_dtors ()
 #ifdef DO_GLOBAL_DTORS_BODY
   DO_GLOBAL_DTORS_BODY;
 #else
-  func_ptr *p;
-  for (p = __DTOR_LIST__ + 1; *p; )
-    (*p++) ();
+  static func_ptr *p = __DTOR_LIST__ + 1;
+  while (*p)
+    {
+      p++;
+      (*(p-1)) ();
+    }
 #endif
 }
 #endif

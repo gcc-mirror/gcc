@@ -111,15 +111,23 @@ typedef void (*func_ptr) (void);
    functions in each root executable and one in each shared library, but
    although they all have the same code, each one is unique in that it
    refers to one particular associated `__DTOR_LIST__' which belongs to the
-   same particular root executable or shared library file.  */
+   same particular root executable or shared library file.
+
+   On some systems, this routine is run more than once from the .fini,
+   when exit is called recursively, so we arrange to remember where in
+   the list we left off processing, and we resume at that point,
+   should we be re-invoked.  */
 
 static func_ptr __DTOR_LIST__[];
 static void
 __do_global_dtors_aux ()
 {
-  func_ptr *p;
-  for (p = __DTOR_LIST__ + 1; *p; p++)
-    (*p) ();
+  static func_ptr *p = __DTOR_LIST__ + 1;
+  while (*p)
+    {
+      p++;
+      (*(p-1)) ();
+    }
 }
 
 /* Stick a call to __do_global_dtors_aux into the .fini section.  */
