@@ -114,7 +114,7 @@ do								\
     act.sa_handler = catch_segv;				\
     sigemptyset (&act.sa_mask);					\
     act.sa_flags = 0;						\
-    sigaction (SIGSEGV, &act, NULL);				\
+    __sigaction (SIGSEGV, &act, NULL);				\
   }								\
 while (0)  
 
@@ -127,7 +127,7 @@ do								\
     act.sa_handler = catch_fpe;					\
     sigemptyset (&act.sa_mask);					\
     act.sa_flags = 0;						\
-    sigaction (SIGFPE, &act, NULL);				\
+    __sigaction (SIGFPE, &act, NULL);				\
   }								\
 while (0)  
 
