@@ -681,7 +681,7 @@ gcse_main (f, file)
      a high connectivity will take a long time and is unlikely to be
      particularly useful.
 
-     In normal circumstances a cfg should have about twice has many edges
+     In normal circumstances a cfg should have about twice as many edges
      as blocks.  But we do not want to punish small functions which have
      a couple switch statements.  So we require a relatively large number
      of basic blocks and the ratio of edges to blocks to be high.  */
@@ -1931,7 +1931,7 @@ hash_scan_set (pat, insn, set_p)
   if (GET_CODE (dest) == REG)
     {
       int regno = REGNO (dest);
-      rtx tmp;
+      rtx tmp, note;
 
       /* Only record sets of pseudo-regs in the hash table.  */
       if (! set_p
@@ -1939,7 +1939,17 @@ hash_scan_set (pat, insn, set_p)
 	  /* Don't GCSE something if we can't do a reg/reg copy.  */
 	  && can_copy_p [GET_MODE (dest)]
 	  /* Is SET_SRC something we want to gcse?  */
-	  && want_to_gcse_p (src))
+	  && want_to_gcse_p (src)
+	  /* Don't GCSE if it has attached REG_EQUIV note.
+	     At this point this only function parameters should have
+	     REG_EQUIV notes and if the argument slot is used somewhere
+	     explicitely, it means address of parameter has been taken,
+	     so we should not extend the lifetime of the pseudo.  */
+	  && ((note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) == 0
+	      || GET_CODE (XEXP (note, 0)) != MEM))
+  	{
+  	  /* An expression is not anticipatable if its operands are
+  	     modified before this insn or if this is not the only SET in
 	{
 	  /* An expression is not anticipatable if its operands are
 	     modified before this insn.  */
@@ -5173,7 +5183,7 @@ delete_null_pointer_checks (f)
      a high connectivity will take a long time and is unlikely to be
      particularly useful.
 
-     In normal circumstances a cfg should have about twice has many edges
+     In normal circumstances a cfg should have about twice as many edges
      as blocks.  But we do not want to punish small functions which have
      a couple switch statements.  So we require a relatively large number
      of basic blocks and the ratio of edges to blocks to be high.  */
