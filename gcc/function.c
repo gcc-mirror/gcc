@@ -5264,7 +5264,10 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
     /* However, BLKmode args passed in regs have their padding done elsewhere.
        The stack slot must be able to hold the entire register.  */
       && !(in_regs && passed_mode == BLKmode))
-    pad_below (offset_ptr, passed_mode, sizetree);
+    {
+      pad_below (offset_ptr, passed_mode, sizetree);
+      pad_below (initial_offset_ptr, passed_mode, sizetree);
+    }
 
   if (where_pad != none
       && (!host_integerp (sizetree, 1)
