@@ -791,6 +791,7 @@ dump_decl (tree t, int flags)
       /* Else fall through.  */
     case FIELD_DECL:
     case PARM_DECL:
+    case ALIAS_DECL:
       dump_simple_decl (t, TREE_TYPE (t), flags);
       break;
 
