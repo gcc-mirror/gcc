@@ -1,3 +1,7 @@
+Mon Feb  5 14:30:37 2001  Christopher Faylor <cgf@cygnus.com>
+
+	* config/i386/cygwin.h (CPP_SPEC): Add missing space after -idirafter.
+
 Mon Feb  5 11:23:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/mips/mips.c (override_options): Fix typo in last change.

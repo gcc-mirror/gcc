@@ -82,7 +82,7 @@ Boston, MA 02111-1307, USA. */
 #define LIBGCC_SPEC "%{mno-cygwin: %{mthreads:-lmingwthrd} -lmingw32} -lgcc %{mno-cygwin:-lmoldname -lmsvcrt}"
 
 #ifdef CROSS_COMPILE
-#define CYGWIN_INCLUDES "-idirafter" CYGWIN_CROSS_DIR "/include"
+#define CYGWIN_INCLUDES "-idirafter " CYGWIN_CROSS_DIR "/include"
 #define CYGWIN_W32API "-I" CYGWIN_CROSS_DIR "/include/w32api"
 #define CYGWIN_LIB CYGWIN_CROSS_DIR "/lib"
 #define MINGW_LIBS "-L" CYGWIN_CROSS_DIR "/lib/mingw"
