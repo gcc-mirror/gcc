@@ -1,3 +1,9 @@
+Thu May 20 10:38:43 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* expr.h (lang_expand_constant): Declare.
+	* toplev.c (lang_expand_constant): Define it.
+	* varasm.c (output_constant): Use it.
+
 Thu May 20 11:28:53 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* optabs.c (expand_cmplxdiv_straight, expand_cmplxdiv_wide):
