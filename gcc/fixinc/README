@@ -192,49 +192,21 @@ Here are the rules for making fixes in the inclhack.def file:
 5.  Testing fixes.
 
     The brute force method is, of course, to configure and build
-    GCC.  There are easier ways, too.  You can run the compiled
-    binaries in isolation.  ``c_tests'' can be tested with
-    ``fixtests'', ``c_fixes'' with ``fixfixes'' and any fix or
-    test can be tested with ``fixincl''.
+    GCC.  But you can also:
 
-    ``fixtests'' is invoked as follows:
+        cd ${top_builddir}/gcc
+        rm -rf fixinc.sh include/ stmp-fixinc
+        make stmp-fixinc
 
-        fixtests filename.h your_test_name
-        if [ $? -ne 0 ]
-        then echo do not apply your_fix_name
-        else echo APPLY your_fix_name ; fi
+    I would really recommend, however:
 
-    and ``fixfixes'' is invoked thus:
+        cd ${top_builddir}/gcc/fixinc
+        make check
 
-        fixfixes filename.h your_fix_name < filename.h > /tmp/fixed
-
-    The file name argument is required, but is only used as a hint
-    for use by ``your_fix_name'', it is not used for obtaining the
-    data.  Also, ``your_fix_name'' and ``your_test_name'' may be
-    the same, since fix names and test names are in different
-    "name spaces."
-
-    The ``fixincl'' program is a little harder to work with  :-}.
-    It was written with the expectation that it would be run
-    inside of the fixincl.sh script that handles everything.
-
-    Run it with no arguments to get usage hints, but here is what
-    you will need to do (approximately):
-
-        FI=${top_builddir}/gcc/fixinc/fixincl
-        TARGET_MACHINE=`sh ${top_srcdir}/config.guess`
-        SRCDIR=/usr/include
-        DESTDIR=/tmp/fixtest
-        VERBOSE=4
-        FIND_BASE="."
-        export TARGET_MACHINE SRCDIR DESTDIR VERBOSE FIND_BASE
-        rm -rf ${DESTDIR}
-        mkdir -p ${DESTDIR}
-        cd ${SRCDIR}
-        find * -follow -type f -name '*.h' > ${DESTDIR}/LIST
-        # you may edit this to the list you want
-        ${FI} ${DESTDIR}/LIST > /dev/null 2> ${DESTDIR}/LOG
-
-    Check your results in ${DESTDIR}/LOG.  The stdout output
-    is merely some shell commands that are relevant only to
-    the fixincl.sh shell script.
+    To do this, you *must* have autogen installed on your system.
+    The "check" step will proceed to construct a shell script that
+    will exercize all the fixes, using the sample test_text
+    provided with each fix.  Once done, the changes made will
+    be compared against the changes saved in the source directory.
+    If you are changing the tests or fixes, the change will likely
+    be highlighted.
