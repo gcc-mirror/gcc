@@ -2,6 +2,8 @@
 
 	* gcc.c-torture/compile/20020318-1.c: New test.
 
+	* gcc.dg/struct-by-value-1.c: New test.
+
 2002-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/opt/conj1.C: New test.
