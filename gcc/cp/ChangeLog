@@ -1,3 +1,8 @@
+2003-03-10  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* expr.c (cplus_expand_constant): Use C90 prototype style.
+	(cxx_expand_expr): Likewise.
+
 2003-03-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9970

@@ -38,8 +38,7 @@ Boston, MA 02111-1307, USA.  */
    constants.  */
 
 tree
-cplus_expand_constant (cst)
-     tree cst;
+cplus_expand_constant (tree cst)
 {
   switch (TREE_CODE (cst))
     {
@@ -79,11 +78,7 @@ cplus_expand_constant (cst)
 /* Hook used by expand_expr to expand language-specific tree codes.  */
 
 rtx
-cxx_expand_expr (exp, target, tmode, modifier)
-     tree exp;
-     rtx target;
-     enum machine_mode tmode;
-     int modifier;  /* Actually an enum expand_modifier.  */
+cxx_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier)
 {
   tree type = TREE_TYPE (exp);
   register enum machine_mode mode = TYPE_MODE (type);
