@@ -2783,12 +2783,6 @@ instantiate_virtual_regs (fndecl, insns)
      regs on many machines.  */
   instantiate_decls (fndecl, 1);
 
-  /* Instantiate the stack slots for the parm registers, for later use in
-     addressof elimination.  */
-  for (i = 0; i < max_parm_reg; ++i)
-    if (parm_reg_stack_loc[i])
-      instantiate_virtual_regs_1 (&parm_reg_stack_loc[i], NULL_RTX, 0);
-
   /* Initialize recognition, indicating that volatile is OK.  */
   init_recog ();
 
@@ -2801,6 +2795,12 @@ instantiate_virtual_regs (fndecl, insns)
 	instantiate_virtual_regs_1 (&PATTERN (insn), insn, 1);
 	instantiate_virtual_regs_1 (&REG_NOTES (insn), NULL_RTX, 0);
       }
+
+  /* Instantiate the stack slots for the parm registers, for later use in
+     addressof elimination.  */
+  for (i = 0; i < max_parm_reg; ++i)
+    if (parm_reg_stack_loc[i])
+      instantiate_virtual_regs_1 (&parm_reg_stack_loc[i], NULL_RTX, 0);
 
   /* Now instantiate the remaining register equivalences for debugging info.
      These will not be valid addresses.  */
