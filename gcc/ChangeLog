@@ -1,3 +1,11 @@
+Sat May 23 22:19:55 1998  Mike Stump  <mrs@wrs.com>
+
+	* expr.c (expand_builtin_setjmp): Handle BUILTIN_SETJMP_FRAME_VALUE.
+	* i960.h (SETUP_FRAME_ADDRESSES, BUILTIN_SETJMP_FRAME_VALUE): Define.
+	* i960.md (ret, flush_register_windows): Define.
+	(nonlocal_goto): Likewise.  Nested function nonlocal gotos don't
+	work yet.
+
 Sat May 23 18:45:59 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* m68k/t-linux: Remove stuff already included in config/t-linux.
