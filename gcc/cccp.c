@@ -59,21 +59,13 @@ typedef unsigned char U_CHAR;
 
 /* The following symbols should be autoconfigured:
 	HAVE_FCNTL_H
-	HAVE_STDLIB_H
 	HAVE_SYS_TIME_H
-	HAVE_UNISTD_H
 	STDC_HEADERS
 	TIME_WITH_SYS_TIME
    In the mean time, we'll get by with approximations based
    on existing GCC configuration symbols.  */
 
 #ifdef POSIX
-# ifndef HAVE_STDLIB_H
-# define HAVE_STDLIB_H 1
-# endif
-# ifndef HAVE_UNISTD_H
-# define HAVE_UNISTD_H 1
-# endif
 # ifndef STDC_HEADERS
 # define STDC_HEADERS 1
 # endif
@@ -103,6 +95,10 @@ typedef unsigned char U_CHAR;
 
 #if HAVE_FCNTL_H
 # include <fcntl.h>
+#endif
+
+#if HAVE_LIMITS_H
+# include <limits.h>
 #endif
 
 #include <errno.h>
@@ -248,18 +244,25 @@ static void hack_vms_include_specification ();
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
 /* Find the largest host integer type and set its size and type.
-   Don't blindly use `long'; on some crazy hosts it is shorter than `int'.  */
+   Watch out: on some crazy hosts `long' is shorter than `int'.  */
 
-#ifndef HOST_BITS_PER_WIDE_INT
-
-#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
-#define HOST_WIDE_INT long
-#else
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
-#define HOST_WIDE_INT int
-#endif
-
+#ifndef HOST_WIDE_INT
+# if HAVE_INTTYPES_H
+#  include <inttypes.h>
+#  define HOST_WIDE_INT intmax_t
+# else
+#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT \
+       && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
+#   define HOST_WIDE_INT int
+#  else
+#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG \
+       || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
+#   define HOST_WIDE_INT long
+#  else
+#   define HOST_WIDE_INT long long
+#  endif
+#  endif
+# endif
 #endif
 
 #ifndef S_ISREG
@@ -5300,12 +5303,12 @@ pcfinclude (buf, limit, name, op)
 
     /* First skip to a longword boundary */
     /* ??? Why a 4-byte boundary?  On all machines? */
-    /* NOTE: This works correctly even if HOST_WIDE_INT
+    /* NOTE: This works correctly even if size_t
        is narrower than a pointer.
        Do not try risky measures here to get another type to use!
        Do not include stddef.h--it will fail!  */
-    if ((HOST_WIDE_INT) cp & 3)
-      cp += 4 - ((HOST_WIDE_INT) cp & 3);
+    if ((size_t) cp & 3)
+      cp += 4 - ((size_t) cp & 3);
     
     /* Now get the string.  */
     str = (STRINGDEF *) (GENERIC_PTR) cp;
