@@ -7774,33 +7774,62 @@ C++, which is to pretend that the file's contents are enclosed in
 @samp{extern "C" @{@dots{}@}}.
 
 @findex HANDLE_PRAGMA
+@item HANDLE_PRAGMA (@var{getc}, @var{ungetc}, @var{name})
+This macro is no longer supported.  You must use
+@code{REGISTER_TARGET_PRAGMAS} instead.
+
+@findex REGISTER_TARGET_PRAGMAS
 @findex #pragma
 @findex pragma
-@item HANDLE_PRAGMA (@var{getc}, @var{ungetc}, @var{name})
-Define this macro if you want to implement any pragmas.  If defined, it
-is a C expression whose value is 1 if the pragma was handled by the
-macro, zero otherwise.  The argument @var{getc} is a function of type
-@samp{int (*)(void)} which will return the next character in the input
-stream, or EOF if no characters are left.  The argument @var{ungetc} is
-a function of type @samp{void (*)(int)} which will push a character back
-into the input stream.  The argument @var{name} is the word following
-#pragma in the input stream.  The input stream pointer will be pointing
-just beyond the end of this word.  The input stream should be left
-undistrubed if the expression returns zero, otherwise it should be
-pointing at the next character after the end of the pragma.  Any
-characters remaining on the line will be ignored.
+@item REGISTER_TARGET_PRAGMAS (@var{pfile})
+Define this macro if you want to implement any target-specific pragmas.
+If defined, it is a C expression which makes a series of calls to the
+@code{cpp_register_pragma} and/or @code{cpp_register_pragma_space}
+functions.  The @var{pfile} argument is the first argument to supply to
+these functions.  The macro may also do setup required for the pragmas.
 
-It is generally a bad idea to implement new uses of @code{#pragma}.  The
-only reason to define this macro is for compatibility with other
-compilers that do support @code{#pragma} for the sake of any user
-programs which already use it.
+The primary reason to define this macro is to provide compatibility with
+other compilers for the same target.  In general, we discourage
+definition of target-specific pragmas for GCC.
 
 If the pragma can be implemented by atttributes then the macro
 @samp{INSERT_ATTRIBUTES} might be a useful one to define as well.
 
-Note: older versions of this macro only had two arguments: @var{stream}
-and @var{token}.  The macro was changed in order to allow it to work
-when gcc is built both with and without a cpp library.
+Preprocessor macros that appear on pragma lines are not expanded.  All
+@samp{#pragma} directives that do not match any registered pragma are
+silently ignored, unless the user specifies @samp{-Wunknown-pragmas}.
+
+@deftypefun void cpp_register_pragma (cpp_reader *@var{pfile}, const char *@var{space}, const char *@var{name}, void (*@var{callback}) (cpp_reader *))
+
+Each call to @code{cpp_register_pragma} establishes one pragma.  The
+@var{callback} routine will be called when the preprocessor encounters a
+pragma of the form
+
+@smallexample
+#pragma [@var{space}] @var{name} @dots{}
+@end smallexample
+
+@var{space} must have been the subject of a previous call to
+@code{cpp_register_pragma_space}, or else be a null pointer.  The
+callback routine receives @var{pfile} as its first argument, but must
+not use it for anything (this may change in the future).  It may read
+any text after the @var{name} by making calls to @code{c_lex}.  Text
+which is not read by the callback will be silently ignored.
+
+Note that both @var{space} and @var{name} are case sensitive.
+
+For an example use of this routine, see @file{c4x.h} and the callback
+routines defined in @file{c4x.c}.
+@end deftypefun
+
+@deftypefun void cpp_register_pragma_space (cpp_reader *@var{pfile}, const char *@var{space})
+This routine establishes a namespace for pragmas, which will be
+registered by subsequent calls to @code{cpp_register_pragma}.  For
+example, pragmas defined by the C standard are in the @samp{STDC}
+namespace, and pragmas specific to GCC are in the @samp{GCC} namespace.
+
+For an example use of this routine in a target header, see @file{v850.h}.
+@end deftypefun
 
 @findex HANDLE_SYSV_PRAGMA
 @findex #pragma

@@ -22,6 +22,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_I960_PROTOS_H
+#define GCC_I960_PROTOS_H
+
 #ifdef RTX_CODE
 extern struct rtx_def *legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
 /* Define the function that build the compare insn for scc and bcc.  */
@@ -102,3 +105,10 @@ extern void i960_function_prologue PARAMS ((FILE *, unsigned int));
 extern void output_function_profiler PARAMS ((FILE *, int));
 extern void i960_function_epilogue PARAMS ((FILE *, unsigned int));
 extern void i960_scan_opcode PARAMS ((const char *));
+
+#ifdef _C_PRAGMA_H
+extern void i960_pr_align PARAMS ((cpp_reader *));
+extern void i960_pr_noalign PARAMS ((cpp_reader *));
+#endif
+
+#endif /* i960-protos.h */

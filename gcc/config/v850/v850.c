@@ -37,7 +37,10 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "obstack.h"
 #include "toplev.h"
-#include "v850-protos.h"
+#include "cpplib.h"
+#include "c-lex.h"
+#include "c-pragma.h"
+#include "tm_p.h"
 
 #ifndef streq
 #define streq(a,b) (strcmp (a, b) == 0)
@@ -50,7 +53,6 @@ static int  const_costs_int        PARAMS ((HOST_WIDE_INT, int));
 static void substitute_ep_register PARAMS ((rtx, rtx, int, int, rtx *, rtx *));
 static int  push_data_area         PARAMS ((v850_data_area));
 static int  pop_data_area          PARAMS ((v850_data_area));
-static int  parse_ghs_pragma_token PARAMS ((char *));
 static int  ep_memory_offset       PARAMS ((enum machine_mode, int));
 static int  mark_current_function_as_interrupt PARAMS ((void));
 static void v850_set_data_area     PARAMS ((tree, v850_data_area));
@@ -441,7 +443,7 @@ print_operand (file, x, code)
     case 'Q':
       if (special_symbolref_operand (x, VOIDmode))
         {
-          char* name;
+          const char *name;
 
 	  if (GET_CODE (x) == SYMBOL_REF)
 	    name = XSTR (x, 0);
@@ -667,7 +669,7 @@ print_operand_address (file, addr)
 /* Return appropriate code to load up a 1, 2, or 4 integer/floating
    point value.  */
 
-char *
+const char *
 output_move_single (operands)
      rtx *operands;
 {
@@ -759,7 +761,7 @@ output_move_single (operands)
 /* Return appropriate code to load up an 8 byte integer or
    floating point value */
 
-char *
+const char *
 output_move_double (operands)
     rtx *operands;
 {
@@ -2726,292 +2728,151 @@ mark_current_function_as_interrupt ()
     (name, NULL_TREE, current_function_decl, NULL_TREE);
 }
 
-/* Parse STRING as part of a GHS pragma.
-   Returns 0 if the pragma has been parsed and there was a problem,
-   non-zero in all other cases.  */
-static int
-parse_ghs_pragma_token (string)
-     char * string;
+/* Support for GHS pragmata.  */
+
+void
+ghs_pragma_section (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
-  static enum v850_pragma_state state = V850_PS_START;
-  static enum v850_pragma_type  type  = V850_PT_UNKNOWN;
-  static v850_data_area         data_area = DATA_AREA_NORMAL;
-  static char *                 data_area_name;
-  static enum GHS_section_kind  GHS_section_kind = GHS_SECTION_KIND_DEFAULT;
+  int repeat;
 
-  /* If the string is NULL then we have reached the end of the
-     #pragma construct.  Make sure that we are in an end state, and
-     then implement the pragma's directive.  */
-  if (string == NULL)
-    {
-      int ret_val = 1;
-      
-      if (state != V850_PS_SHOULD_BE_DONE
-	  && state != V850_PS_MAYBE_COMMA
-	  && state != V850_PS_MAYBE_SECTION_NAME)
-	{
-	  if (state != V850_PS_BAD)
-	    warning ("Incomplete #pragma ghs");
+  /* #pragma ghs section [name = alias [, name = alias [, ...]]] */
+  do {
+    tree x;
+    enum cpp_ttype type;
+    const char *sect, *alias;
+    enum GHS_section_kind kind;
 
-	  ret_val = 0;
-	}
-      else switch (type)
-	{
-	case V850_PT_UNKNOWN:
-	  warning ("Nothing follows #pragma ghs");
-	  ret_val = 0;
-	  break;
-	  
-	case V850_PT_INTERRUPT:
-	  ret_val = mark_current_function_as_interrupt ();
-	  break;
-	  
-	case V850_PT_SECTION:
-	  /* If a section kind has not been specified, then reset
-	     all section names back to their defaults.  */
-	  if (GHS_section_kind == GHS_SECTION_KIND_DEFAULT)
-	    {
-	      int i;
-	      
-	      for (i = COUNT_OF_GHS_SECTION_KINDS; i--;)
-		GHS_current_section_names [i] = NULL;
-	    }
-	  /* If a section has been specified, then this will be handled
-	     by check_default_section_name ().  */
-	  break;
-	  
-	case V850_PT_START_SECTION:
-	  ret_val = push_data_area (data_area);
-	  break;
-	  
-	case V850_PT_END_SECTION:
-	  ret_val = pop_data_area (data_area);
-	  break;
-	}
+    type = c_lex (&x);
+    if (type == CPP_EOF && !repeat)
+      goto reset;
+    else if (type == CPP_NAME)
+      sect = IDENTIFIER_POINTER (x);
+    else
+      goto bad;
+    repeat = 0;
 
-      state = V850_PS_START;
-      type  = V850_PT_UNKNOWN;
-      
-      return ret_val;
-    }
-  
-  switch (state)
-    {
-    case V850_PS_START:
-      data_area = DATA_AREA_NORMAL;
-      data_area_name = NULL;
-      
-      if (streq (string, "interrupt"))
-	{
-	  type = V850_PT_INTERRUPT;
-	  state = V850_PS_SHOULD_BE_DONE;
-	}
-      else if (streq (string, "section"))
-	{
-	  type = V850_PT_SECTION;
-	  state = V850_PS_MAYBE_SECTION_NAME;
-	  GHS_section_kind = GHS_SECTION_KIND_DEFAULT;
-	}
-      else if (streq (string, "starttda"))
-	{
-	  type = V850_PT_START_SECTION;
-	  state = V850_PS_SHOULD_BE_DONE;
-	  data_area = DATA_AREA_TDA;
-	}
-      else if (streq (string, "endtda"))
-	{
-	  type = V850_PT_END_SECTION;
-	  state = V850_PS_SHOULD_BE_DONE;
-	  data_area = DATA_AREA_TDA;
-	}
-      else if (streq (string, "startsda"))
-	{
-	  type = V850_PT_START_SECTION;
-	  state = V850_PS_SHOULD_BE_DONE;
-	  data_area = DATA_AREA_SDA;
-	}
-      else if (streq (string, "endsda"))
-	{
-	  type = V850_PT_END_SECTION;
-	  state = V850_PS_SHOULD_BE_DONE;
-	  data_area = DATA_AREA_SDA;
-	}
-      else if (streq (string, "startzda"))
-	{
-	  type = V850_PT_START_SECTION;
-	  state = V850_PS_SHOULD_BE_DONE;
-	  data_area = DATA_AREA_ZDA;
-	}
-      else if (streq (string, "endzda"))
-	{
-	  type = V850_PT_END_SECTION;
-	  state = V850_PS_SHOULD_BE_DONE;
-	  data_area = DATA_AREA_ZDA;
-	}
-      else
-	{
-	  warning ("Unrecognised GHS pragma: '%s'\n", string);
-	  state = V850_PS_BAD;
-	}
-      break;
-      
-    case V850_PS_SHOULD_BE_DONE:
-      warning ("Extra text after valid #pragma: '%s'", string);
-      state = V850_PS_BAD;
-      break;
-      
-    case V850_PS_BAD:
-      /* Ignore tokens in a pragma that has been diagnosed as being corrupt. */
-      break;
+    if (c_lex (&x) != CPP_EQ)
+      goto bad;
+    if (c_lex (&x) != CPP_NAME)
+      goto bad;
+    alias = IDENTIFIER_POINTER (x);
 
-    case V850_PS_MAYBE_SECTION_NAME:
-      state = V850_PS_EXPECTING_EQUALS;
-      
-           if (streq (string, "data"))	  GHS_section_kind = GHS_SECTION_KIND_DATA;
-      else if (streq (string, "text"))	  GHS_section_kind = GHS_SECTION_KIND_TEXT;
-      else if (streq (string, "rodata"))  GHS_section_kind = GHS_SECTION_KIND_RODATA;
-      else if (streq (string, "const"))	  GHS_section_kind = GHS_SECTION_KIND_RODATA;
-      else if (streq (string, "rosdata")) GHS_section_kind = GHS_SECTION_KIND_ROSDATA;
-      else if (streq (string, "rozdata")) GHS_section_kind = GHS_SECTION_KIND_ROZDATA;
-      else if (streq (string, "sdata"))	  GHS_section_kind = GHS_SECTION_KIND_SDATA;
-      else if (streq (string, "tdata"))	  GHS_section_kind = GHS_SECTION_KIND_TDATA;
-      else if (streq (string, "zdata"))	  GHS_section_kind = GHS_SECTION_KIND_ZDATA;
-      /* According to GHS beta documentation, the following should not be allowed!  */
-      else if (streq (string, "bss"))	  GHS_section_kind = GHS_SECTION_KIND_BSS;
-      else if (streq (string, "zbss"))	  GHS_section_kind = GHS_SECTION_KIND_ZDATA;
-      else
-	{
-	  warning ("Unrecognised section name '%s' in GHS section pragma",
-		   string);
-	  state = V850_PS_BAD;
-	}
-      break;
+    type = c_lex (&x);
+    if (type == CPP_COMMA)
+      repeat = 1;
+    else if (type != CPP_EOF)
+      warning ("junk at end of #pragma ghs section");
 
-    case V850_PS_EXPECTING_EQUALS:
-      if (streq (string, "="))
-	state = V850_PS_EXPECTING_SECTION_ALIAS;
-      else
-	{
-	  warning ("Missing '=' in GHS section pragma");
-	  state = V850_PS_BAD;
-	}
-      break;
-      
-    case V850_PS_EXPECTING_SECTION_ALIAS:
-      if (streq (string, "default"))
-	GHS_current_section_names [GHS_section_kind] = NULL;
-      else
-	GHS_current_section_names [GHS_section_kind] =
-	  build_string (strlen (string) + 1, string);
-      
-      state = V850_PS_MAYBE_COMMA;
-      break;
-      
-    case V850_PS_MAYBE_COMMA:
-      if (streq (string, ","))
-	state = V850_PS_MAYBE_SECTION_NAME;
-      else
-	{
-	  warning
-	    ("Malformed GHS section pragma: found '%s' instead of a comma",
-	     string);
-	  state = V850_PS_BAD;
-	}
-      break;
-    }
-  
-  return 1;
+    if      (streq (sect, "data"))    kind = GHS_SECTION_KIND_DATA;
+    else if (streq (sect, "text"))    kind = GHS_SECTION_KIND_TEXT;
+    else if (streq (sect, "rodata"))  kind = GHS_SECTION_KIND_RODATA;
+    else if (streq (sect, "const"))   kind = GHS_SECTION_KIND_RODATA;
+    else if (streq (sect, "rosdata")) kind = GHS_SECTION_KIND_ROSDATA;
+    else if (streq (sect, "rozdata")) kind = GHS_SECTION_KIND_ROZDATA;
+    else if (streq (sect, "sdata"))   kind = GHS_SECTION_KIND_SDATA;
+    else if (streq (sect, "tdata"))   kind = GHS_SECTION_KIND_TDATA;
+    else if (streq (sect, "zdata"))   kind = GHS_SECTION_KIND_ZDATA;
+    /* According to GHS beta documentation, the following should not be
+       allowed!  */
+    else if (streq (sect, "bss"))     kind = GHS_SECTION_KIND_BSS;
+    else if (streq (sect, "zbss"))    kind = GHS_SECTION_KIND_ZDATA;
+    else
+      {
+	warning ("unrecognised section name \"%s\"", sect);
+	return;
+      }
+
+    if (streq (alias, "default"))
+      GHS_current_section_names [kind] = NULL;
+    else
+      GHS_current_section_names [kind] =
+	build_string (strlen (alias) + 1, alias);
+
+  } while (repeat);
+  return;
+
+ bad:
+  warning ("malformed #pragma ghs section");
+  return;
+
+ reset:
+  /* #pragma ghs section \n: Reset all section names back to their defaults.  */
+  {
+    int i;
+    for (i = COUNT_OF_GHS_SECTION_KINDS; i--;)
+      GHS_current_section_names [i] = NULL;
+  }
 }
 
-/* Handle the parsing of an entire GHS pragma.  */
-int
-v850_handle_pragma (p_getc, p_ungetc, name)
-     int (*  p_getc) PARAMS ((void));
-     void (* p_ungetc) PARAMS ((int));
-     char *  name;
+void
+ghs_pragma_interrupt (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
-  /* Parse characters in the input stream until:
+  tree x;
+  if (c_lex (&x) != CPP_EOF)
+    warning ("junk at end of #pragma ghs interrupt");
+  mark_current_function_as_interrupt ();
+}
 
-   * end of line
-   * end of file
-   * a complete GHS pragma has been parsed
-   * a corrupted GHS pragma has been parsed
-   * an unknown pragma is encountered.
+void
+ghs_pragma_starttda (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  tree x;
+  if (c_lex (&x) != CPP_EOF)
+    warning ("junk at end of #pragma ghs starttda");
+  push_data_area (DATA_AREA_TDA);
+}
 
-   If an unknown pragma is encountered, we must return with
-   the input stream in the same state as upon entry to this function.
-   
-   The first token in the input stream has already been parsed
-   for us, and is passed as 'name'.  */
-  
-  if (! streq (name, "ghs"))
-    return 0;
+void
+ghs_pragma_startsda (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  tree x;
+  if (c_lex (&x) != CPP_EOF)
+    warning ("junk at end of #pragma ghs startsda");
+  push_data_area (DATA_AREA_SDA);
+}
 
-  /* We now know that we are parsing a GHS pragma, so we do
-     not need to preserve the original input stream state.  */
-  for (;;)
-    {
-      static char buffer [128];
-      int         c;
-      char *      buff;
-      
-      /* Skip white space.  */
-      do
-	c = p_getc ();
-      while (c == ' ' || c == '\t');
-      
-      p_ungetc (c);
-      
-      if (c == '\n' || c == EOF || c == '\r')
-	return parse_ghs_pragma_token (NULL);
+void
+ghs_pragma_startzda (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  tree x;
+  if (c_lex (&x) != CPP_EOF)
+    warning ("junk at end of #pragma ghs startzda");
+  push_data_area (DATA_AREA_ZDA);
+}
 
-      /* Read next word.  We have to do the parsing ourselves, rather
-	 than calling yylex() because we can be built with front ends
-	 that do not provide such functions.  */
-      buff = buffer;
-      * buff ++ = (c = p_getc ());
+void
+ghs_pragma_endtda (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  tree x;
+  if (c_lex (&x) != CPP_EOF)
+    warning ("junk at end of #pragma ghs endtda");
+  pop_data_area (DATA_AREA_TDA);
+}
 
-      switch (c)
-	{
-	case ',':
-	case '=':
-	  * buff ++ = (c = p_getc ());
-	  break;
-	  
-	case '"':
-	  /* Skip opening double parenthesis.  */
-	  -- buff;
+void
+ghs_pragma_endsda (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  tree x;
+  if (c_lex (&x) != CPP_EOF)
+    warning ("junk at end of #pragma ghs endsda");
+  pop_data_area (DATA_AREA_SDA);
+}
 
-	  /* Read string.  */
-	  do
-	    * buff ++ = (c = p_getc ());
-	  while (c != EOF && (ISALNUM (c) || c == '_' || c == '.' || c == ' ')
-		 && (buff < buffer + 126));
-	  
-	  if (c != '"')
-	    warning ("Missing trailing \" in #pragma ghs");
-	  else
-	    c = p_getc ();
-	  break;
-
-	default:
-	  while (c != EOF && (ISALNUM (c) || c == '_' || c == '.')
-		 && (buff < buffer + 126))
-	    * buff ++ = (c = p_getc ());
-	  break;
-	}
-
-      p_ungetc (c);
-
-      /* If nothing was read then terminate the parsing.  */
-      if (buff == buffer + 1)
-	return parse_ghs_pragma_token (NULL);
-
-      /* Parse and continue.  */
-      * -- buff = 0;
-      
-      parse_ghs_pragma_token (buffer);
-    }
+void
+ghs_pragma_endzda (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  tree x;
+  if (c_lex (&x) != CPP_EOF)
+    warning ("junk at end of #pragma ghs endzda");
+  pop_data_area (DATA_AREA_ZDA);
 }
 
 /* Add data area to the given declaration if a ghs data area pragma is

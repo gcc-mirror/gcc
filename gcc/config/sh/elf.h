@@ -112,10 +112,6 @@ do {									\
   fprintf ((FILE), "\t.stabs \"\",%d,0,0,Letext\nLetext:\n", N_SO);	\
 } while (0)
 
-/* HANDLE_SYSV_PRAGMA (defined by svr4.h) takes precedence over HANDLE_PRAGMA.
-   We want to use the HANDLE_PRAGMA from sh.h.  */
-#undef HANDLE_SYSV_PRAGMA
-
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
   "%{!shared: crt1.o%s} crti.o%s \

@@ -20,6 +20,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Function prototypes that cannot exist in v850.h due to dependency
    compilcations.  */
+#ifndef GCC_V850_PROTOS_H
+#define GCC_V850_PROTOS_H
+
 #define Mmode enum machine_mode
 
 extern void   expand_prologue               PARAMS ((void));
@@ -41,8 +44,8 @@ extern int    compute_frame_size            PARAMS ((int, long *));
 extern void   print_operand                 PARAMS ((FILE *, rtx, int ));
 extern void   print_operand_address         PARAMS ((FILE *, rtx));
 extern int    const_costs                   PARAMS ((rtx, enum rtx_code));
-extern char * output_move_double            PARAMS ((rtx *));
-extern char * output_move_single            PARAMS ((rtx *));
+extern const char *output_move_double       PARAMS ((rtx *));
+extern const char *output_move_single       PARAMS ((rtx *));
 extern void   v850_reorg                    PARAMS ((rtx));
 extern void   notice_update_cc              PARAMS ((rtx, rtx));
 extern char * construct_save_jarl           PARAMS ((rtx));
@@ -80,5 +83,17 @@ extern int    function_arg_partial_nregs    PARAMS ((CUMULATIVE_ARGS *, Mmode, t
 #endif
 #endif
 
+#ifdef _C_PRAGMA_H
+extern void ghs_pragma_section		    PARAMS ((cpp_reader *));
+extern void ghs_pragma_interrupt	    PARAMS ((cpp_reader *));
+extern void ghs_pragma_starttda		    PARAMS ((cpp_reader *));
+extern void ghs_pragma_startsda		    PARAMS ((cpp_reader *));
+extern void ghs_pragma_startzda		    PARAMS ((cpp_reader *));
+extern void ghs_pragma_endtda		    PARAMS ((cpp_reader *));
+extern void ghs_pragma_endsda		    PARAMS ((cpp_reader *));
+extern void ghs_pragma_endzda		    PARAMS ((cpp_reader *));
+#endif
+
 #undef  Mmode
 
+#endif /* v850-protos.h */

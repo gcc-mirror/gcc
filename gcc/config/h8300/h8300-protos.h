@@ -21,6 +21,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_H8300_PROTOS_H
+#define GCC_H8300_PROTOS_H
+
 /* Declarations for functions used in insn-output.c.  */
 #ifdef RTX_CODE
 extern const char *emit_a_shift PARAMS ((rtx, rtx *));
@@ -66,7 +69,6 @@ extern int h8300_tiny_data_p PARAMS ((tree));
 extern void h8300_encode_label PARAMS ((tree));
 #endif /* TREE_CODE */
 
-extern int handle_pragma PARAMS ((int (*)(void), void (*)(int), const char *));
 extern void h8300_init_once PARAMS ((void));
 extern void function_prologue PARAMS ((FILE *, int));
 extern void function_epilogue PARAMS ((FILE *, int));
@@ -75,3 +77,10 @@ extern void asm_file_end PARAMS ((FILE *));
 extern int ok_for_bclr PARAMS ((HOST_WIDE_INT));
 extern int small_power_of_two PARAMS ((HOST_WIDE_INT));
 extern int initial_offset PARAMS ((int, int));
+
+#ifdef _C_PRAGMA_H
+extern void h8300_pr_interrupt PARAMS ((cpp_reader *));
+extern void h8300_pr_saveall PARAMS ((cpp_reader *));
+#endif
+
+#endif /* GCC_H8300_PROTOS_H */

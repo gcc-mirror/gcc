@@ -41,6 +41,9 @@ end ifc
 #include <setjmp.h>
 #include "tree.h"
 #include "input.h"
+#include "cpplib.h"
+#include "intl.h"
+#include "timevar.h"
 #include "c-lex.h"
 #include "c-tree.h"
 #include "c-pragma.h"
@@ -2797,9 +2800,6 @@ end ifobjc
 
 /* yylex() is a thin wrapper around c_lex(), all it does is translate
    cpplib.h's token codes into yacc's token codes.  */
-#include "cpplib.h"
-#include "intl.h"
-#include "timevar.h"
 
 static enum cpp_ttype last_token;
 #if USE_CPPLIB

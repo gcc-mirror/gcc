@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 #include "tree.h"
-#include "tm_p.h"
+#include "tm.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "real.h"
@@ -42,6 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "ggc.h"
 #include "except.h"
+#include "c-pragma.h"
 #include "tm_p.h"
 
 /* Forward definitions of types.  */
@@ -1613,27 +1614,27 @@ typedef enum
 
 static arm_pragma_enum arm_pragma_long_calls = OFF;
 
-/* Handle pragmas for compatibility with Intel's compilers.
-   FIXME: This is incomplete, since it does not handle all
-   the pragmas that the Intel compilers understand.  */
-int
-arm_process_pragma (p_getc, p_ungetc, pname)
-     int (*  p_getc)   PARAMS ((void)) ATTRIBUTE_UNUSED;
-     void (* p_ungetc) PARAMS ((int))  ATTRIBUTE_UNUSED;
-     char *  pname;
+void
+arm_pr_long_calls (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
-  /* Should be pragma 'far' or equivalent for callx/balx here.  */
-  if (strcmp (pname, "long_calls") == 0)
-    arm_pragma_long_calls = LONG;
-  else if (strcmp (pname, "no_long_calls") == 0)
-    arm_pragma_long_calls = SHORT;
-  else if (strcmp (pname, "long_calls_off") == 0)
-    arm_pragma_long_calls = OFF;
-  else
-    return 0;
-  
-  return 1;
+  arm_pragma_long_calls = LONG;
 }
+
+void
+arm_pr_no_long_calls (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  arm_pragma_long_calls = SHORT;
+}
+
+void
+arm_pr_long_calls_off (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  arm_pragma_long_calls = OFF;
+}
+
 
 /* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
    attribute for TYPE.  The attributes in ATTRIBUTES have previously been

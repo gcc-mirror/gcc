@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "toplev.h"
 #include "recog.h"
+#include "c-pragma.h"
 #include "tm_p.h"
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
@@ -4443,22 +4444,25 @@ initial_elimination_offset (from, to)
 /* Handle machine specific pragmas to be semi-compatible with Hitachi
    compiler.  */
 
-int
-sh_handle_pragma (p_getc, p_ungetc, pname)
-     int (*  p_getc)   PARAMS ((void)) ATTRIBUTE_UNUSED;
-     void (* p_ungetc) PARAMS ((int)) ATTRIBUTE_UNUSED;
-     const char * pname;
+void
+sh_pr_interrupt (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
-  int retval = 0;
+  pragma_interrupt = 1;
+}
 
-  if (strcmp (pname, "interrupt") == 0)
-    pragma_interrupt = retval = 1;
-  else if (strcmp (pname, "trapa") == 0)
-    pragma_interrupt = pragma_trapa = retval = 1;
-  else if (strcmp (pname, "nosave_low_regs") == 0)
-    pragma_nosave_low_regs = retval = 1;
+void
+sh_pr_trapa (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  pragma_interrupt = pragma_trapa = 1;
+}
 
-  return retval;
+void
+sh_pr_nosave_low_regs (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  pragma_nosave_low_regs = 1;
 }
 
 /* Generate 'handle_interrupt' attribute for decls */

@@ -19,6 +19,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_V850_H
+#define GCC_V850_H
+
 #include "svr4.h"	/* Automatically does #undef CPP_PREDEFINES */
 
 /* These are defiend in svr4.h but we want to override them.  */
@@ -138,7 +141,7 @@ extern int target_flags;
 
 /* Information about the various small memory areas.  */
 struct small_memory_info {
-  char *name;
+  const char *name;
   const char *value;
   long max;
   long physical_max;
@@ -1505,27 +1508,17 @@ do { char dstr[30];					\
      v850_set_default_decl_attr (decl)
 
 /* Tell compiler we want to support GHS pragmas */
-#define HANDLE_PRAGMA(get, unget, name) v850_handle_pragma (get, unget, name)
-
-enum v850_pragma_state
-{
-  V850_PS_START,
-  V850_PS_SHOULD_BE_DONE,
-  V850_PS_BAD,
-  V850_PS_MAYBE_SECTION_NAME,
-  V850_PS_EXPECTING_EQUALS,
-  V850_PS_EXPECTING_SECTION_ALIAS,
-  V850_PS_MAYBE_COMMA
-};
-
-enum v850_pragma_type
-{
-  V850_PT_UNKNOWN,
-  V850_PT_INTERRUPT,
-  V850_PT_SECTION,
-  V850_PT_START_SECTION,
-  V850_PT_END_SECTION
-};
+#define REGISTER_TARGET_PRAGMAS(PFILE) do {				  \
+  cpp_register_pragma_space (PFILE, "ghs");				  \
+  cpp_register_pragma (PFILE, "ghs", "interrupt", ghs_pragma_interrupt);  \
+  cpp_register_pragma (PFILE, "ghs", "section",   ghs_pragma_section);    \
+  cpp_register_pragma (PFILE, "ghs", "starttda",  ghs_pragma_starttda);   \
+  cpp_register_pragma (PFILE, "ghs", "startsda",  ghs_pragma_startsda);   \
+  cpp_register_pragma (PFILE, "ghs", "startzda",  ghs_pragma_startzda);   \
+  cpp_register_pragma (PFILE, "ghs", "endtda",    ghs_pragma_endtda);	  \
+  cpp_register_pragma (PFILE, "ghs", "endsda",    ghs_pragma_endsda);	  \
+  cpp_register_pragma (PFILE, "ghs", "endzda",    ghs_pragma_endzda);	  \
+} while (0)
 
 /* enum GHS_SECTION_KIND is an enumeration of the kinds of sections that
    can appear in the "ghs section" pragma.  These names are used to index
@@ -1621,3 +1614,4 @@ enum GHS_section_kind
 { "register_is_ok_for_epilogue",{ REG }},				\
 { "not_power_of_two_operand",	{ CONST_INT }},
   
+#endif /* v850.h */

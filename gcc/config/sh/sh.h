@@ -21,6 +21,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_SH_H
+#define GCC_SH_H
 
 #define TARGET_VERSION \
   fputs (" (Hitachi SH)", stderr);
@@ -2185,10 +2187,12 @@ extern enum mdep_reorg_phase_e mdep_reorg_phase;
 
 #define TARGET_MEM_FUNCTIONS
 
-/* Define this macro if you want to implement any pragmas.  If defined, it
-   is a C expression whose value is 1 if the pragma was handled by the
-   macro, zero otherwise.  */
-#define HANDLE_PRAGMA(GETC, UNGETC, NODE) sh_handle_pragma (GETC, UNGETC, NODE)
+/* Handle Hitachi compiler's pragmas.  */
+#define REGISTER_TARGET_PRAGMAS(PFILE) do {				    \
+  cpp_register_pragma (PFILE, 0, "interrupt", sh_pr_interrupt);		    \
+  cpp_register_pragma (PFILE, 0, "trapa", sh_pr_trapa);			    \
+  cpp_register_pragma (PFILE, 0, "nosave_low_regs", sh_pr_nosave_low_regs); \
+} while (0)
 
 /* Set when processing a function with pragma interrupt turned on.  */
 
@@ -2369,3 +2373,5 @@ do {									\
 0:	.p2align 2\n\
 1:	.long	" USER_LABEL_PREFIX #func " - 0b\n\
 2:")
+
+#endif /* sh.h */

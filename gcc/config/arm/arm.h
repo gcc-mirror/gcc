@@ -2488,8 +2488,12 @@ extern int making_const_table;
   arm_set_default_type_attributes (TYPE)
 
 /* Handle pragmas for compatibility with Intel's compilers.  */
-#define HANDLE_PRAGMA(GET, UNGET, NAME) arm_process_pragma (GET, UNGET, NAME)
-
+#define REGISTER_TARGET_PRAGMAS(PFILE) do { \
+  cpp_register_pragma (PFILE, 0, "long_calls", arm_pr_long_calls); \
+  cpp_register_pragma (PFILE, 0, "no_long_calls", arm_pr_no_long_calls); \
+  cpp_register_pragma (PFILE, 0, "long_calls_off", arm_pr_long_calls_off); \
+} while (0)
+
 /* Condition code information. */
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison. 

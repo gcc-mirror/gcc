@@ -24,12 +24,13 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "function.h"
 #include "defaults.h"
+#include "cpplib.h"
 #include "c-pragma.h"
 #include "flags.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "c-lex.h"
-#include "cpplib.h"
+#include "tm_p.h"
 
 #ifdef HANDLE_GENERIC_PRAGMAS
 
@@ -383,7 +384,7 @@ dispatch_pragma ()
   enum cpp_ttype t;
   tree x;
   const struct pragma_entry *p;
-  const char *name;
+  const char *name, *space = 0;
   size_t len;
 
   p = pragmas;
@@ -407,6 +408,7 @@ dispatch_pragma ()
 	{
 	  if (p->isnspace)
 	    {
+	      space = p->name;
 	      p = p->u.space;
 	      goto new_space;
 	    }
@@ -420,10 +422,15 @@ dispatch_pragma ()
     }
 
   /* Issue a warning message if we have been asked to do so.  Ignore
-     unknown pragmas in system header file unless an explcit
+     unknown pragmas in system headers unless an explicit
      -Wunknown-pragmas has been given. */
   if (warn_unknown_pragmas > in_system_header)
-    warning ("ignoring pragma %s", name);
+    {
+      if (space)
+	warning ("ignoring #pragma %s %s", space, name);
+      else
+	warning ("ignoring #pragma %s", name);
+    }
 }
 
 #endif
@@ -442,6 +449,10 @@ init_pragma ()
 #endif
 #ifdef HANDLE_PRAGMA_WEAK
   cpp_register_pragma (pfile, 0, "weak", handle_pragma_weak);
+#endif
+
+#ifdef REGISTER_TARGET_PRAGMAS
+  REGISTER_TARGET_PRAGMAS (pfile);
 #endif
 
 #ifdef HANDLE_PRAGMA_PACK_PUSH_POP

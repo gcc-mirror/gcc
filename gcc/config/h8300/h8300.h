@@ -22,6 +22,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_H8300_H
+#define GCC_H8300_H
+
 /* Which CPU to compile for.
    We use int for CPU_TYPE to avoid lots of casts.  */
 #if 0 /* defined in insn-attr.h, here for documentation */
@@ -1410,18 +1413,11 @@ do { char dstr[30];					\
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
-/* Define this macro if you want to implement any pragmas.  If defined, it
-   should be a C expression to be executed when #pragma is seen.  The
-   argument GETC is a function which will return the next character in the
-   input stream, or EOF if no characters are left.  The argument UNGETC is
-   a function which will push a character back into the input stream.  The
-   argument NAME is the word following #pragma in the input stream.  The input
-   stream pointer will be pointing just beyond the end of this word.  The
-   expression should return true if it handled the pragma, false otherwise.
-   The input stream should be left undistrubed if false is returned, otherwise
-   it should be pointing at the last character after the end of the pragma
-   (newline or end-of-file).  */
-#define HANDLE_PRAGMA(GETC, UNGETC, NAME) handle_pragma (GETC, UNGETC, NAME)
+/* H8300 specific pragmas.  */
+#define REGISTER_TARGET_PRAGMAS(PFILE) do {				\
+  cpp_register_pragma (PFILE, 0, "saveall", h8300_pr_saveall);		\
+  cpp_register_pragma (PFILE, 0, "interrupt", h8300_pr_interrupt);	\
+} while (0)
 
 #define FINAL_PRESCAN_INSN(insn, operand, nop) final_prescan_insn (insn, operand,nop)
 
@@ -1454,3 +1450,5 @@ do { char dstr[30];					\
   } while (0)
 
 #define MOVE_RATIO 3
+
+#endif /* GCC_H8300_H */

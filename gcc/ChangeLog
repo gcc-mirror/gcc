@@ -1,3 +1,42 @@
+2000-09-07  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* c-pragma.h: Define HANDLE_GENERIC_PRAGMAS if
+	REGISTER_TARGET_PRAGMAS is defined.  Duplicate some
+	definitions from cpplib.h.
+	* cpplib.h: Don't typedef struct cpp_reader if c-pragma.h has
+	already done it.
+	* tm.texi: Document HANDLE_PRAGMA as no longer supported.  Add
+	documentation for REGISTER_TARGET_PRAGMAS.
+
+	* c-lex.c: Include cpplib.h before c-pragma.h.  Define a
+	default-pragma callback to implement -Wunknown-pragmas if
+	USE_CPPLIB.
+	* c-parse.in: Move all includes to top of file.
+	* c-pragma.c: Include cpplib.h before c-pragma.h.  Include
+	tm_p.h.
+	(dispatch_pragma): Put the namespace in the -Wunknown-pragmas
+	warning.
+	(init_pragma): If REGISTER_TARGET_PRAGMAS is defined, call it.
+
+	* arm.h, arm-protos.h, arm.c,
+	  c4x.h, c4x-protos.h, c4x.c,
+	  h8300.h, h8300-protos.h, h8300.c,
+	  i370.h, i370-protos.h, i370.c,
+	  i960.h, i960-protos.h, i960.c,
+	  sh.h, sh-protos.h, sh.c, 
+	  v850.h, v850-protos.h, v850.c: Convert HANDLE_PRAGMA-based
+	pragmata scheme to use REGISTER_TARGET_PRAGMAS instead.
+
+	* d30v.h: Don't mention HANDLE_PRAGMA in comment.  Add
+	multiple include guard.
+	* i370.md (untyped_call): Use GEN_CALL.
+	(umodsi3): Remove unused variable.
+	* sh/elf.h: Don't undef HANDLE_SYSV_PRAGMA.
+	* v850.c (output_move_single, output_move_double): Constify
+	return value.
+	(print_operand): Constify a char *.
+	* v850.h (struct small_memory_info): Constify name member.
+
 2000-09-07  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300.h: Fix comment typos.

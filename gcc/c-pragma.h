@@ -62,7 +62,8 @@ extern int add_weak PARAMS ((const char *, const char *));
    parsing is to be done.  The code in GCC's generic C source files
    will only look for the definition of this constant.  They will
    ignore definitions of HANDLE_PRAGMA_PACK and so on.  */
-#if defined HANDLE_PRAGMA_PACK || defined HANDLE_PRAGMA_WEAK
+#if defined HANDLE_PRAGMA_PACK || defined HANDLE_PRAGMA_WEAK \
+    || defined REGISTER_TARGET_PRAGMAS
 #define HANDLE_GENERIC_PRAGMAS
 #endif
 
@@ -75,6 +76,17 @@ extern void dispatch_pragma PARAMS ((void));
 
 #else
 # define init_pragma()
+#endif
+
+/* Duplicate prototypes for the register_pragma stuff and the typedef for
+   cpp_reader, to avoid dragging cpplib.h in almost everywhere... */
+#ifndef __GCC_CPPLIB__
+typedef struct cpp_reader cpp_reader;
+
+extern void cpp_register_pragma PARAMS ((cpp_reader *,
+					 const char *, const char *,
+					 void (*) PARAMS ((cpp_reader *))));
+extern void cpp_register_pragma_space PARAMS ((cpp_reader *, const char *));
 #endif
 
 #endif /* _C_PRAGMA_H */

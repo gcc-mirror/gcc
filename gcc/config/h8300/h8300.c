@@ -39,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "c-pragma.h"
 #include "tm_p.h"
 
 /* Forward declarations.  */
@@ -730,22 +731,20 @@ eq_operator (x, mode)
    an rte instruction rather than an rts.  A pointer to a function
    with this attribute may be safely used in an interrupt vector.  */
 
-int
-handle_pragma (p_getc, p_ungetc, pname)
-     int (* ATTRIBUTE_UNUSED p_getc) PARAMS ((void));
-     void (* ATTRIBUTE_UNUSED p_ungetc) PARAMS ((int));
-     const char *pname;
+void
+h8300_pr_interrupt (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
-  int retval = 0;
-
-  if (strcmp (pname, "interrupt") == 0)
-    interrupt_handler = retval = 1;
-  else if (strcmp (pname, "saveall") == 0)
-    pragma_saveall = retval = 1;
-
-  return retval;
+  interrupt_handler = 1;
 }
-
+
+void
+h8300_pr_saveall (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+{
+  pragma_saveall = 1;
+}
+
 /* If the next arg with MODE and TYPE is to be passed in a register, return
    the rtx to represent where it is passed.  CUM represents the state after
    the last argument.  NAMED is not used.  */

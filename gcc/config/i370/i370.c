@@ -38,6 +38,9 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "recog.h"
 #include "toplev.h"
+#include "cpplib.h"
+#include "c-pragma.h"
+#include "c-lex.h"
 #include "tm_p.h"
 
 extern FILE *asm_out_file;
@@ -862,6 +865,17 @@ mvs_add_alias (realname, aliasname, emitted)
   alias_node_t *ap;
 
   ap = (alias_node_t *) xmalloc (sizeof (alias_node_t));
+  if (strlen (realname) > MAX_LONG_LABEL_SIZE)
+    {
+      warning ("real name is too long - alias ignored");
+      return;
+    }
+  if (strlen (aliasname) > MAX_MVS_LABEL_SIZE)
+    {
+      warning ("alias name is too long - alias ignored");
+      return;
+    }
+      
   strcpy (ap->real_name, realname);
   strcpy (ap->alias_name, aliasname);
   ap->alias_emitted = emitted;
@@ -1005,116 +1019,31 @@ mvs_check_alias (realname, aliasname)
   return 0;
 }
 
-/* Called from check_newline via the macro HANDLE_PRAGMA.
-   p_getc is a pointer to get character routine.
-   p_ungetc is a pointer to un-get character routine.
-   pname is the pointer to the name of the pragma to process.
-   The result is 1 if the pragma was handled.  */
+/* #pragma map (name, alias) -
+   In this implementation both name and alias are required to be
+   identifiers.  The older code seemed to be more permissive.  Can
+   anyone clarify?  */
 
-int
-handle_pragma (p_getc, p_ungetc, pname)
-     int (* p_getc) PARAMS ((void));
-     void (* p_ungetc) PARAMS ((int));
-     const char *pname;
+void
+i370_pr_map (pfile)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
-  int retval = 0;
-  register int c;
+  tree name, alias, x;
 
-  if (strcmp (pname, "map") == 0)
+  if (c_lex (&x)        == CPP_OPEN_PAREN
+      && c_lex (&name)  == CPP_NAME
+      && c_lex (&x)     == CPP_COMMA
+      && c_lex (&alias) == CPP_NAME
+      && c_lex (&x)     == CPP_CLOSE_PAREN)
     {
-      char realname[MAX_LONG_LABEL_SIZE + 1];
-      char aliasname[MAX_MVS_LABEL_SIZE + 1];
-      char *s;
+      if (c_lex (&x) != CPP_EOF)
+	warning ("junk at end of #pragma map");
 
-      do {
-	c = p_getc ();
-      } while (c == ' ' || c == '\t');
-
-      if (c == '(')
-        {
-	  s = realname;
-	  do {
-	    c = p_getc ();
-	  } while (c == ' ' || c == '\t');
-	  if (c == '\n')
-	    goto PRAGMA_WARNING;
-	  do {
-	    *s++ = c;
-	    c = p_getc ();
-	  } while (ISALNUM(c) || c == '_');
-	  if (c == '\n')
-	    goto PRAGMA_WARNING;
-	  *s = 0;
-
-	  if (c == ' ' || c == '\t')
-	    do {
-	      c = p_getc ();
-	    } while (c == ' ' || c == '\t');
-	  
-	  if (c == ',')
-	    {
-	      do {
-	        c = p_getc ();
-	      } while (c == ' ' || c == '\t');
-	      if (c == '"')
-	        {
-	          s = aliasname;
-	          c = p_getc ();
-	          do {
-	            if (c == '\\')
-	              {
-	                int d = 0;
-	                do {
-	                  c = p_getc ();
-	                  if (c >= '0' && c <= '7')
-	                      d = (d << 3) | (c - '0');
-	                } while (c >= '0' && c <= '7');
-	                p_ungetc (c);
-	                c = d;
-	                if (d < 1 || d > 255)
-			  warning ("Escape value out of range");
-#ifndef HOST_EBCDIC
-                        c = ebcasc[c];
-#endif
-	              }
-	            *s++ = c;
-	            c = p_getc ();
-	            if (ISSPACE(c) || c == ')')
-	              goto PRAGMA_WARNING;
-	          } while (c != '"');
-	          *s = 0;
-		  if (strlen (aliasname) > MAX_MVS_LABEL_SIZE)
-		    {
-		      warning ("#pragma map alias is too long, truncated");
-		      aliasname[MAX_MVS_LABEL_SIZE] = '\0';
-		    }
-		  do {
-		    c = p_getc ();
-		  } while (c == ' ' || c == '\t');
-		  if (c == ')')
-		    {
-	              mvs_add_alias (realname, aliasname, 1);
-		      retval = 1;
-		    }
-	          else
-	            goto PRAGMA_WARNING;
-	        }
-	      else
-	        goto PRAGMA_WARNING;
-	    }
-	  else
-	    goto PRAGMA_WARNING;
-	  
-        }
-      else
-        {
-	 PRAGMA_WARNING:
-	  warning ("#pragma map options are missing or incorrect");
-        }
-      
+      mvs_add_alias (IDENTIFIER_POINTER (name), IDENTIFIER_POINTER (alias), 1);
+      return;
     }
 
-  return retval;
+  warning ("malformed #pragma map, ignored");
 }
 
 /* defines and functions specific to the HLASM assembler */
