@@ -9,7 +9,8 @@ int verbose = 0;
 int debug = 0;
 int bad_accesses = 0;
 
-const char *const memory_use_strings[] = {
+const char *const memory_use_strings[] =
+{
 #define INIT(x)		[x] = #x
   INIT (MEMORY_USE_BAD),
   INIT (MEMORY_USE_DONT),
@@ -23,10 +24,12 @@ const char *const memory_use_strings[] = {
 /* This won't be used for any really huge test cases, so a simple
    linked list is adequate.  We won't even worry about overlapping
    regions; the matching entry that comes up first wins.  */
-const char *const access_mode_strings[] = {
+const char *const access_mode_strings[] =
+{
   "none", "ro", "wo", "rw",
 };
-struct access_node {
+struct access_node
+{
   struct access_node *next;
   const void *addr;
   size_t sz;
@@ -35,7 +38,8 @@ struct access_node {
 
 static struct access_node *access_list;
 
-void mark_region (const void *addr, size_t sz, enum access_mode mode)
+void
+mark_region (const void *addr, size_t sz, enum access_mode mode)
 {
   struct access_node *a;
   if (debug)
@@ -50,7 +54,8 @@ void mark_region (const void *addr, size_t sz, enum access_mode mode)
 }
 
 void report_bad_access (void *, size_t, enum memory_use_mode) NOCHECK;
-void report_bad_access (void *addr, size_t sz, enum memory_use_mode mode)
+void
+report_bad_access (void *addr, size_t sz, enum memory_use_mode mode)
 {
   if (++bad_accesses > 100)
     bad_accesses = 100;
@@ -72,8 +77,9 @@ void report_bad_access (void *addr, size_t sz, enum memory_use_mode mode)
 }
 
 int verify1 (void *, size_t, enum access_mode, struct access_node *) NOCHECK;
-int verify1 (void *addr, size_t sz, enum access_mode mode,
-	     struct access_node *a)
+int
+verify1 (void *addr, size_t sz, enum access_mode mode,
+	 struct access_node *a)
 {
   while (a && (addr + sz <= a->addr || addr >= a->addr + a->sz))
     a = a->next;
@@ -99,8 +105,8 @@ int verify1 (void *addr, size_t sz, enum access_mode mode,
 }
 
 int verify_range_permission (void *, size_t, enum access_mode) NOCHECK;
-
-int verify_range_permission (void *addr, size_t sz, enum access_mode mode)
+int
+verify_range_permission (void *addr, size_t sz, enum access_mode mode)
 {
   if (debug)
     printf ("verify_range_permission (%p, %ld, %s)\n", addr, (long) sz,
@@ -109,8 +115,8 @@ int verify_range_permission (void *addr, size_t sz, enum access_mode mode)
 }
 
 void chkr_check_addr (void *, size_t, int) NOCHECK;
-
-void chkr_check_addr (void *addr, size_t sz, int mode)
+void
+chkr_check_addr (void *addr, size_t sz, int mode)
 {
   switch (mode)
     {
@@ -146,7 +152,8 @@ void chkr_check_addr (void *addr, size_t sz, int mode)
 }
 
 void copy1 (void *, void *, size_t, struct access_node *) NOCHECK;
-void copy1 (void *dest, void *src, size_t sz, struct access_node *a)
+void
+copy1 (void *dest, void *src, size_t sz, struct access_node *a)
 {
   while (a && (src + sz <= a->addr || src >= a->addr + a->sz))
     a = a->next;
@@ -178,7 +185,8 @@ void copy1 (void *dest, void *src, size_t sz, struct access_node *a)
 }
 
 void chkr_copy_bitmap (void *, void *, size_t) NOCHECK;
-void chkr_copy_bitmap (void *dest, void *src, size_t sz)
+void
+chkr_copy_bitmap (void *dest, void *src, size_t sz)
 {
   if (verify_range_permission (dest, sz, MEMORY_USE_WO) == 0)
     report_bad_access (dest, sz, MEMORY_USE_WO);
@@ -186,22 +194,30 @@ void chkr_copy_bitmap (void *dest, void *src, size_t sz)
 }
 
 void chkr_set_right (void *, size_t, enum access_mode) NOCHECK;
-void chkr_set_right (void *addr, size_t sz, enum access_mode mode)
+void
+chkr_set_right (void *addr, size_t sz, enum access_mode mode)
 {
   mark_region (addr, sz, mode);
 }
 
 int main () NOCHECK;
-int main ()
+int
+main ()
 {
   setup ();
   test ();
   bad_accesses = !!bad_accesses; /* get 0 or 1 */
-  /* Return 0 if got expected results, 1 otherwise.  */
-  return !(bad_accesses == expect_error);
+  
+  if (bad_accesses == expect_error)
+    exit (0);
+  else
+    abort ();
+  
+  return 0;
 }
 
-struct malloc_node {
+struct malloc_node
+{
   struct malloc_node *next;
   void *addr;
   size_t sz;
@@ -209,7 +225,8 @@ struct malloc_node {
 };
 static struct malloc_node *malloc_list;
 
-void *c_malloc (size_t sz)
+void *
+c_malloc (size_t sz)
 {
   void *p;
   struct malloc_node *m;
@@ -238,7 +255,8 @@ void *c_malloc (size_t sz)
   return p;
 }
 
-void c_free (void *p)
+void
+c_free (void *p)
 {
   struct malloc_node *m;
   if (p == 0)

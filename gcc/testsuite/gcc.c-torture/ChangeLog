@@ -1,3 +1,16 @@
+1999-02-03  Nick Clifton  <nickc@cygnus.com>
+
+	* execute/memcheck/blkarg.c (foo): Use 10 leading arguments in
+	order to force structure S onto the stack even on the alpha.
+	(test): Pass 10 leading arguments to function foo as well as the
+	structure S.
+
+	* execute/memcheck/blkarg.x: New file: Expected failure for all
+	targets. 
+
+	* execute/memcheck/driver.c (main): Use exit or abort to terminate
+	program execution.
+
 1999-01-28  Michael Meissner  <meissner@cygnus.com>
 
 	* execute/990128-1.c: New test.
