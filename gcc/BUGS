@@ -3,7 +3,7 @@ read the Bugs section of the GCC manual for advice on
 
 (1) how to tell when to report a bug, 
 (2) where to send your bug report, and
-(2) how to write a useful bug report and what information
+(3) how to write a useful bug report and what information
 it needs to have.
 
 There are three ways to read the Bugs section.
@@ -20,4 +20,8 @@ to get to the section on bugs.  Or use standalone Info in
 a like manner.  (Standalone Info is part of the Texinfo distribution.)
 
 (3) By hand. Search for the chapter "Reporting Bugs" in gcc.texi, or
-    cat /usr/local/info/gcc* | more "+/^File: emacs,  Node: Bugs,"
+    cat /usr/local/info/gcc* | more "+/^File: gcc.info,  Node: Bugs,"
+
+You may also want to take a look at the EGCS FAQ, in which there are
+additional instructions for submitting bug reports:
+	http://egcs.cygnus.com/faq.html#bugreport
