@@ -354,6 +354,18 @@ while (0)
 #define DBX_OUTPUT_LBRAC(FILE, NAME) DBX_OUTPUT_BRAC (FILE, NAME, N_LBRAC)
 #define DBX_OUTPUT_RBRAC(FILE, NAME) DBX_OUTPUT_BRAC (FILE, NAME, N_RBRAC)
 
+/* Another case where we want the dot name.  */
+#define	DBX_OUTPUT_NFUN(FILE, LSCOPE, DECL)				\
+  do									\
+    {									\
+      fprintf (FILE, "%s\"\",%d,0,0,", ASM_STABS_OP, N_FUN);		\
+      assemble_name (FILE, LSCOPE);					\
+      fputs ("-.", FILE);						\
+      assemble_name (FILE, XSTR (XEXP (DECL_RTL (DECL), 0), 0));	\
+      putc ('\n', FILE);						\
+    }									\
+  while (0)
+
 /* Override sysv4.h as these are ABI_V4 only.  */
 #undef	ASM_OUTPUT_REG_PUSH
 #undef	ASM_OUTPUT_REG_POP

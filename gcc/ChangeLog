@@ -1,3 +1,9 @@
+2002-09-14  Alan Modra  <amodra@bigpond.net.au>
+
+	* doc/tm.texi (DBX_OUTPUT_NFUN): Describe.
+	* dbxout.c (dbxout_function_end): Use DBX_OUTPUT_NFUN.
+	* config/rs6000/linux64.h (DBX_OUTPUT_NFUN): Define.
+
 2002-09-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* ggc-common.c (ggc_mark_roots): Don't iterate NULL hash tables.
