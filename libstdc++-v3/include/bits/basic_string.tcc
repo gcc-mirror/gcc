@@ -287,7 +287,7 @@ namespace std
 	 __throw_length_error("basic_string::assign");
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
 	   || less<const _CharT*>()(_M_data() + this->size(), __s))
-	 return _M_replace_safe(_M_ibegin(), _M_iend(), __s, __s + __n);
+	 return _M_replace_safe(size_type(0), this->size(), __s, __n);
        else
 	 {
 	   // Work in-place
@@ -324,8 +324,7 @@ namespace std
          __throw_length_error("basic_string::insert");
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
            || less<const _CharT*>()(_M_data() + this->size(), __s))
-         return _M_replace_safe(_M_ibegin() + __pos, _M_ibegin() + __pos,
-                                __s, __s + __n);
+         return _M_replace_safe(__pos, size_type(0), __s, __n);
        else
          {
            // Work in-place. If _M_mutate reallocates the string, __s
@@ -361,8 +360,7 @@ namespace std
          __throw_length_error("basic_string::replace");
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
            || less<const _CharT*>()(_M_data() + this->size(), __s))
-         return _M_replace_safe(_M_ibegin() + __pos,
-				_M_ibegin() + __pos + __n1, __s, __s + __n2);
+         return _M_replace_safe(__pos, __n1, __s, __n2);
        // Todo: optimized in-place replace.
        else
 	 return _M_replace(_M_ibegin() + __pos, _M_ibegin() + __pos + __n1,
@@ -608,16 +606,14 @@ namespace std
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>&
     basic_string<_CharT, _Traits, _Alloc>::
-    _M_replace_aux(iterator __i1, iterator __i2, size_type __n2, _CharT __c)
+    _M_replace_aux(size_type __pos1, size_type __n1, size_type __n2,
+		   _CharT __c)
     {
-      const size_type __n1 = __i2 - __i1;
-      const size_type __off1 = __i1 - _M_ibegin();
-      if (max_size() - (this->size() - __n1) <= __n2)
+      if (this->size() - __n1 > this->max_size() - __n2)
 	__throw_length_error("basic_string::_M_replace_aux");
-      _M_mutate(__off1, __n1, __n2);
-      // Invalidated __i1, __i2
+      _M_mutate(__pos1, __n1, __n2);
       if (__n2)
-	traits_type::assign(_M_data() + __off1, __n2, __c);
+	traits_type::assign(_M_data() + __pos1, __n2, __c);
       return *this;
     }
 
@@ -630,36 +626,26 @@ namespace std
       _M_replace(iterator __i1, iterator __i2, _InputIterator __k1, 
 		 _InputIterator __k2)
       {
-	// Save concerned source string data in a temporary.
 	const basic_string __s(__k1, __k2);
-	return _M_replace_safe(__i1, __i2, __s._M_ibegin(), __s._M_iend());
+	return _M_replace_safe(__i1 - _M_ibegin(), __i2 - __i1, __s._M_data(),
+			       __s.size());
       }
 
-  // This is a special replace helper, which does not buffer internally
-  // and can be used in "safe" situations involving forward iterators,
+  // This helper doesn't buffer internally and can be used in "safe" situations,
   // i.e., when source and destination ranges are known to not overlap.
   template<typename _CharT, typename _Traits, typename _Alloc>
-    template<typename _ForwardIterator>
-      basic_string<_CharT, _Traits, _Alloc>&
-      basic_string<_CharT, _Traits, _Alloc>::
-      _M_replace_safe(iterator __i1, iterator __i2, _ForwardIterator __k1, 
-		      _ForwardIterator __k2)
-      {
-	const size_type __dnew = static_cast<size_type>(std::distance(__k1, __k2));
-	const size_type __dold = __i2 - __i1;
-	const size_type __dmax = this->max_size();
-
-	if (__dmax <= __dnew)
-	  __throw_length_error("basic_string::_M_replace_safe");
-	const size_type __off = __i1 - _M_ibegin();
-	_M_mutate(__off, __dold, __dnew);
-
-	// Invalidated __i1, __i2
-        if (__dnew)
-	  _S_copy_chars(_M_data() + __off, __k1, __k2);
-
-	return *this;
-      }
+    basic_string<_CharT, _Traits, _Alloc>&
+    basic_string<_CharT, _Traits, _Alloc>::
+    _M_replace_safe(size_type __pos1, size_type __n1, const _CharT* __s,
+		    size_type __n2)
+    {
+      if (this->size() - __n1 > this->max_size() - __n2)
+	__throw_length_error("basic_string::_M_replace_safe");
+      _M_mutate(__pos1, __n1, __n2);
+      if (__n2)
+	traits_type::copy(_M_data() + __pos1, __s, __n2);
+      return *this;
+    }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>&
@@ -684,8 +670,8 @@ namespace std
       const size_type __len = __size + this->size();
       if (__len > this->capacity())
 	this->reserve(__len);
-      return _M_replace_safe(_M_iend(), _M_iend(), __str._M_ibegin(),
-			     __str._M_iend());
+      return _M_replace_safe(this->size(), size_type(0), __str._M_data(),
+			     __str.size());
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -701,8 +687,8 @@ namespace std
       const size_type __len = __n + this->size();
       if (__len > this->capacity())
 	this->reserve(__len);
-      return _M_replace_safe(_M_iend(), _M_iend(), __str._M_ibegin()
-			     + __pos, __str._M_ibegin() + __pos + __n);
+      return _M_replace_safe(this->size(), size_type(0), __str._M_data()
+			     + __pos, __n);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -714,7 +700,7 @@ namespace std
       const size_type __len = __n + this->size();
       if (__len > this->capacity())
 	this->reserve(__len);
-      return _M_replace_safe(_M_iend(), _M_iend(), __s, __s + __n);
+      return _M_replace_safe(this->size(), size_type(0), __s, __n);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
