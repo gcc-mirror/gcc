@@ -398,7 +398,7 @@ print_rtx (in_rtx)
   switch (GET_CODE (in_rtx))
     {
     case MEM:
-      fprintf (outfile, " %d", MEM_ALIAS_SET (in_rtx));
+      fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, MEM_ALIAS_SET (in_rtx));
       break;
 
 #if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT && MAX_LONG_DOUBLE_TYPE_SIZE == 64
