@@ -1,3 +1,8 @@
+2001-11-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.pt/memtemp100.C: Remove non-standard
+	constructs.
+
 2001-11-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/redef2.c: Update.
