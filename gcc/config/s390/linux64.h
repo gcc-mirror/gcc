@@ -36,8 +36,10 @@ Boston, MA 02111-1307, USA.  */
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dlinux -Asystem(linux) -Acpu(s390) -Amachine(s390) -D__s390x__ -Asystem(unix) -Dunix -D__ELF__"
-
+#define CPP_PREDEFINES \
+  "-Dlinux -Asystem(linux) -Acpu(s390) -Amachine(s390) -D__s390x__ \
+   -Asystem(unix) -Dunix -D__ELF__ \
+   -D__LONG_MAX__=9223372036854775807L"
 
 #undef	LINK_SPEC
 #ifdef CROSS_COMPILE

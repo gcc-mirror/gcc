@@ -1,3 +1,8 @@
+2001-08-13  Ulrich Weigand  <uweigand@de.ibm.com>:
+ 
+	* glimits.h: Remove the __LONG_MAX__ special case for s390x.
+	* config/s390/linux64.h: Define __LONG_MAX__ in CPP_PREDEFINES.
+
 2001-08-13  Richard Henderson  <rth@redhat.com>
 
 	* config/arm/unknown-elf.h (CTOR_LIST_BEGIN, CTOR_LIST_END): Remove.
