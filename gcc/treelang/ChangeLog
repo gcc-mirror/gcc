@@ -1,3 +1,10 @@
+2004-10-01  James A. Morrison  <phython@gcc.gnu.org>
+
+	* parse.y (ELSE): Set tok to $1.
+	* treelang.texi: Wrap comments in @r{}.  Indent example comments.
+	Use gcc when refering to the command line or website.  Update function
+	definition.
+
 2004-10-01  Jan Hubicka  <jh@suse.cz>
 
 	* treetree.c (treeland_expand_function): Update call of
