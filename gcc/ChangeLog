@@ -1,3 +1,13 @@
+2003-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/ia64/libgcc-ia64.ver: Export _Unwind_GetBSP@@GCC_3.3.2.
+	* config/ia64/unwind-ia64.c (_Unwind_GetBSP): New function.
+	* unwind.h (_Unwind_GetBSP): New prototype.
+	* libgcc-std.ver: Add empty GCC_3.3.2 version.
+	* mkmap-symver.awk: For symbol versions with no exported symbols,
+	don't put anything into version script, just change all symbol
+	versions which inherit from it to inherit from its ancestor.
+
 2003-09-04  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.c (mips_expand_prologue): Convert to
