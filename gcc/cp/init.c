@@ -1472,6 +1472,8 @@ build_member_call (type, name, parmlist)
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR
       && TREE_CODE (type) == NAMESPACE_DECL)
     {
+      /* 'name' already refers to the decls from the namespace, since we
+	 hit do_identifier for template_ids.  */
       my_friendly_assert (is_overloaded_fn (TREE_OPERAND (name, 0)), 980519);
       return build_x_function_call (name, parmlist, current_class_ref);
     }
