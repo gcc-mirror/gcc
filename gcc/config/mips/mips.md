@@ -10043,7 +10043,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "%($LF%= = . + 8\;bal\\t$LF%=\;nop;la\\t%0,%1-$LF%=%)\;addu\\t%0,%0,$31"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
-   (set_attr "length"	"16")])
+   (set_attr "length"	"20")])
 
 ;; This is used in compiling the unwind routines.
 (define_expand "eh_return"
