@@ -2417,7 +2417,7 @@ extern void cat_namespace_levels                PROTO((void));
 
 /* in decl2.c */
 extern int flag_assume_nonnull_objects;
-extern int lang_decode_option			PROTO((char *));
+extern int lang_decode_option			PROTO((int, char **));
 extern tree grok_method_quals			PROTO((tree, tree, tree));
 extern void warn_if_unknown_interface		PROTO((tree));
 extern tree grok_x_components			PROTO((tree, tree));

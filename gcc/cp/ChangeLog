@@ -1,3 +1,12 @@
+1998-06-10  Dave Brolley  <brolley@cygnus.com>
+
+	* decl2.c (lang_decode_option): New argc/argv interface.
+	* cp-tree.h (lang_decode_option): New argc/argv interface.
+	* lang-specs.h (default_compilers): Only call cpp if -E, -M or -MM is
+	specified for cpplib-enabled compilers.
+	* lex.c (lang_init): Don't check_newline for cpplib.
+	(init_parse): Don't initialize cpplib here.
+
 1998-06-10  Brendan Kehoe  <brendan@cygnus.com>
 
 	* typeck.c (build_component_ref): Make sure FIELD has a lang_specific
