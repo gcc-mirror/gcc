@@ -268,6 +268,15 @@ the argument @samp{-lgcc} to tell the linker to do the search.
 This macro is similar to @code{LINK_LIBGCC_SPECIAL}, except that it does
 not affect @samp{-L} options.
 
+@findex LINK_COMMAND_SPEC
+@item LINK_COMMAND_SPEC
+A C string constant giving the complete command line need to execute the
+linker.  When you do this, you will need to update your port each time a
+change is made to the link command line within @file{gcc.c}.  Therefore,
+define this macro only if you need to completely redefine the command
+line for invoking the linker and there is no other way to accomplish
+the effect you need.
+
 @findex MULTILIB_DEFAULTS
 @item MULTILIB_DEFAULTS
 Define this macro as a C expression for the initializer of an array of
