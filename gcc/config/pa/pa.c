@@ -6044,7 +6044,7 @@ output_lbranch (rtx dest, rtx insn)
 	abort ();
 
       final_scan_insn (NEXT_INSN (insn), asm_out_file,
-		       optimize, 0, 0, NULL);
+		       optimize, 0, NULL);
 
       /* Now delete the delay insn.  */
       PUT_CODE (NEXT_INSN (insn), NOTE);
@@ -7048,7 +7048,7 @@ output_call (rtx insn, rtx call_dest, int sibcall)
 	      && !sibcall)
 	    {
 	      final_scan_insn (NEXT_INSN (insn), asm_out_file,
-			       optimize, 0, 0, NULL);
+			       optimize, 0, NULL);
 
 	      /* Now delete the delay insn.  */
 	      PUT_CODE (NEXT_INSN (insn), NOTE);
@@ -7096,7 +7096,7 @@ output_call (rtx insn, rtx call_dest, int sibcall)
 	      /* A non-jump insn in the delay slot.  By definition we can
 		 emit this insn before the call (and in fact before argument
 		 relocating.  */
-	      final_scan_insn (NEXT_INSN (insn), asm_out_file, optimize, 0, 0,
+	      final_scan_insn (NEXT_INSN (insn), asm_out_file, optimize, 0,
 			       NULL);
 
 	      /* Now delete the delay insn.  */

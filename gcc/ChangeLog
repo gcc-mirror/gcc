@@ -1,3 +1,8 @@
+2005-03-30  Ian Lance Taylor  <ian@airs.com>
+
+	* final.c (final): Remove prescan parameter.  Change all callers.
+	(final_scan_insn): Remove prescan parameter.  Change all callers.
+
 2005-03-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-vectorizer.c: Fix comment typos.

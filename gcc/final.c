@@ -1491,18 +1491,10 @@ final_end_function (void)
 }
 
 /* Output assembler code for some insns: all or part of a function.
-   For description of args, see `final_start_function', above.
-
-   PRESCAN is 1 if we are not really outputting,
-     just scanning as if we were outputting.
-   Prescanning deletes and rearranges insns just like ordinary output.
-   PRESCAN is -2 if we are outputting after having prescanned.
-   In this case, don't try to delete or rearrange insns
-   because that has already been done.
-   Prescanning is done only on certain machines.  */
+   For description of args, see `final_start_function', above.  */
 
 void
-final (rtx first, FILE *file, int optimize, int prescan)
+final (rtx first, FILE *file, int optimize)
 {
   rtx insn;
   int max_uid = 0;
@@ -1574,7 +1566,7 @@ final (rtx first, FILE *file, int optimize, int prescan)
 	insn_current_address = INSN_ADDRESSES (INSN_UID (insn));
 #endif /* HAVE_ATTR_length */
 
-      insn = final_scan_insn (insn, file, optimize, prescan, 0, &seen);
+      insn = final_scan_insn (insn, file, optimize, 0, &seen);
     }
 }
 
@@ -1672,8 +1664,7 @@ scan_ahead_for_unlikely_executed_note (rtx insn)
 
 rtx
 final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
-		 int prescan, int nopeepholes ATTRIBUTE_UNUSED,
-		 int *seen)
+		 int nopeepholes ATTRIBUTE_UNUSED, int *seen)
 {
 #ifdef HAVE_cc0
   rtx set;
@@ -1690,9 +1681,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
   switch (GET_CODE (insn))
     {
     case NOTE:
-      if (prescan > 0)
-	break;
-
       switch (NOTE_LINE_NUMBER (insn))
 	{
 	case NOTE_INSN_DELETED:
@@ -1904,8 +1892,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    }
 	}
 #endif
-      if (prescan > 0)
-	break;
 
       if (LABEL_NAME (insn))
 	(*debug_hooks->label) (insn);
@@ -2022,9 +2008,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    int vlen, idx;
 #endif
 
-	    if (prescan > 0)
-	      break;
-
 	    if (! JUMP_TABLES_IN_TEXT_SECTION)
 	      targetm.asm_out.function_rodata_section (current_function_decl);
 	    else
@@ -2103,8 +2086,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	    /* There's no telling what that did to the condition codes.  */
 	    CC_STATUS_INIT;
-	    if (prescan > 0)
-	      break;
 
 	    if (string[0])
 	      {
@@ -2127,8 +2108,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	    /* There's no telling what that did to the condition codes.  */
 	    CC_STATUS_INIT;
-	    if (prescan > 0)
-	      break;
 
 	    /* Get out the operand values.  */
 	    string = decode_asm_operands (body, ops, NULL, NULL, NULL);
@@ -2155,7 +2134,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    break;
 	  }
 
-	if (prescan <= 0 && app_on)
+	if (app_on)
 	  {
 	    fputs (ASM_APP_OFF, file);
 	    app_on = 0;
@@ -2166,8 +2145,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    /* A delayed-branch sequence */
 	    int i;
 
-	    if (prescan > 0)
-	      break;
 	    final_sequence = body;
 
 	    /* Record the delay slots' frame information before the branch.
@@ -2183,7 +2160,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	       thought unnecessary.  If that happens, cancel this sequence
 	       and cause that insn to be restored.  */
 
-	    next = final_scan_insn (XVECEXP (body, 0, 0), file, 0, prescan, 1, seen);
+	    next = final_scan_insn (XVECEXP (body, 0, 0), file, 0, 1, seen);
 	    if (next != XVECEXP (body, 0, 1))
 	      {
 		final_sequence = 0;
@@ -2197,7 +2174,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		/* We loop in case any instruction in a delay slot gets
 		   split.  */
 		do
-		  insn = final_scan_insn (insn, file, 0, prescan, 1, seen);
+		  insn = final_scan_insn (insn, file, 0, 1, seen);
 		while (insn != next);
 	      }
 #ifdef DBR_OUTPUT_SEQEND
@@ -2280,10 +2257,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    && SET_DEST (body) == pc_rtx
 	    && GET_CODE (SET_SRC (body)) == IF_THEN_ELSE
 	    && COMPARISON_P (XEXP (SET_SRC (body), 0))
-	    && XEXP (XEXP (SET_SRC (body), 0), 0) == cc0_rtx
-	    /* This is done during prescan; it is not done again
-	       in final scan when prescan has been done.  */
-	    && prescan >= 0)
+	    && XEXP (XEXP (SET_SRC (body), 0), 0) == cc0_rtx)
 	  {
 	    /* This function may alter the contents of its argument
 	       and clear some of the cc_status.flags bits.
@@ -2383,21 +2357,11 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	       emit them before the peephole.  */
 	    if (next != 0 && next != NEXT_INSN (insn))
 	      {
-		rtx note, prev = PREV_INSN (insn);
+		rtx note;
 
 		for (note = NEXT_INSN (insn); note != next;
 		     note = NEXT_INSN (note))
-		  final_scan_insn (note, file, optimize, prescan, nopeepholes, seen);
-
-		/* In case this is prescan, put the notes
-		   in proper position for later rescan.  */
-		note = NEXT_INSN (insn);
-		PREV_INSN (note) = prev;
-		NEXT_INSN (prev) = note;
-		NEXT_INSN (PREV_INSN (next)) = insn;
-		PREV_INSN (insn) = PREV_INSN (next);
-		NEXT_INSN (insn) = next;
-		PREV_INSN (next) = insn;
+		  final_scan_insn (note, file, optimize, nopeepholes, seen);
 	      }
 
 	    /* PEEPHOLE might have changed this.  */
@@ -2502,9 +2466,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	    return new;
 	  }
-
-	if (prescan > 0)
-	  break;
 
 #ifdef TARGET_UNWIND_INFO
 	/* ??? This will put the directives in the wrong place if

@@ -294,7 +294,7 @@ rest_of_handle_final (void)
 
     assemble_start_function (current_function_decl, fnname);
     final_start_function (get_insns (), asm_out_file, optimize);
-    final (get_insns (), asm_out_file, optimize, 0);
+    final (get_insns (), asm_out_file, optimize);
     final_end_function ();
 
 #ifdef TARGET_UNWIND_INFO
