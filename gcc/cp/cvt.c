@@ -835,7 +835,7 @@ convert_to_void (tree expr, const char *implicit)
       /* These have already decayed to rvalue.  */
       break;
     
-    case CALL_EXPR:   /* we have a special meaning for volatile void fn() */
+    case CALL_EXPR:   /* We have a special meaning for volatile void fn().  */
       break;
     
     case INDIRECT_REF:

@@ -1,3 +1,23 @@
+2003-12-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* call.c: Fix comment formatting.
+	* class.c: Likewise.
+	* cp-tree.h: Likewise.
+	* cvt.c: Likewise.
+	* cxx-pretty-print.c: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* error.c: Likewise.
+	* except.c: Likewise.
+	* init.c: Likewise.
+	* name-lookup.c: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* rtti.c: Likewise.
+	* semantics.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+
 2003-12-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cvt.c: Remove uses of "register" specifier in

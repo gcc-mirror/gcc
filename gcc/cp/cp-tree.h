@@ -1357,7 +1357,7 @@ struct lang_type GTY(())
 #define TYPE_HAS_DEFAULT_CONSTRUCTOR(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->h.has_default_ctor)
 
-/* Nonzero means that this type contains a mutable member */
+/* Nonzero means that this type contains a mutable member.  */
 #define CLASSTYPE_HAS_MUTABLE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_mutable)
 #define TYPE_HAS_MUTABLE_P(NODE) (cp_has_mutable_p (NODE))
 
@@ -2894,7 +2894,7 @@ struct lang_decl GTY(())
 #define THUNK_VIRTUAL_OFFSET(DECL) \
   (LANG_DECL_U2_CHECK (FUNCTION_DECL_CHECK (DECL), 0)->virtual_offset)
 
-/* A thunk which is equivalent to another thunk. */
+/* A thunk which is equivalent to another thunk.  */
 #define THUNK_ALIAS(DECL) \
   (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (DECL))->decl_flags.u.thunk_alias)
 
@@ -2946,7 +2946,7 @@ typedef enum cp_lvalue_kind {
   clk_ordinary = 1, /* An ordinary lvalue.  */
   clk_class = 2,    /* An rvalue of class-type.  */
   clk_bitfield = 4, /* An lvalue for a bit-field.  */
-  clk_packed = 8    /* An lvalue for a packed field. */
+  clk_packed = 8    /* An lvalue for a packed field.  */
 } cp_lvalue_kind;
 
 /* Various kinds of template specialization, instantiation, etc.  */

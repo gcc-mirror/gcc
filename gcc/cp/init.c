@@ -1121,7 +1121,7 @@ build_aggr_init (tree exp, tree init, int flags)
     }
 
   if (TREE_CODE (exp) == VAR_DECL || TREE_CODE (exp) == PARM_DECL)
-    /* just know that we've seen something for this node */
+    /* Just know that we've seen something for this node.  */
     TREE_USED (exp) = 1;
 
   TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
@@ -1499,7 +1499,7 @@ build_offset_ref (tree type, tree name, bool address_p)
 
       if (TREE_CODE (t) != TEMPLATE_ID_EXPR && !really_overloaded_fn (t))
 	{
-	  /* Get rid of a potential OVERLOAD around it */
+	  /* Get rid of a potential OVERLOAD around it.  */
 	  t = OVL_CURRENT (t);
 
 	  /* Unique functions are handled easily.  */
@@ -1687,7 +1687,7 @@ build_new (tree placement, tree decl, tree init, int use_global_new)
 
       if (absdcl && TREE_CODE (absdcl) == ARRAY_REF)
 	{
-	  /* probably meant to be a vec new */
+	  /* Probably meant to be a vec new.  */
 	  tree this_nelts;
 
 	  while (TREE_OPERAND (absdcl, 0)
@@ -1842,7 +1842,7 @@ build_java_class_ref (tree type)
       jclass_node = TREE_TYPE (jclass_node);
     }
 
-  /* Mangle the class$ field */
+  /* Mangle the class$ field.  */
   {
     tree field;
     for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
@@ -2855,7 +2855,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
       if (TREE_SIDE_EFFECTS (addr))
 	addr = save_expr (addr);
 
-      /* throw away const and volatile on target type of addr */
+      /* Throw away const and volatile on target type of addr.  */
       addr = convert_force (build_pointer_type (type), addr, 0);
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
@@ -3115,7 +3115,8 @@ build_vec_delete (tree base, tree maxindex,
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      /* get the total number of things in the array, maxindex is a bad name */
+      /* Get the total number of things in the array, maxindex is a
+	 bad name.  */
       maxindex = array_type_nelts_total (type);
       type = strip_array_types (type);
       base = build_unary_op (ADDR_EXPR, base, 1);

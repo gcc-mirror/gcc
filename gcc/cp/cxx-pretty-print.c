@@ -619,7 +619,7 @@ pp_cxx_pm_expression (cxx_pretty_printer *pp, tree t)
           pp_cxx_qualified_id (pp, t);
           break;
         }
-      /* else fall through */
+      /* Else fall through.  */
     case MEMBER_REF:
     case DOTSTAR_EXPR:
       pp_cxx_pm_expression (pp, TREE_OPERAND (t, 0));

@@ -615,7 +615,7 @@ process_init_constructor (tree type, tree init, tree* elts)
 		   - TREE_INT_CST_LOW (TYPE_MIN_VALUE (domain))
 		   + 1);
 	  else
-	    len = -1;  /* Take as many as there are */
+	    len = -1;  /* Take as many as there are.  */
 	}
       else
 	{
@@ -1131,7 +1131,7 @@ build_functional_cast (tree exp, tree parms)
 
   if (! IS_AGGR_TYPE (type))
     {
-      /* this must build a C cast */
+      /* This must build a C cast.  */
       if (parms == NULL_TREE)
 	parms = integer_zero_node;
       else

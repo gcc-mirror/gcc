@@ -1183,7 +1183,7 @@ handle_using_decl (tree using_decl, tree t)
       return;
     }
   
-  /* Make type T see field decl FDECL with access ACCESS.*/
+  /* Make type T see field decl FDECL with access ACCESS.  */
   if (flist)
     for (; flist; flist = OVL_NEXT (flist))
       {
@@ -5039,7 +5039,7 @@ finish_struct_1 (tree t)
      bases and members and add implicitly generated methods.  */
   check_bases_and_members (t);
 
-  /* Find the key method */
+  /* Find the key method.  */
   if (TYPE_CONTAINS_VPTR_P (t))
     {
       CLASSTYPE_KEY_METHOD (t) = key_method (t);

@@ -525,7 +525,7 @@ add_decl_to_level (tree decl, cxx_scope *b)
       b->names = decl;
       b->names_size++;
 
-      /* If appropriate, add decl to separate list of statics */
+      /* If appropriate, add decl to separate list of statics.  */
       if (b->kind == sk_namespace)
 	if ((TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
 	    || (TREE_CODE (decl) == FUNCTION_DECL
@@ -1269,7 +1269,7 @@ begin_scope (scope_kind kind, tree entity)
     case sk_template_spec:
       scope->explicit_spec_p = true;
       kind = sk_template_parms;
-      /* fall through */
+      /* Fall through.  */
     case sk_template_parms:
     case sk_block:
     case sk_try:
