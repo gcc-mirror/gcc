@@ -111,6 +111,13 @@ void do_word (std::string const& longheader)
 {
     std::string::size_type start = 0;
 
+    // if it doesn't contain a "." then it's already a std header
+    if (longheader.find(".") == std::string::npos)
+    {
+        std::cout << longheader << '\n';
+        return;
+    }
+
     if (longheader.substr(start,5) == "bits/")  start += 5;
     if ((longheader.substr(start,4) == "stl_") ||
         (longheader.substr(start,4) == "std_"))

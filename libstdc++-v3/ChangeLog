@@ -1,5 +1,10 @@
 2002-11-21  Phil Edwards  <pme@gcc.gnu.org>
 
+	* docs/doxygen/run_doxygen:  Tighter search expression for sed.
+	* docs/doxygen/stdheader.cc:  Handle the case of good headers.
+
+2002-11-21  Phil Edwards  <pme@gcc.gnu.org>
+
 	* acinclude.m4:  Uniform formatting.
 	* configure.in:  Warn when generic atomicity.h is used.
 	* configure.target:  Fix comment.

@@ -208,7 +208,7 @@ g++ ${srcdir}/docs/doxygen/stdheader.cc -o ./stdheader
 problematic=`egrep -l '#include <.*_.*>' [a-z]*.3`
 for f in $problematic; do
     # this is also slow, but safe and easy to debug
-    oldh=`sed -n '/#include </s/.*<\(.*\)>.*/\1/p' $f`
+    oldh=`sed -n '/fC#include </s/.*<\(.*\)>.*/\1/p' $f`
     newh=`echo $oldh | ./stdheader`
     sed "s=${oldh}=${newh}=" $f > TEMP
     mv TEMP $f
