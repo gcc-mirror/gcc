@@ -1517,6 +1517,43 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
       pp_needs_newline (pp) = true;
       break;
 
+      /* selection-statement:
+            if ( expression ) statement
+            if ( expression ) statement else statement  */
+    case IF_STMT:
+      pp_cxx_identifier (pp, "if");
+      pp_cxx_whitespace (pp);
+      pp_cxx_left_paren (pp);
+      pp_cxx_expression (pp, IF_COND (t));
+      pp_cxx_right_paren (pp);
+      pp_newline_and_indent (pp, 2);
+      pp_cxx_statement (pp, THEN_CLAUSE (t));
+      pp_newline_and_indent (pp, -2);
+      if (ELSE_CLAUSE (t))
+	{
+	  tree else_clause = ELSE_CLAUSE (t);
+	  pp_cxx_identifier (pp, "else");
+	  if (TREE_CODE (else_clause) == IF_STMT)
+	    pp_cxx_whitespace (pp);
+	  else
+	    pp_newline_and_indent (pp, 2);
+	  pp_cxx_statement (pp, else_clause);
+	  if (TREE_CODE (else_clause) != IF_STMT)
+	    pp_newline_and_indent (pp, -2);
+	}
+      break;
+
+    case CLEANUP_STMT:
+      pp_cxx_identifier (pp, "try");
+      pp_newline_and_indent (pp, 2);
+      pp_cxx_statement (pp, CLEANUP_BODY (t));
+      pp_newline_and_indent (pp, -2);
+      pp_cxx_identifier (pp, CLEANUP_EH_ONLY (t) ? "catch" : "finally");
+      pp_newline_and_indent (pp, 2);
+      pp_cxx_statement (pp, CLEANUP_EXPR (t));
+      pp_newline_and_indent (pp, -2);
+      break;
+
     default:
       pp_c_statement (pp_c_base (pp), t);
       break;

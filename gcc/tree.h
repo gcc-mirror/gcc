@@ -209,8 +209,7 @@ struct tree_common GTY(())
        TREE_SYMBOL_REFERENCED in
            IDENTIFIER_NODE
        CLEANUP_EH_ONLY in
-           TARGET_EXPR, WITH_CLEANUP_EXPR, CLEANUP_STMT,
-	   TREE_LIST elements of a block's cleanup list.
+           TARGET_EXPR, WITH_CLEANUP_EXPR
        ASM_INPUT_P in
            ASM_EXPR
        EH_FILTER_MUST_NOT_THROW in EH_FILTER_EXPR
@@ -690,9 +689,9 @@ extern void tree_operand_check_failed (int, enum tree_code,
    should be cleaned up some day.  */
 #define TREE_STATIC(NODE) ((NODE)->common.static_flag)
 
-/* In a TARGET_EXPR, WITH_CLEANUP_EXPR, CLEANUP_STMT, or element of a
-   block's cleanup list, means that the pertinent cleanup should only be
-   executed if an exception is thrown, not on normal exit of its scope.  */
+/* In a TARGET_EXPR, WITH_CLEANUP_EXPR, means that the pertinent cleanup
+   should only be executed if an exception is thrown, not on normal exit
+   of its scope.  */
 #define CLEANUP_EH_ONLY(NODE) ((NODE)->common.static_flag)
 
 /* In an expr node (usually a conversion) this means the node was made

@@ -346,6 +346,19 @@ do_pushlevel (scope_kind sk)
   return ret;
 }
 
+/* Queue a cleanup.  CLEANUP is an expression/statement to be executed
+   when the current scope is exited.  EH_ONLY is true when this is not
+   meant to apply to normal control flow transfer.  */
+
+void
+push_cleanup (tree decl, tree cleanup, bool eh_only)
+{
+  tree stmt = build_stmt (CLEANUP_STMT, NULL, cleanup, decl);
+  CLEANUP_EH_ONLY (stmt) = eh_only;
+  add_stmt (stmt);
+  CLEANUP_BODY (stmt) = push_stmt_list ();
+}
+
 /* Begin a conditional that might contain a declaration.  When generating
    normal code, we want the declaration to appear before the statement
    containing the conditional.  When generating template code, we want the

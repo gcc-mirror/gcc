@@ -243,8 +243,11 @@ DEFTREECODE (NON_DEPENDENT_EXPR, "non_dependent_expr", 'e', 1)
 /* CTOR_INITIALIZER is a placeholder in template code for a call to
    setup_vtbl_pointer (and appears in all functions, not just ctors).  */
 DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", 'e', 1)
+
 DEFTREECODE (TRY_BLOCK, "try_block", 'e', 2)
+
 DEFTREECODE (EH_SPEC_BLOCK, "eh_spec_block", 'e', 2)
+
 /* A HANDLER wraps a catch handler for the HANDLER_TYPE.  If this is
    CATCH_ALL_TYPE, then the handler catches all types.  The declaration of
    the catch variable is in HANDLER_PARMS, and the body block in
@@ -254,6 +257,17 @@ DEFTREECODE (HANDLER, "handler", 'e', 2)
 /* A MUST_NOT_THROW_EXPR wraps an expression that may not
    throw, and must call terminate if it does.  */
 DEFTREECODE (MUST_NOT_THROW_EXPR, "must_not_throw_expr", 'e', 1)
+
+/* A CLEANUP_STMT marks the point at which a declaration is fully
+   constructed.  The CLEANUP_EXPR is run on behalf of CLEANUP_DECL
+   when CLEANUP_BODY completes.  */
+DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", 'e', 3)
+
+/* Represents an 'if' statement. The operands are IF_COND,
+   THEN_CLAUSE, and ELSE_CLAUSE, respectively.  */
+/* ??? It is currently still necessary to distinguish between IF_STMT 
+   and COND_EXPR for the benefit of templates.  */
+DEFTREECODE (IF_STMT, "if_stmt", 'e', 3)
 
 DEFTREECODE (TAG_DEFN, "tag_defn", 'e', 0)
 

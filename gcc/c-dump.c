@@ -69,13 +69,6 @@ c_dump_tree (void *dump_info, tree t)
       dump_next_stmt (di, t);
       break;
 
-    case CLEANUP_STMT:
-      dump_stmt (di, t);
-      dump_child ("decl", CLEANUP_DECL (t));
-      dump_child ("expr", CLEANUP_EXPR (t));
-      dump_next_stmt (di, t);
-      break;
-
     case DECL_STMT:
       dump_stmt (di, t);
       dump_child ("decl", DECL_STMT_DECL (t));
@@ -101,14 +94,6 @@ c_dump_tree (void *dump_info, tree t)
       dump_child ("cond", FOR_COND (t));
       dump_child ("expr", FOR_EXPR (t));
       dump_child ("body", FOR_BODY (t));
-      dump_next_stmt (di, t);
-      break;
-
-    case IF_STMT:
-      dump_stmt (di, t);
-      dump_child ("cond", IF_COND (t));
-      dump_child ("then", THEN_CLAUSE (t));
-      dump_child ("else", ELSE_CLAUSE (t));
       dump_next_stmt (di, t);
       break;
 
