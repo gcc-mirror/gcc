@@ -1,3 +1,7 @@
+2003-07-26  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c-torture/compile/zero-strct-2.c: New test.
+
 2003-07-25  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/intermod-1.c: New test.

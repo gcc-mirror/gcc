@@ -44,6 +44,13 @@
 
 2003-07-26  Geoffrey Keating  <geoffk@apple.com>
 
+	* varasm.c (output_constant_def_contents): Use 
+	ASM_DECLARE_CONSTANT_NAME if defined.
+	* doc/tm.texi (Label Output): Document ASM_DECLARE_CONSTANT_NAME.
+	* config/darwin.h (ASM_DECLARE_OBJECT_NAME): Ensure zero-sized
+	objects get at least one byte to prevent assembler problems.
+	(ASM_DECLARE_CONSTANT_NAME): New.
+
 	* Makefile.in (libbackend.o): Remove options_.h.
 	(mostlyclean): Likewise.
 
