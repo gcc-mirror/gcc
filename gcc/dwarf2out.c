@@ -4970,20 +4970,20 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 
       if (is_const_type)
 	{
-	  mod_type_die = new_die (DW_TAG_const_type, context_die);
+	  mod_type_die = new_die (DW_TAG_const_type, comp_unit_die);
 	  sub_die = modified_type_die
 	    (build_type_variant (type, 0, is_volatile_type),
 	     0, is_volatile_type, context_die);
 	}
       else if (is_volatile_type)
 	{
-	  mod_type_die = new_die (DW_TAG_volatile_type, context_die);
+	  mod_type_die = new_die (DW_TAG_volatile_type, comp_unit_die);
 	  sub_die = modified_type_die
 	    (TYPE_MAIN_VARIANT (type), 0, 0, context_die);
 	}
       else if (code == POINTER_TYPE)
 	{
-	  mod_type_die = new_die (DW_TAG_pointer_type, context_die);
+	  mod_type_die = new_die (DW_TAG_pointer_type, comp_unit_die);
 	  add_AT_unsigned (mod_type_die, DW_AT_byte_size, PTR_SIZE);
 #if 0
 	  add_AT_unsigned (mod_type_die, DW_AT_address_class, 0);
@@ -4996,7 +4996,7 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 	}
       else if (code == REFERENCE_TYPE)
 	{
-	  mod_type_die = new_die (DW_TAG_reference_type, context_die);
+	  mod_type_die = new_die (DW_TAG_reference_type, comp_unit_die);
 	  add_AT_unsigned (mod_type_die, DW_AT_byte_size, PTR_SIZE);
 #if 0
 	  add_AT_unsigned (mod_type_die, DW_AT_address_class, 0);
@@ -6080,8 +6080,8 @@ push_decl_scope (scope)
 
 /* Return the DIE for the scope the immediately contains this declaration.  */
 static dw_die_ref
-scope_die_for_type (type, context_die)
-    register tree type; 
+scope_die_for (t, context_die)
+    register tree t; 
     register dw_die_ref context_die;
 {
   register dw_die_ref scope_die = NULL;
@@ -6090,24 +6090,33 @@ scope_die_for_type (type, context_die)
 
   /* Walk back up the declaration tree looking for a place to define
      this type.  */
-  containing_scope = TYPE_CONTEXT (type);
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
+    containing_scope = TYPE_CONTEXT (t);
+  else if (TREE_CODE (t) == FUNCTION_DECL && DECL_VIRTUAL_P (t))
+    containing_scope = decl_class_context (t);
+  else
+    containing_scope = DECL_CONTEXT (t);
+
   if (containing_scope == NULL)
     {
       scope_die = comp_unit_die;
     }
   else
     {
-      for (i = decl_scope_depth - 1, scope_die = context_die;
-	   i >= 0
-	   && scope_die != NULL
-	   && decl_scope_table[i] != containing_scope;
-	   --i, scope_die = scope_die->die_parent)
+      for (i = decl_scope_depth, scope_die = context_die;
+	   i > 0 && decl_scope_table[i - 1] != containing_scope;
+	   scope_die = scope_die->die_parent)
 	{
-	  /* nothing */ ;
+	  if (scope_die->die_tag == DW_TAG_lexical_block)
+	    /* nothing */ ;
+	  else
+	    --i;
 	}
-      if (scope_die == NULL)
+      if (i == 0)
 	{
-	  scope_die = context_die;
+	  assert (scope_die == comp_unit_die);
+	  assert (TREE_CODE_CLASS (TREE_CODE (containing_scope)) == 't');
+	  assert (TREE_ASM_WRITTEN (containing_scope));
 	}
     }
   return scope_die;
@@ -6133,7 +6142,6 @@ add_type_attribute (object_die, type, decl_const, decl_volatile, context_die)
      register dw_die_ref context_die;
 {
   register enum tree_code code  = TREE_CODE (type);
-  register dw_die_ref scope_die = NULL;
   register dw_die_ref type_die  = NULL;
 
   if (code == ERROR_MARK)
@@ -6149,11 +6157,10 @@ add_type_attribute (object_die, type, decl_const, decl_volatile, context_die)
       return;
     }
 
-  scope_die = scope_die_for_type (type, context_die);
   type_die = modified_type_die (type,
 				decl_const || TYPE_READONLY (type),
 				decl_volatile || TYPE_VOLATILE (type),
-				scope_die);
+				context_die);
   if (type_die != NULL)
     {
       add_AT_die_ref (object_die, DW_AT_type, type_die);
@@ -6236,14 +6243,10 @@ gen_array_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref scope_die = scope_die_for_type (type, context_die);
-  register dw_die_ref array_die = lookup_type_die (type);
+  register dw_die_ref scope_die = scope_die_for (type, context_die);
+  register dw_die_ref array_die = new_die (DW_TAG_array_type, scope_die);
   register tree element_type;
 
-  if (array_die)
-    return;
-
-  array_die  = new_die (DW_TAG_array_type, scope_die);
 #if 0
   /* We default the array ordering.  SDB will probably do
      the right things even if DW_AT_ordering is not present.  It's not even
@@ -6281,10 +6284,8 @@ gen_set_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref type_die = lookup_type_die (type);
-  if (type_die)
-    return;
-  type_die = new_die (DW_TAG_set_type, scope_die_for_type (type, context_die));
+  register dw_die_ref type_die = new_die
+    (DW_TAG_set_type, scope_die_for (type, context_die));
   equate_type_number_to_die (type, type_die);
   add_type_attribute (type_die, TREE_TYPE (type), 0, 0, context_die);
 }
@@ -6324,7 +6325,7 @@ gen_inlined_enumeration_type_die (type, context_die)
 {
   register dw_die_ref type_die;
   type_die = new_die (DW_TAG_enumeration_type,
-		      scope_die_for_type (type, context_die));
+		      scope_die_for (type, context_die));
   assert (TREE_ASM_WRITTEN (type));
   add_abstract_origin_attribute (type_die, type);
 }
@@ -6337,7 +6338,7 @@ gen_inlined_structure_type_die (type, context_die)
 {
   register dw_die_ref type_die;
   type_die = new_die (DW_TAG_structure_type,
-		      scope_die_for_type (type, context_die));
+		      scope_die_for (type, context_die));
   assert (TREE_ASM_WRITTEN (type));
   add_abstract_origin_attribute (type_die, type);
 }
@@ -6350,7 +6351,7 @@ gen_inlined_union_type_die (type, context_die)
 {
   register dw_die_ref type_die;
   type_die = new_die (DW_TAG_union_type,
-		      scope_die_for_type (type, context_die));
+		      scope_die_for (type, context_die));
   assert (TREE_ASM_WRITTEN (type));
   add_abstract_origin_attribute (type_die, type);
 }
@@ -6371,7 +6372,7 @@ gen_enumeration_type_die (type, is_complete, context_die)
   if (type_die == NULL)
     {
       type_die = new_die (DW_TAG_enumeration_type,
-			  scope_die_for_type (type, context_die));
+			  scope_die_for (type, context_die));
       equate_type_number_to_die (type, type_die);
       add_name_attribute (type_die, type_tag (type));
     }
@@ -6599,7 +6600,8 @@ gen_subprogram_die (decl, context_die)
     }
   else
     {
-      subr_die = new_die (DW_TAG_subprogram, context_die);
+      subr_die = new_die (DW_TAG_subprogram,
+			  scope_die_for (decl, context_die));
       if (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
 	{
 	  add_AT_flag (subr_die, DW_AT_external, 1);
@@ -6686,6 +6688,7 @@ gen_subprogram_die (decl, context_die)
      FUNCTION_TYPE node ends with a void_type_node then there should *not* be 
      an ellipsis at the end.  */
 
+  push_decl_scope (decl);
   /* In the case where we are describing a mere function declaration, all we
      need to do here (and all we *can* do here) is to describe the *types* of 
      its formal parameters.  */
@@ -6777,6 +6780,7 @@ gen_subprogram_die (decl, context_die)
 	}
 #endif
     }
+  pop_decl_scope ();
 }
 
 /* Generate a DIE to represent a declared data object.  */
@@ -6912,13 +6916,16 @@ gen_inlined_subroutine_die (stmt, context_die, depth)
     {
       register dw_die_ref subr_die = new_die (DW_TAG_inlined_subroutine,
 					      context_die);
+      register tree decl = block_ultimate_origin (stmt);
       char label[MAX_ARTIFICIAL_LABEL_BYTES];
-      add_abstract_origin_attribute (subr_die, block_ultimate_origin (stmt));
+      add_abstract_origin_attribute (subr_die, decl);
       sprintf (label, BLOCK_BEGIN_LABEL_FMT, next_block_number);
       add_AT_lbl_id (subr_die, DW_AT_low_pc, label);
       sprintf (label, BLOCK_END_LABEL_FMT, next_block_number);
       add_AT_lbl_id (subr_die, DW_AT_high_pc, label);
+      push_decl_scope (decl);
       decls_for_scope (stmt, subr_die, depth);
+      pop_decl_scope ();
       current_function_has_inlines = 1;
     }
 }
@@ -6944,8 +6951,9 @@ gen_field_die (decl, context_die)
   add_data_member_location_attribute (decl_die, decl);
 }
 
-/* Don't generate either pointer_type DIEs or reference_type DIEs.
-   Use modified type DIE's instead.
+#if 0
+/* Don't generate either pointer_type DIEs or reference_type DIEs here.
+   Use modified_type_die instead.
    We keep this code here just in case these types of DIEs may be needed to
    represent certain things in other languages (e.g. Pascal) someday.  */
 static void
@@ -6953,16 +6961,14 @@ gen_pointer_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref ptr_die = lookup_type_die (type);
-  if (ptr_die)
-    return;
-  ptr_die = new_die (DW_TAG_pointer_type, context_die);
+  register dw_die_ref ptr_die = new_die (DW_TAG_pointer_type, context_die);
   equate_type_number_to_die (type, ptr_die);
   add_type_attribute (ptr_die, TREE_TYPE (type), 0, 0, context_die);
+  add_AT_unsigned (mod_type_die, DW_AT_byte_size, PTR_SIZE);
 }
 
-/* Don't generate either pointer_type DIEs or reference_type DIEs.
-   Use modified type DIE's instead.
+/* Don't generate either pointer_type DIEs or reference_type DIEs here.
+   Use modified_type_die instead.
    We keep this code here just in case these types of DIEs may be needed to
    represent certain things in other languages (e.g. Pascal) someday.  */
 static void
@@ -6970,13 +6976,12 @@ gen_reference_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref ref_die = lookup_type_die (type);
-  if (ref_die)
-    return;
-  ref_die = new_die (DW_TAG_reference_type, context_die);
+  register dw_die_ref ref_die = new_die (DW_TAG_reference_type, context_die);
   equate_type_number_to_die (type, ref_die);
   add_type_attribute (ref_die, TREE_TYPE (type), 0, 0, context_die);
+  add_AT_unsigned (mod_type_die, DW_AT_byte_size, PTR_SIZE);
 }
+#endif
 
 /* Generate a DIE for a pointer to a member type.  */
 static void
@@ -6984,10 +6989,8 @@ gen_ptr_to_mbr_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref ptr_die = lookup_type_die (type);
-  if (ptr_die)
-    return;
-  ptr_die = new_die (DW_TAG_ptr_to_member_type, context_die);
+  register dw_die_ref ptr_die = new_die
+    (DW_TAG_ptr_to_member_type, context_die);
   equate_type_number_to_die (type, ptr_die);
   add_AT_die_ref (ptr_die, DW_AT_containing_type,
 		  lookup_type_die (TYPE_OFFSET_BASETYPE (type)));
@@ -7056,11 +7059,8 @@ gen_string_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref type_die = lookup_type_die (type);
-  if (type_die)
-    return;
-  type_die = new_die (DW_TAG_string_type,
-		      scope_die_for_type (type, context_die));
+  register dw_die_ref type_die = new_die
+    (DW_TAG_string_type, scope_die_for (type, context_die));
   equate_type_number_to_die (type, type_die);
 
   /* Fudge the string length attribute for now.  */
@@ -7140,7 +7140,7 @@ gen_struct_or_union_type_die (type, is_complete, context_die)
     {
       type_die = new_die (TREE_CODE (type) == RECORD_TYPE
 			  ? DW_TAG_structure_type : DW_TAG_union_type,
-			  scope_die_for_type (type, context_die));
+			  scope_die_for (type, context_die));
       equate_type_number_to_die (type, type_die);
       add_name_attribute (type_die, type_tag (type));
     }
@@ -7159,7 +7159,9 @@ gen_struct_or_union_type_die (type, is_complete, context_die)
       if (TYPE_SIZE (type))
 	{
 	  add_byte_size_attribute (type_die, type);
+	  push_decl_scope (type);
 	  gen_member_die (type, type_die);
+	  pop_decl_scope ();
 	}
     }
   else
@@ -7173,10 +7175,7 @@ gen_subroutine_type_die (type, context_die)
      register dw_die_ref context_die;
 {
   register tree return_type = TREE_TYPE (type);
-  register dw_die_ref subr_die = lookup_type_die (type);
-  if (subr_die)
-    return;
-  subr_die = new_die (DW_TAG_subroutine_type, context_die);
+  register dw_die_ref subr_die = new_die (DW_TAG_subroutine_type, context_die);
   equate_type_number_to_die (type, subr_die);
   add_prototyped_attribute (subr_die, type);
   add_type_attribute (subr_die, return_type, 0, 0, context_die);
@@ -7191,8 +7190,7 @@ gen_typedef_die (decl, context_die)
 {
   register tree origin = decl_ultimate_origin (decl);
   register dw_die_ref type_die;
-  type_die = new_die (DW_TAG_typedef,
-		      scope_die_for_type (decl, context_die));
+  type_die = new_die (DW_TAG_typedef, scope_die_for (decl, context_die));
   if (origin != NULL)
     {
       add_abstract_origin_attribute (type_die, origin);
@@ -7562,7 +7560,6 @@ gen_decl_die (decl, context_die)
       return;
     }
 
-  push_decl_scope (DECL_CONTEXT (decl));
   switch (TREE_CODE (decl))
     {
     case CONST_DECL:
@@ -7680,7 +7677,6 @@ gen_decl_die (decl, context_die)
     default:
       abort ();
     }
-  pop_decl_scope ();
 }
 
 /***************** Debug Information Generation Hooks ***********************/
