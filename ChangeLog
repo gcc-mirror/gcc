@@ -1,3 +1,8 @@
+2000-11-16  Fred Fish  <fnf@be.com>
+
+	* configure.in (enable_libstdcxx_v3): Fix typo,
+	libstd++ -> libstdc++.
+
 2000-11-21  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* MAINTAINERS: Add self to Write After Approval list.
