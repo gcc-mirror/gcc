@@ -1,3 +1,21 @@
+Tue Mar  2 10:00:21 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.c (abort_with_insn): Make function static, add a prototype,
+	constify 2nd parameter and mark with ATTRIBUTE_NORETURN.
+	(current_function_file, mips_cpu_string, mips_isa_string,
+	mips_abi_string, mips_no_mips16_string, mips_entry_string,
+	mips_move_1word, mips_move_2words, output_block_move, load_store,
+	override_options, make_temp_file, mips16_fp_args): Qualify a char*
+	with the `const' keyword.
+
+	* mips.h (current_function_file, mips_cpu_string, mips_isa_string,
+	mips_abi_string, mips_entry_string, mips_no_mips16_string,
+	mips_move_1word, mips_move_2words, output_block_move): Likewise.
+	(abort_with_insn): Remove extern prototype.
+
+	* mips.md: Qualify a char* with the `const' keyword.
+	Remove many unused variables named `label'.
+
 Tue Mar  2 01:27:52 1999  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.in (cpp_install_dir, INSTALL_CPP, UNINSTALL_CPP): New

@@ -106,6 +106,8 @@ static rtx add_constant				PROTO ((struct constant **,
 static void dump_constants			PROTO ((struct constant *,
 							rtx));
 static rtx mips_find_symbol			PROTO ((rtx));
+static void abort_with_insn			PROTO ((rtx, const char *))
+  ATTRIBUTE_NORETURN;
 
 
 /* Global variables for machine-dependent things.  */
@@ -148,7 +150,7 @@ struct extern_list
 } *extern_head = 0;
 
 /* Name of the file containing the current function.  */
-char *current_function_file = "";
+const char *current_function_file = "";
 
 /* Warning given that Mips ECOFF can't support changing files
    within a function.  */
@@ -206,9 +208,9 @@ int mips_abi;
 #endif
 
 /* Strings to hold which cpu and instruction set architecture to use.  */
-char *mips_cpu_string;		/* for -mcpu=<xxx> */
-char *mips_isa_string;		/* for -mips{1,2,3,4} */
-char *mips_abi_string;		/* for -mabi={32,n32,64,eabi} */
+const char *mips_cpu_string;	/* for -mcpu=<xxx> */
+const char *mips_isa_string;	/* for -mips{1,2,3,4} */
+const char *mips_abi_string;	/* for -mabi={32,n32,64,eabi} */
 
 /* Whether we are generating mips16 code.  This is a synonym for
    TARGET_MIPS16, and exists for use as an attribute.  */
@@ -217,7 +219,7 @@ int mips16;
 /* This variable is set by -mno-mips16.  We only care whether
    -mno-mips16 appears or not, and using a string in this fashion is
    just a way to avoid using up another bit in target_flags.  */
-char *mips_no_mips16_string;
+const char *mips_no_mips16_string;
 
 /* Whether we are generating mips16 hard float code.  In mips16 mode
    we always set TARGET_SOFT_FLOAT; this variable is nonzero if
@@ -228,7 +230,7 @@ int mips16_hard_float;
 /* This variable is set by -mentry.  We only care whether -mentry
    appears or not, and using a string in this fashion is just a way to
    avoid using up another bit in target_flags.  */
-char *mips_entry_string;
+const char *mips_entry_string;
 
 /* Whether we should entry and exit pseudo-ops in mips16 mode.  */
 int mips_entry;
@@ -1649,13 +1651,13 @@ embedded_pic_offset (x)
 
 /* Return the appropriate instructions to move one operand to another.  */
 
-char *
+const char *
 mips_move_1word (operands, insn, unsignedp)
      rtx operands[];
      rtx insn;
      int unsignedp;
 {
-  char *ret = 0;
+  const char *ret = 0;
   rtx op0 = operands[0];
   rtx op1 = operands[1];
   enum rtx_code code0 = GET_CODE (op0);
@@ -2043,12 +2045,12 @@ mips_move_1word (operands, insn, unsignedp)
 
 /* Return the appropriate instructions to move 2 words */
 
-char *
+const char *
 mips_move_2words (operands, insn)
      rtx operands[];
      rtx insn;
 {
-  char *ret = 0;
+  const char *ret = 0;
   rtx op0 = operands[0];
   rtx op1 = operands[1];
   enum rtx_code code0 = GET_CODE (operands[0]);
@@ -3224,7 +3226,7 @@ expand_block_move (operands)
 	BLOCK_MOVE_NOT_LAST	Do all but the last store.
 	BLOCK_MOVE_LAST		Do just the last store. */
 
-char *
+const char *
 output_block_move (insn, operands, num_regs, move_type)
      rtx insn;
      rtx operands[];
@@ -3244,11 +3246,11 @@ output_block_move (insn, operands, num_regs, move_type)
   rtx xoperands[10];
 
   struct {
-    char *load;			/* load insn without nop */
-    char *load_nop;		/* load insn with trailing nop */
-    char *store;		/* store insn */
-    char *final;		/* if last_store used: NULL or swr */
-    char *last_store;		/* last store instruction */
+    const char *load;		/* load insn without nop */
+    const char *load_nop;	/* load insn with trailing nop */
+    const char *store;		/* store insn */
+    const char *final;		/* if last_store used: NULL or swr */
+    const char *last_store;	/* last store instruction */
     int offset;			/* current offset */
     enum machine_mode mode;	/* mode to use on (MEM) */
   } load_store[4];
@@ -3982,10 +3984,10 @@ function_arg_partial_nregs (cum, mode, type, named)
 
 /* Abort after printing out a specific insn.  */
 
-void
+static void
 abort_with_insn (insn, reason)
      rtx insn;
-     char *reason;
+     const char *reason;
 {
   error (reason);
   debug_rtx (insn);
@@ -4172,7 +4174,7 @@ override_options ()
 
   else
     {
-      char *p = mips_cpu_string;
+      const char *p = mips_cpu_string;
       int seen_v = 0;
 
       /* We need to cope with the various "vr" prefixes for the NEC 4300
@@ -5076,7 +5078,7 @@ static FILE *
 make_temp_file ()
 {
   FILE *stream;
-  char *base = getenv ("TMPDIR");
+  const char *base = getenv ("TMPDIR");
   int len;
 
   if (base == 0)
@@ -7469,7 +7471,7 @@ mips16_fp_args (file, fp_code, from_fp_p)
      int fp_code;
      int from_fp_p;
 {
-  char *s;
+  const char *s;
   int gparg, fparg;
   unsigned int f;
 
