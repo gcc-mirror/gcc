@@ -908,7 +908,7 @@ yyprint (file, yychar, yylval)
     case SCSPEC:
     case PRE_PARSED_CLASS_DECL:
       t = yylval.ttype;
-      if (TREE_CODE (t) == TYPE_DECL)
+      if (TREE_CODE (t) == TYPE_DECL || TREE_CODE (t) == TEMPLATE_DECL)
 	{
 	  fprintf (file, " `%s'", DECL_NAME (t));
 	  break;

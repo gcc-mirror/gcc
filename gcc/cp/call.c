@@ -1476,8 +1476,9 @@ build_scoped_method_call (exp, basetype, name, parms)
     {
       if (TREE_CODE (name) == BIT_NOT_EXPR)
 	{
-	  tree type = get_aggr_from_typedef (TREE_OPERAND (name, 0), 1);
-	  name = build_min_nt (BIT_NOT_EXPR, type);
+	  tree type = get_aggr_from_typedef (TREE_OPERAND (name, 0), 0);
+	  if (type)
+	    name = build_min_nt (BIT_NOT_EXPR, type);
 	}
       name = build_min_nt (SCOPE_REF, basetype, name);
       return build_min_nt (METHOD_CALL_EXPR, name, exp, parms, NULL_TREE);
