@@ -1,3 +1,10 @@
+2004-10-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* typeck.c (composite_pointer_type): Remove comment about DR 195.
+	(build_reinterpret_cast_1): Revert DR195 patch. Only emit a
+	warning when being pedantic.
+	(build_reinterpet_cast, build_c_cast): Adjust.
+
 2004-10-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17695

@@ -1,4 +1,6 @@
 // { dg-do assemble  }
+// { dg-options "" }
+
 // GROUPS passed operators
 // Check that the & operator, when applied to a global function
 // or member function returns a proper value as long as the context
