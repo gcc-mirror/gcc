@@ -3520,10 +3520,10 @@ rs6000_stack_info ()
     info_ptr->fpmem_offset = 0;  
 
   /* Zero offsets if we're not saving those registers */
-  if (!info_ptr->fp_size)
+  if (info_ptr->fp_size == 0)
     info_ptr->fp_save_offset = 0;
 
-  if (!info_ptr->gp_size)
+  if (info_ptr->gp_size == 0)
     info_ptr->gp_save_offset = 0;
 
   if (!info_ptr->lr_save_p)
@@ -4148,8 +4148,9 @@ output_epilog (file, size)
 		     + (regs_ever_live[71] != 0) * 0x10
 		     + (regs_ever_live[72] != 0) * 0x8, reg_names[12]);
 
-      /* If this is V.4, unwind the stack pointer after all of the loads have been done */
-      if (sp_offset)
+      /* If this is V.4, unwind the stack pointer after all of the loads
+	 have been done */
+      if (sp_offset != 0)
 	asm_fprintf (file, "\t{cal|la} %s,%d(%s)\n",
 		     reg_names[1], sp_offset, reg_names[1]);
       else if (sp_reg != 1)
@@ -5285,3 +5286,10 @@ rs6000_encode_section_info (decl)
 }
 
 #endif /* USING_SVR4_H */
+
+void
+rs6000_fatal_bad_address (op)
+  rtx op;
+{
+  fatal_insn ("bad address", op);
+}

@@ -1,3 +1,14 @@
+Sun Aug 16 13:52:00 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.c (rs6000_stack_info): Use if == 0 for sizes.
+	(output_epilog): Use if != 0 for offset.
+	(rs6000_fatal_bad_address): Prepare for Intl.
+	* rs6000.h (rs6000_fatal_bad_address): Declare.
+	* rs6000.md (movsfcc, movdfcc): Use else if.
+	(elf_high): Use {liu|lis}.
+	(elf_low): Use {cal|la}.  Remove %a template from old mnemonics.
+	(movsi): Use rs6000_fatal_bad_address.
+	
 Sun Aug 16 01:53:21 1998  Richard Henderson  <rth@cygnus.com>
 
 	* reload.c (find_equiv_reg): Reject equivalences separated
