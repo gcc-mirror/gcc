@@ -2374,7 +2374,7 @@
 ;; all of memory.  This blocks insns from being moved across this point.
 
 (define_insn "blockage"
-  [(unspec_volatile [(const_int 0)] 0)]
+  [(unspec_volatile [(const_int 0)] 1)]
   ""
   "")
 
