@@ -22,11 +22,6 @@ Boston, MA 02111-1307, USA.  */
 /* This describes the machine the compiler is hosted on.  */
 #define	HOST_WORDS_BIG_ENDIAN
 
-/* If not compiled with GNU C, use only int bitfields.  */
-#ifndef __GNUC__
-#define	ONLY_INT_FIELDS
-#endif
-
 /* Big buffers improve performance.  */
 #define IO_BUFFER_SIZE (0x8000 - 4096)
 

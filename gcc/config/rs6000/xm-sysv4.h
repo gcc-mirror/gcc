@@ -23,9 +23,3 @@ Boston, MA 02111-1307, USA.  */
 /* Doubles are stored in memory with the high order word first.  This
    matters when cross-compiling.  */
 #define HOST_WORDS_BIG_ENDIAN 1
-
-/* if not compiled with GNU C, use only int bitfields. */
-#ifndef __GNUC__
-#undef ONLY_INT_FIELDS
-#define ONLY_INT_FIELDS
-#endif

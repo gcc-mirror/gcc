@@ -25,8 +25,6 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/wait.h>
 #endif
 
-#define	ONLY_INT_FIELDS
-
 /* use ANSI/SYSV style byte manipulation routines instead of BSD ones */
 
 #undef bcopy

@@ -2201,15 +2201,11 @@ decode_addr_const (exp, value)
   value->offset = offset;
 }
 
+enum kind { RTX_DOUBLE, RTX_INT };
 struct rtx_const
 {
-#ifdef ONLY_INT_FIELDS
-  unsigned int kind : 16;
-  unsigned int mode : 16;
-#else
-  enum kind kind : 16;
-  enum machine_mode mode : 16;
-#endif
+  ENUM_BITFIELD(kind) kind : 16;
+  ENUM_BITFIELD(machine_mode) mode : 16;
   union {
     union real_extract du;
     struct addr_const addr;
@@ -3344,7 +3340,6 @@ free_varasm_status (f)
   f->varasm = NULL;
 }
 
-enum kind { RTX_DOUBLE, RTX_INT };
 
 /* Express an rtx for a constant integer (perhaps symbolic)
    as the sum of a symbol or label plus an explicit integer.
