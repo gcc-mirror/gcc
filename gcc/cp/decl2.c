@@ -1925,7 +1925,7 @@ void cplus_decl_attributes (decl, attributes)
      tree decl, attributes;
 {
   if (decl && decl != void_type_node)
-    decl_attributes (decl, attributes);
+    decl_attributes (decl, attributes, NULL_TREE);
 }
 
 /* CONSTRUCTOR_NAME:
