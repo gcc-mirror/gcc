@@ -1,3 +1,11 @@
+2004-10-30  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (calc_live_regs): Declare reg as unsigned and
+	modify the for loop expressions for it.  Remove unnecessary casts.
+	(sh_expand_prologue): Declare reg as unsigned.
+	(sh_gimplify_va_arg_expr): Initinalize lab_over.
+	(sh_handle_sp_switch_attribute): Add const qualifier appropriately.
+
 2004-10-30  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/invoke.texi (Darwin Options): Improve description of

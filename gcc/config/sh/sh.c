@@ -5106,7 +5106,7 @@ shmedia_target_regs_stack_adjust (HARD_REG_SET *live_regs_mask)
 static int
 calc_live_regs (HARD_REG_SET *live_regs_mask)
 {
-  int reg;
+  unsigned int reg;
   int count;
   int interrupt_handler;
   int pr_live, has_call;
@@ -5156,7 +5156,7 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	  || current_function_has_nonlocal_label))
     pr_live = 1;
   has_call = TARGET_SHMEDIA ? ! leaf_function_p () : pr_live;
-  for (count = 0, reg = FIRST_PSEUDO_REGISTER - 1; reg >= 0; reg--)
+  for (count = 0, reg = FIRST_PSEUDO_REGISTER; reg-- != 0; )
     {
       if (reg == (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG)
 	  ? pr_live
@@ -5178,13 +5178,13 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	     (TARGET_SHCOMPACT
 	      && flag_pic
 	      && current_function_args_info.call_cookie
-	      && reg == (int) PIC_OFFSET_TABLE_REGNUM)
+	      && reg == PIC_OFFSET_TABLE_REGNUM)
 	     || (regs_ever_live[reg] && ! call_really_used_regs[reg])
 	     || (current_function_calls_eh_return
-		 && (reg == (int) EH_RETURN_DATA_REGNO (0)
-		     || reg == (int) EH_RETURN_DATA_REGNO (1)
-		     || reg == (int) EH_RETURN_DATA_REGNO (2)
-		     || reg == (int) EH_RETURN_DATA_REGNO (3)))
+		 && (reg == EH_RETURN_DATA_REGNO (0)
+		     || reg == EH_RETURN_DATA_REGNO (1)
+		     || reg == EH_RETURN_DATA_REGNO (2)
+		     || reg == EH_RETURN_DATA_REGNO (3)))
 	     || ((reg == MACL_REG || reg == MACH_REG)
 		 && regs_ever_live[reg]
 		 && sh_cfun_attr_renesas_p ())
@@ -5560,7 +5560,7 @@ sh_expand_prologue (void)
       for (entry = &schedule.entries[1]; entry->mode != VOIDmode; entry++)
         {
 	  enum machine_mode mode = entry->mode;
-	  int reg = entry->reg;
+	  unsigned int reg = entry->reg;
 	  rtx reg_rtx, mem_rtx, pre_dec = NULL_RTX;
 	  rtx orig_reg_rtx;
 
@@ -6407,7 +6407,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 {
   HOST_WIDE_INT size, rsize;
   tree tmp, pptr_type_node;
-  tree addr, lab_over, result = NULL;
+  tree addr, lab_over = NULL, result = NULL;
   int pass_by_ref = targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
 
   if (pass_by_ref)
@@ -7187,7 +7187,7 @@ sh_handle_sp_switch_attribute (tree *node, tree name, tree args,
     }
   else
     {
-      char *s = ggc_strdup (TREE_STRING_POINTER (TREE_VALUE (args)));
+      const char *s = ggc_strdup (TREE_STRING_POINTER (TREE_VALUE (args)));
       sp_switch = gen_rtx_SYMBOL_REF (VOIDmode, s);
     }
 
