@@ -1,3 +1,8 @@
+2000-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (GCC_FOR_TARGET, GCC_CFLAGS, LIBGCC2_INCLUDES,
+	deduced.h): Use -isystem, not -I, for including system headers.
+
 2000-04-24  Nick Clifton  <nickc@cygnus.com>
 
 	* config/fr30/fr30.md (addsi3): Do not use small add instruction if
