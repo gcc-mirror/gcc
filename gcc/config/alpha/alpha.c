@@ -1937,7 +1937,7 @@ summarize_insn (x, sum, set)
       break;
 
     case PARALLEL:
-      for (i = XVECLEN (x, 0); i >= 0; i--)
+      for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
 	summarize_insn (XVECEXP (x, 0, i), sum, 0);
       break;
 
@@ -2004,7 +2004,7 @@ summarize_insn (x, sum, set)
 
     default:
       format_ptr = GET_RTX_FORMAT (GET_CODE (x));
-      for (i = GET_RTX_LENGTH (GET_CODE (x)); i >= 0; i--)
+      for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
 	switch (format_ptr[i])
 	  {
 	  case 'e':
@@ -2012,7 +2012,7 @@ summarize_insn (x, sum, set)
 	    break;
 
 	  case 'E':
-	    for (j = XVECLEN (x, i); j >= 0; j--)
+	    for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	      summarize_insn (XVECEXP (x, i, j), sum, 0);
 	    break;
 
