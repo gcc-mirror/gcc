@@ -1,3 +1,10 @@
+2002-04-14  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* Make-lang.in (f/target.o): Depend on diagnostic.h.
+	* target.c: Include diagnostic.h.
+ 	(ffetarget_memcpy_): Call sorry if host and target endians are
+	not matching.
+
 2002-04-13  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* news.texi: Deprecate frontend version number;
