@@ -113,6 +113,7 @@ static void finalize PARAMS ((void));
 static void set_target_switch PARAMS ((const char *));
 
 static void crash_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
+static void setup_core_dumping PARAMS ((void));
 static void compile_file PARAMS ((void));
 static void display_help PARAMS ((void));
 static void display_target_options PARAMS ((void));
@@ -1692,6 +1693,29 @@ crash_signal (signo)
 {
   internal_error ("%s", strsignal (signo));
 }
+
+/* Arrange to dump core on error.  (The regular error message is still
+   printed first, except in the case of abort().)  */
+
+static void
+setup_core_dumping ()
+{
+#ifdef SIGABRT
+  signal (SIGABRT, SIG_DFL);
+#endif
+#if defined(HAVE_SETRLIMIT)
+  {
+    struct rlimit rlim;
+    if (getrlimit (RLIMIT_CORE, &rlim) != 0)
+      fatal_io_error ("getting core file size maximum limit");
+    rlim.rlim_cur = rlim.rlim_max;
+    if (setrlimit (RLIMIT_CORE, &rlim) != 0)
+      fatal_io_error ("setting core file size limit to maximum");
+  }
+#endif
+  diagnostic_abort_on_error (global_dc);
+}
+
 
 /* Strip off a legitimate source ending from the input string NAME of
    length LEN.  Rather than having to know the names used by all of
@@ -3952,6 +3976,9 @@ decode_d_option (arg)
 	break;
       case 'D':	/* These are handled by the preprocessor.  */
       case 'I':
+	break;
+      case 'H':
+	setup_core_dumping();
 	break;
 
       default:

@@ -3216,6 +3216,9 @@ Dump after the peephole pass, to @file{@var{file}.27.peephole2}.
 @item a
 @opindex da
 Produce all the dumps listed above.
+@item H
+@opindex dH
+Produce a core dump whenever an error occurs.
 @item m
 @opindex dm
 Print statistics on memory usage, at the end of the run, to
