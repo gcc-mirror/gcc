@@ -1512,7 +1512,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  op1x = convert_to_mode (word_mode, op1, 1);
 	}
 
-      if (GET_MODE (op0) != mode)
+      if (GET_MODE (op0) != VOIDmode
+	  && GET_MODE (op0) != mode)
 	op0 = convert_to_mode (mode, op0, unsignedp);
 
       /* Pass 1 for NO_QUEUE so we don't lose any increments
