@@ -3255,8 +3255,9 @@ fold_range_test (exp)
 			  TREE_TYPE (exp), lhs, rhs);
 	}
     }
-  else
-    return 0;
+
+
+  return 0;
 }
 
 /* Subroutine for fold_truthop: C is an INTEGER_CST interpreted as a P
