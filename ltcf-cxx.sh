@@ -254,7 +254,8 @@ case $host_os in
 	    ;;
     esac
     output_verbose_link_cmd='echo'
-    archive_cmds='$CC -r ${wl}-bind_at_load -keep_private_externs -nostdlib -o ${lib}-master.o $libobjs~$CC -dynamiclib $allow_undefined_flag -o $lib ${lib}-master.o $deplibs $compiler_flags -install_name $rpath/$soname $verstring'
+
+    archive_cmds='$CXX -dynamiclib $allow_undefined_flag -o $lib $libobjs $deplibs $compiler_flags -install_name $rpath/$soname $verstring'
     module_cmds='$CC ${wl}-bind_at_load $allow_undefined_flag -o $lib -bundle $libobjs $deplibs$compiler_flags'
 
     # Don't fix this by using the ld -exported_symbols_list flag,
@@ -264,7 +265,6 @@ case $host_os in
     hardcode_direct=no
     hardcode_automatic=yes
     hardcode_shlibpath_var=unsupported
-    whole_archive_flag_spec='-all_load $convenience'
     link_all_deplibs=yes
     ;;
 
