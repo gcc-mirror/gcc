@@ -303,6 +303,10 @@ extern int target_flags;
 
 /* Target machine storage layout.  */
 
+/* Define for cross-compilation from a host with a different float format
+   or endianess (e.g. VAX, x86).  */
+#define REAL_ARITHMETIC
+
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN 0
@@ -940,10 +944,12 @@ extern struct rtx_def *i960_function_arg ();
    is a legitimate general operand.
    It is given that X satisfies CONSTANT_P.
 
-   Anything but a CONST_DOUBLE can be made to work, excepting 0.0 and 1.0.  */
+   Anything but a CONST_DOUBLE can be made to work, excepting 0.0 and 1.0.
+
+   ??? This probably should be defined to 1.  */
 
 #define LEGITIMATE_CONSTANT_P(X) \
-  ((GET_CODE (X) != CONST_DOUBLE) || fp_literal ((X), VOIDmode))
+  ((GET_CODE (X) != CONST_DOUBLE) || fp_literal ((X), GET_MODE (X)))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
