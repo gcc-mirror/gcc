@@ -1,4 +1,12 @@
 2004-10-21  Paolo Carlini  <pcarlini@suse.de>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/basic_string.h (_M_set_length_and_sharable): New.
+	* include/bits/basic_string.tcc (_S_construct, assign(const _CharT*,
+	size_type), _M_mutate, _M_clone): Use it.
+	(_Rep::_S_create): Don't set/call _M_length/_M_set_sharable here.
+
+2004-10-21  Paolo Carlini  <pcarlini@suse.de>
 	    Dhruv Matani  <dhruvbird@gmx.net>
 	    Nathan Myers  <ncm@cantrip.org>
 
