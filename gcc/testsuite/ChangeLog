@@ -1,5 +1,10 @@
 2002-11-07  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8338
+	* g++.dg/template/crash2.C: New test.
+
+2002-11-07  Mark Mitchell  <mark@codesourcery.com>
+
 	* testsuite/g++.dg/abi/dtor1.C: New test.
 	* testsuite/g++.dg/abi/dtor2.C: Likewise.
 
