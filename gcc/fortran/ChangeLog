@@ -1,3 +1,9 @@
+2005-03-17  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans-array.c (gfc_trans_static_array_pointer,
+	get_array_ctor_var_strlen, gfc_conv_array_index_offset): Fix
+	comment and formatting typos.
+
 2005-03-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* invoke.texi: Fix typos.
