@@ -513,6 +513,9 @@ int flag_gnu_linker = 0;
 int flag_gnu_linker = 1;
 #endif
 
+/* Tag all structures with __attribute__(packed) */
+int flag_pack_struct = 0;
+
 /* Table of language-independent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -558,6 +561,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"inhibit-size-directive", &flag_inhibit_size_directive, 1},
   {"verbose-asm", &flag_verbose_asm, 1},
   {"gnu-linker", &flag_gnu_linker, 1},
+  {"pack-struct", &flag_pack_struct, 1},
   {"bytecode", &output_bytecode, 1}
 };
 
