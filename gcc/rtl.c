@@ -22,6 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <ctype.h>
 #include <stdio.h>
 #include "rtl.h"
+#include "real.h"
 
 #include "obstack.h"
 #define	obstack_chunk_alloc	xmalloc
