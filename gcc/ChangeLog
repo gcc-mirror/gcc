@@ -1,3 +1,7 @@
+Tue Oct  7 09:48:51 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (FLOAT_STORE_FLAG_VALUE): It's 2.0 not 0.5.
+
 Mon Oct  6 12:47:32 1997  Manfred Hollstein  (manfred@lts.sel.alcatel.de)
 
 	* m88k.c (m88k_begin_prologue): Remove superfluous backslash.
