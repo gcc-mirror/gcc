@@ -36,7 +36,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 int
 DEFUN(jcf_unexpected_eof, (jcf, count),
-      JCF *jcf AND int count)
+      JCF *jcf AND int count ATTRIBUTE_UNUSED)
 {
   if (jcf->filename)
     fprintf (stderr, "Premature end of .class file %s.\n", jcf->filename);
