@@ -1,3 +1,10 @@
+2003-12-05  Danny Smith <dannysmith@gcc.gnu.org>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13305
+	* parser.c (cp_parser_elaborated_type_specifier): Accept
+	attributes.
+	
 2003-12-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13314
