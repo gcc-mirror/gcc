@@ -87,4 +87,3 @@ typedef union {long itype; tree ttype; char *strtype; enum tree_code code; flagg
 
 
 extern YYSTYPE yylval;
-#define YYEMPTY		-2

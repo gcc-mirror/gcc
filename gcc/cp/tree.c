@@ -2700,7 +2700,7 @@ tree
 build_dummy_object (type)
      tree type;
 {
-  tree decl = build1 (NOP_EXPR, build_pointer_type (type), error_mark_node);
+  tree decl = build1 (NOP_EXPR, build_pointer_type (type), void_zero_node);
   return build_indirect_ref (decl, NULL_PTR);
 }
 
@@ -2743,7 +2743,7 @@ is_dummy_object (ob)
   if (TREE_CODE (ob) == INDIRECT_REF)
     ob = TREE_OPERAND (ob, 0);
   return (TREE_CODE (ob) == NOP_EXPR
-	  && TREE_OPERAND (ob, 0) == error_mark_node);
+	  && TREE_OPERAND (ob, 0) == void_zero_node);
 }
 
 /* Returns 1 iff type T is a POD type, as defined in [basic.types].  */
