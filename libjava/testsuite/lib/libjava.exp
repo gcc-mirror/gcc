@@ -107,11 +107,11 @@ set libjava_initialized 0
 proc libjava_init { args } {
     global wrapper_file;
     global wrap_compile_flags;
-    global libjava_initialized
+    global libjava_initialized libjava_uses_threads
     global GCJ_UNDER_TEST
     global TOOL_EXECUTABLE
     global original_ld_library_path
-    global env
+    global env objdir
 
     if { $libjava_initialized == 1 } { return; }
 
@@ -126,6 +126,13 @@ proc libjava_init { args } {
 	    }
 	}
     }
+
+    # The -B is so we find libgcj.spec.
+    set text [eval exec "$GCJ_UNDER_TEST -B$objdir/../ -v 2>@ stdout"]
+    regexp -- "Thread model: (\[^\n\]+)\n" $text ignore model
+    set libjava_uses_threads [expr {! ($model == "no"
+				       || $model == "none"
+				       || $model == "single")}]
 
     # Always set encoding used by gcj.
     append GCJ_UNDER_TEST " --encoding=UTF-8"
@@ -331,6 +338,15 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 	set opts($item) x
     }
 
+    # If we need threads and we don't have them then set the `no-exec'
+    # flag.  This is case is also handled specially later.
+    if {[info exists opts(need-threads)]} {
+	global libjava_uses_threads
+	if {! $libjava_uses_threads} {
+	    set opts(no-exec) x
+	}
+    }
+
     set errname [file rootname [file tail $srcfile]]
     if {! [runtest_file_p $runtests $errname]} {
         return
@@ -376,7 +392,9 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 	}
 
 	fail "$errname compilation from source"
-	if {[info exists opts(xfail-gcj)] || ! [info exists opts(no-exec)]} {
+	if {[info exists opts(xfail-gcj)]
+	    || ! [info exists opts(no-exec)]
+	    || [info exists opts(need-threads)]} {
 	    untested "$errname execution from source compiled test"
 	    untested "$errname output from source compiled test"
 	}
@@ -388,8 +406,17 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
     }
     pass "$errname compilation from source"
 
-    if {[info exists opts(no-exec)]
-	|| [info exists opts(no-link)]} {
+    if {[info exists opts(no-exec)]} {
+	if {[info exists opts(need-threads)]} {
+	    # This means we wanted to try to run it but we couldn't
+	    # because threads aren't supported.  So we have to
+	    # generate an `untested'.
+	    untested "$errname execution from source compiled test"
+	    untested "$errname output from source compiled test"
+	}
+	return
+    }
+    if {[info exists opts(no-link)]} {
 	return
     }
 
@@ -464,6 +491,14 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	set opts($item) x
     }
 
+    # If we need threads and we don't have them then set the `no-exec'
+    # flag.  This is case is also handled specially later.
+    if {[info exists opts(need-threads)]} {
+	global libjava_uses_threads
+	if {! $libjava_uses_threads} {
+	    set opts(no-exec) x
+	}
+    }
     set errname [file rootname [file tail $srcfile]]
     if {! [runtest_file_p $runtests $errname]} {
         return
@@ -489,7 +524,8 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	}
 	fail "$errname byte compilation"
 	untested "$errname compilation from bytecode"
-	if {! [info exists opts(no-exec)]} {
+	if {! [info exists opts(no-exec)]
+	    || [info exists opts(need-threads)]} {
 	    untested "$errname execution from bytecode->native test"
 	    untested "$errname output from bytecode->native test"
 	}
@@ -521,7 +557,8 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     if {[string match "*parse error*" $main_name]
 	|| [string match "*parse error*" $class_out]} {
 	untested "$errname compilation from bytecode"
-	if {! [info exists opts(no-exec)]} {
+	if {! [info exists opts(no-exec)]
+	    || [info exists opts(need-threads)]} {
 	    untested "$errname execution from bytecode->native test"
 	    untested "$errname output from bytecode->native test"
 	}
@@ -599,7 +636,8 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     if { $x != "" } {
 	verbose "target_compile failed: $x" 2
 	fail "$errname compilation from bytecode"
-	if {! [info exists opts(no-exec)]} {
+	if {! [info exists opts(no-exec)]
+	    || [info exists opts(need-threads)]} {
 	    untested "$errname execution from bytecode->native test"
 	    untested "$errname output from bytecode->native test"
 	}
@@ -608,6 +646,10 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     pass "$errname compilation from bytecode"
 
     if {[info exists opts(no-exec)]} {
+	if {[info exists opts(need-threads)]} {
+	    untested "$errname execution from bytecode->native test"
+	    untested "$errname output from bytecode->native test"
+	}
 	return
     }
 
@@ -676,7 +718,10 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 #                 front end.
 #   `xfail-byte'  compilation from bytecode will fail
 #   `xfail-exec'  exec will fail
-#   `xfail-output' output will be wrong
+#   `xfail-output'
+#                 output will be wrong
+#   `need-threads'
+#                 test relies on thread support
 #
 proc test_libjava { options srcfile compile_args inpfile resultfile exec_args } {
     test_libjava_from_source $options $srcfile $compile_args $inpfile $resultfile $exec_args
