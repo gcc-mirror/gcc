@@ -571,6 +571,15 @@ print_node (file, prefix, node, indent)
 	      print_node (file, temp, TREE_OPERAND (node, i), indent + 4);
 	    }
 	}
+
+      if (TREE_CODE (node) == EXPR_WITH_FILE_LOCATION)
+	{
+	  indent_to (file, indent+4);
+          fprintf (file, "%s:%d:%d", 
+		   (EXPR_WFL_FILENAME_NODE (node ) ?
+		    EXPR_WFL_FILENAME (node) : "(no file info)"),
+		   EXPR_WFL_LINENO (node), EXPR_WFL_COLNO (node));
+	}
       break;
 
     case 'c':

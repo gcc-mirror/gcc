@@ -643,6 +643,17 @@ struct tree_vec
 #define TREE_OPERAND(NODE, I) ((NODE)->exp.operands[I])
 #define TREE_COMPLEXITY(NODE) ((NODE)->exp.complexity)
 
+/* In expression with file location information.  */
+#define EXPR_WFL_NODE(NODE) TREE_OPERAND((NODE), 0)
+#define EXPR_WFL_FILENAME(NODE) (IDENTIFIER_POINTER ((NODE)->common.chain))
+#define EXPR_WFL_FILENAME_NODE(NODE) ((NODE)->common.chain)
+#define EXPR_WFL_LINENO(NODE) ((NODE)->exp.complexity >> 12)
+#define EXPR_WFL_COLNO(NODE) ((NODE)->exp.complexity & 0xfff)
+#define EXPR_WFL_LINECOL(NODE) ((NODE)->exp.complexity)
+#define EXPR_WFL_SET_LINECOL(NODE, LINE, COL) \
+  (EXPR_WFL_LINECOL(NODE) = ((LINE) << 12) | ((COL) & 0xfff))
+#define EXPR_WFL_EMIT_LINE_NOTE(NODE) ((NODE)->common.lang_flag_0)
+
 struct tree_exp
 {
   char common[sizeof (struct tree_common)];
@@ -1296,6 +1307,7 @@ extern tree build_decl_list		PROTO((tree, tree));
 extern tree build_expr_list		PROTO((tree, tree));
 extern tree build_decl			PROTO((enum tree_code, tree, tree));
 extern tree build_block			PROTO((tree, tree, tree, tree, tree));
+extern tree build_expr_wfl              PROTO((tree, char *, int, int));
 
 /* Construct various nodes representing data types.  */
 
