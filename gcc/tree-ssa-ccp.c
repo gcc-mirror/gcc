@@ -454,16 +454,21 @@ replace_uses_in (tree stmt, bool *replaced_addresses_p)
 
   FOR_EACH_SSA_USE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
-      value *val = get_value (USE_FROM_PTR (use));
+      tree tuse = USE_FROM_PTR (use);
+      value *val = get_value (tuse);
 
-      if (val->lattice_val == CONSTANT)
-	{
-	  SET_USE (use, val->const_val);
-	  replaced = true;
-	  if (POINTER_TYPE_P (TREE_TYPE (USE_FROM_PTR (use))) 
-	      && replaced_addresses_p)
-	    *replaced_addresses_p = true;
-	}
+      if (val->lattice_val != CONSTANT)
+	continue;
+
+      if (TREE_CODE (stmt) == ASM_EXPR
+	  && !may_propagate_copy_into_asm (tuse))
+	continue;
+
+      SET_USE (use, val->const_val);
+
+      replaced = true;
+      if (POINTER_TYPE_P (TREE_TYPE (tuse)) && replaced_addresses_p)
+	*replaced_addresses_p = true;
     }
 
   return replaced;

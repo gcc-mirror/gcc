@@ -156,6 +156,16 @@ may_propagate_copy (tree dest, tree orig)
   return true;
 }
 
+/* Similarly, but we know that we're propagating into an ASM_EXPR.  */
+
+bool
+may_propagate_copy_into_asm (tree dest)
+{
+  /* Hard register operands of asms are special.  Do not bypass.  */
+  return !(TREE_CODE (dest) == SSA_NAME
+	   && DECL_HARD_REGISTER (SSA_NAME_VAR (dest)));
+}
+
 
 /* Given two SSA_NAMEs pointers ORIG and NEW such that we are copy
    propagating NEW into ORIG, consolidate aliasing information so that
