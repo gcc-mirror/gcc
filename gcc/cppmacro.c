@@ -599,6 +599,7 @@ funlike_invocation_p (pfile, node, list)
   pfile->state.parsing_args = 1;
   pfile->state.prevent_expansion++;
 
+  pfile->keep_tokens++;
   cpp_start_lookahead (pfile);
   cpp_get_token (pfile, &maybe_paren);
   cpp_stop_lookahead (pfile, maybe_paren.type == CPP_OPEN_PAREN);
@@ -613,6 +614,7 @@ funlike_invocation_p (pfile, node, list)
 
   pfile->state.prevent_expansion--;
   pfile->state.parsing_args = 0;
+  pfile->keep_tokens--;
 
   /* Reset the position in case of failure.  If success, the macro's
      expansion appears where the name would have.  */

@@ -402,6 +402,7 @@ run_directive (pfile, dir_no, buf, count)
   cpp_push_buffer (pfile, (const U_CHAR *) buf, count,
 		   /* from_stage3 */ true, 1);
   start_directive (pfile);
+  pfile->state.bol = 0;
   pfile->state.prevent_expansion++;
   pfile->directive = &dtable[dir_no];
   (void) (*pfile->directive->handler) (pfile);
@@ -1782,6 +1783,7 @@ _cpp_pop_buffer (pfile)
      case of a missing #endif.  */
   pfile->lexer_pos.output_line = pfile->line;
   pfile->state.skipping = 0;
+  pfile->state.bol = 1;
 
   /* Update the reader's buffer before _cpp_do_file_change.  */
   pfile->buffer = buffer->prev;

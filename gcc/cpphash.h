@@ -102,6 +102,13 @@ struct toklist
   cpp_token *limit;
 };
 
+typedef struct tokenrun tokenrun;
+struct tokenrun
+{
+  tokenrun *next;
+  cpp_token *base, *limit;
+};
+
 typedef struct cpp_context cpp_context;
 struct cpp_context
 {
@@ -123,6 +130,9 @@ struct lexer_state
 
   /* True if we are skipping a failed conditional group.  */
   unsigned char skipping;
+
+  /* Nonzero if next token is the start of a line.  */
+  unsigned char bol;
 
   /* Nonzero if in a directive that takes angle-bracketed headers.  */
   unsigned char angled_headers;
@@ -257,6 +267,13 @@ struct cpp_reader
   const cpp_hashnode *mi_cmacro;
   const cpp_hashnode *mi_ind_cmacro;
   bool mi_valid;
+
+  /* Lexing.  */
+  cpp_token *cur_token;
+  tokenrun base_run, *cur_run;
+
+  /* Non-zero prevents the lexer from re-using the token runs.  */
+  unsigned int keep_tokens;
 
   /* Token lookahead.  */
   struct cpp_lookahead *la_read;	/* Read from this lookahead.  */
@@ -397,6 +414,7 @@ extern int _cpp_parse_expr		PARAMS ((cpp_reader *));
 extern void _cpp_lex_token		PARAMS ((cpp_reader *, cpp_token *));
 extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
 						 const cpp_token *));
+extern void _cpp_init_tokenrun		PARAMS ((tokenrun *, unsigned int));
 extern void _cpp_init_pool		PARAMS ((cpp_pool *, unsigned int,
 						  unsigned int, unsigned int));
 extern void _cpp_free_pool		PARAMS ((cpp_pool *));
