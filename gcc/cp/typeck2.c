@@ -962,7 +962,9 @@ process_init_constructor (type, init, elts)
 	{
 	  register tree next1;
 
-	  if (TREE_PURPOSE (tail))
+	  if (TREE_PURPOSE (tail)
+	      && (TREE_CODE (TREE_PURPOSE (tail)) != INTEGER_CST
+		  || TREE_INT_CST_LOW (TREE_PURPOSE (tail)) != i))
 	    sorry ("non-trivial labeled initializers");
 
 	  if (TREE_VALUE (tail) != 0)
