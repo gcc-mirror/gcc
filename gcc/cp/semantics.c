@@ -718,7 +718,7 @@ finish_compound_stmt (has_no_scope, compound_stmt)
 
 void
 finish_asm_stmt (cv_qualifier, string, output_operands,
-		      input_operands, clobbers)
+		 input_operands, clobbers)
      tree cv_qualifier;
      tree string;
      tree output_operands;
@@ -726,7 +726,20 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
      tree clobbers;
 {
   if (TREE_CHAIN (string))
-    string = combine_strings (string);
+    {
+      if (processing_template_decl)
+	{
+	  /* We need to build the combined string on the permanent
+	     obstack so that we can use it during instantiations.  */
+	  push_obstacks_nochange ();
+	  end_temporary_allocation ();
+	}
+
+      string = combine_strings (string);
+
+      if (processing_template_decl)
+	pop_obstacks ();
+    }
 
   if (processing_template_decl)
     {

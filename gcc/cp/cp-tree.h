@@ -1136,7 +1136,8 @@ struct lang_type
    && TREE_VALUE (TYPE_RAISES_EXCEPTIONS (NODE)) == NULL_TREE)
 
 /* The binding level associated with the namespace.  */
-#define NAMESPACE_LEVEL(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.level)
+#define NAMESPACE_LEVEL(NODE) \
+  (DECL_LANG_SPECIFIC(NODE)->decl_flags.u.level)
 
 
 /* If a DECL has DECL_LANG_SPECIFIC, it is either a lang_decl_flags or
@@ -1180,9 +1181,19 @@ struct lang_decl_flags
 
   tree access;
   tree context;
+
+  /* In a template FUNCTION_DECL, this is DECL_SAVED_TREE.
+     In a non-template FUNCTION_DECL, this is DECL_MEMFUNC_POINTER_TO.
+     In a FIELD_DECL, this is DECL_MEMFUNC_POINTING_TO.  */
   tree memfunc_pointer_to;
-  tree template_info;
-  struct binding_level *level;
+
+  union {
+    /* In a FUNCTION_DECL, this is DECL_TEMPLATE_INFO.  */
+    tree template_info;
+
+    /* In a NAMESPACE_DECL, this is NAMESPACE_LEVEL.  */
+    struct binding_level *level;
+  } u;
 };
 
 struct lang_decl
@@ -1392,7 +1403,8 @@ struct lang_decl
 #define DECL_MEMFUNC_POINTING_TO(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.memfunc_pointer_to)
 
 /* For a VAR_DECL or FUNCTION_DECL: template-specific information.  */
-#define DECL_TEMPLATE_INFO(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.template_info)
+#define DECL_TEMPLATE_INFO(NODE) \
+  (DECL_LANG_SPECIFIC(NODE)->decl_flags.u.template_info)
 
 /* Template information for a RECORD_TYPE or UNION_TYPE.  */
 #define CLASSTYPE_TEMPLATE_INFO(NODE) (TYPE_LANG_SPECIFIC(NODE)->template_info)
@@ -1475,7 +1487,10 @@ struct lang_decl
    the class definition is complete.  */
 #define TEMPLATE_PARMS_FOR_INLINE(NODE) TREE_LANG_FLAG_1 (NODE)
 
+/* In a template FUNCTION_DECL, the tree structure that will be
+   substituted into to obtain instantiations.  */
 #define DECL_SAVED_TREE(NODE)		DECL_MEMFUNC_POINTER_TO (NODE)
+
 #define COMPOUND_STMT_NO_SCOPE(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define NEW_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define DELETE_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
@@ -1898,7 +1913,6 @@ extern int flag_new_for_scope;
 
    This list is not used for static variable templates.  */
 #define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     DECL_SIZE(NODE)
-#define DECL_TEMPLATE_INJECT(NODE)	DECL_INITIAL(NODE)
 
 /* Nonzero for a DECL which is actually a template parameter.  */
 #define DECL_TEMPLATE_PARM_P(NODE) \

@@ -3613,12 +3613,8 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	{
 	  if (context)
 	    push_decl_namespace (context);
-	  if (current_class_type != NULL_TREE)
-	    template =
-	      maybe_get_template_decl_from_type_decl
-	      (IDENTIFIER_CLASS_VALUE (d1));
-	  if (template == NULL_TREE)
-	    template = lookup_name_nonclass (d1);
+	  template = lookup_name (d1, /*prefer_type=*/0);
+	  template = maybe_get_template_decl_from_type_decl (template);
 	  if (context)
 	    pop_decl_namespace ();
 	}
@@ -3834,24 +3830,35 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	  if (found)
 	    found = TREE_VALUE (found);
 	}
-      
+
       if (found)
 	{
 	  pop_momentary ();
 	  return found;
 	}
 
-      /* Since we didn't find the type, we'll have to create it.
-	 Since we'll be saving this type on the
-	 DECL_TEMPLATE_INSTANTIATIONS list, it must be permanent.  */
-      push_obstacks (&permanent_obstack, &permanent_obstack);
-      
       /* This type is a "partial instantiation" if any of the template
 	 arguments still inolve template parameters.  Note that we set
 	 IS_PARTIAL_INSTANTIATION for partial specializations as
 	 well.  */
       is_partial_instantiation = uses_template_parms (arglist);
 
+      if (!is_partial_instantiation 
+	  && !PRIMARY_TEMPLATE_P (template)
+	  && TREE_CODE (CP_DECL_CONTEXT (template)) == NAMESPACE_DECL)
+	{
+	  pop_momentary ();
+	  found = xref_tag_from_type (TREE_TYPE (template),
+				      DECL_NAME (template),
+				      /*globalize=*/1);
+	  return found;
+	}
+				    
+      /* Since we didn't find the type, we'll have to create it.
+	 Since we'll be saving this type on the
+	 DECL_TEMPLATE_INSTANTIATIONS list, it must be permanent.  */
+      push_obstacks (&permanent_obstack, &permanent_obstack);
+      
       /* Create the type.  */
       if (TREE_CODE (template_type) == ENUMERAL_TYPE)
 	{
@@ -5110,23 +5117,6 @@ instantiate_class_template (type)
       if (TREE_CODE (friend_type) == TEMPLATE_DECL)
 	--processing_template_decl;
     }
-
-  /* This does injection for friend functions. */
-  if (!processing_template_decl)
-    {
-      t = tsubst (DECL_TEMPLATE_INJECT (template), args,
-		  /*complain=*/1, NULL_TREE);
-
-      for (; t; t = TREE_CHAIN (t))
-	{
-	  tree d = TREE_VALUE (t);
-
-	  if (TREE_CODE (d) == TYPE_DECL)
-	    /* Already injected.  */;
-	  else
-	    pushdecl (d);
-	}
-    } 
 
   for (t = TYPE_FIELDS (type); t; t = TREE_CHAIN (t))
     if (TREE_CODE (t) == FIELD_DECL)
@@ -7200,7 +7190,7 @@ tsubst_expr (t, args, complain, in_decl)
 
     case ASM_STMT:
       lineno = TREE_COMPLEXITY (t);
-      finish_asm_stmt (tsubst_expr (ASM_CV_QUAL (t), args, complain, in_decl),
+      finish_asm_stmt (ASM_CV_QUAL (t),
 		       tsubst_expr (ASM_STRING (t), args, complain, in_decl),
 		       tsubst_expr (ASM_OUTPUTS (t), args, complain, in_decl),
 		       tsubst_expr (ASM_INPUTS (t), args, complain, in_decl), 
