@@ -5577,6 +5577,7 @@ start_struct (code, name)
   if (ref && TREE_CODE (ref) == code)
     {
       C_TYPE_BEING_DEFINED (ref) = 1;
+      TYPE_PACKED (ref) = flag_pack_struct;
       if (TYPE_FIELDS (ref))
 	error ((code == UNION_TYPE ? "redefinition of `union %s'"
 		: "redefinition of `struct %s'"),
