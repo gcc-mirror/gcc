@@ -127,7 +127,7 @@ namespace std
 
     // Construct all standard facets and add them to _M_facets.
     _M_init_facet(new std::ctype<char>(__cloc));
-    _M_init_facet(new codecvt<char, char, mbstate_t>);
+    _M_init_facet(new codecvt<char, char, mbstate_t>(__cloc));
     _M_init_facet(new numpunct<char>(__cloc));
     _M_init_facet(new num_get<char>);
     _M_init_facet(new num_put<char>);
@@ -143,7 +143,7 @@ namespace std
 	
 #ifdef  _GLIBCPP_USE_WCHAR_T
     _M_init_facet(new std::ctype<wchar_t>(__cloc));
-    _M_init_facet(new codecvt<wchar_t, char, mbstate_t>);
+    _M_init_facet(new codecvt<wchar_t, char, mbstate_t>(__cloc));
     _M_init_facet(new numpunct<wchar_t>(__cloc));
     _M_init_facet(new num_get<wchar_t>);
     _M_init_facet(new num_put<wchar_t>);

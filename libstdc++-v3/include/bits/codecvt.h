@@ -70,7 +70,11 @@
       typedef _InternT 					intern_type;
       typedef _ExternT 					extern_type;
       typedef _StateT  					state_type;
-      
+ 
+    protected:
+      __c_locale		_M_c_locale_codecvt;
+
+    public:
       // 22.2.1.5.1 codecvt members
       result
       out(state_type& __state, const intern_type* __from, 
@@ -225,6 +229,10 @@
       explicit 
       codecvt(size_t __refs = 0);
 
+      // Non-standard.
+      explicit 
+      codecvt(__c_locale __cloc, size_t __refs = 0); 
+
     protected:
       virtual 
       ~codecvt();
@@ -277,6 +285,10 @@
       explicit 
       codecvt(size_t __refs = 0);
 
+      // Non-standard.
+      explicit 
+      codecvt(__c_locale __cloc, size_t __refs = 0);
+
     protected:
       virtual 
       ~codecvt();
@@ -320,8 +332,14 @@
     {
     public:
       explicit 
-      codecvt_byname(const char*, size_t __refs = 0) 
-      : codecvt<_InternT, _ExternT, _StateT>(__refs) { }
+      codecvt_byname(const char* __s, size_t __refs = 0) 
+      : codecvt<_InternT, _ExternT, _StateT>(__refs)
+      { 
+	if (_M_c_locale_codecvt != _S_c_locale)
+	  _S_destroy_c_locale(_M_c_locale_codecvt);
+	_S_create_c_locale(_M_c_locale_codecvt, __s); 
+      }
+
     protected:
       virtual 
       ~codecvt_byname() { }
