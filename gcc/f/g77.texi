@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 2001-05-22
+@set last-update 2001-06-03
 @set copyrights-g77 1995,1996,1997,1998,1999,2000,2001
 
 @include root.texi
@@ -616,7 +616,8 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 @end smallexample
 
 Also add information on how to contact you by electronic and paper mail.
@@ -1372,7 +1373,8 @@ by type.  Explanations are in the following sections.
 -fintrin-case-lower  -fintrin-case-any
 -fmatch-case-initcap  -fmatch-case-upper
 -fmatch-case-lower  -fmatch-case-any
--fsource-case-upper -fsource-case-lower  -fsource-case-preserve
+-fsource-case-upper  -fsource-case-lower
+-fsource-case-preserve
 -fsymbol-case-initcap  -fsymbol-case-upper
 -fsymbol-case-lower  -fsymbol-case-any
 -fcase-strict-upper  -fcase-strict-lower
@@ -1398,7 +1400,7 @@ by type.  Explanations are in the following sections.
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @smallexample
 -fsyntax-only  -pedantic  -pedantic-errors  -fpedantic
--w  -Wno-globals  -Wimplicit -Wunused  -Wuninitialized
+-w  -Wno-globals  -Wimplicit  -Wunused  -Wuninitialized
 -Wall  -Wsurprising
 -Werror  -W
 @end smallexample
@@ -13535,8 +13537,8 @@ we should be able to reproduce the crash ourselves.
 
 If you would like to write bug fixes or improvements for the GNU Fortran
 compiler, that is very helpful.
-Send suggested fixes to the bug report
-mailing list, @email{@value{email-bugs}}.
+Send suggested fixes to the mailing list for patches,
+@email{@value{email-patch}}.
 
 Please follow these guidelines so we can study your patches efficiently.
 If you don't follow these guidelines, your information might still be
@@ -13661,7 +13663,7 @@ The service directory is found in the file named @file{SERVICE} in the
 GNU CC distribution.
 
 @item
-Send a message to @email{@value{email-general}}.
+Send a message to @email{@value{email-help}}.
 @end itemize
 
 @end ifset

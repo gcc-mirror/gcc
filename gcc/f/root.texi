@@ -7,7 +7,9 @@
 @set version-gcc 3.1
 
 @set email-general gcc@@gcc.gnu.org
+@set email-help gcc-help@@gcc.gnu.org
 @set email-bugs gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
+@set eamil-patch gcc-patches@@gcc.gnu.org
 @set path-g77 gcc/gcc/f
 @set path-libf2c gcc/libf2c
 

@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001
 
-@set last-update-news 2001-05-22
+@set last-update-news 2001-06-03
 
 @include root.texi
 
@@ -160,7 +160,7 @@ The following information was last updated on @value{last-update-news}:
 @end ifclear
 @end itemize
 
-@heading In prerelease, 0.5.26, @code{GCC} 3.0 versus @code{GCC} 2.95:
+@heading In 0.5.26, @code{GCC} 3.0 versus @code{GCC} 2.95:
 @itemize @bullet
 @item
 When a REWIND was issued after a WRITE statement on an unformatted
