@@ -387,20 +387,6 @@ do {									\
 /* #define LEAF_REG_REMAP(REGNO) */
 
 
-/* Registers That Form a Stack.  */
-
-/* Define this if the machine has any stack-like registers.  */
-/* #define STACK_REGS */
-
-/* The number of the first stack-like register.  This one is the top
-   of the stack.  */
-/* #define FIRST_STACK_REG */
-
-/* The number of the last stack-like register.  This one is the
-   bottom of the stack.  */
-/* #define LAST_STACK_REG */
-
-
 /* Register Classes */
 
 /* An enumeral type that must be defined with all the register class names as
@@ -1333,7 +1319,7 @@ enum reg_class
 
    For this platform, the value of CUMULATIVE_ARGS is the number of words
    of arguments that have been passed in registers so far.  */
-typedef int CUMULATIVE_ARGS;
+#define CUMULATIVE_ARGS int
 
 /* A C statement (sans semicolon) for initializing the variable CUM for the
    state at the beginning of the argument list.  The variable has type
