@@ -1,3 +1,7 @@
+Thu Mar 16 01:33:58 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (partition.o): Depend on config.h
+
 2000-03-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* hashtab.c (find_empty_slot_for_expand): New function.

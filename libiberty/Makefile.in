@@ -272,7 +272,7 @@ floatformat.o: $(INCDIR)/floatformat.h
 mkstemps.o: config.h
 objalloc.o: $(INCDIR)/objalloc.h
 obstack.o: config.h $(INCDIR)/obstack.h
-partition.o: $(INCDIR)/partition.h
+partition.o: config.h $(INCDIR)/partition.h
 pexecute.o: config.h $(INCDIR)/libiberty.h
 setenv.o: config.h
 spaces.o: $(INCDIR)/libiberty.h
