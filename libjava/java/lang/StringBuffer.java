@@ -299,7 +299,7 @@ public final class StringBuffer implements Serializable
    *  @exception NullPointerException if dst is null.
    *  @exception IndexOutOfBoundsException if any source or target
    *             indices are out of range.
-   *  @see java.lang.System#arrayCopy(java.lang.Object,int,java.lang.Object,int,int)
+   *  @see java.lang.System#arraycopy(java.lang.Object,int,java.lang.Object,int,int)
    */
   public synchronized void getChars (int srcOffset, int srcEnd,
 				     char[] dst, int dstOffset)
@@ -494,7 +494,7 @@ public final class StringBuffer implements Serializable
    *  <em>capacity</em> of the <code>StringBuffer</code>.
    *  @return the length of this <code>StringBuffer</code>.
    *  @see #capacity()
-   *  @see #setLength()
+   *  @see #setLength(int)
    */
   public int length ()
   {

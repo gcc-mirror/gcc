@@ -204,8 +204,6 @@ public abstract class URLConnection
       throw new IllegalAccessError("Already connected");
 
     doOutput = dooutput;
-    if (doOutput)
-      doInput = false;
   }
 
   public boolean getDoOutput()
