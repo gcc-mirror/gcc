@@ -1915,15 +1915,12 @@ canon_hash (x, mode)
 
 	if (regno < FIRST_PSEUDO_REGISTER
 	    && (global_regs[regno]
-#ifdef SMALL_REGISTER_CLASSES
 		|| (SMALL_REGISTER_CLASSES
 		    && ! fixed_regs[regno]
 		    && regno != FRAME_POINTER_REGNUM
 		    && regno != HARD_FRAME_POINTER_REGNUM
 		    && regno != ARG_POINTER_REGNUM
-		    && regno != STACK_POINTER_REGNUM)
-#endif
-		))
+		    && regno != STACK_POINTER_REGNUM)))
 	  {
 	    do_not_record = 1;
 	    return 0;
