@@ -1,5 +1,11 @@
 2005-02-01  Janis Johnson  <janis187@us.ibm.com>
 
+	* g++.dg/conversion/simd1.C: Expect warning.
+	* g++.dg/ext/attribute-test-1.C: Ditto.
+	* g++.dg/ext/attribute-test-2.C: Ditto.
+	* g++.dg/ext/attribute-test-3.C: Ditto.
+	* g++.dg/ext/attribute-test-4.C: Ditto.
+
 	* gcc.dg/ppc64-toc.c: Don't explicitly use -m64.
 	* gcc.dg/ppc-eabi.c: Don't explicity use -m32.
 
