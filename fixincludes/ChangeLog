@@ -1,3 +1,7 @@
+2005-02-23  James E Wilson  <wilson@specifixinc.com>
+
+	* Makefile.in (full-stamp, test-stamp, $(AF)): Add $(CFLAGS) to link.
+
 2004-12-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR 18458
