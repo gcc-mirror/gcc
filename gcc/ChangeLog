@@ -1,3 +1,8 @@
+2000-02-26  Geoff Keating  <geoffk@cygnus.com>
+
+	* reload1.c (do_output_reload): Check reg_reloaded_valid before
+	looking at reg_reloaded_contents.
+
 2000-02-26  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Makefile.in (STMP_FIXINC): New toggle.
