@@ -2569,9 +2569,6 @@ extern int flag_new_for_scope;
 #define DECL_ANTICIPATED(NODE) \
   (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->decl_flags.anticipated_p)
 
-/* This _DECL represents a compiler-generated entity.  */
-#define SET_DECL_ARTIFICIAL(NODE) (DECL_ARTIFICIAL (NODE) = 1)
-
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(exp) DECL_LANG_FLAG_1 ((exp))
 

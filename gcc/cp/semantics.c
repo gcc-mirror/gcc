@@ -2232,7 +2232,7 @@ finish_template_template_parm (aggr, identifier)
   tree tmpl = build_lang_decl (TEMPLATE_DECL, identifier, NULL_TREE);
   DECL_TEMPLATE_PARMS (tmpl) = current_template_parms;
   DECL_TEMPLATE_RESULT (tmpl) = decl;
-  SET_DECL_ARTIFICIAL (decl);
+  DECL_ARTIFICIAL (decl) = 1;
   end_template_decl ();
 
   return finish_template_type_parm (aggr, tmpl);

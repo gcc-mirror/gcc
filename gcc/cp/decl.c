@@ -2805,7 +2805,7 @@ create_implicit_typedef (name, type)
   tree decl;
 
   decl = build_decl (TYPE_DECL, name, type);
-  SET_DECL_ARTIFICIAL (decl);
+  DECL_ARTIFICIAL (decl) = 1;
   /* There are other implicit type declarations, like the one *within*
      a class that allows you to write `S::S'.  We must distinguish
      amongst these.  */
