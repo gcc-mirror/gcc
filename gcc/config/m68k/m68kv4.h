@@ -234,3 +234,41 @@ do {									\
 } while (0)
 
 int switch_table_difference_label_flag;
+
+#undef ASM_OUTPUT_COMMON
+#undef ASM_OUTPUT_LOCAL
+#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
+( fputs (".comm ", (FILE)),			\
+  assemble_name ((FILE), (NAME)),		\
+  fprintf ((FILE), ",%u\n", (SIZE)))
+
+#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
+( fputs (".lcomm ", (FILE)),			\
+  assemble_name ((FILE), (NAME)),		\
+  fprintf ((FILE), ",%u\n", (SIZE)))
+
+/* Override the definition in svr4.h. In m68k svr4, using swbeg is the 
+   standard way to do switch table. */
+#undef ASM_OUTPUT_BEFORE_CASE_LABEL
+#define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE)		\
+  fprintf ((FILE), "\t%s &%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1));
+
+/* In m68k svr4, a symbol_ref rtx can be a valid PIC operand if it is an
+   operand of a function call. */
+#undef LEGITIMATE_PIC_OPERAND_P
+#define LEGITIMATE_PIC_OPERAND_P(X) \
+  (! symbolic_operand (X, VOIDmode) \
+   || ((GET_CODE(X) == SYMBOL_REF) && SYMBOL_REF_FLAG(X)))
+
+/* Turn off function cse if we are doing PIC. We always want function call
+   to be done as `bsr foo@PLTPC', so it will force the assembler to create 
+   the PLT entry for `foo'. Doing function cse will cause the address of `foo'
+   to be loaded into a register, which is exactly what we want to avoid when
+   we are doing PIC on svr4 m68k. */
+#undef OVERRIDE_OPTIONS
+#define OVERRIDE_OPTIONS		\
+{					\
+  if (flag_pic) flag_no_function_cse = 1; \
+  if (! TARGET_68020 && flag_pic == 2)	\
+    error("-fPIC is not currently supported on the 68000 or 68010\n");	\
+}
