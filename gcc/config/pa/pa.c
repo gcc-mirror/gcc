@@ -7469,7 +7469,7 @@ pa_asm_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
 	    }
 	  else
 	    {
-	      fprintf (file, "\tldsid (%%sr0,%%r22),%%r1\n");
+	      fprintf (file, "\tldsid (%%sr0,%%r22),%%r21\n");
 	      fprintf (file, "\tmtsp %%r21,%%sr0\n");
 	      fprintf (file, "\tbe 0(%%sr0,%%r22)\n\tldo ");
 	      nbytes += 44;
