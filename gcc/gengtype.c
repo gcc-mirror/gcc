@@ -586,7 +586,6 @@ oprintf VPARAMS ((outf_p o, const char *format, ...))
   VA_FIXEDARG (ap, outf_p, o);
   VA_FIXEDARG (ap, const char *, format);
   slength = xvasprintf (&s, format, ap);
-  VA_CLOSE (ap);
 
   if (o->bufused + slength > o->buflength)
     {
@@ -602,6 +601,7 @@ oprintf VPARAMS ((outf_p o, const char *format, ...))
   memcpy (o->buf + o->bufused, s, slength);
   o->bufused += slength;
   free (s);
+  VA_CLOSE (ap);
 }
 
 /* Open the global header file and the language-specific header files.  */
