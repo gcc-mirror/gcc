@@ -4,6 +4,8 @@ if { [istarget rs6000-*-aix*]
      || [istarget arm*-*-*]       
      || [istarget strongarm*-*-*]
      || [istarget fr30-*-*]
+     || [istarget sh-*-hms]
+     || [istarget sh-*-coff]
 } {
     set options "-Wuninitialized -Werror"
 } else {
