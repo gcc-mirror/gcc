@@ -1,3 +1,8 @@
+2002-03-29  Richard Henderson  <rth@redhat.com>
+
+	PR target/5672
+	* expr.c (expand_expr): Pass along EXPAND_INITIALIZER one more place.
+
 2002-03-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/rs6000.c (rs6000_va_arg): Correctly set register count
