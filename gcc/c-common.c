@@ -733,7 +733,7 @@ decl_attributes (node, attributes, prefix_attributes)
 
 	case A_ALIAS:
 	  if ((TREE_CODE (decl) == FUNCTION_DECL && DECL_INITIAL (decl))
-	      || TREE_CODE (decl) != FUNCTION_DECL && ! DECL_EXTERNAL (decl))
+	      || (TREE_CODE (decl) != FUNCTION_DECL && ! DECL_EXTERNAL (decl)))
 	    error_with_decl (decl,
 			     "`%s' defined both normally and as an alias");
 	  else if (decl_function_context (decl) == 0)
