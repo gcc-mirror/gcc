@@ -5528,15 +5528,13 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode, unsignedp, type,
      that object.  Finally, load from the object into TARGET.  This is not
      very efficient in general, but should only be slightly more expensive
      than the otherwise-required unaligned accesses.  Perhaps this can be
-     cleaned up later.  */
+     cleaned up later.  It's tempting to make OBJECT readonly, but it's set
+     twice, once with emit_move_insn and once via store_field.  */
 
   if (mode == BLKmode
       && (GET_CODE (target) == REG || GET_CODE (target) == SUBREG))
     {
-      rtx object
-	= assign_temp
-	  (build_qualified_type (type, TYPE_QUALS (type) | TYPE_QUAL_CONST),
-	   0, 1, 1);
+      rtx object = assign_temp (type, 0, 1, 1);
       rtx blk_object = adjust_address (object, BLKmode, 0);
 
       if (bitsize != (HOST_WIDE_INT) GET_MODE_BITSIZE (GET_MODE (target)))
