@@ -338,8 +338,7 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/gcj/io/natSimpleSHSStream.cc gnu/gcj/io/shs.cc \
 	gnu/gcj/runtime/natFinalizerThread.cc \
 	gnu/gcj/runtime/natSharedLibLoader.cc \
-	gnu/gcj/runtime/natStringBuffer.cc \
-	gnu/gcj/runtime/natVMClassLoader.cc gnu/gcj/util/natDebug.cc \
+	gnu/gcj/runtime/natStringBuffer.cc gnu/gcj/util/natDebug.cc \
 	gnu/java/lang/natMainThread.cc \
 	gnu/java/net/natPlainDatagramSocketImpl.cc \
 	gnu/java/net/natPlainSocketImpl.cc \
@@ -548,6 +547,7 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/gcj/RawDataManaged.java gnu/gcj/io/DefaultMimeTypes.java \
 	gnu/gcj/io/MimeTypes.java gnu/gcj/io/SimpleSHSStream.java \
 	gnu/gcj/runtime/BootClassLoader.java \
+	gnu/gcj/runtime/ExtensionClassLoader.java \
 	gnu/gcj/runtime/FileDeleter.java \
 	gnu/gcj/runtime/FinalizerThread.java \
 	gnu/gcj/runtime/HelperClassLoader.java \
@@ -557,8 +557,7 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/gcj/runtime/SharedLibHelper.java \
 	gnu/gcj/runtime/SharedLibLoader.java \
 	gnu/gcj/runtime/StringBuffer.java \
-	gnu/gcj/runtime/SystemClassLoader.java \
-	gnu/gcj/runtime/VMClassLoader.java gnu/gcj/util/Debug.java \
+	gnu/gcj/runtime/SystemClassLoader.java gnu/gcj/util/Debug.java \
 	gnu/java/io/ASN1ParsingException.java \
 	gnu/java/io/Base64InputStream.java \
 	gnu/java/io/ClassLoaderObjectInputStream.java \
@@ -2319,8 +2318,7 @@ am__objects_6 = gnu/gcj/natCore.lo \
 	gnu/gcj/io/natSimpleSHSStream.lo gnu/gcj/io/shs.lo \
 	gnu/gcj/runtime/natFinalizerThread.lo \
 	gnu/gcj/runtime/natSharedLibLoader.lo \
-	gnu/gcj/runtime/natStringBuffer.lo \
-	gnu/gcj/runtime/natVMClassLoader.lo gnu/gcj/util/natDebug.lo \
+	gnu/gcj/runtime/natStringBuffer.lo gnu/gcj/util/natDebug.lo \
 	gnu/java/lang/natMainThread.lo \
 	gnu/java/net/natPlainDatagramSocketImpl.lo \
 	gnu/java/net/natPlainSocketImpl.lo \
@@ -3553,6 +3551,7 @@ am__objects_15 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/gcj/io/DefaultMimeTypes.lo gnu/gcj/io/MimeTypes.lo \
 	gnu/gcj/io/SimpleSHSStream.lo \
 	gnu/gcj/runtime/BootClassLoader.lo \
+	gnu/gcj/runtime/ExtensionClassLoader.lo \
 	gnu/gcj/runtime/FileDeleter.lo \
 	gnu/gcj/runtime/FinalizerThread.lo \
 	gnu/gcj/runtime/HelperClassLoader.lo \
@@ -3561,8 +3560,7 @@ am__objects_15 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/gcj/runtime/SharedLibHelper.lo \
 	gnu/gcj/runtime/SharedLibLoader.lo \
 	gnu/gcj/runtime/StringBuffer.lo \
-	gnu/gcj/runtime/SystemClassLoader.lo \
-	gnu/gcj/runtime/VMClassLoader.lo gnu/gcj/util/Debug.lo \
+	gnu/gcj/runtime/SystemClassLoader.lo gnu/gcj/util/Debug.lo \
 	gnu/java/io/ASN1ParsingException.lo \
 	gnu/java/io/Base64InputStream.lo \
 	gnu/java/io/ClassLoaderObjectInputStream.lo \
@@ -6753,6 +6751,7 @@ gnu/gcj/io/DefaultMimeTypes.java \
 gnu/gcj/io/MimeTypes.java \
 gnu/gcj/io/SimpleSHSStream.java	\
 gnu/gcj/runtime/BootClassLoader.java \
+gnu/gcj/runtime/ExtensionClassLoader.java \
 gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
 gnu/gcj/runtime/HelperClassLoader.java \
@@ -6763,7 +6762,6 @@ gnu/gcj/runtime/SharedLibHelper.java \
 gnu/gcj/runtime/SharedLibLoader.java \
 gnu/gcj/runtime/StringBuffer.java \
 gnu/gcj/runtime/SystemClassLoader.java \
-gnu/gcj/runtime/VMClassLoader.java \
 gnu/gcj/util/Debug.java \
 gnu/java/io/ASN1ParsingException.java \
 gnu/java/io/Base64InputStream.java \
@@ -7517,7 +7515,6 @@ gnu/gcj/io/shs.cc \
 gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
-gnu/gcj/runtime/natVMClassLoader.cc \
 gnu/gcj/util/natDebug.cc \
 gnu/java/lang/natMainThread.cc \
 gnu/java/net/natPlainDatagramSocketImpl.cc \
@@ -8226,8 +8223,6 @@ gnu/gcj/runtime/natSharedLibLoader.lo:  \
 	gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/natStringBuffer.lo: gnu/gcj/runtime/$(am__dirstamp) \
-	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/runtime/natVMClassLoader.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/util/$(am__dirstamp):
 	@$(mkdir_p) gnu/gcj/util
@@ -9045,6 +9040,9 @@ gnu/gcj/io/SimpleSHSStream.lo: gnu/gcj/io/$(am__dirstamp) \
 	gnu/gcj/io/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/BootClassLoader.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
+gnu/gcj/runtime/ExtensionClassLoader.lo:  \
+	gnu/gcj/runtime/$(am__dirstamp) \
+	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/FileDeleter.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/FinalizerThread.lo: gnu/gcj/runtime/$(am__dirstamp) \
@@ -9064,8 +9062,6 @@ gnu/gcj/runtime/SharedLibLoader.lo: gnu/gcj/runtime/$(am__dirstamp) \
 gnu/gcj/runtime/StringBuffer.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/SystemClassLoader.lo: gnu/gcj/runtime/$(am__dirstamp) \
-	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/runtime/VMClassLoader.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/util/Debug.lo: gnu/gcj/util/$(am__dirstamp) \
 	gnu/gcj/util/$(DEPDIR)/$(am__dirstamp)
@@ -14851,6 +14847,8 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/natCore.lo
 	-rm -f gnu/gcj/runtime/BootClassLoader.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/BootClassLoader.lo
+	-rm -f gnu/gcj/runtime/ExtensionClassLoader.$(OBJEXT)
+	-rm -f gnu/gcj/runtime/ExtensionClassLoader.lo
 	-rm -f gnu/gcj/runtime/FileDeleter.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/FileDeleter.lo
 	-rm -f gnu/gcj/runtime/FinalizerThread.$(OBJEXT)
@@ -14871,16 +14869,12 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/runtime/StringBuffer.lo
 	-rm -f gnu/gcj/runtime/SystemClassLoader.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/SystemClassLoader.lo
-	-rm -f gnu/gcj/runtime/VMClassLoader.$(OBJEXT)
-	-rm -f gnu/gcj/runtime/VMClassLoader.lo
 	-rm -f gnu/gcj/runtime/natFinalizerThread.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/natFinalizerThread.lo
 	-rm -f gnu/gcj/runtime/natSharedLibLoader.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/natSharedLibLoader.lo
 	-rm -f gnu/gcj/runtime/natStringBuffer.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/natStringBuffer.lo
-	-rm -f gnu/gcj/runtime/natVMClassLoader.$(OBJEXT)
-	-rm -f gnu/gcj/runtime/natVMClassLoader.lo
 	-rm -f gnu/gcj/tools/gcj_dbtool/Main.$(OBJEXT)
 	-rm -f gnu/gcj/tools/gcj_dbtool/natMain.$(OBJEXT)
 	-rm -f gnu/gcj/util/Debug.$(OBJEXT)
@@ -19828,6 +19822,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/io/$(DEPDIR)/natSimpleSHSStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/io/$(DEPDIR)/shs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/BootClassLoader.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/ExtensionClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/FileDeleter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/FinalizerThread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/HelperClassLoader.Plo@am__quote@
@@ -19838,11 +19833,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/SharedLibLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/StringBuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/SystemClassLoader.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/VMClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natFinalizerThread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natSharedLibLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natStringBuffer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natVMClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/tools/gcj_dbtool/$(DEPDIR)/Main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/tools/gcj_dbtool/$(DEPDIR)/natMain.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/util/$(DEPDIR)/Debug.Plo@am__quote@
@@ -24245,7 +24238,7 @@ java/lang/reflect/Proxy$$ProxyType.h: java/lang/reflect/Proxy.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	'java/lang/reflect/Proxy$$ProxyType'
 
-gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class
+gnu/gcj/runtime/ExtensionClassLoader.h: gnu/gcj/runtime/ExtensionClassLoader.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	    -friend 'class ::java::lang::ClassLoader;' \
 	    $(basename $<)

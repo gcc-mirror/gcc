@@ -1,5 +1,31 @@
 2005-04-01  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/natVMClassLoader.cc (getSystemClassLoaderInternal):
+	Updated for name change.
+	(nativeFindClass): New method.
+	(loadClass): Use nativeFindClass.
+	* java/lang/natClassLoader.cc (_Jv_FindClass): Use single-argument
+	form of loadClass.
+	* java/lang/VMClassLoader.java (tried_libraries, lib_control,
+	LIB_FULL, LIB_CACHE, LIB_NEVER): New fields from old
+	VMClassLoader.
+	(initialize): New method.
+	(nativeFindClass): Declare.
+	* gnu/gcj/runtime/natVMClassLoader.cc: Removed.
+	* gnu/gcj/runtime/VMClassLoader.java: Removed.
+	* gnu/gcj/runtime/ExtensionClassLoader.java: Renamed from
+	VMClassLoader.java.
+	(definePackageForNative): Removed.
+	(tried_libraries, LIB_CACHE, LIB_FULL, LIB_NEVER, lib_control):
+	Moved to VMClassLoader.java.
+	* prims.cc (_Jv_CreateJavaVM): Updated for renaming.
+	* Makefile.am (gnu/gcj/runtime/ExtensionClassLoader.h): Renamed.
+	(ordinary_java_source_files): Added ExtensionClassLoader.java,
+	removed VMClassLoader.java.
+	(nat_source_files): Removed natVMClassLoader.cc.
+
+2005-04-01  Tom Tromey  <tromey@redhat.com>
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (db_pathtail): Use $(gcc_version), not
 	@gcc_version@.
