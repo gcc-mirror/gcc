@@ -9,6 +9,9 @@ Wed Sep 22 06:25:15 1999  Jim Kingdon  <http://developer.redhat.com>
 
 Wed Sep 22 06:06:57 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* regclass.c (init_regs): Add "top_of_stack" as a garbage
+	collection root.
+
 	* flow.c (record_active_eh_regions): Terminate loop after finding
 	the last insn in the last basic block.
 
