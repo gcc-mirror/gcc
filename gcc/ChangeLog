@@ -1,3 +1,10 @@
+2003-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Remove bogus
+	clearing of SYMBOL_FLAG_LOCAL bit.
+	If vcall_offset fits into signed 16-bit immediate, use
+	one instruction for both addition and load.
+
 2003-07-07  Neil Booth  <neil@daikokuya.co.uk>
 
 	* opts.c (common_handle_option): Correct handling of the
