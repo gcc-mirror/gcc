@@ -58,7 +58,7 @@ lang_init_options ()
 {
 #if USE_CPPLIB
   cpp_init ();
-  cpp_reader_init (&parse_in);
+  cpp_reader_init (&parse_in, CLK_GNUC89);
 #endif
   /* Mark as "unspecified".  */
   flag_bounds_check = -1;

@@ -105,6 +105,7 @@ static void merge_include_chains	PARAMS ((cpp_reader *));
 static void do_includes			PARAMS ((cpp_reader *,
 						 struct pending_option *,
 						 int));
+static void set_lang			PARAMS ((cpp_reader *, enum c_lang));
 static void initialize_dependency_output PARAMS ((cpp_reader *));
 static void initialize_standard_includes PARAMS ((cpp_reader *));
 static void new_pending_directive	PARAMS ((struct cpp_pending *,
@@ -421,10 +422,111 @@ cpp_init ()
   cpp_init_completed = 1;
 }
 
+/* Sets internal flags correctly for a given language, and defines
+   macros if necessary.  */
+static void
+set_lang (pfile, lang)
+     cpp_reader *pfile;
+     enum c_lang lang;
+{
+  struct cpp_pending *pend = CPP_OPTION (pfile, pending);
+
+  /* Default to zero.  */
+  CPP_OPTION (pfile, lang_asm) = 0;
+  CPP_OPTION (pfile, objc) = 0;
+  CPP_OPTION (pfile, cplusplus) = 0;
+
+  switch (lang)
+    {
+      /* GNU C.  */
+    case CLK_GNUC99:
+      CPP_OPTION (pfile, trigraphs) = 0;
+      CPP_OPTION (pfile, dollars_in_ident) = 1;
+      CPP_OPTION (pfile, cplusplus_comments) = 1;
+      CPP_OPTION (pfile, digraphs) = 1;
+      CPP_OPTION (pfile, c89) = 0;
+      CPP_OPTION (pfile, c99) = 1;
+      new_pending_directive (pend, "__STDC_VERSION__=199901L", cpp_define);
+      break;
+    case CLK_GNUC89:
+      CPP_OPTION (pfile, trigraphs) = 0;
+      CPP_OPTION (pfile, dollars_in_ident) = 1;
+      CPP_OPTION (pfile, cplusplus_comments) = 1;
+      CPP_OPTION (pfile, digraphs) = 1;
+      CPP_OPTION (pfile, c89) = 1;
+      CPP_OPTION (pfile, c99) = 0;
+      break;
+
+      /* ISO C.  */
+    case CLK_STDC94:
+      new_pending_directive (pend, "__STDC_VERSION__=199409L", cpp_define);
+    case CLK_STDC89:
+      CPP_OPTION (pfile, trigraphs) = 1;
+      CPP_OPTION (pfile, dollars_in_ident) = 0;
+      CPP_OPTION (pfile, cplusplus_comments) = 0;
+      CPP_OPTION (pfile, digraphs) = lang == CLK_STDC94;
+      CPP_OPTION (pfile, c89) = 1;
+      CPP_OPTION (pfile, c99) = 0;
+      new_pending_directive (pend, "__STRICT_ANSI__", cpp_define);
+      break;
+    case CLK_STDC99:
+      CPP_OPTION (pfile, trigraphs) = 1;
+      CPP_OPTION (pfile, dollars_in_ident) = 0;
+      CPP_OPTION (pfile, cplusplus_comments) = 1;
+      CPP_OPTION (pfile, digraphs) = 1;
+      CPP_OPTION (pfile, c89) = 0;
+      CPP_OPTION (pfile, c99) = 1;
+      new_pending_directive (pend, "__STRICT_ANSI__", cpp_define);
+      new_pending_directive (pend, "__STDC_VERSION__=199901L", cpp_define);
+      break;
+
+      /* Objective C.  */
+    case CLK_OBJCXX:
+      new_pending_directive (pend, "__cplusplus", cpp_define);
+      CPP_OPTION (pfile, cplusplus) = 1;
+    case CLK_OBJC:
+      CPP_OPTION (pfile, trigraphs) = 0;
+      CPP_OPTION (pfile, dollars_in_ident) = 1;
+      CPP_OPTION (pfile, cplusplus_comments) = 1;
+      CPP_OPTION (pfile, digraphs) = 1;
+      CPP_OPTION (pfile, c89) = 0;
+      CPP_OPTION (pfile, c99) = 0;
+      CPP_OPTION (pfile, objc) = 1;
+      new_pending_directive (pend, "__OBJC__", cpp_define);
+      break;
+
+      /* C++.  */
+    case CLK_GNUCXX:
+    case CLK_CXX98:
+      CPP_OPTION (pfile, cplusplus) = 1;
+      CPP_OPTION (pfile, trigraphs) = lang == CLK_CXX98;
+      CPP_OPTION (pfile, dollars_in_ident) = lang == CLK_GNUCXX;
+      CPP_OPTION (pfile, cplusplus_comments) = 1;
+      CPP_OPTION (pfile, digraphs) = 1;
+      CPP_OPTION (pfile, c89) = 0;
+      CPP_OPTION (pfile, c99) = 0;
+      new_pending_directive (pend, "__cplusplus", cpp_define);
+      break;
+
+      /* Assembler.  */
+    case CLK_ASM:
+      CPP_OPTION (pfile, trigraphs) = 0;
+      CPP_OPTION (pfile, dollars_in_ident) = 0;	/* Maybe not?  */
+      CPP_OPTION (pfile, cplusplus_comments) = 1;
+      CPP_OPTION (pfile, digraphs) = 0; 
+     CPP_OPTION (pfile, c89) = 0;
+      CPP_OPTION (pfile, c99) = 0;
+      CPP_OPTION (pfile, lang_asm) = 1;
+      new_pending_directive (pend, "__ASSEMBLER__", cpp_define);
+      break;
+    }
+}
+
 /* Initialize a cpp_reader structure. */
 void
-cpp_reader_init (pfile)
+cpp_reader_init (pfile, lang)
      cpp_reader *pfile;
+     enum c_lang lang;
 {
   struct spec_nodes *s;
 
@@ -439,11 +541,9 @@ cpp_reader_init (pfile)
       cpp_init ();
     }
 
-  CPP_OPTION (pfile, dollars_in_ident) = 1;
-  CPP_OPTION (pfile, cplusplus_comments) = 1;
+  set_lang (pfile, lang);
   CPP_OPTION (pfile, warn_import) = 1;
   CPP_OPTION (pfile, warn_paste) = 1;
-  CPP_OPTION (pfile, digraphs) = 1;
   CPP_OPTION (pfile, discard_comments) = 1;
   CPP_OPTION (pfile, show_column) = 1;
   CPP_OPTION (pfile, tabstop) = 8;
@@ -1077,6 +1177,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("pedantic",                 0,      OPT_pedantic)                   \
   DEF_OPT("pedantic-errors",          0,      OPT_pedantic_errors)            \
   DEF_OPT("remap",                    0,      OPT_remap)                      \
+  DEF_OPT("std=c++98",                0,      OPT_std_cplusplus98)            \
   DEF_OPT("std=c89",                  0,      OPT_std_c89)                    \
   DEF_OPT("std=c99",                  0,      OPT_std_c99)                    \
   DEF_OPT("std=c9x",                  0,      OPT_std_c9x)                    \
@@ -1324,37 +1425,43 @@ cpp_handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, include_prefix_len) = strlen (arg);
 	  break;
 	case OPT_lang_c:
-	  CPP_OPTION (pfile, cplusplus) = 0;
-	  CPP_OPTION (pfile, cplusplus_comments) = 1;
-	  CPP_OPTION (pfile, c89) = 0;
-	  CPP_OPTION (pfile, c99) = 1;
-	  CPP_OPTION (pfile, digraphs) = 1;
-	  CPP_OPTION (pfile, objc) = 0;
+	  set_lang (pfile, CLK_GNUC89);
 	  break;
 	case OPT_lang_cplusplus:
-	  CPP_OPTION (pfile, cplusplus) = 1;
-	  CPP_OPTION (pfile, cplusplus_comments) = 1;
-	  CPP_OPTION (pfile, c89) = 0;
-	  CPP_OPTION (pfile, c99) = 0;
-	  CPP_OPTION (pfile, objc) = 0;
-	  CPP_OPTION (pfile, digraphs) = 1;
-	  new_pending_directive (pend, "__cplusplus", cpp_define);
+	  set_lang (pfile, CLK_GNUCXX);
+	  break;
+	case OPT_lang_objc:
+	  set_lang (pfile, CLK_OBJC);
 	  break;
 	case OPT_lang_objcplusplus:
-	  CPP_OPTION (pfile, cplusplus) = 1;
-	  new_pending_directive (pend, "__cplusplus", cpp_define);
-	  /* fall through */
-	case OPT_lang_objc:
-	  CPP_OPTION (pfile, cplusplus_comments) = 1;
-	  CPP_OPTION (pfile, c89) = 0;
-	  CPP_OPTION (pfile, c99) = 0;
-	  CPP_OPTION (pfile, objc) = 1;
-	  new_pending_directive (pend, "__OBJC__", cpp_define);
+	  set_lang (pfile, CLK_OBJCXX);
 	  break;
 	case OPT_lang_asm:
- 	  CPP_OPTION (pfile, lang_asm) = 1;
-	  CPP_OPTION (pfile, dollars_in_ident) = 0;
-	  new_pending_directive (pend, "__ASSEMBLER__", cpp_define);
+	  set_lang (pfile, CLK_ASM);
+	  break;
+	case OPT_std_cplusplus98:
+	  set_lang (pfile, CLK_CXX98);
+	  break;
+	case OPT_std_gnu89:
+	  set_lang (pfile, CLK_GNUC89);
+	  break;
+	case OPT_std_gnu9x:
+	case OPT_std_gnu99:
+	  set_lang (pfile, CLK_GNUC99);
+	  break;
+	case OPT_std_iso9899_199409:
+	  set_lang (pfile, CLK_STDC94);
+	  break;
+	case OPT_std_iso9899_1990:
+	case OPT_std_c89:
+	case OPT_lang_c89:
+	  set_lang (pfile, CLK_STDC89);
+	  break;
+	case OPT_std_iso9899_199x:
+	case OPT_std_iso9899_1999:
+	case OPT_std_c9x:
+	case OPT_std_c99:
+	  set_lang (pfile, CLK_STDC99);
 	  break;
 	case OPT_nostdinc:
 	  /* -nostdinc causes no default include directories.
@@ -1364,53 +1471,6 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_nostdincplusplus:
 	  /* -nostdinc++ causes no default C++-specific include directories. */
 	  CPP_OPTION (pfile, no_standard_cplusplus_includes) = 1;
-	  break;
-	case OPT_std_gnu89:
-	  CPP_OPTION (pfile, cplusplus) = 0;
-	  CPP_OPTION (pfile, cplusplus_comments) = 1;
-	  CPP_OPTION (pfile, c89) = 1;
-	  CPP_OPTION (pfile, c99) = 0;
-	  CPP_OPTION (pfile, objc) = 0;
-	  CPP_OPTION (pfile, digraphs) = 1;
-	  break;
-	case OPT_std_gnu9x:
-	case OPT_std_gnu99:
-	  CPP_OPTION (pfile, cplusplus) = 0;
-	  CPP_OPTION (pfile, cplusplus_comments) = 1;
-	  CPP_OPTION (pfile, c89) = 0;
-	  CPP_OPTION (pfile, c99) = 1;
-	  CPP_OPTION (pfile, digraphs) = 1;
-	  CPP_OPTION (pfile, objc) = 0;
-	  new_pending_directive (pend, "__STDC_VERSION__=199901L", cpp_define);
-	  break;
-	case OPT_std_iso9899_199409:
-	  new_pending_directive (pend, "__STDC_VERSION__=199409L", cpp_define);
-	  /* Fall through */
-	case OPT_std_iso9899_1990:
-	case OPT_std_c89:
-	case OPT_lang_c89:
-	  CPP_OPTION (pfile, cplusplus) = 0;
-	  CPP_OPTION (pfile, cplusplus_comments) = 0;
-	  CPP_OPTION (pfile, c89) = 1;
-	  CPP_OPTION (pfile, c99) = 0;
-	  CPP_OPTION (pfile, objc) = 0;
-	  CPP_OPTION (pfile, digraphs) = opt_code == OPT_std_iso9899_199409;
-	  CPP_OPTION (pfile, trigraphs) = 1;
-	  new_pending_directive (pend, "__STRICT_ANSI__", cpp_define);
-	  break;
-	case OPT_std_iso9899_199x:
-	case OPT_std_iso9899_1999:
-	case OPT_std_c9x:
-	case OPT_std_c99:
-	  CPP_OPTION (pfile, cplusplus) = 0;
-	  CPP_OPTION (pfile, cplusplus_comments) = 1;
-	  CPP_OPTION (pfile, c89) = 0;
-	  CPP_OPTION (pfile, c99) = 1;
-	  CPP_OPTION (pfile, objc) = 0;
-	  CPP_OPTION (pfile, digraphs) = 1;
-	  CPP_OPTION (pfile, trigraphs) = 1;
-	  new_pending_directive (pend, "__STRICT_ANSI__", cpp_define);
-	  new_pending_directive (pend, "__STDC_VERSION__=199901L", cpp_define);
 	  break;
 	case OPT_o:
 	  if (CPP_OPTION (pfile, out_fname) != NULL)

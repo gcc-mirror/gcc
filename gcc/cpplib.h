@@ -152,6 +152,10 @@ enum cpp_ttype
 #undef OP
 #undef TK
 
+/* C language kind, used when calling cpp_reader_init.  */
+enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_STDC89, CLK_STDC94, CLK_STDC99,
+	     CLK_GNUCXX, CLK_CXX98, CLK_OBJC, CLK_OBJCXX, CLK_ASM};
+
 /* Multiple-include optimisation.  */
 enum mi_state {MI_FAILED = 0, MI_OUTSIDE};
 enum mi_ind {MI_IND_NONE = 0, MI_IND_NOT};
@@ -168,7 +172,7 @@ struct cpp_string
 #define DIGRAPH		(1 << 1) /* If it was a digraph.  */
 #define STRINGIFY_ARG	(1 << 2) /* If macro argument to be stringified.  */
 #define PASTE_LEFT	(1 << 3) /* If on LHS of a ## operator.  */
-#define NAMED_OP	(1 << 4) /* C++ named operators, also "defined".  */
+#define NAMED_OP	(1 << 4) /* C++ named operators.  */
 #define NO_EXPAND	(1 << 5) /* Do not macro-expand this token.  */
 
 /* A preprocessing token.  This has been carefully packed and should
@@ -518,7 +522,7 @@ struct spec_nodes
   cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
 };
 
-/* a cpp_reader encapsulates the "state" of a pre-processor run.
+/* A cpp_reader encapsulates the "state" of a pre-processor run.
    Applying cpp_get_token repeatedly yields a stream of pre-processor
    tokens.  Usually, there is only one cpp_reader object active.  */
 
@@ -711,33 +715,34 @@ union tree_node;
 
 struct cpp_hashnode
 {
-  const unsigned char *name;		/* null-terminated name */
-  unsigned int hash;			/* cached hash value */
-  unsigned short length;		/* length of name excluding null */
-  unsigned short arg_index;		/* macro argument index */
-  unsigned char directive_index;	/* index into directive table.  */
-  ENUM_BITFIELD(node_type) type : 8;	/* node type.  */
-  unsigned char flags;			/* node flags.  */
+  const unsigned char *name;		/* Null-terminated name.  */
+  unsigned int hash;			/* Cached hash value.  */
+  unsigned short length;		/* Length of name excluding null.  */
+  unsigned short arg_index;		/* Macro argument index.  */
+  unsigned char directive_index;	/* Index into directive table.  */
+  ENUM_BITFIELD(node_type) type : 8;	/* Node type.  */
+  unsigned char flags;			/* Node flags.  */
 
   union
   {
-    cpp_macro *macro;			/* a macro.  */
-    struct answer *answers;		/* answers to an assertion.  */
-    enum cpp_ttype operator;		/* code for a named operator.  */
-    enum builtin_type builtin;		/* code for a builtin macro.  */
+    cpp_macro *macro;			/* If a macro.  */
+    struct answer *answers;		/* Answers to an assertion.  */
+    enum cpp_ttype operator;		/* Code for a named operator.  */
+    enum builtin_type builtin;		/* Code for a builtin macro.  */
   } value;
 
-  union tree_node *fe_value;		/* front end value */
+  union tree_node *fe_value;		/* Front end value.  */
 };
 
 extern unsigned int cpp_token_len PARAMS ((const cpp_token *));
-extern unsigned char *cpp_token_as_text PARAMS ((cpp_reader *, const cpp_token *));
+extern unsigned char *cpp_token_as_text PARAMS ((cpp_reader *,
+						 const cpp_token *));
 extern unsigned char *cpp_spell_token PARAMS ((cpp_reader *, const cpp_token *,
 					       unsigned char *));
 extern void cpp_init PARAMS ((void));
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
 extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
-extern void cpp_reader_init PARAMS ((cpp_reader *));
+extern void cpp_reader_init PARAMS ((cpp_reader *, enum c_lang));
 
 extern void cpp_register_pragma PARAMS ((cpp_reader *,
 					 const char *, const char *,
