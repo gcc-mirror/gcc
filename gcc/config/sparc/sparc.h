@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
-   Copyright (C) 1987, 88, 89, 92, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 94, 95, 96, 1997 Free Software Foundation,
+   Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -222,7 +223,7 @@ void sparc_override_options ();
 
 #define OVERRIDE_OPTIONS \
   do {									\
-    if (profile_flag || profile_block_flag)				\
+    if (profile_flag || profile_block_flag || profile_arc_flag)		\
       {									\
 	if (flag_pic)							\
 	  {								\
