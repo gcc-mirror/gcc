@@ -1,3 +1,8 @@
+1998-04-07  Ken Raeburn  <raeburn@cygnus.com>
+
+	* config/mips/mips.c (siginfo): Deleted.
+	(override_options): Don't install SIGINFO signal handler.
+
 Tue Apr  7 11:58:04 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* loop.c (check_dbra_loop): When normalize comparison_val, add check

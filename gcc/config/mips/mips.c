@@ -3969,20 +3969,6 @@ trace (s, s1, s2)
 }
 
 
-#ifdef SIGINFO
-
-static void
-siginfo (signo)
-     int signo;
-{
-  fprintf (stderr, "compiling '%s' in '%s'\n",
-	   (current_function_name != (char *)0) ? current_function_name : "<toplevel>",
-	   (current_function_file != (char *)0) ? current_function_file : "<no file>");
-  fflush (stderr);
-}
-#endif /* SIGINFO */
-
-
 /* Set up the threshold for data to go into the small data area, instead
    of the normal data area, and detect any conflicts in the switches.  */
 
@@ -4366,19 +4352,6 @@ override_options ()
     mips16 = 1;
   else
     mips16 = 0;
-
-  /* If this is OSF/1, set up a SIGINFO handler so we can see what function
-     is currently being compiled.  */
-#ifdef SIGINFO
-  if (getenv ("GCC_SIGINFO") != (char *)0)
-    {
-      struct sigaction action;
-      action.sa_handler = siginfo;
-      action.sa_mask = 0;
-      action.sa_flags = SA_RESTART;
-      sigaction (SIGINFO, &action, (struct sigaction *)0);
-    }
-#endif
 
 #if defined(_IOLBF)
 #if defined(ultrix) || defined(__ultrix) || defined(__OSF1__) || defined(__osf__) || defined(osf)
