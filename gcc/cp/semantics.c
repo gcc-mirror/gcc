@@ -1739,21 +1739,6 @@ begin_function_definition (decl_specs, attributes, declarator)
   return 1;
 }
 
-/* Finish an init-declarator.  Returns a DECL.  */
-
-tree
-finish_declarator (declarator, declspecs, attributes,
-		   prefix_attributes, initialized)
-     tree declarator;
-     tree declspecs;
-     tree attributes;
-     tree prefix_attributes;
-     int initialized;
-{
-  return start_decl (declarator, declspecs, initialized, attributes,
-		     prefix_attributes); 
-}
-
 /* Finish a translation unit.  */
 
 void 

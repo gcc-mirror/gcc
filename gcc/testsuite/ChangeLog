@@ -1,3 +1,8 @@
+2003-06-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10432
+	* g++.dg/parse/error1.C: New test.
+
 2003-06-11  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/compat/struct-by-value-11_main.c: New file.

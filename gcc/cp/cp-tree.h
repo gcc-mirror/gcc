@@ -4118,7 +4118,6 @@ extern tree finish_unary_op_expr                (enum tree_code, tree);
 extern tree finish_compound_literal             (tree, tree);
 extern tree finish_fname                        (tree);
 extern int begin_function_definition            (tree, tree, tree);
-extern tree finish_declarator                   (tree, tree, tree, tree, int);
 extern void finish_translation_unit             (void);
 extern tree finish_template_type_parm           (tree, tree);
 extern tree finish_template_template_parm       (tree, tree);

@@ -1,3 +1,11 @@
+2003-06-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10432
+	* cp-tree.h (finish_declarator): Remove.
+	* decl.c (cp_finish_decl): Make sure to pop_nested_class even for
+	erroneous declarations.
+	* semantics.c (finish_declarator): Remove.
+
 2003-06-11  Roger Sayle  <roger@eyesopen.com>
 
 	* decl2.c (generate_ctor_or_dtor_function): Avoid expanding a 
