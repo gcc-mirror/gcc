@@ -1,3 +1,15 @@
+2000-07-10  Martin v. Löwis (loewis@informatik.hu-berlin.de)
+
+	* stl_function.h (bind1st, bind2nd): Rename __opr to __oper, 
+	as __opr is used internally by egcs.
+	* stl_numeric.h (__power, power): Likewise.
+
+2000-07-10  Alexandre Oliva  <oliva@dcc.unicamp.br>
+	
+	* stl_algo.h (transform): Rename __opr to __oper, as __opr is used 
+	internally by egcs.
+	Reported by Harri Porten <porten@tu-harburg.de>
+	
 2000-01-19  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* stl_iterator.h: Make it possible to use standard class
