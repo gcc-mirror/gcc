@@ -104,11 +104,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   }
  */
 
-#ifndef __GNUC__
-#define USE_C_ALLOCA
-#endif
-
-
 #undef  ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
   fprintf (FILE, "%s", NAME)
