@@ -1,3 +1,9 @@
+1998-08-17  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (enter_scope_of): New function.
+	* parse.y (complex_direct_notype_declarator): Use it.
+	* semantics.c (enter_scope_of): New function.
+
 1998-08-17  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokparms): No, here.
