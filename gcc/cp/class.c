@@ -3351,7 +3351,7 @@ check_field_decl (field, t, cant_have_const_ctor,
 			    (DECL_PACKED (field) 
 			     ? BITS_PER_UNIT
 			     : TYPE_ALIGN (TREE_TYPE (field))));
-};
+}
 
 /* Check the data members (both static and non-static), class-scoped
    typedefs, etc., appearing in the declaration of T.  Issue
