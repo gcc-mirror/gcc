@@ -1,3 +1,7 @@
+Sat Oct  3 06:58:53 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (ASM_OUTPUT_ADDR_DIFF_ELT): Remove extraneous parameter.
+
 Sat Oct  3 06:53:43 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rs6000.h (CPP_PREDEFINES): Add -D_LONG_LONG.
