@@ -2109,14 +2109,15 @@ process_command (argc, argv)
 
   for (i = 1; i < argc; i++)
     {
+      /* Just skip the switches that were handled by the preceding loop.  */
       if (!strcmp (argv[i], "-Xlinker"))
 	i++;
       else if (! strncmp (argv[i], "-Wl,", 4))
-	i++;
+	;
       else if (! strncmp (argv[i], "-Wa,", 4))
-	i++;
+	;
       else if (! strcmp (argv[i], "-print-libgcc-file-name"))
-	i++;
+	;
       else if (argv[i][0] == '-' && argv[i][1] != 0 && argv[i][1] != 'l')
 	{
 	  register char *p = &argv[i][1];
