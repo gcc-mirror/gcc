@@ -2050,7 +2050,17 @@ duplicate_computed_gotos (void)
 	  FOR_BB_INSNS (bb, insn)
 	    {
 	      if (INSN_P (insn))
-	        size += get_attr_length (insn);
+		{
+		  /* If the insn isn't copyable, don't duplicate
+		     the block.  */
+		  if (targetm.cannot_copy_insn_p
+		      && targetm.cannot_copy_insn_p (insn))
+		    {
+		      size = max_size + 1;
+		      break;
+		    }
+		  size += get_attr_length (insn);
+		}
 	      if (size > max_size)
 		break;
 	    }
