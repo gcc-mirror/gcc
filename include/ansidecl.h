@@ -152,8 +152,8 @@ So instead we use the macro below and test it against specific values.  */
 /* "struct Qdmy" swallows the semicolon after VA_OPEN/VA_FIXEDARG's
    use without inhibiting further decls and without declaring an
    actual variable.  */
-#define VA_OPEN(AP, VAR)	va_list AP; va_start(AP, VAR); { struct Qdmy
-#define VA_CLOSE(AP)		} va_end(AP)
+#define VA_OPEN(AP, VAR)	{ va_list AP; va_start(AP, VAR); { struct Qdmy
+#define VA_CLOSE(AP)		} va_end(AP); }
 #define VA_FIXEDARG(AP, T, N)	struct Qdmy
  
 #undef const
@@ -199,8 +199,8 @@ So instead we use the macro below and test it against specific values.  */
 #define VPARAMS(args)		(va_alist) va_dcl
 #define VA_START(va_list, var)	va_start(va_list)
 
-#define VA_OPEN(AP, VAR)		va_list AP; va_start(AP); { struct Qdmy
-#define VA_CLOSE(AP)			} va_end(AP)
+#define VA_OPEN(AP, VAR)		{ va_list AP; va_start(AP); { struct Qdmy
+#define VA_CLOSE(AP)			} va_end(AP); }
 #define VA_FIXEDARG(AP, TYPE, NAME)	TYPE NAME = va_arg(AP, TYPE)
 
 /* some systems define these in header files for non-ansi mode */
