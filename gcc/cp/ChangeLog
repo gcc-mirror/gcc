@@ -1,5 +1,19 @@
 1999-12-20  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (CLASSTYPE_VFIELD_PARENT): Update comments.
+	(CLASSTYPE_HAS_PRIMARY_BASE_P): New macro.
+	(CLASSTYPE_PRIMARY_BINFO): Likewise.
+	* class.c (check_methods): Don't set TYPE_HAS_COMPLEX_INIT_REF,
+	TYPE_NEEDS_CONSTRUCTING, and CLASSTYPE_NON_AGGREGATE here.
+	(check_bases_and_members): Set them here instead.
+	(create_vtable_ptr): New function, split out from ...
+	(finish_struct_1): ... here.  Use it.  Tidy.  Use
+	CLASSTYPE_HAS_PRIMARY_BASE_P and CLASSTYPE_PRIMARY_BINFO.
+	* search.c (dfs_init_vbase_pointers): Handle seeing TYPE_VFIELD as
+	the first field in the class.
+	* tree.c (layout_basetypes): Use CLASSTYPE_N_BASECLASSES.  Handle
+	seeing TYPE_VFIELD as the first field in the class.
+	
 	* cp-tree.h (TYPE_VIRTUAL_P): Rename to ...
 	(TYPE_POLYMORPHIC_P): ... this.
 	(TYPE_USES_COMPLEX_INHERITANCE): Rename to ...

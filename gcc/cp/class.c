@@ -133,6 +133,7 @@ static void check_methods PROTO((tree));
 static void remove_zero_width_bit_fields PROTO((tree));
 static void check_bases PROTO((tree, int *, int *, int *));
 static void check_bases_and_members PROTO((tree, int *));
+static void create_vtable_ptr PROTO((tree, int *, int *, int *, tree *, tree *));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -3897,18 +3898,13 @@ build_base_fields (rec, empty_p)
 
 /* Go through the TYPE_METHODS of T issuing any appropriate
    diagnostics, figuring out which methods override which other
-   methods, and so forth.  Returns non-zero if this class has any
-   virtual methods.  */
+   methods, and so forth.  */
 
 static void
 check_methods (t)
      tree t;
 {
   tree x;
-  int has_virtual;
-
-  /* Assume there are no virtual methods.  */
-  has_virtual = 0;
 
   for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
     {
@@ -3933,21 +3929,12 @@ check_methods (t)
 	 Save this in auxiliary field for later overloading.  */
       if (DECL_VINDEX (x))
 	{
-	  has_virtual = 1;
+	  TYPE_POLYMORPHIC_P (t) = 1;
 	  if (DECL_ABSTRACT_VIRTUAL_P (x))
 	    CLASSTYPE_ABSTRACT_VIRTUALS (t)
 	      = tree_cons (NULL_TREE, x, CLASSTYPE_ABSTRACT_VIRTUALS (t));
 	}
     }
-
-  /* A class with virtual functions needs constructing because, if
-     nothing else, the vtable pointer must be initialized.  */
-  TYPE_HAS_COMPLEX_INIT_REF (t) |= has_virtual;
-  TYPE_NEEDS_CONSTRUCTING (t) |= has_virtual;
-  /* [dcl.init.aggr]
-
-     An aggregate is a ... class ... with ... no virtual functions.  */
-  CLASSTYPE_NON_AGGREGATE (t) |= has_virtual;
 }
 
 /* Remove all zero-width bit-fields from T.  */
@@ -4014,10 +4001,15 @@ check_bases_and_members (t, empty_p)
   /* Do some bookkeeping that will guide the generation of implicitly
      declared member functions.  */
   TYPE_HAS_COMPLEX_INIT_REF (t)
-    |= (TYPE_HAS_INIT_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t));
+    |= (TYPE_HAS_INIT_REF (t) 
+	|| TYPE_USES_VIRTUAL_BASECLASSES (t)
+	|| TYPE_POLYMORPHIC_P (t));
   TYPE_NEEDS_CONSTRUCTING (t)
-    |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_USES_VIRTUAL_BASECLASSES (t));
-  CLASSTYPE_NON_AGGREGATE (t) |= TYPE_HAS_CONSTRUCTOR (t);
+    |= (TYPE_HAS_CONSTRUCTOR (t) 
+	|| TYPE_USES_VIRTUAL_BASECLASSES (t)
+	|| TYPE_POLYMORPHIC_P (t));
+  CLASSTYPE_NON_AGGREGATE (t) |= (TYPE_HAS_CONSTRUCTOR (t)
+				  || TYPE_POLYMORPHIC_P (t));
   CLASSTYPE_NON_POD_P (t)
     |= (CLASSTYPE_NON_AGGREGATE (t) || TYPE_HAS_DESTRUCTOR (t) 
 	|| TYPE_HAS_ASSIGN_REF (t));
@@ -4041,6 +4033,84 @@ check_bases_and_members (t, empty_p)
     {
       handle_using_decl (TREE_VALUE (access_decls), t);
       access_decls = TREE_CHAIN (access_decls);
+    }
+}
+
+/* If T needs a pointer to its virtual function table, set TYPE_VFIELD
+   accordingly, and, if necessary, add the TYPE_VFIELD to the
+   TYPE_FIELDS list.  */
+
+static void
+create_vtable_ptr (t, empty_p, has_virtual_p, max_has_virtual_p,
+		   pending_virtuals_p, pending_hard_virtuals_p)
+     tree t;
+     int *empty_p;
+     int *has_virtual_p;
+     int *max_has_virtual_p;
+     tree *pending_virtuals_p;
+     tree *pending_hard_virtuals_p;
+{
+  tree fn;
+
+  /* If possible, we reuse the virtual function table pointer from one
+     of our base classes.  */
+  if (CLASSTYPE_N_BASECLASSES (t))
+    {
+      struct base_info base_info;
+
+      /* Remember where we got our vfield from.  */
+      CLASSTYPE_VFIELD_PARENT (t) = finish_base_struct (t, &base_info);
+      *has_virtual_p = base_info.has_virtual;
+      *max_has_virtual_p = base_info.max_has_virtual;
+      TYPE_VFIELD (t) = base_info.vfield;
+      CLASSTYPE_VFIELDS (t) = base_info.vfields;
+      CLASSTYPE_RTTI (t) = base_info.rtti;
+    }
+
+  /* Loop over the virtual functions, adding them to our various
+     vtables.  */
+  for (fn = TYPE_METHODS (t); fn; fn = TREE_CHAIN (fn))
+    if (DECL_VINDEX (fn))
+      add_virtual_function (pending_virtuals_p, pending_hard_virtuals_p,
+			    has_virtual_p, fn, t);
+
+  /* If we couldn't find an appropriate base class, create a new field
+     here.  */
+  if (*has_virtual_p && !TYPE_VFIELD (t))
+    {
+      /* We build this decl with vtbl_ptr_type_node, which is a
+	 `vtable_entry_type*'.  It might seem more precise to use
+	 `vtable_entry_type (*)[N]' where N is the number of firtual
+	 functions.  However, that would require the vtable pointer in
+	 base classes to have a different type than the vtable pointer
+	 in derived classes.  We could make that happen, but that
+	 still wouldn't solve all the problems.  In particular, the
+	 type-based alias analysis code would decide that assignments
+	 to the base class vtable pointer can't alias assignments to
+	 the derived class vtable pointer, since they have different
+	 types.  Thus, in an derived class destructor, where the base
+	 class constructor was inlined, we could generate bad code for
+	 setting up the vtable pointer.  
+
+         Therefore, we use one type for all vtable pointers.  We still
+	 use a type-correct type; it's just doesn't indicate the array
+	 bounds.  That's better than using `void*' or some such; it's
+	 cleaner, and it let's the alias analysis code know that these
+	 stores cannot alias stores to void*!  */
+      TYPE_VFIELD (t) 
+	= build_vtbl_or_vbase_field (get_vfield_name (t),
+				     get_identifier (VFIELD_BASE),
+				     vtbl_ptr_type_node,
+				     t,
+				     empty_p);
+
+      /* Add the new field to the list of fields in this class.  */
+      TYPE_FIELDS (t) = chainon (TYPE_FIELDS (t), TYPE_VFIELD (t));
+
+      /* We can't yet add this new field to the list of all virtual
+	 function table pointers in this class.  The
+	 modify_all_vtables function depends on this not being done.
+	 So, it is done later, in finish_struct_1.  */
     }
 }
 
@@ -4080,14 +4150,8 @@ finish_struct_1 (t)
   int max_has_virtual;
   tree pending_virtuals = NULL_TREE;
   tree pending_hard_virtuals = NULL_TREE;
-  tree vfield;
-  tree vfields;
   int n_fields = 0;
-
-  /* The index of the first base class which has virtual
-     functions.  Only applied to non-virtual baseclasses.  */
-  int first_vfn_base_index;
-
+  tree vfield;
   int n_baseclasses;
   int empty = 1;
   tree inline_friends;
@@ -4110,11 +4174,9 @@ finish_struct_1 (t)
   TYPE_SIZE (t) = NULL_TREE;
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
 
-  first_vfn_base_index = -1;
+  CLASSTYPE_VFIELD_PARENT (t) = -1;
   has_virtual = 0;
   max_has_virtual = 0;
-  vfield = NULL_TREE;
-  vfields = NULL_TREE;
   CLASSTYPE_RTTI (t) = NULL_TREE;
   n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
 
@@ -4129,59 +4191,9 @@ finish_struct_1 (t)
   TYPE_FIELDS (t) = chainon (build_base_fields (t, &empty), 
 			     TYPE_FIELDS (t));
 
-  if (n_baseclasses > 0)
-    {
-      struct base_info base_info;
-
-      first_vfn_base_index = finish_base_struct (t, &base_info);
-      /* Remember where we got our vfield from.  */
-      CLASSTYPE_VFIELD_PARENT (t) = first_vfn_base_index;
-      has_virtual = base_info.has_virtual;
-      max_has_virtual = base_info.max_has_virtual;
-      vfield = base_info.vfield;
-      TYPE_VFIELD (t) = vfield;
-      vfields = base_info.vfields;
-      CLASSTYPE_VFIELDS (t) = vfields;
-      CLASSTYPE_RTTI (t) = base_info.rtti;
-    }
-
-  /* Loop over the virtual functions, adding them to our various
-     vtables.  */
-  for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
-    if (DECL_VINDEX (x))
-      add_virtual_function (&pending_virtuals, &pending_hard_virtuals,
-			    &has_virtual, x, t);
-
-  if (vfield == NULL_TREE && has_virtual)
-    {
-      /* We build this decl with vtbl_ptr_type_node, which is a
-	 `vtable_entry_type*'.  It might seem more precise to use
-	 `vtable_entry_type (*)[N]' where N is the number of firtual
-	 functions.  However, that would require the vtable pointer in
-	 base classes to have a different type than the vtable pointer
-	 in derived classes.  We could make that happen, but that
-	 still wouldn't solve all the problems.  In particular, the
-	 type-based alias analysis code would decide that assignments
-	 to the base class vtable pointer can't alias assignments to
-	 the derived class vtable pointer, since they have different
-	 types.  Thus, in an derived class destructor, where the base
-	 class constructor was inlined, we could generate bad code for
-	 setting up the vtable pointer.  
-
-         Therefore, we use one type for all vtable pointers.  We still
-	 use a type-correct type; it's just doesn't indicate the array
-	 bounds.  That's better than using `void*' or some such; it's
-	 cleaner, and it let's the alias analysis code know that these
-	 stores cannot alias stores to void*!  */
-      vfield = build_vtbl_or_vbase_field (get_vfield_name (t),
-					  get_identifier (VFIELD_BASE),
-					  vtbl_ptr_type_node,
-					  t,
-					  &empty);
-      TYPE_VFIELD (t) = vfield;
-      TYPE_FIELDS (t) = chainon (TYPE_FIELDS (t), vfield);
-      vfields = chainon (vfields, build_tree_list (NULL_TREE, t));
-    }
+  /* Create a pointer to our virtual function table.  */
+  create_vtable_ptr (t, &empty, &has_virtual, &max_has_virtual,
+		     &pending_virtuals, &pending_hard_virtuals);
 
   /* CLASSTYPE_INLINE_FRIENDS is really TYPE_NONCOPIED_PARTS.  Thus,
      we have to save this before we start modifying
@@ -4205,12 +4217,21 @@ finish_struct_1 (t)
       TREE_STATIC (TYPE_NONCOPIED_PARTS (t)) = 1;
     }
 
+  /* Let the back-end lay out the type. Note that at this point we
+     have only included non-virtual base-classes; we will lay out the
+     virtual base classes later.  So, the TYPE_SIZE/TYPE_ALIGN after
+     this call are not necessarily correct; they are just the size and
+     alignment when no virtual base clases are used.  */
   layout_type (t);
 
   /* If we added an extra field to make this class non-empty, remove
      it now.  */
   if (empty)
     TYPE_FIELDS (t) = TREE_CHAIN (TYPE_FIELDS (t));
+
+  /* Delete all zero-width bit-fields from the list of fields.  Now
+     that the type is laid out they are no longer important.  */
+  remove_zero_width_bit_fields (t);
 
   /* Remember the size and alignment of the class before adding
      the virtual bases.  */
@@ -4232,15 +4253,10 @@ finish_struct_1 (t)
   /* Now fix up any virtual base class types that we left lying
      around.  We must get these done before we try to lay out the
      virtual function table.  */
-  pending_hard_virtuals = nreverse (pending_hard_virtuals);
 
   if (n_baseclasses)
     /* layout_basetypes will remove the base subobject fields.  */
     max_has_virtual = layout_basetypes (t, max_has_virtual);
-
-  /* Delete all zero-width bit-fields from the list of fields.  Now
-     that we have layed out the type they are no longer important.  */
-  remove_zero_width_bit_fields (t);
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
     {
@@ -4275,6 +4291,7 @@ finish_struct_1 (t)
   /* Set up the DECL_FIELD_BITPOS of the vfield if we need to, as we
      might need to know it for setting up the offsets in the vtable
      (or in thunks) below.  */
+  vfield = TYPE_VFIELD (t);
   if (vfield != NULL_TREE
       && DECL_FIELD_CONTEXT (vfield) != t)
     {
@@ -4293,9 +4310,6 @@ finish_struct_1 (t)
       TYPE_VFIELD (t) = vfield;
     }
 
-  /* If this vtbl pointer is new, add it to the list of vtbl
-     pointers in this class.  */
-    
   if (has_virtual > max_has_virtual)
     max_has_virtual = has_virtual;
   if (max_has_virtual > 0)
@@ -4335,7 +4349,7 @@ finish_struct_1 (t)
     {
       pending_virtuals = nreverse (pending_virtuals);
       /* We must enter these virtuals into the table.  */
-      if (first_vfn_base_index < 0)
+      if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
 	{
 	  if (! CLASSTYPE_COM_INTERFACE (t))
 	    {
@@ -4357,7 +4371,7 @@ finish_struct_1 (t)
 	     function table, but we will wait until later this function.  */
 
 	  if (! BINFO_NEW_VTABLE_MARKED (TYPE_BINFO (t)))
-	    build_vtable (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (t), first_vfn_base_index), t);
+	    build_vtable (CLASSTYPE_PRIMARY_BINFO (t), t);
 	}
 
       /* If this type has basetypes with constructors, then those
@@ -4367,9 +4381,10 @@ finish_struct_1 (t)
 
       CLASSTYPE_NEEDS_VIRTUAL_REINIT (t) = 1;
     }
-  else if (first_vfn_base_index >= 0)
+  else if (CLASSTYPE_HAS_PRIMARY_BASE_P (t))
     {
-      tree binfo = TREE_VEC_ELT (TYPE_BINFO_BASETYPES (t), first_vfn_base_index);
+      tree binfo = CLASSTYPE_PRIMARY_BINFO (t);
+
       /* This class contributes nothing new to the virtual function
 	 table.  However, it may have declared functions which
 	 went into the virtual function table "inherited" from the
@@ -4385,10 +4400,10 @@ finish_struct_1 (t)
 	CLASSTYPE_NEEDS_VIRTUAL_REINIT (t) = 1;
     }
 
-  if (max_has_virtual || first_vfn_base_index >= 0)
+  if (max_has_virtual || CLASSTYPE_HAS_PRIMARY_BASE_P (t))
     {
       CLASSTYPE_VSIZE (t) = has_virtual;
-      if (first_vfn_base_index >= 0)
+      if (CLASSTYPE_HAS_PRIMARY_BASE_P (t))
 	{
 	  if (pending_virtuals)
 	    TYPE_BINFO_VIRTUALS (t) = chainon (TYPE_BINFO_VIRTUALS (t),
@@ -4410,8 +4425,6 @@ finish_struct_1 (t)
 
       layout_type (atype);
 
-      TYPE_VFIELD (t) = vfield;
-
       /* We may have to grow the vtable.  */
       if (TREE_TYPE (TYPE_BINFO_VTABLE (t)) != atype)
 	{
@@ -4425,9 +4438,12 @@ finish_struct_1 (t)
 		   DECL_ALIGN (TYPE_BINFO_VTABLE (t)));
 	}
     }
-  else if (first_vfn_base_index >= 0)
-    TYPE_VFIELD (t) = vfield;
-  CLASSTYPE_VFIELDS (t) = vfields;
+
+  /* If we created a new vtbl pointer for this class, add it to the
+     list.  */
+  if (TYPE_VFIELD (t) && CLASSTYPE_VFIELD_PARENT (t) == -1)
+    CLASSTYPE_VFIELDS (t) 
+      = chainon (CLASSTYPE_VFIELDS (t), build_tree_list (NULL_TREE, t));
 
   finish_struct_bits (t, max_has_virtual);
 
@@ -4488,7 +4504,7 @@ finish_struct_1 (t)
 	 a place to find them.  */
       TYPE_NONCOPIED_PARTS (t) 
 	= tree_cons (default_conversion (TYPE_BINFO_VTABLE (t)),
-		     vfield, TYPE_NONCOPIED_PARTS (t));
+		     TYPE_VFIELD (t), TYPE_NONCOPIED_PARTS (t));
 
       if (warn_nonvdtor && TYPE_HAS_DESTRUCTOR (t)
 	  && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 1)) == NULL_TREE)

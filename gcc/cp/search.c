@@ -2432,17 +2432,10 @@ dfs_init_vbase_pointers (binfo, data)
 {
   struct vbase_info *vi = (struct vbase_info *) data;
   tree type = BINFO_TYPE (binfo);
-  tree fields = TYPE_FIELDS (type);
+  tree fields;
   tree this_vbase_ptr;
 
   CLEAR_BINFO_VTABLE_PATH_MARKED (binfo);
-
-#if 0
-  /* See finish_struct_1 for when we can enable this.  */
-  /* If we have a vtable pointer first, skip it.  */
-  if (VFIELD_NAME_P (DECL_NAME (fields)))
-    fields = TREE_CHAIN (fields);
-#endif
 
   if (BINFO_INHERITANCE_CHAIN (binfo))
     {
@@ -2456,6 +2449,14 @@ dfs_init_vbase_pointers (binfo, data)
     }
   else
     this_vbase_ptr = TREE_CHAIN (binfo);
+
+  /* We're going to iterate through all the pointers to virtual
+     base-classes.  They come at the beginning of the class.  */
+  fields = TYPE_FIELDS (type);
+  if (fields == TYPE_VFIELD (type))
+    /* If the first field is the vtbl pointer (as happens in the new
+       ABI), skip it.  */
+    fields = TREE_CHAIN (fields);
 
   if (fields == NULL_TREE
       || DECL_NAME (fields) == NULL_TREE
