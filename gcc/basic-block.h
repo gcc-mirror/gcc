@@ -155,6 +155,10 @@ typedef struct edge_def {
 
 #define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
 
+/* Counter summary from the last set of coverage counts read by
+   profile.c. */
+extern const struct gcov_ctr_summary *profile_info;
+
 /* Declared in cfgloop.h.  */
 struct loop;
 struct loops;

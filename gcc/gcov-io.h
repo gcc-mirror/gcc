@@ -127,8 +127,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
         function-data:	announce_function arc_counts
 	announce_function: header string:name int32:checksum
 	arc_counts: header int64:count*
-	summary: in32:checksum int32:runs int32:arcs int64:sum int64:max \
-		int64:sum_max
+	summary: int32:checksum {count-summary}GCOV_COUNTERS
+	count-summary:	int32:num int32:runs int64:sum
+			int64:max int64:sum_max
 
    The ANNOUNCE_FUNCTION record is the same as that in the BBG file,
    but without the source location.
@@ -159,6 +160,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 typedef long gcov_type;
 #else
 typedef long long gcov_type;
+#endif
+#if defined (TARGET_HAS_F_SETLKW)
+#define GCOV_LOCKED 1
+#else
+#define GCOV_LOCKED 0
 #endif
 #endif /* IN_LIBGCOV */
 #if IN_GCOV
@@ -201,11 +207,26 @@ typedef HOST_WIDEST_INT gcov_type;
 #define GCOV_TAG_BLOCKS		 ((unsigned)0x01410000)
 #define GCOV_TAG_ARCS		 ((unsigned)0x01430000)
 #define GCOV_TAG_LINES		 ((unsigned)0x01450000)
-#define GCOV_TAG_ARC_COUNTS  	 ((unsigned)0x01a10000)
+#define GCOV_TAG_COUNTER_BASE 	 ((unsigned)0x01a10000) /* First counter */
 #define GCOV_TAG_OBJECT_SUMMARY  ((unsigned)0xa1000000)
 #define GCOV_TAG_PROGRAM_SUMMARY ((unsigned)0xa3000000)
-#define GCOV_TAG_PLACEHOLDER_SUMMARY ((unsigned)0xa5000000)
-#define GCOV_TAG_INCORRECT_SUMMARY ((unsigned)0xa7000000)
+
+/* Counters that are collected.  */
+#define GCOV_COUNTER_ARCS 	0  /* Arc transitions.  */
+#define GCOV_COUNTERS		1
+
+/* A list of human readable names of the counters */
+#define GCOV_COUNTER_NAMES	{"arcs"}
+
+/* Convert a counter index to a tag. */
+#define GCOV_TAG_FOR_COUNTER(COUNT)				\
+	(GCOV_TAG_COUNTER_BASE + ((COUNT) << 17))
+/* Convert a tag to a counter.  */
+#define GCOV_COUNTER_FOR_TAG(TAG)					\
+	(((TAG) - GCOV_TAG_COUNTER_BASE) >> 17)
+/* Check whether a tag is a counter tag.  */
+#define GCOV_TAG_IS_COUNTER(TAG)				\
+	(!((TAG) & 0xFFFF) && GCOV_COUNTER_FOR_TAG (TAG) < GCOV_COUNTERS)
 
 /* The tag level mask has 1's in the position of the inner levels, &
    the lsb of the current level, and zero on the current and outer
@@ -231,44 +252,43 @@ typedef HOST_WIDEST_INT gcov_type;
 
 /* Structured records.  */
 
+/* Cumulative counter data.   */
+struct gcov_ctr_summary
+{
+  unsigned num;		/* number of counters.  */
+  unsigned runs;	/* number of program runs */
+  gcov_type sum_all;	/* sum of all counters accumulated. */
+  gcov_type run_max;	/* maximum value on a single run.  */
+  gcov_type sum_max;    /* sum of individual run max values. */
+};
+
 /* Object & program summary record.  */
 struct gcov_summary
 {
   unsigned checksum;	  /* checksum of program */
-  unsigned runs;	  /* number of program runs */
-  unsigned arcs;	  /* number of instrumented arcs */
-  gcov_type arc_sum;      /* sum of all arc counters */
-  gcov_type arc_max_one;  /* max counter on any one run */
-  gcov_type arc_sum_max;  /* sum of max_one */
+  struct gcov_ctr_summary ctrs[GCOV_COUNTERS];
 };
 
 /* Structures embedded in coveraged program.  The structures generated
    by write_profile must match these.  */
 
-/* Information about section of counters for a function.  */
-struct gcov_counter_section
-{
-  unsigned tag;		/* Tag of the section.  */
-  unsigned n_counters;	/* Number of counters in the section.  */
-};
-
 #if IN_LIBGCOV
-/* Information about section of counters for an object file.  */
-struct gcov_counter_section_data
-{
-  unsigned tag;		/* Tag of the section.  */
-  unsigned n_counters;	/* Number of counters in the section.  */
-  gcov_type *counters;	/* The data.  */
-};
-
-/* Information about a single function.  */
-struct gcov_function_info
+/* Information about a single function.  This uses the trailing array
+   idiom. The number of counters is determined from the counter_mask
+   in gcov_info.  We hold an array of function info, so have to
+   explicitly calculate the correct array stride.  */
+struct gcov_fn_info
 {
   const char *name;	        /* (mangled) name of function */
   unsigned checksum;		/* function checksum */
-  unsigned n_counter_sections;	/* Number of types of counters */
-  const struct gcov_counter_section *counter_sections;
-  				/* The section descriptions */
+  unsigned n_ctrs[0];		/* instrumented counters */
+};
+
+/* Information about counters.  */
+struct gcov_ctr_info
+{
+  unsigned num;		/* number of counters.  */
+  gcov_type *values;	/* their values.  */
 };
 
 /* Information about a single object file.  */
@@ -278,14 +298,15 @@ struct gcov_info
   struct gcov_info *next;	/* link to next, used by libgcc */
 
   const char *filename;		/* output file name */
-  long wkspc;	  	        /* libgcc workspace */
 
   unsigned n_functions;             /* number of functions */
-  const struct gcov_function_info *functions; /* table of functions */
+  const struct gcov_fn_info *functions; /* table of functions */
 
-  unsigned n_counter_sections;	/* Number of types of counters */
-  const struct gcov_counter_section_data *counter_sections;
-  				/* The data to be put into the sections.  */
+  unsigned ctr_mask;              /* mask of counters instrumented.  */
+  struct gcov_ctr_info counts[0]; /* count data. The number of bits
+				     set in the ctr_mask field
+				     determines how big this array
+				     is.  */
 };
 
 /* Register a new object file module.  */

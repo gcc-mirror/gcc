@@ -81,26 +81,6 @@ struct bb_info {
   gcov_type pred_count;
 };
 
-/* Counts information for a function.  */
-typedef struct counts_entry
-{
-  /* We hash by  */
-  char *function_name;
-  unsigned section;
-  
-  /* Store  */
-  unsigned checksum;
-  unsigned n_counts;
-  gcov_type *counts;
-  unsigned merged;
-  gcov_type max_counter;
-  gcov_type max_counter_sum;
-
-  /* Workspace */
-  struct counts_entry *chain;
-  
-} counts_entry_t;
-
 #define EDGE_INFO(e)  ((struct edge_info *) (e)->aux)
 #define BB_INFO(b)  ((struct bb_info *) (b)->aux)
 
@@ -109,6 +89,10 @@ typedef struct counts_entry
 #define BB_TO_GCOV_INDEX(bb)  ((bb) == ENTRY_BLOCK_PTR ? 0		\
 			       : ((bb) == EXIT_BLOCK_PTR		\
 				  ? last_basic_block + 1 : (bb)->index + 1))
+
+/* Counter summary from the last set of coverage counts read. */
+
+const struct gcov_ctr_summary *profile_info;
 
 /* Collect statistics on the performance of this pass for the entire source
    file.  */
@@ -195,16 +179,13 @@ get_exec_counts ()
 	  num_edges++;
     }
 
-  counts = get_coverage_counts (GCOV_TAG_ARC_COUNTS, num_edges);
+  counts = get_coverage_counts (GCOV_COUNTER_ARCS, num_edges, &profile_info);
   if (!counts)
     return NULL;
 
-  if (rtl_dump_file)
-    {
-      fprintf(rtl_dump_file, "Merged %i profiles with maximal count %i.\n",
-	      profile_info.count_profiles_merged,
-	      (int)profile_info.max_counter_in_program);
-    }
+  if (rtl_dump_file && profile_info)
+    fprintf(rtl_dump_file, "Merged %u profiles with maximal count %u.\n",
+	    profile_info->runs, (unsigned) profile_info->sum_max);
 
   return counts;
 }
@@ -547,7 +528,6 @@ compute_branch_probabilities ()
     }
 
   free_aux_for_blocks ();
-  find_counters_section (GCOV_TAG_ARC_COUNTS)->present = 1;
 }
 
 /* Instrument and/or analyze program behavior based on program flow graph.
@@ -1013,7 +993,7 @@ static rtx
 gen_edge_profiler (edgeno)
      int edgeno;
 {
-  rtx ref = coverage_counter_ref (GCOV_TAG_ARC_COUNTS, edgeno);
+  rtx ref = coverage_counter_ref (GCOV_COUNTER_ARCS, edgeno);
   rtx tmp;
   enum machine_mode mode = GET_MODE (ref);
   rtx sequence;
