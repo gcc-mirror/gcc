@@ -1,3 +1,7 @@
+2001-08-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc.h (ASM_OUTPUT_BYTE): Fix format specifier warning.
+
 2001-08-24  Andreas Jaeger  <aj@suse.de>, rkl@connect.org.uk
 
 	* cp/rtti.c (VPARAMS): Fix parameter.

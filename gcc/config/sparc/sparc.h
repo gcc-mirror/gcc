@@ -3064,7 +3064,7 @@ do {									\
 /* This is how to output an assembler line for a numeric constant byte.  */
 
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "%s0x%x\n", ASM_BYTE_OP, (VALUE))
+  fprintf (FILE, "%s0x%x\n", ASM_BYTE_OP, (int)(VALUE))
 
 /* This is how we hook in and defer the case-vector until the end of
    the function.  */
