@@ -1,5 +1,9 @@
 2004-08-10  Paul Brook  <paul@codesourcery.com>
 
+	* trans-io.c (transfer_expr): Handle pointters.
+
+2004-08-10  Paul Brook  <paul@codesourcery.com>
+
 	PR fortran/16919
 	* trans-array.c (gfc_add_loop_ss_code): Handle GFC_SS_COMPONENT.
 	(gfc_conv_array_index_offset): Allow "temporary" with nonzero delta.

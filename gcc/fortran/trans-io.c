@@ -1138,7 +1138,11 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
 	      se->string_length =
 		TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (tmp)));
 	    }
-	  transfer_expr (se, &c->ts, gfc_build_addr_expr (NULL, tmp));
+	  if (c->dimension)
+	    gfc_todo_error ("IO of arrays in derived types");
+	  if (!c->pointer)
+	    tmp = gfc_build_addr_expr (NULL, tmp);
+	  transfer_expr (se, &c->ts, tmp);
 	}
       return;
 
