@@ -2077,12 +2077,17 @@ location_attribute (rtl)
    (See the `bit_offset_attribute' function below.)  */
 
 static void
-data_member_location_attribute (decl)
-     register tree decl;
+data_member_location_attribute (t)
+     register tree t;
 {
-  register unsigned object_offset_in_bytes = field_byte_offset (decl);
+  register unsigned object_offset_in_bytes;
   char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
   char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
+
+  if (TREE_CODE (t) == TREE_VEC)
+    object_offset_in_bytes = TREE_INT_CST_LOW (BINFO_OFFSET (t));
+  else
+    object_offset_in_bytes = field_byte_offset (t);
 
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_location);
   sprintf (begin_label, LOC_BEGIN_LABEL_FMT, current_dienum);
@@ -3580,6 +3585,33 @@ output_string_type_die (arg)
 }
 
 static void
+output_inheritance_die (arg)
+     register void *arg;
+{
+  register tree binfo = arg;
+
+  ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_inheritance);
+  sibling_attribute ();
+  type_attribute (BINFO_TYPE (binfo), 0, 0);
+  data_member_location_attribute (binfo);
+  if (TREE_VIA_VIRTUAL (binfo))
+    {
+      ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_virtual);
+      ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
+    }
+  if (TREE_VIA_PUBLIC (binfo))
+    {
+      ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_public);
+      ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
+    }
+  else if (TREE_VIA_PROTECTED (binfo))
+    {
+      ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_protected);
+      ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
+    }
+}  
+
+static void
 output_structure_type_die (arg)
      register void *arg;
 {
@@ -4184,10 +4216,21 @@ output_type (type, containing_scope)
 
 	if (TYPE_SIZE (type))
 	  {
+	    /* First output info about the base classes.  */
+	    if (TYPE_BINFO (type) && TYPE_BINFO_BASETYPES (type))
+	      {
+		register tree bases = TYPE_BINFO_BASETYPES (type);
+		register int n_bases = TREE_VEC_LENGTH (bases);
+		register int i;
+
+		for (i = 0; i < n_bases; i++)
+		  output_die (output_inheritance_die, TREE_VEC_ELT (bases, i));
+	      }
+
 	    {
 	      register tree normal_member;
 
-	      /* First output info about the data members and type members.  */
+	      /* Now output info about the data members and type members.  */
 
 	      for (normal_member = TYPE_FIELDS (type);
 		   normal_member;
