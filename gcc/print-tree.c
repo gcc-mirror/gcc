@@ -731,6 +731,32 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 		      BLOCK_ABSTRACT_ORIGIN (node), indent + 4);
 	  break;
 
+	case SSA_NAME:
+	  print_node_brief (file, "var", SSA_NAME_VAR (node), indent + 4);
+	  print_node_brief (file, "def_stmt",
+			    SSA_NAME_DEF_STMT (node), indent + 4);
+
+	  indent_to (file, indent + 4);
+	  fprintf (file, "version %u", SSA_NAME_VERSION (node));
+	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (node))
+	    fprintf (file, " in-abnormal-phi");
+	  if (SSA_NAME_IN_FREE_LIST (node))
+	    fprintf (file, " in-free-list");
+
+	  if (SSA_NAME_PTR_INFO (node)
+	      || SSA_NAME_VALUE (node)
+	      || SSA_NAME_AUX (node))
+	    {
+	      indent_to (file, indent + 3);
+	      if (SSA_NAME_PTR_INFO (node))
+		fprintf (file, " ptr-info %p", SSA_NAME_PTR_INFO (node));
+	      if (SSA_NAME_VALUE (node))
+		fprintf (file, " value %p", SSA_NAME_VALUE (node));
+	      if (SSA_NAME_AUX (node))
+		fprintf (file, " aux %p", SSA_NAME_AUX (node));
+	    }
+	  break;
+
 	default:
 	  if (TREE_CODE_CLASS (TREE_CODE (node)) == 'x')
 	    lang_hooks.print_xnode (file, node, indent);
