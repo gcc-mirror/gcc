@@ -7086,14 +7086,14 @@ mips_secondary_reload_class (class, mode, x, in_p)
      to a general register, or when copying from register 0.  */
   if (class == HILO_REG && regno != GP_REG_FIRST + 0)
     return ((! in_p
-	     && GP_REG_P (regno)
+	     && gp_reg_p
 	     && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (SImode))
-	    ? NO_REGS : GR_REGS);
+	    ? NO_REGS : gr_regs);
   else if (regno == HILO_REGNUM)
     return ((in_p
-	     && class == GR_REGS
+	     && class == gr_regs
 	     && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (SImode))
-	    ? NO_REGS : GR_REGS);
+	    ? NO_REGS : gr_regs);
 
   /* Copying from HI or LO to anywhere other than a general register
      requires a general register.  */
@@ -7104,7 +7104,7 @@ mips_secondary_reload_class (class, mode, x, in_p)
 	  /* We can't really copy to HI or LO at all in mips16 mode.  */
 	  return M16_REGS;
 	}
-      return gp_reg_p ? NO_REGS : GR_REGS;
+      return gp_reg_p ? NO_REGS : gr_regs;
     }
   if (MD_REG_P (regno))
     {
@@ -7113,7 +7113,7 @@ mips_secondary_reload_class (class, mode, x, in_p)
 	  /* We can't really copy to HI or LO at all in mips16 mode.  */
 	  return M16_REGS;
 	}
-      return class == gr_regs ? NO_REGS : GR_REGS;
+      return class == gr_regs ? NO_REGS : gr_regs;
     }
 
   /* We can only copy a value to a condition code register from a

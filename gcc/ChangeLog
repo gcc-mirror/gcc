@@ -1,3 +1,8 @@
+Mon Jun  8 18:12:06 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* mips.c (mips_secondary_reload_class): Use gp_reg_p instead of
+	GP_REG_P.  Use gr_regs instead of GR_REGS.
+
 Mon Jun  8 16:54:12 1998  Ken Raeburn   <raeburn@cygnus.com>
                           Jeff Law      <law@cygnus.com>
 
