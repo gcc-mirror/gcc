@@ -32,11 +32,19 @@
 
 typedef int _Atomic_word;
 
+template <int __inst>
+struct __Atomicity_lock
+{
+  static unsigned char _S_atomicity_lock;
+};
+
+template <int __inst>
+unsigned char __Atomicity_lock<__inst>::_S_atomicity_lock = 0;
+
 static int
 __attribute__ ((__unused__))
 __exchange_and_add (volatile _Atomic_word* __mem, int __val)
 {
-  static unsigned char __lock;
   _Atomic_word __result, __tmp;
 
   __asm__ __volatile__("1:	ldstub	[%1], %0\n\t"
@@ -44,13 +52,13 @@ __exchange_and_add (volatile _Atomic_word* __mem, int __val)
 		       "	bne	1b\n\t"
 		       "	 nop"
 		       : "=&r" (__tmp)
-		       : "r" (&__lock)
+		       : "r" (&__Atomicity_lock<0>::_S_atomicity_lock)
 		       : "memory");
   __result = *__mem;
   *__mem += __val;
   __asm__ __volatile__("stb	%%g0, [%0]"
 		       : /* no outputs */
-		       : "r" (&__lock)
+		       : "r" (&__Atomicity_lock<0>::_S_atomicity_lock)
 		       : "memory");
   return __result;
 }
@@ -59,7 +67,6 @@ static void
 __attribute__ ((__unused__))
 __atomic_add (volatile _Atomic_word* __mem, int __val)
 {
-  static unsigned char __lock;
   _Atomic_word __tmp;
 
   __asm__ __volatile__("1:	ldstub	[%1], %0\n\t"
@@ -67,12 +74,12 @@ __atomic_add (volatile _Atomic_word* __mem, int __val)
 		       "	bne	1b\n\t"
 		       "	 nop"
 		       : "=&r" (__tmp)
-		       : "r" (&__lock)
+		       : "r" (&__Atomicity_lock<0>::_S_atomicity_lock)
 		       : "memory");
   *__mem += __val;
   __asm__ __volatile__("stb	%%g0, [%0]"
 		       : /* no outputs */
-		       : "r" (&__lock)
+		       : "r" (&__Atomicity_lock<0>::_S_atomicity_lock)
 		       : "memory");
 }
 
