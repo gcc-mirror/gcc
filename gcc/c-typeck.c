@@ -3899,7 +3899,7 @@ build_c_cast (type, expr)
 	    name = "";
 	  return digest_init (type, build_nt (CONSTRUCTOR, NULL_TREE,
 					      build_tree_list (field, value)),
-			      NULL_PTR, 0, 0, name);
+			      0, 0);
 	}
       error ("cast to union type from type not present in union");
       return error_mark_node;
@@ -4273,7 +4273,9 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 	 Meanwhile, the lhs target must have all the qualifiers of the rhs.  */
       if (TYPE_MAIN_VARIANT (ttl) == void_type_node
 	  || TYPE_MAIN_VARIANT (ttr) == void_type_node
-	  || comp_target_types (type, rhstype))
+	  || comp_target_types (type, rhstype)
+	  || (unsigned_type (TYPE_MAIN_VARIANT (ttl))
+	      == unsigned_type (TYPE_MAIN_VARIANT (ttr))))
 	{
 	  if (pedantic
 	      && ((TYPE_MAIN_VARIANT (ttl) == void_type_node
@@ -4292,8 +4294,18 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 	      if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
 		warn_for_assignment ("%s discards `const' from pointer target type",
 				     get_spelling (errtype), funname, parmnum);
-	      if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
+	      else if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
 		warn_for_assignment ("%s discards `volatile' from pointer target type",
+				     get_spelling (errtype), funname, parmnum);
+	      /* If this is not a case of ignoring a mismatch in signedness,
+		 no warning.  */
+	      else if (TYPE_MAIN_VARIANT (ttl) == void_type_node
+		       || TYPE_MAIN_VARIANT (ttr) == void_type_node
+		       || comp_target_types (type, rhstype))
+		;
+	      /* If there is a mismatch, do warn.  */
+	      else if (pedantic)
+		warn_for_assignment ("pointer targets in %s differ in signedness",
 				     get_spelling (errtype), funname, parmnum);
 	    }
 	  else
@@ -4309,13 +4321,6 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 		warn_for_assignment ("%s makes `volatile *' function pointer from non-volatile",
 				     get_spelling (errtype), funname, parmnum);
 	    }
-	}
-      else if (unsigned_type (TYPE_MAIN_VARIANT (ttl))
-	       == unsigned_type (TYPE_MAIN_VARIANT (ttr)))
-	{
-	  if (pedantic)
-	    warn_for_assignment ("pointer targets in %s differ in signedness",
-				 get_spelling (errtype), funname, parmnum);
 	}
       else
 	warn_for_assignment ("%s from incompatible pointer type",
@@ -4536,9 +4541,8 @@ store_init_value (decl, init)
 
   /* Digest the specified initializer into an expression.  */
 
-  value = digest_init (type, init, NULL_PTR, TREE_STATIC (decl),
-		       TREE_STATIC (decl) || pedantic, 
-		       IDENTIFIER_POINTER (DECL_NAME (decl)));
+  value = digest_init (type, init, TREE_STATIC (decl),
+		       TREE_STATIC (decl) || pedantic);
 
   /* Store the expression if valid; else report error.  */
 
@@ -4832,8 +4836,8 @@ static tree free_tree_list = NULL_TREE;
    (That is true for all nested calls to digest_init.)  */
 
 static tree
-digest_init (type, init, tail, require_constant, constructor_constant)
-     tree type, init, *tail;
+digest_init (type, init, require_constant, constructor_constant)
+     tree type, init;
      int require_constant, constructor_constant;
 {
   enum tree_code code = TREE_CODE (type);
@@ -5156,6 +5160,9 @@ struct constructor_stack
   int offset;
   tree pending_elts;
   int depth;
+  /* If nonzero, this value should replace the entire
+     constructor at this level.  */
+  tree replacement_value;
   char constant;
   char simple;
   char implicit;
@@ -5319,6 +5326,7 @@ really_start_incremental_init (type)
   p->erroneous = constructor_erroneous;
   p->pending_elts = constructor_pending_elts;
   p->depth = constructor_depth;
+  p->replacement_value = 0;
   p->implicit = 0;
   p->incremental = constructor_incremental;
   p->outer = 0;
@@ -5400,6 +5408,7 @@ push_init_level (implicit)
   p->erroneous = constructor_erroneous;
   p->pending_elts = constructor_pending_elts;
   p->depth = constructor_depth;
+  p->replacement_value = 0;
   p->implicit = implicit;
   p->incremental = constructor_incremental;
   p->outer = 0;
@@ -5445,7 +5454,7 @@ push_init_level (implicit)
     }
   else
     {
-      error_init ("braces where a scalar is expected%s", " for `%s'", NULL);
+      warning ("braces around scalar initializer");
       constructor_fields = constructor_type;
       constructor_unfilled_fields = constructor_type;
     }
@@ -5513,7 +5522,50 @@ pop_init_level (implicit)
 
   /* Pad out the end of the structure.  */
   
-  if (! constructor_incremental)
+  if (p->replacement_value)
+    {
+      /* If this closes a superfluous brace pair,
+	 just pass out the element between them.  */
+      constructor = p->replacement_value;
+      /* If this is the top level thing within the initializer,
+	 and it's for a variable, then since we already calle
+	 assemble_variable, we must output the value now.  */
+      if (p->next == 0 && constructor_decl != 0
+	  && constructor_incremental)
+	{
+	  constructor = digest_init (constructor_type, constructor,
+				     0, 0);
+
+	  /* If initializing an array of unknown size,
+	     determine the size now.  */
+	  if (TREE_CODE (constructor_type) == ARRAY_TYPE
+	      && TYPE_DOMAIN (constructor_type) == 0)
+	    {
+	      int failure;
+
+	      push_obstacks_nochange ();
+	      if (TREE_PERMANENT (constructor_type))
+		end_temporary_allocation ();
+
+	      /* We shouldn't have an incomplete array type within
+		 some other type.  */
+	      if (constructor_stack->next)
+		abort ();
+
+	      failure
+		= complete_array_type (constructor_type,
+				       constructor, 0);
+	      if (failure)
+		abort ();
+
+	      size = int_size_in_bytes (constructor_type);
+	      pop_obstacks ();
+	    }
+
+	  output_constant (constructor, size);
+	}
+    }
+  else if (! constructor_incremental)
     {
       if (constructor_erroneous)
 	constructor = error_mark_node;
@@ -5750,7 +5802,7 @@ output_init_element (value, type, field, pending)
       if (! duplicate)
 	constructor_pending_elts
 	  = tree_cons (field,
-		       digest_init (type, value, (tree *)NULL,
+		       digest_init (type, value,
 				    require_constant_value,
 				    require_constant_elements),
 		       constructor_pending_elts);
@@ -5762,7 +5814,7 @@ output_init_element (value, type, field, pending)
       if (!duplicate)
 	constructor_pending_elts
 	  = tree_cons (field,
-		       digest_init (type, value, (tree *)NULL,
+		       digest_init (type, value,
 				    require_constant_value,
 				    require_constant_elements),
 		       constructor_pending_elts);
@@ -5778,7 +5830,7 @@ output_init_element (value, type, field, pending)
 	    constructor_elements
 	      = tree_cons ((TREE_CODE (constructor_type) != ARRAY_TYPE
 			    ? field : NULL),
-			   digest_init (type, value, (tree *)NULL,
+			   digest_init (type, value,
 					require_constant_value,
 					require_constant_elements),
 			   constructor_elements);
@@ -5981,6 +6033,16 @@ process_init_element (value)
   tree orig_value = value;
   int string_flag = value != 0 && TREE_CODE (value) == STRING_CST;
 
+  /* Handle superfluous braces around string cst as in
+     char x[] = {"foo"}; */
+  if (string_flag
+      && TREE_CODE (constructor_type) == ARRAY_TYPE
+      && integer_zerop (constructor_unfilled_index))
+    {
+      constructor_stack->replacement_value = value;
+      return;
+    }
+
   if (value != 0)
     value = default_conversion (value);
 
@@ -5992,6 +6054,13 @@ process_init_element (value)
     constructor_constant = 0;
   else if (initializer_constant_valid_p (value, TREE_TYPE (value)) == 0)
     constructor_simple = 0;
+
+  if (constructor_stack->replacement_value != 0)
+    {
+      error_init ("excess elements in struct initializer%s",
+		  " after `%s'", NULL_PTR);
+      return;
+    }
 
   /* If we've exhausted any levels that didn't have braces,
      pop them now.  */
