@@ -1,3 +1,8 @@
+1999-06-24  Tom Tromey  <tromey@cygnus.com>
+
+	* gcc.c (main): Read user-specified specs files after computing
+	additional startfile_prefixes.
+
 1999-06-24  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	*fixinc/inclhack.def(end_else_label): combined else_label
