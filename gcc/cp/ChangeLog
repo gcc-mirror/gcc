@@ -1,5 +1,8 @@
 Thu Dec 18 14:51:50 1997  Mark Mitchell  <mmitchell@usa.net>
 
+	* pt.c (coerce_template_parms): Make sure to digest_init if
+	possible.
+
 	* decl.c (duplicate_decls): Make the newdecl virtual if the
 	olddecl was, just as is done with other attributes of olddecl.
 

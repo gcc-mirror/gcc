@@ -1079,7 +1079,10 @@ coerce_template_parms (parms, arglist, in_decl)
 	  if (processing_template_decl)
 	    val = maybe_fold_nontype_arg (arg);
 	  else
-	    val = digest_init (t, arg, (tree *) 0);
+	    val = arg;
+
+	  if (!uses_template_parms (val) && !uses_template_parms (t))
+	    val = digest_init (t, val, (tree *) 0);
 
 	  if (val == error_mark_node 
 	      || (processing_template_decl && uses_template_parms (val)))
