@@ -2365,6 +2365,7 @@ do {									     \
 		: COSTS_N_INSNS (3));			    		\
       case PROCESSOR_PPC403:						\
       case PROCESSOR_PPC604:						\
+      case PROCESSOR_PPC8540:						\
         return COSTS_N_INSNS (4);					\
       case PROCESSOR_PPC620:						\
       case PROCESSOR_PPC630:						\

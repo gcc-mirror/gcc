@@ -1,3 +1,7 @@
+2002-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.h (RTX_COSTS): Add MULT case for 8540.
+
 2002-07-29  Aldy Hernandez  <aldy@quesejoda.com>
 
 	* config/rs6000/rs6000.md: Move altivec patterns from here...
