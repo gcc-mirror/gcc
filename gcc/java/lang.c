@@ -113,6 +113,10 @@ int flag_use_divide_subroutine = 1;
 /* When non zero, generate code for the Boehm GC.  */
 int flag_use_boehm_gc = 0;
 
+/* When non zero, assume the runtime uses a hash table to map an
+   object to its synchronization structure.  */
+int flag_hash_synchronization;
+
 /* From gcc/flags.h, and indicates if exceptions are turned on or not.  */
 
 extern int flag_new_exceptions;
@@ -130,7 +134,8 @@ lang_f_options[] =
   {"emit-class-file", &flag_emit_class_files, 1},
   {"emit-class-files", &flag_emit_class_files, 1},
   {"use-divide-subroutine", &flag_use_divide_subroutine, 1},
-  {"use-boehm-gc", &flag_use_boehm_gc, 1}
+  {"use-boehm-gc", &flag_use_boehm_gc, 1},
+  {"hash-synchronization", &flag_hash_synchronization, 1}
 };
 
 JCF *current_jcf;

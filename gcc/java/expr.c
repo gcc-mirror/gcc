@@ -79,7 +79,7 @@ static tree build_java_throw_out_of_bounds_exception PARAMS ((tree));
 static tree build_java_check_indexed_type PARAMS ((tree, tree)); 
 static tree java_array_data_offset PARAMS ((tree)); 
 static tree case_identity PARAMS ((tree, tree)); 
- 
+
 static tree operand_type[59];
 extern struct obstack permanent_obstack;
 
@@ -1996,7 +1996,8 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    PUSH_FIELD_VALUE (temp, "vtable",
 			      null_pointer_node /* FIXME */
 			      );
-	    PUSH_FIELD_VALUE (temp, "sync_info", null_pointer_node);
+	    if (! flag_hash_synchronization)
+	      PUSH_FIELD_VALUE (temp, "sync_info", null_pointer_node);
 	    FINISH_RECORD_CONSTRUCTOR (temp);
 	    START_RECORD_CONSTRUCTOR (value, array_type);
 	    PUSH_SUPER_VALUE (value, temp);

@@ -1373,7 +1373,8 @@ make_class_data (type)
   START_RECORD_CONSTRUCTOR (temp, object_type_node);
   PUSH_FIELD_VALUE (temp, "vtable",
 		    build1 (ADDR_EXPR, dtable_ptr_type, class_dtable_decl));
-  PUSH_FIELD_VALUE (temp, "sync_info", null_pointer_node);
+  if (! flag_hash_synchronization)
+    PUSH_FIELD_VALUE (temp, "sync_info", null_pointer_node);
   FINISH_RECORD_CONSTRUCTOR (temp);
   START_RECORD_CONSTRUCTOR (cons, class_type_node);
   PUSH_SUPER_VALUE (cons, temp);
