@@ -365,7 +365,7 @@ gfc_trans_runtime_check (tree cond, tree msg, stmtblock_t * pblock)
   tmp = gfc_build_addr_expr (pchar_type_node, gfc_strconst_current_filename);
   args = gfc_chainon_list (args, tmp);
 
-  tmp = build_int_2 (input_line, 0);
+  tmp = build_int_cst (NULL_TREE, input_line, 0);
   args = gfc_chainon_list (args, tmp);
 
   tmp = gfc_build_function_call (gfor_fndecl_runtime_error, args);

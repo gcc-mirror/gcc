@@ -680,7 +680,7 @@ tree_code_get_integer_value (unsigned char* chars, unsigned int length)
   for (ix = start; ix < length; ix++)
     val = val * 10 + chars[ix] - (unsigned char)'0';
   val = val*negative;
-  return build_int_2 (val & 0xffffffff, (val >> 32) & 0xffffffff);
+  return build_int_cst (NULL_TREE, val & 0xffffffff, (val >> 32) & 0xffffffff);
 }
 
 /* Return the tree for an expresssion, type EXP_TYPE (see treetree.h)

@@ -168,16 +168,13 @@ gfc_init_types (void)
       hi = 0;
       lo = (~(unsigned HOST_WIDE_INT) 0) >> (sizeof (HOST_WIDE_INT) * 8 - n);
     }
-  gfc_max_array_element_size = build_int_2 (lo, hi);
-  TREE_TYPE (gfc_max_array_element_size) = long_unsigned_type_node;
+  gfc_max_array_element_size = build_int_cst (long_unsigned_type_node, lo, hi);
 
   size_type_node = gfc_array_index_type;
   boolean_type_node = gfc_get_logical_type (gfc_default_logical_kind ());
 
-  boolean_true_node = build_int_2 (1, 0);
-  TREE_TYPE (boolean_true_node) = boolean_type_node;
-  boolean_false_node = build_int_2 (0, 0);
-  TREE_TYPE (boolean_false_node) = boolean_type_node;
+  boolean_true_node = build_int_cst (boolean_type_node, 1, 0);
+  boolean_false_node = build_int_cst (boolean_type_node, 0, 0);
 }
 
 /* Get a type node for an integer kind */
@@ -600,13 +597,11 @@ gfc_get_dtype (tree type, int rank)
 
       i += TREE_INT_CST_LOW (size) << GFC_DTYPE_SIZE_SHIFT;
     }
-  dtype = build_int_2 (i, 0);
-  TREE_TYPE (dtype) = gfc_array_index_type;
+  dtype = build_int_cst (gfc_array_index_type, i, 0);
 
   if (size && !INTEGER_CST_P (size))
     {
-      tmp = build_int_2 (GFC_DTYPE_SIZE_SHIFT, 0);
-      TREE_TYPE (tmp) = gfc_array_index_type;
+      tmp = build_int_cst (gfc_array_index_type, GFC_DTYPE_SIZE_SHIFT, 0);
       tmp  = fold (build (LSHIFT_EXPR, gfc_array_index_type, size, tmp));
       dtype = fold (build (PLUS_EXPR, gfc_array_index_type, tmp, dtype));
     }

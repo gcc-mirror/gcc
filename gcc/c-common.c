@@ -660,7 +660,7 @@ start_fname_decls (void)
 
       if (decl)
 	{
-	  saved = tree_cons (decl, build_int_2 (ix, 0), saved);
+	  saved = tree_cons (decl, build_int_cst (NULL_TREE, ix, 0), saved);
 	  *fname_vars[ix].decl = NULL_TREE;
 	}
     }
@@ -835,7 +835,8 @@ fix_string_type (tree value)
   const int nchars_max = flag_isoc99 ? 4095 : 509;
   int length = TREE_STRING_LENGTH (value);
   int nchars;
-
+  tree e_type, i_type;
+  
   /* Compute the number of elements, for the array type.  */
   nchars = wide_flag ? length / wchar_bytes : length;
 
@@ -843,23 +844,15 @@ fix_string_type (tree value)
     pedwarn ("string length `%d' is greater than the length `%d' ISO C%d compilers are required to support",
 	     nchars - 1, nchars_max, flag_isoc99 ? 99 : 89);
 
+  e_type = wide_flag ? wchar_type_node : char_type_node;
   /* Create the array type for the string constant.
      -Wwrite-strings says make the string constant an array of const char
      so that copying it to a non-const pointer will get a warning.
      For C++, this is the standard behavior.  */
   if (flag_const_strings)
-    {
-      tree elements
-	= build_type_variant (wide_flag ? wchar_type_node : char_type_node,
-			      1, 0);
-      TREE_TYPE (value)
-	= build_array_type (elements,
-			    build_index_type (build_int_2 (nchars - 1, 0)));
-    }
-  else
-    TREE_TYPE (value)
-      = build_array_type (wide_flag ? wchar_type_node : char_type_node,
-			  build_index_type (build_int_2 (nchars - 1, 0)));
+    e_type = build_type_variant (e_type, 1, 0);
+  i_type = build_index_type (build_int_cst (NULL_TREE, nchars - 1, 0));
+  TREE_TYPE (value) = build_array_type (e_type, i_type);
 
   TREE_CONSTANT (value) = 1;
   TREE_INVARIANT (value) = 1;
@@ -1999,10 +1992,10 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	{
 	  /* Convert primop1 to target type, but do not introduce
 	     additional overflow.  We know primop1 is an int_cst.  */
-	  tree tmp = build_int_2 (TREE_INT_CST_LOW (primop1),
-				  TREE_INT_CST_HIGH (primop1));
+	  tree tmp = build_int_cst (*restype_ptr,
+				    TREE_INT_CST_LOW (primop1),
+				    TREE_INT_CST_HIGH (primop1));
 
-	  TREE_TYPE (tmp) = *restype_ptr;
 	  primop1 = force_fit_type (tmp, 0, TREE_OVERFLOW (primop1),
 				    TREE_CONSTANT_OVERFLOW (primop1));
 	}
@@ -3008,7 +3001,9 @@ c_common_nodes_and_builtins (void)
 
   record_builtin_type (RID_VOID, NULL, void_type_node);
 
-  void_zero_node = build_int_2 (0, 0);
+  void_zero_node = make_node (INTEGER_CST);
+  TREE_INT_CST_LOW (void_zero_node) = 0;
+  TREE_INT_CST_HIGH (void_zero_node) = 0;
   TREE_TYPE (void_zero_node) = void_type_node;
 
   void_list_node = build_void_list_node ();
@@ -3900,10 +3895,11 @@ static void
 c_init_attributes (void)
 {
   /* Fill in the built_in_attributes array.  */
-#define DEF_ATTR_NULL_TREE(ENUM)		\
+#define DEF_ATTR_NULL_TREE(ENUM)				\
   built_in_attributes[(int) ENUM] = NULL_TREE;
-#define DEF_ATTR_INT(ENUM, VALUE)					     \
-  built_in_attributes[(int) ENUM] = build_int_2 (VALUE, VALUE < 0 ? -1 : 0);
+#define DEF_ATTR_INT(ENUM, VALUE)				\
+  built_in_attributes[(int) ENUM] = build_int_cst		\
+	(NULL_TREE, VALUE, VALUE < 0 ? -1 : 0);
 #define DEF_ATTR_IDENT(ENUM, STRING)				\
   built_in_attributes[(int) ENUM] = get_identifier (STRING);
 #define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN)	\

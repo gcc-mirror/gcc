@@ -1556,7 +1556,7 @@ shift_return_value (rtx val)
       if (shift > 0)
 	val = expand_shift (LSHIFT_EXPR, GET_MODE (target),
 			    gen_lowpart (GET_MODE (target), val),
-			    build_int_2 (shift, 0), target, 1);
+			    build_int_cst (NULL_TREE, shift, 0), target, 1);
     }
   return val;
 }
@@ -2566,7 +2566,7 @@ expand_case (tree exp)
 	      if (TREE_CODE (index_expr) != INTEGER_CST)
 		{
 		  index_expr
-		    = build_int_2 (INTVAL (index),
+		    = build_int_cst (NULL_TREE, INTVAL (index),
 				   unsignedp || INTVAL (index) >= 0 ? 0 : -1);
 		  index_expr = convert (index_type, index_expr);
 		}
@@ -2738,7 +2738,8 @@ static int
 estimate_case_costs (case_node_ptr node)
 {
   tree min_ascii = integer_minus_one_node;
-  tree max_ascii = convert (TREE_TYPE (node->high), build_int_2 (127, 0));
+  tree max_ascii = convert (TREE_TYPE (node->high),
+			    build_int_cst (NULL_TREE, 127, 0));
   case_node_ptr n;
   int i;
 

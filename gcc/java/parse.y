@@ -13322,10 +13322,10 @@ patch_binop (tree node, tree wfl_op1, tree wfl_op2)
       /* Shift int only up to 0x1f and long up to 0x3f */
       if (prom_type == int_type_node)
 	op2 = fold (build2 (BIT_AND_EXPR, int_type_node, op2,
-			    build_int_2 (0x1f, 0)));
+			    build_int_cst (NULL_TREE, 0x1f, 0)));
       else
 	op2 = fold (build2 (BIT_AND_EXPR, int_type_node, op2,
-			    build_int_2 (0x3f, 0)));
+			    build_int_cst (NULL_TREE, 0x3f, 0)));
 
       /* The >>> operator is a >> operating on unsigned quantities */
       if (code == URSHIFT_EXPR && ! flag_emit_class_files)
@@ -14020,12 +14020,12 @@ patch_unaryop (tree node, tree wfl_op)
 	     both operands, if really necessary */
 	  if (JINTEGRAL_TYPE_P (op_type))
 	    {
-	      value = build_int_2 (1, 0);
-	      TREE_TYPE (value) = TREE_TYPE (node) = op_type;
+	      value = build_int_cst (op_type, 1, 0);
+	      TREE_TYPE (node) = op_type;
 	    }
 	  else
 	    {
-	      value = build_int_2 (1, 0);
+	      value = build_int_cst (NULL_TREE, 1, 0);
 	      TREE_TYPE (node) =
 		binary_numeric_promotion (op_type,
 					  TREE_TYPE (value), &op, &value);
@@ -14251,8 +14251,7 @@ patch_cast (tree node, tree wfl_op)
 static tree
 build_null_of_type (tree type)
 {
-  tree node = build_int_2 (0, 0);
-  TREE_TYPE (node) = promote_type (type);
+  tree node = build_int_cst (promote_type (type), 0, 0);
   return node;
 }
 
@@ -14333,7 +14332,8 @@ static tree
 build_newarray_node (tree type, tree dims, int extra_dims)
 {
   tree node = build3 (NEW_ARRAY_EXPR, NULL_TREE, type,
-		      nreverse (dims), build_int_2 (extra_dims, 0));
+		      nreverse (dims),
+		      build_int_cst (NULL_TREE, extra_dims, 0));
   return node;
 }
 
@@ -14432,7 +14432,8 @@ patch_newarray (tree node)
 		 tree_cons (NULL_TREE,
 			    build_class_ref (TREE_TYPE (array_type)),
 			    tree_cons (NULL_TREE,
-				       build_int_2 (ndims, 0), dims )),
+				       build_int_cst (NULL_TREE,
+						      ndims, 0), dims )),
 		 NULL_TREE);
 }
 

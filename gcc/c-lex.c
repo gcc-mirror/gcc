@@ -588,13 +588,11 @@ interpret_integer (const cpp_token *token, unsigned int flags)
     pedwarn ("integer constant is too large for \"%s\" type",
 	     (flags & CPP_N_UNSIGNED) ? "unsigned long" : "long");
 
-  value = build_int_2 (integer.low, integer.high);
-  TREE_TYPE (value) = type;
+  value = build_int_cst (type, integer.low, integer.high);
 
   /* Convert imaginary to a complex type.  */
   if (flags & CPP_N_IMAGINARY)
-    value = build_complex (NULL_TREE,
-			   convert (type, integer_zero_node), value);
+    value = build_complex (NULL_TREE, build_int_cst (type, 0, 0), value);
 
   return value;
 }
@@ -795,13 +793,6 @@ lex_charconst (const cpp_token *token)
   result = cpp_interpret_charconst (parse_in, token,
 				    &chars_seen, &unsignedp);
 
-  /* Cast to cppchar_signed_t to get correct sign-extension of RESULT
-     before possibly widening to HOST_WIDE_INT for build_int_2.  */
-  if (unsignedp || (cppchar_signed_t) result >= 0)
-    value = build_int_2 (result, 0);
-  else
-    value = build_int_2 ((cppchar_signed_t) result, -1);
-
   if (token->type == CPP_WCHAR)
     type = wchar_type_node;
   /* In C, a character constant has type 'int'.
@@ -811,6 +802,12 @@ lex_charconst (const cpp_token *token)
   else
     type = char_type_node;
 
-  TREE_TYPE (value) = type;
+  /* Cast to cppchar_signed_t to get correct sign-extension of RESULT
+     before possibly widening to HOST_WIDE_INT for build_int_cst.  */
+  if (unsignedp || (cppchar_signed_t) result >= 0)
+    value = build_int_cst (type, result, 0);
+  else
+    value = build_int_cst (type, (cppchar_signed_t) result, -1);
+
   return value;
 }

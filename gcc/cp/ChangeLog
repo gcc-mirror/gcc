@@ -1,3 +1,24 @@
+2004-08-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (convert_class_to_reference,
+	build_user_type_conversion_1, convert_like_real,
+	build_java_interface_fn_ref, build_special_member_call): Use
+	build_int_cst.
+	* class.c (build_vtbl_initializer): Likewise.
+	* cp-gimplify.c (cp_gimplify_expr): Likewise.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	* decl.c (cxx_init_decl_processing, complete_array_type): Likewise.
+	* decl2.c (start_static_initialization_or_destruction,
+	generate_ctor_or_dtor_function): Likewise.
+	* except.c (build_throw): Likewise.
+	* lex.c (cxx_init): Likewise.
+	* mangle.c (write_integer_cst): Likewise.
+	* rtti.c (build_headof, get_tinfo_decl_dynamic,
+	build_dynamic_cast_1, ptr_initializer, ptm_initializer,
+	get_pseudo_ti_init): Likewise.
+	* search.c (get_dynamic_cast_base_type): Likewise.
+	* tree.c (build_shared_int_cst): Likewise.
+
 2004-08-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16273

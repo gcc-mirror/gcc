@@ -704,7 +704,8 @@ primary:
 		  e2 = TYPE_MAIN_VARIANT (groktypename ($5));
 
 		  $$.value = comptypes (e1, e2)
-		    ? build_int_2 (1, 0) : build_int_2 (0, 0);
+		    ? build_int_cst (NULL_TREE, 1, 0)
+		    : build_int_cst (NULL_TREE, 0, 0);
 		  $$.original_code = ERROR_MARK;
 		}
 	| TYPES_COMPATIBLE_P '(' error ')'

@@ -903,12 +903,12 @@ expand_builtin_prefetch (tree arglist)
       if (TREE_CHAIN (TREE_CHAIN (arglist)))
 	arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
       else
-	arg2 = build_int_2 (3, 0);
+	arg2 = build_int_cst (NULL_TREE, 3, 0);
     }
   else
     {
       arg1 = integer_zero_node;
-      arg2 = build_int_2 (3, 0);
+      arg2 = build_int_cst (NULL_TREE, 3, 0);
     }
 
   /* Argument 0 is an address.  */
@@ -2490,8 +2490,8 @@ expand_builtin_strstr (tree arglist, rtx target, enum machine_mode mode)
 
       /* New argument list transforming strstr(s1, s2) to
 	 strchr(s1, s2[0]).  */
-      arglist =
-	build_tree_list (NULL_TREE, build_int_2 (p2[0], 0));
+      arglist = build_tree_list (NULL_TREE,
+				 build_int_cst (NULL_TREE, p2[0], 0));
       arglist = tree_cons (NULL_TREE, s1, arglist);
       return expand_expr (build_function_call_expr (fn, arglist),
 			  target, mode, EXPAND_NORMAL);
@@ -2647,8 +2647,8 @@ expand_builtin_strpbrk (tree arglist, rtx target, enum machine_mode mode)
 
       /* New argument list transforming strpbrk(s1, s2) to
 	 strchr(s1, s2[0]).  */
-      arglist =
-	build_tree_list (NULL_TREE, build_int_2 (p2[0], 0));
+      arglist = build_tree_list (NULL_TREE,
+				 build_int_cst (NULL_TREE, p2[0], 0));
       arglist = tree_cons (NULL_TREE, s1, arglist);
       return expand_expr (build_function_call_expr (fn, arglist),
 			  target, mode, EXPAND_NORMAL);
@@ -4676,10 +4676,11 @@ expand_builtin_fputs (tree arglist, rtx target, bool unlocked)
 	  {
 	    /* New argument list transforming fputs(string, stream) to
 	       fputc(string[0], stream).  */
-	    arglist =
-	      build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)));
-	    arglist =
-	      tree_cons (NULL_TREE, build_int_2 (p[0], 0), arglist);
+	    arglist = build_tree_list (NULL_TREE,
+				       TREE_VALUE (TREE_CHAIN (arglist)));
+	    arglist = tree_cons (NULL_TREE,
+				 build_int_cst (NULL_TREE, p[0], 0),
+				 arglist);
 	    fn = fn_fputc;
 	    break;
 	  }
@@ -4936,7 +4937,7 @@ build_string_literal (int len, const char *str)
 
   t = build_string (len, str);
   elem = build_type_variant (char_type_node, 1, 0);
-  index = build_index_type (build_int_2 (len - 1, 0));
+  index = build_index_type (build_int_cst (NULL_TREE, len - 1, 0));
   type = build_array_type (elem, index);
   TREE_TYPE (t) = type;
   TREE_CONSTANT (t) = 1;
@@ -5022,7 +5023,7 @@ expand_builtin_printf (tree arglist, rtx target, enum machine_mode mode,
 	  /* Given printf("c"), (where c is any one character,)
 	     convert "c"[0] to an int and pass that to the replacement
 	     function.  */
-	  arg = build_int_2 (fmt_str[0], 0);
+	  arg = build_int_cst (NULL_TREE, fmt_str[0], 0);
 	  arglist = build_tree_list (NULL_TREE, arg);
 	  fn = fn_putchar;
 	}
@@ -5193,8 +5194,7 @@ expand_builtin_sprintf (tree arglist, rtx target, enum machine_mode mode)
 		   const0_rtx, VOIDmode, EXPAND_NORMAL);
       if (target == const0_rtx)
 	return const0_rtx;
-      exp = build_int_2 (strlen (fmt_str), 0);
-      exp = fold_convert (integer_type_node, exp);
+      exp = build_int_cst (NULL_TREE, strlen (fmt_str), 0);
       return expand_expr (exp, target, mode, EXPAND_NORMAL);
     }
   /* If the format is "%s", use strcpy if the result isn't used.  */
@@ -6271,9 +6271,10 @@ static tree
 fold_builtin_classify_type (tree arglist)
 {
   if (arglist == 0)
-    return build_int_2 (no_type_class, 0);
+    return build_int_cst (NULL_TREE, no_type_class, 0);
 
-  return build_int_2 (type_to_class (TREE_TYPE (TREE_VALUE (arglist))), 0);
+  return build_int_cst (NULL_TREE,
+			type_to_class (TREE_TYPE (TREE_VALUE (arglist))), 0);
 }
 
 /* Fold a call to __builtin_inf or __builtin_huge_val.  */
@@ -6706,7 +6707,7 @@ fold_builtin_lround (tree exp)
 
 	  real_round (&r, TYPE_MODE (ftype), &x);
 	  REAL_VALUE_TO_INT (&lo, &hi, r);
-	  result = build_int_2 (lo, hi);
+	  result = build_int_cst (NULL_TREE, lo, hi);
 	  if (int_fits_type_p (result, itype))
 	    return fold_convert (itype, result);
 	}
@@ -6735,7 +6736,7 @@ fold_builtin_bitop (tree exp)
     {
       HOST_WIDE_INT hi, width, result;
       unsigned HOST_WIDE_INT lo;
-      tree type, t;
+      tree type;
 
       type = TREE_TYPE (arg);
       width = TYPE_PRECISION (type);
@@ -6815,9 +6816,7 @@ fold_builtin_bitop (tree exp)
 	  abort();
 	}
 
-      t = build_int_2 (result, 0);
-      TREE_TYPE (t) = TREE_TYPE (exp);
-      return t;
+      return build_int_cst (TREE_TYPE (exp), result, 0);
     }
 
   return NULL_TREE;
@@ -7572,11 +7571,12 @@ fold_builtin_isascii (tree arglist)
       /* Transform isascii(c) -> ((c & ~0x7f) == 0).  */
       tree arg = TREE_VALUE (arglist);
 
+      arg = build2 (BIT_AND_EXPR, integer_type_node, arg,
+		    build_int_cst (NULL_TREE,
+				   ~ (unsigned HOST_WIDE_INT) 0x7f,
+				   ~ (HOST_WIDE_INT) 0));
       arg = fold (build2 (EQ_EXPR, integer_type_node,
-			  build2 (BIT_AND_EXPR, integer_type_node, arg,
-				  build_int_2 (~ (unsigned HOST_WIDE_INT) 0x7f,
-					       ~ (HOST_WIDE_INT) 0)),
-			  integer_zero_node));
+			  arg, integer_zero_node));
 
       if (in_gimple_form && !TREE_CONSTANT (arg))
         return NULL_TREE;
@@ -7598,7 +7598,7 @@ fold_builtin_toascii (tree arglist)
       tree arg = TREE_VALUE (arglist);
 
       return fold (build2 (BIT_AND_EXPR, integer_type_node, arg,
-			   build_int_2 (0x7f, 0)));
+			   build_int_cst (NULL_TREE, 0x7f, 0)));
     }
 }
 
@@ -7616,10 +7616,9 @@ fold_builtin_isdigit (tree arglist)
       tree arg = TREE_VALUE (arglist);
       arg = fold_convert (unsigned_type_node, arg);
       arg = build2 (MINUS_EXPR, unsigned_type_node, arg,
-		    fold_convert (unsigned_type_node,
-				  build_int_2 (TARGET_DIGIT0, 0)));
+		    build_int_cst (unsigned_type_node, TARGET_DIGIT0, 0));
       arg = build2 (LE_EXPR, integer_type_node, arg,
-		    fold_convert (unsigned_type_node, build_int_2 (9, 0)));
+		    build_int_cst (unsigned_type_node, 9, 0));
       arg = fold (arg);
       if (in_gimple_form && !TREE_CONSTANT (arg))
         return NULL_TREE;
@@ -8696,7 +8695,8 @@ simplify_builtin_strstr (tree arglist)
 
       /* New argument list transforming strstr(s1, s2) to
 	 strchr(s1, s2[0]).  */
-      arglist = build_tree_list (NULL_TREE, build_int_2 (p2[0], 0));
+      arglist = build_tree_list (NULL_TREE,
+				 build_int_cst (NULL_TREE, p2[0], 0));
       arglist = tree_cons (NULL_TREE, s1, arglist);
       return build_function_call_expr (fn, arglist);
     }
@@ -8881,8 +8881,8 @@ simplify_builtin_strpbrk (tree arglist)
 
       /* New argument list transforming strpbrk(s1, s2) to
 	 strchr(s1, s2[0]).  */
-      arglist =
-	build_tree_list (NULL_TREE, build_int_2 (p2[0], 0));
+      arglist = build_tree_list (NULL_TREE,
+				 build_int_cst (NULL_TREE, p2[0], 0));
       arglist = tree_cons (NULL_TREE, s1, arglist);
       return build_function_call_expr (fn, arglist);
     }
@@ -9130,9 +9130,11 @@ fold_builtin_fputs (tree arglist, bool ignore, bool unlocked, tree len)
 	  {
 	    /* New argument list transforming fputs(string, stream) to
 	       fputc(string[0], stream).  */
-	    arglist =
-	      build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)));
-	    arglist = tree_cons (NULL_TREE, build_int_2 (p[0], 0), arglist);
+	    arglist = build_tree_list (NULL_TREE,
+				       TREE_VALUE (TREE_CHAIN (arglist)));
+	    arglist = tree_cons (NULL_TREE,
+				 build_int_cst (NULL_TREE, p[0], 0),
+				 arglist);
 	    fn = fn_fputc;
 	    break;
 	  }
@@ -9256,7 +9258,7 @@ simplify_builtin_sprintf (tree arglist, int ignored)
       arglist = tree_cons (NULL_TREE, dest, arglist);
       call = build_function_call_expr (fn, arglist);
       if (!ignored)
-	retval = build_int_2 (strlen (fmt_str), 0);
+	retval = build_int_cst (NULL_TREE, strlen (fmt_str), 0);
     }
 
   /* If the format is "%s", use strcpy if the result isn't used.  */

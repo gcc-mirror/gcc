@@ -1183,9 +1183,9 @@ write_integer_cst (const tree cst)
 	}
       
       type = c_common_signed_or_unsigned_type (1, TREE_TYPE (cst));
-      base = build_int_2 (chunk, 0);
-      n = build_int_2 (TREE_INT_CST_LOW (cst), TREE_INT_CST_HIGH (cst));
-      TREE_TYPE (n) = TREE_TYPE (base) = type;
+      base = build_int_cst (type, chunk, 0);
+      n = build_int_cst (type,
+			 TREE_INT_CST_LOW (cst), TREE_INT_CST_HIGH (cst));
 
       if (sign < 0)
 	{

@@ -506,8 +506,7 @@ build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
   else
     abort ();
 
-  ret = build_int_2 (low, high);
-  TREE_TYPE (ret) = type;
+  ret = build_int_cst (type, low, high);
   return ret;
 }
 

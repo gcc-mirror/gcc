@@ -698,7 +698,7 @@ build_java_array_length_access (tree node)
 
   length = java_array_type_length (type);
   if (length >= 0)
-    return build_int_2 (length, 0);
+    return build_int_cst (NULL_TREE, length, 0);
 
   node = build3 (COMPONENT_REF, int_type_node,
 		 build_java_indirect_ref (array_type, node,
@@ -910,7 +910,7 @@ build_newarray (int atype_value, tree length)
      and save the runtime some work. However, the bytecode generator
      expects to find the type_code int here. */
   if (flag_emit_class_files)
-    type_arg = build_int_2 (atype_value, 0);
+    type_arg = build_int_cst (NULL_TREE, atype_value, 0);
   else
     type_arg = build_class_ref (prim_type);
 
@@ -971,7 +971,8 @@ expand_java_multianewarray (tree class_type, int ndim)
 		      build_address_of (soft_multianewarray_node),
 		      tree_cons (NULL_TREE, build_class_ref (class_type),
 				 tree_cons (NULL_TREE, 
-					    build_int_2 (ndim, 0), args)),
+					    build_int_cst (NULL_TREE, ndim, 0),
+					    args)),
 		      NULL_TREE));
 }
 
@@ -1081,10 +1082,7 @@ expand_java_pushc (int ival, tree type)
   if (type == ptr_type_node && ival == 0)
     value = null_pointer_node;
   else if (type == int_type_node || type == long_type_node)
-    {
-      value = build_int_2 (ival, ival < 0 ? -1 : 0);
-      TREE_TYPE (value) = type;
-    }
+    value = build_int_cst (type, ival, ival < 0 ? -1 : 0);
   else if (type == float_type_node || type == double_type_node)
     {
       REAL_VALUE_TYPE x;
@@ -1289,7 +1287,7 @@ expand_iinc (unsigned int local_var_index, int ival, int pc)
 
   flush_quick_stack ();
   local_var = find_local_variable (local_var_index, int_type_node, pc);
-  constant_value = build_int_2 (ival, ival < 0 ? -1 : 0);
+  constant_value = build_int_cst (NULL_TREE, ival, ival < 0 ? -1 : 0);
   res = fold (build2 (PLUS_EXPR, int_type_node, local_var, constant_value));
   java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (local_var), local_var, res));
   update_aliases (local_var, local_var_index, pc);
@@ -1359,7 +1357,8 @@ build_java_binop (enum tree_code op, tree type, tree arg1, tree arg2)
       }
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
-      mask = build_int_2 (TYPE_PRECISION (TREE_TYPE (arg1)) - 1, 0);
+      mask = build_int_cst (NULL_TREE,
+			    TYPE_PRECISION (TREE_TYPE (arg1)) - 1, 0);
       arg2 = fold (build2 (BIT_AND_EXPR, int_type_node, arg2, mask));
       break;
 
@@ -1539,9 +1538,9 @@ build_field_ref (tree self_value, tree self_class, tree name)
 	   we can make a direct reference.  */
 	{
 	  tree otable_index
-	    = build_int_2 (get_symbol_table_index 
-			   (field_decl, &TYPE_OTABLE_METHODS (output_class)),
-			   0);
+	    = build_int_cst (NULL_TREE, get_symbol_table_index 
+			     (field_decl, &TYPE_OTABLE_METHODS (output_class)),
+			     0);
 	  tree field_offset
 	    = build4 (ARRAY_REF, integer_type_node,
 		      TYPE_OTABLE_DECL (output_class), otable_index,
@@ -1689,8 +1688,7 @@ expand_java_add_case (tree switch_expr, int match, int target_pc)
 {
   tree value, x;
 
-  value = build_int_2 (match, match < 0 ? -1 : 0);
-  TREE_TYPE (value) = TREE_TYPE (switch_expr);
+  value = build_int_cst (TREE_TYPE (switch_expr), match, match < 0 ? -1 : 0);
   
   x = build3 (CASE_LABEL_EXPR, void_type_node, value, NULL_TREE,
 	      create_artificial_label ());
@@ -1705,7 +1703,8 @@ static void
 expand_java_call (int target_pc, int return_address)
 {
   tree target_label = lookup_label (target_pc);
-  tree value = build_int_2 (return_address, return_address < 0 ? -1 : 0);
+  tree value = build_int_cst (NULL_TREE,
+			      return_address, return_address < 0 ? -1 : 0);
   push_value (value);
   flush_quick_stack ();
   expand_goto (target_label);
@@ -1836,8 +1835,8 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
       else
 	{
 	  tree table_index
-	    = build_int_2 (get_symbol_table_index 
-			   (method, &TYPE_ATABLE_METHODS (output_class)), 0);
+	    = build_int_cst (NULL_TREE, get_symbol_table_index 
+			     (method, &TYPE_ATABLE_METHODS (output_class)), 0);
 	  func = build4 (ARRAY_REF,  method_ptr_type_node, 
 			 TYPE_ATABLE_DECL (output_class), table_index,
 			 NULL_TREE, NULL_TREE);
@@ -1881,7 +1880,7 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
 	}
       method_index *= int_size_in_bytes (method_type_node);
       ref = fold (build2 (PLUS_EXPR, method_ptr_type_node,
-			  ref, build_int_2 (method_index, 0)));
+			  ref, build_int_cst (NULL_TREE, method_index, 0)));
       ref = build1 (INDIRECT_REF, method_type_node, ref);
       func = build3 (COMPONENT_REF, nativecode_ptr_type_node,
 		     ref, lookup_field (&method_type_node, ncode_ident),
@@ -1961,8 +1960,8 @@ build_invokevirtual (tree dtable, tree method)
   if (flag_indirect_dispatch)
     {
       otable_index 
-	= build_int_2 (get_symbol_table_index 
-		       (method, &TYPE_OTABLE_METHODS (output_class)), 0);
+	= build_int_cst (NULL_TREE, get_symbol_table_index 
+			 (method, &TYPE_OTABLE_METHODS (output_class)), 0);
       method_index = build4 (ARRAY_REF, integer_type_node, 
 			     TYPE_OTABLE_DECL (output_class), 
 			     otable_index, NULL_TREE, NULL_TREE);
@@ -2021,14 +2020,15 @@ build_invokeinterface (tree dtable, tree method)
   if (flag_indirect_dispatch)
     {
       otable_index
-	= build_int_2 (get_symbol_table_index 
-		       (method, &TYPE_OTABLE_METHODS (output_class)), 0);
+	= build_int_cst (NULL_TREE, get_symbol_table_index 
+			 (method, &TYPE_OTABLE_METHODS (output_class)), 0);
       idx = build4 (ARRAY_REF, integer_type_node,
 		    TYPE_OTABLE_DECL (output_class), otable_index,
 		    NULL_TREE, NULL_TREE);
     }
   else
-    idx = build_int_2 (get_interface_method_index (method, interface), 0);
+    idx = build_int_cst (NULL_TREE,
+			 get_interface_method_index (method, interface), 0);
 
   lookup_arg = tree_cons (NULL_TREE, dtable,
                           tree_cons (NULL_TREE, build_class_ref (interface),
@@ -2282,7 +2282,7 @@ build_jni_stub (tree method)
   /* We call _Jv_LookupJNIMethod to find the actual underlying
      function pointer.  _Jv_LookupJNIMethod will throw the appropriate
      exception if this function is not found at runtime.  */
-  tem = build_tree_list (NULL_TREE, build_int_2 (args_size, 0));
+  tem = build_tree_list (NULL_TREE, build_int_cst (NULL_TREE, args_size, 0));
   method_sig = build_java_signature (TREE_TYPE (method));
   lookup_arg = tree_cons (NULL_TREE,
                           build_utf8_ref (unmangle_classname

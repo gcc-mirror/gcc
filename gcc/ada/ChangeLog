@@ -1,3 +1,10 @@
+2004-08-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cuintp.c (UI_To_gnu): Use build_int_cst..
+	* trans.c (Exception_Handler_to_gnu_sjlj, gnat_to_gnu): Likewise.
+	* utils.c (init_gigi_decls): Likewise.
+	* utils2.c (build_call_raise): Likewise.
+
 2004-08-13  Olivier Hainque  <hainque@act-europe.fr>
 
 	* decl.c (gnat_to_gnu_entity) <E_Variable>: When building an allocator

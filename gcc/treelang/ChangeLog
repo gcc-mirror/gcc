@@ -1,3 +1,7 @@
+2004-08-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* treetree.c (tree_code_get_integer_value): Use build_int_cst.
+
 2004-07-31  James A. Morrison  <phython@gcc.gnu.org>
 
 	* Make-lang.in (TREE_BE_LIBS): Remove.

@@ -3269,13 +3269,14 @@ complete_array_type (tree type, tree initial_value, int do_default)
 	{
 	  int eltsize
 	    = int_size_in_bytes (TREE_TYPE (TREE_TYPE (initial_value)));
-	  maxindex = build_int_2 ((TREE_STRING_LENGTH (initial_value)
-				   / eltsize) - 1, 0);
+	  maxindex = build_int_cst (NULL_TREE,
+				    (TREE_STRING_LENGTH (initial_value)
+				     / eltsize) - 1, 0);
 	}
       else if (TREE_CODE (initial_value) == CONSTRUCTOR)
 	{
 	  tree elts = CONSTRUCTOR_ELTS (initial_value);
-	  maxindex = build_int_2 (-1, -1);
+	  maxindex = build_int_cst (NULL_TREE, -1, -1);
 	  for (; elts; elts = TREE_CHAIN (elts))
 	    {
 	      if (TREE_PURPOSE (elts))
@@ -3292,14 +3293,14 @@ complete_array_type (tree type, tree initial_value, int do_default)
 	    value = 1;
 
 	  /* Prevent further error messages.  */
-	  maxindex = build_int_2 (0, 0);
+	  maxindex = build_int_cst (NULL_TREE, 0, 0);
 	}
     }
 
   if (!maxindex)
     {
       if (do_default)
-	maxindex = build_int_2 (0, 0);
+	maxindex = build_int_cst (NULL_TREE, 0, 0);
       value = 2;
     }
 
@@ -3410,7 +3411,7 @@ check_bitfield_type_and_width (tree *type, tree *width, const char *orig_name)
     {
       error ("width of `%s' exceeds its type", name);
       w = max_width;
-      *width = build_int_2 (w, 0);
+      *width = build_int_cst (NULL_TREE, w, 0);
     }
   else
     w = tree_low_cst (*width, 1);

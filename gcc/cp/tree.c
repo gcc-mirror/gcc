@@ -1377,10 +1377,10 @@ tree
 build_shared_int_cst (int i)
 {
   if (i >= 256)
-    return build_int_2 (i, 0);
+    return build_int_cst (NULL_TREE, i, 0);
 
   if (!shared_int_cache[i])
-    shared_int_cache[i] = build_int_2 (i, 0);
+    shared_int_cache[i] = build_int_cst (NULL_TREE, i, 0);
 
   return shared_int_cache[i];
 }
