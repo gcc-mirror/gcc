@@ -1,3 +1,10 @@
+2004-12-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* fold-const.c (fold_build_cleanup_point_expr): For a RETURN_EXPR,
+	we only need a cleanup point expression when the expression on the
+	left hand side of the MODIFIY_EXPR inside the return has side
+	effects.
+
 2004-12-28  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* tree-vectorizer.c (vect_mark_relevant) First argument changed from

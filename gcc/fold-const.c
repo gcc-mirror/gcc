@@ -10783,6 +10783,21 @@ fold_build_cleanup_point_expr (tree type, tree expr)
      it with a cleanup point expression.  */
   if (!TREE_SIDE_EFFECTS (expr))
     return expr;
+
+  /* If the expression is a return, check to see if the expression inside the
+     return has no side effects or the right hand side of the modify expression
+     inside the return. If either don't have side effects set we don't need to
+     wrap the expression in a cleanup point expression.  Note we don't check the
+     left hand side of the modify because it should always be a return decl.  */
+  if (TREE_CODE (expr) == RETURN_EXPR)
+    {
+      tree op = TREE_OPERAND (expr, 0);
+      if (!op || !TREE_SIDE_EFFECTS (op))
+        return expr;
+      op = TREE_OPERAND (op, 1);
+      if (!TREE_SIDE_EFFECTS (op))
+        return expr;
+    }
   
   return build1 (CLEANUP_POINT_EXPR, type, expr);
 }
