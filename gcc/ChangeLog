@@ -1,5 +1,27 @@
 2002-05-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* Makefile.in: Update.
+	* c-common.c (flag_iso, flag_undef, cb_register_builtins,
+	builtin_define_std): New.
+	(c_common_init): Register CPP builtins callback.
+	* c-common.h (flag_iso, flag_undef): New.
+	* c-decl.c (c_decode_option): Set flag_iso and flag_undef.
+	* c-lex.c: Don't include target.h.
+	(cb_register_builtins): Move to c-common.c.
+	(init_c_lex): Don't register hook here.
+	* c-lex.h (builtin_define, builtin_assert, builtin_define_std): New.
+	(cpp_define, cpp_assert): Remove.
+	* gcc.c (cc1_options): Pass -undef to front end.
+	* target-def.h (TARGET_REGISTER_CPP_BUILTINS): Remove.
+	(TARGET_INITIALIZER): Update.
+	* target.h (struct cpp_reader): Don't predeclare.
+	(struct gcc_target): Remove cpp builtin hook.
+	* tree.c (default_register_cpp_builtins): Remove.
+doc:
+	* tm.texi: Update.
+
+2002-05-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* cppexp.c (_cpp_expand_op_stack): Set op_limit.
 
 2002-05-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>

@@ -2543,13 +2543,6 @@ build_type_attribute_variant (ttype, attribute)
   return ttype;
 }
 
-/* Default registration of target-specific CPP built-ins.  */
-void
-default_register_cpp_builtins (pfile)
-     struct cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-}
-
 /* Default value of targetm.comp_type_attributes that always returns 1.  */
 
 int

@@ -136,12 +136,6 @@ int flag_no_gnu_keywords;
 
 int flag_signed_bitfields = 1;
 
-/* Nonzero means enable obscure standard features and disable GNU
-   extensions that might cause standard-compliant code to be
-   miscompiled.  */
-
-int flag_ansi;
-
 /* Nonzero means do emit exported implementations of functions even if
    they can be inlined.  */
 
@@ -699,8 +693,10 @@ cxx_decode_option (argc, argv)
     }
   else if (!strcmp (p, "-E"))
     flag_preprocess_only = 1;
+  else if (!strcmp (p, "-undef"))
+    flag_undef = 1;
   else if (!strcmp (p, "-ansi"))
-    flag_no_nonansi_builtin = 1, flag_ansi = 1,
+    flag_no_nonansi_builtin = 1, flag_iso = 1,
     flag_noniso_default_format_attributes = 0, flag_no_gnu_keywords = 1;
 #ifdef SPEW_DEBUG
   /* Undocumented, only ever used when you're invoking cc1plus by hand, since
