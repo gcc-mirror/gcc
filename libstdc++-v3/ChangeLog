@@ -1,5 +1,10 @@
 2005-02-16  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/23_containers/set/modifiers/16728.cc:
+	Remove redundant include <testsuite_performance.h>.
+
+2005-02-16  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/19829
 	* testsuite/21_strings/basic_string/find/char/3.cc: Fix the test
 	at line #66 to not access str_lit01 beyond its end.
