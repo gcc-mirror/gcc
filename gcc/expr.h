@@ -284,7 +284,7 @@ extern rtx expand_simple_unop PARAMS ((enum machine_mode, enum rtx_code,
    perform the operation described by CODE and MODE.  */
 extern int have_insn_for PARAMS ((enum rtx_code, enum machine_mode));
 
-/* Emit code to make a call to a constant function or a library call. */
+/* Emit code to make a call to a constant function or a library call.  */
 extern void emit_libcall_block PARAMS ((rtx, rtx, rtx, rtx));
 
 /* Create but don't emit one rtl instruction to perform certain operations.
@@ -429,7 +429,7 @@ extern void emit_group_load PARAMS ((rtx, rtx, int, unsigned int));
 extern void emit_group_store PARAMS ((rtx, rtx, int, unsigned int));
 
 #ifdef TREE_CODE
-/* Copy BLKmode object from a set of registers. */
+/* Copy BLKmode object from a set of registers.  */
 extern rtx copy_blkmode_from_reg PARAMS ((rtx,rtx,tree));
 #endif
 
@@ -483,7 +483,7 @@ extern void emit_push_insn PARAMS ((rtx, enum machine_mode, tree, rtx,
 				    unsigned int, int, rtx, int, rtx, rtx,
 				    int, rtx));
 
-/* Expand an assignment that stores the value of FROM into TO. */
+/* Expand an assignment that stores the value of FROM into TO.  */
 extern rtx expand_assignment PARAMS ((tree, tree, int, int));
 
 /* Generate code for computing expression EXP,

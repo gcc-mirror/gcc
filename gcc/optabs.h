@@ -212,7 +212,7 @@ extern optab optab_table[OTI_MAX];
 /* Tables of patterns for extending one integer mode to another.  */
 extern enum insn_code extendtab[MAX_MACHINE_MODE][MAX_MACHINE_MODE][2];
 
-/* Tables of patterns for converting between fixed and floating point. */
+/* Tables of patterns for converting between fixed and floating point.  */
 extern enum insn_code fixtab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
 extern enum insn_code fixtrunctab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
 extern enum insn_code floattab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];

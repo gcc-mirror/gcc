@@ -4,7 +4,7 @@
    This file is part of GCC.
 
    Provide definitions for macros which depend on HOST_BITS_PER_INT
-   and HOST_BITS_PER_LONG. */
+   and HOST_BITS_PER_LONG.  */
 
 #ifndef GCC_HWINT_H
 #define GCC_HWINT_H

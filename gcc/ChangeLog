@@ -1,5 +1,20 @@
 2001-10-09  Kazu Hirata  <kazu@hxi.com>
 
+	* acconfig.h: Fix comment formatting.
+	* c-dump.h: Likewise.
+	* c-tree.h: Likewise.
+	* conditions.h: Likewise.
+	* expr.h: Likewise.
+	* function.h: Likewise.
+	* gthr.h: Likewise.
+	* hwint.h: Likewise.
+	* integrate.h: Likewise.
+	* intl.h: Likewise.
+	* loop.h: Likewise.
+	* optabs.h: Likewise.
+
+2001-10-09  Kazu Hirata  <kazu@hxi.com>
+
 	* c-common.h: Fix comment formatting.
 	* c-dump.c: Likewise.
 	* cfg.c: Likewise.

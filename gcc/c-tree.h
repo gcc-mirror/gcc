@@ -325,12 +325,12 @@ extern int warn_traditional;
 
 extern int warn_char_subscripts;
 
-/* Warn if main is suspicious. */
+/* Warn if main is suspicious.  */
 
 extern int warn_main;
 
 /* Nonzero means to allow single precision math even if we're generally
-   being traditional. */
+   being traditional.  */
 extern int flag_allow_single_precision;
 
 /* Warn if initializer is not completely bracketed.  */
@@ -341,7 +341,7 @@ extern int warn_missing_braces;
 
 extern int warn_sign_compare;
 
-/* Warn about testing equality of floating point numbers. */
+/* Warn about testing equality of floating point numbers.  */
 
 extern int warn_float_equal;
 
