@@ -2080,8 +2080,8 @@ distribute_bit_expr (code, type, arg0, arg1)
 
   if (TREE_CODE (arg0) != TREE_CODE (arg1)
       || TREE_CODE (arg0) == code
-      || (TREE_CODE (arg0) != TRUTH_AND_EXPR
-	  && TREE_CODE (arg0) != TRUTH_OR_EXPR))
+      || (TREE_CODE (arg0) != BIT_AND_EXPR
+	  && TREE_CODE (arg0) != BIT_IOR_EXPR))
     return 0;
 
   if (operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 0), 0))
