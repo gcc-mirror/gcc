@@ -1,5 +1,7 @@
 2004-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* dbxout.c (dbxout_type): Fix printf format.
+
 	* tree.h (binfo_member): Remove.
 	* tree.c (binfo_member): Remove.
 
@@ -4367,5 +4369,4 @@
 	* libfuncs.h (LTI_gcov_init, gcov_init_libfunc): Remove.
 	* optabs.c (init_optabs): Don't set gcov_init_libfunc.
 
-VERSION_IDENT="CVS-$Name:  $ $Revision: 1.46 $-$Date: 2004/07/08 15:54:45 $-UTC"
 See ChangeLog.11 for earlier changes.

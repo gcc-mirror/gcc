@@ -1690,7 +1690,7 @@ dbxout_type (tree type, int full)
 		if (BINFO_N_BASE_BINFOS (binfo))
 		  {
 		    have_used_extensions = 1;
-		    fprintf (asmfile, "!%d,", BINFO_N_BASE_BINFOS (binfo));
+		    fprintf (asmfile, "!%u,", BINFO_N_BASE_BINFOS (binfo));
 		    CHARS (8);
 		  }
 	      }
