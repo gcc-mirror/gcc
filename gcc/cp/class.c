@@ -5185,7 +5185,16 @@ finish_struct_1 (tree t)
 
   if (warn_nonvdtor && TYPE_POLYMORPHIC_P (t) && TYPE_HAS_DESTRUCTOR (t)
       && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 1)) == NULL_TREE)
-    warning ("`%#T' has virtual functions but non-virtual destructor", t);
+
+    {
+      tree dtor = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 1);
+
+      /* Warn only if the dtor is non-private or the class has friends */
+      if (!TREE_PRIVATE (dtor) ||
+	  (CLASSTYPE_FRIEND_CLASSES (t) ||
+	   DECL_FRIENDLIST (TYPE_MAIN_DECL (t))))
+	warning ("%#T' has virtual functions but non-virtual destructor", t);
+    }
 
   complete_vars (t);
 
