@@ -828,7 +828,7 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
   rtx set = 0, src, dest;
   rtx p;
 #ifdef AUTO_INC_DEC
-  rtx, link;
+  rtx link;
 #endif
   int all_adjacent = (succ ? (next_active_insn (insn) == succ
 			      && next_active_insn (succ) == i3)
@@ -10166,7 +10166,7 @@ simplify_comparison (code, pop0, pop1)
     }
 
   /* Now make any compound operations involved in this comparison.  Then,
-     check for an outmost SUBREG on OP0 that isn't doing anything or is
+     check for an outmost SUBREG on OP0 that is not doing anything or is
      paradoxical.  The latter case can only occur when it is known that the
      "extra" bits will be zero.  Therefore, it is safe to remove the SUBREG.
      We can never remove a SUBREG for a non-equality comparison because the

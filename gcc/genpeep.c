@@ -325,13 +325,9 @@ match_rtx (x, path, fail_label)
 	      printf (";\n");
 	    }
 
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-	  printf ("  if (XWINT (x, %d) != %d) goto L%d;\n",
-		  i, XWINT (x, i), fail_label);
-#else
-	  printf ("  if (XWINT (x, %d) != %ld) goto L%d;\n",
-		  i, XWINT (x, i), fail_label);
-#endif
+	  printf ("  if (XWINT (x, %d) != ", i);
+	  printf (HOST_WIDE_INT_PRINT_DEC, XWINT (x, i));
+	  printf (") goto L%d;\n", fail_label);
 	}
       else if (fmt[i] == 's')
 	{

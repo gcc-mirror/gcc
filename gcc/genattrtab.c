@@ -4617,11 +4617,7 @@ write_test_expr (exp, flags)
 
     /* Constant integer.  */
     case CONST_INT:
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-      printf ("%d", XWINT (exp, 0));
-#else
-      printf ("%ld", XWINT (exp, 0));
-#endif
+      printf (HOST_WIDE_INT_PRINT_DEC, XWINT (exp, 0));
       break;
 
     /* A random C expression.  */
