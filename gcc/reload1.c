@@ -4017,7 +4017,10 @@ forget_old_reloads_1 (x, ignored, data)
 	   reload reg in the current instruction.  */
 	if (n_reloads == 0
 	    || ! TEST_HARD_REG_BIT (reg_is_output_reload, regno + i))
-	  CLEAR_HARD_REG_BIT (reg_reloaded_valid, regno + i);
+	  {
+	    CLEAR_HARD_REG_BIT (reg_reloaded_valid, regno + i);
+	    spill_reg_store[regno + i] = 0;
+	  }
     }
 
   /* Since value of X has changed,
