@@ -1,3 +1,9 @@
+2004-05-08  Tobias Schlüter <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15206
+	* trans-intrinsic.c (gfc_conv_intrinsic_rrspacing): Fixed to
+	handle zero correctly.
+
 2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* match.c (gfc_match): Eliminate dead code.

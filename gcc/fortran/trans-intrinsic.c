@@ -2398,23 +2398,28 @@ gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
    se->expr = tmp;
 }
 
-/* Generate code for RRSPACING (X) intrinsic function. We generate:                                                                            
-    sedigits = edigits + 1;
-    if (expn == 0)
+/* Generate code for RRSPACING (X) intrinsic function. We generate:
+
+    if (expn == 0 && frac == 0)
+       res = 0;
+    else
     {
-      t1 = leadzero (frac);
-      frac = frac << (t1 + sedigits);
-      frac = frac >> (sedigits);
-    }
-    t = bias + BITS_OF_FRACTION_OF;
-    res = (t << BITS_OF_FRACTION_OF) | frac;
+       sedigits = edigits + 1;
+       if (expn == 0)
+       {
+         t1 = leadzero (frac);
+         frac = frac << (t1 + sedigits);
+         frac = frac >> (sedigits);
+       }
+       t = bias + BITS_OF_FRACTION_OF;
+       res = (t << BITS_OF_FRACTION_OF) | frac;
 */
 
 static void
 gfc_conv_intrinsic_rrspacing (gfc_se * se, gfc_expr * expr)
 {
    tree masktype;
-   tree tmp, t1, t2, cond;
+   tree tmp, t1, t2, cond, cond2;
    tree one, zero;
    tree fdigits, fraction;
    real_compnt_info rcs;
@@ -2437,6 +2442,10 @@ gfc_conv_intrinsic_rrspacing (gfc_se * se, gfc_expr * expr)
    tmp = build (PLUS_EXPR, masktype, rcs.bias, fdigits);
    tmp = build (LSHIFT_EXPR, masktype, tmp, fdigits);
    tmp = build (BIT_IOR_EXPR, masktype, tmp, fraction);
+
+   cond2 = build (EQ_EXPR, boolean_type_node, rcs.frac, zero);
+   cond = build (TRUTH_ANDIF_EXPR, boolean_type_node, cond, cond2);
+   tmp = build (COND_EXPR, masktype, cond, integer_zero_node, tmp);
 
    tmp = build1 (VIEW_CONVERT_EXPR, rcs.type, tmp);
    se->expr = tmp;
