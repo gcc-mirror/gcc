@@ -11058,6 +11058,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	case REG_EQUAL:
 	case REG_EQUIV:
 	case REG_NONNEG:
+	case REG_NOALIAS:
 	  /* These notes say something about results of an insn.  We can
 	     only support them if they used to be on I3 in which case they
 	     remain on I3.  Otherwise they are ignored.

@@ -127,6 +127,9 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "insn-attr.h"
 
+extern char *reg_known_equiv_p;
+extern rtx *reg_known_value;
+
 #ifdef INSN_SCHEDULING
 /* Arrays set up by scheduling for the same respective purposes as
    similar-named arrays set up by flow analysis.  We work with these
@@ -143,6 +146,7 @@ static int *sched_reg_live_length;
    such insn.  Needed for new registers which may be introduced
    by splitting insns.  */
 static rtx *reg_last_uses;
+static int reg_last_uses_size;
 static rtx *reg_last_sets;
 static regset reg_pending_sets;
 static int reg_pending_sets_all;
@@ -295,11 +299,6 @@ struct sometimes
 };
 
 /* Forward declarations.  */
-static rtx canon_rtx			PROTO((rtx));
-static int rtx_equal_for_memref_p	PROTO((rtx, rtx));
-static rtx find_symbolic_term		PROTO((rtx));
-static int memrefs_conflict_p		PROTO((int, rtx, int, rtx,
-					       HOST_WIDE_INT));
 static void add_dependence		PROTO((rtx, rtx, enum reg_note));
 static void remove_dependence		PROTO((rtx, rtx));
 static rtx find_insn_list		PROTO((rtx, rtx));
@@ -349,567 +348,6 @@ void schedule_insns	PROTO((FILE *));
 
 #define SIZE_FOR_MODE(X) (GET_MODE_SIZE (GET_MODE (X)))
 
-/* Vector indexed by N giving the initial (unchanging) value known
-   for pseudo-register N.  */
-static rtx *reg_known_value;
-
-/* Vector recording for each reg_known_value whether it is due to a
-   REG_EQUIV note.  Future passes (viz., reload) may replace the
-   pseudo with the equivalent expression and so we account for the
-   dependences that would be introduced if that happens.  */
-/* ??? This is a problem only on the Convex.  The REG_EQUIV notes created in
-   assign_parms mention the arg pointer, and there are explicit insns in the
-   RTL that modify the arg pointer.  Thus we must ensure that such insns don't
-   get scheduled across each other because that would invalidate the REG_EQUIV
-   notes.  One could argue that the REG_EQUIV notes are wrong, but solving
-   the problem in the scheduler will likely give better code, so we do it
-   here.  */
-static char *reg_known_equiv_p;
-
-/* Indicates number of valid entries in reg_known_value.  */
-static int reg_known_value_size;
-
-static rtx
-canon_rtx (x)
-     rtx x;
-{
-  /* Recursively look for equivalences.  */
-  if (GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER
-      && REGNO (x) <= reg_known_value_size)
-    return reg_known_value[REGNO (x)] == x
-      ? x : canon_rtx (reg_known_value[REGNO (x)]);
-  else if (GET_CODE (x) == PLUS)
-    {
-      rtx x0 = canon_rtx (XEXP (x, 0));
-      rtx x1 = canon_rtx (XEXP (x, 1));
-
-      if (x0 != XEXP (x, 0) || x1 != XEXP (x, 1))
-	{
-	  /* We can tolerate LO_SUMs being offset here; these
-	     rtl are used for nothing other than comparisons.  */
-	  if (GET_CODE (x0) == CONST_INT)
-	    return plus_constant_for_output (x1, INTVAL (x0));
-	  else if (GET_CODE (x1) == CONST_INT)
-	    return plus_constant_for_output (x0, INTVAL (x1));
-	  return gen_rtx (PLUS, GET_MODE (x), x0, x1);
-	}
-    }
-  /* This gives us much better alias analysis when called from
-     the loop optimizer.   Note we want to leave the original
-     MEM alone, but need to return the canonicalized MEM with
-     all the flags with their original values.  */
-  else if (GET_CODE (x) == MEM)
-    {
-      rtx copy = copy_rtx (x);
-      XEXP (copy, 0) = canon_rtx (XEXP (copy, 0));
-      x = copy;
-    }
-  return x;
-}
-
-/* Set up all info needed to perform alias analysis on memory references.  */
-
-void
-init_alias_analysis ()
-{
-  int maxreg = max_reg_num ();
-  rtx insn;
-  rtx note;
-  rtx set;
-
-  reg_known_value_size = maxreg;
-
-  reg_known_value
-    = (rtx *) oballoc ((maxreg-FIRST_PSEUDO_REGISTER) * sizeof (rtx))
-      - FIRST_PSEUDO_REGISTER;
-  bzero ((char *) (reg_known_value + FIRST_PSEUDO_REGISTER),
-	 (maxreg-FIRST_PSEUDO_REGISTER) * sizeof (rtx));
-
-  reg_known_equiv_p
-    = (char *) oballoc ((maxreg -FIRST_PSEUDO_REGISTER) * sizeof (char))
-      - FIRST_PSEUDO_REGISTER;
-  bzero (reg_known_equiv_p + FIRST_PSEUDO_REGISTER,
-	 (maxreg - FIRST_PSEUDO_REGISTER) * sizeof (char));
-
-  /* Fill in the entries with known constant values.  */
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if ((set = single_set (insn)) != 0
-	&& GET_CODE (SET_DEST (set)) == REG
-	&& REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
-	&& (((note = find_reg_note (insn, REG_EQUAL, 0)) != 0
-	     && REG_N_SETS (REGNO (SET_DEST (set))) == 1)
-	    || (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
-	&& GET_CODE (XEXP (note, 0)) != EXPR_LIST)
-      {
-	int regno = REGNO (SET_DEST (set));
-	reg_known_value[regno] = XEXP (note, 0);
-	reg_known_equiv_p[regno] = REG_NOTE_KIND (note) == REG_EQUIV;
-      }
-
-  /* Fill in the remaining entries.  */
-  while (--maxreg >= FIRST_PSEUDO_REGISTER)
-    if (reg_known_value[maxreg] == 0)
-      reg_known_value[maxreg] = regno_reg_rtx[maxreg];
-}
-
-/* Return 1 if X and Y are identical-looking rtx's.
-
-   We use the data in reg_known_value above to see if two registers with
-   different numbers are, in fact, equivalent.  */
-
-static int
-rtx_equal_for_memref_p (x, y)
-     rtx x, y;
-{
-  register int i;
-  register int j;
-  register enum rtx_code code;
-  register char *fmt;
-
-  if (x == 0 && y == 0)
-    return 1;
-  if (x == 0 || y == 0)
-    return 0;
-  x = canon_rtx (x);
-  y = canon_rtx (y);
-
-  if (x == y)
-    return 1;
-
-  code = GET_CODE (x);
-  /* Rtx's of different codes cannot be equal.  */
-  if (code != GET_CODE (y))
-    return 0;
-
-  /* (MULT:SI x y) and (MULT:HI x y) are NOT equivalent.
-     (REG:SI x) and (REG:HI x) are NOT equivalent.  */
-
-  if (GET_MODE (x) != GET_MODE (y))
-    return 0;
-
-  /* REG, LABEL_REF, and SYMBOL_REF can be compared nonrecursively.  */
-
-  if (code == REG)
-    return REGNO (x) == REGNO (y);
-  if (code == LABEL_REF)
-    return XEXP (x, 0) == XEXP (y, 0);
-  if (code == SYMBOL_REF)
-    return XSTR (x, 0) == XSTR (y, 0);
-
-  /* For commutative operations, the RTX match if the operand match in any
-     order.  Also handle the simple binary and unary cases without a loop.  */
-  if (code == EQ || code == NE || GET_RTX_CLASS (code) == 'c')
-    return ((rtx_equal_for_memref_p (XEXP (x, 0), XEXP (y, 0))
-	     && rtx_equal_for_memref_p (XEXP (x, 1), XEXP (y, 1)))
-	    || (rtx_equal_for_memref_p (XEXP (x, 0), XEXP (y, 1))
-		&& rtx_equal_for_memref_p (XEXP (x, 1), XEXP (y, 0))));
-  else if (GET_RTX_CLASS (code) == '<' || GET_RTX_CLASS (code) == '2')
-    return (rtx_equal_for_memref_p (XEXP (x, 0), XEXP (y, 0))
-	    && rtx_equal_for_memref_p (XEXP (x, 1), XEXP (y, 1)));
-  else if (GET_RTX_CLASS (code) == '1')
-    return rtx_equal_for_memref_p (XEXP (x, 0), XEXP (y, 0));
-
-  /* Compare the elements.  If any pair of corresponding elements
-     fail to match, return 0 for the whole things.  */
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      switch (fmt[i])
-	{
-	case 'w':
-	  if (XWINT (x, i) != XWINT (y, i))
-	    return 0;
-	  break;
-
-	case 'n':
-	case 'i':
-	  if (XINT (x, i) != XINT (y, i))
-	    return 0;
-	  break;
-
-	case 'V':
-	case 'E':
-	  /* Two vectors must have the same length.  */
-	  if (XVECLEN (x, i) != XVECLEN (y, i))
-	    return 0;
-
-	  /* And the corresponding elements must match.  */
-	  for (j = 0; j < XVECLEN (x, i); j++)
-	    if (rtx_equal_for_memref_p (XVECEXP (x, i, j), XVECEXP (y, i, j)) == 0)
-	      return 0;
-	  break;
-
-	case 'e':
-	  if (rtx_equal_for_memref_p (XEXP (x, i), XEXP (y, i)) == 0)
-	    return 0;
-	  break;
-
-	case 'S':
-	case 's':
-	  if (strcmp (XSTR (x, i), XSTR (y, i)))
-	    return 0;
-	  break;
-
-	case 'u':
-	  /* These are just backpointers, so they don't matter.  */
-	  break;
-
-	case '0':
-	  break;
-
-	  /* It is believed that rtx's at this level will never
-	     contain anything but integers and other rtx's,
-	     except for within LABEL_REFs and SYMBOL_REFs.  */
-	default:
-	  abort ();
-	}
-    }
-  return 1;
-}
-
-/* Given an rtx X, find a SYMBOL_REF or LABEL_REF within
-   X and return it, or return 0 if none found.  */
-
-static rtx
-find_symbolic_term (x)
-     rtx x;
-{
-  register int i;
-  register enum rtx_code code;
-  register char *fmt;
-
-  code = GET_CODE (x);
-  if (code == SYMBOL_REF || code == LABEL_REF)
-    return x;
-  if (GET_RTX_CLASS (code) == 'o')
-    return 0;
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      rtx t;
-
-      if (fmt[i] == 'e')
-	{
-	  t = find_symbolic_term (XEXP (x, i));
-	  if (t != 0)
-	    return t;
-	}
-      else if (fmt[i] == 'E')
-	break;
-    }
-  return 0;
-}
-
-/* Return nonzero if X and Y (memory addresses) could reference the
-   same location in memory.  C is an offset accumulator.  When
-   C is nonzero, we are testing aliases between X and Y + C.
-   XSIZE is the size in bytes of the X reference,
-   similarly YSIZE is the size in bytes for Y.
-
-   If XSIZE or YSIZE is zero, we do not know the amount of memory being
-   referenced (the reference was BLKmode), so make the most pessimistic
-   assumptions.
-
-   We recognize the following cases of non-conflicting memory:
-
-	(1) addresses involving the frame pointer cannot conflict
-	    with addresses involving static variables.
-	(2) static variables with different addresses cannot conflict.
-
-   Nice to notice that varying addresses cannot conflict with fp if no
-   local variables had their addresses taken, but that's too hard now.  */
-
-/* ??? In Fortran, references to a array parameter can never conflict with
-   another array parameter.  */
-
-static int
-memrefs_conflict_p (xsize, x, ysize, y, c)
-     rtx x, y;
-     int xsize, ysize;
-     HOST_WIDE_INT c;
-{
-  if (GET_CODE (x) == HIGH)
-    x = XEXP (x, 0);
-  else if (GET_CODE (x) == LO_SUM)
-    x = XEXP (x, 1);
-  else
-    x = canon_rtx (x);
-  if (GET_CODE (y) == HIGH)
-    y = XEXP (y, 0);
-  else if (GET_CODE (y) == LO_SUM)
-    y = XEXP (y, 1);
-  else
-    y = canon_rtx (y);
-
-  if (rtx_equal_for_memref_p (x, y))
-    return (xsize == 0 || ysize == 0
-	    || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
-
-  if (y == frame_pointer_rtx || y == hard_frame_pointer_rtx
-      || y == stack_pointer_rtx)
-    {
-      rtx t = y;
-      int tsize = ysize;
-      y = x; ysize = xsize;
-      x = t; xsize = tsize;
-    }
-
-  if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
-      || x == stack_pointer_rtx)
-    {
-      rtx y1;
-
-      if (CONSTANT_P (y))
-	return 0;
-
-      if (GET_CODE (y) == PLUS
-	  && canon_rtx (XEXP (y, 0)) == x
-	  && (y1 = canon_rtx (XEXP (y, 1)))
-	  && GET_CODE (y1) == CONST_INT)
-	{
-	  c += INTVAL (y1);
-	  return (xsize == 0 || ysize == 0
-		  || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
-	}
-
-      if (GET_CODE (y) == PLUS
-	  && (y1 = canon_rtx (XEXP (y, 0)))
-	  && CONSTANT_P (y1))
-	return 0;
-
-      return 1;
-    }
-
-  if (GET_CODE (x) == PLUS)
-    {
-      /* The fact that X is canonicalized means that this
-	 PLUS rtx is canonicalized.  */
-      rtx x0 = XEXP (x, 0);
-      rtx x1 = XEXP (x, 1);
-
-      if (GET_CODE (y) == PLUS)
-	{
-	  /* The fact that Y is canonicalized means that this
-	     PLUS rtx is canonicalized.  */
-	  rtx y0 = XEXP (y, 0);
-	  rtx y1 = XEXP (y, 1);
-
-	  if (rtx_equal_for_memref_p (x1, y1))
-	    return memrefs_conflict_p (xsize, x0, ysize, y0, c);
-	  if (rtx_equal_for_memref_p (x0, y0))
-	    return memrefs_conflict_p (xsize, x1, ysize, y1, c);
-	  if (GET_CODE (x1) == CONST_INT)
-	    if (GET_CODE (y1) == CONST_INT)
-	      return memrefs_conflict_p (xsize, x0, ysize, y0,
-					 c - INTVAL (x1) + INTVAL (y1));
-	    else
-	      return memrefs_conflict_p (xsize, x0, ysize, y, c - INTVAL (x1));
-	  else if (GET_CODE (y1) == CONST_INT)
-	    return memrefs_conflict_p (xsize, x, ysize, y0, c + INTVAL (y1));
-
-	  /* Handle case where we cannot understand iteration operators,
-	     but we notice that the base addresses are distinct objects.  */
-	  x = find_symbolic_term (x);
-	  if (x == 0)
-	    return 1;
-	  y = find_symbolic_term (y);
-	  if (y == 0)
-	    return 1;
-	  return rtx_equal_for_memref_p (x, y);
-	}
-      else if (GET_CODE (x1) == CONST_INT)
-	return memrefs_conflict_p (xsize, x0, ysize, y, c - INTVAL (x1));
-    }
-  else if (GET_CODE (y) == PLUS)
-    {
-      /* The fact that Y is canonicalized means that this
-	 PLUS rtx is canonicalized.  */
-      rtx y0 = XEXP (y, 0);
-      rtx y1 = XEXP (y, 1);
-
-      if (GET_CODE (y1) == CONST_INT)
-	return memrefs_conflict_p (xsize, x, ysize, y0, c + INTVAL (y1));
-      else
-	return 1;
-    }
-
-  if (GET_CODE (x) == GET_CODE (y))
-    switch (GET_CODE (x))
-      {
-      case MULT:
-	{
-	  /* Handle cases where we expect the second operands to be the
-	     same, and check only whether the first operand would conflict
-	     or not.  */
-	  rtx x0, y0;
-	  rtx x1 = canon_rtx (XEXP (x, 1));
-	  rtx y1 = canon_rtx (XEXP (y, 1));
-	  if (! rtx_equal_for_memref_p (x1, y1))
-	    return 1;
-	  x0 = canon_rtx (XEXP (x, 0));
-	  y0 = canon_rtx (XEXP (y, 0));
-	  if (rtx_equal_for_memref_p (x0, y0))
-	    return (xsize == 0 || ysize == 0
-		    || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
-
-	  /* Can't properly adjust our sizes.  */
-	  if (GET_CODE (x1) != CONST_INT)
-	    return 1;
-	  xsize /= INTVAL (x1);
-	  ysize /= INTVAL (x1);
-	  c /= INTVAL (x1);
-	  return memrefs_conflict_p (xsize, x0, ysize, y0, c);
-	}
-      }
-
-  if (CONSTANT_P (x))
-    {
-      if (GET_CODE (x) == CONST_INT && GET_CODE (y) == CONST_INT)
-	{
-	  c += (INTVAL (y) - INTVAL (x));
-	  return (xsize == 0 || ysize == 0
-		  || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
-	}
-
-      if (GET_CODE (x) == CONST)
-	{
-	  if (GET_CODE (y) == CONST)
-	    return memrefs_conflict_p (xsize, canon_rtx (XEXP (x, 0)),
-				       ysize, canon_rtx (XEXP (y, 0)), c);
-	  else
-	    return memrefs_conflict_p (xsize, canon_rtx (XEXP (x, 0)),
-				       ysize, y, c);
-	}
-      if (GET_CODE (y) == CONST)
-	return memrefs_conflict_p (xsize, x, ysize,
-				   canon_rtx (XEXP (y, 0)), c);
-
-      if (CONSTANT_P (y))
-	return (rtx_equal_for_memref_p (x, y)
-		&& (xsize == 0 || ysize == 0
-		    || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0)));
-
-      return 1;
-    }
-  return 1;
-}
-
-/* Functions to compute memory dependencies.
-
-   Since we process the insns in execution order, we can build tables
-   to keep track of what registers are fixed (and not aliased), what registers
-   are varying in known ways, and what registers are varying in unknown
-   ways.
-
-   If both memory references are volatile, then there must always be a
-   dependence between the two references, since their order can not be
-   changed.  A volatile and non-volatile reference can be interchanged
-   though. 
-
-   A MEM_IN_STRUCT reference at a non-QImode non-AND varying address can never
-   conflict with a non-MEM_IN_STRUCT reference at a fixed address.   We must
-   allow QImode aliasing because the ANSI C standard allows character
-   pointers to alias anything.  We are assuming that characters are
-   always QImode here.  We also must allow AND addresses, because they may
-   generate accesses outside the object being referenced.  This is used to
-   generate aligned addresses from unaligned addresses, for instance, the
-   alpha storeqi_unaligned pattern.  */
-
-/* Read dependence: X is read after read in MEM takes place.  There can
-   only be a dependence here if both reads are volatile.  */
-
-int
-read_dependence (mem, x)
-     rtx mem;
-     rtx x;
-{
-  return MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem);
-}
-
-/* True dependence: X is read after store in MEM takes place.  */
-
-int
-true_dependence (mem, x)
-     rtx mem;
-     rtx x;
-{
-  /* If X is an unchanging read, then it can't possibly conflict with any
-     non-unchanging store.  It may conflict with an unchanging write though,
-     because there may be a single store to this address to initialize it.
-     Just fall through to the code below to resolve the case where we have
-     both an unchanging read and an unchanging write.  This won't handle all
-     cases optimally, but the possible performance loss should be
-     negligible.  */
-  x = canon_rtx (x);
-  mem = canon_rtx (mem);
-  if (RTX_UNCHANGING_P (x) && ! RTX_UNCHANGING_P (mem))
-    return 0;
-
-  return ((MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
-	  || (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
-				  SIZE_FOR_MODE (x), XEXP (x, 0), 0)
-	      && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
-		    && GET_MODE (mem) != QImode
-		    && GET_CODE (XEXP (mem, 0)) != AND
-		    && ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
-	      && ! (MEM_IN_STRUCT_P (x) && rtx_addr_varies_p (x)
-		    && GET_MODE (x) != QImode
-		    && GET_CODE (XEXP (x, 0)) != AND
-		    && ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem))));
-}
-
-/* Anti dependence: X is written after read in MEM takes place.  */
-
-int
-anti_dependence (mem, x)
-     rtx mem;
-     rtx x;
-{
-  /* If MEM is an unchanging read, then it can't possibly conflict with
-     the store to X, because there is at most one store to MEM, and it must
-     have occurred somewhere before MEM.  */
-  x = canon_rtx (x);
-  mem = canon_rtx (mem);
-  if (RTX_UNCHANGING_P (mem))
-    return 0;
-
-  return ((MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
-	  || (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
-				  SIZE_FOR_MODE (x), XEXP (x, 0), 0)
-	      && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
-		    && GET_MODE (mem) != QImode
-		    && GET_CODE (XEXP (mem, 0)) != AND
-		    && ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
-	      && ! (MEM_IN_STRUCT_P (x) && rtx_addr_varies_p (x)
-		    && GET_MODE (x) != QImode
-		    && GET_CODE (XEXP (x, 0)) != AND
-		    && ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem))));
-}
-
-/* Output dependence: X is written after store in MEM takes place.  */
-
-int
-output_dependence (mem, x)
-     rtx mem;
-     rtx x;
-{
-  x = canon_rtx (x);
-  mem = canon_rtx (mem);
-  return ((MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
-	  || (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
-				  SIZE_FOR_MODE (x), XEXP (x, 0), 0)
-	      && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
-		    && GET_MODE (mem) != QImode
-		    && GET_CODE (XEXP (mem, 0)) != AND
-		    && ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
-	      && ! (MEM_IN_STRUCT_P (x) && rtx_addr_varies_p (x)
-		    && GET_MODE (x) != QImode
-		    && GET_CODE (XEXP (x, 0)) != AND
-		    && ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem))));
-}
-
 /* Helper functions for instruction scheduling.  */
 
 /* Add ELEM wrapped in an INSN_LIST with reg note kind DEP_TYPE to the
@@ -1948,7 +1386,8 @@ sched_analyze_2 (x, insn)
 	  {
 	    /* If a dependency already exists, don't create a new one.  */
 	    if (! find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
-	      if (true_dependence (XEXP (pending_mem, 0), x))
+	      if (true_dependence (XEXP (pending_mem, 0), VOIDmode,
+				   x, rtx_varies_p))
 		add_dependence (insn, XEXP (pending, 0), 0);
 
 	    pending = XEXP (pending, 1);
@@ -2047,7 +1486,7 @@ sched_analyze_insn (x, insn, loop_notes)
 {
   register RTX_CODE code = GET_CODE (x);
   rtx link;
-  int maxreg = max_reg_num ();
+  int maxreg = reg_last_uses_size;
   int i;
 
   if (code == SET || code == CLOBBER)
@@ -2084,7 +1523,7 @@ sched_analyze_insn (x, insn, loop_notes)
 
   if (loop_notes)
     {
-      int max_reg = max_reg_num ();
+      int max_reg = reg_last_uses_size;
       rtx link;
 
       for (i = 0; i < max_reg; i++)
@@ -2222,8 +1661,7 @@ sched_analyze (head, tail)
 	  if (NEXT_INSN (insn) && GET_CODE (NEXT_INSN (insn)) == NOTE
 	      && NOTE_LINE_NUMBER (NEXT_INSN (insn)) == NOTE_INSN_SETJMP)
 	    {
-	      int max_reg = max_reg_num ();
-	      for (i = 0; i < max_reg; i++)
+	      for (i = 0; i < reg_last_uses_size; i++)
 		{
 		  for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
@@ -3198,7 +2636,7 @@ schedule_block (b, file)
     fprintf (file, ";;\t -- basic block number %d from %d to %d --\n",
 	     b, INSN_UID (basic_block_head[b]), INSN_UID (basic_block_end[b]));
 
-  i = max_reg_num ();
+  reg_last_uses_size = i = max_reg_num ();
   reg_last_uses = (rtx *) alloca (i * sizeof (rtx));
   bzero ((char *) reg_last_uses, i * sizeof (rtx));
   reg_last_sets = (rtx *) alloca (i * sizeof (rtx));
@@ -4819,7 +4257,6 @@ schedule_insns (dump_file)
       bb_live_regs = ALLOCA_REG_SET ();
       bzero ((char *) sched_reg_n_calls_crossed, max_regno * sizeof (int));
       bzero ((char *) sched_reg_live_length, max_regno * sizeof (int));
-      init_alias_analysis ();
     }
   else
     {
@@ -4827,9 +4264,8 @@ schedule_insns (dump_file)
       sched_reg_live_length = 0;
       bb_dead_regs = 0;
       bb_live_regs = 0;
-      if (! flag_schedule_insns)
-	init_alias_analysis ();
     }
+  init_alias_analysis ();
 
   if (write_symbols != NO_DEBUG)
     {
