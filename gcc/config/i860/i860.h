@@ -904,9 +904,9 @@ struct cumulative_args { int ints, floats; };
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
-    return 2;							\
+    return 4;							\
   case CONST_DOUBLE:						\
-    return 4;
+    return 6;
 
 /* Specify the cost of a branch insn; roughly the number of extra insns that
    should be added to avoid a branch.
