@@ -122,3 +122,16 @@ case "${target}" in
      ATOMICITYH=$cpu_include_dir
      ;;
 esac
+
+# Set LIMITSH to the directory where the configuration-dependent
+# limits.h can be found.
+# THIS TABLE IS SORTED.  KEEP IT THAT WAY.
+
+case "${target}" in
+   i?86-*-*)
+     LIMITSH=config/cpu/i386
+     ;;
+   *)
+     LIMITSH=config/cpu/generic
+     ;;
+esac

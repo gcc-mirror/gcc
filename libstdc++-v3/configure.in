@@ -204,8 +204,10 @@ fi
 # Propagate the target-specific source directories through the build chain.
 OS_INC_SRCDIR=$os_include_dir/bits
 ATOMICITY_INC_SRCDIR=$ATOMICITYH/bits
+LIMITS_INC_SRCDIR=$LIMITSH/bits
 AC_SUBST(OS_INC_SRCDIR)
 AC_SUBST(ATOMICITY_INC_SRCDIR)
+AC_SUBST(LIMITS_INC_SRCDIR)
 
 # Set up cross-compile flags
 AC_SUBST(GLIBCPP_IS_CROSS_COMPILING)

@@ -104,6 +104,7 @@ LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
 LIBTOOL = @LIBTOOL@
+LIMITS_INC_SRCDIR = @LIMITS_INC_SRCDIR@
 LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
@@ -180,7 +181,7 @@ std_headers =  	${std_srcdir}/algorithm 	${std_srcdir}/bitset 	${std_srcdir}/com
 
 target_srcdir = ${glibcpp_srcdir}/@OS_INC_SRCDIR@
 target_builddir = ./${target_alias}/bits
-target_headers =  	${target_srcdir}/ctype_base.h 	${target_srcdir}/ctype_inline.h 	${target_srcdir}/ctype_noninline.h 	${target_srcdir}/os_defines.h 	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h
+target_headers =  	${target_srcdir}/ctype_base.h 	${target_srcdir}/ctype_inline.h 	${target_srcdir}/ctype_noninline.h 	${target_srcdir}/os_defines.h 	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h 	${glibcpp_srcdir}/@LIMITS_INC_SRCDIR@/limits.h
 
 
 thread_builddir = ./${target_alias}/bits
