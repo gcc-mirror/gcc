@@ -431,9 +431,9 @@ expected_loop_iterations (const struct loop *loop)
 	  count_in += e->count;
 
       if (count_in == 0)
-	return 0;
-
-      expected = (count_latch + count_in - 1) / count_in;
+        expected = count_latch * 2;
+      else
+        expected = (count_latch + count_in - 1) / count_in;
 
       /* Avoid overflows.  */
       return (expected > REG_BR_PROB_BASE ? REG_BR_PROB_BASE : expected);
@@ -452,7 +452,7 @@ expected_loop_iterations (const struct loop *loop)
 	  freq_in += EDGE_FREQUENCY (e);
 
       if (freq_in == 0)
-	return 0;
+	return freq_latch * 2;
 
       return (freq_latch + freq_in - 1) / freq_in;
     }
