@@ -184,7 +184,7 @@ add_handler (start_pc, end_pc, handler, type)
 /* if there are any handlers for this range, issue start of region */
 void
 expand_start_java_handler (range)
-     struct eh_range *range;
+  struct eh_range *range ATTRIBUTE_UNUSED;
 {
   expand_eh_region_start ();
 }

@@ -86,8 +86,9 @@ static tree lookup_java_method2 PROTO ((tree, tree, int));
 static tree method_header PROTO ((int, tree, tree, tree));
 static void fix_method_argument_names PROTO ((tree ,tree));
 static tree method_declarator PROTO ((tree, tree));
-static void parse_warning_context VPROTO ((tree cl, char *msg, ...));
-static void issue_warning_error_from_context PROTO ((tree, char *msg, va_list));
+static void parse_warning_context PVPROTO ((tree cl, const char *msg, ...))
+  ATTRIBUTE_PRINTF_2;
+static void issue_warning_error_from_context PROTO ((tree, const char *msg, va_list));
 static tree parse_jdk1_1_error PROTO ((char *));
 static void complete_class_report_errors PROTO ((jdep *));
 static int process_imports PROTO ((void));
@@ -2447,7 +2448,7 @@ yyerror (msg)
 static void
 issue_warning_error_from_context (cl, msg, ap)
      tree cl;
-     char *msg;
+     const char *msg;
      va_list ap;
 {
   char *saved, *saved_input_filename;
@@ -2475,18 +2476,18 @@ issue_warning_error_from_context (cl, msg, ap)
 /* Issue an error message at a current source line CL */
 
 void
-parse_error_context VPROTO ((tree cl, char *msg, ...))
+parse_error_context VPROTO ((tree cl, const char *msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   tree cl;
-  char *msg;
+  const char *msg;
 #endif
   va_list ap;
 
   VA_START (ap, msg);
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   cl = va_arg (ap, tree);
-  msg = va_arg (ap, char *);
+  msg = va_arg (ap, const char *);
 #endif
   issue_warning_error_from_context (cl, msg, ap);
   va_end (ap);
@@ -2495,18 +2496,18 @@ parse_error_context VPROTO ((tree cl, char *msg, ...))
 /* Issue a warning at a current source line CL */
 
 static void
-parse_warning_context VPROTO ((tree cl, char *msg, ...))
+parse_warning_context VPROTO ((tree cl, const char *msg, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   tree cl;
-  char *msg;
+  const char *msg;
 #endif
   va_list ap;
 
   VA_START (ap, msg);
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   cl = va_arg (ap, tree);
-  msg = va_arg (ap, char *);
+  msg = va_arg (ap, const char *);
 #endif
 
   force_error = do_warning = 1;

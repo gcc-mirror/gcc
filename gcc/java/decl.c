@@ -113,7 +113,6 @@ find_local_variable (index, type, pc)
      tree type;
      int pc;
 {
-  struct rtx_def *rtl = NULL;
   tree decl = TREE_VEC_ELT (decl_map, index);
   tree best = NULL_TREE;
   while (decl != NULL_TREE)
@@ -888,7 +887,6 @@ pushdecl (x)
     {
       char *file;
       int line;
-      int different_binding_level = 0;
 
       t = lookup_name_current_level (name);
       if (t != 0 && t == error_mark_node)
@@ -928,7 +926,6 @@ pushdecl (x)
 	{
 	  /* Here to install a non-global value.  */
 	  tree oldlocal = IDENTIFIER_LOCAL_VALUE (name);
-	  tree oldglobal = IDENTIFIER_GLOBAL_VALUE (name);
 	  IDENTIFIER_LOCAL_VALUE (name) = x;
 
 #if 0
@@ -1047,7 +1044,7 @@ make_binding_level ()
 
 void
 pushlevel (unused)
-     int unused;
+  int unused ATTRIBUTE_UNUSED;
 {
   register struct binding_level *newlevel = NULL_BINDING_LEVEL;
 
@@ -1378,7 +1375,7 @@ copy_lang_decl (node)
 
 tree
 maybe_build_cleanup (decl)
-     tree decl;
+  tree decl ATTRIBUTE_UNUSED;
 {
   /* There are no cleanups in Java (I think).  */
   return NULL_TREE;

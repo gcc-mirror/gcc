@@ -42,10 +42,10 @@ FILE *out = NULL;
 static int found_error = 0;
 
 /* Directory to place resulting files in. Set by -d option. */
-char *output_directory = "";
+const char *output_directory = "";
 
 /* Directory to place temporary file.  Set by -td option.  Currently unused. */
-char *temp_directory = "/tmp";
+const char *temp_directory = "/tmp";
 
 /* Number of friend functions we have to declare.  */
 static int friend_count;
@@ -100,7 +100,7 @@ static struct method_name *method_name_list;
 
 static void print_field_info PROTO ((FILE *, JCF*, int, int, JCF_u2));
 static void print_method_info PROTO ((FILE *, JCF*, int, int, JCF_u2));
-static void print_c_decl PROTO ((FILE*, JCF*, int, int, JCF_u2, int, char *));
+static void print_c_decl PROTO ((FILE*, JCF*, int, int, JCF_u2, int, const char *));
 static void decompile_method PROTO ((FILE *, JCF *, int));
 
 JCF_u2 current_field_name;
@@ -423,7 +423,7 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
 {
   unsigned char *str;
   int length, is_init = 0;
-  char *override = NULL;
+  const char *override = NULL;
 
   method_declared = 0;
   method_access = flags;
@@ -557,7 +557,7 @@ decode_signature_piece (stream, signature, limit, need_space)
      unsigned char *signature, *limit;
      int *need_space;
 {
-  char *ctype;
+  const char *ctype;
 
   switch (signature[0])
     {
@@ -649,7 +649,7 @@ DEFUN(print_c_decl, (stream, jcf, name_index, signature_index, flags, is_init,
 		     name_override),
       FILE* stream AND JCF* jcf
       AND int name_index AND int signature_index AND JCF_u2 flags
-      AND int is_init AND char *name_override)
+      AND int is_init AND const char *name_override)
 {
   if (JPOOL_TAG (jcf, signature_index) != CONSTANT_Utf8)
     {
@@ -734,7 +734,7 @@ DEFUN(print_c_decl, (stream, jcf, name_index, signature_index, flags, is_init,
 
 void
 DEFUN(print_mangled_classname, (stream, jcf, prefix, index),
-      FILE *stream AND JCF *jcf AND char *prefix AND int index)
+      FILE *stream AND JCF *jcf AND const char *prefix AND int index)
 {
   int name_index = JPOOL_USHORT1 (jcf, index);
   fputs (prefix, stream);

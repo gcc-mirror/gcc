@@ -32,6 +32,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-except.h"
 #include "input.h"
 #include "java-tree.h"
+#include "toplev.h"
 
 /* A CONSTANT_Utf8 element is converted to an IDENTIFIER_NODE at parse time. */
 #define JPOOL_UTF(JCF, INDEX) CPOOL_UTF(&(JCF)->cpool, INDEX)

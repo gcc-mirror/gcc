@@ -23,7 +23,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "config.h"
 #include "system.h"
-#include <string.h>
 #include "tree.h"
 #include "java-tree.h"
 #include "jcf.h"
@@ -33,8 +32,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-opcodes.h"
 #include "parse.h" /* for BLOCK_EXPR_BODY */
 #include "buffer.h"
-
-#include <sys/stat.h>
+#include "toplev.h"
 
 #ifndef DIR_SEPARATOR
 #define DIR_SEPARATOR '/'
@@ -550,7 +548,6 @@ localvar_free (decl, state)
   register struct localvar_info **ptr = &localvar_buffer [index];
   register struct localvar_info *info = *ptr;
   int wide = TYPE_IS_WIDE (TREE_TYPE (decl));
-  int i;
 
   info->end_label = end_label;
 
@@ -1054,7 +1051,6 @@ generate_bytecode_conditional (exp, true_label, false_label,
      int true_branch_first;
      struct jcf_partial *state;
 {
-  int kind;
   tree exp0, exp1, type;
   int save_SP = state->code_SP;
   enum java_opcode op, negop;

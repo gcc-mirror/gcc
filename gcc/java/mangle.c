@@ -29,6 +29,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "system.h"
 #include "jcf.h"
 #include "obstack.h"
+#include "toplev.h"
 
 /* Assuming (NAME, LEN) is a Utf8-encoding string, calculate
    the length of the string as mangled (a la g++) including Unicode escapes.
@@ -70,6 +71,7 @@ void
 emit_unicode_mangled_name (obstack, name, len)
      struct obstack *obstack;
      char *name;
+     int len;
 {
   unsigned char *ptr;
   unsigned char *limit = (unsigned char *)name + len;

@@ -33,6 +33,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "output.h"
+#include "parse.h"
 
 static tree mangle_class_field PROTO ((tree class));
 
@@ -95,8 +97,8 @@ identifier_subst (old_id, prefix, old_char, new_char, suffix)
 
 tree
 mangled_classname (prefix, type)
-     char *prefix;
-     tree type;
+  const char *prefix;
+  tree type;
 {
   tree ident = TYPE_NAME (type);
   if (TREE_CODE (ident) != IDENTIFIER_NODE)
@@ -354,6 +356,7 @@ add_interface (this_class, interface_class)
   add_interface_do (basetype_vec, interface_class, i);
 }
 
+#if 0
 /* Return the address of a pointer to the first FUNCTION_DECL
    in the list (*LIST) whose DECL_NAME is NAME. */
 
@@ -366,6 +369,7 @@ find_named_method (list, name)
     list = &TREE_CHAIN (*list);
   return list;
 }
+#endif
 
 tree
 build_java_method_type (fntype, this_class, access_flags)
@@ -566,10 +570,10 @@ build_utf8_ref (name)
   buf_ptr = &buf[strlen (buf)];
   while (--name_len >= 0)
     {
-      char c = *name_ptr++;
+      unsigned char c = *name_ptr++;
       if (c & 0x80)
 	continue;
-      if (!isalpha(c) && !isdigit(c))
+      if (!ISALPHA(c) && !ISDIGIT(c))
 	c = '_';
       *buf_ptr++ = c;
       if (buf_ptr >= buf + 50)
@@ -639,7 +643,7 @@ build_class_ref (type)
 	  char buffer[25];
 	  if (flag_emit_class_files)
 	    {
-	      char *prim_class_name;
+	      const char *prim_class_name;
 	      tree prim_class;
 	      if (type == char_type_node)
 		prim_class_name = "java.lang.Character";
@@ -1499,7 +1503,6 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
      tree this_class, super_class, method_decl, dtable_count;
 {
   char *ptr;
-  char buf[8];
   char *asm_name;
   tree arg, arglist, t;
   int method_name_needs_escapes = 0;

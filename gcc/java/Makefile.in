@@ -273,13 +273,14 @@ clean:  mostlyclean
 
 force:
 
-parse.o: $(PARSE_C) jcf-reader.c
+parse.o: $(PARSE_C) jcf-reader.c $(CONFIG_H) $(srcdir)/../system.h
 jcf-dump.o: jcf-reader.c jcf.h javaop.h javaop.def
 gjavah.o: jcf-reader.c jcf.h javaop.h
 buffer.o : buffer.c $(CONFIG_H) buffer.h $(srcdir)/../gansidecl.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
-class.o : class.c $(CONFIG_H) $(JAVA_TREE_H) $(RTL_H) jcf.h \
-  $(srcdir)/../gansidecl.h $(srcdir)/../toplev.h $(srcdir)/../system.h
+class.o : class.c $(CONFIG_H) $(JAVA_TREE_H) $(RTL_H) jcf.h $(PARSE_H) \
+  $(srcdir)/../gansidecl.h $(srcdir)/../toplev.h $(srcdir)/../system.h \
+  $(srcdir)/../output.h
 constants.o : constants.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h
 decl.o : decl.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h \
@@ -294,16 +295,20 @@ expr.o : expr.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../real.h \
 jcf-depend.o: jcf-depend.c $(CONFIG_H) $(srcdir)/../system.h jcf.h
 jcf-io.o: jcf-io.c $(CONFIG_H) $(srcdir)/../system.h
 jcf-parse.o : jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) $(srcdir)/../flags.h \
-  $(srcdir)/../input.h java-except.h $(srcdir)/../system.h
+  $(srcdir)/../input.h java-except.h $(srcdir)/../system.h \
+  $(srcdir)/../toplev.h
 jcf-write.o : jcf-write.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(RTL_H) \
-  java-opcodes.h parse.h buffer.h $(srcdir)/../system.h
+  java-opcodes.h parse.h buffer.h $(srcdir)/../system.h $(srcdir)/../toplev.h
+jv-scan.o : $(CONFIG_H) $(srcdir)/../system.h
 jvgenmain.o : jvgenmain.c $(CONFIG_H) $(srcdir)/../system.h
 lang.o : lang.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../input.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h
-mangle.o : mangle.c $(CONFIG_H) jcf.h $(srcdir)/../system.h
+mangle.o : mangle.c $(CONFIG_H) jcf.h $(srcdir)/../system.h \
+  $(srcdir)/../toplev.h
+parse-scan.o : $(CONFIG_H) $(srcdir)/../system.h
 typeck.o : typeck.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h convert.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h
 verify.o : verify.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h javaop.h java-opcodes.h \
   java-except.h $(srcdir)/../toplev.h $(srcdir)/../system.h
-zextract.o: zextract.c zipfile.h
+zextract.o: zextract.c $(CONFIG_H) $(srcdir)/../system.h zipfile.h
 

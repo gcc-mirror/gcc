@@ -79,7 +79,7 @@ DEFUN(jcf_filbuf_from_stdio, (jcf, count),
   count -= jcf->read_end - jcf->read_ptr;
   if (count <= 0)
     return 0;
-  if (fread (jcf->read_end, 1, count, file) != count)
+  if ((int) fread (jcf->read_end, 1, count, file) != count)
     jcf_unexpected_eof (jcf, count);
   jcf->read_end += count;
   return 0;

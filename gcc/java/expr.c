@@ -37,6 +37,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-except.h"
 #include "parse.h"
 #include "toplev.h"
+#include "except.h"
 
 static tree operand_type[59];
 extern struct obstack permanent_obstack;
@@ -242,7 +243,6 @@ pop_type (type)
      tree type;
 {
   int n_words;
-  int i;
   tree t;
   if (TREE_CODE (type) == RECORD_TYPE)
     type = promote_type (type);
@@ -356,8 +356,6 @@ tree
 pop_value (type)
      tree type;
 {
-  int n_words = 1 + TYPE_IS_WIDE (type);
-  int i;
   type = pop_type (type);
   if (quick_stack)
     {
@@ -846,7 +844,6 @@ expand_java_arrayload (lhs_type_node )
     tree lhs_type_node;
 {
   tree load_node;
-  int convert;
   tree index_node = pop_value (int_type_node);
   tree array_node = pop_value (ptr_type_node);
 
@@ -1747,18 +1744,14 @@ java_lang_expand_expr (exp, target, tmode, modifier)
      enum machine_mode tmode;
      enum expand_modifier modifier;
 {
-  register rtx op0;
-  tree type = TREE_TYPE (exp);
-  register enum machine_mode mode = TYPE_MODE (type);
-  int unsignedp = TREE_UNSIGNED (type);
-  tree node, current;
+  tree current;
   int has_finally_p;
 
   switch (TREE_CODE (exp))
     {
     case NEW_ARRAY_INIT:
       {
-	rtx tmp, elements;
+	rtx tmp;
 	tree array_type = TREE_TYPE (TREE_TYPE (exp));
 	tree element_type = TYPE_ARRAY_ELEMENT (array_type);
 	tree data_fld = TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (array_type)));
@@ -1942,8 +1935,6 @@ expand_byte_code (jcf, method)
   int i;
   int saw_index;
   unsigned char *linenumber_pointer;
-  struct eh_range *prev_eh_ranges = NULL_EH_RANGE;
-  struct eh_range *eh_ranges;
 
 #undef RET /* Defined by config/i386/i386.h */
 #undef AND /* Causes problems with opcodes for iand and land. */
@@ -2190,7 +2181,7 @@ process_jvm_instruction (PC, byte_ops, length)
      unsigned char* byte_ops;
      long length;
 { 
-  char *opname; /* Temporary ??? */
+  const char *opname; /* Temporary ??? */
   int oldpc = PC; /* PC at instruction start. */
 
   /* If the instruction is at the beginning of a exception handler,
