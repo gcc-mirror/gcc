@@ -1,3 +1,8 @@
+2004-04-12  Kelley Cook  <kcook@gcc.gnu.org>
+            Andreas Jaeger  <aj@suse.de>
+
+	* gcc_update (files_and_dependencies): Insert zlib dependencies.
+
 2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* gcc_update (files_and_dependencies): libobjc/configure now
