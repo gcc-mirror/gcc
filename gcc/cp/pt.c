@@ -6273,6 +6273,11 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	else if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
 	  grok_op_properties (r, DECL_FRIEND_P (r),
 			      (complain & tf_error) != 0);
+
+	if (DECL_FRIEND_P (t) && DECL_FRIEND_CONTEXT (t))
+	  SET_DECL_FRIEND_CONTEXT (r,
+				   tsubst (DECL_FRIEND_CONTEXT (t),
+					    args, complain, in_decl));
       }
       break;
 

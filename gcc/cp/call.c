@@ -4561,6 +4561,8 @@ build_over_call (struct z_candidate *cand, int flags)
       tree return_type;
       return_type = TREE_TYPE (TREE_TYPE (fn));
       expr = build (CALL_EXPR, return_type, fn, args, NULL_TREE);
+      if (TREE_THIS_VOLATILE (fn) && cfun)
+	current_function_returns_abnormally = 1;
       if (!VOID_TYPE_P (return_type))
 	require_complete_type (return_type);
       return convert_from_reference (expr);

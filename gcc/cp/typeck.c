@@ -1292,6 +1292,33 @@ cxx_sizeof_or_alignof_expr (tree e, enum tree_code op)
 }
   
 
+/* EXPR is being used in a context that is not a function call.
+   Enforce:
+
+     [expr.ref] 
+
+     The expression can be used only as the left-hand operand of a
+     member function call.  
+
+     [expr.mptr.operator]
+
+     If the result of .* or ->* is a function, then that result can be
+     used only as the operand for the function call operator ().  
+
+   by issuing an error message if appropriate.  Returns true iff EXPR
+   violates these rules.  */
+
+bool
+invalid_nonstatic_memfn_p (tree expr)
+{
+  if (TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE)
+    {
+      error ("invalid use of non-static member function");
+      return true;
+    }
+  return false;
+}
+
 /* Perform the conversions in [expr] that apply when an lvalue appears
    in an rvalue context: the lvalue-to-rvalue, array-to-pointer, and
    function-to-pointer conversions.
@@ -1344,11 +1371,8 @@ decay_conversion (tree exp)
       error ("void value not ignored as it ought to be");
       return error_mark_node;
     }
-  if (code == METHOD_TYPE)
-    {
-      error ("invalid use of non-static member function");
-      return error_mark_node;
-    }
+  if (invalid_nonstatic_memfn_p (exp))
+    return error_mark_node;
   if (code == FUNCTION_TYPE || is_overloaded_fn (exp))
     return build_unary_op (ADDR_EXPR, exp, 0);
   if (code == ARRAY_TYPE)
