@@ -106,7 +106,8 @@ public abstract class JarURLConnection extends URLConnection
       {
 	// This is a JarURLConnection for the entire jar file.  
 
-	InputStream jar_is = new BufferedInputStream(jarFileURLConnection.getInputStream ());
+	InputStream jar_is = new BufferedInputStream(
+			jarFileURLConnection.getInputStream ());
 	return new JarInputStream(jar_is);
       }
 
@@ -131,7 +132,8 @@ public abstract class JarURLConnection extends URLConnection
     else
       {
 	// If the jar file is not local, ...
-	JarInputStream zis = new JarInputStream(jarFileURLConnection.getInputStream ());
+	JarInputStream zis = new JarInputStream(
+			jarFileURLConnection.getInputStream ());
 
 	// This is hideous, we're doing a linear search...
 	for (ZipEntry ent = zis.getNextEntry (); 
@@ -172,7 +174,8 @@ public abstract class JarURLConnection extends URLConnection
     
     if (jarfile == null)
       {
-	JarInputStream zis = new JarInputStream(jarFileURLConnection.getInputStream ());
+	JarInputStream zis = new JarInputStream(
+			jarFileURLConnection.getInputStream ());
 
 	// This is hideous, we're doing a linear search for the thing...
 	for (ZipEntry ent = zis.getNextEntry (); 

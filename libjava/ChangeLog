@@ -1,4 +1,15 @@
 2002-09-13  Michael Koch  <konqueror@gmx.de>
+	
+	* java/net/DatagramPacket.java (DatagramPacket):
+	Added linebreak for 80 chars per line.
+	* java/net/JarURLConection.java
+	(getInputStream, getJarEntry): Likewise.
+	* java/net/SocketPermission.java
+	(SocketPermission class docu, implies): Likewise.
+	* java/net/URLClassLoader.java (findResources): Likewise.
+	* java/net/URLConnection.java: Reindendet remark for 80 chars per line
+
+2002-09-13  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/channels/DatagramChannel.java,
 	java/nio/channels/ServerSocketChannel.java

@@ -87,7 +87,8 @@ import java.security.PermissionCollection;
  * SocketPermission("www.urbanophile.com:80", "connect,accept");
  *   Can connect to or accept connections from www.urbanophile.com on port 80
  * SocketPermission("localhost:1024-", "listen,accept,connect");
- *   Can connect to, accept from, an listen on any local port number 1024 and up.
+ *   Can connect to, accept from, an listen on any local port number 1024
+ *   and up.
  * SocketPermission("*.edu", "connect");
  *   Can connect to any host in the edu domain
  * SocketPermission("197.197.20.1", "accept");
@@ -241,7 +242,8 @@ public final class SocketPermission extends Permission
    * <p><ul>
    * <li>The argument's hostname or IP address is equal to this object's.
    * <li>The argument's canonical hostname is equal to this object's.
-   * <li>The argument's canonical name matches this domains hostname with wildcards
+   * <li>The argument's canonical name matches this domains hostname with
+   * wildcards
    * </ul>
    *
    * @param perm The Permission to check against

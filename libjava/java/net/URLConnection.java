@@ -32,7 +32,7 @@ import gnu.gcj.io.MimeTypes;
  * Written using on-line Java Platform 1.2 API Specification, as well
  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
  * Status:  One guessContentTypeFrom... methods not implemented.
- *	getContent method assumes content type from response; see comment there.
+ *    getContent method assumes content type from response; see comment there.
  */
 
 public abstract class URLConnection

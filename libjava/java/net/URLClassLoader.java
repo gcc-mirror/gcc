@@ -165,7 +165,8 @@ public class URLClassLoader extends SecureClassLoader
 	  if (conn != null)
 	    {
 	      if (conn.getJarFile().getJarEntry (name) != null)
-		results.addElement (new URL(u, name, getHandler0 (u.getProtocol())));
+		results.addElement (new URL(u, name,
+					getHandler0 (u.getProtocol())));
 	    }
 	  else
 	    {
