@@ -123,15 +123,6 @@ java::lang::Thread::destroy (void)
 }
 
 void
-java::lang::Thread::dumpStack (void)
-{
-  // We don't implement this because it is very hard.  Once we have a
-  // VM, this could potentially ask the VM to do the dump in cases
-  // where it makes sense.
-  JvFail ("java::lang::Thread::dumpStack unimplemented");
-}
-
-void
 java::lang::Thread::interrupt (void)
 {
   interrupt_flag = true;
