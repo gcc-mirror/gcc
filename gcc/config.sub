@@ -1,6 +1,6 @@
 #!/bin/sh
 # Configuration validation subroutine script, version 1.1.
-#   Copyright (C) 1991, 1992 Free Software Foundation, Inc.
+#   Copyright (C) 1991, 1992, 1993 Free Software Foundation, Inc.
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
 # can handle that machine.  It does not imply ALL GNU software can. 
@@ -502,7 +502,7 @@ case $os in
 	# The portable systems comes first.
 	# Each alternative must end in a *, to match a version number.
 	# -sysv* is not here because it comes later, after sysvr4.
-	-bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
+	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
 	      | -vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[34]* | -hpux* \
 	      | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aos* \
