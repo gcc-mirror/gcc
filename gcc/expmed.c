@@ -673,10 +673,15 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
     {
       /* Get the proper mode to use for this field.  We want a mode that
 	 includes the entire field.  If such a mode would be larger than
-	 a word, we won't be doing the extraction the normal way.  */
+	 a word, we won't be doing the extraction the normal way.  
+	 We don't want a mode bigger than the destination.  */
 
+      mode = GET_MODE (op0);
+      if (GET_MODE_BITSIZE (mode) == 0
+          || GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (word_mode))
+        mode = word_mode;
       mode = get_best_mode (bitsize, bitpos + offset * BITS_PER_UNIT,
-			    struct_align, word_mode,
+			    struct_align, mode,
 			    GET_CODE (op0) == MEM && MEM_VOLATILE_P (op0));
 
       if (mode == VOIDmode)

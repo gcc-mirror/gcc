@@ -1,3 +1,8 @@
+2001-07-03  Andrew Haley  <aph@redhat.com>
+
+	* expmed.c (store_fixed_bit_field): Don't use a mode bigger than
+	the mode of the memory location.
+
 2001-07-09  Bo Thorsen  <bo@suse.co.uk>
 
 	* config/i386/unix.h (ASM_OUTPUT_MI_THUNK): Fix x86-64 vtable support.
