@@ -1,3 +1,15 @@
+2003-01-28  Andreas Schwab  <schwab@suse.de>
+
+        * config/m68k/m68k.md (tablejump+2): Don't sign extend an address
+        register.
+        * config/m68k/apollo68.h (ASM_RETURN_CASE_JUMP): Likewise.
+        * config/m68k/coff.h (ASM_RETURN_CASE_JUMP): Likewise.
+        * config/m68k/linux.h (ASM_RETURN_CASE_JUMP): Likewise.
+        * config/m68k/m68kelf.h (ASM_RETURN_CASE_JUMP): Likewise.
+        * config/m68k/mot3300.h (ASM_RETURN_CASE_JUMP): Likewise.
+        * config/m68k/netbsd-elf.h (ASM_RETURN_CASE_JUMP): Likewise.
+        * config/m68k/pbb.h (ASM_RETURN_CASE_JUMP): Likewise.
+
 2003-01-28  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (movti_string): Remove clobber.
