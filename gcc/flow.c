@@ -354,7 +354,7 @@ static rtx propagate_block_delete_libcall PARAMS ((basic_block, rtx, rtx));
 static int insn_dead_p			PARAMS ((struct propagate_block_info *,
 						 rtx, int, rtx));
 static int libcall_dead_p		PARAMS ((struct propagate_block_info *,
-						 rtx, rtx, rtx));
+						 rtx, rtx));
 static void mark_set_regs		PARAMS ((struct propagate_block_info *,
 						 rtx, rtx));
 static void mark_set_1			PARAMS ((struct propagate_block_info *,
@@ -3417,8 +3417,7 @@ propagate_one_insn (pbi, insn)
       insn_is_dead = insn_dead_p (pbi, PATTERN (insn), 0,
 				  REG_NOTES (insn));
       libcall_is_dead = (insn_is_dead && note != 0
-			 && libcall_dead_p (pbi, PATTERN (insn),
-					    note, insn));
+			 && libcall_dead_p (pbi, note, insn));
     }
 
   /* We almost certainly don't want to delete prologue or epilogue
@@ -4000,30 +3999,30 @@ insn_dead_p (pbi, x, call_ok, notes)
   return 0;
 }
 
-/* If X is the pattern of the last insn in a libcall, and assuming X is dead,
+/* If INSN is the last insn in a libcall, and assuming INSN is dead,
    return 1 if the entire library call is dead.
-   This is true if X copies a register (hard or pseudo)
-   and if the hard return  reg of the call insn is dead.
-   (The caller should have tested the destination of X already for death.)
+   This is true if INSN copies a register (hard or pseudo)
+   and if the hard return reg of the call insn is dead.
+   (The caller should have tested the destination of the SET inside
+   INSN already for death.)
 
    If this insn doesn't just copy a register, then we don't
    have an ordinary libcall.  In that case, cse could not have
    managed to substitute the source for the dest later on,
    so we can assume the libcall is dead.
 
-   NEEDED is the bit vector of pseudoregs live before this insn.
-   NOTE is the REG_RETVAL note of the insn.  INSN is the insn itself.  */
+   PBI is the block info giving pseudoregs live before this insn.
+   NOTE is the REG_RETVAL note of the insn.  */
 
 static int
-libcall_dead_p (pbi, x, note, insn)
+libcall_dead_p (pbi, note, insn)
      struct propagate_block_info *pbi;
-     rtx x;
      rtx note;
      rtx insn;
 {
-  register RTX_CODE code = GET_CODE (x);
+  rtx x = single_set (insn);
 
-  if (code == SET)
+  if (x)
     {
       register rtx r = SET_SRC (x);
       if (GET_CODE (r) == REG)
