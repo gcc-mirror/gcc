@@ -1,3 +1,7 @@
+Tue Jul  7 21:05:25 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* cse (cse_insn): Don't make change without validation.
+
 Tue Jul  7 11:40:05 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10200.md (various zero/sign extension patterns): zero and sign
