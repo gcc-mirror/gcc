@@ -147,6 +147,12 @@ const char *rs6000_debug_name;
 int rs6000_debug_stack;		/* debug stack applications */
 int rs6000_debug_arg;		/* debug argument handling */
 
+/* A copy of V2SI_type_node to be used as an opaque type.  */
+static GTY(()) tree opaque_V2SI_type_node;
+
+/* Same, but for V2SF.  */
+static GTY(()) tree opaque_V2SF_type_node;
+
 const char *rs6000_traceback_name;
 static enum {
   traceback_default = 0,
@@ -5431,7 +5437,11 @@ static void
 rs6000_init_builtins ()
 {
   if (TARGET_SPE)
-    spe_init_builtins ();
+    {
+      opaque_V2SI_type_node = copy_node (V2SI_type_node);
+      opaque_V2SF_type_node = copy_node (V2SF_type_node);
+      spe_init_builtins ();
+    }
   if (TARGET_ALTIVEC)
     altivec_init_builtins ();
   if (TARGET_ALTIVEC || TARGET_SPE)
@@ -5910,43 +5920,48 @@ rs6000_common_init_builtins ()
     = build_function_type_list (V4SF_type_node, V4SF_type_node, NULL_TREE);
 
   tree v2si_ftype_v2si_v2si
-    = build_function_type_list (V2SI_type_node,
-				V2SI_type_node, V2SI_type_node, NULL_TREE);
+    = build_function_type_list (opaque_V2SI_type_node,
+				opaque_V2SI_type_node,
+				opaque_V2SI_type_node, NULL_TREE);
 
   tree v2sf_ftype_v2sf_v2sf
-    = build_function_type_list (V2SF_type_node,
-				V2SF_type_node, V2SF_type_node, NULL_TREE);
+    = build_function_type_list (opaque_V2SF_type_node,
+				opaque_V2SF_type_node,
+				opaque_V2SF_type_node, NULL_TREE);
 
   tree v2si_ftype_int_int
-    = build_function_type_list (V2SI_type_node,
+    = build_function_type_list (opaque_V2SI_type_node,
 				integer_type_node, integer_type_node,
 				NULL_TREE);
 
   tree v2si_ftype_v2si
-    = build_function_type_list (V2SI_type_node, V2SI_type_node, NULL_TREE);
+    = build_function_type_list (opaque_V2SI_type_node,
+				opaque_V2SI_type_node, NULL_TREE);
 
   tree v2sf_ftype_v2sf
-    = build_function_type_list (V2SF_type_node,
-				V2SF_type_node, NULL_TREE);
+    = build_function_type_list (opaque_V2SF_type_node,
+				opaque_V2SF_type_node, NULL_TREE);
   
   tree v2sf_ftype_v2si
-    = build_function_type_list (V2SF_type_node,
-				V2SI_type_node, NULL_TREE);
+    = build_function_type_list (opaque_V2SF_type_node,
+				opaque_V2SI_type_node, NULL_TREE);
 
   tree v2si_ftype_v2sf
-    = build_function_type_list (V2SI_type_node,
-				V2SF_type_node, NULL_TREE);
+    = build_function_type_list (opaque_V2SI_type_node,
+				opaque_V2SF_type_node, NULL_TREE);
 
   tree v2si_ftype_v2si_char
-    = build_function_type_list (V2SI_type_node,
-				V2SI_type_node, char_type_node, NULL_TREE);
+    = build_function_type_list (opaque_V2SI_type_node,
+				opaque_V2SI_type_node,
+				char_type_node, NULL_TREE);
 
   tree v2si_ftype_int_char
-    = build_function_type_list (V2SI_type_node,
+    = build_function_type_list (opaque_V2SI_type_node,
 				integer_type_node, char_type_node, NULL_TREE);
 
   tree v2si_ftype_char
-    = build_function_type_list (V2SI_type_node, char_type_node, NULL_TREE);
+    = build_function_type_list (opaque_V2SI_type_node,
+				char_type_node, NULL_TREE);
 
   tree int_ftype_int_int
     = build_function_type_list (integer_type_node,
@@ -13933,12 +13948,14 @@ is_ev64_opaque_type (type)
      tree type;
 {
   return (TARGET_SPE
-	  && TREE_CODE (type) == VECTOR_TYPE
-	  && TYPE_NAME (type)
-	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	  && DECL_NAME (TYPE_NAME (type))
-	  && strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))),
-		     "__ev64_opaque__") == 0);
+	  && (type == opaque_V2SI_type_node
+	      || type == opaque_V2SF_type_node
+	      || (TREE_CODE (type) == VECTOR_TYPE
+		  && TYPE_NAME (type)
+		  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+		  && DECL_NAME (TYPE_NAME (type))
+		  && strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))),
+			     "__ev64_opaque__") == 0)));
 }
 
 static rtx

@@ -1,3 +1,13 @@
+2003-04-07  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (rs6000_common_init_builtins): Rename all
+        V2SI_type_node to opaque_V2SI_type_node.  Rename all
+        V2SF_type_node to opaque_V2SF_type_node.
+        (rs6000_init_builtins): Define opaque_V2SI_type_node and
+        opaque_V2SF_type_node.
+        (is_ev64_opaque_type): The types opaque_V2SI_type_node and
+        opaque_V2SF_type_node are opaque types.
+
 2003-04-07  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcse.c (replace_store_insn): Use single_set.
