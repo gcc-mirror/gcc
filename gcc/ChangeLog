@@ -1,3 +1,7 @@
+2000-01-20  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (jump_optimize_1): Don't do addr_vec optimizations at -O0.
+
 2000-01-20  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Makefile.in (fixinc.sh): Depend on specs.
