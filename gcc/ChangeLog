@@ -1,3 +1,8 @@
+2001-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md (movdf): Avoid calling validize_mem during
+	or after reload.
+
 2001-11-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi2html: Use $MAKEINFO --no-split.

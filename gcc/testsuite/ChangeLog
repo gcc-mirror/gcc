@@ -1,3 +1,7 @@
+2001-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20011109-1.c: New test.
+
 2001-11-08  Geoffrey Keating  <geoffk@redhat.com>
 
 	* g++.old-deja/g++.bugs/900227_01.C: Change stormy16 to xstormy16.
