@@ -2414,16 +2414,6 @@ extern rtx gen_hard_reg_clobber (enum machine_mode, unsigned int);
 extern rtx get_reg_known_value (unsigned int);
 extern bool get_reg_known_equiv_p (unsigned int);
 
-/* In sibcall.c */
-typedef enum {
-  sibcall_use_normal = 1,
-  sibcall_use_tail_recursion,
-  sibcall_use_sibcall
-} sibcall_use_t;
-
-extern void optimize_sibling_and_tail_recursive_calls (void);
-extern void replace_call_placeholder (rtx, sibcall_use_t);
-
 #ifdef STACK_REGS
 extern int stack_regs_mentioned (rtx insn);
 #endif

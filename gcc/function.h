@@ -278,10 +278,6 @@ struct function GTY(())
   /* Chain of all RTL_EXPRs that have insns in them.  */
   tree x_rtl_expr_chain;
 
-  /* Label to jump back to for tail recursion, or 0 if we have
-     not yet needed one for this function.  */
-  rtx x_tail_recursion_label;
-
   /* Place after which to insert the tail_recursion_label if we need one.  */
   rtx x_tail_recursion_reentry;
 
@@ -560,7 +556,6 @@ extern int trampolines_created;
 #define stack_slot_list (cfun->x_stack_slot_list)
 #define parm_birth_insn (cfun->x_parm_birth_insn)
 #define frame_offset (cfun->x_frame_offset)
-#define tail_recursion_label (cfun->x_tail_recursion_label)
 #define tail_recursion_reentry (cfun->x_tail_recursion_reentry)
 #define arg_pointer_save_area (cfun->x_arg_pointer_save_area)
 #define rtl_expr_chain (cfun->x_rtl_expr_chain)

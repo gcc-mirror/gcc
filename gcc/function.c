@@ -444,7 +444,6 @@ free_after_compilation (struct function *f)
   f->x_save_expr_regs = NULL;
   f->x_stack_slot_list = NULL;
   f->x_rtl_expr_chain = NULL;
-  f->x_tail_recursion_label = NULL;
   f->x_tail_recursion_reentry = NULL;
   f->x_arg_pointer_save_area = NULL;
   f->x_parm_birth_insn = NULL;
@@ -1683,32 +1682,7 @@ fixup_var_refs_insns (rtx insn, rtx var, enum machine_mode promoted_mode,
          pointer now.  */
       rtx next = NEXT_INSN (insn);
 
-      /* CALL_PLACEHOLDERs are special; we have to switch into each of
-	 the three sequences they (potentially) contain, and process
-	 them recursively.  The CALL_INSN itself is not interesting.  */
-
-      if (GET_CODE (insn) == CALL_INSN
-	  && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
-	{
-	  int i;
-
-	  /* Look at the Normal call, sibling call and tail recursion
-	     sequences attached to the CALL_PLACEHOLDER.  */
-	  for (i = 0; i < 3; i++)
-	    {
-	      rtx seq = XEXP (PATTERN (insn), i);
-	      if (seq)
-		{
-		  push_to_sequence (seq);
-		  fixup_var_refs_insns (seq, var, promoted_mode, unsignedp, 0,
-					may_share);
-		  XEXP (PATTERN (insn), i) = get_insns ();
-		  end_sequence ();
-		}
-	    }
-	}
-
-      else if (INSN_P (insn))
+      if (INSN_P (insn))
 	fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, toplevel,
 			     may_share);
 
@@ -1717,11 +1691,7 @@ fixup_var_refs_insns (rtx insn, rtx var, enum machine_mode promoted_mode,
 }
 
 /* Look up the insns which reference VAR in HT and fix them up.  Other
-   arguments are the same as fixup_var_refs_insns.
-
-   N.B. No need for special processing of CALL_PLACEHOLDERs here,
-   because the hash table will point straight to the interesting insn
-   (inside the CALL_PLACEHOLDER).  */
+   arguments are the same as fixup_var_refs_insns.  */
 
 static void
 fixup_var_refs_insns_with_hash (htab_t ht, rtx var, enum machine_mode promoted_mode,
@@ -5903,7 +5873,7 @@ identify_blocks (void)
 }
 
 /* Subroutine of identify_blocks.  Do the block substitution on the
-   insn chain beginning with INSNS.  Recurse for CALL_PLACEHOLDER chains.
+   insn chain beginning with INSNS.
 
    BLOCK_STACK is pushed and popped for each BLOCK_BEGIN/BLOCK_END pair.
    BLOCK_VECTOR is incremented for each block seen.  */
@@ -5941,20 +5911,6 @@ identify_blocks_1 (rtx insns, tree *block_vector, tree *end_block_vector,
 
 	      NOTE_BLOCK (insn) = *--block_stack;
 	    }
-	}
-      else if (GET_CODE (insn) == CALL_INSN
-	       && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
-	{
-	  rtx cp = PATTERN (insn);
-
-	  block_vector = identify_blocks_1 (XEXP (cp, 0), block_vector,
-					    end_block_vector, block_stack);
-	  if (XEXP (cp, 1))
-	    block_vector = identify_blocks_1 (XEXP (cp, 1), block_vector,
-					      end_block_vector, block_stack);
-	  if (XEXP (cp, 2))
-	    block_vector = identify_blocks_1 (XEXP (cp, 2), block_vector,
-					      end_block_vector, block_stack);
 	}
     }
 
@@ -6065,16 +6021,6 @@ reorder_blocks_1 (rtx insns, tree current_block, varray_type *p_block_stack)
 		= blocks_nreverse (BLOCK_SUBBLOCKS (current_block));
 	      current_block = BLOCK_SUPERCONTEXT (current_block);
 	    }
-	}
-      else if (GET_CODE (insn) == CALL_INSN
-	       && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
-	{
-	  rtx cp = PATTERN (insn);
-	  reorder_blocks_1 (XEXP (cp, 0), current_block, p_block_stack);
-	  if (XEXP (cp, 1))
-	    reorder_blocks_1 (XEXP (cp, 1), current_block, p_block_stack);
-	  if (XEXP (cp, 2))
-	    reorder_blocks_1 (XEXP (cp, 2), current_block, p_block_stack);
 	}
     }
 }
