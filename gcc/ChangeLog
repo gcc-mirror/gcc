@@ -1,3 +1,11 @@
+2003-11-21  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* mklibgcc.in: Evaluate shlib_slibdir_qual during link
+	step too.
+	* config/t-slibgcc-darwin: Adjust install path.
+	* config/rs6000/t-darwin: Revert multilib matches since
+	it is not used on darwin.
+
 2003-11-20  Richard Henderson  <rth@redhat.com>
 
 	* ssa.c, ssa-dce.c, ssa-ccp.c: Remove files.
