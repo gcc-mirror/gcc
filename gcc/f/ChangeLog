@@ -1,3 +1,8 @@
+Mon Apr  2 22:38:09 2001  Toon Moene <toon@moene.indiv.nluug.nl>
+
+	* com.c (duplicate_decls): Fix thinko in lazy DECL_RTL patch
+	of 2001-03-04.
+
 Mon Mar 26 18:13:30 2001  Mark Mitchell  <mark@codesourcery.com>
 
 	* com.c (duplicate_decls): Don't copy DECL_FRAME_SIZE.
