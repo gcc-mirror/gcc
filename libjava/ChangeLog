@@ -1,3 +1,10 @@
+2003-01-28  Andrew Haley  <aph@redhat.com>
+
+        * libgcj.spec.in (jc1): Add BACKTRACESPEC.
+        * configure.host (x86_64): Default to -fno-omit-frame-pointer.
+        * configure.in (BACKTRACESPEC): New.
+        * configure: Regenerate.
+
 2003-02-02  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

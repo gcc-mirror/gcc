@@ -98,7 +98,7 @@ case "${host}" in
   x86_64-*)
  	CHECKREFSPEC="%{m32:-fcheck-references}"
 	sysdeps_dir=x86-64
-	libgcj_flags="${libgcj_flags} -ffloat-store"
+	libgcj_flags="${libgcj_flags} -ffloat-store -fno-omit-frame-pointer"
 	libgcj_interpreter=no
 	libgcj_cxxflags="-D__NO_MATH_INLINES"
 	libgcj_cflags="-D__NO_MATH_INLINES"
