@@ -1,3 +1,8 @@
+Thu Sep  4 11:51:43 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* tlink.c: Include ctype.h.
+	* ginclude/va-mips.h: Add _VA_MIPS_H_ENUM ifdef/define/endif.
+
 Thu Sep  4 11:17:16 1997  Mikeael Meissner  (meissner@cygnus.com)
 
 	* bitmap.c: Conditionally include stdlib.h.
