@@ -1,3 +1,8 @@
+2000-11-28  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (expand_call): Don't disable tail recursion based
+	on the loop nest.
+
 2000-11-28  Neil Booth  <neilb@earthling.net>
 
         * tradcpp.c (enum node_type): New hash types T_ASSERT, T_UNASSERT.
