@@ -44,6 +44,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "tree-iterator.h"
 #include "hashtab.h"
+#include "tree-mudflap.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -3122,6 +3123,8 @@ c_common_nodes_and_builtins (void)
 #undef DEF_BUILTIN
 
   targetm.init_builtins ();
+  if (flag_mudflap)
+    mudflap_init ();
 
   main_identifier_node = get_identifier ("main");
 }

@@ -82,7 +82,7 @@ CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/typeck.o cp/cvt.o cp/except.o cp/friend.o cp/init.o cp/method.o \
  cp/search.o cp/semantics.o cp/tree.o cp/repo.o cp/dump.o cp/optimize.o \
  cp/mangle.o cp/cp-lang.o cp/name-lookup.o cp/cxx-pretty-print.o \
- cp/cp-gimplify.o tree-mudflap.o cp/cp-mudflap.o
+ cp/cp-gimplify.o tree-mudflap.o
 
 # Use strict warnings for this front end.
 cp-warn = $(STRICT_WARN) $(WERROR)
@@ -266,8 +266,6 @@ cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) toplev.h real.h gt-cp-mangle.h \
 cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) diagnostic.h gt-cp-parser.h \
   output.h
 cp/cp-gimplify.o: cp/cp-gimplify.c $(CXX_TREE_H) toplev.h c-common.h \
-	$(TM_H) coretypes.h
-cp/cp-mudflap.o: cp/cp-mudflap.c $(CXX_TREE_H) toplev.h c-common.h \
 	$(TM_H) coretypes.h
 
 cp/name-lookup.o: cp/name-lookup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \

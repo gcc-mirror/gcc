@@ -1,5 +1,10 @@
 2004-07-05  Zack Weinberg  <zack@codesourcery.com>
 
+	* cp-mudflap.c: Delete file.
+	* Makefile.in: Remove all references to cp-mudflap.o.
+
+2004-07-05  Zack Weinberg  <zack@codesourcery.com>
+
 	* decl.c (cxx_init_decl_processing): Call
 	build_common_tree_nodes before creating the global NAMESPACE_DECL.
 

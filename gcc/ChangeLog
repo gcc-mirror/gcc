@@ -1,3 +1,23 @@
+2004-07-05  Zack Weinberg  <zack@codesourcery.com>
+
+	* tree-mudflap.c: Include cgraph.h.
+	(mf_init_extern_trees): Rename to mudflap_init.  Export.
+	Rewrite to create synthetic declarations instead of looking
+	up declarations from mf-runtime.h.
+	(mf_make_builtin, mf_make_cache_struct_type): New functions.
+	(mf_cache_shift_decl, mf_cache_mask_decl, mf_unregister_fndecl):
+	Correct commentary.
+	(execute_mudflap_function_decls, mudflap_register_call):
+	Don't call mf_init_extern_trees.
+	(mudflap_finish_file): Use cgraph_build_static_cdtor.
+
+	* tree-mudflap.h: Update prototypes.
+	* c-mudflap.c: Delete file.
+	* c-common.c: Include tree-mudflap.h.
+	(c_common_nodes_and_builtins): Call mudflap_init if appropriate.
+	* Makefile.in: Remove all references to c-mudflap.o.
+	Update dependencies.
+
 2004-07-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md (prefetch, prefetch_32, prefetch_64): Only allow short

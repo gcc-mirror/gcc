@@ -1,3 +1,9 @@
+2004-07-05  Zack Weinberg  <zack@codesourcery.com>
+
+	* mf-runtime.h.in: Wrap declarations of struct __mf_cache,
+	__mf_lookup_cache, __mf_lc_mask, or __mf_lc_shift in
+	#ifndef _MUDFLAP.
+
 2004-06-29  Frank Ch. Eigler  <fche@redhat.com>
 
 	Splay tree implementation fork.
@@ -95,7 +101,7 @@
 	* testsuite/libmudflap.c/pass46-frag.c: Ditto.
 	* configure, Makefile, aclocal.m4, config.h.in, testsuite/Makefile.in:
 	Regenerated with autoconf 2.57 and automake 1.7.
-	
+
 2004-06-04  Per Bothner  <per@bothner.com>
 
 	* configure.in (LIBMUDFLAPTH):  Fix thinko.
@@ -229,8 +235,8 @@
 2003-11-19  Frank Ch. Eigler  <fche@redhat.com>
 
 	libstdc++/11696
-        * mf-runtime.h.in: Switch to #pragma redefine_extname for
-        symbols interposed at compile time.
+	* mf-runtime.h.in: Switch to #pragma redefine_extname for
+	symbols interposed at compile time.
 	* testsuite/libmudflap.c++/pass41-frag.cxx: New test.
 
 	libmudflap/12939
@@ -254,7 +260,7 @@
 
 	2003-07-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
-        * configure.in: Update check for union semun.
+	* configure.in: Update check for union semun.
 
 2003-07-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
