@@ -850,6 +850,16 @@ dequeue_and_dump (di)
 	}
       break;
       
+    case AGGR_INIT_EXPR:
+      dump_int ("ctor", AGGR_INIT_VIA_CTOR_P (t));
+      if (dump_children_p)
+	{
+	  dump_child ("fn", TREE_OPERAND (t, 0));
+	  dump_child ("args", TREE_OPERAND (t, 1));
+	  dump_child ("decl", TREE_OPERAND (t, 2));
+	}
+      break;
+
     default:
       /* There are no additional fields to print.  */
       break;
