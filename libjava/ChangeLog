@@ -1,3 +1,8 @@
+2001-09-12  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (class-check): New target.
+
 2001-09-11  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/File.java (toURL): Use getAbsolutePath and `file://'.
