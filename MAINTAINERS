@@ -102,6 +102,8 @@ cpplib			Zack Weinberg		zack@codesourcery.com
 cpplib			Neil Booth		neil@daikokuya.demon.co.uk
 java			Per Bothner		per@bothner.com
 java			Alexandre Petit-Bianco	apbianco@redhat.com
+libgcj			Tom Tromey		tromey@redhat.com
+libgcj			Bryce McKinlay		bryce@gcc.gnu.org
 mercury			Fergus Henderson	fjh@cs.mu.oz.au
 objective-c		Stan Shebs		shebs@apple.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
@@ -153,6 +155,7 @@ Scott Bambrough					scottb@netwinder.org
 Daniel Berlin					dan@dberlin.org
 David Billinghurst				David.Billinghurst@riotinto.com
 Laurynas Biveinis				lauras@softhome.net
+Eric Blake					ericb@gcc.gnu.org
 Jim Blandy					jimb@redhat.com
 Phil Blundell					pb@futuretv.com
 Hans Boehm					hboehm@gcc.gnu.org
@@ -187,7 +190,7 @@ Matt Kraai					kraai@alumni.carnegiemellon.edu
 Ziemowit Laski					zlaski@apple.com
 Marc Lehmann					pcg@goof.com
 Alan Lehotsky					apl@alum.mit.edu
-Warren Levy					warrenl@redhat.com
+Warren Levy					warrenl@cruzio.com
 Kriang Lerdsuwanakij				lerdsuwa@users.sourceforge.net
 Don Lindsay					dlindsay@redhat.com
 Dave Love					d.love@dl.ac.uk
@@ -197,7 +200,6 @@ Andrew Macleod					amacleod@redhat.com
 Vladimir Makarov				vmakarov@redhat.com
 Michael Matz					matz@suse.de
 Greg McGary					gkm@gnu.org
-Bryce McKinlay					bryce@gcc.gnu.org
 Adam Megacz					adam@xwt.org
 Alan Modra					amodra@bigpond.net.au
 Toon Moene					toon@moene.indiv.nluug.nl
@@ -231,11 +233,11 @@ Michael Sokolov					msokolov@ivan.Harhan.ORG
 Richard Stallman				rms@gnu.org
 Graham Stott					grahams@redhat.com
 Mike Stump					mrs@windriver.com
+Jeff Sturm					jsturm@gcc.gnu.org
 Ian Taylor					ian@zembu.com
 Michael Tiemann					tiemann@redhat.com
 Philipp Thomas					pthomas@suse.de
 Kresten Krab Thorup				krab@gcc.gnu.org
-Tom Tromey					tromey@redhat.com
 John Wehle					john@feith.com
 Florian Weimer					fw@deneb.enyo.de
 Mark Wielaard					mark@gcc.gnu.org
@@ -245,4 +247,3 @@ Peter Bienstman(?)
 Benjamin Chelf(?)
 James Dennett(?)
 Mark Galassi(?)
-Jeff Strum(?)
