@@ -1666,6 +1666,7 @@ do { union { float f; long l;} tem;			\
    '!' for the fpcr register (used in some float-to-fixed conversions).
    '$' for the letter `s' in an op code, but only on the 68040.
    '&' for the letter `d' in an op code, but only on the 68040.
+   '/' for register prefix needed by longlong.h.
 
    'b' for byte insn (no effect, on the Sun; this is for the ISI).
    'd' to force memory addressing to be absolute, not relative.
@@ -1681,7 +1682,7 @@ do { union { float f; long l;} tem;			\
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
   ((CODE) == '.' || (CODE) == '#' || (CODE) == '-'			\
    || (CODE) == '+' || (CODE) == '@' || (CODE) == '!'			\
-   || (CODE) == '$' || (CODE) == '&')
+   || (CODE) == '$' || (CODE) == '&' || (CODE) == '/')
 
 #ifdef HOST_WORDS_BIG_ENDIAN
 #define PRINT_OPERAND_EXTRACT_FLOAT(X)					\
