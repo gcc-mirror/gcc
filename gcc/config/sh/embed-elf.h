@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler for Hitachi / SuperH SH 
+/* Definitions of target machine for GNU compiler for Renesas / SuperH SH 
    non-Linux embedded targets.
    Copyright (C) 2002 Free Software Foundation, Inc.
    Contributed by J"orn Rennecke <joern.rennecke@superh.com>

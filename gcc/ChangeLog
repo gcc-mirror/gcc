@@ -1,5 +1,16 @@
 2003-06-17  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/sh/coff.h: Replace Hitachi with Renesas.
+	* config/sh/elf.h: Likewise.
+	* config/sh/embed-elf.h: Likewise.
+	* config/sh/lib1funcs.asm: Likewise.
+	* config/sh/sh-protos.h: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sh/sh.h: Likewise.
+	* config/sh/sh.md: Likewise.
+
+2003-06-17  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* ChangeLog.3: Fix comment typos.
 	* ChangeLog.6: Likewise.
 	* config/d30v/d30v.c: Likewise.

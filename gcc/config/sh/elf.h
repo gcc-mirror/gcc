@@ -1,4 +1,4 @@
-/* Definitions of target machine for gcc for Hitachi / SuperH SH using ELF.
+/* Definitions of target machine for gcc for Renesas / SuperH SH using ELF.
    Copyright (C) 1996, 1997, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Ian Lance Taylor <ian@cygnus.com>.
 

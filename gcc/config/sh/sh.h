@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler for Hitachi / SuperH SH.
+/* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
    2003 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
@@ -102,7 +102,7 @@ do { \
     }									\
   if (flag_pic)								\
     fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;				\
-  /* Hitachi saves and restores mac registers on call.  */		\
+  /* Renesas saves and restores mac registers on call.  */		\
   if (TARGET_HITACHI && ! TARGET_NOMACSAVE)				\
     {									\
       call_used_regs[MACH_REG] = 0;					\
@@ -235,14 +235,14 @@ extern int target_flags;
    to do function call relaxing.  */
 #define TARGET_RELAX (target_flags & RELAX_BIT)
 
-/* Nonzero if using Hitachi's calling convention.  */
+/* Nonzero if using Renesas's calling convention.  */
 #define TARGET_HITACHI 		(target_flags & HITACHI_BIT)
 
 /* Nonzero if not saving macl/mach when using -mhitachi */
 #define TARGET_NOMACSAVE	(target_flags & NOMACSAVE_BIT)
 
 /* Nonzero if padding structures to a multiple of 4 bytes.  This is
-   incompatible with Hitachi's compiler, and gives unusual structure layouts
+   incompatible with Renesas's compiler, and gives unusual structure layouts
    which confuse programmers.
    ??? This option is not useful, but is retained in case there are people
    who are still relying on it.  It may be deleted in the future.  */
@@ -682,7 +682,7 @@ do {									\
 
 /* Standard register usage.  */
 
-/* Register allocation for the Hitachi calling convention:
+/* Register allocation for the Renesas calling convention:
 
         r0		arg return
 	r1..r3          scratch
@@ -1119,7 +1119,7 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
    where the address is passed.  If it returns 0, the address is
    passed as an "invisible" first argument.  */
 
-/* The Hitachi calling convention doesn't quite fit into this scheme since
+/* The Renesas calling convention doesn't quite fit into this scheme since
    the address is passed like an invisible argument, but one that is always
    passed in memory.  */
 #define STRUCT_VALUE \
@@ -3280,7 +3280,7 @@ extern enum mdep_reorg_phase_e mdep_reorg_phase;
 
 #define TARGET_MEM_FUNCTIONS
 
-/* Handle Hitachi compiler's pragmas.  */
+/* Handle Renesas compiler's pragmas.  */
 #define REGISTER_TARGET_PRAGMAS() do {					\
   c_register_pragma (0, "interrupt", sh_pr_interrupt);			\
   c_register_pragma (0, "trapa", sh_pr_trapa);				\
