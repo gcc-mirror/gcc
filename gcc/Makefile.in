@@ -1625,7 +1625,7 @@ install-fixincludes: install-headers
 	  if [ -d $$dir ]; \
 	  then \
 	    $(srcdir)/$(FIXINCLUDES) $(libsubdir)/include $$dir $(srcdir); \
-	  else true; fi \
+	  else true; fi; \
 	done
 	-cd $(libsubdir)/include; \
 	if [ -f limits.h ]; then \
