@@ -9197,11 +9197,17 @@ ffestc_R810 (ffesttCaseList cases, ffelexToken name)
 	    }
 	  if (((caseobj->expr1 != NULL)
 	       && ((ffeinfo_basictype (ffebld_info (caseobj->expr1))
-		    != s->type)))
+		    != s->type)
+		   || ((ffeinfo_kindtype (ffebld_info (caseobj->expr1))
+		       != s->kindtype) 
+		       && (ffeinfo_kindtype (ffebld_info (caseobj->expr1)) != FFEINFO_kindtypeINTEGER1 ))
 	      || ((caseobj->range)
 		  && (caseobj->expr2 != NULL)
 		  && ((ffeinfo_basictype (ffebld_info (caseobj->expr2))
-		       != s->type))))
+		       != s->type)
+		      || ((ffeinfo_kindtype (ffebld_info (caseobj->expr2))
+			  != s->kindtype)
+		      && (ffeinfo_kindtype (ffebld_info (caseobj->expr2)) != FFEINFO_kindtypeINTEGER1)))))))
 	    {
 	      ffebad_start (FFEBAD_CASE_TYPE_DISAGREE);
 	      ffebad_here (0, ffelex_token_where_line (caseobj->t),
@@ -9211,6 +9217,8 @@ ffestc_R810 (ffesttCaseList cases, ffelexToken name)
 	      ffebad_finish ();
 	      continue;
 	    }
+
+
 
 	  if ((s->type == FFEINFO_basictypeLOGICAL) && (caseobj->range))
 	    {

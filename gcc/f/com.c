@@ -10591,6 +10591,78 @@ ffecom_constantunion (ffebldConstantUnion *cu, ffeinfoBasictype bt,
   return item;
 }
 
+/* Transform constant-union to tree, with the type known.  */
+
+tree
+ffecom_constantunion_with_type (ffebldConstantUnion *cu,
+		      tree tree_type, ffebldConst ct)
+{
+  tree item;
+
+  int val;
+
+  switch (ct)
+  {
+#if FFETARGET_okINTEGER1
+	  case  FFEBLD_constINTEGER1:
+         	  val = ffebld_cu_val_integer1 (*cu);
+		  item = build_int_2 (val, (val < 0) ? -1 : 0);
+		  break;
+#endif
+#if FFETARGET_okINTEGER2
+	  case  FFEBLD_constINTEGER2:
+		  val = ffebld_cu_val_integer2 (*cu);
+		  item = build_int_2 (val, (val < 0) ? -1 : 0);
+		  break;
+#endif
+#if FFETARGET_okINTEGER3
+	  case  FFEBLD_constINTEGER3:
+		  val = ffebld_cu_val_integer3 (*cu);
+		  item = build_int_2 (val, (val < 0) ? -1 : 0);
+		  break;
+#endif
+#if FFETARGET_okINTEGER4
+	  case  FFEBLD_constINTEGER4:
+		  val = ffebld_cu_val_integer4 (*cu);
+		  item = build_int_2 (val, (val < 0) ? -1 : 0);
+		  break;
+#endif
+#if FFETARGET_okLOGICAL1
+	  case  FFEBLD_constLOGICAL1:
+		  val = ffebld_cu_val_logical1 (*cu);
+		  item = build_int_2 (val, (val < 0) ? -1 : 0);
+		  break;
+#endif
+#if FFETARGET_okLOGICAL2
+          case  FFEBLD_constLOGICAL2:
+		  val = ffebld_cu_val_logical2 (*cu);
+		  item = build_int_2 (val, (val < 0) ? -1 : 0);
+		  break;
+#endif
+#if FFETARGET_okLOGICAL3
+	  case  FFEBLD_constLOGICAL3:
+		  val = ffebld_cu_val_logical3 (*cu);
+		  item = build_int_2 (val, (val < 0) ? -1 : 0);
+		  break;
+#endif
+#if FFETARGET_okLOGICAL4
+	  case  FFEBLD_constLOGICAL4:
+		  val = ffebld_cu_val_logical4 (*cu);
+		  item = build_int_2 (val, (val < 0) ? -1 : 0);
+		  break;
+#endif
+	  default:
+		  assert ("constant type not supported"==NULL);
+		  return error_mark_node;
+		  break;
+  }
+
+  TREE_TYPE (item) = tree_type;
+
+  TREE_CONSTANT (item) = 1;
+
+  return item;
+}
 /* Transform expression into constant tree.
 
    If the expression can be transformed into a tree that is constant,
