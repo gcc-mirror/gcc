@@ -29,13 +29,16 @@
 
 (define_constants [
   (A0_REG		0)
+  (A1_REG		1)
   (A7_REG		7)
+  (A8_REG		8)
 
   (UNSPEC_NSAU		1)
   (UNSPEC_NOP		2)
   (UNSPEC_PLT		3)
   (UNSPEC_RET_ADDR	4)
   (UNSPECV_SET_FP	1)
+  (UNSPECV_ENTRY	2)
 ])
 
 ;;
@@ -919,21 +922,19 @@
   ""
   "
 {
-  if (CONSTANT_P (operands[1]))
+  if (CONSTANT_P (operands[1])
+      && register_operand (operands[0], DImode))
     {
       rtx src0, src1, dst0, dst1;
-      if ((dst0 = operand_subword (operands[0], 0, 1, DImode))
-	  && (src0 = operand_subword (operands[1], 0, 1, DImode))
-	  && (dst1 = operand_subword (operands[0], 1, 1, DImode))
-	  && (src1 = operand_subword (operands[1], 1, 1, DImode)))
-	{
-	  emit_insn (gen_movsi (dst0, src0));
-	  emit_insn (gen_movsi (dst1, src1));
-	  DONE;
-	}
-      else
-	/* any other constant will be loaded from memory */
-	operands[1] = force_const_mem (DImode, operands[1]);
+      dst0 = operand_subword (operands[0], 0, 1, DImode);
+      src0 = operand_subword (operands[1], 0, 1, DImode);
+      dst1 = operand_subword (operands[0], 1, 1, DImode);
+      src1 = operand_subword (operands[1], 1, 1, DImode);
+      if (!dst0 || !src0 || !dst1 || !src1)
+        abort ();
+      emit_insn (gen_movsi (dst0, src0));
+      emit_insn (gen_movsi (dst1, src1));
+      DONE;
     }
 
   if (!(reload_in_progress | reload_completed))
@@ -948,60 +949,56 @@
 }")
 
 (define_insn "movdi_internal"
-  [(set (match_operand:DI 0 "nonimmed_operand" "=D,D,S,a,a,a,U")
-	(match_operand:DI 1 "non_const_move_operand" "d,S,d,r,T,U,r"))]
+  [(set (match_operand:DI 0 "nonimmed_operand" "=D,D,S,a,a,U")
+	(match_operand:DI 1 "nonimmed_operand" "d,S,d,r,U,r"))]
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)"
   "*
 {
+  rtx dstreg;
   switch (which_alternative)
     {
     case 0: return \"mov.n\\t%0, %1\;mov.n\\t%D0, %D1\";
     case 2: return \"%v0s32i.n\\t%1, %0\;s32i.n\\t%D1, %N0\";
     case 3: return \"mov\\t%0, %1\;mov\\t%D0, %D1\";
-    case 6: return \"%v0s32i\\t%1, %0\;s32i\\t%D1, %N0\";
+    case 5: return \"%v0s32i\\t%1, %0\;s32i\\t%D1, %N0\";
 
     case 1:
     case 4:
-    case 5:
-      {
-	/* Check if the first half of the destination register is used
-	   in the source address.  If so, reverse the order of the loads
-	   so that the source address doesn't get clobbered until it is
-	   no longer needed. */
+      /* Check if the first half of the destination register is used
+	 in the source address.  If so, reverse the order of the loads
+	 so that the source address doesn't get clobbered until it is
+	 no longer needed. */
 
-	rtx dstreg = operands[0];
-	if (GET_CODE (dstreg) == SUBREG)
-	  dstreg = SUBREG_REG (dstreg);
-	if (GET_CODE (dstreg) != REG)
-	  abort();
+      dstreg = operands[0];
+      if (GET_CODE (dstreg) == SUBREG)
+	dstreg = SUBREG_REG (dstreg);
+      if (GET_CODE (dstreg) != REG)
+	abort();
 
-	if (reg_mentioned_p (dstreg, operands[1]))
-	  {
-	    switch (which_alternative)
-	      {
-	      case 1: return \"%v1l32i.n\\t%D0, %N1\;l32i.n\\t%0, %1\";
-	      case 4: return \"%v1l32r\\t%D0, %N1\;l32r\\t%0, %1\";
-	      case 5: return \"%v1l32i\\t%D0, %N1\;l32i\\t%0, %1\";
-	      }
-	  }
-	else
-	  {
-	    switch (which_alternative)
-	      {
-	      case 1: return \"%v1l32i.n\\t%0, %1\;l32i.n\\t%D0, %N1\";
-	      case 4: return \"%v1l32r\\t%0, %1\;l32r\\t%D0, %N1\";
-	      case 5: return \"%v1l32i\\t%0, %1\;l32i\\t%D0, %N1\";
-	      }
-	  }
-      }
+      if (reg_mentioned_p (dstreg, operands[1]))
+	{
+	  switch (which_alternative)
+	    {
+	    case 1: return \"%v1l32i.n\\t%D0, %N1\;l32i.n\\t%0, %1\";
+	    case 4: return \"%v1l32i\\t%D0, %N1\;l32i\\t%0, %1\";
+	    }
+	}
+      else
+	{
+	  switch (which_alternative)
+	    {
+	    case 1: return \"%v1l32i.n\\t%0, %1\;l32i.n\\t%D0, %N1\";
+	    case 4: return \"%v1l32i\\t%0, %1\;l32i\\t%D0, %N1\";
+	    }
+	}
     }
   abort ();
   return \"\";
 }"
-  [(set_attr "type"	"move,load,store,move,load,load,store")
+  [(set_attr "type"	"move,load,store,move,load,store")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"4,4,4,6,6,6,6")])
+   (set_attr "length"	"4,4,4,6,6,6")])
 
 
 ;; 32-bit Integer moves
@@ -1017,8 +1014,8 @@
 }")
 
 (define_insn "movsi_internal"
-  [(set (match_operand:SI 0 "nonimmed_operand" "=D,D,D,D,R,R,a,q,a,a,a,U,*a,*A")
-	(match_operand:SI 1 "move_operand" "M,D,d,R,D,d,r,r,I,T,U,r,*A,*r"))]
+  [(set (match_operand:SI 0 "nonimmed_operand" "=D,D,D,D,R,R,a,q,a,W,a,a,U,*a,*A")
+	(match_operand:SI 1 "move_operand" "M,D,d,R,D,d,r,r,I,i,T,U,r,*A,*r"))]
   "xtensa_valid_move (SImode, operands)"
   "@
    movi.n\\t%0, %x1
@@ -1030,14 +1027,15 @@
    mov\\t%0, %1
    movsp\\t%0, %1
    movi\\t%0, %x1
+   const16\\t%0, %t1\;const16\\t%0, %b1
    %v1l32r\\t%0, %1
    %v1l32i\\t%0, %1
    %v0s32i\\t%1, %0
    rsr\\t%0, 16 # ACCLO
    wsr\\t%1, 16 # ACCLO"
-  [(set_attr "type"	"move,move,move,load,store,store,move,move,move,load,load,store,rsr,wsr")
+  [(set_attr "type" "move,move,move,load,store,store,move,move,move,move,load,load,store,rsr,wsr")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"2,2,2,2,2,2,3,3,3,3,3,3,3,3")])
+   (set_attr "length"	"2,2,2,2,2,2,3,3,3,6,3,3,3,3,3")])
 
 ;; 16-bit Integer moves
 
@@ -1105,15 +1103,16 @@
   ""
   "
 {
-  if (GET_CODE (operands[1]) == CONST_DOUBLE)
+  if (!TARGET_CONST16 && CONSTANT_P (operands[1]))
     operands[1] = force_const_mem (SFmode, operands[1]);
 
   if (!(reload_in_progress | reload_completed))
     {
-      if (((!register_operand (operands[0], SFmode)
+      if ((!register_operand (operands[0], SFmode)
 	   && !register_operand (operands[1], SFmode))
 	  || (FP_REG_P (xt_true_regnum (operands[0]))
-	      && constantpool_mem_p (operands[1]))))
+	      && (constantpool_mem_p (operands[1])
+	          || CONSTANT_P (operands[1]))))
 	operands[1] = force_reg (SFmode, operands[1]);
 
       if (xtensa_copy_incoming_a7 (operands, SFmode))
@@ -1122,14 +1121,12 @@
 }")
 
 (define_insn "movsf_internal"
-  [(set (match_operand:SF 0 "nonimmed_operand"
-			    "=f,f,U,D,D,R,a,f,a,a,a,U")
-	(match_operand:SF 1 "non_const_move_operand"
-			    "f,U,f,d,R,d,r,r,f,T,U,r"))]
+  [(set (match_operand:SF 0 "nonimmed_operand" "=f,f,U,D,D,R,a,f,a,W,a,a,U")
+	(match_operand:SF 1 "move_operand" "f,U,f,d,R,d,r,r,f,F,T,U,r"))]
   "((register_operand (operands[0], SFmode)
      || register_operand (operands[1], SFmode))
-    && (!FP_REG_P (xt_true_regnum (operands[0]))
-        || !constantpool_mem_p (operands[1])))"
+    && !(FP_REG_P (xt_true_regnum (operands[0]))
+         && (constantpool_mem_p (operands[1]) || CONSTANT_P (operands[1]))))"
   "@
    mov.s\\t%0, %1
    %v1lsi\\t%0, %1
@@ -1140,12 +1137,13 @@
    mov\\t%0, %1
    wfr\\t%0, %1
    rfr\\t%0, %1
+   const16\\t%0, %t1\;const16\\t%0, %b1
    %v1l32r\\t%0, %1
    %v1l32i\\t%0, %1
    %v0s32i\\t%1, %0"
-  [(set_attr "type"	"farith,fload,fstore,move,load,store,move,farith,farith,load,load,store")
+  [(set_attr "type"	"farith,fload,fstore,move,load,store,move,farith,farith,move,load,load,store")
    (set_attr "mode"	"SF")
-   (set_attr "length"	"3,3,3,2,2,2,3,3,3,3,3,3")])
+   (set_attr "length"	"3,3,3,2,2,2,3,3,3,6,3,3,3")])
 
 (define_insn "*lsiu"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -1189,8 +1187,19 @@
   ""
   "
 {
-  if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    operands[1] = force_const_mem (DFmode, operands[1]);
+  if (CONSTANT_P (operands[1]))
+    {
+      rtx src0, src1, dst0, dst1;
+      dst0 = operand_subword (operands[0], 0, 1, DFmode);
+      src0 = operand_subword (operands[1], 0, 1, DFmode);
+      dst1 = operand_subword (operands[0], 1, 1, DFmode);
+      src1 = operand_subword (operands[1], 1, 1, DFmode);
+      if (!dst0 || !src0 || !dst1 || !src1)
+        abort ();
+      emit_insn (gen_movsi (dst0, src0));
+      emit_insn (gen_movsi (dst1, src1));
+      DONE;
+    }
 
   if (!(reload_in_progress | reload_completed))
     {
@@ -1204,60 +1213,56 @@
 }")
 
 (define_insn "movdf_internal"
-  [(set (match_operand:DF 0 "nonimmed_operand" "=D,D,S,a,a,a,U")
-	(match_operand:DF 1 "non_const_move_operand" "d,S,d,r,T,U,r"))]
+  [(set (match_operand:DF 0 "nonimmed_operand" "=D,D,S,a,a,U")
+	(match_operand:DF 1 "nonimmed_operand" "d,S,d,r,U,r"))]
   "register_operand (operands[0], DFmode)
    || register_operand (operands[1], DFmode)"
   "*
 {
+  rtx dstreg;
   switch (which_alternative)
     {
     case 0: return \"mov.n\\t%0, %1\;mov.n\\t%D0, %D1\";
     case 2: return \"%v0s32i.n\\t%1, %0\;s32i.n\\t%D1, %N0\";
     case 3: return \"mov\\t%0, %1\;mov\\t%D0, %D1\";
-    case 6: return \"%v0s32i\\t%1, %0\;s32i\\t%D1, %N0\";
+    case 5: return \"%v0s32i\\t%1, %0\;s32i\\t%D1, %N0\";
 
     case 1:
     case 4:
-    case 5:
-      {
-	/* Check if the first half of the destination register is used
-	   in the source address.  If so, reverse the order of the loads
-	   so that the source address doesn't get clobbered until it is
-	   no longer needed. */
+      /* Check if the first half of the destination register is used
+	 in the source address.  If so, reverse the order of the loads
+	 so that the source address doesn't get clobbered until it is
+	 no longer needed.  */
 
-	rtx dstreg = operands[0];
-	if (GET_CODE (dstreg) == SUBREG)
-	  dstreg = SUBREG_REG (dstreg);
-	if (GET_CODE (dstreg) != REG)
-	  abort ();
+      dstreg = operands[0];
+      if (GET_CODE (dstreg) == SUBREG)
+	dstreg = SUBREG_REG (dstreg);
+      if (GET_CODE (dstreg) != REG)
+	abort ();
 
-	if (reg_mentioned_p (dstreg, operands[1]))
-	  {
-	    switch (which_alternative)
-	      {
-	      case 1: return \"%v1l32i.n\\t%D0, %N1\;l32i.n\\t%0, %1\";
-	      case 4: return \"%v1l32r\\t%D0, %N1\;l32r\\t%0, %1\";
-	      case 5: return \"%v1l32i\\t%D0, %N1\;l32i\\t%0, %1\";
-	      }
-	  }
-	else
-	  {
-	    switch (which_alternative)
-	      {
-	      case 1: return \"%v1l32i.n\\t%0, %1\;l32i.n\\t%D0, %N1\";
-	      case 4: return \"%v1l32r\\t%0, %1\;l32r\\t%D0, %N1\";
-	      case 5: return \"%v1l32i\\t%0, %1\;l32i\\t%D0, %N1\";
-	      }
-	  }
-      }
+      if (reg_mentioned_p (dstreg, operands[1]))
+	{
+	  switch (which_alternative)
+	    {
+	    case 1: return \"%v1l32i.n\\t%D0, %N1\;l32i.n\\t%0, %1\";
+	    case 4: return \"%v1l32i\\t%D0, %N1\;l32i\\t%0, %1\";
+	    }
+	}
+      else
+	{
+	  switch (which_alternative)
+	    {
+	    case 1: return \"%v1l32i.n\\t%0, %1\;l32i.n\\t%D0, %N1\";
+	    case 4: return \"%v1l32i\\t%0, %1\;l32i\\t%D0, %N1\";
+	    }
+	}
     }
   abort ();
   return \"\";
 }"
-  [(set_attr "type"	"move,load,store,move,load,load,store")
+  [(set_attr "type"	"move,load,store,move,load,store")
    (set_attr "mode"	"DF")
-   (set_attr "length"	"4,4,4,6,6,6,6")])
+   (set_attr "length"	"4,4,4,6,6,6")])
 
 ;; Block moves
 
@@ -2340,6 +2345,24 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
 
+(define_insn "entry"
+  [(set (reg:SI A1_REG)
+	(unspec_volatile:SI [(match_operand:SI 0 "const_int_operand" "i")
+			     (match_operand:SI 1 "const_int_operand" "i")]
+			    UNSPECV_ENTRY))]
+  ""
+  "*
+{
+  if (frame_pointer_needed)
+    output_asm_insn (\".frame\\ta7, %0\", operands);
+  else
+    output_asm_insn (\".frame\\tsp, %0\", operands);
+  return \"entry\\tsp, %1\";
+}"
+  [(set_attr "type"	"move")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
 (define_insn "return"
   [(return)
    (use (reg:SI A0_REG))]
@@ -2360,6 +2383,24 @@
 ;;
 ;;  ....................
 ;;
+
+(define_expand "prologue"
+  [(const_int 0)]
+  ""
+  "
+{
+  xtensa_expand_prologue ();
+  DONE;
+}")
+
+(define_expand "epilogue"
+  [(return)]
+  ""
+  "
+{
+  emit_jump_insn (gen_return ());
+  DONE;
+}")
 
 (define_insn "nop"
   [(const_int 0)]
@@ -2400,7 +2441,7 @@
 ;; to set up the frame pointer.
 
 (define_insn "set_frame_ptr"
-  [(set (reg:SI A7_REG) (unspec_volatile [(const_int 0)] UNSPECV_SET_FP))]
+  [(set (reg:SI A7_REG) (unspec_volatile:SI [(const_int 0)] UNSPECV_SET_FP))]
   ""
   "*
 {
@@ -2414,7 +2455,7 @@
 
 ;; Post-reload splitter to remove fp assignment when it's not needed.
 (define_split
-  [(set (reg:SI A7_REG) (unspec_volatile [(const_int 0)] UNSPECV_SET_FP))]
+  [(set (reg:SI A7_REG) (unspec_volatile:SI [(const_int 0)] UNSPECV_SET_FP))]
   "reload_completed && !frame_pointer_needed"
   [(unspec [(const_int 0)] UNSPEC_NOP)]
   "")
