@@ -52,7 +52,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
-   of EQ, NE, etc. */
+   of EQ, NE, etc.  */
 
 enum internal_test {
     ITEST_EQ,
@@ -96,7 +96,7 @@ struct machine_function GTY(())
 
 /* Vector, indexed by hard register number, which contains 1 for a
    register that is allowable in a candidate for leaf function
-   treatment. */
+   treatment.  */
 
 const char xtensa_leaf_regs[FIRST_PSEUDO_REGISTER] =
 {
@@ -376,7 +376,7 @@ xtensa_uimm8x4 (v)
 
 
 /* This is just like the standard true_regnum() function except that it
-   works even when reg_renumber is not initialized. */
+   works even when reg_renumber is not initialized.  */
 
 int
 xt_true_regnum (x)
@@ -404,56 +404,56 @@ xt_true_regnum (x)
 
 int
 add_operand (op, mode)
-    rtx op;
-    enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode;
 {
-    if (GET_CODE (op) == CONST_INT)
-	return (xtensa_simm8 (INTVAL (op)) ||
-		xtensa_simm8x256 (INTVAL (op)));
+  if (GET_CODE (op) == CONST_INT)
+    return (xtensa_simm8 (INTVAL (op)) ||
+	    xtensa_simm8x256 (INTVAL (op)));
 
-    return register_operand (op, mode);
+  return register_operand (op, mode);
 }
 
 
 int
 arith_operand (op, mode)
-    rtx op;
-    enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode;
 {
-    if (GET_CODE (op) == CONST_INT)
-	return xtensa_simm8 (INTVAL (op));
+  if (GET_CODE (op) == CONST_INT)
+    return xtensa_simm8 (INTVAL (op));
 
-    return register_operand (op, mode);
+  return register_operand (op, mode);
 }
 
 
 int
 nonimmed_operand (op, mode)
-    rtx op;
-    enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode;
 {
-    /* We cannot use the standard nonimmediate_operand() predicate because
-       it includes constant pool memory operands. */
+  /* We cannot use the standard nonimmediate_operand() predicate because
+     it includes constant pool memory operands.  */
 
-    if (memory_operand (op, mode))
-	return !constantpool_address_p (XEXP (op, 0));
+  if (memory_operand (op, mode))
+    return !constantpool_address_p (XEXP (op, 0));
 
-    return register_operand (op, mode);
+  return register_operand (op, mode);
 }
 
 
 int
 mem_operand (op, mode)
-    rtx op;
-    enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode;
 {
-    /* We cannot use the standard memory_operand() predicate because
-       it includes constant pool memory operands. */
+  /* We cannot use the standard memory_operand() predicate because
+     it includes constant pool memory operands.  */
 
-    if (memory_operand (op, mode))
-	return !constantpool_address_p (XEXP (op, 0));
+  if (memory_operand (op, mode))
+    return !constantpool_address_p (XEXP (op, 0));
 
-    return FALSE;
+  return FALSE;
 }
 
 
@@ -469,7 +469,7 @@ xtensa_valid_move (mode, operands)
     {
       int dst_regnum = xt_true_regnum (operands[0]);
 
-      /* The stack pointer can only be assigned with a MOVSP opcode. */
+      /* The stack pointer can only be assigned with a MOVSP opcode.  */
       if (dst_regnum == STACK_POINTER_REGNUM)
 	return (mode == SImode
 		&& register_operand (operands[1], mode)
@@ -610,7 +610,7 @@ move_operand (op, mode)
     return TRUE;
 
   /* Accept CONSTANT_P_RTX, since it will be gone by CSE1 and
-     result in 0/1. */
+     result in 0/1.  */
   if (GET_CODE (op) == CONSTANT_P_RTX)
     return TRUE;
 
@@ -894,7 +894,7 @@ xtensa_mem_offset (v, mode)
 	 where we emit an optimized block move operation if the block can be
 	 moved in < "move_ratio" pieces.  The worst case is when the block is
 	 aligned but has a size of (3 mod 4) (does this happen?) so that the
-	 last piece requires a byte load/store. */
+	 last piece requires a byte load/store.  */
       return (xtensa_uimm8 (v) &&
 	      xtensa_uimm8 (v + MOVE_MAX * LARGEST_MOVE_RATIO));
 
@@ -943,7 +943,7 @@ map_test_to_internal_test (test_code)
 
 
 /* Generate the code to compare two integer values.  The return value is
-   the comparison expression. */
+   the comparison expression.  */
 
 static rtx
 gen_int_relational (test_code, cmp0, cmp1, p_invert)
@@ -1042,7 +1042,7 @@ gen_int_relational (test_code, cmp0, cmp1, p_invert)
 
 
 /* Generate the code to compare two float values.  The return value is
-   the comparison expression. */
+   the comparison expression.  */
 
 static rtx
 gen_float_relational (test_code, cmp0, cmp1)
@@ -1146,7 +1146,7 @@ gen_conditional_move (cmp)
 	 comparison supported in Xtensa.  We shouldn't have to
 	 transform <LE x const> comparisons, because neither
 	 xtensa_expand_conditional_branch() nor get_condition() will
-	 produce them. */
+	 produce them.  */
 
       if ((code == GT) && (op1 == constm1_rtx))
 	{
@@ -1285,8 +1285,8 @@ xtensa_emit_move_sequence (operands, mode)
     }
 
   /* During reload we don't want to emit (subreg:X (mem:Y)) since that
-     instruction won't be recognized after reload. So we remove the
-     subreg and adjust mem accordingly. */
+     instruction won't be recognized after reload, so we remove the
+     subreg and adjust mem accordingly.  */
   if (reload_in_progress)
     {
       operands[0] = fixup_subreg_mem (operands[0]);
@@ -1598,7 +1598,7 @@ xtensa_init_machine_status ()
 void
 xtensa_setup_frame_addresses ()
 {
-  /* Set flag to cause FRAME_POINTER_REQUIRED to be set. */
+  /* Set flag to cause FRAME_POINTER_REQUIRED to be set.  */
   cfun->machine->accesses_prev_frame = 1;
 
   emit_library_call
@@ -1607,18 +1607,18 @@ xtensa_setup_frame_addresses ()
 }
 
 
-/* Emit the assembly for the end of a zero-cost loop. Normally we just emit
-   a comment showing where the end of the loop is. However, if there is a
+/* Emit the assembly for the end of a zero-cost loop.  Normally we just emit
+   a comment showing where the end of the loop is.  However, if there is a
    label or a branch at the end of the loop then we need to place a nop
-   there. If the loop ends with a label we need the nop so that branches
+   there.  If the loop ends with a label we need the nop so that branches
    targetting that label will target the nop (and thus remain in the loop),
    instead of targetting the instruction after the loop (and thus exiting
-   the loop). If the loop ends with a branch, we need the nop in case the
-   branch is targetting a location inside the loop. When the branch
+   the loop).  If the loop ends with a branch, we need the nop in case the
+   branch is targetting a location inside the loop.  When the branch
    executes it will cause the loop count to be decremented even if it is
    taken (because it is the last instruction in the loop), so we need to
    nop after the branch to prevent the loop count from being decremented
-   when the branch is taken. */
+   when the branch is taken.  */
 
 void
 xtensa_emit_loop_end (insn, operands)
@@ -1680,7 +1680,7 @@ xtensa_emit_call (callop, operands)
 }
 
 
-/* Return the stabs register number to use for 'regno'. */
+/* Return the stabs register number to use for 'regno'.  */
 
 int
 xtensa_dbx_register_number (regno)
@@ -1702,7 +1702,7 @@ xtensa_dbx_register_number (regno)
        numbered in libcc order beginning with 256.  We can't guarantee
        that the FP registers will come first, so the following is just
        a guess.  It seems like we should make a special case for FP
-       registers and give them fixed numbers < 256. */
+       registers and give them fixed numbers < 256.  */
     first = 256;
   }
   else if (ACC_REG_P (regno))
@@ -1712,7 +1712,7 @@ xtensa_dbx_register_number (regno)
     }
 
   /* When optimizing, we sometimes get asked about pseudo-registers
-     that don't represent hard registers. Return 0 for these. */
+     that don't represent hard registers.  Return 0 for these.  */
   if (first == -1)
     return 0;
 
@@ -1794,7 +1794,7 @@ function_arg (cum, mode, type, incoming_p)
      rtx that is not equal to hard_frame_pointer_rtx.  For BLKmode and
      modes bigger than 2 words (because we only have patterns for
      modes of 2 words or smaller), we can't control the expansion
-     unless we explicitly list the individual registers in a PARALLEL. */
+     unless we explicitly list the individual registers in a PARALLEL.  */
 
   if ((mode == BLKmode || words > 2)
       && regno < A7_REG
@@ -1845,7 +1845,7 @@ override_options ()
   xtensa_char_to_class['D'] = ((TARGET_DENSITY) ? GR_REGS: NO_REGS);
   xtensa_char_to_class['d'] = ((TARGET_DENSITY) ? AR_REGS: NO_REGS);
 
-  /* Set up array giving whether a given register can hold a given mode. */
+  /* Set up array giving whether a given register can hold a given mode.  */
   for (mode = VOIDmode;
        mode != MAX_MACHINE_MODE;
        mode = (enum machine_mode) ((int) mode + 1))
@@ -2151,7 +2151,7 @@ xtensa_output_literal (file, x, mode, labelno)
 
 
 /* Return the bytes needed to compute the frame pointer from the current
-   stack pointer. */
+   stack pointer.  */
 
 #define STACK_BYTES (STACK_BOUNDARY / BITS_PER_UNIT)
 #define XTENSA_STACK_ALIGN(LOC) (((LOC) + STACK_BYTES-1) & ~(STACK_BYTES-1))
@@ -2178,7 +2178,7 @@ xtensa_frame_pointer_required ()
   /* The code to expand builtin_frame_addr and builtin_return_addr
      currently uses the hard_frame_pointer instead of frame_pointer.
      This seems wrong but maybe it's necessary for other architectures.
-     This function is derived from the i386 code. */
+     This function is derived from the i386 code.  */
 
   if (cfun->machine->accesses_prev_frame)
     return 1;
@@ -2212,7 +2212,7 @@ xtensa_reorg (first)
      frame pointer.  This search will fail if the function does not
      have an incoming argument in $a7, but in that case, we can just
      set up the frame pointer at the very beginning of the
-     function. */
+     function.  */
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
@@ -2286,7 +2286,7 @@ xtensa_function_prologue (file, size)
 
 
 /* Do any necessary cleanup after a function to restore
-   stack, frame, and regs. */
+   stack, frame, and regs.  */
 
 void
 xtensa_function_epilogue (file, size)
@@ -2294,7 +2294,7 @@ xtensa_function_epilogue (file, size)
      HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   rtx insn = get_last_insn ();
-  /* If the last insn was a BARRIER, we don't have to write anything. */
+  /* If the last insn was a BARRIER, we don't have to write anything.  */
   if (GET_CODE (insn) == NOTE)
     insn = prev_nonnote_insn (insn);
   if (insn == 0 || GET_CODE (insn) != BARRIER)
@@ -2342,7 +2342,7 @@ xtensa_return_addr (count, frame)
    registers.  E.G., if there are 6 argument registers, and each register is
    4 bytes, then __va_stk is set to $sp - (6 * 4); then __va_reg[N*4]
    references argument word N for 0 <= N < 6, and __va_stk[N*4] references
-   argument word N for N >= 6. */
+   argument word N for N >= 6.  */
 
 tree
 xtensa_build_va_list ()
@@ -2375,7 +2375,7 @@ xtensa_build_va_list ()
 
 
 /* Save the incoming argument registers on the stack.  Returns the
-   address of the saved registers. */
+   address of the saved registers.  */
 
 rtx
 xtensa_builtin_saveregs ()
@@ -2401,7 +2401,7 @@ xtensa_builtin_saveregs ()
   /* Note: Don't use move_block_from_reg() here because the incoming
      argument in a7 cannot be represented by hard_frame_pointer_rtx.
      Instead, call gen_raw_REG() directly so that we get a distinct
-     instance of (REG:SI 7). */
+     instance of (REG:SI 7).  */
   for (i = 0; i < gp_left; i++)
     {
       emit_move_insn (operand_subword (dest, i, 1, BLKmode),
@@ -2413,7 +2413,7 @@ xtensa_builtin_saveregs ()
 
 
 /* Implement `va_start' for varargs and stdarg.  We look at the
-   current function to fill in an initial va_list. */
+   current function to fill in an initial va_list.  */
 
 void
 xtensa_va_start (valist, nextarg)
@@ -2451,7 +2451,7 @@ xtensa_va_start (valist, nextarg)
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  /* Set the __va_ndx member. */
+  /* Set the __va_ndx member.  */
   u = build_int_2 (arg_words * UNITS_PER_WORD, 0);
   t = build (MODIFY_EXPR, integer_type_node, ndx, u);
   TREE_SIDE_EFFECTS (t) = 1;
@@ -2715,7 +2715,7 @@ order_regs_for_local_alloc ()
       for (i = 0; i < 16; i++)
 	reg_alloc_order[nxt++] = FP_REG_FIRST + i;
 
-      /* GCC requires that we list *all* the registers.... */
+      /* GCC requires that we list *all* the registers....  */
       reg_alloc_order[nxt++] = 0;	/* a0 = return address */
       reg_alloc_order[nxt++] = 1;	/* a1 = stack pointer */
       reg_alloc_order[nxt++] = 16;	/* pseudo frame pointer */
@@ -2727,7 +2727,7 @@ order_regs_for_local_alloc ()
 
 
 /* A customized version of reg_overlap_mentioned_p that only looks for
-   references to a7 (as opposed to hard_frame_pointer_rtx). */
+   references to a7 (as opposed to hard_frame_pointer_rtx).  */
 
 int
 a7_overlap_mentioned_p (x)
