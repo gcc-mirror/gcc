@@ -1231,7 +1231,7 @@ dead_or_set_regno_p (insn, test_regno)
      unsigned int test_regno;
 {
   unsigned int regno, endregno;
-  rtx link, pattern;
+  rtx pattern;
 
   /* See if there is a death note for something that includes TEST_REGNO.  */
   if (find_regno_note (insn, REG_DEAD, test_regno))

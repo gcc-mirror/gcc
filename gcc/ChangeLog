@@ -1,3 +1,13 @@
+2000-05-03  Jason Merrill  <jason@casey.cygnus.com>
+
+	* cppexp.c (op_t): Make an int.
+
+	* rtlanal.c (dead_or_set_regno_p): Remove unused variable.
+
+	* varasm.c (initializer_constant_valid_p): Fix parenthesis.
+
+	* gensupport.c (process_rtx): Fix macros used.
+
 2000-05-03  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (propagate_one_insn): Also don't PROP_REG_INFO for
