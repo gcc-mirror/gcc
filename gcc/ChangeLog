@@ -1,3 +1,8 @@
+2005-02-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/install.texi (sparc-sun-solaris2*): Document required
+	configure settings on Solaris 7 and later.
+
 2005-02-16  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/19865
