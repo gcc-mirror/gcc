@@ -1130,11 +1130,6 @@ rtl_tidy_fallthru_edge (edge e)
   rtx q;
   basic_block b = e->src, c = b->next_bb;
 
-  /* If the jump insn has side effects, we can't tidy the edge.  */
-  if (GET_CODE (BB_END (b)) == JUMP_INSN
-      && !onlyjump_p (BB_END (b)))
-    return;
-
   /* ??? In a late-running flow pass, other folks may have deleted basic
      blocks by nopping out blocks, leaving multiple BARRIERs between here
      and the target label. They ought to be chastized and fixed.

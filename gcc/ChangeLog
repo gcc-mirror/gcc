@@ -1,3 +1,8 @@
+2004-02-28  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR optimization/14229
+	* cfgrtl.c (rtl_tidy_fallthru_edge): Do not fail for !onlyjump jump.
+
 2004-02-28  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* fold-const.c (fold): Strip NOPs that change the signedness
