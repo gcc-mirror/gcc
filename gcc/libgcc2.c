@@ -3109,7 +3109,9 @@ int _exit_dummy_decl = 0;	/* prevent compiler & linker warnings */
 
 /* Shared exception handling support routines.  */
 
-extern void *__eh_type;
+/* Language-specific information about the active exception(s).  If there
+   are no active exceptions, it is set to 0.  */
+void *__eh_info;
 
 void
 __default_terminate ()
@@ -3224,7 +3226,7 @@ __sjthrow ()
   /* We must call terminate if we try and rethrow an exception, when
      there is no exception currently active and when there are no
      handlers left.  */
-  if (! __eh_type || (*dhc) == top_elt)
+  if (! __eh_info || (*dhc) == top_elt)
     __terminate ();
     
   /* Find the jmpbuf associated with the top element of the dynamic
@@ -3307,7 +3309,7 @@ __sjpopnthrow ()
 /* This value identifies the place from which an exception is being
    thrown.  */
 
-extern void *__eh_pc;
+void *__eh_pc;
 
 #ifdef EH_TABLE_LOOKUP
 
@@ -3652,7 +3654,7 @@ __throw ()
   /* This is required for C++ semantics.  We must call terminate if we
      try and rethrow an exception, when there is no exception currently
      active.  */
-  if (! __eh_type)
+  if (! __eh_info)
     __terminate ();
     
   /* Start at our stack frame.  */

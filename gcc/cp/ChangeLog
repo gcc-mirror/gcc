@@ -1,3 +1,24 @@
+Fri Oct 31 01:47:57 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	Support for nested exceptions.
+	* tinfo2.cc (__is_pointer): New fn.
+	* exception.cc (struct cp_eh_info): Define.
+	(__cp_exception_info, __uncatch_exception): New fns.
+	(__cp_push_exception, __cp_pop_exception): New fns.
+	* except.c: Lose saved_throw_{type,value,cleanup,in_catch}.
+ 	Lose empty_fndecl.
+	(init_exception_processing): Likewise.  __eh_pc is now external.
+	(push_eh_info): New fn.
+	(get_eh_{info,value,type,caught}): New fns.
+	(push_eh_cleanup): Just call __cp_pop_exception.
+	(expand_start_catch_block): Use push_eh_info.  Start the eh region
+	sooner.
+	(expand_end_eh_spec): Use push_eh_info.
+	(expand_throw): Call __cp_push_exception to set up the exception info.
+	Just pass the destructor or 0 as the cleanup.  Call __uncatch_exception
+	when we rethrow.
+	(expand_builtin_throw): Don't refer to empty_fndecl.
+
 Thu Oct 23 02:01:30 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (instantiate_decl): SET_DECL_IMPLICIT_INSTANTIATION on new decl.
