@@ -1266,7 +1266,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  tree attribs = (*targetm.merge_type_attributes)
 	    (TREE_TYPE (olddecl), type);
 
-	  type = build_type_attribute_variant (type, attribs);
+	  type = cp_build_type_attribute_variant (type, attribs);
 	  TREE_TYPE (newdecl) = TREE_TYPE (olddecl) = type;
 	}
 

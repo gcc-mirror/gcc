@@ -666,9 +666,9 @@ merge_types (tree t1, tree t2)
 
 	/* Save space: see if the result is identical to one of the args.  */
 	if (valtype == TREE_TYPE (t1) && ! p2)
-	  return build_type_attribute_variant (t1, attributes);
+	  return cp_build_type_attribute_variant (t1, attributes);
 	if (valtype == TREE_TYPE (t2) && ! p1)
-	  return build_type_attribute_variant (t2, attributes);
+	  return cp_build_type_attribute_variant (t2, attributes);
 
 	/* Simple way if one arg fails to specify argument types.  */
 	if (p1 == NULL_TREE || TREE_VALUE (p1) == void_type_node)
@@ -676,7 +676,7 @@ merge_types (tree t1, tree t2)
 	    rval = build_function_type (valtype, p2);
 	    if ((raises = TYPE_RAISES_EXCEPTIONS (t2)))
 	      rval = build_exception_variant (rval, raises);
-	    return build_type_attribute_variant (rval, attributes);
+	    return cp_build_type_attribute_variant (rval, attributes);
 	  }
 	raises = TYPE_RAISES_EXCEPTIONS (t1);
 	if (p2 == NULL_TREE || TREE_VALUE (p2) == void_type_node)
@@ -684,7 +684,7 @@ merge_types (tree t1, tree t2)
 	    rval = build_function_type (valtype, p1);
 	    if (raises)
 	      rval = build_exception_variant (rval, raises);
-	    return build_type_attribute_variant (rval, attributes);
+	    return cp_build_type_attribute_variant (rval, attributes);
 	  }
 
 	rval = build_function_type (valtype, commonparms (p1, p2));
@@ -722,7 +722,7 @@ merge_types (tree t1, tree t2)
 
     default:;
     }
-  return build_type_attribute_variant (t1, attributes);
+  return cp_build_type_attribute_variant (t1, attributes);
 }
 
 /* Return the common type of two types.
