@@ -33,7 +33,7 @@ public:
     int base::* g ();
 
     int zowee() const
-    { return bar(); }  
+    { return this->bar(); }  
 };
 
 template <class T>

@@ -14,6 +14,8 @@ public:
   friend void x (const T &) { }
 };
 
+void x(const int &);
+
 template<class T>
 void blah (const T &) {
   T y;

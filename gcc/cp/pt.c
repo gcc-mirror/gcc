@@ -125,7 +125,6 @@ static tree retrieve_specialization (tree, tree);
 static tree retrieve_local_specialization (tree);
 static tree register_specialization (tree, tree, tree);
 static void register_local_specialization (tree, tree);
-static int unregister_specialization (tree, tree);
 static tree reduce_template_parm_level (tree, tree, int);
 static tree build_template_decl (tree, tree);
 static int mark_template_parm (tree, void *);
@@ -987,11 +986,11 @@ register_specialization (tree spec, tree tmpl, tree args)
 }
 
 /* Unregister the specialization SPEC as a specialization of TMPL.
-   Returns nonzero if the SPEC was listed as a specialization of
-   TMPL.  */
+   Replace it with NEW_SPEC, if NEW_SPEC is non-NULL.  Returns true
+   if the SPEC was listed as a specialization of TMPL.  */
 
-static int
-unregister_specialization (tree spec, tree tmpl)
+bool
+reregister_specialization (tree spec, tree tmpl, tree new_spec)
 {
   tree* s;
 
@@ -1000,7 +999,10 @@ unregister_specialization (tree spec, tree tmpl)
        s = &TREE_CHAIN (*s))
     if (TREE_VALUE (*s) == spec)
       {
-	*s = TREE_CHAIN (*s);
+	if (!new_spec)
+	  *s = TREE_CHAIN (*s);
+	else
+	  TREE_VALUE (*s) == new_spec;
 	return 1;
       }
 
@@ -4910,8 +4912,17 @@ tsubst_friend_function (tree decl, tree args)
 	      DECL_TEMPLATE_INFO (old_decl) = new_friend_template_info;
 
 	      if (TREE_CODE (old_decl) != TEMPLATE_DECL)
-		/* duplicate_decls will take care of this case.  */
-		;
+		{
+		  tree t;
+		  tree spec;
+
+		  t = most_general_template (old_decl);
+		  for (spec = DECL_TEMPLATE_SPECIALIZATIONS (t);
+		       spec;
+		       spec = TREE_CHAIN (spec))
+		    if (TREE_VALUE (spec) == new_friend)
+		      TREE_VALUE (spec) = old_decl;
+		}
 	      else 
 		{
 		  tree t;
@@ -5503,7 +5514,8 @@ maybe_fold_nontype_arg (tree arg)
 	  arg = tsubst_copy_and_build (arg,
 				       /*args=*/NULL_TREE,
 				       tf_error,
-				       /*in_decl=*/NULL_TREE);
+				       /*in_decl=*/NULL_TREE,
+				       /*function_p=*/false);
 	  processing_template_decl = saved_processing_template_decl; 
 	}
 
@@ -7071,7 +7083,8 @@ tsubst_baselink (tree baselink, tree object_type,
 	template_args = TREE_OPERAND (fns, 1);
 	fns = TREE_OPERAND (fns, 0);
 	template_args = tsubst_copy_and_build (template_args, args,
-					       complain, in_decl);
+					       complain, in_decl,
+					       /*function_p=*/false);
       }
     name = DECL_NAME (get_first_fn (fns));
     baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1);
@@ -7112,7 +7125,8 @@ tsubst_qualified_id (tree qualified_id, tree args,
     {
       is_template = true;
       template_args = tsubst_copy_and_build (TREE_OPERAND (name, 1), 
-					     args, complain, in_decl);
+					     args, complain, in_decl,
+					     /*function_p=*/false);
       name = TREE_OPERAND (name, 0);
     }
   else
@@ -7549,7 +7563,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     return tsubst_copy (t, args, complain, in_decl);
 
   if (!STATEMENT_CODE_P (TREE_CODE (t)))
-    return tsubst_copy_and_build (t, args, complain, in_decl);
+    return tsubst_copy_and_build (t, args, complain, in_decl,
+				  /*function_p=*/false);
     
   switch (TREE_CODE (t))
     {
@@ -7857,15 +7872,37 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   return tsubst_expr (TREE_CHAIN (t), args, complain, in_decl);
 }
 
+/* T is a postfix-expression that is not being used in a function
+   call.  Return the substituted version of T.  */
+
+static tree
+tsubst_non_call_postfix_expression (tree t, tree args, 
+				    tsubst_flags_t complain,
+				    tree in_decl)
+{
+  if (TREE_CODE (t) == SCOPE_REF)
+    t = tsubst_qualified_id (t, args, complain, in_decl,
+			     /*done=*/false, /*address_p=*/false);
+  else
+    t = tsubst_copy_and_build (t, args, complain, in_decl,
+			       /*function_p=*/false);
+
+  return t;
+}
+
 /* Like tsubst but deals with expressions and performs semantic
-   analysis.  */
+   analysis.  FUNCTION_P is true if T is the "F" in "F (ARGS)".  */
 
 tree
 tsubst_copy_and_build (tree t, 
                        tree args, 
                        tsubst_flags_t complain, 
-                       tree in_decl)
+                       tree in_decl,
+		       bool function_p)
 {
+#define RECUR(NODE) \
+  tsubst_copy_and_build (NODE, args, complain, in_decl, /*function_p=*/false)
+
   tree op1;
 
   if (t == NULL_TREE || t == error_mark_node)
@@ -7873,45 +7910,62 @@ tsubst_copy_and_build (tree t,
 
   switch (TREE_CODE (t))
     {
-    case IDENTIFIER_NODE:
-      if (IDENTIFIER_TYPENAME_P (t))
-	{
-	  tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
-	  return do_identifier (mangle_conv_op_name_for_type (new_type),
-				NULL_TREE);
-	}
-      else
-	return do_identifier (t, NULL_TREE);
-
     case LOOKUP_EXPR:
+    case IDENTIFIER_NODE:
       {
-	if (LOOKUP_EXPR_GLOBAL (t))
-	  {
-	    tree token
-	      = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
-	    return do_scoped_id (token, IDENTIFIER_GLOBAL_VALUE (token));
-	  }
+	tree decl;
+	tree scope;
+	cp_id_kind idk;
+	tree qualifying_class;
+	bool non_constant_expression_p;
+	const char *error_msg;
+
+	/* Remember whether this identifier was explicitly qualified
+	   with "::".  */
+	if (TREE_CODE (t) == LOOKUP_EXPR && LOOKUP_EXPR_GLOBAL (t))
+	  scope = global_namespace;
 	else
+	  scope = NULL_TREE;
+	/* Get at the underlying identifier.  */
+	if (TREE_CODE (t) == LOOKUP_EXPR)
+	  t = TREE_OPERAND (t, 0);
+
+	if (IDENTIFIER_TYPENAME_P (t))
 	  {
-	    t = do_identifier
-	      (tsubst_copy
-	       (TREE_OPERAND (t, 0), args, complain, in_decl),
-	       NULL_TREE);
-	    if (TREE_CODE (t) == ALIAS_DECL)
-	      t = DECL_INITIAL (t);
-	    return t;
+	    tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	    t = mangle_conv_op_name_for_type (new_type);
 	  }
+
+	/* Look up the name.  */
+	if (scope == global_namespace)
+	  decl = IDENTIFIER_GLOBAL_VALUE (t);
+	else
+	  decl = lookup_name (t, 0);
+
+	/* By convention, expressions use ERROR_MARK_NODE to indicate
+	   failure, not NULL_TREE.  */
+	if (decl == NULL_TREE)
+	  decl = error_mark_node;
+
+	decl = finish_id_expression (t, decl, scope,
+				     &idk,
+				     &qualifying_class,
+				     /*constant_expression_p=*/false,
+				     /*allow_non_constant_expression_p=*/false,
+				     &non_constant_expression_p,
+				     &error_msg);
+	if (error_msg)
+	  error (error_msg);
+	if (!function_p && TREE_CODE (decl) == IDENTIFIER_NODE)
+	  decl = unqualified_name_lookup_error (decl);
+	return decl;
       }
 
     case TEMPLATE_ID_EXPR:
       {
 	tree object;
-	tree template
-	  = tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, 
-				   in_decl);
-	tree targs
-	  = tsubst_copy_and_build (TREE_OPERAND (t, 1), args, complain, 
-				   in_decl);
+	tree template = RECUR (TREE_OPERAND (t, 0));
+	tree targs = RECUR (TREE_OPERAND (t, 1));
 	
 	if (TREE_CODE (template) == COMPONENT_REF)
 	  {
@@ -7930,46 +7984,37 @@ tsubst_copy_and_build (tree t,
       }
 
     case INDIRECT_REF:
-      return build_x_indirect_ref
-	(tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl),
-	 "unary *");
+      return build_x_indirect_ref (RECUR (TREE_OPERAND (t, 0)), "unary *");
 
     case CAST_EXPR:
       return build_functional_cast
 	(tsubst (TREE_TYPE (t), args, complain, in_decl),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl));
+	 RECUR (TREE_OPERAND (t, 0)));
 
     case REINTERPRET_CAST_EXPR:
       return build_reinterpret_cast
 	(tsubst (TREE_TYPE (t), args, complain, in_decl),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl));
+	 RECUR (TREE_OPERAND (t, 0)));
 
     case CONST_CAST_EXPR:
       return build_const_cast
 	(tsubst (TREE_TYPE (t), args, complain, in_decl),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl));
+	 RECUR (TREE_OPERAND (t, 0)));
 
     case DYNAMIC_CAST_EXPR:
       return build_dynamic_cast
 	(tsubst (TREE_TYPE (t), args, complain, in_decl),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl));
+	 RECUR (TREE_OPERAND (t, 0)));
 
     case STATIC_CAST_EXPR:
       return build_static_cast
 	(tsubst (TREE_TYPE (t), args, complain, in_decl),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl));
+	 RECUR (TREE_OPERAND (t, 0)));
 
     case POSTDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
-      op1 = TREE_OPERAND (t, 0);
-      if (TREE_CODE (op1) == SCOPE_REF)
-	op1 = tsubst_qualified_id (TREE_OPERAND (t, 0),
-				   args, complain, 
-				   in_decl,
-				   /*done=*/false,
-				   /*address_p=*/false);
-      else
-	op1 = tsubst_copy_and_build (op1, args, complain, in_decl);
+      op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
+						args, complain, in_decl);
       return build_x_unary_op (TREE_CODE (t), op1);
 
     case PREDECREMENT_EXPR:
@@ -7981,10 +8026,7 @@ tsubst_copy_and_build (tree t,
     case CONVERT_EXPR:  /* Unary + */
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      return (build_x_unary_op
-	      (TREE_CODE (t),
-	       tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain,
-				      in_decl)));
+      return build_x_unary_op (TREE_CODE (t), RECUR (TREE_OPERAND (t, 0)));
 
     case ADDR_EXPR:
       op1 = TREE_OPERAND (t, 0);
@@ -7992,7 +8034,8 @@ tsubst_copy_and_build (tree t,
 	op1 = tsubst_qualified_id (op1, args, complain, in_decl, 
 				   /*done=*/true, /*address_p=*/true);
       else
-	op1 = tsubst_copy_and_build (op1, args, complain, in_decl);
+	op1 = tsubst_non_call_postfix_expression (op1, args, complain, 
+						  in_decl);
       return build_x_unary_op (ADDR_EXPR, op1);
 
     case PLUS_EXPR:
@@ -8026,15 +8069,11 @@ tsubst_copy_and_build (tree t,
     case LT_EXPR:
     case GT_EXPR:
     case MEMBER_REF:
+    case DOTSTAR_EXPR:
       return build_x_binary_op
 	(TREE_CODE (t), 
-	 tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 1), args, complain, in_decl));
-
-    case DOTSTAR_EXPR:
-      return build_m_component_ref
-	(tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 1), args, complain, in_decl));
+	 RECUR (TREE_OPERAND (t, 0)),
+	 RECUR (TREE_OPERAND (t, 1)));
 
     case SCOPE_REF:
       return tsubst_qualified_id (t, args, complain, in_decl, /*done=*/true,
@@ -8044,24 +8083,14 @@ tsubst_copy_and_build (tree t,
       if (tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl)
 	  == NULL_TREE)
 	/* new-type-id */
-	return build_nt
-	  (ARRAY_REF, NULL_TREE,
-	   tsubst_copy_and_build (TREE_OPERAND (t, 1), args, complain,
-				  in_decl));
+	return build_nt (ARRAY_REF, NULL_TREE, RECUR (TREE_OPERAND (t, 1)));
 
-      op1 = TREE_OPERAND (t, 0);
-      if (TREE_CODE (op1) == SCOPE_REF)
-	op1 = tsubst_qualified_id (op1, args, complain, in_decl,
-				   /*done=*/false, /*address_p=*/false);
-      else
-	op1 = tsubst_copy_and_build (op1, args, complain, in_decl);
+      op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
+						args, complain, in_decl);
       /* Remember that there was a reference to this entity.  */
       if (DECL_P (op1))
 	mark_used (op1);
-      return grok_array_decl (op1, 
-			      tsubst_copy_and_build (TREE_OPERAND (t, 1), 
-						     args, complain,
-						     in_decl));
+      return grok_array_decl (op1, RECUR (TREE_OPERAND (t, 1)));
 
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
@@ -8077,7 +8106,7 @@ tsubst_copy_and_build (tree t,
       else
 	{
 	  ++skip_evaluation;
-	  op1 = tsubst_copy_and_build (op1, args, complain, in_decl);
+	  op1 = RECUR (op1);
 	  --skip_evaluation;
 	}
       if (TREE_CODE (t) == SIZEOF_EXPR)
@@ -8087,17 +8116,13 @@ tsubst_copy_and_build (tree t,
 
     case MODOP_EXPR:
       return build_x_modify_expr
-	(tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl),
+	(RECUR (TREE_OPERAND (t, 0)),
 	 TREE_CODE (TREE_OPERAND (t, 1)),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 2), args, complain, in_decl));
+	 RECUR (TREE_OPERAND (t, 2)));
 
     case ARROW_EXPR:
-      op1 = TREE_OPERAND (t, 0);
-      if (TREE_CODE (op1) == SCOPE_REF)
-	op1 = tsubst_qualified_id (op1, args, complain, in_decl,
-				   /*done=*/false, /*address_p=*/false);
-      else
-	op1 = tsubst_copy_and_build (op1, args, complain, in_decl);
+      op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
+						args, complain, in_decl);
       /* Remember that there was a reference to this entity.  */
       if (DECL_P (op1))
 	mark_used (op1);
@@ -8105,38 +8130,29 @@ tsubst_copy_and_build (tree t,
 
     case NEW_EXPR:
       return build_new
-	(tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 1), args, complain, in_decl),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 2), args, complain, in_decl),
+	(RECUR (TREE_OPERAND (t, 0)),
+	 RECUR (TREE_OPERAND (t, 1)),
+	 RECUR (TREE_OPERAND (t, 2)),
 	 NEW_EXPR_USE_GLOBAL (t));
 
     case DELETE_EXPR:
      return delete_sanity
-       (tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl),
-	tsubst_copy_and_build (TREE_OPERAND (t, 1), args, complain, in_decl),
+       (RECUR (TREE_OPERAND (t, 0)),
+	RECUR (TREE_OPERAND (t, 1)),
 	DELETE_EXPR_USE_VEC (t),
 	DELETE_EXPR_USE_GLOBAL (t));
 
     case COMPOUND_EXPR:
-      return (build_x_compound_expr
-	      (tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, 
-				      in_decl),
-	       tsubst_copy_and_build (TREE_OPERAND (t, 1), args, complain, 
-				      in_decl)));
+      return build_x_compound_expr (RECUR (TREE_OPERAND (t, 0)),
+				    RECUR (TREE_OPERAND (t, 1)));
 
     case CALL_EXPR:
       {
 	tree function;
 	tree call_args;
-	tree koenig_name;
 	bool qualified_p;
 
 	function = TREE_OPERAND (t, 0);
-	if (TREE_CODE (function) == LOOKUP_EXPR
-	    && !LOOKUP_EXPR_GLOBAL (function))
-	  koenig_name = TREE_OPERAND (function, 0);
-	else
-	  koenig_name = NULL_TREE;
 	if (TREE_CODE (function) == SCOPE_REF)
 	  {
 	    qualified_p = true;
@@ -8150,24 +8166,32 @@ tsubst_copy_and_build (tree t,
 			   && (TREE_CODE (TREE_OPERAND (function, 1))
 			       == SCOPE_REF));
 	    function = tsubst_copy_and_build (function, args, complain, 
-					      in_decl);
-	    function = convert_from_reference (function);
+					      in_decl,
+					      !qualified_p);
+	  }
+
+	call_args = RECUR (TREE_OPERAND (t, 1));
+	  
+	if (BASELINK_P (function))
+	  qualified_p = 1;
+
+	if (!qualified_p
+	    && TREE_CODE (function) != TEMPLATE_ID_EXPR
+	    && (is_overloaded_fn (function)
+		|| DECL_P (function)
+		|| TREE_CODE (function) == IDENTIFIER_NODE))
+	  {
+	    if (call_args)
+	      function = perform_koenig_lookup (function, call_args);
+	    else if (TREE_CODE (function) == IDENTIFIER_NODE)
+	      function = unqualified_name_lookup_error (function);
 	  }
 
 	/* Remember that there was a reference to this entity.  */
 	if (DECL_P (function))
 	  mark_used (function);
 
-	call_args = tsubst_copy_and_build (TREE_OPERAND (t, 1), args,
-					   complain, in_decl);
-	  
-	if (BASELINK_P (function))
-	  qualified_p = 1;
-
-	if (call_args != NULL_TREE && koenig_name)
-	  function = lookup_arg_dependent (koenig_name,
-					   function, 
-					   call_args);
+	function = convert_from_reference (function);
 
 	if (TREE_CODE (function) == OFFSET_REF)
 	  return build_offset_ref_call_from_tree (function, call_args);
@@ -8183,15 +8207,15 @@ tsubst_copy_and_build (tree t,
 
     case COND_EXPR:
       return build_x_conditional_expr
-	(tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 1), args, complain, in_decl),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 2), args, complain, in_decl));
+	(RECUR (TREE_OPERAND (t, 0)),
+	 RECUR (TREE_OPERAND (t, 1)),
+	 RECUR (TREE_OPERAND (t, 2)));
 
     case PSEUDO_DTOR_EXPR:
       return finish_pseudo_destructor_expr 
-	(tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 1), args, complain, in_decl),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 2), args, complain, in_decl));
+	(RECUR (TREE_OPERAND (t, 0)),
+	 RECUR (TREE_OPERAND (t, 1)),
+	 RECUR (TREE_OPERAND (t, 2)));
 
     case TREE_LIST:
       {
@@ -8202,13 +8226,13 @@ tsubst_copy_and_build (tree t,
 
 	purpose = TREE_PURPOSE (t);
 	if (purpose)
-	  purpose = tsubst_copy_and_build (purpose, args, complain, in_decl);
+	  purpose = RECUR (purpose);
 	value = TREE_VALUE (t);
 	if (value)
-	  value = tsubst_copy_and_build (value, args, complain, in_decl);
+	  value = RECUR (value);
 	chain = TREE_CHAIN (t);
 	if (chain && chain != void_type_node)
-	  chain = tsubst_copy_and_build (chain, args, complain, in_decl);
+	  chain = RECUR (chain);
 	if (purpose == TREE_PURPOSE (t)
 	    && value == TREE_VALUE (t)
 	    && chain == TREE_CHAIN (t))
@@ -8221,13 +8245,8 @@ tsubst_copy_and_build (tree t,
 	tree object;
 	tree member;
 
-	object = TREE_OPERAND (t, 0);
-	if (TREE_CODE (object) == SCOPE_REF)
-	  object = tsubst_qualified_id (object, args, complain, in_decl,
-					/*done=*/false, /*address_p=*/false);
-	else
-	  object = tsubst_copy_and_build (object, args, complain, in_decl);
-
+	object = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
+						     args, complain, in_decl);
 	/* Remember that there was a reference to this entity.  */
 	if (DECL_P (object))
 	  mark_used (object);
@@ -8282,7 +8301,7 @@ tsubst_copy_and_build (tree t,
 
     case THROW_EXPR:
       return build_throw
-	(tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl));
+	(RECUR (TREE_OPERAND (t, 0)));
 
     case CONSTRUCTOR:
       {
@@ -8308,9 +8327,8 @@ tsubst_copy_and_build (tree t,
 	    tree value = TREE_VALUE (elts);
 	    
 	    if (purpose && purpose_p)
-	      purpose
-		= tsubst_copy_and_build (purpose, args, complain, in_decl);
-	    value = tsubst_copy_and_build (value, args, complain, in_decl);
+	      purpose = RECUR (purpose);
+	    value = RECUR (value);
 	    r = tree_cons (purpose, value, r);
 	  }
 	
@@ -8324,10 +8342,7 @@ tsubst_copy_and_build (tree t,
 
     case TYPEID_EXPR:
       {
-	tree operand_0
-	  = tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain,
-				   in_decl);
-	
+	tree operand_0 = RECUR (TREE_OPERAND (t, 0));
 	if (TYPE_P (operand_0))
 	  return get_typeid (operand_0);
 	return build_typeid (operand_0);
@@ -8347,14 +8362,15 @@ tsubst_copy_and_build (tree t,
       return convert_from_reference (t);
 
     case VA_ARG_EXPR:
-	return build_x_va_arg
-	  (tsubst_copy_and_build
-	   (TREE_OPERAND (t, 0), args, complain, in_decl),
-	   tsubst_copy (TREE_TYPE (t), args, complain, in_decl));
+      return build_x_va_arg (RECUR (TREE_OPERAND (t, 0)),
+			     tsubst_copy (TREE_TYPE (t), args, complain, 
+					  in_decl));
 
     default:
       return tsubst_copy (t, args, complain, in_decl);
     }
+
+#undef RECUR
 }
 
 /* Verify that the instantiated ARGS are valid. For type arguments,
@@ -10576,7 +10592,7 @@ regenerate_decl_from_template (tree decl, tree tmpl)
   tree args;
   tree code_pattern;
   tree new_decl;
-  int unregistered;
+  bool unregistered;
 
   args = DECL_TI_ARGS (decl);
   code_pattern = DECL_TEMPLATE_RESULT (tmpl);
@@ -10587,7 +10603,8 @@ regenerate_decl_from_template (tree decl, tree tmpl)
      instantiation of a specialization, which it isn't: it's a full
      instantiation.  */
   gen_tmpl = most_general_template (tmpl);
-  unregistered = unregister_specialization (decl, gen_tmpl);
+  unregistered = reregister_specialization (decl, gen_tmpl,
+					    /*new_spec=*/NULL_TREE);
 
   /* If the DECL was not unregistered then something peculiar is
      happening: we created a specialization but did not call

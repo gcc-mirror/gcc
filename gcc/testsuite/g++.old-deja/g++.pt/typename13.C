@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "" }
+// { dg-options "-fpermissive" }
 
 template <class T>
 struct B 
@@ -18,7 +18,7 @@ struct D : public B<T>
 template <class T>
 void D<T>::f()
 {
-  I();
+  I(); // { dg-warning "" }
 }
 
 

@@ -423,10 +423,7 @@ build_method_call (tree instance, tree name, tree parms,
 
   /* If the name could not be found, issue an error.  */
   if (!fn)
-    {
-      unqualified_name_lookup_error (name);
-      return error_mark_node;
-    }
+    return unqualified_name_lookup_error (name);
 
   if (BASELINK_P (fn) && has_template_args)
     BASELINK_FUNCTIONS (fn)

@@ -1047,20 +1047,6 @@ typedef enum cp_parser_flags
   CP_PARSER_FLAGS_NO_USER_DEFINED_TYPES = 0x2
 } cp_parser_flags;
 
-/* The different kinds of ids that we ecounter.  */
-
-typedef enum cp_parser_id_kind
-{
-  /* Not an id at all.  */
-  CP_PARSER_ID_KIND_NONE,
-  /* An unqualified-id that is not a template-id.  */
-  CP_PARSER_ID_KIND_UNQUALIFIED,
-  /* An unqualified template-id.  */
-  CP_PARSER_ID_KIND_TEMPLATE_ID,
-  /* A qualified-id.  */
-  CP_PARSER_ID_KIND_QUALIFIED
-} cp_parser_id_kind;
-
 /* The different kinds of declarators we want to parse.  */
 
 typedef enum cp_parser_declarator_kind
@@ -1311,7 +1297,7 @@ static bool cp_parser_translation_unit
 /* Expressions [gram.expr]  */
 
 static tree cp_parser_primary_expression
-  (cp_parser *, cp_parser_id_kind *, tree *);
+  (cp_parser *, cp_id_kind *, tree *);
 static tree cp_parser_id_expression
   (cp_parser *, bool, bool, bool *);
 static tree cp_parser_unqualified_id
@@ -1695,8 +1681,6 @@ static void cp_parser_check_type_definition
   (cp_parser *);
 static tree cp_parser_non_constant_expression
   (const char *);
-static tree cp_parser_non_constant_id_expression
-  (tree);
 static bool cp_parser_diagnose_invalid_type_name
   (cp_parser *);
 static int cp_parser_skip_to_closing_parenthesis
@@ -1791,16 +1775,6 @@ static tree
 cp_parser_non_constant_expression (const char *thing)
 {
   error ("%s cannot appear in a constant-expression", thing);
-  return error_mark_node;
-}
-
-/* Issue an eror message about the fact that DECL appeared in a
-   constant-expression.  Returns ERROR_MARK_NODE.  */
-
-static tree
-cp_parser_non_constant_id_expression (tree decl)
-{
-  error ("`%D' cannot appear in a constant-expression", decl);
   return error_mark_node;
 }
 
@@ -2215,13 +2189,13 @@ cp_parser_translation_unit (cp_parser* parser)
 
 static tree
 cp_parser_primary_expression (cp_parser *parser, 
-			      cp_parser_id_kind *idk,
+			      cp_id_kind *idk,
 			      tree *qualifying_class)
 {
   cp_token *token;
 
   /* Assume the primary expression is not an id-expression.  */
-  *idk = CP_PARSER_ID_KIND_NONE;
+  *idk = CP_ID_KIND_NONE;
   /* And that it cannot be used as pointer-to-member.  */
   *qualifying_class = NULL_TREE;
 
@@ -2397,6 +2371,7 @@ cp_parser_primary_expression (cp_parser *parser,
       {
 	tree id_expression;
 	tree decl;
+	const char *error_msg;
 
       id_expression:
 	/* Parse the id-expression.  */
@@ -2457,281 +2432,16 @@ cp_parser_primary_expression (cp_parser *parser,
 		    return error_mark_node;
 		  }
 	      }
-
-	    if (decl == error_mark_node)
-	      {
-		/* Name lookup failed.  */
-		if (!parser->scope 
-		    && processing_template_decl)
-		  {
-		    /* Unqualified name lookup failed while processing a
-		       template.  */
-		    *idk = CP_PARSER_ID_KIND_UNQUALIFIED;
-		    /* If the next token is a parenthesis, assume that
-		       Koenig lookup will succeed when instantiating the
-		       template.  */
-		    if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
-		      return build_min_nt (LOOKUP_EXPR, id_expression);
-		    /* If we're not doing Koenig lookup, issue an error.  */
-		    error ("`%D' has not been declared", id_expression);
-		    return error_mark_node;
-		  }
-		else if (parser->scope
-			 && (!TYPE_P (parser->scope)
-			     || !dependent_type_p (parser->scope)))
-		  {
-		    /* Qualified name lookup failed, and the
-		       qualifying name was not a dependent type.  That
-		       is always an error.  */
-		    if (TYPE_P (parser->scope)
-			&& !COMPLETE_TYPE_P (parser->scope))
-		      error ("incomplete type `%T' used in nested name "
-			     "specifier",
-			     parser->scope);
-		    else if (parser->scope != global_namespace)
-		      error ("`%D' is not a member of `%D'",
-			     id_expression, parser->scope);
-		    else
-		      error ("`::%D' has not been declared", id_expression);
-		    return error_mark_node;
-		  }
-		else if (!parser->scope && !processing_template_decl)
-		  {
-		    /* It may be resolvable as a koenig lookup function
-		       call.  */
-		    *idk = CP_PARSER_ID_KIND_UNQUALIFIED;
-		    return id_expression;
-		  }
-	      }
-	    /* If DECL is a variable that would be out of scope under
-	       ANSI/ISO rules, but in scope in the ARM, name lookup
-	       will succeed.  Issue a diagnostic here.  */
-	    else
-	      decl = check_for_out_of_scope_variable (decl);
-
-	    /* Remember that the name was used in the definition of
-	       the current class so that we can check later to see if
-	       the meaning would have been different after the class
-	       was entirely defined.  */
-	    if (!parser->scope && decl != error_mark_node)
-	      maybe_note_name_used_in_class (id_expression, decl);
 	  }
-
-	/* If we didn't find anything, or what we found was a type,
-	   then this wasn't really an id-expression.  */
-	if (TREE_CODE (decl) == TEMPLATE_DECL
-	    && !DECL_FUNCTION_TEMPLATE_P (decl))
-	  {
-	    cp_parser_error (parser, "missing template arguments");
-	    return error_mark_node;
-	  }
-	else if (TREE_CODE (decl) == TYPE_DECL
-		 || TREE_CODE (decl) == NAMESPACE_DECL)
-	  {
-	    cp_parser_error (parser, 
-			     "expected primary-expression");
-	    return error_mark_node;
-	  }
-
-	/* If the name resolved to a template parameter, there is no
-	   need to look it up again later.  Similarly, we resolve
-	   enumeration constants to their underlying values.  */
-	if (TREE_CODE (decl) == CONST_DECL)
-	  {
-	    *idk = CP_PARSER_ID_KIND_NONE;
-	    if (DECL_TEMPLATE_PARM_P (decl) || !processing_template_decl)
-	      return DECL_INITIAL (decl);
-	    return decl;
-	  }
-	else
-	  {
-	    bool dependent_p;
-
-	    /* If the declaration was explicitly qualified indicate
-	       that.  The semantics of `A::f(3)' are different than
-	       `f(3)' if `f' is virtual.  */
-	    *idk = (parser->scope 
-		    ? CP_PARSER_ID_KIND_QUALIFIED
-		    : (TREE_CODE (decl) == TEMPLATE_ID_EXPR
-		       ? CP_PARSER_ID_KIND_TEMPLATE_ID
-		       : CP_PARSER_ID_KIND_UNQUALIFIED));
-
-
-	    /* [temp.dep.expr]
-	       
-	       An id-expression is type-dependent if it contains an
-	       identifier that was declared with a dependent type.
-	       
-	       As an optimization, we could choose not to create a
-	       LOOKUP_EXPR for a name that resolved to a local
-	       variable in the template function that we are currently
-	       declaring; such a name cannot ever resolve to anything
-	       else.  If we did that we would not have to look up
-	       these names at instantiation time.
-	       
-	       The standard is not very specific about an
-	       id-expression that names a set of overloaded functions.
-	       What if some of them have dependent types and some of
-	       them do not?  Presumably, such a name should be treated
-	       as a dependent name.  */
-	    /* Assume the name is not dependent.  */
-	    dependent_p = false;
-	    if (!processing_template_decl)
-	      /* No names are dependent outside a template.  */
-	      ;
-	    /* A template-id where the name of the template was not
-	       resolved is definitely dependent.  */
-	    else if (TREE_CODE (decl) == TEMPLATE_ID_EXPR
-		     && (TREE_CODE (TREE_OPERAND (decl, 0)) 
-			 == IDENTIFIER_NODE))
-	      dependent_p = true;
-	    /* For anything except an overloaded function, just check
-	       its type.  */
-	    else if (!is_overloaded_fn (decl))
-	      dependent_p 
-		= dependent_type_p (TREE_TYPE (decl));
-	    /* For a set of overloaded functions, check each of the
-	       functions.  */
-	    else
-	      {
-		tree fns = decl;
-
-		if (BASELINK_P (fns))
-		  fns = BASELINK_FUNCTIONS (fns);
-		  
-		/* For a template-id, check to see if the template
-		   arguments are dependent.  */
-		if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
-		  {
-		    tree args = TREE_OPERAND (fns, 1);
-		    dependent_p = any_dependent_template_arguments_p (args);
-		    /* The functions are those referred to by the
-		       template-id.  */
-		    fns = TREE_OPERAND (fns, 0);
-		  }
-
-		/* If there are no dependent template arguments, go
-		   through the overlaoded functions.  */
-		while (fns && !dependent_p)
-		  {
-		    tree fn = OVL_CURRENT (fns);
-		    
-		    /* Member functions of dependent classes are
-		       dependent.  */
-		    if (TREE_CODE (fn) == FUNCTION_DECL
-			&& type_dependent_expression_p (fn))
-		      dependent_p = true;
-		    else if (TREE_CODE (fn) == TEMPLATE_DECL
-			     && dependent_template_p (fn))
-		      dependent_p = true;
-		    
-		    fns = OVL_NEXT (fns);
-		  }
-	      }
-
-	    /* If the name was dependent on a template parameter,
-	       we will resolve the name at instantiation time.  */
-	    if (dependent_p)
-	      {
-		/* Create a SCOPE_REF for qualified names, if the
-		   scope is dependent.  */
-		if (parser->scope)
-		  {
-		    if (TYPE_P (parser->scope))
-		      *qualifying_class = parser->scope;
-		    /* Since this name was dependent, the expression isn't
-		       constant -- yet.  No error is issued because it
-		       might be constant when things are instantiated.  */
-		    if (parser->constant_expression_p)
-		      parser->non_constant_expression_p = true;
-		    if (TYPE_P (parser->scope)
-			&& dependent_type_p (parser->scope))
-		      return build_nt (SCOPE_REF, 
-				       parser->scope, 
-				       id_expression);
-		    else if (TYPE_P (parser->scope)
-			     && DECL_P (decl))
-		      return build (SCOPE_REF,
-				    TREE_TYPE (decl),
-				    parser->scope,
-				    id_expression);
-		    else
-		      return decl;
-		  }
-		/* A TEMPLATE_ID already contains all the information
-		   we need.  */
-		if (TREE_CODE (id_expression) == TEMPLATE_ID_EXPR)
-		  return id_expression;
-		/* Since this name was dependent, the expression isn't
-		   constant -- yet.  No error is issued because it
-		   might be constant when things are instantiated.  */
-		if (parser->constant_expression_p)
-		  parser->non_constant_expression_p = true;
-		/* Create a LOOKUP_EXPR for other unqualified names.  */
-		return build_min_nt (LOOKUP_EXPR, id_expression);
-	      }
-
-	    /* Only certain kinds of names are allowed in constant
-	       expression.  Enumerators have already been handled
-	       above.  */
-	    if (parser->constant_expression_p)
-	      {
-		/* Non-type template parameters of integral or
-		   enumeration type are OK.  */
-		if (TREE_CODE (decl) == TEMPLATE_PARM_INDEX
-		    && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl)))
-		  ;
-		/* Const variables or static data members of integral
-		   or enumeration types initialized with constant
-                   expressions are OK.  We also accept dependent
-		   initializers; they may turn out to be constant at
-		   instantiation-time.  */
-		else if (TREE_CODE (decl) == VAR_DECL
-			 && CP_TYPE_CONST_P (TREE_TYPE (decl))
-			 && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))
-			 && DECL_INITIAL (decl)
-			 && (TREE_CONSTANT (DECL_INITIAL (decl))
-			     || type_dependent_expression_p (DECL_INITIAL 
-							     (decl))
-			     || value_dependent_expression_p (DECL_INITIAL 
-							      (decl))))
-		  ;
-		else
-		  {
-		    if (!parser->allow_non_constant_expression_p)
-		      return cp_parser_non_constant_id_expression (decl);
-		    parser->non_constant_expression_p = true;
-		  }
-	      }
-
-	    if (parser->scope)
-	      {
-		decl = (adjust_result_of_qualified_name_lookup 
-			(decl, parser->scope, current_class_type));
-		if (TREE_CODE (decl) == FIELD_DECL || BASELINK_P (decl))
-		  *qualifying_class = parser->scope;
-		else if (!processing_template_decl)
-		  decl = convert_from_reference (decl);
-		else if (TYPE_P (parser->scope))
-		  decl = build (SCOPE_REF,
-				TREE_TYPE (decl),
-				parser->scope,
-				decl);
-	      }
-	    else
-	      /* Transform references to non-static data members into
-		 COMPONENT_REFs.  */
-	      decl = hack_identifier (decl, id_expression);
-
-	    /* Resolve references to variables of anonymous unions
-	       into COMPONENT_REFs.  */
-	    if (TREE_CODE (decl) == ALIAS_DECL)
-	      decl = DECL_INITIAL (decl);
-	  }
-
-	if (TREE_DEPRECATED (decl))
-	  warn_deprecated_use (decl);
-
+	
+	decl = finish_id_expression (id_expression, decl, parser->scope, 
+				     idk, qualifying_class,
+				     parser->constant_expression_p,
+				     parser->allow_non_constant_expression_p,
+				     &parser->non_constant_expression_p,
+				     &error_msg);
+	if (error_msg)
+	  cp_parser_error (parser, error_msg);
 	return decl;
       }
 
@@ -3463,7 +3173,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 {
   cp_token *token;
   enum rid keyword;
-  cp_parser_id_kind idk = CP_PARSER_ID_KIND_NONE;
+  cp_id_kind idk = CP_ID_KIND_NONE;
   tree postfix_expression = NULL_TREE;
   /* Non-NULL only if the current postfix-expression can be used to
      form a pointer-to-member.  In that case, QUALIFYING_CLASS is the
@@ -3730,11 +3440,9 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
     {
       if (TREE_CODE (postfix_expression) == IDENTIFIER_NODE
 	  && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN))
-	{
-	  /* It is not a Koenig lookup function call.  */
-	  unqualified_name_lookup_error (postfix_expression);
-	  postfix_expression = error_mark_node;
-	}
+	/* It is not a Koenig lookup function call.  */
+	postfix_expression 
+	  = unqualified_name_lookup_error (postfix_expression);
       
       /* Peek at the next token.  */
       token = cp_lexer_peek_token (parser->lexer);
@@ -3756,7 +3464,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    /* Build the ARRAY_REF.  */
 	    postfix_expression 
 	      = grok_array_decl (postfix_expression, index);
-	    idk = CP_PARSER_ID_KIND_NONE;
+	    idk = CP_ID_KIND_NONE;
 	  }
 	  break;
 
@@ -3780,58 +3488,17 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		parser->non_constant_expression_p = true;
 	      }
 
-	    if (idk == CP_PARSER_ID_KIND_UNQUALIFIED
+	    if (idk == CP_ID_KIND_UNQUALIFIED
 		&& (is_overloaded_fn (postfix_expression)
 		    || DECL_P (postfix_expression)
 		    || TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
 		&& args)
-	      {
-		tree identifier = NULL_TREE;
-		tree functions = NULL_TREE;
-
-		/* Find the name of the overloaded function.  */
-		if (TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
-		  identifier = postfix_expression;
-		else if (is_overloaded_fn (postfix_expression))
-		  {
-		    functions = postfix_expression;
-		    identifier = DECL_NAME (get_first_fn (functions));
-		  }
-		else if (DECL_P (postfix_expression))
-		  {
-		    functions = postfix_expression;
-		    identifier = DECL_NAME (postfix_expression);
-		  }
-
-		/* A call to a namespace-scope function using an
-		   unqualified name.
-
-		   Do Koenig lookup -- unless any of the arguments are
-		   type-dependent.  */
-		if (!any_type_dependent_arguments_p (args))
-		  {
-		    postfix_expression 
-		      = lookup_arg_dependent (identifier, functions, args);
-		    if (!postfix_expression)
-		      {
-			/* The unqualified name could not be resolved.  */
-			unqualified_name_lookup_error (identifier);
-			postfix_expression = error_mark_node;
-			break;
-		      }
-		  }
-		else
-		  postfix_expression = build_min_nt (LOOKUP_EXPR,
-						     identifier);
-	      }
-	    else if (idk == CP_PARSER_ID_KIND_UNQUALIFIED 
+	      postfix_expression 
+		= perform_koenig_lookup (postfix_expression, args);
+	    else if (idk == CP_ID_KIND_UNQUALIFIED 
 		     && TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
-	      {
-		/* The unqualified name could not be resolved.  */
-		unqualified_name_lookup_error (postfix_expression);
-		postfix_expression = error_mark_node;
-		break;
-	      }
+	      postfix_expression
+		= unqualified_fn_lookup_error (postfix_expression);
 
 	    if (TREE_CODE (postfix_expression) == COMPONENT_REF)
 	      {
@@ -3853,7 +3520,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		postfix_expression
 		  = (build_new_method_call 
 		     (instance, fn, args, NULL_TREE, 
-		      (idk == CP_PARSER_ID_KIND_QUALIFIED 
+		      (idk == CP_ID_KIND_QUALIFIED 
 		       ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL)));
 	      }
 	    else if (TREE_CODE (postfix_expression) == OFFSET_REF
@@ -3861,7 +3528,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		     || TREE_CODE (postfix_expression) == DOTSTAR_EXPR)
 	      postfix_expression = (build_offset_ref_call_from_tree
 				    (postfix_expression, args));
-	    else if (idk == CP_PARSER_ID_KIND_QUALIFIED)
+	    else if (idk == CP_ID_KIND_QUALIFIED)
 	      /* A call to a static class member, or a namespace-scope
 		 function.  */
 	      postfix_expression
@@ -3874,7 +3541,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 				    /*disallow_virtual=*/false);
 
 	    /* The POSTFIX_EXPRESSION is certainly no longer an id.  */
-	    idk = CP_PARSER_ID_KIND_NONE;
+	    idk = CP_ID_KIND_NONE;
 	  }
 	  break;
 	  
@@ -3901,7 +3568,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    parser->scope = NULL_TREE;
 	    parser->qualifying_scope = NULL_TREE;
 	    parser->object_scope = NULL_TREE;
-	    idk = CP_PARSER_ID_KIND_NONE;
+	    idk = CP_ID_KIND_NONE;
 	    /* Enter the scope corresponding to the type of the object
 	       given by the POSTFIX_EXPRESSION.  */
 	    if (!dependent_p 
@@ -3969,7 +3636,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		/* But we do need to remember that there was an explicit
 		   scope for virtual function calls.  */
 		if (parser->scope)
-		  idk = CP_PARSER_ID_KIND_QUALIFIED;
+		  idk = CP_ID_KIND_QUALIFIED;
 
 		if (name != error_mark_node 
 		    && !BASELINK_P (name)
@@ -4019,7 +3686,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	  postfix_expression 
 	    = finish_increment_expr (postfix_expression, 
 				     POSTINCREMENT_EXPR);
-	  idk = CP_PARSER_ID_KIND_NONE;
+	  idk = CP_ID_KIND_NONE;
 	  break;
 
 	case CPP_MINUS_MINUS:
@@ -4037,7 +3704,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	  postfix_expression 
 	    = finish_increment_expr (postfix_expression, 
 				     POSTDECREMENT_EXPR);
-	  idk = CP_PARSER_ID_KIND_NONE;
+	  idk = CP_ID_KIND_NONE;
 	  break;
 
 	default:
@@ -8065,7 +7732,7 @@ cp_parser_template_argument (cp_parser* parser)
   bool template_p;
   bool address_p;
   cp_token *token;
-  cp_parser_id_kind idk;
+  cp_id_kind idk;
   tree qualifying_class;
 
   /* There's really no way to know what we're looking at, so we just
@@ -14184,7 +13851,8 @@ cp_parser_fold_non_dependent_expr (tree expr)
       expr = tsubst_copy_and_build (expr,
 				    /*args=*/NULL_TREE,
 				    tf_error,
-				    /*in_decl=*/NULL_TREE);
+				    /*in_decl=*/NULL_TREE,
+				    /*function_p=*/false);
       processing_template_decl = saved_processing_template_decl;
     }
   return expr;

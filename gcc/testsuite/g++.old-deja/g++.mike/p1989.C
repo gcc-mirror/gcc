@@ -195,8 +195,8 @@ template<class T>
 Pix
 List_DLS<T>::search(const T& item) const
 {
-    for (Pix x=first(); 0 != x; next(x)) {
-	if (item == operator()(x)) // { dg-error "" } const subversion
+    for (Pix x=this->first(); 0 != x; this->next(x)) {
+	if (item == this->operator()(x)) // { dg-error "" } const subversion
 	    return x;
     }
     return 0;
@@ -223,8 +223,8 @@ template<class T>
 bool
 List_DLSp<T>::contains(const T& item) const
 {
-    for (Pix x=first(); 0 != x; next(x)) {
-	if (*item == *operator()(x))
+    for (Pix x=this->first(); 0 != x; this->next(x)) {
+        if (*item == *(this->operator()(x)))
 	    return TRUE;
     }
     return FALSE;

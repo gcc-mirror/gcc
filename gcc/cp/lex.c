@@ -49,7 +49,6 @@ static void handle_pragma_interface (cpp_reader *);
 static void handle_pragma_implementation (cpp_reader *);
 static void handle_pragma_java_exceptions (cpp_reader *);
 
-static int is_global (tree);
 static void init_operators (void);
 static void copy_lang_type (tree);
 
@@ -662,30 +661,10 @@ handle_pragma_java_exceptions (cpp_reader* dfile ATTRIBUTE_UNUSED )
   choose_personality_routine (lang_java);
 }
 
-/* Return true if d is in a global scope.  */
-
-static int
-is_global (tree d)
-{
-  while (1)
-    switch (TREE_CODE (d))
-      {
-      case ERROR_MARK:
-	return 1;
-
-      case OVERLOAD: d = OVL_FUNCTION (d); continue;
-      case TREE_LIST: d = TREE_VALUE (d); continue;
-      default:
-        my_friendly_assert (DECL_P (d), 980629);
-
-	return DECL_NAMESPACE_SCOPE_P (d);
-      }
-}
-
 /* Issue an error message indicating that the lookup of NAME (an
-   IDENTIFIER_NODE) failed.  */
+   IDENTIFIER_NODE) failed.  Returns the ERROR_MARK_NODE.  */
 
-void
+tree
 unqualified_name_lookup_error (tree name)
 {
   if (IDENTIFIER_OPNAME_P (name))
@@ -714,164 +693,43 @@ unqualified_name_lookup_error (tree name)
       SET_IDENTIFIER_NAMESPACE_VALUE (name, error_mark_node);
       SET_IDENTIFIER_ERROR_LOCUS (name, current_function_decl);
     }
+
+  return error_mark_node;
 }
 
-tree
-do_identifier (register tree token, tree args)
-{
-  register tree id;
-
-  timevar_push (TV_NAME_LOOKUP);
-  id = lookup_name (token, 0);
-
-  /* Do Koenig lookup if appropriate (inside templates we build lookup
-     expressions instead).
-
-     [basic.lookup.koenig]: If the ordinary unqualified lookup of the name
-     finds the declaration of a class member function, the associated
-     namespaces and classes are not considered.  */
-
-  if (args && !current_template_parms && (!id || is_global (id)))
-    id = lookup_arg_dependent (token, id, args);
-
-  if (id == error_mark_node)
-    {
-      /* lookup_name quietly returns error_mark_node if we're parsing,
-	 as we don't want to complain about an identifier that ends up
-	 being used as a declarator.  So we call it again to get the error
-	 message.  */
-      id = lookup_name (token, 0);
-      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
-    }
-
-  if (!id || (TREE_CODE (id) == FUNCTION_DECL
-	      && DECL_ANTICIPATED (id)))
-    {
-      if (current_template_parms)
-        POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP,
-                                build_min_nt (LOOKUP_EXPR, token));
-      else if (IDENTIFIER_TYPENAME_P (token))
-	/* A templated conversion operator might exist.  */
-	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, token);
-      else
-	{
-	  unqualified_name_lookup_error (token);
-	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
-	}
-    }
-
-  id = check_for_out_of_scope_variable (id);
-
-  /* TREE_USED is set in `hack_identifier'.  */
-  if (TREE_CODE (id) == CONST_DECL)
-    {
-      /* Check access.  */
-      if (IDENTIFIER_CLASS_VALUE (token) == id)
-	perform_or_defer_access_check (TYPE_BINFO (DECL_CONTEXT (id)), id);
-      if (!processing_template_decl || DECL_TEMPLATE_PARM_P (id))
-	id = DECL_INITIAL (id);
-    }
-  else
-    id = hack_identifier (id, token);
-
-  /* We must look up dependent names when the template is
-     instantiated, not while parsing it.  For now, we don't
-     distinguish between dependent and independent names.  So, for
-     example, we look up all overloaded functions at
-     instantiation-time, even though in some cases we should just use
-     the DECL we have here.  We also use LOOKUP_EXPRs to find things
-     like local variables, rather than creating TEMPLATE_DECLs for the
-     local variables and then finding matching instantiations.  */
-  if (current_template_parms
-      && (is_overloaded_fn (id)
-	  || (TREE_CODE (id) == VAR_DECL
-	      && CP_DECL_CONTEXT (id)
-	      && TREE_CODE (CP_DECL_CONTEXT (id)) == FUNCTION_DECL)
-	  || TREE_CODE (id) == PARM_DECL
-	  || TREE_CODE (id) == RESULT_DECL
-	  || TREE_CODE (id) == USING_DECL))
-    id = build_min_nt (LOOKUP_EXPR, token);
-
-  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, id);
-}
+/* Like unqualified_name_lookup_error, but NAME is an unqualified-id
+   used as a function.  Returns an appropriate expression for
+   NAME.  */
 
 tree
-do_scoped_id (tree token, tree id)
+unqualified_fn_lookup_error (tree name)
 {
-  timevar_push (TV_NAME_LOOKUP);
-  if (!id || (TREE_CODE (id) == FUNCTION_DECL
-	      && DECL_ANTICIPATED (id)))
-    {
-      if (processing_template_decl)
-	{
-	  id = build_min_nt (LOOKUP_EXPR, token);
-	  LOOKUP_EXPR_GLOBAL (id) = 1;
-	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, id);
-	}
-      if (IDENTIFIER_NAMESPACE_VALUE (token) != error_mark_node)
-        error ("`::%D' undeclared (first use here)", token);
-      id = error_mark_node;
-      /* Prevent repeated error messages.  */
-      SET_IDENTIFIER_NAMESPACE_VALUE (token, error_mark_node);
-    }
-  else
-    {
-      if (TREE_CODE (id) == ADDR_EXPR)
-	mark_used (TREE_OPERAND (id, 0));
-      else if (TREE_CODE (id) != OVERLOAD)
-	mark_used (id);
-    }
-  if (TREE_CODE (id) == CONST_DECL && ! processing_template_decl)
-    {
-      /* XXX CHS - should we set TREE_USED of the constant? */
-      id = DECL_INITIAL (id);
-      /* This is to prevent an enum whose value is 0
-	 from being considered a null pointer constant.  */
-      id = build1 (NOP_EXPR, TREE_TYPE (id), id);
-      TREE_CONSTANT (id) = 1;
-    }
-
   if (processing_template_decl)
     {
-      if (is_overloaded_fn (id))
+      /* In a template, it is invalid to write "f()" or "f(3)" if no
+	 declaration of "f" is available.  Historically, G++ and most
+	 other compilers accepted that usage; explain to the user what
+	 is going wrong.  */
+      (flag_permissive ? warning : error)
+	("there are no arguments to `%D' that depend on a template "
+	 "parameter, so a declaration of `%D' must be available", name,
+	 name);
+      
+      if (!flag_permissive)
 	{
-	  id = build_min_nt (LOOKUP_EXPR, token);
-	  LOOKUP_EXPR_GLOBAL (id) = 1;
-	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, id);
+	  static bool hint;
+	  if (!hint)
+	    {
+	      error ("(if you use `-fpermissive', G++ will accept your code, "
+		     "but allowing the use of an undeclared name is "
+		     "deprecated)");
+	      hint = true;
+	    }
 	}
-      /* else just use the decl */
-    }
-  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, convert_from_reference (id));
-}
-
-tree
-identifier_typedecl_value (tree node)
-{
-  tree t, type;
-  type = IDENTIFIER_TYPE_VALUE (node);
-  if (type == NULL_TREE)
-    return NULL_TREE;
-
-  if (IDENTIFIER_BINDING (node))
-    {
-      t = IDENTIFIER_VALUE (node);
-      if (t && TREE_CODE (t) == TYPE_DECL && TREE_TYPE (t) == type)
-	return t;
-    }
-  if (IDENTIFIER_NAMESPACE_VALUE (node))
-    {
-      t = IDENTIFIER_NAMESPACE_VALUE (node);
-      if (t && TREE_CODE (t) == TYPE_DECL && TREE_TYPE (t) == type)
-	return t;
+      return build_min_nt (LOOKUP_EXPR, name);
     }
 
-  /* Will this one ever happen?  */
-  if (TYPE_MAIN_DECL (type))
-    return TYPE_MAIN_DECL (type);
-
-  /* We used to do an internal error of 62 here, but instead we will
-     handle the return of a null appropriately in the callers.  */
-  return NULL_TREE;
+  return unqualified_name_lookup_error (name);
 }
 
 #ifdef GATHER_STATISTICS

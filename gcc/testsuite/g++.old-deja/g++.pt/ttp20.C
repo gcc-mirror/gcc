@@ -18,7 +18,7 @@ template<template<class> class D,class E> class C : D<E>
 
 template<template<class> class D,class E> int C<D,E>::g()
 {
-	return f();
+	return this->f();
 }
 
 int main()

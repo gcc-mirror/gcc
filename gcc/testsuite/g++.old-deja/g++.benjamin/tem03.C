@@ -195,7 +195,7 @@ struct Xthirteen {
     if (local_value > value) // { dg-error "" } .*
       return local_value;
     else
-      return value; // { dg-error "" } .*
+      return value;
   }
 };
 

@@ -350,6 +350,20 @@ struct tree_wrapper GTY(())
   struct z_candidate *z_c;
 };
 
+/* The different kinds of ids that we ecounter.  */
+
+typedef enum cp_id_kind
+{
+  /* Not an id at all.  */
+  CP_ID_KIND_NONE,
+  /* An unqualified-id that is not a template-id.  */
+  CP_ID_KIND_UNQUALIFIED,
+  /* An unqualified template-id.  */
+  CP_ID_KIND_TEMPLATE_ID,
+  /* A qualified-id.  */
+  CP_ID_KIND_QUALIFIED
+} cp_id_kind;
+
 /* Macros for access to language-specific slots in an identifier.  */
 
 #define IDENTIFIER_NAMESPACE_BINDINGS(NODE)	\
@@ -3883,10 +3897,8 @@ extern void snarf_method			(tree);
 extern void note_got_semicolon			(tree);
 extern void note_list_got_semicolon		(tree);
 extern void see_typename			(void);
-extern void unqualified_name_lookup_error       (tree);
-extern tree do_identifier			(tree, tree);
-extern tree do_scoped_id			(tree, tree);
-extern tree identifier_typedecl_value		(tree);
+extern tree unqualified_name_lookup_error       (tree);
+extern tree unqualified_fn_lookup_error         (tree);
 extern tree build_lang_decl			(enum tree_code, tree, tree);
 extern void retrofit_lang_decl			(tree);
 extern tree copy_decl                           (tree);
@@ -3963,7 +3975,7 @@ extern tree most_specialized_instantiation      (tree);
 extern void print_candidates                    (tree);
 extern int instantiate_pending_templates        (void);
 extern tree tsubst_default_argument             (tree, tree, tree);
-extern tree tsubst_copy_and_build               (tree, tree, tsubst_flags_t, tree);
+extern tree tsubst_copy_and_build               (tree, tree, tsubst_flags_t, tree, bool);
 extern tree most_general_template		(tree);
 extern tree get_mostly_instantiated_function_type (tree);
 extern int problematic_instantiation_changed    (void);
@@ -3982,6 +3994,7 @@ extern tree resolve_typename_type               (tree, bool);
 extern tree template_for_substitution           (tree);
 extern tree build_non_dependent_expr            (tree);
 extern tree build_non_dependent_args            (tree);
+extern bool reregister_specialization           (tree, tree, tree);
 
 /* in repo.c */
 extern void repo_template_used (tree);
@@ -4111,6 +4124,7 @@ extern tree finish_parenthesized_expr           (tree);
 extern tree finish_non_static_data_member       (tree, tree);
 extern tree begin_stmt_expr                     (void);
 extern tree finish_stmt_expr                    (tree);
+extern tree perform_koenig_lookup               (tree, tree);
 extern tree finish_call_expr                    (tree, tree, bool);
 extern tree finish_increment_expr               (tree, enum tree_code);
 extern tree finish_this_expr                    (void);
@@ -4133,6 +4147,10 @@ extern tree finish_template_type                (tree, tree, int);
 extern tree finish_base_specifier               (tree, tree, bool);
 extern void finish_member_declaration           (tree);
 extern void check_multiple_declarators          (void);
+extern tree finish_id_expression                (tree, tree, tree,
+						 cp_id_kind *, tree *,
+						 bool, bool, bool *, 
+						 const char **);
 extern tree finish_typeof			(tree);
 extern tree finish_sizeof			(tree);
 extern tree finish_alignof			(tree);
