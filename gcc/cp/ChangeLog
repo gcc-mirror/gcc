@@ -1,3 +1,9 @@
+2003-02-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* cp-tree.h (rid_to_yy): Delete.
+	(C_RID_YYCODE): Delete.
+	(finish_file): Delete redundant declaration.
+
 2003-02-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/9623
