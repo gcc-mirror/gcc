@@ -136,8 +136,6 @@ extern int target_flags;
   {"no-powerpc-gpopt",	- MASK_PPC_GPOPT},			\
   {"powerpc-gfxopt",	MASK_POWERPC | MASK_PPC_GFXOPT},	\
   {"no-powerpc-gfxopt",	- MASK_PPC_GFXOPT},			\
-  {"powerpc64",		MASK_POWERPC | MASK_POWERPC64},		\
-  {"no-powerpc64",	-MASK_POWERPC64},			\
   {"new-mnemonics",	MASK_NEW_MNEMONICS},			\
   {"old-mnemonics",	-MASK_NEW_MNEMONICS},			\
   {"full-toc",		- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC \
