@@ -39,7 +39,7 @@ loop_optimizer_init (FILE *dumpfile)
   edge e;
 
   /* Initialize structures for layout changes.  */
-  cfg_layout_initialize ();
+  cfg_layout_initialize (0);
 
   /* Avoid annoying special cases of edges going to exit
      block.  */

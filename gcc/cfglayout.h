@@ -35,7 +35,7 @@ typedef struct reorder_block_def
 
 extern rtx cfg_layout_function_footer;
 
-extern void cfg_layout_initialize (void);
+extern void cfg_layout_initialize (unsigned int);
 extern void cfg_layout_finalize (void);
 extern bool cfg_layout_can_duplicate_bb_p (basic_block);
 extern basic_block cfg_layout_duplicate_bb (basic_block, edge);
