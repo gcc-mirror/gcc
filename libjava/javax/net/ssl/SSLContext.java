@@ -140,7 +140,7 @@ public class SSLContext
   {
     if (provider == null)
       {
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("null provider");
       }
     Provider p = Security.getProvider(provider);
     if (p == null)
@@ -174,13 +174,13 @@ public class SSLContext
       }
     catch (InvocationTargetException ite)
       {
-        ite.printStackTrace();
-        throw new NoSuchAlgorithmException();
+        NoSuchAlgorithmException nsae = new NoSuchAlgorithmException(protocol);
+        throw (NoSuchAlgorithmException) nsae.initCause(ite);
       }
     catch (ClassCastException cce)
       {
-        cce.printStackTrace();
-        throw new NoSuchAlgorithmException();
+        NoSuchAlgorithmException nsae = new NoSuchAlgorithmException(protocol);
+        throw (NoSuchAlgorithmException) nsae.initCause(cce);
       }
   }
 
