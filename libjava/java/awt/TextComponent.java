@@ -1,5 +1,5 @@
 /* TextComponent.java -- Widgets for entering text
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -406,6 +406,18 @@ processTextEvent(TextEvent event)
 {
   if (textListener != null)
     textListener.textValueChanged(event);
+}
+
+void
+dispatchEventImpl(AWTEvent e)
+{
+  if (e.id <= TextEvent.TEXT_LAST 
+      && e.id >= TextEvent.TEXT_FIRST
+      && (textListener != null 
+	  || (eventMask & AWTEvent.TEXT_EVENT_MASK) != 0))
+    processEvent(e);
+  else
+    super.dispatchEventImpl(e);
 }
 
 /*************************************************************************/

@@ -261,13 +261,13 @@ processActionEvent(ActionEvent event)
 void
 dispatchEventImpl(AWTEvent e)
 {
-  super.dispatchEventImpl(e);
-
   if (e.id <= ActionEvent.ACTION_LAST 
       && e.id >= ActionEvent.ACTION_FIRST
       && (action_listeners != null 
 	  || (eventMask & AWTEvent.ACTION_EVENT_MASK) != 0))
     processEvent(e);
+  else
+    super.dispatchEventImpl(e);
 }
 
 /*************************************************************************/
