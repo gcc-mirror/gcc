@@ -1062,18 +1062,22 @@ synthesize_tinfo_fn (fndecl)
      tree fndecl;
 {
   tree type = TREE_TYPE (DECL_NAME (fndecl));
-  tree tmp, addr;
+  tree tmp, addr, tdecl;
 
-  tree tdecl = get_tinfo_var (type);
+  if (at_eof)
+    {
+      import_export_decl (fndecl);
+      if (DECL_REALLY_EXTERN (fndecl))
+	return;
+    }
+
+  tdecl = get_tinfo_var (type);
   DECL_EXTERNAL (tdecl) = 0;
   TREE_STATIC (tdecl) = 1;
   DECL_COMMON (tdecl) = 1;
   TREE_USED (tdecl) = 1;
   DECL_ALIGN (tdecl) = TYPE_ALIGN (ptr_type_node);
   cp_finish_decl (tdecl, NULL_TREE, NULL_TREE, 0, 0);
-
-  if (at_eof)
-    import_export_decl (fndecl);
 
   start_function (NULL_TREE, fndecl, NULL_TREE, 1);
   store_parm_decls ();
