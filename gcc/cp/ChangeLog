@@ -1,5 +1,16 @@
 1998-10-28  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* class.c (finish_struct_1): Don't complain about non-copy
+	assignment ops in union members.
+
+	* class.c (build_vtable): Don't pass at_eof to import_export_vtable.
+	(prepare_fresh_vtable): Likewise.
+	(finish_struct_1): Don't call import_export_class.
+	* decl2.c (finish_vtable_vardecl): Do import/export stuff.
+	(finish_prevtable_vardecl): Lose.
+	(finish_file): Don't call it.
+	* pt.c (instantiate_class_template): Likewise.
+
 	* init.c (build_delete): Reset TYPE_HAS_DESTRUCTOR here.
 	* decl.c (finish_function): Not here.
 	(start_function): Do set DECL_INITIAL.

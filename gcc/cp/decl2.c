@@ -2578,16 +2578,6 @@ import_export_class (ctype)
     }
 }
     
-int
-finish_prevtable_vardecl (prev, vars)
-     tree prev ATTRIBUTE_UNUSED, vars;
-{
-  tree ctype = DECL_CONTEXT (vars);
-  import_export_class (ctype);
-  import_export_vtable (vars, ctype, 1);
-  return 1;
-}
-
 /* We need to describe to the assembler the relationship between
    a vtable and the vtable of the parent class.  */
 
@@ -2619,6 +2609,10 @@ static int
 finish_vtable_vardecl (prev, vars)
      tree prev, vars;
 {
+  tree ctype = DECL_CONTEXT (vars);
+  import_export_class (ctype);
+  import_export_vtable (vars, ctype, 1);
+
   if (! DECL_EXTERNAL (vars)
       && (DECL_INTERFACE_KNOWN (vars)
 	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars))
@@ -3351,11 +3345,6 @@ finish_file ()
   SET_DECL_ARTIFICIAL (vars);
   pushdecl (vars);
 #endif
-
-  /* Walk to mark the inline functions we need, then output them so
-     that we can pick up any other tdecls that those routines need.  */
-  walk_vtables ((void (*) PROTO ((tree, tree))) 0,
-		finish_prevtable_vardecl);
 
   for (vars = static_aggregates; vars; vars = TREE_CHAIN (vars))
     if (! TREE_ASM_WRITTEN (TREE_VALUE (vars)))

@@ -2686,7 +2686,6 @@ extern tree coerce_delete_type			PROTO((tree));
 extern void comdat_linkage			PROTO((tree));
 extern void import_export_class			PROTO((tree));
 extern void import_export_vtable		PROTO((tree, tree, int));
-extern int finish_prevtable_vardecl		PROTO((tree, tree));
 extern int walk_vtables				PROTO((void (*)(tree, tree),
 						       int (*)(tree, tree)));
 extern void walk_sigtables			PROTO((void (*)(tree, tree),
