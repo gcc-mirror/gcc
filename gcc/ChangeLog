@@ -1,5 +1,9 @@
 2000-09-19  Richard Henderson  <rth@cygnus.com>
 
+	* stmt.c (expand_expr_stmt): Only call warn_if_unused_value
+	if the tree has side effects.
+	(warn_if_unused_value): Do not warn about void constructs.
+
 	* c-decl.c (poplevel): Invoke warn_about_unused_variables.
 
 	* unroll.c (copy_loop_body): Update LABEL_NUSES before
