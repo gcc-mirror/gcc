@@ -927,6 +927,14 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 	  && p != succ && volatile_refs_p (PATTERN (p)))
 	return 0;
 
+  /* If there are any volatile insns between INSN and I3, reject, because
+     they might affect machine state.  */
+
+  for (p = NEXT_INSN (insn); p != i3; p = NEXT_INSN (p))
+    if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
+	&& p != succ && volatile_insn_p (PATTERN (p)))
+      return 0;
+
   /* If INSN or I2 contains an autoincrement or autodecrement,
      make sure that register is not used between there and I3,
      and not already used in I3 either.
