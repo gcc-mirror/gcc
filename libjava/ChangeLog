@@ -1,3 +1,10 @@
+2004-07-14  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/beans/EventHandler.java: New file.
+	* Makefile.am (awt_java_source_files): Add EventHandler.java.
+	* Makefile.in, gcj/Makefile.in, include/Makefile.in,
+	testsuite/Makefile.in: Regenerate.
+
 2004-07-14  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libjava.jacks/jacks.exp (gcj_jacks_write): Add deprecation
@@ -20,7 +27,7 @@
 2004-07-14  Michael Koch  <konqueror@gmx.de> 
 	    Matthias Klose  <doko@debian.org> 
 
-	* java/awt/im/InputContext.java: Initialze in, line.
+	* java/awt/im/InputContext.java: Initialize in, line.
 
 2004-07-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
