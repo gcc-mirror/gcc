@@ -1,3 +1,8 @@
+Wed Mar  4 11:28:08 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (finish_member_template_decl): Deal more gracefully with
+	invalid declarations.
+
 Tue Mar  3 01:38:17 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c, class.c, cp-tree.h, cvt.c, decl.c, init.c, lex.c,
