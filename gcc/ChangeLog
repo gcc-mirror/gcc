@@ -1,3 +1,11 @@
+2001-02-26  Jason Eckhardt  <jle@redhat.com>
+
+	* combine.c (known_cond): Do not reverse the condition when
+	SMAX/UMAX is being considered and the condition is for equality 
+	or inequality.
+
+	* testsuite/gcc.c-torture/execute/20010221-1.c: New test.
+
 2001-02-26  Philip Blundell  <philb@gnu.org>
 
 	* config.gcc: Remove obsolete targets "arm*-*-linuxoldld" and
