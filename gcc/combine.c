@@ -3636,7 +3636,8 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 		 just make the comparison operation.  */
 	      if (true_rtx == const_true_rtx && false_rtx == const0_rtx)
 		x = gen_binary (cond_code, mode, cond, cop1);
-	      else if (true_rtx == const0_rtx && false_rtx == const_true_rtx)
+	      else if (true_rtx == const0_rtx && false_rtx == const_true_rtx
+		       && reverse_condition (cond_code) != UNKNOWN)
 		x = gen_binary (reverse_condition (cond_code),
 				mode, cond, cop1);
 
@@ -10828,6 +10829,7 @@ simplify_comparison (code, pop0, pop1)
 
   if (GET_CODE (op0) == SUBREG && subreg_lowpart_p (op0)
       && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT
+      && GET_MODE_CLASS (GET_MODE (SUBREG_REG (op0))) == MODE_INT
       && (code == NE || code == EQ)
       && ((GET_MODE_SIZE (GET_MODE (op0))
 	   > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0))))))
@@ -10838,6 +10840,7 @@ simplify_comparison (code, pop0, pop1)
 
   else if (GET_CODE (op0) == SUBREG && subreg_lowpart_p (op0)
 	   && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT
+	   && GET_MODE_CLASS (GET_MODE (SUBREG_REG (op0))) == MODE_INT
 	   && (code == NE || code == EQ)
 	   && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
 	       <= HOST_BITS_PER_WIDE_INT)

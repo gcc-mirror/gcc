@@ -1,5 +1,9 @@
 2001-08-27  Richard Henderson  <rth@redhat.com>
 
+	* combine.c (combine_simplify_rtx): Don't reverse condition
+	if there is no reverse for the condition.
+	(simplify_comparison): Don't simplify subregs from INT to FP.
+
 	* config/m68k/m68k.md (sordered, sordered_1, sunordered, sunordered_1,
 	suneq, suneq_1, sunge, sunge_1, sungt, sungt_1, sunle, sunle_1,
 	sunlt, sunlt_1, sltgt, sltgt_1, fsogt_1, fsoge_1, fsolt_1, fsole_1,
