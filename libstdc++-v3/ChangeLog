@@ -1,3 +1,26 @@
+2004-02-05  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (money_get::do_get(string_type&)):
+	Thousands-sep are always optional; thousands-sep are not allowed
+	after the decimal_point.
+	* testsuite/22_locale/money_get/get/char/12.cc: New.
+	* testsuite/22_locale/money_get/get/char/13.cc: New.
+	* testsuite/22_locale/money_get/get/wchar_t/12.cc: New.
+	* testsuite/22_locale/money_get/get/wchar_t/13.cc: New.
+
+	* testsuite/22_locale/money_get/get/char/1.cc: Clean-up.
+	* testsuite/22_locale/money_get/get/char/2.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/3.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/4.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/4.cc: Likewise.
+
+	* testsuite/22_locale/money_get/get/char/9.cc: Fix citation from
+	the standard.
+	* testsuite/22_locale/money_get/get/wchar_t/9.cc: Likewise.
+
 2004-02-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/os/irix/irix6.5/os_defines.h (_GLIBCXX_FIONREAD_TAKES_OFF_T):
