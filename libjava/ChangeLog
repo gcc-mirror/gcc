@@ -1,3 +1,14 @@
+2004-04-21  Mark Wielaard  <mark@klomp.org>
+
+	* javax/awt/JFrame.java: Implement WindowConstants. Remove final
+	static fields defined in interface.
+	* javax/awt/JDialog.java: Likewise.
+	(JDialog): Make constructors public.
+	(getDefaultCloseOperation): Make public.
+	(processWindowEvent): Call System.exit(0) when EXIT_ON_CLOSE set.
+	(setDefaultCloseOperation): Make public. Check argument. Add API doc.
+	* javax/swing/JViewport.java (JViewport): Make constructor public.
+
 2004-04-21  Michael Koch  <konqueror@gmx.de>
 
 	* java/util/Map.java

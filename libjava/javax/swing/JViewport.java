@@ -121,7 +121,7 @@ public class JViewport extends JComponent
 
   Point lastPaintPosition;
 
-  JViewport()
+  public JViewport()
   {
     setOpaque(true);
     updateUI();
