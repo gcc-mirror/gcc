@@ -681,6 +681,127 @@ round_push (size)
   return size;
 }
 
+/* Save the stack pointer for the purpose in SAVE_LEVEL.  PSAVE is a pointer
+   to a previously-created save area.  If no save area has been allocated,
+   this function will allocate one.  If a save area is specified, it
+   must be of the proper mode.
+
+   The insns are emitted after insn AFTER, if nonzero, otherwise the insns
+   are emitted at the current position.  */
+
+void
+emit_stack_save (save_level, psave, after)
+     enum save_level save_level;
+     rtx *psave;
+     rtx after;
+{
+  rtx sa = *psave;
+  /* The default is that we use a move insn and save in a Pmode object.  */
+  rtx (*fcn) () = gen_move_insn;
+  enum machine_mode mode = Pmode;
+
+  /* See if this machine has anything special to do for this kind of save.  */
+  switch (save_level)
+    {
+#ifdef HAVE_save_stack_block
+    case SAVE_BLOCK:
+      if (HAVE_save_stack_block)
+	{
+	  fcn = gen_save_stack_block;
+	  mode = insn_operand_mode[CODE_FOR_save_stack_block][0];
+	}
+      break;
+#endif
+#ifdef HAVE_save_stack_function
+    case SAVE_FUNCTION:
+      if (HAVE_save_stack_function)
+	{
+	  fcn = gen_save_stack_function;
+	  mode = insn_operand_mode[CODE_FOR_save_stack_function][0];
+	}
+      break;
+#endif
+#ifdef HAVE_save_stack_nonlocal
+    case SAVE_NONLOCAL:
+      if (HAVE_save_stack_nonlocal)
+	{
+	  fcn = gen_save_stack_nonlocal;
+	  mode = insn_operand_mode[CODE_FOR_save_stack_nonlocal][0];
+	}
+      break;
+#endif
+    }
+
+  /* If there is no save area and we have to allocate one, do so.  Otherwise
+     verify the save area is the proper mode.  */
+
+  if (sa == 0)
+    {
+      if (mode != VOIDmode)
+	{
+	  if (save_level == SAVE_NONLOCAL)
+	    *psave = sa = assign_stack_local (mode, GET_MODE_SIZE (mode), 0);
+	  else
+	    *psave = sa = gen_reg_rtx (mode);
+	}
+    }
+  else
+    {
+      if (mode == VOIDmode || GET_MODE (sa) != mode)
+	abort ();
+    }
+
+  if (after)
+    emit_insn_after (fcn (sa, stack_pointer_rtx), after);
+  else
+    emit_insn (fcn (sa, stack_pointer_rtx));
+}
+
+/* Restore the stack pointer for the purpose in SAVE_LEVEL.  SA is the save
+   area made by emit_stack_save.  If it is zero, we have nothing to do. 
+
+   Put any emitted insns after insn AFTER, if nonzero, otherwise at 
+   current position.  */
+
+void
+emit_stack_restore (save_level, sa, after)
+     enum save_level save_level;
+     rtx after;
+     rtx sa;
+{
+  /* The default is that we use a move insn.  */
+  rtx (*fcn) () = gen_move_insn;
+
+  /* See if this machine has anything special to do for this kind of save.  */
+  switch (save_level)
+    {
+#ifdef HAVE_restore_stack_block
+    case SAVE_BLOCK:
+      if (HAVE_restore_stack_block)
+	fcn = gen_restore_stack_block;
+      break;
+#endif
+#ifdef HAVE_restore_stack_function
+    case SAVE_FUNCTION:
+      if (HAVE_restore_stack_function)
+	fcn = gen_restore_stack_function;
+      break;
+#endif
+#ifdef HAVE_restore_stack_nonlocal
+
+    case SAVE_NONLOCAL:
+      if (HAVE_restore_stack_nonlocal)
+	fcn = gen_restore_stack_nonlocal;
+      break;
+#endif
+    }
+
+  if (after)
+    emit_insn_after (fcn (stack_pointer_rtx, sa), after);
+  else
+    emit_insn (fcn (stack_pointer_rtx, sa));
+}
+
 /* Return an rtx representing the address of an area of memory dynamically
    pushed on the stack.  This region of memory is always aligned to
    a multiple of BIGGEST_ALIGNMENT.

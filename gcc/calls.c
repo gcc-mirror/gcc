@@ -800,7 +800,7 @@ expand_call (exp, target, ignore)
 
 	      if (old_stack_level == 0)
 		{
-		  old_stack_level = copy_to_mode_reg (Pmode, stack_pointer_rtx);
+		  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
 		  old_pending_adj = pending_stack_adjust;
 		  pending_stack_adjust = 0;
 		}
@@ -1060,7 +1060,7 @@ expand_call (exp, target, ignore)
     {
       if (old_stack_level == 0)
 	{
-	  old_stack_level = copy_to_mode_reg (Pmode, stack_pointer_rtx);
+	  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
 	  old_pending_adj = pending_stack_adjust;
 	  pending_stack_adjust = 0;
 	}
@@ -1520,7 +1520,7 @@ expand_call (exp, target, ignore)
 
   if (old_stack_level)
     {
-      emit_move_insn (stack_pointer_rtx, old_stack_level);
+      emit_stack_restore (SAVE_BLOCK, old_stack_level, 0);
       pending_stack_adjust = old_pending_adj;
     }
 
@@ -1570,9 +1570,12 @@ expand_call (exp, target, ignore)
     }
 #endif
 
-  /* If this was alloca, record the new stack level for nonlocal gotos.  */
-  if (may_be_alloca && nonlocal_goto_stack_level != 0)
-    emit_move_insn (nonlocal_goto_stack_level, stack_pointer_rtx);
+  /* If this was alloca, record the new stack level for nonlocal gotos.  
+     Check for the handler slots since we might not have a save area
+     for non-local gotos. */
+
+  if (may_be_alloca && nonlocal_goto_handler_slot != 0)
+    emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, 0);
 
   pop_temp_slots ();
 

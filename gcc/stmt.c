@@ -586,11 +586,9 @@ declare_nonlocal_label (label)
     {
       nonlocal_goto_handler_slot
 	= assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
-      nonlocal_goto_stack_level
-	= assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
-      emit_insn_before (gen_move_insn (nonlocal_goto_stack_level,
-				       stack_pointer_rtx),
-			tail_recursion_reentry);
+      emit_stack_save (SAVE_NONLOCAL,
+		       &nonlocal_goto_stack_level,
+		       PREV_INSN (tail_recursion_reentry));
     }
 }
 
@@ -609,27 +607,50 @@ expand_goto (label)
       struct function *p = find_function_data (context);
       rtx temp;
       p->has_nonlocal_label = 1;
+
+      /* Copy the rtl for the slots so that they won't be shared in
+	 case the virtual stack vars register gets instantiated differently
+	 in the parent than in the child.  */
+
 #if HAVE_nonlocal_goto
       if (HAVE_nonlocal_goto)
 	emit_insn (gen_nonlocal_goto (lookup_static_chain (label),
-				      p->nonlocal_goto_handler_slot,
-				      p->nonlocal_goto_stack_level,
+				      copy_rtx (p->nonlocal_goto_handler_slot),
+				      copy_rtx (p->nonlocal_goto_stack_level),
 				      gen_rtx (LABEL_REF, Pmode,
 					       label_rtx (label))));
       else
 #endif
 	{
+	  rtx addr;
+
 	  /* Restore frame pointer for containing function.
 	     This sets the actual hard register used for the frame pointer
 	     to the location of the function's incoming static chain info.
 	     The non-local goto handler will then adjust it to contain the
 	     proper value and reload the argument pointer, if needed.  */
 	  emit_move_insn (frame_pointer_rtx, lookup_static_chain (label));
+
+	  /* We have now loaded the frame pointer hardware register with
+	     the address of that corresponds to the start of the virtual
+	     stack vars.  So replace virtual_stack_vars_rtx in all
+	     addresses we use with stack_pointer_rtx.  */
+
 	  /* Get addr of containing function's current nonlocal goto handler,
 	     which will do any cleanups and then jump to the label.  */
-	  temp = copy_to_reg (p->nonlocal_goto_handler_slot);
+	  addr = copy_rtx (p->nonlocal_goto_handler_slot);
+	  temp = copy_to_reg (replace_rtx (addr, virtual_stack_vars_rtx,
+					   frame_pointer_rtx));
+	  
 	  /* Restore the stack pointer.  Note this uses fp just restored.  */
-	  emit_move_insn (stack_pointer_rtx, p->nonlocal_goto_stack_level);
+	  addr = p->nonlocal_goto_stack_level;
+	  if (addr)
+	    addr = replace_rtx (copy_rtx (p->nonlocal_goto_stack_level),
+				replace_rtx (addr, virtual_stack_vars_rtx,
+					     frame_pointer_rtx));
+
+	  emit_stack_restore (SAVE_NONLOCAL, addr, 0);
+
 	  /* Put in the static chain register the nonlocal label address.  */
 	  emit_move_insn (static_chain_rtx,
 			  gen_rtx (LABEL_REF, Pmode, label_rtx (label)));
@@ -691,7 +712,7 @@ expand_goto_internal (body, label, last_insn)
 	     the stack pointer.  This one should be deleted as dead by flow. */
 	  clear_pending_stack_adjust ();
 	  do_pending_stack_adjust ();
-	  emit_move_insn (stack_pointer_rtx, stack_level);
+	  emit_stack_restore (SAVE_BLOCK, stack_level, 0);
 	}
 
       if (body != 0 && DECL_TOO_LATE (body))
@@ -902,8 +923,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	  /* Restore stack level for the biggest contour that this
 	     jump jumps out of.  */
 	  if (f->stack_level)
-	    emit_insn_after (gen_move_insn (stack_pointer_rtx, f->stack_level),
-			     f->before_jump);
+	    emit_stack_restore (SAVE_BLOCK, f->stack_level, f->before_jump);
 	  f->before_jump = 0;
 	}
     }
@@ -2592,14 +2612,15 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 
       if (thisblock->data.block.stack_level != 0)
 	{
-	  emit_move_insn (stack_pointer_rtx,
-			  thisblock->data.block.stack_level);
-	  if (nonlocal_goto_stack_level != 0)
-	    emit_move_insn (nonlocal_goto_stack_level, stack_pointer_rtx);
+	  emit_stack_restore (thisblock->next ? SAVE_BLOCK : SAVE_FUNCTION,
+			      thisblock->data.block.stack_level, 0);
+	  if (nonlocal_goto_handler_slot != 0)
+	    emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, 0);
 	}
 
       /* Any gotos out of this block must also do these things.
-	 Also report any gotos with fixups that came to labels in this level.  */
+	 Also report any gotos with fixups that came to labels in this
+	 level.  */
       fixup_gotos (thisblock,
 		   thisblock->data.block.stack_level,
 		   thisblock->data.block.cleanups,
@@ -2753,8 +2774,9 @@ expand_decl (decl)
       if (thisblock->data.block.stack_level == 0)
 	{
 	  do_pending_stack_adjust ();
-	  thisblock->data.block.stack_level
-	    = copy_to_reg (stack_pointer_rtx);
+	  emit_stack_save (thisblock->next ? SAVE_BLOCK : SAVE_FUNCTION,
+			   &thisblock->data.block.stack_level,
+			   thisblock->data.block.first_insn);
 	  stack_block_stack = thisblock;
 	}
 
@@ -2765,11 +2787,14 @@ expand_decl (decl)
 			  0, VOIDmode, 0);
       free_temp_slots ();
 
+      /* This is equivalent to calling alloca.  */
+      current_function_calls_alloca = 1;
+
       /* Allocate space on the stack for the variable.  */
       address = allocate_dynamic_stack_space (size, 0, DECL_ALIGN (decl));
 
-      if (nonlocal_goto_stack_level != 0)
-	emit_move_insn (nonlocal_goto_stack_level, stack_pointer_rtx);
+      if (nonlocal_goto_handler_slot != 0)
+	emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, 0);
 
       /* Reference the variable indirect through that rtx.  */
       DECL_RTL (decl) = gen_rtx (MEM, DECL_MODE (decl), address);

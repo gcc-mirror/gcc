@@ -2317,11 +2317,11 @@ delete_handlers ()
       if (GET_CODE (insn) == CODE_LABEL)
 	LABEL_PRESERVE_P (insn) = 0;
       if (GET_CODE (insn) == INSN
-	  && GET_CODE (PATTERN (insn)) == SET
-	  && (SET_DEST (PATTERN (insn)) == nonlocal_goto_handler_slot
-	      || SET_SRC (PATTERN (insn)) == nonlocal_goto_handler_slot
-	      || SET_DEST (PATTERN (insn)) == nonlocal_goto_stack_level
-	      || SET_SRC (PATTERN (insn)) == nonlocal_goto_stack_level))
+	  && ((nonlocal_goto_handler_slot != 0
+	       && reg_mentioned_p (nonlocal_goto_handler_slot, PATTERN (insn)))
+	      || (nonlocal_goto_stack_level != 0
+		  && reg_mentioned_p (nonlocal_goto_stack_level,
+				      PATTERN (insn)))))
 	delete_insn (insn);
     }
 }
@@ -3961,10 +3961,10 @@ expand_function_end (filename, line)
 #endif
     if (current_function_calls_alloca)
       {
-	rtx tem = gen_reg_rtx (Pmode);
-	emit_insn_after (gen_rtx (SET, VOIDmode, tem, stack_pointer_rtx),
-			 parm_birth_insn);
-	emit_insn (gen_rtx (SET, VOIDmode, stack_pointer_rtx, tem));
+	rtx tem = 0;
+
+	emit_stack_save (SAVE_FUNCTION, &tem, parm_birth_insn);
+	emit_stack_restore (SAVE_FUNCTION, tem, 0);
       }
 
   /* If scalar return value was computed in a pseudo-reg,
