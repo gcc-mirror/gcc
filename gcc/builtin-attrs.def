@@ -69,7 +69,7 @@ DEF_LIST_INT_INT (3,0)
 DEF_LIST_INT_INT (3,4)
 #undef DEF_LIST_INT_INT
 
-/* Construct tress for identifiers.  */
+/* Construct trees for identifiers.  */
 DEF_ATTR_IDENT (ATTR_CONST, "const")
 DEF_ATTR_IDENT (ATTR_FORMAT, "format")
 DEF_ATTR_IDENT (ATTR_FORMAT_ARG, "format_arg")
