@@ -1195,8 +1195,8 @@ finalize_record_size (record_layout_info rli)
 
   /* Round the size up to be a multiple of the required alignment.  */
   TYPE_SIZE (rli->t) = round_up (unpadded_size, TYPE_ALIGN (rli->t));
-  TYPE_SIZE_UNIT (rli->t) = round_up (unpadded_size_unit,
-				      TYPE_ALIGN (rli->t) / BITS_PER_UNIT);
+  TYPE_SIZE_UNIT (rli->t)
+    = round_up (unpadded_size_unit, TYPE_ALIGN_UNIT (rli->t));
 
   if (warn_padded && TREE_CONSTANT (unpadded_size)
       && simple_cst_equal (unpadded_size, TYPE_SIZE (rli->t)) == 0)
@@ -1357,8 +1357,8 @@ finalize_type_size (tree type)
   if (TYPE_SIZE (type) != 0)
     {
       TYPE_SIZE (type) = round_up (TYPE_SIZE (type), TYPE_ALIGN (type));
-      TYPE_SIZE_UNIT (type)
-	= round_up (TYPE_SIZE_UNIT (type), TYPE_ALIGN (type) / BITS_PER_UNIT);
+      TYPE_SIZE_UNIT (type) = round_up (TYPE_SIZE_UNIT (type),
+					TYPE_ALIGN_UNIT (type));
     }
 
   /* Evaluate nonconstant sizes only once, either now or as soon as safe.  */

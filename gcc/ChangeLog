@@ -1,4 +1,17 @@
 2004-08-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-common.c (c_alignof_expr): Use DECL_ALIGN_UNIT and TYPE_ALIGN_UNIT.
+	(c_sizeof_of_alignof_type): Likewise.
+	* expr.c (array_ref_element_size): Likewise.
+	(highest_pow2_factor_for_target): Likewise.
+	* gimplify.c (canonicalize_addr_expr): Likewise.
+	(gimplify_compound_lval): Likewise.
+	* stor-layout.c (finalize_record_size, finalize_type_size): Likewise.
+	* tree-ssa-ccp.c (maybe_fold_offset_to_array_ref): Likewise.
+	* varasm.c (assemble_variable): Likewise.
+	(output_constant_def_contents): Alignments are unsigned.
+
+2004-08-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	    Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cfg_remove_useless_stmts_bb): Also invalidate if VAL

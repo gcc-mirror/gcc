@@ -2774,7 +2774,7 @@ c_sizeof_or_alignof_type (tree type, enum tree_code op, int complain)
 			    size_int (TYPE_PRECISION (char_type_node)
 				      / BITS_PER_UNIT));
       else
-	value = size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
+	value = size_int (TYPE_ALIGN_UNIT (type));
     }
 
   /* VALUE will have an integer type with TYPE_IS_SIZETYPE set.
@@ -2798,7 +2798,7 @@ c_alignof_expr (tree expr)
   tree t;
 
   if (TREE_CODE (expr) == VAR_DECL)
-    t = size_int (DECL_ALIGN (expr) / BITS_PER_UNIT);
+    t = size_int (DECL_ALIGN_UNIT (expr));
 
   else if (TREE_CODE (expr) == COMPONENT_REF
 	   && DECL_C_BIT_FIELD (TREE_OPERAND (expr, 1)))
@@ -2808,7 +2808,7 @@ c_alignof_expr (tree expr)
     }
   else if (TREE_CODE (expr) == COMPONENT_REF
 	   && TREE_CODE (TREE_OPERAND (expr, 1)) == FIELD_DECL)
-    t = size_int (DECL_ALIGN (TREE_OPERAND (expr, 1)) / BITS_PER_UNIT);
+    t = size_int (DECL_ALIGN_UNIT (TREE_OPERAND (expr, 1)));
 
   else if (TREE_CODE (expr) == INDIRECT_REF)
     {

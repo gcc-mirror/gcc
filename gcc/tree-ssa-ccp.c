@@ -1378,7 +1378,7 @@ maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
 
   return build (ARRAY_REF, orig_type, base, idx, min_idx,
 		size_int (tree_low_cst (elt_size, 1)
-			  / (TYPE_ALIGN (elt_type) / BITS_PER_UNIT)));
+			  / (TYPE_ALIGN_UNIT (elt_type))));
 }
 
 

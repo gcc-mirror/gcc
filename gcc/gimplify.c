@@ -1392,8 +1392,7 @@ canonicalize_addr_expr (tree *expr_p)
 		    TYPE_MIN_VALUE (TYPE_DOMAIN (datype)),
 		    TYPE_MIN_VALUE (TYPE_DOMAIN (datype)),
 		    size_binop (EXACT_DIV_EXPR, TYPE_SIZE_UNIT (dctype),
-				size_int (TYPE_ALIGN (dctype)
-					  / BITS_PER_UNIT)));
+				size_int (TYPE_ALIGN_UNIT (dctype))));
   *expr_p = build1 (ADDR_EXPR, ctype, *expr_p);
 }
 
@@ -1520,7 +1519,7 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 	    {
 	      tree elmt_type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (t, 0)));
 	      tree elmt_size = unshare_expr (array_ref_element_size (t));
-	      tree factor = size_int (TYPE_ALIGN (elmt_type) / BITS_PER_UNIT);
+	      tree factor = size_int (TYPE_ALIGN_UNIT (elmt_type));
 
 	      /* Divide the element size by the alignment of the element
 		 type (above).  */
