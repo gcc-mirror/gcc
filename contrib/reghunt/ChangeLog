@@ -1,3 +1,7 @@
+2004-04-18  Release Manager
+
+	* GCC 3.4.0 released.
+
 2003-06-24  Janis Johnson  <janis187@us.ibm.com>
 
 	* reg_search: Replace existing uses of DATE with MADE_DATE and

@@ -1,3 +1,7 @@
+2004-04-18  Release Manager
+
+	* GCC 3.4.0 released.
+
 2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* gettext.m4: Properly quote arguments to AC_DEFUN.

@@ -1,3 +1,7 @@
+2004-04-18  Release Manager
+
+	* GCC 3.4.0 released.
+
 2004-02-22  Matthias Klose  <doko@debian.org>
 
 	* config.guess: Update from version 2002-01-10 to 2004-02-16.

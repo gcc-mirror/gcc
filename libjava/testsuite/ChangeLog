@@ -1,3 +1,7 @@
+2004-04-18  Release Manager
+
+	* GCC 3.4.0 released.
+
 2004-01-12  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* lib/libjava.exp: Add LD_LIBRARY_PATH_32/64 to get proper

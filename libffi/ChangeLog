@@ -1,3 +1,7 @@
+2004-04-18  Release Manager
+
+	* GCC 3.4.0 released.
+
 2004-03-12  Alan Modra  <amodra@bigpond.net.au>
 
 	* src/powerpc/ffi.c (ffi_prep_args64): Correct long double handling.

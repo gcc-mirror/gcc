@@ -1,3 +1,7 @@
+2004-04-18  Release Manager
+
+	* GCC 3.4.0 released.
+
 2003-06-04  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* template1.C (bar): Remove xfail marker.

@@ -1,3 +1,7 @@
+2004-04-18  Release Manager
+
+	* GCC 3.4.0 released.
+
 2003-09-18  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* btest-gcc.sh: Add make check-target-libffi.

@@ -1,3 +1,7 @@
+2004-04-18  Release Manager
+
+	* GCC 3.4.0 released.
+
 2003-02-25  Tim Josling  <tej@melbpc.org.au>
 
 	* treetests.exp (run3): set options to force aggressive GC, to
