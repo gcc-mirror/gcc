@@ -10380,14 +10380,15 @@
   rtx discratch = gen_reg_rtx (DImode);
   rtx last;
 
-  emit_insn (gen_adddi3z_media (discratch, operands[1],
-				force_reg (SImode, GEN_INT (-1))));
-  emit_insn (gen_andcdi3 (discratch, discratch,
-			  simplify_gen_subreg (DImode, operands[1],
-					       SImode, 0)));
+  emit_insn (gen_adddi3 (discratch,
+			 simplify_gen_subreg (DImode, operands[1], SImode, 0),
+			 GEN_INT (-1)));
+  emit_insn (gen_andcdi3 (discratch,
+			  simplify_gen_subreg (DImode, operands[1], SImode, 0),
+			  discratch));
   emit_insn (gen_nsbsi (scratch, discratch));
   last = emit_insn (gen_subsi3 (operands[0],
-				force_reg (SImode, GEN_INT (-64)), scratch));
+				force_reg (SImode, GEN_INT (63)), scratch));
   REG_NOTES (last)
     = gen_rtx_EXPR_LIST (REG_EQUAL,
 			 gen_rtx_FFS (SImode, operands[0]), REG_NOTES (last));
