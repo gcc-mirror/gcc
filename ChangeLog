@@ -1,3 +1,8 @@
+Mon Jun  4 16:24:56 2001  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* ltcf-c.sh (archive_cmd) [hpux, with_gcc]: Use gcc to link shared
+	archives.
+
 Fri Jun  1 18:55:19 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* MAINTAINERS (Write After Approval): Add myself.
