@@ -1073,48 +1073,13 @@ build_typename_overload (type)
   return id;
 }
 
-#ifndef NO_DOLLAR_IN_LABEL
-#define T_DESC_FORMAT "TD$"
-#define I_DESC_FORMAT "ID$"
-#define M_DESC_FORMAT "MD$"
-#else
-#if !defined(NO_DOT_IN_LABEL)
-#define T_DESC_FORMAT "TD."
-#define I_DESC_FORMAT "ID."
-#define M_DESC_FORMAT "MD."
-#else
-#define T_DESC_FORMAT "__t_desc_"
-#define I_DESC_FORMAT "__i_desc_"
-#define M_DESC_FORMAT "__m_desc_"
-#endif
-#endif
-
-/* Build an overload name for the type expression TYPE.  */
 tree
-build_t_desc_overload (type)
-     tree type;
+build_overload_with_type (name, type)
+     tree name, type;
 {
   OB_INIT ();
-  OB_PUTS (T_DESC_FORMAT);
+  OB_PUTID (name);
   nofold = 1;
-
-#if 0
-  /* Use a different format if the type isn't defined yet.  */
-  if (TYPE_SIZE (type) == NULL_TREE)
-    {
-      char *p;
-      int changed;
-
-      for (p = tname; *p; p++)
-	if (isupper (*p))
-	  {
-	    changed = 1;
-	    *p = tolower (*p);
-	  }
-      /* If there's no change, we have an inappropriate T_DESC_FORMAT.  */
-      my_friendly_assert (changed != 0, 249);
-    }
-#endif
 
   build_overload_name (type, 0, 1);
   return get_identifier (obstack_base (&scratch_obstack));
@@ -1580,10 +1545,9 @@ hack_identifier (value, name)
 	 this field was initialized by a base initializer,
 	 we can emit an error message.  */
       TREE_USED (value) = 1;
-      return build_component_ref (C_C_D, name, 0, 1);
+      value = build_component_ref (C_C_D, name, 0, 1);
     }
-
-  if (really_overloaded_fn (value))
+  else if (really_overloaded_fn (value))
     {
 #if 0
       tree t = get_first_fn (value);
@@ -1668,12 +1632,7 @@ hack_identifier (value, name)
     }
 
   if (TREE_CODE (type) == REFERENCE_TYPE && ! current_template_parms)
-    {
-      my_friendly_assert (TREE_CODE (value) == VAR_DECL
-			  || TREE_CODE (value) == PARM_DECL
-			  || TREE_CODE (value) == RESULT_DECL, 252);
-      return convert_from_reference (value);
-    }
+    value = convert_from_reference (value);
   return value;
 }
 

@@ -1185,7 +1185,7 @@ instantiate_class_template (type)
 	  require_complete_type (tmp);
 
       /* XXX handle attributes */
-      type = finish_struct_1 (type, 0, 0);
+      type = finish_struct_1 (type, NULL_TREE, 0);
     }
   else
     {
@@ -1578,7 +1578,7 @@ tsubst (t, args, nargs, in_decl)
 	tree r = copy_node (t);
 	TREE_TYPE (r) = type;
 	DECL_CONTEXT (r) = current_class_type;
-	set_nested_typename (r, current_class_name, DECL_NAME (r), type);
+	set_nested_typename (r, current_class_type != NULL_TREE ? TYPE_NESTED_NAME (current_class_type) : current_class_name, DECL_NAME (r), type);
 	TREE_CHAIN (r) = NULL_TREE;
 	return r;
       }	  

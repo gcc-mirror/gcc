@@ -1650,7 +1650,7 @@ cons_up_default_function (type, full_name, kind)
       /* Fall through...  */
     case 6:
       retref = 1;
-      declspecs = build_decl_list (NULL_TREE, full_name);
+      declspecs = build_decl_list (NULL_TREE, type);
 
       name = ansi_opname [(int) MODIFY_EXPR];
 

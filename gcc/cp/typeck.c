@@ -1572,6 +1572,22 @@ default_conversion (exp)
 
   return exp;
 }
+
+/* Take the address of an inline function without setting TREE_ADDRESSABLE
+   or TREE_USED.  */
+
+tree
+inline_conversion (exp)
+     tree exp;
+{
+  if (TREE_CODE (exp) == FUNCTION_DECL)
+    {
+      tree type = build_type_variant
+	(TREE_TYPE (exp), TREE_READONLY (exp), TREE_THIS_VOLATILE (exp));
+      exp = build1 (ADDR_EXPR, build_pointer_type (type), exp);
+    }
+  return exp;
+}
 
 tree
 build_object_ref (datum, basetype, field)
@@ -2489,11 +2505,6 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 	{
 	  aref = save_expr (aref);
 
-	  /* Save the intermediate result in a SAVE_EXPR so we don't have to
-	     compute each component of the virtual function pointer twice.  */ 
-	  if (TREE_CODE (aref) == INDIRECT_REF)
-	    TREE_OPERAND (aref, 0) = save_expr (TREE_OPERAND (aref, 0));
-      
 	  delta = build_binary_op (PLUS_EXPR,
 				   build_conditional_expr (e1, build_component_ref (aref, delta_identifier, 0, 0), integer_zero_node),
 				   delta, 1);
@@ -2575,10 +2586,7 @@ build_function_call_real (function, params, require_complete, flags)
 	      && current_function_decl)
 	    synthesize_method (function);
 
-	  fntype = build_type_variant (TREE_TYPE (function),
-				       TREE_READONLY (function),
-				       TREE_THIS_VOLATILE (function));
-	  function = build1 (ADDR_EXPR, build_pointer_type (fntype), function);
+	  function = inline_conversion (function);
 	}
       else
 	function = default_conversion (function);

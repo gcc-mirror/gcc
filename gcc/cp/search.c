@@ -74,7 +74,7 @@ pop_stack_level (stack)
 static struct search_level *search_stack;
 
 static tree lookup_field_1 ();
-static int lookup_fnfields_1 ();
+static int lookup_fnfields_1 PROTO((tree, tree));
 static void dfs_walk ();
 static int markedp ();
 static void dfs_unmark ();
@@ -246,6 +246,18 @@ my_new_memoized_entry (chain)
   return p;
 }
 
+/* Clears the deferred pop from pop_memoized_context, if any.  */
+static void
+clear_memoized_cache ()
+{
+  if (prev_type_stack)
+    {
+      type_stack = pop_type_level (prev_type_stack);
+      prev_type_memoized = 0;
+      prev_type_stack = 0;
+    }
+}
+
 /* Make an entry in the memoized table for type TYPE
    that the entry for NAME is FIELD.  */
 
@@ -256,6 +268,10 @@ make_memoized_table_entry (type, name, function_p)
 {
   int index = MEMOIZED_HASH_FN (name);
   tree entry, *prev_entry;
+
+  /* Since we allocate from the type_obstack, we must pop any deferred
+     levels.  */
+   clear_memoized_cache ();
 
   memoized_adds[function_p] += 1;
   if (CLASSTYPE_MTABLE_ENTRY (type) == 0)
@@ -334,9 +350,7 @@ push_memoized_context (type, use_old)
 	  return;
 	}
       /* Otherwise, need to pop old stack here.  */
-      type_stack = pop_type_level (prev_type_stack);
-      prev_type_memoized = 0;
-      prev_type_stack = 0;
+      clear_memoized_cache ();
     }
 
   type_stack = push_type_level ((struct stack_level *)type_stack,
@@ -363,6 +377,9 @@ pop_memoized_context (use_old)
       len = type_stack->len;
       while (len--)
 	tem[len*2+1] = (tree)CLASSTYPE_MTABLE_ENTRY (tem[len*2]);
+
+      /* If there was a deferred pop, we need to pop it now.  */
+      clear_memoized_cache ();
 
       prev_type_stack = type_stack;
       prev_type_memoized = type_stack->type;
@@ -494,13 +511,22 @@ get_binfo (parent, binfo, protect)
 static int
 get_base_distance_recursive (binfo, depth, is_private, rval,
 			     rval_private_ptr, new_binfo_ptr, parent, path_ptr,
-			     protect, via_virtual_ptr, via_virtual)
-     tree binfo, *new_binfo_ptr, parent, *path_ptr;
-     int *rval_private_ptr, depth, is_private, rval, protect, *via_virtual_ptr,
-       via_virtual;
+			     protect, via_virtual_ptr, via_virtual,
+			     current_scope_in_chain)
+     tree binfo;
+     int depth, is_private, rval;
+     int *rval_private_ptr;
+     tree *new_binfo_ptr, parent, *path_ptr;
+     int protect, *via_virtual_ptr, via_virtual;
+     int current_scope_in_chain;
 {
   tree binfos;
   int i, n_baselinks;
+
+  if (protect
+      && !current_scope_in_chain
+      && is_friend (BINFO_TYPE (binfo), current_scope ()))
+    current_scope_in_chain = 1;
 
   if (BINFO_TYPE (binfo) == parent || binfo == parent)
     {
@@ -556,6 +582,8 @@ get_base_distance_recursive (binfo, depth, is_private, rval,
 	    = (protect
 	       && (is_private
 		   || (!TREE_VIA_PUBLIC (base_binfo)
+		       && !(TREE_VIA_PROTECTED (base_binfo)
+			    && current_scope_in_chain)
 		       && !is_friend (BINFO_TYPE (binfo), current_scope ()))));
 	  int this_virtual = via_virtual || TREE_VIA_VIRTUAL (base_binfo);
 	  int was;
@@ -572,7 +600,8 @@ get_base_distance_recursive (binfo, depth, is_private, rval,
 					      rval, rval_private_ptr,
 					      new_binfo_ptr, parent, path_ptr,
 					      protect, via_virtual_ptr,
-					      this_virtual);
+					      this_virtual,
+					      current_scope_in_chain);
 	  /* watch for updates; only update if path is good. */
 	  if (path_ptr && WATCH_VALUES (rval, *via_virtual_ptr) != was)
 	    BINFO_INHERITANCE_CHAIN (base_binfo) = binfo;
@@ -652,7 +681,8 @@ get_base_distance (parent, binfo, protect, path_ptr)
 
   rval = get_base_distance_recursive (binfo, 0, 0, -1,
 				      &rval_private, &new_binfo, parent,
-				      path_ptr, watch_access, &via_virtual, 0);
+				      path_ptr, watch_access, &via_virtual, 0,
+				      0);
 
   dfs_walk (binfo, dfs_unmark, markedp);
 
@@ -2106,8 +2136,9 @@ get_matching_virtual (binfo, fndecl, dtorp)
    expand_direct_vtbls_init for the style of search we do.  */
 static tree
 get_abstract_virtuals_1 (binfo, do_self, abstract_virtuals)
-     tree binfo, abstract_virtuals;
+     tree binfo;
      int do_self;
+     tree abstract_virtuals;
 {
   tree binfos = BINFO_BASETYPES (binfo);
   int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
@@ -2559,12 +2590,12 @@ dfs_init_vbase_pointers (binfo)
 
   CLEAR_BINFO_VTABLE_PATH_MARKED (binfo);
 
-  /* If there is a rtti, it is the first field, though perhaps from
-     the base class.  Otherwise, the first fields are virtual base class
-     pointer fields.  */
-  if (CLASSTYPE_RTTI (type) && VFIELD_NAME_P (DECL_NAME (fields)))
-    /* Get past vtable for the object.  */
+#if 0
+  /* See finish_struct_1 for when we can enable this.  */
+  /* If we have a vtable pointer first, skip it.  */
+  if (VFIELD_NAME_P (DECL_NAME (fields)))
     fields = TREE_CHAIN (fields);
+#endif
 
   if (fields == NULL_TREE
       || DECL_NAME (fields) == NULL_TREE
@@ -2736,6 +2767,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	      DECL_ALIGN (nvtbl) = MAX (TYPE_ALIGN (double_type_node),
 					DECL_ALIGN (nvtbl));
 	      TREE_READONLY (nvtbl) = 0;
+	      DECL_ARTIFICIAL (nvtbl) = 1;
 	      nvtbl = pushdecl (nvtbl);
 	      init = NULL_TREE;
 	      cp_finish_decl (nvtbl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
@@ -2796,8 +2828,9 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
    expand_direct_vtbls_init.  */
 static void
 fixup_virtual_upcast_offsets (real_binfo, binfo, init_self, can_elide, addr, orig_addr, type, vbase, vbase_offsets)
-     tree real_binfo, binfo, addr, orig_addr, type, vbase, *vbase_offsets;
+     tree real_binfo, binfo;
      int init_self, can_elide;
+     tree addr, orig_addr, type, vbase, *vbase_offsets;
 {
   tree real_binfos = BINFO_BASETYPES (real_binfo);
   tree binfos = BINFO_BASETYPES (binfo);

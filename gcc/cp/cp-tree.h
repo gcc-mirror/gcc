@@ -1403,6 +1403,9 @@ extern int flag_new_for_scope;
 #define DECL_NOT_REALLY_EXTERN(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.not_really_extern)
 
+#define DECL_REALLY_EXTERN(NODE) \
+  (DECL_EXTERNAL (NODE) && ! DECL_NOT_REALLY_EXTERN (NODE))
+
 #define DECL_PUBLIC(NODE) \
   (TREE_CODE (NODE) == FUNCTION_DECL \
    ? ! DECL_C_STATIC (NODE) : TREE_PUBLIC (NODE))
@@ -1947,6 +1950,7 @@ extern char *dont_allow_type_definitions;
 extern tree build_vbase_pointer			PROTO((tree, tree));
 extern tree build_vbase_path			PROTO((enum tree_code, tree, tree, tree, int));
 extern tree build_vtable_entry			PROTO((tree, tree));
+extern tree build_vtbl_ref			PROTO((tree, tree));
 extern tree build_vfn_ref			PROTO((tree *, tree, tree));
 extern void add_method				PROTO((tree, tree *, tree));
 extern tree get_vfield_offset			PROTO((tree));
@@ -2074,6 +2078,8 @@ extern void pop_cp_function_context		PROTO((tree));
 extern void grok_op_properties			PROTO((tree, int, int));
 
 /* in decl2.c */
+extern int flag_assume_nonnull_objects;
+
 extern int lang_decode_option			PROTO((char *));
 extern tree grok_method_quals			PROTO((tree, tree, tree));
 extern void grokclassfn				PROTO((tree, tree, tree, enum overload_flags, tree));
@@ -2112,7 +2118,7 @@ extern tree reparse_decl_as_expr		PROTO((tree, tree));
 extern tree finish_decl_parsing			PROTO((tree));
 extern tree lookup_name_nonclass		PROTO((tree));
 extern tree check_cp_case_value			PROTO((tree));
-extern tree do_toplevel_using_decl		PROTO((tree));
+extern void do_toplevel_using_decl		PROTO((tree));
 extern tree do_class_using_decl			PROTO((tree));
 extern tree current_namespace_id		PROTO((tree));
 extern tree get_namespace_id			PROTO((void));
@@ -2152,10 +2158,7 @@ extern void init_repo				PROTO((char*));
 extern void finish_repo				PROTO((void));
 
 /* in rtti.c */
-extern tree build_classof			PROTO((tree));
-extern tree build_t_desc			PROTO((tree, int));
-extern tree build_i_desc			PROTO((tree));
-extern tree build_m_desc			PROTO((tree));
+extern tree get_tinfo_fn			PROTO((tree));
 extern tree build_typeid			PROTO((tree));
 extern tree get_typeid				PROTO((tree));
 extern tree build_dynamic_cast			PROTO((tree, tree));
@@ -2269,7 +2272,7 @@ extern tree build_static_name			PROTO((tree, tree));
 extern tree cplus_exception_name		PROTO((tree));
 extern tree build_decl_overload			PROTO((tree, tree, int));
 extern tree build_typename_overload		PROTO((tree));
-extern tree build_t_desc_overload		PROTO((tree));
+extern tree build_overload_with_type		PROTO((tree, tree));
 extern void declare_overloaded			PROTO((tree));
 #ifdef NO_AUTO_OVERLOAD
 extern int is_overloaded			PROTO((tree));
@@ -2277,6 +2280,7 @@ extern int is_overloaded			PROTO((tree));
 extern tree build_opfncall			PROTO((enum tree_code, int, tree, tree, tree));
 extern tree hack_identifier			PROTO((tree, tree));
 extern tree build_component_type_expr		PROTO((tree, tree, tree, int));
+extern tree make_thunk				PROTO((tree, int));
 extern void synthesize_method			PROTO((tree));
 
 /* in pt.c */
@@ -2288,10 +2292,12 @@ extern void begin_template_parm_list		PROTO((void));
 extern tree process_template_parm		PROTO((tree, tree));
 extern tree end_template_parm_list		PROTO((tree));
 extern void end_template_decl			PROTO((void));
+extern void push_template_decl			PROTO((tree));
 extern tree lookup_template_class		PROTO((tree, tree, tree));
 extern int uses_template_parms			PROTO((tree));
 extern tree instantiate_class_template		PROTO((tree));
 extern tree instantiate_template		PROTO((tree, tree *));
+extern void overload_template_name		PROTO((tree));
 extern int type_unification			PROTO((tree, tree *, tree, tree, int *, int));
 struct tinst_level *tinst_for_decl		PROTO((void));
 extern void mark_decl_instantiated		PROTO((tree, int));
@@ -2402,6 +2408,7 @@ extern tree build_unsave_expr			PROTO((tree));
 extern tree unsave_expr				PROTO((tree));
 extern int cp_expand_decl_cleanup		PROTO((tree, tree));
 extern tree get_type_decl			PROTO((tree));
+extern tree vec_binfo_member			PROTO((tree, tree));
 extern tree hack_decl_function_context 		PROTO((tree));
 
 /* in typeck.c */
@@ -2428,6 +2435,7 @@ extern tree expr_sizeof				PROTO((tree));
 extern tree c_sizeof				PROTO((tree));
 extern tree c_sizeof_nowarn			PROTO((tree));
 extern tree c_alignof				PROTO((tree));
+extern tree inline_conversion			PROTO((tree));
 extern tree decay_conversion			PROTO((tree));
 extern tree default_conversion			PROTO((tree));
 extern tree build_object_ref			PROTO((tree, tree, tree));

@@ -1,3 +1,190 @@
+Fri Apr 12 09:08:27 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* search.c (expand_upcast_fixups): Mark the new fixup as
+	DECL_ARTIFICIAL.
+
+Thu Apr 11 03:57:09 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_new): Use a TARGET_EXPR for alloc_expr.
+
+	* class.c (set_rtti_entry): Fix for thunks.
+
+	* decl2.c (import_export_decl): Still emit typeinfo fns for
+	cv-variants of builtin types.
+
+	* rtti.c (expand_class_desc): Set up base_info_type_node here.
+	(init_rtti_processing): Instead of here.
+
+Wed Apr 10 14:17:13 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* rtti.c (init_rtti_processing): Do init regardless of -frtti.
+	(build_typeid): Only complain about taking dynamic typeid without
+	-frtti.
+
+	* decl2.c: flag_rtti defaults to 1.
+
+	* rtti.c (get_tinfo_var): The general class case is now smaller.
+	(init_rtti_processing): Pack the latter three fields of base_info
+	into 32 bits.
+
+Wed Apr 10 13:50:14 1996  Mike Stump  <mrs@cygnus.com>
+
+	* init.c (expand_member_init): Don't dump if name is NULL_TREE.
+
+Wed Apr 10 12:56:02 1996  Mike Stump  <mrs@cygnus.com>
+
+	* search.c (make_memoized_table_entry): Undefer the pop, if necessary.
+	(push_memoized_context): Split out code to undefer pop_type_level to
+	(clear_memoized_cache): here.
+	(pop_memoized_context): We can only handle one layer of deferral of
+	pop_type_level so clear the cache, if there was a previous level.
+
+Tue Apr  9 23:06:09 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* rtti.c (init_rtti_processing): Build up base_info_type_node.
+	(expand_class_desc): Use one pointer to an array of base_info
+	structs, passed using a CONSTRUCTOR.
+
+Tue Apr  9 14:20:57 1996  Mike Stump  <mrs@cygnus.com>
+
+	* class.c (build_vbase_path): Remove block extern for
+	flag_assume_nonnull_objects here.
+	(build_vfn_ref): Split out functionality into build_vtbl_ref.
+	(build_vtbl_ref): New routine.
+	(build_vtable): Set up rtti info here.
+	(add_virtual_function): Note in CLASSTYPE_RTTI the best
+	place where we can get the rtti pointers from to avoid having to
+	search around for a place.
+	(finish_base_struct): Ditto.
+	(finish_struct_1): Ditto.  Never create totally new vtables with totally
+	new vtable pointers for rtti.  Disable code to layout vtable pointers
+	better until we want to break binary compatibility.
+	* rtti.c (build_headof_sub): New routine to convert down to a
+	sub-object that has an rtti pointer in the vtable.
+	(build_headof): Use it.  Also, use build_vtbl_ref now to be more
+	maintainable.
+	(build_dynamic_cast): Make sure we have saved it, if we need to.
+	* search.c (dfs_init_vbase_pointers): Disable code that deals with
+	a more efficient vtable layout, enable later.
+	* call.c (flag_assume_nonnull_objects): Moved declaration to
+	* cp-tree.h: here.  Declare build_vtbl_ref.
+	* pt.c (instantiate_class_template): Use NULL_TREE instead of 0 in
+	function calls that want a tree.
+
+Tue Apr  9 12:10:26 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* rtti.c (build_dynamic_cast): Handle downcasting to X* given
+ 	other X subobjects in the most derived type.  Ack.
+
+	* rtti.c (build_dynamic_cast): No need to strip cv-quals here,
+ 	get_typeid will do it for us.
+	(get_typeid_1): Break out call-building for expand_*_desc to use.
+	(get_typeid): Call it.
+	(expand_*_desc): Ditto.
+	* decl.c (init_decl_processing): Don't set TYPE_BUILT_IN on char *
+ 	and void *.
+	(init_decl_processing): Lose builtin_type_tdescs lossage.
+	* decl2.c (finish_vtable_vardecl): Remove obsolete code.
+
+Mon Apr  8 17:23:23 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* pt.c (tsubst): When calling set_nested_typename, use
+ 	TYPE_NESTED_NAME (current_class_type) instead of
+ 	current_class_name.
+
+	* decl.c (pushdecl): Ditto.
+	(pushdecl_class_level): Ditto.
+	(grokdeclarator): Use NULL_TREE instead of 0 in the call to
+	set_nested_typename.
+
+Sun Apr  7 10:44:31 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* rtti.c (synthesize_tinfo_fn): Handle arrays.
+
+	* cp-tree.h (DECL_REALLY_EXTERN): New macro.
+
+Sat Apr  6 13:56:27 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* rtti.c (throw_bad_cast): Use entry point __throw_bad_cast.
+	(init_rtti_processing): Lose bad_cast_type.
+	(build_dynamic_cast): Use throw_bad_cast.
+
+	* rtti.c (synthesize_tinfo_fn): Handle enums and pmfs.
+
+	* decl2.c (finish_file): Don't synthesize artificial functions
+ 	that are external and not inline.
+
+	* rtti.c (get_tinfo_fn): If at_eof, call import_export_decl.
+
+	* decl2.c (finish_file): Handle having new inlines added to
+ 	saved_inlines by synthesis.
+
+	* rtti.c (get_bad_cast_node): Don't require <typeinfo>.
+
+Fri Apr  5 17:02:09 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	RTTI rewrite to initialize nodes as needed, not require that
+	users #include <typeinfo>, complete functionality and reduce wasted 
+	space.
+	* rtti.c (init_rtti_processing): New fn.
+	(build_typeid): The vtable entry is now a function.
+	(get_tinfo_var): New fn.
+	(get_tinfo_fn): Ditto.
+	(get_typeid): Use it.
+	(build_dynamic_cast): Declare and use entry point __dynamic_cast.
+	(build_*_desc): Rename to expand_*_desc and rewrite to use entry
+	points __rtti_*.
+	(add_uninstantiated_desc, get_def_to_follow, build_t_desc): Lose.
+	(synthesize_tinfo_fn): New fn.
+	* method.c (build_t_desc_overload): Lose.
+	(build_overload_with_type): More generic.
+	* decl.c (init_decl_processing): Call init_rtti_processing.
+	* class.c (set_rtti_entry): Use get_tinfo_fn.
+	* decl2.c (mark_vtable_entries): Mark the rtti function.
+	(finish_prevtable_vardecl): Don't build_t_desc.
+	(import_export_decl): Handle tinfo functions.
+	(finish_file): Ditto.
+	* typeck.c (inline_conversion): New fn.
+	(build_function_call_real): Use it.
+	* cp-tree.h: Add decls.
+
+	* method.c (hack_identifier): Also convert component_refs from
+ 	references.
+
+	* lex.c (cons_up_default_function): Use the type, not the name, in
+ 	declspecs.
+
+	* decl2.c (import_export_vtable): Fix weak vtables.
+
+Fri Apr  5 13:30:17 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* search.c (get_base_distance_recursive): Fix access checks for
+ 	protected bases.
+
+Fri Apr  5 11:02:06 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* call.c (unary_complex_lvalue): Delete unneeded decl, it's in
+	cp-tree.h.
+	(convert_harshness): Add prototypes wrapped by PROTO.
+	* decl2.c (grok_function_init): Likewise.
+	(do_toplevel_using_decl): Change to void return type.
+	* class.c (build_vtable_entry): Remove decl of make_thunk.
+	(merge_overrides): Fix order of arg definitions.
+	(finish_vtbls): Likewise.
+	(fixup_vtable_deltas): Likewise.
+	(modify_all_direct_vtables): Likewise.
+	(modify_all_indirect_vtables): Likewise.
+	* search.c (get_base_distance_recursive): Likewise.
+	(get_abstract_virtuals_1): Likewise.
+	(fixup_virtual_upcast_offsets): Likewise.
+	(lookup_fnfields_1): Add prototypes wrapped by PROTO.
+	* init.c (perform_member_init): Fix order of arg definitions.
+	(expand_aggr_init_1): Add prototypes wrapped by PROTO.
+	* cp-tree.h (make_thunk): Add decl.
+	(overload_template_name, push_template_decl): Add decls.
+	(do_toplevel_using_decl): Change to void return type.
+	(vec_binfo_member): Add decl.
+
 Thu Apr  4 13:33:10 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* typeck.c (mark_addressable, convert_for_assignment,

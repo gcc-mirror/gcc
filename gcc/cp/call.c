@@ -38,15 +38,11 @@ Boston, MA 02111-1307, USA.  */
 extern void sorry ();
 
 extern int inhibit_warnings;
-extern int flag_assume_nonnull_objects;
 extern tree ctor_label, dtor_label;
-
-/* From typeck.c:  */
-extern tree unary_complex_lvalue ();
 
 /* Compute the ease with which a conversion can be performed
    between an expected and the given type.  */
-static struct harshness_code convert_harshness ();
+static struct harshness_code convert_harshness PROTO((register tree, register tree, tree));
 
 #define EVIL_RETURN(ARG)	((ARG).code = EVIL_CODE, (ARG))
 #define STD_RETURN(ARG)		((ARG).code = STD_CODE, (ARG))

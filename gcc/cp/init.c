@@ -51,7 +51,7 @@ static void expand_aggr_vbase_init ();
 void expand_member_init ();
 void expand_aggr_init ();
 
-static void expand_aggr_init_1 ();
+static void expand_aggr_init_1 PROTO((tree, tree, tree, tree, int, int));
 static void expand_virtual_init PROTO((tree, tree));
 tree expand_vec_init ();
 
@@ -152,8 +152,9 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
 /* Subroutine of emit_base_init.  */
 static void
 perform_member_init (member, name, init, explicit, protect_list)
-     tree member, name, init, *protect_list;
+     tree member, name, init;
      int explicit;
+     tree *protect_list;
 {
   tree decl;
   tree type = TREE_TYPE (member);
@@ -941,7 +942,7 @@ expand_member_init (exp, name, init)
 
   type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
 
-  if (TREE_CODE (name) == TYPE_DECL)
+  if (name && TREE_CODE (name) == TYPE_DECL)
     {
       basetype = TREE_TYPE (name);
       name = DECL_NAME (name);
@@ -2827,8 +2828,9 @@ build_new (placement, decl, init, use_global_new)
 	 not expanded as part of the RTL_EXPR for the initialization,
 	 so we can't just use save_expr here.  */
 
-      alloc_temp = get_temp_name (TREE_TYPE (rval), 0);
-      alloc_expr = build (MODIFY_EXPR, TREE_TYPE (rval), alloc_temp, rval);
+      alloc_temp = build (VAR_DECL, TREE_TYPE (rval));
+      layout_decl (alloc_temp, 0);
+      alloc_expr = build (TARGET_EXPR, TREE_TYPE (rval), alloc_temp, rval, 0);
       TREE_SIDE_EFFECTS (alloc_expr) = 1;
       rval = alloc_temp;
     }
