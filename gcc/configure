@@ -6398,7 +6398,7 @@ case $host_os in
 	win32 | pe | cygwin* | mingw32* | uwin*)
 echo $ac_n "checking whether windows registry support is requested""... $ac_c" 1>&6
 echo "configure:6401: checking whether windows registry support is requested" >&5
-if test x$enable_win32_registry != xno; then
+if test "x$enable_win32_registry" != xno; then
   cat >> confdefs.h <<\EOF
 #define ENABLE_WIN32_REGISTRY 1
 EOF
@@ -6471,7 +6471,7 @@ else
 fi
 
 # Check if user specified a different registry key.
-case x${enable_win32_registry} in
+case "x${enable_win32_registry}" in
 x | xyes)
   # default.
   gcc_cv_win32_registry_key="$VERSION"
@@ -6486,7 +6486,7 @@ xno)
   ;;
 esac
 
-if test x$enable_win32_registry != xno; then
+if test "x$enable_win32_registry" != xno; then
   echo $ac_n "checking registry key on windows hosts""... $ac_c" 1>&6
 echo "configure:6492: checking registry key on windows hosts" >&5
   cat >> confdefs.h <<EOF
