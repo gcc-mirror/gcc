@@ -95,6 +95,7 @@ int ereal_cmp (), eroundi (), ereal_isneg ();
 unsigned int eroundui ();
 REAL_VALUE_TYPE etrunci (), etruncui (), ereal_ldexp (), ereal_atof ();
 REAL_VALUE_TYPE ereal_negate (), ereal_truncate ();
+REAL_VALUE_TYPE ereal_from_float (), ereal_from_double ();
 
 #define REAL_VALUES_EQUAL(x, y) (ereal_cmp ((x), (y)) == 0)
 /* true if x < y : */
@@ -124,9 +125,12 @@ extern REAL_VALUE_TYPE real_value_truncate ();
 /* IN is a REAL_VALUE_TYPE.  OUT is an array of longs. */
 #define REAL_VALUE_TO_TARGET_LONG_DOUBLE(IN, OUT) (etarldouble ((IN), (OUT)))
 #define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT) (etardouble ((IN), (OUT)))
-
+/* d is an array of longs. */
+#define REAL_VALUE_FROM_TARGET_DOUBLE(d)  (ereal_from_double (d))
 /* IN is a REAL_VALUE_TYPE.  OUT is a long. */
 #define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT) ((OUT) = etarsingle ((IN)))
+/* f is a long. */
+#define REAL_VALUE_FROM_TARGET_SINGLE(f)  (ereal_from_float (f))
 
 /* Conversions to decimal ASCII string.  */
 #define REAL_VALUE_TO_DECIMAL(r, fmt, s) (ereal_to_decimal (r, s))
