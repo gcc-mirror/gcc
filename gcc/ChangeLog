@@ -2,8 +2,10 @@
 
 	* config/rs6000/rs6000.h (CLZ_DEFINED_VALUE_AT_ZERO): Define.
 	* config/rs6000/rs6000.md (clzsi2): Rename from cntlzw2.
+	(ctzsi2): New pattern.
 	(ffssi2): Use clz instead of unspec.
 	(clzdi2): Rename from cntlzd2.
+	(ctzdi2): New pattern.
 	(ffsdi2): Use clz instead of unspec.
 
 2003-02-07  Loren James Rittle  <ljrittle@acm.org>
