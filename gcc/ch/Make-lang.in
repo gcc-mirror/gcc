@@ -106,6 +106,7 @@ CHILL.all.build: chill
 CHILL.all.cross: chill-cross
 CHILL.start.encap: chill
 CHILL.rest.encap:
+CHILL.dvi: chill.dvi
 
 CHILL.info: ch/chill.info
 
@@ -162,7 +163,6 @@ CHILL.uninstall:
 
 CHILL.mostlyclean:
 	-rm -f chill.install ch/*.o ch/ch-version.c
-	-cd ch/runtime && $(MAKE) mostlyclean
 CHILL.clean:
 CHILL.distclean:
 	-rm -f ch/config.status ch/Makefile
