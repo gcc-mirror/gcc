@@ -1,6 +1,11 @@
+Fri Aug 14 21:07:03 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* m68k.md (adddi_dilshr32): One of the operands must be a register.
+	(adddi_dishl32): Similarly.
+
 Fri Aug 14 01:45:06 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
-	* i386/cygwin32 (DEFAULT_PCC_STRUCT_RETURN): Define.
+	* i386/cygwin32.h (DEFAULT_PCC_STRUCT_RETURN): Define.
 
 Fri Aug 14 01:40:21 1998  Geoffrey Keating  <geoffk@ozemail.com.au>
 
