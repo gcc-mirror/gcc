@@ -15,6 +15,9 @@ Sun Apr 12 10:03:51 1998  Noel Cragg  <noel@red-bean.com>
 
 Sun Apr 12 07:33:46 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* libgcc2.c (_eh_compat): Deleted.
+	* Makefile.in (LIB2FUNCS): Delete _eh_compat.
+
 	* configure.in (alpha*-*-linux-gnu*): Don't include alpha/xm-linux.h.
 
 	* c-common.c (check_format_info): Properly test for nested pointers.
