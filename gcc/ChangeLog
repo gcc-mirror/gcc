@@ -1,3 +1,10 @@
+2002-09-16  Jason Merrill  <jason@redhat.com>
+	    Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/winnt.c (ix86_handle_dll_attribute): Set
+	DECL_EXTERN and TREE_PUBLIC for dllimported variables here...
+	(i386_pe_mark_dllimport): Not here.
+
 2002-09-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-semantics.c (genrtl_do_stmt): Cope with NULL cond.
