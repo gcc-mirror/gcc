@@ -29,15 +29,15 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <s390/fixdfdi.h>
 #endif
 
-/* Which processor to generate code or schedule for. The cpu attribute 
+/* Which processor to generate code or schedule for. The cpu attribute
    defines a list that mirrors this list, so changes to s390.md must be
    made at the same time.  */
 
 enum processor_type
 {
-  PROCESSOR_9672_G5,		
-  PROCESSOR_9672_G6,		
-  PROCESSOR_2064_Z900,		
+  PROCESSOR_9672_G5,
+  PROCESSOR_9672_G6,
+  PROCESSOR_2064_Z900,
   PROCESSOR_2084_Z990,
   PROCESSOR_max
 };
@@ -94,6 +94,7 @@ extern int target_flags;
 #define MASK_64BIT                 0x10
 #define MASK_ZARCH                 0x20
 #define MASK_MVCLE                 0x40
+#define MASK_TPF                   0x80
 
 #define TARGET_HARD_FLOAT          (target_flags & MASK_HARD_FLOAT)
 #define TARGET_SOFT_FLOAT          (!(target_flags & MASK_HARD_FLOAT))
@@ -103,6 +104,7 @@ extern int target_flags;
 #define TARGET_64BIT               (target_flags & MASK_64BIT)
 #define TARGET_ZARCH               (target_flags & MASK_ZARCH)
 #define TARGET_MVCLE               (target_flags & MASK_MVCLE)
+#define TARGET_TPF                 (target_flags & MASK_TPF)
 
 /* ??? Once this actually works, it could be made a runtime option.  */
 #define TARGET_IBM_FLOAT           0
@@ -129,6 +131,8 @@ extern int target_flags;
   { "esa",         -32, N_("ESA/390 architecture")},                   \
   { "mvcle",        64, N_("mvcle use")},                              \
   { "no-mvcle",    -64, N_("mvc&ex")},                                 \
+  { "tpf",         128, N_("enable tpf OS code")},                     \
+  { "no-tpf",     -128, N_("disable tpf OS code")},                    \
   { "", TARGET_DEFAULT, 0 } }
 
 #define TARGET_OPTIONS                                          \
@@ -264,7 +268,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 /* We have 16 general purpose registers (registers 0-15),
    and 16 floating point registers (registers 16-31).
    (On non-IEEE machines, we have only 4 fp registers.)
- 
+
    Amongst the general purpose registers, some are used
    for specific purposes:
    GPR 11: Hard frame pointer (if needed)
@@ -272,7 +276,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
    GPR 13: Literal pool base register
    GPR 14: Return address register
    GPR 15: Stack pointer
- 
+
    Registers 32-34 are 'fake' hard registers that do not
    correspond to actual hardware:
    Reg 32: Argument pointer
@@ -376,19 +380,19 @@ do								\
 
 
 /* Fitting values into registers.  */
- 
+
 /* Integer modes <= word size fit into any GPR.
    Integer modes > word size fit into successive GPRs, starting with
    an even-numbered register.
    SImode and DImode fit into FPRs as well.
- 
+
    Floating point modes <= word size fit into any FPR or GPR.
    Floating point modes > word size (i.e. DFmode on 32-bit) fit
    into any FPR, or an even-odd GPR pair.
- 
+
    Complex floating point modes fit either into two FPRs, or into
    successive GPRs (again starting with an even number).
- 
+
    Condition code modes fit only into the CC register.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)                           \
@@ -430,19 +434,19 @@ do								\
    ? reg_classes_intersect_p (FP_REGS, CLASS) : 0)
 
 /* Register classes.  */
- 
+
 /* We use the following register classes:
    GENERAL_REGS     All general purpose registers
    ADDR_REGS        All general purpose registers except %r0
                     (These registers can be used in address generation)
    FP_REGS          All floating point registers
- 
+
    GENERAL_FP_REGS  Union of GENERAL_REGS and FP_REGS
    ADDR_FP_REGS     Union of ADDR_REGS and FP_REGS
- 
+
    NO_REGS          No registers
    ALL_REGS         All registers
- 
+
    Note that the 'fake' frame pointer and argument pointer registers
    are included amongst the address registers here.  The condition
    code register is only included in ALL_REGS.  */
@@ -539,7 +543,7 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 
 
 /* Stack layout and calling conventions.  */
- 
+
 /* Our stack grows from higher to lower addresses.  However, local variables
    are accessed by positive offsets, and function arguments are stored at
    increasing addresses.  */
@@ -569,7 +573,7 @@ extern int current_function_outgoing_args_size;
    the argument area.  */
 #define FIRST_PARM_OFFSET(FNDECL) 0
 
-/* The return address of the current frame is retrieved 
+/* The return address of the current frame is retrieved
    from the initial value of register RETURN_REGNUM.
    For frames farther back, we use the stack slot where
    the corresponding RETURN_REGNUM register was saved.  */
@@ -577,7 +581,7 @@ extern int current_function_outgoing_args_size;
 #define DYNAMIC_CHAIN_ADDRESS(FRAME)						\
   ((FRAME) != hard_frame_pointer_rtx ? (FRAME) :				\
    plus_constant (arg_pointer_rtx, -STACK_POINTER_OFFSET))
-     
+
 #define RETURN_ADDR_RTX(COUNT, FRAME)						\
   s390_return_addr_rtx ((COUNT), DYNAMIC_CHAIN_ADDRESS ((FRAME)))
 
@@ -586,7 +590,7 @@ extern int current_function_outgoing_args_size;
 
 
 /* Exception handling.  */
- 
+
 /* Describe calling conventions for DWARF-2 exception handling.  */
 #define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (Pmode, RETURN_REGNUM)
 #define INCOMING_FRAME_SP_OFFSET STACK_POINTER_OFFSET
@@ -612,8 +616,8 @@ extern int current_function_outgoing_args_size;
 #define HARD_FRAME_POINTER_REGNUM 11
 #define ARG_POINTER_REGNUM 32
 
-/* The static chain must be call-clobbered, but not used for 
-   function argument passing.  As register 1 is clobbered by 
+/* The static chain must be call-clobbered, but not used for
+   function argument passing.  As register 1 is clobbered by
    the trampoline code, we only have one option.  */
 #define STATIC_CHAIN_REGNUM 0
 
@@ -633,7 +637,7 @@ extern int current_function_outgoing_args_size;
 {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},	        \
  { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},    \
  { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	        \
- { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}  
+ { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
 
 #define CAN_ELIMINATE(FROM, TO) (1)
 
@@ -654,7 +658,7 @@ extern int current_function_outgoing_args_size;
 
 
 /* Stack arguments.  */
- 
+
 /* We need current_function_outgoing_args to be valid.  */
 #define ACCUMULATE_OUTGOING_ARGS 1
 
@@ -663,7 +667,7 @@ extern int current_function_outgoing_args_size;
 
 
 /* Register arguments.  */
- 
+
 typedef struct s390_arg_structure
 {
   int gprs;			/* gpr so far */
@@ -692,7 +696,7 @@ CUMULATIVE_ARGS;
 
 
 /* Scalar return values.  */
- 
+
 /* We return scalars in general purpose register 2 for integral values,
    and floating point register 0 for fp values.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)				\
@@ -726,7 +730,7 @@ CUMULATIVE_ARGS;
 
 
 /* Function entry and exit.  */
- 
+
 /* When returning from a function, the stack pointer does not matter.  */
 #define EXIT_IGNORE_STACK       1
 
@@ -763,7 +767,7 @@ CUMULATIVE_ARGS;
 
 
 /* Library calls.  */
- 
+
 /* We should use memcpy, not bcopy.  */
 #define TARGET_MEM_FUNCTIONS
 
@@ -790,7 +794,7 @@ CUMULATIVE_ARGS;
 #define REG_OK_FOR_INDEX_NONSTRICT_P(X)   	\
 ((GET_MODE (X) == Pmode) &&			\
  ((REGNO (X) >= FIRST_PSEUDO_REGISTER) 		\
-  || REGNO_REG_CLASS (REGNO (X)) == ADDR_REGS))  
+  || REGNO_REG_CLASS (REGNO (X)) == ADDR_REGS))
 
 #define REG_OK_FOR_BASE_NONSTRICT_P(X)    REG_OK_FOR_INDEX_NONSTRICT_P (X)
 
@@ -860,7 +864,7 @@ CUMULATIVE_ARGS;
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  */
 #define SELECT_CC_MODE(OP, X, Y) s390_select_ccmode ((OP), (X), (Y))
- 
+
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  Note that we can't use "rtx" here
    since it hasn't been defined!  */
@@ -933,7 +937,7 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
 
 /* Position independent code.  */
 
-extern int flag_pic; 
+extern int flag_pic;
 
 #define PIC_OFFSET_TABLE_REGNUM (flag_pic ? 12 : INVALID_REGNUM)
 
@@ -1087,7 +1091,7 @@ extern int s390_nr_constants;
 #define CASE_VECTOR_MODE (TARGET_64BIT ? DImode : SImode)
 
 /* Load from integral MODE < SI from memory into register makes sign_extend
-   or zero_extend  
+   or zero_extend
    In our case sign_extension happens for Halfwords, other no extension.  */
 #define LOAD_EXTEND_OP(MODE) 					\
 (TARGET_64BIT ? ((MODE) == QImode ? ZERO_EXTEND :               \
@@ -1103,6 +1107,9 @@ extern int s390_nr_constants;
    between pointers and any other objects of this machine mode.  */
 #define Pmode ((enum machine_mode) (TARGET_64BIT ? DImode : SImode))
 
+/* This is -1 for "pointer mode" extend.  See ptr_extend in s390.md.  */
+#define POINTERS_EXTEND_UNSIGNED -1
+
 /* A function address in a call instruction is a byte address (for
    indexing purposes) so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
@@ -1110,4 +1117,4 @@ extern int s390_nr_constants;
 /* This macro definition sets up a default value for `main' to return.  */
 #define DEFAULT_MAIN_RETURN  c_expand_return (integer_zero_node)
 
-#endif 
+#endif

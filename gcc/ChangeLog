@@ -1,3 +1,14 @@
+2003-07-22  Eric Christopher <echristo@redhat.com>
+
+	* config/s390.c (s390_valid_pointer_mode): New.
+	(TARGET_VALID_POINTER_MODE): Use.
+	(s390_emit_prologue): Add tpf profiling hooks.
+	(s390_emit_epilogue): Ditto.
+	* config/s390.h (MASK_TPF): New.
+	(TARGET_TPF): Use.
+	(POINTERS_EXTEND_UNSIGNED): Define.
+	* config/s390.md (ptr_extend): New pattern.
+
 2003-07-22  Zack Weinberg  <zack@codesourcery.com>
 
 	* hashtable.c (approx_sqrt): Make static.
