@@ -743,12 +743,37 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
     if (copy_start == loop_start)
       copy_start_luid++;
 
+    /* If a pseudo's lifetime is entirely contained within this loop, then we
+       can use a different pseudo in each unrolled copy of the loop.  This
+       results in better code.  */
     for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; ++j)
       if (regno_first_uid[j] > 0 && regno_first_uid[j] <= max_uid_for_loop
 	  && uid_luid[regno_first_uid[j]] >= copy_start_luid
 	  && regno_last_uid[j] > 0 && regno_last_uid[j] <= max_uid_for_loop
 	  && uid_luid[regno_last_uid[j]] <= copy_end_luid)
-	local_regno[j] = 1;
+	{
+	  /* However, we must also check for loop-carried dependencies.
+	     If the value the pseudo has at the end of iteration X is
+	     used by iteration X+1, then we can not use a different pseudo
+	     for each unrolled copy of the loop.  */
+	  /* A pseudo is safe if regno_first_uid is a set, and this
+	     set dominates all instructions from regno_first_uid to
+	     regno_last_uid.  */
+	  /* ??? This check is simplistic.  We would get better code if
+	     this check was more sophisticated.  */
+	  if (set_dominates_use (j, regno_first_uid[j], regno_last_uid[j],
+				 copy_start, copy_end))
+	    local_regno[j] = 1;
+
+	  if (loop_dump_stream)
+	    {
+	      if (local_regno[j])
+		fprintf (loop_dump_stream, "Marked reg %d as local\n", j);
+	      else
+		fprintf (loop_dump_stream, "Did not mark reg %d as local\n",
+			 j);
+	    }
+	}
   }
 
   /* If this loop requires exit tests when unrolled, check to see if we
@@ -3509,4 +3534,62 @@ remap_split_bivs (x)
 	}
     }
   return x;
+}
+
+/* If FIRST_UID is a set of REGNO, and FIRST_UID dominates LAST_UID (e.g.
+   FIST_UID is always executed if LAST_UID is), then return 1.  Otherwise
+   return 0.  COPY_START is where we can start looking for the insns
+   FIRST_UID and LAST_UID.  COPY_END is where we stop looking for these
+   insns.
+
+   If there is no JUMP_INSN between LOOP_START and FIRST_UID, then FIRST_UID
+   must dominate LAST_UID.
+
+   If there is a CODE_LABEL between FIRST_UID and LAST_UID, then FIRST_UID
+   may not dominate LAST_UID.
+
+   If there is no CODE_LABEL between FIRST_UID and LAST_UID, then FIRST_UID
+   must dominate LAST_UID.  */
+
+int
+set_dominates_use (regno, first_uid, last_uid, copy_start, copy_end)
+     int regno;
+     int first_uid;
+     int last_uid;
+     rtx copy_start;
+     rtx copy_end;
+{
+  int passed_jump = 0;
+  rtx p = NEXT_INSN (copy_start);
+
+  while (INSN_UID (p) != first_uid)
+    {
+      if (GET_CODE (p) == JUMP_INSN)
+	passed_jump= 1;
+      /* Could not find FIRST_UID.  */
+      if (p == copy_end)
+	return 0;
+      p = NEXT_INSN (p);
+    }
+
+  /* Verify that FIRST_UID is an insn that entirely sets REGNO.  */
+  if (GET_RTX_CLASS (GET_CODE (p)) != 'i'
+      || ! dead_or_set_regno_p (p, regno))
+    return 0;
+
+  /* FIRST_UID is always executed.  */
+  if (passed_jump == 0)
+    return 1;
+
+  while (INSN_UID (p) != last_uid)
+    {
+      /* If we see a CODE_LABEL between FIRST_UID and LAST_UID, then we
+	 can not be sure that FIRST_UID dominates LAST_UID.  */
+      if (GET_CODE (p) == CODE_LABEL)
+	return 0;
+      p = NEXT_INSN (p);
+    }
+
+  /* FIRST_UID is always executed if LAST_UID is executed.  */
+  return 1;
 }
