@@ -1,3 +1,10 @@
+2000-09-18  Andreas Jaeger  <aj@suse.de>
+
+	* configure.in: Define _GNU_SOURCE only when using the GNU C
+	Library.
+        * configure: Regenerated.
+        * config.in: Regenerated.
+
 2000-09-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* cppinit.c (cpp_init): Don't use ANSI prototypes.

@@ -328,6 +328,9 @@
    character sets for source code. */
 #undef MULTIBYTE_CHARS
 
+/* Always define this when using the GNU C Library */
+#undef _GNU_SOURCE
+
 /* Always define this */
 #undef _GNU_SOURCE
 
