@@ -1,3 +1,9 @@
+2003-03-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9809
+	* call.c (add_function_candidate): Skip builtin fuctions that have
+	not yet been declared.
+
 2003-03-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (reference_binding): Remove REF_IS_VAR parameter.

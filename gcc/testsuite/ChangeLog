@@ -1,3 +1,8 @@
+2003-03-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9809
+	* g++.dg/parse/builtin1.C: New test.
+
 2003-03-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/ref4.C: New test.
