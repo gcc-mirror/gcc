@@ -1,3 +1,7 @@
+1999-12-22  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* g++.old-deja/g++.pt/instantiate6.C: Remove excess errors XFAIL.
+
 1999-12-20  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/cast3.C: New test.
