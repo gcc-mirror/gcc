@@ -484,11 +484,14 @@ static tree protect_list;
 
 /* Keeps track of the label to resume to should one want to resume
    normal control flow out of a handler (instead of, say, returning to
-   the caller of the current function or exiting the program).  Also
-   used as the context of a throw to rethrow an exception to the outer
-   exception region.  */
+   the caller of the current function or exiting the program).  */
 
 struct label_node *caught_return_label_stack = NULL;
+
+/* Keeps track of the label used as the context of a throw to rethrow an
+   exception to the outer exception region.  */
+
+struct label_node *outer_context_label_stack = NULL;
 
 /* A random data area for the front end's own use.  */
 
@@ -1255,6 +1258,9 @@ expand_start_all_catch ()
   if (! doing_eh (1))
     return;
 
+  push_label_entry (&outer_context_label_stack,
+		    ehstack.top->entry->outer_context, NULL_TREE);
+
   /* End the try block.  */
   expand_eh_region_end (integer_zero_node);
 
@@ -1374,7 +1380,7 @@ expand_end_all_catch ()
 	 thrown from) so that the outer EH region can then try to process
 	 the exception.  */
 
-      expand_internal_throw (DECL_RTL (top_label_entry (&caught_return_label_stack)));
+      expand_internal_throw (outer_context_label_stack->u.rlabel);
     }
 
   /* Now we have the complete catch sequence.  */
@@ -1384,6 +1390,7 @@ expand_end_all_catch ()
   /* This level of catch blocks is done, so set up the successful
      catch jump label for the next layer of catch blocks.  */
   pop_label_entry (&caught_return_label_stack);
+  pop_label_entry (&outer_context_label_stack);
 
   /* Add the new sequence of catches to the main one for this function.  */
   push_to_sequence (catch_clauses);
