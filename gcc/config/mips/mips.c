@@ -204,12 +204,6 @@ enum mips_abicalls_type mips_abicalls;
    initialized in override_options.  */
 REAL_VALUE_TYPE dfhigh, dflow, sfhigh, sflow;
 
-/* Array to RTX class classification.  At present, we care about
-   whether the operator is an add-type operator, or a divide/modulus,
-   and if divide/modulus, whether it is unsigned.  This is for the
-   peephole code.  */
-char mips_rtx_classify[NUM_RTX_CODE];
-
 /* Array giving truth value on whether or not a given hard register
    can support a given mode.  */
 char mips_hard_regno_mode_ok[(int)MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
@@ -467,29 +461,6 @@ reg_or_0_operand (op, mode)
   return FALSE;
 }
 
-/* Return truth value of whether OP is one of the special multiply/divide
-   registers (hi, lo).  */
-
-int
-md_register_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  return (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_CODE (op) == REG
-	  && MD_REG_P (REGNO (op)));
-}
-
-/* Return truth value of whether OP is the FP status register.  */
-
-int
-fpsw_register_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  return (GET_CODE (op) == REG && ST_REG_P (REGNO (op)));
-}
-
 /* Return truth value if a CONST_DOUBLE is ok to be a legitimate constant.  */
 
 int
@@ -497,6 +468,8 @@ mips_const_double_ok (op, mode)
      rtx op;
      enum machine_mode mode;
 {
+  REAL_VALUE_TYPE d;
+
   if (GET_CODE (op) != CONST_DOUBLE)
     return FALSE;
 
@@ -509,30 +482,25 @@ mips_const_double_ok (op, mode)
   if (op == CONST0_RTX (mode))
     return TRUE;
 
-  if (TARGET_MIPS_AS)		/* gas doesn't like li.d/li.s yet */
+  REAL_VALUE_FROM_CONST_DOUBLE (d, op);
+
+  if (REAL_VALUE_ISNAN (d))
+    return FALSE;
+
+  if (REAL_VALUE_NEGATIVE (d))
+    d = REAL_VALUE_NEGATE (d);
+
+  if (mode == DFmode)
     {
-      REAL_VALUE_TYPE d;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (d, op);
-
-      if (REAL_VALUE_ISNAN (d))
-	return FALSE;
-
-      if (REAL_VALUE_NEGATIVE (d))
-	d = REAL_VALUE_NEGATE (d);
-
-      if (mode == DFmode)
-	{
-	  if (REAL_VALUES_LESS (d, dfhigh)
-	      && REAL_VALUES_LESS (dflow, d))
-	    return TRUE;
-	}
-      else
-	{
-	  if (REAL_VALUES_LESS (d, sfhigh)
-	      && REAL_VALUES_LESS (sflow, d))
-	    return TRUE;
-	}
+      if (REAL_VALUES_LESS (d, dfhigh)
+	  && REAL_VALUES_LESS (dflow, d))
+	return TRUE;
+    }
+  else
+    {
+      if (REAL_VALUES_LESS (d, sfhigh)
+	  && REAL_VALUES_LESS (sflow, d))
+	return TRUE;
     }
 
   return FALSE;
@@ -630,7 +598,7 @@ equality_op (op, mode)
   if (mode != GET_MODE (op))
     return FALSE;
 
-  return (classify_op (op, mode) & CLASS_EQUALITY_OP) != 0;
+  return (GET_CODE (op) == EQ || GET_CODE (op) == NE);
 }
 
 /* Return true if the code is a relational operations (EQ, LE, etc.) */
@@ -643,51 +611,8 @@ cmp_op (op, mode)
   if (mode != GET_MODE (op))
     return FALSE;
 
-  return (classify_op (op, mode) & CLASS_CMP_OP) != 0;
+  return (GET_RTX_CLASS (GET_CODE (op)) == '<');
 }
-
-
-/* Genrecog does not take the type of match_operator into consideration,
-   and would complain about two patterns being the same if the same
-   function is used, so make it believe they are different.  */
-
-int
-cmp2_op (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (mode != GET_MODE (op))
-    return FALSE;
-
-  return (classify_op (op, mode) & CLASS_CMP_OP) != 0;
-}
-
-/* Return true if the code is an unsigned relational operations (LEU, etc.) */
-
-int
-uns_cmp_op (op,mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (mode != GET_MODE (op))
-    return FALSE;
-
-  return (classify_op (op, mode) & CLASS_UNS_CMP_OP) == CLASS_UNS_CMP_OP;
-}
-
-/* Return true if the code is a relational operation FP can use.  */
-
-int
-fcmp_op (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (mode != GET_MODE (op))
-    return FALSE;
-
-  return (classify_op (op, mode) & CLASS_FCMP_OP) != 0;
-}
-
 
 /* Return true if the operand is either the PC or a label_ref.  */
 
@@ -725,17 +650,17 @@ call_insn_operand (op, mode)
   return 0;
 }
 
-/* Return an operand string if the given instruction's delay slot or
-   wrap it in a .set noreorder section.  This is for filling delay
-   slots on load type instructions under GAS, which does no reordering
-   on its own.  For the MIPS assembler, all we do is update the filled
-   delay slot statistics.
+/* Returns an operand string for the given instruction's delay slot,
+   after updating filled delay slot statistics.
 
    We assume that operands[0] is the target register that is set.
 
    In order to check the next insn, most of this functionality is moved
    to FINAL_PRESCAN_INSN, and we just set the global variables that
    it needs.  */
+
+/* ??? This function no longer does anything useful, because final_prescan_insn
+   now will never emit a nop.  */
 
 char *
 mips_fill_delay_slot (ret, type, operands, cur_insn)
@@ -807,9 +732,6 @@ mips_fill_delay_slot (ret, type, operands, cur_insn)
       mips_load_reg3 = 0;
       mips_load_reg4 = 0;
     }
-
-  if (TARGET_GAS && set_noreorder++ == 0)
-    fputs ("\t.set\tnoreorder\n", asm_out_file);
 
   return ret;
 }
@@ -2521,9 +2443,6 @@ output_block_move (insn, operands, num_regs, move_type)
   else if (num_regs < 1)
     abort_with_insn (insn, "Cannot do block move, not enough scratch registers");
 
-  if (TARGET_GAS && move_type != BLOCK_MOVE_LAST && set_noreorder++ == 0)
-    output_asm_insn (".set\tnoreorder", operands);
-
   while (bytes > 0)
     {
       load_store[num].offset = offset;
@@ -2715,9 +2634,6 @@ output_block_move (insn, operands, num_regs, move_type)
 	  use_lwl_lwr = FALSE;
 	}
     }
-
-  if (TARGET_GAS && move_type != BLOCK_MOVE_LAST && --set_noreorder == 0)
-    output_asm_insn (".set\treorder", operands);
 
   return "";
 }
@@ -3312,24 +3228,6 @@ override_options ()
   sfhigh = REAL_VALUE_ATOF ("1.0e38", SFmode);
   sflow = REAL_VALUE_ATOF ("1.0e-38", SFmode);
 
-  /* Set up the classification arrays now.  */
-  mips_rtx_classify[(int)PLUS]  = CLASS_ADD_OP;
-  mips_rtx_classify[(int)MINUS] = CLASS_ADD_OP;
-  mips_rtx_classify[(int)DIV]   = CLASS_DIVMOD_OP;
-  mips_rtx_classify[(int)MOD]   = CLASS_DIVMOD_OP;
-  mips_rtx_classify[(int)UDIV]  = CLASS_DIVMOD_OP | CLASS_UNSIGNED_OP;
-  mips_rtx_classify[(int)UMOD]  = CLASS_DIVMOD_OP | CLASS_UNSIGNED_OP;
-  mips_rtx_classify[(int)EQ]    = CLASS_CMP_OP | CLASS_EQUALITY_OP | CLASS_FCMP_OP;
-  mips_rtx_classify[(int)NE]    = CLASS_CMP_OP | CLASS_EQUALITY_OP | CLASS_FCMP_OP;
-  mips_rtx_classify[(int)GT]    = CLASS_CMP_OP | CLASS_FCMP_OP;
-  mips_rtx_classify[(int)GE]    = CLASS_CMP_OP | CLASS_FCMP_OP;
-  mips_rtx_classify[(int)LT]    = CLASS_CMP_OP | CLASS_FCMP_OP;
-  mips_rtx_classify[(int)LE]    = CLASS_CMP_OP | CLASS_FCMP_OP;
-  mips_rtx_classify[(int)GTU]   = CLASS_CMP_OP | CLASS_UNSIGNED_OP;
-  mips_rtx_classify[(int)GEU]   = CLASS_CMP_OP | CLASS_UNSIGNED_OP;
-  mips_rtx_classify[(int)LTU]   = CLASS_CMP_OP | CLASS_UNSIGNED_OP;
-  mips_rtx_classify[(int)LEU]   = CLASS_CMP_OP | CLASS_UNSIGNED_OP;
-
   mips_print_operand_punct['?'] = TRUE;
   mips_print_operand_punct['#'] = TRUE;
   mips_print_operand_punct['&'] = TRUE;
@@ -3564,7 +3462,7 @@ print_operand (file, op, letter)
 	  if (set_noreorder != 0)
 	    fputs ("\n\tnop", file);
 
-	  else if (TARGET_GAS || TARGET_STATS)
+	  else if (TARGET_STATS)
 	    fputs ("\n\t#nop", file);
 
 	  break;
@@ -3991,6 +3889,9 @@ mips_output_lineno (stream, line)
    because of load delays, and also to update the delay slot
    statistics.  */
 
+/* ??? There is no real need for this function, because it never actually
+   emits a NOP anymore.  */
+
 void
 final_prescan_insn (insn, opvec, noperands)
      rtx insn;
@@ -4008,21 +3909,18 @@ final_prescan_insn (insn, opvec, noperands)
 	  || (mips_load_reg2 != (rtx)0 && reg_mentioned_p (mips_load_reg2, pattern))
 	  || (mips_load_reg3 != (rtx)0 && reg_mentioned_p (mips_load_reg3, pattern))
 	  || (mips_load_reg4 != (rtx)0 && reg_mentioned_p (mips_load_reg4, pattern)))
-	fputs ((set_noreorder) ? "\tnop\n" : "\t#nop\n", asm_out_file);
+	fputs ("\t#nop\n", asm_out_file);
 
       else
 	dslots_load_filled++;
 
       while (--dslots_number_nops > 0)
-	fputs ((set_noreorder) ? "\tnop\n" : "\t#nop\n", asm_out_file);
+	fputs ("\t#nop\n", asm_out_file);
 
       mips_load_reg  = (rtx)0;
       mips_load_reg2 = (rtx)0;
       mips_load_reg3 = (rtx)0;
       mips_load_reg4 = (rtx)0;
-
-      if (set_noreorder && --set_noreorder == 0)
-	fputs ("\t.set\treorder\n", asm_out_file);
     }
 
   if (TARGET_STATS)
@@ -4935,7 +4833,7 @@ function_epilogue (file, size)
   char *sp_str = reg_names[STACK_POINTER_REGNUM];
   char *t1_str = reg_names[MIPS_TEMP1_REGNUM];
   rtx epilogue_delay = current_function_epilogue_delay_list;
-  int noreorder = !TARGET_MIPS_AS || (epilogue_delay != 0);
+  int noreorder = (epilogue_delay != 0);
   int noepilogue = FALSE;
   int load_nop = FALSE;
   int load_only_r31;
@@ -4958,11 +4856,8 @@ function_epilogue (file, size)
       else
 	{
 	  while (--dslots_number_nops > 0)
-	    fputs ((set_noreorder) ? "\tnop\n" : "\t#nop\n", asm_out_file);
+	    fputs ("\t#nop\n", asm_out_file);
 	}
-
-      if (set_noreorder > 0 && --set_noreorder == 0)
-	fputs ("\t.set\treorder\n", file);
     }
 
   if (set_noat != 0)
