@@ -77,6 +77,8 @@ optab cmp_optab;
 optab ucmp_optab;  /* Used only for libcalls for unsigned comparisons.  */
 optab tst_optab;
 
+optab strlen_optab;
+
 /* SYMBOL_REF rtx's for the library functions that are called
    implicitly and not via optabs.  */
 
@@ -2831,6 +2833,7 @@ init_optabs ()
   one_cmpl_optab = init_optab (NOT);
   ffs_optab = init_optab (FFS);
   sqrt_optab = init_optab (SQRT);
+  strlen_optab = init_optab (UNKNOWN);
 
 #ifdef HAVE_addqi3
   if (HAVE_addqi3)
@@ -3714,6 +3717,33 @@ init_optabs ()
     sqrt_optab->handlers[(int) TFmode].insn_code = CODE_FOR_sqrttf2;
 #endif
   /* No library calls here!  If there is no sqrt instruction expand_builtin
+     should force the library call.  */
+
+#ifdef HAVE_strlenqi
+  if (HAVE_strlenqi)
+    strlen_optab->handlers[(int) QImode].insn_code = CODE_FOR_strlenqi;
+#endif
+#ifdef HAVE_strlenhi
+  if (HAVE_strlenhi)
+    strlen_optab->handlers[(int) HImode].insn_code = CODE_FOR_strlenhi;
+#endif
+#ifdef HAVE_strlenpsi
+  if (HAVE_strlenpsi)
+    strlen_optab->handlers[(int) PSImode].insn_code = CODE_FOR_strlenpsi;
+#endif
+#ifdef HAVE_strlensi
+  if (HAVE_strlensi)
+    strlen_optab->handlers[(int) SImode].insn_code = CODE_FOR_strlensi;
+#endif
+#ifdef HAVE_strlendi
+  if (HAVE_strlendi)
+    strlen_optab->handlers[(int) DImode].insn_code = CODE_FOR_strlendi;
+#endif
+#ifdef HAVE_strlenti
+  if (HAVE_strlenti)
+    strlen_optab->handlers[(int) TImode].insn_code = CODE_FOR_strlenti;
+#endif
+  /* No library calls here!  If there is no strlen instruction expand_builtin
      should force the library call.  */
 
 #ifdef HAVE_one_cmplqi2

@@ -1,3 +1,21 @@
+# Makefile additions for the NCR3000 as host system.
+
+# Using -O with the AT&T compiler fails, with a message about a missing
+# /usr/ccs/lib/optim pass.  So override the default in Makefile.in
+
+CCLIBFLAGS=
+
+# NCR3000 ships with a MetaWare compiler installed as CC, which chokes and
+# dies all over the place on GCC source.  However, the AT&T compiler,
+# crusty as it is, can be used to bootstrap GCC.  It can be found in
+# /usr/ccs/ATT/cc.  It is also used to compile the things that should
+# not be compiled with GCC.
+
+CC = /usr/ccs/ATT/cc
+OLDCC = /usr/ccs/ATT/cc
+
+# The rest is just x-i386v4.
+
 # The svr4 reference port for the i386 contains an alloca.o routine
 # in /usr/ucblib/libucb.a, but we can't just try to get that by
 # setting CLIB to /usr/ucblib/libucb.a because (unfortunately)
