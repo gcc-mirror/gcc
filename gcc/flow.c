@@ -1643,7 +1643,7 @@ propagate_one_insn (pbi, insn)
 
       if (libcall_is_dead)
 	prev = propagate_block_delete_libcall ( insn, note);
-      else
+      else if (!note)
 	propagate_block_delete_insn (insn);
 
       return prev;
