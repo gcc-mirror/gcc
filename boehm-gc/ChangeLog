@@ -1,3 +1,13 @@
+2003-03-04  Hans Boehm <Hans.Boehm@hp.com>
+	* include/private/gcconfig.h (GC_data_start): declare when needed.
+	* include/private/gc_priv.h: Include gcconfig.h after ptr_t
+	declaration.
+	* dyn_load.c (GC_register_dynamic_libraries_dl_iterate_phdr,
+	GC_register_dynlib_callback): Register main data for static
+	executable if dl_iterate_phdr() didn't.
+	* misc.c (GC_init_inner): Call GC_init_linux_data_start() even
+	if we don't expect to register main static data.
+
 2003-03-03  Hans Boehm  <Hans.Boehm@hp.com>
 	* mark_rts.c (GC_cond_register_dynamic_libraries): add.
 	(GC_push_roots): explicitly mark free list headers, register

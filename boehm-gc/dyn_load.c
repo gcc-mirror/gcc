@@ -487,6 +487,7 @@ static int GC_register_dynlib_callback(info, size, ptr)
     }
   }
 
+  * (int *)ptr = 1;	/* Signal that we were called */
   return 0;
 }     
 
@@ -496,10 +497,17 @@ static int GC_register_dynlib_callback(info, size, ptr)
 
 GC_bool GC_register_dynamic_libraries_dl_iterate_phdr()
 {
-  int tmp = 0;
-
   if (dl_iterate_phdr) {
-    dl_iterate_phdr(GC_register_dynlib_callback, &tmp);
+    int did_something = 0;
+    dl_iterate_phdr(GC_register_dynlib_callback, &did_something);
+    if (!did_something) {
+	/* dl_iterate_phdr may forget the static data segment in	*/
+	/* statically linked executables.				*/
+	GC_add_roots_inner(DATASTART, (char *)(DATAEND), TRUE);
+#       if defined(DATASTART2)
+          GC_add_roots_inner(DATASTART2, (char *)(DATAEND2), TRUE);
+#       endif
+    }
     return TRUE;
   } else {
     return FALSE;

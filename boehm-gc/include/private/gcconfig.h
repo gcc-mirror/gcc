@@ -1810,6 +1810,10 @@
     /* platforms as well, though it should be avoided in win32.		*/
 # endif /* LINUX */
 
+# if defined(SEARCH_FOR_DATA_START) && defined(GC_PRIVATE_H)
+    extern ptr_t GC_data_start;
+# endif
+
 # ifndef CLEAR_DOUBLE
 #   define CLEAR_DOUBLE(x) \
 	((word*)x)[0] = 0; \
