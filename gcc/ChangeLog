@@ -1,3 +1,8 @@
+Fri Aug 18 16:01:18 2000  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.md (fpu_switch0, fpu_switch1): Simplify.
+	* config/sh/sh.c (fpscr_set_from_mem): Use them.
+
 Fri Aug 18 14:23:18 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* regmove.c (perhaps_ends_bb_p): New function.

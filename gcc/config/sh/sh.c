@@ -5106,28 +5106,10 @@ fpscr_set_from_mem (mode, regs_live)
      HARD_REG_SET regs_live;
 {
   enum attr_fp_mode fp_mode = mode;
-  rtx i;
-  rtx sym;
   rtx addr_reg = get_free_reg (regs_live);
 
-  sym = gen_rtx_SYMBOL_REF (SImode, "__fpscr_values");
-  i = gen_rtx_SET (VOIDmode, addr_reg, sym);
-  emit_insn (i);
-  if (fp_mode == (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE))
-    {
-      rtx r = addr_reg;
-      addr_reg = get_free_reg (regs_live);
-      i = gen_rtx_SET (VOIDmode, addr_reg,
-		       gen_rtx_PLUS (Pmode, r, GEN_INT (4)));
-      emit_insn (i);
-    }
-  
-  i = gen_rtx_SET (VOIDmode, 
- 		   get_fpscr_rtx (), 
-  		   gen_rtx_MEM (PSImode, gen_rtx_POST_INC (Pmode, addr_reg)));
-  i = emit_insn (i);
-  REG_NOTES (i) = gen_rtx_EXPR_LIST (REG_DEAD, addr_reg, REG_NOTES (i));
-  REG_NOTES (i) = gen_rtx_EXPR_LIST (REG_INC, addr_reg, REG_NOTES (i));
+  emit_insn ((fp_mode == (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE)
+	      ? gen_fpu_switch1 : gen_fpu_switch0) (addr_reg));
 }
 
 /* Is the given character a logical line separator for the assembler?  */
