@@ -1,3 +1,9 @@
+2004-07-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("udivsi3"): Ensure trap is generated
+	for division by zero.
+	("umodsi3"): Likewise.
+
 2004-07-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_output_move): When generating mips16 code,

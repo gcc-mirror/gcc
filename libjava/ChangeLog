@@ -1,3 +1,13 @@
+2004-07-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* configure.host (DIVIDESPEC) [s390*-*-*]: Set to 
+	-fno-use-divide-subroutine.
+	* include/s390-signal.h: Include <ucontext.h> and <limits.h>.
+	(HANDLE_FPE): Define.
+	(SIGNAL_HANDLER): Change third argument to ucontext_t *.
+	(struct old_s390_kernel_sigaction): Likewise for k_sa_handler.
+	(HANDLE_DIVIDE_OVERFLOW): Define.
+
 2004-07-14  Michael Koch  <konqueror@gmx.de> 
 	    Matthias Klose  <doko@debian.org> 
 
