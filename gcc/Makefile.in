@@ -1092,7 +1092,7 @@ stmp-multilib-sub:
 	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	    AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
-	    LANGUAGES="$(LANGUAGES" \
+	    LANGUAGES="$(LANGUAGES)" \
 	    MULTILIB_CFLAGS="$(MULTILIB_CFLAGS)" T="t" t$${f}; \
 	  mv t$${f} $(dir)/$${f}; \
 	else true; \
