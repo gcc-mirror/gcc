@@ -69,6 +69,11 @@
 #endif
 #include <list>
 #include <locale>
+#ifdef _GLIBCXX_HAVE_UNISTD_H
+# include <unistd.h>
+#else
+# define unlink(x)
+#endif
 
 namespace __gnu_cxx_test
 {

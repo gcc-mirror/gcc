@@ -1,3 +1,7 @@
+2003-07-06  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite/testsuite_hooks.h:  Guard against a missing unlink().
+
 2003-07-05  Phil Edwards  <pme@gcc.gnu.org>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS):  Bump minimal version
