@@ -223,6 +223,7 @@ static tree lookup_avail_expr (tree, varray_type *, bool);
 static struct eq_expr_value get_eq_expr_value (tree, int, varray_type *,
 					       basic_block, varray_type *);
 static hashval_t avail_expr_hash (const void *);
+static hashval_t real_avail_expr_hash (const void *);
 static int avail_expr_eq (const void *, const void *);
 static void htab_statistics (FILE *, htab_t);
 static void record_cond (tree, tree, varray_type *);
@@ -553,7 +554,7 @@ tree_ssa_dominator_optimize (void)
   mark_dfs_back_edges ();
 
   /* Create our hash tables.  */
-  avail_exprs = htab_create (1024, avail_expr_hash, avail_expr_eq, free);
+  avail_exprs = htab_create (1024, real_avail_expr_hash, avail_expr_eq, free);
   VARRAY_TREE_INIT (const_and_copies, num_ssa_names, "const_and_copies");
   nonzero_vars = BITMAP_XMALLOC ();
   VARRAY_EDGE_INIT (redirection_edges, 20, "redirection_edges");
@@ -3294,6 +3295,11 @@ avail_expr_hash (const void *p)
   return val;
 }
 
+static hashval_t
+real_avail_expr_hash (const void *p)
+{
+  return ((const struct expr_hash_elt *)p)->hash;
+}
 
 static int
 avail_expr_eq (const void *p1, const void *p2)
