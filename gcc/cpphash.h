@@ -43,14 +43,15 @@ struct htab;
 #define CPP_STACK_MAX 200
 
 /* Memory pools.  */
-#define _ALIGN(size, align) (((size) + ((align) - 1)) & ~((align) - 1))
+#define POOL_ALIGN(size, align) (((size) + ((align) - 1)) & ~((align) - 1))
 #define POOL_FRONT(p) ((p)->cur->front)
 #define POOL_LIMIT(p) ((p)->cur->limit)
 #define POOL_BASE(p)  ((p)->cur->base)
 #define POOL_SIZE(p)  ((p)->cur->limit - (p)->cur->base)
 #define POOL_ROOM(p)  ((p)->cur->limit - (p)->cur->front)
 #define POOL_USED(p)  ((p)->cur->front - (p)->cur->base)
-#define POOL_COMMIT(p, len) do {((p)->cur->front += _ALIGN (len, (p)->align));\
+#define POOL_COMMIT(p, len) do {\
+  ((p)->cur->front += POOL_ALIGN (len, (p)->align));\
   if ((p)->cur->front > (p)->cur->limit) abort ();} while (0)
 
 typedef struct cpp_chunk cpp_chunk;
