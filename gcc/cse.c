@@ -3924,21 +3924,11 @@ fold_rtx (rtx x, rtx insn)
 	    }
 	}
 
-      new = simplify_relational_operation (code, mode,
-					   (mode_arg0 != VOIDmode
-					    ? mode_arg0
-					    : (GET_MODE (const_arg0
-							 ? const_arg0
-							 : folded_arg0)
-					       != VOIDmode)
-					    ? GET_MODE (const_arg0
-							? const_arg0
-							: folded_arg0)
-					    : GET_MODE (const_arg1
-							? const_arg1
-							: folded_arg1)),
-					   const_arg0 ? const_arg0 : folded_arg0,
-					   const_arg1 ? const_arg1 : folded_arg1);
+      {
+	rtx op0 = const_arg0 ? const_arg0 : folded_arg0;
+	rtx op1 = const_arg1 ? const_arg1 : folded_arg1;
+        new = simplify_relational_operation (code, mode, mode_arg0, op0, op1);
+      }
       break;
 
     case RTX_BIN_ARITH:

@@ -820,7 +820,6 @@ rtx
 compare_from_rtx (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 		  enum machine_mode mode, rtx size)
 {
-  enum rtx_code ucode;
   rtx tem;
 
   /* If one operand is constant, make it the second one.  Only do this
@@ -842,32 +841,19 @@ compare_from_rtx (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 
   do_pending_stack_adjust ();
 
-  ucode = unsignedp ? unsigned_condition (code) : code;
-  tem = simplify_const_relational_operation (ucode, mode, op0, op1);
-  if (tem != 0)
-    return tem;
-
-#if 0
-  /* There's no need to do this now that combine.c can eliminate lots of
-     sign extensions.  This can be less efficient in certain cases on other
-     machines.  */
-
-  /* If this is a signed equality comparison, we can do it as an
-     unsigned comparison since zero-extension is cheaper than sign
-     extension and comparisons with zero are done as unsigned.  This is
-     the case even on machines that can do fast sign extension, since
-     zero-extension is easier to combine with other operations than
-     sign-extension is.  If we are comparing against a constant, we must
-     convert it to what it would look like unsigned.  */
-  if ((code == EQ || code == NE) && ! unsignedp
-      && GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT)
+  code = unsignedp ? unsigned_condition (code) : code;
+  if (0 != (tem = simplify_relational_operation (code, mode, VOIDmode,
+						 op0, op1)))
     {
-      if (GET_CODE (op1) == CONST_INT
-          && (INTVAL (op1) & GET_MODE_MASK (GET_MODE (op0))) != INTVAL (op1))
-        op1 = GEN_INT (INTVAL (op1) & GET_MODE_MASK (GET_MODE (op0)));
-      unsignedp = 1;
+      if (CONSTANT_P (tem))
+	return tem;
+
+      code = GET_CODE (tem);
+      mode = GET_MODE (tem);
+      op0 = XEXP (tem, 0);
+      op1 = XEXP (tem, 1);
+      unsignedp = (code == GTU || code == LTU || code == GEU || code == LEU);
     }
-#endif
 
   emit_cmp_insn (op0, op1, code, size, mode, unsignedp);
 
@@ -889,7 +875,6 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 			 enum machine_mode mode, rtx size, rtx if_false_label,
 			 rtx if_true_label)
 {
-  enum rtx_code ucode;
   rtx tem;
   int dummy_true_label = 0;
 
@@ -921,44 +906,25 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 
   do_pending_stack_adjust ();
 
-  ucode = unsignedp ? unsigned_condition (code) : code;
-  tem = simplify_const_relational_operation (ucode, mode, op0, op1);
-  if (tem != 0)
+  code = unsignedp ? unsigned_condition (code) : code;
+  if (0 != (tem = simplify_relational_operation (code, mode, VOIDmode,
+						 op0, op1)))
     {
-      if (tem == const_true_rtx)
-        {
-          if (if_true_label)
-            emit_jump (if_true_label);
-        }
-      else
-        {
-          if (if_false_label)
-            emit_jump (if_false_label);
-        }
-      return;
-    }
+      if (CONSTANT_P (tem))
+	{
+	  rtx label = (tem == const0_rtx || tem == CONST0_RTX (mode))
+		      ? if_false_label : if_true_label;
+	  if (label)
+	    emit_jump (label);
+	  return;
+	}
 
-#if 0
-  /* There's no need to do this now that combine.c can eliminate lots of
-     sign extensions.  This can be less efficient in certain cases on other
-     machines.  */
-
-  /* If this is a signed equality comparison, we can do it as an
-     unsigned comparison since zero-extension is cheaper than sign
-     extension and comparisons with zero are done as unsigned.  This is
-     the case even on machines that can do fast sign extension, since
-     zero-extension is easier to combine with other operations than
-     sign-extension is.  If we are comparing against a constant, we must
-     convert it to what it would look like unsigned.  */
-  if ((code == EQ || code == NE) && ! unsignedp
-      && GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT)
-    {
-      if (GET_CODE (op1) == CONST_INT
-          && (INTVAL (op1) & GET_MODE_MASK (GET_MODE (op0))) != INTVAL (op1))
-        op1 = GEN_INT (INTVAL (op1) & GET_MODE_MASK (GET_MODE (op0)));
-      unsignedp = 1;
+      code = GET_CODE (tem);
+      mode = GET_MODE (tem);
+      op0 = XEXP (tem, 0);
+      op1 = XEXP (tem, 1);
+      unsignedp = (code == GTU || code == LTU || code == GEU || code == LEU);
     }
-#endif
 
   if (! if_true_label)
     {
