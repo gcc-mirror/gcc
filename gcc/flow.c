@@ -1799,13 +1799,16 @@ propagate_one_insn (pbi, insn)
 			  cond, insn, pbi->flags);
 
 	  /* Calls change all call-used and global registers; sibcalls do not
-	     clobber anything that must be preserved at end-of-function.  */
+	     clobber anything that must be preserved at end-of-function,
+	     except for return values.  */
 
 	  sibcall_p = SIBLING_CALL_P (insn);
 	  live_at_end = EXIT_BLOCK_PTR->global_live_at_start;
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i)
-		&& ! (sibcall_p && REGNO_REG_SET_P (live_at_end, i)))
+		&& ! (sibcall_p
+		      && REGNO_REG_SET_P (live_at_end, i)
+		      && !FUNCTION_VALUE_REGNO_P (i)))
 	      {
 		/* We do not want REG_UNUSED notes for these registers.  */
 		mark_set_1 (pbi, CLOBBER, regno_reg_rtx[i], cond, insn,
