@@ -35,7 +35,7 @@ void test04()
   bool test __attribute__((unused)) = true;
   std::streamoff  		strmof_1(-1), strmof_2;
   typedef std::wstringbuf::int_type int_type;
-  typedef std::stringbuf::traits_type traits_type;
+  typedef std::wstringbuf::traits_type traits_type;
 
   // GET
   strmof_1 = strb_01.in_avail();
