@@ -873,6 +873,18 @@ The typical use of this macro is to increase alignment for string
 constants to be word aligned so that @code{strcpy} calls that copy
 constants can be done inline.
 
+@findex LOCAL_ALIGNMENT
+@item LOCAL_ALIGNMENT (@var{type}, @var{basic-align})
+If defined, a C expression to compute the alignment for a variables in
+the local store.  @var{type} is the data type, and @var{basic-align} is
+the alignment that the object would ordinarily have.  The value of this
+macro is used instead of that alignment to align the object.
+
+If this macro is not defined, then @var{basic-align} is used.
+
+One use of this macro is to increase alignment of medium-size data to
+make it all fit in fewer cache lines.
+
 @findex EMPTY_FIELD_BOUNDARY
 @item EMPTY_FIELD_BOUNDARY
 Alignment in bits to be given to a structure bit field that follows an

@@ -65,6 +65,10 @@ Boston, MA 02111-1307, USA.  */
 #define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
 #endif
 
+#ifndef LOCAL_ALIGNMENT
+#define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
+#endif
+
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
@@ -386,6 +390,8 @@ struct temp_slot
   /* The rtx used to represent the address if not the address of the
      slot above.  May be an EXPR_LIST if multiple addresses exist.  */
   rtx address;
+  /* The alignment (in bits) of the slot. */
+  int align;
   /* The size, in units, of the slot.  */
   HOST_WIDE_INT size;
   /* The value of `sequence_rtl_expr' when this temporary is allocated.  */
@@ -440,6 +446,8 @@ struct fixup_replacement
 
 static rtx assign_outer_stack_local PROTO ((enum machine_mode, HOST_WIDE_INT,
 					    int, struct function *));
+static rtx assign_stack_temp_for_type PROTO ((enum machine_mode, HOST_WIDE_INT,
+					      int, tree));
 static struct temp_slot *find_temp_slot_from_address  PROTO((rtx));
 static void put_reg_into_stack	PROTO((struct function *, rtx, tree,
 				       enum machine_mode, enum machine_mode,
@@ -716,9 +724,19 @@ assign_stack_local (mode, size, align)
 
   if (align == 0)
     {
-      alignment = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
+      tree type;
+
+      alignment = GET_MODE_ALIGNMENT (mode);
       if (mode == BLKmode)
-	alignment = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
+	alignment = BIGGEST_ALIGNMENT;
+
+      /* Allow the target to (possibly) increase the alignment of this
+	 stack slot.  */
+      type = type_for_mode (mode, 0);
+      if (type)
+	alignment = LOCAL_ALIGNMENT (type, alignment);
+
+      alignment /= BITS_PER_UNIT;
     }
   else if (align == -1)
     {
@@ -791,9 +809,19 @@ assign_outer_stack_local (mode, size, align, function)
 
   if (align == 0)
     {
-      alignment = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
+      tree type;
+
+      alignment = GET_MODE_ALIGNMENT (mode);
       if (mode == BLKmode)
-	alignment = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
+	alignment = BIGGEST_ALIGNMENT;
+
+      /* Allow the target to (possibly) increase the alignment of this
+	 stack slot.  */
+      type = type_for_mode (mode, 0);
+      if (type)
+	alignment = LOCAL_ALIGNMENT (type, alignment);
+
+      alignment /= BITS_PER_UNIT;
     }
   else if (align == -1)
     {
@@ -849,12 +877,14 @@ assign_outer_stack_local (mode, size, align, function)
    if we are to allocate something at an inner level to be treated as
    a variable in the block (e.g., a SAVE_EXPR).  */
 
-rtx
-assign_stack_temp (mode, size, keep)
+static rtx
+assign_stack_temp_for_type (mode, size, keep, type)
      enum machine_mode mode;
      HOST_WIDE_INT size;
      int keep;
+     tree type;
 {
+  int align;
   struct temp_slot *p, *best_p = 0;
 
   /* If SIZE is -1 it means that somebody tried to allocate a temporary
@@ -862,19 +892,31 @@ assign_stack_temp (mode, size, keep)
   if (size == -1)
     abort ();
 
-  /* First try to find an available, already-allocated temporary that is the
-     exact size we require.  */
-  for (p = temp_slots; p; p = p->next)
-    if (p->size == size && GET_MODE (p->slot) == mode && ! p->in_use)
-      break;
+  align = GET_MODE_ALIGNMENT (mode);
+  if (mode == BLKmode)
+    align = BIGGEST_ALIGNMENT;
 
-  /* If we didn't find, one, try one that is larger than what we want.  We
-     find the smallest such.  */
-  if (p == 0)
-    for (p = temp_slots; p; p = p->next)
-      if (p->size > size && GET_MODE (p->slot) == mode && ! p->in_use
-	  && (best_p == 0 || best_p->size > p->size))
+  if (! type)
+    type = type_for_mode (mode, 0);
+  if (type)
+    align = LOCAL_ALIGNMENT (type, align);
+
+  /* Try to find an available, already-allocated temporary of the proper
+     mode which meets the size and alignment requirements.  Choose the
+     smallest one with the closest alignment.  */
+  for (p = temp_slots; p; p = p->next)
+    if (p->align >= align && p->size >= size && GET_MODE (p->slot) == mode
+	&& ! p->in_use
+	&& (best_p == 0 || best_p->size > p->size
+	    || (best_p->size == p->size && best_p->align > p->align)))
+      {
+	if (p->align == align && p->size == size)
+	  {
+	    best_p = 0;
+	    break;
+	  }
 	best_p = p;
+      }
 
   /* Make our best, if any, the one to use.  */
   if (best_p)
@@ -884,7 +926,7 @@ assign_stack_temp (mode, size, keep)
 	 for BLKmode slots, so that we can be sure of the alignment.  */
       if (GET_MODE (best_p->slot) == BLKmode)
 	{
-	  int alignment = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
+	  int alignment = best_p->align / BITS_PER_UNIT;
 	  HOST_WIDE_INT rounded_size = CEIL_ROUND (size, alignment);
 
 	  if (best_p->size - rounded_size >= alignment)
@@ -897,6 +939,7 @@ assign_stack_temp (mode, size, keep)
 	      p->slot = gen_rtx_MEM (BLKmode,
 				     plus_constant (XEXP (best_p->slot, 0),
 						    rounded_size));
+	      p->align = best_p->align;
 	      p->address = 0;
 	      p->rtl_expr = 0;
 	      p->next = temp_slots;
@@ -920,9 +963,9 @@ assign_stack_temp (mode, size, keep)
 
       p = (struct temp_slot *) oballoc (sizeof (struct temp_slot));
 
-      /* If the temp slot mode doesn't indicate the alignment,
-	 use the largest possible, so no one will be disappointed.  */
-      p->slot = assign_stack_local (mode, size, mode == BLKmode ? -1 : 0);
+      p->slot = assign_stack_local (mode, size, align);
+
+      p->align = align;
 
       /* The following slot size computation is necessary because we don't
 	 know the actual size of the temporary slot until assign_stack_local
@@ -978,6 +1021,18 @@ assign_stack_temp (mode, size, keep)
   MEM_ALIAS_SET (p->slot) = 0;
   return p->slot;
 }
+
+/* Allocate a temporary stack slot and record it for possible later
+   reuse.  First three arguments are same as in preceding function.  */
+
+rtx
+assign_stack_temp (mode, size, keep)
+     enum machine_mode mode;
+     HOST_WIDE_INT size;
+     int keep;
+{
+  return assign_stack_temp_for_type (mode, size, keep, NULL_TREE);
+}
 
 /* Assign a temporary of given TYPE.
    KEEP is as for assign_stack_temp.
@@ -1010,7 +1065,7 @@ assign_temp (type, keep, memory_required, dont_promote)
 	  && TREE_CODE (TYPE_ARRAY_MAX_SIZE (type)) == INTEGER_CST)
 	size = TREE_INT_CST_LOW (TYPE_ARRAY_MAX_SIZE (type));
 
-      tmp = assign_stack_temp (mode, size, keep);
+      tmp = assign_stack_temp_for_type (mode, size, keep, type);
       MEM_SET_IN_STRUCT_P (tmp, AGGREGATE_TYPE_P (type));
       return tmp;
     }
