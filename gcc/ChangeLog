@@ -1,3 +1,8 @@
+2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/rs6000/sysv4le.h: Remove target-independent comment.
+	Replace "GNU compiler" with "GCC" in comment.
+
 2003-06-16  Andreas Jaeger  <aj@suse.de>
 
 	* tracer.c: Remove duplication declaration.
