@@ -106,6 +106,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    * Don't output `?' before external regs.
    * Output `(sb)' in certain indirect refs.  */
 
+#error this has not been updated since version 1.
+#error it is certainly wrong.
+
 #undef PRINT_OPERAND
 #define PRINT_OPERAND(FILE, X, CODE)					\
 { if (CODE == '$') putc ('$', FILE);					\
