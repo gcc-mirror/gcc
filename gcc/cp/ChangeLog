@@ -1,5 +1,10 @@
 2003-04-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10471
+	* call.c (build_cxx_call): Robustify.
+
+2003-04-23  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/10451
 	* decl.c (grokdeclarator): Correct logic for "mutable" errors.
 
