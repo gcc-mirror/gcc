@@ -1,5 +1,9 @@
 2004-05-27  Jan Hubicka  <jh@suse.cz>
 
+	* cfgcleanup.c (try_optimize_cfg): Do not merge across jumptables.
+
+2004-05-27  Jan Hubicka  <jh@suse.cz>
+
 	* i386.md (UNSPECV_EH_RETURN): Kill.
 	(eh_return): Use jump_insn.
 	(eh_return_si, eh_return_di): Change pattern to jump instruction.
@@ -8,7 +12,6 @@
 
 	* cfgcleanup.c (try_forward_edges):  Do not check loop structure when
 	not loop optimizing.
-	(try_optimize_cfg): Do not merge across jumptables.
 
 2004-05-26  Jan Hubicka  <jh@suse.cz>
 
