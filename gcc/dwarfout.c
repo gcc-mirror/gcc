@@ -4435,118 +4435,91 @@ output_decl (decl, containing_scope)
 	output_formal_types (TREE_TYPE (decl));
       else
 	{
+	  /* Generate DIEs to represent all known formal parameters */
+
 	  register tree arg_decls = DECL_ARGUMENTS (decl);
+	  register tree parm;
 
-	  {
-	    register tree last_arg;
+	  /* WARNING!  Kludge zone ahead!  Here we have a special
+	     hack for svr4 SDB compatibility.  Instead of passing the
+	     current FUNCTION_DECL node as the second parameter (i.e.
+	     the `containing_scope' parameter) to `output_decl' (as
+	     we ought to) we instead pass a pointer to our own private
+	     fake_containing_scope node.  That node is a RECORD_TYPE
+	     node which NO OTHER TYPE may ever actually be a member of.
 
-	    last_arg = (arg_decls && TREE_CODE (arg_decls) != ERROR_MARK)
-			? tree_last (arg_decls)
-			: NULL;
+	     This pointer will ultimately get passed into `output_type'
+	     as its `containing_scope' parameter.  `Output_type' will
+	     then perform its part in the hack... i.e. it will pend
+	     the type of the formal parameter onto the pending_types
+	     list.  Later on, when we are done generating the whole
+	     sequence of formal parameter DIEs for this function
+	     definition, we will un-pend all previously pended types
+	     of formal parameters for this function definition.
 
-	    /* Generate DIEs to represent all known formal parameters, but
-	       don't do it if this looks like a varargs function.  A given
-	       function is considered to be a varargs function if (and only
-	       if) its last named argument is named `__builtin_va_alist'.  */
+	     This whole kludge prevents any type DIEs from being
+	     mixed in with the formal parameter DIEs.  That's good
+	     because svr4 SDB believes that the list of formal
+	     parameter DIEs for a function ends wherever the first
+	     non-formal-parameter DIE appears.  Thus, we have to
+	     keep the formal parameter DIEs segregated.  They must
+	     all appear (consecutively) at the start of the list of
+	     children for the DIE representing the function definition.
+	     Then (and only then) may we output any additional DIEs
+	     needed to represent the types of these formal parameters.
+	  */
 
-	    if (! last_arg
-	        || ! DECL_NAME (last_arg)
-	        || strcmp (IDENTIFIER_POINTER (DECL_NAME (last_arg)),
-			   "__builtin_va_alist"))
-	      {
-	        register tree parm;
+	  /*
+	     When generating DIEs, generate the unspecified_parameters
+	     DIE instead if we come across the arg "__builtin_va_alist"
+	  */
 
-		/* WARNING!  Kludge zone ahead!  Here we have a special
-		   hack for svr4 SDB compatibility.  Instead of passing the
-		   current FUNCTION_DECL node as the second parameter (i.e.
-		   the `containing_scope' parameter) to `output_decl' (as
-		   we ought to) we instead pass a pointer to our own private
-		   fake_containing_scope node.  That node is a RECORD_TYPE
-		   node which NO OTHER TYPE may ever actually be a member of.
-
-		   This pointer will ultimately get passed into `output_type'
-		   as its `containing_scope' parameter.  `Output_type' will
-		   then perform its part in the hack... i.e. it will pend
-		   the type of the formal parameter onto the pending_types
-		   list.  Later on, when we are done generating the whole
-		   sequence of formal parameter DIEs for this function
-		   definition, we will un-pend all previously pended types
-		   of formal parameters for this function definition.
-
-		   This whole kludge prevents any type DIEs from being
-		   mixed in with the formal parameter DIEs.  That's good
-		   because svr4 SDB believes that the list of formal
-		   parameter DIEs for a function ends wherever the first
-		   non-formal-parameter DIE appears.  Thus, we have to
-		   keep the formal parameter DIEs segregated.  They must
-		   all appear (consecutively) at the start of the list of
-		   children for the DIE representing the function definition.
-		   Then (and only then) may we output any additional DIEs
-		   needed to represent the types of these formal parameters.
-		*/
-
-	        for (parm = arg_decls; parm; parm = TREE_CHAIN (parm))
-		  if (TREE_CODE (parm) == PARM_DECL)
-		    output_decl (parm, fake_containing_scope);
-
-		/* Now that we have finished generating all of the DIEs to
-		   represent the formal parameters themselves, force out
-		   any DIEs needed to represent their types.  We do this
-		   simply by un-pending all previously pended types which
-		   can legitimately go into the chain of children DIEs for
-		   the current FUNCTION_DECL.  */
-
-		output_pending_types_for_scope (decl);
+	  for (parm = arg_decls; parm; parm = TREE_CHAIN (parm))
+	    if (TREE_CODE (parm) == PARM_DECL)
+              {
+		if (DECL_NAME(parm) &&
+		    !strcmp(IDENTIFIER_POINTER(DECL_NAME(parm)),
+			    "__builtin_va_alist") )
+		  output_die (output_unspecified_parameters_die, decl);
+	        else
+		  output_decl (parm, fake_containing_scope);
 	      }
-	  }
 
-	  /* Now try to decide if we should put an ellipsis at the end. */
+	  /*
+	     Now that we have finished generating all of the DIEs to
+	     represent the formal parameters themselves, force out
+	     any DIEs needed to represent their types.  We do this
+	     simply by un-pending all previously pended types which
+	     can legitimately go into the chain of children DIEs for
+	     the current FUNCTION_DECL.
+	  */
+
+	  output_pending_types_for_scope (decl);
+
+	  /*
+	    Decide whether we need a unspecified_parameters DIE at the end.
+	    There are 2 more cases to do this for:
+	    1) the ansi ... declaration - this is detectable when the end
+		of the arg list is not a void_type_node
+	    2) an unprototyped function declaration (not a definition).  This
+		just means that we have no info about the parameters at all.
+	  */
 
 	  {
-	    register int has_ellipsis = TRUE;	/* default assumption */
 	    register tree fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
 
 	    if (fn_arg_types)
 	      {
-		/* This function declaration/definition was prototyped.	 */
-
-		/* If the list of formal argument types ends with a
-		   void_type_node, then the formals list did *not* end
-		   with an ellipsis.  */
-
-		if (TREE_VALUE (tree_last (fn_arg_types)) == void_type_node)
-		  has_ellipsis = FALSE;
-	      }
-	    else
-	      {
-		/* This function declaration/definition was not prototyped.  */
-
-		/* Note that all non-prototyped function *declarations* are
-		   assumed to represent varargs functions (until proven
-		   otherwise).	*/
-
-		if (DECL_INITIAL (decl)) /* if this is a func definition */
-		  {
-		    if (!arg_decls)
-		      has_ellipsis = FALSE; /* no args == (void) */
-		    else
-		      {
-			/* For a non-prototyped function definition which
-			   declares one or more formal parameters, if the name
-			   of the first formal parameter is *not*
-			   __builtin_va_alist then we must assume that this
-			   is *not* a varargs function.	 */
-
-			if (DECL_NAME (arg_decls)
-			  && strcmp (IDENTIFIER_POINTER (DECL_NAME (arg_decls)),
-				     "__builtin_va_alist"))
-			  has_ellipsis = FALSE;
-		      }
-		  }
-	      }
-
-	    if (has_ellipsis)
-	      output_die (output_unspecified_parameters_die, decl);
+	      /* this is the prototyped case, check for ... */
+	      if (TREE_VALUE (tree_last (fn_arg_types)) != void_type_node)
+	        output_die (output_unspecified_parameters_die, decl);
+              }
+            else
+              {
+	      /* this is unprotoyped, check for undefined (just declaration) */
+              if (!DECL_INITIAL (decl))
+                output_die (output_unspecified_parameters_die, decl);
+              }
 	  }
 	}
 
