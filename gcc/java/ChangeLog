@@ -13,6 +13,12 @@
 	* parse.y (find_as_inner_class): Handle the case where the
 	enclosing context of an innerclass has been loaded as bytecode.
 
+2000-07-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * parse.y (simple_name:): Reject `$' in type names.
+	(resolve_type_during_patch): Use `type' as a second
+	argument to resolve_no_layout. Fixes gcj/257.
+
 2000-07-18  Jeff Sturm  <jeff.sturm@appnet.com>
 
 	* lang-specs.h: Added %(jc1) to java compiler options.
