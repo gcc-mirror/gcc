@@ -20,7 +20,12 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* We can debug dynamically linked executables on hpux9; we also want
-   dereferecing of a NULL pointer to cause a SEGV.  */
+   derefercing of a NULL pointer to cause a SEGV.  */
 #undef LINK_SPEC
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & 1)
+#define LINK_SPEC \
+  "%{!mpa-risc-1-0:-L/lib/pa1.1 -L/usr/lib/pa1.1} -z %{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{shared:-b}"
+#else
 #define LINK_SPEC \
   "-z %{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{shared:-b}"
+#endif
