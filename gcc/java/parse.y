@@ -12913,10 +12913,11 @@ patch_assignment (tree node, tree wfl_op1)
 	  {
 	    tree tmp = build_decl (VAR_DECL, get_identifier ("<tmp>"), 
 				   TREE_TYPE (new_rhs));
-	    tree block = build (BLOCK, TREE_TYPE (new_rhs), NULL);
+	    tree block = make_node (BLOCK);
 	    tree assignment 
 	      = build (MODIFY_EXPR, TREE_TYPE (new_rhs), tmp, fold (new_rhs));
 	    DECL_CONTEXT (tmp) = current_function_decl;
+	    TREE_TYPE (block) = TREE_TYPE (new_rhs);
 	    BLOCK_VARS (block) = tmp;
 	    BLOCK_EXPR_BODY (block) 
 	      = build (COMPOUND_EXPR, TREE_TYPE (new_rhs), assignment, tmp);

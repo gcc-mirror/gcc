@@ -1,3 +1,15 @@
+2003-10-09  Jason Merrill  <jason@redhat.com>
+
+	* coverage.c (build_ctr_info_value): Use build_decl to make a
+	VAR_DECL.
+	(create_coverage): Likewise.
+
+	* stmt.c (resolve_asm_operand_names): Call check_unique_operand_names
+	here.
+	(expand_asm_operands): Not here.
+	(parse_input_constraint): No longer static.
+	* tree.h: Declare it.
+
 2003-10-08  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/t-linux (SHLIB_LINK): Override to use a linker script

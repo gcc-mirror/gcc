@@ -2977,6 +2977,8 @@ extern void emit_nop (void);
 extern void expand_computed_goto (tree);
 extern bool parse_output_constraint (const char **, int, int, int,
 				     bool *, bool *, bool *);
+extern bool parse_input_constraint (const char **, int, int, int, int,
+				    const char * const *, bool *, bool *);
 extern void expand_asm_operands (tree, tree, tree, tree, int, location_t);
 extern tree resolve_asm_operand_names (tree, tree, tree);
 extern int any_pending_cleanups (void);

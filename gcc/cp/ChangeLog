@@ -1,3 +1,11 @@
+2003-10-09  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (build_cplus_new): Use build_decl to create a VAR_DECL.
+	(build_target_expr_with_type): Likewise.
+
+	* pt.c (instantiate_class_template): Sanity check that our
+	enclosing class has been instantiated.
+
 2003-10-08  Giovanni Bajo  <giovannibajo@libero.it>
 
 	* cp_tree.h: Added TFF_NO_FUNCTION_ARGUMENTS.

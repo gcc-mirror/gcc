@@ -637,7 +637,7 @@ build_ctr_info_value (unsigned int counter, tree type)
       array_type = build_array_type (TREE_TYPE (TREE_TYPE (fields)),
 				     array_type);
 
-      array = build (VAR_DECL, array_type, NULL_TREE, NULL_TREE);
+      array = build_decl (VAR_DECL, NULL_TREE, array_type);
       TREE_STATIC (array) = 1;
       DECL_NAME (array) = get_identifier (XSTR (ctr_labels[counter], 0));
       assemble_variable (array, 0, 0, 0);
@@ -824,8 +824,7 @@ create_coverage (void)
 
   gcov_info_value = build_gcov_info ();
 
-  gcov_info = build (VAR_DECL, TREE_TYPE (gcov_info_value),
-		     NULL_TREE, NULL_TREE);
+  gcov_info = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (gcov_info_value));
   DECL_INITIAL (gcov_info) = gcov_info_value;
 
   TREE_STATIC (gcov_info) = 1;
