@@ -94,7 +94,7 @@ void test03()
 
 int main()
 {
-  test03();
+  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test03);
   return 0;
 }
 

@@ -160,7 +160,7 @@ int main()
   test02(in2, false);
   test02(in3, false);
 
-  test08();
+  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test08);
   test09();
   return 0;
 }

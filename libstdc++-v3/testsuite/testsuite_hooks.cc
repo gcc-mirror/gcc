@@ -148,9 +148,19 @@ namespace __gnu_cxx_test
     bool test = true;
     
     // Set the global locale. 
-    locale loc_name(name);
-    locale orig = locale::global(loc_name);
-    
+    try
+      {
+	locale loc_name(name);
+	locale orig = locale::global(loc_name);
+      }
+    catch (std::runtime_error& ex)
+      {
+	if (std::strstr (ex.what(), "unhandled name in generic implementation"))
+	  return;
+	else
+	  throw;
+      }
+
     const char* res = setlocale(LC_ALL, name);
     if (res != NULL)
       {
@@ -173,9 +183,18 @@ namespace __gnu_cxx_test
     
 #ifdef _GLIBCPP_HAVE_SETENV 
     // Set the global locale. 
-    locale loc_name(name);
-    locale orig = locale::global(loc_name);
-
+    try
+      {
+	locale loc_name(name);
+	locale orig = locale::global(loc_name);
+      }
+    catch (std::runtime_error& ex)
+      {
+	if (std::strstr (ex.what(), "unhandled name in generic implementation"))
+	  return;
+	else
+	  throw;
+      }
     // Set environment variable env to value in name. 
     const char* oldENV = getenv(env);
     if (!setenv(env, name, 1))
@@ -189,6 +208,22 @@ namespace __gnu_cxx_test
 #else
     throw not_found("setenv");
 #endif
+  }
+
+  void 
+  run_test_wrapped_generic_locale_exception_catcher(const test_func f)
+  {
+    try
+      {
+	f();
+      }
+    catch (std::runtime_error& ex)
+      {
+	if (std::strstr (ex.what(), "unhandled name in generic implementation"))
+	  return;
+	else
+	  throw;
+      }
   }
 
   counter::size_type  counter::count = 0;

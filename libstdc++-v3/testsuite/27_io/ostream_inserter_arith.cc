@@ -253,7 +253,7 @@ test01()
   return 0;
 }
 
-int
+void
 test02()
 {
   bool test = true;
@@ -297,7 +297,7 @@ test02()
   os2 << endl;
   os2 << fixed << setprecision(1) << val2 << endl;
 
-  return 0;
+  return;
 }
 
 template<typename T>
@@ -395,7 +395,7 @@ int
 main()
 {
   test01();
-  test02();
+  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test02);
   test03();
   test04();
   test05();

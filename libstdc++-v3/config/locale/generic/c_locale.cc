@@ -212,9 +212,13 @@ namespace std
     }
 
   void
-  locale::facet::_S_create_c_locale(__c_locale& __cloc, const char*, 
+  locale::facet::_S_create_c_locale(__c_locale& __cloc, const char* __s, 
 				    __c_locale)
-  { __cloc = NULL; }
+  {
+    __cloc = NULL;
+    if (strcmp (__s, "C"))
+      __throw_runtime_error("attempt to create locale from unhandled name in generic implementation; see http://gcc.gnu.org/ml/libstdc++/2003-02/msg00345.html");
+  }
 
   void
   locale::facet::_S_destroy_c_locale(__c_locale& __cloc)

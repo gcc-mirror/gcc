@@ -105,6 +105,9 @@ namespace __gnu_cxx_test
   void 
   run_tests_wrapped_env(const char*, const char*, const func_callback&);
 
+  // Run select unit test inside exception catcher for non-C named locale
+  void 
+  run_test_wrapped_generic_locale_exception_catcher(const test_func);
 
   // Test data types.
   struct pod_char

@@ -75,6 +75,6 @@ void test05()
 
 int main()
 {
-  test05();
+  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test05);
   return 0;
 }

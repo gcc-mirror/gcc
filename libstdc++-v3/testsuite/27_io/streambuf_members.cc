@@ -526,7 +526,7 @@ int main()
   test05();
 
   test07();
-  test08();
+  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test08);
 
   test09();
   test10();
