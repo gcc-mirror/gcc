@@ -1,3 +1,9 @@
+2000-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in (HAVE_AS_DWARF2_DEBUG_LINE): Sparc has .file/.loc
+	support in as as well.
+	* configure: Regenerate.
+
 2000-11-20  Richard Henderson  <rth@redhat.com>
 
 	* c-lex.c (orig_filename): New variable.
