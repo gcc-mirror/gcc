@@ -1,3 +1,8 @@
+1997-10-01  Brendan Kehoe  <brendan@lasher.cygnus.com>
+
+	* lex.c (real_yylex): Clean up the code to fully behave the way
+	the c-lex.c parser does for complex and real numbers.
+
 Tue Sep 30 08:51:36 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* method.c (build_decl_overload_real): Reformat.
