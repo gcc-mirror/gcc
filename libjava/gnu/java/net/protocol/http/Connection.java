@@ -122,22 +122,6 @@ public final class Connection extends HttpURLConnection
     doOutput = false;
   }
 
-  public void setRequestProperty(String key, String value)
-  {
-    if (connected)
-      throw new IllegalAccessError("Connection already established.");
-
-    requestProperties.put(key, value);
-  }
-
-  public String getRequestProperty(String key)
-  {
-    if (connected)
-      throw new IllegalAccessError("Connection already established.");
-
-    return (String) requestProperties.get(key);
-  }
-
   /**
    * Connects to the remote host, sends the request, and parses the reply
    * code and header information returned
