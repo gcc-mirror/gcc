@@ -33,7 +33,7 @@ static char *
 xmalloc (nbytes)
      int nbytes;
 {
-  char *tmp = malloc (nbytes);
+  char *tmp = (char *) malloc (nbytes);
 
   if (!tmp)
     {
@@ -53,7 +53,9 @@ xrealloc (block, nbytes)
      char *block;
      int nbytes;
 {
-  char *tmp = block ? realloc (block, nbytes) : malloc (nbytes);
+  char *tmp = (block
+	       ? (char *) realloc (block, nbytes)
+	       : (char *) malloc (nbytes));
 
   if (!tmp)
     {
