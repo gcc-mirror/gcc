@@ -342,10 +342,12 @@ parse_number (olen)
      int olen;
 {
   register char *p = lexptr;
-  register long n = 0;
   register int c;
+  register unsigned long n = 0, nd, ULONG_MAX_over_base;
   register int base = 10;
   register int len = olen;
+  register int overflow = 0;
+  int spec_long = 0;
 
   for (c = 0; c < len; c++)
     if (p[c] == '.') {
@@ -364,31 +366,43 @@ parse_number (olen)
   else if (*p == '0')
     base = 8;
 
-  while (len > 0) {
+  ULONG_MAX_over_base = (unsigned long) -1 / base;
+
+  for (; len > 0; len--) {
     c = *p++;
-    len--;
     if (c >= 'A' && c <= 'Z') c += 'a' - 'A';
 
     if (c >= '0' && c <= '9') {
-      n *= base;
-      n += c - '0';
+      overflow |= ULONG_MAX_over_base < n;
+      nd = n * base + c - '0';
+      overflow |= nd < n;
+      n = nd;
     } else if (base == 16 && c >= 'a' && c <= 'f') {
-      n *= base;
-      n += c - 'a' + 10;
+      overflow |= ULONG_MAX_over_base < n;
+      nd = n * 16 + c - 'a' + 10;
+      overflow |= nd < n;
+      n = nd;
     } else {
       /* `l' means long, and `u' means unsigned.  */
       while (1) {
 	if (c == 'l' || c == 'L')
-	  ;
+	  {
+	    if (spec_long)
+	      yyerror ("two `l's in integer constant");
+	    spec_long = 1;
+	  }
 	else if (c == 'u' || c == 'U')
-	  yylval.integer.unsignedp = 1;
+	  {
+	    if (yylval.integer.unsignedp)
+	      yyerror ("two `u's in integer constant");
+	    yylval.integer.unsignedp = 1;
+	  }
 	else
 	  break;
 
-	if (len == 0)
+	if (--len == 0)
 	  break;
 	c = *p++;
-	len--;
       }
       /* Don't look for any more digits after the suffixes.  */
       break;
@@ -400,9 +414,16 @@ parse_number (olen)
     return ERROR;
   }
 
+  if (overflow)
+    warning ("integer constant out of range");
+
   /* If too big to be signed, consider it unsigned.  */
-  if (n < 0)
-    yylval.integer.unsignedp = 1;
+  if ((long) n < 0 && ! yylval.integer.unsignedp)
+    {
+      if (base == 10)
+	warning ("integer constant is so large that it is unsigned");
+      yylval.integer.unsignedp = 1;
+    }
 
   lexptr = p;
   yylval.integer.value = n;
