@@ -1696,6 +1696,9 @@ typedef struct rs6000_args
   int stdarg;			/* Whether function is a stdarg function.  */
   int call_cookie;		/* Do special things for this call */
   int sysv_gregno;		/* next available GP register */
+  int intoffset;		/* running offset in struct (darwin64) */
+  int use_stack;		/* any part of struct on stack (darwin64) */
+  int named;			/* false for varargs params */
 } CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS

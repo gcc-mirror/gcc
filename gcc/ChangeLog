@@ -1,3 +1,23 @@
+2005-02-28  Dale Johannesen  <dalej@apple.com>
+	    Stan Shebs  <shebs@apple.com>
+
+	Rewrite of 64-bit Darwin structure-by-value pass/return.
+	* config/rs6000/rs6000.h (CUMULATIVE_ARGS): New fields
+	intoffset, use_stack, named.
+	* config/rs6000/rs6000.c (rs6000_darwin64_function_arg):  Remove.
+	(rs6000_darwin64_record_arg_advance_flush):  New.
+	(rs6000_darwin64_record_arg_advance_recurse): New.
+	(rs6000_darwin64_record_arg_flush):  New.
+	(rs6000_darwin64_record_arg_recurse):  New.
+	(rs6000_darwin64_record_arg):  New.
+	(rs6000_return_in_memory):  Remove AGGREGATE_TYPE_P check.
+	(function_arg_boundary):  Handle 128-bit aligned structs.
+	(function_arg_advance):  Rewrite darwin64 struct handling.
+	(function_arg):  Call rs6000_darwin64_record_arg.
+	(function_arg_partial_nregs):  Handle darwin64 structs.
+	(rs6000_darwin64_function_value):  Remove.
+	(rs6000_function_value):  Call rs6000_darwin64_record_arg.
+
 2005-02-28  John David Anglin  <dave.anglin#nrc-cnrc.gc.ca>
 
 	PR target/19819
