@@ -41,6 +41,9 @@ Boston, MA 02111-1307, USA.  */
 #define REGISTER_MOVE_COST(x, y) 2
 #endif
 
+static void init_reg_sets_1	PROTO((void));
+static void init_reg_modes	PROTO((void));
+
 /* If we have auto-increment or auto-decrement and we can have secondary
    reloads, we are not allowed to use classes requiring secondary
    reloads for pseudos auto-incremented since reload can't handle it.  */

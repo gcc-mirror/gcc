@@ -1,3 +1,8 @@
+Thu Nov 19 20:55:59 1998  H.J. Lu  (hjl@gnu.org)
+
+	* regclass.c (init_reg_sets_1): Add prototype.
+	(init_reg_modes): Likewise.
+
 1998-11-19 Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* c-common.c: Change warning messages to say `comparison is
