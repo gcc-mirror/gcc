@@ -13,10 +13,10 @@ void printx(T a)
 {
   union {
     T v;
-    unsigned long a[4];
+    unsigned int a[4];
   } u;
   u.v = a;
-  printf("%ld, %ld, %ld, %ld\n", u.a[0], u.a[1], u.a[2], u.a[3]);
+  printf("%d, %d, %d, %d\n", u.a[0], u.a[1], u.a[2], u.a[3]);
 }
 
 void f1(int a, ...)
