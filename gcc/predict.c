@@ -58,6 +58,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-dump.h"
 #include "tree-pass.h"
 #include "timevar.h"
+#include "tree-scalar-evolution.h"
+#include "cfgloop.h"
 
 /* real constants: 0, 1, 1-1/REG_BR_PROB_BASE, REG_BR_PROB_BASE,
 		   1/REG_BR_PROB_BASE, 0.5, BB_FREQ_MAX.  */
@@ -552,12 +554,15 @@ combine_predictions_for_bb (FILE *file, basic_block bb)
 }
 
 /* Predict edge probabilities by exploiting loop structure.
-   When SIMPLELOOPS is set, attempt to count number of iterations by analyzing
-   RTL.  */
+   When RTLSIMPLELOOPS is set, attempt to count number of iterations by analyzing
+   RTL otherwise use tree based approach.  */
 static void
-predict_loops (struct loops *loops_info, bool simpleloops)
+predict_loops (struct loops *loops_info, bool rtlsimpleloops)
 {
   unsigned i;
+
+  if (!rtlsimpleloops)
+    scev_initialize (loops_info);
 
   /* Try to predict out blocks in a loop that are not part of a
      natural loop.  */
@@ -573,7 +578,7 @@ predict_loops (struct loops *loops_info, bool simpleloops)
       flow_loop_scan (loop, LOOP_EXIT_EDGES);
       exits = loop->num_exits;
 
-      if (simpleloops)
+      if (rtlsimpleloops)
 	{
 	  iv_analysis_loop_init (loop);
 	  find_simple_exit (loop, &desc);
@@ -595,6 +600,42 @@ predict_loops (struct loops *loops_info, bool simpleloops)
 			    prob);
 	    }
 	}
+      else
+	{
+	  edge *exits;
+	  unsigned j, n_exits;
+	  struct tree_niter_desc niter_desc;
+
+	  exits = get_loop_exit_edges (loop, &n_exits);
+	  for (j = 0; j < n_exits; j++)
+	    {
+	      tree niter = NULL;
+
+	      if (number_of_iterations_exit (loop, exits[j], &niter_desc))
+		niter = niter_desc.niter;
+	      if (!niter || TREE_CODE (niter_desc.niter) != INTEGER_CST)
+	        niter = loop_niter_by_eval (loop, exits[j]);
+
+	      if (TREE_CODE (niter) == INTEGER_CST)
+		{
+		  int probability;
+		  if (host_integerp (niter, 1)
+		      && tree_int_cst_lt (niter,
+				          build_int_cstu (NULL_TREE,
+						       REG_BR_PROB_BASE - 1)))
+		    {
+		      HOST_WIDE_INT nitercst = tree_low_cst (niter, 1) + 1;
+		      probability = (REG_BR_PROB_BASE + nitercst / 2) / nitercst;
+		    }
+		  else
+		    probability = 1;
+
+		  predict_edge (exits[j], PRED_LOOP_ITERATIONS, probability);
+		}
+	    }
+
+	  free (exits);
+	}
 
       bbs = get_loop_body (loop);
 
@@ -609,7 +650,7 @@ predict_loops (struct loops *loops_info, bool simpleloops)
 	     statements construct loops via "non-loop" constructs
 	     in the source language and are better to be handled
 	     separately.  */
-	  if ((simpleloops && !can_predict_insn_p (BB_END (bb)))
+	  if ((rtlsimpleloops && !can_predict_insn_p (BB_END (bb)))
 	      || predicted_by_p (bb, PRED_CONTINUE))
 	    continue;
 
@@ -639,6 +680,9 @@ predict_loops (struct loops *loops_info, bool simpleloops)
       /* Free basic blocks from get_loop_body.  */
       free (bbs);
     }
+
+  if (!rtlsimpleloops)
+    scev_reset ();
 }
 
 /* Attempt to predict probabilities of BB outgoing edges using local
