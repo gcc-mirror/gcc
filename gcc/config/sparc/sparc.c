@@ -468,13 +468,27 @@ move_pic_label (op, mode)
 }
 
 int
-memop (op, mode)
+splittable_symbolic_memory_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (GET_CODE (op) == MEM)
-    return (mode == VOIDmode || mode == GET_MODE (op));
-  return 0;
+  if (GET_CODE (op) != MEM)
+    return 0;
+  if (! symbolic_operand (XEXP (op, 0), Pmode))
+    return 0;
+  return 1;
+}
+
+int
+splittable_immediate_memory_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) != MEM)
+    return 0;
+  if (! immediate_operand (XEXP (op, 0), Pmode))
+    return 0;
+  return 1;
 }
 
 /* Return truth value of whether OP is EQ or NE.  */
