@@ -58,6 +58,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_CPU_CPP_BUILTINS() do {	\
   builtin_define_std ("xstormy16");	\
   builtin_assert ("machine=xstormy16");	\
+  builtin_assert ("cpu=xstormy16");     \
 } while (0)
 
 /* This declaration should be present.  */
