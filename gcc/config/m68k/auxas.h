@@ -180,7 +180,7 @@ do { fprintf (asm_out_file, "\tdef\t");			\
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)		\
     fprintf((FILE), "\tln\t%d\n", 			\
 	    (sdb_begin_function_line > 1 ?		\
-	     last_linenum - sdb_begin_function_line : 1))
+	     (LINE) - sdb_begin_function_line : 1))
 
 #define ASM_MOV_INSN	"mov.l"
 

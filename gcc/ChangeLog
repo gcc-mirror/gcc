@@ -1,3 +1,10 @@
+2001-10-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* m68k/3b1.h (ASM_OUTPUT_SOURCE_LINE): Don't reference `last_linenum'.
+	* m68k/auxas.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
+	* m68k/crds.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
+	* m68k/mot3300.h (ASM_OUTPUT_SOURCE_LINE): Likewise.
+
 2001-10-08  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* unroll.c (loop_iterations): Extend check for multiple back edges.
