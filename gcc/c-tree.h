@@ -413,8 +413,6 @@ extern void set_init_index (tree, tree);
 extern void set_init_label (tree);
 extern void process_init_element (struct c_expr);
 extern tree build_compound_literal (tree, tree);
-extern void pedwarn_c90 (const char *, ...) ATTRIBUTE_PRINTF_1;
-extern void pedwarn_c99 (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern tree c_start_case (tree);
 extern void c_finish_case (tree);
 extern tree build_asm_expr (tree, tree, tree, tree, bool);
@@ -469,5 +467,13 @@ extern void c_write_global_declarations (void);
    diagnostic framework extensions, you must include this file before
    toplev.h, not after.  */
 #define GCC_DIAG_STYLE __gcc_cdiag__
+#if GCC_VERSION >= 3005
+#define ATTRIBUTE_GCC_CDIAG(m, n) __attribute__ ((__format__ (GCC_DIAG_STYLE, m ,n))) ATTRIBUTE_NONNULL(m)
+#else
+#define ATTRIBUTE_GCC_CDIAG(m, n) ATTRIBUTE_NONNULL(m)
+#endif
+
+extern void pedwarn_c90 (const char *, ...) ATTRIBUTE_GCC_CDIAG(1,2);
+extern void pedwarn_c99 (const char *, ...) ATTRIBUTE_GCC_CDIAG(1,2);
 
 #endif /* ! GCC_C_TREE_H */

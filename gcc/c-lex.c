@@ -584,7 +584,7 @@ interpret_integer (const cpp_token *token, unsigned int flags)
   if (itk > itk_unsigned_long
       && (flags & CPP_N_WIDTH) != CPP_N_LARGE
       && ! in_system_header && ! flag_isoc99)
-    pedwarn ("integer constant is too large for \"%s\" type",
+    pedwarn ("integer constant is too large for %qs type",
 	     (flags & CPP_N_UNSIGNED) ? "unsigned long" : "long");
 
   value = build_int_cst_wide (type, integer.low, integer.high);
@@ -650,7 +650,7 @@ interpret_float (const cpp_token *token, unsigned int flags)
      ??? That's a dubious reason... is this a mandatory diagnostic or
      isn't it?   -- zw, 2001-08-21.  */
   if (REAL_VALUE_ISINF (real) && pedantic)
-    warning ("floating constant exceeds range of \"%s\"", type_name);
+    warning ("floating constant exceeds range of %<%s%>", type_name);
 
   /* Create a node with determined type and value.  */
   value = build_real (type, real);

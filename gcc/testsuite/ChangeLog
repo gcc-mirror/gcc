@@ -1,3 +1,11 @@
+2004-09-13  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* g++.dg/warn/Wswitch-1.C, g++.dg/warn/Wswitch-2.C,
+	gcc.dg/Wswitch-2.c, gcc.dg/Wswitch-enum.c, gcc.dg/Wswitch.c,
+	gcc.dg/declspec-9.c, gcc.dg/declspec-10.c, gcc.dg/declspec-11.c,
+	gcc.dg/m-un-2.c, gcc.dg/noreturn-1.c, gcc.dg/wtr-conversion-1.c:
+	Update expected messages.
+
 2004-09-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/asmreg-1.c (__syscall_getdents64): Adjust signedness
