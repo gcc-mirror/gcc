@@ -1,3 +1,8 @@
+Mon Oct 25 23:54:45 1999  Geoff Keating  <geoffk@cygnus.com>
+
+	* loop.c (basic_induction_var): A non-integer variable which is
+	being set by a paradoxical subreg is probably not a biv.
+
 1999-10-25 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* prefix.c (translate_name) Check for empty prefix string.
