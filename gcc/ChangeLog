@@ -1,3 +1,11 @@
+2004-11-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/18380
+	* config/ia64/unwind-ia64.h (_Unwind_FindTableEntry): Mark it
+	hidden.
+
+	* unwind-dw2.c (_Unwind_FindTableEntry): Removed.
+
 2004-11-10  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/16480
