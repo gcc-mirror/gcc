@@ -1,5 +1,8 @@
 2001-04-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* configure.in (noconfigdirs): Don't reset it from scratch in the
+	target case; only append to it.
+	
 	* configure.in (noconfigdirs) [hppa*-*-*, mips*-*-irix6*,
 	sparc-*-solaris2.8]: Disable ${libgcj}.
 
