@@ -421,7 +421,7 @@ do {									\
   emit_move_insn (gen_rtx (MEM, Pmode,					\
 			   plus_constant (ADDR, (TARGET_64BIT ? 16 : 12))), \
 		  CXT);							\
-  emit_insn (gen_sync (gen_rtx (MEM, BLKmode, ADDR)));			\
+  emit_insn (gen_sync_isync (gen_rtx (MEM, BLKmode, ADDR)));		\
 }
 
 
