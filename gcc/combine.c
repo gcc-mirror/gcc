@@ -601,7 +601,7 @@ combine_instructions (f, nregs)
 
 /* Set up any promoted values for incoming argument registers.  */
 
-void
+static void
 setup_incoming_promotions ()
 {
 #ifdef PROMOTE_FUNCTION_ARGS
