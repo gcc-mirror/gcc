@@ -184,7 +184,7 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
       break;
 
     case TEMPLATE_TYPE_PARM:
-      t = TYPE_FIELDS (t);
+      t = TEMPLATE_TYPE_PARM_INDEX (t);
     case TEMPLATE_PARM_INDEX:
       pp_cxx_unqualified_id (pp, TEMPLATE_PARM_DECL (t));
       break;

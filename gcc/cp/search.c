@@ -2258,7 +2258,9 @@ dfs_unuse_fields (tree binfo, void *data ATTRIBUTE_UNUSED)
     fields = TYPENAME_TYPE_FULLNAME (type);
   else if (TREE_CODE (type) == TYPEOF_TYPE)
     fields = TYPEOF_TYPE_EXPR (type);
-  else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
+  else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
+	   || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
+	   || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
     fields = TEMPLATE_TYPE_PARM_INDEX (type);
   else
     fields = TYPE_FIELDS (type);
