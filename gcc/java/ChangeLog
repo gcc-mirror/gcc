@@ -1,6 +1,12 @@
+2002-05-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* jcf-write.c (write_classfile): Unlink the temporary file if it
+	cannot be renamed.  Use concat to build up the name of the
+	temporary file.
+
 2002-05-08  Mark Mitchell  <mark@codesourcery.com>
 
-	* java/jcf-write.c (write_classfile): Write the file to a 
+	* jcf-write.c (write_classfile): Write the file to a 
 	temporary file and then rename it.
 
 2002-05-07  Tom Tromey  <tromey@redhat.com>

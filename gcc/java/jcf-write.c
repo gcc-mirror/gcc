@@ -3380,9 +3380,7 @@ write_classfile (clas)
       /* The .class file is initially written to a ".tmp" file so that
 	 if multiple instances of the compiler are running at once
 	 they do not see partially formed class files. */
-      temporary_file_name = xmalloc (strlen (class_file_name) 
-				     + strlen (".tmp") + 1);
-      sprintf (temporary_file_name, "%s.tmp", class_file_name);
+      temporary_file_name = concat (class_file_name, ".tmp", NULL);
       stream = fopen (temporary_file_name, "wb");
       if (stream == NULL)
 	fatal_io_error ("can't open %s for writing", temporary_file_name);
@@ -3394,7 +3392,10 @@ write_classfile (clas)
       if (fclose (stream))
 	fatal_io_error ("error closing %s", temporary_file_name);
       if (rename (temporary_file_name, class_file_name) == -1)
-	fatal_io_error ("can't create %s", class_file_name);
+	{
+	  remove (temporary_file_name);
+	  fatal_io_error ("can't create %s", class_file_name);
+	}
       free (temporary_file_name);
       free (class_file_name);
     }
