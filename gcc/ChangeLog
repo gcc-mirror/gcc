@@ -1,3 +1,11 @@
+2000-11-22  Chris Demetriou  <cgd@sibyte.com>  
+2000-11-22  Neil Booth  <neilb@earthling.net>
+
+        * gcc.c (validate_switches): Validate multiple switches named
+        in '|' (or) expressions in specs.  
+        (handle_braces): If more than 1 alternative in a '|' spec
+        matches, call do_spec1 just once.
+
 2000-11-22  Michael Meissner  <meissner@redhat.com>
 
 	* d30v.h (TARGET_SWITCHES): Add documentation strings.

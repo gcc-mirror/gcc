@@ -4720,6 +4720,7 @@ handle_braces (p)
 {
   const char *filter, *body = NULL, *endbody = NULL;
   int pipe_p = 0;
+  int true_once = 0;	/* If, in %{a|b:d}, at least one of a,b was seen.  */
   int negate;
   int suffix;
   int include_blanks = 1;
@@ -4924,11 +4925,8 @@ next_member:
 	      give_switch (i, 0, include_blanks);
 	    }
 	  else
-	    {
-	      if (do_spec_1 (save_string (body, endbody - body - 1),
-			     0, NULL_PTR) < 0)
-		return 0;
-	    }
+	    /* Even if many alternatives are matched, only output once.  */
+	    true_once = 1;
 	}
       else if (pipe_p)
 	{
@@ -4942,6 +4940,14 @@ next_member:
   /* We didn't match; try again.  */
   if (*p++ == '|')
     goto next_member;
+
+  /* Process the spec just once, regardless of match count.  */
+  if (true_once)
+    {
+      if (do_spec_1 (save_string (body, endbody - body - 1),
+		     0, NULL_PTR) < 0)
+	return 0;
+    }
 
   return endbody;
 }
@@ -5938,19 +5944,21 @@ validate_switches (start)
   register const char *p = start;
   const char *filter;
   register int i;
-  int suffix = 0;
+  int suffix;
 
   if (*p == '|')
     ++p;
 
+next_member:
   if (*p == '!')
     ++p;
 
+  suffix = 0;
   if (*p == '.')
     suffix = 1, ++p;
 
   filter = p;
-  while (*p != ':' && *p != '}')
+  while (*p != ':' && *p != '}' && *p != '|')
     p++;
 
   if (suffix)
@@ -5958,9 +5966,8 @@ validate_switches (start)
   else if (p[-1] == '*')
     {
       /* Mark all matching switches as valid.  */
-      --p;
       for (i = 0; i < n_switches; i++)
-	if (!strncmp (switches[i].part1, filter, p - filter))
+	if (!strncmp (switches[i].part1, filter, p - filter - 1))
 	  switches[i].validated = 1;
     }
   else
@@ -5973,6 +5980,9 @@ validate_switches (start)
 	    switches[i].validated = 1;
 	}
     }
+
+  if (*p++ == '|')
+    goto next_member;
 }
 
 /* Check whether a particular argument was used.  The first time we
