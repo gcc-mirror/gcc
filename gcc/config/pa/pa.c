@@ -5704,7 +5704,7 @@ combinable_fsub (insn)
   /* Only 2 real operands to the subtraction.  Output must be the
      same as the first operand of the MINUS.  */
   if (! rtx_equal_p (dest, XEXP (src, 0)))
-    return;
+    return 0;
 
   /* Inout operand of the sub can not conflict with any operands from the
      multiply.  */
