@@ -1,6 +1,6 @@
 /* Disable this test for 16-bit targets.  */
 
-#if __INT_MAX__ > 32767
+#if !(defined __GNUC__) || (__INT_MAX__ > 32767)
 
 #include "compat-common.h"
 #include "struct-align-2.h"
@@ -38,6 +38,7 @@ return_##NAME (void)						\
   test_##NAME()
 
 SETUP (orig,101, 102, 0x0101010101010101ULL)
+#ifndef SKIP_ATTRIBUTE
 SETUP (structmax, 103, 104, 0x1212121212121212ULL)
 SETUP (struct4, 105, 106, 0x2323232323232323ULL)
 SETUP (struct8, 107, 108, 0x3434343434343434ULL)
@@ -48,6 +49,7 @@ SETUP (pstruct4, 115, 116, 0x7878787878787878ULL)
 SETUP (pstruct8, 117, 118, 0x8989898989898989ULL)
 SETUP (pdata4, 119, 120, 0x9A9A9A9A9A9A9A9AULL)
 SETUP (pdata8, 121, 122, 0xABABABABABABABABULL)
+#endif
 
 void
 struct_align_2_x (void)
@@ -55,6 +57,7 @@ struct_align_2_x (void)
   DEBUG_INIT
 
   CHECK (orig);
+#ifndef SKIP_ATTRIBUTE
   CHECK (structmax);
   CHECK (struct4);
   CHECK (struct8);
@@ -65,6 +68,7 @@ struct_align_2_x (void)
   CHECK (pstruct8);
   CHECK (pdata4);
   CHECK (pdata8);
+#endif
 
   DEBUG_FINI
 

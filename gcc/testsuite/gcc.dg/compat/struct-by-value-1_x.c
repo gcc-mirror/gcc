@@ -34,7 +34,10 @@ testit##N (void)						\
 
 extern void abort (void);
 
-T(0) T(1) T(2) T(3) T(4) T(5) T(6) T(7)
+#ifndef SKIP_ZERO_ARRAY
+T(0)
+#endif
+T(1) T(2) T(3) T(4) T(5) T(6) T(7)
 T(8) T(9) T(10) T(11) T(12) T(13) T(14) T(15)
 T(16) T(17) T(18) T(19) T(20) T(21) T(22) T(23)
 T(24) T(25) T(26) T(27) T(28) T(29) T(30) T(31)
@@ -50,7 +53,10 @@ struct_by_value_1_x ()
 {
 #define T(N) testit##N ();
 
-T(0) T(1) T(2) T(3) T(4) T(5) T(6) T(7)
+#ifndef SKIP_ZERO_ARRAY
+T(0)
+#endif
+T(1) T(2) T(3) T(4) T(5) T(6) T(7)
 T(8) T(9) T(10) T(11) T(12) T(13) T(14) T(15)
 T(16) T(17) T(18) T(19) T(20) T(21) T(22) T(23)
 T(24) T(25) T(26) T(27) T(28) T(29) T(30) T(31)

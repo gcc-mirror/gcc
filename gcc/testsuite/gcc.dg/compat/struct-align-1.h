@@ -27,6 +27,7 @@ struct B3_orig {
   struct A3_orig a3;
 };
 
+#ifndef SKIP_ATTRIBUTE
 #define DESC_p_all "packed attribute for all"
 struct B1_p_all {
   char c;
@@ -176,3 +177,4 @@ struct B3_m_inner_p_outer {
   char c;
   struct A3_m_inner_p_outer a3;
 } __attribute__ ((packed));
+#endif

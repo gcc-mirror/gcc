@@ -1,3 +1,52 @@
+2004-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	Backport from mainline:
+	2004-03-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* lib/compat.exp (skip_list): New global variable.
+	Use it to hold the user defined COMPAT_SKIPS list if any.
+	(compat-obj): Add the members of skip_list to optall.
+
+	2004-03-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/compat/union-by-value-1_main.c,
+	union-by-value-1_x.c, union-by-value-1_y.c,
+	union-check.h, union-defs.h,
+	union-init.h, union-return-1_main.c,
+	union-return-1_x.c, union-return-1_y.c: New files.
+
+	2004-01-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/compat/fnptr-by-value-1_x.c, scalar-by-value-1_y.c
+	scalar-by-value-3_x.c, scalar-by-value-3_y.c,
+	scalar-by-value-4_x.c, scalar-by-value-4_y.c,
+	scalar-return-1_x.c, scalar-return-2_y.c,
+	scalar-return-3_x.c, scalar-return-3_y.c,
+	scalar-return-4_x.c, scalar-return-4_y.c,
+	struct-align-1.h, struct-align-1_x.c,
+	struct-align-1_y.c, struct-align-2.h,
+	struct-align-2_x.c, struct-align-2_y.c,
+	struct-by-value-10_y.c, struct-by-value-11_x.c,
+	struct-by-value-11_y.c, struct-by-value-12_x.c,
+	struct-by-value-12_y.c, struct-by-value-13_x.c,
+	struct-by-value-13_y.c, struct-by-value-14_x.c,
+	struct-by-value-14_y.c, struct-by-value-15_x.c,
+	struct-by-value-15_y.c, struct-by-value-16_y.c,
+	struct-by-value-17_y.c, struct-by-value-18_y.c,
+	struct-by-value-19_y.c, struct-by-value-1_x.c,
+	struct-by-value-1_y.c, struct-by-value-20_y.c,
+	struct-by-value-2_x.c, struct-by-value-2_y.c,
+	struct-by-value-3_y.c, struct-by-value-4_x.c,
+	struct-by-value-4_y.c, struct-by-value-5_y.c,
+	struct-by-value-6_y.c, struct-by-value-7_y.c
+	struct-by-value-8_x.c, struct-by-value-8_y.c
+	struct-by-value-9_x.c, struct-by-value-9_y.c
+	struct-return-10_x.c, struct-return-10_y.c,
+	struct-return-19_x.c, struct-return-20_x.c
+	struct-return-2_x.c, struct-return-2_y.c
+	struct-return-3_x.c: Guard non-C99 tests with SKIP_COMPLEX_INT,
+	SKIP_ATTRIBUTE and SKIP_ZERO_ARRAY.  Turns SKIPVA into SKIP_VA.
+
 2004-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20041018-1.c: New test.

@@ -4,6 +4,7 @@
 #include "fp-struct-check.h"
 #include "fp-struct-test-by-value-x.h"
 
+#ifndef SKIP_COMPLEX_INT
 DEFS(cs, _Complex short)
 CHECKS(cs, _Complex short)
 
@@ -23,12 +24,14 @@ TEST(Scs13, _Complex short)
 TEST(Scs14, _Complex short)
 TEST(Scs15, _Complex short)
 TEST(Scs16, _Complex short)
+#endif
 
 #undef T
 
 void
 struct_by_value_12_x ()
 {
+#ifndef SKIP_COMPLEX_INT
 DEBUG_INIT
 
 #define T(TYPE, MTYPE) testit##TYPE ();
@@ -56,4 +59,5 @@ if (fails != 0)
   abort ();
 
 #undef T
+#endif
 }

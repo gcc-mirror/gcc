@@ -80,9 +80,11 @@ test_##NAME (void)						\
 }
 
 TEST (orig)
+#ifndef SKIP_ATTRIBUTE
 TEST (p_all)
 TEST (p_inner)
 TEST (p_outer)
 TEST (a_max)
 TEST (m_outer_p_inner)
 TEST (m_inner_p_outer)
+#endif
