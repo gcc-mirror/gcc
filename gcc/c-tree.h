@@ -57,8 +57,6 @@ struct lang_identifier
    message for this identifier.  Value is a FUNCTION_DECL or null.  */
 #define IDENTIFIER_ERROR_LOCUS(NODE)	\
   (((struct lang_identifier *)(NODE))->error_locus)
-#define IDENTIFIER_LIMBO_VALUE(NODE)	\
-  (((struct lang_identifier *)(NODE))->limbo_value)
 
 /* In identifiers, C uses the following fields in a special way:
    TREE_PUBLIC        to record that there was a previous local extern decl.
