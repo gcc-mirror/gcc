@@ -49,27 +49,6 @@ asm_file_start (file)
 }
 
 
-int
-const_costs (r, c)
-     rtx r;
-     enum rtx_code c;
-{
-  switch (c)
-    {
-    case CONST_INT:
-      if (INT_8_BITS (INTVAL (r)))
-	return 0;
-      else if (INT_16_BITS (INTVAL (r)))
-	return 1;
-      else
-	return 2;
-    case CONST_DOUBLE:
-      return 8;
-    default:
-      return 4;
-    }
-}
-
 /* Print operand X using operand code CODE to assembly language output file
    FILE.  */
 
@@ -134,7 +113,8 @@ print_operand (file, x, code)
 	  print_operand (file, x, 0);
 	break;
      
-      default:
+      /* These are the least significant word in a 64bit value.  */
+      case 'L':
 	switch (GET_CODE (x))
 	  {
 	  case MEM:
@@ -151,6 +131,138 @@ print_operand (file, x, code)
 	    fprintf (file, "%s",
 		     reg_names[REGNO (SUBREG_REG (x)) + SUBREG_WORD (x)]);
 	    break;
+
+	  case CONST_DOUBLE:
+	      {
+		long val[2];
+		REAL_VALUE_TYPE rv;
+
+		switch (GET_MODE (x))
+		  {
+		    case DFmode:
+		      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+		      REAL_VALUE_TO_TARGET_DOUBLE (rv, val);
+		      print_operand_address (file, GEN_INT (val[0]));
+		      break;;
+		    case SFmode:
+		      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+		      REAL_VALUE_TO_TARGET_SINGLE (rv, val[0]);
+		      print_operand_address (file, GEN_INT (val[0]));
+		      break;;
+		    case VOIDmode:
+		    case DImode:
+		      print_operand_address (file,
+					     GEN_INT (CONST_DOUBLE_LOW (x)));
+		      break;
+		  }
+		break;
+	      }
+
+	  case CONST_INT:
+	    print_operand_address (file, x);
+	    break;
+
+	  default:
+	    abort ();
+	  }
+	break;
+
+      /* Similarly, but for the most significant word.  */
+      case 'H':
+	switch (GET_CODE (x))
+	  {
+	  case MEM:
+	    fputc ('(', file);
+	    x = adj_offsettable_operand (x, 4);
+	    output_address (XEXP (x, 0));
+	    fputc (')', file);
+	    break;
+
+	  case REG:
+	    fprintf (file, "%s", reg_names[REGNO (x) + 1]);
+	    break;
+
+	  case SUBREG:
+	    fprintf (file, "%s",
+		     reg_names[REGNO (SUBREG_REG (x)) + SUBREG_WORD (x)] + 1);
+	    break;
+
+	  case CONST_DOUBLE:
+	      {
+		long val[2];
+		REAL_VALUE_TYPE rv;
+
+		switch (GET_MODE (x))
+		  {
+		    case DFmode:
+		      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+		      REAL_VALUE_TO_TARGET_DOUBLE (rv, val);
+		      print_operand_address (file, GEN_INT (val[1]));
+		      break;;
+		    case SFmode:
+		      abort ();
+		    case VOIDmode:
+		    case DImode:
+		      print_operand_address (file, 
+					     GEN_INT (CONST_DOUBLE_HIGH (x)));
+		      break;
+		  }
+		break;
+	      }
+
+	  case CONST_INT:
+	    if (INTVAL (x) < 0)
+	      print_operand_address (file, GEN_INT (-1));
+ 	    else
+	      print_operand_address (file, GEN_INT (0));
+	    break;
+	  default:
+	    abort ();
+	  }
+	break;
+
+      case 'A':
+	fputc ('(', file);
+	if (GET_CODE (XEXP (x, 0)) == REG)
+	  output_address (gen_rtx (PLUS, SImode, XEXP (x, 0), GEN_INT (0)));
+	else
+	  output_address (XEXP (x, 0));
+	fputc (')', file);
+	break;
+
+      default:
+	switch (GET_CODE (x))
+	  {
+	  case MEM:
+	    fputc ('(', file);
+	    output_address (XEXP (x, 0));
+	    fputc (')', file);
+	    break;
+
+	  case PLUS:
+	    output_address (x);
+	    break;
+
+	  case REG:
+	    fprintf (file, "%s", reg_names[REGNO (x)]);
+	    break;
+
+	  case SUBREG:
+	    fprintf (file, "%s",
+		     reg_names[REGNO (SUBREG_REG (x)) + SUBREG_WORD (x)]);
+	    break;
+
+	  /* This will only be single precision....  */
+	  case CONST_DOUBLE:
+	    {
+	      unsigned long val;
+	      REAL_VALUE_TYPE rv;
+
+	      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+	      REAL_VALUE_TO_TARGET_SINGLE (rv, val);
+	      print_operand_address (file, GEN_INT (val));
+	      break;
+	    }
 
 	  case CONST_INT:
 	  case SYMBOL_REF:
@@ -208,6 +320,20 @@ print_operand_address (file, addr)
     }
 }
 
+int
+can_use_return_insn ()
+{
+  int size = get_frame_size ();
+
+  return (reload_completed
+	  && size == 0
+	  && !regs_ever_live[2]
+	  && !regs_ever_live[3]
+	  && !regs_ever_live[6]
+	  && !regs_ever_live[7]
+	  && !frame_pointer_needed);
+}
+
 void
 expand_prologue ()
 {
@@ -262,10 +388,16 @@ expand_epilogue ()
   else
     {
       if (size)
-	emit_insn (gen_addsi3 (stack_pointer_rtx,
-			       stack_pointer_rtx,
-			       GEN_INT (size)));
-      emit_jump_insn (gen_return_internal ());
+	{
+	  emit_insn (gen_addsi3 (stack_pointer_rtx,
+				 stack_pointer_rtx,
+				 GEN_INT (size)));
+	  emit_jump_insn (gen_return_internal ());
+	}
+      else
+	{
+	  emit_jump_insn (gen_return ());
+	}
     }
 }
 
