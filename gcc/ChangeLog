@@ -1,3 +1,14 @@
+2004-06-25  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/15825
+	* ifcvt.c (unshare_ifcvt_sequence): Rename to end_ifcvt_sequence.
+	Use get_isns and end_sequence instead of accepting a seq argument.
+	Scan the instruction sequence for unrecognizable or jump insns.
+	(noce_try_move, noce_try_store_flag, noce_try_store_flag_constants,
+	noce_try_addcc, noce_try_store_flag_mask, noce_try_cmove,
+	noce_try_cmove_arith, noce_try_minmax, noce_try_abs,
+	noce_try_sign_mask): Use end_ifcvt_sequence to factor common code.
+
 2004-06-24  Jeff Law  <law@redhat.com>
 
 	* gimplify.c (gimplify_compound_lval): Reset TREE_SIDE_EFFECTS
