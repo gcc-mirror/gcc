@@ -31,7 +31,7 @@ EXTRA_LONG_DOUBLE_yes = \
 	hypotl.c signbitl.c
 
 EXTRA_DIST = \
-	hypot.c hypotf.c atan2f.c expf.c \
+	hypot.c hypotf.c \
 	$(EXTRA_LONG_DOUBLE_yes) 
 
 libmath_la_LIBADD = \
