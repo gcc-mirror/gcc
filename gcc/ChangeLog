@@ -14,6 +14,27 @@
 	* defaults.h (ASM_STABD_OP, EH_FRAME_SECTION_ASM_OP): Here.
 	* varasm.c (ASM_STABS_OP): Here.
 	* xcoffout.h (ASM_STABS_OP): Here.
+	* config/elfos.h (IDENT_ASM_OP, ASM_BYTE_OP, SET_ASM_OP,
+	SKIP_ASM_OP, ALIGN_ASM_OP, COMMON_ASM_OP, LOCAL_ASM_OP,
+	INT_ASM_OP, ASCII_DATA_ASM_OP, TYPE_ASM_OP, SIZE_ASM_OP,
+	STRING_ASM_OP): Here.
+	* config/freebsd.h (IDENT_ASM_OP): Here.
+	* config/linux-aout.h (SET_ASM_OP): Here.
+	* config/linux.h (SET_ASM_OP): Here.
+	* config/lynx.h (CTORS_SECTION_ASM_OP, DTORS_SECTION_ASM_OP,
+	INT_ASM_OP): Here.
+	* config/netbsd.h (TYPE_ASM_OP, SIZE_ASM_OP, SET_ASM_OP): Here.
+	* config/nextstep.h (EH_FRAME_SECTION_ASM_OP, ALIGN_ASM_OP): Here.
+	* config/openbsd.h (TYPE_ASM_OP, SIZE_ASM_OP, SET_ASM_OP): Here.
+	* config/psos.h (CTORS_SECTION_ASM_OP, DTORS_SECTION_ASM_OP,
+	INT_ASM_OP): Here.
+	* config/ptx4.h (IDENT_ASM_OP, ASM_BYTE_OP, SET_ASM_OP,
+	SKIP_ASM_OP, ALIGN_ASM_OP, COMMON_ASM_OP, LOCAL_ASM_OP,
+	INT_ASM_OP, ASCII_DATA_ASM_OP, CONST_SECTION_ASM_OP,
+	CTORS_SECTION_ASM_OP, DTORS_SECTION_ASM_OP, INIT_SECTION_ASM_OP,
+	FINI_SECTION_ASM_OP, TYPE_ASM_OP, SIZE_ASM_OP STRING_ASM_OP): Here.
+	* config/svr3.h (INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP,
+	CONST_SECTION_ASM_OP, ASM_BYTE_OP): Here.
 
 2000-09-25  Richard Henderson  <rth@cygnus.com>
 

@@ -1,5 +1,5 @@
 /* Definitions for Linux-based GNU systems with ELF format
-   Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
 
@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-#define SET_ASM_OP	".set"
+#define SET_ASM_OP	"\t.set\t"
 
 /* Use stabs instead of DWARF debug format.  */
 #undef PREFERRED_DEBUGGING_TYPE

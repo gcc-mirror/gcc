@@ -98,7 +98,7 @@ Boston, MA 02111-1307, USA.  */
    .ident string is patterned after the ones produced by native svr4
    C compilers.  */
 
-#define IDENT_ASM_OP ".ident"
+#define IDENT_ASM_OP "\t.ident\t"
 
 #define ASM_FILE_END(FILE)				\
   do							\
@@ -110,10 +110,10 @@ Boston, MA 02111-1307, USA.  */
   while (0)
 
 #undef  ASM_BYTE_OP
-#define ASM_BYTE_OP	".byte"
+#define ASM_BYTE_OP	"\t.byte\t"
 
 #undef  SET_ASM_OP
-#define SET_ASM_OP	".set"
+#define SET_ASM_OP	"\t.set\t"
 
 /* This is how to begin an assembly language file.  Most svr4 assemblers want
    at least a .file directive to come first, and some want to see a .version
@@ -129,7 +129,7 @@ Boston, MA 02111-1307, USA.  */
 /* This is how to allocate empty space in some section.  The .zero
    pseudo-op is used for this on most svr4 assemblers.  */
 
-#define SKIP_ASM_OP	".zero"
+#define SKIP_ASM_OP	"\t.zero\t"
 
 #undef  ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE, SIZE) \
@@ -173,7 +173,7 @@ Boston, MA 02111-1307, USA.  */
    make sure that the location counter for the .rodata section gets pro-
    perly re-aligned prior to the actual beginning of the jump table.  */
 
-#define ALIGN_ASM_OP ".align"
+#define ALIGN_ASM_OP "\t.align\t"
 
 #ifndef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
@@ -201,7 +201,7 @@ Boston, MA 02111-1307, USA.  */
    the linker seems to want the alignment of data objects
    to depend on their types.  We do exactly that here.  */
 
-#define COMMON_ASM_OP	".comm"
+#define COMMON_ASM_OP	"\t.comm\t"
 
 #undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
@@ -218,7 +218,7 @@ Boston, MA 02111-1307, USA.  */
    the linker seems to want the alignment of data objects
    to depend on their types.  We do exactly that here.  */
 
-#define LOCAL_ASM_OP	".local"
+#define LOCAL_ASM_OP	"\t.local\t"
 
 #undef  ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)	\
@@ -235,14 +235,14 @@ Boston, MA 02111-1307, USA.  */
    specific value in some section.  This is the same for all known svr4
    assemblers.  */
 
-#define INT_ASM_OP		".long"
+#define INT_ASM_OP		"\t.long\t"
 
 /* This is the pseudo-op used to generate a contiguous sequence of byte
    values from a double-quoted string WITHOUT HAVING A TERMINATING NUL
    AUTOMATICALLY APPENDED.  This is the same for most svr4 assemblers.  */
 
 #undef  ASCII_DATA_ASM_OP
-#define ASCII_DATA_ASM_OP	".ascii"
+#define ASCII_DATA_ASM_OP	"\t.ascii\t"
 
 /* Support const sections and the ctors and dtors sections for g++.
    Note that there appears to be two different ways to support const
@@ -514,8 +514,8 @@ dtors_section ()						\
    different pseudo-op names for these, they may be overridden in the
    file which includes this one.  */
 
-#define TYPE_ASM_OP	".type"
-#define SIZE_ASM_OP	".size"
+#define TYPE_ASM_OP	"\t.type\t"
+#define SIZE_ASM_OP	"\t.size\t"
 
 /* This is how we tell the assembler that a symbol is weak.  */
 
@@ -691,7 +691,7 @@ dtors_section ()						\
 
 #define STRING_LIMIT	((unsigned) 256)
 
-#define STRING_ASM_OP	".string"
+#define STRING_ASM_OP	"\t.string\t"
 
 /* The routine used to output NUL terminated strings.  We use a special
    version of this for most svr4 targets because doing so makes the

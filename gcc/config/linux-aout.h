@@ -1,5 +1,5 @@
 /* Definitions for Linux-based GNU systems.
-   Copyright (C) 1995, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997, 1999, 2000 Free Software Foundation, Inc.
    Contributed by H.J. Lu (hjl@nynexst.com)
 
 This file is part of GNU CC.
@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-#define SET_ASM_OP	".set"
+#define SET_ASM_OP	"\t.set\t"
 
 /* We need that too. */
 #define HANDLE_SYSV_PRAGMA
