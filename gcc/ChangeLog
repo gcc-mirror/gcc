@@ -1,3 +1,17 @@
+2002-09-12  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-modes.def (CCAPmode, CCANmode): New CC modes.
+	* config/s390/s390.c (s390_match_ccmode_set): Support new CC modes.
+	(s390_select_ccmode): Likewise.
+	(s390_branch_condition_mask): Likewise.
+	(optimization_options): Do not set flag_branch_on_count.
+	(s390_split_branches): Handle doloop branches.
+	(s390_chunkify_pool): Likewise.
+	* config/s390/s390.md ("*adddi3_imm_cc", "*addsi3_imm_cc"): New insns.
+	("doloop_end"): New expander.
+	("doolop_si", "*doloop_si_long", "doloop_di", "*doloop_di_long",
+	associated splitters): New.
+
 2002-09-11  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* fold-const.c (make_range): Only narrow to signed range if
