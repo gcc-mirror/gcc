@@ -585,7 +585,8 @@ fix = {
     select    = "(#define [A-Za-z_0-9]+)(\\\\\n[^A-Za-z_0-9 \t\n(])";
     c_fix     = format;
     c_fix_arg = "%1 %2";
-    test_text = "#define PTHREAD_MUTEX_INITIALIZER\\\n{";
+    test_text = "#define PTHREAD_MUTEX_INITIALIZER\\\\\n"
+                "{...init stuff...}";
 };
 
 
