@@ -163,8 +163,7 @@ complete_type_or_diagnostic (tree type, tree value, int diag_type)
 int
 type_unknown_p (tree exp)
 {
-  return (TREE_CODE (exp) == OVERLOAD
-          || TREE_CODE (exp) == TREE_LIST
+  return (TREE_CODE (exp) == TREE_LIST
 	  || TREE_TYPE (exp) == unknown_type_node);
 }
 
@@ -4023,7 +4022,11 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	  if (! lvalue_p (arg) && pedantic)
 	    pedwarn ("ISO C++ forbids taking the address of a cast to a non-lvalue expression");
 	  break;
-	  
+
+	case OVERLOAD:
+	  arg = OVL_CURRENT (arg);
+	  break;
+
 	default:
 	  break;
 	}

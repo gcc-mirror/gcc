@@ -2218,9 +2218,21 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	  if (tmp1)
 	    continue;
 	    
+	  /* If we are adding to an existing OVERLOAD, then we no
+	     longer know the type of the set of functions.  */
+	  if (*newval && TREE_CODE (*newval) == OVERLOAD)
+	    TREE_TYPE (*newval) = unknown_type_node;
+	  /* Add this new function to the set.  */
 	  *newval = build_overload (OVL_CURRENT (tmp), *newval);
+	  /* If there is only one function, then we use its type.  (A
+	     using-declaration naming a single function can be used in
+	     contexts where overload resolution cannot be
+	     performed.)  */
 	  if (TREE_CODE (*newval) != OVERLOAD)
-	    *newval = ovl_cons (*newval, NULL_TREE);
+	    {
+	      *newval = ovl_cons (*newval, NULL_TREE);
+	      TREE_TYPE (*newval) = TREE_TYPE (OVL_CURRENT (tmp));
+	    }
 	  OVL_USED (*newval) = 1;
 	}
     }

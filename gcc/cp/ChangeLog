@@ -1,5 +1,29 @@
 2004-03-18  Mark Mitchell  <mark@codesourcery.com>
 
+	* semantics.c (finish_pseudo_destructor_expr): Allow differing
+	cv-qualification between the type named by the
+	pseudo-destructor-name and the object-type.
+
+	* search.c (accessible_base_p): Handle non-proper bases.
+
+	* name-lookup.c (do_nonmember_using_decl): If a using declaration
+	refers to a single overloaded function, set the type of the
+	function.
+	* tree.c (lvalue_type): Simplify.
+	* typeck.c (type_unknown_p): Do not assume all OVERLOADs have an
+	unknown type.
+	(build_unary_op): Handle OVERLOADs with known types.
+
+	* decl.c (duplicate_decls): Do not destroy DECL_ARGUMENTS for
+	function templates.
+
+	* parser.c (cp_parser_postfix_expression): Handle the use of
+	"typename" in non-dependent contexts.  Convert appropriately when
+	when using a qualified name after "->" or ".".
+
+	* call.c (conditional_conversion): Honor the requirement that some
+	conversions refer to the original object.
+
 	* call.c (build_conditional_expr): Do not call force_rvalue for
 	operands of void_type when the conditional expression itself has
 	void type.

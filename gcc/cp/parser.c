@@ -3555,10 +3555,16 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	/* If that didn't work, try an identifier.  */
 	if (!cp_parser_parse_definitely (parser))
 	  id = cp_parser_identifier (parser);
+	/* If we look up a template-id in a non-dependent qualifying
+	   scope, there's no need to create a dependent type.  */
+	if (TREE_CODE (id) == TYPE_DECL
+	    && !dependent_type_p (parser->scope))
+	  type = TREE_TYPE (id);
 	/* Create a TYPENAME_TYPE to represent the type to which the
 	   functional cast is being performed.  */
-	type = make_typename_type (parser->scope, id, 
-				   /*complain=*/1);
+	else
+	  type = make_typename_type (parser->scope, id, 
+				     /*complain=*/1);
 
 	postfix_expression = cp_parser_functional_cast (parser, type);
       }
@@ -3897,6 +3903,9 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		    parser->qualifying_scope = NULL_TREE;
 		    parser->object_scope = NULL_TREE;
 		  }
+		if (scope && name && BASELINK_P (name))
+		  adjust_result_of_qualified_name_lookup 
+		    (name, BINFO_TYPE (BASELINK_BINFO (name)), scope);
 		postfix_expression 
 		  = finish_class_member_access_expr (postfix_expression, name);
 	      }

@@ -2901,10 +2901,7 @@ conditional_conversion (tree e1, tree e2)
      same cv-qualification as, or a greater cv-qualification than, the
      cv-qualification of T1.  If the conversion is applied, E1 is
      changed to an rvalue of type T2 that still refers to the original
-     source class object (or the appropriate subobject thereof).
-
-     FIXME we can't express an rvalue that refers to the original object;
-     we have to create a new one.  */
+     source class object (or the appropriate subobject thereof).  */
   if (CLASS_TYPE_P (t1) && CLASS_TYPE_P (t2)
       && ((good_base = DERIVED_FROM_P (t2, t1)) || DERIVED_FROM_P (t1, t2)))
     {
@@ -2913,10 +2910,7 @@ conditional_conversion (tree e1, tree e2)
 	  conv = build1 (IDENTITY_CONV, t1, e1);
 	  if (!same_type_p (TYPE_MAIN_VARIANT (t1), 
 			    TYPE_MAIN_VARIANT (t2)))
-	    {
-	      conv = build_conv (BASE_CONV, t2, conv);
-	      NEED_TEMPORARY_P (conv) = 1;
-	    }
+	    conv = build_conv (BASE_CONV, t2, conv);
 	  else
 	    conv = build_conv (RVALUE_CONV, t2, conv);
 	  return conv;

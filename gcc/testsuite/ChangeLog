@@ -1,5 +1,17 @@
 2004-03-18  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/expr/dtor2.C: New test.
+
+	* g++.dg/lookup/anon4.C: New test.
+
+	* g++.dg/overload/using1.C: New test.
+
+	* g++.dg/template/lookup7.C: New test.
+
+	* g++.dg/template/typename6.C: New test.
+
+	* g++.dg/expr/cond6.C: New test.
+
 	* g++.dg/expr/cond5.C: New test.
 	* g++.dg/expr/constcast1.C: Likewise.
 	* g++.dg/expr/ptrmem2.C: Likewise.

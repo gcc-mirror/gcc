@@ -232,7 +232,7 @@ lookup_base_r (tree binfo, tree base, base_access access,
 }
 
 /* Returns true if type BASE is accessible in T.  (BASE is known to be
-   a base class of T.)  */
+   a (possibly non-proper) base class of T.)  */
 
 bool
 accessible_base_p (tree t, tree base)
@@ -242,7 +242,12 @@ accessible_base_p (tree t, tree base)
   /* [class.access.base]
 
      A base class is said to be accessible if an invented public
-     member of the base class is accessible.  */
+     member of the base class is accessible.  
+
+     If BASE is a non-proper base, this condition is trivially
+     true.  */
+  if (same_type_p (t, base))
+    return true;
   /* Rather than inventing a public member, we use the implicit
      public typedef created in the scope of every class.  */
   decl = TYPE_FIELDS (base);

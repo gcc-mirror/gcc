@@ -1594,6 +1594,9 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  DECL_SOURCE_LOCATION (olddecl) 
 	    = DECL_SOURCE_LOCATION (DECL_TEMPLATE_RESULT (olddecl))
 	    = DECL_SOURCE_LOCATION (newdecl);
+	  if (DECL_FUNCTION_TEMPLATE_P (newdecl))
+	    DECL_ARGUMENTS (DECL_TEMPLATE_RESULT (olddecl))
+	      = DECL_ARGUMENTS (DECL_TEMPLATE_RESULT (newdecl));
 	}
 
       if (DECL_FUNCTION_TEMPLATE_P (newdecl))

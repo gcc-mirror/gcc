@@ -1803,7 +1803,21 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor)
 	  return error_mark_node;
 	}
       
-      if (!same_type_p (TREE_TYPE (object), destructor))
+      /* [expr.pseudo] says both:
+
+           The type designated by the pseudo-destructor-name shall be
+	   the same as the object type.
+
+         and:
+
+           The cv-unqualified versions of the object type and of the
+	   type designated by the pseudo-destructor-name shall be the
+	   same type.
+
+         We implement the more generous second sentence, since that is
+         what most other compilers do.  */
+      if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (object), 
+						      destructor))
 	{
 	  error ("`%E' is not of type `%T'", object, destructor);
 	  return error_mark_node;
