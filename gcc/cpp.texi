@@ -1482,7 +1482,7 @@ pointer (the argument @samp{p} says where to find it) across whitespace
 characters:
 
 @example
-#define SKIP_SPACES (p, limit)  \
+#define SKIP_SPACES(p, limit)  \
 @{ register char *lim = (limit); \
   while (p != lim) @{            \
     if (*p++ != ' ') @{          \
@@ -1518,7 +1518,7 @@ The definition of the macro @samp{SKIP_SPACES} can be altered to solve
 this problem, using a @samp{do @dots{} while} statement.  Here is how:
 
 @example
-#define SKIP_SPACES (p, limit)     \
+#define SKIP_SPACES(p, limit)     \
 do @{ register char *lim = (limit); \
      while (p != lim) @{            \
        if (*p++ != ' ') @{          \
