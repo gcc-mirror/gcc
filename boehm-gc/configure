@@ -2394,12 +2394,6 @@ case "$host" in
  alpha*-*-*)
     machdep="alpha_mach_dep.lo"
     ;;
- mips-*-*)
-    machdep="mips_sgi_mach_dep.lo"
-    cat >> confdefs.h <<\EOF
-#define NO_EXECUTE_PERMISSION 1
-EOF
-
     ;;
  mipstx39-*-elf*)
     machdep="mips_ultrix_mach_dep.lo"
@@ -2412,6 +2406,15 @@ EOF
 EOF
 
     ;;
+ mips-dec-ultrix*)
+    machdep="mips_ultrix_mach-dep.lo"
+    ;;
+ mips-*-*)
+    machdep="mips_sgi_mach_dep.lo"
+    cat >> confdefs.h <<\EOF
+#define NO_EXECUTE_PERMISSION 1
+EOF
+
  sparc-sun-solaris2.3*)
     cat >> confdefs.h <<\EOF
 #define SUNOS53_SHARED_LIB 1

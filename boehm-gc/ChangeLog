@@ -1,3 +1,7 @@
+Mon Aug  2 23:09:41 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in (machdep): Use mips_ultrix_mach_dep.s on Ultrix V4.
+
 1999-08-03  Tom Tromey  <tromey@cygnus.com>
 
 	* gc_priv.h (GC_test_and_set): Implementation for Linux PPC from
