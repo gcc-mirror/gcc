@@ -416,8 +416,7 @@ template <typename _Alloc>
     template <class _ForwardIterator>
     void _M_initialize_range(_ForwardIterator __first, _ForwardIterator __last,
                              forward_iterator_tag) {
-      size_type __n = 0;
-      distance(__first, __last, __n);
+      size_type __n = distance(__first, __last);
       _M_initialize(__n);
       copy(__first, __last, _M_start);
     }
@@ -437,8 +436,7 @@ template <typename _Alloc>
                          _ForwardIterator __first, _ForwardIterator __last,
                          forward_iterator_tag) {
       if (__first != __last) {
-        size_type __n = 0;
-        distance(__first, __last, __n);
+        size_type __n = distance(__first, __last);
         if (capacity() - size() >= __n) {
           copy_backward(__position, end(), _M_finish + difference_type(__n));
           copy(__first, __last, __position);
@@ -600,8 +598,7 @@ template <typename _Alloc>
     template <class _ForwardIterator>
     void _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
                        forward_iterator_tag) {
-      size_type __len = 0;
-      distance(__first, __last, __len);
+      size_type __len = distance(__first, __last);
       if (__len < size())
         erase(copy(__first, __last, begin()), end());
       else {

@@ -462,8 +462,7 @@ protected:
   void _M_range_initialize(_ForwardIterator __first,
                            _ForwardIterator __last, forward_iterator_tag)
   {
-    size_type __n = 0;
-    distance(__first, __last, __n);
+    size_type __n = distance(__first, __last);
     _M_start = _M_allocate(__n);
     _M_end_of_storage = _M_start + __n;
     _M_finish = uninitialized_copy(__first, __last, _M_start);
@@ -583,8 +582,7 @@ template <class _Tp, class _Alloc> template <class _ForwardIter>
 void
 vector<_Tp, _Alloc>::_M_assign_aux(_ForwardIter __first, _ForwardIter __last,
                                    forward_iterator_tag) {
-  size_type __len = 0;
-  distance(__first, __last, __len);
+  size_type __len = distance(__first, __last);
 
   if (__len > capacity()) {
     pointer __tmp(_M_allocate_and_copy(__len, __first, __last));
@@ -752,8 +750,7 @@ vector<_Tp, _Alloc>::_M_range_insert(iterator __position,
                                      forward_iterator_tag)
 {
   if (__first != __last) {
-    size_type __n = 0;
-    distance(__first, __last, __n);
+    size_type __n = distance(__first, __last);
     if (size_type(_M_end_of_storage - _M_finish) >= __n) {
       const size_type __elems_after = end() - __position;
       iterator __old_finish(_M_finish);
