@@ -9459,6 +9459,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
   if (!(flags & CP_PARSER_FLAGS_NO_USER_DEFINED_TYPES))
     {
       bool qualified_p;
+      bool global_p;
 
       /* Don't gobble tokens or issue error messages if this is an
 	 optional type-specifier.  */
@@ -9466,8 +9467,9 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	cp_parser_parse_tentatively (parser);
 
       /* Look for the optional `::' operator.  */
-      cp_parser_global_scope_opt (parser,
-				  /*current_scope_valid_p=*/false);
+      global_p
+	= cp_parser_global_scope_opt (parser,
+				      /*current_scope_valid_p=*/false);
       /* Look for the nested-name specifier.  */
       qualified_p
 	= (cp_parser_nested_name_specifier_opt (parser,
@@ -9499,6 +9501,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	type = cp_parser_type_name (parser);
       /* Keep track of all name-lookups performed in class scopes.  */
       if (type
+	  && !global_p
 	  && !qualified_p
 	  && TREE_CODE (type) == TYPE_DECL
 	  && TREE_CODE (DECL_NAME (type)) == IDENTIFIER_NODE)
