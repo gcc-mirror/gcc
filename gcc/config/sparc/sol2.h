@@ -76,17 +76,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CTORS_SECTION_ASM_OP	"\t.section\t\".ctors\",#alloc,#execinstr\n"
 #define DTORS_SECTION_ASM_OP	"\t.section\t\".dtors\",#alloc,#execinstr\n"
 
-/* The Solaris 2 assembler doesn't support the .string directive,
-   so disable it. */
-
-/* This doesn't work, despite the comment in svr4.h:
-#undef STRING_LIMIT
-#define STRING_LIMIT 0
-*/
-
-#undef ASM_OUTPUT_ASCII
-#define ASM_OUTPUT_DWARF_STRING(FILE,P) assemble_string(FILE, P)
-
 /* The Solaris 2 assembler uses .skip, not .zero, so put this back. */
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
