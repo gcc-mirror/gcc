@@ -1522,6 +1522,7 @@ build_offset_ref (type, name)
   tree decl, fnfields, fields, t = error_mark_node;
   tree basebinfo = NULL_TREE;
   int dtor = 0;
+  tree orig_name = name;
 
   /* class templates can come in as TEMPLATE_DECLs here.  */
   if (TREE_CODE (name) == TEMPLATE_DECL)
@@ -1532,8 +1533,6 @@ build_offset_ref (type, name)
 
   if (processing_template_decl || uses_template_parms (type))
     return build_min_nt (SCOPE_REF, type, name);
-  else if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
-    return build (SCOPE_REF, unknown_type_node, type, name);
 
   /* Handle namespace names fully here.  */
   if (TREE_CODE (type) == NAMESPACE_DECL)
@@ -1541,6 +1540,16 @@ build_offset_ref (type, name)
 
   if (type == NULL_TREE || ! is_aggr_type (type, 1))
     return error_mark_node;
+
+  if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+    {
+      /* If the NAME is a TEMPLATE_ID_EXPR, we are looking at
+	 something like `a.template f<int>' or the like.  For the most
+	 part, we treat this just like a.f.  We do remember, however,
+	 the template-id that was used.  */
+      name = TREE_OPERAND (orig_name, 0);
+      my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 0);
+    }
 
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
@@ -1612,10 +1621,32 @@ build_offset_ref (type, name)
   if (fnfields)
     {
       extern int flag_save_memoized_contexts;
-      basebinfo = TREE_PURPOSE (fnfields);
 
       /* Go from the TREE_BASELINK to the member function info.  */
       t = TREE_VALUE (fnfields);
+
+      if (TREE_CODE (orig_name) == TEMPLATE_ID_EXPR)
+	{
+	  /* The FNFIELDS are going to contain functions that aren't
+	     necessarily templates, and templates that don't
+	     necessarily match the explicit template parameters.  We
+	     save all the functions, and the explicit parameters, and
+	     then figure out exactly what to instantiate with what
+	     arguments in instantiate_type.  */
+
+	  if (TREE_CODE (t) != OVERLOAD)
+	    /* The code in instantiate_type which will process this
+	       expects to encounter OVERLOADs, not raw functions.  */
+	    t = ovl_cons (t, NULL_TREE);
+	  
+	  return build (OFFSET_REF, 
+			build_offset_type (type, unknown_type_node),
+			decl,
+			build (TEMPLATE_ID_EXPR, 
+			       TREE_TYPE (t),
+			       t,
+			       TREE_OPERAND (orig_name, 1)));
+	}
 
       if (!really_overloaded_fn (t))
 	{
@@ -1625,6 +1656,7 @@ build_offset_ref (type, name)
 	  t = OVL_CURRENT (t);
 
 	  /* unique functions are handled easily.  */
+	  basebinfo = TREE_PURPOSE (fnfields);
 	  access = compute_access (basebinfo, t);
 	  if (access == access_protected_node)
 	    {
