@@ -1097,7 +1097,7 @@ implementation by default.  The ``thunk'' implementation is more efficient
 (especially if you have provided an implementation of
 @code{ASM_OUTPUT_MI_THUNK}, see @ref{Function Entry}), but is not binary
 compatible with code compiled using the traditional implementation.  
-If you are writing a new ports, define @code{DEFAULT_VTABLE_THUNKS} to 1.
+If you are writing a new port, define @code{DEFAULT_VTABLE_THUNKS} to 1.
 
 If you do not define this macro, the default for @samp{-fvtable-thunk} is 0.
 @end table

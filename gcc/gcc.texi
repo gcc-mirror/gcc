@@ -3434,7 +3434,7 @@ to the input file name.
 @item
 Register movement (@file{regmove.c}). This pass looks for cases where
 matching constraints would force an instruction to need a reload, and
-this reload would be a register to register move.  It them attempts
+this reload would be a register to register move.  It then attempts
 to change the registers used by the instruction to avoid the move
 instruction.
 
