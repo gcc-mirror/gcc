@@ -1,3 +1,9 @@
+2005-01-16  Ian Lance Taylor  <ian@c2micro.com>
+
+	PR middle-end/13127
+	* gcc.dg/20040206-1.c: Remove xfail on bogus warning which is no
+	longer emitted.
+
 2005-01-16  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/18778
