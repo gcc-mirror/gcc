@@ -59,9 +59,12 @@ details.  */
 
 #include <java-cpool.h>
 #include <java-interp.h>
+
 
 
 using namespace gcj;
+
+bool gcj::verbose_class_flag;
 
 jclass
 java::lang::Class::forName (jstring className, jboolean initialize,
@@ -827,6 +830,9 @@ java::lang::Class::initializeClass (void)
       _Jv_MonitorExit (this);
       throw except;
     }
+
+  if (gcj::verbose_class_flag)
+    fprintf (stderr, "[Loaded %s]\n", (const char*)(name->data));
 
   _Jv_MonitorEnter (this);
   state = JV_STATE_DONE;

@@ -133,6 +133,8 @@ main (int argc, const char **argv)
 	  // correct behavior.
 	  _Jv_Jar_Class_Path = argv[++i];
 	}
+      else if (! strcmp (arg, "-verbose:class"))
+	gcj::verbose_class_flag = true;
       else if (arg[1] == 'X')
 	{
 	  if (arg[2] == '\0')

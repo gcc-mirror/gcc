@@ -1,3 +1,10 @@
+2004-07-07  Per Bothner  <per@bothner.com>
+
+	* include/jvm.h (namespace jcj):  Declare verbose_class_flag
+	* java/lang/natClass.cc (gcj::verbose_class_flag):  New variable.
+	(initializeClass):  If verbose_class_flag, print message.
+	* gij.cc (main):  Handle -verbose:class flag.
+
 2004-07-07  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* configure.host: Enable hash synchronization on Darwin.
