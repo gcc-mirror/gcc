@@ -1,3 +1,7 @@
+2000-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20001031-1.c: New test.
+
 2000-11-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.brendan/misc13.C: Put `strlen' in `std'
