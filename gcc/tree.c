@@ -4267,7 +4267,7 @@ decl_function_context (decl)
     {
       if (TREE_CODE (context) == RECORD_TYPE
 	  || TREE_CODE (context) == UNION_TYPE)
-	context = NULL_TREE;
+	context = TYPE_CONTEXT (context);
       else if (TREE_CODE (context) == TYPE_DECL)
 	context = DECL_CONTEXT (context);
       else if (TREE_CODE (context) == BLOCK)
