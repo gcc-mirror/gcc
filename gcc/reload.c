@@ -725,7 +725,8 @@ push_reload (in, out, inloc, outloc, class,
   int dont_share = 0;
   rtx *in_subreg_loc = 0, *out_subreg_loc = 0;
   int secondary_in_reload = -1, secondary_out_reload = -1;
-  enum insn_code secondary_in_icode, secondary_out_icode;
+  enum insn_code secondary_in_icode = CODE_FOR_nothing;
+  enum insn_code secondary_out_icode = CODE_FOR_nothing;
 
   /* INMODE and/or OUTMODE could be VOIDmode if no mode
      has been specified for the operand.  In that case,
