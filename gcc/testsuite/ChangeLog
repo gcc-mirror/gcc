@@ -1,3 +1,9 @@
+2003-03-26  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.c-torture/execute/20020227-1.x: Don't XFAIL for powerpc64.
+
+	* gcc.c-torture/compile/simd-5.x: Expect XFAIL for powerpc64.
+
 2003-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/ia64-sync-3.c: New test.
