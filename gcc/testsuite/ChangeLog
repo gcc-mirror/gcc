@@ -1,3 +1,9 @@
+2001-04-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.old-deja/g++.ext/instantiate1.C: Adjust to accommodate
+	peculiarities of the SH.
+	* g++.old-deja/g++.ext/instantiate2.C: Likewise.
+
 2001-04-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gcc.c-torture/execute/ieee/fp-cmp-1.c: Renamed nan to dnan.
