@@ -1683,24 +1683,32 @@ AC_MSG_RESULT($gxx_include_dir)
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE(version-specific-runtime-libs,
 [  --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory ],
-[  version_specific_libs=yes
-# Need the gcc compiler version to know where to install libraries
-# and header files if --enable-version-specific-runtime-libs option
-# is selected.
-changequote(,)dnl
-gcc_version_trigger=${srcdir}/../gcc/version.c
-gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
-gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
-gxx_include_dir='$(libdir)/gcc-lib/$(target_alias)/'${gcc_version}/include/g++
-glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
-glibcpp_toolexeclibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
-changequote([,])dnl
-],version_specific_libs=no)
+[case "$enableval" in
+ yes) version_specific_libs=yes ;;
+ no)  version_specific_libs=no ;;
+ *)   AC_MSG_ERROR([Unknown argument to enable/disable version-specific libs]);;
+ esac],
+version_specific_libs=no)dnl
+# Option set, now we can test it.
 AC_MSG_RESULT($version_specific_libs)
 
+if test $version_specific_libs = yes; then
+  # Need the gcc compiler version to know where to install libraries
+  # and header files if --enable-version-specific-runtime-libs option
+  # is selected.
+  changequote(,)dnl
+  gcc_version_trigger=${srcdir}/../gcc/version.c
+  gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
+  gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
+  gxx_include_dir='$(libdir)/gcc-lib/$(target_alias)/'${gcc_version}/include/g++
+  glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+  glibcpp_toolexeclibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
+  changequote([,])dnl
+fi
+
 # Default case for install directory for include files.
-if test x"$version_specific_libs" = x"no" \
-   && test x"$gxx_include_dir" = x"no"; then
+if test $version_specific_libs = no &&
+   test $gxx_include_dir = no; then
   gxx_include_dir='$(prefix)'/include/g++-${libstdcxx_interface}
 fi
 
