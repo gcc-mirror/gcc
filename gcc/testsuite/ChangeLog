@@ -1,3 +1,7 @@
+2003-03-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/abi/layout3.C: New test.
+
 2003-03-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20030305-1.c
