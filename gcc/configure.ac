@@ -157,13 +157,26 @@ fi])
 # sources.  Therefore we have --enable-generated-files-in-srcdir to do 
 # just that.
 
-AC_ARG_ENABLE(generated-files-in-srcdir, 
-[  --enable-generated-files-in-srcdir  Put generated files in source dir],
-[case ${enableval} in
-  no)    parsedir='$(objdir)'; docobjdir='$(objdir)/doc';;
-  *)     parsedir='$(srcdir)'; docobjdir='$(srcdir)/doc';;
-esac],
-[parsedir='$(objdir)'; docobjdir='$(objdir)/doc';])
+AC_MSG_CHECKING([whether to place generated files in the source directory])
+  dnl generated-files-in-srcdir is disabled by default
+  AC_ARG_ENABLE(generated-files-in-srcdir, 
+[  --enable-generated-files-in-srcdir
+                          put copies of generated files in source dir
+                          intended for creating source tarballs for users
+                          without texinfo bison or flex.],
+      generated_files_in_srcdir=$enableval,
+      generated_files_in_srcdir=no)
+
+AC_MSG_RESULT($generated_files_in_srcdir)
+
+if test "$generated_files_in_srcdir" = "yes"; then
+  GENINSRC=''
+  docobjdir='$(srcdir)/doc'
+else
+  GENINSRC='#'
+  docobjdir='$(objdir)/doc'
+fi
+AC_SUBST(GENINSRC)
 
 # -------------------
 # Find default linker
@@ -2845,7 +2858,7 @@ rm -f Make-hooks
 touch Make-hooks
 target_list="all.build all.cross start.encap rest.encap tags \
 	install-normal install-common install-man \
-	uninstall \
+	uninstall srcextra \
 	mostlyclean clean distclean maintainer-clean \
 	stage1 stage2 stage3 stage4 stageprofile stagefeedback"
 for t in $target_list
@@ -2939,7 +2952,6 @@ AC_SUBST(objdir)
 AC_SUBST(subdirs)
 AC_SUBST(srcdir)
 AC_SUBST(docobjdir)
-AC_SUBST(parsedir)
 AC_SUBST(all_boot_languages)
 AC_SUBST(all_compilers)
 AC_SUBST(all_gtfiles)

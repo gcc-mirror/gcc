@@ -57,10 +57,7 @@ GCC_EXTRAS = -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include
 
 # GCC_FOR_TREELANG = ./xgcc $(GCC_EXTRAS)
 
-TREE_GENERATED = $(parsedir)/treelang/lex.c $(parsedir)/treelang/parse.c \
-  $(parsedir)/treelang/parse.h $(parsedir)/treelang/parse.output \
-  $(parsedir)/treelang/TAGS $(parsedir)/treelang/TAGS.sub
-
+TREE_GENERATED = lex.c parse.c parse.h parse.output
 TREE_EXES = tree1
 
 #no -Wtraditional warnings, allow long long
@@ -104,33 +101,30 @@ treelang/tree1.o: treelang/tree1.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 treelang/treetree.o: treelang/treetree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(TREE_H) flags.h output.h $(RTL_H) $(GGC_H) toplev.h \
   varray.h $(LANGHOOKS_DEF_H) langhooks.h treelang/treelang.h input.h \
-  treelang/treetree.h $(parsedir)/treelang/parse.h
+  treelang/treetree.h treelang/parse.h
 
 treelang/tree-convert.o: treelang/tree-convert.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h diagnostic.h $(TREE_H) flags.h toplev.h langhooks.h $(TM_H)
 
-treelang/parse.o: $(parsedir)/treelang/parse.c $(CONFIG_H) $(SYSTEM_H) \
-   coretypes.h $(TM_H) diagnostic.h treelang/treelang.h input.h \
-   treelang/treetree.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(parsedir)/treelang/parse.c $(OUTPUT_OPTION)
+treelang/parse.o: treelang/parse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+  $(TM_H) diagnostic.h treelang/treelang.h input.h treelang/treetree.h
 
-treelang/lex.o: $(parsedir)/treelang/lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+treelang/lex.o: treelang/lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) diagnostic.h $(TREE_H) treelang/treelang.h input.h \
-  $(parsedir)/treelang/parse.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(parsedir)/treelang/lex.c $(OUTPUT_OPTION)
+  treelang/parse.h
 
 # generated files the files from lex and yacc are put into the source
 # directory in case someone wants to build but does not have
 # lex/yacc
 
-$(parsedir)/treelang/lex.c: $(srcdir)/treelang/lex.l
-	$(LEX) $(LEXFLAGS) -o$(parsedir)/treelang/lex.c $(srcdir)/treelang/lex.l
+treelang.srcextra: treelang/parse.c treelang/parse.h treelang/lex.c
+	-cp -p $^ $(srcdir)/treelang
 
-$(parsedir)/treelang/parse.c $(parsedir)/treelang/parse.h: $(srcdir)/treelang/parse.y
-	$(BISON) $(BISONFLAGS) -v --defines \
-	--output=$(parsedir)/treelang/parse.c $(srcdir)/treelang/parse.y
+treelang/lex.c: treelang/lex.l
+	-$(FLEX) $(FLEXFLAGS) -o$@ $<
+
+treelang/parse.c treelang/parse.h treelang/parse.output: treelang/parse.y
+	-$(BISON) $(BISONFLAGS) -v --defines --output=treelang/parse.c $<
 
 # -v
 

@@ -1,3 +1,12 @@
+2004-01-15  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (TREE_GENERATED): Delete reference to $(parsedir).
+	(treelang/parse.o, treelang/lex.o): Look for sources in build 
+	directory.  Use implicit rule.
+	(treelang/parse.c, treelang/parse.h treelang/lex.c): Always build in
+	doc directory.
+	(treelang.srcextra): Copy above back to source directory if requested.
+
 2004-01-07  Zack Weinberg  <zack@codesourcery.com>
 
 	* parse.y (yyerror): Mark the definition static.

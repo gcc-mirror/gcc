@@ -1,3 +1,11 @@
+2004-01-15  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (parse.c, parse-scan.c): Always build in doc directory.
+	(java.srcextra): Copy above back to source directory if requested.
+	(po-generated): Delete reference to $(parsedir).
+	(java/parse.o, java/parse-scan.o): Delete reference to $(parsedir).
+	Use implicit rule.
+
 2004-01-14  Jan Hubicka  <jh@suse.cz>
 
 	* lang.c (java_estimate_num_insns_1): Fix bug in MODIFY_EXPR cost

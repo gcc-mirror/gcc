@@ -1,3 +1,7 @@
+2004-01-15  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (f77.srcextra): Dummy entry.
+
 2004-01-13  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	PR fortran/6491

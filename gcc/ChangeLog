@@ -1,3 +1,26 @@
+2004-01-15  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR bootstrap/12744
+	* configure.in: Revamp enable-generated-files-in-srcdir rule to define
+	GENINSRC and not parsedir.  Define srcextra as a langhook.
+	* configure: Regenerate.
+	* Makefile.in: Suppress default .l.c rule.  Don't substitute
+	parsedir and delete all references throughout.  Conditionally define
+	rule for srcextra dependent on GENINSRC.
+	(stmp-docobjdir): Delete.
+	(c-parse.o, gengtype-lex.o, gengtype-yacc.o): Use implicit build rule.
+	(srcextra): Copy c-parse.y, c-parse.c, gengtype-lex.c, gengtype-yacc.c,
+	and gengtype-yacc.h back to source directory.
+	(maintainer-clean): Delete all parse files in source directory.
+	(distclean): Delete generated files.
+
+	* objc/Make-lang.in (objc-parse.o): Use implicit build rule.
+	(objc-parse.c, objc-parse.y): Don't use parsedir.
+	(objc.srcextra): Copy objc-parse.y and objc-parse.c back to source
+	directory if requested.
+	(po-generated): Don't use parsedir.
+	(objc.maintainer-clean): Delete above files from source directory.
+
 2004-01-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/tm.texi (FUNCTION_VALUE): Fix a typo.

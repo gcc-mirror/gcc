@@ -108,6 +108,7 @@ c++.all.build: g++$(exeext)
 c++.all.cross: g++-cross$(exeext)
 c++.start.encap: g++$(exeext)
 c++.rest.encap:
+c++.srcextra:
 
 c++.tags: force
 	cd $(srcdir)/cp; etags -o TAGS.sub *.c *.h --language=none \
