@@ -105,10 +105,7 @@ MKDIR = mkdir -p
 AR = ar
 AR_FLAGS = rc
 LS = ls
-# How to invoke ranlib.
-RANLIB = ranlib
-# Test to use to see whether ranlib exists on the system.
-RANLIB_TEST = [ -f /usr/bin/ranlib -o -f /bin/ranlib ]
+RANLIB = @RANLIB@
 
 SHELL = @SHELL@
 PWD_COMMAND = $${PWDCMD-pwd}
@@ -1722,8 +1719,9 @@ install-gnatlib: ../stamp-gnatlib
 	    $(INSTALL_DATA_DATE) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	done
 	-$(INSTALL_DATA) rts/g-trasym$(objext) $(DESTDIR)$(ADA_RTL_OBJ_DIR)
-	-for file in rts/*$(arext);do \
+	-cd rts; for file in *$(arext);do \
 	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
+	    $(RANLIB) $(DESTDIR)$(ADA_RTL_OBJ_DIR)/$$file; \
 	done
 #     Install the shared libraries, if any, using $(INSTALL) instead
 #     of $(INSTALL_DATA). The latter may force a mode inappropriate
@@ -1811,12 +1809,13 @@ gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
         ifneq ($(PREFIX_OBJS),)
 		$(AR) $(AR_FLAGS) rts/libgccprefix$(arext) $(PREFIX_OBJS);
         endif
-	if $(RANLIB_TEST) ; then $(RANLIB) rts/libgnat$(arext); else true; fi
+	-$(RANLIB) rts/libgnat$(arext)
 	$(AR) $(AR_FLAGS) rts/libgnarl$(arext) \
 	   $(addprefix rts/,$(GNATRTL_TASKING_OBJS))
-	if $(RANLIB_TEST) ; then $(RANLIB) rts/libgnarl$(arext); else true; fi
+	-$(RANLIB) rts/libgnarl$(arext)
         ifeq ($(GMEM_LIB),gmemlib)
-		$(AR) $(AR_FLAGS) rts/libgmem$(arext) rts/memtrack.o;
+		$(AR) $(AR_FLAGS) rts/libgmem$(arext) rts/memtrack.o
+		-$(RANLIB) rts/libgmem$(arext)
         endif
 	$(CHMOD) a-wx rts/*.ali
 	touch ../stamp-gnatlib
