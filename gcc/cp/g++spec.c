@@ -1,5 +1,5 @@
 /* Specific flags and argument handling of the C++ front-end.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -82,6 +82,9 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   /* By default, we throw on the math library if we have one.  */
   int need_math = (MATH_LIBRARY[0] != '\0');
 
+  /* True if we should add -shared-libgcc to the command-line.  */
+  int shared_libgcc = 1;
+
   /* The total number of arguments with the new stuff.  */
   int argc;
 
@@ -160,6 +163,9 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	      library = 0;
 	      added -= 2;
 	    }
+	  else if (strcmp (argv[i], "-static-libgcc") == 0 
+		   || strcmp (argv[i], "-static") == 0)
+	    shared_libgcc = 0;
 	  else
 	    /* Pass other options through.  */
 	    continue;
@@ -197,8 +203,14 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
       return;
     }
 
+  /* There's no point adding -shared-libgcc if we don't have a shared
+     libgcc.  */
+#ifndef ENABLE_SHARED_LIBGCC
+  shared_libgcc = 0;
+#endif
+
   /* Make sure to have room for the trailing NULL argument.  */
-  num_args = argc + added + need_math + 1;
+  num_args = argc + added + need_math + shared_libgcc + 1;
   arglist = (const char **) xmalloc (num_args * sizeof (char *));
 
   i = 0;
@@ -258,6 +270,8 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
     }
   if (saw_libc)
     arglist[j++] = saw_libc;
+  if (shared_libgcc)
+    arglist[j++] = "-shared-libgcc";
 
   arglist[j] = NULL;
 

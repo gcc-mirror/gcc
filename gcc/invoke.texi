@@ -3688,11 +3688,16 @@ of these is when the application wishes to throw and catch exceptions
 across different shared libraries.  In that case, each of the libraries
 as well as the application itself should use the shared @file{libgcc}.
 
-At present the GCC driver makes no attempt to recognize the situations
-in which the shared @file{libgcc} should be used, and defaults to using
-the static @file{libgcc} always.  This will likely change in the future,
-at which time @samp{-static-libgcc} becomes useful as a means for 
-overriding GCC's choice.
+Therefore, whenever you specify the @samp{-shared} option, the GCC
+driver automatically adds @samp{-shared-libgcc}, unless you explicitly
+specify @samp{-static-libgcc}.  The G++ driver automatically adds
+@samp{-shared-libgcc} when you build a main executable as well because
+for C++ programs that is typically the right thing to do.
+(Exception-handling will not work reliably otherwise.)
+
+However, when linking a main executable written in C, you must
+explicitly say @samp{-shared-libgcc} if you want to use the shared
+@file{libgcc}.
 
 @item -symbolic
 Bind references to global symbols when building a shared object.  Warn
