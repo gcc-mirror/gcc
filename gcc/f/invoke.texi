@@ -1,11 +1,11 @@
-@c Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
+@c Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2004
 @c Free Software Foundation, Inc.
 @c This is part of the G77 manual.   
 @c For copying conditions, see the file g77.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 1996, 1997, 1998, 1999, 2000, 2001, 2002
+Copyright @copyright{} 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2004
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -300,9 +300,7 @@ preprocessor directive must be used instead.
 Ratfor source code, which must be preprocessed by the @command{ratfor}
 command, which is available separately (as it is not yet part of the GNU
 Fortran distribution).
-One version in Fortran, adapted for use with @command{g77} is at
-@uref{ftp://members.aol.com/n8tm/rat7.uue} (of uncertain copyright
-status).  Another, public domain version in C is at
+A public domain version in C is at
 @uref{http://sepwww.stanford.edu/sep/prof/ratfor.shar.2}.
 @end table
 
