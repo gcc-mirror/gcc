@@ -858,6 +858,22 @@ build_overload_value (type, value, in_template)
 	tree delta2;
 
 	my_friendly_assert (TYPE_PTRMEMFUNC_P (type), 0);
+
+	/* We'll get a ADDR_EXPR of a SCOPE_REF here if we're
+	   mangling, an instantiation of something like:
+
+	     template <class T, void (T::*fp)()> class C {};
+	     template <class T> C<T, &T::f> x();  
+	
+	   We mangle the return type of the function, and that
+	   contains template parameters.  */
+	if (TREE_CODE (value) == ADDR_EXPR
+	    && TREE_CODE (TREE_OPERAND (value, 0)) == SCOPE_REF)
+	  {
+	    build_overload_scope_ref (TREE_OPERAND (value, 0));
+	    break;
+	  }
+
 	my_friendly_assert (TREE_CODE (value) == PTRMEM_CST, 0);
 
 	expand_ptrmemfunc_cst (value, &delta, &idx, &pfn, &delta2);
