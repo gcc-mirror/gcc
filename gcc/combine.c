@@ -8369,14 +8369,15 @@ nonzero_bits (x, mode)
       {
 	unsigned HOST_WIDE_INT nz0 = nonzero_bits (XEXP (x, 0), mode);
 	unsigned HOST_WIDE_INT nz1 = nonzero_bits (XEXP (x, 1), mode);
+	int sign_index = GET_MODE_BITSIZE (GET_MODE (x)) - 1;
 	int width0 = floor_log2 (nz0) + 1;
 	int width1 = floor_log2 (nz1) + 1;
 	int low0 = floor_log2 (nz0 & -nz0);
 	int low1 = floor_log2 (nz1 & -nz1);
 	HOST_WIDE_INT op0_maybe_minusp
-	  = (nz0 & ((HOST_WIDE_INT) 1 << (mode_width - 1)));
+	  = (nz0 & ((HOST_WIDE_INT) 1 << sign_index));
 	HOST_WIDE_INT op1_maybe_minusp
-	  = (nz1 & ((HOST_WIDE_INT) 1 << (mode_width - 1)));
+	  = (nz1 & ((HOST_WIDE_INT) 1 << sign_index));
 	unsigned int result_width = mode_width;
 	int result_low = 0;
 

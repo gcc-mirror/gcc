@@ -1,3 +1,7 @@
+2003-01-28  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c-torture/execute/20030128-1.c: New test.
+
 2003-01-28  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	* g++.dg/lookup/nested1.C: Test moved from ...
