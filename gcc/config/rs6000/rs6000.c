@@ -189,7 +189,7 @@ rs6000_override_options ()
   /* If -mstring or -mno-string was explicitly used, don't
      override with the processor default */
   if (TARGET_STRING_SET)
-    target_flags = (target_flags & ~MASK_STRING) | multiple;
+    target_flags = (target_flags & ~MASK_STRING) | string;
 
   /* Don't allow -mmultiple or -mstring on little endian systems, because the
      hardware doesn't support the instructions used in little endian mode */
