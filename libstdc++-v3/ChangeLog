@@ -1,3 +1,21 @@
+2000-12-19  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
+
+	* config/os/solaris/solaris2.5/bits/ctype_inline.h (is): Same.
+	* config/os/solaris/solaris2.6/bits/ctype_inline.h (is): Same.
+	* config/os/solaris/solaris2.7/bits/ctype_inline.h (is): Same.
+	* config/os/newlib/bits/ctype_inline.h (is): Same.
+	* config/os/irix/bits/ctype_inline.h (is): Same.
+	* config/os/bsd/netbsd/bits/ctype_inline.h (is): Same.
+	* config/os/bsd/freebsd/bits/ctype_inline.h (is): Same.
+	* config/os/aix/bits/ctype_inline.h (is): Same.
+	* config/os/gnu-linux/bits/ctype_inline.h (is): Revert.
+	* config/os/generic/bits/ctype_inline.h (is): Non-table based
+	implementation.
+
+	* testsuite/22_locale/ctype_char_members.cc (test01): Use binary
+	operator correctly.
+	(test01): Check 'A' for alnum, upper, alpha.
+
 2000-12-19  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* include/bits/std_complex.h (complex<float>::operator-=): Fix

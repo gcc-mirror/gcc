@@ -48,14 +48,18 @@
   ctype<char>::
   is(const char* __low, const char* __high, mask* __vec) const
   {
-    const int __bitmasksize = sizeof(mask) * 8;
+    const int __bitmasksize = 11; // Highest bitmask in ctype_base == 10
     for (;__low < __high; ++__vec, ++__low)
       {
-	mask __m = _M_table[*__low];
-	int __i = 0; // Lowest bitmask value, 1 == 1 << 0 means 0 
-	while (__i < __bitmasksize && !(__m & static_cast<mask>(1 << __i)))
-	  ++__i;
-	*__vec = static_cast<mask>(1 << __i);
+	mask __m = 0;
+	int __i = 0; // Lowest bitmask in ctype_base == 0
+	for (;__i < __bitmasksize; ++__i)
+	  {
+	    mask __bit = static_cast<mask>(1 << __i);
+	    if (this->is(__bit, *__low))
+	      __m |= __bit;
+	  }
+	*__vec = __m;
       }
     return __high;
   }
