@@ -1,3 +1,7 @@
+2002-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* mklibgcc.in: Don't use GNU make extension.
+
 2002-02-28  Richard Henderson  <rth@redhat.com>
 
 	* haifa-sched.c (sched_emit_insn): New.
