@@ -1,3 +1,9 @@
+2002-04-06  Jason Merrill  <jason@redhat.com>
+
+	* toplev.c (flag_no_inline, flag_really_no_inline): Default to 2.
+	(parse_options_and_default_flags): Set them appropriately.
+	* c-common.c (c_common_post_options): Don't set flag_really_no_inline.
+
 2002-04-06  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/t-mmix (TARGET_LIBGCC2_CFLAGS): Don't -Dinhibit_libc

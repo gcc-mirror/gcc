@@ -636,12 +636,12 @@ int flag_keep_inline_functions;
 
 /* Nonzero means that functions will not be inlined.  */
 
-int flag_no_inline;
+int flag_no_inline = 2;
 
 /* Nonzero means that we don't want inlining by virtue of -fno-inline,
    not just because the tree inliner turned us off.  */
 
-int flag_really_no_inline;
+int flag_really_no_inline = 2;
 
 /* Nonzero means that we should emit static const variables
    regardless of whether or not optimization is turned on.  */
@@ -4716,6 +4716,11 @@ parse_options_and_default_flags (argc, argv)
 	}
     }
 
+  if (flag_no_inline == 2)
+    flag_no_inline = 0;
+  else
+    flag_really_no_inline = flag_no_inline;
+
   /* Set flag_no_inline before the post_options () hook.  The C front
      ends use it to determine tree inlining defaults.  FIXME: such
      code should be lang-independent when all front ends use tree
@@ -4734,6 +4739,9 @@ parse_options_and_default_flags (argc, argv)
       if (warn_uninitialized == 1)
 	warning ("-Wuninitialized is not supported without -O");
     }
+
+  if (flag_really_no_inline == 2)
+    flag_really_no_inline = flag_no_inline;
 
   /* All command line options have been parsed; allow the front end to
      perform consistency checks, etc.  */
