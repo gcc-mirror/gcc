@@ -1,3 +1,9 @@
+2003-03-13  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (rs6000_dwarf_register_span):
+        Differentiate endianness.
+        (s6000_override_options): Use cpu type instead of TARGET_SPE.
+
 2003-03-13  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (print_multi_reg): Do not generate a type 2

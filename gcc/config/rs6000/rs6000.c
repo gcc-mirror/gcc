@@ -695,7 +695,7 @@ rs6000_override_options (default_cpu)
 
   /* The e500 does not have string instructions, and we set
      MASK_STRING above when optimizing for size.  */
-  if (TARGET_SPE && (target_flags & MASK_STRING) != 0)
+  if (rs6000_cpu == PROCESSOR_PPC8540 && (target_flags & MASK_STRING) != 0)
     target_flags = target_flags & ~MASK_STRING;
 
   /* Handle -m(no-)longcall option.  This is a bit of a cheap hack,
@@ -13759,12 +13759,13 @@ rs6000_dwarf_register_span (reg)
      64-bits.  */
   return
     gen_rtx_PARALLEL (VOIDmode,
-		      gen_rtvec (2,
-				 gen_rtx_REG (SImode, regno),
-				 /* Who, where, what?  1200?  This
-				    will get changed to a sane value
-				    when the SPE ABI finalizes.  */
-				 gen_rtx_REG (SImode, regno + 1200)));
+		      BYTES_BIG_ENDIAN
+		      ? gen_rtvec (2,
+				   gen_rtx_REG (SImode, regno + 1200),
+				   gen_rtx_REG (SImode, regno))
+		      : gen_rtvec (2,
+				   gen_rtx_REG (SImode, regno),
+				   gen_rtx_REG (SImode, regno + 1200)));
 }
 
 #include "gt-rs6000.h"
