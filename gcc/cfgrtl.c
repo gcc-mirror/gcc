@@ -1926,12 +1926,9 @@ rtl_verify_flow_info_1 (void)
   basic_block *bb_info;
   rtx x;
   int err = 0;
-  basic_block bb, last_bb_seen;
+  basic_block bb;
 
   bb_info = xcalloc (max_uid, sizeof (basic_block));
-
-  /* Check bb chain & numbers.  */
-  last_bb_seen = ENTRY_BLOCK_PTR;
 
   FOR_EACH_BB_REVERSE (bb)
     {
