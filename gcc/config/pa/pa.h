@@ -265,6 +265,17 @@ do {								\
    or endianess (e.g. VAX, x86).  */
 #define REAL_ARITHMETIC
 
+/* Define this macro if it is advisable to hold scalars in registers
+   in a wider mode than that declared by the program.  In such cases, 
+   the value is constrained to be within the bounds of the declared
+   type, but kept valid in the wider mode.  The signedness of the
+   extension may differ from that of the type.  */
+
+#define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)  \
+  if (GET_MODE_CLASS (MODE) == MODE_INT	\
+      && GET_MODE_SIZE (MODE) < 4)  	\
+    (MODE) = SImode;
+
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN 1
