@@ -1,3 +1,12 @@
+2003-12-16  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* gnu/java/net/natPlainDatagramSocketImplPosix.cc
+	(peekData): Throw SocketTimeoutException instead of
+	InterruptedIOException on timeout.
+	(receive): Likewise.
+	* gnu/java/net/natPlainSocketImplPosix.cc
+	(read): Made a minor exception text case change.
+
 2003-12-16  Michael Koch  <konqueror@gmx.de>
 
 	Fix for PR libgcj/13056.

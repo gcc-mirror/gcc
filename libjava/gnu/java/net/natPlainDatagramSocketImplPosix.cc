@@ -29,6 +29,7 @@ details.  */
 #include <java/io/InterruptedIOException.h>
 #include <java/net/BindException.h>
 #include <java/net/SocketException.h>
+#include <java/net/SocketTimeoutException.h>
 #include <java/net/InetAddress.h>
 #include <java/net/NetworkInterface.h>
 #include <java/net/DatagramPacket.h>
@@ -225,7 +226,8 @@ gnu::java::net::PlainDatagramSocketImpl::peekData (::java::net::DatagramPacket *
       if ((retval = _Jv_select (native_fd + 1, &rset, NULL, NULL, &tv)) < 0)
         goto error;
       else if (retval == 0)
-        throw new ::java::io::InterruptedIOException ();
+        throw new ::java::net::SocketTimeoutException
+          (JvNewStringUTF ("PeekData timed out") );
     }
 
   retlen =
@@ -345,7 +347,8 @@ gnu::java::net::PlainDatagramSocketImpl::receive (::java::net::DatagramPacket *p
       if ((retval = _Jv_select (native_fd + 1, &rset, NULL, NULL, &tv)) < 0)
         goto error;
       else if (retval == 0)
-        throw new ::java::io::InterruptedIOException ();
+        throw new ::java::net::SocketTimeoutException
+          (JvNewStringUTF ("Receive timed out") );
     }
 
   retlen =
