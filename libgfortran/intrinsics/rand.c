@@ -51,7 +51,11 @@ GFC_INTEGER_4
 prefix(irand) (GFC_INTEGER_4 *i)
 {
   
-  GFC_INTEGER_4 j = *i;
+  GFC_INTEGER_4 j;
+  if (i)
+    j = *i;
+  else
+    j = 0;
 
   switch (j)
   {

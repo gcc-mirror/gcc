@@ -1,3 +1,7 @@
+2004-10-30  Canqun Yang  <canqun@nudt.edu.cn>
+
+	* intrinsics/rand.c (irand): Handle NULL argument.
+
 2004-10-07  Paul Brook  <paul@codesourcery.com>
 
 	* io/transfer.c (finalize_transfer): Free internal streams.
