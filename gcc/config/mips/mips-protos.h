@@ -88,7 +88,10 @@ enum mips_symbol_type {
 };
 #define NUM_SYMBOL_TYPES (SYMBOL_64_LOW + 1)
 
+extern bool mips_symbolic_constant_p (rtx, enum mips_symbol_type *);
+extern bool mips_atomic_symbolic_constant_p (rtx);
 extern int mips_regno_mode_ok_for_base_p (int, enum machine_mode, int);
+extern bool mips_stack_address_p (rtx, enum machine_mode);
 extern int mips_address_insns (rtx, enum machine_mode);
 extern int mips_const_insns (rtx);
 extern int mips_fetch_insns (rtx);
@@ -173,6 +176,7 @@ extern void mips_declare_object (FILE *, const char *, const char *,
 extern void mips_declare_object_name (FILE *, const char *, tree);
 extern void mips_finish_declare_object (FILE *, tree, int, int);
 
+extern bool mips_small_data_pattern_p (rtx);
 extern rtx mips_rewrite_small_data (rtx);
 extern HOST_WIDE_INT compute_frame_size (HOST_WIDE_INT);
 extern HOST_WIDE_INT mips_initial_elimination_offset (int, int);
