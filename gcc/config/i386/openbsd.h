@@ -31,6 +31,10 @@ Boston, MA 02111-1307, USA.  */
 #define OBSD_OLD_GAS
 #include <openbsd.h>
 
+/* This goes away when the math-emulator is fixed */
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT 0701             /* TARGET_NO_FANCY_MATH_387 | ... */
+
 /* Run-time target specifications */
 #define CPP_PREDEFINES "-D__unix__ -D__i386__ -D__OpenBSD__ -Asystem(unix) -Asystem(OpenBSD) -Acpu(i386) -Amachine(i386)"
 
