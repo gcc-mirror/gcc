@@ -1,5 +1,5 @@
 /* Communication between reload.c and reload1.c.
-   Copyright (C) 1987, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -64,10 +64,12 @@ extern enum machine_mode reload_outmode[MAX_RELOADS];
 extern char reload_optional[MAX_RELOADS];
 extern int reload_inc[MAX_RELOADS];
 extern int reload_opnum[MAX_RELOADS];
-extern int reload_secondary_reload[MAX_RELOADS];
 extern int reload_secondary_p[MAX_RELOADS];
+extern int reload_secondary_in_reload[MAX_RELOADS];
+extern int reload_secondary_out_reload[MAX_RELOADS];
 #ifdef MAX_INSN_CODE
-extern enum insn_code reload_secondary_icode[MAX_RELOADS];
+extern enum insn_code reload_secondary_in_icode[MAX_RELOADS];
+extern enum insn_code reload_secondary_out_icode[MAX_RELOADS];
 #endif
 extern int n_reloads;
 
