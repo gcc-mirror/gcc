@@ -1,3 +1,23 @@
+2000-12-22  Bernd Schmidt  <bernds@redhat.com>
+
+	* regrename.c (struct du_chain): New field "earlyclobber".
+	(enum scan_actions): Remove unused entry "note_reference".
+	(enum scan_actions_name): Likewise.
+	(note_sets, clear_dead_regs, merge_overlapping_regs): New static
+	functions.
+	(regrename_optimize): Use them to compute unavailable regs; get
+	rid of the more simpleminded code we used to have here.
+	Use a tick array to ensure registers are allocated in a more
+	round-robin way.  Disable code that only optimizes registers
+	that were seen more than once.
+	(referenced_regs): Remove variable.
+	(scan_rtx_reg): New arg "earlyclobber".  All callers changed.
+	Store its value in newly generated du_chain structures.
+	Add new du_chains at the end, not the start, of the list.
+	Don't handle the "note_reference" action.
+	(scan_rtx): New arg "earlyclobber".  All callers changed.
+	(build_def_use): Lose code to keep track of referenced regs.
+
 2000-12-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (sched-deps.o, sched-rgn.o): Fix dependency typo.
