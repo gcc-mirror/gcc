@@ -1,3 +1,19 @@
+2002-01-15  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* system.h (ASM_IDENTIFY_GCC, STDC_VALUE, TRAMPOLINE_ALIGN,
+	ASM_IDENTIFY_GCC_AFTER_SOURCE): Poison.
+	* config/pdp11/pdp11.h (TRAMPOLINE_ALIGN): Rename to
+	TRAMPOLINE_ALIGNMENT.
+	* config/arm/arm.h, config/mcore/mcore.h: Likewise.  Change value
+	to be in bits.
+	* config/i386/cygwin.h (PCC_BITFIELDS_TYPE_MATTERS): Rename to
+	PCC_BITFIELD_TYPE_MATTERS.
+	* config/interix.h (STDC_VALUE): Remove.  Use
+	STDC_0_IN_SYSTEM_HEADERS.
+	* config/darwin.h (ASM_IDENTIFY_GCC), config/dsp16xx/dsp16xx.h
+	(ASM_IDENTIFY_GCC), config/stormy16/stormy16.h (ASM_IDENTIFY_GCC,
+	ASM_IDENTIFY_GCC_AFTER_SOURCE): Remove.
+
 2002-01-15  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* doc/install.texi (hppa*-hp-hpux11): --enable-threads does

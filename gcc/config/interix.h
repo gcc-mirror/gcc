@@ -83,8 +83,7 @@ for windows/multi thread */
 
 #endif /* 0 */
 
-#undef STDC_VALUE
-#define STDC_VALUE 0
+#define STDC_0_IN_SYSTEM_HEADERS 1
 
 #define HANDLE_SYSV_PRAGMA
 #undef HANDLE_PRAGMA_WEAK  /* until the link format can handle it */
