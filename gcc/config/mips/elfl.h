@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* This is a little endian version of ecoff.h.  */
+/* This is a little endian version of elf.h.  */
 
 #define TARGET_ENDIAN_DEFAULT 0
 
