@@ -1,3 +1,7 @@
+2000-01-20  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.compile/BlankFinal.java: New file.
+
 2000-01-19  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* libjava.lang/anon.java, libjava.lang/anon2.java,
