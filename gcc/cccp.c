@@ -219,15 +219,11 @@ my_bzero (b, length)
 /* VMS-specific definitions */
 #ifdef VMS
 #include <descrip.h>
-#define read(fd,buf,size)	VMS_read (fd,buf,size)
-#define write(fd,buf,size)	VMS_write (fd,buf,size)
 #define open(fname,mode,prot)	VMS_open (fname,mode,prot)
 #define fopen(fname,mode)	VMS_fopen (fname,mode)
 #define freopen(fname,mode,ofile) VMS_freopen (fname,mode,ofile)
 #define fstat(fd,stbuf)		VMS_fstat (fd,stbuf)
 static int VMS_fstat (), VMS_stat ();
-static int VMS_read ();
-static int VMS_write ();
 static int VMS_open ();
 static FILE * VMS_fopen ();
 static FILE * VMS_freopen ();
@@ -1216,7 +1212,8 @@ static GENERIC_PTR xcalloc PROTO((size_t, size_t));
 static char *savestring PROTO((char *));
 
 /* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
-   retrying if necessary.  Return a negative value if an error occurs,
+   retrying if necessary.  If MAX_READ_LEN is defined, read at most
+   that bytes at a time.  Return a negative value if an error occurs,
    otherwise return the actual number of bytes read,
    which must be LEN unless end-of-file was reached.  */
 
@@ -1226,9 +1223,16 @@ safe_read (desc, ptr, len)
      char *ptr;
      int len;
 {
-  int left = len;
+  int left, rcount, nchars;
+
+  left = len;
   while (left > 0) {
-    int nchars = read (desc, ptr, left);
+    rcount = left;
+#ifdef MAX_READ_LEN
+    if (rcount > MAX_READ_LEN)
+      rcount = MAX_READ_LEN;
+#endif
+    nchars = read (desc, ptr, rcount);
     if (nchars < 0)
       {
 #ifdef EINTR
@@ -1246,7 +1250,8 @@ safe_read (desc, ptr, len)
 }
 
 /* Write LEN bytes at PTR to descriptor DESC,
-   retrying if necessary, and treating any real error as fatal.  */
+   retrying if necessary, and treating any real error as fatal.
+   If MAX_WRITE_LEN is defined, write at most that many bytes at a time.  */
 
 static void
 safe_write (desc, ptr, len)
@@ -1254,8 +1259,15 @@ safe_write (desc, ptr, len)
      char *ptr;
      int len;
 {
+  int wcount, written;
+
   while (len > 0) {
-    int written = write (desc, ptr, len);
+    wcount = len;
+#ifdef MAX_WRITE_LEN
+    if (wcount > MAX_WRITE_LEN)
+      wcount = MAX_WRITE_LEN;
+#endif
+    written = write (desc, ptr, wcount);
     if (written < 0)
       {
 #ifdef EINTR
@@ -10172,59 +10184,6 @@ hack_vms_include_specification (fname, vaxc_include)
 #endif	/* VMS */
 
 #ifdef	VMS
-
-/* These are the read/write replacement routines for
-   VAX-11 "C".  They make read/write behave enough
-   like their UNIX counterparts that CCCP will work */
-
-static int
-read (fd, buf, size)
-     int fd;
-     char *buf;
-     int size;
-{
-#undef	read	/* Get back the REAL read routine */
-  register int i;
-  register int total = 0;
-
-  /* Read until the buffer is exhausted */
-  while (size > 0) {
-    /* Limit each read to 32KB */
-    i = (size > (32*1024)) ? (32*1024) : size;
-    i = read (fd, buf, i);
-    if (i <= 0) {
-      if (i == 0) return (total);
-      return (i);
-    }
-    /* Account for this read */
-    total += i;
-    buf += i;
-    size -= i;
-  }
-  return (total);
-}
-
-static int
-write (fd, buf, size)
-     int fd;
-     char *buf;
-     int size;
-{
-#undef	write	/* Get back the REAL write routine */
-  int i;
-  int j;
-
-  /* Limit individual writes to 32Kb */
-  i = size;
-  while (i > 0) {
-    j = (i > (32*1024)) ? (32*1024) : i;
-    if (write (fd, buf, j) < 0) return (-1);
-    /* Account for the data written */
-    buf += j;
-    i -= j;
-  }
-  return (size);
-}
 
 /* The following wrapper functions supply additional arguments to the VMS
    I/O routines to optimize performance with file handling.  The arguments
