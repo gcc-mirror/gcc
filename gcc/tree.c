@@ -4946,7 +4946,7 @@ build_common_tree_nodes_2 (short_double)
 #ifdef BUILD_VA_LIST_TYPE
   BUILD_VA_LIST_TYPE (va_list_type_node);
 #else
-  va_list_type_node = ptr_type_node;
+  va_list_type_node = build_type_copy (ptr_type_node);
 #endif
 
   V4SF_type_node = make_node (VECTOR_TYPE);

@@ -1,3 +1,8 @@
+2000-11-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* tree.c (build_common_tree_nodes_2): Make va_list_type_node be a
+	copy of ptr_type_node rather than ptr_type_node itself.
+
 Tue Nov  7 06:29:24 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* combine.c (recog_for_combine): Allocate uninitialized vector with
