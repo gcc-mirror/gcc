@@ -285,6 +285,13 @@ do { REAL_VALUE_TYPE in = (IN);  /* Make sure it's not in a register.  */\
 #define REAL_VALUE_TO_TARGET_LONG_DOUBLE(a, b) REAL_VALUE_TO_TARGET_DOUBLE (a, b)
 #endif
 
+/* Compare two floating-point objects for bitwise identity.
+   This is not the same as comparing for equality on IEEE hosts:
+   -0.0 equals 0.0 but they are not identical, and conversely
+   two NaNs might be identical but they cannot be equal.  */
+#define REAL_VALUES_IDENTICAL(x, y) \
+  (!bcmp ((char *) &(x), (char *) &(y), sizeof (REAL_VALUE_TYPE)))
+
 /* Compare two floating-point values for equality.  */
 #ifndef REAL_VALUES_EQUAL
 #define REAL_VALUES_EQUAL(x, y) ((x) == (y))
