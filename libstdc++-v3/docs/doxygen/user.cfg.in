@@ -35,8 +35,8 @@ SUBGROUPING            = YES
 EXTRACT_ALL            = NO
 EXTRACT_PRIVATE        = NO
 EXTRACT_STATIC         = YES
-EXTRACT_LOCAL_CLASSES  = NO
-EXTRACT_LOCAL_METHODS  = NO
+EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_METHODS  = YES
 HIDE_UNDOC_MEMBERS     = NO
 HIDE_UNDOC_CLASSES     = YES
 HIDE_FRIEND_COMPOUNDS  = NO
@@ -44,7 +44,7 @@ HIDE_IN_BODY_DOCS      = NO
 INTERNAL_DOCS          = NO
 CASE_SENSE_NAMES       = NO
 HIDE_SCOPE_NAMES       = YES
-SHOW_INCLUDE_FILES     = YES
+SHOW_INCLUDE_FILES     = NO
 INLINE_INFO            = YES
 SORT_MEMBER_DOCS       = YES
 SORT_BRIEF_DOCS        = YES
@@ -70,7 +70,9 @@ WARN_LOGFILE           =
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
-                         @srcdir@/src \
+			 include/@host_alias@/bits \
+                         include/bits \
+                         include/ext \
                          @srcdir@/libsupc++/exception \
                          @srcdir@/libsupc++/new \
                          @srcdir@/libsupc++/typeinfo \
@@ -101,8 +103,6 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/utility \
                          include/valarray \
                          include/vector \
-                         include/bits \
-                         include/ext \
                          include/ext/algorithm \
                          include/ext/functional \
                          include/ext/hash_map \
@@ -112,8 +112,7 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/ext/rope \
                          include/ext/slist \
                          include/tr1/array \
-                         include/tr1/tuple \
-			 include/@host_alias@/bits
+                         include/tr1/tuple 
 FILE_PATTERNS          = *.h \
                          *.tcc
 RECURSIVE              = NO
@@ -253,13 +252,13 @@ PERL_PATH              = /usr/bin/perl
 # Configuration options related to the dot tool   
 #---------------------------------------------------------------------------
 CLASS_DIAGRAMS         = YES
-HIDE_UNDOC_RELATIONS   = YES
+HIDE_UNDOC_RELATIONS   = NO
 HAVE_DOT               = NO
 CLASS_GRAPH            = YES
-COLLABORATION_GRAPH    = YES
+COLLABORATION_GRAPH    = NO
 UML_LOOK               = NO
 TEMPLATE_RELATIONS     = YES
-INCLUDE_GRAPH          = YES
+INCLUDE_GRAPH          = NO
 INCLUDED_BY_GRAPH      = NO
 CALL_GRAPH             = NO
 GRAPHICAL_HIERARCHY    = YES

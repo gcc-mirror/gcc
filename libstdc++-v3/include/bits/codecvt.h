@@ -33,7 +33,7 @@
 
 // Written by Benjamin Kosnik <bkoz@cygnus.com>
 
-/** @file codecvt.h
+/** @file bits/codecvt.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
@@ -43,10 +43,7 @@
 
 #pragma GCC system_header
 
-  //  22.2.1.5  Template class codecvt
-  /**
-   *  @brief  Base class for codecvt facet providing conversion result enum.
-   */
+  /// @brief  Empty base class for codecvt facet [22.2.1.5].
   class codecvt_base
   {
   public:
@@ -59,12 +56,8 @@
     };
   };
 
-  // Template class __codecvt_abstract_base
-  // NB: An abstract base class that fills in the public inlines, so
-  // that the specializations don't have to re-copy the public
-  // interface.
   /**
-   *  @brief  Common base for codecvt facet
+   *  @brief  Common base for codecvt functions.
    *
    *  This template class provides implementations of the public functions
    *  that forward to the protected virtual functions.
@@ -271,8 +264,8 @@
       do_max_length() const throw() = 0;
     };
 
-  /// @brief  22.2.1.5 Template class codecvt
-  // NB: Generic, mostly useless implementation.
+  /// @brief class codecvt [22.2.1.5].
+  /// NB: Generic, mostly useless implementation.
   template<typename _InternT, typename _ExternT, typename _StateT>
     class codecvt
     : public __codecvt_abstract_base<_InternT, _ExternT, _StateT>
@@ -334,7 +327,7 @@
   template<typename _InternT, typename _ExternT, typename _StateT>
     locale::id codecvt<_InternT, _ExternT, _StateT>::id;
 
-  /// @brief  codecvt<char, char, mbstate_t> required specialization
+  /// @brief class codecvt<char, char, mbstate_t> specialization.
   template<>
     class codecvt<char, char, mbstate_t>
     : public __codecvt_abstract_base<char, char, mbstate_t>
@@ -392,7 +385,7 @@
   };
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  /// @brief  codecvt<wchar_t, char, mbstate_t> required specialization
+  /// @brief  class codecvt<wchar_t, char, mbstate_t> specialization.
   template<>
     class codecvt<wchar_t, char, mbstate_t>
     : public __codecvt_abstract_base<wchar_t, char, mbstate_t>
@@ -452,7 +445,7 @@
     };
 #endif //_GLIBCXX_USE_WCHAR_T
 
-  /// @brief  22.2.1.6  Template class codecvt_byname
+  /// @brief class codecvt_byname [22.2.1.6].
   template<typename _InternT, typename _ExternT, typename _StateT>
     class codecvt_byname : public codecvt<_InternT, _ExternT, _StateT>
     {

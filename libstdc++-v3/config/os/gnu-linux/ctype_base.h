@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -32,6 +32,11 @@
 // ISO C++ 14882: 22.1  Locales
 //
   
+/** @file ctype_base.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 // Information as gleaned from /usr/include/ctype.h
   
   /// @brief  Base class for ctype.

@@ -108,6 +108,9 @@ enabled_sections=
 generate_tagfile=
 DATEtext=`date '+%Y-%m-%d'`
 
+# Show how this script is called.
+echo run_doxygen $*
+
 parse_options $*
 find_doxygen
 

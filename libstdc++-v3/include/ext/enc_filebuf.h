@@ -1,6 +1,6 @@
 // filebuf with __enc_traits state type -*- C++ -*-
 
-// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,6 +27,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file ext/enc_filebuf.h
+ *  This file is a GNU extension to the Standard C++ Library.
+ */
+
 #include <fstream>
 #include <locale>
 
@@ -35,6 +39,7 @@ namespace __gnu_cxx
   // Custom traits type with __enc_traits for the state type, and the
   // associated fpos<__enc_traits> for the position type, all other
   // bits equivalent to the required char_traits instantiations.
+  /// @brief  class enc_char_traits.
   template<typename _CharT>
     struct enc_char_traits: public std::char_traits<_CharT>
     {
@@ -42,6 +47,7 @@ namespace __gnu_cxx
       typedef typename std::fpos<state_type>	pos_type;
     };
 
+  /// @brief  class enc_filebuf.
   template<typename _CharT>
     class enc_filebuf
     : public std::basic_filebuf<_CharT, enc_char_traits<_CharT> >

@@ -76,37 +76,20 @@ namespace std
       typedef typename traits_type::pos_type 		pos_type;
       typedef typename traits_type::off_type 		off_type;
 
-      //@{
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
       typedef basic_filebuf<char_type, traits_type>     __filebuf_type;
       typedef __basic_file<char>		        __file_type;
       typedef typename traits_type::state_type          __state_type;
       typedef codecvt<char_type, char, __state_type>    __codecvt_type;
-      //@}
 
       friend class ios_base; // For sync_with_stdio.
 
     protected:
       // Data Members:
       // MT lock inherited from libio or other low-level io library.
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       __c_lock          	_M_lock;
 
       // External buffer.
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       __file_type 		_M_file;
 
       /**
@@ -117,30 +100,15 @@ namespace std
       ios_base::openmode 	_M_mode;
 
       // Beginning state type for codecvt.
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       __state_type 		_M_state_beg;
 
       // During output, the state that corresponds to pptr(),
       // during input, the state that corresponds to egptr() and
       // _M_ext_next.
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       __state_type		_M_state_cur;
 
       // Not used for output. During input, the state that corresponds
       // to eback() and _M_ext_buf.
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       __state_type		_M_state_last;
 
       /**
@@ -160,11 +128,6 @@ namespace std
       size_t			_M_buf_size;
 
       // Set iff _M_buf is allocated memory from _M_allocate_internal_buffer.
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       bool			_M_buf_allocated;
 
       /**
@@ -316,24 +279,13 @@ namespace std
       close() throw();
 
     protected:
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       void
       _M_allocate_internal_buffer();
 
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       void
       _M_destroy_internal_buffer() throw();
 
       // [27.8.1.4] overridden virtual functions
-      // [documentation is inherited]
       virtual streamsize
       showmanyc();
 
@@ -342,11 +294,9 @@ namespace std
       // charater from the real input source when the buffer is empty.
       // Buffered input uses underflow()
 
-      // [documentation is inherited]
       virtual int_type
       underflow();
 
-      // [documentation is inherited]
       virtual int_type
       pbackfail(int_type __c = _Traits::eof());
 
@@ -357,21 +307,11 @@ namespace std
       // character c.
       // 27.5.2.4.5
       // Consume some sequence of the characters in the pending sequence.
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       virtual int_type
       overflow(int_type __c = _Traits::eof());
 
       // Convert internal byte sequence to external, char-based
       // sequence via codecvt.
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       bool
       _M_convert_to_external(char_type*, streamsize);
 
@@ -390,47 +330,31 @@ namespace std
       virtual __streambuf_type*
       setbuf(char_type* __s, streamsize __n);
 
-      // [documentation is inherited]
       virtual pos_type
       seekoff(off_type __off, ios_base::seekdir __way,
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
-      // [documentation is inherited]
       virtual pos_type
       seekpos(pos_type __pos,
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
       // Common code for seekoff and seekpos
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       pos_type
       _M_seek(off_type __off, ios_base::seekdir __way, __state_type __state);
 
-      // [documentation is inherited]
       virtual int
       sync();
 
-      // [documentation is inherited]
       virtual void
       imbue(const locale& __loc);
 
-      // [documentation is inherited]
       virtual streamsize
       xsgetn(char_type* __s, streamsize __n);
 
-      // [documentation is inherited]
       virtual streamsize
       xsputn(const char_type* __s, streamsize __n);
 
       // Flushes output buffer, then writes unshift sequence.
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       bool
       _M_terminate_output();
 
@@ -491,11 +415,6 @@ namespace std
       typedef basic_istream<char_type, traits_type>	__istream_type;
 
     private:
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       __filebuf_type	_M_filebuf;
 
     public:
@@ -620,11 +539,6 @@ namespace std
       typedef basic_ostream<char_type, traits_type>	__ostream_type;
 
     private:
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       __filebuf_type	_M_filebuf;
 
     public:
@@ -753,11 +667,6 @@ namespace std
       typedef basic_iostream<char_type, traits_type>	__iostream_type;
 
     private:
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
       __filebuf_type	_M_filebuf;
 
     public:

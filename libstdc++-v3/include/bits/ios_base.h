@@ -191,7 +191,7 @@ namespace std
 
   // 27.4.2  Class ios_base
   /**
-   *  @brief  The very top of the I/O class hierarchy.
+   *  @brief  The base of the I/O class hierarchy.
    *
    *  This class defines everything that can be defined about I/O that does
    *  not depend on the type of characters being input or output.  Most

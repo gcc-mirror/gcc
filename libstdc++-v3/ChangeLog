@@ -1,3 +1,27 @@
+2004-11-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h (isspace, isprint, isupper,
+	islower, isalpha, isdigit, ispunct, isxdigit, isalnum, isgraph,
+	toupper, tolower): Add doxygen markup.
+	(codecvt_byname, ctype_byname, numpunct_byname, collate_byname,
+	time_get_byname, time_put_byname, moneypunct_byname,
+	messages_byname): Same.
+	* include/std/std_fstream.h: Remove superfluous markup.
+	* include/std/std_sstream.h: Same.
+	* include/std/std_streambuf.h: Same.
+	* include/ext/enc_filebuf.h: Adjust markup.
+	* include/ext/stdio_filebuf.h: Same.
+	* include/ext/stdio_sync_filebuf.h: Same.
+	* include/bits/codecvt.h: Same.
+	* config/os/gnu-linux/ctype_base.h: Same.
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h: Same.
+	* include/tr1/array: Add markup.
+	* include/tr1/tuple: Same.
+	
+	* docs/doxygen/run_doxygen: Print arguments.
+
+	* docs/doxygen/user.cfg.in: Tweaks.
+	
 2004-11-19  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/bits/basic_string.h, include/bits/locale_classes.h,

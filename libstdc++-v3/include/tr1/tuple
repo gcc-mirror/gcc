@@ -22,6 +22,10 @@
 
 // This header is automatically generated: see maketuple.c for details.
 
+/** @file 
+ *  This is a TR1 C++ Library header. 
+ */
+
 #ifndef _TUPLE
 #define _TUPLE 1
 
@@ -35,7 +39,6 @@ namespace tr1
   // when the tuple is not maximum possible size.
   struct _NullClass { };
 
-  /// @brief  Foward definition of the tuple class.
   template<typename _Tp0 = _NullClass, typename _Tp1 = _NullClass,
 	   typename _Tp2 = _NullClass, typename _Tp3 = _NullClass,
 	   typename _Tp4 = _NullClass, typename _Tp5 = _NullClass,
@@ -43,7 +46,7 @@ namespace tr1
 	   typename _Tp8 = _NullClass, typename _Tp9 = _NullClass>
     class tuple;
 
-  /// @brief  Gives the type of the ith element of a given tuple type.
+  /// Gives the type of the ith element of a given tuple type.
   template<int __i, typename _Tp>
     struct tuple_element;
 
@@ -110,6 +113,7 @@ namespace tr1
 				  _Tp7, _Tp8, _Tp9> >
     { typedef _Tp8 type; };
 
+  /// @brief  class tuple_element
   template<typename _Tp0, typename _Tp1, typename _Tp2, typename _Tp3,
 	   typename _Tp4, typename _Tp5, typename _Tp6, typename _Tp7,
 	   typename _Tp8, typename _Tp9>
@@ -117,7 +121,7 @@ namespace tr1
 				  _Tp7, _Tp8, _Tp9> >
     { typedef _Tp9 type; };
 
-  /// @brief  Finds the size of a given tuple type.
+  /// Finds the size of a given tuple type.
   template<typename _Tp>
     struct tuple_size;
 
@@ -181,6 +185,7 @@ namespace tr1
 			    _Tp8,  _NullClass> >
     { static const int value = 9; };
 
+  /// @brief  class tuple_size
   template<typename _Tp0, typename _Tp1, typename _Tp2, typename _Tp3,
 	   typename _Tp4, typename _Tp5, typename _Tp6, typename _Tp7,
 	   typename _Tp8, typename _Tp9>
@@ -821,6 +826,7 @@ namespace tr1
         friend class tuple;
   };
 
+  /// @brief  Template class tuple
   template<typename _Tp0, typename _Tp1, typename _Tp2, typename _Tp3,
 	   typename _Tp4, typename _Tp5, typename _Tp6, typename _Tp7,
 	   typename _Tp8, typename _Tp9>
