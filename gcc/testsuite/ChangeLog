@@ -1,5 +1,13 @@
 2005-03-30  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR c/772
+	PR c/17913
+	* gcc.dg/stmt-expr-label-1.c, gcc.dg/stmt-expr-label-2.c,
+	gcc.dg/stmt-expr-label-3.c : New tests.
+	* gcc.c-torture/execute/medce-2.c: Remove.
+
+2005-03-30  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR c/20368
 	* gcc.dg/pr20368-1.c, gcc.dg/pr20368-2.c, gcc.dg/pr20368-3.c: New
 	tests.

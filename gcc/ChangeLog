@@ -1,5 +1,32 @@
 2005-03-30  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR c/772
+	PR c/17913
+	* c-tree.h (C_DECL_UNJUMPABLE_STMT_EXPR,
+	C_DECL_UNDEFINABLE_STMT_EXPR, struct c_label_list, struct
+	c_label_context, label_context_stack): New.
+	* c-decl.c (define_label): Check for jumps into statement
+	expressions.  Add label to list of defined labels.
+	(start_function): Push context on label_context_stack.
+	(finish_function): Pop context from label_context_stack.
+	* c-typeck.c (label_context_stack): New.
+	(c_finish_goto_label): Check for jumps into statement
+	expressions.  Add label to list of jumped to labels.
+	(struct c_switch): Add blocked_stmt_expr.
+	(c_start_case): Initialize it.
+	(do_case): Check it.
+	(c_finish_case): Verify !blocked_stmt_expr.
+	(c_begin_stmt_expr):  Push context on label_context_stack.
+	Increment blocked_stmt_expr.  Mark labels jumped to from outside
+	as undefinable.
+	(c_finish_stmt_expr): December blocked_stmt_expr.  Mark labels
+	defined in the statement expression and no longer jumpable to.
+	Mark labels jumped to from just outside the statement expression
+	as again definable.  Pop context from label_context_stack.
+	* doc/extend.texi (Statement Exprs): Update.
+
+2005-03-30  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR c/20368
 	* c-decl.c (start_function): Check for old_decl being
 	error_mark_node.
