@@ -210,6 +210,8 @@ static int special_function_p			PARAMS ((tree, int));
 static int flags_from_decl_or_type 		PARAMS ((tree));
 static rtx try_to_integrate			PARAMS ((tree, tree, rtx,
 							 int, tree, rtx));
+static void combine_pending_stack_adjustment_and_call
+                                                PARAMS ((int, struct args_size *, int));
 
 #ifdef REG_PARM_STACK_SPACE
 static rtx save_fixed_argument_area	PARAMS ((int, rtx, int *, int *));
@@ -1855,6 +1857,64 @@ try_to_integrate (fndecl, actparms, target, ignore, type, structure_value_addr)
   return (rtx) (HOST_WIDE_INT) - 1;
 }
 
+/* We need to pop PENDING_STACK_ADJUST bytes.  But, if the arguments
+   wouldn't fill up an even multiple of PREFERRED_UNIT_STACK_BOUNDARY
+   bytes, then we would need to push some additional bytes to pad the
+   arguments.  So, we adjust the stack pointer by an amount that will
+   leave the stack under-aligned by UNADJUSTED_ARGS_SIZE bytes.  Then,
+   when the arguments are pushed the stack will be perfectly aligned.
+   ARGS_SIZE->CONSTANT is set to the number of bytes that should be
+   popped after the call.  */
+
+static void
+combine_pending_stack_adjustment_and_call (unadjusted_args_size,
+					   args_size,
+					   preferred_unit_stack_boundary)
+     int unadjusted_args_size;
+     struct args_size *args_size;
+     int preferred_unit_stack_boundary;
+{
+  /* The number of bytes to pop so that the stack will be
+     under-aligned by UNADJUSTED_ARGS_SIZE bytes.  */
+  HOST_WIDE_INT adjustment;
+  /* The alignment of the stack after the arguments are pushed, if we
+     just pushed the arguments without adjust the stack here.  */
+  HOST_WIDE_INT unadjusted_alignment;
+
+  unadjusted_alignment 
+    = ((stack_pointer_delta + unadjusted_args_size)
+       % preferred_unit_stack_boundary);
+
+  /* We want to get rid of as many of the PENDING_STACK_ADJUST bytes
+     as possible -- leaving just enough left to cancel out the
+     UNADJUSTED_ALIGNMENT.  In other words, we want to ensure that the
+     PENDING_STACK_ADJUST is non-negative, and congruent to
+     -UNADJUSTED_ALIGNMENT modulo the PREFERRED_UNIT_STACK_BOUNDARY.  */
+
+  /* Begin by trying to pop all the bytes.  */
+  unadjusted_alignment 
+    = (unadjusted_alignment 
+       - (pending_stack_adjust % preferred_unit_stack_boundary));
+  adjustment = pending_stack_adjust;
+  /* Push enough additional bytes that the stack will be aligned
+     after the arguments are pushed.  */
+  if (unadjusted_alignment >= 0)
+    adjustment -= preferred_unit_stack_boundary - unadjusted_alignment;
+  else
+    adjustment += unadjusted_alignment;
+  
+  /* Now, sets ARGS_SIZE->CONSTANT so that we pop the right number of
+     bytes after the call.  The right number is the entire
+     PENDING_STACK_ADJUST less our ADJUSTMENT plus the amount required
+     by the arguments in the first place.  */
+  args_size->constant 
+    = pending_stack_adjust - adjustment + unadjusted_args_size;
+
+  /* Push the right number of bytes.  */
+  pending_stack_adjust = adjustment;
+  do_pending_stack_adjust ();
+}
+
 /* Generate all the code for a function call
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -1966,7 +2026,10 @@ expand_call (exp, target, ignore)
   rtx call_fusage;
   register tree p;
   register int i;
-  int preferred_stack_boundary;
+  /* The alignment of the stack, in bits.  */
+  HOST_WIDE_INT preferred_stack_boundary;
+  /* The alignment of the stack, in bytes.  */
+  HOST_WIDE_INT preferred_unit_stack_boundary;
 
   /* The value of the function call can be put in a hard register.  But
      if -fcheck-memory-usage, code which invokes functions (and thus
@@ -2207,11 +2270,13 @@ expand_call (exp, target, ignore)
   if (fndecl && DECL_NAME (fndecl))
     name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
 
+  /* Figure out the amount to which the stack should be aligned.  */
 #ifdef PREFERRED_STACK_BOUNDARY
   preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
 #else
   preferred_stack_boundary = STACK_BOUNDARY;
 #endif
+  preferred_unit_stack_boundary = preferred_stack_boundary / BITS_PER_UNIT;
 
   /* Ensure current function's preferred stack boundary is at least
      what we need.  We don't have to increase alignment for recursive
@@ -2657,21 +2722,13 @@ expand_call (exp, target, ignore)
 	{
 	  /* When the stack adjustment is pending, we get better code
 	     by combining the adjustments.  */
-	  if (pending_stack_adjust && ! (flags & (ECF_CONST | ECF_PURE))
+	  if (pending_stack_adjust 
+	      && ! (flags & (ECF_CONST | ECF_PURE))
 	      && ! inhibit_defer_pop)
-	    {
-	      int adjust;
-	      args_size.constant = (unadjusted_args_size
-				    + ((pending_stack_adjust
-					+ args_size.constant
-					- unadjusted_args_size)
-				       % (preferred_stack_boundary
-					  / BITS_PER_UNIT)));
-	      adjust = (pending_stack_adjust - args_size.constant
-		        + unadjusted_args_size);
-	      adjust_stack (GEN_INT (adjust));
-	      pending_stack_adjust = 0;
-	    }
+	    combine_pending_stack_adjustment_and_call 
+	      (unadjusted_args_size,
+	       &args_size,
+	       preferred_unit_stack_boundary);
 	  else if (argblock == 0)
 	    anti_adjust_stack (GEN_INT (args_size.constant
 					- unadjusted_args_size));
