@@ -3970,9 +3970,11 @@ thread_jumps (void)
 		set_immediate_dominator (CDI_DOMINATORS, old_dest, bb);
 
 	      /* Now proceed like if we forwarded just over one edge at a time.
-		 Algorithm for forwarding over edge A --> B then is
+		 Algorithm for forwarding edge S --> A over edge A --> B then
+		 is
 
-		 if (idom (B) == A)
+		 if (idom (B) == A
+		     && !dominated_by (S, B))
 		   idom (B) = idom (A);
 		 recount_idom (A);  */
 
@@ -3980,7 +3982,8 @@ thread_jumps (void)
 		{
 		  tmp = old_dest->succ->dest;
 
-		  if (get_immediate_dominator (CDI_DOMINATORS, tmp) == old_dest)
+		  if (get_immediate_dominator (CDI_DOMINATORS, tmp) == old_dest
+		      && !dominated_by_p (CDI_DOMINATORS, bb, tmp))
 		    {
 		      dom = get_immediate_dominator (CDI_DOMINATORS, old_dest);
   		      set_immediate_dominator (CDI_DOMINATORS, tmp, dom);
