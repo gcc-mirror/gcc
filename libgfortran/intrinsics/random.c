@@ -70,7 +70,6 @@ static unsigned int seed[N];
 /* This is the routine which handles the seeding of the generator,
    and also reading and writing of the seed.  */
 
-#define random_seed prefix(random_seed)
 void
 random_seed (GFC_INTEGER_4 * size, const gfc_array_i4 * put,
 	     const gfc_array_i4 * get)

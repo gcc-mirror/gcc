@@ -100,6 +100,8 @@ init (void)
 #endif
 
   memory_init ();
+  random_seed(NULL,NULL,NULL);
+
 }
 
 
