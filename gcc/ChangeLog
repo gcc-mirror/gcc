@@ -1,3 +1,8 @@
+2004-02-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* xcoffout.c (xcoff_assign_fundamental_type_number): Check
+	DECL_NAME != 0 before dereferencing.
+
 2004-02-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_output_symbolic_const): Remove.
