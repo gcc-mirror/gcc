@@ -125,6 +125,166 @@ const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* See below where shifts are handled for explanation of this enum.  */
+
+enum shift_alg
+{
+  SHIFT_INLINE,
+  SHIFT_ROT_AND,
+  SHIFT_SPECIAL,
+  SHIFT_LOOP
+};
+
+/* Symbols of the various shifts which can be used as indices.  */
+
+enum shift_type
+{
+  SHIFT_ASHIFT, SHIFT_LSHIFTRT, SHIFT_ASHIFTRT
+};
+
+/* Macros to keep the shift algorithm tables small.  */
+#define INL SHIFT_INLINE
+#define ROT SHIFT_ROT_AND
+#define LOP SHIFT_LOOP
+#define SPC SHIFT_SPECIAL
+
+/* The shift algorithms for each machine, mode, shift type, and shift
+   count are defined below.  The three tables below correspond to
+   QImode, HImode, and SImode, respectively.  Each table is organized
+   by, in the order of indecies, machine, shift type, and shift count.  */
+
+static enum shift_alg shift_alg_qi[3][3][8] = {
+  {
+    /* TARGET_H8300  */
+    /* 0    1    2    3    4    5    6    7  */
+    { INL, INL, INL, INL, INL, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, LOP, LOP, SPC }  /* SHIFT_ASHIFTRT */
+  },
+  {
+    /* TARGET_H8300H  */
+    /* 0    1    2    3    4    5    6    7  */
+    { INL, INL, INL, INL, INL, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, LOP, LOP, SPC }  /* SHIFT_ASHIFTRT */
+  },
+  {
+    /* TARGET_H8300S  */
+    /*  0    1    2    3    4    5    6    7  */
+    { INL, INL, INL, INL, INL, INL, ROT, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, INL, ROT, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, INL, INL, SPC }  /* SHIFT_ASHIFTRT */
+  }
+};
+
+static enum shift_alg shift_alg_hi[3][3][16] = {
+  {
+    /* TARGET_H8300  */
+    /*  0    1    2    3    4    5    6    7  */
+    /*  8    9   10   11   12   13   14   15  */
+    { INL, INL, INL, INL, INL, INL, INL, SPC,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, LOP, LOP, SPC,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, LOP, LOP, SPC,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFTRT */
+  },
+  {
+    /* TARGET_H8300H  */
+    /*  0    1    2    3    4    5    6    7  */
+    /*  8    9   10   11   12   13   14   15  */
+    { INL, INL, INL, INL, INL, INL, INL, SPC,
+      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, INL, INL, SPC,
+      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, INL, INL, SPC,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFTRT */
+  },
+  {
+    /* TARGET_H8300S  */
+    /*  0    1    2    3    4    5    6    7  */
+    /*  8    9   10   11   12   13   14   15  */
+    { INL, INL, INL, INL, INL, INL, INL, INL,
+      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, INL, INL, INL,
+      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, INL, INL, INL,
+      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFTRT */
+  }
+};
+
+static enum shift_alg shift_alg_si[3][3][32] = {
+  {
+    /* TARGET_H8300  */
+    /*  0    1    2    3    4    5    6    7  */
+    /*  8    9   10   11   12   13   14   15  */
+    /* 16   17   18   19   20   21   22   23  */
+    /* 24   25   26   27   28   29   30   31  */
+    { INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, SPC, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
+      SPC, SPC, LOP, LOP, LOP, LOP, LOP, SPC,
+      SPC, SPC, SPC, LOP, LOP, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, SPC, LOP, LOP, SPC }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
+      SPC, SPC, LOP, LOP, LOP, LOP, LOP, LOP,
+      SPC, SPC, SPC, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
+  },
+  {
+    /* TARGET_H8300H  */
+    /*  0    1    2    3    4    5    6    7  */
+    /*  8    9   10   11   12   13   14   15  */
+    /* 16   17   18   19   20   21   22   23  */
+    /* 24   25   26   27   28   29   30   31  */
+    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
+      SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
+      SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
+  },
+  {
+    /* TARGET_H8300S  */
+    /*  0    1    2    3    4    5    6    7  */
+    /*  8    9   10   11   12   13   14   15  */
+    /* 16   17   18   19   20   21   22   23  */
+    /* 24   25   26   27   28   29   30   31  */
+    { INL, INL, INL, INL, INL, INL, INL, INL,
+      INL, INL, INL, LOP, LOP, LOP, LOP, SPC,
+      SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
+      SPC, SPC, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_ASHIFT   */
+    { INL, INL, INL, INL, INL, INL, INL, INL,
+      INL, INL, INL, LOP, LOP, LOP, LOP, SPC,
+      SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
+      SPC, SPC, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_LSHIFTRT */
+    { INL, INL, INL, INL, INL, INL, INL, INL,
+      INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
+      SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
+      SPC, SPC, LOP, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
+  }
+};
+
+#undef INL
+#undef ROT
+#undef LOP
+#undef SPC
+
+enum h8_cpu
+{
+  H8_300,
+  H8_300H,
+  H8_S
+};
+
 /* Initialize various cpu specific globals at start up.  */
 
 void
@@ -153,6 +313,41 @@ h8300_init_once ()
     {
       error ("-ms2600 is used without -ms");
       target_flags |= 1;
+    }
+
+  /* Some of the shifts are optimized for speed by default. 
+     See http://gcc.gnu.org/ml/gcc-patches/2002-07/msg01858.html
+     If optimizing for size, change shift_alg for those shift to 
+     SHIFT_LOOP.  */
+  if(optimize_size)
+    {
+      /* H8300 */
+      shift_alg_hi[H8_300][SHIFT_ASHIFT][5] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300][SHIFT_ASHIFT][6] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300][SHIFT_ASHIFT][13] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300][SHIFT_ASHIFT][14] = SHIFT_LOOP ;
+
+      shift_alg_hi[H8_300][SHIFT_LSHIFTRT][13] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300][SHIFT_LSHIFTRT][14] = SHIFT_LOOP ;
+
+      shift_alg_hi[H8_300][SHIFT_ASHIFTRT][13] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300][SHIFT_ASHIFTRT][14] = SHIFT_LOOP ;
+
+      /* H8300H */
+      shift_alg_hi[H8_300H][SHIFT_ASHIFT][5] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300H][SHIFT_ASHIFT][6] = SHIFT_LOOP ;
+
+      shift_alg_hi[H8_300H][SHIFT_LSHIFTRT][5] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300H][SHIFT_LSHIFTRT][6] = SHIFT_LOOP ;
+
+      shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][5] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][6] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][13] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][14] = SHIFT_LOOP ;
+
+      /* H8S */
+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][13] = SHIFT_LOOP ;
+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][14] = SHIFT_LOOP ;
     }
 }
 
@@ -1997,23 +2192,6 @@ expand_a_shift (mode, code, operands)
   return 1;
 }
 
-/* See above for explanation of this enum.  */
-
-enum shift_alg
-{
-  SHIFT_INLINE,
-  SHIFT_ROT_AND,
-  SHIFT_SPECIAL,
-  SHIFT_LOOP
-};
-
-/* Symbols of the various shifts which can be used as indices.  */
-
-enum shift_type
-{
-  SHIFT_ASHIFT, SHIFT_LSHIFTRT, SHIFT_ASHIFTRT
-};
-
 /* Symbols of the various modes which can be used as indices.  */
 
 enum shift_mode
@@ -2175,142 +2353,6 @@ static const char *const rotate_two[3][3] =
       "rotl.l\t#2,%S0"
     }
 };
-
-/* Macros to keep the shift algorithm tables small.  */
-#define INL SHIFT_INLINE
-#define ROT SHIFT_ROT_AND
-#define LOP SHIFT_LOOP
-#define SPC SHIFT_SPECIAL
-
-/* The shift algorithms for each machine, mode, shift type, and shift
-   count are defined below.  The three tables below correspond to
-   QImode, HImode, and SImode, respectively.  Each table is organized
-   by, in the order of indecies, machine, shift type, and shift count.  */
-
-static const enum shift_alg shift_alg_qi[3][3][8] = {
-  {
-    /* TARGET_H8300  */
-    /* 0    1    2    3    4    5    6    7  */
-    { INL, INL, INL, INL, INL, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
-    { INL, INL, INL, INL, INL, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
-    { INL, INL, INL, INL, INL, LOP, LOP, SPC }  /* SHIFT_ASHIFTRT */
-  },
-  {
-    /* TARGET_H8300H  */
-    /* 0    1    2    3    4    5    6    7  */
-    { INL, INL, INL, INL, INL, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
-    { INL, INL, INL, INL, INL, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
-    { INL, INL, INL, INL, INL, LOP, LOP, SPC }  /* SHIFT_ASHIFTRT */
-  },
-  {
-    /* TARGET_H8300S  */
-    /*  0    1    2    3    4    5    6    7  */
-    { INL, INL, INL, INL, INL, INL, ROT, ROT }, /* SHIFT_ASHIFT   */
-    { INL, INL, INL, INL, INL, INL, ROT, ROT }, /* SHIFT_LSHIFTRT */
-    { INL, INL, INL, INL, INL, INL, INL, SPC }  /* SHIFT_ASHIFTRT */
-  }
-};
-
-static const enum shift_alg shift_alg_hi[3][3][16] = {
-  {
-    /* TARGET_H8300  */
-    /*  0    1    2    3    4    5    6    7  */
-    /*  8    9   10   11   12   13   14   15  */
-    { INL, INL, INL, INL, INL, INL, INL, SPC,
-      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFT   */
-    { INL, INL, INL, INL, INL, LOP, LOP, SPC,
-      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_LSHIFTRT */
-    { INL, INL, INL, INL, INL, LOP, LOP, SPC,
-      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFTRT */
-  },
-  {
-    /* TARGET_H8300H  */
-    /*  0    1    2    3    4    5    6    7  */
-    /*  8    9   10   11   12   13   14   15  */
-    { INL, INL, INL, INL, INL, INL, INL, SPC,
-      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
-    { INL, INL, INL, INL, INL, INL, INL, SPC,
-      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
-    { INL, INL, INL, INL, INL, INL, INL, SPC,
-      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFTRT */
-  },
-  {
-    /* TARGET_H8300S  */
-    /*  0    1    2    3    4    5    6    7  */
-    /*  8    9   10   11   12   13   14   15  */
-    { INL, INL, INL, INL, INL, INL, INL, INL,
-      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
-    { INL, INL, INL, INL, INL, INL, INL, INL,
-      SPC, SPC, SPC, SPC, SPC, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
-    { INL, INL, INL, INL, INL, INL, INL, INL,
-      SPC, SPC, SPC, SPC, SPC, SPC, SPC, SPC }, /* SHIFT_ASHIFTRT */
-  }
-};
-
-static const enum shift_alg shift_alg_si[3][3][32] = {
-  {
-    /* TARGET_H8300  */
-    /*  0    1    2    3    4    5    6    7  */
-    /*  8    9   10   11   12   13   14   15  */
-    /* 16   17   18   19   20   21   22   23  */
-    /* 24   25   26   27   28   29   30   31  */
-    { INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
-      SPC, SPC, SPC, SPC, SPC, LOP, LOP, LOP,
-      SPC, SPC, SPC, SPC, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFT   */
-    { INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
-      SPC, SPC, LOP, LOP, LOP, LOP, LOP, SPC,
-      SPC, SPC, SPC, LOP, LOP, LOP, LOP, LOP,
-      SPC, SPC, SPC, SPC, SPC, LOP, LOP, SPC }, /* SHIFT_LSHIFTRT */
-    { INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
-      SPC, SPC, LOP, LOP, LOP, LOP, LOP, LOP,
-      SPC, SPC, SPC, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
-  },
-  {
-    /* TARGET_H8300H  */
-    /*  0    1    2    3    4    5    6    7  */
-    /*  8    9   10   11   12   13   14   15  */
-    /* 16   17   18   19   20   21   22   23  */
-    /* 24   25   26   27   28   29   30   31  */
-    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
-      SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_ASHIFT   */
-    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
-      SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_LSHIFTRT */
-    { INL, INL, INL, INL, INL, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
-      SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
-  },
-  {
-    /* TARGET_H8300S  */
-    /*  0    1    2    3    4    5    6    7  */
-    /*  8    9   10   11   12   13   14   15  */
-    /* 16   17   18   19   20   21   22   23  */
-    /* 24   25   26   27   28   29   30   31  */
-    { INL, INL, INL, INL, INL, INL, INL, INL,
-      INL, INL, INL, LOP, LOP, LOP, LOP, SPC,
-      SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
-      SPC, SPC, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_ASHIFT   */
-    { INL, INL, INL, INL, INL, INL, INL, INL,
-      INL, INL, INL, LOP, LOP, LOP, LOP, SPC,
-      SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
-      SPC, SPC, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_LSHIFTRT */
-    { INL, INL, INL, INL, INL, INL, INL, INL,
-      INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
-      SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
-      SPC, SPC, LOP, LOP, LOP, LOP, LOP, SPC }, /* SHIFT_ASHIFTRT */
-  }
-};
-
-#undef INL
-#undef ROT
-#undef LOP
-#undef SPC
 
 struct shift_info {
   /* Shift algorithm.  */

@@ -1,3 +1,13 @@
+2002-09-06	Dhananjay Deshpande <dhananjayd@kpit.com>
+
+	* h8300.c (enum shift_alg): Move to earlier in h8300.c.
+	(enum shift_type, enum h8_cpu): Likewise.
+	(INL, ROT, LOP, SPC macros): Likewise.
+	(shift_alg_qi, shift_alg_hi, shift_alg_si): Likewise.  Lose
+	const designator.
+	(h8300_init_once): Update shift_alg_{qi,hi,si} to use more
+	space efficient algorithms when optimize for codesize.
+
 Fri Sep  6 16:35:32 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	Fix PR/1727 and long-standing failing testcase
