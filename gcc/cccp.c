@@ -8844,6 +8844,7 @@ static void
 error_from_errno (name)
      char *name;
 {
+  int e = errno;
   int i;
   FILE_BUF *ip = NULL;
 
@@ -8858,7 +8859,7 @@ error_from_errno (name)
   if (ip != NULL)
     fprintf (stderr, "%s:%d: ", ip->nominal_fname, ip->lineno);
 
-  fprintf (stderr, "%s: %s\n", name, my_strerror (errno));
+  fprintf (stderr, "%s: %s\n", name, my_strerror (e));
 
   errors++;
 }
@@ -10077,8 +10078,7 @@ static void
 perror_with_name (name)
      char *name;
 {
-  fprintf (stderr, "%s: ", progname);
-  fprintf (stderr, "%s: %s\n", name, my_strerror (errno));
+  fprintf (stderr, "%s: %s: %s\n", progname, name, my_strerror (errno));
   errors++;
 }
 
