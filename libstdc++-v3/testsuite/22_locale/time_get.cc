@@ -20,6 +20,8 @@
 
 // 22.2.5.1  Template class time_get
 
+// { dg-do compile }
+
 #include <locale>
 
 void test01()

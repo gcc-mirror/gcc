@@ -20,6 +20,8 @@
 
 // 22.2.7 The message retrieval category
 
+// { dg-do compile }
+
 #include <locale>
 
 void test01()

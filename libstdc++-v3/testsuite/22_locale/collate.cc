@@ -20,6 +20,8 @@
 
 // 22.2.4 The collate category
 
+// { dg-do compile }
+
 #include <locale>
 
 void test01()

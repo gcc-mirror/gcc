@@ -20,6 +20,8 @@
 
 // 22.2.6.3  Template class moneypunct
 
+// { dg-do compile }
+
 #include <locale>
 #include <testsuite_hooks.h>
 

@@ -20,6 +20,8 @@
 
 // 22.2.3  The numeric punctuation facet
 
+// { dg-do compile }
+
 #include <locale>
 
 void test01()
