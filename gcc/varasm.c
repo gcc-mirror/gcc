@@ -48,6 +48,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "debug.h"
 #include "target.h"
+#include "cgraph.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -1742,7 +1743,16 @@ assemble_name (file, name)
 
   id = maybe_get_identifier (real_name);
   if (id)
-    TREE_SYMBOL_REFERENCED (id) = 1;
+    {
+      if (!TREE_SYMBOL_REFERENCED (id)
+	  && !cgraph_global_info_ready)
+	{
+	  struct cgraph_node *node = cgraph_node_for_identifier (id);
+	  if (node)
+	    cgraph_mark_needed_node (node, 1);
+	}
+      TREE_SYMBOL_REFERENCED (id) = 1;
+    }
 
   if (name[0] == '*')
     fputs (&name[1], file);

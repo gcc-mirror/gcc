@@ -1,3 +1,24 @@
+Mon Jun 23 23:07:35 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_nodes_queue): Declare.
+	(eq_node): Take identifier as p2.
+	(cgraph_node): Update htab_find_slot_with_hash call.
+	(cgraph_node_for_identifier): New.
+	(cgraph_mark_needed_node): Move here from cgraphunit.c.
+	* cgraph.h (cgraph_nodes_queue): Declare.
+	(cgraph_node_for_identifier): Declare.
+	* cgraphunit.c (cgraph_finalize_function): Collect entry points here
+	instead of in cgraph_finalize_compilation_unit; constructors and
+	destructors are entry points.
+	(cgraph_finalize_compilation_unit): Reorganize debug outout; 
+	examine nested functions after lowerng; call collect_functions hook.
+	(cgraph_mark_local_functions): DECL_COMDAT functions are not local.
+	(cgraph_finalize_compilation_unit): Do not collect entry points.
+	* varasm.c: Include cgraph.h
+	(assemble_name): Mark referenced identifier as needed.
+
+	* cgraphunit.c (record_call_1): Use get_callee_fndecl.
+
 2003-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (x86_output_mi_thunk): Don't pass MEM to %P0,
