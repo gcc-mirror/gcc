@@ -30,6 +30,10 @@ Boston, MA 02111-1307, USA.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
 
+/* Support -gstabs using stabs in COFF sections.  */
+
+#include "dbxcoff.h"
+
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) \
   output_file_directive ((FILE), main_input_filename)

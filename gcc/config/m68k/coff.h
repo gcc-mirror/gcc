@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    m68k series COFF object files and debugging, version.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -24,15 +24,11 @@ Boston, MA 02111-1307, USA.  */
 
 /* Generate sdb debugging information.  */
 
-#undef DBX_DEBUGGING_INFO
 #define SDB_DEBUGGING_INFO
 
 /* Output DBX (stabs) debugging information if using -gstabs.  */
 
-#define DBX_DEBUGGING_INFO
-
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
+#include "dbxcoff.h"
 
 /* COFF symbols don't start with an underscore.  */
 
