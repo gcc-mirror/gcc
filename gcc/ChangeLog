@@ -294,7 +294,7 @@ Fri Nov 20 08:34:00 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 	(goto_handler_and_restore_v9): Comment out.
 	(goto_handler_and_restore_v9_sp64): Comment out.
 
-Thu Nov 19 23:44:38 1998  
+Thu Nov 19 23:44:38 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* expr.c (STACK_BYTES): Delete unused macro.
 	* calls.c: Provide default for PREFERRED_STACK_BOUNDARY.
