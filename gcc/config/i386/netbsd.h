@@ -8,6 +8,10 @@
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -D__NetBSD__ \
  -Asystem=unix -Asystem=bsd -Asystem=NetBSD"
+
+#undef CPP_SPEC
+#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE}"
+
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"

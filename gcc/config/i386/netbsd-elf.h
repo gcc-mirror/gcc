@@ -43,6 +43,13 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES							\
   "-D__NetBSD__ -D__ELF__ -Asystem=unix -Asystem=NetBSD"
 
+/* Provide a CPP_SPEC appropriate for NetBSD.  Currently we just deal with
+   the GCC option `-posix'.  */
+
+#undef CPP_SPEC
+#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE}"
+
+
 /* Make gcc agree with <machine/ansi.h> */
 
 #undef SIZE_TYPE

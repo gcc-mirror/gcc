@@ -295,10 +295,6 @@ Boston, MA 02111-1307, USA.  */
   "%{!m32:%(cpp_subtarget_spec64)}%{m32:%(cpp_subtarget_spec32)}"
 #endif
 
-/* Restore this from sparc/sparc.h, netbsd.h changes it.  */
-#undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %(cpp_arch) %(cpp_endian) %(cpp_subtarget)"
-
 /* Name the port. */
 #undef TARGET_NAME
 #define TARGET_NAME     (DEFAULT_ARCH32_P ? TARGET_NAME32 : TARGET_NAME64)
