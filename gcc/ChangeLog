@@ -1,3 +1,11 @@
+2004-05-27  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline:
+
+	* config/sh/t-linux (SHLIB_MAPFILES): Use sh specific
+	libgcc-std.ver.
+	* config/sh/libgcc-std.ver: New file.
+
 2004-05-27  Olivier Hainque  <hainque@act-europe.fr>
 
 	* expr.c (store_constructor): Restore sanity check on
