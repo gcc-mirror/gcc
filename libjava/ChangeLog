@@ -1,5 +1,7 @@
 2001-12-12  Tom Tromey  <tromey@redhat.com>
 
+	* jni.cc (call): Synchronize if required.
+
 	* gij.cc (main): Clarify --help output.
 
 	* gnu/gcj/runtime/StringBuffer.java
