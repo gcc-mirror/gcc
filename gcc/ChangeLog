@@ -1,3 +1,29 @@
+2003-10-11  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (web.o): New.
+	* web.c: New file.
+	* rtl.h (web_main): Declare.
+	* timervar.def (TV_WEB): New.
+	* toplev.c (dump_file_index, dump_file_info): Add DFI_web.
+	(rest_of_hanle_web): New.
+	(flag_web): New static variable.
+	(lang_independent_options): Add "web".
+	(rest_of_compilation): Call rest_of_handle_web.
+	* invoke.texi (-fweb): Document.
+	* common.opt (fweb): New.
+	* flags.h (flag_web): New.
+	* opts.c (decode_options): Set flag_web at -O3.
+
+	* passes.texi (web construction):  Document.
+	* invoke.texi (-O3): Document that -fweb is enabled.
+
+	* regrename.c (regrename_optimize): Deal better with situation when
+	replacement failed.
+
+	* sched-ebb.c: Include params.h and profile.h
+	(schedule_ebbs):  Use tracer parameters to discover superblocks
+	* Makefile.in (sched-ebb.o):  Add dependencies.
+
 2003-10-11  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (negate_mathfn_p): New function to determine whether

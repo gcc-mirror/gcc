@@ -39,6 +39,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "recog.h"
 #include "cfglayout.h"
+#include "params.h"
 #include "sched-int.h"
 #include "target.h"
 
@@ -561,6 +562,13 @@ void
 schedule_ebbs (FILE *dump_file)
 {
   basic_block bb;
+  int probability_cutoff;
+
+  if (profile_info && flag_branch_probabilities)
+    probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY_FEEDBACK);
+  else
+    probability_cutoff = PARAM_VALUE (TRACER_MIN_BRANCH_PROBABILITY);
+  probability_cutoff = REG_BR_PROB_BASE / 100 * probability_cutoff;
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
@@ -592,7 +600,7 @@ schedule_ebbs (FILE *dump_file)
 	      break;
 	  if (! e)
 	    break;
-	  if (e->probability < REG_BR_PROB_BASE / 2)
+	  if (e->probability <= probability_cutoff)
 	    break;
 	  bb = bb->next_bb;
 	}

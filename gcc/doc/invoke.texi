@@ -3680,13 +3680,14 @@ also turns on the following optimization flags:
 -fgcse   -fgcse-lm   -fgcse-sm @gol
 -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations @gol
--fregmove @gol
+-fregmove -@gol
 -fschedule-insns  -fschedule-insns2 @gol
 -fsched-interblock  -fsched-spec @gol
 -fcaller-saves @gol
 -fpeephole2 @gol
 -freorder-blocks  -freorder-functions @gol
 -fstrict-aliasing @gol
+-funit-at-a-time @gol
 -falign-functions  -falign-jumps @gol
 -falign-loops  -falign-labels}
 
@@ -3697,7 +3698,7 @@ invoking @option{-O2} on programs that use computed gotos.
 @opindex O3
 Optimize yet more.  @option{-O3} turns on all optimizations specified by
 @option{-O2} and also turns on the @option{-finline-functions},
-@option{-funit-at-a-time} and @option{-frename-registers} options.
+@option{-fweb} and @option{-frename-registers} options.
 
 @item -O0
 @opindex O0

@@ -2055,6 +2055,8 @@ extern rtx remove_death (unsigned int, rtx);
 extern void dump_combine_stats (FILE *);
 extern void dump_combine_total_stats (FILE *);
 #endif
+/* In web.c */
+extern void web_main			PARAMS ((void));
 
 /* In sched.c.  */
 #ifdef BUFSIZ

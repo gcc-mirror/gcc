@@ -230,7 +230,7 @@ regrename_optimize (void)
       CLEAR_HARD_REG_SET (regs_seen);
       while (all_chains)
 	{
-	  int new_reg, best_new_reg = -1;
+	  int new_reg, best_new_reg;
 	  int n_uses;
 	  struct du_chain *this = all_chains;
 	  struct du_chain *tmp, *last;
@@ -239,6 +239,8 @@ regrename_optimize (void)
 	  int i;
 
 	  all_chains = this->next_chain;
+
+	  best_new_reg = reg;
 
 #if 0 /* This just disables optimization opportunities.  */
 	  /* Only rename once we've seen the reg more than once.  */
@@ -320,8 +322,7 @@ regrename_optimize (void)
 		  break;
 	      if (! tmp)
 		{
-		  if (best_new_reg == -1
-		      || tick[best_new_reg] > tick[new_reg])
+		  if (tick[best_new_reg] > tick[new_reg])
 		    best_new_reg = new_reg;
 		}
 	    }
@@ -334,15 +335,16 @@ regrename_optimize (void)
 		fprintf (rtl_dump_file, " crosses a call");
 	    }
 
-	  if (best_new_reg == -1)
+	  if (best_new_reg == reg)
 	    {
+	      tick[reg] = ++this_tick;
 	      if (rtl_dump_file)
-		fprintf (rtl_dump_file, "; no available registers\n");
+		fprintf (rtl_dump_file, "; no available better choice\n");
 	      continue;
 	    }
 
 	  do_replace (this, best_new_reg);
-	  tick[best_new_reg] = this_tick++;
+	  tick[best_new_reg] = ++this_tick;
 
 	  if (rtl_dump_file)
 	    fprintf (rtl_dump_file, ", renamed as %s\n", reg_names[best_new_reg]);

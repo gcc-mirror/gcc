@@ -709,6 +709,8 @@ extern int flag_signaling_nans;
 
 extern int flag_unit_at_a_time;
 
+extern int flag_web;
+
 /* A string that's used when a random name is required.  NULL means
    to make it really random.  */
 
