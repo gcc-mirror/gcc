@@ -1115,9 +1115,9 @@ used to disable building the Ada front end.
 
 Additional build tools (such as @command{gnatmake}) or a working GNAT
 run-time library installation are usually @emph{not} required.  However,
-if you want to boostrap the compiler using a minimal version of GNAT,
+if you want to bootstrap the compiler using a minimal version of GNAT,
 you have to issue the following commands before invoking @samp{make
-boostrap} (this assumes that you start with an unmodified and consistent
+bootstrap} (this assumes that you start with an unmodified and consistent
 source distribution):
 
 @example
