@@ -614,6 +614,11 @@ extern void emit_0_to_1_insn PROTO((rtx));
 extern void emit_cmp_insn PROTO((rtx, rtx, enum rtx_code, rtx,
 				 enum machine_mode, int, int));
 
+/* Emit a pair of rtl insns to compare two rtx's and to jump 
+   to a label if the comparison is true.  */
+extern void emit_cmp_and_jump_insns PROTO((rtx, rtx, enum rtx_code, rtx,
+					   enum machine_mode, int, int, rtx));
+
 /* Nonzero if a compare of mode MODE can be done straightforwardly
    (without splitting it into pieces).  */
 extern int can_compare_p PROTO((enum machine_mode));

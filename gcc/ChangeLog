@@ -1,3 +1,14 @@
+Sun Jan  3 22:58:15 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* optabs.c (emit_cmp_insn): Abort if asked to emit non-canonical RTL
+	for a target with HAVE_cc0 defined.
+	(emit_cmp_and_jump_insns): New function.
+	* expr.h (emit_cmp_and_jump_insns): Prototype it.
+	* loop.c (check_dbra_loop): Use it to replace calls
+	to emit_cmp_insn and emit_jump_insn and to canonicalise
+	the comparison if necessary.
+	* unroll.c (unroll_loop): Likewise.
+
 Sun Jan  3 21:01:04 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixincludes (sys/utsname.h): Provide forward declaration of
