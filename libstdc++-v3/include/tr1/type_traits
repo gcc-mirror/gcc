@@ -240,8 +240,13 @@ namespace tr1
     struct extent;
   
   /// @brief  relationships between types [4.6].
-  template<typename _Tp, typename _Up>
-    struct is_same;
+  template<typename, typename>
+    struct is_same
+    : public false_type { };
+
+  template<typename _Tp>
+    struct is_same<_Tp, _Tp>
+    : public true_type { };
 
   template<typename _From, typename _To>
     struct is_convertible;
@@ -270,10 +275,28 @@ namespace tr1
 
   /// @brief  reference modifications [4.7.2].
   template<typename _Tp>
-    struct remove_reference;
+    struct remove_reference
+    {
+      typedef _Tp     type;
+    };
+
+  template<typename _Tp>
+    struct remove_reference<_Tp&>
+    {
+      typedef _Tp     type;
+    };
   
   template<typename _Tp>
-    struct add_reference;
+    struct add_reference
+    {
+      typedef _Tp&    type;
+    };
+
+  template<typename _Tp>
+    struct add_reference<_Tp&>
+    {
+      typedef _Tp&    type;
+    };
 
   /// @brief  array modififications [4.7.3].
   template<typename _Tp>
