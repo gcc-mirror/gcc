@@ -143,9 +143,12 @@ struct induction
 				   based on the same biv.  For bivs, links
 				   together all biv entries that refer to the
 				   same biv register.  */
-  struct induction *same;	/* If this giv has been combined with another
-				   giv, this points to the base giv.  The base
-				   giv will have COMBINED_WITH nonzero.  */
+  struct induction *same;	/* For givs, if the giv has been combined with
+				   another giv, this points to the base giv.
+				   The base giv will have COMBINED_WITH nonzero.
+				   For bivs, if the biv has the same LOCATION
+				   than another biv, this points to the base
+				   biv.  */
   HOST_WIDE_INT const_adjust;	/* Used by loop unrolling, when an address giv
 				   is split, and a constant is eliminated from
 				   the address, the -constant is stored here

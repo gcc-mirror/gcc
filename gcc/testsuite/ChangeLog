@@ -1,3 +1,7 @@
+2003-09-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/opt/unroll1.C: New test.
+
 2003-09-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/cpp/Wunknown-pragmas-1.c: New test.
@@ -14992,3 +14996,4 @@ rlsruhe.de>
 	correspond to c-torture	1.11.
 
 	* New file.
+
