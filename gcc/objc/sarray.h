@@ -42,7 +42,7 @@ extern const char* __objc_sparse3_id;
 
 #include <stddef.h>
 
-#include "objc/thread.h"
+#include "objc/thr.h"
 
 extern int nbuckets;		/* for stats */
 extern int nindices;
