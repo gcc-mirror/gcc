@@ -2153,9 +2153,9 @@
        || operands[1] == const0_rtx)"
   "*
 {
-  if (which_alternative == 0)
+  if (which_alternative == 1)
     return \"stx %%g0,%0\";
-  if (which_alternative == 7)
+  if (which_alternative == 8)
     return \"fzero %0\";
   if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]))
     return output_fp_move_double (operands);
