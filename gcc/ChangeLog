@@ -1,3 +1,8 @@
+2002-02-27  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_chunkify_pool): Do not confuse
+	insn UIDs with insn addresses.
+
 2002-02-27  Graham Stott  <grahams@redhat.com>
 
 	* config/rs6000/rs6000.h (ASM_OUTPUT_DEF_FROM_DELC):
