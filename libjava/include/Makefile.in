@@ -119,11 +119,11 @@ ZLIBSPEC = @ZLIBSPEC@
 ZLIBTESTSPEC = @ZLIBTESTSPEC@
 here = @here@
 libgcj_basedir = @libgcj_basedir@
+mkinstalldirs = @mkinstalldirs@
 
 AUTOMAKE_OPTIONS = foreign
 
 include_HEADERS = jni.h jvmpi.h
-mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = 
 HEADERS =  $(include_HEADERS)

@@ -12,22 +12,38 @@ AC_ARG_ENABLE(multilib,
 dnl We may get other options which we dont document:
 dnl --with-target-subdir, --with-multisrctop, --with-multisubdir
 
-if test "[$]{srcdir}" = "."; then
-  if test "[$]{with_target_subdir}" != "."; then
-    libgcj_basedir="[$]{srcdir}/[$]{with_multisrctop}../$1"
+# When building with srcdir == objdir, links to the source files will
+# be created in directories within the target_subdir.  We have to
+# adjust toplevel_srcdir accordingly, so that configure finds
+# install-sh and other auxiliary files that live in the top-level
+# source directory.
+if test "${srcdir}" = "."; then
+  if test -z "${with_target_subdir}"; then
+    toprel=".."
   else
-    libgcj_basedir="[$]{srcdir}/[$]{with_multisrctop}$1"
+    if test "${with_target_subdir}" != "."; then
+      toprel="${with_multisrctop}../.."
+    else
+      toprel="${with_multisrctop}.."
+    fi
   fi
 else
-  libgcj_basedir="[$]{srcdir}/$1"
+  toprel=".."
 fi
+
+libgcj_basedir=$srcdir/$toprel/$1/libjava
 AC_SUBST(libgcj_basedir)
-AC_CONFIG_AUX_DIR($libgcj_basedir/..)
+
+AC_CONFIG_AUX_DIR(${srcdir}/$toprel)
 if :; then :; else
   # This overrides the previous occurrence for automake, but not for
   # autoconf, which is exactly what we want.
   AC_CONFIG_AUX_DIR(..)
 fi
+
+# This works around an automake problem.
+mkinstalldirs="`cd $ac_aux_dir && pwd`/mkinstalldirs"
+AC_SUBST(mkinstalldirs)
 
 AC_CANONICAL_SYSTEM
 
@@ -80,11 +96,6 @@ libgcj_cxxflags=
 libgcj_javaflags=
 
 . [$]{srcdir}/configure.host
-
-case [$]{libgcj_basedir} in
-/* | [A-Za-z]:[/\\]*) libgcj_flagbasedir=[$]{libgcj_basedir} ;;
-*) libgcj_flagbasedir='[$](top_builddir)/'[$]{libgcj_basedir} ;;
-esac
 
 LIBGCJ_CFLAGS="[$]{libgcj_cflags}"
 LIBGCJ_CXXFLAGS="[$]{libgcj_cxxflags}"

@@ -1,3 +1,11 @@
+2001-07-02  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR bootstrap/3281:
+	* aclocal.m4, configure: Rebuilt.
+	* acinclude.m4 (LIBGCJ_CONFIGURE): Don't set libgcj_flagbasedir.
+	Correctly compute libgcj_basedir.
+	(mkinstalldirs): Define and subst.
+
 2001-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in (test for eh model): Fixed typo.

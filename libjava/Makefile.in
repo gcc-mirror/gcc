@@ -118,6 +118,7 @@ ZLIBSPEC = @ZLIBSPEC@
 ZLIBTESTSPEC = @ZLIBTESTSPEC@
 here = @here@
 libgcj_basedir = @libgcj_basedir@
+mkinstalldirs = @mkinstalldirs@
 
 AUTOMAKE_OPTIONS = foreign
 @TESTSUBDIR_TRUE@SUBDIRS = \
@@ -1132,7 +1133,6 @@ MULTISUBDIR =
 MULTIDO = true
 MULTICLEAN = true
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ./include/config.h
 CONFIG_CLEAN_FILES =  libgcj.spec libgcj-test.spec
 LIBRARIES =  $(toolexeclib_LIBRARIES)

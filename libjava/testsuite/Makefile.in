@@ -119,6 +119,7 @@ ZLIBSPEC = @ZLIBSPEC@
 ZLIBTESTSPEC = @ZLIBTESTSPEC@
 here = @here@
 libgcj_basedir = @libgcj_basedir@
+mkinstalldirs = @mkinstalldirs@
 
 AUTOMAKE_OPTIONS = foreign dejagnu
 
@@ -134,7 +135,6 @@ RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then \
 
 
 RUNTESTFLAGS = @AM_RUNTESTFLAGS@
-mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../include/config.h
 CONFIG_CLEAN_FILES = 
 DIST_COMMON =  ChangeLog Makefile.am Makefile.in

@@ -119,12 +119,12 @@ ZLIBSPEC = @ZLIBSPEC@
 ZLIBTESTSPEC = @ZLIBTESTSPEC@
 here = @here@
 libgcj_basedir = @libgcj_basedir@
+mkinstalldirs = @mkinstalldirs@
 
 AUTOMAKE_OPTIONS = foreign
 
 gcjdir = $(includedir)/gcj
 gcj_HEADERS = array.h cni.h field.h javaprims.h method.h
-mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../include/config.h
 CONFIG_CLEAN_FILES = 
 HEADERS =  $(gcj_HEADERS)
