@@ -270,8 +270,10 @@ while [ $# != 0 ]; do
 				   :loop
 	  /\\$/			N
 	  /\\$/			b loop
-	  s%^\([ 	]*#[ 	]*endif[ 	]*\)\([^/ 	].*\)$%\1/* \2 */%
-	  s%^\([ 	]*#[ 	]*else[ 	]*\)\([^/ 	].*\)$%\1/* \2 */%
+	  s%^\([ 	]*#[ 	]*else\)[ 	]*/[^*].*%\1%
+	  s%^\([ 	]*#[ 	]*else\)[ 	]*[^/ 	].*%\1%
+	  s%^\([ 	]*#[ 	]*endif\)[ 	]*/[^*].*%\1%
+	  s%^\([ 	]*#[ 	]*endif\)[ 	]*[^/ 	].*%\1%
 	  /\/\/[^*]/			s|//\(.*\)$|/*\1*/|
 	  /[ 	]_IO[A-Z]*[ 	]*(/	s/\(_IO[A-Z]*[ 	]*(\)\(.\),/\1'\''\2'\'',/
 	  /[ 	]BSD43__IO[A-Z]*[ 	]*(/	s/(\(.\),/('\''\1'\'',/
@@ -520,24 +522,6 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
-# Remove nested comments created by #endifs in a comment (Ultrix 4.1)
-# Only needed if commenting out junk after #endif.
-file=signal.h
-if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
-  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
-  chmod +w ${LIB}/$file 2>/dev/null
-  chmod a+r ${LIB}/$file 2>/dev/null
-fi
-
-if [ -r ${LIB}/$file ]; then
-  echo Fixing $file, nested comments
-  sed -e 's/^[ 	]*#endif.*/#endif/' ${LIB}/$file > ${LIB}/${file}.sed
-  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
-  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    rm -f ${LIB}/$file
-  fi
-fi
-
 # Check for superfluous `static' (in Ultrix 4.2)
 file=machine/cpu.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
@@ -698,24 +682,6 @@ if [ -r ${LIB}/$file ]; then
   sed -e 's/typedef[ 	]char \*	malloc_t/typedef void \*	malloc_t/g' \
   -e 's/int[ 	][ 	]*free/void	free/g' \
   ${LIB}/$file > ${LIB}/${file}.sed
-  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
-  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    rm -f ${LIB}/$file
-  fi
-fi
-
-
-# Fix bogus comment in <locale.h> on SunOS 4.1.
-file=locale.h
-if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
-  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
-  chmod +w ${LIB}/$file 2>/dev/null
-  chmod a+r ${LIB}/$file 2>/dev/null
-fi
-
-if [ -r ${LIB}/$file ]; then
-  echo Fixing $file
-  sed -e 's%#endif / \*%#endif /\* %g' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm -f ${LIB}/$file
@@ -1098,17 +1064,6 @@ if test -d /etc/conf/kconfig.d \
   sed '/CHILD_MAX/s,/\* Max, Max,' < ${INPUT}/$file >${LIB}/$file.
   sed '/OPEN_MAX/s,/\* Max, Max,' < ${LIB}/$file. >${LIB}/$file
 fi
-
-# These files on Ultrix 4.2 put comments around instances of #endif
-# __mips.  When the sed expression turns that into #endif /* __mips */
-# the comment ends prematurely.
-for file in sys/audit.h sys/signal.h; do
-  if [ -r ${LIB}/${file} ]; then
-    echo Fixing $file, early comment termination
-    sed -e 's|^#endif /\*.*\*/|#endif|g' ${LIB}/${file} > ${LIB}/${file}.sed
-    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
-  fi
-done
 
 echo 'Removing unneeded directories:'
 cd $LIB
