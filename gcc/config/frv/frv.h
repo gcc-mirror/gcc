@@ -2780,8 +2780,6 @@ extern int size_directive_output;
 #undef ASM_OUTPUT_ALIGNED_DECL_LOCAL
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGN)	\
 do {                                                                   	\
-  extern unsigned HOST_WIDE_INT g_switch_value;				\
-									\
   if ((SIZE) > 0 && (SIZE) <= g_switch_value)				\
     sbss_section ();                                                 	\
   else                                                                 	\
