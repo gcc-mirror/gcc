@@ -1,3 +1,11 @@
+2003-09-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* dwarf2out.c (default_eh_frame_section): Split into ...
+	(named_section_eh_frame_section, collect2_eh_frame_section): ... new
+	functions. 
+	* output.h (named_section_eh_frame_section): Declare.
+	(collect2_eh_frame_section): Likewise.
+
 2003-09-29  Zack Weinberg  <zack@codesourcery.com>
 
 	* real.c (real_sqrt): Use get_canonical_qnan directly.

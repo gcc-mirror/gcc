@@ -110,12 +110,12 @@ dwarf2out_do_frame (void)
 #define PTR_SIZE (POINTER_SIZE / BITS_PER_UNIT)
 #endif
 
-/* Default version of targetm.eh_frame_section.  Note this must appear
-   outside the DWARF2_DEBUGGING_INFO || DWARF2_UNWIND_INFO macro
-   guards.  */
+/* Various versions of targetm.eh_frame_section.  Note these must appear
+   outside the DWARF2_DEBUGGING_INFO || DWARF2_UNWIND_INFO macro guards.  */
 
+/* Version of targetm.eh_frame_section for systems with named sections.  */ 
 void
-default_eh_frame_section (void)
+named_section_eh_frame_section (void)
 {
 #ifdef EH_FRAME_SECTION_NAME
 #ifdef HAVE_LD_RO_RW_SECTION_MIXING
@@ -136,13 +136,29 @@ default_eh_frame_section (void)
 #else
   named_section_flags (EH_FRAME_SECTION_NAME, SECTION_WRITE);
 #endif
-#else
+#endif
+}
+
+/* Version of targetm.eh_frame_section for systems using collect2.  */ 
+void
+collect2_eh_frame_section (void)
+{
   tree label = get_file_function_name ('F');
 
   data_section ();
   ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
   (*targetm.asm_out.globalize_label) (asm_out_file, IDENTIFIER_POINTER (label));
   ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
+}
+
+/* Default version of targetm.eh_frame_section.  */
+void
+default_eh_frame_section (void)
+{
+#ifdef EH_FRAME_SECTION_NAME
+  named_section_eh_frame_section ();
+#else
+  collect2_eh_frame_section ();
 #endif
 }
 
