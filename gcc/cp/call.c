@@ -5848,7 +5848,6 @@ tree
 initialize_reference (tree type, tree expr, tree decl)
 {
   tree conv;
-  bool ref_bound_directly_to_rvalue_p = false;
 
   if (type == error_mark_node || error_operand_p (expr))
     return error_mark_node;
@@ -5877,7 +5876,7 @@ initialize_reference (tree type, tree expr, tree decl)
      In that case, we store the converted expression into a new
      VAR_DECL in a new scope.  */
   my_friendly_assert (TREE_CODE (conv) == REF_BIND, 20030302);
-  if (decl && (NEED_TEMPORARY_P (conv) || ref_bound_directly_to_rvalue_p))
+  if (decl && NEED_TEMPORARY_P (conv))
     {
       tree var;
       
