@@ -1307,7 +1307,21 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   GMEM_LIB = gmemlib
   PREFIX_OBJS=$(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
+endif
 
+ifeq ($(strip $(filter-out powerpc darwin%,$(arch) $(osys))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-intnam.ads<a-intnam-darwin.ads \
+  s-inmaop.adb<7sinmaop.adb \
+  s-intman.adb<7sintman.adb \
+  s-osinte.adb<s-osinte-darwin.adb \
+  s-osinte.ads<s-osinte-darwin.ads \
+  s-osprim.adb<7sosprim.adb \
+  s-taprop.adb<7staprop.adb \
+  s-taspri.ads<7staspri.ads \
+  s-tpopsp.adb<5atpopsp.adb \
+  g-soccon.ads<3bsoccon.ads \
+  system.ads<system-darwin-ppc.ads
 endif
 
 # The runtime library for gnat comprises two directories.  One contains the
@@ -1909,7 +1923,7 @@ gnatlib-shared-default:
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
-	$(RM) rts/libgnat$(soext) rts/libgnarl$(soext)
+	$(RM) rts/libgna*$(soext)
 	cd rts; ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
@@ -1965,7 +1979,7 @@ gnatlib-shared-win32:
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
-	$(RM) rts/libgnat$(soext) rts/libgnarl$(soext)
+	$(RM) rts/libgna*$(soext)
 	cd rts; ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
@@ -1982,7 +1996,7 @@ gnatlib-shared-vms:
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
-	$(RM) rts/libgnat*$(soext) rts/libgnarl*$(soext)
+	$(RM) rts/libgna*$(soext)
 	cd rts && echo "case_sensitive=yes" > SYMVEC_$$$$.opt && \
 	objdump --syms $(LIBGNAT_OBJS) $(GNATRTL_NONTASKING_OBJS) | \
 	$(SHLIB_SYMVEC) >> SYMVEC_$$$$.opt && \
