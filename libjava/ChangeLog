@@ -1,3 +1,8 @@
+2001-05-18  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added Polygon.java.
+
 2001-05-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* include/jvm.h: Move "#pragma GCC java_exceptions" to ...

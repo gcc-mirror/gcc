@@ -388,6 +388,7 @@ java/awt/Paint.java \
 java/awt/PaintContext.java \
 java/awt/Panel.java \
 java/awt/Point.java \
+java/awt/Polygon.java \
 java/awt/PopupMenu.java	\
 java/awt/Rectangle.java	\
 java/awt/RenderingHints.java \
@@ -1410,7 +1411,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/MenuComponent.P .deps/java/awt/MenuContainer.P \
 .deps/java/awt/MenuItem.P .deps/java/awt/MenuShortcut.P \
 .deps/java/awt/Paint.P .deps/java/awt/PaintContext.P \
-.deps/java/awt/Panel.P .deps/java/awt/Point.P \
+.deps/java/awt/Panel.P .deps/java/awt/Point.P .deps/java/awt/Polygon.P \
 .deps/java/awt/PopupMenu.P .deps/java/awt/Rectangle.P \
 .deps/java/awt/RenderingHints.P .deps/java/awt/ScrollPane.P \
 .deps/java/awt/Scrollbar.P .deps/java/awt/Shape.P \
