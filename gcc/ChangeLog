@@ -1,3 +1,8 @@
+2002-09-26  Theodore A. Roth  <troth@verinet.com>
+
+        * config/avr/avr.c: Eliminate use of _PC_ in pc relative insns.
+        * config/avr/avr.md: Ditto.
+
 2002-09-27  Alexander N. Kabaev <ak03@gte.com>
 
 	PR preprocessor/8055
