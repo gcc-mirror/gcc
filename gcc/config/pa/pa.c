@@ -28,10 +28,10 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
-#include "output.h"
 #include "insn-attr.h"
 #include "flags.h"
 #include "tree.h"
+#include "output.h"
 #include "except.h"
 #include "expr.h"
 #include "optabs.h"
@@ -6509,7 +6509,7 @@ pa_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
   const char *target_name = XSTR (XEXP (DECL_RTL (function), 0), 0);
   static unsigned int current_thunk_number;
   char label[16];
-  char *lab;
+  const char *lab;
   ASM_GENERATE_INTERNAL_LABEL (label, "LTHN", current_thunk_number);
   lab = (*targetm.strip_name_encoding) (label);
   target_name = (*targetm.strip_name_encoding) (target_name);
