@@ -198,13 +198,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"m88k, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.68 $"
+#define VERSION_INFO2   "$Revision: 1.69 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.68 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.69 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */
@@ -1718,6 +1718,11 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /*** Output of Assembler Code ***/
 
 /* Control the assembler format that we output.  */
+
+/* A C string constant describing how to begin a comment in the target
+   assembler language.  The compiler assumes that the comment will end at
+   the end of the line.  */
+#define ASM_COMMENT_START ";"
 
 /* Allow pseudo-ops to be overridden.  Override these in svr[34].h.  */
 #undef	INT_ASM_OP
