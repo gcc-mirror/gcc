@@ -68,14 +68,6 @@ namespace std
     S::_M_replace(S::iterator, S::iterator, const C*, const C*);  
 
   template 
-    S& 
-    S::_M_replace_safe(S::iterator, S::iterator, S::iterator, S::iterator);
-
-  template
-    S&
-    S::_M_replace_safe(S::iterator, S::iterator, const C*, const C*);  
-
-  template 
     C* 
     S::_S_construct(S::iterator, S::iterator, 
 		    const allocator<C>&, forward_iterator_tag);

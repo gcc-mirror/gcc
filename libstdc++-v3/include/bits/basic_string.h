@@ -750,7 +750,7 @@ namespace std
        */
       basic_string&
       append(size_type __n, _CharT __c)
-      { return _M_replace_aux(_M_iend(), _M_iend(), __n, __c); }
+      { return _M_replace_aux(this->size(), size_type(0), __n, __c); }
 
       /**
        *  @brief  Append a range of characters.
@@ -836,7 +836,7 @@ namespace std
        */
       basic_string&
       assign(size_type __n, _CharT __c)
-      { return _M_replace_aux(_M_ibegin(), _M_iend(), __n, __c); }
+      { return _M_replace_aux(size_type(0), this->size(), __n, __c); }
 
       /**
        *  @brief  Set value to a range of characters.
@@ -1281,7 +1281,7 @@ namespace std
       { 
 	_GLIBCXX_DEBUG_PEDASSERT(_M_ibegin() <= __i1 && __i1 <= __i2
 				 && __i2 <= _M_iend());
-	return _M_replace_aux(__i1, __i2, __n, __c); 
+	return _M_replace_aux(__i1 - _M_ibegin(), __i2 - __i1, __n, __c); 
       }
 
       /**
@@ -1359,7 +1359,7 @@ namespace std
 	basic_string&
 	_M_replace_dispatch(iterator __i1, iterator __i2, _Integer __n, 
 			    _Integer __val, __true_type)
-        { return _M_replace_aux(__i1, __i2, __n, __val); }
+        { return _M_replace_aux(__i1 - _M_ibegin(), __i2 - __i1, __n, __val); }
 
       template<class _InputIterator>
 	basic_string&
@@ -1368,17 +1368,16 @@ namespace std
         { return _M_replace(__i1, __i2, __k1, __k2); }
 
       basic_string&
-      _M_replace_aux(iterator __i1, iterator __i2, size_type __n2, _CharT __c);
+      _M_replace_aux(size_type __pos1, size_type __n1, size_type __n2, _CharT __c);
 
       template<class _InputIterator>
         basic_string&
         _M_replace(iterator __i1, iterator __i2, _InputIterator __k1,
 		   _InputIterator __k2);
 
-      template<class _ForwardIterator>
-        basic_string&
-        _M_replace_safe(iterator __i1, iterator __i2, _ForwardIterator __k1,
-		   _ForwardIterator __k2);
+      basic_string&
+      _M_replace_safe(size_type __pos1, size_type __n1, const _CharT* __s,
+		      size_type __n2);
 
       // _S_construct_aux is used to implement the 21.3.1 para 15 which
       // requires special behaviour if _InIter is an integral type

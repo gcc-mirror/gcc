@@ -1,3 +1,28 @@
+2004-01-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.h (_M_replace_safe): Change
+	signatures to take size_types and const _CharT*.
+	(_M_replace_aux): Likewise, takes size_types instead of
+	iterators.
+	(append(size_type, _CharT)): Update call.
+	(assign(size_type, _CharT)): Ditto.
+	(replace(iterator, iterator, size_type, _CharT)): Ditto.
+	(_M_replace_dispatch(iterator, iterator, _Integer,
+	_Integer, __true_type)): Ditto.
+	* include/bits/basic_string.tcc (assign(const _CharT*,
+	size_type)): Ditto.
+	(insert(size_type, const _CharT*, size_type)): Ditto.
+	(replace(size_type, size_type, const _CharT*,
+	size_type)): Ditto.
+	(_M_replace(iterator, iterator, _InputIterator,
+	_InputIterator)): Ditto.
+	(append(const basic_string&)): Ditto.
+	(append(const basic_string&, size_type, size_type): Ditto.
+	(append(const _CharT*, size_type): Ditto.
+	(_M_replace_safe, _M_replace_safe): Change definitions
+	accordingly, simplify.
+	* string-inst.cc (_M_replace_safe): Don't instantiate.
+
 2004-01-21  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.tcc (append(const basic_string&)):
