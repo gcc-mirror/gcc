@@ -3,7 +3,7 @@
    as distinct from winnt.h, which is used to build GCC for use with a
    windows style library and tool set and uses the Microsoft tools.
    This variant uses CRTDLL.DLL insted of MSVCRTDLL.DLL.
-   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,11 +21,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
-
-/* Most of this is the same as for mingw32, except for changing some
-   specs.  */
-
-#include "i386/mingw32.h"
 
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC "-lmingw32 -lgcc -lmoldname -lcrtdll"
