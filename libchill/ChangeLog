@@ -1,3 +1,8 @@
+Wed Oct 27 01:13:12 1999  Alan Modra <alan@SPRI.Levels.UniSA.Edu.Au>
+
+	* Makefile.in (config.status): Fix leading whitespace.
+	(clean): Remove libchill.a.
+
 Thu Sep  2 17:50:47 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* powerset.h (SET_WORD, SET_SHORT, SET_CHAR): Do not redefine based
