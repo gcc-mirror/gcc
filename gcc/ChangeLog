@@ -499,7 +499,7 @@ Wed Dec  5 00:42:16 EST 2001  John Wehle  (john@feith.com)
 	* builtins.def (BUILT_IN_PREFETCH): New.
 	* builtins.c (expand_builtin_expect): New.
 	  (expand_builtin): Call it.
-	* doc/extend.texi: Document __builtin_expect.
+	* doc/extend.texi: Document __builtin_prefetch.
 
 	* config/i386/i386.md (prefetch): Rename as prefetch_sse to avoid
 	  conflicts with new generic prefetch functionality.
