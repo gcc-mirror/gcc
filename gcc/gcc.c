@@ -4195,7 +4195,9 @@ static int basename_length;
 static int suffixed_basename_length;
 static const char *input_basename;
 static const char *input_suffix;
+#ifndef HOST_LACKS_INODE_NUMBERS
 static struct stat input_stat;
+#endif
 static int input_stat_set;
 
 /* The compiler used to process the current input file.  */
@@ -4759,6 +4761,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		    *((char *) temp_filename + temp_filename_length) = '\0';
 		    if (strcmp (temp_filename, input_filename) != 0)
 		      {
+#ifndef HOST_LACKS_INODE_NUMBERS
 			struct stat st_temp;
 
 			/* Note, set_input() resets input_stat_set to 0.  */
@@ -4773,11 +4776,19 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 			   and we can do the stat for the temp_filename
 			   then the they could still refer to the same
 			   file if st_dev/st_ino's are the same.  */
-
 			if (input_stat_set != 1
 			    || stat (temp_filename, &st_temp) < 0
 			    || input_stat.st_dev != st_temp.st_dev
 			    || input_stat.st_ino != st_temp.st_ino)
+#else
+			/* Just compare canonical pathnames.  */
+			char* input_realname = lrealpath (input_filename);
+			char* temp_realname = lrealpath (temp_filename);
+			bool files_differ = strcmp (input_realname, temp_realname);
+			free (input_realname);
+			free (temp_realname);
+			if (files_differ) 	
+#endif
 			  {
 			    temp_filename = save_string (temp_filename,
 							 temp_filename_length + 1);
