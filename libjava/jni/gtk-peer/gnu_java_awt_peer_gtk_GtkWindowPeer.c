@@ -410,7 +410,7 @@ Java_gnu_java_awt_peer_gtk_GtkFramePeer_setMenuBarPeer
 
 JNIEXPORT jint JNICALL
 Java_gnu_java_awt_peer_gtk_GtkFramePeer_getMenuBarHeight
-  (JNIEnv *env, jobject obj, jobject menubar)
+  (JNIEnv *env, jobject obj __attribute__((unused)), jobject menubar)
 {
   GtkWidget *ptr;
   jint height;
@@ -722,7 +722,8 @@ window_property_changed_cb (GtkWidget *widget __attribute__((unused)),
   return FALSE;
 }
 
-static void menubar_resize_cb (GtkWidget *widget, GtkAllocation *alloc, 
+static void menubar_resize_cb (GtkWidget *widget __attribute__((unused)), 
+                               GtkAllocation *alloc __attribute__((unused)), 
                                jobject peer)
 {
   static int id_set = 0;
