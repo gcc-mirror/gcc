@@ -1,3 +1,12 @@
+2003-07-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (define_label): Replace filename and lineno
+	arguments with a location_t.
+	* decl.c (pop_label): Adjust define_label call.
+	(define_label): Replace filename and lineno arguments with a
+	location_t.
+	* semantics.c (finish_label): Adjust define_label call.
+
 2003-07-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9559

@@ -2446,7 +2446,7 @@ label:	  CASE expr_no_commas ':'
                 { stmt_count++;
 		  $$ = do_case (NULL_TREE, NULL_TREE); }
 	| identifier save_location ':' maybe_attribute
-		{ tree label = define_label ($2.file, $2.line, $1);
+		{ tree label = define_label ($2, $1);
 		  stmt_count++;
 		  if (label)
 		    {

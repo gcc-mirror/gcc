@@ -189,7 +189,7 @@ extern void check_for_loop_decls (void);
 extern void clear_parm_order (void);
 extern int  complete_array_type (tree, tree, int);
 extern void declare_parm_level (int);
-extern tree define_label (const char *, int, tree);
+extern tree define_label (location_t, tree);
 extern void finish_decl (tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
 extern void finish_function (int, int);

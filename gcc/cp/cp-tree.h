@@ -3650,7 +3650,7 @@ extern tree push_using_directive                (tree);
 extern bool push_class_level_binding		(tree, tree);
 extern tree implicitly_declare			(tree);
 extern tree declare_local_label                 (tree);
-extern tree define_label			(const char *, int, tree);
+extern tree define_label			(location_t, tree);
 extern void check_goto				(tree);
 extern void define_case_label			(void);
 extern tree namespace_binding                   (tree, tree);

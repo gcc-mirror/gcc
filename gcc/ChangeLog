@@ -1,3 +1,14 @@
+2003-07-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-tree.h (define_label): Replace filename and lineno arguments
+	with a location_t.
+	* c-decl.c (poplevel): Adjust define_label call.
+	(pop_label_level): Likewise.
+	(define_label): Replace filename and lineno arguments with a
+	location_t.
+	(store_parm_decls): Use DECL_SOURCE_LOCATION.
+	* c-parse.in (label): Adjust define_label call.
+
 2003-07-01  Neil Booth  <neil@daikokuya.co.uk>
 
 	* config/sol2.h, config/alpha/alpha.h, config/alpha/linux.h,
