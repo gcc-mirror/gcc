@@ -289,6 +289,7 @@ extern int target_flags;
 #define	TARGET_DEBUG_STACK	(target_flags & MASK_DEBUG_STACK)
 #define	TARGET_DEBUG_ARG	(target_flags & MASK_DEBUG_ARG)
 
+#define TARGET_32BIT		(! TARGET_64BIT)
 #define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
 
 /* Pseudo target to indicate whether the object format is ELF
@@ -496,11 +497,11 @@ extern struct rs6000_cpu_select rs6000_select[];
    Note that this is not necessarily the width of data type `int';
    if using 16-bit ints on a 68000, this would still be 32.
    But on a machine with 16-bit registers, this would be 16.  */
-#define BITS_PER_WORD (TARGET_POWERPC64 ? 64 : 32)
+#define BITS_PER_WORD (! TARGET_POWERPC64 ? 32 : 64)
 #define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */
-#define UNITS_PER_WORD (TARGET_POWERPC64 ? 8 : 4)
+#define UNITS_PER_WORD (! TARGET_POWERPC64 ? 4 : 8)
 #define MIN_UNITS_PER_WORD 4
 #define UNITS_PER_FP_WORD 8
 
@@ -527,7 +528,7 @@ extern struct rs6000_cpu_select rs6000_select[];
 /* A C expression for the size in bits of the type `long' on the
    target machine.  If you don't define this, the default is one
    word.  */
-#define LONG_TYPE_SIZE (TARGET_64BIT ? 64 : 32)
+#define LONG_TYPE_SIZE (TARGET_32BIT ? 32 : 64)
 #define MAX_LONG_TYPE_SIZE 64
 
 /* A C expression for the size in bits of the type `long long' on the
@@ -558,10 +559,10 @@ extern struct rs6000_cpu_select rs6000_select[];
 
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE (TARGET_64BIT ? 64 : 32)
+#define POINTER_SIZE (TARGET_32BIT ? 32 : 64)
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
-#define PARM_BOUNDARY (TARGET_64BIT ? 64 : 32)
+#define PARM_BOUNDARY (TARGET_32BIT ? 32 : 64)
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
 #define STACK_BOUNDARY 64
@@ -1123,10 +1124,10 @@ typedef struct rs6000_stack {
 /* #define FRAME_GROWS_DOWNWARD */
 
 /* Size of the outgoing register save area */
-#define RS6000_REG_SAVE (TARGET_64BIT ? 64 : 32)
+#define RS6000_REG_SAVE (TARGET_32BIT ? 32 : 64)
 
 /* Size of the fixed area on the stack */
-#define RS6000_SAVE_AREA (TARGET_64BIT ? 48 : 24)
+#define RS6000_SAVE_AREA (TARGET_32BIT ? 24 : 48)
 
 /* Address to save the TOC register */
 #define RS6000_SAVE_TOC plus_constant (stack_pointer_rtx, 20)
@@ -1145,7 +1146,7 @@ extern int rs6000_sysv_varargs_p;
 
 /* Size of V.4 varargs area in bytes */
 #define RS6000_VARARGS_SIZE \
-  ((GP_ARG_NUM_REG * (TARGET_64BIT ? 8 : 4)) + (FP_ARG_NUM_REG * 8) + 8)
+  ((GP_ARG_NUM_REG * (TARGET_32BIT ? 4 : 8)) + (FP_ARG_NUM_REG * 8) + 8)
 
 /* Offset of V.4 varargs area */
 #define RS6000_VARARGS_OFFSET \
@@ -1509,7 +1510,7 @@ typedef struct rs6000_args
 #define RETURN_ADDRESS_OFFSET						\
  ((DEFAULT_ABI == ABI_AIX						\
    || DEFAULT_ABI == ABI_AIX_NODESC)	? 8 :				\
-  (DEFAULT_ABI == ABI_V4)		? (TARGET_64BIT ? 8 : 4) :	\
+  (DEFAULT_ABI == ABI_V4)		? (TARGET_32BIT ? 4 : 8) :	\
   (DEFAULT_ABI == ABI_NT)		? -4 :				\
   (fatal ("RETURN_ADDRESS_OFFSET not supported"), 0))
 
@@ -1674,13 +1675,15 @@ typedef struct rs6000_args
    plus a constant), a short (16-bit signed) constant plus a register,
    the sum of two registers, or a register indirect, possibly with an
    auto-increment.  For DFmode and DImode with an constant plus register,
-   we must ensure that both words are addressable.  */
+   we must ensure that both words are addressable or PowerPC64 with offset
+   word aligned.  */
 
 #define LEGITIMATE_CONSTANT_POOL_BASE_P(X)				\
   (TARGET_TOC && GET_CODE (X) == SYMBOL_REF				\
    && CONSTANT_POOL_ADDRESS_P (X)					\
    && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (X)))
 
+/* TARGET_64BIT TOC64 guaranteed to have 64 bit alignment.  */
 #define LEGITIMATE_CONSTANT_POOL_ADDRESS_P(X)				\
   (LEGITIMATE_CONSTANT_POOL_BASE_P (X)					\
    || (TARGET_TOC							\
@@ -1703,7 +1706,13 @@ typedef struct rs6000_args
   && REG_OK_FOR_BASE_P (XEXP (X, 0))			\
   && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 0)	\
   && (((MODE) != DFmode && (MODE) != DImode)		\
-      || LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 4)))
+      || (TARGET_32BIT					\
+        ? LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 4) \
+        : ! (INTVAL (XEXP (X, 1)) & 3)))		\
+  && ((MODE) != TImode					\
+      || (TARGET_64BIT					\
+        && ! (INTVAL (XEXP (X, 1)) & 3)			\
+        && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 8))))
 
 #define LEGITIMATE_INDEXED_ADDRESS_P(X)		\
  (GET_CODE (X) == PLUS				\
@@ -1739,8 +1748,9 @@ typedef struct rs6000_args
     goto ADDR;						\
   if (LEGITIMATE_OFFSET_ADDRESS_P (MODE, X))		\
     goto ADDR;						\
-  if ((MODE) != DImode && (MODE) != TImode		\
-      && (TARGET_HARD_FLOAT || (MODE) != DFmode)	\
+  if ((MODE) != TImode					\
+      && (TARGET_HARD_FLOAT || TARGET_64BIT || (MODE) != DFmode) \
+      && (TARGET_64BIT || (MODE) != DImode)		\
       && LEGITIMATE_INDEXED_ADDRESS_P (X))		\
     goto ADDR;						\
   if (LEGITIMATE_LO_SUM_ADDRESS_P (MODE, X))		\
@@ -1787,14 +1797,15 @@ typedef struct rs6000_args
     }									\
   else if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
 	   && GET_CODE (XEXP (X, 1)) != CONST_INT			\
-	   && (TARGET_HARD_FLOAT || (MODE) != DFmode)			\
-	   && (MODE) != DImode && (MODE) != TImode)			\
+	   && (TARGET_HARD_FLOAT || TARGET_64BIT || (MODE) != DFmode)	\
+	   && (TARGET_64BIT || (MODE) != DImode)			\
+	   && (MODE) != TImode)						\
     {									\
       (X) = gen_rtx (PLUS, Pmode, XEXP (X, 0),				\
 		     force_reg (Pmode, force_operand (XEXP (X, 1), 0))); \
       goto WIN;								\
     }									\
-  else if (TARGET_ELF && !TARGET_64BIT && TARGET_NO_TOC			\
+  else if (TARGET_ELF && TARGET_32BIT && TARGET_NO_TOC			\
 	   && GET_CODE (X) != CONST_INT					\
 	   && GET_CODE (X) != CONST_DOUBLE && CONSTANT_P (X)		\
 	   && (TARGET_HARD_FLOAT || (MODE) != DFmode)			\
@@ -1818,7 +1829,8 @@ typedef struct rs6000_args
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)		\
 { if (GET_CODE (ADDR) == PLUS					\
       && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (ADDR, 1), 0)	\
-      && ! LEGITIMATE_ADDRESS_INTEGER_P (XEXP (ADDR, 1), 4))	\
+      && ! LEGITIMATE_ADDRESS_INTEGER_P (XEXP (ADDR, 1),	\
+					 (TARGET_32BIT ? 4 : 8))) \
     goto LABEL;							\
   if (GET_CODE (ADDR) == PRE_INC)				\
     goto LABEL;							\
@@ -1835,7 +1847,7 @@ typedef struct rs6000_args
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE (TARGET_64BIT ? DImode : SImode)
+#define CASE_VECTOR_MODE (TARGET_32BIT ? SImode : DImode)
 
 /* Define this if the tablejump instruction expects the table
    to contain offsets from the address of the table.
@@ -1858,7 +1870,7 @@ typedef struct rs6000_args
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
-#define MOVE_MAX (TARGET_POWERPC64 ? 8 : 4)
+#define MOVE_MAX (! TARGET_POWERPC64 ? 4 : 8)
 #define MAX_MOVE_MAX 8
 
 /* Nonzero if access to memory by bytes is no faster than for words.
@@ -1913,12 +1925,12 @@ typedef struct rs6000_args
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode (TARGET_64BIT ? DImode : SImode)
+#define Pmode (TARGET_32BIT ? SImode : DImode)
 
 /* Mode of a function address in a call instruction (for indexing purposes).
 
    Doesn't matter on RS/6000.  */
-#define FUNCTION_MODE (TARGET_64BIT ? DImode : SImode)
+#define FUNCTION_MODE (TARGET_32BIT ? SImode : DImode)
 
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.
