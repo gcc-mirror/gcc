@@ -2610,8 +2610,8 @@ contains_128bit_aligned_vector_p (tree type)
   return false;
 }
 
-/* Gives the alignment boundary, in bits, of an argument with the specified mode
-   and type.   */
+/* Gives the alignment boundary, in bits, of an argument with the
+   specified mode and type.  */
 
 int
 ix86_function_arg_boundary (enum machine_mode mode, tree type)
@@ -2642,8 +2642,6 @@ ix86_function_arg_boundary (enum machine_mode mode, tree type)
 	  if (!contains_128bit_aligned_vector_p (type))
 	    align = PARM_BOUNDARY;
 	}
-      if (align != PARM_BOUNDARY && !TARGET_SSE)
-	abort();
     }
   if (align > 128)
     align = 128;
