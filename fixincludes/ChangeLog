@@ -1,3 +1,19 @@
+2004-11-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* configure.ac: Add code to determine noncanonical_target,
+	local_prefix, gcc_version; process mkheaders.in to make mkheaders.
+	* configure: Regenerate.
+	* fixinc.in: Move here from gcc/; fix many cross-hosting bugs.
+	* mkfixinc.sh: Move here from gcc/; update for changes to fixinc.in.
+	* mkheaders.in: Move here from gcc/; remove some unnecessary macros;
+	update for changes to fixinc.in.
+	* Makefile.in: Add many new macros.
+	(install): New target.
+	(mkheaders): New target.
+	(fixinc.sh): New target.
+	(all): Add mkheaders and fixinc.sh.
+	* README-fixinc: Move here from gcc/.
+
 2004-11-01  Mike Stump  <mrs@apple.com>
 
 	* inclhack.def (stdio_va_list): Break out clients from here...

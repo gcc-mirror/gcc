@@ -6,6 +6,24 @@ AC_CONFIG_AUX_DIR(..)
 AC_CANONICAL_SYSTEM
 AC_PROG_CC
 
+# Determine the noncanonical target name, for directory use.
+ACX_NONCANONICAL_TARGET
+
+# Specify the local prefix
+local_prefix=
+AC_ARG_WITH(local-prefix,
+[  --with-local-prefix=DIR specifies directory to put local include],
+[case "${withval}" in
+yes)	AC_MSG_ERROR(bad value ${withval} given for local include directory prefix) ;;
+no)	;;
+*)	local_prefix=$with_local_prefix ;;
+esac])
+
+# Default local prefix if it is empty
+if test x$local_prefix = x; then
+	local_prefix=/usr/local
+fi
+
 # Choose one or two-process fix methodology.  Systems that cannot handle
 # bi-directional pipes must use the two process method.
 #
@@ -33,6 +51,12 @@ if test $TARGET = twoprocess; then
 	AC_DEFINE(SEPARATE_FIX_PROC, 1,
 		  [Define if testing and fixing are done by separate process])
 fi
+
+# Get GCC's version number.
+changequote(,)dnl
+gcc_version=`sed -n '/version_string/ { s/.*"\([^ "]*\)[^"]*".*/\1/p ; }' ${srcdir}/../gcc/version.c`
+changequote([,])dnl
+AC_SUBST(gcc_version)
 
 case $host in
 	vax-dec-bsd* )
@@ -74,5 +98,5 @@ fi
 AC_SUBST(MAINT)
 
 AC_CONFIG_HEADERS(config.h, [echo timestamp > stamp-h])
-AC_CONFIG_FILES(Makefile)
+AC_CONFIG_FILES(Makefile mkheaders)
 AC_OUTPUT

@@ -1,3 +1,10 @@
+2004-11-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.def: Build fixincludes for the host, too.
+	* Makefile.in: Regenerate.
+	* configure.in (host_tools): Add fixincludes.
+	* configure: Regenerate.
+
 2004-11-04  Daniel Jacobowitz  <dan@debian.org>
 
 	* configure.in (arm-*-oabi*, thumb-*-oabi*): Remove.

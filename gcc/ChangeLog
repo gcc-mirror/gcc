@@ -1,3 +1,16 @@
+2004-11-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (distclean): Don't delete nonexistent fixinc/ directory.
+	(install-mkheaders): Install the version built for the
+	host, not for the build machine.
+	* configure.ac: Always run fixincludes.
+	(all_outputs): Remove mkheaders.
+	* configure: Regenerate.
+	* fixinc.in: Move to fixincludes/.
+	* mkfixinc.sh: Likewise.
+	* mkheaders.in: Likewise.
+	* README-fixinc: Likewise.
+
 2004-11-05  Ramana Radhakrishnan  <ramana.radhakrishnan@codito.com>
 
 	PR target/18263
