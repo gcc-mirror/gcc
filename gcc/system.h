@@ -112,6 +112,10 @@ extern int fprintf_unlocked PARAMS ((FILE *, const char *, ...));
 extern int errno;
 #endif
 
+/* Some of glibc's string inlines cause warnings.  Plus we'd rather
+   rely on (and therefore test) GCC's string builtins.  */
+#define __NO_STRING_INLINES
+
 #ifdef STRING_WITH_STRINGS
 # include <string.h>
 # include <strings.h>
