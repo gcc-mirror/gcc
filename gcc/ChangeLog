@@ -1,3 +1,8 @@
+Thu May 27 02:09:27 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* reload.c (push_reload): Do not call remove_address_replacements
+	when presented with identical optional reloads.
+
 Wed May 26 14:18:05 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (MASK_FIX, TARGET_FIX): New.
