@@ -144,6 +144,36 @@ htab_empty (htab)
   memset (htab->entries, 0, htab->size * sizeof (void *));
 }
 
+/* Similar to htab_find_slot, but without several unwanted side effects:
+    - Does not call htab->eq_f when it finds an existing entry.
+    - Does not change the count of elements/searches/collisions in the
+      hash table.
+   This function also assumes there are no deleted entries in the table.
+   HASH is the hash value for the element to be inserted.  */
+static void **
+find_empty_slot_for_expand (htab, hash)
+     htab_t htab;
+     unsigned int hash;
+{
+  size_t size = htab->size;
+  unsigned int hash2 = 1 + hash % (size - 2);
+  unsigned int index = hash % size;
+
+  for (;;)
+    {
+      void **slot = htab->entries + index;
+      if (*slot == EMPTY_ENTRY)
+	return slot;
+
+      if (*slot == DELETED_ENTRY)
+	abort ();
+
+      index += hash2;
+      if (index >= size)
+	index -= size;
+    }
+}
+
 /* The following function changes size of memory allocated for the
    entries and repeatedly inserts the table elements.  The occupancy
    of the table after the call will be about 50%.  Naturally the hash
@@ -173,7 +203,7 @@ htab_expand (htab)
       void *x = *p;
       if (x != EMPTY_ENTRY && x != DELETED_ENTRY)
 	{
-	  void **q = htab_find_slot (htab, x, 1);
+	  void **q = find_empty_slot_for_expand (htab, (*htab->hash_f) (x));
 	  *q = x;
 	}
       p++;
@@ -186,16 +216,16 @@ htab_expand (htab)
    element.  It cannot be used to insert or delete an element.  */
 
 void *
-htab_find (htab, element)
+htab_find_with_hash (htab, element, hash)
      htab_t htab;
      const void *element;
+     unsigned int hash;
 {
-  unsigned int index, hash, hash2;
+  unsigned int index, hash2;
   size_t size;
 
   htab->searches++;
   size = htab->size;
-  hash = (*htab->hash_f) (element);
   hash2 = 1 + hash % (size - 2);
   index = hash % size;
 
@@ -214,6 +244,16 @@ htab_find (htab, element)
     }
 }
 
+/* Like htab_find_slot_with_hash, but compute the hash value from the
+   element.  */
+void *
+htab_find (htab, element)
+     htab_t htab;
+     const void *element;
+{
+  return htab_find_with_hash (htab, element, (*htab->hash_f) (element));
+}
+
 /* This function searches for a hash table slot containing an entry
    equal to the given element.  To delete an entry, call this with
    INSERT = 0, then call htab_clear_slot on the slot returned (possibly
@@ -221,20 +261,20 @@ htab_find (htab, element)
    INSERT = 1, then write the value you want into the returned slot.  */
 
 void **
-htab_find_slot (htab, element, insert)
+htab_find_slot_with_hash (htab, element, hash, insert)
      htab_t htab;
      const void *element;
+     unsigned int hash;
      int insert;
 {
   void **first_deleted_slot;
-  unsigned int index, hash, hash2;
+  unsigned int index, hash2;
   size_t size;
 
   if (insert && htab->size * 3 <= htab->n_elements * 4)
     htab_expand (htab);
 
   size = htab->size;
-  hash = (*htab->hash_f) (element);
   hash2 = 1 + hash % (size - 2);
   index = hash % size;
 
@@ -276,6 +316,18 @@ htab_find_slot (htab, element, insert)
       if (index >= size)
 	index -= size;
     }
+}
+
+/* Like htab_find_slot_with_hash, but compute the hash value from the
+   element.  */
+void **
+htab_find_slot (htab, element, insert)
+     htab_t htab;
+     const void *element;
+     int insert;
+{
+  return htab_find_slot_with_hash (htab, element, (*htab->hash_f) (element),
+				   insert);
 }
 
 /* This function deletes an element with the given value from hash
@@ -336,7 +388,7 @@ htab_traverse (htab, callback, info)
     {
       void *x = *slot;
       if (x != EMPTY_ENTRY && x != DELETED_ENTRY)
-	if (!(*callback) (x, info))
+	if (!(*callback) (slot, info))
 	  break;
     }
   while (++slot < limit);

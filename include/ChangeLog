@@ -1,3 +1,10 @@
+2000-03-14  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* hashtab.h (htab_trav): Modify type so that first arg is of type
+	void **.
+	(htab_find_with_hash, htab_find_slot_with_hash): Declare new
+	functions.
+
 2000-03-09  Alex Samuel  <samuel@codesourcery.com>
 
 	* partition.h: New file.
