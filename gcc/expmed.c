@@ -109,12 +109,12 @@ init_expmed ()
       XEXP (XEXP (SET_SRC (PATTERN (shiftadd_insn)), 0), 1)
 	= GEN_INT ((HOST_WIDE_INT) 1 << m);
       if (recog (PATTERN (shiftadd_insn), shiftadd_insn, &dummy) >= 0)
-	shiftadd_cost[m] = rtx_cost (PATTERN (SET_SRC (shiftadd_insn)), SET);
+	shiftadd_cost[m] = rtx_cost (SET_SRC (PATTERN (shiftadd_insn)), SET);
 
       XEXP (XEXP (SET_SRC (PATTERN (shiftsub_insn)), 0), 1)
 	= GEN_INT ((HOST_WIDE_INT) 1 << m);
       if (recog (PATTERN (shiftsub_insn), shiftsub_insn, &dummy) >= 0)
-	shiftsub_cost[m] = rtx_cost (PATTERN (SET_SRC (shiftsub_insn)), SET);
+	shiftsub_cost[m] = rtx_cost (SET_SRC (PATTERN (shiftsub_insn)), SET);
     }
 
   mult_cost = rtx_cost (gen_rtx (MULT, word_mode, reg, reg), SET);
