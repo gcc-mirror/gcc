@@ -1,3 +1,9 @@
+2002-05-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* testsuite/lib/libjava.exp (libjava_find_spec): New function.
+	(libjava_init): Use it to find libgcj.spec.
+	(libjava_arguments): Likewise.
+
 2002-05-02  David S. Miller  <davem@redhat.com>
 
 	PR bootstrap/6525
