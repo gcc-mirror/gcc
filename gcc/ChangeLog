@@ -1,3 +1,7 @@
+Mon Apr 27 20:22:08 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (gen_ashift_hi): Don't make SUBREG of a SUBREG.
+
 Mon Apr 27 18:23:51 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
         * sh.c (sh_expand_prologue, sh_expand_epilogue):

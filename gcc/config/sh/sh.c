@@ -922,8 +922,16 @@ gen_ashift_hi (type, n, reg)
 	 zero/sign extension.
 	 gen_ashift_hi is only called in contexts where we know that the
 	 sign extension works out correctly.  */
-      gen_ashift (type, n, gen_rtx_SUBREG (SImode, reg, 0));
-      break;
+      {
+	int word = 0;
+	if (GET_CODE (reg) == SUBREG)
+	  {
+	    word = SUBREG_WORD (reg);
+	    reg = SUBREG_REG (reg);
+	  }
+	gen_ashift (type, n, gen_rtx_SUBREG (SImode, reg, word));
+	break;
+      }
     case ASHIFT:
       emit_insn (gen_ashlhi3_k (reg, reg, GEN_INT (n)));
       break;
