@@ -446,12 +446,10 @@ free_after_compilation (struct function *f)
   f->x_tail_recursion_reentry = NULL;
   f->x_arg_pointer_save_area = NULL;
   f->x_parm_birth_insn = NULL;
-  f->x_last_parm_insn = NULL;
   f->x_parm_reg_stack_loc = NULL;
   f->fixup_var_refs_queue = NULL;
   f->original_arg_vector = NULL;
   f->original_decl_initial = NULL;
-  f->inl_last_parm_insn = NULL;
   f->epilogue_delay_list = NULL;
 }
 
@@ -1823,12 +1821,6 @@ fixup_var_refs_insn (rtx insn, rtx var, enum machine_mode promoted_mode,
 
       fixup_var_refs_1 (var, promoted_mode, &PATTERN (insn), insn,
 			&replacements, no_share);
-
-      /* If this is last_parm_insn, and any instructions were output
-	 after it to fix it up, then we must set last_parm_insn to
-	 the last such instruction emitted.  */
-      if (insn == last_parm_insn)
-	last_parm_insn = PREV_INSN (next_insn);
 
       while (replacements)
 	{
@@ -5291,8 +5283,6 @@ assign_parms (tree fndecl)
       set_mem_attributes (x, result, 1);
       SET_DECL_RTL (result, x);
     }
-
-  last_parm_insn = get_last_insn ();
 
   /* We have aligned all the args, so add space for the pretend args.  */
   stack_args_size.constant += extra_pretend_bytes;

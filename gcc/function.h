@@ -296,10 +296,6 @@ struct function GTY(())
   /* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
   rtx x_parm_birth_insn;
 
-  /* Last insn of those whose job was to put parms into their nominal
-     homes.  */
-  rtx x_last_parm_insn;
-
   /* 1 + last pseudo register number possibly used for loading a copy
      of a parameter of this function.  */
   unsigned int x_max_parm_reg;
@@ -337,9 +333,6 @@ struct function GTY(())
   int no_debugging_symbols;
   rtvec original_arg_vector;
   tree original_decl_initial;
-  /* Last insn of those whose job was to put parms into their nominal
-     homes.  */
-  rtx inl_last_parm_insn;
   /* Highest label number in current function.  */
   int inl_max_label_num;
 
@@ -550,7 +543,6 @@ extern int trampolines_created;
 #define tail_recursion_reentry (cfun->x_tail_recursion_reentry)
 #define arg_pointer_save_area (cfun->x_arg_pointer_save_area)
 #define rtl_expr_chain (cfun->x_rtl_expr_chain)
-#define last_parm_insn (cfun->x_last_parm_insn)
 #define function_call_count (cfun->x_function_call_count)
 #define used_temp_slots (cfun->x_used_temp_slots)
 #define avail_temp_slots (cfun->x_avail_temp_slots)
