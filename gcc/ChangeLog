@@ -1,3 +1,11 @@
+Mon Sep 27 10:28:48 1999  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.c (output_function_prologue,
+	output_function_epilogue): Use
+	current_function_uses_pic_offset_table instead of regs_ever_live
+	to decide whether to save/restore pic register.
+	(legitimize_pic_address): Don't modify regs_ever_live any more.
+
 Sun Sep 26 16:36:52 1999  Robert Lipe  (robertlipe@usa.net)
 
 	* config/i386/dgux.h (SELECT_RTX_SECTION): Provide dummy argument
