@@ -1,5 +1,11 @@
 2000-11-25  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/sh/sh.h (TARGET_NONE): New.
+	(TARGET_SWITCHES): For all variant-selecting switch, use
+	TARGET_NONE to reset all other variant-selecting switch.  Added
+	empty strings to avoid warnings.
+	(TARGET_DEFAULT): Set to SH1_BIT.
+
 	* Makefile.in ($(INTL_TARGETS)): Added $(CONFIG_H) for
 	insn-codes.h.
 

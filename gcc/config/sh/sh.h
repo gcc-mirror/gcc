@@ -190,38 +190,50 @@ extern int target_flags;
 /* Nonzero if we should prefer @GOT calls when generating PIC.  */
 #define TARGET_PREFERGOT	(target_flags & PREFERGOT_BIT)
 
+/* Reset all target-selection flags.  */
+#define TARGET_NONE -(SH1_BIT | SH2_BIT | SH3_BIT | SH3E_BIT | SH4_BIT \
+		      | HARD_SH4_BIT | FPU_SINGLE_BIT)
+
 #define TARGET_SWITCHES  			\
-{ {"1",	        SH1_BIT},			\
-  {"2",	        SH2_BIT},			\
-  {"3",	        SH3_BIT|SH2_BIT},		\
-  {"3e",	SH3E_BIT|SH3_BIT|SH2_BIT|FPU_SINGLE_BIT},	\
-  {"4-single-only",	SH3E_BIT|SH3_BIT|SH2_BIT|HARD_SH4_BIT|FPU_SINGLE_BIT},	\
-  {"4-single",	SH4_BIT|SH3E_BIT|SH3_BIT|SH2_BIT|HARD_SH4_BIT|FPU_SINGLE_BIT},\
-  {"4-nofpu",	SH3_BIT|SH2_BIT|HARD_SH4_BIT},\
-  {"4",	        SH4_BIT|SH3E_BIT|SH3_BIT|SH2_BIT|HARD_SH4_BIT},	\
-  {"b",		-LITTLE_ENDIAN_BIT},  		\
-  {"bigtable", 	BIGTABLE_BIT},			\
-  {"dalign",  	DALIGN_BIT},			\
-  {"fmovd",  	FMOVD_BIT},			\
-  {"hitachi",	HITACHI_BIT},			\
-  {"nomacsave", NOMACSAVE_BIT},			\
-  {"ieee",  	IEEE_BIT},			\
-  {"isize", 	ISIZE_BIT},			\
-  {"l",		LITTLE_ENDIAN_BIT},  		\
-  {"no-ieee",  	-IEEE_BIT},			\
-  {"padstruct", PADSTRUCT_BIT},    		\
-  {"prefergot",	PREFERGOT_BIT},			\
-  {"relax",	RELAX_BIT},			\
-  {"space", 	SPACE_BIT},			\
-  {"usermode",	USERMODE_BIT},			\
+{ {"1",	        TARGET_NONE, "" },		\
+  {"1",	        SH1_BIT, "" },			\
+  {"2",	        TARGET_NONE, "" },		\
+  {"2",	        SH2_BIT|SH1_BIT, "" },		\
+  {"3",	        TARGET_NONE, "" },		\
+  {"3",	        SH3_BIT|SH2_BIT|SH1_BIT, "" },	\
+  {"3e",	TARGET_NONE, "" },		\
+  {"3e",	SH3E_BIT|SH3_BIT|SH2_BIT|SH1_BIT|FPU_SINGLE_BIT, "" },	\
+  {"4-single-only",	TARGET_NONE, "" },	\
+  {"4-single-only",	SH3E_BIT|SH3_BIT|SH2_BIT|SH1_BIT|HARD_SH4_BIT|FPU_SINGLE_BIT, "" },	\
+  {"4-single",	TARGET_NONE, "" },		\
+  {"4-single",	SH4_BIT|SH3E_BIT|SH3_BIT|SH2_BIT|SH1_BIT|HARD_SH4_BIT|FPU_SINGLE_BIT, "" },\
+  {"4-nofpu",	TARGET_NONE, "" },		\
+  {"4-nofpu",	SH3_BIT|SH2_BIT|SH1_BIT|HARD_SH4_BIT, "" },\
+  {"4",	        TARGET_NONE, "" },		\
+  {"4",	        SH4_BIT|SH3E_BIT|SH3_BIT|SH2_BIT|SH1_BIT|HARD_SH4_BIT, "" }, \
+  {"b",		-LITTLE_ENDIAN_BIT, "" },  	\
+  {"bigtable", 	BIGTABLE_BIT, "" },		\
+  {"dalign",  	DALIGN_BIT, "" },		\
+  {"fmovd",  	FMOVD_BIT, "" },		\
+  {"hitachi",	HITACHI_BIT, "" },		\
+  {"nomacsave", NOMACSAVE_BIT, "" },		\
+  {"ieee",  	IEEE_BIT, "" },			\
+  {"isize", 	ISIZE_BIT, "" },		\
+  {"l",		LITTLE_ENDIAN_BIT, "" },  	\
+  {"no-ieee",  	-IEEE_BIT, "" },		\
+  {"padstruct", PADSTRUCT_BIT, "" },    	\
+  {"prefergot",	PREFERGOT_BIT, "" },		\
+  {"relax",	RELAX_BIT, "" },		\
+  {"space", 	SPACE_BIT, "" },		\
+  {"usermode",	USERMODE_BIT, "" },		\
   SUBTARGET_SWITCHES                            \
-  {"",   	TARGET_DEFAULT} 		\
+  {"",   	TARGET_DEFAULT, "" } 		\
 }
 
 /* This are meant to be redefined in the host dependent files */
 #define SUBTARGET_SWITCHES
 
-#define TARGET_DEFAULT  (0)
+#define TARGET_DEFAULT  (SH1_BIT)
 
 #define OPTIMIZATION_OPTIONS(LEVEL,SIZE)				\
 do {									\
