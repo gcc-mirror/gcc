@@ -414,7 +414,7 @@ static struct d_comp *d_make_sub PARAMS ((struct d_info *, const char *));
 static struct d_comp *d_mangled_name PARAMS ((struct d_info *));
 static int has_return_type PARAMS ((struct d_comp *));
 static int is_ctor_dtor_or_conversion PARAMS ((struct d_comp *));
-static struct d_comp *d_encoding PARAMS ((struct d_info *));
+static struct d_comp *d_encoding PARAMS ((struct d_info *, int));
 static struct d_comp *d_name PARAMS ((struct d_info *));
 static struct d_comp *d_nested_name PARAMS ((struct d_info *));
 static struct d_comp *d_prefix PARAMS ((struct d_info *));
@@ -884,7 +884,7 @@ d_mangled_name (di)
     return NULL;
   if (d_next_char (di) != 'Z')
     return NULL;
-  return d_encoding (di);
+  return d_encoding (di, 1);
 }
 
 /* Return whether a function should have a return type.  The argument
@@ -940,11 +940,17 @@ is_ctor_dtor_or_conversion (dc)
 
 /* <encoding> ::= <(function) name> <bare-function-type>
               ::= <(data) name>
-              ::= <special-name>  */
+              ::= <special-name>
+
+   TOP_LEVEL is non-zero when called at the top level, in which case
+   if DMGL_PARAMS is not set we do not demangle the function
+   parameters.  We only set this at the top level, because otherwise
+   we would not correctly demangle names in local scopes.  */
 
 static struct d_comp *
-d_encoding (di)
+d_encoding (di, top_level)
      struct d_info *di;
+     int top_level;
 {
   char peek = d_peek_char (di);
 
@@ -956,7 +962,9 @@ d_encoding (di)
 
       dc = d_name (di);
       peek = d_peek_char (di);
-      if (peek == '\0' || peek == 'E')
+      if (peek == '\0'
+	  || peek == 'E'
+	  || (top_level && (di->options & DMGL_PARAMS) == 0))
 	return dc;
       return d_make_comp (di, D_COMP_TYPED_NAME, dc,
 			  d_bare_function_type (di, has_return_type (dc)));
@@ -1373,12 +1381,12 @@ d_special_name (di)
 	case 'h':
 	  if (! d_call_offset (di, 'h'))
 	    return NULL;
-	  return d_make_comp (di, D_COMP_THUNK, d_encoding (di), NULL);
+	  return d_make_comp (di, D_COMP_THUNK, d_encoding (di, 0), NULL);
 
 	case 'v':
 	  if (! d_call_offset (di, 'v'))
 	    return NULL;
-	  return d_make_comp (di, D_COMP_VIRTUAL_THUNK, d_encoding (di),
+	  return d_make_comp (di, D_COMP_VIRTUAL_THUNK, d_encoding (di, 0),
 			      NULL);
 
 	case 'c':
@@ -1386,7 +1394,7 @@ d_special_name (di)
 	    return NULL;
 	  if (! d_call_offset (di, '\0'))
 	    return NULL;
-	  return d_make_comp (di, D_COMP_COVARIANT_THUNK, d_encoding (di),
+	  return d_make_comp (di, D_COMP_COVARIANT_THUNK, d_encoding (di, 0),
 			      NULL);
 
 	case 'C':
@@ -1626,7 +1634,6 @@ d_type (di)
     case 'h': case 'i': case 'j':           case 'l': case 'm': case 'n':
     case 'o':                               case 's': case 't':
     case 'v': case 'w': case 'x': case 'y': case 'z':
-      /* FIXME: The old demangler handles Java types here.  */
       ret = d_make_builtin_type (di, &d_builtin_types[peek - 'a']);
       can_subst = 0;
       d_advance (di, 1);
@@ -2188,7 +2195,7 @@ d_local_name (di)
   if (d_next_char (di) != 'Z')
     return NULL;
 
-  function = d_encoding (di);
+  function = d_encoding (di, 0);
 
   if (d_next_char (di) != 'E')
     return NULL;
@@ -3673,6 +3680,7 @@ print_usage (fp, exit_value)
   fprintf (fp, "Usage: %s [options] [names ...]\n", program_name);
   fprintf (fp, "Options:\n");
   fprintf (fp, "  -h,--help       Display this message.\n");
+  fprintf (fp, "  -p,--no-params  Don't display function parameters\n");
   fprintf (fp, "  -v,--verbose    Produce verbose demanglings.\n");
   fprintf (fp, "If names are provided, they are demangled.  Otherwise filters standard input.\n");
 
@@ -3682,9 +3690,10 @@ print_usage (fp, exit_value)
 /* Option specification for getopt_long.  */
 static const struct option long_options[] = 
 {
-  { "help",    no_argument, NULL, 'h' },
-  { "verbose", no_argument, NULL, 'v' },
-  { NULL,      no_argument, NULL, 0   },
+  { "help",	 no_argument, NULL, 'h' },
+  { "no-params", no_argument, NULL, 'p' },
+  { "verbose",   no_argument, NULL, 'v' },
+  { NULL,        no_argument, NULL, 0   },
 };
 
 /* Main entry for a demangling filter executable.  It will demangle
@@ -3707,7 +3716,7 @@ main (argc, argv)
   /* Parse options.  */
   do 
     {
-      opt_char = getopt_long (argc, argv, "hv", long_options, NULL);
+      opt_char = getopt_long (argc, argv, "hpv", long_options, NULL);
       switch (opt_char)
 	{
 	case '?':  /* Unrecognized option.  */
@@ -3716,6 +3725,10 @@ main (argc, argv)
 
 	case 'h':
 	  print_usage (stdout, 0);
+	  break;
+
+	case 'p':
+	  options &= ~ DMGL_PARAMS;
 	  break;
 
 	case 'v':
