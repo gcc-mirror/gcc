@@ -1,3 +1,7 @@
+2001-04-10  Richard Henderson  <rth@redhat.com>
+
+	* g++.old-deja/g++.other/array5.C: New.
+
 2001-04-08  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/20010408-1.c: New test.
