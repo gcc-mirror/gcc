@@ -1,3 +1,8 @@
+2004-12-30  Jan Hubicka  <jh@suse.cz>
+
+	PR target/18019
+	* i386.md (movqi_1): Fix -Os instruction choice.
+
 2004-12-30  Steven Bosscher  <stevenb@suse.de>
 
 	* global.c (regclass_intersect): Remove.
