@@ -6304,24 +6304,8 @@ get_delta_difference (from, to, force)
 	  return delta;
 	}
       binfo = get_binfo (to, from, 1);
-      if (binfo == error_mark_node)
-	{
-	  if (!force)
-	    error ("   in pointer to member conversion");
-	  return delta;
-	}
-      if (binfo == 0)
-	{
-	  if (!force)
-	    cp_error ("cannot convert pointer to member of type %T to unrelated pointer to member of type %T", from, to);
-	  return delta;
-	}
-      if (TREE_VIA_VIRTUAL (binfo))
-	{
-	  binfo = binfo_member (BINFO_TYPE (binfo),
-				CLASSTYPE_VBASECLASSES (from));
-	  warning ("pointer to member conversion to virtual base class will only work if you are very careful");
-	}
+      if (binfo == 0 || binfo == error_mark_node || TREE_VIA_VIRTUAL (binfo))
+	return delta;
       delta = BINFO_OFFSET (binfo);
       delta = cp_convert (ptrdiff_type_node, delta);
       
@@ -6329,10 +6313,21 @@ get_delta_difference (from, to, force)
 			      integer_zero_node,
 			      delta, 1);
     }
+
   if (TREE_VIA_VIRTUAL (binfo))
     {
-      warning ("pointer to member conversion from virtual base class will only work if you are very careful");
+      if (force)
+	{
+	  cp_warning ("pointer to member cast from virtual base `%T'",
+		      BINFO_TYPE (binfo));
+	  warning ("  will only work if you are very careful");
+	}
+      else
+	cp_error ("pointer to member conversion from virtual base `%T'",
+		  BINFO_TYPE (binfo));
+      return delta;
     }
+
   return BINFO_OFFSET (binfo);
 }
 
