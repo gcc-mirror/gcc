@@ -1,3 +1,8 @@
+2004-10-03  Paul Brook  <paul@codesourcery.com>
+
+	* gfortran.dg/pr17286.f90: Add dg-do line.  Explicitly test bug,
+	rather than relying on default formatting.
+
 2004-10-02  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/20040920-1.c: Update expected message text.

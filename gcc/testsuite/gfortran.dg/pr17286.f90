@@ -1,9 +1,8 @@
-! pr17286
-! namelist read fails when spaces exist between the '=' and the numbers
-! this is a libgfortran bug
-! derived from testcase provided by Paul Thomas <paulthomas2@wanadoo.fr
-
-
+! { dg-do run }
+! PR17286
+! Namelist read failed when spaces exist between the '=' and the numbers
+! This is a libgfortran bug
+! Derived from testcase provided by Paul Thomas <paulthomas2@wanadoo.fr>
        program bug3
        integer num1 , num2 , num3 , num4 
        data num3  / 42 /
@@ -13,7 +12,7 @@
        logical dbg
        data dbg / .FALSE. /
        open(unit=10,status='SCRATCH')
-       write(10,'(A)') "&mynml1,num1=16,num2=32,&end"
+       write(10,'(A)') "&mynml1,num1= 16,num2=32,&end"
 !
 ! write mynml2
 !
