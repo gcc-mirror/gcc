@@ -12,6 +12,8 @@
 
 2000-05-05 Mark Elbrecht <snowball3@bigfoot.com>
 
+	* gcc.c (set_input) [HAVE_DOS_STYLE_FILE_SYSTEM]: Skip drive name.
+
 	* toplev.c (output_file_directive): Use IS_DIR_SEPARATOR.
 	(main): Likewise.
 

@@ -5087,7 +5087,12 @@ set_input (filename)
   input_filename_length = strlen (input_filename);
   
   input_basename = input_filename;
-  for (p = input_filename; *p; p++)
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+  /* Skip drive name so 'x:foo' is handled properly.  */
+  if (input_basename[1] == ':')
+    input_basename += 2;
+#endif
+  for (p = input_basename; *p; p++)
     if (IS_DIR_SEPARATOR (*p))
       input_basename = p + 1;
 
