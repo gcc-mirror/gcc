@@ -1,5 +1,7 @@
 2001-03-27  Alan Modra  <alan@linuxcare.com.au>
 
+	* c-typeck.c (digest_init): Fold init expression.
+
 	* except.c (eh_regs): Save results of build_pointer_type to a temp
 	as FUNCTION_VALUE macro may evaluate its args multiple times.
 
