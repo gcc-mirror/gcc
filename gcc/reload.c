@@ -2818,9 +2818,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  while (*p && (c = *p++) != ',')
 	    switch (c)
 	      {
-	      case '=':
-	      case '+':
-	      case '*':
+	      case '=':  case '+':  case '*':
 		break;
 
 	      case '%':
@@ -2843,11 +2841,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		while (*p && *p != ',') p++;
 		break;
 
-	      case '0':
-	      case '1':
-	      case '2':
-	      case '3':
-	      case '4':
+	      case '0':  case '1':  case '2':  case '3':  case '4':
+	      case '5':  case '6':  case '7':  case '8':  case '9':
+
 		c -= '0';
 		this_alternative_matches[i] = c;
 		/* We are supposed to match a previous operand.
