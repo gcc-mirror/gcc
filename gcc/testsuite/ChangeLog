@@ -1,3 +1,8 @@
+2004-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/16301
+	* g++.dg/lookup/strong-using-4.C: New test.
+
 2004-10-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/i386-sse-4.c: Use 'float' as the base type for FP types.

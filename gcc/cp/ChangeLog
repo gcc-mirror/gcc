@@ -1,3 +1,10 @@
+2004-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/16301
+	* namelookup.c (parse_using_directive): If we have a
+	error_mark_node, do not set the decl namespace associations
+	on it.
+
 2004-10-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17976

@@ -3384,7 +3384,7 @@ parse_using_directive (tree namespace, tree attribs)
 	{
 	  if (!toplevel_bindings_p ())
 	    error ("strong using only meaningful at namespace scope");
-	  else
+	  else if (namespace != error_mark_node)
 	    DECL_NAMESPACE_ASSOCIATIONS (namespace)
 	      = tree_cons (current_namespace, 0,
 			   DECL_NAMESPACE_ASSOCIATIONS (namespace));
