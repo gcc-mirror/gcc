@@ -1,3 +1,8 @@
+2004-08-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16707
+	* name-lookup.c (validate_nonmember_using_decl): Robustify.
+
 2004-08-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16224

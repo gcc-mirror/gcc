@@ -2115,6 +2115,17 @@ push_overloaded_decl (tree decl, int flags)
 static tree
 validate_nonmember_using_decl (tree decl, tree scope, tree name)
 {
+  /* [namespace.udecl]
+       A using-declaration for a class member shall be a
+       member-declaration.  */
+  if (TYPE_P (scope))
+    {
+      error ("`%T' is not a namespace", scope);
+      return NULL_TREE;
+    }
+  else if (scope == error_mark_node)
+    return NULL_TREE;
+
   if (TREE_CODE (decl) == TEMPLATE_ID_EXPR)
     {
       /* 7.3.3/5
@@ -2141,15 +2152,6 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
     decl = get_first_fn (decl);
 
   my_friendly_assert (DECL_P (decl), 20020908);
-
-  /* [namespace.udecl]
-       A using-declaration for a class member shall be a
-       member-declaration.  */
-  if (TYPE_P (scope))
-    {
-      error ("`%T' is not a namespace", scope);
-      return NULL_TREE;
-    }
 
   /* Make a USING_DECL.  */
   return push_using_decl (scope, name);
