@@ -279,44 +279,6 @@
 /* Define to enable the use of a default assembler. */
 #undef DEFAULT_ASSEMBLER
 
-/* Define if you want more run-time sanity checks.  This one gets a grab
-   bag of miscellaneous but relatively cheap checks. */
-#undef ENABLE_CHECKING
-
-/* Define if you want all operations on trees (the basic data
-   structure of the front ends) to be checked for dynamic type safety
-   at runtime.  This is moderately expensive. */
-#undef ENABLE_TREE_CHECKING
-
-/* Define if you want all operations on RTL (the basic data structure
-   of the optimizer and back end) to be checked for dynamic type safety
-   at runtime.  This is quite expensive. */
-#undef ENABLE_RTL_CHECKING
-
-/* Define if you want RTL flag accesses to be checked against the RTL
-   codes that are supported for each access macro.  This is relatively
-   cheap. */
-#undef ENABLE_RTL_FLAG_CHECKING
-
-/* Define if you want the garbage collector to do object poisoning and
-   other memory allocation checks.  This is quite expensive. */
-#undef ENABLE_GC_CHECKING
-
-/* Define if you want the garbage collector to operate in maximally
-   paranoid mode, validating the entire heap and collecting garbage at
-   every opportunity.  This is extremely expensive. */
-#undef ENABLE_GC_ALWAYS_COLLECT
-
-/* Define if you want to use __cxa_atexit, rather than atexit, to
-   register C++ destructors for local statics and global objects.
-   This is essential for fully standards-compliant handling of
-   destructors, but requires __cxa_atexit in libc. */
-#undef DEFAULT_USE_CXA_ATEXIT
-
-/* Define if you want the C and C++ compilers to support multibyte
-   character sets for source code. */
-#undef MULTIBYTE_CHARS
-
 /* Define if your compiler understands volatile. */
 #undef HAVE_VOLATILE
 
@@ -349,6 +311,48 @@
 
 /* Define if the host execution character set is EBCDIC. */
 #undef HOST_EBCDIC
+
+/* Define if you want more run-time sanity checks.  This one gets a grab
+   bag of miscellaneous but relatively cheap checks. */
+#undef ENABLE_CHECKING
+
+/* Define if you want all operations on trees (the basic data
+   structure of the front ends) to be checked for dynamic type safety
+   at runtime.  This is moderately expensive. */
+#undef ENABLE_TREE_CHECKING
+
+/* Define if you want all operations on RTL (the basic data structure
+   of the optimizer and back end) to be checked for dynamic type safety
+   at runtime.  This is quite expensive. */
+#undef ENABLE_RTL_CHECKING
+
+/* Define if you want RTL flag accesses to be checked against the RTL
+   codes that are supported for each access macro.  This is relatively
+   cheap. */
+#undef ENABLE_RTL_FLAG_CHECKING
+
+/* Define if you want the garbage collector to do object poisoning and
+   other memory allocation checks.  This is quite expensive. */
+#undef ENABLE_GC_CHECKING
+
+/* Define if you want the garbage collector to operate in maximally
+   paranoid mode, validating the entire heap and collecting garbage at
+   every opportunity.  This is extremely expensive. */
+#undef ENABLE_GC_ALWAYS_COLLECT
+
+/* Define if you want to run subprograms and generated programs
+   through valgrind (a memory checker).  This is extremely expensive. */
+#undef ENABLE_VALGRIND_CHECKING
+
+/* Define if you want to use __cxa_atexit, rather than atexit, to
+   register C++ destructors for local statics and global objects.
+   This is essential for fully standards-compliant handling of
+   destructors, but requires __cxa_atexit in libc. */
+#undef DEFAULT_USE_CXA_ATEXIT
+
+/* Define if you want the C and C++ compilers to support multibyte
+   character sets for source code. */
+#undef MULTIBYTE_CHARS
 
 /* Always define this when using the GNU C Library */
 #undef _GNU_SOURCE
