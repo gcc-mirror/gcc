@@ -1,3 +1,8 @@
+2002-04-30  Tom Rix  <trix@redhat.com>
+
+	* regrename.c (build_def_use, copyprop_hardreg_forward_1): Sanity 
+	check which_alternative.
+
 2002-04-30  Kazu Hirata  <kazu@hxi.com>
 
 	* cpplex.c: Fix comment formatting.

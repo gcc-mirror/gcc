@@ -786,7 +786,8 @@ build_def_use (bb)
 
 	  icode = recog_memoized (insn);
 	  extract_insn (insn);
-	  constrain_operands (1);
+	  if (! constrain_operands (1))
+	    fatal_insn_not_found (insn);	
 	  preprocess_constraints ();
 	  alt = which_alternative;
 	  n_ops = recog_data.n_operands;
@@ -1546,7 +1547,8 @@ copyprop_hardreg_forward_1 (bb, vd)
 
       set = single_set (insn);
       extract_insn (insn);
-      constrain_operands (1);
+      if (! constrain_operands (1))
+	fatal_insn_not_found (insn);	
       preprocess_constraints ();
       alt = which_alternative;
       n_ops = recog_data.n_operands;
