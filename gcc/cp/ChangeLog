@@ -1,5 +1,13 @@
 1999-01-26  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* tree.c (equal_functions): Fix name in prototype.
+
+	* decl.c (push_local_binding): Add FLAGS argument.
+	(pushdecl, push_overloaded_decl): Pass it.
+	* decl2.c (do_local_using_decl): Likewise.
+	* cp-tree.h: Adjust prototype.
+	* decl.c (poplevel): Fix logic.
+
 	* decl.c (push_local_binding): Also wrap used decls in a TREE_LIST.
 	(poplevel): Handle that.  Fix logic for removing TREE_LISTs.
 	(cat_namespace_levels): Don't loop forever.

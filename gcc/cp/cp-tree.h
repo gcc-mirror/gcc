@@ -2822,7 +2822,7 @@ extern void revert_static_member_fn             PROTO((tree*, tree*, tree*));
 extern void cat_namespace_levels                PROTO((void));
 extern void fixup_anonymous_union               PROTO((tree));
 extern int check_static_variable_definition     PROTO((tree, tree));
-extern void push_local_binding                  PROTO((tree, tree));
+extern void push_local_binding                  PROTO((tree, tree, int));
 extern void push_class_binding                  PROTO((tree, tree));
 extern tree check_default_argument              PROTO((tree, tree));
 extern tree push_overloaded_decl		PROTO((tree, int));
