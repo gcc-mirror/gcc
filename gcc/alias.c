@@ -509,10 +509,17 @@ base_alias_check (x, y)
     return 1;
 
   /* The base addresses of the read and write are different
-     expressions.  If they are both symbols there is no
-     conflict.  */
+     expressions.  If they are both symbols and they are not accessed
+     via AND, there is no conflict.  */
+  /* XXX: We can bring knowledge of object alignment and offset into 
+     play here.  For example, on alpha, "char a, b;" can alias one
+     another, though "char a; long b;" cannot.  Similarly, offsets
+     into strutures may be brought into play.  Given "char a, b[40];",
+     a and b[1] may overlap, but a and b[20] do not.  */
   if (GET_CODE (x_base) != ADDRESS && GET_CODE (y_base) != ADDRESS)
-    return 0;
+    {
+      return GET_CODE (x) == AND || GET_CODE (y) == AND;
+    }
 
   /* If one address is a stack reference there can be no alias:
      stack references using different base registers do not alias,
@@ -541,6 +548,10 @@ base_alias_check (x, y)
    If XSIZE or YSIZE is zero, we do not know the amount of memory being
    referenced (the reference was BLKmode), so make the most pessimistic
    assumptions.
+
+   If XSIZE or YSIZE is negative, we may access memory outside the object
+   being referenced as a side effect.  This can happen when using AND to
+   align memory references, as is done on the Alpha.
 
    We recognize the following cases of non-conflicting memory:
 
@@ -573,7 +584,7 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 
   if (rtx_equal_for_memref_p (x, y))
     {
-      if (xsize == 0 || ysize == 0)
+      if (xsize <= 0 || ysize <= 0)
 	return 1;
       if (c >= 0 && xsize > c)
 	return 1;
@@ -605,7 +616,7 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 	  && GET_CODE (y1) == CONST_INT)
 	{
 	  c += INTVAL (y1);
-	  return (xsize == 0 || ysize == 0
+	  return (xsize <= 0 || ysize <= 0
 		  || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
 	}
 
@@ -703,16 +714,22 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
   /* Treat an access through an AND (e.g. a subword access on an Alpha)
      as an access with indeterminate size.  */
   if (GET_CODE (x) == AND && GET_CODE (XEXP (x, 1)) == CONST_INT)
-    return memrefs_conflict_p (0, XEXP (x, 0), ysize, y, c);
+    return memrefs_conflict_p (-1, XEXP (x, 0), ysize, y, c);
   if (GET_CODE (y) == AND && GET_CODE (XEXP (y, 1)) == CONST_INT)
-    return memrefs_conflict_p (xsize, x, 0, XEXP (y, 0), c);
+    {
+      /* XXX: If we are indexing far enough into the array/structure, we
+	 may yet be able to determine that we can not overlap.  But we 
+	 also need to that we are far enough from the end not to overlap
+	 a following reference, so we do nothing for now.  */
+      return memrefs_conflict_p (xsize, x, -1, XEXP (y, 0), c);
+    }
 
   if (CONSTANT_P (x))
     {
       if (GET_CODE (x) == CONST_INT && GET_CODE (y) == CONST_INT)
 	{
 	  c += (INTVAL (y) - INTVAL (x));
-	  return (xsize == 0 || ysize == 0
+	  return (xsize <= 0 || ysize <= 0
 		  || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
 	}
 
@@ -730,9 +747,10 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 				   canon_rtx (XEXP (y, 0)), c);
 
       if (CONSTANT_P (y))
-	return (rtx_equal_for_memref_p (x, y)
-		&& (xsize == 0 || ysize == 0
-		    || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0)));
+	return (xsize < 0 || ysize < 0
+		|| (rtx_equal_for_memref_p (x, y)
+		    && (xsize == 0 || ysize == 0
+		        || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0))));
 
       return 1;
     }
