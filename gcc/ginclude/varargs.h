@@ -90,8 +90,13 @@ typedef void *__gnuc_va_list;
 
 #define va_end(AP)
 
+#if defined(sysV68)
+#define __va_rounded_size(TYPE)  \
+  (((sizeof (TYPE) + sizeof (short) - 1) / sizeof (short)) * sizeof (short))
+#else
 #define __va_rounded_size(TYPE)  \
   (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
+#endif
 
 #if defined (__arm__) || defined (__i386__) || defined (__i860__) || defined (__ns32000__) || defined (__vax__)
 /* This is for little-endian machines; small args are padded upward.  */
