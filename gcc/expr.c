@@ -148,7 +148,8 @@ static int fixed_type_p		PROTO((tree));
 static int get_pointer_alignment PROTO((tree, unsigned));
 static tree string_constant	PROTO((tree, tree *));
 static tree c_strlen		PROTO((tree));
-static rtx expand_builtin  PROTO((tree, rtx, rtx, enum machine_mode, int));
+static rtx expand_builtin	PROTO((tree, rtx, rtx,
+				       enum machine_mode, int));
 static int apply_args_size	PROTO((void));
 static int apply_result_size	PROTO((void));
 static rtx result_vector	PROTO((int, rtx));
@@ -4273,23 +4274,9 @@ expand_expr (exp, target, tmode, modifier)
 	if (TREE_CODE (array) == STRING_CST
 	    && TREE_CODE (index) == INTEGER_CST
 	    && !TREE_INT_CST_HIGH (index)
-	    && (i = TREE_INT_CST_LOW (index)) < TREE_STRING_LENGTH (array))
-	  {
-	    if (TREE_TYPE (TREE_TYPE (array)) == integer_type_node)
-	      {
-		exp = build_int_2 (((int *)TREE_STRING_POINTER (array))[i], 0);
-		TREE_TYPE (exp) = integer_type_node;
-		return expand_expr (exp, target, tmode, modifier);
-	      }
-	    if (TREE_TYPE (TREE_TYPE (array)) == char_type_node)
-	      {
-		exp = build_int_2 (TREE_STRING_POINTER (array)[i], 0);
-		TREE_TYPE (exp) = integer_type_node;
-		return expand_expr (convert (TREE_TYPE (TREE_TYPE (array)),
-					     exp),
-				    target, tmode, modifier);
-	      }
-	  }
+	    && (i = TREE_INT_CST_LOW (index)) < TREE_STRING_LENGTH (array)
+	    && GET_MODE_CLASS (mode) == MODE_INT)
+	  return GEN_INT (TREE_STRING_POINTER (array)[i]);
 
 	/* If this is a constant index into a constant array,
 	   just get the value from the array.  Handle both the cases when
@@ -4336,10 +4323,7 @@ expand_expr (exp, target, tmode, modifier)
 		  }
 		else if (TREE_CODE (init) == STRING_CST
 			 && i < TREE_STRING_LENGTH (init))
-		  {
-		    temp = GEN_INT (TREE_STRING_POINTER (init)[i]);
-		    return convert_to_mode (mode, temp, 0);
-		  }
+		  return GEN_INT (TREE_STRING_POINTER (init)[i]);
 	      }
 	  }
       }
