@@ -2418,15 +2418,15 @@ build_new_1 (exp)
 	  /* All cleanups must last longer than normal.  */
 	  int yes = suspend_momentary ();
 
-	  if (placement)
-	    {
-	      flags |= LOOKUP_SPECULATIVELY;
+	  /* The Standard is unclear here, but the right thing to do
+             is to use the same method for finding deallocation
+             functions that we use for finding allocation functions.  */
+	  flags |= LOOKUP_SPECULATIVELY;
 
-	      /* We expect alloc_expr to look like a TARGET_EXPR around
-		 a NOP_EXPR around the CALL_EXPR we want.  */
-	      fn = TREE_OPERAND (alloc_expr, 1);
-	      fn = TREE_OPERAND (fn, 0);
-	    }
+	  /* We expect alloc_expr to look like a TARGET_EXPR around
+	     a NOP_EXPR around the CALL_EXPR we want.  */
+	  fn = TREE_OPERAND (alloc_expr, 1);
+	  fn = TREE_OPERAND (fn, 0);
 
 	  /* Copy size to the saveable obstack.  */
 	  size = mapcar (size, permanent_p);
