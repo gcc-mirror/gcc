@@ -1,3 +1,8 @@
+2001-04-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* optimize.c (maybe_clone_body): Copy TREE_PUBLIC before emitting
+	the clone.
+
 2001-04-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (grokdeclarator): Set context of namespace scope
