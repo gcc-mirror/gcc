@@ -124,7 +124,7 @@ toplevel_srcdir = @toplevel_srcdir@
 AUTOMAKE_OPTIONS = 1.3 cygnus
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
-@GLIBCPP_BUILD_LIBIO_TRUE@noinst_LTLIBRARIES = @GLIBCPP_BUILD_LIBIO_TRUE@libio.la
+@GLIBCPP_BUILD_LIBIO_TRUE@noinst_LTLIBRARIES = libio.la
 @GLIBCPP_BUILD_LIBIO_FALSE@noinst_LTLIBRARIES = 
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
@@ -132,20 +132,14 @@ GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
 
-INCLUDES = \
-	-nostdinc++ \
-	$(GLIBCPP_INCLUDES) $(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
+INCLUDES =  	-nostdinc++ 	$(GLIBCPP_INCLUDES) $(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
 
 
-libio_headers = \
-        libio.h libioP.h iolibio.h
+libio_headers =          libio.h libioP.h iolibio.h
 
-@GLIBCPP_NEED_LIBIO_TRUE@LIBIO_SRCS = @GLIBCPP_NEED_LIBIO_TRUE@\
-@GLIBCPP_NEED_LIBIO_TRUE@	filedoalloc.c genops.c fileops.c stdfiles.c c_codecvt.c \
-@GLIBCPP_NEED_LIBIO_TRUE@	iofclose.c iofopen.c 
+@GLIBCPP_NEED_LIBIO_TRUE@LIBIO_SRCS = 	filedoalloc.c genops.c fileops.c stdfiles.c c_codecvt.c 	iofclose.c iofopen.c 
 @GLIBCPP_NEED_LIBIO_FALSE@LIBIO_SRCS = 
-@GLIBCPP_NEED_WLIBIO_TRUE@LIBIO_WSRCS = @GLIBCPP_NEED_WLIBIO_TRUE@\
-@GLIBCPP_NEED_WLIBIO_TRUE@	wfiledoalloc.c wfileops.c wgenops.c iofwide.c
+@GLIBCPP_NEED_WLIBIO_TRUE@LIBIO_WSRCS = 	wfiledoalloc.c wfileops.c wgenops.c iofwide.c
 @GLIBCPP_NEED_WLIBIO_FALSE@LIBIO_WSRCS = 
 
 EXTRA_DIST = iostreamP.h
