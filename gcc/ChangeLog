@@ -1,3 +1,8 @@
+2004-08-30  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-pretty-print.c (dump_generic_node): Handle VALUE_HANDLE
+	in COMPONENT_REF nodes.
+
 2004-08-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/15378
