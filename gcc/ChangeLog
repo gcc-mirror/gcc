@@ -1,3 +1,8 @@
+2002-10-18  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (start_decl): Point users of the old initialized-
+	typedef extension at __typeof__.
+
 2002-10-18  Richard Henderson  <rth@redhat.com>
 
 	* real.c (cmp_significand_0, rtd_divmod, ten_to_mptwo): New.
@@ -65,11 +70,11 @@
 	* config/vax/vax.h (ASM_OUTPUT_MI_THUNK): Rename to ...
 	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
 	* doc/tm.texi: Adjust documentation.
-	
+
 2002-10-18  Jason Thorpe  <thorpej@wasabisystems.com>
 
-	* config/netbsd.h (NETBSD_ENABLE_EXECUTE_STACK): Define 
-	__enable_execute_stack function. 
+	* config/netbsd.h (NETBSD_ENABLE_EXECUTE_STACK): Define
+	__enable_execute_stack function.
 	* config/alpha/netbsd.h (TRANSFER_FROM_TRAMPOLINE): Define
 	as NETBSD_ENABLE_EXECUTE_STACK.
 	* config/i386/netbsd-elf.h (TRANSFER_FROM_TRAMPOLINE): Ditto.
@@ -167,14 +172,14 @@ Wed Oct 16 15:01:29 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP, BSS_SECTION_ASM_OP,
 	GLOBAL_ASM_OP, ASM_OUTPUT_MI_THUNK): Move to s390.h.
 
-	* config/s390/s390.h (ASM_COMMENT_START, LOCAL_LABEL_PREFIX, 
-	ASM_FORMAT_PRIVATE_NAME, ASM_OUTPUT_ALIGN, ASM_OUTPUT_SKIP, 
-	ASM_OUTPUT_ALIGNED_BSS, TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP, 
+	* config/s390/s390.h (ASM_COMMENT_START, LOCAL_LABEL_PREFIX,
+	ASM_FORMAT_PRIVATE_NAME, ASM_OUTPUT_ALIGN, ASM_OUTPUT_SKIP,
+	ASM_OUTPUT_ALIGNED_BSS, TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP,
 	BSS_SECTION_ASM_OP): Move from linux.h.
 	(ASM_OUTPUT_ADDR_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
 	Also, use ASM_GENERATE_INTERNAL_LABEL instead of LPREFIX.
 
-	* config/s390/s390.c (s390_function_profiler): Use 
+	* config/s390/s390.c (s390_function_profiler): Use
 	ASM_GENERATE_INTERNAL_LABEL instead of LPREFIX.
 
 2002-10-15  Richard Henderson  <rth@redhat.com>
@@ -186,10 +191,10 @@ Wed Oct 16 15:01:29 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(REAL_VALUE_TO_DECIMAL): Remove.
 	* c-common.c, c-pretty-print.c, print-rtl.c, print-tree.c,
 	sched-vis.c, config/arc/arc.c, config/c4x/c4x.c, config/fr30/fr30.c,
-	config/i370/i370.h, config/i386/i386.c, config/i960/i960.c, 
+	config/i370/i370.h, config/i386/i386.c, config/i960/i960.c,
 	config/ip2k/ip2k.c, config/m32r/m32r.c, config/m68hc11/m68hc11.c,
 	config/m68k/hp320.h, config/m68k/m68k.h, config/m68k/sun2o4.h,
-	config/m68k/sun3.h, config/mips/mips.c, config/ns32k/ns32k.c, 
+	config/m68k/sun3.h, config/mips/mips.c, config/ns32k/ns32k.c,
 	config/pdp11/pdp11.h, config/vax/vax.h: Update all callers to
 	use real_to_decimal directly, and with the proper arguments.
 	* doc/tm.texi (REAL_VALUE_TO_DECIMAL): Remove.
@@ -221,7 +226,7 @@ Tue Oct 15 22:08:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(struct constant_pool): Add members pool_insn, insns, and anchor.
 	Remove member last_insn.
 	(s390_start_pool): Initialize them.
-	(s390_end_pool): Emit pool placeholder insn. 
+	(s390_end_pool): Emit pool placeholder insn.
 	(s390_add_pool_insn): New function.
 	(s390_find_pool): Use insns bitmap instead of addresses.
 	(s390_dump_pool): Replace placeholder insn.  Emit anchor.
@@ -233,7 +238,7 @@ Tue Oct 15 22:08:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(s390_add_anchor): New function.
 
 	(s390_chunkify_pool): Delete, replace by ...
-	(s390_chunkify_start, s390_chunkify_finish, 
+	(s390_chunkify_start, s390_chunkify_finish,
 	s390_chunkify_cancel): ... these new functions.
 	(s390_optimize_prolog): Add parameter TEMP_REGNO.
 	Recompute register live data for special registers.
@@ -278,13 +283,13 @@ Mon Oct 14 20:33:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(ix86_init_mmx_sse_builtins): Kill SSE1 logicals.
 	(ix86_expand_builtin): Likewise.
 	* i386.h (sse_andti4_df_1, sse_andti3_df_2, sse_andti3_sf_1, sse_andti3_sf_2,
-        sse_andti3,
+	sse_andti3,
 	sse_andnti4_df_1, sse_andti3_df_2, sse_andti3_sf_1, sse_andti3_sf_2,
-        sse_andnti3,
+	sse_andnti3,
 	sse_orti4_df_1, sse_orti3_df_2, sse_orti3_sf_1, sse_orti3_sf_2,
-        sse_orti3,
+	sse_orti3,
 	sse_xorti4_df_1, sse_xorti3_df_2, sse_xorti3_sf_1, sse_xorti3_sf_2,
-        sse_xorti3): Kill.
+	sse_xorti3): Kill.
 	(sse_andv4sf3, sse_andnv4sf3, sse_orv2df3, sse_xorv2df3, sse_andv2df3,
 	 sse_andnv2df3, sse_orv2df3, sse_xorv2df3): New expanders.
 	(*sse_andv4sf3, *sse_andnv2df3, *sse_orv4sf3, *sse_xorv4sf3, *sse_andv2df3,
