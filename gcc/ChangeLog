@@ -1,5 +1,9 @@
 2001-11-09  Geoffrey Keating  <geoffk@redhat.com>
 
+	* config/stormy16/stormy16.h (ASM_SPEC): Revert last change,
+	don't pass --gdwarf2 to the assembler if the compiler will also
+	provide debug info.
+
 	* config/stormy16/stormy16.c (xstormy16_expand_casesi): 
 	Don't change INDEX.
 
