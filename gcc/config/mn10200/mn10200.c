@@ -864,16 +864,6 @@ call_address_operand (op, mode)
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == REG);
 }
 
-/* Return true if OP is an indirect memory operand, the "bset" and "bclr"
-   insns use this predicate.  */
-int
-indirect_memory_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  return (GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) == REG);
-}
-
 /* Return true if OP is a memory operand with a constant address.
    A special PSImode move pattern uses this predicate.  */
 int

@@ -1,3 +1,9 @@
+Fri Oct 24 17:40:34 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10200.c (indirect_memory_operand): Delete unused function.
+	* mn10200.h (EXTRA_CONSTRAINT): Handle 'R'.
+	* mn10200.md (bset, bclr insns): Handle output in a reg too.
+
 Fri Oct 24 15:54:57 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (call patterns): Revert Oct 16 change; if we are to elide
