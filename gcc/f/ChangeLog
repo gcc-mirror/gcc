@@ -1,3 +1,8 @@
+2002-04-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* invoke.texi: Use @gol at ends of lines inside @gccoptlist.
+	* g77.texi: Update last update date.
+
 2002-04-20  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* root.texi: Remove variable version-g77.
