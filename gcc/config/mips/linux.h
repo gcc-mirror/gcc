@@ -19,6 +19,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "mips/mips.h"
+#include "mips/abi64.h"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
