@@ -33,6 +33,11 @@ Sat Nov  7 16:02:10 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* mkstemp.c: Likewise.
 	* pexecute.c: Likewise.
 
+Mon Nov  2 15:05:33 1998  Geoffrey Noer  <noer@cygnus.com>
+
+        * configure.in: detect cygwin* instead of cygwin32*
+        * configure: regenerate
+
 Mon Nov  2 10:22:01 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* pexecute.c: Check HAVE_CONFIG_H, not IN_GCC, when determining
@@ -128,6 +133,10 @@ Tue Oct 13 23:51:51 1998  Jeffrey A Law  (law@cygnus.com)
 	* getopt.c: Check HAVE_STRINGS_H before including strings.h.
 	* configure.in (AC_CHECK_HEADERS): Check for strings.h too.
 	* config.in, configure: Rebuilt.
+
+Mon Oct 12 19:15:59 1998  Geoffrey Noer  <noer@cygnus.com>
+
+        * configure.in: in comment, call AC_EXEEXT instead of AM_EXEEXT
 
 Sun Oct 11 17:36:06 1998  Michael Tiemann  <tiemann@holodeck.cygnus.com>
 

@@ -93,7 +93,7 @@ AC_CONFIG_HEADER(config.h:config.in)
 
 dnl When we start using automake:
 dnl AM_MAINTAINER_MODE
-dnl AM_EXEEXT
+dnl AC_EXEEXT
 
 dnl When we start using automake:
 dnl AM_PROG_INSTALL
@@ -249,10 +249,10 @@ if test -z "${setobjs}"; then
 
   case "${host}" in
 
-  *-*-cygwin32*)
-    # The cygwin32 library actually uses a couple of files from
+  *-*-cygwin*)
+    # The Cygwin library actually uses a couple of files from
     # libiberty when it is built.  If we are building a native
-    # cygwin32, and we run the tests, we will appear to have these
+    # Cygwin, and we run the tests, we will appear to have these
     # files.  However, when we go on to build winsup, we will wind up
     # with a library which does not have the files, since they should
     # have come from libiberty.
