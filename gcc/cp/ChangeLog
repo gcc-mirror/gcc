@@ -1,3 +1,9 @@
+2004-03-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14616
+	* decl.c (cp_finish_decl): Compute the size of arrays declared in
+	templates, if their type is non-dependent.
+
 2004-03-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_op_delete_call): Do not forget the placement
