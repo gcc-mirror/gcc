@@ -1,3 +1,8 @@
+Mon Feb  9 00:01:00 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* loop.c (strength_reduce): When placing increment for auto-inc
+	case, do comparison in loop order.
+
 Fri Jan  2 23:40:09 1998  Jim Wilson  (wilson@cygnus.com)
 			  Jeffrey A Law  (law@cygnus.com)
 

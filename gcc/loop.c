@@ -4068,8 +4068,14 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 			auto_inc_opt = 1;
 		    }
 		  /* Check for case where increment is before the the address
-		     giv.  */
-		  else if (INSN_LUID (v->insn) > INSN_LUID (bl->biv->insn))
+		     giv.  Do this test in "loop order".  */
+		  else if ((INSN_LUID (v->insn) > INSN_LUID (bl->biv->insn)
+			    && (INSN_LUID (v->insn) < INSN_LUID (scan_start)
+				|| (INSN_LUID (bl->biv->insn)
+				    > INSN_LUID (scan_start))))
+			   || (INSN_LUID (v->insn) < INSN_LUID (scan_start)
+			       && (INSN_LUID (scan_start)
+				   < INSN_LUID (bl->biv->insn))))
 		    auto_inc_opt = -1;
 		  else
 		    auto_inc_opt = 1;
