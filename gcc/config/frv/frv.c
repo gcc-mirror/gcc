@@ -1954,7 +1954,7 @@ frv_initial_elimination_offset (from, to)
     ret = info->total_size - info->pretend_size;
 
   else if (to == STACK_POINTER_REGNUM && from == FRAME_POINTER_REGNUM)
-    ret = - info->reg_offset[FRAME_POINTER_REGNUM];
+    ret = info->reg_offset[FRAME_POINTER_REGNUM];
 
   else if (to == FRAME_POINTER_REGNUM && from == ARG_POINTER_REGNUM)
     ret = (info->total_size

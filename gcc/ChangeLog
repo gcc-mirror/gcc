@@ -1,5 +1,10 @@
 2003-11-06  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/frv/frv.c (frv_initial_elimination_offset): Remove bogus
+	negation.
+
+2003-11-06  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/frv/frv.h (ASM_OUTPUT_ALIGN_WITH_NOP): Define.
 
 2003-11-06  Momchil Velikov  <velco@fadata.bg>
