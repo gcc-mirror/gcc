@@ -265,7 +265,7 @@ extern int target_flags;
     { "noshort", - MASK_SHORT,						\
       N_("Consider type `int' to be 32 bits wide") },			\
     { "68881", MASK_68881, "" },					\
-    { "soft-float", - (MASK_68040_ONLY|MASK_68881),			\
+    { "soft-float", - MASK_68881,					\
       N_("Generate code with library calls for floating point") },	\
     { "68020-40", -(MASK_ALL_CF_BITS|MASK_68060|MASK_68040_ONLY),	\
       N_("Generate code for a 68040, without any new instructions") },	\
@@ -389,9 +389,9 @@ extern int target_flags;
 #define LONG_DOUBLE_TYPE_SIZE 96
 
 /* Set the value of FLT_EVAL_METHOD in float.h.  When using 68040 fp
-   instructions, we get proper intermediate rounding, otherwise we 
+   instructions, we get proper intermediate rounding, otherwise we
    get extended precision results.  */
-#define TARGET_FLT_EVAL_METHOD (TARGET_68040_ONLY ? 0 : 2)
+#define TARGET_FLT_EVAL_METHOD ((TARGET_68040_ONLY || ! TARGET_68881) ? 0 : 2)
 
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.
