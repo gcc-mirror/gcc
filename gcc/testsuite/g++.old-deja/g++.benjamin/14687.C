@@ -1,6 +1,5 @@
 // 981203 bkoz
 // g++/14687
-// excess errors test - XFAIL *-*-*
 
 #include <assert.h>
 unsigned int gtest;

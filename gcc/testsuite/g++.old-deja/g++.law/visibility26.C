@@ -13,6 +13,6 @@ class X {
 
 class Y : private X {
   public:
-    void f(int);// ERROR -    because.*
-    X::f;  // g++ 2.5.5 doesn't flag this misuse
-};// ERROR -  cannot adjust.*
+    void f(int);
+    X::f;  // used to be an error; now equivalent to 'using X::f'
+};

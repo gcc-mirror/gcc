@@ -1,5 +1,4 @@
 // Build don't link:
-// crash test - XFAIL *-*-*
 
 // by Paul Burchard <burchard@pobox.com>, Level Set Systems, Inc.
 // Copyright (C) 1999 Free Software Foundation
@@ -11,7 +10,7 @@ class Q {
 };
 template<template<class> class XX>
 class Y {
-	XX<int> x_;
+	XX<int> x_;		// ERROR - Q::X not a template
 };
-Y<Q::X> y;
+Y<Q::X> y;			// ERROR - instantiated from here
 

@@ -19,8 +19,8 @@ class C : public A, public B {};
 void foo() {
   // straight call
   C x;
-  x.A::ii = 5;
-  x.A::foo(x.A::ii);
+  x.A::ii = 5;			// ERROR - L is ambiguous base
+  x.A::foo(x.A::ii);		// ERROR - L is ambiguous base
   
   // 5.1 Primary expressions
   // p 8 
