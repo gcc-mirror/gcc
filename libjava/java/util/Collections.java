@@ -1,5 +1,6 @@
 /* Collections.java -- Utility class with methods to operate on collections
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -1053,7 +1054,7 @@ public class Collections
   /**
    * The object for {@link #reverseOrder()}.
    */
-  static private final ReverseComparator rcInstance = new ReverseComparator();
+  private static final ReverseComparator rcInstance = new ReverseComparator();
 
   /**
    * The implementation of {@link #reverseOrder()}. This class name
@@ -1067,7 +1068,7 @@ public class Collections
     /**
      * Compatible with JDK 1.4.
      */
-    static private final long serialVersionUID = 7207038068494060240L;
+    private static final long serialVersionUID = 7207038068494060240L;
 
     /**
      * A private constructor adds overhead.

@@ -68,7 +68,7 @@ public abstract class FloatBuffer extends Buffer
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
-  final public static FloatBuffer wrap (float[] array, int offset, int length)
+  public static final FloatBuffer wrap (float[] array, int offset, int length)
   {
     return new FloatBufferImpl (array, 0, array.length, offset + length, offset, -1, false);
   }
@@ -77,7 +77,7 @@ public abstract class FloatBuffer extends Buffer
    * Wraps a <code>float</code> array into a <code>FloatBuffer</code>
    * object.
    */
-  final public static FloatBuffer wrap (float[] array)
+  public static final FloatBuffer wrap (float[] array)
   {
     return wrap (array, 0, array.length);
   }

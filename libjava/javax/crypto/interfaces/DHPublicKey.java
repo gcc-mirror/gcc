@@ -56,9 +56,8 @@ import java.security.PublicKey;
  */
 public interface DHPublicKey extends DHKey, PublicKey
 {
-
   /** Compatible with JDK1.4. */
-  static final long serialVersionUID = -6628103563352519193L;
+  long serialVersionUID = -6628103563352519193L;
 
   /**
    * Get the public value <i>y</i>.

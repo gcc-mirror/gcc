@@ -1,5 +1,5 @@
-/* AbstractPreferences - Partial implementation of a Preference node
-   Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+/* AbstractPreferences -- Partial implementation of a Preference node
+   Copyright (C) 2001, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -1197,7 +1197,7 @@ public abstract class AbstractPreferences extends Preferences {
      * @exception BackingStoreException when the backing store cannot be     
      *            reached
      */
-    abstract protected String[] keysSpi() throws BackingStoreException;
+    protected abstract String[] keysSpi() throws BackingStoreException;
      
     /**
      * Returns the value associated with the key in this preferences node or
@@ -1207,7 +1207,7 @@ public abstract class AbstractPreferences extends Preferences {
      * key is valid, not null and that the node has not been removed.
      * <code>key()</code> will catch any exceptions that this method throws.
      */
-    abstract protected String getSpi(String key);
+    protected abstract String getSpi(String key);
 
     /**
      * Sets the value of the given preferences entry for this node.
@@ -1220,7 +1220,7 @@ public abstract class AbstractPreferences extends Preferences {
      * Called by <code>put()</code> with this node locked after checking that
      * key and value are valid and non-null.
      */
-    abstract protected void putSpi(String key, String value);
+    protected abstract void putSpi(String key, String value);
 
     /**
      * Removes the given key entry from this preferences node.
@@ -1233,7 +1233,7 @@ public abstract class AbstractPreferences extends Preferences {
      * Called by <code>remove()</code> with this node locked after checking
      * that the key is valid and non-null.
      */
-    abstract protected void removeSpi(String key);
+    protected abstract void removeSpi(String key);
 
     /**
      * Writes all entries of this preferences node that have not yet been
@@ -1245,7 +1245,7 @@ public abstract class AbstractPreferences extends Preferences {
      * <p>
      * Called (indirectly) by <code>flush()</code> with this node locked.
      */
-    abstract protected void flushSpi() throws BackingStoreException;
+    protected abstract void flushSpi() throws BackingStoreException;
 
     /**
      * Writes all entries of this preferences node that have not yet been
@@ -1257,7 +1257,7 @@ public abstract class AbstractPreferences extends Preferences {
      * <p>
      * Called (indirectly) by <code>sync()</code> with this node locked.
      */
-    abstract protected void syncSpi() throws BackingStoreException;
+    protected abstract void syncSpi() throws BackingStoreException;
 
     /**
      * Clears this node from this VM and removes it from the backing store.
@@ -1266,5 +1266,5 @@ public abstract class AbstractPreferences extends Preferences {
      * Called (indirectly) by <code>removeNode()</code> with this node locked
      * after all the sub nodes of this node have already been removed.
      */
-    abstract protected void removeNodeSpi() throws BackingStoreException;
+    protected abstract void removeNodeSpi() throws BackingStoreException;
 }

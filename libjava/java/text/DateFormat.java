@@ -309,18 +309,15 @@ public abstract class DateFormat extends Format implements Cloneable
     return calendar;
   }
 
-  private static final DateFormat computeInstance (int style, Locale loc,
-						   boolean use_date,
-						   boolean use_time)
+  private static DateFormat computeInstance (int style, Locale loc,
+                                             boolean use_date, boolean use_time)
   {
     return computeInstance (style, style, loc, use_date, use_time);
   }
 
-  private static final DateFormat computeInstance (int dateStyle, 
-						   int timeStyle,
-						   Locale loc,
-						   boolean use_date,
-						   boolean use_time)
+  private static DateFormat computeInstance (int dateStyle, int timeStyle,
+                                             Locale loc, boolean use_date,
+                                             boolean use_time)
   {
     ResourceBundle res;
     try

@@ -1,5 +1,6 @@
 /* ChoiceFormat.java -- Format over a range of numbers
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -440,7 +441,7 @@ public class ChoiceFormat extends NumberFormat
     this.choiceLimits = (double[]) choiceLimits.clone();
   }
 
-  private final void quoteString (StringBuffer dest, String text)
+  private void quoteString (StringBuffer dest, String text)
   {
     int max = text.length();
     for (int i = 0; i < max; ++i)

@@ -51,9 +51,8 @@ import javax.crypto.SecretKey;
  */
 public interface PBEKey extends SecretKey
 {
-
   /** Compatible with JDK1.4. */
-  static final long serialVersionUID = -1430015993304333921L;
+  long serialVersionUID = -1430015993304333921L;
 
   /**
    * Retruns the iteration count, or 0 if not specified.

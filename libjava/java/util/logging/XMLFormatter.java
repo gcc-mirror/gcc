@@ -98,10 +98,8 @@ public class XMLFormatter
    * @param content the element content, or <code>null</code> to
    *        have no output whatsoever appended to <code>buf</code>.
    */
-  private static final void appendTag(StringBuffer buf,
-				      int indent,
-				      String tag,
-				      String content)
+  private static void appendTag(StringBuffer buf, int indent,
+                                String tag, String content)
   {
     int i;
 
@@ -175,10 +173,8 @@ public class XMLFormatter
    *
    * @param content the element content.
    */
-  private static final void appendTag(StringBuffer buf,
-				      int indent,
-				      String tag,
-				      long content)
+  private static void appendTag(StringBuffer buf, int indent,
+                                String tag, long content)
   {
     appendTag(buf, indent, tag, Long.toString(content));
   }

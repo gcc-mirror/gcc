@@ -147,7 +147,7 @@ public class RuleBasedCollator extends Collator
    * This class describes what rank has a character (or a sequence of characters) 
    * in the lexicographic order. Each element in a rule has a collation element.
    */
-  final static class CollationElement
+  static final class CollationElement
   {
     String key;
     int primary;
@@ -169,7 +169,7 @@ public class RuleBasedCollator extends Collator
       this.expansion = expansion;
     }
 
-    final int getValue()
+    int getValue()
     {
       return (primary << 16) + (secondary << 8) + tertiary;
     }
@@ -183,7 +183,7 @@ public class RuleBasedCollator extends Collator
    * {@link #mergeRules(int,java.lang.String,java.util.ArrayList,java.util.ArrayList)})
    * as a temporary state while merging two sets of instructions.
    */
-  final static class CollationSorter
+  static final class CollationSorter
   {
     static final int GREATERP = 0;
     static final int GREATERS = 1;

@@ -77,7 +77,7 @@ public abstract class ByteBuffer extends Buffer
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
-  final public static ByteBuffer wrap (byte[] array, int offset, int length)
+  public static final ByteBuffer wrap (byte[] array, int offset, int length)
   {
     // FIXME: In GCJ and other implementations where arrays may not
     // move we might consider, at least when offset==0:
@@ -94,7 +94,7 @@ public abstract class ByteBuffer extends Buffer
    * Wraps a <code>byte</code> array into a <code>ByteBuffer</code>
    * object.
    */
-  final public static ByteBuffer wrap (byte[] array)
+  public static final ByteBuffer wrap (byte[] array)
   {
     return wrap (array, 0, array.length);
   }

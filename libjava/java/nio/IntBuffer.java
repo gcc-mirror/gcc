@@ -68,7 +68,7 @@ public abstract class IntBuffer extends Buffer
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
-  final public static IntBuffer wrap (int[] array, int offset, int length)
+  public static final IntBuffer wrap (int[] array, int offset, int length)
   {
     return new IntBufferImpl (array, 0, array.length, offset + length, offset, -1, false);
   }
@@ -77,7 +77,7 @@ public abstract class IntBuffer extends Buffer
    * Wraps a <code>int</code> array into a <code>IntBuffer</code>
    * object.
    */
-  final public static IntBuffer wrap (int[] array)
+  public static final IntBuffer wrap (int[] array)
   {
     return wrap (array, 0, array.length);
   }

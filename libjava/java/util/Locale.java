@@ -416,7 +416,7 @@ public final class Locale implements Serializable, Cloneable
    * @return the string representation of this Locale
    * @see #getDisplayName()
    */
-  public final String toString()
+  public String toString()
   {
     if (language.length() == 0 && country.length() == 0)
       return "";
@@ -522,7 +522,7 @@ public final class Locale implements Serializable, Cloneable
    * @return the language name of this locale localized to the default locale,
    *         with the ISO code as backup
    */
-  public final String getDisplayLanguage()
+  public String getDisplayLanguage()
   {
     return getDisplayLanguage(defaultLocale);
   }
@@ -560,7 +560,7 @@ public final class Locale implements Serializable, Cloneable
    * @return the country name of this locale localized to the given locale,
    *         with the ISO code as backup
    */
-  public final String getDisplayCountry()
+  public String getDisplayCountry()
   {
     return getDisplayCountry(defaultLocale);
   }
@@ -598,7 +598,7 @@ public final class Locale implements Serializable, Cloneable
    * @return the variant code of this locale localized to the given locale,
    *         with the ISO code as backup
    */
-  public final String getDisplayVariant()
+  public String getDisplayVariant()
   {
     return getDisplayVariant(defaultLocale);
   }
@@ -637,7 +637,7 @@ public final class Locale implements Serializable, Cloneable
    *
    * @return String version of this locale, suitable for display to the user
    */
-  public final String getDisplayName()
+  public String getDisplayName()
   {
     return getDisplayName(defaultLocale);
   }

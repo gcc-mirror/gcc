@@ -1,5 +1,5 @@
 /* Charset.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -158,7 +158,7 @@ public abstract class Charset implements Comparable
   // XXX: we need to support multiple providers, reading them from
   // java.nio.charset.spi.CharsetProvider in the resource directory
   // META-INF/services
-  private static final CharsetProvider provider ()
+  private static CharsetProvider provider ()
   {
     return Provider.provider ();
   }

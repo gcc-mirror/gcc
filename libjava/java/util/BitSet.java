@@ -1,5 +1,5 @@
 /* BitSet.java -- A vector of bits.
-   Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -732,7 +732,7 @@ public class BitSet implements Cloneable, Serializable
    *
    * @param lastElt the size needed for the bits array
    */
-  private final void ensure(int lastElt)
+  private void ensure(int lastElt)
   {
     if (lastElt >= bits.length)
       {

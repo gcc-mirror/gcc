@@ -1,5 +1,5 @@
-/* Preferences - Preference node containing key value entries and subnodes
-   Copyright (C) 2001 Free Software Foundation, Inc.
+/* Preferences -- Preference node containing key value entries and subnodes
+   Copyright (C) 2001, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -307,20 +307,20 @@ public abstract class Preferences {
      * plus a '/' plus its own name. If the node is the root node and has no
      * parent then its name is "" and its absolute path name is "/".
      */
-    abstract public String absolutePath();
+    public abstract String absolutePath();
 
     /**
      * Returns true if this node comes from the user preferences tree, false
      * if it comes from the system preferences tree.
      */
-    abstract public boolean isUserNode();
+    public abstract boolean isUserNode();
 
     /**
      * Returns the name of this preferences node. The name of the node cannot
      * be null, can be mostly 80 characters and cannot contain any '/'
      * characters. The root node has as name "".
      */
-    abstract public String name();
+    public abstract String name();
 
     /**
      * Returns the String given by
@@ -328,7 +328,7 @@ public abstract class Preferences {
      * (isUserNode() ? "User":"System") + " Preference Node: " + absolutePath()
      * </code>
      */
-    abstract public String toString();
+    public abstract String toString();
 
     // abstract methods (navigation)
 
@@ -340,7 +340,7 @@ public abstract class Preferences {
      *            reached
      * @exception IllegalStateException when this node has been removed
      */
-    abstract public String[] childrenNames() throws BackingStoreException;
+    public abstract String[] childrenNames() throws BackingStoreException;
 
     /**
      * Returns a sub node of this preferences node if the given path is
@@ -353,7 +353,7 @@ public abstract class Preferences {
      * string "/" (indicating the root node) or any name on the path is more
      * then 80 characters long
      */
-    abstract public Preferences node(String path);
+    public abstract Preferences node(String path);
 
     /**
      * Returns true if the node that the path points to exists in memory or
@@ -371,7 +371,7 @@ public abstract class Preferences {
      * string "/" (indicating the root node) or any name on the path is more
      * then 80 characters long
      */
-    abstract public boolean nodeExists(String path)
+    public abstract boolean nodeExists(String path)
                                 throws BackingStoreException;
 
     /**
@@ -380,21 +380,21 @@ public abstract class Preferences {
      *
      * @exception IllegalStateException if this node has been removed
      */
-    abstract public Preferences parent();
+    public abstract Preferences parent();
 
     // abstract methods (export)
 
     /**
      * XXX
      */
-    abstract public void exportNode(OutputStream os)
+    public abstract void exportNode(OutputStream os)
                                 throws BackingStoreException,
                                        IOException;
 
     /**
      * XXX
      */
-    abstract public void exportSubtree(OutputStream os)
+    public abstract void exportSubtree(OutputStream os)
                                 throws BackingStoreException,
                                        IOException;
 
@@ -408,7 +408,7 @@ public abstract class Preferences {
      *            reached
      * @exception IllegalStateException if this node has been removed
      */
-    abstract public String[] keys() throws BackingStoreException;
+    public abstract String[] keys() throws BackingStoreException;
 
     /**
      * Returns the value associated with the key in this preferences node. If
@@ -420,7 +420,7 @@ public abstract class Preferences {
      * @exception IllegalStateException if this node has been removed
      * @exception NullPointerException if key is null
      */
-    abstract public String get(String key, String defaultVal);
+    public abstract String get(String key, String defaultVal);
 
     /**
      * Convenience method for getting the given entry as a boolean.
@@ -432,7 +432,7 @@ public abstract class Preferences {
      * @exception IllegalStateException if this node has been removed
      * @exception NullPointerException if key is null
      */
-    abstract public boolean getBoolean(String key, boolean defaultVal);
+    public abstract boolean getBoolean(String key, boolean defaultVal);
 
     /**
      * Convenience method for getting the given entry as a byte array.
@@ -445,7 +445,7 @@ public abstract class Preferences {
      * @exception IllegalStateException if this node has been removed
      * @exception NullPointerException if key is null
      */
-    abstract public byte[] getByteArray(String key, byte[] defaultVal);
+    public abstract byte[] getByteArray(String key, byte[] defaultVal);
 
     /**
      * Convenience method for getting the given entry as a double.
@@ -457,7 +457,7 @@ public abstract class Preferences {
      * @exception IllegalStateException if this node has been removed
      * @exception NullPointerException if key is null
      */
-    abstract public double getDouble(String key, double defaultVal);
+    public abstract double getDouble(String key, double defaultVal);
 
     /**
      * Convenience method for getting the given entry as a float.
@@ -469,7 +469,7 @@ public abstract class Preferences {
      * @exception IllegalStateException if this node has been removed
      * @exception NullPointerException if key is null
      */
-    abstract public float getFloat(String key, float defaultVal);
+    public abstract float getFloat(String key, float defaultVal);
 
     /**
      * Convenience method for getting the given entry as an integer.
@@ -481,7 +481,7 @@ public abstract class Preferences {
      * @exception IllegalStateException if this node has been removed
      * @exception NullPointerException if key is null
      */
-    abstract public int getInt(String key, int defaultVal);
+    public abstract int getInt(String key, int defaultVal);
 
     /**
      * Convenience method for getting the given entry as a long.
@@ -493,7 +493,7 @@ public abstract class Preferences {
      * @exception IllegalStateException if this node has been removed
      * @exception NullPointerException if key is null
      */
-    abstract public long getLong(String key, long defaultVal);
+    public abstract long getLong(String key, long defaultVal);
 
     /**
      * Sets the value of the given preferences entry for this node.
@@ -507,7 +507,7 @@ public abstract class Preferences {
      * @exception IllegalArgumentException if either key or value are to large
      * @exception IllegalStateException when this node has been removed
      */
-    abstract public void put(String key, String value);
+    public abstract void put(String key, String value);
 
     /**
      * Convenience method for setting the given entry as a boolean.
@@ -518,7 +518,7 @@ public abstract class Preferences {
      * @exception IllegalArgumentException if the key length is to large
      * @exception IllegalStateException when this node has been removed
      */
-    abstract public void putBoolean(String key, boolean value);
+    public abstract void putBoolean(String key, boolean value);
 
     /**
      * Convenience method for setting the given entry as an array of bytes.
@@ -533,7 +533,7 @@ public abstract class Preferences {
      * @exception IllegalArgumentException if either key or value are to large
      * @exception IllegalStateException when this node has been removed
      */
-    abstract public void putByteArray(String key, byte[] value);
+    public abstract void putByteArray(String key, byte[] value);
 
     /**
      * Convenience method for setting the given entry as a double.
@@ -544,7 +544,7 @@ public abstract class Preferences {
      * @exception IllegalArgumentException if the key length is to large
      * @exception IllegalStateException when this node has been removed
      */
-    abstract public void putDouble(String key, double value);
+    public abstract void putDouble(String key, double value);
 
     /**
      * Convenience method for setting the given entry as a float.
@@ -555,7 +555,7 @@ public abstract class Preferences {
      * @exception IllegalArgumentException if the key length is to large
      * @exception IllegalStateException when this node has been removed
      */
-    abstract public void putFloat(String key, float value);
+    public abstract void putFloat(String key, float value);
 
     /**
      * Convenience method for setting the given entry as an integer.
@@ -566,7 +566,7 @@ public abstract class Preferences {
      * @exception IllegalArgumentException if the key length is to large
      * @exception IllegalStateException when this node has been removed
      */
-    abstract public void putInt(String key, int value);
+    public abstract void putInt(String key, int value);
 
     /**
      * Convenience method for setting the given entry as a long.
@@ -577,7 +577,7 @@ public abstract class Preferences {
      * @exception IllegalArgumentException if the key length is to large
      * @exception IllegalStateException when this node has been removed
      */
-    abstract public void putLong(String key, long value);
+    public abstract void putLong(String key, long value);
 
     /**
      * Removes the preferences entry from this preferences node.
@@ -589,7 +589,7 @@ public abstract class Preferences {
      * @exception IllegalArgumentException if the key length is to large
      * @exception IllegalStateException when this node has been removed
      */
-    abstract public void remove(String key);
+    public abstract void remove(String key);
 
     // abstract methods (preference node manipulation)
 
@@ -604,7 +604,7 @@ public abstract class Preferences {
      *            reached
      * @exception IllegalStateException if this node has been removed
      */
-    abstract public void clear() throws BackingStoreException;
+    public abstract void clear() throws BackingStoreException;
 
     /**
      * Writes all preference changes on this and any subnode that have not
@@ -618,7 +618,7 @@ public abstract class Preferences {
      *            reached
      * @exception IllegalStateException if this node has been removed
      */
-    abstract public void flush() throws BackingStoreException;
+    public abstract void flush() throws BackingStoreException;
 
     /**
      * Writes and reads all preference changes to and from this and any
@@ -630,7 +630,7 @@ public abstract class Preferences {
      *            reached
      * @exception IllegalStateException if this node has been removed
      */
-    abstract public void sync() throws BackingStoreException;
+    public abstract void sync() throws BackingStoreException;
 
     /**
      * Removes this and all subnodes from the backing store and clears all
@@ -651,19 +651,18 @@ public abstract class Preferences {
      * @exception IllegalStateException if this node has already been removed
      * @exception UnsupportedOperationException if this is a root node
      */
-    abstract public void removeNode() throws BackingStoreException;
+    public abstract void removeNode() throws BackingStoreException;
 
     // abstract methods (listeners)
 
-    abstract public void addNodeChangeListener(NodeChangeListener listener);
+    public abstract void addNodeChangeListener(NodeChangeListener listener);
 
-    abstract public void addPreferenceChangeListener
+    public abstract void addPreferenceChangeListener
                             (PreferenceChangeListener listener);
 
-    abstract public void removeNodeChangeListener(NodeChangeListener listener);
+    public abstract void removeNodeChangeListener(NodeChangeListener listener);
 
-    abstract public void removePreferenceChangeListener
+    public abstract void removePreferenceChangeListener
                             (PreferenceChangeListener listener);
-
 }
 

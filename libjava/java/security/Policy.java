@@ -1,5 +1,5 @@
 /* Policy.java --- Policy Manager Class
-   Copyright (C) 1999, 2003, Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -95,7 +95,7 @@ import java.util.Map;
  */
 public abstract class Policy
 {
-  static private Policy currentPolicy;
+  private static Policy currentPolicy;
 
   /** Map of ProtectionDomains to PermissionCollections for this instance. */
   private Map pd2pc = null;
