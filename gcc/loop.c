@@ -851,17 +851,23 @@ scan_loop (loop_start, end, loop_cont, unroll_p, bct_p)
 	     We don't know its life-span, so we can't compute the benefit.  */
 	  if (REGNO (SET_DEST (set)) >= max_reg_before_loop)
 	    ;
-	  else if (/* The set is not guaranteed to be executed one
-		      the loop starts, or the value before the set is
-		      needed before the set occurs... */
-		   (maybe_never
-		    || loop_reg_used_before_p (set, p, loop_start,
-					       scan_start, end))
-		   /* And the register is used in basic blocks other
+	  else if (/* The register is used in basic blocks other
 		      than the one where it is set (meaning that
 		      something after this point in the loop might
 		      depend on its value before the set).  */
-		   && !reg_in_basic_block_p (p, SET_DEST (set)))
+		   ! reg_in_basic_block_p (p, SET_DEST (set))
+		   /* And the set is not guaranteed to be executed one
+		      the loop starts, or the value before the set is
+		      needed before the set occurs... 
+
+		      ??? Note we have quadratic behaviour here, mitigated
+		      by the fact that the previous test will often fail for
+		      large loops.  Rather than re-scanning the entire loop
+		      each time for register usage, we should build tables
+		      of the register usage and use them here instead.  */
+		   && (maybe_never
+		       || loop_reg_used_before_p (set, p, loop_start,
+						  scan_start, end)))
 	    /* It is unsafe to move the set.  
 
 	       This code used to consider it OK to move a set of a variable
