@@ -3306,7 +3306,6 @@ put_condition_code (code, reverse_cc, mode, file)
    z -- print the opcode suffix for the size of the current operand.
    * -- print a star (in certain assembler syntax)
    w -- print the operand as if it's a "word" (HImode) even if it isn't.
-   c -- don't print special prefixes before constant operands.
    J -- print the appropriate jump operand.
    s -- print a shift double count, followed by the assemblers argument
 	delimiter.
