@@ -1,3 +1,7 @@
+2004-06-22  Ben Elliston  <bje@au.ibm.com>
+
+	* tree-ssa.c (ssa_redirect_edge): Correct leading comment.
+
 2004-06-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (gimplify.o): Add cgraph.h.
