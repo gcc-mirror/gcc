@@ -253,10 +253,28 @@ proc verify-calls { testcase file } {
 
 proc run-gcov { args } {
     global GCOV
-    global subdir
+    global srcdir subdir
 
     # Extract the test name from the arguments.
     set testcase [lindex $args end]
+
+    # Get special options for this test from the .x script, if present.
+    # This can include:
+    #   gcov_execute_xfail     string to pass to setup_xfail
+    #   gcov_verify_xfail      string to pass to setup_xfail
+    #   gcov_verify_branches   if defined, check branch percentages
+    #   gcov_verify_calls      if defined, check call return percentages
+    if [file exists [file rootname $srcdir/$subdir/$testcase].x] {
+	set done_p 0
+	catch "set done_p \[source [file rootname $srcdir/$subdir/$testcase].x\]"
+	if { $done_p } {
+	    return
+	}
+    }
+
+    if [info exists gcov_execute_xfail] {
+	setup_xfail $gcov_execute_xfail
+    }
 
     verbose "Running $GCOV $testcase" 2
     set testcase [remote_download host $testcase];
@@ -276,22 +294,30 @@ proc run-gcov { args } {
     }
     remote_upload host $testcase.gcov $testcase.gcov;
 
+    if [info exists gcov_verify_xfail] {
+	setup_xfail $gcov_verify_xfail
+    }
+
     # Check that line execution counts are as expected.
     set loutput [verify-lines $testcase $testcase.gcov]
     set lfailed [lindex $loutput 0]
     set lmessage [lindex $loutput 1]
 
-    # If we asked for branch and call information, check that it is correct.
-    if [regexp -- "-b" $args] {
+    # If requested via the .x file, check that branch and call information
+    # is correct.
+    if [info exists gcov_verify_branches] {
 	set boutput [verify-branches $testcase $testcase.gcov]
 	set bfailed [lindex $boutput 0]
 	set bmessage [lindex $boutput 1]
+    } else {
+	set bfailed 0
+	set bmessage ""
+    }
+    if [info exists gcov_verify_calls] {
 	set coutput [verify-calls $testcase $testcase.gcov]
 	set cfailed [lindex $coutput 0]
 	set cmessage [lindex $coutput 1]
     } else {
-	set bfailed 0
-	set bmessage ""
 	set cfailed 0
 	set cmessage ""
     }
@@ -300,7 +326,7 @@ proc run-gcov { args } {
 
     # Report whether the gcov test passed or failed.  If there were
     # multiple failures then the message is a summary.
-    set tfailed [expr $lfailed + [expr $bfailed + $cfailed]]
+    set tfailed [expr $lfailed + $bfailed + $cfailed]
     if { $tfailed > 0 } {
 	if { $tfailed == 1 } {
 	    set vmessage "$lmessage$bmessage$cmessage"
