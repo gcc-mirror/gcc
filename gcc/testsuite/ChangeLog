@@ -1,3 +1,8 @@
+Thu May 11 19:02:43 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* g77.f-torture/compile/20000511-1.f: New test.
+	* g77.f-torture/compile/20000511-2.f: New test.
+
 2000-05-11  Michael Meissner  <meissner@redhat.com>
 
 	* gcc.c-torture/execute/20000511-1.c: New test.
