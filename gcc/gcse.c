@@ -5314,13 +5314,36 @@ pre_insert_copy_insn (expr, insn)
   rtx reg = expr->reaching_reg;
   int regno = REGNO (reg);
   int indx = expr->bitmap_index;
-  rtx set = single_set (insn);
-  rtx new_insn;
+  rtx pat = PATTERN (insn);
+  rtx set, new_insn;
+  int i;
 
-  if (!set)
+  /* This block matches the logic in hash_scan_insn.  */
+  if (GET_CODE (pat) == SET)
+    set = pat;
+  else if (GET_CODE (pat) == PARALLEL)
+    {
+      /* Search through the parallel looking got the set whose
+	 source was the expression that we're interested in.  */
+      set = NULL_RTX;
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	{
+	  rtx x = XVECEXP (pat, 0, i);
+	  if (GET_CODE (x) == SET
+	      && expr_equiv_p (SET_SRC (x), expr->expr))
+	    {
+	      set = x;
+	      break;
+	    }
+	}
+      if (! set)
+	abort ();
+    }
+  else
     abort ();
 
-  new_insn = emit_insn_after (gen_move_insn (reg, SET_DEST (set)), insn);
+  new_insn = gen_move_insn (reg, copy_rtx (SET_DEST (set)));
+  new_insn = emit_insn_after (new_insn, insn);
 
   /* Keep register set table up to date.  */
   record_one_set (regno, new_insn);

@@ -1,3 +1,10 @@
+2003-11-08  Roger Sayle  <roger@eyesopen.com>
+
+	Backport from mainline
+	PR optimization/10467, PR optimization/11741
+	* gcc.dg/20030926-1.c: New test case.
+	* gcc.dg/20031108-1.c: New test case.
+
 2003-11-08  Bernardo Innocenti  <bernie@develer.com>
 
 	Backport from 3.4-branch

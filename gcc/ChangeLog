@@ -1,3 +1,10 @@
+2003-11-08  Roger Sayle  <roger@eyesopen.com>
+
+	Backport from mainline
+	PR optimization/10467, PR optimization/11741
+	* gcse.c (pre_insert_copy_insn): Tweak the logic for finding the
+	appropriate set to match the code in hash_scan_insn.
+
 2003-11-06  H.J. Lu <hongjiu.lu@intel.com>
 
 	* cppinit.c (init_standard_includes): Updated.
