@@ -185,7 +185,7 @@ remember_protocol_qualifiers ()
       wordlist[i].name = "oneway";   
 }
 
-void
+char *
 init_parse (filename)
      char *filename;
 {
@@ -220,6 +220,8 @@ init_parse (filename)
   if (! cpp_start_read (&parse_in, filename))
     abort ();
 #endif
+
+  return filename;
 }
 
 void
