@@ -1,3 +1,9 @@
+2003-10-28  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* ada/acats/run_all.sh: Change output to be more compliant with
+	dejagnu framework.
+	Create acats.sum and acats.log files under testsuite/ada/acats
+
 2003-10-27  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* README.ada: Removed, integrated in ../doc/sourcebuild.texi
