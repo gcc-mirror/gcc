@@ -7374,51 +7374,16 @@ debug_dependencies ()
 		  int n;
 		  fprintf (dump, ";;   %6d ", INSN_UID (insn));
 		  if (GET_CODE (insn) == NOTE)
-		    switch (n = NOTE_LINE_NUMBER (insn))
-		      {
-		      case NOTE_INSN_DELETED:
-			fprintf (dump, "NOTE_INSN_DELETED");
-			break;
-		      case NOTE_INSN_BLOCK_BEG:
-			fprintf (dump, "NOTE_INSN_BLOCK_BEG");
-			break;
-		      case NOTE_INSN_BLOCK_END:
-			fprintf (dump, "NOTE_INSN_BLOCK_END");
-			break;
-		      case NOTE_INSN_LOOP_BEG:
-			fprintf (dump, "NOTE_INSN_LOOP_BEG");
-			break;
-		      case NOTE_INSN_LOOP_END:
-			fprintf (dump, "NOTE_INSN_LOOP_END");
-			break;
-		      case NOTE_INSN_LOOP_CONT:
-			fprintf (dump, "NOTE_INSN_LOOP_CONT");
-			break;
-		      case NOTE_INSN_LOOP_VTOP:
-			fprintf (dump, "NOTE_INSN_LOOP_VTOP");
-			break;
-		      case NOTE_INSN_FUNCTION_BEG:
-			fprintf (dump, "NOTE_INSN_FUNCTION_BEG");
-			break;
-		      case NOTE_INSN_FUNCTION_END:
-			fprintf (dump, "NOTE_INSN_FUNCTION_END");
-			break;
-		      case NOTE_INSN_EH_REGION_BEG:
-			fprintf (dump, "NOTE_INSN_EH_REGION_BEG");
-			break;
-		      case NOTE_INSN_EH_REGION_END:
-			fprintf (dump, "NOTE_INSN_EH_REGION_END");
-			break;
-		      case NOTE_INSN_SETJMP:
-			fprintf (dump, "NOTE_INSN_SETJMP");
-			break;
-		      default:
-			if (n > 0)
-			  fprintf (dump, "NOTE_LINE_NUMBER %d", n);
-			else
-			  fprintf (dump, "??? UNRECOGNIZED NOTE %d", n);
-		      }
-		  fprintf (dump, "\n");
+		    {
+		      n = NOTE_LINE_NUMBER (insn);
+		      if (n < 0)
+			fprintf (dump, "%s\n", GET_NOTE_INSN_NAME (n));
+		      else
+			fprintf (dump, "line %d, file %s\n", n,
+				 NOTE_SOURCE_FILE (insn));
+		    }
+		  else
+		    fprintf (dump, " {%s}\n", GET_RTX_NAME (insn));
 		  continue;
 		}
 
