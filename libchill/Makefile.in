@@ -1,5 +1,5 @@
 # Makefile for GNU CHILL compiler runtime library.
-#   Copyright (C) 1987, 88, 90-94, 1998 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 88, 90-94, 1998, 1999 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -94,6 +94,80 @@ OBJS = $(LIBOBJS1) $(IOOBJS) $(PSOBJS) $(STROBJS) $(TIMEOBJS) $(TASKOBJS)
 libchill.a: $(OBJS)
 	$(AR) $(AR_FLAGS) $@ $(OBJS)
 	$(RANLIB) $@
+
+allgmem.o: allgmem.c rtltypes.h
+allmem.o: allmem.c rtltypes.h
+allocate.o: allocate.c rtltypes.h
+cause.o: cause.c
+exhstack.o: exhstack.c rtltypes.h
+exh.o: exh.c rtltypes.h
+retmem.o: retmem.c
+unhex.o: unhex.c
+unhex1.o: unhex1.c
+rtsdummy.o: rtsdummy.c gvarargs.h rtltypes.h
+terminate.o: terminate.c rtltypes.h
+basicio.o: basicio.c fileio.h
+chillstdio.o: chillstdio.c iomodes.h
+delete.o: delete.c fileio.h
+eoln.o: eoln.c fileio
+existing.o: existing.c fileio.h
+format.o: format.c bitstring.h auxtypes.h iomodes.h format.h fileio.h ioerror.h
+getassoc.o: getassoc.c fileio.h
+gettextaccess.o: gettextaccess.c fileio.h
+gettextindex.o: gettextindex.c fileio.h
+gettextrecord.o: gettextrecord.c fileio.h
+getusage.o: getusage.c fileio.h
+indexable.o: indexable.c fileio.h
+ioerror.o: ioerror.c
+isassociated.o: isassociated.c fileio.h
+outoffile.o: outoffile.c fileio.h
+readable.o: readable.c fileio.h
+readrecord.o: readrecord.c fileio.h
+sequencible.o: sequencible.c fileio.h
+settextaccess.o: settextaccess.c fileio.h
+settextindex.o: settextindex.c fileio.h
+settextrecord.o: settextrecord.c fileio.h
+variable.o: variable.c fileio.h
+writeable.o: writeable.c fileio.h
+writerecord.o: writerecord.c fileio.h
+andps.o: andps.c powerset.h
+cardps.o: cardps.c powerset.h
+concatps.o: concatps.c powerset.h
+copyps.o: copyps.c powerset.h
+diffps.o: diffps.c powerset.h
+eqps.o: eqps.c powerset.h
+ffsetclrps.o: ffsetclrps.c powerset.h
+ffsetps.o: ffsetps.c powerset.h
+flsetclrps.o: flsetclrps.c powerset.h
+flsetps.o: flsetps.c powerset.h
+inbitstr.o: inbitstr.c powerset.h
+inps.o: inps.c powerset.h
+leps.o: leps.c powerset.h
+ltps.o: ltps.c powerset.h
+neps.o: neps.c powerset.h
+notps.o: notps.c powerset.h
+orps.o: orps.c powerset.h
+setbitps.o: setbitps.c powerset.h
+setbits.o: setbits.c powerset.h
+sliceps.o: sliceps.c powerset.h
+xorps.o: xorps.c powerset.h
+concatstr.o: concatstr.c
+eqstr.o: eqstr.c
+ltstr.o: ltstr.c
+memmove.o: memmove.c
+abstime.o: abstime.c rtltypes.h
+inttime.o: inttime.c
+waituntil.o: waituntil.c rtltypes.h rts.h
+remaintime.o: remaintime.c rts.h
+convdurrtstime.o: convdurrtstime.c rts.h
+checkcycle.o: checkcycle.c rtltypes.h rts.h
+continue.o: continue.c rtltypes.h rts.h
+delaycase.o: delaycase.c rtltypes.h rts.h
+printbuffer.o: printbuffer.c rtltypes.h rts.h
+printevent.o: printevent.c rtltypes.h rts.h
+queuelength.o: queuelength.c rtltypes.h rts.h
+sendbuffer.o: sendbuffer.c rtltypes.h rts.h
+waitbuffer.o: waitbuffer.c rtltypes.h rts.h
 
 $(PSOBJS): $(srcdir)/powerset.h
 librmt.o: $(srcdir)/rtltypes.h
