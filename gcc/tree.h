@@ -873,6 +873,9 @@ struct tree_type
 #define DECL_TOO_LATE(NODE) ((NODE)->decl.bit_field_flag)
 /* In a FUNCTION_DECL, nonzero means a built in function.  */
 #define DECL_BUILT_IN(NODE) ((NODE)->decl.bit_field_flag)
+/* In a VAR_DECL that's static,
+   nonzero if the space is in the text section.  */
+#define DECL_IN_TEXT_SECTION(NODE) ((NODE)->decl.bit_field_flag)
 
 /* Used in VAR_DECLs to indicate that the variable is a vtable.
    It is also used in FIELD_DECLs for vtable pointers.  */
