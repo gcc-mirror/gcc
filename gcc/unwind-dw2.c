@@ -1,5 +1,6 @@
 /* DWARF2 exception handling and frame unwind runtime interface routines.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -524,14 +525,14 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	    {
 	    case DW_OP_deref:
 	      {
-		void *ptr = (void *)(_Unwind_Ptr) result;
+		void *ptr = (void *) (_Unwind_Ptr) result;
 		result = (_Unwind_Ptr) read_pointer (ptr);
 	      }
 	      break;
 
 	    case DW_OP_deref_size:
 	      {
-		void *ptr = (void *)(_Unwind_Ptr) result;
+		void *ptr = (void *) (_Unwind_Ptr) result;
 		switch (*op_ptr++)
 		  {
 		  case 1:
@@ -1096,14 +1097,16 @@ uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 /* Fill in CONTEXT for top-of-stack.  The only valid registers at this
    level will be the return address and the CFA.  */
    
-#define uw_init_context(CONTEXT)					\
-do {									\
-  /* Do any necessary initialization to access arbitrary stack frames.	\
-     On the SPARC, this means flushing the register windows.  */	\
-  __builtin_unwind_init ();						\
-  uw_init_context_1 (CONTEXT, __builtin_dwarf_cfa (),			\
-		     __builtin_return_address (0));			\
-} while (0)
+#define uw_init_context(CONTEXT)					   \
+  do									   \
+    {									   \
+      /* Do any necessary initialization to access arbitrary stack frames. \
+	 On the SPARC, this means flushing the register windows.  */	   \
+      __builtin_unwind_init ();						   \
+      uw_init_context_1 (CONTEXT, __builtin_dwarf_cfa (),		   \
+			 __builtin_return_address (0));			   \
+    }									   \
+  while (0)
 
 static void
 uw_init_context_1 (struct _Unwind_Context *context,
@@ -1137,12 +1140,14 @@ uw_init_context_1 (struct _Unwind_Context *context,
    macro because __builtin_eh_return must be invoked in the context of
    our caller.  */
 
-#define uw_install_context(CURRENT, TARGET)				\
-do {									\
-  long offset = uw_install_context_1 ((CURRENT), (TARGET));		\
-  void *handler = __builtin_frob_return_addr ((TARGET)->ra);		\
-  __builtin_eh_return (offset, handler);				\
-} while (0)
+#define uw_install_context(CURRENT, TARGET)				 \
+  do									 \
+    {									 \
+      long offset = uw_install_context_1 ((CURRENT), (TARGET));		 \
+      void *handler = __builtin_frob_return_addr ((TARGET)->ra);	 \
+      __builtin_eh_return (offset, handler);				 \
+    }									 \
+  while (0)
 
 static inline void
 init_dwarf_reg_size_table (void)
