@@ -1,3 +1,8 @@
+Sun Jan 25 22:00:25 1998  Alasdair Baird <alasdair@wildcat.demon.co.uk>
+
+	* recog.c (validate_replace_rtx_1): Only perform substitutions
+	of arguments to commutative and comparison operators once.
+
 Sun Jan 25 12:30:18 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* sparc.c (output_cbranch): Add default case in
