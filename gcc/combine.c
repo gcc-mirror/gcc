@@ -12074,6 +12074,25 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	  break;
 
 	case REG_EH_REGION:
+	  /* These notes must remain with the call or trapping instruction.  */
+	  if (GET_CODE (i3) == CALL_INSN)
+	    place = i3;
+	  else if (i2 && GET_CODE (i2) == CALL_INSN)
+	    place = i2;
+	  else if (flag_non_call_exceptions)
+	    {
+	      if (may_trap_p (i3))
+		place = i3;
+	      else if (i2 && may_trap_p (i2))
+		place = i2;
+	      /* ??? Otherwise assume we've combined things such that we
+		 can now prove that the instructions can't trap.  Drop the
+		 note in this case.  */
+	    }
+	  else
+	    abort ();
+	  break;
+
 	case REG_EH_RETHROW:
 	case REG_NORETURN:
 	  /* These notes must remain with the call.  It should not be
