@@ -35,6 +35,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 void
 split_quadword_operands (operands, low, n)
      rtx *operands, *low;
+     int n;
 {
   int i;
   /* Split operands.  */
