@@ -1620,19 +1620,6 @@ for module in ${build_modules} ; do
   configure_build_modules=configure-build-${module}
 done
 
-check_host_modules=
-install_host_modules=
-for module in ${configdirs} ; do
-  check_host_modules="${check_host_modules} check-${module}"
-  install_host_modules="${install_host_modules} install-${module}"
-done
-install_host_modules_nogcc=`echo "${install_host_modules}" | sed -e 's/install-gcc//g'`
-
-check_target_modules=
-for module in ${target_configdirs} ; do
-  check_target_modules="${check_target_modules} check-target-${module}"
-done
-
 # Determine whether gdb needs tk/tcl or not.
 # Use 'maybe' since enable_gdbtk might be true even if tk isn't available
 # and in that case we want gdb to be built without tk.  Ugh!
@@ -1668,7 +1655,7 @@ rm -f maybedep.tmp
 echo '# maybedep.tmp' > maybedep.tmp
 
 # Make-targets which may need maybe dependencies.
-mts="configure all install"
+mts="configure all install check"
 
 # Loop over modules and make-targets.
 for module in ${build_modules} ; do
@@ -1994,13 +1981,10 @@ AC_SUBST(all_build_modules)
 # Host module lists & subconfigure args.
 AC_SUBST(host_configargs)
 AC_SUBST(configdirs)
-AC_SUBST(check_host_modules)
-AC_SUBST(install_host_modules_nogcc)
 
 # Target module lists & subconfigure args.
 AC_SUBST(target_configargs)
 AC_SUBST(target_configdirs)
-AC_SUBST(check_target_modules)
 
 # Build tools.
 AC_SUBST(BISON)

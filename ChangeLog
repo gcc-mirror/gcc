@@ -1,3 +1,11 @@
+2003-05-19  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Switch more things to use maybe dependencies.
+	* Makefile.tpl: Switch more things to use maybe dependencies.  
+	Factor out common code from autogen IF statements.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2003-05-14  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* configure.in: Accept i[3456789]86 for machine type.
