@@ -2008,17 +2008,19 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  break;
 
 #ifdef HAVE_cc0
-	/* If there is a REG_CC_SETTER note on this insn, it means that
-	   the setting of the condition code was done in the delay slot
-	   of the insn that branched here.  So recover the cc status
-	   from the insn that set it.  */
+	{
+	  /* If there is a REG_CC_SETTER note on this insn, it means that
+	     the setting of the condition code was done in the delay slot
+	     of the insn that branched here.  So recover the cc status
+	     from the insn that set it.  */
 
-	note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
-	if (note)
-	  {
-	    NOTICE_UPDATE_CC (PATTERN (XEXP (note, 0)), XEXP (note, 0));
-	    cc_prev_status = cc_status;
-	  }
+	  rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
+	  if (note)
+	    {
+	      NOTICE_UPDATE_CC (PATTERN (XEXP (note, 0)), XEXP (note, 0));
+	      cc_prev_status = cc_status;
+	    }
+	}
 #endif
 
 	/* Detect insns that are really jump-tables
@@ -2401,7 +2403,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	       emit them before the peephole.  */
 	    if (next != 0 && next != NEXT_INSN (insn))
 	      {
-		rtx prev = PREV_INSN (insn);
+		rtx note, prev = PREV_INSN (insn);
 
 		for (note = NEXT_INSN (insn); note != next;
 		     note = NEXT_INSN (note))
