@@ -325,26 +325,36 @@ scan_rtx_reg (insn, loc, class, action, type)
 
 	  if (regno + nregs <= this_regno
 	      || this_regno + this_nregs <= regno)
-	    p = &this->next_chain;
-	  else if (action == mark_read)
+	    {
+	      p = &this->next_chain;
+	      continue;
+	    }
+
+	  if (action == mark_read)
 	    {
 	      if (! exact_match)
 		abort ();
-	      if (class == NO_REGS)
-		abort ();
 
-	      this = (struct du_chain *)
-		obstack_alloc (&rename_obstack, sizeof (struct du_chain));
-	      this->next_use = *p;
-	      this->next_chain = (*p)->next_chain;
-	      this->loc = loc;
-	      this->insn = insn;
-	      this->class = class;
-	      this->need_caller_save_reg = 0;
-	      *p = this;
-	      return;
+	      /* ??? Class NO_REGS can happen if the md file makes use of 
+		 EXTRA_CONSTRAINTS to match registers.  Which is arguably
+		 wrong, but there we are.  Since we know not what this may
+		 be replaced with, terminate the chain.  */
+	      if (class != NO_REGS)
+		{
+		  this = (struct du_chain *)
+		    obstack_alloc (&rename_obstack, sizeof (struct du_chain));
+		  this->next_use = *p;
+		  this->next_chain = (*p)->next_chain;
+		  this->loc = loc;
+		  this->insn = insn;
+		  this->class = class;
+		  this->need_caller_save_reg = 0;
+		  *p = this;
+		  return;
+		}
 	    }
-	  else if (action != terminate_overlapping_read || ! exact_match)
+
+	  if (action != terminate_overlapping_read || ! exact_match)
 	    {
 	      struct du_chain *next = this->next_chain;
 
