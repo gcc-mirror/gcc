@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -42,6 +42,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "ggc.h"
 #include "stdio.h"
 #include "target.h"
+#include "except.h"
 
 /* DOS brain-damage */
 #ifndef O_BINARY
@@ -302,6 +303,83 @@ unmangle_classname (const char *name, int name_length)
       }
   
   return to_return;
+}
+
+
+/* Given a class, create the DECLs for all its associated indirect dispatch tables.  */
+void
+gen_indirect_dispatch_tables (tree type)
+{
+  const char *typename = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+  {  
+    tree field = NULL;
+    char *buf = alloca (strlen (typename) + strlen ("_catch_classes_"));
+    tree catch_class_type = make_node (RECORD_TYPE);
+
+    sprintf (buf, "_catch_classes_%s", typename);
+    PUSH_FIELD (catch_class_type, field, "address", utf8const_ptr_type);
+    PUSH_FIELD (catch_class_type, field, "classname", ptr_type_node);
+    FINISH_RECORD (catch_class_type);
+    
+    TYPE_CTABLE_DECL (type) 
+      = build_decl (VAR_DECL, get_identifier (buf),
+		    build_array_type (catch_class_type, 0));
+    DECL_EXTERNAL (TYPE_CTABLE_DECL (type)) = 1;
+    TREE_STATIC (TYPE_CTABLE_DECL (type)) = 1;
+    TREE_READONLY (TYPE_CTABLE_DECL (type)) = 1;
+    TREE_CONSTANT (TYPE_CTABLE_DECL (type)) = 1;
+    DECL_IGNORED_P (TYPE_CTABLE_DECL (type)) = 1;
+    pushdecl (TYPE_CTABLE_DECL (type));  
+  }
+
+  if (flag_indirect_dispatch)
+    {
+      {
+	char *buf = alloca (strlen (typename) + strlen ("_otable_syms_"));
+
+	sprintf (buf, "_otable_%s", typename);
+	TYPE_OTABLE_DECL (type) = 
+	  build_decl (VAR_DECL, get_identifier (buf), otable_type);
+	DECL_EXTERNAL (TYPE_OTABLE_DECL (type)) = 1;
+	TREE_STATIC (TYPE_OTABLE_DECL (type)) = 1;
+	TREE_READONLY (TYPE_OTABLE_DECL (type)) = 1;
+	TREE_CONSTANT (TYPE_OTABLE_DECL (type)) = 1;
+	DECL_IGNORED_P (TYPE_OTABLE_DECL (type)) = 1;
+	pushdecl (TYPE_OTABLE_DECL (type));  
+	sprintf (buf, "_otable_syms_%s", typename);
+	TYPE_OTABLE_SYMS_DECL (type) = 
+	  build_decl (VAR_DECL, get_identifier (buf), symbols_array_type);
+	TREE_STATIC (TYPE_OTABLE_SYMS_DECL (type)) = 1;
+	TREE_CONSTANT (TYPE_OTABLE_SYMS_DECL (type)) = 1;
+	DECL_IGNORED_P(TYPE_OTABLE_SYMS_DECL (type)) = 1;
+	pushdecl (TYPE_OTABLE_SYMS_DECL (type));
+      }
+
+      {
+	char *buf = alloca (strlen (typename) + strlen ("_atable_syms_"));
+	tree decl;
+
+	sprintf (buf, "_atable_%s", typename);
+	TYPE_ATABLE_DECL (type) = decl =
+	  build_decl (VAR_DECL, get_identifier (buf), atable_type);
+	DECL_EXTERNAL (decl) = 1;
+	TREE_STATIC (decl) = 1;
+	TREE_READONLY (decl) = 1;
+	TREE_CONSTANT (decl) = 1;
+	DECL_IGNORED_P (decl) = 1;
+	/* Mark the atable as belonging to this class.  */
+	pushdecl (decl);  
+	MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
+	DECL_OWNER (decl) = type;
+	sprintf (buf, "_atable_syms_%s", typename);
+	TYPE_ATABLE_SYMS_DECL (type) = 
+	  build_decl (VAR_DECL, get_identifier (buf), symbols_array_type);
+	TREE_STATIC (TYPE_ATABLE_SYMS_DECL (type)) = 1;
+	TREE_CONSTANT (TYPE_ATABLE_SYMS_DECL (type)) = 1;
+	DECL_IGNORED_P (TYPE_ATABLE_SYMS_DECL (type)) = 1;
+	pushdecl (TYPE_ATABLE_SYMS_DECL (type));
+      }
+    }
 }
 
 tree
@@ -835,8 +913,13 @@ build_class_ref (tree type)
       if (TREE_CODE (type) == POINTER_TYPE)
 	type = TREE_TYPE (type);
 
-      if  (flag_indirect_dispatch 
-	   && type != current_class
+      /* FIXME: we really want an indirect reference to our
+	 superclass.  However, libgcj assumes that a superclass
+	 pointer always points directly to a class.  As a workaround
+	 we always emit this hard superclass reference.  */
+      if  (flag_indirect_dispatch
+	   && type != output_class
+	   && type != CLASSTYPE_SUPER (output_class)
 	   && TREE_CODE (type) == RECORD_TYPE)
 	return build_indirect_class_ref (type);
 
@@ -957,10 +1040,11 @@ build_static_field_ref (tree fdecl)
   if (flag_indirect_dispatch)
     {
       tree table_index 
-	= build_int_2 (get_symbol_table_index (fdecl, &atable_methods), 0);
+	= build_int_2 (get_symbol_table_index 
+		       (fdecl, &TYPE_ATABLE_METHODS (output_class)), 0);
       tree field_address
 	= build (ARRAY_REF, build_pointer_type (TREE_TYPE (fdecl)), 
-		 atable_decl, table_index);
+		 TYPE_ATABLE_DECL (output_class), table_index);
       return fold (build1 (INDIRECT_REF, TREE_TYPE (fdecl), 
 			   field_address));
     }
@@ -1435,8 +1519,10 @@ make_class_data (tree type)
   super = CLASSTYPE_SUPER (type);
   if (super == NULL_TREE)
     super = null_pointer_node;
-  else if (! flag_indirect_dispatch
-	   && assume_compiled (IDENTIFIER_POINTER (DECL_NAME (type_decl)))
+  else if (/* FIXME: we should also test for (!
+	      flag_indirect_dispatch) here, but libgcj can't cope with
+	      a symbolic reference a superclass in the class data.  */
+	   assume_compiled (IDENTIFIER_POINTER (DECL_NAME (type_decl)))
 	   && assume_compiled (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (super)))))
     super = build_class_ref (super);
   else
@@ -1463,13 +1549,15 @@ make_class_data (tree type)
 	  tree child = TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), i);
 	  tree iclass = BINFO_TYPE (child);
 	  tree index;
-	  if (assume_compiled (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (iclass)))))
+	  if (! flag_indirect_dispatch
+	      && (assume_compiled 
+		  (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (iclass))))))
 	    index = build_class_ref (iclass);
 	  else
 	    {
-		int int_index = alloc_class_constant (iclass);
-		index = build_int_2 (int_index, 0);
-		TREE_TYPE (index) = ptr_type_node;
+	      int int_index = alloc_class_constant (iclass);
+	      index = build_int_2 (int_index, 0);
+	      TREE_TYPE (index) = ptr_type_node;
 	    }
 	  init = tree_cons (NULL_TREE, index, init); 
 	}
@@ -1482,6 +1570,23 @@ make_class_data (tree type)
     }
 
   constant_pool_constructor = build_constants_constructor ();
+
+  if (flag_indirect_dispatch)
+    {
+      TYPE_OTABLE_DECL (type) 
+	= emit_symbol_table 
+	(DECL_NAME (TYPE_OTABLE_DECL (type)), 
+	 TYPE_OTABLE_DECL (type), TYPE_OTABLE_METHODS (type), 
+	 TYPE_OTABLE_SYMS_DECL (type), integer_type_node);
+       
+      TYPE_ATABLE_DECL (type) 
+	= emit_symbol_table 
+	(DECL_NAME (TYPE_ATABLE_DECL (type)), 
+	 TYPE_ATABLE_DECL (type), TYPE_ATABLE_METHODS (type), 
+	 TYPE_ATABLE_SYMS_DECL (type), ptr_type_node);
+    }
+  
+  TYPE_CTABLE_DECL (type) = emit_catch_table (type);
 
   START_RECORD_CONSTRUCTOR (temp, object_type_node);
   PUSH_FIELD_VALUE (temp, "vtable",
@@ -1526,7 +1631,7 @@ make_class_data (tree type)
 		      : build (PLUS_EXPR, dtable_ptr_type,
 			       build1 (ADDR_EXPR, dtable_ptr_type, dtable_decl),
 			       dtable_start_offset));
-  if (otable_methods == NULL_TREE)
+  if (TYPE_OTABLE_METHODS (type) == NULL_TREE)
     {
       PUSH_FIELD_VALUE (cons, "otable", null_pointer_node);
       PUSH_FIELD_VALUE (cons, "otable_syms", null_pointer_node);
@@ -1534,13 +1639,13 @@ make_class_data (tree type)
   else
     {
       PUSH_FIELD_VALUE (cons, "otable",
-			build1 (ADDR_EXPR, otable_ptr_type, otable_decl));
+			build1 (ADDR_EXPR, otable_ptr_type, TYPE_OTABLE_DECL (type)));
       PUSH_FIELD_VALUE (cons, "otable_syms",
 			build1 (ADDR_EXPR, symbols_array_ptr_type,
-				otable_syms_decl));
-      TREE_CONSTANT (otable_decl) = 1;
-    }
-  if (atable_methods == NULL_TREE)
+				TYPE_OTABLE_SYMS_DECL (type)));
+      TREE_CONSTANT (TYPE_OTABLE_DECL (type)) = 1;
+    } 
+  if (TYPE_ATABLE_METHODS(type) == NULL_TREE)
     {
       PUSH_FIELD_VALUE (cons, "atable", null_pointer_node);
       PUSH_FIELD_VALUE (cons, "atable_syms", null_pointer_node);
@@ -1548,15 +1653,15 @@ make_class_data (tree type)
   else
     {
       PUSH_FIELD_VALUE (cons, "atable",
-			build1 (ADDR_EXPR, atable_ptr_type, atable_decl));
+			build1 (ADDR_EXPR, atable_ptr_type, TYPE_ATABLE_DECL (type)));
       PUSH_FIELD_VALUE (cons, "atable_syms",
 			build1 (ADDR_EXPR, symbols_array_ptr_type,
-				atable_syms_decl));
-      TREE_CONSTANT (atable_decl) = 1;
+				TYPE_ATABLE_SYMS_DECL (type)));
+      TREE_CONSTANT (TYPE_ATABLE_DECL (type)) = 1;
     }
  
   PUSH_FIELD_VALUE (cons, "catch_classes",
-		    build1 (ADDR_EXPR, ptr_type_node, ctable_decl)); 
+		    build1 (ADDR_EXPR, ptr_type_node, TYPE_CTABLE_DECL (type))); 
   PUSH_FIELD_VALUE (cons, "interfaces", interfaces);
   PUSH_FIELD_VALUE (cons, "loader", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "interface_count", build_int_2 (interface_len, 0));
@@ -1615,6 +1720,8 @@ finish_class (void)
 	}
       method = TREE_CHAIN (method);
     }
+
+  java_expand_catch_classes (current_class);
 
   current_function_decl = NULL_TREE;
   make_class_data (current_class);
@@ -2231,7 +2338,7 @@ tree
 make_catch_class_record (tree catch_class, tree classname)
 {
   tree entry;
-  tree type = TREE_TYPE (TREE_TYPE (ctable_decl));
+  tree type = TREE_TYPE (TREE_TYPE (TYPE_CTABLE_DECL (output_class)));
   START_RECORD_CONSTRUCTOR (entry, type);
   PUSH_FIELD_VALUE (entry, "address", catch_class);
   PUSH_FIELD_VALUE (entry, "classname", classname);
@@ -2241,29 +2348,35 @@ make_catch_class_record (tree catch_class, tree classname)
 
 
 /* Generate the list of Throwable classes that are caught by exception
-   handlers in this compilation.  */
-void 
-emit_catch_table (void)
+   handlers in this class.  */
+tree 
+emit_catch_table (tree this_class)
 {
   tree table, table_size, array_type;
-  catch_classes 
-    = tree_cons (NULL, 
-		 make_catch_class_record (null_pointer_node, null_pointer_node),
-		 catch_classes);
-  catch_classes = nreverse (catch_classes);
-  catch_classes 
-    = tree_cons (NULL, 
-		 make_catch_class_record (null_pointer_node, null_pointer_node),
-		 catch_classes);
-  table_size = build_index_type (build_int_2 (list_length (catch_classes), 0));
+  TYPE_CATCH_CLASSES (this_class) =
+    tree_cons (NULL,
+	       make_catch_class_record (null_pointer_node, null_pointer_node),
+	       TYPE_CATCH_CLASSES (this_class));
+  TYPE_CATCH_CLASSES (this_class) = nreverse (TYPE_CATCH_CLASSES (this_class));
+  TYPE_CATCH_CLASSES (this_class) = 
+    tree_cons (NULL,
+	       make_catch_class_record (null_pointer_node, null_pointer_node),
+	       TYPE_CATCH_CLASSES (this_class));
+  table_size = 
+    build_index_type (build_int_2 
+		      (list_length (TYPE_CATCH_CLASSES (this_class)), 0));
   array_type 
-    = build_array_type (TREE_TYPE (TREE_TYPE (ctable_decl)), table_size);
-  table = build_decl (VAR_DECL, DECL_NAME (ctable_decl), array_type);
-  DECL_INITIAL (table) = build_constructor (array_type, catch_classes);
+    = build_array_type (TREE_TYPE (TREE_TYPE (TYPE_CTABLE_DECL (this_class))),
+			table_size);
+  table = 
+    build_decl (VAR_DECL, DECL_NAME (TYPE_CTABLE_DECL (this_class)), array_type);
+  DECL_INITIAL (table) = 
+    build_constructor (array_type, TYPE_CATCH_CLASSES (this_class));
   TREE_STATIC (table) = 1;
   TREE_READONLY (table) = 1;  
+  DECL_IGNORED_P (table) = 1;
   rest_of_decl_compilation (table, NULL, 1, 0);
-  ctable_decl = table;
+  return table;
 }
  
 

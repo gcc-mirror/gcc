@@ -1,6 +1,6 @@
 /* Process declarations and variables for the GNU compiler for the
    Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -63,10 +63,6 @@ tree java_lang_cloneable_identifier_node;
 
 /* Name of the Serializable class.  */
 tree java_io_serializable_identifier_node;
-
-/* Set to nonzero value in order to emit class initialization code
-   before static field references.  */
-extern int always_initialize_class_p;
 
 /* The DECL_MAP is a mapping from (index, type) to a decl node.
    If index < max_locals, it is the index of a local variable.
@@ -389,6 +385,13 @@ create_primitive_vtable (const char *name)
   return r;
 }
 
+static tree
+do_nothing (tree t)
+{
+  return t;
+}
+
+
 void
 java_init_decl_processing (void)
 {
@@ -538,6 +541,28 @@ java_init_decl_processing (void)
   float_array_vtable = create_primitive_vtable ("float");
   double_array_vtable = create_primitive_vtable ("double");
 
+  one_elt_array_domain_type = build_index_type (integer_one_node);
+  utf8const_type = make_node (RECORD_TYPE);
+  PUSH_FIELD (utf8const_type, field, "hash", unsigned_short_type_node);
+  PUSH_FIELD (utf8const_type, field, "length", unsigned_short_type_node);
+  FINISH_RECORD (utf8const_type);
+  utf8const_ptr_type = build_pointer_type (utf8const_type);
+
+  atable_type = build_array_type (ptr_type_node, 
+				  one_elt_array_domain_type);
+  TYPE_NONALIASED_COMPONENT (atable_type) = 1;
+  atable_ptr_type = build_pointer_type (atable_type);
+
+  symbol_type = make_node (RECORD_TYPE);
+  PUSH_FIELD (symbol_type, field, "clname", utf8const_ptr_type);
+  PUSH_FIELD (symbol_type, field, "name", utf8const_ptr_type);
+  PUSH_FIELD (symbol_type, field, "signature", utf8const_ptr_type);
+  FINISH_RECORD (symbol_type);
+
+  symbols_array_type = build_array_type (symbol_type, 
+					 one_elt_array_domain_type);
+  symbols_array_ptr_type = build_pointer_type (symbols_array_type);
+
   /* As you're adding items here, please update the code right after
      this section, so that the filename containing the source code of
      the pre-defined class gets registered correctly. */
@@ -595,12 +620,6 @@ java_init_decl_processing (void)
   /* for lack of a better place to put this stub call */
   init_expr_processing();
 
-  utf8const_type = make_node (RECORD_TYPE);
-  PUSH_FIELD (utf8const_type, field, "hash", unsigned_short_type_node);
-  PUSH_FIELD (utf8const_type, field, "length", unsigned_short_type_node);
-  FINISH_RECORD (utf8const_type);
-  utf8const_ptr_type = build_pointer_type (utf8const_type);
-
   constants_type_node = make_node (RECORD_TYPE);
   PUSH_FIELD (constants_type_node, field, "size", unsigned_int_type_node);
   PUSH_FIELD (constants_type_node, field, "tags", ptr_type_node);
@@ -613,69 +632,10 @@ java_init_decl_processing (void)
   dtable_type = make_node (RECORD_TYPE);
   dtable_ptr_type = build_pointer_type (dtable_type);
 
-  one_elt_array_domain_type = build_index_type (integer_one_node);
   otable_type = build_array_type (integer_type_node, 
 				  one_elt_array_domain_type);
   TYPE_NONALIASED_COMPONENT (otable_type) = 1;
   otable_ptr_type = build_pointer_type (otable_type);
-  atable_type = build_array_type (ptr_type_node, 
-				  one_elt_array_domain_type);
-  TYPE_NONALIASED_COMPONENT (atable_type) = 1;
-  atable_ptr_type = build_pointer_type (atable_type);
-
-  symbol_type = make_node (RECORD_TYPE);
-  PUSH_FIELD (symbol_type, field, "clname", utf8const_ptr_type);
-  PUSH_FIELD (symbol_type, field, "name", utf8const_ptr_type);
-  PUSH_FIELD (symbol_type, field, "signature", utf8const_ptr_type);
-  FINISH_RECORD (symbol_type);
-
-  symbols_array_type = build_array_type (symbol_type, 
-					 one_elt_array_domain_type);
-  symbols_array_ptr_type = build_pointer_type (symbols_array_type);
-
-  if (flag_indirect_dispatch)
-    {
-      otable_decl = build_decl (VAR_DECL, get_identifier ("otable"), otable_type);
-      DECL_EXTERNAL (otable_decl) = 1;
-      TREE_STATIC (otable_decl) = 1;
-      TREE_READONLY (otable_decl) = 1;
-      TREE_CONSTANT (otable_decl) = 1;
-      pushdecl (otable_decl);  
-      otable_syms_decl = build_decl (VAR_DECL, get_identifier ("otable_syms"), 
-				     symbols_array_type);
-      TREE_STATIC (otable_syms_decl) = 1;
-      TREE_CONSTANT (otable_syms_decl) = 1;
-      pushdecl (otable_syms_decl);
-
-      atable_decl = build_decl (VAR_DECL, get_identifier ("atable"), atable_type);
-      DECL_EXTERNAL (atable_decl) = 1;
-      TREE_STATIC (atable_decl) = 1;
-      TREE_READONLY (atable_decl) = 1;
-      TREE_CONSTANT (atable_decl) = 1;
-      pushdecl (atable_decl);  
-      atable_syms_decl = build_decl (VAR_DECL, get_identifier ("atable_syms"), 
-				     symbols_array_type);
-      TREE_STATIC (atable_syms_decl) = 1;
-      TREE_CONSTANT (atable_syms_decl) = 1;
-      pushdecl (atable_syms_decl);
-    }
-  
-  {  
-    tree catch_class_type = make_node (RECORD_TYPE);
-    PUSH_FIELD (catch_class_type, field, "address", utf8const_ptr_type);
-    PUSH_FIELD (catch_class_type, field, "classname", ptr_type_node);
-    FINISH_RECORD (catch_class_type);
-    
-    ctable_decl 
-      = build_decl (VAR_DECL, get_identifier ("catch_classes"), 
-		    build_array_type 
-		    (catch_class_type, 0));
-    DECL_EXTERNAL (ctable_decl) = 1;
-    TREE_STATIC (ctable_decl) = 1;
-    TREE_READONLY (ctable_decl) = 1;
-    TREE_CONSTANT (ctable_decl) = 1;
-    pushdecl (ctable_decl);  
-  }
 
   PUSH_FIELD (object_type_node, field, "vtable", dtable_ptr_type);
   /* This isn't exactly true, but it is what we have in the source.
@@ -945,12 +905,12 @@ java_init_decl_processing (void)
   eh_personality_libfunc = init_one_libfunc (USING_SJLJ_EXCEPTIONS
                                              ? "__gcj_personality_sj0"
                                              : "__gcj_personality_v0");
-  lang_eh_runtime_type = prepare_eh_table_type;
+
+  lang_eh_runtime_type = do_nothing;
 
   init_jcf_parse ();
     
   initialize_builtins ();
-
   soft_fmod_node = built_in_decls[BUILT_IN_FMOD];
 #if 0
   soft_fmodf_node = built_in_decls[BUILT_IN_FMODF];
@@ -1860,6 +1820,7 @@ java_expand_body (tree fndecl)
 
   current_function_decl = fndecl;
   input_location = DECL_SOURCE_LOCATION (fndecl);
+  output_class = DECL_CONTEXT (current_function_decl);
   current_class = DECL_CONTEXT (fndecl);
 
   timevar_push (TV_EXPAND);
