@@ -554,6 +554,7 @@ echo '	  if [ -d $(stage)/$$dir ]; then true; else '$mkinstalldirs' $(stage)/$$d
 echo '	done'
 echo '	-for dir in '"${dirs}"'; do \'
 echo '	  mv $$dir/*'"${objext}"' $(stage)/$$dir; \'
+echo '	  mv $$dir/*'"${objext}s"' $(stage)/$$dir || true; \'
 echo '	  test ! -f $$dir/stacknote.s || mv $$dir/stacknote.s $(stage)/$$dir; \'
 echo '	  test ! -f $$dir/libgcc.a || mv $$dir/lib* $(stage)/$$dir; \'
 echo '	done'

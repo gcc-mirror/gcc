@@ -12,10 +12,14 @@ SHLIB_SLIBDIR_QUAL = @shlib_slibdir_qual@
 
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -dynamiclib -nodefaultlibs \
 	-Wl,-install_name,$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SONAME) \
-	-Wl,-flat_namespace -o $(SHLIB_NAME) \
+	-Wl,-flat_namespace -o $(SHLIB_NAME).tmp \
 	$(SHLIB_VERSTRING) \
 	@multilib_flags@ $(SHLIB_OBJS) -lc && \
 	rm -f $(SHLIB_SOLINK) && \
+	if [ -f $(SHLIB_NAME) ]; then \
+	  mv -f $(SHLIB_NAME) $(SHLIB_NAME).`basename $(STAGE_PREFIX)`; \
+	else true; fi && \
+	mv $(SHLIB_NAME).tmp $(SHLIB_NAME) && \
 	$(LN_S) $(SHLIB_NAME) $(SHLIB_SOLINK)
 # $(slibdir) double quoted to protect it from expansion while building
 # libgcc.mk.  We want this delayed until actual install time.

@@ -5,8 +5,12 @@ SHLIB_SONAME = @shlib_base_name@.1
 SHLIB_OBJS = @shlib_objs@
 
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared  -nodefaultlibs \
-	-o $(SHLIB_NAME) @multilib_flags@ $(SHLIB_OBJS) -lc && \
+	-o $(SHLIB_NAME).tmp @multilib_flags@ $(SHLIB_OBJS) -lc && \
         rm -f $(SHLIB_SONAME) && \
+	if [ -f $(SHLIB_NAME) ]; then \
+	  mv -f $(SHLIB_NAME) $(SHLIB_NAME).`basename $(STAGE_PREFIX)`; \
+	else true; fi && \
+	mv $(SHLIB_NAME).tmp $(SHLIB_NAME) && \
         $(LN_S) $(SHLIB_NAME) $(SHLIB_SONAME)
 
 

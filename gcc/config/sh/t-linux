@@ -22,8 +22,12 @@ SHLIB_MAPFILES =  $(srcdir)/config/sh/libgcc-std.ver \
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 	-Wl,--soname=$(SHLIB_SONAME) \
 	-Wl,--version-script=$(SHLIB_MAP) \
-	-o $(SHLIB_NAME) @multilib_flags@ $(SHLIB_OBJS) $(SHLIB_LC) && \
+	-o $(SHLIB_NAME).tmp @multilib_flags@ $(SHLIB_OBJS) $(SHLIB_LC) && \
 	rm -f $(SHLIB_SOLINK) && \
+	if [ -f $(SHLIB_NAME) ]; then \
+	  mv -f $(SHLIB_NAME) $(SHLIB_NAME).`basename $(STAGE_PREFIX)`; \
+	else true; fi && \
+	mv $(SHLIB_NAME).tmp $(SHLIB_NAME) && \
 	(echo "/* GNU ld script"; \
 	 echo "   Use the shared library, but some functions are only in"; \
 	 echo "   the static library.  */"; \
