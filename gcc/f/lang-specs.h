@@ -38,7 +38,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    {"cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-	-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+	%{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
 	%{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 	%{!undef:%P} -D_LANGUAGE_FORTRAN %{trigraphs} \
 	%c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} -traditional\
@@ -88,7 +88,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    {"cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I \
       %{C:%{!E:%eGNU C does not support -C without using -E}} \
       %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG} \
-      -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 \
+      %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2} \
       %{ansi:-trigraphs -$ -D__STRICT_ANSI__} \
       %{!undef:%P} -D_LANGUAGE_FORTRAN %{trigraphs} \
       %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} -traditional \
