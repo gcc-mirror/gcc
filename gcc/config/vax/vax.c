@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Vax.
-   Copyright (C) 1987, 94, 95, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 94, 95, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -33,13 +33,14 @@ Boston, MA 02111-1307, USA.  */
 #ifdef VMS_TARGET
 #include "tree.h"
 #endif
+#include "tm_p.h"
 
 /* This is like nonimmediate_operand with a restriction on the type of MEM.  */
 
 void
 split_quadword_operands (operands, low, n)
      rtx *operands, *low;
-     int n;
+     int n ATTRIBUTE_UNUSED;
 {
   int i;
   /* Split operands.  */
@@ -68,11 +69,12 @@ split_quadword_operands (operands, low, n)
     }
 }
 
+void
 print_operand_address (file, addr)
      FILE *file;
      register rtx addr;
 {
-  register rtx reg1, reg2, breg, ireg;
+  register rtx reg1, breg, ireg;
   rtx offset;
 
  retry:
@@ -250,7 +252,7 @@ print_operand_address (file, addr)
     }
 }
 
-char *
+const char *
 rev_cond_name (op)
      rtx op;
 {
@@ -287,8 +289,10 @@ vax_float_literal(c)
     register rtx c;
 {
   register enum machine_mode mode;
+#if HOST_FLOAT_FORMAT == VAX_FLOAT_FORMAT
   int i;
   union {double d; int i[2];} val;
+#endif
 
   if (GET_CODE (c) != CONST_DOUBLE)
     return 0;
@@ -324,7 +328,8 @@ vax_float_literal(c)
    2 - indirect */
 
 
-int vax_address_cost(addr)
+int
+vax_address_cost (addr)
     register rtx addr;
 {
   int reg = 0, indexed = 0, indir = 0, offset = 0, predec = 0;
@@ -366,6 +371,8 @@ int vax_address_cost(addr)
       indir = 2;	/* 3 on VAX 2 */
       addr = XEXP (addr, 0);
       goto restart;
+    default:
+      break;
     }
 
   /* Up to 3 things can be added in an address.  They are stored in
@@ -427,6 +434,8 @@ vax_rtx_cost (x)
 	case HImode:
 	case QImode:
 	  c = 10;		/* 3-4 on VAX 9000, 20-28 on VAX 2 */
+	  break;
+	default:
 	  break;
 	}
       break;
@@ -583,7 +592,7 @@ vax_rtx_cost (x)
 
 /* Check a `double' value for validity for a particular machine mode.  */
 
-static char *float_strings[] =
+static const char *const float_strings[] =
 {
    "1.70141173319264430e+38", /* 2^127 (2^24 - 1) / 2^24 */
   "-1.70141173319264430e+38",
@@ -662,7 +671,7 @@ check_float_value (mode, d, overflow)
 static
 struct extern_list {
   struct extern_list *next;	/* next external */
-  char *name;			/* name of the external */
+  const char *name;		/* name of the external */
   int size;			/* external's actual size */
   int in_const;			/* section type flag */
 } *extern_head = 0, *pending_head = 0;
@@ -673,7 +682,7 @@ struct extern_list {
 void
 vms_check_external (decl, name, pending)
      tree decl;
-     char *name;
+     const char *name;
      int pending;
 {
   register struct extern_list *p, *p0;

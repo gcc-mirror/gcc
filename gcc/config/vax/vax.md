@@ -1,5 +1,5 @@
 ;; Machine description for GNU compiler, Vax Version
-;; Copyright (C) 1987, 88, 91, 94-96, 1998, 1999 Free Software Foundation, Inc.
+;; Copyright (C) 1987, 88, 91, 94-96, 98, 99, 2000 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -662,7 +662,7 @@
   "*
 {
   rtx low[3];
-  char *pattern;
+  const char *pattern;
   int carry = 1;
 
   split_quadword_operands (operands, low, 3);
@@ -753,7 +753,7 @@
   "*
 {
   rtx low[3];
-  char *pattern;
+  const char *pattern;
   int carry = 1;
 
   split_quadword_operands (operands, low, 3);

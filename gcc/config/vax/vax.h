@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vax version.
-   Copyright (C) 1987, 88, 91, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -258,7 +258,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS {0, 0xffff}
+#define REG_CLASS_CONTENTS {{0}, {0xffff}}
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -1270,8 +1270,7 @@ VAX operand formatting codes:
   ((CODE) == '#')
 
 #define PRINT_OPERAND(FILE, X, CODE)  \
-{ extern char *rev_cond_name ();					\
-  if (CODE == '#') fputc (ASM_DOUBLE_CHAR, FILE);			\
+{ if (CODE == '#') fputc (ASM_DOUBLE_CHAR, FILE);			\
   else if (CODE == 'C')							\
     fputs (rev_cond_name (X), FILE);					\
   else if (CODE == 'D' && GET_CODE (X) == CONST_INT && INTVAL (X) < 0)	\
