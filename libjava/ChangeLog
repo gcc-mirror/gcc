@@ -1,5 +1,10 @@
 2000-12-04  Warren Levy  <warrenl@redhat.com>
 
+	* java/util/TimeZone.java (getAvailableIDs): Activated commented
+	out code dependent on compiler and library changes.
+
+2000-12-04  Warren Levy  <warrenl@redhat.com>
+
 	* java/io/FilePermission.java: Made class final per spec.
 	* java/text/DecimalFormatSymbols.java (setCurrencySymbol): Changed
 	method name to match spec (fixed typo).

@@ -646,15 +646,11 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
        Calendar.MARCH, -1, Calendar.SUNDAY, 2000 * 3600);
     timezones.put("Australia/Melbourne", tz);
     timezones.put("Australia/Sydney", tz);
-/******************************************************************
- * FIXME: XXX: Not yet available in libgcj.  Need new jdk 1.2
- * SimpleTimeZone constructor.
     tz = new SimpleTimeZone
       (10500 * 3600, "Australia/Lord_Howe",
        Calendar.OCTOBER, -1, Calendar.SUNDAY, 2000 * 3600,
        Calendar.MARCH, -1, Calendar.SUNDAY, 2000 * 3600, 500 * 3600);
     timezones.put("Australia/Lord_Howe", tz);
- ******************************************************************/
     tz = new SimpleTimeZone
       (11000 * 3600, "Asia/Magadan",
        Calendar.MARCH, -1, Calendar.SUNDAY, 2000 * 3600,
@@ -1012,8 +1008,6 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
    * offset. For example <code>{"Phoenix", "Denver"}</code>, since both have
    * GMT-07:00, but differ in daylight savings behaviour.
    */
-/******************************************************************
- * FIXME: XXX: Not yet available in libgcj.  Need jdk 1.2 Iterator and Map.
   public static String[] getAvailableIDs(int rawOffset)
   {
     int count = 0;
@@ -1038,20 +1032,16 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
       }
     return ids;
   }
- ******************************************************************/
 
   /**
    * Gets all available IDs.
    * @return An array of all supported IDs.
    */
-/******************************************************************
- * FIXME: XXX: Not yet available in libgcj.  Need jdk 1.2 java.util.Map.
   public static String[] getAvailableIDs()
   {
     return (String[])
       timezones.keySet().toArray(new String[timezones.size()]);
   }
- ******************************************************************/
 
   /**
    * Returns the time zone under which the host is running.  This
