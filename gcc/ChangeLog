@@ -1,5 +1,10 @@
 2004-01-13  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c (dosize): Change to
+	h8300_emit_stack_adjustment.  Update callers.
+
+2004-01-13  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (movstrictqi): Add an alternative with
 	the source being post_inc.  Tighten the predicate for the
 	destination to register_operand.
