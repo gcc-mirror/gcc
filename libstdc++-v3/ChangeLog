@@ -1,5 +1,10 @@
+2003-07-15  Petur Runolfsson  <peturr02@ru.is>
+
+	* include/bits/char_traits.h (char_traits<wchar_t>::move):
+	Change last parameter from int_type to size_t.
+
 2003-07-08  Benjamin Kosnik  <bkoz@redhat.com>
-	      Jerry Quinn  <jlquinn@optonline.net>
+            Jerry Quinn  <jlquinn@optonline.net>
 
 	* include/bits/ios_base.h (ios_base::_M_getloc): Return reference
 	to the imbued locale.
