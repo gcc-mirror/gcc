@@ -1,3 +1,11 @@
+1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* loop.c (loop_max_reg): New static variable.
+	(loop_optimize): Initialize it.  Eliminate one unnecessary call to
+	max_reg_num.
+	(scan_loop): Call reg_scan_update whenever we may have added new
+	registers, and update loop_max_reg.
+
 Tue Dec 14 12:07:29 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* regclass.c  (record_reg_classes): Do not do the copying preferrencing
