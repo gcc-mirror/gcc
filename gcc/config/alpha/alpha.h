@@ -1476,7 +1476,7 @@ literal_section ()						\
 /* Likewise for `char' and `short' constants.  */
 
 #define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-  fprintf (FILE, "\t.short %d\n",		\
+  fprintf (FILE, "\t.word %d\n",		\
     (GET_CODE (VALUE) == CONST_INT		\
      ? INTVAL (VALUE) & 0xffff : (abort (), 0)))
 
