@@ -121,7 +121,6 @@ extern const char *mips_arch_string;    /* for -march=<xxx> */
 extern const char *mips_tune_string;    /* for -mtune=<xxx> */
 extern const char *mips_isa_string;	/* for -mips{1,2,3,4} */
 extern const char *mips_abi_string;	/* for -mabi={32,n32,64} */
-extern const char *mips_entry_string;	/* for -mentry */
 extern const char *mips_cache_flush_func;/* for -mflush-func= and -mno-flush-func */
 extern int mips_string_length;		/* length of strings for mips16 */
 extern const struct mips_cpu_info mips_cpu_info_table[];
@@ -731,8 +730,6 @@ extern const struct mips_cpu_info *mips_tune_info;
       N_("Specify an ABI"), 0},						\
   { "ips",	&mips_isa_string,					\
       N_("Specify a Standard MIPS ISA"), 0},				\
-  { "entry",	&mips_entry_string,					\
-      N_("Use mips16 entry/exit psuedo ops"), 0},			\
   { "no-flush-func", &mips_cache_flush_func,				\
       N_("Don't call any cache flush functions"), 0},			\
   { "flush-func=", &mips_cache_flush_func,				\

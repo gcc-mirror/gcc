@@ -1,3 +1,14 @@
+2003-10-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	* doc/invoke.texi: Remove documentation of -mentry.
+	* config/mips/mips.c (mips_entry_string, mips_entry): Remove.
+	(override_options, mips_save_reg_p): Remove handling.
+	(compute_frame_size, mips_output_function_prologue): Likewise.
+	(mips_expand_prologue, mips_expand_epilogue): Likewise.
+	* config/mips/mips.h (mips_entry_string): Remove declaration.
+	(TARGET_OPTIONS): Remove -mentry.
+	* config/mips/mips16.S: Remove mention of -mentry.
+
 2003-10-06  Zack Weinberg  <zack@codesourcery.com>
 
 	* libfuncs.h (LTI_extendsfdf2, LTI_extendsfxf2, LTI_extendsftf2)
