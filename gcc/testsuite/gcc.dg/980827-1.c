@@ -1,6 +1,8 @@
 /* { dg-do run { target powerpc*-*-* } } */
 /* { dg-options -O2 } */
 
+double dval = 0;
+
 void splat (double d);
 
 int main(void)
