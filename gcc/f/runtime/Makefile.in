@@ -246,7 +246,7 @@ mostlyclean:
 	done
 
 clean:
-	-rm -f config.log config.cache stamp-*
+	-rm -f config.log stamp-*
 	for i in libI77 libF77 libU77; do \
 	  if [ -f $$i/Makefile ]; then \
 	    cd $$i; $(MAKE) -f Makefile clean; cd ..; \
@@ -254,7 +254,7 @@ clean:
 	done
 
 distclean: clean
-	-rm -f Makefile lib?77/Makefile config.status libU77/config.status ../../include/f2c.h
+	-rm -f Makefile config.cache lib?77/Makefile config.status libU77/config.status ../../include/f2c.h
 
 maintainer-clean: distclean
 	-rm -f $(srcdir)/configure $(srcdir)/libU77/configure
