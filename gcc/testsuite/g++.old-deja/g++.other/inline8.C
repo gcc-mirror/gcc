@@ -23,23 +23,23 @@ public:
 
 NAMES_ITEM::NAMES_ITEM (const NAMES_ITEM& item2)
         {
-        size_t length=strlen(item2.name);
+        size_t length=std::strlen(item2.name);
 
         name=new char[length+1];
-        memcpy(name,item2.name,length+1);
+        std::memcpy(name,item2.name,length+1);
         }
 
 NAMES_ITEM::NAMES_ITEM (const char* name2)      
         {
-        size_t length=strlen(name2);
+        size_t length=std::strlen(name2);
 
         name=new char[length+1];
-        memcpy(name,name2,length+1);
+        std::memcpy(name,name2,length+1);
         }
 
 NAMES_ITEM::~NAMES_ITEM ()
 {
-  if (strcmp (name, "one") != 0)
+  if (std::strcmp (name, "one") != 0)
     abort ();
   
   name=0;
@@ -47,12 +47,12 @@ NAMES_ITEM::~NAMES_ITEM ()
 
 bool NAMES_ITEM::operator==(const NAMES_ITEM& n) const
 {
-  return (strcmp(name,n.name) == 0);
+  return (std::strcmp(name,n.name) == 0);
 }
 
 bool operator<(const NAMES_ITEM& n1, const NAMES_ITEM& n2)
     {
-    return (strcmp(n1.name,n2.name) < 0);
+    return (std::strcmp(n1.name,n2.name) < 0);
     }
 
     typedef map<NAMES_ITEM,size_t,less<NAMES_ITEM> > lookup_t;
