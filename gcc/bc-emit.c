@@ -276,7 +276,7 @@ seg_refsym (seg, name, offset)
   segreloc->sym = sym;
   segreloc->next = seg->relocs;
   seg->relocs = segreloc;
-  seg_data(seg, (char *) &offset, sizeof offset);
+  seg_data (seg, (char *) &offset, sizeof offset);
 }
 
 
@@ -837,9 +837,9 @@ bc_gen_rtx (label, offset, bc_label)
   rtx r;
 
   r = (rtx) obstack_alloc (rtl_obstack, sizeof (struct rtx_def));
-  r->label = label;		/* FIXME: Do we need to copy here?  */
-  r->offset = offset;
-  r->bc_label = bc_label;
+  BYTECODE_LABEL(r) = label;		/* Do we need to copy here?  */
+  BYTECODE_OFFSET(r) = offset;
+  BYTECODE_BC_LABEL(r) = bc_label;
   return r;
 }
 
