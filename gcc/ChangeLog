@@ -1,3 +1,9 @@
+2005-02-24  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/19019
+	* reload.c (operands_match_p): Only increment register number for
+	SCALAR_INT_MODE_P modes in multiple hard registers.
+
 2005-02-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* ChangeLog.5: Fix log message typo(s).
