@@ -1224,7 +1224,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
       return error_mark_node;
     }
   TREE_USED (current_class_ptr) = 1;
-  if (processing_template_decl)
+  if (processing_template_decl && !qualifying_scope)
     {
       tree type = TREE_TYPE (decl);
 
@@ -1262,6 +1262,13 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 	      return error_mark_node;
 	    }
 	}
+
+      /* If PROCESSING_TEMPLATE_DECL is non-zero here, then
+	 QUALIFYING_SCOPE is also non-null.  Wrap this in a SCOPE_REF
+	 for now.  */
+      if (processing_template_decl)
+	return build_min (SCOPE_REF, TREE_TYPE (decl),
+			  qualifying_scope, DECL_NAME (decl));
 
       perform_or_defer_access_check (TYPE_BINFO (access_type), decl);
 

@@ -1,3 +1,9 @@
+2003-10-26  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10371
+	* semantics.c (finish_non_static_data_member): Handle when
+	both processing_template_decl and qualifying_scope are true.
+
 2003-10-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11076
