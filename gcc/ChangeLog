@@ -1,3 +1,8 @@
+2001-05-22  Richard Henderson  <rth@redhat.com>
+
+	* rtl.c (read_string): Break out from ...
+	(read_rtx): ... here.
+
 2001-05-22  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Specific): Remove a bogus and duplicate part
