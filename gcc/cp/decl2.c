@@ -269,10 +269,6 @@ int warn_sign_compare;
 
 int warn_float_equal = 0;
 
-/* Warn about *printf or *scanf format/argument anomalies.  */
-
-int warn_format;
-
 /* Warn about functions which might be candidates for format attributes.  */
 
 int warn_missing_format_attribute;
@@ -723,7 +719,13 @@ lang_decode_option (argc, argv)
       else if (!strcmp (p, "float-equal"))
 	warn_float_equal = setting;
       else if (!strcmp (p, "format"))
-	warn_format = setting;
+	set_Wformat (setting);
+      else if (!strcmp (p, "format-y2k"))
+	warn_format_y2k = setting;
+      else if (!strcmp (p, "format-extra-args"))
+	warn_format_extra_args = setting;
+      else if (!strcmp (p, "format-nonliteral"))
+	warn_format_nonliteral = setting;
       else if (!strcmp (p, "missing-format-attribute"))
 	warn_missing_format_attribute = setting;
       else if (!strcmp (p, "conversion"))
@@ -772,7 +774,7 @@ lang_decode_option (argc, argv)
 	  set_Wunused (setting);
 	  warn_implicit = setting;
 	  warn_switch = setting;
-	  warn_format = setting;
+	  set_Wformat (setting);
 	  warn_parentheses = setting;
 	  warn_missing_braces = setting;
 	  warn_sign_compare = setting;

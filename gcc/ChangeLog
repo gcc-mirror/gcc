@@ -1,5 +1,22 @@
 2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (warn_format, warn_format_y2k,
+	warn_format_extra_args, warn_format_nonliteral): Define.
+	(check_format_info): Check warn_format_nonliteral and
+	warn_format_extra_args.
+	(check_format_info_main): Check warn_format_y2k.
+	(set_Wformat): New function.
+	* c-common.h (warn_format_y2k, warn_format_extra_args,
+	warn_format_nonliteral, set_Wformat): Declare.
+	* c-decl.c (warn_format): Remove definition.
+	(c_decode_option): Handle -Wformat-nonliteral,
+	-Wno-format-extra-args and -Wno-format-y2k, and negated versions.
+	Use set_Wformat.
+	* invoke.texi: Document these new options and -Wformat=2.
+	* toplev.c (documented_lang_options): Add these new options.
+
+2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* builtins.def (BUILT_IN_IMAXABS): Add.
 	* builtins.c (expand_builtin): Also abort on BUILT_IN_IMAXABS.
 	* c-common.c (c_common_nodes_and_builtins): Create builtin

@@ -173,6 +173,22 @@ int flag_no_nonansi_builtin;
 
 const char *flag_dump_translation_unit;
 
+/* Warn about *printf or *scanf format/argument anomalies. */
+
+int warn_format;
+
+/* Warn about Y2K problems with strftime formats.  */
+
+int warn_format_y2k;
+
+/* Warn about excess arguments to formats.  */
+
+int warn_format_extra_args;
+
+/* Warn about non-literal format arguments.  */
+
+int warn_format_nonliteral;
+
 /* Nonzero means warn about possible violations of sequence point rules.  */
 
 int warn_sequence_point;
@@ -2321,7 +2337,7 @@ check_format_info (status, info, params)
       /* Functions taking a va_list normally pass a non-literal format
 	 string.  These functions typically are declared with
 	 first_arg_num == 0, so avoid warning in those cases.  */
-      if (info->first_arg_num != 0 && warn_format > 1)
+      if (info->first_arg_num != 0 && warn_format_nonliteral)
 	status_warning (status, "format not a string literal, argument types not checked");
     }
 
@@ -2333,10 +2349,10 @@ check_format_info (status, info, params)
      If the format is an empty string, this should be counted similarly to the
      case of extra format arguments.  */
   if (res.number_extra_args > 0 && res.number_non_literal == 0
-      && res.number_other == 0)
+      && res.number_other == 0 && warn_format_extra_args)
     status_warning (status, "too many arguments for format");
   if (res.number_dollar_extra_args > 0 && res.number_non_literal == 0
-      && res.number_other == 0)
+      && res.number_other == 0 && warn_format_extra_args)
     status_warning (status, "unused arguments in $-style format");
   if (res.number_empty > 0 && res.number_non_literal == 0
       && res.number_other == 0)
@@ -2991,23 +3007,24 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	}
 
       /* Give Y2K warnings.  */
-      {
-	int y2k_level = 0;
-	if (strchr (fci->flags2, '4') != 0)
-	  if (strchr (flag_chars, 'E') != 0)
+      if (warn_format_y2k)
+	{
+	  int y2k_level = 0;
+	  if (strchr (fci->flags2, '4') != 0)
+	    if (strchr (flag_chars, 'E') != 0)
+	      y2k_level = 3;
+	    else
+	      y2k_level = 2;
+	  else if (strchr (fci->flags2, '3') != 0)
 	    y2k_level = 3;
-	  else
+	  else if (strchr (fci->flags2, '2') != 0)
 	    y2k_level = 2;
-	else if (strchr (fci->flags2, '3') != 0)
-	  y2k_level = 3;
-	else if (strchr (fci->flags2, '2') != 0)
-	  y2k_level = 2;
-	if (y2k_level == 3)
-	  status_warning (status, "`%%%c' yields only last 2 digits of year in some locales",
-			  format_char);
-	else if (y2k_level == 2)
-	  status_warning (status, "`%%%c' yields only last 2 digits of year", format_char);
-      }
+	  if (y2k_level == 3)
+	    status_warning (status, "`%%%c' yields only last 2 digits of year in some locales",
+			    format_char);
+	  else if (y2k_level == 2)
+	    status_warning (status, "`%%%c' yields only last 2 digits of year", format_char);
+	}
 
       if (strchr (fci->flags2, '[') != 0)
 	{
@@ -3324,6 +3341,19 @@ check_format_types (status, types)
 	  }
       }
     }
+}
+
+/* Set format warning options according to a -Wformat=n option.  */
+
+void
+set_Wformat (setting)
+     int setting;
+{
+  warn_format = setting;
+  warn_format_y2k = setting;
+  warn_format_extra_args = setting;
+  if (setting != 1)
+    warn_format_nonliteral = setting;
 }
 
 /* Print a warning if a constant expression had overflow in folding.

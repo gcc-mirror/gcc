@@ -421,10 +421,6 @@ int warn_redundant_decls = 0;
 
 int warn_nested_externs = 0;
 
-/* Warn about *printf or *scanf format/argument anomalies.  */
-
-int warn_format;
-
 /* Warn about a subscript that has type char.  */
 
 int warn_char_subscripts = 0;
@@ -710,11 +706,23 @@ c_decode_option (argc, argv)
   else if (!strcmp (p, "-Wno-traditional"))
     warn_traditional = 0;
   else if (!strncmp (p, "-Wformat=", 9))
-    warn_format = atol (p + 9);
+    set_Wformat (atoi (p + 9));
   else if (!strcmp (p, "-Wformat"))
-    warn_format = 1;
+    set_Wformat (1);
   else if (!strcmp (p, "-Wno-format"))
-    warn_format = 0;
+    set_Wformat (0);
+  else if (!strcmp (p, "-Wformat-y2k"))
+    warn_format_y2k = 1;
+  else if (!strcmp (p, "-Wno-format-y2k"))
+    warn_format_y2k = 0;
+  else if (!strcmp (p, "-Wformat-extra-args"))
+    warn_format_extra_args = 1;
+  else if (!strcmp (p, "-Wno-format-extra-args"))
+    warn_format_extra_args = 0;
+  else if (!strcmp (p, "-Wformat-nonliteral"))
+    warn_format_nonliteral = 1;
+  else if (!strcmp (p, "-Wno-format-nonliteral"))
+    warn_format_nonliteral = 0;
   else if (!strcmp (p, "-Wchar-subscripts"))
     warn_char_subscripts = 1;
   else if (!strcmp (p, "-Wno-char-subscripts"))
@@ -793,7 +801,7 @@ c_decode_option (argc, argv)
       warn_return_type = 1;
       set_Wunused (1);
       warn_switch = 1;
-      warn_format = 1;
+      set_Wformat (1);
       warn_char_subscripts = 1;
       warn_parentheses = 1;
       warn_sequence_point = 1;
