@@ -2537,6 +2537,36 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# Fix <c_asm.h> on Digital UNIX V4.0:
+# It contains a prototype for a DEC C internal asm() function, clashing with
+# gcc's asm keyword.  So protect this with __DECC.
+file=c_asm.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e '/^[ 	]*float[ 	]*fasm/i\
+#ifdef __DECC
+' \
+      -e '/^[ 	]*#[ 	]*pragma[ 	]*intrinsic([ 	]*dasm/a\
+#endif
+' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+
 # This file on SunOS 4 has a very large macro.  When the sed loop
 # tries pull it in, it overflows the pattern space size of the SunOS
 # sed (GNU sed does not have this problem).  Since the file does not
