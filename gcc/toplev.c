@@ -632,6 +632,8 @@ char *lang_options[] =
   "-fno-implement-inlines",
   "-fexternal-templates",
   "-fno-external-templates",
+  "-fansi-overloading",
+  "-fno-ansi-overloading",
 
   "-Wreturn-type",
   "-Wno-return-type",
