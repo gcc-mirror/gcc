@@ -252,7 +252,8 @@ typedef enum type_kind_t
 #define LEN_STRING(str)         ( (STRING_EMPTY(str))?0:((str)->p - (str)->b))
 
 /* The scope separator appropriate for the language being demangled.  */
-#define SCOPE_STRING(work) "::"
+
+#define SCOPE_STRING(work) ((work->options & DMGL_JAVA) ? "." : "::")
 
 #define ARM_VTABLE_STRING "__vtbl__"	/* Lucid/ARM virtual table prefix */
 #define ARM_VTABLE_STRLEN 8		/* strlen (ARM_VTABLE_STRING) */
@@ -1548,6 +1549,7 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
   int need_comma = 0;
   int success = 0;
   const char *start;
+  int is_java_array = 0;
   string temp;
   int bindex = 0;
 
@@ -1592,13 +1594,19 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 	    {
 	      return (0);
 	    }
-	  string_appendn (tname, *mangled, r);
+	  is_java_array = (work -> options & DMGL_JAVA)
+	    && strncmp (*mangled, "JArray1Z", 8) == 0;
+	  if (! is_java_array)
+	    {
+	      string_appendn (tname, *mangled, r);
+	    }
 	  if (trawname)
 	    string_appendn (trawname, *mangled, r);
 	  *mangled += r;
 	}
     }
-  string_append (tname, "<");
+  if (!is_java_array)
+    string_append (tname, "<");
   /* get size of template parameter list */
   if (!get_count (mangled, &r))
     {
@@ -1716,10 +1724,15 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 	}
       need_comma = 1;
     }
+  if (is_java_array)
     {
-  if (tname->p[-1] == '>')
-    string_append (tname, " ");
-  string_append (tname, ">");
+      string_append (tname, "[]");
+    }
+  else
+    {
+      if (tname->p[-1] == '>')
+	string_append (tname, " ");
+      string_append (tname, ">");
     }
 
   if (is_type && remember)
@@ -2234,13 +2247,17 @@ demangle_prefix (work, mangled, declp)
 	    }
 	  else
 	    {
-              const char *tmp;
-              /* Look for the LAST occurrence of __, allowing names to have
-                 the '__' sequence embedded in them.*/
-              while ((tmp = mystrstr (scan+2, "__")) != NULL)
-                scan = tmp;
-              if (*(scan + 2) == '\0')
-                success = 0;
+	      const char *tmp;
+
+              /* Look for the LAST occurrence of __, allowing names to
+                 have the '__' sequence embedded in them. */
+	      if (!(ARM_DEMANGLING || HP_DEMANGLING))
+		{
+		  while ((tmp = mystrstr (scan + 2, "__")) != NULL)
+		    scan = tmp;
+		}
+	      if (*(scan + 2) == '\0')
+		success = 0;
               else
                 demangle_function_name (work, mangled, declp, scan);
 	    }
@@ -2873,7 +2890,8 @@ do_type (work, mangled, result)
 	case 'P':
 	case 'p':
 	  (*mangled)++;
-	  string_prepend (&decl, "*");
+	  if (! (work -> options & DMGL_JAVA))
+	    string_prepend (&decl, "*");
 	  if (tk == tk_none)
 	    tk = tk_pointer;
 	  break;
@@ -3889,6 +3907,7 @@ demangle_nested_args (work, mangled, declp)
   if (work->previous_argument)
     string_delete (work->previous_argument);
   work->previous_argument = saved_previous_argument;
+  --work->forgetting_types;
   work->nrepeats = saved_nrepeats;
 
   return result;
@@ -4262,6 +4281,7 @@ static struct option long_options[] = {
   {"strip-underscores", no_argument, 0, '_'},
   {"format", required_argument, 0, 's'},
   {"help", no_argument, 0, 'h'},
+  {"java", no_argument, 0, 'j'},
   {"no-strip-underscores", no_argument, 0, 'n'},
   {"version", no_argument, 0, 'v'},
   {0, no_argument, 0, 0}
@@ -4305,6 +4325,9 @@ main (argc, argv)
 	  exit (0);
 	case '_':
 	  strip_underscore = 1;
+	  break;
+	case 'j':
+	  flags |= DMGL_JAVA;
 	  break;
 	case 's':
 	  if (strcmp (optarg, "gnu") == 0)

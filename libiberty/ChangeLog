@@ -31,6 +31,13 @@
 	nothing.  Don't bother with `strlen' sanity check; consume_count
 	does it for us.
 
+1999-03-16  Stan Shebs  <shebs@andros.cygnus.com>
+
+	From Art Haas  <ahaas@neosoft.com>:
+	* cplus-dem.c (demangle_prefix): Don't grab all the '__' strings
+	when doing arm or hp style.
+	(demangle_nested_args): Decr forgetting_types field when done.
+	
 Thu Mar 11 01:22:58 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* pexecute.c (__CYGWIN32__): Rename to
@@ -49,6 +56,10 @@ Thu Mar 11 01:22:58 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 Thu Mar 11 01:07:55 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* config.table: Cleanup and add mh-*pic handling for alpha, arm, powerpc
+
+Sun Feb 28 22:30:44 1999  Geoffrey Noer  <noer@cygnus.com>
+
+	* config.table: Check cygwin*, not cygwin32*.
 
 Tue Feb  9 16:39:01 1999  Dave Brolley  <brolley@cygnus.com>
 
@@ -79,6 +90,15 @@ Wed Jan 13 07:26:44 1999  H.J. Lu  (hjl@gnu.org)
 Wed Jan 13 14:16:36 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* xstrdup.c (xstrdup): Switch from strcpy to memcpy for speed.
+
+Tue Jan  5 15:58:29 1999  Elena Zannoni  <ezannoni@kwikemart.cygnus.com>
+
+	* Makefile.in (CFILES): fix typo, splay-tree.c instead of
+	splay-tree.o.
+
+1999-01-04  Jason Molenda  (jsm@bugshack.cygnus.com)
+
+	* configure.in: Require autoconf 2.12.1 or higher.
 
 1998-12-30  Michael Meissner  <meissner@cygnus.com>
 
@@ -118,13 +138,24 @@ Sun Dec 20 16:03:46 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* Makefile.in (CFILES): Fix typo: splay-tree.c, not splay-tree.o
 
+Fri Dec 18 17:50:18 1998  David Taylor  <taylor@texas.cygnus.com>
+
+	* cplus-dem.c (demangle_arm_pt): remove declaration -- function
+ 	doesn't exist.
+	(do_hpacc_template_literal): remove unused variable `i'.
+	
 Fri Dec 18 16:11:43 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* cplus-dem.c (demangle_fund_type): Process CV and u codes before
 	bumping the pointer we read from. Also prepend these codes,
 	as we do in other places.
 
-Mon Dec 14 09:55:50 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+1998-12-18  Nick Clifton  <nickc@cygnus.com>
+
+	* cplus-dem.c (demangle_arm_hp_template): Make variable 'args' be
+	'const char *' in order to match its usage when calling siblings.
+	(snarf_numeric_literal): Make first arg 'const char **' in order
+	to match usage.
 
 	* choose-temp.c: Don't check IN_GCC anymore.
 
@@ -227,6 +258,16 @@ Thu Nov 19 12:59:21 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* configure.in: Call AC_HEADER_SYS_WAIT.
 
 	* pexecute.c: Include sys/wait.h when !IN_GCC.
+
+Thu Nov 19 14:38:20 1998  Geoffrey Noer  <noer@cygnus.com>
+
+	* pexecute.c: revert back to checking old Cygwin
+	preprocessor symbol until some time has passed.
+
+Wed Nov 18 08:52:26 1998  Christopher Faylor <cgf@cygnus.com>
+
+	* pexecute.c: Reorganize WIN32 case to accomodate Cygwin
+	since it will now support similar constructs.
 
 Fri Nov 13 19:18:05 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -940,6 +981,12 @@ Tue Aug 19 20:28:45 1997  Geoffrey Noer  <noer@cygnus.com>
 Tue Aug 19 17:10:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cplus-dem.c: Add 'extern' to prepends_underscore.
+
+Wed Jul 30 11:42:19 1997  Per Bothner  <bothner@cygnus.com>
+
+	* cplus-dem.c: Various changes to produce Java output when passed
+	DMGL_JAVA.  Thus "::" becomes "." and "JArray<Foo>" becomes "Foo[]".
+	(main): Support --java and -j flags to set DMGL_JAVA.
 
 Tue Jul 22 19:05:23 1997  Robert Hoehne <robert.hoehne@Mathematik.TU-Chemnitz.DE>
 

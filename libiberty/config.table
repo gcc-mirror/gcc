@@ -18,7 +18,7 @@ case "${enable_shared}" in
 esac
 if [ "${shared}" = "yes" ]; then
   case "${host}" in
-    *-*-cygwin32*)	;;
+    *-*-cygwin*)	;;
     alpha*-*-linux*)	frags="${frags} ../../config/mh-elfalphapic" ;;
     arm*-*-*)		frags="${frags} ../../config/mh-armpic" ;;
     hppa*-*-*)		frags="${frags} ../../config/mh-papic" ;;
