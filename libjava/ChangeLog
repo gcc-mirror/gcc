@@ -1,3 +1,18 @@
+2003-11-27  Dalibor Topic <robilad@kaffe.org>
+
+	* java/text/FieldPosition.java (equals): Adapted to handle
+	field_attribute. Added fast-circuit check for comparison to self.
+	Replaced use of instanceof by getClass to fix symmetry for derived
+	types.
+	(toString): Adapted to handle field_attribute. Improved readability.
+	(hashCode): New method.
+
+2003-11-27  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/text/FieldPosition.java (field_attribute): New field.
+	(FieldPosition (Format.Field), FieldPosition(Format.Field, int),
+	getFieldAttribute): New methods.
+
 2003-11-27  Guilhem Lavaux <guilhem@kaffe.org>
 
 	* java/text/DecimalFormatSymbols.java (locale): New field.
