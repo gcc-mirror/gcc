@@ -1633,12 +1633,14 @@ init_spec (void)
 #else
 			    "-lgcc_s%M"
 #endif
+			    ,
+			    "-lgcc",
+			    "-lgcc_eh"
 #ifdef USE_LIBUNWIND_EXCEPTIONS
 			    " -lunwind"
 #endif
-			    ,
-			    "-lgcc",
-			    "-lgcc_eh");
+			    );
+
 	    p += 5;
 	    in_sep = 0;
 	  }

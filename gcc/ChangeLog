@@ -1,5 +1,8 @@
 2003-11-29  James E Wilson  <wilson@specifixinc.com>
 
+	* gcc.c (init_spec): Pass -lunwind to init_gcc_specs in eh_name
+	instead of in shared_name.
+
 	* final.c (final_start_function): Delete code for NON_SAVING_SETJMP.
 	* reload1.c (reload): Re-add it here.
 
