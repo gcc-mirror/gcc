@@ -709,6 +709,22 @@ extern char leaf_reg_backmap[];
 #define BASE_PASSING_ARG_REG(MODE) (8)
 #define BASE_INCOMING_ARG_REG(MODE) (TARGET_FRW ? 8 : 24)
 
+/* Define this macro if the target machine has "register windows".  This
+   C expression returns the register number as seen by the called function
+   corresponding to register number OUT as seen by the calling function.
+   Return OUT if register number OUT is not an outbound register.  */
+
+#define INCOMING_REGNO(OUT) \
+ ((TARGET_FRW || (OUT) < 8 || (OUT) > 15) ? (OUT) : (OUT) + 16)
+
+/* Define this macro if the target machine has "register windows".  This
+   C expression returns the register number as seen by the calling function
+   corresponding to register number IN as seen by the called function.
+   Return IN if register number IN is not an inbound register.  */
+
+#define OUTGOING_REGNO(IN) \
+ ((TARGET_FRW || (IN) < 24 || (IN) > 31) ? (IN) : (IN) - 16)
+
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
