@@ -7258,6 +7258,45 @@ push_minipool_fix (rtx insn, HOST_WIDE_INT address, rtx *loc,
   minipool_fix_tail = fix;
 }
 
+/* Determine if a CONST_DOUBLE should be pushed to the minipool */
+static bool
+const_double_needs_minipool (rtx val)
+{
+  long parts[2];
+
+  /* thumb only knows to load a CONST_DOUBLE from memory at the moment */
+  if (TARGET_THUMB)
+    return true;
+
+  if (GET_MODE (val) == DFmode)
+    {
+      REAL_VALUE_TYPE r;
+      if (!TARGET_SOFT_FLOAT)
+	return true;
+      REAL_VALUE_FROM_CONST_DOUBLE (r, val);
+      REAL_VALUE_TO_TARGET_DOUBLE (r, parts);
+    }
+  else if (GET_MODE (val) != VOIDmode)
+    return true;
+  else
+    {
+      parts[0] = CONST_DOUBLE_LOW (val);
+      parts[1] = CONST_DOUBLE_HIGH (val);
+    }
+
+  /* Don't push anything to the minipool if a CONST_DOUBLE can be built with
+     a few ALU insns directly. On balance, the optimum is likely to be around
+     3 insns, except when there are no load delay slots where it should be 4.
+     When optimizing for size, a limit of 3 allows saving at least one word
+     except for cases where a single minipool entry could be shared more than
+     2 times which is rather unlikely to outweight the overall savings. */
+  return (  arm_gen_constant (SET, SImode, NULL_RTX, parts[0],
+			      NULL_RTX, NULL_RTX, 0, 0)
+	  + arm_gen_constant (SET, SImode, NULL_RTX, parts[1],
+			      NULL_RTX, NULL_RTX, 0, 0)
+	  > ((optimize_size || (tune_flags & FL_LDSCHED)) ? 3 : 4));
+}
+
 /* Scan INSN and note any of its operands that need fixing.
    If DO_PUSHES is false we do not actually push any of the fixups
    needed.  The function returns TRUE is any fixups were needed/pushed.
@@ -7294,7 +7333,9 @@ note_invalid_constants (rtx insn, HOST_WIDE_INT address, int do_pushes)
 	{
 	  rtx op = recog_data.operand[opno];
 
-	  if (CONSTANT_P (op))
+	  if (CONSTANT_P (op)
+	      && (GET_CODE (op) != CONST_DOUBLE
+		  || const_double_needs_minipool (op)))
 	    {
 	      if (do_pushes)
 		push_minipool_fix (insn, address, recog_data.operand_loc[opno],
