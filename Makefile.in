@@ -251,7 +251,7 @@ GCJ_FOR_TARGET =
 # variable is passed down to the gcc Makefile, where it is used to
 # build libgcc2.a.  We define it here so that it can itself be
 # overridden on the command line.
-GCC_FOR_TARGET = $$r/gcc/xgcc -B$$r/gcc/ $(FLAGS_FOR_TARGET)
+GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) $$r/gcc/xgcc -B$$r/gcc/ $(FLAGS_FOR_TARGET)
 
 AS_FOR_TARGET = ` \
   if [ -f $$r/gas/as-new ] ; then \
