@@ -1,5 +1,17 @@
 2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (struct deferred_access): Move to ...
+	* semantics.c (struct deferred_access): ... here. Adjust.
+	(deferred_access_stack): Make a VEC(deferred_access),
+	(deferred_access_free_list): Remove.
+	(deferred_access_no_check): New.
+	(push_deferring_access_checks, resume_deferring_access_checks,
+	stop_deferring_access_checks, pop_deferring_access_checks,
+	get_deferred_access_checks, pop_to_parent_deferring_access_checks,
+	perform_deferred_access_checks, perform_or_defer_access_check): Adjust.
+
+2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR C++/16174
 	* call.c (build_temp): Declare.
 	(check_constructor_callable): New.
@@ -9,6 +21,8 @@
 	check_constructor_callable.
 	* cp-tree.h (LOOKUP_CONSTRUCTOR_CALLABLE): New.
 	(LOOKUP_*): Renumber.
+
+2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* friend.c (add_friend): Only perform access checks when context
 	is a class.
