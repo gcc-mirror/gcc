@@ -1,3 +1,19 @@
+2005-01-22  Richard Henderson  <rth@redhat.com>
+
+	* genopinit.c (optabs): Use smin/smax for floating point too.
+	* doc/md.texi: Update to match.  Clarify that floating point
+	results are undefined for +0/-0 and NaN.
+	* doc/rtl.texi: Likewise.
+	* rtl.def (SMIN, SMAX): Likewise
+	* tree.def (MIN_EXPR, MAX_EXPR): Likewise.
+
+	* config/alpha/alpha.md (smaxdf3, smindf3, smaxsf3, sminsf3): Add
+	leading 's' to the name.
+	* config/ia64/ia64.md (smaxsf3, sminsf3, smaxdf3, smindf3,
+	smaxxf3, sminxf3): Likewise.
+	* config/rs6000/rs6000.md (smaxdf3, smindf3, smaxsf3, sminsf3):
+	Likewise.
+
 2005-01-22  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md: Use "Uy" constraint for wcgr load/stores.
