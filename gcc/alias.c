@@ -338,6 +338,7 @@ HOST_WIDE_INT
 get_alias_set (t)
      tree t;
 {
+  tree orig_t;
   HOST_WIDE_INT set;
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
@@ -357,45 +358,50 @@ get_alias_set (t)
      language-specific routine may make mutually-recursive calls to
      each other to figure out what to do.  At each juncture, we see if
      this is a tree that the language may need to handle specially.
-     But first remove nops since we care only about the actual object.  */
-  while (TREE_CODE (t) == NOP_EXPR || TREE_CODE (t) == CONVERT_EXPR
-	 || TREE_CODE (t) == NON_LVALUE_EXPR)
-    t = TREE_OPERAND (t, 0);
-
-  /* Now give the language a chance to do something.  */
-  if (lang_get_alias_set != 0
-      && (set = (*lang_get_alias_set) (t)) != -1)
-    return set;
-
-  /* If this is a reference, go inside it and use the underlying object.  */
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == 'r')
-    t = get_inner_reference (t, &bitsize, &bitpos, &offset, &mode,
-			     &unsignedp, &volatilep, &alignment);
-
-  if (TREE_CODE (t) == INDIRECT_REF)
-    {
-      /* Check for accesses through restrict-qualified pointers.  */
-      tree decl = find_base_decl (TREE_OPERAND (t, 0));
-
-      if (decl && DECL_POINTER_ALIAS_SET_KNOWN_P (decl))
-	/* We use the alias set indicated in the declaration.  */
-	return DECL_POINTER_ALIAS_SET (decl);
-
-      /* If we have an INDIRECT_REF via a void pointer, we don't know anything
-	 about what that might alias.  */
-      if (TREE_CODE (TREE_TYPE (t)) == VOID_TYPE)
-	return 0;
-    }
-
-  /* Give the language another chance to do something special.  */
-  if (lang_get_alias_set != 0
-      && (set = (*lang_get_alias_set) (t)) != -1)
-    return set;
-
-  /* Now we are done with expressions, so get the type if this isn't
-     a type.  */
+     First handle things that aren't types and start by removing nops
+     since we care only about the actual object.  */
   if (! TYPE_P (t))
-    t = TREE_TYPE (t);
+    {
+      while (TREE_CODE (t) == NOP_EXPR || TREE_CODE (t) == CONVERT_EXPR
+	     || TREE_CODE (t) == NON_LVALUE_EXPR)
+	t = TREE_OPERAND (t, 0);
+
+      /* Now give the language a chance to do something but record what we
+	 gave it this time.  */
+      orig_t = t;
+      if (lang_get_alias_set != 0
+	  && (set = (*lang_get_alias_set) (t)) != -1)
+	return set;
+
+      /* If this is a reference, go inside it and use the underlying
+         object.  */
+      if (TREE_CODE_CLASS (TREE_CODE (t)) == 'r')
+	t = get_inner_reference (t, &bitsize, &bitpos, &offset, &mode,
+				 &unsignedp, &volatilep, &alignment);
+
+      if (TREE_CODE (t) == INDIRECT_REF)
+	{
+	  /* Check for accesses through restrict-qualified pointers.  */
+	  tree decl = find_base_decl (TREE_OPERAND (t, 0));
+
+	  if (decl && DECL_POINTER_ALIAS_SET_KNOWN_P (decl))
+	    /* We use the alias set indicated in the declaration.  */
+	    return DECL_POINTER_ALIAS_SET (decl);
+
+	  /* If we have an INDIRECT_REF via a void pointer, we don't
+	     know anything about what that might alias.  */
+	  if (TREE_CODE (TREE_TYPE (t)) == VOID_TYPE)
+	    return 0;
+	}
+
+      /* Give the language another chance to do something special.  */
+      if (orig_t != t && lang_get_alias_set != 0
+	  && (set = (*lang_get_alias_set) (t)) != -1)
+	return set;
+
+      /* Now all we care about is the type.  */
+      t = TREE_TYPE (t);
+    }
 
   /* Variant qualifiers don't affect the alias set, so get the main
      variant. If this is a type with a known alias set, return it.  */

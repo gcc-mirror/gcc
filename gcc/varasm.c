@@ -559,7 +559,6 @@ make_function_rtl (decl)
       DECL_RTL (decl)
 	= gen_rtx_MEM (DECL_MODE (decl),
 		       gen_rtx_SYMBOL_REF (Pmode, name));
-      set_mem_attributes (DECL_RTL (decl), decl, 1);
 
       /* Optionally set flags or add text to the name to record
 	 information such as that it is a function name.  If the name
@@ -812,7 +811,8 @@ make_decl_rtl (decl, asmspec, top_level)
 	    = get_identifier (name[0] == '*' ? name + 1 : name);
 	  DECL_RTL (decl) = gen_rtx_MEM (DECL_MODE (decl),
 					 gen_rtx_SYMBOL_REF (Pmode, name));
-	  set_mem_attributes (DECL_RTL (decl), decl, 1);
+	  if (TREE_CODE (decl) != FUNCTION_DECL)
+	    set_mem_attributes (DECL_RTL (decl), decl, 1);
 
 	  /* Optionally set flags or add text to the name to record information
 	     such as that it is a function name.
