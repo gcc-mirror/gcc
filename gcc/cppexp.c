@@ -344,7 +344,20 @@ parse_defined (pfile)
 	}
     }
   else
-    cpp_error (pfile, "\"defined\" without an identifier");
+    {
+      cpp_error (pfile, "operator \"defined\" requires an identifier");
+      if (token.flags & NAMED_OP)
+	{
+	  cpp_token op;
+
+	  op.flags = 0;
+	  op.type = token.type;
+	  cpp_error (pfile,
+		     "(\"%s\" is an alternative token for \"%s\" in C++)",
+		     cpp_token_as_text (pfile, &token),
+		     cpp_token_as_text (pfile, &op));
+	}
+    }
 
   if (!node)
     op.op = CPP_ERROR;

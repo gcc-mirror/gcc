@@ -1,5 +1,10 @@
 2001-02-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+        * cppexp.c (parse_defined): Improve diagnostics for invalid
+        syntax.
+
+2001-02-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
         * cppmacro.c (cpp_get_token): Avoid pasting after a builtin.
 
 2001-02-06  Mark Mitchell  <mark@codesourcery.com>
