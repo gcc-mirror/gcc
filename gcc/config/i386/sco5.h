@@ -855,6 +855,11 @@ dtors_section ()							\
   %{symbolic:-Bsymbolic -G -dy %{!z*:-z text}} %{z*} %{R*} %{Y*} \
   %{G:-G} %{melf:%{Qn:} %{!Qy:-Qn}}"
 
+/* The SCO COFF linker gets confused on the difference between "-ofoo"
+   and "-o foo".   So we just always force a single space. */
+
+#define SWITCHES_NEED_SPACES "o"
+
 /* Library spec. If we are not building a shared library, provide the
    standard libraries, as per the SCO compiler.  */
 
