@@ -1,3 +1,10 @@
+Thu Feb  7 12:14:17 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386-protos.h (x86_order_regs_for_local_alloc): Declare
+	* i386.c (x86_order_regs_for_local_alloc): New global function.
+	* i386.h (REG_ALLOC_ORDER): CLeanup.
+	(ORDER_REGS_FOR_LOCAL_ALLOC): New.
+
 2002-02-07  Richard Henderson  <rth@redhat.com>
 
 	* alias.c (find_base_value): Recall base values for fixed hard regs.
