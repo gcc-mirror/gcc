@@ -1684,7 +1684,7 @@ commit_one_edge_insertion (edge e, int watch_calls)
   else
     gcc_assert (!JUMP_P (last));
 
-  /* Mark the basic block for find_sub_basic_blocks.  */
+  /* Mark the basic block for find_many_sub_basic_blocks.  */
   bb->aux = &bb->aux;
 }
 

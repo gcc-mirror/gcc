@@ -28,9 +28,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    Available functionality:
      - CFG construction
-         find_basic_blocks
-     - Local CFG construction
-         find_sub_basic_blocks		 */
+         find_basic_blocks  */
 
 #include "config.h"
 #include "system.h"
@@ -537,7 +535,7 @@ find_basic_blocks (rtx f)
   timevar_pop (TV_CFG);
 }
 
-/* State of basic block as seen by find_sub_basic_blocks.  */
+/* State of basic block as seen by find_many_sub_basic_blocks.  */
 enum state {BLOCK_NEW = 0, BLOCK_ORIGINAL, BLOCK_TO_SPLIT};
 
 #define STATE(BB) (enum state) ((size_t) (BB)->aux)
@@ -770,42 +768,4 @@ find_many_sub_basic_blocks (sbitmap blocks)
 
   FOR_EACH_BB (bb)
     SET_STATE (bb, 0);
-}
-
-/* Like above but for single basic block only.  */
-
-void
-find_sub_basic_blocks (basic_block bb)
-{
-  basic_block min, max, b;
-  basic_block next = bb->next_bb;
-
-  min = bb;
-  find_bb_boundaries (bb);
-  max = next->prev_bb;
-
-  /* Now re-scan and wire in all edges.  This expect simple (conditional)
-     jumps at the end of each new basic blocks.  */
-  make_edges (min, max, 1);
-
-  /* Update branch probabilities.  Expect only (un)conditional jumps
-     to be created with only the forward edges.  */
-  FOR_BB_BETWEEN (b, min, max->next_bb, next_bb)
-    {
-      edge e;
-      edge_iterator ei;
-
-      if (b != min)
-	{
-	  b->count = 0;
-	  b->frequency = 0;
-	  FOR_EACH_EDGE (e, ei, b->preds)
-	    {
-	      b->count += e->count;
-	      b->frequency += EDGE_FREQUENCY (e);
-	    }
-	}
-
-      compute_outgoing_frequencies (b);
-    }
 }
