@@ -1371,6 +1371,33 @@ dbxout_symbol (decl, local)
 	    /* Nonzero means we must output a tag as well as a typedef.  */
 	    tag_needed = 0;
 
+	    /* Handle the case of a C++ structure or union
+	       where the TYPE_NAME is a TYPE_DECL
+	       which gives both a typedef name and a tag.  */
+	    /* dbx requires the tag first and the typedef second.
+	       ??? there is a bug here.  It generates spurious tags
+	       for C code.  */
+	    if ((TREE_CODE (type) == RECORD_TYPE
+		 || TREE_CODE (type) == UNION_TYPE)
+		&& TYPE_NAME (type) == decl
+		&& !(use_gdb_dbx_extensions && have_used_extensions)
+		&& !TREE_ASM_WRITTEN (TYPE_NAME (type)))
+	      {
+		tree name = TYPE_NAME (type);
+		if (TREE_CODE (name) == TYPE_DECL)
+		  name = DECL_NAME (name);
+
+		current_sym_code = DBX_TYPE_DECL_STABS_CODE;
+		current_sym_value = 0;
+		current_sym_addr = 0;
+		current_sym_nchars = 2 + IDENTIFIER_LENGTH (name);
+
+		fprintf (asmfile, "%s \"%s:T", ASM_STABS_OP,
+			 IDENTIFIER_POINTER (name));
+		dbxout_type (type, 1, 0);
+		dbxout_finish_symbol (0);
+	      }
+
 	    /* Output typedef name.  */
 	    fprintf (asmfile, "%s \"%s:", ASM_STABS_OP,
 		     IDENTIFIER_POINTER (DECL_NAME (decl)));
@@ -1395,8 +1422,10 @@ dbxout_symbol (decl, local)
 		    putc ('T', asmfile);
 		    TREE_ASM_WRITTEN (TYPE_NAME (type)) = 1;
 		  }
+#if 0 /* Now we generate the tag for this case up above.  */
 		else
 		  tag_needed = 1;
+#endif
 	      }
 /* #endif */
 
