@@ -1,3 +1,8 @@
+2002-07-19  Chris Demetriou  <cgd@broadcom.com>
+
+	* lang-specs.h (@c++): Include "%2" (cc1plus_spec) wherever
+	cpp_options is included.
+
 2002-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/2862, c++/2863
