@@ -39,6 +39,7 @@ extern "Java"
   {
     namespace io
     {
+      class BlockDataException;
       class BufferedInputStream;
       class BufferedOutputStream;
       class BufferedReader;
@@ -53,6 +54,7 @@ extern "Java"
       class DataOutput;
       class DataOutputStream;
       class EOFException;
+      class Externalizable;
       class File;
       class FileDescriptor;
       class FileInputStream;
@@ -68,11 +70,13 @@ extern "Java"
       class IOException;
       class InputStream;
       class InputStreamReader;
+      class InterfaceComparator;
       class InterruptedIOException;
       class InvalidClassException;
       class InvalidObjectException;
       class LineNumberInputStream;
       class LineNumberReader;
+      class MemberComparator;
       class NotActiveException;
       class NotSerializableException;
       class ObjectInput;
@@ -99,10 +103,11 @@ extern "Java"
       class PushbackReader;
       class RandomAccessFile;
       class Reader;
+      class Replaceable;
+      class Resolvable;
       class SequenceInputStream;
       class Serializable;
       class SerializablePermission;
-      class SimpleDigestStream;
       class StreamCorruptedException;
       class StreamTokenizer;
       class StringBufferInputStream;
@@ -111,8 +116,10 @@ extern "Java"
       class SyncFailedException;
       class UTFDataFormatException;
       class UnsupportedEncodingException;
+      class ValidatorAndPriority;
+      class WriteAbortedException;
       class Writer;
-    }
+    };
 
     namespace lang
     {
@@ -122,6 +129,7 @@ extern "Java"
       class ArrayStoreException;
       class Boolean;
       class Byte;
+      class CPlusPlusDemangler;
       class Character;
       class Class;
       class ClassCastException;
@@ -198,13 +206,20 @@ extern "Java"
         class Member;
         class Method;
         class Modifier;
-      }
-    }
+      };
+    };
 
     namespace util
     {
+      class AbstractCollection;
+      class AbstractList;
+      class AbstractList$SubList;
+      class Arrays;
+      class Arrays$ListImpl;
       class BitSet;
       class Calendar;
+      class Collection;
+      class Comparator;
       class ConcurrentModificationException;
       class Date;
       class Dictionary;
@@ -216,6 +231,9 @@ extern "Java"
       class Hashtable;
       class HashtableEntry;
       class HashtableEnumeration;
+      class Iterator;
+      class List;
+      class ListIterator;
       class ListResourceBundle;
       class Locale;
       class MissingResourceException;
@@ -238,7 +256,7 @@ extern "Java"
         class JarEntry;
         class JarFile;
         class JarInputStream;
-      }
+      };
 
       namespace zip
       {
@@ -261,9 +279,9 @@ extern "Java"
         class ZipFile;
         class ZipInputStream;
         class ZipOutputStream;
-      }
-    }
-  }
+      };
+    };
+  };
 };
 
 typedef struct java::lang::Object* jobject;
