@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler.  SONY NEWS-OS 3.0 version.
+/* Definitions of target machine for GNU compiler.  SONY NEWS-OS 4 version.
    Copyright (C) 1987, 1989 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
