@@ -1,3 +1,8 @@
+2002-02-06  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (require_array_type): If argument is a null array of
+	references, return null as the element type.
+
 2002-02-06  Mark Wielaard  <mark@klomp.org>
 
 	* verify.cc (verify_instructions_0) [op_dup2]: Actually push the

@@ -1166,9 +1166,11 @@ private:
   // compatible with type ELEMENT.  Returns the actual element type.
   type require_array_type (type array, type element)
   {
-    // An odd case.  Here we just pretend that everything went ok.
+    // An odd case.  Here we just pretend that everything went ok.  If
+    // the requested element type is some kind of reference, return
+    // the null type instead.
     if (array.isnull ())
-      return element;
+      return element.isreference () ? type (null_type) : element;
 
     if (! array.isarray ())
       verify_fail ("array required");
