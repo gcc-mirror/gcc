@@ -89,7 +89,15 @@ convert (type, expr)
   if (code == INTEGER_TYPE || code == ENUMERAL_TYPE)
     return fold (convert_to_integer (type, e));
   if (code == BOOLEAN_TYPE)
-    return fold (build1 (NOP_EXPR, type, truthvalue_conversion (expr)));
+    {
+      tree t = truthvalue_conversion (expr);
+      /* If truthvalue_conversion returns a NOP_EXPR, we must fold it here
+	 to avoid infinite recursion between fold () and convert ().  */
+      if (TREE_CODE (t) == NOP_EXPR)
+	return fold (build1 (NOP_EXPR, type, TREE_OPERAND (t, 0)));
+      else
+	return fold (build1 (NOP_EXPR, type, t));
+    }
   if (code == POINTER_TYPE || code == REFERENCE_TYPE)
     return fold (convert_to_pointer (type, e));
   if (code == REAL_TYPE)

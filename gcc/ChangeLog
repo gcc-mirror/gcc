@@ -1,3 +1,8 @@
+2001-04-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-convert.c (convert): When converting to a BOOLEAN_TYPE, avoid
+	passing nested NOP_EXPRs to fold.
+
 Mon Apr 23 14:32:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (emit_swap_insn): Do not get pass CALL_INSNs.
