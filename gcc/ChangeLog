@@ -1,3 +1,11 @@
+2005-01-10  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/18720
+	Backport from mainline
+	* collect2.c (main): Set aixrtl_flag for -brtl option.
+	(resolve_lib_name): Search for .so file extension before .a
+	if aixrtl_flag set.
+
 2005-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/19012

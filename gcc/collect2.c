@@ -189,6 +189,7 @@ static int strip_flag;			/* true if -s */
 #ifdef COLLECT_EXPORT_LIST
 static int export_flag;                 /* true if -bE */
 static int aix64_flag;			/* true if -b64 */
+static int aixrtl_flag;			/* true if -brtl */
 #endif
 
 int debug;				/* true if -debug */
@@ -246,7 +247,6 @@ static struct path_prefix cmdline_lib_dirs; /* directories specified with -L */
 static struct path_prefix libpath_lib_dirs; /* directories in LIBPATH */
 static struct path_prefix *libpaths[3] = {&cmdline_lib_dirs,
 					  &libpath_lib_dirs, NULL};
-static const char *const libexts[3] = {"a", "so", NULL};  /* possible library extensions */
 #endif
 
 static void handler (int);
@@ -1080,6 +1080,8 @@ main (int argc, char **argv)
                 export_flag = 1;
 	      else if (arg[2] == '6' && arg[3] == '4')
 		aix64_flag = 1;
+	      else if (arg[2] == 'r' && arg[3] == 't' && arg[4] == 'l')
+		aixrtl_flag = 1;
 	      break;
 #endif
 
@@ -2823,6 +2825,8 @@ resolve_lib_name (const char *name)
 {
   char *lib_buf;
   int i, j, l = 0;
+  /* Library extensions for AIX dynamic linking.  */
+  const char * const libexts[2] = {"a", "so"};
 
   for (i = 0; libpaths[i]; i++)
     if (libpaths[i]->max_len > l)
@@ -2841,14 +2845,15 @@ resolve_lib_name (const char *name)
 	  const char *p = "";
 	  if (list->prefix[strlen(list->prefix)-1] != '/')
 	    p = "/";
-	  for (j = 0; libexts[j]; j++)
+	  for (j = 0; j < 2; j++)
 	    {
 	      sprintf (lib_buf, "%s%slib%s.%s",
-		       list->prefix, p, name, libexts[j]);
-if (debug) fprintf (stderr, "searching for: %s\n", lib_buf);
+		       list->prefix, p, name,
+		       libexts[(j + aixrtl_flag) % 2]);
+	      if (debug) fprintf (stderr, "searching for: %s\n", lib_buf);
 	      if (file_exists (lib_buf))
 		{
-if (debug) fprintf (stderr, "found: %s\n", lib_buf);
+		  if (debug) fprintf (stderr, "found: %s\n", lib_buf);
 		  return (lib_buf);
 		}
 	    }
