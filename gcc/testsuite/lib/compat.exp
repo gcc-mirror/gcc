@@ -1,0 +1,232 @@
+# Copyright (C) 2002 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+# This file was written by Janis Johnson, <janis187@us.ibm.com>
+
+
+# Test interoperability of two compilers that follow the same ABI, or
+# compatibility of two versions of GCC.
+#
+# Each test has a main program that does nothing but call a function,
+# plus two additional source files that contain parts of a program that
+# rely on the ABI.  those source files are compiled into relocatable
+# object files with both compilers.  Executables are built using various
+# combinations of those object files, with the main program compiled
+# with the compiler under test and using that compiler's runtime support.
+
+# The including .exp file must define these callback procedures.
+if [string match "" [info procs "compat-use-alt-compiler"]] then {
+    error "Proc compat-use-alt-compiler is not defined."
+}
+if [string match "" [info procs "compat-use-tst-compiler"]] then {
+    error "Proc compat-use-tst-compiler is not defined."
+}
+
+# Each test is run with each pair of compiler options from this list.
+# The first set of options in each pair is used by the compiler under
+# test, and the second set is used by the alternate compiler.
+# The default option lists can be overridden by
+# COMPAT_OPTIONS="[list [list {tst_1} {alt_1}]...[list {tst_n} {alt_n}]]"
+# where tst_i and alt_i are lists of options.  You can put this in the
+# environment before site.exp is written or add it to site.exp directly.
+if ![info exists COMPAT_OPTIONS] {
+    set COMPAT_OPTIONS [list \
+	[list {} {}]]
+}
+
+set option_list $COMPAT_OPTIONS
+
+#
+# compat-obj -- compile to an object file
+#
+# SOURCE is the source file
+# DEST is the object file
+# OPTIONS is the list of compiler options
+# OPTSTR is the options to print with test messages
+#
+proc compat-obj { source dest options optstr } {
+    global testcase
+    global tool
+
+    set comp_output [${tool}_target_compile "$source" "$dest" object $options]
+    ${tool}_check_compile "$testcase $dest compile" $optstr $dest $comp_output
+}
+
+# compat-run -- link and run an executable
+#
+# TESTNAME is the mixture of object files to link
+# OBJLIST is the list of object files to link
+# DEST is the name of the executable
+# OPTIONS is a list of compiler and linker options to use
+# OPTSTR is the list of options to list in messages
+#
+proc compat-run { testname objlist dest options optstr } {
+    global testcase
+    global tool
+
+    # Check that all of the objects were built successfully.
+    foreach obj [split $objlist] {
+	if ![file exists $obj] then {
+	    unresolved "$testcase $testname link $optstr"
+	    unresolved "$testcase $testname execute $optstr"
+	    return
+	}
+    }
+
+    # Link the objects into an executable.
+    set comp_output [${tool}_target_compile "$objlist" $dest executable \
+		     "$options"]
+    if ![${tool}_check_compile "$testcase $testname link" "" \
+	 $dest $comp_output] then {
+	unresolved "$testcase $testname execute $optstr"
+	return
+    }
+
+    # Run the self-checking executable.
+    set result [${tool}_load $dest "" ""]
+    set status [lindex $result 0]
+    if { $status == "pass" } then {
+	remote_file build delete $dest
+    }
+    $status "$testcase $testname execute $optstr"
+}
+
+#
+# compat-execute -- compile with compatible compilers
+#
+# SRC1 is the full pathname of the main file of the testcase.
+# USE_ALT is nonzero if we're using an alternate compiler as well as
+#   the compiler under test.
+#
+proc compat-execute { src1 use_alt } {
+    global srcdir tmpdir
+    global option_list
+    global tool
+    global verbose
+    global testcase
+
+    # Use the dg-options mechanism to specify extra flags for this test.
+    # FIXME: This does not handle other uses of dg-options, and it only
+    # processes the first one.
+    set extra_tool_flags ""
+    set tmp [grep $src1 "{\[ \t\]\*dg-options.*\[ \t\]\+}"]
+    if ![string match "" $tmp] {
+	set tmp0 [lindex $tmp 0]
+	# Extract the compiler options.
+	regexp "dg-options\[ \t\]\+(.*)\[ \t\]\+\}" \
+	       $tmp0 all args
+	# Sometime the options are in quotes, sometimes not.
+	regsub -all "\"" $args "" args
+	set extra_tool_flags $args
+    }
+
+    # Set up the names of the other source files.
+    regsub "_main.*" $src1 "" base
+    regsub ".*/" $base "" base
+    regsub "_main" $src1 "_x" src2
+    regsub "_main" $src1 "_y" src3
+
+    # Define the names of the object files.
+    set obj1 "main_tst.o"
+    set obj2_tst "x_tst.o"
+    set obj2_alt "x_alt.o"
+    set obj3_tst "y_tst.o"
+    set obj3_alt "y_alt.o"
+
+    # Get the base name of this test, for use in messages.
+    regsub "^$srcdir/?" $src1 "" testcase
+    regsub "_main.*" $testcase "" testcase
+    # Set up the base name of executable files so they'll be unique.
+    regsub -all "\[./\]" $testcase "-" execbase
+
+    # If we couldn't rip $srcdir out of `src1' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] then {
+        set testcase "[file tail [file dirname $src1]]/[file tail $src1]"
+    }
+
+    # Loop through all of the option lists used for this test.
+
+    set count 0
+    foreach option_pair $option_list {
+
+	# Pick out each set of options.
+	set tst_option [lindex $option_pair 0]
+	set alt_option [lindex $option_pair 1]
+	set optstr ""
+	if { ![string match $tst_option ""] \
+	     || ![string match $alt_option ""] } then {
+	    set optstr "\"$tst_option\",\"$alt_option\""
+	}
+	verbose "Testing $testcase, $optstr" 1
+
+	set tst_options ""
+	set alt_options ""
+	if ![string match $extra_tool_flags ""] then {
+	    lappend tst_options "additional_flags=$extra_tool_flags $tst_option"
+	    lappend alt_options "additional_flags=$extra_tool_flags $alt_option"
+	}
+
+	# There's a unique name for each executable we generate, based on
+	# the set of options and how the pieces of the tests are compiled.
+	set execname1 "${execbase}-${count}1"
+	set execname2 "${execbase}-${count}2"
+	set execname3 "${execbase}-${count}3"
+	set execname4 "${execbase}-${count}4"
+	incr count
+
+	remote_file build delete $execname1
+	remote_file build delete $execname2
+	remote_file build delete $execname3
+	remote_file build delete $execname4
+
+	# Compile pieces with the alternate compiler; we'll catch problems
+	# later.  Skip this if we don't have an alternate compiler.
+	if { $use_alt != 0 } then {
+	    compat-use-alt-compiler
+	    compat-obj "$src2" "$obj2_alt" $alt_options $optstr
+	    compat-obj "$src3" "$obj3_alt" $alt_options $optstr
+	}
+
+	# Compile pieces with the compiler under test.
+	compat-use-tst-compiler
+	compat-obj "$src1" "$obj1" $tst_options $optstr
+	compat-obj "$src2" "$obj2_tst" $tst_options $optstr
+	compat-obj "$src3" "$obj3_tst" $tst_options $optstr
+
+	# Link (using the compiler under test), run, and clean up tests.
+	compat-run "${obj2_tst}-${obj3_tst}" \
+	    "$obj1 $obj2_tst $obj3_tst" $execname1 $tst_options $optstr
+
+	# If we've got an alternate compiler try some combinations.
+	if { $use_alt != 0 } then {
+	    compat-run "${obj2_tst}-${obj3_alt}" "$obj1 $obj2_tst $obj3_alt" \
+		       $execname2 $tst_options $optstr
+	    compat-run "${obj2_alt}-${obj3_tst}" "$obj1 $obj2_alt $obj3_tst" \
+		       $execname3 $tst_options $optstr
+	    compat-run "${obj2_alt}-${obj3_alt}" "$obj1 $obj2_alt $obj3_alt" \
+		       $execname4 $tst_options $optstr
+	}
+
+	# Clean up object files.
+	set files [glob -nocomplain *.o]
+	if { $files != "" } {
+	    eval "remote_file build delete $files"
+	}
+    }
+}

@@ -1,0 +1,137 @@
+# Copyright (C) 2002 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# This file was written by Janis Johnson, <janis187@us.ibm.com>
+
+
+# Test interoperability of two compilers that follow the same ABI.
+#
+# Break simple tests into two pieces and see that they work when linked
+# together.  If an alternate compiler is specified then the two main
+# pieces of each test are compiled with different compilers.  The
+# alternate compiler must be installed, and is specified by defining
+# ALT_CXX_UNDER_TEST in the environment.
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+global GXX_UNDER_TEST
+global ld_library_path
+
+# Load procedures from common libraries. 
+load_lib standard.exp
+load_lib g++.exp
+
+#
+# compat-fix-library-path -- switch LD_LIBRARY_PATH
+#
+proc compat-fix-library-path { } {
+    global ld_library_path
+
+    # See comments in lib/g++.exp for why this is needed.
+    setenv  LD_LIBRARY_PATH     $ld_library_path
+    setenv  SHLIB_PATH          $ld_library_path
+    setenv  LD_LIBRARYN32_PATH  $ld_library_path
+    setenv  LD_LIBRARY64_PATH   $ld_library_path
+}
+
+#
+# compat-use-alt-compiler -- make the alternate compiler the default
+# 
+proc compat-use-alt-compiler { } {
+    global GXX_UNDER_TEST ALT_CXX_UNDER_TEST
+    global CXXFLAGS
+    global ALWAYS_CXXFLAGS
+    global ld_library_path alt_ld_library_path
+    global same_alt
+
+    # We don't need to do this if the alternate compiler is actually
+    # the same as the compiler under test.
+    if { $same_alt == 0 } then {
+	set GXX_UNDER_TEST $ALT_CXX_UNDER_TEST
+	set CXXFLAGS ""
+	set ALWAYS_CXXFLAGS ""
+	set ld_library_path $alt_ld_library_path
+	compat-fix-library-path
+    }
+}
+
+#
+# compat-use-tst-compiler -- make compiler under test the default
+#
+proc compat-use-tst-compiler { } {
+    global GXX_UNDER_TEST save_gxx_under_test
+    global CXXFLAGS save_cxxflags
+    global ALWAYS_CXXFLAGS save_always_cxxflags
+    global ld_library_path save_ld_library_path
+    global same_alt
+
+    # We don't need to do this if the alternate compiler is actually
+    # the same as the compiler under test.
+
+    if { $same_alt == 0 } then {
+	set GXX_UNDER_TEST $save_gxx_under_test
+	set CXXFLAGS $save_cxxflags
+	set ALWAYS_CXXFLAGS $save_always_cxxflags
+	set ld_library_path $save_ld_library_path
+	compat-fix-library-path
+    }
+}
+
+# Load the language-independent compabibility support procedures.
+# This must be done after the compat-use-*-compiler definitions.
+load_lib compat.exp
+
+g++_init
+
+# Save variables for the C++ compiler under test, which each test will
+# change a couple of times.  This must be done after calling g++-init.
+set save_gxx_under_test $GXX_UNDER_TEST
+set save_cxxflags $CXXFLAGS
+set save_always_cxxflags $ALWAYS_CXXFLAGS
+set save_ld_library_path $ld_library_path
+
+# Find out whether there is an alternate compiler to test.  If the
+# variable is defined but is set to "same", that means we use the same
+# compiler twice, which is meaningful if the two parts of COMPAT_OPTIONS
+# are different.
+set use_alt 0
+set same_alt 0
+set alt_ld_library_path "."
+if [info exists ALT_CXX_UNDER_TEST] then {
+    set use_alt 1
+    if [string match "same" $ALT_CXX_UNDER_TEST] then {
+	set same_alt 1
+    } else {
+	if [info exists ALT_LD_LIBRARY_PATH] then {
+	    append alt_ld_library_path ":${ALT_LD_LIBRARY_PATH}"
+	}
+    }
+}
+
+# Main loop.
+foreach src [lsort [find $srcdir/$subdir *_main.C]] {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $src] then {
+	continue
+    }
+
+    compat-execute $src $use_alt
+}
+
+# Restore the original compiler under test.
+compat-use-tst-compiler
