@@ -1,3 +1,8 @@
+2002-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/avr/avr.md (length): Fix length computation for
+	conditional branches.
+
 2002-03-21  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in (fold-const.o, stor-layout.o, stmt.o,
