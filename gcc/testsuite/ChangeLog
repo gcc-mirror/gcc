@@ -1,3 +1,7 @@
+2000-07-25  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.f-torture/compile/20000630-2.x: Removed.  Case fixed.
+
 2000-07-24  Geoff Keating  <geoffk@cygnus.com>
 
 	* gcc.c-torture/execute/20000722-1.x: New, testcase fails.
