@@ -2130,372 +2130,375 @@ case $machine in
 esac
 
 # Support for --with-cpu and related options (and a few unrelated options,
-# too).
+# too).  Only do this if $machine is the target, or we'll try to validate
+# the CPU argument against the wrong machine type.
 
-case "x$with_cpu" in
-xyes | xno)
-	echo "--with-cpu must be passed a value" 1>&2
-	exit 1
-	;;
-esac
-
-# If there is no $with_cpu option, try to infer one from ${machine}.
-# This block sets nothing except for with_cpu.
-if test x$with_cpu = x
+if test "x$pass2done" = xyes
 then
-	case $machine in
-	ep9312-*-*)
-		# A Cirrus ARM variant.
-		with_cpu="ep9312"
+	case "x$with_cpu" in
+	xyes | xno)
+		echo "--with-cpu must be passed a value" 1>&2
+		exit 1
 		;;
-	i486-*-*)
-		with_cpu=i486
-		;;
-	i586-*-*)
-		case $target_alias in
-		k6_2-*)
-			with_cpu=k6-2
+	esac
+
+	# If there is no $with_cpu option, try to infer one from ${machine}.
+	# This block sets nothing except for with_cpu.
+	if test x$with_cpu = x
+	then
+		case $machine in
+		ep9312-*-*)
+			# A Cirrus ARM variant.
+			with_cpu="ep9312"
 			;;
-		k6_3-*)
-			with_cpu=k6-3
+		i486-*-*)
+			with_cpu=i486
 			;;
-		k6-*)
-			with_cpu=k6
+		i586-*-*)
+			case $target_alias in
+			k6_2-*)
+				with_cpu=k6-2
+				;;
+			k6_3-*)
+				with_cpu=k6-3
+				;;
+			k6-*)
+				with_cpu=k6
+				;;
+			pentium_mmx-*|winchip_c6-*|winchip2-*|c3-*)
+				with_cpu=pentium-mmx
+				;;
+			*)
+				with_cpu=pentium
+				;;
+			esac
 			;;
-		pentium_mmx-*|winchip_c6-*|winchip2-*|c3-*)
-			with_cpu=pentium-mmx
+		i686-*-* | i786-*-*)
+			case $target_alias in
+			k8-*)
+				with_cpu=k8
+				;;
+			athlon_xp-*|athlon_mp-*|athlon_4-*)
+				with_cpu=athlon-4
+				;;
+			athlon_tbird-*|athlon-*)
+				with_cpu=athlon
+				;;
+			pentium2-*)
+				with_cpu=pentium2
+				;;
+			pentium3-*)
+				with_cpu=pentium3
+				;;
+			pentium4-*)
+				with_cpu=pentium4
+				;;
+			*)
+				with_cpu=pentiumpro
+				;;
+			esac
 			;;
-		*)
-			with_cpu=pentium
-			;;
-		esac
-		;;
-	i686-*-* | i786-*-*)
-		case $target_alias in
-		k8-*)
+		x86_64-*-*)
 			with_cpu=k8
 			;;
-		athlon_xp-*|athlon_mp-*|athlon_4-*)
-			with_cpu=athlon-4
+		alpha*-*-*)
+			case $machine in
+			alphaev6[78]*)
+				with_cpu=ev67
+				;;
+			alphaev6*)
+				with_cpu=ev6
+				;;
+			alphapca56*)
+				with_cpu=pca56
+				;;
+			alphaev56*)
+				with_cpu=ev56
+				;;
+			alphaev5*)
+				with_cpu=ev5
+				;;
+			esac
 			;;
-		athlon_tbird-*|athlon-*)
-			with_cpu=athlon
+		sparc*-*-*)
+			with_cpu="`echo $machine | sed 's/-.*$//'`"
 			;;
-		pentium2-*)
-			with_cpu=pentium2
+		esac
+	fi
+
+	# Similarly for --with-schedule.
+	if test x$with_schedule = x; then
+		case $machine in
+		hppa1* | parisc1*)
+			# Override default PA8000 scheduling model.
+			with_schedule=7100LC
 			;;
-		pentium3-*)
-			with_cpu=pentium3
-			;;
-		pentium4-*)
-			with_cpu=pentium4
+		esac
+	fi
+
+	# Optionally, validate the argument to --with-cpu.
+	# This block sets nothing.
+	case $machine in
+	alpha*-*-*)
+		case "x$with_cpu" in
+		x \
+		| xev5 | xev56 | xpca56 | xev6 | xev67)
+			# OK
 			;;
 		*)
-			with_cpu=pentiumpro
+			echo "Unknown CPU used in --with-cpu=$with_cpu" 1>&2
+			exit 1
 			;;
 		esac
 		;;
-	x86_64-*-*)
-		with_cpu=k8
-		;;
-	alpha*-*-*)
-		case $machine in
-		alphaev6[78]*)
-			with_cpu=ev67
+
+	arm*-*-*)
+		case "x$with_cpu" in
+		x \
+		| xarm[236789] | xarm250 | xarm[67][01]0 \
+		| xarm7m | xarm7dm | xarm7dmi | xarm[79]tdmi \
+		| xarm7100 | xarm7500 | xarm7500fe | xarm810 \
+		| xxscale \
+		| xep9312 \
+		| xstrongarm | xstrongarm110 | xstrongarm1100)
+			# OK
 			;;
-		alphaev6*)
-			with_cpu=ev6
-			;;
-		alphapca56*)
-			with_cpu=pca56
-			;;
-		alphaev56*)
-			with_cpu=ev56
-			;;
-		alphaev5*)
-			with_cpu=ev5
+		*)
+			echo "Unknown cpu used in --with-cpu=$with_cpu" 1>&2
+			exit 1
 			;;
 		esac
 		;;
+
+	hppa*-*-* | parisc*-*-*)
+		case "x$with_schedule" in
+		x | x700 | x7100 | x7100LC | x7200 | x7300 | x8000)
+			# OK
+			;;
+		*)
+			echo "Unknown processor used in --with-schedule=$with_schedule." 1>&2
+			exit 1
+			;;
+		esac
+		;;
+
+	i[34567]86-*-* | x86_64-*-*)
+		case x$with_cpu in
+		x \
+		| xi486 \
+		| xi586 | xk6 | xk6-2 | xk6-3 | xpentium-mmx | xpentium \
+		| xpentiumpro | xpentium2 | xpentium3 | xpentium4 \
+		| xathlon | xathlon-4 | xk8)
+			# OK
+			;;
+		*)
+			echo "Unknown CPU given in --with-cpu=$with_cpu." 1>&2
+			exit 1
+			;;
+		esac
+		;;
+
+	powerpc*-*-* | rs6000-*-*)
+		case "x$with_cpu" in
+		x \
+		| xdefault32 | xdefault64 \
+		| xcommon \
+		| xpower | xpower2 | xpower3 | xpower4 \
+		| xpowerpc | xpowerpc64 \
+		| xrios | xrios1 | xrios2 | xrsc | xrsc1 | xrs64a \
+		| x401 | x403 | x405 | x405fp | x440 | x440fp | x505 \
+		| x601 | x602 | x603 | x603e | xec603e | x604 \
+		| x604e | x620 | x630 | x740 | x750 | x7400 | x7450 \
+		| x8540 | x801 | x821 | x823 | x860)
+			# OK
+			;;
+		*)
+			echo "Unknown cpu used in --with-cpu=$with_cpu." 1>&2
+			exit 1
+			;;
+		esac
+		;;
+
 	sparc*-*-*)
-		with_cpu="`echo $machine | sed 's/-.*$//'`"
+		case x$with_cpu in
+		x)
+			echo "Should never happen - no default CPU for sparc target."
+			exit 1
+			;;
+
+		xsparc | xsparc86x | xsparcv9 | xsparc64 \
+		| xsupersparc | xhypersparc | xultrasparc | xv7 | xv8 | xv9)
+			# OK
+			;;
+		*)
+			echo "Unknown cpu used in --with-$which=$val" 1>&2
+			exit 1
+			;;
+		esac
+		;;
+
+	v850*-*-*)
+		case "x$with_cpu" in
+		x | xv850e)
+			# OK
+			;;
+		*)
+			echo "Unknown cpu used in --with-cpu=$with_cpu" 1>&2
+			exit 1
+			;;
+		esac
 		;;
 	esac
-fi
 
-# Similarly for --with-schedule.
-if test x$with_schedule = x; then
+	# Now, for targets which support this, convert --with-cpu to
+	# a setting of target_cpu_default2.  This block also sets assorted
+	# other configuration variables.
+	target_cpu_default2=
 	case $machine in
-	hppa1* | parisc1*)
-		# Override default PA8000 scheduling model.
-		with_schedule=7100LC
-		;;
-	esac
-fi
+	alpha*-*-*)
+		case $with_cpu in
+			ev67)
+				target_cpu_default2="MASK_CPU_EV6|MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX"
+				;;
+			ev6)
+				target_cpu_default2="MASK_CPU_EV6|MASK_BWX|MASK_MAX|MASK_FIX"
+				;;
+			pca56)
+				target_cpu_default2="MASK_CPU_EV5|MASK_BWX|MASK_MAX"
+				;;
+			ev56)
+				target_cpu_default2="MASK_CPU_EV5|MASK_BWX"
+				;;
+			ev5)
+				target_cpu_default2="MASK_CPU_EV5"
+				;;
+		esac
 
-# Optionally, validate the argument to --with-cpu.
-# This block sets nothing.
-case $machine in
-alpha*-*-*)
-	case "x$with_cpu" in
-	x \
-	| xev5 | xev56 | xpca56 | xev6 | xev67)
-		# OK
-		;;
-	*)
-		echo "Unknown CPU used in --with-cpu=$with_cpu" 1>&2
-		exit 1
-		;;
-	esac
-	;;
-
-arm*-*-*)
-	case "x$with_cpu" in
-	x \
-	| xarm[236789] | xarm250 | xarm[67][01]0 \
-	| xarm7m | xarm7dm | xarm7dmi | xarm[79]tdmi \
-	| xarm7100 | xarm7500 | xarm7500fe | xarm810 \
-	| xxscale \
-	| xep9312 \
-	| xstrongarm | xstrongarm110 | xstrongarm1100)
-		# OK
-		;;
-	*)
-		echo "Unknown cpu used in --with-cpu=$with_cpu" 1>&2
-		exit 1
-		;;
-	esac
-	;;
-
-hppa*-*-* | parisc*-*-*)
-	case "x$with_schedule" in
-	x | x700 | x7100 | x7100LC | x7200 | x7300 | x8000)
-		# OK
-		;;
-	*)
-		echo "Unknown processor used in --with-schedule=$with_schedule." 1>&2
-		exit 1
-		;;
-	esac
-	;;
-
-i[34567]86-*-* | x86_64-*-*)
-	case x$with_cpu in
-	x \
-	| xi486 \
-	| xi586 | xk6 | xk6-2 | xk6-3 | xpentium-mmx | xpentium \
-	| xpentiumpro | xpentium2 | xpentium3 | xpentium4 \
-	| xathlon | xathlon-4 | xk8)
-		# OK
-		;;
-	*)
-		echo "Unknown CPU given in --with-cpu=$with_cpu." 1>&2
-		exit 1
-		;;
-	esac
-	;;
-
-powerpc*-*-* | rs6000-*-*)
-	case "x$with_cpu" in
-	x \
-	| xdefault32 | xdefault64 \
-	| xcommon \
-	| xpower | xpower2 | xpower3 | xpower4 \
-	| xpowerpc | xpowerpc64 \
-	| xrios | xrios1 | xrios2 | xrsc | xrsc1 | xrs64a \
-	| x401 | x403 | x405 | x405fp | x440 | x440fp | x505 \
-	| x601 | x602 | x603 | x603e | xec603e | x604 \
-	| x604e | x620 | x630 | x740 | x750 | x7400 | x7450 \
-	| x8540 | x801 | x821 | x823 | x860)
-		# OK
-		;;
-	*)
-		echo "Unknown cpu used in --with-cpu=$with_cpu." 1>&2
-		exit 1
-		;;
-	esac
-	;;
-
-sparc*-*-*)
-	case x$with_cpu in
-	x)
-		echo "Should never happen - no default CPU for sparc target."
-		exit 1
-		;;
-
-	xsparc | xsparc86x | xsparcv9 | xsparc64 \
-	| xsupersparc | xhypersparc | xultrasparc | xv7 | xv8 | xv9)
-		# OK
-		;;
-	*)
-		echo "Unknown cpu used in --with-$which=$val" 1>&2
-		exit 1
-		;;
-	esac
-	;;
-
-v850*-*-*)
-	case "x$with_cpu" in
-	x | xv850e)
-		# OK
-		;;
-	*)
-		echo "Unknown cpu used in --with-cpu=$with_cpu" 1>&2
-		exit 1
-		;;
-	esac
-	;;
-esac
-
-# Now, for targets which support this, convert --with-cpu to
-# a setting of target_cpu_default2.  This block also sets assorted
-# other configuration variables.
-
-target_cpu_default2=
-case $machine in
-alpha*-*-*)
-	case $with_cpu in
-		ev67)
-			target_cpu_default2="MASK_CPU_EV6|MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX"
-			;;
-		ev6)
-			target_cpu_default2="MASK_CPU_EV6|MASK_BWX|MASK_MAX|MASK_FIX"
-			;;
-		pca56)
-			target_cpu_default2="MASK_CPU_EV5|MASK_BWX|MASK_MAX"
-			;;
-		ev56)
-			target_cpu_default2="MASK_CPU_EV5|MASK_BWX"
-			;;
-		ev5)
-			target_cpu_default2="MASK_CPU_EV5"
-			;;
-	esac
-
-	if test x$gas = xyes
-	then
-		if test "$target_cpu_default2" = ""
-		then
-			target_cpu_default2="MASK_GAS"
-		else
-			target_cpu_default2="${target_cpu_default2}|MASK_GAS"
-		fi
-	fi
-	;;
-
-arm*-*-*)
-	case "x$with_cpu" in
-	x)
-		# The most generic
-		target_cpu_default2="TARGET_CPU_generic"
-		;;
-
-	*)
-		target_cpu_default2="TARGET_CPU_$with_cpu"
-		;;
-	esac
-	;;
-
-hppa*-*-* | parisc*-*-*)
-	if test x$gas = xyes
-	then
-		target_cpu_default2="MASK_GAS|MASK_JUMP_IN_DELAY"
-	fi
-	if test "x$with_schedule" != x
-	then
-		tm_defines="TARGET_SCHED_DEFAULT=\\\"$with_schedule\\\""
-		;;
-	fi
-	;;
-
-i[34567]86-*-* | x86_64-*-*)
-	case x$with_cpu in
-	xathlon-4)
-		target_cpu_default2=TARGET_CPU_DEFAULT_athlon_sse
-		;;
-	*)
-		target_cpu_default2=TARGET_CPU_DEFAULT_"`echo $with_cpu | sed s/-/_/`"
-		;;
-	esac
-	;;
-
-mips*-*-*)
-	case $machine in
-	mips*-*-ecoff* | mips*-*-elf*)
 		if test x$gas = xyes
 		then
-			if test x$gnu_ld = xyes
+			if test "$target_cpu_default2" = ""
 			then
-				target_cpu_default2="MASK_GAS|MASK_SPLIT_ADDR"
-			else
 				target_cpu_default2="MASK_GAS"
+			else
+				target_cpu_default2="${target_cpu_default2}|MASK_GAS"
 			fi
 		fi
 		;;
-	mips*-*-*)
+
+	arm*-*-*)
+		case "x$with_cpu" in
+		x)
+			# The most generic
+			target_cpu_default2="TARGET_CPU_generic"
+			;;
+
+		*)
+			target_cpu_default2="TARGET_CPU_$with_cpu"
+			;;
+		esac
+		;;
+
+	hppa*-*-* | parisc*-*-*)
 		if test x$gas = xyes
 		then
-			target_cpu_default2="MASK_GAS"
+			target_cpu_default2="MASK_GAS|MASK_JUMP_IN_DELAY"
+		fi
+		if test "x$with_schedule" != x
+		then
+			tm_defines="TARGET_SCHED_DEFAULT=\\\"$with_schedule\\\""
+			;;
 		fi
 		;;
-	esac
-	case $machine in
-		mips*el-*-*)
-			tm_defines="TARGET_ENDIAN_DEFAULT=0 $tm_defines"
+
+	i[34567]86-*-* | x86_64-*-*)
+		case x$with_cpu in
+		xathlon-4)
+			target_cpu_default2=TARGET_CPU_DEFAULT_athlon_sse
 			;;
-	esac
-	case $tm_file in
-		*mips/elf.h* | *mips/elf64.h*)
-			tm_defines="OBJECT_FORMAT_ELF $tm_defines"
+		*)
+			target_cpu_default2=TARGET_CPU_DEFAULT_"`echo $with_cpu | sed s/-/_/`"
 			;;
-	esac
-	if test "x$enable_gofast" = xyes
-	then
-		tm_defines="INIT_SUBTARGET_OPTABS=INIT_GOFAST_OPTABS $tm_defines"
-		tm_file="gofast.h $tm_file"
-		tmake_file="mips/t-gofast $tmake_file"
-	else
-		tmake_file="mips/t-mips $tmake_file"
-	fi
-	;;
-
-powerpc*-*-* | rs6000-*-*)
-        if test x$enable_altivec = xyes
-        then
-                tm_file="$tm_file rs6000/altivec-defs.h"
-        fi
-	if test "x$with_cpu" != x
-	then
-		target_cpu_default2="\\\"$with_cpu\\\""
-	fi
-	out_file=rs6000/rs6000.c
-	c_target_objs="${c_target_objs} rs6000-c.o"
-	cxx_target_objs="${cxx_target_objs} rs6000-c.o"
-	tmake_file="rs6000/t-rs6000 ${tmake_file}"
-	;;
-
-sparc*-*-*)
-	target_cpu_default2="TARGET_CPU_$with_cpu"
-	;;
-
-v850*-*-*)
-	case "x$with_cpu" in
-	x)
+		esac
 		;;
-	xv850e)
+
+	mips*-*-*)
+		case $machine in
+		mips*-*-ecoff* | mips*-*-elf*)
+			if test x$gas = xyes
+			then
+				if test x$gnu_ld = xyes
+				then
+					target_cpu_default2="MASK_GAS|MASK_SPLIT_ADDR"
+				else
+					target_cpu_default2="MASK_GAS"
+				fi
+			fi
+			;;
+		mips*-*-*)
+			if test x$gas = xyes
+			then
+				target_cpu_default2="MASK_GAS"
+			fi
+			;;
+		esac
+		case $machine in
+			mips*el-*-*)
+				tm_defines="TARGET_ENDIAN_DEFAULT=0 $tm_defines"
+				;;
+		esac
+		case $tm_file in
+			*mips/elf.h* | *mips/elf64.h*)
+				tm_defines="OBJECT_FORMAT_ELF $tm_defines"
+				;;
+		esac
+		if test "x$enable_gofast" = xyes
+		then
+			tm_defines="INIT_SUBTARGET_OPTABS=INIT_GOFAST_OPTABS $tm_defines"
+			tm_file="gofast.h $tm_file"
+			tmake_file="mips/t-gofast $tmake_file"
+		else
+			tmake_file="mips/t-mips $tmake_file"
+		fi
+		;;
+
+	powerpc*-*-* | rs6000-*-*)
+	        if test x$enable_altivec = xyes
+	        then
+	                tm_file="$tm_file rs6000/altivec-defs.h"
+	        fi
+		if test "x$with_cpu" != x
+		then
+			target_cpu_default2="\\\"$with_cpu\\\""
+		fi
+		out_file=rs6000/rs6000.c
+		c_target_objs="${c_target_objs} rs6000-c.o"
+		cxx_target_objs="${cxx_target_objs} rs6000-c.o"
+		tmake_file="rs6000/t-rs6000 ${tmake_file}"
+		;;
+
+	sparc*-*-*)
 		target_cpu_default2="TARGET_CPU_$with_cpu"
 		;;
-	esac
-	;;
-esac
 
-if test "$target_cpu_default2" != ""
-then
-	if test "$target_cpu_default" != ""
+	v850*-*-*)
+		case "x$with_cpu" in
+		x)
+			;;
+		xv850e)
+			target_cpu_default2="TARGET_CPU_$with_cpu"
+			;;
+		esac
+		;;
+	esac
+
+	if test "$target_cpu_default2" != ""
 	then
-		target_cpu_default="(${target_cpu_default}|${target_cpu_default2})"
-	else
-		target_cpu_default=$target_cpu_default2
+		if test "$target_cpu_default" != ""
+		then
+			target_cpu_default="(${target_cpu_default}|${target_cpu_default2})"
+		else
+			target_cpu_default=$target_cpu_default2
+		fi
 	fi
 fi
 
