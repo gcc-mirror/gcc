@@ -167,6 +167,7 @@ struct attr_desc
   struct attr_desc *next;	/* Next attribute. */
   int is_numeric;		/* Values of this attribute are numeric. */
   int negative_ok;		/* Allow negative numeric values.  */
+  int unsigned_p;		/* Make the output function unsigned int.  */
   int is_const;			/* Attribute value constant for each run.  */
   int is_special;		/* Don't call `write_attr_set'. */
   struct attr_value *first_value; /* First value of this attribute. */
@@ -174,6 +175,14 @@ struct attr_desc
 };
 
 #define NULL_ATTR (struct attr_desc *) NULL
+
+/* A range of values.  */
+
+struct range
+{
+  int min;
+  int max;
+};
 
 /* Structure for each DEFINE_DELAY.  */
 
@@ -192,7 +201,9 @@ struct function_unit_op
   struct function_unit_op *next; /* Next operation for this function unit.  */
   int num;			/* Ordinal for this operation type in unit.  */
   int ready;			/* Cost until data is ready.  */
-  rtx busyexp;			/* Expression computing conflict cost.  */
+  int issue_delay;		/* Cost until unit can accept another insn.  */
+  rtx conflict_exp;		/* Expression TRUE for insns incurring issue delay.  */
+  rtx issue_exp;		/* Expression computing issue delay.  */
 };
 
 /* Record information about each function unit mentioned in a
@@ -207,14 +218,14 @@ struct function_unit
   int simultaneity;		/* Maximum number of simultaneous insns
 				   on this function unit or 0 if unlimited.  */
   rtx condexp;			/* Expression TRUE for insn needing unit. */
-  rtx costexp;			/* Worst-case cost as function of insn. */
   int num_opclasses;		/* Number of different operation types.  */
   struct function_unit_op *ops;	/* Pointer to first operation type.  */
   int needs_conflict_function;	/* Nonzero if a conflict function required.  */
+  int needs_blockage_function;	/* Nonzero if a blockage function required.  */
+  int needs_range_function;	/* Nonzero if a blockage range function required.  */
   rtx default_cost;		/* Conflict cost, if constant.  */
-  rtx max_busy_cost;		/* Maximum conflict cost.  */
-  int min_busy_delay;		/* Minimum conflict cost.  */
-  int max_busy_delay;		/* Maximum conflict cost.  */
+  struct range issue_delay;	/* Range of issue delay values.  */
+  int max_blockage;		/* Maximum time an insn blocks the unit.  */
 };
 
 /* Listheads of above structures.  */
@@ -240,7 +251,7 @@ static int num_units;
 
 /* Used as operand to `operate_exp':  */
 
-enum operator {PLUS_OP, MINUS_OP, OR_OP, MAX_OP};
+enum operator {PLUS_OP, MINUS_OP, POS_MINUS_OP, EQ_OP, OR_OP, MAX_OP, MIN_OP, RANGE_OP};
 
 /* Stores, for each insn code, the number of constraint alternatives.  */
 
@@ -301,6 +312,7 @@ static rtx copy_boolean ();
 static void expand_delays ();
 static rtx operate_exp ();
 static void expand_units ();
+static rtx simplify_knowing ();
 static rtx encode_units_mask ();
 static void fill_attr ();
 static rtx substitute_address ();
@@ -349,6 +361,7 @@ static void write_upcase ();
 static void write_indent ();
 static void write_eligible_delay ();
 static void write_function_unit_info ();
+static void write_complex_function ();
 static int n_comma_elts ();
 static char *next_comma_elt ();
 static struct attr_desc *find_attr ();
@@ -356,6 +369,7 @@ static void make_internal_attr ();
 static struct attr_value *find_most_used ();
 static rtx find_single_value ();
 static rtx make_numeric_value ();
+static void extend_range ();
 char *xrealloc ();
 char *xmalloc ();
 static void fatal ();
@@ -1504,12 +1518,34 @@ operate_exp (op, left, right)
 	      i = left_value - right_value;
 	      break;
 
+	    case POS_MINUS_OP:  /* The positive part of LEFT - RIGHT.  */
+	      if (left_value > right_value)
+		i = left_value - right_value;
+	      else
+		i = 0;
+	      break;
+
 	    case OR_OP:
 	      i = left_value | right_value;
 	      break;
 
+	    case EQ_OP:
+	      i = left_value == right_value;
+	      break;
+
+	    case RANGE_OP:
+	      i = (left_value << (HOST_BITS_PER_INT / 2)) | right_value;
+	      break;
+
 	    case MAX_OP:
 	      if (left_value > right_value)
+		i = left_value;
+	      else
+		i = right_value;
+	      break;
+
+	    case MIN_OP:
+	      if (left_value < right_value)
 		i = left_value;
 	      else
 		i = right_value;
@@ -1646,7 +1682,15 @@ operate_exp (op, left, right)
    and a `<name>_unit_conflict_cost' function is given an insn already
    executing on the unit and a candidate to execute and will give the
    cost from the time the executing insn started until the candidate
-   can start (ignore limitations on the number of simultaneous insns).  */
+   can start (ignore limitations on the number of simultaneous insns).
+
+   For each unit, a `<name>_unit_blockage' function is given an insn
+   already executing on the unit and a candidate to execute and will
+   give the delay incurred due to function unit conflicts.  The range of
+   blockage cost values for a given executing insn is given by the
+   `<name>_unit_blockage_range' function.  These values are encoded in
+   an int where the upper half gives the minimum value and the lower
+   half gives the maximum value.  */
 
 static void
 expand_units ()
@@ -1659,19 +1703,47 @@ expand_units ()
   char *str;
   int i, j, u, num, nvalues;
 
-  /* Validate the expressions we were given for the conditions and busy cost.
-     Then make attributes for use in the conflict function.  */
+  /* Rebuild the condition for the unit to share the RTL expressions.
+     Sharing is required by simplify_by_exploding.  Build the issue delay
+     expressions.  Validate the expressions we were given for the conditions
+     and conflict vector.  Then make attributes for use in the conflict
+     function.  */
+
   for (unit = units; unit; unit = unit->next)
-    for (op = unit->ops; op; op = op->next)
-      {
-	op->condexp = check_attr_test (op->condexp, 0);
-	op->busyexp = check_attr_value (make_canonical (NULL_ATTR,
-							op->busyexp),
+    {
+      rtx min_issue = make_numeric_value (unit->issue_delay.min);
+
+      unit->condexp = check_attr_test (unit->condexp, 0);
+
+      for (op = unit->ops; op; op = op->next)
+	{
+	  rtx issue_delay = make_numeric_value (op->issue_delay);
+	  rtx issue_exp = issue_delay;
+
+	  /* Build, validate, and simplify the issue delay expression.  */
+	  if (op->conflict_exp != true_rtx)
+	    issue_exp = attr_rtx (IF_THEN_ELSE, op->conflict_exp,
+				  issue_exp, make_numeric_value (0));
+	  issue_exp = check_attr_value (make_canonical (NULL_ATTR,
+							issue_exp),
 					NULL_ATTR);
-	str = attr_printf (strlen (unit->name) + 11, "*%s_case_%d",
-			   unit->name, op->num);
-	make_internal_attr (str, op->busyexp, 1);
-      }
+	  issue_exp = simplify_knowing (issue_exp, unit->condexp);
+	  op->issue_exp = issue_exp;
+
+	  /* Make an attribute for use in the conflict function if needed.  */
+	  unit->needs_conflict_function = (unit->issue_delay.min
+					   != unit->issue_delay.max);
+	  if (unit->needs_conflict_function)
+	    {
+	      str = attr_printf (strlen (unit->name) + 11, "*%s_cost_%d",
+				 unit->name, op->num);
+	      make_internal_attr (str, issue_exp, 1);
+	    }
+
+	  /* Validate the condition.  */
+	  op->condexp = check_attr_test (op->condexp, 0);
+	}
+    }
 
   /* Compute the mask of function units used.  Initially, the unitsmask is
      zero.   Set up a conditional to compute each unit's contribution.  */
@@ -1682,7 +1754,7 @@ expand_units ()
   /* Merge each function unit into the unit mask attributes.  */
   for (unit = units; unit; unit = unit->next)
     {
-      XEXP (newexp, 0) = check_attr_test (unit->condexp, 0);
+      XEXP (newexp, 0) = unit->condexp;
       XEXP (newexp, 1) = make_numeric_value (1 << unit->num);
       unitsmask = operate_exp (OR_OP, unitsmask, newexp);
     }
@@ -1788,13 +1860,128 @@ expand_units ()
 	  XVECEXP (readycost, 0, nvalues * 2 + 1) = make_numeric_value (value);
 	}
 
-      /* Make an attribute for the ready_cost function.  Simplifying
-	 further with simplify_by_exploding doesn't win.  */
       if (u < num_units)
-	str = attr_printf (strlen (unit->name) + 20, "*%s_unit_ready_cost",
-			   unit->name);
+	{
+	  rtx max_blockage = 0, min_blockage = 0;
+
+	  /* Simplify the readycost expression by only considering insns
+	     that use the unit.  */
+	  readycost = simplify_knowing (readycost, unit->condexp);
+
+	  /* Determine the blockage cost the executing insn (E) given
+	     the candidate insn (C).  This is the maximum of the issue
+	     delay, the pipeline delay, and the simultaneity constraint.
+	     Each function_unit_op represents the characteristics of the
+	     candidate insn, so in the expressions below, C is a known
+	     term and E is an unknown term.
+
+	     The issue delay function for C is op->issue_exp and is used to
+	     write the `<name>_unit_conflict_cost' function.  Symbolicly
+	     this is "ISSUE-DELAY (E,C)".
+
+	     The pipeline delay results form the FIFO constraint on the
+	     function unit and is "READY-COST (E) + 1 - READY-COST (C)".
+
+	     The simultaneity constraint is based on how long it takes to
+	     fill the unit given the minimum issue delay.  FILL-TIME is the
+	     constant "MIN (ISSUE-DELAY (*,*)) * (SIMULTANEITY - 1)", and
+	     the simultaneity constraint is "READY-COST (E) - FILL-TIME"
+	     if SIMULTANEITY is non-zero and zero otherwise.
+
+	     Thus, BLOCKAGE (E,C) when SIMULTANEITY is zero is
+
+	         MAX (ISSUE-DELAY (E,C),
+		      READY-COST (E) - (READY-COST (C) - 1))
+
+	     and otherwise
+
+	         MAX (ISSUE-DELAY (E,C),
+		      READY-COST (E) - (READY-COST (C) - 1),
+		      READY-COST (E) - FILL-TIME)
+
+	     The `<name>_unit_blockage' function is computed by determining
+	     this value for each candidate insn.  As these values are
+	     computed, we also compute the upper and lower bounds for
+	     BLOCKAGE (E,*).  These are combined to form the function
+	     `<name>_unit_blockage_range'.  Finally, the maximum blockage
+	     cost, MAX (BLOCKAGE (*,*)), is computed.  */
+
+	  for (op = unit->ops; op; op = op->next)
+	    {
+	      rtx blockage = readycost;
+	      int delay = op->ready - 1;
+
+	      if (unit->simultaneity != 0)
+		delay = MIN (delay, ((unit->simultaneity - 1)
+				     * unit->issue_delay.min));
+
+	      if (delay > 0)
+		blockage = operate_exp (POS_MINUS_OP, blockage,
+					make_numeric_value (delay));
+
+	      blockage = operate_exp (MAX_OP, blockage, op->issue_exp);
+	      blockage = simplify_knowing (blockage, unit->condexp);
+
+	      /* Add this op's contribution to MAX (BLOCKAGE (E,*)) and
+		 MIN (BLOCKAGE (E,*)).  */
+	      if (max_blockage == 0)
+		max_blockage = min_blockage = blockage;
+	      else
+		{
+		  max_blockage
+		    = simplify_knowing (operate_exp (MAX_OP, max_blockage,
+						     blockage),
+					unit->condexp);
+		  min_blockage
+		    = simplify_knowing (operate_exp (MIN_OP, min_blockage,
+						     blockage),
+					unit->condexp);
+		}
+
+	      /* Make an attribute for use in the blockage function.  */
+	      str = attr_printf (strlen (unit->name) + 12, "*%s_block_%d",
+				 unit->name, op->num);
+	      make_internal_attr (str, blockage, 1);
+	    }
+
+	  /* Record MAX (BLOCKAGE (*,*)).  */
+	  unit->max_blockage = max_attr_value (max_blockage);
+
+	  /* See if the upper and lower bounds of BLOCKAGE (E,*) are the
+	     same.  If so, the blockage function carries no additional
+	     information and is not written.  */
+	  newexp = operate_exp (EQ_OP, max_blockage, min_blockage);
+	  newexp = simplify_knowing (newexp, unit->condexp);
+	  unit->needs_blockage_function
+	    = (GET_CODE (newexp) != CONST_STRING
+	       || atoi (XSTR (newexp, 0)) != 1);
+
+	  /* If the all values of BLOCKAGE (E,C) have the same value,
+	     neither blockage function is written.  */	  
+	  unit->needs_range_function
+	    = (unit->needs_blockage_function
+	       || GET_CODE (max_blockage) != CONST_STRING);
+
+	  if (unit->needs_range_function)
+	    {
+	      /* Compute the blockage range function and make an attribute
+		 for writing it's value.  */
+	      newexp = operate_exp (RANGE_OP, min_blockage, max_blockage);
+	      newexp = simplify_knowing (newexp, unit->condexp);
+
+	      str = attr_printf (strlen (unit->name) + 20,
+				 "*%s_unit_blockage_range", unit->name);
+	      make_internal_attr (str, newexp, 4);
+	    }
+
+	  str = attr_printf (strlen (unit->name) + 20, "*%s_unit_ready_cost",
+			     unit->name);
+	}
       else
 	str = "*result_ready_cost";
+
+      /* Make an attribute for the ready_cost function.  Simplifying
+	 further with simplify_by_exploding doesn't win.  */
       make_internal_attr (str, readycost, 0);
     }
 
@@ -1804,7 +1991,8 @@ expand_units ()
     {
       rtx caseexp;
 
-      if (unit->min_busy_delay == unit->max_busy_delay)
+      if (! unit->needs_conflict_function
+	  && ! unit->needs_blockage_function)
 	continue;
 
       caseexp = rtx_alloc (COND);
@@ -1831,6 +2019,21 @@ expand_units ()
       str = attr_printf (strlen (unit->name) + 8, "*%s_cases", unit->name);
       make_internal_attr (str, caseexp, 1);
     }
+}
+
+/* Simplify EXP given KNOWN_TRUE.  */
+
+static rtx
+simplify_knowing (exp, known_true)
+     rtx exp, known_true;
+{
+  if (GET_CODE (exp) != CONST_STRING)
+    {
+      exp = attr_rtx (IF_THEN_ELSE, known_true, exp,
+		      make_numeric_value (max_attr_value (exp)));
+      exp = simplify_by_exploding (exp);
+    }
+  return exp;
 }
 
 /* Translate the CONST_STRING expressions in X to change the encoding of
@@ -3170,11 +3373,11 @@ simplify_by_exploding (exp)
   rtx list = 0, link, condexp, defval;
   struct dimension *space;
   rtx *condtest, *condval;
-  int i, j, total, ndim;
+  int i, j, total, ndim = 0;
   int most_tests, num_marks, new_marks;
 
   /* Locate all the EQ_ATTR expressions.  */
-  if (! find_and_mark_used_attributes (exp, &list))
+  if (! find_and_mark_used_attributes (exp, &list, &ndim) || ndim == 0)
     {
       unmark_used_attributes (list, 0, 0);
       return exp;
@@ -3186,9 +3389,6 @@ simplify_by_exploding (exp)
      cover the domain of the attribute.  This makes the expanded COND form
      order independent.  */
 
-  ndim = 0;
-  for (link = list; link; link = XEXP (link, 1))
-    ndim++;
   space = (struct dimension *) alloca (ndim * sizeof (struct dimension));
 
   total = 1;
@@ -3289,6 +3489,10 @@ simplify_by_exploding (exp)
   if (num_marks == 0)
     return exp;
 
+  /* If all values are the default, use that.  */
+  if (total == most_tests)
+    return defval;
+
   /* Make a COND with the most common constant value the default.  (A more
      complex method where tests with the same value were combined didn't
      seem to improve things.)  */
@@ -3311,8 +3515,9 @@ simplify_by_exploding (exp)
    tests have known value.  */
 
 static int
-find_and_mark_used_attributes (exp, terms)
+find_and_mark_used_attributes (exp, terms, nterms)
      rtx exp, *terms;
+     int *nterms;
 {
   int i;
 
@@ -3325,28 +3530,29 @@ find_and_mark_used_attributes (exp, terms)
 	  XEXP (link, 0) = exp;
 	  XEXP (link, 1) = *terms;
 	  *terms = link;
+	  *nterms += 1;
 	  MEM_VOLATILE_P (exp) = 1;
 	}
     case CONST_STRING:
       return 1;
 
     case IF_THEN_ELSE:
-      if (! find_and_mark_used_attributes (XEXP (exp, 2), terms))
+      if (! find_and_mark_used_attributes (XEXP (exp, 2), terms, nterms))
 	return 0;
     case IOR:
     case AND:
-      if (! find_and_mark_used_attributes (XEXP (exp, 1), terms))
+      if (! find_and_mark_used_attributes (XEXP (exp, 1), terms, nterms))
 	return 0;
     case NOT:
-      if (! find_and_mark_used_attributes (XEXP (exp, 0), terms))
+      if (! find_and_mark_used_attributes (XEXP (exp, 0), terms, nterms))
 	return 0;
       return 1;
 
     case COND:
       for (i = 0; i < XVECLEN (exp, 0); i++)
-	if (! find_and_mark_used_attributes (XVECEXP (exp, 0, i), terms))
+	if (! find_and_mark_used_attributes (XVECEXP (exp, 0, i), terms, nterms))
 	  return 0;
-      if (! find_and_mark_used_attributes (XEXP (exp, 1), terms))
+      if (! find_and_mark_used_attributes (XEXP (exp, 1), terms, nterms))
 	return 0;
       return 1;
     }
@@ -3935,15 +4141,21 @@ gen_unit (def)
 {
   struct function_unit *unit;
   struct function_unit_op *op;
+  char *name = XSTR (def, 0);
+  int multiplicity = XINT (def, 1);
+  int simultaneity = XINT (def, 2);
+  rtx condexp = XEXP (def, 3);
+  int ready_cost = MAX (XINT (def, 4), 1);
+  int issue_delay = MAX (XINT (def, 5), 1);
 
   /* See if we have already seen this function unit.  If so, check that
      the multiplicity and simultaneity values are the same.  If not, make
      a structure for this function unit.  */
   for (unit = units; unit; unit = unit->next)
-    if (! strcmp (unit->name, XSTR (def, 0)))
+    if (! strcmp (unit->name, name))
       {
-	if (unit->multiplicity != XINT (def, 1)
-	    || unit->simultaneity != XINT (def, 2))
+	if (unit->multiplicity != multiplicity
+	    || unit->simultaneity != simultaneity)
 	  fatal ("Differing specifications given for `%s' function unit.",
 		 unit->name);
 	break;
@@ -3952,27 +4164,28 @@ gen_unit (def)
   if (unit == 0)
     {
       unit = (struct function_unit *) xmalloc (sizeof (struct function_unit));
-      unit->name = XSTR (def, 0);
-      unit->multiplicity = XINT (def, 1);
-      unit->simultaneity = XINT (def, 2);
+      unit->name = name;
+      unit->multiplicity = multiplicity;
+      unit->simultaneity = simultaneity;
+      unit->issue_delay.min = unit->issue_delay.max = issue_delay;
       unit->num = num_units++;
       unit->num_opclasses = 0;
       unit->condexp = false_rtx;
       unit->ops = 0;
       unit->next = units;
-      unit->min_busy_delay = unit->max_busy_delay = XINT (def, 5);
       units = unit;
     }
 
   /* Make a new operation class structure entry and initialize it.  */
   op = (struct function_unit_op *) xmalloc (sizeof (struct function_unit_op));
-  op->condexp = XEXP (def, 3);
+  op->condexp = condexp;
   op->num = unit->num_opclasses++;
-  op->ready = XINT (def, 4);
+  op->ready = ready_cost;
+  op->issue_delay = issue_delay;
   op->next = unit->ops;
   unit->ops = op;
 
-  /* Set our busy expression based on whether or not an optional conflict
+  /* Set our issue expression based on whether or not an optional conflict
      vector was specified.  */
   if (XVEC (def, 6))
     {
@@ -3983,17 +4196,13 @@ gen_unit (def)
       for (i = 0; i < XVECLEN (def, 6); i++)
 	orexp = insert_right_side (IOR, orexp, XVECEXP (def, 6, i), -2);
 
-      op->busyexp = attr_rtx (IF_THEN_ELSE, orexp,
-			      make_numeric_value (XINT (def, 5)),
-			      make_numeric_value (0));
-      unit->min_busy_delay = MIN (unit->min_busy_delay, 0);
-      unit->max_busy_delay = MAX (unit->max_busy_delay, XINT (def, 5));
+      op->conflict_exp = orexp;
+      extend_range (&unit->issue_delay, 1, issue_delay);
     }
   else
     {
-      op->busyexp = make_numeric_value (XINT (def, 5));
-      unit->min_busy_delay = MIN (unit->min_busy_delay, XINT (def, 5));
-      unit->max_busy_delay = MAX (unit->max_busy_delay, XINT (def, 5));
+      op->conflict_exp = true_rtx;
+      extend_range (&unit->issue_delay, issue_delay, issue_delay);
     }
 
   /* Merge our conditional into that of the function unit so we can determine
@@ -4249,6 +4458,14 @@ max_attr_value (exp)
 	current_max = n;
     }
 
+  else if (GET_CODE (exp) == IF_THEN_ELSE)
+    {
+      current_max = max_attr_value (XEXP (exp, 1));
+      n = max_attr_value (XEXP (exp, 2));
+      if (n > current_max)
+	current_max = n;
+    }
+
   else
     abort ();
 
@@ -4331,10 +4548,12 @@ write_attr_get (attr)
 
   /* Write out start of function, then all values with explicit `case' lines,
      then a `default', then the value with the most uses.  */
-  if (attr->is_numeric)
-    printf ("int\n");
-  else
+  if (!attr->is_numeric)
     printf ("enum attr_%s\n", attr->name);
+  else if (attr->unsigned_p)
+    printf ("unsigned int\n");
+  else
+    printf ("int\n");
 
   /* If the attribute name starts with a star, the remainder is the name of
      the subroutine to use, instead of `get_attr_...'.  */
@@ -4583,7 +4802,12 @@ write_attr_valueq (attr, s)
      char *s;
 {
   if (attr->is_numeric)
-    printf ("%s", s);
+    {
+      printf ("%s", s);
+      /* Make the blockage range values easier to read.  */
+      if (strlen (s) > 1)
+	printf (" /* 0x%x */", atoi (s));
+    }
   else
     {
       write_upcase (attr->name);
@@ -4758,107 +4982,27 @@ static void
 write_function_unit_info ()
 {
   struct function_unit *unit;
-  struct attr_desc *case_attr, *attr;
-  struct attr_value *av, *common_av;
-  rtx value;
-  char *str;
-  int using_case;
   int i;
 
   /* Write out conflict routines for function units.  Don't bother writing
-     one if there is only one busy value.  */
+     one if there is only one issue delay value.  */
 
   for (unit = units; unit; unit = unit->next)
     {
-      /* Record the maximum busy cost.  */
-      unit->max_busy_cost = make_numeric_value (unit->max_busy_delay);
+      if (unit->needs_blockage_function)
+	write_complex_function (unit, "blockage", "block");
 
       /* If the minimum and maximum conflict costs are the same, there
 	 is only one value, so we don't need a function.  */
-      if (unit->min_busy_delay == unit->max_busy_delay)
+      if (! unit->needs_conflict_function)
 	{
-	  unit->needs_conflict_function = 0;
-	  unit->default_cost = unit->max_busy_cost;
+	  unit->default_cost = make_numeric_value (unit->issue_delay.max);
 	  continue;
 	}
 
       /* The function first computes the case from the candidate insn.  */
-      unit->needs_conflict_function = 1;
       unit->default_cost = make_numeric_value (0);
-
-      printf ("static int\n");
-      printf ("%s_unit_conflict_cost (executing_insn, candidate_insn)\n",
-	      unit->name);
-      printf ("     rtx executing_insn;\n");
-      printf ("     rtx candidate_insn;\n");
-      printf ("{\n");
-      printf ("  rtx insn;\n");
-      printf ("  int casenum;\n\n");
-      printf ("  insn = candidate_insn;\n");
-      printf ("  switch (recog_memoized (insn))\n");
-      printf ("    {\n");
-
-      /* Write the `switch' statement to get the case value.  */
-      str = (char *) alloca (strlen (unit->name) + 10);
-      sprintf (str, "*%s_cases", unit->name);
-      case_attr = find_attr (str, 0);
-      if (! case_attr) abort ();
-      common_av = find_most_used (case_attr);
-
-      for (av = case_attr->first_value; av; av = av->next)
-	if (av != common_av)
-	  write_attr_case (case_attr, av, 1,
-			   "casenum =", ";", 4, unit->condexp);
-
-      write_attr_case (case_attr, common_av, 0,
-		       "casenum =", ";", 4, unit->condexp);
-      printf ("    }\n\n");
-
-      /* Now write an outer switch statement on each case.  Then write
-	 the tests on the executing function within each.  */
-      printf ("  insn = executing_insn;\n");
-      printf ("  switch (casenum)\n");
-      printf ("    {\n");
-
-      for (i = 0; i < unit->num_opclasses; i++)
-	{
-	  /* Ensure using this case.  */
-	  using_case = 0;
-	  for (av = case_attr->first_value; av; av = av->next)
-	    if (av->num_insns
-		&& contained_in_p (make_numeric_value (i), av->value))
-	      using_case = 1;
-
-	  if (! using_case)
-	    continue;
-
-	  printf ("    case %d:\n", i);
-	  sprintf (str, "*%s_case_%d", unit->name, i);
-	  attr = find_attr (str, 0);
-	  if (! attr) abort ();
-
-	  /* If single value, just write it.  */
-	  value = find_single_value (attr);
-	  if (value)
-	    write_attr_set (attr, 6, value, "return", ";\n", true_rtx, -2);
-	  else
-	    {
-	      common_av = find_most_used (attr);
-	      printf ("      switch (recog_memoized (insn))\n");
-	      printf ("\t{\n");
-
-	      for (av = attr->first_value; av; av = av->next)
-		if (av != common_av)
-		  write_attr_case (attr, av, 1,
-				   "return", ";", 8, unit->condexp);
-
-	      write_attr_case (attr, common_av, 0,
-			       "return", ";", 8, unit->condexp);
-	      printf ("      }\n\n");
-	    }
-	}
-
-      printf ("    }\n}\n\n");
+      write_complex_function (unit, "conflict_cost", "cost");
     }
 
   /* Now that all functions have been written, write the table describing
@@ -4875,13 +5019,25 @@ write_function_unit_info ()
 	if (unit->num == i)
 	  break;
 
-      printf ("  {\"%s\", %d, %d, %d, %s, %s, %s_unit_ready_cost, ",
+      printf ("  {\"%s\", %d, %d, %d, %s, %d, %s_unit_ready_cost, ",
 	      unit->name, 1 << unit->num, unit->multiplicity,
 	      unit->simultaneity, XSTR (unit->default_cost, 0),
-	      XSTR (unit->max_busy_cost, 0), unit->name);
+	      unit->issue_delay.max, unit->name);
 
       if (unit->needs_conflict_function)
-	printf ("%s_unit_conflict_cost", unit->name);
+	printf ("%s_unit_conflict_cost, ", unit->name);
+      else
+	printf ("0, ");
+
+      printf ("%d, ", unit->max_blockage);
+
+      if (unit->needs_range_function)
+	printf ("%s_unit_blockage_range, ", unit->name);
+      else
+	printf ("0, ");
+
+      if (unit->needs_blockage_function)
+	printf ("%s_unit_blockage", unit->name);
       else
 	printf ("0");
 
@@ -4889,6 +5045,93 @@ write_function_unit_info ()
     }
 
   printf ("};\n\n");
+}
+
+static void
+write_complex_function (unit, name, connection)
+     struct function_unit *unit;
+     char *name, *connection;
+{
+  struct attr_desc *case_attr, *attr;
+  struct attr_value *av, *common_av;
+  rtx value;
+  char *str;
+  int using_case;
+  int i;
+
+  printf ("static int\n");
+  printf ("%s_unit_%s (executing_insn, candidate_insn)\n",
+	  unit->name, name);
+  printf ("     rtx executing_insn;\n");
+  printf ("     rtx candidate_insn;\n");
+  printf ("{\n");
+  printf ("  rtx insn;\n");
+  printf ("  int casenum;\n\n");
+  printf ("  insn = candidate_insn;\n");
+  printf ("  switch (recog_memoized (insn))\n");
+  printf ("    {\n");
+
+  /* Write the `switch' statement to get the case value.  */
+  str = (char *) alloca (strlen (unit->name) + strlen (name) + strlen (connection) + 10);
+  sprintf (str, "*%s_cases", unit->name);
+  case_attr = find_attr (str, 0);
+  if (! case_attr) abort ();
+  common_av = find_most_used (case_attr);
+
+  for (av = case_attr->first_value; av; av = av->next)
+    if (av != common_av)
+      write_attr_case (case_attr, av, 1,
+		       "casenum =", ";", 4, unit->condexp);
+
+  write_attr_case (case_attr, common_av, 0,
+		   "casenum =", ";", 4, unit->condexp);
+  printf ("    }\n\n");
+
+  /* Now write an outer switch statement on each case.  Then write
+     the tests on the executing function within each.  */
+  printf ("  insn = executing_insn;\n");
+  printf ("  switch (casenum)\n");
+  printf ("    {\n");
+
+  for (i = 0; i < unit->num_opclasses; i++)
+    {
+      /* Ensure using this case.  */
+      using_case = 0;
+      for (av = case_attr->first_value; av; av = av->next)
+	if (av->num_insns
+	    && contained_in_p (make_numeric_value (i), av->value))
+	  using_case = 1;
+
+      if (! using_case)
+	continue;
+
+      printf ("    case %d:\n", i);
+      sprintf (str, "*%s_%s_%d", unit->name, connection, i);
+      attr = find_attr (str, 0);
+      if (! attr) abort ();
+
+      /* If single value, just write it.  */
+      value = find_single_value (attr);
+      if (value)
+	write_attr_set (attr, 6, value, "return", ";\n", true_rtx, -2);
+      else
+	{
+	  common_av = find_most_used (attr);
+	  printf ("      switch (recog_memoized (insn))\n");
+	  printf ("\t{\n");
+
+	  for (av = attr->first_value; av; av = av->next)
+	    if (av != common_av)
+	      write_attr_case (attr, av, 1,
+			       "return", ";", 8, unit->condexp);
+
+	  write_attr_case (attr, common_av, 0,
+			   "return", ";", 8, unit->condexp);
+	  printf ("      }\n\n");
+	}
+    }
+
+  printf ("    }\n}\n\n");
 }
 
 /* This page contains miscellaneous utility routines.  */
@@ -4996,6 +5239,7 @@ make_internal_attr (name, value, special)
   attr->is_const = 0;
   attr->is_special = (special & 1) != 0;
   attr->negative_ok = (special & 2) != 0;
+  attr->unsigned_p = (special & 4) != 0;
   attr->default_val = get_attr_value (value, attr, -2);
 }
 
@@ -5067,6 +5311,16 @@ make_numeric_value (n)
   return exp;
 }
 
+static void
+extend_range (range, min, max)
+     struct range *range;
+     int min;
+     int max;
+{
+  if (range->min > min) range->min = min;
+  if (range->max < max) range->max = max;
+}
+
 char *
 xrealloc (ptr, size)
      char *ptr;
