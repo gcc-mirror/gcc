@@ -4127,14 +4127,18 @@ convert_arg_to_ellipsis (tree arg)
 
   arg = require_complete_type (arg);
   
-  if (arg != error_mark_node && ! pod_type_p (TREE_TYPE (arg)))
+  if (arg != error_mark_node
+      && !pod_type_p (TREE_TYPE (arg)))
     {
       /* Undefined behavior [expr.call] 5.2.2/7.  We used to just warn
 	 here and do a bitwise copy, but now cp_expr_size will abort if we
-	 try to do that.  */
-      warning ("cannot pass objects of non-POD type `%#T' through `...'; \
-call will abort at runtime",
-	       TREE_TYPE (arg));
+	 try to do that. 
+	 If the call appears in the context of a sizeof expression, 
+	 there is no need to emit a warning, since the expression won't be 
+	 evaluated. We keep the builtin_trap just as a safety check.  */
+      if (!skip_evaluation)
+	warning ("cannot pass objects of non-POD type `%#T' through `...'; "
+	         "call will abort at runtime", TREE_TYPE (arg));
       arg = call_builtin_trap (TREE_TYPE (arg));
     }
 
