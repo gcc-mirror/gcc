@@ -343,6 +343,8 @@ struct graphics
 #define AWT_FOCUS_LOST 1004
 #define AWT_FOCUS_GAINED 1005
 
+extern jmethodID setBoundsCallbackID;
+
 extern jmethodID postActionEventID;
 extern jmethodID postMenuActionEventID;
 extern jmethodID postMouseEventID;

@@ -42,6 +42,7 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.MenuBar;
 import java.awt.Rectangle;
 import java.awt.event.PaintEvent;
@@ -69,9 +70,19 @@ public class GtkFramePeer extends GtkWindowPeer
     super (frame);
   }
 
+  void initializeInsets ()
+  {
+    // Unfortunately, X does not provide a clean way to calculate the
+    // dimensions of a frame's borders before it has been displayed.
+    // So we guess and then fix the dimensions upon receipt of the
+    // first configure event.
+    insets = new Insets (20, 6, 6, 6);
+  }
+
   void create ()
   {
-    create (GTK_WINDOW_TOPLEVEL);
+    // Create a normal decorated window.
+    create (GDK_WINDOW_TYPE_HINT_NORMAL, true);
   }
 
   public void getArgs (Component component, GtkArgList args)
@@ -97,26 +108,8 @@ public class GtkFramePeer extends GtkWindowPeer
     return g;
   }
 
-  public void setBounds (int x, int y, int width, int height)
-  {
-    super.setBounds (0, 0, width - insets.left - insets.right,
-		     height - insets.top - insets.bottom + menuBarHeight);
-  }
-
-  protected void postConfigureEvent (int x, int y, int width, int height,
-				     int top, int left, int bottom, int right)
-  {
-    if (((Frame)awtComponent).getMenuBar () != null)
-      {
-	menuBarHeight = getMenuBarHeight ();
-	top += menuBarHeight;
-      }
-
-    super.postConfigureEvent (0, 0,
-			      width + left + right,
-			      height + top + bottom - menuBarHeight,
-			      top, left, bottom, right);
-  }
+  // FIXME: When MenuBars work, override postConfigureEvent and
+  // setBounds to account for MenuBar dimensions.
 
   protected void postMouseEvent(int id, long when, int mods, int x, int y, 
 				int clickCount, boolean popupTrigger)
@@ -128,8 +121,6 @@ public class GtkFramePeer extends GtkWindowPeer
 
   protected void postExposeEvent (int x, int y, int width, int height)
   {
-//      System.out.println ("x + insets.left:" + (x + insets.left));
-//      System.out.println ("y + insets.top :" + (y + insets.top));
     q.postEvent (new PaintEvent (awtComponent, PaintEvent.PAINT,
 				 new Rectangle (x + insets.left, 
 						y + insets.top, 

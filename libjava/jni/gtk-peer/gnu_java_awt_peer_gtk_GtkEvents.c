@@ -981,31 +981,40 @@ awt_event_handler (GdkEvent *event)
 	    if (widget && GTK_WIDGET_TOPLEVEL (widget))
 	      {
 		gint top, left, right, bottom;
-		gint x, y, w, h, wb, d;
+		gint x, y, w, h, d;
+		GdkRectangle r;
 
-		/* calculate our insets */
-		gdk_window_get_root_geometry (event->any.window, 
-					      &x, &y, &w, &h, &wb, &d);
-
-		/* We used to compute these based on the configure
-		   event's fields.  However, that gives strange and
-		   apparently incorrect results.  */
-		top = left = bottom = right = 0;
-
-		/* configure events are not posted to the AWT event queue,
-		   and as such, gdk/gtk will be called back before
-		   postConfigureEvent returns */
+		/* Configure events are not posted to the AWT event
+		   queue, and as such, the gdk/gtk peer functions will
+		   be called back before postConfigureEvent
+		   returns. */
 		gdk_threads_leave ();
-		(*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr, 
+
+		/* Calculate our insets. */
+
+		/* When called from within the gdk_threads critical
+		   section these functions seem to return strange
+		   results, so we call them after
+		   gdk_threads_leave. */
+		gdk_window_get_geometry (event->any.window,
+					 &x, &y, &w, &h, &d);
+		gdk_window_get_frame_extents (event->any.window, &r);
+
+		top = y;
+		left = x;
+		bottom = r.height - h - y;
+		right = r.width - w - x;
+
+		(*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr,
 					    postConfigureEventID,
-					    (jint)event->configure.x,
-					    (jint)event->configure.y,
-					    (jint)event->configure.width,
-					    (jint)event->configure.height,
-					    (jint)top,
-					    (jint)left,
-					    (jint)bottom,
-					    (jint)right);
+					    (jint) event->configure.x,
+					    (jint) event->configure.y,
+					    (jint) event->configure.width,
+					    (jint) event->configure.height,
+					    (jint) top,
+					    (jint) left,
+					    (jint) bottom,
+					    (jint) right);
 		gdk_threads_enter ();
 	      }
 	  }

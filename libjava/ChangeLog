@@ -1,3 +1,52 @@
+2003-10-02  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java (insets): New
+	field.
+	(initializeInsets): New method.
+	(GtkComponentPeer): Call initializeInsets.  Call setCursor and
+	setBounds unconditionally.
+	(setBounds): Convert coordinates if parent is a Window.
+	* gnu/java/awt/peer/gtk/GtkContainerPeer.java (insets): Move
+	field to GtkComponentPeer.
+	(GtkContainerPeer): Don't initialize insets.
+	* gnu/java/awt/peer/gtk/GtkDialogPeer.java (initializeInsets):
+	New method.
+	(create): Call new GtkWindowPeer create method.
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java (initializeInsets):
+	New method.
+	(create): Call new GtkWindowPeer create method.
+	(setBounds): Remove method.
+	(postConfigureEvent): Likewise.
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java: Replace GTK window
+	type constants with GDK window type constants.
+	(create(int,boolean,int,int,GtkWindowPeer)): New method.
+	(create(int,boolean)): Likewise.
+	(create()): Call create(int,boolean).
+	(nativeSetBounds): New native method declaration.
+	(setBounds): Call native method declaration.
+	(setSize): New native method declaration.
+	(setBoundsCallback): Likewise.
+	(postConfigureEvent): Handle change in insets.  Call setSize and
+	setBoundsCallback methods.
+	* java/awt/Window.java (Window): Set visible to false.
+	(setBoundsCallback): New method.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
+	(gtkWidgetGetLocationOnScreen): If this component is not a
+	container, adjust the location returned based on the peer's
+	allocation.
+	(set(String,boolean)): Revert change from 2003-09-19.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(awt_event_handler): Fix inset calculation.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c: Add JNI
+	glue for Window.setBoundsCallback.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c (create):
+	Set up stacking order, window decorations and window manager
+	hints.
+	(setBoundsCallback): New method.
+	(setSize): New method.
+	(nativeSetBounds): New method.
+	* jni/gtk-peer/gtkpeer.h: Declare setBoundsCallbackID.
+
 2003-10-02  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/VMClassLoader.java (loadClass): Now native.

@@ -90,6 +90,7 @@ public class Window extends Container implements Accessible
    */
   Window()
   {
+    visible = false;
     setLayout(new BorderLayout());
   }
 
@@ -726,5 +727,29 @@ public class Window extends Container implements Accessible
   public void setFocusableWindowState (boolean focusableWindowState)
   {
     this.focusableWindowState = focusableWindowState;
+  }
+
+  // setBoundsCallback is needed so that when a user moves a window,
+  // the Window's location can be updated without calling the peer's
+  // setBounds method.  When a user moves a window the peer window's
+  // location is updated automatically and the windowing system sends
+  // a message back to the application informing it of its updated
+  // dimensions.  We must update the AWT Window class with these new
+  // dimensions.  But we don't want to call the peer's setBounds
+  // method, because the peer's dimensions have already been updated.
+  // (Under X, having this method prevents Configure event loops when
+  // moving windows: Component.setBounds -> peer.setBounds ->
+  // postConfigureEvent -> Component.setBounds -> ...  In some cases
+  // Configure event loops cause windows to jitter back and forth
+  // continuously).
+  void setBoundsCallback (int x, int y, int w, int h)
+  {
+    if (this.x == x && this.y == y && width == w && height == h)
+      return;
+    invalidate();
+    this.x = x;
+    this.y = y;
+    width = w;
+    height = h;
   }
 }

@@ -48,14 +48,12 @@ import java.awt.peer.ContainerPeer;
 public class GtkContainerPeer extends GtkComponentPeer
   implements ContainerPeer
 {
-  Insets insets;
   Container c;
 
   public GtkContainerPeer(Container c)
   {
     super (c);
     this.c = c;
-    insets = new Insets (0, 0, 0, 0);
   }
 
   public void beginValidate() 
