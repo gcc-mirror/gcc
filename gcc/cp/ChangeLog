@@ -1,4 +1,11 @@
+Mon May 18 03:00:57 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (instantiate_type): Don't abort on TREE_NONLOCAL_FLAG.
+
 Mon May 18 01:43:01 1998  Martin v. Loewis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (lookup_name_real): Don't look at IDENTIFIER_LOCAL_VALUE 
+	for a type unless it is one.
 
 	* class.c (finish_struct_1): Use OVL_CURRENT in error message.
 
