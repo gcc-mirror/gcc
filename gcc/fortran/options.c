@@ -282,7 +282,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_qkind_:
-      if (gfc_validate_kind (BT_REAL, value) < 0)
+      if (gfc_validate_kind (BT_REAL, value, true) < 0)
 	gfc_fatal_error ("Argument to -fqkind isn't a valid real kind");
       gfc_option.q_kind = value;
       break;

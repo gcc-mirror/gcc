@@ -128,7 +128,7 @@ get_kind (bt type, gfc_expr * k, const char *name, int default_kind)
     }
 
   if (gfc_extract_int (k, &kind) != NULL
-      || gfc_validate_kind (type, kind) == -1)
+      || gfc_validate_kind (type, kind, true) < 0)
     {
 
       gfc_error ("Invalid KIND parameter of %s at %L", name, &k->where);
@@ -547,10 +547,7 @@ gfc_simplify_bit_size (gfc_expr * e)
   gfc_expr *result;
   int i;
 
-  i = gfc_validate_kind (e->ts.type, e->ts.kind);
-  if (i == -1)
-    gfc_internal_error ("In gfc_simplify_bit_size(): Bad kind");
-
+  i = gfc_validate_kind (e->ts.type, e->ts.kind, false);
   result = gfc_constant_result (BT_INTEGER, e->ts.kind, &e->where);
   mpz_set_ui (result->value.integer, gfc_integer_kinds[i].bit_size);
 
@@ -818,10 +815,7 @@ gfc_simplify_digits (gfc_expr * x)
 {
   int i, digits;
 
-  i = gfc_validate_kind (x->ts.type, x->ts.kind);
-  if (i == -1)
-    goto bad;
-
+  i = gfc_validate_kind (x->ts.type, x->ts.kind, false);
   switch (x->ts.type)
     {
     case BT_INTEGER:
@@ -834,8 +828,7 @@ gfc_simplify_digits (gfc_expr * x)
       break;
 
     default:
-    bad:
-      gfc_internal_error ("gfc_simplify_digits(): Bad type");
+      abort ();
     }
 
   return gfc_int_expr (digits);
@@ -907,9 +900,7 @@ gfc_simplify_epsilon (gfc_expr * e)
   gfc_expr *result;
   int i;
 
-  i = gfc_validate_kind (e->ts.type, e->ts.kind);
-  if (i == -1)
-    gfc_internal_error ("gfc_simplify_epsilon(): Bad kind");
+  i = gfc_validate_kind (e->ts.type, e->ts.kind, false);
 
   result = gfc_constant_result (BT_REAL, e->ts.kind, &e->where);
 
@@ -1109,9 +1100,7 @@ gfc_simplify_huge (gfc_expr * e)
   gfc_expr *result;
   int i;
 
-  i = gfc_validate_kind (e->ts.type, e->ts.kind);
-  if (i == -1)
-    goto bad_type;
+  i = gfc_validate_kind (e->ts.type, e->ts.kind, false);
 
   result = gfc_constant_result (e->ts.type, e->ts.kind, &e->where);
 
@@ -1125,9 +1114,8 @@ gfc_simplify_huge (gfc_expr * e)
       mpfr_set (result->value.real, gfc_real_kinds[i].huge, GFC_RND_MODE);
       break;
 
-    bad_type:
     default:
-      gfc_internal_error ("gfc_simplify_huge(): Bad type");
+      abort ();
     }
 
   return result;
@@ -1189,9 +1177,7 @@ gfc_simplify_ibclr (gfc_expr * x, gfc_expr * y)
       return &gfc_bad_expr;
     }
 
-  k = gfc_validate_kind (x->ts.type, x->ts.kind);
-  if (k == -1)
-    gfc_internal_error ("gfc_simplify_ibclr(): Bad kind");
+  k = gfc_validate_kind (x->ts.type, x->ts.kind, false);
 
   if (pos > gfc_integer_kinds[k].bit_size)
     {
@@ -1232,9 +1218,7 @@ gfc_simplify_ibits (gfc_expr * x, gfc_expr * y, gfc_expr * z)
       return &gfc_bad_expr;
     }
 
-  k = gfc_validate_kind (BT_INTEGER, x->ts.kind);
-  if (k == -1)
-    gfc_internal_error ("gfc_simplify_ibits(): Bad kind");
+  k = gfc_validate_kind (BT_INTEGER, x->ts.kind, false);
 
   bitsize = gfc_integer_kinds[k].bit_size;
 
@@ -1293,9 +1277,7 @@ gfc_simplify_ibset (gfc_expr * x, gfc_expr * y)
       return &gfc_bad_expr;
     }
 
-  k = gfc_validate_kind (x->ts.type, x->ts.kind);
-  if (k == -1)
-    gfc_internal_error ("gfc_simplify_ibset(): Bad kind");
+  k = gfc_validate_kind (x->ts.type, x->ts.kind, false);
 
   if (pos > gfc_integer_kinds[k].bit_size)
     {
@@ -1620,9 +1602,7 @@ gfc_simplify_ishft (gfc_expr * e, gfc_expr * s)
       return &gfc_bad_expr;
     }
 
-  k = gfc_validate_kind (BT_INTEGER, e->ts.kind);
-  if (k == -1)
-    gfc_internal_error ("gfc_simplify_ishft(): Bad kind");
+  k = gfc_validate_kind (BT_INTEGER, e->ts.kind, false);
 
   isize = gfc_integer_kinds[k].bit_size;
 
@@ -1676,9 +1656,7 @@ gfc_simplify_ishftc (gfc_expr * e, gfc_expr * s, gfc_expr * sz)
       return &gfc_bad_expr;
     }
 
-  k = gfc_validate_kind (e->ts.type, e->ts.kind);
-  if (k == -1)
-    gfc_internal_error ("gfc_simplify_ishftc(): Bad kind");
+  k = gfc_validate_kind (e->ts.type, e->ts.kind, false);
 
   if (sz != NULL)
     {
@@ -2137,9 +2115,7 @@ gfc_simplify_maxexponent (gfc_expr * x)
   gfc_expr *result;
   int i;
 
-  i = gfc_validate_kind (BT_REAL, x->ts.kind);
-  if (i == -1)
-    gfc_internal_error ("gfc_simplify_maxexponent(): Bad kind");
+  i = gfc_validate_kind (BT_REAL, x->ts.kind, false);
 
   result = gfc_int_expr (gfc_real_kinds[i].max_exponent);
   result->where = x->where;
@@ -2154,9 +2130,7 @@ gfc_simplify_minexponent (gfc_expr * x)
   gfc_expr *result;
   int i;
 
-  i = gfc_validate_kind (BT_REAL, x->ts.kind);
-  if (i == -1)
-    gfc_internal_error ("gfc_simplify_minexponent(): Bad kind");
+  i = gfc_validate_kind (BT_REAL, x->ts.kind, false);
 
   result = gfc_int_expr (gfc_real_kinds[i].min_exponent);
   result->where = x->where;
@@ -2306,9 +2280,7 @@ gfc_simplify_nearest (gfc_expr * x, gfc_expr * s)
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  k = gfc_validate_kind (x->ts.type, x->ts.kind);
-  if (k == -1)
-    gfc_internal_error ("gfc_simplify_precision(): Bad kind");
+  k = gfc_validate_kind (x->ts.type, x->ts.kind, false);
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
@@ -2443,9 +2415,7 @@ gfc_simplify_not (gfc_expr * e)
   /* Because of how GMP handles numbers, the result must be ANDed with
      the max_int mask.  For radices <> 2, this will require change.  */
 
-  i = gfc_validate_kind (BT_INTEGER, e->ts.kind);
-  if (i == -1)
-    gfc_internal_error ("gfc_simplify_not(): Bad kind");
+  i = gfc_validate_kind (BT_INTEGER, e->ts.kind, false);
 
   mpz_and (result->value.integer, result->value.integer,
 	   gfc_integer_kinds[i].max_int);
@@ -2480,9 +2450,7 @@ gfc_simplify_precision (gfc_expr * e)
   gfc_expr *result;
   int i;
 
-  i = gfc_validate_kind (e->ts.type, e->ts.kind);
-  if (i == -1)
-    gfc_internal_error ("gfc_simplify_precision(): Bad kind");
+  i = gfc_validate_kind (e->ts.type, e->ts.kind, false);
 
   result = gfc_int_expr (gfc_real_kinds[i].precision);
   result->where = e->where;
@@ -2497,10 +2465,7 @@ gfc_simplify_radix (gfc_expr * e)
   gfc_expr *result;
   int i;
 
-  i = gfc_validate_kind (e->ts.type, e->ts.kind);
-  if (i == -1)
-    goto bad;
-
+  i = gfc_validate_kind (e->ts.type, e->ts.kind, false);
   switch (e->ts.type)
     {
     case BT_INTEGER:
@@ -2512,8 +2477,7 @@ gfc_simplify_radix (gfc_expr * e)
       break;
 
     default:
-    bad:
-      gfc_internal_error ("gfc_simplify_radix(): Bad type");
+      abort ();
     }
 
   result = gfc_int_expr (i);
@@ -2530,9 +2494,7 @@ gfc_simplify_range (gfc_expr * e)
   int i;
   long j;
 
-  i = gfc_validate_kind (e->ts.type, e->ts.kind);
-  if (i == -1)
-    goto bad_type;
+  i = gfc_validate_kind (e->ts.type, e->ts.kind, false);
 
   switch (e->ts.type)
     {
@@ -2545,9 +2507,8 @@ gfc_simplify_range (gfc_expr * e)
       j = gfc_real_kinds[i].range;
       break;
 
-    bad_type:
     default:
-      gfc_internal_error ("gfc_simplify_range(): Bad kind");
+      abort ();
     }
 
   result = gfc_int_expr (j);
@@ -2886,9 +2847,7 @@ gfc_simplify_rrspacing (gfc_expr * x)
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  i = gfc_validate_kind (x->ts.type, x->ts.kind);
-  if (i == -1)
-    gfc_internal_error ("gfc_simplify_rrspacing(): Bad kind");
+  i = gfc_validate_kind (x->ts.type, x->ts.kind, false);
 
   result = gfc_constant_result (BT_REAL, x->ts.kind, &x->where);
 
@@ -2959,9 +2918,7 @@ gfc_simplify_scale (gfc_expr * x, gfc_expr * i)
       return result;
     }
 
-  k = gfc_validate_kind (BT_REAL, x->ts.kind);
-  if (k == -1)
-    gfc_internal_error ("gfc_simplify_scale(): Bad kind");
+  k = gfc_validate_kind (BT_REAL, x->ts.kind, false);
 
   exp_range = gfc_real_kinds[k].max_exponent - gfc_real_kinds[k].min_exponent;
 
@@ -3410,9 +3367,7 @@ gfc_simplify_spacing (gfc_expr * x)
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  i = gfc_validate_kind (x->ts.type, x->ts.kind);
-  if (i == -1)
-    gfc_internal_error ("gfc_simplify_spacing(): Bad kind");
+  i = gfc_validate_kind (x->ts.type, x->ts.kind, false);
 
   p = gfc_real_kinds[i].digits;
 
@@ -3599,9 +3554,7 @@ gfc_simplify_tan (gfc_expr * x)
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  i = gfc_validate_kind (BT_REAL, x->ts.kind);
-  if (i == -1)
-    gfc_internal_error ("gfc_simplify_tan(): Bad kind");
+  i = gfc_validate_kind (BT_REAL, x->ts.kind, false);
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
@@ -3634,9 +3587,7 @@ gfc_simplify_tiny (gfc_expr * e)
   gfc_expr *result;
   int i;
 
-  i = gfc_validate_kind (BT_REAL, e->ts.kind);
-  if (i == -1)
-    gfc_internal_error ("gfc_simplify_error(): Bad kind");
+  i = gfc_validate_kind (BT_REAL, e->ts.kind, false);
 
   result = gfc_constant_result (BT_REAL, e->ts.kind, &e->where);
   mpfr_set (result->value.real, gfc_real_kinds[i].tiny, GFC_RND_MODE);

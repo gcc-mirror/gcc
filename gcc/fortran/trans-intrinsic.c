@@ -365,7 +365,7 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, int op)
   /* Test if the value is too large to handle sensibly.  */
   gfc_set_model_kind (kind);
   mpfr_init (huge);
-  n = gfc_validate_kind (BT_INTEGER, kind);
+  n = gfc_validate_kind (BT_INTEGER, kind, false);
   mpfr_set_z (huge, gfc_integer_kinds[n].huge, GFC_RND_MODE);
   tmp = gfc_conv_mpfr_to_tree (huge, kind);
   cond = build2 (LT_EXPR, boolean_type_node, arg, tmp);
@@ -804,7 +804,7 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
       /* Test if the value is too large to handle sensibly.  */
       gfc_set_model_kind (expr->ts.kind);
       mpfr_init (huge);
-      n = gfc_validate_kind (BT_INTEGER, expr->ts.kind);
+      n = gfc_validate_kind (BT_INTEGER, expr->ts.kind, false);
       mpfr_set_z (huge, gfc_integer_kinds[n].huge, GFC_RND_MODE);
       test = gfc_conv_mpfr_to_tree (huge, expr->ts.kind);
       test2 = build2 (LT_EXPR, boolean_type_node, tmp, test);
@@ -1424,7 +1424,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
     maskss = NULL;
 
   limit = gfc_create_var (gfc_typenode_for_spec (&arrayexpr->ts), "limit");
-  n = gfc_validate_kind (arrayexpr->ts.type, arrayexpr->ts.kind);
+  n = gfc_validate_kind (arrayexpr->ts.type, arrayexpr->ts.kind, false);
   switch (arrayexpr->ts.type)
     {
     case BT_REAL:
@@ -1565,7 +1565,7 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, int op)
   type = gfc_typenode_for_spec (&expr->ts);
   /* Initialize the result.  */
   limit = gfc_create_var (type, "limit");
-  n = gfc_validate_kind (expr->ts.type, expr->ts.kind);
+  n = gfc_validate_kind (expr->ts.type, expr->ts.kind, false);
   switch (expr->ts.type)
     {
     case BT_REAL:
@@ -2327,7 +2327,7 @@ void prepare_arg_info (gfc_se * se, gfc_expr * expr,
    rcs->arg = arg;
 
    /* Caculate the numbers of bits of exponent, fraction and word  */
-   n = gfc_validate_kind (a1->ts.type, a1->ts.kind);
+   n = gfc_validate_kind (a1->ts.type, a1->ts.kind, false);
    tmp = build_int_cst (NULL_TREE, gfc_real_kinds[n].digits - 1);
    rcs->fdigits = convert (masktype, tmp);
    wbits = build_int_cst (NULL_TREE, TYPE_PRECISION (rcs->type) - 1);

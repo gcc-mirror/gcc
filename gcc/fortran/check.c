@@ -117,7 +117,7 @@ kind_check (gfc_expr * k, int n, bt type)
     }
 
   if (gfc_extract_int (k, &kind) != NULL
-      || gfc_validate_kind (type, kind) == -1)
+      || gfc_validate_kind (type, kind, true) < 0)
     {
       gfc_error ("Invalid kind for %s at %L", gfc_basic_typename (type),
 		 &k->where);
@@ -133,7 +133,6 @@ kind_check (gfc_expr * k, int n, bt type)
 static try
 double_check (gfc_expr * d, int n)
 {
-
   if (type_check (d, n, BT_REAL) == FAILURE)
     return FAILURE;
 
