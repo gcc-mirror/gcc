@@ -21,7 +21,7 @@ typedef union {long itype; tree ttype; char *strtype; enum tree_code code; flagg
 #define	DEFAULT	277
 #define	BREAK	278
 #define	CONTINUE	279
-#define	RETURN	280
+#define	RETURN_KEYWORD	280
 #define	GOTO	281
 #define	ASM_KEYWORD	282
 #define	TYPEOF	283
