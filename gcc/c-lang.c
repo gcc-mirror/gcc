@@ -183,13 +183,13 @@ is_class_name (arg)
 }
 
 void
-maybe_objc_check_decl (decl)
+objc_check_decl (decl)
      tree decl ATTRIBUTE_UNUSED;
 {
 }
 
 int
-maybe_objc_comptypes (lhs, rhs, reflexive)
+objc_comptypes (lhs, rhs, reflexive)
      tree lhs ATTRIBUTE_UNUSED;
      tree rhs ATTRIBUTE_UNUSED;
      int reflexive ATTRIBUTE_UNUSED;
@@ -198,7 +198,7 @@ maybe_objc_comptypes (lhs, rhs, reflexive)
 }
 
 tree
-maybe_building_objc_message_expr ()
+objc_message_selector ()
 {
   return 0;
 }

@@ -165,10 +165,10 @@ struct lang_type GTY(())
 /* in c-lang.c and objc-act.c */
 extern tree lookup_interface			PARAMS ((tree));
 extern tree is_class_name			PARAMS ((tree));
-extern void maybe_objc_check_decl		PARAMS ((tree));
+extern void objc_check_decl			PARAMS ((tree));
 extern void finish_file				PARAMS ((void));
-extern int maybe_objc_comptypes                 PARAMS ((tree, tree, int));
-extern tree maybe_building_objc_message_expr    PARAMS ((void));
+extern int objc_comptypes                 	PARAMS ((tree, tree, int));
+extern tree objc_message_selector		PARAMS ((void));
 extern int recognize_objc_keyword		PARAMS ((void));
 extern tree lookup_objc_ivar			PARAMS ((tree));
 

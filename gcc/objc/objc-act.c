@@ -518,14 +518,6 @@ define_decl (declarator, declspecs)
    `a' and `b' are the same class type, or
    `a' and `b' are of class types A and B such that B is a descendant of A.  */
 
-int
-maybe_objc_comptypes (lhs, rhs, reflexive)
-     tree lhs, rhs;
-     int reflexive;
-{
-  return objc_comptypes (lhs, rhs, reflexive);
-}
-
 static tree
 lookup_method_in_protocol_list (rproto_list, sel_name, class_meth)
    tree rproto_list;
@@ -762,13 +754,6 @@ objc_check_decl (decl)
       && TREE_STATIC_TEMPLATE (type)
       && type != constant_string_type)
     error_with_decl (decl, "`%s' cannot be statically allocated");
-}
-
-void
-maybe_objc_check_decl (decl)
-     tree decl;
-{
-  objc_check_decl (decl);
 }
 
 /* Implement static typing.  At this point, we know we have an interface.  */
@@ -4690,7 +4675,7 @@ receiver_is_class_object (receiver)
 static tree building_objc_message_expr = 0;
 
 tree
-maybe_building_objc_message_expr ()
+objc_message_selector ()
 {
   return building_objc_message_expr;
 }

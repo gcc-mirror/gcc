@@ -200,6 +200,9 @@ int flag_preprocess_only;
    user's namespace.  */
 int flag_iso;
 
+/* Nonzero whenever Objective-C functionality is being used.  */
+int flag_objc;
+
 /* Nonzero if -undef was given.  It suppresses target built-in macros
    and assertions.  */
 int flag_undef;

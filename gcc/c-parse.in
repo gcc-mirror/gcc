@@ -3546,7 +3546,7 @@ init_reswords ()
   int mask = (flag_isoc99 ? 0 : D_C89)
 	      | (flag_no_asm ? (flag_isoc99 ? D_EXT : D_EXT|D_EXT89) : 0);
 
-  if (c_language != clk_objective_c)
+  if (!flag_objc)
      mask |= D_OBJC;
 
   /* It is not necessary to register ridpointers as a GC root, because

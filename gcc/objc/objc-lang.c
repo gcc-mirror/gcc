@@ -162,5 +162,6 @@ const char * const tree_code_name[] = {
 static void 
 objc_init_options ()
 {
-  c_common_init_options (clk_objective_c);
-} 
+  flag_objc = 1;
+  c_common_init_options (clk_c);
+}
