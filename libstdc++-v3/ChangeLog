@@ -1,3 +1,8 @@
+Sat Nov 11 20:25:49 2000  Mark P Mitchell  <mark@codesourcery.com>
+
+	* include/bits/basic_file.h (__basic_file): Don't use __c_wfile_type
+	when _GLIBCPP_USE_WCHAR_T is not defined.
+
 2000-11-10  Phil Edwards  <pme@sources.redhat.com>
 
 	* include/bits/codecvt.h (__iconv_adaptor):  New adaptor function,
