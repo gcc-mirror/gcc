@@ -95,12 +95,6 @@ int pending_stack_adjust;
    and in other cases as well.  */
 int inhibit_defer_pop;
 
-/* When temporaries are created by TARGET_EXPRs, they are created at
-   this level of temp_slot_level, so that they can remain allocated
-   until no longer needed.  CLEANUP_POINT_EXPRs define the lifetime
-   of TARGET_EXPRs.  */
-int target_temp_slot_level;
-
 /* Nonzero means __builtin_saveregs has already been done in this function.
    The value is the pseudoreg containing the value __builtin_saveregs
    returned.  */
