@@ -1,3 +1,10 @@
+2003-03-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6412
+	* cp/decl2.c (arg_assoc_class): Correct check for namespace-scope
+	friends.
+	* cp/pt.c (instantiate_class_template): Fix formatting.
+
 2003-03-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/8316, c++/9315, c++/10136

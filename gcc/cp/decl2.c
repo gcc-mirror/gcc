@@ -4245,7 +4245,7 @@ arg_assoc_class (k, type)
 	/* Only interested in global functions with potentially hidden
            (i.e. unqualified) declarations.  */
 	if (TREE_PURPOSE (friends) == error_mark_node && TREE_VALUE (friends)
-	    && decl_namespace (TREE_VALUE (friends)) == context)
+	    && CP_DECL_CONTEXT (TREE_VALUE (friends)) == context)
 	  if (add_function (k, TREE_VALUE (friends)))
 	    return 1;
 
