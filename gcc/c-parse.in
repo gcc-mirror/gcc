@@ -542,35 +542,6 @@ cast_expr:
 		  type = groktypename ($2);
 		  warn_strict_prototypes = SAVED_warn_strict_prototypes;
 		  $$ = build_c_cast (type, $4); }
-	| '(' typename ')' '{' 
-		{ start_init (NULL_TREE, NULL, 0);
-		  $2 = groktypename ($2);
-		  really_start_incremental_init ($2); }
-	  initlist_maybe_comma '}'  %prec UNARY
-		{ const char *name;
-		  tree result = pop_init_level (0);
-		  tree type = $2;
-		  finish_init ();
-
-		  if (pedantic && ! flag_isoc99)
-		    pedwarn ("ISO C89 forbids constructor expressions");
-		  if (TYPE_NAME (type) != 0)
-		    {
-		      if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
-			name = IDENTIFIER_POINTER (TYPE_NAME (type));
-		      else
-			name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
-		    }
-		  else
-		    name = "";
-		  $$ = result;
-		  if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
-		    {
-		      int failure = complete_array_type (type, $$, 1);
-		      if (failure)
-			abort ();
-		    }
-		}
 	;
 
 expr_no_commas:
@@ -659,6 +630,35 @@ primary:
 	| CONSTANT
 	| string
 		{ $$ = combine_strings ($1); }
+	| '(' typename ')' '{' 
+		{ start_init (NULL_TREE, NULL, 0);
+		  $2 = groktypename ($2);
+		  really_start_incremental_init ($2); }
+	  initlist_maybe_comma '}'  %prec UNARY
+		{ const char *name;
+		  tree result = pop_init_level (0);
+		  tree type = $2;
+		  finish_init ();
+
+		  if (pedantic && ! flag_isoc99)
+		    pedwarn ("ISO C89 forbids compound literals");
+		  if (TYPE_NAME (type) != 0)
+		    {
+		      if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
+			name = IDENTIFIER_POINTER (TYPE_NAME (type));
+		      else
+			name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+		    }
+		  else
+		    name = "";
+		  $$ = result;
+		  if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
+		    {
+		      int failure = complete_array_type (type, $$, 1);
+		      if (failure)
+			abort ();
+		    }
+		}
 	| '(' expr ')'
 		{ char class = TREE_CODE_CLASS (TREE_CODE ($2));
 		  if (class == 'e' || class == '1'

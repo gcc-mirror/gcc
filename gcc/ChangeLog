@@ -1,5 +1,11 @@
 2001-01-24  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-parse.in (cast_expr): Move compound literals from here ...
+	(primary): ... to here.  Use standard terminology "compound
+	literal" instead of "constructor expression".
+
+2001-01-24  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.1, cpp.1: Regenerate.
 
 2001-01-24  Alexandre Oliva  <aoliva@redhat.com>
