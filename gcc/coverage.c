@@ -109,7 +109,7 @@ static int htab_counts_entry_eq (const void *, const void *);
 static void htab_counts_entry_del (void *);
 static void read_counts_file (void);
 static unsigned compute_checksum (void);
-static unsigned checksum_string (unsigned, const char *);
+static unsigned coverage_checksum_string (unsigned, const char *);
 static tree build_fn_info_type (unsigned);
 static tree build_fn_info_value (const struct function_list *, tree);
 static tree build_ctr_info_type (void);
@@ -405,23 +405,51 @@ coverage_counter_ref (unsigned counter, unsigned no)
    checksum.  */
 
 static unsigned
-checksum_string (unsigned chksum, const char *string)
+coverage_checksum_string (unsigned chksum, const char *string)
 {
-  do
+  int i;
+  char *dup = NULL;
+
+  /* Look for everything that looks if it were produced by
+     get_file_function_name_long and zero out the second part
+     that may result from flag_random_seed.  This is not critical
+     as the checksums are used only for sanity checking.  */
+  for (i = 0; string[i]; i++)
     {
-      unsigned value = *string << 24;
-      unsigned ix;
+      if (!strncmp (string + i, "_GLOBAL__", 9))
+	for (i = i + 9; string[i]; i++)
+	  if (string[i]=='_')
+	    {
+	      int y;
+	      unsigned seed;
 
-      for (ix = 8; ix--; value <<= 1)
-	{
-	  unsigned feedback;
-
-	  feedback = (value ^ chksum) & 0x80000000 ? 0x04c11db7 : 0;
-	  chksum <<= 1;
-	  chksum ^= feedback;
-	}
+	      for (y = 1; y < 9; y++)
+		if (!(string[i + y] >= '0' && string[i + y] <= '9')
+		    && !(string[i + y] >= 'A' && string[i + y] <= 'F'))
+		  break;
+	      if (y != 9 || string[i + 9] != '_')
+		continue;
+	      for (y = 10; y < 18; y++)
+		if (!(string[i + y] >= '0' && string[i + y] <= '9')
+		    && !(string[i + y] >= 'A' && string[i + y] <= 'F'))
+		  break;
+	      if (y != 18)
+		continue;
+	      if (!sscanf (string + i + 10, "%X", &seed))
+		abort ();
+	      if (seed != crc32_string (0, flag_random_seed))
+		continue;
+	      string = dup = xstrdup (string);
+	      for (y = 10; y < 18; y++)
+		dup[i + y] = '0';
+	      break;
+	    }
+      break;
     }
-  while (*string++);
+
+  chksum = crc32_string (chksum, string);
+  if (dup)
+    free (dup);
 
   return chksum;
 }
@@ -433,8 +461,9 @@ compute_checksum (void)
 {
   unsigned chksum = DECL_SOURCE_LINE (current_function_decl);
 
-  chksum = checksum_string (chksum, DECL_SOURCE_FILE (current_function_decl));
-  chksum = checksum_string
+  chksum = coverage_checksum_string (chksum,
+      				     DECL_SOURCE_FILE (current_function_decl));
+  chksum = coverage_checksum_string
     (chksum, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
 
   return chksum;
