@@ -405,7 +405,13 @@ extern caddr_t mmap ();\
   rm -f /tmp/$base /tmp/$base.sed
 fi
 
-# Fix declarations of `ftw' and `nftw' in <ftw.h>.
+# Fix declarations of `ftw' and `nftw' in <ftw.h>.  On some/most SVR4 systems
+# the file <ftw.h> contains extern declarations of these functions followed
+# by explicitly `static' definitions of these functions... and that's not
+# allowed according to ANSI C.  (Note however that on Solaris, this header
+# file glitch has been pre-fixed by Sun.  In the Solaris version of <ftw.h>
+# there are no static definitions of any function so we don't need to do
+# any of this stuff when on Solaris.
 
 file=ftw.h
 base=`basename $file`
@@ -418,7 +424,11 @@ else
     file_to_fix=""
   fi
 fi
-if [ \! -z "$file_to_fix" ]; then
+if test -z "$file_to_fix" || grep 'define	ftw' $file_to_fix > /dev/null; then
+# Either we have no <ftw.h> file at all, or else we have the pre-fixed Solaris
+# one.  Either way, we don't have to do anything.
+  true
+else
   echo Checking $file_to_fix
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
