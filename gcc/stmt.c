@@ -31,6 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm.h"
 
 #include "rtl.h"
+#include "hard-reg-set.h"
 #include "tree.h"
 #include "tm_p.h"
 #include "flags.h"
@@ -39,7 +40,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "insn-config.h"
 #include "expr.h"
 #include "libfuncs.h"
-#include "hard-reg-set.h"
 #include "recog.h"
 #include "machmode.h"
 #include "toplev.h"
@@ -558,15 +558,12 @@ parse_input_constraint (const char **constraint_p, int input_num,
   return true;
 }
 
-/* Check for overlap between registers marked in CLOBBERED_REGS and
-   anything inappropriate in DECL.  Emit error and return TRUE for error,
-   FALSE for ok.  */
+/* Return true iff there's an overlap between REGS and DECL, where DECL
+   can be an asm-declared register.  */
 
-static bool
-decl_conflicts_with_clobbers_p (tree decl, const HARD_REG_SET clobbered_regs)
+bool
+decl_overlaps_hard_reg_set_p (tree decl, const HARD_REG_SET regs)
 {
-  /* Conflicts between asm-declared register variables and the clobber
-     list are not allowed.  */
   if ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
       && DECL_REGISTER (decl)
       && REG_P (DECL_RTL (decl))
@@ -579,18 +576,34 @@ decl_conflicts_with_clobbers_p (tree decl, const HARD_REG_SET clobbered_regs)
 	   regno < (REGNO (reg)
 		    + hard_regno_nregs[REGNO (reg)][GET_MODE (reg)]);
 	   regno++)
-	if (TEST_HARD_REG_BIT (clobbered_regs, regno))
-	  {
-	    error ("asm-specifier for variable %qs conflicts with "
-		   "asm clobber list",
-		   IDENTIFIER_POINTER (DECL_NAME (decl)));
-
-	    /* Reset registerness to stop multiple errors emitted for a
-	       single variable.  */
-	    DECL_REGISTER (decl) = 0;
-	    return true;
-	  }
+	if (TEST_HARD_REG_BIT (regs, regno))
+	  return true;
     }
+
+  return false;
+}
+
+
+/* Check for overlap between registers marked in CLOBBERED_REGS and
+   anything inappropriate in DECL.  Emit error and return TRUE for error,
+   FALSE for ok.  */
+
+static bool
+decl_conflicts_with_clobbers_p (tree decl, const HARD_REG_SET clobbered_regs)
+{
+  /* Conflicts between asm-declared register variables and the clobber
+     list are not allowed.  */
+  if (decl_overlaps_hard_reg_set_p (decl, clobbered_regs))
+    {
+      error ("asm-specifier for variable %qs conflicts with asm clobber list",
+	     IDENTIFIER_POINTER (DECL_NAME (decl)));
+
+      /* Reset registerness to stop multiple errors emitted for a single
+	 variable.  */
+      DECL_REGISTER (decl) = 0;
+      return true;
+    }
+
   return false;
 }
 
@@ -656,7 +669,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
      Case in point is when the i386 backend moved from cc0 to a hard reg --
      maintaining source-level compatibility means automatically clobbering
      the flags register.  */
-  clobbers = targetm.md_asm_clobbers (clobbers);
+  clobbers = targetm.md_asm_clobbers (outputs, inputs, clobbers);
 
   /* Count the number of meaningful clobbered registers, ignoring what
      we would ignore later.  */

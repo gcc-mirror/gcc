@@ -487,8 +487,8 @@ struct gcc_target
   rtx (* builtin_setjmp_frame_value) (void);
 
   /* This target hook should add STRING_CST trees for any hard regs
-     the port wishes to automatically clobber for all asms.  */
-  tree (* md_asm_clobbers) (tree);
+     the port wishes to automatically clobber for an asm.  */
+  tree (* md_asm_clobbers) (tree, tree, tree);
 
   /* This target hook allows the backend to specify a calling convention
      in the debug information.  This function actually returns an
