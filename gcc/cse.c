@@ -2360,7 +2360,8 @@ set_nonvarying_address_components (addr, size, pbase, pstart, pend)
 		 constant we already had.  */
 
 	      size = *pend - *pstart - INTVAL (XEXP (base, 1)) - 1;
-	      start += *pstart - INTVAL (XEXP (base, 1)) - 1;
+	      start += *pstart + INTVAL (XEXP (base, 1)) + 1;
+	      end += *pend;
 	      base = *pbase;
 	    }
 	  break;
