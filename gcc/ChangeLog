@@ -1,3 +1,17 @@
+2003-07-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config.gcc (mips-sgi-irix6*o32, mips-sgi-irix5*): Add mips/sdb.h
+	to the list of include files when using gas.
+	(mips*el-*-openbsd*, mips*-*-openbsd*): Add mips/sdb.h unconditionally.
+	* config/mips/elf.h: Remove #undef SDB_DEBUGGING_INFO.
+	* config/mips/elf64.h: Likewise.
+	* config/mips/iris5.h: Likewise.
+	* config/mips/linux.h: Likewise.
+	* config/mips/iris5gas.h (SDB_DEBUGGING_INFO): Remove definition.
+	* config/mips/mips.h (PREFERRED_DEBUGGING_TYPE): Likewise.
+	(SDB_DEBUGGING_INFO, sdb*, SDB_ALLOW_*, PUT_SDB*): Move to...
+	* config/mips/sdb.h: ...this new file.
+
 2003-07-14  Douglas Rupp  <rupp@gnat.com>
 
 	* fixinc/server.c (server_setup): Don't use non-POSIX NULL first
