@@ -6169,17 +6169,17 @@ such constructs may be detected and treated as compilation errors.
 @node Thread-Local
 @section Thread-Local Storage
 @cindex Thread-Local Storage
-@cindex TLS
+@cindex @acronym{TLS}
 @cindex __thread
 
-Thread-local storage (TLS) is a mechanism by which variables are
-allocated such that there is one instance of the variable per extant
+Thread-local storage (@acronym{TLS}) is a mechanism by which variables
+are allocated such that there is one instance of the variable per extant
 thread.  The run-time model GCC uses to implement this originates
 in the IA-64 processor-specific ABI, but has since been migrated
 to other processors as well.  It requires significant support from
 the linker (@command{ld}), dynamic linker (@command{ld.so}), and
 system libraries (@file{libc.so} and @file{libpthread.so}), so it
-is not supported everywhere.
+is not available everywhere.
 
 At the user level, the extension is visible with a new storage
 class keyword: @code{__thread}.  For example:
@@ -6197,7 +6197,7 @@ immediately after the other storage class specifier.
 
 The @code{__thread} specifier may be applied to any global, file-scoped
 static, function-scoped static, or class-scoped static variable.  It may
-not be applied to function-scoped automatic or class-scoped member variables.
+not be applied to block-scoped automatic or class-scoped member variables.
 
 When the address-of operator is applied to a thread-local variable, it is
 evaluated at run-time and returns the address of the current thread's
@@ -6207,13 +6207,220 @@ in that thread become invalid.
 
 No static initialization may refer to the address of a thread-local variable.
 
-In C++, a thread-local variable may not be initialized by a static
-constructor.
+In C++, a thread-local variable may not be initialized at runtime,
+that is, either by a static constructor or a non-constant expression.
 
 See @uref{http://people.redhat.com/drepper/tls.pdf,
 ELF Handling For Thread-Local Storage} for a detailed explanation of
 the four thread-local storage addressing models, and how the run-time
 is expected to function.
+
+@menu
+* C99 Thread-Local Edits::
+* C++98 Thread-Local Edits::
+@end menu
+
+@node C99 Thread-Local Edits
+@subsection ISO/IEC 9899:1999 Edits for Thread-Local Storage
+
+The following are a set of changes to ISO/IEC 9899:1999 (aka C99)
+that document the exact semantics of the language extension.
+
+@itemize @bullet
+@item
+@cite{5.1.2  Execution environments}
+
+Add new text after paragraph 1
+
+@quotation
+Within either execution environment, a @dfn{thread} is a flow of
+control within a program.  It is implementation defined whether
+or not there may be more than one thread associated with a program.
+It is implementation defined how threads beyond the first are
+created, the name and type of the function called at thread
+startup, and how threads may be terminated.  However, objects
+with thread storage duration shall be initialized before thread
+startup.
+@end quotation
+
+@item
+@cite{6.2.4  Storage durations of objects}
+
+Add new text before paragraph 3
+
+@quotation
+An object whose identifier is declared with the storage-class
+specifier @w{@code{__thread}} has @dfn{thread storage duration}.
+Its lifetime is the entire execution of the thread, and its
+stored value is initialized only once, prior to thread startup.
+@end quotation
+
+@item
+@cite{6.4.1  Keywords}
+
+Add @code{__thread}.
+
+@item
+@cite{6.7.1  Storage-class specifiers}
+
+Add @code{__thread} to the list of storage class specifiers in
+paragraph 1.
+
+Change paragraph 2 to
+
+@quotation
+With the exception of @code{__thread}, at most one storage-class
+specifier may be given [@dots{}].  The @code{__thread} specifier may
+be used alone, or immediately following @code{extern} or
+@code{static}.
+@end quotation
+
+Add new text after paragraph 6
+
+@quotation
+The declaration of an identifier for a variable that has
+block scope that specifies @code{__thread} shall also
+specify either @code{extern} or @code{static}.
+
+The @code{__thread} specifier shall be used only with
+variables.
+@end quotation
+@end itemize
+
+@node C++98 Thread-Local Edits
+@subsection ISO/IEC 14882:1998 Edits for Thread-Local Storage
+
+The following are a set of changes to ISO/IEC 14882:1998 (aka C++98)
+that document the exact semantics of the language extension.
+
+@itemize @bullet
+@b{[intro.execution]}
+
+New text after paragraph 4
+
+@quotation
+A @dfn{thread} is a flow of control within the abstract machine.
+It is implementation defined whether or not there may be more than
+one thread.
+@end quotation
+
+New text after paragraph 7
+
+@quotation
+It is unspecified whether additional action must be taken to 
+ensure when and whether side effects are visible to other threads.
+@end quotation
+
+@item
+@b{[lex.key]}
+
+Add @code{__thread}.
+
+@item
+@b{[basic.start.main]}
+
+Add after paragraph 5
+
+@quotation
+The thread that begins execution at the @code{main} function is called
+the @dfn{main thread}.  It is implementation defined how functions 
+beginning threads other than the main thread are designated or typed.
+A function so designated, as well as the @code{main} function, is called
+a @dfn{thread startup function}.  It is implementation defined what
+happens if a thread startup function returns.  It is implementation
+defined what happens to other threads when any thread calls @code{exit}.
+@end quotation
+
+@item
+@b{[basic.start.init]}
+
+Add after paragraph 4
+
+@quotation
+The storage for an object of thread storage duration shall be
+staticly initialized before the first statement of the thread startup
+function.  An object of thread storage duration shall not require
+dynamic initialization.
+@end quotation
+
+@item
+@b{[basic.start.term]}
+
+Add after paragraph 3
+
+@quotation
+An object of thread storage duration shall not require a destructor.
+@end quotation
+
+@item
+@b{[basic.stc]}
+
+Add ``thread storage duration'' to the list in paragraph 1.
+
+Change paragraph 2
+
+@quotation
+Thread, static, and automatic storage durations are associated with
+objects introduced by declarations [@dots{}].
+@end quotation
+
+Add @code{__thread} to the list of specifiers in paragraph 3.
+
+@item
+@b{[basic.stc.thread]}
+
+New section before @b{[basic.stc.static]}
+
+@quotation
+The keyword @code{__thread} applied to an non-local object gives the
+object thread storage duration.
+
+A local variable or class data member declared both @code{static}
+and @code{__thread} gives the variable or member thread storage
+duration.
+@end quotation
+
+@item
+@b{[basic.stc.static]}
+
+Change paragraph 1
+
+@quotation
+All objects which have neither thread storage duration, dynamic
+storage duration nor are local [@dots{}].
+@end quotation
+
+@item
+@b{[dcl.stc]}
+
+Add @code{__thread} to the list in paragraph 1.
+
+Change paragraph 1
+
+@quotation
+With the exception of @code{__thread}, at most one
+@var{storage-class-specifier} shall appear in a given
+@var{decl-specifier-seq}.  The @code{__thread} specifier may
+be used alone, or immediately following the @code{extern} or
+@code{static} specifiers.  [@dots{}]
+@end quotation
+
+Add after paragraph 5
+
+@quotation
+The @code{__thread} specifier can be applied only to the names of objects
+and to anonymous unions.
+@end quotation
+
+@item
+@b{[class.mem]}
+
+Add after paragraph 6
+
+@quotation
+Non-@code{static} members shall not be @code{__thread}.
+@end quotation
+@end itemize
 
 @node C++ Extensions
 @chapter Extensions to the C++ Language
