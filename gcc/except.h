@@ -354,6 +354,7 @@ extern int exception_table_p			PARAMS ((void));
 /* Outputs the exception table if we have one.  */
 
 extern void output_exception_table		PARAMS ((void));
+extern void output_exception_table_data		PARAMS ((void));
 
 /* Free the exception table.  */
 

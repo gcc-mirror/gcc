@@ -1,3 +1,37 @@
+2000-05-27  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (resource.o): Depend on except.h.
+	* except.h (output_exception_table_data): Prototype.
+	* genconfig.c (gen_peephole2): Prototype.
+	* genemit.c (main): Include ggc.h.
+	* genoutput.c: Revert parts of last change: include errors.h
+	(main): Set progname.
+	* recog.c: Include hard-reg-set.h before recog.h.
+	* resource.c: Include except.h.
+
+	* config/alpha/alpha-protos.h (alpha_arg_info_reg_val): Protect
+	with RTX_CODE.
+	(alpha_write_linkage): Protect with BUFSIZ.
+	(alpha_need_linkage): Update prototype.
+	* config/alpha/alpha.c (function_arg): Move VMS code here.
+	(alpha_links_base): Remove.
+	(alpha_links): New.
+	(mark_alpha_links_node, mark_alpha_links): New.
+	(alpha_write_one_linkage): New.
+	(alpha_need_linkage): Use a splay tree.  Build the linkage symbol.
+	(alpha_write_linkage): Use splay_tree_foreach.
+	* config/alpha/alpha.md (call_vms): Use alpha_need_linkage
+	to get the linkage symbol.
+	(call_value_vms): Likewise.
+	* config/alpha/elf.h (output_file_directive): Remove decl.
+	(ctors_section, dtors_section): Prototype.
+	(sbss_section, sdata_section): Prototype.
+	* config/alpha/vms.h (FUNCTION_ARG): Remove.
+	(readonly_section, link_section, literals_section): Prototype.
+	(ctors_section, dtors_section): Prototype.
+	(vms_valid_decl_attribute_p): Remove decl.
+	(alpha_arg_type, alpha_arg_info_reg_val): Likewise.
+
 2000-05-27  Geoff Keating  <geoffk@cygnus.com>
 
 	* reload.c (get_secondary_mem): Don't widen floating-point modes.
