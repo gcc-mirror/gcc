@@ -684,6 +684,7 @@ build_throw (tree exp)
          because it will only return false in cases where elided is true,
          and therefore we don't need to work around the failure to
          preevaluate.  */
+      temp_expr = NULL_TREE;
       stabilize_init (exp, &temp_expr);
 
       if (elided)

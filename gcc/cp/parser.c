@@ -5958,8 +5958,8 @@ cp_parser_iteration_statement (cp_parser* parser)
 	  expression = cp_parser_expression (parser);
 	finish_for_expr (expression, statement);
 	/* Look for the `)'.  */
-	cp_parser_require (parser, CPP_CLOSE_PAREN, "`;'");
-
+	cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
+	
 	/* Parse the body of the for-statement.  */
 	parser->in_iteration_statement_p = true;
 	cp_parser_already_scoped_statement (parser);
