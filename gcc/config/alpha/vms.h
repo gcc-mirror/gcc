@@ -519,14 +519,17 @@ do {									\
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain
 
-/* Specify the list of include file directories.  */
-#define INCLUDE_DEFAULTS		\
-{					\
-  { "/gnu_gxx_include", 0, 1, 1 },	\
-  { "/gnu_cc_include", 0, 0, 0 },	\
-  { "/gnu/include", 0, 0, 0 },	        \
-  { 0, 0, 0, 0 }			\
-}
-
 #define MD_EXEC_PREFIX "/gnu/lib/gcc-lib/"
 #define MD_STARTFILE_PREFIX "/gnu/lib/gcc-lib/"
+
+/* Specify the list of include file directories.  */
+#define INCLUDE_DEFAULTS		   \
+{					   \
+  { "/gnu/lib/gcc-lib/include", 0, 0, 0 }, \
+  { "/gnu_gxx_include", 0, 1, 1 },	   \
+  { "/gnu_cc_include", 0, 0, 0 },	   \
+  { "/gnu/include", 0, 0, 0 },	           \
+  { 0, 0, 0, 0 }			   \
+}
+
+#define LONGLONG_STANDALONE 1
