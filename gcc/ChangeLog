@@ -1,3 +1,13 @@
+2004-03-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	* real.h (struct real_value): Use the same type for all
+	bitfields.  Rename exp to uexp.
+	(REAL_EXP, SET_REAL_EXP): New accessor macros for uexp.
+	Adjust all uses of exp...
+	* builtins.c: ... here, ...
+	* emit-rtl.c: ... here, and ...
+	* real.c: ... and here.
+
 2004-03-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* pretty-print.c (pp_base_maybe_space): New function.
