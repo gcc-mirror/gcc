@@ -1,3 +1,10 @@
+2004-01-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR optimization/12440
+	* loop.c: Include ggc.h.
+	(loop_optimize): Run garbage collector between optimization of loops.
+	* Makefile.in (loop.o): Add GGC_H dependency.
+
 2004-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* simplify-rtx.c (simplify_relational_operation): Don't
