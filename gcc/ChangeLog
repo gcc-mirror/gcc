@@ -1,3 +1,10 @@
+Fri Feb 12 13:06:28 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* stmt.c (expand_return): Return if optimize_tail_recursion succeeded.
+	(optimize_tail_recursion): Change return type from void to int.
+	Add return statements.
+	* tree.h (optimize_tail_recursion): Change prototype to match.
+
 Fri Feb 12 21:09:51 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload.c (find_reloads_subreg_address): New function, broken out of

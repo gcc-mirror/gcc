@@ -2632,7 +2632,8 @@ expand_return (retval)
     }
 
   /* Attempt to optimize the call if it is tail recursive.  */
-  optimize_tail_recursion (retval_rhs, last_insn);
+  if (optimize_tail_recursion (retval_rhs, last_insn))
+    return;
 
 #ifdef HAVE_return
   /* This optimization is safe if there are local cleanups
@@ -2840,12 +2841,13 @@ drop_through_at_end_p ()
 
 /* Test CALL_EXPR to determine if it is a potential tail recursion call
    and emit code to optimize the tail recursion.  LAST_INSN indicates where
-   to place the jump to the tail recursion label.
+   to place the jump to the tail recursion label.  Return TRUE if the
+   call was optimized into a goto.
 
    This is only used by expand_return, but expand_call is expected to
    use it soon.  */
 
-void
+int
 optimize_tail_recursion (call_expr, last_insn)
      tree call_expr;
      rtx last_insn;
@@ -2874,7 +2876,10 @@ optimize_tail_recursion (call_expr, last_insn)
       emit_queue ();
       expand_goto_internal (NULL_TREE, tail_recursion_label, last_insn);
       emit_barrier ();
+      return 1;
     }
+
+  return 0;
 }
 
 /* Emit code to alter this function's formal parms for a tail-recursive call.
