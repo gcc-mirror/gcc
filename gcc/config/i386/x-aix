@@ -10,6 +10,3 @@ ALLOCA = alloca.o
 #CLIB_S = -lc_s
 
 CLIB = -lld $(MALLOCLIB) $(CLIB_S)
-
-# Use a special fixincludes file to avoid munging types.h.
-FIXINCLUDES = fixinc.ps2
