@@ -127,13 +127,13 @@ namespace std
        *  functions in constructs like "std::cout << std::endl".  For more
        *  information, see the iomanip header.
       */
-      __ostream_type&
+      inline __ostream_type&
       operator<<(__ostream_type& (*__pf)(__ostream_type&));
       
-      __ostream_type&
+      inline __ostream_type&
       operator<<(__ios_type& (*__pf)(__ios_type&));
       
-      __ostream_type&
+      inline __ostream_type&
       operator<<(ios_base& (*__pf) (ios_base&));
       //@}
 
