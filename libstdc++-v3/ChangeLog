@@ -1,5 +1,20 @@
 2001-02-27  Benjamin Kosnik  <bkoz@redhat.com>
 
+	Correct license.
+	* config/cpu/alpha/bits/atomicity.h: Change.
+	* config/cpu/arm/bits/atomicity.h
+	* config/cpu/generic/bits/atomicity.h
+	* config/cpu/i386/bits/atomicity.h
+	* config/cpu/i486/bits/atomicity.h
+	* config/cpu/ia64/bits/atomicity.h
+	* config/cpu/powerpc/bits/atomicity.h
+	* config/cpu/sparc/sparc32/bits/atomicity.h
+	* config/cpu/sparc/sparc64/bits/atomicity.h
+	* config/os/aix/bits/atomicity.h
+	* config/os/irix/bits/atomicity.h
+
+2001-02-27  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/bits/std_stdexcept.h (runtime_error): Make string
 	member non-const.
 	(logic_error): Same.
