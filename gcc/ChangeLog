@@ -1,3 +1,8 @@
+Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* ifcvt.c (noce_try_addcc): Do not call emit_conditional_add
+	with weird operands.
+
 2003-01-10  Dale Johannesen <dalej@apple.com>
  
         * calls.c (load_register_parameters):  Add is_sibcall, sibcall_failure
