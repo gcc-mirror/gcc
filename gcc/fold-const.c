@@ -6589,6 +6589,17 @@ fold (tree expr)
 	  if (fold_real_zero_addition_p (TREE_TYPE (arg1), arg0, 0))
 	    return non_lvalue (fold_convert (type, arg1));
 
+	  /* Convert X + -C into X - C.  */
+	  if (TREE_CODE (arg1) == REAL_CST
+	      && REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg1)))
+	    {
+	      tem = fold_negate_const (arg1, type);
+	      if (!TREE_OVERFLOW (arg1) || !flag_trapping_math)
+		return fold (build2 (MINUS_EXPR, type,
+				     fold_convert (type, arg0),
+				     fold_convert (type, tem)));
+	    }
+
 	  /* Convert x+x into x*2.0.  */
 	  if (operand_equal_p (arg0, arg1, 0)
 	      && SCALAR_FLOAT_TYPE_P (type))
@@ -6921,7 +6932,10 @@ fold (tree expr)
 
       /* A - B -> A + (-B) if B is easily negatable.  */
       if (!wins && negate_expr_p (arg1)
-	  && (FLOAT_TYPE_P (type)
+	  && ((FLOAT_TYPE_P (type)
+               /* Avoid this transformation if B is a positive REAL_CST.  */
+	       && (TREE_CODE (arg1) != REAL_CST
+		   ||  REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg1))))
 	      || (INTEGRAL_TYPE_P (type) && flag_wrapv && !flag_trapv)))
 	return fold (build2 (PLUS_EXPR, type, arg0, negate_expr (arg1)));
 

@@ -1,3 +1,10 @@
+2004-07-11  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold) <PLUS_EXPR>: Canonicalize X + -C as X - C for
+	floating point additions, to keep real immediate constant positive.
+	<MINUS_EXPR>:  For floating point subtractions, only transform X - -C
+	into X + C, and leave positive real constants as X - C.
+
 2004-07-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (hppa_gimplify_va_arg_expr): Remove comment.
