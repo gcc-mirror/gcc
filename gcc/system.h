@@ -584,11 +584,17 @@ typedef char _Bool;
 
 #if (GCC_VERSION >= 3000)
 
+/* Note autoconf checks for prototype declarations and includes
+   system.h while doing so.  Only poison these tokens if actually
+   compiling gcc, so that the autoconf declaration tests for malloc
+   etc don't spuriously fail.  */
+#ifdef IN_GCC
 #undef malloc
 #undef realloc
 #undef calloc
 #undef strdup
  #pragma GCC poison malloc realloc calloc strdup
+#endif /* IN_GCC */
 
 /* Note: not all uses of `bcopy' and `index' (esp. variable names)
    have been eliminated.  */
