@@ -1,3 +1,8 @@
+2004-02-05  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* diagnostic.h (DEFINE_DIAGNOSTIC_KIND): Change parameter M to
+	msgid.
+
 2004-02-05  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* config/rs6000/altivec.md (*movv4si_internal): At least one
