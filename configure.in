@@ -67,19 +67,13 @@ progname=$0
 if test -n "$PWD" ; then PWD=`${PWDCMD-pwd}`; fi
 
 # Export original configure arguments for use by sub-configures.  These
-# will be expanded once by make, and once by the shell, so they need to
-# have '$' quoted for make, and then each argument quoted for the shell.
-# What's more, the 'echo' below might expand backslashes.
-cat <<\EOF_SED > conftestsed
-s,\\,\\\\,g; s,\$,$$,g
+# will be expanded by make, so quote '$'.
+tmp="$progname $@"
+sed -e 's,\$,$$,g' <<EOF_SED > conftestsed.out
+$tmp
 EOF_SED
-tmp="'$progname'"
-for ac_arg
-do
-  tmp="$tmp '"`echo "$ac_arg" | sed -f conftestsed`
-done
-rm -f conftestsed
-TOPLEVEL_CONFIGURE_ARGUMENTS="$tmp"
+TOPLEVEL_CONFIGURE_ARGUMENTS=`cat conftestsed.out`
+rm -f conftestsed.out
 AC_SUBST(TOPLEVEL_CONFIGURE_ARGUMENTS)
 
 moveifchange=${srcdir}/move-if-change
@@ -1766,7 +1760,7 @@ AC_SUBST_FILE(serialization_dependencies)
 
 # Base args.  Strip norecursion, cache-file, srcdir, host, build,
 # target and nonopt.  These are the ones we might not want to pass
-# down to subconfigures.
+# down to subconfigures.  These will be expanded by make, so quote '$'.
 cat <<\EOF_SED > conftestsed
 s/ --no[[^ ]]* / /
 s/ --c[[a-z-]]*[[= ]][[^ ]]* / /
@@ -1781,10 +1775,13 @@ s/ -build[[= ]][[^ ]]* / /
 s/ -target[[= ]][[^ ]]* / /
 s/ [[^' -][^ ]*] / /
 s/^ *//;s/ *$//
-s,\\,\\\\,g; s,\$,$$,g
+s,\$,$$,g
 EOF_SED
-baseargs=`echo " ${ac_configure_args} " | sed -f conftestsed`
-rm -f conftestsed
+sed -f conftestsed <<EOF_SED > conftestsed.out
+ ${ac_configure_args} 
+EOF_SED
+baseargs=`cat conftestsed.out`
+rm -f conftestsed conftestsed.out
 
 # For the build-side libraries, we just need to pretend we're native,
 # and not use the same cache file.  Multilibs are neither needed nor

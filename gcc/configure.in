@@ -1180,9 +1180,18 @@ if test -f configargs.h ; then
 else
 	gcc_config_arguments="$TOPLEVEL_CONFIGURE_ARGUMENTS"
 fi
+
+# Double all backslashes and backslash all quotes to turn
+# gcc_config_arguments into a C string.
+sed -e 's/\\/\\\\/g; s/"/\\"/g' <<EOF >conftest.out
+$gcc_config_arguments
+EOF
+gcc_config_arguments_str=`cat conftest.out`
+rm -f conftest.out
+
 cat > configargs.h <<EOF
 /* Generated automatically. */
-static const char configuration_arguments[] = "$gcc_config_arguments";
+static const char configuration_arguments[] = "$gcc_config_arguments_str";
 static const char thread_model[] = "$thread_file";
 
 static const struct {
