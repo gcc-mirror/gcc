@@ -29,7 +29,7 @@ extern void s390_emit_epilogue PARAMS ((void));
 extern void s390_function_profiler PARAMS ((FILE *, int));
 
 #ifdef RTX_CODE
-extern int q_constraint PARAMS ((rtx));
+extern int s390_extra_constraint PARAMS ((rtx, int));
 extern int const0_operand PARAMS ((rtx, enum machine_mode));
 extern int consttable_operand PARAMS ((rtx, enum machine_mode));
 extern int larl_operand PARAMS ((rtx, enum machine_mode));
