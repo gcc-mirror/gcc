@@ -1353,8 +1353,8 @@ determine_specialization (tree template_id,
   /* Count the number of template headers specified for this
      specialization.  */
   header_count = 0;
-  for (b = current_binding_level;
-       b->kind == sk_template_parms || b->kind == sk_template_spec;
+  for (b = current_binding_level; 
+       b->kind == sk_template_parms;
        b = b->level_chain)
     ++header_count;
 
@@ -1423,6 +1423,14 @@ determine_specialization (tree template_id,
 	  if (header_count && header_count != template_count + 1)
 	    continue;
 
+	  /* Check that the number of template arguments at the
+	     innermost level for DECL is the same as for FN.  */
+	  if (current_binding_level->kind == sk_template_parms
+	      && !current_binding_level->explicit_spec_p
+	      && (TREE_VEC_LENGTH (DECL_INNERMOST_TEMPLATE_PARMS (fn))
+		  != TREE_VEC_LENGTH (TREE_VALUE (current_template_parms))))
+	    continue;
+ 
 	  /* See whether this function might be a specialization of this
 	     template.  */
 	  targs = get_bindings (fn, decl, explicit_targs);
