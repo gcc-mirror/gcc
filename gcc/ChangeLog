@@ -1,3 +1,12 @@
+2004-10-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload.c (find_reloads): When reloading a PLUS with constant
+	operand, make sure the constant is pushed to the constant pool
+	if required.
+	* config/s390/s390.c (s390_secondary_input_reload_class): Remove
+	reload bug workaround.
+	(s390_expand_plus_operand): Likewise.
+
 2004-10-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* opts.c (common_handle_option): Do not enable
