@@ -3082,6 +3082,11 @@ rest_of_compilation (decl)
 	       fflush (jump2_opt_dump_file);
 	     });
 
+  /* If a machine dependent reorganization is needed, call it.  */
+#ifdef MACHINE_DEPENDENT_REORG
+   MACHINE_DEPENDENT_REORG (insns);
+#endif
+
   /* If a scheduling pass for delayed branches is to be done,
      call the scheduling code. */
 
