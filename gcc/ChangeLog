@@ -1,3 +1,10 @@
+2001-06-22  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (verify_tree): Check for x being NULL.
+	* doc/c-tree.texi: Document COMPOUND_BODY of an empty
+	COMPOUND_STMT.
+	Fixes PR c/3259.
+
 2001-06-22  DJ Delorie  <dj@redhat.com>
 
 	* config/arm/arm.h (struct machine_function): Remove ra_rtx.
