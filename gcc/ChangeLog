@@ -1,3 +1,9 @@
+2004-09-12  Richard Henderson  <rth@redhat.com
+
+        PR 17186, part deux
+        * except.c (sjlj_emit_function_exit): Fix logic locating
+        sjlj_exit_after in final block.
+
 2004-09-12  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* common.opt: Remove flags -fmove-all-movables and

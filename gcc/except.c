@@ -2042,18 +2042,19 @@ sjlj_emit_function_exit (void)
          is inside the last basic block or after it.  In the other case
          we need to emit to edge.  */
       gcc_assert (e->src->next_bb == EXIT_BLOCK_PTR);
-      for (insn = NEXT_INSN (BB_END (e->src)); insn; insn = NEXT_INSN (insn))
-	if (insn == cfun->eh->sjlj_exit_after)
-	  break;
-      if (insn)
-	insert_insn_on_edge (seq, e);
-      else
+      for (insn = BB_HEAD (e->src); ; insn = NEXT_INSN (insn))
 	{
-	  insn = cfun->eh->sjlj_exit_after;
-	  if (LABEL_P (insn))
-	    insn = NEXT_INSN (insn);
-	  emit_insn_after (seq, insn);
+	  if (insn == cfun->eh->sjlj_exit_after)
+	    {
+	      if (LABEL_P (insn))
+		insn = NEXT_INSN (insn);
+	      emit_insn_after (seq, insn);
+	      return;
+	    }
+	  if (insn == BB_END (e->src))
+	    break;
 	}
+      insert_insn_on_edge (seq, e);
     }
 }
 
