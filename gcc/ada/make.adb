@@ -357,9 +357,6 @@ package body Make is
    --  added. Switch "-shared" is added if there is a non-static Library
    --  Project File.
 
-   Bind_Shared_Known : Boolean := False;
-   --  Set to True after the first time Bind_Shared is computed
-
    Shared_Libgcc : aliased String := "-shared-libgcc";
 
    No_Shared_Libgcc_Switch : aliased Argument_List := (1 .. 0 => null);
@@ -3750,7 +3747,6 @@ package body Make is
 
       Bind_Shared := No_Shared_Switch'Access;
       Link_With_Shared_Libgcc := No_Shared_Libgcc_Switch'Access;
-      Bind_Shared_Known := False;
 
       Failed_Links.Set_Last (0);
       Successful_Links.Set_Last (0);
@@ -3969,7 +3965,8 @@ package body Make is
          Write_Eol;
          Write_Str ("GNATMAKE ");
          Write_Str (Gnatvsn.Gnat_Version_String);
-         Write_Str (" Copyright 1995-2004 Free Software Foundation, Inc.");
+         Write_Eol;
+         Write_Str ("Copyright 1995-2004 Free Software Foundation, Inc.");
          Write_Eol;
       end if;
 
@@ -4958,32 +4955,47 @@ package body Make is
                Last_Arg : Natural := Binder_Switches.Last;
                --  Index of the last argument in Args
 
+               Shared_Libs : Boolean := False;
+               --  Set to True when there are shared library project files or
+               --  when gnatbind is invoked with -shared.
+
             begin
-               --  If it is the first time the bind step is performed,
-               --  check if there are shared libraries, so that gnatbind is
-               --  called with -shared.
+               --  Check if there are shared libraries, so that gnatbind is
+               --  called with -shared. Check also if gnatbind is called with
+               --  -shared, so that gnatlink is called with -shared-libgcc
+               --  for GCC version 3 and above, ensuring that the shared
+               --  version of libgcc will be used.
 
-               if not Bind_Shared_Known then
-                  if Main_Project /= No_Project
-                     and then MLib.Tgt.Support_For_Libraries /= MLib.Tgt.None
-                  then
-                     for Proj in Projects.First .. Projects.Last loop
-                        if Projects.Table (Proj).Library and then
-                          Projects.Table (Proj).Library_Kind /= Static
-                        then
-                           Bind_Shared := Shared_Switch'Access;
+               if Main_Project /= No_Project
+                 and then MLib.Tgt.Support_For_Libraries /= MLib.Tgt.None
+               then
+                  for Proj in Projects.First .. Projects.Last loop
+                     if Projects.Table (Proj).Library and then
+                       Projects.Table (Proj).Library_Kind /= Static
+                     then
+                        Shared_Libs := True;
+                        Bind_Shared := Shared_Switch'Access;
+                        exit;
+                     end if;
+                  end loop;
+               end if;
 
-                           if GCC_Version >= 3 then
-                              Link_With_Shared_Libgcc :=
-                                Shared_Libgcc_Switch'Access;
-                           end if;
+               --  Check now for switch -shared
 
-                           exit;
-                        end if;
-                     end loop;
-                  end if;
+               if not Shared_Libs then
+                  for J in Binder_Switches.First .. Last_Arg loop
+                     if Binder_Switches.Table (J).all = "-shared" then
+                        Shared_Libs := True;
+                        exit;
+                     end if;
+                  end loop;
+               end if;
 
-                  Bind_Shared_Known := True;
+               --  If there are shared libraries, invoke gnatlink with
+               --  -shared-libgcc if GCC version is 3 or more.
+
+               if Shared_Libs and then GCC_Version >= 3 then
+                  Link_With_Shared_Libgcc := Shared_Libgcc_Switch'Access;
                end if;
 
                --  Get all the binder switches
