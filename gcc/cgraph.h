@@ -32,7 +32,7 @@ struct cgraph_local_info GTY(())
   int self_insns;
 
   /* Set when function function is visible in current compilation unit only
-     and it's address is never taken.  */
+     and its address is never taken.  */
   bool local;
 
   /* Set once it has been finalized so we consider it to be output.  */
@@ -41,7 +41,7 @@ struct cgraph_local_info GTY(())
   /* False when there something makes inlining impossible (such as va_arg).  */
   bool inlinable;
 
-  /* True when function should be inlined independently on it's size.  */
+  /* True when function should be inlined independently on its size.  */
   bool disregard_inline_limits;
 
   /* True when the function has been originally extern inline, but it is
@@ -107,7 +107,7 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   /* Unique id of the node.  */
   int uid;
   /* Set when function must be output - it is externally visible
-     or it's address is taken.  */
+     or its address is taken.  */
   bool needed;
   /* Set when function is reachable by call from other function
      that is either reachable or needed.  */
@@ -142,7 +142,7 @@ struct cgraph_varpool_node GTY(())
   struct cgraph_varpool_node *next_needed;
 
   /* Set when function must be output - it is externally visible
-     or it's address is taken.  */
+     or its address is taken.  */
   bool needed;
   /* Set once it has been finalized so we consider it to be output.  */
   bool finalized;
