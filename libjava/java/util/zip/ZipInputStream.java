@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -52,7 +52,13 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
 	int fname_length = readu2();
 	int extra_length = readu2();
 	int fcomment_length = readu2();
-	in.skip(12+fname_length+extra_length+fcomment_length+size);
+	// `12' is the number of bytes between the comment length
+	// field and the end of the fixed part of the header:
+	// 2 bytes for `disk number start'
+	// 2 bytes for `internal file attributes'
+	// 4 bytes for `external file attributes'
+	// 4 bytes for `relative offset of local header'
+	in.skip(12 + fname_length + extra_length + fcomment_length);
 	if (in.read() != 'P' || in.read() != 'K')
 	  return null;
 	code = in.read();
