@@ -1,3 +1,16 @@
+2004-09-12  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* common.opt: Remove flags -fmove-all-movables and
+	-freduce-all-givs.
+	* loop-invariant.c (find_invariants_to_move):
+	Remove all uses of flag_move_all_movables.
+	* loop.c (move_movables): Remove all uses of
+	flag_move_all_movables.
+	(strength_reduce): Remove all uses of
+	flag_reduce_all_givs.
+	* doc/invoke.texi: Remove documentation of flags
+	-fremove-all-movables and -freduce-all-givs.
+
 2004-09-11  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/17411

@@ -523,10 +523,6 @@ fmodulo-sched
 Common Report Var(flag_modulo_sched)
 Perform SMS based modulo scheduling before the first scheduling pass
 
-fmove-all-movables
-Common Report Var(flag_move_all_movables)
-Force all loop invariant computations out of loops
-
 fmove-loop-invariants
 Common Report Var(flag_move_loop_invariants)
 Move loop invariant computations out of loops
@@ -645,10 +641,6 @@ Common
 frandom-seed=
 Common Joined RejectNegative
 -frandom-seed=<string>	Make compile reproducible using <string>
-
-freduce-all-givs
-Common Report Var(flag_reduce_all_givs)
-Strength reduce all loop general induction variables
 
 freg-struct-return
 Common Report Var(flag_pcc_struct_return,0) VarExists

@@ -294,7 +294,7 @@ Objective-C and Objective-C++ Dialects}.
 -floop-optimize -fcrossjumping  -fif-conversion  -fif-conversion2 @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
--fmodulo-sched -fmove-all-movables  -fnew-ra  -fno-branch-count-reg @gol
+-fmodulo-sched -fnew-ra  -fno-branch-count-reg @gol
 -fno-default-inline  -fno-defer-pop -floop-optimize2 -fmove-loop-invariants @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
@@ -303,7 +303,7 @@ Objective-C and Objective-C++ Dialects}.
 -fomit-frame-pointer  -foptimize-register-move @gol
 -foptimize-sibling-calls  -fprefetch-loop-arrays @gol
 -fprofile-generate -fprofile-use @gol
--freduce-all-givs  -fregmove  -frename-registers @gol
+-fregmove  -frename-registers @gol
 -freorder-blocks  -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop  -frerun-loop-opt @gol
 -frounding-math -fschedule-insns  -fschedule-insns2 @gol
@@ -4701,20 +4701,6 @@ the loop is entered.  This usually makes programs run more slowly.
 @opindex fprefetch-loop-arrays
 If supported by the target machine, generate instructions to prefetch
 memory to improve the performance of loops that access large arrays.
-
-@item -fmove-all-movables
-@opindex fmove-all-movables
-Forces all invariant computations in loops to be moved
-outside the loop.
-
-@item -freduce-all-givs
-@opindex freduce-all-givs
-Forces all general-induction variables in loops to be
-strength-reduced.
-
-@emph{Note:} When compiling programs written in Fortran,
-@option{-fmove-all-movables} and @option{-freduce-all-givs} are enabled
-by default when you use the optimizer.
 
 These options may generate better or worse code; results are highly
 dependent on the structure of loops within the source code.
