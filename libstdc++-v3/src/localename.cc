@@ -1,4 +1,4 @@
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -35,7 +35,7 @@ namespace __gnu_cxx
   using namespace std;
 
   // Defined in globals.cc.
-  extern locale::facet** facet_vec;
+  extern locale::facet* facet_vec[_GLIBCPP_NUM_FACETS];
   extern char* facet_name[6 + _GLIBCPP_NUM_CATEGORIES];
 
   extern std::ctype<char>			ctype_c;

@@ -1,3 +1,7 @@
+2003-04-24  Richard Sandiford  <rsandifo@redhat.com>
+
+	* src/localename.cc (__gnu_cxx::facet_vec): Correct types.
+
 2003-04-24  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/17_intro/howto.html:  Update some links.
