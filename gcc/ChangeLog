@@ -1,3 +1,11 @@
+2002-04-18  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c (ia64_function_arg_pass_by_reference): New.
+	(ia64_va_arg): Expect variable sized types by reference.
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/ia64.h (FUNCTION_ARG_PASS_BY_REFERENCE): Use 
+	ia64_function_arg_pass_by_reference.
+
 2002-04-18  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* flow.c (update_life_info): Ignore return value of cleanup_cfg.
@@ -54,11 +62,11 @@ Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-04-17  Dale Johannesen <dalej@apple.com>
 
-        * config/rs6000/rs6000.c (rs6000_emit_cmove): Fail if modes of
-        comparison operands do not match each other or if modes of
-        conditions do not match result.
-        (rs6000_output_function_prologue): Compute instruction addresses.
-        (rs6000_output_function_epilogue): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_cmove): Fail if modes of
+	comparison operands do not match each other or if modes of
+	conditions do not match result.
+	(rs6000_output_function_prologue): Compute instruction addresses.
+	(rs6000_output_function_epilogue): Likewise.
 
 2002-04-17  Ulrich Weigand  <uweigand@de.ibm.com>
 
@@ -105,21 +113,21 @@ Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-04-17  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h (vec_ld): Add array variants.
-        (vec_lde): Same.
-        (vec_ldl): Same.
+	* config/rs6000/altivec.h (vec_ld): Add array variants.
+	(vec_lde): Same.
+	(vec_ldl): Same.
 
 2002-04-17  Alan Matsuoka  <alanm@redhat.com>
-            Aldy Hernandez <aldyh@redhat.com>
+	    Aldy Hernandez <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h: Define __ALTIVEC__.
-        (bool): New.
-        (__pixel): New.
-        (pixel): New.
-        (vec_cfux): New.
-        (vec_vmaddfp): New.
-        (vec_vsldoi): New.
-        Add parentheses to all macro arguments.
+	* config/rs6000/altivec.h: Define __ALTIVEC__.
+	(bool): New.
+	(__pixel): New.
+	(pixel): New.
+	(vec_cfux): New.
+	(vec_vmaddfp): New.
+	(vec_vsldoi): New.
+	Add parentheses to all macro arguments.
 
 2002-04-16  Richard Henderson  <rth@redhat.com>
 
@@ -175,7 +183,7 @@ Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-04-16  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h (vec_addc): Type check.
+	* config/rs6000/altivec.h (vec_addc): Type check.
 
 2002-04-16  Jakub Jelinek  <jakub@redhat.com>
 
@@ -880,19 +888,19 @@ Sat Apr  6 18:26:32 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* libgcc2.c (__bb_exit_func): Revert 03-31 change.
 
 2002-04-02  Eric Botcazou  <ebotcazou@multimania.com>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
-        PR c/5484
-        * function.c (assign_temp): Accept either type or decl argument.
-        Detect variables whose size is too large to fit into an integer.
-        * stmt.c (expand_decl): Pass the decl, not the type.
+	PR c/5484
+	* function.c (assign_temp): Accept either type or decl argument.
+	Detect variables whose size is too large to fit into an integer.
+	* stmt.c (expand_decl): Pass the decl, not the type.
 
 2002-04-02  David O'Brien  <obrien@FreeBSD.org>
 
 	* protoize.c: Match include directory usage with cppdefault.c.
 
 2002-04-03  Jeffrey A Law  (law@redhat.com)
-            Hans-Peter Nilsson  <hp@bitrange.com>
+	    Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* combine.c (simplify_comparison): Avoid narrowing a comparison
 	with a paradoxical subreg when doing so would drop signficant bits.

@@ -3185,6 +3185,19 @@ ia64_function_arg_advance (cum, mode, type, named)
       cum->int_regs = cum->words;
     }
 }
+
+/* Variable sized types are passed by reference.  */
+/* ??? At present this is a GCC extension to the IA-64 ABI.  */
+
+int
+ia64_function_arg_pass_by_reference (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     tree type;
+     int named ATTRIBUTE_UNUSED;
+{
+  return TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
+}
 
 /* Implement va_start.  */
 
@@ -3215,6 +3228,13 @@ ia64_va_arg (valist, type)
      tree valist, type;
 {
   tree t;
+
+  /* Variable sized types are passed by reference.  */
+  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+    {
+      rtx addr = std_expand_builtin_va_arg (valist, build_pointer_type (type));
+      return gen_rtx_MEM (ptr_mode, force_reg (Pmode, addr));
+    }
 
   /* Arguments with alignment larger than 8 bytes start at the next even
      boundary.  */
