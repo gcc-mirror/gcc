@@ -1129,8 +1129,11 @@ mark_impl_file_chain (arg)
   struct impl_files *ifs;
 
   ifs = *(struct impl_files **) arg;
-  if (ifs)
-    ggc_mark_string (ifs->filename);
+  while (ifs)
+    {
+      ggc_mark_string (ifs->filename);
+      ifs = ifs->next;
+    }
 }
 
 /* Helper function to load global variables with interface
