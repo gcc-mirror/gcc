@@ -43,6 +43,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "line-map.h"
 #include "input.h"
 #include "tree.h"
+#include "version.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "flags.h"

@@ -28,6 +28,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifdef VMS_DEBUGGING_INFO
 #include "tree.h"
+#include "version.h"
 #include "flags.h"
 #include "rtl.h"
 #include "output.h"
