@@ -2384,6 +2384,24 @@ hack_decl_function_context (decl)
   return decl_function_context (decl);
 }
 
+/* Returns the namespace that contains DECL, whether directly or
+   indirectly.  */
+
+tree
+decl_namespace_context (decl)
+     tree decl;
+{
+  while (1)
+    {
+      if (TREE_CODE (decl) == NAMESPACE_DECL)
+	return decl;
+      else if (TYPE_P (decl))
+	decl = CP_DECL_CONTEXT (TYPE_MAIN_DECL (decl));
+      else
+	decl = CP_DECL_CONTEXT (decl);
+    }
+}
+
 /* Return truthvalue of whether T1 is the same tree structure as T2.
    Return 1 if they are the same.
    Return 0 if they are understandably different.

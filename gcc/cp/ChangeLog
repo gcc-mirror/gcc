@@ -1,3 +1,15 @@
+1999-02-07  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (maybe_process_partial_specialization): Complain about
+	specialization in wrong namespace.
+	* tree.c (decl_namespace_context): New fn.
+
+1999-02-06  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
+
+	* decl2.c (arg_assoc_type): Handle TEMPLATE_TEMPLATE_PARM.
+	* pt.c (coerce_template_template_parms): Handle nested 
+	template template parameters.
+
 Sat Feb  6 18:08:40 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* typeck2.c: Update email addrsses.

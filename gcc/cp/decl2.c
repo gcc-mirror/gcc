@@ -4483,6 +4483,7 @@ arg_assoc_type (k, type)
       /* Associate the return type. */
       return arg_assoc_type (k, TREE_TYPE (type));
     case TEMPLATE_TYPE_PARM:
+    case TEMPLATE_TEMPLATE_PARM:
       return 0;
     case LANG_TYPE:
       if (type == unknown_type_node)
