@@ -416,6 +416,13 @@ while (0)
 /* A code distinguishing the floating point format of the target machine.  */
 #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
+/* By default, the C++ compiler will use function addresses in the
+   vtable entries.  Setting this non-zero tells the compiler to use
+   function descriptors instead.  The value of this macro says how
+   many words wide the descriptor is (normally 2).  It is assumed 
+   that the address of a function descriptor may be treated as a
+   pointer to a function.  */
+#define TARGET_VTABLE_USES_DESCRIPTORS 2
 
 /* Layout of Source Language Data Types */
 
@@ -1534,6 +1541,17 @@ do {									\
   fprintf (FILE, "\n");							\
 } while (0)
 
+/* Output part N of a function descriptor for DECL.  For ia64, both
+   words are emitted with a single relocation, so ignore N > 0.  */
+#define ASM_OUTPUT_FDESC(FILE, DECL, PART)				\
+do {									\
+  if ((PART) == 0)							\
+    {									\
+      fputs ("\tdata16.ua @iplt(", FILE);				\
+      assemble_name (FILE, XSTR (XEXP (DECL_RTL (DECL), 0), 0));	\
+      fputs (")\n", FILE);						\
+    }									\
+} while (0)
 
 /* Generating Code for Profiling.  */
 

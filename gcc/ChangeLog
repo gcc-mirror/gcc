@@ -1,3 +1,14 @@
+2001-09-21  Richard Henderson  <rth@redhat.com>
+
+	* tree.def (FDESC_EXPR): New.
+	* expr.c (expand_expr): Handle it.
+	* varasm.c (initializer_constant_valid_p): Likewise.
+	(output_constant): Likewise.
+	* defaults.h (TARGET_VTABLE_USES_DESCRIPTORS): New.
+	* config/ia64/ia64.h (TARGET_VTABLE_USES_DESCRIPTORS): New.
+	(ASM_OUTPUT_FDESC): New.
+	* doc/tm.texi: Document the new macros.
+
 21-09-2001  Richard Earnshaw  (reanrsha@arm.com)
 
 	* cfgcleanup.c (merge_blocks_move_successor_nojumps): Don't leave 

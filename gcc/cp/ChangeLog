@@ -1,3 +1,13 @@
+2001-09-21  Richard Henderson  <rth@redhat.com>
+
+	* class.c (set_vindex): Mind TARGET_VTABLE_USES_DESCRIPTORS.
+	(build_vtbl_initializer): Likewise.
+	(build_vfn_ref): New.
+	* cp-tree.h: Declare it.
+	* call.c (build_over_call): Use it.
+	* decl2.c (mark_vtable_entries): Mark FDESC_EXPR.
+	* typeck.c (get_member_function_from_ptrfunc): Mind descriptors.
+
 Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* decl.c (grokdeclarator): Use C syntax for attr_flags declaration.

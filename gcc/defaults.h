@@ -358,6 +358,16 @@ do {								\
 #define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
 #endif
 
+/* By default, the C++ compiler will use function addresses in the
+   vtable entries.  Setting this non-zero tells the compiler to use
+   function descriptors instead.  The value of this macro says how
+   many words wide the descriptor is (normally 2).  It is assumed 
+   that the address of a function descriptor may be treated as a
+   pointer to a function.  */
+#ifndef TARGET_VTABLE_USES_DESCRIPTORS
+#define TARGET_VTABLE_USES_DESCRIPTORS 0
+#endif
+
 /* Select a format to encode pointers in exception handling data.  We
    prefer those that result in fewer dynamic relocations.  Assume no
    special support here and encode direct references.  */

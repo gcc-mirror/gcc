@@ -8757,6 +8757,11 @@ expand_expr (exp, target, tmode, modifier)
     case EXC_PTR_EXPR:
       return get_exception_pointer (cfun);
 
+    case FDESC_EXPR:
+      /* Function descriptors are not valid except for as
+	 initialization constants, and should not be expanded.  */
+      abort ();
+
     default:
       return (*lang_expand_expr) (exp, original_target, tmode, modifier);
     }
