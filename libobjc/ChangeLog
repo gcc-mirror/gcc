@@ -1,3 +1,7 @@
+Tue Oct  6 20:32:06 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* Makefile.in (INCLUDES): Make it multilib-friendly
+
 Fri Oct  2 07:12:14 1998  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.in (INCLUDES): Add -I$(srcdir)/../gcc.
