@@ -924,23 +924,6 @@ sdbout_symbol (decl, local)
 	  PUT_SDB_INT_VAL (DEBUGGER_AUTO_OFFSET (XEXP (value, 0)));
 	  PUT_SDB_SCL (C_AUTO);
 	}
-      else if (GET_CODE (value) == MEM && GET_CODE (XEXP (value, 0)) == CONST)
-	{
-	  /* Handle an obscure case which can arise when optimizing and
-	     when there are few available registers.  (This is *always*
-	     the case for i386/i486 targets).  The DECL_RTL looks like
-	     (MEM (CONST ...)) even though this variable is a local `auto'
-	     or a local `register' variable.  In effect, what has happened
-	     is that the reload pass has seen that all assignments and
-	     references for one such a local variable can be replaced by
-	     equivalent assignments and references to some static storage
-	     variable, thereby avoiding the need for a register.  In such
-	     cases we're forced to lie to debuggers and tell them that
-	     this variable was itself `static'.  */
-	  PUT_SDB_DEF (name);
-	  PUT_SDB_VAL (XEXP (XEXP (value, 0), 0));
-	  PUT_SDB_SCL (C_STAT);
-	}
       else
 	{
 	  /* It is something we don't know how to represent for SDB.  */
