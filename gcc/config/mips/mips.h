@@ -66,6 +66,8 @@ enum processor_type {
   PROCESSOR_R3000,
   PROCESSOR_R6000,
   PROCESSOR_R4000,
+  PROCESSOR_R4100,
+  PROCESSOR_R4300,
   PROCESSOR_R4600,
   PROCESSOR_R4650,
   PROCESSOR_R8000
@@ -275,7 +277,7 @@ extern char	       *mktemp ();
 #define MASK_BIG_ENDIAN	0x00010000	/* Generate big endian code */
 #define MASK_SINGLE_FLOAT 0x00020000	/* Only single precision FPU.  */
 #define MASK_MAD	0x00040000	/* Generate mad/madu as on 4650.  */
-#define MASK_UNUSED1	0x00080000
+#define MASK_4300_MUL_FIX 0x00080000    /* Work-around early Vr4300 CPU bug */
 
 					/* Dummy switches used only in spec's*/
 #define MASK_MIPS_TFILE	0x00000000	/* flag for mips-tfile usage */
@@ -359,6 +361,8 @@ extern char	       *mktemp ();
 
 #define TARGET_MAD		(target_flags & MASK_MAD)
 
+#define TARGET_4300_MUL_FIX     (target_flags & MASK_4300_MUL_FIX)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -405,6 +409,8 @@ extern char	       *mktemp ();
   {"double-float",	 -MASK_SINGLE_FLOAT},				\
   {"mad",		  MASK_MAD},					\
   {"no-mad",		 -MASK_MAD},					\
+  {"fix4300",             MASK_4300_MUL_FIX},				\
+  {"no-fix4300",         -MASK_4300_MUL_FIX},				\
   {"4650",		  MASK_MAD | MASK_SINGLE_FLOAT},		\
   {"debug",		  MASK_DEBUG},					\
   {"debuga",		  MASK_DEBUG_A},				\
