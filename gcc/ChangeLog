@@ -1,3 +1,9 @@
+2002-10-02  Richard Henderson  <rth@redhat.com>
+
+	PR opt/7124
+	* config/i386/i386.c (ix86_register_move_cost): Increase cost
+	for secondary_memory_needed pairs.
+
 Wed Oct  9 19:09:13 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/7912
@@ -23,7 +29,7 @@ Wed Oct  9 19:09:13 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(CRTSTUFF_T_CFLAGS): Define.
 
 2002-09-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Volker Reichelt <reichelt@igpm.rwth-aachen.de>
+	    Volker Reichelt <reichelt@igpm.rwth-aachen.de>
 
 	PR c/7411
 	* expr.c (expand_expr) [PLUS]: Simplify after the operands
@@ -142,8 +148,8 @@ Thu Oct  3 21:35:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* toplev.c (rest_of_compilation): Dump loops before clobbering
 	the structure.
 
-        * expr.c (force_operand): Use expand_simple_* to handle more
-        cases.
+	* expr.c (force_operand): Use expand_simple_* to handle more
+	cases.
 
 	* i386.c (q_regs_operand): Use ANY_QI_REG_P.
 
@@ -160,9 +166,9 @@ Thu Oct  3 21:35:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* rtl.h (reg_or_subregno): Declare
 	* unroll.c (find_splittable_givs): Handle subregs.
 
-        Richard Sandiford  <rsandifo@redhat.com>:
+	Richard Sandiford  <rsandifo@redhat.com>:
 
-        * expr.c (force_operand): Fix reversed move.
+	* expr.c (force_operand): Fix reversed move.
 
 	Andreas Jaeger  <aj@suse.de>:
 
