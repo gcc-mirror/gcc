@@ -1,3 +1,7 @@
+2004-10-02  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/tree-ssa/loop-1.c: Merge changed dg-options for s390-*-*.
+
 2004-10-01  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/loop-1.c: Check that unrolling occurs already on
