@@ -273,7 +273,7 @@ static void
 print_usage ()
 {
   fprintf (stderr, "gcov [-b] [-v] [-n] [-l] [-f] [-o OBJDIR] file\n");
-  exit (1);
+  exit (FATAL_EXIT_CODE);
 }
 
 /* Parse the command line.  */
@@ -391,7 +391,7 @@ open_files ()
   if (bb_file == NULL)
     {
       fprintf (stderr, "Could not open basic block file %s.\n", bb_file_name);
-      exit (1);
+      exit (FATAL_EXIT_CODE);
     }
 
   /* If none of the functions in the file were executed, then there won't
@@ -408,7 +408,7 @@ open_files ()
     {
       fprintf (stderr, "Could not open program flow graph file %s.\n",
 	       bbg_file_name);
-      exit (1);
+      exit (FATAL_EXIT_CODE);
     }
 
   /* Check for empty .bbg file.  This indicates that there is no executable
@@ -419,7 +419,7 @@ open_files ()
     {
       fprintf (stderr, "No executable code associated with file %s.\n",
 	       input_file_name);
-      exit (2);
+      exit (FATAL_EXIT_CODE);
     }
 }
 
