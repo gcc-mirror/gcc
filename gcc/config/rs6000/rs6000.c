@@ -5703,7 +5703,7 @@ min_max_operator (op, mode)
 
 /* Return 1 if ANDOP is a mask that has no bits on that are not in the
    mask required to convert the result of a rotate insn into a shift
-   left insn of SHIFTOP bits.  Both are known to be CONST_INT.  */
+   left insn of SHIFTOP bits.  Both are known to be SImode CONST_INT.  */
 
 int
 includes_lshift_p (shiftop, andop)
@@ -5714,7 +5714,7 @@ includes_lshift_p (shiftop, andop)
 
   shift_mask <<= INTVAL (shiftop);
 
-  return (INTVAL (andop) & ~shift_mask) == 0;
+  return (INTVAL (andop) & 0xffffffff & ~shift_mask) == 0;
 }
 
 /* Similar, but for right shift.  */
@@ -5728,7 +5728,7 @@ includes_rshift_p (shiftop, andop)
 
   shift_mask >>= INTVAL (shiftop);
 
-  return (INTVAL (andop) & ~shift_mask) == 0;
+  return (INTVAL (andop) & 0xffffffff & ~shift_mask) == 0;
 }
 
 /* Return 1 if ANDOP is a mask suitable for use with an rldic insn
@@ -6378,7 +6378,7 @@ print_operand (file, x, code)
 			    
     case 'm':
       /* MB value for a mask operand.  */
-      if (! mask_operand (x, VOIDmode))
+      if (! mask_operand (x, SImode))
 	output_operand_lossage ("invalid %%m value");
 
       val = INT_LOWPART (x);
@@ -6413,7 +6413,7 @@ print_operand (file, x, code)
 
     case 'M':
       /* ME value for a mask operand.  */
-      if (! mask_operand (x, VOIDmode))
+      if (! mask_operand (x, SImode))
 	output_operand_lossage ("invalid %%M value");
 
       val = INT_LOWPART (x);
@@ -6543,7 +6543,7 @@ print_operand (file, x, code)
       /* PowerPC64 mask position.  All 0's and all 1's are excluded.
 	 CONST_INT 32-bit mask is considered sign-extended so any
 	 transition must occur within the CONST_INT, not on the boundary.  */
-      if (! mask64_operand (x, VOIDmode))
+      if (! mask64_operand (x, DImode))
 	output_operand_lossage ("invalid %%S value");
 
       val = INT_LOWPART (x);
@@ -9636,6 +9636,8 @@ rs6000_output_function_epilogue (file, size)
 	 Only emit this if the alloca bit was set above.  */
       if (frame_pointer_needed)
 	fputs ("\t.byte 31\n", file);
+
+      fputs ("\t.align 2\n", file);
     }
   return;
 }
