@@ -1,3 +1,8 @@
+Mon Jul 27 20:33:02 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* test_summary: Corrected script name in comments providing
+	documentation.  Added linebreaks for lines with > 80 characters.
+
 Fri Jun 19 02:36:59 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
 
 	* test_summary: new switch (-i) and environment variable
