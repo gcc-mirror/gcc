@@ -1,3 +1,41 @@
+2003-02-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa-protos.h (attr_length_millicode_call): Remove second argument.
+	(attr_length_indirect_call, attr_length_indirect_call,
+	attr_length_save_restore_dltp): New prototypes.
+	* pa.c (attr_length_millicode_call): Remove second argument.  Check
+	INSN_ADDRESSES_SET_P in distance calculation.
+	(output_millicode_call): Check INSN_ADDRESSES_SET_P before using
+	INSN_ADDRESSES.
+	(attr_length_call): Check INSN_ADDRESSES_SET_P in distance calculation.
+	(output_call): Check INSN_ADDRESSES_SET_P before using INSN_ADDRESSES.
+	Call attr_length_call directly.
+	(attr_length_indirect_call, output_indirect_call,
+	attr_length_save_restore_dltp): New functions.
+	* pa.md (attr_length_millicode_call): Drop second argument from all
+	patterns.
+	(return_internal_pic): Delete.
+	(return_external_pic): Remove use of PIC register and pic operand and
+	flag checks.
+	(epilogue): Use return_internal for both normal and pic code.
+	(call, call_value): Emit new 32-bit pic patterns for symref and
+	indirect calls.  Remove uses for arg pointer and pic register.
+	(call_symref_pic, call_symref_pic_post_reload, call_reg_pic,
+	call_reg_pic_post_reload, call_val_symref_pic,
+	call_val_symref_pic_post_reload, call_val_reg_pic,
+	call_val_reg_pic_post_reload): New pre and post reload insn patterns.
+	Implement define_split and define_peephole2 patterns for pre reload
+	patterns.
+	(call_symref_64bit, call_internal_reg_64bit, call_value_symref_64bit,
+	call_value_internal_reg_64bit): Shorten names.
+	(all call patterns): Explicitly indicate registers used and clobbered.
+	Use attr_length_indirect_call and attr_length_save_restore_dltp for
+	attribute length calculation.  Move code generation for indirect calls
+	to output_indirect_call.
+	(sibcall, sibcall_value): Don't restore PIC register.
+	(exception_receiver, builtin_setjmp_receiver): Add blockage after PIC
+	register retore.
+
 2003-02-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Testing): Simplify and compress instructions
