@@ -1,3 +1,13 @@
+2002-04-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/6492
+	* pt.c (tsubst_friend_class): If the friend has an explicit scope,
+	enter that scope before name lookup.
+
+	PR c++/6486
+	* method.c (do_build_copy_constructor): Avoid building
+	cv-qualified reference types.
+
 2002-04-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/5719
@@ -11,7 +21,7 @@
 
 2002-04-26  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/6497
+	PR c++/6479
 	* method.c (do_build_assign_ref): Pass a derivation to
 	build_method_call when calling base class assignment operators.
 
