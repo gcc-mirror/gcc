@@ -376,7 +376,7 @@ void GC_get_next_stack(char *start, char **lo, char **hi)
 
 /* We register threads from DllMain */
 
-GC_API HANDLE GC_CreateThread(
+GC_API HANDLE WINAPI GC_CreateThread(
     LPSECURITY_ATTRIBUTES lpThreadAttributes, 
     DWORD dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, 
     LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId )
@@ -397,9 +397,9 @@ typedef struct {
     LPVOID param;
 } thread_args;
 
-DWORD WINAPI thread_start(LPVOID arg);
+static DWORD WINAPI thread_start(LPVOID arg);
 
-HANDLE WINAPI GC_CreateThread(
+GC_API HANDLE WINAPI GC_CreateThread(
     LPSECURITY_ATTRIBUTES lpThreadAttributes, 
     DWORD dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, 
     LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId )
@@ -445,7 +445,7 @@ HANDLE WINAPI GC_CreateThread(
 		    if (!DuplicateHandle(GetCurrentProcess(),
 				 	 thread_h,
 					 GetCurrentProcess(),
-			 		 &thread_table[i].handle,
+			 		 (PHANDLE) &thread_table[i].handle,
 			  		 0,
 					 0,
 					 DUPLICATE_SAME_ACCESS)) {
