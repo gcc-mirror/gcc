@@ -204,9 +204,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"28 Feb 1992"
+#define VERSION_INFO2	"09 Mar 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.0.2.1 28 Feb 1992 12:37:41"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.0.2.3 09 Mar 1992 14:20:23"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -364,7 +364,7 @@ extern char * reg_names[];
    instructions for them.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* Number of bits in an addressible storage unit */
+/* Number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -414,9 +414,9 @@ extern char * reg_names[];
 /* Every structure's size must be a multiple of this.  */
 #define STRUCTURE_SIZE_BOUNDARY 8
 
-/* Define this if move instructions will actually fail to work
+/* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
-#define STRICT_ALIGNMENT
+#define STRICT_ALIGNMENT 1
 
 /* A bitfield declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
@@ -427,7 +427,7 @@ extern char * reg_names[];
 
 /* Report errors on floating point, if we are given NaN's, or such.  Leave
    the number as is, though, since we output the number in hex, and the
-   assemble won't choak on it.  */
+   assembler won't choke on it.  */
 #define CHECK_FLOAT_VALUE(MODE,VALUE) check_float_value (MODE, VALUE)
 
 /* A code distinguishing the floating point format of the target machine.  */
@@ -649,7 +649,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
    expression is true iff C is a known letter and VALUE is appropriate for
    that letter.
 
-   For the m88000,  the following contraints are used:
+   For the m88000, the following constants are used:
    `I' requires a non-negative 16-bit value.
    `J' requires a non-positive 16-bit value.
    `K' is unused.
@@ -992,7 +992,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
    This is really two components.  The first 32 bytes are fixed and
    must be copied; the last 12 bytes are just storage that's filled
    in later.  So for allocation purposes, it's 32+12 bytes, but for
-   initializaiton purposes, it's 32 bytes.  */
+   initialization purposes, it's 32 bytes.  */
 
 #define TRAMPOLINE_SIZE (32+12)
 
@@ -1363,7 +1363,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
     return 0;
 
 /* Provide the costs of an addressing mode that contains ADDR.
-   If ADDR is not a valid address, it's cost is irrelavent.
+   If ADDR is not a valid address, its cost is irrelevant.
    REG+REG is made slightly more expensive because it might keep
    a register live for longer than we might like.  */
 #define ADDRESS_COST(ADDR)				\
@@ -1421,68 +1421,68 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 #undef	SIZE_ASM_OP
 
 /* These are used in varasm.c as well.  */
-#define TEXT_SECTION_ASM_OP	"\ttext"
-#define DATA_SECTION_ASM_OP	"\tdata"
+#define TEXT_SECTION_ASM_OP	"text"
+#define DATA_SECTION_ASM_OP	"data"
 
 /* Other sections.  */
 #define CONST_SECTION_ASM_OP (VERSION_0300_SYNTAX		\
-			      ? "\tsection\t .rodata,\"a\"\n"	\
-			      : "\tsection\t .rodata,\"x\"\n")
+			      ? "section\t .rodata,\"a\""	\
+			      : "section\t .rodata,\"x\"")
 #define TDESC_SECTION_ASM_OP (VERSION_0300_SYNTAX		\
-			      ? "\tsection\t .tdesc,\"a\""	\
-			      : "\tsection\t .tdesc,\"x\"")
+			      ? "section\t .tdesc,\"a\""	\
+			      : "section\t .tdesc,\"x\"")
 
 /* These must be constant strings for crtstuff.c.  */
-#define CTORS_SECTION_ASM_OP "\tsection\t .ctors,\"d\"\n"
-#define DTORS_SECTION_ASM_OP "\tsection\t .dtors,\"d\"\n"
-#define INIT_SECTION_ASM_OP	"\tsection\t .init,\"x\""
-#define FINI_SECTION_ASM_OP	"\tsection\t .fini,\"x\""
+#define CTORS_SECTION_ASM_OP "section\t .ctors,\"d\""
+#define DTORS_SECTION_ASM_OP "section\t .dtors,\"d\""
+#define INIT_SECTION_ASM_OP	"section\t .init,\"x\""
+#define FINI_SECTION_ASM_OP	"section\t .fini,\"x\""
 
 /* These are pretty much common to all assemblers.  */
-#define IDENT_ASM_OP		"\tident"
-#define FILE_ASM_OP		"\tfile"
-#define SECTION_ASM_OP		"\tsection"
-#define DEF_ASM_OP		"\tdef"
-#define GLOBAL_ASM_OP		"\tglobal"
-#define ALIGN_ASM_OP		"\talign"
-#define SKIP_ASM_OP		"\tzero"
-#define COMMON_ASM_OP		"\tcomm"
-#define LOCAL_ASM_OP		"\tbss"
-#define FLOAT_ASM_OP		"\tfloat"
-#define DOUBLE_ASM_OP		"\tdouble"
-#define INT_ASM_OP		"\tword"
+#define IDENT_ASM_OP		"ident"
+#define FILE_ASM_OP		"file"
+#define SECTION_ASM_OP		"section"
+#define DEF_ASM_OP		"def"
+#define GLOBAL_ASM_OP		"global"
+#define ALIGN_ASM_OP		"align"
+#define SKIP_ASM_OP		"zero"
+#define COMMON_ASM_OP		"comm"
+#define LOCAL_ASM_OP		"bss"
+#define FLOAT_ASM_OP		"float"
+#define DOUBLE_ASM_OP		"double"
+#define INT_ASM_OP		"word"
 #define ASM_LONG		INT_ASM_OP
-#define SHORT_ASM_OP		"\thalf"
-#define CHAR_ASM_OP		"\tbyte"
-#define ASCII_DATA_ASM_OP	"\tstring"
+#define SHORT_ASM_OP		"half"
+#define CHAR_ASM_OP		"byte"
+#define ASCII_DATA_ASM_OP	"string"
 
 /* These are particular to the global pool optimization.  */
-#define SBSS_ASM_OP		"\tsbss"
-#define SCOMM_ASM_OP		"\tscomm"
-#define SDATA_SECTION_ASM_OP	"\tsdata"
+#define SBSS_ASM_OP		"sbss"
+#define SCOMM_ASM_OP		"scomm"
+#define SDATA_SECTION_ASM_OP	"sdata"
 
 /* These are specific to PIC.  */
-#define TYPE_ASM_OP		"\ttype"
-#define SIZE_ASM_OP		"\tsize"
-#define WEAK_ASM_OP		"\tweak"
+#define TYPE_ASM_OP		"type"
+#define SIZE_ASM_OP		"size"
+#define WEAK_ASM_OP		"weak"
 #ifndef AS_BUG_POUND_TYPE /* Faulty assemblers require @ rather than #.  */
 #undef	TYPE_OPERAND_FMT
 #define TYPE_OPERAND_FMT	"#%s"
 #endif
 
 /* These are specific to version 03.00 assembler syntax.  */
-#define INTERNAL_ASM_OP		"\tlocal"
-#define VERSION_ASM_OP		"\tversion"
+#define INTERNAL_ASM_OP		"local"
+#define VERSION_ASM_OP		"version"
 #define ASM_DWARF_POP_SECTION(FILE) fputs ("\tprevious\n", FILE)
-#define UNALIGNED_SHORT_ASM_OP	"\tuahalf"
-#define UNALIGNED_INT_ASM_OP	"\tuaword"
+#define UNALIGNED_SHORT_ASM_OP	"uahalf"
+#define UNALIGNED_INT_ASM_OP	"uaword"
 
 /* Output any initial stuff to the assembly file.  Always put out
    a file directive, even if not debugging.
 
    Immediately after putting out the file, put out a "sem.<value>"
    declaration.  This should be harmless on other systems, and
-   is used in DG/UX by the debuggers to suppliment COFF.  The
+   is used in DG/UX by the debuggers to supplement COFF.  The
    fields in the integer value are as follows:
 
    Bits	Value	Meaning
@@ -1519,7 +1519,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define ASM_FIRST_LINE(FILE)						\
   do {									\
     if (VERSION_0300_SYNTAX)						\
-      fprintf (FILE, "%s\t \"03.00\"\n", VERSION_ASM_OP);		\
+      fprintf (FILE, "\t%s\t \"03.00\"\n", VERSION_ASM_OP);		\
   } while (0)
 
 /* Override svr[34].h.  */
@@ -1531,7 +1531,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 #undef	ASM_FILE_END
 
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, NAME) \
-  fprintf (FILE, "%s\t \"%s\"\n", FILE_ASM_OP, NAME)
+  fprintf (FILE, "\t%s\t \"%s\"\n", FILE_ASM_OP, NAME)
 
 #ifdef SDB_DEBUGGING_INFO
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)			\
@@ -1546,7 +1546,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define ASM_OUTPUT_IDENT(FILE, NAME)
 #else
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
-  fprintf(FILE, "%s\t \"%s\"\n", IDENT_ASM_OP, NAME)
+  fprintf (FILE, "\t%s\t \"%s\"\n", IDENT_ASM_OP, NAME)
 #endif
 
 /* Output to assembler file text saying following lines
@@ -1598,7 +1598,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
   do {									\
     if (DECLARE_ASM_NAME)						\
       {									\
-	fprintf (FILE, "%s\t ", TYPE_ASM_OP);				\
+	fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
 	assemble_name (FILE, NAME);					\
 	putc (',', FILE);						\
 	fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
@@ -1613,14 +1613,14 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
   do {									\
     if (DECLARE_ASM_NAME)						\
       {									\
-	fprintf (FILE, "%s\t ", TYPE_ASM_OP);				\
+	fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
 	assemble_name (FILE, NAME);					\
 	putc (',', FILE);						\
 	fprintf (FILE, TYPE_OPERAND_FMT, "object");			\
 	putc ('\n', FILE);						\
 	if (!flag_inhibit_size_directive)				\
 	  {								\
-	    fprintf (FILE, "%s\t ", SIZE_ASM_OP);			\
+	    fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			\
 	    assemble_name (FILE, NAME);					\
 	    fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (decl))); \
 	  }								\
@@ -1641,7 +1641,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 	    labelno++;							\
 	    ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);	\
 	    ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);		\
-	    fprintf (FILE, "%s\t ", SIZE_ASM_OP);			\
+	    fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			\
 	    assemble_name (FILE, (FNAME));				\
 	    fprintf (FILE, ",%s-", &label[1]);				\
 	    assemble_name (FILE, (FNAME));				\
@@ -1659,7 +1659,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
    defined for reference from other files.  */
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)			\
   do {							\
-    fprintf (FILE, "%s\t ", GLOBAL_ASM_OP);		\
+    fprintf (FILE, "\t%s\t ", GLOBAL_ASM_OP);		\
     assemble_name (FILE, NAME);				\
     putc ('\n', FILE);					\
   } while (0)
@@ -1680,7 +1680,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #ifdef AS_BUG_DOT_LABELS /* The assembler requires a declaration of local.  */
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)			\
-  fprintf (FILE, VERSION_0300_SYNTAX ? ".%s%d:\n%s\t .%s%d\n" : "@%s%d:\n", \
+  fprintf (FILE, VERSION_0300_SYNTAX ? ".%s%d:\n\t%s\t .%s%d\n" : "@%s%d:\n", \
 	   PREFIX, NUM, INTERNAL_ASM_OP, PREFIX, NUM)
 #else
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)			\
@@ -1739,7 +1739,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
   do {									\
     union { REAL_VALUE_TYPE d; long l[2]; } x;				\
     x.d = (VALUE);							\
-    fprintf (FILE, "%s\t 0x%.8x, 0x%.8x\n", INT_ASM_OP,			\
+    fprintf (FILE, "\t%s\t 0x%.8x, 0x%.8x\n", INT_ASM_OP,			\
 	     x.l[0], x.l[1]);						\
   } while (0)
 
@@ -1748,32 +1748,32 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
   do {									\
     int i;								\
     FLOAT_TO_INT_INTERNAL (VALUE, i);					\
-    fprintf (FILE, "%s\t 0x%.8x\n", INT_ASM_OP, i);			\
+    fprintf (FILE, "\t%s\t 0x%.8x\n", INT_ASM_OP, i);			\
   } while (0)
 
 /* Likewise for `int', `short', and `char' constants.  */
 #define ASM_OUTPUT_INT(FILE,VALUE)					\
-( fprintf (FILE, "%s\t ", INT_ASM_OP),					\
+( fprintf (FILE, "\t%s\t ", INT_ASM_OP),				\
   output_addr_const (FILE, (VALUE)),					\
   fprintf (FILE, "\n"))
 
 #define ASM_OUTPUT_SHORT(FILE,VALUE)					\
-( fprintf (FILE, "%s\t ", SHORT_ASM_OP),				\
+( fprintf (FILE, "\t%s\t ", SHORT_ASM_OP),				\
   output_addr_const (FILE, (VALUE)),					\
   fprintf (FILE, "\n"))
 
 #define ASM_OUTPUT_CHAR(FILE,VALUE)					\
-( fprintf (FILE, "%s\t ", CHAR_ASM_OP),					\
+( fprintf (FILE, "\t%s\t ", CHAR_ASM_OP),				\
   output_addr_const (FILE, (VALUE)),					\
   fprintf (FILE, "\n"))
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "%s\t 0x%x\n", CHAR_ASM_OP, (VALUE))
+  fprintf (FILE, "\t%s\t 0x%x\n", CHAR_ASM_OP, (VALUE))
 
 /* The singl-byte pseudo-op is the default.  Override svr[34].h.  */
 #undef	ASM_BYTE_OP
-#define ASM_BYTE_OP "\tbyte"
+#define ASM_BYTE_OP "byte"
 #undef	ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii ((FILE), (P), (SIZE))
@@ -1809,7 +1809,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
    to a multiple of 2**LOG bytes.  */
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) != 0)			\
-    fprintf (FILE, "%s\t %d\n", ALIGN_ASM_OP, 1<<(LOG))
+    fprintf (FILE, "\t%s\t %d\n", ALIGN_ASM_OP, 1<<(LOG))
 
 /* Align the text address to half a cache boundary when it can only be
    reached by jumping.  Pack code tightly when compiling crtstuff.c.  */
@@ -1819,7 +1819,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Override svr[34].h.  */
 #undef	ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "%s\t %u\n", SKIP_ASM_OP, (SIZE))
+  fprintf (FILE, "\t%s\t %u\n", SKIP_ASM_OP, (SIZE))
 
 /* Override svr4.h.  */
 #undef	ASM_OUTPUT_EXTERNAL_LIBCALL
@@ -1830,18 +1830,18 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 #undef	ASM_OUTPUT_COMMON
 #undef	ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)	\
-( fprintf ((FILE), "%s\t ",				\
-	   (ROUNDED) <= m88k_gp_threshold ? SCOMM_ASM_OP : COMMON_ASM_OP), \
+( fprintf ((FILE), "\t%s\t ",				\
+	   ((SIZE) ? (SIZE) : 1) <= m88k_gp_threshold ? SCOMM_ASM_OP : COMMON_ASM_OP), \
   assemble_name ((FILE), (NAME)),			\
   fprintf ((FILE), ",%u\n", (SIZE) ? (SIZE) : 1))
 
-/* This says how to output an assember line to define a local common
+/* This says how to output an assembler line to define a local common
    symbol.  Override svr[34].h.  */
 #undef	ASM_OUTPUT_LOCAL
 #undef	ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
-( fprintf ((FILE), "%s\t ",				\
-	   (ROUNDED) <= m88k_gp_threshold ? SBSS_ASM_OP : LOCAL_ASM_OP), \
+( fprintf ((FILE), "\t%s\t ",				\
+	   ((SIZE) ? (SIZE) : 1) <= m88k_gp_threshold ? SBSS_ASM_OP : LOCAL_ASM_OP), \
   assemble_name ((FILE), (NAME)),			\
   fprintf ((FILE), ",%u,%d\n", (SIZE) ? (SIZE) : 1, (SIZE) <= 4 ? 4 : 8))
 
