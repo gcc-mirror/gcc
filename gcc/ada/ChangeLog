@@ -1,3 +1,11 @@
+2005-04-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/19956
+	Backport from mainline:
+
+	2005-03-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+	* utils.c (finish_record_type): Use variable_size when setting sizes.
+
 2005-03-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/20255
