@@ -1,3 +1,9 @@
+2000-10-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c: Miscellaneous white space and comment clean-ups.  No 
+	functional change.
+	* arm.md: Likewise.
+
 2000-10-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c (c_expand_builtin_printf): Set the TREE_TYPE of a new
