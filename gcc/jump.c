@@ -539,19 +539,24 @@ duplicate_loop_exit_test (loop_start)
 }
 
 /* Move all block-beg, block-end, loop-beg, loop-cont, loop-vtop, loop-end,
-   notes between START and END out before START.  Assume that END is not
-   such a note.  START may be such a note.  Returns the value of the new
-   starting insn, which may be different if the original start was such a
-   note.  */
+   notes between START and END out before START.  START and END may be such
+   notes.  Returns the values of the new starting and ending insns, which
+   may be different if the original ones were such notes.  */
 
-rtx
-squeeze_notes (start, end)
-     rtx start, end;
+void
+squeeze_notes (startp, endp)
+     rtx* startp;
+     rtx* endp;
 {
+  rtx start = *startp;
+  rtx end = *endp;
+
   rtx insn;
   rtx next;
+  rtx last = NULL;
+  rtx past_end = NEXT_INSN (end);
 
-  for (insn = start; insn != end; insn = next)
+  for (insn = start; insn != past_end; insn = next)
     {
       next = NEXT_INSN (insn);
       if (GET_CODE (insn) == NOTE
@@ -575,9 +580,19 @@ squeeze_notes (start, end)
 	      PREV_INSN (next) = prev;
 	    }
 	}
+      else
+	last = insn;
     }
 
-  return start;
+  /* There were no real instructions, and we can't represent an empty
+     range.  Die.  */
+  if (start == past_end)
+    abort ();
+
+  end = last;
+
+  *startp = start;
+  *endp = end;
 }
 
 /* Return the label before INSN, or put a new label there.  */

@@ -5152,7 +5152,7 @@ expand_end_case (orig_index)
   int ncases;
   rtx *labelvec;
   register int i;
-  rtx before_case;
+  rtx before_case, end;
   register struct nesting *thiscase = case_stack;
   tree index_expr, index_type;
   int unsignedp;
@@ -5414,8 +5414,10 @@ expand_end_case (orig_index)
 #endif
 	}
 
-      before_case = squeeze_notes (NEXT_INSN (before_case), get_last_insn ());
-      reorder_insns (before_case, get_last_insn (),
+      before_case = NEXT_INSN (before_case);
+      end = get_last_insn ();
+      squeeze_notes (&before_case, &end);
+      reorder_insns (before_case, end,
 		     thiscase->data.case_stmt.start);
     }
   else
