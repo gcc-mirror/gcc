@@ -250,20 +250,20 @@ static int n_regs_set;
 
 static HARD_REG_SET eliminable_regset;
 
-static int allocno_compare ();
-static void mark_reg_store ();
-static void mark_reg_clobber ();
-static void mark_reg_conflicts ();
-static void mark_reg_live_nc ();
-static void mark_reg_death ();
-static void dump_conflicts ();
-void dump_global_regs ();
-static void find_reg ();
-static void global_conflicts ();
-static void expand_preferences ();
-static void prune_preferences ();
-static void record_conflicts ();
-static void set_preference ();
+static int allocno_compare	PROTO((int *, int *));
+static void global_conflicts	PROTO((void));
+static void expand_preferences	PROTO((void));
+static void prune_preferences	PROTO((void));
+static void find_reg		PROTO((int, HARD_REG_SET, int, int, int));
+static void record_one_conflict PROTO((int));
+static void record_conflicts	PROTO((short *, int));
+static void mark_reg_store	PROTO((rtx, rtx));
+static void mark_reg_clobber	PROTO((rtx, rtx));
+static void mark_reg_conflicts	PROTO((rtx));
+static void mark_reg_death	PROTO((rtx));
+static void mark_reg_live_nc	PROTO((int, enum machine_mode));
+static void set_preference	PROTO((rtx, rtx));
+static void dump_conflicts	PROTO((FILE *));
 
 /* Perform allocation of pseudo-registers not allocated by local_alloc.
    FILE is a file to output debugging information on,
