@@ -974,7 +974,7 @@ gfc_match_if (gfc_statement * if_type)
       return MATCH_YES;
     }
 
-  if (gfc_match (" then %t") == MATCH_YES)
+  if (gfc_match (" then%t") == MATCH_YES)
     {
       new_st.op = EXEC_IF;
       new_st.expr = expr;
@@ -1822,7 +1822,7 @@ gfc_match_nullify (void)
       tail->expr = p;
       tail->expr2 = e;
 
-      if (gfc_match_char (')') == MATCH_YES)
+      if (gfc_match (" )%t") == MATCH_YES)
 	break;
       if (gfc_match_char (',') != MATCH_YES)
 	goto syntax;
