@@ -754,6 +754,8 @@ comptypes (type1, type2, strict)
     return 0;
   if (TYPE_VOLATILE (t1) != TYPE_VOLATILE (t2))
     return 0;
+  if (strict > 0 && TYPE_FOR_JAVA (t1) != TYPE_FOR_JAVA (t2))
+    return 0;
 
   /* Allow for two different type nodes which have essentially the same
      definition.  Note that we already checked for equality of the type

@@ -83,7 +83,6 @@ static int issue_ktype PROTO((tree));
 static void build_overload_scope_ref PROTO((tree));
 static void build_mangled_template_parm_index PROTO((char *, tree));
 static int check_btype PROTO((tree));
-static int is_java_type PROTO((tree));
 
 # define OB_INIT() (scratch_firstobj ? (obstack_free (&scratch_obstack, scratch_firstobj), 0) : 0)
 # define OB_PUTC(C) (obstack_1grow (&scratch_obstack, (C)))
@@ -1042,7 +1041,7 @@ build_mangled_name (parmtypes, begin, end)
               typevec[maxtype++] = parmtype;
 
               if (TREE_USED (parmtype) && parmtype == typevec[maxtype-2]
-		  && ! is_java_type (parmtype))
+		  && ! TYPE_FOR_JAVA (parmtype))
                 {
                   Nrepeats++;
                   continue;
@@ -1068,7 +1067,7 @@ build_mangled_name (parmtypes, begin, end)
               if ((parmtype != TYPE_MAIN_VARIANT (parmtype)
 		   || (TREE_CODE (parmtype) != INTEGER_TYPE
 		       && TREE_CODE (parmtype) != REAL_TYPE))
-		  && ! is_java_type (parmtype))
+		  && ! TYPE_FOR_JAVA (parmtype))
                 TREE_USED (parmtype) = 1;
             }
         if (TYPE_PTRMEMFUNC_P (parmtype))
@@ -1115,29 +1114,12 @@ process_modifiers (parmtype)
   if (TREE_CODE (parmtype) == INTEGER_TYPE
       && (TYPE_MAIN_VARIANT (parmtype)
 	  == unsigned_type (TYPE_MAIN_VARIANT (parmtype)))
-      && ! is_java_type (parmtype))
+      && ! TYPE_FOR_JAVA (parmtype))
     {
       OB_PUTC ('U');
     }
   if (TYPE_VOLATILE (parmtype))
     OB_PUTC ('V');
-}
-
-/* True iff TYPE was declared as a "Java" type (inside extern "Java"). */
-
-static int
-is_java_type (type)
-     tree type;
-{
-  if (TYPE_NAME (type) != NULL_TREE)
-    {
-      tree decl = TYPE_NAME (type);
-      if (TREE_CODE (decl) == TYPE_DECL
-	  && DECL_LANG_SPECIFIC (decl) != NULL
-	  && DECL_LANGUAGE (decl) == lang_java)
-	return 1;
-    }
-  return 0;
 }
 
 /* Check to see if a tree node has been entered into the Bcode typelist 
@@ -1311,39 +1293,17 @@ process_overload_item (parmtype, extra_Gcode)
       }
 
     case INTEGER_TYPE:
-      /* "Java" integer types should mangle the same on all platforms,
-	 and only depend on precision, not target 'int' size. */
-      if (is_java_type (parmtype))
-	{
-	  if (TREE_UNSIGNED (parmtype))
-	    {
-	      switch (TYPE_PRECISION (parmtype))
-		{
-		case  8:  OB_PUTC ('b');  return;
-		case 16:  OB_PUTC ('w');  return;
-		}
-	    }
-	  else
-	    {
-	      switch (TYPE_PRECISION (parmtype))
-		{
-		case  8:  OB_PUTC ('c');  return;
-		case 16:  OB_PUTC ('s');  return;
-		case 32:  OB_PUTC ('i');  return;
-		case 64:  OB_PUTC ('x');  return;
-		}
-	    }
-	}
-
       parmtype = TYPE_MAIN_VARIANT (parmtype);
       if (parmtype == integer_type_node
-          || parmtype == unsigned_type_node)
+          || parmtype == unsigned_type_node
+	  || parmtype == java_int_type_node)
         OB_PUTC ('i');
       else if (parmtype == long_integer_type_node
                || parmtype == long_unsigned_type_node)
         OB_PUTC ('l');
       else if (parmtype == short_integer_type_node
-               || parmtype == short_unsigned_type_node)
+               || parmtype == short_unsigned_type_node
+	       || parmtype == java_short_type_node)
         OB_PUTC ('s');
       else if (parmtype == signed_char_type_node)
         {
@@ -1351,12 +1311,15 @@ process_overload_item (parmtype, extra_Gcode)
           OB_PUTC ('c');
         }
       else if (parmtype == char_type_node
-               || parmtype == unsigned_char_type_node)
+               || parmtype == unsigned_char_type_node
+	       || parmtype == java_byte_type_node)
         OB_PUTC ('c');
-      else if (parmtype == wchar_type_node)
+      else if (parmtype == wchar_type_node
+	       || parmtype == java_char_type_node)
         OB_PUTC ('w');
       else if (parmtype == long_long_integer_type_node
-          || parmtype == long_long_unsigned_type_node)
+	       || parmtype == long_long_unsigned_type_node
+	       || parmtype == java_long_type_node)
         OB_PUTC ('x');
 #if 0
       /* it would seem there is no way to enter these in source code,
@@ -1365,6 +1328,8 @@ process_overload_item (parmtype, extra_Gcode)
           || parmtype == long_long_long_unsigned_type_node)
         OB_PUTC ('q');
 #endif
+      else if (parmtype == java_boolean_type_node)
+	OB_PUTC ('b');
       else
         my_friendly_abort (73);
       break;
@@ -1377,9 +1342,11 @@ process_overload_item (parmtype, extra_Gcode)
       parmtype = TYPE_MAIN_VARIANT (parmtype);
       if (parmtype == long_double_type_node)
         OB_PUTC ('r');
-      else if (parmtype == double_type_node)
+      else if (parmtype == double_type_node
+	       || parmtype == java_double_type_node)
         OB_PUTC ('d');
-      else if (parmtype == float_type_node)
+      else if (parmtype == float_type_node
+	       || parmtype == java_float_type_node)
         OB_PUTC ('f');
       else my_friendly_abort (74);
       break;

@@ -60,10 +60,10 @@ Boston, MA 02111-1307, USA.  */
    0: C_TYPE_FIELDS_READONLY (in RECORD_TYPE or UNION_TYPE).
    1: TYPE_HAS_CONSTRUCTOR.
    2: TYPE_HAS_DESTRUCTOR.
-   3: Not used.
+   3: TYPE_FOR_JAVA.
    4: TYPE_NEEDS_DESTRUCTOR.
    5: IS_AGGR_TYPE.
-   6: TYPE_BUILT_IN
+   6: TYPE_BUILT_IN.
 
    Usage of DECL_LANG_FLAG_?:
    0: DECL_ERROR_REPORTED (in VAR_DECL).
@@ -280,6 +280,15 @@ extern tree intSI_type_node, unsigned_intSI_type_node;
 extern tree intDI_type_node, unsigned_intDI_type_node;
 extern tree intTI_type_node, unsigned_intTI_type_node;
 
+extern tree java_byte_type_node;
+extern tree java_short_type_node;
+extern tree java_int_type_node;
+extern tree java_long_type_node;
+extern tree java_float_type_node;
+extern tree java_double_type_node;
+extern tree java_char_type_node;
+extern tree java_boolean_type_node;
+
 extern int current_function_returns_value;
 extern int current_function_returns_null;
 extern tree current_function_return_value;
@@ -489,6 +498,9 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 
 /* In a *_TYPE, nonzero means a built-in type.  */
 #define TYPE_BUILT_IN(NODE) TYPE_LANG_FLAG_6(NODE)
+
+/* True if this a "Java" type, defined in 'extern "Java"'. */
+#define TYPE_FOR_JAVA(NODE) TYPE_LANG_FLAG_3(NODE)
 
 #define DELTA_FROM_VTABLE_ENTRY(ENTRY) \
   (!flag_vtable_thunks ? \
