@@ -1,5 +1,11 @@
 Sun Mar 29 12:45:23 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (c-typeck.o): Delete on expr.h, insn-codes.h and
+	$(RTL_H).
+	(stor-layout.o): Likewise.
+	* c-typeck.c: Include rtl.h and expr.h.
+	* stor-layout.c: Likewise.
+
 	* cpplib.c (cpp_file_line_for_message): Delete unused parameter.
 	All callers changed.
 	(do_sccs): Wrap in an SCCS_DIRECTIVE ifdef.
