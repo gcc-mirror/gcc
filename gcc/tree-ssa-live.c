@@ -738,6 +738,8 @@ calculate_live_on_entry (var_map map)
     abort ();
 #endif
 
+  BITMAP_XFREE (saw_def);
+
   return live;
 }
 

@@ -1,5 +1,8 @@
 2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* tree-ssa-live (calculate_live_on_entry): Free saw_def
+	at the end of the function.
+
 	* tree-ssa-dce.c (perform_tree_ssa_dce): Free
 	el at the end of the function.
 
