@@ -137,7 +137,7 @@ inverse (tree x, tree mask)
    In case we are unable to determine number of iterations, contents of
    this structure is unchanged.  */
 
-void
+static void
 number_of_iterations_cond (tree type, tree base0, tree step0,
 			   enum tree_code code, tree base1, tree step1,
 			   struct tree_niter_desc *niter)
@@ -221,24 +221,24 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
       if (zero_p (step0))
 	{
 	  if (mmax)
-	    assumption = fold (build2 (EQ_EXPR, boolean_type_node, base0, mmax));
+	    assumption = fold_build2 (EQ_EXPR, boolean_type_node, base0, mmax);
 	  else
 	    assumption = boolean_false_node;
 	  if (nonzero_p (assumption))
 	    goto zero_iter;
-	  base0 = fold (build2 (PLUS_EXPR, type, base0,
-				build_int_cst_type (type, 1)));
+	  base0 = fold_build2 (PLUS_EXPR, type, base0,
+			       build_int_cst_type (type, 1));
 	}
       else
 	{
 	  if (mmin)
-	    assumption = fold (build2 (EQ_EXPR, boolean_type_node, base1, mmin));
+	    assumption = fold_build2 (EQ_EXPR, boolean_type_node, base1, mmin);
 	  else
 	    assumption = boolean_false_node;
 	  if (nonzero_p (assumption))
 	    goto zero_iter;
-	  base1 = fold (build2 (MINUS_EXPR, type, base1,
-				build_int_cst_type (type, 1)));
+	  base1 = fold_build2 (MINUS_EXPR, type, base1,
+			       build_int_cst_type (type, 1));
 	}
       noloop_assumptions = assumption;
       code = LE_EXPR;
@@ -274,7 +274,7 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
       else
 	step = step0;
       delta = build2 (MINUS_EXPR, type, base1, base0);
-      delta = fold (build2 (FLOOR_MOD_EXPR, type, delta, step));
+      delta = fold_build2 (FLOOR_MOD_EXPR, type, delta, step);
       may_xform = boolean_false_node;
 
       if (TREE_CODE (delta) == INTEGER_CST)
@@ -305,8 +305,8 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 						   mmin, step);
 		  bound = fold_binary_to_constant (MINUS_EXPR, type,
 						   bound, delta);
-		  may_xform = fold (build2 (LE_EXPR, boolean_type_node,
-					   bound, base0));
+		  may_xform = fold_build2 (LE_EXPR, boolean_type_node,
+					   bound, base0);
 		}
 	    }
 	  else
@@ -319,8 +319,8 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 						   mmax, step);
 		  bound = fold_binary_to_constant (PLUS_EXPR, type,
 						   bound, delta);
-		  may_xform = fold (build2 (LE_EXPR, boolean_type_node,
-					   base1, bound));
+		  may_xform = fold_build2 (LE_EXPR, boolean_type_node,
+					   base1, bound);
 		}
 	    }
 	}
@@ -335,18 +335,18 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 
 	  if (zero_p (step0))
 	    {
-	      base0 = fold (build2 (PLUS_EXPR, type, base0, delta));
-	      base0 = fold (build2 (MINUS_EXPR, type, base0, step));
+	      base0 = fold_build2 (PLUS_EXPR, type, base0, delta);
+	      base0 = fold_build2 (MINUS_EXPR, type, base0, step);
 	    }
 	  else
 	    {
-	      base1 = fold (build2 (MINUS_EXPR, type, base1, delta));
-	      base1 = fold (build2 (PLUS_EXPR, type, base1, step));
+	      base1 = fold_build2 (MINUS_EXPR, type, base1, delta);
+	      base1 = fold_build2 (PLUS_EXPR, type, base1, step);
 	    }
 
-	  assumption = fold (build2 (GT_EXPR, boolean_type_node, base0, base1));
-	  noloop_assumptions = fold (build2 (TRUTH_OR_EXPR, boolean_type_node,
-					    noloop_assumptions, assumption));
+	  assumption = fold_build2 (GT_EXPR, boolean_type_node, base0, base1);
+	  noloop_assumptions = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+					    noloop_assumptions, assumption);
 	  code = NE_EXPR;
 	}
     }
@@ -361,7 +361,7 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 	 makes us able to do more involved computations of number of iterations
 	 than in other cases.  First transform the condition into shape
 	 s * i <> c, with s positive.  */
-      base1 = fold (build2 (MINUS_EXPR, type, base1, base0));
+      base1 = fold_build2 (MINUS_EXPR, type, base1, base0);
       base0 = NULL_TREE;
       if (!zero_p (step1))
   	step0 = fold_unary_to_constant (NEGATE_EXPR, type, step1);
@@ -369,7 +369,7 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
       if (!tree_expr_nonnegative_p (fold_convert (signed_niter_type, step0)))
 	{
 	  step0 = fold_unary_to_constant (NEGATE_EXPR, type, step0);
-	  base1 = fold (build1 (NEGATE_EXPR, type, base1));
+	  base1 = fold_build1 (NEGATE_EXPR, type, base1);
 	}
 
       base1 = fold_convert (niter_type, base1);
@@ -387,16 +387,16 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 				   (TYPE_PRECISION (niter_type)
 				    - tree_low_cst (bits, 1)));
 
-      assumption = fold (build2 (FLOOR_MOD_EXPR, niter_type, base1, d));
-      assumption = fold (build2 (EQ_EXPR, boolean_type_node,
-				 assumption,
-				 build_int_cst (niter_type, 0)));
-      assumptions = fold (build2 (TRUTH_AND_EXPR, boolean_type_node,
-				  assumptions, assumption));
+      assumption = fold_build2 (FLOOR_MOD_EXPR, niter_type, base1, d);
+      assumption = fold_build2 (EQ_EXPR, boolean_type_node,
+				assumption,
+				build_int_cst (niter_type, 0));
+      assumptions = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+				 assumptions, assumption);
 
-      tmp = fold (build2 (EXACT_DIV_EXPR, niter_type, base1, d));
-      tmp = fold (build2 (MULT_EXPR, niter_type, tmp, inverse (s, bound)));
-      niter->niter = fold (build2 (BIT_AND_EXPR, niter_type, tmp, bound));
+      tmp = fold_build2 (EXACT_DIV_EXPR, niter_type, base1, d);
+      tmp = fold_build2 (MULT_EXPR, niter_type, tmp, inverse (s, bound));
+      niter->niter = fold_build2 (BIT_AND_EXPR, niter_type, tmp, bound);
     }
   else
     {
@@ -411,17 +411,17 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 	  if (mmax)
 	    {
 	      bound = fold_binary_to_constant (MINUS_EXPR, type, mmax, step0);
-	      assumption = fold (build2 (LE_EXPR, boolean_type_node,
-					 base1, bound));
-	      assumptions = fold (build2 (TRUTH_AND_EXPR, boolean_type_node,
-					  assumptions, assumption));
+	      assumption = fold_build2 (LE_EXPR, boolean_type_node,
+					base1, bound);
+	      assumptions = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+					 assumptions, assumption);
 	    }
 
 	  step = step0;
-	  tmp = fold (build2 (PLUS_EXPR, type, base1, step0));
-	  assumption = fold (build2 (GT_EXPR, boolean_type_node, base0, tmp));
-	  delta = fold (build2 (PLUS_EXPR, type, base1, step));
-	  delta = fold (build2 (MINUS_EXPR, type, delta, base0));
+	  tmp = fold_build2 (PLUS_EXPR, type, base1, step0);
+	  assumption = fold_build2 (GT_EXPR, boolean_type_node, base0, tmp);
+	  delta = fold_build2 (PLUS_EXPR, type, base1, step);
+	  delta = fold_build2 (MINUS_EXPR, type, delta, base0);
 	  delta = fold_convert (niter_type, delta);
 	}
       else
@@ -432,22 +432,22 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 	  if (mmin)
 	    {
 	      bound = fold_binary_to_constant (MINUS_EXPR, type, mmin, step1);
-	      assumption = fold (build2 (LE_EXPR, boolean_type_node,
-					bound, base0));
-	      assumptions = fold (build2 (TRUTH_AND_EXPR, boolean_type_node,
-					 assumptions, assumption));
+	      assumption = fold_build2 (LE_EXPR, boolean_type_node,
+					bound, base0);
+	      assumptions = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+					 assumptions, assumption);
 	    }
-	  step = fold (build1 (NEGATE_EXPR, type, step1));
-	  tmp = fold (build2 (PLUS_EXPR, type, base0, step1));
-	  assumption = fold (build2 (GT_EXPR, boolean_type_node, tmp, base1));
-	  delta = fold (build2 (MINUS_EXPR, type, base0, step));
-	  delta = fold (build2 (MINUS_EXPR, type, base1, delta));
+	  step = fold_build1 (NEGATE_EXPR, type, step1);
+	  tmp = fold_build2 (PLUS_EXPR, type, base0, step1);
+	  assumption = fold_build2 (GT_EXPR, boolean_type_node, tmp, base1);
+	  delta = fold_build2 (MINUS_EXPR, type, base0, step);
+	  delta = fold_build2 (MINUS_EXPR, type, base1, delta);
 	  delta = fold_convert (niter_type, delta);
 	}
-      noloop_assumptions = fold (build2 (TRUTH_OR_EXPR, boolean_type_node,
-					noloop_assumptions, assumption));
-      delta = fold (build2 (FLOOR_DIV_EXPR, niter_type, delta,
-			    fold_convert (niter_type, step)));
+      noloop_assumptions = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+					noloop_assumptions, assumption);
+      delta = fold_build2 (FLOOR_DIV_EXPR, niter_type, delta,
+			   fold_convert (niter_type, step));
       niter->niter = delta;
     }
 
@@ -462,60 +462,131 @@ zero_iter:
   return;
 }
 
-/* Tries to simplify EXPR using the evolutions of the loop invariants
-   in the superloops of LOOP.  Returns the simplified expression
-   (or EXPR unchanged, if no simplification was possible).  */
 
-static tree
-simplify_using_outer_evolutions (struct loop *loop, tree expr)
+/* Similar to number_of_iterations_cond, but only handles the special
+   case of loops with step 1 or -1.  The meaning of the arguments
+   is the same as in number_of_iterations_cond.  The function
+   returns true if the special case was recognized, false otherwise.  */
+
+static bool
+number_of_iterations_special (tree type, tree base0, tree step0,
+			      enum tree_code code, tree base1, tree step1,
+			      struct tree_niter_desc *niter)
 {
-  enum tree_code code = TREE_CODE (expr);
-  bool changed;
-  tree e, e0, e1, e2;
+  tree niter_type = unsigned_type_for (type), mmax, mmin;
 
-  if (is_gimple_min_invariant (expr))
-    return expr;
-
-  if (code == TRUTH_OR_EXPR
-      || code == TRUTH_AND_EXPR
-      || code == COND_EXPR)
+  /* Make < comparison from > ones.  */
+  if (code == GE_EXPR
+      || code == GT_EXPR)
     {
-      changed = false;
-
-      e0 = simplify_using_outer_evolutions (loop, TREE_OPERAND (expr, 0));
-      if (TREE_OPERAND (expr, 0) != e0)
-	changed = true;
-
-      e1 = simplify_using_outer_evolutions (loop, TREE_OPERAND (expr, 1));
-      if (TREE_OPERAND (expr, 1) != e1)
-	changed = true;
-
-      if (code == COND_EXPR)
-	{
-	  e2 = simplify_using_outer_evolutions (loop, TREE_OPERAND (expr, 2));
-	  if (TREE_OPERAND (expr, 2) != e2)
-	    changed = true;
-	}
-      else
-	e2 = NULL_TREE;
-
-      if (changed)
-	{
-	  if (code == COND_EXPR)
-	    expr = build3 (code, boolean_type_node, e0, e1, e2);
-	  else
-	    expr = build2 (code, boolean_type_node, e0, e1);
-	  expr = fold (expr);
-	}
-
-      return expr;
+      SWAP (base0, base1);
+      SWAP (step0, step1);
+      code = swap_tree_comparison (code);
     }
 
-  e = instantiate_parameters (loop, expr);
-  if (is_gimple_min_invariant (e))
-    return e;
+  switch (code)
+    {
+    case NE_EXPR:
+      if (zero_p (step0))
+	{
+	  if (zero_p (step1))
+	    return false;
+    	  SWAP (base0, base1);
+	  SWAP (step0, step1);
+	}
+      else if (!zero_p (step1))
+	return false;
 
-  return expr;
+      if (integer_onep (step0))
+	{
+	  /* for (i = base0; i != base1; i++)  */
+	  niter->assumptions = boolean_true_node;
+	  niter->may_be_zero = boolean_false_node;
+	  niter->niter = fold_build2 (MINUS_EXPR, type, base1, base0);
+	  niter->additional_info = boolean_true_node;
+	}
+      else if (integer_all_onesp (step0))
+	{
+	  /* for (i = base0; i != base1; i--)  */
+	  niter->assumptions = boolean_true_node;
+	  niter->may_be_zero = boolean_false_node;
+	  niter->niter = fold_build2 (MINUS_EXPR, type, base0, base1);
+	}
+      else
+	return false;
+
+      break;
+
+    case LT_EXPR:
+      if ((step0 && integer_onep (step0) && zero_p (step1))
+	  || (step1 && integer_all_onesp (step1) && zero_p (step0)))
+	{
+	  /* for (i = base0; i < base1; i++)
+	     
+	     or
+
+	     for (i = base1; i > base0; i--).
+	     
+	     In both cases # of iterations is base1 - base0.  */
+
+	  niter->assumptions = boolean_true_node;
+	  niter->may_be_zero = fold_build2 (GT_EXPR, boolean_type_node,
+					    base0, base1);
+	  niter->niter = fold_build2 (MINUS_EXPR, type, base1, base0);
+	}
+      else
+	return false;
+      break;
+
+    case LE_EXPR:
+      if (POINTER_TYPE_P (type))
+	{
+	  /* We assume pointer arithmetic never overflows.  */
+	  mmin = mmax = NULL_TREE;
+	}
+      else
+	{
+	  mmin = TYPE_MIN_VALUE (type);
+	  mmax = TYPE_MAX_VALUE (type);
+	}
+
+      if (step0 && integer_onep (step0) && zero_p (step1))
+	{
+	  /* for (i = base0; i <= base1; i++)  */
+	  if (mmax)
+	    niter->assumptions = fold_build2 (NE_EXPR, boolean_type_node,
+					      base1, mmax);
+	  else
+	    niter->assumptions = boolean_true_node;
+	  base1 = fold_build2 (PLUS_EXPR, type, base1,
+			       build_int_cst_type (type, 1));
+	}
+      else if (step1 && integer_all_onesp (step1) && zero_p (step0))
+	{
+	  /* for (i = base1; i >= base0; i--)  */
+	  if (mmin)
+	    niter->assumptions = fold_build2 (NE_EXPR, boolean_type_node,
+					      base0, mmin);
+	  else
+	    niter->assumptions = boolean_true_node;
+	  base0 = fold_build2 (MINUS_EXPR, type, base0,
+			       build_int_cst_type (type, 1));
+	}
+      else
+	return false;
+
+      niter->may_be_zero = fold_build2 (GT_EXPR, boolean_type_node,
+					base0, base1);
+      niter->niter = fold_build2 (MINUS_EXPR, type, base1, base0);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  niter->niter = fold_convert (niter_type, niter->niter);
+  niter->additional_info = boolean_true_node;
+  return true;
 }
 
 /* Substitute NEW for OLD in EXPR and fold the result.  */
@@ -592,10 +663,9 @@ tree_simplify_using_condition (tree cond, tree expr)
       if (changed)
 	{
 	  if (code == COND_EXPR)
-	    expr = build3 (code, boolean_type_node, e0, e1, e2);
+	    expr = fold_build3 (code, boolean_type_node, e0, e1, e2);
 	  else
-	    expr = build2 (code, boolean_type_node, e0, e1);
-	  expr = fold (expr);
+	    expr = fold_build2 (code, boolean_type_node, e0, e1);
 	}
 
       return expr;
@@ -648,14 +718,14 @@ tree_simplify_using_condition (tree cond, tree expr)
 
   /* Check whether COND ==> EXPR.  */
   notcond = invert_truthvalue (cond);
-  e = fold (build2 (TRUTH_OR_EXPR, boolean_type_node,
-		   notcond, expr));
+  e = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+		   notcond, expr);
   if (nonzero_p (e))
     return e;
 
   /* Check whether COND ==> not EXPR.  */
-  e = fold (build2 (TRUTH_AND_EXPR, boolean_type_node,
-		   cond, expr));
+  e = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+		   cond, expr);
   if (zero_p (e))
     return e;
 
@@ -695,13 +765,68 @@ simplify_using_initial_conditions (struct loop *loop, tree expr,
       exp = tree_simplify_using_condition (cond, expr);
 
       if (exp != expr)
-	*conds_used = fold (build2 (TRUTH_AND_EXPR,
+	*conds_used = fold_build2 (TRUTH_AND_EXPR,
 				   boolean_type_node,
 				   *conds_used,
-				   cond));
+				   cond);
 
       expr = exp;
     }
+
+  return expr;
+}
+
+/* Tries to simplify EXPR using the evolutions of the loop invariants
+   in the superloops of LOOP.  Returns the simplified expression
+   (or EXPR unchanged, if no simplification was possible).  */
+
+static tree
+simplify_using_outer_evolutions (struct loop *loop, tree expr)
+{
+  enum tree_code code = TREE_CODE (expr);
+  bool changed;
+  tree e, e0, e1, e2;
+
+  if (is_gimple_min_invariant (expr))
+    return expr;
+
+  if (code == TRUTH_OR_EXPR
+      || code == TRUTH_AND_EXPR
+      || code == COND_EXPR)
+    {
+      changed = false;
+
+      e0 = simplify_using_outer_evolutions (loop, TREE_OPERAND (expr, 0));
+      if (TREE_OPERAND (expr, 0) != e0)
+	changed = true;
+
+      e1 = simplify_using_outer_evolutions (loop, TREE_OPERAND (expr, 1));
+      if (TREE_OPERAND (expr, 1) != e1)
+	changed = true;
+
+      if (code == COND_EXPR)
+	{
+	  e2 = simplify_using_outer_evolutions (loop, TREE_OPERAND (expr, 2));
+	  if (TREE_OPERAND (expr, 2) != e2)
+	    changed = true;
+	}
+      else
+	e2 = NULL_TREE;
+
+      if (changed)
+	{
+	  if (code == COND_EXPR)
+	    expr = fold_build3 (code, boolean_type_node, e0, e1, e2);
+	  else
+	    expr = fold_build2 (code, boolean_type_node, e0, e1);
+	}
+
+      return expr;
+    }
+
+  e = instantiate_parameters (loop, expr);
+  if (is_gimple_min_invariant (e))
+    return e;
 
   return expr;
 }
@@ -762,16 +887,28 @@ number_of_iterations_exit (struct loop *loop, edge exit,
     return false;
 
   niter->niter = NULL_TREE;
-  number_of_iterations_cond (type, base0, step0, code, base1, step1,
-			     niter);
-  if (!niter->niter)
-    return false;
 
-  niter->assumptions = simplify_using_outer_evolutions (loop,
-							niter->assumptions);
-  niter->may_be_zero = simplify_using_outer_evolutions (loop,
-							niter->may_be_zero);
-  niter->niter = simplify_using_outer_evolutions (loop, niter->niter);
+  /* Handle common special cases first, so that we do not need to use
+     generic (and slow) analysis very often.  */
+  if (!number_of_iterations_special (type, base0, step0, code, base1, step1,
+				     niter))
+    {
+
+      number_of_iterations_cond (type, base0, step0, code, base1, step1,
+				 niter);
+
+      if (!niter->niter)
+	return false;
+    }
+
+  if (optimize >= 3)
+    {
+      niter->assumptions = simplify_using_outer_evolutions (loop,
+							    niter->assumptions);
+      niter->may_be_zero = simplify_using_outer_evolutions (loop,
+							    niter->may_be_zero);
+      niter->niter = simplify_using_outer_evolutions (loop, niter->niter);
+    }
 
   niter->additional_info = boolean_true_node;
   niter->assumptions
@@ -1046,7 +1183,7 @@ loop_niter_by_eval (struct loop *loop, edge exit)
       for (j = 0; j < 2; j++)
 	aval[j] = get_val_for (op[j], val[j]);
 
-      acnd = fold (build2 (cmp, boolean_type_node, aval[0], aval[1]));
+      acnd = fold_build2 (cmp, boolean_type_node, aval[0], aval[1]);
       if (zero_p (acnd))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1203,11 +1340,11 @@ compare_trees (tree a, tree b)
   a = fold_convert (type, a);
   b = fold_convert (type, b);
 
-  if (nonzero_p (fold (build2 (EQ_EXPR, boolean_type_node, a, b))))
+  if (nonzero_p (fold_build2 (EQ_EXPR, boolean_type_node, a, b)))
     return 0;
-  if (nonzero_p (fold (build2 (LT_EXPR, boolean_type_node, a, b))))
+  if (nonzero_p (fold_build2 (LT_EXPR, boolean_type_node, a, b)))
     return 1;
-  if (nonzero_p (fold (build2 (GT_EXPR, boolean_type_node, a, b))))
+  if (nonzero_p (fold_build2 (GT_EXPR, boolean_type_node, a, b)))
     return -1;
 
   return 2;
@@ -1271,8 +1408,8 @@ can_count_iv_in_wider_type_bound (tree type, tree base, tree step,
 
   b = fold_convert (type, base);
   bplusstep = fold_convert (type,
-			    fold (build2 (PLUS_EXPR, inner_type, base, step)));
-  new_step = fold (build2 (MINUS_EXPR, type, bplusstep, b));
+			    fold_build2 (PLUS_EXPR, inner_type, base, step));
+  new_step = fold_build2 (MINUS_EXPR, type, bplusstep, b);
   if (TREE_CODE (new_step) != INTEGER_CST)
     return NULL_TREE;
 
@@ -1280,14 +1417,14 @@ can_count_iv_in_wider_type_bound (tree type, tree base, tree step,
     {
     case -1:
       extreme = upper_bound_in_type (type, inner_type);
-      delta = fold (build2 (MINUS_EXPR, type, extreme, b));
+      delta = fold_build2 (MINUS_EXPR, type, extreme, b);
       new_step_abs = new_step;
       break;
 
     case 1:
       extreme = lower_bound_in_type (type, inner_type);
-      new_step_abs = fold (build1 (NEGATE_EXPR, type, new_step));
-      delta = fold (build2 (MINUS_EXPR, type, b, extreme));
+      new_step_abs = fold_build1 (NEGATE_EXPR, type, new_step);
+      delta = fold_build2 (MINUS_EXPR, type, b, extreme);
       break;
 
     case 0:
@@ -1300,8 +1437,8 @@ can_count_iv_in_wider_type_bound (tree type, tree base, tree step,
   unsigned_type = unsigned_type_for (type);
   delta = fold_convert (unsigned_type, delta);
   new_step_abs = fold_convert (unsigned_type, new_step_abs);
-  valid_niter = fold (build2 (FLOOR_DIV_EXPR, unsigned_type,
-			     delta, new_step_abs));
+  valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type,
+			     delta, new_step_abs);
 
   bound_type = TREE_TYPE (bound);
   if (TYPE_PRECISION (type) > TYPE_PRECISION (bound_type))
@@ -1313,24 +1450,22 @@ can_count_iv_in_wider_type_bound (tree type, tree base, tree step,
     {
       /* After the statement OF we know that anything is executed at most
 	 BOUND times.  */
-      cond = build2 (GE_EXPR, boolean_type_node, valid_niter, bound);
+      cond = fold_build2 (GE_EXPR, boolean_type_node, valid_niter, bound);
     }
   else
     {
       /* Before the statement OF we know that anything is executed at most
 	 BOUND + 1 times.  */
-      cond = build2 (GT_EXPR, boolean_type_node, valid_niter, bound);
+      cond = fold_build2 (GT_EXPR, boolean_type_node, valid_niter, bound);
     }
 
-  cond = fold (cond);
   if (nonzero_p (cond))
     return new_step;
 
   /* Try taking additional conditions into account.  */
-  cond = build2 (TRUTH_OR_EXPR, boolean_type_node,
-		invert_truthvalue (additional),
-		cond);
-  cond = fold (cond);
+  cond = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+		      invert_truthvalue (additional),
+		      cond);
   if (nonzero_p (cond))
     return new_step;
 
