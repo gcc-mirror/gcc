@@ -6125,18 +6125,26 @@ collect_expansion (buf, end, nargs, arglist)
 	  if (arg->name[0] == c
 	      && arg->length == id_len
 	      && bcmp (arg->name, id_beg, id_len) == 0) {
-	    if (expected_delimiter && warn_stringify) {
-	      if (traditional) {
-		warning ("macro argument `%.*s' is stringified.",
-			 id_len, arg->name);
-	      } else {
-		warning ("macro arg `%.*s' would be stringified with -traditional.",
-			 id_len, arg->name);
+	    enum sharp_token_type tpat_stringify;
+	    if (expected_delimiter) {
+	      if (warn_stringify) {
+		if (traditional) {
+		  warning ("macro argument `%.*s' is stringified.",
+			   id_len, arg->name);
+		} else {
+		  warning ("macro arg `%.*s' would be stringified with -traditional.",
+			   id_len, arg->name);
+		}
 	      }
+	      /* If ANSI, don't actually substitute inside a string.  */
+	      if (!traditional)
+		break;
+	      tpat_stringify = SHARP_TOKEN;
+	    } else {
+	      tpat_stringify
+		= (stringify == id_beg
+		   ? stringify_sharp_token_type : NO_SHARP_TOKEN);
 	    }
-	    /* If ANSI, don't actually substitute inside a string.  */
-	    if (!traditional && expected_delimiter)
-	      break;
 	    /* make a pat node for this arg and append it to the end of
 	       the pat list */
 	    tpat = (struct reflist *) xmalloc (sizeof (struct reflist));
@@ -6145,9 +6153,7 @@ collect_expansion (buf, end, nargs, arglist)
 	      = concat == id_beg ? concat_sharp_token_type : NO_SHARP_TOKEN;
 	    tpat->raw_after = NO_SHARP_TOKEN;
 	    tpat->rest_args = arg->rest_args;
-	    tpat->stringify
-	      = ((traditional ? expected_delimiter : stringify == id_beg)
-		 ? stringify_sharp_token_type : NO_SHARP_TOKEN);
+	    tpat->stringify = tpat_stringify;
 
 	    if (endpat == NULL)
 	      defn->pattern = tpat;
