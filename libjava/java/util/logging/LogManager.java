@@ -200,7 +200,7 @@ public class LogManager
     {
       /* FIXME: Is it ok to ignore exceptions here? */
     }
-  };
+  }
   
 
   private static LogManager makeLogManager()

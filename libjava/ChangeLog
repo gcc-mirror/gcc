@@ -1,3 +1,24 @@
+2004-01-09  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/geom/PathIterator.java
+	(WIND_EVEN_ODD): Removed redundant modifiers.
+	(WIND_NON_ZERO): Likewise.
+	(SEG_MOVETO): Likewise.
+	(SEG_LINETO): Likewise.
+	(SEG_QUADTO): Likewise.
+	(SEG_CUBICTO): Likewise.
+	(SEG_CLOSE): Likewise.
+	* java/awt/image/SinglePixelPackedSampleModel.java:
+	Removed redundant semicolon.
+	* java/io/ObjectInputStream.java
+	(inputGetObjectStreamClasses): Removed unused variable "ret_val".
+	* java/util/logging/Filter.java
+	(isLoggable): Removed redundant modifier.
+	* java/util/logging/LogManager.java:
+	Removed redundant semicolon.
+	* java/util/logging/XMLFormatter.java
+	(format): Removed unused variable "key".
+
 2004-01-08  Fernando Nasser  <fnasser@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkFileDialogPeer.java (nativeSetFile):

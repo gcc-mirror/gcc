@@ -657,8 +657,6 @@ public class ObjectInputStream extends InputStream
   {
     ObjectStreamClass osc = lookupClass(clazz);
 
-    ObjectStreamClass[] ret_val;
-
     if (osc == null)
       return new ObjectStreamClass[0];
     else

@@ -64,5 +64,5 @@ public interface Filter
    * @return <code>true</code> if the record should be published,
    *         <code>false</code> if it should be discarded.
    */
-  public boolean isLoggable(LogRecord record);
+  boolean isLoggable(LogRecord record);
 }
