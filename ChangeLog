@@ -1,3 +1,8 @@
+2003-10-14  Roger Sayle  <roger@eyesopen.com>
+
+	* MAINTAINERS: Move myself from 'Write After Approval' to
+	'Various Maintainers' section as middle-end maintainer.
+
 2003-10-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Make GCC_FLAGS_TO_PASS a superset of

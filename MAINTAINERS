@@ -162,6 +162,7 @@ gcov			Jan Hubicka		jh@suse.cz
 gcov			Nathan Sidwell		nathan@codesourcery.com
 option handling		Neil Booth		neil@daikokuya.co.uk
 libffi testsuite	Andreas Tobler		andreast@gcc.gnu.org
+middle-end		Roger Sayle		roger@eyesopen.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
@@ -250,7 +251,6 @@ Ira Ruben					ira@apple.com
 Douglas Rupp					rupp@gnat.com
 Alex Samuel					samuel@codesourcery.com
 Richard Sandiford				rsandifo@redhat.com
-Roger Sayle					roger@eyesopen.com
 Andreas Schwab					schwab@suse.de
 Svein Seldal                                    svein.seldal@solidas.com
 Franz Sirl					franz.sirl-kernel@lauterbach.com
