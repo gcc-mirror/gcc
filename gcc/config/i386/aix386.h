@@ -23,6 +23,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  * with aix ps/2 1.3.x.
  */
 
+/* Define USE_GAS if you have the new version of gas that can handle
+ * multiple segments and .section pseudo op.  This will allow gcc to
+ * use the .init section for g++ ctor/dtor.
+ *
+ * If you don't have gas then undefined USE_GAS.  You will also have
+ * to use collect if you want to use g++
+ */
+#define USE_GAS
+
 #include "i386/aix386ng.h"
 
 /* Use crt1.o as a startup file and crtn.o as a closing file.
