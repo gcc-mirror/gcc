@@ -364,7 +364,7 @@ extern int avr_asm_only_p;
 
    One use of this macro is on machines where the highest numbered
    registers must always be saved and the save-multiple-registers
-   instruction supports only sequences of consetionve registers.  On
+   instruction supports only sequences of consecutive registers.  On
    such machines, define `REG_ALLOC_ORDER' to be an initializer that
    lists the highest numbered allocatable register first. */
 

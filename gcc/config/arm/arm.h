@@ -1024,7 +1024,7 @@ extern const char * structure_size_string;
 /* The number of (integer) argument register available.  */
 #define NUM_ARG_REGS		4
 
-/* Return the regiser number of the N'th (integer) argument.  */
+/* Return the register number of the N'th (integer) argument.  */
 #define ARG_REGISTER(N) 	(N - 1)
 
 #if 0 /* FIXME: The ARM backend has special code to handle structure

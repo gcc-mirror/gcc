@@ -28,7 +28,7 @@ EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
-# Currently there is a bug somwehere in GCC's alias analysis
+# Currently there is a bug somewhere in GCC's alias analysis
 # or scheduling code that is breaking _fpmul_parts in fp-bit.c.
 # Disabling function inlining is a workaround for this problem.
 TARGET_LIBGCC2_CFLAGS = -Dinhibit_libc -fno-inline
