@@ -2414,7 +2414,7 @@
 
 (define_expand "div_trap"
   [(trap_if (eq (match_operand 0 "register_operand" "d")
-		(match_operand 1 "reg_or_0_operand" "dJ"))
+		(match_operand 1 "true_reg_or_0_operand" "dJ"))
             (match_operand 2 "immediate_operand" ""))]
   ""
   "
@@ -2428,7 +2428,7 @@
 
 (define_insn "div_trap_normal"
   [(trap_if (eq (match_operand 0 "register_operand" "d")
-		(match_operand 1 "reg_or_0_operand" "dJ"))
+		(match_operand 1 "true_reg_or_0_operand" "dJ"))
             (match_operand 2 "immediate_operand" ""))]
   "!TARGET_MIPS16"
   "*
@@ -2471,7 +2471,7 @@
 
 (define_insn "div_trap_mips16"
   [(trap_if (eq (match_operand 0 "register_operand" "d")
-		(match_operand 1 "reg_or_0_operand" "dJ"))
+		(match_operand 1 "true_reg_or_0_operand" "dJ"))
             (match_operand 2 "immediate_operand" ""))
    (clobber (reg:SI 24))]
   "TARGET_MIPS16"

@@ -1,3 +1,10 @@
+Wed Feb  3 15:51:04 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.c (true_reg_or_0_operand) : New function.
+	* config/mips/mips.h (PREDICATE_CODES): Add true_reg_or_0_operand.
+	* config/mips/mips.md (div_trap,div_trap_normal,div_trap_mips16): 
+	Use true_reg_or_0_operand for div_trap.
+
 Wed Feb  3 20:44:59 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.h (express_from): Declare.
