@@ -1,3 +1,7 @@
+Tue Feb  2 22:38:48 1999  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* decl2.c (lang_decode_option): Use read_integral_parameter.
+
 1999-02-01  Mark Mitchell  <mark@markmitchell.com>
 
 	* pt.c (tsubst, case TYPENAME_TYPE): Check TYPE_BEING_DEFINED
