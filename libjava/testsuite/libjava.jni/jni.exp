@@ -11,7 +11,7 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
 
   lappend options "additional_flags=-shared -fPIC"
   # Find the generated header.
-  lappend options "additional_flags=-I."
+  lappend options "additional_flags=-I. -I.."
   # Find jni.h.
   lappend options "additional_flags=-I$srcdir/../include"
 
