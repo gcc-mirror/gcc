@@ -1,6 +1,6 @@
 /* GNU Objective C Runtime Thread Interface
    Copyright (C) 1996 Free Software Foundation, Inc.
-   Cobnrtibuted by Galen C. Hunt (gchunt@cs.rochester.edu)
+   Contributed by Galen C. Hunt (gchunt@cs.rochester.edu)
 
 This file is part of GNU CC.
 
@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
+#include <objc/thr.h>
 #include "runtime.h"
 
 #include <thread.h>

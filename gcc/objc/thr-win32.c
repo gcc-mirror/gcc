@@ -25,6 +25,8 @@ Boston, MA 02111-1307, USA.  */
    covered by the GNU General Public License.  */
 
 #include <windows.h>
+#include <objc/thr.h>
+#include "runtime.h"
 
 /********
  *  This structure represents a single mutual exclusion lock.  Lock semantics

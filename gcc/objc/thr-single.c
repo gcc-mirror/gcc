@@ -24,6 +24,9 @@ Boston, MA 02111-1307, USA.  */
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
+#include <objc/thr.h>
+#include "runtime.h"
+
 /********
  *  This structure represents a single mutual exclusion lock.  Lock semantics
  *  are detailed with the subsequent functions.  We use whatever lock is

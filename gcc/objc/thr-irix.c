@@ -29,6 +29,8 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/sysmp.h>
 #include <sys/prctl.h>
 #include <ulocks.h>
+#include <objc/thr.h>
+#include "runtime.h"
 
 /********
  *  This structure represents a single mutual exclusion lock.  Lock semantics

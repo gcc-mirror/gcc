@@ -1,8 +1,7 @@
 /* GNU Objective C Runtime Thread Implementation
    Copyright (C) 1996 Free Software Foundation, Inc.
-
-Author: Galen C. Hunt (gchunt@cs.rochester.edu)
-Modified for Mach threads by: Bill Bumgarner <bbum@friday.com>
+   Contributed by Galen C. Hunt (gchunt@cs.rochester.edu)
+   Modified for Mach threads by Bill Bumgarner <bbum@friday.com>
 
 This file is part of GNU CC.
 
@@ -28,6 +27,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include <mach/mach.h>
 #include <mach/cthreads.h>
+#include <objc/thr.h>
+#include "runtime.h"
 
 /********
  *  This structure represents a single mutual exclusion lock.  Lock semantics

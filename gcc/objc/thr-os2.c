@@ -1,9 +1,6 @@
 /* GNU Objective C Runtime Thread Interface - OS/2 emx Implementation
    Copyright (C) 1996 Free Software Foundation, Inc.
-
-Author: Thomas Baier (baier@ci.tuwien.ac.at)
-
-This file is included into thread.c
+   Contributed by Thomas Baier (baier@ci.tuwien.ac.at)
 
 This file is part of GNU CC.
 
@@ -26,6 +23,9 @@ Boston, MA 02111-1307, USA.  */
    to be covered by the GNU General Public License. This exception does not
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
+
+#include <objc/thr.h>
+#include "runtime.h"
 
 #define INCL_DOSSEMAPHORES
 #define INCL_DOSPROCESS
