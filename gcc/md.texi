@@ -1197,10 +1197,10 @@ constraints with multiple alternatives, sometimes one alternative
 requires @samp{&} while others do not.  See, for example, the
 @samp{movdf} insn of the 68000.
 
-An input operand can be tied to an earlyclobber operand if its only 
+An input operand can be tied to an earlyclobber operand if its only
 use as an input occurs before the early result is written.  Adding
 alternatives of this form often allows GCC to produce better code
-when only some of the inputs can be affected by the earlyclobber. 
+when only some of the inputs can be affected by the earlyclobber.
 See, for example, the @samp{mulsi3} insn of the ARM.
 
 @samp{&} does not obviate the need to write @samp{=}.
@@ -1493,7 +1493,7 @@ Floating point register
 Signed 16-bit constant
 
 @item J
-Unsigned 16-bit constant shifted left 16 bits (use @samp{L} instead for 
+Unsigned 16-bit constant shifted left 16 bits (use @samp{L} instead for
 @code{SImode} constants)
 
 @item K
@@ -1925,13 +1925,13 @@ Ones complement of unsigned 16-bit constant
 High 16-bit constant (32-bit constant with 16 LSBs zero)
 
 @item Q
-Indirect memory reference with signed 8-bit or index register displacement 
+Indirect memory reference with signed 8-bit or index register displacement
 
 @item R
 Indirect memory reference with unsigned 5-bit displacement
 
 @item S
-Indirect memory reference with 1 bit or index register displacement 
+Indirect memory reference with 1 bit or index register displacement
 
 @item T
 Direct memory reference
@@ -2867,7 +2867,7 @@ the abnormal return path.
 The pattern takes two arguments.  The first is an offset to be applied
 to the stack pointer.  It will have been copied to some appropriate
 location (typically @code{EH_RETURN_STACKADJ_RTX}) which will survive
-until after reload to when the normal epilogue is generated. 
+until after reload to when the normal epilogue is generated.
 The second argument is the address of the exception handler to which
 the function should return.  This will normally need to copied by the
 pattern to some special register or memory location.
@@ -2908,7 +2908,7 @@ sibling call (aka tail call) sites.
 
 The @code{sibcall_epilogue} pattern must not clobber any arguments used for
 parameter passing or any stack slots for arguments passed to the current
-function.  
+function.
 
 @cindex @code{trap} instruction pattern
 @item @samp{trap}
@@ -2925,7 +2925,7 @@ A typical @code{conditional_trap} pattern looks like
 
 @smallexample
 (define_insn "conditional_trap"
-  [(trap_if (match_operator 0 "trap_operator" 
+  [(trap_if (match_operator 0 "trap_operator"
              [(cc0) (const_int 0)])
             (match_operand 1 "const_int_operand" "i"))]
   ""
@@ -3234,7 +3234,7 @@ pattern will not be matched by the combiner.
 The other two special looping patterns, @samp{doloop_begin} and
 @samp{doloop_end}, are emitted by the loop optimiser for certain
 well-behaved loops with a finite number of loop iterations using
-information collected during strength reduction.  
+information collected during strength reduction.
 
 The @samp{doloop_end} pattern describes the actual looping instruction
 (or the implicit looping operation) and the @samp{doloop_begin} pattern
@@ -3803,7 +3803,7 @@ from i386.md:
 
 @end smallexample
 
-In this case, the actual split condition will be 
+In this case, the actual split condition will be
 "TARGET_ZERO_EXTEND_WITH_AND && !optimize_size && reload_completed."
 
 The @code{define_insn_and_split} construction provides exactly the same
@@ -3833,7 +3833,7 @@ is deprecated.
 
 A newer @code{define_peephole2} matches insns and substitutes new
 insns.  The @code{peephole2} pass is run after register allocation
-but before scheduling, which may result in much better code for 
+but before scheduling, which may result in much better code for
 targets that do scheduling.
 
 @menu
@@ -4039,7 +4039,7 @@ then the way to mention this insn in a peephole is as follows:
 @findex define_peephole2
 
 The @code{define_peephole2} definition tells the compiler how to
-substitute one sequence of instructions for another sequence, 
+substitute one sequence of instructions for another sequence,
 what additional scratch registers may be needed and what their
 lifetimes must be.
 
@@ -4927,15 +4927,15 @@ In order to handle the general case, there is a global variable
 @code{current_insn_predicate} that will contain the entire predicate
 if the current insn is predicated, and will otherwise be @code{NULL}.
 
-When @code{define_cond_exec} is used, an implicit reference to 
-the @code{predicable} instruction attribute is made. 
+When @code{define_cond_exec} is used, an implicit reference to
+the @code{predicable} instruction attribute is made.
 @xref{Insn Attributes}.  This attribute must be boolean (i.e. have
 exactly two elements in its @var{list-of-values}).  Further, it must
 not be used with complex expressions.  That is, the default and all
-uses in the insns must be a simple constant, not dependent on the 
+uses in the insns must be a simple constant, not dependent on the
 alternative or anything else.
 
-For each @code{define_insn} for which the @code{predicable} 
+For each @code{define_insn} for which the @code{predicable}
 attribute is true, a new @code{define_insn} pattern will be
 generated that matches a predicated version of the instruction.
 For example,

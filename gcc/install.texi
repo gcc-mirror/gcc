@@ -236,7 +236,7 @@ are building the compiler with GNU C.
 @itemx --disable-nls
 The @samp{--enable-nls} option enables Native Language Support (NLS),
 which lets GCC output diagnostics in languages other than American
-English. Native Language Support is enabled by default if not doing a 
+English. Native Language Support is enabled by default if not doing a
 canadian cross build. The @samp{--disable-nls} option disables NLS.
 
 @cindex @code{gettext}
@@ -747,7 +747,7 @@ MIL-STD-1750A processors.
 
 The MIL-STD-1750A cross configuration produces output for
 @code{as1750}, an assembler/linker available under the GNU Public
-License for the 1750A. @code{as1750} can be obtained at 
+License for the 1750A. @code{as1750} can be obtained at
 @uref{ftp://ftp.fta-berlin.de/pub/crossgcc/1750gals/}.
 A similarly licensed simulator for
 the 1750A is available from same address.
@@ -856,7 +856,7 @@ of the GNU/Linux binutils, which you can download from
 @uref{ftp://ftp.varesearch.com/pub/support/hjl/binutils/}.
 
 These two configurations differ only in the required version of GNU
-binutils.  For binutils 2.9.1.0.x, use @samp{arm-*-linux-gnuoldld}.  For 
+binutils.  For binutils 2.9.1.0.x, use @samp{arm-*-linux-gnuoldld}.  For
 newer versions of binutils, use @samp{arm-*-linux-gnu}.
 
 @item arm-*-riscix

@@ -2614,7 +2614,7 @@ and so may be read-only.
 The macro should return a combination of the @code{DW_EH_PE_*} defines
 as found in @file{dwarf2.h}.
 
-If this macro is not defined, pointers will not be encoded but 
+If this macro is not defined, pointers will not be encoded but
 represented directly.
 
 @findex ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX
@@ -3996,9 +3996,9 @@ support block profiling.
 @findex TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER
 @item TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER
 On some targets, it is impossible to use profiling when the frame
-pointer has been omitted.  For example, on x86 GNU/Linux systems, 
+pointer has been omitted.  For example, on x86 GNU/Linux systems,
 the @code{mcount} routine provided by the GNU C Library finds the
-address of the routine that called the routine that called @code{mcount} 
+address of the routine that called the routine that called @code{mcount}
 by looking in the immediate caller's stack frame.  If the immediate
 caller has no frame pointer, this lookup will fail.
 

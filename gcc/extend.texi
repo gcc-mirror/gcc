@@ -3146,7 +3146,7 @@ across a volatile @code{asm} instruction.  For example:
 asm volatile ("eieio" : : );
 @end example
 
-@noindent 
+@noindent
 Assume @code{addr} contains the address of a memory mapped device
 register.  The PowerPC @code{eieio} instruction (Enforce In-order
 Execution of I/O) tells the cpu to make sure that the store to that

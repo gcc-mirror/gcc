@@ -128,7 +128,7 @@ info to the standard output.  This option allows you to see how often
 each branch in your program was taken.
 
 @item -c
-Write branch frequencies as the number of branches taken, rather than 
+Write branch frequencies as the number of branches taken, rather than
 the percentage of branches taken.
 
 @item -v
@@ -178,19 +178,19 @@ $ gcov tmp.c
 Creating tmp.c.gcov.
 @end smallexample
 
-The file @file{tmp.c.gcov} contains output from @code{gcov}. 
+The file @file{tmp.c.gcov} contains output from @code{gcov}.
 Here is a sample:
 
 @smallexample
                 main()
                 @{
            1      int i, total;
-                
+
            1      total = 0;
-                
+
           11      for (i = 0; i < 10; i++)
           10        total += i;
-                
+
            1      if (total != 45)
       ######        printf ("Failure\n");
                   else
@@ -216,15 +216,15 @@ Here is a sample of a resulting @file{tmp.c.gcov} file:
                 main()
                 @{
            1      int i, total;
-                
+
            1      total = 0;
-                
+
           11      for (i = 0; i < 10; i++)
 branch 0 taken = 91%
 branch 1 taken = 100%
 branch 2 taken = 100%
           10        total += i;
-                
+
            1      if (total != 45)
 branch 0 taken = 100%
       ######        printf ("Failure\n");
