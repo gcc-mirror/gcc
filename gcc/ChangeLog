@@ -1,3 +1,8 @@
+2001-11-29  Richard Henderson  <rth@redhat.com>
+
+	* ifcvt.c (noce_try_store_flag_constants): Test for overflow
+	in computing DIFF.
+
 2001-11-29  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR other/4932

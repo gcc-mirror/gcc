@@ -641,6 +641,11 @@ noce_try_store_flag_constants (if_info)
       itrue = INTVAL (if_info->b);
       diff = itrue - ifalse;
 
+      /* Make sure we can represent the difference between the two values.  */
+      if ((itrue - ifalse > 0)
+	  != ((ifalse < 0) != (itrue < 0) ? ifalse < 0 : ifalse < itrue))
+	return FALSE;
+
       can_reverse = can_reverse_comparison_p (if_info->cond, if_info->jump);
 
       reversep = 0;
