@@ -3410,7 +3410,7 @@
    (use (reg:SI PIC_REG))
    (clobber (reg:SI PR_REG))
    (clobber (match_scratch:SI 2 "=r"))]
-  "TARGET_SH2 && optimize"
+  "TARGET_SH2"
   "#"
   "reload_completed"
   [(const_int 0)]
@@ -3469,7 +3469,7 @@
    (use (reg:SI PIC_REG))
    (clobber (reg:SI PR_REG))
    (clobber (match_scratch:SI 3 "=r"))]
-  "TARGET_SH2 && optimize"
+  "TARGET_SH2"
   "#"
   "reload_completed"
   [(const_int 0)]
@@ -3499,7 +3499,7 @@
   ""
   "
 {
-  if (flag_pic && TARGET_SH2 && optimize
+  if (flag_pic && TARGET_SH2
       && GET_CODE (operands[0]) == MEM
       && GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF)
     {
@@ -3519,7 +3519,7 @@
   ""
   "
 {
-  if (flag_pic && TARGET_SH2 && optimize
+  if (flag_pic && TARGET_SH2
       && GET_CODE (operands[1]) == MEM
       && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF)
     {
@@ -3532,8 +3532,7 @@
 }")
 
 (define_insn "sibcalli"
-  ;; FIXME: any call-clobbered register will do
-  [(call (mem:SI (match_operand:SI 0 "register_operand" "z"))
+  [(call (mem:SI (match_operand:SI 0 "register_operand" "k"))
 	 (match_operand 1 "" ""))
    (use (reg:PSI FPSCR_REG))
    (return)]
@@ -3543,8 +3542,7 @@
    (set_attr "type" "jump_ind")])
 
 (define_insn "sibcalli_pcrel"
-  ;; FIXME: any call-clobbered register will do
-  [(call (mem:SI (match_operand:SI 0 "arith_reg_operand" "z"))
+  [(call (mem:SI (match_operand:SI 0 "arith_reg_operand" "k"))
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (use (reg:PSI FPSCR_REG))
@@ -3558,10 +3556,9 @@
   [(call (mem:SI (match_operand:SI 0 "symbol_ref_operand" ""))
 	 (match_operand 1 "" ""))
    (use (reg:PSI FPSCR_REG))
-   ;; FIXME: any call-clobbered register will do
-   (clobber (match_scratch:SI 2 "=z"))
+   (clobber (match_scratch:SI 2 "=k"))
    (return)]
-  "TARGET_SH2 && optimize"
+  "TARGET_SH2"
   "#"
   "reload_completed"
   [(const_int 0)]
@@ -3586,7 +3583,7 @@
   ""
   "
 {
-  if (flag_pic && TARGET_SH2 && optimize
+  if (flag_pic && TARGET_SH2
       && GET_CODE (operands[0]) == MEM
       && GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF
       /* The PLT needs the PIC register, but the epilogue would have

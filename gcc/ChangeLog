@@ -1,3 +1,17 @@
+2000-12-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.c (reg_class_from_letter): Assign `k' to SIBCALL_REGS.
+	(machine_dependent_reorg): Split all insns.
+	* config/sh/sh.h (CONDITIONAL_REGISTER_USAGE): Compute
+	reg_class_contents[SIBCALL_REGS].
+	(reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS): Add SIBCALL_REGS.
+	* config/sh/sh.md (calli_pcrel, call_pcrel, call_valuei_pcrel,
+	call_value_pcrel, call, call_value, sibcall): Match even when
+	not optimizing.
+	(sibcalli_pcrel, sibcall_pcrel): Likewise.  Use constraint `k'
+	for call address.
+	(sibcalli): Likewise.
+
 2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (warn_format, warn_format_y2k,
