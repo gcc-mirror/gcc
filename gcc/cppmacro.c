@@ -44,6 +44,7 @@ struct cpp_macro
   unsigned int fun_like : 1;	/* If a function-like macro.  */
   unsigned int variadic : 1;	/* If a variadic macro.  */
   unsigned int disabled : 1;	/* If macro is disabled.  */
+  unsigned int syshdr   : 1;	/* If macro defined in system header.  */
 };
 
 typedef struct macro_arg macro_arg;
@@ -562,7 +563,7 @@ parse_args (pfile, node)
 
       if (argc + 1 == macro->paramc && macro->variadic)
 	{
-	  if (CPP_PEDANTIC (pfile))
+	  if (CPP_PEDANTIC (pfile) && ! macro->syshdr)
 	    cpp_pedwarn (pfile, "ISO C99 requires rest arguments to be used");
 	}
       else
@@ -616,7 +617,7 @@ funlike_invocation_p (pfile, node, list)
 
   if (maybe_paren.type == CPP_OPEN_PAREN)
     args = parse_args (pfile, node);
-  else if (CPP_WTRADITIONAL (pfile))
+  else if (CPP_WTRADITIONAL (pfile) && ! node->value.macro->syshdr)
     cpp_warning (pfile,
 	 "function-like macro \"%s\" must be used with arguments in traditional C",
 		 node->name);
@@ -993,6 +994,18 @@ cpp_get_token (pfile, token)
 
   if (pfile->la_write)
     save_lookahead_token (pfile, token);
+}
+
+/* Returns true if we're expanding an object-like macro that was
+   defined in a system header.  Just checks the macro at the top of
+   the stack.  Used for diagnostic suppression.  */
+int
+cpp_sys_objmacro_p (pfile)
+     cpp_reader *pfile;
+{
+  cpp_macro *macro = pfile->context->macro;
+
+  return macro && ! macro->fun_like && macro->syshdr;
 }
 
 /* Read each token in, until EOF.  Directives are transparently
@@ -1452,6 +1465,9 @@ _cpp_create_definition (pfile, node)
   macro->disabled = (macro->count == 1 && !macro->fun_like
 		     && macro->expansion[0].type == CPP_NAME
 		     && macro->expansion[0].val.node == node);
+
+  /* To suppress some diagnostics.  */
+  macro->syshdr = pfile->buffer->sysp != 0;
 
   /* Commit the memory.  */
   POOL_COMMIT (&pfile->macro_pool, macro->count * sizeof (cpp_token));
