@@ -1,3 +1,7 @@
+Thu Sep 10 14:57:25 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
+
+	* Makefile.in (install): Add missing "else true;".
+
 1998-09-09  Craig Burley  <burley@gnu.org>
 
 	* configure.in: Test $srcdir, not $subdir (probable typo).

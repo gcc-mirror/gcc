@@ -155,7 +155,7 @@ install: all
 	  echo '         (To turn off this warning, delete the file'; \
 	  echo '         f2c-install-ok in the source or build directory.)'; \
 	  echo ''; \
-	fi
+	else true; fi
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
