@@ -692,7 +692,8 @@ prepare_move_operands (operands, mode)
 	{
 	  if (GET_CODE (operands[0]) == MEM)
 	    operands[1] = force_reg (Pmode, operands[1]);
-	  else if (GET_CODE (operands[1]) == LABEL_REF
+	  else if (TARGET_SHMEDIA
+		   && GET_CODE (operands[1]) == LABEL_REF
 		   && target_reg_operand (operands[0], mode))
 	    /* It's ok.  */;
 	  else
