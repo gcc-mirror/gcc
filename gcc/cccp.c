@@ -1,5 +1,5 @@
 /* C Compatible Compiler Preprocessor (CCCP)
-Copyright (C) 1986, 1987, 1989, 1992 Free Software Foundation, Inc.
+Copyright (C) 1986, 1987, 1989, 1992, 1993 Free Software Foundation, Inc.
                     Written by Paul Rubin, June 1986
 		    Adapted to ANSI C, Richard Stallman, Jan 1987
 
@@ -6429,22 +6429,24 @@ skip_if_group (ip, any)
 	 and backslash-newlines, and see if we reach this #.
 	 If not, this # is not special.  */
       bp = beg_of_line;
-      while (1) {
-	if (is_hor_space[*bp])
-	  bp++;
-	else if (*bp == '\\' && bp[1] == '\n')
-	  bp += 2;
-	else if (*bp == '/' && bp[1] == '*') {
-	  bp += 2;
-	  while (!(*bp == '*' && bp[1] == '/'))
+      /* If -traditional, require # to be at beginning of line.  */
+      if (!traditional)
+	while (1) {
+	  if (is_hor_space[*bp])
 	    bp++;
-	  bp += 2;
-	} else if (cplusplus_comments && *bp == '/' && bp[1] == '/') {
-	  bp += 2;
-	  while (*bp++ != '\n') ;
-        }
-	else break;
-      }
+	  else if (*bp == '\\' && bp[1] == '\n')
+	    bp += 2;
+	  else if (*bp == '/' && bp[1] == '*') {
+	    bp += 2;
+	    while (!(*bp == '*' && bp[1] == '/'))
+	      bp++;
+	    bp += 2;
+	  } else if (cplusplus_comments && *bp == '/' && bp[1] == '/') {
+	    bp += 2;
+	    while (*bp++ != '\n') ;
+	  }
+	  else break;
+	}
       if (bp != ip->bufp) {
 	bp = ip->bufp + 1;	/* Reset bp to after the #.  */
 	break;
