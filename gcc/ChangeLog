@@ -1,3 +1,20 @@
+2004-02-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* target-def.h (TARGET_STRUCT_VALUE_RTX): Define as
+	hook_rtx_tree_int_null.
+	* targhooks.c (default_struct_value_rtx): Remove.
+	* targhooks.h: Remove the prototype for
+	default_struct_value_rtx.
+	* config/alpha/alpha.c, config/arc/arc.c, config/avr/avr.c,
+	config/fr30/fr30.c, config/h8300/h8300.c, config/i386/i386.c,
+	config/ip2k/ip2k.c, config/iq2000/iq2000.c,
+	config/m32r/m32r.c, config/mcore/mcore.c, config/mips/mips.c,
+	config/mn10300/mn10300.c, config/pdp11/pdp11.c,
+	config/rs6000/rs6000.c, config/s390/s390.c,
+	config/stormy16/stormy16.c, config/v850/v850.c,
+	config/xtensa/xtensa.c (TARGET_STRUCT_VALUE_RTX): Remove.
+	* doc/tm.texi (TARGET_STRUCT_VALUE_RTX): Document the default.
+
 2004-02-08  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* README.Portability: Change "ISO C89" to "ISO C90".

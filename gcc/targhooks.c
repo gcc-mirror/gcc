@@ -78,13 +78,6 @@ default_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
   return VOIDmode;
 }
 
-rtx
-default_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
-			  int incoming ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
 bool
 default_return_in_memory (tree type,
 			  tree fntype ATTRIBUTE_UNUSED)

@@ -115,8 +115,6 @@ const struct attribute_spec ip2k_attribute_table[];
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS ip2k_init_libfuncs
 
-#undef TARGET_STRUCT_VALUE_RTX
-#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY ip2k_return_in_memory
 
