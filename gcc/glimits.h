@@ -39,7 +39,8 @@
 
 /* Minimum and maximum values a `signed short int' can hold.  */
 #undef SHRT_MIN
-#define SHRT_MIN (-32768)
+/* For the sake of 16 bit hosts, we may not use -32768 */
+#define SHRT_MIN (-32767-1)
 #undef SHRT_MAX
 #define SHRT_MAX 32767
 
