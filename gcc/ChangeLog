@@ -1,5 +1,9 @@
 Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.c (override_options): Default to PA8000 scheduling.
+	* doc/invoke.texi (HP-PA options): Mention newly added 7300
+	scheduling parameter.
+
 	* pa.md (7100lc, 7200, 7300 scheduling): Slightly refine
 	handling of double precision multiplies.
 
