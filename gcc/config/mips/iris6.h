@@ -38,6 +38,11 @@ Boston, MA 02111-1307, USA.  */
    compiling -g.  This guarantees that we can unwind the stack.  */
 #define DWARF2_FRAME_INFO 1
 
+/* The system unwinder in libexc requires a specific dwarf return address
+   column to work.  */
+#undef  DWARF_FRAME_RETURN_COLUMN
+#define DWARF_FRAME_RETURN_COLUMN (FP_REG_LAST + 1)
+
 #undef MACHINE_TYPE
 #define MACHINE_TYPE "SGI running IRIX 6.x"
 
