@@ -2396,7 +2396,7 @@ build_x_function_call (function, params, decl)
 	  tree val = TREE_VALUE (function);
 
 	  if (flag_ansi_overloading)
-	    return build_new_function_call (function, params, NULL_TREE);
+	    return build_new_function_call (function, params);
 
 	  if (TREE_CODE (val) == TEMPLATE_DECL)
 	    return build_overload_call_real
