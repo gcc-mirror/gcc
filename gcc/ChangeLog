@@ -1,3 +1,7 @@
+Fre Mar 19 23:26:29 1999  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* expr.c (expand_expr): Handle ERROR_MARK much earlier.
+
 Fri Mar 19 15:28:38 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cccp.c (create_definition): Cast to U_CHAR* when assigning to one.
