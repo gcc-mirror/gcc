@@ -2812,7 +2812,7 @@ do
 	# This substitutes for lots of *.h files.
 	if [[ x$target_cpu_default != x -a $link = tm.h ]]
 	then
-		echo "#define TARGET_CPU_DEFAULT $target_cpu_default" >>$link
+		echo "#define TARGET_CPU_DEFAULT ($target_cpu_default)" >>$link
 	fi
 
 	for file in `eval echo '$'$var`; do
