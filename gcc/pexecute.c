@@ -316,9 +316,13 @@ pwait (pid, status, flags)
      report SIGABRT.  */
   if (termstat == 3)
     *status = SIGABRT;
-  else
+  else {
+#ifdef __CYGWIN32__
     *status = (((termstat) & 0xff) << 8);
-
+#else /* !__CYGWIN32__ this is MINGW32 */
+    *status = termstat;
+#endif
+  }
   return pid;
 }
 
