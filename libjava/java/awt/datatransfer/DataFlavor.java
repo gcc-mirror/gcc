@@ -1,5 +1,5 @@
 /* DataFlavor.java -- A type of data to transfer via the clipboard.
-   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,11 +60,7 @@ public class DataFlavor implements java.io.Externalizable, Cloneable
 {
   static final long serialVersionUID = 8367026044764648243L;
 
-// FIXME: Serialization: Need to write methods for.
-
-/*
- * Static Variables
- */
+  // FIXME: Serialization: Need to write methods for.
 
 /**
  * This is the data flavor used for tranferring plain text.  The MIME
@@ -90,6 +86,10 @@ public static final DataFlavor stringFlavor;
  */
 public static final DataFlavor javaFileListFlavor;
 
+/**
+ * This is an image flavor used for transferring images.  The
+ * representation type is a <code>java.awt.Image</code>.
+ */
 public static final DataFlavor imageFlavor;
 
 /**
@@ -105,7 +105,7 @@ public static final String javaSerializedObjectMimeType =
  * being transferred.
  */
 public static final String javaJVMLocalObjectMimeType =
-  "application/x-java-jvm-local-object";
+  "application/x-java-jvm-local-objectref";
 
 /**
  * This is the MIME type used to transfer a link to a remote object.
