@@ -1,5 +1,27 @@
 2003-09-16  Roger Sayle  <roger@eyesopen.com>
 
+	PR bootstrap/12269
+	* simplify-rtx.c (simplify_gen_relational): Allow the cmp_mode
+	argument to be VOIDmode, taking the mode of the comparison from
+	the operands.  Only call simplify_relational_operation if we
+	know the mode of the comparison.  Honor FLOAT_STORE_FLAG_VALUE
+	if comparison has a floating point result.  Ensure that the
+	result is always of the specified mode.
+	(simplify_replace_rtx): Simplify call to simplify_gen_relational.
+	(simplify_unary_operation): Ensure the correct mode and cmp_mode
+	are always passed to simplify_gen_relational.  Simplify NOT of
+	comparison operator in any mode, not just BImode.
+	(simplify_ternary_operation): Correct tests on the return value
+	of simplify_relational_operation to use const_true_rtx, not
+	const1_rtx.  Abort if it ever returns a non-constant result.
+
+	* cfgloopanal.c (count_strange_loop_iterations): Use the function
+	simplify_relational_operation, not simplify_gen_relational, if
+	we're only interested in constant comparisons and will ignore
+	non-constant results.
+
+2003-09-16  Roger Sayle  <roger@eyesopen.com>
+
 	* fold-const.c (tree_swap_operands_p): New function to determine
 	the prefered ordering of operands.
 	(fold): Numerous clean-ups.  Use tree_swap_operands_p when swapping
