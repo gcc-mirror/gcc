@@ -13,6 +13,8 @@ Mon Oct 12 12:10:37 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	
 Mon Oct 12 10:50:44 1998  Nick Clifton  <nickc@cygnus.com>
 
+	* config/arm/arm.md: Replace (reg 24) with (reg:CC 24).
+
 	* config/arm/thumb.c (thumb_override_options): Add warning about
 	PIC code not being supported just yet.
 
