@@ -1,5 +1,7 @@
 2003-01-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* g++.dg/template/nested1.C: New test.
+
 	* g++.dg/parse/namespace3.C: New test.
 
 2003-01-02  Nathanael Nerode  <neroden@gcc.gnu.org>
