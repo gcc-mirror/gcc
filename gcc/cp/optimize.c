@@ -33,6 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "params.h"
 #include "hashtab.h"
 #include "debug.h"
+#include "tree-inline.h"
 
 /* To Do:
 
@@ -99,7 +100,6 @@ static int inlinable_function_p PARAMS ((tree, inline_data *));
 static tree remap_decl PARAMS ((tree, inline_data *));
 static void remap_block PARAMS ((tree, tree, inline_data *));
 static void copy_scope_stmt PARAMS ((tree *, int *, inline_data *));
-static void optimize_inline_calls PARAMS ((tree));
 static tree calls_setjmp_r PARAMS ((tree *, int *, void *));
 static void update_cloned_parm PARAMS ((tree, tree));
 static void dump_function PARAMS ((enum tree_dump_index, tree));
@@ -121,7 +121,7 @@ remap_decl (decl, id)
 
   /* We only remap local variables in the current function.  */
   fn = VARRAY_TOP_TREE (id->fns);
-  if (!nonstatic_local_decl_p (decl) || DECL_CONTEXT (decl) != fn)
+  if (! LANG_AUTO_VAR_IN_FN_P (decl, fn))
     return NULL_TREE;
 
   /* See if we have remapped this declaration.  */
@@ -151,8 +151,8 @@ remap_decl (decl, id)
 		     copy_body_r, id, NULL);
 	}
 
-      if (!DECL_NAME (t) && TREE_TYPE (t)
-	  && ANON_AGGR_TYPE_P (TREE_TYPE ((t))))
+      if (! DECL_NAME (t) && TREE_TYPE (t)
+	  && LANG_ANON_AGGR_TYPE_P (TREE_TYPE (t)))
 	{
 	  /* For a VAR_DECL of anonymous type, we must also copy the
 	     member VAR_DECLS here and rechain the
@@ -165,7 +165,8 @@ remap_decl (decl, id)
 	    {
 	      tree member = remap_decl (TREE_VALUE (src), id);
 
-	      my_friendly_assert (!TREE_PURPOSE (src), 20010529);
+	      if (TREE_PURPOSE (src))
+		abort ();
 	      members = tree_cons (NULL, member, members);
 	    }
 	  DECL_ANON_UNION_ELEMS (t) = nreverse (members);
@@ -277,7 +278,8 @@ remap_block (scope_stmt, decls, id)
       /* Find this block in the table of remapped things.  */
       n = splay_tree_lookup (id->decl_map,
 			     (splay_tree_key) SCOPE_STMT_BLOCK (scope_stmt));
-      my_friendly_assert (n != NULL, 19991203);
+      if (! n)
+	abort ();
       SCOPE_STMT_BLOCK (scope_stmt) = (tree) n->value;
     }
 }
@@ -322,12 +324,14 @@ copy_body_r (tp, walk_subtrees, data)
   id = (inline_data *) data;
   fn = VARRAY_TOP_TREE (id->fns);
 
+#if 0
   /* All automatic variables should have a DECL_CONTEXT indicating
      what function they come from.  */
   if ((TREE_CODE (*tp) == VAR_DECL || TREE_CODE (*tp) == LABEL_DECL)
       && DECL_NAMESPACE_SCOPE_P (*tp))
-    my_friendly_assert (DECL_EXTERNAL (*tp) || TREE_STATIC (*tp),
-			19991113);
+    if (! DECL_EXTERNAL (*tp) && ! TREE_STATIC (*tp))
+      abort ();
+#endif
 
   /* If this is a RETURN_STMT, change it into an EXPR_STMT and a
      GOTO_STMT with the RET_LABEL as its target.  */
@@ -359,26 +363,29 @@ copy_body_r (tp, walk_subtrees, data)
      variables.  We don't want to copy static variables; there's only
      one of those, no matter how many times we inline the containing
      function.  */
-  else if (nonstatic_local_decl_p (*tp) && DECL_CONTEXT (*tp) == fn)
+  else if (LANG_AUTO_VAR_IN_FN_P (*tp, fn))
     {
       tree new_decl;
 
       /* Remap the declaration.  */
       new_decl = remap_decl (*tp, id);
-      my_friendly_assert (new_decl != NULL_TREE, 19991203);
+      if (! new_decl)
+	abort ();
       /* Replace this variable with the copy.  */
       STRIP_TYPE_NOPS (new_decl);
       *tp = new_decl;
     }
+#if 0
   else if (nonstatic_local_decl_p (*tp)
 	   && DECL_CONTEXT (*tp) != VARRAY_TREE (id->fns, 0))
-    my_friendly_abort (0);
+    abort ();
+#endif
   else if (TREE_CODE (*tp) == SAVE_EXPR)
     remap_save_expr (tp, id->decl_map, VARRAY_TREE (id->fns, 0),
 		     walk_subtrees);
   else if (TREE_CODE (*tp) == UNSAVE_EXPR)
     /* UNSAVE_EXPRs should not be generated until expansion time.  */
-    my_friendly_abort (19991113);
+    abort ();
   /* For a SCOPE_STMT, we must copy the associated block so that we
      can write out debugging information for the inlined variables.  */
   else if (TREE_CODE (*tp) == SCOPE_STMT && !id->in_target_cleanup_p)
@@ -398,8 +405,7 @@ copy_body_r (tp, walk_subtrees, data)
 	}
       else if (TREE_CODE (*tp) == MODIFY_EXPR
 	       && TREE_OPERAND (*tp, 0) == TREE_OPERAND (*tp, 1)
-	       && nonstatic_local_decl_p (TREE_OPERAND (*tp, 0))
-	       && DECL_CONTEXT (TREE_OPERAND (*tp, 0)) == fn)
+	       && LANG_AUTO_VAR_IN_FN_P (TREE_OPERAND (*tp, 0), fn))
 	{
 	  /* Some assignments VAR = VAR; don't generate any rtl code
 	     and thus don't count as variable modification.  Avoid
@@ -561,7 +567,7 @@ declare_return_variable (id, use_stmt)
   tree fn = VARRAY_TOP_TREE (id->fns);
   tree result = DECL_RESULT (fn);
   tree var;
-  int aggregate_return_p;
+  int need_return_decl = 1;
 
   /* We don't need to do anything for functions that don't return
      anything.  */
@@ -571,29 +577,9 @@ declare_return_variable (id, use_stmt)
       return NULL_TREE;
     }
 
-  /* Figure out whether or not FN returns an aggregate.  */
-  aggregate_return_p = IS_AGGR_TYPE (TREE_TYPE (result));
-
-  /* If FN returns an aggregate then the caller will always create the
-     temporary (using a TARGET_EXPR) and the call will be the
-     initializing expression for the TARGET_EXPR.  If we were just to
-     create a new VAR_DECL here, then the result of this function
-     would be copied (bitwise) into the variable initialized by the
-     TARGET_EXPR.  That's incorrect, so we must transform any
-     references to the RESULT into references to the target.  */
-  if (aggregate_return_p)
-    {
-      my_friendly_assert (VARRAY_ACTIVE_SIZE (id->target_exprs) != 0,
-			  20000430);
-      var = TREE_OPERAND (VARRAY_TOP_TREE (id->target_exprs), 0);
-      my_friendly_assert
-	(same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (var),
-						    TREE_TYPE (result)),
-	 20000430);
-    }
-  /* Otherwise, make an appropriate copy.  */
-  else
-    var = copy_decl_for_inlining (result, fn, VARRAY_TREE (id->fns, 0));
+  var = LANG_COPY_RES_DECL_FOR_INLINING (result, fn, VARRAY_TREE (id->fns, 0),
+					 id->decl_map, &need_return_decl,
+					 &id->target_exprs);
 
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that
      way, when the RESULT_DECL is encountered, it will be
@@ -602,29 +588,12 @@ declare_return_variable (id, use_stmt)
 		     (splay_tree_key) result,
 		     (splay_tree_value) var);
 
-  if (DECL_SAVED_FUNCTION_DATA (fn))
-    {
-      tree nrv = DECL_SAVED_FUNCTION_DATA (fn)->x_return_value;
-      if (nrv)
-	{
-	  /* We have a named return value; copy the name and source
-	     position so we can get reasonable debugging information, and
-	     register the return variable as its equivalent.  */
-	  DECL_NAME (var) = DECL_NAME (nrv);
-	  DECL_SOURCE_FILE (var) = DECL_SOURCE_FILE (nrv);
-	  DECL_SOURCE_LINE (var) = DECL_SOURCE_LINE (nrv);
-	  splay_tree_insert (id->decl_map,
-			     (splay_tree_key) nrv,
-			     (splay_tree_value) var);
-	}
-    }
-
   /* Build the USE_STMT.  */
   *use_stmt = build_stmt (EXPR_STMT, var);
 
   /* Build the declaration statement if FN does not return an
      aggregate.  */
-  if (!aggregate_return_p)
+  if (need_return_decl)
     return build_stmt (DECL_STMT, var);
   /* If FN does return an aggregate, there's no need to declare the
      return variable; we're using a variable in our caller's frame.  */
@@ -656,12 +625,11 @@ inlinable_function_p (fn, id)
      it.  */
   else if (!DECL_INLINE (fn))
     ;
-  /* We can't inline varargs functions.  */
-  else if (varargs_function_p (fn))
-    ;
-  /* We can't inline functions that are too big.
-   * Only allow a single function to eat up half of our budget. */
-  else if (DECL_NUM_STMTS (fn) * INSNS_PER_STMT > MAX_INLINE_INSNS / 2)
+  /* We can't inline functions that are too big.  Only allow a single
+     function to eat up half of our budget.  Make special allowance
+     for extern inline functions, though.  */
+  else if (! LANG_DISREGARD_INLINE_LIMITS (fn)
+	   && DECL_NUM_STMTS (fn) * INSNS_PER_STMT > MAX_INLINE_INSNS / 2)
     ;
   /* All is well.  We can inline this function.  Traditionally, GCC
      has refused to inline functions using alloca, or functions whose
@@ -675,26 +643,25 @@ inlinable_function_p (fn, id)
 
   /* Even if this function is not itself too big to inline, it might
      be that we've done so much inlining already that we don't want to
-     risk too much inlining any more and thus halve the acceptable size. */
-  if ((DECL_NUM_STMTS (fn) + id->inlined_stmts) * INSNS_PER_STMT
-      > MAX_INLINE_INSNS
+     risk too much inlining any more and thus halve the acceptable
+     size.  */
+  if (! LANG_DISREGARD_INLINE_LIMITS (fn)
+      && ((DECL_NUM_STMTS (fn) + id->inlined_stmts) * INSNS_PER_STMT
+	  > MAX_INLINE_INSNS)
       && DECL_NUM_STMTS (fn) * INSNS_PER_STMT > MAX_INLINE_INSNS / 4)
     inlinable = 0;
 
-  /* We can inline a template instantiation only if it's fully
-     instantiated.  */
-  if (inlinable
-      && DECL_TEMPLATE_INFO (fn)
-      && TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn)))
-    {
-      fn = instantiate_decl (fn, /*defer_ok=*/0);
-      inlinable = !TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn));
-    }
-
+  if (inlinable && LANG_CANNOT_INLINE_TREE_FN (&fn))
+    inlinable = 0;
+  
   /* If we don't have the function body available, we can't inline
      it.  */
   if (!DECL_SAVED_TREE (fn))
     inlinable = 0;
+
+  /* Check again, language hooks may have modified it.  */
+  if (! inlinable || DECL_UNINLINABLE (fn))
+    return 0;
 
   /* Don't do recursive inlining, either.  We don't record this in
      DECL_UNINLINABLE; we may be able to inline this function later.  */
@@ -706,7 +673,7 @@ inlinable_function_p (fn, id)
 	if (VARRAY_TREE (id->fns, i) == fn)
 	  return 0;
 
-      if (inlinable && DECL_LANG_SPECIFIC (fn) && DECL_INLINED_FNS (fn))
+      if (inlinable && DECL_INLINED_FNS (fn))
 	{
 	  int j;
 	  tree inlined_fns = DECL_INLINED_FNS (fn);
@@ -808,7 +775,7 @@ expand_call_inline (tp, walk_subtrees, data)
      for the return statements within the function to jump to.  The
      type of the statement expression is the return type of the
      function call.  */
-  expr = build_min (STMT_EXPR, TREE_TYPE (TREE_TYPE (fn)), NULL_TREE);
+  expr = build1 (STMT_EXPR, TREE_TYPE (TREE_TYPE (fn)), NULL_TREE);
 
   /* Local declarations will be replaced by their equivalents in this
      map.  */
@@ -832,7 +799,7 @@ expand_call_inline (tp, walk_subtrees, data)
 
   /* Record the function we are about to inline if optimize_function
      has not been called on it yet and we don't have it in the list.  */
-  if (DECL_LANG_SPECIFIC (fn) && !DECL_INLINED_FNS (fn))
+  if (! DECL_INLINED_FNS (fn))
     {
       int i;
 
@@ -878,9 +845,9 @@ expand_call_inline (tp, walk_subtrees, data)
   /* Close the block for the parameters.  */
   scope_stmt = build_stmt (SCOPE_STMT, DECL_INITIAL (fn));
   SCOPE_NO_CLEANUPS_P (scope_stmt) = 1;
-  my_friendly_assert (DECL_INITIAL (fn)
-		      && TREE_CODE (DECL_INITIAL (fn)) == BLOCK,
-		      19991203);
+  if (! DECL_INITIAL (fn)
+      || TREE_CODE (DECL_INITIAL (fn)) != BLOCK)
+    abort ();
   remap_block (scope_stmt, NULL_TREE, id);
   STMT_EXPR_STMT (expr)
     = chainon (STMT_EXPR_STMT (expr), scope_stmt);
@@ -957,13 +924,12 @@ expand_calls_inline (tp, id)
 
 /* Expand calls to inline functions in the body of FN.  */
 
-static void
+void
 optimize_inline_calls (fn)
      tree fn;
 {
   inline_data id;
   tree prev_fn;
-  struct saved_scope *s;
   
   /* Clear out ID.  */
   memset (&id, 0, sizeof (id));
@@ -978,12 +944,8 @@ optimize_inline_calls (fn)
       VARRAY_PUSH_TREE (id.fns, current_function_decl);
       prev_fn = current_function_decl;
     }
-  for (s = scope_chain; s; s = s->prev)
-    if (s->function_decl && s->function_decl != prev_fn)
-      {
-	VARRAY_PUSH_TREE (id.fns, s->function_decl);
-	prev_fn = s->function_decl;
-      }
+
+  prev_fn = LANG_ADD_PENDING_FN_DECLS (&id.fns, prev_fn);
   
   /* Create the stack of TARGET_EXPRs.  */
   VARRAY_TREE_INIT (id.target_exprs, 32, "target_exprs");
@@ -1014,8 +976,6 @@ optimize_inline_calls (fn)
       DECL_INLINED_FNS (fn) = ifn;
     }
   VARRAY_FREE (id.inlined_fns);
-  
-  dump_function (TDI_inlined, fn);
 }
 
 /* Optimize the body of FN. */
@@ -1043,7 +1003,11 @@ optimize_function (fn)
          optimization, (c) virtual functions are rarely inlineable,
          and (d) ASM_OUTPUT_MI_THUNK is there to DTRT anyway.  */
       && !DECL_THUNK_P (fn))
-    optimize_inline_calls (fn);
+    {
+      optimize_inline_calls (fn);
+
+      dump_function (TDI_inlined, fn);
+    }
   
   /* Undo the call to ggc_push_context above.  */
   --function_depth;
@@ -1106,6 +1070,38 @@ update_cloned_parm (parm, cloned_parm)
   DECL_SOURCE_LINE (cloned_parm) = DECL_SOURCE_LINE (parm);
 }
 
+/* FN is a function that has a complete body, and CLONE is a function
+   whose body is to be set to a copy of FN, mapping argument
+   declarations according to the ARG_MAP splay_tree.  */
+
+void
+clone_body (clone, fn, arg_map)
+     tree clone, fn;
+     void *arg_map;
+{
+  inline_data id;
+
+  /* Clone the body, as if we were making an inline call.  But, remap
+     the parameters in the callee to the parameters of caller.  If
+     there's an in-charge parameter, map it to an appropriate
+     constant.  */
+  memset (&id, 0, sizeof (id));
+  VARRAY_TREE_INIT (id.fns, 2, "fns");
+  VARRAY_PUSH_TREE (id.fns, clone);
+  VARRAY_PUSH_TREE (id.fns, fn);
+  id.decl_map = (splay_tree)arg_map;
+
+  /* Cloning is treated slightly differently from inlining.  Set
+     CLONING_P so that it's clear which operation we're performing.  */
+  id.cloning_p = true;
+
+  /* Actually copy the body.  */
+  TREE_CHAIN (DECL_SAVED_TREE (clone)) = copy_body (&id);
+
+  /* Clean up.  */
+  VARRAY_FREE (id.fns);
+}
+
 /* FN is a function that has a complete body.  Clone the body as
    necessary.  Returns non-zero if there's no longer any need to
    process the main body.  */
@@ -1114,7 +1110,6 @@ int
 maybe_clone_body (fn)
      tree fn;
 {
-  inline_data id;
   tree clone;
   int first = 1;
 
@@ -1135,6 +1130,7 @@ maybe_clone_body (fn)
       tree parm;
       tree clone_parm;
       int parmno;
+      splay_tree decl_map;
 
       /* Update CLONE's source position information to match FN's.  */
       DECL_SOURCE_FILE (clone) = DECL_SOURCE_FILE (fn);
@@ -1178,22 +1174,8 @@ maybe_clone_body (fn)
       push_to_top_level ();
       start_function (NULL_TREE, clone, NULL_TREE, SF_PRE_PARSED);
 
-      /* Just clone the body, as if we were making an inline call.
-	 But, remap the parameters in the callee to the parameters of
-	 caller.  If there's an in-charge parameter, map it to an
-	 appropriate constant.  */
-      memset (&id, 0, sizeof (id));
-      VARRAY_TREE_INIT (id.fns, 2, "fns");
-      VARRAY_PUSH_TREE (id.fns, clone);
-      VARRAY_PUSH_TREE (id.fns, fn);
-
-      /* Cloning is treated slightly differently from inlining.  Set
-	 CLONING_P so that its clear which operation we're performing.  */
-      id.cloning_p = true;
-
       /* Remap the parameters.  */
-      id.decl_map = splay_tree_new (splay_tree_compare_pointers,
-				    NULL, NULL);
+      decl_map = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
       for (parmno = 0,
 	     parm = DECL_ARGUMENTS (fn),
 	     clone_parm = DECL_ARGUMENTS (clone);
@@ -1206,7 +1188,7 @@ maybe_clone_body (fn)
 	    {
 	      tree in_charge;
 	      in_charge = in_charge_arg_for_name (DECL_NAME (clone));
-	      splay_tree_insert (id.decl_map,
+	      splay_tree_insert (decl_map,
 				 (splay_tree_key) parm,
 				 (splay_tree_value) in_charge);
 	    }
@@ -1219,7 +1201,7 @@ maybe_clone_body (fn)
 	      if (DECL_HAS_VTT_PARM_P (clone))
 		{
 		  DECL_ABSTRACT_ORIGIN (clone_parm) = parm;
-		  splay_tree_insert (id.decl_map,
+		  splay_tree_insert (decl_map,
 				     (splay_tree_key) parm,
 				     (splay_tree_value) clone_parm);
 		  clone_parm = TREE_CHAIN (clone_parm);
@@ -1227,7 +1209,7 @@ maybe_clone_body (fn)
 	      /* Otherwise, map the VTT parameter to `NULL'.  */
 	      else
 		{
-		  splay_tree_insert (id.decl_map,
+		  splay_tree_insert (decl_map,
 				     (splay_tree_key) parm,
 				     (splay_tree_value) null_pointer_node);
 		}
@@ -1236,23 +1218,22 @@ maybe_clone_body (fn)
 	     function.  */
 	  else
 	    {
-	      splay_tree_insert (id.decl_map,
+	      splay_tree_insert (decl_map,
 				 (splay_tree_key) parm,
 				 (splay_tree_value) clone_parm);
 	      clone_parm = TREE_CHAIN (clone_parm);
 	    }
 	}
 
-      /* Actually copy the body.  */
-      TREE_CHAIN (DECL_SAVED_TREE (clone)) = copy_body (&id);
+      /* Clone the body.  */
+      clone_body (clone, fn, decl_map);
 
       /* There are as many statements in the clone as in the
 	 original.  */
       DECL_NUM_STMTS (clone) = DECL_NUM_STMTS (fn);
 
       /* Clean up.  */
-      splay_tree_delete (id.decl_map);
-      VARRAY_FREE (id.fns);
+      splay_tree_delete (decl_map);
 
       /* Now, expand this function into RTL, if appropriate.  */
       finish_function (0);

@@ -378,13 +378,6 @@ int flag_weak = 1;
 
 int flag_use_cxa_atexit;
 
-/* 0 if we should not perform inlining.
-   1 if we should expand functions calls inline at the tree level.  
-   2 if we should consider *all* functions to be inline 
-   candidates.  */
-
-int flag_inline_trees = 0;
-
 /* Maximum template instantiation depth.  This limit is rather
    arbitrary, but it exists to limit the time it takes to notice
    infinite template instantiations.  */

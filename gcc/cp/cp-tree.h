@@ -1758,10 +1758,6 @@ struct lang_decl
   /* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
   tree cloned_function;
 
-  /* In a FUNCTION_DECL, these are function data which is to be kept
-     as long as FUNCTION_DECL is kept.  */
-  tree inlined_fns;
-
   union
   {
     tree sorted_fields;
@@ -1777,10 +1773,6 @@ struct lang_decl
 };
 
 #define DEFARG_POINTER(NODE) (DEFAULT_ARG_CHECK(NODE)->identifier.id.str)
-
-/* Non-zero if NODE is a _DECL with TREE_READONLY set.  */
-#define TREE_READONLY_DECL_P(NODE) \
-  (TREE_READONLY (NODE) && DECL_P (NODE))
 
 /* DECL_NEEDED_P holds of a declaration when we need to emit its
    definition.  This is true when the back-end tells us that
@@ -1887,10 +1879,6 @@ struct lang_decl
    cloned.  */
 #define DECL_CLONED_FUNCTION(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->cloned_function)
-
-/* List of FUNCION_DECLs inlined into this function's body.  */
-#define DECL_INLINED_FNS(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->inlined_fns)
 
 /* Nonzero if NODE has DECL_DISCRIMINATOR and not DECL_ACCESS.  */
 #define DECL_DISCRIMINATOR_P(NODE)	\
@@ -3262,13 +3250,6 @@ extern int flag_implicit_templates;
 
 extern int flag_weak;
 
-/* 0 if we should not perform inlining.
-   1 if we should expand functions calls inline at the tree level.  
-   2 if we should consider *all* functions to be inline 
-   candidates.  */
-
-extern int flag_inline_trees;
-
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
 extern int at_eof;
@@ -4197,18 +4178,9 @@ extern void debug_binfo				PARAMS ((tree));
 extern tree build_dummy_object			PARAMS ((tree));
 extern tree maybe_dummy_object			PARAMS ((tree, tree *));
 extern int is_dummy_object			PARAMS ((tree));
-extern tree walk_tree                           PARAMS ((tree *,
-							 walk_tree_fn,
-							 void *,
-							 htab_t));
-extern tree walk_tree_without_duplicates        PARAMS ((tree *,
-							 walk_tree_fn,
-							 void *));
-extern tree copy_tree_r                         PARAMS ((tree *, int *, void *));
 extern const struct attribute_spec cp_attribute_table[];
 extern tree make_ptrmem_cst                     PARAMS ((tree, tree));
 extern tree cp_build_qualified_type_real        PARAMS ((tree, int, int));
-extern void remap_save_expr                     PARAMS ((tree *, splay_tree, tree, int *));
 #define cp_build_qualified_type(TYPE, QUALS) \
   cp_build_qualified_type_real ((TYPE), (QUALS), /*complain=*/1)
 extern tree build_shared_int_cst                PARAMS ((int));
