@@ -2540,7 +2540,7 @@ process_command (argc, argv)
 				    1, 0, NULL_PTR);
 		      else
 			{
-			  char *string = xmalloc (len);
+			  char *string = xmalloc (len + 1);
 			  strncpy (string, value, len-7);
 			  strcpy (string+len-7, "include");
 			  add_prefix (&include_prefixes, string,
