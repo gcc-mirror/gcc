@@ -577,15 +577,17 @@ define_decl (declarator, declspecs)
   return decl;
 }
 
-/* Rules for statically typed objects.  Called from comptypes,
-   convert_for_assignment, and comp_target_types.
+/* Return 1 if LHS and RHS are compatible types for assignment or
+   various other operations.  Return 0 if they are incompatible, and
+   return -1 if we choose to not decide.  When the operation is
+   REFLEXIVE, check for compatibility in either direction.
 
-   An assignment of the form `a' = `b' is permitted if:
+   For statically typed objects, an assignment of the form `a' = `b'
+   is permitted if:
 
-   - `a' is of type "id".
-   - `a' and `b' are the same class type.
-   - `a' and `b' are of class types A and B such that B is a descendant
-     of A.  */
+   `a' is of type "id",
+   `a' and `b' are the same class type, or
+   `a' and `b' are of class types A and B such that B is a descendant of A.  */
 
 int
 maybe_objc_comptypes (lhs, rhs, reflexive)
@@ -594,7 +596,7 @@ maybe_objc_comptypes (lhs, rhs, reflexive)
 {
   if (doing_objc_thang)
     return objc_comptypes (lhs, rhs, reflexive);
-  return 0;
+  return -1;
 }
 
 static tree
@@ -661,6 +663,11 @@ lookup_protocol_in_reflist (rproto_list, lproto)
 
    return 0;
 }
+
+/* Return 1 if LHS and RHS are compatible types for assignment
+   or various other operations.  Return 0 if they are incompatible,
+   and return -1 if we choose to not decide.  When the operation
+   is REFLEXIVE, check for compatibility in either direction.  */
 
 int
 objc_comptypes (lhs, rhs, reflexive)
@@ -752,12 +759,12 @@ objc_comptypes (lhs, rhs, reflexive)
 	    return 1;	/* one of the types is a protocol */
 	}
       else
-	return 2;	/* defer to comptypes */
+	return -1;	/* defer to comptypes */
     }
   else if (TREE_CODE (lhs) == RECORD_TYPE && TREE_CODE (rhs) == RECORD_TYPE)
     ; /* fall thru...this is the case we have been handling all along */
   else
-    return 2;	/* defer to comptypes */
+    return -1;	/* defer to comptypes */
 
   /* End of new protocol support.  */
 
@@ -803,7 +810,7 @@ objc_comptypes (lhs, rhs, reflexive)
       return 0;
     }
   else
-    return 0;
+    return -1;	/* defer to comptypes */
 }
 
 /* Called from c-decl.c before all calls to rest_of_decl_compilation.  */
