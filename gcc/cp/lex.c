@@ -747,6 +747,9 @@ init_parse (filename)
   ridpointers[(int) RID_EXPLICIT] = get_identifier ("explicit");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_EXPLICIT],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_EXPLICIT]));
+  ridpointers[(int) RID_EXPORT] = get_identifier ("export");
+  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_EXPORT],
+			  build_tree_list (NULL_TREE, ridpointers[(int) RID_EXPORT]));
   ridpointers[(int) RID_FRIEND] = get_identifier ("friend");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_FRIEND],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_FRIEND]));
