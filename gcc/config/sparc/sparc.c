@@ -6024,7 +6024,7 @@ sparc_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   bool indirect;
   tree ptrtype = build_pointer_type (type);
 
-  if (pass_by_reference (NULL, TYPE_MODE (type), type, 0))
+  if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
     {
       indirect = true;
       size = rsize = UNITS_PER_WORD;
@@ -6044,7 +6044,7 @@ sparc_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	    align = 2 * UNITS_PER_WORD;
 
 	  /* SPARC-V9 ABI states that structures up to 16 bytes in size
-	     are given whole slots as needed.  */
+	     are left-justified in their slots.  */
 	  if (AGGREGATE_TYPE_P (type))
 	    {
 	      if (size == 0)
@@ -6074,7 +6074,7 @@ sparc_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   if (indirect)
     {
       addr = fold_convert (build_pointer_type (ptrtype), addr);
-      addr = build_fold_indirect_ref (addr);
+      addr = build_va_arg_indirect_ref (addr);
     }
   /* If the address isn't aligned properly for the type,
      we may need to copy to a temporary.  
@@ -6103,7 +6103,7 @@ sparc_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   incr = build2 (MODIFY_EXPR, ptr_type_node, valist, incr);
   gimplify_and_add (incr, post_p);
 
-  return build_fold_indirect_ref (addr);
+  return build_va_arg_indirect_ref (addr);
 }
 
 /* Return the string to output an unconditional branch to LABEL, which is
@@ -8543,7 +8543,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     {
       /* We will emit a regular sibcall below, so we need to instruct
 	 output_sibcall that we are in a leaf function.  */
-      sparc_leaf_function_p = 1;
+      sparc_leaf_function_p = current_function_uses_only_leaf_regs = 1;
 
       /* This will cause final.c to invoke leaf_renumber_regs so we
 	 must behave as if we were in a not-yet-leafified function.  */
@@ -8553,7 +8553,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     {
       /* We will emit the sibcall manually below, so we will need to
 	 manually spill non-leaf registers.  */
-      sparc_leaf_function_p = 0;
+      sparc_leaf_function_p = current_function_uses_only_leaf_regs = 0;
 
       /* We really are in a leaf function.  */
       int_arg_first = SPARC_OUTGOING_INT_ARG_FIRST;
