@@ -513,7 +513,7 @@ The directory you use for @option{--with-local-prefix} @strong{must not}
 contain any of the system's standard header files.  If it did contain
 them, certain programs would be miscompiled (including GNU Emacs, on
 certain targets), because this would override and nullify the header
-file corrections made by the @code{fixincludes} script.
+file corrections made by the @command{fixincludes} script.
 
 Indications are that people who use this option use it based on mistaken
 ideas of what it is for.  People use it as if it specified where to
@@ -876,10 +876,10 @@ Some options which only apply to building cross compilers:
 @item --with-headers=@var{dir}
 Specifies a directory
 which has target include files.
-@emph{This options is required} when building a cross
+@emph{This option is required} when building a cross
 compiler, if @file{@var{prefix}/@var{target}/sys-include} doesn't pre-exist.
 These include files will be copied into the @file{gcc} install directory.
-Fixincludes will be run on these files to make them compatible with
+@command{fixincludes} will be run on these files to make them compatible with
 GCC.
 @item --with-libs=``@var{dir1} @var{dir2} @dots{} @var{dirN}''
 Specifies a list of directories which contain the target runtime
@@ -947,7 +947,7 @@ because you have previously configured the compiler in the source
 directory.  Make sure you have done all the necessary preparations.
 
 If you build GCC on a BSD system using a directory stored in an old System
-V file system, problems may occur in running @code{fixincludes} if the
+V file system, problems may occur in running @command{fixincludes} if the
 System V file system doesn't support symbolic links.  These problems
 result in a failure to fix the declaration of @code{size_t} in
 @file{sys/types.h}.  If you find that @code{size_t} is a signed type and
