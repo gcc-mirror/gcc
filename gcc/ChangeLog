@@ -1,3 +1,8 @@
+Sat Nov 14 15:05:07 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (addsi3, subsi3): Revise 5 Nov change to store DImode
+	value in paradoxical SImode result, rather than truncating midpoint.
+
 Fri Nov 13 22:19:23 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (reg_not_elim_operand): New.
