@@ -1,3 +1,11 @@
+2003-11-20  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/11602
+	* config/locale/gnu/codecvt_members.cc (codecvt::do_out):
+	Rewrite, using both wcsnrtombs and wcrtomb in a loop: the
+	former is very fast, but stops if encounters a NUL.
+	* testsuite/performance/wchar_t_out.cc: New, from the PR.
+
 2003-11-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/gnu/codecvt_members.cc (do_out): If
