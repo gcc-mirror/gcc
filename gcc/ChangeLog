@@ -1,5 +1,7 @@
 2003-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* c-parse.in (yylexstring): Use a location_t.
+
 	* diagnostic.h (diagnostic_set_info): Replace file and lineno
 	parameters with a location_t.
 	* diagnostic.c (diagnostic_set_info): Replace file and lineno
