@@ -1,3 +1,7 @@
+Sat Jan  3 12:11:05 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
+
+	* configure.in: Finalize support for {alpha|powerpc}*-*-linux-gnulibc1
+
 Tue Dec 23 12:44:24 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* config.guess: HP 9000/803 is a PA1.1 machine.
