@@ -1282,7 +1282,7 @@ static format_char_info time_char_table[] = {
   { "cx", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "3E" },
   { "%",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "" },
   { "X",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "E" },
-  { "RTnrt",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "9" },
+  { "FRTnrt",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "9" },
   { "P",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "G" },
   { "HIMSUWdmw",	0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow" },
   { "e",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow9" },
@@ -1295,7 +1295,6 @@ static format_char_info time_char_table[] = {
   { "b",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^" },
   { "h",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^9" },
   { "Y",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOow" },
-  { "F",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "w9" },
   { "C",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOow9" },
   { NULL,		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
@@ -2054,7 +2053,9 @@ check_format_info (info, params)
 		warning ("ISO C does not support the `%c' length modifier",
 			 length_char);
 	    }
-	  else if (*format_chars == 'Z' || *format_chars == 'z')
+	  else if (*format_chars == 'z'
+		   || (*format_chars == 'Z'
+		       && info->format_type == printf_format_type))
 	    {
 	      length_char = *format_chars++;
 	      if (pedantic)

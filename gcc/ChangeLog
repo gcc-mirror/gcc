@@ -1,3 +1,8 @@
+2000-08-24  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (time_char_table): Don't allow width with %F.
+	(check_format_info): Don't allow "Z" length with scanf.
+
 2000-08-24  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.c (finish_diagnostic): Define.
