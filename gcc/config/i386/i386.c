@@ -14233,7 +14233,14 @@ x86_output_mi_thunk (file, thunk, delta, vcall_offset, function)
       if (!flag_pic || (*targetm.binds_local_p) (function))
 	output_asm_insn ("jmp\t%P0", xops);
       else
-	output_asm_insn ("jmp\t*%P0@GOTPCREL(%%rip)", xops);
+	{
+	  tmp = XEXP (xops[0], 0);
+	  tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, tmp), UNSPEC_GOTPCREL);
+	  tmp = gen_rtx_CONST (Pmode, tmp);
+	  tmp = gen_rtx_MEM (QImode, tmp);
+	  xops[0] = tmp;
+	  output_asm_insn ("jmp\t%A0", xops);
+	}
     }
   else
     {
