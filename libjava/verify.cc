@@ -100,13 +100,15 @@ debug_print (MAYBE_UNUSED const char *fmt, ...)
 // subroutine is exited via `goto' or `athrow' and not `ret'.
 //
 // In some other areas the JVM specification is (mildly) incorrect,
-// but we still implement what is specified.  For instance, you cannot
+// so we diverge.  For instance, you cannot
 // violate type safety by allocating an object with `new' and then
 // failing to initialize it, no matter how one branches or where one
 // stores the uninitialized reference.  See "Improving the official
 // specification of Java bytecode verification" by Alessandro Coglio.
-// Similarly, there's no real point in enforcing that padding bytes or
-// the mystery byte of invokeinterface must be 0, but we do that too.
+//
+// Note that there's no real point in enforcing that padding bytes or
+// the mystery byte of invokeinterface must be 0, but we do that
+// regardless.
 //
 // The verifier is currently neither completely lazy nor eager when it
 // comes to loading classes.  It tries to represent types by name when
@@ -1098,28 +1100,6 @@ private:
       return changed;
     }
 
-    // Throw an exception if there is an uninitialized object on the
-    // stack or in a local variable.  EXCEPTION_SEMANTICS controls
-    // whether we're using backwards-branch or exception-handing
-    // semantics.
-    void check_no_uninitialized_objects (int max_locals,
-					 _Jv_BytecodeVerifier *verifier,
-					 bool exception_semantics = false)
-    {
-      if (! exception_semantics)
-	{
-	  for (int i = 0; i < stacktop; ++i)
-	    if (stack[i].isreference () && ! stack[i].isinitialized ())
-	      verifier->verify_fail ("uninitialized object on stack");
-	}
-
-      for (int i = 0; i < max_locals; ++i)
-	if (locals[i].isreference () && ! locals[i].isinitialized ())
-	  verifier->verify_fail ("uninitialized object in local variable");
-
-      check_this_initialized (verifier);
-    }
-
     // Ensure that `this' has been initialized.
     void check_this_initialized (_Jv_BytecodeVerifier *verifier)
     {
@@ -1434,15 +1414,19 @@ private:
   void push_jump (int offset)
   {
     int npc = compute_jump (offset);
-    if (npc < PC)
-      current_state->check_no_uninitialized_objects (current_method->max_locals, this);
+    // According to the JVM Spec, we need to check for uninitialized
+    // objects here.  However, this does not actually affect type
+    // safety, and the Eclipse java compiler generates code that
+    // violates this constraint.
     merge_into (npc, current_state);
   }
 
   void push_exception_jump (type t, int pc)
   {
-    current_state->check_no_uninitialized_objects (current_method->max_locals,
-						   this, true);
+    // According to the JVM Spec, we need to check for uninitialized
+    // objects here.  However, this does not actually affect type
+    // safety, and the Eclipse java compiler generates code that
+    // violates this constraint.
     state s (current_state, current_method->max_stack,
 	     current_method->max_locals);
     if (current_method->max_stack < 1)
@@ -1504,9 +1488,10 @@ private:
     if (npc >= current_method->code_length)
       verify_fail ("fell off end");
 
-    if (npc < PC)
-      current_state->check_no_uninitialized_objects (current_method->max_locals,
-						     this);
+    // According to the JVM Spec, we need to check for uninitialized
+    // objects here.  However, this does not actually affect type
+    // safety, and the Eclipse java compiler generates code that
+    // violates this constraint.
     merge_into (npc, current_state);
     invalidate_pc ();
   }
@@ -1515,8 +1500,10 @@ private:
   {
     int npc = compute_jump (offset);
 
-    if (npc < PC)
-      current_state->check_no_uninitialized_objects (current_method->max_locals, this);
+    // According to the JVM Spec, we need to check for uninitialized
+    // objects here.  However, this does not actually affect type
+    // safety, and the Eclipse java compiler generates code that
+    // violates this constraint.
 
     // Modify our state as appropriate for entry into a subroutine.
     type ret_addr (return_address_type);
