@@ -1557,10 +1557,6 @@ override_options (void)
 	error ("bad value (%s) for -mfpmath= switch", ix86_fpmath_string);
     }
 
-  /* If fpmath doesn't include 387, disable use of x87 intrinsics.  */
-  if (! (ix86_fpmath & FPMATH_387))
-    target_flags |= MASK_NO_FANCY_MATH_387;
-
   if ((x86_accumulate_outgoing_args & TUNEMASK)
       && !(target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
       && !optimize_size)
