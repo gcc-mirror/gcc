@@ -1,3 +1,8 @@
+2003-04-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Prefer "bug fix" over "bugfix".
+	Add Segher Boessenkool.
+
 2003-04-18  Alexander Sotirov  <sluncho@mirizma.org>
 
 	PR c/9177
