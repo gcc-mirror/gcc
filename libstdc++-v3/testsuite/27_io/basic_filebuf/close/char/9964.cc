@@ -51,17 +51,18 @@ void test_07()
     {
       filebuf fbin;
       fbin.open(name, ios_base::in);
-      sleep(1);
+      sleep(2);
       fbin.close();
       exit(0);
     }
   
   filebuf fb;
+  sleep(1);
   filebuf* ret = fb.open(name, ios_base::out | ios_base::trunc);
   VERIFY( ret != NULL );
   VERIFY( fb.is_open() );
 
-  sleep(2);
+  sleep(3);
   fb.sputc('a');
 
   ret = fb.close();

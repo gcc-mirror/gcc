@@ -1,3 +1,8 @@
+2003-04-22  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/27_io/basic_filebuf/close/char/9964.cc (test_07):
+	Adjust timing.
+
 2003-04-22  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_streambuf.h (_S_pback_size, _M_pback,
