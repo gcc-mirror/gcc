@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.39 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -511,8 +511,9 @@ package body Bcheck is
          --  with the checksums in the ALI files.
 
          elsif Check_Source_Files then
-            if Source.Table (S).Checksum /=
-               Get_File_Checksum (Source.Table (S).Sfile)
+            if not Checksums_Match
+              (Source.Table (S).Checksum,
+               Get_File_Checksum (Source.Table (S).Sfile))
             then
                Source.Table (S).All_Checksums_Match := False;
             end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.124 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -1143,9 +1143,9 @@ package body ALI is
                   Chk := Chk * 16 +
                            Character'Pos (Nextc) - Character'Pos ('0');
 
-               elsif Nextc in 'A' .. 'F' then
+               elsif Nextc in 'a' .. 'f' then
                   Chk := Chk * 16 +
-                           Character'Pos (Nextc) - Character'Pos ('A') + 10;
+                           Character'Pos (Nextc) - Character'Pos ('a') + 10;
 
                else
                   exit;

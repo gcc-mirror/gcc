@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.32 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,7 @@
 ------------------------------------------------------------------------------
 
 with Types; use Types;
+
 package Scans is
 
 --  The scanner maintains a current state in the global variables defined
@@ -342,8 +343,8 @@ package Scans is
    --  recovery circuits which depend on looking at the column line up.
 
    Checksum : Word;
-   --  Used to accumulate a checksum representing the tokens in the source
-   --  file being compiled. This checksum includes only program tokens, and
+   --  Used to accumulate a CRC representing the tokens in the source
+   --  file being compiled. This CRC includes only program tokens, and
    --  excludes comments.
 
    First_Non_Blank_Location : Source_Ptr;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.87 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -121,7 +121,7 @@ pragma Preelaborate (Types);
    --  Procedure for freeing dynamically allocated String values
 
    subtype Word_Hex_String is String (1 .. 8);
-   --  Type used to represent Word value as 8 hex digits, with upper case
+   --  Type used to represent Word value as 8 hex digits, with lower case
    --  letters for the alphabetic cases.
 
    function Get_Hex_String (W : Word) return Word_Hex_String;

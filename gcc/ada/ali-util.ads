@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.2 $                              --
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -130,12 +130,26 @@ package ALI.Util is
    -- Subprograms for manipulating checksums --
    --------------------------------------------
 
+   Checksum_Error : constant Word := 16#FFFF_FFFF#;
+   --  This value is used to indicate an error in computing the checksum.
+   --  When comparing checksums for smart recompilation, the CRC_Error
+   --  value is never considered to match. This could possibly result
+   --  in a false negative, but that is never harmful, it just means
+   --  that in unusual cases an unnecessary recompilation occurs.
+
    function Get_File_Checksum (Fname : Name_Id) return Word;
    --  Compute checksum for the given file. As far as possible, this circuit
    --  computes exactly the same value computed by the compiler, but it does
    --  not matter if it gets it wrong in marginal cases, since the only result
    --  is to miss some smart recompilation cases, correct functioning is not
-   --  affecte by a mis-computation. Returns an impossible checksum value,
-   --  with the upper bit set, if the file is missing or has an error.
+   --  affected by a miscomputation. Returns Checksum_Error if the file is
+   --  missing or has an error.
+
+   function Checksums_Match (Checksum1, Checksum2 : Word) return Boolean;
+   pragma Inline (Checksums_Match);
+   --  Returns True if Checksum1 and Checksum2 have the same value and are
+   --  not equal to Checksum_Error, returns False in all other cases. This
+   --  routine must always be used to compare for checksum equality, to
+   --  ensure that the case of Checksum_Error is handled properly.
 
 end ALI.Util;

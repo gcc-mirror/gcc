@@ -299,16 +299,16 @@ GNAT1_C_OBJS = b_gnat1.o adaint.o cstreams.o cio.o targtyps.o decl.o \
 # Object files from Ada sources that are used by gnat1
 
 GNAT_ADA_OBJS = \
- ada.o a-charac.o a-chlat1.o a-except.o s-memory.o s-traceb.o s-mastop.o \
- s-except.o ali.o alloc.o atree.o butil.o casing.o checks.o comperr.o     \
- csets.o cstand.o debug.o debug_a.o einfo.o elists.o errout.o eval_fat.o \
- exp_attr.o exp_ch11.o exp_ch12.o exp_ch13.o exp_ch2.o exp_ch3.o exp_ch4.o \
- exp_ch5.o exp_ch6.o exp_ch7.o exp_ch8.o exp_ch9.o exp_code.o exp_dbug.o \
- exp_disp.o exp_dist.o exp_fixd.o exp_aggr.o exp_imgv.o \
+ ada.o a-charac.o a-chlat1.o a-except.o s-memory.o \
+ s-traceb.o s-mastop.o s-except.o ali.o alloc.o atree.o butil.o casing.o \
+ checks.o comperr.o csets.o cstand.o debug.o debug_a.o einfo.o elists.o \
+ errout.o eval_fat.o exp_attr.o exp_ch11.o exp_ch12.o exp_ch13.o exp_ch2.o \
+ exp_ch3.o exp_ch4.o exp_ch5.o exp_ch6.o exp_ch7.o exp_ch8.o exp_ch9.o \
+ exp_code.o exp_dbug.o exp_disp.o exp_dist.o exp_fixd.o exp_aggr.o exp_imgv.o \
  exp_intr.o exp_pakd.o exp_prag.o exp_smem.o \
  exp_strm.o exp_tss.o exp_util.o exp_vfpt.o expander.o fname.o fname-uf.o \
  freeze.o frontend.o gnat.o g-hesora.o g-htable.o g-os_lib.o \
- g-speche.o get_targ.o gnatvsn.o \
+ g-speche.o s-crc32.o get_targ.o gnatvsn.o \
  hlo.o hostparm.o impunit.o \
  interfac.o itypes.o inline.o krunch.o lib.o \
  layout.o lib-load.o lib-util.o lib-xref.o lib-writ.o live.o \
@@ -339,7 +339,7 @@ GNATBIND_OBJS = \
  butil.o casing.o csets.o \
  debug.o fname.o gnat.o g-hesora.o g-htable.o \
  g-os_lib.o gnatbind.o gnatvsn.o hostparm.o \
- krunch.o namet.o opt.o osint.o output.o rident.o s-assert.o \
+ krunch.o namet.o opt.o osint.o output.o rident.o s-crc32.o s-assert.o \
  s-parame.o s-sopco3.o s-sopco4.o s-sopco5.o s-stache.o s-stalib.o \
  s-stoele.o s-imgenu.o s-strops.o s-soflin.o s-wchcon.o s-wchjis.o \
  sdefault.o switch.o stylesw.o validsw.o \
@@ -392,7 +392,7 @@ GNATKR_RTL_OBJS = ada.o a-charac.o a-chahan.o a-chlat1.o a-comlin.o \
   a-filico.o  s-strops.o  s-stratt.o s-imgenu.o a-ioexce.o s-exctab.o
 GNATKR_OBJS = gnatkr.o gnatvsn.o \
   krunch.o hostparm.o $(GNATKR_RTL_OBJS) $(EXTRA_GNATTOOLS_OBJS)
- 
+
 GNATLINK_RTL_OBJS = \
    adaint.o argv.o cio.o cstreams.o \
    exit.o init.o final.o raise.o tracebak.o \
@@ -451,6 +451,7 @@ GNATLS_RTL_OBJS = \
  system.o   \
  s-assert.o \
  s-bitops.o \
+ s-crc32.o  \
  s-except.o \
  s-exctab.o \
  s-finroo.o \
@@ -478,6 +479,7 @@ GNATLS_RTL_OBJS = \
  s-wchcnv.o \
  s-wchcon.o \
  s-wchjis.o
+
 GNATLS_OBJS = \
  ali.o      \
  ali-util.o \
@@ -553,7 +555,7 @@ GNATMAKE_RTL_OBJS = adaint.o argv.o raise.o exit.o a-comlin.o \
  s-imgenu.o s-assert.o s-secsta.o s-stoele.o s-soflin.o s-fileio.o \
  s-valenu.o s-valuti.o g-casuti.o \
  system.o s-exctab.o s-strops.o s-sopco3.o s-sopco4.o s-sopco5.o \
- g-htable.o g-regexp.o s-wchcnv.o
+ g-htable.o g-regexp.o s-crc32.o s-wchcnv.o
 
 GNATMAKE_OBJS = ali.o ali-util.o \
  alloc.o atree.o binderr.o butil.o casing.o csets.o debug.o einfo.o elists.o \
@@ -1666,6 +1668,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-cgicoo.o \
   g-cgideb.o \
   g-comlin.o \
+  g-crc32.o \
   g-curexc.o \
   g-debuti.o \
   g-debpoo.o \
@@ -1715,6 +1718,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-auxdec.o \
   s-bitops.o \
   s-chepoo.o \
+  s-crc32.o  \
   s-direio.o \
   s-errrep.o \
   s-except.o \
@@ -3929,6 +3933,8 @@ s-assert.o : ada.ads a-except.ads gnat.ads g-htable.ads system.ads \
 
 s-bitops.o : gnat.ads g-except.ads system.ads s-bitops.ads s-bitops.adb \
    s-unstyp.ads unchconv.ads 
+
+s-crc32.o : interfac.ads system.ads s-crc32.ads s-crc32.adb
 
 s-except.o : ada.ads a-except.ads system.ads s-except.ads s-stalib.ads \
    unchconv.ads 
