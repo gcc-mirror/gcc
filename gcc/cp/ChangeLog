@@ -1,3 +1,8 @@
+2004-07-09  Mike Stump  <mrs@apple.com>
+
+	* typeck.c (build_class_member_access_expr): Skip null deref
+	warning when we don't dereference it.
+
 2004-07-09  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/8211
