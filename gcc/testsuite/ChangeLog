@@ -1,3 +1,12 @@
+2004-11-14  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c99-flex-array-5.c, gcc.dg/c99-fordecl-3.c,
+	gcc.dg/comp-goto-1.c, gcc.dg/comp-goto-2.c, gcc.dg/comp-goto-3.c,
+	gcc.dg/format/strfmon-2.c, gcc.dg/pointer-arith-1.c,
+	gcc.dg/pointer-arith-2.c, gcc.dg/pointer-arith-3.c,
+	gcc.dg/pointer-arith-4.c, gcc.dg/switch-5.c, gcc.dg/switch-6.c,
+	gcc.dg/switch-7.c: New tests.
+
 2004-11-14  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-78.c: Now vectorized on powerpc*.
