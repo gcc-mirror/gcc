@@ -1,3 +1,22 @@
+1999-07-06  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.lang/Final.xfail: New file.
+	* libjava.compile/Case.xfail: New file.
+	* libjava.compile/Where.xfail: New file.
+	* libjava.compile/test.exp: Look for `.xfail' files.
+	* libjava.lang/test.exp: Don't look for `.arg' files.
+	Do look for `.xfail' files.
+	* lib/libjava.exp (test_libjava_from_source): Changed meaning of
+	`exec_args' argument.  Handle `xfail-*' arguments.
+	(test_libjava_from_javac): Likewise.
+	(test_libjava): Likewise.
+	(libjava_read_xfail): New proc.
+
+1999-07-05  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* libjava.lang/Final.java: Added.
+	* libjava.lang/Final.out: Added.
+
 1999-07-02  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.lang/Finalize_1.out: Removed.
@@ -10,6 +29,19 @@ Thu Jul  1 16:22:19 1999  Anthony Green  <green@cygnus.com>
 
 	* libjava.mauve/mauve.exp: Don't stop counting test results
  	prematurely.
+
+1999-06-25  Tom Tromey  <tromey@cygnus.com>
+
+	* lib/libjava.exp (test_libjava_from_javac): Fixed typo.  Always
+	make class_files a list.
+
+	* lib/libjava.exp (test_libjava_from_javac): Prepend `$objdir/' to
+	class file names.
+
+1999-06-24  Tom Tromey  <tromey@cygnus.com>
+
+	* lib/libjava.exp (libjava_arguments): If `libtool' not found in
+	build tree, just use $GCJ_UNDER_TEST as compiler.
 
 1999-06-23  Tom Tromey  <tromey@cygnus.com>
 

@@ -10,6 +10,17 @@ if ![info exists tmpdir] {
     set tmpdir "/tmp"
 }
 
+# Read an `xfail' file if it exists.  Returns a list of xfail tokens.
+proc libjava_read_xfail {file} {
+    if {! [file exists $file]} {
+	return ""
+    }
+    set fd [open $file r]
+    set tokens [string trim [read $fd]]
+    close $fd
+    return $tokens
+}
+
 # Find `jv-scan'.  FIXME: this relies on DejaGnu internals.  These
 # should probably be exposed in a better way.
 proc find_jvscan {} {
@@ -200,14 +211,19 @@ proc libjava_arguments {{mode compile}} {
     }
 
     # Search for libtool.  We need it to link.
+    set found_compiler 0
     set d [absolute $objdir]
     foreach x {. .. ../.. ../../..} {
 	if {[file exists $d/$x/libtool]} then {
 	    # We have to run silently to avoid DejaGNU lossage.
 	    lappend args \
 	      "compiler=$d/$x/libtool --silent --mode=$mode $GCJ_UNDER_TEST"
+	    set found_compiler 1
 	    break
 	}
+    }
+    if {! $found_compiler} {
+	lappend args "compiler=$GCJ_UNDER_TEST"
     }
 
     return $args
@@ -216,8 +232,15 @@ proc libjava_arguments {{mode compile}} {
 
 #
 # Run the test specified by srcfile and resultfile. compile_args and
-# exec_args are additional arguments to be passed in when compiling and
-# running the testcase, respectively.
+# exec_args are options telling this proc how to work.
+#   `no-exec'     don't try to run the test
+#   `xfail-gcj'   compilation from source will fail
+#   `xfail-javac' compilation with javac will fail
+#   `xfail-gcjC'  compilation with gcj -C will fail
+#   `xfail-byte'  compilation from bytecode will fail
+#   `xfail-exec'  exec will fail
+#   `xfail-output' output will be wrong
+#   
 #
 proc test_libjava_from_source { options srcfile compile_args inpfile resultfile exec_args } {
     global base_dir
@@ -228,6 +251,13 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
     global GCJ_UNDER_TEST
     global tmpdir
     global runtests
+
+    # Make opts into an array.
+    set opts(_) x
+    unset opts(_)
+    foreach item $exec_args {
+	set opts($item) x
+    }
 
     set errname [file rootname [file tail $srcfile]]
     if {! [runtest_file_p $runtests $errname]} {
@@ -248,10 +278,13 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
     }
 
     set x [target_compile $srcfile "$executable" executable $args]
+    if {[info exists opts(xfail-gcj)]} {
+	setup_xfail *-*-*
+    }
     if { $x != "" } {
 	verbose "target_compile failed: $x" 2
 	fail "$errname compilation from source"
-	if {$exec_args != "no-exec"} {
+	if {[info exists opts(xfail-gcj)] || ! [info exists opts(no-exec)]} {
 	    setup_xfail "*-*-*"
 	    fail "$errname execution from source compiled test"
 	    setup_xfail "*-*-*"
@@ -261,17 +294,20 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
     }
     pass "$errname compilation from source"
 
-    if { $exec_args == "no-exec" } {
+    if {[info exists opts(no-exec)]} {
 	return
     }
 
-    set result [libjava_load $executable "$exec_args" "$inpfile"];
+    set result [libjava_load $executable "" "$inpfile"];
     set status [lindex $result 0];
     set output [lindex $result 1];
+    if {[info exists opts(xfail-exec)]} then {
+	setup_xfail *-*-*
+    }
     $status "$errname execution from source compiled test"
     if { $status != "pass" } {
 	setup_xfail "*-*-*"
-	fail "$errname output from source compiled test"
+	fail "$errname execution from source compiled test"
 	return;
     }
 
@@ -300,6 +336,9 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 	    set passed 1;
 	}
     }
+    if {[info exists opts(xfail-output)]} {
+	setup_xfail *-*-*
+    }
     if { $passed == 1 } {
 	pass "$errname output from source compiled test"
     } else {
@@ -312,8 +351,14 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 
 #
 # Run the test specified by srcfile and resultfile. compile_args and
-# exec_args are additional arguments to be passed in when compiling and
-# running the testcase, respectively.
+# exec_args are options telling this proc how to work.
+#   `no-exec' don't try to run the test
+#   `xfail-gcj'   compilation from source will fail
+#   `xfail-javac' compilation with javac will fail
+#   `xfail-gcjC'  compilation with gcj -C will fail
+#   `xfail-byte'  compilation from bytecode will fail
+#   `xfail-exec'  exec will fail
+#   `xfail-output' output will be wrong
 #
 proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile exec_args } {
     global base_dir
@@ -325,6 +370,13 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     global tmpdir
     global runtests
 
+    # Make opts into an array.
+    set opts(_) x
+    unset opts(_)
+    foreach item $exec_args {
+	set opts($item) x
+    }
+
     set errname [file rootname [file tail $srcfile]]
     if {! [runtest_file_p $runtests $errname]} {
         return
@@ -332,11 +384,16 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 
     # bytecompile files with Sun's compiler for now.
     set bc_ok [bytecompile_file $srcfile $objdir]
+    # FIXME: assumes we are using javac to compile to bytecode.
+    # This is not always the case.
+    if {[info exists opts(xfail-javac)]} {
+	setup_xfail *-*-*
+    }
     if {! $bc_ok} then {
 	fail "$errname byte compilation"
 	setup_xfail "*-*-*"
 	fail "$errname compilation from bytecode"
-	if {$exec_args != "no-exec"} {
+	if {! [info exists opts(no-exec)]} {
 	    setup_xfail "*-*-*"
 	    fail "$errname execution from bytecode->native test"
 	    setup_xfail "*-*-*"
@@ -361,17 +418,21 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     # nothing if the file contains an interface and not a class.  I
     # believe this is a jv-scan bug.
     if {$class_out == ""} then {
-	set class_files [file rootname [file tail $srcfile]].class
+	set class_files \
+	  [list $objdir/[file rootname [file tail $srcfile]].class]
     } else {
 	# Turn "a b" into "a.class b.class".
-	set class_files [join [split [string trim $class_out]] ".class "].class
+	set class_files {}
+        foreach file [split [string trim $class_out]] {
+	    lappend class_files $objdir/$file.class
+	}
     }
 
     # Usually it is an error for a test program not to have a `main'
     # method.  However, for no-exec tests it is ok.
     set largs {}
     if {$main_name == ""} {
-	if {$exec_args != "no-exec"} {
+	if {! [info exists opts(no-exec)]} {
 	    perror "No `main' given in program $errname"
 	    return
 	} else {
@@ -400,11 +461,14 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 
     verbose "compilation command = $args" 2
     set x [target_compile $class_files "$executable" $type $args]
+    if {[info exists opts(xfail-byte)]} {
+	setup_xfail *-*-*
+    }
     if { $x != "" } {
 	verbose "target_compile failed: $x" 2
 	fail "$errname compilation from bytecode"
 	setup_xfail "*-*-*"
-	if {$exec_args != "no-exec"} {
+	if {! [info exists opts(no-exec)]} {
 	    fail "$errname execution from bytecode->native test"
 	    setup_xfail "*-*-*"
 	    fail "$errname output from bytecode->native test"
@@ -413,13 +477,16 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     }
     pass "$errname compilation from bytecode"
 
-    if { $exec_args == "no-exec" } {
+    if {[info exists opts(no-exec)]} {
 	return
     }
 
-    set result [libjava_load $executable "$exec_args" "$inpfile"];
+    set result [libjava_load $executable "" "$inpfile"];
     set status [lindex $result 0];
     set output [lindex $result 1];
+    if {[info exists opts(xfail-exec)]} {
+	setup_xfail *-*-*
+    }
     $status "$errname execution from bytecode->native test"
     if { $status != "pass" } {
 	setup_xfail "*-*-*"
@@ -443,6 +510,9 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     verbose "expected is $expected"
     verbose "actual is $output"
     set passed 0;
+    if {[info exists opts(xfail-output)]} {
+	setup_xfail *-*-*
+    }
     if {$options == "regexp_match"} {
 	if [regexp $expected $output] {
 	    set passed 1;
@@ -464,8 +534,14 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 
 #
 # Run the test specified by srcfile and resultfile. compile_args and
-# exec_args are additional arguments to be passed in when compiling and
-# running the testcase, respectively.
+# exec_args are options telling this proc how to work.
+#   `no-exec' don't try to run the test
+#   `xfail-gcj'   compilation from source will fail
+#   `xfail-javac' compilation with javac will fail
+#   `xfail-gcjC'  compilation with gcj -C will fail
+#   `xfail-byte'  compilation from bytecode will fail
+#   `xfail-exec'  exec will fail
+#   `xfail-output' output will be wrong
 #
 proc test_libjava { options srcfile compile_args inpfile resultfile exec_args } {
     test_libjava_from_source $options $srcfile $compile_args $inpfile $resultfile $exec_args
@@ -480,3 +556,7 @@ proc default_libjava_version {} {
 
 proc default_libjava_start { } {
 }
+
+# Local Variables:
+# tcl-indent-level:4
+# End:

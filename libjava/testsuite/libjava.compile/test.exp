@@ -1,10 +1,9 @@
-global srcdir subdir
+    set args [libjava_read_xfail [file rootname $x].xfail]
+    lappend args no-exec
 
-catch "glob -nocomplain ${srcdir}/${subdir}/*.java" srcfiles
-verbose "srcfiles are $srcfiles"
+    test_libjava $options "$x" "" "" "" $args
+    test_libjava $options "$x" "-O" "" "" $args
 
-set prefix ""
-foreach x $srcfiles {
-    test_libjava $options "$x" "" "" "" "no-exec"
-    test_libjava $options "$x" "-O" "" "" "no-exec"
-}
+# Local Variables:
+# tcl-indent-level:4
+# End:
