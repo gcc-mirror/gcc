@@ -860,7 +860,7 @@ read_and_prescan (pfile, fp, desc, len)
 
 	  delta_op = op - buf;
 	  delta_line_base = line_base - buf;
-	  buf = xrealloc (buf, len);
+	  buf = (U_CHAR *) xrealloc (buf, len);
 	  op = buf + delta_op;
 	  line_base = buf + delta_line_base;
 	}
@@ -989,7 +989,7 @@ read_and_prescan (pfile, fp, desc, len)
 	  len += 2;
 	  if (offset + 2 > len)
 	    goto too_big;
-	  buf = xrealloc (buf, len);
+	  buf = (U_CHAR *) xrealloc (buf, len);
 	  op = buf + offset;
 	}
       if (op[-1] == '\\')
@@ -997,7 +997,8 @@ read_and_prescan (pfile, fp, desc, len)
       *op++ = '\n';
     }
 
-  fp->buf = (len - offset < 20) ? buf : xrealloc (buf, op - buf);
+  fp->buf =
+    (U_CHAR *) ((len - offset < 20) ? (PTR) buf : xrealloc (buf, op - buf));
   return op - buf;
 
  too_big:

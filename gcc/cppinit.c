@@ -51,7 +51,8 @@ U_CHAR trigraph_table[256] = { 0 };
 
 /* Initialize syntactic classifications of characters. */
 void
-initialize_char_syntax (int dollar_in_ident)
+initialize_char_syntax (dollar_in_ident)
+     int dollar_in_ident;
 {
   is_idstart['a'] = 1; is_idstart['b'] = 1; is_idstart['c'] = 1;
   is_idstart['d'] = 1; is_idstart['e'] = 1; is_idstart['f'] = 1;
