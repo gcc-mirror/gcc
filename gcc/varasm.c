@@ -40,18 +40,12 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "real.h"
 #include "toplev.h"
-#include "dbxout.h"
-#include "sdbout.h"
 #include "obstack.h"
 #include "hashtab.h"
 #include "c-pragma.h"
 #include "ggc.h"
 #include "tm_p.h"
 #include "debug.h"
-
-#ifdef XCOFF_DEBUGGING_INFO
-#include "xcoffout.h"
-#endif
 
 #ifndef TRAMPOLINE_ALIGNMENT
 #define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
@@ -64,10 +58,6 @@ Boston, MA 02111-1307, USA.  */
 /* Define the prefix to use when check_memory_usage_flag is enable.  */
 #define CHKR_PREFIX "_CHKR_"
 #define CHKR_PREFIX_SIZE (sizeof (CHKR_PREFIX) - 1)
-
-/* File in which assembler code is being written.  */
-
-extern FILE *asm_out_file;
 
 /* The (assembler) name of the first globally-visible object output.  */
 const char *first_global_object_name;
@@ -807,20 +797,6 @@ assemble_asm (string)
   fprintf (asm_out_file, "\t%s\n", TREE_STRING_POINTER (string));
 }
 
-#if 0 /* This should no longer be needed, because
-	 flag_gnu_linker should be 0 on these systems,
-	 which should prevent any output
-	 if ASM_OUTPUT_CONSTRUCTOR and ASM_OUTPUT_DESTRUCTOR are absent.  */
-#if !(defined(DBX_DEBUGGING_INFO) && !defined(FASCIST_ASSEMBLER))
-#ifndef ASM_OUTPUT_CONSTRUCTOR
-#define ASM_OUTPUT_CONSTRUCTOR(file, name)
-#endif
-#ifndef ASM_OUTPUT_DESTRUCTOR
-#define ASM_OUTPUT_DESTRUCTOR(file, name)
-#endif
-#endif
-#endif /* 0 */
-
 /* Record an element in the table of global destructors.
    How this is done depends on what sort of assembler and linker
    are in use.
@@ -1228,7 +1204,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   register const char *name;
   unsigned int align;
   int reloc = 0;
-  enum in_section saved_in_section;
 
   last_assemble_variable_decl = 0;
 
@@ -1291,7 +1266,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       && ! host_integerp (DECL_SIZE_UNIT (decl), 1))
     {
       error_with_decl (decl, "size of variable `%s' is too large");
-      goto finish;
+      return;
     }
 
   name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
@@ -1380,14 +1355,9 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
            (decl, "requested alignment for %s is greater than implemented alignment of %d.",rounded);
 #endif
        
-#if 0 /* ??? We should either delete this or add a comment describing what
-	 it was intended to do and why we shouldn't delete it.  */
-      if (flag_shared_data)
-	data_section ();
-#endif
       asm_emit_uninitialised (decl, name, size, rounded);
 
-      goto finish;
+      return;
     }
 
   /* Handle initialized definitions.
@@ -1410,15 +1380,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 #endif
       ASM_GLOBALIZE_LABEL (asm_out_file, name);
     }
-#if 0
-  for (d = equivalents; d; d = TREE_CHAIN (d))
-    {
-      tree e = TREE_VALUE (d);
-      if (TREE_PUBLIC (e) && DECL_NAME (e))
-	ASM_GLOBALIZE_LABEL (asm_out_file,
-			     XSTR (XEXP (DECL_RTL (e), 0), 0));
-    }
-#endif
 
   /* Output any data that we will need to use the address of.  */
   if (DECL_INITIAL (decl) == error_mark_node)
@@ -1438,14 +1399,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   /* dbxout.c needs to know this.  */
   if (in_text_section ())
     DECL_IN_TEXT_SECTION (decl) = 1;
-
-  /* Record current section so we can restore it if dbxout.c clobbers it.  */
-  saved_in_section = in_section;
-
-  /* If the debugging output changed sections, reselect the section
-     that's supposed to be selected.  */
-  if (in_section != saved_in_section)
-    variable_section (decl, reloc);
 
   /* Output the alignment of this data.  */
   if (align > BITS_PER_UNIT)
@@ -1471,29 +1424,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	/* Leave space for it.  */
 	assemble_zeros (tree_low_cst (DECL_SIZE_UNIT (decl), 1));
     }
-
- finish:
-#ifdef XCOFF_DEBUGGING_INFO
-  /* Unfortunately, the IBM assembler cannot handle stabx before the actual
-     declaration.  When something like ".stabx  "aa:S-2",aa,133,0" is emitted 
-     and `aa' hasn't been output yet, the assembler generates a stab entry with
-     a value of zero, in addition to creating an unnecessary external entry
-     for `aa'.  Hence, we must postpone dbxout_symbol to here at the end.  */
-
-  /* File-scope global variables are output here.  */
-  if (write_symbols == XCOFF_DEBUG && top_level)
-    {
-      saved_in_section = in_section;
-
-      dbxout_symbol (decl, 0);
-
-      if (in_section != saved_in_section)
-	variable_section (decl, reloc);
-    }
-#else
-  /* There must be a statement after a label.  */
-  ;
-#endif
 }
 
 /* Return 1 if type TYPE contains any pointers.  */
