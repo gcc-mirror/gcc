@@ -1411,19 +1411,13 @@ pop{l} %0"							\
  { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
  { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}	\
 
-/* Given FROM and TO register numbers, say whether this elimination is allowed.
-   Frame pointer elimination is automatically handled.
-
-   For the i386, if frame pointer elimination is being done, we would like to
-   convert ap into sp, not fp.
+/* Given FROM and TO register numbers, say whether this elimination is
+   allowed.  Frame pointer elimination is automatically handled.
 
    All other eliminations are valid.  */
 
-#define CAN_ELIMINATE(FROM, TO)						\
- ((((FROM) == ARG_POINTER_REGNUM || (FROM) == FRAME_POINTER_REGNUM)	\
-   && (TO) == STACK_POINTER_REGNUM)					\
-  ? ! frame_pointer_needed						\
-  : 1)
+#define CAN_ELIMINATE(FROM, TO) \
+  ((TO) == STACK_POINTER_REGNUM ? ! frame_pointer_needed : 1)
 
 /* Define the offset between two registers, one to be eliminated, and the other
    its replacement, at the start of a routine.  */
@@ -2436,6 +2430,9 @@ do { long l;						\
   {"const248_operand", {CONST_INT}},					\
   {"incdec_operand", {CONST_INT}},					\
   {"reg_no_sp_operand", {SUBREG, REG}},					\
+  {"general_no_elim_operand", {CONST_INT, CONST_DOUBLE, CONST,		\
+			SYMBOL_REF, LABEL_REF, SUBREG, REG, MEM}},	\
+  {"nonmemory_no_elim_operand", {CONST_INT, REG, SUBREG}},		\
   {"q_regs_operand", {SUBREG, REG}},					\
   {"non_q_regs_operand", {SUBREG, REG}},				\
   {"no_comparison_operator", {EQ, NE, LT, GE, LTU, GTU, LEU, GEU}},	\

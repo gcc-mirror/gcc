@@ -1168,6 +1168,44 @@ reg_no_sp_operand (op, mode)
   return register_operand (op, mode);
 }
 
+/* Return false if this is any eliminable register.  Otherwise
+   general_operand.  */
+
+int
+general_no_elim_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  rtx t = op;
+  if (GET_CODE (t) == SUBREG)
+    t = SUBREG_REG (t);
+  if (t == arg_pointer_rtx || t == frame_pointer_rtx
+      || t == virtual_incoming_args_rtx || t == virtual_stack_vars_rtx
+      || t == virtual_stack_dynamic_rtx)
+    return 0;
+
+  return general_operand (op, mode);
+}
+
+/* Return false if this is any eliminable register.  Otherwise
+   register_operand or const_int.  */
+
+int
+nonmemory_no_elim_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  rtx t = op;
+  if (GET_CODE (t) == SUBREG)
+    t = SUBREG_REG (t);
+  if (t == arg_pointer_rtx || t == frame_pointer_rtx
+      || t == virtual_incoming_args_rtx || t == virtual_stack_vars_rtx
+      || t == virtual_stack_dynamic_rtx)
+    return 0;
+
+  return GET_CODE (op) == CONST_INT || register_operand (op, mode);
+}
+
 /* Return true if op is a Q_REGS class register.  */
 
 int
@@ -3986,6 +4024,10 @@ ix86_expand_move (mode, operands)
 	      || !push_operand (operands[0], mode))
 	  && GET_CODE (operands[1]) == MEM)
 	operands[1] = force_reg (mode, operands[1]);
+
+      if (push_operand (operands[0], mode)
+	  && ! general_no_elim_operand (operands[1], mode))
+	operands[1] = copy_to_mode_reg (mode, operands[1]);
 
       if (FLOAT_MODE_P (mode))
 	{
