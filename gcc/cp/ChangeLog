@@ -1,3 +1,10 @@
+2001-08-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* error.c (dump_template_decl): Output template parameters
+	together with their specifiers.
+	Output `class' prefix for template template parameter.
+	(dump_decl): Fix formatting.
+
 2001-08-30  Kurt Garloff  <garloff@suse.de>
  
 	* optimize.c (inlinable_function_p): Allow only smaller single
