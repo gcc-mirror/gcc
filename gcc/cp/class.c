@@ -3466,11 +3466,6 @@ finish_struct_1 (t, warn_anon)
 		  DECL_INITIAL (x) = NULL_TREE;
 		  DECL_FIELD_SIZE (x) = width;
 		  DECL_BIT_FIELD (x) = 1;
-		  /* Traditionally a bit field is unsigned
-		     even if declared signed.  */
-		  if (flag_traditional
-		      && TREE_CODE (TREE_TYPE (x)) == INTEGER_TYPE)
-		    TREE_TYPE (x) = unsigned_type_node;
 		}
 	    }
 	  else
@@ -4348,15 +4343,6 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
       while (x)
 	{
 	  tree tag = TYPE_NAME (TREE_VALUE (x));
-
-#ifdef DWARF_DEBUGGING_INFO
-	  if (write_symbols == DWARF_DEBUG)
-	    {
-	      /* Notify dwarfout.c that this TYPE_DECL node represent a
-		 gratuitous typedef.  */
-	      DECL_IGNORED_P (tag) = 1;
-	    }
-#endif /* DWARF_DEBUGGING_INFO */
 
 	  TREE_NONLOCAL_FLAG (TREE_VALUE (x)) = 0;
 	  x = TREE_CHAIN (x);

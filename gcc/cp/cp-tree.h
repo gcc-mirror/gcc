@@ -208,10 +208,6 @@ extern int warn_write_strings;
 
 extern int warn_pointer_arith;
 
-/* Nonzero means warn for all old-style non-prototype function decls.  */
-
-extern int warn_strict_prototypes;
-
 /* Nonzero means warn about suggesting putting in ()'s.  */
 
 extern int warn_parentheses;
@@ -238,10 +234,6 @@ extern int warn_char_subscripts;
 
 extern int warn_cast_qual;
 
-/* Warn about traditional constructs whose meanings changed in ANSI C.  */
-
-extern int warn_traditional;
-
 /* Warn about *printf or *scanf format/argument anomalies.  */
 
 extern int warn_format;
@@ -253,10 +245,6 @@ extern int warn_nonvdtor;
 
 /* Non-zero means warn when a function is declared extern and later inline.  */
 extern int warn_extern_inline;
-
-/* Nonzero means do some things the same way PCC does.  */
-
-extern int flag_traditional;
 
 /* Nonzero means to treat bitfields as unsigned unless they say `signed'.  */
 
@@ -2287,10 +2275,6 @@ extern tree cplus_exception_name		PROTO((tree));
 extern tree build_decl_overload			PROTO((tree, tree, int));
 extern tree build_typename_overload		PROTO((tree));
 extern tree build_overload_with_type		PROTO((tree, tree));
-extern void declare_overloaded			PROTO((tree));
-#ifdef NO_AUTO_OVERLOAD
-extern int is_overloaded			PROTO((tree));
-#endif
 extern tree build_opfncall			PROTO((enum tree_code, int, tree, tree, tree));
 extern tree hack_identifier			PROTO((tree, tree));
 extern tree build_component_type_expr		PROTO((tree, tree, tree, int));
