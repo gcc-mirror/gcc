@@ -20,24 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef NO_HALF_PIC
 
-/* Add prototype support.  */
-/* ??? It would be nice to use gansidecl.h here but there's an extra
-   complication with NO_STDIO_H that must be dealt with.  */
-#ifndef PROTO
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define PROTO(ARGS) ARGS
-#else
-#define PROTO(ARGS) ()
-#endif
-#endif
-
-#if !defined(STDIO_PROTO) && !defined(NO_STDIO_H)
-#ifndef BUFSIZ
-#include <stdio.h>
-#endif
-
-#define STDIO_PROTO(ARGS) PROTO(ARGS)
-#endif
+#include "gansidecl.h"
 
 #if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
 union tree_node;		/* forward reference */
@@ -64,9 +47,8 @@ extern void half_pic_external PROTO((char *));			/* declare object external */
 extern void half_pic_init PROTO((void));			/* half_pic initialization */
 extern int  half_pic_address_p PROTO((struct rtx_def *));	/* true if an address is half-pic */
 extern struct rtx_def *half_pic_ptr PROTO((struct rtx_def *));	/* return RTX for half-pic pointer */
-#ifdef STDIO_PROTO
-extern void half_pic_finish STDIO_PROTO((FILE *));		/* half_pic termination */
-#endif
+/* Can't use prototype since FILE isn't defined yet.  */
+extern void half_pic_finish (/* FILE * */);		/* half_pic termination */
 
 /* Macros to provide access to the half-pic stuff (so they can easily
    be stubbed out.  */
