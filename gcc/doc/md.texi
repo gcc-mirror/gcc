@@ -5999,6 +5999,14 @@ nondeterministic treatment means trying all alternatives, some of them
 may be rejected by reservations in the subsequent insns.  You can not
 query functional unit reservations in nondeterministic automaton
 states.
+
+@item
+@dfn{progress} means output of a progress bar showing how many states
+were generated so far for automaton being processed.  This is useful
+during debugging a @acronym{DFA} description.  If you see too many
+generated states, you could interrupt the generator of the pipeline
+hazard recognizer and try to figure out a reason for generation of the
+huge automaton.
 @end itemize
 
 As an example, consider a superscalar @acronym{RISC} machine which can
