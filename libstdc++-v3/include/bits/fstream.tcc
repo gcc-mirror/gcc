@@ -203,27 +203,17 @@ namespace std
 	      const bool __testout = this->_M_mode & ios_base::out;
 	      const bool __testeq = traits_type::eq(__c, this->_M_in_cur[-1]);
 
+	      --this->_M_in_cur;
+	      if (__testout)
+		--this->_M_out_cur;
 	      // Try to put back __c into input sequence in one of three ways.
 	      // Order these tests done in is unspecified by the standard.
 	      if (!__testeof && __testeq)
-		{
-		  --this->_M_in_cur;
-		  if (__testout)
-		    --this->_M_out_cur;
-		  __ret = __i;
-		}
+		__ret = __i;
 	      else if (__testeof)
+		__ret = traits_type::not_eof(__i);
+	      else
 		{
-		  --this->_M_in_cur;
-		  if (__testout)
-		    --this->_M_out_cur;
-		  __ret = traits_type::not_eof(__i);
-		}
-	      else if (!__testeof)
-		{
-		  --this->_M_in_cur;
-		  if (__testout)
-		    --this->_M_out_cur;
 		  _M_pback_create();
 		  *this->_M_in_cur = __c; 
 		  __ret = __i;
