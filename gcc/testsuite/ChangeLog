@@ -1,3 +1,9 @@
+2002-04-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/5189.
+	* call.c (add_template_candidate_real): Do not treat member
+	templates as copy constructors.
+
 2002-04-12  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/20020406-1.c (DUPFFnew): Use calloc.
