@@ -1,3 +1,8 @@
+Sat Apr 11 16:06:17 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* typeck.c (expand_target_expr): Avoid direct reference to vars
+	in function.c.
+
 Mon Nov 24 12:15:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (mark_addressable): Don't assume a FUNCTION_DECL
