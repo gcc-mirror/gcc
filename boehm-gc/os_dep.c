@@ -91,10 +91,6 @@
 #   include <setjmp.h>
 #endif
 
-#if defined(FREEBSD) && defined(I386)
-#  include <machine/trap.h>
-#endif
-
 #ifdef AMIGA
 # define GC_AMIGA_DEF
 # include "AmigaOS.c"
