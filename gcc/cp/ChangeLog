@@ -1,3 +1,11 @@
+2002-05-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/6620
+	* pt.c (verify_class_unification): Don't check if PARM is template
+	parameter dependent.  Simplify.
+	(unify) [TEMPLATE_PARM_INDEX]: Handle when ARG is a template
+	parameter dependent expression.
+
 2002-05-14  Jason Merrill  <jason@redhat.com>
 
 	* rtti.c (get_tinfo_decl): Don't call comdat_linkage.
