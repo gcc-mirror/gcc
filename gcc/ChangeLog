@@ -1,3 +1,8 @@
+2004-01-23  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* doc/invoke.texi (Optimize Options): Note that --param arguments
+	are subject to change without notice.
+
 2004-01-23  Zack Weinberg  <zack@codesourcery.com>
 
 	PR c/13814
