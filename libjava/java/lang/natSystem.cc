@@ -1,6 +1,6 @@
 // natSystem.cc - Native code implementing System class.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -10,6 +10,7 @@ details.  */
 
 #include <config.h>
 
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -28,6 +29,17 @@ details.  */
 #include <langinfo.h>
 #endif
 
+#if TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java-props.h>
@@ -38,6 +50,7 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/lang/StringBuffer.h>
 #include <java/util/Properties.h>
+#include <java/util/TimeZone.h>
 #include <java/io/PrintStream.h>
 #include <java/io/InputStream.h>
 
@@ -214,6 +227,50 @@ getpwuid_adaptor(T_passwd * (*getpwuid_r)(T_uid user_id, T_passwd *pwd_r,
 }
 #endif
 
+/*
+ * This method returns a time zone string that is used by init_properties
+ * to set the default timezone property 'user.timezone'.  That value is
+ * used by default as a key into the timezone table used by the
+ * java::util::TimeZone class.
+ */
+jstring
+java::lang::System::getSystemTimeZone (void)
+{
+  time_t current_time;
+  char **tzinfo, *tzid;
+  long tzoffset;
+
+  current_time = time(0);
+
+  mktime(localtime(&current_time));
+  tzinfo = tzname;
+  tzoffset = timezone;
+
+  if ((tzoffset % 3600) == 0)
+    tzoffset = tzoffset / 3600;
+
+  if (!strcmp(tzinfo[0], tzinfo[1]))  
+    {
+      tzid = (char*) _Jv_Malloc (strlen(tzinfo[0]) + 6);
+      if (!tzid)
+        return NULL;
+
+      sprintf(tzid, "%s%ld", tzinfo[0], tzoffset);
+    }
+  else
+    {
+      tzid = (char*) _Jv_Malloc (strlen(tzinfo[0]) + strlen(tzinfo[1]) + 6);
+      if (!tzid)
+        return NULL;
+
+      sprintf(tzid, "%s%ld%s", tzinfo[0], tzoffset, tzinfo[1]);
+    }
+
+  jstring retval = JvNewStringUTF (tzid);
+  _Jv_Free (tzid);
+  return retval;
+}
+
 void
 java::lang::System::init_properties (void)
 {
@@ -363,6 +420,11 @@ java::lang::System::init_properties (void)
     {
       SET ("user.language", "en");
     }  
+
+  // Set the "user.timezone" property.
+  jstring timezone = getDefaultTimeZoneId ();
+  if (timezone != NULL)
+    newprops->put (JvNewStringLatin1 ("user.timezone"), timezone);
 
   // Set some properties according to whatever was compiled in with
   // `-D'.

@@ -1020,7 +1020,6 @@ java/net/natPlainDatagramSocketImpl.cc \
 java/net/natPlainSocketImpl.cc \
 java/text/natCollator.cc \
 java/util/natGregorianCalendar.cc \
-java/util/natTimeZone.cc \
 java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
 
@@ -1172,8 +1171,8 @@ java/lang/reflect/natArray.lo java/lang/reflect/natConstructor.lo \
 java/lang/reflect/natField.lo java/lang/reflect/natMethod.lo \
 java/net/natInetAddress.lo java/net/natPlainDatagramSocketImpl.lo \
 java/net/natPlainSocketImpl.lo java/text/natCollator.lo \
-java/util/natGregorianCalendar.lo java/util/natTimeZone.lo \
-java/util/zip/natDeflater.lo java/util/zip/natInflater.lo
+java/util/natGregorianCalendar.lo java/util/zip/natDeflater.lo \
+java/util/zip/natInflater.lo
 libgcjx_la_OBJECTS =  gnu/gcj/xlib/natClip.lo \
 gnu/gcj/xlib/natColormap.lo gnu/gcj/xlib/natDisplay.lo \
 gnu/gcj/xlib/natDrawable.lo gnu/gcj/xlib/natFont.lo \

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -461,7 +461,7 @@ public class Date implements java.io.Serializable, Cloneable
     // This method is deprecated.  We don't care if it is very slow.
     SimpleDateFormat fmt = new SimpleDateFormat ("d MMM yyyy HH:mm:ss 'GMT'",
 						 Locale.US);
-    fmt.setTimeZone(TimeZone.zoneGMT);
+    fmt.setTimeZone(TimeZone.getTimeZone("GMT"));
     return fmt.format(this);
   }
 
@@ -476,7 +476,7 @@ public class Date implements java.io.Serializable, Cloneable
   public static long UTC (int year, int month, int date,
 			  int hours, int minutes, int seconds)
   {
-    GregorianCalendar cal = new GregorianCalendar (TimeZone.zoneGMT);
+    GregorianCalendar cal = new GregorianCalendar (TimeZone.getTimeZone("GMT"));
     cal.set(year+1900, month, date, hours, minutes, seconds);
     return cal.getTimeInMillis();
   }

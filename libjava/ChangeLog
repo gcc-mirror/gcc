@@ -1,3 +1,25 @@
+2001-01-08  Warren Levy  <warrenl@redhat.com>
+
+	Fix for PR libgcj/1411:
+	* Makefile.am: Removed java/util/natTimeZone.cc.
+	* Makefile.in: Rebuilt.
+	* gnu/gcj/text/LocaleData_en_US.java (zoneStringsDefault): Added
+	missing localized timezone names.
+	* java/lang/System.java (getDefaultTimeZoneId): New private method.
+	* java/lang/natSystem.cc (getSystemTimeZone): New private method.
+	(init_properties): Set user.timezone property.
+	* java/text/DateFormatSymbols.java (zoneStringsDefault): Added
+	default timezone names; removed non-standard ones.  Use standard
+	ID names per JCL.
+	* java/util/Date.java (toGMTString): Removed zoneGMT variable.
+	(UTC): Ditto.
+	* java/util/TimeZone.java: Add standard ID names per JCL; removed
+	non-standard ones.
+	(getDefaultTimeZoneId): Removed.
+	(zoneGMT): Removed.
+	(getDefaultTimeZoneId): Removed.
+	* java/util/natTimeZone.cc: Removed.
+
 2001-01-08  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/Class.h (_Jv_InitClass): Use __builtin_expect.

@@ -1,6 +1,6 @@
 // System.java - System-specific info.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -20,6 +20,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.util.Properties;
 import java.util.PropertyPermission;
+import java.util.TimeZone;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -40,6 +41,83 @@ public final class System
 				       int count);
 
   public static native long currentTimeMillis ();
+
+  // FIXME: When merging with Classpath, remember to remove the call to
+  // getDefaultTimeZoneId from java.util.Timezone.
+  private static native String getSystemTimeZone ();
+
+  // Get the System Timezone as reported by the OS.  It should be in
+  // the form PST8PDT so we'll need to parse it and check that it's valid.
+  // The result is used to set the user.timezone property in init_properties.
+  // FIXME: Using the code from Classpath for generating the System
+  // Timezone IMO is suboptimal because it ignores whether the rules for
+  // DST match up.
+  private static String getDefaultTimeZoneId ()
+  {
+    String sysTimeZoneId = getSystemTimeZone ();
+
+    // Check if this is a valid timezone.  Make sure the IDs match
+    // since getTimeZone returns GMT if no match is found.
+    TimeZone tz = TimeZone.getTimeZone (sysTimeZoneId);
+    if (tz.getID ().equals (sysTimeZoneId))
+      return sysTimeZoneId;
+
+    // Check if the base part of sysTimeZoneId is a valid timezone that
+    // matches with daylight usage and rawOffset.  Make sure the IDs match
+    // since getTimeZone returns GMT if no match is found.
+    // First find start of GMT offset info and any Daylight zone name.
+    int startGMToffset = 0;
+    int sysTimeZoneIdLength = sysTimeZoneId.length();
+    for (int i = 0; i < sysTimeZoneIdLength && startGMToffset == 0; i++)
+      {
+        if (Character.isDigit (sysTimeZoneId.charAt (i)))
+	  startGMToffset = i;
+      }
+
+    int startDaylightZoneName = 0;
+    boolean usesDaylight = false;
+    for (int i = sysTimeZoneIdLength - 1;
+         i >= 0 && !Character.isDigit (sysTimeZoneId.charAt (i)); --i)
+      {
+        startDaylightZoneName = i;
+      }
+    if (startDaylightZoneName > 0)
+      usesDaylight = true;
+
+    int GMToffset = Integer.parseInt (startDaylightZoneName == 0 ?
+      sysTimeZoneId.substring (startGMToffset) :
+      sysTimeZoneId.substring (startGMToffset, startDaylightZoneName));
+
+    // Offset could be in hours or seconds.  Convert to millis.
+    if (GMToffset < 24)
+      GMToffset *= 60 * 60;
+    GMToffset *= -1000;
+
+    String tzBasename = sysTimeZoneId.substring (0, startGMToffset);
+    tz = TimeZone.getTimeZone (tzBasename);
+    if (tz.getID ().equals (tzBasename) && tz.getRawOffset () == GMToffset)
+      {
+        boolean tzUsesDaylight = tz.useDaylightTime ();
+        if (usesDaylight && tzUsesDaylight || !usesDaylight && !tzUsesDaylight)
+          return tzBasename;
+      }
+  
+    // If no match, see if a valid timezone has the same attributes as this
+    // and then use it instead.
+    String[] IDs = TimeZone.getAvailableIDs (GMToffset);
+    for (int i = 0; i < IDs.length; ++i)
+      {
+	// FIXME: The daylight savings rules may not match the rules
+	// for the desired zone.
+        boolean IDusesDaylight =
+	  TimeZone.getTimeZone (IDs[i]).useDaylightTime ();
+        if (usesDaylight && IDusesDaylight || !usesDaylight && !IDusesDaylight)
+	  return IDs[i];
+      }
+
+    // If all else fails, return null.
+    return null;
+  }
 
   public static void exit (int status)
   {
