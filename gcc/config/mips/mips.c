@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for MIPS
    Copyright (C) 1989, 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -4036,6 +4036,7 @@ function_arg (cum, mode, type, named)
 
       if (! type || TREE_CODE (type) != RECORD_TYPE || mips_abi == ABI_32
 	  || mips_abi == ABI_EABI || mips_abi == ABI_O64 || ! named
+	  || ! TYPE_SIZE_UNIT (type)
 	  || ! host_integerp (TYPE_SIZE_UNIT (type), 1))
 	ret = gen_rtx_REG (mode, regbase + *arg_words + bias);
       else
