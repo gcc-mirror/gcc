@@ -1,3 +1,17 @@
+Mon Feb 15 14:44:53 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cccp.c: Don't define HOST_WIDE_INT.  Replace all occurrences of
+	WIDE_INT with WIDEST_INT.
+
+	* cexp.y: Likewise.
+	Don't define unsigned_HOST_WIDE_INT, CHAR_BIT or
+ 	HOST_BITS_PER_WIDE_INT.  Replace occurrences of PRINTF_PROTO_1()
+ 	style with PVPROTO() ATTRIBUTE_PRINTF_1 style macros.  Replace
+ 	occurrences of "unsigned_HOST" with "unsigned HOST".  Provide a
+ 	definition of variable `c89' when compiling a test binary and set it.
+
+	* system.h: Don't define the PRINTF_PROTO_* macros.
+
 Mon Feb 15 11:33:51 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (mark_loop_jump): Handle LO_SUM.  If we encounter something
