@@ -3157,7 +3157,11 @@ redeclare_class_template (tree type, tree parms)
       tree tmpl_default = TREE_PURPOSE (TREE_VEC_ELT (tmpl_parms, i));
       tree parm_default = TREE_PURPOSE (TREE_VEC_ELT (parms, i));
 
-      if (TREE_CODE (tmpl_parm) != TREE_CODE (parm))
+      /* TMPL_PARM and PARM can be either TYPE_DECL, PARM_DECL, or
+	 TEMPLATE_DECL.  */
+      if (TREE_CODE (tmpl_parm) != TREE_CODE (parm)
+	  || (TREE_CODE (tmpl_parm) != TYPE_DECL
+	      && !same_type_p (TREE_TYPE (tmpl_parm), TREE_TYPE (parm))))
 	{
 	  cp_error_at ("template parameter `%#D'", tmpl_parm);
 	  error ("redeclared here as `%#D'", parm);

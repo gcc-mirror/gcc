@@ -1,3 +1,9 @@
+2004-08-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/14428
+	* pt.c (redeclare_class_template): Check the type of non-type and
+	template template parameter.
+
 2004-08-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 
