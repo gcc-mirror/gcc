@@ -1,3 +1,9 @@
+2003-04-14  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold):  Transform (c1 - x) cmp c2, where cmp is a
+	comparison operation and c1/c2 are floating point constants into
+	x swap(cmp) (c1 - c2).
+
 2003-04-14  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c (output_translate_vect): Fix a typo in loop
@@ -1376,7 +1382,7 @@ Thu Apr  3 00:18:49 CEST 2003  Jan Hubicka  <jh@suse.cz>
 2003-04-01  Roger Sayle  <roger@eyesopen.com>
 
 	PR fortran/9974
-	* gcse.c (reg_killed_on_egde): New function to test whether the
+	* gcse.c (reg_killed_on_edge): New function to test whether the
 	given reg is overwritten by any instruction queued on an edge.
 	(bypass_block): Ignore substitutions killed on incoming edges.
 	Don't bypass outgoing edges that have queued instructions.
