@@ -1,5 +1,5 @@
 /* Name mangling for the 3.0 C++ ABI.
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Written by Alex Samuel <sameul@codesourcery.com>
 
    This file is part of GNU CC.
@@ -2607,9 +2607,16 @@ mangle_conv_op_name_for_type (type)
   free (op_name);
 
   /* It had better be a unique mangling for the type.  */
-  my_friendly_assert (!IDENTIFIER_TYPENAME_P (identifier)
-		      || same_type_p (type, TREE_TYPE (identifier)),
-		      20011230);
+  if (IDENTIFIER_TYPENAME_P (identifier)
+      && !same_type_p (type, TREE_TYPE (identifier)))
+    {
+      /* In G++ 3.2, the name mangling scheme was ambiguous.  In later
+	 versions of the ABI, this problem has been fixed.  */
+      if (abi_version_at_least (2))
+	abort ();
+      error ("due to a defect in the G++ 3.2 ABI, G++ has assigned the "
+	     "same mangled name to two different types");
+    }
   
   /* Set bits on the identifier so we know later it's a conversion.  */
   IDENTIFIER_OPNAME_P (identifier) = 1;
