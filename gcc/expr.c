@@ -3923,8 +3923,8 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	      || bitpos % BITS_PER_UNIT != 0)
 	    abort ();
 
-	  temp = change_address (temp, VOIDmode,
-				 plus_constant (XEXP (temp, 0),
+	  target = change_address (target, VOIDmode,
+				   plus_constant (XEXP (target, 0),
 						bitpos / BITS_PER_UNIT));
 
 	  emit_block_move (target, temp,
