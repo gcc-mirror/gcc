@@ -150,11 +150,14 @@ init_c_lex (filename)
 }
 
 /* A thin wrapper around the real parser that initializes the 
-   integrated preprocessor after debug output has been initialized.  */
+   integrated preprocessor after debug output has been initialized.
+   Also, make sure the start_source_file debug hook gets called for
+   the primary source file.  */
 
 int
 yyparse()
 {
+  (*debug_hooks->start_source_file) (lineno, input_filename);
   cpp_finish_options (parse_in);
 
   return yyparse_1();
