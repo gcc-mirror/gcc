@@ -1,3 +1,7 @@
+2003-09-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* objc/objc-act.c (gen_declaration_1): Fix printf format.
+
 2003-09-25  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (all_cores): arm710t, arm720t and arm740t are all based on the

@@ -8480,7 +8480,8 @@ gen_declaration_1 (tree atype_or_adecl, char *buf)
 	  strcat (buf, gen_declarator (declarator, declbuf, ""));
 	}
       if (width)
-	sprintf (buf + strlen (buf), ": %lu", TREE_INT_CST_LOW (width));
+	sprintf (buf + strlen (buf), ": " HOST_WIDE_INT_PRINT_UNSIGNED, 
+		 TREE_INT_CST_LOW (width));
     }
 
   else
