@@ -942,9 +942,21 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define ISA_HAS_FCMP_DELAY	(mips_isa <= 3)
 
 /* True if mflo and mfhi can be immediately followed by instructions
-   which write to the HI and LO registers.  Most targets require a
-   two-instruction gap.  */
-#define ISA_HAS_HILO_INTERLOCKS	(TARGET_MIPS5500 || TARGET_SB1)
+   which write to the HI and LO registers.
+
+   According to MIPS specifications, MIPS ISAs I, II, and III need
+   (at least) two instructions between the reads of HI/LO and
+   instructions which write them, and later ISAs do not.  Contradicting
+   the MIPS specifications, some MIPS IV processor user manuals (e.g.
+   the UM for the NEC Vr5000) document needing the instructions between
+   HI/LO reads and writes, as well.  Therefore, we declare only MIPS32,
+   MIPS64 and later ISAs to have the interlocks, plus any specific
+   earlier-ISA CPUs for which CPU documentation declares that the
+   instructions are really interlocked.  */
+#define ISA_HAS_HILO_INTERLOCKS	(ISA_MIPS32				\
+				 || ISA_MIPS32R2			\
+				 || ISA_MIPS64				\
+				 || TARGET_MIPS5500)
 
 /* Add -G xx support.  */
 
