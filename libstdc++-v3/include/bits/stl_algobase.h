@@ -45,18 +45,14 @@
 #include <bits/std_cstddef.h>
 #include <new>
 
-#ifdef __STL_USE_NEW_IOSTREAMS 
-#include <iosfwd>
-#else /* __STL_USE_NEW_IOSTREAMS */
 #include <bits/std_iosfwd.h>
-#endif /* __STL_USE_NEW_IOSTREAMS */
-
 #include <bits/stl_iterator_base.h>
 #include <bits/stl_iterator.h>
 
 // We pick up concept_checks.h from stl_iterator_base.h.
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 // swap and iter_swap
 
@@ -89,8 +85,6 @@ inline void swap(_Tp& __a, _Tp& __b) {
 //--------------------------------------------------
 // min and max
 
-#if !defined(__BORLANDC__) || __BORLANDC__ >= 0x540 /* C++ Builder 4.0 */
-
 #undef min
 #undef max
 
@@ -107,8 +101,6 @@ inline const _Tp& max(const _Tp& __a, const _Tp& __b) {
   //return  __a < __b ? __b : __a;
   if (__a < __b) return __b; return __a;
 }
-
-#endif /* __BORLANDC__ */
 
 template <class _Tp, class _Compare>
 inline const _Tp& min(const _Tp& __a, const _Tp& __b, _Compare __comp) {
@@ -161,7 +153,6 @@ __copy_trivial(const _Tp* __first, const _Tp* __last, _Tp* __result) {
   return __result + (__last - __first);
 }
 
-#if defined(__STL_FUNCTION_TMPL_PARTIAL_ORDER)
 
 template <class _InputIter, class _OutputIter>
 inline _OutputIter __copy_aux2(_InputIter __first, _InputIter __last,
@@ -240,91 +231,6 @@ inline _OutputIter copy(_InputIter __first, _InputIter __last,
    return __copy_ni1(__first, __last, __result, __Normal());
 }
 
-// Hack for compilers that don't have partial ordering of function templates
-// but do have partial specialization of class templates.
-#elif defined(__STL_CLASS_PARTIAL_SPECIALIZATION)
-
-template <class _InputIter, class _OutputIter, class _BoolType>
-struct __copy_dispatch {
-  static _OutputIter copy(_InputIter __first, _InputIter __last,
-                          _OutputIter __result) {
-    typedef typename iterator_traits<_InputIter>::iterator_category _Category;
-    typedef typename iterator_traits<_InputIter>::difference_type _Distance;
-    return __copy(__first, __last, __result, _Category(), (_Distance*) 0);
-  }
-};
-
-template <class _Tp>
-struct __copy_dispatch<_Tp*, _Tp*, __true_type>
-{
-  static _Tp* copy(const _Tp* __first, const _Tp* __last, _Tp* __result) {
-    return __copy_trivial(__first, __last, __result);
-  }
-};
-
-template <class _Tp>
-struct __copy_dispatch<const _Tp*, _Tp*, __true_type>
-{
-  static _Tp* copy(const _Tp* __first, const _Tp* __last, _Tp* __result) {
-    return __copy_trivial(__first, __last, __result);
-  }
-};
-
-template <class _InputIter, class _OutputIter>
-inline _OutputIter copy(_InputIter __first, _InputIter __last,
-                        _OutputIter __result) {
-  __STL_REQUIRES(_InputIter, _InputIterator);
-  __STL_REQUIRES(_OutputIter, _OutputIterator);
-  typedef typename iterator_traits<_InputIter>::value_type _Tp;
-  typedef typename __type_traits<_Tp>::has_trivial_assignment_operator
-          _Trivial;
-  return __copy_dispatch<_InputIter, _OutputIter, _Trivial>
-    ::copy(__first, __last, __result);
-}
-
-// Fallback for compilers with neither partial ordering nor partial
-// specialization.  Define the faster version for the basic builtin
-// types.
-#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
-
-template <class _InputIter, class _OutputIter>
-inline _OutputIter copy(_InputIter __first, _InputIter __last,
-                        _OutputIter __result)
-{
-  return __copy(__first, __last, __result,
-                __ITERATOR_CATEGORY(__first),
-                __DISTANCE_TYPE(__first));
-}
-
-#define __SGI_STL_DECLARE_COPY_TRIVIAL(_Tp)                                \
-  inline _Tp* copy(const _Tp* __first, const _Tp* __last, _Tp* __result) { \
-    memmove(__result, __first, sizeof(_Tp) * (__last - __first));          \
-    return __result + (__last - __first);                                  \
-  }
-
-__SGI_STL_DECLARE_COPY_TRIVIAL(char)
-__SGI_STL_DECLARE_COPY_TRIVIAL(signed char)
-__SGI_STL_DECLARE_COPY_TRIVIAL(unsigned char)
-__SGI_STL_DECLARE_COPY_TRIVIAL(short)
-__SGI_STL_DECLARE_COPY_TRIVIAL(unsigned short)
-__SGI_STL_DECLARE_COPY_TRIVIAL(int)
-__SGI_STL_DECLARE_COPY_TRIVIAL(unsigned int)
-__SGI_STL_DECLARE_COPY_TRIVIAL(long)
-__SGI_STL_DECLARE_COPY_TRIVIAL(unsigned long)
-#ifdef __STL_HAS_WCHAR_T
-__SGI_STL_DECLARE_COPY_TRIVIAL(wchar_t)
-#endif
-#ifdef _STL_LONG_LONG
-__SGI_STL_DECLARE_COPY_TRIVIAL(long long)
-__SGI_STL_DECLARE_COPY_TRIVIAL(unsigned long long)
-#endif 
-__SGI_STL_DECLARE_COPY_TRIVIAL(float)
-__SGI_STL_DECLARE_COPY_TRIVIAL(double)
-__SGI_STL_DECLARE_COPY_TRIVIAL(long double)
-
-#undef __SGI_STL_DECLARE_COPY_TRIVIAL
-#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
-
 //--------------------------------------------------
 // copy_backward
 
@@ -353,7 +259,6 @@ inline _BidirectionalIter __copy_backward(_RandomAccessIter __first,
   return __result;
 }
 
-#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION 
 
 // This dispatch class is a workaround for compilers that do not 
 // have partial ordering of function templates.  All we're doing is
@@ -443,17 +348,6 @@ inline _BI2 copy_backward(_BI1 __first, _BI1 __last, _BI2 __result) {
                                                __Normal());
 }
 
-#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
-
-template <class _BI1, class _BI2>
-inline _BI2 copy_backward(_BI1 __first, _BI1 __last, _BI2 __result) {
-  return __copy_backward(__first, __last, __result,
-                         __ITERATOR_CATEGORY(__first),
-                         __DISTANCE_TYPE(__first));
-}
-
-#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
-
 //--------------------------------------------------
 // copy_n (not part of the C++ standard)
 
@@ -531,8 +425,6 @@ inline void fill(char* __first, char* __last, const char& __c) {
   memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
 }
 
-#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
-
 template <class _Size>
 inline unsigned char* fill_n(unsigned char* __first, _Size __n,
                              const unsigned char& __c) {
@@ -553,7 +445,6 @@ inline char* fill_n(char* __first, _Size __n, const char& __c) {
   return __first + __n;
 }
 
-#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 //--------------------------------------------------
 // equal and mismatch
@@ -746,7 +637,7 @@ int lexicographical_compare_3way(_InputIter1 __first1, _InputIter1 __last1,
   return __lexicographical_compare_3way(__first1, __last1, __first2, __last2);
 }
 
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* __SGI_STL_INTERNAL_ALGOBASE_H */
 

@@ -41,7 +41,8 @@
 // not have included the std_ios file.
 #include <bits/c++io.h>
 
-namespace std {
+namespace std
+{
 
   // 27.4.1  Types
 

@@ -54,7 +54,8 @@
 #include <bits/ostream.tcc>
 #endif
 
-namespace std {
+namespace std
+{
 
   //
   // streambuf

@@ -1,6 +1,6 @@
 // Input streams -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,8 @@
 #include <bits/std_ios.h>
 #include <bits/std_limits.h> // For numeric_limits
 
-namespace std {
+namespace std
+{
 
   // 27.6.1.1 Template class basic_istream
   template<typename _CharT, typename _Traits>
@@ -299,11 +300,4 @@ namespace std {
 #endif
 
 #endif	/* _CPP_ISTREAM */
-
-
-
-
-
-
-
 

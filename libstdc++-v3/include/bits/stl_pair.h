@@ -31,7 +31,8 @@
 #ifndef __SGI_STL_INTERNAL_PAIR_H
 #define __SGI_STL_INTERNAL_PAIR_H
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 template <class _T1, class _T2>
 struct pair {
@@ -43,10 +44,8 @@ struct pair {
   pair() : first(_T1()), second(_T2()) {}
   pair(const _T1& __a, const _T2& __b) : first(__a), second(__b) {}
 
-#ifdef __STL_MEMBER_TEMPLATES
   template <class _U1, class _U2>
   pair(const pair<_U1, _U2>& __p) : first(__p.first), second(__p.second) {}
-#endif
 };
 
 template <class _T1, class _T2>
@@ -61,8 +60,6 @@ inline bool operator<(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
   return __x.first < __y.first || 
          (!(__y.first < __x.first) && __x.second < __y.second); 
 }
-
-#ifdef __STL_FUNCTION_TMPL_PARTIAL_ORDER
 
 template <class _T1, class _T2>
 inline bool operator!=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y) {
@@ -84,8 +81,6 @@ inline bool operator>=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y) {
   return !(__x < __y);
 }
 
-#endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
-
 template <class _T1, class _T2>
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 //181.  make_pair() unintended behavior
@@ -97,7 +92,7 @@ inline pair<_T1, _T2> make_pair(const _T1& __x, const _T2& __y)
   return pair<_T1, _T2>(__x, __y);
 }
 
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* __SGI_STL_INTERNAL_PAIR_H */
 

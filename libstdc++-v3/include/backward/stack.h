@@ -33,11 +33,9 @@
 #include <bits/stl_stack.h>
 #include <bits/stl_queue.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::stack;
-using __STD::queue;
-using __STD::priority_queue;
-#endif /* __STL_USE_NAMESPACES */
+using std::stack;
+using std::queue;
+using std::priority_queue;
 
 #endif /* _CPP_BACKWARD_STACK_H */
 

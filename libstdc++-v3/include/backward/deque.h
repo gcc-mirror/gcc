@@ -31,9 +31,7 @@
 #include "alloc.h"
 #include <bits/std_deque.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::deque;
-#endif /* __STL_USE_NAMESPACES */
+using std::deque;
 
 #endif /* _CPP_BACKWARD_DEQUE_H */
 

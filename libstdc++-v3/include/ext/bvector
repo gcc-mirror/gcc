@@ -31,11 +31,7 @@
 #include <bits/std_vector.h>
 #include <ext/stl_bvector.h>
 
-#ifdef __STL_USE_NAMESPACES
-
-using __STD::bit_vector;
-
-#endif /* __STL_USE_NAMESPACES */
+using std::bit_vector;
 
 #endif /* __SGI_STL_BVECTOR_H */
 

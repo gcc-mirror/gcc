@@ -35,7 +35,8 @@
 #include <bits/stl_alloc.h>
 #include <bits/std_vector.h>
 
-namespace std {
+namespace std
+{
 
   template class __malloc_alloc_template<0>;
 

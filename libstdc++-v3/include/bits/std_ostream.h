@@ -38,8 +38,8 @@
 
 #include <bits/std_ios.h>
 
-namespace std {
-  
+namespace std
+{
   // 27.6.2.1 Template class basic_ostream
   template<typename _CharT, typename _Traits>
     class basic_ostream : virtual public basic_ios<_CharT, _Traits>

@@ -31,9 +31,7 @@
 #include "alloc.h"  
 #include <bits/stl_vector.h>
 
-#ifdef __STL_USE_NAMESPACES
-using __STD::vector;
-#endif /* __STL_USE_NAMESPACES */
+using std::vector;
 
 #endif /* _CPP_BACKWARD_VECTOR_H */
 

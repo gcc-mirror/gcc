@@ -47,13 +47,9 @@
 #include <bits/stl_tempbuf.h>
 #endif
 
-#ifdef __STL_USE_NAMESPACES
-
-using __STD::get_temporary_buffer;
-using __STD::return_temporary_buffer;
-using __STD::_Temporary_buffer;
-
-#endif /* __STL_USE_NAMESPACES */
+using std::get_temporary_buffer;
+using std::return_temporary_buffer;
+using std::_Temporary_buffer;
 
 #endif /* _CPP_BACKWARD_TEMPBUF_H */
 

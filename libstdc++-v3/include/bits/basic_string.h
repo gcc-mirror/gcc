@@ -38,7 +38,8 @@
 
 #include <bits/atomicity.h>
 
-namespace std {
+namespace std
+{
 
   // Documentation?  What's that? 
   // Nathan Myers <ncm@cantrip.org>.

@@ -30,11 +30,8 @@
 #ifndef _CPP_BITS_STL_HEAP_H
 #define _CPP_BITS_STL_HEAP_H 1
 
-__STL_BEGIN_NAMESPACE
-
-#if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
-#pragma set woff 1209
-#endif
+namespace std
+{
 
 // Heap-manipulation functions: push_heap, pop_heap, make_heap, sort_heap.
 
@@ -284,11 +281,7 @@ sort_heap(_RandomAccessIterator __first,
     pop_heap(__first, __last--, __comp);
 }
 
-#if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
-#pragma reset woff 1209
-#endif
-
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* _CPP_BITS_STL_HEAP_H */
 

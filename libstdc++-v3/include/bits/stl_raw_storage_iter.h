@@ -31,7 +31,8 @@
 #ifndef _CPP_BITS_STL_RAW_STORAGE_ITERATOR_H
 #define _CPP_BITS_STL_RAW_STORAGE_ITERATOR_H 1
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 template <class _ForwardIterator, class _Tp>
 class raw_storage_iterator {
@@ -61,18 +62,8 @@ public:
   }
 };
 
-#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
 
-template <class _ForwardIterator, class _Tp>
-inline output_iterator_tag
-iterator_category(const raw_storage_iterator<_ForwardIterator, _Tp>&)
-{
-  return output_iterator_tag();
-}
-
-#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
-
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* _CPP_BITS_STL_RAW_STORAGE_ITERATOR_H */
 

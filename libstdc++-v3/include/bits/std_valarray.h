@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- valarray class.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,8 +42,8 @@
 #include <bits/std_functional.h>
 #include <bits/std_algorithm.h>
 
-namespace std {
-
+namespace std
+{
     template<class _Clos, typename _Tp> class _Expr;
 
     template<typename _Tp1, typename _Tp2> class _ValArray;    
@@ -82,13 +82,13 @@ namespace std {
     template<class _Tp> class mask_array;     // masked array
     template<class _Tp> class indirect_array; // indirected array
 
-}
+} // namespace std
 
 #include <bits/valarray_array.h>
 #include <bits/valarray_meta.h>
   
-namespace std {
-
+namespace std
+{
   template<class _Tp> class valarray
   {
   public:
@@ -254,8 +254,8 @@ namespace std {
 #include <bits/mask_array.h>
 #include <bits/indirect_array.h>
 
-namespace std {
-
+namespace std
+{
   template<typename _Tp>
   inline valarray<_Tp>::valarray () : _M_size (0), _M_data (0) {}
 
@@ -627,7 +627,8 @@ _DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(>>, shift_right)
 } // std::
   
 
-namespace std {
+namespace std
+{
 
 #define _DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(_Op, _Name)          \
   template<class _Tp> template<class _Dom>				\

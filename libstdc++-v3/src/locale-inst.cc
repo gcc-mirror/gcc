@@ -42,7 +42,8 @@
 #include <bits/std_istream.h>
 #include <bits/std_ostream.h>
 
-namespace std {
+namespace std
+{
 
   typedef ostreambuf_iterator<char, char_traits<char> > obuf_iterator;
   typedef istreambuf_iterator<char, char_traits<char> > ibuf_iterator;
@@ -303,5 +304,5 @@ namespace std {
     fill(__normal_iterator<locale::facet**, vector<locale::facet*> >,
          __normal_iterator<locale::facet**, vector<locale::facet*> >,
          locale::facet* const&);
-} 
+} // namespace std
 

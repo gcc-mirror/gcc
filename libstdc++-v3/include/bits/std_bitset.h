@@ -38,21 +38,14 @@
 #include <bits/std_stdexcept.h>   // for invalid_argument, out_of_range, 
 				  // overflow_error
 
-#ifdef __STL_USE_NEW_IOSTREAMS 
-#include <iostream>
-#else
 #include <bits/std_iostream.h>   // for istream, ostream
-#endif
 
 #define _GLIBCPP_BITSET_BITS_PER_WORD (CHAR_BIT*sizeof(unsigned long))
 #define __BITSET_WORDS(__n) \
  ((__n) < 1 ? 1 : ((__n) + _GLIBCPP_BITSET_BITS_PER_WORD - 1)/_GLIBCPP_BITSET_BITS_PER_WORD)
 
-__STL_BEGIN_NAMESPACE
-
-#if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
-#pragma set woff 1209
-#endif
+namespace std
+{
 
 // structure to aid in counting bits
 template<bool __dummy> 
@@ -315,7 +308,7 @@ _Base_bitset<_Nw>::_M_do_find_next(size_t __prev, size_t __not_found) const
 // Base class: specialization for a single word.
 //
 
-__STL_TEMPLATE_NULL struct _Base_bitset<1> {
+template<> struct _Base_bitset<1> {
   typedef unsigned long _WordT;
   _WordT _M_w;
 
@@ -381,7 +374,7 @@ template <size_t _Extrabits> struct _Sanitize {
     { __val &= ~((~static_cast<unsigned long>(0)) << _Extrabits); }
 };
 
-__STL_TEMPLATE_NULL struct _Sanitize<0> {
+template<> struct _Sanitize<0> {
   static void _M_do_sanitize(unsigned long) {}
 };
 
@@ -466,7 +459,6 @@ public:
   bitset(unsigned long __val) : _Base_bitset<__BITSET_WORDS(_Nb)>(__val) 
     { _M_do_sanitize(); }
 
-#ifdef __STL_MEMBER_TEMPLATES
   template<class _CharT, class _Traits, class _Alloc>
   explicit bitset(const basic_string<_CharT, _Traits, _Alloc>& __s,
                   size_t __pos = 0)
@@ -487,17 +479,6 @@ public:
       __STL_THROW(out_of_range("bitset"));
     _M_copy_from_string(__s, __pos, __n);
   }
-#else /* __STL_MEMBER_TEMPLATES */
-  explicit bitset(const basic_string<char>& __s,
-                  size_t __pos = 0,
-                  size_t __n = basic_string<char>::npos) 
-    : _Base() 
-  {
-    if (__pos > __s.size()) 
-      __STL_THROW(out_of_range("bitset"));
-    _M_copy_from_string(__s, __pos, __n);
-  }
-#endif /* __STL_MEMBER_TEMPLATES */
 
   // 23.3.5.2 bitset operations:
   bitset<_Nb>& operator&=(const bitset<_Nb>& __rhs) {
@@ -619,18 +600,14 @@ public:
 
   unsigned long to_ulong() const { return this->_M_do_to_ulong(); }
 
-#if defined(__STL_MEMBER_TEMPLATES) && \
-    defined(__STL_EXPLICIT_FUNCTION_TMPL_ARGS)
   template <class _CharT, class _Traits, class _Alloc>
   basic_string<_CharT, _Traits, _Alloc> to_string() const {
     basic_string<_CharT, _Traits, _Alloc> __result;
     _M_copy_to_string(__result);
     return __result;
   }
-#endif /* member templates and explicit function template args */
 
   // Helper functions for string operations.
-#ifdef __STL_MEMBER_TEMPLATES
   template<class _CharT, class _Traits, class _Alloc>
   void _M_copy_from_string(const basic_string<_CharT,_Traits,_Alloc>& __s,
                           size_t,
@@ -638,10 +615,6 @@ public:
 
   template<class _CharT, class _Traits, class _Alloc>
   void _M_copy_to_string(basic_string<_CharT,_Traits,_Alloc>&) const;
-#else /* __STL_MEMBER_TEMPLATES */
-  void _M_copy_from_string(const basic_string<char>&, size_t, size_t);
-  void _M_copy_to_string(basic_string<char>&) const;
-#endif /* __STL_MEMBER_TEMPLATES */
 
   size_t count() const { return this->_M_do_count(); }
 
@@ -689,8 +662,6 @@ public:
 // Definitions of non-inline member functions.
 //
 
-#ifdef __STL_MEMBER_TEMPLATES
-
 template <size_t _Nb>
 template<class _CharT, class _Traits, class _Alloc>
 void bitset<_Nb>
@@ -725,40 +696,6 @@ void bitset<_Nb>
       __s[_Nb - 1 - __i] = '1';
 }
 
-#else /* __STL_MEMBER_TEMPLATES */
-
-template <size_t _Nb>
-void bitset<_Nb>::_M_copy_from_string(const basic_string<char>& __s,
-                                      size_t __pos, size_t __n)
-{
-  reset();
-  size_t __tmp = _Nb;
-  const size_t __nbits = min(__tmp, min(__n, __s.size() - __pos));
-  for (size_t __i = 0; __i < __nbits; ++__i) {
-    switch(__s[__pos + __nbits - __i - 1]) {
-    case '0':
-      break;
-    case '1':
-      set(__i);
-      break;
-    default:
-      __STL_THROW(invalid_argument("bitset"));
-    }
-  }
-}
-
-template <size_t _Nb>
-void bitset<_Nb>::_M_copy_to_string(basic_string<char>& __s) const
-{
-  __s.assign(_Nb, '0');
-  
-  for (size_t __i = 0; __i < _Nb; ++__i) 
-    if (_Unchecked_test(__i))
-      __s[_Nb - 1 - __i] = '1';
-}
-
-#endif /* __STL_MEMBER_TEMPLATES */
-
 // ------------------------------------------------------------
 
 //
@@ -787,8 +724,6 @@ inline bitset<_Nb> operator^(const bitset<_Nb>& __x, const bitset<_Nb>& __y) {
   return __result;
 }
 
-#ifdef __STL_USE_NEW_IOSTREAMS
-
 template <class _CharT, class _Traits, size_t _Nb>
 basic_istream<_CharT, _Traits>&
 operator>>(basic_istream<_CharT, _Traits>& __is, bitset<_Nb>& __x)
@@ -802,7 +737,7 @@ operator>>(basic_istream<_CharT, _Traits>& __is, bitset<_Nb>& __x)
   if (__sentry) {
     basic_streambuf<_CharT, _Traits>* __buf = __is.rdbuf();
     for (size_t __i = 0; __i < _Nb; ++__i) {
-      static _Traits::int_type __eof = _Traits::eof();
+      static typename _Traits::int_type __eof = _Traits::eof();
 
       typename _Traits::int_type __c1 = __buf->sbumpc();
       if (_Traits::eq_int_type(__c1, __eof)) {
@@ -840,59 +775,7 @@ operator<<(basic_ostream<_CharT, _Traits>& __os, const bitset<_Nb>& __x)
   return __os << __tmp;
 }
 
-#else /* __STL_USE_NEW_IOSTREAMS */
-
-template <size_t _Nb>
-istream& operator>>(istream& __is, bitset<_Nb>& __x) {
-  string __tmp;
-  __tmp.reserve(_Nb);
-
-  if (__is.flags() & ios::skipws) {
-    char __c;
-    do 
-      __is.get(__c);
-    while (__is && isspace(__c));
-    if (__is)
-      __is.putback(__c);
-  }
-
-  for (size_t __i = 0; __i < _Nb; ++__i) {
-    char __c;
-    __is.get(__c);
-
-    if (!__is)
-      break;
-    else if (__c != '0' && __c != '1') {
-      __is.putback(__c);
-      break;
-    }
-    else
-      __tmp.push_back(__c);
-  }
-
-  if (__tmp.empty()) 
-    __is.clear(__is.rdstate() | ios::failbit);
-  else
-    __x._M_copy_from_string(__tmp, static_cast<size_t>(0), _Nb);
-
-  return __is;
-}
-
-template <size_t _Nb>
-ostream& operator<<(ostream& __os, const bitset<_Nb>& __x) {
-  string __tmp;
-  __x._M_copy_to_string(__tmp);
-  return __os << __tmp;
-}
-
-#endif /* __STL_USE_NEW_IOSTREAMS */
-
-
-#if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)
-#pragma reset woff 1209
-#endif
-
-__STL_END_NAMESPACE
+} // namespace std
 
 #undef __BITSET_WORDS
 

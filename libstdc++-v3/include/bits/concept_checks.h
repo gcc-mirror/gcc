@@ -490,34 +490,35 @@ struct _STL_ERROR {
 
 /* Associated Type Requirements */
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 template <class _Iterator> struct iterator_traits;
-__STL_END_NAMESPACE
+} // namespace std
 
 template <class _Iter> 
 struct __value_type_type_definition_requirement_violation {
-  typedef typename __STD::iterator_traits<_Iter>::value_type value_type;
+  typedef typename std::iterator_traits<_Iter>::value_type value_type;
 };
 
 template <class _Iter> 
 struct __difference_type_type_definition_requirement_violation {
-  typedef typename __STD::iterator_traits<_Iter>::difference_type
+  typedef typename std::iterator_traits<_Iter>::difference_type
           difference_type;
 };
 
 template <class _Iter> 
 struct __reference_type_definition_requirement_violation {
-  typedef typename __STD::iterator_traits<_Iter>::reference reference;
+  typedef typename std::iterator_traits<_Iter>::reference reference;
 };
 
 template <class _Iter> 
 struct __pointer_type_definition_requirement_violation {
-  typedef typename __STD::iterator_traits<_Iter>::pointer pointer;
+  typedef typename std::iterator_traits<_Iter>::pointer pointer;
 };
 
 template <class _Iter> 
 struct __iterator_category_type_definition_requirement_violation {
-  typedef typename __STD::iterator_traits<_Iter>::iterator_category 
+  typedef typename std::iterator_traits<_Iter>::iterator_category 
           iterator_category;
 };
 
@@ -797,8 +798,7 @@ _Allocator_requirement_violation(_Alloc __a) {
   __pointer__typedef_requirement_violation<_Alloc>();
   __const_pointer__typedef_requirement_violation<_Alloc>();
   typedef typename _Alloc::value_type _Tp;
-  //__STL_REQUIRES_SAME_TYPE(typename _Alloc::__STL_TEMPLATE rebind<_Tp>::other,
-  //                         _Alloc);
+//  __STL_REQUIRES_SAME_TYPE(typename _Alloc::template rebind<_Tp>::other, _Alloc);
 }
 };
 

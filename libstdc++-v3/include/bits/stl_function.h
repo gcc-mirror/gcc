@@ -31,7 +31,8 @@
 #ifndef __SGI_STL_INTERNAL_FUNCTION_H
 #define __SGI_STL_INTERNAL_FUNCTION_H
 
-__STL_BEGIN_NAMESPACE
+namespace std
+{
 
 template <class _Arg, class _Result>
 struct unary_function {
@@ -589,8 +590,6 @@ private:
   _Ret (_Tp::*_M_f)(_Arg) const;
 };
 
-#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
-
 template <class _Tp>
 class mem_fun_t<void, _Tp> : public unary_function<_Tp*,void> {
 public:
@@ -666,7 +665,6 @@ private:
   void (_Tp::*_M_f)(_Arg) const;
 };
 
-#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 // Mem_fun adaptor helper functions.  There are only two:
 //  mem_fun and mem_fun_ref.  (mem_fun1 and mem_fun1_ref 
@@ -723,7 +721,7 @@ inline const_mem_fun1_ref_t<_Ret,_Tp,_Arg>
 mem_fun1_ref(_Ret (_Tp::*__f)(_Arg) const)
   { return const_mem_fun1_ref_t<_Ret,_Tp,_Arg>(__f); }
 
-__STL_END_NAMESPACE
+} // namespace std
 
 #endif /* __SGI_STL_INTERNAL_FUNCTION_H */
 
