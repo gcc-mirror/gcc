@@ -1172,10 +1172,9 @@ classify_zip_file (struct ZipDirectory *zdir)
 		   ".class", 6))
     return 1;
 
-  /* For now we drop the manifest and other information.  Maybe it
-     would make more sense to compile it in?  */
+  /* For now we drop the manifest, but not other information.  */
   if (zdir->filename_length > 8
-      && !strncmp (class_name_in_zip_dir, "META-INF/", 9))
+      && !strncmp (class_name_in_zip_dir, "META-INF/MANIFEST.MF", 20))
     return 0;
 
   /* Drop directory entries.  */
