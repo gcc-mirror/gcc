@@ -73,7 +73,7 @@ enum cmp_type				/* comparison type */
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -D_HPUX_SOURCE -Dhp9000 -Dhp800 -Dspectrum -DREVARGV"
-y
+
 /* Print subsidiary information on the compiler version in use.  */
 
 #define TARGET_VERSION fprintf (stderr, " (hp9000s800)");
