@@ -1,3 +1,9 @@
+Wed Jun  2 08:42:55 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/tcoff.h (USER_LABEL_PREFIX): Synchronise with
+	definition in config/arm/coff.h
+	* config/arm/coff.h: Add comment about USER_LABEL_PREFIX.
+
 Wed Jun  2 07:07 1999 Bruce Korb <ddsinc09@ix.netcom.com
 
 	*fixinc/fixincl.c(global def): Add FD_SHELL_SCRIPT to mark
